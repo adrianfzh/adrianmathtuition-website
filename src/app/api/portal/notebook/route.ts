@@ -15,46 +15,20 @@
 // notebook exists to catch, and it cannot be reconstructed after the reveal.
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server';
-import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
-import {
-  buildEntriesFromPapers, checkTypedAnswer, applyVerdict, entryKey, sgtToday,
-} from '@/lib/notebook';
+import { checkTypedAnswer, applyVerdict, sgtToday } from '@/lib/notebook';
+import { loadPapersAndNotebook, type NotebookEntryRow } from '@/lib/notebook-data';
 import { computeMastery } from '@/lib/mastery';
 import { fullPortalVisible } from '@/lib/portal-beta';
 
 export const dynamic = 'force-dynamic';
 
-// Same window as /app/marking — the notebook is born from the same papers.
-const MAX_RUNS = 40;
-const RUN_COLUMNS =
-  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, pdf_url, released_at, result_json';
 const MAX_ATTEMPTS_KEPT = 50;
 const MAX_ANSWER_LEN = 300;
 
-interface EntryRow {
-  id: string;
-  airtable_student_id: string;
-  variant_qb_id: string | null;
-  run_id: string;
-  question_number: string;
-  paper_name: string | null;
-  paper_date: string | null;
-  topic: string | null;
-  awarded: number;
-  max_marks: number;
-  comment: string | null;
-  slips: unknown;
-  question_prompt: string | null;
-  variant_question: string | null;
-  variant_answer: string | null;
-  variant_note: string | null;
-  variant_origin: string | null;
-  status: 'live' | 'archived';
-  streak: number;
-  next_due: string | null;
-  attempts: unknown;
-  archived_at: string | null;
-}
+// Row shape + the papers/entries assembly live in lib/notebook-data.ts,
+// shared with /app/plan (SPEC-REVISION-PLAN.md) so the two surfaces can never
+// read the same rows differently.
+type EntryRow = NotebookEntryRow;
 
 type Attempt = {
   at: string;
@@ -138,41 +112,14 @@ export async function GET() {
   const svc = createServiceClient();
   const today = sgtToday();
 
-  const { data: runs, error: runsErr } = await svc
-    .from('paper_marking_runs')
-    .select(RUN_COLUMNS)
-    .eq('student_id', sid)
-    .not('released_at', 'is', null)
-    .order('created_at', { ascending: false })
-    .limit(MAX_RUNS);
-  if (runsErr) return NextResponse.json({ error: 'Could not load papers' }, { status: 500 });
-
-  const { data: existing, error: exErr } = await svc
-    .from('notebook_entries')
-    .select('*')
-    .eq('airtable_student_id', sid);
-  if (exErr) return NextResponse.json({ error: 'Could not load notebook' }, { status: 500 });
-
-  const existingKeys = new Set(
-    (existing ?? []).map(e => entryKey(e.run_id, e.question_number)),
-  );
-  const { papers } = buildStudentMarking((runs ?? []) as MarkingRunRow[]);
-  const inserts = buildEntriesFromPapers(sid, papers, existingKeys, today);
-
-  let rows = (existing ?? []) as EntryRow[];
-  if (inserts.length) {
-    // ignoreDuplicates makes a concurrent double-open race-safe (unique key
-    // on student+run+question) — re-select rather than merging by hand.
-    await svc.from('notebook_entries').upsert(inserts, {
-      onConflict: 'airtable_student_id,run_id,question_number',
-      ignoreDuplicates: true,
-    });
-    const { data: fresh } = await svc
-      .from('notebook_entries')
-      .select('*')
-      .eq('airtable_student_id', sid);
-    rows = (fresh ?? rows) as EntryRow[];
+  const res = await loadPapersAndNotebook(svc, sid, today);
+  if (!res.ok) {
+    return NextResponse.json(
+      { error: res.error === 'papers' ? 'Could not load papers' : 'Could not load notebook' },
+      { status: 500 },
+    );
   }
+  const { papers, entries: rows } = res;
 
   const live = rows
     .filter(e => e.status === 'live')

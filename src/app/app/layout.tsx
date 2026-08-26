@@ -23,7 +23,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!isAdmin) await requireAuth();
 
   // Marking-only beta (lib/portal-beta.ts, Adrian 2026-08-21): students see
-  // Home / Practise / Submit / Marked (+ Settings) and nothing else. Adrian's
+  // Home / Plan / Practise / Submit / Marked (+ Settings) and nothing else. Adrian's
   // admin cookie keeps the full nav — Learn while LEARN_OPEN_TO_STUDENTS is off
   // — unless he has flipped "View as student", which demotes him everywhere.
   const viewingAsStudent = isAdmin && cookieStore.get(VIEW_AS_STUDENT_COOKIE)?.value === '1';
@@ -33,9 +33,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // Notebook is hidden from the marking-only beta (Adrian, 2026-08-24: "hide
   // notebook as well") — it rides the full-portal switch like Learn/Notes;
   // its page and API bounce students via the same portal-beta gate.
+  // "My Plan" (SPEC-REVISION-PLAN.md) rides in BOTH branches — it is in the
+  // marking-only allowlist (marking-derived, released-only).
   const desktopLinks = fullPortal
     ? [
         { href: '/app', label: 'Dashboard' },
+        { href: '/app/plan', label: 'My Plan' },
         { href: '/app/practice', label: 'Practice' },
         ...(learnVisible ? [{ href: '/app/learn', label: 'Learn' }] : []),
         { href: '/app/submit', label: 'Submit' },
@@ -44,6 +47,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       ]
     : [
         { href: '/app', label: 'Dashboard' },
+        { href: '/app/plan', label: 'My Plan' },
         { href: '/app/practice', label: 'Practise' },
         { href: '/app/submit', label: 'Hand in a paper' },
         { href: '/app/marking', label: 'Marked papers' },
@@ -51,6 +55,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const mobileTabs = fullPortal
     ? [
         { href: '/app', label: 'Home' },
+        { href: '/app/plan', label: 'Plan' },
         { href: '/app/practice', label: 'Practice' },
         ...(learnVisible ? [{ href: '/app/learn', label: 'Learn' }] : []),
         { href: '/app/notebook', label: 'Notebook' },
@@ -58,6 +63,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       ]
     : [
         { href: '/app', label: 'Home' },
+        { href: '/app/plan', label: 'Plan' },
         { href: '/app/practice', label: 'Practise' },
         { href: '/app/submit', label: 'Hand in' },
         { href: '/app/marking', label: 'Marked' },

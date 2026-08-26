@@ -1,12 +1,15 @@
 // Marking-only beta (Adrian, 2026-08-21: "the only function that students can
 // see now should be just uploading papers to mark and viewing their marked
-// papers"). While MARKING_ONLY_BETA is on, a STUDENT session sees three
+// papers"). While MARKING_ONLY_BETA is on, a STUDENT session sees four
 // surfaces inside the portal — /app/practice (added the same day at Adrian's
 // request: topic → Standard/Advanced → question, marked line by line),
-// /app/submit (hand a paper in) and /app/marking (released marked papers) —
-// plus the dashboard shell and Settings. Learn, Notes and Reference are hidden
-// from the nav/dashboard AND their routes redirect back to /app, so no link
-// inside the portal leads anywhere else.
+// /app/submit (hand a paper in), /app/marking (released marked papers) and
+// /app/plan (SPEC-REVISION-PLAN.md, added 2026-08-26 — marking-derived and
+// released-only, so it belongs in this beta) — plus the dashboard shell and
+// Settings. Learn, Notes and Reference are hidden from the nav/dashboard AND
+// their routes redirect back to /app, so no link inside the portal leads
+// anywhere else. The allowlist is enforced by construction: an allowed page
+// simply never calls requireFullPortal().
 //
 // Escape hatch, same as learn-gate: Adrian's signed admin cookie in the same
 // browser passes everything — that is how he previews the full portal through

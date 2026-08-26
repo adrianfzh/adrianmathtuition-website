@@ -29,8 +29,8 @@ const PRESETS: { key: Preset; emoji: string; title: string; body: string }[] = [
   { key: 'weakspots', emoji: '🩹', title: 'Fix my weak spots', body: 'Built from your own marked papers — the topics where you dropped marks.' },
 ];
 
-export default function PrintClient({ levels }: { levels: { key: string; label: string }[] }) {
-  const [preset, setPreset] = useState<Preset>('mock');
+export default function PrintClient({ levels, initialPreset }: { levels: { key: string; label: string }[]; initialPreset?: Preset }) {
+  const [preset, setPreset] = useState<Preset>(initialPreset ?? 'mock');
   const [level, setLevel] = useState(levels[0]?.key ?? 'EM');
   const [paper, setPaper] = useState<'P1' | 'P2'>('P1');
   const [count, setCount] = useState(8);

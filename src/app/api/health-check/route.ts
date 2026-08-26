@@ -253,6 +253,14 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`notebook_entries? HTTP ${q.status}`);
       return 'auth gate up';
     }),
+    // "My Plan" (/app/plan, SPEC-REVISION-PLAN.md). Anonymous 401 proves the
+    // route is deployed with its auth gate up; the tables it reads are already
+    // probed by portal-marking + portal-notebook above.
+    timed('portal-plan', async () => {
+      const r = await fetch(`${base}/api/portal/plan`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // "From Adrian" assigned work (SPEC-ASSIGN.md). The student list route must
     // hold its auth gate (401 anonymously — a 404 means the Home card and
     // /app/assignments silently vanish), and the table + the columns the Home

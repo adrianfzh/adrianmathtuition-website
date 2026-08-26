@@ -15,8 +15,14 @@ import PrintClient from './print-client';
 
 export const dynamic = 'force-dynamic';
 
-export default async function PrintPage() {
+export default async function PrintPage({ searchParams }: { searchParams: Promise<{ preset?: string }> }) {
   await requireFullPortal();
+
+  // ?preset= deep-link — /app/plan's "Print a weak-spot paper" button lands
+  // here with the weak-spot preset preselected. Anything unknown → default.
+  const { preset } = await searchParams;
+  const initialPreset =
+    preset === 'weakspots' || preset === 'topics' || preset === 'mock' ? preset : undefined;
 
   let levels: { key: string; label: string }[] | null = null;
   const supabase = await createSupabaseServer();
@@ -48,5 +54,5 @@ export default async function PrintPage() {
     );
   }
 
-  return <PrintClient levels={levels} />;
+  return <PrintClient levels={levels} initialPreset={initialPreset} />;
 }
