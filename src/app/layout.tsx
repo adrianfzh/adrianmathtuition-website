@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   title: DEFAULT_TITLE,
   description: DEFAULT_DESC,
   icons: { icon: "/favicon.svg" },
+  // Bing Webmaster Tools site verification (Adrian's account, added 2026-08-26).
+  verification: { other: { "msvalidate.01": "76578FC6617EF7A40833BFFE8C176CA8" } },
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
