@@ -352,6 +352,7 @@ const LAUNCHERS: Launcher[] = [
   { emoji: '👤', title: 'Students', sub: 'Profiles · attendance · slots', href: '/admin/students' },
   { emoji: '📊', title: 'Exams', sub: 'Dates · topics · results', href: '/admin/exams' },
   { emoji: '📌', title: 'Follow-ups',      sub: 'Parent promises · daily 8am digest', href: '/admin/followups' },
+  { emoji: '🖊️', title: 'Red Pen Playbook', sub: 'Positioning · ready-to-send marketing kit', href: 'https://claude.ai/code/artifact/c1d32aba-b358-4163-91ff-9f74af679468' },
   { emoji: '⏳', title: 'Waitlist',        sub: 'Prospects · auto-alert on slot opening', href: '/admin/waitlist' },
   { emoji: '📝', title: 'My To-Dos',       sub: 'Personal — things I need to do',       href: '/admin/my-todos' },
   { emoji: '🔁', title: 'Loop Tasks',      sub: 'Build-test-fix /loop queue for Claude', href: '/admin/todo' },
