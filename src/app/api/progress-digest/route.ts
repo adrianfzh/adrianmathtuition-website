@@ -16,6 +16,7 @@
 // Regenerating replaces existing DRAFTS for the same (student, period, label);
 // rows already marked 'sent' are never touched.
 import { NextRequest, NextResponse } from 'next/server';
+import { logJobRun } from '@/lib/job-log';
 import { sendTelegram } from '@/lib/telegram';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { createServiceClient } from '@/lib/supabase-server';
@@ -48,7 +49,11 @@ export async function GET(req: NextRequest) {
 
   try {
     if (period === 'week') return await runWeekly();
-    if (period === 'month') return await runMonthly();
+    if (period === 'month') {
+      const res = await runMonthly();
+      await logJobRun('progress-digest', res.ok, `monthly digests run (HTTP ${res.status})`);
+      return res;
+    }
     if (period === 'term') {
       const raw = req.nextUrl.searchParams.get('examType');
       const valid: ExamType[] = ['WA1', 'WA2', 'WA3', 'EOY'];

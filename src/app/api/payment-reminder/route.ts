@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logJobRun } from '@/lib/job-log';
 import { sendTelegram } from '@/lib/telegram';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
@@ -24,6 +25,7 @@ export async function GET(req: NextRequest) {
       `invoices generate tomorrow at 7am.\n\n` +
       `Go to Airtable → Invoices → tick Is Paid for received payments.`
   );
+  await logJobRun('payment-reminder', true, 'reminder Telegram sent');
   return NextResponse.json({ ok: true });
 }
 

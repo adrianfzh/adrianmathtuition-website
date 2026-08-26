@@ -357,6 +357,50 @@ export async function GET(req: NextRequest) {
   ]);
   results.push(...parallelChecks);
 
+  // ── The centre's logbook (job_runs): missed-slot + failed-run alarms ──────────
+  // Every automated job stamps one row when it finishes (lib/job-log.ts); the
+  // rules live in lib/job-health.ts (pure, tested). A job that misses its rhythm
+  // or last finished in failure goes red HERE — which is what turns a silent 3:30am
+  // no-show on the Mac into a Telegram at breakfast. Jobs that have never stamped
+  // are skipped (visible on /admin/ops, never an alarm).
+  results.push(await timed('ops-jobs', async () => {
+    const { latestJobRuns } = await import('@/lib/job-log');
+    const { staleJobs } = await import('@/lib/job-health');
+    const latest = await latestJobRuns();
+    const stale = staleJobs(latest, new Date());
+    if (stale.length) throw new Error(stale.map(s => `${s.job}: ${s.reason}`).join(' · '));
+    return `${latest.length} jobs stamped, all on rhythm`;
+  }));
+  // The marking queue is event-driven (no rhythm), so its health signal is LAG:
+  // a queued, unmarked, unfailed paper older than 2h means the worker is stuck —
+  // Batch API rounds normally land well inside the hour.
+  results.push(await timed('marking-queue-lag', async () => {
+    const { getSupabaseAdmin } = await import('@/lib/supabase');
+    const { data, error } = await getSupabaseAdmin()
+      .from('paper_marking_runs')
+      .select('id, created_at, queue:result_json->queue')
+      .is('total_max', null)
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (error) throw new Error(`queue read failed: ${error.message}`);
+    type Q = { queued_at?: string; failed_at?: string };
+    const lagged = (data || []).filter((r) => {
+      const q = (r as { queue?: Q }).queue;
+      if (!q || !q.queued_at || q.failed_at) return false;
+      return Date.now() - new Date(q.queued_at).getTime() > 2 * 3600e3;
+    });
+    if (lagged.length) throw new Error(`${lagged.length} queued paper(s) unmarked for over 2h — worker stuck?`);
+    return 'no queue lag';
+  }));
+
+  // The health check stamps its own row too, so /admin/ops shows when the watcher
+  // itself last watched. Best-effort like every stamp.
+  {
+    const { logJobRun } = await import('@/lib/job-log');
+    const bad = results.filter(r => !r.ok).length;
+    await logJobRun('health-check', bad === 0, bad === 0 ? `all ${results.length} checks green` : `${bad}/${results.length} checks failing`);
+  }
+
   const failures = results.filter(r => !r.ok);
   if (failures.length) {
     try {

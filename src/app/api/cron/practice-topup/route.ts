@@ -13,6 +13,7 @@
 // restored the same day: removing it just starves the plan worker's queue.
 // Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer.
 import { NextRequest, NextResponse } from 'next/server';
+import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { type Tier, TIER_DIFFICULTY_VALUES } from '@/lib/practice-tiers';
 
@@ -68,6 +69,7 @@ export async function GET(req: NextRequest) {
     .select('id', { count: 'exact', head: true })
     .in('status', ['pending', 'claimed']);
   if ((queued ?? 0) >= QUEUE_BACKOFF) {
+    await logJobRun('practice-topup', true, `skipped — queue busy (${queued} waiting)`);
     return NextResponse.json({ ok: true, skipped: `queue busy (${queued} waiting)` });
   }
 
@@ -191,6 +193,7 @@ export async function GET(req: NextRequest) {
   }
 
   const total = report.reduce((a, r) => a + r.enqueued, 0);
+  await logJobRun('practice-topup', true, `enqueued ${total} generation requests`);
   return NextResponse.json({
     ok: true,
     enqueued: total,

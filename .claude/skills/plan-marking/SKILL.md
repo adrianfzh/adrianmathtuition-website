@@ -31,3 +31,17 @@ set -a; . "$MARKER_STATE/env"; set +a   # MARKER_API_BASE + MARKER_API_TOKEN
    the Fly worker's API fallback then marks everything, exactly as before this
    feature existed (plus a ≤12-min head-start delay — kill that too with
    `MARK_QUEUE_EXTERNAL_GRACE_MS=0` on Fly if the pause is long-term).
+
+## Stamp the logbook (always, the very last step)
+
+Whatever happened this run — success, partial, or failure — insert ONE row into the
+math project's `job_runs` table using the same Supabase access this skill already
+uses for its other reads/writes, then stop:
+
+    insert into job_runs (job, ok, summary)
+    values ('plan-marking', <true|false>, '<one line: what this run did>');
+
+`job` is exactly `plan-marking`. Stamp `ok=false` on a failed run with the error in the
+summary. The 6-hourly health check alarms when this stamp goes missing and
+/admin/ops displays it — a run that skips the stamp reads as a run that never
+happened.

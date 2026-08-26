@@ -12,6 +12,7 @@
 // ?dry=1 reports what WOULD be purged without deleting anything.
 // Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer.
 import { NextRequest, NextResponse } from 'next/server';
+import { logJobRun } from '@/lib/job-log';
 import { del } from '@vercel/blob';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { isOurBlobUrl } from '@/lib/blob-url';
@@ -136,6 +137,7 @@ export async function GET(req: NextRequest) {
       ).catch(() => {});
     }
 
+    if (!dry) await logJobRun('retention', true, `swept ${byKey.size} departed students, purged ${purgedStudents}`);
     return NextResponse.json({
       ok: true, dry, cutoff,
       students: byKey.size,

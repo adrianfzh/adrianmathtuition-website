@@ -337,6 +337,7 @@ const LAUNCHERS: Launcher[] = [
   { emoji: '✏️', title: 'Log lessons',   sub: 'Write up the day in one tap each',      href: '/admin/log'          },
   { emoji: '🎯', title: 'Lesson prep',   sub: 'One card per student · today at a glance', href: '/admin/prep'      },
   { emoji: '📬', title: 'Parent Digests', sub: 'Weekly · monthly · term drafts',       href: '/admin/digests'      },
+  { emoji: '🩺', title: 'Ops',           sub: 'Every job & queue · last run · alarms', href: '/admin/ops'          },
   { emoji: '📑', title: 'Marked papers', sub: 'Every script · by student · annotate',  href: '/admin/papers'       },
   { emoji: '🖨️', title: 'Notes',     sub: 'Print revision notes · AirPrint',      href: '/admin/notes'     },
   { emoji: '✍️', title: 'Mark a paper',   sub: 'Question PDF + working photos → marks', href: '/admin/mark-paper'  },

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logJobRun } from '@/lib/job-log';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
 import { getInvoiceMonth, displaySpanMonth } from '@/lib/invoice-month';
@@ -376,6 +377,7 @@ export async function POST(req: NextRequest) {
           method: 'PATCH',
           body: JSON.stringify({ fields: { Value: '' } }),
         }).catch(() => {});
+        await logJobRun('send-invoices', true, 'paused — nothing sent');
         return NextResponse.json({ sent: 0, failed: 0, errors: [], paused: true });
       }
       // Scope to current invoice month only so stale rows from previous
@@ -439,6 +441,7 @@ export async function POST(req: NextRequest) {
 
     if (!invoiceRecords.length) {
       await flagHeld(getInvoiceMonth().label);
+      await logJobRun('send-invoices', true, `all ${heldForReview.length} held for review — nothing sent`);
       return NextResponse.json({ sent: 0, failed: 0, errors: [], held: heldForReview.length });
     }
 
@@ -739,6 +742,7 @@ export async function POST(req: NextRequest) {
     // Flag the invoices the classifier held back, so Adrian can review + send them with a tap.
     await flagHeld(currentMonth);
 
+    await logJobRun('send-invoices', failedCount === 0, `sent ${sentCount}, failed ${failedCount}, held ${heldForReview.length}`);
     return NextResponse.json({ sent: sentCount, failed: failedCount, errors, total: emails.length, sentDetails, held: heldForReview.length });
   } catch (err: any) {
     console.error('[send-invoices] Unhandled error:', err);

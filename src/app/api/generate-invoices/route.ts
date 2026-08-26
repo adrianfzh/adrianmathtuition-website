@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logJobRun } from '@/lib/job-log';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
 import { sendTelegram } from '@/lib/telegram';
@@ -121,6 +122,7 @@ export async function POST(req: NextRequest) {
     );
     console.log(`[generate-invoices] Active enrollments fetched: ${enrollmentsData.records.length}`);
     if (!enrollmentsData.records?.length) {
+      await logJobRun('generate-invoices', true, 'nothing to generate (no active enrollments)');
       return NextResponse.json({ generated: 0, skipped: 0, errors: [] });
     }
 
@@ -763,6 +765,7 @@ export async function POST(req: NextRequest) {
         `Invoices send automatically at 10am tomorrow.`
     );
 
+    await logJobRun('generate-invoices', errors.length === 0, `generated ${generated}, skipped ${skipped}${errors.length ? `, ${errors.length} errors` : ''}`);
     return NextResponse.json({ generated, skipped, errors, skipReasons });
   } catch (err: any) {
     console.error('[generate-invoices] Unhandled error:', err);
