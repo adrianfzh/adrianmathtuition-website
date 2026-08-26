@@ -64,6 +64,22 @@ This keeps history linear (`dev` is always at or ahead of `main`). If `--ff-only
 - **Hotfix exception:** if the user says something is broken in prod and wants it fixed *now*, it's fine to commit to `dev` and promote in the same turn — but still say so, don't silently push to `main`.
 - Rollback is `git revert` on `main` + push, or Vercel → Deployments → promote a previous build.
 
+## 📱 File deliverables → Adrian's phone (2026-08-26)
+
+When a turn produces a user-facing FILE (worksheet/prelim/revision `.docx`, marked or assembled PDF, a report) and the session is **headless/remote** — remote-control CLI session, cron/launchd run, or any session WITHOUT the desktop-app panes (heuristic: no `mcp__Claude_Browser__*` tools in context = headless) — ALSO send it to Adrian's Telegram, same chat as health-check alerts:
+
+```
+curl -s -F chat_id="$TELEGRAM_CHAT_ID" -F document=@"<file>" \
+  -F caption="<short title>" \
+  "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendDocument"
+```
+
+Vars are in `.env.local` (trim quotes/trailing newline before interpolating — see the env-var escaping gotcha below). Bot uploads cap at 50MB — fine for docx/PDF. Verified working 2026-08-26 (msg 18833).
+
+- Telegram = "hand it to me NOW" channel; Dropbox stays the filing system — files that belong in the notes library still go to their normal Dropbox home as well.
+- In desktop-app sessions with Adrian at the machine, the in-app file card is enough — don't double-send unless he asks.
+- "don't send" / "no telegram" for the turn skips it.
+
 ## Architecture
 
 Next.js App Router (`src/app/`) with TypeScript. API routes in `src/app/api/*/route.ts`. Shared components in `src/`. Deployed on Vercel. The Telegram/WhatsApp bot is a SEPARATE repo (`~/Desktop/adrianmath-telegram-math-bot`, Fly.io, manual `npm run deploy`).
