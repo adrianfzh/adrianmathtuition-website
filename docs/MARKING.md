@@ -52,6 +52,30 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   the row, trim `result_json.source.photos` to the student pages (stash the rest in
   `source.removed_answer_key_photos`), set `results: []` + a fresh `queue` key, null
   `total_awarded`/`total_max`/`num_questions` — the worker re-marks it in place.
+  Two later safety layers (both bot-side): `page_kind` classification on every
+  marking read (2026-08-24 — an answer_key/question_paper/blank/cover page returns
+  zero attempts, keeps its place in the PDF as a clean unbannered page, and never
+  triggers the retry/rescue passes), and the **🔑 answer-key cross-check** below.
+- **🔑 Answer-key cross-check — verification, never marking (2026-08-26):** when a
+  scanned-in PRINTED key page is detected (`page_kind: 'answer_key'`), the bot runs
+  ONE extra model call after marking (`ai/answer-key.js` + the hook in
+  `markPaperDirect`): read the key, compare it against the final answers the marker
+  accepted as its own ground truth, and flag disagreements — `review_recommended` +
+  a "Answer key disagrees — key: …; marking accepted: …" entry in that question's
+  `review_reasons` (flows into `/admin/mark/triage` untouched) plus a ⚠️ paper-level
+  `review` note. **Marks are NEVER changed** — printed keys carry misprints, so the
+  key flags for Adrian's decision; the Alexis rule (nothing printed is ever marked)
+  stands. Result lands in `result_json` only via the flagged rows + review note; the
+  check summary also rides the response as `answer_key_check`. Born from linjie's
+  EM set-3 P2 (26 Aug 2026): the marker anchored on the student's setups in Q7(d)
+  and Q7(g) and awarded 4 marks for wrong answers while the key page in the same
+  upload carried 2765 m² and 4.2° — confident-and-wrong misses that flag-only
+  triage cannot see. Same incident also added an anti-anchoring SOLVE step + a
+  "SETUP BEFORE ARITHMETIC" severity rule to both marking prompts (commit to your
+  own answer before reading the student's method; code-exec verifies arithmetic,
+  never which givens belong in the formula), and a **blank-page pre-gate**: a
+  success-empty `detectInkSpan` read skips the Opus call entirely (a detector error
+  keeps the full read path — losing a real page is worse than one wasted read).
 - **🌙 A queued paper arrives FINISHED (2026-08-06):** after the queue worker
   marks a run, `deliverQueuedRun` (bot `handlers/webchat.js`) builds BOTH PDFs
   via the site's `/api/admin/mark-paper-pdf` (photos first, then full — neither
@@ -890,6 +914,16 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   - Bands widen to fit the caption (`max(colW × frac, boxW × 1.2)`) but are still clamped to
     the part's own column — a fixed fraction of a narrow two-up column is less than the label,
     so a purely fractional reach would send every captioned box to the footer.
+- **SEAB codes ride the score box as a second line (2026-08-26):** the marking prompt
+  has always produced per-part scheme codes (`parts[].scheme`, "M1 A0" / "B1 B1ft") —
+  after the Kimi K3 side-by-side (the codes beside each part are much of what makes a
+  page read as a school marker's) they are now DRAWN: a smaller line under the score
+  inside the same box (`Q6(b) 1/2` / `M1 A0`). `schemeCodes()` in `ai/annotate.js`
+  (exported, unit-tested — `test/scheme-codes.test.js`) validates token-by-token so
+  model prose can never reach a box; reserve and draw still share `_marginScoreGeom`
+  (which grows the box for the codes line); when the box spills to the footer the
+  codes follow the score (`1/2 · M1 A0`). Display-only — never marks arithmetic.
+  Classic style has no margin layer, so no codes there (unchanged).
 - **A WORKING-ONLY page is marked against a reconstruction, and must say so** (2026-07-29).
   With no question paper attached, the bot uses `STANDALONE_MARK_SYSTEM` — "the printed
   question and the working are BOTH on this page". A continuation sheet or graph paper has
