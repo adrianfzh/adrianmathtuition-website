@@ -164,6 +164,19 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   Queue also uses) · **Combine into one paper** (the old append behaviour, for
   one script scanned as several files) · Cancel. Loose photos in the same drop
   still attach immediately either way.
+- **Duplicate-marking guard (2026-08-26):** ▶ Mark, 🌙 Queue and the multi-PDF
+  "Queue N separately" flow confirm before spending money when the loaded
+  history (`phase:'stats'`) has a run with the SAME paper name (case-insensitive,
+  trimmed) from the last 3 days — "You marked 'X' on <date> — mark it again?
+  (~$2.30)". August 2026 had ≥$25 of the same paper marked 2–5× out of a $164
+  marking bill. `confirmDuplicateMark` in the page; client-side only, no new
+  API. Deliberately NOT gated: the portal hand-in auto-queue (server-side, must
+  stay silent), 🔁 Re-mark (has its own confirm — its images-attached path calls
+  `markPaper({skipDupGuard:true})`), the history-row ▶ Mark on a ⏳ row
+  (finishing a saved paper, not duplicating), and bare ⏳ rows never trigger a
+  match (nothing was paid for yet — only marked or currently-queued runs count).
+  In the multi-PDF flow the confirms all fire up front at tap time; a declined
+  paper is skipped and named in the queue note, the rest queue as normal.
 - **Paper name is editable everywhere (2026-08-06):** a name input sits above
   Mark/Queue (placeholder = working-file name), the send row keeps its input,
   and history rows' names click into an inline rename (Enter saves, Esc
