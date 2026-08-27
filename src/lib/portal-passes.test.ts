@@ -3,6 +3,7 @@ import {
   isTuitionAccount,
   hasActivePassInRows,
   computeGrantExpiry,
+  latestPassExpiry,
   portalAccessAllowed,
   grantPass,
   decimalAmountToCents,
@@ -102,6 +103,26 @@ describe('computeGrantExpiry (stacking)', () => {
     expect(() => computeGrantExpiry([], -5, NOW)).toThrow();
     expect(() => computeGrantExpiry([], NaN, NOW)).toThrow();
     expect(() => computeGrantExpiry([], Infinity, NOW)).toThrow();
+  });
+});
+
+describe('latestPassExpiry (the /pass "ends <date>" source)', () => {
+  it('no rows → null (nothing to announce)', () => {
+    expect(latestPassExpiry([])).toBeNull();
+  });
+  it('picks the furthest expiry across rows, live or lapsed', () => {
+    const rows: PassRow[] = [
+      { expires_at: iso(NOW.getTime() - DAY) },
+      { expires_at: iso(NOW.getTime() + 2 * DAY) },
+      { expires_at: iso(NOW.getTime() + DAY) },
+    ];
+    expect(latestPassExpiry(rows)?.toISOString()).toBe(iso(NOW.getTime() + 2 * DAY));
+  });
+  it('garbage dates are ignored; all-garbage → null', () => {
+    expect(latestPassExpiry([{ expires_at: 'nonsense' }])).toBeNull();
+    expect(
+      latestPassExpiry([{ expires_at: 'nonsense' }, { expires_at: iso(NOW.getTime()) }])?.toISOString()
+    ).toBe(iso(NOW.getTime()));
   });
 });
 

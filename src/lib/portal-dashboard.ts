@@ -55,6 +55,16 @@ async function airtableSection(account: PortalAccount) {
   let lastTopics: string[] = [];
   let homeworkAssigned: string | null = null;
 
+  // Self-serve (stranger) accounts have airtable_student_id = '' — there is
+  // no Airtable record or lessons to read, and `/Students/` with an empty id
+  // would resolve to the LIST endpoint. The portal_accounts copies above are
+  // the whole truth for them.
+  if (!studentId) {
+    const data = { firstName, level, nextLesson, weekLessons, lastTopics, homeworkAssigned };
+    cache.set(account.id, { at: Date.now(), data });
+    return data;
+  }
+
   try {
     // Student display fields (name may have changed in Airtable since
     // activation) and the lessons window are independent — fetch them in

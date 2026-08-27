@@ -7,7 +7,9 @@
 //      airtable_student_id and fall through to the pass check.
 //   2. Everyone else needs an unexpired row in Supabase `portal_passes`
 //      (service-role only, RLS locked): account_id, source
-//      ('hitpay'|'stripe'|'manual'), reference, starts_at, expires_at.
+//      ('hitpay'|'stripe'|'manual'|'trial'), reference, starts_at, expires_at.
+//      'trial' = the free 3-day pass a REFERRED self-serve signup gets at
+//      creation (/api/portal/join) — same table, same gate, shorter clock.
 //
 // Granting (grantPass) STACKS: the new expiry is max(now, latest existing
 // expiry) + days, so buying again before expiry extends from the end of the
@@ -19,10 +21,13 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from './supabase';
 
-export type PassSource = 'hitpay' | 'stripe' | 'manual';
+export type PassSource = 'hitpay' | 'stripe' | 'manual' | 'trial';
 
 /** Days a single standard purchase buys. */
 export const DEFAULT_PASS_DAYS = 30;
+
+/** Days a referred self-serve signup gets free (the invite hook). */
+export const TRIAL_PASS_DAYS = 3;
 
 /** Floor (SGD) below which a verified payment does NOT auto-grant — stops a
  *  S$1 payment-link typo, or a malicious tiny payment aimed at a guessed
@@ -74,6 +79,17 @@ export function computeGrantExpiry(rows: PassRow[], days: number, now: Date): Da
     if (Number.isFinite(t) && t > base) base = t;
   }
   return new Date(base + days * 86_400_000);
+}
+
+/** Latest expiry across an account's passes, or null when it has none with a
+ *  readable date. Powers the /pass "your trial ends <date>" renew screen. */
+export function latestPassExpiry(rows: PassRow[]): Date | null {
+  let latest = -Infinity;
+  for (const r of rows) {
+    const t = Date.parse(r.expires_at);
+    if (Number.isFinite(t) && t > latest) latest = t;
+  }
+  return Number.isFinite(latest) ? new Date(latest) : null;
 }
 
 /** "29.00" / "25" → integer cents; null when not a plain non-negative decimal
