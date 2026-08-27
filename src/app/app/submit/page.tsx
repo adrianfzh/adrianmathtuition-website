@@ -5,9 +5,15 @@
 // ?assignment=<id> — a "From Adrian" worksheet hand-in (SPEC-ASSIGN.md): the
 // assignment is ownership-checked here and the client locks the paper name.
 import { redirect } from 'next/navigation';
-import { currentAccount } from '@/lib/portal-auth';
+import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { getStudentAssignment } from '@/lib/portal-assignments';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import {
+  dailyHandinCapForTier,
+  getCurrentPass,
+  handinsRemaining,
+  isTuitionAccount,
+} from '@/lib/portal-passes';
 import { DAILY_SUBMIT_CAP, countHandinsToday } from '@/lib/portal-submit-limit';
 import type { HandinCountingClient } from '@/lib/portal-submit-limit';
 import SubmitClient from './submit-client';
@@ -16,10 +22,13 @@ export const dynamic = 'force-dynamic';
 
 export default async function SubmitPage({ searchParams }: { searchParams: Promise<{ assignment?: string; paper?: string }> }) {
   const account = await currentAccount();
+  // rec… for tuition, acct:<uuid> for strangers — the same identity the submit
+  // route stamps on runs and counts the daily cap by.
+  const sid = portalIdentity(account);
   const { assignment: assignmentId, paper: paperId } = await searchParams;
   let assignment: { id: string; title: string } | null = null;
   if (assignmentId) {
-    const a = await getStudentAssignment(assignmentId, account.airtable_student_id);
+    const a = await getStudentAssignment(assignmentId, sid);
     if (!a || a.kind !== 'worksheet') redirect('/app/assignments');
     if (a.status !== 'assigned') redirect(`/app/assignments/${a.id}`);
     assignment = { id: a.id, title: a.title };
@@ -35,7 +44,7 @@ export default async function SubmitPage({ searchParams }: { searchParams: Promi
       .from('portal_generated_papers')
       .select('id, title, status')
       .eq('id', paperId)
-      .eq('airtable_student_id', account.airtable_student_id)
+      .eq('airtable_student_id', sid)
       .maybeSingle();
     if (!data) redirect('/app/print');
     if (data.status !== 'open') redirect('/app/print');
@@ -49,8 +58,19 @@ export default async function SubmitPage({ searchParams }: { searchParams: Promi
   let slotUsed = false;
   if (!assignment) {
     try {
-      const count = await countHandinsToday(getSupabaseAdmin() as unknown as HandinCountingClient, account.airtable_student_id);
-      slotUsed = count >= DAILY_SUBMIT_CAP;
+      // Strangers: the ceiling comes from their pass tier (Standard 1/day,
+      // Intensive 3/day) and an exhausted pass meter also greys the form —
+      // both re-checked server-side at POST time; this is only the preflight.
+      let cap = DAILY_SUBMIT_CAP;
+      if (!isTuitionAccount(account)) {
+        const pass = await getCurrentPass(account.id);
+        cap = dailyHandinCapForTier(pass?.tier);
+        if (handinsRemaining(pass) <= 0) slotUsed = true;
+      }
+      if (!slotUsed) {
+        const count = await countHandinsToday(getSupabaseAdmin() as unknown as HandinCountingClient, sid);
+        slotUsed = count >= cap;
+      }
     } catch { /* degrade to the POST-time check */ }
   }
   return <SubmitClient assignment={assignment} paper={paper} slotUsed={slotUsed} />;

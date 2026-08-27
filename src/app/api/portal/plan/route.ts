@@ -10,6 +10,7 @@
 // beta. No fullPortalVisible() gate here, on purpose.
 import { NextResponse } from 'next/server';
 import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server';
+import { portalIdentity } from '@/lib/portal-auth';
 import { loadPapersAndNotebook } from '@/lib/notebook-data';
 import { buildPlan } from '@/lib/plan';
 import { sgtToday } from '@/lib/notebook';
@@ -17,6 +18,8 @@ import { homeCounts } from '@/lib/portal-home-counts';
 
 export const dynamic = 'force-dynamic';
 
+// The session's portal identity (rec… / acct:<uuid>) — a paying stranger's
+// plan derives from their own hand-ins, same as everyone else's.
 async function sessionStudentId(): Promise<string | null> {
   const supabase = await createSupabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
@@ -24,10 +27,10 @@ async function sessionStudentId(): Promise<string | null> {
   // portal_accounts RLS: a student can read their own row only.
   const { data } = await supabase
     .from('portal_accounts')
-    .select('airtable_student_id')
+    .select('id, airtable_student_id')
     .eq('id', user.id)
     .single();
-  return data?.airtable_student_id ?? null;
+  return data ? portalIdentity(data) : null;
 }
 
 export async function GET() {

@@ -9,8 +9,18 @@ import {
   decimalAmountToCents,
   passMinAmountSgd,
   paymentQualifiesForPass,
+  normalizeTier,
+  currentPassInRows,
+  handinAllowance,
+  handinsRemaining,
+  dailyHandinCapForTier,
+  requireActiveAccess,
+  HANDINS_PER_PASS,
+  DAILY_HANDIN_CAP_BY_TIER,
+  PASS_REQUIRED_MESSAGE,
   DEFAULT_PASS_DAYS,
   DEFAULT_PASS_MIN_AMOUNT_SGD,
+  type MeteredPassRow,
   type PassRow,
 } from './portal-passes';
 
@@ -185,7 +195,7 @@ describe('paymentQualifiesForPass (auto-grant floor)', () => {
 
 // In-memory portal_passes supporting exactly the query shapes grantPass and
 // findPassByReference build — proves webhook-retry idempotency end to end.
-type FakePass = { id: string; account_id: string; source: string; reference: string | null; starts_at: string; expires_at: string };
+type FakePass = { id: string; account_id: string; source: string; reference: string | null; starts_at: string; expires_at: string; tier?: string };
 function fakePassesDb(seed: FakePass[] = []) {
   const rows: FakePass[] = [...seed];
   const state = { inserts: 0 };
@@ -304,5 +314,143 @@ describe('portalAccessAllowed', () => {
   it('anonymous (no account) → refused, no lookup', async () => {
     await expect(portalAccessAllowed(null, NOW, explodingClient)).resolves.toBe(false);
     await expect(portalAccessAllowed(undefined, NOW, explodingClient)).resolves.toBe(false);
+  });
+});
+
+// ── Tiers + the hand-in meter (2026-08-28) ───────────────────────────────────
+
+describe('normalizeTier', () => {
+  it("only exactly 'intensive' is intensive", () => {
+    expect(normalizeTier('intensive')).toBe('intensive');
+  });
+  it('everything else meters as standard (old rows, trials, NULL, typos, case drift)', () => {
+    for (const v of ['standard', null, undefined, '', 'INTENSIVE', 'Intensive', 'gold', 'trial']) {
+      expect(normalizeTier(v)).toBe('standard');
+    }
+  });
+});
+
+describe('tier tables', () => {
+  it('Standard: 8 marked papers, 1/day; Intensive: 20 marked papers, 3/day', () => {
+    expect(HANDINS_PER_PASS).toEqual({ standard: 8, intensive: 20 });
+    expect(DAILY_HANDIN_CAP_BY_TIER).toEqual({ standard: 1, intensive: 3 });
+  });
+  it('dailyHandinCapForTier normalizes unknown tiers to the standard cap', () => {
+    expect(dailyHandinCapForTier('intensive')).toBe(3);
+    expect(dailyHandinCapForTier('standard')).toBe(1);
+    expect(dailyHandinCapForTier(null)).toBe(1);
+    expect(dailyHandinCapForTier('gold')).toBe(1);
+  });
+});
+
+function meteredRow(over: Partial<MeteredPassRow> = {}): MeteredPassRow {
+  return {
+    id: 'p1',
+    source: 'stripe',
+    expires_at: iso(NOW.getTime() + 10 * DAY),
+    tier: 'standard',
+    handins_used: 0,
+    ...over,
+  };
+}
+
+describe('currentPassInRows (the row the meter counts against)', () => {
+  it('no rows → null; only expired rows → null', () => {
+    expect(currentPassInRows([], NOW)).toBeNull();
+    expect(currentPassInRows([meteredRow({ expires_at: iso(NOW.getTime() - DAY) })], NOW)).toBeNull();
+  });
+  it('picks the ACTIVE row with the LATEST expiry (the one stacking extends)', () => {
+    const a = meteredRow({ id: 'a', expires_at: iso(NOW.getTime() + 2 * DAY) });
+    const b = meteredRow({ id: 'b', expires_at: iso(NOW.getTime() + 9 * DAY) });
+    const lapsed = meteredRow({ id: 'c', expires_at: iso(NOW.getTime() - 5 * DAY) });
+    expect(currentPassInRows([a, b, lapsed], NOW)?.id).toBe('b');
+  });
+  it('a pass expiring exactly at now is already expired (strict >, matching the DB gate)', () => {
+    expect(currentPassInRows([meteredRow({ expires_at: NOW.toISOString() })], NOW)).toBeNull();
+  });
+  it('garbage expiry rows are ignored', () => {
+    const good = meteredRow({ id: 'good' });
+    expect(currentPassInRows([meteredRow({ id: 'bad', expires_at: 'garbage' }), good], NOW)?.id).toBe('good');
+  });
+});
+
+describe('handinAllowance / handinsRemaining (the pass meter)', () => {
+  it('allowance by tier — unknown tiers fall back to standard', () => {
+    expect(handinAllowance(meteredRow())).toBe(8);
+    expect(handinAllowance(meteredRow({ tier: 'intensive' }))).toBe(20);
+    expect(handinAllowance(meteredRow({ tier: null }))).toBe(8);
+    expect(handinAllowance(null)).toBe(8);
+  });
+  it('remaining counts down from the allowance', () => {
+    expect(handinsRemaining(meteredRow())).toBe(8);
+    expect(handinsRemaining(meteredRow({ handins_used: 3 }))).toBe(5);
+    expect(handinsRemaining(meteredRow({ tier: 'intensive', handins_used: 19 }))).toBe(1);
+  });
+  it('boundary: exactly the allowance → 0; the accepted over-count race clamps, never negative', () => {
+    expect(handinsRemaining(meteredRow({ handins_used: 8 }))).toBe(0);
+    expect(handinsRemaining(meteredRow({ handins_used: 9 }))).toBe(0);
+  });
+  it('NULL handins_used (fresh row before any hand-in) → full allowance', () => {
+    expect(handinsRemaining(meteredRow({ handins_used: null }))).toBe(8);
+  });
+  it('no pass at all → 0 remaining (nothing to spend)', () => {
+    expect(handinsRemaining(null)).toBe(0);
+    expect(handinsRemaining(undefined)).toBe(0);
+  });
+});
+
+describe('requireActiveAccess (the API belt on expensive routes)', () => {
+  const explodingClient = {
+    from() {
+      throw new Error('portal_passes should not be queried for a tuition account');
+    },
+  } as unknown as Parameters<typeof requireActiveAccess>[2];
+
+  // Minimal stub of the rows read getCurrentPass() builds.
+  function rowsClient(rows: MeteredPassRow[]) {
+    const builder = {
+      select: () => builder,
+      eq: () => builder,
+      then: (resolve: (r: { data: MeteredPassRow[]; error: null }) => unknown) =>
+        resolve({ data: rows, error: null }),
+    };
+    return { from: () => builder } as unknown as Parameters<typeof requireActiveAccess>[2];
+  }
+
+  it('tuition account → ok with pass:null, and the DB is never touched', async () => {
+    await expect(
+      requireActiveAccess({ id: 'u1', airtable_student_id: 'recABC' }, NOW, explodingClient)
+    ).resolves.toEqual({ ok: true, pass: null });
+  });
+  it('stranger with an active pass → ok, and hands back the CURRENT pass row (the meter)', async () => {
+    const current = meteredRow({ id: 'cur', tier: 'intensive', handins_used: 4 });
+    const older = meteredRow({ id: 'old', expires_at: iso(NOW.getTime() + DAY) });
+    const res = await requireActiveAccess({ id: 'u2', airtable_student_id: '' }, NOW, rowsClient([older, current]));
+    expect(res.ok).toBe(true);
+    if (res.ok) expect(res.pass?.id).toBe('cur');
+  });
+  it('stranger with no pass (or only lapsed ones) → 402 naming /app/pass', async () => {
+    for (const rows of [[], [meteredRow({ expires_at: iso(NOW.getTime() - DAY) })]]) {
+      const res = await requireActiveAccess({ id: 'u2', airtable_student_id: '' }, NOW, rowsClient(rows));
+      expect(res).toEqual({ ok: false, status: 402, error: PASS_REQUIRED_MESSAGE });
+      expect(PASS_REQUIRED_MESSAGE).toContain('/app/pass');
+    }
+  });
+  it('anonymous → 402, no lookup', async () => {
+    const res = await requireActiveAccess(null, NOW, explodingClient);
+    expect(res.ok).toBe(false);
+  });
+});
+
+describe('grantPass stores the tier (the webhook passthrough target)', () => {
+  it('defaults to standard when no tier is given (trials, referral +7d, old callers)', async () => {
+    const db = fakePassesDb();
+    await grantPass({ accountId: 'acc-1', days: 3, source: 'trial', now: NOW }, db.client);
+    expect(db.rows[0].tier).toBe('standard');
+  });
+  it("stores 'intensive' when the caller says so", async () => {
+    const db = fakePassesDb();
+    await grantPass({ accountId: 'acc-1', days: 30, source: 'stripe', reference: 'cs_int_1', now: NOW, tier: 'intensive' }, db.client);
+    expect(db.rows[0].tier).toBe('intensive');
   });
 });

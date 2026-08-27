@@ -143,13 +143,19 @@ export async function POST(req: NextRequest) {
   const parsedDays = parseInt(session.metadata?.days ?? '', 10);
   const days = Number.isInteger(parsedDays) && parsedDays > 0 && parsedDays <= 3650 ? parsedDays : DEFAULT_PASS_DAYS;
 
+  // Tier (the hand-in meter): the Intensive payment link carries
+  // metadata.tier = 'intensive'; anything else — the Standard link, old
+  // sessions, typos — meters as 'standard'.
+  const tier = session.metadata?.tier === 'intensive' ? 'intensive' as const : 'standard' as const;
+
   const { expiresAt, duplicate } = await grantPass({
     accountId,
     days,
     source: 'stripe',
     reference: reference || null,
+    tier,
   });
-  console.log(`[stripe-webhook] granted ${days}d pass to ${accountId} (session ${reference}), expires ${expiresAt}`);
+  console.log(`[stripe-webhook] granted ${days}d ${tier} pass to ${accountId} (session ${reference}), expires ${expiresAt}`);
 
   // Referral reward (Adrian, 2026-08-28): when the payer was invited, the
   // inviter earns — a PAYING inviter gets +7 days automatically (idempotent:

@@ -3,7 +3,7 @@
 // with the admin client after resolving the student, so keep one path).
 // Pure helpers live in lib/assignments.ts; this file is the I/O.
 import { getSupabaseAdmin } from './supabase';
-import { sessionAccount } from './portal-auth';
+import { portalIdentity, sessionAccount } from './portal-auth';
 import { pendingCount, type AssignmentRow } from './assignments';
 
 export async function listStudentAssignments(airtableStudentId: string): Promise<AssignmentRow[]> {
@@ -33,10 +33,11 @@ export async function getStudentAssignment(id: string, airtableStudentId: string
 export async function pendingAssignmentCountForSession(): Promise<number> {
   try {
     const acct = await sessionAccount();
-    if (!acct?.airtable_student_id) return 0;
+    if (!acct) return 0;
     const { data } = await getSupabaseAdmin()
       .from('portal_assignments').select('status')
-      .eq('airtable_student_id', acct.airtable_student_id)
+      // portalIdentity: rec… for tuition, acct:<uuid> for strangers.
+      .eq('airtable_student_id', portalIdentity(acct))
       .in('status', ['assigned', 'submitted']);
     return pendingCount((data || []) as { status: AssignmentRow['status'] }[]);
   } catch {

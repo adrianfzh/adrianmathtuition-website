@@ -11,7 +11,7 @@
 // re-enforces the release gate on top (its invariant #1).
 
 import { NextRequest, NextResponse } from 'next/server';
-import { currentStudent } from '@/lib/portal-auth';
+import { currentStudent, portalIdentity } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
 import { buildPracticePdfHtml, practicePdfFilename } from '@/lib/practice-pdf';
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
     .from('paper_marking_runs')
     .select(COLUMNS)
     .eq('id', runId)
-    .eq('student_id', account.airtable_student_id)
+    .eq('student_id', portalIdentity(account))
     .not('released_at', 'is', null)
     .limit(1);
 

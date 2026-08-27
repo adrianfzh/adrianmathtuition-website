@@ -7,9 +7,11 @@
 //
 // Field mapping (live-schema-checked 2026-08-28):
 //   Caption    (singleLineText)       — the question text, '[image]' if photo-only
-//   Student    (multipleRecordLinks)  — [airtable_student_id]
+//   Student    (multipleRecordLinks)  — [airtable_student_id]; SKIPPED for
+//                                       stranger accounts (no Students record)
 //   Username   (singleLineText)       — 'portal' (the source marker; the bot
-//                                       writes 'web' for anonymous web asks)
+//                                       writes 'web' for anonymous web asks);
+//                                       strangers log as 'portal · <name>'
 //   Chat ID    (singleLineText)       — the portal-… session id, correlating
 //                                       with the bot's own answer row
 //   Timestamp  (dateTime)             — now, ISO
@@ -29,9 +31,9 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { data: account } = await supabase
     .from('portal_accounts')
-    .select('airtable_student_id')
+    .select('airtable_student_id, display_name')
     .eq('id', user.id)
-    .single<Pick<PortalAccount, 'airtable_student_id'>>();
+    .single<Pick<PortalAccount, 'airtable_student_id' | 'display_name'>>();
   if (!account) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   let body: { text?: unknown; hasImage?: unknown; chatId?: unknown } = {};
@@ -41,11 +43,18 @@ export async function POST(req: NextRequest) {
   if (!text && !hasImage) return NextResponse.json({ error: 'Nothing to log' }, { status: 400 });
   const chatId = typeof body.chatId === 'string' ? body.chatId.slice(0, 100) : '';
 
+  // Stranger accounts (airtable_student_id = '') have no Students record to
+  // link — Airtable would reject [''] as a bad record id. Log them by NAME
+  // instead: the Student link is skipped and Username carries the name string
+  // after the 'portal' source marker (Questions has no other free-text name
+  // field — schema checked 2026-08-28), so grep-by-'portal' still finds every
+  // portal ask and Adrian can still see who asked.
   const fields: Record<string, unknown> = {
     'Timestamp': new Date().toISOString(),
     'Caption': text || '[image]',
-    'Student': [account.airtable_student_id],
-    'Username': 'portal',
+    ...(account.airtable_student_id
+      ? { 'Student': [account.airtable_student_id], 'Username': 'portal' }
+      : { 'Username': `portal · ${(account.display_name || 'stranger').slice(0, 60)}` }),
     'Subject': 'Math',
   };
   if (chatId) fields['Chat ID'] = chatId;

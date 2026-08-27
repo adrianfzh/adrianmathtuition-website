@@ -30,6 +30,14 @@ export async function GET() {
     .select('airtable_student_id, display_name, level, subjects')
     .eq('id', user.id)
     .maybeSingle<Pick<PortalAccount, 'airtable_student_id' | 'display_name' | 'level' | 'subjects'>>();
+  // DELIBERATELY tuition-only (2026-08-28, stranger-accounts build): the token's
+  // sid goes to the BOT, which links it as an Airtable Students record on its
+  // Questions row — a stranger's acct:<uuid> identity would make that write
+  // fail and lose the log row. Strangers therefore ask on the anonymous path
+  // (the client's documented fallback), while the website's own
+  // /api/portal/ask-log still records who asked by name. Once the bot's
+  // ask-token consumer learns to skip the Student link for acct: sids, swap
+  // this gate to portalIdentity() and strangers get the student quota too.
   if (!account?.airtable_student_id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const secret = process.env.BOT_INTERNAL_SECRET;

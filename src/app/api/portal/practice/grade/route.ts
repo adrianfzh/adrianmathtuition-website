@@ -12,6 +12,8 @@ import { createServiceClient } from '@/lib/supabase-server';
 import { gradeAttempt, upsertWeaknessTags, topWeaknessTags, DAILY_GRADE_CAP, GRADING_MODEL } from '@/lib/practice-grade';
 import { sendTelegram } from '@/lib/telegram';
 import { canTransition, type AssignmentRow } from '@/lib/assignments';
+import { portalIdentity } from '@/lib/portal-auth';
+import { requireActiveAccess } from '@/lib/portal-passes';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -22,6 +24,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Student session required' }, { status: 401 });
   }
   const account = caller.account;
+  // Opus grading costs real money: tuition rides free (zero-cost
+  // short-circuit); a stranger needs an active pass or gets the 402 → /app/pass.
+  const access = await requireActiveAccess(account);
+  if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
+  // rec… for tuition, acct:<uuid> for strangers — the key every attempt row,
+  // weakness tag and assignment lookup below uses.
+  const identity = portalIdentity(account);
 
   const body = await req.json().catch(() => ({}));
   const { questionId, lines, image, assignmentId } = body as {
@@ -56,12 +65,12 @@ export async function POST(req: NextRequest) {
   const admin = createServiceClient();
 
   // Assignment ownership — the id is client-supplied, so every claim is
-  // re-checked server-side against the student's Airtable id.
+  // re-checked server-side against the session's portal identity.
   let assignment: AssignmentRow | null = null;
   if (assignmentId) {
     const { data: a } = await admin
       .from('portal_assignments').select('*')
-      .eq('id', String(assignmentId)).eq('airtable_student_id', account.airtable_student_id)
+      .eq('id', String(assignmentId)).eq('airtable_student_id', identity)
       .maybeSingle();
     const row = a as AssignmentRow | null;
     if (!row || row.kind !== 'question' || row.question_id !== questionId || row.status === 'revoked') {
@@ -114,7 +123,7 @@ export async function POST(req: NextRequest) {
     .from('student_attempts')
     .insert({
       user_id: account.id,
-      airtable_student_id: account.airtable_student_id,
+      airtable_student_id: identity,
       question_id: q.id,
       attempted_via: 'portal',
       answer_text: storedLines.join('\n'),
@@ -125,7 +134,7 @@ export async function POST(req: NextRequest) {
     .single();
 
   const newTags = result.lineComments.filter(c => !c.ok && c.tag).map(c => c.tag!) ;
-  await upsertWeaknessTags(account.id, account.airtable_student_id, newTags);
+  await upsertWeaknessTags(account.id, identity, newTags);
 
   // "From Adrian": mark the assignment done (a re-mark overwrites the score)
   // and tell Adrian — D1's spot-check hook.

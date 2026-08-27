@@ -20,6 +20,8 @@ import {
   DAILY_GENERATE_CAP, CAP_MESSAGE, NOT_AVAILABLE_MESSAGE, GENERATE_FAILED_MESSAGE,
   type GenerationCountingClient,
 } from '@/lib/portal-find';
+import { portalIdentity } from '@/lib/portal-auth';
+import { requireActiveAccess } from '@/lib/portal-passes';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300; // the 4-gate worker takes 1–3 min
@@ -30,10 +32,18 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { data: account } = await supabase
     .from('portal_accounts')
-    .select('airtable_student_id, level, subjects')
+    .select('id, airtable_student_id, level, subjects')
     .eq('id', user.id)
-    .maybeSingle<{ airtable_student_id: string; level: string | null; subjects: string[] | null }>();
-  if (!account?.airtable_student_id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    .maybeSingle<{ id: string; airtable_student_id: string; level: string | null; subjects: string[] | null }>();
+  if (!account) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // rec… for tuition, acct:<uuid> for strangers — keys the cap count, the
+  // generation log, and the "question ready" push below.
+  const identity = portalIdentity(account);
+
+  // 4-gate generation is the portal's most expensive call (1–3 min of model
+  // time) — tuition short-circuits free; a stranger needs an active pass.
+  const access = await requireActiveAccess(account);
+  if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
 
   const parsed = parseGenerateBody(await req.json().catch(() => null));
   if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: parsed.status });
@@ -43,7 +53,7 @@ export async function POST(req: Request) {
   const admin = createServiceClient();
   const used = await countGenerationsToday(
     admin as unknown as GenerationCountingClient,
-    account.airtable_student_id,
+    identity,
   );
   if (used >= DAILY_GENERATE_CAP) {
     return NextResponse.json({ error: CAP_MESSAGE }, { status: 429 });
@@ -59,7 +69,7 @@ export async function POST(req: Request) {
   const log = async (questionId: string | null) => {
     try {
       await admin.from('portal_generation_log').insert({
-        airtable_student_id: account.airtable_student_id,
+        airtable_student_id: identity,
         kind: ask.kind,
         qb_hit: false,
         generated: questionId !== null,
@@ -89,7 +99,7 @@ export async function POST(req: Request) {
     // them straight back to the fresh question; with the tab still open it's
     // a harmless tap-in. Fire-and-forget — a push failure never fails the
     // generation.
-    sendPushToStudent(account.airtable_student_id, {
+    sendPushToStudent(identity, {
       title: 'Your question is ready ✨',
       body: 'Fresh practice question — written for you, checked, and gradable.',
       url: `/app/practice?qid=${questionId}&from=generated`,

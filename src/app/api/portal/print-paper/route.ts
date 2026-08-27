@@ -17,6 +17,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { practiceAuth, levelAllowed } from '@/lib/practice';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { portalIdentity } from '@/lib/portal-auth';
+import { requireActiveAccess } from '@/lib/portal-passes';
 import { fetchWorksheetPool, figureServable, hasPrintableAnswer } from '@/lib/kiosk-pool';
 import { dailyDraw, sgtDate } from '@/lib/kiosk-draw';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
@@ -204,7 +206,7 @@ async function drawTopics(levelKey: string, topics: string[], total: number, stu
 export async function GET(req: NextRequest) {
   const caller = await practiceAuth(req);
   if (!caller || caller.kind !== 'student') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const sid = caller.account.airtable_student_id;
+  const sid = portalIdentity(caller.account);
   const { data } = await getSupabaseAdmin()
     .from('portal_generated_papers')
     .select('id, preset, level, paper, title, total_marks, status, created_at')
@@ -222,7 +224,13 @@ export async function POST(req: NextRequest) {
   const caller = await practiceAuth(req);
   if (!caller || caller.kind !== 'student') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const account = caller.account;
-  const sid = account.airtable_student_id;
+  const sid = portalIdentity(account); // rec… / acct:<uuid>
+
+  // Assembling a paper is a QB-heavy, allowance-spending operation ("mock
+  // papers" is literally what the pass sells) — tuition short-circuits free; a
+  // stranger needs an active pass or gets the 402 → /app/pass.
+  const access = await requireActiveAccess(account);
+  if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
 
   let body: { preset?: unknown; level?: unknown; paper?: unknown; topics?: unknown; count?: unknown };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }

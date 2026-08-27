@@ -17,7 +17,9 @@
 //
 // Money logic lives here as pure functions with injectable now/rows (tested in
 // portal-passes.test.ts); the service wrappers only fetch rows and insert.
-// NOTHING enforces this yet — entitlement gating lands with the invite build.
+// Enforcement (2026-08-28): the /app layout redirects pass-less strangers to
+// /app/pass (page gate), and requireActiveAccess() below is the API belt on
+// the expensive routes (grade / generate / similar / submit / print POST).
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from './supabase';
 
@@ -36,6 +38,74 @@ export const DEFAULT_PASS_MIN_AMOUNT_SGD = 25;
 
 export interface PassRow {
   expires_at: string;
+}
+
+// ── Tiers + the hand-in meter (Adrian, 2026-08-28: "build the counter") ─────
+// A pass is 'standard' (S$29) or 'intensive' (S$49). Everything in the portal
+// stays unlimited on both; ONLY marked hand-ins are metered — they are the
+// expensive human+model loop the pass actually sells. Tuition students are
+// never metered (they don't ride passes at all). Trials carry the column
+// default 'standard'. DB: portal_passes.tier text default 'standard',
+// portal_passes.handins_used int default 0 (added 2026-08-28, verified live).
+
+export type PassTier = 'standard' | 'intensive';
+
+/** Marked hand-ins one pass includes, by tier. */
+export const HANDINS_PER_PASS: Record<PassTier, number> = { standard: 8, intensive: 20 };
+
+/** Hand-ins per SGT day for a STRANGER on this tier (tuition students keep the
+ *  global DAILY_SUBMIT_CAP from lib/portal-submit-limit.ts). */
+export const DAILY_HANDIN_CAP_BY_TIER: Record<PassTier, number> = { standard: 1, intensive: 3 };
+
+/** Anything that isn't exactly 'intensive' (old rows, trials, NULL, typos)
+ *  meters as 'standard' — the safe floor. */
+export function normalizeTier(tier: string | null | undefined): PassTier {
+  return tier === 'intensive' ? 'intensive' : 'standard';
+}
+
+/** A portal_passes row as the meter reads it. */
+export interface MeteredPassRow extends PassRow {
+  id: string;
+  source: string;
+  tier: string | null;
+  handins_used: number | null;
+}
+
+/**
+ * The account's CURRENT pass among `rows`: active (expires_at strictly after
+ * `now`) with the LATEST expiry — the same row stacking extends, so a renewal
+ * mid-pass keeps counting on the pass that ends last. Null when none is active.
+ */
+export function currentPassInRows<T extends PassRow>(rows: T[], now: Date): T | null {
+  let best: T | null = null;
+  let bestTime = now.getTime();
+  for (const r of rows) {
+    const t = Date.parse(r.expires_at);
+    if (Number.isFinite(t) && t > bestTime) {
+      best = r;
+      bestTime = t;
+    }
+  }
+  return best;
+}
+
+/** Marked hand-ins this pass includes in total (tier-normalized). */
+export function handinAllowance(pass: Pick<MeteredPassRow, 'tier'> | null | undefined): number {
+  return HANDINS_PER_PASS[normalizeTier(pass?.tier)];
+}
+
+/** Marked hand-ins still unspent on this pass; 0 with no pass. Never negative
+ *  (an over-count from the accepted increment race clamps to 0, not -1). */
+export function handinsRemaining(
+  pass: Pick<MeteredPassRow, 'tier' | 'handins_used'> | null | undefined,
+): number {
+  if (!pass) return 0;
+  return Math.max(0, handinAllowance(pass) - (pass.handins_used ?? 0));
+}
+
+/** The SGT-daily hand-in ceiling for a stranger on this tier. */
+export function dailyHandinCapForTier(tier: string | null | undefined): number {
+  return DAILY_HANDIN_CAP_BY_TIER[normalizeTier(tier)];
 }
 
 /** The slice of a portal account this module needs. Matches PortalAccount
@@ -190,7 +260,15 @@ export async function findPassByReference(
  * gives days away, never takes them.)
  */
 export async function grantPass(
-  opts: { accountId: string; days: number; source: PassSource; reference?: string | null; now?: Date },
+  opts: {
+    accountId: string;
+    days: number;
+    source: PassSource;
+    reference?: string | null;
+    now?: Date;
+    /** 'standard' (default) or 'intensive' — sets the pass's hand-in meter. */
+    tier?: PassTier;
+  },
   client: PassesClient = getSupabaseAdmin(),
 ): Promise<{ id: string; expiresAt: string; duplicate?: boolean }> {
   const now = opts.now ?? new Date();
@@ -216,6 +294,7 @@ export async function grantPass(
       reference,
       starts_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
+      tier: normalizeTier(opts.tier),
     })
     .select('id, expires_at')
     .single<{ id: string; expires_at: string }>();
@@ -233,4 +312,52 @@ export async function portalAccessAllowed(
   if (!account) return false;
   if (isTuitionAccount(account)) return true; // short-circuits: no DB hit for tuition students
   return hasActivePass(account.id, now, client ?? getSupabaseAdmin());
+}
+
+/** The account's current pass row (active, latest expiry) with its tier and
+ *  hand-in meter — what /app/pass and the submit meter read. Null when no pass
+ *  is active. */
+export async function getCurrentPass(
+  accountId: string,
+  now: Date = new Date(),
+  client: PassesClient = getSupabaseAdmin(),
+): Promise<MeteredPassRow | null> {
+  const { data, error } = await client
+    .from('portal_passes')
+    .select('id, source, expires_at, tier, handins_used')
+    .eq('account_id', accountId);
+  if (error) throw new Error(`portal_passes read failed: ${error.message}`);
+  return currentPassInRows((data ?? []) as MeteredPassRow[], now);
+}
+
+/** What a 402 tells the student. The page-level paywall (the /app layout →
+ *  /app/pass redirect) is the normal path; this message is the API belt for
+ *  direct calls after a pass lapses mid-session. */
+export const PASS_REQUIRED_MESSAGE =
+  'Your pass has ended — renew at /app/pass (S$29 for 30 days) to keep going.';
+
+export type AccessCheck =
+  /** `pass` is the stranger's current pass row (their meter), null for tuition
+   *  accounts — the tuition short-circuit never touches the DB. */
+  | { ok: true; pass: MeteredPassRow | null }
+  | { ok: false; status: 402; error: string };
+
+/**
+ * API-level pass enforcement for the EXPENSIVE routes (grade / generate /
+ * similar / submit / print-paper POST — each one spends real model or human
+ * time). Tuition accounts short-circuit with zero extra cost; a stranger
+ * without an active pass gets a friendly 402 naming /app/pass. Cheap reads
+ * stay behind the page gate only.
+ */
+export async function requireActiveAccess(
+  account: PassAccountLike | null | undefined,
+  now: Date = new Date(),
+  client?: PassesClient,
+): Promise<AccessCheck> {
+  if (account && isTuitionAccount(account)) return { ok: true, pass: null };
+  if (account) {
+    const pass = await getCurrentPass(account.id, now, client ?? getSupabaseAdmin());
+    if (pass) return { ok: true, pass };
+  }
+  return { ok: false, status: 402, error: PASS_REQUIRED_MESSAGE };
 }

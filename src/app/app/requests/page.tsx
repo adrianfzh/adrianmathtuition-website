@@ -3,7 +3,7 @@
 // Server component gates the session and preloads the list; the form is the
 // client half. Deliberately does NOT call requireFullPortal() — requests are
 // part of the marking-only beta surface, same as Submit and Marked.
-import { currentAccount } from '@/lib/portal-auth';
+import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { listStudentRequests } from '@/lib/portal-requests';
 import { DAILY_REQUEST_CAP, countRequestsToday, type RequestCountingClient } from '@/lib/requests';
@@ -13,12 +13,13 @@ export const dynamic = 'force-dynamic';
 
 export default async function RequestsPage() {
   const account = await currentAccount();
+  const sid = portalIdentity(account); // rec… / acct:<uuid>
   // Best-effort preloads — a hiccup degrades to the client's own refetch, and
   // the POST-time cap check is the real gate anyway.
-  const initial = await listStudentRequests(account.airtable_student_id).catch(() => []);
+  const initial = await listStudentRequests(sid).catch(() => []);
   let usedToday = 0;
   try {
-    usedToday = await countRequestsToday(getSupabaseAdmin() as unknown as RequestCountingClient, account.airtable_student_id);
+    usedToday = await countRequestsToday(getSupabaseAdmin() as unknown as RequestCountingClient, sid);
   } catch { /* form stays enabled; the route still enforces */ }
   return <RequestsClient initial={initial.map(r => ({
     id: r.id,

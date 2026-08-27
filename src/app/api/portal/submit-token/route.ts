@@ -7,6 +7,7 @@
 import { NextResponse } from 'next/server';
 import { generateClientTokenFromReadWriteToken } from '@vercel/blob/client';
 import { createSupabaseServer } from '@/lib/supabase-server';
+import { portalIdentity } from '@/lib/portal-auth';
 
 export const runtime = 'nodejs';
 
@@ -15,13 +16,16 @@ export async function GET(req: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { data: account } = await supabase
-    .from('portal_accounts').select('airtable_student_id').eq('id', user.id).single();
-  if (!account?.airtable_student_id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    .from('portal_accounts').select('id, airtable_student_id').eq('id', user.id).single();
+  if (!account) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const filename = new URL(req.url).searchParams.get('filename') || '';
   const rawExt = (filename.match(/\.([a-z0-9]{2,5})$/i)?.[1] || 'jpg').toLowerCase();
   const ext = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'].includes(rawExt) ? rawExt : 'jpg';
-  const pathname = `mark-paper/portal/${account.airtable_student_id}/${crypto.randomUUID()}.${ext}`;
+  // portalIdentity, not the raw airtable id: a stranger's prefix is
+  // `acct:<uuid>` — the submit route checks the SAME identity, so ownership
+  // proof-by-prefix keeps working for both kinds of account.
+  const pathname = `mark-paper/portal/${portalIdentity(account)}/${crypto.randomUUID()}.${ext}`;
   const token = await generateClientTokenFromReadWriteToken({
     token: process.env.BLOB_READ_WRITE_TOKEN!,
     pathname,
