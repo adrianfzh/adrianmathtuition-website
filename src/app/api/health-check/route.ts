@@ -293,6 +293,20 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // HitPay payment webhook (the $29 portal-pass money plumbing). An empty
+    // unsigned POST must draw 503 (deployed but HITPAY_WEBHOOK_SALT not yet
+    // configured — expected until Adrian pastes the keys) or 403 (salt set and
+    // the signature gate rejecting the probe — correct live behaviour). EITHER
+    // passes: both prove the route exists and refuses unverified input. What
+    // must never happen is 404 (route gone → HitPay retries exhaust and real
+    // payments silently stop granting passes) or 500 (handler crashing).
+    timed('hitpay-webhook', async () => {
+      const r = await fetch(`${base}/api/payments/hitpay-webhook`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 503 && r.status !== 403) {
+        throw new Error(`expected 503 (unconfigured) or 403 (sig gate), got HTTP ${r.status}`);
+      }
+      return r.status === 503 ? 'deployed, awaiting HitPay salt' : 'signature gate up';
+    }),
     // "Save to My Notes" (/app/my-notes + the ✂️ clipper on /app/marking).
     // Anonymous 401 proves the route is deployed with its auth gate up; the
     // REST probe proves portal_notes still answers — a dropped table would
