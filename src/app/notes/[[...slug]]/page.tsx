@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { DocsPage, DocsBody, DocsTitle } from 'fumadocs-ui/layouts/docs/page';
+import PageFrame, { type TocEntry } from '../NotesPageFrame';
 import NotesMarkdown from '../NotesMarkdown';
 import NotesUnits from '../NotesUnits';
 import { ReviewBar } from '../ReviewControls';
@@ -32,24 +32,17 @@ const ANCHOR = {
 } as const;
 
 /** Footer prev/next, computed from the unfiltered tree so it never depends on
- *  whatever the sidebar filter happens to be showing. */
+ *  whatever the browse-panel filter happens to be showing. */
 async function footerFor(level: string, url: string) {
   const tree = await getNotesTree(level);
-  const { previous, next } = neighbours(tree, url);
-  return {
-    items: {
-      previous: previous ? { type: 'page' as const, ...previous } : undefined,
-      next: next ? { type: 'page' as const, ...next } : undefined,
-    },
-  };
+  return neighbours(tree, url);
 }
 
 // ── Shared page furniture ────────────────────────────────────────────────────
 //
-// fumadocs' own breadcrumb is switched off on every page below in favour of this
-// single back-link: with a three-level tree the breadcrumb repeated the title
-// and the sidebar without saying anything new, and it pushed the heading down
-// the fold on an iPad.
+// A single back-link instead of a breadcrumb (decision from the fumadocs era,
+// kept): with a three-level tree the breadcrumb repeated the title without
+// saying anything new, and it pushed the heading down the fold on an iPad.
 
 function BackLink({ href, children }: { href: string; children: ReactNode }) {
   return (
@@ -119,18 +112,21 @@ function CardLink({
 
 function LevelChooser() {
   return (
-    <DocsPage toc={[]} breadcrumb={{ enabled: false }}>
-      <p className="nx-eyebrow">Notes</p>
-      <DocsTitle className="nx-title">Revision Notes</DocsTitle>
-      <hr className="nx-rule" />
-      <DocsBody>
-        <div className="not-prose nx-list">
-          {NOTES_LEVELS.map(l => (
-            <CardLink key={l.code} href={`/notes/${l.code.toLowerCase()}`} title={l.label} />
-          ))}
-        </div>
-      </DocsBody>
-    </DocsPage>
+    <PageFrame
+      header={
+        <>
+          <p className="nx-eyebrow">Notes</p>
+          <h1 className="nx-title">Revision Notes</h1>
+          <hr className="nx-rule" />
+        </>
+      }
+    >
+      <div className="nx-list">
+        {NOTES_LEVELS.map(l => (
+          <CardLink key={l.code} href={`/notes/${l.code.toLowerCase()}`} title={l.label} />
+        ))}
+      </div>
+    </PageFrame>
   );
 }
 
@@ -141,44 +137,47 @@ async function LevelIndex({ level }: { level: string }) {
 
   if (topics.length === 0) {
     return (
-      <DocsPage toc={[]} breadcrumb={{ enabled: false }}>
-        <DocsTitle className="nx-title">{levelLabel(level)}</DocsTitle>
+      <PageFrame header={<h1 className="nx-title">{levelLabel(level)}</h1>}>
         <p className="nx-lede">No published notes yet.</p>
-      </DocsPage>
+      </PageFrame>
     );
   }
 
-  // Same grouping the sidebar uses, so the page and the tree read as one thing.
+  // Same grouping the browse panel uses, so the page and the tree read as one.
   const families = groupByFamily(level, topics, t => t.topic);
 
-  const toc = families.map(({ family }) => ({
+  const toc: TocEntry[] = families.map(({ family }) => ({
     title: family.label,
     url: `#family-${topicSlug(family.label)}`,
     depth: 2,
   }));
 
   return (
-    <DocsPage toc={toc} breadcrumb={{ enabled: false }}>
-      {/* No lede, no counts — Adrian, 2026-08-21: the landing page is just the
-          topic list; a student picks a topic and reads. */}
-      <p className="nx-eyebrow">Notes</p>
-      <DocsTitle className="nx-title">{levelLabel(level)}</DocsTitle>
-      <hr className="nx-rule" />
-      <DocsBody>
-        {families.map(({ family, items }) => (
-          <section key={family.label} className="nx-family">
-            <h2 className="nx-family-head" id={`family-${topicSlug(family.label)}`}>
-              {family.label}
-            </h2>
-            <div className="not-prose nx-grid">
-              {items.map(t => (
-                <CardLink key={t.url} href={t.url} title={t.topic} />
-              ))}
-            </div>
-          </section>
-        ))}
-      </DocsBody>
-    </DocsPage>
+    <PageFrame
+      toc={toc}
+      header={
+        <>
+          {/* No lede, no counts — Adrian, 2026-08-21: the landing page is just
+              the topic list; a student picks a topic and reads. */}
+          <p className="nx-eyebrow">Notes</p>
+          <h1 className="nx-title">{levelLabel(level)}</h1>
+          <hr className="nx-rule" />
+        </>
+      }
+    >
+      {families.map(({ family, items }) => (
+        <section key={family.label} className="nx-family">
+          <h2 className="nx-family-head" id={`family-${topicSlug(family.label)}`}>
+            {family.label}
+          </h2>
+          <div className="nx-grid">
+            {items.map(t => (
+              <CardLink key={t.url} href={t.url} title={t.topic} />
+            ))}
+          </div>
+        </section>
+      ))}
+    </PageFrame>
   );
 }
 
@@ -225,101 +224,109 @@ async function TopicIndex({ level, topicSlugParam }: { level: string; topicSlugP
     // the link works whether or not the student has opened it.
     ...sections.map(s => ({ title: s.title, url: `#${s.id}`, depth: 2 })),
     showPages && { title: 'Worked examples', url: `#${ANCHOR.pages}`, depth: 2 },
-  ].filter(Boolean) as { title: string; url: string; depth: number }[];
+  ].filter(Boolean) as TocEntry[];
+
+  const { previous, next } = await footerFor(level, url);
 
   return (
-    <DocsPage toc={toc} footer={await footerFor(level, url)} breadcrumb={{ enabled: false }}>
-      <BackLink href={`/notes/${level.toLowerCase()}`}>
-        {levelLabel(level)}
-      </BackLink>
-      <DocsTitle className="nx-title">{data.topic}</DocsTitle>
-      <div className="nx-byline">
-        <span className="nx-byline-avatar" aria-hidden>
-          A
-        </span>
-        <span className="nx-byline-text">
-          <span className="nx-byline-name">Taught by Adrian</span>
-          <span className="nx-byline-sub">{levelLabel(level)} specialist</span>
-        </span>
-        {/* Deep link into the portal's instant-graded practice for THIS topic —
-            read the examples, then do a few. The practice page opens the
-            topic's sheet directly (?level&topic). */}
-        <Link
-          href={`/app/practice?level=${level.toUpperCase()}&topic=${encodeURIComponent(data.topic)}`}
-          className="nx-practise"
-        >
-          ✏️ Practise this topic
-        </Link>
-      </div>
-      <hr className="nx-rule" />
-      <DocsBody>
-        {admin && data.unitSections.length > 0 && (
-          <ReviewBar
-            level={level}
-            topic={data.topic}
-            pending={pending}
-            flagged={flagged}
-            fixed={fixed}
-          />
-        )}
+    <PageFrame
+      toc={toc}
+      previous={previous}
+      next={next}
+      header={
+        <>
+          <BackLink href={`/notes/${level.toLowerCase()}`}>
+            {levelLabel(level)}
+          </BackLink>
+          <h1 className="nx-title">{data.topic}</h1>
+          <div className="nx-byline">
+            <span className="nx-byline-avatar" aria-hidden>
+              A
+            </span>
+            <span className="nx-byline-text">
+              <span className="nx-byline-name">Taught by Adrian</span>
+              <span className="nx-byline-sub">{levelLabel(level)} specialist</span>
+            </span>
+            {/* Deep link into the portal's instant-graded practice for THIS topic —
+                read the examples, then do a few. The practice page opens the
+                topic's sheet directly (?level&topic). */}
+            <Link
+              href={`/app/practice?level=${level.toUpperCase()}&topic=${encodeURIComponent(data.topic)}`}
+              className="nx-practise"
+            >
+              ✏️ Practise this topic
+            </Link>
+          </div>
+          <hr className="nx-rule" />
+        </>
+      }
+    >
+      {admin && data.unitSections.length > 0 && (
+        <ReviewBar
+          level={level}
+          topic={data.topic}
+          pending={pending}
+          flagged={flagged}
+          fixed={fixed}
+        />
+      )}
 
-        {/* The recall-card ("Key concepts") grid and the counts pills are gone
-            — Adrian, 2026-08-21: a topic page is the list of concept dropdowns
-            below, each named for what the student wants to do; open one and the
-            explanation begins. The formula + remember content the cards carried
-            lives on inside each dropdown's Big Idea. */}
+      {/* The recall-card ("Key concepts") grid and the counts pills are gone
+          — Adrian, 2026-08-21: a topic page is the list of concept dropdowns
+          below, each named for what the student wants to do; open one and the
+          explanation begins. The formula + remember content the cards carried
+          lives on inside each dropdown's Big Idea. */}
 
-        {/* Quick-revision card, when the topic has one. Its own title is dropped:
-            it always restates the topic, which is already the page heading.
-            Students only see published cards — drafts are the reviewer's. */}
-        {data.card?.content_md && (admin || data.card.status === 'published') && (
-          <section className="nx-revision">
-            <header className="nx-revision-head">
-              <span className="nx-eyebrow" id={ANCHOR.revision}>
-                Quick revision
-              </span>
-              {data.card.status === 'draft' && <span className="nx-draft">Draft</span>}
-            </header>
-            <NotesMarkdown content={data.card.content_md} className="nx-revision-body" />
-          </section>
-        )}
+      {/* Quick-revision card, when the topic has one. Its own title is dropped:
+          it always restates the topic, which is already the page heading.
+          Students only see published cards — drafts are the reviewer's. */}
+      {data.card?.content_md && (admin || data.card.status === 'published') && (
+        <section className="nx-revision">
+          <header className="nx-revision-head">
+            <span className="nx-eyebrow" id={ANCHOR.revision}>
+              Quick revision
+            </span>
+            {data.card.status === 'draft' && <span className="nx-draft">Draft</span>}
+          </header>
+          <NotesMarkdown content={data.card.content_md} className="nx-revision-body" />
+        </section>
+      )}
 
-        {/* Interactive tools deliberately do NOT render here (Adrian,
-            2026-08-06): the recap page is for reading; tools belong to the
-            interactive lesson-unit surface. The dedicated tool pages still
-            exist for unconverted topics via the sidebar. */}
+      {/* Interactive tools deliberately do NOT render here (Adrian,
+          2026-08-06): the recap page is for reading; tools belong to the
+          interactive lesson-unit surface. The dedicated tool pages still
+          exist for unconverted topics via the browse panel. */}
 
-        {/* The lesson itself — one dropdown per concept. On an unapproved topic
-            it renders above the old sub-group list so both formats can be
-            compared; the moment the topic has approved blocks, the old list
-            retires. */}
-        {sections.length > 0 && (
-          <>
-            <h2 className="nx-section">Notes &amp; formulas</h2>
-            <NotesUnits sections={sections} admin={admin} />
-          </>
-        )}
+      {/* The lesson itself — one dropdown per concept. On an unapproved topic
+          it renders above the old sub-group list so both formats can be
+          compared; the moment the topic has approved blocks, the old list
+          retires. */}
+      {sections.length > 0 && (
+        <>
+          <h2 className="nx-section">Notes &amp; formulas</h2>
+          <NotesUnits sections={sections} admin={admin} />
+        </>
+      )}
 
-        {showPages && (
-          <section>
-            <h2 id={ANCHOR.pages} className="nx-section">
-              Worked examples
-            </h2>
-            <div className="not-prose nx-list">
-              {data.subgroups.map(s => (
-                <CardLink
-                  key={s.url}
-                  href={s.url}
-                  title={cleanTitle(s.name)}
-                  description={cleanDescription(s.description).summary}
-                  count={plural(s.count, 'example')}
-                />
-              ))}
-            </div>
-          </section>
-        )}
-      </DocsBody>
-    </DocsPage>
+      {showPages && (
+        <section>
+          <h2 id={ANCHOR.pages} className="nx-section">
+            Worked examples
+          </h2>
+          <div className="nx-list">
+            {data.subgroups.map(s => (
+              <CardLink
+                key={s.url}
+                href={s.url}
+                title={cleanTitle(s.name)}
+                description={cleanDescription(s.description).summary}
+                count={plural(s.count, 'example')}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+    </PageFrame>
   );
 }
 
@@ -385,7 +392,7 @@ async function SubgroupPage({
   const showSections =
     data.sections.length > 1 || data.sections[0]?.name !== data.subgroup.name;
 
-  const toc = sections.flatMap(({ section, items }) => [
+  const toc: TocEntry[] = sections.flatMap(({ section, items }) => [
     ...(showSections ? [{ title: section.name, url: `#${section.id}`, depth: 2 }] : []),
     ...items.map(s => ({
       title: cleanTitle(s.card_title) || `Worked example ${s.n}`,
@@ -394,36 +401,44 @@ async function SubgroupPage({
     })),
   ]);
 
+  const { previous, next } = await footerFor(level, url);
+
   return (
-    <DocsPage toc={toc} footer={await footerFor(level, url)} breadcrumb={{ enabled: false }}>
-      <BackLink href={topicUrl(level, data.topic)}>{data.topic}</BackLink>
-      <DocsTitle className="nx-title">{cleanTitle(data.subgroup.name)}</DocsTitle>
-      {summary && <p className="nx-lede">{summary}</p>}
-      <div className="nx-meta">
-        <span className="nx-pill">{plural(n, 'worked example')}</span>
-        {example && (
-          <span className="nx-eg">
-            <b>e.g.</b>
-            {example}
-          </span>
-        )}
-      </div>
-      <hr className="nx-rule" />
-      <DocsBody>
-        {sections.map(({ section, items }) => (
-          <section key={section.id}>
-            {showSections && (
-              <h2 id={section.id} className="nx-section">
-                {section.name}
-              </h2>
+    <PageFrame
+      toc={toc}
+      previous={previous}
+      next={next}
+      header={
+        <>
+          <BackLink href={topicUrl(level, data.topic)}>{data.topic}</BackLink>
+          <h1 className="nx-title">{cleanTitle(data.subgroup.name)}</h1>
+          {summary && <p className="nx-lede">{summary}</p>}
+          <div className="nx-meta">
+            <span className="nx-pill">{plural(n, 'worked example')}</span>
+            {example && (
+              <span className="nx-eg">
+                <b>e.g.</b>
+                {example}
+              </span>
             )}
-            {items.map(snippet => (
-              <Example key={snippet.id} snippet={snippet} />
-            ))}
-          </section>
-        ))}
-      </DocsBody>
-    </DocsPage>
+          </div>
+          <hr className="nx-rule" />
+        </>
+      }
+    >
+      {sections.map(({ section, items }) => (
+        <section key={section.id}>
+          {showSections && (
+            <h2 id={section.id} className="nx-section">
+              {section.name}
+            </h2>
+          )}
+          {items.map(snippet => (
+            <Example key={snippet.id} snippet={snippet} />
+          ))}
+        </section>
+      ))}
+    </PageFrame>
   );
 }
 

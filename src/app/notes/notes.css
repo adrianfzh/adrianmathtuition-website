@@ -1,48 +1,35 @@
 /* ── Notes portal styles, scoped to /notes ────────────────────────────────────
  *
  * Imported by src/app/notes/layout.tsx ONLY, never by globals.css. Next.js emits
- * this as a route-segment stylesheet, so it loads on /notes and nowhere else.
+ * this as a route-segment stylesheet, so it loads on /notes and nowhere else —
+ * keep it that way: everything here assumes the `.notes-shell` wrapper.
  *
- * Why the isolation matters: fumadocs-ui/css/preset.css ships an `@layer base`
- * block that repaints `body` (background + colour) and sets a global
- * `*, ::before, ::after { border-color: … }`. Imported into globals.css that
- * would restyle every page on the site — homepage, admin, kiosk, the lot.
+ * 2026-08-28: the fumadocs chrome (DocsLayout sidebar, DocsPage, its neutral +
+ * preset stylesheets) is GONE — Adrian: "the style of the UIUX of the notes
+ * should follow that of the student portal itself." The shell, drawer, TOC and
+ * footer are now portal-styled components (NotesShell / NotesPageFrame) built
+ * on the site-wide Tailwind from globals.css, so this file no longer imports
+ * tailwindcss or any fumadocs CSS. What remains is CONTENT styling — worked
+ * examples, learning-unit blocks, prose, KaTeX overflow, print — plus the few
+ * chrome bits Tailwind is awkward at (drawer animation, <details> markers).
  *
- * Tailwind is re-imported here because the fumadocs preset relies on `@apply`,
- * `@utility`, `@variant` and `@plugin`, which need a Tailwind context in this
- * entry point. Fumadocs safelists its own class names via `@source inline(…)`
- * in its generated CSS, so nothing under node_modules needs scanning.
- *
- * Everything below the token block is unlayered on purpose: Tailwind v4 emits
- * its utilities inside `@layer utilities`, and an unlayered rule beats a layered
- * one whatever the specificity. That is how `.nx-title` overrides the
- * `text-3xl font-semibold` fumadocs puts on DocsTitle without `!important`.
- */
-
-@import 'tailwindcss';
-@import 'fumadocs-ui/css/neutral.css';
-@import 'fumadocs-ui/css/preset.css';
+ * The `--color-fd-*` custom-property names survive from the fumadocs era purely
+ * as this file's internal palette tokens (hundreds of references below); they
+ * no longer feed any fumadocs component. Rules are unlayered on purpose:
+ * Tailwind v4 (globals.css) emits utilities inside `@layer utilities`, and an
+ * unlayered rule beats a layered one whatever the specificity. */
 
 /* ── Theme ────────────────────────────────────────────────────────────────────
- * A documentation surface, styled like one: white ground, one green accent, and
- * a single sans family at a comfortable reading size.
- *
- * This deliberately does NOT follow the warm-paper house style used by
- * public/tools/*.html and the /revise swipe cards. Those are single-purpose
- * apps; this is a reference manual, and a reference manual wants to disappear
- * behind its content. Where the two meet — an embedded tool — the tool is
- * framed as media (`.nx-tool`) so the change of palette reads as a deliberate
- * boundary rather than a clash.
- *
- * The `--color-fd-*` names are fumadocs' contract (see
- * fumadocs-ui/css/lib/default-colors.css); overriding them on the shell
- * repaints the sidebar, TOC, popovers and footer in one go. `.dark` sits on
- * <html>, i.e. OUTSIDE the shell, so the dark block below outranks it. */
+ * The student portal's language (lib/portal-theme.ts, /app pages): warm cream
+ * ground hsl(45,100%,98%), white cards with a black/5 hairline + soft shadow,
+ * navy for structure, gold for attention. Green stays for one job only —
+ * answers / correct / fixed — matching the portal's marking semantics.
+ * Light-only, like the portal: the theme provider left with fumadocs. */
 
 .notes-shell {
-  --color-fd-background: hsl(0, 0%, 100%);
+  --color-fd-background: hsl(45, 100%, 98%);
   --color-fd-foreground: hsl(220, 12%, 13%);
-  --color-fd-muted: hsl(220, 14%, 97%);
+  --color-fd-muted: hsl(220, 14%, 96.5%);
   --color-fd-muted-foreground: hsl(220, 8%, 46%);
   --color-fd-popover: hsl(0, 0%, 100%);
   --color-fd-popover-foreground: hsl(220, 12%, 13%);
@@ -53,7 +40,7 @@
   --color-fd-primary-foreground: hsl(45, 100%, 96%);
   --color-fd-secondary: hsl(220, 14%, 97%);
   --color-fd-secondary-foreground: hsl(220, 12%, 20%);
-  --color-fd-accent: hsl(220, 50%, 95.5%);
+  --color-fd-accent: hsl(45, 100%, 96%);
   --color-fd-accent-foreground: hsl(220, 60%, 22%);
   --color-fd-ring: hsl(45, 90%, 50%);
 
@@ -64,6 +51,8 @@
   --nx-navy-soft: hsl(220, 50%, 95.5%);
   --nx-navy-line: hsl(220, 40%, 85%);
   --nx-gold: hsl(45, 90%, 55%);
+  --nx-cream: hsl(45, 100%, 96%);
+  --nx-cream-chip: hsl(45, 80%, 94%);
   --nx-green: hsl(162, 88%, 27%);
   --nx-green-mid: hsl(160, 72%, 38%);
   --nx-green-line: hsl(158, 45%, 82%);
@@ -71,7 +60,7 @@
   --nx-amber-deep: hsl(40, 80%, 38%);
   --nx-amber-line: hsl(45, 85%, 74%);
   --nx-amber-wash: hsl(45, 90%, 93.5%);
-  /* Solid block-header bars — deep enough for white text in both themes. */
+  /* Solid block-header bars — deep enough for white text. */
   --nx-bar-core: var(--nx-navy);
   --nx-bar-example: hsl(168, 75%, 26%);
   --nx-bar-check: hsl(262, 48%, 42%);
@@ -80,15 +69,17 @@
   --nx-rose-deep: hsl(349, 66%, 45%);
   --nx-rose-line: hsl(350, 60%, 89%);
   --nx-rose-wash: hsl(350, 80%, 97.5%);
-  --nx-line: hsl(220, 13%, 91%);
-  --nx-hairline: hsl(220, 14%, 94.5%);
+  /* Portal hairlines: translucent near-black, like border-black/5 on cards. */
+  --nx-line: hsl(220 15% 12% / 0.09);
+  --nx-hairline: hsl(220 15% 12% / 0.055);
   --nx-wash: hsl(220, 20%, 98%);
   --nx-shadow: 0 1px 2px hsl(220 20% 20% / 0.05);
   --nx-shadow-lift: 0 1px 2px hsl(220 20% 20% / 0.06), 0 10px 24px -14px hsl(220 25% 20% / 0.22);
 
   --nx-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --nx-mono: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --nx-radius: 12px;
+  /* Portal cards are rounded-2xl. */
+  --nx-radius: 16px;
 
   background-color: var(--color-fd-background);
   color: var(--color-fd-foreground);
@@ -99,191 +90,53 @@
   -webkit-font-smoothing: antialiased;
 }
 
-.dark .notes-shell {
-  --color-fd-background: hsl(220, 18%, 9%);
-  --color-fd-foreground: hsl(220, 14%, 92%);
-  --color-fd-muted: hsl(220, 16%, 14%);
-  --color-fd-muted-foreground: hsl(220, 10%, 64%);
-  --color-fd-popover: hsl(220, 17%, 12%);
-  --color-fd-popover-foreground: hsl(220, 14%, 92%);
-  --color-fd-card: hsl(220, 17%, 11.5%);
-  --color-fd-card-foreground: hsl(220, 14%, 92%);
-  --color-fd-border: hsl(220, 12%, 21%);
-  --color-fd-primary: hsl(220, 70%, 76%);
-  --color-fd-primary-foreground: hsl(220, 40%, 10%);
-  --color-fd-secondary: hsl(220, 15%, 15%);
-  --color-fd-secondary-foreground: hsl(220, 14%, 90%);
-  --color-fd-accent: hsl(220, 26%, 20%);
-  --color-fd-accent-foreground: hsl(220, 60%, 86%);
-  --color-fd-ring: hsl(45, 80%, 55%);
+/* ── Chrome: browse panel + TOC (NotesShell / NotesPageFrame) ────────────────
+ * The components style themselves with Tailwind; this is only what utilities
+ * can't express — entry animation and native <details> marker handling. */
 
-  --nx-ink: hsl(220, 16%, 95%);
-  --nx-ink-soft: hsl(220, 12%, 70%);
-  --nx-navy: hsl(220, 45%, 30%);
-  --nx-navy-soft: hsl(220, 30%, 17%);
-  --nx-navy-line: hsl(220, 28%, 30%);
-  --nx-gold: hsl(45, 85%, 55%);
-  --nx-green: hsl(158, 64%, 58%);
-  --nx-green-mid: hsl(158, 60%, 46%);
-  --nx-green-line: hsl(160, 26%, 28%);
-  --nx-green-wash: hsl(162, 26%, 13%);
-  --nx-amber-deep: hsl(42, 80%, 64%);
-  --nx-amber-line: hsl(42, 34%, 30%);
-  --nx-amber-wash: hsl(42, 28%, 13%);
-  --nx-bar-core: var(--nx-navy);
-  --nx-bar-example: hsl(168, 52%, 25%);
-  --nx-bar-check: hsl(262, 38%, 42%);
-  --nx-bar-autopsy: hsl(349, 55%, 40%);
-  --nx-bar-try: hsl(22, 70%, 40%);
-  --nx-rose-deep: hsl(350, 72%, 74%);
-  --nx-rose-line: hsl(350, 26%, 30%);
-  --nx-rose-wash: hsl(350, 24%, 13%);
-  --nx-line: hsl(220, 12%, 21%);
-  --nx-hairline: hsl(220, 12%, 17%);
-  --nx-wash: hsl(220, 16%, 13%);
-  --nx-shadow: 0 1px 2px hsl(0 0% 0% / 0.3);
-  --nx-shadow-lift: 0 1px 2px hsl(0 0% 0% / 0.35), 0 12px 28px -16px hsl(0 0% 0% / 0.7);
+@keyframes nx-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes nx-slide-in {
+  from {
+    transform: translateX(2rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.nx-fade {
+  animation: nx-fade-in 0.18s ease-out;
+}
+.nx-slide {
+  animation: nx-slide-in 0.22s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .nx-fade,
+  .nx-slide {
+    animation: none;
+  }
 }
 
-/* neutral.css re-greys these three inside the sidebar with an id selector, which
- * outranks `.dark .notes-shell`. Win it back rather than living with a grey
- * sidebar against the page. */
-.dark .notes-shell #nd-sidebar {
-  --color-fd-muted: hsl(220, 16%, 13%);
-  --color-fd-secondary: hsl(220, 15%, 15%);
-  --color-fd-muted-foreground: hsl(220, 10%, 66%);
+/* "On this page" phone card — a native <details> with our own chevron. */
+.nx-toc-card > summary {
+  list-style: none;
 }
-
-/* ── Chrome: sidebar ─────────────────────────────────────────────────────────*/
-
-.notes-shell #nd-sidebar {
-  background-color: var(--color-fd-background);
-  border-right: 1px solid var(--nx-line);
+.nx-toc-card > summary::-webkit-details-marker {
+  display: none;
 }
-.notes-shell #nd-sidebar a {
-  /* v3: students read the rails too — 14px sidebar type read as chrome. */
-  font-size: 1rem;
-  line-height: 1.45;
+.nx-toc-card .nx-toc-chev {
+  transition: rotate 0.15s;
 }
-.notes-shell #nd-sidebar a[data-active='true'] {
-  border-left: 3px solid var(--nx-gold);
-  border-radius: 0 8px 8px 0;
-  font-weight: 700;
-}
-
-/* Family headings between groups of topics. Rendered through the `Separator`
- * component override in NotesShell — fumadocs' own separator markup carries no
- * stable class name, so relying on its Tailwind utilities would break on any
- * upgrade. */
-.nx-sep {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  margin: 1.6rem 0 0.35rem;
-  padding: 0 0.5rem;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-  color: var(--color-fd-muted-foreground);
-}
-.nx-sep:first-child {
-  margin-top: 0.25rem;
-}
-/* The active page: green label with a green spine, the docs-site convention. */
-.notes-shell #nd-sidebar a[data-active='true'] {
-  position: relative;
-  color: var(--nx-green);
-  font-weight: 600;
-  background-color: var(--color-fd-accent);
-}
-.notes-shell #nd-sidebar a[data-active='true']::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.3rem;
-  bottom: 0.3rem;
-  width: 2px;
-  border-radius: 999px;
-  background: var(--nx-green-mid);
-}
-
-.nx-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.nx-brand-mark {
-  display: grid;
-  place-items: center;
-  width: 1.6rem;
-  height: 1.6rem;
-  border-radius: 7px;
-  background: var(--nx-green);
-  color: #fff;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-.nx-brand-name {
-  font-size: 1.0625rem;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  color: var(--nx-ink);
-}
-.nx-brand-chip {
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--nx-green);
-  background: var(--nx-green-wash);
-  border: 1px solid var(--nx-green-line);
-  border-radius: 999px;
-  padding: 0.12rem 0.45rem;
-}
-
-.nx-filter {
-  position: relative;
-}
-.nx-filter svg {
-  position: absolute;
-  left: 0.7rem;
-  top: 50%;
-  width: 0.95rem;
-  height: 0.95rem;
-  translate: 0 -50%;
-  color: var(--color-fd-muted-foreground);
-  pointer-events: none;
-}
-.nx-filter input {
-  width: 100%;
-  border: 1px solid var(--nx-line);
-  border-radius: 9px;
-  background: var(--color-fd-card);
-  padding: 0.5rem 0.85rem 0.5rem 2.15rem;
-  font-size: 0.875rem;
-  color: var(--color-fd-foreground);
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-.nx-filter input::placeholder {
-  color: var(--color-fd-muted-foreground);
-}
-.nx-filter input:focus {
-  outline: none;
-  border-color: var(--nx-green-mid);
-  box-shadow: 0 0 0 3px hsl(160 72% 38% / 0.14);
-}
-
-/* ── Chrome: table of contents ───────────────────────────────────────────────*/
-
-.notes-shell #nd-toc a {
-  font-size: 0.96rem;
-  line-height: 1.5;
-}
-.notes-shell #nd-toc a[data-active='true'] {
-  color: var(--color-fd-primary);
-  font-weight: 700;
+.nx-toc-card[open] .nx-toc-chev {
+  rotate: 180deg;
 }
 
 /* ── Page header ─────────────────────────────────────────────────────────────*/
@@ -302,19 +155,21 @@
   transition: color 0.15s;
 }
 a.nx-eyebrow:hover {
-  color: var(--nx-green);
+  color: var(--nx-navy);
 }
 
+/* Portal-scale page heading: bold navy, tight tracking — the /app register
+ * ("text-2xl font-bold text-navy"), a step up for a reading surface. */
 .nx-title {
   display: flex;
   align-items: center;
   gap: 0.6rem;
   font-family: var(--nx-sans);
   font-weight: 800;
-  font-size: clamp(2.3rem, 1.6rem + 2.3vw, 3.1rem);
-  line-height: 1.1;
-  letter-spacing: -0.025em;
-  color: var(--nx-ink);
+  font-size: clamp(1.55rem, 1.25rem + 1.1vw, 2rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--nx-navy);
   margin: 0 0 0.65rem;
 }
 .nx-lede {
@@ -362,7 +217,7 @@ a.nx-eyebrow:hover {
   font-size: 0.6875rem;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: var(--nx-green);
+  color: var(--nx-navy);
   margin-right: 0.4rem;
 }
 
@@ -371,46 +226,6 @@ a.nx-eyebrow:hover {
   border: 0;
   background: var(--nx-line);
   margin: 1.5rem 0 0;
-}
-
-/* ── Call-to-action buttons ──────────────────────────────────────────────────*/
-
-.nx-cta-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  margin-top: 1.35rem;
-}
-.nx-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  border-radius: 999px;
-  padding: 0.6rem 1.15rem;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  text-decoration: none;
-  border: 1px solid transparent;
-  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
-}
-.nx-cta-primary {
-  background: var(--nx-green-mid);
-  color: #fff;
-}
-.nx-cta-primary:hover {
-  background: var(--nx-green);
-}
-.dark .nx-cta-primary {
-  color: hsl(220, 30%, 8%);
-}
-.nx-cta-ghost {
-  border-color: var(--nx-line);
-  color: var(--nx-ink-soft);
-  background: var(--color-fd-background);
-}
-.nx-cta-ghost:hover {
-  border-color: var(--nx-green-line);
-  color: var(--nx-green);
 }
 
 /* ── Level index: families of topic cards ────────────────────────────────────*/
@@ -460,16 +275,17 @@ a.nx-eyebrow:hover {
   align-items: center;
   gap: 1rem;
   padding: 0.9rem 1.1rem;
-  border: 1px solid var(--nx-line);
+  border: 1px solid var(--nx-hairline);
   border-radius: var(--nx-radius);
   background: var(--color-fd-card);
+  box-shadow: var(--nx-shadow);
   color: inherit;
   text-decoration: none;
   transition: border-color 0.16s, box-shadow 0.16s, background-color 0.16s;
 }
 .nx-item:hover {
-  border-color: var(--nx-green-line);
-  background: var(--nx-green-wash);
+  border-color: var(--nx-navy-line);
+  background: var(--nx-cream);
   box-shadow: var(--nx-shadow-lift);
 }
 .nx-item-main {
@@ -484,7 +300,7 @@ a.nx-eyebrow:hover {
   color: var(--nx-ink);
 }
 .nx-item:hover .nx-item-title {
-  color: var(--nx-green);
+  color: var(--nx-navy);
 }
 .nx-item-desc {
   display: -webkit-box;
@@ -518,7 +334,7 @@ a.nx-eyebrow:hover {
 }
 .nx-item:hover .nx-chevron {
   transform: translateX(2px);
-  color: var(--nx-green);
+  color: var(--nx-navy);
 }
 
 /* ── Formula reflexes (recall cards) ─────────────────────────────────────────
@@ -539,7 +355,7 @@ a.nx-eyebrow:hover {
 }
 .nx-subhead .nx-eyebrow {
   margin: 0;
-  color: var(--nx-green);
+  color: var(--nx-navy);
   scroll-margin-top: 6rem;
 }
 .nx-subhead-note {
@@ -625,13 +441,6 @@ a.nx-eyebrow:hover {
   background-size: 24px 100%, 24px 100%, 9px 100%, 9px 100%;
   background-attachment: local, local, scroll, scroll;
 }
-.dark .nx-rc-body .katex-display {
-  background-image:
-    linear-gradient(to right, var(--nx-wash) 60%, transparent),
-    linear-gradient(to left, var(--nx-wash) 60%, transparent),
-    radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 0.5), transparent),
-    radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 0.5), transparent);
-}
 .nx-rc-body .katex-display > .katex {
   text-align: center;
 }
@@ -681,7 +490,7 @@ a.nx-eyebrow:hover {
   margin-top: 0;
 }
 .nx-revision-body ol > li::marker {
-  color: var(--nx-green);
+  color: var(--nx-navy);
   font-weight: 700;
 }
 
@@ -731,16 +540,16 @@ a.nx-eyebrow:hover {
   gap: 0.3rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--nx-green);
+  color: var(--nx-navy);
   text-decoration: none;
-  border: 1px solid var(--nx-green-line);
-  background: var(--nx-green-wash);
+  border: 1px solid var(--nx-navy-line);
+  background: var(--nx-cream-chip);
   border-radius: 999px;
   padding: 0.28rem 0.7rem;
   white-space: nowrap;
 }
 .nx-tool-open:hover {
-  background: var(--nx-green-line);
+  background: var(--nx-amber-wash);
 }
 .nx-tool-frame {
   display: block;
@@ -786,8 +595,11 @@ a.nx-eyebrow:hover {
   margin: 1rem 0 0;
   padding: 1.25rem 1.4rem 1.35rem;
   background: var(--color-fd-card);
-  border: 1px solid var(--nx-line);
+  border: 1px solid var(--nx-hairline);
   border-radius: var(--nx-radius);
+  box-shadow: var(--nx-shadow);
+  /* Search deep-links land on #ex-<id> — clear the sticky top bar. */
+  scroll-margin-top: 5rem;
 }
 .nx-ex-head {
   display: flex;
@@ -807,9 +619,9 @@ a.nx-eyebrow:hover {
   font-family: var(--nx-mono);
   font-size: 0.7rem;
   font-weight: 600;
-  color: var(--nx-green);
-  background: var(--nx-green-wash);
-  border: 1px solid var(--nx-green-line);
+  color: var(--nx-navy);
+  background: var(--nx-cream-chip);
+  border: 1px solid var(--nx-amber-line);
 }
 .nx-ex-title {
   font-family: var(--nx-sans);
@@ -843,8 +655,9 @@ a.nx-eyebrow:hover {
   color: var(--nx-ink);
 }
 .notes-prose a {
-  color: var(--nx-green);
-  text-decoration-color: var(--nx-green-line);
+  color: var(--nx-navy);
+  font-weight: 600;
+  text-decoration-color: var(--nx-gold);
   text-underline-offset: 3px;
 }
 .notes-prose code {
@@ -921,7 +734,7 @@ a.nx-eyebrow:hover {
   padding: 0.85rem 1.05rem;
   background: var(--nx-wash);
   border: 1px solid var(--nx-hairline);
-  border-left: 3px solid var(--nx-green-line);
+  border-left: 3px solid var(--nx-gold);
   border-radius: 0 9px 9px 0;
 }
 .notes-prose blockquote p {
@@ -935,7 +748,7 @@ a.nx-eyebrow:hover {
 .notes-prose blockquote strong {
   display: inline-block;
   min-width: 6.5rem;
-  color: var(--nx-green);
+  color: var(--nx-navy);
 }
 
 /* ── Semantic blocks (see lib/notes-blocks.ts) ───────────────────────────────*/
@@ -954,7 +767,7 @@ a.nx-eyebrow:hover {
   border-bottom: 1px dashed var(--nx-line);
 }
 .nb[data-nb='question'] .nb-label {
-  color: var(--nx-green);
+  color: var(--nx-navy);
   margin-bottom: 0.4rem;
 }
 .nb[data-nb='question'] p {
@@ -992,7 +805,7 @@ a.nx-eyebrow:hover {
   height: 8px;
   border-radius: 50%;
   background: var(--color-fd-card);
-  border: 2px solid var(--nx-green-mid);
+  border: 2px solid var(--nx-navy);
 }
 /* End of a run of steps: stop the rule at the last line of content. */
 .nb[data-nb='step']:not(:has(+ .nb[data-nb='step'])) {
@@ -1231,10 +1044,6 @@ a.nx-eyebrow:hover {
   text-transform: uppercase;
   color: var(--nx-amber-deep);
 }
-.dark .nx-u-keyformula {
-  box-shadow: 0 2px 10px hsl(45 85% 40% / 0.18);
-}
-
 /* ── One unit ────────────────────────────────────────────────────────────────
  * v3: a white card opened by a solid colour-block header — the block's kind is
  * a colour and an icon before it is a word, which is what lets a student scan
@@ -1810,10 +1619,11 @@ a.nx-eyebrow:hover {
   color: var(--color-fd-muted-foreground);
 }
 
-/* Adrian's review bar: reading the page is the review; this is where it ends. */
+/* Adrian's review bar: reading the page is the review; this is where it ends.
+ * Sticky offset clears the h-14 portal top bar. */
 .nx-reviewbar {
   position: sticky;
-  top: 0.75rem;
+  top: 4.25rem;
   z-index: 30;
   display: flex;
   align-items: center;
@@ -1860,22 +1670,18 @@ a.nx-eyebrow:hover {
   opacity: 0.6;
   cursor: default;
 }
-.dark .nx-reviewbar-approve {
-  color: hsl(220, 30%, 8%);
-}
 
 /* ── Print ───────────────────────────────────────────────────────────────────
  * These pages get printed for lessons, so make a print actually usable: drop
  * the app chrome, flatten the cards to rules, and keep a worked example whole
  * on one sheet instead of letting a page break land mid-solution. */
 @media print {
-  .notes-shell #nd-sidebar,
-  .notes-shell #nd-tocnav,
-  .notes-shell #nd-toc,
-  .notes-shell #nd-subnav,
+  .nx-topbar,
+  .nx-toc-card,
+  .nx-tocrail,
+  .nx-prevnext,
   .nx-eyebrow,
   .nx-chevron,
-  .nx-cta-row,
   /* An iframe prints as an empty rectangle at best — the tool is interactive,
      so on paper it is nothing but a hole in the page. */
   .nx-tool,
@@ -2119,18 +1925,6 @@ a.nx-eyebrow:hover {
   }
 }
 
-/* The theme toggle was a 16px whisper in the sidebar footer — make it read as
- * a control. (Students asked how to switch to dark mode.) */
-.notes-shell #nd-sidebar button[aria-label='Toggle Theme'] {
-  border: 1px solid var(--nx-line);
-  border-radius: 999px;
-  padding: 0.25rem 0.5rem;
-}
-.notes-shell #nd-sidebar button[aria-label='Toggle Theme'] svg {
-  width: 1.3rem;
-  height: 1.3rem;
-}
-
 /* ── Concept dropdowns ────────────────────────────────────────────────────────
  * The topic page is a list of <details>, one per concept, titled by the
  * question the student wants answered (Adrian, 2026-08-21: no "Key Concepts"
@@ -2214,84 +2008,24 @@ a.nx-eyebrow:hover {
   }
 }
 
-/* ── Level switcher (sidebar banner) ─────────────────────────────────────────*/
-.nx-levels {
-  display: flex;
-  gap: 0.35rem;
-  margin-bottom: 0.35rem;
-}
-.nx-level {
-  flex: 1;
-  text-align: center;
-  border: 1px solid var(--nx-line);
-  border-radius: 9px;
-  padding: 0.3rem 0.6rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--color-fd-muted-foreground);
-  background: var(--color-fd-card);
-  text-decoration: none;
-  transition: border-color 0.15s, color 0.15s;
-}
-.nx-level:hover {
-  color: var(--color-fd-foreground);
-}
-.nx-level[aria-current='page'] {
-  color: var(--color-fd-foreground);
-  border-color: var(--nx-green-mid);
-}
-
-/* ── Search results (deep links into sections + worked examples) ─────────────*/
-.nx-hits {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-top: 0.35rem;
-  border: 1px solid var(--nx-line);
-  border-radius: 9px;
-  background: var(--color-fd-card);
-  padding: 0.3rem;
-  max-height: 19rem;
-  overflow-y: auto;
-}
-.nx-hit {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  padding: 0.35rem 0.5rem;
-  border-radius: 7px;
-  text-decoration: none;
-}
-.nx-hit:hover {
-  background: var(--color-fd-accent);
-}
-.nx-hit-label {
-  font-size: 0.82rem;
-  font-weight: 550;
-  color: var(--color-fd-foreground);
-  line-height: 1.25;
-}
-.nx-hit-context {
-  font-size: 0.72rem;
-  color: var(--color-fd-muted-foreground);
-  line-height: 1.2;
-}
-
-/* ── "Practise this topic" deep link (topic page byline) ─────────────────────*/
+/* ── "Practise this topic" deep link (topic page byline) ─────────────────────
+ * The portal's secondary-button recipe: white, navy text, navy/20 hairline,
+ * navy/5 hover (see the quick-actions grid on /app). */
 .nx-practise {
   margin-left: auto;
   align-self: center;
-  border: 1px solid var(--nx-line);
+  border: 1px solid hsl(220 60% 20% / 0.2);
   border-radius: 999px;
   padding: 0.35rem 0.85rem;
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--color-fd-foreground);
+  color: var(--nx-navy);
   background: var(--color-fd-card);
+  box-shadow: var(--nx-shadow);
   text-decoration: none;
   white-space: nowrap;
-  transition: border-color 0.15s;
+  transition: background-color 0.15s;
 }
 .nx-practise:hover {
-  border-color: var(--nx-green-mid);
+  background: hsl(220 60% 20% / 0.05);
 }
