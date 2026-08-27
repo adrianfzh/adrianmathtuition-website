@@ -21,6 +21,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page('/solutions', 0.8),
     ...publishedSolutions().map(s => page(`/solutions/${s.slug}`, 0.7)),
     page('/revise', 0.6),
+    // Revision-deck level indexes — the crawlable entry points to the
+    // topic decks (/revise/[level]/[topic]/{worked-examples,recall}).
+    ...['am', 'em', 'jc', 's1', 's2'].map(l => page(`/revise/${l}`, 0.6)),
     ...FORMULA_SLUGS.map(s => page(`/formulas/${s}`, 0.5)),
     page('/tools', 0.5),
     page('/terms', 0.2),

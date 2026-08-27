@@ -279,7 +279,7 @@ describe('buildStudentMarking — revise links', () => {
     ],
   };
 
-  it('attaches swipe-player links to the mapped dropped questions', () => {
+  it('attaches practice + worked-example links to the mapped dropped questions', () => {
     const out = buildStudentMarking([
       run({
         id: 'a',
@@ -296,7 +296,8 @@ describe('buildStudentMarking — revise links', () => {
     const [q3, q5, q8] = out.papers[0].questions;
     expect(q3.revise).toEqual({
       name: 'Rationalising Denominators',
-      href: '/revise/am/surds/worked-examples?subgroup=101',
+      href: '/app/practice?level=AM&topic=Surds',
+      examplesHref: '/revise/am/surds/worked-examples?subgroup=101',
     });
     // Full marks — nothing to fix, so no link even though the block names Q5.
     expect(q5.revise).toBeNull();
@@ -305,7 +306,7 @@ describe('buildStudentMarking — revise links', () => {
     expect(out.papers[0].dropped.find(d => d.questionNumber === '3')?.revise).not.toBeNull();
   });
 
-  it('slugs multi-word and bracketed topics into the /revise URL format', () => {
+  it('encodes the topic for practice and slugs it for the deck URL', () => {
     const out = buildStudentMarking([
       run({
         id: 'a',
@@ -318,9 +319,32 @@ describe('buildStudentMarking — revise links', () => {
         },
       }),
     ]);
-    expect(out.papers[0].questions[0].revise?.href).toBe(
+    const link = out.papers[0].questions[0].revise;
+    // Practice matches topics by exact name, so the raw topic is URL-encoded, not slugged.
+    expect(link?.href).toBe(
+      '/app/practice?level=AM&topic=Trigonometry%20(R-Formula)'
+    );
+    expect(link?.examplesHref).toBe(
       '/revise/am/trigonometry-r-formula/worked-examples?subgroup=7'
     );
+  });
+
+  it('maps the jc deck level to the JC2 practice key', () => {
+    const out = buildStudentMarking([
+      run({
+        id: 'a',
+        result_json: {
+          results: [q({ n: '1', awarded: 3, max: 6 })],
+          revise: {
+            level: 'JC',
+            items: [{ for: '1', subgroup_id: 9, name: 'Integration by Parts', topic: 'Integration' }],
+          },
+        },
+      }),
+    ]);
+    const link = out.papers[0].questions[0].revise;
+    expect(link?.href).toBe('/app/practice?level=JC2&topic=Integration');
+    expect(link?.examplesHref).toBe('/revise/jc/integration/worked-examples?subgroup=9');
   });
 
   it('degrades a malformed block to no chips, never a broken href', () => {

@@ -427,23 +427,42 @@ function ReviseContent() {
     );
   }
 
-  // No topic
+  // No topic → index of the revision-deck levels (the ?topic= reader is a
+  // legacy deep-link surface; bare /revise should never dead-end).
   if (!topic) {
+    const levels = [
+      { href: '/revise/am', label: 'A-Math', sub: 'O-Level Additional Mathematics' },
+      { href: '/revise/em', label: 'E-Math', sub: 'O-Level Elementary Mathematics' },
+      { href: '/revise/jc', label: 'H2 Math', sub: 'A-Level' },
+      { href: '/revise/s1', label: 'Sec 1 Math', sub: 'Secondary 1' },
+      { href: '/revise/s2', label: 'Sec 2 Math', sub: 'Secondary 2' },
+    ];
     return (
-      <div className="revise-layout">
-        <TopNav topic="Revise" badge={subjectLabel} />
-        <div className="tab-bar" />
-        <div className="page-body">
-          <div className="content-scroll">
-            <div className="content-area">
-              <div className="state-message">
-                <div className="state-title">No topic specified</div>
-                <p>Add <code>?topic=Binomial+Expansion</code> to the URL.</p>
-              </div>
-            </div>
-          </div>
+      <main className="min-h-screen bg-[#F5EFE2] px-5 py-10">
+        <div className="mx-auto w-full max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-widest text-amber-700">
+            Revision decks
+          </p>
+          <h1 className="mt-1 text-3xl font-bold text-slate-900">Revise</h1>
+          <p className="mt-2 text-sm text-slate-500">
+            Pick your level — each topic has ⚡ quick-recall cards and 💡 full
+            worked examples you can swipe through.
+          </p>
+          <ul className="mt-8 space-y-3">
+            {levels.map((l) => (
+              <li key={l.href}>
+                <a
+                  href={l.href}
+                  className="block rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm hover:border-amber-300 hover:shadow"
+                >
+                  <div className="font-semibold text-slate-800">{l.label}</div>
+                  <div className="text-sm text-slate-500">{l.sub}</div>
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
+      </main>
     );
   }
 

@@ -55,13 +55,16 @@ export interface StudentQuestion {
   /** The complete correct solution, one step per line ($…$ TeX). */
   solution: string | null;
   /**
-   * "📚 Revise this concept" link into the worked-examples swipe player, when
-   * the release-time mapper (`result_json.revise`, lib/revise-map) matched this
-   * question to a sub-group with published cards. Null for full-mark questions
-   * and whenever no mapping was confident enough — a missing chip is fine, a
-   * wrong or dead link is not.
+   * "Practise this" follow-up for a dropped-marks question, when the
+   * release-time mapper (`result_json.revise`, lib/revise-map) matched it to a
+   * sub-group with published cards. `href` deep-links into graded practice
+   * (`/app/practice?level=&topic=` — the student is already signed in here);
+   * `examplesHref` keeps the no-login worked-examples deck as a secondary
+   * "see it done first" link. Null for full-mark questions and whenever no
+   * mapping was confident enough — a missing chip is fine, a wrong or dead
+   * link is not.
    */
-  revise: { name: string; href: string } | null;
+  revise: { name: string; href: string; examplesHref: string } | null;
 }
 
 /**
@@ -224,13 +227,23 @@ function toQuestion(raw: unknown): StudentQuestion | null {
 }
 
 /**
- * result_json.revise → question-number → swipe-player link. Every field is
+ * result_json.revise → question-number → follow-up links. Every field is
  * re-validated here even though lib/revise-map validated on write — this is
  * student-facing, and a malformed block must degrade to "no chip", never to a
  * broken href.
+ *
+ * Deck level → QB practice level key. `jc` maps to JC2 (the common case); a
+ * JC1 student's practice page falls back to their own level and still opens
+ * the topic sheet when the topic exists there, so the link degrades softly.
  */
-function reviseLinks(raw: unknown): Map<string, { name: string; href: string }> {
-  const links = new Map<string, { name: string; href: string }>();
+const PRACTICE_LEVEL: Record<string, string> = {
+  am: 'AM', em: 'EM', jc: 'JC2', s1: 'S1', s2: 'S2',
+};
+
+function reviseLinks(
+  raw: unknown,
+): Map<string, { name: string; href: string; examplesHref: string }> {
+  const links = new Map<string, { name: string; href: string; examplesHref: string }>();
   const block = asRecord(raw);
   const level = str(block?.level).toLowerCase();
   const items = block?.items;
@@ -246,7 +259,8 @@ function reviseLinks(raw: unknown): Map<string, { name: string; href: string }> 
     if (!forQ || !name || !topic || !Number.isInteger(id) || links.has(forQ)) continue;
     links.set(forQ, {
       name,
-      href: `/revise/${level}/${topicSlug(topic)}/worked-examples?subgroup=${id}`,
+      href: `/app/practice?level=${PRACTICE_LEVEL[level]}&topic=${encodeURIComponent(topic)}`,
+      examplesHref: `/revise/${level}/${topicSlug(topic)}/worked-examples?subgroup=${id}`,
     });
   }
   return links;

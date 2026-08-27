@@ -275,12 +275,20 @@ function Paper({ paper }: { paper: StudentPaper }) {
                   </ul>
                 )}
                 {q.revise && (
-                  <Link
-                    href={q.revise.href}
-                    className="inline-block mt-2 text-[12px] font-semibold bg-[hsl(45,80%,94%)] text-navy rounded-full px-3 py-1.5 hover:bg-[hsl(45,80%,88%)] transition-colors"
-                  >
-                    📚 Revise: {q.revise.name} <span className="text-gray-400">›</span>
-                  </Link>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                    <Link
+                      href={q.revise.href}
+                      className="inline-block text-[12px] font-semibold bg-[hsl(45,80%,94%)] text-navy rounded-full px-3 py-1.5 hover:bg-[hsl(45,80%,88%)] transition-colors"
+                    >
+                      ✏️ Practise: {q.revise.name} <span className="text-gray-400">›</span>
+                    </Link>
+                    <a
+                      href={q.revise.examplesHref}
+                      className="text-[12px] text-gray-500 underline underline-offset-2 hover:text-navy"
+                    >
+                      worked examples ›
+                    </a>
+                  </div>
                 )}
               </li>
             ))}
