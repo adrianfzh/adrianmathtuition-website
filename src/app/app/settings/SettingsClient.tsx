@@ -19,6 +19,7 @@ export default function SettingsClient({
   const [pw, setPw] = useState({ next: '', confirm: '', msg: '', busy: false });
   const [tg, setTg] = useState({ value: telegramChatId, msg: '', busy: false });
   const [del, setDel] = useState({ confirm: '', msg: '', busy: false });
+  const [nm, setNm] = useState({ value: displayName, msg: '', busy: false });
 
   async function changePassword(e: React.FormEvent) {
     e.preventDefault();
@@ -27,6 +28,23 @@ export default function SettingsClient({
     setPw(s => ({ ...s, busy: true, msg: '' }));
     const { error } = await getSupabaseBrowser().auth.updateUser({ password: pw.next });
     setPw({ next: '', confirm: '', busy: false, msg: error ? 'Could not update password.' : '✓ Password updated.' });
+  }
+
+  // Preferred name — what the app calls the student everywhere (Adrian,
+  // 2026-08-28: tuition students should get to pick a name too, same as
+  // outside students). The registered name in Adrian's records is untouched.
+  async function saveName(e: React.FormEvent) {
+    e.preventDefault();
+    const value = nm.value.trim();
+    if (value.length < 2) return setNm(s => ({ ...s, msg: 'At least 2 characters.' }));
+    setNm(s => ({ ...s, busy: true, msg: '' }));
+    const res = await fetch('/api/portal/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ display_name: value }),
+    });
+    setNm(s => ({ ...s, busy: false, msg: res.ok ? '✓ Saved — the app will call you this.' : 'Could not save.' }));
+    if (res.ok) router.refresh();
   }
 
   async function saveTelegram(e: React.FormEvent) {
@@ -73,7 +91,22 @@ export default function SettingsClient({
       <div className={card}>
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Account</p>
         <div className="text-sm text-gray-700 space-y-1">
-          <p><span className="text-gray-400">Name:</span> {displayName || '—'}</p>
+          <form onSubmit={saveName} className="flex items-center gap-2">
+            <span className="text-gray-400 shrink-0">Name:</span>
+            <input
+              value={nm.value}
+              onChange={e => setNm(s => ({ ...s, value: e.target.value }))}
+              maxLength={80}
+              className="flex-1 min-w-0 rounded-lg border border-black/10 px-2.5 py-1.5 text-sm"
+              placeholder="What should we call you?"
+            />
+            {nm.value.trim() !== displayName && (
+              <button disabled={nm.busy} className="shrink-0 text-xs font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-lg px-3 py-1.5 disabled:opacity-60">
+                {nm.busy ? '…' : 'Save'}
+              </button>
+            )}
+          </form>
+          {nm.msg && <p className="text-xs text-gray-500">{nm.msg}</p>}
           <p><span className="text-gray-400">Email:</span> {email}</p>
           <p><span className="text-gray-400">Level:</span> {level || '—'}</p>
         </div>
