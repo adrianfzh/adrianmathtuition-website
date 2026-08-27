@@ -284,6 +284,15 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // Web-push subscriptions (/app/settings toggle → "marked paper ready"
+    // notifications). 401 anonymously proves the subscribe route is deployed
+    // with its session gate up — a 404 means students silently stop being able
+    // to opt in, and released-paper pushes dry up as endpoints expire.
+    timed('portal-push', async () => {
+      const r = await fetch(`${base}/api/portal/push`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // Practice topic picker (/app/practice → lib/practice-strands + topic-picker).
     // The question-type route must hold its auth gate, and the two RPCs the
     // picker is built on must still answer with rows for a JC bank AND a Sec 3

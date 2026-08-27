@@ -1,0 +1,14 @@
+{
+  "name": "AdrianMath",
+  "short_name": "AdrianMath",
+  "description": "Adrian's Math Tuition student portal — hand papers in, see your marked scripts.",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fffcf5",
+  "theme_color": "#142952",
+  "icons": [
+    { "src": "/icons/admin-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/admin-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

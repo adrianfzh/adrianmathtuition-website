@@ -2,6 +2,7 @@
 // /login. Desktop: top nav. Mobile (<640px): bottom tab bar (thumb-reachable).
 // Adrian's signed admin cookie also passes the gate (review/testing) — the
 // per-page APIs decide what an admin caller may see (e.g. pending units).
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { requireAuth } from '@/lib/portal-auth';
@@ -14,6 +15,15 @@ import ViewAsToggle from './view-as-toggle';
 import PortalTour from '@/components/PortalTour';
 import { portalSurfaces } from '@/lib/portal-surfaces';
 import { DesktopLinks, MobileTabs } from '@/components/PortalTabs';
+
+// PWA identity for the student portal: the manifest + apple-touch-icon are what
+// let an iPhone install /app to the Home Screen — which is the ONLY way web
+// push works on iOS. Keep in step with public/app-manifest.webmanifest.
+export const metadata: Metadata = {
+  manifest: '/app-manifest.webmanifest',
+  icons: { apple: '/icons/admin-180.png' },
+  appleWebApp: { capable: true, title: 'AdrianMath' },
+};
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();

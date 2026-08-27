@@ -34,6 +34,7 @@ import {
 } from '@/lib/mark-triage';
 import { buildReviseBlock } from '@/lib/revise-map';
 import { canTransition, type AssignmentStatus } from '@/lib/assignments';
+import { sendPushToStudent } from '@/lib/portal-push';
 
 export const runtime = 'nodejs';
 // Release itself is fast; the ceiling is for the after() enrichment, which
@@ -446,6 +447,25 @@ export async function POST(req: NextRequest) {
         via,
         note: outcome.note,
       });
+
+      // Web push (portal): "Your marked paper is ready ✅" on every device the
+      // student turned notifications on for (/app/settings). Runs after the
+      // response via after(); sendPushToStudent never throws — a push failure
+      // must NEVER fail or delay a release. Rides alongside the Telegram
+      // nudge, not instead of it.
+      if (run.student_id) {
+        const pushStudentId = run.student_id;
+        const pushBody = run.paper_name || 'Tap to see your marks';
+        try {
+          after(() => sendPushToStudent(pushStudentId, {
+            title: 'Your marked paper is ready ✅',
+            body: pushBody,
+            url: '/app/marking',
+          }));
+        } catch (err) {
+          console.warn('[mark-triage] push scheduling failed:', (err as Error).message);
+        }
+      }
 
       // Full marks → nothing to practise; don't even queue the call.
       const totals = recomputeTotals(run.result_json);
