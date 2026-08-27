@@ -39,6 +39,23 @@ const SWIPE_THRESHOLD = 100;
 const VELOCITY_THRESHOLD = 500;
 const CHAT_ENDPOINT = 'https://adrianmath-telegram-math-bot.fly.dev/api/chat';
 
+// ── Trial-deck UX (Adrian, 2026-08-27: "build 1-5 on a trial topic") ─────────
+// Three behaviours run on the decks below only, so Adrian can compare against
+// an untouched deck before rolling out: (1) reveal-first cards — question face,
+// tap to show the solution; (2) a section overline on every card; (3) resume +
+// seen memory in localStorage. Add "level:Topic Name" keys to widen the trial.
+const TRIAL_DECKS = new Set(['em:Trigonometry']);
+
+const storeKey = (level: string, topic: string) => `revise_deck_v1:${level}:${topic}`;
+
+// Question face = everything before "**Step 1" (question + sketch prompt).
+// Cards without a Step 1 marker get no reveal step and render whole.
+function splitReveal(content: string): { prompt: string; solution: string } | null {
+  const m = content.match(/\n\*\*Step\s*1/);
+  if (!m || m.index === undefined) return null;
+  return { prompt: content.slice(0, m.index), solution: content.slice(m.index) };
+}
+
 // ── Animation variants ────────────────────────────────────────────────────────
 const slideVariants = {
   enter: (dir: 1 | -1) => ({ y: dir > 0 ? '100%' : '-100%', opacity: 1 }),
@@ -148,6 +165,55 @@ function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }
 
   const total = cards.length;
   const card = cards[index];
+
+  // ── Trial-deck UX state (see TRIAL_DECKS above) ─────────────────────────────
+  const trial = TRIAL_DECKS.has(`${level}:${topic}`);
+  const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set());
+  const [seenIds, setSeenIds] = useState<Set<string>>(new Set());
+  const restoredRef = useRef(false);
+
+  const reveal = trial ? splitReveal(card.content) : null;
+  const isRevealed = !reveal || revealedIds.has(card.id);
+
+  // Restore last position + seen/revealed marks (trial decks only). localStorage
+  // can throw (private mode) — any failure just starts the deck fresh. A
+  // ?subgroup deep-link skips the position jump so Revise chips land where they
+  // point; seen/revealed marks are keyed by card id, so they survive both the
+  // subset view and content re-ordering.
+  useEffect(() => {
+    if (!trial || restoredRef.current) return;
+    restoredRef.current = true;
+    try {
+      const raw = localStorage.getItem(storeKey(level, topic));
+      if (!raw) return;
+      const saved = JSON.parse(raw) as { at?: string; seen?: string[]; revealed?: string[] };
+      setSeenIds(new Set(saved.seen ?? []));
+      setRevealedIds(new Set(saved.revealed ?? []));
+      if (!focusedSubgroupName && saved.at) {
+        const i = cards.findIndex(c => c.id === saved.at);
+        if (i > 0) { setDirection(1); setIndex(i); setShowHint(false); }
+      }
+    } catch { /* fresh start */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Mark the current card seen, then persist. The persist effect is declared
+  // after the restore above, so on first mount the stored value is read before
+  // it can be overwritten.
+  useEffect(() => {
+    if (!trial) return;
+    setSeenIds(prev => (prev.has(card.id) ? prev : new Set(prev).add(card.id)));
+  }, [trial, card.id]);
+
+  useEffect(() => {
+    if (!trial) return;
+    try {
+      localStorage.setItem(
+        storeKey(level, topic),
+        JSON.stringify({ at: card.id, seen: [...seenIds], revealed: [...revealedIds] }),
+      );
+    } catch { /* private mode — this visit just won't be remembered */ }
+  }, [trial, level, topic, card.id, seenIds, revealedIds]);
 
   // Reset chat when card changes
   useEffect(() => {
@@ -281,7 +347,8 @@ function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }
       clearTimeout(t);
       cleanups.forEach(c => c());
     };
-  }, [index]);
+    // isRevealed: revealing swaps in fresh KaTeX blocks that also need wrapping.
+  }, [index, isRevealed]);
 
   // Block pull-to-refresh (Problem 3)
   useEffect(() => {
@@ -320,6 +387,10 @@ function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }
 
   const goNext = useCallback(() => goTo(index + 1, 1), [goTo, index]);
   const goPrev = useCallback(() => goTo(index - 1, -1), [goTo, index]);
+
+  const revealCard = useCallback(() => {
+    setRevealedIds(prev => new Set(prev).add(card.id));
+  }, [card.id]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -424,8 +495,9 @@ function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   }
 
-  const isFirstInSubgroup = index === 0 || cards[index - 1].subgroup_id !== card.subgroup_id;
-  const sg = subgroups[card.subgroup_id];
+  // Section overline (trial): the student-facing section this card belongs to —
+  // display_group when set, else the sub-group's own name.
+  const sectionName = card.display_group ?? subgroups[card.subgroup_id]?.name ?? '';
   const hasMessages = chatMessages.length > 0;
 
   return (
@@ -473,11 +545,31 @@ function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }
                 style={{ maxWidth: 'min(92vw, 600px)', maxHeight: 'calc(100% - 8px)', background: '#FFFFFF', borderRadius: 16, boxShadow: '0 4px 24px rgba(0,0,0,0.10)', overflow: 'hidden' }}
               >
                 <div className="flex-none" style={{ padding: '20px 24px 14px', borderBottom: '1px solid #F0EBE0' }}>
+                  {trial && sectionName && (
+                    <p style={{ margin: '0 0 5px', fontSize: 11, fontWeight: 700, letterSpacing: 0.7, textTransform: 'uppercase', color: '#A08F6C' }}>{sectionName}</p>
+                  )}
                   <h2 style={{ margin: 0, fontSize: 19, fontWeight: 600, color: '#2C3E50', lineHeight: 1.3 }}>{card.card_title}</h2>
                 </div>
                 <div ref={contentRef} className="flex-1 overflow-y-auto" style={{ padding: '16px 24px 20px', fontSize: 16, color: '#2C2C2C', lineHeight: 1.65, touchAction: 'pan-y' }} onPointerDown={e => e.stopPropagation()}>
-                  <CardMarkdown content={card.content} />
-                  {index === total - 1 && (
+                  {isRevealed ? (
+                    <CardMarkdown content={card.content} />
+                  ) : (
+                    <>
+                      <CardMarkdown content={reveal!.prompt} />
+                      <div style={{ marginTop: 18, padding: '14px 16px', background: '#FBF7EC', border: '1px dashed #D9CCAC', borderRadius: 12 }}>
+                        <p style={{ margin: 0, fontSize: 14, color: '#6B5E45', lineHeight: 1.5 }}>
+                          Try it on paper first — even just deciding what Step 1 should be counts.
+                        </p>
+                        <button
+                          onClick={revealCard}
+                          style={{ marginTop: 12, width: '100%', padding: '12px 16px', borderRadius: 12, border: 0, background: '#2C3E50', color: '#FFF', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}
+                        >
+                          Show the solution
+                        </button>
+                      </div>
+                    </>
+                  )}
+                  {index === total - 1 && isRevealed && (
                     <div style={{ marginTop: 24, textAlign: 'center' }}>
                       <a href={`/revise/${level}`} style={{ color: '#2980B9', fontSize: 14, fontWeight: 500 }}>↩ Back to {topic}</a>
                     </div>
@@ -577,7 +669,7 @@ function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }
                 return (
                   <Fragment key={i}>
                     {isSgBreak && (
-                      <div style={{ width: 1, height: 14, background: 'rgba(0,0,0,0.13)', flexShrink: 0, margin: '0 3px' }} />
+                      <div style={{ width: trial ? 2 : 1, height: 14, background: trial ? 'rgba(0,0,0,0.28)' : 'rgba(0,0,0,0.13)', flexShrink: 0, margin: '0 3px' }} />
                     )}
                     <button
                       ref={i === index ? activeDotRef : null}
@@ -589,7 +681,11 @@ function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }
                         width: i === index ? 12 : 8,
                         height: i === index ? 12 : 8,
                         borderRadius: '50%',
-                        background: i === index ? '#E67E22' : 'rgba(0,0,0,0.2)',
+                        background: i === index
+                          ? '#E67E22'
+                          : trial && seenIds.has(c.id)
+                            ? 'rgba(39,174,96,0.55)'
+                            : 'rgba(0,0,0,0.2)',
                         transition: 'width 0.18s, height 0.18s, background 0.18s',
                       }} />
                     </button>
