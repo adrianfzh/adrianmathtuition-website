@@ -3,6 +3,7 @@ import Link from 'next/link';
 import SwipeApp from '../worked-examples/SwipeApp';
 import { topicSlug } from '@/lib/topic-slug';
 import { getSupabase } from '@/lib/supabase';
+import { orderDeckCards } from '@/lib/deck-order';
 
 const VALID_LEVELS = ['am', 'em', 'jc', 's1', 's2'];
 
@@ -94,38 +95,24 @@ export default async function Page({
     );
   }
 
-  // Sort by section order (sections_meta), then subgroup_id, then order_index.
-  // Unknown sections appear alphabetically after known ones.
-  const { data: sectionsMeta } = await supa
-    .from('sections_meta')
-    .select('name, order_index')
-    .eq('level', levelLower.toUpperCase())
-    .eq('topic', canonicalTopic);
-  const metaOrder: Record<string, number> = Object.fromEntries(
-    (sectionsMeta || []).map((s: { name: string; order_index: number }) => [s.name, s.order_index])
-  );
   type Card = { id: string; subgroup_id: number; display_group: string | null; order_index: number; card_title: string; content: string; content_kind: string };
-  const allSections = [...new Set((cardsRaw as Card[]).map(c => c.display_group).filter(Boolean))] as string[];
-  const knownSections = allSections.filter(s => metaOrder[s] !== undefined).sort((a, b) => metaOrder[a] - metaOrder[b]);
-  const unknownSections = allSections.filter(s => metaOrder[s] === undefined).sort();
-  const sectionRank: Record<string, number> = Object.fromEntries(
-    [...knownSections, ...unknownSections].map((s, i) => [s, i])
-  );
-  const cards: Card[] = [...cardsRaw as Card[]].sort((a, b) => {
-    const aRank = a.display_group != null ? (sectionRank[a.display_group] ?? 999999) : 999999;
-    const bRank = b.display_group != null ? (sectionRank[b.display_group] ?? 999999) : 999999;
-    if (aRank !== bRank) return aRank - bRank;
-    return (a.order_index ?? 0) - (b.order_index ?? 0);
-  });
-
-  const sgIds = [...new Set(cards.map((c: { subgroup_id: number }) => c.subgroup_id))];
-  const { data: sgs } = await supa
-    .from('subgroups')
-    .select('id, name, description')
-    .in('id', sgIds);
+  const sgIds = [...new Set((cardsRaw as Card[]).map(c => c.subgroup_id))];
+  const [{ data: sgs }, { data: sectionsMeta }] = await Promise.all([
+    supa.from('subgroups').select('id, name, description, order_index').in('id', sgIds),
+    supa
+      .from('sections_meta')
+      .select('name, order_index')
+      .eq('level', levelLower.toUpperCase())
+      .eq('topic', canonicalTopic),
+  ]);
   const sgMap = Object.fromEntries(
-    (sgs || []).map((s: { id: number; name: string; description: string }) => [s.id, s])
+    (sgs || []).map((s: { id: number; name: string; description: string; order_index: number | null }) => [s.id, s])
   );
+
+  // Sort so every student-facing section (display_group, falling back to the
+  // sub-group name — the key DesktopView groups by) is contiguous: sections_meta
+  // order first, everything else in sub-group order. See lib/deck-order.ts.
+  const cards = orderDeckCards(cardsRaw as Card[], sgMap, sectionsMeta || []);
 
   const focusedSubgroupName =
     subgroupId !== null && sgIds.length === 1 && sgMap[subgroupId]

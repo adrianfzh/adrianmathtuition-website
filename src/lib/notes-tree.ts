@@ -176,8 +176,9 @@ export function sortSubgroups(rows: SubgroupRow[]): SubgroupRow[] {
 /**
  * Rank display_group section names for a topic: sections known to
  * `sections_meta` first (in their configured order), then unknown ones
- * alphabetically. Mirrors the ordering the /revise worked-examples page uses so
- * both surfaces present sections identically.
+ * alphabetically. The /revise swipe decks share the known-first rule but anchor
+ * unknown sections to card position instead (lib/deck-order.ts) — they order
+ * whole topics, whereas this ranks within a single sub-group page.
  */
 export function sectionRanker(
   sectionNames: string[],

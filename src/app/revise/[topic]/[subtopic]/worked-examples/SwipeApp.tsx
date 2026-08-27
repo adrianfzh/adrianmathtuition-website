@@ -4,6 +4,7 @@ import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, LayoutGroup, motion, type PanInfo } from 'framer-motion';
 import type { Components } from 'react-markdown';
 import { MathMarkdown } from '@/lib/math-markdown';
+import { deckSectionName } from '@/lib/deck-order';
 
 interface Card {
   id: string;
@@ -95,13 +96,15 @@ function CardMarkdown({ content }: { content: string }) {
 
 // ── Desktop list view ─────────────────────────────────────────────────────────
 function DesktopView({ cards, subgroups, level, topic, focusedSubgroupName }: Props) {
-  // Group by display_group (falling back to subgroup name for cards without one)
-  const groups: { section: string; cards: Card[] }[] = [];
+  // Group by student-facing section (display_group ?? subgroup name). The server
+  // sorts sections contiguous under this same key (lib/deck-order.ts); merging
+  // by name keeps each section — and its React key — unique even if not.
+  const groups = new Map<string, Card[]>();
   for (const card of cards) {
-    const section = card.display_group ?? subgroups[card.subgroup_id]?.name ?? '';
-    const last = groups[groups.length - 1];
-    if (last && last.section === section) last.cards.push(card);
-    else groups.push({ section, cards: [card] });
+    const section = deckSectionName(card, subgroups);
+    const list = groups.get(section);
+    if (list) list.push(card);
+    else groups.set(section, [card]);
   }
   return (
     <div className="hidden md:block min-h-screen bg-gray-50">
@@ -120,7 +123,7 @@ function DesktopView({ cards, subgroups, level, topic, focusedSubgroupName }: Pr
         </div>
       </div>
       <div className="max-w-3xl mx-auto px-6 py-8 space-y-10">
-        {groups.map(({ section, cards: gc }) => (
+        {[...groups.entries()].map(([section, gc]) => (
           <section key={section} id={`section-${section}`}>
             <div className="space-y-4">
               {gc.map(card => (
@@ -497,7 +500,7 @@ function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }
 
   // Section overline (trial): the student-facing section this card belongs to —
   // display_group when set, else the sub-group's own name.
-  const sectionName = card.display_group ?? subgroups[card.subgroup_id]?.name ?? '';
+  const sectionName = deckSectionName(card, subgroups);
   const hasMessages = chatMessages.length > 0;
 
   return (
