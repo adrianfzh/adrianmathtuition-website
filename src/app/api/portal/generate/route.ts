@@ -13,6 +13,7 @@
 // {BOT_BASE_URL}/api/portal-generate {level, topic?, seedText} → a question id)
 // is being built in the bot repo — until then this degrades to a friendly 503/502.
 import { NextResponse } from 'next/server';
+import { sendPushToStudent } from '@/lib/portal-push';
 import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server';
 import {
   parseGenerateBody, resolveQbLevel, extractQuestionId, countGenerationsToday,
@@ -83,6 +84,16 @@ export async function POST(req: Request) {
       // The bot answered but nothing survived its verification gates.
       return NextResponse.json({ error: GENERATE_FAILED_MESSAGE }, { status: 502 });
     }
+    // Adrian, 2026-08-28: "generated questions — i want push too". If the
+    // student wandered off during the 1–3 min wait, the notification brings
+    // them straight back to the fresh question; with the tab still open it's
+    // a harmless tap-in. Fire-and-forget — a push failure never fails the
+    // generation.
+    sendPushToStudent(account.airtable_student_id, {
+      title: 'Your question is ready ✨',
+      body: 'Fresh practice question — written for you, checked, and gradable.',
+      url: `/app/practice?qid=${questionId}&from=generated`,
+    }).catch(() => {});
     return NextResponse.json({ questionId });
   } catch (e) {
     console.error('[portal-generate] bot call failed:', e);

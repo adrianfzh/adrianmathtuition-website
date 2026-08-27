@@ -19,7 +19,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from './supabase';
 
-export type PassSource = 'hitpay' | 'stripe' | 'manual';
+export type PassSource = 'hitpay' | 'stripe' | 'manual' | 'referral' | 'trial';
 
 /** Days a single standard purchase buys. */
 export const DEFAULT_PASS_DAYS = 30;
