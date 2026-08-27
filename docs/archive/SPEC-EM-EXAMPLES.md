@@ -1,3 +1,8 @@
+> **✅ EXECUTED IN FULL — 2026-08-27.** All 7 batches run in one session: 136 worked examples created
+> (tagged `source='em-fill-2026-08'` in `content_snippets`) and published on Adrian's instruction.
+> EM now has 189 published worked examples across 44/44 topics. Archived for reference — **do not re-run**.
+> One-statement revert: `delete from content_snippets where source='em-fill-2026-08'`.
+
 # SPEC — Fill the E-Math worked-example library
 
 > Written 2026-08-27 as a SELF-CONTAINED hand-off: any Claude Code session (any
