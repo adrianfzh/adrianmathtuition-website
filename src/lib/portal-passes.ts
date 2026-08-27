@@ -24,6 +24,11 @@ export type PassSource = 'hitpay' | 'stripe' | 'manual';
 /** Days a single standard purchase buys. */
 export const DEFAULT_PASS_DAYS = 30;
 
+/** Floor (SGD) below which a verified payment does NOT auto-grant — stops a
+ *  S$1 payment-link typo, or a malicious tiny payment aimed at a guessed
+ *  account uuid, from buying 30 days. Override with PASS_MIN_AMOUNT_SGD. */
+export const DEFAULT_PASS_MIN_AMOUNT_SGD = 25;
+
 export interface PassRow {
   expires_at: string;
 }
@@ -71,6 +76,50 @@ export function computeGrantExpiry(rows: PassRow[], days: number, now: Date): Da
   return new Date(base + days * 86_400_000);
 }
 
+/** "29.00" / "25" → integer cents; null when not a plain non-negative decimal
+ *  with ≤2 dp (HitPay sends amounts as decimal strings — money never rides
+ *  through bare parseFloat comparisons here). */
+export function decimalAmountToCents(amount: string): number | null {
+  if (typeof amount !== 'string' || !/^\d+(\.\d{1,2})?$/.test(amount.trim())) return null;
+  return Math.round(parseFloat(amount.trim()) * 100);
+}
+
+/** The configured auto-grant floor in SGD: PASS_MIN_AMOUNT_SGD when it parses
+ *  to a finite non-negative number (0 = floor off), else the default 25. */
+export function passMinAmountSgd(env: Record<string, string | undefined> = process.env): number {
+  const raw = parseFloat(env.PASS_MIN_AMOUNT_SGD ?? '');
+  return Number.isFinite(raw) && raw >= 0 ? raw : DEFAULT_PASS_MIN_AMOUNT_SGD;
+}
+
+/**
+ * Should a VERIFIED completed payment auto-grant a pass? Two gates, both in
+ * integer cents (no float drift on the boundary):
+ *   - currency must be SGD (case-insensitive) — a webhook in any other
+ *     currency goes to the manual-note path, never a guessed conversion;
+ *   - amount ≥ the floor (exactly the floor qualifies; one cent under fails).
+ * Returns a human `reason` for the Telegram note when it refuses.
+ */
+export function paymentQualifiesForPass(opts: {
+  amountCents: number | null;
+  currency: string;
+  minAmountSgd?: number;
+}): { ok: boolean; reason?: string } {
+  const min = opts.minAmountSgd ?? passMinAmountSgd();
+  if ((opts.currency || '').toUpperCase() !== 'SGD') {
+    return { ok: false, reason: `currency ${(opts.currency || '(none)').toUpperCase()} is not SGD` };
+  }
+  if (opts.amountCents === null || !Number.isFinite(opts.amountCents)) {
+    return { ok: false, reason: 'amount unreadable' };
+  }
+  if (opts.amountCents < Math.round(min * 100)) {
+    return {
+      ok: false,
+      reason: `amount S$${(opts.amountCents / 100).toFixed(2)} is below the S$${min.toFixed(2)} auto-grant floor`,
+    };
+  }
+  return { ok: true };
+}
+
 // ── Service pieces (Supabase, service-role) ─────────────────────────────────
 // `client` is injectable for tests (portal-submit-limit.ts precedent); the
 // default is the RLS-bypassing admin client — portal_passes is service-only.
@@ -113,6 +162,13 @@ export async function findPassByReference(
 /**
  * Insert a new pass for the account, expiring `days` after whichever is later:
  * now, or the account's latest existing expiry (stacking). Returns the row.
+ *
+ * IDEMPOTENT on (source, reference): when a reference is given and a pass with
+ * that source+reference already exists, the existing pass is returned with
+ * `duplicate: true` and NOTHING is inserted — payment webhooks retry until
+ * they see 200, and a retry must never stack a second 30 days. (Manual grants
+ * without a reference always insert.)
+ *
  * (Read-then-insert has a race window if two grants land in the same instant —
  * at this scale the worst case is two passes both counted, which only ever
  * gives days away, never takes them.)
@@ -120,8 +176,15 @@ export async function findPassByReference(
 export async function grantPass(
   opts: { accountId: string; days: number; source: PassSource; reference?: string | null; now?: Date },
   client: PassesClient = getSupabaseAdmin(),
-): Promise<{ id: string; expiresAt: string }> {
+): Promise<{ id: string; expiresAt: string; duplicate?: boolean }> {
   const now = opts.now ?? new Date();
+
+  const reference = opts.reference ?? null;
+  if (reference) {
+    const already = await findPassByReference(opts.source, reference, client);
+    if (already) return { id: already.id, expiresAt: already.expires_at, duplicate: true };
+  }
+
   const { data: existing, error: readErr } = await client
     .from('portal_passes')
     .select('expires_at')
@@ -134,7 +197,7 @@ export async function grantPass(
     .insert({
       account_id: opts.accountId,
       source: opts.source,
-      reference: opts.reference ?? null,
+      reference,
       starts_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
     })

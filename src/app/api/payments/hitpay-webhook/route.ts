@@ -16,11 +16,13 @@
 //
 // REFERENCE CONVENTION (v1): checkouts WE create put the portal account id
 // (uuid) in reference_number. A verified completed payment whose reference is
-// a uuid matching portal_accounts gets an automatic 30-day pass, keyed on
-// payment_id for idempotency (HitPay retries webhooks; a retry must never
-// stack a second 30 days). Anything else (e.g. a dashboard payment link with
-// an arbitrary reference) is NOT guessed at: we answer 200, record nothing,
-// and Telegram Adrian to grant manually in admin.
+// a uuid matching portal_accounts — and whose amount clears the SGD auto-grant
+// floor (PASS_MIN_AMOUNT_SGD, default S$25; non-SGD never auto-grants) — gets
+// an automatic 30-day pass, keyed on payment_id for idempotency (HitPay
+// retries webhooks; a retry must never stack a second 30 days). Anything else
+// (e.g. a dashboard payment link with an arbitrary reference, or a below-floor
+// amount) is NOT guessed at: we answer 200, record nothing, and Telegram
+// Adrian to grant manually in admin.
 //
 // STATUS CODES: 503 = not configured yet; 403 = bad/missing signature (the
 // only rejection); 200 = verified and handled (granted, duplicate, ignored
@@ -29,7 +31,13 @@
 // safe, so a transient DB blip cannot silently swallow a payment.
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyHitPayHmac, parseHitPayWebhook } from '@/lib/hitpay';
-import { grantPass, findPassByReference, DEFAULT_PASS_DAYS } from '@/lib/portal-passes';
+import {
+  grantPass,
+  findPassByReference,
+  paymentQualifiesForPass,
+  decimalAmountToCents,
+  DEFAULT_PASS_DAYS,
+} from '@/lib/portal-passes';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
 
@@ -84,9 +92,30 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  const ref = payload.referenceNumber.trim();
+  const label = `${money(payload.amount, payload.currency)} (ref ${ref || '(empty)'})`;
+
+  // Manual-note path: anything that shouldn't auto-grant answers 200 with
+  // nothing recorded, and Adrian gets a Telegram to grant by hand in admin.
+  const manual = async (reason: string) => {
+    await sendTelegram(
+      `💰 HitPay payment ${label} received — ${reason}; grant manually in admin.`
+    ).catch(() => {});
+    console.warn(`[hitpay-webhook] completed payment ${paymentId} not auto-granted: ${reason} (ref=${ref})`);
+    return NextResponse.json({ ok: true, matched: false, reason });
+  };
+
+  // Amount floor + SGD-only gate (PASS_MIN_AMOUNT_SGD, default S$25): a S$1
+  // link typo — or a malicious tiny payment aimed at a guessed uuid — must
+  // never buy 30 days.
+  const qual = paymentQualifiesForPass({
+    amountCents: decimalAmountToCents(payload.amount),
+    currency: payload.currency,
+  });
+  if (!qual.ok) return manual(qual.reason || 'payment did not qualify');
+
   // v1 account resolution: our checkout links carry the portal account uuid in
   // reference_number. Anything else → manual-grant Telegram, never a guess.
-  const ref = payload.referenceNumber.trim();
   let accountId: string | null = null;
   if (UUID_RE.test(ref)) {
     const { data } = await getSupabaseAdmin()
@@ -96,15 +125,7 @@ export async function POST(req: NextRequest) {
       .maybeSingle<{ id: string }>();
     accountId = data?.id ?? null;
   }
-
-  if (!accountId) {
-    await sendTelegram(
-      `💰 HitPay payment ${money(payload.amount, payload.currency)} received ` +
-      `(ref ${ref || '(empty)'}) — no account matched; grant manually in admin.`
-    ).catch(() => {});
-    console.warn(`[hitpay-webhook] completed payment ${paymentId} did not match an account (ref=${ref})`);
-    return NextResponse.json({ ok: true, matched: false });
-  }
+  if (!accountId) return manual('no account matched');
 
   const { expiresAt } = await grantPass({
     accountId,
