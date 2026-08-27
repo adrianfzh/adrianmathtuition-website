@@ -15,7 +15,6 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import PracticeFlow, { type InitialAssignment } from './practice-flow';
-import { fullPortalVisible } from '@/lib/portal-beta';
 import { sessionAccount } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { qbLevelsFor } from '@/lib/practice';
@@ -82,8 +81,9 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
     };
   }
   // "Print a paper" entry card (SPEC-PRINT-PAPER.md) — full-portal only, so
-  // marking-only beta students never see a door the gate would bounce them off.
-  const printEntry = (await fullPortalVisible()) && !initialAssignment;
+  // Print opened to all students 2026-08-28; the door only hides while a
+  // deep-linked assignment should keep the student's focus.
+  const printEntry = !initialAssignment;
 
   return (
     <>

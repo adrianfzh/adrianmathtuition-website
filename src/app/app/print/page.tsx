@@ -7,7 +7,6 @@
 // students; Adrian's admin cookie sees it, and generating needs his test
 // STUDENT session too (the API registers papers against a student).
 import Link from 'next/link';
-import { requireFullPortal } from '@/lib/portal-beta';
 import { sessionAccount } from '@/lib/portal-auth';
 import { qbLevelsFor } from '@/lib/qb-levels';
 import { PRINT_POOL_SCOPE } from '@/lib/print-paper';
@@ -16,7 +15,9 @@ import PrintClient from './print-client';
 export const dynamic = 'force-dynamic';
 
 export default async function PrintPage({ searchParams }: { searchParams: Promise<{ preset?: string }> }) {
-  await requireFullPortal();
+  // Open to ALL students since 2026-08-28 (Adrian: "open mock papers to
+  // students") — the first surface deliberately promoted out of the
+  // marking-only beta. The rest of the beta gate is untouched.
 
   // ?preset= deep-link — /app/plan's "Print a weak-spot paper" button lands
   // here with the weak-spot preset preselected. Anything unknown → default.

@@ -41,7 +41,14 @@ export function announcementKey(id: string): string {
 // new). Example shape, with the ~2-week expiry convention:
 //   { id: '2026-08-daily-slot', emoji: '🎟️', title: 'Hand-ins now run on a daily slot',
 //     body: '…', cta: { label: 'Hand in a paper', href: '/app/submit' }, until: '2026-09-08' }
-export const CURRENT_ANNOUNCEMENT: PortalAnnouncement | null = null;
+export const CURRENT_ANNOUNCEMENT: PortalAnnouncement | null = {
+  id: '2026-08-mock-papers',
+  emoji: '🖨️',
+  title: 'Print real mock exam papers',
+  body: 'Build a full 90-mark mock — proper cover page, timing and answer key — print it, sit it, then hand it in for marking. Also new: ✂️ save parts of marked papers into My Notes, and paper-ready notifications in Settings.',
+  cta: { label: 'Print a paper', href: '/app/print' },
+  until: '2026-09-11',
+};
 
 /** The announcement to show today — null when none is set or it has expired. */
 export function activeAnnouncement(now: Date = new Date()): PortalAnnouncement | null {

@@ -16,7 +16,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'node:fs';
 import path from 'node:path';
 import { practiceAuth, levelAllowed } from '@/lib/practice';
-import { fullPortalVisible } from '@/lib/portal-beta';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { fetchWorksheetPool, figureServable, hasPrintableAnswer } from '@/lib/kiosk-pool';
 import { dailyDraw, sgtDate } from '@/lib/kiosk-draw';
@@ -205,7 +204,6 @@ async function drawTopics(levelKey: string, topics: string[], total: number, stu
 export async function GET(req: NextRequest) {
   const caller = await practiceAuth(req);
   if (!caller || caller.kind !== 'student') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  if (!(await fullPortalVisible())) return NextResponse.json({ error: 'Not available yet' }, { status: 403 });
   const sid = caller.account.airtable_student_id;
   const { data } = await getSupabaseAdmin()
     .from('portal_generated_papers')
@@ -223,7 +221,6 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const caller = await practiceAuth(req);
   if (!caller || caller.kind !== 'student') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  if (!(await fullPortalVisible())) return NextResponse.json({ error: 'Not available yet' }, { status: 403 });
   const account = caller.account;
   const sid = account.airtable_student_id;
 
