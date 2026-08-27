@@ -52,6 +52,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: '/app/notebook', label: 'Notebook' },
         { href: '/app/marking', label: 'Marked' },
         { href: '/app/my-notes', label: 'My Notes' },
+        { href: '/app/requests', label: 'Requests' },
       ]
     : [
         { href: '/app', label: 'Dashboard' },
@@ -60,6 +61,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: '/app/submit', label: 'Hand in a paper' },
         { href: '/app/marking', label: 'Marked papers' },
         { href: '/app/my-notes', label: 'My Notes' },
+        { href: '/app/requests', label: 'Requests' },
       ];
   const mobileTabs = fullPortal
     ? [
