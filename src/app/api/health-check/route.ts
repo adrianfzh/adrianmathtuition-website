@@ -387,6 +387,15 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // "Ask" tab identity mint (/app/ask → signed portalToken → bot 60/day
+    // student quota + Student-linked Questions row). 401 anonymously proves
+    // the route is deployed with its session gate up — a 404 means every
+    // student silently degrades to the anonymous 20/day quota.
+    timed('portal-ask-token', async () => {
+      const r = await fetch(`${base}/api/portal/ask-token`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // "Save to My Notes" (/app/my-notes + the ✂️ clipper on /app/marking).
     // Anonymous 401 proves the route is deployed with its auth gate up; the
     // REST probe proves portal_notes still answers — a dropped table would

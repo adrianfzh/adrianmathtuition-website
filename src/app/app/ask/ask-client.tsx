@@ -5,8 +5,10 @@
 // (KaTeX pipeline, chat-DOM builders, typewriter streaming engine, feedback
 // rows, history restore) is the SHARED core in lib/chat-solver.ts; this file
 // is portal-specific: navy/cream styling, document-flow messages with a fixed
-// composer above the mobile tab bar, the student's level hint to the bot, and
-// fire-and-forget question logging to /api/portal/ask-log.
+// composer above the mobile tab bar, the student's level hint to the bot,
+// fire-and-forget question logging to /api/portal/ask-log, and the signed
+// identity token (/api/portal/ask-token → body.portalToken) that upgrades the
+// student from the bot's anonymous 20/day quota to the student 60/day one.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
@@ -164,6 +166,42 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
     return () => document.removeEventListener('paste', handlePaste);
   }, [setImage]);
 
+  /* ── Portal identity token (see /api/portal/ask-token) ─────────────────────
+     Short-lived (60 min) signed token that tells the bot WHICH student is
+     asking: student quota (60/day) + the bot's Questions row links their
+     record. Fetched on mount, refreshed when older than ~50 min, and strictly
+     best-effort — any failure sends the question anonymously, never blocks. */
+  const portalTokenRef = useRef<{ token: string; fetchedAt: number } | null>(null);
+  const tokenFetchRef = useRef<Promise<string | null> | null>(null);
+  const ensurePortalToken = useCallback((): Promise<string | null> => {
+    const cached = portalTokenRef.current;
+    const ageMs = cached ? Date.now() - cached.fetchedAt : Infinity;
+    if (cached && ageMs < 50 * 60 * 1000) return Promise.resolve(cached.token);
+    if (tokenFetchRef.current) return tokenFetchRef.current;
+    const p = (async () => {
+      try {
+        // Never let a hung mint delay the question (the send awaits this).
+        const signal = typeof AbortSignal !== 'undefined' && 'timeout' in AbortSignal
+          ? AbortSignal.timeout(4000) : undefined;
+        const res = await fetch('/api/portal/ask-token', { signal });
+        if (!res.ok) throw new Error(String(res.status));
+        const data: { token?: unknown } = await res.json();
+        if (typeof data.token !== 'string' || !data.token) throw new Error('no token');
+        portalTokenRef.current = { token: data.token, fetchedAt: Date.now() };
+        return data.token;
+      } catch {
+        // Refresh failed but the old token may still be inside its 60-min
+        // life — better a soon-to-expire identity than none (bot fail-opens).
+        return cached && ageMs < 59 * 60 * 1000 ? cached.token : null;
+      } finally {
+        tokenFetchRef.current = null;
+      }
+    })();
+    tokenFetchRef.current = p;
+    return p;
+  }, []);
+  useEffect(() => { ensurePortalToken(); }, [ensurePortalToken]);
+
   /* ── Feedback opts for the shared 👍/👎 row ── */
   const feedbackOpts = useCallback(() => ({
     getChatId: () => sessionIdRef.current,
@@ -264,6 +302,12 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
       // prompt server-side; null (dual/unknown) lets the bot's router decide.
       if (botLevel) body.level = botLevel;
 
+      // Identify the signed-in student to the bot: student quota (60/day vs
+      // anonymous 20/day) + the bot's Questions row links their record.
+      // Best-effort — a missing/failed token sends the question anonymously.
+      const portalToken = await ensurePortalToken();
+      if (portalToken) body.portalToken = portalToken;
+
       if (capturedFile) {
         body.image = capturedPreviewSrc.split(',')[1];
         body.mediaType = capturedFile.type;
@@ -319,7 +363,7 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
       setIsLoading(false);
       inputRef.current?.focus();
     }
-  }, [isLoading, selectedFile, previewSrc, extraFiles, extraPreviews, removeImage, scrollToBottom, autoScroll, showError, botLevel, feedbackOpts]);
+  }, [isLoading, selectedFile, previewSrc, extraFiles, extraPreviews, removeImage, scrollToBottom, autoScroll, showError, botLevel, feedbackOpts, ensurePortalToken]);
 
   return (
     <div className="max-w-2xl mx-auto ask-page">
