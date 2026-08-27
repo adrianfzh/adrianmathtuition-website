@@ -51,6 +51,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: '/app/submit', label: 'Submit' },
         { href: '/app/notebook', label: 'Notebook' },
         { href: '/app/marking', label: 'Marked' },
+        { href: '/app/my-notes', label: 'My Notes' },
       ]
     : [
         { href: '/app', label: 'Dashboard' },
@@ -58,6 +59,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         ...(NOTES_OPEN_TO_STUDENTS ? [{ href: '/app/notes', label: 'Notes' }] : []),
         { href: '/app/submit', label: 'Hand in a paper' },
         { href: '/app/marking', label: 'Marked papers' },
+        { href: '/app/my-notes', label: 'My Notes' },
       ];
   const mobileTabs = fullPortal
     ? [
@@ -66,6 +68,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         ...(learnVisible ? [{ href: '/app/learn', label: 'Learn' }] : []),
         { href: '/app/notebook', label: 'Notebook' },
         { href: '/app/marking', label: 'Marked' },
+        { href: '/app/my-notes', label: 'My Notes' },
       ]
     : [
         { href: '/app', label: 'Home' },
@@ -73,6 +76,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         ...(NOTES_OPEN_TO_STUDENTS ? [{ href: '/app/notes', label: 'Notes' }] : []),
         { href: '/app/submit', label: 'Hand in' },
         { href: '/app/marking', label: 'Marked' },
+        { href: '/app/my-notes', label: 'My Notes' },
       ];
   // "From Adrian" pending work → numeric badge on Home (no 5th tab, per spec).
   const pendingWork = await pendingAssignmentCountForSession();
