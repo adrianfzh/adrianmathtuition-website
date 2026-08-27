@@ -68,6 +68,13 @@ to their own level.** No anonymous browsing.
    + not-deleted + text-only-or-verified-figure. The old `solution NOT NULL` filter was an
    AI-pool leftover that hid ~80% of the extracted bank. Fetch cap 400 → answer gate → seeded
    shuffle over the whole gated pool (no post-gate cap).
+5c-iii. **Legacy-syllabus gate** (2026-08-28): `questions.legacy_syllabus = true` marks cut
+   content — old-syllabus AM 4047 topics (Modulus Functions, Power Graphs) and, as workers
+   extract TYS wave 2, 9740-only H2 material. The `kiosk_pool` RPC (and the practice family:
+   `practice_pool`, `practice_next`, `practice_subgroups`) carries `and not q.legacy_syllabus`,
+   so flagged rows stay in the bank for reference but never serve to students on any surface
+   (kiosk, bot worksheets, portal practice). Extraction workers set the flag at write time
+   (batch rule in the pipeline repo's CLAUDE.md); ~115 rows backfilled at launch.
 5c-ii. **Figure crops resolve via `lib/kiosk-worksheet-images.ts`** (fixed 2026-07-16): the
    `questions.image_url` JSON array holds bare paths (`<file>.png` /
    `question_images/<file>.png`) **or `{url,pos}` objects** (the 2025 EM batch, ~270 rows —

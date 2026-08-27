@@ -6,8 +6,11 @@
 // INVARIANTS (docs/KIOSK.md §5b–5c):
 //  - Servability is decided by the `kiosk_pool` RPC: tag-match UNION
 //    sub-group-match, answer-presence (top-level OR parts), not-deleted,
-//    text-only or verified/engine-drawn figure. Ordered by id so the seeded
-//    daily draw is reproducible.
+//    NOT legacy_syllabus (cut content — old 4047/9740 topics — stays in the
+//    bank for reference but never serves; same leg in practice_pool/
+//    practice_next/practice_subgroups, added 2026-08-28), text-only or
+//    verified/engine-drawn figure. Ordered by id so the seeded daily draw is
+//    reproducible.
 //  - Answer-GATED, not solution-gated: a row with no printable answer never
 //    serves (the sheet always prints its [Ans: …] line / answer page).
 //  - NEVER worked solutions, NEVER originating school/paper metadata. The RPC
