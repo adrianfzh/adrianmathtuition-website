@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { createServiceClient } from '@/lib/supabase-server';
 import { renderPrelimPDF, type PrelimQuestion } from '@/lib/render-prelim';
-import { answerMarkdown, questionMarkdown, storageUrl, type QbPrintRow } from '@/lib/print-paper';
+import { answerMarkdown, paperCodeFull, questionMarkdown, storageUrl, subjectName, type QbPrintRow } from '@/lib/print-paper';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -58,9 +58,10 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const paperCode = draft.level === 'AM' ? '4049' : '4052';
+    // Subject name/code derivation shared with the student mock cover
+    // (lib/print-paper.ts) — same strings as the old inline ternaries.
     const pdf = await renderPrelimPDF({
-      title: `${draft.level === 'AM' ? 'ADDITIONAL ' : ''}MATHEMATICS ${paperCode}/${draft.paper === 'P1' ? '01' : '02'}`,
+      title: `${subjectName(draft.level)} ${paperCodeFull(draft.level, draft.paper)}`,
       subtitle: `${draft.title || 'Prelim practice paper'} · ${draft.preset}${draft.difficulty === 'hard' ? ' · hard' : ''}`,
       questions,
       workingSpace,

@@ -6,7 +6,7 @@
 // the one the POST enforces can never disagree.
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { MAX_TOPICS_PER_PAPER, MOCK_LEVELS } from '@/lib/print-paper';
+import { MAX_TOPICS_PER_PAPER, MOCK_LEVELS, paperDuration } from '@/lib/print-paper';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 
@@ -155,7 +155,9 @@ export default function PrintClient({ levels, initialPreset }: { levels: { key: 
                 {p === 'P1' ? 'Paper 1' : 'Paper 2'}
               </button>
             ))}
-            <span className="text-[12px] text-gray-400 ml-1">About 2 hours of work.</span>
+            {/* Real O-Level duration for the chosen paper — same DURATIONS
+                table the printed cover reads, so they can never disagree. */}
+            <span className="text-[12px] text-gray-400 ml-1">⏱ {paperDuration(level, paper) ?? 'About 2 hours'} — sit it in one go.</span>
           </div>
         )}
 
