@@ -306,7 +306,10 @@ function renderMath(el: HTMLElement) {
   const tryRender = (attempts: number) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rme = (window as any).renderMathInElement;
-    if (rme) {
+    // Require window.katex too: auto-render captures the katex global at its
+    // own load time, so rme existing without katex means broken maths forever.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (rme && (window as any).katex) {
       try {
         rme(el, {
           delimiters: [
@@ -316,7 +319,7 @@ function renderMath(el: HTMLElement) {
           throwOnError: false,
         });
       } catch (e) { console.warn('[KaTeX]', e); }
-    } else if (attempts < 30) {
+    } else if (attempts < 50) {
       setTimeout(() => tryRender(attempts + 1), 100);
     }
   };
@@ -338,24 +341,26 @@ function ReviseContent() {
   const contentRef = useRef<HTMLDivElement>(null);
   const tabBarRef  = useRef<HTMLDivElement>(null);
 
-  // Load notes — wait for KaTeX before setting sections so renderMarkdown can render inline
+  // Load notes. Fetch immediately — KaTeX loads in parallel (Script tags in
+  // RevisePage, mounted from first paint). Only AFTER the data arrives do we
+  // give KaTeX a short grace period so renderMarkdown can render math inline;
+  // if it's still not there, renderMath's auto-render retry picks it up later.
   useEffect(() => {
     if (!topic) { setLoading(false); return; }
     (async () => {
       try {
-        // Wait for window.katex (up to 5s) so renderMarkdown can call renderToString directly
-        await new Promise<void>((resolve) => {
-          const check = (n: number) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((typeof window !== 'undefined' && (window as any).katex) || n > 50) resolve();
-            else setTimeout(() => check(n + 1), 100);
-          };
-          check(0);
-        });
         const r = await fetch(`/api/notes?subject=${encodeURIComponent(subject)}&topic=${encodeURIComponent(topic)}`);
         if (!r.ok) throw new Error('HTTP ' + r.status);
         const data = await r.json();
         const raw = data.content || data.generatedContent || '';
+        await new Promise<void>((resolve) => {
+          const check = (n: number) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if ((typeof window !== 'undefined' && (window as any).katex) || n > 20) resolve();
+            else setTimeout(() => check(n + 1), 100);
+          };
+          check(0);
+        });
         setSections(raw.trim() ? parseSections(raw, topic) : []);
       } catch {
         setFetchError(true);
@@ -508,14 +513,6 @@ function ReviseContent() {
 
   return (
     <>
-      <Script
-        src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"
-        strategy="afterInteractive"
-      />
-      <Script
-        src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
-        strategy="afterInteractive"
-      />
       <div className="revise-layout">
         <TopNav topic={topic} badge={subjectLabel} />
 
@@ -595,24 +592,43 @@ function TopNav({ topic, badge }: { topic: string; badge: string }) {
 }
 
 export default function RevisePage() {
+  // KaTeX loads from first paint (not just once notes arrive) so the reader
+  // never sits waiting on it. auto-render is chained AFTER katex is ready:
+  // it captures the katex global at its own load time, so if it executed
+  // first (afterInteractive order is not guaranteed) maths would render as
+  // raw $…$ forever — the prod ParseError console warning.
+  const [katexReady, setKatexReady] = useState(false);
   return (
-    <Suspense fallback={
-      <div className="revise-layout">
-        <div className="top-nav">
-          <span className="nav-topic">Loading…</span>
-        </div>
-        <div className="page-body">
-          <div className="content-scroll">
-            <div className="content-area">
-              <div className="skeleton title" />
-              <div className="skeleton w80" />
-              <div className="skeleton w60" />
+    <>
+      <Script
+        src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"
+        strategy="afterInteractive"
+        onReady={() => setKatexReady(true)}
+      />
+      {katexReady && (
+        <Script
+          src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+          strategy="afterInteractive"
+        />
+      )}
+      <Suspense fallback={
+        <div className="revise-layout">
+          <div className="top-nav">
+            <span className="nav-topic">Loading…</span>
+          </div>
+          <div className="page-body">
+            <div className="content-scroll">
+              <div className="content-area">
+                <div className="skeleton title" />
+                <div className="skeleton w80" />
+                <div className="skeleton w60" />
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    }>
-      <ReviseContent />
-    </Suspense>
+      }>
+        <ReviseContent />
+      </Suspense>
+    </>
   );
 }
