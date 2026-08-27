@@ -16,7 +16,7 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import PracticeFlow, { type InitialAssignment } from './practice-flow';
 import { fullPortalVisible } from '@/lib/portal-beta';
-import { createSupabaseServer } from '@/lib/supabase-server';
+import { sessionAccount } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { qbLevelsFor } from '@/lib/practice';
 import { getStudentAssignment } from '@/lib/portal-assignments';
@@ -41,16 +41,10 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
   // was just taking space above the topic list; it stays on /app/marking.
   let account: { airtable_student_id: string; level: string | null; subjects: string[] | null } | null = null;
   try {
-    const supabase = await createSupabaseServer();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data } = await supabase
-        .from('portal_accounts')
-        .select('airtable_student_id, level, subjects')
-        .eq('id', user.id)
-        .maybeSingle<{ airtable_student_id: string; level: string | null; subjects: string[] | null }>();
-      if (data) { account = data; initialLevels = qbLevelsFor(data.level, data.subjects); }
-    }
+    // Per-request cached (lib/portal-auth.ts) — shared with the layout's
+    // lookups in the same render pass instead of a second getUser round-trip.
+    const data = await sessionAccount();
+    if (data) { account = data; initialLevels = qbLevelsFor(data.level, data.subjects); }
   } catch { /* fall back to client-side detection */ }
 
   let initialAssignment: InitialAssignment | null = null;

@@ -1,7 +1,7 @@
 // /app — Dashboard. Server component: assembles data directly via
 // getDashboardData (same source as /api/portal/dashboard).
 import Link from 'next/link';
-import { currentStudent } from '@/lib/portal-auth';
+import { currentAccount } from '@/lib/portal-auth';
 import { getDashboardData } from '@/lib/portal-dashboard';
 import { getTodayCards } from '@/lib/portal-today';
 import { isNotesAuthed } from '@/lib/notes-auth';
@@ -28,7 +28,10 @@ function friendlyDate(dateStr: string): string {
 }
 
 export default async function DashboardPage() {
-  const { account } = await currentStudent();
+  // currentAccount, not currentStudent — this page never reads the Airtable
+  // record, so it skips that serial round-trip (getDashboardData re-fetches
+  // the student fields it needs inside its own parallel batch below).
+  const account = await currentAccount();
   // Marking-only beta (lib/portal-beta.ts): students get a calm dashboard —
   // next lesson, last lesson's topics/homework, and three doors: Practise
   // (its own page since 2026-08-21 — embedding the whole topic→tier→question
@@ -68,7 +71,7 @@ export default async function DashboardPage() {
           Marked papers). Up to 3 rows inline, then "see all". */}
       {workSummary && (
         <div className="bg-navy text-[hsl(45,100%,96%)] rounded-3xl shadow-[0_8px_24px_-8px_rgba(15,23,42,0.5)] overflow-hidden">
-          <Link href="/app/assignments" className="flex items-center justify-between gap-3 px-4 pt-3.5 pb-2 hover:opacity-90">
+          <Link href="/app/assignments" className="flex items-center justify-between gap-3 px-4 pt-3.5 pb-2 hover:opacity-90 active:opacity-75 transition-opacity">
             <span className="flex items-center gap-2.5 font-semibold">
               <span className={`flex items-center justify-center w-8 h-8 rounded-xl bg-white/10 ${A.tile.split(' ')[1]}`}><PortalIcon name={A.icon} className="w-4.5 h-4.5" /></span>
               From Adrian
@@ -80,7 +83,7 @@ export default async function DashboardPage() {
               const due = dueLabel(a.due_on);
               return (
                 <li key={a.id}>
-                  <Link href={assignmentHref(a)} className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5">
+                  <Link href={assignmentHref(a)} className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 active:bg-white/10">
                     <PortalIcon name={a.kind === 'question' ? 'pencil' : 'file-check'} className="w-4 h-4 opacity-80 shrink-0" />
                     <span className="flex-1 min-w-0">
                       <span className="block text-sm font-medium truncate">{a.title}</span>
@@ -117,7 +120,7 @@ export default async function DashboardPage() {
               <Link
                 key={`${c.subject}|${c.topic}|${i}`}
                 href={`/app/learn?topic=${encodeURIComponent(c.topic)}&subject=${encodeURIComponent(c.subject)}`}
-                className="flex items-center gap-3 bg-navy text-[hsl(45,100%,96%)] rounded-2xl px-4 py-3.5 shadow-sm hover:opacity-90 transition-opacity"
+                className="flex items-center gap-3 bg-navy text-[hsl(45,100%,96%)] rounded-2xl px-4 py-3.5 shadow-sm hover:opacity-90 active:scale-[0.99] transition"
               >
                 <span className="flex-1 min-w-0">
                   <span className="block font-semibold text-[hsl(45,100%,96%)] truncate">{c.topic}</span>
@@ -132,7 +135,7 @@ export default async function DashboardPage() {
         ) : (
           <Link
             href="/app/learn"
-            className="flex items-center justify-between gap-3 bg-navy text-[hsl(45,100%,96%)] rounded-2xl px-4 py-3.5 font-semibold shadow-sm hover:opacity-90 transition-opacity"
+            className="flex items-center justify-between gap-3 bg-navy text-[hsl(45,100%,96%)] rounded-2xl px-4 py-3.5 font-semibold shadow-sm hover:opacity-90 active:scale-[0.99] transition"
           >
             <span>▶ Start learning</span>
             <span className="shrink-0 text-[hsl(43,90%,60%)] text-lg">›</span>
@@ -174,15 +177,15 @@ export default async function DashboardPage() {
       {/* Quick actions */}
       {fullPortal ? (
         <div className="grid grid-cols-2 gap-3">
-          <Link href="/app/practice" className="bg-navy text-[hsl(45,100%,96%)] rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:opacity-90 transition-opacity">
+          <Link href="/app/practice" className="bg-navy text-[hsl(45,100%,96%)] rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:opacity-90 active:scale-[0.98] transition">
             ✏️ Practise a question
           </Link>
           {learnVisible ? (
-            <Link href="/app/notes" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 transition-colors">
+            <Link href="/app/notes" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 active:scale-[0.98] transition">
               📚 Revision Notes
             </Link>
           ) : (
-            <Link href="/app/submit" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 transition-colors">
+            <Link href="/app/submit" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 active:scale-[0.98] transition">
               📄 Submit a paper
             </Link>
           )}

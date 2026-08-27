@@ -56,12 +56,11 @@ async function airtableSection(account: PortalAccount) {
   let homeworkAssigned: string | null = null;
 
   try {
-    // Student display fields (name may have changed in Airtable since activation)
-    try {
-      const student = await airtableRequest('Students', `/${studentId}`);
-      firstName = ((student.fields?.['Student Name'] as string) || firstName).split(' ')[0];
-      level = (student.fields?.['Level'] as string) || level;
-    } catch { /* fall back to portal_accounts copies */ }
+    // Student display fields (name may have changed in Airtable since
+    // activation) and the lessons window are independent — fetch them in
+    // parallel (.catch attached immediately so a student-record failure just
+    // falls back to the portal_accounts copies, as before).
+    const studentPromise = airtableRequest('Students', `/${studentId}`).catch(() => null);
 
     // Lessons: past 14 days (topics/homework) through next 14 days (upcoming).
     // Airtable gotchas: exclusive upper bound; linked-record match done in JS.
@@ -71,10 +70,17 @@ async function airtableSection(account: PortalAccount) {
     const formula = encodeURIComponent(
       `AND({Date}>='${from}',{Date}<'${toExcl}',{Status}!='Cancelled',{Status}!='Cancelled - Prorated')`
     );
-    const { records } = await airtableRequestAll(
-      'Lessons',
-      `?filterByFormula=${formula}&fields[]=Date&fields[]=Student&fields[]=Slot&fields[]=Type&fields[]=Status&fields[]=Topics Covered&fields[]=Topics Free Text&fields[]=Homework Assigned&sort[0][field]=Date&sort[0][direction]=asc`
-    );
+    const [student, { records }] = await Promise.all([
+      studentPromise,
+      airtableRequestAll(
+        'Lessons',
+        `?filterByFormula=${formula}&fields[]=Date&fields[]=Student&fields[]=Slot&fields[]=Type&fields[]=Status&fields[]=Topics Covered&fields[]=Topics Free Text&fields[]=Homework Assigned&sort[0][field]=Date&sort[0][direction]=asc`
+      ),
+    ]);
+    if (student) {
+      firstName = ((student.fields?.['Student Name'] as string) || firstName).split(' ')[0];
+      level = (student.fields?.['Level'] as string) || level;
+    }
     const mine = records.filter((r: any) => r.fields['Student']?.[0] === studentId);
 
     // Slot labels

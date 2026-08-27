@@ -4,7 +4,7 @@
 // the Submit button. Server component, service-role read scoped by the
 // student's Airtable id (lib/portal-assignments.ts).
 import Link from 'next/link';
-import { currentStudent } from '@/lib/portal-auth';
+import { currentAccount } from '@/lib/portal-auth';
 import { listStudentAssignments } from '@/lib/portal-assignments';
 import { assignmentHref, dueLabel, isOverdue, isPending, statusLabel } from '@/lib/assignments';
 
@@ -17,7 +17,7 @@ function sentOn(iso: string): string {
 }
 
 export default async function AssignmentsPage() {
-  const { account } = await currentStudent();
+  const account = await currentAccount();
   const rows = await listStudentAssignments(account.airtable_student_id).catch(() => []);
   const pending = rows.filter(r => isPending(r.status));
   const done = rows.filter(r => !isPending(r.status));
@@ -29,7 +29,7 @@ export default async function AssignmentsPage() {
       ? 'bg-emerald-50 text-emerald-800'
       : r.status === 'submitted' ? 'bg-blue-50 text-blue-700' : 'bg-[hsl(45,80%,94%)] text-navy';
     return (
-      <Link href={assignmentHref(r)} className={`${CARD} block p-4 hover:bg-[hsl(45,100%,99%)] transition-colors`}>
+      <Link href={assignmentHref(r)} className={`${CARD} block p-4 hover:bg-[hsl(45,100%,99%)] active:scale-[0.99] transition`}>
         <div className="flex items-start gap-3">
           <span className="text-xl leading-none mt-0.5" aria-hidden>{r.kind === 'question' ? '✏️' : '📄'}</span>
           <div className="flex-1 min-w-0">

@@ -9,7 +9,8 @@
 // The "Print a weak-spot paper" button is the one full-portal-only door on the
 // page, so it hides from beta students (the practice page's printEntry rule).
 import Link from 'next/link';
-import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server';
+import { createServiceClient } from '@/lib/supabase-server';
+import { sessionAccount } from '@/lib/portal-auth';
 import { loadPapersAndNotebook } from '@/lib/notebook-data';
 import { buildPlan } from '@/lib/plan';
 import { sgtToday } from '@/lib/notebook';
@@ -32,17 +33,10 @@ const STATE_PILL: Record<string, string> = {
 export default async function PlanPage() {
   // The print-page pattern: Adrian's admin cookie may browse /app/* without a
   // student session, but a plan belongs to a student — show the pointer card.
-  let sid: string | null = null;
-  const supabase = await createSupabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) {
-    const { data } = await supabase
-      .from('portal_accounts')
-      .select('airtable_student_id')
-      .eq('id', user.id)
-      .maybeSingle<{ airtable_student_id: string }>();
-    sid = data?.airtable_student_id ?? null;
-  }
+  // sessionAccount() is per-request cached (lib/portal-auth.ts), so this
+  // shares the layout's auth lookup instead of repeating it.
+  const account = await sessionAccount();
+  const sid: string | null = account?.airtable_student_id ?? null;
 
   if (!sid) {
     return (
@@ -58,8 +52,14 @@ export default async function PlanPage() {
     );
   }
 
+  // The plan assembly, the Home-tile counts and the beta gate are independent
+  // — one parallel batch instead of two sequential awaits.
   const svc = createServiceClient();
-  const res = await loadPapersAndNotebook(svc, sid, sgtToday());
+  const [res, { beingMarked }, printVisible] = await Promise.all([
+    loadPapersAndNotebook(svc, sid, sgtToday()),
+    homeCounts(sid),
+    fullPortalVisible(),
+  ]);
   if (!res.ok) {
     return (
       <div className="space-y-4 pb-24 sm:pb-4">
@@ -80,10 +80,6 @@ export default async function PlanPage() {
       paperName: e.paper_name,
     })),
   );
-  const [{ beingMarked }, printVisible] = await Promise.all([
-    homeCounts(sid),
-    fullPortalVisible(),
-  ]);
   const S = SURFACES.submit;
 
   return (

@@ -46,7 +46,7 @@ export function DesktopLinks({ items, pendingWork }: { items: NavItem[]; pending
         const active = isActive(pathname, l.href);
         return (
           <Link key={l.href} href={l.href} data-tour={tourKey(l.href)}
-            className={`relative flex items-center gap-1.5 text-sm rounded-full px-3 py-1.5 transition-colors ${
+            className={`relative flex items-center gap-1.5 text-sm rounded-full px-3 py-1.5 transition select-none active:scale-95 ${
               active ? `${s.tint} ${s.text} font-semibold` : 'text-gray-600 hover:text-navy hover:bg-navy/5'}`}>
             <PortalIcon name={s.icon} className="w-4 h-4" />
             {l.label}
@@ -70,7 +70,7 @@ export function MobileTabs({ items, pendingWork }: { items: NavItem[]; pendingWo
           const active = isActive(pathname, t.href);
           return (
             <Link key={t.href} href={t.href} data-tour={tourKey(t.href)} aria-current={active ? 'page' : undefined}
-              className={`flex flex-col items-center justify-center gap-1 ${active ? `${s.text} font-semibold` : 'text-gray-500'}`}>
+              className={`flex flex-col items-center justify-center gap-1 select-none transition-transform active:scale-95 ${active ? `${s.text} font-semibold` : 'text-gray-500'}`}>
               <span className={`relative flex items-center justify-center w-11 h-7 rounded-full transition-colors ${active ? s.tint : ''}`}>
                 <PortalIcon name={s.icon} className="w-[22px] h-[22px]" strokeWidth={active ? 2.4 : 2} />
                 {t.href === '/app' && <Badge n={pendingWork} className="-top-1.5 right-0" />}

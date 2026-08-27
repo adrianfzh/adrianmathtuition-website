@@ -1,17 +1,15 @@
 // Auth helpers for /app/* pages and /api/portal/* routes.
+//
+// Perf (2026-08-28): the session lookups are wrapped in React cache() so ONE
+// render pass (the /app layout + the page + any lib they both call) hits the
+// Supabase Auth server and the portal_accounts table ONCE, however many
+// callers ask. cache() is strictly per-request — nothing persists across
+// requests, so there is no staleness: a student who reschedules sees fresh
+// data on the very next navigation.
+import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { createSupabaseServer } from './supabase-server';
 import { airtableRequest } from './airtable';
-
-// Returns the authenticated Supabase user or redirects to /login.
-// getUser() validates the JWT against the Supabase Auth server (unlike
-// getSession(), which only trusts the cookie) — always use this on the server.
-export async function requireAuth() {
-  const supabase = await createSupabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/login');
-  return user;
-}
 
 export interface PortalAccount {
   id: string;
@@ -26,17 +24,56 @@ export interface PortalAccount {
   last_seen_at: string | null;
 }
 
-// The logged-in student's portal_accounts row + their Airtable Students record.
-// Redirects to /login when there's no session or no linked account (an Auth
-// user without a portal_accounts row shouldn't exist — treat as unauthenticated).
-export async function currentStudent() {
-  const user = await requireAuth();
+// The validated session user, or null — the ONE getUser() per request.
+// getUser() validates the JWT against the Supabase Auth server (unlike
+// getSession(), which only trusts the cookie) — always use this on the server.
+export const getSessionUser = cache(async () => {
+  const supabase = await createSupabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+});
+
+// The session's portal_accounts row, or null (no session / no linked row).
+// Non-redirecting on purpose: the layout badge and the admin-browsable pages
+// (plan, practice, print) need "null when anonymous", not a bounce.
+export const sessionAccount = cache(async (): Promise<PortalAccount | null> => {
+  const user = await getSessionUser();
+  if (!user) return null;
   const supabase = await createSupabaseServer();
   const { data: account } = await supabase
     .from('portal_accounts')
     .select('*')
     .eq('id', user.id)
-    .single<PortalAccount>();
+    .maybeSingle<PortalAccount>();
+  return account ?? null;
+});
+
+// Returns the authenticated Supabase user or redirects to /login.
+export async function requireAuth() {
+  const user = await getSessionUser();
+  if (!user) redirect('/login');
+  return user;
+}
+
+// The logged-in student's portal_accounts row; redirects to /login when
+// there's no session or no linked account (an Auth user without a
+// portal_accounts row shouldn't exist — treat as unauthenticated). This is
+// what /app pages should call — none of them read the Airtable record, so
+// they skip currentStudent()'s serial Airtable round-trip.
+export async function currentAccount(): Promise<PortalAccount> {
+  const user = await getSessionUser();
+  if (!user) redirect('/login');
+  const account = await sessionAccount();
+  if (!account) redirect('/login');
+  return account;
+}
+
+// currentAccount() + the student's Airtable Students record. Kept for callers
+// that need the Airtable fields; prefer currentAccount() when they don't.
+// Redirect behaviour is identical to currentAccount().
+export const currentStudent = cache(async () => {
+  const user = await requireAuth();
+  const account = await sessionAccount();
   if (!account) redirect('/login');
 
   // Airtable is best-effort: a deleted student record or an Airtable outage
@@ -47,4 +84,4 @@ export async function currentStudent() {
   } catch { /* degrade gracefully */ }
 
   return { user, account, airtableRecord };
-}
+});

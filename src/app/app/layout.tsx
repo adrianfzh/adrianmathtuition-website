@@ -71,15 +71,20 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: '/app/marking', label: 'Marked' },
       ];
   // "From Adrian" pending work → numeric badge on Home (no 5th tab, per spec).
-  const pendingWork = await pendingAssignmentCountForSession();
-
   // First-login tour (components/PortalTour.tsx). The `data-tour` attributes
   // below are what its highlight ring measures — keep them on both the desktop
   // links and the mobile tabs, since only one set is on screen at a time.
-  const surfaces = await portalSurfaces();
+  // Independent lookups — run them in parallel, not one after the other.
+  const [pendingWork, surfaces] = await Promise.all([
+    pendingAssignmentCountForSession(),
+    portalSurfaces(),
+  ]);
 
   return (
-    <div className="min-h-screen bg-[hsl(45,100%,98%)]">
+    // -webkit-tap-highlight-color:transparent — iOS Safari's grey tap flash
+    // fights the tabs'/cards' own pressed states (active:scale/tint); scoped
+    // to the portal shell, inherited by everything inside it.
+    <div className="min-h-screen bg-[hsl(45,100%,98%)] [-webkit-tap-highlight-color:transparent]">
       <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-black/5">
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-5">
