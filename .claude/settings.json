@@ -1,4 +1,8 @@
 {
+  "env": {
+    "SUPABASE_URL": "https://nempslbewxtlikfzachi.supabase.co",
+    "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5lbXBzbGJld3h0bGlrZnphY2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMzI3OTEsImV4cCI6MjA4OTkwODc5MX0.OsJAL6-yE0_z90HxpQSs0w1Jib5p1skwiPlJGze-ISI"
+  },
   "permissions": {
     "allow": [
       "Bash(fly logs *)",
@@ -16,7 +20,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd /Users/adrianfong/Desktop/adrianmathtuition-website && npm run sync-schema 2>/dev/null || true",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && npm run sync-schema 2>/dev/null || true",
             "timeout": 15,
             "statusMessage": "Syncing Airtable schema…"
           }

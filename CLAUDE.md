@@ -301,6 +301,10 @@ This takes 2 seconds and returns **no student data** — only field names, types
 - Chat page smart scroll
 - Add image support for revision notes (diagrams from DOCX files)
 
+## ☁️ Cloud sessions (claude.ai/code) → [`docs/CLOUD.md`](docs/CLOUD.md)
+
+claude.ai environments and skill libraries are **per-account**, but everything committed in this repo (skills, docs, the `env` block in `.claude/settings.json` with the public Supabase config) carries to any account/machine automatically. The only per-account step is a one-time ~5-min secrets bootstrap — `CRON_SECRET` + a read-only Airtable token + the network allowlist. Recipe, verification probes, and the crown-jewels-never-in-cloud list: [`docs/CLOUD.md`](docs/CLOUD.md). Posture: **the cloud agent holds triggers, not power**.
+
 ## Environment Variables
 
 `AIRTABLE_TOKEN`, `AIRTABLE_BASE_ID`, `ANTHROPIC_API_KEY`, `ADMIN_PASSWORD`, `CRON_SECRET`, `SIGNUP_SECRET`, `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`, `BLOB_READ_WRITE_TOKEN`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `RECEIPT_API_TOKEN`, `RENDER_MARKING_SECRET`, `GOOGLE_API_KEY`, `SUPABASE_SECRET_KEY`, `MARK_INBOX_TOKEN`, `KIOSK_WA_NUMBER`, `DROPBOX_APP_KEY`/`DROPBOX_APP_SECRET`/`DROPBOX_REFRESH_TOKEN`
