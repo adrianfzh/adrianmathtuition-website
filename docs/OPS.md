@@ -54,3 +54,29 @@ itself every minute while open, and rows deep-link to the relevant screen
 1. Pick a kebab slug. 2. Stamp your success path (`logJobRun` / SKILL.md insert /
 `POST /api/job-log`). 3. If it has a schedule, add one line to `JOB_RHYTHMS` so
 missing it alarms. That's the whole contract — no registration anywhere else.
+
+## Claude Code scheduled tasks — per-Mac registry
+
+Claude Code desktop scheduled tasks are **machine-local**: stored under
+`~/.claude/scheduled-tasks/<taskId>/SKILL.md` on the Mac that created them, they
+run only while that Mac is awake with the app open, and each Mac's list is
+invisible from every other machine. This table is the cross-Mac source of truth
+— update it whenever a task is created, moved, or retired (Adrian 2026-08-27).
+
+Rules:
+- **Recurring tasks live on an always-on Mac only** — a sleeping laptop silently
+  skips runs (no catch-up).
+- **Keep the task thin**: the prompt points at a spec (repo doc or Supabase row)
+  and says "follow it". Recreating a task on another Mac is then one 30-second
+  create; the intelligence stays in synced files.
+- Recurring workers stamp `job_runs` (above), so a dead or orphaned task still
+  alarms by absence no matter which Mac owned it.
+- One-time reminders auto-disable after firing — don't register those here.
+
+| Task | Schedule | Mac | Status (2026-08-27) | What it does |
+|---|---|---|---|---|
+| `topup-bank-nightly` | 3:30am daily | A (MacBook Pro) | ✅ live | plan-billed question-bank topup (spec in its SKILL.md; stamps `qb-topup`) |
+| `file-subgroups-nightly` | 4:15am daily | A (MacBook Pro) | ✅ live | sub-group filing backfill after the topup (stamps `file-subgroups`) |
+| `s1s2-math-extraction-worker` | every 20 min | A (MacBook Pro) | ⏸ disabled | drains `~/Desktop/AdrianMath/papers/` one bundle per run — re-enable pending (~19 PDFs waiting) |
+| `siteground-vercel-migration-reminder` | one-time 1 Nov 2026 | A (MacBook Pro) | ✅ armed | domain + hosting expiry reminder |
+| *(extraction fleet)* | various | B | ❓ list from Mac B | paper→bank workers in `~/Desktop/AdrianMath`; worker law = live Supabase row |
