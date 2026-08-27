@@ -24,6 +24,14 @@ import { isNotesAuthed } from './notes-auth';
 
 export const MARKING_ONLY_BETA = true;
 
+// Notes carve-out (Adrian, 2026-08-27: "add the notes back to the student
+// portal now"). The /notes Fumadocs reader re-opens to students while the rest
+// of the marking-only beta stays shut — Learn / Notebook / Reference are still
+// bounced. Flip to false to hide notes again in one place; when
+// MARKING_ONLY_BETA itself goes false this flag is moot (full portal already
+// includes notes).
+export const NOTES_OPEN_TO_STUDENTS = true;
+
 // "View as student" — Adrian's admin cookie normally unlocks the full portal,
 // which means his own phone can never show him what a student actually sees
 // (bit on 2026-08-21: his Home showed Practice/Learn while students got the

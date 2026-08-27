@@ -7,7 +7,7 @@ import { cookies } from 'next/headers';
 import { requireAuth } from '@/lib/portal-auth';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
-import { MARKING_ONLY_BETA, VIEW_AS_STUDENT_COOKIE } from '@/lib/portal-beta';
+import { MARKING_ONLY_BETA, NOTES_OPEN_TO_STUDENTS, VIEW_AS_STUDENT_COOKIE } from '@/lib/portal-beta';
 import SignOutButton from './signout-button';
 import { pendingAssignmentCountForSession } from '@/lib/portal-assignments';
 import ViewAsToggle from './view-as-toggle';
@@ -49,6 +49,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: '/app', label: 'Dashboard' },
         { href: '/app/plan', label: 'My Plan' },
         { href: '/app/practice', label: 'Practise' },
+        ...(NOTES_OPEN_TO_STUDENTS ? [{ href: '/app/notes', label: 'Notes' }] : []),
         { href: '/app/submit', label: 'Hand in a paper' },
         { href: '/app/marking', label: 'Marked papers' },
       ];
@@ -65,6 +66,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: '/app', label: 'Home' },
         { href: '/app/plan', label: 'Plan' },
         { href: '/app/practice', label: 'Practise' },
+        ...(NOTES_OPEN_TO_STUDENTS ? [{ href: '/app/notes', label: 'Notes' }] : []),
         { href: '/app/submit', label: 'Hand in' },
         { href: '/app/marking', label: 'Marked' },
       ];

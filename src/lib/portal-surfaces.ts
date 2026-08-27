@@ -11,7 +11,7 @@
 // server component and pass the plain object down to the client components.
 import { isNotesAuthed } from './notes-auth';
 import { LEARN_OPEN_TO_STUDENTS } from './learn-gate';
-import { MARKING_ONLY_BETA, viewingAsStudent } from './portal-beta';
+import { MARKING_ONLY_BETA, NOTES_OPEN_TO_STUDENTS, viewingAsStudent } from './portal-beta';
 import type { PortalSurfaces } from './portal-tour';
 
 export async function portalSurfaces(): Promise<PortalSurfaces> {
@@ -20,6 +20,6 @@ export async function portalSurfaces(): Promise<PortalSurfaces> {
   return {
     practice: true,
     learn: adminPowers || LEARN_OPEN_TO_STUDENTS,
-    notes: fullPortal,
+    notes: fullPortal || NOTES_OPEN_TO_STUDENTS,
   };
 }

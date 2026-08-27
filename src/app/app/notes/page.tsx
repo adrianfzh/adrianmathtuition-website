@@ -3,12 +3,14 @@
 // unorganized"), then a redirect into /app/learn. Since 2026-08-14 the /notes
 // reader is the released student surface and Learn units stay admin-only, so
 // the dashboard button and old links land there instead.
-// Marking-only beta (2026-08-21): students are sent back to /app instead —
-// the notes reader is not a portal surface during the beta (lib/portal-beta.ts).
+// Marking-only beta (2026-08-21): students were sent back to /app —
+// re-opened 2026-08-27 via the NOTES_OPEN_TO_STUDENTS carve-out
+// (lib/portal-beta.ts); the /notes reader itself already accepts a portal
+// student session (notes-auth isNotesViewer), so lifting the bounce is enough.
 import { redirect } from 'next/navigation';
-import { requireFullPortal } from '@/lib/portal-beta';
+import { NOTES_OPEN_TO_STUDENTS, requireFullPortal } from '@/lib/portal-beta';
 
 export default async function NotesRedirect() {
-  await requireFullPortal();
+  if (!NOTES_OPEN_TO_STUDENTS) await requireFullPortal();
   redirect('/notes');
 }

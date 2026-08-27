@@ -6,7 +6,7 @@ import { getDashboardData } from '@/lib/portal-dashboard';
 import { getTodayCards } from '@/lib/portal-today';
 import { isNotesAuthed } from '@/lib/notes-auth';
 import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
-import { fullPortalVisible, viewingAsStudent } from '@/lib/portal-beta';
+import { NOTES_OPEN_TO_STUDENTS, fullPortalVisible, viewingAsStudent } from '@/lib/portal-beta';
 import { listStudentAssignments } from '@/lib/portal-assignments';
 import { assignmentHref, dueLabel, homeCardSummary, isPending } from '@/lib/assignments';
 import { homeCounts } from '@/lib/portal-home-counts';
@@ -56,7 +56,7 @@ export default async function DashboardPage() {
   // practise, teal = hand in, violet = marked" without reading.
   const card = 'bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-5';
   const caption = 'text-[11px] font-bold uppercase tracking-wider text-slate-400';
-  const P = SURFACES.practice, S = SURFACES.submit, M = SURFACES.marking, A = SURFACES.assignments, L = SURFACES.lesson, PL = SURFACES.plan;
+  const P = SURFACES.practice, S = SURFACES.submit, M = SURFACES.marking, A = SURFACES.assignments, L = SURFACES.lesson, PL = SURFACES.plan, N = SURFACES.notes;
 
   return (
     <div className="space-y-4 pb-20 sm:pb-4">
@@ -236,6 +236,20 @@ export default async function DashboardPage() {
         </span>
         <span className={`shrink-0 ${PL.text}`}>›</span>
       </Link>
+
+      {/* Revision Notes — re-opened to beta students 2026-08-27
+          (NOTES_OPEN_TO_STUDENTS carve-out in lib/portal-beta.ts). The full
+          portal already surfaces notes in its quick-actions grid above. */}
+      {!fullPortal && NOTES_OPEN_TO_STUDENTS && (
+        <Link href="/app/notes" className={`${card} !p-4 flex items-center gap-3 hover:shadow-md active:scale-[0.99] transition`}>
+          <span className={`flex items-center justify-center w-11 h-11 rounded-2xl shrink-0 ${N.tile}`}><PortalIcon name={N.icon} className="w-5.5 h-5.5" /></span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-bold text-navy text-sm leading-tight">Revision Notes</span>
+            <span className="block text-[11px] text-slate-500 mt-0.5">Read the notes first, then practise the topic</span>
+          </span>
+          <span className={`shrink-0 ${N.text}`}>›</span>
+        </Link>
+      )}
 
       {/* Last lesson topics + homework */}
       {(d.lastTopics.length > 0 || d.homeworkAssigned) && (
