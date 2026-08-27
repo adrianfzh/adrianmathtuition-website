@@ -4,8 +4,8 @@ import { getNotesTree, getSearchIndex } from '@/lib/notes-data';
 import { NOTES_LEVELS } from '@/lib/notes-tree';
 import NotesLogin from './NotesLogin';
 import NotesShell, { type ShellLevel } from './NotesShell';
-// Scoped fumadocs styles — see the header comment in notes.css for why these
-// must never move into globals.css.
+// Scoped notes styles (portal-look chrome + content styling) — see the header
+// comment in notes.css for why these must never move into globals.css.
 import './notes.css';
 
 export const metadata: Metadata = {
