@@ -69,8 +69,10 @@ export const MOCK_LEVELS = ['EM', 'AM'] as const;
 export const DURATIONS: Record<string, string> = {
   'AM-P1': '2 hours 15 minutes',
   'AM-P2': '2 hours 15 minutes',
-  'EM-P1': '2 hours',
-  'EM-P2': '2 hours',
+  // 4052 (first exam 2025, the 90-mark shape these blueprints match): SEAB
+  // gives BOTH EM papers 2 h 15 min — '2 hours' was the old 4048 P1 habit.
+  'EM-P1': '2 hours 15 minutes',
+  'EM-P2': '2 hours 15 minutes',
 };
 
 export function paperDuration(level: string, paper: string): string | null {
@@ -131,7 +133,7 @@ export function mockCover(
     subjectName: subjectName(level),
     subjectCode: paperCodeFull(level, paper),
     paperLabel: paper === 'P1' ? 'Paper 1' : 'Paper 2',
-    duration: paperDuration(level, paper) ?? '2 hours',
+    duration: paperDuration(level, paper) ?? '2 hours 15 minutes',
     materials: ['Candidates answer on the Question Paper.', 'No additional materials are required.'],
     candidateLine: [who ? `Printed for ${who}` : null, opts.printedOn ?? null, 'AdrianMath']
       .filter(Boolean)

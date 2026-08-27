@@ -86,8 +86,8 @@ describe('exam-format facts', () => {
   it('carries the real O-Level duration for all four mock papers', () => {
     expect(DURATIONS['AM-P1']).toBe('2 hours 15 minutes');
     expect(DURATIONS['AM-P2']).toBe('2 hours 15 minutes');
-    expect(DURATIONS['EM-P1']).toBe('2 hours');
-    expect(DURATIONS['EM-P2']).toBe('2 hours');
+    expect(DURATIONS['EM-P1']).toBe('2 hours 15 minutes');
+    expect(DURATIONS['EM-P2']).toBe('2 hours 15 minutes');
     expect(paperDuration('AM', 'P1')).toBe('2 hours 15 minutes');
     expect(paperDuration('JC2', 'P1')).toBeNull();
   });
