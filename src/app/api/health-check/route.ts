@@ -293,6 +293,21 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // "Save to My Notes" (/app/my-notes + the ✂️ clipper on /app/marking).
+    // Anonymous 401 proves the route is deployed with its auth gate up; the
+    // REST probe proves portal_notes still answers — a dropped table would
+    // otherwise surface only as students' clippings silently vanishing.
+    timed('portal-my-notes', async () => {
+      const r = await fetch(`${base}/api/portal/my-notes`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      const q = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/portal_notes?select=id&limit=1`,
+        { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: T(10000) }
+      );
+      if (!q.ok) throw new Error(`portal_notes? HTTP ${q.status}`);
+      return 'auth gate up';
+    }),
     // Practice topic picker (/app/practice → lib/practice-strands + topic-picker).
     // The question-type route must hold its auth gate, and the two RPCs the
     // picker is built on must still answer with rows for a JC bank AND a Sec 3

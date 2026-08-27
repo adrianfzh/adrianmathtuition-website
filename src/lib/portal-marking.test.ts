@@ -383,6 +383,50 @@ describe('buildStudentMarking — SEAB scheme chips', () => {
   });
 });
 
+describe('buildStudentMarking — annotated pages (the ✂️ clipper)', () => {
+  it('exposes annotated_photos as pages in page order, index + url only', () => {
+    const { papers } = buildStudentMarking([run({
+      id: 'a',
+      result_json: {
+        results: [q({ n: '1', awarded: 1, max: 2 })],
+        annotated_photos: [
+          { photo_index: 2, url: 'https://blob.example/p2.jpg', url_with_solutions: 'https://blob.example/p2s.jpg', method: 'gemini' },
+          { photo_index: 0, url: 'https://blob.example/p0.jpg', method: 'tick-grid' },
+        ],
+      },
+    })]);
+    expect(papers[0].pages).toEqual([
+      { index: 0, url: 'https://blob.example/p0.jpg' },
+      { index: 2, url: 'https://blob.example/p2.jpg' },
+    ]);
+    // `method` is plumbing — it must not ride into the student payload.
+    expect(JSON.stringify(papers[0].pages)).not.toContain('gemini');
+  });
+
+  it('drops malformed entries and degrades to no pages, never a broken image', () => {
+    const { papers } = buildStudentMarking([run({
+      id: 'a',
+      result_json: {
+        results: [q({ n: '1', awarded: 1, max: 2 })],
+        annotated_photos: [
+          { photo_index: 0, url: 'http://insecure.example/p.jpg' }, // not https
+          { photo_index: 'x', url: 'https://blob.example/p.jpg' },  // bad index
+          { photo_index: 1 },                                        // no url
+          'junk',
+        ],
+      },
+    })]);
+    expect(papers[0].pages).toEqual([]);
+  });
+
+  it('returns [] when annotated_photos is absent entirely', () => {
+    const { papers } = buildStudentMarking([
+      run({ id: 'a', result_json: { results: [q({ n: '1', awarded: 1, max: 2 })] } }),
+    ]);
+    expect(papers[0].pages).toEqual([]);
+  });
+});
+
 describe('buildStudentMarking — streak notice', () => {
   const scoredRun = (id: string, date: string, awarded: number) => run({
     id,

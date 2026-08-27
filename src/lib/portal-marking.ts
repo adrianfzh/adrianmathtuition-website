@@ -106,6 +106,14 @@ export interface StudentPaper {
   dropped: StudentQuestion[];
   /** The annotated script if it was rendered, else the plain marked PDF. */
   pdfUrl: string | null;
+  /**
+   * The annotated page images (result_json.annotated_photos), page order —
+   * what the ✂️ Save-to-My-Notes clipper draws on. Only the index and the
+   * plain-annotation url cross over; `method`/`url_with_solutions` are
+   * plumbing. Empty for runs that never rendered annotations (the clipper
+   * simply doesn't offer itself).
+   */
+  pages: { index: number; url: string }[];
   /** Follow-up practice, one item per dropped-marks question. Often empty. */
   practice: StudentPracticeItem[];
   /**
@@ -266,6 +274,25 @@ function reviseLinks(
   return links;
 }
 
+/**
+ * result_json.annotated_photos → the clipper's page list. Student-facing, so
+ * every entry is re-validated: a malformed block degrades to no clipper, never
+ * to a broken image. https-only — these are public Vercel Blob JPEGs.
+ */
+function annotatedPages(raw: unknown): { index: number; url: string }[] {
+  if (!Array.isArray(raw)) return [];
+  const pages: { index: number; url: string }[] = [];
+  for (const rawEntry of raw) {
+    const entry = asRecord(rawEntry);
+    if (!entry) continue;
+    const url = str(entry.url);
+    const index = Number(entry.photo_index);
+    if (!/^https:\/\//.test(url) || !Number.isInteger(index)) continue;
+    pages.push({ index, url });
+  }
+  return pages.sort((a, b) => a.index - b.index);
+}
+
 function toPracticeItem(raw: unknown): StudentPracticeItem | null {
   const r = asRecord(raw);
   if (!r) return null;
@@ -326,6 +353,7 @@ function toPaper(row: MarkingRunRow): StudentPaper | null {
     // The annotated script is the one with red pen on their own handwriting;
     // the plain PDF is the fallback when annotation never rendered.
     pdfUrl: row.annotated_pdf_url || row.pdf_url || null,
+    pages: annotatedPages(rj?.annotated_photos),
     practice,
     practiceDocxUrl: str(practiceRec?.docx_url) || null,
   };
