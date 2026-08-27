@@ -12,20 +12,33 @@
 // ?assignment=<id> — "From Adrian" mode (SPEC-ASSIGN.md): the assigned bank
 // question is resolved here (service role, ownership-checked against the
 // student's Airtable id) and handed to the flow as `initialAssignment`.
+//
+// ?qid=<questions.id> — fixed-question mode: EXACTLY that bank question in the
+// graded flow. This is the landing pad for /app/marking's "Try it now" twins,
+// the 📷/🔍 finder's matches, and freshly generated questions (`?from=` names
+// the door for the context header). Resolved here with the service client and
+// gated by lib/portal-find.practiceEligibility — the same bars practice_next
+// applies (not deleted / flag-buried / unverified-AI, has content, has an
+// answer to mark against) — so a deep link can never open a question the
+// normal flow would refuse; an ineligible id degrades to a friendly notice
+// over the ordinary picker, never a broken screen.
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
-import PracticeFlow, { type InitialAssignment } from './practice-flow';
+import PracticeFlow, { type FixedQuestion, type InitialAssignment } from './practice-flow';
 import { sessionAccount } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { qbLevelsFor } from '@/lib/practice';
 import { getStudentAssignment } from '@/lib/portal-assignments';
 import { dueLabel } from '@/lib/assignments';
+import { practiceEligibility } from '@/lib/portal-find';
 import { questionMarkdown, questionStructured } from '@/lib/bank-question-markdown';
 
 export const dynamic = 'force-dynamic';
 
-export default async function PracticePage({ searchParams }: { searchParams: Promise<{ assignment?: string; level?: string; topic?: string }> }) {
-  const { assignment: assignmentId, level: targetLevel, topic: targetTopic } = await searchParams;
+const QID_FROM = ['marked', 'photo', 'search', 'generated'] as const;
+
+export default async function PracticePage({ searchParams }: { searchParams: Promise<{ assignment?: string; level?: string; topic?: string; qid?: string; from?: string }> }) {
+  const { assignment: assignmentId, level: targetLevel, topic: targetTopic, qid, from } = await searchParams;
   // "Practise this topic" deep link from /notes: preselect the level and open
   // that topic's sheet once the overview loads. Ignored when an assignment is
   // being opened (the assignment fixes the question).
@@ -80,13 +93,55 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
       },
     };
   }
+  // ?qid= fixed-question mode. Student session required (the links that carry
+  // qid all live behind a login); the eligibility gate turns a bad/ineligible
+  // id into a notice rather than a 404 — the student still lands on a working
+  // practice page.
+  let initialQuestion: FixedQuestion | null = null;
+  let qidBlocked = false;
+  if (qid && !assignmentId) {
+    if (!account) redirect('/login');
+    const { data: q } = await getSupabaseAdmin()
+      .from('questions')
+      .select('id, question_text, parts, total_marks, has_image, image_url, images, figure_url, solution, answer, topics, deleted_at, flagged_count, ai_generated, verified')
+      .eq('id', qid)
+      .maybeSingle();
+    if (q && practiceEligibility(q).ok) {
+      const { stem, parts } = questionStructured(q);
+      const fromParam = QID_FROM.find(f => f === from) ?? null;
+      const topics = Array.isArray(q.topics) ? q.topics.filter((t): t is string => typeof t === 'string' && !!t.trim()) : [];
+      initialQuestion = {
+        from: fromParam,
+        topic: topics[0] ?? null,
+        question: {
+          id: q.id,
+          markdown: questionMarkdown(q),
+          stem,
+          parts,
+          marks: q.total_marks ?? null,
+          figureUrl: q.figure_url ?? null,
+          source: null,
+          hasSolution: !!(q.solution && q.solution.trim()),
+        },
+      };
+    } else {
+      qidBlocked = true;
+    }
+  }
+
   // "Print a paper" entry card (SPEC-PRINT-PAPER.md) — full-portal only, so
   // Print opened to all students 2026-08-28; the door only hides while a
-  // deep-linked assignment should keep the student's focus.
-  const printEntry = !initialAssignment;
+  // deep-linked assignment or fixed question should keep the student's focus.
+  const printEntry = !initialAssignment && !initialQuestion;
 
   return (
     <>
+      {qidBlocked && (
+        <div className="mb-4 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800">
+          That one can&apos;t be practised here — it doesn&apos;t have a marked answer on file yet.
+          Pick a topic below instead, or snap the question to find one like it.
+        </div>
+      )}
       {printEntry && (
         <Link
           href="/app/print"
@@ -99,7 +154,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
           </span>
         </Link>
       )}
-      <PracticeFlow initialLevels={initialLevels} initialAssignment={initialAssignment} initialTarget={initialTarget} />
+      <PracticeFlow initialLevels={initialLevels} initialAssignment={initialAssignment} initialTarget={initialTarget} initialQuestion={initialQuestion} />
     </>
   );
 }

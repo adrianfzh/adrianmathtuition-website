@@ -124,27 +124,10 @@ type GradeResult = {
   transcribedLines?: string[];
 };
 
-// Downscale + re-encode any camera image to a small JPEG (also normalises
-// HEIC on iOS, since Safari decodes it into the canvas).
-async function fileToJpegDataUrl(file: File, maxDim = 1600): Promise<string> {
-  const url = URL.createObjectURL(file);
-  try {
-    const img = await new Promise<HTMLImageElement>((res, rej) => {
-      const i = new Image();
-      i.onload = () => res(i);
-      i.onerror = () => rej(new Error('Could not read that image'));
-      i.src = url;
-    });
-    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(img.width * scale);
-    canvas.height = Math.round(img.height * scale);
-    canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL('image/jpeg', 0.82);
-  } finally {
-    URL.revokeObjectURL(url);
-  }
-}
+// Camera-photo downscale lives in ./image-downscale.ts, shared with the
+// question-finder ("Snap a question"), which sends the same kind of photo.
+import { fileToJpegDataUrl } from './image-downscale';
+import QuestionFinder from './question-finder';
 
 // `initialLevels` comes from the server page for a signed-in student (their
 // scoped QB levels) so the level control is right on first paint; null means
@@ -161,13 +144,37 @@ export type InitialAssignment = {
   score: number | null; outOf: number | null; question: Question;
 };
 
-export default function PracticeFlow({ initialLevels = null, initialAssignment = null, initialTarget = null }: {
+// ?qid= deep-link mode (the page resolves + eligibility-checks the question
+// server-side): ONE fixed bank question in the same graded loop — from a
+// marked paper's "Try it now", a photo/search match, or a freshly generated
+// question. Like assignment mode there is no picker and no question stream;
+// unlike it there is no due date, no Telegram, no cap exemption — it's a
+// normal practice attempt on a chosen question. `topic` (the question's bank
+// topic, when known) powers the "more of this topic" follow-up after grading.
+export type FixedQuestion = {
+  question: Question;
+  from: 'marked' | 'photo' | 'search' | 'generated' | null;
+  topic: string | null;
+};
+
+const FIXED_FROM: Record<NonNullable<FixedQuestion['from']> | 'link', { label: string; blurb: string }> = {
+  marked: { label: '📄 From your marked paper', blurb: 'A question like the one you dropped marks on — try it here, then get it marked.' },
+  photo: { label: '📷 Matched to your photo', blurb: 'The closest bank question to the one you snapped — work it here and get it marked.' },
+  search: { label: '🔍 From your search', blurb: 'Work it here — snap or type your working and get it marked.' },
+  generated: { label: '✨ Made for you', blurb: 'A fresh question written for you and checked to solve correctly. Work it here and get it marked.' },
+  link: { label: '🎯 Practice question', blurb: 'Work it here — snap or type your working and get it marked.' },
+};
+
+export default function PracticeFlow({ initialLevels = null, initialAssignment = null, initialTarget = null, initialQuestion = null }: {
   initialLevels?: LevelOpt[] | null; initialAssignment?: InitialAssignment | null;
   /** Deep link from /notes ("Practise this topic"): preselect the level and
    *  open that topic's sheet once the overview loads. One-shot. */
   initialTarget?: { level: string | null; topic: string } | null;
+  initialQuestion?: FixedQuestion | null;
 }) {
   const assignment = initialAssignment;
+  // Fixed ?qid= question — assignment wins if both somehow arrive.
+  const fixedQ = assignment ? null : initialQuestion;
   const targetRef = useRef(initialTarget);
   // mode: checking → student (portal session) | admin (password) | locked
   const [mode, setMode] = useState<'checking' | 'student' | 'admin' | 'locked'>(initialLevels || assignment ? 'student' : 'checking');
@@ -183,18 +190,18 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     return initialLevels?.some(l => l.key === 'AM') ? 'AM' : (initialLevels?.[0]?.key ?? 'AM');
   });
   const [tier, setTier] = useState<Tier>(assignment?.tier ?? 'Standard');
-  const [tierPicked, setTierPicked] = useState(!!assignment);   // admin: topic chosen → pick Standard/Advanced → question
+  const [tierPicked, setTierPicked] = useState(!!assignment || !!fixedQ);   // admin: topic chosen → pick Standard/Advanced → question
   const [topics, setTopics] = useState<TopicCard[]>([]);
   const [recommended, setRecommended] = useState<Recommended[]>([]);
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);   // question types for the level (topic sheet)
   const [topic, setTopic] = useState(assignment?.topic ?? '');
   const [sheetTopic, setSheetTopic] = useState<string | null>(null);   // student: topic sheet open for…
   const [subgroup, setSubgroup] = useState<Subgroup | null>(null);     // chosen question type (null = whole topic)
-  const [loadingOverview, setLoadingOverview] = useState(!!initialLevels && !assignment); // student: skeleton on first paint, not "No topics"
+  const [loadingOverview, setLoadingOverview] = useState(!!initialLevels && !assignment && !fixedQ); // student: skeleton on first paint, not "No topics"
   const [search, setSearch] = useState('');
   const [strand, setStrand] = useState('All');
 
-  const [q, setQ] = useState<Question | null>(assignment?.question ?? null);
+  const [q, setQ] = useState<Question | null>(assignment?.question ?? fixedQ?.question ?? null);
   const [loading, setLoading] = useState(false);
   const [exhausted, setExhausted] = useState(false);
   const [error, setError] = useState('');
@@ -230,7 +237,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   // Remembered Standard/Advanced (topic sheet) — read after mount so SSR and
   // the first client paint agree.
   useEffect(() => {
-    if (assignment) return;
+    if (assignment || fixedQ) return;
     try {
       const t = window.localStorage.getItem(TIER_KEY);
       if (t === 'Standard' || t === 'Advanced') setTier(t);
@@ -266,7 +273,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   // Load the progress-aware overview when the level changes (once authed).
   useEffect(() => {
     if (mode !== 'student' && mode !== 'admin') return;
-    if (assignment) return;   // the question is fixed; no picker, no overview
+    if (assignment || fixedQ) return;   // the question is fixed; no picker, no overview
     setLoadingOverview(true); setTopic(''); setTopics([]); setRecommended([]); setSubgroups([]);
     setSheetTopic(null); setSubgroup(null);
     setQ(null); setExhausted(false); setError(''); resetAttempt(); setTierPicked(false);
@@ -304,7 +311,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
 
   // Scroll the tier chooser / question into view after a card click.
   useEffect(() => {
-    if (assignment) return;   // already at the top of the page
+    if (assignment || fixedQ) return;   // already at the top of the page
     if (topic || q) questionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topic, q]);
@@ -498,7 +505,8 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   // topic" bar so the tier chooser / question sits at the top of the card
   // instead of below a phone-length list of topic rows. Admin keeps the grid
   // (the test-generate harness works off the selected card).
-  const pickerOpen = !assignment && (!isStudent || !topic);
+  const pickerOpen = !assignment && !fixedQ && (!isStudent || !topic);
+  const fixedMeta = fixedQ ? FIXED_FROM[fixedQ.from ?? 'link'] : null;
 
   return (
     <div className="pb-20 sm:pb-6 max-w-4xl mx-auto">
@@ -523,9 +531,20 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           </div>
         </div>
       )}
+      {/* ?qid= context header — where this question came from, and the way
+          back to the normal picker (a plain href so the qid clears). */}
+      {fixedQ && fixedMeta && (
+        <div className="mb-4 pt-1">
+          <a href="/app/practice" className="text-sm text-gray-500 hover:text-navy">← All topics</a>
+          <div className="mt-2 bg-white border border-slate-200 rounded-2xl px-4 py-3.5">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{fixedMeta.label}</p>
+            <p className="text-sm text-slate-600 mt-1">{fixedMeta.blurb}</p>
+          </div>
+        </div>
+      )}
       {/* Title row — the level toggle sits beside the title (students
           usually have two: E Math / A Math). Hidden once a topic is picked. */}
-      {!assignment && (
+      {!assignment && !fixedQ && (
       <div className="flex items-center justify-between gap-3 flex-wrap mb-4 pt-1">
         <h1 className="text-xl font-bold text-navy">Practise</h1>
         {pickerOpen && levels.length > 1 && (
@@ -576,6 +595,9 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           topic sheet. Redesigned 2026-08-22 — see the file header there. */}
       {pickerOpen && isStudent && (
         <div className="mb-6">
+          {/* Bring-your-own-question doors: 📷 photo → similar, 🔍 describe →
+              find/generate. Students only — the API routes are session-authed. */}
+          <QuestionFinder level={level} />
           <TopicPicker
             key={level}
             level={bankScope(level).level}
@@ -715,7 +737,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           {/* Question card */}
           <div className="bg-white border border-slate-200 rounded-2xl p-5">
             <div className="flex justify-between items-center mb-3 gap-3">
-              {assignment ? (
+              {assignment || fixedQ ? (
                 <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Question</span>
               ) : (
               <div className="inline-flex gap-1 bg-slate-100 rounded-lg p-0.5" role="radiogroup" aria-label="Question difficulty">
@@ -813,7 +835,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                     {solLoading ? 'Loading…' : '🔎 Show solution'}
                   </button>
                 )}
-                {!assignment && (
+                {!assignment && !fixedQ && (
                 <button onClick={tryAnother} disabled={loading}
                   className="bg-white border border-slate-300 text-slate-700 rounded-lg px-4 py-2 text-sm font-semibold">
                   🔄 Try another
@@ -821,6 +843,14 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                 )}
                 {assignment && grade && (
                   <Link href="/app/assignments" className="text-sm font-semibold text-navy underline ml-auto">Done — back to From Adrian →</Link>
+                )}
+                {fixedQ && grade && (
+                  // Plain href on purpose — a Link would keep ?qid= in the URL
+                  // and the server would hand the same fixed question back.
+                  <a href={fixedQ.topic ? `/app/practice?topic=${encodeURIComponent(fixedQ.topic)}` : '/app/practice'}
+                    className="text-sm font-semibold text-navy underline ml-auto">
+                    {fixedQ.topic ? 'More of this topic →' : 'Practise more →'}
+                  </a>
                 )}
                 {solution !== null && (
                   <span className="text-xs text-slate-400">Marking is off once you&apos;ve seen the solution.</span>
@@ -930,7 +960,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
               {solLoading ? 'Loading…' : '🔎 Show solution'}
             </button>
           )}
-          {!isStudent && (
+          {!isStudent && !fixedQ && (
             <button onClick={tryAnother} disabled={loading}
               className="ml-2 bg-white border border-slate-300 text-slate-700 rounded-lg px-4 py-2 text-sm font-semibold">
               🔄 Try another

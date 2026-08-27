@@ -343,6 +343,20 @@ function Paper({ paper }: { paper: StudentPaper }) {
                 </p>
                 <MathText text={it.question} className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed" />
                 {it.note && <MathText text={it.note} className="text-[12px] text-gray-500 italic mt-1.5" />}
+                {/* Bank picks (id = questions.id) open in the graded practice
+                    flow — attempt it, get it marked, close the loop. Freshly
+                    written items (id null) aren't in the bank, so they stay
+                    try-on-paper with the answer below. */}
+                {it.id && (
+                  <div className="mt-2">
+                    <Link
+                      href={`/app/practice?qid=${it.id}&from=marked`}
+                      className="inline-block text-[12px] font-semibold bg-[hsl(45,80%,94%)] text-navy rounded-full px-3 py-1.5 hover:bg-[hsl(45,80%,88%)] transition-colors"
+                    >
+                      ✏️ Try it now <span className="text-gray-400">›</span>
+                    </Link>
+                  </div>
+                )}
                 {it.answer && (
                   <details className="mt-2">
                     <summary className="cursor-pointer text-xs font-semibold text-emerald-700 list-none">

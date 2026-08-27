@@ -276,6 +276,28 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`table? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
       return 'auth gate up';
     }),
+    // Photo→similar + search→generate on the practice tab (lib/portal-find).
+    // Anonymous 401 proves each route is deployed with its session gate up —
+    // a 404 means the 📷/🔍 finder silently dies for every student.
+    timed('portal-similar', async () => {
+      const r = await fetch(`${base}/api/portal/similar`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
+    // The generate route additionally leans on portal_generation_log (the
+    // 5-a-day cap's ledger) — a dropped table would fail the cap OPEN, so the
+    // REST probe proves the table + the columns the routes write still resolve.
+    timed('portal-generate', async () => {
+      const r = await fetch(`${base}/api/portal/generate`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      const q = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/portal_generation_log?select=id,airtable_student_id,kind,qb_hit,generated,question_id&limit=1`,
+        { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: T(10000) }
+      );
+      if (!q.ok) throw new Error(`portal_generation_log? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
+      return 'auth gate up';
+    }),
     // Portal reschedule (Home "Change" → /app/reschedule → bot lib/reschedule.js).
     // The route must hold its auth gate — a 404 here means students silently
     // lose self-service lesson moves and fall back to messaging Adrian.
