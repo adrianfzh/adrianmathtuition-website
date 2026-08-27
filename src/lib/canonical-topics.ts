@@ -199,14 +199,17 @@ export const A_MATH_EXAM_TOPICS: TopicCategory[] = [
   {
     label: 'Algebra & Functions',
     topics: [
+      // Textbook order (New Discovering AM, Adrian 2026-08-28): ch1 quadratics,
+      // ch2 equations/inequalities, ch3 surds, ch4 polynomials, ch5 exp/log,
+      // ch6 binomial, ch9 linear law. Membership unchanged — display order only.
       'Quadratic Functions',
       'Simultaneous Equations',
-      'Quadratic Inequalities',
       'Nature of Roots',
+      'Quadratic Inequalities',
       'Modulus Functions',
-      'Partial Fractions',
-      'Polynomials',
       'Surds',
+      'Polynomials',
+      'Partial Fractions',
       'Indices',
       'Logarithms',
       'Binomial Theorem',
@@ -235,14 +238,17 @@ export const A_MATH_EXAM_TOPICS: TopicCategory[] = [
   {
     label: 'Calculus',
     topics: [
+      // Textbook order: ch12 techniques, ch13 tangents/normals → increasing/
+      // decreasing → rates, ch14 maxima/minima, ch16 integration, ch17
+      // definite → area → applications, ch18 kinematics.
       'Differentiation (Techniques)',
       'Differentiation (Tangents and Normals)',
+      'Differentiation (Increasing and Decreasing Functions)',
       'Differentiation (Rates of Change)',
       'Differentiation (Maximum and Minimum)',
-      'Differentiation (Increasing and Decreasing Functions)',
       'Integration (Techniques)',
-      'Integration (Area)',
       'Integration (Definite Integrals)',
+      'Integration (Area)',
       'Integration (Applications)',
       'Kinematics',
     ],

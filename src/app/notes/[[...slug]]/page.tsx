@@ -198,8 +198,11 @@ async function TopicIndex({ level, topicSlugParam }: { level: string; topicSlugP
   // that's `converted` below, and it flips per topic as Adrian reviews.
   const sections = admin ? data.unitSections : approvedSections(data.unitSections);
   const converted = hasApprovedUnits(data.unitSections);
-  // Card-only topics have no example pages yet — no empty "Pages" heading.
-  const showPages = !converted && data.subgroups.length > 0;
+  // Two sections per topic (Adrian, 2026-08-28): Notes & formulas (the
+  // concept dropdowns + quick revision) and Worked examples (the example
+  // pages). Each shows whenever it has content — a converted topic no longer
+  // hides its examples.
+  const showPages = data.subgroups.length > 0;
   const pending = data.unitSections.reduce(
     (n, s) =>
       n +
@@ -221,7 +224,7 @@ async function TopicIndex({ level, topicSlugParam }: { level: string; topicSlugP
     // One entry per concept dropdown; the anchor sits on the <details> row, so
     // the link works whether or not the student has opened it.
     ...sections.map(s => ({ title: s.title, url: `#${s.id}`, depth: 2 })),
-    showPages && { title: 'Pages', url: `#${ANCHOR.pages}`, depth: 2 },
+    showPages && { title: 'Worked examples', url: `#${ANCHOR.pages}`, depth: 2 },
   ].filter(Boolean) as { title: string; url: string; depth: number }[];
 
   return (
@@ -290,12 +293,17 @@ async function TopicIndex({ level, topicSlugParam }: { level: string; topicSlugP
             it renders above the old sub-group list so both formats can be
             compared; the moment the topic has approved blocks, the old list
             retires. */}
-        {sections.length > 0 && <NotesUnits sections={sections} admin={admin} />}
+        {sections.length > 0 && (
+          <>
+            <h2 className="nx-section">Notes &amp; formulas</h2>
+            <NotesUnits sections={sections} admin={admin} />
+          </>
+        )}
 
         {showPages && (
           <section>
             <h2 id={ANCHOR.pages} className="nx-section">
-              Pages
+              Worked examples
             </h2>
             <div className="not-prose nx-list">
               {data.subgroups.map(s => (

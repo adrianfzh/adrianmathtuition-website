@@ -24,6 +24,12 @@ export type PortalAnnouncement = {
    * being announced lives behind the full-portal switch.
    */
   fullPortalOnly?: boolean;
+  /**
+   * Last day the card shows (YYYY-MM-DD, SGT) — after this it hides on its own
+   * even if never dismissed. Convention: launch day + ~14 days (Adrian,
+   * 2026-08-28: a NEW card must not sit there forever). Omit = no auto-expiry.
+   */
+  until?: string;
 };
 
 /** localStorage key that marks one announcement as dismissed on this device. */
@@ -31,10 +37,20 @@ export function announcementKey(id: string): string {
   return `portal_announcement_${id}`;
 }
 
-export const CURRENT_ANNOUNCEMENT: PortalAnnouncement | null = {
-  id: '2026-08-daily-slot',
-  emoji: '🎟️',
-  title: 'Hand-ins now run on a daily slot',
-  body: 'Every day you get one hand-in slot — photograph a finished paper, send it in, and it comes back marked. Your slot renews at midnight.',
-  cta: { label: 'Hand in a paper', href: '/app/submit' },
-};
+// Retired 2026-08-28 (Adrian: only show a NEW card when something is actually
+// new). Example shape, with the ~2-week expiry convention:
+//   { id: '2026-08-daily-slot', emoji: '🎟️', title: 'Hand-ins now run on a daily slot',
+//     body: '…', cta: { label: 'Hand in a paper', href: '/app/submit' }, until: '2026-09-08' }
+export const CURRENT_ANNOUNCEMENT: PortalAnnouncement | null = null;
+
+/** The announcement to show today — null when none is set or it has expired. */
+export function activeAnnouncement(now: Date = new Date()): PortalAnnouncement | null {
+  const a = CURRENT_ANNOUNCEMENT;
+  if (!a) return null;
+  if (a.until) {
+    // SGT day comparison — the card dies at midnight Singapore time.
+    const today = new Date(now.getTime() + 8 * 3600e3).toISOString().slice(0, 10);
+    if (today > a.until) return null;
+  }
+  return a;
+}

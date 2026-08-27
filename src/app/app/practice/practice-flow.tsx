@@ -44,6 +44,7 @@ import {
   type Recommended, type Subgroup, type Tier, type TopicCard,
 } from './topic-picker';
 import { bankScope } from '@/lib/qb-levels';
+import { topicOrderComparator } from '@/lib/notes-tree';
 import { familyOf, variantOf } from '@/lib/practice-strands';
 
 // Admin picker only: leading word before "(" → derived chip row.
@@ -279,7 +280,11 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
       .then(r => r.json())
       .then(d => {
         if (d.error) { setError(d.error); return; }
-        setTopics(d.topics || []);
+        // Syllabus/textbook order, not the API's alphabetical — the same
+        // comparator the notes reader uses, so both surfaces list topics
+        // the way the textbook does (Adrian, 2026-08-28).
+        const byTextbook = topicOrderComparator(level);
+        setTopics((d.topics || []).slice().sort((a: TopicCard, b: TopicCard) => byTextbook(a.topic, b.topic)));
         setRecommended(d.recommended || []);
         // One-shot deep-link: open the linked topic's sheet if this level has it.
         const target = targetRef.current;

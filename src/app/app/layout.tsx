@@ -13,7 +13,7 @@ import { pendingAssignmentCountForSession } from '@/lib/portal-assignments';
 import ViewAsToggle from './view-as-toggle';
 import PortalTour from '@/components/PortalTour';
 import PortalAnnouncementCard from '@/components/PortalAnnouncementCard';
-import { CURRENT_ANNOUNCEMENT } from '@/lib/portal-announcement';
+import { activeAnnouncement } from '@/lib/portal-announcement';
 import { portalSurfaces } from '@/lib/portal-surfaces';
 import { DesktopLinks, MobileTabs } from '@/components/PortalTabs';
 
@@ -101,9 +101,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         {/* Release announcement (lib/portal-announcement.ts) — one card, shown
             once per device. Full-portal-only announcements stay invisible to
             marking-only beta students, whose portal doesn't have the feature. */}
-        {CURRENT_ANNOUNCEMENT && (fullPortal || !CURRENT_ANNOUNCEMENT.fullPortalOnly) && (
-          <PortalAnnouncementCard announcement={CURRENT_ANNOUNCEMENT} />
-        )}
+        {(() => { const a = activeAnnouncement(); return a && (fullPortal || !a.fullPortalOnly) && (
+          <PortalAnnouncementCard announcement={a} />
+        ); })()}
         {children}
       </main>
 
