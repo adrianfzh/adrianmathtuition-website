@@ -1,9 +1,11 @@
-# QMINE — daily student-demand mining (spec)
+# QMINE — student-demand mining (spec)
 
-> Owner: the `question-mine-daily` Claude Code scheduled task (Mac A, 7:00am SGT).
-> Doctrine: [CLAUDE.md → Building doctrine]. This file is the spec the task
-> follows verbatim (step 1 of the recipe). Created 2026-08-28 (Adrian: "instead
-> of weekly, make it more frequent" — approved as a daily routine).
+> Owner: the `question-mine-daily` Claude Code scheduled task (Mac A,
+> **Mon & Thu 7:00am SGT**). Doctrine: [CLAUDE.md → Building doctrine]. This
+> file is the spec the task follows verbatim (step 1 of the recipe). Created
+> 2026-08-28 as daily (Adrian: "instead of weekly, make it more frequent");
+> same day dialed to twice-weekly (Adrian: "daily is too frequent") and pinned
+> to **Fable 5, high reasoning effort** for the mining + judgment work.
 
 ## What this loop is (and is not)
 
@@ -18,7 +20,8 @@ mention it in the digest as a pointer to bot-review, nothing more.
 
 ## Inputs (read-only except where stated)
 
-1. **Airtable `Questions`** — last 48h by `Timestamp`. Fields: `Student` (link),
+1. **Airtable `Questions`** — last 96h by `Timestamp` (covers the Thu→Mon
+   gap with a day of overlap; the ≥2-asks thresholds below are per-window). Fields: `Student` (link),
    `Caption`, `Topic`, `Subject`, `Status`, `Timestamp`. Skip test traffic
    (`Chat ID` starting `web-check-` / `web-probe`). Resolve each `Student` link
    to the student's Level via `Students` (fetch linked records, match record id
@@ -74,7 +77,7 @@ website `.env.local`, trim quotes/newlines). ≤15 lines:
 
 ```
 ⛏ QMINE — <date>
-Asked (48h): N questions · M students · top: <topic ×k, topic ×k, topic ×k>
+Asked (96h): N questions · M students · top: <topic ×k, topic ×k, topic ×k>
 Enqueued for topup: <topic (level) ×3, …>  |  or "pool covers today's demand"
 Needs your call:
 1. <finding — evidence — what the site serves today>
@@ -94,6 +97,13 @@ the enqueue + 1 judgment item; job_runs stamped ok=true.
 
 ## Environment
 
+Model/effort (Adrian, 2026-08-28): the task's SKILL.md frontmatter pins
+`model: fable` + `effort: high`. There is no per-task effort field in the
+scheduler record, but Fable 5's default effort is high, so both resolution
+paths land on high. ⚠ Never set a global `effortLevel` or
+`CLAUDE_CODE_EFFORT_LEVEL` in `~/.claude/settings.json` without rechecking —
+the env var overrides frontmatter and would silently unpin this.
+
 Run with the website repo (`~/dev/adrianmathtuition-website`) as cwd. Airtable:
 `AIRTABLE_TOKEN`/`AIRTABLE_BASE_ID` from `.env.local` (values are quoted —
 strip). Supabase writes: the same access the Mac skills use (bot repo
@@ -108,6 +118,6 @@ Whatever happened — success, partial, failure:
     insert into job_runs (job, ok, summary)
     values ('question-mine', <true|false>, '<one line: asks seen, enqueued, judgment count>');
 
-`job` is exactly `question-mine` (rhythm: daily 7am, alarms via
-`lib/job-health.ts` after 36h). A run that skips the stamp reads as a run that
-never happened.
+`job` is exactly `question-mine` (rhythm: Mon & Thu 7am, alarms via
+`lib/job-health.ts` after 108h — the 96h Thu→Mon gap plus half a day). A run
+that skips the stamp reads as a run that never happened.
