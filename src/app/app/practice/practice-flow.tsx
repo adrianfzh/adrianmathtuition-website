@@ -146,19 +146,21 @@ export type InitialAssignment = {
 
 // ?qid= deep-link mode (the page resolves + eligibility-checks the question
 // server-side): ONE fixed bank question in the same graded loop — from a
-// marked paper's "Try it now", a photo/search match, or a freshly generated
-// question. Like assignment mode there is no picker and no question stream;
-// unlike it there is no due date, no Telegram, no cap exemption — it's a
-// normal practice attempt on a chosen question. `topic` (the question's bank
-// topic, when known) powers the "more of this topic" follow-up after grading.
+// marked paper's "Try it now", a My Notebook retry, a photo/search match, or
+// a freshly generated question. Like assignment mode there is no picker and
+// no question stream; unlike it there is no due date, no Telegram, no cap
+// exemption — it's a normal practice attempt on a chosen question. `topic`
+// (the question's bank topic, when known) powers the "more of this topic"
+// follow-up after grading.
 export type FixedQuestion = {
   question: Question;
-  from: 'marked' | 'photo' | 'search' | 'generated' | null;
+  from: 'marked' | 'photo' | 'search' | 'generated' | 'notebook' | null;
   topic: string | null;
 };
 
 const FIXED_FROM: Record<NonNullable<FixedQuestion['from']> | 'link', { label: string; blurb: string }> = {
   marked: { label: '📄 From your marked paper', blurb: 'A question like the one you dropped marks on — try it here, then get it marked.' },
+  notebook: { label: '📓 From your notebook', blurb: 'A twin of a question you dropped marks on — beat it here and get it marked.' },
   photo: { label: '📷 Matched to your photo', blurb: 'The closest bank question to the one you snapped — work it here and get it marked.' },
   search: { label: '🔍 From your search', blurb: 'Work it here — snap or type your working and get it marked.' },
   generated: { label: '✨ Made for you', blurb: 'A fresh question written for you and checked to solve correctly. Work it here and get it marked.' },

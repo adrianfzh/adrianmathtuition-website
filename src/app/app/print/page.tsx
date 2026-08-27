@@ -19,8 +19,10 @@ export default async function PrintPage({ searchParams }: { searchParams: Promis
   // students") — the first surface deliberately promoted out of the
   // marking-only beta. The rest of the beta gate is untouched.
 
-  // ?preset= deep-link — /app/plan's "Print a weak-spot paper" button lands
-  // here with the weak-spot preset preselected. Anything unknown → default.
+  // ?preset= deep-link — the old /app/plan "Print a weak-spot paper" button
+  // landed here with the weak-spot preset preselected (plan merged into My
+  // Notebook 2026-08-28); the param stays supported for old links and any
+  // future door. Anything unknown → default.
   const { preset } = await searchParams;
   const initialPreset =
     preset === 'weakspots' || preset === 'topics' || preset === 'mock' ? preset : undefined;

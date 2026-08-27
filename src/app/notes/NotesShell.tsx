@@ -377,7 +377,7 @@ export default function NotesShell({
           { href: '/app/ask', label: 'Ask' },
           { href: '/app/submit', label: 'Hand in' },
           { href: '/app/marking', label: 'Marked' },
-          { href: '/app/my-notes', label: 'My Notes' },
+          { href: '/app/my-notes', label: 'My Notebook' },
         ]}
         pendingWork={0}
       />

@@ -230,3 +230,33 @@ export function buildEntriesFromPapers(
   }
   return inserts;
 }
+
+// ---------------------------------------------------------------------------
+// "Questions to retry" — display order for the My Notebook band (/app/my-notes)
+// ---------------------------------------------------------------------------
+
+/** The slice of a notebook row the retry band orders on. */
+export interface RetrySource {
+  status: 'live' | 'archived';
+  topic: string | null;
+  paper_date: string | null;
+  question_number: string;
+}
+
+/**
+ * Live (unconquered) entries in display order: grouped by topic A→Z with
+ * untagged entries last, newest paper first inside a topic, question number
+ * (numeric-aware, so Q10 follows Q9) as the tiebreak. Pure — the page slices
+ * its display cap on top; archived (conquered) entries never show.
+ */
+export function retryOrder<T extends RetrySource>(entries: T[]): T[] {
+  return entries
+    .filter(e => e.status === 'live')
+    .sort(
+      (a, b) =>
+        Number(a.topic === null) - Number(b.topic === null) ||
+        (a.topic ?? '').localeCompare(b.topic ?? '') ||
+        (b.paper_date ?? '').localeCompare(a.paper_date ?? '') ||
+        a.question_number.localeCompare(b.question_number, undefined, { numeric: true }),
+    );
+}

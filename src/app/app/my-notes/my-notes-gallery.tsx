@@ -1,9 +1,10 @@
 'use client';
 
-// The My Notes gallery — clippings grouped by the paper they were cut from,
-// newest first. Tap a clipping for the full view: edit the typed note
-// (PATCH /api/portal/my-notes) or delete it (DELETE, with a confirm step —
-// the file and the row both go, there is no undo).
+// The clippings gallery — the ✂️ band of My Notebook (/app/my-notes), grouped
+// by the paper each clipping was cut from, newest first. Tap a clipping for
+// the full view: edit the typed note (PATCH /api/portal/my-notes) or delete
+// it (DELETE, with a confirm step — the file and the row both go, there is no
+// undo). The page owns the h1 and band captions; this renders only the grid.
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { groupNotes, MAX_NOTE, type MyNoteRow } from '@/lib/portal-notes';
@@ -23,12 +24,7 @@ export default function MyNotesGallery({ initialNotes }: { initialNotes: MyNoteR
   const open = openId ? notes.find(n => n.id === openId) ?? null : null;
 
   return (
-    <div className="space-y-4 pb-24 sm:pb-4">
-      <div className="flex items-baseline justify-between pt-1">
-        <h1 className="text-xl font-bold text-navy">🗂 My Notes</h1>
-        <Link href="/app/marking" className="text-sm text-gray-500 hover:text-navy">← Marked papers</Link>
-      </div>
-
+    <div className="space-y-4">
       {notes.length === 0 ? (
         <div className={`${CARD} p-5`}>
           <p className="text-sm text-gray-600">

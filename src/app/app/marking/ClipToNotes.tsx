@@ -1,6 +1,6 @@
 'use client';
 
-// ✂️ Save to My Notes — the clipper on a marked paper (Adrian, 2026-08-27:
+// ✂️ Save to My Notebook — the clipper on a marked paper (Adrian, 2026-08-27:
 // "on the output marked pdf -> able for students to save parts of it as notes
 // -> for reference later").
 //
@@ -177,11 +177,11 @@ export default function ClipToNotes({ runId, paperName, pages }: {
         onClick={() => { reset(0); setOpen(true); }}
         className="inline-block text-sm font-semibold text-navy border border-navy/20 rounded-xl px-4 py-2 hover:bg-navy/5 transition-colors"
       >
-        ✂️ Save to My Notes
+        ✂️ Save to My Notebook
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 bg-black/85 flex flex-col" role="dialog" aria-label="Save part of this paper to My Notes">
+        <div className="fixed inset-0 z-50 bg-black/85 flex flex-col" role="dialog" aria-label="Save part of this paper to My Notebook">
           {/* Header */}
           <div className="flex items-center justify-between gap-3 px-4 py-3 text-white shrink-0">
             <p className="text-sm font-semibold truncate">✂️ {paperName}</p>
@@ -254,7 +254,7 @@ export default function ClipToNotes({ runId, paperName, pages }: {
             {error && <p className="text-sm text-rose-700">{error}</p>}
             {saved ? (
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-sm font-semibold text-emerald-700">✅ Saved to My Notes</p>
+                <p className="text-sm font-semibold text-emerald-700">✅ Saved to My Notebook</p>
                 <div className="flex gap-2">
                   <button
                     type="button"
@@ -267,7 +267,7 @@ export default function ClipToNotes({ runId, paperName, pages }: {
                     href="/app/my-notes"
                     className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-3.5 py-2 hover:opacity-90"
                   >
-                    View My Notes ›
+                    View My Notebook ›
                   </Link>
                 </div>
               </div>

@@ -91,7 +91,7 @@ export default async function MarkingPage() {
       <div className="-mb-1 pt-1">
         <PortalFlowStrip current="marking" surfaces={surfaces} />
       </div>
-      {/* Title only — the tab bar already offers Hand in + My Notes
+      {/* Title only — the tab bar already offers Hand in + My Notebook
           (Adrian, 2026-08-28: "no need for a top bar menu in marked tab"). */}
       <h1 className="text-xl font-bold text-navy pt-1">Marked papers</h1>
 

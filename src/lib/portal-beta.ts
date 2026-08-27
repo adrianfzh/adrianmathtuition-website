@@ -4,7 +4,8 @@
 // surfaces inside the portal — /app/practice (added the same day at Adrian's
 // request: topic → Standard/Advanced → question, marked line by line),
 // /app/submit (hand a paper in), /app/marking (released marked papers) and
-// /app/plan (SPEC-REVISION-PLAN.md, added 2026-08-26 — marking-derived and
+// /app/my-notes ("My Notebook" — the focus/retry/clippings page; it absorbed
+// /app/plan on 2026-08-28, which now redirects there — marking-derived and
 // released-only, so it belongs in this beta) — plus the dashboard shell and
 // Settings. Learn, Notes and Reference are hidden from the nav/dashboard AND
 // their routes redirect back to /app, so no link inside the portal leads

@@ -253,9 +253,10 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`notebook_entries? HTTP ${q.status}`);
       return 'auth gate up';
     }),
-    // "My Plan" (/app/plan, SPEC-REVISION-PLAN.md). Anonymous 401 proves the
-    // route is deployed with its auth gate up; the tables it reads are already
-    // probed by portal-marking + portal-notebook above.
+    // The plan API (SPEC-REVISION-PLAN.md; its page merged into My Notebook,
+    // /app/my-notes, on 2026-08-28). Anonymous 401 proves the route is
+    // deployed with its auth gate up; the tables it reads are already probed
+    // by portal-marking + portal-notebook above.
     timed('portal-plan', async () => {
       const r = await fetch(`${base}/api/portal/plan`, { redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
@@ -396,7 +397,7 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
-    // "Save to My Notes" (/app/my-notes + the ✂️ clipper on /app/marking).
+    // "Save to My Notebook" (/app/my-notes + the ✂️ clipper on /app/marking).
     // Anonymous 401 proves the route is deployed with its auth gate up; the
     // REST probe proves portal_notes still answers — a dropped table would
     // otherwise surface only as students' clippings silently vanishing.
