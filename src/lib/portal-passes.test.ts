@@ -4,7 +4,12 @@ import {
   hasActivePassInRows,
   computeGrantExpiry,
   portalAccessAllowed,
+  grantPass,
+  decimalAmountToCents,
+  passMinAmountSgd,
+  paymentQualifiesForPass,
   DEFAULT_PASS_DAYS,
+  DEFAULT_PASS_MIN_AMOUNT_SGD,
   type PassRow,
 } from './portal-passes';
 
@@ -97,6 +102,145 @@ describe('computeGrantExpiry (stacking)', () => {
     expect(() => computeGrantExpiry([], -5, NOW)).toThrow();
     expect(() => computeGrantExpiry([], NaN, NOW)).toThrow();
     expect(() => computeGrantExpiry([], Infinity, NOW)).toThrow();
+  });
+});
+
+describe('decimalAmountToCents', () => {
+  it('parses HitPay-style decimal strings exactly', () => {
+    expect(decimalAmountToCents('29.00')).toBe(2900);
+    expect(decimalAmountToCents('25')).toBe(2500);
+    expect(decimalAmountToCents('24.99')).toBe(2499);
+    expect(decimalAmountToCents('0.5')).toBe(50);
+  });
+  it('rejects anything that is not a plain non-negative decimal', () => {
+    expect(decimalAmountToCents('')).toBeNull();
+    expect(decimalAmountToCents('abc')).toBeNull();
+    expect(decimalAmountToCents('-5')).toBeNull();
+    expect(decimalAmountToCents('1e3')).toBeNull();
+    expect(decimalAmountToCents('29.001')).toBeNull();
+  });
+});
+
+describe('passMinAmountSgd', () => {
+  it('defaults to 25 when unset or garbage', () => {
+    expect(DEFAULT_PASS_MIN_AMOUNT_SGD).toBe(25);
+    expect(passMinAmountSgd({})).toBe(25);
+    expect(passMinAmountSgd({ PASS_MIN_AMOUNT_SGD: 'cheap' })).toBe(25);
+    expect(passMinAmountSgd({ PASS_MIN_AMOUNT_SGD: '-3' })).toBe(25);
+  });
+  it('honours a configured override, including 0 (floor off)', () => {
+    expect(passMinAmountSgd({ PASS_MIN_AMOUNT_SGD: '10' })).toBe(10);
+    expect(passMinAmountSgd({ PASS_MIN_AMOUNT_SGD: '0' })).toBe(0);
+  });
+});
+
+describe('paymentQualifiesForPass (auto-grant floor)', () => {
+  it('boundary: exactly S$25.00 grants, S$24.99 does not', () => {
+    expect(paymentQualifiesForPass({ amountCents: 2500, currency: 'SGD', minAmountSgd: 25 }).ok).toBe(true);
+    const under = paymentQualifiesForPass({ amountCents: 2499, currency: 'SGD', minAmountSgd: 25 });
+    expect(under.ok).toBe(false);
+    expect(under.reason).toContain('below the S$25.00 auto-grant floor');
+    expect(under.reason).toContain('S$24.99');
+  });
+  it('a S$1 typo payment never buys 30 days', () => {
+    expect(paymentQualifiesForPass({ amountCents: 100, currency: 'SGD', minAmountSgd: 25 }).ok).toBe(false);
+  });
+  it('currency must be SGD — case-insensitive, everything else goes manual', () => {
+    expect(paymentQualifiesForPass({ amountCents: 2900, currency: 'sgd', minAmountSgd: 25 }).ok).toBe(true);
+    const usd = paymentQualifiesForPass({ amountCents: 999900, currency: 'usd', minAmountSgd: 25 });
+    expect(usd.ok).toBe(false);
+    expect(usd.reason).toContain('USD is not SGD');
+    expect(paymentQualifiesForPass({ amountCents: 2900, currency: '', minAmountSgd: 25 }).ok).toBe(false);
+  });
+  it('unreadable amount never qualifies', () => {
+    expect(paymentQualifiesForPass({ amountCents: null, currency: 'SGD', minAmountSgd: 25 }).ok).toBe(false);
+    expect(paymentQualifiesForPass({ amountCents: NaN, currency: 'SGD', minAmountSgd: 25 }).ok).toBe(false);
+  });
+  it('floor 0 disables the amount gate (currency gate stays)', () => {
+    expect(paymentQualifiesForPass({ amountCents: 1, currency: 'SGD', minAmountSgd: 0 }).ok).toBe(true);
+    expect(paymentQualifiesForPass({ amountCents: 1, currency: 'USD', minAmountSgd: 0 }).ok).toBe(false);
+  });
+});
+
+// In-memory portal_passes supporting exactly the query shapes grantPass and
+// findPassByReference build — proves webhook-retry idempotency end to end.
+type FakePass = { id: string; account_id: string; source: string; reference: string | null; starts_at: string; expires_at: string };
+function fakePassesDb(seed: FakePass[] = []) {
+  const rows: FakePass[] = [...seed];
+  const state = { inserts: 0 };
+  const client = {
+    from() {
+      const filters: Array<(r: FakePass) => boolean> = [];
+      const matches = () => rows.filter((r) => filters.every((f) => f(r)));
+      const builder = {
+        select: () => builder,
+        eq: (col: string, val: unknown) => {
+          filters.push((r) => (r as unknown as Record<string, unknown>)[col] === val);
+          return builder;
+        },
+        limit: () => builder,
+        maybeSingle: async () => ({ data: matches()[0] ?? null, error: null }),
+        then: (resolve: (v: { data: FakePass[]; error: null }) => unknown) =>
+          resolve({ data: matches(), error: null }),
+        insert: (row: Omit<FakePass, 'id'>) => ({
+          select: () => ({
+            single: async () => {
+              state.inserts += 1;
+              const full: FakePass = { id: `pass-${rows.length + 1}`, ...row };
+              rows.push(full);
+              return { data: { id: full.id, expires_at: full.expires_at }, error: null };
+            },
+          }),
+        }),
+      };
+      return builder;
+    },
+  } as unknown as Parameters<typeof grantPass>[1];
+  return { client, rows, state };
+}
+
+describe('grantPass idempotency (webhook retries must not double-grant)', () => {
+  it('same source+reference a second time returns the SAME pass, inserts nothing', async () => {
+    const db = fakePassesDb();
+    const first = await grantPass(
+      { accountId: 'acc-1', days: 30, source: 'stripe', reference: 'cs_live_1', now: NOW },
+      db.client,
+    );
+    const retry = await grantPass(
+      { accountId: 'acc-1', days: 30, source: 'stripe', reference: 'cs_live_1', now: new Date(NOW.getTime() + 60_000) },
+      db.client,
+    );
+    expect(first.duplicate).toBeUndefined();
+    expect(retry).toEqual({ id: first.id, expiresAt: first.expiresAt, duplicate: true });
+    expect(db.state.inserts).toBe(1);
+    expect(db.rows).toHaveLength(1);
+  });
+  it('the same reference under a DIFFERENT source is a different payment — both insert', async () => {
+    const db = fakePassesDb();
+    await grantPass({ accountId: 'acc-1', days: 30, source: 'hitpay', reference: 'ref-x', now: NOW }, db.client);
+    const second = await grantPass({ accountId: 'acc-1', days: 30, source: 'stripe', reference: 'ref-x', now: NOW }, db.client);
+    expect(second.duplicate).toBeUndefined();
+    expect(db.state.inserts).toBe(2);
+  });
+  it('a genuine renewal (new reference) inserts and STACKS on the first expiry', async () => {
+    const db = fakePassesDb();
+    const first = await grantPass(
+      { accountId: 'acc-1', days: 30, source: 'stripe', reference: 'cs_1', now: NOW },
+      db.client,
+    );
+    const renewal = await grantPass(
+      { accountId: 'acc-1', days: 30, source: 'stripe', reference: 'cs_2', now: NOW },
+      db.client,
+    );
+    expect(db.state.inserts).toBe(2);
+    expect(Date.parse(renewal.expiresAt)).toBe(Date.parse(first.expiresAt) + 30 * DAY);
+  });
+  it('manual grants without a reference always insert (no false dedupe on null)', async () => {
+    const db = fakePassesDb();
+    await grantPass({ accountId: 'acc-1', days: 30, source: 'manual', now: NOW }, db.client);
+    const second = await grantPass({ accountId: 'acc-1', days: 30, source: 'manual', now: NOW }, db.client);
+    expect(second.duplicate).toBeUndefined();
+    expect(db.state.inserts).toBe(2);
   });
 });
 

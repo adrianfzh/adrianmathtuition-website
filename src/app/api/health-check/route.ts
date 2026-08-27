@@ -307,6 +307,17 @@ export async function GET(req: NextRequest) {
       }
       return r.status === 503 ? 'deployed, awaiting HitPay salt' : 'signature gate up';
     }),
+    // Stripe payment webhook — the portal's primary rail. Same contract as the
+    // HitPay probe above: an unsigned empty POST must draw 503 (deployed,
+    // STRIPE_WEBHOOK_SECRET not yet set) or 403 (secret set, signature gate
+    // rejecting) — either passes; 404/500 mean paid checkouts stop granting.
+    timed('stripe-webhook', async () => {
+      const r = await fetch(`${base}/api/payments/stripe-webhook`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 503 && r.status !== 403) {
+        throw new Error(`expected 503 (unconfigured) or 403 (sig gate), got HTTP ${r.status}`);
+      }
+      return r.status === 503 ? 'deployed, awaiting Stripe secret' : 'signature gate up';
+    }),
     // "Save to My Notes" (/app/my-notes + the ✂️ clipper on /app/marking).
     // Anonymous 401 proves the route is deployed with its auth gate up; the
     // REST probe proves portal_notes still answers — a dropped table would
