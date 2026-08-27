@@ -47,6 +47,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ? [
         { href: '/app', label: 'Dashboard' },
         { href: '/app/practice', label: 'Practice' },
+        { href: '/app/ask', label: 'Ask' },
         ...(learnVisible ? [{ href: '/app/learn', label: 'Learn' }] : []),
         { href: '/app/submit', label: 'Submit' },
         { href: '/app/notebook', label: 'Notebook' },
@@ -57,6 +58,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     : [
         { href: '/app', label: 'Dashboard' },
         { href: '/app/practice', label: 'Practise' },
+        { href: '/app/ask', label: 'Ask' },
         ...(NOTES_OPEN_TO_STUDENTS ? [{ href: '/app/notes', label: 'Notes' }] : []),
         { href: '/app/submit', label: 'Hand in a paper' },
         { href: '/app/marking', label: 'Marked papers' },
@@ -67,6 +69,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ? [
         { href: '/app', label: 'Home' },
         { href: '/app/practice', label: 'Practice' },
+        { href: '/app/ask', label: 'Ask' },
         ...(learnVisible ? [{ href: '/app/learn', label: 'Learn' }] : []),
         { href: '/app/notebook', label: 'Notebook' },
         { href: '/app/marking', label: 'Marked' },
@@ -75,7 +78,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     : [
         { href: '/app', label: 'Home' },
         { href: '/app/practice', label: 'Practise' },
-        ...(NOTES_OPEN_TO_STUDENTS ? [{ href: '/app/notes', label: 'Notes' }] : []),
+        { href: '/app/ask', label: 'Ask' },
         { href: '/app/submit', label: 'Hand in' },
         { href: '/app/marking', label: 'Marked' },
         { href: '/app/my-notes', label: 'My Notes' },

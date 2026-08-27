@@ -61,7 +61,7 @@ export function DesktopLinks({ items, pendingWork }: { items: NavItem[]; pending
 export function MobileTabs({ items, pendingWork }: { items: NavItem[]; pendingWork: number }) {
   const pathname = usePathname();
   const cols = items.length === 4 ? 'grid-cols-4' : items.length === 5 ? 'grid-cols-5'
-    : items.length === 6 ? 'grid-cols-6' : 'grid-cols-3';
+    : items.length === 6 ? 'grid-cols-6' : items.length === 7 ? 'grid-cols-7' : 'grid-cols-3';
   return (
     <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-black/5 pb-[env(safe-area-inset-bottom)]">
       <div className={`grid ${cols} h-[60px] text-center text-[11px]`}>
