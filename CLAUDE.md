@@ -22,6 +22,27 @@ The deep documentation (bug archaeology, invariants, field tables) was split out
 | Subject expansion — Science / English / Chinese for the portal (research + phasing; nothing built yet) | [`SPEC-SUBJECTS.md`](SPEC-SUBJECTS.md) |
 | "From Adrian" assigned work — `/app/assignments`, `/api/admin/assignments`, `/api/portal/assignments`, the Send-work card on `/admin/students/[id]`, `portal_assignments` table | [`SPEC-ASSIGN.md`](SPEC-ASSIGN.md) |
 
+> The four highest-traffic rows (marking, kiosk, schedule, invoices) also exist as
+> auto-loading skills in `.claude/skills/` — belt and suspenders; this table stays
+> the authoritative list.
+
+## 🏗 Building doctrine (Adrian, 2026-08-27)
+
+Apply this whenever designing a NEW feature, process, or automation — it's the shape every build should take, not a checklist to paste into code.
+
+**The 5-step recipe** — the ladder from "ask Claude" to a self-running process:
+1. **Spec** — write down inputs, output format, tone, red lines, and 2–3 worked examples, in a repo doc (or Supabase row) the agent follows verbatim.
+2. **Tools** — wire the APIs/queries the process needs; no manual copy-paste step left inside the loop.
+3. **Checkpoints** — the agent does everything reversible; a human approves the outward-facing step (send, publish, charge).
+4. **Trigger** — automate the firing: cron / routine / queue, never "when Adrian remembers".
+5. **Log + alarm** — stamp `job_runs` + add a `JOB_RHYTHMS` line ([`docs/OPS.md`](docs/OPS.md)) so a dead process alarms by absence.
+
+**What stays human (the moat)** — design so these four keep Adrian in the loop, and automate everything else:
+- **Standard** — Adrian's marking/teaching judgment is the calibration ground truth. Setting and correcting the standard is expert work; the system executes it at scale.
+- **Accountability** — parents pay a person who answers for outcomes. Parent-facing output carries his name and passes his sign-off checkpoint.
+- **Relationships** — trust with parents and students is the distribution channel. Agents draft; Adrian delivers in his own voice.
+- **Novelty** — noticing the spec itself is wrong (new syllabus, new failure mode) is human work. Surface anomalies to him; never smooth them over.
+
 ## Commands
 
 - `npm run dev` / `next dev` — run locally
