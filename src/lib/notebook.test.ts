@@ -97,7 +97,7 @@ function q(over: Partial<StudentQuestion>): StudentQuestion {
 function paper(over: Partial<StudentPaper>): StudentPaper {
   return {
     id: 'run-1', date: '2026-08-20', name: 'Paper A', awarded: 10, max: 20, pct: 50,
-    questions: [], dropped: [], pdfUrl: null, practice: [], practiceDocxUrl: null, ...over,
+    questions: [], dropped: [], pdfUrl: null, pages: [], practice: [], practiceDocxUrl: null, ...over,
   };
 }
 const variant: StudentPracticeItem = {

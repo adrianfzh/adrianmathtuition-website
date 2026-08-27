@@ -15,6 +15,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/lib/portal-marking';
 import PortalFlowStrip from '@/components/PortalFlowStrip';
 import AnnotatedSolution from './AnnotatedSolution';
+import ClipToNotes from './ClipToNotes';
 import { portalSurfaces } from '@/lib/portal-surfaces';
 import { mathHtml } from '@/lib/math-inline';
 // Practice questions carry inline $…$ TeX — mathHtml KaTeXes only the math
@@ -89,12 +90,17 @@ export default async function MarkingPage() {
       </div>
       <div className="flex items-center justify-between pt-1">
         <h1 className="text-xl font-bold text-navy">Marked papers</h1>
-        <Link
-          href="/app/submit"
-          className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-3.5 py-2 hover:opacity-90"
-        >
-          📤 Submit a paper
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/app/my-notes" className="text-sm font-semibold text-navy hover:underline">
+            🗂 My Notes
+          </Link>
+          <Link
+            href="/app/submit"
+            className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-3.5 py-2 hover:opacity-90"
+          >
+            📤 Submit a paper
+          </Link>
+        </div>
       </div>
 
       {pending.length > 0 && (
@@ -215,15 +221,24 @@ function Paper({ paper }: { paper: StudentPaper }) {
         </span>
       </div>
 
-      {paper.pdfUrl && (
-        <a
-          href={paper.pdfUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block mt-3 text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2 hover:opacity-90 transition-opacity"
-        >
-          📄 Open your marked script
-        </a>
+      {(paper.pdfUrl || paper.pages.length > 0) && (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {paper.pdfUrl && (
+            <a
+              href={paper.pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2 hover:opacity-90 transition-opacity"
+            >
+              📄 Open your marked script
+            </a>
+          )}
+          {/* ✂️ clip a region of the marked pages into /app/my-notes — only
+              offered when the run has annotated page images to draw on. */}
+          {paper.pages.length > 0 && (
+            <ClipToNotes runId={paper.id} paperName={paper.name} pages={paper.pages} />
+          )}
+        </div>
       )}
 
       {paper.dropped.length > 0 ? (
