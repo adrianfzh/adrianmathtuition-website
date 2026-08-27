@@ -276,6 +276,22 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`table? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
       return 'auth gate up';
     }),
+    // Student resource requests (/app/requests → /admin/requests, v1
+    // human-in-the-loop). The student route must hold its auth gate (401
+    // anonymously — a 404 means the tab silently vanishes and asks stop
+    // reaching Adrian's Telegram), and the table + the columns both UIs read
+    // must still resolve.
+    timed('portal-requests', async () => {
+      const r = await fetch(`${base}/api/portal/requests`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      const q = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/portal_requests?select=id,status,kind,detail,result_url,admin_note,airtable_student_id&limit=1`,
+        { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: T(10000) }
+      );
+      if (!q.ok) throw new Error(`table? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
+      return 'auth gate up';
+    }),
     // Portal reschedule (Home "Change" → /app/reschedule → bot lib/reschedule.js).
     // The route must hold its auth gate — a 404 here means students silently
     // lose self-service lesson moves and fall back to messaging Adrian.
