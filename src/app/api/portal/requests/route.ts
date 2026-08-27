@@ -27,22 +27,24 @@ import {
   type RequestCountingClient,
 } from '@/lib/requests';
 import { listStudentRequests } from '@/lib/portal-requests';
-import type { PortalAccount } from '@/lib/portal-auth';
+import { portalIdentity, type PortalAccount } from '@/lib/portal-auth';
 
 export const runtime = 'nodejs';
 
 // The client never learns another student's rows: everything is scoped by the
 // session's own airtable_student_id, resolved server-side.
-async function sessionStudent(): Promise<Pick<PortalAccount, 'airtable_student_id' | 'display_name'> | null> {
+async function sessionStudent(): Promise<Pick<PortalAccount, 'id' | 'airtable_student_id' | 'display_name'> | null> {
   const supabase = await createSupabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
   const { data: account } = await supabase
     .from('portal_accounts')
-    .select('airtable_student_id, display_name')
+    .select('id, airtable_student_id, display_name')
     .eq('id', user.id)
-    .single<Pick<PortalAccount, 'airtable_student_id' | 'display_name'>>();
-  return account?.airtable_student_id ? account : null;
+    .single<Pick<PortalAccount, 'id' | 'airtable_student_id' | 'display_name'>>();
+  // Strangers file requests too — rows key on portalIdentity() (acct:<uuid>),
+  // so no account is ever dropped here for having no Airtable record.
+  return account ?? null;
 }
 
 function shape(r: PortalRequestRow) {
@@ -63,10 +65,11 @@ function shape(r: PortalRequestRow) {
 export async function GET() {
   const account = await sessionStudent();
   if (!account) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const sid = portalIdentity(account);
   try {
     const [requests, usedToday] = await Promise.all([
-      listStudentRequests(account.airtable_student_id),
-      countRequestsToday(getSupabaseAdmin() as unknown as RequestCountingClient, account.airtable_student_id),
+      listStudentRequests(sid),
+      countRequestsToday(getSupabaseAdmin() as unknown as RequestCountingClient, sid),
     ]);
     return NextResponse.json({ requests: requests.map(shape), usedToday, cap: DAILY_REQUEST_CAP });
   } catch (e) {
@@ -77,7 +80,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const account = await sessionStudent();
   if (!account) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const studentId = account.airtable_student_id;
+  const studentId = portalIdentity(account);
 
   let body: { kind?: unknown; detail?: unknown };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }

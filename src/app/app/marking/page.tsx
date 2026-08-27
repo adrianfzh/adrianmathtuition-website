@@ -6,11 +6,12 @@
 // destination, Telegram is the doorbell). Until this existed, that link 404'd.
 //
 // Server component: reads Supabase with the service key and scopes to the
-// logged-in student's Airtable id. `paper_marking_runs` has no per-student RLS
+// logged-in student's portal identity (Airtable rec… id, or acct:<uuid> for
+// self-serve accounts). `paper_marking_runs` has no per-student RLS
 // policy, so the ownership filter below IS the access control — it must never
 // be driven by anything the client can set.
 import Link from 'next/link';
-import { currentAccount } from '@/lib/portal-auth';
+import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/lib/portal-marking';
 import PortalFlowStrip from '@/components/PortalFlowStrip';
@@ -50,6 +51,9 @@ function niceDate(d: string): string {
 
 export default async function MarkingPage() {
   const account = await currentAccount();
+  // rec… for tuition, acct:<uuid> for strangers — runs are stamped with this
+  // same identity by /api/portal/submit, so paying strangers see their papers.
+  const sid = portalIdentity(account);
   // Marking-only beta: /app/practice is closed to students, but the same flow
   // is embedded on Home — so their "Work on next" chips deep-link to /app?topic=
   // (the flow reads ?topic= on mount); the full portal links to /app/practice.
@@ -68,14 +72,14 @@ export default async function MarkingPage() {
     sb
       .from('paper_marking_runs')
       .select(COLUMNS)
-      .eq('student_id', account.airtable_student_id)
+      .eq('student_id', sid)
       .not('released_at', 'is', null)
       .order('created_at', { ascending: false })
       .limit(MAX_PAPERS),
     sb
       .from('paper_marking_runs')
       .select('id, created_at, paper_name, num_photos')
-      .eq('student_id', account.airtable_student_id)
+      .eq('student_id', sid)
       .eq('result_json->>portal_submission', 'true')
       .is('released_at', null)
       .order('created_at', { ascending: false })

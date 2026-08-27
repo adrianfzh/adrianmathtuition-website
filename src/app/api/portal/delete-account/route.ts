@@ -1,9 +1,11 @@
 // POST /api/portal/delete-account — PDPA right to erasure. Permanently removes
-// the caller's practice attempts, weakness tags, invite tokens, portal account
-// (incl. consent record), and the Auth user. Airtable (lessons/billing) is untouched — that's
-// Adrian's tutoring bookkeeping, outside the portal's scope.
+// the caller's practice attempts, weakness tags, push subscriptions, invite
+// tokens, portal account (incl. consent record), and the Auth user. Airtable
+// (lessons/billing) is untouched — that's Adrian's tutoring bookkeeping,
+// outside the portal's scope.
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server';
+import { portalIdentity } from '@/lib/portal-auth';
 
 export async function POST(req: NextRequest) {
   const supabase = await createSupabaseServer();
@@ -17,10 +19,11 @@ export async function POST(req: NextRequest) {
 
   const admin = createServiceClient();
 
-  // Look up the account first (need airtable_student_id to purge invite tokens).
+  // Look up the account first (need airtable_student_id to purge invite tokens
+  // and the portal identity to purge push subscriptions).
   const { data: account } = await admin
     .from('portal_accounts')
-    .select('airtable_student_id')
+    .select('id, airtable_student_id')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -36,6 +39,14 @@ export async function POST(req: NextRequest) {
 
   if (account?.airtable_student_id) {
     await admin.from('portal_invite_tokens').delete().eq('airtable_student_id', account.airtable_student_id);
+  }
+
+  // Push subscriptions are keyed on the portal identity (rec… / acct:<uuid>) —
+  // without this, a deleted account's devices would keep receiving pushes.
+  // Best-effort like the invite-token purge: never blocks the erasure.
+  if (account) {
+    await admin.from('portal_push_subscriptions').delete()
+      .eq('airtable_student_id', portalIdentity(account));
   }
 
   const { error: e2 } = await admin.from('portal_accounts').delete().eq('id', user.id);

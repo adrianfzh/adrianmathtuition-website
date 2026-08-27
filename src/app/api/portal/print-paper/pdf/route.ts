@@ -14,7 +14,7 @@
 // exam). Never worked solutions (kiosk invariant D7): those arrive via marking
 // or /solutions.
 import { NextRequest, NextResponse } from 'next/server';
-import { currentStudent } from '@/lib/portal-auth';
+import { currentStudent, portalIdentity } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { renderPrelimPDF, type PrelimQuestion } from '@/lib/render-prelim';
 import {
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     .from('portal_generated_papers')
     .select('id, preset, level, paper, title, question_ids, total_marks, created_at')
     .eq('id', id)
-    .eq('airtable_student_id', account.airtable_student_id)
+    .eq('airtable_student_id', portalIdentity(account))
     .limit(1);
   const row = rows?.[0];
   if (!row) return NextResponse.json({ error: 'not found' }, { status: 404 });

@@ -4,7 +4,7 @@
 // assignment to marked. A question-kind id redirects to the practice grader.
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { currentAccount } from '@/lib/portal-auth';
+import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { getStudentAssignment } from '@/lib/portal-assignments';
 import { assignmentHref, dueLabel, isOverdue } from '@/lib/assignments';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -16,7 +16,7 @@ const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 export default async function AssignmentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const account = await currentAccount();
-  const a = await getStudentAssignment(id, account.airtable_student_id);
+  const a = await getStudentAssignment(id, portalIdentity(account));
   if (!a) notFound();
   if (a.kind === 'question') redirect(assignmentHref(a));
 

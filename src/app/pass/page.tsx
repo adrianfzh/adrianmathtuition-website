@@ -19,10 +19,13 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSessionUser, sessionAccount } from '@/lib/portal-auth';
 import {
+  HANDINS_PER_PASS,
+  currentPassInRows,
+  handinAllowance,
   hasActivePassInRows,
   isTuitionAccount,
   latestPassExpiry,
-  type PassRow,
+  type MeteredPassRow,
 } from '@/lib/portal-passes';
 import { passCheckoutUrl } from '@/lib/portal-join';
 import { createServiceClient } from '@/lib/supabase-server';
@@ -32,9 +35,11 @@ export const dynamic = 'force-dynamic';
 
 const RENEW_WINDOW_MS = 3 * 86_400_000; // start offering renewal in the last 3 days
 
-const INCLUDED = [
-  'Practice questions from real school papers, marked line by line',
-  'Hand in your own papers — get them marked with feedback',
+// Two tiers, one meter (portal_passes.tier + handins_used — lib/portal-passes):
+// everything is unlimited on both; ONLY marked hand-ins are counted.
+const SHARED = [
+  'Unlimited practice questions from real school papers, marked line by line',
+  'Unlimited mock papers and topic sheets to print and sit',
   'Revision notes and worked examples for your level',
   'Full 30 days from the moment you pay — renewing later stacks on top',
 ] as const;
@@ -54,12 +59,11 @@ export default async function PassPage() {
 
   // One passes read decides everything (rows are service-only; RLS keeps the
   // anon client out of portal_passes entirely).
-  type Row = PassRow & { source: string };
   const { data } = await createServiceClient()
     .from('portal_passes')
-    .select('expires_at, source')
+    .select('id, expires_at, source, tier, handins_used')
     .eq('account_id', account.id);
-  const rows = (data ?? []) as Row[];
+  const rows = (data ?? []) as MeteredPassRow[];
   const now = new Date();
   const active = hasActivePassInRows(rows, now);
   const expiry = latestPassExpiry(rows);
@@ -67,7 +71,9 @@ export default async function PassPage() {
   if (active && msLeft > RENEW_WINDOW_MS) redirect('/app');
 
   // Renewal wording: honest about WHAT is ending — the free trial or a paid
-  // pass (the row holding the latest expiry says which).
+  // pass (the row holding the latest expiry says which). The meter line reads
+  // the CURRENT pass (active, latest expiry — the row hand-ins count against).
+  const currentPass = currentPassInRows(rows, now);
   const renewing = active && expiry
     ? {
         endsLabel: sgtDate(expiry),
@@ -76,6 +82,9 @@ export default async function PassPage() {
     : null;
 
   const checkout = passCheckoutUrl(process.env.STRIPE_PASS_LINK || '', account.id);
+  // Intensive rides the same client_reference_id pattern on its own payment
+  // link; until STRIPE_PASS_LINK_INTENSIVE exists the card simply doesn't render.
+  const checkoutIntensive = passCheckoutUrl(process.env.STRIPE_PASS_LINK_INTENSIVE || '', account.id);
   const firstName = (account.display_name || account.email).split(' ')[0];
 
   return (
@@ -90,18 +99,27 @@ export default async function PassPage() {
           </h1>
           <p className="text-sm text-gray-600 mt-2">
             {renewing
-              ? `Hi ${firstName} — keep access: S$29 for 30 days, added on top of the days you already have.`
+              ? `Hi ${firstName} — keep access: a new pass adds 30 days on top of the days you already have.`
               : `Hi ${firstName} — your account is ready. One pass unlocks everything below.`}
           </p>
+          {renewing && currentPass && (
+            <p className="inline-block text-xs font-semibold text-navy bg-[hsl(45,80%,92%)] rounded-full px-3 py-1 mt-3">
+              {Math.min(currentPass.handins_used ?? 0, handinAllowance(currentPass))} of {handinAllowance(currentPass)} marked papers used on this pass
+            </p>
+          )}
         </div>
 
-        <div className="bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-6">
-          <div className="flex items-baseline justify-between mb-4">
-            <p className="font-bold text-navy">30 days of AdrianMath</p>
+        {/* Standard — the primary card */}
+        <div className="bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-6 border-2 border-navy/80">
+          <div className="flex items-baseline justify-between mb-1">
+            <p className="font-bold text-navy">Standard — 30 days</p>
             <p className="text-2xl font-bold text-navy">S$29</p>
           </div>
+          <p className="text-sm font-semibold text-gray-800 mb-3">
+            {HANDINS_PER_PASS.standard} full papers marked with feedback (1 a day) — everything else unlimited
+          </p>
           <ul className="space-y-2.5 mb-5">
-            {INCLUDED.map(item => (
+            {SHARED.map(item => (
               <li key={item} className="flex items-start gap-2.5 text-sm text-gray-700">
                 <span className="shrink-0 text-emerald-600 font-bold">✓</span>
                 <span>{item}</span>
@@ -113,7 +131,7 @@ export default async function PassPage() {
               href={checkout}
               className="block w-full bg-navy text-[hsl(45,100%,96%)] rounded-xl py-3 text-center text-sm font-semibold hover:opacity-90 transition-opacity"
             >
-              {renewing ? 'Keep access — S$29 for 30 days' : 'Get your pass — S$29'}
+              {renewing ? 'Keep access — S$29 for 30 days' : 'Get Standard — S$29'}
             </a>
           ) : (
             <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
@@ -124,6 +142,26 @@ export default async function PassPage() {
             One-time payment — no subscription, nothing renews by itself.
           </p>
         </div>
+
+        {/* Intensive — rendered only once its payment link is configured */}
+        {checkoutIntensive && (
+          <div className="bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-6">
+            <div className="flex items-baseline justify-between mb-1">
+              <p className="font-bold text-navy">Intensive — 30 days</p>
+              <p className="text-2xl font-bold text-navy">S$49</p>
+            </div>
+            <p className="text-sm font-semibold text-gray-800 mb-3">
+              {HANDINS_PER_PASS.intensive} full papers marked with feedback (up to 3 a day) — for exam season
+            </p>
+            <p className="text-sm text-gray-700 mb-5">Everything in Standard, with more than twice the marking.</p>
+            <a
+              href={checkoutIntensive}
+              className="block w-full border-2 border-navy text-navy rounded-xl py-3 text-center text-sm font-semibold hover:bg-navy hover:text-[hsl(45,100%,96%)] transition-colors"
+            >
+              {renewing ? 'Keep access — S$49 Intensive' : 'Get Intensive — S$49'}
+            </a>
+          </div>
+        )}
 
         {renewing ? (
           <p className="text-center text-sm text-gray-600">

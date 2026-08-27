@@ -20,6 +20,7 @@
 // ids that came out of that RLS-protected account row, never by client input.
 import { NextResponse } from 'next/server';
 import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server';
+import { portalIdentity } from '@/lib/portal-auth';
 
 const RUN_PUBLIC = 'id, created_at, paper_name, num_photos, released_at';
 const RUN_RELEASED = `${RUN_PUBLIC}, total_awarded, total_max, annotated_pdf_url, pdf_url, result_json`;
@@ -35,7 +36,9 @@ export async function GET() {
   ]);
 
   const admin = createServiceClient();
-  const studentId: string | null = account?.airtable_student_id ?? null;
+  // Portal identity (rec… / acct:<uuid>): a stranger's marked papers and
+  // assignments are keyed on it, so their export includes them too.
+  const studentId: string | null = account ? portalIdentity(account) : null;
 
   const [released, pending, assignments, tags, events, recalls] = await Promise.all([
     studentId

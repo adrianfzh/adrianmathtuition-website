@@ -13,16 +13,17 @@
 //      my-notes-gallery.tsx, talking to /api/portal/my-notes).
 //
 // /app/plan now redirects here. Server component: reads with the service key
-// scoped to the logged-in student's Airtable id — portal_notes and
-// notebook_entries have RLS with no policies, so this filter IS the access
-// control (the /app/marking pattern).
+// scoped to the logged-in student's portal identity (rec… / acct:<uuid>,
+// lib/portal-auth.portalIdentity) — portal_notes and notebook_entries have
+// RLS with no policies, so this filter IS the access control (the
+// /app/marking pattern).
 //
 // Deliberately NOT behind requireFullPortal(): everything here derives from
 // marked papers (which are in the marking-only beta allowlist) or is the
 // student's own clippings — an allowed page simply never calls the gate
 // (lib/portal-beta.ts).
 import Link from 'next/link';
-import { sessionAccount } from '@/lib/portal-auth';
+import { portalIdentity, sessionAccount } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { createServiceClient } from '@/lib/supabase-server';
 import { loadPapersAndNotebook, type NotebookEntryRow, type PapersAndNotebook } from '@/lib/notebook-data';
@@ -45,7 +46,10 @@ export default async function MyNotebookPage() {
   // card. sessionAccount() is per-request cached (lib/portal-auth.ts), so this
   // shares the layout's auth lookup instead of repeating it.
   const account = await sessionAccount();
-  const sid: string | null = account?.airtable_student_id ?? null;
+  // rec… for tuition, acct:<uuid> for strangers (lib/portal-auth.portalIdentity)
+  // — a paying stranger's notebook builds from their own hand-ins; only a truly
+  // account-less session (Adrian's admin cookie browsing) gets the pointer card.
+  const sid: string | null = account ? portalIdentity(account) : null;
 
   if (!sid) {
     return (

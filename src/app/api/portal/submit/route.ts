@@ -28,6 +28,14 @@ import { DAILY_SUBMIT_CAP, countHandinsToday } from '@/lib/portal-submit-limit';
 import type { HandinCountingClient } from '@/lib/portal-submit-limit';
 import { sendTelegram } from '@/lib/telegram';
 import { canTransition, type AssignmentRow } from '@/lib/assignments';
+import { portalIdentity } from '@/lib/portal-auth';
+import {
+  dailyHandinCapForTier,
+  handinAllowance,
+  handinsRemaining,
+  isTuitionAccount,
+  requireActiveAccess,
+} from '@/lib/portal-passes';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -40,11 +48,24 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { data: account } = await supabase
     .from('portal_accounts')
-    .select('airtable_student_id, display_name')
+    .select('id, airtable_student_id, display_name')
     .eq('id', user.id)
     .single();
-  if (!account?.airtable_student_id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const studentId = account.airtable_student_id;
+  if (!account) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Strangers (empty airtable_student_id) hand in as `acct:<uuid>` — the ONE
+  // identity convention (lib/portal-auth.portalIdentity). The bot's set-student
+  // phase stores it verbatim (student_id/student_name are plain text columns;
+  // the 🌙 queue, its Telegram and auto-release all key on the run row, never
+  // on Airtable), so the whole marking loop works unchanged.
+  const studentId = portalIdentity(account);
+  const tuition = isTuitionAccount(account);
+
+  // Pass gate + the hand-in meter (strangers only; tuition costs no DB hit).
+  // The paywall page is the normal path — this is the API belt, and it also
+  // hands back the CURRENT pass row so the meter below reads no second time.
+  const access = await requireActiveAccess(account);
+  if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
+  const meteredPass = access.pass; // null for tuition accounts
 
   let body: { photoUrls?: unknown; paperName?: unknown; assignmentId?: unknown; paperId?: unknown };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
@@ -99,7 +120,12 @@ export async function POST(req: Request) {
   for (const u of photoUrls) {
     let ok = false;
     if (isOurBlobUrl(u)) {
-      try { ok = new URL(u).pathname.startsWith(`/mark-paper/portal/${studentId}/`); } catch { ok = false; }
+      // decodeURIComponent: a stranger's identity segment (`acct:<uuid>`)
+      // contains a colon, which a URL serializer MAY percent-encode — decode
+      // before comparing so both spellings match the prefix the submit-token
+      // route pinned. Airtable rec ids are alphanumeric, so this is a no-op
+      // for tuition students.
+      try { ok = decodeURIComponent(new URL(u).pathname).startsWith(`/mark-paper/portal/${studentId}/`); } catch { ok = false; }
     }
     if (!ok) return NextResponse.json({ error: 'A photo upload went wrong — please re-add your photos and try again.' }, { status: 400 });
   }
@@ -122,9 +148,27 @@ export async function POST(req: Request) {
   // types are deep enough that inferring them through the helper trips TS2589
   // ("type instantiation is excessively deep"). HandinCountingClient names the
   // four methods actually used.
+  // Strangers additionally spend their pass's hand-in meter (8 on Standard,
+  // 20 on Intensive) — checked BEFORE the daily cap so "pass used up" never
+  // masquerades as "come back tomorrow". Assignments stay exempt from both
+  // (Adrian initiated them; one hand-in per assignment is the brake).
+  if (meteredPass && !assignment && handinsRemaining(meteredPass) <= 0) {
+    return NextResponse.json({
+      error: `You’ve used all ${handinAllowance(meteredPass)} marked papers in this pass — upgrade to Intensive or wait for your next pass at /app/pass. Everything else stays open.`,
+    }, { status: 402 });
+  }
+
+  // Daily ceiling: tuition students keep the global cap (1/SGT day, shared
+  // with the bot's /handin); a stranger's ceiling comes from their pass tier
+  // (Standard 1/day, Intensive 3/day — trials meter as Standard).
+  const dailyCap = tuition ? DAILY_SUBMIT_CAP : dailyHandinCapForTier(meteredPass?.tier);
   const count = assignment ? 0 : await countHandinsToday(admin as unknown as HandinCountingClient, studentId);
-  if ((count ?? 0) >= DAILY_SUBMIT_CAP) {
-    return NextResponse.json({ error: 'Today’s hand-in slot is used — a fresh one opens at midnight. One paper a day gets every script marked properly.' }, { status: 429 });
+  if ((count ?? 0) >= dailyCap) {
+    return NextResponse.json({
+      error: dailyCap === 1
+        ? 'Today’s hand-in slot is used — a fresh one opens at midnight. One paper a day gets every script marked properly.'
+        : `You’ve handed in ${dailyCap} papers today — a fresh allowance opens at midnight.`,
+    }, { status: 429 });
   }
 
   const botBase = process.env.BOT_BASE_URL;
@@ -173,6 +217,21 @@ export async function POST(req: Request) {
   } catch (e) {
     console.warn('[portal-submit] portal_submission stamp failed:', (e as Error).message);
   }
+
+  // Spend one hand-in on the stranger's pass meter — AFTER the run is saved,
+  // so a failed submission never burns allowance. Read-modify-write on the row
+  // requireActiveAccess just fetched: two truly simultaneous submits could
+  // write the same value and under-count by one (accepted — it only ever gives
+  // a hand-in away, and the daily cap bounds the drift); a failure here is
+  // logged, never fatal — the paper is already with Adrian.
+  if (meteredPass && !assignment) {
+    const { error: meterErr } = await admin
+      .from('portal_passes')
+      .update({ handins_used: (meteredPass.handins_used ?? 0) + 1 })
+      .eq('id', meteredPass.id);
+    if (meterErr) console.error('[portal-submit] hand-in meter update failed:', meterErr.message);
+  }
+
   if (assignment) {
     const { error: flipErr } = await admin.from('portal_assignments')
       .update({ status: 'submitted', run_id: runId, submitted_at: new Date().toISOString() })

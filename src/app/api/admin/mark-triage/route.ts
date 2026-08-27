@@ -112,12 +112,18 @@ type Recipient = { chatId: number | string; via: 'portal' | 'telegram' } | null;
 async function resolveRecipient(studentId: string | null): Promise<Recipient> {
   if (!studentId) return null;
 
+  // Stranger runs carry the acct:<uuid> portal identity
+  // (lib/portal-auth.portalIdentity): their portal_accounts row is keyed by
+  // that uuid — and there is no Airtable record to fall back to, so don't
+  // fire a guaranteed-404 lookup at the Students table for them.
+  const isStranger = studentId.startsWith('acct:');
   const { data } = await getSupabaseAdmin()
     .from('portal_accounts')
     .select('telegram_chat_id')
-    .eq('airtable_student_id', studentId)
+    .eq(isStranger ? 'id' : 'airtable_student_id', isStranger ? studentId.slice('acct:'.length) : studentId)
     .maybeSingle();
   if (data?.telegram_chat_id) return { chatId: data.telegram_chat_id, via: 'portal' };
+  if (isStranger) return null; // web push (run.student_id) is their doorbell
 
   try {
     // Single-record GET ignores fields[] — fetch all and pick in JS.

@@ -18,6 +18,8 @@ import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server
 import {
   parseSimilarBody, normalizeMatches, resolveQbLevel, NOT_AVAILABLE_MESSAGE,
 } from '@/lib/portal-find';
+import { portalIdentity } from '@/lib/portal-auth';
+import { requireActiveAccess } from '@/lib/portal-passes';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // vision extraction + embedding match, not generation
@@ -28,10 +30,16 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { data: account } = await supabase
     .from('portal_accounts')
-    .select('airtable_student_id, level, subjects')
+    .select('id, airtable_student_id, level, subjects')
     .eq('id', user.id)
-    .maybeSingle<{ airtable_student_id: string; level: string | null; subjects: string[] | null }>();
-  if (!account?.airtable_student_id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    .maybeSingle<{ id: string; airtable_student_id: string; level: string | null; subjects: string[] | null }>();
+  if (!account) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const identity = portalIdentity(account); // rec… / acct:<uuid> — keys the log
+
+  // Vision extraction + embedding search cost model time — tuition rides free;
+  // a stranger needs an active pass (402 → /app/pass otherwise).
+  const access = await requireActiveAccess(account);
+  if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
 
   const parsed = parseSimilarBody(await req.json().catch(() => null));
   if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: parsed.status });
@@ -50,7 +58,7 @@ export async function POST(req: Request) {
   const log = async (qbHit: boolean) => {
     try {
       await createServiceClient().from('portal_generation_log').insert({
-        airtable_student_id: account.airtable_student_id,
+        airtable_student_id: identity,
         kind: ask.mode,
         qb_hit: qbHit,
         generated: false,

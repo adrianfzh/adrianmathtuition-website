@@ -1,7 +1,7 @@
 // /app — Dashboard. Server component: assembles data directly via
 // getDashboardData (same source as /api/portal/dashboard).
 import Link from 'next/link';
-import { currentAccount } from '@/lib/portal-auth';
+import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { getDashboardData } from '@/lib/portal-dashboard';
 import { getTodayCards } from '@/lib/portal-today';
 import { isNotesAuthed } from '@/lib/notes-auth';
@@ -50,13 +50,16 @@ export default async function DashboardPage() {
   // Learn units aren't released to students — the "start here" stack (which
   // deep-links into /app/learn) only renders for Adrian's admin cookie.
   const learnVisible = LEARN_OPEN_TO_STUDENTS || ((await isNotesAuthed()) && !(await viewingAsStudent()));
+  // rec… for tuition, acct:<uuid> for strangers — the key every portal-owned
+  // Supabase table uses (lib/portal-auth.portalIdentity).
+  const sid = portalIdentity(account);
   const [d, todayCards, assignments, counts] = await Promise.all([
     getDashboardData(account),
     learnVisible ? getTodayCards(account).catch(() => []) : Promise.resolve([]),
     // "From Adrian" assigned work (SPEC-ASSIGN.md) — fail-soft, hidden at zero.
-    listStudentAssignments(account.airtable_student_id).catch(() => []),
+    listStudentAssignments(sid).catch(() => []),
     // Live numbers on the Hand in / Marked tiles — fail-soft zeros.
-    homeCounts(account.airtable_student_id),
+    homeCounts(sid),
   ]);
   const pendingWork = assignments.filter(a => isPending(a.status));
   const workSummary = homeCardSummary(assignments);
@@ -66,7 +69,7 @@ export default async function DashboardPage() {
   // that can't load just means no card.
   const focus = await (async () => {
     try {
-      const res = await loadPapersAndNotebook(createServiceClient(), account.airtable_student_id, sgtToday());
+      const res = await loadPapersAndNotebook(createServiceClient(), sid, sgtToday());
       if (!res.ok) return [];
       return buildPlan(res.papers, res.entries.map(e => ({
         topic: e.topic, attempts: e.attempts,

@@ -4,7 +4,7 @@
 // the Submit button. Server component, service-role read scoped by the
 // student's Airtable id (lib/portal-assignments.ts).
 import Link from 'next/link';
-import { currentAccount } from '@/lib/portal-auth';
+import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { listStudentAssignments } from '@/lib/portal-assignments';
 import { assignmentHref, dueLabel, isOverdue, isPending, statusLabel } from '@/lib/assignments';
 
@@ -18,7 +18,7 @@ function sentOn(iso: string): string {
 
 export default async function AssignmentsPage() {
   const account = await currentAccount();
-  const rows = await listStudentAssignments(account.airtable_student_id).catch(() => []);
+  const rows = await listStudentAssignments(portalIdentity(account)).catch(() => []);
   const pending = rows.filter(r => isPending(r.status));
   const done = rows.filter(r => !isPending(r.status));
 

@@ -12,20 +12,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import type { PortalAccount } from '@/lib/portal-auth';
+import { portalIdentity, type PortalAccount } from '@/lib/portal-auth';
 
 export const runtime = 'nodejs';
 
+// The session's portal identity (rec… for tuition, acct:<uuid> for strangers)
+// — the SAME string releases push against (mark-triage passes run.student_id
+// to sendPushToStudent, and the submit route stamps runs with this identity),
+// so a stranger's "marked paper ready ✅" finds their subscription rows.
+// Previously this returned the raw airtable id, which is '' for strangers and
+// silently broke their subscriptions.
 async function sessionStudentId(): Promise<string | null> {
   const supabase = await createSupabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
   const { data: account } = await supabase
     .from('portal_accounts')
-    .select('airtable_student_id')
+    .select('id, airtable_student_id')
     .eq('id', user.id)
-    .single<Pick<PortalAccount, 'airtable_student_id'>>();
-  return account?.airtable_student_id ?? null;
+    .single<Pick<PortalAccount, 'id' | 'airtable_student_id'>>();
+  return account ? portalIdentity(account) : null;
 }
 
 export async function POST(req: NextRequest) {

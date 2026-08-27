@@ -24,6 +24,34 @@ export interface PortalAccount {
   last_seen_at: string | null;
 }
 
+/**
+ * THE portal identity convention (2026-08-28, stranger accounts build).
+ *
+ * Every Supabase row a portal feature owns (paper_marking_runs.student_id,
+ * portal_requests / portal_notes / portal_generation_log /
+ * portal_generated_papers / notebook_entries / portal_assignments /
+ * student_attempts `airtable_student_id`, portal_push_subscriptions) is keyed
+ * on ONE string per student:
+ *
+ *   - tuition students → their Airtable Students record id (`rec…`), so every
+ *     existing row and every admin surface keeps working unchanged;
+ *   - self-serve strangers (airtable_student_id = '') → `acct:<account uuid>`.
+ *
+ * `acct:` can never collide with Airtable's `rec…` ids, and the uuid makes it
+ * unique per account. Pure and total: any account row with `id` set gets a
+ * non-empty identity. The stranger predicate is EXACTLY the complement of
+ * portal-passes' isTuitionAccount (trimmed-empty counts as stranger), so the
+ * pass gate and the identity can never disagree about one account. Callers
+ * that GENUINELY need the Airtable record (lesson reads, invoice links) must
+ * keep using `airtable_student_id` and guard the stranger marker themselves.
+ */
+export function portalIdentity(
+  account: { id: string; airtable_student_id?: string | null },
+): string {
+  const airtableId = account.airtable_student_id;
+  return airtableId && airtableId.trim() !== '' ? airtableId : `acct:${account.id}`;
+}
+
 // The validated session user, or null — the ONE getUser() per request.
 // getUser() validates the JWT against the Supabase Auth server (unlike
 // getSession(), which only trusts the cookie) — always use this on the server.
@@ -78,10 +106,15 @@ export const currentStudent = cache(async () => {
 
   // Airtable is best-effort: a deleted student record or an Airtable outage
   // must degrade the page (fall back to portal_accounts copies), never 500 it.
+  // Stranger accounts (airtable_student_id = '') have no record to fetch — and
+  // `/Students/` with an empty id would resolve to the LIST endpoint, so the
+  // guard is correctness, not just a saved round-trip.
   let airtableRecord: { id: string; fields: Record<string, unknown> } | null = null;
-  try {
-    airtableRecord = await airtableRequest('Students', `/${account.airtable_student_id}`);
-  } catch { /* degrade gracefully */ }
+  if (account.airtable_student_id) {
+    try {
+      airtableRecord = await airtableRequest('Students', `/${account.airtable_student_id}`);
+    } catch { /* degrade gracefully */ }
+  }
 
   return { user, account, airtableRecord };
 });

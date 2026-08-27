@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { listStudentAssignments } from '@/lib/portal-assignments';
 import { homeCardSummary, pendingCount } from '@/lib/assignments';
-import type { PortalAccount } from '@/lib/portal-auth';
+import { portalIdentity, type PortalAccount } from '@/lib/portal-auth';
 
 export const runtime = 'nodejs';
 
@@ -14,10 +14,12 @@ export async function GET() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { data: account } = await supabase
-    .from('portal_accounts').select('airtable_student_id').eq('id', user.id).single<Pick<PortalAccount, 'airtable_student_id'>>();
+    .from('portal_accounts').select('id, airtable_student_id').eq('id', user.id).single<Pick<PortalAccount, 'id' | 'airtable_student_id'>>();
   if (!account) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
-    const assignments = await listStudentAssignments(account.airtable_student_id);
+    // Identity, not the raw airtable id: strangers get an (empty) list instead
+    // of every-row-matches-'' surprises if rows are ever keyed acct:<uuid>.
+    const assignments = await listStudentAssignments(portalIdentity(account));
     return NextResponse.json({ assignments, pending: pendingCount(assignments), summary: homeCardSummary(assignments) });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });

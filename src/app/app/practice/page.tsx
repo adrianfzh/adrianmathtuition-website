@@ -25,7 +25,7 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import PracticeFlow, { type FixedQuestion, type InitialAssignment } from './practice-flow';
-import { sessionAccount } from '@/lib/portal-auth';
+import { portalIdentity, sessionAccount } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { qbLevelsFor } from '@/lib/practice';
 import { getStudentAssignment } from '@/lib/portal-assignments';
@@ -51,7 +51,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
   // testing mode renders a login card instead). No "you are here" flow strip
   // on this tab — Adrian 2026-08-23: the Practise → Hand in → Marked strip
   // was just taking space above the topic list; it stays on /app/marking.
-  let account: { airtable_student_id: string; level: string | null; subjects: string[] | null } | null = null;
+  let account: { id: string; airtable_student_id: string; level: string | null; subjects: string[] | null } | null = null;
   try {
     // Per-request cached (lib/portal-auth.ts) — shared with the layout's
     // lookups in the same render pass instead of a second getUser round-trip.
@@ -62,7 +62,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
   let initialAssignment: InitialAssignment | null = null;
   if (assignmentId) {
     if (!account) redirect('/login');
-    const a = await getStudentAssignment(assignmentId, account.airtable_student_id);
+    const a = await getStudentAssignment(assignmentId, portalIdentity(account));
     if (!a) notFound();
     if (a.kind !== 'question' || !a.question_id) redirect(`/app/assignments/${a.id}`);
     const { data: q } = await getSupabaseAdmin()
