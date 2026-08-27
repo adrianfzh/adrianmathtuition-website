@@ -18,7 +18,7 @@ import path from 'node:path';
 import { practiceAuth, levelAllowed } from '@/lib/practice';
 import { fullPortalVisible } from '@/lib/portal-beta';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { fetchWorksheetPool } from '@/lib/kiosk-pool';
+import { fetchWorksheetPool, figureServable, hasPrintableAnswer } from '@/lib/kiosk-pool';
 import { dailyDraw, sgtDate } from '@/lib/kiosk-draw';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
 import { computeMastery, type MasteryEntry } from '@/lib/mastery';
@@ -29,21 +29,21 @@ import {
   MOCK_LEVELS,
   PRINT_POOL_SCOPE,
   WEEKLY_PRINT_CAP,
+  assembleMockFromCandidates,
   rankWeakTopics,
   sgtStartOfWeekIso,
+  storageUrl,
   type PrintQuestionRef,
 } from '@/lib/print-paper';
 import {
   applyPreset,
   countParts,
   mulberry32,
-  pickForSlot,
   targetMarks,
   walkTopics,
   type Candidate,
   type PaperDef,
   type Preset,
-  type SlotPick,
 } from '@/lib/prelim-builder';
 
 export const runtime = 'nodejs';
@@ -71,39 +71,36 @@ async function papersThisWeek(studentId: string): Promise<number> {
   return count ?? 0;
 }
 
-/** Mock-slot candidates — the prelim-builder query, tightened for a STUDENT
- * sheet: a printable answer is required (the key page always prints) and a
- * scanned figure serves only when the watermark sweep marked it clean
- * (engine-drawn figure_url rows are ours and exempt) — the same two gates
- * kiosk-pool applies to worksheet draws. */
-async function fetchSlotCandidates(opts: { level: string; topic: string; lo: number; hi: number; excludeIds: Set<string> }) {
+/** Mock-slot candidates — the prelim-builder query, scoped and gated for a
+ * STUDENT sheet:
+ *  - pool scope matches the documented PRINT_POOL_SCOPE tagging (multi-level
+ *    `.in('level', tagLevels)`, no exam_type narrowing — the old
+ *    `.eq('level')` + `%prelim%` pair silently excluded most of the bank);
+ *  - servability = the CANONICAL kiosk-pool predicates (hasPrintableAnswer +
+ *    figureServable), imported, never re-implemented;
+ *  - `solution` is never selected, so worked solutions are structurally absent
+ *    from this route; school/year are fetched for spread/recency scoring only
+ *    and never survive past the assembled refs. */
+async function fetchSlotCandidates(opts: { tagLevels: string[]; topic: string; lo: number; hi: number }): Promise<Candidate[]> {
   const { data, error } = await getSupabaseAdmin()
     .from('questions')
-    .select('id, total_marks, school, year, difficulty, parts, answer, solution, has_image, image_url, figure_url, image_watermark_status')
+    .select('id, total_marks, school, year, difficulty, parts, answer, has_image, image_url, figure_url, image_watermark_status')
     .is('deleted_at', null)
-    .eq('level', opts.level)
-    .ilike('exam_type', '%prelim%')
+    .in('level', opts.tagLevels)
     .contains('topics', [opts.topic])
     .gte('total_marks', opts.lo)
     .lte('total_marks', opts.hi)
     .order('year', { ascending: false })
-    .limit(30);
+    .limit(40);
   if (error) throw new Error(`QB query failed (${opts.topic}): ${error.message}`);
   type Row = {
     id: string; total_marks: number; school: string | null; year: number | null;
-    difficulty: string | null; parts: unknown; answer: string | null; solution: string | null;
+    difficulty: string | null; parts: unknown; answer: string | null;
     has_image: boolean | null; image_url: string | null; figure_url: string | null;
     image_watermark_status: string | null;
   };
-  const hasAnswer = (r: Row): boolean => {
-    if (r.answer?.trim()) return true;
-    const parts = Array.isArray(r.parts) ? (r.parts as { answer?: string; subparts?: { answer?: string }[] }[]) : [];
-    return parts.some(p => p.answer?.trim() || p.subparts?.some(s => s.answer?.trim()));
-  };
-  const figureClean = (r: Row): boolean =>
-    !r.has_image || !!r.figure_url || r.image_watermark_status === 'clean';
-  const candidates: Candidate[] = (data as Row[])
-    .filter(r => !opts.excludeIds.has(r.id) && hasAnswer(r) && figureClean(r))
+  return (data as Row[])
+    .filter(r => hasPrintableAnswer(r) && figureServable(r))
     .map(r => ({
       id: r.id,
       total_marks: r.total_marks,
@@ -111,49 +108,71 @@ async function fetchSlotCandidates(opts: { level: string; topic: string; lo: num
       year: r.year,
       difficulty: r.difficulty,
       has_image: r.has_image,
-      image_url: null,
+      // What the mock PDF can actually draw: a clean scan's crop. Engine-drawn
+      // figure_url rows pass the gate but this renderer has no figure_url path,
+      // so leave them image-less — the scorer's missing-diagram penalty keeps
+      // them off the paper rather than printing a figureless figure question.
+      image_url: r.figure_url ? null : storageUrl(r.image_url),
       answer: r.answer,
-      has_solution: !!r.solution,
+      has_solution: false, // never selected here — uniform, so scoring is unaffected
       parts_count: countParts(r.parts),
     }));
-  return candidates;
 }
 
-async function assembleMock(level: string, paper: string): Promise<{ refs: PrintQuestionRef[]; title: string } | { error: string }> {
+const MOCK_ATTEMPTS = 3;
+
+async function assembleMock(level: string, paper: string): Promise<{ refs: PrintQuestionRef[]; title: string; totalMarks: number } | { error: string }> {
   const key = `${level}-${paper}`;
   const blueprint = loadBlueprint();
   const paperDef = blueprint.papers[key];
   if (!paperDef) return { error: `No mock blueprint for ${key}` };
+  const scope = PRINT_POOL_SCOPE[level];
+  if (!scope) return { error: `Unknown level ${level}` };
 
-  const rng = mulberry32(Math.floor(Math.random() * 1e9));
   const overlaid = applyPreset(paperDef, blueprint.presets['standard']?.overlay ?? {});
   const targets = targetMarks(overlaid, { difficulty: 'standard' });
-  const topics = walkTopics(overlaid, rng);
-  const usedSchools = new Set<string>();
-  const usedIds = new Set<string>();
-  const picks: SlotPick[] = [];
-  for (let i = 0; i < overlaid.slots.length; i++) {
-    const slot = overlaid.slots[i];
-    const cands = await fetchSlotCandidates({
-      level, topic: topics[i], lo: slot.marks[0], hi: slot.marks[1], excludeIds: usedIds,
-    });
-    const { pick } = pickForSlot(
-      cands,
-      { target: targets[i], difficulty: 'standard', usedSchools, usedIds },
+
+  // One fetch per distinct (topic, band) — slots are fetched IN PARALLEL (the
+  // old sequential walk was up to 26 awaited round trips) and cached across
+  // retry attempts so a re-walk only fetches topics it hasn't seen.
+  const cache = new Map<string, Promise<Candidate[]>>();
+  const candidatesFor = (topic: string, lo: number, hi: number): Promise<Candidate[]> => {
+    const k = `${topic}|${lo}|${hi}`;
+    let hit = cache.get(k);
+    if (!hit) {
+      hit = fetchSlotCandidates({ tagLevels: scope.tagLevels, topic, lo, hi });
+      cache.set(k, hit);
+    }
+    return hit;
+  };
+
+  let lastError = 'Not enough servable questions to build a full mock right now';
+  for (let attempt = 0; attempt < MOCK_ATTEMPTS; attempt++) {
+    const rng = mulberry32(Math.floor(Math.random() * 1e9));
+    let topics: string[];
+    try {
+      topics = walkTopics(overlaid, rng);
+    } catch {
+      continue; // blueprint constraints unsatisfiable this walk — redraw
+    }
+    const candidateLists = await Promise.all(
+      overlaid.slots.map((slot, i) => candidatesFor(topics[i], slot.marks[0], slot.marks[1])),
+    );
+    const out = assembleMockFromCandidates(
+      overlaid.slots.map((slot, i) => ({ pos: slot.pos, topic: topics[i], target: targets[i], candidates: candidateLists[i] })),
+      overlaid.total_marks,
       rng,
     );
-    if (pick) {
-      usedIds.add(pick.id);
-      if (pick.school) usedSchools.add(pick.school);
+    if (out.ok) {
+      return {
+        refs: out.refs,
+        totalMarks: out.totalMarks,
+        title: `${level === 'AM' ? 'A Math' : 'E Math'} mock ${paper === 'P1' ? 'Paper 1' : 'Paper 2'}`,
+      };
     }
-    picks.push({ pos: slot.pos, topic: topics[i], target: targets[i], pick, alternates: [] });
+    lastError = out.error;
   }
-  const filled = picks.filter(p => p.pick);
-  if (filled.length < overlaid.slots.length * 0.7) {
-    return { error: 'Not enough servable questions to build a full mock right now' };
-  }
-  const refs: PrintQuestionRef[] = filled.map((p, i) => ({ id: p.pick!.id, pos: i + 1, marks: p.pick!.total_marks }));
-  return { refs, title: `${level === 'AM' ? 'A Math' : 'E Math'} mock ${paper === 'P1' ? 'Paper 1' : 'Paper 2'}` };
+  return { error: lastError };
 }
 
 async function drawTopics(levelKey: string, topics: string[], total: number, studentId: string):
@@ -232,8 +251,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Mock papers are available for E Math and A Math' }, { status: 400 });
     }
     if (!['P1', 'P2'].includes(p)) return NextResponse.json({ error: 'paper must be P1 or P2' }, { status: 400 });
-    const out = await assembleMock(level, p);
-    if ('error' in out) return NextResponse.json({ error: out.error }, { status: 502 });
+    let out: Awaited<ReturnType<typeof assembleMock>>;
+    try {
+      out = await assembleMock(level, p);
+    } catch {
+      return NextResponse.json({ error: 'The question bank is unreachable right now — try again in a minute.' }, { status: 502 });
+    }
+    // Fail LOUDLY rather than shipping a short paper: an unfillable/unlandable
+    // mock is a 422 the client shows, and no allowance is spent (no insert).
+    if ('error' in out) return NextResponse.json({ error: out.error }, { status: 422 });
     refs = out.refs; title = out.title; paper = p;
   } else {
     const total = Math.min(MAX_QUESTION_COUNT, Math.max(4, Number(body.count) || DEFAULT_QUESTION_COUNT));

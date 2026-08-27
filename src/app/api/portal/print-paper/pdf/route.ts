@@ -6,14 +6,26 @@
 // the paper: re-downloading always reprints exactly the sheet that was
 // generated, figures included.
 //
-// All presets render through renderPrelimPDF — exam-style header, marks-scaled
-// working space, and the answer KEY on its own final page. Never worked
-// solutions (kiosk invariant D7): those arrive via marking or /solutions.
+// All presets render through renderPrelimPDF, marks-scaled working space and
+// the answer KEY on its own final page. A MOCK renders in exam format — page-1
+// cover (centre name, subject code, duration, candidate boxes), questions from
+// page 2, Page N of M footers, [Turn over, END OF PAPER — while topics/
+// weak-spots sheets keep the worksheet-style header (a topic sheet is not an
+// exam). Never worked solutions (kiosk invariant D7): those arrive via marking
+// or /solutions.
 import { NextRequest, NextResponse } from 'next/server';
 import { currentStudent } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { renderPrelimPDF, type PrelimQuestion } from '@/lib/render-prelim';
-import { answerMarkdown, questionMarkdown, storageUrl, type QbPrintRow, type PrintQuestionRef } from '@/lib/print-paper';
+import {
+  MOCK_COVER_INSTRUCTIONS,
+  answerMarkdown,
+  mockCover,
+  questionMarkdown,
+  storageUrl,
+  type QbPrintRow,
+  type PrintQuestionRef,
+} from '@/lib/print-paper';
 
 export const dynamic = 'force-dynamic';
 // Puppeteer cold start + KaTeX fonts can push past the 10s default.
@@ -60,11 +72,21 @@ export async function GET(req: NextRequest) {
   if (!questions.length) return NextResponse.json({ error: 'no questions left on this paper' }, { status: 404 });
 
   const printed = new Date(row.created_at).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Singapore' });
+  const isMock = row.preset === 'mock' && (row.paper === 'P1' || row.paper === 'P2');
   const pdf = await renderPrelimPDF({
     title: row.title.toUpperCase(),
     subtitle: `Printed for ${account.display_name || 'you'} · ${printed} · AdrianMath`,
     questions,
     workingSpace: true,
+    ...(isMock
+      ? {
+          cover: mockCover(row.level, row.paper as string, {
+            printedFor: account.display_name,
+            printedOn: printed,
+          }),
+          instructions: MOCK_COVER_INSTRUCTIONS,
+        }
+      : {}),
   });
 
   const filename = `${row.title.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'paper'}.pdf`;

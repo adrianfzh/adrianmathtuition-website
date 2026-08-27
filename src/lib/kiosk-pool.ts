@@ -31,6 +31,31 @@ export const SEED_LEVELS: Record<string, string[]> = {
   S2: ['S2'],
 };
 
+// ── The eligibility gate, as named predicates ────────────────────────────────
+// These two booleans ARE the leakage invariant (docs/KIOSK.md §5b–5c). Every
+// surface that decides servability outside the `kiosk_pool` RPC — this pool's
+// post-RPC checks, the student mock assembly in /api/portal/print-paper — must
+// import THESE, never re-implement them inline (a second copy of the gate is
+// how the pre-2026-08-28 print route drifted).
+
+/** A printable answer exists: part/subpart answers rolled up (same rollup the
+ * printed sheet uses), else the top-level `answer`. Whitespace-only = none. */
+export function hasPrintableAnswer(row: { answer?: string | null; parts?: unknown }): boolean {
+  const flat = flattenParts('', (row.parts as Part[] | null) ?? null);
+  return ((flat.answer || row.answer) ?? '').trim() !== '';
+}
+
+/** Figure gate: text-only questions always serve; engine-drawn figures
+ * (figure_url) are ours and serve; a scanned figure serves ONLY when the
+ * watermark sweep marked it clean. Unknown/missing status fails CLOSED. */
+export function figureServable(row: {
+  has_image?: boolean | null;
+  figure_url?: string | null;
+  image_watermark_status?: string | null;
+}): boolean {
+  return !row.has_image || !!row.figure_url || row.image_watermark_status === 'clean';
+}
+
 export type PoolItem = {
   id: string;
   markdown: string;
@@ -74,19 +99,21 @@ export async function fetchWorksheetPool(
   const scanIds = (bankRes.data || [])
     .filter((r: { has_image?: boolean; figure_url?: string | null; id: string }) => r.has_image && !r.figure_url)
     .map((r: { id: string }) => r.id);
-  let notClean = new Set<string>();
+  let statusById = new Map<string, string | null>();
+  let lookupFailed = false;
   if (scanIds.length) {
     const wm = await supa.from('questions').select('id, image_watermark_status').in('id', scanIds);
-    if (wm.error) notClean = new Set(scanIds);
-    else notClean = new Set((wm.data || []).filter(r => r.image_watermark_status !== 'clean').map(r => r.id as string));
+    if (wm.error) lookupFailed = true; // fail closed: every scan row reads as un-swept
+    else statusById = new Map((wm.data || []).map(r => [r.id as string, r.image_watermark_status as string | null]));
   }
 
   const items: PoolItem[] = [];
   for (const r of bankRes.data || []) {
-    if (notClean.has(r.id as string)) continue;
+    const status = lookupFailed ? null : (statusById.get(r.id as string) ?? null);
+    if (!figureServable({ has_image: r.has_image as boolean | null, figure_url: r.figure_url as string | null, image_watermark_status: status })) continue;
+    if (!hasPrintableAnswer(r)) continue; // answers always print — answer-less questions don't serve
     const flat = flattenParts((r.question_text as string) ?? '', (r.parts as Part[] | null) ?? null);
     const answer = flat.answer || ((r.answer as string | null) ?? '');
-    if (!answer.trim()) continue; // answers always print — answer-less questions don't serve
     items.push({
       id: r.id as string,
       markdown: flat.text,
