@@ -16,6 +16,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { put } from '@vercel/blob';
 import { renderRevisePNG, RenderType, ReviseRenderInput } from '@/lib/render-revise';
+import { rollupSolution, rollupAnswer } from '@/lib/solution-rollup';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
@@ -74,7 +75,7 @@ export async function POST(req: NextRequest) {
   // (~9.5KB of JSON, ~80% of the row payload) on every render fetch.
   const { data: row, error: fetchErr } = await supabase
     .from('questions')
-    .select('question_image_url, question_with_answer_image_url, solution_image_url, topics, question_text, total_marks, answer, solution')
+    .select('question_image_url, question_with_answer_image_url, solution_image_url, topics, question_text, total_marks, answer, solution, parts')
     .eq('id', practice_question_id)
     .single();
 
@@ -100,8 +101,11 @@ export async function POST(req: NextRequest) {
     subgroup_name:  (() => { const sg = sgLink?.[0]?.subgroups as unknown; return (Array.isArray(sg) ? (sg[0] as { name?: string })?.name : (sg as { name?: string } | null)?.name) ?? ''; })(),
     question_text:  row.question_text ?? '',
     marks:          row.total_marks ?? null,
-    answer:         row.answer ?? '',
-    solution:       row.solution ?? '',
+    // Parts are canonical since the 2026-08-27 canonicalisation: ~20.3k rows
+    // hold their worked solution ONLY inside parts[]. Reading the top-level
+    // column alone rendered a BLANK solution image for every one of them.
+    answer:         rollupAnswer(row.answer, row.parts),
+    solution:       rollupSolution(row.solution, row.parts),
   };
 
   // Render PNG

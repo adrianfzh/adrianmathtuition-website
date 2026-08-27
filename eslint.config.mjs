@@ -16,6 +16,9 @@ const eslintConfig = defineConfig([
     "public/pdf.worker.min.mjs", // vendored pdfjs build artifact
     "_old/**", // pre-App-Router legacy, kept for reference only
     "_backups/**",
+    // Session config/skills, not app code — peers committing .claude/skills/*
+    // put 17k+ eslint errors on the 0-errors CI gate (2026-08-27).
+    ".claude/**",
   ]),
   {
     rules: {
