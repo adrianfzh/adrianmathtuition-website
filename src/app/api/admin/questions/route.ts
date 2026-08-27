@@ -16,6 +16,7 @@ import { compareQnum, excerptText, searchTerms, normalizeForSearch } from '@/lib
 import { flattenParts, type Part } from '@/lib/kiosk-worksheet-images';
 import { renderBotWorksheetPDF, type BotWorksheetQuestion } from '@/lib/render-bot-worksheet';
 import { renderSolutionsPDF, type SolutionsItem, type SolutionsPart } from '@/lib/render-solutions-pdf';
+import { rollupSolution } from '@/lib/solution-rollup';
 import { renderPaperPDF, type PaperPdfQuestion } from '@/lib/render-paper-pdf';
 import { assessCoverage, answerKeyLines, type AnswerPart } from '@/lib/paper-reconstruction';
 import { KIOSK_LEVELS } from '@/lib/kiosk-session';
@@ -413,7 +414,9 @@ export async function POST(req: NextRequest) {
     for (const qid of ids) {
       const row = byId.get(qid) as Row | undefined;
       if (!row) continue;
-      const solution = ((row.solution as string | null) ?? '').trim();
+      // Rollup: since the 2026-08-27 canonicalisation the worked solution may
+      // live only in parts[].solution — never read the top-level column alone.
+      const solution = rollupSolution(row.solution, row.parts);
       const solutionImages = Array.isArray(row.solution_images)
         ? (row.solution_images as string[]).filter(isPlausibleImagePath).map(imgSrc).slice(0, 6)
         : [];

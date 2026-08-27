@@ -20,6 +20,7 @@ import { loadPapersAndNotebook, type NotebookEntryRow } from '@/lib/notebook-dat
 import { computeMastery } from '@/lib/mastery';
 import { fullPortalVisible } from '@/lib/portal-beta';
 import { imgSrc, isPlausibleImagePath } from '@/lib/kiosk-worksheet-images';
+import { rollupSolution } from '@/lib/solution-rollup';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,10 +68,11 @@ async function workedSolution(
   try {
     const { data } = await svc
       .from('questions')
-      .select('solution, solution_images')
+      .select('solution, parts, solution_images')
       .eq('id', entry.variant_qb_id)
       .single();
-    const sol = typeof data?.solution === 'string' ? data.solution.trim() : '';
+    // Rollup: post-canonicalisation the text may live only in parts[].solution.
+    const sol = rollupSolution(data?.solution, data?.parts);
     const images = Array.isArray(data?.solution_images)
       ? (data.solution_images as unknown[]).filter(isPlausibleImagePath).map(imgSrc).slice(0, 4)
       : [];
