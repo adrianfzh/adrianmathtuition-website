@@ -356,6 +356,15 @@ export async function GET(req: NextRequest) {
       }
       return r.status === 503 ? 'deployed, awaiting Stripe secret' : 'signature gate up';
     }),
+    // "Ask" tab question logging (/app/ask → Airtable Questions with the
+    // Student link). 401 anonymously proves the route is deployed with its
+    // session gate up — a 404 means portal questions silently stop being
+    // logged against students while the answers keep flowing from the bot.
+    timed('portal-ask-log', async () => {
+      const r = await fetch(`${base}/api/portal/ask-log`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // "Save to My Notes" (/app/my-notes + the ✂️ clipper on /app/marking).
     // Anonymous 401 proves the route is deployed with its auth gate up; the
     // REST probe proves portal_notes still answers — a dropped table would
