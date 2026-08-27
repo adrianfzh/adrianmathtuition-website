@@ -45,6 +45,8 @@ const STRANDS: Record<string, { strands: Strand[]; families: Record<string, stri
     ],
     families: {
       'Binomial Theorem': 'algebra', Indices: 'algebra', 'Linear Law': 'algebra', Logarithms: 'algebra',
+      // 'Modulus Functions' retired from the syllabus (2026-08-28) but kept
+      // mapped so legacy lessons/attempts tagged with it still aggregate.
       'Modulus Functions': 'algebra', 'Nature of Roots': 'algebra', 'Partial Fractions': 'algebra',
       Polynomials: 'algebra', 'Quadratic Functions': 'algebra', 'Quadratic Inequalities': 'algebra',
       'Simultaneous Equations': 'algebra', Surds: 'algebra',

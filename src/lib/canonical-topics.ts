@@ -189,12 +189,14 @@ export const E_MATH_EXAM_TOPICS: TopicCategory[] = [
   ...S1_EXAM_TOPICS.map(c => ({ ...c, label: `[S1] ${c.label}` })),
 ];
 
-// ─── O-Level A Math (31 topics) ───────────────────────────────────────────────
-// Power Graphs + Proof removed 2026-08-07 — no longer in the syllabus (Adrian).
+// ─── O-Level A Math (30 topics) ───────────────────────────────────────────────
+// Power Graphs + Proof removed 2026-08-07; Modulus Functions removed 2026-08-28
+// — no longer in the syllabus (Adrian; legacy pre-2021 4047 papers still
+// examine it, current 4049 does not).
 // Within each family, topics are in LEARNING order (Supabase `topic_spine`,
 // mirrored 2026-08-09 — Adrian: the notes sidebar must read in teaching
-// sequence, not alphabetically). Modulus Functions and Integration
-// (Applications) have no spine row; they sit where they are taught.
+// sequence, not alphabetically). Integration (Applications) has no spine row;
+// it sits where it is taught.
 export const A_MATH_EXAM_TOPICS: TopicCategory[] = [
   {
     label: 'Algebra & Functions',
@@ -206,7 +208,6 @@ export const A_MATH_EXAM_TOPICS: TopicCategory[] = [
       'Simultaneous Equations',
       'Nature of Roots',
       'Quadratic Inequalities',
-      'Modulus Functions',
       'Surds',
       'Polynomials',
       'Partial Fractions',
