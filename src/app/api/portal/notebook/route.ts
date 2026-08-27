@@ -19,6 +19,7 @@ import { checkTypedAnswer, applyVerdict, sgtToday } from '@/lib/notebook';
 import { loadPapersAndNotebook, type NotebookEntryRow } from '@/lib/notebook-data';
 import { computeMastery } from '@/lib/mastery';
 import { fullPortalVisible } from '@/lib/portal-beta';
+import { imgSrc, isPlausibleImagePath } from '@/lib/kiosk-worksheet-images';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,23 +55,28 @@ async function sessionStudentId(): Promise<string | null> {
 // The variant answer is deliberately NOT in the GET payload — the reveal
 // happens in the POST response, after the attempt is committed.
 // The reveal teaches, not just tells: when the twin came from the bank, fetch
-// its full worked solution to show alongside the answer. Best-effort — a
-// missing/failed lookup degrades to the answer-only reveal, never blocks it.
+// its full worked solution — text AND any solution diagrams (the recovered
+// solution_images) — to show alongside the answer. Best-effort — a missing/
+// failed lookup degrades to the answer-only reveal, never blocks it.
 async function workedSolution(
   svc: ReturnType<typeof createServiceClient>,
   entry: EntryRow,
-): Promise<string | null> {
-  if (!entry.variant_qb_id) return null;
+): Promise<{ text: string | null; images: string[] }> {
+  const none = { text: null, images: [] as string[] };
+  if (!entry.variant_qb_id) return none;
   try {
     const { data } = await svc
       .from('questions')
-      .select('solution')
+      .select('solution, solution_images')
       .eq('id', entry.variant_qb_id)
       .single();
     const sol = typeof data?.solution === 'string' ? data.solution.trim() : '';
-    return sol || null;
+    const images = Array.isArray(data?.solution_images)
+      ? (data.solution_images as unknown[]).filter(isPlausibleImagePath).map(imgSrc).slice(0, 4)
+      : [];
+    return { text: sol || null, images };
   } catch {
-    return null;
+    return none;
   }
 }
 
@@ -203,10 +209,12 @@ export async function POST(req: NextRequest) {
     if (checked === 'unclear') {
       // Not recorded: the student now sees the answer and judges — the
       // follow-up confirm call is what commits the attempt.
+      const ws = await workedSolution(svc, entry);
       return NextResponse.json({
         verdict: 'unclear',
         official: entry.variant_answer,
-        officialSolution: await workedSolution(svc, entry),
+        officialSolution: ws.text,
+        officialSolutionImages: ws.images,
         note: entry.variant_note,
       });
     }
@@ -246,10 +254,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Could not save attempt' }, { status: 500 });
   }
 
+  const ws = await workedSolution(svc, entry);
   return NextResponse.json({
     verdict,
     official: entry.variant_answer,
-    officialSolution: await workedSolution(svc, entry),
+    officialSolution: ws.text,
+    officialSolutionImages: ws.images,
     note: entry.variant_note,
     conquered: updated.status === 'archived',
     entry: toClient(updated),

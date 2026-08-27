@@ -56,15 +56,16 @@ interface AttemptResult {
   verdict: 'correct' | 'wrong';
   official: string | null;
   officialSolution: string | null;
+  officialSolutionImages: string[];
   note: string | null;
   conquered: boolean;
 }
 
 // The /solutions look, mini: the worked solution as numbered typeset lines,
 // so a wrong re-attempt teaches the method instead of just naming the answer.
-function SolutionLines({ solution }: { solution: string }) {
+function SolutionLines({ solution, images = [] }: { solution: string; images?: string[] }) {
   const lines = solution.split('\n').map(l => l.trim()).filter(Boolean);
-  if (!lines.length) return null;
+  if (!lines.length && !images.length) return null;
   return (
     <div className="mt-2 rounded-lg border border-gray-200 bg-white p-2.5">
       <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-1.5">The worked solution</p>
@@ -76,6 +77,10 @@ function SolutionLines({ solution }: { solution: string }) {
           </li>
         ))}
       </ol>
+      {images.map((u, i) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img key={i} src={u} alt="solution diagram" className="mt-2 max-w-full rounded border border-gray-100" />
+      ))}
     </div>
   );
 }
@@ -239,7 +244,7 @@ function EntryCard({ entry, today, onUpdated }: {
   const [answer, setAnswer] = useState('');
   const [confident, setConfident] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
-  const [reveal, setReveal] = useState<{ official: string; solution: string | null; note: string | null } | null>(null);
+  const [reveal, setReveal] = useState<{ official: string; solution: string | null; solutionImages: string[]; note: string | null } | null>(null);
   const [result, setResult] = useState<AttemptResult | null>(null);
   const [failed, setFailed] = useState(false);
 
@@ -258,11 +263,12 @@ function EntryCard({ entry, today, onUpdated }: {
       const j = await r.json();
       if (!r.ok) throw new Error(j?.error || String(r.status));
       if (j.verdict === 'unclear') {
-        setReveal({ official: j.official || '', solution: j.officialSolution ?? null, note: j.note ?? null });
+        setReveal({ official: j.official || '', solution: j.officialSolution ?? null, solutionImages: j.officialSolutionImages ?? [], note: j.note ?? null });
       } else {
         setResult({
           verdict: j.verdict, official: j.official ?? null,
           officialSolution: j.officialSolution ?? null,
+          officialSolutionImages: j.officialSolutionImages ?? [],
           note: j.note ?? null, conquered: !!j.conquered,
         });
         setReveal(null);
@@ -337,7 +343,7 @@ function EntryCard({ entry, today, onUpdated }: {
                 <div className="mt-3 rounded-lg border border-gray-200 bg-white p-3">
                   <p className="text-xs font-semibold text-gray-500 mb-1">Here’s the answer — how did you do?</p>
                   <MathText text={reveal.official} className="text-[13px] text-gray-800 whitespace-pre-wrap" />
-                  {reveal.solution && <SolutionLines solution={reveal.solution} />}
+                  {(reveal.solution || reveal.solutionImages.length > 0) && <SolutionLines solution={reveal.solution ?? ''} images={reveal.solutionImages} />}
                   {reveal.note && <MathText text={reveal.note} className="text-[12px] text-gray-500 italic mt-1" />}
                   <div className="flex gap-2 mt-2.5">
                     <button
@@ -497,7 +503,7 @@ function ResultPanel({ result, confident }: { result: AttemptResult; confident: 
           <details className="mt-1.5">
             <summary className="cursor-pointer text-xs font-semibold text-emerald-700 list-none">Show the full answer</summary>
             <MathText text={result.official} className="text-[13px] text-emerald-900 mt-1 whitespace-pre-wrap" />
-            {result.officialSolution && <SolutionLines solution={result.officialSolution} />}
+            {(result.officialSolution || result.officialSolutionImages.length > 0) && <SolutionLines solution={result.officialSolution ?? ''} images={result.officialSolutionImages} />}
           </details>
         )}
       </div>
@@ -512,7 +518,7 @@ function ResultPanel({ result, confident }: { result: AttemptResult; confident: 
           <MathText text={result.official} className="text-[13px] text-gray-800 whitespace-pre-wrap" />
         </>
       )}
-      {result.officialSolution && <SolutionLines solution={result.officialSolution} />}
+      {(result.officialSolution || result.officialSolutionImages.length > 0) && <SolutionLines solution={result.officialSolution ?? ''} images={result.officialSolutionImages} />}
       {result.note && <MathText text={result.note} className="text-[12px] text-gray-500 italic mt-1" />}
       {confident === true && (
         <p className="text-[12px] text-rose-900 mt-2">
