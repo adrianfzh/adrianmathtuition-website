@@ -26,9 +26,17 @@ The deep documentation (bug archaeology, invariants, field tables) was split out
 > auto-loading skills in `.claude/skills/` — belt and suspenders; this table stays
 > the authoritative list.
 
-## 🏗 Building doctrine (Adrian, 2026-08-27)
+## 🏗 Building doctrine (Adrian, 2026-08-27) — LIVING, expected to change
 
 Apply this whenever designing a NEW feature, process, or automation — it's the shape every build should take, not a checklist to paste into code.
+
+> **Revision rule**: this doctrine is versioned here so it can change as models
+> improve and the moat line moves. Any session should PROPOSE an edit (diff +
+> why, Adrian approves, dated commit) when: (a) a build genuinely fights the
+> recipe, (b) a "stays human" item becomes automatable to Adrian's standard,
+> (c) a new failure mode reveals a missing step, or (d) a new frontier model
+> ships — on model upgrades, explicitly ask "which moat item did this move?"
+> Never silently ignore the doctrine; change it in the open instead.
 
 **The 5-step recipe** — the ladder from "ask Claude" to a self-running process:
 1. **Spec** — write down inputs, output format, tone, red lines, and 2–3 worked examples, in a repo doc (or Supabase row) the agent follows verbatim.
