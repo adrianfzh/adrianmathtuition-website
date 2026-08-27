@@ -111,13 +111,17 @@ export default function FormulaPageLayout({
 }) {
   const [inIframe, setInIframe] = useState(false);
   const [katexReady, setKatexReady] = useState(false);
+  const [autoRenderReady, setAutoRenderReady] = useState(false);
 
   useEffect(() => {
     try { setInIframe(window.self !== window.top); } catch { setInIframe(true); }
   }, []);
 
   function renderMath() {
-    if (typeof window === 'undefined' || !window.renderMathInElement) return;
+    // Require window.katex too: auto-render captures the katex global at its
+    // own load time, so rme existing without katex means broken maths forever.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (typeof window === 'undefined' || !window.renderMathInElement || !(window as any).katex) return;
     const el = document.getElementById(contentId);
     if (!el) return;
     try {
@@ -132,9 +136,9 @@ export default function FormulaPageLayout({
   }
 
   useEffect(() => {
-    if (katexReady) renderMath();
+    if (autoRenderReady) renderMath();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [katexReady, inIframe]);
+  }, [autoRenderReady, inIframe]);
 
   return (
     <>
@@ -142,15 +146,21 @@ export default function FormulaPageLayout({
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
       />
+      {/* auto-render captures the katex global at its own load time — it must
+          only load AFTER katex.min.js is ready (afterInteractive order is not
+          guaranteed; losing the race = raw $…$ forever). */}
       <Script
         src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"
         strategy="afterInteractive"
+        onReady={() => setKatexReady(true)}
       />
-      <Script
-        src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
-        strategy="afterInteractive"
-        onLoad={() => setKatexReady(true)}
-      />
+      {katexReady && (
+        <Script
+          src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+          strategy="afterInteractive"
+          onReady={() => setAutoRenderReady(true)}
+        />
+      )}
 
       <style>{`
         .formula-row { overflow-x: auto; padding: 6px 0; -webkit-overflow-scrolling: touch; }

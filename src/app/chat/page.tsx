@@ -545,6 +545,7 @@ export default function ChatPage() {
   const [formulaSheet, setFormulaSheet] = useState<FormulaSheetId | null>(null);
   const [formulaFromMenu, setFormulaFromMenu] = useState(false);
   const [menuWidth, setMenuWidth] = useState(300);
+  const [katexReady, setKatexReady] = useState(false);
   const menuWidthRef = useRef(300);
   const menuPanelRef = useRef<HTMLDivElement>(null);
 
@@ -760,7 +761,7 @@ export default function ChatPage() {
       textDiv.innerHTML = formatMessage(content);
       bubble.appendChild(textDiv);
       requestAnimationFrame(() => {
-        if (window.renderMathInElement) {
+        if (window.renderMathInElement && window.katex) {
           try {
             window.renderMathInElement(textDiv, {
               delimiters: [
@@ -1526,15 +1527,20 @@ export default function ChatPage() {
     <div id="chatLayout" className="chat-layout">
       {/* Telegram Mini App SDK */}
       <Script src="https://telegram.org/js/telegram-web-app.js" strategy="afterInteractive" />
-      {/* KaTeX scripts */}
+      {/* KaTeX scripts — auto-render captures the katex global at its own load
+          time, so it must only load AFTER katex.min.js is ready (afterInteractive
+          order is not guaranteed; losing the race = raw $…$ forever). */}
       <Script
         src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"
         strategy="afterInteractive"
+        onReady={() => setKatexReady(true)}
       />
-      <Script
-        src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
-        strategy="afterInteractive"
-      />
+      {katexReady && (
+        <Script
+          src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+          strategy="afterInteractive"
+        />
+      )}
 
       <style>{`
         @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }

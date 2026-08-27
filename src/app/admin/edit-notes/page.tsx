@@ -436,6 +436,7 @@ export default function EditNotesPage() {
   const [editorShown, setEditorShown] = useState(false);
   const [lineCount, setLineCount] = useState(0);
   const [saveState, setSaveState] = useState<SaveState>('idle');
+  const [katexReady, setKatexReady] = useState(false);
   const [katexLoaded, setKatexLoaded] = useState(false);
 
   // Toast
@@ -677,7 +678,10 @@ export default function EditNotesPage() {
   function renderMath(el: HTMLElement) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rme = (window as any).renderMathInElement;
-    if (!rme) { setTimeout(() => renderMath(el), 80); return; }
+    // Require window.katex too: auto-render captures the katex global at its
+    // own load time, so rme existing without katex means broken maths forever.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!rme || !(window as any).katex) { setTimeout(() => renderMath(el), 80); return; }
     try {
       rme(el, {
         delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }],
@@ -1397,12 +1401,21 @@ export default function EditNotesPage() {
   return (
     <>
       <a href="/admin" style={{ position: 'fixed', top: 10, left: 10, zIndex: 50, color: '#64748b', textDecoration: 'none', fontSize: 14, fontWeight: 600, background: 'rgba(255,255,255,0.9)', padding: '4px 10px', borderRadius: 8 }}>‹ Admin</a>
-      <Script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" strategy="afterInteractive" />
+      {/* auto-render captures the katex global at its own load time — it must
+          only load AFTER katex.min.js is ready (afterInteractive order is not
+          guaranteed; losing the race = raw $…$ forever). */}
       <Script
-        src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"
         strategy="afterInteractive"
-        onLoad={() => setKatexLoaded(true)}
+        onReady={() => setKatexReady(true)}
       />
+      {katexReady && (
+        <Script
+          src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+          strategy="afterInteractive"
+          onReady={() => setKatexLoaded(true)}
+        />
+      )}
 
       <div className="en-layout">
         {/* Password gate */}
