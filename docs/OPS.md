@@ -19,8 +19,11 @@ Writers:
   `progress-digest` (month period only), `retention` (non-dry), `practice-topup`,
   and `health-check` itself.
 - **Mac plan-billed workers** stamp as the last step of their SKILL.md
-  (`qb-topup`, `file-subgroups`, `bot-review`, `plan-marking`) — a direct
-  `insert into job_runs …` through the Supabase access each skill already has.
+  (`qb-topup`, `file-subgroups`, `bot-review`, `plan-marking`, `question-mine`,
+  `pdf-extract` — the last stamps only on runs that actually claimed a file, so
+  it has no rhythm/alarm; the ops board just shows the newest extraction) — a
+  direct `insert into job_runs …` through the Supabase access each skill
+  already has.
 - **Anything shell-ish** can `POST /api/job-log` (`Bearer CRON_SECRET` or admin)
   with `{job, ok?, summary?}` — job must be a kebab-case slug.
 
@@ -77,6 +80,8 @@ Rules:
 |---|---|---|---|---|
 | `topup-bank-nightly` | 3:30am daily | A (MacBook Pro) | ✅ live | plan-billed question-bank topup (spec in its SKILL.md; stamps `qb-topup`) |
 | `file-subgroups-nightly` | 4:15am daily | A (MacBook Pro) | ✅ live | sub-group filing backfill after the topup (stamps `file-subgroups`) |
-| `s1s2-math-extraction-worker` | every 20 min | A (MacBook Pro) | ⏸ disabled | drains `~/Desktop/AdrianMath/papers/` one bundle per run — re-enable pending (~19 PDFs waiting) |
+| `s1s2-math-extraction-worker` | every 20 min | A (MacBook Pro) | ⏸ retired | superseded by `pdf-extraction-worker` (below) — delete when convenient |
+| `pdf-extraction-worker` | every 20 min | A (MacBook Pro) | ⏸ armed, enables when GCE TYS staging lands (2026-08-28) | drains `~/Desktop/AdrianMath/papers/` ONE file per run under the live law + CLAUDE.md overrides (GCE priority); stamps `pdf-extract` only on claiming runs |
+| `question-mine-daily` | 7:00am daily | A (MacBook Pro) | ✅ live (2026-08-28) | daily student-demand mining per [`docs/QMINE.md`](QMINE.md) — asks → coverage cross-ref → topup enqueues + ≤3 judgment digest (stamps `question-mine`) |
 | `siteground-vercel-migration-reminder` | one-time 1 Nov 2026 | A (MacBook Pro) | ✅ armed | domain + hosting expiry reminder |
 | *(extraction fleet)* | various | B | ❓ list from Mac B | paper→bank workers in `~/Desktop/AdrianMath`; worker law = live Supabase row |
