@@ -10,7 +10,7 @@
 // policy, so the ownership filter below IS the access control — it must never
 // be driven by anything the client can set.
 import Link from 'next/link';
-import { currentStudent } from '@/lib/portal-auth';
+import { currentAccount } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/lib/portal-marking';
 import PortalFlowStrip from '@/components/PortalFlowStrip';
@@ -49,7 +49,7 @@ function niceDate(d: string): string {
 }
 
 export default async function MarkingPage() {
-  const { account } = await currentStudent();
+  const account = await currentAccount();
   // Marking-only beta: /app/practice is closed to students, but the same flow
   // is embedded on Home — so their "Work on next" chips deep-link to /app?topic=
   // (the flow reads ?topic= on mount); the full portal links to /app/practice.
@@ -58,30 +58,33 @@ export default async function MarkingPage() {
   const practiceHref = (topic: string) => `/app/practice?topic=${encodeURIComponent(topic)}`;
 
   const sb = getSupabaseAdmin();
-  const { data } = await sb
-    .from('paper_marking_runs')
-    .select(COLUMNS)
-    .eq('student_id', account.airtable_student_id)
-    .not('released_at', 'is', null)
-    .order('created_at', { ascending: false })
-    .limit(MAX_PAPERS);
-
-  // Papers this student handed in through /app/submit that Adrian hasn't
-  // released yet. Portal submissions ONLY (the result_json stamp) — a paper
-  // Adrian uploaded himself and chose not to release must never surface as a
-  // phantom "being marked". Name + date + page count, never a mark.
-  const { data: pendingRows } = await sb
-    .from('paper_marking_runs')
-    .select('id, created_at, paper_name, num_photos')
-    .eq('student_id', account.airtable_student_id)
-    .eq('result_json->>portal_submission', 'true')
-    .is('released_at', null)
-    .order('created_at', { ascending: false })
-    .limit(5);
+  // The released list, the pending list (papers this student handed in through
+  // /app/submit that Adrian hasn't released yet — portal submissions ONLY, the
+  // result_json stamp: a paper Adrian uploaded himself and chose not to
+  // release must never surface as a phantom "being marked"; name + date +
+  // page count, never a mark) and the flow-strip surfaces are independent —
+  // fetch all three in parallel instead of one after the other.
+  const [{ data }, { data: pendingRows }, surfaces] = await Promise.all([
+    sb
+      .from('paper_marking_runs')
+      .select(COLUMNS)
+      .eq('student_id', account.airtable_student_id)
+      .not('released_at', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(MAX_PAPERS),
+    sb
+      .from('paper_marking_runs')
+      .select('id, created_at, paper_name, num_photos')
+      .eq('student_id', account.airtable_student_id)
+      .eq('result_json->>portal_submission', 'true')
+      .is('released_at', null)
+      .order('created_at', { ascending: false })
+      .limit(5),
+    portalSurfaces(),
+  ]);
   const pending = pendingRows ?? [];
 
   const { papers, averagePct, trendPts, focus, streakNote } = buildStudentMarking((data ?? []) as MarkingRunRow[]);
-  const surfaces = await portalSurfaces();
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
@@ -91,12 +94,12 @@ export default async function MarkingPage() {
       <div className="flex items-center justify-between pt-1">
         <h1 className="text-xl font-bold text-navy">Marked papers</h1>
         <div className="flex items-center gap-3">
-          <Link href="/app/my-notes" className="text-sm font-semibold text-navy hover:underline">
+          <Link href="/app/my-notes" className="text-sm font-semibold text-navy hover:underline active:scale-95 transition">
             🗂 My Notes
           </Link>
           <Link
             href="/app/submit"
-            className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-3.5 py-2 hover:opacity-90"
+            className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-3.5 py-2 hover:opacity-90 active:scale-95 transition"
           >
             📤 Submit a paper
           </Link>

@@ -5,7 +5,7 @@
 // ?assignment=<id> — a "From Adrian" worksheet hand-in (SPEC-ASSIGN.md): the
 // assignment is ownership-checked here and the client locks the paper name.
 import { redirect } from 'next/navigation';
-import { currentStudent } from '@/lib/portal-auth';
+import { currentAccount } from '@/lib/portal-auth';
 import { getStudentAssignment } from '@/lib/portal-assignments';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { DAILY_SUBMIT_CAP, countHandinsToday } from '@/lib/portal-submit-limit';
@@ -15,7 +15,7 @@ import SubmitClient from './submit-client';
 export const dynamic = 'force-dynamic';
 
 export default async function SubmitPage({ searchParams }: { searchParams: Promise<{ assignment?: string; paper?: string }> }) {
-  const { account } = await currentStudent();
+  const account = await currentAccount();
   const { assignment: assignmentId, paper: paperId } = await searchParams;
   let assignment: { id: string; title: string } | null = null;
   if (assignmentId) {

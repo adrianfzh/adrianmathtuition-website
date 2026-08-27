@@ -8,7 +8,7 @@
 // STUDENT session too (the API registers papers against a student).
 import Link from 'next/link';
 import { requireFullPortal } from '@/lib/portal-beta';
-import { createSupabaseServer } from '@/lib/supabase-server';
+import { sessionAccount } from '@/lib/portal-auth';
 import { qbLevelsFor } from '@/lib/qb-levels';
 import { PRINT_POOL_SCOPE } from '@/lib/print-paper';
 import PrintClient from './print-client';
@@ -25,17 +25,11 @@ export default async function PrintPage({ searchParams }: { searchParams: Promis
     preset === 'weakspots' || preset === 'topics' || preset === 'mock' ? preset : undefined;
 
   let levels: { key: string; label: string }[] | null = null;
-  const supabase = await createSupabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) {
-    const { data: account } = await supabase
-      .from('portal_accounts')
-      .select('level, subjects')
-      .eq('id', user.id)
-      .single<{ level: string | null; subjects: string[] | null }>();
-    if (account) {
-      levels = qbLevelsFor(account.level, account.subjects).filter(l => PRINT_POOL_SCOPE[l.key]);
-    }
+  // Per-request cached (lib/portal-auth.ts) — shares the layout's auth lookup
+  // in the same render pass instead of a second getUser round-trip.
+  const account = await sessionAccount();
+  if (account) {
+    levels = qbLevelsFor(account.level, account.subjects).filter(l => PRINT_POOL_SCOPE[l.key]);
   }
 
   if (!levels || !levels.length) {

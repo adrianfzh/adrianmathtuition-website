@@ -1,12 +1,12 @@
 // /app/settings — server wrapper: loads the account, hands plain fields to the
 // interactive client component.
-import { currentStudent } from '@/lib/portal-auth';
+import { currentAccount } from '@/lib/portal-auth';
 import SettingsClient from './SettingsClient';
 
 export const dynamic = 'force-dynamic';
 
 export default async function SettingsPage() {
-  const { account } = await currentStudent();
+  const account = await currentAccount();
   return (
     <SettingsClient
       email={account.email}
