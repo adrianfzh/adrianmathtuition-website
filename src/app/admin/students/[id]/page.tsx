@@ -608,6 +608,26 @@ export default function StudentProfilePage() {
                   }}>
                   {inviteState === 'sending' ? 'Sending…' : '🎓 Portal invite'}
                 </button>
+                {/* Same invite, hand-delivered: returns the activation URL for
+                    Adrian to WhatsApp — needs no Student Email in Airtable. */}
+                <button style={actionBtn()} disabled={inviteState === 'sending'}
+                  onClick={async () => {
+                    if (!confirm(`Create a portal invite link for ${s.name}? You send it yourself (WhatsApp/in person). Expires in 7 days.`)) return;
+                    setInviteState('sending');
+                    try {
+                      const r = await fetch('/api/portal/invite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ airtableStudentId: studentId, delivery: 'link' }) });
+                      const d = await r.json();
+                      if (r.ok) {
+                        try {
+                          await navigator.clipboard.writeText(d.inviteUrl);
+                          alert(`✅ Invite link copied — send it to ${s.name}:\n${d.inviteUrl}\n\nThey set their own email + password there. Expires in 7 days.`);
+                        } catch { prompt('Invite link (copy manually):', d.inviteUrl); }
+                      } else alert(`❌ ${d.error || 'Failed'}`);
+                    } catch { alert('❌ Network error'); }
+                    setInviteState('idle');
+                  }}>
+                  {inviteState === 'sending' ? 'Sending…' : '🔗 Portal link'}
+                </button>
                 {s.status !== 'Inactive' && (
                   <button onClick={openHoliday} style={actionBtn('#0369a1', '#bae6fd', '#f0f9ff')}>🏖 Holiday opt-out</button>
                 )}
