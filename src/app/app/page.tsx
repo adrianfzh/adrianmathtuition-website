@@ -10,6 +10,12 @@ import { NOTES_OPEN_TO_STUDENTS, fullPortalVisible, viewingAsStudent } from '@/l
 import { listStudentAssignments } from '@/lib/portal-assignments';
 import { assignmentHref, dueLabel, homeCardSummary, isPending } from '@/lib/assignments';
 import { homeCounts } from '@/lib/portal-home-counts';
+import { createServiceClient } from '@/lib/supabase-server';
+import { loadPapersAndNotebook } from '@/lib/notebook-data';
+import { buildPlan } from '@/lib/plan';
+import { sgtToday } from '@/lib/notebook';
+import { activeAnnouncement } from '@/lib/portal-announcement';
+import PortalAnnouncementCard from '@/components/PortalAnnouncementCard';
 import { SURFACES } from '@/lib/portal-theme';
 import PortalIcon from '@/components/PortalIcon';
 
@@ -50,6 +56,21 @@ export default async function DashboardPage() {
   const pendingWork = assignments.filter(a => isPending(a.status));
   const workSummary = homeCardSummary(assignments);
 
+  // This week's focus (Adrian, 2026-08-28): the Plan TAB is gone — real
+  // suggestions surface HERE, and only when they exist. Fail-soft: a plan
+  // that can't load just means no card.
+  const focus = await (async () => {
+    try {
+      const res = await loadPapersAndNotebook(createServiceClient(), account.airtable_student_id, sgtToday());
+      if (!res.ok) return [];
+      return buildPlan(res.papers, res.entries.map(e => ({
+        topic: e.topic, attempts: e.attempts,
+        questionNumber: e.question_number, paperName: e.paper_name,
+      }))).focus;
+    } catch { return []; }
+  })();
+  const announcement = activeAnnouncement();
+
   // Home visual language (2026-08-22, lib/portal-theme.ts): soft elevated
   // cards, no hairline borders, and every destination wearing its own colour
   // — the same colour it has in the tab bar — so a student learns "amber =
@@ -61,6 +82,12 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-4 pb-20 sm:pb-4">
       <h1 className="text-2xl font-bold text-navy pt-1 tracking-tight">Hi {d.firstName} 👋</h1>
+
+      {/* Release announcement — HOME ONLY (Adrian, 2026-08-28: not on every
+          tab). One card, dismissible, auto-expires via `until`. */}
+      {announcement && (fullPortal || !announcement.fullPortalOnly) && (
+        <PortalAnnouncementCard announcement={announcement} />
+      )}
 
       {/* From Adrian — assigned work, at the top because it's the one thing
           Adrian specifically asked this student to do. Hidden when nothing is
@@ -225,17 +252,28 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* My Plan (SPEC-REVISION-PLAN.md) — the adaptive revision plan, rebuilt
-          from marked papers + notebook wins on every open. In the marking-only
-          allowlist, so it renders in both branches. */}
-      <Link href="/app/plan" className={`${card} !p-4 flex items-center gap-3 hover:shadow-md active:scale-[0.99] transition`}>
-        <span className={`flex items-center justify-center w-11 h-11 rounded-2xl shrink-0 ${PL.tile}`}><PortalIcon name={PL.icon} className="w-5.5 h-5.5" /></span>
-        <span className="min-w-0 flex-1">
-          <span className="block font-bold text-navy text-sm leading-tight">My Plan</span>
-          <span className="block text-[11px] text-slate-500 mt-0.5">What to work on this week, from your own marked papers</span>
-        </span>
-        <span className={`shrink-0 ${PL.text}`}>›</span>
-      </Link>
+      {/* This week's focus — renders ONLY when the plan derived real
+          suggestions from this student's marked papers + notebook (Adrian,
+          2026-08-28: no standing Plan tab; suggestions earn their place on
+          Home or appear nowhere). /app/plan stays routable for the detail. */}
+      {focus.length > 0 && (
+        <div className={`${card} !p-4`}>
+          <div className="flex items-center gap-2 mb-2">
+            <span className={`flex items-center justify-center w-8 h-8 rounded-xl shrink-0 ${PL.tile}`}><PortalIcon name={PL.icon} className="w-4 h-4" /></span>
+            <span className="font-bold text-navy text-sm">This week&apos;s focus</span>
+            <Link href="/app/plan" className={`ml-auto text-[11px] font-semibold ${PL.text} hover:underline`}>full plan ›</Link>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {focus.map(f => (
+              <Link key={f.topic} href={`/app/practice?topic=${encodeURIComponent(f.topic)}`}
+                className="text-sm bg-rose-50 text-rose-800 rounded-full px-3 py-1 hover:bg-rose-100 transition-colors">
+                {f.topic} <span className="text-rose-500">›</span>
+              </Link>
+            ))}
+          </div>
+          <p className="text-[11px] text-slate-400 mt-2">Where your marked papers say the marks are going — tap one to practise it.</p>
+        </div>
+      )}
 
       {/* Revision Notes — re-opened to beta students 2026-08-27
           (NOTES_OPEN_TO_STUDENTS carve-out in lib/portal-beta.ts). The full

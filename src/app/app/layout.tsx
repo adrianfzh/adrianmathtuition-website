@@ -12,8 +12,6 @@ import SignOutButton from './signout-button';
 import { pendingAssignmentCountForSession } from '@/lib/portal-assignments';
 import ViewAsToggle from './view-as-toggle';
 import PortalTour from '@/components/PortalTour';
-import PortalAnnouncementCard from '@/components/PortalAnnouncementCard';
-import { activeAnnouncement } from '@/lib/portal-announcement';
 import { portalSurfaces } from '@/lib/portal-surfaces';
 import { DesktopLinks, MobileTabs } from '@/components/PortalTabs';
 
@@ -38,7 +36,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const desktopLinks = fullPortal
     ? [
         { href: '/app', label: 'Dashboard' },
-        { href: '/app/plan', label: 'My Plan' },
         { href: '/app/practice', label: 'Practice' },
         ...(learnVisible ? [{ href: '/app/learn', label: 'Learn' }] : []),
         { href: '/app/submit', label: 'Submit' },
@@ -47,7 +44,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       ]
     : [
         { href: '/app', label: 'Dashboard' },
-        { href: '/app/plan', label: 'My Plan' },
         { href: '/app/practice', label: 'Practise' },
         ...(NOTES_OPEN_TO_STUDENTS ? [{ href: '/app/notes', label: 'Notes' }] : []),
         { href: '/app/submit', label: 'Hand in a paper' },
@@ -56,7 +52,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const mobileTabs = fullPortal
     ? [
         { href: '/app', label: 'Home' },
-        { href: '/app/plan', label: 'Plan' },
         { href: '/app/practice', label: 'Practice' },
         ...(learnVisible ? [{ href: '/app/learn', label: 'Learn' }] : []),
         { href: '/app/notebook', label: 'Notebook' },
@@ -64,7 +59,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       ]
     : [
         { href: '/app', label: 'Home' },
-        { href: '/app/plan', label: 'Plan' },
         { href: '/app/practice', label: 'Practise' },
         ...(NOTES_OPEN_TO_STUDENTS ? [{ href: '/app/notes', label: 'Notes' }] : []),
         { href: '/app/submit', label: 'Hand in' },
@@ -98,12 +92,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       )}
 
       <main className="max-w-4xl mx-auto px-4 py-5">
-        {/* Release announcement (lib/portal-announcement.ts) — one card, shown
-            once per device. Full-portal-only announcements stay invisible to
-            marking-only beta students, whose portal doesn't have the feature. */}
-        {(() => { const a = activeAnnouncement(); return a && (fullPortal || !a.fullPortalOnly) && (
-          <PortalAnnouncementCard announcement={a} />
-        ); })()}
         {children}
       </main>
 
