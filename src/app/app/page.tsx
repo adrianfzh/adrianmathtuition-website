@@ -171,6 +171,18 @@ export default async function DashboardPage() {
       </div>
       )}
 
+      {/* Quick links — the surfaces that lost their phone tab slot in the
+          six-tab squeeze (reading Notes, Requests) still need a thumb-reachable
+          door; on desktop the nav also has them, harmless duplication. */}
+      <div className="flex gap-2">
+        <Link href="/app/notes" className={`${card} !py-3 flex-1 text-center text-sm font-semibold text-navy active:scale-95 transition-transform select-none`}>
+          📖 Notes
+        </Link>
+        <Link href="/app/requests" className={`${card} !py-3 flex-1 text-center text-sm font-semibold text-navy active:scale-95 transition-transform select-none`}>
+          🙋 Requests
+        </Link>
+      </div>
+
       {/* Next lesson — information, not an action, so a slim row rather than
           a card that competes with the tiles below. */}
       <div className={`${card} !py-3.5 flex items-center gap-3`}>
