@@ -81,7 +81,8 @@ Rules:
 | `topup-bank-nightly` | 3:30am daily | A (MacBook Pro) | ✅ live | plan-billed question-bank topup (spec in its SKILL.md; stamps `qb-topup`) |
 | `file-subgroups-nightly` | 4:15am daily | A (MacBook Pro) | ✅ live | sub-group filing backfill after the topup (stamps `file-subgroups`) |
 | `s1s2-math-extraction-worker` | every 20 min | A (MacBook Pro) | ⏸ retired | superseded by `pdf-extraction-worker` (below) — delete when convenient |
-| `pdf-extraction-worker` | every 20 min | A (MacBook Pro) | ⏸ armed, enables when GCE TYS staging lands (2026-08-28) | drains `~/Desktop/AdrianMath/papers/` ONE file per run under the live law + CLAUDE.md overrides (GCE priority); stamps `pdf-extract` only on claiming runs |
+| `pdf-extraction-worker` | every 20 min | A (MacBook Pro) | ✅ live (2026-08-28) | drains `~/Desktop/AdrianMath/papers/` ONE file per run under the live law + CLAUDE.md overrides (GCE priority); stamps `pdf-extract` only on claiming runs |
+| `pdf-extraction-worker` (clone) | every 20 min | *(new Mac, Adrian setting up)* | 🔜 planned (2026-08-28) | same task on a second machine — recipe: copy this repo's task SKILL.md, change RUNNER prefix to `PDF-Pipeline-<MacName>-Sched-`. ⚠ If that Mac's `~/Desktop/AdrianMath` is a SEPARATE copy (not synced), MOVE a slice of `papers/` there rather than sharing — `mv -n` claims are only atomic within one filesystem; the DB dedup index catches cross-machine dups but duplicate extraction wastes usage |
 | `question-mine-daily` | 7:00am daily | A (MacBook Pro) | ✅ live (2026-08-28) | daily student-demand mining per [`docs/QMINE.md`](QMINE.md) — asks → coverage cross-ref → topup enqueues + ≤3 judgment digest (stamps `question-mine`) |
 | `siteground-vercel-migration-reminder` | one-time 1 Nov 2026 | A (MacBook Pro) | ✅ armed | domain + hosting expiry reminder |
 | *(extraction fleet)* | various | B | ❓ list from Mac B | paper→bank workers in `~/Desktop/AdrianMath`; worker law = live Supabase row |
