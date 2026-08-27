@@ -282,13 +282,14 @@ export default async function DashboardPage() {
       {/* This week's focus — renders ONLY when the plan derived real
           suggestions from this student's marked papers + notebook (Adrian,
           2026-08-28: no standing Plan tab; suggestions earn their place on
-          Home or appear nowhere). /app/plan stays routable for the detail. */}
+          Home or appear nowhere). The detail lives in My Notebook
+          (/app/my-notes — /app/plan redirects there since 2026-08-28). */}
       {focus.length > 0 && (
         <div className={`${card} !p-4`}>
           <div className="flex items-center gap-2 mb-2">
             <span className={`flex items-center justify-center w-8 h-8 rounded-xl shrink-0 ${PL.tile}`}><PortalIcon name={PL.icon} className="w-4 h-4" /></span>
             <span className="font-bold text-navy text-sm">This week&apos;s focus</span>
-            <Link href="/app/plan" className={`ml-auto text-[11px] font-semibold ${PL.text} hover:underline`}>full plan ›</Link>
+            <Link href="/app/my-notes" className={`ml-auto text-[11px] font-semibold ${PL.text} hover:underline`}>My Notebook ›</Link>
           </div>
           <div className="flex flex-wrap gap-2">
             {focus.map(f => (

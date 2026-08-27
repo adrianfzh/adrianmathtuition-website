@@ -1,5 +1,6 @@
-// /api/portal/my-notes — "Save to My Notes": clippings a student cuts out of
-// their released marked papers (Adrian, 2026-08-27).
+// /api/portal/my-notes — "Save to My Notebook": clippings a student cuts out
+// of their released marked papers (Adrian, 2026-08-27; the surface was named
+// My Notes until the 2026-08-28 My Notebook merge — the route path stays).
 //
 //   GET              the student's own clippings, newest first
 //   POST             save one clipping: {runId?, sourceLabel, topic?, note?, image}

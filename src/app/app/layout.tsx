@@ -46,18 +46,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   // Marking-only beta (lib/portal-beta.ts, Adrian 2026-08-21): students see
-  // Home / Plan / Practise / Submit / Marked (+ Settings) and nothing else. Adrian's
-  // admin cookie keeps the full nav — Learn while LEARN_OPEN_TO_STUDENTS is off
-  // — unless he has flipped "View as student", which demotes him everywhere.
+  // Home / Practise / Ask / Hand in / Marked / My Notebook (+ Notes while the
+  // carve-out is on, + Settings) and nothing else. Adrian's admin cookie keeps
+  // the full nav — Learn while LEARN_OPEN_TO_STUDENTS is off — unless he has
+  // flipped "View as student", which demotes him everywhere.
   const viewingAsStudent = isAdmin && cookieStore.get(VIEW_AS_STUDENT_COOKIE)?.value === '1';
   const adminPowers = isAdmin && !viewingAsStudent;
   const fullPortal = adminPowers || !MARKING_ONLY_BETA;
   const learnVisible = adminPowers || LEARN_OPEN_TO_STUDENTS;
-  // Notebook is hidden from the marking-only beta (Adrian, 2026-08-24: "hide
-  // notebook as well") — it rides the full-portal switch like Learn/Notes;
-  // its page and API bounce students via the same portal-beta gate.
-  // "My Plan" (SPEC-REVISION-PLAN.md) rides in BOTH branches — it is in the
-  // marking-only allowlist (marking-derived, released-only).
+  // Notebook (/app/notebook, the re-attempt flow) is hidden from the
+  // marking-only beta (Adrian, 2026-08-24: "hide notebook as well") — it rides
+  // the full-portal switch like Learn/Notes; its page and API bounce students
+  // via the same portal-beta gate.
+  // "My Notebook" (/app/my-notes) rides in BOTH branches — marking-derived +
+  // the student's own clippings, so it is in the marking-only allowlist. It
+  // absorbed /app/plan (My Plan) on 2026-08-28, which now redirects there.
   const desktopLinks = fullPortal
     ? [
         { href: '/app', label: 'Dashboard' },
@@ -67,7 +70,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: '/app/submit', label: 'Submit' },
         { href: '/app/notebook', label: 'Notebook' },
         { href: '/app/marking', label: 'Marked' },
-        { href: '/app/my-notes', label: 'My Notes' },
+        { href: '/app/my-notes', label: 'My Notebook' },
         { href: '/app/requests', label: 'Requests' },
       ]
     : [
@@ -77,7 +80,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         ...(NOTES_OPEN_TO_STUDENTS ? [{ href: '/app/notes', label: 'Notes' }] : []),
         { href: '/app/submit', label: 'Hand in a paper' },
         { href: '/app/marking', label: 'Marked papers' },
-        { href: '/app/my-notes', label: 'My Notes' },
+        { href: '/app/my-notes', label: 'My Notebook' },
         { href: '/app/requests', label: 'Requests' },
       ];
   const mobileTabs = fullPortal
@@ -88,7 +91,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         ...(learnVisible ? [{ href: '/app/learn', label: 'Learn' }] : []),
         { href: '/app/notebook', label: 'Notebook' },
         { href: '/app/marking', label: 'Marked' },
-        { href: '/app/my-notes', label: 'My Notes' },
+        { href: '/app/my-notes', label: 'My Notebook' },
       ]
     : [
         { href: '/app', label: 'Home' },
@@ -96,7 +99,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: '/app/ask', label: 'Ask' },
         { href: '/app/submit', label: 'Hand in' },
         { href: '/app/marking', label: 'Marked' },
-        { href: '/app/my-notes', label: 'My Notes' },
+        { href: '/app/my-notes', label: 'My Notebook' },
       ];
   // "From Adrian" pending work → numeric badge on Home (no 5th tab, per spec).
   // First-login tour (components/PortalTour.tsx). The `data-tour` attributes

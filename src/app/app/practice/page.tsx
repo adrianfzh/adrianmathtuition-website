@@ -35,7 +35,7 @@ import { questionMarkdown, questionStructured } from '@/lib/bank-question-markdo
 
 export const dynamic = 'force-dynamic';
 
-const QID_FROM = ['marked', 'photo', 'search', 'generated'] as const;
+const QID_FROM = ['marked', 'photo', 'search', 'generated', 'notebook'] as const;
 
 export default async function PracticePage({ searchParams }: { searchParams: Promise<{ assignment?: string; level?: string; topic?: string; qid?: string; from?: string }> }) {
   const { assignment: assignmentId, level: targetLevel, topic: targetTopic, qid, from } = await searchParams;

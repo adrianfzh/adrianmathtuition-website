@@ -1,4 +1,4 @@
-// "Save to My Notes" — students clip regions of their released marked papers
+// "Save to My Notebook" — students clip regions of their released marked papers
 // into a personal gallery (Adrian, 2026-08-27: "on the output marked pdf ->
 // able for students to save parts of it as notes -> for reference later").
 //

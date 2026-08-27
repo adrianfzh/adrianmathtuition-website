@@ -28,8 +28,9 @@ const MAX_ATTEMPTS_KEPT = 50;
 const MAX_ANSWER_LEN = 300;
 
 // Row shape + the papers/entries assembly live in lib/notebook-data.ts,
-// shared with /app/plan (SPEC-REVISION-PLAN.md) so the two surfaces can never
-// read the same rows differently.
+// shared with the plan surfaces (Home's focus card + My Notebook,
+// SPEC-REVISION-PLAN.md) so the surfaces can never read the same rows
+// differently.
 type EntryRow = NotebookEntryRow;
 
 type Attempt = {

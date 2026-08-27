@@ -1,6 +1,7 @@
 // One student's released marked papers + their (lazily synced) notebook rows —
-// the assembly that both /api/portal/notebook and the plan surfaces
-// (/app/plan, /api/portal/plan) read. Lifted out of the notebook route
+// the assembly that both /api/portal/notebook and the plan surfaces (Home's
+// focus card, /app/my-notes "My Notebook", /api/portal/plan) read. Lifted out
+// of the notebook route
 // 2026-08-26 (SPEC-REVISION-PLAN.md) so the plan can never drift from the
 // notebook's view of the same rows: same run window, same release gate, same
 // lazy sync (opening EITHER page backfills entries from newly released papers).
