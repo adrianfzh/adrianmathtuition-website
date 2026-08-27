@@ -318,6 +318,23 @@ Shared component `src/components/LessonModal.tsx`. On the schedule page, name ta
 
 14-day edit window enforced server-side in both `lesson-update` and `lesson-prev-update`. Debounce timers cleared on modal unmount.
 
+### Portal self-service reschedule (2026-08-28)
+
+Students can move their own lesson from the portal: Home's "Next lesson" row →
+**Change** → `/app/reschedule` (not gated by the marking-only beta — lesson
+logistics, same thing they already do via the bots). The website does NOT
+re-implement any rule: `/api/portal/reschedule` (portal-session auth, studentId
+injected server-side) is a thin proxy to the bot's `/api/portal-reschedule`
+(GET list / POST book, `BOT_INTERNAL_SECRET`), which calls the canonical
+`lib/reschedule.js` — same movable-lesson list (Scheduled Regular/Rescheduled/
+Additional, today→+4 weeks, one-hour rule), same capacity-checked open-only
+options (no waiting list on the portal: it has no push channel), and the POST
+re-derives BOTH lists at confirm time (membership in the student's own movable
+list = the ownership check; the option re-check = capacity/blocked/start-time
+gate) before `executeReschedule(..., 'Portal (student)')`. Adrian gets the
+usual 📅 Telegram note from the bot. Health-check probes the website route
+anonymously (expects 401).
+
 ### Reschedule semantics (mirrors bot /rs exactly)
 
 - Creates new lesson: `Type: 'Rescheduled'`, `Status: 'Scheduled'`

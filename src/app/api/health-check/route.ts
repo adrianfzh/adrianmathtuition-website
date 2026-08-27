@@ -276,6 +276,14 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`table? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
       return 'auth gate up';
     }),
+    // Portal reschedule (Home "Change" → /app/reschedule → bot lib/reschedule.js).
+    // The route must hold its auth gate — a 404 here means students silently
+    // lose self-service lesson moves and fall back to messaging Adrian.
+    timed('portal-reschedule', async () => {
+      const r = await fetch(`${base}/api/portal/reschedule`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // Practice topic picker (/app/practice → lib/practice-strands + topic-picker).
     // The question-type route must hold its auth gate, and the two RPCs the
     // picker is built on must still answer with rows for a JC bank AND a Sec 3

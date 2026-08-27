@@ -186,6 +186,11 @@ export default async function DashboardPage() {
         {d.nextLesson && d.nextLesson.type !== 'Regular' && (
           <span className="text-[11px] bg-blue-50 text-blue-700 rounded-full px-2.5 py-1 font-semibold shrink-0">{d.nextLesson.type}</span>
         )}
+        {d.nextLesson && (
+          <Link href="/app/reschedule" className="shrink-0 text-xs font-semibold text-slate-500 hover:text-navy border border-black/10 rounded-full px-3 py-1.5">
+            Change
+          </Link>
+        )}
       </div>
 
       {/* Week stats — the "lessons done / coming up" pills were dropped on
