@@ -95,7 +95,7 @@ function CardLink({
   count?: string;
 }) {
   return (
-    <Link href={href} className="nx-item">
+    <Link href={href} className="nx-item active:scale-[.98] transition-transform select-none">
       <span className="nx-item-main">
         <span className="nx-item-title">{title}</span>
         {description && <span className="nx-item-desc">{description}</span>}

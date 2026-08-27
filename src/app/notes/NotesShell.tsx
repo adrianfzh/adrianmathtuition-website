@@ -1,4 +1,6 @@
 'use client';
+
+import { MobileTabs } from '@/components/PortalTabs';
 // Portal-style shell for /notes (2026-08-28). The fumadocs docs-site chrome is
 // gone — Adrian, reviewing on his phone: "the style of the UIUX of the notes
 // should follow that of the student portal itself." So this is the /app
@@ -363,7 +365,22 @@ export default function NotesShell({
         />
       )}
 
-      <main className="mx-auto w-full max-w-4xl px-4 py-6">{children}</main>
+      <main className="mx-auto w-full max-w-4xl px-4 py-6 pb-24 sm:pb-6">{children}</main>
+
+      {/* Same bottom tab bar as /app, so the notes reader feels in-app on a
+          phone (Adrian, 2026-08-28: "the lower menu bar is gone?"). Static
+          student set — no badge counts here. */}
+      <MobileTabs
+        items={[
+          { href: '/app', label: 'Home' },
+          { href: '/app/practice', label: 'Practise' },
+          { href: '/app/ask', label: 'Ask' },
+          { href: '/app/submit', label: 'Hand in' },
+          { href: '/app/marking', label: 'Marked' },
+          { href: '/app/my-notes', label: 'My Notes' },
+        ]}
+        pendingWork={0}
+      />
     </>
   );
 }

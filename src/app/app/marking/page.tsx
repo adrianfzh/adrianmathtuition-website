@@ -91,20 +91,9 @@ export default async function MarkingPage() {
       <div className="-mb-1 pt-1">
         <PortalFlowStrip current="marking" surfaces={surfaces} />
       </div>
-      <div className="flex items-center justify-between pt-1">
-        <h1 className="text-xl font-bold text-navy">Marked papers</h1>
-        <div className="flex items-center gap-3">
-          <Link href="/app/my-notes" className="text-sm font-semibold text-navy hover:underline active:scale-95 transition">
-            🗂 My Notes
-          </Link>
-          <Link
-            href="/app/submit"
-            className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-3.5 py-2 hover:opacity-90 active:scale-95 transition"
-          >
-            📤 Submit a paper
-          </Link>
-        </div>
-      </div>
+      {/* Title only — the tab bar already offers Hand in + My Notes
+          (Adrian, 2026-08-28: "no need for a top bar menu in marked tab"). */}
+      <h1 className="text-xl font-bold text-navy pt-1">Marked papers</h1>
 
       {pending.length > 0 && (
         <div className={`${CARD} p-4`}>
