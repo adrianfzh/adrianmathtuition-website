@@ -356,6 +356,28 @@ export async function GET(req: NextRequest) {
       }
       return r.status === 503 ? 'deployed, awaiting Stripe secret' : 'signature gate up';
     }),
+    // /join — the public self-serve signup landing every student's 🎟 invite
+    // link points at. Must render 200 anonymously; anything else means the
+    // invite loop's front door is broken.
+    timed('join-page', async () => {
+      const r = await fetch(`${base}/join`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 200) throw new Error(`expected 200, got HTTP ${r.status}`);
+      return 'join page up';
+    }),
+    // /app/pass — the paywall stranger accounts are gated to. Anonymously we
+    // expect the page's own auth redirect to /login (any 3xx) — or a 200 if
+    // its auth handling ever changes shape. What this asserts is NOT 404/500:
+    // a 404 means the /app/pass → /pass rewrite (next.config.ts) or the page
+    // itself is gone — paying strangers would be redirect-looped out of the
+    // portal with nowhere to pay; a 500 means the paywall is crashing.
+    timed('pass-page', async () => {
+      const r = await fetch(`${base}/app/pass`, { redirect: 'manual', signal: T(10000) });
+      const redirected = r.status >= 300 && r.status < 400;
+      if (!redirected && r.status !== 200) {
+        throw new Error(`expected redirect-to-login or 200, got HTTP ${r.status}`);
+      }
+      return redirected ? `auth redirect (${r.status})` : 'rendered';
+    }),
     // "Ask" tab question logging (/app/ask → Airtable Questions with the
     // Student link). 401 anonymously proves the route is deployed with its
     // session gate up — a 404 means portal questions silently stop being

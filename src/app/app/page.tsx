@@ -15,9 +15,11 @@ import { loadPapersAndNotebook } from '@/lib/notebook-data';
 import { buildPlan } from '@/lib/plan';
 import { sgtToday } from '@/lib/notebook';
 import { activeAnnouncement } from '@/lib/portal-announcement';
+import { inviteLinkFor } from '@/lib/portal-join';
 import PortalAnnouncementCard from '@/components/PortalAnnouncementCard';
 import { SURFACES } from '@/lib/portal-theme';
 import PortalIcon from '@/components/PortalIcon';
+import InviteFriend from './invite-friend';
 
 export const dynamic = 'force-dynamic';
 
@@ -85,6 +87,11 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-4 pb-20 sm:pb-4">
       <h1 className="text-2xl font-bold text-navy pt-1 tracking-tight">Hi {d.firstName} 👋</h1>
+
+      {/* 🎟 Invite a friend — every student, beta included (invite/paywall
+          build 2026-08-28). The link is the student's personal /join?ref=…;
+          a referred friend gets a 3-day trial, then the S$29/30-day pass. */}
+      <InviteFriend link={inviteLinkFor(account.id)} />
 
       {/* Release announcement — HOME ONLY (Adrian, 2026-08-28: not on every
           tab). One card, dismissible, auto-expires via `until`. */}

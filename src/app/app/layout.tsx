@@ -5,7 +5,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
-import { requireAuth } from '@/lib/portal-auth';
+import { redirect } from 'next/navigation';
+import { currentAccount } from '@/lib/portal-auth';
+import { portalAccessAllowed } from '@/lib/portal-passes';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
 import { MARKING_ONLY_BETA, NOTES_OPEN_TO_STUDENTS, VIEW_AS_STUDENT_COOKIE } from '@/lib/portal-beta';
@@ -28,7 +30,20 @@ export const metadata: Metadata = {
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
   const isAdmin = verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
-  if (!isAdmin) await requireAuth();
+  if (!isAdmin) {
+    // Auth + paywall gate. currentAccount() bounces anonymous (and
+    // account-less) sessions to /login; it costs nothing extra — the same
+    // per-request-cached lookups (lib/portal-auth cache()) every page below
+    // already makes. portalAccessAllowed (lib/portal-passes) short-circuits
+    // for tuition accounts (non-empty airtable_student_id) BEFORE any pass
+    // query, so their gate is free too; only a self-serve stranger costs one
+    // portal_passes head count, and without an active pass (S$29/30 days, or
+    // the referred 3-day trial) they land on /app/pass — served by
+    // src/app/pass via the next.config.ts rewrite, OUTSIDE this layout, so
+    // the redirect can never loop.
+    const account = await currentAccount();
+    if (!(await portalAccessAllowed(account))) redirect('/app/pass');
+  }
 
   // Marking-only beta (lib/portal-beta.ts, Adrian 2026-08-21): students see
   // Home / Plan / Practise / Submit / Marked (+ Settings) and nothing else. Adrian's
