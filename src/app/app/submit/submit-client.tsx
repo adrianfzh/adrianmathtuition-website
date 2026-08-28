@@ -220,6 +220,19 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
           or upload a <b>PDF scan</b>. It comes back marked in <b>Marked papers</b>.
         </p>
 
+        {/* Free-form hand-ins only — mocks and assigned worksheets already carry their
+            questions. The marker anchors each attempt on the student's own question
+            labels, and printed question pages are classified and skipped harmlessly,
+            so asking for both rescues the working-on-foolscap case at no cost
+            (Adrian, 2026-08-28, ahead of Alessi's plain-paper TYS hand-in). */}
+        {!assignment && !paper && (
+          <p className="text-[13px] text-gray-500">
+            ✍️ Worked on your own paper instead of the question sheet? Add photos of the{' '}
+            <b>question pages</b> too, and write each <b>question number</b> clearly beside
+            your working — everything goes in this one submission.
+          </p>
+        )}
+
         <button
           onClick={() => inputRef.current?.click()}
           disabled={busy}
