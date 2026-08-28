@@ -25,6 +25,11 @@ export interface SubgroupRow {
   name: string;
   description: string | null;
   order_index: number | null;
+  /** 'all' | 'hidden' | 'ip' — Adrian's vetting verdicts (2026-08-29).
+   *  loadSubgroups drops everything but 'all', so downstream code only ever
+   *  sees visible rows; the union type stays here for when 'ip' grows a real
+   *  per-student gate. */
+  visibility?: string;
 }
 
 export interface SnippetRow {

@@ -91,11 +91,19 @@ const loadSubgroups = cache((level: string): Promise<SubgroupRow[]> =>
     const rows = await fetchAllRows<SubgroupRow>((from, to) =>
       supa
         .from('subgroups')
-        .select('id, level, topic, name, description, order_index')
+        .select('id, level, topic, name, description, order_index, visibility')
         .eq('level', level.toUpperCase())
         .range(from, to),
     );
-    return sortSubgroups(rows.filter(r => !RETIRED_TOPICS.has(r.topic)));
+    // Vetting verdicts (Adrian, 2026-08-29): 'hidden' rows are retired from
+    // every student surface (old-syllabus / out-of-syllabus folders). 'ip'
+    // rows are reserved for IP-stream students — until portal accounts carry
+    // an IP flag they are conservatively excluded too, never wrongly shown.
+    // This is THE chokepoint: tree, level index, topic pages, search and
+    // prev/next all enumerate from here, so one filter covers them all.
+    return sortSubgroups(
+      rows.filter(r => !RETIRED_TOPICS.has(r.topic) && (r.visibility ?? 'all') === 'all'),
+    );
   }),
 );
 
