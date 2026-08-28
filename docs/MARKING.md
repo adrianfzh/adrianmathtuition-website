@@ -288,6 +288,15 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
 - **Deploy drain (bot, 2026-08-04):** fly kill_timeout 300 + `lib/drain.js` —
   deploys wait for in-flight markings; long phases 503 with a clear message
   while draining. Deploy-killed 502s are history.
+  **Drain rides the WORK, not the HTTP response (2026-08-28, bot `c468ed7`):**
+  the route wrapper `end()`s on `res 'close'`, and the Vercel proxy cuts every
+  request dead at 300s — so any mark longer than 5 min went drain-invisible the
+  moment the client hung up, and a deploy's SIGTERM saw "idle" and exited with
+  the paper half-annotated (Kassandra's TYS re-mark — exit 0, run never stored).
+  `markPaperDirect` now holds its own `begin()`/finally-`end()` for its whole
+  life; nested pairs with the route/queue wrappers are harmless. Corollary for
+  scripts: a remark's HTTP response is unreliable past 300s — fire, then poll
+  `paper_marking_runs` for the new row instead of parsing the body.
 - **⏳ Saved papers (2026-08-03, same day):** the uploads are SAVED as a run row
   BEFORE marking starts (`phase:'save-paper'` → row with `result_json.source`
   only, `total_max` null = the pending signal) and the marking FILLS that row
