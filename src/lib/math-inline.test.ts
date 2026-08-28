@@ -49,3 +49,26 @@ describe('mathHtml', () => {
     expect(escapeHtml('a<b & c>d')).toBe('a&lt;b &amp; c&gt;d');
   });
 });
+
+
+describe('mathHtml — escaped currency dollars', () => {
+  // Sub-group descriptions are TeX-authored and write currency as "\\$75"
+  // (2026-08-29 vetting pass) — the backslash must never leak to the page
+  // and the literal dollar must never open a math span.
+  it('renders \\$ as a plain dollar in prose', () => {
+    expect(mathHtml('this year’s \\$75 680 is 3.5% higher')).toContain('$75 680');
+    expect(mathHtml('costs \\$5')).not.toContain('\\');
+  });
+
+  it('never pairs a literal dollar with a math delimiter', () => {
+    const out = mathHtml('S\\$ prices differ; solve $x + 1 = 2$ first');
+    expect(out).toContain('S$ prices differ');
+    expect(out).toContain('katex'); // the real math span still renders
+  });
+
+  it('leaves no mask sentinel behind in any path', () => {
+    for (const s of ['\\$5 and $x^2$', 'plain', '$\\$3 + \\$4$']) {
+      expect(mathHtml(s)).not.toContain('\u0000');
+    }
+  });
+});

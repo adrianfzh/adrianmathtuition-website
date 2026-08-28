@@ -14,7 +14,7 @@
 import { NextRequest } from 'next/server';
 import { verifyAdminAuth } from './schedule-helpers';
 import { createSupabaseServer } from './supabase-server';
-import type { PortalAccount } from './portal-auth';
+import { getSessionUser, type PortalAccount } from './portal-auth';
 import { qbLevelsFor } from './qb-levels';
 
 export type PracticeCaller =
@@ -23,9 +23,11 @@ export type PracticeCaller =
   | null;
 
 export async function practiceAuth(req: NextRequest): Promise<PracticeCaller> {
-  const supabase = await createSupabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  // Local JWT verification (portal-auth fast path) — the picker fires several
+  // of these per visit and each used to pay the Auth-server round-trip.
+  const user = await getSessionUser();
   if (user) {
+    const supabase = await createSupabaseServer();
     const { data: account } = await supabase
       .from('portal_accounts').select('*').eq('id', user.id).single<PortalAccount>();
     if (account) return { kind: 'student', account };

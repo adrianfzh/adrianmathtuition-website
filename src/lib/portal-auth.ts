@@ -8,8 +8,59 @@
 // data on the very next navigation.
 import { cache } from 'react';
 import { redirect } from 'next/navigation';
+import { createRemoteJWKSet, jwtVerify, type JWTPayload } from 'jose';
 import { createSupabaseServer } from './supabase-server';
 import { airtableRequest } from './airtable';
+
+/**
+ * What the portal actually needs from a session: the auth user's uuid (every
+ * portal_accounts row is keyed on it) and the email when the token carries
+ * one. Deliberately NOT the full supabase User — the fast path below builds
+ * this from locally-verified JWT claims without asking the Auth server.
+ */
+export interface SessionUser {
+  id: string;
+  email?: string;
+}
+
+// ── Local JWT verification (2026-08-29, "is the lagginess addressed?") ───────
+//
+// auth.getUser() round-trips to the Supabase Auth server on EVERY /app
+// request — measured as most of the ~300-400ms warm TTFB before any byte.
+// The project signs access tokens with an asymmetric ES256 key (verified
+// against /auth/v1/.well-known/jwks.json), so the signature can be checked
+// locally: jose's createRemoteJWKSet fetches the public keys once per warm
+// lambda and caches them (~10 min), making steady-state verification pure
+// CPU. Trade-off, accepted deliberately: a revoked session (sign-out
+// elsewhere, password change) stays usable until the access token expires
+// (≤1h) — the standard JWT trade, and account DELETION is still immediate
+// because sessionAccount() re-reads portal_accounts on every request.
+// Anything that fails the fast path (expired token that needs a refresh,
+// JWKS hiccup, key rotation) falls back to the full getUser() round-trip, so
+// the fast path can only ever save time, never admit a token getUser would
+// reject... except within the ≤1h revocation window above.
+const jwksUrl = () => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  if (!url) throw new Error('SUPABASE_URL / NEXT_PUBLIC_SUPABASE_URL is not set');
+  return url.replace(/\/$/, '');
+};
+let _jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
+function getJwks() {
+  if (!_jwks) _jwks = createRemoteJWKSet(new URL(`${jwksUrl()}/auth/v1/.well-known/jwks.json`));
+  return _jwks;
+}
+
+/**
+ * Verified JWT claims → the session user, or null when the claims aren't a
+ * real signed-in person (missing sub, or a non-user token like the anon key,
+ * whose role is "anon"). Pure — exported for the unit test.
+ */
+export function claimsToSessionUser(payload: JWTPayload): SessionUser | null {
+  if (typeof payload.sub !== 'string' || !payload.sub) return null;
+  if (payload.role !== 'authenticated') return null;
+  const email = (payload as { email?: unknown }).email;
+  return { id: payload.sub, email: typeof email === 'string' && email ? email : undefined };
+}
 
 export interface PortalAccount {
   id: string;
@@ -62,13 +113,28 @@ export function portalIdentity(
   return airtableId && airtableId.trim() !== '' ? airtableId : `acct:${account.id}`;
 }
 
-// The validated session user, or null — the ONE getUser() per request.
-// getUser() validates the JWT against the Supabase Auth server (unlike
-// getSession(), which only trusts the cookie) — always use this on the server.
-export const getSessionUser = cache(async () => {
+// The validated session user, or null — ONE auth check per request.
+// Fast path: read the cookie session locally (getSession does no network) and
+// verify the access token's ES256 signature + expiry + issuer ourselves — see
+// the header of this block. getSession() alone must NEVER be trusted (it only
+// parses the cookie); it is safe here strictly because jwtVerify stands
+// between it and the caller. Every miss falls back to getUser(), which also
+// performs the token refresh when the access token has expired.
+export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   const supabase = await createSupabaseServer();
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    if (token) {
+      const { payload } = await jwtVerify(token, getJwks(), {
+        issuer: `${jwksUrl()}/auth/v1`,
+      });
+      const user = claimsToSessionUser(payload);
+      if (user) return user;
+    }
+  } catch { /* expired/rotated/unreachable — take the validated slow path */ }
   const { data: { user } } = await supabase.auth.getUser();
-  return user;
+  return user ? { id: user.id, email: user.email ?? undefined } : null;
 });
 
 // The session's portal_accounts row, or null (no session / no linked row).

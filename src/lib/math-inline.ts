@@ -24,20 +24,26 @@ export function looksLikeMath(c: string): boolean {
   return false;
 }
 
+// `\$` is a literal dollar sign (TeX-authored currency — "S\$75") and must
+// never open or close a math span. Masked out of the pairing scan, restored
+// afterwards: as "\$" inside math (KaTeX renders it as $), as plain "$" in prose.
+const ESCAPED_DOLLAR = '\u0000';
+
 /** Render a comment string to safe HTML: math spans via KaTeX, the rest escaped. */
 export function mathHtml(s: string): string {
   return s
+    .replace(/\\\$/g, ESCAPED_DOLLAR)
     .split(/(\$[^$\n]+\$)/g)
     .map((part) => {
       if (part.length > 2 && part.startsWith('$') && part.endsWith('$')) {
-        const inner = part.slice(1, -1);
+        const inner = part.slice(1, -1).replaceAll(ESCAPED_DOLLAR, '\\$');
         if (looksLikeMath(inner)) {
           try {
             return katex.renderToString(inner, { throwOnError: false, output: 'html' });
           } catch { /* fall through — show the literal text */ }
         }
       }
-      return escapeHtml(part);
+      return escapeHtml(part.replaceAll(ESCAPED_DOLLAR, '$'));
     })
     .join('');
 }

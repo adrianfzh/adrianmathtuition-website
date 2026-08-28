@@ -20,6 +20,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { filterTree, treeFolders, type TreeFolder, type TreeRoot } from '@/lib/notes-tree';
+import { entryMatches, normalize } from '@/lib/notes-search';
 import type { SearchEntry } from '@/lib/notes-data';
 
 export interface ShellLevel {
@@ -35,24 +36,27 @@ const CREAM = 'text-[hsl(45,100%,96%)]';
 
 // ── Search ───────────────────────────────────────────────────────────────────
 
-/** Case-insensitive match, every query word somewhere in label+context. */
-function matches(entry: SearchEntry, words: string[]): boolean {
-  const hay = `${entry.label} ${entry.context}`.toLowerCase();
-  return words.every(w => hay.includes(w));
-}
-
 function SearchResults({ entries, query }: { entries: SearchEntry[]; query: string }) {
-  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  // Typo- and synonym-tolerant matching lives in lib/notes-search — see there
+  // for the substring → synonym → typo pipeline (Adrian, round 5: "trigo
+  // identitis" and "min point" found nothing under a bare substring check).
+  // The haystack is normalized once per entry, keyed on `entries` (only
+  // changes on a level switch) rather than on every keystroke; only the
+  // query side redoes work as the student types.
+  const indexed = useMemo(
+    () => entries.map(e => ({ entry: e, hay: normalize(`${e.label} ${e.context}`) })),
+    [entries],
+  );
+  const words = useMemo(() => normalize(query).split(' ').filter(Boolean), [query]);
   const hits = useMemo(() => {
     if (!words.length) return [];
-    const all = entries.filter(e => matches(e, words));
+    const all = indexed.filter(({ hay }) => entryMatches(hay, words)).map(({ entry }) => entry);
     // Examples first — they are the precise answer; sections and topics are
     // already reachable through the filtered tree below the results.
     const rank = { example: 0, section: 1, topic: 2 } as const;
     all.sort((a, b) => rank[a.kind] - rank[b.kind] || a.label.localeCompare(b.label));
     return all.slice(0, 8);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entries, query]);
+  }, [indexed, words]);
 
   if (!words.length || hits.length === 0) return null;
   return (

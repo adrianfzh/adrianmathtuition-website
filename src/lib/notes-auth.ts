@@ -14,6 +14,7 @@
 import { cookies } from 'next/headers';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from './admin-session';
 import { createSupabaseServer } from './supabase-server';
+import { getSessionUser } from './portal-auth';
 
 export async function isNotesAuthed(): Promise<boolean> {
   const jar = await cookies();
@@ -27,11 +28,13 @@ export async function isNotesAuthed(): Promise<boolean> {
 
 // Non-redirecting portal-session check: a validated Supabase user WITH a
 // portal_accounts row (an Auth user without one shouldn't exist — fail closed).
+// Rides portal-auth's locally-verified fast path (and its per-request cache),
+// so /notes stops paying its own Auth-server round-trip per render.
 export async function hasPortalSession(): Promise<boolean> {
   try {
-    const supabase = await createSupabaseServer();
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getSessionUser();
     if (!user) return false;
+    const supabase = await createSupabaseServer();
     const { data: account } = await supabase
       .from('portal_accounts')
       .select('id')

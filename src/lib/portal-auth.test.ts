@@ -5,7 +5,7 @@ import { describe, it, expect, vi } from 'vitest';
 vi.mock('./supabase-server', () => ({ createSupabaseServer: vi.fn() }));
 vi.mock('./airtable', () => ({ airtableRequest: vi.fn() }));
 
-import { portalIdentity } from './portal-auth';
+import { claimsToSessionUser, portalIdentity } from './portal-auth';
 import { isTuitionAccount } from './portal-passes';
 
 const UUID = 'a1b2c3d4-e5f6-4711-8899-aabbccddeeff';
@@ -67,5 +67,34 @@ describe('portalIdentity — THE portal identity convention', () => {
   it('deactivated STRANGER account keeps the acct: form too', () => {
     const offboardedStranger = { id: UUID, airtable_student_id: '', deactivated_at: '2026-08-28T04:00:00.000Z' };
     expect(portalIdentity(offboardedStranger)).toBe(`acct:${UUID}`);
+  });
+});
+
+// ── Local-JWT fast path (2026-08-29) ─────────────────────────────────────────
+// jose enforces signature, expiry and issuer BEFORE these claims are seen;
+// this gate is what stands between "a validly signed token" and "a signed-in
+// person" — the anon/publishable key is also a validly signed token on
+// legacy projects, and it must never mint a session.
+
+describe('claimsToSessionUser', () => {
+  it('accepts a real user token: sub + authenticated role', () => {
+    expect(claimsToSessionUser({ sub: 'uuid-1', role: 'authenticated', email: 'kid@example.com' }))
+      .toEqual({ id: 'uuid-1', email: 'kid@example.com' });
+  });
+
+  it('rejects the anon-key shape (role anon, no sub)', () => {
+    expect(claimsToSessionUser({ role: 'anon' })).toBeNull();
+    expect(claimsToSessionUser({ sub: '', role: 'anon' })).toBeNull();
+  });
+
+  it('rejects a sub-less or role-less token outright', () => {
+    expect(claimsToSessionUser({ role: 'authenticated' })).toBeNull();
+    expect(claimsToSessionUser({ sub: 'uuid-1' })).toBeNull();
+    expect(claimsToSessionUser({ sub: 'uuid-1', role: 'service_role' })).toBeNull();
+  });
+
+  it('drops a malformed email rather than failing the session', () => {
+    expect(claimsToSessionUser({ sub: 'uuid-1', role: 'authenticated', email: 42 } as never))
+      .toEqual({ id: 'uuid-1', email: undefined });
   });
 });
