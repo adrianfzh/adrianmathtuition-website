@@ -17,7 +17,8 @@ import { flattenParts, type Part } from '@/lib/kiosk-worksheet-images';
 import { renderBotWorksheetPDF, type BotWorksheetQuestion } from '@/lib/render-bot-worksheet';
 import { renderSolutionsPDF, type SolutionsItem, type SolutionsPart } from '@/lib/render-solutions-pdf';
 import { rollupSolution } from '@/lib/solution-rollup';
-import { renderPaperPDF, type PaperPdfQuestion } from '@/lib/render-paper-pdf';
+import { renderPaperPDF, PAPER_PDF_RENDER_VERSION, type PaperPdfQuestion } from '@/lib/render-paper-pdf';
+import { createHash } from 'crypto';
 import { assessCoverage, answerKeyLines, type AnswerPart } from '@/lib/paper-reconstruction';
 import { KIOSK_LEVELS } from '@/lib/kiosk-session';
 import { put } from '@vercel/blob';
@@ -568,6 +569,25 @@ export async function POST(req: NextRequest) {
     // Adrian can type his own title on the print card; blank falls back to the
     // auto title (which the UI shows as the input's placeholder).
     const titleBits = typeof body.title === 'string' && body.title.trim() ? body.title.trim() : autoTitle;
+
+    // Cache: the render is ~20s of Puppeteer, so same content + same options
+    // returns the stored Blob URL instantly. The key hashes the FULL question
+    // content (text, parts, marks, figures) plus options and the renderer
+    // version — so editing a question, replacing a figure, or changing any
+    // toggle misses naturally, with no manual invalidation to forget.
+    const cacheKey = createHash('sha256').update(JSON.stringify({
+      v: PAPER_PDF_RENDER_VERSION,
+      opts: { workingSpace, answerKey, originalNumbering, title: titleBits },
+      rows: rows.map((r) => [r.id, r.question_number, r.total_marks, r.question_text, r.parts, r.answer, r.image_url, r.figure_url, r.has_image]),
+    })).digest('hex');
+    const payload = {
+      count: rows.length, marksTotal,
+      coverage: { status: cov.status, missingMarks: cov.missingMarks, label: cov.label },
+      warnings,
+    };
+    const { data: hit } = await supa.from('paper_pdf_cache').select('url').eq('key', cacheKey).maybeSingle();
+    if (hit?.url) return NextResponse.json({ url: hit.url, cached: true, ...payload });
+
     try {
       const pdf = await renderPaperPDF({
         title: titleBits,
@@ -580,11 +600,8 @@ export async function POST(req: NextRequest) {
       const blob = await put(`mark-paper/paper-pdfs/${Date.now()}.pdf`, pdf, {
         access: 'public', contentType: 'application/pdf', token: process.env.BLOB_READ_WRITE_TOKEN,
       });
-      return NextResponse.json({
-        url: blob.url, count: rows.length, marksTotal,
-        coverage: { status: cov.status, missingMarks: cov.missingMarks, label: cov.label },
-        warnings,
-      });
+      await supa.from('paper_pdf_cache').upsert({ key: cacheKey, url: blob.url, meta: { title: titleBits, ...payload } });
+      return NextResponse.json({ url: blob.url, cached: false, ...payload });
     } catch (e) {
       return NextResponse.json({ error: (e as Error).message || 'render failed' }, { status: 500 });
     }

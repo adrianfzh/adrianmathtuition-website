@@ -33,6 +33,10 @@ import type { Part } from '@/lib/kiosk-worksheet-images';
 const NAVY = '#1c3a5e';
 const ANSWER_ORANGE = '#843C0C';
 
+/** Bump on ANY visual change to this renderer — it keys the paper_pdf_cache,
+ * so stale-looking cached PDFs after a layout tweak mean this wasn't bumped. */
+export const PAPER_PDF_RENDER_VERSION = 1;
+
 export interface PaperPdfQuestion {
   /** Printed question number (original or resequenced by the caller). */
   qnum: string;

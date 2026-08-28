@@ -104,7 +104,9 @@ export default function QuestionBankPage() {
   const [pdfSpace, setPdfSpace] = useState(true);
   const [pdfAnswerKey, setPdfAnswerKey] = useState(true);
   const [pdfOrigNum, setPdfOrigNum] = useState(true);
-  const [pdfTitle, setPdfTitle] = useState(''); // blank → the auto title shown as placeholder
+  const [pdfTitle, setPdfTitle] = useState(''); // prefilled with the auto title on paper open, editable in place
+  const [pdfResult, setPdfResult] = useState<{ url: string; count: number; marksTotal: number; cached: boolean } | null>(null);
+  const [solResult, setSolResult] = useState<{ url: string; count: number } | null>(null);
   const replaceRef = useRef<HTMLInputElement | null>(null);
   const [replaceTarget, setReplaceTarget] = useState<string | null>(null); // figure URL being replaced
   const [replBusy, setReplBusy] = useState(false);
@@ -236,7 +238,13 @@ export default function QuestionBankPage() {
       cacheCards(d.questions || []);
       rememberDetails(d.questions || []);
       setPaperView({ meta, questions: d.questions || [] });
-      setPdfTitle(''); // don't carry a typed title over to a different paper
+      // Prefill the print title with the auto title so Adrian edits in place
+      // instead of retyping; the API treats it the same either way.
+      setPdfTitle([
+        `${meta.school} ${meta.year}`, meta.level,
+        meta.paper ? `Paper ${String(meta.paper).replace(/^P/i, '')}` : null, meta.examType,
+      ].filter(Boolean).join(' · '));
+      setPdfResult(null); setSolResult(null);
       setOpenDetail(null);
       window.scrollTo({ top: 0 });
     } catch (e) { setApiError((e as Error).message); }
@@ -373,9 +381,10 @@ export default function QuestionBankPage() {
       const d = await r.json();
       if (d.error) { flash(d.error); return; }
       (d.warnings || []).forEach((w: string) => flash(w));
-      window.open(d.url, '_blank');
+      // No navigation — the result renders as a row in the print card, so the
+      // page stays put for the next paper or interaction.
+      setPdfResult({ url: d.url, count: d.count, marksTotal: d.marksTotal, cached: !!d.cached });
       navigator.clipboard?.writeText(d.url).catch(() => {});
-      flash(`Paper PDF ready — ${d.count} questions · ${d.marksTotal} marks (link copied)`);
     } catch (e) { flash((e as Error).message); }
     finally { setPdfBusy(false); }
   };
@@ -400,9 +409,8 @@ export default function QuestionBankPage() {
       const d = await r.json();
       if (d.error) { flash(d.error); return; }
       if (d.missingSolutions > 0) flash(`${d.missingSolutions} without a worked solution — [Ans:] printed instead`);
-      window.open(d.url, '_blank');
+      setSolResult({ url: d.url, count: d.count });
       navigator.clipboard?.writeText(d.url).catch(() => {});
-      flash(`Solutions ready — ${d.count} question${d.count === 1 ? '' : 's'} (link copied)`);
     } catch (e) { flash((e as Error).message); }
     finally { setSolBusy(false); }
   };
@@ -722,6 +730,24 @@ export default function QuestionBankPage() {
                 {pdfBusy ? 'Building…' : '⬇️ Paper PDF'}
               </button>
             </div>
+            {pdfResult && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 8, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '6px 10px', fontSize: 13 }}>
+                <span>✅ Paper ready — {pdfResult.count} questions · {pdfResult.marksTotal} marks{pdfResult.cached ? ' · instant (cached)' : ''} · link copied</span>
+                <a href={pdfResult.url} target="_blank" rel="noopener noreferrer"
+                  style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 600, color: '#fff', background: '#15803d', borderRadius: 8, padding: '4px 12px', textDecoration: 'none' }}>
+                  Open PDF ↗
+                </a>
+              </div>
+            )}
+            {solResult && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 8, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '6px 10px', fontSize: 13 }}>
+                <span>✅ Solutions ready — {solResult.count} question{solResult.count === 1 ? '' : 's'} · link copied</span>
+                <a href={solResult.url} target="_blank" rel="noopener noreferrer"
+                  style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 600, color: '#fff', background: '#15803d', borderRadius: 8, padding: '4px 12px', textDecoration: 'none' }}>
+                  Open PDF ↗
+                </a>
+              </div>
+            )}
           </div>
           {paperView.questions.map(c => (
             <button key={c.id} onClick={() => openQuestion(c.id)}
