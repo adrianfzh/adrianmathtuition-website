@@ -288,7 +288,10 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
             placeholder="e.g. Xinmin 2021 Prelim P2"
             className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy/20"
           />
-          <p className="text-[11px] text-gray-400 mt-1">School, year and paper — so Adrian knows what he&apos;s marking.</p>
+          {/* A name shaped like the placeholder is what lets ai/paper-totals.js
+              ground the run to the official total (e.g. /90) — vague names fall
+              back to a counted denominator (Adrian, 2026-08-29). */}
+          <p className="text-[11px] text-gray-400 mt-1">School, year and paper — so Adrian knows what he&apos;s marking, and your score comes back out of the official total (e.g. /90).</p>
         </div>
         )}
 
