@@ -58,14 +58,31 @@ export const PRINT_POOL_SCOPE: Record<string, { tagLevels: string[]; topicsKey: 
   S2: { tagLevels: ['S2'], topicsKey: 'S2' },
 };
 
-/** Mock papers exist only where data/paper-blueprints.json has a blueprint. */
-export const MOCK_LEVELS = ['EM', 'AM'] as const;
+/** Mock papers exist only where data/paper-blueprints.json has a blueprint.
+ * JC1/JC2 both sit the same H2 9758 papers — the 'JC' blueprint family via
+ * blueprintKeyFor. */
+export const MOCK_LEVELS = ['EM', 'AM', 'JC1', 'JC2'] as const;
+
+/** Blueprint family for a portal level: the JC1/JC2 student levels share one
+ * H2 9758 syllabus, so both map to the 'JC' blueprint family; AM/EM (and the
+ * admin builder's own 'JC') map to themselves. */
+export function blueprintFamily(level: string): string {
+  return level === 'JC1' || level === 'JC2' ? 'JC' : level;
+}
+
+/** The data/paper-blueprints.json key (and DURATIONS key) for a level+paper —
+ * use this everywhere a `<level>-<paper>` key is built so the JC1/JC2 → 'JC'
+ * mapping can never be forgotten at one call site. */
+export function blueprintKeyFor(level: string, paper: string): string {
+  return `${blueprintFamily(level)}-${paper}`;
+}
 
 // ── Exam-format facts (cover page + the /app/print duration chip) ────────────
 
-/** Real exam paper durations, keyed `<level>-<paper>`. One table, read by
- * BOTH the renderer's cover and the /app/print client, so the chip and the
- * printed cover can never disagree. */
+/** Real exam paper durations, keyed by blueprint family `<family>-<paper>`.
+ * One table, read by BOTH the renderer's cover and the /app/print client, so
+ * the chip and the printed cover can never disagree. Read it via
+ * paperDuration(), which maps student levels (JC1/JC2 → 'JC') first. */
 export const DURATIONS: Record<string, string> = {
   'AM-P1': '2 hours 15 minutes',
   'AM-P2': '2 hours 15 minutes',
@@ -73,26 +90,27 @@ export const DURATIONS: Record<string, string> = {
   // gives BOTH EM papers 2 h 15 min — '2 hours' was the old 4048 P1 habit.
   'EM-P1': '2 hours 15 minutes',
   'EM-P2': '2 hours 15 minutes',
-  // H2 Math 9758: both papers are 3 hours. Inert until JC joins MOCK_LEVELS —
-  // note the blueprint family key is 'JC', while portal student levels are
-  // 'JC1'/'JC2' (PRINT_POOL_SCOPE), so enablement must map level→'JC' before
-  // building the `<level>-<paper>` key.
+  // H2 Math 9758: both papers are 3 hours.
   'JC-P1': '3 hours',
   'JC-P2': '3 hours',
 };
 
 export function paperDuration(level: string, paper: string): string | null {
-  return DURATIONS[`${level}-${paper}`] ?? null;
+  return DURATIONS[blueprintKeyFor(level, paper)] ?? null;
 }
 
 /** SEAB subject codes — the same derivation /api/admin/prelim-builder/export
  * ships on Adrian's own exports (moved here 2026-08-28 so both surfaces share
- * one copy): 4049 = Additional Mathematics, 4052 = Mathematics. */
+ * one copy): 4049 = Additional Mathematics, 4052 = Mathematics,
+ * 9758 = H2 Mathematics (JC/JC1/JC2). */
 export function subjectCode(level: string): string {
-  return level === 'AM' ? '4049' : '4052';
+  if (level === 'AM') return '4049';
+  if (blueprintFamily(level) === 'JC') return '9758';
+  return '4052';
 }
 
 export function subjectName(level: string): string {
+  // H2 9758's official cover title is also plain MATHEMATICS.
   return level === 'AM' ? 'ADDITIONAL MATHEMATICS' : 'MATHEMATICS';
 }
 
@@ -115,7 +133,9 @@ export interface PrelimCover {
   candidateLine?: string; // small provenance line, e.g. "Printed for … · AdrianMath"
 }
 
-/** Cover instructions for a student mock (rendered on page 1, exam style). */
+/** Cover instructions for a student mock (rendered on page 1, exam style).
+ * O-Level (EM/AM) wording — H2 has its own twin below; pick per level via
+ * mockCoverInstructions(). */
 export const MOCK_COVER_INSTRUCTIONS: string[] = [
   'Write your name, class and index number in the spaces at the top of this page.',
   'Answer all the questions.',
@@ -124,6 +144,25 @@ export const MOCK_COVER_INSTRUCTIONS: string[] = [
   'The use of an approved scientific calculator is expected, where appropriate.',
   'The number of marks is given in brackets [ ] at the end of each question or part question.',
 ];
+
+/** H2 9758 twin of the cover instructions — the calculator lines every JC
+ * paper carries in place of the O-Level scientific-calculator line: an
+ * approved GRAPHING calculator is expected, and unsupported answers from it
+ * are allowed unless a question says otherwise. */
+export const MOCK_COVER_INSTRUCTIONS_H2: string[] = [
+  'Write your name, class and index number in the spaces at the top of this page.',
+  'Answer all the questions.',
+  'Write your answers and working in the spaces provided on the question paper.',
+  'Give non-exact numerical answers correct to 3 significant figures, or 1 decimal place in the case of angles in degrees, unless a different level of accuracy is specified in the question.',
+  'The use of an approved graphing calculator is expected, where appropriate.',
+  'Unsupported answers from a graphing calculator are allowed unless a question specifically states otherwise.',
+  'The number of marks is given in brackets [ ] at the end of each question or part question.',
+];
+
+/** The right cover-instruction block for a level (H2 → graphing calculator). */
+export function mockCoverInstructions(level: string): string[] {
+  return blueprintFamily(level) === 'JC' ? MOCK_COVER_INSTRUCTIONS_H2 : MOCK_COVER_INSTRUCTIONS;
+}
 
 /** Assemble the cover block for a generated mock. Pure + unit-tested; the PDF
  * route passes the result straight to renderPrelimPDF. */
@@ -145,6 +184,35 @@ export function mockCover(
       .filter(Boolean)
       .join(' · '),
   };
+}
+
+// ── Section headings (H2 P2) ─────────────────────────────────────────────────
+
+/** A bold centred heading the renderer draws immediately before the question
+ * whose pos is `beforePos`. */
+export interface SectionHeading {
+  beforePos: number;
+  label: string;
+}
+
+/** Headings for a sectioned paper — H2 9758 P2's "Section A: Pure Mathematics"
+ * before slot 1 and "Section B: Probability and Statistics" before the
+ * blueprint's section_boundary slot. Section marks are summed from the
+ * blueprint's typical slot marks (40/60 on JC-P2). Papers without a
+ * section_boundary get no headings. Safe on refs positions: sectioned papers
+ * must fill EVERY slot (MOCK_FILL_THRESHOLD on 10 slots), so rendered
+ * positions equal blueprint positions. */
+export function sectionHeadings(
+  paperDef: { section_boundary?: number; slots: { pos: number; typ: number }[] } | null | undefined,
+): SectionHeading[] {
+  const boundary = paperDef?.section_boundary;
+  if (!paperDef || !boundary) return [];
+  const sum = (pred: (pos: number) => boolean) =>
+    paperDef.slots.filter(s => pred(s.pos)).reduce((t, s) => t + s.typ, 0);
+  return [
+    { beforePos: 1, label: `Section A: Pure Mathematics [${sum(p => p < boundary)} marks]` },
+    { beforePos: boundary, label: `Section B: Probability and Statistics [${sum(p => p >= boundary)} marks]` },
+  ];
 }
 
 // ── Mock assembly (pure) ─────────────────────────────────────────────────────

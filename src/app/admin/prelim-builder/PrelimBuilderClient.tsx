@@ -328,6 +328,7 @@ export default function PrelimBuilderClient() {
           <select value={level} onChange={(e) => setLevel(e.target.value)} className="border border-slate-200 rounded-lg px-2 py-1.5 text-sm text-navy">
             <option>AM</option>
             <option>EM</option>
+            <option>JC</option>
           </select>
         </label>
         <label className="flex flex-col gap-1 text-xs font-semibold text-slate-500">

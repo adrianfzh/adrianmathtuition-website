@@ -31,6 +31,8 @@ import {
   PRINT_POOL_SCOPE,
   WEEKLY_PRINT_CAP,
   assembleMockFromCandidates,
+  blueprintFamily,
+  blueprintKeyFor,
   rankWeakTopics,
   sgtStartOfWeekIso,
   storageUrl,
@@ -123,7 +125,10 @@ async function fetchSlotCandidates(opts: { tagLevels: string[]; topic: string; l
 const MOCK_ATTEMPTS = 3;
 
 async function assembleMock(level: string, paper: string): Promise<{ refs: PrintQuestionRef[]; title: string; totalMarks: number } | { error: string }> {
-  const key = `${level}-${paper}`;
+  // Student levels JC1/JC2 share the 'JC' blueprint family (H2 9758); the
+  // candidate pool still scopes by the STUDENT level via PRINT_POOL_SCOPE,
+  // whose JC entries fan out to the JC/JC1/JC2 tag levels.
+  const key = blueprintKeyFor(level, paper);
   const blueprint = loadBlueprint();
   const paperDef = blueprint.papers[key];
   if (!paperDef) return { error: `No mock blueprint for ${key}` };
@@ -165,10 +170,12 @@ async function assembleMock(level: string, paper: string): Promise<{ refs: Print
       rng,
     );
     if (out.ok) {
+      const family = blueprintFamily(level);
+      const subject = family === 'AM' ? 'A Math' : family === 'JC' ? 'H2 Mathematics' : 'E Math';
       return {
         refs: out.refs,
         totalMarks: out.totalMarks,
-        title: `${level === 'AM' ? 'A Math' : 'E Math'} mock ${paper === 'P1' ? 'Paper 1' : 'Paper 2'}`,
+        title: `${subject} mock ${paper === 'P1' ? 'Paper 1' : 'Paper 2'}`,
       };
     }
     lastError = out.error;
@@ -253,7 +260,7 @@ export async function POST(req: NextRequest) {
   if (preset === 'mock') {
     const p = String(body.paper ?? 'P1');
     if (!(MOCK_LEVELS as readonly string[]).includes(level)) {
-      return NextResponse.json({ error: 'Mock papers are available for E Math and A Math' }, { status: 400 });
+      return NextResponse.json({ error: 'Mock papers are available for E Math, A Math and H2 Math' }, { status: 400 });
     }
     if (!['P1', 'P2'].includes(p)) return NextResponse.json({ error: 'paper must be P1 or P2' }, { status: 400 });
     let out: Awaited<ReturnType<typeof assembleMock>>;

@@ -14,22 +14,41 @@
 // exam). Never worked solutions (kiosk invariant D7): those arrive via marking
 // or /solutions.
 import { NextRequest, NextResponse } from 'next/server';
+import fs from 'node:fs';
+import path from 'node:path';
 import { currentStudent, portalIdentity } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { renderPrelimPDF, type PrelimQuestion } from '@/lib/render-prelim';
 import {
-  MOCK_COVER_INSTRUCTIONS,
   answerMarkdown,
+  blueprintKeyFor,
   mockCover,
+  mockCoverInstructions,
   questionMarkdown,
+  sectionHeadings,
   storageUrl,
   type QbPrintRow,
   type PrintQuestionRef,
 } from '@/lib/print-paper';
+import type { PaperDef } from '@/lib/prelim-builder';
 
 export const dynamic = 'force-dynamic';
 // Puppeteer cold start + KaTeX fonts can push past the 10s default.
 export const maxDuration = 60;
+
+/** The stored blueprint entry for a mock row — the H2 P2 render reads its
+ * section_boundary to draw the Section A/B headings. Null for levels/papers
+ * without a blueprint (topics sheets never look here). */
+function blueprintPaperFor(level: string, paper: string): PaperDef | null {
+  try {
+    const file = JSON.parse(
+      fs.readFileSync(path.join(process.cwd(), 'data', 'paper-blueprints.json'), 'utf8'),
+    ) as { papers: Record<string, PaperDef> };
+    return file.papers[blueprintKeyFor(level, paper)] ?? null;
+  } catch {
+    return null; // a missing/unreadable blueprint only costs the headings
+  }
+}
 
 export async function GET(req: NextRequest) {
   const { account } = await currentStudent(); // no session → redirect to /login
@@ -84,7 +103,9 @@ export async function GET(req: NextRequest) {
             printedFor: account.display_name,
             printedOn: printed,
           }),
-          instructions: MOCK_COVER_INSTRUCTIONS,
+          instructions: mockCoverInstructions(row.level),
+          // H2 P2 carries section_boundary → Section A/B headings; [] elsewhere.
+          sections: sectionHeadings(blueprintPaperFor(row.level, row.paper as string)),
         }
       : {}),
   });

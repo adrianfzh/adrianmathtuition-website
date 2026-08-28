@@ -155,8 +155,9 @@ export default function PrintClient({ levels, initialPreset }: { levels: { key: 
                 {p === 'P1' ? 'Paper 1' : 'Paper 2'}
               </button>
             ))}
-            {/* Real O-Level duration for the chosen paper — same DURATIONS
-                table the printed cover reads, so they can never disagree. */}
+            {/* Real exam duration for the chosen paper (O-Level 2 h 15 min,
+                H2 3 hours) — same DURATIONS table the printed cover reads, so
+                they can never disagree. */}
             <span className="text-[12px] text-gray-400 ml-1">⏱ {paperDuration(level, paper) ?? 'About 2 hours'} — sit it in one go.</span>
           </div>
         )}
