@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   DAILY_GENERATE_CAP,
+  DAILY_FIND_CAP,
   countGenerationsToday,
+  countFinderCallsToday,
   practiceEligibility,
   parseSimilarBody,
   parseGenerateBody,
@@ -134,6 +136,47 @@ describe('countGenerationsToday', () => {
 
   it('cap is five a day', () => {
     expect(DAILY_GENERATE_CAP).toBe(5);
+  });
+
+  // ── The finder cap (/similar + the /generate attempts backstop) ────────────
+  // Phase G 2026-08-28: /similar (vision extraction, model money per call) had
+  // NO daily brake, and /generate's 5/day counted only successes, so failed
+  // 4-gate runs were unlimited. countFinderCallsToday counts EVERY ledger row.
+  it('countFinderCallsToday counts every row today — hits, misses and failures alike', async () => {
+    const rows: Row[] = [
+      { airtable_student_id: 'recA', generated: true, created_at: '2026-08-27T20:00:00Z' },  // counts
+      { airtable_student_id: 'recA', generated: false, created_at: '2026-08-28T05:30:00Z' }, // miss/fail — counts
+      { airtable_student_id: 'recB', generated: false, created_at: '2026-08-28T05:00:00Z' }, // someone else
+      { airtable_student_id: 'recA', generated: false, created_at: '2026-08-27T10:00:00Z' }, // yesterday SGT
+    ];
+    expect(await countFinderCallsToday(client(rows), 'recA', now)).toBe(2);
+  });
+
+  it('countFinderCallsToday queries the same ledger with the SGT boundary and no generated filter', async () => {
+    const log: string[] = [];
+    await countFinderCallsToday(client([], log), 'recA', now);
+    expect(log).toContain('from:portal_generation_log');
+    expect(log).toContain('created_at>=2026-08-27T16:00:00.000Z');
+    expect(log).not.toContain('generated=true');
+  });
+
+  it('finder cap fails open at 0 on a query error, and sits well above the generate cap', async () => {
+    const broken: GenerationCountingClient = {
+      from: () => ({
+        select: () => {
+          const b = {
+            eq: () => b,
+            gte: () => b,
+            then: (res: (x: { count: number | null; error: unknown }) => unknown) =>
+              Promise.resolve(res({ count: null, error: new Error('boom') })),
+          };
+          return b as never;
+        },
+      }),
+    };
+    expect(await countFinderCallsToday(broken, 'recA', now)).toBe(0);
+    expect(DAILY_FIND_CAP).toBe(25);
+    expect(DAILY_FIND_CAP).toBeGreaterThan(DAILY_GENERATE_CAP);
   });
 });
 

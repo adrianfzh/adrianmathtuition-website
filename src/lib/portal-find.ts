@@ -57,6 +57,39 @@ export async function countGenerationsToday(
   return count ?? 0;
 }
 
+// ── Finder cap (/similar) ────────────────────────────────────────────────────
+// Every /similar call runs the bot's vision extraction + embedding match —
+// real model money per call, smaller than a generation but previously
+// UNCAPPED (found in the 2026-08-28 Phase G leak/rate-limit audit: /generate
+// had its 5/day, /similar had none). The brake counts EVERY finder-ledger row
+// for the student today — similar hits, misses, and generation attempts all
+// log one `portal_generation_log` row each — so it bounds total finder model
+// spend per student per SGT day. Generous on purpose: a student photographing
+// their whole homework stays well under it; a runaway client or scripted
+// abuse does not.
+export const DAILY_FIND_CAP = 25;
+
+export const FIND_CAP_MESSAGE =
+  'You’ve done a lot of question-finding today — the finder reopens at midnight. Bank questions in the topic list stay unlimited!';
+
+/**
+ * Finder-ledger rows this student has written today (SGT calendar day): every
+ * /similar call (hit or miss) and every /generate attempt logs exactly one
+ * row, so this is the student's total finder model spend today.
+ */
+export async function countFinderCallsToday(
+  client: GenerationCountingClient,
+  studentId: string,
+  now: Date = new Date(),
+): Promise<number> {
+  const { count } = await client
+    .from('portal_generation_log')
+    .select('id', { count: 'exact', head: true })
+    .eq('airtable_student_id', studentId)
+    .gte('created_at', sgtStartOfDayIso(now));
+  return count ?? 0;
+}
+
 // ── ?qid= eligibility ────────────────────────────────────────────────────────
 // Mirrors the gates the `practice_next` RPC applies when it serves a random
 // question, so a deep-linked question is never one the normal flow would have

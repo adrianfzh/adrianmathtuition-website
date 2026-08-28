@@ -5,6 +5,42 @@
 //
 // createServiceClient() — service-role key, bypasses RLS. ONLY for trusted
 // backend logic (admin invite flow, cron). Never import into client code.
+//
+// ── RLS posture of every table the portal touches (Phase G audit 2026-08-28) ─
+// The browser NEVER queries tables directly: the only client-side Supabase
+// usage is auth (signIn/signOut/updateUser/getUser — see lib/supabase-client
+// call sites). Two access classes server-side:
+//
+// User-scoped (anon key + session JWT; RLS self-scoped `auth.uid()` policies;
+// verified in the 2026-08-20 pg_policies sweep):
+//   portal_accounts       own row only (id = auth.uid())
+//   student_attempts      own rows only (user_id = auth.uid())
+//
+// Service-role ONLY (RLS enabled, NO anon/authenticated policies — the anon
+// key reads zero rows; every query goes through createServiceClient /
+// getSupabaseAdmin with the ownership filter derived from the session, never
+// from client input — lib/portal-auth.portalIdentity is the one key):
+//   paper_marking_runs          student_id = identity, + released_at gate
+//   notebook_entries            airtable_student_id = identity
+//   portal_notes                airtable_student_id = identity (+ Blob images)
+//   portal_requests             airtable_student_id = identity
+//   portal_generated_papers     airtable_student_id = identity
+//   portal_generation_log       airtable_student_id = identity
+//   portal_assignments          airtable_student_id = identity
+//   portal_push_subscriptions   airtable_student_id = identity
+//   portal_passes               account_id = account.id (the money gate)
+//   portal_invite_tokens        token-addressed (activate flow) / admin
+//   weakness_tags, unit_events, recall_messages   user_id = auth uid
+//
+// Shared teaching content, service-role reads with visibility gates (level/
+// subject scoping, approved-only for students — no per-student rows at all):
+//   questions (solutions stripped or reveal-gated), learning_units,
+//   lesson_cards, lessons, kb_entries, topic_meta, topic_spine,
+//   method_templates, formula_ref
+//
+// Any NEW portal table must pick a class: either self-scoped RLS policies, or
+// RLS enabled with no policies + service-role queries that carry the identity
+// predicate IN THE QUERY (not filtered after the fetch).
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';

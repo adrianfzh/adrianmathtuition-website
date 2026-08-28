@@ -14,6 +14,15 @@
 //   weakness_tags      the derived focus tags practice grading keeps
 //   learn_events       unit_events ledger (Learn usage)
 //   recall_messages    timestamps of Recall chats (content is not stored)
+//   notebook_entries   the error notebook built from their marked papers
+//   clippings          "Save to My Notebook" crops (incl. the image URLs)
+//   requests           resource requests filed on /app/requests
+//   generated_papers   self-printed practice papers (SPEC-PRINT-PAPER)
+//   finder_log         the similar/generate usage ledger
+//   passes             their portal passes (entitlements they paid for)
+//   push_subscriptions endpoints of their own subscribed devices
+//   (the last seven widened 2026-08-28 Phase G audit — features built after
+//    the original list; Settings says "all stored data", so it must be true)
 //
 // The account + attempts reads go through the user-scoped client so RLS
 // guarantees own-rows-only; the rest are service-role reads filtered by the
@@ -40,6 +49,16 @@ export async function GET() {
   // assignments are keyed on it, so their export includes them too.
   const studentId: string | null = account ? portalIdentity(account) : null;
 
+  // select('*') on purpose (same as the attempts/assignments exports above):
+  // it is the student's own data and a named-column list would silently 500
+  // the sub-read if a column drifts. No ORDER BY — export order is irrelevant
+  // and created_at isn't guaranteed on every table.
+  const empty = Promise.resolve({ data: [] as unknown[] });
+  const byIdentity = (table: string) =>
+    studentId
+      ? admin.from(table).select('*').eq('airtable_student_id', studentId)
+      : empty;
+
   const [released, pending, assignments, tags, events, recalls] = await Promise.all([
     studentId
       ? admin.from('paper_marking_runs').select(RUN_RELEASED)
@@ -60,6 +79,25 @@ export async function GET() {
     admin.from('recall_messages').select('created_at').eq('user_id', user.id).order('created_at', { ascending: true }),
   ]);
 
+  // The 2026-08-28 widening (see header): notebook, clippings, requests,
+  // printed papers, the finder ledger, passes, push subscriptions. All keyed
+  // on the derived identity / auth uid — never on client input.
+  const [notebook, clippings, requests, generatedPapers, finderLog, passes, pushSubs] = await Promise.all([
+    byIdentity('notebook_entries'),
+    byIdentity('portal_notes'),
+    byIdentity('portal_requests'),
+    byIdentity('portal_generated_papers'),
+    byIdentity('portal_generation_log'),
+    account
+      ? admin.from('portal_passes').select('id, source, tier, handins_used, starts_at, expires_at')
+          .eq('account_id', account.id)
+      : empty,
+    studentId
+      ? admin.from('portal_push_subscriptions').select('endpoint')
+          .eq('airtable_student_id', studentId)
+      : empty,
+  ]);
+
   const payload = {
     exported_at: new Date().toISOString(),
     account,
@@ -72,6 +110,13 @@ export async function GET() {
     weakness_tags: tags.data || [],
     learn_events: events.data || [],
     recall_messages: recalls.data || [],
+    notebook_entries: notebook.data || [],
+    clippings: clippings.data || [],
+    requests: requests.data || [],
+    generated_papers: generatedPapers.data || [],
+    finder_log: finderLog.data || [],
+    passes: passes.data || [],
+    push_subscriptions: pushSubs.data || [],
   };
 
   return new NextResponse(JSON.stringify(payload, null, 2), {
