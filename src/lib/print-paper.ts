@@ -63,7 +63,7 @@ export const MOCK_LEVELS = ['EM', 'AM'] as const;
 
 // ── Exam-format facts (cover page + the /app/print duration chip) ────────────
 
-/** Real O-Level paper durations, keyed `<level>-<paper>`. One table, read by
+/** Real exam paper durations, keyed `<level>-<paper>`. One table, read by
  * BOTH the renderer's cover and the /app/print client, so the chip and the
  * printed cover can never disagree. */
 export const DURATIONS: Record<string, string> = {
@@ -73,6 +73,12 @@ export const DURATIONS: Record<string, string> = {
   // gives BOTH EM papers 2 h 15 min — '2 hours' was the old 4048 P1 habit.
   'EM-P1': '2 hours 15 minutes',
   'EM-P2': '2 hours 15 minutes',
+  // H2 Math 9758: both papers are 3 hours. Inert until JC joins MOCK_LEVELS —
+  // note the blueprint family key is 'JC', while portal student levels are
+  // 'JC1'/'JC2' (PRINT_POOL_SCOPE), so enablement must map level→'JC' before
+  // building the `<level>-<paper>` key.
+  'JC-P1': '3 hours',
+  'JC-P2': '3 hours',
 };
 
 export function paperDuration(level: string, paper: string): string | null {

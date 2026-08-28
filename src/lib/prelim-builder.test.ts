@@ -192,3 +192,87 @@ describe('landTotal', () => {
     expect(landed).toBe(false);
   });
 });
+
+// ── JC (H2 9758) blueprint entries — derived 2026-08-28 ──────────────────────
+// JC mocks are NOT enabled anywhere yet (MOCK_LEVELS stays EM/AM; the admin
+// builder's level→bank mapping is unmade). These pin the structural contract
+// of the derived entries so enabling JC later is a UI decision, not a data one.
+// Mirrors JC_STATS_RE in scripts/derive-paper-blueprints.mjs.
+const JC_STATS_RE =
+  /^(Probability|Permutations and Combinations|Hypothesis Testing|Linear Regression|Sampling Methods|Distributions \()/;
+
+describe('JC blueprint entries', () => {
+  it('exist, parse as PaperDef, and keep the TS-builder slot contract', () => {
+    for (const key of ['JC-P1', 'JC-P2']) {
+      const paper = blueprint.papers[key];
+      expect(paper, `${key} present`).toBeDefined();
+      expect(paper.total_marks).toBe(100); // H2 9758: both papers are 100 marks
+      expect(paper.slots.length).toBe(paper.question_count[1]);
+      for (const slot of paper.slots) {
+        // one slot per numeric pos — walkTopics and the reroll endpoint cannot
+        // take the derivation script's merged "a-b" pos ranges
+        expect(typeof slot.pos, `${key} slot pos numeric`).toBe('number');
+        expect(slot.marks[0]).toBeLessThanOrEqual(slot.marks[1]);
+        expect(slot.typ).toBeGreaterThanOrEqual(slot.marks[0]);
+        expect(slot.typ).toBeLessThanOrEqual(slot.marks[1]);
+        const w = slot.topic_pool.reduce((a, p) => a + p.weight, 0);
+        expect(Math.abs(w - 1), `${key} slot ${slot.pos} weights sum to 1`).toBeLessThan(0.005);
+      }
+      // slot typicals land the paper total exactly (targetMarks starts here)
+      expect(paper.slots.reduce((a, s) => a + s.typ, 0)).toBe(paper.total_marks);
+    }
+  });
+
+  it('JC-P2 is positionally sectioned: pure slots, then stats slots, 40/60', () => {
+    const paper = blueprint.papers['JC-P2'] as PaperDef & { section_boundary: number };
+    const b = paper.section_boundary;
+    expect(b).toBeGreaterThan(1);
+    expect(b).toBeLessThanOrEqual(paper.slots.length);
+    let pure = 0;
+    let stats = 0;
+    for (const slot of paper.slots) {
+      const isStatsSlot = slot.pos >= b;
+      if (isStatsSlot) stats += slot.typ;
+      else pure += slot.typ;
+      for (const p of slot.topic_pool) {
+        expect(
+          JC_STATS_RE.test(p.topic),
+          `slot ${slot.pos} pool topic "${p.topic}" must sit on its own side of the boundary`
+        ).toBe(isStatsSlot);
+      }
+    }
+    expect(pure).toBe(40); // Section A: Pure Mathematics
+    expect(stats).toBe(60); // Section B: Probability and Statistics
+    // and every walked topic sequence respects the boundary too
+    for (let seed = 1; seed <= 25; seed++) {
+      const topics = walkTopics(paper, mulberry32(seed));
+      topics.forEach((t, i) => {
+        expect(JC_STATS_RE.test(t), `seed ${seed} slot ${i + 1}`).toBe(i + 1 >= b);
+      });
+    }
+  });
+
+  it('slot mark bands can land the exact paper total via landTotal swaps', () => {
+    for (const key of ['JC-P1', 'JC-P2']) {
+      const paper = blueprint.papers[key];
+      const lo = paper.slots.reduce((a, s) => a + s.marks[0], 0);
+      const hi = paper.slots.reduce((a, s) => a + s.marks[1], 0);
+      expect(lo, `${key} bands reach down to the total`).toBeLessThanOrEqual(paper.total_marks);
+      expect(hi, `${key} bands reach up to the total`).toBeGreaterThanOrEqual(paper.total_marks);
+      // worst case: every pick opens at the bottom of its band with alternates
+      // covering the band — landTotal must climb to exactly total_marks
+      const picks: SlotPick[] = paper.slots.map((s, i) => ({
+        pos: s.pos,
+        topic: 'T',
+        target: s.typ,
+        pick: cand(`p-${key}-${i}`, s.marks[0]),
+        alternates: Array.from({ length: s.marks[1] - s.marks[0] }, (_, k) =>
+          cand(`a-${key}-${i}-${k}`, s.marks[0] + k + 1)
+        ),
+      }));
+      const { landed } = landTotal(picks, paper.total_marks);
+      expect(landed, `${key} lands ${paper.total_marks}`).toBe(true);
+      expect(picks.reduce((a, p) => a + p.pick!.total_marks, 0)).toBe(paper.total_marks);
+    }
+  });
+});
