@@ -13,6 +13,7 @@ import {
   type UnitRow,
   type UnitSection,
 } from './notes-units';
+import { topicSlug } from './topic-slug';
 import {
   buildPageTree,
   buildSections,
@@ -468,7 +469,7 @@ export interface SearchEntry {
  * extra Supabase query (the id/title list) per revalidation window.
  */
 export const getSearchIndex = cache(async (level: string): Promise<SearchEntry[]> => {
-  const [subgroups, counts, titles] = await Promise.all([
+  const [subgroups, counts, titles, coreRows] = await Promise.all([
     loadSubgroups(level),
     loadSnippetCounts(level),
     notesCache(['search-titles', level], async () => {
@@ -482,6 +483,25 @@ export const getSearchIndex = cache(async (level: string): Promise<SearchEntry[]
             .eq('content_kind', PUBLISHABLE.content_kind)
             .in('feature', [...PUBLISHABLE.features])
             .eq('is_published', true)
+            .range(from, to),
+      );
+    }),
+    // Key-concept section headings ("How do I complete the square?") — the
+    // learning-unit `core` titles that open each section on a converted topic
+    // page. Adrian's round-5 review: a student searching a CONCEPT rather
+    // than an example title found nothing. ALL statuses are fetched because
+    // draft cores still consume anchor ids on the page (groupIntoSections
+    // dedups across them) — only approved ones are emitted below. Privileged
+    // client: learning_units is not anon-readable.
+    notesCache(['search-sections', level], async () => {
+      const supa = getSupabaseAdmin();
+      return fetchAllRows<{ topic: string; title: string; unit_order: number | null; status: string | null; payload: unknown }>(
+        (from, to) =>
+          supa
+            .from('learning_units')
+            .select('topic, title, unit_order, status, payload')
+            .eq('subject', level.toUpperCase())
+            .eq('kind', 'core')
             .range(from, to),
       );
     }),
@@ -515,6 +535,39 @@ export const getSearchIndex = cache(async (level: string): Promise<SearchEntry[]
       url: `${subgroupUrl(level, sg.topic, sg.name)}#ex-${t.id}`,
       kind: 'example',
     });
+  }
+
+  // Key-concept sections, with the SAME anchor derivation as
+  // groupIntoSections (lib/notes-units): question-form title when the style
+  // pass wrote one, `unit-<slug>` id deduped per topic in unit order —
+  // including drafts, so an approved core after a draft twin still lands on
+  // its real anchor.
+  const coresByTopic = new Map<string, typeof coreRows>();
+  for (const r of coreRows) {
+    // toUnit drops rows with a non-object payload — they never open a section
+    // on the page, so they must neither consume an anchor id nor emit here.
+    if (!r.payload || typeof r.payload !== 'object' || Array.isArray(r.payload)) continue;
+    if (!coresByTopic.has(r.topic)) coresByTopic.set(r.topic, []);
+    coresByTopic.get(r.topic)!.push(r);
+  }
+  for (const [topic, rows] of coresByTopic) {
+    rows.sort((a, b) => (a.unit_order ?? 0) - (b.unit_order ?? 0));
+    const used = new Set<string>();
+    for (const r of rows) {
+      const titleQ = (r.payload as { title_q?: unknown }).title_q;
+      const label = (typeof titleQ === 'string' && titleQ.trim() ? titleQ.trim() : r.title) || '';
+      const base = `unit-${topicSlug(label) || 'section'}`;
+      let id = base;
+      for (let n = 2; used.has(id); n += 1) id = `${base}-${n}`;
+      used.add(id);
+      if (r.status !== 'approved' || !label) continue;
+      out.push({
+        label,
+        context: topic,
+        url: `${topicUrl(level, topic)}#${id}`,
+        kind: 'section',
+      });
+    }
   }
   return out;
 });

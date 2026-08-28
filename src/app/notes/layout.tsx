@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
-import { isNotesViewer, hasPortalSession } from '@/lib/notes-auth';
+import Link from 'next/link';
+import { isNotesAuthed, isNotesViewer, hasPortalSession } from '@/lib/notes-auth';
+import { NOTES_OPEN_TO_STUDENTS } from '@/lib/portal-beta';
 import { getNotesTree, getSearchIndex } from '@/lib/notes-data';
 import { NOTES_LEVELS } from '@/lib/notes-tree';
 import NotesLogin from './NotesLogin';
@@ -30,6 +32,31 @@ export default async function NotesLayout({
     return (
       <div className="notes-shell">
         <NotesLogin />
+      </div>
+    );
+  }
+
+  // Carve-out closed (2026-08-29, content vetting): a logged-in STUDENT gets a
+  // friendly closed card — never the login form (they are signed in; a
+  // password box here reads as "your account broke"). Adrian's admin cookie
+  // keeps the full reader for the vetting work itself.
+  if (!NOTES_OPEN_TO_STUDENTS && !(await isNotesAuthed())) {
+    return (
+      <div className="notes-shell">
+        <div className="mx-auto max-w-md px-6 py-24 text-center">
+          <p className="text-4xl" aria-hidden>📚</p>
+          <h1 className="mt-4 text-xl font-bold text-navy">Notes are getting a polish</h1>
+          <p className="mt-2 text-sm text-slate-600">
+            Adrian is reviewing every page before this opens up. It&apos;ll be back soon —
+            your practice, papers and notebook are all still here.
+          </p>
+          <Link
+            href="/app"
+            className="mt-6 inline-block rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-[hsl(45,100%,96%)] hover:opacity-90"
+          >
+            ‹ Back to the portal
+          </Link>
+        </div>
       </div>
     );
   }

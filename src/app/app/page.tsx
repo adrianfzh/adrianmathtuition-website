@@ -208,9 +208,13 @@ export default async function DashboardPage() {
           six-tab squeeze (reading Notes, Requests) still need a thumb-reachable
           door; on desktop the nav also has them, harmless duplication. */}
       <div className="flex gap-2">
-        <Link href="/app/notes" className={`${card} !py-3 flex-1 text-center text-sm font-semibold text-navy active:scale-95 transition-transform select-none`}>
-          📖 Notes
-        </Link>
+        {/* Notes pill hides with the carve-out flag (closed 2026-08-29 for the
+            content vetting pass) — Adrian's admin view keeps the door. */}
+        {(fullPortal || NOTES_OPEN_TO_STUDENTS) && (
+          <Link href="/app/notes" className={`${card} !py-3 flex-1 text-center text-sm font-semibold text-navy active:scale-95 transition-transform select-none`}>
+            📖 Notes
+          </Link>
+        )}
         <Link href="/app/requests" className={`${card} !py-3 flex-1 text-center text-sm font-semibold text-navy active:scale-95 transition-transform select-none`}>
           🙋 Request materials
         </Link>

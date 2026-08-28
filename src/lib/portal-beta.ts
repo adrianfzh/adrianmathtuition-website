@@ -31,7 +31,15 @@ export const MARKING_ONLY_BETA = true;
 // bounced. Flip to false to hide notes again in one place; when
 // MARKING_ONLY_BETA itself goes false this flag is moot (full portal already
 // includes notes).
-export const NOTES_OPEN_TO_STUDENTS = true;
+//
+// CLOSED again 2026-08-29 (Adrian, phone review round 5: "let's hide it from
+// students first") while the notes content is vetted — the sub-group names
+// read as internal cluster jargon and descriptions carry raw ASCII math.
+// Reopen by flipping back to true once the vetting layers land. The /notes
+// layout ALSO consults this flag (a student session with the direct URL must
+// see the closed card, not the reader) — the nav/Home gates alone don't cover
+// a bookmark.
+export const NOTES_OPEN_TO_STUDENTS = false;
 
 // "View as student" — Adrian's admin cookie normally unlocks the full portal,
 // which means his own phone can never show him what a student actually sees

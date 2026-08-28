@@ -16,7 +16,7 @@ import { MobileTabs } from '@/components/PortalTabs';
 // Phase 2 (2026-08-27) multi-level behaviour kept: one tree + index per level,
 // picked by the current pathname.
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { filterTree, treeFolders, type TreeFolder, type TreeRoot } from '@/lib/notes-tree';
@@ -193,6 +193,7 @@ function BrowsePanel({
   onClose: () => void;
 }) {
   const [query, setQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
   const filtered = useMemo(() => filterTree(active.tree, query), [active.tree, query]);
   // Count folders, not children — `children` also holds the family separators,
   // which would inflate "12 of 31 topics" into nonsense.
@@ -234,14 +235,29 @@ function BrowsePanel({
           <div className="relative">
             <MagnifierIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
+              ref={searchInputRef}
               type="search"
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Search topics & examples…"
               aria-label="Search notes by topic, section or worked-example name"
               autoFocus
-              className="w-full rounded-xl border border-black/10 bg-white py-2.5 pl-9 pr-3.5 text-[15px] text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-navy/40 focus:outline-none focus:ring-2 focus:ring-navy/15"
+              className="w-full rounded-xl border border-black/10 bg-white py-2.5 pl-9 pr-10 text-[15px] text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-navy/40 focus:outline-none focus:ring-2 focus:ring-navy/15 [&::-webkit-search-cancel-button]:hidden"
             />
+            {/* Every search bar clears with one tap (Adrian, round 5:
+                "search bars should have this: Search ✕"). */}
+            {query !== '' && (
+              <button
+                type="button"
+                onClick={() => { setQuery(''); searchInputRef.current?.focus(); }}
+                aria-label="Clear search"
+                className="absolute right-0 top-0 grid h-full w-10 place-items-center text-gray-400 hover:text-navy"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="h-4 w-4" aria-hidden>
+                  <path d="M6 6l12 12M18 6 6 18" />
+                </svg>
+              </button>
+            )}
           </div>
           {query.trim() !== '' && (
             <p className="mt-1.5 px-1 text-xs text-gray-500" role="status" aria-live="polite">

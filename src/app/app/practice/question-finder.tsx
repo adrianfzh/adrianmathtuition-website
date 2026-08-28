@@ -43,6 +43,7 @@ export default function QuestionFinder({ level }: { level: string }) {
   const [opening, setOpening] = useState<string | null>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   const albumRef = useRef<HTMLInputElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Progress clock for the generate wait.
   useEffect(() => {
@@ -167,10 +168,24 @@ export default function QuestionFinder({ level }: { level: string }) {
           </p>
           {panel === 'search' && (
             <form className="mt-2 flex gap-2" onSubmit={(e) => { e.preventDefault(); submitSearch(); }}>
-              <input
-                value={query} onChange={(e) => setQuery(e.target.value)} autoFocus
-                placeholder="Describe it — e.g. quadratic inequality with modulus"
-                className="min-w-0 flex-1 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy/30" />
+              <div className="relative min-w-0 flex-1">
+                <input
+                  ref={searchInputRef}
+                  value={query} onChange={(e) => setQuery(e.target.value)} autoFocus
+                  placeholder="Describe it — e.g. quadratic inequality with modulus"
+                  className="w-full border border-slate-300 rounded-xl pl-3.5 pr-9 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy/30" />
+                {/* One-tap clear — every search bar gets this (Adrian, round 5). */}
+                {query !== '' && (
+                  <button
+                    type="button"
+                    onClick={() => { setQuery(''); searchInputRef.current?.focus(); }}
+                    aria-label="Clear"
+                    className="absolute right-0 top-0 grid h-full w-9 place-items-center text-slate-400 hover:text-navy"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
               <button type="submit" disabled={!query.trim()}
                 className="shrink-0 bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5 text-sm font-semibold disabled:opacity-40">
                 Find

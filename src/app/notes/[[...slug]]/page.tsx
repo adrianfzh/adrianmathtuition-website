@@ -28,6 +28,10 @@ import {
   type NotesSection,
 } from '@/lib/notes-tree';
 import { topicSlug } from '@/lib/topic-slug';
+import { mathHtml } from '@/lib/math-inline';
+// Server-rendered KaTeX spans (CardLink descriptions, sub-group ledes) need
+// the stylesheet even on pages with no client math component mounted.
+import 'katex/dist/katex.min.css';
 
 // Cookie-gated, so always rendered per request.
 export const dynamic = 'force-dynamic';
@@ -107,7 +111,12 @@ function CardLink({
     <Link href={href} className="nx-item active:scale-[.98] transition-transform select-none">
       <span className="nx-item-main">
         <span className="nx-item-title">{title}</span>
-        {description && <span className="nx-item-desc">{description}</span>}
+        {/* Server-side KaTeX over inline $…$ spans — sub-group descriptions
+            carry real math ("$a(x-h)^2+k$") since the 2026-08-29 TeX pass;
+            mathHtml escapes everything else, so this stays injection-safe. */}
+        {description && (
+          <span className="nx-item-desc" dangerouslySetInnerHTML={{ __html: mathHtml(description) }} />
+        )}
       </span>
       <span className="nx-item-side">
         {count && <span className="nx-count">{count}</span>}
@@ -461,13 +470,13 @@ async function SubgroupPage({
         <>
           <BackLink href={topicUrl(level, data.topic)}>{data.topic}</BackLink>
           <h1 className="nx-title">{cleanTitle(data.subgroup.name)}</h1>
-          {summary && <p className="nx-lede">{summary}</p>}
+          {summary && <p className="nx-lede" dangerouslySetInnerHTML={{ __html: mathHtml(summary) }} />}
           <div className="nx-meta">
             <span className="nx-pill">{plural(n, 'worked example')}</span>
             {example && (
               <span className="nx-eg">
                 <b>e.g.</b>
-                {example}
+                <span dangerouslySetInnerHTML={{ __html: mathHtml(example) }} />
               </span>
             )}
           </div>
