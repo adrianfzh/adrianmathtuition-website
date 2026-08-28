@@ -26,6 +26,12 @@ The deep documentation (bug archaeology, invariants, field tables) was split out
 > auto-loading skills in `.claude/skills/` — belt and suspenders; this table stays
 > the authoritative list.
 
+**Which skill does what → [`docs/SKILLS.md`](docs/SKILLS.md).** All skills are
+committed under `.claude/skills/`, so they travel with the repo to every machine
+and claude.ai account — there is nothing per-account to install. Read the index
+before reaching for a worksheet/paper skill: five of them are paper-shaped and
+differ by *what they start from*. Add a row there whenever you add a skill.
+
 ## 🏗 Building doctrine (Adrian, 2026-08-27) — LIVING, expected to change
 
 Apply this whenever designing a NEW feature, process, or automation — it's the shape every build should take, not a checklist to paste into code.
