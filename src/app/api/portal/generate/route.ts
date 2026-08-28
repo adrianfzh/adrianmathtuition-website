@@ -17,6 +17,7 @@ import { sendPushToStudent } from '@/lib/portal-push';
 import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server';
 import {
   parseGenerateBody, resolveQbLevel, extractQuestionId, countGenerationsToday,
+  countFinderCallsToday, DAILY_FIND_CAP, FIND_CAP_MESSAGE,
   DAILY_GENERATE_CAP, CAP_MESSAGE, NOT_AVAILABLE_MESSAGE, GENERATE_FAILED_MESSAGE,
   type GenerationCountingClient,
 } from '@/lib/portal-find';
@@ -57,6 +58,18 @@ export async function POST(req: Request) {
   );
   if (used >= DAILY_GENERATE_CAP) {
     return NextResponse.json({ error: CAP_MESSAGE }, { status: 429 });
+  }
+  // Total-attempts backstop (Phase G, 2026-08-28): the 5/day cap counts only
+  // SUCCESSFUL generations, but a failed attempt still burns 1–3 min of 4-gate
+  // model time and was previously unlimited. The shared finder ledger cap
+  // (every /similar call + every generate attempt = one row) bounds the
+  // failure loop too.
+  const attempts = await countFinderCallsToday(
+    admin as unknown as GenerationCountingClient,
+    identity,
+  );
+  if (attempts >= DAILY_FIND_CAP) {
+    return NextResponse.json({ error: FIND_CAP_MESSAGE }, { status: 429 });
   }
 
   const botBase = process.env.BOT_BASE_URL;

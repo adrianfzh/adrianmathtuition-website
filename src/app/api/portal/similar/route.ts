@@ -17,6 +17,8 @@ import { NextResponse } from 'next/server';
 import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server';
 import {
   parseSimilarBody, normalizeMatches, resolveQbLevel, NOT_AVAILABLE_MESSAGE,
+  countFinderCallsToday, DAILY_FIND_CAP, FIND_CAP_MESSAGE,
+  type GenerationCountingClient,
 } from '@/lib/portal-find';
 import { portalIdentity } from '@/lib/portal-auth';
 import { requireActiveAccess } from '@/lib/portal-passes';
@@ -40,6 +42,18 @@ export async function POST(req: Request) {
   // a stranger needs an active pass (402 → /app/pass otherwise).
   const access = await requireActiveAccess(account);
   if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
+
+  // Daily finder cap (Phase G, 2026-08-28): /generate always had its 5/day
+  // brake but /similar — vision extraction + embedding, model money per call —
+  // had none. Counts every finder-ledger row today (similar hits, misses AND
+  // generation attempts each log exactly one), bounding total finder spend.
+  const used = await countFinderCallsToday(
+    createServiceClient() as unknown as GenerationCountingClient,
+    identity,
+  );
+  if (used >= DAILY_FIND_CAP) {
+    return NextResponse.json({ error: FIND_CAP_MESSAGE }, { status: 429 });
+  }
 
   const parsed = parseSimilarBody(await req.json().catch(() => null));
   if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: parsed.status });
