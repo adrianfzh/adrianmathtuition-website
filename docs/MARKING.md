@@ -353,7 +353,9 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   `result_json.total_max_override` so ▶ Mark/🔁 Re-mark/🌙 queue re-ground the same way —
   admin page only, deliberately NOT on `/app/submit`: students rarely know official totals
   and a wrong override always wins); **(2) the known-paper registry** matched on paper name
-  (EM/AM prelim/practice set+paper names → 90, JC/H2 → 100) — applied only when the counted
+  (EM/AM prelim/practice set+paper names → 90, JC/H2 → 100; since 2026-08-28 `tys` counts
+  as paper context too — TYS papers ARE the official past papers, so "am tys 2021 p1" → 90) —
+  applied only when the counted
   sum lands within **0.75×–1.10×** of the official total, so a 3-question partial hand-in
   named "Set 3 P1" stays counted; **(3) the counted sum**, exactly as before. `totals`
   becomes `{awarded, max, counted_max, max_source: 'override'|'registry'|'counted'}` —
@@ -373,6 +375,37 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   student's copy of the notes was a different version from the PDF uploaded (her Practice
   3 Q3 was a GP/AP question; the uploaded PDF's Practice 3 Q3 is the integer-sets one), so
   the marker marks it from the working alone and says so. Not a marker miss.
+- **🔁 Cross-photo reconciliation — the "92/90" double-marking fix (2026-08-28):** photos
+  are marked independently, so a question appearing on TWO photos (half-page re-shot,
+  cross-page continuation, crossed-out reattempt marked where it lies) landed in
+  `results[]` twice and the blind sum double-counted it — Kassandra's Set 3 P1 badged
+  92/90 (a re-shot half page made Q2 a 4/4 AND a 4/5), and her AM TYS 2021 P1 badged
+  74/98 (Q8(b) marked on both its pages; a crossed-out Q10(a) marked 0/4 next to the
+  real 4/4). Fixed by **`ai/marker-reconcile.js`** (bot repo; pure, 19 tests incl. two
+  paper-shaped structural regressions), called inside `markPaperDirect` in PHOTO ORDER
+  **before the results sort** (the sort destroys the photo adjacency the relabel passes
+  read) and before totals/grounding/answer-key check, so everything downstream sees the
+  reconciled truth. Three passes: **(A1)** number-less continuations (`'ii'`,
+  `'(b)-(c)'`, `'?'`) adopt into the nearest preceding question when their part labels
+  fit disjointly; a generic **whole**-read adopts onto a whole-read predecessor only when
+  the question prompts agree (token-Jaccard ≥ 0.5 — the double-shot pair measured ~0.85,
+  unrelated questions ~0.1); **(A2)** same-number conflicts (a continuation photo
+  numbered with its neighbour's question) relabel onto the preceding question when
+  disjoint — literal label collisions are NEVER relabelled, merge owns those; **(B)**
+  literal duplicates merge per `(question, part)` keeping the best read (awarded ↓, then
+  max ↓, then later photo), losers land in a `superseded_parts` audit; entries emptied of
+  every part drop whole into `superseded_results`. **Ambiguity is flagged, never
+  silently dropped**: whole-vs-parts residual overlap and same-number whole reads with
+  dissimilar prompts (< 0.15) get review notes into triage instead of a merge, and an
+  `awarded > max` survivor appends a loud check-for-repeated-pages note. The run payload
+  gains a **`reconciliation`** key (`relabels` / `superseded_parts` / `superseded_results`
+  / `notes`), relabelled entries keep `original_question_number`, and reconcile notes
+  join the run-level review reasons. Fail-open: a reconcile crash keeps raw results.
+  ⚠ Annotation is baked per-photo BEFORE assembly, so a relabel can't fix margin ink —
+  the review note says so, cosmetic only. Regression proof (28 Aug): TYS re-marked
+  74/98 → 74/90 (both dups dropped, `tys` registry-grounds the denominator), Set 3
+  92/90 → 89/90 (double-shot merged, 4 relabels, one genuinely ambiguous page flagged
+  to triage instead of guessed).
 - **Runs link to their student** (2026-07-30): picking a student in the send row silently fires `phase:'set-student'` (bot store → `student_id`/`student_name` on `paper_marking_runs`, indexed; last pick wins). The organizing principle is the same as Lessons/Invoices — a link to the Airtable Student record, NOT per-student Blob folders (Blob is the shelf, the DB row is the index card). `phase:'by-student'` returns one student's runs; `/admin/students/[id]` renders them in a **Marked papers** section (overview tab, ✍️/🖼/📄 links). History rows show the tagged name. Runs marked before 2026-07-30 are untagged until re-loaded and re-picked.
 
 ## /admin/mark/triage — flagged-only review + the release gate (2026-08-11)
