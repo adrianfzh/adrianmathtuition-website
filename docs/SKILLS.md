@@ -34,7 +34,7 @@ from**:
 |---|---|---|
 | `create-worksheet` | nothing — a topic and a count | a new `.docx` in house style. Also owns the "(With Worked Examples)" revision format |
 | `revision-worksheet` | **an existing document of Adrian's** (a notes-bank fragment, or a worked-examples sheet) | that same document with a fresh Practice section of real QB questions appended |
-| `worksheet-clerk` | **a conversation** — it shows candidates and Adrian picks | a physical worksheet from the picks; can also read jobs off `/admin/todo` |
+| `worksheet-clerk` | **a conversation** — it shows candidates and Adrian picks | a physical worksheet from the picks (it calls `create-worksheet` to render); can also read jobs off `/admin/todo` |
 | `prelim-paper` | **the blueprint** (`data/paper-blueprints.json`) + the QB | a full S4 prelim paper, DOCX, with answer key |
 | `finish-practice-set` | **a PDF that already exists** — a compiled past paper | the same paper, cleaned of its source's header/footer/mark-up, titled, with a QB answer key appended |
 
@@ -63,3 +63,13 @@ authoritative list.
 Add a row here in the same turn you create it — an unlisted skill is one Adrian
 will not remember exists. If the new skill's name is close to an existing one,
 say what it starts from in the disambiguation table above, not just what it does.
+
+**And put the distinction in the `description:`, not only here.** A session loads
+every skill's name and description automatically; it does NOT load the bodies, and
+it does not load this file. So the description is the entire budget for picking the
+right skill — this index is for Adrian and for an agent that comes looking. When
+two skills could answer the same sentence, each description must name the other and
+say when to prefer it. `create-worksheet` and `worksheet-clerk` both claimed the
+trigger "make a worksheet" until 2026-08-28; the phrase now belongs to
+`create-worksheet` alone, and the clerk claims "pull questions" / "show me
+questions on <topic>" / "let me choose".

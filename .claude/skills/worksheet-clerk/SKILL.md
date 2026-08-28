@@ -1,6 +1,17 @@
 ---
 name: worksheet-clerk
-description: Ad-hoc question clerk — fetch questions from the Supabase QB (or generate new ones via the Fly 4-gate worker), show them to Adrian to pick from, and build a PHYSICAL worksheet (DOCX/PDF) where each pick is either a fully worked annotated example or a practice question to attempt. Can also read jobs from /admin/todo, and optionally publish picks to the student portal. Use when Adrian asks to "pull questions", "make a worksheet", "show me questions on <topic>", or references a worksheet todo.
+description: >
+  Ad-hoc question clerk — fetch questions from the Supabase QB (or generate new ones
+  via the Fly 4-gate worker), show them to Adrian to pick from, and build a PHYSICAL
+  worksheet (DOCX/PDF) where each pick is either a fully worked annotated example or a
+  practice question to attempt. Can also read jobs from /admin/todo, and optionally
+  publish picks to the student portal. Use when Adrian asks to "pull questions",
+  "show me questions on <topic>", "let me choose", or references a worksheet todo.
+  The round of choosing is the point of this skill: use it only when Adrian wants to
+  see candidates and say which ones go in. A bare "make me a worksheet on X" with a
+  topic and a count and no candidate list is create-worksheet instead — this skill
+  calls create-worksheet to render whatever he picked, so reach for that one directly
+  when there is nothing to pick.
 ---
 
 # Worksheet Clerk

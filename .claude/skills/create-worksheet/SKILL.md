@@ -13,7 +13,11 @@ description: >
   Revision "(With Worked Examples)" sheet format — notes summary, concept-titled boxed
   Examples, practice set — so use it for those too; the separate revision-worksheet
   skill is only for building worksheets out of real past-paper questions from the
-  question bank.
+  question bank. Use THIS skill when the worksheet should be produced straight from
+  a topic and a count, with no round of choosing first. If Adrian wants to SEE
+  candidate questions from the question bank and pick which ones go in before
+  anything is built, that is worksheet-clerk — which calls this skill to render
+  whatever he picked.
 ---
 
 # Create Worksheet Skill
