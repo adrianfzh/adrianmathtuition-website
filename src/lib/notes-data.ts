@@ -348,7 +348,16 @@ export interface TopicPageData {
   recall: RecallCardRow[];
   /** Learning units, every status — the reviewer's view. Empty when none exist. */
   unitSections: UnitSection[];
-  subgroups: { name: string; url: string; description: string | null; count: number }[];
+  subgroups: {
+    name: string;
+    url: string;
+    description: string | null;
+    count: number;
+    /** Every example inline (2026-08-29, nested-accordion topic page): the
+     *  folder opens in place instead of navigating — "dropdowns in worked
+     *  examples themselves … with further dropdowns to see into each". */
+    examples: { id: string; card_title: string | null; content: string }[];
+  }[];
 }
 
 /** Topic index page: reflexes and the topic card, then its sub-group list. */
@@ -375,13 +384,40 @@ export const getTopicPage = cache(
     const topic = matchBySlug(topics, slug, t => t);
     if (!topic) return null;
 
-    const list = levelRows
-      .filter(s => s.topic === topic)
+    const topicRows = levelRows.filter(s => s.topic === topic);
+    // One query for every example on the page, grouped per folder below. Same
+    // publishable filters as loadSnippetCounts, so a folder's inline list can
+    // never disagree with its count pill.
+    const ids = topicRows.map(s => s.id);
+    const snippetRows = ids.length === 0 ? [] : await notesCache(['topic-snippets', level, topic], async () => {
+      const supa = getSupabase();
+      return fetchAllRows<{ id: string; subgroup_id: number; order_index: number | null; card_title: string | null; content: string }>(
+        (from, to) =>
+          supa
+            .from('content_snippets')
+            .select('id, subgroup_id, order_index, card_title, content')
+            .in('subgroup_id', ids)
+            .eq('content_kind', PUBLISHABLE.content_kind)
+            .in('feature', [...PUBLISHABLE.features])
+            .eq('is_published', true)
+            .order('order_index', { ascending: true, nullsFirst: false })
+            .range(from, to),
+      );
+    });
+    const examplesBySubgroup = new Map<number, { id: string; card_title: string | null; content: string }[]>();
+    for (const r of snippetRows) {
+      const a = examplesBySubgroup.get(r.subgroup_id) ?? [];
+      a.push({ id: r.id, card_title: r.card_title, content: r.content });
+      examplesBySubgroup.set(r.subgroup_id, a);
+    }
+
+    const list = topicRows
       .map(s => ({
         name: s.name,
         url: subgroupUrl(level, topic, s.name),
         description: s.description,
         count: counts.get(s.id) ?? 0,
+        examples: examplesBySubgroup.get(s.id) ?? [],
       }))
       .filter(s => s.count > 0);
 

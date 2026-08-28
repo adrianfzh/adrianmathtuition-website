@@ -13,10 +13,11 @@
 // A student filing a request is a STUDENT action, so it notifies — the
 // "admin web UI actions are silent" rule covers Adrian's own clicks, not
 // students asking for things (same policy as /api/portal/submit hand-ins).
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { sendTelegram } from '@/lib/telegram';
+import { sendTelegram, sendTelegramDocumentTo } from '@/lib/telegram';
+import { generateRequestDraft } from '@/lib/request-draft';
 import {
   DAILY_REQUEST_CAP,
   countRequestsToday,
@@ -30,18 +31,20 @@ import { listStudentRequests } from '@/lib/portal-requests';
 import { portalIdentity, type PortalAccount } from '@/lib/portal-auth';
 
 export const runtime = 'nodejs';
+// The worksheet auto-draft (Puppeteer render in after()) outlives the response.
+export const maxDuration = 60;
 
 // The client never learns another student's rows: everything is scoped by the
 // session's own airtable_student_id, resolved server-side.
-async function sessionStudent(): Promise<Pick<PortalAccount, 'id' | 'airtable_student_id' | 'display_name'> | null> {
+async function sessionStudent(): Promise<Pick<PortalAccount, 'id' | 'airtable_student_id' | 'display_name' | 'level'> | null> {
   const supabase = await createSupabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
   const { data: account } = await supabase
     .from('portal_accounts')
-    .select('id, airtable_student_id, display_name')
+    .select('id, airtable_student_id, display_name, level')
     .eq('id', user.id)
-    .single<Pick<PortalAccount, 'id' | 'airtable_student_id' | 'display_name'>>();
+    .single<Pick<PortalAccount, 'id' | 'airtable_student_id' | 'display_name' | 'level'>>();
   // Strangers file requests too — rows key on portalIdentity() (acct:<uuid>),
   // so no account is ever dropped here for having no Airtable record.
   return account ?? null;
@@ -119,6 +122,50 @@ export async function POST(req: Request) {
     await sendTelegram(requestTelegramText(account.display_name || 'A student', kind, detail.detail));
   } catch (e) {
     console.warn('[portal-requests] telegram notify failed:', (e as Error).message);
+  }
+
+  // Worksheet requests auto-draft AFTER the response (Adrian, 2026-08-29:
+  // "possible to automate, but then let me vet the output first through
+  // telegram then i hit approve or send"). The draft PDF goes to his Telegram
+  // and onto the row as draft_url; /admin/requests prefills ✅ Mark done with
+  // it. The student sees NOTHING until that tap, and any parse/pool failure
+  // just leaves the request in the manual queue the doorbell already rang.
+  if (kind === 'worksheet') {
+    const requestId = (data as PortalRequestRow).id;
+    const studentName = account.display_name || 'A student';
+    const level = account.level;
+    after(async () => {
+      try {
+        const draft = await generateRequestDraft(admin, {
+          portalLevel: level,
+          detail: detail.detail,
+          requestId,
+        });
+        if ('skip' in draft) {
+          console.warn('[portal-requests] draft skipped:', draft.skip);
+          return;
+        }
+        await admin
+          .from('portal_requests')
+          .update({
+            draft_url: draft.url,
+            draft_meta: { title: draft.title, levelKey: draft.levelKey, topic: draft.topic, tier: draft.tier, count: draft.count },
+          })
+          .eq('id', requestId);
+        const chatId = process.env.TELEGRAM_CHAT_ID;
+        if (chatId) {
+          await sendTelegramDocumentTo(
+            chatId,
+            draft.url,
+            `📝 Draft for ${studentName}'s request — ${draft.title} (${draft.count} qns).\n` +
+              `"${detail.detail.slice(0, 120)}"\n` +
+              `Vet the PDF, then approve: https://www.adrianmathtuition.com/admin/requests`,
+          );
+        }
+      } catch (e) {
+        console.warn('[portal-requests] draft generation failed:', (e as Error).message);
+      }
+    });
   }
 
   return NextResponse.json({ ok: true, request: shape(data as PortalRequestRow) });

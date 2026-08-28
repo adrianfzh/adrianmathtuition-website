@@ -35,6 +35,10 @@ export interface PortalRequestRow {
   result_url: string | null;
   created_at: string;
   decided_at: string | null;
+  /** Auto-drafted worksheet awaiting Adrian's vet (lib/request-draft) - never
+   *  shown to the student; becomes result_url only via his approve. */
+  draft_url?: string | null;
+  draft_meta?: unknown;
 }
 
 /** Anything not a known kind collapses to 'other' — the column has a default

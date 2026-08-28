@@ -19,6 +19,7 @@ type Req = {
   status: string;
   adminNote: string | null;
   resultUrl: string | null;
+  draftUrl: string | null;
   createdAt: string;
   decidedAt: string | null;
 };
@@ -81,7 +82,9 @@ export default function AdminRequestsPage() {
   function openAction(r: Req, mode: 'done' | 'reject') {
     setActId(r.id);
     setActMode(mode);
-    setActUrl('');
+    // A vetted draft is one tap from approval: the URL box starts prefilled
+    // with the auto-draft, so ✅ Mark done sends exactly the PDF he vetted.
+    setActUrl(mode === 'done' && r.draftUrl ? r.draftUrl : '');
     setActNote('');
     setActError('');
   }
@@ -179,6 +182,12 @@ export default function AdminRequestsPage() {
       {!isQueued && r.resultUrl && (
         <a href={r.resultUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: '#1e3a5f', fontWeight: 600, display: 'inline-block', marginTop: 4, wordBreak: 'break-all' }}>
           🔗 {r.resultUrl}
+        </a>
+      )}
+      {isQueued && r.draftUrl && (
+        <a href={r.draftUrl} target="_blank" rel="noopener noreferrer"
+          style={{ fontSize: 13, color: '#047857', fontWeight: 700, display: 'inline-block', marginTop: 6 }}>
+          📝 Draft ready — vet the PDF
         </a>
       )}
       {isQueued && (actId === r.id ? actionPanel() : (

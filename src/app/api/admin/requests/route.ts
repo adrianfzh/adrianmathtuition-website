@@ -27,6 +27,7 @@ function shape(r: PortalRequestRow, names: Map<string, string>) {
     status: r.status,
     adminNote: r.admin_note,
     resultUrl: r.result_url,
+    draftUrl: r.draft_url ?? null,
     createdAt: r.created_at,
     decidedAt: r.decided_at,
   };

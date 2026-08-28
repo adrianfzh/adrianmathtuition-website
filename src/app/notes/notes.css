@@ -777,6 +777,67 @@ a.nx-eyebrow:hover {
   margin-top: 1.5rem;
 }
 
+/* Folder accordion on the TOPIC page (Adrian, 2026-08-29: "dropdowns in
+   worked examples themselves … with further dropdowns to see into each"):
+   the folder row looks like the old link card but opens in place to its
+   example accordions. */
+.nx-fold {
+  margin-top: 0.6rem;
+  overflow: hidden;
+  background: var(--color-fd-card);
+  border: 1px solid var(--nx-hairline);
+  border-radius: 14px;
+  box-shadow: var(--nx-shadow);
+}
+.nx-fold-head {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.nx-fold-head::-webkit-details-marker {
+  display: none;
+}
+.nx-fold-head::marker {
+  content: '';
+}
+.nx-fold-head:focus-visible {
+  outline: 2px solid var(--nx-gold);
+  outline-offset: -2px;
+}
+.nx-fold-head .nx-chevron {
+  transition: transform 0.16s ease;
+}
+.nx-fold[open] > .nx-fold-head .nx-chevron {
+  transform: rotate(90deg);
+}
+.nx-fold[open] {
+  border-color: var(--nx-amber-line);
+}
+.nx-fold[open] > .nx-fold-head {
+  border-bottom: 1px solid var(--nx-hairline);
+}
+.nx-fold-body {
+  padding: 0.2rem 0.85rem 0.95rem;
+}
+.nx-fold-open {
+  display: inline-block;
+  margin-top: 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--nx-navy);
+  text-decoration: underline;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nx-fold-head .nx-chevron {
+    transition: none;
+  }
+}
+
 /* Each worked example is a closed-by-default accordion (Adrian, 2026-08-29:
    "for each example why not dropdowns?"): shut, the page reads as an index of
    navy title bars a thumb can scan; open, one full worked card. */

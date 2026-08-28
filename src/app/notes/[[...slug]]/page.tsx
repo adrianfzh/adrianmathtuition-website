@@ -339,16 +339,43 @@ async function TopicIndex({ level, topicSlugParam }: { level: string; topicSlugP
           <h2 id={ANCHOR.pages} className="nx-section">
             Worked examples
           </h2>
+          {/* Nested accordions (Adrian, 2026-08-29): each folder opens in
+              place to its examples, each example opens to its full working —
+              two taps from the topic page to any solution, no navigation. */}
           <div className="nx-list">
-            {data.subgroups.map(s => (
-              <CardLink
-                key={s.url}
-                href={s.url}
-                title={cleanTitle(s.name)}
-                description={cleanDescription(s.description).summary}
-                count={plural(s.count, 'example')}
-              />
-            ))}
+            {data.subgroups.map(s => {
+              const desc = cleanDescription(s.description).summary;
+              return (
+                <details key={s.url} className="nx-fold">
+                  <summary className="nx-fold-head">
+                    <span className="nx-item-main">
+                      <span className="nx-item-title">{cleanTitle(s.name)}</span>
+                      {desc && (
+                        <span
+                          className="nx-item-desc"
+                          dangerouslySetInnerHTML={{ __html: mathHtml(desc) }}
+                        />
+                      )}
+                    </span>
+                    <span className="nx-item-side">
+                      <span className="nx-count">{plural(s.count, 'example')}</span>
+                      <Chevron />
+                    </span>
+                  </summary>
+                  <div className="nx-fold-body">
+                    {s.examples.map((ex, i) => (
+                      <Example
+                        key={ex.id}
+                        snippet={{ id: `t-${ex.id}`, card_title: ex.card_title, content: ex.content, n: i + 1 }}
+                      />
+                    ))}
+                    <Link href={s.url} className="nx-fold-open">
+                      Open this set as its own page ↗
+                    </Link>
+                  </div>
+                </details>
+              );
+            })}
           </div>
         </section>
       ) : (
