@@ -508,10 +508,13 @@ export async function POST(req: NextRequest) {
     const answerless = questions.filter((qq) => !qq.answerLines.length).length;
     if (answerKey && answerless > 0) warnings.push(`${answerless} question${answerless === 1 ? '' : 's'} with no stored answer — "—" in the key`);
 
-    const titleBits = [
+    const autoTitle = [
       `${school} ${year}`, level,
       paper ? `Paper ${String(paper).replace(/^P/i, '')}` : null, examType,
     ].filter(Boolean).join(' · ');
+    // Adrian can type his own title on the print card; blank falls back to the
+    // auto title (which the UI shows as the input's placeholder).
+    const titleBits = typeof body.title === 'string' && body.title.trim() ? body.title.trim() : autoTitle;
     try {
       const pdf = await renderPaperPDF({
         title: titleBits,

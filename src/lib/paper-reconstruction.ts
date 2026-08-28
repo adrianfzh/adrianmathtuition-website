@@ -65,27 +65,20 @@ export function assessCoverage(marksTotal: number, count: number, level?: string
 }
 
 /**
- * Working-space sizing, mirroring the create-exam-paper skill's rule
- * (exam_lib.SQm): `max(2, round(marks * 2.5))` blank lines per part.
- * That round() is Python's — half-to-even — so odd marks land where the
- * skill puts them (1 mark → 2 lines, not 3; 5 marks → 12, not 13).
+ * Working-space sizing. This originally mirrored the create-exam-paper
+ * skill's rule (2.5 lines per mark), but real school papers are roomier and
+ * Adrian found the print cramped — now DELIBERATELY GENEROUS (2026-08-28):
+ * 4 handwriting lines per mark, floor of 4 lines for markless parts, so a
+ * 3-mark part gets ~a third of a page and a 4-mark part about half.
  */
-function roundHalfToEven(x: number): number {
-  const floor = Math.floor(x);
-  const frac = x - floor;
-  if (frac < 0.5) return floor;
-  if (frac > 0.5) return floor + 1;
-  return floor % 2 === 0 ? floor : floor + 1;
-}
-
 export function workingSpaceLines(marks: number | null | undefined): number {
   const m = typeof marks === 'number' && marks > 0 ? marks : 0;
-  return Math.max(2, roundHalfToEven(m * 2.5));
+  return Math.max(4, m * 4);
 }
 
 /** One handwriting line ≈ 8mm; capped so a big closer still fits on a page. */
 const LINE_MM = 8;
-const SPACE_CAP_MM = 180;
+const SPACE_CAP_MM = 230;
 
 export function workingSpaceMm(marks: number | null | undefined): number {
   return Math.min(SPACE_CAP_MM, workingSpaceLines(marks) * LINE_MM);

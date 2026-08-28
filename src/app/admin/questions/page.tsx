@@ -104,6 +104,7 @@ export default function QuestionBankPage() {
   const [pdfSpace, setPdfSpace] = useState(true);
   const [pdfAnswerKey, setPdfAnswerKey] = useState(true);
   const [pdfOrigNum, setPdfOrigNum] = useState(true);
+  const [pdfTitle, setPdfTitle] = useState(''); // blank → the auto title shown as placeholder
   const [cardCache, setCardCache] = useState<Record<string, Card>>({});
 
   const [students, setStudents] = useState<{ id: string; name: string; level: string }[]>([]);
@@ -232,6 +233,7 @@ export default function QuestionBankPage() {
       cacheCards(d.questions || []);
       rememberDetails(d.questions || []);
       setPaperView({ meta, questions: d.questions || [] });
+      setPdfTitle(''); // don't carry a typed title over to a different paper
       setOpenDetail(null);
       window.scrollTo({ top: 0 });
     } catch (e) { setApiError((e as Error).message); }
@@ -362,6 +364,7 @@ export default function QuestionBankPage() {
           action: 'paper-pdf', school: m.school, year: m.year,
           level: m.level || undefined, paper: m.paper || undefined, examType: m.examType || undefined,
           workingSpace: pdfSpace, answerKey: pdfAnswerKey, originalNumbering: pdfOrigNum,
+          title: pdfTitle.trim() || undefined,
         }),
       });
       const d = await r.json();
@@ -649,6 +652,14 @@ export default function QuestionBankPage() {
               🖨 Print this paper
               <span style={{ fontWeight: 400, color: C.muted, marginLeft: 6 }}>the full paper as a sit-able PDF — questions in order, with figures</span>
             </div>
+            <input
+              type="text" value={pdfTitle} onChange={e => setPdfTitle(e.target.value)}
+              placeholder={[
+                `${paperView.meta.school} ${paperView.meta.year}`, paperView.meta.level,
+                paperView.meta.paper ? `Paper ${String(paperView.meta.paper).replace(/^P/i, '')}` : null, paperView.meta.examType,
+              ].filter(Boolean).join(' · ')}
+              style={{ width: '100%', marginTop: 6, fontSize: 13, border: `1px solid ${C.border}`, borderRadius: 8, padding: '5px 9px' }}
+            />
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginTop: 6 }}>
               {([
                 ['working space', pdfSpace, setPdfSpace],

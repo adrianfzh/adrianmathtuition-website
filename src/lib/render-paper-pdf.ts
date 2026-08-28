@@ -13,8 +13,8 @@
  * Exam-paper conventions (mirroring the create-exam-paper skill): no topic or
  * source labels on questions, marks right-aligned at the margin, optional
  * working space after each marked part sized by its mark allocation
- * (lib/paper-reconstruction.workingSpaceMm — the skill's 2.5-lines-per-mark
- * rule), and an optional ANSWER KEY on a final page of its own.
+ * (lib/paper-reconstruction.workingSpaceMm — generous 4 lines per mark),
+ * and an optional ANSWER KEY on a final page of its own.
  *
  * Honesty rule: a paper the bank only partially covers says so — the coverage
  * warning prints under the header AND in the footer, so a photocopied sheet

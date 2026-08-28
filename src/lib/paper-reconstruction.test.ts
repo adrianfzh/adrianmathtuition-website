@@ -59,30 +59,30 @@ describe('assessCoverage', () => {
   });
 });
 
-describe('workingSpaceLines — mirrors create-exam-paper exam_lib.SQm', () => {
-  it('max(2, round(marks * 2.5)) with Python half-to-even rounding', () => {
-    expect(workingSpaceLines(1)).toBe(2); // 2.5 → 2 (banker's), then max(2, …)
-    expect(workingSpaceLines(2)).toBe(5);
-    expect(workingSpaceLines(3)).toBe(8); // 7.5 → 8 (even)
-    expect(workingSpaceLines(4)).toBe(10);
-    expect(workingSpaceLines(5)).toBe(12); // 12.5 → 12 (banker's), NOT 13
-    expect(workingSpaceLines(6)).toBe(15);
+describe('workingSpaceLines — generous 4 lines per mark (Adrian, 2026-08-28)', () => {
+  it('max(4, marks * 4)', () => {
+    expect(workingSpaceLines(1)).toBe(4);
+    expect(workingSpaceLines(2)).toBe(8);
+    expect(workingSpaceLines(3)).toBe(12);
+    expect(workingSpaceLines(4)).toBe(16);
+    expect(workingSpaceLines(5)).toBe(20);
+    expect(workingSpaceLines(6)).toBe(24);
   });
 
-  it('floors at 2 lines for markless parts', () => {
-    expect(workingSpaceLines(0)).toBe(2);
-    expect(workingSpaceLines(null)).toBe(2);
-    expect(workingSpaceLines(undefined)).toBe(2);
+  it('floors at 4 lines for markless parts', () => {
+    expect(workingSpaceLines(0)).toBe(4);
+    expect(workingSpaceLines(null)).toBe(4);
+    expect(workingSpaceLines(undefined)).toBe(4);
   });
 });
 
 describe('workingSpaceMm', () => {
   it('is lines × 8mm', () => {
-    expect(workingSpaceMm(2)).toBe(40); // 5 lines
-    expect(workingSpaceMm(4)).toBe(80); // 10 lines
+    expect(workingSpaceMm(2)).toBe(64); // 8 lines
+    expect(workingSpaceMm(4)).toBe(128); // 16 lines
   });
   it('caps so one part never exceeds a page', () => {
-    expect(workingSpaceMm(30)).toBe(180);
+    expect(workingSpaceMm(30)).toBe(230);
   });
 });
 
