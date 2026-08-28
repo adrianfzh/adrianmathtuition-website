@@ -1684,3 +1684,8 @@ flattens inked pages client-side, uploads via the client-token flow (`type=page`
   `mark-paper-inbox` both honour `x-file-name`.
 - **Marker comments render inline $…$ TeX** in the results panel via `lib/math-inline.ts`
   (KaTeX, currency-vs-math heuristic, tested) — don't regex-render TeX in the page.
+  ⚠ TWO prices in one comment pair with each other ("$24 < $32" → KaTeX'd garble;
+  KaTeX never throws on prose, it italicises it). Fixed 2026-08-28 by the
+  price-collision check in `mathHtml` + a function-words rule in `looksLikeMath`,
+  validated by sweeping every mathHtml-rendered DB field (119 garbled spans fixed,
+  zero legit TeX flipped) — the file header carries the details.
