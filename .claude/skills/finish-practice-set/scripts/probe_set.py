@@ -50,29 +50,41 @@ def main(path):
         print(f"    y={k:>5}  x{rows[k]:<3} {sample[k]!r}")
     if not repeated:
         print("    none — this paper may have no footer to strip")
-    footer_top = (min(repeated) - 3) if repeated else None
 
-    # ---- body extent, so the footer band cannot eat real content ----------
-    worst = 0
-    worst_pg = None
-    for i, p in enumerate(doc):
-        for sp in spans(p):
-            if footer_top and sp["bbox"][1] >= footer_top:
-                continue
-            if sp["bbox"][3] > worst:
-                worst, worst_pg = sp["bbox"][3], i + 1
-        for d in p.get_drawings():
-            r = d["rect"]
-            if footer_top and r.y0 >= footer_top:
-                continue
-            if r.y1 > worst:
-                worst, worst_pg = r.y1, i + 1
+    def lowest_content(cut):
+        """Bottom of everything that is NOT part of the footer band at `cut`."""
+        worst, pg = 0, None
+        for i, p in enumerate(doc):
+            for sp in spans(p):
+                if cut and sp["bbox"][1] >= cut:
+                    continue
+                if sp["bbox"][3] > worst:
+                    worst, pg = sp["bbox"][3], i + 1
+            for d in p.get_drawings():
+                if cut and d["rect"].y0 >= cut:
+                    continue
+                if d["rect"].y1 > worst:
+                    worst, pg = d["rect"].y1, i + 1
+        return worst, pg
+
+    # A repeating row is only a footer if no real content sits below it. Tall
+    # brackets and fraction bars repeat at the same y across pages too, and
+    # picking one of those as the cut would redact half the last question.
+    footer_top = worst = worst_pg = None
+    for k in repeated:
+        cand = k - 3
+        w, pg = lowest_content(cand)
+        if w < cand:
+            footer_top, worst, worst_pg = cand, w, pg
+            break
+        print(f"    y={k} rejected — real content reaches y={w:.1f} (page {pg})")
+    if worst is None:
+        worst, worst_pg = lowest_content(None)
     print(f"\n  lowest real content: y={worst:.1f} (page {worst_pg})")
     if footer_top:
-        if worst >= footer_top:
-            print(f"    !! footer_top={footer_top:.1f} would clip content — raise it or redact per page")
-        else:
-            print(f"    footer_top = {footer_top:.1f}   (clear by {footer_top - worst:.1f}pt)")
+        print(f"    footer_top = {footer_top:.1f}   (clear by {footer_top - worst:.1f}pt)")
+    elif repeated:
+        print("    !! no candidate clears the content — set footer_top by eye, or redact per page")
 
     # ---- page-1 header: top spans, and the first gap that looks like a break
     p1 = sorted(spans(doc[0]), key=lambda s: s["bbox"][1])
@@ -99,16 +111,25 @@ def main(path):
             print(f"\n  !! {len(art)} line-art object(s) inside the page-1 header band — e.g. {art[0]}")
             print("     make_set.py removes covered line art, so the header rule goes with it")
 
-    hl = []
+    sat = lambda c: c is not None and (max(c) - min(c)) > 0.15
+    fills, strokes = [], []
     for i, p in enumerate(doc):
         for d in p.get_drawings():
-            f = d.get("fill")
-            if f and f[0] > 0.8 and f[1] > 0.8 and f[2] < 0.5:
-                hl.append((i + 1, p.get_textbox(d["rect"]).strip().replace("\n", " ")[:45]))
-    if hl:
-        print(f"\n  {len(hl)} yellow highlight(s) baked into the pages — kept unless Adrian says otherwise:")
-        for pg, t in hl:
+            txt = p.get_textbox(d["rect"]).strip().replace("\n", " ")[:45]
+            if sat(d.get("fill")):
+                fills.append((i + 1, txt))
+            elif sat(d.get("color")):
+                strokes.append((i + 1, d["rect"], txt))
+    if fills:
+        print(f"\n  {len(fills)} highlighter fill(s) — make_set.py removes these automatically:")
+        for pg, t in fills:
             print(f"    p{pg}: {t!r}")
+    if strokes:
+        print(f"\n  {len(strokes)} saturated STROKE(s) — YOUR CALL, look at each:")
+        print("    a diagram drawn in colour (keep) vs a compiler callout box (scrub)")
+        for pg, r, t in strokes:
+            print(f"    p{pg} {r} {t!r}")
+        print("    to erase one:  --scrub <page>:<y0>-<y1>   (check nothing real is in the band)")
 
     print("\n  suggested config:")
     print(f"    --footer-top {footer_top}  --header-bot {header_bot}  --content-top {content_top}")

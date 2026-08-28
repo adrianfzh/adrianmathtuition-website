@@ -104,7 +104,8 @@ node .claude/skills/finish-practice-set/scripts/build_key.js answers.json /tmp/k
 ```bash
 python3 .claude/skills/finish-practice-set/scripts/make_set.py \
   --live "<paper>.pdf" --title "JC1 H2 Math Promo Practice Set N" \
-  --footer-top 768 --header-bot 60 --content-top 64.4 --key /tmp/key.pdf
+  --footer-top 768 --header-bot 60 --content-top 64.4 --key /tmp/key.pdf \
+  --scrub 10:44-73          # optional, repeatable; see the mark-up gotcha below
 ```
 
 Overwrites in place. The first run copies the file to
@@ -140,9 +141,20 @@ Then send the file with `SendUserFile`. In a headless session also Telegram it
   near the footer survive.
 - **Page size varies.** Sets 1 and 2 are A4; Set 3 is US Letter. Always read it
   off the probe rather than assuming.
-- **Highlights may be baked in.** VJC's pages carry six yellow fills over command
-  words (*Without using a calculator*, *Hence*, *exact*). They are deliberate
-  emphasis and are kept — flag them, do not silently strip.
+- **Compiler mark-up is baked into the pages, and fill ≠ stroke.** VJC's pages
+  carried eight highlighter fills (yellow and cyan, over *Without using a
+  calculator*, *Hence*, *exact*…) plus a green callout box reading "Expected to
+  show working and details in your solutions", with a leader line. All are
+  removed. The rule that makes this safe:
+  - **Saturated *fill*** = highlighter → removed automatically. Highlights are
+    painted *behind* the glyphs, so a white cover-up would hide the words too;
+    `strip_highlights` redacts with `TEXT_NONE` so only the fill goes.
+  - **Saturated *stroke*** = could be either. ACJC draws its diagram curves in a
+    dark slate blue, so auto-removing coloured strokes would delete the figures.
+    The probe lists them and you decide; erase a callout with an explicit band,
+    `--scrub 10:44-73` (that one takes the box, the leader line and its text).
+  Always re-render the scrubbed page — `--scrub` uses `IF_TOUCHED`, so a band set
+  too generously will eat real line art.
 - **Don't `find` for the file.** Dropbox MCP `search` with `search_mode:
   "title_only"` finds it in a second; a recursive `find` over `~/Desktop` stalls
   for half an hour on iCloud-evicted files. See [[never-find-over-adrianmath]].
