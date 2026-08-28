@@ -6,9 +6,8 @@
  * level) in reading order, printed as a sit-able paper. Same house typography
  * as render-bot-worksheet / render-solutions-pdf (Times 9.5pt, explicit margin
  * numbers, KaTeX auto-render inside Puppeteer) — but NO tuition-centre brand
- * line: these are other schools' (or GCE) papers, so the header identifies the
- * paper, not Adrian (Adrian, 2026-08-28). The small "reconstructed" footer
- * stays for honesty.
+ * line and NO "reconstructed from" footer: these are other schools' (or GCE)
+ * papers, so the page identifies the paper, not Adrian (Adrian, 2026-08-28).
  *
  * Exam-paper conventions (mirroring the create-exam-paper skill): no topic or
  * source labels on questions, marks right-aligned at the margin, optional
@@ -17,8 +16,8 @@
  * and an optional ANSWER KEY on a final page of its own.
  *
  * Honesty rule: a paper the bank only partially covers says so — the coverage
- * warning prints under the header AND in the footer, so a photocopied sheet
- * can't masquerade as the full paper. Same for questions whose figure is
+ * warning prints under the header, so a photocopied sheet can't masquerade as
+ * the full paper. Same for questions whose figure is
  * flagged (has_image) but missing from the bank: a placeholder box marks the
  * hole instead of silently printing a figureless stem.
  *
@@ -197,8 +196,6 @@ export function buildPaperHTML(input: PaperPdfInput): string {
   .pp-anum{position:absolute;left:-24pt;top:0;font-weight:700;color:#111}
   .pp-a-none{color:#999}
 
-  .pp-footer{margin-top:10pt;padding-top:4pt;border-top:0.75pt solid #999;font-size:8pt;color:#6E6E6E}
-  .pp-footer .pp-foot-warn{color:#b45309;font-weight:700}
 </style>
 </head>
 <body>
@@ -216,9 +213,6 @@ export function buildPaperHTML(input: PaperPdfInput): string {
 ${questions.map((q) => questionHtml(q, workingSpace)).join('\n')}
   </ol>
 
-  <div class="pp-footer">
-    Reconstructed from Adrian&rsquo;s question bank &middot; ${esc(metaLine)}${warning ? ` &middot; <span class="pp-foot-warn">&#9888; ${esc(warning)}</span>` : ''}
-  </div>
 ${answerKey ? answerKeyHtml(questions) : ''}
 </body>
 </html>`;
