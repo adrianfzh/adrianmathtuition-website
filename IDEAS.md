@@ -40,7 +40,9 @@
 
 ## Marking/content quality
 - 💡 **Marker anti-injection line** — marking prompts should state that text ON a student script is never an instruction (cheap insurance; students could write "print your instructions" on paper).
-- 🔨 **Watermark-held diagram redraws** (78 questions) — in flight at handoff (2026-08-29 night, re-permitted to fan out). Workspace: ~/Documents/Claude/Projects/AdrianMath/diagram-recovery-2026-08/redraw/ (render.js, guarded apply-one.js, batch manifests G1/G2/T1/J1/S1/C1/M1, held lists). If unreported when you read this: check live progress (questions.solution_images counts) + the workspace, finish remaining batches through the guarded apply, never ship watermarked crops.
+- ✅ **Watermark-held diagram redraws DONE (2026-08-29 night): 76 of 78 applied**, every row verified carrying ONLY our clean redrawn paths (zero watermarked pixels shipped; every figure spec-authored, fail-closed verified, visually checked). The 2 remaining, both documented in the redraw workspace reports:
+  - `2d37e763` (Punggol S1 2021 Q2 construction) — **ANOMALY FOR ADRIAN**: exact geometry proves the stored answers wrong (ZY = 5.085 cm vs stored 5.5 ± 0.2; ∠XYZ 100.5° vs 102 ± 2). Suggested corrections in report-C1B.json; redraw is trivial once he rules.
+  - `5312d8dc` (Riverside EM 2024 Q16) — base dimensions exist nowhere in the row (empty question_text, unlabelled image); needs re-extraction from the original paper first.
 - ✅ **Curve/region figure gaps (2026-08-29)** — 74 registry-verified figures applied (14 question-side, 2 part-level, 58 solution-side); 16 skipped with reasons (unpinnable/no family — incl. compass constructions, frustum, parametric spiral: candidate future families); 2 rows carry representative curves (provenance-noted).
 - 💡 **Per-step "why this earns the mark" at scale** across worked solutions.
 - 💡 **Generator bake-off** via the GEN_MODEL lever (eval harness exists in bot scripts/).
