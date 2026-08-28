@@ -264,7 +264,7 @@ a.nx-eyebrow:hover {
    * depth gradient with a faint graph-paper grid and TWO coloured light
    * blooms — gold from below, teal from above on AM; white + coral on EM
    * (Adrian, 2026-08-29: "a little more colours to be more vibrant"). */
-  --nx-hero-grad: linear-gradient(var(--nx-navy), var(--nx-navy));
+  --nx-hero-grad: linear-gradient(140deg, #101f38 0%, var(--nx-navy) 46%, #33639c 100%);
   --nx-hero-ink: var(--nx-cream);
   --nx-hero-sub: hsl(45 100% 96% / 0.78);
   --nx-hero-chip: hsl(41 92% 60% / 0.24);
@@ -273,11 +273,10 @@ a.nx-eyebrow:hover {
   --nx-hero-grid: hsl(0 0% 100% / 0.055);
   /* Painted as background layers, not pseudo-elements, so they can never end
    * up over the text. */
-  /* Blooms retired 2026-08-29 ("if it is going to be this colourful, then
-   * perhaps don't need the colour gradient") — the pills carry the colour,
-   * the ground stays flat. */
-  --nx-hero-bloom: transparent;
-  --nx-hero-bloom2: transparent;
+  /* Gradient + blooms kept (Adrian, 2026-08-29, second look) — colourful
+   * pills over a lit ground. */
+  --nx-hero-bloom: hsl(38 92% 58% / 0.5);
+  --nx-hero-bloom2: hsl(188 80% 55% / 0.42);
 
   display: flex;
   flex-direction: column;
@@ -297,7 +296,7 @@ a.nx-eyebrow:hover {
   transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
 }
 .nx-hero[data-level='EM'] {
-  --nx-hero-grad: linear-gradient(var(--nx-gold), var(--nx-gold));
+  --nx-hero-grad: linear-gradient(140deg, #e08e0b 0%, var(--nx-gold) 44%, #ffd166 100%);
   --nx-hero-ink: var(--nx-navy);
   /* 0.8, not the navy tile's 0.74: navy-on-gold at 0.74 measures ~4.8:1, which
    * is only just over AA for 13px. */
@@ -306,8 +305,8 @@ a.nx-eyebrow:hover {
   --nx-hero-cta: var(--nx-navy);
   --nx-hero-glow: hsl(45 90% 45% / 0.5);
   --nx-hero-grid: hsl(220 60% 20% / 0.07);
-  --nx-hero-bloom: transparent;
-  --nx-hero-bloom2: transparent;
+  --nx-hero-bloom: hsl(0 0% 100% / 0.42);
+  --nx-hero-bloom2: hsl(16 92% 56% / 0.45);
 }
 .nx-hero:hover {
   filter: brightness(1.06);
