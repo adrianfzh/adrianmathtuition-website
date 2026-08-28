@@ -34,7 +34,7 @@
 
 ## Growth builds (Adrian-approved directions)
 - 📐 **Shareable result cards** — branded score image on release ("marked by AdrianMath" — NOT "overnight"), one tap to WhatsApp, invite link baked in. BUILD FIRST of the growth loops.
-- 📐 **"Challenge a friend"** — share a generated mock so the friend sits the IDENTICAL paper (needs a claim flow copying portal_generated_papers question_ids to the friend's account at signup); both compare marked scores.
+- 📐 **"Do it with a friend"** (Adrian's final name — was "Challenge a friend" / "Sit my paper") — share a generated mock so the friend sits the IDENTICAL paper (needs a claim flow copying portal_generated_papers question_ids to the friend's account at signup); both compare marked scores.
 - 📐 **Parent digest as a shareable branded page** — public token URL rendering parent_digests content beautifully; parents forward to parent groups.
 - ✅ Free-tool funnel (2026-08-29): /chat nudge links "Try the student portal →" /join.
 
