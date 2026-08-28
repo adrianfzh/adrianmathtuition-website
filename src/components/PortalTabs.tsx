@@ -16,7 +16,7 @@ import { usePathname } from 'next/navigation';
 import PortalIcon from './PortalIcon';
 import { surfaceForHref } from '@/lib/portal-theme';
 
-export type NavItem = { href: string; label: string };
+export type NavItem = { href: string; label: string; fab?: boolean };
 
 function tourKey(href: string): string {
   return href === '/app' ? 'home' : href.slice('/app/'.length);
@@ -68,6 +68,19 @@ export function MobileTabs({ items, pendingWork }: { items: NavItem[]; pendingWo
         {items.map(t => {
           const s = surfaceForHref(t.href);
           const active = isActive(pathname, t.href);
+          // Instagram-style raised centre button (Adrian, 2026-08-28) — one
+          // hero action gets a navy circle floating above the bar.
+          if (t.fab) {
+            return (
+              <Link key={t.href} href={t.href} data-tour={tourKey(t.href)} aria-current={active ? 'page' : undefined}
+                className="flex flex-col items-center justify-end pb-1 gap-0.5 select-none transition-transform active:scale-95">
+                <span className={`-mt-7 flex items-center justify-center w-14 h-14 rounded-full shadow-lg border-4 border-[hsl(45,100%,98%)] transition-colors ${active ? 'bg-navy' : 'bg-navy/90'}`}>
+                  <PortalIcon name={s.icon} className="w-6 h-6 text-[hsl(45,100%,96%)]" strokeWidth={2.2} />
+                </span>
+                <span className={`text-[10px] ${active ? 'text-navy font-semibold' : 'text-gray-500'}`}>{t.label}</span>
+              </Link>
+            );
+          }
           return (
             <Link key={t.href} href={t.href} data-tour={tourKey(t.href)} aria-current={active ? 'page' : undefined}
               className={`flex flex-col items-center justify-center gap-1 select-none transition-transform active:scale-95 ${active ? `${s.text} font-semibold` : 'text-gray-500'}`}>

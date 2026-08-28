@@ -14,10 +14,8 @@ import Link from 'next/link';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/lib/portal-marking';
-import PortalFlowStrip from '@/components/PortalFlowStrip';
 import AnnotatedSolution from './AnnotatedSolution';
 import ClipToNotes from './ClipToNotes';
-import { portalSurfaces } from '@/lib/portal-surfaces';
 import { mathHtml } from '@/lib/math-inline';
 // Practice questions carry inline $…$ TeX — mathHtml KaTeXes only the math
 // spans, and this stylesheet is what makes the output render as maths.
@@ -66,9 +64,8 @@ export default async function MarkingPage() {
   // /app/submit that Adrian hasn't released yet — portal submissions ONLY, the
   // result_json stamp: a paper Adrian uploaded himself and chose not to
   // release must never surface as a phantom "being marked"; name + date +
-  // page count, never a mark) and the flow-strip surfaces are independent —
-  // fetch all three in parallel instead of one after the other.
-  const [{ data }, { data: pendingRows }, surfaces] = await Promise.all([
+  // page count, never a mark).
+  const [{ data }, { data: pendingRows }] = await Promise.all([
     sb
       .from('paper_marking_runs')
       .select(COLUMNS)
@@ -84,7 +81,6 @@ export default async function MarkingPage() {
       .is('released_at', null)
       .order('created_at', { ascending: false })
       .limit(5),
-    portalSurfaces(),
   ]);
   const pending = pendingRows ?? [];
 
@@ -92,12 +88,17 @@ export default async function MarkingPage() {
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
-      <div className="-mb-1 pt-1">
-        <PortalFlowStrip current="marking" surfaces={surfaces} />
-      </div>
-      {/* Title only — the tab bar already offers Hand in + My Notebook
-          (Adrian, 2026-08-28: "no need for a top bar menu in marked tab"). */}
-      <h1 className="text-xl font-bold text-navy pt-1">Marked papers</h1>
+      {/* One "Papers" surface (Adrian, 2026-08-28: Hand in + Marked merged) —
+          submitting is the tab's FIRST action, so the merge hides nothing. */}
+      <h1 className="text-xl font-bold text-navy pt-1">Papers</h1>
+      <Link
+        href="/app/submit"
+        className="flex items-center gap-3 bg-navy text-[hsl(45,100%,96%)] rounded-2xl px-4 py-3.5 font-semibold shadow-sm hover:opacity-90 active:scale-[0.98] transition"
+      >
+        <span className="text-xl" aria-hidden>📷</span>
+        <span className="flex-1">Hand in a paper</span>
+        <span className="shrink-0 text-[hsl(43,90%,60%)] text-lg">›</span>
+      </Link>
 
       {pending.length > 0 && (
         <div className={`${CARD} p-4`}>

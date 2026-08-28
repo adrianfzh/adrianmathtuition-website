@@ -71,21 +71,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ? [
         { href: '/app', label: 'Dashboard' },
         { href: '/app/practice', label: 'Practice' },
-        { href: '/app/ask', label: 'Ask' },
+        { href: '/app/ask', label: 'Ask Bot' },
         ...(learnVisible ? [{ href: '/app/learn', label: 'Learn' }] : []),
-        { href: '/app/submit', label: 'Submit' },
         { href: '/app/notebook', label: 'Notebook' },
-        { href: '/app/marking', label: 'Marked' },
+        { href: '/app/marking', label: 'Papers' },
         { href: '/app/my-notes', label: 'My Notebook' },
         { href: '/app/requests', label: 'Requests' },
       ]
     : [
         { href: '/app', label: 'Dashboard' },
         { href: '/app/practice', label: 'Practise' },
-        { href: '/app/ask', label: 'Ask' },
+        { href: '/app/ask', label: 'Ask Bot' },
         ...(NOTES_OPEN_TO_STUDENTS ? [{ href: '/app/notes', label: 'Notes' }] : []),
-        { href: '/app/submit', label: 'Hand in a paper' },
-        { href: '/app/marking', label: 'Marked papers' },
+        { href: '/app/marking', label: 'Papers' },
         { href: '/app/my-notes', label: 'My Notebook' },
         { href: '/app/requests', label: 'Requests' },
       ];
@@ -93,18 +91,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ? [
         { href: '/app', label: 'Home' },
         { href: '/app/practice', label: 'Practice' },
-        { href: '/app/ask', label: 'Ask' },
-        ...(learnVisible ? [{ href: '/app/learn', label: 'Learn' }] : []),
-        { href: '/app/notebook', label: 'Notebook' },
-        { href: '/app/marking', label: 'Marked' },
+        { href: '/app/ask', label: 'Ask Bot', fab: true },
+        { href: '/app/marking', label: 'Papers' },
         { href: '/app/my-notes', label: 'My Notebook' },
       ]
     : [
         { href: '/app', label: 'Home' },
         { href: '/app/practice', label: 'Practise' },
-        { href: '/app/ask', label: 'Ask' },
-        { href: '/app/submit', label: 'Hand in' },
-        { href: '/app/marking', label: 'Marked' },
+        { href: '/app/ask', label: 'Ask Bot', fab: true },
+        { href: '/app/marking', label: 'Papers' },
         { href: '/app/my-notes', label: 'My Notebook' },
       ];
   // "From Adrian" pending work → numeric badge on Home (no 5th tab, per spec).

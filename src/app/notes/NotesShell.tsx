@@ -374,9 +374,8 @@ export default function NotesShell({
         items={[
           { href: '/app', label: 'Home' },
           { href: '/app/practice', label: 'Practise' },
-          { href: '/app/ask', label: 'Ask' },
-          { href: '/app/submit', label: 'Hand in' },
-          { href: '/app/marking', label: 'Marked' },
+          { href: '/app/ask', label: 'Ask Bot', fab: true },
+          { href: '/app/marking', label: 'Papers' },
           { href: '/app/my-notes', label: 'My Notebook' },
         ]}
         pendingWork={0}
