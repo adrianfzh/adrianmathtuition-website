@@ -137,6 +137,25 @@ export function isTuitionAccount(account: PassAccountLike | null | undefined): b
   if (account.deactivated_at) return false;
   return Boolean(account.airtable_student_id && account.airtable_student_id.trim() !== '');
 }
+/**
+ * May this INVITER's link grant a 3-day trial? (Adrian, 2026-08-29: "let's
+ * guard against that" — trial-farming.) Qualified = an active (non-deactivated)
+ * tuition student, or an account holding any ACTIVE pass that wasn't itself a
+ * trial ('stripe' | 'hitpay' | 'manual' | 'referral' — referral days only ever
+ * come from a friend actually paying). A trial-only account can invite (the
+ * link still works, attribution still lands) but its invitees get NO trial —
+ * which breaks A→B→C self-referral chains that would mint free marking
+ * forever. Pure over the inviter row + their pass rows.
+ */
+export function qualifiesToGrantTrials(
+  inviter: { id?: string; airtable_student_id?: string | null; deactivated_at?: string | null },
+  passRows: Array<{ expires_at: string; source?: string | null }>,
+  now: Date = new Date(),
+): boolean {
+  if (isTuitionAccount({ id: inviter.id ?? '', ...inviter })) return true;
+  return passRows.some(p => p.source !== 'trial' && new Date(p.expires_at) > now);
+}
+
 
 /** Any pass strictly in the future keeps access on. A pass expiring exactly at
  *  `now` is already expired (strict >, mirroring the DB filter `expires_at > now`). */

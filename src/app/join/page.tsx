@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/portal-auth';
 import { createServiceClient } from '@/lib/supabase-server';
+import { qualifiesToGrantTrials } from '@/lib/portal-passes';
 import { validateInviteRef } from '@/lib/portal-join';
 import JoinForm from './join-form';
 
@@ -50,13 +51,25 @@ export default async function JoinPage({
   let inviterFirstName: string | null = null;
   if (validRef) {
     try {
-      const { data } = await createServiceClient()
+      const svc = createServiceClient();
+      const { data } = await svc
         .from('portal_accounts')
-        .select('id, display_name')
+        .select('id, display_name, airtable_student_id, deactivated_at')
         .eq('id', validRef)
-        .maybeSingle<{ id: string; display_name: string | null }>();
-      inviterFound = !!data;
-      inviterFirstName = (data?.display_name || '').trim().split(' ')[0] || null;
+        .maybeSingle<{ id: string; display_name: string | null; airtable_student_id: string | null; deactivated_at: string | null }>();
+      // The pitch mirrors the API's trial-farming guard exactly: "3 days
+      // free" only when this inviter can actually mint a trial (tuition, or
+      // a paid-class pass) — a trial-only inviter's page shows the generic
+      // S$29 pitch, matching what the signup will really grant.
+      if (data) {
+        const { data: passRows } = await svc
+          .from('portal_passes')
+          .select('expires_at, source')
+          .eq('account_id', data.id)
+          .gt('expires_at', new Date().toISOString());
+        inviterFound = qualifiesToGrantTrials(data, passRows ?? []);
+        inviterFirstName = (data.display_name || '').trim().split(' ')[0] || null;
+      }
     } catch { /* cosmetic — worst case the generic pitch shows */ }
   }
 

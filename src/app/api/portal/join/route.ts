@@ -25,7 +25,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase-server';
 import { sendTelegram } from '@/lib/telegram';
-import { grantPass, TRIAL_PASS_DAYS } from '@/lib/portal-passes';
+import { grantPass, TRIAL_PASS_DAYS, qualifiesToGrantTrials } from '@/lib/portal-passes';
 import {
   buildSelfServeConsentRecord,
   rateLimitStep,
@@ -84,14 +84,28 @@ export async function POST(req: NextRequest) {
 
   // ── Resolve the inviter (a bad ref unattributes, never blocks) ────────────
   const ref = validateInviteRef((body as { ref?: unknown }).ref);
-  let inviter: { id: string; display_name: string | null } | null = null;
+  let inviter: { id: string; display_name: string | null; airtable_student_id: string | null; deactivated_at: string | null } | null = null;
+  let inviterQualifies = false;
   if (ref) {
     const { data } = await supabase
       .from('portal_accounts')
-      .select('id, display_name')
+      .select('id, display_name, airtable_student_id, deactivated_at')
       .eq('id', ref)
-      .maybeSingle<{ id: string; display_name: string | null }>();
+      .maybeSingle<{ id: string; display_name: string | null; airtable_student_id: string | null; deactivated_at: string | null }>();
     inviter = data ?? null;
+    // Trial-farming guard (Adrian, 2026-08-29): only a tuition student or a
+    // PAID pass holder may mint trials — a trial-only account's link still
+    // attributes the signup but grants no trial, so A→B→C chains die.
+    if (inviter) {
+      try {
+        const { data: passRows } = await supabase
+          .from('portal_passes')
+          .select('expires_at, source')
+          .eq('account_id', inviter.id)
+          .gt('expires_at', new Date().toISOString());
+        inviterQualifies = qualifiesToGrantTrials(inviter, passRows ?? []);
+      } catch { inviterQualifies = false; }
+    }
   }
 
   // ── Create the Auth user (mirrors activate: email_confirm → instant login) ─
@@ -134,7 +148,7 @@ export async function POST(req: NextRequest) {
   // never fails the signup (the account is already saved). The reference
   // (invite:<inviter>:<new account>) makes retries idempotent per-invitee.
   let trialGranted = false;
-  if (inviter) {
+  if (inviter && inviterQualifies) {
     try {
       await grantPass({
         accountId: created.user.id,
