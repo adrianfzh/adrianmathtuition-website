@@ -841,6 +841,45 @@ a.nx-eyebrow:hover {
   }
 }
 
+/* Open/close MOTION for both accordion layers (Adrian, 2026-08-29: "one tap
+   and the content shows immediately, doesn't have the effect of accordion …
+   make it fast"). Two layers of enhancement: browsers with ::details-content
+   (Chrome 131+, new Safari) get a real height slide; everywhere else the body
+   slides-and-fades in. 0.2s — feedback, never delay. */
+:root {
+  interpolate-size: allow-keywords;
+}
+.nx-ex::details-content,
+.nx-fold::details-content {
+  block-size: 0;
+  overflow-y: clip;
+  transition: block-size 0.2s ease, content-visibility 0.2s allow-discrete;
+}
+.nx-ex[open]::details-content,
+.nx-fold[open]::details-content {
+  block-size: auto;
+}
+.nx-ex[open] .nx-ex-body,
+.nx-fold[open] .nx-fold-body {
+  animation: nx-reveal 0.18s ease;
+}
+@keyframes nx-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nx-ex::details-content,
+  .nx-fold::details-content {
+    transition: none;
+  }
+  .nx-ex[open] .nx-ex-body,
+  .nx-fold[open] .nx-fold-body {
+    animation: none;
+  }
+}
+
 /* Each worked example is a closed-by-default accordion (Adrian, 2026-08-29:
    "for each example why not dropdowns?"): shut, the page reads as an index of
    navy title bars a thumb can scan; open, one full worked card. */
