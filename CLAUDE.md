@@ -301,11 +301,12 @@ This takes 2 seconds and returns **no student data** — only field names, types
 - Signup link expiry is checked against `Date.now()` — links become invalid after the `expires` timestamp
 - ⚠ `src/lib/latex-repair.ts` reads as binary to `grep` (non-printing mask sentinel) — use `grep -a`
 
-## Pending Tasks
+## Pending Tasks → [`IDEAS.md`](IDEAS.md)
 
-- Revision page formatting improvements
-- Chat page smart scroll
-- Add image support for revision notes (diagrams from DOCX files)
+**The consolidated build queue lives in [`IDEAS.md`](IDEAS.md)** (repo root, 2026-08-29) —
+statuses per idea, updated by whichever session ships or designs one. Read it before
+proposing new builds; add agreed ideas THERE, not here (session memory is per-account;
+the repo travels).
 
 ## ☁️ Cloud sessions (claude.ai/code) → [`docs/CLOUD.md`](docs/CLOUD.md)
 

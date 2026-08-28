@@ -117,7 +117,15 @@ export async function POST(req: NextRequest) {
             .eq('source', 'trial')
             .like('reference', `invite:${inviter.id}:%`)
             .gte('created_at', since);
-          if ((count ?? 0) >= 5) inviterQualifies = false;
+          // Tuition students are trusted super-inviters (10/30d); paid
+          // strangers stay at 5. A LEGIT streak that hits the cap must never
+          // die silently — Adrian gets a Telegram and can hand-grant trials
+          // (or raise the cap) while the momentum is hot.
+          const capForInviter = inviter.airtable_student_id && !inviter.deactivated_at ? 10 : 5;
+          if ((count ?? 0) >= capForInviter) {
+            inviterQualifies = false;
+            sendTelegram(`🎟⚠ ${inviter.display_name || 'An inviter'} hit their trial cap (${capForInviter}/30d) — latest invitee signed up WITHOUT a trial. Legit streak? Grant manually via /api/admin/passes or say the word to raise caps.`).catch(() => {});
+          }
         }
       } catch { inviterQualifies = false; }
     }

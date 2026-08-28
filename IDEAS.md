@@ -14,6 +14,13 @@
 - 💡 **Recommendation merge** — Home focus card / Practise "up next" / My Notebook bands share one brain eventually.
 - 💡 **Exam Intensive queue-priority done; consider surfacing "priority marking" copy** on /app/pass Intensive card once first intensive customer exists.
 
+## Growth / virality (Adrian asked for organic loops, 2026-08-29)
+- 💡 **Shareable result cards** — after a marked paper, a branded score-card image ("71/75 · marked overnight") one tap to WhatsApp with the student's invite link baked in. The strongest teen-share loop available.
+- 💡 **Referral reward ladder** — 3 paying referrals → a free month / merch; visible progress on the invite sheet.
+- 💡 **Inviter leaderboard** (per class / per school) — social proof + competition.
+- 💡 **Streak shares** — practice streaks as share cards.
+- 💡 **Subjects picker at stranger signup** — Sec 3–5 signups should declare E/A Math (JOIN_LEVELS has no subject split; scoping currently defaults). Small form + account.subjects write.
+
 ## Automation — money/ops
 - 📐 **Auto-deactivation cron** — monthly: portal account with no active enrollment ≥30d → deactivate + Telegram. Data stays dormant indefinitely (rejoin-friendly); hard-delete only on request or ≥2–3y dormant (see docs/RETENTION.md).
 - 📐 **Auto referral invoice credit** — tuition inviter's −S$10 as a deferred adjustment on next invoice when an invited friend's first payment clears (READ docs/INVOICES.md first; Adrian still eyeballs invoices between the 14th and 15th).
