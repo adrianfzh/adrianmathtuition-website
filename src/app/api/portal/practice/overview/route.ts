@@ -92,8 +92,11 @@ export async function GET(req: NextRequest) {
     };
   });
 
-  // Recommendations (deterministic, no AI): weakest attempted topics first
-  // (lowest mastery), then fill from not-yet-started topics in list order.
+  // Recommendations (deterministic, no AI): weakest attempted topics only —
+  // real evidence or nothing. The old "New topic — start here" padding made a
+  // data-less student see a fake-personalised section that merely repeated the
+  // first rows of the list below it (Adrian, 2026-08-29: "up for you next may
+  // not serve much purpose?"). With no attempts the section now hides.
   const recommended: { topic: string; level: string; reason: string }[] = [];
   const weak = topics
     .filter(t => t.attempts > 0 && t.mastery != null && t.mastery < 75)
@@ -105,10 +108,6 @@ export async function GET(req: NextRequest) {
       level: activeLevel,
       reason: t.mastery! < 40 ? 'You keep slipping here' : 'Almost there — keep practising',
     });
-  }
-  for (const t of topics.filter(t => t.attempts === 0)) {
-    if (recommended.length >= 3) break;
-    recommended.push({ topic: t.topic, level: activeLevel, reason: 'New topic — start here' });
   }
 
   return NextResponse.json({ levels, activeLevel, topics, recommended });
