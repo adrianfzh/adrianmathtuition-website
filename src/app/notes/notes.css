@@ -261,17 +261,20 @@ a.nx-eyebrow:hover {
 
 .nx-hero {
   /* Default = the Additional Maths tile; see the ⚠ above. Each tile is a
-   * depth gradient with a faint graph-paper grid — exam-pad texture, not a
-   * flat colour slab (Adrian, 2026-08-29). */
-  --nx-hero-grad: linear-gradient(140deg, #14283f 0%, var(--nx-navy) 52%, #2a5286 100%);
+   * depth gradient with a faint graph-paper grid and TWO coloured light
+   * blooms — gold from below, teal from above on AM; white + coral on EM
+   * (Adrian, 2026-08-29: "a little more colours to be more vibrant"). */
+  --nx-hero-grad: linear-gradient(140deg, #101f38 0%, var(--nx-navy) 46%, #33639c 100%);
   --nx-hero-ink: var(--nx-cream);
   --nx-hero-sub: hsl(45 100% 96% / 0.78);
-  --nx-hero-chip: hsl(45 100% 96% / 0.16);
+  --nx-hero-chip: hsl(41 92% 60% / 0.24);
+  --nx-hero-cta: hsl(41 92% 66%);
   --nx-hero-glow: hsl(220 60% 20% / 0.4);
   --nx-hero-grid: hsl(0 0% 100% / 0.055);
-  /* Painted as a background layer, not a pseudo-element, so it can never end
+  /* Painted as background layers, not pseudo-elements, so they can never end
    * up over the text. */
-  --nx-hero-bloom: hsl(38 90% 60% / 0.2);
+  --nx-hero-bloom: hsl(38 92% 58% / 0.3);
+  --nx-hero-bloom2: hsl(188 75% 55% / 0.22);
 
   display: flex;
   flex-direction: column;
@@ -280,6 +283,7 @@ a.nx-eyebrow:hover {
   border-radius: 22px;
   background:
     radial-gradient(115% 115% at 100% 118%, var(--nx-hero-bloom), transparent 62%),
+    radial-gradient(95% 95% at -5% -15%, var(--nx-hero-bloom2), transparent 58%),
     linear-gradient(var(--nx-hero-grid), transparent 1.5px) 0 0 / 100% 24px,
     linear-gradient(90deg, var(--nx-hero-grid), transparent 1.5px) 0 0 / 24px 100%,
     var(--nx-hero-grad);
@@ -290,15 +294,17 @@ a.nx-eyebrow:hover {
   transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
 }
 .nx-hero[data-level='EM'] {
-  --nx-hero-grad: linear-gradient(140deg, #d99a12 0%, var(--nx-gold) 48%, #f6cd5e 100%);
+  --nx-hero-grad: linear-gradient(140deg, #e08e0b 0%, var(--nx-gold) 44%, #ffd166 100%);
   --nx-hero-ink: var(--nx-navy);
   /* 0.8, not the navy tile's 0.74: navy-on-gold at 0.74 measures ~4.8:1, which
    * is only just over AA for 13px. */
   --nx-hero-sub: hsl(220 60% 20% / 0.8);
   --nx-hero-chip: hsl(220 60% 20% / 0.14);
+  --nx-hero-cta: var(--nx-navy);
   --nx-hero-glow: hsl(45 90% 45% / 0.5);
   --nx-hero-grid: hsl(220 60% 20% / 0.07);
-  --nx-hero-bloom: hsl(0 0% 100% / 0.28);
+  --nx-hero-bloom: hsl(0 0% 100% / 0.3);
+  --nx-hero-bloom2: hsl(16 90% 58% / 0.26);
 }
 .nx-hero:hover {
   filter: brightness(1.06);
@@ -380,6 +386,7 @@ a.nx-eyebrow:hover {
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.02em;
+  color: var(--nx-hero-cta, inherit);
 }
 .nx-hero-cta .nx-chevron {
   width: 0.85rem;
