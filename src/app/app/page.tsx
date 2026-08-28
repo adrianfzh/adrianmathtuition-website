@@ -3,6 +3,7 @@
 import { Suspense, cache } from 'react';
 import Link from 'next/link';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
+import { getCurrentPass, isTuitionAccount, passEndingNudge } from '@/lib/portal-passes';
 import { getDashboardData } from '@/lib/portal-dashboard';
 import { getTodayCards } from '@/lib/portal-today';
 import { isNotesAuthed } from '@/lib/notes-auth';
@@ -57,7 +58,7 @@ export default async function DashboardPage() {
   // streams in via the two <Suspense> islands below and the shell paints
   // immediately after login (Adrian, 2026-08-28: "still taking a bit of time
   // to load initially"). Everything awaited here is fast Supabase.
-  const [todayCards, assignments, counts, focus] = await Promise.all([
+  const [todayCards, assignments, counts, focus, passNudge] = await Promise.all([
     learnVisible ? getTodayCards(account).catch(() => []) : Promise.resolve([]),
     // "From Adrian" assigned work (SPEC-ASSIGN.md) — fail-soft, hidden at zero.
     listStudentAssignments(sid).catch(() => []),
@@ -75,6 +76,15 @@ export default async function DashboardPage() {
         }))).focus;
       } catch { return []; }
     })(),
+    // ⏳ pass-ending nudge (HOME ONLY): a pass-riding account whose current
+    // pass ends today/tomorrow gets one slim amber line to /app/pass. Tuition
+    // accounts short-circuit on the pure isTuitionAccount check — zero DB
+    // cost for them (this also nudges an offboarded ex-student on a paid
+    // pass, who since the offboarding build rides passes like a stranger).
+    // Fail-soft: a portal_passes hiccup never breaks Home.
+    isTuitionAccount(account)
+      ? Promise.resolve(null)
+      : getCurrentPass(account.id).then(p => passEndingNudge(p, new Date())).catch(() => null),
   ]);
   const pendingWork = assignments.filter(a => isPending(a.status));
   const workSummary = homeCardSummary(assignments);
@@ -92,6 +102,22 @@ export default async function DashboardPage() {
     <div className="space-y-4 pb-20 sm:pb-4">
       <h1 className="text-2xl font-bold text-navy pt-1 tracking-tight">Hi {(account.display_name || 'there').split(' ')[0]} 👋</h1>
 
+      {/* ⏳ Trial/pass-ending nudge — HOME ONLY, strangers riding a pass that
+          ends today/tomorrow (lib/portal-passes.passEndingNudge). One slim
+          amber line, straight to the renew screen. */}
+      {passNudge && (
+        <Link
+          href="/app/pass"
+          className="flex items-center gap-2.5 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-2.5 text-sm text-amber-900 hover:bg-amber-100 active:scale-[0.99] transition"
+        >
+          <span aria-hidden className="shrink-0">⏳</span>
+          <span className="min-w-0 flex-1">
+            <span className="font-semibold">Your {passNudge.kind} ends {passNudge.when}</span>
+            {' '}— keep access: S$29 for 30 days
+          </span>
+          <span className="shrink-0 font-semibold text-amber-700">›</span>
+        </Link>
+      )}
 
       {/* Release announcement — HOME ONLY (Adrian, 2026-08-28: not on every
           tab). One card, dismissible, auto-expires via `until`. */}

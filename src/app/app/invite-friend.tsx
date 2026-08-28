@@ -52,6 +52,10 @@ export default function InviteFriend({ link }: { link: string }) {
             <p className="text-[13px] text-gray-600 leading-snug">
               Your friend gets 3 days free, then S$29 for 30 days — practice, mock papers and marking.
             </p>
+            {/* Kept generic on purpose — the reward differs by account type. */}
+            <p className="text-[13px] text-gray-600 leading-snug">
+              You get a thank-you reward when they join 🎁
+            </p>
             <p className="text-xs font-mono text-slate-500 bg-slate-50 border border-black/5 rounded-xl px-3 py-2 break-all select-all">
               {link}
             </p>

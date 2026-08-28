@@ -22,6 +22,12 @@ export interface PortalAccount {
   prefs: Record<string, unknown>;
   created_at: string;
   last_seen_at: string | null;
+  /** Offboarding (2026-08-28): non-null once Adrian deactivates the account
+   *  (POST /api/admin/passes {action:'deactivate'}). A deactivated ex-tuition
+   *  account is no longer tuition-free (lib/portal-passes.isTuitionAccount)
+   *  and falls through to the S$29 pass gate — but portalIdentity below keeps
+   *  returning their Airtable rec id, so their history stays theirs. */
+  deactivated_at: string | null;
 }
 
 /**
@@ -39,11 +45,15 @@ export interface PortalAccount {
  *
  * `acct:` can never collide with Airtable's `rec…` ids, and the uuid makes it
  * unique per account. Pure and total: any account row with `id` set gets a
- * non-empty identity. The stranger predicate is EXACTLY the complement of
- * portal-passes' isTuitionAccount (trimmed-empty counts as stranger), so the
- * pass gate and the identity can never disagree about one account. Callers
- * that GENUINELY need the Airtable record (lesson reads, invoice links) must
- * keep using `airtable_student_id` and guard the stranger marker themselves.
+ * non-empty identity. The stranger predicate is the complement of "has a
+ * linked Airtable record" (trimmed-empty counts as stranger) — NOT of
+ * portal-passes' isTuitionAccount, which since the offboarding build
+ * (2026-08-28) also goes false for DEACTIVATED tuition accounts: identity
+ * deliberately ignores deactivated_at, so an offboarded ex-student keeps their
+ * `rec…` id (marked papers, notebook, attempts stay theirs) while the pass
+ * gate makes them pay like a stranger. Callers that GENUINELY need the
+ * Airtable record (lesson reads, invoice links) must keep using
+ * `airtable_student_id` and guard the stranger marker themselves.
  */
 export function portalIdentity(
   account: { id: string; airtable_student_id?: string | null },

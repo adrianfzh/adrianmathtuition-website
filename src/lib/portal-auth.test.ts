@@ -38,12 +38,34 @@ describe('portalIdentity — THE portal identity convention', () => {
     }
   });
 
-  it('agrees with isTuitionAccount on every edge (whitespace-only id counts as stranger)', () => {
+  it('agrees with isTuitionAccount on every NON-deactivated edge (whitespace-only id counts as stranger)', () => {
     for (const airtableId of ['recXYZ', '', null, undefined, '   ']) {
       const account = { id: UUID, airtable_student_id: airtableId };
       const identity = portalIdentity(account);
-      // Tuition ⇔ the identity is the raw Airtable id; stranger ⇔ acct: form.
+      // For active accounts: tuition ⇔ the identity is the raw Airtable id;
+      // stranger ⇔ acct: form. (Deactivated accounts split the two BY DESIGN —
+      // pinned below.)
       expect(identity.startsWith('acct:')).toBe(!isTuitionAccount(account));
     }
+  });
+
+  // Offboarding (2026-08-28): deactivation flips the PASS gate, never the
+  // identity. A graduate Adrian offboards must keep every marked paper,
+  // notebook entry and attempt keyed on their rec id — whether or not they
+  // later pay S$29 to come back and see them.
+  it('DEACTIVATED ex-tuition account KEEPS its Airtable rec id (history stays theirs)', () => {
+    const offboarded = {
+      id: UUID,
+      airtable_student_id: 'recABC123xyz',
+      deactivated_at: '2026-08-28T04:00:00.000Z',
+    };
+    expect(portalIdentity(offboarded)).toBe('recABC123xyz');
+    // …even though the pass gate now treats them like a stranger:
+    expect(isTuitionAccount(offboarded)).toBe(false);
+  });
+
+  it('deactivated STRANGER account keeps the acct: form too', () => {
+    const offboardedStranger = { id: UUID, airtable_student_id: '', deactivated_at: '2026-08-28T04:00:00.000Z' };
+    expect(portalIdentity(offboardedStranger)).toBe(`acct:${UUID}`);
   });
 });

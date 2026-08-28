@@ -113,15 +113,29 @@ export function dailyHandinCapForTier(tier: string | null | undefined): number {
 export interface PassAccountLike {
   id: string;
   airtable_student_id?: string | null;
+  /** Offboarding (2026-08-28): set when Adrian deactivates the account
+   *  (POST /api/admin/passes {action:'deactivate'}). A deactivated account is
+   *  no longer tuition-free — see isTuitionAccount. */
+  deactivated_at?: string | null;
 }
 
 // ── Pure logic ───────────────────────────────────────────────────────────────
 
 /** Tuition students ride free: a non-empty airtable_student_id means Adrian
- *  already teaches (and bills) this person. Stranger accounts from the future
- *  invite/payments flow will have null/empty here and fall through to passes. */
+ *  already teaches (and bills) this person. Stranger accounts from the
+ *  invite/payments flow have null/empty here and fall through to passes.
+ *
+ *  Offboarding (2026-08-28): a DEACTIVATED account (deactivated_at set) is no
+ *  longer tuition-free even with a linked Airtable record — a graduate can pay
+ *  S$29 like anyone else, otherwise the paywall stops them. NOTE this makes
+ *  "not tuition" wider than "stranger": portal-auth's portalIdentity
+ *  deliberately does NOT consult deactivated_at, so an offboarded ex-student
+ *  keeps their `rec…` identity (marked papers, notebook, attempts stay theirs)
+ *  while paying like a stranger. */
 export function isTuitionAccount(account: PassAccountLike | null | undefined): boolean {
-  return Boolean(account?.airtable_student_id && account.airtable_student_id.trim() !== '');
+  if (!account) return false;
+  if (account.deactivated_at) return false;
+  return Boolean(account.airtable_student_id && account.airtable_student_id.trim() !== '');
 }
 
 /** Any pass strictly in the future keeps access on. A pass expiring exactly at
@@ -160,6 +174,43 @@ export function latestPassExpiry(rows: PassRow[]): Date | null {
     if (Number.isFinite(t) && t > latest) latest = t;
   }
   return Number.isFinite(latest) ? new Date(latest) : null;
+}
+
+/** What the /app Home banner says when a pass is about to run out. */
+export interface PassEndingNudge {
+  /** 'trial' when the ending pass is the free referred trial, else 'pass'. */
+  kind: 'trial' | 'pass';
+  when: 'today' | 'tomorrow';
+}
+
+/** SGT calendar date (YYYY-MM-DD) of an epoch-ms instant — SGT has no DST, so
+ *  a fixed +8h shift is exact. */
+function sgtDateOf(ms: number): string {
+  return new Date(ms + 8 * 3600_000).toISOString().slice(0, 10);
+}
+
+/**
+ * The Home-page "⏳ your trial/pass is about to end" banner decision: fires
+ * only for a pass that is ACTIVE (strict >, matching every other gate here),
+ * ends within 48h, AND ends on today's or tomorrow's SGT calendar day — so
+ * the copy "ends today/tomorrow" is always literally true (a pass 47h out but
+ * on the day AFTER tomorrow says nothing rather than lying). Null = no banner.
+ * Tuition accounts never reach this — callers short-circuit on
+ * isTuitionAccount first, keeping their Home render at zero pass cost.
+ */
+export function passEndingNudge(
+  pass: Pick<MeteredPassRow, 'source' | 'expires_at'> | null | undefined,
+  now: Date,
+): PassEndingNudge | null {
+  if (!pass) return null;
+  const t = Date.parse(pass.expires_at);
+  if (!Number.isFinite(t) || t <= now.getTime()) return null; // lapsed (or garbage) — the paywall's job, not a nudge
+  if (t - now.getTime() > 48 * 3600_000) return null; // not soon enough to nag
+  const kind: PassEndingNudge['kind'] = pass.source === 'trial' ? 'trial' : 'pass';
+  const endDay = sgtDateOf(t);
+  if (endDay === sgtDateOf(now.getTime())) return { kind, when: 'today' };
+  if (endDay === sgtDateOf(now.getTime() + 86_400_000)) return { kind, when: 'tomorrow' };
+  return null;
 }
 
 /** "29.00" / "25" → integer cents; null when not a plain non-negative decimal
