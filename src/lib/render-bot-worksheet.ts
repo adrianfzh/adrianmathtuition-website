@@ -66,7 +66,13 @@ function esc(s: string): string {
  * (lib/kiosk-worksheet-images spaceMm): 17mm/mark, floor 36mm, cap 100mm.
  */
 function spaceMm(marks: number | null): number {
-  return Math.min(100, Math.max(36, (marks ?? 2) * 17));
+  return Math.min(160, Math.max(36, (marks ?? 2) * 17));
+}
+
+/** Working space for ONE part — same 17mm/mark, smaller floor, so (a)(b)(c)
+ *  each get room under them instead of one lump after the question. */
+function partSpaceMm(marks: number): number {
+  return Math.min(120, Math.max(30, marks * 17));
 }
 
 /** One question's body: figures, then the markdown, then the marks tag. */
@@ -81,14 +87,26 @@ function questionHtml(q: BotWorksheetQuestion, index: number, workspace = true):
   const { src, stash } = protectWorksheetHtml(q.markdown);
   let body = restoreWorksheetHtml(mdToHtml(src), stash);
 
+  // Word-style hanging indent for parts (Adrian, 2026-08-29): "(a) …" gets
+  // its marker in a gutter and every wrapped line aligned with the text.
+  body = body.replace(
+    /<p>\((([a-h])|([ivx]{1,4}))\)\s*/g,
+    (_m, label: string) => `<p class="ws-part"><span class="ws-pnum">(${label})</span>`,
+  );
+
   // Part marks arrive as plain "[3]" at the end of each part's paragraph —
   // float them to the right margin like a real paper (Adrian, 2026-08-29:
-  // "marks are not right-aligned"). Only a bracketed number that CLOSES a
-  // paragraph is a mark tag; [x+2] mid-sentence maths never matches.
+  // "marks are not right-aligned"), and give EACH part its own
+  // marks-proportional working space ("be more generous with the space").
+  // Only a bracketed number that CLOSES a paragraph is a mark tag; [x+2]
+  // mid-sentence maths never matches.
   let partMarks = 0;
   body = body.replace(/\[(\d{1,2})\]\s*(<\/p>)/g, (_m, n: string, close: string) => {
     partMarks += 1;
-    return `<span class="ws-mk">[${n}]</span>${close}`;
+    const perPart = workspace
+      ? `<div class="ws-answer-space" style="height:${partSpaceMm(parseInt(n, 10))}mm"></div>`
+      : '';
+    return `<span class="ws-mk">[${n}]</span>${close}${perPart}`;
   });
 
   // Parts carry their own [n] and their own spacer; a stem-only question gets
@@ -96,7 +114,8 @@ function questionHtml(q: BotWorksheetQuestion, index: number, workspace = true):
   // When the parts just got their floated tags, the per-question total is
   // noise (the header already totals the sheet) — skip it.
   const hasOwnMarks = q.markdown.includes('ws-mk') || partMarks > 0;
-  const hasOwnSpace = q.markdown.includes('ws-sp');
+  // Parts that just received their own spacers don't ALSO get the end lump.
+  const hasOwnSpace = q.markdown.includes('ws-sp') || partMarks > 0;
   const marksTag = !hasOwnMarks && q.marks != null
     ? `<span class="ws-mk">[${q.marks} mark${q.marks === 1 ? '' : 's'}]</span>`
     : '';
@@ -143,6 +162,10 @@ export function buildBotWorksheetHTML(input: BotWorksheetInput): string {
 <head>
 <meta charset="UTF-8">
 <title>${esc(input.title)}</title>
+<!-- Tinos = metric-compatible Times New Roman. The Vercel render lambda has
+     no system TNR, which silently fell back to a sans (Adrian caught it,
+     2026-08-29) — a webfont renders the same everywhere. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
@@ -162,8 +185,8 @@ export function buildBotWorksheetHTML(input: BotWorksheetInput): string {
   @page{size:A4;margin:15mm 22mm 13mm}
   html,body{background:#fff}
   body{
-    color:#111;font-family:"Times New Roman",Georgia,serif;
-    font-size:9.5pt;line-height:1.5;
+    color:#111;font-family:Tinos,"Times New Roman",Georgia,serif;
+    font-size:11pt;line-height:1.5;
   }
   /* KaTeX defaults to 1.21em — maths printed ~11.5pt against 9.5pt prose and
      the whole sheet read oversized. Pin maths to the body size. */
@@ -183,7 +206,9 @@ export function buildBotWorksheetHTML(input: BotWorksheetInput): string {
   .ws-lvl{color:#6E6E6E;font-size:8pt;letter-spacing:.2em}
   .ws-type{color:${NAVY};font-weight:700;font-size:9.5pt;letter-spacing:.26em;margin-left:9pt}
   .ws-topic{text-align:center;font-size:13.5pt;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin:7pt 0 3pt}
-  .ws-namebar{display:flex;justify-content:space-between;gap:10pt;font-size:9pt;margin-top:6pt;padding-top:4pt;border-top:0.5pt solid #ccc}
+  .ws-namebar{display:flex;justify-content:space-between;align-items:baseline;gap:10pt;font-size:10.5pt;margin-top:8pt;padding-top:5pt;border-top:0.5pt solid #ccc}
+  .ws-nameline{flex:1;display:flex;align-items:baseline;gap:4pt}
+  .ws-nameblank{flex:1;max-width:220pt;border-bottom:0.75pt solid #111;height:14pt}
   .ws-datemeta{color:#6E6E6E;text-transform:capitalize}
 
   /* Explicit numbering (::marker misplaces itself on tall/figure-first questions). */
@@ -197,6 +222,10 @@ export function buildBotWorksheetHTML(input: BotWorksheetInput): string {
 
   /* Marks right-aligned at the margin, exam style. */
   .ws-mk{float:right;font-weight:400}
+  /* Word-style hanging indent for parts: marker in a gutter, wrapped lines
+     aligned with the part's own text. */
+  .ws-part{position:relative;padding-left:17pt;margin-top:3pt}
+  .ws-pnum{position:absolute;left:0}
   /* Working space: blank, no lines; heights set inline (∝ marks). */
   .ws-sp,.ws-answer-space{display:block;clear:both}
   /* Compact list mode: part-level spacers flatten too; questions breathe a little. */
@@ -226,7 +255,7 @@ export function buildBotWorksheetHTML(input: BotWorksheetInput): string {
     </div>
     <div class="ws-topic">${esc(topic)}</div>
     <div class="ws-namebar">
-      <span>Name: ______________________________</span>
+      <span class="ws-nameline">Name:<span class="ws-nameblank"></span></span>
       <span class="ws-datemeta">${esc(tierBit)}${esc(dateLabel)}${totalMarks > 0 ? ` · ${totalMarks} marks` : ''}</span>
       <span>Date: ______________</span>
     </div>
