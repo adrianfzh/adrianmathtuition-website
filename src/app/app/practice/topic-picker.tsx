@@ -97,7 +97,7 @@ function LeafRow({ t, label, sub, accent, indent, onClick }: {
       <div className="min-w-0 flex-1">
         <div className="font-semibold text-navy text-[15px] leading-snug">{label ?? t.topic}</div>
         <div className={`text-[11px] mt-0.5 truncate ${accent ? 'text-amber-800' : meta.text}`}>
-          {sub ?? `${meta.label} · ${plural(t.questionCount, 'question')}`}
+          {sub ?? meta.label}
         </div>
       </div>
       <Chevron />
@@ -314,7 +314,7 @@ export function TopicSheet({ topic, types, tier, onTier, onStart, onClose }: {
             <div className="min-w-0 flex-1">
               {variant && <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{family}</p>}
               <h2 className="font-bold text-navy text-lg leading-tight">{variant ?? topic.topic}</h2>
-              <p className={`text-[12px] mt-0.5 ${meta.text}`}>{meta.label} · {plural(topic.questionCount, 'question')}</p>
+              <p className={`text-[12px] mt-0.5 ${meta.text}`}>{meta.label}</p>
             </div>
             <button type="button" onClick={onClose} aria-label="Close" className="shrink-0 -mr-1.5 -mt-1 w-8 h-8 rounded-full text-slate-400 hover:bg-slate-100 hover:text-navy inline-flex items-center justify-center">
               <PortalIcon name="x" className="w-4 h-4" />

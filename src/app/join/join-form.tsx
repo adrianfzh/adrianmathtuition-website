@@ -15,6 +15,10 @@ export default function JoinForm({ refId, trial }: { refId: string | null; trial
   const router = useRouter();
   const [name, setName] = useState('');
   const [level, setLevel] = useState('');
+  // Sec 3–5 must also declare WHICH maths (Adrian, 2026-08-29) — it drives
+  // every practice/mock scope via portal_accounts.subjects → qbLevelsFor.
+  const [subjectPick, setSubjectPick] = useState<'E Math' | 'A Math' | 'Both' | ''>('');
+  const upperSec = /^Sec [3-5]$/.test(level);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -26,6 +30,7 @@ export default function JoinForm({ refId, trial }: { refId: string | null; trial
     e.preventDefault();
     setError(null);
     if (!level) return setError('Pick your level.');
+    if (upperSec && !subjectPick) return setError('Pick your maths subject(s).');
     if (password.length < 8) return setError('Password must be at least 8 characters.');
     if (password !== confirm) return setError('Passwords do not match.');
     if (!consent) return setError('Please tick the agreement box to continue.');
@@ -33,7 +38,10 @@ export default function JoinForm({ refId, trial }: { refId: string | null; trial
     const res = await fetch('/api/portal/join', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, level, email, password, consent, ref: refId }),
+      body: JSON.stringify({
+        name, level, email, password, consent, ref: refId,
+        subjects: upperSec ? (subjectPick === 'Both' ? ['E Math', 'A Math'] : [subjectPick]) : null,
+      }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -82,6 +90,19 @@ export default function JoinForm({ refId, trial }: { refId: string | null; trial
             <option key={l.value} value={l.value}>{l.label}</option>
           ))}
         </select>
+
+        {upperSec && (
+          <div className="flex gap-2">
+            {(['E Math', 'A Math', 'Both'] as const).map(opt => (
+              <button
+                key={opt} type="button" onClick={() => setSubjectPick(opt)}
+                className={`flex-1 rounded-xl border px-3 py-2.5 text-sm font-semibold transition ${subjectPick === opt ? 'bg-navy text-[hsl(45,100%,96%)] border-navy' : 'border-black/10 text-gray-600 hover:border-navy/30'}`}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        )}
         <input
           type="email" required autoComplete="email"
           placeholder="Your login email"

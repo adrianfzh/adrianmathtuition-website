@@ -6,6 +6,15 @@ import NotesMarkdown from '../NotesMarkdown';
 import NotesUnits from '../NotesUnits';
 import { ReviewBar } from '../ReviewControls';
 import { isNotesAuthed, isNotesViewer } from '@/lib/notes-auth';
+import { viewingAsStudent } from '@/lib/portal-beta';
+
+/** Admin chrome (ReviewBar, DRAFT pills, pending blocks) — admin cookie AND
+ *  not currently "viewing as a student" (the portal toggle now covers /notes
+ *  too; Adrian, 2026-08-29: draft/review chrome must never look student-facing). */
+async function notesAdmin(): Promise<boolean> {
+  const [a, vs] = await Promise.all([notesAdmin(), viewingAsStudent()]);
+  return a && !vs;
+}
 import { approvedSections, hasApprovedUnits } from '@/lib/notes-units';
 import { getLevelIndex, getNotesTree, getSubgroupPage, getTopicPage } from '@/lib/notes-data';
 import { cleanDescription, cleanTitle } from '@/lib/notes-text';
@@ -186,7 +195,7 @@ async function LevelIndex({ level }: { level: string }) {
 async function TopicIndex({ level, topicSlugParam }: { level: string; topicSlugParam: string }) {
   const [data, admin] = await Promise.all([
     getTopicPage(level, topicSlugParam),
-    isNotesAuthed(),
+    notesAdmin(),
   ]);
   if (!data) notFound();
 

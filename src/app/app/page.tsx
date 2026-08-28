@@ -298,19 +298,6 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Revision Notes — re-opened to beta students 2026-08-27
-          (NOTES_OPEN_TO_STUDENTS carve-out in lib/portal-beta.ts). The full
-          portal already surfaces notes in its quick-actions grid above. */}
-      {!fullPortal && NOTES_OPEN_TO_STUDENTS && (
-        <Link href="/app/notes" className={`${card} !p-4 flex items-center gap-3 hover:shadow-md active:scale-[0.99] transition`}>
-          <span className={`flex items-center justify-center w-11 h-11 rounded-2xl shrink-0 ${N.tile}`}><PortalIcon name={N.icon} className="w-5.5 h-5.5" /></span>
-          <span className="min-w-0 flex-1">
-            <span className="block font-bold text-navy text-sm leading-tight">Revision Notes</span>
-            <span className="block text-[11px] text-slate-500 mt-0.5">Read the notes first, then practise the topic</span>
-          </span>
-          <span className={`shrink-0 ${N.text}`}>›</span>
-        </Link>
-      )}
 
       <Suspense fallback={null}>
         <LessonRecap account={account} fullPortal={fullPortal} card={card} caption={caption} />

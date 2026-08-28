@@ -83,6 +83,12 @@ export async function POST(req: NextRequest) {
   } catch { /* fail-open */ }
 
   // ── Resolve the inviter (a bad ref unattributes, never blocks) ────────────
+  // Sec 3–5 declare their maths (Adrian, 2026-08-29): whitelist to the exact
+  // Airtable subject vocabulary qbLevelsFor filters by; anything else → null.
+  const rawSubjects = (body as { subjects?: unknown }).subjects;
+  const subjects = Array.isArray(rawSubjects)
+    ? rawSubjects.filter((x): x is string => x === 'E Math' || x === 'A Math').slice(0, 2)
+    : [];
   const ref = validateInviteRef((body as { ref?: unknown }).ref);
   let inviter: { id: string; display_name: string | null; airtable_student_id: string | null; deactivated_at: string | null } | null = null;
   let inviterQualifies = false;
@@ -152,7 +158,7 @@ export async function POST(req: NextRequest) {
     email: v.email,
     display_name: v.name,
     level: v.level,
-    subjects: null,
+    subjects: subjects.length ? subjects : null,
     invited_by: inviter?.id ?? null,
     consent_record: buildSelfServeConsentRecord({ ref: inviter?.id ?? null }),
   });

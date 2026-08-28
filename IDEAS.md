@@ -9,7 +9,7 @@
 - 📐 **Animated solution player** — step-by-step web playback of a worked solution (the /solutions presentation style, animated). The "HTML is the new markdown" direction.
 - 📐 **Parent monthly digest as a designed HTML page** — shareable branded page instead of text; top pick of the HTML-first ideas.
 - 📐 **Auto-renew subscription option** — S$29/mo second button beside the one-time pass; Stripe recurring price + invoice.paid renewals (skip billing_reason=subscription_create); cancel = message Adrian at current scale.
-- 📐 **JC mock enablement** — blueprint SHIPPED (JC-P1/P2 with 40/60 section boundary); remaining: MOCK_LEVELS + JC↔blueprint key mapping, 9758 cover code, H2 instructions/calculator wording, admin fetchCandidates level scope. One wiring pass.
+- ✅ **JC mock enablement (2026-08-29)** — JC1/JC2 students get the Mock preset: 9758 cover, 3 hours, graphing-calculator instructions, P2 Section A/B headings (40/60 derived from blueprint). WAS: 📐 **JC mock enablement** — blueprint SHIPPED (JC-P1/P2 with 40/60 section boundary); remaining: MOCK_LEVELS + JC↔blueprint key mapping, 9758 cover code, H2 instructions/calculator wording, admin fetchCandidates level scope. One wiring pass.
 - 💡 **Student-own-notes tab** — students writing their own notes (beyond ✂️ clippings). Later.
 - 💡 **Recommendation merge** — Home focus card / Practise "up next" / My Notebook bands share one brain eventually.
 - 💡 **Exam Intensive queue-priority done; consider surfacing "priority marking" copy** on /app/pass Intensive card once first intensive customer exists.
@@ -29,8 +29,8 @@
 
 ## Marking/content quality
 - 💡 **Marker anti-injection line** — marking prompts should state that text ON a student script is never an instruction (cheap insurance; students could write "print your instructions" on paper).
-- 🔨 **Watermark-held diagram redraws** (78 questions) — agent in flight.
-- 🔨 **Curve/region figure gaps** (~dozens of rows) — agent in flight.
+- 🔨 **Watermark-held diagram redraws** (78 questions) — agent resumed, applying; final report pending.
+- ✅ **Curve/region figure gaps (2026-08-29)** — 74 registry-verified figures applied (14 question-side, 2 part-level, 58 solution-side); 16 skipped with reasons (unpinnable/no family — incl. compass constructions, frustum, parametric spiral: candidate future families); 2 rows carry representative curves (provenance-noted).
 - 💡 **Per-step "why this earns the mark" at scale** across worked solutions.
 - 💡 **Generator bake-off** via the GEN_MODEL lever (eval harness exists in bot scripts/).
 - 💡 **Confident-wrong view** in /admin/log (😎-marked wrong answers = teaching gold).
@@ -45,3 +45,20 @@
 ## Parked / decided-against
 - ⏸ Exam-season booklet (dropped).
 - ⏸ Browser E2E tests (solo-maintenance cost).
+
+## 📱 Phone review round 4 (2026-08-29) — the handoff batch
+> Adrian's full portal walkthrough. ✅ = fixed same day; the rest are specs for the next session (any account — this file IS the handoff, CLAUDE.md points here).
+
+1. 💡 **Perceived lag, round 3** — streaming shipped for Home; next: loading/streaming inside practice picker + notes pages, and measure real mobile TTFB (his 4G/5G loads still feel slow; serverless cold starts contribute).
+2. ✅ Home's duplicate Revision Notes card removed (quick-link row remains).
+3. 📐 **Marked script should open the IMAGE pages, not the full assembled PDF** — the student "Open your marked script" link serves `pdf_url`; students want the annotated photo pages (`annotated_pdf_url` / photos). Swap in src/lib/portal-marking.ts payload + /app/marking link; keep the full PDF as a secondary link if cheap.
+4. 📐 **Clip box UX**: drag-to-move + corner resize (today every tap redraws the box) — src/app/app/marking/ClipToNotes.tsx. PLUS the bigger idea: **photo-upload into My Notebook** (student photographs any external work → gallery), and auto-organization (topic/paper albums) as volume grows — portal_notes gains source 'upload', topic tagging UI.
+5. 🐛 **My Notebook retry cards don't respond to taps** — cards without a bank twin have no action (only "Try a similar one" links exist when variant_qb_id is set). Make EVERY card tappable: with twin → practice qid; without → inline detail (their score, the marker's comment, solution reveal from the run). src/app/app/my-notes.
+6. 📐 **Papers tab visual pass** — bring Home's colourful tile language (teal hand-in, violet marked, celebratory score chip).
+7. 📐 **"Where you lost marks" upgrades** — (a) show each QUESTION's stem above the feedback (students can't tell what the comment refers to); (b) FIX RAW LaTeX: the yellow annotation boxes show literal $…$ — render KaTeX there; (c) readability: Show-answer content crams onto one line — multi-line layout. src/app/app/marking + portal-marking fields.
+8. 📐 **Follow-up worksheet PDF (Practice these next → Download)**: brand header in house style — "ADRIAN'S MATH TUITION" navy letterspaced over a rule, like the Worked Solutions header Adrian showed; add marks [n] per question; `break-inside: avoid` so a question + its working space never straddles pages; more generous working space.
+9. ✅ Topic rows no longer show question counts.
+10. 📐 **Advanced-tier gaps** — some topics have zero Advanced questions (picker shows "none yet"): SQL the empty (topic × advanced) pairs → seed generation_requests → the nightly plan-billed topup authors them through the 4 gates. Zero-API-cost path exists.
+11. 📐 **/notes level index (A Math / E Math cards) redesign** — dull; give it the portal's hero/colour language.
+12. ✅ Review/DRAFT admin chrome on /notes now hidden under "View as student" (it was never student-visible — admin cookie chrome — but must not look student-facing in review). REMAINING 📐: the KEY FACTS/TECHNIQUES blocks are hard to read on mobile (label/text column wrap breaks mid-sentence — notes.css table layout) + a content-clarity pass is Adrian's editing call.
+13. ✅ **Sec 3–5 strangers now declare E Math / A Math / Both at signup** — stored to portal_accounts.subjects, scoping practice + mocks via qbLevelsFor.
