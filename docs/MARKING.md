@@ -462,6 +462,13 @@ runs the same student nudge + post-release enrichment as a manual release. Bot-s
 therefore no longer appears in triage at all unless its ticks were degraded or the
 release call failed.
 
+> **Daily nag (2026-08-29):** every failure notifies Adrian exactly once, so a held
+> script used to go silent after its doorbell scrolled past. `/api/triage-reminder`
+> (cron 08:00 SGT) now Telegrams "🗂 N marked papers waiting in triage" each morning
+> anything is unreleased — same query as this page's GET so the numbers always match;
+> quiet triage → no message. Composer: `lib/triage-reminder.ts` (pure, tested); stamps
+> `job_runs` → [`OPS.md`](OPS.md).
+
 - **It shows flagged questions only.** The bot's marker already writes
   `review_recommended` + `review_reasons[]` per question in `result_json.results[]`
   (question not found, uncertain match, marker uncertainty note, low marking

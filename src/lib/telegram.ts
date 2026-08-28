@@ -60,12 +60,12 @@ export async function sendTelegramDocumentTo(
   }
 }
 
-export async function sendTelegram(text: string) {
+export async function sendTelegram(text: string): Promise<boolean> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
   if (!token || !chatId) {
     console.warn('[telegram] Missing bot token or chat ID');
-    return;
+    return false;
   }
   const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
@@ -74,7 +74,9 @@ export async function sendTelegram(text: string) {
   });
   if (!res.ok) {
     console.error('[telegram] Send failed:', await res.text());
+    return false;
   }
+  return true;
 }
 
 export async function sendTelegramWithButtons(

@@ -30,6 +30,7 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'progress-digest':   { kind: 'monthly', day: 1,  graceDays: 1, label: '1st 8am' },
   'retention':         { kind: 'monthly', day: 2,  graceDays: 1, label: '2nd 3am' },
   'practice-topup':    { kind: 'interval', hours: 36, label: 'daily 2am' },
+  'triage-reminder':   { kind: 'interval', hours: 36, label: 'daily 8am' },
   // Self-referential: if the health check itself dies, nothing ALARMS (it is the
   // alarm) — but the /admin/ops board still shows this row going stale, which is
   // the one place that failure is visible at all.
