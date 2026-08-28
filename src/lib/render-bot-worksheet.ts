@@ -66,13 +66,14 @@ function esc(s: string): string {
  * (lib/kiosk-worksheet-images spaceMm): 17mm/mark, floor 36mm, cap 100mm.
  */
 function spaceMm(marks: number | null): number {
-  return Math.min(160, Math.max(36, (marks ?? 2) * 17));
+  return Math.min(190, Math.max(44, (marks ?? 2) * 22));
 }
 
-/** Working space for ONE part — same 17mm/mark, smaller floor, so (a)(b)(c)
- *  each get room under them instead of one lump after the question. */
+/** Working space for ONE part — same 22mm/mark, smaller floor, so (a)(b)(c)
+ *  each get room under them instead of one lump after the question.
+ *  (Adrian, 2026-08-29, twice: "be more generous with the space".) */
 function partSpaceMm(marks: number): number {
-  return Math.min(120, Math.max(30, marks * 17));
+  return Math.min(150, Math.max(40, marks * 22));
 }
 
 /** One question's body: figures, then the markdown, then the marks tag. */
@@ -141,7 +142,9 @@ function questionHtml(q: BotWorksheetQuestion, index: number, workspace = true):
 function answersHtml(questions: BotWorksheetQuestion[]): string {
   const rows = questions
     .map((q, i) => {
-      const { src, stash } = protectWorksheetHtml(`[Ans: ${q.answer}]`);
+      // Bare answers — the page is already headed ANSWERS, so the inline
+      // "[Ans: …]" wrapper is noise here (Adrian, 2026-08-29).
+      const { src, stash } = protectWorksheetHtml(q.answer);
       return `<li class="ws-a"><span class="ws-anum">${i + 1}.</span><div class="ws-a-body">${restoreWorksheetHtml(mdToHtml(src), stash)}</div></li>`;
     })
     .join('\n');
@@ -206,9 +209,11 @@ export function buildBotWorksheetHTML(input: BotWorksheetInput): string {
   .ws-lvl{color:#6E6E6E;font-size:8pt;letter-spacing:.2em}
   .ws-type{color:${NAVY};font-weight:700;font-size:9.5pt;letter-spacing:.26em;margin-left:9pt}
   .ws-topic{text-align:center;font-size:13.5pt;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin:7pt 0 3pt}
-  .ws-namebar{display:flex;justify-content:space-between;align-items:baseline;gap:10pt;font-size:10.5pt;margin-top:8pt;padding-top:5pt;border-top:0.5pt solid #ccc}
-  .ws-nameline{flex:1;display:flex;align-items:baseline;gap:4pt}
-  .ws-nameblank{flex:1;max-width:220pt;border-bottom:0.75pt solid #111;height:14pt}
+  /* Clear air above the name row so a student's handwriting doesn't collide
+     with the divider (Adrian, 2026-08-29: "give more space above name too"). */
+  .ws-namebar{display:flex;justify-content:space-between;align-items:flex-end;gap:10pt;font-size:10.5pt;margin-top:9pt;padding-top:18pt;border-top:0.5pt solid #ccc}
+  .ws-nameline{flex:1;display:flex;align-items:flex-end;gap:4pt}
+  .ws-nameblank{flex:1;max-width:220pt;border-bottom:0.75pt solid #111;height:18pt}
   .ws-datemeta{color:#6E6E6E;text-transform:capitalize}
 
   /* Explicit numbering (::marker misplaces itself on tall/figure-first questions). */
