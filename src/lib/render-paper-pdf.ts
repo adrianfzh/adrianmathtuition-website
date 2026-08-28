@@ -4,9 +4,11 @@
  * Reconstructed exam paper for the Question Bank browser (/admin/questions
  * Papers view): every bank question of one (school, year, exam_type, paper,
  * level) in reading order, printed as a sit-able paper. Same house typography
- * as render-bot-worksheet / render-solutions-pdf (Times 9.5pt, navy caps brand
- * over an orange rule, explicit margin numbers, KaTeX auto-render inside
- * Puppeteer).
+ * as render-bot-worksheet / render-solutions-pdf (Times 9.5pt, explicit margin
+ * numbers, KaTeX auto-render inside Puppeteer) — but NO tuition-centre brand
+ * line: these are other schools' (or GCE) papers, so the header identifies the
+ * paper, not Adrian (Adrian, 2026-08-28). The small "reconstructed" footer
+ * stays for honesty.
  *
  * Exam-paper conventions (mirroring the create-exam-paper skill): no topic or
  * source labels on questions, marks right-aligned at the margin, optional
@@ -165,9 +167,7 @@ export function buildPaperHTML(input: PaperPdfInput): string {
   .katex{font-size:1em}
 
   .pp-header{margin-bottom:9pt}
-  .pp-brand{text-align:center;color:${NAVY};font-weight:700;font-size:11.5pt;letter-spacing:.3em;border-bottom:1.1pt solid ${ANSWER_ORANGE};padding-bottom:2.5pt}
-  .pp-type{display:block;text-align:center;color:${NAVY};font-weight:700;font-size:9.5pt;letter-spacing:.26em;margin-top:4pt}
-  .pp-title{text-align:center;font-size:13pt;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:5pt 0 2pt}
+  .pp-title{text-align:center;color:${NAVY};font-size:13pt;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-bottom:1.1pt solid ${ANSWER_ORANGE};padding-bottom:3pt;margin-bottom:3pt}
   .pp-meta{text-align:center;color:#6E6E6E;font-size:8.5pt}
   .pp-warning{margin-top:5pt;border:0.9pt solid #b45309;border-radius:3pt;color:#b45309;font-size:8.5pt;padding:3pt 6pt;text-align:center}
   .pp-namebar{display:flex;justify-content:space-between;gap:10pt;font-size:9pt;margin-top:6pt;padding-top:4pt;border-top:0.5pt solid #ccc}
@@ -184,6 +184,7 @@ export function buildPaperHTML(input: PaperPdfInput): string {
 
   .pp-mk{float:right;font-weight:400}
   .pp-space{display:block;clear:both}
+  .pp-keep{break-inside:avoid;page-break-inside:avoid}
 
   .pp-answers{break-before:page;page-break-before:always;padding-top:2pt}
   .pp-answers-h{color:${NAVY};font-weight:700;font-size:11pt;letter-spacing:.24em;text-transform:uppercase;border-bottom:0.9pt solid ${ANSWER_ORANGE};padding-bottom:2.5pt;margin-bottom:7pt}
@@ -199,8 +200,6 @@ export function buildPaperHTML(input: PaperPdfInput): string {
 </head>
 <body>
   <div class="pp-header">
-    <div class="pp-brand">ADRIAN&rsquo;S MATH TUITION</div>
-    <span class="pp-type">RECONSTRUCTED PAPER</span>
     <div class="pp-title">${esc(title)}</div>
     <div class="pp-meta">${esc(metaLine)}${workingSpace ? ' &middot; Answer ALL questions in the spaces provided.' : ''}</div>
     ${warning ? `<div class="pp-warning">&#9888; ${esc(warning)}</div>` : ''}
@@ -242,6 +241,24 @@ export async function renderPaperPDF(input: PaperPdfInput): Promise<Buffer> {
         }),
     );
     await page.evaluate(() => document.fonts?.ready);
+    // Pagination pass (after KaTeX + fonts, so heights are final): a question
+    // and its working space stay on one page whenever they fit — only a
+    // question taller than most of a page is allowed to flow across, and even
+    // then each part + its own working space still stays together.
+    await page.evaluate(() => {
+      const PX_PER_MM = 96 / 25.4;
+      const KEEP_MAX = 240 * PX_PER_MM; // printable A4 height ≈ 269mm; headroom for the page-1 header
+      document.querySelectorAll('.pp-q').forEach((el) => {
+        const q = el as HTMLElement;
+        if (q.offsetHeight <= KEEP_MAX) {
+          q.classList.add('pp-keep');
+          return;
+        }
+        q.querySelectorAll('.pp-part').forEach((p) => {
+          if ((p as HTMLElement).offsetHeight <= KEEP_MAX) p.classList.add('pp-keep');
+        });
+      });
+    });
     await new Promise((r) => setTimeout(r, 250));
     const pdf = await page.pdf({ format: 'A4', printBackground: true, preferCSSPageSize: true });
     return Buffer.from(pdf);

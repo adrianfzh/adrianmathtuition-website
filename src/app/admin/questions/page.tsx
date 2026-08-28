@@ -644,21 +644,27 @@ export default function QuestionBankPage() {
               <button onClick={() => setPaperView(null)} style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer' }}>✕ Close paper</button>
             </span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: '7px 10px', marginBottom: 8 }}>
-            {([
-              ['working space', pdfSpace, setPdfSpace],
-              ['answer key', pdfAnswerKey, setPdfAnswerKey],
-              ['original numbering', pdfOrigNum, setPdfOrigNum],
-            ] as const).map(([label, val, set]) => (
-              <label key={label} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12.5, color: '#374151', cursor: 'pointer' }}>
-                <input type="checkbox" checked={val} onChange={e => set(e.target.checked)} />
-                {label}
-              </label>
-            ))}
-            <button onClick={generatePaperPdf} disabled={pdfBusy}
-              style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 600, color: '#fff', background: C.navy, border: 'none', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', opacity: pdfBusy ? 0.6 : 1 }}>
-              {pdfBusy ? 'Building…' : '⬇️ Download PDF'}
-            </button>
+          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: '8px 10px', marginBottom: 8 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: C.navy }}>
+              🖨 Print this paper
+              <span style={{ fontWeight: 400, color: C.muted, marginLeft: 6 }}>the full paper as a sit-able PDF — questions in order, with figures</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginTop: 6 }}>
+              {([
+                ['working space', pdfSpace, setPdfSpace],
+                ['answer key', pdfAnswerKey, setPdfAnswerKey],
+                ['original numbering', pdfOrigNum, setPdfOrigNum],
+              ] as const).map(([label, val, set]) => (
+                <label key={label} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12.5, color: '#374151', cursor: 'pointer' }}>
+                  <input type="checkbox" checked={val} onChange={e => set(e.target.checked)} />
+                  {label}
+                </label>
+              ))}
+              <button onClick={generatePaperPdf} disabled={pdfBusy}
+                style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 600, color: '#fff', background: C.navy, border: 'none', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', opacity: pdfBusy ? 0.6 : 1 }}>
+                {pdfBusy ? 'Building…' : '⬇️ Paper PDF'}
+              </button>
+            </div>
           </div>
           {paperView.questions.map(c => (
             <button key={c.id} onClick={() => openQuestion(c.id)}
