@@ -112,11 +112,13 @@ function questionHtml(q: PaperPdfQuestion, workingSpace: boolean): string {
     : (stemMarks ? `<div class="pp-stem">${stemMarks}</div>` : '');
   const parts = q.parts.map((p) => partHtml(p, workingSpace)).join('');
   const stemSpace = workingSpace && !inParts ? spacer(q.marks) : '';
-  // Stem first, then figures: stems say "the diagram below shows…".
+  // Stem first, then figures: stems say "the diagram below shows…". The
+  // stem + figures travel as one .pp-intro unit so a page break can never
+  // strand a stem on the page before its diagram.
   return `
     <li class="pp-q">
       <span class="pp-qnum">${esc(q.qnum)}</span>
-      <div class="pp-q-body">${stem}${figures}${hole}${parts}${stemSpace}</div>
+      <div class="pp-q-body"><div class="pp-intro">${stem}${figures}${hole}</div>${parts}${stemSpace}</div>
     </li>`;
 }
 
@@ -163,35 +165,36 @@ export function buildPaperHTML(input: PaperPdfInput): string {
   *{box-sizing:border-box;margin:0;padding:0}
   @page{size:A4;margin:15mm 22mm 13mm}
   html,body{background:#fff}
-  body{color:#111;font-family:"Times New Roman",Georgia,serif;font-size:9.5pt;line-height:1.5}
+  body{color:#111;font-family:"Times New Roman",Georgia,serif;font-size:11pt;line-height:1.5}
   .katex{font-size:1em}
 
   .pp-header{margin-bottom:9pt}
-  .pp-title{text-align:center;color:${NAVY};font-size:13pt;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-bottom:1.1pt solid ${ANSWER_ORANGE};padding-bottom:3pt;margin-bottom:3pt}
-  .pp-meta{text-align:center;color:#6E6E6E;font-size:8.5pt}
-  .pp-warning{margin-top:5pt;border:0.9pt solid #b45309;border-radius:3pt;color:#b45309;font-size:8.5pt;padding:3pt 6pt;text-align:center}
-  .pp-namebar{display:flex;justify-content:space-between;gap:10pt;font-size:9pt;margin-top:6pt;padding-top:4pt;border-top:0.5pt solid #ccc}
+  .pp-title{text-align:center;color:${NAVY};font-size:14pt;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-bottom:1.1pt solid ${ANSWER_ORANGE};padding-bottom:3pt;margin-bottom:3pt}
+  .pp-meta{text-align:center;color:#6E6E6E;font-size:9.5pt}
+  .pp-warning{margin-top:5pt;border:0.9pt solid #b45309;border-radius:3pt;color:#b45309;font-size:9.5pt;padding:3pt 6pt;text-align:center}
+  .pp-namebar{display:flex;justify-content:space-between;gap:10pt;font-size:10pt;margin-top:6pt;padding-top:4pt;border-top:0.5pt solid #ccc}
 
-  .pp-questions{list-style:none;padding-left:20pt;margin:0}
-  .pp-q{margin-bottom:7pt;position:relative}
-  .pp-qnum{position:absolute;left:-20pt;top:0;font-weight:700}
+  .pp-questions{list-style:none;padding-left:24pt;margin:0}
+  .pp-q{margin-bottom:8pt;position:relative}
+  .pp-qnum{position:absolute;left:-24pt;top:0;font-weight:700}
   .pp-stem{white-space:pre-wrap;break-inside:avoid}
-  .pp-part{margin-top:3.5pt}
-  .pp-part .pp-part{margin-left:13pt}
+  .pp-part{margin-top:4pt}
+  .pp-part .pp-part{margin-left:15pt}
   .pp-part-text{white-space:pre-wrap;break-inside:avoid}
-  .pp-figure{display:block;max-width:100%;max-height:300pt;margin:5pt 0}
+  .pp-figure{display:block;max-width:100%;max-height:300pt;margin:6pt 0}
   .pp-missing-figure{border:0.75pt dashed #999;color:#999;font-style:italic;text-align:center;padding:14pt 8pt;margin:5pt 0}
 
   .pp-mk{float:right;font-weight:400}
   .pp-space{display:block;clear:both}
   .pp-keep{break-inside:avoid;page-break-inside:avoid}
+  .pp-fresh{break-before:page;page-break-before:always}
 
   .pp-answers{break-before:page;page-break-before:always;padding-top:2pt}
-  .pp-answers-h{color:${NAVY};font-weight:700;font-size:11pt;letter-spacing:.24em;text-transform:uppercase;border-bottom:0.9pt solid ${ANSWER_ORANGE};padding-bottom:2.5pt;margin-bottom:7pt}
-  .pp-answer-list{list-style:none;padding-left:20pt;margin:0}
-  .pp-a{position:relative;margin-bottom:4pt;break-inside:avoid;color:${ANSWER_ORANGE}}
+  .pp-answers-h{color:${NAVY};font-weight:700;font-size:12pt;letter-spacing:.24em;text-transform:uppercase;border-bottom:0.9pt solid ${ANSWER_ORANGE};padding-bottom:2.5pt;margin-bottom:7pt}
+  .pp-answer-list{list-style:none;padding-left:24pt;margin:0}
+  .pp-a{position:relative;margin-bottom:5pt;break-inside:avoid;color:${ANSWER_ORANGE}}
   .pp-a .katex{color:${ANSWER_ORANGE}}
-  .pp-anum{position:absolute;left:-20pt;top:0;font-weight:700;color:#111}
+  .pp-anum{position:absolute;left:-24pt;top:0;font-weight:700;color:#111}
   .pp-a-none{color:#999}
 
   .pp-footer{margin-top:10pt;padding-top:4pt;border-top:0.75pt solid #999;font-size:8pt;color:#6E6E6E}
@@ -241,20 +244,39 @@ export async function renderPaperPDF(input: PaperPdfInput): Promise<Buffer> {
         }),
     );
     await page.evaluate(() => document.fonts?.ready);
-    // Pagination pass (after KaTeX + fonts, so heights are final): a question
-    // and its working space stay on one page whenever they fit — only a
-    // question taller than most of a page is allowed to flow across, and even
-    // then each part + its own working space still stays together.
+    // Figure-sharpness pass: the bank's crops are ~850–1000px scans, and
+    // stretching one across the full 166mm text width prints at ~130 DPI —
+    // visibly soft. Cap each figure's on-page size so it never renders below
+    // ~200 DPI (CSS px = naturalWidth × 96/200); a figure only shrinks, never
+    // grows, and stays within the column. Must run BEFORE the pagination
+    // measurement since it changes heights.
+    await page.evaluate(() => {
+      const MAX_CSS_PER_NATURAL = 96 / 200;
+      document.querySelectorAll('img.pp-figure').forEach((el) => {
+        const img = el as HTMLImageElement;
+        if (!img.naturalWidth) return;
+        const sharpWidth = img.naturalWidth * MAX_CSS_PER_NATURAL;
+        const colWidth = img.parentElement?.clientWidth ?? sharpWidth;
+        img.style.width = `${Math.min(sharpWidth, colWidth)}px`;
+      });
+    });
+    // Pagination pass (after KaTeX + fonts + figure sizing, so heights are
+    // final): a question and its working space stay on one page whenever they
+    // fit. A question taller than that starts on a FRESH page so the read is
+    // contiguous instead of straddling a break mid-thought — and within it,
+    // the stem+figures unit and each part + its working space never split.
     await page.evaluate(() => {
       const PX_PER_MM = 96 / 25.4;
       const KEEP_MAX = 240 * PX_PER_MM; // printable A4 height ≈ 269mm; headroom for the page-1 header
-      document.querySelectorAll('.pp-q').forEach((el) => {
+      document.querySelectorAll('.pp-q').forEach((el, i) => {
         const q = el as HTMLElement;
         if (q.offsetHeight <= KEEP_MAX) {
           q.classList.add('pp-keep');
           return;
         }
-        q.querySelectorAll('.pp-part').forEach((p) => {
+        // Q1 oversized: don't push it off page 1 — that leaves a header-only page.
+        if (i > 0) q.classList.add('pp-fresh');
+        q.querySelectorAll('.pp-intro, .pp-part').forEach((p) => {
           if ((p as HTMLElement).offsetHeight <= KEEP_MAX) p.classList.add('pp-keep');
         });
       });
