@@ -4,6 +4,8 @@
 > this repo travels everywhere. Any session on any account reads THIS for the agreed
 > ideas/backlog. Keep entries one-line-ish with status; move detail into docs/ or specs.
 > Statuses: 💡 idea · 📐 designed (awaiting go) · 🔨 in progress · ⏸ parked · ✅ shipped (dated, then prune after a while)
+>
+> **Standing working agreement (Adrian):** fan out with agents where it makes work faster — no need to ask. Auto commit+push to dev each turn; promote to prod freely once verified (his 2026-08-29 cadence); alias adrianmath-dev after preview builds; ALWAYS check the marking queue (paper_marking_runs result_json null count = 0) before any bot push.
 
 ## Product — student portal
 - 📐 **Animated solution player** — step-by-step web playback of a worked solution (the /solutions presentation style, animated). The "HTML is the new markdown" direction.
@@ -27,9 +29,18 @@
 - 📐 **Retention cron** — docs/RETENTION.md has the policy sketch; Adrian owes 3 sign-offs before anything deletes.
 - 💡 **Privacy-policy copy update** — marking-records retention after deletion + dormancy policy, folded in when retention is signed off.
 
+## Content review debt
+- 📐 **Notes bulk approval**: 594 learning-unit blocks approved (live to students) vs **1,297 pending** (invisible to students). Options: Adrian approves topic-by-topic via the /notes Review bar, or a session runs a QC pass over all pending (correctness + readability) and he bulk-approves. Also: KEY FACTS/TECHNIQUES mobile readability fix (label/text wrap breaks mid-sentence — notes.css).
+
+## Growth builds (Adrian-approved directions)
+- 📐 **Shareable result cards** — branded score image on release ("marked by AdrianMath" — NOT "overnight"), one tap to WhatsApp, invite link baked in. BUILD FIRST of the growth loops.
+- 📐 **"Challenge a friend"** — share a generated mock so the friend sits the IDENTICAL paper (needs a claim flow copying portal_generated_papers question_ids to the friend's account at signup); both compare marked scores.
+- 📐 **Parent digest as a shareable branded page** — public token URL rendering parent_digests content beautifully; parents forward to parent groups.
+- ✅ Free-tool funnel (2026-08-29): /chat nudge links "Try the student portal →" /join.
+
 ## Marking/content quality
 - 💡 **Marker anti-injection line** — marking prompts should state that text ON a student script is never an instruction (cheap insurance; students could write "print your instructions" on paper).
-- 🔨 **Watermark-held diagram redraws** (78 questions) — agent resumed, applying; final report pending.
+- 🔨 **Watermark-held diagram redraws** (78 questions) — in flight at handoff (2026-08-29 night, re-permitted to fan out). Workspace: ~/Documents/Claude/Projects/AdrianMath/diagram-recovery-2026-08/redraw/ (render.js, guarded apply-one.js, batch manifests G1/G2/T1/J1/S1/C1/M1, held lists). If unreported when you read this: check live progress (questions.solution_images counts) + the workspace, finish remaining batches through the guarded apply, never ship watermarked crops.
 - ✅ **Curve/region figure gaps (2026-08-29)** — 74 registry-verified figures applied (14 question-side, 2 part-level, 58 solution-side); 16 skipped with reasons (unpinnable/no family — incl. compass constructions, frustum, parametric spiral: candidate future families); 2 rows carry representative curves (provenance-noted).
 - 💡 **Per-step "why this earns the mark" at scale** across worked solutions.
 - 💡 **Generator bake-off** via the GEN_MODEL lever (eval harness exists in bot scripts/).
