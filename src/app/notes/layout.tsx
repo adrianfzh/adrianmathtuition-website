@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { isNotesAuthed, isNotesViewer, hasPortalSession } from '@/lib/notes-auth';
-import { NOTES_OPEN_TO_STUDENTS } from '@/lib/portal-beta';
+import { NOTES_OPEN_TO_STUDENTS, viewingAsStudent } from '@/lib/portal-beta';
 import { getNotesTree, getSearchIndex } from '@/lib/notes-data';
 import { NOTES_LEVELS } from '@/lib/notes-tree';
 import NotesLogin from './NotesLogin';
@@ -39,8 +39,9 @@ export default async function NotesLayout({
   // Carve-out closed (2026-08-29, content vetting): a logged-in STUDENT gets a
   // friendly closed card — never the login form (they are signed in; a
   // password box here reads as "your account broke"). Adrian's admin cookie
-  // keeps the full reader for the vetting work itself.
-  if (!NOTES_OPEN_TO_STUDENTS && !(await isNotesAuthed())) {
+  // keeps the full reader for the vetting work itself — unless he flips
+  // "View as student", which must show him exactly this card.
+  if (!NOTES_OPEN_TO_STUDENTS && !((await isNotesAuthed()) && !(await viewingAsStudent()))) {
     return (
       <div className="notes-shell">
         <div className="mx-auto max-w-md px-6 py-24 text-center">
