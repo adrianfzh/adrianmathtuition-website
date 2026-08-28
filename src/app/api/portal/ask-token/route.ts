@@ -16,7 +16,8 @@ import { NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { botLevelForAccount } from '@/lib/chat-solver';
 import { signAskToken } from '@/lib/ask-token';
-import type { PortalAccount } from '@/lib/portal-auth';
+import { portalIdentity, type PortalAccount } from '@/lib/portal-auth';
+import { requireActiveAccess } from '@/lib/portal-passes';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -27,18 +28,24 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { data: account } = await supabase
     .from('portal_accounts')
-    .select('airtable_student_id, display_name, level, subjects')
+    .select('id, airtable_student_id, display_name, level, subjects, deactivated_at')
     .eq('id', user.id)
-    .maybeSingle<Pick<PortalAccount, 'airtable_student_id' | 'display_name' | 'level' | 'subjects'>>();
-  // DELIBERATELY tuition-only (2026-08-28, stranger-accounts build): the token's
-  // sid goes to the BOT, which links it as an Airtable Students record on its
-  // Questions row — a stranger's acct:<uuid> identity would make that write
-  // fail and lose the log row. Strangers therefore ask on the anonymous path
-  // (the client's documented fallback), while the website's own
-  // /api/portal/ask-log still records who asked by name. Once the bot's
-  // ask-token consumer learns to skip the Student link for acct: sids, swap
-  // this gate to portalIdentity() and strangers get the student quota too.
-  if (!account?.airtable_student_id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    .maybeSingle<Pick<PortalAccount, 'id' | 'airtable_student_id' | 'display_name' | 'level' | 'subjects' | 'deactivated_at'>>();
+  // An Auth user without a portal_accounts row shouldn't exist — treat as
+  // unauthenticated (same stance as lib/portal-auth.currentAccount).
+  if (!account) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // ALL active accounts get an identified token now (2026-08-28, stranger Ask
+  // quota — this replaces the earlier tuition-only gate): sid is the ONE
+  // portal identity, rec… for tuition students, acct:<uuid> for strangers.
+  // The bot's ask-token consumer is learning acct: sids in a parallel change
+  // and FAILS OPEN — on an older bot an acct: token verifies but degrades to
+  // the anonymous path (no Student link, anonymous quota) instead of erroring,
+  // so the two deploys can land in either order. Pass gate: tuition accounts
+  // short-circuit free; a stranger (or deactivated ex-student) without an
+  // active pass gets the 402 and the client degrades to anonymous asking —
+  // the token must never hand the paid 60/day student quota past the paywall.
+  const access = await requireActiveAccess(account);
+  if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
 
   const secret = process.env.BOT_INTERNAL_SECRET;
   if (!secret) {
@@ -52,7 +59,7 @@ export async function GET() {
   const firstName = (account.display_name || '').trim().split(/\s+/)[0] || null;
   const token = signAskToken(
     {
-      sid: account.airtable_student_id,
+      sid: portalIdentity(account),
       name: firstName,
       // 'EM'|'AM'|'JC'|'S1'|'S2', or null for dual/unknown — same rule the Ask
       // page uses for the body's `level` field (bot router decides on null).

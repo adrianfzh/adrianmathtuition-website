@@ -87,6 +87,13 @@ export default async function PassPage() {
   const checkoutIntensive = passCheckoutUrl(process.env.STRIPE_PASS_LINK_INTENSIVE || '', account.id);
   const firstName = (account.display_name || account.email).split(' ')[0];
 
+  // Offboarding (2026-08-28): a DEACTIVATED ex-tuition account reaches this
+  // page because isTuitionAccount() above no longer waves it through. Name
+  // what happened — their student access ended, not "your account is ready" —
+  // and offer the exact same S$29 card underneath. (With an active pass they
+  // are a paying member again, so the renewal branch wins as usual.)
+  const offboarded = Boolean(account.deactivated_at) && Boolean(account.airtable_student_id?.trim());
+
   return (
     <main className="min-h-screen bg-[hsl(45,100%,97%)] px-4 py-10">
       <div className="max-w-md mx-auto space-y-5">
@@ -95,12 +102,16 @@ export default async function PassPage() {
           <h1 className="text-2xl font-bold text-navy mt-3 tracking-tight">
             {renewing
               ? `Your ${renewing.isTrial ? 'trial' : 'pass'} ends ${renewing.endsLabel}`
-              : 'Your 30-day pass'}
+              : offboarded
+                ? 'Your student access has ended'
+                : 'Your 30-day pass'}
           </h1>
           <p className="text-sm text-gray-600 mt-2">
             {renewing
               ? `Hi ${firstName} — keep access: a new pass adds 30 days on top of the days you already have.`
-              : `Hi ${firstName} — your account is ready. One pass unlocks everything below.`}
+              : offboarded
+                ? `Hi ${firstName} — lessons with Adrian have wrapped up, but everything you built here is saved. One pass keeps it all open.`
+                : `Hi ${firstName} — your account is ready. One pass unlocks everything below.`}
           </p>
           {renewing && currentPass && (
             <p className="inline-block text-xs font-semibold text-navy bg-[hsl(45,80%,92%)] rounded-full px-3 py-1 mt-3">

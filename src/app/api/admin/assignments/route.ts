@@ -10,6 +10,7 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { validateAssignment, canTransition, dueLabel, type AssignmentRow } from '@/lib/assignments';
 import { sendTelegramTo } from '@/lib/telegram';
+import { sendPushToStudent } from '@/lib/portal-push';
 import { dropboxConfigured, getTemporaryLink } from '@/lib/dropbox';
 
 export const runtime = 'nodejs';
@@ -87,6 +88,17 @@ export async function POST(req: NextRequest) {
       notified = await sendTelegramTo(acct.telegram_chat_id, text);
     }
   } catch { /* never fail the send over a notification */ }
+
+  // Web push too (2026-08-28) — every device this student turned notifications
+  // on for (/app/settings), keyed on the same identity string the subscription
+  // rows carry (rec… or acct:…). Fire-and-forget: sendPushToStudent never
+  // throws, and the extra .catch belts the promise — a push failure must never
+  // fail (or delay) the assignment create.
+  sendPushToStudent(a.airtable_student_id, {
+    title: '📬 New work from Adrian',
+    body: a.title,
+    url: '/app/assignments',
+  }).catch(() => {});
 
   return NextResponse.json({ assignment: a, notified });
 }

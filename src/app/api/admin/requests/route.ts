@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { createServiceClient } from '@/lib/supabase-server';
-import { validResultUrl, type PortalRequestRow } from '@/lib/requests';
+import { kindLabel, validResultUrl, type PortalRequestRow } from '@/lib/requests';
+import { sendPushToStudent } from '@/lib/portal-push';
 
 export const runtime = 'nodejs';
 
@@ -97,10 +98,26 @@ export async function PATCH(req: NextRequest) {
     const { data, error } = await supa
       .from('portal_requests').update(fields)
       .eq('id', id).in('status', ['queued', 'approved'])
-      .select('id')
+      .select('id, airtable_student_id, kind, detail')
       .maybeSingle();
     if (error) throw error;
     if (!data) return NextResponse.json({ error: 'Request not found or already decided' }, { status: 409 });
+
+    // Web push on ✅ done (2026-08-28): the student asked for this — tell them
+    // the moment it's ready, on every device they enabled (/app/settings).
+    // Fire-and-forget: sendPushToStudent never throws, and the extra .catch
+    // belts the promise — a push failure must never fail the admin action.
+    if (action === 'done') {
+      const row = data as Pick<PortalRequestRow, 'airtable_student_id' | 'kind' | 'detail'>;
+      const detail = (row.detail || '').trim();
+      const preview = detail.length > 60 ? `${detail.slice(0, 60).trimEnd()}…` : detail;
+      sendPushToStudent(row.airtable_student_id, {
+        title: '✅ Your request is ready',
+        body: [kindLabel(row.kind), preview].filter(Boolean).join(' — '),
+        url: '/app/requests',
+      }).catch(() => {});
+    }
+
     return NextResponse.json({ ok: true });
   } catch (err: unknown) {
     return NextResponse.json({ error: (err as Error)?.message || 'update failed' }, { status: 500 });

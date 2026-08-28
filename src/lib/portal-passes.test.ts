@@ -4,6 +4,7 @@ import {
   hasActivePassInRows,
   computeGrantExpiry,
   latestPassExpiry,
+  passEndingNudge,
   portalAccessAllowed,
   grantPass,
   decimalAmountToCents,
@@ -43,6 +44,22 @@ describe('isTuitionAccount', () => {
   it('no account at all → not tuition', () => {
     expect(isTuitionAccount(null)).toBe(false);
     expect(isTuitionAccount(undefined)).toBe(false);
+  });
+
+  // Offboarding (2026-08-28): deactivated_at set = no longer tuition-free —
+  // the account falls through to the pass check like a stranger, so a
+  // graduate can pay S$29 to keep access and the paywall stops the rest.
+  it('DEACTIVATED ex-tuition account (deactivated_at set) is not tuition-free', () => {
+    expect(isTuitionAccount({
+      id: 'u1', airtable_student_id: 'recABC123', deactivated_at: '2026-08-28T04:00:00.000Z',
+    })).toBe(false);
+  });
+  it('deactivated_at null/undefined leaves a linked account tuition-free', () => {
+    expect(isTuitionAccount({ id: 'u1', airtable_student_id: 'recABC123', deactivated_at: null })).toBe(true);
+    expect(isTuitionAccount({ id: 'u1', airtable_student_id: 'recABC123', deactivated_at: undefined })).toBe(true);
+  });
+  it('deactivating a stranger account changes nothing (already not tuition)', () => {
+    expect(isTuitionAccount({ id: 'u1', airtable_student_id: '', deactivated_at: '2026-08-28T04:00:00.000Z' })).toBe(false);
   });
 });
 
@@ -133,6 +150,50 @@ describe('latestPassExpiry (the /pass "ends <date>" source)', () => {
     expect(
       latestPassExpiry([{ expires_at: 'nonsense' }, { expires_at: iso(NOW.getTime()) }])?.toISOString()
     ).toBe(iso(NOW.getTime()));
+  });
+});
+
+describe('passEndingNudge (the Home "⏳ ends today/tomorrow" banner)', () => {
+  // NOW is 12:00 SGT on 28 Aug — SGT "today" = 2026-08-28.
+  const HOUR = 3_600_000;
+  const at = (h: number) => ({ source: 'stripe', expires_at: iso(NOW.getTime() + h * HOUR) });
+
+  it('no current pass → no banner (the paywall page owns the lapsed case)', () => {
+    expect(passEndingNudge(null, NOW)).toBeNull();
+    expect(passEndingNudge(undefined, NOW)).toBeNull();
+  });
+  it('a lapsed or exactly-now expiry → null (strict >, like every other gate)', () => {
+    expect(passEndingNudge(at(-1), NOW)).toBeNull();
+    expect(passEndingNudge({ source: 'stripe', expires_at: NOW.toISOString() }, NOW)).toBeNull();
+  });
+  it('ends later today (18:00 SGT) → { pass, today }', () => {
+    expect(passEndingNudge(at(6), NOW)).toEqual({ kind: 'pass', when: 'today' });
+  });
+  it('ends tomorrow SGT (08:00 and 18:00) → { pass, tomorrow }', () => {
+    expect(passEndingNudge(at(20), NOW)).toEqual({ kind: 'pass', when: 'tomorrow' });
+    expect(passEndingNudge(at(30), NOW)).toEqual({ kind: 'pass', when: 'tomorrow' });
+  });
+  it("source 'trial' names the trial; any paid source says pass", () => {
+    expect(passEndingNudge({ source: 'trial', expires_at: iso(NOW.getTime() + 6 * HOUR) }, NOW))
+      .toEqual({ kind: 'trial', when: 'today' });
+    expect(passEndingNudge({ source: 'manual', expires_at: iso(NOW.getTime() + 6 * HOUR) }, NOW))
+      .toEqual({ kind: 'pass', when: 'today' });
+  });
+  it('within 48h but on the day AFTER tomorrow → null (never say "tomorrow" when it is not)', () => {
+    // +47h from noon SGT = 11:00 SGT on 30 Aug — two calendar days out.
+    expect(passEndingNudge(at(47), NOW)).toBeNull();
+  });
+  it('more than 48h out → null, plenty of days left', () => {
+    expect(passEndingNudge(at(49), NOW)).toBeNull();
+    expect(passEndingNudge(at(10 * 24), NOW)).toBeNull();
+  });
+  it('near-midnight honesty: 23:30 SGT tonight, pass ending 01:00 SGT on the 30th → null until midnight', () => {
+    const lateNow = new Date('2026-08-28T15:30:00.000Z'); // 23:30 SGT 28 Aug
+    const ends = { source: 'stripe', expires_at: '2026-08-29T17:00:00.000Z' }; // 01:00 SGT 30 Aug, 25.5h away
+    expect(passEndingNudge(ends, lateNow)).toBeNull();
+  });
+  it('garbage expiry → null, never a broken banner', () => {
+    expect(passEndingNudge({ source: 'stripe', expires_at: 'garbage' }, NOW)).toBeNull();
   });
 });
 
@@ -314,6 +375,26 @@ describe('portalAccessAllowed', () => {
   it('anonymous (no account) → refused, no lookup', async () => {
     await expect(portalAccessAllowed(null, NOW, explodingClient)).resolves.toBe(false);
     await expect(portalAccessAllowed(undefined, NOW, explodingClient)).resolves.toBe(false);
+  });
+  // Offboarding: a deactivated ex-tuition account rides the STRANGER path —
+  // no pass → paywall; an active pass (a paying graduate) → in.
+  it('deactivated ex-tuition account with no pass → refused', async () => {
+    await expect(
+      portalAccessAllowed(
+        { id: 'u3', airtable_student_id: 'recABC', deactivated_at: NOW.toISOString() },
+        NOW,
+        countingClient(0),
+      )
+    ).resolves.toBe(false);
+  });
+  it('deactivated ex-tuition account WITH an active pass → allowed (S$29 keeps a graduate in)', async () => {
+    await expect(
+      portalAccessAllowed(
+        { id: 'u3', airtable_student_id: 'recABC', deactivated_at: NOW.toISOString() },
+        NOW,
+        countingClient(1),
+      )
+    ).resolves.toBe(true);
   });
 });
 
