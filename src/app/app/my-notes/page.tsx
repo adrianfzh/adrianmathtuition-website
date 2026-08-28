@@ -226,14 +226,23 @@ function RetryCard({ e }: { e: NotebookEntryRow }) {
           {e.awarded}/{e.max_marks}
         </span>
       </div>
-      {e.variant_qb_id && (
+      {e.variant_qb_id ? (
         <Link
           href={`/app/practice?qid=${encodeURIComponent(e.variant_qb_id)}&from=notebook`}
           className="mt-2.5 inline-flex items-center gap-1.5 bg-amber-50 text-amber-800 rounded-xl px-3 py-1.5 text-[13px] font-semibold hover:bg-amber-100 transition-colors"
         >
           ✏️ Try a similar one →
         </Link>
-      )}
+      ) : e.topic ? (
+        // No bank twin picked for this one (yet) — the card must still DO
+        // something on tap (Adrian, 2026-08-29): practise the topic instead.
+        <Link
+          href={`/app/practice?topic=${encodeURIComponent(e.topic)}`}
+          className="mt-2.5 inline-flex items-center gap-1.5 bg-amber-50 text-amber-800 rounded-xl px-3 py-1.5 text-[13px] font-semibold hover:bg-amber-100 transition-colors"
+        >
+          ✏️ Practise this topic →
+        </Link>
+      ) : null}
     </div>
   );
 }

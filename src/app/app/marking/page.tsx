@@ -281,7 +281,7 @@ function Paper({ paper }: { paper: StudentPaper }) {
                   <ul className="mt-1.5 space-y-1">
                     {q.slips.map((s, j) => (
                       <li key={j} className="text-[12px] text-amber-900 bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-1.5">
-                        {s}
+                        <MathText text={s} />
                       </li>
                     ))}
                   </ul>
