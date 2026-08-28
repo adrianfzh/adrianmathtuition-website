@@ -155,9 +155,23 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   triage cannot see. Same incident also added an anti-anchoring SOLVE step + a
   "SETUP BEFORE ARITHMETIC" severity rule to both marking prompts (commit to your
   own answer before reading the student's method; code-exec verifies arithmetic,
-  never which givens belong in the formula), and a **blank-page pre-gate**: a
-  success-empty `detectInkSpan` read skips the Opus call entirely (a detector error
-  keeps the full read path — losing a real page is worse than one wasted read).
+  never which givens belong in the formula), and a **blank-page pre-gate**. ⚠ The
+  gate was REBUILT 2026-08-28 after it silently destroyed two of Kassandra's papers
+  (bot commit `b8773f6`): the original reused the margin overlay's `detectInkSpan`
+  (280px scan, absolute pixel<115 cut) as a discard gate — the downsample area-
+  averages thin pen/pencil strokes into light grey, so pages FULL of real working
+  read as "blank" and never reached the model (run 1: all pages gated, 4 output
+  tokens; run 2: 17 of 21 pages gated) — and its error path returned the same
+  shape as "blank", so the promised keep-on-error never engaged. The gate now
+  calls **`detectBlankPage`** (`ai/marker-annotate.js`): 640px greyscale histogram,
+  page median = paper tone, blank ⟺ <0.04% of pixels clearly below that tone
+  (median−40) — measured >20,000× separation between the faintest real page and a
+  true blank; a dark photo (median<140) is unjudgeable → NOT blank; it **throws on
+  error** so each caller picks its safe direction explicitly (the gate and the
+  zero-attempt rescue's `pageHasInk` both fail toward "read it"). `detectInkSpan`
+  is demoted to PLACEMENT ONLY and carries an `ok` flag marking real errors.
+  Regression suite: bot `test/blank-page-gate.test.js` (a faint-pencil fixture the
+  old scan provably misses must stay not-blank).
 - **🌙 A queued paper arrives FINISHED (2026-08-06):** after the queue worker
   marks a run, `deliverQueuedRun` (bot `handlers/webchat.js`) builds BOTH PDFs
   via the site's `/api/admin/mark-paper-pdf` (photos first, then full — neither
