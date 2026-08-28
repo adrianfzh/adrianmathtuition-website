@@ -21,12 +21,22 @@ function LoginForm() {
   const rawNext = params.get('next') || '';
   const nextPath = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/app';
 
-  // Already signed in? Straight through.
+  // ?stale=1: the server found an Auth session with no portal account behind
+  // it (deleted account / stale cookie). Auto-redirecting that session to /app
+  // would loop it straight back here — the flicker loop Adrian hit
+  // (2026-08-29). Sign the dead session out and show the form instead.
+  const stale = params.get('stale') === '1';
   useEffect(() => {
+    if (stale) {
+      getSupabaseBrowser().auth.signOut().catch(() => { /* cookie already gone */ });
+      setError('Your previous session expired — please log in again.');
+      return;
+    }
+    // Already (properly) signed in? Straight through.
     getSupabaseBrowser().auth.getUser().then(({ data: { user } }) => {
       if (user) router.replace(nextPath);
     });
-  }, [router, nextPath]);
+  }, [router, nextPath, stale]);
 
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault();

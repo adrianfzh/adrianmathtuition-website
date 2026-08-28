@@ -92,7 +92,12 @@ export async function currentAccount(): Promise<PortalAccount> {
   const user = await getSessionUser();
   if (!user) redirect('/login');
   const account = await sessionAccount();
-  if (!account) redirect('/login');
+  // An Auth user whose portal_accounts row is gone (deleted account, stale
+  // cookie from an old build) must NOT bounce to plain /login — its
+  // auto-redirect sees the session and sends them straight back here, a
+  // visible /app ↔ /login flicker loop (Adrian hit it, 2026-08-29).
+  // ?stale=1 tells /login to sign the dead session out first.
+  if (!account) redirect('/login?stale=1');
   return account;
 }
 
@@ -102,7 +107,7 @@ export async function currentAccount(): Promise<PortalAccount> {
 export const currentStudent = cache(async () => {
   const user = await requireAuth();
   const account = await sessionAccount();
-  if (!account) redirect('/login');
+  if (!account) redirect('/login?stale=1');
 
   // Airtable is best-effort: a deleted student record or an Airtable outage
   // must degrade the page (fall back to portal_accounts copies), never 500 it.
