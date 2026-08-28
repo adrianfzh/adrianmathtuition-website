@@ -88,3 +88,5 @@ Rules:
 | `question-mine-daily` | Mon & Thu 7:00am | A (MacBook Pro) | ✅ live (2026-08-28; daily → twice-weekly same day, Adrian: "daily is too frequent") | student-demand mining per [`docs/QMINE.md`](QMINE.md) — asks → coverage cross-ref → topup enqueues + ≤3 judgment digest (stamps `question-mine`) |
 | `siteground-vercel-migration-reminder` | one-time 1 Nov 2026 | A (MacBook Pro) | ✅ armed | domain + hosting expiry reminder |
 | *(extraction fleet)* | various | B | ❓ list from Mac B | paper→bank workers in `~/Desktop/AdrianMath`; worker law = live Supabase row |
+
+<!-- preview-build tick 2026-08-29a — dev-only nudge so Vercel builds a preview when dev == main (same-commit builds get skipped) -->
