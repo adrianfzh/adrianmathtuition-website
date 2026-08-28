@@ -35,6 +35,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // Students carry their invite link in the top bar; admin sessions have no
   // portal account, so no button.
   let inviteRef: string | null = null;
+  let inviteTuition = false;
   if (!isAdmin) {
   // Auth + paywall gate. currentAccount() bounces anonymous (and
     // account-less) sessions to /login; it costs nothing extra — the same
@@ -49,6 +50,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     const account = await currentAccount();
     if (!(await portalAccessAllowed(account))) redirect('/app/pass');
     inviteRef = account.id;
+    inviteTuition = Boolean(account.airtable_student_id?.trim());
   }
 
   // Marking-only beta (lib/portal-beta.ts, Adrian 2026-08-21): students see
@@ -124,7 +126,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <DesktopLinks items={desktopLinks} pendingWork={pendingWork} />
           </div>
           <div className="flex items-center gap-4">
-            {inviteRef && <InviteFriend link={inviteLinkFor(inviteRef)} />}
+            {inviteRef && <InviteFriend link={inviteLinkFor(inviteRef)} tuition={inviteTuition} />}
             <Link href="/app/settings" data-tour="settings" className="text-sm text-gray-600 hover:text-navy">Settings</Link>
             <SignOutButton />
           </div>

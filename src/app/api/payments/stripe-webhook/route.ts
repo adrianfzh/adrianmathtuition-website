@@ -37,6 +37,7 @@ import {
 } from '@/lib/portal-passes';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
+import { rewardInviterForPaidPass } from '@/lib/referral-reward';
 
 export const runtime = 'nodejs';
 
@@ -157,36 +158,16 @@ export async function POST(req: NextRequest) {
   });
   console.log(`[stripe-webhook] granted ${days}d ${tier} pass to ${accountId} (session ${reference}), expires ${expiresAt}`);
 
-  // Referral reward (Adrian, 2026-08-28): when the payer was invited, the
-  // inviter earns — a PAYING inviter gets +7 days automatically (idempotent:
-  // referral:<session id>); a TUITION inviter earns a S$10 invoice credit,
-  // which stays a human step (his invoice adjustments), so Telegram him.
-  // Fail-soft and only on the first grant — a webhook retry re-enters as
-  // duplicate above and never re-rewards.
+  // Referral reward — segmented per Adrian's 2026-08-29 call (strangers →
+  // S$10 of pass days automatically; tuition inviters → voucher-to-the-kid
+  // ping). Shared with the HitPay webhook via lib/referral-reward; fail-soft
+  // and only on the first grant — a webhook retry re-enters as duplicate
+  // above and never re-rewards.
   if (!duplicate) {
-    try {
-      const svc = getSupabaseAdmin();
-      const { data: payer } = await svc.from('portal_accounts')
-        .select('id, display_name, invited_by').eq('id', accountId).maybeSingle();
-      const inviterId = payer?.invited_by;
-      if (inviterId) {
-        const { data: inviter } = await svc.from('portal_accounts')
-          .select('id, display_name, airtable_student_id').eq('id', inviterId).maybeSingle();
-        if (inviter) {
-          const payerName = payer?.display_name || 'a new student';
-          if (inviter.airtable_student_id) {
-            await sendTelegram(`🎁 Referral: ${payerName} paid — invited by ${inviter.display_name || 'a tuition student'} (tuition). S$10 off their next invoice is due.`);
-          } else {
-            const r = await grantPass({ accountId: inviter.id, days: 7, source: 'referral', reference: `referral:${reference}` });
-            if (!r.duplicate) {
-              await sendTelegram(`🎁 Referral: ${payerName} paid — inviter ${inviter.display_name || inviterId} auto-earned +7 days (now expires ${r.expiresAt}).`);
-            }
-          }
-        }
-      }
-    } catch (e) {
-      console.error('[stripe-webhook] referral reward failed (grant unaffected):', (e as Error).message);
-    }
+    await rewardInviterForPaidPass(getSupabaseAdmin(), {
+      payerAccountId: accountId,
+      paymentReference: reference,
+    });
   }
   return NextResponse.json({ ok: true, granted: true, duplicate: duplicate ?? false, accountId, expiresAt });
 }

@@ -11,7 +11,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-export default function InviteFriend({ link }: { link: string }) {
+export default function InviteFriend({ link, tuition }: { link: string; tuition: boolean }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -78,9 +78,15 @@ export default function InviteFriend({ link }: { link: string }) {
             <p className="text-[13px] text-gray-600 leading-snug">
               Your friend gets 3 days free, then S$29 for 30 days — practice, mock papers and marking.
             </p>
-            {/* Kept generic on purpose — the reward differs by account type. */}
+            {/* The reward differs by account type (Adrian, 2026-08-29):
+                tuition students get a real-world treat (manual, ping-driven);
+                self-serve students get S$10 of pass time automatically. Both
+                fire only when the friend PAYS — so a schoolmate who is
+                already Adrian's student can never trigger one. */}
             <p className="text-[13px] text-gray-600 leading-snug">
-              You get a thank-you reward when they join 🎁
+              {tuition
+                ? 'And when your friend gets their first pass, Mr Fong sends you a treat 🎁'
+                : 'And when your friend gets their first pass, you get S$10 of pass time free 🎁'}
             </p>
             <p className="text-xs font-mono text-slate-500 bg-slate-50 border border-black/5 rounded-xl px-3 py-2 break-all select-all">
               {link}

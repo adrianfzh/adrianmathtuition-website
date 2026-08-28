@@ -40,6 +40,7 @@ import {
 } from '@/lib/portal-passes';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
+import { rewardInviterForPaidPass } from '@/lib/referral-reward';
 
 export const runtime = 'nodejs';
 
@@ -127,12 +128,18 @@ export async function POST(req: NextRequest) {
   }
   if (!accountId) return manual('no account matched');
 
-  const { expiresAt } = await grantPass({
+  const paymentReference = paymentId || `payment_request:${payload.paymentRequestId}`;
+  const { expiresAt, duplicate } = await grantPass({
     accountId,
     days: DEFAULT_PASS_DAYS,
     source: 'hitpay',
-    reference: paymentId || `payment_request:${payload.paymentRequestId}`,
+    reference: paymentReference,
   });
   console.log(`[hitpay-webhook] granted ${DEFAULT_PASS_DAYS}d pass to ${accountId} (payment ${paymentId}), expires ${expiresAt}`);
+  // Same segmented referral reward as the Stripe webhook (lib/referral-reward)
+  // — fail-soft, first grant only.
+  if (!duplicate) {
+    await rewardInviterForPaidPass(getSupabaseAdmin(), { payerAccountId: accountId, paymentReference });
+  }
   return NextResponse.json({ ok: true, granted: true, accountId, expiresAt });
 }

@@ -140,7 +140,9 @@ export async function generateRequestDraft(
         day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC',
       }),
       questions: picked,
-      answers: false,
+      // Answers page on by default (Adrian, 2026-08-29): he vets the whole
+      // PDF before the student sees it, and a practice sheet self-checks.
+      answers: true,
     });
     const blob = await put(`requests/drafts/${args.requestId}.pdf`, pdf, {
       access: 'public',

@@ -79,11 +79,23 @@ function questionHtml(q: BotWorksheetQuestion, index: number, workspace = true):
     .join('');
 
   const { src, stash } = protectWorksheetHtml(q.markdown);
-  const body = restoreWorksheetHtml(mdToHtml(src), stash);
+  let body = restoreWorksheetHtml(mdToHtml(src), stash);
+
+  // Part marks arrive as plain "[3]" at the end of each part's paragraph —
+  // float them to the right margin like a real paper (Adrian, 2026-08-29:
+  // "marks are not right-aligned"). Only a bracketed number that CLOSES a
+  // paragraph is a mark tag; [x+2] mid-sentence maths never matches.
+  let partMarks = 0;
+  body = body.replace(/\[(\d{1,2})\]\s*(<\/p>)/g, (_m, n: string, close: string) => {
+    partMarks += 1;
+    return `<span class="ws-mk">[${n}]</span>${close}`;
+  });
 
   // Parts carry their own [n] and their own spacer; a stem-only question gets
   // the total marks tag plus one marks-proportional block of working space.
-  const hasOwnMarks = q.markdown.includes('ws-mk');
+  // When the parts just got their floated tags, the per-question total is
+  // noise (the header already totals the sheet) — skip it.
+  const hasOwnMarks = q.markdown.includes('ws-mk') || partMarks > 0;
   const hasOwnSpace = q.markdown.includes('ws-sp');
   const marksTag = !hasOwnMarks && q.marks != null
     ? `<span class="ws-mk">[${q.marks} mark${q.marks === 1 ? '' : 's'}]</span>`
