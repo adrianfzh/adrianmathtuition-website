@@ -83,7 +83,7 @@ export default function RequestsClient({ initial, usedToday, cap }: { initial: R
 
       <div className={`${CARD} p-4 space-y-3`}>
         <p className="text-sm text-gray-600">
-          Need something? Ask Adrian for a worksheet, notes, or anything else — it lands straight on his phone.
+          Need something? Request a worksheet, notes, or anything else — it usually comes back within a day or two.
         </p>
 
         <div className="flex gap-2" role="radiogroup" aria-label="What kind of thing?">
@@ -188,7 +188,7 @@ export default function RequestsClient({ initial, usedToday, cap }: { initial: R
       )}
 
       <p className="text-[11px] text-gray-400">
-        Adrian sees every request the moment you send it. When it&apos;s ready, the ✅ chip appears here with your download.
+        When it&apos;s ready, the ✅ chip appears here with your download.
       </p>
     </div>
   );
