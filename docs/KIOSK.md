@@ -75,6 +75,14 @@ to their own level.** No anonymous browsing.
    so flagged rows stay in the bank for reference but never serve to students on any surface
    (kiosk, bot worksheets, portal practice). Extraction workers set the flag at write time
    (batch rule in the pipeline repo's CLAUDE.md); ~115 rows backfilled at launch.
+5c-iv. **Open-figure-flag gate** (2026-08-29, DB-side): a question whose figure Adrian
+   flagged in /admin/figures-bank (`figure_flags.status='open'`) must not serve until the
+   figure is fixed. Enforced inside the SERVING RPCs themselves — `kiosk_pool`,
+   `practice_next`, `practice_candidates` each carry
+   `and not exists (select 1 from figure_flags ff where ff.question_id=q.id and ff.status='open')`
+   (migration `open_flag_exclusion_serving_pools`; partial index `figure_flags_open_qid`).
+   Every consumer (kiosk, bot worksheets, portal practice, assignment picks, print) inherits
+   it, and flipping a flag to `'fixed'` auto-releases the question — no cache, no extra step.
 5c-ii. **Figure crops resolve via `lib/kiosk-worksheet-images.ts`** (fixed 2026-07-16): the
    `questions.image_url` JSON array holds bare paths (`<file>.png` /
    `question_images/<file>.png`) **or `{url,pos}` objects** (the 2025 EM batch, ~270 rows —
