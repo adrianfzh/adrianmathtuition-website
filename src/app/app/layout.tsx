@@ -12,6 +12,8 @@ import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
 import { MARKING_ONLY_BETA, NOTES_OPEN_TO_STUDENTS, VIEW_AS_STUDENT_COOKIE } from '@/lib/portal-beta';
 import SignOutButton from './signout-button';
+import InviteFriend from './invite-friend';
+import { inviteLinkFor } from '@/lib/portal-join';
 import { pendingAssignmentCountForSession } from '@/lib/portal-assignments';
 import ViewAsToggle from './view-as-toggle';
 import PortalTour from '@/components/PortalTour';
@@ -30,8 +32,11 @@ export const metadata: Metadata = {
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
   const isAdmin = verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
+  // Students carry their invite link in the top bar; admin sessions have no
+  // portal account, so no button.
+  let inviteRef: string | null = null;
   if (!isAdmin) {
-    // Auth + paywall gate. currentAccount() bounces anonymous (and
+  // Auth + paywall gate. currentAccount() bounces anonymous (and
     // account-less) sessions to /login; it costs nothing extra — the same
     // per-request-cached lookups (lib/portal-auth cache()) every page below
     // already makes. portalAccessAllowed (lib/portal-passes) short-circuits
@@ -43,6 +48,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     // the redirect can never loop.
     const account = await currentAccount();
     if (!(await portalAccessAllowed(account))) redirect('/app/pass');
+    inviteRef = account.id;
   }
 
   // Marking-only beta (lib/portal-beta.ts, Adrian 2026-08-21): students see
@@ -123,6 +129,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <DesktopLinks items={desktopLinks} pendingWork={pendingWork} />
           </div>
           <div className="flex items-center gap-4">
+            {inviteRef && <InviteFriend link={inviteLinkFor(inviteRef)} />}
             <Link href="/app/settings" data-tour="settings" className="text-sm text-gray-600 hover:text-navy">Settings</Link>
             <SignOutButton />
           </div>

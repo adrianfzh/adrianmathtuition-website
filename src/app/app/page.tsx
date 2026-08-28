@@ -1,5 +1,6 @@
 // /app — Dashboard. Server component: assembles data directly via
 // getDashboardData (same source as /api/portal/dashboard).
+import { Suspense, cache } from 'react';
 import Link from 'next/link';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { getDashboardData } from '@/lib/portal-dashboard';
@@ -15,11 +16,9 @@ import { loadPapersAndNotebook } from '@/lib/notebook-data';
 import { buildPlan } from '@/lib/plan';
 import { sgtToday } from '@/lib/notebook';
 import { activeAnnouncement } from '@/lib/portal-announcement';
-import { inviteLinkFor } from '@/lib/portal-join';
 import PortalAnnouncementCard from '@/components/PortalAnnouncementCard';
 import { SURFACES } from '@/lib/portal-theme';
 import PortalIcon from '@/components/PortalIcon';
-import InviteFriend from './invite-friend';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,30 +52,32 @@ export default async function DashboardPage() {
   // rec… for tuition, acct:<uuid> for strangers — the key every portal-owned
   // Supabase table uses (lib/portal-auth.portalIdentity).
   const sid = portalIdentity(account);
-  const [d, todayCards, assignments, counts] = await Promise.all([
-    getDashboardData(account),
+  // The Airtable-backed lesson data (getDashboardData) is deliberately NOT
+  // awaited here — it's the slowest fetch on the page (~0.5–1.5s cold), so it
+  // streams in via the two <Suspense> islands below and the shell paints
+  // immediately after login (Adrian, 2026-08-28: "still taking a bit of time
+  // to load initially"). Everything awaited here is fast Supabase.
+  const [todayCards, assignments, counts, focus] = await Promise.all([
     learnVisible ? getTodayCards(account).catch(() => []) : Promise.resolve([]),
     // "From Adrian" assigned work (SPEC-ASSIGN.md) — fail-soft, hidden at zero.
     listStudentAssignments(sid).catch(() => []),
     // Live numbers on the Hand in / Marked tiles — fail-soft zeros.
     homeCounts(sid),
+    // This week's focus (Adrian, 2026-08-28): the Plan TAB is gone — real
+    // suggestions surface HERE, and only when they exist. Fail-soft.
+    (async () => {
+      try {
+        const res = await loadPapersAndNotebook(createServiceClient(), sid, sgtToday());
+        if (!res.ok) return [];
+        return buildPlan(res.papers, res.entries.map(e => ({
+          topic: e.topic, attempts: e.attempts,
+          questionNumber: e.question_number, paperName: e.paper_name,
+        }))).focus;
+      } catch { return []; }
+    })(),
   ]);
   const pendingWork = assignments.filter(a => isPending(a.status));
   const workSummary = homeCardSummary(assignments);
-
-  // This week's focus (Adrian, 2026-08-28): the Plan TAB is gone — real
-  // suggestions surface HERE, and only when they exist. Fail-soft: a plan
-  // that can't load just means no card.
-  const focus = await (async () => {
-    try {
-      const res = await loadPapersAndNotebook(createServiceClient(), sid, sgtToday());
-      if (!res.ok) return [];
-      return buildPlan(res.papers, res.entries.map(e => ({
-        topic: e.topic, attempts: e.attempts,
-        questionNumber: e.question_number, paperName: e.paper_name,
-      }))).focus;
-    } catch { return []; }
-  })();
   const announcement = activeAnnouncement();
 
   // Home visual language (2026-08-22, lib/portal-theme.ts): soft elevated
@@ -89,12 +90,8 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-4 pb-20 sm:pb-4">
-      <h1 className="text-2xl font-bold text-navy pt-1 tracking-tight">Hi {d.firstName} 👋</h1>
+      <h1 className="text-2xl font-bold text-navy pt-1 tracking-tight">Hi {(account.display_name || 'there').split(' ')[0]} 👋</h1>
 
-      {/* 🎟 Invite a friend — every student, beta included (invite/paywall
-          build 2026-08-28). The link is the student's personal /join?ref=…;
-          a referred friend gets a 3-day trial, then the S$29/30-day pass. */}
-      <InviteFriend link={inviteLinkFor(account.id)} />
 
       {/* Release announcement — HOME ONLY (Adrian, 2026-08-28: not on every
           tab). One card, dismissible, auto-expires via `until`. */}
@@ -189,44 +186,13 @@ export default async function DashboardPage() {
           📖 Notes
         </Link>
         <Link href="/app/requests" className={`${card} !py-3 flex-1 text-center text-sm font-semibold text-navy active:scale-95 transition-transform select-none`}>
-          🙋 Requests
+          🙋 Request materials
         </Link>
       </div>
 
-      {/* Next lesson — information, not an action, so a slim row rather than
-          a card that competes with the tiles below. */}
-      <div className={`${card} !py-3.5 flex items-center gap-3`}>
-        <span className={`flex items-center justify-center w-10 h-10 rounded-2xl shrink-0 ${L.tile}`}><PortalIcon name={L.icon} className="w-5 h-5" /></span>
-        <div className="min-w-0 flex-1">
-          <p className={caption}>Next lesson</p>
-          {d.nextLesson ? (
-            <p className="text-base font-bold text-navy truncate">
-              {friendlyDate(d.nextLesson.date)}
-              <span className="ml-2 font-medium text-slate-500 text-sm">{d.nextLesson.slotLabel}</span>
-            </p>
-          ) : (
-            <p className="text-sm text-slate-500">Nothing scheduled yet</p>
-          )}
-        </div>
-        {d.nextLesson && d.nextLesson.type !== 'Regular' && (
-          <span className="text-[11px] bg-blue-50 text-blue-700 rounded-full px-2.5 py-1 font-semibold shrink-0">{d.nextLesson.type}</span>
-        )}
-        {d.nextLesson && (
-          <Link href="/app/reschedule" className="shrink-0 text-xs font-semibold text-slate-500 hover:text-navy border border-black/10 rounded-full px-3 py-1.5">
-            Change
-          </Link>
-        )}
-      </div>
-
-      {/* Week stats — the "lessons done / coming up" pills were dropped on
-          Adrian's request (2026-08-21); only the practice count remains, and
-          only on the full portal. */}
-      {fullPortal && (
-        <div className={`${card} flex items-baseline gap-2`}>
-          <p className="text-2xl font-bold text-navy">{d.attemptsThisWeek}</p>
-          <p className="text-xs text-gray-500">questions practised this week</p>
-        </div>
-      )}
+      <Suspense fallback={<div className={`${card} !py-3.5 h-[68px] animate-pulse`} />}>
+        <NextLessonAndStats account={account} fullPortal={fullPortal} card={card} caption={caption} />
+      </Suspense>
 
       {/* Quick actions */}
       {fullPortal ? (
@@ -320,6 +286,72 @@ export default async function DashboardPage() {
         </Link>
       )}
 
+      <Suspense fallback={null}>
+        <LessonRecap account={account} fullPortal={fullPortal} card={card} caption={caption} />
+      </Suspense>
+    </div>
+  );
+}
+
+
+// ── Streaming islands ────────────────────────────────────────────────────────
+// Both await the SAME per-request-deduped fetch (React cache() below — the
+// module's own 60s Map cache doesn't dedupe two CONCURRENT misses), so the
+// two islands cost one Airtable round trip between them — off the shell's
+// critical path.
+const dashboardOnce = cache(getDashboardData);
+
+async function NextLessonAndStats({ account, fullPortal, card, caption }: {
+  account: Awaited<ReturnType<typeof currentAccount>>; fullPortal: boolean; card: string; caption: string;
+}) {
+  const d = await dashboardOnce(account);
+  const L = SURFACES.lesson;
+  return (
+    <>
+      {/* Next lesson — information, not an action, so a slim row rather than
+          a card that competes with the tiles below. */}
+      <div className={`${card} !py-3.5 flex items-center gap-3`}>
+        <span className={`flex items-center justify-center w-10 h-10 rounded-2xl shrink-0 ${L.tile}`}><PortalIcon name={L.icon} className="w-5 h-5" /></span>
+        <div className="min-w-0 flex-1">
+          <p className={caption}>Next lesson</p>
+          {d.nextLesson ? (
+            <p className="text-base font-bold text-navy truncate">
+              {friendlyDate(d.nextLesson.date)}
+              <span className="ml-2 font-medium text-slate-500 text-sm">{d.nextLesson.slotLabel}</span>
+            </p>
+          ) : (
+            <p className="text-sm text-slate-500">Nothing scheduled yet</p>
+          )}
+        </div>
+        {d.nextLesson && d.nextLesson.type !== 'Regular' && (
+          <span className="text-[11px] bg-blue-50 text-blue-700 rounded-full px-2.5 py-1 font-semibold shrink-0">{d.nextLesson.type}</span>
+        )}
+        {d.nextLesson && (
+          <Link href="/app/reschedule" className="shrink-0 text-xs font-semibold text-slate-500 hover:text-navy border border-black/10 rounded-full px-3 py-1.5">
+            Change
+          </Link>
+        )}
+      </div>
+
+      {/* Week stats — the "lessons done / coming up" pills were dropped on
+          Adrian's request (2026-08-21); only the practice count remains, and
+          only on the full portal. */}
+      {fullPortal && (
+        <div className={`${card} flex items-baseline gap-2`}>
+          <p className="text-2xl font-bold text-navy">{d.attemptsThisWeek}</p>
+          <p className="text-xs text-gray-500">questions practised this week</p>
+        </div>
+      )}
+    </>
+  );
+}
+
+async function LessonRecap({ account, fullPortal, card, caption }: {
+  account: Awaited<ReturnType<typeof currentAccount>>; fullPortal: boolean; card: string; caption: string;
+}) {
+  const d = await dashboardOnce(account);
+  return (
+    <>
       {/* Last lesson topics + homework */}
       {(d.lastTopics.length > 0 || d.homeworkAssigned) && (
         <div className={card}>
@@ -362,6 +394,6 @@ export default async function DashboardPage() {
         )}
       </div>
       )}
-    </div>
+    </>
   );
 }

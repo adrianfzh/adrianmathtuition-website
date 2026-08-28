@@ -402,7 +402,7 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
           <p className="font-semibold text-navy">Hi{firstName ? ` ${firstName}` : ''}! Stuck on a question?</p>
           <p className="text-sm text-gray-600 mt-2 leading-relaxed">
             Type it out or send a photo — you&rsquo;ll get a clear, step-by-step solution.
-            Mr Fong sees what you ask, so lessons can pick up exactly where you got stuck.
+            Adrian sees what you ask, so lessons can pick up exactly where you got stuck.
           </p>
         </div>
       )}

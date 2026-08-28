@@ -77,13 +77,13 @@ export default function RequestsClient({ initial, usedToday, cap }: { initial: R
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
       <div className="flex items-baseline justify-between pt-1">
-        <h1 className="text-xl font-bold text-navy">🙋 Requests</h1>
+        <h1 className="text-xl font-bold text-navy">🙋 Request materials</h1>
         <Link href="/app" className="text-sm text-gray-500 hover:text-navy">← Home</Link>
       </div>
 
       <div className={`${CARD} p-4 space-y-3`}>
         <p className="text-sm text-gray-600">
-          Need something? Ask Mr Fong for a worksheet, notes, or anything else — it lands straight on his phone.
+          Need something? Ask Adrian for a worksheet, notes, or anything else — it lands straight on his phone.
         </p>
 
         <div className="flex gap-2" role="radiogroup" aria-label="What kind of thing?">
@@ -117,7 +117,7 @@ export default function RequestsClient({ initial, usedToday, cap }: { initial: R
 
         {error && <p className="text-sm text-red-600">{error}</p>}
         {sentFlash && !error && (
-          <p className="text-sm text-emerald-700">✅ Sent — Mr Fong has been pinged. Watch this page for the result.</p>
+          <p className="text-sm text-emerald-700">✅ Sent — Adrian has been pinged. Watch this page for the result.</p>
         )}
 
         {capped ? (
@@ -188,7 +188,7 @@ export default function RequestsClient({ initial, usedToday, cap }: { initial: R
       )}
 
       <p className="text-[11px] text-gray-400">
-        Mr Fong sees every request the moment you send it. When it&apos;s ready, the ✅ chip appears here with your download.
+        Adrian sees every request the moment you send it. When it&apos;s ready, the ✅ chip appears here with your download.
       </p>
     </div>
   );
