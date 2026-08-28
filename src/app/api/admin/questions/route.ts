@@ -222,6 +222,59 @@ export async function POST(req: NextRequest) {
   catch { return NextResponse.json({ error: 'invalid JSON' }, { status: 400 }); }
   const supa = getSupabaseAdmin();
 
+  // ♻️ Replace a stem-level figure (detail-panel button): the new image is
+  // uploaded as a NEW bucket object — the original stays in question_images,
+  // so rollback is just repointing image_url back — then whichever of
+  // figure_url / image_url entries resolved to oldUrl is repointed at it.
+  // Base64 in JSON keeps well under Vercel's 4.5MB body cap (client caps 3MB).
+  if (body.action === 'replace-figure') {
+    const id = typeof body.id === 'string' ? body.id : '';
+    const oldUrl = typeof body.oldUrl === 'string' ? body.oldUrl : '';
+    const b64 = typeof body.imageBase64 === 'string' ? body.imageBase64 : '';
+    const mediaType = typeof body.mediaType === 'string' && /^image\/(png|jpeg|webp)$/.test(body.mediaType)
+      ? body.mediaType : 'image/png';
+    if (!id || !oldUrl || !b64) return NextResponse.json({ error: 'id, oldUrl and imageBase64 required' }, { status: 400 });
+    let bytes: Buffer;
+    try { bytes = Buffer.from(b64, 'base64'); } catch { return NextResponse.json({ error: 'bad base64' }, { status: 400 }); }
+    if (!bytes.length || bytes.length > 3_500_000) return NextResponse.json({ error: 'image must be under 3.5MB' }, { status: 413 });
+
+    const { data: row, error } = await supa.from('questions').select('id, figure_url, image_url').eq('id', id).single();
+    if (error || !row) return NextResponse.json({ error: 'question not found' }, { status: 404 });
+
+    // Work out the repoint BEFORE uploading, so a mismatch never orphans a
+    // bucket object. newPath is decided up front and only written on success.
+    const ext = mediaType === 'image/jpeg' ? 'jpg' : mediaType === 'image/webp' ? 'webp' : 'png';
+    const name = `${crypto.randomUUID()}.${ext}`;
+    const newPath = `question_images/${name}`;
+    const patch: Record<string, unknown> = {};
+    let matched = false;
+    if (typeof row.figure_url === 'string' && row.figure_url === oldUrl) {
+      patch.figure_url = imgSrc(newPath);
+      matched = true;
+    }
+    if (typeof row.image_url === 'string' && row.image_url) {
+      try {
+        const arr = JSON.parse(row.image_url);
+        if (Array.isArray(arr)) {
+          const next = arr.map((entry: unknown) => {
+            const p = entry && typeof entry === 'object' ? (entry as { url?: unknown }).url : entry;
+            if (!isPlausibleImagePath(p) || imgSrc(p) !== oldUrl) return entry;
+            matched = true;
+            return entry && typeof entry === 'object' ? { ...(entry as object), url: newPath } : newPath;
+          });
+          if (JSON.stringify(next) !== JSON.stringify(arr)) patch.image_url = JSON.stringify(next);
+        }
+      } catch { /* unparseable image_url — fall through to the not-found check */ }
+    }
+    if (!matched) return NextResponse.json({ error: 'that figure is not on this question (stem-level figures only)' }, { status: 404 });
+
+    const up = await supa.storage.from('question_images').upload(name, bytes, { contentType: mediaType });
+    if (up.error) return NextResponse.json({ error: `upload failed: ${up.error.message}` }, { status: 500 });
+    const upd = await supa.from('questions').update(patch).eq('id', id);
+    if (upd.error) return NextResponse.json({ error: upd.error.message }, { status: 500 });
+    return NextResponse.json({ url: imgSrc(newPath) });
+  }
+
   // Smart search: the bot owns the embeddings + OCR (OpenAI key lives there);
   // we send text or a photo, get ranked ids back, and render the cards.
   if (body.action === 'semantic') {

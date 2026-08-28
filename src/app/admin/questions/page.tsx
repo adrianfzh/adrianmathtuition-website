@@ -105,6 +105,9 @@ export default function QuestionBankPage() {
   const [pdfAnswerKey, setPdfAnswerKey] = useState(true);
   const [pdfOrigNum, setPdfOrigNum] = useState(true);
   const [pdfTitle, setPdfTitle] = useState(''); // blank → the auto title shown as placeholder
+  const replaceRef = useRef<HTMLInputElement | null>(null);
+  const [replaceTarget, setReplaceTarget] = useState<string | null>(null); // figure URL being replaced
+  const [replBusy, setReplBusy] = useState(false);
   const [cardCache, setCardCache] = useState<Record<string, Card>>({});
 
   const [students, setStudents] = useState<{ id: string; name: string; level: string }[]>([]);
@@ -404,6 +407,36 @@ export default function QuestionBankPage() {
     finally { setSolBusy(false); }
   };
 
+  // ♻️ Replace a stem-level figure: original pixels, no recompression — the
+  // API stores it as a new bucket object and repoints this question at it.
+  const onReplaceFigurePicked = async (file: File | null) => {
+    if (!file || !openDetail || !replaceTarget) return;
+    if (file.size > 3_000_000) { flash('Image too big — keep it under 3MB'); return; }
+    setReplBusy(true);
+    try {
+      const dataUrl = await new Promise<string>((res, rej) => {
+        const fr = new FileReader();
+        fr.onload = () => res(fr.result as string);
+        fr.onerror = () => rej(new Error('could not read file'));
+        fr.readAsDataURL(file);
+      });
+      const r = await fetch('/api/admin/questions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'replace-figure', id: openDetail.id, oldUrl: replaceTarget,
+          imageBase64: dataUrl.split(',')[1], mediaType: file.type || 'image/png',
+        }),
+      });
+      const d = await r.json();
+      if (d.error) { flash(d.error); return; }
+      const updated = { ...openDetail, images: openDetail.images.map(x => (x === replaceTarget ? (d.url as string) : x)) };
+      setOpenDetail(updated);
+      rememberDetails([updated]);
+      flash('Figure replaced');
+    } catch (e) { flash((e as Error).message); }
+    finally { setReplBusy(false); setReplaceTarget(null); }
+  };
+
   // ── camera → OCR → smart search ────────────────────────────────────────────
   const onPhotoPicked = async (file: File | null) => {
     if (!file) return;
@@ -528,7 +561,20 @@ export default function QuestionBankPage() {
           <button onClick={() => setOpenDetail(null)} style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer' }}>✕ Close</button>
         </span>
       </div>
-      {openDetail.images.map(u => <img key={u} src={u} alt="figure" style={{ maxWidth: '100%', borderRadius: 8, margin: '6px 0' }} />)}
+      {openDetail.images.map(u => (
+        <div key={u} style={{ position: 'relative', margin: '6px 0' }}>
+          <img src={u} alt="figure" style={{ maxWidth: '100%', borderRadius: 8, display: 'block' }} />
+          <button
+            onClick={() => { setReplaceTarget(u); replaceRef.current?.click(); }} disabled={replBusy}
+            style={{ position: 'absolute', top: 6, right: 6, fontSize: 11.5, border: `1px solid ${C.border}`, background: 'rgba(255,255,255,.92)', borderRadius: 6, padding: '2px 8px', cursor: 'pointer', opacity: replBusy ? 0.6 : 1 }}>
+            {replBusy && replaceTarget === u ? 'Uploading…' : '♻️ Replace'}
+          </button>
+        </div>
+      ))}
+      <input
+        ref={replaceRef} type="file" accept="image/png,image/jpeg,image/webp" hidden
+        onChange={e => { const f = e.target.files?.[0] ?? null; e.target.value = ''; onReplaceFigurePicked(f); }}
+      />
       <div style={{ fontSize: 15, lineHeight: 1.55 }}><MathBlock text={openDetail.questionMd} /></div>
       {openDetail.parts.map(pt => partBlock(pt))}
       <div style={{ marginTop: 12, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
