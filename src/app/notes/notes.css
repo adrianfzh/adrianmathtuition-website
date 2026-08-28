@@ -724,9 +724,13 @@ a.nx-eyebrow:hover {
   margin-top: 1.5rem;
 }
 
+/* Each worked example is one unmistakable card: a tinted title band on top,
+   the working below, real air between neighbours — "the four worked examples,
+   it is hard to distinguish one from the other" (Adrian, 2026-08-29). */
 .nx-ex {
-  margin: 1rem 0 0;
-  padding: 1.25rem 1.4rem 1.35rem;
+  margin: 1.75rem 0 0;
+  padding: 0;
+  overflow: hidden;
   background: var(--color-fd-card);
   border: 1px solid var(--nx-hairline);
   border-radius: var(--nx-radius);
@@ -738,23 +742,26 @@ a.nx-eyebrow:hover {
   display: flex;
   align-items: center;
   gap: 0.7rem;
-  margin: 0 0 0.95rem;
-  padding-bottom: 0.8rem;
-  border-bottom: 1px solid var(--nx-hairline);
+  margin: 0;
+  padding: 0.75rem 1.4rem;
+  background: var(--nx-cream-chip);
+  border-bottom: 1px solid var(--nx-amber-line);
+}
+.nx-ex-body {
+  padding: 1.1rem 1.4rem 1.3rem;
 }
 .nx-ex-no {
   flex: none;
   display: grid;
   place-items: center;
-  width: 1.6rem;
-  height: 1.6rem;
-  border-radius: 7px;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 999px;
   font-family: var(--nx-mono);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  color: var(--nx-navy);
-  background: var(--nx-cream-chip);
-  border: 1px solid var(--nx-amber-line);
+  color: var(--nx-cream);
+  background: var(--nx-navy);
 }
 .nx-ex-title {
   font-family: var(--nx-sans);
@@ -1104,7 +1111,8 @@ a.nx-eyebrow:hover {
  * the content column is maths width — pull the card padding in rather than let
  * an equation scroll that would otherwise have fitted. */
 @media (max-width: 560px) {
-  .nx-ex,
+  .nx-ex-head,
+  .nx-ex-body,
   .nx-revision,
   .nx-rc {
     padding-left: 0.9rem;

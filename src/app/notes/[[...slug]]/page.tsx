@@ -15,7 +15,7 @@ async function notesAdmin(): Promise<boolean> {
   const [a, vs] = await Promise.all([isNotesAuthed(), viewingAsStudent()]);
   return a && !vs;
 }
-import { approvedSections, hasApprovedUnits } from '@/lib/notes-units';
+import { approvedSections } from '@/lib/notes-units';
 import { getLevelIndex, getNotesTree, getSubgroupPage, getTopicPage } from '@/lib/notes-data';
 import { cleanDescription, cleanTitle } from '@/lib/notes-text';
 import {
@@ -145,20 +145,29 @@ const LEVEL_HERO: Record<string, { chip: string; blurb: string }> = {
   },
 };
 
-function LevelChooser() {
+async function LevelChooser() {
+  // Topic counts give the tiles information scent (Adrian, 2026-08-29: the
+  // bare tiles "can be made better") without turning the chooser back into a
+  // list. Counts come from the same query the level index uses, so they can
+  // never disagree with the page behind the tile.
+  const counts = await Promise.all(
+    NOTES_LEVELS.map(async l => (await getLevelIndex(l.code)).length),
+  );
   return (
     <PageFrame
       header={
         <>
           <p className="nx-eyebrow">Notes</p>
           <h1 className="nx-title">Revision Notes</h1>
+          <p className="nx-lede">Worked examples for every topic — pick your level.</p>
           <hr className="nx-rule" />
         </>
       }
     >
       <div className="nx-heroes">
-        {NOTES_LEVELS.map(l => {
+        {NOTES_LEVELS.map((l, i) => {
           const hero = LEVEL_HERO[l.code];
+          const n = counts[i];
           return (
             <Link
               key={l.code}
@@ -176,7 +185,7 @@ function LevelChooser() {
                 <span className="nx-hero-title">{l.label}</span>
                 {hero && <span className="nx-hero-sub">{hero.blurb}</span>}
                 <span className="nx-hero-cta">
-                  Browse topics
+                  {n > 0 ? `Browse ${plural(n, 'topic')}` : 'Browse topics'}
                   <Chevron />
                 </span>
               </span>
@@ -250,45 +259,29 @@ async function TopicIndex({ level, topicSlugParam }: { level: string; topicSlugP
 
   const url = topicUrl(level, data.topic);
 
-  // Learning units. The reviewer reads everything; a student reads what has
-  // been approved. Approving a topic also retires its old sub-group list —
-  // that's `converted` below, and it flips per topic as Adrian reviews.
+  // Revision-only topic page (Adrian, 2026-08-29 phone review): the old page
+  // stacked key facts, techniques, watch-outs, concept dropdowns AND the
+  // examples — "teaching from scratch and revising at the same time". A
+  // student revising gets exactly the worked examples; the whole teaching
+  // stack lives on `${url}/learn` (LearnPage below).
   const sections = admin ? data.unitSections : approvedSections(data.unitSections);
-  const converted = hasApprovedUnits(data.unitSections);
-  // Two sections per topic (Adrian, 2026-08-28): Notes & formulas (the
-  // concept dropdowns + quick revision) and Worked examples (the example
-  // pages). Each shows whenever it has content — a converted topic no longer
-  // hides its examples.
+  const hasLearn =
+    sections.length > 0 || Boolean(data.card?.content_md && (admin || data.card.status === 'published'));
   const showPages = data.subgroups.length > 0;
-  const pending = data.unitSections.reduce(
-    (n, s) =>
-      n +
-      s.units.filter(u => u.draft && !u.flagged).length +
-      (s.lead && s.lead.draft && !s.lead.flagged ? 1 : 0),
-    0,
-  );
-  const flagged = data.unitSections.reduce(
-    (n, s) => n + s.units.filter(u => u.flagged).length + (s.lead?.flagged ? 1 : 0),
-    0,
-  );
-  const fixed = data.unitSections.reduce(
-    (n, s) => n + s.units.filter(u => u.fixedNote).length + (s.lead?.fixedNote ? 1 : 0),
-    0,
-  );
-
-  const toc = [
-    data.card?.content_md && { title: 'Quick revision', url: `#${ANCHOR.revision}`, depth: 2 },
-    // One entry per concept dropdown; the anchor sits on the <details> row, so
-    // the link works whether or not the student has opened it.
-    ...sections.map(s => ({ title: s.title, url: `#${s.id}`, depth: 2 })),
-    showPages && { title: 'Worked examples', url: `#${ANCHOR.pages}`, depth: 2 },
-  ].filter(Boolean) as TocEntry[];
+  const pending = admin
+    ? data.unitSections.reduce(
+        (n, s) =>
+          n +
+          s.units.filter(u => u.draft && !u.flagged).length +
+          (s.lead && s.lead.draft && !s.lead.flagged ? 1 : 0),
+        0,
+      )
+    : 0;
 
   const { previous, next } = await footerFor(level, url);
 
   return (
     <PageFrame
-      toc={toc}
       previous={previous}
       next={next}
       header={
@@ -319,54 +312,7 @@ async function TopicIndex({ level, topicSlugParam }: { level: string; topicSlugP
         </>
       }
     >
-      {admin && data.unitSections.length > 0 && (
-        <ReviewBar
-          level={level}
-          topic={data.topic}
-          pending={pending}
-          flagged={flagged}
-          fixed={fixed}
-        />
-      )}
-
-      {/* The recall-card ("Key concepts") grid and the counts pills are gone
-          — Adrian, 2026-08-21: a topic page is the list of concept dropdowns
-          below, each named for what the student wants to do; open one and the
-          explanation begins. The formula + remember content the cards carried
-          lives on inside each dropdown's Big Idea. */}
-
-      {/* Quick-revision card, when the topic has one. Its own title is dropped:
-          it always restates the topic, which is already the page heading.
-          Students only see published cards — drafts are the reviewer's. */}
-      {data.card?.content_md && (admin || data.card.status === 'published') && (
-        <section className="nx-revision">
-          <header className="nx-revision-head">
-            <span className="nx-eyebrow" id={ANCHOR.revision}>
-              Quick revision
-            </span>
-            {data.card.status === 'draft' && <span className="nx-draft">Draft</span>}
-          </header>
-          <NotesMarkdown content={data.card.content_md} className="nx-revision-body" />
-        </section>
-      )}
-
-      {/* Interactive tools deliberately do NOT render here (Adrian,
-          2026-08-06): the recap page is for reading; tools belong to the
-          interactive lesson-unit surface. The dedicated tool pages still
-          exist for unconverted topics via the browse panel. */}
-
-      {/* The lesson itself — one dropdown per concept. On an unapproved topic
-          it renders above the old sub-group list so both formats can be
-          compared; the moment the topic has approved blocks, the old list
-          retires. */}
-      {sections.length > 0 && (
-        <>
-          <h2 className="nx-section">Notes &amp; formulas</h2>
-          <NotesUnits sections={sections} admin={admin} />
-        </>
-      )}
-
-      {showPages && (
+      {showPages ? (
         <section>
           <h2 id={ANCHOR.pages} className="nx-section">
             Worked examples
@@ -383,6 +329,108 @@ async function TopicIndex({ level, topicSlugParam }: { level: string; topicSlugP
             ))}
           </div>
         </section>
+      ) : (
+        <p className="nx-lede">Worked examples for this topic are being prepared.</p>
+      )}
+
+      {/* The teaching stack, one click away — never interleaved with revision. */}
+      {hasLearn && (
+        <CardLink
+          href={`${url}/learn`}
+          title="📖 Learn this topic from scratch"
+          description="Key ideas, formulas and techniques, step by step — for the first time round, not revision."
+          count={admin && pending > 0 ? `${pending} to review` : undefined}
+        />
+      )}
+    </PageFrame>
+  );
+}
+
+// ── Learn page (the teaching stack, split out of the topic page) ─────────────
+
+async function LearnPage({ level, topicSlugParam }: { level: string; topicSlugParam: string }) {
+  const [data, admin] = await Promise.all([
+    getTopicPage(level, topicSlugParam),
+    notesAdmin(),
+  ]);
+  if (!data) notFound();
+
+  const url = topicUrl(level, data.topic);
+  const sections = admin ? data.unitSections : approvedSections(data.unitSections);
+  const showCard = Boolean(
+    data.card?.content_md && (admin || data.card?.status === 'published'),
+  );
+  if (sections.length === 0 && !showCard) notFound();
+
+  const pending = data.unitSections.reduce(
+    (n, s) =>
+      n +
+      s.units.filter(u => u.draft && !u.flagged).length +
+      (s.lead && s.lead.draft && !s.lead.flagged ? 1 : 0),
+    0,
+  );
+  const flagged = data.unitSections.reduce(
+    (n, s) => n + s.units.filter(u => u.flagged).length + (s.lead?.flagged ? 1 : 0),
+    0,
+  );
+  const fixed = data.unitSections.reduce(
+    (n, s) => n + s.units.filter(u => u.fixedNote).length + (s.lead?.fixedNote ? 1 : 0),
+    0,
+  );
+
+  const toc = [
+    showCard && { title: 'Quick revision', url: `#${ANCHOR.revision}`, depth: 2 },
+    // One entry per concept dropdown; the anchor sits on the <details> row, so
+    // the link works whether or not the student has opened it.
+    ...sections.map(s => ({ title: s.title, url: `#${s.id}`, depth: 2 })),
+  ].filter(Boolean) as TocEntry[];
+
+  return (
+    <PageFrame
+      toc={toc}
+      header={
+        <>
+          <BackLink href={url}>{data.topic}</BackLink>
+          <h1 className="nx-title">Learn from scratch</h1>
+          <p className="nx-lede">
+            The full teaching version of {data.topic} — key ideas, formulas and techniques.
+            Revising instead? The worked examples live one page back.
+          </p>
+          <hr className="nx-rule" />
+        </>
+      }
+    >
+      {admin && data.unitSections.length > 0 && (
+        <ReviewBar
+          level={level}
+          topic={data.topic}
+          pending={pending}
+          flagged={flagged}
+          fixed={fixed}
+        />
+      )}
+
+      {/* Quick-revision card, when the topic has one. Its own title is dropped:
+          it always restates the topic, which is already the page heading.
+          Students only see published cards — drafts are the reviewer's. */}
+      {showCard && data.card?.content_md && (
+        <section className="nx-revision">
+          <header className="nx-revision-head">
+            <span className="nx-eyebrow" id={ANCHOR.revision}>
+              Quick revision
+            </span>
+            {data.card.status === 'draft' && <span className="nx-draft">Draft</span>}
+          </header>
+          <NotesMarkdown content={data.card.content_md} className="nx-revision-body" />
+        </section>
+      )}
+
+      {/* The lesson itself — one dropdown per concept. */}
+      {sections.length > 0 && (
+        <>
+          <h2 className="nx-section">Notes &amp; formulas</h2>
+          <NotesUnits sections={sections} admin={admin} />
+        </>
       )}
     </PageFrame>
   );
@@ -407,7 +455,9 @@ function Example({ snippet }: { snippet: NumberedSnippet }) {
         <span className="nx-ex-no">{snippet.n}</span>
         <h3 className="nx-ex-title">{title || `Worked example ${snippet.n}`}</h3>
       </header>
-      <NotesMarkdown content={snippet.content} />
+      <div className="nx-ex-body">
+        <NotesMarkdown content={snippet.content} />
+      </div>
     </article>
   );
 }
@@ -523,6 +573,9 @@ export default async function Page({
   if (slug.length === 1) return <LevelIndex level={level} />;
   if (slug.length === 2) return <TopicIndex level={level} topicSlugParam={slug[1]} />;
   if (slug.length === 3) {
+    // No sub-group slugs to 'learn' (checked against all 1,127 names,
+    // 2026-08-29), so the teaching stack owns that segment.
+    if (slug[2] === 'learn') return <LearnPage level={level} topicSlugParam={slug[1]} />;
     return <SubgroupPage level={level} topicSlugParam={slug[1]} subgroupSlug={slug[2]} />;
   }
   notFound();

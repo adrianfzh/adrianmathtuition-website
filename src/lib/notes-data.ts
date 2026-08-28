@@ -561,10 +561,12 @@ export const getSearchIndex = cache(async (level: string): Promise<SearchEntry[]
       for (let n = 2; used.has(id); n += 1) id = `${base}-${n}`;
       used.add(id);
       if (r.status !== 'approved' || !label) continue;
+      // The concept dropdowns moved off the topic page onto its /learn
+      // sub-page (2026-08-29, revision-only split) — anchors follow.
       out.push({
         label,
         context: topic,
-        url: `${topicUrl(level, topic)}#${id}`,
+        url: `${topicUrl(level, topic)}/learn#${id}`,
         kind: 'section',
       });
     }
