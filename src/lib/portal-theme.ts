@@ -10,7 +10,7 @@
 // Pure data (no React) so the server layout, client components and tests can
 // all import it. Icon names resolve in components/PortalIcon.tsx.
 
-export type SurfaceKey = 'home' | 'assignments' | 'plan' | 'practice' | 'submit' | 'marking' | 'notebook' | 'learn' | 'notes' | 'settings' | 'lesson';
+export type SurfaceKey = 'home' | 'assignments' | 'plan' | 'practice' | 'submit' | 'marking' | 'notebook' | 'learn' | 'notes' | 'settings' | 'lesson' | 'ask';
 
 export type SurfaceIdentity = {
   key: SurfaceKey;
@@ -62,6 +62,13 @@ export const SURFACES: Record<SurfaceKey, SurfaceIdentity> = {
   notes: {
     key: 'notes', label: 'Notes', icon: 'book',
     tile: 'bg-sky-500 text-white', text: 'text-sky-700', tint: 'bg-sky-50', ring: 'ring-sky-400/60',
+  },
+  ask: {
+    /* The centre FAB wore the home glyph until 2026-08-29 ('/app/ask' had no
+     * surface, so surfaceForHref fell back to 'home' — Adrian: "home button
+     * already has the home icon"). */
+    key: 'ask', label: 'Ask Bot', icon: 'chat',
+    tile: 'bg-indigo-500 text-white', text: 'text-indigo-700', tint: 'bg-indigo-50', ring: 'ring-indigo-400/60',
   },
   settings: {
     key: 'settings', label: 'Settings', icon: 'settings',

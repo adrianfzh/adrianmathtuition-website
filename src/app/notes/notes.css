@@ -273,8 +273,8 @@ a.nx-eyebrow:hover {
   --nx-hero-grid: hsl(0 0% 100% / 0.055);
   /* Painted as background layers, not pseudo-elements, so they can never end
    * up over the text. */
-  --nx-hero-bloom: hsl(38 92% 58% / 0.3);
-  --nx-hero-bloom2: hsl(188 75% 55% / 0.22);
+  --nx-hero-bloom: hsl(38 92% 58% / 0.5);
+  --nx-hero-bloom2: hsl(188 80% 55% / 0.42);
 
   display: flex;
   flex-direction: column;
@@ -303,8 +303,8 @@ a.nx-eyebrow:hover {
   --nx-hero-cta: var(--nx-navy);
   --nx-hero-glow: hsl(45 90% 45% / 0.5);
   --nx-hero-grid: hsl(220 60% 20% / 0.07);
-  --nx-hero-bloom: hsl(0 0% 100% / 0.3);
-  --nx-hero-bloom2: hsl(16 90% 58% / 0.26);
+  --nx-hero-bloom: hsl(0 0% 100% / 0.42);
+  --nx-hero-bloom2: hsl(16 92% 56% / 0.45);
 }
 .nx-hero:hover {
   filter: brightness(1.06);
@@ -330,11 +330,18 @@ a.nx-eyebrow:hover {
   width: 2.75rem;
   height: 2.75rem;
   border-radius: 16px;
-  background: var(--nx-hero-chip);
+  background: linear-gradient(135deg, hsl(43 96% 60%), hsl(35 92% 50%));
+  color: var(--nx-navy);
   font-size: 0.9375rem;
   font-weight: 800;
   letter-spacing: 0.03em;
   line-height: 1;
+  box-shadow: 0 4px 10px -4px hsl(38 90% 40% / 0.6);
+}
+.nx-hero[data-level='EM'] .nx-hero-chip {
+  background: linear-gradient(135deg, #24466b, var(--nx-navy));
+  color: hsl(43 96% 62%);
+  box-shadow: 0 4px 10px -4px hsl(220 60% 20% / 0.5);
 }
 /* margin-top:auto pins the copy to the bottom of the tile — the shape of the
  * portal's "Practise" hero. */
@@ -365,18 +372,29 @@ a.nx-eyebrow:hover {
   margin-top: 0.65rem;
 }
 .nx-hero-topic {
-  padding: 0.18rem 0.55rem;
+  padding: 0.2rem 0.6rem;
   border-radius: 999px;
   background: var(--nx-hero-chip);
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.4;
   white-space: nowrap;
 }
+/* The homepage's colour language — amber, teal, violet chips — carried onto
+ * the tiles: each sample topic wears its own hue (Adrian, 2026-08-29: "more
+ * vibrant (with more colours) like the homepage"). Scoped per tile so both
+ * grounds keep AA contrast. */
+.nx-hero[data-level='AM'] .nx-hero-topic:nth-of-type(1) { background: hsl(43 96% 56%); color: var(--nx-navy); }
+.nx-hero[data-level='AM'] .nx-hero-topic:nth-of-type(2) { background: hsl(172 66% 50%); color: hsl(220 60% 14%); }
+.nx-hero[data-level='AM'] .nx-hero-topic:nth-of-type(3) { background: hsl(258 90% 76%); color: hsl(220 60% 14%); }
+.nx-hero[data-level='EM'] .nx-hero-topic:nth-of-type(1) { background: var(--nx-navy); color: hsl(45 100% 96%); }
+.nx-hero[data-level='EM'] .nx-hero-topic:nth-of-type(2) { background: hsl(172 60% 38%); color: #fff; }
+.nx-hero[data-level='EM'] .nx-hero-topic:nth-of-type(3) { background: hsl(16 85% 52%); color: #fff; }
 .nx-hero-topic-more {
   background: transparent;
-  border: 1px dashed var(--nx-hero-sub);
+  border: 1.5px dashed var(--nx-hero-sub);
   color: var(--nx-hero-sub);
+  font-weight: 600;
 }
 .nx-hero-cta {
   display: inline-flex;
