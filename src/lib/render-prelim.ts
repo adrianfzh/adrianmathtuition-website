@@ -27,7 +27,7 @@
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { getBrowser } from '@/lib/generate-pdf';
 import { mdToHtml } from '@/lib/render-worksheet';
-import type { PrelimCover } from '@/lib/print-paper';
+import type { PrelimCover, SectionHeading } from '@/lib/print-paper';
 
 export interface PrelimQuestion {
   pos: number;
@@ -46,6 +46,9 @@ export interface PrelimInput {
   /** Present → exam-format render (page-1 cover, footers, END OF PAPER,
    * answer key outside the page numbering). Absent → worksheet-style. */
   cover?: PrelimCover;
+  /** Sectioned papers (H2 P2): a bold centred heading is drawn immediately
+   * before the question whose pos matches each entry's beforePos. */
+  sections?: SectionHeading[];
 }
 
 function esc(s: string): string {
@@ -78,6 +81,7 @@ const STYLES = `
   .instructions p{margin:0 0 3px}
   .instructions .ihead{font-weight:700;color:#1a365d}
 
+  .section-h{text-align:center;font-weight:700;font-size:12.5pt;letter-spacing:.5px;margin:16px 0 12px}
   .q{margin-bottom:14px}
   .q-row{display:flex;gap:10px}
   .q-num{font-weight:700;min-width:24px;font-size:12.5pt}
@@ -148,14 +152,17 @@ ${body}
 }
 
 function questionsHtml(input: PrelimInput): string {
+  const sectionAt = new Map((input.sections ?? []).map((s) => [s.beforePos, s.label]));
   return input.questions
     .map((q) => {
+      const label = sectionAt.get(q.pos);
+      const heading = label ? `<div class="section-h">${esc(label)}</div>\n    ` : '';
       // ~9mm of working space per mark, capped at 130mm, only when requested.
       const space = input.workingSpace
         ? `<div class="q-space" style="min-height:${Math.min(130, q.marks * 9)}mm"></div>`
         : '';
       return `
-    <div class="q">
+    ${heading}<div class="q">
       <div class="q-row">
         <div class="q-num">${q.pos}</div>
         <div class="q-body">

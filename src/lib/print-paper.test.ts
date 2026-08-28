@@ -1,22 +1,34 @@
 import { describe, expect, it } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   DURATIONS,
+  MOCK_COVER_INSTRUCTIONS,
+  MOCK_COVER_INSTRUCTIONS_H2,
+  MOCK_LEVELS,
   MOCK_TOTAL_TOLERANCE,
   answerMarkdown,
   assembleMockFromCandidates,
+  blueprintKeyFor,
   mockCover,
+  mockCoverInstructions,
   paperCodeFull,
   paperDuration,
   questionMarkdown,
   rankWeakTopics,
+  sectionHeadings,
   sgtStartOfWeekIso,
   subjectCode,
   subjectName,
   type MockSlotInput,
   type QbPrintRow,
 } from './print-paper';
-import { mulberry32, type Candidate } from './prelim-builder';
+import { mulberry32, targetMarks, type Candidate, type PaperDef } from './prelim-builder';
 import type { TopicMastery } from './mastery';
+
+const blueprint: { papers: Record<string, PaperDef> } = JSON.parse(
+  fs.readFileSync(path.join(process.cwd(), 'data', 'paper-blueprints.json'), 'utf8')
+);
 
 describe('sgtStartOfWeekIso', () => {
   // 2026-08-26 is a Wednesday. SGT Monday 00:00 that week = Aug 24 00:00 SGT
@@ -82,19 +94,40 @@ describe('question/answer markdown', () => {
   });
 });
 
+describe('blueprintKeyFor', () => {
+  it('maps JC1/JC2 to the JC blueprint family and leaves AM/EM alone', () => {
+    expect(blueprintKeyFor('JC1', 'P1')).toBe('JC-P1');
+    expect(blueprintKeyFor('JC1', 'P2')).toBe('JC-P2');
+    expect(blueprintKeyFor('JC2', 'P1')).toBe('JC-P1');
+    expect(blueprintKeyFor('JC2', 'P2')).toBe('JC-P2');
+    expect(blueprintKeyFor('AM', 'P1')).toBe('AM-P1');
+    expect(blueprintKeyFor('EM', 'P2')).toBe('EM-P2');
+  });
+
+  it('resolves a real blueprint entry for EVERY mock level (the enablement gate)', () => {
+    for (const level of MOCK_LEVELS) {
+      for (const paper of ['P1', 'P2']) {
+        expect(blueprint.papers[blueprintKeyFor(level, paper)], `${level} ${paper}`).toBeTruthy();
+      }
+    }
+    expect(blueprint.papers[blueprintKeyFor('JC2', 'P1')].total_marks).toBe(100);
+  });
+});
+
 describe('exam-format facts', () => {
   it('carries the real exam duration for every blueprinted paper', () => {
     expect(DURATIONS['AM-P1']).toBe('2 hours 15 minutes');
     expect(DURATIONS['AM-P2']).toBe('2 hours 15 minutes');
     expect(DURATIONS['EM-P1']).toBe('2 hours 15 minutes');
     expect(DURATIONS['EM-P2']).toBe('2 hours 15 minutes');
-    // H2 9758 — pre-staged for JC mocks (blueprint family key 'JC')
+    // H2 9758 — both papers 3 hours (blueprint family key 'JC')
     expect(DURATIONS['JC-P1']).toBe('3 hours');
     expect(DURATIONS['JC-P2']).toBe('3 hours');
     expect(paperDuration('AM', 'P1')).toBe('2 hours 15 minutes');
-    // student level keys (JC1/JC2) deliberately do NOT hit the JC entries —
-    // enablement must map them to the 'JC' family first (see DURATIONS note)
-    expect(paperDuration('JC2', 'P1')).toBeNull();
+    // student level keys (JC1/JC2) hit the JC entries through blueprintKeyFor —
+    // the mapping this pin used to demand of enablement, now live
+    expect(paperDuration('JC2', 'P1')).toBe('3 hours');
+    expect(paperDuration('JC1', 'P2')).toBe('3 hours');
   });
 
   it('derives SEAB subject codes the same way the admin export always has', () => {
@@ -104,6 +137,13 @@ describe('exam-format facts', () => {
     expect(subjectName('EM')).toBe('MATHEMATICS');
     expect(paperCodeFull('AM', 'P1')).toBe('4049/01');
     expect(paperCodeFull('EM', 'P2')).toBe('4052/02');
+    // H2 9758 — student levels AND the admin builder's 'JC' family key
+    expect(subjectCode('JC1')).toBe('9758');
+    expect(subjectCode('JC2')).toBe('9758');
+    expect(subjectCode('JC')).toBe('9758');
+    expect(subjectName('JC2')).toBe('MATHEMATICS');
+    expect(paperCodeFull('JC1', 'P1')).toBe('9758/01');
+    expect(paperCodeFull('JC2', 'P2')).toBe('9758/02');
   });
 
   it('builds a complete mock cover block', () => {
@@ -115,6 +155,44 @@ describe('exam-format facts', () => {
     expect(c.duration).toBe('2 hours 15 minutes');
     expect(c.materials.length).toBeGreaterThan(0);
     expect(c.candidateLine).toBe('Printed for Wei Jie · 28 Aug 2026 · AdrianMath');
+  });
+
+  it('builds the H2 cover block for a JC2 student', () => {
+    const c = mockCover('JC2', 'P2', { printedFor: 'Jia En', printedOn: '28 Aug 2026' });
+    expect(c.subjectName).toBe('MATHEMATICS');
+    expect(c.subjectCode).toBe('9758/02');
+    expect(c.paperLabel).toBe('Paper 2');
+    expect(c.duration).toBe('3 hours');
+  });
+
+  it('picks the graphing-calculator instructions for H2 and scientific for O-Level', () => {
+    expect(mockCoverInstructions('JC1')).toBe(MOCK_COVER_INSTRUCTIONS_H2);
+    expect(mockCoverInstructions('JC2')).toBe(MOCK_COVER_INSTRUCTIONS_H2);
+    expect(mockCoverInstructions('AM')).toBe(MOCK_COVER_INSTRUCTIONS);
+    expect(mockCoverInstructions('EM')).toBe(MOCK_COVER_INSTRUCTIONS);
+    const h2 = MOCK_COVER_INSTRUCTIONS_H2.join(' ');
+    expect(h2).toContain('approved graphing calculator');
+    expect(h2).toContain('Unsupported answers from a graphing calculator are allowed');
+    expect(h2).not.toContain('scientific calculator');
+    expect(MOCK_COVER_INSTRUCTIONS.join(' ')).toContain('approved scientific calculator');
+  });
+});
+
+describe('sectionHeadings', () => {
+  it('derives the two H2 P2 headings, marks summed from the real blueprint (40/60)', () => {
+    const jc2 = blueprint.papers[blueprintKeyFor('JC1', 'P2')];
+    expect(sectionHeadings(jc2)).toEqual([
+      { beforePos: 1, label: 'Section A: Pure Mathematics [40 marks]' },
+      { beforePos: jc2.section_boundary, label: 'Section B: Probability and Statistics [60 marks]' },
+    ]);
+  });
+
+  it('is empty for unsectioned papers and missing blueprints', () => {
+    expect(sectionHeadings(blueprint.papers['AM-P1'])).toEqual([]);
+    expect(sectionHeadings(blueprint.papers['EM-P2'])).toEqual([]);
+    expect(sectionHeadings(blueprint.papers['JC-P1'])).toEqual([]);
+    expect(sectionHeadings(null)).toEqual([]);
+    expect(sectionHeadings(undefined)).toEqual([]);
   });
 });
 
@@ -195,6 +273,31 @@ describe('assembleMockFromCandidates', () => {
       if (out.ok) {
         const ids = out.refs.map(r => r.id);
         expect(new Set(ids).size).toBe(ids.length);
+      }
+    }
+  });
+
+  it('lands a JC-P2 mock on exactly 100 marks from the real blueprint targets', () => {
+    // The enablement path end-to-end minus I/O: blueprintKeyFor('JC2','P2')
+    // resolves the real JC blueprint, its standard targets sum to 100, and the
+    // slot walk + landTotal ship exactly 100 — every slot filled (a sectioned
+    // paper may never run short, or Section B headings would drift).
+    const paperDef = blueprint.papers[blueprintKeyFor('JC2', 'P2')];
+    const targets = targetMarks(paperDef, { difficulty: 'standard' });
+    expect(targets.reduce((a, b) => a + b, 0)).toBe(100);
+    for (let seed = 1; seed <= 8; seed++) {
+      const slots = paperDef.slots.map((s, i) =>
+        slot(s.pos, targets[i], [
+          cand(`q${s.pos}a`, targets[i]),
+          cand(`q${s.pos}b`, Math.min(s.marks[1], targets[i] + 1)),
+        ]),
+      );
+      const out = assembleMockFromCandidates(slots, paperDef.total_marks, mulberry32(seed));
+      expect(out.ok).toBe(true);
+      if (out.ok) {
+        expect(out.totalMarks).toBe(100);
+        expect(out.landed).toBe(true);
+        expect(out.refs).toHaveLength(paperDef.slots.length);
       }
     }
   });

@@ -22,6 +22,10 @@ export interface PaperDef {
   must_appear: string[];
   rules: { never_together: string[][]; min_distinct_topics: number };
   slots: BlueprintSlot[];
+  /** Sectioned papers only (H2 9758 P2): pos of the FIRST Section B slot.
+   * Slots below it are Section A (Pure Mathematics), the rest Section B
+   * (Probability and Statistics). Absent on unsectioned papers. */
+  section_boundary?: number;
 }
 
 export interface PresetOverlay {

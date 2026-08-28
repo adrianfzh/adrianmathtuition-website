@@ -85,6 +85,12 @@ function toCandidate(r: QbRow): Candidate & { preview: string; schoolYear: strin
   };
 }
 
+// Blueprint family → QB level tags. JC rows are tagged 'JC1'/'JC2' (plus a
+// legacy plain 'JC'), so the 'JC' family fans out to all three — the same
+// universe as PRINT_POOL_SCOPE's JC entries on the student route. AM/EM tags
+// match their family name and stay a single-value scope.
+const FAMILY_TAG_LEVELS: Record<string, string[]> = { JC: ['JC', 'JC1', 'JC2'] };
+
 async function fetchCandidates(
   supabase: ReturnType<typeof createServiceClient>,
   opts: {
@@ -102,7 +108,7 @@ async function fetchCandidates(
       'id, question_text, total_marks, school, year, paper, question_number, difficulty, topics, parts, answer, solution, has_image, image_url'
     )
     .is('deleted_at', null)
-    .eq('level', opts.level)
+    .in('level', FAMILY_TAG_LEVELS[opts.level] ?? [opts.level])
     .ilike('exam_type', '%prelim%')
     .contains('topics', [opts.topic])
     .gte('total_marks', opts.lo)
