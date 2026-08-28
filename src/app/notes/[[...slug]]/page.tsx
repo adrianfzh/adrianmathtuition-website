@@ -146,12 +146,19 @@ const LEVEL_HERO: Record<string, { chip: string; blurb: string }> = {
 };
 
 async function LevelChooser() {
-  // Topic counts give the tiles information scent (Adrian, 2026-08-29: the
-  // bare tiles "can be made better") without turning the chooser back into a
-  // list. Counts come from the same query the level index uses, so they can
-  // never disagree with the page behind the tile.
-  const counts = await Promise.all(
-    NOTES_LEVELS.map(async l => (await getLevelIndex(l.code)).length),
+  // Real numbers and real topic names on the tiles (Adrian, 2026-08-29: the
+  // bare colour slabs "can be made better") — same query as the level index,
+  // so the tile can never disagree with the page behind it.
+  const levels = await Promise.all(
+    NOTES_LEVELS.map(async l => {
+      const topics = await getLevelIndex(l.code);
+      return {
+        ...l,
+        topics: topics.length,
+        examples: topics.reduce((n, t) => n + t.examples, 0),
+        sample: topics.slice(0, 3).map(t => t.topic),
+      };
+    }),
   );
   return (
     <PageFrame
@@ -165,9 +172,8 @@ async function LevelChooser() {
       }
     >
       <div className="nx-heroes">
-        {NOTES_LEVELS.map((l, i) => {
+        {levels.map(l => {
           const hero = LEVEL_HERO[l.code];
-          const n = counts[i];
           return (
             <Link
               key={l.code}
@@ -184,8 +190,24 @@ async function LevelChooser() {
               <span className="nx-hero-body">
                 <span className="nx-hero-title">{l.label}</span>
                 {hero && <span className="nx-hero-sub">{hero.blurb}</span>}
+                {l.sample.length > 0 && (
+                  <span className="nx-hero-topics">
+                    {l.sample.map(t => (
+                      <span key={t} className="nx-hero-topic">
+                        {t}
+                      </span>
+                    ))}
+                    {l.topics > l.sample.length && (
+                      <span className="nx-hero-topic nx-hero-topic-more">
+                        +{l.topics - l.sample.length} more
+                      </span>
+                    )}
+                  </span>
+                )}
                 <span className="nx-hero-cta">
-                  {n > 0 ? `Browse ${plural(n, 'topic')}` : 'Browse topics'}
+                  {l.topics > 0
+                    ? `${plural(l.topics, 'topic')} · ${plural(l.examples, 'worked example')}`
+                    : 'Browse topics'}
                   <Chevron />
                 </span>
               </span>
@@ -448,19 +470,50 @@ interface NumberedSnippet {
 function Example({ snippet }: { snippet: NumberedSnippet }) {
   const title = cleanTitle(snippet.card_title);
   return (
-    // The id is the search deep-link target (#ex-<id>) and the per-example
-    // "On this page" anchor — keep it in sync with getSearchIndex's URLs.
-    <article className="nx-ex" id={`ex-${snippet.id}`}>
-      <header className="nx-ex-head">
+    // Closed-by-default accordion (Adrian, 2026-08-29): a page of full
+    // solutions was a wall — closed, the page is a scannable list of navy
+    // title bars; tap one to study it. The id is the search deep-link target
+    // (#ex-<id>) and the "On this page" anchor — openFromHash() below pops the
+    // right one open when a link lands here.
+    <details className="nx-ex" id={`ex-${snippet.id}`}>
+      <summary className="nx-ex-head">
         <span className="nx-ex-no">{snippet.n}</span>
         <h3 className="nx-ex-title">{title || `Worked example ${snippet.n}`}</h3>
-      </header>
+        <svg
+          className="nx-ex-chev"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+      </summary>
       <div className="nx-ex-body">
         <NotesMarkdown content={snippet.content} />
       </div>
-    </article>
+    </details>
   );
 }
+
+/** Opens the #ex-… accordion a deep link points at — search results, "On this
+ *  page" entries and shared URLs all land on a <details> that starts closed. */
+const OPEN_FROM_HASH = `(function () {
+  function openFromHash() {
+    var h = location.hash.slice(1);
+    if (!h) return;
+    var el = document.getElementById(h);
+    if (el && el.tagName === 'DETAILS' && !el.open) {
+      el.open = true;
+      el.scrollIntoView();
+    }
+  }
+  window.addEventListener('hashchange', openFromHash);
+  openFromHash();
+})();`;
 
 async function SubgroupPage({
   level,
@@ -546,6 +599,7 @@ async function SubgroupPage({
           ))}
         </section>
       ))}
+      <script dangerouslySetInnerHTML={{ __html: OPEN_FROM_HASH }} />
     </PageFrame>
   );
 }

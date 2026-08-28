@@ -260,15 +260,18 @@ a.nx-eyebrow:hover {
 }
 
 .nx-hero {
-  /* Default = the Additional Maths tile; see the ⚠ above. */
-  --nx-hero-bg: var(--nx-navy);
+  /* Default = the Additional Maths tile; see the ⚠ above. Each tile is a
+   * depth gradient with a faint graph-paper grid — exam-pad texture, not a
+   * flat colour slab (Adrian, 2026-08-29). */
+  --nx-hero-grad: linear-gradient(140deg, #14283f 0%, var(--nx-navy) 52%, #2a5286 100%);
   --nx-hero-ink: var(--nx-cream);
-  --nx-hero-sub: hsl(45 100% 96% / 0.74);
+  --nx-hero-sub: hsl(45 100% 96% / 0.78);
   --nx-hero-chip: hsl(45 100% 96% / 0.16);
   --nx-hero-glow: hsl(220 60% 20% / 0.4);
+  --nx-hero-grid: hsl(0 0% 100% / 0.055);
   /* Painted as a background layer, not a pseudo-element, so it can never end
    * up over the text. */
-  --nx-hero-bloom: hsl(0 0% 100% / 0.14);
+  --nx-hero-bloom: hsl(38 90% 60% / 0.2);
 
   display: flex;
   flex-direction: column;
@@ -277,7 +280,9 @@ a.nx-eyebrow:hover {
   border-radius: 22px;
   background:
     radial-gradient(115% 115% at 100% 118%, var(--nx-hero-bloom), transparent 62%),
-    var(--nx-hero-bg);
+    linear-gradient(var(--nx-hero-grid), transparent 1.5px) 0 0 / 100% 24px,
+    linear-gradient(90deg, var(--nx-hero-grid), transparent 1.5px) 0 0 / 24px 100%,
+    var(--nx-hero-grad);
   color: var(--nx-hero-ink);
   text-decoration: none;
   box-shadow: 0 10px 26px -12px var(--nx-hero-glow);
@@ -285,14 +290,15 @@ a.nx-eyebrow:hover {
   transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
 }
 .nx-hero[data-level='EM'] {
-  --nx-hero-bg: var(--nx-gold);
+  --nx-hero-grad: linear-gradient(140deg, #d99a12 0%, var(--nx-gold) 48%, #f6cd5e 100%);
   --nx-hero-ink: var(--nx-navy);
   /* 0.8, not the navy tile's 0.74: navy-on-gold at 0.74 measures ~4.8:1, which
    * is only just over AA for 13px. */
   --nx-hero-sub: hsl(220 60% 20% / 0.8);
   --nx-hero-chip: hsl(220 60% 20% / 0.14);
   --nx-hero-glow: hsl(45 90% 45% / 0.5);
-  --nx-hero-bloom: hsl(220 60% 20% / 0.12);
+  --nx-hero-grid: hsl(220 60% 20% / 0.07);
+  --nx-hero-bloom: hsl(0 0% 100% / 0.28);
 }
 .nx-hero:hover {
   filter: brightness(1.06);
@@ -342,6 +348,28 @@ a.nx-eyebrow:hover {
   margin-top: 0.3rem;
   font-size: 0.8125rem;
   line-height: 1.45;
+  color: var(--nx-hero-sub);
+}
+/* Three real topic names as translucent pills — the tile says what lives
+ * behind it instead of asking the student to guess. */
+.nx-hero-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.65rem;
+}
+.nx-hero-topic {
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: var(--nx-hero-chip);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.nx-hero-topic-more {
+  background: transparent;
+  border: 1px dashed var(--nx-hero-sub);
   color: var(--nx-hero-sub);
 }
 .nx-hero-cta {
@@ -724,16 +752,15 @@ a.nx-eyebrow:hover {
   margin-top: 1.5rem;
 }
 
-/* Each worked example is one unmistakable card: a tinted title band on top,
-   the working below, real air between neighbours — "the four worked examples,
-   it is hard to distinguish one from the other" (Adrian, 2026-08-29). */
+/* Each worked example is a closed-by-default accordion (Adrian, 2026-08-29:
+   "for each example why not dropdowns?"): shut, the page reads as an index of
+   navy title bars a thumb can scan; open, one full worked card. */
 .nx-ex {
-  margin: 1.75rem 0 0;
-  padding: 0;
+  margin: 0.6rem 0 0;
   overflow: hidden;
   background: var(--color-fd-card);
   border: 1px solid var(--nx-hairline);
-  border-radius: var(--nx-radius);
+  border-radius: 14px;
   box-shadow: var(--nx-shadow);
   /* Search deep-links land on #ex-<id> — clear the sticky top bar. */
   scroll-margin-top: 5rem;
@@ -741,11 +768,24 @@ a.nx-eyebrow:hover {
 .nx-ex-head {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  margin: 0;
-  padding: 0.75rem 1.4rem;
-  background: var(--nx-cream-chip);
-  border-bottom: 1px solid var(--nx-amber-line);
+  gap: 0.75rem;
+  padding: 0.8rem 1.05rem;
+  background: linear-gradient(120deg, #16304f, var(--nx-navy) 70%);
+  color: var(--nx-cream);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.nx-ex-head::-webkit-details-marker {
+  display: none;
+}
+.nx-ex-head::marker {
+  content: '';
+}
+.nx-ex-head:focus-visible {
+  outline: 2px solid var(--nx-gold);
+  outline-offset: -2px;
 }
 .nx-ex-body {
   padding: 1.1rem 1.4rem 1.3rem;
@@ -759,18 +799,38 @@ a.nx-eyebrow:hover {
   border-radius: 999px;
   font-family: var(--nx-mono);
   font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--nx-cream);
-  background: var(--nx-navy);
+  font-weight: 700;
+  color: var(--nx-navy);
+  background: var(--nx-gold);
 }
 .nx-ex-title {
+  flex: 1;
+  min-width: 0;
   font-family: var(--nx-sans);
   font-size: 0.9375rem;
   font-weight: 600;
   letter-spacing: -0.01em;
-  line-height: 1.4;
-  color: var(--nx-ink);
+  line-height: 1.35;
+  color: var(--nx-cream);
   margin: 0;
+}
+.nx-ex-chev {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.8;
+  transition: transform 0.16s ease;
+}
+.nx-ex[open] .nx-ex-chev {
+  transform: rotate(90deg);
+}
+.nx-ex[open] {
+  border-color: var(--nx-amber-line);
+}
+@media (prefers-reduced-motion: reduce) {
+  .nx-ex-chev {
+    transition: none;
+  }
 }
 
 /* ── Prose inside a card ─────────────────────────────────────────────────────*/
