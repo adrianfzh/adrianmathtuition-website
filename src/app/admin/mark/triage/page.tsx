@@ -155,6 +155,33 @@ export default function TriagePage() {
     load(false);
   }
 
+  // "Seen" = handled outside the system (marked physically, handed back in
+  // class): leaves triage/hub/reminder WITHOUT releasing — the student's portal
+  // never shows it and nobody is notified (Adrian, 2026-08-29).
+  async function markSeen(runId: string) {
+    setBusy(`seen:${runId}`);
+    const d = await post({ action: 'archive', runId });
+    setBusy('');
+    if (d.error) { setToast(d.error); return; }
+    setRuns(prev => prev.filter(r => r.id !== runId));
+    setSelected(prev => { const next = new Set(prev); next.delete(runId); return next; });
+    load(false);
+  }
+
+  async function markAllSeen() {
+    if (!window.confirm(`Mark all ${runs.length} scripts as seen (not released)? Held student hand-ins are kept.`)) return;
+    setBusy('seen-all');
+    const d = await post({ action: 'archive-all' });
+    setBusy('');
+    if (d.error) { setToast(d.error); return; }
+    setToast(
+      `${d.archived} marked as seen` +
+      (d.skippedStudent ? ` — ${d.skippedStudent} student hand-in${d.skippedStudent === 1 ? '' : 's'} kept` : '')
+    );
+    setSelected(new Set());
+    load(false);
+  }
+
   function toggle(id: string) {
     setSelected(prev => {
       const next = new Set(prev);
@@ -190,9 +217,18 @@ export default function TriagePage() {
     <div style={{ fontFamily: 'system-ui, sans-serif', maxWidth: 760, margin: '0 auto', padding: '16px 12px 96px' }}>
       <header style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
         <h1 style={{ fontSize: 20, margin: 0 }}>⏳ Marking triage</h1>
-        <button onClick={() => load()} style={{ border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '6px 10px', fontSize: 13 }}>
-          ↻ Refresh
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {runs.length > 0 && (
+            <button onClick={markAllSeen} disabled={busy === 'seen-all'}
+              title="Handled outside the system — clear the queue without releasing anything"
+              style={{ border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '6px 10px', fontSize: 13 }}>
+              {busy === 'seen-all' ? '…' : '👁 All seen'}
+            </button>
+          )}
+          <button onClick={() => load()} style={{ border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '6px 10px', fontSize: 13 }}>
+            ↻ Refresh
+          </button>
+        </div>
       </header>
 
       {stats && (
@@ -242,6 +278,13 @@ export default function TriagePage() {
               <div style={{ fontSize: 12, color: run.flagged.length ? C.flag : C.ok }}>
                 {run.flagged.length ? `${run.flagged.length} to check` : 'ready'}
               </div>
+              <button
+                onClick={() => markSeen(run.id)} disabled={busy === `seen:${run.id}`}
+                title="Handled outside — remove from triage without releasing"
+                style={{ border: 'none', background: 'none', color: C.muted, fontSize: 12, padding: '4px 0 0', cursor: 'pointer' }}
+              >
+                {busy === `seen:${run.id}` ? '…' : '👁 Seen'}
+              </button>
             </div>
           </div>
 

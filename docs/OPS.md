@@ -18,8 +18,9 @@ Writers:
   exits: `generate-invoices`, `send-invoices`, `payment-reminder`,
   `progress-digest` (month period only), `retention` (non-dry), `practice-topup`,
   `triage-reminder` (daily 8am SGT — Telegrams Adrian when marked scripts are
-  waiting unreleased in /admin/mark/triage; stamps even on quiet 0-waiting days,
-  skips the stamp only in `?dry=1` mode), and `health-check` itself.
+  waiting unreleased **and unarchived** in /admin/mark/triage; stamps even on
+  quiet 0-waiting days, skips the stamp only in `?dry=1` mode), and
+  `health-check` itself.
 - **Mac plan-billed workers** stamp as the last step of their SKILL.md
   (`qb-topup`, `file-subgroups`, `bot-review`, `plan-marking`, `question-mine`,
   `pdf-extract` — the last stamps only on runs that actually claimed a file, so

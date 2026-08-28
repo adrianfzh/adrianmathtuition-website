@@ -43,6 +43,7 @@ export async function GET(req: NextRequest) {
     .from('paper_marking_runs')
     .select('created_at, paper_name, student_name, result_json')
     .is('released_at', null)
+    .is('archived_at', null)
     .gte('created_at', since);
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -55,6 +56,9 @@ export async function GET(req: NextRequest) {
       studentName: r.student_name ?? null,
       flaggedCount: extractFlagged(r.result_json).flagged.length,
       createdAt: r.created_at,
+      // A held student hand-in (auto-release refused: degraded ticks or a
+      // failed release call) outranks Adrian's own uploads — mark it 📱.
+      fromStudent: !!(r.result_json as { portal_submission?: unknown })?.portal_submission,
     }));
 
   const message = triageReminderMessage(waiting, new Date());

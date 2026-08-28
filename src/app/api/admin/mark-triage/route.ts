@@ -1,8 +1,14 @@
 // Batch triage over recent marking runs — /admin/mark/triage.
 //
-// GET  → unreleased runs from the last N days, each reduced to ONLY the
-//        questions the marker asked a human to look at.
-// POST → { action: 'agree' | 'override' | 'release' }.
+// GET  → unreleased, unarchived runs from the last N days, each reduced to ONLY
+//        the questions the marker asked a human to look at.
+// POST → { action: 'agree' | 'override' | 'release' | 'archive' | 'archive-all' }.
+//
+// Archive = "seen": Adrian handled the paper outside the system (marked it
+// physically, handed it back in class), so it leaves triage / the hub card /
+// the daily reminder WITHOUT releasing — released_at stays null, the student's
+// portal never shows it, nobody is notified. The /admin/papers library still
+// lists it. (Adrian, 2026-08-29: "make everything else as read or seen".)
 //
 // Release is the one thing here with an outward effect: it stamps `released_at`
 // and nudges the student. For papers Adrian marks himself nothing reaches a
@@ -62,6 +68,7 @@ export async function GET(req: NextRequest) {
     .from('paper_marking_runs')
     .select(`${RUN_COLUMNS}, result_json`)
     .is('released_at', null)
+    .is('archived_at', null)
     .gte('created_at', daysAgoIso(days))
     .order('created_at', { ascending: false });
 
@@ -508,6 +515,62 @@ export async function POST(req: NextRequest) {
       notified: results.filter(r => r.released && !r.via.endsWith('none')).length,
       results,
     });
+  }
+
+  // ── archive: "seen" — out of the queue WITHOUT releasing ──────────────────
+  if (body.action === 'archive') {
+    if (!body.runId) return NextResponse.json({ error: 'runId is required' }, { status: 400 });
+    const { data: run, error: readErr } = await supa
+      .from('paper_marking_runs')
+      .select('id, released_at')
+      .eq('id', body.runId)
+      .maybeSingle();
+    if (readErr) return NextResponse.json({ error: readErr.message }, { status: 500 });
+    if (!run) return NextResponse.json({ error: 'run not found' }, { status: 404 });
+    if (run.released_at) {
+      return NextResponse.json({ error: 'already released — nothing to archive' }, { status: 409 });
+    }
+    const { error: writeErr } = await supa
+      .from('paper_marking_runs')
+      .update({ archived_at: now })
+      .eq('id', body.runId);
+    if (writeErr) return NextResponse.json({ error: writeErr.message }, { status: 500 });
+    return NextResponse.json({ ok: true, archived: 1 });
+  }
+
+  if (body.action === 'archive-all') {
+    // Bulk-clear the whole waiting queue (no date window — older-than-view runs
+    // go too). One guard: a HELD STUDENT HAND-IN is never swallowed en masse.
+    // Portal submissions auto-release on the happy path, so one sitting here
+    // unreleased IS the signal Adrian must act on (release or re-mark) — it can
+    // only be archived deliberately, one run at a time.
+    const [{ data: toArchive, error: readErr }, { count: skippedStudent }] = await Promise.all([
+      supa
+        .from('paper_marking_runs')
+        .select('id')
+        .is('released_at', null)
+        .is('archived_at', null)
+        .not('result_json->results', 'is', null)
+        .is('result_json->portal_submission', null),
+      supa
+        .from('paper_marking_runs')
+        .select('id', { count: 'exact', head: true })
+        .is('released_at', null)
+        .is('archived_at', null)
+        .not('result_json->results', 'is', null)
+        .not('result_json->portal_submission', 'is', null),
+    ]);
+    if (readErr) return NextResponse.json({ error: readErr.message }, { status: 500 });
+
+    const ids = (toArchive ?? []).map(r => r.id);
+    if (ids.length) {
+      const { error: writeErr } = await supa
+        .from('paper_marking_runs')
+        .update({ archived_at: now })
+        .in('id', ids);
+      if (writeErr) return NextResponse.json({ error: writeErr.message }, { status: 500 });
+    }
+    return NextResponse.json({ ok: true, archived: ids.length, skippedStudent: skippedStudent ?? 0 });
   }
 
   return NextResponse.json({ error: `unknown action: ${body.action}` }, { status: 400 });

@@ -65,6 +65,19 @@ describe('triageReminderMessage', () => {
     expect(msg).not.toContain('Paper 8'); // 9th oldest — beyond the cap
   });
 
+  it('held student hand-ins get 📱 and jump the queue, even when newer', () => {
+    const msg = triageReminderMessage(
+      [
+        run({ paperName: 'Adrians old upload', createdAt: '2026-08-20T00:00:00Z' }),
+        run({ paperName: 'Held hand-in', fromStudent: true, createdAt: '2026-08-28T00:00:00Z' }),
+      ],
+      NOW
+    )!;
+    expect(msg).toContain('• 📱 Held hand-in');
+    expect(msg.indexOf('Held hand-in')).toBeLessThan(msg.indexOf('Adrians old upload'));
+    expect(msg).not.toContain('📱 Adrians');
+  });
+
   it('mixed header names both the checks and the releases', () => {
     const msg = triageReminderMessage(
       [run({ flaggedCount: 1 }), run({ paperName: 'Clean one' })],

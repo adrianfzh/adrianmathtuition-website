@@ -8,9 +8,10 @@
 // 2026-08-29).
 //
 // Pure on purpose: the route fetches rows with the SAME filter as the triage
-// GET (`released_at IS NULL`, ≤14 days, `result_json.results` present) so the
-// number here always equals the scripts count on /admin/mark/triage — a
-// reminder that says 3 when the page shows 2 teaches Adrian to distrust both.
+// GET (`released_at IS NULL`, `archived_at IS NULL`, ≤14 days,
+// `result_json.results` present) so the number here always equals the scripts
+// count on /admin/mark/triage — a reminder that says 3 when the page shows 2
+// teaches Adrian to distrust both.
 
 export interface WaitingRun {
   paperName: string;
@@ -18,6 +19,9 @@ export interface WaitingRun {
   /** Flagged questions still unresolved — 0 means the script is ready to release. */
   flaggedCount: number;
   createdAt: string; // ISO
+  /** True for a held student hand-in (portal/bot submission whose auto-release
+   *  was refused) — a student is actually waiting, so the line gets a 📱. */
+  fromStudent?: boolean;
 }
 
 const TRIAGE_URL = 'https://www.adrianmathtuition.com/admin/mark/triage';
@@ -53,10 +57,15 @@ export function triageReminderMessage(runs: WaitingRun[], now: Date): string | n
     (flagged > 0 ? ` — ${flagged} question${flagged === 1 ? '' : 's'} to check` : '') +
     (ready > 0 ? `, ${ready} ready to release` : '');
 
+  // Held student hand-ins lead regardless of age — a student is waiting on
+  // those; Adrian's own uploads merely wait on him.
+  sorted.sort((a, b) => Number(!!b.fromStudent) - Number(!!a.fromStudent));
+
   const lines = sorted.slice(0, MAX_LINES).map(r => {
     const who = r.studentName ? escapeHtml(r.studentName) : 'untagged';
     const state = r.flaggedCount > 0 ? `${r.flaggedCount} to check` : 'ready';
-    return `• ${escapeHtml(r.paperName)} — ${who} · ${state} · ${waitedLabel(r.createdAt, now)}`;
+    const mark = r.fromStudent ? '📱 ' : '';
+    return `• ${mark}${escapeHtml(r.paperName)} — ${who} · ${state} · ${waitedLabel(r.createdAt, now)}`;
   });
   if (sorted.length > MAX_LINES) {
     lines.push(`…and ${sorted.length - MAX_LINES} more`);

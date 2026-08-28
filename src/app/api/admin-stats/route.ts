@@ -91,6 +91,7 @@ async function fetchTriage(): Promise<{ flagged: number; readyToRelease: number 
       .from('paper_marking_runs')
       .select('result_json')
       .is('released_at', null)
+      .is('archived_at', null)
       .gte('created_at', since);
     if (error) return null;
 

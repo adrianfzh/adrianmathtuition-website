@@ -465,9 +465,22 @@ release call failed.
 > **Daily nag (2026-08-29):** every failure notifies Adrian exactly once, so a held
 > script used to go silent after its doorbell scrolled past. `/api/triage-reminder`
 > (cron 08:00 SGT) now Telegrams "🗂 N marked papers waiting in triage" each morning
-> anything is unreleased — same query as this page's GET so the numbers always match;
-> quiet triage → no message. Composer: `lib/triage-reminder.ts` (pure, tested); stamps
-> `job_runs` → [`OPS.md`](OPS.md).
+> anything is unreleased and unarchived — same query as this page's GET so the numbers
+> always match; quiet triage → no message. Held student hand-ins are marked 📱 and
+> listed first (a student is waiting on those). Composer: `lib/triage-reminder.ts`
+> (pure, tested); stamps `job_runs` → [`OPS.md`](OPS.md).
+
+> **👁 Seen / archive (2026-08-29, Adrian: "make everything else as read or seen"):**
+> papers Adrian marks physically and hands back in class never get released — so
+> triage/hub/reminder used to count them forever. `archived_at` on
+> `paper_marking_runs` is the third state: **seen ≠ released** — the run leaves
+> triage, the hub card, and the daily reminder, but `released_at` stays null so the
+> student's portal NEVER shows it and nobody is notified; /admin/papers still lists
+> it. UI: 👁 Seen per run + 👁 All seen in the triage header (POST
+> `{action:'archive'|'archive-all'}`); **archive-all skips held student hand-ins**
+> — those auto-release on the happy path, so one sitting unreleased is a signal to
+> act on, not bulk-dismiss. Backfill 2026-08-29: 106 runs archived, keeping only
+> Kassandra's two re-marks.
 
 - **It shows flagged questions only.** The bot's marker already writes
   `review_recommended` + `review_reasons[]` per question in `result_json.results[]`
