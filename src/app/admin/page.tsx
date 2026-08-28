@@ -331,6 +331,7 @@ type Launcher = { emoji: string; title: string; sub: string; href: string; icon?
 const LAUNCHERS: Launcher[] = [
   { emoji: '📅', title: 'Schedule',  sub: 'Weekly lessons · drag to reschedule', href: '/admin/schedule'  },
   { emoji: '📚', title: 'Question Bank', sub: 'Search 26k questions · whole papers · solutions', href: '/admin/questions' },
+  { emoji: '🖼', title: 'Bank Figures', sub: 'Eyeball every bank scan · flag ones to fix', href: '/admin/figures-bank' },
   { emoji: '🤖', title: 'Bot',           sub: 'Metrics · analytics · API usage',     href: '/admin/bot'          },
   { emoji: '💰', title: 'Invoices',  sub: 'Generate · send · track payments',     href: '/admin/invoices'  },
   { emoji: '📨', title: 'Email Log',     sub: 'All sent invoices & receipts',               href: '/admin/emails'       },
