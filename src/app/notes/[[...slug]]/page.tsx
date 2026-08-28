@@ -12,7 +12,7 @@ import { viewingAsStudent } from '@/lib/portal-beta';
  *  not currently "viewing as a student" (the portal toggle now covers /notes
  *  too; Adrian, 2026-08-29: draft/review chrome must never look student-facing). */
 async function notesAdmin(): Promise<boolean> {
-  const [a, vs] = await Promise.all([notesAdmin(), viewingAsStudent()]);
+  const [a, vs] = await Promise.all([isNotesAuthed(), viewingAsStudent()]);
   return a && !vs;
 }
 import { approvedSections, hasApprovedUnits } from '@/lib/notes-units';
@@ -119,6 +119,23 @@ function CardLink({
 
 // ── Level chooser (/notes root) ──────────────────────────────────────────────
 
+/** Hero copy per level code. Adrian, 2026-08-29 (phone review): the two level
+ *  rows read as list items, not as places — so /notes opens on two big tiles in
+ *  the portal's hero language, one strong colour each (the accents live in
+ *  notes.css, keyed on `data-level`). A code that isn't in this map still
+ *  renders — chip falls back to the code, subtitle is simply omitted — so
+ *  adding a level to NOTES_LEVELS can never produce a broken tile. */
+const LEVEL_HERO: Record<string, { chip: string; blurb: string }> = {
+  AM: {
+    chip: 'AM',
+    blurb: 'Calculus, trig identities and every A-Math formula, worked through.',
+  },
+  EM: {
+    chip: 'EM',
+    blurb: 'Algebra, geometry and stats — the E-Math syllabus, topic by topic.',
+  },
+};
+
 function LevelChooser() {
   return (
     <PageFrame
@@ -130,10 +147,33 @@ function LevelChooser() {
         </>
       }
     >
-      <div className="nx-list">
-        {NOTES_LEVELS.map(l => (
-          <CardLink key={l.code} href={`/notes/${l.code.toLowerCase()}`} title={l.label} />
-        ))}
+      <div className="nx-heroes">
+        {NOTES_LEVELS.map(l => {
+          const hero = LEVEL_HERO[l.code];
+          return (
+            <Link
+              key={l.code}
+              href={`/notes/${l.code.toLowerCase()}`}
+              className="nx-hero"
+              data-level={l.code}
+            >
+              {/* The code, not a picture: it is how the level is named
+                  everywhere else in the shell, and it can never be the wrong
+                  metaphor for a syllabus. */}
+              <span className="nx-hero-chip" aria-hidden>
+                {hero?.chip ?? l.code}
+              </span>
+              <span className="nx-hero-body">
+                <span className="nx-hero-title">{l.label}</span>
+                {hero && <span className="nx-hero-sub">{hero.blurb}</span>}
+                <span className="nx-hero-cta">
+                  Browse topics
+                  <Chevron />
+                </span>
+              </span>
+            </Link>
+          );
+        })}
       </div>
     </PageFrame>
   );

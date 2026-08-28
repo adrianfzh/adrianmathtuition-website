@@ -16,7 +16,7 @@ import { buildEntriesFromPapers, entryKey } from './notebook';
 // same papers.
 export const MAX_RUNS = 40;
 const RUN_COLUMNS =
-  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, pdf_url, released_at, result_json';
+  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json';
 
 /** A notebook_entries row, as selected with `*`. */
 export interface NotebookEntryRow {

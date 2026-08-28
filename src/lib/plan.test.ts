@@ -15,7 +15,7 @@ function paper(daysAgo: number, questions: StudentQuestion[], over: Partial<Stud
   const d = new Date(NOW.getTime() - daysAgo * 86400e3).toISOString().slice(0, 10);
   return {
     id: `run-${daysAgo}`, date: d, name: 'Prelim P1', awarded: 0, max: 0, pct: null,
-    questions, dropped: [], pdfUrl: null, pages: [], practice: [], practiceDocxUrl: null, ...over,
+    questions, dropped: [], pdfUrl: null, fullPdfUrl: null, pages: [], practice: [], practiceDocxUrl: null, ...over,
   };
 }
 function attempt(daysAgo: number, verdict: 'correct' | 'wrong', confident = false) {

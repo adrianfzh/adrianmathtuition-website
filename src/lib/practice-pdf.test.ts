@@ -90,6 +90,62 @@ describe('buildPracticePdfHtml', () => {
   });
 });
 
+describe('buildPracticePdfHtml — brand header', () => {
+  const html = buildPracticePdfHtml(paper, 'Kieran');
+
+  it('prints the house-style brand line above the paper title', () => {
+    expect(html).toContain('<div class="brand">ADRIAN&rsquo;S MATH TUITION</div>');
+    expect(html.indexOf('class="brand"')).toBeLessThan(html.indexOf('class="title"'));
+  });
+
+  it('styles the brand line navy, letterspaced, over the house orange rule', () => {
+    expect(html).toContain('color: #1c3a5e');
+    expect(html).toContain('letter-spacing: .3em');
+    expect(html).toContain('border-bottom: 1.1pt solid #843C0C');
+  });
+});
+
+describe('buildPracticePdfHtml — marks bracket', () => {
+  const bankId = '11111111-1111-4111-8111-111111111111'; // paper.practice[0].id
+
+  it('prints [n] for a bank pick with a mapped positive mark', () => {
+    const html = buildPracticePdfHtml(paper, 'Kieran', { [bankId]: 3 });
+    expect(html).toContain('<span class="q-mk">[3]</span>');
+  });
+
+  it('never brackets a generated item, even when its (null) id could somehow map', () => {
+    const html = buildPracticePdfHtml(paper, 'Kieran', { [bankId]: 3 });
+    // Q3 (bank pick) gets exactly one bracket; Q7b (generated, id null) gets none.
+    expect(html.match(/class="q-mk"/g)).toHaveLength(1);
+  });
+
+  it('omits the bracket for a bank pick missing from the marks map', () => {
+    const html = buildPracticePdfHtml(paper, 'Kieran', {});
+    expect(html).not.toContain('class="q-mk"');
+  });
+
+  it('omits the bracket when the mapped total_marks is 0', () => {
+    const html = buildPracticePdfHtml(paper, 'Kieran', { [bankId]: 0 });
+    expect(html).not.toContain('class="q-mk"');
+  });
+
+  it('omits the bracket entirely when no marks map is passed', () => {
+    expect(buildPracticePdfHtml(paper, 'Kieran')).not.toContain('class="q-mk"');
+  });
+});
+
+describe('buildPracticePdfHtml — page breaks and working space', () => {
+  const html = buildPracticePdfHtml(paper, 'Kieran');
+
+  it('keeps a whole question block — head, stem, note and space — off a page break', () => {
+    expect(html).toContain('.q { margin-bottom: 2mm; break-inside: avoid; page-break-inside: avoid; }');
+  });
+
+  it('gives each question a ~68mm working-space band', () => {
+    expect(html).toContain('.space { height: 68mm; }');
+  });
+});
+
 describe('practicePdfFilename', () => {
   it('keeps word characters and drops filename-hostile ones', () => {
     expect(practicePdfFilename('Xinmin 2021 Prelim P2')).toBe('Practice - Xinmin 2021 Prelim P2.pdf');

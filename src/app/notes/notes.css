@@ -228,6 +228,139 @@ a.nx-eyebrow:hover {
   margin: 1.5rem 0 0;
 }
 
+/* ── Level chooser: hero tiles (/notes root) ─────────────────────────────────
+ * Adrian, 2026-08-29 (phone review): "dull; give it the portal's hero/colour
+ * language." /notes opens on exactly two destinations, so they get the /app
+ * bento-hero treatment — a big radius, one solid colour each, a chip at the
+ * top, bold title + one-line subtitle pinned to the bottom, a coloured glow
+ * shadow and a press state — written in the nx tokens rather than borrowed
+ * from the portal's Tailwind, because this stylesheet is the notes surface's
+ * design system.
+ *
+ * The colour split is the site's own pair, one each: Additional Maths takes
+ * navy with cream ink, Elementary Maths takes gold with navy ink. Two levels,
+ * two brand colours, inverted — the tiles read as two doors instead of two
+ * rows, and nothing new has to be invented to harmonise.
+ *
+ * ⚠ The accents are keyed on `data-level`, and the BASE rule is a complete
+ * (navy) tile on its own. A third level added to NOTES_LEVELS therefore
+ * renders as a valid tile rather than an unstyled white box — do not move the
+ * navy values into a `[data-level='AM']`-only block. */
+
+.nx-heroes {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: 1fr;
+  margin-top: 0.5rem;
+}
+@media (min-width: 640px) {
+  .nx-heroes {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.nx-hero {
+  /* Default = the Additional Maths tile; see the ⚠ above. */
+  --nx-hero-bg: var(--nx-navy);
+  --nx-hero-ink: var(--nx-cream);
+  --nx-hero-sub: hsl(45 100% 96% / 0.74);
+  --nx-hero-chip: hsl(45 100% 96% / 0.16);
+  --nx-hero-glow: hsl(220 60% 20% / 0.4);
+  /* Painted as a background layer, not a pseudo-element, so it can never end
+   * up over the text. */
+  --nx-hero-bloom: hsl(0 0% 100% / 0.14);
+
+  display: flex;
+  flex-direction: column;
+  min-height: 8.75rem;
+  padding: 1.15rem 1.25rem 1.25rem;
+  border-radius: 22px;
+  background:
+    radial-gradient(115% 115% at 100% 118%, var(--nx-hero-bloom), transparent 62%),
+    var(--nx-hero-bg);
+  color: var(--nx-hero-ink);
+  text-decoration: none;
+  box-shadow: 0 10px 26px -12px var(--nx-hero-glow);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+}
+.nx-hero[data-level='EM'] {
+  --nx-hero-bg: var(--nx-gold);
+  --nx-hero-ink: var(--nx-navy);
+  /* 0.8, not the navy tile's 0.74: navy-on-gold at 0.74 measures ~4.8:1, which
+   * is only just over AA for 13px. */
+  --nx-hero-sub: hsl(220 60% 20% / 0.8);
+  --nx-hero-chip: hsl(220 60% 20% / 0.14);
+  --nx-hero-glow: hsl(45 90% 45% / 0.5);
+  --nx-hero-bloom: hsl(220 60% 20% / 0.12);
+}
+.nx-hero:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 14px 32px -12px var(--nx-hero-glow);
+}
+.nx-hero:active {
+  transform: scale(0.985);
+}
+@media (prefers-reduced-motion: reduce) {
+  .nx-hero {
+    transition: none;
+  }
+  .nx-hero:active {
+    transform: none;
+  }
+}
+
+/* 44px square, the portal's icon-chip geometry (w-11 h-11 rounded-2xl). */
+.nx-hero-chip {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 16px;
+  background: var(--nx-hero-chip);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  line-height: 1;
+}
+/* margin-top:auto pins the copy to the bottom of the tile — the shape of the
+ * portal's "Practise" hero. */
+.nx-hero-body {
+  margin-top: auto;
+  padding-top: 1.4rem;
+}
+.nx-hero-title {
+  display: block;
+  font-size: 1.1875rem;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+.nx-hero-sub {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--nx-hero-sub);
+}
+.nx-hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.nx-hero-cta .nx-chevron {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+.nx-hero:hover .nx-chevron {
+  transform: translateX(2px);
+}
+
 /* ── Level index: families of topic cards ────────────────────────────────────*/
 
 .nx-family {
@@ -746,9 +879,73 @@ a.nx-eyebrow:hover {
   content: none;
 }
 .notes-prose blockquote strong {
+  color: var(--nx-navy);
+}
+/* ⚠ Only the bold that OPENS a line is a label. remarkNotesBlocks leaves the
+ * whole panel as ONE paragraph — `strong … <br> strong … <br> strong …` — so
+ * the leading labels are exactly `p > strong:first-child` and `br + strong`,
+ * and nothing else in the panel is one. Styling every `strong` (what this rule
+ * did until 2026-08-29) also opened a 6.5rem column under mid-sentence
+ * emphasis — "factorize **completely**." — and blew a hole in the line; 37 of
+ * the 313 authored lines carry a second bold. Keep the two selectors in sync
+ * with the mobile block below. */
+.notes-prose blockquote p > strong:first-child,
+.notes-prose blockquote br + strong {
   display: inline-block;
   min-width: 6.5rem;
-  color: var(--nx-navy);
+}
+
+/* The Quick-revision card on a phone (Adrian, phone review 2026-08-29: every
+ * entry "breaks mid-sentence"). Below ~640px the label column stops working:
+ * a formula longer than the ~260px left beside a 6.5rem label wraps back to
+ * the panel's LEFT EDGE, so its tail interleaves with the next entry's label
+ * and the panel stops reading as a table at all. So each entry stacks —
+ * label on its own line, formula under it at the full panel width — and gets
+ * its separation from a margin instead of from a 2.1 line-height.
+ *
+ * ⚠ `display: block` must stay on the two leading-label selectors ONLY. A
+ * blanket `blockquote strong { display: block }` throws every mid-sentence
+ * bold onto its own line and strands the punctuation after it.
+ * ⚠ No `text-transform: uppercase` on these labels, tempting as the house
+ * label voice is: 15 of the 307 labels carry inline KaTeX ($A$, $P$), and
+ * uppercasing rendered maths changes what it says. Navy + weight is the
+ * separation; sentence case keeps 48-character labels readable. */
+@media (max-width: 640px) {
+  .notes-prose blockquote {
+    /* Same trade as the narrow-screen card padding below: buy the maths a few
+     * more millimetres rather than let it wrap. */
+    padding: 0.8rem 0.85rem;
+  }
+  .notes-prose blockquote p {
+    /* 2.1 is a label-column line height. Wrapped inline KaTeX needs far less —
+     * tall inline-blocks (\dfrac) still grow their own line box, so only the
+     * plain lines tighten. */
+    line-height: 1.7;
+  }
+  .notes-prose blockquote p > strong:first-child,
+  .notes-prose blockquote br + strong {
+    display: block;
+    min-width: 0;
+    margin: 0.95rem 0 0.1rem;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+  }
+  .notes-prose blockquote p > strong:first-child {
+    margin-top: 0;
+  }
+  /* Each <br> now sits in front of a block-level label, where it paints one
+   * empty line. Browsers without :has() simply get a bigger gap between
+   * entries — the stacking itself does not depend on this rule. */
+  .notes-prose blockquote br:has(+ strong) {
+    display: none;
+  }
+  /* "## Techniques" is an ordered list of multi-line prose. At 0.22rem apart
+   * (.notes-prose li) consecutive items run together once each wraps to four
+   * or five lines on a phone; scoped to the card so worked-example and unit
+   * lists keep their tighter rhythm. */
+  .nx-revision-body ol > li {
+    margin: 0.6rem 0;
+  }
 }
 
 /* ── Semantic blocks (see lib/notes-blocks.ts) ───────────────────────────────*/
@@ -1707,6 +1904,23 @@ a.nx-eyebrow:hover {
   }
   .nx-u-keyformula {
     box-shadow: none;
+  }
+
+  /* The level tiles are solid colour by design; on paper that is a page of
+   * toner, so re-point their tokens and they print as outlined cards like
+   * everything else. */
+  .nx-hero {
+    --nx-hero-bg: #fff;
+    --nx-hero-ink: var(--nx-ink);
+    --nx-hero-sub: var(--nx-ink-soft);
+    --nx-hero-chip: none;
+    --nx-hero-bloom: transparent;
+    min-height: 0;
+    border: 1px solid var(--nx-line);
+    box-shadow: none;
+  }
+  .nx-hero-chip {
+    border: 1px solid var(--nx-line);
   }
 
   .notes-shell {

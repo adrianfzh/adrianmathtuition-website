@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildStudentMarking, type MarkingRunRow } from './portal-marking';
+import { answerLines, buildStudentMarking, type MarkingRunRow } from './portal-marking';
 
 // Minimal shape of one entry in result_json.results[], matching what the bot's
 // paper-marker writes and what mark-triage.ts reads.
@@ -35,6 +35,7 @@ function run(over: Partial<MarkingRunRow> & { id: string }): MarkingRunRow {
     total_awarded: null,
     total_max: null,
     annotated_pdf_url: null,
+    photos_pdf_url: null,
     pdf_url: null,
     released_at: '2026-08-01T09:00:00.000Z',
     result_json: { results: [] },
@@ -168,14 +169,24 @@ describe('buildStudentMarking — per question', () => {
     expect(out.papers[0].questions).toHaveLength(3);
   });
 
-  it('prefers the annotated PDF and falls back to the plain one', () => {
+  it('opens Adrian\'s pen first, then the red-pen page images, then the full report', () => {
+    const results = { results: [q({ n: '1', awarded: 1, max: 1 })] };
     const rows = [
-      run({ id: 'both', annotated_pdf_url: 'https://x/annotated.pdf', pdf_url: 'https://x/plain.pdf', result_json: { results: [q({ n: '1', awarded: 1, max: 1 })] } }),
-      run({ id: 'plain', created_at: '2026-07-01T02:00:00Z', pdf_url: 'https://x/plain.pdf', result_json: { results: [q({ n: '1', awarded: 1, max: 1 })] } }),
-      run({ id: 'none', created_at: '2026-06-01T02:00:00Z', result_json: { results: [q({ n: '1', awarded: 1, max: 1 })] } }),
+      run({ id: 'penned', annotated_pdf_url: 'https://x/annotated.pdf', photos_pdf_url: 'https://x/images.pdf', pdf_url: 'https://x/full.pdf', result_json: results }),
+      run({ id: 'images', created_at: '2026-07-04T02:00:00Z', photos_pdf_url: 'https://x/images.pdf', pdf_url: 'https://x/full.pdf', result_json: results }),
+      run({ id: 'full-only', created_at: '2026-07-01T02:00:00Z', pdf_url: 'https://x/full.pdf', result_json: results }),
+      run({ id: 'none', created_at: '2026-06-01T02:00:00Z', result_json: results }),
     ];
-    const urls = buildStudentMarking(rows).papers.map(p => p.pdfUrl);
-    expect(urls).toEqual(['https://x/annotated.pdf', 'https://x/plain.pdf', null]);
+    const papers = buildStudentMarking(rows).papers;
+    expect(papers.map(p => p.pdfUrl)).toEqual([
+      'https://x/annotated.pdf', 'https://x/images.pdf', 'https://x/full.pdf', null,
+    ]);
+    // The full report stays reachable as a secondary link — except when it IS
+    // the primary (nothing else rendered), where a second identical link would
+    // just be clutter.
+    expect(papers.map(p => p.fullPdfUrl)).toEqual([
+      'https://x/full.pdf', 'https://x/full.pdf', null, null,
+    ]);
   });
 });
 
@@ -424,6 +435,41 @@ describe('buildStudentMarking — annotated pages (the ✂️ clipper)', () => {
       run({ id: 'a', result_json: { results: [q({ n: '1', awarded: 1, max: 2 })] } }),
     ]);
     expect(papers[0].pages).toEqual([]);
+  });
+});
+
+describe('answerLines — the Show-answer reveal', () => {
+  it('splits a packed multi-part answer at its part markers', () => {
+    expect(answerLines('(i) $p=4$, $q=7$. (ii) $3p=12$ and $2q=14$; since $12<14$, $3p$ is smaller.')).toEqual([
+      '(i) $p=4$, $q=7$.',
+      '(ii) $3p=12$ and $2q=14$;',
+      'since $12<14$, $3p$ is smaller.',
+    ]);
+  });
+
+  it('breaks after a top-level semicolon but never inside $…$ math', () => {
+    expect(answerLines('$x = 2$; $y = 3$')).toEqual(['$x = 2$;', '$y = 3$']);
+    // The semicolon here lives inside the math span — one line, untouched.
+    expect(answerLines('$\\{x : x > 2 ; x \\in \\mathbb{Z}\\}$')).toEqual([
+      '$\\{x : x > 2 ; x \\in \\mathbb{Z}\\}$',
+    ]);
+  });
+
+  it('respects real newlines and drops blank lines', () => {
+    expect(answerLines('$x = 3$\n\n$y = 5$')).toEqual(['$x = 3$', '$y = 5$']);
+  });
+
+  it('leaves a single plain answer alone', () => {
+    expect(answerLines('$x = 3$')).toEqual(['$x = 3$']);
+    // "(2, 3)" is a coordinate, not a part marker — digits never match.
+    expect(answerLines('The point is $(2, 3)$ and (3, 4) is not on the curve.')).toEqual([
+      'The point is $(2, 3)$ and (3, 4) is not on the curve.',
+    ]);
+  });
+
+  it('does not mistake function notation for a part marker', () => {
+    // "f(a)" — the bracket hugs the f, so no whitespace precedes it.
+    expect(answerLines('f(a) = 3 when a = 2')).toEqual(['f(a) = 3 when a = 2']);
   });
 });
 

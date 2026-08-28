@@ -47,7 +47,26 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'no practice for this paper' }, { status: 404 });
   }
 
-  const html = buildPracticePdfHtml(paper, account.display_name);
+  // Bank-pick items (a `questions.id` uuid) print their marks, exam-style;
+  // generated items (id null) never do. One query for the whole paper — and
+  // fail-soft, since a lookup hiccup should never block the download itself.
+  const bankIds = [...new Set(paper.practice.map(it => it.id).filter((id): id is string => !!id))];
+  let marksById: Record<string, number> | undefined;
+  if (bankIds.length > 0) {
+    try {
+      const { data: qRows, error } = await sb.from('questions').select('id, total_marks').in('id', bankIds);
+      if (!error && qRows) {
+        marksById = {};
+        for (const q of qRows as { id: string; total_marks: number | null }[]) {
+          if (typeof q.total_marks === 'number' && q.total_marks > 0) marksById[q.id] = q.total_marks;
+        }
+      }
+    } catch {
+      // no marks map — the PDF still renders, just without the [n] brackets
+    }
+  }
+
+  const html = buildPracticePdfHtml(paper, account.display_name, marksById);
 
   const browser = await getBrowser();
   const page = await browser.newPage();

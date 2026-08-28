@@ -37,6 +37,68 @@ const MAX_EDGE = 1600;
 const MAX_DATA_URL = 3_600_000;
 const MIN_DRAG_PX = 12;
 
+// Corner-handle touch target: generous vs. the ~14px visible dot so a finger
+// can grab a corner without precision aim (Adrian's phone walkthrough).
+const HANDLE_HIT_PX = 28;
+
+interface Point { x: number; y: number }
+type Corner = 'nw' | 'ne' | 'sw' | 'se';
+
+// What the current pointer gesture does to the box, decided once at
+// pointerdown by hit-testing against the box that already existed. 'move'
+// and 'resize' only ever start from a real box, so they carry a non-null
+// startRect; 'draw' carries whatever box preceded it (or null) purely so a
+// gesture that collapses back to a tap can restore it instead of erasing it.
+type DragState =
+  | { mode: 'draw'; startPoint: Point; startRect: Rect | null }
+  | { mode: 'move'; startPoint: Point; startRect: Rect }
+  | { mode: 'resize'; corner: Corner; startPoint: Point; startRect: Rect };
+
+function clamp(v: number, min: number, max: number): number {
+  return Math.min(Math.max(v, min), max);
+}
+
+function insideRect(r: Rect, p: Point): boolean {
+  return p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h;
+}
+
+// Nearest corner within the hit radius, not just the first in listed order —
+// on a box near MIN_DRAG_PX the four hit-circles overlap each other.
+function hitCorner(r: Rect, p: Point): Corner | null {
+  const corners: [Corner, number, number][] = [
+    ['nw', r.x, r.y],
+    ['ne', r.x + r.w, r.y],
+    ['sw', r.x, r.y + r.h],
+    ['se', r.x + r.w, r.y + r.h],
+  ];
+  let best: Corner | null = null;
+  let bestDist = HANDLE_HIT_PX;
+  for (const [corner, cx, cy] of corners) {
+    const d = Math.hypot(p.x - cx, p.y - cy);
+    if (d <= bestDist) { best = corner; bestDist = d; }
+  }
+  return best;
+}
+
+function oppositeCorner(r: Rect, corner: Corner): Point {
+  return {
+    x: corner === 'nw' || corner === 'sw' ? r.x + r.w : r.x,
+    y: corner === 'nw' || corner === 'ne' ? r.y + r.h : r.y,
+  };
+}
+
+// Pushes `free` at least `min` away from `anchor`, preferring whichever side
+// `free` is already on; flips to the other side if the anchor has no room
+// left on that side (it sits within `min` of the surface edge).
+function enforceMin(free: number, anchor: number, min: number, boundMax: number): number {
+  const positive = free >= anchor;
+  let result = positive ? Math.max(free, anchor + min) : Math.min(free, anchor - min);
+  if (result < 0 || result > boundMax) {
+    result = positive ? anchor - min : anchor + min;
+  }
+  return clamp(result, 0, boundMax);
+}
+
 export default function ClipToNotes({ runId, paperName, pages }: {
   runId: string;
   paperName: string;
@@ -51,7 +113,7 @@ export default function ClipToNotes({ runId, paperName, pages }: {
   const [error, setError] = useState<string | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const surfaceRef = useRef<HTMLDivElement | null>(null);
-  const dragStart = useRef<{ x: number; y: number } | null>(null);
+  const dragRef = useRef<DragState | null>(null);
 
   // The page behind the overlay must not scroll under a finger that is
   // drawing a rectangle.
@@ -72,7 +134,7 @@ export default function ClipToNotes({ runId, paperName, pages }: {
   if (pages.length === 0) return null;
   const page = pages[Math.min(pageIdx, pages.length - 1)];
 
-  function pos(e: React.PointerEvent): { x: number; y: number } {
+  function pos(e: React.PointerEvent): Point {
     const el = surfaceRef.current!;
     const r = el.getBoundingClientRect();
     return {
@@ -81,34 +143,87 @@ export default function ClipToNotes({ runId, paperName, pages }: {
     };
   }
 
+  function surfaceSize(): { width: number; height: number } {
+    const r = surfaceRef.current?.getBoundingClientRect();
+    return { width: r?.width ?? 0, height: r?.height ?? 0 };
+  }
+
   function onPointerDown(e: React.PointerEvent) {
     if (saving) return;
     e.preventDefault();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     const p = pos(e);
-    dragStart.current = p;
     setSaved(false);
     setError(null);
+
+    if (rect) {
+      const corner = hitCorner(rect, p);
+      if (corner) {
+        dragRef.current = { mode: 'resize', corner, startPoint: p, startRect: rect };
+        return;
+      }
+      if (insideRect(rect, p)) {
+        dragRef.current = { mode: 'move', startPoint: p, startRect: rect };
+        return;
+      }
+    }
+    // Outside the box (or no box yet) — draw fresh, but remember the old box
+    // so a gesture that never turns into a real drag can restore it below.
+    dragRef.current = { mode: 'draw', startPoint: p, startRect: rect };
     setRect({ x: p.x, y: p.y, w: 0, h: 0 });
   }
 
   function onPointerMove(e: React.PointerEvent) {
-    const start = dragStart.current;
-    if (!start) return;
+    const drag = dragRef.current;
+    if (!drag) return;
     e.preventDefault();
     const p = pos(e);
+
+    if (drag.mode === 'draw') {
+      setRect({
+        x: Math.min(drag.startPoint.x, p.x),
+        y: Math.min(drag.startPoint.y, p.y),
+        w: Math.abs(p.x - drag.startPoint.x),
+        h: Math.abs(p.y - drag.startPoint.y),
+      });
+      return;
+    }
+
+    const { width, height } = surfaceSize();
+
+    if (drag.mode === 'move') {
+      const { startRect: start, startPoint } = drag;
+      setRect({
+        x: clamp(start.x + (p.x - startPoint.x), 0, Math.max(0, width - start.w)),
+        y: clamp(start.y + (p.y - startPoint.y), 0, Math.max(0, height - start.h)),
+        w: start.w,
+        h: start.h,
+      });
+      return;
+    }
+
+    // resize: the opposite corner is the fixed anchor; the dragged corner
+    // follows the pointer, clamped to the surface and to MIN_DRAG_PX.
+    const anchor = oppositeCorner(drag.startRect, drag.corner);
+    const px = enforceMin(p.x, anchor.x, MIN_DRAG_PX, width);
+    const py = enforceMin(p.y, anchor.y, MIN_DRAG_PX, height);
     setRect({
-      x: Math.min(start.x, p.x),
-      y: Math.min(start.y, p.y),
-      w: Math.abs(p.x - start.x),
-      h: Math.abs(p.y - start.y),
+      x: Math.min(anchor.x, px),
+      y: Math.min(anchor.y, py),
+      w: Math.abs(px - anchor.x),
+      h: Math.abs(py - anchor.y),
     });
   }
 
   function onPointerUp() {
-    if (!dragStart.current) return;
-    dragStart.current = null;
-    setRect(r => (r && r.w >= MIN_DRAG_PX && r.h >= MIN_DRAG_PX ? r : null));
+    const drag = dragRef.current;
+    if (!drag) return;
+    dragRef.current = null;
+    // Only a fresh draw can collapse to nothing (a tap outside the box) — in
+    // that case restore whatever box was there before, rather than wiping it.
+    if (drag.mode === 'draw') {
+      setRect(r => (r && r.w >= MIN_DRAG_PX && r.h >= MIN_DRAG_PX ? r : drag.startRect));
+    }
   }
 
   async function save() {
@@ -219,7 +334,20 @@ export default function ClipToNotes({ runId, paperName, pages }: {
                 <div
                   className="absolute border-2 border-amber-400 bg-amber-300/15 rounded-sm pointer-events-none"
                   style={{ left: rect.x, top: rect.y, width: rect.w, height: rect.h }}
-                />
+                >
+                  {/* Visual dots only — hit-testing happens in the surface's pointer handlers at a larger radius, not on these elements. */}
+                  {(['nw', 'ne', 'sw', 'se'] as const).map(corner => (
+                    <span
+                      key={corner}
+                      className="absolute w-3.5 h-3.5 rounded-full border-2 border-amber-400 bg-amber-300 shadow-sm pointer-events-none"
+                      style={{
+                        left: corner === 'nw' || corner === 'sw' ? 0 : '100%',
+                        top: corner === 'nw' || corner === 'ne' ? 0 : '100%',
+                        transform: 'translate(-50%, -50%)',
+                      }}
+                    />
+                  ))}
+                </div>
               )}
             </div>
           </div>
@@ -282,7 +410,7 @@ export default function ClipToNotes({ runId, paperName, pages }: {
                   className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy/20"
                 />
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs text-gray-400">Drag again to redo the box.</p>
+                  <p className="text-xs text-gray-400">Drag the box to move it, pull a corner to resize — or drag anywhere else to draw a new box.</p>
                   <button
                     type="button"
                     onClick={save}

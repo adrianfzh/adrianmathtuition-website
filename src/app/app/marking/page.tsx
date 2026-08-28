@@ -13,10 +13,12 @@
 import Link from 'next/link';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/lib/portal-marking';
+import { answerLines, buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/lib/portal-marking';
 import AnnotatedSolution from './AnnotatedSolution';
 import ClipToNotes from './ClipToNotes';
 import { mathHtml } from '@/lib/math-inline';
+import { SURFACES } from '@/lib/portal-theme';
+import PortalIcon from '@/components/PortalIcon';
 // Practice questions carry inline $…$ TeX — mathHtml KaTeXes only the math
 // spans, and this stylesheet is what makes the output render as maths.
 import 'katex/dist/katex.min.css';
@@ -30,13 +32,20 @@ const MAX_PAPERS = 40;
 // One literal, not a concatenation: supabase-js parses the select string at the
 // type level, and a `+` here widens it to `string` and loses the row type.
 const COLUMNS =
-  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, pdf_url, released_at, result_json';
+  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json';
 
-const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
+// Home's soft elevated card (lib/portal-theme's visual language) — this tab
+// wears the marked-work violet and the hand-in teal the way Home's tiles do,
+// so the colours mean the same thing everywhere.
+const CARD = 'bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)]';
+const M = SURFACES.marking;
+const S = SURFACES.submit;
 
-function scoreTint(pct: number | null): string {
+// Celebration is earned, not decoration: the chip goes solid emerald only at
+// 75%+ — the same bar the streak notice uses.
+function scoreChip(pct: number | null): string {
   if (pct === null) return 'bg-gray-100 text-gray-600';
-  if (pct >= 75) return 'bg-emerald-100 text-emerald-800';
+  if (pct >= 75) return 'bg-emerald-500 text-white shadow-[0_4px_12px_-4px_rgba(16,185,129,0.7)]';
   if (pct >= 50) return 'bg-amber-100 text-amber-800';
   return 'bg-rose-100 text-rose-800';
 }
@@ -90,33 +99,41 @@ export default async function MarkingPage() {
     <div className="space-y-4 pb-24 sm:pb-4">
       {/* One "Papers" surface (Adrian, 2026-08-28: Hand in + Marked merged) —
           submitting is the tab's FIRST action, so the merge hides nothing. */}
-      <h1 className="text-xl font-bold text-navy pt-1">Papers</h1>
+      <div className="flex items-center gap-2.5 pt-1">
+        <span className={`flex items-center justify-center w-9 h-9 rounded-2xl shrink-0 ${M.tile}`}>
+          <PortalIcon name={M.icon} className="w-5 h-5" />
+        </span>
+        <h1 className="text-xl font-bold text-navy">Papers</h1>
+      </div>
       <Link
         href="/app/submit"
-        className="flex items-center gap-3 bg-navy text-[hsl(45,100%,96%)] rounded-2xl px-4 py-3.5 font-semibold shadow-sm hover:opacity-90 active:scale-[0.98] transition"
+        className="flex items-center gap-3 bg-teal-500 text-white rounded-3xl px-4 py-3.5 font-semibold shadow-[0_8px_24px_-10px_rgba(20,184,166,0.8)] hover:brightness-105 active:scale-[0.98] transition"
       >
-        <span className="text-xl" aria-hidden>📷</span>
+        <span className="flex items-center justify-center w-9 h-9 rounded-2xl bg-white/25 shrink-0" aria-hidden>
+          <PortalIcon name={S.icon} className="w-5 h-5" />
+        </span>
         <span className="flex-1">Hand in a paper</span>
-        <span className="shrink-0 text-[hsl(43,90%,60%)] text-lg">›</span>
+        <span className="shrink-0 text-white/80 text-lg">›</span>
       </Link>
 
       {pending.length > 0 && (
-        <div className={`${CARD} p-4`}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">With Adrian</p>
+        // Teal = the hand-in surface, so papers sitting with Adrian wear it too.
+        <div className="bg-teal-50 rounded-3xl p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-teal-700/80 mb-2">With Adrian</p>
           <ul className="space-y-1.5">
             {pending.map(p => (
-              <li key={p.id} className="text-sm text-gray-700 flex items-baseline justify-between gap-3">
+              <li key={p.id} className="text-sm text-teal-900 flex items-baseline justify-between gap-3">
                 <span className="min-w-0 break-words">
                   ⏳ {p.paper_name || 'Submitted paper'}
                   {typeof p.num_photos === 'number' && p.num_photos > 0 && (
-                    <span className="text-gray-400"> · {p.num_photos} page{p.num_photos === 1 ? '' : 's'}</span>
+                    <span className="text-teal-700/60"> · {p.num_photos} page{p.num_photos === 1 ? '' : 's'}</span>
                   )}
                 </span>
-                <span className="shrink-0 text-xs text-gray-400">{niceDate(String(p.created_at).slice(0, 10))}</span>
+                <span className="shrink-0 text-xs text-teal-700/60">{niceDate(String(p.created_at).slice(0, 10))}</span>
               </li>
             ))}
           </ul>
-          <p className="text-[11px] text-gray-400 mt-2">Handed in — it appears below once marked and released.</p>
+          <p className="text-[11px] text-teal-700/70 mt-2">Handed in — it appears below once marked and released.</p>
         </div>
       )}
 
@@ -189,7 +206,9 @@ function Summary({ papers, averagePct, trendPts }: {
   return (
     <div className="grid grid-cols-3 gap-3">
       <div className={`${CARD} p-4 text-center`}>
-        <p className="text-2xl font-bold text-navy">{latest.pct}%</p>
+        <p className="text-2xl font-bold text-navy">
+          {latest.pct}%{latest.pct !== null && latest.pct >= 75 ? ' 🎉' : ''}
+        </p>
         <p className="text-xs text-gray-500 mt-0.5">latest paper</p>
       </div>
       <div className={`${CARD} p-4 text-center`}>
@@ -208,24 +227,29 @@ function Paper({ paper }: { paper: StudentPaper }) {
   return (
     <div className={`${CARD} p-4`}>
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="font-bold text-navy leading-snug break-words">{paper.name}</p>
-          <p className="text-xs text-gray-500 mt-0.5">{niceDate(paper.date)}</p>
+        <div className="flex items-start gap-2.5 min-w-0">
+          <span className={`flex items-center justify-center w-9 h-9 rounded-xl shrink-0 ${M.tile}`} aria-hidden>
+            <PortalIcon name={M.icon} className="w-4.5 h-4.5" />
+          </span>
+          <div className="min-w-0">
+            <p className="font-bold text-navy leading-snug break-words">{paper.name}</p>
+            <p className="text-xs text-gray-500 mt-0.5">{niceDate(paper.date)}</p>
+          </div>
         </div>
-        <span className={`shrink-0 text-sm font-bold rounded-full px-3 py-1 ${scoreTint(paper.pct)}`}>
+        <span className={`shrink-0 text-sm font-bold rounded-full px-3 py-1 ${scoreChip(paper.pct)}`}>
           {paper.max > 0 ? `${paper.awarded}/${paper.max}` : '—'}
           {paper.pct !== null && <span className="font-semibold"> · {paper.pct}%</span>}
         </span>
       </div>
 
       {(paper.pdfUrl || paper.pages.length > 0) && (
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
           {paper.pdfUrl && (
             <a
               href={paper.pdfUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2 hover:opacity-90 transition-opacity"
+              className={`inline-block text-sm font-semibold ${M.tile} rounded-xl px-4 py-2 hover:opacity-90 transition-opacity`}
             >
               📄 Open your marked script
             </a>
@@ -234,6 +258,19 @@ function Paper({ paper }: { paper: StudentPaper }) {
               offered when the run has annotated page images to draw on. */}
           {paper.pages.length > 0 && (
             <ClipToNotes runId={paper.id} paperName={paper.name} pages={paper.pages} />
+          )}
+          {/* The primary button now opens the red-pen page images (Adrian's
+              phone review: "open the IMAGE pages, not the full assembled
+              PDF") — the full report stays one tap away. */}
+          {paper.fullPdfUrl && (
+            <a
+              href={paper.fullPdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[12px] text-gray-500 underline underline-offset-2 hover:text-navy"
+            >
+              Full report (PDF)
+            </a>
           )}
         </div>
       )}
@@ -256,6 +293,15 @@ function Paper({ paper }: { paper: StudentPaper }) {
                   </p>
                   <span className="shrink-0 text-xs font-semibold text-gray-600">{q.awarded}/{q.max}</span>
                 </div>
+                {/* The printed question, so the feedback below has something to
+                    refer to (Adrian's phone review: "students can't tell what
+                    the comment refers to"). */}
+                {q.prompt && (
+                  <MathText
+                    text={q.prompt}
+                    className="text-[12.5px] text-gray-600 mt-1.5 leading-snug border-l-2 border-gray-200 pl-2"
+                  />
+                )}
                 {q.schemes.length > 0 && (
                   // SEAB teacher-margin shorthand, per part — the same codes a
                   // school marker writes ("M1 A0" = method earned, accuracy lost).
@@ -356,7 +402,13 @@ function Paper({ paper }: { paper: StudentPaper }) {
                     <summary className="cursor-pointer text-xs font-semibold text-emerald-700 list-none">
                       Show answer
                     </summary>
-                    <MathText text={it.answer} className="text-[13px] text-emerald-800 mt-1 whitespace-pre-wrap" />
+                    {/* One line per part/statement (answerLines) — packed
+                        multi-part answers used to cram onto a single line. */}
+                    <div className="mt-1 space-y-1">
+                      {answerLines(it.answer).map((line, j) => (
+                        <MathText key={j} text={line} className="text-[13px] text-emerald-800" />
+                      ))}
+                    </div>
                   </details>
                 )}
               </li>

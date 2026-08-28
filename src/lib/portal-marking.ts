@@ -28,6 +28,8 @@ export interface MarkingRunRow {
   total_awarded: number | null;
   total_max: number | null;
   annotated_pdf_url: string | null;
+  /** The 🖼 images-only PDF — red pen on the student's own pages. */
+  photos_pdf_url: string | null;
   pdf_url: string | null;
   released_at: string | null;
   result_json: unknown;
@@ -104,8 +106,20 @@ export interface StudentPaper {
   questions: StudentQuestion[];
   /** Questions that dropped marks, biggest loss first — the revision list. */
   dropped: StudentQuestion[];
-  /** The annotated script if it was rendered, else the plain marked PDF. */
+  /**
+   * The marked script the student opens first: Adrian's own pen when he
+   * annotated a copy, else the 🖼 images-only PDF (red pen on their own
+   * pages, worked solutions in the footer), else the full report. Same
+   * precedence as the admin send row (docs/MARKING.md): once Adrian's pen is
+   * on a copy, that copy IS the paper — and the images copy beats the full
+   * report because it reads like a hand-marked script, not a dossier.
+   */
   pdfUrl: string | null;
+  /**
+   * The 📄 full assembled report (marked pages + typeset transcript sheets),
+   * kept reachable as a secondary link when it isn't already the primary.
+   */
+  fullPdfUrl: string | null;
   /**
    * The annotated page images (result_json.annotated_photos), page order —
    * what the ✂️ Save-to-My-Notes clipper draws on. Only the index and the
@@ -293,6 +307,40 @@ function annotatedPages(raw: unknown): { index: number; url: string }[] {
   return pages.sort((a, b) => a.index - b.index);
 }
 
+/**
+ * Split a practice answer into display lines. Bank answers pack multi-part
+ * results into one string — "(i) $p=4$. (ii) $3p=12$ …" — which crammed the
+ * Show-answer reveal onto a single wrapped line (Adrian's phone review, 7c).
+ * Breaks happen at real newlines, before a part marker ((i), (b), …) that
+ * follows whitespace, and after a top-level "; " — but never inside $…$, so a
+ * semicolon in set-builder notation or a piecewise definition stays put.
+ */
+export function answerLines(answer: string): string[] {
+  const out: string[] = [];
+  const partAhead = /^\((?:[ivx]{1,4}|[a-h])\)\s/;
+  for (const rawLine of answer.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line) continue;
+    let cur = '';
+    let inMath = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '$') inMath = !inMath;
+      if (!inMath && ch === '(' && /\s$/.test(cur) && cur.trim() && partAhead.test(line.slice(i))) {
+        out.push(cur.trim());
+        cur = '';
+      }
+      cur += ch;
+      if (!inMath && ch === ';' && line[i + 1] === ' ' && cur.trim()) {
+        out.push(cur.trim());
+        cur = '';
+      }
+    }
+    if (cur.trim()) out.push(cur.trim());
+  }
+  return out;
+}
+
 function toPracticeItem(raw: unknown): StudentPracticeItem | null {
   const r = asRecord(raw);
   if (!r) return null;
@@ -339,6 +387,11 @@ function toPaper(row: MarkingRunRow): StudentPaper | null {
     ? practiceRec.items.map(toPracticeItem).filter((x): x is StudentPracticeItem => x !== null)
     : [];
 
+  // Adrian's pen > red-pen page images > full report (see the StudentPaper
+  // field docs). `photos_pdf_url` is absent from rows selected by callers that
+  // never show a script (they read `undefined`, which the chain skips).
+  const pdfUrl = row.annotated_pdf_url || row.photos_pdf_url || row.pdf_url || null;
+
   return {
     id: row.id,
     date: String(row.created_at).slice(0, 10),
@@ -350,9 +403,8 @@ function toPaper(row: MarkingRunRow): StudentPaper | null {
     dropped: questions
       .filter(q => q.max > 0 && q.awarded < q.max)
       .sort((a, b) => (b.max - b.awarded) - (a.max - a.awarded) || a.questionNumber.localeCompare(b.questionNumber)),
-    // The annotated script is the one with red pen on their own handwriting;
-    // the plain PDF is the fallback when annotation never rendered.
-    pdfUrl: row.annotated_pdf_url || row.pdf_url || null,
+    pdfUrl,
+    fullPdfUrl: row.pdf_url && row.pdf_url !== pdfUrl ? row.pdf_url : null,
     pages: annotatedPages(rj?.annotated_photos),
     practice,
     practiceDocxUrl: str(practiceRec?.docx_url) || null,
