@@ -401,11 +401,39 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   gains a **`reconciliation`** key (`relabels` / `superseded_parts` / `superseded_results`
   / `notes`), relabelled entries keep `original_question_number`, and reconcile notes
   join the run-level review reasons. Fail-open: a reconcile crash keeps raw results.
-  ⚠ Annotation is baked per-photo BEFORE assembly, so a relabel can't fix margin ink —
-  the review note says so, cosmetic only. Regression proof (28 Aug): TYS re-marked
-  74/98 → 74/90 (both dups dropped, `tys` registry-grounds the denominator), Set 3
-  92/90 → 89/90 (double-shot merged, 4 relabels, one genuinely ambiguous page flagged
-  to triage instead of guessed).
+  Annotation is baked per-photo BEFORE assembly — the photo ink caveat this used to
+  carry is RESOLVED by the post-reconcile redraw (next bullet). Regression proof
+  (28 Aug): TYS re-marked 74/98 → 74/90 (both dups dropped, `tys` registry-grounds the
+  denominator), Set 3 92/90 → 89/90 (double-shot merged, 4 relabels, one genuinely
+  ambiguous page flagged to triage instead of guessed).
+- **🖋 The ink agrees with the reconciled marks — post-reconcile redraw + chip guarantee
+  (2026-08-28, bot `b43901e`):** Adrian's review of the reconcile fix found the annotated
+  PHOTOS — the images PDF is what he actually works from — never saw it: superseded score
+  chips stayed baked in the ink ("Q2 4/4" on the losing page of the 92/90 pair), TYS P1
+  page 1 was "hardly marked" (every chip had spilled to the footer), SEAB codes rendered
+  tiny, and chips sagged below their questions. Four fixes, all bot-side:
+  1. **Post-reconcile re-annotation** — each photo's winning annotation rung
+     (`annotateToBuffer`) now captures its render **grounding** (`{kind:'anns'|'margin', …}`),
+     carried through `markPhotoDirect` as `renderCtx`. After reconciliation,
+     **`ai/reannotate.js`** (pure, 7 tests) translates the audit into per-photo edits —
+     superseded reads LOSE their score chips (ticks stay: the working is still right or
+     wrong line by line), relabelled pages get the corrected question number in ink —
+     and `reannotateAndUpload` re-renders sharp-only (no AI cost, ~1–3s/photo), uploading
+     `-r`/`-r-sol` blob variants that replace the photo's URLs. A reconciliation note
+     names the redrawn photos; `annotation_debug` rows gain `reannotated: true`.
+     Fail-open: a redraw crash keeps the original ink.
+  2. **Chip guarantee** — on a PORTRAIT page, a score chip the rail can't seat goes to
+     the manufactured side strip (same red box, level with its part), NEVER the footer.
+     Only landscape two-up scans keep the old deep bands + footer, since their strip
+     sits past the facing page. Render-tested: a fully-inked portrait page grows
+     WIDER (strip), never TALLER (footer).
+  3. **SEAB codes larger** — tick-side M1/A1/B1 raised 0.52×/11px → 0.72×/floor 14;
+     box-side 0.6×/11 → 0.72×/floor 13. Also fixed: `buildPartKeys` was dropping
+     `scheme`/`codes_on_lines`, so the codes-on-box fallback for partly-attributed parts
+     had NEVER rendered anywhere.
+  4. **Chips level with the question** — portrait rail bands tightened to ~1.2
+     box-heights of the part's top; a spot that doesn't exist there diverts to the side
+     strip (still level) instead of sagging down the page.
 - **Runs link to their student** (2026-07-30): picking a student in the send row silently fires `phase:'set-student'` (bot store → `student_id`/`student_name` on `paper_marking_runs`, indexed; last pick wins). The organizing principle is the same as Lessons/Invoices — a link to the Airtable Student record, NOT per-student Blob folders (Blob is the shelf, the DB row is the index card). `phase:'by-student'` returns one student's runs; `/admin/students/[id]` renders them in a **Marked papers** section (overview tab, ✍️/🖼/📄 links). History rows show the tagged name. Runs marked before 2026-07-30 are untagged until re-loaded and re-picked.
 
 ## /admin/mark/triage — flagged-only review + the release gate (2026-08-11)
