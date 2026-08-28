@@ -13,13 +13,21 @@
 //   node scripts/derive-paper-blueprints.mjs                       # dump if present, else live
 //   node scripts/derive-paper-blueprints.mjs --from-dump data/prelim-rows.json
 //   node scripts/derive-paper-blueprints.mjs --live --save-dump data/prelim-rows.json
+//   node scripts/derive-paper-blueprints.mjs --top-up-jc   # one-time: append the JC (H2)
+//                                  # prelim rows to the existing dump — the pinned O-Level
+//                                  # rows are untouched, so AM/EM entries stay byte-identical
 //
 // Live mode reads SUPABASE_URL + SUPABASE_SECRET_KEY (fallback SUPABASE_SERVICE_ROLE_KEY)
 // from the environment or .env.local (parsed with dotenv, never grep — values are
 // trimmed because stored Vercel values can carry a trailing newline; see CLAUDE.md).
 //
+// Levels covered: AM + EM (O-Level) and JC — the H2 9758 family, mined from
+// questions.level='JC2' AND exam_type='Prelim' (JC2_H1 is a separate level value and
+// stays excluded; JC1 Promos/MYs are a different paper species and never feed the
+// blueprint, though they may still serve as candidates at build time).
+//
 // Dump format (data/prelim-rows.json): dictionary-compressed rows.
-//   meta.row_format: schoolIdx|year|level(A|E)|paper|qn|marks|difficulty(S|A|C|'')|
+//   meta.row_format: schoolIdx|year|level(A|E|J)|paper|qn|marks|difficulty(S|A|C|'')|
 //                    diagram(0|1)|n_parts(''=unknown, 0=no sub-parts)|topicIdx[;...]
 //   windows[]: '~'-joined packed rows; meta.windows[] gives row ranges so a partial
 //   (crashed) dump is detectable: windows.length / per-window counts vs meta.
@@ -43,6 +51,7 @@ const FROM_DUMP = argOf('--from-dump');
 const SAVE_DUMP = argOf('--save-dump');
 const OUT = argOf('--out') ?? OUT_DEFAULT;
 const LIVE = argv.includes('--live');
+const TOP_UP_JC = argv.includes('--top-up-jc');
 
 // ------------------------------------------------------------- helpers ----
 const pct = (sorted, p) => {
@@ -95,7 +104,7 @@ function rowsFromDump(path) {
     throw new Error(`dump is PARTIAL: ${windows.length}/${meta.windows.length} windows present`);
   }
   const rows = [];
-  const RE = /^(\d+)\|(\d{4})\|(A|E)\|(1|2)\|(\d+)\|(\d+)\|(S|A|C|)\|(0|1)\|(\d*)\|((\d+)(;\d+)*)?$/;
+  const RE = /^(\d+)\|(\d{4})\|(A|E|J)\|(1|2)\|(\d+)\|(\d+)\|(S|A|C|)\|(0|1)\|(\d*)\|((\d+)(;\d+)*)?$/;
   windows.forEach((w, wi) => {
     const packed = w.split('~');
     const [a, b] = meta.windows[wi].rows;
@@ -106,7 +115,7 @@ function rowsFromDump(path) {
       rows.push({
         school: schools[+m[1]],
         year: +m[2],
-        level: m[3] === 'A' ? 'AM' : 'EM',
+        level: m[3] === 'A' ? 'AM' : m[3] === 'E' ? 'EM' : 'JC',
         paper: m[4],
         qn: +m[5],
         marks: +m[6],
@@ -144,7 +153,9 @@ function loadEnv() {
   return { ...parsed, ...process.env };
 }
 
-async function rowsFromLive() {
+// bankLevels: the questions.level values to fetch. 'JC2' rows come back as
+// blueprint family 'JC' (H2 9758); AM/EM map to themselves.
+async function rowsFromLive(bankLevels = ['AM', 'EM', 'JC2']) {
   const env = loadEnv();
   const url = (env.SUPABASE_URL ?? '').trim();
   const key = (env.SUPABASE_SECRET_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim();
@@ -155,7 +166,7 @@ async function rowsFromLive() {
   const rows = [];
   for (let offset = 0; ; offset += 1000) {
     const res = await fetch(
-      `${url}/rest/v1/questions?select=${cols}&exam_type=eq.Prelim&deleted_at=is.null&level=in.(AM,EM)&order=id.asc&limit=1000&offset=${offset}`,
+      `${url}/rest/v1/questions?select=${cols}&exam_type=eq.Prelim&deleted_at=is.null&level=in.(${bankLevels.join(',')})&order=id.asc&limit=1000&offset=${offset}`,
       { headers: { apikey: key, Authorization: `Bearer ${key}` } },
     );
     if (!res.ok) throw new Error(`supabase ${res.status}: ${(await res.text()).slice(0, 200)}`);
@@ -164,7 +175,7 @@ async function rowsFromLive() {
       rows.push({
         school: q.school,
         year: q.year,
-        level: q.level,
+        level: q.level === 'JC2' ? 'JC' : q.level,
         paper: q.paper,
         qn: parseInt(q.question_number, 10),
         marks: q.total_marks,
@@ -183,7 +194,7 @@ async function rowsFromLive() {
   return rows;
 }
 
-function saveDump(rows, path) {
+function saveDump(rows, path, metaExtra = {}) {
   const schools = [...new Set(rows.map((r) => r.school))].sort();
   const topics = [...new Set(rows.flatMap((r) => r.topics))].sort();
   const sIdx = new Map(schools.map((s, i) => [s, i]));
@@ -192,7 +203,7 @@ function saveDump(rows, path) {
     a.school.localeCompare(b.school) || a.year - b.year || a.level.localeCompare(b.level) ||
     a.paper.localeCompare(b.paper) || a.qn - b.qn);
   const packed = sorted.map((r) =>
-    `${sIdx.get(r.school)}|${r.year}|${r.level === 'AM' ? 'A' : 'E'}|${r.paper}|${r.qn}|${r.marks}|` +
+    `${sIdx.get(r.school)}|${r.year}|${{ AM: 'A', EM: 'E', JC: 'J' }[r.level]}|${r.paper}|${r.qn}|${r.marks}|` +
     `${r.difficulty ? r.difficulty[0] : ''}|${r.diagram ? 1 : 0}|${r.nParts ?? ''}|` +
     `${r.topics.map((t) => tIdx.get(t)).join(';')}`);
   const windows = [], ranges = [];
@@ -203,14 +214,15 @@ function saveDump(rows, path) {
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, JSON.stringify({
     meta: {
-      source: "supabase questions table: exam_type='Prelim', level IN ('AM','EM'), deleted_at IS NULL",
+      source: "supabase questions table: exam_type='Prelim', deleted_at IS NULL; level IN ('AM','EM') plus level='JC2' packed as family J (H2 9758)",
       fetched_at: new Date().toISOString().slice(0, 10),
       expected_total_rows: packed.length,
-      row_format: "schoolIdx|year|level(A=AM,E=EM)|paper(1|2)|question_number|total_marks|difficulty(S|A|C|empty=null)|diagram(0|1)|n_parts(int, empty=null, 0=no sub-parts)|topicIdx[;topicIdx...]",
+      row_format: "schoolIdx|year|level(A=AM,E=EM,J=JC — bank level JC2, H2)|paper(1|2)|question_number|total_marks|difficulty(S|A|C|empty=null)|diagram(0|1)|n_parts(int, empty=null, 0=no sub-parts)|topicIdx[;topicIdx...]",
       diagram_def: 'image_url/figure_url/question_image_url non-empty OR images jsonb array non-empty',
       row_order: 'school, year, level, paper, question_number::int, id',
       row_sep: '~',
       windows: ranges,
+      ...metaExtra,
     },
     schools, topics, windows,
   }));
@@ -273,11 +285,27 @@ function groupBy(arr, keyFn) {
 }
 
 // ------------------------------------------- Step 3 + 4: analyse & emit ----
-const PAPER_KEYS = ['AM-P1', 'AM-P2', 'EM-P1', 'EM-P2'];
+const PAPER_KEYS = ['AM-P1', 'AM-P2', 'EM-P1', 'EM-P2', 'JC-P1', 'JC-P2'];
+// Preset mining (top-school-hard, vintage) stays scoped to the O-Level keys so
+// adding JC cannot reshape the presets Adrian already uses.
+const OLEVEL_KEYS = ['AM-P1', 'AM-P2', 'EM-P1', 'EM-P2'];
 const lpOf = (p) => `${p.level}-P${p.paper}`;
+const famOf = (key) => key.split('-')[0];
+
+// O-Level syllabus break: 4049/4052 first examined 2023, so post-2023 papers are
+// preferred as the base when there are enough of them. H2 9758 has been examined
+// unchanged since 2017 — no cut, every complete JC paper feeds the base.
+const SYLLABUS_CUT = { AM: 2023, EM: 2023, JC: null };
 
 const CALC_TOPICS = (t) => /^(Differentiation|Integration|Kinematics)/.test(t);
 const STATS_TOPICS = (t) => /^(Statistics|Probability)$/.test(t);
+
+// H2 9758 P2 is sectioned: Section A (pure math, ~40 marks) then Section B
+// (probability & statistics, ~60 marks). The bank's JC topic vocabulary
+// separates the families exactly — these topics occur ONLY in P2 across all
+// recovered H2 prelims, never in P1.
+const JC_STATS_RE = /^(Probability|Permutations and Combinations|Hypothesis Testing|Linear Regression|Sampling Methods|Distributions \()/;
+const isJcStats = (t) => JC_STATS_RE.test(t);
 
 function derive(rows) {
   const papers = reconstructPapers(rows);
@@ -309,20 +337,58 @@ function derive(rows) {
     if (comp.length === 0) continue;
     say(`\n== ${key} ==`);
 
-    // ---- year drift + base selection (prefer post-2023 syllabus papers)
-    const post = comp.filter((p) => p.year >= 2023);
-    const pre = comp.filter((p) => p.year < 2023);
-    const base = post.length >= 15 ? post : comp;
+    // ---- year drift + base selection (prefer post-syllabus-cut papers; JC has
+    // no cut — 9758 has been stable across the whole 2017-2025 window)
+    const cut = SYLLABUS_CUT[famOf(key)];
+    const post = cut ? comp.filter((p) => p.year >= cut) : [];
+    const pre = cut ? comp.filter((p) => p.year < cut) : [];
+    let base = post.length >= 15 ? post : comp;
+
+    // ---- H2 P2 sectioning: split every base paper into its pure prefix and
+    // stats suffix by topic family. Base papers must split CLEANLY (every pure
+    // question numbered before every stats question) — the odd one that doesn't
+    // is tagging/positional noise and leaves the base (it still feeds presence
+    // and co-occurrence stats through `comp` like any complete paper).
+    const sectioned = key === 'JC-P2';
+    let pureN = 0, statsN = 0, pureTotal = 0, statsTotal = 0;
+    if (sectioned) {
+      for (const p of base) {
+        p.pureQ = p.questions.filter((q) => !q.topics.some(isJcStats));
+        p.statsQ = p.questions.filter((q) => q.topics.some(isJcStats));
+      }
+      const clean = base.filter((p) => {
+        if (p.pureQ.length === 0 || p.statsQ.length === 0) return false;
+        return Math.max(...p.pureQ.map((q) => q.qn)) < Math.min(...p.statsQ.map((q) => q.qn));
+      });
+      if (clean.length < base.length) {
+        say(`sectioning: dropped ${base.length - clean.length} base paper(s) without a clean pure->stats split`);
+      }
+      base = clean;
+      pureN = mode(base.map((p) => p.pureQ.length));
+      statsN = mode(base.map((p) => p.statsQ.length));
+      pureTotal = mode(base.map((p) => p.pureQ.reduce((a, q) => a + q.marks, 0)));
+      statsTotal = mode(base.map((p) => p.statsQ.reduce((a, q) => a + q.marks, 0)));
+    }
+
     const totals = base.map((p) => p.total).sort((a, b) => a - b);
     const canonicalTotal = mode(base.map((p) => p.total));
     const ns = base.map((p) => p.n);
-    const typN = mode(ns);
-    say(`base = ${base.length} papers (${post.length >= 15 ? 'year>=2023' : 'all years'}); ` +
+    // For a sectioned paper the slot count is the modal SECTION split — mode of
+    // n alone can disagree by one and would smear the 40/60 boundary.
+    const typN = sectioned ? pureN + statsN : mode(ns);
+    if (sectioned) {
+      if (pureTotal + statsTotal !== canonicalTotal) {
+        say(`WARN: section mark modes ${pureTotal}+${statsTotal} != total ${canonicalTotal}; pinning stats to the remainder`);
+        statsTotal = canonicalTotal - pureTotal;
+      }
+      say(`sections: pure ${pureN} slots / ${pureTotal} marks, stats ${statsN} slots / ${statsTotal} marks (boundary slot ${pureN + 1})`);
+    }
+    say(`base = ${base.length} papers (${post.length >= 15 ? `year>=${cut}` : 'all years'}); ` +
       `totals mode=${canonicalTotal} range=[${totals[0]},${totals[totals.length - 1]}]; ` +
-      `Q-count mode=${typN} range=[${Math.min(...ns)},${Math.max(...ns)}]`);
+      `Q-count mode=${mode(ns)} range=[${Math.min(...ns)},${Math.max(...ns)}]`);
     if (pre.length >= 3 && post.length >= 3) {
       const preT = mode(pre.map((p) => p.total)), preN = mode(pre.map((p) => p.n));
-      say(`drift: pre-2023 mode total=${preT} Q=${preN}  ->  post-2023 mode total=${mode(post.map((p) => p.total))} Q=${mode(post.map((p) => p.n))}`);
+      say(`drift: pre-${cut} mode total=${preT} Q=${preN}  ->  post-${cut} mode total=${mode(post.map((p) => p.total))} Q=${mode(post.map((p) => p.n))}`);
     }
 
     // ---- mark-by-position (terciles over normalized position)
@@ -352,8 +418,26 @@ function derive(rows) {
         basePresence.set(t, (basePresence.get(t) ?? 0) + 1);
       }
     }
-    const mustAppear = [...basePresence.entries()].filter(([, k]) => k / base.length >= 0.8).map(([t]) => t).sort();
+    let mustAppear = [...basePresence.entries()].filter(([, k]) => k / base.length >= 0.8).map(([t]) => t).sort();
     const common = [...basePresence.entries()].filter(([, k]) => k / base.length >= 0.4 && k / base.length < 0.8).map(([t]) => t).sort();
+    // The TS builder (walkTopics) reserves one whole slot per must, so a paper
+    // can hold at most as many musts as it has slots — and a SECTION at most as
+    // many as its section's slots. H2 P2's Section B: seven stats topics clear
+    // 80% presence (multi-topic questions pack >6 families into 6 questions)
+    // but only ~6 stats slots exist. Trim the lowest-presence musts until they
+    // fit; the trimmed ones still live in the slot pools with their mined weight.
+    const capMusts = (list, cap, label) => {
+      if (list.length <= cap) return list;
+      const kept = [...list].sort((a, b) => basePresence.get(b) - basePresence.get(a)).slice(0, cap).sort();
+      say(`must-appear trimmed to ${label} capacity ${cap}: dropped ${list.filter((t) => !kept.includes(t)).join(', ')}`);
+      return kept;
+    };
+    mustAppear = sectioned
+      ? [
+          ...capMusts(mustAppear.filter((t) => !isJcStats(t)), pureN, 'pure-section'),
+          ...capMusts(mustAppear.filter(isJcStats), statsN, 'stats-section'),
+        ].sort()
+      : capMusts(mustAppear, typN, 'slot');
     say(`must-appear (>=80% of ${base.length} base papers): ${mustAppear.join(', ')}`);
     say(`common (40-80%): ${common.join(', ')}`);
 
@@ -398,26 +482,60 @@ function derive(rows) {
     if (neverTogether.length) say('never-together (both common, 0 co-papers): ' + neverTogether.map(([a, b, ka, kb]) => `${a}(${ka})+${b}(${kb})`).join('; '));
     if (alwaysTogether.length) say('together>=90% of papers-with-either: ' + alwaysTogether.map(([a, b, t, e]) => `${a}+${b} ${t}/${e}`).join('; '));
 
-    // ---- slots: map every base-paper question onto 1..typN normalized positions
+    // ---- slots: map every base-paper question onto 1..typN normalized
+    // positions. Sectioned papers map each SECTION onto its own slot range, so
+    // pure questions can never sample into stats slots or vice versa.
     const slotSamples = Array.from({ length: typN }, () => ({ marks: [], topics: new Map(), parts: [], diagrams: [] }));
+    const pushSample = (idx, q) => {
+      const slot = slotSamples[idx];
+      slot.marks.push(q.marks);
+      slot.diagrams.push(q.diagram ? 1 : 0);
+      if (q.nParts !== null) slot.parts.push(Math.max(1, q.nParts));
+      for (const t of q.topics) slot.topics.set(t, (slot.topics.get(t) ?? 0) + 1);
+    };
+    const mapOnto = (list, offset, width) => {
+      list.forEach((q, i) => {
+        const s = list.length === 1 ? 0 : Math.round((i / (list.length - 1)) * (width - 1));
+        pushSample(offset + s, q);
+      });
+    };
     for (const p of base) {
-      p.questions.forEach((q, i) => {
-        const s = p.n === 1 ? 0 : Math.round((i / (p.n - 1)) * (typN - 1));
-        const slot = slotSamples[s];
-        slot.marks.push(q.marks);
-        slot.diagrams.push(q.diagram ? 1 : 0);
-        if (q.nParts !== null) slot.parts.push(Math.max(1, q.nParts));
-        for (const t of q.topics) slot.topics.set(t, (slot.topics.get(t) ?? 0) + 1);
+      if (sectioned) {
+        mapOnto(p.pureQ, 0, pureN);
+        mapOnto(p.statsQ, pureN, statsN);
+      } else {
+        mapOnto(p.questions, 0, typN);
+      }
+    }
+    // Stats slots pool ONLY stats-family topics (and vice versa): the builder
+    // fetches candidates BY TOPIC, so a pure co-tag left in a Section B pool
+    // would let it fetch a pure-math question into Section B.
+    if (sectioned) {
+      slotSamples.forEach((s, i) => {
+        for (const t of [...s.topics.keys()]) {
+          if (isJcStats(t) !== i >= pureN) s.topics.delete(t);
+        }
       });
     }
-    const rawMeans = slotSamples.map((s) => mean(s.marks));
-    const scale = canonicalTotal / rawMeans.reduce((a, b) => a + b, 0);
-    // largest-remainder round so slot typicals sum exactly to the canonical total
-    const scaled = rawMeans.map((m) => m * scale);
-    const typs = scaled.map(Math.floor);
-    let deficit = canonicalTotal - typs.reduce((a, b) => a + b, 0);
-    const rema = scaled.map((x, i) => [x - Math.floor(x), i]).sort((a, b) => b[0] - a[0]);
-    for (let i = 0; i < deficit; i++) typs[rema[i][1]]++;
+    // largest-remainder round so slot typicals sum exactly to the canonical
+    // total — per SECTION for sectioned papers, so the 40/60 split is exact.
+    const typs = new Array(typN).fill(0);
+    const scaleRange = (from, to, target) => {
+      const raw = slotSamples.slice(from, to).map((s) => mean(s.marks));
+      const scale = target / raw.reduce((a, b) => a + b, 0);
+      const scaled = raw.map((m) => m * scale);
+      const floors = scaled.map(Math.floor);
+      const deficit = target - floors.reduce((a, b) => a + b, 0);
+      const rema = scaled.map((x, i) => [x - Math.floor(x), i]).sort((a, b) => b[0] - a[0]);
+      for (let i = 0; i < deficit; i++) floors[rema[i][1]]++;
+      floors.forEach((v, i) => { typs[from + i] = v; });
+    };
+    if (sectioned) {
+      scaleRange(0, pureN, pureTotal);
+      scaleRange(pureN, typN, statsTotal);
+    } else {
+      scaleRange(0, typN, canonicalTotal);
+    }
 
     const slots = slotSamples.map((s, i) => {
       const sorted = [...s.marks].sort((a, b) => a - b);
@@ -469,7 +587,11 @@ function derive(rows) {
     for (const sl of slots) {
       const prev = merged[merged.length - 1];
       const pos = sl.pos;
-      const isEdge = pos <= 2 || pos >= typN - 1;
+      // JC slots never merge into pos ranges: the TS builder (walkTopics, the
+      // reroll endpoint) expects one slot per numeric pos, and a range would
+      // also blur the P2 section boundary. (O-Level data has never actually
+      // produced a merge; the path stays for the mining contract.)
+      const isEdge = famOf(key) === 'JC' || pos <= 2 || pos >= typN - 1;
       if (prev && !isEdge && !prev.edge &&
         prev.marks[0] === sl.marks[0] && prev.marks[1] === sl.marks[1] &&
         cosine(prev.topic_pool, sl.topic_pool) >= 0.85) {
@@ -512,6 +634,15 @@ function derive(rows) {
     blueprint.papers[key] = {
       total_marks: canonicalTotal,
       question_count: [Math.min(...ns), typN, Math.max(...ns)],
+      ...(sectioned
+        ? {
+            section_boundary: pureN + 1,
+            notes:
+              `H2 9758 P2: slots 1-${pureN} are Section A (Pure Mathematics, ${pureTotal} marks); ` +
+              `slots ${pureN + 1}-${typN} are Section B (Probability and Statistics, ${statsTotal} marks). ` +
+              'section_boundary = first Section B slot.',
+          }
+        : {}),
       slots: slotsOut,
       must_appear: mustAppear,
       rules: {
@@ -578,7 +709,7 @@ function derive(rows) {
 
   // ---- diagram rate by topic (all prelim rows, per level) — report only
   say('\n== diagram rate by topic (all prelim rows) ==');
-  for (const level of ['AM', 'EM']) {
+  for (const level of ['AM', 'EM', 'JC']) {
     const byTopic = new Map();
     for (const r of rows) {
       if (r.level !== level) continue;
@@ -599,12 +730,14 @@ function derive(rows) {
     standard: { description: 'Balanced empirical shape — the base blueprint as-is.', overlay: {} },
   };
 
-  // top-school-hard: pooled topic mix of the most style-deviant multi-paper schools
+  // top-school-hard: pooled topic mix of the most style-deviant multi-paper
+  // schools — O-Level keys only, so the preset Adrian already uses cannot drift
+  // when JC joins the blueprint.
   const hardSchools = [...new Set(
-    PAPER_KEYS.flatMap((k) => (outliersByKey[k] ?? []).slice(0, 2).map((o) => o.school)),
+    OLEVEL_KEYS.flatMap((k) => (outliersByKey[k] ?? []).slice(0, 2).map((o) => o.school)),
   )].slice(0, 4);
   const hardMult = {};
-  for (const key of PAPER_KEYS) {
+  for (const key of OLEVEL_KEYS) {
     for (const o of (outliersByKey[key] ?? []).slice(0, 2)) {
       hardMult[o.topTopic] = Math.min(2, round2((hardMult[o.topTopic] ?? 1) + 0.3));
     }
@@ -641,9 +774,10 @@ function derive(rows) {
   groupPreset('AM-P2', 'calculus-forward-am-p2', CALC_TOPICS, 'Calculus-forward');
   groupPreset('EM-P2', 'stats-forward-em-p2', STATS_TOPICS, 'Stats-forward');
 
-  // vintage preset if pre-2023 totals differed (old 80/100 syllabus formats)
+  // vintage preset if pre-2023 totals differed (old 80/100 O-Level formats;
+  // JC is excluded — 9758 totals never moved)
   const vintageTotals = {};
-  for (const key of PAPER_KEYS) {
+  for (const key of OLEVEL_KEYS) {
     const pre = complete.filter((p) => lpOf(p) === key && p.year < 2023);
     if (pre.length >= 3) {
       const t = mode(pre.map((p) => p.total));
@@ -682,18 +816,63 @@ function sanityCheck(bp) {
     for (const t of paper.must_appear) {
       if (!poolTopics.has(t)) errs.push(`${key}: must-appear "${t}" missing from every slot pool`);
     }
+    // sectioned papers (JC-P2): pools must respect the boundary, per-section
+    // typicals must land the section totals exactly, and section musts must fit
+    // their section's slots (the builder reserves one slot per must).
+    if (paper.section_boundary) {
+      const b = paper.section_boundary;
+      const startOf = (slot) => (typeof slot.pos === 'string' ? Number(slot.pos.split('-')[0]) : slot.pos);
+      let pureTyp = 0, statsTyp = 0, statsSlots = 0;
+      for (const slot of paper.slots) {
+        const span = typeof slot.pos === 'string' ? slot.pos.split('-').map(Number).reduce((a, x) => x - a + 1) : 1;
+        if (startOf(slot) < b) pureTyp += slot.typ * span;
+        else { statsTyp += slot.typ * span; statsSlots += span; }
+        for (const p of slot.topic_pool) {
+          if (JC_STATS_RE.test(p.topic) !== startOf(slot) >= b) {
+            errs.push(`${key} slot ${slot.pos}: "${p.topic}" is on the wrong side of the section boundary`);
+          }
+        }
+      }
+      if (pureTyp + statsTyp !== paper.total_marks) {
+        errs.push(`${key}: section typicals ${pureTyp}+${statsTyp} != total ${paper.total_marks}`);
+      }
+      const statsMusts = paper.must_appear.filter((t) => JC_STATS_RE.test(t)).length;
+      if (statsMusts > statsSlots) errs.push(`${key}: ${statsMusts} stats must-appear topics for ${statsSlots} stats slots`);
+      const pureMusts = paper.must_appear.length - statsMusts;
+      if (pureMusts > paper.slots.length - statsSlots) errs.push(`${key}: ${pureMusts} pure must-appear topics for ${paper.slots.length - statsSlots} pure slots`);
+    }
   }
   if (errs.length) {
     console.error('SANITY CHECK FAILED:\n' + errs.join('\n'));
     process.exit(1);
   }
-  console.log('sanity checks passed: weights sum to 1, typicals within ±4 of totals, must-appear topics all present in pools');
+  console.log('sanity checks passed: weights sum to 1, typicals within ±4 of totals (exact per section where sectioned), must-appear topics all present in pools and within section capacity');
 }
 
 // ---------------------------------------------------------------- main ----
 async function main() {
   let rows;
-  if (FROM_DUMP || (!LIVE && existsSync(DUMP_DEFAULT))) {
+  if (TOP_UP_JC) {
+    // One-time JC append: keep the pinned O-Level rows exactly as dumped (so
+    // the AM/EM blueprint entries cannot move), fetch only the H2 prelims
+    // live, and re-save the combined dump so future runs reproduce all six
+    // entries from the dump alone.
+    const path = FROM_DUMP ?? DUMP_DEFAULT;
+    console.log(`reading dump: ${path}`);
+    const existing = rowsFromDump(path);
+    if (existing.some((r) => r.level === 'JC')) {
+      throw new Error('dump already contains JC rows — rerun without --top-up-jc');
+    }
+    const baseMeta = JSON.parse(readFileSync(path, 'utf8')).meta;
+    console.log('fetching JC (level=JC2, H2 9758) prelim rows from Supabase…');
+    const jc = await rowsFromLive(['JC2']);
+    console.log(`fetched ${jc.length} JC rows`);
+    rows = [...existing, ...jc];
+    saveDump(rows, SAVE_DUMP ?? path, {
+      olevel_fetched_at: baseMeta.fetched_at,
+      jc_fetched_at: new Date().toISOString().slice(0, 10),
+    });
+  } else if (FROM_DUMP || (!LIVE && existsSync(DUMP_DEFAULT))) {
     const path = FROM_DUMP ?? DUMP_DEFAULT;
     console.log(`reading dump: ${path}`);
     rows = rowsFromDump(path);

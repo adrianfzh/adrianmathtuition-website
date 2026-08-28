@@ -1,13 +1,15 @@
 {
- "derived_at": "2026-08-10",
+ "derived_at": "2026-08-28",
  "source": {
   "papers_complete": {
    "AM-P1": 126,
    "AM-P2": 126,
    "EM-P1": 111,
-   "EM-P2": 111
+   "EM-P2": 111,
+   "JC-P1": 147,
+   "JC-P2": 142
   },
-  "prelim_rows": 7308
+  "prelim_rows": 10669
  },
  "papers": {
   "AM-P1": {
@@ -2812,6 +2814,1030 @@
     "Statistics",
     "Trigonometry",
     "Vectors"
+   ],
+   "rules": {
+    "never_together": [],
+    "min_distinct_topics": 10
+   }
+  },
+  "JC-P1": {
+   "total_marks": 100,
+   "question_count": [
+    10,
+    11,
+    13
+   ],
+   "slots": [
+    {
+     "pos": 1,
+     "marks": [
+      4,
+      6
+     ],
+     "typ": 5,
+     "topic_pool": [
+      {
+       "topic": "Equations",
+       "weight": 0.236
+      },
+      {
+       "topic": "Graphing Techniques",
+       "weight": 0.228
+      },
+      {
+       "topic": "Inequalities",
+       "weight": 0.203
+      },
+      {
+       "topic": "Integration (Techniques)",
+       "weight": 0.089
+      },
+      {
+       "topic": "Series and Sequences",
+       "weight": 0.089
+      },
+      {
+       "topic": "Complex Numbers",
+       "weight": 0.057
+      },
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.049
+      },
+      {
+       "topic": "Differentiation (Rates of Change)",
+       "weight": 0.049
+      }
+     ],
+     "parts": [
+      1,
+      2
+     ],
+     "diagram_rate": 0.84
+    },
+    {
+     "pos": 2,
+     "marks": [
+      4,
+      7
+     ],
+     "typ": 6,
+     "topic_pool": [
+      {
+       "topic": "Graphing Techniques",
+       "weight": 0.213
+      },
+      {
+       "topic": "Inequalities",
+       "weight": 0.197
+      },
+      {
+       "topic": "Series and Sequences",
+       "weight": 0.142
+      },
+      {
+       "topic": "Integration (Techniques)",
+       "weight": 0.134
+      },
+      {
+       "topic": "Complex Numbers",
+       "weight": 0.094
+      },
+      {
+       "topic": "Differentiation (Maclaurin Series)",
+       "weight": 0.094
+      },
+      {
+       "topic": "Equations",
+       "weight": 0.071
+      },
+      {
+       "topic": "Differentiation (Tangents and Normals)",
+       "weight": 0.055
+      }
+     ],
+     "parts": [
+      1,
+      2
+     ],
+     "diagram_rate": 0.84
+    },
+    {
+     "pos": 3,
+     "marks": [
+      5,
+      8
+     ],
+     "typ": 7,
+     "topic_pool": [
+      {
+       "topic": "Graphing Techniques",
+       "weight": 0.168
+      },
+      {
+       "topic": "Vectors",
+       "weight": 0.152
+      },
+      {
+       "topic": "Inequalities",
+       "weight": 0.136
+      },
+      {
+       "topic": "Integration (Techniques)",
+       "weight": 0.128
+      },
+      {
+       "topic": "Complex Numbers",
+       "weight": 0.12
+      },
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.12
+      },
+      {
+       "topic": "Series and Sequences",
+       "weight": 0.096
+      },
+      {
+       "topic": "Functions",
+       "weight": 0.08
+      }
+     ],
+     "parts": [
+      2,
+      3
+     ],
+     "diagram_rate": 0.86
+    },
+    {
+     "pos": 4,
+     "marks": [
+      6,
+      9
+     ],
+     "typ": 7,
+     "topic_pool": [
+      {
+       "topic": "Graphing Techniques",
+       "weight": 0.255
+      },
+      {
+       "topic": "Inequalities",
+       "weight": 0.143
+      },
+      {
+       "topic": "Integration (Techniques)",
+       "weight": 0.119
+      },
+      {
+       "topic": "Complex Numbers",
+       "weight": 0.111
+      },
+      {
+       "topic": "Series and Sequences",
+       "weight": 0.103
+      },
+      {
+       "topic": "Differentiation (Maclaurin Series)",
+       "weight": 0.095
+      },
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.087
+      },
+      {
+       "topic": "Differentiation (Tangents and Normals)",
+       "weight": 0.087
+      }
+     ],
+     "parts": [
+      2,
+      3
+     ],
+     "diagram_rate": 0.83
+    },
+    {
+     "pos": 5,
+     "marks": [
+      7,
+      9
+     ],
+     "typ": 8,
+     "topic_pool": [
+      {
+       "topic": "Graphing Techniques",
+       "weight": 0.24
+      },
+      {
+       "topic": "Series and Sequences",
+       "weight": 0.147
+      },
+      {
+       "topic": "Vectors",
+       "weight": 0.132
+      },
+      {
+       "topic": "Differentiation (Maximum and Minimum)",
+       "weight": 0.101
+      },
+      {
+       "topic": "Integration (Techniques)",
+       "weight": 0.101
+      },
+      {
+       "topic": "Complex Numbers",
+       "weight": 0.101
+      },
+      {
+       "topic": "Functions",
+       "weight": 0.093
+      },
+      {
+       "topic": "Differentiation (Maclaurin Series)",
+       "weight": 0.085
+      }
+     ],
+     "parts": [
+      2,
+      3
+     ],
+     "diagram_rate": 0.85
+    },
+    {
+     "pos": 6,
+     "marks": [
+      7,
+      10
+     ],
+     "typ": 9,
+     "topic_pool": [
+      {
+       "topic": "Series and Sequences",
+       "weight": 0.181
+      },
+      {
+       "topic": "Integration (Techniques)",
+       "weight": 0.146
+      },
+      {
+       "topic": "Graphing Techniques",
+       "weight": 0.132
+      },
+      {
+       "topic": "Differentiation (Maclaurin Series)",
+       "weight": 0.125
+      },
+      {
+       "topic": "Functions",
+       "weight": 0.118
+      },
+      {
+       "topic": "Differentiation (Tangents and Normals)",
+       "weight": 0.111
+      },
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.097
+      },
+      {
+       "topic": "APGP",
+       "weight": 0.09
+      }
+     ],
+     "parts": [
+      2,
+      3
+     ],
+     "diagram_rate": 0.84
+    },
+    {
+     "pos": 7,
+     "marks": [
+      8,
+      11
+     ],
+     "typ": 10,
+     "topic_pool": [
+      {
+       "topic": "Complex Numbers",
+       "weight": 0.161
+      },
+      {
+       "topic": "Functions",
+       "weight": 0.153
+      },
+      {
+       "topic": "Differentiation (Maclaurin Series)",
+       "weight": 0.137
+      },
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.129
+      },
+      {
+       "topic": "Series and Sequences",
+       "weight": 0.113
+      },
+      {
+       "topic": "Parametric Equations",
+       "weight": 0.105
+      },
+      {
+       "topic": "Differentiation (Tangents and Normals)",
+       "weight": 0.105
+      },
+      {
+       "topic": "Vectors",
+       "weight": 0.097
+      }
+     ],
+     "parts": [
+      2,
+      3
+     ],
+     "diagram_rate": 0.84
+    },
+    {
+     "pos": 8,
+     "marks": [
+      9,
+      12
+     ],
+     "typ": 11,
+     "topic_pool": [
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.212
+      },
+      {
+       "topic": "Complex Numbers",
+       "weight": 0.158
+      },
+      {
+       "topic": "Functions",
+       "weight": 0.13
+      },
+      {
+       "topic": "Graphing Techniques",
+       "weight": 0.123
+      },
+      {
+       "topic": "Differentiation (Tangents and Normals)",
+       "weight": 0.103
+      },
+      {
+       "topic": "Parametric Equations",
+       "weight": 0.103
+      },
+      {
+       "topic": "APGP",
+       "weight": 0.089
+      },
+      {
+       "topic": "Integration (Techniques)",
+       "weight": 0.082
+      }
+     ],
+     "parts": [
+      2,
+      4
+     ],
+     "diagram_rate": 0.85
+    },
+    {
+     "pos": 9,
+     "marks": [
+      10,
+      13
+     ],
+     "typ": 12,
+     "topic_pool": [
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.203
+      },
+      {
+       "topic": "Vectors",
+       "weight": 0.182
+      },
+      {
+       "topic": "Complex Numbers",
+       "weight": 0.155
+      },
+      {
+       "topic": "Functions",
+       "weight": 0.128
+      },
+      {
+       "topic": "Integration (Techniques)",
+       "weight": 0.101
+      },
+      {
+       "topic": "Graphing Techniques",
+       "weight": 0.095
+      },
+      {
+       "topic": "Parametric Equations",
+       "weight": 0.068
+      },
+      {
+       "topic": "Series and Sequences",
+       "weight": 0.068
+      }
+     ],
+     "parts": [
+      2,
+      4
+     ],
+     "diagram_rate": 0.86
+    },
+    {
+     "pos": 10,
+     "marks": [
+      11,
+      13
+     ],
+     "typ": 12,
+     "topic_pool": [
+      {
+       "topic": "Integration (Differential Equations)",
+       "weight": 0.255
+      },
+      {
+       "topic": "Vectors",
+       "weight": 0.186
+      },
+      {
+       "topic": "APGP",
+       "weight": 0.143
+      },
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.124
+      },
+      {
+       "topic": "Differentiation (Maximum and Minimum)",
+       "weight": 0.106
+      },
+      {
+       "topic": "Parametric Equations",
+       "weight": 0.068
+      },
+      {
+       "topic": "Differentiation (Rates of Change)",
+       "weight": 0.068
+      },
+      {
+       "topic": "Differentiation (Tangents and Normals)",
+       "weight": 0.05
+      }
+     ],
+     "parts": [
+      3,
+      5
+     ],
+     "diagram_rate": 0.89
+    },
+    {
+     "pos": 11,
+     "marks": [
+      12,
+      15
+     ],
+     "typ": 13,
+     "topic_pool": [
+      {
+       "topic": "Integration (Differential Equations)",
+       "weight": 0.27
+      },
+      {
+       "topic": "Vectors",
+       "weight": 0.191
+      },
+      {
+       "topic": "APGP",
+       "weight": 0.14
+      },
+      {
+       "topic": "Differentiation (Maximum and Minimum)",
+       "weight": 0.129
+      },
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.107
+      },
+      {
+       "topic": "Parametric Equations",
+       "weight": 0.067
+      },
+      {
+       "topic": "Differentiation (Rates of Change)",
+       "weight": 0.062
+      },
+      {
+       "topic": "Differentiation (Tangents and Normals)",
+       "weight": 0.034
+      }
+     ],
+     "parts": [
+      3,
+      5
+     ],
+     "diagram_rate": 0.87
+    }
+   ],
+   "must_appear": [
+    "Complex Numbers",
+    "Graphing Techniques",
+    "Integration (Area and Volume)",
+    "Integration (Differential Equations)",
+    "Vectors"
+   ],
+   "rules": {
+    "never_together": [],
+    "min_distinct_topics": 9
+   }
+  },
+  "JC-P2": {
+   "total_marks": 100,
+   "question_count": [
+    10,
+    10,
+    12
+   ],
+   "section_boundary": 5,
+   "notes": "H2 9758 P2: slots 1-4 are Section A (Pure Mathematics, 40 marks); slots 5-10 are Section B (Probability and Statistics, 60 marks). section_boundary = first Section B slot.",
+   "slots": [
+    {
+     "pos": 1,
+     "marks": [
+      4,
+      9
+     ],
+     "typ": 7,
+     "topic_pool": [
+      {
+       "topic": "Complex Numbers",
+       "weight": 0.167
+      },
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.167
+      },
+      {
+       "topic": "Vectors",
+       "weight": 0.14
+      },
+      {
+       "topic": "Series and Sequences",
+       "weight": 0.14
+      },
+      {
+       "topic": "Graphing Techniques",
+       "weight": 0.123
+      },
+      {
+       "topic": "Inequalities",
+       "weight": 0.096
+      },
+      {
+       "topic": "Differentiation (Maclaurin Series)",
+       "weight": 0.088
+      },
+      {
+       "topic": "Equations",
+       "weight": 0.079
+      }
+     ],
+     "parts": [
+      2,
+      3
+     ],
+     "diagram_rate": 0.82
+    },
+    {
+     "pos": 2,
+     "marks": [
+      6,
+      10
+     ],
+     "typ": 9,
+     "topic_pool": [
+      {
+       "topic": "Vectors",
+       "weight": 0.179
+      },
+      {
+       "topic": "Complex Numbers",
+       "weight": 0.161
+      },
+      {
+       "topic": "Series and Sequences",
+       "weight": 0.134
+      },
+      {
+       "topic": "Functions",
+       "weight": 0.125
+      },
+      {
+       "topic": "Differentiation (Maclaurin Series)",
+       "weight": 0.107
+      },
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.098
+      },
+      {
+       "topic": "Integration (Techniques)",
+       "weight": 0.098
+      },
+      {
+       "topic": "Graphing Techniques",
+       "weight": 0.098
+      }
+     ],
+     "parts": [
+      2,
+      3
+     ],
+     "diagram_rate": 0.83
+    },
+    {
+     "pos": 3,
+     "marks": [
+      7,
+      12
+     ],
+     "typ": 11,
+     "topic_pool": [
+      {
+       "topic": "Vectors",
+       "weight": 0.188
+      },
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.151
+      },
+      {
+       "topic": "Complex Numbers",
+       "weight": 0.129
+      },
+      {
+       "topic": "Functions",
+       "weight": 0.118
+      },
+      {
+       "topic": "Differentiation (Maclaurin Series)",
+       "weight": 0.118
+      },
+      {
+       "topic": "Series and Sequences",
+       "weight": 0.113
+      },
+      {
+       "topic": "Graphing Techniques",
+       "weight": 0.097
+      },
+      {
+       "topic": "Differentiation (Tangents and Normals)",
+       "weight": 0.086
+      }
+     ],
+     "parts": [
+      2,
+      4
+     ],
+     "diagram_rate": 0.84
+    },
+    {
+     "pos": 4,
+     "marks": [
+      10,
+      14
+     ],
+     "typ": 13,
+     "topic_pool": [
+      {
+       "topic": "Vectors",
+       "weight": 0.314
+      },
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.164
+      },
+      {
+       "topic": "Complex Numbers",
+       "weight": 0.15
+      },
+      {
+       "topic": "Integration (Techniques)",
+       "weight": 0.079
+      },
+      {
+       "topic": "Parametric Equations",
+       "weight": 0.079
+      },
+      {
+       "topic": "Differentiation (Maximum and Minimum)",
+       "weight": 0.079
+      },
+      {
+       "topic": "Differentiation (Maclaurin Series)",
+       "weight": 0.071
+      },
+      {
+       "topic": "Differentiation (Tangents and Normals)",
+       "weight": 0.064
+      }
+     ],
+     "parts": [
+      2,
+      4
+     ],
+     "diagram_rate": 0.85
+    },
+    {
+     "pos": 5,
+     "marks": [
+      4,
+      8
+     ],
+     "typ": 7,
+     "topic_pool": [
+      {
+       "topic": "Permutations and Combinations",
+       "weight": 0.39
+      },
+      {
+       "topic": "Probability",
+       "weight": 0.308
+      },
+      {
+       "topic": "Distributions (DRV)",
+       "weight": 0.151
+      },
+      {
+       "topic": "Distributions (Binomial)",
+       "weight": 0.057
+      },
+      {
+       "topic": "Distributions (Normal)",
+       "weight": 0.05
+      },
+      {
+       "topic": "Distributions (Sampling)",
+       "weight": 0.044
+      }
+     ],
+     "parts": [
+      2,
+      3
+     ],
+     "diagram_rate": 0.82
+    },
+    {
+     "pos": 6,
+     "marks": [
+      6,
+      9
+     ],
+     "typ": 8,
+     "topic_pool": [
+      {
+       "topic": "Probability",
+       "weight": 0.256
+      },
+      {
+       "topic": "Distributions (DRV)",
+       "weight": 0.255
+      },
+      {
+       "topic": "Permutations and Combinations",
+       "weight": 0.163
+      },
+      {
+       "topic": "Distributions (Binomial)",
+       "weight": 0.11
+      },
+      {
+       "topic": "Linear Regression",
+       "weight": 0.076
+      },
+      {
+       "topic": "Distributions (Sampling)",
+       "weight": 0.052
+      },
+      {
+       "topic": "Hypothesis Testing",
+       "weight": 0.047
+      },
+      {
+       "topic": "Distributions (Normal)",
+       "weight": 0.041
+      }
+     ],
+     "parts": [
+      2,
+      4
+     ],
+     "diagram_rate": 0.81
+    },
+    {
+     "pos": 7,
+     "marks": [
+      7,
+      10
+     ],
+     "typ": 9,
+     "topic_pool": [
+      {
+       "topic": "Distributions (Binomial)",
+       "weight": 0.178
+      },
+      {
+       "topic": "Distributions (DRV)",
+       "weight": 0.162
+      },
+      {
+       "topic": "Probability",
+       "weight": 0.15
+      },
+      {
+       "topic": "Linear Regression",
+       "weight": 0.126
+      },
+      {
+       "topic": "Hypothesis Testing",
+       "weight": 0.108
+      },
+      {
+       "topic": "Distributions (Normal)",
+       "weight": 0.102
+      },
+      {
+       "topic": "Permutations and Combinations",
+       "weight": 0.096
+      },
+      {
+       "topic": "Distributions (Sampling)",
+       "weight": 0.078
+      }
+     ],
+     "parts": [
+      2,
+      4
+     ],
+     "diagram_rate": 0.8
+    },
+    {
+     "pos": 8,
+     "marks": [
+      8,
+      12
+     ],
+     "typ": 10,
+     "topic_pool": [
+      {
+       "topic": "Distributions (Binomial)",
+       "weight": 0.186
+      },
+      {
+       "topic": "Linear Regression",
+       "weight": 0.181
+      },
+      {
+       "topic": "Distributions (Normal)",
+       "weight": 0.145
+      },
+      {
+       "topic": "Hypothesis Testing",
+       "weight": 0.131
+      },
+      {
+       "topic": "Distributions (Sampling)",
+       "weight": 0.113
+      },
+      {
+       "topic": "Distributions (DRV)",
+       "weight": 0.09
+      },
+      {
+       "topic": "Probability",
+       "weight": 0.086
+      },
+      {
+       "topic": "Permutations and Combinations",
+       "weight": 0.068
+      }
+     ],
+     "parts": [
+      3,
+      4
+     ],
+     "diagram_rate": 0.82
+    },
+    {
+     "pos": 9,
+     "marks": [
+      11,
+      13
+     ],
+     "typ": 13,
+     "topic_pool": [
+      {
+       "topic": "Distributions (Normal)",
+       "weight": 0.241
+      },
+      {
+       "topic": "Hypothesis Testing",
+       "weight": 0.23
+      },
+      {
+       "topic": "Linear Regression",
+       "weight": 0.135
+      },
+      {
+       "topic": "Distributions (Sampling)",
+       "weight": 0.112
+      },
+      {
+       "topic": "Distributions (Binomial)",
+       "weight": 0.107
+      },
+      {
+       "topic": "Probability",
+       "weight": 0.073
+      },
+      {
+       "topic": "Distributions (DRV)",
+       "weight": 0.051
+      },
+      {
+       "topic": "Permutations and Combinations",
+       "weight": 0.051
+      }
+     ],
+     "parts": [
+      4,
+      5
+     ],
+     "diagram_rate": 0.8
+    },
+    {
+     "pos": 10,
+     "marks": [
+      12,
+      14
+     ],
+     "typ": 13,
+     "topic_pool": [
+      {
+       "topic": "Distributions (Normal)",
+       "weight": 0.243
+      },
+      {
+       "topic": "Hypothesis Testing",
+       "weight": 0.233
+      },
+      {
+       "topic": "Distributions (Binomial)",
+       "weight": 0.164
+      },
+      {
+       "topic": "Distributions (Sampling)",
+       "weight": 0.09
+      },
+      {
+       "topic": "Linear Regression",
+       "weight": 0.085
+      },
+      {
+       "topic": "Probability",
+       "weight": 0.079
+      },
+      {
+       "topic": "Distributions (DRV)",
+       "weight": 0.074
+      },
+      {
+       "topic": "Permutations and Combinations",
+       "weight": 0.032
+      }
+     ],
+     "parts": [
+      4,
+      5
+     ],
+     "diagram_rate": 0.82
+    }
+   ],
+   "must_appear": [
+    "Distributions (Binomial)",
+    "Distributions (DRV)",
+    "Distributions (Normal)",
+    "Hypothesis Testing",
+    "Permutations and Combinations",
+    "Probability"
    ],
    "rules": {
     "never_together": [],

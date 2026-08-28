@@ -83,12 +83,17 @@ describe('question/answer markdown', () => {
 });
 
 describe('exam-format facts', () => {
-  it('carries the real O-Level duration for all four mock papers', () => {
+  it('carries the real exam duration for every blueprinted paper', () => {
     expect(DURATIONS['AM-P1']).toBe('2 hours 15 minutes');
     expect(DURATIONS['AM-P2']).toBe('2 hours 15 minutes');
     expect(DURATIONS['EM-P1']).toBe('2 hours 15 minutes');
     expect(DURATIONS['EM-P2']).toBe('2 hours 15 minutes');
+    // H2 9758 — pre-staged for JC mocks (blueprint family key 'JC')
+    expect(DURATIONS['JC-P1']).toBe('3 hours');
+    expect(DURATIONS['JC-P2']).toBe('3 hours');
     expect(paperDuration('AM', 'P1')).toBe('2 hours 15 minutes');
+    // student level keys (JC1/JC2) deliberately do NOT hit the JC entries —
+    // enablement must map them to the 'JC' family first (see DURATIONS note)
     expect(paperDuration('JC2', 'P1')).toBeNull();
   });
 
