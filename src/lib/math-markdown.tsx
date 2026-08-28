@@ -27,10 +27,13 @@ import { prepareMath, DOLLAR_MACRO } from './math-prep';
  */
 export function fixMathFences(src: string): string {
   return src
-    // If $$ is immediately followed by non-whitespace, insert a newline after it
-    .replace(/\$\$(?=\S)/g, () => '$$\n')
-    // If $$ is immediately preceded by non-whitespace, insert a newline before it
-    .replace(/([^\n\s])\$\$/g, (_, c: string) => `${c}\n$$`);
+    // If $$ is followed by content on the SAME line — hugging it or padded by
+    // spaces ("$$ 5^{x} = …", Adrian's phone review 2026-08-29: the padded form
+    // rendered raw because only the hugging form was caught) — break after it,
+    // eating the padding so the fence line is clean.
+    .replace(/\$\$[ \t]*(?=\S)/g, () => '$$\n')
+    // Same-line content before $$ (spaces allowed) → break before it.
+    .replace(/([^\n\s])[ \t]*\$\$/g, (_, c: string) => `${c}\n$$`);
 }
 
 /** KaTeX options tuned for the authored content (loose mode, never throws). */

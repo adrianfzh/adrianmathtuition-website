@@ -41,12 +41,19 @@ describe('fixMathFences', () => {
     expect(fixMathFences('$$a$$then$$b$$')).toBe('$$\na\n$$\nthen\n$$\nb\n$$');
   });
 
-  // Documents a deliberate limit of the production behaviour: only delimiters
-  // GLUED to non-whitespace get a line break. `$$ then $$` keeps its spaces, so
-  // the inner delimiters stay on the prose line. Left as-is — this is the
-  // long-standing /revise behaviour and the authored content does not hit it.
-  it('leaves space-separated delimiters on the prose line', () => {
-    expect(fixMathFences('$$a$$ then $$b$$')).toBe('$$\na\n$$ then $$\nb\n$$');
+  // Space-PADDED delimiters fence too (was a documented limit until Adrian's
+  // 2026-08-29 phone review: a practice stem authored as "$$ 5^{x} = … $$"
+  // rendered as raw dollars — only hugging delimiters were being caught).
+  it('fences space-padded delimiters, eating the padding', () => {
+    expect(fixMathFences('the equations $$ 5^{x} = 4\\sqrt{2^{3y}}. $$ [4]')).toBe(
+      'the equations\n$$\n5^{x} = 4\\sqrt{2^{3y}}.\n$$\n[4]',
+    );
+    expect(fixMathFences('$$a$$ then $$b$$')).toBe('$$\na\n$$\nthen\n$$\nb\n$$');
+  });
+
+  it('stays idempotent on the padded form as well', () => {
+    const once = fixMathFences('prose $$ x+1 $$ more');
+    expect(fixMathFences(once)).toBe(once);
   });
 
   it('passes plain prose through unchanged', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { answerLines, buildStudentMarking, type MarkingRunRow } from './portal-marking';
+import { answerLines, promptLines, buildStudentMarking, type MarkingRunRow } from './portal-marking';
 
 // Minimal shape of one entry in result_json.results[], matching what the bot's
 // paper-marker writes and what mark-triage.ts reads.
@@ -470,6 +470,42 @@ describe('answerLines — the Show-answer reveal', () => {
   it('does not mistake function notation for a part marker', () => {
     // "f(a)" — the bracket hugs the f, so no whitespace precedes it.
     expect(answerLines('f(a) = 3 when a = 2')).toEqual(['f(a) = 3 when a = 2']);
+  });
+});
+
+describe('promptLines — the question-stem line breaks', () => {
+  it('splits a packed multi-part stem at its part markers', () => {
+    expect(promptLines(
+      'Given that $x^2+\\tfrac{1}{x^2}=14$ and $x>0$, find (i) $x+\\tfrac{1}{x}$ (ii) $\\left(x-\\tfrac{1}{x}\\right)^2$.'
+    )).toEqual([
+      'Given that $x^2+\\tfrac{1}{x^2}=14$ and $x>0$, find',
+      '(i) $x+\\tfrac{1}{x}$',
+      '(ii) $\\left(x-\\tfrac{1}{x}\\right)^2$.',
+    ]);
+  });
+
+  it('never splits on a marker-shaped bracket inside $…$ math', () => {
+    // "f(i) = 2i" lives entirely inside the math span — one line, untouched.
+    expect(promptLines('$f(i) = 2i$')).toEqual(['$f(i) = 2i$']);
+  });
+
+  it('does not split on a top-level semicolon, unlike answerLines', () => {
+    // Prose stems use semicolons as ordinary punctuation — splitting here
+    // would chop the sentence in half.
+    expect(promptLines('State the range of values of $x$; hence, or otherwise, solve the inequality.')).toEqual([
+      'State the range of values of $x$; hence, or otherwise, solve the inequality.',
+    ]);
+  });
+
+  it('leaves a plain one-sentence stem alone', () => {
+    expect(promptLines('Solve the equation $2x + 3 = 11$.')).toEqual([
+      'Solve the equation $2x + 3 = 11$.',
+    ]);
+  });
+
+  it('does not mistake function notation for a part marker', () => {
+    // "f(a)" — the bracket hugs the f, so no whitespace precedes it.
+    expect(promptLines('f(a) = 3')).toEqual(['f(a) = 3']);
   });
 });
 

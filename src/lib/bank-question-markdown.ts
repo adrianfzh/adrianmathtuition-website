@@ -193,6 +193,24 @@ export function splitInlineParts(text: string | null | undefined): { stem: strin
   return { stem: stemLines.join('\n\n'), parts };
 }
 
+/**
+ * Total marks derived from the structured parts, for rows whose
+ * `total_marks` column is null — the header chip showed nothing on those
+ * ("some questions have no marks?", Adrian's phone review 2026-08-29) even
+ * though the marks sit right there on the parts. Sums every part and
+ * sub-part (structuredPart already nulls a parent that merely repeats its
+ * sub-parts' total, so leaves are counted exactly once). Null when the parts
+ * carry no marks at all — a "0 marks" chip would be worse than none.
+ */
+export function totalMarksOf(parts: StructuredPart[]): number | null {
+  let sum = 0;
+  for (const p of parts) {
+    sum += p.marks ?? 0;
+    for (const sp of p.subparts) sum += sp.marks ?? 0;
+  }
+  return sum > 0 ? sum : null;
+}
+
 /** Stem markdown + structured parts (no answer/solution). */
 export function questionStructured(q: BankQuestion): { stem: string; parts: StructuredPart[] } {
   const authored = (Array.isArray(q.parts) ? q.parts : []).filter(p => p && (p.label || p.text));

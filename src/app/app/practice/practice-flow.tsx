@@ -509,6 +509,12 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   // (the test-generate harness works off the selected card).
   const pickerOpen = !assignment && !fixedQ && (!isStudent || !topic);
   const fixedMeta = fixedQ ? FIXED_FROM[fixedQ.from ?? 'link'] : null;
+  // "Print a paper" entry (SPEC-PRINT-PAPER.md) — a slim row below the topic
+  // list, not a fat card above everything (Adrian, phone review round 5: it
+  // sat above the whole page and stayed on screen even while a question was
+  // open). Hides the instant any topic is chosen, same as assignment/fixed
+  // question mode — "the picker" is the only place it belongs.
+  const showPrintEntry = !assignment && !fixedQ && !topic;
 
   return (
     <div className="pb-20 sm:pb-6 max-w-4xl mx-auto">
@@ -671,6 +677,20 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
         </div>
       )}
       </>)}
+
+      {/* "Print a paper" — slim link below the topic list, gone once a topic
+          is picked (showPrintEntry above). Same destination/behaviour as
+          before, just demoted from a card above everything. */}
+      {showPrintEntry && (
+        <Link
+          href="/app/print"
+          className="flex items-center gap-2.5 mb-4 px-1 py-2.5 text-sm text-slate-500 hover:text-navy motion-safe:transition-colors"
+        >
+          <span aria-hidden>🖨️</span>
+          <span className="flex-1 min-w-0">Print a paper — a mock exam or topic sheet to hand back in</span>
+          <span aria-hidden className="text-slate-300">›</span>
+        </Link>
+      )}
 
       {/* Stage 2 generation test result (admin) */}
       {!isStudent && gen && (

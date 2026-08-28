@@ -1,5 +1,6 @@
-// /app loading skeleton — mirrors the dashboard: greeting, next-lesson row,
-// the three-door bento (amber Practise hero + two stacked tiles), plan row.
+// /app loading skeleton — mirrors the dashboard: greeting, quick-link pills,
+// next-lesson row, the three-door bento (amber Practise hero + two stacked
+// tiles), this-week's-focus row, last-lesson row.
 // See components/PortalSkeleton.tsx for why every /app segment has one.
 import { Sk, SkCard, SkRow } from '@/components/PortalSkeleton';
 
@@ -7,6 +8,12 @@ export default function Loading() {
   return (
     <div className="space-y-4 pb-20 sm:pb-4">
       <Sk className="h-8 w-44 rounded-lg mt-1" />
+
+      {/* Quick links — 📖 Notes / 🙋 Request materials */}
+      <div className="flex gap-2">
+        <Sk className="h-11 flex-1 rounded-3xl" />
+        <Sk className="h-11 flex-1 rounded-3xl" />
+      </div>
 
       {/* Next lesson row */}
       <SkCard className="!py-3.5"><SkRow /></SkCard>
@@ -24,7 +31,7 @@ export default function Loading() {
         <SkCard><SkRow /></SkCard>
       </div>
 
-      {/* My Plan row */}
+      {/* This week's focus row */}
       <SkCard><SkRow /></SkCard>
 
       {/* Revision notes / last lesson */}

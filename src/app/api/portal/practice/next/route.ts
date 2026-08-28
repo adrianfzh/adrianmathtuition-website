@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { questionMarkdown, questionStructured } from '@/lib/bank-question-markdown';
+import { questionMarkdown, questionStructured, totalMarksOf } from '@/lib/bank-question-markdown';
 import { practiceAuth, levelAllowed, bankScope } from '@/lib/practice';
 
 export const runtime = 'nodejs';
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       markdown: questionMarkdown(q),
       stem,
       parts,
-      marks: q.total_marks ?? null,
+      marks: q.total_marks ?? totalMarksOf(parts),
       figureUrl: q.figure_url ?? null,
       source: null,
       hasSolution: !!q.has_solution,

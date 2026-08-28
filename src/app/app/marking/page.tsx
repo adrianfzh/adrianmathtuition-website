@@ -13,7 +13,7 @@
 import Link from 'next/link';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { answerLines, buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/lib/portal-marking';
+import { answerLines, promptLines, buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/lib/portal-marking';
 import AnnotatedSolution from './AnnotatedSolution';
 import ClipToNotes from './ClipToNotes';
 import { mathHtml } from '@/lib/math-inline';
@@ -297,10 +297,11 @@ function Paper({ paper }: { paper: StudentPaper }) {
                     refer to (Adrian's phone review: "students can't tell what
                     the comment refers to"). */}
                 {q.prompt && (
-                  <MathText
-                    text={q.prompt}
-                    className="text-[12.5px] text-gray-600 mt-1.5 leading-snug border-l-2 border-gray-200 pl-2"
-                  />
+                  <div className="mt-1.5 space-y-0.5 border-l-2 border-gray-200 pl-2">
+                    {promptLines(q.prompt).map((line, j) => (
+                      <MathText key={j} text={line} className="text-[12.5px] text-gray-600 leading-snug" />
+                    ))}
+                  </div>
                 )}
                 {q.schemes.length > 0 && (
                   // SEAB teacher-margin shorthand, per part — the same codes a

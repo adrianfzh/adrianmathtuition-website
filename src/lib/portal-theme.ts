@@ -73,8 +73,14 @@ export const SURFACES: Record<SurfaceKey, SurfaceIdentity> = {
   },
 };
 
-/** Identity for a nav href ('/app/marking' → marking; '/app' → home). */
+/** Identity for a nav href ('/app/marking' → marking; '/app' → home).
+ *  '/app/my-notes' ("My Notebook" — the merged tab that absorbed My Plan on
+ *  2026-08-28) needs to map onto the 'notebook' surface even though its route
+ *  segment is 'my-notes', not 'notebook': without this it silently fell back
+ *  to 'home' and the tab bar wore the house glyph for both Home and My
+ *  Notebook (Adrian, phone review round 5, 2026-08-28). */
 export function surfaceForHref(href: string): SurfaceIdentity {
-  const key = href === '/app' ? 'home' : href.replace(/^\/app\//, '').split(/[/?]/)[0];
+  const seg = href === '/app' ? 'home' : href.replace(/^\/app\//, '').split(/[/?]/)[0];
+  const key = seg === 'my-notes' ? 'notebook' : seg;
   return SURFACES[(key in SURFACES ? key : 'home') as SurfaceKey];
 }

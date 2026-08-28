@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { questionStructured, questionMarkdown, splitInlineParts } from './bank-question-markdown';
+import { questionStructured, questionMarkdown, splitInlineParts, totalMarksOf } from './bank-question-markdown';
 
 // The portal renders questions from questionStructured() in an exam-style grid
 // (label / sub-part label / text / marks). These pin the shape the grid relies
@@ -129,5 +129,34 @@ describe('splitInlineParts', () => {
     const authored = questionStructured({ question_text: '(a) looks like a part [9]', parts: [{ label: 'a', text: 'Real part', marks: 1 }] });
     expect(authored.stem).toBe('(a) looks like a part [9]');
     expect(authored.parts.map(p => [p.label, p.marks])).toEqual([['a', 1]]);
+  });
+});
+
+describe('totalMarksOf', () => {
+  it('sums part and sub-part marks for rows whose total_marks column is null', () => {
+    const { parts } = questionStructured({
+      question_text: null,
+      parts: [
+        { label: 'a', text: 'First.', marks: 2 },
+        { label: 'b', text: '', marks: 5, subparts: [
+          { label: 'i', text: 'One.', marks: 2 },
+          { label: 'ii', text: 'Two.', marks: 3 },
+        ] },
+      ],
+    });
+    // (b)'s parent 5 is a repeat of its sub-parts' total and is nulled by
+    // structuredPart — the sum must count each leaf exactly once.
+    expect(totalMarksOf(parts)).toBe(7);
+  });
+
+  it('derives marks from inline [n] tags too', () => {
+    const { parts } = questionStructured({ question_text: '(a) First. [2]\n(b) Second. [3]', parts: null });
+    expect(totalMarksOf(parts)).toBe(5);
+  });
+
+  it('returns null (never a 0-marks chip) when no part carries marks', () => {
+    const { parts } = questionStructured({ question_text: '(a) Show this.\n(b) Hence that.', parts: null });
+    expect(totalMarksOf(parts)).toBeNull();
+    expect(totalMarksOf([])).toBeNull();
   });
 });

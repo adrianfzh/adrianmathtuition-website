@@ -23,7 +23,6 @@
 // normal flow would refuse; an ineligible id degrades to a friendly notice
 // over the ordinary picker, never a broken screen.
 import { notFound, redirect } from 'next/navigation';
-import Link from 'next/link';
 import PracticeFlow, { type FixedQuestion, type InitialAssignment } from './practice-flow';
 import { portalIdentity, sessionAccount } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -31,7 +30,7 @@ import { qbLevelsFor } from '@/lib/practice';
 import { getStudentAssignment } from '@/lib/portal-assignments';
 import { dueLabel } from '@/lib/assignments';
 import { practiceEligibility } from '@/lib/portal-find';
-import { questionMarkdown, questionStructured } from '@/lib/bank-question-markdown';
+import { questionMarkdown, questionStructured, totalMarksOf } from '@/lib/bank-question-markdown';
 
 export const dynamic = 'force-dynamic';
 
@@ -86,7 +85,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
         markdown: questionMarkdown(q),
         stem,
         parts,
-        marks: q.total_marks ?? null,
+        marks: q.total_marks ?? totalMarksOf(parts),
         figureUrl: q.figure_url ?? null,
         source: null,
         hasSolution: !!(q.solution && q.solution.trim()),
@@ -118,7 +117,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
           markdown: questionMarkdown(q),
           stem,
           parts,
-          marks: q.total_marks ?? null,
+          marks: q.total_marks ?? totalMarksOf(parts),
           figureUrl: q.figure_url ?? null,
           source: null,
           hasSolution: !!(q.solution && q.solution.trim()),
@@ -129,11 +128,12 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
     }
   }
 
-  // "Print a paper" entry card (SPEC-PRINT-PAPER.md) — full-portal only, so
-  // Print opened to all students 2026-08-28; the door only hides while a
-  // deep-linked assignment or fixed question should keep the student's focus.
-  const printEntry = !initialAssignment && !initialQuestion;
-
+  // "Print a paper" entry (SPEC-PRINT-PAPER.md) — full-portal only used to
+  // gate this; Print opened to all students 2026-08-28, so the only remaining
+  // condition is deep-linked assignment/fixed-question mode. Rendered inside
+  // PracticeFlow now (Adrian, phone review round 5: it was a fat card sitting
+  // above everything, even a live question — demoted to a slim row below the
+  // topic list that hides the moment a topic is chosen).
   return (
     <>
       {qidBlocked && (
@@ -141,18 +141,6 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
           That one can&apos;t be practised here — it doesn&apos;t have a marked answer on file yet.
           Pick a topic below instead, or snap the question to find one like it.
         </div>
-      )}
-      {printEntry && (
-        <Link
-          href="/app/print"
-          className="mb-4 flex items-center gap-3 bg-white rounded-2xl border border-black/5 shadow-sm p-4 hover:border-black/10"
-        >
-          <span className="text-2xl" aria-hidden>🖨️</span>
-          <span className="min-w-0">
-            <span className="block text-sm font-bold text-navy">Print a paper</span>
-            <span className="block text-[12px] text-gray-500">A mock exam or topic sheet on real paper — then hand it back in for marking.</span>
-          </span>
-        </Link>
       )}
       <PracticeFlow initialLevels={initialLevels} initialAssignment={initialAssignment} initialTarget={initialTarget} initialQuestion={initialQuestion} />
     </>

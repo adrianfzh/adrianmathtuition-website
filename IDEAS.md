@@ -56,6 +56,24 @@
 - 💡 **Drop unused fumadocs deps** from package.json (unimported since the /notes reskin).
 - 💡 **/admin stranger-aware views** — acct: ids render raw in admin queues; nicer display when paying strangers matter.
 
+## 📱 Phone review round 5 (2026-08-29, same evening) — prod test after round 4
+> Adrian's pass over the promoted build + the /notes reader. ✅ shipped same session.
+
+1. ✅ **Raw `$$ … $$` in question stems** — root cause was systemic: `fixMathFences` (lib/math-markdown) only fenced delimiters HUGGING the math; space-padded `$$ 5^{x} = …$$` never became a fence and rendered as raw dollars on every MathMarkdown surface. Now padded delimiters fence too (tested). This was the "STILL rendering issues" class, not one bad row.
+2. ✅ **"Some questions have no marks"** — rows whose `total_marks` is null but whose parts carry `[n]` now derive the header chip via `totalMarksOf(parts)` (lib/bank-question-markdown, tested; wired into practice next + assignment + qid paths).
+3. ✅ Marked-paper stems split one part per line (`promptLines`, no semicolon rule — prose punctuation).
+4. ✅ Practice search gains a ✕ clear button; ✅ "Print a paper" demoted (hidden while a question is open, slim row below the picker); ✅ My Notebook tab gets its own glyph (was the Home house); ✅ `/app` root loading skeleton (Home tap froze on the Supabase batch).
+5. 🔨 **Mock Next-Lesson for the demo account** — blocked mid-build: the demo account's `airtable_student_id` is synthetic (`recTESTE000000000`), so a real Airtable Student + Lessons row + a Supabase identity migration is needed; the auto-mode classifier (configured this same evening) denied the Airtable prod write. Plan is ready (Student "Teste Echo (portal demo)" Trial/no-enrollment → no billing, lesson 2026-09-01 Tue 3-5pm slot recU4GFAJHZX3v6X2, then UPDATE every student-keyed Supabase table from the synthetic id). Needs Adrian's explicit go (or he runs the snippet).
+6. 📐 **Figure axis labels read slanted** — bot-side: the matplotlib figure generator uses italic mathtext for axis labels; add an upright-axis-label style rule to the figure prompt/demos (bot ai/question-gen.js figure pass). Do on the next bot deploy window (check marking queue first, per standing rule).
+7. **Practice-these-next provenance** (Adrian asked): bank-embedding-matched FIRST (origin "School Year" shown), model-generated + verified only when no bank candidate fits; the demo paper's 4 were all generated because its questions had no close twins. Working as designed.
+8. 💡 **Perceived lag continues** — the remaining lever stays the serial session-auth round-trip (round-4 item 1); root skeleton shipped this round.
+
+## 📚 Notes reader content (Adrian, 2026-08-29 evening) — the vetting thread
+- **Search exists** (the 🔍 pill → slide-over: topics + sub-group pages + every published worked example BY TITLE — lib/notes-data getSearchIndex). Gaps to close: unit-section titles ("How do I complete the square?") aren't indexed, and the pill under-advertises itself (placeholder copy like "Search notes — try 'complete the square'"). Small build.
+- 📐 **Sub-group descriptions carry undelimited ASCII math** ("Rewriting ax^2 + bx + c into a(x – h)^2 + k") — **282 rows** across levels (AM 101, JC 74, EM 49, S2 39, S1 19). Two-part fix: render descriptions through the math pipeline on the topic page, AND a content pass wrapping the math runs in $…$ TeX (in-session/agents with strict rules + spot-check; zero API).
+- 📐 **Sub-group NAMES are internal cluster labels** — "Bounding & Sign Reasoning via Completed Square", "Vieta sum-product transformation to new quadratic" read as our filing jargon, not Singapore-syllabus student language. Rename pass with Adrian approving the mapping (names are his voice); flag off-syllabus content instead of renaming it (Vieta sum/product is NOT in 4049 AM — hide vs keep-with-"beyond syllabus"-tag is Adrian's call). Renames change /notes slugs (URLs derive from name) — internal links regenerate, external bookmarks break; acceptable pre-launch.
+- 📐 **The vetting process itself** — see the proposal in the 2026-08-29 session summary: 3 layers (mechanical render pass → naming pass → per-unit QC fleet over the 1,297 pending blocks producing an approve/fix/hide sheet for one Adrian sitting).
+
 ## Parked / decided-against
 - ⏸ Exam-season booklet (dropped).
 - ⏸ Browser E2E tests (solo-maintenance cost).

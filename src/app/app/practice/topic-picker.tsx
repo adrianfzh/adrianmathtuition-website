@@ -120,6 +120,7 @@ export function TopicPicker({ level, topics, recommended, subgroups, loading, se
   // with fresh chip/accordion state — no reset effect needed.
   const [strand, setStrand] = useState('all');
   const [open, setOpen] = useState<Set<string>>(() => new Set());
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const typesByTopic = useMemo(() => {
     const m = new Map<string, Subgroup[]>();
@@ -144,10 +145,22 @@ export function TopicPicker({ level, topics, recommended, subgroups, loading, se
       <div className="relative">
         <PortalIcon name="search" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
         <input
+          ref={searchRef}
           value={search} onChange={(e) => onSearch(e.target.value)} type="search"
           placeholder="Search a topic or kind of question…"
-          className="w-full bg-white rounded-2xl pl-10 pr-3 py-3 text-[15px] shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] focus:outline-none focus:ring-2 focus:ring-amber-400/60 placeholder:text-slate-400"
+          className="w-full bg-white rounded-2xl pl-10 pr-9 py-3 text-[15px] shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] focus:outline-none focus:ring-2 focus:ring-amber-400/60 placeholder:text-slate-400 [&::-webkit-search-cancel-button]:hidden"
         />
+        {/* Clear — phone-generous 40px hit area, keeps focus in the input. */}
+        {search && (
+          <button
+            type="button"
+            onClick={() => { onSearch(''); searchRef.current?.focus(); }}
+            aria-label="Clear search"
+            className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-slate-400 hover:text-navy active:text-navy motion-safe:transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-amber-400/60 rounded-full"
+          >
+            <PortalIcon name="x" className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {loading ? (

@@ -341,6 +341,41 @@ export function answerLines(answer: string): string[] {
   return out;
 }
 
+/**
+ * Split a packed multi-part question stem into display lines, one per part.
+ * Markers pack the printed stem into one string — "Given that … find (i) …
+ * (ii) …" — which read as a wall of text on the phone (Adrian's phone review,
+ * round 5: "the questions itself should also have better readability — parts
+ * should be on its own line"). Same walking technique as `answerLines`:
+ * breaks happen at real newlines and before a part marker ((i), (b), …) that
+ * follows whitespace, but never inside $…$, so function notation like
+ * "f(i) = 2i" stays whole. Unlike `answerLines`, there is deliberately no
+ * semicolon rule — prose stems use semicolons as ordinary punctuation
+ * ("hence, or otherwise; find …"), and splitting there would chop a sentence
+ * in half. A stem with no markers returns as a single line.
+ */
+export function promptLines(prompt: string): string[] {
+  const out: string[] = [];
+  const partAhead = /^\((?:[ivx]{1,4}|[a-h])\)\s/;
+  for (const rawLine of prompt.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line) continue;
+    let cur = '';
+    let inMath = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '$') inMath = !inMath;
+      if (!inMath && ch === '(' && /\s$/.test(cur) && cur.trim() && partAhead.test(line.slice(i))) {
+        out.push(cur.trim());
+        cur = '';
+      }
+      cur += ch;
+    }
+    if (cur.trim()) out.push(cur.trim());
+  }
+  return out;
+}
+
 function toPracticeItem(raw: unknown): StudentPracticeItem | null {
   const r = asRecord(raw);
   if (!r) return null;
