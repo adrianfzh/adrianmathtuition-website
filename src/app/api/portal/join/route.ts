@@ -104,6 +104,21 @@ export async function POST(req: NextRequest) {
           .eq('account_id', inviter.id)
           .gt('expires_at', new Date().toISOString());
         inviterQualifies = qualifiesToGrantTrials(inviter, passRows ?? []);
+        // Per-inviter burn rate (Adrian, 2026-08-29 "foolproof plan"): even a
+        // qualified inviter mints at most 5 trials per rolling 30 days — a
+        // paid student farming trials for a friend's serial re-signups burns
+        // the allowance in a month's first week and the chain stops. The
+        // signup itself still works and attributes; only the free 3 days stop.
+        if (inviterQualifies) {
+          const since = new Date(Date.now() - 30 * 86400e3).toISOString();
+          const { count } = await supabase
+            .from('portal_passes')
+            .select('id', { count: 'exact', head: true })
+            .eq('source', 'trial')
+            .like('reference', `invite:${inviter.id}:%`)
+            .gte('created_at', since);
+          if ((count ?? 0) >= 5) inviterQualifies = false;
+        }
       } catch { inviterQualifies = false; }
     }
   }
