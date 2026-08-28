@@ -306,6 +306,7 @@ This takes 2 seconds and returns **no student data** — only field names, types
 - **Vercel hard-caps request bodies at 4.5MB at the PLATFORM level** — `vercel.json` memory bumps do NOT lift it. Big uploads must chunk (`mark-batch`), go client-token → Blob, go to the bot (`/api/mark-inbox`), or reference already-uploaded files by id — mark-paper auto-falls back to `phase:'remark'` on the saved run when the inline body would bust the cap (`lib/mark-payload.ts`, 2026-08-13).
 - Signup link expiry is checked against `Date.now()` — links become invalid after the `expires` timestamp
 - ⚠ `src/lib/latex-repair.ts` reads as binary to `grep` (non-printing mask sentinel) — use `grep -a`
+- **iCloud/Finder " 2" duplicate files** (`page 2.tsx`, `SPEC-X 2.md`, `.gitignore 2`): the Desktop folder is iCloud-synced, so Finder keeps minting these sync-conflict copies — in worktrees too. They are stale snapshots: **delete on sight, never commit or edit one.** They're gitignored (so invisible to `git status`) but still hit greps and get typechecked by `next build`/`tsc`. Sweep check: `git ls-files -o -x node_modules | grep -E ' [0-9]+(\.[^/]+)?$'`. Full purge 2026-08-28 (152 files, every one verified byte-identical to its sibling or to a committed blob first — do the same before deleting).
 
 ## Pending Tasks → [`IDEAS.md`](IDEAS.md)
 

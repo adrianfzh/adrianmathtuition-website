@@ -51,8 +51,12 @@ scripts/split-april-created-*.json
 /reference/
 __pycache__/
 
-# Finder / cloud-sync conflict copies: "area-ratios 2.html", "Info 3.plist".
-# 20 of these were tracked and served publicly as stale tool pages (removed
-# 2026-08-12); 120+ more sit untracked in the working tree. Never commit them.
+# Finder / cloud-sync conflict copies: "area-ratios 2.html", "Info 3.plist",
+# ".gitignore 2". 20 of these were tracked and served publicly as stale tool
+# pages (removed 2026-08-12); 152 untracked ones were swept 2026-08-28 after
+# verifying each was recoverable from git. Delete on sight, never commit them.
+# The extensionless patterns also catch duplicated directories.
 * [0-9].*
 * [0-9][0-9].*
+* [0-9]
+* [0-9][0-9]
