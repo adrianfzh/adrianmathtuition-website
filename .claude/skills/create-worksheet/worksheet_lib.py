@@ -193,7 +193,7 @@ class Worksheet:
     LINE_PT = 9.5 * 1.5
 
     def __init__(self, working_space=0.0, keep_questions_together=False,
-                 keep_figures_with_text=True):
+                 keep_figures_with_text=True, one_mark_bonus=1.0):
         """working_space: blank writing lines to leave per mark, after every
         paragraph that carries a mark allocation. 0 disables it (the right
         choice for a solutions sheet); pass 2.5 for a worksheet students write
@@ -211,11 +211,18 @@ class Worksheet:
 
         keep_figures_with_text: anchor each figure to the paragraphs either
         side of it, so a diagram is never split from the stem that introduces
-        it."""
+        it.
+
+        one_mark_bonus: extra lines for a [1] part on top of the proportional
+        allowance. Strict proportionality is meanest exactly where it hurts —
+        a one-mark answer still needs a line of working plus the answer itself
+        — so a [1] gets one line more than its share. Only applied when
+        working_space is set."""
         self.doc = Document()
         self.working_space = float(working_space)
         self.keep_questions_together = bool(keep_questions_together)
         self.keep_figures_with_text = bool(keep_figures_with_text)
+        self.one_mark_bonus = float(one_mark_bonus)
         self._auto_subq_id = 9   # increments to 10, 11, ... per Q with sub-parts
         self._current_subq_id = None
         self._block_paras = []   # paragraphs of the current question block (for keep-together)
@@ -550,6 +557,10 @@ class Worksheet:
         straddles a break silently loses the rest of the student's writing room.
         Separate lines simply flow onto the next page.
 
+        A [1] part gets `one_mark_bonus` lines on top of its share: strict
+        proportionality is meanest exactly where it hurts, since a one-mark
+        answer still needs a line of working and a line for the answer.
+
         The marked paragraph and ALL of its blank lines are glued into one unit,
         so a part's writing space never straddles a page break — a page breaks
         between parts, never inside one. Keep the unit small: it is one line of
@@ -560,6 +571,8 @@ class Worksheet:
             if marks is None:
                 raise ValueError('workspace() needs marks or lines')
             lines = float(marks) * self.working_space
+            if self.working_space and float(marks) == 1:
+                lines += self.one_mark_bonus   # a [1] still needs working + answer
         n = int(round(lines))
         if n <= 0:
             return None

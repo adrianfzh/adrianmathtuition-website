@@ -279,7 +279,7 @@ The library hardcodes Adrian's house style. To change it, edit `worksheet_lib.py
 | Marks tab stop | 15.5 cm, right-aligned |
 | Marks colour | Black |
 | Answer style | Right-aligned, orange `#843C0C`, prefix `[Ans: ...]` |
-| Working space | `Worksheet(working_space=4.0)` — 4 blank lines (~2 cm) per mark, so a `[3]` gets three times the room of a `[1]` |
+| Working space | `Worksheet(working_space=4.0)` — 4 blank lines (~2 cm) per mark, plus one bonus line for a `[1]` (`one_mark_bonus`) |
 | Question tag | Usually none — a sheet grouped under `Section A — Trigonometry` headers does not need `(Trigonometry)` repeated on every question. Tag only a mixed-topic sheet, in italics. **Never name the source school or year** |
 
 ### Working space and question tags (2026-08-29)
@@ -289,7 +289,10 @@ library then leaves blank writing space after each paragraph that carries a mark
 allocation, sized `marks x working_space` body lines — a `[3]` part gets three
 times the room of a `[1]`, which is what a student expects when the marks tell
 them how much working is wanted. 4.0 is about 2 cm per mark and is what Adrian
-asked for; go higher, never lower. Set it to `0` (the default) only for a sheet
+asked for; go higher, never lower. A `[1]` part gets **one extra line** on top of
+its share (`one_mark_bonus=1.0`, so 5 lines): strict proportionality is meanest
+exactly where it hurts, since a one-mark answer still needs a line of working and
+a line for the answer itself. Set it to `0` (the default) only for a sheet
 nobody writes on: a solutions sheet, or a Revision "(With Worked Examples)" sheet
 where `solution_box()` already fills the space.
 
