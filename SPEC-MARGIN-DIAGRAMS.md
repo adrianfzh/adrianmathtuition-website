@@ -28,8 +28,13 @@
 >   region ("split the region" is the refusal message).
 > - Prompt-side eligibility gate = rules 11–12 in `MARK_JSON_SPEC`
 >   (`ai/paper-marker.js`), shared by both marking modes.
-> - Demo renders (Kayla EM P2 Q3 elevation; Kassandra AM 2021 P1 Q14 area)
->   shown to Adrian 2026-08-29 from verified-solution numbers only.
+> - **`scene: true` panel added same day** (Adrian: "show both diagrams so
+>   students can see the 3D picture"): when the triangle stands on a plan/
+>   bearings diagram, a second panel draws the ground as a plane with the
+>   segment (e.g. $BC$) lying ON it and the vertical rising OUT of it, beside
+>   the flat true-ratio triangle. Schematic angle; flat panel carries truth.
+> - Demo renders (Kayla EM P2 Q3 elevation with scene panel; Kassandra AM 2021
+>   P1 Q14 area) shown to Adrian 2026-08-29 from verified-solution numbers only.
 > - **Remaining DoD**: bot deploy (with the accuracy bundle; marking queue must
 >   be empty), then the doctrine checkpoint — Adrian eyeballs the first real
 >   paper carrying a margin diagram before anything releases (auto-release is
