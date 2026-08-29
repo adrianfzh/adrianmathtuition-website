@@ -31,18 +31,24 @@ function oneMathRun(line: string): string | null {
   return m ? m[1].trim() : null;
 }
 
-/** First top-level relation (`=`, `\approx`, `≈`; not `<=`/`>=`/`!=`/`:=`/`==`), split there. */
-export function splitAtRelation(src: string): { lhs: string; rhs: string; rel: '=' | '\\approx' } | null {
+type Rel = '=' | '\\approx' | '\\le' | '\\ge' | '<' | '>';
+
+/** First top-level relation (`=`, `\approx`/`≈`, `\le`/`\ge`/`≤`/`≥`, bare `<`/`>`;
+ *  not `<=`/`>=`/`!=`/`:=`/`==`/`->`), split there. */
+export function splitAtRelation(src: string): { lhs: string; rhs: string; rel: Rel } | null {
   let depth = 0;
   for (let i = 0; i < src.length; i++) {
     const c = src[i];
     if (c === '\\') {
-      // `\approx` is a relation too — mirrored from the bot's ai/pen-math.js
-      // (Adrian, 26 Aug 2026: "approximate equal sign not aligned"); change both
-      // or neither.
-      const m = /^\\approx(?![a-zA-Z])/.exec(src.slice(i));
+      // `\approx` and the inequalities are relations too — an inequality chain
+      // ("$4x - 5 < 15$ … $x < 5$") sat ragged beside its aligned `=` siblings
+      // (Adrian, 29 Aug 2026, Kayla's Q1 footer). Mirrored from the bot's
+      // ai/pen-math.js — change both or neither. The lookahead keeps `\left`
+      // and `\geqslant` safe: a longer command name never matches.
+      const m = /^\\(approx|leq?|geq?)(?![a-zA-Z])/.exec(src.slice(i));
       if (m && depth === 0) {
-        return { lhs: src.slice(0, i).trim(), rhs: src.slice(i + m[0].length).trim(), rel: '\\approx' };
+        const rel: Rel = m[1] === 'approx' ? '\\approx' : m[1][0] === 'l' ? '\\le' : '\\ge';
+        return { lhs: src.slice(0, i).trim(), rhs: src.slice(i + m[0].length).trim(), rel };
       }
       i += 1; continue;
     }
@@ -50,6 +56,15 @@ export function splitAtRelation(src: string): { lhs: string; rhs: string; rel: '
     if (c === '}') { depth--; continue; }
     if (c === '≈' && depth === 0) {
       return { lhs: src.slice(0, i).trim(), rhs: src.slice(i + 1).trim(), rel: '\\approx' };
+    }
+    if ((c === '≤' || c === '≥') && depth === 0) {
+      return { lhs: src.slice(0, i).trim(), rhs: src.slice(i + 1).trim(), rel: c === '≤' ? '\\le' : '\\ge' };
+    }
+    if ((c === '<' || c === '>') && depth === 0) {
+      // `<=`, `>=`, `<<`, `>>`, `->`, `=>` are not this relation.
+      if (src[i + 1] === '=' || src[i + 1] === c) return null;
+      if (i > 0 && '<>-='.includes(src[i - 1])) return null;
+      return { lhs: src.slice(0, i).trim(), rhs: src.slice(i + 1).trim(), rel: c };
     }
     if (c === '=' && depth === 0) {
       if (i > 0 && '<>!:='.includes(src[i - 1])) return null;
@@ -59,7 +74,7 @@ export function splitAtRelation(src: string): { lhs: string; rhs: string; rel: '
   return null;
 }
 
-type RhsSeg = { tex: string; rel: '=' | '\\approx' };
+type RhsSeg = { tex: string; rel: Rel };
 
 /** Parse one step into subject + every top-level relation segment, each carrying
  *  the relation that precedes it (`$a=b≈c$` → lhs a, rhss [{b,=},{c,≈}]). */
@@ -82,12 +97,36 @@ function equationParts(line: string): { lhs: string; rhss: RhsSeg[] } | null {
   return { lhs: split.lhs, rhss };
 }
 
+// A comma outside every group/bracket means SEVERAL statements share the line
+// ("x = 4, y = -2.5 or x = -5, y = 2") — breaking such a line at each relation
+// shreds it into nonsense rows ("x &= 4, y" / "&= -2.5 or x"), which is exactly
+// how Alessi's simultaneous-equations footer printed (2026-08-29). `\,` is a
+// spacing command, and commas inside (), [], {} — coordinates, intervals,
+// function arguments — are not statement separators.
+function hasTopLevelComma(src: string): boolean {
+  let depth = 0;
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+    if (c === '\\') { i += 1; continue; }
+    if (c === '{' || c === '(' || c === '[') depth++;
+    else if (c === '}' || c === ')' || c === ']') depth--;
+    else if (c === ',' && depth <= 0) return true;
+  }
+  return false;
+}
+
 /** One step → its aligned rows (a long relation chain becomes one row per relation). */
 function alignedRowsForStep(line: string): { tex: string; raw: string }[] | null {
   const eq = equationParts(line);
   if (!eq) return null;
   const texLen = eq.lhs.length + eq.rhss.reduce((n, r) => n + r.tex.length + 3, 0);
-  if (eq.rhss.length === 1 || texLen <= CHAIN_SPLIT_MIN) {
+  // Multi-statement lines (top-level comma, or prose via \text between the
+  // relations) must never chain-split — each "rhs" is really the next
+  // statement's opening, not a continuation of this one.
+  const multiStatement =
+    hasTopLevelComma(eq.lhs) ||
+    eq.rhss.some((r) => hasTopLevelComma(r.tex) || /\\text\s*\{/.test(r.tex));
+  if (eq.rhss.length === 1 || texLen <= CHAIN_SPLIT_MIN || multiStatement) {
     const tail = eq.rhss.map((r, i) => (i === 0 ? r.tex : `${r.rel} ${r.tex}`)).join(' ');
     return [{ tex: `${eq.lhs} &${eq.rhss[0].rel} ${tail}`, raw: line }];
   }
@@ -95,6 +134,20 @@ function alignedRowsForStep(line: string): { tex: string; raw: string }[] | null
     tex: `${i === 0 ? eq.lhs : ''} &${r.rel} ${r.tex}`,
     raw: i === 0 ? `$${eq.lhs} ${r.rel} ${r.tex}$` : `$${r.rel} ${r.tex}$`,
   }));
+}
+
+// `$\text{(b) } 2y + 1 = 5$` — a part label welded inside the maths run both
+// defeats the alignment (a \text{…} LHS never joins a block) and buries which
+// part the working belongs to on a multi-part footer (Adrian, 29 Aug 2026:
+// Kayla's Q27 "Correct solution" ran two parts together with no labels). Lift
+// the label out as its own heading line and align what remains. Mirrored in the
+// bot's ai/pen-math.js — change both or neither.
+const PART_LABEL_RE = /^\$\s*\\text\{\s*\(([a-z]{1,3}|[A-Z])\)\s*([^{}]*?)\s*\}\s*(.*)\$\s*$/;
+function liftPartLabel(line: string): { label: string; rest: string | null } | null {
+  const m = PART_LABEL_RE.exec(line.trim());
+  if (!m) return null;
+  const rest = [m[2] ? `\\text{${m[2]} }` : '', m[3]].filter(Boolean).join(' ').trim();
+  return { label: `(${m[1]})`, rest: rest ? `$${rest}$` : null };
 }
 
 /**
@@ -115,6 +168,17 @@ export function groupAlignedSteps(src: string): string {
     run = [];
   };
   for (const step of steps) {
+    const lifted = liftPartLabel(step);
+    if (lifted) {
+      flush();                       // a part label starts a fresh alignment group
+      out.push(lifted.label);
+      if (lifted.rest) {
+        const rows = alignedRowsForStep(lifted.rest);
+        if (rows) { run.push(...rows); continue; }
+        out.push(lifted.rest);
+      }
+      continue;
+    }
     const rows = alignedRowsForStep(step);
     if (rows) { run.push(...rows); continue; }
     flush();

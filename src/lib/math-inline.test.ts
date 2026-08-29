@@ -19,6 +19,19 @@ describe('looksLikeMath', () => {
     expect(looksLikeMath('(-1.5, 2)')).toBe(true);
     expect(looksLikeMath('5, ')).toBe(false); // numeric span between prices: "$5, $6"
   });
+  it('bare numeric lists are math (the "$2, 3$" study-note leak, Kayla 2026-08-29)', () => {
+    expect(looksLikeMath('2, 3')).toBe(true);
+    expect(looksLikeMath('1.5, 2, 3')).toBe(true);
+    expect(looksLikeMath('-1, 4')).toBe(true);
+    expect(looksLikeMath('5, ')).toBe(false);   // still the between-prices span
+  });
+  it('spaced-minus expressions are math (the "$e - 2$" kinematics leak)', () => {
+    expect(looksLikeMath('e - 2')).toBe(true);
+    expect(looksLikeMath('20 - 11.472')).toBe(true);
+    expect(looksLikeMath('x − 4')).toBe(true);        // unicode minus
+    expect(looksLikeMath('5 - ')).toBe(false);        // "$5 - $10" between prices
+    expect(looksLikeMath('one-off fee at just ')).toBe(false);
+  });
   it('prose caught between two currency signs is NOT math', () => {
     expect(looksLikeMath('x. In addition, they ordered some dishes from the menu at ')).toBe(false);
     expect(looksLikeMath('96. All dishes from the a la carte menu would be entitled to ')).toBe(false);

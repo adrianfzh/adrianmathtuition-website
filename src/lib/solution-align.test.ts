@@ -14,6 +14,23 @@ describe('splitAtRelation', () => {
   it('an equals in position 0 is a continuation, not a compound', () => {
     expect(splitAtRelation('= 3')).toEqual({ lhs: '', rhs: '3', rel: '=' });
   });
+  it('inequalities are relations too (Kayla Q1, 2026-08-29)', () => {
+    expect(splitAtRelation('4x < 20')).toEqual({ lhs: '4x', rhs: '20', rel: '<' });
+    expect(splitAtRelation('x > -2')).toEqual({ lhs: 'x', rhs: '-2', rel: '>' });
+    expect(splitAtRelation('x \\le 5')).toEqual({ lhs: 'x', rhs: '5', rel: '\\le' });
+    expect(splitAtRelation('x \\leq 5')).toEqual({ lhs: 'x', rhs: '5', rel: '\\le' });
+    expect(splitAtRelation('x \\geq 5')).toEqual({ lhs: 'x', rhs: '5', rel: '\\ge' });
+    expect(splitAtRelation('x ≤ 5')).toEqual({ lhs: 'x', rhs: '5', rel: '\\le' });
+    expect(splitAtRelation('x ≥ 5')).toEqual({ lhs: 'x', rhs: '5', rel: '\\ge' });
+  });
+  it('command names that merely start with \\le / \\ge never split', () => {
+    expect(splitAtRelation('\\left(x\\right)')).toBeNull();
+    expect(splitAtRelation('x \\gets 3')).toBeNull();
+  });
+  it('arrows and doubled angle brackets are not relations', () => {
+    expect(splitAtRelation('x -> 3')).toBeNull();
+    expect(splitAtRelation('a << b')).toBeNull();
+  });
 });
 
 describe('groupAlignedSteps', () => {
@@ -57,6 +74,54 @@ describe('groupAlignedSteps', () => {
   });
   it('empty and null-ish input survives', () => {
     expect(groupAlignedSteps('')).toBe('');
+  });
+  it('an inequality chain shares the alignment column (Kayla Q1)', () => {
+    const out = groupAlignedSteps('$4x - 5 < 15$\n$4x < 20$\n$x < 5$');
+    expect(out).toContain('\\begin{aligned}');
+    expect((out.match(/&</g) || []).length).toBe(3);
+  });
+  it('mixed = and < steps align together', () => {
+    const out = groupAlignedSteps('$2x + 3 = 7 - x$\n$3x \\le 4$');
+    expect(out).toContain('\\begin{aligned}');
+    expect(out).toContain('&\\le 4');
+  });
+  it('a multi-statement line never chain-splits (Alessi simultaneous eqns, 2026-08-29)', () => {
+    const src = '$x = 4, \\; y = -2.5 \\text{ or } x = -5, \\; y = 2$\n$k = 1$';
+    const out = groupAlignedSteps(src);
+    // one aligned row for the pair line, one for k — never a row per equals
+    expect((out.match(/&=/g) || []).length).toBe(2);
+    expect(out).toContain('x &= 4, \\; y = -2.5');
+  });
+  it('commas inside coordinates or intervals still allow the chain split', () => {
+    const out = groupAlignedSteps(
+      '$\\lg y = \\lg b^x - \\lg 10^a = x\\lg b - a + f(1, 2)$\n$x = 1$',
+    );
+    expect((out.match(/&=/g) || []).length).toBe(3);   // chain still breaks per equals
+  });
+  it('a part label inside \\text lifts out as its own heading line', () => {
+    const out = groupAlignedSteps('$\\text{(a) } 2y + 1 = 5$\n$y = 2$');
+    const lines = out.split('\n');
+    expect(lines[0]).toBe('(a)');
+    expect(lines[1]).toContain('\\begin{aligned}');
+    expect(lines[1]).toContain('2y + 1 &= 5');
+  });
+  it('a label with trailing words keeps the words as prose in the step', () => {
+    const out = groupAlignedSteps('$\\text{(b) When } y = 0$');
+    const lines = out.split('\n');
+    expect(lines[0]).toBe('(b)');
+    expect(lines[1]).toBe('$\\text{When } y = 0$');
+  });
+  it('a label starts a fresh alignment group', () => {
+    const out = groupAlignedSteps('$a = 1$\n$b = 2$\n$\\text{(c) } d = 4$\n$e = 5$');
+    const lines = out.split('\n');
+    expect(lines).toHaveLength(3);
+    expect(lines[0]).toContain('a &= 1');
+    expect(lines[1]).toBe('(c)');
+    expect(lines[2]).toContain('d &= 4');
+  });
+  it('ordinary \\text{…} spans are not part labels', () => {
+    const src = '$\\text{area} = 12$\n$\\text{(3 s.f.)}$';
+    expect(groupAlignedSteps(src)).toBe(src);
   });
 });
 

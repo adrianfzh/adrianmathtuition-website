@@ -38,6 +38,16 @@ export function looksLikeMath(c: string): boolean {
   // Numeric coordinates/tuples — "(1, 6)", "(-1.5, 2)". Anchored to the parens
   // so a numeric span between two prices ("$5, $6") never matches.
   if (/^\(\s*-?\d+(\.\d+)?(\s*,\s*-?\d+(\.\d+)?)+\s*\)$/.test(c)) return true;
+  // Bare numeric lists — "$2, 3$" in a study note (Kayla's P2 script printed the
+  // raw dollars, 2026-08-29). A digit is REQUIRED after every comma, so the
+  // "5, " caught between two prices ("$5, $6") still reads as prose.
+  if (/^-?\d+(\.\d+)?(\s*,\s*-?\d+(\.\d+)?)+$/.test(c.trim())) return true;
+  // Short symbol runs with a SPACED minus — "$e - 2$", "$20 - 11.472$" (same
+  // leak). The operator rule above deliberately omits `-` (hyphens live in
+  // prose), so these need their own gate: no 2+-letter word anywhere, and real
+  // content after every minus, so the "5 - " between "$5 - $10" stays literal.
+  if (c.length <= 24 && !/[a-zA-Z]{2,}/.test(c) &&
+      /^[\w().^]+(\s*[−–-]\s*[\w().^]+)+$/.test(c.trim())) return true;
   return false;
 }
 
