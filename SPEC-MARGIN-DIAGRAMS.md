@@ -33,6 +33,18 @@
 >   bearings diagram, a second panel draws the ground as a plane with the
 >   segment (e.g. $BC$) lying ON it and the vertical rising OUT of it, beside
 >   the flat true-ratio triangle. Schematic angle; flat panel carries truth.
+> - **`buildAnchoredRightTriangle(spec, anchor, opts)` added same day** (bot
+>   `86d8dbb`; Adrian: "draw the right angle triangle on the original diagram
+>   itself"): same validated spec plus an image-pixel anchor
+>   `{from:[x,y], to:[x,y], flip?}` = the printed ground segment — the pole
+>   rises at `to` on the page-upward side, hypotenuse back to `from`,
+>   right-angle box + angle arc + minimal labels (pole-top name, sought side,
+>   angle). Pole height is schematic (base/2); the printed segment is never
+>   re-traced and printed letters never repeated. Returns `{ok, svg, bbox}` in
+>   IMAGE coordinates for the photo compositor. **Renderer only for now** —
+>   model-side anchor emission + photo-overlay compositing (ink-aware flip)
+>   ship with the accuracy bundle; `anchor` is deliberately NOT in the marking
+>   prompt yet. Demoed on Kayla's real printed bearings diagram 2026-08-29.
 > - Demo renders (Kayla EM P2 Q3 elevation with scene panel; Kassandra AM 2021
 >   P1 Q14 area) shown to Adrian 2026-08-29 from verified-solution numbers only.
 > - **Remaining DoD**: bot deploy (with the accuracy bundle; marking queue must
