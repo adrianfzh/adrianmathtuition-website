@@ -655,7 +655,10 @@ export default function QuestionBankPage() {
           style={{ width: 76, padding: 8, fontSize: 14, border: `1px solid ${C.border}`, borderRadius: 8 }} />
         <input value={school} onChange={e => setSchool(e.target.value)} placeholder="School"
           style={{ flex: 1, minWidth: 110, padding: 8, fontSize: 14, border: `1px solid ${C.border}`, borderRadius: 8 }} />
-        <button onClick={() => (tab === 'search' ? search(0) : loadPapers())} disabled={loading}
+        {/* A new search must also CLOSE any open paper — the result lists are
+            gated behind !paperView, so without this Go fetched into a hidden
+            list and looked dead (Adrian, 2026-08-29). */}
+        <button onClick={() => { setPaperView(null); if (tab === 'search') search(0); else loadPapers(); }} disabled={loading}
           style={{ padding: '8px 16px', fontSize: 14, fontWeight: 600, color: '#fff', background: C.accent, border: 'none', borderRadius: 8, cursor: 'pointer' }}>
           {loading ? '…' : 'Go'}
         </button>
