@@ -48,11 +48,18 @@
 >   Pole height is schematic (base/2); the printed segment is never re-traced
 >   and printed letters never repeated (pole-top name only — target for
 >   elevation, observer for depression). Returns `{ok, svg, bbox}` in IMAGE
->   coordinates for the photo compositor. **Renderer only for now** —
->   model-side anchor emission + photo-overlay compositing (ink-aware lean)
->   ship with the accuracy bundle; `anchor` is deliberately NOT in the marking
->   prompt yet. Demoed on Kayla's real printed bearings diagram 2026-08-29 in
->   green (`#1a7f37`), lean 14°.
+>   coordinates for the photo compositor. **SHELVED 2026-08-29** after two
+>   demo rounds on Kayla's real bearings page (v1 blue perpendicular-pole,
+>   v2 green oblique with sail + lean 14°): Adrian — still reads flat. Root
+>   cause is perceptual, not a bug: the printed plan fixes the whole figure's
+>   projection, and a single added vertical (plus fill) cannot override it —
+>   textbook 3D figures convince because the ENTIRE scene, ground plane
+>   included, is drawn in the oblique convention. That consistent-scene
+>   drawing is exactly the margin figure's `scene: true` panel, which stays
+>   the production 3D carrier alongside the flat true-ratio triangle.
+>   Renderer + tests kept dormant (nothing calls them); anchor emission /
+>   photo-overlay compositing is **out of the accuracy-bundle scope**, and
+>   `anchor` stays out of the marking prompt.
 > - Demo renders (Kayla EM P2 Q3 elevation with scene panel; Kassandra AM 2021
 >   P1 Q14 area) shown to Adrian 2026-08-29 from verified-solution numbers only.
 > - **Remaining DoD**: bot deploy (with the accuracy bundle; marking queue must
