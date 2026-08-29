@@ -50,6 +50,16 @@ export const maxDuration = 300;
 
 const DEFAULT_DAYS = 14;
 const MAX_DAYS = 90;
+
+// ⏸ Auto-release kill switch (Adrian, 2026-08-29). Alessi's hand-in auto-released
+// with an indefensible score — 15/16 parts were marked with question_found:false
+// (per-photo isolation marked the model's guess, not her work) and nothing gated
+// it. While paused, `auto: true` releases refuse and the run stays in triage; the
+// bot's Telegram line carries the note, and the daily 8am reminder keeps the run
+// visible. Manual release from /admin/mark/triage is unaffected. Flip back to
+// false only when the accuracy gates land (unread-page gate, question_found
+// fraction, reconcile-flag hold — approved bundle, 2026-08-29).
+const AUTO_RELEASE_PAUSED = true;
 const RUN_COLUMNS =
   'id, created_at, paper_name, student_id, student_name, total_awarded, total_max, num_questions, annotated_pdf_url, pdf_url, released_at';
 
@@ -418,6 +428,10 @@ export async function POST(req: NextRequest) {
     for (const run of runs ?? []) {
       if (run.released_at) {
         results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: 'already released' });
+        continue;
+      }
+      if (auto && AUTO_RELEASE_PAUSED) {
+        results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: 'auto-release paused — accuracy gates pending; review in triage' });
         continue;
       }
       if (auto && !isPortalSubmission(run.result_json) && !telegramHandinOf(run.result_json)) {
