@@ -33,7 +33,7 @@ export type ItemRow = {
   topic: string;
   skill: string;
   evidence: string[];
-  material: { bank_qids?: string[]; docx_url?: string; subgroup_id?: number; note?: string };
+  material: { bank_qids?: string[]; docx_url?: string; subgroup_id?: number; note?: string; reminder?: string };
   clear_rule: ClearRule;
   state: ItemState;
   attempts: number;
@@ -90,6 +90,7 @@ export async function ensureAssignmentForItem(plan: PlanRow, item: ItemRow): Pro
     topic: item.topic.slice(0, 80),
     level: plan.level.slice(0, 20),
     note: `Game plan step ${item.seq} — clear it to unlock the next.`,
+    reminder: item.material?.reminder ?? null,
   });
   if (!v.ok) return null;
   const { data: created, error } = await sb.from('portal_assignments').insert(v.row).select('id').single<{ id: string }>();

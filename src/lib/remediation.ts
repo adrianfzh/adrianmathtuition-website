@@ -50,6 +50,7 @@ export type PlanItemDraft = {
   topic: string;
   bankTopic: string | null;                 // canonical topic for the QB candidates RPC, or null
   skill: string;                            // "∫1/(ax+b) keeps the 1/a"
+  reminder: string;                         // the collapsed 💡 nudge above each drill question
   evidence: string[];                       // ["Q13(a)(ii)", …] — refs into LossEvidence
   clearRule: ClearRule;
 };
@@ -142,8 +143,10 @@ Group these into AT MOST 6 plan items. Each item is ONE teachable skill (e.g. "i
 For each item ALSO pick "bank_topic": the closest topic from this canonical question-bank list (copied EXACTLY), or null if none fits:
 ${bankTopics.length ? bankTopics.join(' | ') : '(no list available — always null)'}
 
+For each item ALSO write "reminder": 2-3 plain sentences the student reads right before every practice question of this item — state the rule or the exact first move (e.g. "Only 1/(ax+b)-type terms integrate to a logarithm — and the 1/a factor comes out front. Powers of x use the power rule, even negative powers."). Address the student directly; no question-specific spoilers.
+
 Reply with ONLY this JSON (no prose, no fences):
-{"items":[{"skill":"…","class":"blank|procedure|discipline|concept","topic":"…","bank_topic":"…"|null,"evidence":["Q4","Q13(a)(ii)"],"why":"one sentence"}]}
+{"items":[{"skill":"…","class":"blank|procedure|discipline|concept","topic":"…","bank_topic":"…"|null,"reminder":"…","evidence":["Q4","Q13(a)(ii)"],"why":"one sentence"}]}
 Every "evidence" entry MUST be copied exactly from the refs above. Order items by marks recoverable, largest first.`;
 }
 
@@ -195,6 +198,7 @@ export function parsePlanDraft(
       || byRef.get(refs[0])!.topic || 'General';
     const bankTopicRaw = String(it?.bank_topic ?? '').trim();
     const bankTopic = bankTopics.includes(bankTopicRaw) ? bankTopicRaw : null;
+    const reminder = String(it?.reminder ?? '').trim().slice(0, 600);
     out.push({
       seq: out.length + 1,
       kind: cls === 'blank' && refs.every((r) => byRef.get(r)!.awarded === 0 && byRef.get(r)!.notAttempted && !byRef.get(r)!.errorSummary)
@@ -204,6 +208,7 @@ export function parsePlanDraft(
       topic,
       bankTopic,
       skill,
+      reminder,
       evidence: refs,
       clearRule: defaultClearRule(cls),
     });

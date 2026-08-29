@@ -15,6 +15,7 @@ export type AssignmentRow = {
   level: string | null;
   tier: string | null;
   note: string | null;
+  reminder: string | null;
   pdf_url: string | null;
   pdf_source: string | null;
   due_on: string | null;           // 'YYYY-MM-DD'
@@ -38,6 +39,7 @@ export type CreateAssignmentInput = {
   level?: string | null;
   tier?: string | null;
   note?: string | null;
+  reminder?: string | null;
   pdfUrl?: string | null;
   pdfSource?: string | null;
   dueOn?: string | null;
@@ -52,6 +54,7 @@ export type ValidatedAssignment = {
   level: string | null;
   tier: string | null;
   note: string | null;
+  reminder: string | null;
   pdf_url: string | null;
   pdf_source: string | null;
   due_on: string | null;
@@ -83,6 +86,9 @@ export function validateAssignment(input: CreateAssignmentInput):
   const tierRaw = clean(input.tier, 20);
   const tier = tierRaw === 'Standard' || tierRaw === 'Advanced' ? tierRaw : null;
   const note = clean(input.note, MAX_NOTE);
+  // A concept nudge rendered COLLAPSED above the question ("💡 Reminder") —
+  // game-plan drills carry the step's rule here; optional everywhere else.
+  const reminder = clean(input.reminder, MAX_NOTE);
 
   let due_on: string | null = null;
   if (input.dueOn != null && input.dueOn !== '') {
@@ -98,7 +104,7 @@ export function validateAssignment(input: CreateAssignmentInput):
     const title = clean(input.title, MAX_TITLE) || (topic ? `${topic} question` : 'A question from Adrian');
     return {
       ok: true,
-      row: { airtable_student_id: studentId, kind: 'question', question_id: qid, title, topic, level, tier, note, pdf_url: null, pdf_source: null, due_on },
+      row: { airtable_student_id: studentId, kind: 'question', question_id: qid, title, topic, level, tier, note, reminder, pdf_url: null, pdf_source: null, due_on },
     };
   }
 
@@ -109,7 +115,7 @@ export function validateAssignment(input: CreateAssignmentInput):
   const pdfSource = clean(input.pdfSource, 400);
   return {
     ok: true,
-    row: { airtable_student_id: studentId, kind: 'worksheet', question_id: null, title, topic, level, tier, note, pdf_url: pdfUrl, pdf_source: pdfSource, due_on },
+    row: { airtable_student_id: studentId, kind: 'worksheet', question_id: null, title, topic, level, tier, note, reminder, pdf_url: pdfUrl, pdf_source: pdfSource, due_on },
   };
 }
 

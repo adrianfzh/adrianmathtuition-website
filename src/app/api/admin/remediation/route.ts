@@ -109,11 +109,11 @@ async function draft(body: Record<string, unknown>) {
       });
       const qids = (cands ?? []).map((c: { id: string }) => c.id).filter(Boolean);
       if (qids.length) {
-        (it as unknown as { material: Record<string, unknown> }).material = { bank_qids: qids };
+        (it as unknown as { material: Record<string, unknown> }).material = { bank_qids: qids, ...(it.reminder ? { reminder: it.reminder } : {}) };
         continue;
       }
     }
-    (it as unknown as { material: Record<string, unknown> }).material = {};
+    (it as unknown as { material: Record<string, unknown> }).material = it.reminder ? { reminder: it.reminder } : {};
     it.clearRule = { kind: 'self_attest' };
   }
 

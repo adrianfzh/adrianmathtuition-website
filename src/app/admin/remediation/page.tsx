@@ -12,7 +12,7 @@ type Plan = {
 };
 type Item = {
   id: string; seq: number; kind: string; loss_class: string; topic: string; skill: string;
-  evidence: string[]; material: { bank_qids?: string[]; docx_url?: string; note?: string };
+  evidence: string[]; material: { bank_qids?: string[]; docx_url?: string; note?: string; reminder?: string };
   clear_rule: { kind: string }; state: string; attempts: number; assignment_ids: string[];
 };
 
@@ -120,12 +120,17 @@ export default function RemediationAdmin() {
                       <span className="text-xs font-bold text-slate-400 mt-0.5">{it.seq}.</span>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-semibold text-slate-800">{it.skill}</div>
+                        {it.material?.reminder && (
+                          <div className="text-[11px] text-amber-700 bg-amber-50 rounded px-2 py-1 mt-1">💡 {it.material.reminder}</div>
+                        )}
                         <div className="text-[11px] text-slate-400">
                           {it.kind} · {it.loss_class} · {it.topic || '—'} · {it.evidence.join(', ')}
                           {' · '}
                           {it.material?.bank_qids?.length
                             ? `${it.material.bank_qids.length} bank Qs ready`
                             : it.material?.docx_url ? 'notes attached' : it.clear_rule.kind === 'self_attest' ? 'self-attest (no bank Qs)' : '⚠ no material'}
+                          {' · '}
+                          {it.kind === 'learn' ? '—' : it.material?.reminder ? '💡 reminder' : '⚠ no reminder'}
                           {' · '}<span className="font-semibold">{it.state}</span>
                           {it.attempts > 0 && ` · ${it.attempts} retr${it.attempts === 1 ? 'y' : 'ies'}`}
                         </div>

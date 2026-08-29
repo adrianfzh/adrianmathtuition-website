@@ -74,6 +74,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
       id: a.id,
       title: a.title,
       note: a.note,
+      reminder: a.reminder ?? null,
       dueLabel: dueLabel(a.due_on),
       topic: a.topic,
       tier: a.tier === 'Advanced' || a.tier === 'Standard' ? a.tier : null,

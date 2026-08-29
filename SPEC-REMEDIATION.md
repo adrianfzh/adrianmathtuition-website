@@ -103,6 +103,19 @@ remediation_items:   id, plan_id fk, seq int, kind ('probe'|'learn'|'drill'|'pro
 5. **Log** — plan drafts stamp `job_runs` (`remediation-draft`); add the
    `JOB_RHYTHMS` line when the trigger ships.
 
+## Completeness rule (Adrian, 30 Aug 2026)
+
+**A plan is not ready to activate until every part carries its teaching.** Two
+layers: every DRILL step carries a `material.reminder` — 2-3 sentences of the
+rule/first move, rendered as a collapsed "💡 Reminder before you start" above
+every question of that step (the model writes one per item at draft time;
+`portal_assignments.reminder` carries it to the practice page) — and the heavy
+skill clusters additionally get a learn sheet placed immediately BEFORE their
+drills (read → use it straight away). The admin screen shows "⚠ no reminder"
+per drill so an incomplete plan is visible at a glance. Born from the pilot:
+the first draft shipped with only the calculus sheet — "a game plan needs to
+incorporate all parts."
+
 ## Deliberately NOT in v1
 
 - No auto-send of the plan (Adrian's tap is the gate — moat: standard + accountability).

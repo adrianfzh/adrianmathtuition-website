@@ -128,3 +128,14 @@ describe('clear rules + state machine', () => {
     expect(planDone([])).toBe(false);
   });
 });
+
+describe('reminder field (the collapsed 💡 above each drill, 30 Aug 2026)', () => {
+  it('rides the draft parse onto the item, trimmed', () => {
+    const evidence = [{ q: '4', part: '', awarded: 1, max: 4, notAttempted: false, errorSummary: 'x', studyNote: '', topic: 'Integration' }] as LossEvidence[];
+    const items = parsePlanDraft(JSON.stringify({ items: [
+      { skill: 'integrate 1/(ax+b)', class: 'procedure', reminder: '  Only 1/(ax+b) gives a log.  ', evidence: ['Q4'] },
+    ] }), evidence, new Map());
+    expect(items[0].reminder).toBe('Only 1/(ax+b) gives a log.');
+    expect(buildDraftPrompt(evidence, new Map())).toContain('"reminder"');
+  });
+});

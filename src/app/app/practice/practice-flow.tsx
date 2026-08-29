@@ -139,7 +139,7 @@ import QuestionFinder from './question-finder';
 // assignment, Telegrams Adrian). Tier toggle / "Try another" are hidden —
 // this is THE question, not a stream.
 export type InitialAssignment = {
-  id: string; title: string; note: string | null; dueLabel: string | null;
+  id: string; title: string; note: string | null; reminder: string | null; dueLabel: string | null;
   topic: string | null; tier: Tier | null; status: 'assigned' | 'submitted' | 'marked';
   score: number | null; outOf: number | null; question: Question;
 };
@@ -537,6 +537,20 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
             </div>
             {assignment.note && <p className="text-sm mt-2 italic opacity-90">“{assignment.note}”</p>}
           </div>
+          {/* 💡 Concept reminder — collapsed by default (Adrian, 30 Aug 2026:
+              "a hint/reminder at the front before the question, as a dropdown
+              closed by default, for the concept it is trying to teach").
+              Game-plan drills fill it from the plan step; any assignment may
+              carry one. */}
+          {assignment.reminder && (
+            <details className="mt-2 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-2.5 group">
+              <summary className="text-sm font-semibold text-amber-900 cursor-pointer select-none list-none flex items-center gap-2">
+                <span aria-hidden>💡</span> Reminder before you start
+                <span className="ml-auto text-amber-400 group-open:rotate-180 transition-transform">▾</span>
+              </summary>
+              <div className="text-sm text-amber-900 mt-2 whitespace-pre-line">{assignment.reminder}</div>
+            </details>
+          )}
         </div>
       )}
       {/* ?qid= context header — where this question came from, and the way
