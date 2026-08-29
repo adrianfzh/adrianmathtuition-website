@@ -96,7 +96,7 @@ def apply_scrubs(doc, scrubs):
 def build(live, title, footer_top, header_bot, content_top, key_pdf,
           title_size=TITLE_SIZE, title_baseline=TITLE_BASELINE,
           content_target=CONTENT_TOP, keep_highlights=False, scrubs=(),
-          subtitle=None):
+          subtitle=None, header_all_pages=False):
     originals = os.path.join(os.path.dirname(live), "originals")
     os.makedirs(originals, exist_ok=True)
     backup = os.path.join(originals,
@@ -117,7 +117,7 @@ def build(live, title, footer_top, header_bot, content_top, key_pdf,
 
     for pno, page in enumerate(doc):
         page.add_redact_annot(pymupdf.Rect(0, footer_top, W, H))
-        if pno == 0 and header_bot:
+        if header_bot and (pno == 0 or header_all_pages):
             page.add_redact_annot(pymupdf.Rect(0, 0, W, header_bot))
         page.apply_redactions(
             images=pymupdf.PDF_REDACT_IMAGE_NONE,
@@ -130,9 +130,12 @@ def build(live, title, footer_top, header_bot, content_top, key_pdf,
     out = pymupdf.open()
     p1 = out.new_page(width=W, height=H)
     p1.show_pdf_page(pymupdf.Rect(0, dy, W, H + dy), doc, 0)   # nudge body down
-    tw = pymupdf.get_text_length(title, fontname="tibo", fontsize=title_size)
-    p1.insert_text(((W - tw) / 2, title_baseline), title,
-                   fontname="tibo", fontsize=title_size, color=(0, 0, 0))
+    # An empty title still nudges the body down, leaving clear space at the top
+    # for Adrian to set his own title in a PDF editor.
+    if title:
+        tw = pymupdf.get_text_length(title, fontname="tibo", fontsize=title_size)
+        p1.insert_text(((W - tw) / 2, title_baseline), title,
+                       fontname="tibo", fontsize=title_size, color=(0, 0, 0))
     if subtitle:   # EM sets carry two papers: "... Practice Set 1" / "Paper 2"
         sw = pymupdf.get_text_length(subtitle, fontname="tibo", fontsize=title_size)
         p1.insert_text(((W - sw) / 2, title_baseline + SUBTITLE_DROP), subtitle,
@@ -159,13 +162,17 @@ def build(live, title, footer_top, header_bot, content_top, key_pdf,
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--live", required=True, help="the PDF to overwrite in place")
-    ap.add_argument("--title", required=True)
+    ap.add_argument("--title", required=True,
+                    help='pass "" to leave the top space blank for a hand-set title')
     ap.add_argument("--subtitle", default=None,
                     help='second centred title line, e.g. "Paper 2"')
     ap.add_argument("--footer-top", type=float, required=True)
     ap.add_argument("--header-bot", type=float, default=0.0,
                     help="0 when page 1 has no header to strip")
     ap.add_argument("--content-top", type=float, required=True)
+    ap.add_argument("--header-all-pages", action="store_true",
+                    help="strip the header band from every page, not just page 1 "
+                         "(the source's own page numbers go too)")
     ap.add_argument("--key", required=True, help="answer-key PDF to append")
     ap.add_argument("--keep-highlights", action="store_true",
                     help="leave the source's highlighter marks in place")
@@ -174,7 +181,8 @@ def main():
                          "or --scrub 10:108,44,512,73 (repeatable, 1-based page)")
     a = ap.parse_args()
     build(a.live, a.title, a.footer_top, a.header_bot, a.content_top, a.key,
-          keep_highlights=a.keep_highlights, scrubs=a.scrub, subtitle=a.subtitle)
+          keep_highlights=a.keep_highlights, scrubs=a.scrub, subtitle=a.subtitle,
+          header_all_pages=a.header_all_pages)
 
 
 if __name__ == "__main__":

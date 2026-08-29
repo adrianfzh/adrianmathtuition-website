@@ -118,9 +118,13 @@ object instead of a bare array:
 ```
 
 `em` gives a left-aligned Times-Bold 15.5pt heading over a 10pt italic subheading
-and a rule, and stacks **one part per line** under the question number; a question
-whose only answer is unlabelled stays inline (`3.  x = 7, y = 2`). Omitting the
-object (a bare array) keeps the JC layout exactly as before.
+and a rule, and stacks **one part per line, left-aligned with the question
+number** (not indented under it — match the reference); a question whose only
+answer is unlabelled stays inline (`3.  x = 7, y = 2`). Omitting the object
+(a bare array) keeps the JC layout exactly as before.
+
+`"subheading": ""` drops that line entirely — use it when Adrian is titling the
+set himself, so the key carries no name you invented.
 
 ## 4. Assemble
 
@@ -137,6 +141,14 @@ re-running is idempotent — no double-shifted title, no stacked key pages. That
 also means: to change spacing, just re-run with new numbers.
 
 Pass `--header-bot 0` when page 1 has no header to strip.
+
+`--header-all-pages` strips the header band from **every** page, taking the
+source's own page numbers with it. The JC sets keep those (the reference does),
+but Adrian asked for them gone on the EM set — ask, or match whatever the sheet
+next to it does. Check first that no page starts its content inside the band.
+
+`--title ""` skips drawing a title while still nudging the body down, leaving
+clear space at the top for Adrian to set his own title in a PDF editor.
 
 ### Two papers in one file
 

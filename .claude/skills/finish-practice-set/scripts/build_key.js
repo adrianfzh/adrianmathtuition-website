@@ -30,8 +30,10 @@ const data = cfg.answers;
 const style = cfg.style || 'jc';
 const em = style === 'em';
 const heading = cfg.heading || (em ? 'Answers  -  Paper 1' : 'H2 Mathematics');
-const subheading = cfg.subheading ||
-  (em ? 'Practice Set' : 'Promotional Examination &nbsp;&mdash;&nbsp; Answer Key');
+// "" suppresses the sub-heading entirely (an untitled set has nothing to put there).
+const subheading = cfg.subheading === undefined
+  ? (em ? 'Practice Set' : 'Promotional Examination &nbsp;&mdash;&nbsp; Answer Key')
+  : cfg.subheading;
 
 const md = s => s.split(/(\$[^$]*\$)/g).map(c =>
   (c.startsWith('$') && c.endsWith('$') && c.length > 2)
@@ -75,11 +77,11 @@ const html = `<!doctype html><html><head><meta charset="utf-8">
   span.sep { display: inline-block; width: 12pt; }
   div.qblock { margin: 0 0 5pt 0; }
   p.qnum { margin: 0; line-height: 1.5; }
-  p.part { margin: 0 0 0 10.5pt; line-height: 1.62; }
+  p.part { margin: 0; line-height: 1.62; }   /* level with the question number */
   .katex { font-size: 1.13em; }
 </style></head><body>
 <h1>${heading}</h1>
-<h2>${subheading}</h2>
+${subheading ? `<h2>${subheading}</h2>` : ''}
 <hr>
 ${rows}
 </body></html>`;
