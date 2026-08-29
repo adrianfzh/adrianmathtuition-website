@@ -7,6 +7,7 @@ import {
   isFlagged,
   isReleasable,
   pendingCount,
+  computeAutoHold,
   TriageIndexError,
 } from './mark-triage';
 
@@ -232,5 +233,53 @@ describe('isFlagged', () => {
     expect(isFlagged({ review_recommended: true, triage_reviewed: true })).toBe(false);
     expect(isFlagged({ review_recommended: false })).toBe(false);
     expect(isFlagged({})).toBe(false);
+  });
+});
+
+describe('computeAutoHold', () => {
+  // Mirror of the bot's lib/release-gates.js — keep the two in lockstep. Born
+  // from Alessi's auto-released 38/66 (15/16 parts question_found:false,
+  // 2026-08-29); each gate here is pinned so a refactor can't silently drop one.
+  it('clean run: no hold, no reasons', () => {
+    const h = computeAutoHold(run(question(), question(), question()));
+    expect(h.hold).toBe(false);
+    expect(h.reasons).toEqual([]);
+  });
+
+  it('gate U: unreadable pages hold', () => {
+    const h = computeAutoHold({ ...run(question()), unreadable_pages: [2, 5] });
+    expect(h.hold).toBe(true);
+    expect(h.reasons.join(' ')).toContain('2 pages could not be read');
+  });
+
+  it('gate E: zero marked questions hold', () => {
+    const h = computeAutoHold(run());
+    expect(h.hold).toBe(true);
+    expect(h.reasons.join(' ')).toContain('no questions were marked');
+  });
+
+  it('gate Q: half or more marked blind holds; a lone blind question does not', () => {
+    const blind = question({ question_found: false });
+    expect(computeAutoHold(run(blind, blind, question(), question())).hold).toBe(true);
+    expect(computeAutoHold(run(blind, question(), question(), question())).hold).toBe(false);
+  });
+
+  it('gate R: reconcile findings hold; redraw receipts alone do not', () => {
+    const finding = {
+      ...run(question(), question()),
+      reconciliation: { relabels: [], superseded_parts: [{ q: '2' }], notes: [] },
+    };
+    expect(computeAutoHold(finding).hold).toBe(true);
+    const receiptOnly = {
+      ...run(question(), question()),
+      reconciliation: { relabels: [], superseded_parts: [], notes: [], redraws: ['Photo 2 redrawn.'] },
+    };
+    expect(computeAutoHold(receiptOnly).hold).toBe(false);
+  });
+
+  it('never throws on garbage input — holds via gate E instead', () => {
+    expect(computeAutoHold(null).hold).toBe(true);
+    expect(computeAutoHold({}).hold).toBe(true);
+    expect(computeAutoHold('nope').hold).toBe(true);
   });
 });

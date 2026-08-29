@@ -247,3 +247,60 @@ export function isReleasable(resultJson: unknown): boolean {
 export function pendingCount(resultJson: unknown): number {
   return resultsOf(resultJson).filter(isFlagged).length;
 }
+
+export interface AutoHold {
+  hold: boolean;
+  reasons: string[];
+}
+
+/**
+ * Would the bot's auto-release accuracy gates hold this run? Mirror of the bot's
+ * `lib/release-gates.js` computeReleaseGates, re-derived from the persisted
+ * `result_json` (the bot persists the same signals it gated on in memory) so the
+ * triage board can say WHY a hand-in did not go out by itself. Born from Alessi's
+ * auto-released 38/66: 15 of 16 parts were marked "no question found" and nothing
+ * in the ladder looked (29 Aug 2026).
+ *
+ * Gates — keep in lockstep with the bot:
+ *   U — any unreadable page (real writing, both reads empty; kept with a banner)
+ *   E — zero marked questions
+ *   Q — half or more of the questions marked without their question
+ *   R — reconciliation merged or flagged reads (its `redraws` receipts are
+ *       housekeeping and never hold)
+ *
+ * Display + explanation only on this side: the actual auto-release decision is
+ * the bot's, made before the release call ever reaches this API.
+ */
+export function computeAutoHold(resultJson: unknown): AutoHold {
+  const root = asRecord(resultJson) ?? {};
+  const reasons: string[] = [];
+
+  const unreadable = Array.isArray(root.unreadable_pages) ? root.unreadable_pages : [];
+  if (unreadable.length) {
+    reasons.push(`${unreadable.length} page${unreadable.length === 1 ? '' : 's'} could not be read`);
+  }
+
+  const results = resultsOf(resultJson);
+  if (!results.length) {
+    reasons.push('no questions were marked');
+  } else {
+    const noQ = results.filter(r => r.question_found === false).length;
+    if (noQ / results.length >= 0.5) {
+      reasons.push(`${noQ}/${results.length} questions marked without their question`);
+    }
+  }
+
+  const rec = asRecord(root.reconciliation);
+  if (rec) {
+    const structural =
+      (Array.isArray(rec.relabels) ? rec.relabels.length : 0) +
+      (Array.isArray(rec.superseded_parts) ? rec.superseded_parts.length : 0) +
+      (Array.isArray(rec.superseded_results) ? rec.superseded_results.length : 0);
+    const flagged = Array.isArray(rec.notes) ? rec.notes.length : 0;
+    if (structural || flagged) {
+      reasons.push('reconciliation merged or flagged reads');
+    }
+  }
+
+  return { hold: reasons.length > 0, reasons };
+}

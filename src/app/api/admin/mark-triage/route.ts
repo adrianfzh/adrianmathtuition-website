@@ -36,6 +36,7 @@ import {
   recomputeTotals,
   isReleasable,
   pendingCount,
+  computeAutoHold,
   TriageIndexError,
 } from '@/lib/mark-triage';
 import { buildReviseBlock } from '@/lib/revise-map';
@@ -56,9 +57,12 @@ const MAX_DAYS = 90;
 // (per-photo isolation marked the model's guess, not her work) and nothing gated
 // it. While paused, `auto: true` releases refuse and the run stays in triage; the
 // bot's Telegram line carries the note, and the daily 8am reminder keeps the run
-// visible. Manual release from /admin/mark/triage is unaffected. Flip back to
-// false only when the accuracy gates land (unread-page gate, question_found
-// fraction, reconcile-flag hold — approved bundle, 2026-08-29).
+// visible. Manual release from /admin/mark/triage is unaffected.
+// The accuracy gates SHIPPED bot-side 2026-08-29 evening (bot lib/release-gates.js,
+// wired before autoReleaseHandIn: unreadable pages, zero/blind-majority questions,
+// reconcile findings — `computeAutoHold` in lib/mark-triage.ts is the same logic
+// over the persisted run, driving the amber chip below). Flip to false on Adrian's
+// go once he's satisfied with the gated behaviour.
 const AUTO_RELEASE_PAUSED = true;
 const RUN_COLUMNS =
   'id, created_at, paper_name, student_id, student_name, total_awarded, total_max, num_questions, annotated_pdf_url, pdf_url, released_at';
@@ -105,6 +109,10 @@ export async function GET(req: NextRequest) {
         annotatedPhotos: extractAnnotatedPhotos(r.result_json),
         flagged: summary.flagged,
         releasable: summary.flagged.length === 0,
+        // Why auto-release held (or would have) — the bot's accuracy gates
+        // re-derived from the persisted signals. Explanatory only: manual
+        // release ignores it.
+        autoHold: computeAutoHold(r.result_json),
       };
     });
 

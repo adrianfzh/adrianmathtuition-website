@@ -30,6 +30,9 @@ type Run = {
   pdfUrl: string | null;
   flagged: TriageQuestion[];
   releasable: boolean;
+  /** The bot's auto-release accuracy gates, re-derived server-side — why this
+      hand-in did not go out by itself. Explanatory; manual release ignores it. */
+  autoHold?: { hold: boolean; reasons: string[] };
 };
 
 type Stats = { scripts: number; questions: number; confident: number; flagged: number; readyToRelease: number };
@@ -287,6 +290,12 @@ export default function TriagePage() {
               </button>
             </div>
           </div>
+
+          {run.autoHold?.hold && (
+            <div style={{ padding: '8px 12px', fontSize: 13, color: C.flag, background: C.flagBg, borderBottom: `1px solid ${C.flagBorder}` }}>
+              ⚠ Held from auto-release: {run.autoHold.reasons.join(' · ')}
+            </div>
+          )}
 
           {run.flagged.length === 0 ? (
             <div style={{ padding: '10px 12px', fontSize: 13, color: C.muted }}>
