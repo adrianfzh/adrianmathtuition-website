@@ -182,7 +182,11 @@ async function addItem(body: Record<string, unknown>) {
   if (!skill) return NextResponse.json({ error: 'item.skill required' }, { status: 400 });
   const kind = ['probe', 'learn', 'drill', 'prove'].includes(String(item.kind)) ? String(item.kind) : 'learn';
   const lossClass = ['blank', 'procedure', 'discipline', 'concept'].includes(String(item.lossClass)) ? String(item.lossClass) : 'concept';
-  const seq = Number(item.seq) || (Math.max(0, ...loaded.items.map((i) => i.seq)) + 1);
+  // Number(item.seq) || fallback would treat an explicit seq 0 as unset —
+  // seq 0 is exactly how a prepended "read this first" learn item sorts ahead
+  // of a drafted plan's 1..N.
+  const seqRaw = Number(item.seq);
+  const seq = item.seq != null && Number.isFinite(seqRaw) ? seqRaw : (Math.max(0, ...loaded.items.map((i) => i.seq)) + 1);
   const clearRule = (item.clearRule as Record<string, unknown>)?.kind
     ? item.clearRule
     : kind === 'learn' ? { kind: 'self_attest' } : defaultClearRule(lossClass as LossClass);
