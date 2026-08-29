@@ -55,7 +55,7 @@ Save as `my_worksheet.py` next to `worksheet_lib.py`:
 ```python
 from worksheet_lib import Worksheet
 
-ws = Worksheet()
+ws = Worksheet(working_space=2.0)   # 2 blank lines per mark for the student's working
 ws.title('Worksheet Title')
 ws.subtitle('IP4 / Sec 4 Mathematics')
 
@@ -102,6 +102,7 @@ The `Worksheet` class exposes these methods. All take a `parts` list (described 
 | `ws.ans(parts)` | `[Ans: ...]` line — right-aligned, orange. The wrapper `[Ans: ` and `]` are added automatically; pass only the inner content. |
 | `ws.figure(path, width_cm=10.5)` | Embed a rendered figure PNG, centred under the current question. Cap 16 cm; never upscales a small image. Render the PNG with `figure_lib.render` first — see **Figures** below. |
 | `ws.solution_box(rows, keep_together=True)` | Boxed worked solution in Adrian's house format — see **Worked-solution boxes** below. |
+| `ws.workspace(marks=None, lines=None)` | Blank writing space, sized by `marks` or by an explicit `lines`. Emitted automatically after every marked paragraph when `working_space` is set — call it directly only for space that isn't tied to a mark allocation. |
 | `ws.page_break()` | Manual page break. |
 | `ws.save(path)` | Write the final docx to disk. |
 
@@ -275,6 +276,30 @@ The library hardcodes Adrian's house style. To change it, edit `worksheet_lib.py
 | Marks tab stop | 15.5 cm, right-aligned |
 | Marks colour | Black |
 | Answer style | Right-aligned, orange `#843C0C`, prefix `[Ans: ...]` |
+| Working space | `Worksheet(working_space=2.0)` — 2 blank lines per mark, so a `[3]` gets three times the room of a `[1]` |
+| Question tag | Topic only, in italics: `(Trigonometry)`. **Never name the source school or year** |
+
+### Working space and question tags (2026-08-29)
+
+**Build every write-on worksheet with `Worksheet(working_space=2.0)`.** The
+library then leaves blank writing space after each paragraph that carries a mark
+allocation, sized `marks x working_space` body lines — a `[3]` part gets three
+times the room of a `[1]`, which is what a student expects when the marks tell
+them how much working is wanted. Set it to `0` (the default) only for a sheet
+nobody writes on: a solutions sheet, or a Revision "(With Worked Examples)"
+sheet where `solution_box()` already fills the space.
+
+Because the space is generous, a worksheet runs long — that is correct, not a
+bug. Do NOT hand-place `page_break()` calls to compact it. `Worksheet` keeps each
+question together by default (`keep_questions_together=True`), so Word moves a
+whole question to the next page rather than splitting it off from its figure.
+Reach for `page_break()` only to force a genuine section boundary.
+
+**Never put the originating school or year in a question.** Tag the question with
+its topic alone — `(Trigonometry)`, `(Similarity)`, `(Congruency)` — in italics,
+the same convention as the kiosk and bot worksheets, which strip originating-school
+metadata by design. Keep provenance in the author script's comments if you need it.
+
 
 ## Verification
 

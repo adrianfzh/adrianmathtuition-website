@@ -189,8 +189,20 @@ def _style_annotations(elem):
 class Worksheet:
     """Builder for a single worksheet docx with Adrian's house style."""
 
-    def __init__(self):
+    #: one body line at 9.5 pt on 1.5 spacing
+    LINE_PT = 9.5 * 1.5
+
+    def __init__(self, working_space=0.0, keep_questions_together=True):
+        """working_space: blank writing lines to leave per mark, after every
+        paragraph that carries a mark allocation. 0 disables it (the right
+        choice for a solutions sheet); pass 2.0 for a worksheet students write
+        on, so a [3] gets three times the room of a [1].
+
+        keep_questions_together: stop Word splitting a question across a page
+        break. A question taller than a page still splits, gracefully."""
         self.doc = Document()
+        self.working_space = float(working_space)
+        self.keep_questions_together = bool(keep_questions_together)
         self._auto_subq_id = 9   # increments to 10, 11, ... per Q with sub-parts
         self._current_subq_id = None
         self._block_paras = []   # paragraphs of the current question block (for keep-together)
@@ -291,6 +303,8 @@ class Worksheet:
             run.font.name = 'Times New Roman'
             run.font.size = Pt(9.5)
         self._block_paras.append(p)
+        if marks is not None and self.working_space:
+            self.workspace(marks=marks)
         return p
 
     def _fill(self, p, parts):
@@ -356,6 +370,7 @@ class Worksheet:
     def Q(self, parts, marks=None):
         """Main question. Auto-numbered 1. 2. 3. ..."""
         # Bump the sub-question id pool for this question; reset on each Q call
+        self._finish_block()    # glue the question that just ended
         self._auto_subq_id += 1
         self._current_subq_id = self._auto_subq_id
         self._block_paras = []  # a new question starts a new keep-together block
@@ -488,12 +503,45 @@ class Worksheet:
         self.doc.add_paragraph()  # breathing space between the box and what follows
         return table
 
+    def workspace(self, marks=None, lines=None):
+        """Blank writing space. Sized by `marks` (marks x self.working_space
+        lines) or by an explicit number of `lines`. Emitted automatically after
+        every marked paragraph when the Worksheet was built with working_space."""
+        if lines is None:
+            if marks is None:
+                raise ValueError('workspace() needs marks or lines')
+            lines = float(marks) * self.working_space
+        if lines <= 0:
+            return None
+        # A 1 pt empty run carries almost no height of its own, so the space is
+        # exactly `lines` body lines rather than that plus a stray blank line.
+        p = self.doc.add_paragraph()
+        run = p.add_run('')
+        run.font.size = Pt(1)
+        p.paragraph_format.line_spacing = 1
+        p.paragraph_format.space_before = Pt(0)
+        p.paragraph_format.space_after = Pt(lines * self.LINE_PT)
+        self._block_paras.append(p)
+        return p
+
+    def _finish_block(self):
+        """Glue the paragraphs of the question just finished so Word moves the
+        whole question to the next page rather than splitting it. The last
+        paragraph must NOT keep with what follows, or every question in the
+        document chains into one unbreakable block."""
+        if self.keep_questions_together:
+            for para in self._block_paras[:-1]:
+                para.paragraph_format.keep_with_next = True
+        self._block_paras = []
+
     def page_break(self):
+        self._finish_block()
         self.doc.add_page_break()
         self._block_paras = []  # a manual break ends any keep-together block
 
     def save(self, path):
         """Save the worksheet, injecting clean numbering.xml."""
+        self._finish_block()    # the last question has no Q() after it
         # Save to a temp buffer first, then rewrite numbering.xml
         buf = io.BytesIO()
         self.doc.save(buf)
