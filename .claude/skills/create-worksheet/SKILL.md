@@ -277,7 +277,7 @@ The library hardcodes Adrian's house style. To change it, edit `worksheet_lib.py
 | Marks colour | Black |
 | Answer style | Right-aligned, orange `#843C0C`, prefix `[Ans: ...]` |
 | Working space | `Worksheet(working_space=2.0)` — 2 blank lines per mark, so a `[3]` gets three times the room of a `[1]` |
-| Question tag | Topic only, in italics: `(Trigonometry)`. **Never name the source school or year** |
+| Question tag | Usually none — a sheet grouped under `Section A — Trigonometry` headers does not need `(Trigonometry)` repeated on every question. Tag only a mixed-topic sheet, in italics. **Never name the source school or year** |
 
 ### Working space and question tags (2026-08-29)
 
@@ -290,15 +290,18 @@ nobody writes on: a solutions sheet, or a Revision "(With Worked Examples)"
 sheet where `solution_box()` already fills the space.
 
 Because the space is generous, a worksheet runs long — that is correct, not a
-bug. Do NOT hand-place `page_break()` calls to compact it. `Worksheet` keeps each
-question together by default (`keep_questions_together=True`), so Word moves a
-whole question to the next page rather than splitting it off from its figure.
-Reach for `page_break()` only to force a genuine section boundary.
+bug. Do NOT hand-place `page_break()` calls to compact it, and do NOT try to keep
+whole questions on one page: once each question is half a page tall, gluing it
+makes Word bump the whole thing to the next page and leaves most of a page blank.
+`Worksheet` anchors only the **figure** (`keep_figures_with_text=True`), so a
+diagram never separates from its stem while sub-questions and their writing space
+flow across the break. Reach for `page_break()` only for a real section boundary.
 
-**Never put the originating school or year in a question.** Tag the question with
-its topic alone — `(Trigonometry)`, `(Similarity)`, `(Congruency)` — in italics,
-the same convention as the kiosk and bot worksheets, which strip originating-school
-metadata by design. Keep provenance in the author script's comments if you need it.
+**Never put the originating school or year in a question.** Provenance lives in
+the author script's comments — the same convention as the kiosk and bot
+worksheets, which strip originating-school metadata by design. A topic tag on
+each question is usually redundant too: if the sheet is already grouped under
+`Section A — Trigonometry and Pythagoras' Theorem`, the questions need no tag.
 
 
 ## Verification

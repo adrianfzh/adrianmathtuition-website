@@ -192,17 +192,21 @@ class Worksheet:
     #: one body line at 9.5 pt on 1.5 spacing
     LINE_PT = 9.5 * 1.5
 
-    def __init__(self, working_space=0.0, keep_questions_together=True):
+    def __init__(self, working_space=0.0, keep_figures_with_text=True):
         """working_space: blank writing lines to leave per mark, after every
         paragraph that carries a mark allocation. 0 disables it (the right
         choice for a solutions sheet); pass 2.0 for a worksheet students write
         on, so a [3] gets three times the room of a [1].
 
-        keep_questions_together: stop Word splitting a question across a page
-        break. A question taller than a page still splits, gracefully."""
+        keep_figures_with_text: glue each figure to the paragraph above it and
+        to the one below, so a diagram never lands on a different page from its
+        question stem. Only the figure is anchored — sub-questions and their
+        writing space flow freely across a page break. (Gluing a whole question
+        looks tidy until working_space makes questions half a page tall, and
+        Word then bumps entire questions to the next page, leaving huge gaps.)"""
         self.doc = Document()
         self.working_space = float(working_space)
-        self.keep_questions_together = bool(keep_questions_together)
+        self.keep_figures_with_text = bool(keep_figures_with_text)
         self._auto_subq_id = 9   # increments to 10, 11, ... per Q with sub-parts
         self._current_subq_id = None
         self._block_paras = []   # paragraphs of the current question block (for keep-together)
@@ -421,6 +425,10 @@ class Worksheet:
     def figure(self, path, width_cm=10.5):
         """Embed a rendered figure (see figure_lib.py) under the current question."""
         p = self._picture(self.doc.add_paragraph(), path, width_cm)
+        if self.keep_figures_with_text:
+            if self._block_paras:          # stay with the stem above
+                self._block_paras[-1].paragraph_format.keep_with_next = True
+            p.paragraph_format.keep_with_next = True   # and the part below
         self._block_paras.append(p)
         return p
 
@@ -525,13 +533,8 @@ class Worksheet:
         return p
 
     def _finish_block(self):
-        """Glue the paragraphs of the question just finished so Word moves the
-        whole question to the next page rather than splitting it. The last
-        paragraph must NOT keep with what follows, or every question in the
-        document chains into one unbreakable block."""
-        if self.keep_questions_together:
-            for para in self._block_paras[:-1]:
-                para.paragraph_format.keep_with_next = True
+        """Close the current question's paragraph block. Figures were already
+        anchored as they were added, so there is nothing to glue here."""
         self._block_paras = []
 
     def page_break(self):
