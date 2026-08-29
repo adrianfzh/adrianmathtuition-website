@@ -20,6 +20,7 @@ import pymupdf
 
 TITLE_SIZE = 18.37      # matches Set 1, the reference sheet
 TITLE_BASELINE = 52.0   # title baseline, y from page top
+SUBTITLE_DROP = 23.0    # second title line ("Paper 2"), baseline offset below the first
 CONTENT_TOP = 96.0      # where the page-1 body starts after the nudge
 
 
@@ -94,7 +95,8 @@ def apply_scrubs(doc, scrubs):
 
 def build(live, title, footer_top, header_bot, content_top, key_pdf,
           title_size=TITLE_SIZE, title_baseline=TITLE_BASELINE,
-          content_target=CONTENT_TOP, keep_highlights=False, scrubs=()):
+          content_target=CONTENT_TOP, keep_highlights=False, scrubs=(),
+          subtitle=None):
     originals = os.path.join(os.path.dirname(live), "originals")
     os.makedirs(originals, exist_ok=True)
     backup = os.path.join(originals,
@@ -131,6 +133,10 @@ def build(live, title, footer_top, header_bot, content_top, key_pdf,
     tw = pymupdf.get_text_length(title, fontname="tibo", fontsize=title_size)
     p1.insert_text(((W - tw) / 2, title_baseline), title,
                    fontname="tibo", fontsize=title_size, color=(0, 0, 0))
+    if subtitle:   # EM sets carry two papers: "... Practice Set 1" / "Paper 2"
+        sw = pymupdf.get_text_length(subtitle, fontname="tibo", fontsize=title_size)
+        p1.insert_text(((W - sw) / 2, title_baseline + SUBTITLE_DROP), subtitle,
+                       fontname="tibo", fontsize=title_size, color=(0, 0, 0))
     if len(doc) > 1:
         out.insert_pdf(doc, from_page=1, to_page=len(doc) - 1)
 
@@ -154,6 +160,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--live", required=True, help="the PDF to overwrite in place")
     ap.add_argument("--title", required=True)
+    ap.add_argument("--subtitle", default=None,
+                    help='second centred title line, e.g. "Paper 2"')
     ap.add_argument("--footer-top", type=float, required=True)
     ap.add_argument("--header-bot", type=float, default=0.0,
                     help="0 when page 1 has no header to strip")
@@ -166,7 +174,7 @@ def main():
                          "or --scrub 10:108,44,512,73 (repeatable, 1-based page)")
     a = ap.parse_args()
     build(a.live, a.title, a.footer_top, a.header_bot, a.content_top, a.key,
-          keep_highlights=a.keep_highlights, scrubs=a.scrub)
+          keep_highlights=a.keep_highlights, scrubs=a.scrub, subtitle=a.subtitle)
 
 
 if __name__ == "__main__":

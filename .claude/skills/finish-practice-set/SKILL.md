@@ -98,6 +98,29 @@ node .claude/skills/finish-practice-set/scripts/build_key.js answers.json /tmp/k
   Set 1 does this.
 - Keep sketch answers descriptive (asymptotes, turning points, intercepts). Set 1
   writes `8. Graph` where there is nothing else to say.
+- **Never write `\$` inside `$…$`.** The renderer splits on `$…$` pairs, so
+  `$\$888$` is read as a math chunk holding a lone backslash and KaTeX dies.
+  Money goes in plain text: `"$888"`, `"$10 510"`.
+
+### EM sheets: `style: "em"`
+
+The O-Level EM sets use a different key layout from the JC promo sets — Adrian's
+`2026 EM Prelim Practice Set 1 (Ahmad Ibrahim 2025).pdf` is the reference. Pass an
+object instead of a bare array:
+
+```json
+{
+  "style": "em",
+  "heading": "Answers  -  Paper 1",
+  "subheading": "EM S3 SA2 Practice Set 1",
+  "answers": [ {"n": "1", "parts": [["(a)", "31 540 000"]]} ]
+}
+```
+
+`em` gives a left-aligned Times-Bold 15.5pt heading over a 10pt italic subheading
+and a rule, and stacks **one part per line** under the question number; a question
+whose only answer is unlabelled stays inline (`3.  x = 7, y = 2`). Omitting the
+object (a bare array) keeps the JC layout exactly as before.
 
 ## 4. Assemble
 
@@ -114,6 +137,31 @@ re-running is idempotent — no double-shifted title, no stacked key pages. That
 also means: to change spacing, just re-run with new numbers.
 
 Pass `--header-bot 0` when page 1 has no header to strip.
+
+### Two papers in one file
+
+An EM set is usually Paper 1 and Paper 2 bound together, and each needs its own
+title page and its own key at its own end. `build()` finishes one paper, so
+**split, finish each half, merge**:
+
+```python
+import make_set, pymupdf
+src = pymupdf.open(backup)                     # always the pristine backup
+for lo, hi, sub, key in [(0, 7, "Paper 1", "key_p1.pdf"),
+                         (8, 15, "Paper 2", "key_p2.pdf")]:
+    half = pymupdf.open(); half.insert_pdf(src, from_page=lo, to_page=hi)
+    half.save(path); half.close()
+    make_set.build(path, TITLE, FOOTER_TOP, HEADER_BOT, CONTENT_TOP, key,
+                   subtitle=sub)               # subtitle = the second title line
+# then insert_pdf the finished halves into one document
+```
+
+Splitting off the backup every time keeps it idempotent. `--subtitle` / the
+`subtitle=` argument prints a second centred title line 23pt under the first,
+matching the reference's `Sec 4 E Math Prelims Practice Set 1` / `Paper 2`.
+
+Find the paper boundary from the text: both papers restart at question 1 and at
+the source's own page 3, so `pdftotext -f N -l N` per page shows it immediately.
 
 ## 5. Verify before handing over
 
@@ -140,7 +188,13 @@ Then send the file with `SendUserFile`. In a headless session also Telegram it
   fully inside a band and leaves everything that merely touches one — so diagrams
   near the footer survive.
 - **Page size varies.** Sets 1 and 2 are A4; Set 3 is US Letter. Always read it
-  off the probe rather than assuming.
+  off the probe rather than assuming. Adrian's own EM reference has Letter key
+  pages in an A4 paper — don't copy that; build the key at the paper's size.
+- **`probe_set.py` counts white cover-up boxes as content.** The Ang Mo Kio set
+  carries a 126x45 pt *white-filled* rectangle low on every even page, so the
+  probe rejected every footer candidate with "real content reaches y=817". It is
+  invisible. Dump the drawings and check `fill` before believing the probe:
+  a `(1.0, 1.0, 1.0)` fill is the compiler painting something out, not content.
 - **Compiler mark-up is baked into the pages, and fill ≠ stroke.** VJC's pages
   carried eight highlighter fills (yellow and cyan, over *Without using a
   calculator*, *Hence*, *exact*…) plus a green callout box reading "Expected to
