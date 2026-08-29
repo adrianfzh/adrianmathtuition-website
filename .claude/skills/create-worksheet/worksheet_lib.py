@@ -192,24 +192,32 @@ class Worksheet:
     #: one body line at 9.5 pt on 1.5 spacing
     LINE_PT = 9.5 * 1.5
 
-    def __init__(self, working_space=0.0, keep_figures_with_text=True):
+    def __init__(self, working_space=0.0, keep_questions_together=True,
+                 keep_figures_with_text=True):
         """working_space: blank writing lines to leave per mark, after every
         paragraph that carries a mark allocation. 0 disables it (the right
-        choice for a solutions sheet); pass 2.0 for a worksheet students write
+        choice for a solutions sheet); pass 2.5 for a worksheet students write
         on, so a [3] gets three times the room of a [1].
 
-        keep_figures_with_text: glue each figure to the paragraph above it and
-        to the one below, so a diagram never lands on a different page from its
-        question stem. Only the figure is anchored — sub-questions and their
-        writing space flow freely across a page break. (Gluing a whole question
-        looks tidy until working_space makes questions half a page tall, and
-        Word then bumps entire questions to the next page, leaving huge gaps.)"""
+        keep_questions_together: a question — stem, figure, every part, its
+        writing space and its answer line — never straddles a page break. This
+        only works if each question actually FITS on a page: check with
+        `block_heights()` after building, because a question taller than the
+        text column is split by Word anyway, and one that only just overflows
+        gets bumped whole and leaves most of a page blank.
+
+        keep_figures_with_text: anchor each figure to the paragraphs either
+        side of it. Redundant while questions are kept whole, but it is what
+        stops a diagram being orphaned when a question does have to split."""
         self.doc = Document()
         self.working_space = float(working_space)
+        self.keep_questions_together = bool(keep_questions_together)
         self.keep_figures_with_text = bool(keep_figures_with_text)
         self._auto_subq_id = 9   # increments to 10, 11, ... per Q with sub-parts
         self._current_subq_id = None
         self._block_paras = []   # paragraphs of the current question block (for keep-together)
+        self._blocks = []        # every finished block, for block_heights()
+        self._fig_cm = {}        # id(paragraph) -> rendered figure height in cm
         self._example_n = 0      # auto-counter for example() labels
         self._setup_page()
         self._setup_styles()
@@ -392,6 +400,18 @@ class Worksheet:
         """Plain paragraph (no numbering)."""
         return self._add(parts, marks=marks)
 
+    def section(self, text):
+        """Bold section header, e.g. 'Section B - Congruency and Similarity'.
+
+        Closes the previous question and glues itself to the question that
+        follows, so a header can never be left stranded at the foot of a page
+        with its first question overleaf."""
+        self._finish_block()
+        p = self._add([('text', text, {'bold': True})])
+        p.paragraph_format.space_before = Pt(6)
+        p.paragraph_format.keep_with_next = True
+        return p
+
     def math_block(self, latex_expr):
         """Centred display equation."""
         p = self.doc.add_paragraph()
@@ -419,7 +439,10 @@ class Worksheet:
         p.paragraph_format.space_before = Pt(4)
         p.paragraph_format.space_after = Pt(4)
         run = p.add_run()
-        run.add_picture(path, width=Cm(min(width_cm, 16, natural_cm)))
+        w = min(width_cm, 16, natural_cm)
+        run.add_picture(path, width=Cm(w))
+        with Image.open(path) as im:
+            self._fig_cm[id(p)] = w * im.height / im.width
         return p
 
     def figure(self, path, width_cm=10.5):
@@ -533,9 +556,46 @@ class Worksheet:
         return p
 
     def _finish_block(self):
-        """Close the current question's paragraph block. Figures were already
-        anchored as they were added, so there is nothing to glue here."""
+        """Close the question just finished. The last paragraph must NOT keep
+        with what follows, or every question chains into one unbreakable block."""
+        if self.keep_questions_together:
+            for para in self._block_paras[:-1]:
+                para.paragraph_format.keep_with_next = True
+        if self._block_paras:
+            self._blocks.append(self._block_paras)
         self._block_paras = []
+
+    #: usable text column, A4 less the house margins (top 2 cm, bottom 1 cm)
+    PAGE_CM = 26.7
+    LINE_CM = LINE_PT / 28.35
+    CHAR_CM = 0.151        # Times 9.5 pt, averaged over mixed case
+
+    def block_heights(self):
+        """Estimated height, in cm, of each question block — the check that
+        keep_questions_together is actually achievable. A block taller than
+        PAGE_CM cannot be kept whole; one just under it will be bumped to a
+        fresh page and leave the previous one mostly blank.
+
+        An estimate, not a measurement: line counts come from character counts
+        at the body size, and an equation is charged as three characters. Treat
+        anything within ~1.5 cm of PAGE_CM as "may not fit"."""
+        out = []
+        for block in self._blocks + ([self._block_paras] if self._block_paras else []):
+            cm = 0.0
+            for p in block:
+                if id(p) in self._fig_cm:
+                    cm += self._fig_cm[id(p)] + 8 / 28.35   # picture + its 4pt padding
+                    continue
+                gap = p.paragraph_format.space_after
+                if gap is not None and gap.pt > 20:
+                    cm += gap.pt / 28.35
+                    continue
+                indent = 1.5 if p.style is not None and p.style.name == 'SubQuestion' else 0.0
+                width = 16.0 - indent
+                chars = len(p.text) + 3 * p._element.xml.count('<m:oMath')
+                cm += max(1, -(-chars // int(width / self.CHAR_CM))) * self.LINE_CM
+            out.append(round(cm, 1))
+        return out
 
     def page_break(self):
         self._finish_block()

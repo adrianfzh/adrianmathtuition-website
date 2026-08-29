@@ -98,6 +98,8 @@ The `Worksheet` class exposes these methods. All take a `parts` list (described 
 | `ws.Q(parts, marks=None)` | Main question. Auto-numbered `1.`, `2.`, `3.`, ... Each call also opens a fresh sub-question pool, so any `SQ()` calls that follow restart at `(a)`. |
 | `ws.SQ(parts, marks=None)` | Sub-question under the most recent `Q()`. Auto-numbered `(a)`, `(b)`, `(c)`, ... Restarts when a new `Q()` is called. |
 | `ws.para(parts, marks=None)` | Plain paragraph with no numbering. |
+| `ws.section(text)` | Bold section header, glued to the question that follows so it cannot be stranded at the foot of a page. |
+| `ws.block_heights()` | Estimated cm height of each question block — call it before `save()` to confirm every question actually fits on a page (`ws.PAGE_CM` is the budget). |
 | `ws.math_block(latex)` | Centred display equation (no surrounding text). |
 | `ws.ans(parts)` | `[Ans: ...]` line — right-aligned, orange. The wrapper `[Ans: ` and `]` are added automatically; pass only the inner content. |
 | `ws.figure(path, width_cm=10.5)` | Embed a rendered figure PNG, centred under the current question. Cap 16 cm; never upscales a small image. Render the PNG with `figure_lib.render` first — see **Figures** below. |
@@ -293,9 +295,15 @@ Because the space is generous, a worksheet runs long — that is correct, not a
 bug. Do NOT hand-place `page_break()` calls to compact it, and do NOT try to keep
 whole questions on one page: once each question is half a page tall, gluing it
 makes Word bump the whole thing to the next page and leaves most of a page blank.
-`Worksheet` anchors only the **figure** (`keep_figures_with_text=True`), so a
-diagram never separates from its stem while sub-questions and their writing space
-flow across the break. Reach for `page_break()` only for a real section boundary.
+`Worksheet` keeps each question whole (`keep_questions_together=True`) — stem,
+figure, parts, writing space and answer line all move together. **That only works
+if each question fits on a page**, so print `ws.block_heights()` before saving and
+check every block against `ws.PAGE_CM` (26.7 cm): a question that only just
+overflows gets bumped whole and leaves most of the previous page blank, which is
+worse than the split it avoided. If one is too tall, shrink its figures rather
+than cutting the writing space. Use `ws.section()` for section headers so they
+travel with the question below, and reach for `page_break()` only for a hard
+section boundary.
 
 **Never put the originating school or year in a question.** Provenance lives in
 the author script's comments — the same convention as the kiosk and bot
