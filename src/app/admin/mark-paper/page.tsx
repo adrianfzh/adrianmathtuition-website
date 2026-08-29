@@ -1308,10 +1308,29 @@ export default function MarkPaperPage() {
         method: 'POST', headers: authHeaders,
         body: JSON.stringify({ phase: 'practice', id: runId, model: markModel }),
       });
-      const d = await r.json();
-      if (!r.ok || d.error) throw new Error(d.error || `practice failed (${r.status})`);
-      if (!d.items?.length) { setError('No practice questions came back — try again, or the wrong questions had no usable match.'); return; }
-      setPracticeItems(d.items);
+      let d: { error?: string; items?: PracticeItem[] } | null = null;
+      try { d = await r.json(); } catch { d = null; }
+      if (d) {
+        if (!r.ok || d.error) throw new Error(d.error || `practice failed (${r.status})`);
+        if (!d.items?.length) { setError('No practice questions came back — try again, or the wrong questions had no usable match.'); return; }
+        setPracticeItems(d.items);
+        return;
+      }
+      // Unparseable response — the Vercel proxy cuts requests at 300s, and a paper
+      // with many wrong questions generates for longer, so the reply dies as a
+      // plain-text error page ("Unexpected token 'A' … is not valid JSON",
+      // 30 Aug 2026 on Alessi's 12-wrong-question run). The bot finishes anyway
+      // and stores the list on the run — poll for it instead of failing.
+      for (let i = 0; i < 36; i++) {
+        await new Promise((res) => setTimeout(res, 10_000));
+        const rr = await fetch('/api/admin/mark-paper', {
+          method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'run', id: runId }),
+        });
+        const rd = await rr.json().catch(() => null);
+        const items: PracticeItem[] | undefined = rd?.run?.result_json?.practice?.items;
+        if (items?.length) { setPracticeItems(items); return; }
+      }
+      setError('Practice is still building server-side (it never pays twice) — reload the run in a few minutes to see the list.');
     } catch (e) { setError((e as Error).message); }
     finally { setPracticeBusy(false); }
   }

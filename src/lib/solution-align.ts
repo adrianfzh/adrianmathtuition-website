@@ -83,8 +83,14 @@ function equationParts(line: string): { lhs: string; rhss: RhsSeg[] } | null {
   if (tex == null) return null;
   const split = splitAtRelation(tex);
   if (!split) return null;
-  if (/\\text\s*\{/.test(split.lhs)) return null;
-  if (split.lhs.length > ALIGN_LHS_MAX) return null;
+  // An LHS that is EXACTLY one \text{…} group is a NAMED QUANTITY ("Area under
+  // curve", "Total area") and joins the block, so its "= …" continuations share
+  // its equals column; mixed label+maths LHSs stay excluded. Mirrored from the
+  // bot's ai/pen-math.js (30 Aug 2026) — change both or neither.
+  const lhsTrim = split.lhs.trim();
+  const pureLabel = /^\\text\s*\{[^{}]*\}$/.test(lhsTrim);
+  if (/\\text\s*\{/.test(lhsTrim) && !pureLabel) return null;
+  if (lhsTrim.length > (pureLabel ? 40 : ALIGN_LHS_MAX)) return null;
   const rhss: RhsSeg[] = [];
   let rel = split.rel;
   let rest = split.rhs;

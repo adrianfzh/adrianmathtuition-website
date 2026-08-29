@@ -59,8 +59,10 @@ describe('groupAlignedSteps', () => {
     const src = 'At $x = -0.1$ the gradient is positive.\n$y = 2$';
     expect(groupAlignedSteps(src)).toBe(src);
   });
-  it('a \\text{…} left-hand side never joins a block', () => {
-    const src = '$\\text{area} = 12$\n$x = 3$';
+  it('a MIXED \\text{…}+maths left-hand side never joins a block', () => {
+    // (A PURE label LHS like $\\text{area} = 12$ DOES join since 30 Aug 2026 —
+    // see the mirror suite at the bottom.)
+    const src = '$\\text{so } x = 12$\n$x = 3$';
     expect(groupAlignedSteps(src)).toBe(src);
   });
   it('a long equality chain becomes one row per equals sign', () => {
@@ -146,5 +148,21 @@ describe('alignMarkingSolutions', () => {
   it('passes through payloads with no solution', () => {
     expect(alignMarkingSolutions({})).toEqual({});
     expect(alignMarkingSolutions({ correct: null })).toEqual({ correct: null });
+  });
+});
+
+describe('pure \\text{…} label LHS (mirrors bot pen-math, 30 Aug 2026)', () => {
+  it('a named quantity joins the block so its continuations share the equals column', () => {
+    const g = groupAlignedSteps(
+      '$\\text{Area under curve} = \\int_0^4 (4+3x)^{\\frac{1}{2}}\\,dx$\n$= \\frac{2}{9}(64 - 8)$',
+    );
+    expect(g).toContain('\\begin{aligned}');
+    expect(g).toContain('\\text{Area under curve} &=');
+  });
+  it('mixed label+maths and sentence-length labels stay excluded', () => {
+    const mixed = '$\\text{At } P(4,4): \\frac{dy}{dx} = \\frac{3}{8}$\n$x = 3$';
+    expect(groupAlignedSteps(mixed)).toBe(mixed);
+    const longLabel = '$\\text{a very long sentence pretending to be a label of a quantity} = 3$\n$x = 3$';
+    expect(groupAlignedSteps(longLabel)).toBe(longLabel);
   });
 });
