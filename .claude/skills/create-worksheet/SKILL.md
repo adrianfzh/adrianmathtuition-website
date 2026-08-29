@@ -242,7 +242,7 @@ Supported genres (`figure_lib.GENRES`) and their key spec fields:
 | `histogram` | `bins: [[lo, hi, freq], …]`, `density: true` for unequal widths, `xlabel` |
 | `boxplot` | `min, q1, median, q3, max`, `xticks`, `xlabel` |
 | `cumulative` | `points: [[x, cf], …]`, `xlabel` (ogive with grid) |
-| `points` | `points: {A: [x,y], …}`, `segments: [[A,B] or [A,B,'dashed']]`, `circles`, `right_angles: [[A,B,C]]` (mark at B), `angle_arcs: [{at, from, to, label}]`, `labels`, `axes: true` for coordinate questions |
+| `points` | `points: {A: [x,y], …}`, `segments: [[A,B] or [A,B,'dashed']]`, `circles`, `right_angles: [[A,B,C]]` (mark at B), `angle_arcs: [{at, from, to, label}]`, `labels: [{text, at, halo?, size?}]` (`halo: true` paints a white box behind the text — use it for any dimension label that has to sit on or near a line, otherwise the line strikes through it), `hide_points: [names]`, `axes: true` for coordinate questions |
 
 - `expr` strings use a whitelisted namespace: `x`, `sin cos tan exp ln log sqrt abs pi e`.
   `render` raises on anything else — a bad spec must fail the script, never ship a blank box.

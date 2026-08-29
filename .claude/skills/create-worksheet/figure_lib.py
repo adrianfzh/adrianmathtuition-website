@@ -66,7 +66,8 @@ def _axes_through_origin(ax, xlim, ylim, names=("x", "y")):
                 xytext=(6, 4), textcoords="offset points", style="italic")
 
 
-def _fig(width_in=DEFAULT_W_IN, height_in=None):
+def _fig(width_in=None, height_in=None):
+    width_in = width_in or DEFAULT_W_IN
     return plt.subplots(figsize=(width_in, height_in or width_in * 0.72))
 
 
@@ -229,8 +230,12 @@ def _render_cumulative(spec, out_path):
 
 def _render_points(spec, out_path):
     """Labelled plane geometry from coordinates: segments, circles, arcs,
-    right-angle marks. No axes unless asked — a geometry figure is not a graph."""
-    fig, ax = _fig()
+    right-angle marks. No axes unless asked — a geometry figure is not a graph.
+
+    spec["width_in"] widens the canvas. Labels are drawn at a fixed point size, so
+    a long, shallow figure (a roof truss, a road) needs a wider canvas or the text
+    is huge relative to the geometry and will not fit inside narrow wedges."""
+    fig, ax = _fig(spec.get("width_in"))
     P = {k: np.array(v, dtype=float) for k, v in spec.get("points", {}).items()}
 
     for seg in spec.get("segments", []):
@@ -281,7 +286,14 @@ def _render_points(spec, out_path):
             ax.annotate(name, pt, xytext=tuple(off), textcoords="offset points",
                         ha="center", va="center", style="italic", fontsize=11)
     for lab in spec.get("labels", []):
-        ax.annotate(lab["text"], tuple(lab["at"]), ha="center", va="center", fontsize=10)
+        kw = {}
+        if lab.get("halo"):
+            # White box behind the text: a dimension label that has to sit on or
+            # near a line stays readable instead of being crossed out by it.
+            kw["bbox"] = dict(boxstyle="square,pad=0.12", facecolor="white",
+                              edgecolor="none")
+        ax.annotate(lab["text"], tuple(lab["at"]), ha="center", va="center",
+                    fontsize=lab.get("size", 10), **kw)
 
     ax.set_aspect("equal")
     ax.autoscale()
