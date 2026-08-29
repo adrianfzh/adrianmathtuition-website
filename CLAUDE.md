@@ -21,7 +21,7 @@ The deep documentation (bug archaeology, invariants, field tables) was split out
 | In-browser Pencil annotation spec | [`SPEC-ANNOTATE.md`](SPEC-ANNOTATE.md) |
 | Subject expansion — Science / English / Chinese for the portal (research + phasing; nothing built yet) | [`SPEC-SUBJECTS.md`](SPEC-SUBJECTS.md) |
 | "From Adrian" assigned work — `/app/assignments`, `/api/admin/assignments`, `/api/portal/assignments`, the Send-work card on `/admin/students/[id]`, `portal_assignments` table | [`SPEC-ASSIGN.md`](SPEC-ASSIGN.md) |
-| Margin teaching diagrams beside marking annotations (two new bot figure-registry families; build waits on the reconcile session) | [`SPEC-MARGIN-DIAGRAMS.md`](SPEC-MARGIN-DIAGRAMS.md) |
+| Margin teaching diagrams beside marking annotations (BUILT 2026-08-29 as `right_triangle` + `integral_region` kinds in the bot's `ai/margin-diagram.js`; deploy + Adrian's first-paper eyeball pending) | [`SPEC-MARGIN-DIAGRAMS.md`](SPEC-MARGIN-DIAGRAMS.md) |
 
 > The four highest-traffic rows (marking, kiosk, schedule, invoices) also exist as
 > auto-loading skills in `.claude/skills/` — belt and suspenders; this table stays

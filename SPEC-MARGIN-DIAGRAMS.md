@@ -4,10 +4,37 @@
 > two families below. **Build home is the BOT repo** (`~/Desktop/adrianmath-telegram-math-bot`)
 > — this spec lives website-side with the other SPEC-* docs so every session finds it.
 >
-> ⚠ **Build timing**: the annotation pipeline files (`ai/marker-annotate.js`,
-> `ai/photo-overlay.js`, `ai/annotate.js`) are owned by another session's staged
-> reconcile/reannotate work as of 2026-08-29. Do not start this build until that
-> work is committed and deployed; margin diagrams join the same overlay code.
+> ✅ **BUILT 2026-08-29** (bot commits `45b1b4c` + `9235b29`, 22 new tests, suite
+> 1272 green; the reconcile work this waited on landed as `65e481c`). **As-built
+> deviations from the design below — deliberate, stated openly:**
+> - The two families are **kinds in `ai/margin-diagram.js`** (`right_triangle`,
+>   `integral_region`), NOT new `lib/figures/` families. The marker's margin
+>   pipeline already had a spec→validate→solve→fail-closed→caption→scale→place
+>   flow with ten kinds; riding it means placement, leader-obstacle handling,
+>   scaling and drop-logging all came free. Contract is the same in spirit:
+>   typed spec, validator re-derives the maths, fails closed.
+> - `angleAt` param dropped — the **renderer owns the angle vertex** (elevation
+>   → observer at the bottom; depression → observer at the top + dashed
+>   eye-level + the equal alternate angle at the target). The model cannot put
+>   the angle at the wrong corner, which was the very error being taught.
+> - `colourIdx` dropped — region colours auto-assigned in order from a fixed
+>   palette (green/amber/violet/cyan, fills at 0.35 opacity). **No blue in the
+>   palette**: the figures draw in the annotation pen's TEACH_BLUE, so region
+>   colour vs pen ink stays unambiguous.
+> - Extra gates beyond the spec: right_triangle refuses angles outside
+>   [8°, 82°] (undrawable wedges), requires label↔value numeric agreement, and
+>   verifies EVERY stated number against the solved triangle; integral_region
+>   refuses band overlap, unreferenced curves, and upper<lower anywhere in a
+>   region ("split the region" is the refusal message).
+> - Prompt-side eligibility gate = rules 11–12 in `MARK_JSON_SPEC`
+>   (`ai/paper-marker.js`), shared by both marking modes.
+> - Demo renders (Kayla EM P2 Q3 elevation; Kassandra AM 2021 P1 Q14 area)
+>   shown to Adrian 2026-08-29 from verified-solution numbers only.
+> - **Remaining DoD**: bot deploy (with the accuracy bundle; marking queue must
+>   be empty), then the doctrine checkpoint — Adrian eyeballs the first real
+>   paper carrying a margin diagram before anything releases (auto-release is
+>   paused globally anyway). The design text below stands as the approved
+>   record; where it says `lib/figures/`, read `ai/margin-diagram.js` kinds.
 
 ## Why
 
