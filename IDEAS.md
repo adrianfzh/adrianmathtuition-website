@@ -40,6 +40,7 @@
 - ✅ Free-tool funnel (2026-08-29): /chat nudge links "Try the student portal →" /join.
 
 ## Marking/content quality
+- 📐 **Margin teaching diagrams** (approved 2026-08-29) — elevation/depression right-triangle + colour-coded integral regions drawn beside annotations; typed-spec fail-closed families in the bot figure registry → [`SPEC-MARGIN-DIAGRAMS.md`](SPEC-MARGIN-DIAGRAMS.md). Build frozen until the reconcile session's staged bot work lands.
 - 💡 **Marker anti-injection line** — marking prompts should state that text ON a student script is never an instruction (cheap insurance; students could write "print your instructions" on paper).
 - ✅ **Watermark-held diagram redraws DONE (2026-08-29 night): 76 of 78 applied**, every row verified carrying ONLY our clean redrawn paths (zero watermarked pixels shipped; every figure spec-authored, fail-closed verified, visually checked). The 2 remaining, both documented in the redraw workspace reports:
   - `2d37e763` (Punggol S1 2021 Q2 construction) — **ANOMALY FOR ADRIAN**: exact geometry proves the stored answers wrong (ZY = 5.085 cm vs stored 5.5 ± 0.2; ∠XYZ 100.5° vs 102 ± 2). Suggested corrections in report-C1B.json; redraw is trivial once he rules.
