@@ -277,6 +277,21 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`table? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
       return 'auth gate up';
     }),
+    // 🎯 Fix-it plans (SPEC-REMEDIATION.md). The student route must hold its
+    // auth gate (401 anonymously — a 404 means the Home card and /app/fixit
+    // silently vanish), and the tables + the columns the lane reads must
+    // still resolve.
+    timed('remediation', async () => {
+      const r = await fetch(`${base}/api/portal/remediation`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      const q = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/remediation_items?select=id,plan_id,seq,kind,skill,state,clear_rule&limit=1`,
+        { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: T(10000) }
+      );
+      if (!q.ok) throw new Error(`table? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
+      return 'auth gate up';
+    }),
     // Student resource requests (/app/requests → /admin/requests, v1
     // human-in-the-loop). The student route must hold its auth gate (401
     // anonymously — a 404 means the tab silently vanishes and asks stop

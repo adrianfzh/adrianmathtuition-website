@@ -17,6 +17,8 @@ import { loadPapersAndNotebook } from '@/lib/notebook-data';
 import { buildPlan } from '@/lib/plan';
 import { sgtToday } from '@/lib/notebook';
 import { activeAnnouncement } from '@/lib/portal-announcement';
+import { loadActivePlan } from '@/lib/remediation-data';
+import { relockItems, nextOpenItem } from '@/lib/remediation';
 import PortalAnnouncementCard from '@/components/PortalAnnouncementCard';
 import { SURFACES } from '@/lib/portal-theme';
 import PortalIcon from '@/components/PortalIcon';
@@ -58,7 +60,7 @@ export default async function DashboardPage() {
   // streams in via the two <Suspense> islands below and the shell paints
   // immediately after login (Adrian, 2026-08-28: "still taking a bit of time
   // to load initially"). Everything awaited here is fast Supabase.
-  const [todayCards, assignments, counts, focus, passNudge] = await Promise.all([
+  const [todayCards, assignments, counts, focus, passNudge, fixit] = await Promise.all([
     learnVisible ? getTodayCards(account).catch(() => []) : Promise.resolve([]),
     // "From Adrian" assigned work (SPEC-ASSIGN.md) — fail-soft, hidden at zero.
     listStudentAssignments(sid).catch(() => []),
@@ -85,6 +87,19 @@ export default async function DashboardPage() {
     isTuitionAccount(account)
       ? Promise.resolve(null)
       : getCurrentPass(account.id).then(p => passEndingNudge(p, new Date())).catch(() => null),
+    // 🎯 Fix-it plan (SPEC-REMEDIATION.md) — progress line for the active plan.
+    // Light read (no reconcile — /app/fixit does that); fail-soft, hidden when
+    // no plan is active.
+    (async () => {
+      try {
+        const loaded = await loadActivePlan(sid);
+        if (!loaded) return null;
+        const items = relockItems(loaded.items);
+        const next = nextOpenItem(items);
+        const clearedN = items.filter(i => i.state === 'cleared' || i.state === 'skipped').length;
+        return { total: items.length, cleared: clearedN, nextSkill: next?.skill ?? null };
+      } catch { return null; }
+    })(),
   ]);
   const pendingWork = assignments.filter(a => isPending(a.status));
   const workSummary = homeCardSummary(assignments);
@@ -163,6 +178,20 @@ export default async function DashboardPage() {
             </Link>
           )}
         </div>
+      )}
+
+      {/* 🎯 Fix-it plan — the targeted remediation lane (SPEC-REMEDIATION.md).
+          Visible only while a plan Adrian ACTIVATED is in flight; drafts never
+          reach this card. */}
+      {fixit && (
+        <Link href="/app/fixit" className={`${card} !p-4 flex items-center gap-3 hover:shadow-md active:scale-[0.99] transition`}>
+          <span aria-hidden className="flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-50 shrink-0 text-lg">🎯</span>
+          <span className="flex-1 min-w-0">
+            <span className="block text-sm font-bold text-navy">Fix-it plan · {fixit.cleared}/{fixit.total} cleared</span>
+            {fixit.nextSkill && <span className="block text-xs text-slate-500 truncate">Next: {fixit.nextSkill}</span>}
+          </span>
+          <span className="shrink-0 text-emerald-600 font-semibold">›</span>
+        </Link>
       )}
 
       {/* Today stack — personalised "start here" learn cards.
