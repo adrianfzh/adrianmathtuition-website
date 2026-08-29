@@ -34,7 +34,7 @@ export default async function FixitPage() {
     <div className="max-w-2xl mx-auto px-4 py-6">
       <div className="flex items-center gap-2 mb-1">
         <Link href="/app" className="text-sm text-slate-400 hover:text-navy">←</Link>
-        <h1 className="text-xl font-bold text-navy">🎯 Fix-it plan</h1>
+        <h1 className="text-xl font-bold text-navy">🎯 Game plan</h1>
       </div>
       <p className="text-sm text-slate-500 mb-5">
         Built from your marked papers — one skill at a time. Clear a step to unlock the next.
@@ -42,7 +42,7 @@ export default async function FixitPage() {
 
       {!view && (
         <div className="bg-white rounded-3xl shadow-sm p-6 text-center text-slate-500 text-sm">
-          No plan right now. When Mr Fong sets one from your marked work, it appears here.
+          No game plan right now. When Mr Fong sets one from your marked work, it appears here.
         </div>
       )}
 

@@ -60,7 +60,7 @@ export default function RemediationAdmin() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
-      <h1 className="text-xl font-bold text-slate-900 mb-1">🎯 Fix-it plans</h1>
+      <h1 className="text-xl font-bold text-slate-900 mb-1">🎯 Game plans</h1>
       <p className="text-sm text-slate-500 mb-4">
         Drafted from marked papers; nothing reaches a student until you Activate it. Activating archives the student&apos;s previous active plan.
       </p>

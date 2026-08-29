@@ -299,7 +299,7 @@ export function buildReportMd(
     classTotals.set(it.lossClass, (classTotals.get(it.lossClass) ?? 0) + marksRecoverable(it, evidence));
   }
   const lines: string[] = [];
-  lines.push(`# Fix-it plan — teaching brief`);
+  lines.push(`# Game plan — teaching brief`);
   lines.push('');
   lines.push(`Source: ${paperNames.join('; ') || 'marked paper'}. Marks lost below cite the marked questions; the plan is ordered by marks recoverable.`);
   lines.push('');

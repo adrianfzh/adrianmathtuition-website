@@ -86,10 +86,10 @@ export async function ensureAssignmentForItem(plan: PlanRow, item: ItemRow): Pro
     studentId: plan.airtable_student_id,
     kind: 'question',
     questionId: nextQid,
-    title: `Fix-it: ${item.skill}`.slice(0, 120),
+    title: `Game plan: ${item.skill}`.slice(0, 120),
     topic: item.topic.slice(0, 80),
     level: plan.level.slice(0, 20),
-    note: `Fix-it plan step ${item.seq} — clear it to unlock the next.`,
+    note: `Game plan step ${item.seq} — clear it to unlock the next.`,
   });
   if (!v.ok) return null;
   const { data: created, error } = await sb.from('portal_assignments').insert(v.row).select('id').single<{ id: string }>();
@@ -175,7 +175,7 @@ export async function reconcilePlan(plan: PlanRow, items: ItemRow[]): Promise<Re
     // cleared. Fire-and-forget — a Telegram hiccup never breaks the student's
     // page load.
     sendTelegram(
-      `🎯 ${plan.student_name || plan.airtable_student_id} finished their fix-it plan — all ${items.length} steps cleared.`
+      `🎯 ${plan.student_name || plan.airtable_student_id} finished their game plan — all ${items.length} steps cleared.`
       + `\nhttps://www.adrianmathtuition.com/admin/remediation`
     ).catch(() => {});
   }
@@ -195,7 +195,7 @@ async function notifyStuckOnce(plan: PlanRow, item: ItemRow, why: string): Promi
     .update({ material: { ...item.material, stuck_notified: true } })
     .eq('id', item.id);
   sendTelegram(
-    `⚠️ ${plan.student_name || plan.airtable_student_id} is stuck on fix-it step ${item.seq} (“${item.skill}”) — ${why}.`
+    `⚠️ ${plan.student_name || plan.airtable_student_id} is stuck on game plan step ${item.seq} (“${item.skill}”) — ${why}.`
     + `\nhttps://www.adrianmathtuition.com/admin/remediation`
   ).catch(() => {});
 }

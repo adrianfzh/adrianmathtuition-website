@@ -187,7 +187,7 @@ export default async function DashboardPage() {
         <Link href="/app/fixit" className={`${card} !p-4 flex items-center gap-3 hover:shadow-md active:scale-[0.99] transition`}>
           <span aria-hidden className="flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-50 shrink-0 text-lg">🎯</span>
           <span className="flex-1 min-w-0">
-            <span className="block text-sm font-bold text-navy">Fix-it plan · {fixit.cleared}/{fixit.total} cleared</span>
+            <span className="block text-sm font-bold text-navy">Game plan · {fixit.cleared}/{fixit.total} cleared</span>
             {fixit.nextSkill && <span className="block text-xs text-slate-500 truncate">Next: {fixit.nextSkill}</span>}
           </span>
           <span className="shrink-0 text-emerald-600 font-semibold">›</span>
