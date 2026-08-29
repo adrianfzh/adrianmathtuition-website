@@ -34,17 +34,25 @@
 >   segment (e.g. $BC$) lying ON it and the vertical rising OUT of it, beside
 >   the flat true-ratio triangle. Schematic angle; flat panel carries truth.
 > - **`buildAnchoredRightTriangle(spec, anchor, opts)` added same day** (bot
->   `86d8dbb`; Adrian: "draw the right angle triangle on the original diagram
->   itself"): same validated spec plus an image-pixel anchor
->   `{from:[x,y], to:[x,y], flip?}` = the printed ground segment — the pole
->   rises at `to` on the page-upward side, hypotenuse back to `from`,
->   right-angle box + angle arc + minimal labels (pole-top name, sought side,
->   angle). Pole height is schematic (base/2); the printed segment is never
->   re-traced and printed letters never repeated. Returns `{ok, svg, bbox}` in
->   IMAGE coordinates for the photo compositor. **Renderer only for now** —
->   model-side anchor emission + photo-overlay compositing (ink-aware flip)
+>   `86d8dbb`, reworked for 3D `2c55c40` after Adrian's "doesn't give the 3D
+>   feel" on the v1 demo): same validated spec plus an image-pixel anchor
+>   `{from:[x,y], to:[x,y], lean?}` = the printed ground segment. Drawn with
+>   **oblique-projection conventions** so it reads as standing OUT of the
+>   plan: the pole at `to` is **page-vertical** (v1's perpendicular-to-segment
+>   pole read as another plan line), the right-angle box is a parallelogram
+>   *asserting* the unprojected 90°, and the vertical triangle carries a faint
+>   **sail fill** (opacity 0.1) — the depth cue. `lean` tilts the pole up to
+>   ±22° to dodge ink (bearings diagrams print a page-vertical north line at
+>   the exact vertex the pole stands on); beyond that, or a printed segment
+>   within 30° of page-vertical, → refuse and fall back to the margin panel.
+>   Pole height is schematic (base/2); the printed segment is never re-traced
+>   and printed letters never repeated (pole-top name only — target for
+>   elevation, observer for depression). Returns `{ok, svg, bbox}` in IMAGE
+>   coordinates for the photo compositor. **Renderer only for now** —
+>   model-side anchor emission + photo-overlay compositing (ink-aware lean)
 >   ship with the accuracy bundle; `anchor` is deliberately NOT in the marking
->   prompt yet. Demoed on Kayla's real printed bearings diagram 2026-08-29.
+>   prompt yet. Demoed on Kayla's real printed bearings diagram 2026-08-29 in
+>   green (`#1a7f37`), lean 14°.
 > - Demo renders (Kayla EM P2 Q3 elevation with scene panel; Kassandra AM 2021
 >   P1 Q14 area) shown to Adrian 2026-08-29 from verified-solution numbers only.
 > - **Remaining DoD**: bot deploy (with the accuracy bundle; marking queue must
