@@ -6,6 +6,7 @@
 // paper_marking_runs, so identity must never come from anything client-set.
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { validateAssignment } from '@/lib/assignments';
+import { sendTelegram } from '@/lib/telegram';
 import {
   attemptClears, relockItems, nextOpenItem, planDone,
   type ClearRule, type ItemKind, type ItemState, type LossClass, type PlanStatus,
@@ -168,9 +169,35 @@ export async function reconcilePlan(plan: PlanRow, items: ItemRow[]): Promise<Re
   if (planDone(items) && plan.status === 'active') {
     await sb.from('remediation_plans').update({ status: 'done', updated_at: new Date().toISOString() }).eq('id', plan.id);
     plan = { ...plan, status: 'done' };
+    // The finish-line doorbell (Adrian, 30 Aug 2026: "will I get notification on
+    // remediation? I should"). Per-attempt pings already ride the practice
+    // grader's assignment Telegram; this is the one that says the whole plan
+    // cleared. Fire-and-forget — a Telegram hiccup never breaks the student's
+    // page load.
+    sendTelegram(
+      `🎯 ${plan.student_name || plan.airtable_student_id} finished their fix-it plan — all ${items.length} steps cleared.`
+      + `\nhttps://www.adrianmathtuition.com/admin/remediation`
+    ).catch(() => {});
   }
 
   return { plan, items, openAssignment };
+}
+
+/**
+ * One-shot stuck-step doorbell: a student who hit the retry cap or ran the
+ * step's question list dry needs Adrian, not silence. Deduped via
+ * material.stuck_notified so repeated taps ring once.
+ */
+async function notifyStuckOnce(plan: PlanRow, item: ItemRow, why: string): Promise<void> {
+  if ((item.material as { stuck_notified?: boolean }).stuck_notified) return;
+  const sb = getSupabaseAdmin();
+  await sb.from('remediation_items')
+    .update({ material: { ...item.material, stuck_notified: true } })
+    .eq('id', item.id);
+  sendTelegram(
+    `⚠️ ${plan.student_name || plan.airtable_student_id} is stuck on fix-it step ${item.seq} (“${item.skill}”) — ${why}.`
+    + `\nhttps://www.adrianmathtuition.com/admin/remediation`
+  ).catch(() => {});
 }
 
 /** Student taps "Done — I've read it" on a learn/self-attest item. */
@@ -195,7 +222,10 @@ export async function anotherSimilar(identity: string, itemId: string): Promise<
   const { data: plan } = await sb.from('remediation_plans').select('*').eq('id', item.plan_id).single<PlanRow>();
   if (!plan || plan.airtable_student_id !== identity || plan.status !== 'active') return { ok: false, error: 'Not found' };
   if (item.state !== 'open') return { ok: false, error: 'This step is not open' };
-  if (item.attempts + 1 >= MAX_DRILL_ATTEMPTS) return { ok: false, error: 'Attempt limit reached — this step is flagged for Adrian.' };
+  if (item.attempts + 1 >= MAX_DRILL_ATTEMPTS) {
+    await notifyStuckOnce(plan, item, `hit the ${MAX_DRILL_ATTEMPTS}-attempt retry cap`);
+    return { ok: false, error: 'Attempt limit reached — Mr Fong has been pinged to help with this one.' };
+  }
   // Only after the current assignment was actually marked (and did not clear).
   const lastId = item.assignment_ids[item.assignment_ids.length - 1];
   if (lastId) {
@@ -205,7 +235,10 @@ export async function anotherSimilar(identity: string, itemId: string): Promise<
     if (attemptClears(item.clear_rule, Number(a.score) || 0, Number(a.out_of) || 0)) return { ok: false, error: 'Already cleared — reload' };
   }
   const created = await ensureAssignmentForItem(plan, item);
-  if (!created) return { ok: false, error: 'No more similar questions on this step — it is flagged for Adrian.' };
+  if (!created) {
+    await notifyStuckOnce(plan, item, 'ran out of similar questions');
+    return { ok: false, error: 'No more similar questions on this step — Mr Fong has been pinged to help with this one.' };
+  }
   await sb.from('remediation_items').update({ attempts: item.attempts + 1 }).eq('id', itemId);
   return { ok: true, assignmentId: created };
 }
