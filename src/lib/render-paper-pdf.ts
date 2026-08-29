@@ -75,6 +75,52 @@ function esc(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
+/**
+ * esc() plus GFM pipe tables → real bordered tables (Adrian, 2026-08-29:
+ * data tables in stems printed as raw "| t | 1 | 2 |" rows). Everything
+ * that isn't a table line stays escaped pre-wrap plain text; cell contents
+ * keep their $…$ TeX for the page's KaTeX pass. Exported for the unit test.
+ */
+export function richText(s: string): string {
+  const lines = String(s).split('\n');
+  const out: string[] = [];
+  let buf: string[] = [];
+  let table: string[][] | null = null;
+  const flushBuf = () => {
+    if (buf.length) {
+      out.push(esc(buf.join('\n')));
+      buf = [];
+    }
+  };
+  const flushTable = () => {
+    if (table && table.length) {
+      const [head, ...rest] = table;
+      out.push(
+        '<table class="pp-table"><thead><tr>' + head.map((c) => `<th>${esc(c)}</th>`).join('') + '</tr></thead>' +
+          (rest.length
+            ? '<tbody>' + rest.map((r) => '<tr>' + r.map((c) => `<td>${esc(c)}</td>`).join('') + '</tr>').join('') + '</tbody>'
+            : '') +
+          '</table>',
+      );
+    }
+    table = null;
+  };
+  for (const raw of lines) {
+    const t = raw.trim();
+    if (/^\|.*\|?$/.test(t) && t.includes('|', 1)) {
+      flushBuf();
+      const cells = t.replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => c.trim());
+      if (!cells.every((c) => /^:?-{2,}:?$/.test(c))) (table ??= []).push(cells);
+      continue;
+    }
+    flushTable();
+    buf.push(raw);
+  }
+  flushBuf();
+  flushTable();
+  return out.join('\n');
+}
+
 function img(u: string): string {
   return `<img class="pp-figure" src="${esc(u)}" alt="figure">`;
 }
@@ -88,7 +134,7 @@ function partHtml(p: Part, workingSpace: boolean): string {
   const marks = p.marks ? `<span class="pp-mk">[${p.marks}]</span>` : '';
   const before = p.image_url ? img(p.image_url) : '';
   const after = p.image_url_after ? img(p.image_url_after) : '';
-  const text = p.text ? `<div class="pp-part-text">${label}${esc(p.text)}${marks}</div>` : (label || marks ? `<div class="pp-part-text">${label}${marks}</div>` : '');
+  const text = p.text ? `<div class="pp-part-text">${label}${richText(p.text)}${marks}</div>` : (label || marks ? `<div class="pp-part-text">${label}${marks}</div>` : '');
   const subs = (p.subparts ?? []).map((sp) => partHtml(sp, workingSpace)).join('');
   // Working space belongs to the part that asks for the work: a part with its
   // own marks and no marked subparts gets the skill-rule space after it.
@@ -111,7 +157,7 @@ function questionHtml(q: PaperPdfQuestion, workingSpace: boolean): string {
   const inParts = partsCarryMarks(q.parts);
   const stemMarks = !inParts && q.marks != null ? `<span class="pp-mk">[${q.marks}]</span>` : '';
   const stem = q.stem.trim()
-    ? `<div class="pp-stem">${esc(q.stem.trim())}${stemMarks}</div>`
+    ? `<div class="pp-stem">${richText(q.stem.trim())}${stemMarks}</div>`
     : (stemMarks ? `<div class="pp-stem">${stemMarks}</div>` : '');
   const parts = q.parts.map((p) => partHtml(p, workingSpace)).join('');
   const stemSpace = workingSpace && !inParts ? spacer(q.marks) : '';
@@ -181,6 +227,11 @@ export function buildPaperHTML(input: PaperPdfInput): string {
   .pp-q{margin-bottom:8pt;position:relative}
   .pp-qnum{position:absolute;left:-24pt;top:0;font-weight:700}
   .pp-stem{white-space:pre-wrap;break-inside:avoid}
+  /* Data tables from stems/parts (richText) — exam-style bordered grid. The
+     pre-wrap ancestors would render the table's own newlines; normal it. */
+  .pp-table{white-space:normal;border-collapse:collapse;margin:4pt 0;break-inside:avoid}
+  .pp-table th,.pp-table td{border:0.75pt solid #444;padding:2pt 8pt;text-align:center}
+  .pp-table th{font-weight:700}
   .pp-part{margin-top:4pt}
   .pp-part .pp-part{margin-left:15pt}
   .pp-part-text{white-space:pre-wrap;break-inside:avoid}

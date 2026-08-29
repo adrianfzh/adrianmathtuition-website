@@ -89,10 +89,37 @@ export function mdToHtml(src: string): string {
     }
   };
 
+  // GFM pipe tables (Adrian, 2026-08-29: data tables in question stems were
+  // printing as raw "| t | 1 | 2 |" text on reconstructed papers). Cell text
+  // is already escaped and math already stashed, so cells restore cleanly.
+  let tableRows: string[][] | null = null;
+  const closeTable = () => {
+    if (tableRows && tableRows.length) {
+      const [head, ...rest] = tableRows;
+      out.push(
+        '<table><thead><tr>' + head.map(c => `<th>${c}</th>`).join('') + '</tr></thead>' +
+          (rest.length
+            ? '<tbody>' + rest.map(r => '<tr>' + r.map(c => `<td>${c}</td>`).join('') + '</tr>').join('') + '</tbody>'
+            : '') +
+          '</table>',
+      );
+    }
+    tableRows = null;
+  };
+
   for (const rawLine of lines) {
     const line = rawLine.trimEnd();
     const trimmed = line.trim();
     const heading = /^(#{1,4})\s+(.*)$/.exec(trimmed);
+    if (/^\|.*\|?$/.test(trimmed) && trimmed.includes('|', 1)) {
+      flushPara();
+      closeList();
+      const cells = trimmed.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+      const isSeparator = cells.every(c => /^:?-{2,}:?$/.test(c));
+      if (!isSeparator) (tableRows ??= []).push(cells);
+      continue;
+    }
+    closeTable();
     if (!trimmed) {
       flushPara();
       closeList();
@@ -124,6 +151,7 @@ export function mdToHtml(src: string): string {
   }
   flushPara();
   closeList();
+  closeTable();
 
   // 6. Restore stashed math / svg / pre
   return out.join('\n').replace(/\x00(\d+)\x00/g, (_, i: string) => stash[Number(i)]);
