@@ -550,8 +550,11 @@ class Worksheet:
         straddles a break silently loses the rest of the student's writing room.
         Separate lines simply flow onto the next page.
 
-        The marked paragraph and the first blank line are glued, so a question's
-        marks can never sit alone at the foot of a page.
+        The marked paragraph and ALL of its blank lines are glued into one unit,
+        so a part's writing space never straddles a page break — a page breaks
+        between parts, never inside one. Keep the unit small: it is one line of
+        text plus `marks x working_space` lines, so at 4.0 a [3] part is 13
+        lines (~6.5 cm) and packs easily.
         """
         if lines is None:
             if marks is None:
@@ -567,7 +570,7 @@ class Worksheet:
             p = self.doc.add_paragraph()
             p.paragraph_format.space_before = Pt(0)
             p.paragraph_format.space_after = Pt(0)
-            if i == 0 and n > 1:                   # never a lone orphan line
+            if i < n - 1:      # the whole run is atomic; only its end may break
                 p.paragraph_format.keep_with_next = True
             self._block_paras.append(p)
             made.append(p)
@@ -597,10 +600,14 @@ class Worksheet:
         An estimate, not a measurement: line counts come from character counts
         at the body size, and an equation is charged as three characters. Treat
         anything within ~1.5 cm of PAGE_CM as "may not fit"."""
-        out = []
-        for block in self._blocks + ([self._block_paras] if self._block_paras else []):
+        return [round(self._height_cm(b), 1) for b in
+                self._blocks + ([self._block_paras] if self._block_paras else [])]
+
+    def _height_cm(self, paras):
+        """Estimated height in cm of a list of paragraphs."""
+        if True:
             cm = 0.0
-            for p in block:
+            for p in paras:
                 if id(p) in self._fig_cm:
                     cm += self._fig_cm[id(p)] + 8 / 28.35   # picture + its 4pt padding
                     continue
@@ -608,8 +615,24 @@ class Worksheet:
                 width = 16.0 - indent
                 chars = len(p.text) + 3 * p._element.xml.count('<m:oMath')
                 cm += max(1, -(-chars // int(width / self.CHAR_CM))) * self.LINE_CM
-            out.append(round(cm, 1))
-        return out
+            return cm
+
+    def glued_heights(self):
+        """Height in cm of each atomic run — a chain of keep_with_next
+        paragraphs plus the one that ends it. These, not whole questions, are
+        what must fit on a page: Word has to break inside any run taller than
+        PAGE_CM. Same estimating caveats as block_heights()."""
+        flat = [p for block in self._blocks + ([self._block_paras] if self._block_paras else [])
+                for p in block]
+        runs, cur = [], []
+        for p in flat:
+            cur.append(p)
+            if not p.paragraph_format.keep_with_next:
+                runs.append(cur)
+                cur = []
+        if cur:
+            runs.append(cur)
+        return [round(self._height_cm(run), 1) for run in runs]
 
     def page_break(self):
         self._finish_block()

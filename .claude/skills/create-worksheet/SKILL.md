@@ -99,7 +99,8 @@ The `Worksheet` class exposes these methods. All take a `parts` list (described 
 | `ws.SQ(parts, marks=None)` | Sub-question under the most recent `Q()`. Auto-numbered `(a)`, `(b)`, `(c)`, ... Restarts when a new `Q()` is called. |
 | `ws.para(parts, marks=None)` | Plain paragraph with no numbering. |
 | `ws.section(text)` | Bold section header, glued to the question that follows so it cannot be stranded at the foot of a page. |
-| `ws.block_heights()` | Estimated cm height of each question block — call it before `save()` to confirm every question actually fits on a page (`ws.PAGE_CM` is the budget). |
+| `ws.block_heights()` | Estimated cm height of each question block. Informative — shows which questions span pages. |
+| `ws.glued_heights()` | Estimated cm height of each atomic run (a keep-with-next chain). **Check this before `save()`:** anything over `ws.PAGE_CM` is a run Word must break inside. |
 | `ws.math_block(latex)` | Centred display equation (no surrounding text). |
 | `ws.ans(parts)` | `[Ans: ...]` line — right-aligned, orange. The wrapper `[Ans: ` and `]` are added automatically; pass only the inner content. |
 | `ws.figure(path, width_cm=10.5)` | Embed a rendered figure PNG, centred under the current question. Cap 16 cm; never upscales a small image. Render the PNG with `figure_lib.render` first — see **Figures** below. |
@@ -297,21 +298,27 @@ The space is **real blank line paragraphs**, not one paragraph with a big
 gap that straddles a break silently swallows the rest of the student's writing
 room; separate lines just flow onto the next page.
 
-**Let questions flow across pages. Do NOT try to keep them whole.** Once the
-space is this generous a question is taller than the text column, so gluing it
-either does nothing or bumps the whole question and leaves most of a page blank —
-that is how a first page ended up holding nothing but the title. `Worksheet`
-instead glues the units that actually matter, always:
+**The atomic unit is the PART, not the question.** This took three tries; the
+reasoning is worth keeping:
 
-- a question's text keeps with its writing space (marks can't sit alone at a page foot)
-- the answer line keeps with the line above it (no orphaned `[Ans: …]`)
-- a figure keeps with the stem above and the part below it
+1. Gluing whole questions fails — at this much space a question is taller than
+   the text column, so Word either splits it anyway or bumps it whole and leaves
+   most of a page blank. That is how a first page ended up holding only a title.
+2. Letting everything flow fails too — a part's writing space then straddles a
+   break, and its tail plus the `[Ans: …]` line strand on a near-empty page.
+3. What works: glue **a part's text to every one of its blank lines**, so the
+   unit is atomic and a page can only break *between* parts. A `[3]` part at
+   `working_space=4.0` is 13 lines, about 6.5 cm — small enough to pack well.
 
-Pages then break between blank writing lines, where a break costs nothing.
-`ws.block_heights()` still reports each question's height against `ws.PAGE_CM`
-(26.7 cm) — useful to see which questions span pages, no longer something to
-fix. Use `ws.section()` for section headers so they travel with the question
-below, and `page_break()` only for a hard section boundary.
+`Worksheet` does this automatically. On top of it, the answer line keeps with the
+line above (no orphaned `[Ans: …]`), and a figure keeps with the stem above and
+the part below.
+
+**Check `ws.glued_heights()` before saving**: every atomic run must be under
+`ws.PAGE_CM` (26.7 cm), or Word is forced to break inside one. `ws.block_heights()`
+reports whole questions — informative (it shows which questions span pages) but
+no longer something to fix. Use `ws.section()` for section headers so they travel
+with the question below, and `page_break()` only for a hard section boundary.
 
 **Never put the originating school or year in a question.** Provenance lives in
 the author script's comments — the same convention as the kiosk and bot
