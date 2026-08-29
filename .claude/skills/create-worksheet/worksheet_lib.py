@@ -192,23 +192,26 @@ class Worksheet:
     #: one body line at 9.5 pt on 1.5 spacing
     LINE_PT = 9.5 * 1.5
 
-    def __init__(self, working_space=0.0, keep_questions_together=True,
+    def __init__(self, working_space=0.0, keep_questions_together=False,
                  keep_figures_with_text=True):
         """working_space: blank writing lines to leave per mark, after every
         paragraph that carries a mark allocation. 0 disables it (the right
         choice for a solutions sheet); pass 2.5 for a worksheet students write
         on, so a [3] gets three times the room of a [1].
 
-        keep_questions_together: a question — stem, figure, every part, its
-        writing space and its answer line — never straddles a page break. This
-        only works if each question actually FITS on a page: check with
-        `block_heights()` after building, because a question taller than the
-        text column is split by Word anyway, and one that only just overflows
-        gets bumped whole and leaves most of a page blank.
+        keep_questions_together: glue a whole question so it cannot straddle a
+        page break. OFF by default, and leave it off once working_space is
+        generous — a question is then taller than a page, so Word either splits
+        it anyway or bumps it whole and wastes most of the previous page (which
+        is what left a title-only first page). What stops the ugly breaks is
+        unit-level gluing, always on: a question's text keeps with its writing
+        space, the answer line keeps with the line above it, and a figure keeps
+        with its stem. Pages then break between blank writing lines, where a
+        break costs nothing.
 
         keep_figures_with_text: anchor each figure to the paragraphs either
-        side of it. Redundant while questions are kept whole, but it is what
-        stops a diagram being orphaned when a question does have to split."""
+        side of it, so a diagram is never split from the stem that introduces
+        it."""
         self.doc = Document()
         self.working_space = float(working_space)
         self.keep_questions_together = bool(keep_questions_together)
@@ -424,7 +427,10 @@ class Worksheet:
         return p
 
     def ans(self, parts):
-        """[Ans: ...] right-aligned orange line."""
+        """[Ans: ...] right-aligned orange line, glued to the line above it so
+        it cannot be stranded at the top of the next page."""
+        if self._block_paras:
+            self._block_paras[-1].paragraph_format.keep_with_next = True
         full = [('text', '[Ans: ')] + list(parts) + [('text', ']')]
         return self._add(full, style='Answer', alignment=WD_ALIGN_PARAGRAPH.RIGHT)
 
@@ -535,25 +541,37 @@ class Worksheet:
         return table
 
     def workspace(self, marks=None, lines=None):
-        """Blank writing space. Sized by `marks` (marks x self.working_space
-        lines) or by an explicit number of `lines`. Emitted automatically after
-        every marked paragraph when the Worksheet was built with working_space."""
+        """Blank writing space: `marks` x self.working_space real empty lines
+        (or an explicit `lines`). Emitted automatically after every marked
+        paragraph when the Worksheet was built with working_space.
+
+        Real empty paragraphs, NOT one paragraph with a big space_after: Word
+        discards trailing space at a page break, so a space_after gap that
+        straddles a break silently loses the rest of the student's writing room.
+        Separate lines simply flow onto the next page.
+
+        The marked paragraph and the first blank line are glued, so a question's
+        marks can never sit alone at the foot of a page.
+        """
         if lines is None:
             if marks is None:
                 raise ValueError('workspace() needs marks or lines')
             lines = float(marks) * self.working_space
-        if lines <= 0:
+        n = int(round(lines))
+        if n <= 0:
             return None
-        # A 1 pt empty run carries almost no height of its own, so the space is
-        # exactly `lines` body lines rather than that plus a stray blank line.
-        p = self.doc.add_paragraph()
-        run = p.add_run('')
-        run.font.size = Pt(1)
-        p.paragraph_format.line_spacing = 1
-        p.paragraph_format.space_before = Pt(0)
-        p.paragraph_format.space_after = Pt(lines * self.LINE_PT)
-        self._block_paras.append(p)
-        return p
+        if self._block_paras:                      # text keeps with its space
+            self._block_paras[-1].paragraph_format.keep_with_next = True
+        made = []
+        for i in range(n):
+            p = self.doc.add_paragraph()
+            p.paragraph_format.space_before = Pt(0)
+            p.paragraph_format.space_after = Pt(0)
+            if i == 0 and n > 1:                   # never a lone orphan line
+                p.paragraph_format.keep_with_next = True
+            self._block_paras.append(p)
+            made.append(p)
+        return made
 
     def _finish_block(self):
         """Close the question just finished. The last paragraph must NOT keep
@@ -585,10 +603,6 @@ class Worksheet:
             for p in block:
                 if id(p) in self._fig_cm:
                     cm += self._fig_cm[id(p)] + 8 / 28.35   # picture + its 4pt padding
-                    continue
-                gap = p.paragraph_format.space_after
-                if gap is not None and gap.pt > 20:
-                    cm += gap.pt / 28.35
                     continue
                 indent = 1.5 if p.style is not None and p.style.name == 'SubQuestion' else 0.0
                 width = 16.0 - indent

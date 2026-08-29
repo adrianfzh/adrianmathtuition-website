@@ -55,7 +55,7 @@ Save as `my_worksheet.py` next to `worksheet_lib.py`:
 ```python
 from worksheet_lib import Worksheet
 
-ws = Worksheet(working_space=2.0)   # 2 blank lines per mark for the student's working
+ws = Worksheet(working_space=4.0)   # ~2 cm of writing space per mark
 ws.title('Worksheet Title')
 ws.subtitle('IP4 / Sec 4 Mathematics')
 
@@ -278,39 +278,46 @@ The library hardcodes Adrian's house style. To change it, edit `worksheet_lib.py
 | Marks tab stop | 15.5 cm, right-aligned |
 | Marks colour | Black |
 | Answer style | Right-aligned, orange `#843C0C`, prefix `[Ans: ...]` |
-| Working space | `Worksheet(working_space=2.0)` — 2 blank lines per mark, so a `[3]` gets three times the room of a `[1]` |
+| Working space | `Worksheet(working_space=4.0)` — 4 blank lines (~2 cm) per mark, so a `[3]` gets three times the room of a `[1]` |
 | Question tag | Usually none — a sheet grouped under `Section A — Trigonometry` headers does not need `(Trigonometry)` repeated on every question. Tag only a mixed-topic sheet, in italics. **Never name the source school or year** |
 
 ### Working space and question tags (2026-08-29)
 
-**Build every write-on worksheet with `Worksheet(working_space=2.0)`.** The
+**Build every write-on worksheet with `Worksheet(working_space=4.0)`.** The
 library then leaves blank writing space after each paragraph that carries a mark
 allocation, sized `marks x working_space` body lines — a `[3]` part gets three
 times the room of a `[1]`, which is what a student expects when the marks tell
-them how much working is wanted. Set it to `0` (the default) only for a sheet
-nobody writes on: a solutions sheet, or a Revision "(With Worked Examples)"
-sheet where `solution_box()` already fills the space.
+them how much working is wanted. 4.0 is about 2 cm per mark and is what Adrian
+asked for; go higher, never lower. Set it to `0` (the default) only for a sheet
+nobody writes on: a solutions sheet, or a Revision "(With Worked Examples)" sheet
+where `solution_box()` already fills the space.
 
-Because the space is generous, a worksheet runs long — that is correct, not a
-bug. Do NOT hand-place `page_break()` calls to compact it, and do NOT try to keep
-whole questions on one page: once each question is half a page tall, gluing it
-makes Word bump the whole thing to the next page and leaves most of a page blank.
-`Worksheet` keeps each question whole (`keep_questions_together=True`) — stem,
-figure, parts, writing space and answer line all move together. **That only works
-if each question fits on a page**, so print `ws.block_heights()` before saving and
-check every block against `ws.PAGE_CM` (26.7 cm): a question that only just
-overflows gets bumped whole and leaves most of the previous page blank, which is
-worse than the split it avoided. If one is too tall, shrink its figures rather
-than cutting the writing space. Use `ws.section()` for section headers so they
-travel with the question below, and reach for `page_break()` only for a hard
-section boundary.
+The space is **real blank line paragraphs**, not one paragraph with a big
+`space_after`. Word discards trailing space at a page break, so a `space_after`
+gap that straddles a break silently swallows the rest of the student's writing
+room; separate lines just flow onto the next page.
+
+**Let questions flow across pages. Do NOT try to keep them whole.** Once the
+space is this generous a question is taller than the text column, so gluing it
+either does nothing or bumps the whole question and leaves most of a page blank —
+that is how a first page ended up holding nothing but the title. `Worksheet`
+instead glues the units that actually matter, always:
+
+- a question's text keeps with its writing space (marks can't sit alone at a page foot)
+- the answer line keeps with the line above it (no orphaned `[Ans: …]`)
+- a figure keeps with the stem above and the part below it
+
+Pages then break between blank writing lines, where a break costs nothing.
+`ws.block_heights()` still reports each question's height against `ws.PAGE_CM`
+(26.7 cm) — useful to see which questions span pages, no longer something to
+fix. Use `ws.section()` for section headers so they travel with the question
+below, and `page_break()` only for a hard section boundary.
 
 **Never put the originating school or year in a question.** Provenance lives in
 the author script's comments — the same convention as the kiosk and bot
 worksheets, which strip originating-school metadata by design. A topic tag on
 each question is usually redundant too: if the sheet is already grouped under
 `Section A — Trigonometry and Pythagoras' Theorem`, the questions need no tag.
-
 
 ## Verification
 
