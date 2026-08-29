@@ -1,12 +1,20 @@
-# SPEC-REMEDIATION — the targeted fix-it loop (v1 design, 2026-08-30)
+# SPEC-REMEDIATION — the targeted fix-it loop (v1 built 2026-08-30)
 
-> **Status: DESIGN — nothing built.** Born from Adrian's ask on the Alessi re-mark
-> review (30 Aug 2026): *"identify each area (pedagogy now) that the student is
-> weak in … produce a report, come up with useful teaching materials … then
-> practice that relevant / similar question … submit for marking through app …
-> request another similar until they get right, then move on"* — i.e. practice
-> questions are passive; the loop should be **diagnose → teach → drill → prove →
-> advance**, one weakness at a time.
+> **Status: v1 BUILT same day** (`lib/remediation.ts` + `lib/remediation-data.ts`
+> + `/api/admin/remediation` + `/api/portal/remediation` + `/app/fixit` + Home
+> card + `/admin/remediation` + `remediation_plans`/`remediation_items` tables +
+> health-check `remediation`). Deltas from the design below: v1 drafts create
+> drill/probe items only (learn items are added via the API/admin until material
+> auto-attach lands); bank candidates are picked at DRAFT time so the review
+> screen shows the ammo; an item whose canonical topic has no bank questions
+> falls back to self-attest; stuck-item surfacing on the reminder is NOT built
+> yet. Born from Adrian's ask on the Alessi re-mark review (30 Aug 2026):
+> *"identify each area (pedagogy now) that the student is weak in … produce a
+> report, come up with useful teaching materials … then practice that relevant /
+> similar question … submit for marking through app … request another similar
+> until they get right, then move on"* — i.e. practice questions are passive;
+> the loop should be **diagnose → teach → drill → prove → advance**, one
+> weakness at a time.
 
 ## What it is
 
