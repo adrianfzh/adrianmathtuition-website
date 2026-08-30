@@ -103,6 +103,22 @@ remediation_items:   id, plan_id fk, seq int, kind ('probe'|'learn'|'drill'|'pro
 5. **Log** — plan drafts stamp `job_runs` (`remediation-draft`); add the
    `JOB_RHYTHMS` line when the trigger ships.
 
+## Grounding rule (Adrian, 30 Aug 2026 — twice in one review)
+
+**Materials and drill picks trace to the student's ACTUAL failed questions —
+their prompts (`result_json.results[].marking_output.question.prompt`) — never
+to topic labels alone.** `topic_detected` is the marker's free text and lies at
+the granularity that matters: on the pilot it said "Exponentials and
+logarithms" for a split-base indices + change-of-base log pair (the first
+sheet then taught e-models she never gets wrong), and "Circle theorems" for an
+A-Math plane-geometry PROOF (the sheet then taught E-Math numeric angle
+chasing). Same lesson as revise-map's noisy `level_detected`. Consequences:
+the draft classifier's evidence lines should carry the question PROMPT, not
+just the error summary; bank picks for a drill should be shape-matched against
+the failed prompt (SQL on the stem where the candidates RPC's topic pool is
+too broad); and any learn sheet's worked examples reproduce the failed
+question's SHAPE with changed numbers.
+
 ## Completeness rule (Adrian, 30 Aug 2026)
 
 **A plan is not ready to activate until every part carries its teaching.** Two
