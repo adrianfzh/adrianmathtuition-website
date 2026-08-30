@@ -114,20 +114,53 @@ Build `$WORK/submit.json` with python3:
 python3 do the escaping. Include every photo you marked; a photo you genuinely
 could not read may be omitted — the bot re-reads it on the API at its own cost.)
 
-POST it with `curl -s -m 1800 -d @"$WORK/submit.json"`. Then:
+POST it with `curl -s -m 1800 -d @"$WORK/submit.json"`. On a paper of roughly
+15 pages or more, EXPECT the request to end in a gateway timeout rather than a
+JSON answer — that is the normal path, not a fault (see below). Then:
 
 - `{"ok":true,...}` → SUCCESS. The bot is delivering (PDFs, Dropbox, Telegram).
   Delete `$MARKER_STATE/current-claim.json`, print the totals, end successfully.
 - `{"superseded":true}` → the API fallback marked it first, or a previous
   attempt of this POST already landed. Treat as success (nothing to deliver
   twice): delete `$MARKER_STATE/current-claim.json` and end.
-- `{"error":"worker busy — retry shortly"}`, a 502/503, or a timeout/connection
-  drop → heartbeat, wait 3 minutes, retry the SAME POST. Up to 10 retries
-  (~30 min). A timed-out POST may still have succeeded server-side — that is
-  exactly what the `superseded` answer on the retry means, so never treat it as
-  a failure.
+- `{"error":"worker busy — retry shortly"}`, a 502/503, `FUNCTION_INVOCATION_TIMEOUT`,
+  or a dropped connection → **not a failure, and usually not even a problem**:
+  the submit runs the whole annotation pipeline, which on a 20+ page paper takes
+  longer than the 300-second ceiling on the proxy in front of the bot, so the
+  gateway hangs up while the bot carries on and finishes. Resolve it with the
+  loop below.
 - Any other `{"error":...}` twice in a row → release (step 8) and end with the
   error printed.
+
+### Resolving an unanswered submit — ⚠ NEVER END YOUR TURN HERE
+
+You are a one-shot headless session: there is no "wait and check back later".
+If you end your turn with a submit unresolved, the session is over, the wrapper
+releases your claim, and a complete marking gets thrown away and re-bought on
+the paid API. **Every wait must happen INSIDE a single blocking Bash call** —
+`sleep 120 && curl …` in one command, never a message that says you are waiting.
+
+The heartbeat is the cheap, definitive answer to "did it land?" — it reports
+`claim lost (already marked)` exactly when the run now has marks, whoever put
+them there:
+
+```bash
+for i in 1 2 3 4 5 6 7 8 9 10; do
+  sleep 120
+  HB=$(api '{"phase":"external-heartbeat","id":"<run id>","by":"<BY>"}')
+  case "$HB" in
+    *"already marked"*) echo "LANDED"; break ;;                # success — delete the claim file, end
+    *'"ok":true'*) api @"$WORK/submit.json" ;;                 # still unmarked and still ours → re-POST
+    *) echo "claim gone: $HB"; break ;;                        # someone else has it — stop, do not resubmit
+  esac
+done
+```
+
+30 Aug 2026: a 22-page paper marked perfectly on the Mac, the submit hit the
+proxy's 300s ceiling, the session announced "retry still in its wait phase" and
+ended. The reads had in fact landed — but the session could not know that, and
+on any other night that would have been a free marking silently replaced by a
+$2 one.
 
 ## 8. Release (failure path only)
 
