@@ -37,10 +37,13 @@ from**:
 | `worksheet-clerk` | **a conversation** — it shows candidates and Adrian picks | a physical worksheet from the picks (it calls `create-worksheet` to render); can also read jobs off `/admin/todo` |
 | `prelim-paper` | **the blueprint** (`data/paper-blueprints.json`) + the QB | a full S4 prelim paper, DOCX, with answer key |
 | `finish-practice-set` | **a PDF that already exists** — a compiled past paper | the same paper, cleaned of its source's header/footer/mark-up, titled, with a QB answer key appended |
+| `self-study-sheet` | **one student's MARKED PAPER** — the questions they actually lost marks on | a per-student sheet they learn from (Example → Practice pairs, verified), filed to Dropbox `/Self-Study/<Student>/` for Adrian to vet, edit and release with the marked copy. Steps 3–6 of [`SPEC-TEACHING-CYCLE.md`](../SPEC-TEACHING-CYCLE.md) |
 
 Rule of thumb: `create-worksheet` **authors**, `revision-worksheet` **extends**,
 `worksheet-clerk` **curates**, `prelim-paper` **assembles**, `finish-practice-set`
-**finishes**. `setter-pass` is not a maker — it reviews what `prelim-paper` saved.
+**finishes**, `self-study-sheet` **diagnoses** (it is the only one that starts
+from a student's own marked work, and the only one whose content is chosen by
+what that student got wrong). `setter-pass` is not a maker — it reviews what `prelim-paper` saved.
 
 ## The four area skills are different in kind
 
