@@ -134,7 +134,7 @@ Each line below is one part that lost marks (class=… (fixed) lines are already
 
 ${rows.join('\n')}
 
-Group these into AT MOST 6 plan items. Each item is ONE teachable skill (e.g. "integrate 1/(ax+b) with the 1/a factor", "write the first line of a trig identity proof"), never a whole topic. Classify each item:
+Group these into items covering EVERY line above — never drop a weakness because the list is long (Adrian, 30 Aug 2026: "it has to highlight all skills that need fixing"). The caller decides which items become this wave and which are shelved for later; your job is to name them all. Each item is ONE teachable skill (e.g. "integrate 1/(ax+b) with the 1/a factor", "write the first line of a trig identity proof"), never a whole topic. Classify each item:
 - "blank": the student never wrote a first move — the medicine is first-move drills
 - "procedure": a named rule misapplied — rule card + drill
 - "discipline": conclusions/units/signs/rounding habits — checklist practice
@@ -151,7 +151,10 @@ Every "evidence" entry MUST be copied exactly from the refs above. Order items b
 }
 
 const LOSS_CLASSES: LossClass[] = ['blank', 'procedure', 'discipline', 'concept'];
+/** The WAVE cap — how many items a single sheet/plan teaches. */
 export const MAX_PLAN_ITEMS = 6;
+/** The DIAGNOSIS cap — everything named, wave or shelf. Only a runaway model hits this. */
+export const MAX_DIAGNOSED_ITEMS = 24;
 
 /**
  * Grounded parse of the model's draft: unknown evidence refs are dropped, an
@@ -181,7 +184,9 @@ export function parsePlanDraft(
   const used = new Set<string>();
   const out: PlanItemDraft[] = [];
   for (const it of items) {
-    if (out.length >= MAX_PLAN_ITEMS) break;
+    // Cap the DIAGNOSIS generously, not at the wave size: an un-named weakness
+    // can never be shelved, so it would be lost entirely.
+    if (out.length >= MAX_DIAGNOSED_ITEMS) break;
     const skill = String(it?.skill ?? '').trim().slice(0, 160);
     if (!skill) continue;
     const refs = (Array.isArray(it?.evidence) ? it.evidence : [])
@@ -214,6 +219,23 @@ export function parsePlanDraft(
     });
   }
   return out;
+}
+
+/**
+ * Split a full diagnosis into the wave to teach now and the shelf for later.
+ * Ranked by marks recoverable, largest first — a 10-mark blank outranks a
+ * 1-mark slip — so the student's biggest bleed is always what gets taught this
+ * round, and nothing named is ever silently dropped.
+ */
+export function splitWave(
+  items: PlanItemDraft[],
+  evidence: LossEvidence[],
+  waveSize = MAX_PLAN_ITEMS,
+): { wave: PlanItemDraft[]; shelved: PlanItemDraft[] } {
+  const ranked = [...items].sort((a, b) => marksRecoverable(b, evidence) - marksRecoverable(a, evidence));
+  const wave = ranked.slice(0, Math.max(1, waveSize)).map((it, i) => ({ ...it, seq: i + 1 }));
+  const shelved = ranked.slice(Math.max(1, waveSize));
+  return { wave, shelved };
 }
 
 export function defaultClearRule(cls: LossClass): ClearRule {

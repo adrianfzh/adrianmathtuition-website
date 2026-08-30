@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import SendWorkCard from './send-work';
+import ShelfSection from './shelf-section';
 import LessonModal, { type LessonModalLesson } from '@/components/LessonModal';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { resolveActiveExamType } from '@/lib/exam-season';
@@ -674,7 +675,11 @@ export default function StudentProfilePage() {
 
             {/* From Adrian — assigned work (SPEC-ASSIGN.md): bank question → in-browser
                 grader, worksheet PDF → /app/submit pipeline. */}
-            <Section title="📬 From Adrian" show={tab === 'overview'}>
+            <Section title="🧺 On the shelf" show={tab === 'overview'}>
+          <ShelfSection studentId={studentId} />
+        </Section>
+
+        <Section title="📬 From Adrian" show={tab === 'overview'}>
               <SendWorkCard
                 studentId={studentId}
                 studentName={data.student.name}

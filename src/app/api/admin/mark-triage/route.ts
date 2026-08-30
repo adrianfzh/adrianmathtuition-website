@@ -502,6 +502,10 @@ export async function POST(req: NextRequest) {
           title,
           topic: sheet.topic || null,
           note: sheet.note || 'Read your newest marked paper first, then work this sheet on paper — photograph it and hand it in here when you are done.',
+          // The sheet is written FROM this paper — recording it is what lets the
+          // marked copy say "practice was sent from this" and the shelf know
+          // which wave a topic belongs to.
+          sourceRunId: run.id,
         });
         if (!v.ok) {
           results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: `sheet rejected: ${v.error}` });

@@ -107,8 +107,13 @@ say "START ($WAITING queued, auth=$AUTH_VIA, model=${WORKER_MODEL:-opus}, max ${
 START_EPOCH=$(date +%s)
 cd "$SHEETS_REPO" || { say "FATAL: cannot cd to $SHEETS_REPO"; cleanup_pid; exit 1; }
 
+# Effort is pinned HIGH, not left to the default: authoring a sheet is
+# diagnosis + writing + symbolic verification + figure construction in one
+# pass, and a cheap pass here produces a sheet Adrian has to rewrite — which
+# costs more of his time than the tokens ever save.
 claude -p "$(cat "$PROMPT")" \
   --model "${WORKER_MODEL:-opus}" \
+  --effort "${WORKER_EFFORT:-high}" \
   --permission-mode dontAsk \
   --allowedTools Bash Read Write Edit Glob Grep TodoWrite Skill \
   --setting-sources user project \

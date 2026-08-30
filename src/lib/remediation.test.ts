@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   extractLossEvidence, classifyLossDeterministic, buildDraftPrompt, parsePlanDraft,
-  defaultClearRule, marksRecoverable, relockItems, attemptClears, nextOpenItem, planDone,
+  defaultClearRule, marksRecoverable, relockItems, attemptClears, nextOpenItem, planDone, splitWave,
   type LossEvidence, type LossClass,
 } from './remediation';
 
@@ -137,5 +137,45 @@ describe('reminder field (the collapsed 💡 above each drill, 30 Aug 2026)', ()
     ] }), evidence, new Map());
     expect(items[0].reminder).toBe('Only 1/(ax+b) gives a log.');
     expect(buildDraftPrompt(evidence, new Map())).toContain('"reminder"');
+  });
+});
+
+describe('every weakness is named; the WAVE is what gets capped (30 Aug 2026)', () => {
+  const evidence: LossEvidence[] = Array.from({ length: 9 }, (_, i) => ({
+    q: String(i + 1), part: '', awarded: 0, max: i + 1, notAttempted: false,
+    errorSummary: `error ${i + 1}`, studyNote: '', topic: 'T',
+  }));
+  const draft = JSON.stringify({
+    items: evidence.map((e, i) => ({
+      skill: `skill ${i + 1}`, class: 'procedure', topic: 'T', evidence: [`Q${e.q}`],
+    })),
+  });
+
+  it('parses ALL nine weaknesses — none silently dropped at the wave size', () => {
+    const items = parsePlanDraft(draft, evidence, new Map());
+    expect(items).toHaveLength(9);
+  });
+
+  it('splitWave takes the biggest bleeds first and shelves the rest', () => {
+    const items = parsePlanDraft(draft, evidence, new Map());
+    const { wave, shelved } = splitWave(items, evidence, 6);
+    expect(wave).toHaveLength(6);
+    expect(shelved).toHaveLength(3);
+    // Q9 is worth 9 marks, Q1 only 1 — the wave takes the heavy ones.
+    expect(wave[0].evidence).toEqual(['Q9']);
+    expect(shelved.map(s => s.evidence[0])).toEqual(['Q3', 'Q2', 'Q1']);
+    expect(wave.map(w => w.seq)).toEqual([1, 2, 3, 4, 5, 6]);
+    // Nothing vanished.
+    expect(wave.length + shelved.length).toBe(items.length);
+  });
+
+  it('a short diagnosis is all wave, empty shelf', () => {
+    const two = parsePlanDraft(JSON.stringify({ items: [
+      { skill: 'a', class: 'procedure', evidence: ['Q1'] },
+      { skill: 'b', class: 'procedure', evidence: ['Q2'] },
+    ] }), evidence, new Map());
+    const { wave, shelved } = splitWave(two, evidence, 6);
+    expect(wave).toHaveLength(2);
+    expect(shelved).toEqual([]);
   });
 });
