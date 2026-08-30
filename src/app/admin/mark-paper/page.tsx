@@ -130,7 +130,7 @@ async function uploadPaperPdf(file: File): Promise<string | null> {
 }
 
 type MarkPart = { label?: string; awarded?: number; max?: number; error_summary?: string | null };
-type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; checked_at?: string | null; released_at?: string | null; archived_at?: string | null; marked_by?: string | null; mark_now?: string | null };
+type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; checked_at?: string | null; released_at?: string | null; archived_at?: string | null; marked_by?: string | null; mark_now?: string | null; skip_external?: string | null; claim_at?: string | null; claim_released?: string | null };
 type Result = {
   question_number: string; working_index: number; match_confidence: string; photo_index?: number | null;
   marking?: { total_awarded?: number; total_max?: number; overall_comment?: string; parts?: MarkPart[] };
@@ -987,7 +987,7 @@ export default function MarkPaperPage() {
   // only covers the paper currently loaded — Adrian wanted it on past rows too,
   // plus a way to delete junk (abandoned ⏳ uploads, duplicate runs). State is
   // keyed by run id so a slow save on one row never freezes another's buttons.
-  const [rowBusy, setRowBusy] = useState<Record<string, 'dbx' | 'del' | 'now' | 'sheet' | undefined>>({});
+  const [rowBusy, setRowBusy] = useState<Record<string, 'dbx' | 'del' | 'now' | 'batch' | 'sheet' | undefined>>({});
   const [rowNote, setRowNote] = useState<Record<string, { ok: boolean; text: string } | undefined>>({});
   // 📘 Queue a self-study sheet for this paper. The heavy work (diagnose →
   // wave → author → verify → file to Dropbox) happens in a headless session on
@@ -1223,6 +1223,35 @@ export default function MarkPaperPage() {
     } catch (e) {
       setRowNote((p) => ({ ...p, [run.id]: { ok: false, text: `⚡ failed: ${(e as Error).message}` } }));
     } finally { setRowBusy((p) => ({ ...p, [run.id]: undefined })); }
+  }
+
+  // ☁️ Batch now (31 Aug 2026): the other escape hatch. ⚡ Mark now buys speed at
+  // full price; this one only gives up on the MAC — the paper leaves the free
+  // plan-billed queue and takes the ordinary ~50% batch route on the next tick.
+  async function batchNowRun(run: Run) {
+    setRowBusy((p) => ({ ...p, [run.id]: 'batch' })); setRowNote((p) => ({ ...p, [run.id]: undefined }));
+    try {
+      const r = await fetch('/api/admin/mark-paper', {
+        method: 'POST', headers: authHeaders,
+        body: JSON.stringify({ phase: 'batch-now', id: run.id }),
+      });
+      const d = await r.json();
+      if (!r.ok || d.error) throw new Error(d.error || 'could not switch it');
+      setRowNote((p) => ({ ...p, [run.id]: { ok: true, text: d.macMarkingNow
+        ? '☁️ your Mac is mid-paper on this one — it finishes free; the switch only applies if it stops'
+        : '☁️ off the Mac queue — batch API takes it on the next tick (~10–60 min, ~50% price)' } }));
+      loadStats();
+    } catch (e) {
+      setRowNote((p) => ({ ...p, [run.id]: { ok: false, text: `☁️ failed: ${(e as Error).message}` } }));
+    } finally { setRowBusy((p) => ({ ...p, [run.id]: undefined })); }
+  }
+
+  // Is the Mac reading THIS paper right now? Same 10-minute lease the queue
+  // policy uses (lib/queue-pick.js) — the Mac heartbeats while it works, so a
+  // recent claim means a live session, and a released one means it let go.
+  function macMarking(run: Run) {
+    if (!run.claim_at || run.claim_released) return false;
+    return Date.now() - new Date(run.claim_at).getTime() < 10 * 60 * 1000;
   }
 
   // Several PDFs dropped in one go (19 Aug 2026): parked here until Adrian says
@@ -1507,7 +1536,9 @@ export default function MarkPaperPage() {
                   // double-cost marking, so canMark waits out the window.
                   <span style={{ color: run.queue_failed ? '#b91c1c' : run.queued_at ? '#4c1d95' : '#b45309', fontSize: 12, fontWeight: 600 }}>
                     {run.queue_failed ? '⚠ queue failed twice'
-                      : run.queued_at && run.total_max == null ? '🌙 queued — your Mac marks it free if it is awake, else ~50% batch API. 10–60 min, then Telegram + Dropbox'
+                      : run.queued_at && macMarking(run) ? '💻 your Mac is marking it now — free, ~25 min for a full paper'
+                      : run.queued_at && run.skip_external ? '☁️ queued for the batch API (~50% price) — 10–60 min, then Telegram + Dropbox'
+                      : run.queued_at && run.total_max == null ? '🌙 queued — waiting for your Mac (free) while it is awake, else ~50% batch API. 10–60 min, then Telegram + Dropbox'
                       : canMark ? '⏳ uploaded — not marked yet'
                       : '⏳ still marking on the server — this row updates itself when it lands'}
                   </span>
@@ -1546,13 +1577,30 @@ export default function MarkPaperPage() {
                         ▶ Mark
                       </button>
                     )}
-                    {run.total_max == null && !!run.queued_at && !run.queue_failed && (
-                      <button type="button" disabled={!!rowBusy[run.id]}
-                        title="Skip the 50% batch queue — mark this paper immediately at full price"
-                        onClick={() => markNowRun(run)}
-                        style={{ ...btn, background: '#4c1d95', padding: '4px 10px', fontSize: 12, opacity: rowBusy[run.id] ? 0.6 : 1 }}>
-                        {rowBusy[run.id] === 'now' ? '…' : '⚡ Mark now'}
-                      </button>
+                    {/* Waiting is a choice, not a sentence (31 Aug 2026). A queued
+                        paper reserved for the Mac can be switched at any time:
+                        ⚡ for speed at full price, ☁️ to give up on the Mac but
+                        keep the 50% batch price. Both are hidden while the Mac
+                        is actually reading this paper — neither could take
+                        effect before it finishes, and saying so beats a button
+                        that quietly does nothing. */}
+                    {run.total_max == null && !!run.queued_at && !run.queue_failed && !macMarking(run) && (
+                      <>
+                        {!run.skip_external && (
+                          <button type="button" disabled={!!rowBusy[run.id]}
+                            title="Stop waiting for the Mac — send it to the batch API now (~50% price, 10–60 min)"
+                            onClick={() => batchNowRun(run)}
+                            style={{ ...btn, background: '#1d4ed8', padding: '4px 10px', fontSize: 12, opacity: rowBusy[run.id] ? 0.6 : 1 }}>
+                            {rowBusy[run.id] === 'batch' ? '…' : '☁️ Batch now'}
+                          </button>
+                        )}
+                        <button type="button" disabled={!!rowBusy[run.id]}
+                          title="Skip the queue entirely — mark this paper immediately at full price"
+                          onClick={() => markNowRun(run)}
+                          style={{ ...btn, background: '#4c1d95', padding: '4px 10px', fontSize: 12, opacity: rowBusy[run.id] ? 0.6 : 1 }}>
+                          {rowBusy[run.id] === 'now' ? '…' : '⚡ Mark now'}
+                        </button>
+                      </>
                     )}
                     {run.total_max != null && (
                       <>
