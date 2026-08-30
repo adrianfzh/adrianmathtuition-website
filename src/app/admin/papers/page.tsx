@@ -31,6 +31,7 @@ type Run = {
   questions: number;
   pending: number;
   released: boolean;
+  superseded: boolean;
   checked: boolean;
   annotatedPdfUrl: string | null;
   photosPdfUrl: string | null;
@@ -346,6 +347,11 @@ export default function PapersPage() {
                   {fmtDate(run.date)} · {run.questions} question{run.questions === 1 ? '' : 's'}
                   {run.pending > 0 && <span style={{ color: '#a16207', fontWeight: 700 }}> · ⏳ {run.pending} to check</span>}
                   {run.released && <span style={{ color: '#15803d' }}> · sent</span>}
+                  {run.superseded && (
+                    <span style={{ color: C.faint }} title="A later re-mark of this paper replaced it — the student sees the newer one">
+                      {' '}· replaced by a re-mark
+                    </span>
+                  )}
                   {run.checked && (
                     <button
                       onClick={() => setCheckedState(run.id, false)}

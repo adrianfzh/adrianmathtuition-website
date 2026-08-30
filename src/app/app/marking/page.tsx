@@ -80,6 +80,7 @@ export default async function MarkingPage() {
       .select(COLUMNS)
       .eq('student_id', sid)
       .not('released_at', 'is', null)
+      .is('superseded_by', null)   // a re-marked paper shows once, at its current mark
       .order('created_at', { ascending: false })
       .limit(MAX_PAPERS),
     sb

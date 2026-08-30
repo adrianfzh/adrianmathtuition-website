@@ -286,6 +286,7 @@ export async function POST(req: NextRequest) {
       const [{ data: runs }, { data: entries }] = await Promise.all([
         svc.from('paper_marking_runs').select(RUN_COLUMNS)
           .eq('student_id', sid).not('released_at', 'is', null)
+          .is('superseded_by', null)   // superseded re-marks would double-count a paper's weak topics
           .order('created_at', { ascending: false }).limit(30),
         svc.from('notebook_entries').select('topic, attempts').eq('airtable_student_id', sid),
       ]);

@@ -29,6 +29,7 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { airtableRequest } from '@/lib/airtable';
 import { sendTelegramTo, sendTelegramDocumentTo } from '@/lib/telegram';
+import { pickSuperseded } from '@/lib/marking-supersede';
 import {
   extractFlagged,
   applyAgree,
@@ -446,7 +447,7 @@ export async function POST(req: NextRequest) {
 
     const { data: runs, error: readErr } = await supa
       .from('paper_marking_runs')
-      .select('id, paper_name, student_id, student_name, annotated_pdf_url, photos_pdf_url, result_json, released_at')
+      .select('id, paper_name, student_id, student_name, annotated_pdf_url, photos_pdf_url, result_json, released_at, created_at')
       .in('id', runIds);
     if (readErr) return NextResponse.json({ error: readErr.message }, { status: 500 });
 
@@ -541,6 +542,35 @@ export async function POST(req: NextRequest) {
         via,
         note: outcome.note,
       });
+
+      // A re-mark replaces the old marking instead of sitting beside it
+      // (Adrian, 2026-08-31: "re-mark lands, previous run auto-archive").
+      // Releasing THIS run stamps `superseded_by` on every earlier released
+      // marking of the same paper for the same student, so the student's
+      // /app/marking shows one — the current — score. Nothing is deleted and
+      // `released_at` is untouched: /admin/papers still has the full history.
+      // Non-fatal by design; a failure here must never undo a release.
+      try {
+        if (!run.student_id || !run.paper_name) throw new Error('untagged run — nothing to supersede');
+        const { data: siblings } = await supa
+          .from('paper_marking_runs')
+          .select('id, student_id, paper_name, created_at, superseded_by')
+          .eq('student_id', run.student_id)
+          .not('released_at', 'is', null)
+          .is('superseded_by', null)
+          .limit(200);
+        const stale = pickSuperseded(
+          { id: run.id, student_id: run.student_id, paper_name: run.paper_name, created_at: run.created_at },
+          siblings ?? [],
+        );
+        if (stale.length) {
+          await supa.from('paper_marking_runs').update({ superseded_by: run.id }).in('id', stale);
+        }
+      } catch (e) {
+        // Untagged runs land here by design — an unnamed or unassigned paper
+        // has no identity to match on, so it replaces nothing.
+        console.warn('[mark-triage] supersede skipped:', (e as Error).message);
+      }
 
       // Web push (portal): "Your marked paper is ready ✅" on every device the
       // student turned notifications on for (/app/settings). Runs after the

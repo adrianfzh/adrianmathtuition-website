@@ -39,6 +39,7 @@ export async function GET(req: NextRequest) {
     .eq('id', runId)
     .eq('student_id', portalIdentity(account))
     .not('released_at', 'is', null)
+    .is('superseded_by', null)   // a superseded run is off the student's list; its practice link 404s
     .limit(1);
 
   const paper = buildStudentMarking((data ?? []) as MarkingRunRow[]).papers[0];

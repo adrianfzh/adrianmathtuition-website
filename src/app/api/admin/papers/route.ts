@@ -34,7 +34,7 @@ const MAX_TOPICS_PER_RUN = 8;
 
 const COLUMNS =
   'id, created_at, paper_name, student_id, student_name, num_questions, ' +
-  'total_awarded, total_max, pdf_url, photos_pdf_url, annotated_pdf_url, released_at, checked_at, source';
+  'total_awarded, total_max, pdf_url, photos_pdf_url, annotated_pdf_url, released_at, checked_at, source, superseded_by';
 
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
@@ -90,6 +90,9 @@ export async function GET(req: NextRequest) {
         // walked through as if its marks were final.
         pending: pendingCount(r.result_json),
         released: !!r.released_at,
+        // A later re-mark of the same paper replaced this one on the student's
+        // side. The row stays in the library — this is where the history lives.
+        superseded: !!r.superseded_by,
         // Adrian has been through this one — annotated it, sent it, or ticked it off.
         checked: !!r.checked_at,
         annotatedPdfUrl: r.annotated_pdf_url,

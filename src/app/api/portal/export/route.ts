@@ -32,7 +32,10 @@ import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server
 import { portalIdentity } from '@/lib/portal-auth';
 
 const RUN_PUBLIC = 'id, created_at, paper_name, num_photos, released_at';
-const RUN_RELEASED = `${RUN_PUBLIC}, total_awarded, total_max, annotated_pdf_url, pdf_url, result_json`;
+// `superseded_by` rides along on purpose: the export is everything we hold,
+// so a re-marked paper's earlier pass stays in it — the column is what says
+// which row the student's portal actually shows.
+const RUN_RELEASED = `${RUN_PUBLIC}, superseded_by, total_awarded, total_max, annotated_pdf_url, pdf_url, result_json`;
 
 export async function GET() {
   const supabase = await createSupabaseServer();

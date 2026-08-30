@@ -482,6 +482,40 @@ release call failed.
 > act on, not bulk-dismiss. Backfill 2026-08-29: 106 runs archived, keeping only
 > Kassandra's two re-marks.
 
+> **🔁 Superseded — a re-mark replaces the old marking (2026-08-31, Adrian: "re-mark
+> lands, previous run auto-archive"):** re-marking a paper inserts a NEW run rather
+> than editing the old one, so a student could see the same paper twice at two
+> different scores (Alessi Tay, 2026-08-30: 38/66 released on the 29th, 50/90 on the
+> 30th). `superseded_by uuid` on `paper_marking_runs` is a **fourth, orthogonal
+> state** — do not confuse it with `archived_at`:
+>
+> | column | means | student sees the run? |
+> |---|---|---|
+> | `released_at` null | not handed back yet | no |
+> | `archived_at` set | cleared from triage WITHOUT releasing | no (never released) |
+> | `superseded_by` set | released, then replaced by a better marking | **no — the newer run shows instead** |
+>
+> `archived_at` could not carry this meaning: mark-triage's `archive` action 409s on
+> an already-released run, and no student-facing query filters it — archiving hides
+> nothing from a student who has already been handed the paper.
+>
+> **Hooked to release, not to the re-mark.** The website never inserts marking runs
+> (the bot does), so the supersede stamp rides the website's `release` action: when
+> a run is released, every EARLIER released run with the same `student_id` and the
+> same normalised `paper_name` gets `superseded_by = <winner>`. Matching logic is
+> pure + tested in [`../src/lib/marking-supersede.ts`](../src/lib/marking-supersede.ts)
+> — **`paper_name` alone is never enough** ("worksheet (10 photos)" is on eight runs
+> from different students), and an untagged run (`student_id` null) supersedes
+> nothing. The stamp is non-fatal: a failure there can never undo a release.
+>
+> Student-side filters (`.is('superseded_by', null)`): `/app/marking`,
+> `portal/print-paper` weak-topic ranking, `portal/practice-pdf`. **Not** filtered:
+> `portal/export` (a data dump of everything held — the column rides along so the
+> row says which one is live), notebook clippings (a clipping is the student's own
+> note and keeps working), and the assignment flip (re-release rewrites `run_id`).
+> Nothing is deleted and `released_at` is untouched — /admin/papers shows the full
+> history with a "· replaced by a re-mark" chip.
+
 - **It shows flagged questions only.** The bot's marker already writes
   `review_recommended` + `review_reasons[]` per question in `result_json.results[]`
   (question not found, uncertain match, marker uncertainty note, low marking
