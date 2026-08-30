@@ -7,8 +7,12 @@
 > drill/probe items only (learn items are added via the API/admin until material
 > auto-attach lands); bank candidates are picked at DRAFT time so the review
 > screen shows the ammo; an item whose canonical topic has no bank questions
-> falls back to self-attest; stuck-item surfacing on the reminder is NOT built
-> yet. Born from Adrian's ask on the Alessi re-mark review (30 Aug 2026):
+> falls back to self-attest. Stuck-item surfacing SHIPPED later the same day
+> (`notifyStuckOnce` — one ⚠️ Telegram per stuck item, on the retry cap or an
+> exhausted question list) along with the 🎯 plan-finished doorbell; what
+> remains unbuilt is the DRAFT TRIGGER (no button — drafting is an API call,
+> no auto-run on release) and MATERIAL AUTO-ATTACH (learn sheets are still
+> hand-authored and hand-attached). Born from Adrian's ask on the Alessi re-mark review (30 Aug 2026):
 > *"identify each area (pedagogy now) that the student is weak in … produce a
 > report, come up with useful teaching materials … then practice that relevant /
 > similar question … submit for marking through app … request another similar
