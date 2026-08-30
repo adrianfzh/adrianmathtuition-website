@@ -19,7 +19,12 @@ export PATH="/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 
-STATE="$HOME/.adrianmath_marker"
+# Slot-scoped state (31 Aug 2026). Slot 1 keeps the original path untouched;
+# extra slots get their own dir (env + WORKER_PROMPT.md symlinked in by
+# install-slot.sh) so two sessions can mark two DIFFERENT papers at once. The
+# bot's claim is a conditional update, so a race is safe — the loser is told
+# "lost claim race" and backs off to its next tick.
+STATE="${MARKER_STATE_DIR:-$HOME/.adrianmath_marker}"
 LOG="$STATE/plan-marking.log"
 PROMPT="$STATE/WORKER_PROMPT.md"
 CLAIM_FILE="$STATE/current-claim.json"
@@ -80,6 +85,11 @@ PY
 
 # A claim file with no live session behind it = a previous run died mid-paper.
 release_stale_claim "previous run died"
+
+# Stagger slots so two workers rarely reach for the same paper on the same tick
+# (harmless when it happens — the loser just waits out its interval — but a lost
+# race idles a slot for 5 minutes, which is the whole point of having it).
+if [ "${START_DELAY_SEC:-0}" -gt 0 ] 2>/dev/null; then sleep "$START_DELAY_SEC"; fi
 
 # --- peek: is there anything for us? (one curl — no Claude spend) -----------
 PEEK=$(api '{"phase":"external-peek"}' 30) || PEEK=""
