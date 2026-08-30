@@ -987,8 +987,28 @@ export default function MarkPaperPage() {
   // only covers the paper currently loaded — Adrian wanted it on past rows too,
   // plus a way to delete junk (abandoned ⏳ uploads, duplicate runs). State is
   // keyed by run id so a slow save on one row never freezes another's buttons.
-  const [rowBusy, setRowBusy] = useState<Record<string, 'dbx' | 'del' | 'now' | undefined>>({});
+  const [rowBusy, setRowBusy] = useState<Record<string, 'dbx' | 'del' | 'now' | 'sheet' | undefined>>({});
   const [rowNote, setRowNote] = useState<Record<string, { ok: boolean; text: string } | undefined>>({});
+  // 📘 Queue a self-study sheet for this paper. The heavy work (diagnose →
+  // wave → author → verify → file to Dropbox) happens in a headless session on
+  // the Mac; this only puts the job on the queue.
+  async function queueSheet(run: Run) {
+    setRowBusy((p) => ({ ...p, [run.id]: 'sheet' }));
+    setRowNote((p) => ({ ...p, [run.id]: undefined }));
+    try {
+      const r = await fetch('/api/admin/sheet-jobs', {
+        method: 'POST', headers: authHeaders, body: JSON.stringify({ runId: run.id }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error || `could not queue (${r.status})`);
+      setRowNote((p) => ({ ...p, [run.id]: { ok: true, text: '📘 Sheet queued — it lands in Dropbox and Telegram tells you.' } }));
+    } catch (e) {
+      setRowNote((p) => ({ ...p, [run.id]: { ok: false, text: (e as Error).message } }));
+    } finally {
+      setRowBusy((p) => ({ ...p, [run.id]: undefined }));
+    }
+  }
+
   async function rowToDropbox(run: Run) {
     // Same preference order as the send row: the annotated copy is THE hand-back
     // copy once it exists, then the images PDF, then the full one.
@@ -1538,6 +1558,16 @@ export default function MarkPaperPage() {
                         ✓
                       </button>
                     )}
+                    {/* 📘 Queue a self-study sheet from this marked paper
+                        (SPEC-TEACHING-CYCLE steps 3-6): a headless session
+                        diagnoses what they actually got wrong, authors the
+                        sheet in Adrian's style and files the DOCX into
+                        Dropbox for him to vet. Needs a tagged student. */}
+                    <button type="button" disabled={!!rowBusy[run.id]} title="Queue a self-study sheet from this paper"
+                      onClick={() => queueSheet(run)}
+                      style={{ background: 'none', border: '1px solid #c4b5fd', color: '#6d28d9', borderRadius: 8, padding: '3px 8px', fontSize: 12, cursor: 'pointer', opacity: rowBusy[run.id] ? 0.6 : 1 }}>
+                      {rowBusy[run.id] === 'sheet' ? '…' : '📘'}
+                    </button>
                     <button type="button" disabled={!!rowBusy[run.id]} title="Delete this paper and all its stored files"
                       onClick={() => deleteRun(run)}
                       style={{ background: 'none', border: '1px solid #fca5a5', color: '#b91c1c', borderRadius: 8, padding: '3px 8px', fontSize: 12, cursor: 'pointer', opacity: rowBusy[run.id] ? 0.6 : 1 }}>

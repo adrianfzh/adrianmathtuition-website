@@ -292,6 +292,18 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`table? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
       return 'auth gate up';
     }),
+    // 📘 Self-study sheet queue (SPEC-TEACHING-CYCLE): the 📘 button writes
+    // here and the Mac worker polls it. A broken table means sheets queue into
+    // nothing and Adrian never learns why.
+    timed('sheet-jobs', async () => {
+      const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      const q = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/sheet_jobs?select=id,status,run_id,airtable_student_id,attempts&limit=1`,
+        { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: T(10000) }
+      );
+      if (!q.ok) throw new Error(`table? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
+      return 'queue table up';
+    }),
     // Student resource requests (/app/requests → /admin/requests, v1
     // human-in-the-loop). The student route must hold its auth gate (401
     // anonymously — a 404 means the tab silently vanishes and asks stop

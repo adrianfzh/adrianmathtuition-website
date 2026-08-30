@@ -12,6 +12,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest } from '@/lib/airtable';
 import { createServiceClient } from '@/lib/supabase-server';
 import { POLICY_VERSION } from '@/lib/portal-consent';
+import { sendTelegram } from '@/lib/telegram';
+
+// Telegram HTML mode: a student's name may contain & < >.
+const escapeHtml = (t: string) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 async function loadToken(token: string) {
   const supabase = createServiceClient();
@@ -118,6 +122,15 @@ export async function POST(req: NextRequest) {
     .from('portal_invite_tokens')
     .update({ consumed_at: new Date().toISOString(), consumed_by_user_id: created.user.id })
     .eq('token', token);
+
+  // Tell Adrian the invite landed (30 Aug 2026 — self-serve signups via
+  // /api/portal/join have always pinged him; his OWN invited students
+  // activating did not, so a sent invite just went quiet either way).
+  // Best-effort: a Telegram failure must never fail an activation.
+  sendTelegram(
+    `🎓 <b>${escapeHtml(displayName || email)}</b> activated their student portal account` +
+    `${level ? ` (${escapeHtml(level)})` : ''}.`
+  ).catch(() => {});
 
   return NextResponse.json({ ok: true });
 }
