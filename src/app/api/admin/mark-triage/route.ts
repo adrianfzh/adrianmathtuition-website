@@ -40,7 +40,7 @@ import {
   TriageIndexError,
 } from '@/lib/mark-triage';
 import { buildReviseBlock } from '@/lib/revise-map';
-import { canTransition, type AssignmentStatus } from '@/lib/assignments';
+import { canTransition, validateAssignment, type AssignmentStatus } from '@/lib/assignments';
 import { sendPushToStudent } from '@/lib/portal-push';
 
 export const runtime = 'nodejs';
@@ -172,7 +172,7 @@ async function deliver(run: {
   annotated_pdf_url: string | null;
   photos_pdf_url?: string | null;
   result_json: unknown;
-}, auto = false): Promise<{ delivered: boolean; via: 'portal' | 'telegram' | 'none'; note?: string }> {
+}, auto = false, sheet: { title: string } | null = null): Promise<{ delivered: boolean; via: 'portal' | 'telegram' | 'none'; note?: string }> {
   // Telegram /handin runs: the marked copy goes back to the ORIGIN chat (which
   // may be a parent's, not the student's own), as the IMAGES PDF only (Adrian
   // 2026-08-22: never the full PDF, no "pass it back in class" line). On
@@ -208,11 +208,18 @@ async function deliver(run: {
   const { awarded, max } = recomputeTotals(run.result_json);
   const name = run.paper_name || 'your paper';
   const score = max > 0 ? ` — <b>${awarded}/${max}</b>` : '';
+  // Marks and remedy arrive together (SPEC-TEACHING-CYCLE step 7): when a sheet
+  // rides the release, the nudge names both and points at the work, not just
+  // the score. A bare score with the practice following later is the thing the
+  // combined release exists to prevent.
+  const sheetLine = sheet
+    ? `\n\n📘 Practice to go with it: <b>${escapeHtml(sheet.title)}</b> — work it on paper, then photograph it and hand it in.\n${SITE}/app/assignments`
+    : '';
 
   if (recipient.via === 'portal' && PORTAL_ENABLED) {
     const ok = await sendTelegramTo(
       recipient.chatId,
-      `📄 Your marked <b>${escapeHtml(name)}</b> is ready${score}.\n\n${SITE}/app/marking`
+      `📄 Your marked <b>${escapeHtml(name)}</b> is ready${score}.\n\n${SITE}/app/marking${sheetLine}`
     );
     return { delivered: ok, via: 'portal' };
   }
@@ -222,13 +229,13 @@ async function deliver(run: {
     const ok = await sendTelegramDocumentTo(
       recipient.chatId,
       run.annotated_pdf_url,
-      `📄 Your marked ${name}${max > 0 ? ` — ${awarded}/${max}` : ''}`
+      `📄 Your marked ${name}${max > 0 ? ` — ${awarded}/${max}` : ''}${sheet ? `\n\n📘 Practice to go with it: ${sheet.title} — in the app under From Adrian.` : ''}`
     );
     if (ok) return { delivered: true, via: 'telegram' };
   }
   const ok = await sendTelegramTo(
     recipient.chatId,
-    `📄 Your marked <b>${escapeHtml(name)}</b> is ready${score}. Adrian will pass it to you in class.`
+    `📄 Your marked <b>${escapeHtml(name)}</b> is ready${score}. Adrian will pass it to you in class.${sheetLine}`
   );
   return { delivered: ok, via: 'telegram' };
 }
@@ -355,6 +362,8 @@ export async function POST(req: NextRequest) {
     awarded?: number;
     note?: string;
     auto?: boolean;
+    /** 📘 Optional sheet to release alongside the marked copy (step 7). */
+    sheet?: { pdfUrl?: string; title?: string; note?: string; topic?: string };
   };
   try {
     body = await req.json();
@@ -416,6 +425,24 @@ export async function POST(req: NextRequest) {
     if (!runIds.length) return NextResponse.json({ error: 'runIds is required' }, { status: 400 });
 
     const auto = body.auto === true;
+    // 📘 Release WITH the sheet (SPEC-TEACHING-CYCLE step 7). Optional: without
+    // it this is exactly the old release. The assignment is created BEFORE the
+    // release stamp so a failed assignment can never leave the student holding
+    // a bare score — release aborts instead, and Adrian retries.
+    const sheet = body.sheet && typeof body.sheet === 'object'
+      ? {
+          pdfUrl: String((body.sheet as { pdfUrl?: unknown }).pdfUrl ?? '').trim(),
+          title: String((body.sheet as { title?: unknown }).title ?? '').trim(),
+          note: String((body.sheet as { note?: unknown }).note ?? '').trim(),
+          topic: String((body.sheet as { topic?: unknown }).topic ?? '').trim(),
+        }
+      : null;
+    if (sheet && !sheet.pdfUrl) {
+      return NextResponse.json({ error: 'sheet.pdfUrl is required when attaching a sheet' }, { status: 400 });
+    }
+    if (sheet && runIds.length > 1) {
+      return NextResponse.json({ error: 'a sheet can only ride a single-run release' }, { status: 400 });
+    }
 
     const { data: runs, error: readErr } = await supa
       .from('paper_marking_runs')
@@ -460,7 +487,35 @@ export async function POST(req: NextRequest) {
         continue;
       }
 
-      const outcome = await deliver(run, auto);
+      // Create the assignment first — see the `sheet` comment above.
+      let sheetForNudge: { title: string } | null = null;
+      if (sheet) {
+        if (!run.student_id) {
+          results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: 'tag the run to a student before releasing a sheet with it' });
+          continue;
+        }
+        const title = sheet.title || `Practice — from ${run.paper_name || 'your marked paper'}`;
+        const v = validateAssignment({
+          studentId: run.student_id,
+          kind: 'worksheet',
+          pdfUrl: sheet.pdfUrl,
+          title,
+          topic: sheet.topic || null,
+          note: sheet.note || 'Read your newest marked paper first, then work this sheet on paper — photograph it and hand it in here when you are done.',
+        });
+        if (!v.ok) {
+          results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: `sheet rejected: ${v.error}` });
+          continue;
+        }
+        const { data: created, error: aErr } = await supa.from('portal_assignments').insert(v.row).select('id').single();
+        if (aErr || !created) {
+          results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: `could not assign the sheet: ${aErr?.message ?? 'insert failed'} — nothing released` });
+          continue;
+        }
+        sheetForNudge = { title };
+      }
+
+      const outcome = await deliver(run, auto, sheetForNudge);
       const via = auto ? `auto:${outcome.via}` : outcome.via;
 
       // Stamp regardless of whether a nudge landed: the release IS Adrian's

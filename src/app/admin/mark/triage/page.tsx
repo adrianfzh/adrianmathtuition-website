@@ -68,6 +68,9 @@ export default function TriagePage() {
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState('');
   const [busy, setBusy] = useState<string>(''); // `${runId}:${idx}` or 'release'
+  // 📘 Sheet riding the release (step 7 of SPEC-TEACHING-CYCLE) — optional.
+  const [sheetFile, setSheetFile] = useState<File | null>(null);
+  const [sheetTitle, setSheetTitle] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState<string | null>(null); // `${runId}:${idx}`
   const [editAwarded, setEditAwarded] = useState('');
@@ -141,11 +144,34 @@ export default function TriagePage() {
     setEditing(null); setEditAwarded(''); setEditNote('');
   }
 
-  async function release() {
+  // 📘 Release WITH the sheet (SPEC-TEACHING-CYCLE step 7): marks and the
+  // practice that goes with them reach the student in ONE delivery. Optional —
+  // with no sheet picked this is exactly the release it always was.
+  async function release(withSheet = false) {
     const ids = [...selected];
     if (!ids.length) return;
+    if (withSheet && !sheetFile) return;
     setBusy('release');
-    const d = await post({ action: 'release', runIds: ids });
+    let sheet: { pdfUrl: string; title: string } | undefined;
+    if (withSheet && sheetFile) {
+      try {
+        const t = await fetch(`/api/admin/assignments/upload-token?filename=${encodeURIComponent(sheetFile.name)}`);
+        if (!t.ok) throw new Error('could not start the upload');
+        const { token, pathname } = await t.json();
+        // Same client-token → Blob path as the Send-work card (the 4.5MB
+        // platform body cap never applies).
+        const { put } = await import('@vercel/blob');
+        const blob = await put(pathname, sheetFile, {
+          access: 'public', token, contentType: 'application/pdf',
+          multipart: sheetFile.size > 5 * 1024 * 1024,
+        });
+        sheet = { pdfUrl: blob.url, title: sheetTitle.trim() || sheetFile.name.replace(/\.pdf$/i, '') };
+      } catch (e) {
+        setBusy(''); setToast(`Sheet upload failed — nothing released. ${(e as Error).message}`);
+        return;
+      }
+    }
+    const d = await post({ action: 'release', runIds: ids, ...(sheet ? { sheet } : {}) });
     setBusy('');
     if (d.error) { setToast(d.error); return; }
     const manual = (d.results || []).filter((r: { released: boolean; via: string }) => r.released && r.via === 'none').length;
@@ -155,6 +181,7 @@ export default function TriagePage() {
       (manual ? ` — ${manual} need${manual === 1 ? 's' : ''} a manual hand-back` : '')
     );
     setSelected(new Set());
+    setSheetFile(null); setSheetTitle('');
     load(false);
   }
 
@@ -422,12 +449,50 @@ export default function TriagePage() {
 
       {selected.size > 0 && (
         <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, padding: 12, background: '#fff', borderTop: `1px solid ${C.border}`, boxShadow: '0 -2px 12px rgba(0,0,0,.06)' }}>
-          <div style={{ maxWidth: 760, margin: '0 auto', display: 'flex', gap: 10, alignItems: 'center' }}>
-            <button onClick={() => setSelected(new Set())} style={btn('#fff', '#374151', C.border)}>Clear</button>
-            <button onClick={release} disabled={busy === 'release'}
-              style={{ ...btn('#111827', '#fff'), flex: 1, padding: '12px 16px', fontSize: 16 }}>
-              {busy === 'release' ? 'Releasing…' : `Release ${selected.size} script${selected.size === 1 ? '' : 's'}`}
-            </button>
+          <div style={{ maxWidth: 760, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {/* 📘 Optional sheet — one selected script only. Attaching it makes
+                the release ONE delivery: marks + the practice that goes with
+                them (SPEC-TEACHING-CYCLE step 7). Releasing the paper alone
+                stays exactly as it was. */}
+            {selected.size === 1 && (
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                <label style={{ ...btn('#fff', '#374151', C.border), cursor: 'pointer', margin: 0 }}>
+                  {sheetFile ? '📘 Change sheet' : '📘 Attach a sheet (PDF)'}
+                  <input
+                    type="file" accept="application/pdf,.pdf" style={{ display: 'none' }}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0] || null;
+                      if (f && f.type && f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)) { setToast('The sheet must be a PDF.'); return; }
+                      setSheetFile(f);
+                      if (f && !sheetTitle) setSheetTitle(f.name.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ').trim());
+                    }}
+                  />
+                </label>
+                {sheetFile && (
+                  <>
+                    <input
+                      value={sheetTitle} onChange={(e) => setSheetTitle(e.target.value)}
+                      placeholder="Sheet title the student sees"
+                      style={{ flex: 1, minWidth: 180, padding: '8px 10px', borderRadius: 8, border: `1px solid ${C.border}`, fontSize: 14 }}
+                    />
+                    <button onClick={() => { setSheetFile(null); setSheetTitle(''); }} style={btn('#fff', '#b91c1c', C.border)}>✕</button>
+                  </>
+                )}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <button onClick={() => setSelected(new Set())} style={btn('#fff', '#374151', C.border)}>Clear</button>
+              <button onClick={() => release(false)} disabled={!!busy}
+                style={{ ...btn(sheetFile ? '#fff' : '#111827', sheetFile ? '#374151' : '#fff', sheetFile ? C.border : undefined), flex: 1, padding: '12px 16px', fontSize: 16 }}>
+                {busy === 'release' && !sheetFile ? 'Releasing…' : `Release ${selected.size} paper${selected.size === 1 ? '' : 's'} only`}
+              </button>
+              {sheetFile && (
+                <button onClick={() => release(true)} disabled={!!busy}
+                  style={{ ...btn('#111827', '#fff'), flex: 1.4, padding: '12px 16px', fontSize: 16 }}>
+                  {busy === 'release' ? 'Releasing…' : '📘 Release paper + sheet'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
