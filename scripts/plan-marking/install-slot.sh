@@ -14,8 +14,8 @@
 # _queueBusy, so extra slots do not multiply the annotation load either.
 #
 # What a slot needs is its own STATE DIR: pid file, claim file, work dir, log.
-# Config (env, WORKER_PROMPT.md) is symlinked back to slot 1, so there is
-# exactly one copy of the runbook to keep current.
+# Config (env) is symlinked back to slot 1; the runbook is fetched from the
+# server on every run, so there is no local copy to keep current at all.
 #
 #   bash scripts/plan-marking/install-slot.sh 2
 #   launchctl list | grep planmarking          # both slots
@@ -51,12 +51,13 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 mkdir -p "$STATE"
 # Shared config, one copy: a runbook fix lands in every slot at once.
 ln -sfn "$BASE/env" "$STATE/env"
-ln -sfn "$BASE/WORKER_PROMPT.md" "$STATE/WORKER_PROMPT.md"
+# No prompt symlink: every slot pulls the runbook from the server each run.
 [ -r "$BASE/oauth_token" ] && ln -sfn "$BASE/oauth_token" "$STATE/oauth_token"
-# The wrapper itself is copied, not symlinked — same reason install.sh copies it:
-# the repo checkout flips branches under peer sessions and a launchd job must not
-# break when it does.
-cp "$HERE/run.sh" "$STATE/run.sh"
+# The wrapper is copied from slot 1 (which install.sh/bootstrap-marker.sh fetched
+# from the server), not symlinked: a launchd job must not break when the file it
+# points at is being replaced. It is copied rather than taken from the repo so
+# there is only ever one version of the worker on a machine.
+cp "$BASE/run.sh" "$STATE/run.sh"
 chmod +x "$STATE/run.sh"
 
 # Stagger: slot N starts (N-1) × 150s into the 5-minute tick, so slots reach for
@@ -110,7 +111,7 @@ launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
 launchctl bootstrap "gui/$(id -u)" "$PLIST"
 
 echo "✅ slot $SLOT installed"
-echo "   state:  $STATE  (env + prompt symlinked to slot 1)"
+echo "   state:  $STATE  (env symlinked to slot 1; runbook fetched each run)"
 echo "   starts: ${DELAY}s into each 5-minute tick"
 echo "   log:    $STATE/plan-marking.log"
 echo

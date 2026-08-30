@@ -18,8 +18,15 @@ STATE="$HOME/.adrianmath_marker"
 AGENT="$HOME/Library/LaunchAgents/com.adrianmath.planmarking.plist"
 
 mkdir -p "$STATE"
-cp "$HERE/run.sh" "$STATE/run.sh" && chmod 755 "$STATE/run.sh"
-cp "$HERE/WORKER_PROMPT.md" "$STATE/WORKER_PROMPT.md"
+# The wrapper and the runbook both come from the SERVER now (31 Aug 2026)
+# — see the fetch below, after the env file gives us a token. Nothing about the
+# worker is shipped with this repo any more, so a machine cannot run yesterday's
+# code just because nobody re-ran the installer on it.
+# The RUNBOOK is no longer copied (31 Aug 2026): the wrapper pulls it from the
+# deployed bot on every run, so one edit reaches every machine on its next tick
+# instead of leaving other Macs marking to yesterday's rules. Canonical copy:
+# the bot repo's worker/plan-marking/WORKER_PROMPT.md, served as external-runbook.
+# For a machine WITHOUT this repo, use bootstrap-marker.sh instead.
 
 # --- env file (MARKER_API_BASE + MARKER_API_TOKEN) --------------------------
 # The token is the admin password from the repo's .env.local, parsed with
@@ -42,6 +49,18 @@ MARKER_API_BASE=https://www.adrianmathtuition.com
 MARKER_API_TOKEN=$TOKEN
 EOF
 chmod 600 "$STATE/env"
+
+# --- wrapper, from the deployed tree ---------------------------------------
+curl -s -m 30 -X POST "https://www.adrianmathtuition.com/api/admin/mark-paper" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"phase":"external-runner"}' | python3 -c '
+import json, sys
+d = json.load(sys.stdin)
+t = d.get("text") or ""
+assert "external-marking-result" in t and len(t) > 1000, "that is not the marking wrapper"
+open(sys.argv[1], "w").write(t)
+' "$STATE/run.sh"
+chmod 755 "$STATE/run.sh"
 
 # --- LaunchAgent ------------------------------------------------------------
 mkdir -p "$HOME/Library/LaunchAgents"
