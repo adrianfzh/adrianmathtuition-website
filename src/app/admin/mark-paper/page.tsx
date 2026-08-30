@@ -130,7 +130,7 @@ async function uploadPaperPdf(file: File): Promise<string | null> {
 }
 
 type MarkPart = { label?: string; awarded?: number; max?: number; error_summary?: string | null };
-type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; checked_at?: string | null };
+type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; checked_at?: string | null; released_at?: string | null; archived_at?: string | null; marked_by?: string | null; mark_now?: string | null };
 type Result = {
   question_number: string; working_index: number; match_confidence: string; photo_index?: number | null;
   marking?: { total_awarded?: number; total_max?: number; overall_comment?: string; parts?: MarkPart[] };
@@ -1370,11 +1370,17 @@ export default function MarkPaperPage() {
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [liveRows]);
 
-  // Seen/unseen split for the history list (Adrian, 20 Aug 2026). checked_at is
-  // stamped by sending, the send row's ⬇ download, saving an annotated copy, or
-  // the manual ✓ below — NOT by peeking at a PDF from a history row.
-  const unseenRuns = recentRuns.filter((r) => !r.checked_at);
-  const seenRuns = recentRuns.filter((r) => r.checked_at);
+  // OUTSTANDING vs settled (31 Aug 2026). This split used to key on checked_at,
+  // which is only stamped by emailing, downloading from the send row, or saving
+  // an annotated copy — none of which is how Adrian works, so the counter only
+  // ever climbed ("25 not checked") and meant nothing. What he actually wants to
+  // see is the papers he has not FINISHED WITH: still marking, or marked but
+  // neither released to the student nor marked 👁 Seen (handed back in class).
+  // A paper released or archived is done; so is one he has explicitly ✓'d.
+  const isOutstanding = (r: Run) =>
+    !r.released_at && !r.archived_at && !r.checked_at;
+  const unseenRuns = recentRuns.filter(isOutstanding);
+  const seenRuns = recentRuns.filter((r) => !isOutstanding(r));
   // Same endpoint as the library's ✓, so /admin/papers and this list always agree.
   function toggleChecked(run: Run) {
     const next = !run.checked_at;
@@ -1410,14 +1416,14 @@ export default function MarkPaperPage() {
         <details ref={historyRef} style={card}>
           <summary style={{ fontWeight: 700, cursor: 'pointer' }}>
             🗂️ Recent marked papers ({recentRuns.length}{runsTotal > recentRuns.length ? ` of ${runsTotal}` : ''})
-            {unseenRuns.length > 0 && <span style={{ color: '#b45309', fontWeight: 600 }}> · 🆕 {unseenRuns.length} not checked</span>}
+            {unseenRuns.length > 0 && <span style={{ color: '#b45309', fontWeight: 600 }}> · 🆕 {unseenRuns.length} still to deal with</span>}
           </summary>
           <div style={{ marginTop: 8 }}>
             {[
-              { key: 'unseen', title: '🆕 Not checked yet', color: '#b45309', rows: unseenRuns,
-                hint: 'Papers you haven’t been through yet. Sending, downloading from the send row, saving an annotated copy, or ticking ✓ moves one to Checked.' },
-              { key: 'seen', title: '✓ Checked', color: '#047857', rows: seenRuns,
-                hint: 'Papers you’ve been through — sent, downloaded to hand out, annotated, or ticked ✓.' },
+              { key: 'unseen', title: '🆕 Still to deal with', color: '#b45309', rows: unseenRuns,
+                hint: 'Marked but not yet released to the student, not marked 👁 Seen, and not ticked ✓ — the papers still waiting on you.' },
+              { key: 'seen', title: '✓ Done', color: '#047857', rows: seenRuns,
+                hint: 'Released to the student, marked 👁 Seen (handed back in class), or ticked ✓.' },
             ].filter((s) => s.rows.length > 0).map((section) => (
             <div key={section.key}>
               <div title={section.hint} style={{ fontWeight: 700, fontSize: 11, color: section.color, textTransform: 'uppercase', letterSpacing: 0.6, padding: '10px 0 2px' }}>
@@ -1489,6 +1495,9 @@ export default function MarkPaperPage() {
                     </button>
                   )}
                 </span>
+                {run.total_max != null && !run.released_at && !run.archived_at && !run.checked_at && (
+                  <span style={{ fontSize: 11, color: '#b45309' }} title="Not released to the student and not marked Seen">not released</span>
+                )}
                 {run.total_max == null ? (
                   // Saved uploads, never (successfully) marked — the row a 502 leaves
                   // behind. ▶ Mark (in the actions cluster) marks it from the stored
@@ -1498,14 +1507,28 @@ export default function MarkPaperPage() {
                   // double-cost marking, so canMark waits out the window.
                   <span style={{ color: run.queue_failed ? '#b91c1c' : run.queued_at ? '#4c1d95' : '#b45309', fontSize: 12, fontWeight: 600 }}>
                     {run.queue_failed ? '⚠ queue failed twice'
-                      : run.queued_at ? '🌙 queued (~50% batch discount) — marks in ~10–60 min, then Telegram + Dropbox'
+                      : run.queued_at && run.total_max == null ? '🌙 queued — your Mac marks it free if it is awake, else ~50% batch API. 10–60 min, then Telegram + Dropbox'
                       : canMark ? '⏳ uploaded — not marked yet'
                       : '⏳ still marking on the server — this row updates itself when it lands'}
                   </span>
                 ) : (
                   <span style={{ display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
                     <span style={{ color: '#374151' }}>{run.total_awarded ?? 0}/{run.total_max ?? 0}</span>
-                    <span style={{ color: '#9ca3af' }}>${(run.cost_usd ?? 0).toFixed(3)}</span>
+                    {/* WHICH path actually marked it (31 Aug 2026). The row used to
+                        show a cost with no way to tell a free plan-billed marking
+                        from a paid one — 💻 $0.20 and ☁️ $1.73 papers looked
+                        identical, so there was no way to see the Mac earning its
+                        keep, or sleeping through a night of marking. */}
+                    <span
+                      style={{ color: run.marked_by ? '#047857' : '#9ca3af' }}
+                      title={run.marked_by
+                        ? 'Marked free on your Mac (plan usage) — the cost shown is only the bot-side extras'
+                        : run.mark_now ? 'Marked immediately at full API price (⚡ Mark now)'
+                        : run.queued_at ? 'Marked through the batch API (~50% discount)'
+                        : 'Marked live through the API (full price)'}
+                    >
+                      {run.marked_by ? '💻' : run.queued_at ? '☁️' : '⚡'} ${(run.cost_usd ?? 0).toFixed(3)}
+                    </span>
                   </span>
                 )}
                 <span style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end', marginLeft: 'auto' }}>
