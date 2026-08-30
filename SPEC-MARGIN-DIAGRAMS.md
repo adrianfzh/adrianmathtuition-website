@@ -60,6 +60,36 @@
 >   Renderer + tests kept dormant (nothing calls them); anchor emission /
 >   photo-overlay compositing is **out of the accuracy-bundle scope**, and
 >   `anchor` stays out of the marking prompt.
+> - **VARIANT B — the lifted pole — BUILT 2026-08-31** (bot `32ef8df`; Adrian:
+>   "go for B, watch out for marking"). Answers the shelving cause head-on: if
+>   the printed plan reading as *lines* is what defeats a lone vertical, give
+>   the overlay a **ground**. Two new optional anchor fields:
+>   `ground?: [[x,y], …]` — the printed plan's outline, washed at 7% so the
+>   region reads as a **surface**; and `across?: [x,y]` — a second printed
+>   ground direction. At the pole's foot B draws a **corner tile** spanned by
+>   two of the plan's own directions (back along the printed segment, and
+>   across it), leaning **into** the plan by a point-in-polygon test.
+>   Deliberate calls, each one a render that failed first:
+>   · the wash is **neutral slate, not the pen colour** — washing it red tinted
+>     the sail's own backdrop and cost the triangle its contrast (grey = the
+>     page's figure, red = Mr Fong wrote this);
+>   · the tile is a **corner** tile, not a centred one — the foot is normally a
+>     corner of the plan, and a patch centred there is always half off the
+>     figure, which read as a sticker beside C rather than ground at C;
+>   · **no third fallback.** A synthesised recede direction (the segment swung
+>     ~50° into the page) was built and then cut: with no outline there is no
+>     "inside", so the tile hung off the figure into the margin — ink on a
+>     student's script bought with nothing. **Ground we cannot locate is ground
+>     we do not draw**, so an emitter that wants this overlay must supply
+>     `ground` (or `across`); with neither, B degrades to the flat v2 that was
+>     already judged insufficient, and the question belongs in the margin panel.
+>   Fail-closed additions: a ground outline that isn't a polygon, has more than
+>   `anchorGroundMaxPts` corners, or whose area exceeds `anchorGroundMaxAreaK ×
+>   base²` (a bad anchor that would tint half a marked script) all REFUSE.
+>   16 anchored tests (4 pre-existing unchanged), file 104/104 green.
+>   **Still dormant** — nothing calls it, `anchor` is still out of the marking
+>   prompt and the photo compositor, and it stays that way until Adrian
+>   eyeballs the render and says otherwise.
 > - Demo renders (Kayla EM P2 Q3 elevation with scene panel; Kassandra AM 2021
 >   P1 Q14 area) shown to Adrian 2026-08-29 from verified-solution numbers only.
 > - **Remaining DoD**: bot deploy (with the accuracy bundle; marking queue must
