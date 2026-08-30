@@ -61,6 +61,14 @@ itself every minute while open, and rows deep-link to the relevant screen
 `POST /api/job-log`). 3. If it has a schedule, add one line to `JOB_RHYTHMS` so
 missing it alarms. That's the whole contract — no registration anywhere else.
 
+**On-demand workers get NO rhythm.** `sheet-worker` (the 📘 self-study sheet
+queue, SPEC-TEACHING-CYCLE) polls every 15 min but only *works* when Adrian has
+queued a sheet, so a week with no sheets is normal, not a fault — giving it a
+`JOB_RHYTHMS` line would alarm on his silence. It still stamps `job_runs` on
+success, so the /admin/ops board shows when it last produced something. Same
+reasoning would apply to any future queue-driven worker: rhythms are for jobs
+that MUST run on a clock.
+
 ## Claude Code scheduled tasks — per-Mac registry
 
 Claude Code desktop scheduled tasks are **machine-local**: stored under
