@@ -60,7 +60,7 @@
 >   Renderer + tests kept dormant (nothing calls them); anchor emission /
 >   photo-overlay compositing is **out of the accuracy-bundle scope**, and
 >   `anchor` stays out of the marking prompt.
-> - **VARIANT B — the lifted pole — BUILT 2026-08-31** (bot `32ef8df`; Adrian:
+> - **VARIANT B — the lifted pole — BUILT 2026-08-31** (bot `4abda07`; Adrian:
 >   "go for B, watch out for marking"). Answers the shelving cause head-on: if
 >   the printed plan reading as *lines* is what defeats a lone vertical, give
 >   the overlay a **ground**. Two new optional anchor fields:
