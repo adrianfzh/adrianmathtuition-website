@@ -82,6 +82,15 @@ export default function QuestionBankPage() {
 
   const [papers, setPapers] = useState<PaperRow[]>([]);
   const [papersTotal, setPapersTotal] = useState(0);
+  // Tick several papers and print them in one go. Each paper still renders on
+  // its OWN request — one PDF per paper, never merged — because a Puppeteer
+  // render is ~20s against a 60s function limit, so a server-side batch would
+  // time out on the third paper. The client queue also gives honest progress.
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [batch, setBatch] = useState<{
+    running: boolean; done: number; total: number; current: string;
+    results: { label: string; url?: string; count?: number; marksTotal?: number; cached?: boolean; error?: string }[];
+  } | null>(null);
 
   const [openDetail, setOpenDetail] = useState<Detail | null>(null);
   // Which questions are showing their worked solution, keyed by id — the paper
@@ -180,6 +189,9 @@ export default function QuestionBankPage() {
       const d = await r.json();
       if (d.error) { setApiError(d.error); return; }
       setPapers(d.papers || []); setPapersTotal(d.total || 0);
+      // A new filter means a new list — a tick left over from the old one would
+      // silently print a paper that is no longer on screen.
+      setPicked(new Set()); setBatch(null);
     } catch (e) { setApiError((e as Error).message); }
     finally { setLoading(false); }
   }, [level, year, school]);
@@ -378,6 +390,48 @@ export default function QuestionBankPage() {
       flash(`Worksheet ready — ${d.count} questions (link copied)`);
     } catch (e) { flash((e as Error).message); }
     finally { setWsBusy(false); }
+  };
+
+  const paperKey = (p: PaperRow | PaperMeta) =>
+    `${p.school}|${p.year}|${p.level ?? ''}|${p.paper ?? ''}|${p.examType ?? ''}`;
+  const paperLabel = (p: PaperRow | PaperMeta) =>
+    [`${p.school} ${p.year}`, p.level, p.paper ? `P${String(p.paper).replace(/^P/i, '')}` : null, p.examType]
+      .filter(Boolean).join(' · ');
+  const togglePick = (p: PaperRow) => setPicked(cur => {
+    const next = new Set(cur); const k = paperKey(p);
+    if (next.has(k)) next.delete(k); else next.add(k);
+    return next;
+  });
+
+  /** Print every ticked paper, one request each, in order. A paper that fails
+   *  is recorded and the queue carries on — one bad paper must not cost the
+   *  other nine their renders. */
+  const runPaperBatch = async () => {
+    const rows = papers.filter(pp => picked.has(paperKey(pp)));
+    if (!rows.length || batch?.running) return;
+    setBatch({ running: true, done: 0, total: rows.length, current: '', results: [] });
+    const results: NonNullable<typeof batch>['results'] = [];
+    for (let i = 0; i < rows.length; i++) {
+      const pp = rows[i];
+      const label = paperLabel(pp);
+      setBatch(b => (b ? { ...b, done: i, current: label } : b));
+      try {
+        const r = await fetch('/api/admin/questions', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'paper-pdf', school: pp.school, year: pp.year,
+            level: pp.level || undefined, paper: pp.paper || undefined, examType: pp.examType || undefined,
+            workingSpace: pdfSpace, answerKey: pdfAnswerKey, originalNumbering: pdfOrigNum,
+            // No shared title — each paper keeps its own auto title.
+          }),
+        });
+        const d = await r.json();
+        if (d.error) results.push({ label, error: d.error });
+        else results.push({ label, url: d.url, count: d.count, marksTotal: d.marksTotal, cached: !!d.cached });
+      } catch (e) { results.push({ label, error: (e as Error).message }); }
+      setBatch(b => (b ? { ...b, results: [...results] } : b));
+    }
+    setBatch(b => (b ? { ...b, running: false, done: rows.length, current: '' } : b));
   };
 
   // Reconstructed-paper PDF — the open paper as a sit-able exam paper, with
@@ -950,11 +1004,83 @@ export default function QuestionBankPage() {
 
       {!paperView && tab === 'papers' && (
         <section>
-          <div style={{ color: C.muted, fontSize: 13, marginBottom: 8 }}>{papersTotal} papers reconstructed from the bank{papersTotal > 400 ? ' (showing 400 — filter to narrow)' : ''}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 }}>
+            <span style={{ color: C.muted, fontSize: 13 }}>{papersTotal} papers reconstructed from the bank{papersTotal > 400 ? ' (showing 400 — filter to narrow)' : ''}</span>
+            {papers.length > 0 && (
+              <button onClick={() => setPicked(cur => cur.size === papers.length ? new Set() : new Set(papers.map(paperKey)))}
+                style={{ marginLeft: 'auto', fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 10px', cursor: 'pointer' }}>
+                {picked.size === papers.length ? 'Select none' : `Select all ${papers.length}`}
+              </button>
+            )}
+          </div>
+
+          {/* Batch print bar — appears once anything is ticked. */}
+          {picked.size > 0 && (
+            <div style={{ background: C.card, border: `1px solid ${C.accent}`, borderRadius: 12, padding: '10px 12px', marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <strong style={{ fontSize: 14.5 }}>{picked.size} paper{picked.size === 1 ? '' : 's'} selected</strong>
+                <span style={{ color: C.muted, fontSize: 12.5 }}>one PDF each — they are not merged</span>
+                <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+                  <button onClick={() => setPicked(new Set())} disabled={batch?.running}
+                    style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '4px 10px', cursor: 'pointer' }}>Clear</button>
+                  <button onClick={runPaperBatch} disabled={!!batch?.running}
+                    style={{ fontSize: 13.5, fontWeight: 600, color: '#fff', background: C.navy, border: 'none', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', opacity: batch?.running ? 0.6 : 1 }}>
+                    {batch?.running ? `Building ${batch.done + 1}/${batch.total}…` : `🖨 Build ${picked.size} paper PDF${picked.size === 1 ? '' : 's'}`}
+                  </button>
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 14, marginTop: 8, fontSize: 12.5, color: '#374151', flexWrap: 'wrap' }}>
+                {([['working space', pdfSpace, setPdfSpace], ['answer key', pdfAnswerKey, setPdfAnswerKey],
+                   ['original numbering', pdfOrigNum, setPdfOrigNum]] as const).map(([lbl, val, set]) => (
+                  <label key={lbl} style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
+                    <input type="checkbox" checked={val} onChange={e => set(e.target.checked)} disabled={batch?.running} />{lbl}
+                  </label>
+                ))}
+              </div>
+              {batch?.running && (
+                <div style={{ marginTop: 8, fontSize: 12.5, color: C.muted }}>
+                  {batch.current} — a fresh render takes ~20s; one already built comes back instantly.
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Results — one row per paper, each its own PDF. */}
+          {batch && batch.results.length > 0 && (
+            <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: '10px 12px', marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
+                <strong style={{ fontSize: 14 }}>
+                  {batch.running ? `Built ${batch.results.length} of ${batch.total}` : `Done — ${batch.results.filter(r => r.url).length} of ${batch.total} built`}
+                </strong>
+                {!batch.running && batch.results.some(r => r.url) && (
+                  <button onClick={() => {
+                    navigator.clipboard?.writeText(batch.results.filter(r => r.url).map(r => `${r.label}\n${r.url}`).join('\n\n'))
+                      .then(() => flash('All links copied')).catch(() => flash('Copy failed'));
+                  }} style={{ marginLeft: 'auto', fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 10px', cursor: 'pointer' }}>🔗 Copy all links</button>
+                )}
+              </div>
+              {batch.results.map((r, i) => (
+                <div key={`${r.label}-${i}`} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, padding: '3px 0', flexWrap: 'wrap' }}>
+                  <span style={{ color: r.error ? '#b91c1c' : '#111' }}>{r.error ? '✗' : '✓'} {r.label}</span>
+                  {r.error
+                    ? <span style={{ color: '#b91c1c', fontSize: 12.5 }}>{r.error}</span>
+                    : <span style={{ color: C.muted, fontSize: 12.5 }}>{r.count} q · {r.marksTotal} marks{r.cached ? ' · instant (already built)' : ''}</span>}
+                  {r.url && (
+                    <a href={r.url} target="_blank" rel="noopener noreferrer"
+                      style={{ marginLeft: 'auto', fontSize: 12.5, fontWeight: 600, color: '#fff', background: '#15803d', borderRadius: 8, padding: '3px 10px', textDecoration: 'none' }}>Open PDF ↗</a>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
           {papers.map(pp => (
-            <button key={`${pp.school}|${pp.year}|${pp.level}|${pp.paper}|${pp.examType}`}
-              onClick={() => openPaper(pp)}
-              style={{ display: 'flex', gap: 10, alignItems: 'baseline', width: '100%', textAlign: 'left', background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: '10px 12px', marginBottom: 8, cursor: 'pointer' }}>
+            <div key={paperKey(pp)}
+              style={{ display: 'flex', gap: 10, alignItems: 'center', background: C.card, border: `1px solid ${picked.has(paperKey(pp)) ? C.accent : C.border}`, borderRadius: 12, padding: '10px 12px', marginBottom: 8 }}>
+            <input type="checkbox" checked={picked.has(paperKey(pp))} onChange={() => togglePick(pp)}
+              aria-label={`select ${paperLabel(pp)}`} style={{ width: 17, height: 17, cursor: 'pointer', flexShrink: 0 }} />
+            <button onClick={() => openPaper(pp)}
+              style={{ display: 'flex', gap: 10, alignItems: 'baseline', flex: 1, minWidth: 0, textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
               <strong style={{ fontSize: 14.5 }}>{pp.school}</strong>
               <span style={{ color: C.muted, fontSize: 13 }}>{pp.year} · {pp.level}{pp.paper ? ` · P${String(pp.paper).replace(/^P/i, '')}` : ''}{pp.examType ? ` · ${pp.examType}` : ''}</span>
               <span style={{ marginLeft: 'auto', textAlign: 'right' }}>
@@ -968,6 +1094,7 @@ export default function QuestionBankPage() {
                 )}
               </span>
             </button>
+            </div>
           ))}
         </section>
       )}
