@@ -65,6 +65,26 @@ export const AREA_MID_HI = 235;
 export const AREA_RATIO_MIN = 2.2;
 export const AREA_MIN_SHARE = 0.005;
 
+/**
+ * The one thing this guard CANNOT catch, recorded so it is not re-litigated.
+ *
+ * A fill only a little paler than the page is the SAME SIGNAL as haze in a
+ * histogram, and the page finder swallows it. Measured on NJC 2019 JC1 Q12: a
+ * pink tint at grey 237 against a page whose edge was found at 226, so the
+ * tint mapped to white. Colour does not help either — that pink is 0.07%
+ * saturated, less than a figure with no fill at all.
+ *
+ * Separating them needs SPATIAL reasoning (a fill is a contiguous region, haze
+ * is everywhere), not another histogram rule, and a rule strict enough to
+ * protect it would refuse every genuinely hazy scan — which is the main job.
+ *
+ * So: darker fills are safe (YIJC 2023 JC2 Q1's beige strips and HCI 2024 JC2
+ * Q8's grey region both came through the same pass intact), very pale ones are
+ * not, and `scripts/figure-maintenance/audit-clean.ts` is how you find the
+ * casualties — it put that figure in the worst six of 1,337. A row carrying
+ * `gen_meta.figure_no_clean` has been ruled out by hand and is skipped.
+ */
+
 export type Histogram = number[];
 
 export function greyHistogram(data: Uint8Array | Buffer): Histogram {

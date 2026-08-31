@@ -17,6 +17,7 @@ const C = {
 type Item = {
   path: string; qid: string; level: string | null; school: string | null;
   year: number | null; qnum: string | null; url: string; thumb: string; flagged: boolean;
+  currentUrl?: string | null; changed?: boolean;
 };
 
 const LEVELS = ['', 'AM', 'EM', 'EM_NA', 'S1', 'S2', 'S3_AM', 'S3_EM', 'S3_EM_NA', 'JC1', 'JC2'];
@@ -31,6 +32,8 @@ export default function FiguresPage() {
   const [pageSize] = useState(60);
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [flaggedCount, setFlaggedCount] = useState(0);
+  const [withheld, setWithheld] = useState(0);
+  const [busy, setBusy] = useState('');
   const [level, setLevel] = useState('');
   const [tab, setTab] = useState<'all' | 'flagged'>('all');
   const [loading, setLoading] = useState(false);
@@ -54,11 +57,30 @@ export default function FiguresPage() {
       if (tab === 'all') {
         setTotalQuestions(d.totalQuestions ?? 0);
         setFlaggedCount(d.flaggedCount ?? 0);
+        if (typeof d.withheld === 'number') setWithheld(d.withheld);
         localStorage.setItem(lsKey(level), String(page));
       }
     } finally { setLoading(false); }
   }, [tab, page, pageSize, level]);
   useEffect(() => { if (authed) load(); }, [authed, load]);
+
+  /** "Looks fine" — mark the flag fixed, which releases the question back into
+   *  every serving pool (kiosk, worksheets, portal practice, print). */
+  const resolve = async (it: Item) => {
+    if (busy) return;
+    setBusy(it.path);
+    setItems(cur => cur.filter(x => x.path !== it.path));
+    setFlaggedCount(c => Math.max(0, c - 1));
+    setWithheld(w => Math.max(0, w - 1));
+    try {
+      const r = await fetch('/api/admin/figures-bank', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: it.path, questionId: it.qid, resolve: true }),
+      });
+      if (!r.ok) throw new Error('failed');
+    } catch { load(); }
+    finally { setBusy(''); }
+  };
 
   const toggle = async (it: Item) => {
     const flag = !it.flagged;
@@ -137,7 +159,49 @@ export default function FiguresPage() {
         <div style={{ color: C.muted, fontSize: 14, padding: 20, textAlign: 'center' }}>No open flags — flag figures from the All tab.</div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8 }}>
+      {tab === 'flagged' && items.length > 0 && (
+        <div style={{ background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 10, padding: '8px 12px', marginBottom: 10, fontSize: 13.5 }}>
+          <strong>{withheld || flaggedCount} questions are withheld from students</strong> while these flags are open —
+          the serving gate excludes them from the kiosk, bot worksheets, portal practice and print.
+          Tapping <em>Looks fine</em> releases one immediately.
+        </div>
+      )}
+
+      {/* Flagged tab: the figure AS FLAGGED beside the figure AS IT IS NOW, so a
+          pass is one glance per row rather than a hunt through thumbnails. */}
+      {tab === 'flagged' && items.map((it) => (
+        <div key={it.path} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: 10, marginBottom: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, fontSize: 13 }}>
+            <strong>{it.school ?? '?'} {it.year ?? ''}</strong>
+            <span style={{ color: C.muted }}>{it.level ?? ''}{it.qnum ? ` · Q${it.qnum}` : ''}</span>
+            {it.changed && <span style={{ fontSize: 11.5, color: '#15803d', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 999, padding: '1px 8px' }}>cleaned since you flagged it</span>}
+            <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+              <a href={`/admin/questions?id=${it.qid}`} target="_blank" rel="noreferrer"
+                style={{ fontSize: 12.5, border: `1px solid ${C.border}`, borderRadius: 8, padding: '3px 10px', textDecoration: 'none', color: '#111' }}>Open question ↗</a>
+              <button onClick={() => resolve(it)} disabled={!!busy}
+                style={{ fontSize: 13, fontWeight: 600, color: '#fff', background: '#15803d', border: 'none', borderRadius: 8, padding: '4px 14px', cursor: 'pointer', opacity: busy === it.path ? 0.5 : 1 }}>
+                ✓ Looks fine — release
+              </button>
+            </span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: it.changed ? '1fr 1fr' : '1fr', gap: 10 }}>
+            {it.changed && (
+              <figure style={{ margin: 0 }}>
+                <figcaption style={{ fontSize: 11.5, color: C.muted, marginBottom: 3 }}>as you flagged it</figcaption>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={it.url} alt="" loading="lazy" style={{ width: '100%', maxHeight: 340, objectFit: 'contain', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 6 }} />
+              </figure>
+            )}
+            <figure style={{ margin: 0 }}>
+              <figcaption style={{ fontSize: 11.5, color: C.muted, marginBottom: 3 }}>{it.changed ? 'as it is now' : 'current figure'}</figcaption>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={it.currentUrl ?? it.url} alt="" loading="lazy" style={{ width: '100%', maxHeight: 340, objectFit: 'contain', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 6 }} />
+            </figure>
+          </div>
+        </div>
+      ))}
+
+      <div style={{ display: tab === 'flagged' ? 'none' : 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8 }}>
         {items.map((it) => (
           <div key={it.path}
             style={{ background: C.card, border: `2px solid ${it.flagged ? C.flag : C.border}`, borderRadius: 10, overflow: 'hidden', position: 'relative' }}>
