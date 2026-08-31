@@ -18,6 +18,9 @@ type Item = {
   path: string; qid: string; level: string | null; school: string | null;
   year: number | null; qnum: string | null; url: string; thumb: string; flagged: boolean;
   currentUrl?: string | null; changed?: boolean;
+  stem?: string; stemEmpty?: boolean; figureMissing?: boolean; watermark?: string | null;
+  checks?: { width: number; height: number; inkShare: number; textShare: number;
+             small: boolean; blank: boolean; textInCrop: boolean } | null;
 };
 
 const LEVELS = ['', 'AM', 'EM', 'EM_NA', 'S1', 'S2', 'S3_AM', 'S3_EM', 'S3_EM_NA', 'JC1', 'JC2'];
@@ -48,7 +51,7 @@ export default function FiguresPage() {
     setLoading(true);
     try {
       const qs = tab === 'flagged'
-        ? 'flagged=1'
+        ? `flagged=1&page=${page}&pageSize=20`
         : `page=${page}&pageSize=${pageSize}${level ? `&level=${level}` : ''}`;
       const r = await fetch(`/api/admin/figures-bank?${qs}`);
       const d = await r.json();
@@ -164,6 +167,11 @@ export default function FiguresPage() {
           <strong>{withheld || flaggedCount} questions are withheld from students</strong> while these flags are open —
           the serving gate excludes them from the kiosk, bot worksheets, portal practice and print.
           Tapping <em>Looks fine</em> releases one immediately.
+          <div style={{ marginTop: 4, color: C.muted }}>
+            The chips below each figure are measured, not guessed — but they only catch what is
+            measurable. A figure with no chips can still be the wrong figure; the question&apos;s own
+            words are printed beside it so you can tell.
+          </div>
         </div>
       )}
 
@@ -184,18 +192,52 @@ export default function FiguresPage() {
               </button>
             </span>
           </div>
+          {/* What a glance cannot carry: the question's own words (so a figure
+              that is really the NEXT question's text, or that repeats the stem,
+              is obvious), and measurements of the figure itself. */}
+          {(() => {
+            const c = it.checks;
+            const chips: [string, string][] = [];
+            if (it.figureMissing) chips.push(['🖼 no figure stored', C.flag]);
+            if (c?.textInCrop) chips.push([`📝 crop looks like it includes question text (${(c.textShare * 100).toFixed(0)}%)`, C.flag]);
+            if (c?.blank) chips.push(['◻ almost no ink', C.flag]);
+            if (c?.small) chips.push([`🔍 small — ${c.width}×${c.height}px`, '#b45309']);
+            if (it.watermark && it.watermark !== 'clean' && it.watermark !== 'no_image') chips.push([`⚠ image: ${it.watermark}`, '#b45309']);
+            if (it.stemEmpty) chips.push(['· stem is empty — the figure carries the whole question', C.muted]);
+            return (
+              <>
+                {chips.length > 0 && (
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
+                    {chips.map(([t, col]) => (
+                      <span key={t} style={{ fontSize: 11.5, color: col, border: `1px solid ${col}`, borderRadius: 999, padding: '1px 9px' }}>{t}</span>
+                    ))}
+                  </div>
+                )}
+                {chips.length === 0 && c && (
+                  <div style={{ fontSize: 11.5, color: '#15803d', marginBottom: 6 }}>
+                    ✓ nothing measurable wrong — {c.width}×{c.height}px, {(c.inkShare * 100).toFixed(1)}% ink
+                  </div>
+                )}
+                {it.stem && (
+                  <div style={{ fontSize: 12.5, color: '#374151', background: '#f8fafc', border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 9px', marginBottom: 8, maxHeight: 92, overflow: 'auto' }}>
+                    {it.stem}
+                  </div>
+                )}
+              </>
+            );
+          })()}
           <div style={{ display: 'grid', gridTemplateColumns: it.changed ? '1fr 1fr' : '1fr', gap: 10 }}>
             {it.changed && (
               <figure style={{ margin: 0 }}>
                 <figcaption style={{ fontSize: 11.5, color: C.muted, marginBottom: 3 }}>as you flagged it</figcaption>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={it.url} alt="" loading="lazy" style={{ width: '100%', maxHeight: 340, objectFit: 'contain', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 6 }} />
+                <a href={it.url} target="_blank" rel="noreferrer"><img src={it.url} alt="" loading="lazy" style={{ width: '100%', maxHeight: 340, objectFit: 'contain', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 6 }} /></a>
               </figure>
             )}
             <figure style={{ margin: 0 }}>
               <figcaption style={{ fontSize: 11.5, color: C.muted, marginBottom: 3 }}>{it.changed ? 'as it is now' : 'current figure'}</figcaption>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={it.currentUrl ?? it.url} alt="" loading="lazy" style={{ width: '100%', maxHeight: 340, objectFit: 'contain', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 6 }} />
+              <a href={it.currentUrl ?? it.url} target="_blank" rel="noreferrer" title="open full size"><img src={it.currentUrl ?? it.url} alt="" loading="lazy" style={{ width: '100%', maxHeight: 340, objectFit: 'contain', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 6 }} /></a>
             </figure>
           </div>
         </div>
