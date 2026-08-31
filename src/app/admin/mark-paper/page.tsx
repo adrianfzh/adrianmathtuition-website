@@ -1262,6 +1262,17 @@ export default function MarkPaperPage() {
     } finally { setRowBusy((p) => ({ ...p, [run.id]: undefined })); }
   }
 
+  // Page progress off the heartbeat, as a fraction. Only the Mac path reports
+  // it — the API marks a paper in one go and has nothing to count — so the bar
+  // exists exactly where there is a real number behind it, and nowhere else.
+  // A bar that guessed at "drafting" would be decoration pretending to know.
+  function pageProgress(run: Run): { done: number; total: number; pct: number } | null {
+    const done = Number(run.pages_done), total = Number(run.pages_total);
+    if (!Number.isFinite(done) || !Number.isFinite(total) || total <= 0) return null;
+    const clamped = Math.max(0, Math.min(done, total));
+    return { done: clamped, total, pct: Math.round((clamped / total) * 100) };
+  }
+
   // Is the Mac reading THIS paper right now? Same 10-minute lease the queue
   // policy uses (lib/queue-pick.js) — the Mac heartbeats while it works, so a
   // recent claim means a live session, and a released one means it let go.
@@ -1574,13 +1585,20 @@ export default function MarkPaperPage() {
                   // double-cost marking, so canMark waits out the window.
                   <span style={{ color: run.queue_failed ? '#b91c1c' : run.queued_at ? '#4c1d95' : '#b45309', fontSize: 12, fontWeight: 600 }}>
                     {run.queue_failed ? '⚠ queue failed twice'
-                      : run.queued_at && macMarking(run) ? (run.pages_done && run.pages_total
-                          ? `💻 marking on your Mac — page ${run.pages_done} of ${run.pages_total}`
+                      : run.queued_at && macMarking(run) ? (pageProgress(run)
+                          ? `💻 page ${pageProgress(run)!.done} of ${pageProgress(run)!.total} · ${pageProgress(run)!.pct}%`
                           : '💻 your Mac is marking it now — free, ~25 min for a full paper')
                       : run.queued_at && run.skip_external ? '☁️ queued for the batch API (~50% price) — 10–60 min, then Telegram + Dropbox'
                       : run.queued_at && run.total_max == null ? '🌙 queued — waiting for your Mac (free) while it is awake, else ~50% batch API. 10–60 min, then Telegram + Dropbox'
                       : canMark ? '⏳ uploaded — not marked yet'
                       : '⏳ still marking on the server — this row updates itself when it lands'}
+                    {macMarking(run) && pageProgress(run) && (
+                      <span aria-hidden style={{ display: 'inline-block', width: 72, height: 4, borderRadius: 2,
+                        background: '#e5e7eb', marginLeft: 8, verticalAlign: 'middle', overflow: 'hidden' }}>
+                        <span style={{ display: 'block', height: '100%', borderRadius: 2, background: '#047857',
+                          width: `${pageProgress(run)!.pct}%`, transition: 'width .4s ease' }} />
+                      </span>
+                    )}
                   </span>
                 ) : (
                   <span style={{ display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
