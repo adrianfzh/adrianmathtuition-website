@@ -49,6 +49,22 @@ api() {  # api '<json body>'
 command -v claude  >/dev/null || { echo "✗ the 'claude' CLI is not on PATH — install Claude Code first" >&2; exit 1; }
 command -v python3 >/dev/null || { echo "✗ python3 is required (the wrapper parses JSON with it)" >&2; exit 1; }
 
+# --- credentials: the half that actually fails ------------------------------
+# A machine that cannot authenticate to Claude fails on every single tick, and
+# fails BEFORE it claims anything — so no attempt counter moves and no job_runs
+# row is ever written. That is how the sheet worker stayed broken from install
+# day to its first real use. Check it here, before anything is written.
+if claude auth status 2>/dev/null | grep -q '"loggedIn": *true'; then
+  echo "✓ Claude credentials: keychain"
+elif [ -r "$HOME/.adrianmath_pipeline/oauth_token" ] || [ -r "$STATE/oauth_token" ]; then
+  echo "✓ Claude credentials: setup-token file"
+else
+  echo "✗ NO CLAUDE CREDENTIALS on this machine — every tick would fail." >&2
+  echo "  Run 'claude auth login' here first (a different account = its own quota)," >&2
+  echo "  or save a 'claude setup-token' to $STATE/oauth_token." >&2
+  exit 1
+fi
+
 # --- reachability, before writing anything ----------------------------------
 PEEK="$(api '{"phase":"external-peek"}')"
 if ! printf '%s' "$PEEK" | grep -q '"eligible"'; then

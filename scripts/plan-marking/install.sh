@@ -50,6 +50,26 @@ MARKER_API_TOKEN=$TOKEN
 EOF
 chmod 600 "$STATE/env"
 
+# --- credentials: the half that actually fails ------------------------------
+# The queue probe below proves the SERVER half, which is the half that cannot
+# fail quietly. The sheet worker shipped with only that check, passed it on
+# install day, and then died on every tick for want of a Claude login — 46 runs,
+# nothing in the logbook, a job sitting "queued" behind a UI that said it was on
+# its way. Never declare a worker installed without proving it can authenticate.
+CREDS=""
+if claude auth status 2>/dev/null | grep -q '"loggedIn": *true'; then CREDS="keychain"
+elif [ -r "$STATE/oauth_token" ]; then CREDS="$STATE/oauth_token"
+elif [ -r "$HOME/.adrianmath_pipeline/oauth_token" ]; then CREDS="pipeline token"
+fi
+if [ -z "$CREDS" ]; then
+  echo "✗ NO CLAUDE CREDENTIALS — this worker would fail on every tick."
+  echo "  Fix one of these, then re-run:"
+  echo "    claude auth login                       (this machine, interactive)"
+  echo "    echo '<setup-token>' > $STATE/oauth_token"
+  exit 1
+fi
+echo "✓ Claude credentials: $CREDS"
+
 # --- wrapper, from the deployed tree ---------------------------------------
 curl -s -m 30 -X POST "https://www.adrianmathtuition.com/api/admin/mark-paper" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
