@@ -144,8 +144,7 @@ Invoke `create-teaching-notes` and give it this brief:
 
   > **PRACTICE AGAIN — Learn from A Math 2021 Paper 1**
   >
-  > Sophie, this worksheet is built from the questions you lost marks on in
-  > this paper.
+  > This worksheet is built from the questions you lost marks on in this paper.
   >
   > Work through each **Example** first — the notes beside it show where the
   > marks went. Then do the **Practice** under it on your own, before you look
@@ -157,11 +156,14 @@ Invoke `create-teaching-notes` and give it this brief:
   Nothing about waves, triage, or why a skill was chosen — that is Adrian's
   reasoning, not the student's instructions.
 
-- **Use the student's first name once, quietly.** It opens the intro sentence
-  and appears nowhere else — not in the title, not in a header, not on every
-  page. The sheet should feel written for them without being labelled with
-  them. (This reverses the earlier "name never appears" rule: Adrian wants
-  these personal.) The FILE name keeps the student's name as before.
+- **The student's first name goes in the running header, small and quiet** —
+  right-aligned in the same block as ADRIAN'S MATH TUITION / <subject>, at the
+  header's font size or smaller, grey. Never in the title, never addressed in
+  the prose ("Sophie, this worksheet…" was tried and cut — the sheet should
+  feel made for them, not talk at them). If the header is crowded, a small grey
+  subtitle under the title is the alternative. One placement, not both.
+  (This reverses the earlier "name never appears" rule: Adrian wants these
+  personalised, just subtly.) The FILE name keeps the student's name as before.
 - **Every ② item appears as a single line, not a section.** "Q13(a)(ii): the 500
   was already per second — no ÷ 60." That is the whole treatment.
 - **The Optional section (③) is last, and says it is optional in its heading**,
