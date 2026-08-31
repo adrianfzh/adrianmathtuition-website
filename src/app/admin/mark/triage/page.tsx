@@ -31,13 +31,16 @@ type Run = {
   annotatedPhotos?: { photoIndex: number; url: string }[];
   pdfUrl: string | null;
   flagged: TriageQuestion[];
+  confident: TriageQuestion[];
   releasable: boolean;
   /** The bot's auto-release accuracy gates, re-derived server-side — why this
       hand-in did not go out by itself. Explanatory; manual release ignores it. */
   autoHold?: { hold: boolean; reasons: string[] };
 };
 
-type Stats = { scripts: number; questions: number; confident: number; flagged: number; readyToRelease: number };
+type Stats = { scripts: number; questions: number; confident: number; flagged: number; readyToRelease: number;
+  /** How often Adrian has had to correct the marker, split by who the error cost. */
+  corrections?: { against: number; forStudent: number; reviewed: number } };
 
 const C = {
   border: '#e5e7eb',
@@ -296,6 +299,17 @@ export default function TriagePage() {
           <Chip label={`${stats.confident} confident — skipped`} bg={C.okBg} color={C.ok} />
           <Chip label={`${stats.flagged} to check`} bg={C.flagBg} color={C.flag} />
           {stats.readyToRelease > 0 && <Chip label={`${stats.readyToRelease} ready to release`} bg="#eff6ff" color="#1d4ed8" />}
+          {/* The accuracy number, and deliberately only one of the two: marks
+              Adrian had to ADD are marks a student earned and did not get. Marks
+              he removed never reached her. Averaging them would hide the one
+              that decides whether this can ever release unsupervised. */}
+          {stats.corrections && stats.corrections.reviewed > 0 && (
+            <Chip
+              label={`${stats.corrections.against} withheld wrongly / ${stats.corrections.reviewed} checked`}
+              bg={stats.corrections.against > 0 ? '#fef2f2' : '#f0fdf4'}
+              color={stats.corrections.against > 0 ? '#b91c1c' : '#047857'}
+            />
+          )}
         </div>
       )}
 
@@ -531,6 +545,54 @@ export default function TriagePage() {
                 </div>
               );
             })
+          )}
+
+          {/* Everything the marker was SURE about. Folded away, because it is
+              usually right and this list is long — but reachable, because its
+              confidence does not track its correctness: two of twenty questions
+              on Kayla's paper were marked wrong against her and neither was
+              flagged, so Adrian found them by reading the PDF instead.
+              Correcting one here is also the only way the error rate gets a
+              real denominator. */}
+          {run.confident?.length > 0 && (
+            <details style={{ marginTop: 10, borderTop: `1px solid ${C.border}`, paddingTop: 8 }}>
+              <summary style={{ fontSize: 12.5, fontWeight: 600, color: C.muted, cursor: 'pointer' }}>
+                ✓ {run.confident.length} the marker was sure about — check any of them
+              </summary>
+              <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {run.confident.map(q => {
+                  const key = `${run.id}:${q.index}`;
+                  const full = q.awarded >= q.max;
+                  if (editing === key) {
+                    return (
+                      <div key={key} style={{ width: '100%', display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', padding: 8, background: C.flagBg, borderRadius: 8 }}>
+                        <strong style={{ fontSize: 14 }}>Q{q.questionNumber}</strong>
+                        <input type="number" inputMode="numeric" min={0} max={q.max} value={editAwarded}
+                          onChange={e => setEditAwarded(e.target.value)} autoFocus
+                          style={{ width: 68, padding: 8, fontSize: 16, border: `1px solid ${C.border}`, borderRadius: 6 }} />
+                        <span style={{ color: C.muted }}>/ {q.max}</span>
+                        <input value={editNote} onChange={e => setEditNote(e.target.value)} placeholder="Why (optional)"
+                          style={{ flex: 1, minWidth: 140, padding: 8, fontSize: 15, border: `1px solid ${C.border}`, borderRadius: 6 }} />
+                        <button onClick={() => override(run.id, q.index)} disabled={busy === key || editAwarded === ''} style={btn('#111827', '#fff')}>
+                          {busy === key ? '…' : 'Save'}
+                        </button>
+                        <button onClick={() => setEditing(null)} style={btn('#fff', '#374151', C.border)}>Cancel</button>
+                      </div>
+                    );
+                  }
+                  return (
+                    <button key={key} type="button"
+                      title={`Q${q.questionNumber} — ${q.awarded}/${q.max}. Click to correct.`}
+                      onClick={() => { setEditing(key); setEditAwarded(String(q.awarded)); setEditNote(''); }}
+                      style={{ fontSize: 12.5, padding: '3px 9px', borderRadius: 999, cursor: 'pointer',
+                        border: `1px solid ${full ? '#d1d5db' : '#fbbf24'}`,
+                        background: full ? '#fff' : '#fffbeb', color: full ? '#374151' : '#92400e' }}>
+                      Q{q.questionNumber} {q.awarded}/{q.max}
+                    </button>
+                  );
+                })}
+              </div>
+            </details>
           )}
         </section>
       ))}
