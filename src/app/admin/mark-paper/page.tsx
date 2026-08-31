@@ -1564,16 +1564,23 @@ export default function MarkPaperPage() {
                       fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
                       color: run.sheet_status === 'failed' ? '#b91c1c'
                         : run.sheet_status === 'done' ? '#047857'
-                        : run.sheet_status === 'claimed' ? '#1d4ed8' : '#6d28d9',
+                        : run.sheet_status === 'claimed' ? '#1d4ed8'
+                        : run.sheet_error ? '#b45309' : '#6d28d9',
                     }}
                     title={run.sheet_status === 'failed' ? `Sheet failed: ${run.sheet_error || 'no reason given'}`
                       : run.sheet_status === 'done' ? 'Written and filed to Dropbox → Self-Study'
                       : run.sheet_status === 'claimed' ? 'Your Mac is writing it now — up to ~70 min'
+                      : run.sheet_error ? `Handed back and waiting to retry — ${run.sheet_error}`
                       : 'Waiting for the Mac sheet worker (polls every 15 min)'}
                   >
+                    {/* A job that started, hit something and bounced back to the
+                        queue used to read exactly like one that had never begun
+                        — same word, and the reason it stopped was visible only
+                        in the database. It waits differently, so it says so. */}
                     {run.sheet_status === 'failed' ? '📘 sheet failed'
                       : run.sheet_status === 'done' ? '📘 sheet ready'
-                      : run.sheet_status === 'claimed' ? `📘 ${run.sheet_stage || 'writing'}…` : '📘 sheet queued'}
+                      : run.sheet_status === 'claimed' ? `📘 ${run.sheet_stage || 'writing'}…`
+                      : run.sheet_error ? '📘 bounced — retrying' : '📘 sheet queued'}
                   </span>
                 )}
                 {run.total_max == null ? (
