@@ -68,6 +68,48 @@ rounding, "show that" endpoints). The mix decides what the sheet teaches: a
 paper losing 29 marks to blanks and 12 to procedure is a first-moves sheet,
 not a rules sheet.
 
+### What earns practice — Adrian's triage (31 Aug 2026, binding)
+
+**Practice is for what the student cannot yet do, not for what they got wrong.**
+The first sheets got this backwards: Sophie's opened with *"Every skill on this
+sheet comes from a question where your method was already right — the marks went
+in the last line"*, and then set practice on all of it. A student whose method
+was already right does not need to do it again. They need to be shown the line
+and left alone.
+
+Sort every loss into one of three, and the sort decides the sheet:
+
+**① Teach and practise — conceptual and method gaps.** The student could not
+have got there. Full Example → Practice treatment, and these come FIRST.
+*Sophie's shoelace area: the wrong idea of how an area is obtained. Her weather
+balloon: a differentiation-technique gap.*
+
+**② Show, do not drill — arithmetic and careless slips.** The method was sound
+and one line went wrong. Point at the line, say what happened in a sentence, and
+move on. **No practice question.** A slip is not a skill.
+*Dividing (−56 + 14√2) by −14 and flipping only the first sign. Dividing by an
+extra 60 when the rate was already per second. −48 ÷ 8 written as +6.*
+
+**③ Optional practice — borderline, worth awareness.** Real but slight; the
+student should know it exists and may drill it if they have time. Put these in a
+clearly marked **Optional** section at the END, never mixed into the core.
+*The trigonometry slips on this paper.*
+
+Two consequences worth stating out loud:
+
+- **Target the missing SKILL, not the question's topic.** The weather balloon
+  sits in a rate-of-change question, but the marks went on differentiating
+  `2.4V⁻¹` — carrying a constant multiplier through a derivative. So the practice
+  is differentiation technique, not more rates. Ask "what could they not do?",
+  never "what chapter was this in?".
+- **Rank by damage, not by order in the paper.** A major conceptual error
+  outranks a topic that only produced slips: the area question comes before the
+  trigonometry, every time.
+
+**Their time is the constraint.** A sheet that drills everything they got wrong
+is a sheet that does not get done. Four to six skills in ① is a real sheet; the
+rest is ② in one line each, or ③ at the back, or shelved for the next wave.
+
 ## Step 3 — propose ONE wave, and STOP
 
 Cluster into 6–8 teachable skills for a single sheet. Everything else is
@@ -98,6 +140,22 @@ Invoke `create-teaching-notes` and give it this brief:
   orange right-aligned `[Ans: …]`.
 - **The student's name never appears inside the document.** Title it for the
   paper ("PRACTICE AGAIN — Learn from A Math 2021 Paper 1").
+- **Every ② item appears as a single line, not a section.** "Q13(a)(ii): the 500
+  was already per second — no ÷ 60." That is the whole treatment.
+- **The Optional section (③) is last, and says it is optional in its heading**,
+  so a student who is short of time knows exactly what they may skip.
+
+**Two things the first sheets got wrong, both non-negotiable:**
+
+- **Real equations, never plain text.** `dV/dr = 4πr²` typed as a run of
+  characters is not acceptable output; it must be OMML, one step per line with
+  the `=` signs aligned, exactly as STYLE.md §equation-steps requires. The
+  marking annotations already render proper fractions and derivatives — the
+  sheet cannot look worse than the paper it came from.
+- **A geometry or area question gets a diagram.** If the skill is about a shape,
+  a region, or coordinates, the student must be able to SEE it — draw it per
+  DIAGRAMS.md and view the PNG before embedding. Sophie's area example shipped
+  without one, which is the one example where seeing the figure IS the method.
 
 **Verify everything before rendering**: every worked and practice answer
 recomputed with sympy; any figure verified from its own coordinates (tangency,
@@ -127,4 +185,9 @@ marked paper + sheet together from triage** (the 📘 attach button there).
 - **Nothing bare.** Every practice item on the sheet has its teaching above it.
 - **Evidence or it doesn't ship.** Every skill on the sheet traces to a
   question they actually lost marks on; say which in your summary to Adrian.
+- **A slip is not a skill.** Nothing gets a practice question because the
+  student was careless — only because they could not do it. See the triage in
+  Step 2; getting this wrong wastes the scarcest thing they have.
+- **The sheet cannot look worse than the marked paper.** Typeset equations and
+  a diagram wherever the idea is visual.
 - If the paper has no lost marks, say so and stop — do not invent weaknesses.
