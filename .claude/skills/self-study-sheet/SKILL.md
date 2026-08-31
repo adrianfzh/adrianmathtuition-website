@@ -107,8 +107,31 @@ Two consequences worth stating out loud:
   trigonometry, every time.
 
 **Their time is the constraint.** A sheet that drills everything they got wrong
-is a sheet that does not get done. Four to six skills in ① is a real sheet; the
-rest is ② in one line each, or ③ at the back, or shelved for the next wave.
+is a sheet that does not get done. **Four skills in ① is the target** — Adrian
+cut a six-section sheet to four plus an optional one, losing a third of the
+paragraphs, and that is the shape he sends. The rest is ② in one line each,
+③ at the back, or shelved.
+
+Four more rules from that edit (full account in `teaching_style/FEEDBACK.md`):
+
+- **An optional TOPIC is optional whole.** Told the trigonometry could be
+  optional, the sheet made one trig ITEM optional and kept two trig sections as
+  core. He moved the identity to Optional and cut the other. If a topic is
+  optional, none of it is core.
+- **Merge skills that share one lesson.** Two of his four sections are joins —
+  rate-of-change with the constant-factor rule; squaring-two-cases with the
+  shoelace method. One worked example can carry two skills; not every diagnosed
+  skill earns its own Example/Practice pair.
+- **"Already taught last wave" is not a reason to shelve.** The sheet shelved
+  integration coefficients because the previous wave covered them; he restored
+  them as section 1. Still wrong means still taught.
+- **Individual practice ITEMS can be marked "(Optional)"**, not only whole
+  sections — his Practice 4 marks item 3 alone.
+
+Section headings are numbered, name the BEHAVIOUR, and may join two ideas with
+"+" or give a direct instruction: "3. A constant factor rides along — and read
+what the rate is measured per", "4. Squaring hides a second case + Make Sure You
+Perform Shoelace Method Correctly".
 
 ## Step 3 — propose ONE wave, and STOP
 
