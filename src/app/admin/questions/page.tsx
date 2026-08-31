@@ -89,7 +89,8 @@ export default function QuestionBankPage() {
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [batch, setBatch] = useState<{
     running: boolean; done: number; total: number; current: string;
-    results: { label: string; url?: string; count?: number; marksTotal?: number; cached?: boolean; error?: string }[];
+    kind: 'paper' | 'solutions';
+    results: { label: string; url?: string; count?: number; marksTotal?: number; cached?: boolean; missingSolutions?: number; error?: string }[];
   } | null>(null);
 
   const [openDetail, setOpenDetail] = useState<Detail | null>(null);
@@ -403,31 +404,54 @@ export default function QuestionBankPage() {
     return next;
   });
 
-  /** Print every ticked paper, one request each, in order. A paper that fails
-   *  is recorded and the queue carries on — one bad paper must not cost the
-   *  other nine their renders. */
-  const runPaperBatch = async () => {
+  /** Build every ticked paper, one request each, in order — as sit-able papers
+   *  or as worked solutions. A paper that fails is recorded and the queue
+   *  carries on: one bad paper must not cost the other nine their renders. */
+  const runBatch = async (kind: 'paper' | 'solutions') => {
     const rows = papers.filter(pp => picked.has(paperKey(pp)));
     if (!rows.length || batch?.running) return;
-    setBatch({ running: true, done: 0, total: rows.length, current: '', results: [] });
+    setBatch({ running: true, done: 0, total: rows.length, current: '', kind, results: [] });
     const results: NonNullable<typeof batch>['results'] = [];
     for (let i = 0; i < rows.length; i++) {
       const pp = rows[i];
       const label = paperLabel(pp);
       setBatch(b => (b ? { ...b, done: i, current: label } : b));
       try {
-        const r = await fetch('/api/admin/questions', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'paper-pdf', school: pp.school, year: pp.year,
-            level: pp.level || undefined, paper: pp.paper || undefined, examType: pp.examType || undefined,
-            workingSpace: pdfSpace, answerKey: pdfAnswerKey, originalNumbering: pdfOrigNum,
-            // No shared title — each paper keeps its own auto title.
-          }),
-        });
-        const d = await r.json();
-        if (d.error) results.push({ label, error: d.error });
-        else results.push({ label, url: d.url, count: d.count, marksTotal: d.marksTotal, cached: !!d.cached });
+        if (kind === 'paper') {
+          const r = await fetch('/api/admin/questions', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'paper-pdf', school: pp.school, year: pp.year,
+              level: pp.level || undefined, paper: pp.paper || undefined, examType: pp.examType || undefined,
+              workingSpace: pdfSpace, answerKey: pdfAnswerKey, originalNumbering: pdfOrigNum,
+              // No shared title — each paper keeps its own auto title.
+            }),
+          });
+          const d = await r.json();
+          if (d.error) results.push({ label, error: d.error });
+          else results.push({ label, url: d.url, count: d.count, marksTotal: d.marksTotal, cached: !!d.cached });
+        } else {
+          // Solutions are addressed by question id, so each paper needs its id
+          // list first. Fetched WITHOUT details=1 — the whole paper's parts and
+          // solutions would be megabytes the client never looks at.
+          const q = new URLSearchParams({ paperView: '1', school: pp.school, year: String(pp.year) });
+          if (pp.level) q.set('level', pp.level);
+          if (pp.paper) q.set('paper', pp.paper);
+          if (pp.examType) q.set('exam_type', pp.examType);
+          const lr = await fetch(`/api/admin/questions?${q}`);
+          const ld = await lr.json();
+          const ids: string[] = ((ld.questions || []) as { id: string }[]).map(x => x.id).filter(Boolean);
+          if (ld.error || !ids.length) { results.push({ label, error: ld.error || 'no questions in this paper' }); }
+          else {
+            const r = await fetch('/api/admin/questions', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'solutions-pdf', ids, title: label, includeQuestions: solWithQuestions }),
+            });
+            const d = await r.json();
+            if (d.error) results.push({ label, error: d.error });
+            else results.push({ label, url: d.url, count: d.count, missingSolutions: d.missingSolutions ?? 0 });
+          }
+        }
       } catch (e) { results.push({ label, error: (e as Error).message }); }
       setBatch(b => (b ? { ...b, results: [...results] } : b));
     }
@@ -1023,19 +1047,28 @@ export default function QuestionBankPage() {
                 <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
                   <button onClick={() => setPicked(new Set())} disabled={batch?.running}
                     style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '4px 10px', cursor: 'pointer' }}>Clear</button>
-                  <button onClick={runPaperBatch} disabled={!!batch?.running}
+                  <button onClick={() => runBatch('solutions')} disabled={!!batch?.running}
+                    style={{ fontSize: 13.5, fontWeight: 600, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', opacity: batch?.running ? 0.6 : 1 }}>
+                    {batch?.running && batch.kind === 'solutions' ? `Building ${batch.done + 1}/${batch.total}…` : `📄 ${picked.size} solutions PDF${picked.size === 1 ? '' : 's'}`}
+                  </button>
+                  <button onClick={() => runBatch('paper')} disabled={!!batch?.running}
                     style={{ fontSize: 13.5, fontWeight: 600, color: '#fff', background: C.navy, border: 'none', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', opacity: batch?.running ? 0.6 : 1 }}>
-                    {batch?.running ? `Building ${batch.done + 1}/${batch.total}…` : `🖨 Build ${picked.size} paper PDF${picked.size === 1 ? '' : 's'}`}
+                    {batch?.running && batch.kind === 'paper' ? `Building ${batch.done + 1}/${batch.total}…` : `🖨 ${picked.size} paper PDF${picked.size === 1 ? '' : 's'}`}
                   </button>
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: 14, marginTop: 8, fontSize: 12.5, color: '#374151', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 14, marginTop: 8, fontSize: 12.5, color: '#374151', flexWrap: 'wrap', alignItems: 'center' }}>
                 {([['working space', pdfSpace, setPdfSpace], ['answer key', pdfAnswerKey, setPdfAnswerKey],
                    ['original numbering', pdfOrigNum, setPdfOrigNum]] as const).map(([lbl, val, set]) => (
                   <label key={lbl} style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
                     <input type="checkbox" checked={val} onChange={e => set(e.target.checked)} disabled={batch?.running} />{lbl}
                   </label>
                 ))}
+                <span style={{ color: C.muted }}>· paper PDFs</span>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer', marginLeft: 6 }}>
+                  <input type="checkbox" checked={solWithQuestions} onChange={e => setSolWithQuestions(e.target.checked)} disabled={batch?.running} />with questions
+                </label>
+                <span style={{ color: C.muted }}>· solutions</span>
               </div>
               {batch?.running && (
                 <div style={{ marginTop: 8, fontSize: 12.5, color: C.muted }}>
@@ -1050,7 +1083,9 @@ export default function QuestionBankPage() {
             <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: '10px 12px', marginBottom: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
                 <strong style={{ fontSize: 14 }}>
-                  {batch.running ? `Built ${batch.results.length} of ${batch.total}` : `Done — ${batch.results.filter(r => r.url).length} of ${batch.total} built`}
+                  {batch.running
+                    ? `Built ${batch.results.length} of ${batch.total}`
+                    : `Done — ${batch.results.filter(r => r.url).length} of ${batch.total} ${batch.kind === 'paper' ? 'paper' : 'solutions'} PDFs`}
                 </strong>
                 {!batch.running && batch.results.some(r => r.url) && (
                   <button onClick={() => {
@@ -1064,7 +1099,11 @@ export default function QuestionBankPage() {
                   <span style={{ color: r.error ? '#b91c1c' : '#111' }}>{r.error ? '✗' : '✓'} {r.label}</span>
                   {r.error
                     ? <span style={{ color: '#b91c1c', fontSize: 12.5 }}>{r.error}</span>
-                    : <span style={{ color: C.muted, fontSize: 12.5 }}>{r.count} q · {r.marksTotal} marks{r.cached ? ' · instant (already built)' : ''}</span>}
+                    : <span style={{ color: C.muted, fontSize: 12.5 }}>
+                        {r.count} q{r.marksTotal != null ? ` · ${r.marksTotal} marks` : ''}
+                        {r.missingSolutions ? ` · ${r.missingSolutions} without a worked solution` : ''}
+                        {r.cached ? ' · instant (already built)' : ''}
+                      </span>}
                   {r.url && (
                     <a href={r.url} target="_blank" rel="noopener noreferrer"
                       style={{ marginLeft: 'auto', fontSize: 12.5, fontWeight: 600, color: '#fff', background: '#15803d', borderRadius: 8, padding: '3px 10px', textDecoration: 'none' }}>Open PDF ↗</a>
