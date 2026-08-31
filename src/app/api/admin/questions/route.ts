@@ -23,6 +23,9 @@ import { assessCoverage, answerKeyLines, type AnswerPart } from '@/lib/paper-rec
 import { KIOSK_LEVELS } from '@/lib/kiosk-session';
 import { put } from '@vercel/blob';
 import { PDFDocument } from 'pdf-lib';
+import JSZip from 'jszip';
+import { isOurBlobUrl } from '@/lib/blob-url';
+import { paperFileNames } from '@/lib/paper-filename';
 import Anthropic from '@anthropic-ai/sdk';
 import { cleanScan } from '@/lib/figure-clean';
 
@@ -738,6 +741,43 @@ export async function POST(req: NextRequest) {
   // Teacher document: stems in grey, solutions in ink, [Ans:] fallback where
   // no worked solution is on file. Admin-authed above; solutions never leave
   // admin auth except inside this generated PDF.
+  // ── one zip of several built PDFs ────────────────────────────────────────
+  // A browser will not reliably save six files from six clicks — it blocks the
+  // repeats or buries them in prompts. One archive is one save, and it is also
+  // the only place the files get PROPER NAMES: a Blob URL ends in a timestamp,
+  // so a paper downloaded straight from the link arrives as 1756...pdf.
+  if (body.action === 'zip-pdfs') {
+    const raw = (Array.isArray(body.files) ? body.files : []).slice(0, 40) as { url?: unknown; label?: unknown }[];
+    const files = raw
+      .filter(f => typeof f?.url === 'string' && isOurBlobUrl(f.url as string))
+      .map(f => ({ url: f.url as string, label: typeof f.label === 'string' ? f.label : 'paper' }));
+    if (!files.length) return NextResponse.json({ error: 'no files to zip' }, { status: 400 });
+
+    const names = paperFileNames(files.map(f => f.label));
+    const zip = new JSZip();
+    let added = 0;
+    const failed: string[] = [];
+    await Promise.all(files.map(async (f, i) => {
+      try {
+        const r = await fetch(f.url);
+        if (!r.ok) { failed.push(names[i]); return; }
+        zip.file(names[i], Buffer.from(await r.arrayBuffer()));
+        added++;
+      } catch { failed.push(names[i]); }
+    }));
+    if (!added) return NextResponse.json({ error: 'could not fetch any of the PDFs' }, { status: 502 });
+
+    // A PDF is already compressed; level 1 keeps the archive quick and the
+    // saving would be a rounding error at level 9.
+    const buf = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE', compressionOptions: { level: 1 } });
+    const zipName = typeof body.zipName === 'string' && body.zipName.trim()
+      ? paperFileNames([body.zipName.trim()], '.zip')[0] : 'papers.zip';
+    const blob = await put(`mark-paper/paper-zips/${Date.now()}-${zipName}`, buf, {
+      access: 'public', contentType: 'application/zip', token: process.env.BLOB_READ_WRITE_TOKEN,
+    });
+    return NextResponse.json({ url: blob.url, count: added, failed, name: zipName });
+  }
+
   if (body.action === 'solutions-pdf') {
     const ids = (Array.isArray(body.ids) ? body.ids : [])
       .filter((x): x is string => typeof x === 'string' && /^[0-9a-f-]{36}$/.test(x))

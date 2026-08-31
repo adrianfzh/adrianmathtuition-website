@@ -135,7 +135,8 @@ export default function QuestionBankPage() {
   const replaceRef = useRef<HTMLInputElement | null>(null);
   const [replaceTarget, setReplaceTarget] = useState<string | null>(null); // figure URL being replaced
   const [replBusy, setReplBusy] = useState(false);
-  const [figBusy, setFigBusy] = useState(''); // '' | 'clean:<url>' | 'undo' | 'redo' | 'flag:<url>'
+  const [figBusy, setFigBusy] = useState('');
+  const [zipBusy, setZipBusy] = useState(false); // '' | 'clean:<url>' | 'undo' | 'redo' | 'flag:<url>'
   const [cardCache, setCardCache] = useState<Record<string, Card>>({});
 
   const [students, setStudents] = useState<{ id: string; name: string; level: string }[]>([]);
@@ -407,6 +408,30 @@ export default function QuestionBankPage() {
     if (next.has(k)) next.delete(k); else next.add(k);
     return next;
   });
+
+  /** Save every built PDF as one archive. Six links is six saves a browser
+   *  will fight you over, and a Blob URL ends in a timestamp — so the archive
+   *  is also where the files finally get readable names. */
+  const saveAllBuilt = async () => {
+    const files = (batch?.results ?? []).filter(r => r.url).map(r => ({ url: r.url!, label: r.label }));
+    if (!files.length || zipBusy) return;
+    setZipBusy(true);
+    try {
+      const r = await fetch('/api/admin/questions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'zip-pdfs', files,
+          zipName: files.length === 1 ? files[0].label : `${files[0].label.split(' ')[0]} papers`,
+        }),
+      });
+      const d = await r.json();
+      if (d.error) { flash(d.error); return; }
+      if (d.failed?.length) flash(`${d.failed.length} could not be added`);
+      window.location.href = d.url;                 // the browser saves it
+      flash(`${d.count} PDFs in ${d.name}`);
+    } catch (e) { flash((e as Error).message); }
+    finally { setZipBusy(false); }
+  };
 
   /** Build every ticked paper, one request each, in order — as sit-able papers
    *  or as worked solutions. A paper that fails is recorded and the queue
@@ -1114,10 +1139,18 @@ export default function QuestionBankPage() {
                     : `Done — ${batch.results.filter(r => r.url).length} of ${batch.total} ${batch.kind === 'paper' ? 'paper' : 'solutions'} PDFs`}
                 </strong>
                 {!batch.running && batch.results.some(r => r.url) && (
-                  <button onClick={() => {
-                    navigator.clipboard?.writeText(batch.results.filter(r => r.url).map(r => `${r.label}\n${r.url}`).join('\n\n'))
-                      .then(() => flash('All links copied')).catch(() => flash('Copy failed'));
-                  }} style={{ marginLeft: 'auto', fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 10px', cursor: 'pointer' }}>🔗 Copy all links</button>
+                  <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+                    <button onClick={() => {
+                      navigator.clipboard?.writeText(batch.results.filter(r => r.url).map(r => `${r.label}\n${r.url}`).join('\n\n'))
+                        .then(() => flash('Links copied — paste them into a message or a doc')).catch(() => flash('Copy failed'));
+                    }} title="Copies the web links as text. Nothing is downloaded."
+                      style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 10px', cursor: 'pointer' }}>🔗 Copy links</button>
+                    <button onClick={saveAllBuilt} disabled={zipBusy}
+                      title="Downloads every PDF as one zip, each named after its paper"
+                      style={{ fontSize: 12.5, fontWeight: 600, color: '#fff', background: '#15803d', border: 'none', borderRadius: 8, padding: '3px 12px', cursor: 'pointer', opacity: zipBusy ? 0.6 : 1 }}>
+                      {zipBusy ? 'Zipping…' : '⬇ Save all'}
+                    </button>
+                  </span>
                 )}
               </div>
               {batch.results.map((r, i) => (
