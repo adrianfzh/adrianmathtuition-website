@@ -176,10 +176,22 @@ Invoke `create-teaching-notes` and give it this brief:
   the `=` signs aligned, exactly as STYLE.md §equation-steps requires. The
   marking annotations already render proper fractions and derivatives — the
   sheet cannot look worse than the paper it came from.
-- **A geometry or area question gets a diagram.** If the skill is about a shape,
-  a region, or coordinates, the student must be able to SEE it — draw it per
-  DIAGRAMS.md and view the PNG before embedding. Sophie's area example shipped
-  without one, which is the one example where seeing the figure IS the method.
+- **A geometry or area question gets a diagram — EXAMPLES AND PRACTICE ALIKE.**
+  If the skill is about a shape, a region, or coordinates, the student must be
+  able to SEE it: draw it per DIAGRAMS.md and view the PNG before embedding.
+
+  This is not decoration on an area question, it is the method. "The region
+  bounded by the curve, the normal and the coordinate axes" is a sentence a
+  student can read three times and still not know what to integrate; one
+  sketch with the region shaded settles it. Sophie's sheet proved the point
+  twice — the worked example shipped without a figure, and then Practice 1(a),
+  (b) and (c) were three area questions in a row with no picture between them,
+  carrying an italic note ("in (b) the region really does lie between two
+  graphs, so you subtract") that was doing a diagram's job in words.
+
+  The figure shows the bounding curves and lines, labelled, with the region
+  shaded. If the practice item asks the student to FIND the region, draw the
+  curves and leave the shading to them — but draw the axes and curves.
 
 **Verify everything before rendering**: every worked and practice answer
 recomputed with sympy; any figure verified from its own coordinates (tangency,
