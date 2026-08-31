@@ -200,6 +200,29 @@ recomputed with sympy; any figure verified from its own coordinates (tangency,
 parallels, claimed equal angles). Report the tally. An unverified sheet is not
 finished.
 
+### Re-authoring vs a new wave
+
+A sheet already in `/Self-Study/<Student>/` for this paper does NOT always mean
+the job is a duplicate. Two different requests look identical from here:
+
+- **A new wave** — the same paper, the skills the last sheet deliberately left
+  out. If nothing is left (every lost mark is already taught), say so and stop.
+  That guard is correct and stays.
+- **A re-author** — the SAME wave, rebuilt because the format changed: a
+  missing diagram, plain-text maths, a heading Adrian rewrote. The content
+  repeats on purpose. Filing it is the whole point, and REPLACING the previous
+  file is the right outcome.
+
+`focus` on the job tells you which. Anything naming a rebuild, a fix, or a
+format ("regenerate", "with diagrams", "same wave") is a re-author: keep the
+wave the earlier sheet used, fix what was asked, file over it, and say in your
+summary which file you replaced. With no `focus`, and every lost mark already
+taught, the duplicate guard applies as before.
+
+31 Aug 2026: a rebuild-with-diagrams job reached "verifying" and then refused to
+file, reporting that all 19 lost marks were already covered by the two sheets
+before it. They were — that was the point.
+
 ## Step 5 — file it for Adrian
 
 Render the DOCX **and** a preview PDF, then file both:
