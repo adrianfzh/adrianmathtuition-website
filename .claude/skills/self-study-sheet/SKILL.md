@@ -138,8 +138,30 @@ Invoke `create-teaching-notes` and give it this brief:
 - Colour: red = the single danger line and the offending term; blue =
   check/verify lines with ✓; grey = ← annotations and Common Error working;
   orange right-aligned `[Ans: …]`.
-- **The student's name never appears inside the document.** Title it for the
-  paper ("PRACTICE AGAIN — Learn from A Math 2021 Paper 1").
+- **The opening block is fixed. Use this, adapted only for the paper and the
+  name** (Adrian, 31 Aug 2026 — the first version explained the sheet's
+  *selection theory* to a 16-year-old, which is not their problem):
+
+  > **PRACTICE AGAIN — Learn from A Math 2021 Paper 1**
+  >
+  > Sophie, this worksheet is built from the questions you lost marks on in
+  > this paper.
+  >
+  > Work through each **Example** first — the notes beside it show where the
+  > marks went. Then do the **Practice** under it on your own, before you look
+  > at the answers.
+  >
+  > When you have finished, photograph your work and submit it for marking.
+
+  Three beats, in this order: what it is, how to use it, what to do when done.
+  Nothing about waves, triage, or why a skill was chosen — that is Adrian's
+  reasoning, not the student's instructions.
+
+- **Use the student's first name once, quietly.** It opens the intro sentence
+  and appears nowhere else — not in the title, not in a header, not on every
+  page. The sheet should feel written for them without being labelled with
+  them. (This reverses the earlier "name never appears" rule: Adrian wants
+  these personal.) The FILE name keeps the student's name as before.
 - **Every ② item appears as a single line, not a section.** "Q13(a)(ii): the 500
   was already per second — no ÷ 60." That is the whole treatment.
 - **The Optional section (③) is last, and says it is optional in its heading**,
