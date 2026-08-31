@@ -69,6 +69,26 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   still finishes first; `_queueBusy` is serial), delivery unchanged. It is per-run — the
   global `MARK_QUEUE_BATCH=0` kill switch is a different lever. Triage deliberately has
   no queue UI: it lists only runs WITH results, and queued runs have none yet.
+- **✕ Off the queue — cancelling a marking (2026-08-31).** The third answer after ⚡ and
+  ☁️: don't mark it at all. **The marking queue is not a table — it is the `queue` key
+  inside `paper_marking_runs.result_json`,** and every drain the bot has filters on
+  `result_json->queue is not null`: the Fly worker's candidate query, the Mac's claim and
+  peek, and `externalHeartbeat` / `externalMarkingResult`, which BOTH read a missing
+  `queue` as "claim lost" and refuse to write. **So deleting that one key cancels the
+  paper everywhere at once**, a Mac session mid-paper included: its next per-page
+  heartbeat is refused, the runbook's `claim lost` branch stops it without submitting,
+  and anything it finished anyway is dropped as superseded rather than delivered.
+  `PATCH /api/admin/papers {action:'cancel-marking', id}`, decided by
+  `lib/mark-queue-cancel.ts` (pure, tested: queued / running / marked / none, stale and
+  released claims count as merely queued). The update is guarded on `total_max is null`,
+  so a marking that LANDS between the read and the write is never stripped. The upload
+  and its photos survive — ▶ Mark re-queues it whenever.
+  Deliberately a **website-side Supabase write, not a new bot phase**: deploying the bot
+  kills whatever it is marking at that moment, a steep price for a cancel button. One
+  cosmetic consequence: the bot still answers a cancelled worker with
+  `claim lost (already marked)`, which reads oddly in the Mac log for a paper that was
+  never marked. Behaviour is right (it stops, it does not submit); the wording waits for
+  the next bot deploy that is needed anyway.
 - **🌙 No vision, no claim (2026-08-19):** before claiming (and paying for) a paper,
   the queue worker runs `visionPreflight()` (bot `ai/photo-overlay.js`) — a cheap
   Gemini text ping through the overlay's own model ladder. If it fails, the paper

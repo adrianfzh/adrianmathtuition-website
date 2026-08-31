@@ -6,6 +6,7 @@
 //   POST { action:'beat', id }   → { ok }         heartbeat while authoring
 //   POST { action:'done', id, result } → { ok }   file paths + wave; Telegrams Adrian
 //   POST { action:'fail', id, error }  → { ok }   back on the queue unless attempts are spent
+//   POST { action:'cancel', id } → { ok }         stop it — terminal, never re-picked
 //
 // Everything is admin-authed: the worker is a headless Claude session on
 // Adrian's Mac holding the same admin bearer (identical posture to the
@@ -15,7 +16,7 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
 import { logJobRun } from '@/lib/job-log';
-import { pickNextJob, sanitizeResult, completionMessage, MAX_ATTEMPTS, type SheetJob } from '@/lib/sheet-jobs';
+import { pickNextJob, sanitizeResult, completionMessage, cancelState, MAX_ATTEMPTS, type SheetJob } from '@/lib/sheet-jobs';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -52,8 +53,47 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ job: claimed });
   }
 
+  // ── Adrian: stop a sheet he didn't mean to start ──────────────────────────
+  // A mis-tap on 📘 (it sits next to 🗑 on a phone-sized row) used to need a
+  // hand-written DELETE: 'failed' requeues, and nothing else meant "I changed
+  // my mind". Terminal, and never re-picked — see cancelState + pickNextJob.
+  if (body.action === 'cancel') {
+    // Addressed by runId from the paper row (which knows the paper, not the job)
+    // or by job id from anywhere holding one. runId picks the OPEN job, so a
+    // paper with an old cancelled or done job still cancels the live one.
+    let job: SheetJob | null = null;
+    if (body.id) {
+      ({ data: job } = await sb.from('sheet_jobs').select('*').eq('id', body.id).maybeSingle<SheetJob>());
+    } else if (body.runId) {
+      ({ data: job } = await sb.from('sheet_jobs').select('*')
+        .eq('run_id', body.runId).in('status', ['queued', 'claimed'])
+        .order('created_at', { ascending: false }).limit(1).maybeSingle<SheetJob>());
+    } else {
+      return NextResponse.json({ error: 'id or runId required' }, { status: 400 });
+    }
+    const state = cancelState(job);
+    if (!state.can) return NextResponse.json({ error: state.reason }, { status: 409 });
+    // Guarded on the status we read: a worker that claimed it between the read
+    // and the write keeps its claim, and Adrian is told to try again rather
+    // than being shown a cancel that didn't happen.
+    const { data: done, error } = await sb.from('sheet_jobs')
+      .update({ status: 'cancelled', claimed_by: null, heartbeat_at: null, completed_at: new Date().toISOString() })
+      .eq('id', job!.id).eq('status', job!.status)
+      .select('id').maybeSingle();
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!done) return NextResponse.json({ error: 'that job changed while you tapped — refresh and look again' }, { status: 409 });
+    return NextResponse.json({ ok: true, cancelled: true, wasRunning: state.running });
+  }
+
   if (body.action === 'beat') {
     if (!body.id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+    // The heartbeat is where a running worker learns it has been cancelled —
+    // the same shape as the marking runbook's "claim lost", and the reason
+    // cancel can reach a session already writing a sheet.
+    const { data: cur } = await sb.from('sheet_jobs').select('status').eq('id', body.id).maybeSingle<{ status: string }>();
+    if (cur?.status === 'cancelled') {
+      return NextResponse.json({ ok: false, cancelled: true, stop: true, error: 'cancelled — stop now' }, { status: 409 });
+    }
     // An optional stage label rides the heartbeat (31 Aug 2026). A sheet takes
     // ~15 minutes across four distinct phases and "claimed" said nothing about
     // which — one diagnosing looked exactly like one about to file. Trimmed and
@@ -70,10 +110,15 @@ export async function POST(req: NextRequest) {
     if (!body.id) return NextResponse.json({ error: 'id required' }, { status: 400 });
     const result = sanitizeResult(body.result);
     if (!result) return NextResponse.json({ error: 'result.docx_path is required' }, { status: 400 });
+    // A cancelled job stays cancelled. The worker may have filed a DOCX before
+    // it noticed — that file is left in Dropbox rather than deleted, but the row
+    // does not flip to done and Adrian is not Telegrammed about a sheet he
+    // stopped. The .neq below is what enforces it: no matching row, no update.
     const { data: job, error } = await sb.from('sheet_jobs')
       .update({ status: 'done', result, completed_at: new Date().toISOString(), error: null })
-      .eq('id', body.id).select('*').single<SheetJob>();
+      .eq('id', body.id).neq('status', 'cancelled').select('*').maybeSingle<SheetJob>();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!job) return NextResponse.json({ ok: false, cancelled: true, error: 'cancelled — this sheet was stopped' }, { status: 409 });
     // Best-effort: a Telegram hiccup must not undo a finished sheet.
     sendTelegram(completionMessage(job, result)).catch(() => {});
     logJobRun('sheet-worker', true, `${job.student_name || job.airtable_student_id}: sheet filed`).catch(() => {});
@@ -84,6 +129,10 @@ export async function POST(req: NextRequest) {
     if (!body.id) return NextResponse.json({ error: 'id required' }, { status: 400 });
     const msg = String(body.error || 'unknown').slice(0, 500);
     const { data: job } = await sb.from('sheet_jobs').select('*').eq('id', body.id).single<SheetJob>();
+    // A worker reporting failure on a job Adrian cancelled must not put it back
+    // on the queue — 'failed' requeues, which is exactly the trap that made a
+    // hand-written DELETE the only way to stop one.
+    if (job?.status === 'cancelled') return NextResponse.json({ ok: true, cancelled: true, requeued: false });
     const spent = (job?.attempts ?? 0) >= MAX_ATTEMPTS;
     await sb.from('sheet_jobs')
       .update({ status: spent ? 'failed' : 'queued', error: msg, claimed_by: null, claimed_at: null, heartbeat_at: null })

@@ -8,7 +8,7 @@
 //
 // Everything here is pure (no I/O) and unit-tested — the route only orchestrates.
 
-export type SheetJobStatus = 'queued' | 'claimed' | 'done' | 'failed';
+export type SheetJobStatus = 'queued' | 'claimed' | 'done' | 'failed' | 'cancelled';
 
 export type SheetJob = {
   id: string;
@@ -46,8 +46,35 @@ export function claimExpired(job: Pick<SheetJob, 'status' | 'heartbeat_at' | 'cl
   return !Number.isFinite(t) || now - t > LEASE_MS;
 }
 
+/**
+ * What cancelling this job would mean — or why it can't be cancelled.
+ *
+ * Adrian mis-tapped 📘 next to 🗑 on a phone-sized row and a duplicate sheet
+ * started building for a paper that already had one (31 Aug 2026). Undoing that
+ * needed a hand-written DELETE against the table, because 'failed' requeues and
+ * there was no other way to say "I changed my mind".
+ *
+ * `running` is the honest half: a claimed job has a headless session mid-way
+ * through authoring, and nothing here can reach into it. Cancelling stops it
+ * being retried, refuses its completion, and tells it to stop at its next
+ * heartbeat — which is within a step, not instantly.
+ */
+export function cancelState(
+  job: Pick<SheetJob, 'status'> | null | undefined,
+): { can: boolean; running: boolean; reason?: string } {
+  if (!job) return { can: false, running: false, reason: 'no sheet job for this paper' };
+  if (job.status === 'queued') return { can: true, running: false };
+  if (job.status === 'claimed') return { can: true, running: true };
+  if (job.status === 'cancelled') return { can: false, running: false, reason: 'already cancelled' };
+  if (job.status === 'done') return { can: false, running: false, reason: 'that sheet is already written' };
+  return { can: false, running: false, reason: 'that job already stopped' };
+}
+
 /** The next job a worker should take: queued first (oldest), then abandoned claims. */
 export function pickNextJob(jobs: SheetJob[], now = Date.now()): SheetJob | null {
+  // 'cancelled' is terminal: it is neither queued nor a reclaimable lease, so it
+  // falls out of both branches below. Asserted in the tests so a future edit to
+  // either filter can't quietly resurrect a job Adrian stopped.
   const live = jobs.filter(j => j.attempts < MAX_ATTEMPTS);
   const queued = live
     .filter(j => j.status === 'queued')

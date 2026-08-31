@@ -80,6 +80,24 @@ proposes the wave for approval, returns the DOCX for amendment.
 - **Auto-tag suggestion** on mark-paper (112 of 123 runs carry no student, so
   they reach no profile, report or round).
 
+### Stopping a sheet (31 Aug 2026)
+
+While a sheet is queued or being written, the 📘 button on the paper row *is*
+its cancel (📘✕) — the way out lives where the mistake is made. Adrian mis-tapped
+📘 beside 🗑 on a phone-sized row and a second sheet started building for a paper
+that already had one; undoing that took a hand-written DELETE, because
+`sheet_jobs.status` had no value meaning "I changed my mind" and `failed`
+requeues.
+
+`cancelled` is now a terminal status: `pickNextJob` never returns one (asserted
+in the tests, both as queued work and as an expired lease), `done` on one is
+refused so no Telegram fires, and `fail` on one does not requeue it. A **running**
+session learns it through the heartbeat — a `409 {cancelled:true}` means stop
+where you are, file nothing, call neither `done` nor `fail` — which is why the
+runbook beats at every stage rather than only near the lease edge. A queued sheet
+cancels without a confirm (it is the undo for a mis-tap); one already being
+written asks first.
+
 ## Reference instance — Alessi Tay, 30 Aug 2026
 
 AM 2021 P1 re-marked to 50/90 (four re-marks; accuracy fixes shipped between

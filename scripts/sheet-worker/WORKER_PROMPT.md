@@ -43,6 +43,13 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
    `diagnosing` → `picking the wave` → `drafting` → `verifying` → `filing`.
    Free text is allowed (40 chars) if the job genuinely does something else.
 
+   **A beat that answers `409` with `"cancelled": true` means Adrian stopped
+   this job. STOP THERE.** Do not file anything to Dropbox, do not call `done`,
+   do not call `fail` — just exit. The beat is the only place a running session
+   can learn this, which is why one is sent at every stage rather than only when
+   the lease is about to lapse. `done` on a cancelled job is refused anyway, so
+   carrying on only wastes the session.
+
 4. **File both files into Dropbox** (from the repo, which is your working dir):
 
 ```bash

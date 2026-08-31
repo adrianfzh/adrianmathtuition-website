@@ -987,7 +987,7 @@ export default function MarkPaperPage() {
   // only covers the paper currently loaded — Adrian wanted it on past rows too,
   // plus a way to delete junk (abandoned ⏳ uploads, duplicate runs). State is
   // keyed by run id so a slow save on one row never freezes another's buttons.
-  const [rowBusy, setRowBusy] = useState<Record<string, 'dbx' | 'del' | 'now' | 'batch' | 'sheet' | undefined>>({});
+  const [rowBusy, setRowBusy] = useState<Record<string, 'dbx' | 'del' | 'now' | 'batch' | 'sheet' | 'cancel' | undefined>>({});
   const [rowNote, setRowNote] = useState<Record<string, { ok: boolean; text: string } | undefined>>({});
   const [deletedNote, setDeletedNote] = useState<{ id: string; name: string } | null>(null);
   async function undoDelete() {
@@ -1020,6 +1020,48 @@ export default function MarkPaperPage() {
     } finally {
       setRowBusy((p) => ({ ...p, [run.id]: undefined }));
     }
+  }
+
+  // ✕ on the 📘 badge — stop a sheet Adrian didn't mean to start. A queued one
+  // goes without a confirm: it is the undo for a mis-tap, and asking "are you
+  // sure" about undoing a mistake is one tap too many. A sheet already being
+  // WRITTEN is different — a session is mid-way through, so that one asks.
+  async function cancelSheet(run: Run) {
+    if (rowBusy[run.id]) return;
+    if (run.sheet_status === 'claimed'
+      && !window.confirm(`Your Mac is writing this sheet now.\n\nStop it? It stops at its next step; anything already filed in Dropbox stays there.`)) return;
+    setRowBusy((p) => ({ ...p, [run.id]: 'sheet' })); setRowNote((p) => ({ ...p, [run.id]: undefined }));
+    try {
+      const r = await fetch('/api/admin/sheet-jobs', {
+        method: 'POST', headers: authHeaders, body: JSON.stringify({ action: 'cancel', runId: run.id }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error || `could not cancel (${r.status})`);
+      setRecentRuns((prev) => prev.map((x) => (x.id === run.id ? { ...x, sheet_status: 'cancelled', sheet_error: null, sheet_stage: null } : x)));
+      setRowNote((p) => ({ ...p, [run.id]: { ok: true, text: d.wasRunning ? '📘 Stopped — it ends at its next step.' : '📘 Sheet cancelled — nothing was written.' } }));
+    } catch (e) { setRowNote((p) => ({ ...p, [run.id]: { ok: false, text: (e as Error).message } })); }
+    finally { setRowBusy((p) => ({ ...p, [run.id]: undefined })); }
+  }
+
+  // ✕ on the marking badge — take a paper back off the marking queue. Removing
+  // the queue key drops it from every drain the bot has, so a Mac already
+  // reading it stops at its next page rather than delivering. The paper itself,
+  // and its uploaded photos, are untouched: ▶ Mark puts it back whenever.
+  async function cancelMarking(run: Run) {
+    if (rowBusy[run.id]) return;
+    if (macMarking(run)
+      && !window.confirm(`Your Mac is marking this paper now${pageProgress(run) ? ` (page ${pageProgress(run)!.done} of ${pageProgress(run)!.total})` : ''}.\n\nStop it? The pages it has read are discarded. The upload stays — you can mark it again later.`)) return;
+    setRowBusy((p) => ({ ...p, [run.id]: 'cancel' })); setRowNote((p) => ({ ...p, [run.id]: undefined }));
+    try {
+      const r = await fetch('/api/admin/papers', {
+        method: 'PATCH', headers: authHeaders, body: JSON.stringify({ action: 'cancel-marking', id: run.id }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error || `could not cancel (${r.status})`);
+      setRowNote((p) => ({ ...p, [run.id]: { ok: true, text: '✕ Off the queue — the upload is still here, ▶ Mark when you want it.' } }));
+      loadStats();
+    } catch (e) { setRowNote((p) => ({ ...p, [run.id]: { ok: false, text: (e as Error).message } })); }
+    finally { setRowBusy((p) => ({ ...p, [run.id]: undefined })); }
   }
 
   async function rowToDropbox(run: Run) {
@@ -1298,6 +1340,12 @@ export default function MarkPaperPage() {
   function macMarking(run: Run) {
     if (!run.claim_at || run.claim_released) return false;
     return Date.now() - new Date(run.claim_at).getTime() < 10 * 60 * 1000;
+  }
+
+  /** Is a sheet in flight for this paper — queued, or being written right now?
+   *  The two states where 📘 turns into its own cancel. */
+  function sheetRunning(run: Run) {
+    return run.sheet_status === 'queued' || run.sheet_status === 'claimed';
   }
 
   // Several PDFs dropped in one go (19 Aug 2026): parked here until Adrian says
@@ -1603,7 +1651,9 @@ export default function MarkPaperPage() {
                     a confirmation line that vanished on refresh, so a paper with
                     a sheet being written looked identical to one nobody had
                     touched — and identical again to one whose worker was dead. */}
-                {run.sheet_status && (
+                {/* A cancelled job shows nothing: the point of cancelling a
+                    mis-tap is that the row goes back to looking untouched. */}
+                {run.sheet_status && run.sheet_status !== 'cancelled' && (
                   <span
                     style={{
                       fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
@@ -1722,6 +1772,23 @@ export default function MarkPaperPage() {
                         </button>
                       </>
                     )}
+                    {/* ✕ Off the queue — the third answer to "waiting is a
+                        choice", after ⚡ and ☁️: don't mark it at all. Unlike
+                        those two this one stays visible while the Mac is
+                        marking, because a paper queued by mistake is exactly
+                        the one you want to stop mid-flight. The upload and its
+                        photos survive; ▶ Mark puts it back. */}
+                    {run.total_max == null && !!run.queued_at && (
+                      <button type="button" disabled={!!rowBusy[run.id]}
+                        title={macMarking(run)
+                          ? 'Stop marking this paper — the upload stays, the pages read so far are discarded'
+                          : 'Take this paper off the marking queue — the upload stays'}
+                        onClick={() => cancelMarking(run)}
+                        style={{ background: 'none', border: '1px solid #fdba74', color: '#b45309', borderRadius: 8, padding: '3px 8px', fontSize: 12,
+                          cursor: 'pointer', opacity: rowBusy[run.id] ? 0.45 : 1 }}>
+                        {rowBusy[run.id] === 'cancel' ? '…' : '✕'}
+                      </button>
+                    )}
                     {run.total_max != null && (
                       <>
                         <button type="button" disabled={!!loadingRun} title="Load and write on it with the Pencil" onClick={() => annotateRun(run.id)}
@@ -1754,22 +1821,34 @@ export default function MarkPaperPage() {
                         diagnoses what they actually got wrong, authors the
                         sheet in Adrian's style and files the DOCX into
                         Dropbox for him to vet. Needs a tagged student. */}
-                    {/* A sheet already queued or being written cannot be queued
-                        again — the route refuses duplicates, and a button that
-                        silently does nothing is how the dead worker stayed
-                        hidden. The badge on the row says which state it is in. */}
-                    <button type="button"
-                      disabled={!!rowBusy[run.id] || run.sheet_status === 'queued' || run.sheet_status === 'claimed'}
-                      title={run.sheet_status === 'queued' ? 'A sheet is already queued for this paper'
-                        : run.sheet_status === 'claimed' ? 'Your Mac is writing this sheet now'
-                        : run.sheet_status === 'done' ? 'Sheet already written — queue another one'
-                        : 'Queue a self-study sheet from this paper'}
-                      onClick={() => queueSheet(run)}
-                      style={{ background: 'none', border: '1px solid #c4b5fd', color: '#6d28d9', borderRadius: 8, padding: '3px 8px', fontSize: 12,
-                        cursor: (run.sheet_status === 'queued' || run.sheet_status === 'claimed') ? 'default' : 'pointer',
-                        opacity: (rowBusy[run.id] || run.sheet_status === 'queued' || run.sheet_status === 'claimed') ? 0.45 : 1 }}>
-                      {rowBusy[run.id] === 'sheet' ? '…' : '📘'}
-                    </button>
+                    {/* While a sheet is queued or being written this SAME button
+                        becomes its cancel (31 Aug 2026 — Adrian mis-tapped 📘
+                        beside 🗑 and a duplicate sheet started building for a
+                        paper that already had one; undoing it meant a
+                        hand-written DELETE against the table). A disabled 📘
+                        was dead space in the one state where you most want a
+                        way out, so the way out lives where the mistake was
+                        made. */}
+                    {sheetRunning(run) ? (
+                      <button type="button" disabled={!!rowBusy[run.id]}
+                        title={run.sheet_status === 'claimed'
+                          ? 'Stop the sheet your Mac is writing'
+                          : 'Cancel this queued sheet — nothing has been written yet'}
+                        onClick={() => cancelSheet(run)}
+                        style={{ background: 'none', border: '1px solid #c4b5fd', color: '#6d28d9', borderRadius: 8, padding: '3px 8px', fontSize: 12,
+                          cursor: 'pointer', opacity: rowBusy[run.id] ? 0.45 : 1 }}>
+                        {rowBusy[run.id] === 'sheet' ? '…' : '📘✕'}
+                      </button>
+                    ) : (
+                      <button type="button" disabled={!!rowBusy[run.id]}
+                        title={run.sheet_status === 'done' ? 'Sheet already written — queue another one'
+                          : 'Queue a self-study sheet from this paper'}
+                        onClick={() => queueSheet(run)}
+                        style={{ background: 'none', border: '1px solid #c4b5fd', color: '#6d28d9', borderRadius: 8, padding: '3px 8px', fontSize: 12,
+                          cursor: 'pointer', opacity: rowBusy[run.id] ? 0.45 : 1 }}>
+                        {rowBusy[run.id] === 'sheet' ? '…' : '📘'}
+                      </button>
+                    )}
                     <button type="button" disabled={!!rowBusy[run.id]} title="Delete this paper and all its stored files"
                       onClick={() => deleteRun(run)}
                       style={{ background: 'none', border: '1px solid #fca5a5', color: '#b91c1c', borderRadius: 8, padding: '3px 8px', fontSize: 12, cursor: 'pointer', opacity: rowBusy[run.id] ? 0.6 : 1 }}>

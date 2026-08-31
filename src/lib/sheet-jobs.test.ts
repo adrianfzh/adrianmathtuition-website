@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  claimExpired, pickNextJob, sanitizeResult, completionMessage,
+  claimExpired, pickNextJob, sanitizeResult, completionMessage, cancelState,
   LEASE_MS, MAX_ATTEMPTS, type SheetJob,
 } from './sheet-jobs';
 
@@ -31,9 +31,45 @@ describe('claimExpired — a dead session must never strand a job', () => {
     expect(claimExpired(job({ status: 'claimed', claimed_at: 'not-a-date' }), t0)).toBe(true);
   });
   it('only claimed jobs expire', () => {
-    for (const status of ['queued', 'done', 'failed'] as const) {
+    for (const status of ['queued', 'done', 'failed', 'cancelled'] as const) {
       expect(claimExpired(job({ status, heartbeat_at: iso(t0 - 99 * LEASE_MS) }), t0)).toBe(false);
     }
+  });
+});
+
+describe('cancelState — undoing a misclicked 📘', () => {
+  it('a queued job cancels, and is not running', () => {
+    expect(cancelState(job({ status: 'queued' }))).toEqual({ can: true, running: false });
+  });
+  it('a claimed job cancels, and says a session is mid-way through it', () => {
+    expect(cancelState(job({ status: 'claimed' }))).toEqual({ can: true, running: true });
+  });
+  it('a finished, failed, or already-cancelled job cannot be cancelled, each with its own reason', () => {
+    for (const status of ['done', 'failed', 'cancelled'] as const) {
+      const r = cancelState(job({ status }));
+      expect(r.can).toBe(false);
+      expect(r.reason).toBeTruthy();
+    }
+    expect(cancelState(job({ status: 'done' })).reason).toMatch(/already written/);
+  });
+  it('a missing job says so rather than throwing', () => {
+    expect(cancelState(null).can).toBe(false);
+    expect(cancelState(undefined).reason).toMatch(/no sheet job/);
+  });
+});
+
+describe('a cancelled job never comes back', () => {
+  it('is not picked as queued work', () => {
+    expect(pickNextJob([job({ id: 'x', status: 'cancelled' })], t0)).toBeNull();
+  });
+  it('is not picked as an abandoned lease, however long it sits', () => {
+    const stale = job({ id: 'x', status: 'cancelled', claimed_at: iso(t0), heartbeat_at: iso(t0) });
+    expect(pickNextJob([stale], t0 + 99 * LEASE_MS)).toBeNull();
+  });
+  it('does not block a real queued job behind it', () => {
+    const live = job({ id: 'live', created_at: iso(t0 + 60_000) });
+    const dead = job({ id: 'dead', status: 'cancelled', created_at: iso(t0) });
+    expect(pickNextJob([dead, live], t0 + 120_000)?.id).toBe('live');
   });
 });
 

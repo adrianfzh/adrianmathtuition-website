@@ -21,6 +21,7 @@ import { isOurBlobUrl } from '@/lib/blob-url';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { airtableRequest } from '@/lib/airtable';
 import { recomputeTotals, pendingCount } from '@/lib/mark-triage';
+import { cancelMarkingState, stripQueue } from '@/lib/mark-queue-cancel';
 import { aggregateTopicBleed } from '@/lib/report-facts';
 
 export const runtime = 'nodejs';
@@ -254,15 +255,51 @@ export async function DELETE(req: NextRequest) {
   return NextResponse.json({ ok: true, id, blobsDeleted, binned: !purgeNow, purged });
 }
 
-/** Put a binned paper back, files and all. */
+/** Put a binned paper back, files and all — or take a paper off the marking queue. */
 export async function PATCH(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const body = await req.json().catch(() => ({} as { action?: string; id?: string }));
-  if (body.action !== 'restore') return NextResponse.json({ error: 'unknown action' }, { status: 400 });
+  if (body.action !== 'restore' && body.action !== 'cancel-marking') {
+    return NextResponse.json({ error: 'unknown action' }, { status: 400 });
+  }
   const id = String(body.id || '');
   if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 });
 
   const supa = getSupabaseAdmin();
+
+  // ── Take a paper off the marking queue ─────────────────────────────────────
+  // The queue is the `queue` key inside result_json, and EVERY drain the bot has
+  // filters on it being present — the Fly worker, the Mac's claim, and the
+  // heartbeat/submit guards, which read a missing queue as "claim lost" and
+  // refuse to write. So removing that one key cancels the paper everywhere at
+  // once, a running Mac session included: it stops at its next per-page
+  // heartbeat, and anything it finished anyway is dropped as superseded rather
+  // than delivered. Reasoning and the state machine: lib/mark-queue-cancel.ts.
+  //
+  // Deliberately NOT a new bot phase: deploying the bot kills whatever it is
+  // marking at that moment, which is a steep price for a cancel button.
+  if (body.action === 'cancel-marking') {
+    const { data: run, error: readErr } = await supa
+      .from('paper_marking_runs').select('id, paper_name, total_max, result_json').eq('id', id).maybeSingle();
+    if (readErr) return NextResponse.json({ error: readErr.message }, { status: 500 });
+    if (!run) return NextResponse.json({ error: 'run not found' }, { status: 404 });
+
+    const state = cancelMarkingState(run);
+    if (!state.can) return NextResponse.json({ error: state.reason, state: state.state }, { status: 409 });
+
+    // Guarded on total_max still being null: a marking that LANDED between the
+    // read and this write must not have its finished queue record stripped.
+    const { data: done, error: upErr } = await supa
+      .from('paper_marking_runs')
+      .update({ result_json: stripQueue(run.result_json, new Date().toISOString()) })
+      .eq('id', id).is('total_max', null)
+      .select('id').maybeSingle();
+    if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 });
+    if (!done) return NextResponse.json({ error: 'it finished marking while you tapped — nothing was cancelled' }, { status: 409 });
+
+    return NextResponse.json({ ok: true, id, cancelled: true, wasRunning: state.running });
+  }
+
   const { data: binned, error: readErr } = await supa
     .from('paper_marking_runs_bin').select('row').eq('id', id).maybeSingle();
   if (readErr) return NextResponse.json({ error: readErr.message }, { status: 500 });
