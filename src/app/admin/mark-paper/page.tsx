@@ -1225,6 +1225,22 @@ export default function MarkPaperPage() {
     } finally { setRowBusy((p) => ({ ...p, [run.id]: undefined })); }
   }
 
+  // Watch anything in flight (31 Aug 2026). The list only ever reloaded after an
+  // action, so a sheet being written or a paper being marked changed nothing on
+  // an open page — Adrian went looking for the progress indicator and it was
+  // there, on a list rendered before the job started. An indicator you have to
+  // reload is not an indicator. Polls only while something IS in flight, so an
+  // idle page still costs nothing.
+  const inFlight = recentRuns.some((r: Run) =>
+    r.sheet_status === 'queued' || r.sheet_status === 'claimed' ||
+    (r.total_max == null && !!r.queued_at && !r.queue_failed));
+  useEffect(() => {
+    if (!inFlight) return;
+    const t = setInterval(() => { loadStats(); }, 15000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inFlight]);
+
   // ☁️ Batch now (31 Aug 2026): the other escape hatch. ⚡ Mark now buys speed at
   // full price; this one only gives up on the MAC — the paper leaves the free
   // plan-billed queue and takes the ordinary ~50% batch route on the next tick.
