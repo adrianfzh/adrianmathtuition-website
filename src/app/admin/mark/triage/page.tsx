@@ -597,11 +597,13 @@ export default function TriagePage() {
         </section>
       ))}
 
-      {/* An override corrects the record; the annotated PDF was rendered once at
-          marking time and cannot be redrawn from here. Say so where it's acted on. */}
+      {/* This used to end "tell the student in class", which was the remedy
+          before release could refuse a stale PDF. It can now, so the remedy is
+          the upload, not a conversation. */}
       {totalFlagged > 0 && (
         <p style={{ fontSize: 12, color: C.muted, marginTop: -4 }}>
-          Overriding changes the recorded score. The annotated PDF still shows the original red pen — tell the student in class.
+          Overriding changes the recorded score, but not the PDF — that was drawn once when the paper was marked.
+          Release is held until you upload the copy you corrected (✍️ Upload amended), so a student never sees two different totals.
         </p>
       )}
 
