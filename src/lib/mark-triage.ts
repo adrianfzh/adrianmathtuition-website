@@ -48,6 +48,8 @@ export interface TriageQuestion {
 
 export interface TriageSummary {
   flagged: TriageQuestion[];
+  /** Everything the marker did not flag — hidden by default, still correctable. */
+  confident: TriageQuestion[];
   totalQuestions: number;
   /** Questions the marker was confident about — never shown, never blocking. */
   unflaggedCount: number;
@@ -129,17 +131,52 @@ function toTriageQuestion(r: Json, index: number): TriageQuestion {
 export function extractFlagged(resultJson: unknown): TriageSummary {
   const results = resultsOf(resultJson);
   const flagged: TriageQuestion[] = [];
+  // The questions the marker was CONFIDENT about (31 Aug 2026). They are not
+  // shown by default and never block a release — but they must be correctable,
+  // because the marker's confidence does not track its correctness: two of
+  // Kayla's twenty were marked wrong against her and neither was flagged.
+  //
+  // It is also the only way to measure anything. Correcting flagged questions
+  // alone samples the marker's own doubts, which will always flatter it; a rate
+  // over every question is the real one.
+  const confident: TriageQuestion[] = [];
   for (let i = 0; i < results.length; i++) {
-    if (isFlagged(results[i])) flagged.push(toTriageQuestion(results[i], i));
+    (isFlagged(results[i]) ? flagged : confident).push(toTriageQuestion(results[i], i));
   }
   const { awarded, max } = recomputeTotals(resultJson);
   return {
     flagged,
+    confident,
     totalQuestions: results.length,
-    unflaggedCount: results.length - flagged.length,
+    unflaggedCount: confident.length,
     awarded,
     max,
   };
+}
+
+/**
+ * Corrections Adrian has made, split by who they cost.
+ *
+ * An override where his mark is HIGHER than the marker's is a mark the student
+ * earned and did not get — the error that damages trust, and the one to gate
+ * auto-release on. Lower is a mark she was given and had not earned: a quality
+ * problem, not a trust one. They are not the same number and should never be
+ * averaged into one.
+ */
+export function overrideTally(resultJson: unknown): { against: number; forStudent: number; reviewed: number } {
+  const results = resultsOf(resultJson);
+  let against = 0, forStudent = 0, reviewed = 0;
+  for (const r of results) {
+    const rec = asRecord(r);
+    if (!rec) continue;
+    if (rec.triage_reviewed === true) reviewed++;
+    const ov = asRecord(rec.triage_override);
+    if (!ov) continue;
+    const now = num(ov.awarded), was = num(ov.previous);
+    if (now > was) against++;
+    else if (now < was) forStudent++;
+  }
+  return { against, forStudent, reviewed };
 }
 
 /**
