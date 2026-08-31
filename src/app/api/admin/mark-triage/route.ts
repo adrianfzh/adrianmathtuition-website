@@ -110,6 +110,8 @@ export async function GET(req: NextRequest) {
         annotatedPhotos: extractAnnotatedPhotos(r.result_json),
         flagged: summary.flagged,
         releasable: summary.flagged.length === 0,
+        // Marks changed after marking → the stored PDF still shows the old ones.
+        pdfStale: !!(r.result_json as { pdf_stale?: unknown } | null)?.pdf_stale,
         // Why auto-release held (or would have) — the bot's accuracy gates
         // re-derived from the persisted signals. Explanatory only: manual
         // release ignores it.
@@ -359,6 +361,7 @@ export async function POST(req: NextRequest) {
     action?: string;
     runId?: string;
     runIds?: string[];
+    url?: string;
     questionIdx?: number;
     awarded?: number;
     note?: string;
@@ -404,9 +407,19 @@ export async function POST(req: NextRequest) {
     }
 
     const totals = recomputeTotals(nextJson);
+    // An OVERRIDE changes the number in the portal but not the ink already
+    // baked into the marked PDF, and the paper-total strip is drawn from these
+    // columns at assembly time — so after this write the stored PDF says
+    // something else. Sophie's 31 Aug paper would have gone out reading 67/90
+    // on screen and 71/90 on the page. Mark it stale here; release refuses
+    // while it is, until Adrian attaches his amended copy or rebuilds.
+    // (Agree changes no mark, so it never makes the PDF stale.)
+    const staleJson = body.action === 'override' && Number(body.awarded) !== undefined
+      ? { ...nextJson, pdf_stale: { at: now, reason: `Q index ${questionIdx} overridden to ${Number(body.awarded)}` } }
+      : nextJson;
     const { error: writeErr } = await supa
       .from('paper_marking_runs')
-      .update({ result_json: nextJson, total_awarded: totals.awarded, total_max: totals.max })
+      .update({ result_json: staleJson, total_awarded: totals.awarded, total_max: totals.max })
       .eq('id', runId);
     if (writeErr) return NextResponse.json({ error: writeErr.message }, { status: 500 });
 
@@ -417,7 +430,34 @@ export async function POST(req: NextRequest) {
       max: totals.max,
       pending: pendingCount(nextJson),
       releasable: isReleasable(nextJson),
+      pdfStale: body.action === 'override',
     });
+  }
+
+  // ── attach-amended: Adrian's own hand on the marked copy ──────────────────
+  // He downloads the marked PDF, writes on it (Sophie's carries "= 67/90" and
+  // "-4" in red), and this makes THAT the copy the student opens. Batch marking
+  // has had this for months as "Upload amended PDF"; the single-paper flow had
+  // no equivalent, so an edited paper could only be attached through an API
+  // call. It also clears pdf_stale — a copy Adrian has written the true total
+  // on is, by definition, no longer out of date.
+  if (body.action === 'attach-amended') {
+    const { runId } = body;
+    const url = String((body as { url?: unknown }).url ?? '').trim();
+    if (!runId || !url) return NextResponse.json({ error: 'runId and url are required' }, { status: 400 });
+    if (!/^https:\/\/[\w.-]+\.public\.blob\.vercel-storage\.com\//.test(url)) {
+      return NextResponse.json({ error: 'url must be a Vercel Blob URL' }, { status: 400 });
+    }
+    const { data: run, error: readErr } = await supa
+      .from('paper_marking_runs').select('id, result_json, released_at').eq('id', runId).single();
+    if (readErr || !run) return NextResponse.json({ error: readErr?.message || 'run not found' }, { status: 404 });
+    if (run.released_at) return NextResponse.json({ error: 'already released — the student has this copy' }, { status: 409 });
+    const rj = (run.result_json || {}) as Record<string, unknown>;
+    delete rj.pdf_stale;
+    const { error: upErr } = await supa
+      .from('paper_marking_runs').update({ annotated_pdf_url: url, result_json: rj }).eq('id', runId);
+    if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 });
+    return NextResponse.json({ ok: true, runId, annotatedPdfUrl: url });
   }
 
   // ── release: stamp + nudge ────────────────────────────────────────────────
@@ -450,6 +490,20 @@ export async function POST(req: NextRequest) {
       .select('id, paper_name, student_id, student_name, annotated_pdf_url, photos_pdf_url, result_json, released_at, created_at')
       .in('id', runIds);
     if (readErr) return NextResponse.json({ error: readErr.message }, { status: 500 });
+
+    // A paper whose marks were overridden carries a PDF that still shows the old
+    // ones. Releasing it sends the student two different totals — the corrected
+    // one in the portal, the original printed on the page she opens. Refuse,
+    // and name the fix: attach the copy you wrote the new total on.
+    const stale = (runs ?? []).filter(r => (r.result_json as { pdf_stale?: unknown } | null)?.pdf_stale);
+    if (stale.length) {
+      return NextResponse.json({
+        error: stale.length === 1
+          ? 'This paper\u2019s marks were changed after it was marked, so its PDF still shows the old total. Upload your amended copy first (\u270f\ufe0f the marked PDF you wrote the new total on), then release.'
+          : `${stale.length} of these papers had marks changed after marking, so their PDFs show the old totals. Upload the amended copies first.`,
+        staleRunIds: stale.map(r => r.id),
+      }, { status: 409 });
+    }
 
     const results: {
       runId: string;

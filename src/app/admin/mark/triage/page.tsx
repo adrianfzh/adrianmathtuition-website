@@ -26,6 +26,7 @@ type Run = {
   totalQuestions: number;
   unflaggedCount: number;
   annotatedPdfUrl: string | null;
+  pdfStale?: boolean;
   annotatedPhotos?: { photoIndex: number; url: string }[];
   pdfUrl: string | null;
   flagged: TriageQuestion[];
@@ -142,6 +143,32 @@ export default function TriagePage() {
     if (d.error) { setToast(d.error); return; }
     resolveLocally(runId, idx, Number(editAwarded));
     setEditing(null); setEditAwarded(''); setEditNote('');
+  }
+
+  // ✍️ Upload the copy Adrian wrote on. Overriding a mark corrects the number
+  // in the portal but not the ink already baked into the PDF, so a paper can
+  // otherwise reach a student showing two different totals. This is the fix he
+  // was already doing by hand — edit the marked PDF in Preview, put it back —
+  // and it clears the stale flag that blocks release.
+  const [amendBusy, setAmendBusy] = useState('');
+  async function uploadAmended(runId: string, file: File) {
+    setAmendBusy(runId);
+    try {
+      const t = await fetch(`/api/admin/assignments/upload-token?filename=${encodeURIComponent(file.name)}`);
+      if (!t.ok) throw new Error('could not start the upload');
+      const { token, pathname } = await t.json();
+      const { put } = await import('@vercel/blob');
+      const blob = await put(pathname, file, {
+        access: 'public', token, contentType: 'application/pdf',
+        multipart: file.size > 5 * 1024 * 1024,
+      });
+      const d = await post({ action: 'attach-amended', runId, url: blob.url });
+      if (d.error) throw new Error(d.error);
+      setToast('Your amended copy is now the one the student gets.');
+      load();
+    } catch (e) {
+      setToast(`Upload failed — ${(e as Error).message}`);
+    } finally { setAmendBusy(''); }
   }
 
   // 📘 Release WITH the sheet (SPEC-TEACHING-CYCLE step 7): marks and the
@@ -328,6 +355,33 @@ export default function TriagePage() {
             <div style={{ padding: '10px 12px', fontSize: 13, color: C.muted }}>
               All {run.totalQuestions} questions marked confidently.
               {run.annotatedPdfUrl && <> · <a href={run.annotatedPdfUrl} target="_blank" rel="noreferrer">📄 View</a></>}
+              {/* Every topic this script dropped marks on, in one link. The
+                  per-question 📬 sends one; a paper rarely fails on one thing,
+                  and three follow-ups used to mean three trips back here. */}
+              {run.studentId && (() => {
+                const topics = [...new Set(run.flagged.map(q => q.topic).filter(Boolean) as string[])];
+                if (topics.length < 2) return null;
+                return (
+                  <> · <a href={`/admin/students/${run.studentId}?send=${encodeURIComponent(topics.join('|'))}`}
+                    style={{ fontWeight: 600 }} title={`Send follow-ups on all ${topics.length} weak topics`}>
+                    📬 Follow up on all {topics.length}
+                  </a></>
+                );
+              })()}
+              {run.pdfStale && (
+                <>
+                  {' · '}
+                  <span style={{ color: '#b45309', fontWeight: 600 }} title="A mark was changed after this paper was marked, so the PDF still prints the old total. Release is blocked until you attach the copy you corrected.">
+                    ⚠ PDF shows the old total
+                  </span>
+                  {' '}
+                  <label style={{ color: '#1d4ed8', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}>
+                    {amendBusy === run.id ? 'Uploading…' : '✍️ Upload amended'}
+                    <input type="file" accept="application/pdf" hidden disabled={!!amendBusy}
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAmended(run.id, f); e.target.value = ''; }} />
+                  </label>
+                </>
+              )}
             </div>
           ) : (
             run.flagged.map(q => {

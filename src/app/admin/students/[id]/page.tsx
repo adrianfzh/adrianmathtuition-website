@@ -112,7 +112,16 @@ export default function StudentProfilePage() {
   // Read from window (not useSearchParams) so the client page needs no Suspense
   // boundary for the static shell.
   const [sendTopic, setSendTopic] = useState<string | null>(null);
-  useEffect(() => { setSendTopic(new URLSearchParams(window.location.search).get('send')); }, []);
+  const [sendTopics, setSendTopics] = useState<string[]>([]);
+  useEffect(() => {
+    // ?send=Topic — one topic, as before. ?send=A|B|C — the paper's weak topics,
+    // first one pre-filled and the rest offered as one-click switches. Pipe
+    // rather than comma: topic names contain commas ("Vectors, 2D").
+    const raw = new URLSearchParams(window.location.search).get('send');
+    const list = (raw || '').split('|').map(t => t.trim()).filter(Boolean);
+    setSendTopic(list[0] ?? null);
+    setSendTopics(list);
+  }, []);
 
   const [password, setPassword] = useState('');
   const [authed, setAuthed] = useState(false);
@@ -681,6 +690,7 @@ export default function StudentProfilePage() {
 
         <Section title="📬 From Adrian" show={tab === 'overview'}>
               <SendWorkCard
+                prefillTopics={sendTopics}
                 studentId={studentId}
                 studentName={data.student.name}
                 studentLevel={data.student.level}

@@ -48,8 +48,12 @@ const pill = (on: boolean): React.CSSProperties => ({
   border: on ? '1px solid #1e3a5f' : '1px solid #e5e7eb', background: on ? '#1e3a5f' : '#fff', color: on ? '#fff' : '#374151',
 });
 
-export default function SendWorkCard({ studentId, studentName, studentLevel, subjects, prefillTopic }: {
+export default function SendWorkCard({ studentId, studentName, studentLevel, subjects, prefillTopic, prefillTopics }: {
   studentId: string; studentName: string; studentLevel: string; subjects: string[]; prefillTopic?: string | null;
+  /** The other weak topics from the same paper, offered as one-click switches
+   *  (31 Aug 2026). A paper rarely fails on one thing, and sending three
+   *  follow-ups used to mean three trips back to triage. */
+  prefillTopics?: string[];
 }) {
   const levels = useMemo(() => {
     const own = qbLevelsFor(studentLevel, subjects);
@@ -61,6 +65,8 @@ export default function SendWorkCard({ studentId, studentName, studentLevel, sub
   const [level, setLevel] = useState(levels[0]?.key || 'AM');
   const [topics, setTopics] = useState<{ topic: string; questionCount: number; advancedCount: number }[]>([]);
   const [topic, setTopic] = useState(prefillTopic || '');
+  const [sentTopics, setSentTopics] = useState<string[]>([]);
+  const queue = (prefillTopics || []).filter(t => t && t !== topic);
   const [tier, setTier] = useState<'' | 'Standard' | 'Advanced'>('');
   const [candidates, setCandidates] = useState<Candidate[] | null>(null);
   const [loadingCands, setLoadingCands] = useState(false);
@@ -188,6 +194,8 @@ export default function SendWorkCard({ studentId, studentName, studentLevel, sub
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
       setMsg({ ok: true, text: `Sent to ${studentName.split(' ')[0]}${j.notified ? ' — Telegram nudge delivered' : ' — shows on their Home next visit'}.` });
+      // Strike the topic off the paper's list so the next one is obvious.
+      if (topic) setSentTopics(prev => prev.includes(topic) ? prev : [...prev, topic]);
       setPicked(null); setNote(''); setDueOn(''); setTitle(''); setUploaded(null); setLibPick(null);
       loadList();
     } catch (e) {
@@ -234,6 +242,25 @@ export default function SendWorkCard({ studentId, studentName, studentLevel, sub
                 {topics.map(t => <option key={t.topic} value={t.topic}>{t.topic} ({t.questionCount})</option>)}
                 {topic && !topics.some(t => t.topic === topic) && <option value={topic}>{topic}</option>}
               </select>
+              {/* The paper's other weak topics, one tap each. Sending three
+                  follow-ups from one script used to mean three trips back to
+                  triage; a script rarely fails on a single thing. A topic dims
+                  once you have assigned from it, so you can see what is left. */}
+              {queue.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6, alignItems: 'center' }}>
+                  <span style={{ fontSize: 11.5, color: '#6b7280' }}>Also weak on this paper:</span>
+                  {queue.map(t => (
+                    <button key={t} type="button" onClick={() => { setTopic(t); setCandidates(null); setPicked(null); }}
+                      style={{ fontSize: 11.5, fontWeight: 600, padding: '2px 8px', borderRadius: 999,
+                        border: '1px solid #c7d2fe', cursor: 'pointer',
+                        background: sentTopics.includes(t) ? '#f3f4f6' : '#eef2ff',
+                        color: sentTopics.includes(t) ? '#9ca3af' : '#3730a3',
+                        textDecoration: sentTopics.includes(t) ? 'line-through' : 'none' }}>
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             {kind === 'question' && (
               <div>
