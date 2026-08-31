@@ -130,7 +130,7 @@ async function uploadPaperPdf(file: File): Promise<string | null> {
 }
 
 type MarkPart = { label?: string; awarded?: number; max?: number; error_summary?: string | null };
-type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; checked_at?: string | null; released_at?: string | null; archived_at?: string | null; marked_by?: string | null; mark_now?: string | null; skip_external?: string | null; claim_at?: string | null; claim_released?: string | null };
+type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; checked_at?: string | null; released_at?: string | null; archived_at?: string | null; marked_by?: string | null; mark_now?: string | null; skip_external?: string | null; claim_at?: string | null; claim_released?: string | null; sheet_status?: string | null; sheet_error?: string | null; sheet_at?: string | null };
 type Result = {
   question_number: string; working_index: number; match_confidence: string; photo_index?: number | null;
   marking?: { total_awarded?: number; total_max?: number; overall_comment?: string; parts?: MarkPart[] };
@@ -1527,6 +1527,28 @@ export default function MarkPaperPage() {
                 {run.total_max != null && !run.released_at && !run.archived_at && !run.checked_at && (
                   <span style={{ fontSize: 11, color: '#b45309' }} title="Not released to the student and not marked Seen">not released</span>
                 )}
+                {/* 📘 says where the sheet is. Before this the only feedback was
+                    a confirmation line that vanished on refresh, so a paper with
+                    a sheet being written looked identical to one nobody had
+                    touched — and identical again to one whose worker was dead. */}
+                {run.sheet_status && (
+                  <span
+                    style={{
+                      fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
+                      color: run.sheet_status === 'failed' ? '#b91c1c'
+                        : run.sheet_status === 'done' ? '#047857'
+                        : run.sheet_status === 'claimed' ? '#1d4ed8' : '#6d28d9',
+                    }}
+                    title={run.sheet_status === 'failed' ? `Sheet failed: ${run.sheet_error || 'no reason given'}`
+                      : run.sheet_status === 'done' ? 'Written and filed to Dropbox → Self-Study'
+                      : run.sheet_status === 'claimed' ? 'Your Mac is writing it now — up to ~70 min'
+                      : 'Waiting for the Mac sheet worker (polls every 15 min)'}
+                  >
+                    {run.sheet_status === 'failed' ? '📘 sheet failed'
+                      : run.sheet_status === 'done' ? '📘 sheet ready'
+                      : run.sheet_status === 'claimed' ? '📘 writing…' : '📘 sheet queued'}
+                  </span>
+                )}
                 {run.total_max == null ? (
                   // Saved uploads, never (successfully) marked — the row a 502 leaves
                   // behind. ▶ Mark (in the actions cluster) marks it from the stored
@@ -1634,9 +1656,20 @@ export default function MarkPaperPage() {
                         diagnoses what they actually got wrong, authors the
                         sheet in Adrian's style and files the DOCX into
                         Dropbox for him to vet. Needs a tagged student. */}
-                    <button type="button" disabled={!!rowBusy[run.id]} title="Queue a self-study sheet from this paper"
+                    {/* A sheet already queued or being written cannot be queued
+                        again — the route refuses duplicates, and a button that
+                        silently does nothing is how the dead worker stayed
+                        hidden. The badge on the row says which state it is in. */}
+                    <button type="button"
+                      disabled={!!rowBusy[run.id] || run.sheet_status === 'queued' || run.sheet_status === 'claimed'}
+                      title={run.sheet_status === 'queued' ? 'A sheet is already queued for this paper'
+                        : run.sheet_status === 'claimed' ? 'Your Mac is writing this sheet now'
+                        : run.sheet_status === 'done' ? 'Sheet already written — queue another one'
+                        : 'Queue a self-study sheet from this paper'}
                       onClick={() => queueSheet(run)}
-                      style={{ background: 'none', border: '1px solid #c4b5fd', color: '#6d28d9', borderRadius: 8, padding: '3px 8px', fontSize: 12, cursor: 'pointer', opacity: rowBusy[run.id] ? 0.6 : 1 }}>
+                      style={{ background: 'none', border: '1px solid #c4b5fd', color: '#6d28d9', borderRadius: 8, padding: '3px 8px', fontSize: 12,
+                        cursor: (run.sheet_status === 'queued' || run.sheet_status === 'claimed') ? 'default' : 'pointer',
+                        opacity: (rowBusy[run.id] || run.sheet_status === 'queued' || run.sheet_status === 'claimed') ? 0.45 : 1 }}>
                       {rowBusy[run.id] === 'sheet' ? '…' : '📘'}
                     </button>
                     <button type="button" disabled={!!rowBusy[run.id]} title="Delete this paper and all its stored files"

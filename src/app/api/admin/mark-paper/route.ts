@@ -31,6 +31,27 @@ export async function POST(req: NextRequest) {
         const byId = new Map((rows ?? []).map((row) => [row.id as string, row.checked_at as string | null]));
         for (const run of data.runs) run.checked_at = byId.get(run.id) ?? null;
       } catch { /* the list is still useful without the split */ }
+      // 📘 Self-study sheet state, merged the same way (31 Aug 2026). Queueing a
+      // sheet used to leave no trace on the row: the green confirmation vanished
+      // on the next refresh, so a paper whose sheet was being written looked
+      // exactly like one nobody had touched — and when the worker was silently
+      // dead, that was the whole story Adrian had to go on. sheet_jobs lives in
+      // the website's Supabase, not the bot, so the bot cannot report it.
+      try {
+        const ids = data.runs.map((x: { id?: string }) => x.id).filter(Boolean);
+        const { data: jobs } = await getSupabaseAdmin()
+          .from('sheet_jobs').select('run_id, status, error, created_at, completed_at')
+          .in('run_id', ids).order('created_at', { ascending: true });
+        // Last job wins: re-queueing after a failure should show the retry.
+        const byRun = new Map<string, { status: string; error: string | null; created_at: string; completed_at: string | null }>();
+        for (const j of jobs ?? []) byRun.set(j.run_id as string, j as never);
+        for (const run of data.runs) {
+          const j = byRun.get(run.id);
+          run.sheet_status = j?.status ?? null;
+          run.sheet_error = j?.error ?? null;
+          run.sheet_at = j?.completed_at ?? j?.created_at ?? null;
+        }
+      } catch { /* a missing badge is better than a broken list */ }
     }
     return NextResponse.json(data, { status: r.status });
   } catch (err) {
