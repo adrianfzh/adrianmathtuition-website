@@ -58,8 +58,39 @@ their read-off is banned outright. Two consequences encoded with it:
   the method marks the working supports, and leave the read-off marks for triage
   rather than deducting on a guess.
 
-**Still to verify on a real script**, and worth doing deliberately: re-mark the
-linear-law paper and check the marker now either reads the line or declines.
+**VERIFIED 1 Sep 2026 — and the original report was inverted.** Traced to Kiara AM
+TYS 2022 P1 Q2. Her graph WAS submitted: photo 18 of 19, filed at the end the way
+graph paper always is. Marking that page the marker scored her plotting 2/2;
+marking the question page (photo 1) it had her printed table but no line, derived
+the intercept it expected, and wrote *"Your line cuts the axis at 3.00, not
+3.10"*. **The same script, marked once against her work and once against an
+imagined version of it.**
+
+**Her line reads 3.01 and she wrote 3.10 — a full major square out, so the
+deduction was RIGHT.** Adrian's note was that the marker QUOTED 3.00 where the
+line reads 3.01, a hundredth the grid cannot resolve (now covered by the tolerance
+rule). So the bug was never the mark: it was that the marker reached the right
+answer **without being able to see the evidence**, and would have reached it just
+as confidently had she been correct.
+
+**Fix: the graph now travels with the question** → `ai/graph-companion.js` (pure,
+12 tests) + the classification pre-pass reporting `graph_for` per page. Only a
+page whose question has its graph elsewhere gets the second image.
+
+**Can the marker actually READ a graph? Yes, tested decisively.** Kiara's own
+graph cannot answer this — reading and calculating both give ≈3.00 there. So a
+synthetic sheet was drawn with the true table points plotted and the LINE
+DELIBERATELY WRONG: intercept 3.40, gradient −0.20, missing every point. A reader
+reports 3.40; a calculator reports 3.00. The marker returned:
+
+> *"your line cuts the $\ln m$ axis at **3.40**, not 3.10 — and a line through the
+> points gives $\ln A = 3.00$"*
+
+Exact, and it volunteered that the line does not fit the points. **Known gap:** on
+the SECOND read-off (part (c)) it used the fitted gradient (−0.250) rather than
+reading off the drawn line (which gives t ≈ 5.45). It reads the intercept, then
+falls back to computing for the rest. Immaterial on a realistic line, large on a
+deliberately wrong one — worth revisiting if a student's line is ever badly off.
 
 **A5. Brackets on Q12(a). — RULED AND SHIPPED 31 Aug 2026.**
 The question was Klaire's AM TYS 2021 P1 Q12(a): she wrote $\log_6 5\times3^{x+1}$
