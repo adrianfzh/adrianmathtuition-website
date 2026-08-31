@@ -7,8 +7,15 @@
 //
 //   GET  ?page=0&pageSize=60&level=AM        → page of questions-with-figures,
 //        each with its stem figures, thumb URLs and flag state
-//   GET  ?flagged=1                          → every open flag with question meta
+//   GET  ?flagged=1                          → every open flag, with the figure
+//        AS FLAGGED and the question's figure AS IT IS NOW
 //   POST { path, questionId, flag: boolean } → set/clear a flag
+//   POST { path, resolve: true }             → mark 'fixed' (releases the question)
+//
+// A flag records the bucket path at the moment it was raised. Cleaning a figure
+// writes a NEW bucket object and repoints the question, so that path goes stale
+// — which is useful, not a bug: it is the BEFORE. The serving gate keys on
+// question_id, so a stale path never breaks the exclusion.
 //
 // ADMIN ONLY. Thumbs live at question_images/thumbs/<basename>.jpg (pre-built
 // batch job); the client falls back to the full image if a thumb 404s.
@@ -55,17 +62,29 @@ export async function GET(req: NextRequest) {
     const qids = [...new Set((flags ?? []).map((f) => f.question_id))];
     const meta: Record<string, Row> = {};
     if (qids.length) {
-      const { data: qs } = await supa
-        .from('questions').select('id, level, school, year, question_number').in('id', qids);
-      for (const q of qs ?? []) meta[q.id as string] = q;
+      for (let i = 0; i < qids.length; i += 200) {
+        const { data: qs } = await supa
+          .from('questions').select('id, level, school, year, question_number, image_url, figure_url')
+          .in('id', qids.slice(i, i + 200));
+        for (const q of qs ?? []) meta[q.id as string] = q;
+      }
     }
     return NextResponse.json({
-      items: (flags ?? []).map((f) => ({
-        path: f.path, qid: f.question_id, flagged: true,
-        url: imgSrc(`question_images/${f.path}`), thumb: thumbUrl(f.path),
-        level: meta[f.question_id]?.level ?? null, school: meta[f.question_id]?.school ?? null,
-        year: meta[f.question_id]?.year ?? null, qnum: meta[f.question_id]?.question_number ?? null,
-      })),
+      items: (flags ?? []).map((f) => {
+        const q = meta[f.question_id as string];
+        // What the question shows TODAY. Differs from f.path wherever the
+        // figure has been cleaned or replaced since it was flagged.
+        const now = q ? stemPaths(q as Row)[0] ?? null : null;
+        return {
+          path: f.path, qid: f.question_id, flagged: true,
+          url: imgSrc(`question_images/${f.path}`), thumb: thumbUrl(f.path),
+          currentUrl: now ? imgSrc(`question_images/${now}`) : null,
+          changed: !!now && now !== f.path,
+          level: q?.level ?? null, school: q?.school ?? null,
+          year: q?.year ?? null, qnum: q?.question_number ?? null,
+        };
+      }),
+      withheld: new Set((flags ?? []).map(f => f.question_id)).size,
     });
   }
 
@@ -115,6 +134,16 @@ export async function POST(req: NextRequest) {
   const path = typeof body.path === 'string' ? body.path.replace(/^question_images\//, '') : '';
   const questionId = typeof body.questionId === 'string' ? body.questionId : '';
   if (!path || !questionId) return NextResponse.json({ error: 'path and questionId required' }, { status: 400 });
+  // Resolve, don't delete: 'fixed' releases the question to every serving pool
+  // (the gate excludes only status='open') AND keeps the record that it was
+  // once looked at — which is how the 76 from 28 Aug are recorded.
+  if (body.resolve === true) {
+    const { error } = await supa.from('figure_flags')
+      .update({ status: 'fixed', note: typeof body.note === 'string' ? body.note.slice(0, 500) : null })
+      .eq('path', path);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true, status: 'fixed' });
+  }
   if (body.flag === true) {
     const { error } = await supa.from('figure_flags')
       .upsert({ path, question_id: questionId, status: 'open' });

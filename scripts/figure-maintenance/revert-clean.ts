@@ -19,6 +19,11 @@ const supa = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SECRET
     const hist = (gm.figure_history ?? {}) as { undo?: { figure_url: string | null; image_url: string | null }[]; redo?: unknown[] };
     const undo = Array.isArray(hist.undo) ? hist.undo : [];
     if (!undo.length) { none++; continue; }
+    // Only step back a CLEAN. A row whose last edit was a ♻️ Replace also has
+    // undo history, and undoing that would throw away a figure someone chose
+    // deliberately — not this script's business.
+    const cleanedInto = Array.isArray(gm.figure_cleaned) ? (gm.figure_cleaned as string[]) : [];
+    if (!cleanedInto.length) { none++; continue; }
     const target = undo[undo.length - 1];
     if (!APPLY) { reverted++; continue; }
     const upd = await supa.from('questions').update({

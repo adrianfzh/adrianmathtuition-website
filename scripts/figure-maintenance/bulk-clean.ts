@@ -43,6 +43,9 @@ async function one(r: Row) {
   if (!path) { skipped++; return; }
   const objName = path.replace(/^question_images\//, '');
   const gm = (r.gen_meta && typeof r.gen_meta === 'object' ? r.gen_meta : {}) as Record<string, unknown>;
+  // Ruled out by hand: a figure whose pale fill the page finder cannot tell
+  // from haze (see the note in @/lib/figure-clean).
+  if (gm.figure_no_clean === true) { skipped++; return; }
   const already = Array.isArray(gm.figure_cleaned) ? (gm.figure_cleaned as string[]) : [];
   if (already.includes(objName)) { skipped++; return; }        // idempotent
   try {
