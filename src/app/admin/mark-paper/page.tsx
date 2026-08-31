@@ -1518,11 +1518,18 @@ export default function MarkPaperPage() {
                 hint: 'Marked but not yet released to the student, not marked 👁 Seen, and not ticked ✓ — the papers still waiting on you.' },
               { key: 'seen', title: '✓ Done', color: '#047857', rows: seenRuns,
                 hint: 'Released to the student, marked 👁 Seen (handed back in class), or ticked ✓.' },
-            ].filter((s) => s.rows.length > 0).map((section) => (
-            <div key={section.key}>
-              <div title={section.hint} style={{ fontWeight: 700, fontSize: 11, color: section.color, textTransform: 'uppercase', letterSpacing: 0.6, padding: '10px 0 2px' }}>
-                {section.title} ({section.rows.length})
-              </div>
+            ].filter((s) => s.rows.length > 0).map((section) => {
+            // Done folds away (Adrian, 31 Aug 2026): it is the longer list and
+            // the one with nothing left to do on it, so leaving it open pushed
+            // the papers still waiting off the top of the screen. Same rows
+            // either way — only the wrapper differs.
+            const Shell = (section.key === 'seen' ? 'details' : 'div') as 'details' | 'div';
+            const headStyle = { fontWeight: 700, fontSize: 11, color: section.color, textTransform: 'uppercase' as const, letterSpacing: 0.6, padding: '10px 0 2px' };
+            return (
+            <Shell key={section.key}>
+              {section.key === 'seen'
+                ? <summary title={section.hint} style={{ ...headStyle, cursor: 'pointer' }}>{section.title} ({section.rows.length})</summary>
+                : <div title={section.hint} style={headStyle}>{section.title} ({section.rows.length})</div>}
               {section.rows.map((run) => {
               // Grouped row layout (14 Aug 2026, from Adrian's screenshot): info on
               // the left, then ONE right-aligned actions cluster whose links and
@@ -1616,7 +1623,17 @@ export default function MarkPaperPage() {
                         — same word, and the reason it stopped was visible only
                         in the database. It waits differently, so it says so. */}
                     {run.sheet_status === 'failed' ? '📘 sheet failed'
-                      : run.sheet_status === 'done' ? '📘 sheet ready'
+                      : run.sheet_status === 'done' ? (
+                        // "Ready" left Adrian to go and find the file in
+                        // /Self-Study/<Student>/. The one step between a sheet
+                        // finishing and being read should not be a hunt.
+                        <a href={`/api/admin/sheet-open?runId=${encodeURIComponent(run.id)}`}
+                          target="_blank" rel="noopener noreferrer"
+                          style={{ color: 'inherit', fontWeight: 600 }}
+                          title="Open the .docx from Dropbox">
+                          📘 open sheet ↗
+                        </a>
+                      )
                       : run.sheet_status === 'claimed' ? `📘 ${run.sheet_stage || 'writing'}…`
                       : run.sheet_error ? '📘 bounced — retrying' : '📘 sheet queued'}
                   </span>
@@ -1766,8 +1783,9 @@ export default function MarkPaperPage() {
               </div>
               );
             })}
-            </div>
-            ))}
+            </Shell>
+            );
+            })}
 
             {runsMore && (
               <div style={{ paddingTop: 10, borderTop: '1px solid #f3f4f6' }}>
