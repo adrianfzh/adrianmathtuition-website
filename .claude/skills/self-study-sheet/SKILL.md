@@ -154,6 +154,16 @@ Invoke `create-teaching-notes` and give it this brief:
   solution, with at most a one-line italic strategy opener.
 - **Worked examples reproduce the SHAPE of the question they got wrong**, with
   changed numbers — never a generic textbook example of the same topic.
+- **The Practice must drill the METHOD the Example just taught, not the topic
+  it belongs to** (Adrian, 31 Aug 2026). Example 3 taught "pair every
+  combination of powers that adds up to n" on `(1+4x)(3-ax)⁴`, and its practice
+  then asked for the first four terms of `(2 - x/2)⁵` — a plain expansion, which
+  never pairs anything. The student drills something adjacent and the skill goes
+  untouched. Test each practice item by asking: **can this be answered without
+  doing the thing the Example taught?** If yes, it is the wrong question.
+  Prefer real bank questions of the same shape (the QB has them: the pairing
+  method appears as `(2+3x)(1-2x)ⁿ` at Catholic High 2024 Q8(a), and as
+  `(1-x/2)⁸(2/x+3x)²` at New Town 2022 Q3(b)).
 - Plain skill-phrase headings ("Differentiating a square root of a linear
   expression"); teach by contrast in one example where two rules compete;
   chain examples ("From Example 5: … ← carried forward"); 2–4 practice per
@@ -196,11 +206,15 @@ Invoke `create-teaching-notes` and give it this brief:
 
 **Two things the first sheets got wrong, both non-negotiable:**
 
-- **Real equations, never plain text.** `dV/dr = 4πr²` typed as a run of
-  characters is not acceptable output; it must be OMML, one step per line with
-  the `=` signs aligned, exactly as STYLE.md §equation-steps requires. The
-  marking annotations already render proper fractions and derivatives — the
-  sheet cannot look worse than the paper it came from.
+- **Real equations, never plain text — headings and question stems included.**
+  `dV/dr = 4πr²` typed as a run of characters is not acceptable output; it must
+  be OMML, one step per line with the `=` signs aligned, exactly as STYLE.md
+  §equation-steps requires. This is the rule most often half-obeyed: the worked
+  steps come out typeset while a section heading still reads "Kinematics — v =
+  dx/dt" and an example stem writes `40sin(πt/4)` inline (Adrian, 31 Aug 2026).
+  If it is maths, it is an equation object, wherever it appears. The marking
+  annotations already render proper fractions and derivatives — the sheet cannot
+  look worse than the paper it came from.
 - **A geometry or area question gets a diagram — EXAMPLES AND PRACTICE ALIKE.**
   If the skill is about a shape, a region, or coordinates, the student must be
   able to SEE it: draw it per DIAGRAMS.md and view the PNG before embedding.
