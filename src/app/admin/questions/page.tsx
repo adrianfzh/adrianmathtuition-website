@@ -125,6 +125,10 @@ export default function QuestionBankPage() {
   const [pdfSpace, setPdfSpace] = useState(true);
   const [pdfAnswerKey, setPdfAnswerKey] = useState(true);
   const [pdfOrigNum, setPdfOrigNum] = useState(true);
+  // Append the worked solutions after the paper (and after the answers, when
+  // both are on). Off by default — a paper you hand a student must not carry
+  // its own solutions.
+  const [pdfSolutions, setPdfSolutions] = useState(false);
   const [pdfTitle, setPdfTitle] = useState(''); // prefilled with the auto title on paper open, editable in place
   const [pdfResult, setPdfResult] = useState<{ url: string; count: number; marksTotal: number; cached: boolean } | null>(null);
   const [solResult, setSolResult] = useState<{ url: string; count: number } | null>(null);
@@ -424,6 +428,7 @@ export default function QuestionBankPage() {
               action: 'paper-pdf', school: pp.school, year: pp.year,
               level: pp.level || undefined, paper: pp.paper || undefined, examType: pp.examType || undefined,
               workingSpace: pdfSpace, answerKey: pdfAnswerKey, originalNumbering: pdfOrigNum,
+              solutions: pdfSolutions,
               // No shared title — each paper keeps its own auto title.
             }),
           });
@@ -471,6 +476,7 @@ export default function QuestionBankPage() {
           action: 'paper-pdf', school: m.school, year: m.year,
           level: m.level || undefined, paper: m.paper || undefined, examType: m.examType || undefined,
           workingSpace: pdfSpace, answerKey: pdfAnswerKey, originalNumbering: pdfOrigNum,
+          solutions: pdfSolutions,
           title: pdfTitle.trim() || undefined,
         }),
       });
@@ -917,8 +923,9 @@ export default function QuestionBankPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginTop: 6 }}>
               {([
                 ['working space', pdfSpace, setPdfSpace],
-                ['answer key', pdfAnswerKey, setPdfAnswerKey],
                 ['original numbering', pdfOrigNum, setPdfOrigNum],
+                ['answers at the end', pdfAnswerKey, setPdfAnswerKey],
+                ['full solutions at the end', pdfSolutions, setPdfSolutions],
               ] as const).map(([label, val, set]) => (
                 <label key={label} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12.5, color: '#374151', cursor: 'pointer' }}>
                   <input type="checkbox" checked={val} onChange={e => set(e.target.checked)} />
@@ -1049,26 +1056,45 @@ export default function QuestionBankPage() {
                     style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '4px 10px', cursor: 'pointer' }}>Clear</button>
                   <button onClick={() => runBatch('solutions')} disabled={!!batch?.running}
                     style={{ fontSize: 13.5, fontWeight: 600, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', opacity: batch?.running ? 0.6 : 1 }}>
-                    {batch?.running && batch.kind === 'solutions' ? `Building ${batch.done + 1}/${batch.total}…` : `📄 ${picked.size} solutions PDF${picked.size === 1 ? '' : 's'}`}
+                    {batch?.running && batch.kind === 'solutions' ? `Building ${batch.done + 1}/${batch.total}…` : `📄 Solutions only`}
                   </button>
                   <button onClick={() => runBatch('paper')} disabled={!!batch?.running}
                     style={{ fontSize: 13.5, fontWeight: 600, color: '#fff', background: C.navy, border: 'none', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', opacity: batch?.running ? 0.6 : 1 }}>
-                    {batch?.running && batch.kind === 'paper' ? `Building ${batch.done + 1}/${batch.total}…` : `🖨 ${picked.size} paper PDF${picked.size === 1 ? '' : 's'}`}
+                    {batch?.running && batch.kind === 'paper' ? `Building ${batch.done + 1}/${batch.total}…` : `🖨 Build ${picked.size} paper${picked.size === 1 ? '' : 's'}`}
                   </button>
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: 14, marginTop: 8, fontSize: 12.5, color: '#374151', flexWrap: 'wrap', alignItems: 'center' }}>
-                {([['working space', pdfSpace, setPdfSpace], ['answer key', pdfAnswerKey, setPdfAnswerKey],
-                   ['original numbering', pdfOrigNum, setPdfOrigNum]] as const).map(([lbl, val, set]) => (
-                  <label key={lbl} style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
-                    <input type="checkbox" checked={val} onChange={e => set(e.target.checked)} disabled={batch?.running} />{lbl}
+              <div style={{ marginTop: 10, fontSize: 12.5, color: '#374151' }}>
+                <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span style={{ color: C.muted, width: 132 }}>At the end of each:</span>
+                  {([['answers', pdfAnswerKey, setPdfAnswerKey],
+                     ['full solutions', pdfSolutions, setPdfSolutions]] as const).map(([lbl, val, set]) => (
+                    <label key={lbl} style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
+                      <input type="checkbox" checked={val} onChange={e => set(e.target.checked)} disabled={batch?.running} />{lbl}
+                    </label>
+                  ))}
+                  <span style={{ color: C.muted, fontSize: 12 }}>
+                    {pdfAnswerKey && pdfSolutions ? '→ paper, then answers, then solutions'
+                      : pdfSolutions ? '→ paper, then solutions'
+                      : pdfAnswerKey ? '→ paper, then an answer key'
+                      : '→ questions only'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginTop: 5 }}>
+                  <span style={{ color: C.muted, width: 132 }}>Paper layout:</span>
+                  {([['working space', pdfSpace, setPdfSpace],
+                     ['original numbering', pdfOrigNum, setPdfOrigNum]] as const).map(([lbl, val, set]) => (
+                    <label key={lbl} style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
+                      <input type="checkbox" checked={val} onChange={e => set(e.target.checked)} disabled={batch?.running} />{lbl}
+                    </label>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginTop: 5 }}>
+                  <span style={{ color: C.muted, width: 132 }}>Solutions-only doc:</span>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
+                    <input type="checkbox" checked={solWithQuestions} onChange={e => setSolWithQuestions(e.target.checked)} disabled={batch?.running} />repeat each question above its solution
                   </label>
-                ))}
-                <span style={{ color: C.muted }}>· paper PDFs</span>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer', marginLeft: 6 }}>
-                  <input type="checkbox" checked={solWithQuestions} onChange={e => setSolWithQuestions(e.target.checked)} disabled={batch?.running} />with questions
-                </label>
-                <span style={{ color: C.muted }}>· solutions</span>
+                </div>
               </div>
               {batch?.running && (
                 <div style={{ marginTop: 8, fontSize: 12.5, color: C.muted }}>

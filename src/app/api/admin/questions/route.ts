@@ -22,6 +22,7 @@ import { createHash } from 'crypto';
 import { assessCoverage, answerKeyLines, type AnswerPart } from '@/lib/paper-reconstruction';
 import { KIOSK_LEVELS } from '@/lib/kiosk-session';
 import { put } from '@vercel/blob';
+import { PDFDocument } from 'pdf-lib';
 import Anthropic from '@anthropic-ai/sdk';
 import { cleanScan } from '@/lib/figure-clean';
 
@@ -150,6 +151,45 @@ function card(row: Row) {
     aiGenerated: row.ai_generated === true,
     thumb: resolveImages(row, 1)[0] ?? null,
   };
+}
+
+/** The worked-solution items for a set of question rows, in the order given.
+ *  Shared so solutions appended to a paper and the standalone solutions
+ *  document can never drift apart. Also reports how many had nothing to show. */
+function solutionItemsFrom(rows: Row[]): { items: SolutionsItem[]; missing: number } {
+  let missing = 0;
+  const items: SolutionsItem[] = [];
+  for (const row of rows) {
+    // Rollup: since the 2026-08-27 canonicalisation the worked solution may
+    // live only in parts[].solution — never read the top-level column alone.
+    const solution = rollupSolution(row.solution as string | null, row.parts);
+    const solutionImages = Array.isArray(row.solution_images)
+      ? (row.solution_images as string[]).filter(isPlausibleImagePath).map(imgSrc).slice(0, 6)
+      : [];
+    if (!solution && !solutionImages.length) missing++;
+    items.push({
+      qnum: (row.question_number as string | null) ?? null,
+      questionText: ((row.question_text as string | null) ?? '').trim(),
+      solution,
+      answer: ((row.answer as string | null) ?? '').trim(),
+      parts: (row.parts as SolutionsPart[] | null) ?? null,
+      solutionImages,
+    });
+  }
+  return { items, missing };
+}
+
+/** Glue PDFs end to end. The solutions section is rendered by its OWN renderer
+ *  and appended, rather than reimplemented inside the paper template — one
+ *  solutions layout, used by both documents. */
+async function concatPdfs(parts: Buffer[]): Promise<Buffer> {
+  const out = await PDFDocument.create();
+  for (const p of parts) {
+    const doc = await PDFDocument.load(new Uint8Array(p));
+    const pages = await out.copyPages(doc, doc.getPageIndices());
+    for (const pg of pages) out.addPage(pg);
+  }
+  return Buffer.from(await out.save());
 }
 
 /** Bucket object names with an OPEN redraw flag, for these questions. Fails
@@ -709,27 +749,8 @@ export async function POST(req: NextRequest) {
       .in('id', ids);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const byId = new Map((data ?? []).map((row) => [row.id as string, row]));
-    let missing = 0;
-    const items: SolutionsItem[] = [];
-    for (const qid of ids) {
-      const row = byId.get(qid) as Row | undefined;
-      if (!row) continue;
-      // Rollup: since the 2026-08-27 canonicalisation the worked solution may
-      // live only in parts[].solution — never read the top-level column alone.
-      const solution = rollupSolution(row.solution, row.parts);
-      const solutionImages = Array.isArray(row.solution_images)
-        ? (row.solution_images as string[]).filter(isPlausibleImagePath).map(imgSrc).slice(0, 6)
-        : [];
-      if (!solution && !solutionImages.length) missing++;
-      items.push({
-        qnum: (row.question_number as string | null) ?? null,
-        questionText: ((row.question_text as string | null) ?? '').trim(),
-        solution,
-        answer: ((row.answer as string | null) ?? '').trim(),
-        parts: (row.parts as SolutionsPart[] | null) ?? null,
-        solutionImages,
-      });
-    }
+    const ordered = ids.map(qid => byId.get(qid)).filter(Boolean) as Row[];
+    const { items, missing } = solutionItemsFrom(ordered);
     if (!items.length) return NextResponse.json({ error: 'no questions found' }, { status: 400 });
     const title = typeof body.title === 'string' && body.title.trim() ? body.title.trim().slice(0, 80) : 'Selected questions';
     try {
@@ -778,6 +799,11 @@ export async function POST(req: NextRequest) {
     const workingSpace = body.workingSpace !== false;
     const answerKey = body.answerKey !== false;
     const originalNumbering = body.originalNumbering !== false;
+    // Worked solutions appended after the paper (and after the answer key, when
+    // both are asked for) — so one file is the paper, its answers and its
+    // solutions in the order you would hand them out. Opt-in: a sit-able paper
+    // with the solutions stapled on is not what you give a student.
+    const withSolutions = body.solutions === true;
 
     const partHasImage = (list: Part[] | null | undefined): boolean =>
       (list ?? []).some((pt) =>
@@ -823,7 +849,7 @@ export async function POST(req: NextRequest) {
     // toggle misses naturally, with no manual invalidation to forget.
     const cacheKey = createHash('sha256').update(JSON.stringify({
       v: PAPER_PDF_RENDER_VERSION,
-      opts: { workingSpace, answerKey, originalNumbering, title: titleBits },
+      opts: { workingSpace, answerKey, originalNumbering, withSolutions, title: titleBits },
       rows: rows.map((r) => [r.id, r.question_number, r.total_marks, r.question_text, r.parts, r.answer, r.image_url, r.figure_url, r.has_image]),
     })).digest('hex');
     const payload = {
@@ -835,7 +861,7 @@ export async function POST(req: NextRequest) {
     if (hit?.url) return NextResponse.json({ url: hit.url, cached: true, ...payload });
 
     try {
-      const pdf = await renderPaperPDF({
+      let pdf = await renderPaperPDF({
         title: titleBits,
         metaLine: `${rows.length} question${rows.length === 1 ? '' : 's'} · ${marksTotal} marks`,
         questions,
@@ -843,6 +869,18 @@ export async function POST(req: NextRequest) {
         answerKey,
         coverageWarning: cov.label || null,
       });
+      if (withSolutions) {
+        const { items, missing } = solutionItemsFrom(rows as Row[]);
+        if (missing) warnings.push(`${missing} question${missing === 1 ? '' : 's'} with no worked solution — the answer alone is printed`);
+        const solPdf = await renderSolutionsPDF({
+          title: `${titleBits} — worked solutions`,
+          items,
+          // The questions are already in this file; repeating each stem above
+          // its solution would double the paper's length for nothing.
+          includeStems: false,
+        });
+        pdf = await concatPdfs([pdf, solPdf]);
+      }
       const blob = await put(`mark-paper/paper-pdfs/${Date.now()}.pdf`, pdf, {
         access: 'public', contentType: 'application/pdf', token: process.env.BLOB_READ_WRITE_TOKEN,
       });
