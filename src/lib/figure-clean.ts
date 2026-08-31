@@ -52,6 +52,54 @@ export const MIN_MIDTONE = 0.005;
  */
 export const FAINT_LO = 150;
 export const FAINT_MIN = 0.02;
+
+/**
+ * The area-tone guard — the one that stops this destroying figures.
+ *
+ * A white-point lift sends everything at or above the white point to pure
+ * white. On a thin grid line that is exactly what you want. On a GREY FILL it
+ * is a disaster: "find the shaded area" loses its shading (East Spring 2018 S1
+ * Q9 lost it outright, GCE 2020 AM Q11 faded to near-nothing), and a
+ * photograph or halftone washes out (BWSS 2023 EM_NA Q12's table, CHIJ 2020 S2
+ * Q1's pictograms). Found by eye on the first applied batch of 45, which was
+ * reverted.
+ *
+ * Telling a fill from a line needs more than a histogram, because both are
+ * "mid-grey". SCALE is what separates them: shrink the image and a thin stroke
+ * spreads over its neighbours, so the mid-tone share CLIMBS, while a solid area
+ * keeps the same share at any size. Measured on those figures:
+ *
+ *     photo 1.00 · pictograms 1.36 · shaded 1.37 · shaded 1.52     <- area
+ *     ogive 3.09 · cum-freq 3.38 · grid 3.38 · tables 3.68 · hatch 4.04  <- strokes
+ *
+ * The gap is wide and the bar sits in the middle of it.
+ */
+export const AREA_SCALE = 12;
+export const AREA_MID_LO = 60;
+export const AREA_MID_HI = 235;
+export const AREA_RATIO_MIN = 2.2;
+/** Below this much mid-tone there is no area to protect. */
+export const AREA_MIN_SHARE = 0.005;
+
+/**
+ * Do this figure's mid-tones look like AREA (a fill, a photo) rather than thin
+ * strokes? PURE, so the judgement is testable without an image.
+ */
+export function looksLikeAreaTone(fullMidShare: number, smallMidShare: number): boolean {
+  if (fullMidShare < AREA_MIN_SHARE) return false;
+  return smallMidShare / fullMidShare < AREA_RATIO_MIN;
+}
+
+/** Share of pixels in the mid band — the measurement both scales feed on. */
+export function midShare(data: Uint8Array | Buffer): number {
+  let n = 0;
+  for (const v of data) if (v >= AREA_MID_LO && v <= AREA_MID_HI) n++;
+  return data.length ? n / data.length : 0;
+}
+
+export type CleanResult =
+  | { ok: true; out: Buffer; whitePoint: number }
+  | { ok: false; reason: 'already-clean' | 'area-tone' };
 /** A mild unsharp so thin lines survive the browser's downscale. Deliberately
  *  gentle: a hard sharpen puts halos along every grid line. */
 export const SHARPEN = { sigma: 1.1, m1: 1, m2: 2 };
@@ -108,15 +156,24 @@ export function whitePointFor(hist: Histogram): number | null {
  * The measurement is greyscale but the lift runs on the COLOUR channels, so a
  * colour figure stays colour.
  */
-export async function cleanScan(src: Buffer): Promise<{ out: Buffer; whitePoint: number } | null> {
-  const { data } = await sharp(src).greyscale().raw().toBuffer({ resolveWithObject: true });
+export async function cleanScan(src: Buffer): Promise<CleanResult> {
+  const meta = await sharp(src).metadata();
+  const { data } = await sharp(src).flatten({ background: '#fff' }).greyscale()
+    .raw().toBuffer({ resolveWithObject: true });
   const whitePoint = whitePointFor(greyHistogram(data));
-  if (whitePoint === null) return null;
+  if (whitePoint === null) return { ok: false, reason: 'already-clean' };
+
+  // Refuse anything whose mid-tones are area rather than strokes.
+  const small = await sharp(src).flatten({ background: '#fff' }).greyscale()
+    .resize({ width: Math.max(8, Math.round((meta.width ?? 96) / AREA_SCALE)) })
+    .raw().toBuffer({ resolveWithObject: true });
+  if (looksLikeAreaTone(midShare(data), midShare(small.data))) return { ok: false, reason: 'area-tone' };
+
   const a = 255 / (whitePoint - BLACK_POINT);
   const out = await sharp(src)
     .linear(a, -BLACK_POINT * a)
     .sharpen(SHARPEN)
     .png({ compressionLevel: 9 })
     .toBuffer();
-  return { out, whitePoint };
+  return { ok: true, out, whitePoint };
 }

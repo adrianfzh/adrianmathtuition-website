@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { whitePointFor, greyHistogram, PAGE_FRACTION, WP_FLOOR, INK_CEILING, MIN_MIDTONE, FAINT_MIN } from './figure-clean';
+import {
+  whitePointFor, greyHistogram, looksLikeAreaTone, midShare,
+  PAGE_FRACTION, WP_FLOOR, INK_CEILING, MIN_MIDTONE, FAINT_MIN, AREA_RATIO_MIN,
+} from './figure-clean';
 
 /** A histogram with `n` pixels spread over the given [grey, count] pairs. */
 const hist = (pairs: [number, number][]) => {
@@ -89,5 +92,51 @@ describe('whitePointFor', () => {
     expect(INK_CEILING).toBe(235);
     expect(MIN_MIDTONE).toBe(0.005);
     expect(FAINT_MIN).toBe(0.02);
+  });
+});
+
+describe('looksLikeAreaTone', () => {
+  // The real measurements from the batch of 45 that had to be reverted:
+  // [full-res mid share, 1/12-scale mid share].
+  const AREA: [string, number, number][] = [
+    ['BWSS 2023 table photograph', 0.9098, 0.9134],
+    ['CHIJ 2020 baby pictograms',  0.1490, 0.2021],
+    ['East Spring 2018 shaded region', 0.2983, 0.4095],
+    ['GCE 2020 shaded trapezium',  0.1952, 0.2975],
+  ];
+  const STROKES: [string, number, number][] = [
+    ['GCE 2022 ogive',          0.1000, 0.3091],
+    ['SCGS 2022 cum-freq',      0.1370, 0.4625],
+    ['Greenridge 2025 grid',    0.1185, 0.4008],
+    ['Bukit Merah 2023 tables', 0.0919, 0.3382],
+    ['ACS 2025 hatched region', 0.0459, 0.1856],
+  ];
+
+  it.each(AREA)('protects %s (a lift would wash it out)', (_n, full, small) => {
+    expect(looksLikeAreaTone(full, small)).toBe(true);
+  });
+
+  it.each(STROKES)('still cleans %s (thin strokes, not area)', (_n, full, small) => {
+    expect(looksLikeAreaTone(full, small)).toBe(false);
+  });
+
+  it('keeps a real margin either side of the bar', () => {
+    // The worst area case and the best stroke case must not be adjacent, or the
+    // guard is luck rather than a measurement.
+    const worstArea = Math.max(...AREA.map(([, f, s]) => s / f));
+    const bestStroke = Math.min(...STROKES.map(([, f, s]) => s / f));
+    expect(worstArea).toBeLessThan(AREA_RATIO_MIN);
+    expect(bestStroke).toBeGreaterThan(AREA_RATIO_MIN);
+    expect(bestStroke - worstArea).toBeGreaterThan(1.0);
+  });
+
+  it('ignores a figure with almost no mid-tone at all', () => {
+    // Pure black-on-white line art has no area to protect; the ratio there is
+    // noise, so it must not be allowed to veto anything.
+    expect(looksLikeAreaTone(0.001, 0.0005)).toBe(false);
+  });
+
+  it('midShare counts only the mid band', () => {
+    expect(midShare(Uint8Array.from([0, 10, 100, 200, 250, 255]))).toBeCloseTo(2 / 6);
   });
 });

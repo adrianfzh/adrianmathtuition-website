@@ -403,12 +403,16 @@ export async function POST(req: NextRequest) {
     if (dl.error || !dl.data) return NextResponse.json({ error: `could not read the figure: ${dl.error?.message ?? 'missing'}` }, { status: 502 });
     const src = Buffer.from(await dl.data.arrayBuffer());
 
-    let cleaned: { out: Buffer; whitePoint: number } | null;
+    let cleaned: Awaited<ReturnType<typeof cleanScan>>;
     try { cleaned = await cleanScan(src); }
     catch (e) { return NextResponse.json({ error: `clean failed: ${(e as Error).message}` }, { status: 500 }); }
-    // Already white: say so and change NOTHING — no bucket object, no history
-    // entry, so the undo stack still points at the last real edit.
-    if (!cleaned) return NextResponse.json({ alreadyClean: true, question: await freshDetail(id) });
+    // Nothing to do, or nothing SAFE to do: change nothing at all — no bucket
+    // object, no history entry, so the undo stack still points at the last
+    // real edit. `area-tone` is the important one: a lift would wash out a
+    // grey fill or a photograph.
+    if (!cleaned.ok) {
+      return NextResponse.json({ alreadyClean: true, skipReason: cleaned.reason, question: await freshDetail(id) });
+    }
 
     const name = `${crypto.randomUUID()}.png`;
     const up = await supa.storage.from('question_images').upload(name, cleaned.out, { contentType: 'image/png' });
