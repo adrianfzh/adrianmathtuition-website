@@ -146,6 +146,43 @@ Picking the wave is teaching judgment — the checkpoint is his.
 
 ## Step 4 — author the sheet
 
+### The reference sheet
+
+`/Self-Study/Khoo Ke Er Klaire/Practice Again (Wave 1) — klaire am tys 2021 p1.docx`
+is the sheet Adrian says is closest to what he wants (31 Aug 2026, comparing it
+against Kiara's and Sophie's from the same evening). Read it before authoring.
+What makes it the reference — all of it reproducible, none of it accidental:
+
+- **The heading TEACHES; it is not a topic label.** "Make it ONE base before you
+  do anything else", "A curved edge is not a polygon — split the region and
+  integrate", "When the power is −1 the power rule breaks". Kiara's sheet
+  headed the same kind of skill "Always Increasing / Always Positive Leading To
+  The Discriminant Condition" — Title Case, a filing label, and a student who
+  reads only the headings learns nothing from it. A student who reads only
+  Klaire's headings has already been taught four things.
+- **Two examples where the skill has two faces.** Example 1a took `12ˣ = 7×4ˣ⁺¹`
+  (same base by logs), 1b took `log₂x + log₄(x+3) = 3` (same base by change of
+  base) — one skill, both faces, then one practice set covering both. Kiara got
+  one example per skill throughout.
+- **The three triage tiers are three visible ZONES, in order**, not tags mixed
+  into the flow: the numbered skills with Example + Practice, then
+  **"Read these once — no practice needed"** (② — one line each, no questions),
+  then **"Optional — do these only if you have time"** (③ — teaching, then a
+  single `(Optional)` question with its answer). Kiara's sheet put a bare
+  `(Optional)` tag above a mid-document skill, so nothing tells a student who is
+  short of time where to stop.
+- **Diagrams in the Example AND in the Practice.** Klaire's area section carried
+  three figures — one in the worked example and one on each practice item.
+  Kiara's sheet had none at all.
+- **Density.** 107 fractions and 50 display equations in Klaire's, against 29
+  and 34 in Kiara's, on comparable page counts. The difference is not padding:
+  it is that Kiara's Example 1 solution is four paragraphs of bare algebra with
+  no opening line in plain English, and Klaire's boxes all open with one
+  ("You are given dV/dt and asked for dr/dt. Build the chain first, substitute
+  second.") and close with a red danger line and a blue ✓ check.
+- **The fixed opening block, all three lines**, and the name as a faded-blue
+  `For <Full Name>` subtitle. Kiara's had one instruction line and no name.
+
 Invoke `create-teaching-notes` and give it this brief:
 
 - **Example → Practice pairs, numbered straight through.** No TRIGGER /
@@ -229,6 +266,45 @@ Invoke `create-teaching-notes` and give it this brief:
   If it is maths, it is an equation object, wherever it appears. The marking
   annotations already render proper fractions and derivatives — the sheet cannot
   look worse than the paper it came from.
+
+- **Every fraction is STACKED — numerator over denominator, always** (Adrian,
+  31 Aug 2026). In python-docx terms: an `m:f` with **no `m:fPr/m:type`** (the
+  default `bar`). Never emit `<m:type m:val="lin"/>` or `"skw"` — Word draws
+  those as `4/3` and `1/2` side by side, and on a page where every other
+  fraction is stacked the small ones read as a different, sloppier standard.
+  Klaire's sheet carried nine linear fractions, all of them the "simple" ones
+  (`½`, `4/3`) the author judged not worth stacking — that judgement is wrong,
+  it is exactly the constant in front of `πr³` that a student mis-copies.
+  The same applies to slashes typed in PROSE: "so v = dx/dt" inside a sentence
+  is still maths, so it is still an equation object.
+  Sweep the finished file before filing it:
+
+  ```
+  python3 -c "import zipfile,re,sys; x=zipfile.ZipFile(sys.argv[1]).read('word/document.xml').decode(); \
+  print('linear fractions:', len(re.findall(r'<m:type m:val=\"(?:lin|skw)\"/>', x))); \
+  print('slashes in maths:', re.findall(r'<m:t[^>]*>([^<]*/[^<]*)</m:t>', x))" sheet.docx
+  ```
+
+  Zero linear fractions. The only slashes allowed in an `m:t` are units —
+  `cm/s`, `m/s²`.
+
+- **The solution box hugs its content, top and bottom** (Adrian, 31 Aug 2026 —
+  *"i can't backspace to bring the box up to below the solution"*). Two separate
+  faults make that gap, and neither can be deleted by hand:
+
+  - **Below `Solution:`** — there is no empty paragraph there to remove, so
+    Backspace does nothing; the gap is the label paragraph's `space_after` plus
+    the cell's top margin. Set `space_after = 0` on the `Solution:` label and
+    `space_before = 0` on the cell's first paragraph, so the box starts where
+    the label ends.
+  - **Inside the box, at the bottom** — a trailing EMPTY paragraph in the cell.
+    Word will not let you delete the last paragraph of a cell, so that space is
+    permanent for whoever edits the sheet. Never append one: the box's last
+    paragraph must be the last line of teaching. Four of Klaire's six boxes and
+    every one of Kiara's ended on an empty paragraph.
+
+  Check both before filing: the last paragraph of every table cell must have
+  text, and no table may be preceded by an empty paragraph.
 - **A geometry or area question gets a diagram — EXAMPLES AND PRACTICE ALIKE.**
   If the skill is about a shape, a region, or coordinates, the student must be
   able to SEE it: draw it per DIAGRAMS.md and view the PNG before embedding.
