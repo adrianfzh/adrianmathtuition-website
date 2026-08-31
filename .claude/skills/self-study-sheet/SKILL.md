@@ -300,8 +300,8 @@ Invoke `create-teaching-notes` and give it this brief:
   - **Inside the box, at the bottom** — a trailing EMPTY paragraph in the cell.
     Word will not let you delete the last paragraph of a cell, so that space is
     permanent for whoever edits the sheet. Never append one: the box's last
-    paragraph must be the last line of teaching. Four of Klaire's six boxes and
-    every one of Kiara's ended on an empty paragraph.
+    paragraph must be the last line of teaching. Two of Klaire's six boxes ended
+    on an empty paragraph, and five of Kiara's ten.
 
   Check both before filing: the last paragraph of every table cell must have
   text, and no table may be preceded by an empty paragraph.
