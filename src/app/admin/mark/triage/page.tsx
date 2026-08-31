@@ -369,19 +369,22 @@ export default function TriagePage() {
                 );
               })()}
               {run.pdfStale && (
-                <>
-                  {' · '}
-                  <span style={{ color: '#b45309', fontWeight: 600 }} title="A mark was changed after this paper was marked, so the PDF still prints the old total. Release is blocked until you attach the copy you corrected.">
-                    ⚠ PDF shows the old total
-                  </span>
-                  {' '}
-                  <label style={{ color: '#1d4ed8', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}>
-                    {amendBusy === run.id ? 'Uploading…' : '✍️ Upload amended'}
-                    <input type="file" accept="application/pdf" hidden disabled={!!amendBusy}
-                      onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAmended(run.id, f); e.target.value = ''; }} />
-                  </label>
-                </>
+                <> · <span style={{ color: '#b45309', fontWeight: 600 }} title="A mark was changed after this paper was marked, so the PDF still prints the old total. Release is blocked until you attach the copy you corrected.">
+                  ⚠ PDF shows the old total
+                </span></>
               )}
+              {/* Always offered, not only when a mark was overridden (31 Aug
+                  2026): Adrian edits the marked PDF as a matter of course — a
+                  clearer comment, a correction he made by hand — and gating the
+                  upload behind the stale flag hid it for exactly the paper he
+                  was editing. The warning above is a separate state. */}
+              {' · '}
+              <label style={{ color: '#1d4ed8', fontWeight: 600, cursor: 'pointer' }}
+                title="Upload the marked PDF after you have written on it — that copy becomes the one the student opens">
+                {amendBusy === run.id ? 'Uploading…' : '✍️ Upload amended'}
+                <input type="file" accept="application/pdf" hidden disabled={!!amendBusy}
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAmended(run.id, f); e.target.value = ''; }} />
+              </label>
             </div>
           ) : (
             run.flagged.map(q => {
@@ -430,11 +433,29 @@ export default function TriagePage() {
                     );
                   })()}
 
-                  {q.reviewReasons.map((reason, i) => (
-                    <div key={i} style={{ background: C.flagBg, border: `1px solid ${C.flagBorder}`, color: C.flag, borderRadius: 6, padding: '6px 8px', fontSize: 13, marginBottom: 6 }}>
-                      ⚠ {reason}
-                    </div>
-                  ))}
+                  {q.reviewReasons.map((reason, i) => {
+                    // An answer-key disagreement is a comparison, and a
+                    // comparison buried in a sentence has to be re-read to be
+                    // understood. Kayla's Q6 said "key: (14y+7)/(...); marking
+                    // accepted: (14y-3)/(...)" mid-prose — the one flag type
+                    // where Adrian decides by looking at two expressions side
+                    // by side, so show them that way and keep the rest of the
+                    // sentence underneath.
+                    const m = /key:\s*(.+?);\s*marking accepted:\s*(.+?)(?:\.|$)/i.exec(reason);
+                    return (
+                      <div key={i} style={{ background: C.flagBg, border: `1px solid ${C.flagBorder}`, color: C.flag, borderRadius: 6, padding: '6px 8px', fontSize: 13, marginBottom: 6 }}>
+                        {m ? (
+                          <>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '2px 10px', marginBottom: 4, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 13 }}>
+                              <span style={{ fontWeight: 700 }}>key</span><span>{m[1]}</span>
+                              <span style={{ fontWeight: 700 }}>marked</span><span>{m[2]}</span>
+                            </div>
+                            <div style={{ fontSize: 12.5, opacity: 0.85 }}>⚠ {reason.replace(m[0], '').replace(/^\s*[—–-]\s*/, '').trim() || 'Answer key disagrees.'}</div>
+                          </>
+                        ) : <>⚠ {reason}</>}
+                      </div>
+                    );
+                  })}
                   {!q.questionFound && (
                     <div style={{ fontSize: 12, color: C.muted, marginBottom: 6 }}>
                       Max marks here are the marker&apos;s own allocation, not the paper&apos;s.
