@@ -107,7 +107,39 @@ is that it collides with the student's own pen. Green collides with their
 CORRECTIONS (see A3) and would break the green-pen detector's meaning. A third
 colour — or a tinted panel behind the note — is the likely answer.
 
-**C3. The same point made twice. — PARTLY FIXED, and the limit is now measured.**
+**C3. The same point made twice. — FIXED 31 Aug 2026, and the gate turned out to
+be the bigger bug.**
+
+Measured against **all 505 (error_summary, study_note) pairs the marker has ever
+written, across 66 papers** — not against invented examples. Word overlap alone
+flagged **92**, and reading them, essentially every one was GOOD: a short
+diagnosis naming what broke, then a longer note teaching the rule. They overlap
+because they are about the same mathematics. **The gate was silently deleting the
+teaching half of nearly one note in five**, and nobody could see what went missing.
+
+The genuine duplicates are structurally different. In 91 of those 92 the study
+note was LONGER than the diagnosis (median ~2×). The six real restatements in the
+whole corpus are all roughly the SAME LENGTH, because they repeat instead of
+expanding — e.g. *"the student is picked from the 15 who study French, so the
+answer is 8/15"* beside *"your denominator is the French total (8+7=15), not the
+whole 30"*.
+
+So the discriminator is **not overlap, it is whether the second note spent more
+words**. You cannot restate a sentence at twice the length without adding
+something. Requiring overlap ≥ 0.6 AND length ratio ≥ 0.7 takes it from **92 false
+deletions to 6 true ones** on the same corpus. Thresholds set by which way the
+error hurts: a false match costs a student the explanation of their own mistake
+and leaves no trace; a miss costs one visible repeated sentence, which Adrian sees
+and reports. Prefer the miss.
+
+Every test pair is now real corpus data. The lesson worth keeping: an earlier pass
+on this same defect, calibrated on hand-written examples, concluded the ranges
+were inseparable and *lowered* the threshold — making the deletion worse. The
+corpus was available the whole time.
+
+<details><summary>The superseded analysis, kept because the reasoning failure is the point</summary>
+
+**PARTLY FIXED, and the limit is now measured.**
 The placement half was already solved (a part's diagnosis and its ✱ study note are
 folded into one block, so they cannot print in two places). What remained is one
 block saying the same thing twice.
@@ -137,6 +169,8 @@ restatement or a cheap second-pass check.
 
 **What would settle it: the actual duplicated pair from the script Adrian saw.**
 Calibrating on invented examples is how a gate ends up eating the teaching.
+
+</details>
 
 ## D. Open question
 
