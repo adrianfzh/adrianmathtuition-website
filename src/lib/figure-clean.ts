@@ -36,6 +36,22 @@ export const BLACK_POINT = 20;
  *  already black-on-white (a vector render, a previous clean). Doing nothing
  *  beats burning a bucket object and an undo entry on an invisible change. */
 export const MIN_MIDTONE = 0.005;
+/**
+ * The faint-ink band, and the guard that keeps the ink pass off clean art.
+ *
+ * Most of this bank is NOT photocopies — it is digital diagrams extracted from
+ * DOCX, whose only mid-tones are the anti-alias fringe on a black line. Running
+ * the ink pass over those gains nothing and shaves the fringe: measured over 40
+ * sampled figures, ones with under ~1% faint ink came back with LESS ink than
+ * they started with (VJC 2017 JC2 Q5: 2.14% -> 2.10%), while genuine scans
+ * gained a lot (Catholic High 2013 S1 Q9: 4.47% -> 6.68%).
+ *
+ * So when the PAGE is already white, only deepen ink if there is faint ink
+ * worth deepening. A grey page still cleans regardless — there the lift is
+ * fixing the background, which always helps.
+ */
+export const FAINT_LO = 150;
+export const FAINT_MIN = 0.02;
 /** A mild unsharp so thin lines survive the browser's downscale. Deliberately
  *  gentle: a hard sharpen puts halos along every grid line. */
 export const SHARPEN = { sigma: 1.1, m1: 1, m2: 2 };
@@ -76,6 +92,14 @@ export function whitePointFor(hist: Histogram): number | null {
   let mid = 0;
   for (let v = BLACK_POINT + 1; v < wp; v++) mid += hist[v];
   if (mid / total < MIN_MIDTONE) return null;
+
+  // Page already white? Then this would be the ink pass alone, and that only
+  // pays on a figure with genuinely faint ink. Clean line art is left alone.
+  if (pageWp >= INK_CEILING) {
+    let faint = 0;
+    for (let v = FAINT_LO; v < wp; v++) faint += hist[v];
+    if (faint / total < FAINT_MIN) return null;
+  }
   return wp;
 }
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { whitePointFor, greyHistogram, PAGE_FRACTION, WP_FLOOR, INK_CEILING, MIN_MIDTONE } from './figure-clean';
+import { whitePointFor, greyHistogram, PAGE_FRACTION, WP_FLOOR, INK_CEILING, MIN_MIDTONE, FAINT_MIN } from './figure-clean';
 
 /** A histogram with `n` pixels spread over the given [grey, count] pairs. */
 const hist = (pairs: [number, number][]) => {
@@ -19,11 +19,19 @@ describe('whitePointFor', () => {
     expect(wp!).toBeLessThan(245);
   });
 
+  it('leaves clean line art alone even though it is not pure bilevel', () => {
+    // A digital diagram: black lines with a thin anti-alias fringe on a white
+    // page. Measured, the ink pass takes ink OFF these. 0.5% faint is under the
+    // 2% bar, so nothing happens — this is most of the bank.
+    expect(whitePointFor(hist([[0, 800], [190, 50], [255, 9150]]))).toBeNull();
+  });
+
   it('still deepens the INK on a page that is already white', () => {
     // The regression this exists for: once the ogive's background was whitened,
     // the old rule reported ~254, the lift became the identity and the button
     // said "nothing to clean" while the grid still read faint. A white page
     // must be held at the ink ceiling so the LINES get pulled down.
+    // 5% of the page is faint grid ink — a scan, and over the 2% bar.
     expect(whitePointFor(hist([[60, 500], [200, 500], [255, 9000]]))).toBe(INK_CEILING);
   });
 
@@ -33,11 +41,18 @@ describe('whitePointFor', () => {
     expect(whitePointFor(hist([[0, 1200], [255, 8800]]))).toBeNull();
   });
 
-  it('treats a whisker of mid-tone as already clean, but not a real grid', () => {
-    // Just under the threshold (anti-aliasing on vector art) → no-op …
-    expect(whitePointFor(hist([[0, 1000], [150, 30], [255, 8970]]))).toBeNull();
-    // … and just over it (a genuine faint grid) → clean.
-    expect(whitePointFor(hist([[0, 1000], [150, 200], [255, 8800]]))).toBe(INK_CEILING);
+  it('treats a whisker of faint ink as already clean, but not a real grid', () => {
+    // Under the 2% faint bar (anti-aliasing on vector art) → no-op …
+    expect(whitePointFor(hist([[0, 1000], [180, 150], [255, 8850]]))).toBeNull();
+    // … and over it (a genuine faint grid) → clean.
+    expect(whitePointFor(hist([[0, 1000], [180, 400], [255, 8600]]))).toBe(INK_CEILING);
+  });
+
+  it('a GREY page still cleans however little faint ink it has', () => {
+    // There the lift is fixing the background, which always helps — the faint
+    // bar only gates the ink-pass-alone case.
+    const h = hist([[60, 300], [230, 8000], [240, 900], [255, 800]]);
+    expect(whitePointFor(h)).toBeLessThan(INK_CEILING);
   });
 
   it('never lifts a mostly-ink figure past the floor', () => {
@@ -73,5 +88,6 @@ describe('whitePointFor', () => {
     expect(WP_FLOOR).toBe(170);
     expect(INK_CEILING).toBe(235);
     expect(MIN_MIDTONE).toBe(0.005);
+    expect(FAINT_MIN).toBe(0.02);
   });
 });
