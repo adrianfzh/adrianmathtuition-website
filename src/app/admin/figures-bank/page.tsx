@@ -39,6 +39,21 @@ export default function FiguresPage() {
   const [busy, setBusy] = useState('');
   const [level, setLevel] = useState('');
   const [tab, setTab] = useState<'all' | 'flagged'>('all');
+  // ?flagged=1 opens the review directly — the tab buttons are easy to miss,
+  // and a link is something that can be sent.
+  useEffect(() => {
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('flagged') === '1') {
+      setTab('flagged'); setPage(0);
+    }
+  }, []);
+  const goTab = (t: 'all' | 'flagged') => {
+    setTab(t); setPage(0);
+    if (typeof window !== 'undefined') {
+      const u = new URL(window.location.href);
+      if (t === 'flagged') u.searchParams.set('flagged', '1'); else u.searchParams.delete('flagged');
+      window.history.replaceState(null, '', u.toString());
+    }
+  };
   const [loading, setLoading] = useState(false);
 
   useEffect(() => { ensureAdminSession().then(setAuthed); }, []);
@@ -135,13 +150,19 @@ export default function FiguresPage() {
           {tab === 'all' ? 'tap a figure to flag it for rectification' : 'each figure with its question and what the checks found'}
         </span>
         <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
-          <button onClick={() => { setTab('all'); setPage(0); }}
-            style={{ fontSize: 13, fontWeight: tab === 'all' ? 700 : 400, border: `1px solid ${C.border}`, background: tab === 'all' ? '#fff' : 'transparent', borderRadius: 8, padding: '4px 10px', cursor: 'pointer' }}>
-            All
+          {/* Filled = where you are. The old pair read as two buttons rather
+              than a choice, and the review kept getting missed. */}
+          <button onClick={() => goTab('all')}
+            style={{ fontSize: 13.5, fontWeight: 600, color: tab === 'all' ? '#fff' : '#374151',
+              border: `1px solid ${tab === 'all' ? C.navy : C.border}`, background: tab === 'all' ? C.navy : '#fff',
+              borderRadius: 8, padding: '6px 14px', cursor: 'pointer' }}>
+            All figures
           </button>
-          <button onClick={() => { setTab('flagged'); setPage(0); }}
-            style={{ fontSize: 13, fontWeight: tab === 'flagged' ? 700 : 400, color: C.flag, border: `1px solid ${tab === 'flagged' ? C.flag : C.border}`, background: tab === 'flagged' ? C.flagBg : 'transparent', borderRadius: 8, padding: '4px 10px', cursor: 'pointer' }}>
-            🚩 Flagged{flaggedCount ? ` (${flaggedCount})` : ''}
+          <button onClick={() => goTab('flagged')}
+            style={{ fontSize: 13.5, fontWeight: 700, color: tab === 'flagged' ? '#fff' : C.flag,
+              border: `1px solid ${C.flag}`, background: tab === 'flagged' ? C.flag : '#fff',
+              borderRadius: 8, padding: '6px 14px', cursor: 'pointer' }}>
+            🚩 Review {flaggedCount || ''} flagged →
           </button>
         </span>
       </div>
