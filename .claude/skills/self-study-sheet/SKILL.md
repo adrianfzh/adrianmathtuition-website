@@ -154,6 +154,20 @@ Invoke `create-teaching-notes` and give it this brief:
   solution, with at most a one-line italic strategy opener.
 - **Worked examples reproduce the SHAPE of the question they got wrong**, with
   changed numbers — never a generic textbook example of the same topic.
+- **Practice layout is fixed (Adrian, 31 Aug 2026):**
+  - **Number the items 1, 2, 3 …** — never (a), (b), (c). Letters are for the
+    PARTS of one question; using them for separate questions makes a
+    three-question practice look like one question with three parts.
+  - **A question with parts gets ONE answer line, at the end**, carrying every
+    part: `[Ans: (a) v = 5π cos(πt/6), max speed 15.7 cm/s; (b) 8.22 cm/s²;
+    (c) 50 cm/s, a = −100 cm/s²]`. An answer line under each sub-part breaks the
+    question into fragments and lets the student check (a) before attempting (b).
+  - **Answers are OMML too.** They are the maths the student compares their own
+    against — a fraction typed as `3/2` beside a properly set one in the working
+    reads as a different standard, and the bracket ends up riding the fraction.
+  - **Right tab stop at 15.5 cm** for the `[N]` marks and the `[Ans: …]` line, so
+    every question on the sheet lines up down one edge.
+
 - **The Practice must drill the METHOD the Example just taught, not the topic
   it belongs to** (Adrian, 31 Aug 2026). Example 3 taught "pair every
   combination of powers that adds up to n" on `(1+4x)(3-ax)⁴`, and its practice
