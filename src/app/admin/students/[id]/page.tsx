@@ -628,10 +628,26 @@ export default function StudentProfilePage() {
                       const r = await fetch('/api/portal/invite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ airtableStudentId: studentId, delivery: 'link' }) });
                       const d = await r.json();
                       if (r.ok) {
+                        // Copy the MESSAGE, not the bare URL (31 Aug 2026). The
+                        // link alone still left Adrian writing the same WhatsApp
+                        // from scratch every time; this is paste-and-send, and
+                        // the wording is the one that has actually gone out.
+                        const first = (s.name || '').split(' ')[0] || 'there';
+                        const msg = [
+                          `Hi ${first}! I've set up your student portal — this link is just for you:`,
+                          '',
+                          d.inviteUrl,
+                          '',
+                          'Open it and choose your own login (email + password). Your marked papers are waiting inside, along with any practice I\u2019ve set for you.',
+                          '',
+                          'The link works for 7 days — let me know if you have any trouble getting in.',
+                          '',
+                          'Adrian',
+                        ].join('\n');
                         try {
-                          await navigator.clipboard.writeText(d.inviteUrl);
-                          alert(`✅ Invite link copied — send it to ${s.name}:\n${d.inviteUrl}\n\nThey set their own email + password there. Expires in 7 days.`);
-                        } catch { prompt('Invite link (copy manually):', d.inviteUrl); }
+                          await navigator.clipboard.writeText(msg);
+                          alert(`✅ Message copied — paste it to ${s.name}:\n\n${msg}`);
+                        } catch { prompt('Message (copy manually):', msg); }
                       } else alert(`❌ ${d.error || 'Failed'}`);
                     } catch { alert('❌ Network error'); }
                     setInviteState('idle');
