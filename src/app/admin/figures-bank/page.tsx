@@ -121,18 +121,25 @@ export default function FiguresPage() {
   }
   if (authed === null) return <main style={{ minHeight: '100vh', background: C.bg }} />;
 
-  const lastPage = Math.max(0, Math.ceil(totalQuestions / pageSize) - 1);
+  // Each tab has its own length and its own page size — the review is measured
+  // 20 at a time, the grid shows 60 thumbnails.
+  const FLAG_PAGE = 20;
+  const lastPage = tab === 'flagged'
+    ? Math.max(0, Math.ceil((withheld || flaggedCount) / FLAG_PAGE) - 1)
+    : Math.max(0, Math.ceil(totalQuestions / pageSize) - 1);
   return (
     <main style={{ minHeight: '100vh', background: C.bg, padding: '14px 12px 80px', maxWidth: 900, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
         <h1 style={{ fontSize: 18, fontWeight: 700 }}>🖼 Figure Review</h1>
-        <span style={{ color: C.muted, fontSize: 13 }}>tap a figure to flag it for rectification</span>
+        <span style={{ color: C.muted, fontSize: 13 }}>
+          {tab === 'all' ? 'tap a figure to flag it for rectification' : 'each figure with its question and what the checks found'}
+        </span>
         <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
-          <button onClick={() => setTab('all')}
+          <button onClick={() => { setTab('all'); setPage(0); }}
             style={{ fontSize: 13, fontWeight: tab === 'all' ? 700 : 400, border: `1px solid ${C.border}`, background: tab === 'all' ? '#fff' : 'transparent', borderRadius: 8, padding: '4px 10px', cursor: 'pointer' }}>
             All
           </button>
-          <button onClick={() => setTab('flagged')}
+          <button onClick={() => { setTab('flagged'); setPage(0); }}
             style={{ fontSize: 13, fontWeight: tab === 'flagged' ? 700 : 400, color: C.flag, border: `1px solid ${tab === 'flagged' ? C.flag : C.border}`, background: tab === 'flagged' ? C.flagBg : 'transparent', borderRadius: 8, padding: '4px 10px', cursor: 'pointer' }}>
             🚩 Flagged{flaggedCount ? ` (${flaggedCount})` : ''}
           </button>
@@ -160,6 +167,20 @@ export default function FiguresPage() {
       {loading && <div style={{ color: C.muted, fontSize: 14, padding: 20, textAlign: 'center' }}>Loading…</div>}
       {!loading && tab === 'flagged' && items.length === 0 && (
         <div style={{ color: C.muted, fontSize: 14, padding: 20, textAlign: 'center' }}>No open flags — flag figures from the All tab.</div>
+      )}
+
+      {tab === 'flagged' && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+          <span style={{ fontSize: 13, color: C.muted }}>
+            page {page + 1} / {lastPage + 1} · {withheld || flaggedCount} flagged figures
+          </span>
+          <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+            <button disabled={page === 0 || loading} onClick={() => { setPage((p) => Math.max(0, p - 1)); window.scrollTo({ top: 0 }); }}
+              style={{ fontSize: 13, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '4px 12px', cursor: 'pointer', opacity: page === 0 ? 0.4 : 1 }}>← Prev</button>
+            <button disabled={page >= lastPage || loading} onClick={() => { setPage((p) => p + 1); window.scrollTo({ top: 0 }); }}
+              style={{ fontSize: 13, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '4px 12px', cursor: 'pointer', opacity: page >= lastPage ? 0.4 : 1 }}>Next →</button>
+          </span>
+        </div>
       )}
 
       {tab === 'flagged' && items.length > 0 && (
