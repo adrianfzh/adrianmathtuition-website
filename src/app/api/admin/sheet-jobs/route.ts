@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  let body: { runId?: string; focus?: string; action?: string; by?: string; id?: string; result?: unknown; error?: string };
+  let body: { runId?: string; focus?: string; action?: string; by?: string; id?: string; result?: unknown; error?: string ; stage?: string};
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const sb = getSupabaseAdmin();
 
@@ -54,7 +54,15 @@ export async function POST(req: NextRequest) {
 
   if (body.action === 'beat') {
     if (!body.id) return NextResponse.json({ error: 'id required' }, { status: 400 });
-    await sb.from('sheet_jobs').update({ heartbeat_at: new Date().toISOString() }).eq('id', body.id);
+    // An optional stage label rides the heartbeat (31 Aug 2026). A sheet takes
+    // ~15 minutes across four distinct phases and "claimed" said nothing about
+    // which — one diagnosing looked exactly like one about to file. Trimmed and
+    // capped here; a worker that sends none behaves exactly as before.
+    const stage = typeof body.stage === 'string' && body.stage.trim()
+      ? body.stage.trim().slice(0, 40) : undefined;
+    await sb.from('sheet_jobs')
+      .update({ heartbeat_at: new Date().toISOString(), ...(stage ? { stage } : {}) })
+      .eq('id', body.id);
     return NextResponse.json({ ok: true });
   }
 

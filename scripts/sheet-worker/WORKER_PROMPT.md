@@ -28,13 +28,20 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
      take. Honour it over your own judgement.
 
 3. **Heartbeat every ~10 minutes** while you work, or the lease expires and
-   another tick reclaims the job:
+   another tick reclaims the job. **Send a `stage` with every beat**, and change
+   it as you move on — it is the only thing that tells Adrian whether a sheet is
+   thinking or nearly done, and a job stuck for twenty minutes on "diagnosing"
+   reads very differently from one on "filing":
 
 ```bash
 curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
   -H "Authorization: Bearer $SHEETS_API_TOKEN" -H 'Content-Type: application/json' \
-  -d "{\"action\":\"beat\",\"id\":\"$JOB_ID\"}"
+  -d "{\"action\":\"beat\",\"id\":\"$JOB_ID\",\"stage\":\"drafting\"}"
 ```
+
+   Use these, in order, and beat once as you enter each: `reading paper` →
+   `diagnosing` → `picking the wave` → `drafting` → `verifying` → `filing`.
+   Free text is allowed (40 chars) if the job genuinely does something else.
 
 4. **File both files into Dropbox** (from the repo, which is your working dir):
 

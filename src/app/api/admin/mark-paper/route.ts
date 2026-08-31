@@ -40,15 +40,16 @@ export async function POST(req: NextRequest) {
       try {
         const ids = data.runs.map((x: { id?: string }) => x.id).filter(Boolean);
         const { data: jobs } = await getSupabaseAdmin()
-          .from('sheet_jobs').select('run_id, status, error, created_at, completed_at')
+          .from('sheet_jobs').select('run_id, status, error, stage, created_at, completed_at')
           .in('run_id', ids).order('created_at', { ascending: true });
         // Last job wins: re-queueing after a failure should show the retry.
-        const byRun = new Map<string, { status: string; error: string | null; created_at: string; completed_at: string | null }>();
+        const byRun = new Map<string, { status: string; error: string | null; stage: string | null; created_at: string; completed_at: string | null }>();
         for (const j of jobs ?? []) byRun.set(j.run_id as string, j as never);
         for (const run of data.runs) {
           const j = byRun.get(run.id);
           run.sheet_status = j?.status ?? null;
           run.sheet_error = j?.error ?? null;
+          run.sheet_stage = j?.stage ?? null;
           run.sheet_at = j?.completed_at ?? j?.created_at ?? null;
         }
       } catch { /* a missing badge is better than a broken list */ }
