@@ -90,6 +90,39 @@
 >   **Still dormant** — nothing calls it, `anchor` is still out of the marking
 >   prompt and the photo compositor, and it stays that way until Adrian
 >   eyeballs the render and says otherwise.
+> - **VARIANT C — the dashed sight line + the cast shadow — BUILT 2026-08-31**
+>   (bot `3d8a26f`; Adrian: "how about the line of sight as a dotted line?", and "how do people
+>   draw to create a 3d effect"). Two changes on top of B, both from how
+>   illustrators and animators actually buy depth on flat paper:
+>   · **the line of sight is dashed.** The pole is a thing that exists; the
+>     sight line is where an eye points. Drawn solid they read as the same kind
+>     of object and compete; dashed is the textbook way to say "construction,
+>     not edge", and it makes the pole the one dominant vertical. On an overlay
+>     it pays twice: the sight line is the ONE line that must cross the page
+>     diagonally over the student's own working, and a dashed line lays down
+>     roughly half the ink there. Its rhythm is deliberately longer than the
+>     depression eye-level's dots so the two dashed lines stay distinguishable.
+>   · **a cast shadow at the foot.** The depth-cue literature is unambiguous:
+>     Kersten's ball-in-a-box (1997) shows the position of an object's cast
+>     shadow decides whether it reads as resting on a surface or floating above
+>     it, and that it **overrides** the other cues — size, lighting direction —
+>     when they disagree; infants use it by 6–7 months. Animators use the same
+>     thing as a contact shadow to weld a character to the floor. It is the
+>     cheapest depth available on a marked script: one grey sliver, no extra
+>     geometry to get wrong, and it must TOUCH the foot (a detached shadow is
+>     literally how you draw something hovering).
+>   The shadow runs along the **corner's bisector**, not along either ground
+>   direction — cast down `across` alone it lies on the plan's own printed edge,
+>   doubling a line already on the page and reading as a smudge (the first C
+>   render did exactly that). The bisector is the one direction at that corner
+>   guaranteed to head INTO the surface, and it is the tile's own diagonal, so
+>   the shadow extends the patch instead of fighting it. Fail-closed like the
+>   rest: with a `ground` outline the far end is walked back until it lands
+>   inside the polygon, and if it cannot land, **no shadow is drawn**; with no
+>   ground direction at all there is no shadow to begin with.
+>   106/106 green in the file (2 new anchored tests). **Still dormant** —
+>   nothing calls it, `anchor` is still out of the marking prompt and the photo
+>   compositor, and it stays that way until Adrian eyeballs the render.
 > - Demo renders (Kayla EM P2 Q3 elevation with scene panel; Kassandra AM 2021
 >   P1 Q14 area) shown to Adrian 2026-08-29 from verified-solution numbers only.
 > - **Remaining DoD**: bot deploy (with the accuracy bundle; marking queue must
