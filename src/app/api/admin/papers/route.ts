@@ -203,17 +203,73 @@ export async function DELETE(req: NextRequest) {
   // sweep of the whole row catches them all; isOurBlobUrl keeps it to our store.
   const urls = [...new Set(JSON.stringify(row).match(/https:\/\/[^"\\\s]+/g) || [])].filter(isOurBlobUrl);
 
-  // Row first: the row is what surfaces the run everywhere (history, portal,
-  // reports). If the blob cleanup then fails we're left with invisible orphaned
-  // files — cheap; the other order would leave a run full of dead links.
+  // Into the bin first, THEN out of the table — and the files stay put for 30
+  // days (Adrian, 31 Aug 2026). This used to delete the row and every Blob in
+  // one irreversible go, from an icon next to Dropbox and ✓ on a phone-sized
+  // row; a mis-tap destroyed a marked script, its source photos and, if it had
+  // been released, the student's copy. It also destroyed labelled data: since
+  // the corrections became the calibration signal, a deleted paper is evidence
+  // deleted.
+  //
+  // ?purge=1 keeps the old behaviour for when he means it.
+  const purgeNow = req.nextUrl.searchParams.get('purge') === '1';
+  if (!purgeNow) {
+    const { error: binErr } = await supa.from('paper_marking_runs_bin').upsert({
+      id,
+      row,
+      blob_urls: urls,
+      paper_name: row.paper_name ?? null,
+      student_name: row.student_name ?? null,
+      deleted_at: new Date().toISOString(),
+      purge_after: new Date(Date.now() + 30 * 86400_000).toISOString(),
+    });
+    // No bin, no delete. Losing the paper because the safety net failed is the
+    // exact outcome the net exists to prevent.
+    if (binErr) return NextResponse.json({ error: `could not bin it: ${binErr.message}` }, { status: 500 });
+  }
+
   const { error: delErr } = await supa.from('paper_marking_runs').delete().eq('id', id);
   if (delErr) return NextResponse.json({ error: delErr.message }, { status: 500 });
 
   let blobsDeleted = 0;
-  if (urls.length) {
+  if (purgeNow && urls.length) {
     try { await del(urls); blobsDeleted = urls.length; }
     catch (e) { console.error('[papers] blob cleanup failed for', id, (e as Error).message); }
   }
 
-  return NextResponse.json({ ok: true, id, blobsDeleted });
+  // Opportunistic purge of anything past its 30 days — no cron to forget, and
+  // it only runs on a delete, which is exactly when a bin is on someone's mind.
+  let purged = 0;
+  try {
+    const { data: expired } = await supa
+      .from('paper_marking_runs_bin').select('id, blob_urls').lt('purge_after', new Date().toISOString()).limit(20);
+    for (const e of expired ?? []) {
+      const old = (e.blob_urls as string[] | null) ?? [];
+      if (old.length) { try { await del(old); } catch { /* orphaned files are cheap */ } }
+      await supa.from('paper_marking_runs_bin').delete().eq('id', e.id);
+      purged++;
+    }
+  } catch (e) { console.warn('[papers] bin purge skipped:', (e as Error).message); }
+
+  return NextResponse.json({ ok: true, id, blobsDeleted, binned: !purgeNow, purged });
+}
+
+/** Put a binned paper back, files and all. */
+export async function PATCH(req: NextRequest) {
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  const body = await req.json().catch(() => ({} as { action?: string; id?: string }));
+  if (body.action !== 'restore') return NextResponse.json({ error: 'unknown action' }, { status: 400 });
+  const id = String(body.id || '');
+  if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 });
+
+  const supa = getSupabaseAdmin();
+  const { data: binned, error: readErr } = await supa
+    .from('paper_marking_runs_bin').select('row').eq('id', id).maybeSingle();
+  if (readErr) return NextResponse.json({ error: readErr.message }, { status: 500 });
+  if (!binned) return NextResponse.json({ error: 'not in the bin — it may have passed 30 days' }, { status: 404 });
+
+  const { error: insErr } = await supa.from('paper_marking_runs').insert(binned.row as Record<string, unknown>);
+  if (insErr) return NextResponse.json({ error: insErr.message }, { status: 500 });
+  await supa.from('paper_marking_runs_bin').delete().eq('id', id);
+  return NextResponse.json({ ok: true, id, restored: true });
 }
