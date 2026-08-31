@@ -23,6 +23,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { imgSrc, isPlausibleImagePath } from '@/lib/kiosk-worksheet-images';
+import { inspectFigure } from '@/lib/figure-checks';
 
 export const runtime = 'nodejs';
 
@@ -55,37 +56,56 @@ export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
 
   if (sp.get('flagged') === '1') {
-    const { data: flags, error } = await supa
+    const { data: allFlags, error } = await supa
       .from('figure_flags').select('path, question_id, status, created_at')
-      .eq('status', 'open').order('created_at', { ascending: false }).limit(1000);
+      .eq('status', 'open').order('created_at', { ascending: true }).limit(1000);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    const qids = [...new Set((flags ?? []).map((f) => f.question_id))];
+    // Paginated, because every item is MEASURED — the checks below need the
+    // pixels, and 493 image fetches in one request is not a page load.
+    const fPage = Math.max(0, Number(sp.get('page') ?? 0) || 0);
+    const fSize = Math.min(40, Math.max(6, Number(sp.get('pageSize') ?? 20) || 20));
+    const total = (allFlags ?? []).length;
+    const flags = (allFlags ?? []).slice(fPage * fSize, fPage * fSize + fSize);
+    const qids = [...new Set(flags.map((f) => f.question_id))];
     const meta: Record<string, Row> = {};
     if (qids.length) {
       for (let i = 0; i < qids.length; i += 200) {
         const { data: qs } = await supa
-          .from('questions').select('id, level, school, year, question_number, image_url, figure_url')
+          .from('questions')
+          .select('id, level, school, year, question_number, image_url, figure_url, question_text, has_image, image_watermark_status')
           .in('id', qids.slice(i, i + 200));
         for (const q of qs ?? []) meta[q.id as string] = q;
       }
     }
-    return NextResponse.json({
-      items: (flags ?? []).map((f) => {
-        const q = meta[f.question_id as string];
-        // What the question shows TODAY. Differs from f.path wherever the
-        // figure has been cleaned or replaced since it was flagged.
-        const now = q ? stemPaths(q as Row)[0] ?? null : null;
-        return {
-          path: f.path, qid: f.question_id, flagged: true,
-          url: imgSrc(`question_images/${f.path}`), thumb: thumbUrl(f.path),
-          currentUrl: now ? imgSrc(`question_images/${now}`) : null,
-          changed: !!now && now !== f.path,
-          level: q?.level ?? null, school: q?.school ?? null,
-          year: q?.year ?? null, qnum: q?.question_number ?? null,
-        };
-      }),
-      withheld: new Set((flags ?? []).map(f => f.question_id)).size,
-    });
+
+    const items = await Promise.all(flags.map(async (f) => {
+      const q = meta[f.question_id as string];
+      // What the question shows TODAY. Differs from f.path wherever the figure
+      // has been cleaned or replaced since it was flagged.
+      const now = q ? stemPaths(q as Row)[0] ?? null : null;
+      let checks: Awaited<ReturnType<typeof inspectFigure>> | null = null;
+      if (now) {
+        try {
+          const dl = await supa.storage.from('question_images').download(now.replace(/^question_images\//, ''));
+          if (dl.data) checks = await inspectFigure(Buffer.from(await dl.data.arrayBuffer()));
+        } catch { /* a measurement is evidence, not a precondition */ }
+      }
+      const stem = ((q?.question_text as string) ?? '').replace(/\s+/g, ' ').trim();
+      return {
+        path: f.path, qid: f.question_id, flagged: true,
+        url: imgSrc(`question_images/${f.path}`), thumb: thumbUrl(f.path),
+        currentUrl: now ? imgSrc(`question_images/${now}`) : null,
+        changed: !!now && now !== f.path,
+        level: q?.level ?? null, school: q?.school ?? null,
+        year: q?.year ?? null, qnum: q?.question_number ?? null,
+        stem: stem.slice(0, 700), stemEmpty: !stem,
+        figureMissing: q?.has_image === true && !now,
+        watermark: (q?.image_watermark_status as string | null) ?? null,
+        checks,
+      };
+    }));
+
+    return NextResponse.json({ items, total, page: fPage, pageSize: fSize, withheld: total });
   }
 
   const page = Math.max(0, Number(sp.get('page') ?? 0) || 0);
