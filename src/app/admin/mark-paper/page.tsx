@@ -989,6 +989,19 @@ export default function MarkPaperPage() {
   // keyed by run id so a slow save on one row never freezes another's buttons.
   const [rowBusy, setRowBusy] = useState<Record<string, 'dbx' | 'del' | 'now' | 'batch' | 'sheet' | undefined>>({});
   const [rowNote, setRowNote] = useState<Record<string, { ok: boolean; text: string } | undefined>>({});
+  const [deletedNote, setDeletedNote] = useState<{ id: string; name: string } | null>(null);
+  async function undoDelete() {
+    if (!deletedNote) return;
+    const { id, name } = deletedNote;
+    setDeletedNote(null);
+    const r = await fetch('/api/admin/papers', {
+      method: 'PATCH', headers: { ...authHeaders, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'restore', id }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || d.error) { alert(`Could not restore “${name}”: ${d.error || r.status}`); return; }
+    loadStats();
+  }
   // 📘 Queue a self-study sheet for this paper. The heavy work (diagnose →
   // wave → author → verify → file to Dropbox) happens in a headless session on
   // the Mac; this only puts the job on the queue.
@@ -1040,8 +1053,10 @@ export default function MarkPaperPage() {
   }
   async function deleteRun(run: Run) {
     if (rowBusy[run.id]) return;
-    const portal = run.student_name ? ` If it was released, it also disappears from ${run.student_name}'s portal.` : '';
-    if (!window.confirm(`Delete “${run.paper_name || 'this paper'}” and all its stored files? This can't be undone.${portal}`)) return;
+    const portal = run.student_name ? ` It also disappears from ${run.student_name}'s portal.` : '';
+    // The warning used to say "this can't be undone", which was true. It now
+    // can be, for 30 days, and saying so is the point of having built the bin.
+    if (!window.confirm(`Delete “${run.paper_name || 'this paper'}”?${portal}\n\nIt goes to the bin — the marked copy and its files are kept for 30 days and can be put back.`)) return;
     setRowBusy((p) => ({ ...p, [run.id]: 'del' })); setRowNote((p) => ({ ...p, [run.id]: undefined }));
     try {
       const r = await fetch(`/api/admin/papers?id=${encodeURIComponent(run.id)}`, { method: 'DELETE', headers: authHeaders });
@@ -1050,6 +1065,10 @@ export default function MarkPaperPage() {
       // The row unmounts here — no busy flag to clear on the success path.
       setRecentRuns((prev) => prev.filter((x) => x.id !== run.id));
       setRunsTotal((t) => Math.max(0, t - 1));
+      // The row is gone from the list, so the undo has to live somewhere else —
+      // a toast that survives the row is the whole difference between a bin and
+      // a bin nobody can reach.
+      setDeletedNote({ id: run.id, name: run.paper_name || 'that paper' });
     } catch (e) {
       setRowNote((p) => ({ ...p, [run.id]: { ok: false, text: (e as Error).message } }));
       setRowBusy((p) => ({ ...p, [run.id]: undefined }));
@@ -1465,6 +1484,25 @@ export default function MarkPaperPage() {
           <span style={{ fontSize: 13, color: '#374151' }}>
             last {stats.count} papers · ${stats.totalCost.toFixed(2)} total · <strong>${stats.avgCost.toFixed(3)}/paper</strong> avg · {stats.avgTime.toFixed(0)}s avg
           </span>
+        </div>
+      )}
+
+      {/* The undo, where the deleted row used to be. A 30-day bin nobody can
+          reach from the screen they deleted on is a bin in name only. */}
+      {deletedNote && (
+        <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+          background: '#fffbeb', border: '1px solid #fde68a' }}>
+          <span style={{ fontSize: 14, color: '#92400e' }}>
+            🗑 “{deletedNote.name}” is in the bin — kept with its files for 30 days.
+          </span>
+          <button type="button" onClick={undoDelete}
+            style={{ ...btn, background: '#92400e', padding: '5px 14px', fontSize: 13 }}>
+            Put it back
+          </button>
+          <button type="button" onClick={() => setDeletedNote(null)}
+            style={{ background: 'none', border: 'none', color: '#92400e', fontSize: 13, cursor: 'pointer' }}>
+            Dismiss
+          </button>
         </div>
       )}
 
