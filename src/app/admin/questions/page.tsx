@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import 'katex/dist/katex.min.css';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { mathHtml } from '@/lib/math-inline';
+import { splitPipeTables } from '@/lib/pipe-tables';
 import { assessCoverage } from '@/lib/paper-reconstruction';
 import {
   A_MATH_EXAM_TOPICS, EM_OWN_TOPICS, JC_TOPICS, S1_EXAM_TOPICS, S2_EXAM_TOPICS,
@@ -32,8 +33,51 @@ const C = {
 function MathText({ text }: { text: string }) {
   return <span dangerouslySetInnerHTML={{ __html: mathHtml(text) }} />;
 }
+/**
+ * Question text on screen. Prose keeps its line breaks; a GFM pipe table
+ * becomes a real table — the same split the printed paper uses (@/lib/
+ * pipe-tables), so a stem cannot read as a table on paper and as literal
+ * "| t | 1 | 2 |" rows in the browser (GCE 2022 AM P1 Q2, Adrian).
+ */
 function MathBlock({ text }: { text: string }) {
-  return <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.55 }} dangerouslySetInnerHTML={{ __html: mathHtml(text) }} />;
+  const blocks = splitPipeTables(text);
+  if (blocks.length === 1 && blocks[0].kind === 'text') {
+    return <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.55 }} dangerouslySetInnerHTML={{ __html: mathHtml(text) }} />;
+  }
+  return (
+    <>
+      {blocks.map((b, i) => b.kind === 'text'
+        ? (b.text.trim()
+            ? <div key={i} style={{ whiteSpace: 'pre-wrap', lineHeight: 1.55 }} dangerouslySetInnerHTML={{ __html: mathHtml(b.text) }} />
+            : null)
+        : (
+          // A wide table scrolls inside its own box rather than stretching the
+          // question card — data tables run to a dozen columns.
+          <div key={i} style={{ overflowX: 'auto', margin: '8px 0' }}>
+            <table style={{ borderCollapse: 'collapse', fontSize: 14 }}>
+              <tbody>
+                {/* Row 0 is the header, exactly as the printed paper treats it
+                    (<thead>) — anything cleverer here and the same stem would
+                    look different on paper and on screen. */}
+                {b.rows.map((row, r) => (
+                  <tr key={r}>
+                    {row.map((cell, c) => (
+                      <td key={c} style={{
+                        border: '1px solid #cbd5e1', padding: '4px 12px', whiteSpace: 'nowrap',
+                        fontWeight: r === 0 ? 600 : 400,
+                        background: r === 0 ? '#f8fafc' : '#fff',
+                      }}>
+                        <span dangerouslySetInnerHTML={{ __html: mathHtml(cell) }} />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
+    </>
+  );
 }
 
 type Card = {

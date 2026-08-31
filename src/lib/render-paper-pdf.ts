@@ -29,6 +29,7 @@
 import { getBrowser } from '@/lib/generate-pdf';
 import { workingSpaceMm } from '@/lib/paper-reconstruction';
 import type { Part } from '@/lib/kiosk-worksheet-images';
+import { splitPipeTables } from '@/lib/pipe-tables';
 
 const NAVY = '#1c3a5e';
 const ANSWER_ORANGE = '#843C0C';
@@ -37,7 +38,8 @@ const ANSWER_ORANGE = '#843C0C';
  * so stale-looking cached PDFs after a layout tweak mean this wasn't bumped. */
 // v2 (2026-08-29): richText pipe tables — bump on ANY visual change or the
 // blob cache keeps serving PDFs rendered by the old code.
-export const PAPER_PDF_RENDER_VERSION = 2;
+// v3 (2026-08-31): "End of Paper" after the last question.
+export const PAPER_PDF_RENDER_VERSION = 3;
 
 export interface PaperPdfQuestion {
   /** Printed question number (original or resequenced by the caller). */
@@ -82,45 +84,20 @@ function esc(s: string): string {
  * data tables in stems printed as raw "| t | 1 | 2 |" rows). Everything
  * that isn't a table line stays escaped pre-wrap plain text; cell contents
  * keep their $…$ TeX for the page's KaTeX pass. Exported for the unit test.
+ *
+ * The SPLITTING lives in @/lib/pipe-tables, shared with the on-screen question
+ * view — the same stem has to become the same table in print and in a browser.
  */
 export function richText(s: string): string {
-  const lines = String(s).split('\n');
-  const out: string[] = [];
-  let buf: string[] = [];
-  let table: string[][] | null = null;
-  const flushBuf = () => {
-    if (buf.length) {
-      out.push(esc(buf.join('\n')));
-      buf = [];
-    }
-  };
-  const flushTable = () => {
-    if (table && table.length) {
-      const [head, ...rest] = table;
-      out.push(
-        '<table class="pp-table"><thead><tr>' + head.map((c) => `<th>${esc(c)}</th>`).join('') + '</tr></thead>' +
-          (rest.length
-            ? '<tbody>' + rest.map((r) => '<tr>' + r.map((c) => `<td>${esc(c)}</td>`).join('') + '</tr>').join('') + '</tbody>'
-            : '') +
-          '</table>',
-      );
-    }
-    table = null;
-  };
-  for (const raw of lines) {
-    const t = raw.trim();
-    if (/^\|.*\|?$/.test(t) && t.includes('|', 1)) {
-      flushBuf();
-      const cells = t.replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => c.trim());
-      if (!cells.every((c) => /^:?-{2,}:?$/.test(c))) (table ??= []).push(cells);
-      continue;
-    }
-    flushTable();
-    buf.push(raw);
-  }
-  flushBuf();
-  flushTable();
-  return out.join('\n');
+  return splitPipeTables(s).map((b) => {
+    if (b.kind === 'text') return esc(b.text);
+    const [head, ...rest] = b.rows;
+    return '<table class="pp-table"><thead><tr>' + head.map((c) => `<th>${esc(c)}</th>`).join('') + '</tr></thead>' +
+      (rest.length
+        ? '<tbody>' + rest.map((r) => '<tr>' + r.map((c) => `<td>${esc(c)}</td>`).join('') + '</tr>').join('') + '</tbody>'
+        : '') +
+      '</table>';
+  }).join('\n');
 }
 
 function img(u: string): string {
@@ -245,6 +222,8 @@ export function buildPaperHTML(input: PaperPdfInput): string {
   .pp-keep{break-inside:avoid;page-break-inside:avoid}
   .pp-fresh{break-before:page;page-break-before:always}
 
+  .pp-end{text-align:center;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+    font-size:9.5pt;color:${NAVY};margin:14pt 0 2pt;break-inside:avoid;page-break-inside:avoid}
   .pp-answers{break-before:page;page-break-before:always;padding-top:2pt}
   .pp-answers-h{color:${NAVY};font-weight:700;font-size:12pt;letter-spacing:.24em;text-transform:uppercase;border-bottom:0.9pt solid ${ANSWER_ORANGE};padding-bottom:2.5pt;margin-bottom:7pt}
   .pp-answer-list{list-style:none;padding-left:24pt;margin:0}
@@ -269,6 +248,11 @@ export function buildPaperHTML(input: PaperPdfInput): string {
   <ol class="pp-questions">
 ${questions.map((q) => questionHtml(q, workingSpace)).join('\n')}
   </ol>
+
+  <!-- After the last question's working space, before any key or solutions:
+       a real paper says where it stops, so a candidate knows there is nothing
+       overleaf (Adrian, 2026-08-31). -->
+  <div class="pp-end">End of Paper</div>
 
 ${answerKey ? answerKeyHtml(questions) : ''}
 </body>
