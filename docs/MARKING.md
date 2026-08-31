@@ -743,13 +743,13 @@ Adrian's own intake) → straight-to-Blob via client token → one POST files it
   session, never the body. Rate brake: 3 portal submissions / 10 min / student
   (counted via the `result_json->>portal_submission` stamp).
 - **`result_json.portal_submission: true`** is stamped site-side right after
-  creation — it is what lets `/app/marking`'s "With Mr Fong" strip list the
+  creation — it is what lets `/app/marking`'s "With Adrian" strip list the
   student's own pending hand-ins (name + date + pages, never a mark) without
   ever surfacing papers Adrian uploaded himself and chose not to release.
   **The bot preserves it through the pending-row fill** (2026-08-13):
   `logMarkingRun` rebuilds `result_json` from scratch when the queue worker's
   remark fills the ⏳ row, which used to WIPE the flag the moment marking landed
-  — emptying the student's "With Mr Fong" strip pre-release and un-counting the
+  — emptying the student's "With Adrian" strip pre-release and un-counting the
   run from the 3/10min rate brake. `remarkRun` now passes
   `extra.portalSubmission` through (latent since /app/submit shipped; surfaced
   by auto-queue, where every hand-in gets marked within minutes).

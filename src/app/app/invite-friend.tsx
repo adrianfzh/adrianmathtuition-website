@@ -85,7 +85,7 @@ export default function InviteFriend({ link, tuition }: { link: string; tuition:
                 already Adrian's student can never trigger one. */}
             <p className="text-[13px] text-gray-600 leading-snug">
               {tuition
-                ? 'And when your friend gets their first pass, Mr Fong sends you a treat 🎁'
+                ? 'And when your friend gets their first pass, Adrian sends you a treat 🎁'
                 : 'And when your friend gets their first pass, you get S$10 of pass time free 🎁'}
             </p>
             <p className="text-xs font-mono text-slate-500 bg-slate-50 border border-black/5 rounded-xl px-3 py-2 break-all select-all">

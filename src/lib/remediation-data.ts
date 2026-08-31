@@ -225,7 +225,7 @@ export async function anotherSimilar(identity: string, itemId: string): Promise<
   if (item.state !== 'open') return { ok: false, error: 'This step is not open' };
   if (item.attempts + 1 >= MAX_DRILL_ATTEMPTS) {
     await notifyStuckOnce(plan, item, `hit the ${MAX_DRILL_ATTEMPTS}-attempt retry cap`);
-    return { ok: false, error: 'Attempt limit reached — Mr Fong has been pinged to help with this one.' };
+    return { ok: false, error: 'Attempt limit reached — Adrian has been pinged to help with this one.' };
   }
   // Only after the current assignment was actually marked (and did not clear).
   const lastId = item.assignment_ids[item.assignment_ids.length - 1];
@@ -238,7 +238,7 @@ export async function anotherSimilar(identity: string, itemId: string): Promise<
   const created = await ensureAssignmentForItem(plan, item);
   if (!created) {
     await notifyStuckOnce(plan, item, 'ran out of similar questions');
-    return { ok: false, error: 'No more similar questions on this step — Mr Fong has been pinged to help with this one.' };
+    return { ok: false, error: 'No more similar questions on this step — Adrian has been pinged to help with this one.' };
   }
   await sb.from('remediation_items').update({ attempts: item.attempts + 1 }).eq('id', itemId);
   return { ok: true, assignmentId: created };

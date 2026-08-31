@@ -72,7 +72,7 @@
 >   Deliberate calls, each one a render that failed first:
 >   · the wash is **neutral slate, not the pen colour** — washing it red tinted
 >     the sail's own backdrop and cost the triangle its contrast (grey = the
->     page's figure, red = Mr Fong wrote this);
+>     page's figure, red = Adrian wrote this);
 >   · the tile is a **corner** tile, not a centred one — the foot is normally a
 >     corner of the plan, and a patch centred there is always half off the
 >     figure, which read as a sticker beside C rather than ground at C;

@@ -42,7 +42,7 @@ export default async function FixitPage() {
 
       {!view && (
         <div className="bg-white rounded-3xl shadow-sm p-6 text-center text-slate-500 text-sm">
-          No game plan right now. When Mr Fong sets one from your marked work, it appears here.
+          No game plan right now. When Adrian sets one from your marked work, it appears here.
         </div>
       )}
 
