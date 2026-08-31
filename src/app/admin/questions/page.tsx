@@ -51,6 +51,8 @@ type Detail = Card & {
   questionMd: string; parts: Part[]; solution: string | null; answer: string | null;
   difficulty: string | null; sourceFile: string | null; watermarkStatus: string | null;
   images: string[]; solutionImages: string[];
+  // Figure edit history depth + which stem figures are queued for a redraw.
+  canUndo: number; canRedo: number; flaggedFigures: string[];
 };
 type PaperMeta = { school: string; year: number; level?: string | null; paper?: string | null; examType?: string | null };
 type PaperRow = PaperMeta & {
@@ -119,6 +121,7 @@ export default function QuestionBankPage() {
   const replaceRef = useRef<HTMLInputElement | null>(null);
   const [replaceTarget, setReplaceTarget] = useState<string | null>(null); // figure URL being replaced
   const [replBusy, setReplBusy] = useState(false);
+  const [figBusy, setFigBusy] = useState(''); // '' | 'clean:<url>' | 'undo' | 'redo' | 'flag:<url>'
   const [cardCache, setCardCache] = useState<Record<string, Card>>({});
 
   const [students, setStudents] = useState<{ id: string; name: string; level: string }[]>([]);
@@ -430,6 +433,34 @@ export default function QuestionBankPage() {
     finally { setSolBusy(false); }
   };
 
+  /** Every figure action returns the whole refreshed question, so the client
+   *  never patches image URLs by hand (that used to miss canUndo/canRedo). */
+  const applyDetail = useCallback((q: Detail | null | undefined) => {
+    if (!q) return;
+    detailCache.current.set(q.id, q);
+    setOpenDetail(cur => (cur && cur.id === q.id ? q : cur));
+    setPaperView(pv => (pv && pv.questions.some(x => x.id === q.id)
+      ? { ...pv, questions: pv.questions.map(x => (x.id === q.id ? q : x)) } : pv));
+  }, []);
+
+  /** clean / undo / redo / flag — one call shape, one busy key. */
+  const figureAction = async (
+    payload: Record<string, unknown>, busyKey: string, okMsg: (d: Record<string, unknown>) => string,
+  ) => {
+    if (figBusy) return;
+    setFigBusy(busyKey);
+    try {
+      const r = await fetch('/api/admin/questions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+      });
+      const d = await r.json();
+      if (d.error) { flash(d.error); return; }
+      applyDetail(d.question as Detail | undefined);
+      flash(okMsg(d));
+    } catch (e) { flash((e as Error).message); }
+    finally { setFigBusy(''); }
+  };
+
   // ♻️ Replace a stem-level figure: original pixels, no recompression — the
   // API stores it as a new bucket object and repoints this question at it.
   const onReplaceFigurePicked = async (file: File | null) => {
@@ -452,10 +483,8 @@ export default function QuestionBankPage() {
       });
       const d = await r.json();
       if (d.error) { flash(d.error); return; }
-      const updated = { ...openDetail, images: openDetail.images.map(x => (x === replaceTarget ? (d.url as string) : x)) };
-      setOpenDetail(updated);
-      rememberDetails([updated]);
-      flash('Figure replaced');
+      applyDetail(d.question as Detail | undefined);
+      flash('Figure replaced — ↩ Undo puts the old one back');
     } catch (e) { flash((e as Error).message); }
     finally { setReplBusy(false); setReplaceTarget(null); }
   };
@@ -616,20 +645,55 @@ export default function QuestionBankPage() {
         <span style={{ marginLeft: 'auto', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <button onClick={() => toggleBasket(openDetail)} style={{ fontSize: 12.5, border: `1px solid ${inBasket(openDetail.id) ? C.accent : C.border}`, background: inBasket(openDetail.id) ? C.chipBg : '#fff', color: inBasket(openDetail.id) ? C.accent : '#111', borderRadius: 8, padding: '3px 9px', cursor: 'pointer' }}>{inBasket(openDetail.id) ? '🧺 In basket' : '🧺 Basket'}</button>
           <button onClick={() => openAssign(openDetail)} style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer' }}>📬 Assign</button>
+          {/* Figure edits are non-destructive at the storage layer — the old
+              bucket object is never deleted — so undo is just a repoint. */}
+          {(openDetail.canUndo > 0 || openDetail.canRedo > 0) && (
+            <>
+              <button onClick={() => figureAction({ action: 'undo-figure', id: openDetail.id }, 'undo', () => 'Figure reverted')}
+                disabled={!openDetail.canUndo || !!figBusy} title={`${openDetail.canUndo} figure edit${openDetail.canUndo === 1 ? '' : 's'} to undo`}
+                style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: openDetail.canUndo ? 'pointer' : 'default', opacity: openDetail.canUndo && !figBusy ? 1 : 0.4 }}>
+                {figBusy === 'undo' ? '…' : '↩ Undo'}
+              </button>
+              <button onClick={() => figureAction({ action: 'redo-figure', id: openDetail.id }, 'redo', () => 'Figure re-applied')}
+                disabled={!openDetail.canRedo || !!figBusy} title={`${openDetail.canRedo} undone edit${openDetail.canRedo === 1 ? '' : 's'} to redo`}
+                style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: openDetail.canRedo ? 'pointer' : 'default', opacity: openDetail.canRedo && !figBusy ? 1 : 0.4 }}>
+                {figBusy === 'redo' ? '…' : '↪ Redo'}
+              </button>
+            </>
+          )}
           <button onClick={() => copyLink(`id=${openDetail.id}`, 'Question')} style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer' }}>🔗 Copy link</button>
           <button onClick={() => setOpenDetail(null)} style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer' }}>✕ Close</button>
         </span>
       </div>
-      {openDetail.images.map(u => (
-        <div key={u} style={{ position: 'relative', margin: '6px 0' }}>
-          <img src={u} alt="figure" style={{ maxWidth: '100%', borderRadius: 8, display: 'block' }} />
-          <button
-            onClick={() => { setReplaceTarget(u); replaceRef.current?.click(); }} disabled={replBusy}
-            style={{ position: 'absolute', top: 6, right: 6, fontSize: 11.5, border: `1px solid ${C.border}`, background: 'rgba(255,255,255,.92)', borderRadius: 6, padding: '2px 8px', cursor: 'pointer', opacity: replBusy ? 0.6 : 1 }}>
-            {replBusy && replaceTarget === u ? 'Uploading…' : '♻️ Replace'}
+      {openDetail.images.map(u => {
+        const flagged = openDetail.flaggedFigures.includes(u);
+        const tool = (label: string, on: () => void, busy: boolean, extra: React.CSSProperties = {}) => (
+          <button onClick={on} disabled={replBusy || !!figBusy}
+            style={{ fontSize: 11.5, border: `1px solid ${C.border}`, background: 'rgba(255,255,255,.94)', borderRadius: 6, padding: '2px 8px', cursor: 'pointer', opacity: replBusy || figBusy ? 0.6 : 1, ...extra }}>
+            {busy ? '…' : label}
           </button>
-        </div>
-      ))}
+        );
+        return (
+          <div key={u} style={{ position: 'relative', margin: '6px 0' }}>
+            <img src={u} alt="figure" style={{ maxWidth: '100%', borderRadius: 8, display: 'block' }} />
+            <span style={{ position: 'absolute', top: 6, right: 6, display: 'flex', gap: 5 }}>
+              {/* A clean only lifts the white point — it moves no geometry, so
+                  it is safe on any scan. A redraw could change what the
+                  question asks, so it QUEUES for a person, never runs here. */}
+              {tool('✨ Clean', () => figureAction(
+                { action: 'clean-figure', id: openDetail.id, url: u }, `clean:${u}`,
+                d => d.alreadyClean ? 'Already white — nothing to clean' : `Cleaned (white point ${d.whitePoint}) — ↩ Undo reverts it`,
+              ), figBusy === `clean:${u}`)}
+              {tool(flagged ? '🚩 Queued' : '🚩 Redraw', () => figureAction(
+                { action: 'flag-redraw', id: openDetail.id, url: u, flag: !flagged }, `flag:${u}`,
+                () => flagged ? 'Removed from the redraw queue' : 'Queued for redraw',
+              ), figBusy === `flag:${u}`, flagged ? { borderColor: C.warn, color: C.warn, background: C.flagBg } : {})}
+              {tool(replBusy && replaceTarget === u ? 'Uploading…' : '♻️ Replace',
+                () => { setReplaceTarget(u); replaceRef.current?.click(); }, false)}
+            </span>
+          </div>
+        );
+      })}
       <input
         ref={replaceRef} type="file" accept="image/png,image/jpeg,image/webp" hidden
         onChange={e => { const f = e.target.files?.[0] ?? null; e.target.value = ''; onReplaceFigurePicked(f); }}

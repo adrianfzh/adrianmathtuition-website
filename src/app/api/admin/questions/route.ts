@@ -23,6 +23,7 @@ import { assessCoverage, answerKeyLines, type AnswerPart } from '@/lib/paper-rec
 import { KIOSK_LEVELS } from '@/lib/kiosk-session';
 import { put } from '@vercel/blob';
 import Anthropic from '@anthropic-ai/sdk';
+import { cleanScan } from '@/lib/figure-clean';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // the worksheet action renders a Puppeteer PDF
@@ -41,6 +42,55 @@ function resolveImages(row: Row, cap = 6): string[] {
     for (const p of row.images) if (isPlausibleImagePath(p)) urls.push(imgSrc(p));
   }
   return [...new Set(urls)].slice(0, cap);
+}
+
+/** The bucket object name behind a stored figure value (a full public URL or a
+ *  bare `question_images/x.png` path), or null if it isn't in our bucket. */
+function storageObjectName(stored: string): string | null {
+  const i = stored.lastIndexOf('question_images/');
+  if (i === -1) return null;
+  const name = stored.slice(i + 'question_images/'.length).split('?')[0];
+  return name && !name.includes('..') ? name : null;
+}
+
+/** The STORED value behind a public figure URL on this row, or null when that
+ *  URL is not one of the question's STEM figures (part figures are not ours to
+ *  edit here — they live inside the parts jsonb). */
+function figurePathOnRow(row: Row, publicUrl: string): string | null {
+  if (typeof row.figure_url === 'string' && row.figure_url && row.figure_url === publicUrl) return row.figure_url;
+  if (typeof row.image_url === 'string' && row.image_url) {
+    try {
+      const arr = JSON.parse(row.image_url);
+      if (Array.isArray(arr)) {
+        for (const entry of arr) {
+          const pth = entry && typeof entry === 'object' ? (entry as { url?: unknown }).url : entry;
+          if (isPlausibleImagePath(pth) && imgSrc(pth as string) === publicUrl) return pth as string;
+        }
+      }
+    } catch { /* unparseable image_url */ }
+  }
+  return null;
+}
+
+/** The column patch that swaps one stem figure for a new bucket path. Returns
+ *  an empty object when the URL matched nothing, so callers can fail closed. */
+function repointFigure(row: Row, oldPublicUrl: string, newPath: string): Record<string, unknown> {
+  const patch: Record<string, unknown> = {};
+  if (typeof row.figure_url === 'string' && row.figure_url === oldPublicUrl) patch.figure_url = imgSrc(newPath);
+  if (typeof row.image_url === 'string' && row.image_url) {
+    try {
+      const arr = JSON.parse(row.image_url);
+      if (Array.isArray(arr)) {
+        const next = arr.map((entry: unknown) => {
+          const pth = entry && typeof entry === 'object' ? (entry as { url?: unknown }).url : entry;
+          if (!isPlausibleImagePath(pth) || imgSrc(pth as string) !== oldPublicUrl) return entry;
+          return entry && typeof entry === 'object' ? { ...(entry as object), url: newPath } : newPath;
+        });
+        if (JSON.stringify(next) !== JSON.stringify(arr)) patch.image_url = JSON.stringify(next);
+      }
+    } catch { /* unparseable image_url */ }
+  }
+  return patch;
 }
 
 /** The one-line card excerpt. Plenty of papers (the GCE ones especially) carry
@@ -102,10 +152,40 @@ function card(row: Row) {
   };
 }
 
-/** One question, everything the detail panel shows. */
-function detail(row: Row) {
+/** Bucket object names with an OPEN redraw flag, for these questions. Fails
+ *  open: a flags outage costs the 🚩 highlight, never the question itself. */
+async function openFlagPaths(
+  supa: ReturnType<typeof getSupabaseAdmin>, questionIds: string[],
+): Promise<Set<string>> {
+  if (!questionIds.length) return new Set();
+  try {
+    const { data } = await supa.from('figure_flags')
+      .select('path').eq('status', 'open').in('question_id', questionIds);
+    return new Set(((data ?? []) as { path: string }[]).map(r => r.path));
+  } catch { return new Set(); }
+}
+
+/** How deep the figure undo/redo stacks are. Read straight off gen_meta — no
+ *  extra query — so every detail payload can light its own buttons. */
+function historyDepth(row: Row): { canUndo: number; canRedo: number } {
+  const h = (row.gen_meta && typeof row.gen_meta === 'object'
+    ? (row.gen_meta as Record<string, unknown>).figure_history : null) as Record<string, unknown> | null;
+  const len = (v: unknown) => (Array.isArray(v) ? v.length : 0);
+  return { canUndo: len(h?.undo), canRedo: len(h?.redo) };
+}
+
+/** One question, everything the detail panel shows.
+ *  `flagged` holds bucket object NAMES already flagged for redraw; the caller
+ *  fetches them in bulk so opening a paper stays one query, not one per page. */
+function detail(row: Row, flagged: Set<string> = new Set()) {
+  const images = resolveImages(row);
   return {
     ...card(row),
+    ...historyDepth(row),
+    flaggedFigures: images.filter((u) => {
+      const n = storageObjectName(u);
+      return !!n && flagged.has(n);
+    }),
     questionMd: row.question_text ?? '',
     parts: resolveParts(row.parts),
     solution: row.solution ?? null,
@@ -113,7 +193,7 @@ function detail(row: Row) {
     difficulty: row.difficulty ?? null,
     sourceFile: row.source_file ?? null,
     watermarkStatus: row.image_watermark_status ?? null,
-    images: resolveImages(row),
+    images,
     solutionImages: Array.isArray(row.solution_images)
       ? row.solution_images.filter(isPlausibleImagePath).map(imgSrc).slice(0, 6)
       : [],
@@ -134,7 +214,7 @@ export async function GET(req: NextRequest) {
       .eq('id', id)
       .single();
     if (error || !row) return NextResponse.json({ error: error?.message || 'not found' }, { status: 404 });
-    return NextResponse.json({ question: detail(row) });
+    return NextResponse.json({ question: detail(row, await openFlagPaths(supa, [id])) });
   }
 
   // ── a whole paper, in reading order ───────────────────────────────────────
@@ -163,9 +243,10 @@ export async function GET(req: NextRequest) {
     const { data, error } = await q.limit(120);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const rows = (data ?? []).sort((a, b) => compareQnum(a.question_number as string, b.question_number as string));
+    const flagged = withDetails ? await openFlagPaths(supa, rows.map(r => r.id as string)) : new Set<string>();
     return NextResponse.json({
       paper: { school, year: Number(year), level, paper, examType },
-      questions: rows.map(withDetails ? detail : card),
+      questions: withDetails ? rows.map(r => detail(r as Row, flagged)) : rows.map(r => card(r as Row)),
     });
   }
 
@@ -251,6 +332,140 @@ export async function POST(req: NextRequest) {
   // so rollback is just repointing image_url back — then whichever of
   // figure_url / image_url entries resolved to oldUrl is repointed at it.
   // Base64 in JSON keeps well under Vercel's 4.5MB body cap (client caps 3MB).
+  // ── stem-figure edit history (undo / redo) ────────────────────────────────
+  // Every figure edit is a repoint of two columns; the old bucket object is
+  // never deleted, so a full undo only needs the PREVIOUS pair of column
+  // values. They live under gen_meta.figure_history, merged in — gen_meta also
+  // carries generation metadata on AI questions and must not be clobbered.
+  // Capped at HISTORY_MAX so a much-edited figure can't grow the row forever.
+  type FigState = { figure_url: string | null; image_url: string | null };
+  type FigHistory = { undo: FigState[]; redo: FigState[] };
+  const HISTORY_MAX = 10;
+
+  const readHistory = (genMeta: unknown): FigHistory => {
+    const h = (genMeta && typeof genMeta === 'object'
+      ? (genMeta as Record<string, unknown>).figure_history : null) as Record<string, unknown> | null;
+    const arr = (v: unknown): FigState[] => (Array.isArray(v) ? (v as FigState[]) : []);
+    return { undo: arr(h?.undo), redo: arr(h?.redo) };
+  };
+  const withHistory = (genMeta: unknown, hist: FigHistory) => ({
+    ...(genMeta && typeof genMeta === 'object' ? (genMeta as Record<string, unknown>) : {}),
+    figure_history: { undo: hist.undo.slice(-HISTORY_MAX), redo: hist.redo.slice(-HISTORY_MAX) },
+  });
+  const stateOf = (row: Record<string, unknown>): FigState => ({
+    figure_url: (row.figure_url as string | null) ?? null,
+    image_url: (row.image_url as string | null) ?? null,
+  });
+
+  /** Re-read the question and hand the client a whole fresh detail — every
+   *  figure action returns this, so the client never patches URLs by hand. */
+  const freshDetail = async (id: string) => {
+    const { data } = await supa.from('questions').select('*').eq('id', id).single();
+    return data ? detail(data as Row) : null;
+  };
+
+  // ── ✨ clean: lift the white point on a faded scan ─────────────────────────
+  // Photocopied graph paper arrives as ink on a grey haze. A white-point lift
+  // sends the haze to pure white and stretches the ink down, WITHOUT touching
+  // geometry — so unlike a redraw it can never change what the question asks.
+  // Deliberately conservative: the default white point is derived from the
+  // image's own background (its modal grey), never a fixed guess, because a
+  // too-low point eats the light grid lines that a student reads values off.
+  if (body.action === 'clean-figure') {
+    const id = typeof body.id === 'string' ? body.id : '';
+    const url = typeof body.url === 'string' ? body.url : '';
+    if (!id || !url) return NextResponse.json({ error: 'id and url required' }, { status: 400 });
+
+    const { data: row, error } = await supa.from('questions')
+      .select('id, figure_url, image_url, gen_meta').eq('id', id).single();
+    if (error || !row) return NextResponse.json({ error: 'question not found' }, { status: 404 });
+
+    const srcPath = figurePathOnRow(row as Row, url);
+    if (!srcPath) return NextResponse.json({ error: 'that figure is not on this question (stem-level figures only)' }, { status: 404 });
+
+    const objName = storageObjectName(srcPath);
+    if (!objName) return NextResponse.json({ error: 'that figure is not stored in our bucket, so it cannot be cleaned' }, { status: 400 });
+    const dl = await supa.storage.from('question_images').download(objName);
+    if (dl.error || !dl.data) return NextResponse.json({ error: `could not read the figure: ${dl.error?.message ?? 'missing'}` }, { status: 502 });
+    const src = Buffer.from(await dl.data.arrayBuffer());
+
+    let cleaned: { out: Buffer; whitePoint: number } | null;
+    try { cleaned = await cleanScan(src); }
+    catch (e) { return NextResponse.json({ error: `clean failed: ${(e as Error).message}` }, { status: 500 }); }
+    // Already white: say so and change NOTHING — no bucket object, no history
+    // entry, so the undo stack still points at the last real edit.
+    if (!cleaned) return NextResponse.json({ alreadyClean: true, question: await freshDetail(id) });
+
+    const name = `${crypto.randomUUID()}.png`;
+    const up = await supa.storage.from('question_images').upload(name, cleaned.out, { contentType: 'image/png' });
+    if (up.error) return NextResponse.json({ error: `upload failed: ${up.error.message}` }, { status: 500 });
+
+    const patch = repointFigure(row as Row, url, `question_images/${name}`);
+    const hist = readHistory(row.gen_meta);
+    const upd = await supa.from('questions')
+      .update({ ...patch, gen_meta: withHistory(row.gen_meta, { undo: [...hist.undo, stateOf(row as Row)], redo: [] }) })
+      .eq('id', id);
+    if (upd.error) return NextResponse.json({ error: upd.error.message }, { status: 500 });
+    return NextResponse.json({ url: imgSrc(`question_images/${name}`), whitePoint: cleaned.whitePoint, question: await freshDetail(id) });
+  }
+
+  // ── ↩ undo / ↪ redo a figure edit ──────────────────────────────────────────
+  if (body.action === 'undo-figure' || body.action === 'redo-figure') {
+    const id = typeof body.id === 'string' ? body.id : '';
+    if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+    const back = body.action === 'undo-figure';
+
+    const { data: row, error } = await supa.from('questions')
+      .select('id, figure_url, image_url, gen_meta').eq('id', id).single();
+    if (error || !row) return NextResponse.json({ error: 'question not found' }, { status: 404 });
+
+    const hist = readHistory(row.gen_meta);
+    const from = back ? hist.undo : hist.redo;
+    if (!from.length) return NextResponse.json({ error: back ? 'nothing to undo' : 'nothing to redo' }, { status: 400 });
+
+    const target = from[from.length - 1];
+    const rest = from.slice(0, -1);
+    const other = [...(back ? hist.redo : hist.undo), stateOf(row as Row)];
+    const next: FigHistory = back ? { undo: rest, redo: other } : { undo: other, redo: rest };
+
+    const upd = await supa.from('questions').update({
+      figure_url: target.figure_url,
+      image_url: target.image_url,
+      gen_meta: withHistory(row.gen_meta, next),
+    }).eq('id', id);
+    if (upd.error) return NextResponse.json({ error: upd.error.message }, { status: 500 });
+    return NextResponse.json({ question: await freshDetail(id) });
+  }
+
+  // ── 🚩 flag for redraw ────────────────────────────────────────────────────
+  // A REDRAW is not something to do unattended: the figure library can prove a
+  // drawing is internally consistent, but nothing can prove it still matches
+  // the exam paper — only a person can. So this queues, it never redraws.
+  // Same `figure_flags` table /admin/figures-bank already works from.
+  if (body.action === 'flag-redraw') {
+    const id = typeof body.id === 'string' ? body.id : '';
+    const url = typeof body.url === 'string' ? body.url : '';
+    const on = body.flag !== false;
+    if (!id || !url) return NextResponse.json({ error: 'id and url required' }, { status: 400 });
+
+    const { data: row, error } = await supa.from('questions')
+      .select('id, figure_url, image_url').eq('id', id).single();
+    if (error || !row) return NextResponse.json({ error: 'question not found' }, { status: 404 });
+    const srcPath = figurePathOnRow(row as Row, url);
+    if (!srcPath) return NextResponse.json({ error: 'that figure is not on this question' }, { status: 404 });
+    const path = srcPath.replace(/^question_images\//, '');
+
+    if (on) {
+      const note = typeof body.note === 'string' && body.note.trim() ? body.note.trim().slice(0, 500) : 'redraw requested from /admin/questions';
+      const { error: e } = await supa.from('figure_flags').upsert({ path, question_id: id, status: 'open', note });
+      if (e) return NextResponse.json({ error: e.message }, { status: 500 });
+    } else {
+      const { error: e } = await supa.from('figure_flags').delete().eq('path', path);
+      if (e) return NextResponse.json({ error: e.message }, { status: 500 });
+    }
+    return NextResponse.json({ flagged: on });
+  }
+
   if (body.action === 'replace-figure') {
     const id = typeof body.id === 'string' ? body.id : '';
     const oldUrl = typeof body.oldUrl === 'string' ? body.oldUrl : '';
@@ -262,7 +477,8 @@ export async function POST(req: NextRequest) {
     try { bytes = Buffer.from(b64, 'base64'); } catch { return NextResponse.json({ error: 'bad base64' }, { status: 400 }); }
     if (!bytes.length || bytes.length > 3_500_000) return NextResponse.json({ error: 'image must be under 3.5MB' }, { status: 413 });
 
-    const { data: row, error } = await supa.from('questions').select('id, figure_url, image_url').eq('id', id).single();
+    const { data: row, error } = await supa.from('questions')
+      .select('id, figure_url, image_url, gen_meta').eq('id', id).single();
     if (error || !row) return NextResponse.json({ error: 'question not found' }, { status: 404 });
 
     // Work out the repoint BEFORE uploading, so a mismatch never orphans a
@@ -270,33 +486,21 @@ export async function POST(req: NextRequest) {
     const ext = mediaType === 'image/jpeg' ? 'jpg' : mediaType === 'image/webp' ? 'webp' : 'png';
     const name = `${crypto.randomUUID()}.${ext}`;
     const newPath = `question_images/${name}`;
-    const patch: Record<string, unknown> = {};
-    let matched = false;
-    if (typeof row.figure_url === 'string' && row.figure_url === oldUrl) {
-      patch.figure_url = imgSrc(newPath);
-      matched = true;
+    const patch = repointFigure(row as Row, oldUrl, newPath);
+    if (!Object.keys(patch).length) {
+      return NextResponse.json({ error: 'that figure is not on this question (stem-level figures only)' }, { status: 404 });
     }
-    if (typeof row.image_url === 'string' && row.image_url) {
-      try {
-        const arr = JSON.parse(row.image_url);
-        if (Array.isArray(arr)) {
-          const next = arr.map((entry: unknown) => {
-            const p = entry && typeof entry === 'object' ? (entry as { url?: unknown }).url : entry;
-            if (!isPlausibleImagePath(p) || imgSrc(p) !== oldUrl) return entry;
-            matched = true;
-            return entry && typeof entry === 'object' ? { ...(entry as object), url: newPath } : newPath;
-          });
-          if (JSON.stringify(next) !== JSON.stringify(arr)) patch.image_url = JSON.stringify(next);
-        }
-      } catch { /* unparseable image_url — fall through to the not-found check */ }
-    }
-    if (!matched) return NextResponse.json({ error: 'that figure is not on this question (stem-level figures only)' }, { status: 404 });
 
     const up = await supa.storage.from('question_images').upload(name, bytes, { contentType: mediaType });
     if (up.error) return NextResponse.json({ error: `upload failed: ${up.error.message}` }, { status: 500 });
-    const upd = await supa.from('questions').update(patch).eq('id', id);
+    // Snapshot the pre-replace columns so ↩ Undo can put the old figure back —
+    // the old bucket object was never deleted, only unreferenced.
+    const hist = readHistory(row.gen_meta);
+    const upd = await supa.from('questions')
+      .update({ ...patch, gen_meta: withHistory(row.gen_meta, { undo: [...hist.undo, stateOf(row as Row)], redo: [] }) })
+      .eq('id', id);
     if (upd.error) return NextResponse.json({ error: upd.error.message }, { status: 500 });
-    return NextResponse.json({ url: imgSrc(newPath) });
+    return NextResponse.json({ url: imgSrc(newPath), question: await freshDetail(id) });
   }
 
   // Smart search: the bot owns the embeddings + OCR (OpenAI key lives there);
