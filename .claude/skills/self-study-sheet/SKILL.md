@@ -142,28 +142,30 @@ Invoke `create-teaching-notes` and give it this brief:
   name** (Adrian, 31 Aug 2026 — the first version explained the sheet's
   *selection theory* to a 16-year-old, which is not their problem):
 
-  > **PRACTICE AGAIN — Learn from A Math 2021 Paper 1**
-  >
-  > This worksheet is built from the questions you lost marks on in this paper.
-  >
-  > Work through each **Example** first — the notes beside it show where the
-  > marks went. Then do the **Practice** under it on your own, before you look
-  > at the answers.
-  >
-  > When you have finished, photograph your work and submit it for marking.
+  ```
+  ADRIAN'S MATH TUITION            ← running header, grey, centred
+  Additional Mathematics           ← running header, grey, centred
 
-  Three beats, in this order: what it is, how to use it, what to do when done.
-  Nothing about waves, triage, or why a skill was chosen — that is Adrian's
-  reasoning, not the student's instructions.
+  PRACTICE AGAIN — Learn from A Math 2021 Paper 1     ← title, navy, bold, centred
+  For Sophie Tan                   ← small, FADED blue (8EAADB), centred
 
-- **The student's first name goes in the running header, small and quiet** —
-  right-aligned in the same block as ADRIAN'S MATH TUITION / <subject>, at the
-  header's font size or smaller, grey. Never in the title, never addressed in
-  the prose ("Sophie, this worksheet…" was tried and cut — the sheet should
-  feel made for them, not talk at them). If the header is crowded, a small grey
-  subtitle under the title is the alternative. One placement, not both.
+  Read through each Example
+  Then do the Practice under it on your own, before you look at the answers.
+  When you have finished, photograph your work and submit it for marking.
+  ```
+
+  Three instruction lines, in that order, bolding only **Example** and
+  **Practice**. Nothing about waves, triage, or why a skill was chosen — that is
+  Adrian's reasoning, not the student's instructions. No explanatory sentence
+  above them: the title already says what the sheet is.
+
+- **The name is a "For <Full Name>" subtitle under the title** — small, centred,
+  and in a FADED blue (`8EAADB`, i.e. the title's blue lightened, not grey).
+  Present but receding: the sheet is theirs, it does not shout their name and it
+  never addresses them in the prose ("Sophie, this worksheet…" was tried and
+  cut — made for them, not talking at them). Nowhere else on the page.
   (This reverses the earlier "name never appears" rule: Adrian wants these
-  personalised, just subtly.) The FILE name keeps the student's name as before.
+  personalised, just quietly.) The FILE name keeps the student's name as before.
 - **Every ② item appears as a single line, not a section.** "Q13(a)(ii): the 500
   was already per second — no ÷ 60." That is the whole treatment.
 - **The Optional section (③) is last, and says it is optional in its heading**,
