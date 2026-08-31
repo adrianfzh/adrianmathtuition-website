@@ -603,7 +603,8 @@ export async function GET(req: NextRequest) {
       await sendTelegram(
         `🚨 <b>Health check FAILED</b> (${failures.length}/${results.length})\n\n` +
         failures.map(f => `❌ <b>${f.name}</b>: ${f.info || 'failed'}`).join('\n') +
-        `\n\n✅ passing: ${results.filter(r => r.ok).map(r => r.name).join(', ') || 'none'}`
+        `\n\n✅ passing: ${results.filter(r => r.ok).map(r => r.name).join(', ') || 'none'}`,
+        'alerts'
       );
     } catch { /* alert is best-effort */ }
   }
