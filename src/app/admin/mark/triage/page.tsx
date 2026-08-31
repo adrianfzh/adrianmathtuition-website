@@ -14,6 +14,7 @@ import 'katex/dist/katex.min.css';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { mathHtml } from '@/lib/math-inline';
 import type { TriageQuestion } from '@/lib/mark-triage';
+import { bandForRegion, isPartialBand } from '@/lib/region-crop';
 
 type Run = {
   id: string;
@@ -416,10 +417,29 @@ export default function TriagePage() {
                       ? (run.annotatedPhotos || []).find(p => p.photoIndex === q.photoIndex)
                       : undefined;
                     if (!pagePhoto) return null;
+                    // Crop to the band the marker said the question sat in, and
+                    // show it WITHOUT a click. Reading the marker's account of
+                    // the working is not the same as seeing it — two wrong marks
+                    // on Kayla's paper were found in the PDF, not here. The full
+                    // page stays one expander away.
+                    const band = bandForRegion(q.region);
                     return (
+                      <>
+                      {isPartialBand(band) && (
+                        <div style={{ marginBottom: 6 }}>
+                          <div style={{ position: 'relative', width: '100%', overflow: 'hidden',
+                            borderRadius: 8, border: `1px solid ${C.border}`, aspectRatio: `1 / ${band.height * 1.414}` }}>
+                            <img src={pagePhoto.url} alt={`Q${q.questionNumber} working`} loading="lazy"
+                              style={{ position: 'absolute', left: 0, width: '100%',
+                                top: `${-(band.top / band.height) * 100}%`, height: `${(1 / band.height) * 100}%`,
+                                objectFit: 'cover', objectPosition: 'top' }} />
+                          </div>
+                          <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{q.region}</div>
+                        </div>
+                      )}
                       <details style={{ marginBottom: 6 }}>
                         <summary style={{ fontSize: 12, fontWeight: 600, color: '#1d4ed8', cursor: 'pointer' }}>
-                          📷 Show page {q.photoIndex! + 1}
+                          📷 {isPartialBand(band) ? 'Show the whole page' : `Show page ${q.photoIndex! + 1}`}
                         </summary>
                         <a href={pagePhoto.url} target="_blank" rel="noreferrer">
                           <img
@@ -430,6 +450,7 @@ export default function TriagePage() {
                           />
                         </a>
                       </details>
+                      </>
                     );
                   })()}
 
