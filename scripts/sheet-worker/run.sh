@@ -32,6 +32,22 @@ mkdir -p "$STATE"
 ts() { date '+%Y-%m-%d %H:%M:%S'; }
 say() { echo "[$(ts)] $*" >> "$LOG"; }
 
+# A worker that dies BEFORE claiming a job is invisible: attempts stays 0, no
+# job_runs row is ever written, and /admin/ops has nothing to be amber about.
+# That is how this job failed 46 times in a row on 31 Aug 2026 while the UI
+# still said "Sheet queued". So a fatal stamps the logbook on its way out —
+# best-effort, never blocking, and it says WHY, which the queue-lag alarm in the
+# health check cannot know.
+stamp_fail() {
+  [ -n "${SHEETS_API_BASE:-}" ] && [ -n "${SHEETS_API_TOKEN:-}" ] || return 0
+  curl -s -m 15 -X POST "$SHEETS_API_BASE/api/job-log" \
+    -H "Authorization: Bearer $SHEETS_API_TOKEN" -H 'Content-Type: application/json' \
+    -d "{\"job\":\"sheet-worker\",\"ok\":false,\"summary\":$(python3 -c '
+import json, sys
+print(json.dumps(sys.argv[1][:300]))' "$1")}" > /dev/null 2>&1 || true
+}
+die() { say "FATAL: $1"; stamp_fail "$1"; cleanup_pid; exit 1; }
+
 # --- single instance --------------------------------------------------------
 if [ -f "$STATE/worker.pid" ]; then
   OLDPID=$(cat "$STATE/worker.pid" 2>/dev/null || echo "")
@@ -92,20 +108,29 @@ elif [ -r "$HOME/.adrianmath_marker/oauth_token" ]; then
   CLAUDE_CODE_OAUTH_TOKEN="$(tr -d '[:space:]' < "$HOME/.adrianmath_marker/oauth_token")"
   export CLAUDE_CODE_OAUTH_TOKEN
   AUTH_VIA="marker oauth_token"
+# The token every plan-billed worker on this Mac actually shares (31 Aug 2026).
+# This chain was copied from the marker's wrapper but its last rung was pointed
+# at ~/.adrianmath_marker/oauth_token — a file that has never existed, because
+# the MARKER itself falls through to the pipeline token. So the sheet worker
+# died on "no Claude credentials" on every one of its 15-minute ticks, from
+# install onward, and Adrian's first queued sheet sat untouched for two hours
+# while the button that queued it looked broken.
+elif [ -r "$HOME/.adrianmath_pipeline/oauth_token" ]; then
+  CLAUDE_CODE_OAUTH_TOKEN="$(tr -d '[:space:]' < "$HOME/.adrianmath_pipeline/oauth_token")"
+  export CLAUDE_CODE_OAUTH_TOKEN
+  AUTH_VIA="pipeline oauth_token"
 else
-  say "FATAL: no Claude credentials — 'claude auth login' once, or put a setup-token in $STATE/oauth_token"
-  cleanup_pid; exit 1
+  die "no Claude credentials — 'claude auth login' once, or put a setup-token in $STATE/oauth_token"
 fi
 
 if [ ! -r "$PROMPT" ]; then
-  say "FATAL: missing $PROMPT — run install.sh again"
-  cleanup_pid; exit 1
+  die "missing $PROMPT — run install.sh again"
 fi
 
 # --- run: one sheet, one session -------------------------------------------
 say "START ($WAITING queued, auth=$AUTH_VIA, model=${WORKER_MODEL:-opus}, max ${MAX_RUNTIME_SEC}s)"
 START_EPOCH=$(date +%s)
-cd "$SHEETS_REPO" || { say "FATAL: cannot cd to $SHEETS_REPO"; cleanup_pid; exit 1; }
+cd "$SHEETS_REPO" || die "cannot cd to $SHEETS_REPO"
 
 # Effort is pinned HIGH, not left to the default: authoring a sheet is
 # diagnosis + writing + symbolic verification + figure construction in one

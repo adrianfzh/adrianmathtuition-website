@@ -51,6 +51,26 @@ cp "$HERE/com.adrianmath.sheetworker.plist" "$AGENT"
 launchctl unload "$AGENT" 2>/dev/null || true
 launchctl load "$AGENT"
 
+# --- credentials: the check that would have caught the 31 Aug failure --------
+# The queue check below proves the SERVER half. It passed on install day and
+# kept passing while the worker died on every tick for want of a Claude login —
+# 46 runs, all exit 1, nothing in the logbook, a job sitting "queued" behind a
+# UI that said it was on its way. Verify the half that can actually fail.
+CREDS=""
+if claude auth status 2>/dev/null | grep -q '"loggedIn": *true'; then CREDS="keychain"
+elif [ -r "$STATE/oauth_token" ]; then CREDS="$STATE/oauth_token"
+elif [ -r "$HOME/.adrianmath_marker/oauth_token" ]; then CREDS="marker token"
+elif [ -r "$HOME/.adrianmath_pipeline/oauth_token" ]; then CREDS="pipeline token"
+fi
+if [ -z "$CREDS" ]; then
+  echo "✗ NO CLAUDE CREDENTIALS — the worker would fail on every tick."
+  echo "  Fix one of these, then re-run:"
+  echo "    claude auth login                       (this machine, interactive)"
+  echo "    echo '<setup-token>' > $STATE/oauth_token"
+  exit 1
+fi
+echo "✓ Claude credentials: $CREDS"
+
 # --- functional check -------------------------------------------------------
 CHECK="$(curl -s -m 30 "https://www.adrianmathtuition.com/api/admin/sheet-jobs" \
   -H "Authorization: Bearer $TOKEN")"

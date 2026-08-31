@@ -537,6 +537,39 @@ export async function GET(req: NextRequest) {
   // The marking queue is event-driven (no rhythm), so its health signal is LAG:
   // a queued, unmarked, unfailed paper older than 2h means the worker is stuck —
   // Batch API rounds normally land well inside the hour.
+  // 📘 Self-study sheets: is anything CONSUMING the queue? The sheet-jobs check
+  // above proves the table is readable, which is the half that cannot fail —
+  // and on 31 Aug that is exactly what hid the failure. The Mac worker had
+  // never once started (its credential chain pointed at a token file that has
+  // never existed), so it died on every 15-minute tick before claiming
+  // anything. attempts stayed 0, no job_runs row was ever stamped, the ops
+  // board had nothing to be amber about, and Adrian's first queued sheet sat
+  // untouched for two hours behind a UI that said "Sheet queued".
+  //
+  // A job that never starts is invisible to every surface downstream of a
+  // successful start. So watch the QUEUE instead: unclaimed work is unclaimed
+  // whatever the reason — worker dead, unauthenticated, Mac asleep, plan cap.
+  // 45 minutes is three missed ticks: long enough that a single slow poll or a
+  // reboot is not an alarm, short enough that Adrian hears about it while he is
+  // still at his desk.
+  results.push(await timed('sheet-queue-lag', async () => {
+    const { getSupabaseAdmin } = await import('@/lib/supabase');
+    const { data, error } = await getSupabaseAdmin()
+      .from('sheet_jobs')
+      .select('id, status, created_at, student_name')
+      .eq('status', 'queued')
+      .order('created_at', { ascending: true })
+      .limit(20);
+    if (error) throw new Error(`sheet queue read failed: ${error.message}`);
+    const stale = (data || []).filter(j => Date.now() - new Date(j.created_at).getTime() > 45 * 60e3);
+    if (stale.length) {
+      const who = stale.map(j => j.student_name || 'a student').slice(0, 3).join(', ');
+      const mins = Math.round((Date.now() - new Date(stale[0].created_at).getTime()) / 60e3);
+      throw new Error(`${stale.length} sheet job(s) unclaimed for ${mins}+ min (${who}) — is the Mac sheet worker running?`);
+    }
+    return data?.length ? `${data.length} queued, all fresh` : 'nothing waiting';
+  }));
+
   results.push(await timed('marking-queue-lag', async () => {
     const { getSupabaseAdmin } = await import('@/lib/supabase');
     const { data, error } = await getSupabaseAdmin()
