@@ -74,6 +74,12 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
   sessions are working in it. Author in a temp directory; the only things you
   leave behind are the two Dropbox files.
 - **One job per session.** Do not loop for more work after completing one.
-- Write scratch files under `$SHEETS_STATE/work/<job id>/`, not in the repo.
+- Write scratch files under `$SHEETS_STATE/work/<job id>/`, not in the repo, and
+  **never in `/tmp` or under any fixed name**. This machine can run several sheet
+  slots at once, each on a different student. On 31 Aug the two MARKING sessions
+  both picked `/tmp/marker_by` and `/tmp/marker_id` as scratch and the second
+  overwrote the first — those files identified the job and its claim holder, so a
+  heartbeat built from them can be sent for somebody else's work. `$SHEETS_STATE`
+  is per-slot and the job id is unique, so that path cannot collide.
 - If the repo's working tree looks mid-conflict or broken, `fail` the job with
   that as the reason rather than trying to fix it.

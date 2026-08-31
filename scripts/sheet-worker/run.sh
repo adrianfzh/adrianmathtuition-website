@@ -21,7 +21,11 @@ export PATH="/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 
-STATE="$HOME/.adrianmath_sheets"
+# Slot-scoped state (31 Aug 2026). Slot 1 keeps the original path untouched;
+# extra slots get their own dir so two sessions can author two DIFFERENT sheets
+# at once. Safe because the claim is a conditional update on (id, status) — two
+# workers cannot take the same job, the loser simply picks the next one.
+STATE="${SHEETS_STATE_DIR:-$HOME/.adrianmath_sheets}"
 LOG="$STATE/sheet-worker.log"
 PROMPT="$STATE/WORKER_PROMPT.md"
 # Authoring is long: diagnose + write + sympy-verify + figures + render + file.
@@ -57,6 +61,9 @@ if [ -f "$STATE/worker.pid" ]; then
 fi
 echo $$ > "$STATE/worker.pid"
 cleanup_pid() { rm -f "$STATE/worker.pid"; }
+
+# Stagger slots so two workers rarely reach for the same job on the same tick.
+if [ "${START_DELAY_SEC:-0}" -gt 0 ] 2>/dev/null; then sleep "$START_DELAY_SEC"; fi
 
 # --- config -----------------------------------------------------------------
 if [ ! -r "$STATE/env" ]; then
