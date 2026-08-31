@@ -228,7 +228,7 @@ before it. They were — that was the point.
 Render the DOCX **and** a preview PDF, then file both:
 
 ```bash
-node scripts/dropbox-put.mjs "<file>" "/Self-Study/<Student Name>/<YYYY-MM-DD> <Sheet title> — <paper>.docx"
+node scripts/dropbox-put.mjs "<file>" "/Self-Study/<Student Name>/Practice Again (Wave <n>) — <paper>.docx" --overwrite
 ```
 
 (The script stages to Blob and calls `/api/admin/dropbox-put`; a direct Dropbox
@@ -237,6 +237,25 @@ call from this Mac 401s — its refresh token predates `files.content.write`.)
 Then hand Adrian both files in the session and tell him the next step in one
 line: **edit the DOCX in Dropbox, export the PDF beside it, then release the
 marked paper + sheet together from triage** (the 📘 attach button there).
+
+### The filename is fixed
+
+`/Self-Study/<Student Name>/Practice Again (Wave <n>) — <paper>.docx` (and
+`.pdf`). No date, no title variation, no run number.
+
+The wave number IS the identity: wave 2 of a paper is one document, however many
+times it gets rebuilt, so a re-author writes the same path with `--overwrite`
+and the folder keeps one file per wave. A NEW wave increments `<n>`.
+
+Sophie's folder is what happens without this. Two runs, two conventions —
+"2026-08-31 PRACTICE AGAIN — Learn from A Math 2021 Paper 1 — sophie am tys
+2021 p1" and "2026-08-31 Practice Again (Wave 2) — sophie am tys 2021 p1" —
+so the rebuild that was told to replace the earlier sheet quietly sat down
+beside it instead, and Adrian opened a folder with two sheets, two PDFs and a
+sync copy in it, unable to tell which one to send. "Replace the earlier file"
+is unenforceable when each run invents its own name.
+
+Dates belong in Dropbox's own modified column, not in the name.
 
 ## Hard rules
 
