@@ -682,7 +682,7 @@ export default function QuestionBankPage() {
                   question asks, so it QUEUES for a person, never runs here. */}
               {tool('✨ Clean', () => figureAction(
                 { action: 'clean-figure', id: openDetail.id, url: u }, `clean:${u}`,
-                d => d.alreadyClean ? 'Already white — nothing to clean' : `Cleaned (white point ${d.whitePoint}) — ↩ Undo reverts it`,
+                d => d.alreadyClean ? 'Already as clean as a lift can make it' : `Cleaned (white point ${d.whitePoint}) — ↩ Undo reverts it`,
               ), figBusy === `clean:${u}`)}
               {tool(flagged ? '🚩 Queued' : '🚩 Redraw', () => figureAction(
                 { action: 'flag-redraw', id: openDetail.id, url: u, flag: !flagged }, `flag:${u}`,

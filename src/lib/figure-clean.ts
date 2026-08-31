@@ -13,13 +13,32 @@
 import sharp from 'sharp';
 
 export const PAGE_FRACTION = 0.80;
+/**
+ * A CEILING on the white point, and the second half of the job.
+ *
+ * PAGE_FRACTION alone only ever fixed the PAGE. Once the background is white it
+ * reports ~254, the lift becomes the identity, and the button says "nothing to
+ * clean" while the figure still reads faint — which is exactly what happened on
+ * the GCE 2022 EM P2 ogive after its background was whitened. The faintness
+ * left is the INK: on that scan the graph-paper grid averages grey 139 at full
+ * size, and the browser then squeezes 2164px into ~760, mixing each 1px line
+ * with its white neighbours until it lands near 214. Capping the white point
+ * here pulls that ink down instead of leaving it alone.
+ * 235 is above where real grid ink sits and below the page, so it deepens lines
+ * without touching the background.
+ */
+export const INK_CEILING = 235;
 /** A mostly-INK figure (a dark solid diagram) reports a low background; lifting
  *  that to white would blow the drawing out. Never go below this. */
 export const WP_FLOOR = 170;
-/** At or above this the page is already white — do nothing rather than burn a
- *  bucket object re-saving an unchanged image (and a bogus undo entry). */
-export const SKIP_ABOVE = 248;
 export const BLACK_POINT = 20;
+/** Below this share of mid-tones there is nothing left to deepen — the art is
+ *  already black-on-white (a vector render, a previous clean). Doing nothing
+ *  beats burning a bucket object and an undo entry on an invisible change. */
+export const MIN_MIDTONE = 0.005;
+/** A mild unsharp so thin lines survive the browser's downscale. Deliberately
+ *  gentle: a hard sharpen puts halos along every grid line. */
+export const SHARPEN = { sigma: 1.1, m1: 1, m2: 2 };
 
 /** Grey levels 0-255 → how many pixels. */
 export type Histogram = number[];
@@ -31,22 +50,33 @@ export function greyHistogram(data: Uint8Array | Buffer): Histogram {
 }
 
 /**
- * The white point for this histogram, or null when the page is already white.
+ * The white point for this histogram, or null when there is nothing to gain.
  * PURE — this is the decision the whole clean turns on, so it is testable
  * without an image.
  */
 export function whitePointFor(hist: Histogram): number | null {
   const total = hist.reduce((a, b) => a + b, 0);
   if (!total) throw new Error('unreadable image');
+
+  // Where the page background starts, from the top down.
   const want = total * PAGE_FRACTION;
   let acc = 0;
-  let wp = 0;
+  let pageWp = 0;
   for (let v = 255; v >= 0; v--) {
     acc += hist[v];
-    if (acc >= want) { wp = v; break; }
+    if (acc >= want) { pageWp = v; break; }
   }
-  if (wp >= SKIP_ABOVE) return null;
-  return Math.max(wp, WP_FLOOR);
+
+  // A hazy page pulls the point down (233 on the ogive scan); a white page is
+  // held at the ink ceiling so the LINES still get deepened. The floor stops a
+  // mostly-ink figure from reporting a dark background and being blown out.
+  const wp = Math.max(Math.min(pageWp, INK_CEILING), WP_FLOOR);
+
+  // Nothing between black and the white point means nothing to move.
+  let mid = 0;
+  for (let v = BLACK_POINT + 1; v < wp; v++) mid += hist[v];
+  if (mid / total < MIN_MIDTONE) return null;
+  return wp;
 }
 
 /**
@@ -59,6 +89,10 @@ export async function cleanScan(src: Buffer): Promise<{ out: Buffer; whitePoint:
   const whitePoint = whitePointFor(greyHistogram(data));
   if (whitePoint === null) return null;
   const a = 255 / (whitePoint - BLACK_POINT);
-  const out = await sharp(src).linear(a, -BLACK_POINT * a).png({ compressionLevel: 9 }).toBuffer();
+  const out = await sharp(src)
+    .linear(a, -BLACK_POINT * a)
+    .sharpen(SHARPEN)
+    .png({ compressionLevel: 9 })
+    .toBuffer();
   return { out, whitePoint };
 }

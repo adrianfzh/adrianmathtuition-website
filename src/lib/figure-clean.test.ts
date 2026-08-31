@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { whitePointFor, greyHistogram, PAGE_FRACTION, WP_FLOOR, SKIP_ABOVE } from './figure-clean';
+import { whitePointFor, greyHistogram, PAGE_FRACTION, WP_FLOOR, INK_CEILING, MIN_MIDTONE } from './figure-clean';
 
 /** A histogram with `n` pixels spread over the given [grey, count] pairs. */
 const hist = (pairs: [number, number][]) => {
@@ -19,10 +19,25 @@ describe('whitePointFor', () => {
     expect(wp!).toBeLessThan(245);
   });
 
-  it('returns null on a page that is already white', () => {
-    // 90% pure white — the shape of an image someone already flattened. Doing
-    // nothing here is what stops a pointless bucket object and a bogus undo.
-    expect(whitePointFor(hist([[60, 500], [200, 500], [255, 9000]]))).toBeNull();
+  it('still deepens the INK on a page that is already white', () => {
+    // The regression this exists for: once the ogive's background was whitened,
+    // the old rule reported ~254, the lift became the identity and the button
+    // said "nothing to clean" while the grid still read faint. A white page
+    // must be held at the ink ceiling so the LINES get pulled down.
+    expect(whitePointFor(hist([[60, 500], [200, 500], [255, 9000]]))).toBe(INK_CEILING);
+  });
+
+  it('returns null on art that is already black and white', () => {
+    // A vector render or an already-cleaned scan: no mid-tones to deepen, so
+    // doing nothing beats burning a bucket object on an invisible change.
+    expect(whitePointFor(hist([[0, 1200], [255, 8800]]))).toBeNull();
+  });
+
+  it('treats a whisker of mid-tone as already clean, but not a real grid', () => {
+    // Just under the threshold (anti-aliasing on vector art) → no-op …
+    expect(whitePointFor(hist([[0, 1000], [150, 30], [255, 8970]]))).toBeNull();
+    // … and just over it (a genuine faint grid) → clean.
+    expect(whitePointFor(hist([[0, 1000], [150, 200], [255, 8800]]))).toBe(INK_CEILING);
   });
 
   it('never lifts a mostly-ink figure past the floor', () => {
@@ -56,6 +71,7 @@ describe('whitePointFor', () => {
     // every clean in the bank, so pin them.
     expect(PAGE_FRACTION).toBe(0.80);
     expect(WP_FLOOR).toBe(170);
-    expect(SKIP_ABOVE).toBe(248);
+    expect(INK_CEILING).toBe(235);
+    expect(MIN_MIDTONE).toBe(0.005);
   });
 });

@@ -342,6 +342,13 @@ export async function POST(req: NextRequest) {
   type FigHistory = { undo: FigState[]; redo: FigState[] };
   const HISTORY_MAX = 10;
 
+  /** Bucket objects this question's figures have already been cleaned INTO. */
+  const readCleaned = (genMeta: unknown): string[] => {
+    const v = genMeta && typeof genMeta === 'object'
+      ? (genMeta as Record<string, unknown>).figure_cleaned : null;
+    return Array.isArray(v) ? (v as string[]).filter(x => typeof x === 'string') : [];
+  };
+
   const readHistory = (genMeta: unknown): FigHistory => {
     const h = (genMeta && typeof genMeta === 'object'
       ? (genMeta as Record<string, unknown>).figure_history : null) as Record<string, unknown> | null;
@@ -385,6 +392,13 @@ export async function POST(req: NextRequest) {
 
     const objName = storageObjectName(srcPath);
     if (!objName) return NextResponse.json({ error: 'that figure is not stored in our bucket, so it cannot be cleaned' }, { status: 400 });
+    // A clean is NOT idempotent — the lift re-reads the histogram of its own
+    // output, so a second pass would deepen the ink again and a third would
+    // crush it. One clean per bucket object; ♻️ Replace or ↩ Undo to start over.
+    const cleanedAlready = readCleaned(row.gen_meta);
+    if (cleanedAlready.includes(objName)) {
+      return NextResponse.json({ alreadyClean: true, question: await freshDetail(id) });
+    }
     const dl = await supa.storage.from('question_images').download(objName);
     if (dl.error || !dl.data) return NextResponse.json({ error: `could not read the figure: ${dl.error?.message ?? 'missing'}` }, { status: 502 });
     const src = Buffer.from(await dl.data.arrayBuffer());
@@ -402,8 +416,9 @@ export async function POST(req: NextRequest) {
 
     const patch = repointFigure(row as Row, url, `question_images/${name}`);
     const hist = readHistory(row.gen_meta);
+    const meta = withHistory(row.gen_meta, { undo: [...hist.undo, stateOf(row as Row)], redo: [] });
     const upd = await supa.from('questions')
-      .update({ ...patch, gen_meta: withHistory(row.gen_meta, { undo: [...hist.undo, stateOf(row as Row)], redo: [] }) })
+      .update({ ...patch, gen_meta: { ...meta, figure_cleaned: [...cleanedAlready, name].slice(-40) } })
       .eq('id', id);
     if (upd.error) return NextResponse.json({ error: upd.error.message }, { status: 500 });
     return NextResponse.json({ url: imgSrc(`question_images/${name}`), whitePoint: cleaned.whitePoint, question: await freshDetail(id) });
