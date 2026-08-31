@@ -41,7 +41,12 @@ type Card = {
   paper: string | null; examType: string | null; qnum: string | null; level: string | null;
   topics: string[]; hasFigure: boolean; aiGenerated: boolean; thumb: string | null;
 };
-type Part = { label?: string; text?: string; marks?: number; answer?: string; solution?: string; image_url?: string; subparts?: Part[] };
+type Part = {
+  label?: string; text?: string; marks?: number; answer?: string; solution?: string;
+  // image_url_after is a figure that belongs BELOW the part's words; 1.7k parts
+  // carry a solution_image (a drawn graph, typically) and nothing drew either.
+  image_url?: string; image_url_after?: string; solution_image?: string; subparts?: Part[];
+};
 type Detail = Card & {
   questionMd: string; parts: Part[]; solution: string | null; answer: string | null;
   difficulty: string | null; sourceFile: string | null; watermarkStatus: string | null;
@@ -77,8 +82,12 @@ export default function QuestionBankPage() {
   const [papersTotal, setPapersTotal] = useState(0);
 
   const [openDetail, setOpenDetail] = useState<Detail | null>(null);
-  const [showSolution, setShowSolution] = useState(false);
-  const [paperView, setPaperView] = useState<{ meta: PaperMeta; questions: Card[] } | null>(null);
+  // Which questions are showing their worked solution, keyed by id — the paper
+  // view puts ten questions on screen at once, so one global flag won't do.
+  const [solOpen, setSolOpen] = useState<Record<string, boolean>>({});
+  // details=1 on open, so every question in a paper arrives COMPLETE — text,
+  // parts, figures and solution — and renders in full with no further network.
+  const [paperView, setPaperView] = useState<{ meta: PaperMeta; questions: Detail[] } | null>(null);
   const [toast, setToast] = useState('');
 
   const [mode, setMode] = useState<'text' | 'smart'>('text');
@@ -208,20 +217,26 @@ export default function QuestionBankPage() {
     if (id) void fetchDetail(id);
   }, [fetchDetail]);
 
+  // The detail card renders at the TOP of the page, so a tap from far down a
+  // paper used to look like nothing happened — scroll to it (Adrian, 31 Aug).
+  const showDetail = useCallback((d: Detail) => {
+    setOpenDetail(d);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const openQuestion = useCallback(async (id: string) => {
-    setShowSolution(false);
     const known = detailCache.current.get(id);
-    if (known) { setOpenDetail(known); return; }   // instant
+    if (known) { showDetail(known); return; }   // instant
     // A prefetch may already be in flight; poll the cache briefly rather than
     // duplicating the request, then fall back to fetching it ourselves.
     for (let i = 0; i < 20 && inFlight.current.has(id); i++) {
       await new Promise(res => setTimeout(res, 25));
       const arrived = detailCache.current.get(id);
-      if (arrived) { setOpenDetail(arrived); return; }
+      if (arrived) { showDetail(arrived); return; }
     }
     const d = await fetchDetail(id);
-    if (d) setOpenDetail(d);
-  }, [fetchDetail]);
+    if (d) showDetail(d);
+  }, [fetchDetail, showDetail]);
 
   const openPaper = useCallback(async (meta: PaperMeta) => {
     setLoading(true);
@@ -528,7 +543,7 @@ export default function QuestionBankPage() {
     );
   }
 
-  const partBlock = (pt: Part, depth = 0) => (
+  const partBlock = (pt: Part, depth = 0, showSol = false) => (
     <div key={`${pt.label}-${depth}-${(pt.text || '').slice(0, 12)}`} style={{ marginLeft: depth * 14, marginTop: 8 }}>
       <div style={{ fontSize: 14.5 }}>
         {pt.label && <strong>{pt.label} </strong>}
@@ -536,17 +551,53 @@ export default function QuestionBankPage() {
         {pt.marks != null && <span style={{ float: 'right', color: C.muted }}>[{pt.marks}]</span>}
       </div>
       {pt.image_url && <img src={pt.image_url} alt="" style={{ maxWidth: '100%', borderRadius: 8, margin: '6px 0' }} />}
-      {showSolution && pt.solution && (
+      {pt.image_url_after && <img src={pt.image_url_after} alt="" style={{ maxWidth: '100%', borderRadius: 8, margin: '6px 0' }} />}
+      {showSol && pt.solution && (
         <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '6px 10px', margin: '6px 0', fontSize: 14 }}>
           <MathBlock text={pt.solution} />
         </div>
       )}
-      {showSolution && pt.answer && (
+      {showSol && pt.solution_image && (
+        <img src={pt.solution_image} alt="worked solution" style={{ maxWidth: '100%', borderRadius: 8, margin: '6px 0', display: 'block' }} />
+      )}
+      {showSol && pt.answer && (
         <div style={{ color: '#843C0C', fontSize: 13.5, margin: '2px 0' }}>Ans: <MathText text={pt.answer} /></div>
       )}
-      {(pt.subparts || []).map(sp => partBlock(sp, depth + 1))}
+      {(pt.subparts || []).map(sp => partBlock(sp, depth + 1, showSol))}
     </div>
   );
+
+  const isSolOpen = (qid: string) => !!solOpen[qid];
+  const toggleSol = (qid: string) => setSolOpen(m => ({ ...m, [qid]: !m[qid] }));
+  const solButton = (d: Detail) => (
+    <button onClick={() => toggleSol(d.id)}
+      style={{ fontSize: 13.5, fontWeight: 600, color: '#fff', background: isSolOpen(d.id) ? C.muted : C.good, border: 'none', borderRadius: 8, padding: '6px 13px', cursor: 'pointer' }}>
+      {isSolOpen(d.id) ? 'Hide solution' : '✅ Show solution'}
+    </button>
+  );
+
+  /** The worked solution, exactly as the detail card has always shown it. */
+  const solutionBlock = (d: Detail) => (
+    <div style={{ marginTop: 10 }}>
+      {d.solution && (
+        <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: 12, fontSize: 14.5 }}>
+          <MathBlock text={d.solution} />
+        </div>
+      )}
+      {(d.solutionImages || []).map(u => <img key={u} src={u} alt="solution" style={{ maxWidth: '100%', borderRadius: 8, margin: '6px 0' }} />)}
+      {d.answer && <div style={{ color: '#843C0C', marginTop: 8, fontSize: 14.5 }}>Ans: <MathText text={d.answer} /></div>}
+      {!d.solution && !(d.parts || []).some(pt => pt.solution || pt.solution_image) && !d.answer && (
+        <div style={{ color: C.muted, fontSize: 13.5, marginTop: 6 }}>No stored solution on this question.</div>
+      )}
+    </div>
+  );
+
+  /** has_image is set but nothing is stored — worth saying out loud on a paper
+   *  that is about to be printed, rather than showing a silently figure-less Q. */
+  const partsHaveImage = (list: Part[]): boolean =>
+    list.some(pt => !!pt.image_url || !!pt.image_url_after || partsHaveImage(pt.subparts || []));
+  const figureMissing = (d: Detail) =>
+    d.hasFigure && !(d.images || []).length && !partsHaveImage(d.parts || []);
 
   const detailCard = openDetail && (
     <section style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 16, marginBottom: 14 }}>
@@ -583,29 +634,18 @@ export default function QuestionBankPage() {
         ref={replaceRef} type="file" accept="image/png,image/jpeg,image/webp" hidden
         onChange={e => { const f = e.target.files?.[0] ?? null; e.target.value = ''; onReplaceFigurePicked(f); }}
       />
-      <div style={{ fontSize: 15, lineHeight: 1.55 }}><MathBlock text={openDetail.questionMd} /></div>
-      {openDetail.parts.map(pt => partBlock(pt))}
-      <div style={{ marginTop: 12, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-        <button onClick={() => setShowSolution(s => !s)}
-          style={{ fontSize: 14, fontWeight: 600, color: '#fff', background: showSolution ? C.muted : C.good, border: 'none', borderRadius: 8, padding: '7px 14px', cursor: 'pointer' }}>
-          {showSolution ? 'Hide solution' : '✅ Show solution'}
-        </button>
-        {openDetail.topics.map(t => <span key={t} style={{ fontSize: 12, color: C.muted, background: C.bg, borderRadius: 999, padding: '2px 9px' }}>{t}</span>)}
-      </div>
-      {showSolution && (
-        <div style={{ marginTop: 10 }}>
-          {openDetail.solution && (
-            <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: 12, fontSize: 14.5 }}>
-              <MathBlock text={openDetail.solution} />
-            </div>
-          )}
-          {openDetail.solutionImages.map(u => <img key={u} src={u} alt="solution" style={{ maxWidth: '100%', borderRadius: 8, margin: '6px 0' }} />)}
-          {openDetail.answer && <div style={{ color: '#843C0C', marginTop: 8, fontSize: 14.5 }}>Ans: <MathText text={openDetail.answer} /></div>}
-          {!openDetail.solution && !openDetail.parts.some(pt => pt.solution) && !openDetail.answer && (
-            <div style={{ color: C.muted, fontSize: 13.5, marginTop: 6 }}>No stored solution on this question.</div>
-          )}
+      {figureMissing(openDetail) && (
+        <div style={{ fontSize: 12.5, color: C.warn, background: C.flagBg, borderRadius: 8, padding: '4px 9px', margin: '6px 0' }}>
+          🖼 figure flagged on this question but not stored in the bank
         </div>
       )}
+      <div style={{ fontSize: 15, lineHeight: 1.55 }}><MathBlock text={openDetail.questionMd} /></div>
+      {openDetail.parts.map(pt => partBlock(pt, 0, isSolOpen(openDetail.id)))}
+      <div style={{ marginTop: 12, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+        {solButton(openDetail)}
+        {openDetail.topics.map(t => <span key={t} style={{ fontSize: 12, color: C.muted, background: C.bg, borderRadius: 999, padding: '2px 9px' }}>{t}</span>)}
+      </div>
+      {isSolOpen(openDetail.id) && solutionBlock(openDetail)}
     </section>
   );
 
@@ -701,7 +741,22 @@ export default function QuestionBankPage() {
                 style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer', opacity: solBusy ? 0.6 : 1 }}>
                 {solBusy ? 'Building…' : '📄 Solutions PDF'}
               </button>
-              <button onClick={() => setPaperView(null)} style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer' }}>✕ Close paper</button>
+              <button onClick={() => {
+                const open = paperView.questions.every(q => solOpen[q.id]);
+                setSolOpen(m => {
+                  const next = { ...m };
+                  for (const q of paperView.questions) next[q.id] = !open;
+                  return next;
+                });
+              }} style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer' }}>
+                {paperView.questions.length > 0 && paperView.questions.every(q => solOpen[q.id]) ? '🙈 Hide solutions' : '✅ All solutions'}
+              </button>
+              {/* "Close paper" is also the way BACK to whatever list you came
+                  from — the result lists are gated behind !paperView — so it
+                  says so (Adrian, 31 Aug). */}
+              <button onClick={() => setPaperView(null)} style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer' }}>
+                {tab === 'papers' ? '← Back to papers' : results.length ? '← Back to results' : '✕ Close paper'}
+              </button>
             </span>
           </div>
           <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: '8px 10px', marginBottom: 8 }}>
@@ -752,16 +807,39 @@ export default function QuestionBankPage() {
               </div>
             )}
           </div>
+          {/* The whole question, figures and all — this is the sit-able paper on
+              screen, not an index of it. Everything here is already in memory
+              from the details=1 open, so it costs no network (Adrian, 31 Aug). */}
           {paperView.questions.map(c => (
-            <button key={c.id} onClick={() => openQuestion(c.id)}
-              style={{ display: 'block', width: '100%', textAlign: 'left', background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: '10px 12px', marginBottom: 8, cursor: 'pointer' }}>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
-                <strong>Q{c.qnum ?? '?'}</strong>
+            <section key={c.id} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: '12px 14px', marginBottom: 10 }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 4 }}>
+                <strong style={{ fontSize: 15.5 }}>Q{c.qnum ?? '?'}</strong>
                 {c.marks != null && <span style={{ color: C.muted, fontSize: 12.5 }}>[{c.marks}]</span>}
-                {c.hasFigure && <span style={{ fontSize: 12 }}>🖼</span>}
+                {c.topics.map(t => (
+                  <span key={t} style={{ fontSize: 11.5, color: C.muted, background: C.bg, borderRadius: 999, padding: '1px 8px' }}>{t}</span>
+                ))}
+                <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+                  <button onClick={() => toggleBasket(c)}
+                    style={{ fontSize: 12, border: 'none', background: 'none', color: inBasket(c.id) ? C.accent : C.muted, cursor: 'pointer' }}>
+                    {inBasket(c.id) ? '🧺 ✓' : '🧺 +'}
+                  </button>
+                  <button onClick={() => openQuestion(c.id)} title="Open on its own — assign, replace figure, copy link"
+                    style={{ fontSize: 12, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '2px 8px', cursor: 'pointer' }}>⤢ Open</button>
+                </span>
               </div>
-              <div style={{ fontSize: 14, color: '#1f2937', marginTop: 3 }}><MathText text={c.excerpt} /></div>
-            </button>
+              {figureMissing(c) && (
+                <div style={{ fontSize: 12.5, color: C.warn, background: C.flagBg, borderRadius: 8, padding: '4px 9px', margin: '6px 0' }}>
+                  🖼 figure flagged on this question but not stored in the bank
+                </div>
+              )}
+              {(c.images || []).map(u => (
+                <img key={u} src={u} alt="figure" loading="lazy" style={{ maxWidth: '100%', borderRadius: 8, margin: '6px 0', display: 'block' }} />
+              ))}
+              {c.questionMd && <div style={{ fontSize: 14.5, lineHeight: 1.55 }}><MathBlock text={c.questionMd} /></div>}
+              {(c.parts || []).map(pt => partBlock(pt, 0, isSolOpen(c.id)))}
+              <div style={{ marginTop: 10 }}>{solButton(c)}</div>
+              {isSolOpen(c.id) && solutionBlock(c)}
+            </section>
           ))}
         </section>
       )}
@@ -775,6 +853,11 @@ export default function QuestionBankPage() {
                 onTouchStart={() => prefetchQuestion(c.id)}
                 style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
                 <div style={{ fontSize: 14.5, color: '#111' }}><MathText text={c.excerpt} /></div>
+                {/* The API has always sent a thumb; nothing ever drew it. */}
+                {c.thumb && (
+                  <img src={c.thumb} alt="" loading="lazy"
+                    style={{ maxHeight: 110, maxWidth: '100%', borderRadius: 8, marginTop: 6, display: 'block' }} />
+                )}
               </button>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}>
                 <button onClick={() => c.school && c.year && openPaper({ school: c.school, year: c.year, level: c.level, paper: c.paper, examType: c.examType })}

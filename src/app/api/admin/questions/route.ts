@@ -43,13 +43,36 @@ function resolveImages(row: Row, cap = 6): string[] {
   return [...new Set(urls)].slice(0, cap);
 }
 
+/** The one-line card excerpt. Plenty of papers (the GCE ones especially) carry
+ *  an EMPTY question_text with the whole question living in `parts` — those
+ *  cards used to render blank, which read as "the question is missing". Fall
+ *  back to the first part that has text so no card is ever wordless. */
+function cardExcerpt(row: Row): string {
+  const stem = excerptText(row.question_text as string);
+  if (stem) return stem;
+  const firstPartText = (function walk(list: unknown): string {
+    if (!Array.isArray(list)) return '';
+    for (const pt of list) {
+      if (!pt || typeof pt !== 'object') continue;
+      const o = pt as { label?: unknown; text?: unknown; subparts?: unknown };
+      if (typeof o.text === 'string' && o.text.trim()) {
+        return `${typeof o.label === 'string' && o.label ? `${o.label} ` : ''}${o.text}`;
+      }
+      const deeper = walk(o.subparts);
+      if (deeper) return deeper;
+    }
+    return '';
+  })(row.parts);
+  return excerptText(firstPartText);
+}
+
 /** Part image paths → public URLs, recursively, so the client renders them directly. */
 function resolveParts(parts: unknown): unknown {
   if (!Array.isArray(parts)) return [];
   return parts.map((pt) => {
     if (!pt || typeof pt !== 'object') return pt;
     const o = { ...(pt as Record<string, unknown>) };
-    for (const k of ['image_url', 'image_url_after'] as const) {
+    for (const k of ['image_url', 'image_url_after', 'solution_image'] as const) {
       if (typeof o[k] === 'string' && o[k] && !/^https?:/i.test(o[k] as string) && isPlausibleImagePath(o[k])) {
         o[k] = imgSrc(o[k] as string);
       }
@@ -64,7 +87,7 @@ function resolveParts(parts: unknown): unknown {
 function card(row: Row) {
   return {
     id: row.id,
-    excerpt: excerptText(row.question_text as string),
+    excerpt: cardExcerpt(row),
     marks: row.total_marks ?? null,
     school: row.school ?? null,
     year: row.year ?? null,
@@ -190,7 +213,7 @@ export async function GET(req: NextRequest) {
   }
 
   // ── search cards ──────────────────────────────────────────────────────────
-  let q = supa.from('questions').select(LIST_COLUMNS).is('deleted_at', null);
+  let q = supa.from('questions').select(`${LIST_COLUMNS}, parts`).is('deleted_at', null);
   const level = p.get('level');
   if (level) q = q.eq('level', level);
   if (year) q = q.eq('year', Number(year));
@@ -300,7 +323,7 @@ export async function POST(req: NextRequest) {
       if (d.error) return NextResponse.json({ error: d.error }, { status: 502 });
       const ids: string[] = Array.isArray(d.ids) ? d.ids : [];
       if (!ids.length) return NextResponse.json({ results: [], extractedText: d.extractedText ?? null });
-      const { data, error } = await supa.from('questions').select(LIST_COLUMNS).in('id', ids);
+      const { data, error } = await supa.from('questions').select(`${LIST_COLUMNS}, parts`).in('id', ids);
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
       const byId = new Map((data ?? []).map((row) => [row.id as string, row]));
       const results = ids.map((qid) => byId.get(qid)).filter(Boolean).map((row) => card(row as Row));
