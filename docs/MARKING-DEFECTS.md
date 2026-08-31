@@ -61,10 +61,34 @@ their read-off is banned outright. Two consequences encoded with it:
 **Still to verify on a real script**, and worth doing deliberately: re-mark the
 linear-law paper and check the marker now either reads the line or declines.
 
-**A5. Brackets on Q12(a). — WAITING ON ADRIAN.** *"brackets are required?"*
-Nothing can be encoded until he rules. It is a genuine either-way call, and
-guessing it would put a wrong rule in the calibration ground truth, which is worse
-than the open question.
+**A5. Brackets on Q12(a). — RULED AND SHIPPED 31 Aug 2026.**
+The question was Klaire's AM TYS 2021 P1 Q12(a): she wrote $\log_6 5\times3^{x+1}$
+for $\log_6(5\times3^{x+1})$, with nothing round the argument — strictly
+$(\log_6 5)\times3^{x+1}$ — and the marker ticked it.
+
+**Adrian's ruling: it gets a note, not a deduction.** The mathematics is right and
+her own next line shows the intended grouping, so it is a notation habit, not an
+error. Award in full, and write one short sentence giving the correct form.
+
+Encoded in both prompts as **BRACKETS ROUND A FUNCTION'S ARGUMENT** (log, lg, ln,
+sin, cos, tan, roots), with two guards:
+- **This is the ONE case where a full-marks part carries a note**, stated
+  explicitly — otherwise the marker starts commenting on every correct answer.
+  `error_summary`'s spec was widened for it; the renderer already drew a note on a
+  full-marks part, the prompt was simply forbidding one.
+- **If the student went on to USE the loose reading**, the missing bracket produced
+  the wrong quantity and marks go normally. The test is what their next line does
+  with it, never how it looks.
+
+**B5. Circled equation numbers printed as empty boxes. — FIXED 31 Aug 2026.**
+Found on the same page. Klaire numbered her equations ① and ②; the marker echoed
+them — *"so ② = ① just gives 0 = 0"* — and Patrick Hand has no circled-digit
+glyph, so the note reached the page as *"so ⊡ = ⊡ just gives 0 = 0"* and said
+nothing. Same class as B1: the marking was right, the page could not draw it.
+①–⑳ (plus Ⓐⓑ⑴) now render as `(1)`, `(2)` — what a student writes when they
+cannot circle. Applied to the JOINED output, not just the prose path: `② = ①`
+counts as a maths run because of the `=`, which is how it leaked past a
+prose-only repair in the first place.
 
 ## B. Rendering — the output is wrong on the page
 
