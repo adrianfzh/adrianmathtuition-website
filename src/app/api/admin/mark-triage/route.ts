@@ -38,8 +38,7 @@ import {
   isReleasable,
   pendingCount,
   computeAutoHold,
-  TriageIndexError,
-} from '@/lib/mark-triage';
+  TriageIndexError, overrideTally } from '@/lib/mark-triage';
 import { buildReviseBlock } from '@/lib/revise-map';
 import { canTransition, validateAssignment, type AssignmentStatus } from '@/lib/assignments';
 import { sendPushToStudent } from '@/lib/portal-push';
@@ -109,6 +108,8 @@ export async function GET(req: NextRequest) {
         pdfUrl: r.pdf_url,
         annotatedPhotos: extractAnnotatedPhotos(r.result_json),
         flagged: summary.flagged,
+        // Not shown by default; correctable, and the denominator for any rate.
+        confident: summary.confident,
         releasable: summary.flagged.length === 0,
         // Marks changed after marking → the stored PDF still shows the old ones.
         pdfStale: !!(r.result_json as { pdf_stale?: unknown } | null)?.pdf_stale,
@@ -126,6 +127,14 @@ export async function GET(req: NextRequest) {
       scripts: runs.length,
       questions: runs.reduce((n, r) => n + r.totalQuestions, 0),
       confident: runs.reduce((n, r) => n + r.unflaggedCount, 0),
+      // How often Adrian has had to correct the marker, split by who the error
+      // cost. Marks he ADDED are marks a student earned and did not get — the
+      // number that gates auto-release. Averaging the two directions would hide
+      // exactly the one that matters.
+      corrections: (data ?? []).reduce((acc, r) => {
+        const t = overrideTally(r.result_json);
+        return { against: acc.against + t.against, forStudent: acc.forStudent + t.forStudent, reviewed: acc.reviewed + t.reviewed };
+      }, { against: 0, forStudent: 0, reviewed: 0 }),
       flagged: runs.reduce((n, r) => n + r.flagged.length, 0),
       readyToRelease: runs.filter(r => r.releasable).length,
     },

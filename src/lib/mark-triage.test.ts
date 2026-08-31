@@ -9,6 +9,7 @@ import {
   pendingCount,
   computeAutoHold,
   TriageIndexError,
+  overrideTally,
 } from './mark-triage';
 
 // Shaped from a real `paper_marking_runs.result_json` row (2026-08-11) — the
@@ -281,5 +282,57 @@ describe('computeAutoHold', () => {
     expect(computeAutoHold(null).hold).toBe(true);
     expect(computeAutoHold({}).hold).toBe(true);
     expect(computeAutoHold('nope').hold).toBe(true);
+  });
+});
+
+// ── the measurement (31 Aug 2026) ────────────────────────────────────────────
+// Two of twenty questions on Kayla's paper were marked wrong against her and
+// neither was flagged, so a rate computed over flagged questions alone would
+// have counted zero errors on a paper with two. These assertions are about the
+// denominator being every question, and the numerator keeping its direction.
+describe('measuring the marker', () => {
+  const run = (marks: { aw: number; mx: number; flag?: boolean; ov?: { awarded: number; previous: number } }[]) => ({
+    results: marks.map((m, i) => ({
+      question_number: String(i + 1),
+      review_recommended: !!m.flag,
+      marking: { total_awarded: m.aw, total_max: m.mx, parts: [] },
+      ...(m.ov ? { triage_reviewed: true, triage_override: m.ov } : {}),
+    })),
+  });
+
+  it('offers every question for correction, not just the flagged ones', () => {
+    const s = extractFlagged(run([{ aw: 2, mx: 2 }, { aw: 1, mx: 2, flag: true }, { aw: 3, mx: 3 }]));
+    expect(s.flagged).toHaveLength(1);
+    expect(s.confident).toHaveLength(2);           // Kayla's two lived here
+    expect(s.flagged.length + s.confident.length).toBe(s.totalQuestions);
+  });
+
+  it('keeps the index, so a correction on a confident question addresses the right one', () => {
+    const s = extractFlagged(run([{ aw: 2, mx: 2 }, { aw: 1, mx: 2, flag: true }, { aw: 0, mx: 3 }]));
+    expect(s.confident.map(q => q.index)).toEqual([0, 2]);
+  });
+
+  it('splits corrections by who the error cost', () => {
+    const t = overrideTally(run([
+      { aw: 2, mx: 2, ov: { awarded: 2, previous: 1 } },   // Adrian added a mark → against the student
+      { aw: 1, mx: 3, ov: { awarded: 1, previous: 3 } },   // Adrian removed marks → in her favour
+      { aw: 3, mx: 3 },
+    ]));
+    expect(t.against).toBe(1);
+    expect(t.forStudent).toBe(1);
+    expect(t.reviewed).toBe(2);
+  });
+
+  it('an agreed question is reviewed but is not an error', () => {
+    const r = run([{ aw: 2, mx: 2 }]);
+    (r.results[0] as Record<string, unknown>).triage_reviewed = true;
+    const t = overrideTally(r);
+    expect(t.reviewed).toBe(1);
+    expect(t.against + t.forStudent).toBe(0);
+  });
+
+  it('an unmarked paper tallies nothing rather than throwing', () => {
+    expect(overrideTally(null)).toEqual({ against: 0, forStudent: 0, reviewed: 0 });
+    expect(overrideTally({})).toEqual({ against: 0, forStudent: 0, reviewed: 0 });
   });
 });
