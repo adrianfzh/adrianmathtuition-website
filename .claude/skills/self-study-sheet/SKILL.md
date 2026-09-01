@@ -212,9 +212,55 @@ Invoke `create-teaching-notes` and give it this brief:
   never pairs anything. The student drills something adjacent and the skill goes
   untouched. Test each practice item by asking: **can this be answered without
   doing the thing the Example taught?** If yes, it is the wrong question.
-  Prefer real bank questions of the same shape (the QB has them: the pairing
-  method appears as `(2+3x)(1-2x)ⁿ` at Catholic High 2024 Q8(a), and as
-  `(1-x/2)⁸(2/x+3x)²` at New Town 2022 Q3(b)).
+
+### Search the bank BEFORE you write a question (Adrian, 1 Sep 2026 — binding)
+
+This used to read "prefer real bank questions of the same shape", buried at the
+end of another bullet, with no procedure and no tool. Predictably nothing was ever
+searched: every practice question on every sheet so far was written from scratch.
+Checked on Klaire's — `15ˣ = 4×3ˣ⁺¹`, the 300 cm³/s balloon,
+`log₅x + log₂₅(x+4)` — **not one of them is in the bank.** A preference with no
+recipe is not a preference, it is a comment.
+
+So, for EVERY practice item, in this order:
+
+1. **Search.** The bank holds thousands of real school and TYS questions and it is
+   searched semantically, so describe the METHOD, not the topic — "coefficient of
+   x² from a product where two pairs of powers combine" finds what "binomial
+   expansion" never will:
+
+   ```bash
+   curl -s -X POST "$SHEETS_API_BASE/api/admin/mark-paper" \
+     -H "Authorization: Bearer $SHEETS_API_TOKEN" -H 'Content-Type: application/json' \
+     -d '{"phase":"qb-search","q":"<the method in one sentence>","level":"AM","count":12}'
+   ```
+
+2. **Judge each hit by the same test the Practice must pass** — can it be answered
+   without doing the thing the Example taught? A hit on the right topic that skips
+   the method is not a hit. Take the best one that passes, verify its answer like
+   any other, and use it.
+
+3. **Author only when nothing fits**, and then say so: record the question as a
+   proposal (below). A real question of the same shape beats an invented one —
+   it carries a school's own phrasing, its mark allocation and its difficulty,
+   and Adrian can point at where it came from.
+
+**Authored questions go into the vetting queue, not into the void.** Until now an
+invented practice question lived in one student's DOCX and nowhere else, so the
+bank never grew and the next sheet on the same skill invented it again. POST each
+one to `authored_question_proposals` with the search that came up empty:
+
+```bash
+curl -s -X POST "$SHEETS_API_BASE/api/admin/question-proposals" \
+  -H "Authorization: Bearer $SHEETS_API_TOKEN" -H 'Content-Type: application/json' \
+  -d '{"runId":"<run id>","sheetJobId":"<job id>","level":"AM","topics":["Binomial"],
+       "skill":"pairing powers for a coefficient","questionText":"…","answer":"…",
+       "solution":"…","marks":5,"searchQuery":"<what you searched>","searchHits":[…]}'
+```
+
+Nothing there reaches the bank until Adrian approves it. Record the FAILED SEARCH
+honestly — the queue cannot tell a genuine gap from a lazy search without it, and
+the gap is the interesting half: it says what the bank is missing.
 - Plain skill-phrase headings ("Differentiating a square root of a linear
   expression"); teach by contrast in one example where two rules compete;
   chain examples ("From Example 5: … ← carried forward"); 2–4 practice per
