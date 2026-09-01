@@ -1,7 +1,8 @@
 // Downscale + re-encode any camera image to a small JPEG (also normalises
 // HEIC on iOS, since Safari decodes it into the canvas). Browser-only —
-// imported by the practice flow's working editor and the question-finder's
-// "Snap a question" door, which send the same kind of photo.
+// imported by the practice flow's working editor, the question-finder's
+// "Snap a question" door, and My Notebook's "➕ Add a photo" door, which all
+// send the same kind of photo.
 export async function fileToJpegDataUrl(file: File, maxDim = 1600): Promise<string> {
   const url = URL.createObjectURL(file);
   try {
