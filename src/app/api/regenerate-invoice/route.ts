@@ -6,6 +6,7 @@ import { buildRegisterUrl } from '@/lib/invoice-register-url';
 import { NO_LESSON_DATES } from '@/lib/holidays';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { resolveInvoiceIssueDate, sgtTodayISO } from '@/lib/invoice-month';
+import { applyPriorBalance, stripPersistedCarryOver } from '@/lib/invoice-consolidate';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -159,51 +160,23 @@ export async function POST(req: NextRequest) {
     const baseAmount = regularCount * ratePerLesson;
     const additionalAmount = additionalCount * ratePerLesson;
 
-    // 7. Recalculate carry-over from previous month
-    const prevMonthDate = new Date(year, monthIdx - 1, 1);
-    const prevMonthLabel = `${MONTH_NAMES[prevMonthDate.getMonth()]} ${prevMonthDate.getFullYear()}`;
-    // Fetch all invoices for the previous month then filter by student ID in JS
-    // (Airtable cannot filter linked-record fields by ID in formulas)
-    const prevInvData = await airtableRequestAll(
-      'Invoices',
-      `?filterByFormula=${encodeURIComponent(`{Month}='${prevMonthLabel}'`)}&fields[]=Student&fields[]=Final Amount&fields[]=Amount Paid&fields[]=Is Paid`
-    );
-    const prevInvoice = prevInvData.records.find((r: any) => r.fields['Student']?.[0] === studentId);
-
-    const carryOverItems: any[] = [];
-    let carryOverNotes = '';
-    if (prevInvoice) {
-      const prevFinal = (prevInvoice.fields['Final Amount'] as number) || 0;
-      const prevPaid = (prevInvoice.fields['Amount Paid'] as number) || 0;
-      const outstanding = Math.max(0, prevFinal - prevPaid);
-      if (outstanding > 0) {
-        carryOverItems.push({
-          description: `Outstanding balance \u2014 ${prevMonthLabel}`,
-          amount: parseFloat(outstanding.toFixed(2)),
-        });
-        carryOverNotes =
-          `${prevMonthLabel} invoice breakdown:\n` +
-          `  Invoice amount: ${prevFinal.toFixed(2)}\n` +
-          `  Amount paid: ${prevPaid.toFixed(2)}\n` +
-          `  Outstanding: ${outstanding.toFixed(2)}`;
-      }
-    }
-
-    // 8. Preserve manual Line Items Extra; replace only carry-over items
+    // 7. Per-month model (lib/invoice-consolidate.ts): the STORED invoice carries
+    // only its own month's charge \u2014 prior open months are appended at render time
+    // by applyPriorBalance, never persisted. The carry-forward recalculation that
+    // used to live here predated the 2026-06-28 per-month cutover (this route was
+    // missed by it); with consolidated rendering its "Outstanding balance" lump
+    // made every PDF path count the previous month twice. Strip any such
+    // machine-written rows still stored; manual admin extras pass through.
     let existingExtra: any[] = [];
     try { existingExtra = JSON.parse((f['Line Items Extra'] || '[]') as string); } catch { /* ignore */ }
-    const manualExtra = existingExtra.filter(
-      (item: any) => !((item.description as string || '').startsWith('Outstanding balance'))
-    );
-    const newExtra = [...carryOverItems, ...manualExtra];
+    const newExtra = stripPersistedCarryOver(existingExtra);
 
     const adjustmentAmount = (f['Adjustment Amount'] as number) || 0;
     const extraTotal = newExtra.reduce((sum: number, item: any) => sum + (parseFloat(item.amount) || 0), 0);
     const finalAmount = Math.max(0, baseAmount + additionalAmount + adjustmentAmount + extraTotal);
 
-    // 9. Update invoice in Airtable.
-    // Only overwrite Auto Notes if there is a fresh carry-over to write;
-    // otherwise preserve whatever the admin set via the Amend form.
+    // 8. Update invoice in Airtable. Auto Notes stay untouched — whatever the
+    // admin or generator wrote there is preserved.
     const dueDateStr = `${year}-${String(monthIdx + 1).padStart(2, '0')}-15`;
     // Issue Date via the one shared rule (lib/invoice-month.ts): a Sent invoice
     // being rebuilt is reissued today; a Draft keeps its send-date/default.
@@ -218,18 +191,15 @@ export async function POST(req: NextRequest) {
       'Issue Date': issueDateStr,
       'PDF URL': '',
     };
-    if (carryOverNotes.trim()) patchFields['Auto Notes'] = carryOverNotes.trim();
 
     await at('Invoices', `/${recordId}`, {
       method: 'PATCH',
       body: JSON.stringify({ fields: patchFields }),
     });
 
-    // Use recalculated carry-over notes for the PDF; fall back to the
-    // existing saved Auto Notes if carry-over is empty (e.g. admin-edited notes).
-    const pdfNotes = carryOverNotes.trim() || ((f['Auto Notes'] || '') as string);
+    const pdfNotes = (f['Auto Notes'] || '') as string;
 
-    // 10. Generate fresh PDF and upload to Vercel Blob
+    // 9. Generate fresh PDF and upload to Vercel Blob
     try {
       const invoiceData = {
         studentName,
@@ -248,6 +218,12 @@ export async function POST(req: NextRequest) {
         lineItemsExtra: newExtra,
         registerUrl: buildRegisterUrl(studentId),
       };
+      // Consolidated view, render-time ONLY — the PATCH above already persisted
+      // the per-month rows, and applyPriorBalance replaces lineItemsExtra with a
+      // fresh array rather than mutating newExtra. `month` is the stored
+      // canonical Airtable Month (the fail-closed contract: a display span
+      // would consolidate nothing).
+      await applyPriorBalance(invoiceData, studentId, month);
       const pdfBuffer = await generateInvoicePDF(invoiceData);
       const blob = await put(
         `invoices/AdrianMathTuition-Invoice-${studentName.replace(/\s+/g, '-')}-${month.replace(/\s+/g, '-')}.pdf`,

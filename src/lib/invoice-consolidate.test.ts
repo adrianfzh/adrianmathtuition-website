@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { monthSortKey, priorBalanceFrom, applyPriorBalance } from './invoice-consolidate';
+import { monthSortKey, priorBalanceFrom, applyPriorBalance, stripPersistedCarryOver } from './invoice-consolidate';
 import { airtableRequestAll } from '@/lib/airtable';
 
 vi.mock('@/lib/airtable', () => ({
@@ -108,6 +108,32 @@ describe('priorBalanceFrom', () => {
     const { priorItems } = priorBalanceFrom(records, 'recStu', 'September 2026', 'recCur');
     expect(priorItems[0].description).toBe('June 2026 (Revision)');
     expect(priorItems[0].lessons).toBeUndefined();
+  });
+});
+
+describe('stripPersistedCarryOver', () => {
+  // REGRESSION 2026-09-02: regenerate-invoice was missed by the 2026-06-28
+  // per-month cutover — it still recalculated the previous month's outstanding
+  // into an "Outstanding balance" lump AND baked it into the stored Final
+  // Amount, so every consolidated render path (preview / pdf-batch / send)
+  // then ALSO appended that month as a previous-balance row: double-counted.
+  // A stored invoice must carry only its own month; carry-over is render-only.
+  it('drops Outstanding-balance lumps and previousBalance rows, keeps manual rows in order', () => {
+    const rows = [
+      { description: 'Outstanding balance — July 2026', amount: 280 },
+      { description: 'August 2026', amount: 300, previousBalance: true },
+      { description: 'Referral credit', amount: -10 },
+      { description: 'Exam workshop', amount: 50 },
+    ];
+    expect(stripPersistedCarryOver(rows)).toEqual([
+      { description: 'Referral credit', amount: -10 },
+      { description: 'Exam workshop', amount: 50 },
+    ]);
+  });
+
+  it('tolerates rows without a description and null-ish input', () => {
+    expect(stripPersistedCarryOver([{ amount: 25 }])).toEqual([{ amount: 25 }]);
+    expect(stripPersistedCarryOver(undefined as any)).toEqual([]);
   });
 });
 

@@ -95,6 +95,18 @@ export function priorBalanceFrom(
   return { priorItems, priorTotal };
 }
 
+// Rows a STORED invoice must never carry: machine-written carry-over. Covers the
+// pre-cutover "Outstanding balance — <month>" lumps the old carry-forward model
+// wrote into Line Items Extra, and the previousBalance rows applyPriorBalance
+// appends at render time. regenerate-invoice runs stored extras through this
+// before re-persisting, so recalculating a pre-cutover invoice converges it to
+// the per-month model; admin-entered manual rows pass through untouched.
+export function stripPersistedCarryOver(items: any[]): any[] {
+  return (items || []).filter((item: any) =>
+    item?.previousBalance !== true &&
+    !(((item?.description || '') as string).startsWith('Outstanding balance')));
+}
+
 // Merge a student's prior open-month balances into an invoiceData object in place:
 // appends "previous balance" rows to lineItemsExtra and bumps finalAmount to the
 // consolidated total. Safe no-op if the student has no other open months.
