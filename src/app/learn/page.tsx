@@ -423,7 +423,7 @@ function LearnInner() {
         }),
       });
 
-      if (!res.ok) throw new Error('HTTP error');
+      if (!res.ok) throw new Error(res.status === 401 ? 'unauthorized' : 'HTTP error');
 
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
@@ -446,12 +446,15 @@ function LearnInner() {
           } catch { /* skip */ }
         }
       }
-    } catch {
+    } catch (err) {
       typingGroup.remove();
       if (messagesRef.current) {
         const g = document.createElement('div');
         g.className = 'lrn-msg-group lrn-bot';
-        g.innerHTML = `<div class="lrn-bubble lrn-bubble-bot" style="color:hsl(0,60%,45%);font-size:15px;">Something went wrong. Please try again.</div>`;
+        const msg = err instanceof Error && err.message === 'unauthorized'
+          ? 'Not logged in — open /admin, log in, then come back and retry.'
+          : 'Something went wrong. Please try again.';
+        g.innerHTML = `<div class="lrn-bubble lrn-bubble-bot" style="color:hsl(0,60%,45%);font-size:15px;">${msg}</div>`;
         messagesRef.current.appendChild(g);
         scrollToBottomIfNear();
       }

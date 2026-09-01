@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { resolveGradingModel, MATH_SYSTEM } from '@/lib/learn/prompts';
 import { parseJson } from '@/lib/learn/parse';
 import { getRubric, buildEnglishSystem } from '@/lib/learn/rubric';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -10,6 +11,15 @@ export const maxDuration = 60;
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export async function POST(req: NextRequest) {
+  // Admin-gated: caller-supplied image + caller-chosen model against
+  // ANTHROPIC_API_KEY, no rate limit — /solo is Adrian's unlinked prototype,
+  // so the admin session cookie (or Bearer ADMIN_PASSWORD) is the only
+  // intended caller. If /solo ever goes student-facing it needs its own
+  // auth + caps first (see /api/tools/vision for the compensating-controls bar).
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: 'unauthorized — log in at /admin first' }, { status: 401 });
+  }
+
   let body: { mode?: string; text?: string; image?: string; level?: string; paper?: string; essayType?: string; question?: string; model?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'bad body' }, { status: 400 }); }
 

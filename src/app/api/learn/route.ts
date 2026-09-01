@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 200, headers: CORS_HEADERS });
-}
-
 export async function POST(req: NextRequest) {
+  // Admin-gated: this route spends on ANTHROPIC_API_KEY with no rate limit or
+  // job_runs trace, and /learn is Adrian's unlinked prototype — the admin
+  // session cookie (or Bearer ADMIN_PASSWORD) is the only intended caller.
+  // The old wildcard-CORS + OPTIONS handler dated from the _old/learn.html
+  // static-page era and is gone with it.
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: 'unauthorized — log in at /admin first' }, { status: 401 });
+  }
+
   const { subject, topic, action, studentAnswer, conversationHistory = [], _startMessage } =
     await req.json();
 
@@ -42,15 +42,12 @@ export async function POST(req: NextRequest) {
 
   // ── init action: no AI call, just metadata ──
   if (action === 'init') {
-    return NextResponse.json(
-      { subtopics, visuals, hasNotes: !!adrianNotes },
-      { headers: CORS_HEADERS }
-    );
+    return NextResponse.json({ subtopics, visuals, hasNotes: !!adrianNotes });
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: 'Not configured' }, { status: 500, headers: CORS_HEADERS });
+    return NextResponse.json({ error: 'Not configured' }, { status: 500 });
   }
 
   const client = new Anthropic({ apiKey });
@@ -186,7 +183,6 @@ ${notesContext}`;
 
   return new Response(readable, {
     headers: {
-      ...CORS_HEADERS,
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
       Connection: 'keep-alive',
