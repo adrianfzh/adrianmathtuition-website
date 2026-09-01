@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminSession, ADMIN_SESSION_COOKIE } from '@/lib/admin-session';
+import { safeEqual } from '@/lib/safe-equal';
 import { nextDayISO } from '@/lib/billing-math';
 import { SEC_CAP_SETTING, parseSecCapOverride } from '@/lib/capacity-override';
 
@@ -30,7 +31,7 @@ export function verifyAdminAuth(req: NextRequest): boolean {
   // carries no secret, JS-unreadable). Legacy: raw-password Bearer header,
   // kept for the bot/tools and admin pages not yet migrated.
   if (verifyAdminSession(req.cookies.get(ADMIN_SESSION_COOKIE)?.value)) return true;
-  return req.headers.get('authorization') === `Bearer ${pw}`;
+  return safeEqual(req.headers.get('authorization') ?? '', `Bearer ${pw}`);
 }
 
 export function formatDateSlotLabel(

@@ -2,6 +2,7 @@
 // Kept for one release cycle in case rollback is needed. Safe to delete after next deploy.
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import { NextRequest, NextResponse } from 'next/server';
+import { safeEqual } from '@/lib/safe-equal';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -19,9 +20,11 @@ export async function POST(request: NextRequest) {
       body,
       request,
       onBeforeGenerateToken: async (_pathname, clientPayload) => {
-        // clientPayload carries the admin password from the upload() call
+        // clientPayload carries the admin password from the upload() call.
+        // Unset ADMIN_PASSWORD must fail CLOSED — the old `pw && …` guard
+        // handed out upload tokens to anyone when the env var was missing.
         const pw = process.env.ADMIN_PASSWORD;
-        if (pw && clientPayload !== pw) {
+        if (!pw || !safeEqual(String(clientPayload ?? ''), pw)) {
           throw new Error('Unauthorized');
         }
         return {
