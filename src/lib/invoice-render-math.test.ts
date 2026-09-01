@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { reconciliationGap, renderedRowsSum } from './invoice-render-math';
+import { reconciliationGap, renderedRowsSum, extraItemsTotal, invoiceFinalAmount } from './invoice-render-math';
 
 describe('reconciliationGap', () => {
   // REGRESSION — Tan Heng Kang, July 2026: invoice sent to the parent showed
@@ -37,5 +37,28 @@ describe('reconciliationGap', () => {
 describe('renderedRowsSum', () => {
   it('handles missing arrays', () => {
     expect(renderedRowsSum(undefined, undefined, 70)).toBe(0);
+  });
+});
+
+describe('extraItemsTotal', () => {
+  it('sums numeric and user-typed string amounts; garbage counts as 0', () => {
+    expect(extraItemsTotal([{ amount: 350 }, { amount: '-70' }, { amount: 'abc' }])).toBe(280);
+  });
+  it('handles null/undefined/empty', () => {
+    expect(extraItemsTotal(null)).toBe(0);
+    expect(extraItemsTotal(undefined)).toBe(0);
+    expect(extraItemsTotal([])).toBe(0);
+  });
+});
+
+describe('invoiceFinalAmount', () => {
+  it('base + adjustment + extras, nulls as zero', () => {
+    expect(invoiceFinalAmount(280, 140, 0)).toBe(420);
+    expect(invoiceFinalAmount(280, null, null)).toBe(280);
+    expect(invoiceFinalAmount(null, null, null)).toBe(0);
+  });
+  it('rounds float dust to cents (never stores 420.00000000000006 in Airtable)', () => {
+    expect(invoiceFinalAmount(0.1, 0.2, 0)).toBe(0.3);
+    expect(invoiceFinalAmount(280, 69.996, 70.006)).toBe(420);
   });
 });

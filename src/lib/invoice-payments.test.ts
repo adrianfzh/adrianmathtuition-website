@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { computePerMonthPayments, monthSortKey, type PaymentInvoiceInput } from './invoice-payments';
+import {
+  computePerMonthPayments, monthSortKey, invoiceOutstanding, isSettled,
+  paymentState, matchesPaymentFilter, otherMonthsOpen, type PaymentInvoiceInput,
+} from './invoice-payments';
 
 // Minimal factory — only the fields computePerMonthPayments reads.
 function inv(p: Partial<PaymentInvoiceInput> & { month: string }): PaymentInvoiceInput {
@@ -98,5 +101,102 @@ describe('computePerMonthPayments — pooled payment allocation', () => {
     const r = computePerMonthPayments([inv({ month: 'June 2026', finalAmount: null, amountPaid: null })]);
     expect(r.totalCharged).toBe(0);
     expect(r.totalPaid).toBe(0);
+  });
+
+  it('accepts lineItemsExtra as a parsed ARRAY (how /api/admin-invoices serves it) — lump still stripped', () => {
+    const r = computePerMonthPayments([
+      inv({ month: 'June 2026', finalAmount: 500, lineItemsExtra: [{ description: 'Outstanding balance (May 2026)', amount: 200 }] }),
+    ]);
+    expect(r.months[0].charge).toBe(300);
+  });
+
+  it('strips rows flagged previousBalance even without the "Outstanding balance" wording', () => {
+    const r = computePerMonthPayments([
+      inv({ month: 'July 2026', finalAmount: 660, lineItemsExtra: [{ description: 'June 2026', amount: 300, previousBalance: true }] }),
+    ]);
+    expect(r.months[0].charge).toBe(360);
+  });
+});
+
+describe('single-invoice predicates — the admin page badges/filters', () => {
+  it('invoiceOutstanding: only a Sent, un-settled invoice owes anything', () => {
+    expect(invoiceOutstanding({ status: 'Sent', isPaid: false, finalAmount: 300, amountPaid: 100 })).toBe(200);
+    expect(invoiceOutstanding({ status: 'Draft', isPaid: false, finalAmount: 300, amountPaid: 0 })).toBe(0);
+    expect(invoiceOutstanding({ status: 'Sent', isPaid: true, finalAmount: 300, amountPaid: 0 })).toBe(0);
+    expect(invoiceOutstanding({ status: 'Sent', isPaid: false, finalAmount: 300, amountPaid: 400 })).toBe(0); // never negative
+  });
+
+  it('the Is Paid checkbox is authoritative: checked + short payment is still settled/paid', () => {
+    const forgiven = { status: 'Sent', isPaid: true, finalAmount: 300, amountPaid: 200 };
+    expect(isSettled(forgiven)).toBe(true);
+    expect(paymentState(forgiven)).toBe('paid');
+    expect(matchesPaymentFilter(forgiven, 'paid')).toBe(true);
+    expect(matchesPaymentFilter(forgiven, 'partial')).toBe(false);
+  });
+
+  it('unchecked but fully covered by payments is also settled (never nagged as partial)', () => {
+    const covered = { status: 'Sent', isPaid: false, finalAmount: 300, amountPaid: 300 };
+    expect(paymentState(covered)).toBe('paid');
+    expect(matchesPaymentFilter(covered, 'paid')).toBe(true);
+    expect(matchesPaymentFilter(covered, 'partial')).toBe(false);
+  });
+
+  it('partial and unpaid states require Sent status — drafts are not owed yet', () => {
+    expect(paymentState({ status: 'Sent', isPaid: false, finalAmount: 300, amountPaid: 100 })).toBe('partial');
+    expect(matchesPaymentFilter({ status: 'Sent', isPaid: false, finalAmount: 300, amountPaid: 100 }, 'partial')).toBe(true);
+    expect(matchesPaymentFilter({ status: 'Sent', isPaid: false, finalAmount: 300, amountPaid: 0 }, 'unpaid')).toBe(true);
+    expect(matchesPaymentFilter({ status: 'Draft', isPaid: false, finalAmount: 300, amountPaid: 0 }, 'unpaid')).toBe(false);
+    expect(matchesPaymentFilter({ status: 'Draft', isPaid: false, finalAmount: 300, amountPaid: 0 }, 'paid')).toBe(false);
+  });
+
+  it("an unknown filter (the dropdown's 'all') matches everything", () => {
+    expect(matchesPaymentFilter({ status: 'Draft', isPaid: false, finalAmount: 300, amountPaid: 0 }, 'all')).toBe(true);
+  });
+});
+
+describe('otherMonthsOpen — the "other months outstanding" card badge', () => {
+  // REGRESSION 2026-09-02 (the /admin/invoices double-count). Old carry-forward
+  // data: June ($300) is still open in Airtable AND baked into July's stored
+  // Final Amount ($660 = $360 own + $300 lump). The page used to sum raw
+  // per-invoice outstanding → $960, contradicting the banner's correct $660 on
+  // the same screen. A month consolidated into a later invoice must never be
+  // counted as outstanding again.
+  it('REGRESSION: a month consolidated into a later invoice is NOT counted again', () => {
+    const invoices = [
+      inv({ id: 'jun', month: 'June 2026', finalAmount: 300 }),
+      inv({ id: 'jul', month: 'July 2026', finalAmount: 660,
+            lineItemsExtra: JSON.stringify([{ description: 'Outstanding balance — June 2026', amount: 300 }]) }),
+      inv({ id: 'aug', month: 'August 2026', finalAmount: 300 }),
+    ];
+    const r = otherMonthsOpen(invoices, 'August 2026');
+    expect(r.total).toBe(660); // NOT 960
+    expect(r.entries).toEqual([
+      { month: 'July 2026', amount: 360 },  // own-month charge, lump stripped
+      { month: 'June 2026', amount: 300 },  // counted once, newest first
+    ]);
+  });
+
+  it('REGRESSION: paying the carrying invoice settles the consolidated month too', () => {
+    // Parent paid July's $660 consolidated total. That covers June's $300 —
+    // June must stop showing as outstanding even though its own Amount Paid is 0.
+    const invoices = [
+      inv({ id: 'jun', month: 'June 2026', finalAmount: 300 }),
+      inv({ id: 'jul', month: 'July 2026', finalAmount: 660, amountPaid: 660, isPaid: true,
+            lineItemsExtra: JSON.stringify([{ description: 'Outstanding balance — June 2026', amount: 300 }]) }),
+    ];
+    const r = otherMonthsOpen(invoices, 'August 2026');
+    expect(r.total).toBe(0);
+    expect(r.entries).toEqual([]);
+  });
+
+  it('excludes the current month from the RESULT but includes it in payment allocation', () => {
+    // June's $400 payment first funds May ($300), leaving June $200 open.
+    const invoices = [
+      inv({ id: 'may', month: 'May 2026', finalAmount: 300 }),
+      inv({ id: 'jun', month: 'June 2026', finalAmount: 300, amountPaid: 400 }),
+    ];
+    const r = otherMonthsOpen(invoices, 'June 2026');
+    expect(r.entries).toEqual([]); // May settled by June's pooled payment; June itself excluded
+    expect(r.total).toBe(0);
   });
 });

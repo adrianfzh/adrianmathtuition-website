@@ -13,6 +13,9 @@
 //
 // Pure function — no Airtable calls. Feed it the student's invoice records.
 
+import { monthSortKey } from './invoice-consolidate';
+export { monthSortKey };
+
 export interface PaymentInvoiceInput {
   id: string;
   month: string;            // "June 2026"
@@ -21,7 +24,7 @@ export interface PaymentInvoiceInput {
   isPaid: boolean;
   status: string;           // Draft / Sent / Paid / Voided …
   invoiceType: string;      // Regular / Revision Sprint / Adjustment …
-  lineItemsExtra?: string;  // JSON string
+  lineItemsExtra?: string | any[];  // JSON string (Airtable) or parsed array (/api/admin-invoices)
   pdfUrl?: string;
 }
 
@@ -42,24 +45,17 @@ export interface PaymentSummary {
   credit: number;           // payments beyond all charges (advance credit)
 }
 
-const MONTHS = ['january','february','march','april','may','june','july','august','september','october','november','december'];
-
-/** "June 2026" → year*12 + monthIndex, for chronological sort. -1 if unparseable. */
-export function monthSortKey(label: string | undefined | null): number {
-  if (!label) return -1;
-  const m = String(label).trim().match(/([A-Za-z]+)\s+(\d{4})/);
-  if (!m) return -1;
-  const idx = MONTHS.indexOf(m[1].toLowerCase());
-  if (idx < 0) return -1;
-  return parseInt(m[2], 10) * 12 + idx;
-}
-
-/** Sum the "Outstanding balance …" lump lines carried in Line Items Extra. */
-function lumpTotal(lineItemsExtra?: string): number {
+/** Sum the carried prior-balance lump lines in Line Items Extra: old-style
+ *  "Outstanding balance …" text rows, plus anything flagged previousBalance
+ *  (the consolidated-rendering rows — render-time only today, but stripping
+ *  them is correct if one ever reaches a stored record). */
+function lumpTotal(lineItemsExtra?: string | any[]): number {
   let items: any[] = [];
-  try { items = JSON.parse(lineItemsExtra || '[]'); } catch { items = []; }
+  if (Array.isArray(lineItemsExtra)) items = lineItemsExtra;
+  else { try { items = JSON.parse(lineItemsExtra || '[]'); } catch { items = []; } }
   return items
-    .filter((it) => /outstanding balance/i.test((it?.description || it?.label || '').toString()))
+    .filter((it) => it?.previousBalance === true ||
+      /outstanding balance/i.test((it?.description || it?.label || '').toString()))
     .reduce((s, it) => s + (Number(it?.amount) || 0), 0);
 }
 
@@ -96,4 +92,68 @@ export function computePerMonthPayments(invoices: PaymentInvoiceInput[]): Paymen
 
   const outstanding = months.reduce((s, x) => s + x.open, 0);
   return { months, totalCharged, totalPaid, outstanding, credit: pool };
+}
+
+// ── Single-invoice paid/outstanding predicates ────────────────────────────────
+// THE definitions the admin invoices page uses (it used to carry ~5 divergent
+// inline copies). Rules unified 2026-09-02:
+//   • The {Is Paid} CHECKBOX is authoritative "settled" — checked wins even if
+//     Amount Paid is short (a deliberately forgiven remainder is not owed).
+//   • Fully-covered-by-payments (within half a cent) also counts as settled.
+//   • Only SENT invoices can be "unpaid"/"partial" — drafts aren't owed yet.
+
+const EPSILON = 0.005; // half a cent — float-dust tolerance, same as computePerMonthPayments
+
+export interface PayableInvoice {
+  status?: string;
+  isPaid?: boolean;
+  finalAmount?: number | null;
+  amountPaid?: number | null;
+}
+
+/** What one invoice still owes. 0 unless it is Sent and not settled. */
+export function invoiceOutstanding(inv: PayableInvoice): number {
+  if (inv.status !== 'Sent' || inv.isPaid) return 0;
+  return Math.max(0, (inv.finalAmount || 0) - (inv.amountPaid || 0));
+}
+
+/** Settled = Is Paid checked, or payments cover the final amount. */
+export function isSettled(inv: PayableInvoice): boolean {
+  return inv.isPaid === true || (inv.finalAmount || 0) - (inv.amountPaid || 0) <= EPSILON;
+}
+
+/** Badge state for one invoice, regardless of its status. */
+export function paymentState(inv: PayableInvoice): 'paid' | 'partial' | 'unpaid' {
+  if (isSettled(inv)) return 'paid';
+  return (inv.amountPaid || 0) > EPSILON ? 'partial' : 'unpaid';
+}
+
+/** The dashboard payment-filter dropdown. Unknown filter values (e.g. 'all') match everything. */
+export function matchesPaymentFilter(inv: PayableInvoice, filter: string): boolean {
+  if (filter === 'paid') return isSettled(inv);
+  if (filter === 'partial' || filter === 'unpaid') {
+    return inv.status === 'Sent' && paymentState(inv) === filter;
+  }
+  return true;
+}
+
+// ── Other open months for one student's invoice card ─────────────────────────
+// Feed it ALL of the student's invoices (current month included — the pooled
+// oldest-first allocation needs every month to attribute payments correctly),
+// and the month of the card being rendered; that month is excluded from the
+// RESULT only. Built on computePerMonthPayments so a month whose balance was
+// carried forward into a later invoice's Final Amount is stripped back to its
+// own charge and payments settle oldest-first — the same maths as the
+// "Outstanding by student" banner, so the two figures always agree.
+export function otherMonthsOpen(
+  invoices: PaymentInvoiceInput[],
+  excludeMonth: string,
+): { total: number; entries: { month: string; amount: number }[] } {
+  const summary = computePerMonthPayments(invoices);
+  const entries = summary.months
+    .filter((m) => m.month !== excludeMonth && m.open > EPSILON)
+    .map((m) => ({ month: m.month, amount: Math.round(m.open * 100) / 100 }))
+    .reverse(); // newest first, matching the card badge
+  const total = Math.round(entries.reduce((s, e) => s + e.amount, 0) * 100) / 100;
+  return { total, entries };
 }

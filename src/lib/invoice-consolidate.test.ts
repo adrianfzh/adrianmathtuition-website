@@ -40,6 +40,13 @@ describe('monthSortKey', () => {
     expect(monthSortKey('Junk 2026')).toBe(-1);
     expect(monthSortKey('June nineteen')).toBe(-1);
   });
+
+  it('is case-insensitive and whitespace-tolerant but stays anchored', () => {
+    expect(monthSortKey('  june 2026 ')).toBe(monthSortKey('June 2026'));
+    expect(monthSortKey('JUNE  2026')).toBe(monthSortKey('June 2026'));
+    expect(monthSortKey('June 202')).toBe(-1);    // year must be 4 digits
+    expect(monthSortKey('June 20261')).toBe(-1);
+  });
 });
 
 describe('priorBalanceFrom', () => {

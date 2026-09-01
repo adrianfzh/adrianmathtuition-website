@@ -18,14 +18,17 @@ export interface Consolidated {
   priorTotal: number;               // sum of prior outstanding
 }
 
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 // "June 2026" -> sortable integer (year*12 + monthIndex). Unknown -> -1.
-export function monthSortKey(label: string): number {
-  const p = (label || '').trim().split(/\s+/);
-  if (p.length !== 2) return -1;
-  const mi = MONTHS.indexOf(p[0]);
-  const yr = parseInt(p[1], 10);
-  return mi < 0 || isNaN(yr) ? -1 : yr * 12 + mi;
+// THE canonical month parser (re-exported by invoice-payments). Strictly
+// anchored — exactly two tokens, a real month name, a 4-digit year — because
+// fail-closed callers (priorBalanceFrom) rely on display spans like
+// "July–August 2026" mapping to -1, never to a real month.
+export function monthSortKey(label: string | undefined | null): number {
+  const p = String(label || '').trim().split(/\s+/);
+  if (p.length !== 2 || !/^\d{4}$/.test(p[1])) return -1;
+  const mi = MONTHS.indexOf(p[0].toLowerCase());
+  return mi < 0 ? -1 : parseInt(p[1], 10) * 12 + mi;
 }
 
 // Fetch the student's other open invoices for months EARLIER than `currentMonth`

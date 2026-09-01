@@ -3,6 +3,10 @@
 import { useEffect } from 'react';
 import AdminAIChat from '@/components/AdminAIChat';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
+// Money logic lives in src/lib (unit-tested) — the page only renders it.
+import { monthSortKey } from '@/lib/invoice-consolidate';
+import { paymentState, matchesPaymentFilter, otherMonthsOpen } from '@/lib/invoice-payments';
+import { extraItemsTotal, invoiceFinalAmount } from '@/lib/invoice-render-math';
 
 const CSS = `
 html { font-size: 18px; }
@@ -703,14 +707,8 @@ export default function AdminPage() {
     }
 
     function populateMonthFilter() {
-      const monthOrder = ['January','February','March','April','May','June',
-        'July','August','September','October','November','December'];
       const months = [...new Set(invoices.map((i: any) => i.month).filter(Boolean))] as string[];
-      months.sort((a, b) => {
-        const [aM, aY] = [monthOrder.indexOf(a.split(' ')[0]), parseInt(a.split(' ')[1])];
-        const [bM, bY] = [monthOrder.indexOf(b.split(' ')[0]), parseInt(b.split(' ')[1])];
-        return bY !== aY ? bY - aY : bM - aM;
-      });
+      months.sort((a, b) => monthSortKey(b) - monthSortKey(a)); // newest first
 
       const sel = document.getElementById('month-filter') as HTMLSelectElement;
       const prev = sel.value;
@@ -756,13 +754,7 @@ export default function AdminPage() {
         });
       }
       if (paymentFilter) {
-        out = out.filter((i: any) => {
-          const outstanding = i.finalAmount - (i.amountPaid || 0);
-          if (paymentFilter === 'unpaid')  return i.status === 'Sent' && !i.isPaid && !(i.amountPaid > 0);
-          if (paymentFilter === 'partial') return i.status === 'Sent' && !i.isPaid && i.amountPaid > 0 && outstanding > 0;
-          if (paymentFilter === 'paid')    return i.isPaid || outstanding <= 0;
-          return true;
-        });
+        out = out.filter((i: any) => matchesPaymentFilter(i, paymentFilter));
       }
       if (statusFilter) {
         out = out.filter((i: any) => i.status === statusFilter);
@@ -902,8 +894,8 @@ export default function AdminPage() {
       const sent = vis.filter((i: any) => i.status === 'Sent');
       const total = drafts.reduce((s: number, i: any) => s + (i.finalAmount || 0), 0);
 
-      const paid = sent.filter((i: any) => i.isPaid);
-      const partiallyPaid = sent.filter((i: any) => !i.isPaid && i.amountPaid > 0);
+      const paid = sent.filter((i: any) => paymentState(i) === 'paid');
+      const partiallyPaid = sent.filter((i: any) => paymentState(i) === 'partial');
 
       const counterEl = document.getElementById('approval-counter');
       if (counterEl) {
@@ -936,29 +928,16 @@ export default function AdminPage() {
       return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     }
 
-    // Outstanding on a single invoice — only a Sent, not-fully-paid invoice owes money.
-    function invoiceOutstanding(i: any): number {
-      if (i.status !== 'Sent' || i.isPaid) return 0;
-      return Math.max(0, (i.finalAmount || 0) - (i.amountPaid || 0));
-    }
     const shortMon = (m: string) => String(m || '').split(' ')[0].slice(0, 3);
-    // Sum this student's outstanding across every month EXCEPT the one on the card,
-    // so any month view surfaces balances sitting in other months.
+    // This student's TRUE outstanding across every month EXCEPT the one on the
+    // card. Lib otherMonthsOpen strips carried-forward lumps and pools payments
+    // oldest-first — the same maths as the "Outstanding by student" banner, so
+    // the badge can never contradict it (the old raw per-invoice sum here
+    // double-counted months already consolidated into a later invoice).
     function otherMonthsOutstanding(inv: any): { total: number; entries: { month: string; amount: number }[] } {
       const sid = inv.studentId;
       if (!sid) return { total: 0, entries: [] };
-      const monthOrder = ['January','February','March','April','May','June',
-        'July','August','September','October','November','December'];
-      const parseM = (m: string) => { const [mo, yr] = String(m).split(' '); return parseInt(yr) * 12 + monthOrder.indexOf(mo); };
-      let total = 0;
-      const entries: { month: string; amount: number }[] = [];
-      for (const i of invoices) {
-        if (i.studentId !== sid || i.month === inv.month) continue;
-        const o = invoiceOutstanding(i);
-        if (o > 0.001) { total += o; entries.push({ month: i.month, amount: o }); }
-      }
-      entries.sort((a, b) => parseM(b.month) - parseM(a.month));
-      return { total, entries };
+      return otherMonthsOpen(invoices.filter((i: any) => i.studentId === sid), inv.month);
     }
 
     function renderCard(inv: any): string {
@@ -994,11 +973,12 @@ export default function AdminPage() {
 
       let paymentBadge = '';
       if (isSent) {
-        if (inv.isPaid && (!inv.amountPaid || outstanding <= 0)) {
+        const state = paymentState(inv);
+        if (state === 'paid') {
           paymentBadge = '<span class="payment-status paid">\u2705 Paid</span>';
-        } else if (inv.amountPaid > 0 && outstanding > 0) {
+        } else if (state === 'partial') {
           paymentBadge = `<span class="payment-status partial">\u26A0\uFE0F Partial: ${inv.amountPaid.toFixed(2)} paid, ${outstanding.toFixed(2)} outstanding</span>`;
-        } else if (!inv.isPaid && !inv.amountPaid) {
+        } else {
           paymentBadge = '<span class="payment-status unpaid">\u23F3 Unpaid</span>';
         }
       }
@@ -1226,7 +1206,7 @@ export default function AdminPage() {
     function renderAmendForm(inv: any): string {
       const mainItemsHtml = renderMainLineItemsHtml(inv.lineItems || [], inv.ratePerLesson, inv.id);
       const lineItemsHtml = renderLineItemRowsHtml(inv.lineItemsExtra || [], inv.id);
-      const initialExtraTotal = (inv.lineItemsExtra || []).reduce((s: number, i: any) => s + (parseFloat(i.amount) || 0), 0);
+      const initialExtraTotal = extraItemsTotal(inv.lineItemsExtra);
       return `
         <div class="amend-form" id="amend-${inv.id}">
           <h3>\u270F\uFE0F Amend Invoice</h3>
@@ -1272,7 +1252,7 @@ export default function AdminPage() {
     }
 
     function calcDisplay(baseAmount: number, adj: number, extraTotal: number, lessonsCount: number, rate: number): string {
-      const final = (baseAmount || 0) + (adj || 0) + (extraTotal || 0);
+      const final = invoiceFinalAmount(baseAmount, adj, extraTotal);
       let str = lessonsCount != null && rate != null
         ? `(${lessonsCount} \u00D7 $${rate.toFixed(2)})`
         : `$${(baseAmount || 0).toFixed(2)}`;
@@ -1582,13 +1562,7 @@ export default function AdminPage() {
         const allInv: any[] = Array.isArray(data.invoices) ? data.invoices : [];
         // Sort invoices chronologically (newest first). The API sorts by the "Month" TEXT field,
         // which orders alphabetically (April, August, July…), not by date — so re-sort here.
-        const MONTHS = ['january','february','march','april','may','june','july','august','september','october','november','december'];
-        const monthKey = (m: string) => {
-          const [name, yr] = String(m || '').toLowerCase().split(/\s+/);
-          const mi = MONTHS.indexOf(name);
-          return (parseInt(yr) || 0) * 12 + (mi < 0 ? -1 : mi);
-        };
-        allInv.sort((a: any, b: any) => monthKey(b.month) - monthKey(a.month));
+        allInv.sort((a: any, b: any) => monthSortKey(b.month) - monthSortKey(a.month));
         const sectionTitle = (txt: string) =>
           `<div style="font-size:12px;font-weight:700;color:#7e22ce;text-transform:uppercase;letter-spacing:.04em;margin:14px 4px 8px;">${txt}</div>`;
 
@@ -1753,8 +1727,7 @@ export default function AdminPage() {
 
       const baseAmount = mainLineItems.reduce((sum, item) => sum + item.lessons * ratePerLesson, 0);
       const lessonsCount = mainLineItems.reduce((sum, item) => sum + item.lessons, 0);
-      const extraLineItemsTotal = currentLineItems.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-      const finalAmount = baseAmount + adjustmentAmount + extraLineItemsTotal;
+      const finalAmount = invoiceFinalAmount(baseAmount, adjustmentAmount, extraItemsTotal(currentLineItems));
 
       const fields: Record<string, any> = {
         'Lessons Count': lessonsCount,
@@ -1952,9 +1925,8 @@ export default function AdminPage() {
       const desc = existing.description || `${inv.studentLevel || ''} — ${inv.month}`;
       const lineItems = Array.from({ length: n }, () => ({ day, description: desc }));
       const baseAmount = n * rate;
-      const extraTotal = (Array.isArray(inv.lineItemsExtra) ? inv.lineItemsExtra : [])
-        .reduce((s: number, e: any) => s + (parseFloat(e.amount) || 0), 0);
-      const finalAmount = baseAmount + (inv.adjustmentAmount || 0) + extraTotal;
+      const extraTotal = extraItemsTotal(Array.isArray(inv.lineItemsExtra) ? inv.lineItemsExtra : []);
+      const finalAmount = invoiceFinalAmount(baseAmount, inv.adjustmentAmount, extraTotal);
       const note = `Prorated to ${n} lesson${n !== 1 ? 's' : ''} attended (${n} × $${rate.toFixed(2)} = $${baseAmount.toFixed(2)})`;
       const autoNotes = inv.autoNotes ? `${inv.autoNotes}\n\n${note}` : note;
       try {
@@ -1988,9 +1960,8 @@ export default function AdminPage() {
       const newAdj = (inv.adjustmentAmount || 0) + addAmt;
       const adjNote = `Additional lessons: ${n} × $${rate.toFixed(2)}`;
       const adjustmentNotes = inv.adjustmentNotes ? `${inv.adjustmentNotes}; ${adjNote}` : adjNote;
-      const extraTotal = (Array.isArray(inv.lineItemsExtra) ? inv.lineItemsExtra : [])
-        .reduce((s: number, e: any) => s + (parseFloat(e.amount) || 0), 0);
-      const finalAmount = (inv.baseAmount || 0) + newAdj + extraTotal;
+      const extraTotal = extraItemsTotal(Array.isArray(inv.lineItemsExtra) ? inv.lineItemsExtra : []);
+      const finalAmount = invoiceFinalAmount(inv.baseAmount, newAdj, extraTotal);
       try {
         const res = await fetch('/api/admin-invoices', {
           method: 'PATCH',

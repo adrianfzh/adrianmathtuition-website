@@ -8,6 +8,20 @@
 export interface RenderableLineItem { rate?: number }
 export interface RenderableExtraItem { amount: number | string }
 
+/** Sum of the extra line items (amounts may be user-typed strings). */
+export function extraItemsTotal(extras: RenderableExtraItem[] | null | undefined): number {
+  return (extras ?? []).reduce((s, it) => s + (parseFloat(String(it.amount)) || 0), 0);
+}
+
+/** THE Final Amount formula: base + adjustment + extra items, rounded to cents. */
+export function invoiceFinalAmount(
+  baseAmount: number | null | undefined,
+  adjustmentAmount: number | null | undefined,
+  extrasTotal: number | null | undefined
+): number {
+  return Math.round(((baseAmount || 0) + (adjustmentAmount || 0) + (extrasTotal || 0)) * 100) / 100;
+}
+
 /** Sum of everything the PDF's rows visibly display. */
 export function renderedRowsSum(
   lineItems: RenderableLineItem[] | undefined,
@@ -15,8 +29,7 @@ export function renderedRowsSum(
   ratePerLesson: number
 ): number {
   const items = (lineItems ?? []).reduce((s, it) => s + (it.rate ?? ratePerLesson ?? 0), 0);
-  const extra = (extras ?? []).reduce((s, it) => s + (parseFloat(String(it.amount)) || 0), 0);
-  return items + extra;
+  return items + extraItemsTotal(extras);
 }
 
 /**
