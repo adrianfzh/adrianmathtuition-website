@@ -20,7 +20,9 @@ type Item = {
   currentUrl?: string | null; changed?: boolean;
   stem?: string; stemEmpty?: boolean; figureMissing?: boolean; watermark?: string | null;
   checks?: { width: number; height: number; inkShare: number; textShare: number;
-             small: boolean; blank: boolean; textInCrop: boolean } | null;
+             small: boolean; blank: boolean; textInCrop: boolean;
+             margins: { left: number; right: number; top: number; bottom: number } | null;
+             wideMargins: boolean } | null;
 };
 
 const LEVELS = ['', 'AM', 'EM', 'EM_NA', 'S1', 'S2', 'S3_AM', 'S3_EM', 'S3_EM_NA', 'JC1', 'JC2'];
@@ -244,6 +246,10 @@ export default function FiguresPage() {
             if (c?.textInCrop) chips.push([`📝 crop looks like it includes question text (${(c.textShare * 100).toFixed(0)}%)`, C.flag]);
             if (c?.blank) chips.push(['◻ almost no ink', C.flag]);
             if (c?.small) chips.push([`🔍 small — ${c.width}×${c.height}px`, '#b45309']);
+            if (c?.wideMargins && c.margins) {
+              const m = c.margins, pc = (v: number) => `${Math.round(v * 100)}%`;
+              chips.push([`⬜ blank edges — L ${pc(m.left)} R ${pc(m.right)} T ${pc(m.top)} B ${pc(m.bottom)}`, '#b45309']);
+            }
             if (it.watermark && it.watermark !== 'clean' && it.watermark !== 'no_image') chips.push([`⚠ image: ${it.watermark}`, '#b45309']);
             if (it.stemEmpty) chips.push(['· stem is empty — the figure carries the whole question', C.muted]);
             return (
@@ -258,6 +264,7 @@ export default function FiguresPage() {
                 {chips.length === 0 && c && (
                   <div style={{ fontSize: 11.5, color: '#15803d', marginBottom: 6 }}>
                     ✓ nothing measurable wrong — {c.width}×{c.height}px, {(c.inkShare * 100).toFixed(1)}% ink
+                    {c.margins ? `, edges L ${Math.round(c.margins.left * 100)}% R ${Math.round(c.margins.right * 100)}%` : ''}
                   </div>
                 )}
                 {it.stem && (
@@ -273,13 +280,13 @@ export default function FiguresPage() {
               <figure style={{ margin: 0 }}>
                 <figcaption style={{ fontSize: 11.5, color: C.muted, marginBottom: 3 }}>as you flagged it</figcaption>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <a href={it.url} target="_blank" rel="noreferrer"><img src={it.url} alt="" loading="lazy" style={{ width: '100%', maxHeight: 340, objectFit: 'contain', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 6 }} /></a>
+                <a href={it.url} target="_blank" rel="noreferrer"><img src={it.url} alt="" loading="lazy" style={{ width: '100%', maxHeight: 340, objectFit: 'contain', background: '#fff', border: '1px solid #94a3b8', borderRadius: 6, boxShadow: '0 0 0 5px #e2e8f0' }} /></a>
               </figure>
             )}
             <figure style={{ margin: 0 }}>
               <figcaption style={{ fontSize: 11.5, color: C.muted, marginBottom: 3 }}>{it.changed ? 'as it is now' : 'current figure'}</figcaption>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <a href={it.currentUrl ?? it.url} target="_blank" rel="noreferrer" title="open full size"><img src={it.currentUrl ?? it.url} alt="" loading="lazy" style={{ width: '100%', maxHeight: 340, objectFit: 'contain', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 6 }} /></a>
+              <a href={it.currentUrl ?? it.url} target="_blank" rel="noreferrer" title="open full size"><img src={it.currentUrl ?? it.url} alt="" loading="lazy" style={{ width: '100%', maxHeight: 340, objectFit: 'contain', background: '#fff', border: '1px solid #94a3b8', borderRadius: 6, boxShadow: '0 0 0 5px #e2e8f0' }} /></a>
             </figure>
           </div>
         </div>
