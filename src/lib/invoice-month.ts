@@ -1,4 +1,6 @@
-const MONTH_NAMES = [
+/** Exported so month-label writers (referral-invoice-credit) build labels the
+ *  generator's `{Deferred To Month}` query matches EXACTLY. */
+export const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ];

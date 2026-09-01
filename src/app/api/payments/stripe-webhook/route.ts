@@ -158,11 +158,13 @@ export async function POST(req: NextRequest) {
   });
   console.log(`[stripe-webhook] granted ${days}d ${tier} pass to ${accountId} (session ${reference}), expires ${expiresAt}`);
 
-  // Referral reward — segmented per Adrian's 2026-08-29 call (strangers →
-  // S$10 of pass days automatically; tuition inviters → voucher-to-the-kid
-  // ping). Shared with the HitPay webhook via lib/referral-reward; fail-soft
-  // and only on the first grant — a webhook retry re-enters as duplicate
-  // above and never re-rewards.
+  // Referral reward — segmented (strangers → S$10 of pass days automatically;
+  // tuition inviters → automatic −S$10 deferred adjustment on their next
+  // invoice, Adrian's 2026-09-02 call — the Telegram is just a receipt).
+  // Shared with the HitPay webhook via lib/referral-reward; fail-soft and
+  // only on the first grant — a webhook retry re-enters as duplicate above
+  // and never re-rewards, and the credit itself re-checks the session id in
+  // referral_invoice_credits so even a racing retry can't write twice.
   if (!duplicate) {
     await rewardInviterForPaidPass(getSupabaseAdmin(), {
       payerAccountId: accountId,
