@@ -295,6 +295,38 @@ export default function TriagePage() {
     });
   }
 
+  // 🧺 Shelve — defer this weakness to a later teaching round WITH its evidence
+  // (IDEAS.md "wave 2 waiting"). One tap: the shelf API grabs the question's
+  // prompt, part scores and annotated page from the run's own result_json, so
+  // nothing is re-diagnosed when wave 2 is picked. Needs a tagged run — the
+  // shelf is per-student. Deliberately does NOT resolve the triage flag: parking
+  // a topic for later is not the same as agreeing with the mark.
+  const [shelved, setShelved] = useState<Set<string>>(new Set());
+  async function shelve(runId: string, q: TriageQuestion) {
+    const key = `shelve:${runId}:${q.index}`;
+    setBusy(key);
+    try {
+      const r = await fetch('/api/admin/shelf', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromRun: { runId, questionNumber: q.questionNumber },
+          ...(q.topic ? { topic: q.topic } : {}),
+        }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (r.status === 409) {
+        setShelved(prev => new Set(prev).add(`${runId}:${q.index}`));
+        setToast(`Q${q.questionNumber} is already on the shelf.`);
+      } else if (!r.ok) {
+        setToast(d.error || 'Could not shelve it');
+      } else {
+        setShelved(prev => new Set(prev).add(`${runId}:${q.index}`));
+        setToast(`🧺 On the shelf — Q${q.questionNumber}${q.topic ? ` · ${q.topic}` : ''}`);
+      }
+    } catch { setToast('Connection error'); }
+    finally { setBusy(''); }
+  }
+
   // ── auth gate ─────────────────────────────────────────────────────────────
   if (!authed) {
     return (
@@ -603,6 +635,20 @@ export default function TriagePage() {
                       >
                         ✏️ Override
                       </button>
+                      {/* 🧺 The wave-2 door: park this weakness on the student's
+                          shelf with its evidence auto-grabbed from the run.
+                          Untagged runs have no shelf to go to — tag first. */}
+                      {run.studentId && q.awarded < q.max && (
+                        shelved.has(`${run.id}:${q.index}`) ? (
+                          <span style={{ ...btn('#f5f3ff', '#6d28d9', '#ddd6fe'), cursor: 'default' }}>🧺 Shelved ✓</span>
+                        ) : (
+                          <button onClick={() => shelve(run.id, q)} disabled={busy === `shelve:${run.id}:${q.index}`}
+                            title="Defer this to a later wave — the question, scores and marked page go with it"
+                            style={btn('#f5f3ff', '#6d28d9', '#ddd6fe')}>
+                            {busy === `shelve:${run.id}:${q.index}` ? '…' : '🧺 Shelve'}
+                          </button>
+                        )
+                      )}
                       {run.annotatedPdfUrl && (
                         <a href={run.annotatedPdfUrl} target="_blank" rel="noreferrer" style={{ ...btn('#fff', '#374151', C.border), textDecoration: 'none', display: 'inline-block' }}>
                           🔁 View page

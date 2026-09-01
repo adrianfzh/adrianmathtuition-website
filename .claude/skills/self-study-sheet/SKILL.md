@@ -240,13 +240,20 @@ Perform Shoelace Method Correctly".
 ## Step 3 — propose ONE wave, and STOP
 
 Cluster into 6–8 teachable skills for a single sheet. Everything else is
-**deferred with its evidence** (question, part scores, the annotated page URL
-from `result_json.annotated_photos`) — put deferred topics in Adrian's
-`/admin/my-todos` (one line each, with the marked-page link) until the shelf
-is built.
+**deferred with its evidence** (question, part scores, the annotated page URL).
 
 Show Adrian the proposed wave and the shelf list, and **wait for his approval**.
 Picking the wave is teaching judgment — the checkpoint is his.
+
+Once he approves the split, record each deferred topic on the 🧺 **student
+shelf** (built 2026-09-02 — this replaced the interim `/admin/my-todos` lines):
+one `POST /api/admin/shelf` per topic with
+`{ fromRun: { runId, questionNumber: "6(b)" }, topic }` — the API grabs the
+prompt, part scores and annotated page from the run's own `result_json`, and
+answers 409 if that question is already shelved. **Headless runs (the
+sheet-worker) skip this step** and only report `shelved` in the completion
+payload — no auto-shelving without Adrian's approval; he shelves in one tap
+from `/admin/mark/triage` or `/admin/papers`.
 
 ## Step 4 — author the sheet
 

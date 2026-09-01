@@ -557,6 +557,14 @@ release call failed.
   the guess-sum /89 right back on a badge the bot had already corrected to /90. Runs with
   `max_source: 'counted'` (or no `max_source` at all — every pre-grounding run) behave
   byte-identically to before.
+- **🧺 Shelve (2026-09-02)** sits beside Agree/Override on tagged runs' lost-marks
+  questions: one tap parks the weakness on the student's shelf (`student_shelf`,
+  IDEAS.md "wave 2 waiting") — `POST /api/admin/shelf {fromRun:{runId,
+  questionNumber}}`, and the SERVER grabs the evidence (prompt, part scores,
+  annotated page URL) from the run's own result_json. Deliberately does NOT
+  resolve the flag — parking a topic is not agreeing with the mark. 409 = already
+  shelved. Views: `/admin/students/[id]` "🧺 On the shelf", `/admin/remediation`
+  "Later" lane.
 - **Agree / Override.** Both stamp `triage_reviewed: true` so the row drops off and
   can't re-appear on the next load. Override also writes `triage_override
   {awarded, previous, note, at}`, clamped to `[0, total_max]`, and **keeps the first
@@ -622,6 +630,10 @@ it), and **tag the backlog**.
 - Filters: student, "Needs tagging", "Not checked yet", Clear. Default view is
   everything — filtering by student first would have shown an empty list and read
   as broken.
+- **🧺 Shelve… (2026-09-02):** tagged rows with lost marks grow a 🧺 toggle in the
+  links row — it opens the run's below-max questions (`lostQuestions` on the GET,
+  from `lib/shelf.ts` `lostMarkQuestions`) as one-tap chips onto the student's
+  shelf, same `fromRun` auto-grab as triage's button.
 - **Bulk ✓ + delete (2026-08-21, Adrian's ask):** "✓ Mark all N as checked" in the
   filter row sweeps every *visible* unchecked run (POST `{runIds, checked}` — one
   Supabase `.in()` update, so it composes with the filters: filter to a student

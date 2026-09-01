@@ -20,6 +20,7 @@ import {
 } from '@/lib/remediation';
 import { loadPlan, ensureAssignmentForItem, type ItemRow, type PlanRow } from '@/lib/remediation-data';
 import { logJobRun } from '@/lib/job-log';
+import { extractQuestionEvidence, type ShelfEvidence } from '@/lib/shelf';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -57,6 +58,7 @@ export async function POST(req: NextRequest) {
       case 'add-item': return await addItem(body);
       case 'update-item': return await updateItem(body);
       case 'remove-item': return await removeItem(String(body.itemId ?? ''));
+      case 'shelve-item': return await shelveItem(String(body.itemId ?? ''));
       case 'skip-item': return await skipItem(String(body.itemId ?? ''));
       default: return NextResponse.json({ error: `Unknown action ${action}` }, { status: 400 });
     }
@@ -223,6 +225,63 @@ async function removeItem(itemId: string) {
   const { error } = await getSupabaseAdmin().from('remediation_items').delete().eq('id', itemId);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
+}
+
+/**
+ * 🧺 Prune a draft item WITHOUT losing the diagnosis: the item moves to the
+ * student's shelf ("wave 2 waiting", IDEAS.md 2026-08-30) with its evidence
+ * re-grabbed from the plan's own source runs — question prompt, part scores,
+ * the annotated page — then leaves the plan. Remove stays the other choice for
+ * items that were simply wrong.
+ */
+async function shelveItem(itemId: string) {
+  if (!itemId) return NextResponse.json({ error: 'itemId required' }, { status: 400 });
+  const sb = getSupabaseAdmin();
+  const { data: item } = await sb.from('remediation_items').select('*').eq('id', itemId).maybeSingle<ItemRow>();
+  if (!item) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  const { data: plan } = await sb.from('remediation_plans').select('*').eq('id', item.plan_id).single<PlanRow>();
+  if (!plan) return NextResponse.json({ error: 'Plan not found' }, { status: 404 });
+
+  // The evidence refs ("Q6(b)") point into the plan's source runs — walk those
+  // runs and grab each ref's prompt/scores/annotated page. A ref no run can
+  // answer is skipped rather than fatal: the shelf entry still carries the
+  // skill and whatever evidence WAS found.
+  const runIds = (plan.source_run_ids ?? []).filter(Boolean);
+  const { data: runs } = runIds.length
+    ? await sb.from('paper_marking_runs').select('id, paper_name, result_json').in('id', runIds)
+    : { data: [] as Array<{ id: string; paper_name: string | null; result_json: unknown }> };
+
+  const evidence: ShelfEvidence[] = [];
+  let lost = 0;
+  const matchedRuns = new Map<string, string>(); // id → paper_name
+  for (const ref of item.evidence ?? []) {
+    for (const run of runs ?? []) {
+      const grabbed = extractQuestionEvidence(run.result_json, String(ref).replace(/^Q/i, ''));
+      if (grabbed) {
+        evidence.push(grabbed.evidence);
+        lost += grabbed.lost;
+        matchedRuns.set(run.id, run.paper_name ?? '');
+        break;
+      }
+    }
+  }
+
+  const { data: shelfRow, error: insErr } = await sb.from('student_shelf').insert({
+    airtable_student_id: plan.airtable_student_id,
+    student_name: plan.student_name ?? '',
+    topic: (item.topic || 'General').slice(0, 120),
+    skill_label: (item.skill || item.topic || 'Deferred skill').slice(0, 200),
+    evidence,
+    source_run_id: [...matchedRuns.keys()][0] ?? null,
+    paper_name: [...matchedRuns.values()].filter(Boolean).join(' · ').slice(0, 160),
+    marks_lost: evidence.length ? lost : null,
+    note: 'Shelved while pruning a game-plan draft.',
+  }).select('*').single();
+  if (insErr) return NextResponse.json({ error: insErr.message }, { status: 500 });
+
+  const { error: delErr } = await sb.from('remediation_items').delete().eq('id', itemId);
+  if (delErr) return NextResponse.json({ error: `shelved, but the item stayed on the plan: ${delErr.message}` }, { status: 500 });
+  return NextResponse.json({ ok: true, item: shelfRow });
 }
 
 async function skipItem(itemId: string) {

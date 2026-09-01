@@ -23,6 +23,7 @@ import { airtableRequest } from '@/lib/airtable';
 import { recomputeTotals, pendingCount } from '@/lib/mark-triage';
 import { cancelMarkingState, stripQueue } from '@/lib/mark-queue-cancel';
 import { aggregateTopicBleed } from '@/lib/report-facts';
+import { lostMarkQuestions } from '@/lib/shelf';
 
 export const runtime = 'nodejs';
 
@@ -100,6 +101,9 @@ export async function GET(req: NextRequest) {
         photosPdfUrl: r.photos_pdf_url,
         pdfUrl: r.pdf_url,
         topics,
+        // Every question that lost marks — the 🧺 Shelve list. Paper order, so
+        // it reads like the script; capped the same spirit as the topic chips.
+        lostQuestions: lostMarkQuestions(r.result_json).slice(0, 20),
       };
     });
 

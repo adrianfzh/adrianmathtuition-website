@@ -15,6 +15,11 @@ type Item = {
   evidence: string[]; material: { bank_qids?: string[]; docx_url?: string; note?: string; reminder?: string };
   clear_rule: { kind: string }; state: string; attempts: number; assignment_ids: string[];
 };
+// 🧺 The shelf's cross-student "Later" lane (IDEAS.md "wave 2 waiting").
+type ShelfEntry = {
+  id: string; airtable_student_id: string; student_name: string; topic: string;
+  skill_label: string; status: string; marks_lost: number | null; paper_name: string; created_at: string;
+};
 
 const STATUS_BADGE: Record<Plan['status'], string> = {
   draft: 'bg-amber-100 text-amber-800',
@@ -30,10 +35,18 @@ export default function RemediationAdmin() {
   const [err, setErr] = useState('');
   const [showReport, setShowReport] = useState(false);
 
+  const [later, setLater] = useState<ShelfEntry[]>([]);
+
   const loadList = useCallback(async () => {
     const r = await fetch('/api/admin/remediation');
     const d = await r.json();
     if (r.ok) setPlans(d.plans ?? []); else setErr(d.error || 'load failed');
+    // The Later lane rides the same load; a shelf hiccup never hides the plans.
+    try {
+      const s = await fetch('/api/admin/shelf');
+      const sd = await s.json();
+      if (s.ok) setLater(sd.shelf?.waiting ?? []);
+    } catch { /* lane stays empty */ }
   }, []);
   useEffect(() => { loadList(); }, [loadList]);
 
@@ -136,8 +149,17 @@ export default function RemediationAdmin() {
                         </div>
                       </div>
                       {sel.plan.status === 'draft' && (
-                        <button type="button" disabled={!!busy} onClick={() => act({ action: 'remove-item', itemId: it.id }, 'remove')}
-                          className="text-xs text-rose-500 hover:text-rose-700 shrink-0">✕</button>
+                        <span className="flex gap-2 shrink-0 items-start">
+                          {/* Pruning is a choice, not a deletion: 🧺 keeps the
+                              diagnosis on the student's shelf with its evidence
+                              (wave 2 waiting); ✕ is for items that were wrong. */}
+                          <button type="button" disabled={!!busy} onClick={() => act({ action: 'shelve-item', itemId: it.id }, 'shelve')}
+                            title="Take it off this plan but keep it — evidence and all — on the student's shelf for a later wave"
+                            className="text-xs font-semibold text-violet-600 hover:text-violet-800">🧺 Shelve</button>
+                          <button type="button" disabled={!!busy} onClick={() => act({ action: 'remove-item', itemId: it.id }, 'remove')}
+                            title="Remove it entirely — nothing is kept"
+                            className="text-xs text-rose-500 hover:text-rose-700">✕</button>
+                        </span>
                       )}
                       {sel.plan.status === 'active' && it.state !== 'cleared' && it.state !== 'skipped' && (
                         <button type="button" disabled={!!busy} onClick={() => act({ action: 'skip-item', itemId: it.id }, 'skip')}
@@ -151,6 +173,31 @@ export default function RemediationAdmin() {
           )}
         </div>
       </div>
+
+      {/* 🧺 Later — every topic parked for a future wave, across students.
+          Read-only here: the per-student shelf (evidence, done/reopen, "draft
+          a plan from these") lives on /admin/students/[id]. */}
+      {later.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-sm font-bold text-slate-700 mb-1">🧺 Later — waiting on the shelf</h2>
+          <p className="text-xs text-slate-400 mb-3">
+            Deliberately deferred from earlier waves, evidence attached. Open a student to pick their next wave.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-2">
+            {later.map((s) => (
+              <a key={s.id} href={`/admin/students/${s.airtable_student_id}`}
+                className="block bg-white rounded-xl border border-slate-200 px-3 py-2 hover:border-violet-300 transition-colors">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-sm font-semibold text-slate-800 truncate">{s.student_name || s.airtable_student_id}</span>
+                  <span className="text-xs text-slate-500 truncate flex-1">{s.topic}</span>
+                  {s.marks_lost != null && <span className="text-[11px] text-rose-600 font-semibold shrink-0">−{s.marks_lost}</span>}
+                </div>
+                {s.skill_label && <div className="text-[11px] text-slate-400 truncate">{s.skill_label}</div>}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

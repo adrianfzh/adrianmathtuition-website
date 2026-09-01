@@ -75,8 +75,15 @@ proposes the wave for approval, returns the DOCX for amendment.
 - 📘 **Self-study notes button** → job queue → headless Mac worker
   (plan-billed) → DOCX into Dropbox `Apps/AdrianMathNotes/Self-Study/` →
   Telegram.
-- 🧺 **Student shelf** on `/admin/students/[id]` — deferred topics with their
-  evidence; "draft the next wave from these".
+- 🧺 **Student shelf — BUILT 2026-09-02** (`student_shelf` + `/api/admin/shelf`;
+  design agreed 2026-08-30). Doors in: 🧺 Shelve beside lost-marks questions in
+  `/admin/mark/triage` + `/admin/papers` (evidence auto-grabbed from the run's
+  result_json), 🧺 Shelve-or-✕ when pruning a game-plan draft on
+  `/admin/remediation`, and the API. Views out: "🧺 On the shelf" on
+  `/admin/students/[id]` (evidence expand, done/reopen, "🎯 Draft game plan from
+  these" feeding the remediation draft pipeline), the "Later" lane on
+  `/admin/remediation`, and a "🧺 wave 2 waiting: N topics" line on the 🎯
+  plan-finished Telegram. Admin-only; no auto-shelving, no reminder cron.
 - **Auto-tag suggestion** on mark-paper (112 of 123 runs carry no student, so
   they reach no profile, report or round).
 
