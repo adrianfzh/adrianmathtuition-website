@@ -15,6 +15,7 @@ The deep documentation (bug archaeology, invariants, field tables) was split out
 | `/admin/schedule`, `/admin/progress`, lessons, reschedules, capacity, recurring generation, Revision Sprint, exam season, Lessons progress fields | [`docs/SCHEDULE.md`](docs/SCHEDULE.md) |
 | Marking — `/admin/mark-paper`, `/admin/mark` (batch), `/admin/papers`, `/admin/mark/triage`, **`/app/marking`** (student-facing), `mark-paper-*`/`mark-batch/*` routes, `render-marking`, marked-PDF assembly, ✏️ Annotate overlay | [`docs/MARKING.md`](docs/MARKING.md) |
 | `/kiosk`, `/api/kiosk/*`, `/admin/notes`, Dropbox notes/revision/practice/prelim PDFs | [`docs/KIOSK.md`](docs/KIOSK.md) |
+| **Question-bank figure images** — `/admin/figures-bank`, `figure_flags`/`figure_clean_log`, repairing or recovering a figure, any bulk figure work (claim protocol — parallel sessions collide here) | [`docs/FIGURES.md`](docs/FIGURES.md) |
 | Invoices, deferred adjustments, Resend email delivery | [`docs/INVOICES.md`](docs/INVOICES.md) |
 | `/tools` static pages, house style, photo-extraction service (`/api/tools/vision`) | [`docs/TOOLS.md`](docs/TOOLS.md) |
 | Student Portal | [`PORTAL.md`](PORTAL.md) + [`PLAN-PORTAL-SOLO.md`](PLAN-PORTAL-SOLO.md) |
