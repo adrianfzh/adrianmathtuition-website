@@ -186,16 +186,31 @@ same `.env.local`, and this doc. On a different Mac: clone both repos
   data, or question text baked into the image. Those need the source paper
   (§6), not a redraw.
 
-## 8. State (2026-09-01)
+## 8. State (2026-09-02)
 
-- **~3,640** repairs applied across the bank (`figure_clean_log`): 2,284 auto
+- **3,708** repairs applied across the bank (`figure_clean_log`): 2,284 auto
   bleed-clean · 1,198 vision-approved clean · 14 grey-background normalise ·
-  18 targeted cleans · 57+44 redraws · 11 recovered missing figures · 5 re-extractions.
-- **Adrian's flag queue: 569 flagged; ~128 fixed; ~440 open** — worked in
-  50-figure batches (agents draw → Adrian vets a sheet → apply). Batches 1–3
-  are applied; batch 4 was in flight at the time of writing (`fable-batch-4`).
+  18 targeted cleans · 57+44+25 redraws/cleans/crops · 11 recovered missing
+  figures · 5+3 re-extractions · 2 answer-sketch removals.
+- **Adrian's flag queue: 569 flagged; 206 fixed; 363 open** (313 unclaimed,
+  50 held by `opus-batch-5`) — worked in 50-figure batches (agents draw →
+  Adrian vets a sheet → apply). Batches 1–4 applied; `opus-batch-6` applied
+  2026-09-02 (28 figures; the other 22 of that claim were released back to the
+  queue unworked, so the heavy extraction-defect cases in it are still open).
 - **6** questions have no image anywhere; Pierce 2024 EM_NA Q18 is a known total
   loss (absent from every source copy).
+- **A flag is sometimes an answer leak, not a drawing fault.** ASRJC 2021 JC2 P2
+  Q4 carried the marking scheme's own answer sketches for parts (b)(ii) and
+  (b)(iv) in `image_url` — on the parts that ask the student to sketch. Two
+  agents caught it independently; the tell is **colour**, since question papers
+  are monochrome. The fix is removal from `image_url` (logged with
+  `new_path='(removed)'`), not repair. Check for this whenever a flagged figure
+  looks *too* complete.
+- **Redraws leave `image_watermark_status` behind.** Closing the flag is half the
+  release: 9 of this batch's 27 questions were still gated on a NULL watermark
+  afterwards. A redrawn figure is vector art with no watermark possible, so it
+  can be set `clean` on sight — but it must actually be set, or the repair
+  changes nothing. Verify with the gate predicate, not the flag table alone.
 - **Known, NOT being worked here:** ~1,015 questions exist as duplicate rows
   where one twin has an empty stem (sampled and confirmed — e.g. EJC 2021 JC2
   Q1 has the stem on one row and the parts on the other). That is an extraction
