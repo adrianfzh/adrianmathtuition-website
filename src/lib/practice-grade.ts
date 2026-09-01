@@ -7,7 +7,7 @@
 // matching breaks on math notation (PLAN R7).
 import Anthropic from '@anthropic-ai/sdk';
 import { createServiceClient } from './supabase-server';
-import { ERROR_TAGS, buildGradingPrompt } from './practice-grade-prompt';
+import { ERROR_TAGS, buildGradingPrompt, type PitfallHint } from './practice-grade-prompt';
 import { parseMarkAnatomy, type MarkAnatomyItem } from './mark-anatomy';
 
 export const GRADING_MODEL = 'claude-opus-5';
@@ -91,12 +91,13 @@ export async function gradeAttempt(opts: {
   lines?: string[];
   image?: AttemptImage;
   weaknessTags: string[];
+  pitfalls?: PitfallHint[];
 }): Promise<GradeResult> {
-  const { question, lines, image, weaknessTags } = opts;
+  const { question, lines, image, weaknessTags, pitfalls = [] } = opts;
   const isPhoto = !!image;
   if (!isPhoto && !lines?.length) throw new Error('lines or image required');
 
-  const prompt = buildGradingPrompt({ question, lines, isPhoto, weaknessTags });
+  const prompt = buildGradingPrompt({ question, lines, isPhoto, weaknessTags, pitfalls });
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 

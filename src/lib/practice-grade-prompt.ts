@@ -22,6 +22,13 @@ export function collectScheme(parts: unknown, out: string[], prefix = ''): void 
   }
 }
 
+/** One curated trap for this question's topic (Supabase `pitfalls`). */
+export type PitfallHint = {
+  wrong_move: string;
+  why_wrong?: string | null;
+  corrective_cue?: string | null;
+};
+
 export function buildGradingPrompt(opts: {
   question: Record<string, unknown>;
   lines?: string[];
@@ -30,8 +37,12 @@ export function buildGradingPrompt(opts: {
   // Mark-anatomy field (default ON — production behaviour). false exists ONLY so
   // scripts/golden-anatomy-check.mjs can build the pre-anatomy baseline prompt.
   anatomy?: boolean;
+  // Adrian's curated traps for this topic. Naming help for the feedback wording
+  // only — placed after the marking rules, like markAnatomy, so it cannot shift
+  // how marks are awarded. Empty/omitted renders nothing.
+  pitfalls?: PitfallHint[];
 }): string {
-  const { question, lines, isPhoto, weaknessTags, anatomy = true } = opts;
+  const { question, lines, isPhoto, weaknessTags, anatomy = true, pitfalls = [] } = opts;
 
   const scheme: string[] = [];
   collectScheme(question.parts, scheme);
@@ -57,6 +68,14 @@ In "transcribedLines", return these same lines in the same order — exactly one
   const anatomyField = anatomy
     ? `,"markAnatomy":[{"code":"M1","for":"<short phrase: what this mark is for>","earned":true}]`
     : '';
+  // Adrian's curated traps for this topic. Same discipline as `watch` above:
+  // mention ONLY when the student's own working shows it. Stated as feedback
+  // wording help and placed after the marking rules so it cannot move a mark.
+  const pitfallRule = pitfalls.length
+    ? `\nKnown traps for this topic, in Adrian's words. These are NOT a checklist and NOT evidence: say nothing about a trap unless this student's own working actually shows it, and ignore every one of them otherwise. They must never change awarded/outOf — they only sharpen the wording when the error you already found happens to be one of these:\n` +
+      pitfalls.map(p => `- ${p.wrong_move}${p.why_wrong ? ` — ${p.why_wrong}` : ''}${p.corrective_cue ? ` Say instead: ${p.corrective_cue}` : ''}`).join('\n')
+    : '';
+
   const anatomyRule = anatomy
     ? `\nmarkAnatomy labels each part's marks with O-Level mark codes — M for a method mark, A for an accuracy mark, B for an independent mark (M1, A1, B1, …). It is EXPLANATORY ONLY: first decide awarded/outOf exactly as instructed above, then describe that decision — markAnatomy must never change or contradict the marks. Give exactly one entry per mark of the part's outOf, each with a short student-readable "for" phrase; set "earned" per whether that specific mark was gained, so the earned entries count to exactly "awarded".`
     : '';
@@ -88,6 +107,6 @@ Reply with ONLY a JSON object (no markdown fences):
   "strengths": ["<max 3, genuine>"],
   "nextSteps": ["<2-3 concrete actions>"]
 }
-Comment on every line that earns or loses a mark; skip trivial restatements. "tag" only on ok=false lines.${anatomyRule}
+Comment on every line that earns or loses a mark; skip trivial restatements. "tag" only on ok=false lines.${anatomyRule}${pitfallRule}
 Write all mathematics in comments, fixes, partBreakdown comments and nextSteps as LaTeX in $...$ (it is rendered with KaTeX). The reply must be valid JSON — escape LaTeX backslashes (write \\\\sqrt in the JSON string).`;
 }
