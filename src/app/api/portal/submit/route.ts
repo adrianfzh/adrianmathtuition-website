@@ -42,6 +42,11 @@ export const maxDuration = 60;
 
 const MAX_PAGES = 20;
 
+/** How long a repeat of the same photos counts as a retry rather than a new
+ *  hand-in. Long enough to cover a phone that reconnects minutes later, far
+ *  shorter than the daily slot it protects. */
+const RESUBMIT_WINDOW_MS = 30 * 60 * 1000;
+
 export async function POST(req: Request) {
   const supabase = await createSupabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
@@ -169,6 +174,35 @@ export async function POST(req: Request) {
         ? 'Today’s hand-in slot is used — a fresh one opens at midnight. One paper a day gets every script marked properly.'
         : `You’ve handed in ${dailyCap} papers today — a fresh allowance opens at midnight.`,
     }, { status: 429 });
+  }
+
+  // ── the same submission, sent twice ────────────────────────────────────────
+  // Sophie, 1 Sep 2026: eighteen pages uploaded, then the one small POST that
+  // registers them died on a network handover and she saw Safari's bare "Load
+  // failed". Her photos were already in Blob storage; nothing reached Adrian.
+  //
+  // The client can now retry that POST, which needs this route to be safe to
+  // call twice — otherwise a reply lost on the way BACK would make a second
+  // paper, spend her one hand-in for the day, and put a duplicate in triage.
+  //
+  // No new column is needed to make it safe: every upload pathname is a fresh
+  // crypto.randomUUID() (api/portal/submit-token), so a photo URL is unique to
+  // one submission for all time. Finding a recent run of this student's that
+  // already carries this exact first photo means this is that same submission
+  // arriving again — so hand back the run it already made.
+  const firstPhoto = photoUrls[0];
+  const { data: already } = await admin
+    .from('paper_marking_runs')
+    .select('id, created_at')
+    .eq('student_id', studentId)
+    .gte('created_at', new Date(Date.now() - RESUBMIT_WINDOW_MS).toISOString())
+    .contains('source', { photos: [{ original_url: firstPhoto }] })
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (already?.id) {
+    console.log('[portal-submit] same photos already saved as', already.id, '— returning it rather than duplicating');
+    return NextResponse.json({ runId: already.id, resumed: true });
   }
 
   const botBase = process.env.BOT_BASE_URL;

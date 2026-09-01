@@ -163,18 +163,37 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         uploadedRef.current.set(i, url);
         urls.push(url);
       }
+      // The last step, and the one that used to lose everything. All the pages
+      // are in storage by now; this small POST is what turns them into a paper.
+      // Sophie, 1 Sep 2026: it died on a network handover after eighteen
+      // successful uploads and she saw a bare "Load failed" — nothing reached
+      // Adrian, though every photo had arrived.
+      //
+      // Retried like the uploads are. Safe to repeat because the route matches
+      // a resend against the photos it already holds and returns the paper it
+      // made the first time, rather than making a second (see the route).
       setStage('Sending to Adrian…');
-      const r = await fetch('/api/portal/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          photoUrls: urls,
-          paperName: paperName.trim(),
-          ...(assignment ? { assignmentId: assignment.id } : {}),
-          ...(paper ? { paperId: paper.id } : {}),
-        }),
+      const body = JSON.stringify({
+        photoUrls: urls,
+        paperName: paperName.trim(),
+        ...(assignment ? { assignmentId: assignment.id } : {}),
+        ...(paper ? { paperId: paper.id } : {}),
       });
-      const d = await r.json().catch(() => ({}));
+      let r: Response | null = null, d: { error?: string; runId?: string } = {}, lastNet: Error | null = null;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          if (attempt > 1) setStage(`Sending to Adrian… (try ${attempt} of 3)`);
+          r = await fetch('/api/portal/submit', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
+          });
+          d = await r.json().catch(() => ({}));
+          break;                       // a reply of ANY status is an answer — stop
+        } catch (e) {
+          lastNet = e as Error;        // no reply at all: the connection dropped
+          if (attempt < 3) await new Promise(res => setTimeout(res, attempt * 1000));
+        }
+      }
+      if (!r) throw new Error(`Your ${pages.length} page${pages.length === 1 ? '' : 's'} uploaded safely, but the last step could not reach us (${lastNet?.message || 'connection lost'}). Tap Send again — it will not upload them a second time.`);
       if (!r.ok) throw new Error(d.error || 'The submission failed — try again.');
       setDoneRunId(d.runId || 'ok');
       pages.forEach(p => { if (p.preview) URL.revokeObjectURL(p.preview); });
