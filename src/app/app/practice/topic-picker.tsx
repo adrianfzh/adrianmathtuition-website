@@ -20,7 +20,9 @@
 // Pure grouping logic lives in lib/practice-strands.ts (tested).
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { familyOf, groupTopics, strandKey, strandsFor, variantOf } from '@/lib/practice-strands';
+import type { LessonCatalogEntry } from '@/lib/lesson-catalog';
 import PortalIcon from '@/components/PortalIcon';
 
 export type Tier = 'Standard' | 'Advanced';
@@ -289,10 +291,12 @@ function SearchResults({ topics, typesByTopic, query, onPick, onStartType }: {
  * The topic sheet — bottom sheet on phones, centred dialog on wider screens.
  * Start = whole-topic mix (tier applied); or one question type.
  */
-export function TopicSheet({ topic, types, tier, onTier, onStart, onClose }: {
+export function TopicSheet({ topic, types, tier, lesson = null, onTier, onStart, onClose }: {
   topic: TopicCard;
   types: Subgroup[];
   tier: Tier;
+  /** Animated lesson for this topic (lib/lesson-catalog), if one exists. */
+  lesson?: LessonCatalogEntry | null;
   onTier: (t: Tier) => void;
   onStart: (sg: Subgroup | null) => void;
   onClose: () => void;
@@ -335,6 +339,19 @@ export function TopicSheet({ topic, types, tier, onTier, onStart, onClose }: {
           </div>
 
           <div className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:pb-5 overflow-y-auto">
+            {/* ▶ Animated lesson for this topic — taught by computed animation,
+                so it sits above the practise controls: watch first, then drill. */}
+            {lesson && (
+              <Link href={`/app/lesson/${lesson.slug}`}
+                className="mb-4 w-full flex items-center gap-3 rounded-2xl bg-sky-50 border border-sky-200 px-3.5 py-3 hover:bg-sky-100 active:scale-[0.99] motion-safe:transition">
+                <span aria-hidden className="w-9 h-9 rounded-xl bg-sky-500 text-white inline-flex items-center justify-center text-sm shrink-0">▶</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-bold text-sky-900">Learn this topic first</span>
+                  <span className="block text-[11px] text-sky-700">Animated lesson · {lesson.minutes} min</span>
+                </span>
+                <PortalIcon name="chevron-right" className="w-4 h-4 text-sky-400 shrink-0" />
+              </Link>
+            )}
             {/* Tier — segmented, remembered */}
             <div className="grid grid-cols-2 gap-1 bg-slate-100 rounded-xl p-1 mb-4" role="radiogroup" aria-label="Difficulty">
               {(['Standard', 'Advanced'] as Tier[]).map((t) => {

@@ -1,0 +1,206 @@
+{
+  "slug": "binomial-theorem-am",
+  "title": "The Binomial Theorem",
+  "level": "AM",
+  "topic": "Binomial Theorem",
+  "minutes": 4,
+  "scenes": [
+    {
+      "type": "title",
+      "title": "The Binomial Theorem",
+      "promise": "Expand any power of a bracket — and pick out one term without expanding at all."
+    },
+    {
+      "type": "caption",
+      "heading": "Why expanding by hand dies",
+      "text": "Expanding $(1+x)^2$ by hand is fine. $(1+x)^3$ — still fine.\n\nBy $(1+x)^5$ you are multiplying five brackets and collecting six terms. One slip anywhere wrecks the lot.\n\nThis topic gives you a formula that writes any of these down in one line — and grabs any single term on its own."
+    },
+    {
+      "type": "graph-morph",
+      "heading": "The same curve, one power higher each time",
+      "caption": "Each power of $(1+x)$ is still just a polynomial. Watch the coefficients: $1,1$ → $1,2,1$ → $1,3,3,1$ → $1,4,6,4,1$ — each row is the previous row's neighbours added together (Pascal's triangle).",
+      "window": { "xMin": -2.6, "xMax": 1.4, "yMin": -3, "yMax": 5 },
+      "xLabel": "x",
+      "yLabel": "y",
+      "states": [
+        { "label": "$(1+x)^1 = 1 + x$", "coeffs": [1, 1] },
+        { "label": "$(1+x)^2 = 1 + 2x + x^2$", "coeffs": [1, 2, 1] },
+        { "label": "$(1+x)^3 = 1 + 3x + 3x^2 + x^3$", "coeffs": [1, 3, 3, 1] },
+        { "label": "$(1+x)^4 = 1 + 4x + 6x^2 + 4x^3 + x^4$", "coeffs": [1, 4, 6, 4, 1] }
+      ]
+    },
+    {
+      "type": "caption",
+      "heading": "The numbers in front",
+      "text": "Those coefficients — $1, 4, 6, 4, 1$ — are the **binomial coefficients**, written $\\binom{n}{r}$ and read \"$n$ choose $r$\".\n\nYou never work them out by hand: press $^nC_r$ on your calculator. $\\binom{7}{2}$ is 7 $\\,^nC_r\\,$ 2 $\\,= 21$."
+    },
+    {
+      "type": "annotate",
+      "heading": "The binomial theorem — it's on your formula sheet",
+      "intro": "The whole expansion, written once:",
+      "tokens": [
+        { "tex": "(a+b)^n =" },
+        { "tex": "\\binom{n}{0}a^n", "id": "first" },
+        { "tex": "+\\binom{n}{1}a^{n-1}b" },
+        { "tex": "+\\binom{n}{2}a^{n-2}b^2", "id": "third" },
+        { "tex": "+\\cdots" },
+        { "tex": "+\\binom{n}{n}b^n", "id": "last" }
+      ],
+      "callouts": [
+        { "target": "first", "label": "starts at $a^n$ — all $a$, no $b$", "tone": "sky" },
+        { "target": "third", "label": "$a$'s power falls, $b$'s rises — in every term the two powers add to $n$", "tone": "amber" },
+        { "target": "last", "label": "ends at $b^n$ — $(n+1)$ terms in all", "tone": "emerald" }
+      ]
+    },
+    {
+      "type": "annotate",
+      "heading": "The workhorse: the general term",
+      "intro": "One formula grabs any term on its own — also on the formula sheet:",
+      "tokens": [
+        { "tex": "T_{r+1}", "id": "T" },
+        { "tex": "=" },
+        { "tex": "\\binom{n}{r}", "id": "choose" },
+        { "tex": "a^{n-r}", "id": "apow" },
+        { "tex": "\\,b^{r}", "id": "bpow" }
+      ],
+      "callouts": [
+        { "target": "T", "label": "the $(r+1)$th term — $r=3$ gives the 4th term, not the 3rd", "tone": "rose" },
+        { "target": "choose", "label": "the coefficient — press $^nC_r$", "tone": "sky" },
+        { "target": "apow", "label": "first term's power falls: $n-r$", "tone": "amber" },
+        { "target": "bpow", "label": "second term's power rises: $r$ — its sign stays inside", "tone": "emerald" }
+      ]
+    },
+    {
+      "type": "equation-steps",
+      "heading": "Watch it work",
+      "intro": "Find the coefficient of $x^3$ in $(2+3x)^5$.",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "T_{r+1}" },
+            { "tex": "=" },
+            { "tex": "\\binom{5}{r}", "id": "choose" },
+            { "tex": "\\,2^{5-r}", "id": "apow" },
+            { "tex": "(3x)^r", "id": "bpow", "hl": "amber" }
+          ],
+          "note": "Match the formula: $a=2$, $b=3x$, $n=5$. The whole of $3x$ is $b$ — the 3 rides inside the power."
+        },
+        {
+          "tokens": [
+            { "tex": "\\text{want } x^3" },
+            { "tex": "\\;\\Rightarrow\\;" },
+            { "tex": "r = 3", "hl": "amber" }
+          ],
+          "note": "The $x$'s only come from $(3x)^r$, so the power of $x$ is $r$."
+        },
+        {
+          "tokens": [
+            { "tex": "T_{4}" },
+            { "tex": "=" },
+            { "tex": "\\binom{5}{3}", "from": "choose" },
+            { "tex": "\\,2^{2}", "from": "apow" },
+            { "tex": "(3x)^3", "from": "bpow" }
+          ],
+          "note": "Substitute $r=3$ everywhere — and $T_{3+1}$ is the 4th term."
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "10", "hl": "sky" },
+            { "tex": "\\times 4" },
+            { "tex": "\\times 27x^3" }
+          ],
+          "note": "$\\binom{5}{3} = 10$ from the calculator; $(3x)^3 = 27x^3$."
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "1080\\,x^3", "hl": "emerald" }
+          ],
+          "note": "Coefficient of $x^3$: $\\,1080$. No full expansion anywhere."
+        }
+      ]
+    },
+    {
+      "type": "caption",
+      "heading": "When a bracket sits in front",
+      "text": "Exams love $(k+2x)(\\ldots)^6$. Don't expand everything.\n\nEach part of the front bracket picks out whichever term of the expansion lands on the power you want. Want $x^3$ overall? Then $k$ needs the bracket's $x^3$ term, and $2x$ needs the bracket's $x^2$ term.\n\nExpand only as far as you need — then collect."
+    },
+    {
+      "type": "check",
+      "qid": "22303d15-cdcc-4b0c-9fea-70f382242699",
+      "prompt": "Your turn — a real O-Level question (GCE 2023). Use the general term on the bracket, then pair each part of $(k+2x)$ with the right term.",
+      "placeholder": "k = ?",
+      "why": "$k$ pairs with the bracket's $x^3$ term and $2x$ pairs with its $x^2$ term: $-20k + 2(60) = 0$, so $k = 6$."
+    },
+    {
+      "type": "equation-steps",
+      "heading": "The other classic: the term independent of x",
+      "intro": "\"Independent of $x$\" means the power of $x$ is ZERO. Find that term in $\\left(x^2 + \\frac{2}{x}\\right)^{\\!6}$.",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "T_{r+1}" },
+            { "tex": "=" },
+            { "tex": "\\binom{6}{r}" },
+            { "tex": "(x^2)^{6-r}" },
+            { "tex": "\\left(\\frac{2}{x}\\right)^{\\!r}" }
+          ],
+          "note": "Same workhorse: $a = x^2$, $b = \\frac{2}{x}$, $n = 6$."
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "\\binom{6}{r}\\,2^r" },
+            { "tex": "\\,x^{12-2r}", "id": "xa", "hl": "sky" },
+            { "tex": "\\cdot x^{-r}", "id": "xb", "hl": "sky" }
+          ],
+          "note": "The habit that earns the marks: (numbers) × (powers of $x$). $\\frac{1}{x^r} = x^{-r}$."
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "\\binom{6}{r}\\,2^r", "id": "genterm" },
+            { "tex": "\\,x^{12-3r}", "from": "xa", "hl": "amber" }
+          ],
+          "note": "Multiplying powers of $x$: ADD the exponents. $12 - 2r - r = 12 - 3r$."
+        },
+        {
+          "tokens": [
+            { "tex": "12 - 3r = 0", "hl": "amber" },
+            { "tex": "\\;\\Rightarrow\\;" },
+            { "tex": "r = 4" }
+          ],
+          "note": "Set the power to zero and solve. $r$ must land on a whole number — if it doesn't, the term does not exist."
+        },
+        {
+          "tokens": [
+            { "tex": "T_5" },
+            { "tex": "=" },
+            { "tex": "\\binom{6}{4}\\,2^4", "from": "genterm" },
+            { "tex": "=" },
+            { "tex": "240", "hl": "emerald" }
+          ],
+          "note": "$15 \\times 16 = 240$ — the term independent of $x$."
+        }
+      ]
+    },
+    {
+      "type": "caption",
+      "heading": "The slip that costs the most marks",
+      "text": "When the bracket is $(a-bx)^n$, the minus lives INSIDE $b$.\n\n$(-2x)^3 = -8x^3$ — the power hits the coefficient AND the sign AND the $x$. Odd $r$ keeps the minus; even $r$ kills it.\n\nWrite the second term in brackets, with its sign, every single time."
+    },
+    {
+      "type": "check",
+      "qid": "914fe2ab-f1a0-44f8-bb9a-0b9da05af227",
+      "prompt": "Last one. \"No term in $x^2$\" means that coefficient equals zero — and keep the minus inside $\\left(-\\frac{a}{3}x\\right)^{\\!r}$ while you work.",
+      "placeholder": "a = ?",
+      "why": "Pairing up for $x^2$: $\\;3 \\times \\frac{80a^2}{3} + 5 \\times (-64a) = 80a^2 - 320a = 0$, so the positive constant is $a = 4$."
+    },
+    {
+      "type": "caption",
+      "heading": "You own the workhorse now",
+      "text": "General term → one power of $x$ → set the power to what you want → solve for $r$ → substitute back.\n\nThat is the whole topic. Every exam variation is this loop with different scenery — go make it automatic."
+    }
+  ]
+}

@@ -303,6 +303,21 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`table? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
       return 'auth gate up';
     }),
+    // 🎬 Animated lessons (/app/lesson/[slug]). The telemetry route must hold
+    // its auth gate (401 anonymously — a 404 means the lesson engine's routes
+    // fell out of the build), and portal_event_log (the funnel ledger it and
+    // ask-log write) must still resolve.
+    timed('lesson-engine', async () => {
+      const r = await fetch(`${base}/api/portal/lesson-event`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      const q = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/portal_event_log?select=id,identity,kind,created_at&limit=1`,
+        { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: T(10000) }
+      );
+      if (!q.ok) throw new Error(`table? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
+      return 'auth gate up';
+    }),
     // 🎯 Fix-it plans (SPEC-REMEDIATION.md). The student route must hold its
     // auth gate (401 anonymously — a 404 means the Home card and /app/fixit
     // silently vanish), and the tables + the columns the lane reads must
