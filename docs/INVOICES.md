@@ -72,3 +72,37 @@ misleading when they did not; the classifier cannot tell the cases apart, so the
 caller declares which it is. Add `preview: true` to see the exact email without
 sending. Note the Email Log's own resend button replays the ARCHIVED body verbatim —
 use it only when you want the original bytes, mistakes included.
+
+## Delivery receipts — the webhook, and why the log said `sent` for three months
+
+`/api/resend-webhook` turns Resend's delivery events into the EmailLog row's
+`Status`, so "did the parent actually get it?" is a glance at the row instead of
+an investigation. It was built in June 2026 and answered that question for
+**zero** of 279 emails until 1 Sep 2026, because of two independent faults that
+each fail in total silence:
+
+1. **The subscription.** The endpoint was live, enabled, and pointed at the
+   correct `www` URL — subscribed to `email.delivery_delayed` and nothing else.
+   A delayed email is rare, so the endpoint was simply never called. Adrian added
+   the other four events on 1 Sep.
+2. **The write.** `Status` is an Airtable singleSelect whose only options were
+   `sent` and `failed`. Writing an unlisted option to a singleSelect is a 422,
+   and the PATCH is wrapped in `.catch(console.error)` — a webhook must return
+   200 or Resend retries forever. So the first `delivered` event to arrive would
+   have failed invisibly too. Fixed 2 Sep with `typecast: true`
+   (`lib/email-status.ts`), which makes Airtable create the option on first use.
+   The API token has no `schema.bases:write` scope, so adding the options by hand
+   was not available; typecast is safe here because `STATUS_BY_EVENT` is a closed
+   five-value set.
+
+**If you touch delivery status, check both halves.** Code review sees the second
+fault at best; only the Resend API sees the first:
+
+```
+curl -s https://api.resend.com/webhooks -H "Authorization: Bearer $RESEND_API_KEY"
+```
+
+(needs a Full-access Resend key — a sending-only key 403s with error 1010). The
+same lesson as the mangled WhatsApp number above: **an integration that
+type-checks, deploys, and throws nothing is not an integration that works. Only
+an assertion on real output proves it.**
