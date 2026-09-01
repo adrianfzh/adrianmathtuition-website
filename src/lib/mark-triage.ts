@@ -341,3 +341,49 @@ export function computeAutoHold(resultJson: unknown): AutoHold {
 
   return { hold: reasons.length > 0, reasons };
 }
+
+// ── Does the paper add up? ────────────────────────────────────────────────────
+//
+// Adrian, 1 Sep 2026, on Sophie's script: "but should it be upon 90, not 91?"
+// He was right — the per-question maxes summed to 91, and an O-Level E-Maths
+// Paper 1 is 90. Exactly one question carried an allocation one too high.
+//
+// The marker reads each [n] off the page, so a smudged or absent one is inferred,
+// and nothing downstream ever checks the total. A student sees 75/91 and cannot
+// tell that the denominator is wrong; the percentage is quietly off for every
+// report that uses it.
+//
+// This is a WARNING, never a block. Practice sets, half-papers and
+// school-specific papers have genuinely odd totals, so the check only speaks when
+// the total sits NEAR a standard one — close enough that a misread [n] is the
+// likeliest explanation, and far enough from the others not to guess.
+
+/** Totals a real Singapore paper is set out of. */
+export const STANDARD_PAPER_TOTALS = [40, 50, 60, 70, 80, 90, 100];
+/** How far from a standard total still looks like a misread allocation. */
+export const TOTAL_SLACK = 3;
+
+/**
+ * A one-line warning when the marks don't add up to a plausible paper total, or
+ * null when they do (or when the total is nowhere near a standard one, which
+ * means it is probably a practice set and none of our business).
+ */
+export function paperTotalWarning(totalMax: number | null | undefined): string | null {
+  const mx = Number(totalMax);
+  if (!Number.isFinite(mx) || mx <= 0) return null;
+  if (STANDARD_PAPER_TOTALS.includes(mx)) return null;
+
+  let best: number | null = null;
+  for (const t of STANDARD_PAPER_TOTALS) {
+    const d = Math.abs(mx - t);
+    if (d <= TOTAL_SLACK && (best === null || d < Math.abs(mx - best))) best = t;
+  }
+  if (best === null) return null;
+
+  const diff = mx - best;
+  const over = diff > 0;
+  const n = Math.abs(diff);
+  return `These questions add up to ${mx}, but a paper like this is out of ${best}. `
+    + `${n === 1 ? 'One question’s' : `${n} marks of`} allocation is likely ${over ? 'one too high' : 'one too low'}`
+    + `${n === 1 ? '' : ''} — check the printed [n] before releasing, or the percentage will be wrong.`;
+}

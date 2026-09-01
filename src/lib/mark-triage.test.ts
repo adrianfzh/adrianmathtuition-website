@@ -9,8 +9,7 @@ import {
   pendingCount,
   computeAutoHold,
   TriageIndexError,
-  overrideTally,
-} from './mark-triage';
+  overrideTally, paperTotalWarning } from './mark-triage';
 
 // Shaped from a real `paper_marking_runs.result_json` row (2026-08-11) — the
 // nesting is load-bearing: marks live at results[].marking.total_awarded, and
@@ -334,5 +333,44 @@ describe('measuring the marker', () => {
   it('an unmarked paper tallies nothing rather than throwing', () => {
     expect(overrideTally(null)).toEqual({ against: 0, forStudent: 0, reviewed: 0 });
     expect(overrideTally({})).toEqual({ against: 0, forStudent: 0, reviewed: 0 });
+  });
+});
+
+describe('paperTotalWarning — does the paper add up?', () => {
+  it('says nothing when the total is a real paper total', () => {
+    for (const t of [40, 50, 60, 70, 80, 90, 100]) {
+      expect(paperTotalWarning(t)).toBeNull();
+    }
+  });
+
+  it('catches the one that prompted it — 91 where an EM P1 is 90', () => {
+    const w = paperTotalWarning(91)!;
+    expect(w).toContain('91');
+    expect(w).toContain('90');
+    expect(w).toMatch(/one too high/);
+  });
+
+  it('catches an allocation that is one too LOW', () => {
+    expect(paperTotalWarning(89)).toMatch(/one too low/);
+    expect(paperTotalWarning(99)).toMatch(/one too low/);
+  });
+
+  it('stays quiet on a genuine practice set, which can total anything', () => {
+    // Far from every standard total — probably a half paper or a topical set,
+    // and guessing there would cry wolf on every one of them.
+    for (const t of [17, 25, 35, 45, 55, 65, 75, 112]) {
+      expect(paperTotalWarning(t)).toBeNull();
+    }
+  });
+
+  it('picks the NEAREST standard total when two are in range', () => {
+    expect(paperTotalWarning(97)).toContain('100');
+    expect(paperTotalWarning(92)).toContain('90');
+  });
+
+  it('never throws on missing or nonsense input', () => {
+    for (const bad of [null, undefined, 0, -5, NaN, 'x' as unknown as number]) {
+      expect(paperTotalWarning(bad)).toBeNull();
+    }
   });
 });

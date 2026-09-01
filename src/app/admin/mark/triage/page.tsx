@@ -28,6 +28,7 @@ type Run = {
   unflaggedCount: number;
   annotatedPdfUrl: string | null;
   pdfStale?: boolean;
+  totalWarning?: string | null;
   annotatedPhotos?: { photoIndex: number; url: string }[];
   pdfUrl: string | null;
   flagged: TriageQuestion[];
@@ -386,6 +387,17 @@ export default function TriagePage() {
               {run.pdfStale && (
                 <> · <span style={{ color: '#b45309', fontWeight: 600 }} title="A mark was changed after this paper was marked, so the PDF still prints the old total. Release is blocked until you attach the copy you corrected.">
                   ⚠ PDF shows the old total
+                </span></>
+              )}
+              {/* The marks do not add up to a real paper total — one printed [n]
+                  was probably misread (Adrian, 1 Sep 2026: "should it be upon 90,
+                  not 91?"). Nothing else on any screen would ever show this, and
+                  a wrong denominator quietly skews the student's percentage and
+                  every report built on it. A warning, never a block: practice
+                  sets legitimately total anything. */}
+              {run.totalWarning && (
+                <> · <span style={{ color: '#b91c1c', fontWeight: 600 }} title={run.totalWarning}>
+                  ⚠ marks add up to {run.max}
                 </span></>
               )}
               {/* Always offered, not only when a mark was overridden (31 Aug

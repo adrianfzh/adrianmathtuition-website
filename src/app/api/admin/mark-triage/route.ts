@@ -38,7 +38,7 @@ import {
   isReleasable,
   pendingCount,
   computeAutoHold,
-  TriageIndexError, overrideTally } from '@/lib/mark-triage';
+  TriageIndexError, overrideTally, paperTotalWarning } from '@/lib/mark-triage';
 import { buildReviseBlock } from '@/lib/revise-map';
 import { canTransition, validateAssignment, type AssignmentStatus } from '@/lib/assignments';
 import { sendPushToStudent } from '@/lib/portal-push';
@@ -113,6 +113,10 @@ export async function GET(req: NextRequest) {
         releasable: summary.flagged.length === 0,
         // Marks changed after marking → the stored PDF still shows the old ones.
         pdfStale: !!(r.result_json as { pdf_stale?: unknown } | null)?.pdf_stale,
+        // Do the marks add up to a real paper total? A misread [n] on one
+        // question is invisible in every other view, and it silently skews the
+        // percentage on the student's copy and in every report that uses it.
+        totalWarning: paperTotalWarning(r.total_max),
         // Why auto-release held (or would have) — the bot's accuracy gates
         // re-derived from the persisted signals. Explanatory only: manual
         // release ignores it.
