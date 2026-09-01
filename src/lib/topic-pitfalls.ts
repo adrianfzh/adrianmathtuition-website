@@ -114,9 +114,15 @@ export async function loadPitfallsForQuestion(
     const subject = pitfallSubjectForLevel(level);
     const topicList = Array.isArray(topics) ? (topics as unknown[]).map(String) : [];
     if (!subject || !topicList.length) return [];
+    // status='approved' is the gate: `pitfalls.status` defaults to 'pending' and
+    // NOTHING has ever moved a row off it, so this filter means only traps
+    // Adrian has personally signed off reach a student. With none approved the
+    // query returns nothing and the grader behaves exactly as it did before —
+    // the safe direction to fail.
     const { data, error } = await admin
       .from('pitfalls')
       .select('subject, topic, wrong_move, why_wrong, corrective_cue')
+      .eq('status', 'approved')
       .eq('subject', subject)
       .in('topic', topicList);
     if (error || !Array.isArray(data)) return [];
