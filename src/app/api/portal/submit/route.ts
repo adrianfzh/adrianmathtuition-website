@@ -72,7 +72,7 @@ export async function POST(req: Request) {
   if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
   const meteredPass = access.pass; // null for tuition accounts
 
-  let body: { photoUrls?: unknown; paperName?: unknown; assignmentId?: unknown; paperId?: unknown };
+  let body: { photoUrls?: unknown; paperName?: unknown; assignmentId?: unknown; paperId?: unknown; confirmed?: boolean };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const admin = getSupabaseAdmin();
 
@@ -216,6 +216,24 @@ export async function POST(req: Request) {
     });
     return r.json().catch(() => ({}));
   };
+
+  // ── look at the hand-in before filing it ───────────────────────────────────
+  // Adrian, 1 Sep 2026. The one problem nobody can fix after marking is a page
+  // that was never photographed: Q7 with no page produces no row, scores zero,
+  // and looks identical to Q7 genuinely left blank. Only the student can tell
+  // those apart, and only while the paper is still in front of them.
+  //
+  // ADVISORY, NEVER A GATE. `confirmed` is what the student sends back after
+  // reading the warning, and it always goes through. A checker that can refuse a
+  // hand-in is worse than the gap it catches — the paper gets marked with a
+  // missing page either way, but a refused hand-in never arrives at all.
+  if (!body.confirmed) {
+    const pre = await bot({ phase: 'preflight', source: { photos: photoUrls.map(u => ({ original_url: u })) } });
+    const findings = Array.isArray(pre?.findings) ? pre.findings : [];
+    if (findings.some((f: { blocking?: boolean }) => f?.blocking)) {
+      return NextResponse.json({ needsConfirm: true, findings }, { status: 409 });
+    }
+  }
 
   const saved = await bot({
     phase: 'save-paper',

@@ -77,6 +77,9 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   const [stage, setStage] = useState('');            // progress line while submitting
   const [converting, setConverting] = useState('');  // progress line while a PDF rasterises
   const [error, setError] = useState('');
+  // What the pre-flight found wrong with the hand-in. Shown once; sending again
+  // goes through regardless (see the route — this is advice, never a gate).
+  const [findings, setFindings] = useState<{ kind: string; message: string; blocking?: boolean }[]>([]);
   const [doneRunId, setDoneRunId] = useState<string | null>(null);
   // Pages that already reached Blob, kept across a failed attempt so tapping Send
   // again RESUMES instead of starting from page 1 (1 Sep 2026 — see uploadPage).
@@ -144,11 +147,12 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
       // The cache is keyed by index, so removing a page invalidates every entry
       // after it. Cheaper and safer to drop the lot than to renumber.
       uploadedRef.current.clear();
+      setFindings([]);
       return prev.filter((_, j) => j !== i);
     });
   }
 
-  async function submit() {
+  async function submit(confirmed = false) {
     if (!pages.length || busy) return;
     if (!paperName.trim()) { setError('Tell us which paper this is before sending.'); return; }
     setError('');
@@ -176,10 +180,11 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
       const body = JSON.stringify({
         photoUrls: urls,
         paperName: paperName.trim(),
+        ...(confirmed ? { confirmed: true } : {}),
         ...(assignment ? { assignmentId: assignment.id } : {}),
         ...(paper ? { paperId: paper.id } : {}),
       });
-      let r: Response | null = null, d: { error?: string; runId?: string } = {}, lastNet: Error | null = null;
+      let r: Response | null = null, d: { error?: string; runId?: string; findings?: { kind: string; message: string; blocking?: boolean }[] } = {}, lastNet: Error | null = null;
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
           if (attempt > 1) setStage(`Sending to Adrian… (try ${attempt} of 3)`);
@@ -194,6 +199,13 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         }
       }
       if (!r) throw new Error(`Your ${pages.length} page${pages.length === 1 ? '' : 's'} uploaded safely, but the last step could not reach us (${lastNet?.message || 'connection lost'}). Tap Send again — it will not upload them a second time.`);
+      // 409 with findings: the hand-in looks wrong. Show it and let them decide —
+      // their pages stay uploaded, so sending again costs nothing.
+      if (r.status === 409 && Array.isArray(d.findings)) {
+        setFindings(d.findings);
+        setStage('');
+        return;
+      }
       if (!r.ok) throw new Error(d.error || 'The submission failed — try again.');
       setDoneRunId(d.runId || 'ok');
       pages.forEach(p => { if (p.preview) URL.revokeObjectURL(p.preview); });
@@ -357,12 +369,30 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
 
         {error && <p className="text-sm text-rose-700 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2">{error}</p>}
 
+        {/* What the pre-flight found. Amber, not red: nothing here is an error —
+            the pages are uploaded and the hand-in will go through either way.
+            The point is to ask the one question only the student can answer,
+            while the paper is still in front of them. */}
+        {findings.length > 0 && (
+          <div className="text-sm bg-amber-50 border border-amber-200 rounded-xl px-3 py-3 space-y-2">
+            <p className="font-bold text-amber-900">Before you send — check this</p>
+            <ul className="space-y-1.5 text-amber-900">
+              {findings.map((f, i) => <li key={i} className="leading-snug">• {f.message}</li>)}
+            </ul>
+            <p className="text-[11px] text-amber-700">
+              Your photos are already uploaded — adding a page won&apos;t re-send them.
+            </p>
+          </div>
+        )}
+
         <button
-          onClick={submit}
+          onClick={() => submit(findings.length > 0)}
           disabled={!pages.length || !paperName.trim() || busy}
           className="w-full text-sm font-bold bg-navy text-[hsl(45,100%,96%)] rounded-xl py-3 disabled:opacity-40"
         >
-          {busy ? stage : pages.length ? `📤 Send ${pages.length} page${pages.length === 1 ? '' : 's'} for marking` : '📤 Send for marking'}
+          {busy ? stage
+            : findings.length > 0 ? '📤 Send anyway'
+            : pages.length ? `📤 Send ${pages.length} page${pages.length === 1 ? '' : 's'} for marking` : '📤 Send for marking'}
         </button>
         <p className="text-[11px] text-gray-400">
           Wide photos of an open booklet are split into single pages automatically. PDFs are converted to pages on your phone before uploading.
