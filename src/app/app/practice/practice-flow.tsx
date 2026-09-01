@@ -107,8 +107,13 @@ const FIXED_FROM: Record<NonNullable<FixedQuestion['from']> | 'link', { label: s
   link: { label: '🎯 Practice question', blurb: 'Work it here — snap or type your working and get it marked.' },
 };
 
-export default function PracticeFlow({ initialLevels = null, initialAssignment = null, initialTarget = null, initialQuestion = null }: {
+export default function PracticeFlow({ initialLevels = null, initialAssignment = null, initialTarget = null, initialQuestion = null, timedEntry = false, lessonsVisible = false }: {
   initialLevels?: LevelOpt[] | null; initialAssignment?: InitialAssignment | null;
+  /** Show the ⏱ Timed-set row — the server page decides (EXAM_PREP_OPEN_TO_STUDENTS
+   *  or Adrian's admin cookie); the client never sees the flag itself. */
+  timedEntry?: boolean;
+  /** Animated lessons are admin-preview only until Adrian releases them (2026-09-02). */
+  lessonsVisible?: boolean;
   /** Deep link from /notes ("Practise this topic"): preselect the level and
    *  open that topic's sheet once the overview loads. One-shot. */
   initialTarget?: { level: string | null; topic: string } | null;
@@ -445,7 +450,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   const sheetTypes = sheetTopic ? subgroups.filter(s => s.topic === sheetTopic) : [];
   // Animated lesson for the opened topic (lib/lesson-catalog) — the sheet shows
   // "▶ Learn this topic first" above the tier chips when one exists.
-  const sheetLesson = sheetCard ? lessonForTopic(bankScope(level).level, sheetCard.topic) : null;
+  const sheetLesson = sheetCard && lessonsVisible ? lessonForTopic(bankScope(level).level, sheetCard.topic) : null;
   // Students: once a topic is chosen the picker folds away into a "← Change
   // topic" bar so the tier chooser / question sits at the top of the card
   // instead of below a phone-length list of topic rows. Admin keeps the grid
@@ -650,7 +655,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
       )}
       {/* "Timed set" (2026-09-02) — same slim-row treatment, same hide rule:
           a few questions against an exam-pace clock, marked at the end. */}
-      {showPrintEntry && (
+      {showPrintEntry && timedEntry && (
         <Link
           href="/app/practice/timed"
           className="flex items-center gap-2.5 -mt-3 mb-4 px-1 py-2.5 text-sm text-slate-500 hover:text-navy motion-safe:transition-colors"

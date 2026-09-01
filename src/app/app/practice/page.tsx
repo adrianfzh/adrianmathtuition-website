@@ -22,6 +22,7 @@
 // answer to mark against) — so a deep link can never open a question the
 // normal flow would refuse; an ineligible id degrades to a friendly notice
 // over the ordinary picker, never a broken screen.
+import { fullPortalVisible } from '@/lib/portal-beta';
 import { notFound, redirect } from 'next/navigation';
 import PracticeFlow, { type FixedQuestion, type InitialAssignment } from './practice-flow';
 import { portalIdentity, sessionAccount } from '@/lib/portal-auth';
@@ -31,6 +32,7 @@ import { getStudentAssignment } from '@/lib/portal-assignments';
 import { dueLabel } from '@/lib/assignments';
 import { practiceEligibility } from '@/lib/portal-find';
 import { questionMarkdown, questionStructured, totalMarksOf } from '@/lib/bank-question-markdown';
+import { examPrepVisible } from '@/lib/portal-beta';
 
 export const dynamic = 'force-dynamic';
 
@@ -135,6 +137,12 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
   // PracticeFlow now (Adrian, phone review round 5: it was a fat card sitting
   // above everything, even a live question — demoted to a slim row below the
   // topic list that hides the moment a topic is chosen).
+  // ⏱ Timed-set row: in prod behind EXAM_PREP_OPEN_TO_STUDENTS (lib/portal-beta)
+  // — Adrian's admin cookie sees it, students don't until the flag flips.
+  const timedEntry = await examPrepVisible();
+  // Animated lessons: admin preview only until Adrian releases them.
+  const lessonsVisible = await fullPortalVisible();
+
   return (
     <>
       {qidBlocked && (
@@ -143,7 +151,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
           Pick a topic below instead, or snap the question to find one like it.
         </div>
       )}
-      <PracticeFlow initialLevels={initialLevels} initialAssignment={initialAssignment} initialTarget={initialTarget} initialQuestion={initialQuestion} />
+      <PracticeFlow initialLevels={initialLevels} initialAssignment={initialAssignment} initialTarget={initialTarget} initialQuestion={initialQuestion} timedEntry={timedEntry} lessonsVisible={lessonsVisible} />
     </>
   );
 }
