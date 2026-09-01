@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { textLineShare, TEXT_MIN, TEXT_BAND, SMALL_PX, BLANK_INK } from './figure-checks';
+import { textLineShare, inkMargins, TEXT_MIN, TEXT_BAND, SMALL_PX, BLANK_INK, MARGIN_MAX, MARGIN_LOPSIDED } from './figure-checks';
 
 /** Build a greyscale raster: rows of text-like ink, then a diagram-like stroke. */
 function raster(w: number, h: number, paint: (x: number, y: number) => boolean): Uint8Array {
@@ -43,5 +43,40 @@ describe('textLineShare', () => {
     expect(TEXT_BAND).toBe(0.42);
     expect(SMALL_PX).toBe(220);
     expect(BLANK_INK).toBe(0.01);
+  });
+});
+
+describe('inkMargins', () => {
+  it('measures the blank border on each side', () => {
+    // Ink only in the middle fifth, horizontally offset.
+    const g = raster(100, 100, (x, y) => x >= 40 && x < 60 && y >= 20 && y < 80);
+    const m = inkMargins(g, 100, 100)!;
+    expect(m.left).toBeCloseTo(0.40, 2);
+    expect(m.right).toBeCloseTo(0.40, 2);
+    expect(m.top).toBeCloseTo(0.20, 2);
+  });
+
+  it('catches a lopsided crop the eye cannot see on a white card', () => {
+    // RVHS 2021 Q8's shape: a quarter blank on the left, nothing on the right.
+    const g = raster(100, 100, (x, y) => x >= 25 && y >= 5 && y < 95);
+    const m = inkMargins(g, 100, 100)!;
+    expect(m.left).toBeGreaterThanOrEqual(MARGIN_MAX);
+    expect(Math.abs(m.left - m.right)).toBeGreaterThanOrEqual(MARGIN_LOPSIDED);
+  });
+
+  it('leaves a tight figure alone', () => {
+    // What the other 22 sampled figures look like: 0-5% all round.
+    const g = raster(100, 100, (x, y) => x >= 3 && x < 97 && y >= 3 && y < 97);
+    const m = inkMargins(g, 100, 100)!;
+    expect(Math.max(m.left, m.right, m.top, m.bottom)).toBeLessThan(MARGIN_MAX);
+  });
+
+  it('returns null when there is no ink to bound', () => {
+    expect(inkMargins(raster(20, 20, () => false), 20, 20)).toBeNull();
+  });
+
+  it('keeps the margin bars where the figures were measured', () => {
+    expect(MARGIN_MAX).toBe(0.15);
+    expect(MARGIN_LOPSIDED).toBe(0.12);
   });
 });
