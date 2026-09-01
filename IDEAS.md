@@ -27,8 +27,8 @@
 - 💡 **Subjects picker at stranger signup** — Sec 3–5 signups should declare E/A Math (JOIN_LEVELS has no subject split; scoping currently defaults). Small form + account.subjects write.
 
 ## Automation — money/ops
-- ✅ **Auto-deactivation cron (2026-09-02)** — monthly 3:30am SGT on the 3rd; no-Active-enrollment ≥30d → pass gate; fail-safe keeps ambiguous rows; dry-run verified live (0 offboardable today); job_runs rhythm alarm.
-- 🔨 **Auto referral invoice credit** — agent in flight 2026-09-02 (deferred adjustment per docs/INVOICES.md; Telegram demoted to receipt; fallback to manual note on any write failure).
+- 📐 **Auto-deactivation cron** — monthly: portal account with no active enrollment ≥30d → deactivate + Telegram. Data stays dormant indefinitely (rejoin-friendly); hard-delete only on request or ≥2–3y dormant (see docs/RETENTION.md).
+- ✅ **Auto referral invoice credit** — BUILT 2026-09-02 (branch `agent/referral-invoice-credit`, in review): tuition inviter's −S$10 now writes ITSELF as a deferred adjustment (`lib/referral-invoice-credit.ts` + Supabase `referral_invoice_credits` idempotency ledger, live); Telegram demoted to a receipt, manual-apply ping only on write failure. Adrian still eyeballs the draft 14th–15th.
 - 📐 **Retention cron** — docs/RETENTION.md has the policy sketch; Adrian owes 3 sign-offs before anything deletes.
 - 💡 **Privacy-policy copy update** — marking-records retention after deletion + dormancy policy, folded in when retention is signed off.
 
