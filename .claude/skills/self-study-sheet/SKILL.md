@@ -116,6 +116,25 @@ where r.student_id = '<rec…>'
 order by r.created_at desc;
 ```
 
+**THE LATEST PAPER HAS A VETO** (Adrian, 1 Sep 2026 — the correction that makes
+this rule safe). Past papers tell you whether something is a HABIT; the newest one
+tells you whether they still have it. A weakness that has stopped appearing is
+evidence of LEARNING, and drilling it wastes the sheet on something already fixed.
+
+Eva is the worked example against itself. Blanks were her largest aggregate loss —
+37 marks — and they run 6, then 8 and 15, then 8, then **zero** on her most recent
+paper. Summed, they look like her number one problem. Read in date order they look
+like a problem she is solving. Ranking them first would have taught her something
+she had already learned.
+
+So: count across every paper, but **check the newest before you rank**.
+- Still present in the latest paper → live. Rank it.
+- Absent from the latest but heavy before → say so in the wave as progress
+  ("blanks: 37 marks over four papers, none in the newest"), and do NOT give it a
+  section. Adrian may still want a word about it; that is his call, not a drill.
+- Present ONLY in the latest → a possible one-off; rank it by size and say it has
+  been seen once.
+
 **RECURRENCE OUTRANKS SIZE.** A misconception that costs 2 marks in three
 different papers beats a 6-mark loss that happened once — the first is a hole they
 carry into the exam, the second may be one hard question on one bad day. Adrian's
