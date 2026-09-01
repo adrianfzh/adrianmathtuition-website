@@ -55,14 +55,23 @@ export type Theme = {
  * classifier is coarse on purpose — its job is to rank, and the examples carry
  * the detail.
  */
+//
+// TITLES ARE THE NAMES STUDENTS USE (Adrian, 1 Sep 2026: "shape and space are
+// not the terms that students usually use — mensuration is fine, it is the topic
+// name"). A student looks for the chapter in their own notes, so these are the
+// syllabus topic names off the contents page, not the marker's categories. Where
+// a theme is a HABIT rather than a topic it is described as the thing they do,
+// in the second person, because there is no chapter to look up.
 const THEMES: { key: string; title: string; test: RegExp }[] = [
-  { key: 'blank', title: 'Parts left blank', test: /no attempt|left (completely )?blank|not attempted|nothing attempted|no working|no method was shown|no proof was written|part left/i },
-  { key: 'explain', title: 'Explaining — stating the answer without earning it', test: /repeats the claim|restates|no figures|justif|you needed to say|must be stated|never showed|no check shown|\breason\b|explanation/i },
-  { key: 'shape', title: 'Shape & space — mensuration, circle, 3-D', test: /cylinder|sector|arc\b|kite|surface|curved|cuboid|radius|perimeter|circle|tangent|chord|\btriangle\b|congruen|similar/i },
-  { key: 'scale', title: 'Scale factors — squaring for area, cubing for volume', test: /(scale|factor)[^.]*(squar|cube)|squared with|both base and height|areas scale|cube root/i },
-  { key: 'accuracy', title: 'Accuracy — the answer line', test: /d\.p\.|s\.f\.|significant figure|decimal place|do not round|nearest cent|in terms of|answer line|units?\b/i },
-  { key: 'stats', title: 'Statistics — reading the right measure', test: /quartile|median|mid-value|\bIQR\b|\bmean\b|percentile/i },
-  { key: 'algebra', title: 'Signs and algebra slips', test: /sign|inequality|dropped|negative|expand|bracket/i },
+  { key: 'blank', title: 'Questions you left blank', test: /no attempt|left (completely )?blank|not attempted|nothing attempted|no working|no method was shown|no proof was written|part left/i },
+  { key: 'explain', title: 'Giving a reason, not just the answer', test: /repeats the claim|restates|no figures|justif|you needed to say|must be stated|never showed|no check shown|\breason\b|explanation/i },
+  { key: 'shape', title: 'Mensuration — volume, surface area, arcs and sectors', test: /cylinder|sector|arc\b|kite|surface|curved|cuboid|radius|perimeter|\bcone\b|sphere|prism|pyramid/i },
+  { key: 'circle', title: 'Circle properties', test: /circle|tangent|chord|cyclic|\bO\b is the centre|angle at the cent/i },
+  { key: 'congruence', title: 'Congruence and similarity', test: /congruen|similar (triangle|figure)|\bAA\b|\bSAS\b|\bRHS\b/i },
+  { key: 'scale', title: 'Scale factors — square it for area, cube it for volume', test: /(scale|factor)[^.]*(squar|cube)|squared with|both base and height|areas scale|cube root/i },
+  { key: 'accuracy', title: 'Writing the answer the way the question asked', test: /d\.p\.|s\.f\.|significant figure|decimal place|do not round|nearest cent|in terms of|answer line|units?\b/i },
+  { key: 'stats', title: 'Statistics — median, quartiles and the mean', test: /quartile|median|mid-value|\bIQR\b|\bmean\b|percentile/i },
+  { key: 'algebra', title: 'Signs and slips in the algebra', test: /sign|inequality|dropped|negative|expand|bracket/i },
 ];
 
 /** Which theme a lost part belongs to, or null. Blank wins over topic: a part

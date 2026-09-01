@@ -9,7 +9,7 @@ import {
   pendingCount,
   computeAutoHold,
   TriageIndexError,
-  overrideTally, paperTotalWarning } from './mark-triage';
+  overrideTally, paperTotalWarning, paperTotalsMismatch } from './mark-triage';
 
 // Shaped from a real `paper_marking_runs.result_json` row (2026-08-11) — the
 // nesting is load-bearing: marks live at results[].marking.total_awarded, and
@@ -372,5 +372,48 @@ describe('paperTotalWarning — does the paper add up?', () => {
     for (const bad of [null, undefined, 0, -5, NaN, 'x' as unknown as number]) {
       expect(paperTotalWarning(bad)).toBeNull();
     }
+  });
+});
+
+describe('paperTotalsMismatch — the run’s own two numbers', () => {
+  const totals = (max: number, counted: number, src = 'registry') =>
+    ({ totals: { max, counted_max: counted, max_source: src } });
+
+  it('catches Kassandra: a score above the paper total', () => {
+    const w = paperTotalsMismatch(totals(90, 94), 91)!;
+    expect(w).toContain('91/90');
+    expect(w).toMatch(/HIGHER than the paper/);
+    expect(w).toContain('94');            // says where the inflation came from
+    expect(w).toMatch(/Do not release/);
+  });
+
+  it('catches the allocation gap even when the score is legal', () => {
+    const w = paperTotalsMismatch(totals(90, 94), 70)!;
+    expect(w).toContain('94');
+    expect(w).toContain('90');
+    expect(w).toMatch(/4 marks of allocation too many/);
+  });
+
+  it('reports too FEW allocations as well', () => {
+    expect(paperTotalsMismatch(totals(90, 88), 70)).toMatch(/2 marks of allocation too few/);
+  });
+
+  it('is silent when the paper adds up', () => {
+    expect(paperTotalsMismatch(totals(90, 90), 75)).toBeNull();
+  });
+
+  it('is silent when the run stores no totals — nothing to compare', () => {
+    expect(paperTotalsMismatch({}, 75)).toBeNull();
+    expect(paperTotalsMismatch(null, 75)).toBeNull();
+    expect(paperTotalsMismatch({ totals: { max: 90 } }, 75)).toBeNull();
+  });
+
+  it('hedges its wording when the total was not from the registry', () => {
+    expect(paperTotalsMismatch(totals(90, 93, 'counted'), 70)).toMatch(/looks like a paper out of/);
+  });
+
+  it('the over-max finding outranks the allocation one', () => {
+    // Both are true here; the student-facing impossibility is what must be said.
+    expect(paperTotalsMismatch(totals(90, 94), 91)).toMatch(/HIGHER/);
   });
 });

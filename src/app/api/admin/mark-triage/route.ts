@@ -38,7 +38,7 @@ import {
   isReleasable,
   pendingCount,
   computeAutoHold,
-  TriageIndexError, overrideTally, paperTotalWarning } from '@/lib/mark-triage';
+  TriageIndexError, overrideTally, paperTotalWarning, paperTotalsMismatch } from '@/lib/mark-triage';
 import { buildReviseBlock } from '@/lib/revise-map';
 import { canTransition, validateAssignment, type AssignmentStatus } from '@/lib/assignments';
 import { sendPushToStudent } from '@/lib/portal-push';
@@ -128,7 +128,9 @@ export async function GET(req: NextRequest) {
         // Do the marks add up to a real paper total? A misread [n] on one
         // question is invisible in every other view, and it silently skews the
         // percentage on the student's copy and in every report that uses it.
-        totalWarning: paperTotalWarning(r.total_max),
+        // The run's OWN two numbers first — registry total vs what the questions
+        // add up to — and only then the guess from the shape of the total.
+        totalWarning: paperTotalsMismatch(r.result_json, r.total_awarded) ?? paperTotalWarning(r.total_max),
         // Is a finished self-study sheet waiting in Dropbox for this paper? When
         // there is one, releasing it alongside the marks is one tap and needs no
         // file picking — the worker already filed it (see /api/admin/release-with-sheet).

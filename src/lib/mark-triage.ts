@@ -364,9 +364,53 @@ export const STANDARD_PAPER_TOTALS = [40, 50, 60, 70, 80, 90, 100];
 export const TOTAL_SLACK = 3;
 
 /**
+ * The strongest check, and it needs no guessing at all: the run already stores
+ * BOTH numbers and has never compared them.
+ *
+ * `totals.max` is the paper's real total — from the registry when the paper is
+ * known. `totals.counted_max` is what the marker's own per-question allocations
+ * add up to. When they disagree, an allocation is wrong, and the size of the gap
+ * says how badly.
+ *
+ * Kassandra's practice set 3 p1 (found 1 Sep 2026) is why this exists:
+ * registry max 90, counted_max 94, and awarded summed against the inflated set
+ * to give **91/90** — a score above the maximum, on a paper waiting to go to a
+ * student. The heuristic below never saw it, because 90 is a perfectly ordinary
+ * paper total.
+ *
+ * Returns the more serious of the two findings, or null when the paper is sound.
+ */
+export function paperTotalsMismatch(resultJson: unknown, awarded?: number | null): string | null {
+  const t = (resultJson as { totals?: { max?: unknown; counted_max?: unknown; max_source?: unknown } } | null)?.totals;
+  const max = Number(t?.max);
+  const counted = Number(t?.counted_max);
+  const aw = Number(awarded);
+
+  // A score above the maximum is self-evidently wrong and outranks everything.
+  if (Number.isFinite(aw) && Number.isFinite(max) && max > 0 && aw > max) {
+    return `${aw}/${max} — the score is HIGHER than the paper's total. `
+      + (Number.isFinite(counted) && counted !== max
+        ? `The questions were marked out of ${counted}, not ${max}, so the marks were awarded against the wrong allocations. `
+        : '')
+      + 'Do not release until the per-question marks are corrected.';
+  }
+
+  if (!Number.isFinite(max) || !Number.isFinite(counted) || max <= 0 || counted === max) return null;
+  const diff = counted - max;
+  const src = t?.max_source === 'registry' ? 'the paper is out of' : 'this looks like a paper out of';
+  return `The questions add up to ${counted}, but ${src} ${max}. `
+    + `${Math.abs(diff)} mark${Math.abs(diff) === 1 ? '' : 's'} of allocation ${diff > 0 ? 'too many' : 'too few'} — `
+    + 'check the printed [n] before releasing, or every percentage from this paper is wrong.';
+}
+
+/**
  * A one-line warning when the marks don't add up to a plausible paper total, or
  * null when they do (or when the total is nowhere near a standard one, which
  * means it is probably a practice set and none of our business).
+ *
+ * The weaker of the two checks — a guess from the shape of the number. Use it
+ * only when `paperTotalsMismatch` has nothing to say, which is the case for
+ * papers the registry does not know.
  */
 export function paperTotalWarning(totalMax: number | null | undefined): string | null {
   const mx = Number(totalMax);

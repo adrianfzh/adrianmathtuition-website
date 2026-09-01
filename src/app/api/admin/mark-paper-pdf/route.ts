@@ -10,6 +10,8 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 // Page width + paper-total strip are SHARED with the ✏️ Annotate assemble route —
 // see lib/marked-pdf-layout.ts. Change layout there, never inline here.
 import { PAGE_W, drawPaperTotal, stripHeight, shouldStampPaperTotal } from '@/lib/marked-pdf-layout';
+import { analyse, worstQuestions, type LostPart } from '@/lib/paper-analysis';
+import { renderFrontPagePng } from '@/lib/render-front-page';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -44,7 +46,7 @@ async function linkToRun(runId: string | undefined, url: string, mode: string) {
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { results?: ResultIn[]; annotated_photos?: { photo_index: number; url: string; url_with_solutions?: string | null }[]; totals?: { awarded: number; max: number; counted_max?: number; max_source?: string }; student?: { name?: string; level?: string }; multi?: boolean; mode?: string; runId?: string };
+  let body: { results?: ResultIn[]; annotated_photos?: { photo_index: number; url: string; url_with_solutions?: string | null }[]; totals?: { awarded: number; max: number; counted_max?: number; max_source?: string }; student?: { name?: string; level?: string }; multi?: boolean; mode?: string; runId?: string; paperName?: string; frontPage?: boolean };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
   const mode = body.mode === 'photos' ? 'photos' : 'full';   // 'photos' = annotated originals only (no typeset)
@@ -119,6 +121,31 @@ export async function POST(req: NextRequest) {
 
   // Assemble a PDF: each annotated photo followed by ITS OWN transcript sheets.
   const pdfDoc = await PDFDocument.create();
+
+  // ── Page 1: where the marks went (Adrian, 1 Sep 2026) ──────────────────────
+  // A student opening a marked script sees twenty pages of red before they see
+  // what to DO about it. This puts the answer first: what to work on, ranked by
+  // what they are still getting wrong, read across every paper they have handed
+  // in so a habit can be told from a bad day.
+  //
+  // Fail-soft by construction (renderFrontPagePng never throws): a paper without
+  // its cover is still a paper, and nothing here may cost a student their marked
+  // script. `frontPage: false` skips it for callers that do not want one.
+  if (runId && body.frontPage !== false) {
+    try {
+      const fp = await buildFrontPage(runId, {
+        paperName: body.paperName ?? null, awarded: totalAwarded, max: totalMax,
+        studentName: student.name ?? null,
+      });
+      if (fp) {
+        const img = await pdfDoc.embedPng(fp);
+        const h = Math.round(PAGE_W * (img.height / img.width));
+        const page = pdfDoc.addPage([PAGE_W, h]);
+        page.drawImage(img, { x: 0, y: 0, width: PAGE_W, height: h });
+      }
+    } catch (e) { console.warn('[mark-paper-pdf] front page skipped:', (e as Error).message); }
+  }
+
   const pages = orderMarkedPages(
     annotated.map(a => ({ photo_index: a.photo_index, item: a })),
     pngs.map(p => ({ photo_index: p.photo_index, label: p.label, item: p })),
@@ -153,4 +180,69 @@ export async function POST(req: NextRequest) {
   const blob = await put(`mark-paper/${id}.pdf`, Buffer.from(pdfBytes), { access: 'public', contentType: 'application/pdf', allowOverwrite: true });
   await linkToRun(runId, blob.url, mode);
   return NextResponse.json({ url: blob.url, kind: 'pdf', totalAwarded, totalMax });
+}
+
+
+/**
+ * The front page's data: every marked paper this student has, so a weakness can
+ * be told from a bad day, and the newest one deciding what still counts.
+ *
+ * Returns null — not an error — whenever there is nothing worth fronting: an
+ * untagged paper, a paper with no losses, a database hiccup. The caller then
+ * assembles exactly the PDF it always did.
+ */
+async function buildFrontPage(
+  runId: string,
+  meta: { paperName: string | null; awarded: number; max: number; studentName: string | null },
+): Promise<Buffer | null> {
+  const sb = getSupabaseAdmin();
+  const { data: run } = await sb.from('paper_marking_runs')
+    .select('student_id, student_name, paper_name').eq('id', runId).maybeSingle();
+  if (!run) return null;
+
+  let rows: { id: string; paper_name: string | null; created_at: string; result_json: unknown }[] = [];
+  if (run.student_id) {
+    const { data } = await sb.from('paper_marking_runs')
+      .select('id, paper_name, created_at, result_json')
+      .eq('student_id', run.student_id)
+      .gte('created_at', new Date(Date.now() - 120 * 86400_000).toISOString())
+      .order('created_at', { ascending: false }).limit(12);
+    rows = (data ?? []) as typeof rows;
+  }
+  if (!rows.some(r => r.id === runId)) {
+    const { data } = await sb.from('paper_marking_runs')
+      .select('id, paper_name, created_at, result_json').eq('id', runId).limit(1);
+    rows = [...((data ?? []) as typeof rows), ...rows];
+  }
+
+  const parts: LostPart[] = [];
+  for (const r of rows) {
+    const res = (r.result_json as { results?: unknown[] } | null)?.results;
+    if (!Array.isArray(res)) continue;
+    for (const q of res as Record<string, never>[]) {
+      const mo = (q as { marking_output?: { parts?: Record<string, unknown>[] } }).marking_output;
+      for (const p of (mo?.parts ?? [])) {
+        const mx = Number(p.max), aw = Number(p.awarded);
+        if (!Number.isFinite(mx) || !Number.isFinite(aw) || aw >= mx) continue;
+        parts.push({
+          paperId: r.id, paperName: r.paper_name || 'a paper', createdAt: r.created_at,
+          question: String((q as { question_number?: unknown }).question_number ?? '?'),
+          label: String(p.label ?? ''), lost: mx - aw, max: mx,
+          blank: p.not_attempted === true, why: String(p.error_summary ?? ''),
+        });
+      }
+    }
+  }
+  // Nothing lost anywhere: a cover page saying so would be noise on a clean script.
+  if (!parts.length) return null;
+
+  return renderFrontPagePng({
+    studentName: meta.studentName || run.student_name,
+    paperName: meta.paperName || run.paper_name,
+    markedOn: null,
+    awarded: meta.awarded, max: meta.max,
+    papersRead: rows.length,
+    themes: analyse(parts, runId),
+    worstQuestions: worstQuestions(parts, runId),
+  });
 }
