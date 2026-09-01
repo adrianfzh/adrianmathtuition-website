@@ -57,7 +57,12 @@ export async function GET(req: NextRequest) {
       .from('paper_marking_runs')
       .select('id, paper_name, created_at, result_json')
       .eq('student_id', run.student_id)
-      .is('archived_at', null)
+      // ARCHIVED PAPERS COUNT. Archive means Adrian dealt with that script
+      // outside the system — marked it by hand, handed it back in class. It says
+      // nothing about the marking's quality, and a paper she sat and lost marks
+      // on is evidence whether or not it went through triage. Filtering them out
+      // read only 2 of Eva's 5 papers on the first live run, which is the same
+      // blind spot this whole analysis exists to close.
       .gte('created_at', new Date(Date.now() - LOOKBACK_DAYS * 86400_000).toISOString())
       .order('created_at', { ascending: false })
       .limit(MAX_PAPERS);

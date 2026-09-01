@@ -116,7 +116,11 @@ export function analyse(parts: LostPart[], latestPaperId: string): Theme[] {
 export function worstQuestions(parts: LostPart[], paperId: string, limit = 5) {
   const byQ = new Map<string, { question: string; lost: number; max: number; why: string }>();
   for (const p of (parts || []).filter(x => x.paperId === paperId)) {
-    const k = `Q${p.question}`;
+    // The marker's question_number is not always a number — it comes back as
+    // "(b)", "c" or "?" when a page carried no printed question number. Prefixing
+    // those with Q produced "Q(b)" and "Qc" on the first live run. A label with no
+    // digit in it is not a question number, so it is shown as the marker wrote it.
+    const k = /\d/.test(p.question) ? `Q${p.question}` : (p.question || '?');
     const cur = byQ.get(k) || { question: k, lost: 0, max: 0, why: p.why };
     cur.lost += p.lost; cur.max += p.max;
     byQ.set(k, cur);
@@ -130,5 +134,8 @@ export function headline(themes: Theme[], awarded: number, max: number): string 
   const live = themes.filter(t => t.live);
   if (!live.length) return `${awarded}/${max} (${pct}%). Nothing here repeats — the losses are scattered, so work through the marked script itself.`;
   const first = live[0];
-  return `${awarded}/${max} (${pct}%). The biggest single thing to fix is **${first.title.toLowerCase()}** — ${first.marks} mark${first.marks === 1 ? '' : 's'} across ${first.papers} paper${first.papers === 1 ? '' : 's'}.`;
+  const where = first.papers === 1
+    ? 'on this paper'
+    : `across ${first.papers} papers`;
+  return `${awarded}/${max} (${pct}%). The biggest single thing to fix is **${first.title.toLowerCase()}** — ${first.marks} mark${first.marks === 1 ? '' : 's'} ${where}.`;
 }
