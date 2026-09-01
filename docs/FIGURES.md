@@ -115,12 +115,65 @@ EM_NA Q20's stored answers (mode 2 / median 1.5 / 50%) contradicted the genuine
 recovered figure (0 / 1 / 25%) and were corrected on Adrian's say-so. If a
 recovered figure disagrees with the stored answer, suspect the answer.
 
-## 7. State (2026-09-01)
+## 7. Handing this work to another session / Claude account
 
-- **3,582** repairs applied across **3,399** questions (`figure_clean_log`):
-  2,284 auto bleed-clean · 1,198 vision-approved clean · 14 grey-background
-  normalise · 18 targeted cleans · 57 redraws · 11 recovered missing figures.
-- **Adrian's flag queue: 569 flagged, 78 fixed, 491 open** — worked in ~50-figure
-  batches (agents draw → Adrian vets a sheet → apply).
+Everything needed to continue lives in **this repo + the database**. A session
+scratchpad does NOT travel and does not need to: the durable state is
+`figure_flags` (what is left, and who holds it) and `figure_clean_log` (what was
+done, and how to undo it).
+
+**On the same Mac, another Claude account needs nothing extra** — same repos,
+same `.env.local`, and this doc. On a different Mac: clone both repos
+(website + `adrianmath-telegram-math-bot` for `lib/figures/`), copy
+`.env.local`, and follow `docs/CLOUD.md` for the secrets bootstrap.
+
+### The loop, one batch at a time
+
+1. **Claim** the next 50 (see §3). Use a distinct `claimed_by` label, e.g.
+   `<account>-batch-N`. Never work unclaimed rows — a peer may hold them.
+2. Resolve each flag's **working path**: the flagged path can be stale (the
+   figure was replaced since). If `figure_flags.path` appears in neither
+   `image_url` nor `parts`, work on the question's CURRENT image instead, and
+   remember the flag path so you can close the right row afterwards.
+3. **Spawn agents** (6–7 figures each, no more than ~4 at once — 8 concurrent
+   agents viewing full-size scans stalled the watchdog). Tell each agent to
+   downscale before viewing (`sharp(...).resize({width:900}).jpeg()`), finish
+   one figure completely before starting the next, and prefix its scratch
+   scripts (`g1-`, `g2-`, …) — they share a directory.
+   The brief that works is §5 plus: *match the original's relative font sizes*
+   (the commonest review complaint), *render SVG at density 200*, *invent
+   nothing*, *append (never rewrite) the shared manifest*.
+4. **Build a review sheet** — numbered, each pair labelled `#N · School Year
+   Level Qn` with the treatment used, original left / repaired right, skips
+   listed at the top. Adrian rules on it by number. Nothing is applied before he does.
+5. **Apply** the approved ones (§5 last paragraph), then close each flag by its
+   ORIGINAL flag path and clear `claimed_by`.
+6. If you abandon a batch, null out its `claimed_by` so the rows return to the queue.
+
+### Watch-outs that have already cost time
+
+- Applying by the *target* path silently fails to close flags whose path was
+  stale — the figure gets fixed but the question stays gated out of serving.
+  Verify: no rows left with your `claimed_by` and `status='open'`.
+- A repaired figure whose DATA is still incomplete (a truncated crop) must stay
+  `open` with a `re-extract needed:` note — art quality is not the only test.
+- Not every flag is a drawing problem. Roughly 1 in 8 is an extraction defect —
+  the wrong page stored (formula list, whole exam page), a crop that slices off
+  data, or question text baked into the image. Those need the source paper
+  (§6), not a redraw.
+
+## 8. State (2026-09-01)
+
+- **~3,640** repairs applied across the bank (`figure_clean_log`): 2,284 auto
+  bleed-clean · 1,198 vision-approved clean · 14 grey-background normalise ·
+  18 targeted cleans · 57+44 redraws · 11 recovered missing figures · 5 re-extractions.
+- **Adrian's flag queue: 569 flagged; ~128 fixed; ~440 open** — worked in
+  50-figure batches (agents draw → Adrian vets a sheet → apply). Batches 1–3
+  are applied; batch 4 was in flight at the time of writing (`fable-batch-4`).
 - **6** questions have no image anywhere; Pierce 2024 EM_NA Q18 is a known total
   loss (absent from every source copy).
+- **Known, NOT being worked here:** ~1,015 questions exist as duplicate rows
+  where one twin has an empty stem (sampled and confirmed — e.g. EJC 2021 JC2
+  Q1 has the stem on one row and the parts on the other). That is an extraction
+  defect, not a figure defect, and it is why some wrong figures are attached to
+  the empty-stem twin.
