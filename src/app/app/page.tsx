@@ -22,6 +22,7 @@ import { relockItems, nextOpenItem } from '@/lib/remediation';
 import PortalAnnouncementCard from '@/components/PortalAnnouncementCard';
 import { SURFACES } from '@/lib/portal-theme';
 import PortalIcon from '@/components/PortalIcon';
+import ExamCountdown from './exam-countdown';
 
 export const dynamic = 'force-dynamic';
 
@@ -378,6 +379,10 @@ async function NextLessonAndStats({ account, fullPortal, card, caption }: {
           </Link>
         )}
       </div>
+
+      {/* Next exam countdown (2026-09-02) — same island, same Airtable batch;
+          renders nothing when no dated exam is inside the horizon. */}
+      <ExamCountdown exams={d.upcomingExams} card={card} caption={caption} />
 
       {/* Week stats — the "lessons done / coming up" pills were dropped on
           Adrian's request (2026-08-21); only the practice count remains, and

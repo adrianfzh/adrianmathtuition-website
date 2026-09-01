@@ -15,6 +15,7 @@ import { canTransition, type AssignmentRow } from '@/lib/assignments';
 import { portalIdentity } from '@/lib/portal-auth';
 import { requireActiveAccess } from '@/lib/portal-passes';
 import { loadPitfallsForQuestion } from '@/lib/topic-pitfalls';
+import { parseTimedMeta } from '@/lib/timed-set';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -34,13 +35,19 @@ export async function POST(req: NextRequest) {
   const identity = portalIdentity(account);
 
   const body = await req.json().catch(() => ({}));
-  const { questionId, lines, image, assignmentId } = body as {
+  const { questionId, lines, image, assignmentId, timed } = body as {
     questionId?: string;
     lines?: string[];
     image?: { data?: string; mediaType?: string };
     assignmentId?: string;
+    timed?: unknown;
   };
   if (!questionId) return NextResponse.json({ error: 'questionId required' }, { status: 400 });
+  // Timed set (/app/practice/timed, 2026-09-02): the client tags each graded
+  // question with the set + elapsed time; malformed → treated as ordinary
+  // practice. The attempt row then carries duration_seconds + marking_json.timed
+  // so Adrian can see pace, not just marks. Cap and grading are unchanged.
+  const timedMeta = parseTimedMeta(timed);
 
   // Photo path (primary for students) or typed-lines path — exactly one.
   let attemptImage: { data: string; mediaType: 'image/jpeg' | 'image/png' | 'image/webp' } | undefined;
@@ -136,7 +143,11 @@ export async function POST(req: NextRequest) {
       attempted_via: 'portal',
       answer_text: storedLines.join('\n'),
       marking_verdict: result.verdict,
-      marking_json: { ...result, model: GRADING_MODEL, lines: storedLines, source: attemptImage ? 'photo' : 'typed', topics: q.topics },
+      duration_seconds: timedMeta?.elapsedSec ?? null,
+      marking_json: {
+        ...result, model: GRADING_MODEL, lines: storedLines, source: attemptImage ? 'photo' : 'typed', topics: q.topics,
+        ...(timedMeta ? { timed: timedMeta } : {}),
+      },
     })
     .select('id')
     .single();

@@ -513,6 +513,16 @@ export async function GET(req: NextRequest) {
       if (jcTotal < 4000) throw new Error(`JC practice pool shrank to ${jcTotal} (expected ≥ 4000 — topic-tag fallback lost?)`);
       return `JC ${jc.length} topics / ${jcTotal} q · S3 AM ${s3.length} · AM ${types.length} question types`;
     }),
+    // ⏱ Timed sets (/app/practice/timed, 2026-09-02) — the set builder must
+    // hold its auth gate: an anonymous POST is 401, never a set of questions.
+    timed('portal-timed-set', async () => {
+      const r = await fetch(`${base}/api/portal/practice/timed-set`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
+        redirect: 'manual', signal: T(10000),
+      });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // The parent-report store the monthly cron writes into. It runs unattended
     // on the 1st, so a broken table or renamed column would mean parents simply
     // stop hearing anything, with nothing on screen to say why.

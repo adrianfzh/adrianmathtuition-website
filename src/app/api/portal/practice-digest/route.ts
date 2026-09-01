@@ -33,12 +33,13 @@ export async function GET(req: NextRequest) {
   const byStudent = new Map<string, { n: number; scores: string[]; low: number }>();
   for (const a of attempts) {
     const key = nameById[a.user_id as string] || 'unknown';
-    const mj = (a.marking_json || {}) as { score?: number; outOf?: number; topics?: string[] };
+    const mj = (a.marking_json || {}) as { score?: number; outOf?: number; topics?: string[]; timed?: unknown };
     if (!byStudent.has(key)) byStudent.set(key, { n: 0, scores: [], low: 0 });
     const s = byStudent.get(key)!;
     s.n++;
     if (typeof mj.score === 'number' && typeof mj.outOf === 'number') {
-      s.scores.push(`${mj.score}/${mj.outOf}${mj.topics?.[0] ? ` (${mj.topics[0]})` : ''}`);
+      // ⏱ = graded inside a timed set (/app/practice/timed) — pace, not just marks.
+      s.scores.push(`${mj.score}/${mj.outOf}${mj.topics?.[0] ? ` (${mj.topics[0]})` : ''}${mj.timed ? ' ⏱' : ''}`);
       if (mj.outOf > 0 && mj.score / mj.outOf < 0.4) s.low++;
     }
   }

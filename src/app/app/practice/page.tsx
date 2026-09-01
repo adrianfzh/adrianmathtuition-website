@@ -34,7 +34,7 @@ import { questionMarkdown, questionStructured, totalMarksOf } from '@/lib/bank-q
 
 export const dynamic = 'force-dynamic';
 
-const QID_FROM = ['marked', 'photo', 'search', 'generated', 'notebook'] as const;
+const QID_FROM = ['marked', 'photo', 'search', 'generated', 'notebook', 'timed'] as const;
 
 export default async function PracticePage({ searchParams }: { searchParams: Promise<{ assignment?: string; level?: string; topic?: string; qid?: string; from?: string }> }) {
   const { assignment: assignmentId, level: targetLevel, topic: targetTopic, qid, from } = await searchParams;

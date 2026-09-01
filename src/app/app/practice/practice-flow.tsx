@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { MathMarkdown } from '@/lib/math-markdown';
 import { getSupabaseBrowser } from '@/lib/supabase-client';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
+// The question renderer + inline-math helpers moved to ./question-view.tsx on
+// 2026-09-02, shared with the timed set (/app/practice/timed).
+import { MathText, QuestionView, type Question } from './question-view';
 
 // Retrieval-first practice (PORTAL.md + tiered-router spec) + the Phase E
 // grading loop: pick a topic → choose Standard / Advanced → real bank question
@@ -29,11 +32,6 @@ import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 // student lines and plain-text comments pass through untouched — markdown
 // rendering only kicks in when the string actually carries $...$ math, so a
 // hand-typed "3*4*5" can never get italicised by markdown rules.
-const INLINE_P = { p: ({ children }: { children?: React.ReactNode }) => <>{children}</> };
-function MathText({ text }: { text: string }) {
-  if (!text.includes('$')) return <>{text}</>;
-  return <MathMarkdown content={text} components={INLINE_P} />;
-}
 
 type LevelOpt = { key: string; label: string };
 
@@ -54,66 +52,6 @@ function strandOf(topic: string): string {
   return head.split(/\s+/)[0] || 'Other';
 }
 
-// Mirrors StructuredPart in lib/bank-question-markdown.ts (server module).
-type QPart = { label: string; text: string; marks: number | null; subparts: QPart[] };
-type Question = {
-  id: string; markdown: string; stem: string; parts: QPart[];
-  marks: number | null; figureUrl?: string | null; source: string | null; hasSolution: boolean;
-};
-
-function Md({ text }: { text: string }) {
-  return <MathMarkdown content={text} />;
-}
-
-// Exam-style layout: a 4-column grid — part label · sub-part label · text ·
-// marks. A part with its own text spans the two inner columns; a bare "(b)"
-// that only carries sub-parts puts its label on the same row as "(i)", so
-// "(b) (i) …" reads as one line the way it does on the paper. Marks sit in
-// the last column, bottom-aligned, as "[3]". Only the text cells go through
-// markdown, so KaTeX keeps working inside them.
-function QuestionView({ q }: { q: Question }) {
-  const rows: React.ReactNode[] = [];
-  const label = 'font-semibold text-slate-800 whitespace-nowrap pr-1 self-baseline';
-  const text = 'prose prose-sm max-w-none text-slate-800 leading-relaxed min-w-0 [&>p]:my-0 [&>p+p]:mt-2';
-  const marks = 'self-end text-xs text-slate-500 tabular-nums pl-2 pb-0.5 whitespace-nowrap';
-  const fmt = (l: string) => (l ? `(${l})` : '');
-  q.parts.forEach((p, i) => {
-    const hasText = p.text.trim().length > 0;
-    if (hasText || p.subparts.length === 0) {
-      rows.push(
-        <div key={`p${i}`} className={label} style={{ gridColumn: 1 }}>{fmt(p.label)}</div>,
-        <div key={`t${i}`} className={text} style={{ gridColumn: '2 / 4' }}><Md text={p.text} /></div>,
-        <div key={`m${i}`} className={marks} style={{ gridColumn: 4 }}>{p.marks ? `[${p.marks}]` : ''}</div>,
-      );
-    }
-    p.subparts.forEach((sp, j) => {
-      rows.push(
-        <div key={`p${i}s${j}`} className={label} style={{ gridColumn: 1 }}>{!hasText && j === 0 ? fmt(p.label) : ''}</div>,
-        <div key={`l${i}s${j}`} className={label} style={{ gridColumn: 2 }}>{fmt(sp.label)}</div>,
-        <div key={`t${i}s${j}`} className={text} style={{ gridColumn: 3 }}><Md text={sp.text} /></div>,
-        <div key={`m${i}s${j}`} className={marks} style={{ gridColumn: 4 }}>{sp.marks ? `[${sp.marks}]` : ''}</div>,
-      );
-    });
-  });
-  const hasSub = q.parts.some(p => p.subparts.length > 0);
-  // Both label columns size to their widest label ("(iii)"); an unused
-  // sub-part column collapses to nothing.
-  const cols = `max-content ${hasSub ? 'max-content' : '0'} minmax(0, 1fr) max-content`;
-  return (
-    <div className="math-working">
-      {q.stem && (
-        <div className={`prose prose-sm max-w-none text-slate-800 leading-relaxed ${q.parts.length ? 'mb-3' : ''}`}>
-          <Md text={q.stem} />
-        </div>
-      )}
-      {rows.length > 0 && (
-        <div className="grid items-start" style={{ gridTemplateColumns: cols, columnGap: '0.35rem', rowGap: '0.6rem' }}>
-          {rows}
-        </div>
-      )}
-    </div>
-  );
-}
 type LineComment = { line: number; ok: boolean; comment: string; fix?: string; tag?: string; severity?: string };
 type MarkAnatomyItem = { code: string; for: string; earned: boolean };
 type GradeResult = {
@@ -155,7 +93,7 @@ export type InitialAssignment = {
 // follow-up after grading.
 export type FixedQuestion = {
   question: Question;
-  from: 'marked' | 'photo' | 'search' | 'generated' | 'notebook' | null;
+  from: 'marked' | 'photo' | 'search' | 'generated' | 'notebook' | 'timed' | null;
   topic: string | null;
 };
 
@@ -165,6 +103,7 @@ const FIXED_FROM: Record<NonNullable<FixedQuestion['from']> | 'link', { label: s
   photo: { label: '📷 Matched to your photo', blurb: 'The closest bank question to the one you snapped — work it here and get it marked.' },
   search: { label: '🔍 From your search', blurb: 'Work it here — snap or type your working and get it marked.' },
   generated: { label: '✨ Made for you', blurb: 'A fresh question written for you and checked to solve correctly. Work it here and get it marked.' },
+  timed: { label: '⏱ From your timed set', blurb: 'Redo it without the clock — work it here and get it marked.' },
   link: { label: '🎯 Practice question', blurb: 'Work it here — snap or type your working and get it marked.' },
 };
 
@@ -706,6 +645,18 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
         >
           <span aria-hidden>🖨️</span>
           <span className="flex-1 min-w-0">Print a paper — a mock exam or topic sheet to hand back in</span>
+          <span aria-hidden className="text-slate-300">›</span>
+        </Link>
+      )}
+      {/* "Timed set" (2026-09-02) — same slim-row treatment, same hide rule:
+          a few questions against an exam-pace clock, marked at the end. */}
+      {showPrintEntry && (
+        <Link
+          href="/app/practice/timed"
+          className="flex items-center gap-2.5 -mt-3 mb-4 px-1 py-2.5 text-sm text-slate-500 hover:text-navy motion-safe:transition-colors"
+        >
+          <span aria-hidden>⏱</span>
+          <span className="flex-1 min-w-0">Timed set — a few questions against the clock, marked at the end</span>
           <span aria-hidden className="text-slate-300">›</span>
         </Link>
       )}

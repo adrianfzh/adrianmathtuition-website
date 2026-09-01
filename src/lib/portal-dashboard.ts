@@ -9,6 +9,7 @@
 import { airtableRequestAll, airtableRequest } from './airtable';
 import { createSupabaseServer } from './supabase-server';
 import type { PortalAccount } from './portal-auth';
+import { shapeUpcomingExams, type ExamRecordLike, type UpcomingExam } from './portal-exams';
 
 export interface DashboardLesson {
   date: string;          // YYYY-MM-DD
@@ -24,6 +25,8 @@ export interface DashboardData {
   weekLessons: { completed: number; upcoming: number };
   lastTopics: string[];          // from the most recent past lesson with topics
   homeworkAssigned: string | null;
+  /** Home "Next exam" countdown — dated upcoming Exams rows (lib/portal-exams). */
+  upcomingExams: UpcomingExam[];
   attemptsThisWeek: number;
   recentAttempts: Array<{ attemptedAt: string; verdict: string | null; via: string }>;
 }
@@ -54,13 +57,14 @@ async function airtableSection(account: PortalAccount) {
   const weekLessons = { completed: 0, upcoming: 0 };
   let lastTopics: string[] = [];
   let homeworkAssigned: string | null = null;
+  let upcomingExams: UpcomingExam[] = [];
 
   // Self-serve (stranger) accounts have airtable_student_id = '' — there is
   // no Airtable record or lessons to read, and `/Students/` with an empty id
   // would resolve to the LIST endpoint. The portal_accounts copies above are
   // the whole truth for them.
   if (!studentId) {
-    const data = { firstName, level, nextLesson, weekLessons, lastTopics, homeworkAssigned };
+    const data = { firstName, level, nextLesson, weekLessons, lastTopics, homeworkAssigned, upcomingExams };
     cache.set(account.id, { at: Date.now(), data });
     return data;
   }
@@ -80,18 +84,41 @@ async function airtableSection(account: PortalAccount) {
     const formula = encodeURIComponent(
       `AND({Date}>='${from}',{Date}<'${toExcl}',{Status}!='Cancelled',{Status}!='Cancelled - Prorated')`
     );
-    const [student, { records }] = await Promise.all([
+    // Exams dated today or later (Home's "Next exam" countdown) ride the same
+    // batch — no extra latency — and fail soft so an Exams hiccup can never
+    // take the lessons down with it. Same gotchas: string date compare on the
+    // date-typed field, linked-record match done in JS below.
+    const examFormula = encodeURIComponent(`AND({Exam Date}>='${iso(today)}',NOT({No Exam}))`);
+    const [student, { records }, exams] = await Promise.all([
       studentPromise,
       airtableRequestAll(
         'Lessons',
         `?filterByFormula=${formula}&fields[]=Date&fields[]=Student&fields[]=Slot&fields[]=Type&fields[]=Status&fields[]=Topics Covered&fields[]=Topics Free Text&fields[]=Homework Assigned&sort[0][field]=Date&sort[0][direction]=asc`
       ),
+      airtableRequestAll(
+        'Exams',
+        `?filterByFormula=${examFormula}&fields[]=Student&fields[]=Exam Type&fields[]=Custom Name&fields[]=Subject&fields[]=Exam Date&fields[]=Tested Topics&fields[]=Exam Notes&fields[]=No Exam`
+      ).catch(() => ({ records: [] as any[] })),
     ]);
     if (student) {
       firstName = ((student.fields?.['Student Name'] as string) || firstName).split(' ')[0];
       level = (student.fields?.['Level'] as string) || level;
     }
     const mine = records.filter((r: any) => r.fields['Student']?.[0] === studentId);
+
+    const myExams: ExamRecordLike[] = (exams.records as any[])
+      .filter(r => r.fields['Student']?.[0] === studentId)
+      .map(r => ({
+        id: r.id as string,
+        examType: (r.fields['Exam Type'] as string) || '',
+        customName: (r.fields['Custom Name'] as string) || '',
+        subject: (r.fields['Subject'] as string) || '',
+        examDate: (r.fields['Exam Date'] as string) || null,
+        testedTopics: (r.fields['Tested Topics'] as string) || '',
+        examNotes: (r.fields['Exam Notes'] as string) || '',
+        noExam: !!r.fields['No Exam'],
+      }));
+    upcomingExams = shapeUpcomingExams(myExams, iso(today), level);
 
     // Slot labels
     const slotIds = [...new Set(mine.map((r: any) => r.fields['Slot']?.[0]).filter(Boolean))] as string[];
@@ -143,7 +170,7 @@ async function airtableSection(account: PortalAccount) {
     // Airtable down or student record missing — dashboard degrades to practice-only data.
   }
 
-  const data = { firstName, level, nextLesson, weekLessons, lastTopics, homeworkAssigned };
+  const data = { firstName, level, nextLesson, weekLessons, lastTopics, homeworkAssigned, upcomingExams };
   cache.set(account.id, { at: Date.now(), data });
   return data;
 }
