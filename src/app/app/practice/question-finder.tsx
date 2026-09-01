@@ -17,6 +17,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MathMarkdown } from '@/lib/math-markdown';
 import { DAILY_GENERATE_CAP } from '@/lib/portal-find';
+import { PortalFetchError, portalFetch, portalMessage } from '@/lib/portal-fetch';
 import { fileToJpegDataUrl } from './image-downscale';
 
 type Match = { id: string; preview: string; topics: string[]; totalMarks: number | null };
@@ -56,18 +57,15 @@ export default function QuestionFinder({ level }: { level: string }) {
   async function findSimilar(body: { imageBase64: string } | { text: string }, source: 'photo' | 'search') {
     setFinding(source); setError(''); setFound(null);
     try {
-      const r = await fetch('/api/portal/similar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...body, level }),
+      const d = await portalFetch<{ extractedText?: string; matches?: Match[] }>('/api/portal/similar', {
+        json: { ...body, level },
+        fallback: 'Something went wrong — try again.',
       });
-      const d = await r.json().catch(() => ({}));
-      if (!r.ok) { setError(d.error || 'Something went wrong — try again.'); return; }
       const seed = (typeof d.extractedText === 'string' && d.extractedText.trim())
         || ('text' in body ? body.text : '');
       setFound({ source, seedText: seed, matches: Array.isArray(d.matches) ? d.matches : [] });
-    } catch {
-      setError('Connection error — try again.');
+    } catch (e) {
+      setError(portalMessage(e));
     } finally {
       setFinding(null);
     }
@@ -97,21 +95,20 @@ export default function QuestionFinder({ level }: { level: string }) {
     const ctrl = new AbortController();
     const kill = window.setTimeout(() => ctrl.abort(), 295_000);
     try {
-      const r = await fetch('/api/portal/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ level, seedText: found.seedText, kind: found.source }),
+      const d = await portalFetch<{ questionId?: string }>('/api/portal/generate', {
+        json: { level, seedText: found.seedText, kind: found.source },
         signal: ctrl.signal,
+        fallback: 'That one didn’t pass our checks — try again or pick a bank match.',
       });
-      const d = await r.json().catch(() => ({}));
-      if (!r.ok || !d.questionId) {
-        setError(d.error || 'That one didn’t pass our checks — try again or pick a bank match.');
-        return;
+      if (d.questionId) {
+        router.push(`/app/practice?qid=${d.questionId}&from=generated`);
+        return; // keep the progress screen up while the new page loads
       }
-      router.push(`/app/practice?qid=${d.questionId}&from=generated`);
-      return; // keep the progress screen up while the new page loads
-    } catch {
       setError('That one didn’t pass our checks — try again or pick a bank match.');
+    } catch (e) {
+      setError(e instanceof PortalFetchError
+        ? e.message
+        : 'That one didn’t pass our checks — try again or pick a bank match.');
     } finally {
       window.clearTimeout(kill);
     }

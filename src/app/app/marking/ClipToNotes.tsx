@@ -17,6 +17,7 @@
 // browser still refuses.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { PortalFetchError, portalFetch } from '@/lib/portal-fetch';
 
 interface Page {
   index: number;
@@ -430,24 +431,27 @@ export default function ClipToNotes({ runId, paperName, pages }: {
         throw new Error('That selection is too large to save — try a smaller box.');
       }
 
-      const res = await fetch('/api/portal/my-notes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ runId, sourceLabel: paperName, note: note.trim(), image: dataUrl }),
+      await portalFetch('/api/portal/my-notes', {
+        json: { runId, sourceLabel: paperName, note: note.trim(), image: dataUrl },
+        fallback: 'Couldn’t save that clipping — try again.',
       });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error((body as { error?: string }).error || `HTTP ${res.status}`);
 
       setRect(null);
       setNote('');
       setSaved(true);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      setError(
-        /security|tainted/i.test(msg)
-          ? "Couldn't read the page image on this device — try the PDF instead."
-          : msg,
-      );
+      if (e instanceof PortalFetchError) {
+        setError(e.message);
+      } else {
+        // Locally-thrown messages (too-large selection, canvas SecurityError)
+        // land here, already worded for the student.
+        const msg = e instanceof Error ? e.message : String(e);
+        setError(
+          /security|tainted/i.test(msg)
+            ? "Couldn't read the page image on this device — try the PDF instead."
+            : msg,
+        );
+      }
     } finally {
       setSaving(false);
     }

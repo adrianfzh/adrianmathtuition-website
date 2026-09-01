@@ -24,6 +24,7 @@ import { MathText, QuestionView, type Question } from '../question-view';
 import { fileToJpegDataUrl } from '../image-downscale';
 import type { Tier } from '../topic-picker';
 import { topicOrderComparator } from '@/lib/notes-tree';
+import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 import {
   TIMED_SET_COUNTS, coachingLine, formatClock, marksForTiming, summariseSet,
   type SetItemOutcome, type TimedSetCount,
@@ -117,8 +118,7 @@ export default function TimedFlow({ levels, initialLevel, initialTopics }: {
     if (phase !== 'setup') return;
     let cancelled = false;
     setTopicsLoading(true);
-    fetch(`/api/portal/practice/topics?level=${encodeURIComponent(level)}`)
-      .then(r => r.json())
+    portalFetch<{ topics?: TopicRow[] }>(`/api/portal/practice/topics?level=${encodeURIComponent(level)}`)
       .then(d => { if (!cancelled) setTopicRows(Array.isArray(d.topics) ? d.topics : []); })
       .catch(() => { if (!cancelled) setTopicRows([]); })
       .finally(() => { if (!cancelled) setTopicsLoading(false); });
@@ -176,11 +176,9 @@ export default function TimedFlow({ levels, initialLevel, initialTopics }: {
         ? { questionId: q.id, image: { data: a.photo.split(',')[1], mediaType: 'image/jpeg' }, timed }
         : { questionId: q.id, lines, timed };
       try {
-        const r = await fetch('/api/portal/practice/grade', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+        const d = await portalFetch<{ result: GradeResult }>('/api/portal/practice/grade', {
+          json: body, fallback: 'Marking didn’t go through',
         });
-        const d = await r.json();
-        if (!r.ok) { results[q.id] = { status: 'error', message: d.error || 'Marking failed' }; return; }
         // Same rule as the practice flow: use the grader's echoed lines only
         // when the count matches, so lineComments' numbering stays valid.
         const tl: string[] | undefined = d.result?.transcribedLines;
@@ -188,7 +186,11 @@ export default function TimedFlow({ levels, initialLevel, initialTopics }: {
           status: 'marked', result: d.result,
           lines: a?.photo ? (tl || lines) : (tl && tl.length === lines.length ? tl : lines),
         };
-      } catch { results[q.id] = { status: 'error', message: 'Connection error while marking' }; }
+      } catch (e) {
+        // The results card appends "— your working was not lost; redo it below
+        // without the clock", so drop the message's own full stop for the join.
+        results[q.id] = { status: 'error', message: portalMessage(e).replace(/\.$/, '') };
+      }
     }));
     setGraded(results);
     const blank = Object.values(results).filter(g => g.status === 'blank').length;
@@ -208,15 +210,13 @@ export default function TimedFlow({ levels, initialLevel, initialTopics }: {
   async function build() {
     setBuilding(true); setError('');
     try {
-      const r = await fetch('/api/portal/practice/timed-set', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ level, topics: chosen, tier, count }),
+      const d = await portalFetch<BuiltSet>('/api/portal/practice/timed-set', {
+        json: { level, topics: chosen, tier, count },
+        fallback: 'Couldn’t build the set — try again.',
       });
-      const d = await r.json();
-      if (!r.ok) { setError(d.error || 'Could not build a set'); return; }
-      setSet(d as BuiltSet); setAnswers({}); setGraded({}); setSolutions({}); setIdx(0); setResumed(false);
+      setSet(d); setAnswers({}); setGraded({}); setSolutions({}); setIdx(0); setResumed(false);
       setPhase('ready');
-    } catch { setError('Connection error'); }
+    } catch (e) { setError(portalMessage(e)); }
     finally { setBuilding(false); }
   }
   function start() {
@@ -254,9 +254,8 @@ export default function TimedFlow({ levels, initialLevel, initialTopics }: {
   async function showSolution(qid: string) {
     setSolLoading(qid);
     try {
-      const r = await fetch(`/api/portal/practice/solution?id=${encodeURIComponent(qid)}`);
-      const d = await r.json();
-      setSolutions(s => ({ ...s, [qid]: r.ok ? d.markdown : '_Could not load the solution._' }));
+      const d = await portalFetch<{ markdown?: string }>(`/api/portal/practice/solution?id=${encodeURIComponent(qid)}`);
+      setSolutions(s => ({ ...s, [qid]: d.markdown || '_Could not load the solution._' }));
     } catch { setSolutions(s => ({ ...s, [qid]: '_Could not load the solution._' })); }
     finally { setSolLoading(null); }
   }

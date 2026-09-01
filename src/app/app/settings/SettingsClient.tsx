@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowser } from '@/lib/supabase-client';
 import { PORTAL_TOUR_KEY } from '@/lib/portal-tour';
+import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 import PushToggle from './PushToggle';
 
 const card = 'bg-white rounded-2xl border border-black/5 shadow-sm p-5';
@@ -38,24 +39,24 @@ export default function SettingsClient({
     const value = nm.value.trim();
     if (value.length < 2) return setNm(s => ({ ...s, msg: 'At least 2 characters.' }));
     setNm(s => ({ ...s, busy: true, msg: '' }));
-    const res = await fetch('/api/portal/settings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ display_name: value }),
-    });
-    setNm(s => ({ ...s, busy: false, msg: res.ok ? '✓ Saved — the app will call you this.' : 'Could not save.' }));
-    if (res.ok) router.refresh();
+    try {
+      await portalFetch('/api/portal/settings', { json: { display_name: value } });
+      setNm(s => ({ ...s, busy: false, msg: '✓ Saved — the app will call you this.' }));
+      router.refresh();
+    } catch {
+      setNm(s => ({ ...s, busy: false, msg: 'Could not save.' }));
+    }
   }
 
   async function saveTelegram(e: React.FormEvent) {
     e.preventDefault();
     setTg(s => ({ ...s, busy: true, msg: '' }));
-    const res = await fetch('/api/portal/settings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telegram_chat_id: tg.value.trim() || null }),
-    });
-    setTg(s => ({ ...s, busy: false, msg: res.ok ? '✓ Saved.' : 'Could not save — check the ID.' }));
+    try {
+      await portalFetch('/api/portal/settings', { json: { telegram_chat_id: tg.value.trim() || null } });
+      setTg(s => ({ ...s, busy: false, msg: '✓ Saved.' }));
+    } catch {
+      setTg(s => ({ ...s, busy: false, msg: 'Could not save — check the ID.' }));
+    }
   }
 
   // Replay the first-login tour: clear the once-per-device flag and go back to
@@ -70,18 +71,16 @@ export default function SettingsClient({
     if (del.confirm !== 'DELETE') return setDel(s => ({ ...s, msg: 'Type DELETE (in capitals) to confirm.' }));
     if (!window.confirm('This permanently deletes the account and ALL practice history. There is no undo. Continue?')) return;
     setDel(s => ({ ...s, busy: true, msg: '' }));
-    const res = await fetch('/api/portal/delete-account', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ confirm: del.confirm }),
-    });
-    if (res.ok) {
+    try {
+      await portalFetch('/api/portal/delete-account', {
+        json: { confirm: del.confirm },
+        fallback: 'Could not delete — contact Adrian.',
+      });
       await getSupabaseBrowser().auth.signOut();
       router.replace('/');
-      return;
+    } catch (e) {
+      setDel(s => ({ ...s, busy: false, msg: portalMessage(e) }));
     }
-    const d = await res.json().catch(() => ({}));
-    setDel(s => ({ ...s, busy: false, msg: d.error || 'Could not delete — contact Adrian.' }));
   }
 
   return (

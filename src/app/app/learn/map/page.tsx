@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getDoneMap } from '@/lib/learn-progress';
 import type { LearnTopic } from '@/lib/learn-types';
+import { PortalFetchError, portalFetch } from '@/lib/portal-fetch';
 
 type SubjectOpt = { key: string; label: string };
 type TodayCard = { topic: string; subject: string; reason: string; chip: string };
@@ -359,16 +360,8 @@ function MapInner() {
   }, []);
 
   useEffect(() => {
-    fetch('/api/portal/learn/overview')
-      .then(async r => {
-        if (r.status === 401) { setStatus('locked'); return null; }
-        // Learn not released to students — /app/learn shows the notes CTA.
-        if (r.status === 403) { window.location.replace('/app/learn'); return null; }
-        if (!r.ok) throw new Error(String(r.status));
-        return r.json();
-      })
+    portalFetch<{ subjects?: SubjectOpt[]; topics?: LearnTopic[] }>('/api/portal/learn/overview')
       .then(d => {
-        if (!d) return;
         setSubjects(d.subjects || []);
         setTopics(d.topics || []);
         const keys: string[] = (d.subjects || []).map((s: SubjectOpt) => s.key);
@@ -377,17 +370,21 @@ function MapInner() {
         );
         setStatus('ready');
       })
-      .catch(() => setStatus('error'));
+      .catch((e) => {
+        const code = e instanceof PortalFetchError ? e.status : null;
+        if (code === 401) setStatus('locked');
+        // Learn not released to students — /app/learn shows the notes CTA.
+        else if (code === 403) window.location.replace('/app/learn');
+        else setStatus('error');
+      });
   }, [deepLinkSubject]);
 
   // Recommended topics from the Today stack (best-effort; never blocks the map).
   useEffect(() => {
-    fetch('/api/portal/learn/today')
-      .then(r => (r.ok ? r.json() : null))
+    portalFetch<{ cards?: TodayCard[] }>('/api/portal/learn/today')
       .then(d => {
-        if (!d) return;
         const set = new Set<string>();
-        for (const c of (d.cards || []) as TodayCard[]) set.add(`${c.subject}|${norm(c.topic)}`);
+        for (const c of d.cards || []) set.add(`${c.subject}|${norm(c.topic)}`);
         setRecommended(set);
       })
       .catch(() => { /* no recommendations → no gold pulses */ });

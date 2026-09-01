@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { DETAIL_MAX, DETAIL_MIN, kindLabel, REQUEST_KINDS, type RequestKind } from '@/lib/requests';
+import { PortalFetchError, portalFetch, portalMessage } from '@/lib/portal-fetch';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 
@@ -51,24 +52,18 @@ export default function RequestsClient({ initial, usedToday, cap }: { initial: R
     setSending(true);
     setError('');
     try {
-      const res = await fetch('/api/portal/requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ kind, detail: trimmed }),
+      const data = await portalFetch<{ request?: RequestItem }>('/api/portal/requests', {
+        json: { kind, detail: trimmed },
+        fallback: 'Something went wrong — try again in a minute.',
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setError(data.error || 'Something went wrong — try again in a minute.');
-        if (res.status === 429) setUsed(cap); // the server says today is spent
-        return;
-      }
       if (data.request) setRequests(rs => [data.request as RequestItem, ...rs]);
       setUsed(u => u + 1);
       setDetail('');
       setSentFlash(true);
       setTimeout(() => setSentFlash(false), 4000);
-    } catch {
-      setError('Connection problem — check your internet and try again.');
+    } catch (e) {
+      setError(portalMessage(e));
+      if (e instanceof PortalFetchError && e.status === 429) setUsed(cap); // the server says today is spent
     } finally {
       setSending(false);
     }

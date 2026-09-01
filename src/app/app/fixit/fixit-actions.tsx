@@ -4,6 +4,7 @@
 // the server-rendered page — state lives server-side, never here.
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 
 export function AttestButton({ itemId }: { itemId: string }) {
   const router = useRouter();
@@ -17,14 +18,12 @@ export function AttestButton({ itemId }: { itemId: string }) {
         onClick={async () => {
           setBusy(true); setErr('');
           try {
-            const r = await fetch('/api/portal/remediation', {
-              method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: 'attest', itemId }),
+            await portalFetch('/api/portal/remediation', {
+              json: { action: 'attest', itemId },
+              fallback: 'Could not save that — try again.',
             });
-            const d = await r.json().catch(() => ({}));
-            if (!r.ok) throw new Error(d.error || 'Could not save');
             router.refresh();
-          } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+          } catch (e) { setErr(portalMessage(e)); } finally { setBusy(false); }
         }}
         className="mt-3 inline-flex items-center gap-2 bg-emerald-600 text-white text-sm font-semibold rounded-full px-4 py-2 hover:bg-emerald-700 disabled:opacity-50 transition-colors"
       >
@@ -47,15 +46,13 @@ export function AnotherSimilarButton({ itemId }: { itemId: string }) {
         onClick={async () => {
           setBusy(true); setErr('');
           try {
-            const r = await fetch('/api/portal/remediation', {
-              method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: 'another', itemId }),
+            const d = await portalFetch<{ assignmentId?: string }>('/api/portal/remediation', {
+              json: { action: 'another', itemId },
+              fallback: 'Could not get another question — try again.',
             });
-            const d = await r.json().catch(() => ({}));
-            if (!r.ok) throw new Error(d.error || 'Could not get another question');
             if (d.assignmentId) { window.location.href = `/app/practice?assignment=${d.assignmentId}`; return; }
             router.refresh();
-          } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+          } catch (e) { setErr(portalMessage(e)); } finally { setBusy(false); }
         }}
         className="mt-2 inline-flex items-center gap-2 bg-white border border-emerald-300 text-emerald-700 text-sm font-semibold rounded-full px-4 py-2 hover:bg-emerald-50 disabled:opacity-50 transition-colors"
       >

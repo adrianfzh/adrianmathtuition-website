@@ -15,6 +15,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { fileToJpegDataUrl } from '../practice/image-downscale';
 import type { MyNoteRow, TopicOptionGroup } from '@/lib/portal-notes';
+import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 
 // Client-side guard against the platform's 4.5MB body cap — the 1600px JPEG
 // re-encode keeps real photos far under this; the guard is for pathologies.
@@ -82,25 +83,21 @@ export default function AddPhoto({ topicGroups, variant, onSaved }: {
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch('/api/portal/my-notes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const body = await portalFetch<{ note: MyNoteRow }>('/api/portal/my-notes', {
+        json: {
           kind: 'photo',
           image: dataUrl,
           note: caption.trim(),
           topic: topic || undefined,
-        }),
+        },
+        fallback: 'Couldn’t save that photo — try again.',
       });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error((body as { error?: string }).error || `HTTP ${res.status}`);
-      const row = (body as { note: MyNoteRow }).note;
       setSaving(false);
       close();
-      onSaved(row);
+      onSaved(body.note);
     } catch (e) {
       setSaving(false);
-      setError(e instanceof Error ? e.message : String(e));
+      setError(portalMessage(e));
     }
   }
 

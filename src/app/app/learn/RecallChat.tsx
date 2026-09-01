@@ -11,6 +11,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
+import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 import 'katex/dist/katex.min.css';
 
 const REMARK = [remarkMath, remarkGfm];
@@ -63,20 +64,12 @@ export default function RecallChat() {
     try {
       // Send the trailing conversation (server clamps to 10 turns / 500 chars).
       const payload = nextTurns.map(t => ({ role: t.role, content: t.content }));
-      const res = await fetch('/api/portal/recall', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: payload }),
+      const data = await portalFetch<{ reply?: string; units?: UnitLink[] }>('/api/portal/recall', {
+        json: { messages: payload },
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setError(data?.error || 'Something went wrong. Try again.');
-        setSending(false);
-        return;
-      }
       setTurns([...nextTurns, { role: 'assistant', content: data.reply || '', units: data.units || [] }]);
-    } catch {
-      setError('Network error — try again.');
+    } catch (e) {
+      setError(portalMessage(e));
     } finally {
       setSending(false);
     }

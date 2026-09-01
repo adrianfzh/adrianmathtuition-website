@@ -3,6 +3,7 @@
 // method_templates + formula_ref. Reached via the Learn header link.
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { PortalFetchError, portalFetch } from '@/lib/portal-fetch';
 
 type Method = { subject: string; topic: string | null; questionType: string; method: string; watchOut: string | null };
 type Formula = { subject: string; area: string; result: string; statement: string; givenStatus: string | null };
@@ -24,10 +25,9 @@ export default function ReferencePage() {
   const [q, setQ] = useState('');
 
   useEffect(() => {
-    fetch('/api/portal/reference')
-      .then((r) => { if (r.status === 401) { setStatus('locked'); return null; } return r.json(); })
-      .then((d: Data | null) => { if (!d) return; setData(d); setSubject(d.subjects[0] ?? null); setStatus('ready'); })
-      .catch(() => setStatus('error'));
+    portalFetch<Data>('/api/portal/reference')
+      .then((d) => { setData(d); setSubject(d.subjects[0] ?? null); setStatus('ready'); })
+      .catch((e) => setStatus(e instanceof PortalFetchError && e.status === 401 ? 'locked' : 'error'));
   }, []);
 
   const methods = useMemo(

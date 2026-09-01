@@ -9,6 +9,7 @@ import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { put } from '@vercel/blob/client';
 import { pdfToPageImages } from '@/lib/pdf-pages';
+import { friendlyPortalMessage } from '@/lib/portal-fetch';
 import { splitFileIfSpread, resizeToJpeg } from '@/lib/spread-split';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
@@ -41,12 +42,11 @@ type Page = { file: File; preview: string | null };
 // finished pages.
 async function uploadPage(file: File, onNote: (s: string) => void): Promise<string> {
   const upload = await resizeToJpeg(file);
-  let lastErr: Error | null = null;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       if (attempt > 1) onNote(`retrying (${attempt} of 3)`);
       const tokenRes = await fetch(`/api/portal/submit-token?filename=${encodeURIComponent(upload.name || 'photo.jpg')}`);
-      if (!tokenRes.ok) throw new Error(`could not start the upload (${tokenRes.status})`);
+      if (!tokenRes.ok) throw new Error('could not start the upload');
       const { token, pathname } = await tokenRes.json();
       const blob = await put(pathname, upload, {
         access: 'public', token,
@@ -54,14 +54,13 @@ async function uploadPage(file: File, onNote: (s: string) => void): Promise<stri
         multipart: upload.size > 5 * 1024 * 1024,
       });
       return blob.url;
-    } catch (e) {
-      lastErr = e as Error;
+    } catch {
       // A fresh token each attempt, so an expired one is not the reason a retry
       // fails. Pause 1s then 2s: long enough for a network handover to settle.
       if (attempt < 3) await new Promise(r => setTimeout(r, attempt * 1000));
     }
   }
-  throw new Error(`That page would not upload after three tries (${lastErr?.message || 'connection lost'}). Your signal may be weak — tap Send again and it will carry on from where it stopped.`);
+  throw new Error('That page would not upload after three tries. Your signal may be weak — tap Send again and it will carry on from where it stopped.');
 }
 
 export default function SubmitClient({ assignment = null, paper = null, slotUsed = false }: {
@@ -104,8 +103,8 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
           // A named scan is usually the paper's name — offer it, never overwrite.
           const nice = f.name.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ').trim();
           if (nice && !/^(scan|img|image|document|shared)[\s\d]*$/i.test(nice)) setPaperName(prev => prev || nice);
-        } catch (e) {
-          setError(`Couldn't read ${f.name} (${(e as Error).message}). Photograph the pages instead.`);
+        } catch {
+          setError(`Couldn't read ${f.name} — photograph the pages instead.`);
         } finally { setConverting(''); }
         continue;
       }
@@ -184,7 +183,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         ...(assignment ? { assignmentId: assignment.id } : {}),
         ...(paper ? { paperId: paper.id } : {}),
       });
-      let r: Response | null = null, d: { error?: string; runId?: string; findings?: { kind: string; message: string; blocking?: boolean }[] } = {}, lastNet: Error | null = null;
+      let r: Response | null = null, d: { error?: string; runId?: string; findings?: { kind: string; message: string; blocking?: boolean }[] } = {};
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
           if (attempt > 1) setStage(`Sending to Adrian… (try ${attempt} of 3)`);
@@ -193,12 +192,12 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
           });
           d = await r.json().catch(() => ({}));
           break;                       // a reply of ANY status is an answer — stop
-        } catch (e) {
-          lastNet = e as Error;        // no reply at all: the connection dropped
+        } catch {
+          // No reply at all: the connection dropped.
           if (attempt < 3) await new Promise(res => setTimeout(res, attempt * 1000));
         }
       }
-      if (!r) throw new Error(`Your ${pages.length} page${pages.length === 1 ? '' : 's'} uploaded safely, but the last step could not reach us (${lastNet?.message || 'connection lost'}). Tap Send again — it will not upload them a second time.`);
+      if (!r) throw new Error(`Your ${pages.length} page${pages.length === 1 ? '' : 's'} uploaded safely, but the last step could not reach us. Tap Send again — it will not upload them a second time.`);
       // 409 with findings: the hand-in looks wrong. Show it and let them decide —
       // their pages stay uploaded, so sending again costs nothing.
       if (r.status === 409 && Array.isArray(d.findings)) {
@@ -206,7 +205,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         setStage('');
         return;
       }
-      if (!r.ok) throw new Error(d.error || 'The submission failed — try again.');
+      if (!r.ok) throw new Error(friendlyPortalMessage(r.status, d.error, 'The submission failed — try again.'));
       setDoneRunId(d.runId || 'ok');
       pages.forEach(p => { if (p.preview) URL.revokeObjectURL(p.preview); });
     } catch (e) {

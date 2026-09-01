@@ -8,6 +8,7 @@ import { useSearchParams } from 'next/navigation';
 import { KIND_META, studentTitle } from '@/lib/learn';
 import { getDoneMap, getSessionCleared } from '@/lib/learn-progress';
 import type { LearnTopic, UnitKind, UnitSummary } from '@/lib/learn-types';
+import { PortalFetchError, portalFetch } from '@/lib/portal-fetch';
 import RecallChat from './RecallChat';
 
 type SubjectOpt = { key: string; label: string };
@@ -45,16 +46,8 @@ function LearnPageInner() {
   useEffect(() => { setDone(getDoneMap()); setSessionCleared(getSessionCleared()); }, []);
 
   useEffect(() => {
-    fetch('/api/portal/learn/overview')
-      .then(async r => {
-        if (r.status === 401) { setStatus('locked'); return null; }
-        // Learn isn't released to students yet — point them at /notes.
-        if (r.status === 403) { setStatus('closed'); return null; }
-        if (!r.ok) throw new Error(String(r.status));
-        return r.json();
-      })
+    portalFetch<{ subjects?: SubjectOpt[]; topics?: LearnTopic[]; review?: ReviewItem[] }>('/api/portal/learn/overview')
       .then(d => {
-        if (!d) return;
         setSubjects(d.subjects || []);
         setTopics(d.topics || []);
         setReview(d.review || []);
@@ -66,7 +59,13 @@ function LearnPageInner() {
         setActiveSubject(initialSubject);
         setStatus('ready');
       })
-      .catch(() => setStatus('error'));
+      .catch((e) => {
+        const code = e instanceof PortalFetchError ? e.status : null;
+        if (code === 401) setStatus('locked');
+        // Learn isn't released to students yet — point them at /notes.
+        else if (code === 403) setStatus('closed');
+        else setStatus('error');
+      });
   }, []);
 
   const visibleTopics = useMemo(() => {

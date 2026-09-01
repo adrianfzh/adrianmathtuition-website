@@ -22,6 +22,7 @@ import {
   type TopicOptionGroup,
 } from '@/lib/portal-notes';
 import AddPhoto from './add-photo';
+import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 
@@ -179,18 +180,16 @@ function NoteLightbox({ note, onClose, onSaved, onDeleted }: {
     setBusy('save');
     setError(null);
     try {
-      const res = await fetch('/api/portal/my-notes', {
+      const body = await portalFetch<{ note: MyNoteRow }>('/api/portal/my-notes', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: note.id, note: text.trim() }),
+        json: { id: note.id, note: text.trim() },
+        fallback: 'Couldn’t save that note — try again.',
       });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error((body as { error?: string }).error || `HTTP ${res.status}`);
-      onSaved((body as { note: MyNoteRow }).note);
+      onSaved(body.note);
       setFlash('Saved ✓');
       setTimeout(() => setFlash(null), 1500);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(portalMessage(e));
     } finally {
       setBusy(null);
     }
@@ -201,12 +200,13 @@ function NoteLightbox({ note, onClose, onSaved, onDeleted }: {
     setBusy('delete');
     setError(null);
     try {
-      const res = await fetch(`/api/portal/my-notes?id=${encodeURIComponent(note.id)}`, { method: 'DELETE' });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error((body as { error?: string }).error || `HTTP ${res.status}`);
+      await portalFetch(`/api/portal/my-notes?id=${encodeURIComponent(note.id)}`, {
+        method: 'DELETE',
+        fallback: `Couldn’t delete that ${noun} — try again.`,
+      });
       onDeleted(note.id);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(portalMessage(e));
       setBusy(null);
       setConfirming(false);
     }

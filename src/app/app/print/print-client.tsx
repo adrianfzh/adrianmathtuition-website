@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { MAX_TOPICS_PER_PAPER, MOCK_LEVELS, paperDuration } from '@/lib/print-paper';
+import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 
@@ -47,9 +48,8 @@ export default function PrintClient({ levels, initialPreset }: { levels: { key: 
 
   const refresh = useCallback(async () => {
     try {
-      const r = await fetch('/api/portal/print-paper');
-      const d = await r.json();
-      if (r.ok) { setPapers(d.papers || []); setRemaining(d.remaining ?? null); setCap(d.cap ?? 2); }
+      const d = await portalFetch<{ papers?: PaperRow[]; remaining?: number | null; cap?: number }>('/api/portal/print-paper');
+      setPapers(d.papers || []); setRemaining(d.remaining ?? null); setCap(d.cap ?? 2);
     } catch { /* list stays as-is */ }
   }, []);
   useEffect(() => { refresh(); }, [refresh]);
@@ -60,9 +60,8 @@ export default function PrintClient({ levels, initialPreset }: { levels: { key: 
     let gone = false;
     (async () => {
       try {
-        const r = await fetch(`/api/portal/practice/topics?level=${encodeURIComponent(level)}`);
-        const d = await r.json();
-        if (!gone && r.ok) setAllTopics((d.topics || []).map((t: { topic: string }) => t.topic));
+        const d = await portalFetch<{ topics?: { topic: string }[] }>(`/api/portal/practice/topics?level=${encodeURIComponent(level)}`);
+        if (!gone) setAllTopics((d.topics || []).map(t => t.topic));
       } catch { if (!gone) setAllTopics([]); }
     })();
     return () => { gone = true; };
@@ -80,21 +79,18 @@ export default function PrintClient({ levels, initialPreset }: { levels: { key: 
     if (busy) return;
     setBusy(true); setError(''); setMade(null);
     try {
-      const r = await fetch('/api/portal/print-paper', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const d = await portalFetch<{ paperId: string }>('/api/portal/print-paper', {
+        json: {
           preset, level,
           ...(preset === 'mock' ? { paper } : { count }),
           ...(preset === 'topics' ? { topics } : {}),
-        }),
+        },
+        fallback: 'Could not generate the paper — try again.',
       });
-      const d = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(d.error || 'Could not generate the paper — try again.');
       setMade(d.paperId);
       await refresh();
     } catch (e) {
-      setError((e as Error).message);
+      setError(portalMessage(e));
     } finally {
       setBusy(false);
     }

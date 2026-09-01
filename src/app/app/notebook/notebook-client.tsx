@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { mathHtml } from '@/lib/math-inline';
+import { portalFetch } from '@/lib/portal-fetch';
 import 'katex/dist/katex.min.css';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
@@ -103,9 +104,7 @@ export default function NotebookClient() {
   const load = useCallback(async () => {
     setError(false);
     try {
-      const r = await fetch('/api/portal/notebook');
-      if (!r.ok) throw new Error(String(r.status));
-      setData(await r.json());
+      setData(await portalFetch<NotebookData>('/api/portal/notebook'));
     } catch {
       setError(true);
     }
@@ -255,13 +254,15 @@ function EntryCard({ entry, today, onUpdated }: {
     setBusy(true);
     setFailed(false);
     try {
-      const r = await fetch('/api/portal/notebook', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ entryId: entry.id, confident, ...payload }),
-      });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error || String(r.status));
+      const j = await portalFetch<{
+        verdict: 'correct' | 'wrong' | 'unclear';
+        official?: string | null;
+        officialSolution?: string | null;
+        officialSolutionImages?: string[];
+        note?: string | null;
+        conquered?: boolean;
+        entry?: Entry;
+      }>('/api/portal/notebook', { json: { entryId: entry.id, confident, ...payload } });
       if (j.verdict === 'unclear') {
         setReveal({ official: j.official || '', solution: j.officialSolution ?? null, solutionImages: j.officialSolutionImages ?? [], note: j.note ?? null });
       } else {

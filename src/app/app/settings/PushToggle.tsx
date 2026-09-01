@@ -10,6 +10,7 @@
 // of a toggle that could never work.
 import { useEffect, useState } from 'react';
 import { urlBase64ToUint8Array } from '@/lib/push-payload';
+import { portalFetch } from '@/lib/portal-fetch';
 
 const card = 'bg-white rounded-2xl border border-black/5 shadow-sm p-5';
 
@@ -71,16 +72,13 @@ export default function PushToggle() {
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
-      const res = await fetch('/api/portal/push', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sub.toJSON()),
-      });
-      if (!res.ok) {
+      try {
+        await portalFetch('/api/portal/push', { json: sub.toJSON() });
+      } catch (e) {
         // Server didn't store it — undo the browser side so the toggle never
         // shows "on" for a subscription no push will ever reach.
         await sub.unsubscribe().catch(() => { /* best effort */ });
-        throw new Error(`HTTP ${res.status}`);
+        throw e;
       }
       setEnabled(true);
       setMsg('✓ On — you\'ll get a notification when a marked paper is released.');

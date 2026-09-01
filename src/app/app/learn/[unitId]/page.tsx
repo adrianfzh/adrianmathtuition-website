@@ -17,6 +17,7 @@ import type {
   AutopsyPayload, CheckPayload, CorePayload, Decision, ExamplePayload,
   LearnUnit, TryPayload, UnitSummary,
 } from '@/lib/learn-types';
+import { PortalFetchError, portalFetch, portalMessage } from '@/lib/portal-fetch';
 
 const REMARK = [remarkMath, remarkGfm];
 const REHYPE = [rehypeRaw, rehypeKatex];
@@ -113,16 +114,13 @@ function ExplainBack({ unitId }: { unitId: string }) {
     if (!a || busy) return;
     setBusy(true); setErr('');
     try {
-      const r = await fetch('/api/portal/learn/explain', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ unitId, answer: a }),
+      const d = await portalFetch<{ verdict: string; feedback: string }>('/api/portal/learn/explain', {
+        json: { unitId, answer: a },
+        fallback: 'Couldn’t check that — try again.',
       });
-      const d = await r.json().catch(() => ({}));
-      if (!r.ok) { setErr(d.error || 'Couldn’t check that — try again.'); setBusy(false); return; }
       setResult({ verdict: d.verdict, feedback: d.feedback });
-    } catch {
-      setErr('Couldn’t check that — try again.'); setBusy(false);
+    } catch (e) {
+      setErr(portalMessage(e)); setBusy(false);
     }
   };
 
@@ -595,19 +593,16 @@ export default function UnitPlayerPage() {
 
   useEffect(() => {
     if (!unitId) return;
-    fetch(`/api/portal/learn/unit?id=${encodeURIComponent(unitId)}`)
-      .then(async r => {
-        if (r.status === 404 || r.status === 403) { setStatus('notfound'); return null; }
-        if (!r.ok) throw new Error(String(r.status));
-        return r.json();
-      })
+    portalFetch<{ unit: LearnUnit; siblings?: UnitSummary[] }>(`/api/portal/learn/unit?id=${encodeURIComponent(unitId)}`)
       .then(d => {
-        if (!d) return;
         setUnit(d.unit);
         setSiblings(d.siblings || []);
         setStatus('ready');
       })
-      .catch(() => setStatus('error'));
+      .catch((e) => {
+        const code = e instanceof PortalFetchError ? e.status : null;
+        setStatus(code === 404 || code === 403 ? 'notfound' : 'error');
+      });
   }, [unitId]);
 
   const logEvent = useCallback((event: UnitEvent) => {

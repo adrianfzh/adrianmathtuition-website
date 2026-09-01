@@ -10,6 +10,7 @@
 // silently.
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { PortalFetchError, portalFetch, portalMessage } from '@/lib/portal-fetch';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 
@@ -41,13 +42,11 @@ export default function RescheduleClient() {
   const load = useCallback(async () => {
     setLoadError(null);
     try {
-      const r = await fetch('/api/portal/reschedule');
-      if (!r.ok) throw new Error((await r.json().catch(() => ({})) as { error?: string }).error || `HTTP ${r.status}`);
-      const d: Data = await r.json();
+      const d = await portalFetch<Data>('/api/portal/reschedule');
       setData(d);
       setLessonId(prev => (prev && d.lessons.some(l => l.id === prev)) ? prev : (d.lessons.length === 1 ? d.lessons[0].id : null));
     } catch (e) {
-      setLoadError((e as Error).message);
+      setLoadError(portalMessage(e));
     }
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -70,25 +69,26 @@ export default function RescheduleClient() {
     setBusy(true);
     setNotice(null);
     try {
-      const r = await fetch('/api/portal/reschedule', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lessonId: lesson.id, slotId: choice.slotId, date: choice.date }),
+      const d = await portalFetch<{ movedTo?: { dateLabel: string; slotLabel: string } }>('/api/portal/reschedule', {
+        json: { lessonId: lesson.id, slotId: choice.slotId, date: choice.date },
       });
-      const d = await r.json().catch(() => ({} as { error?: string; movedTo?: { dateLabel: string; slotLabel: string } }));
-      if (r.ok && d.movedTo) {
+      if (d.movedTo) {
         setDone(d.movedTo);
-      } else if (r.status === 409) {
+      } else {
+        setNotice('Something went wrong saving that. Please try again, or message Adrian.');
+      }
+    } catch (e) {
+      // 409 = the session filled or the lesson moved while the page sat open —
+      // branch on status/serverError (never message text), refresh the lists.
+      if (e instanceof PortalFetchError && e.status === 409) {
         setChoice(null);
-        setNotice(d.error === 'lesson_not_movable'
+        setNotice(e.serverError === 'lesson_not_movable'
           ? 'That lesson can no longer be moved from here — it may have changed. Here is the fresh list.'
           : 'That session just filled up or closed — pick another time.');
         await load();
       } else {
         setNotice('Something went wrong saving that. Please try again, or message Adrian.');
       }
-    } catch {
-      setNotice('Something went wrong saving that. Please try again, or message Adrian.');
     } finally {
       setBusy(false);
     }
@@ -120,8 +120,17 @@ export default function RescheduleClient() {
       {header}
 
       {loadError && (
-        <div className={`${CARD} p-5 text-sm text-gray-600`}>
-          Couldn’t load your lessons right now ({loadError}). Please try again in a minute, or message Adrian and he’ll move it for you.
+        <div className={`${CARD} p-5 space-y-3`}>
+          <p className="text-sm text-gray-600">
+            {loadError} If it keeps happening, message Adrian and he’ll move it for you.
+          </p>
+          <button
+            type="button"
+            onClick={load}
+            className="text-sm font-semibold text-navy border border-navy/30 rounded-xl px-4 py-2 hover:bg-navy/5 transition-colors"
+          >
+            Try again
+          </button>
         </div>
       )}
 

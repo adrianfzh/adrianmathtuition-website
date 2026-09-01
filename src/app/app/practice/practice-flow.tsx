@@ -8,6 +8,7 @@ import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 // The question renderer + inline-math helpers moved to ./question-view.tsx on
 // 2026-09-02, shared with the timed set (/app/practice/timed).
 import { MathText, QuestionView, type Question } from './question-view';
+import { NETWORK_MESSAGE, portalFetch, portalMessage } from '@/lib/portal-fetch';
 
 // Retrieval-first practice (PORTAL.md + tiered-router spec) + the Phase E
 // grading loop: pick a topic → choose Standard / Advanced → real bank question
@@ -197,13 +198,23 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   }
 
   // Detect portal session first; fall back to admin session mode. Skipped when
-  // the server already told us this is a student.
+  // the server already told us this is a student. getUser() can reject on a
+  // network blip — without the catch that stranded the page on "Loading…"
+  // forever, so a failure flips to a visible try-again instead.
+  const [checkFailed, setCheckFailed] = useState(false);
+  const detectSession = useCallback(() => {
+    setCheckFailed(false);
+    getSupabaseBrowser().auth.getUser()
+      .then(({ data: { user } }) => {
+        if (user) { setMode('student'); return; }
+        // ensureAdminSession never rejects — it resolves false on failure.
+        return ensureAdminSession().then(ok => setMode(ok ? 'admin' : 'locked'));
+      })
+      .catch(() => setCheckFailed(true));
+  }, []);
   useEffect(() => {
     if (mode !== 'checking') return;
-    getSupabaseBrowser().auth.getUser().then(({ data: { user } }) => {
-      if (user) { setMode('student'); return; }
-      ensureAdminSession().then(ok => setMode(ok ? 'admin' : 'locked'));
-    });
+    detectSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -226,14 +237,13 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     setQ(null); setExhausted(false); setError(''); resetAttempt(); setTierPicked(false);
     // Question types load alongside; the sheet reads them from state, so
     // opening a topic costs no round trip.
-    fetch(`/api/portal/practice/subgroups?level=${encodeURIComponent(level)}`)
-      .then(r => r.json())
-      .then(d => { if (!d.error) setSubgroups(d.subgroups || []); })
+    portalFetch<{ subgroups?: Subgroup[] }>(`/api/portal/practice/subgroups?level=${encodeURIComponent(level)}`)
+      .then(d => setSubgroups(d.subgroups || []))
       .catch(() => { /* sheet just shows "Start" with no type list */ });
-    fetch(`/api/portal/practice/overview?level=${encodeURIComponent(level)}`)
-      .then(r => r.json())
+    portalFetch<{ topics?: TopicCard[]; recommended?: Recommended[]; levels?: LevelOpt[] }>(
+      `/api/portal/practice/overview?level=${encodeURIComponent(level)}`,
+    )
       .then(d => {
-        if (d.error) { setError(d.error); return; }
         // Syllabus/textbook order, not the API's alphabetical — the same
         // comparator the notes reader uses, so both surfaces list topics
         // the way the textbook does (Adrian, 2026-08-28).
@@ -251,7 +261,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           if (!d.levels.some((l: LevelOpt) => l.key === level)) setLevel(d.levels[0].key);
         }
       })
-      .catch(() => setError('Could not load your practice topics'))
+      .catch(e => setError(portalMessage(e)))
       .finally(() => setLoadingOverview(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level, mode]);
@@ -291,15 +301,13 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     const sg = sgArg === undefined ? subgroup : sgArg;
     setLoading(true); setError(''); setExhausted(false); resetAttempt();
     try {
-      const r = await fetch('/api/portal/practice/next', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ level, topic: useTopic, exclude: excludeIds, tier: tierArg ?? tier, subgroupId: sg?.id ?? null }),
+      const d = await portalFetch<{ question?: Question }>('/api/portal/practice/next', {
+        json: { level, topic: useTopic, exclude: excludeIds, tier: tierArg ?? tier, subgroupId: sg?.id ?? null },
+        fallback: 'Couldn’t load a question — try again.',
       });
-      const d = await r.json();
-      if (!r.ok) { setError(d.error || 'Something went wrong'); return; }
       if (!d.question) { setExhausted(true); setQ(null); return; }
       setQ(d.question);
-    } catch { setError('Connection error'); }
+    } catch (e) { setError(portalMessage(e)); }
     finally { setLoading(false); }
   }, [level, topic, tier, subgroup]);
 
@@ -348,9 +356,8 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     if (!q) return;
     setSolLoading(true);
     try {
-      const r = await fetch(`/api/portal/practice/solution?id=${q.id}`);
-      const d = await r.json();
-      setSolution(r.ok ? d.markdown : '_Could not load the solution._');
+      const d = await portalFetch<{ markdown?: string }>(`/api/portal/practice/solution?id=${q.id}`);
+      setSolution(d.markdown || '_Could not load the solution._');
     } catch { setSolution('_Could not load the solution._'); }
     finally { setSolLoading(false); }
   }
@@ -375,12 +382,10 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           : { questionId: q.id, lines }),
         ...(assignment ? { assignmentId: assignment.id } : {}),
       };
-      const r = await fetch('/api/portal/practice/grade', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+      const d = await portalFetch<{ result: GradeResult; weaknessTags?: string[] }>('/api/portal/practice/grade', {
+        json: body,
+        fallback: 'Marking didn’t go through — try again.',
       });
-      const d = await r.json();
-      if (!r.ok) { setError(d.error || 'Marking failed'); return; }
       if (grade) setPrevScore(grade.score);
       setGrade(d.result);
       // Typed path: the grader echoes the lines back as LaTeX. Use them only
@@ -390,7 +395,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
       setGradedViaPhoto(!!photo);
       setWeakTags(d.weaknessTags || []);
       if (assignment && d.result) setAssignDone({ score: d.result.score, outOf: d.result.outOf });
-    } catch { setError('Connection error while marking'); }
+    } catch (e) { setError(portalMessage(e)); }
     finally { setGrading(false); }
   }
 
@@ -413,7 +418,24 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
 
   // ── Locked (no session, no admin cookie) ──
   if (mode === 'checking') {
-    return <div className="min-h-[50vh] flex items-center justify-center text-sm text-slate-400">Loading…</div>;
+    return (
+      <div className="min-h-[50vh] flex flex-col items-center justify-center gap-3 p-4 text-center">
+        {checkFailed ? (
+          <>
+            <p className="text-sm text-slate-500">{NETWORK_MESSAGE}</p>
+            <button
+              type="button"
+              onClick={detectSession}
+              className="text-sm font-semibold text-navy border border-navy/30 rounded-xl px-4 py-2 hover:bg-navy/5 transition-colors"
+            >
+              Try again
+            </button>
+          </>
+        ) : (
+          <span className="text-sm text-slate-400">Loading…</span>
+        )}
+      </div>
+    );
   }
   if (mode === 'locked') {
     return (
