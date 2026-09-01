@@ -240,7 +240,8 @@ already written that rule down:
 
 ```sql
 SELECT wrong_move, why_wrong, corrective_cue FROM pitfalls
-WHERE subject = '<AM|EM|JC|S1|S2>' AND topic = ANY(ARRAY['<canonical topic>']);
+WHERE status = 'approved'            -- Adrian's sign-off; NEVER drop this filter
+  AND subject = '<AM|EM|JC|S1|S2>' AND topic = ANY(ARRAY['<canonical topic>']);
 ```
 
 (`subject` is the coarse level: `S3_AM`→`AM`, `S3_EM`/`EM_NA`→`EM`, any `JC*`→`JC`.)
