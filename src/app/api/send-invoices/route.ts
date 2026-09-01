@@ -8,6 +8,7 @@ import { generateAndStoreInvoicePdf } from '@/lib/invoice-pdf';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { checkDelivery, alertVerificationBlind } from '@/lib/resend-verify';
 import { waDigits, waDisplay } from '@/lib/wa-number';
+import { formatDueDate, amountDueHtml, paymentHtml } from '@/lib/invoice-email-format';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -49,8 +50,8 @@ function buildEmailHtml(invoice: {
     : '';
   return `
     <p>Dear Parent/Student,</p>
-    ${delayApology}<p>Please find attached the invoice for ${invoice.studentName} for ${invoice.month} — <strong>$${invoice.finalAmount}</strong>, due by <strong>${invoice.dueDate}</strong>.</p>
-    <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${invoice.paymentRef}</strong>.</p>
+    ${delayApology}<p>Please find attached the invoice for ${invoice.studentName} for ${invoice.month} — ${amountDueHtml(invoice.finalAmount, invoice.dueDate)}.</p>
+    ${paymentHtml(invoice.finalAmount, invoice.paymentRef)}
     <p>Please feel free to reach out if you have any questions.</p>
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
     ${buildSelfServiceFooterHtml()}
@@ -72,21 +73,16 @@ function buildFirstInvoiceEmailHtml(invoice: {
   firstLessonDate?: string;
 }) {
   const { studentName, month, finalAmount, dueDate, paymentRef, lessonsCount, firstLessonDate } = invoice;
-  const dueFmt = dueDate
-    ? new Date(dueDate + 'T00:00:00Z').toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
-    : dueDate;
-  const firstFmt = firstLessonDate
-    ? new Date(firstLessonDate + 'T00:00:00Z').toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
-    : '';
+  const firstFmt = firstLessonDate ? formatDueDate(firstLessonDate) : '';
   const prorationLine = (lessonsCount && firstFmt)
     ? `<p>As this is the first invoice, it's <strong>prorated</strong> — it covers only the <strong>${lessonsCount} lesson${lessonsCount !== 1 ? 's' : ''}</strong> from <strong>${firstFmt}</strong> to the end of the month, rather than a full month.</p>`
     : '';
   return `
     <p>Dear Parent/Student,</p>
     <p>A warm welcome to Adrian's Math Tuition — delighted to have <strong>${studentName}</strong> onboard!</p>
-    <p>Please find attached <strong>${studentName}'s first invoice</strong> for ${month} — <strong>$${finalAmount}</strong>, due by <strong>${dueFmt}</strong>.</p>
+    <p>Please find attached <strong>${studentName}'s first invoice</strong> for ${month} — ${amountDueHtml(finalAmount, dueDate)}.</p>
     ${prorationLine}
-    <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${paymentRef}</strong>.</p>
+    ${paymentHtml(finalAmount, paymentRef)}
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
     ${buildSelfServiceFooterHtml()}
     <p>I am looking forward to working with ${studentName}. Please reach out anytime if you have any questions.</p>
@@ -198,9 +194,9 @@ function buildAmendedEmailHtml(invoice: {
 }) {
   return `
     <p>Dear Parent/Student,</p>
-    <p>Please find attached the <strong>amended invoice</strong> for ${invoice.studentName} for ${invoice.month} — <strong>$${invoice.finalAmount.toFixed(2)}</strong>, due by <strong>${invoice.dueDate}</strong>.</p>
+    <p>Please find attached the <strong>amended invoice</strong> for ${invoice.studentName} for ${invoice.month} — ${amountDueHtml(invoice.finalAmount, invoice.dueDate)}.</p>
     <p>This replaces the previously sent invoice. Please disregard the earlier email.</p>
-    <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${invoice.paymentRef}</strong>.</p>
+    ${paymentHtml(invoice.finalAmount, invoice.paymentRef)}
     <p>Please feel free to reach out if you have any questions.</p>
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
     ${buildSelfServiceFooterHtml()}
