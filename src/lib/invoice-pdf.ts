@@ -42,8 +42,12 @@ export async function generateAndStoreInvoicePdf(
     registerUrl: studentId ? buildRegisterUrl(studentId) : '',
   };
 
-  // Consolidated view: pull in the student's other open months as previous balance.
-  await applyPriorBalance(invoiceData, studentId);
+  // Consolidated view: pull in the student's other open months as previous
+  // balance. The stored Month, NOT invoiceData.month — the display span
+  // ("July–August 2026") can't be ordered against other months, and before
+  // 2026-09-02 that collapsed the earlier-month guard and appended every open
+  // invoice (future months included) to the emailed PDF.
+  await applyPriorBalance(invoiceData, studentId, f['Month'] || '');
 
   const buffer = await generateInvoicePDF(invoiceData);
   const blob = await put(

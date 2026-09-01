@@ -431,7 +431,7 @@ export async function POST(req: NextRequest) {
               lineItemsExtra: carryOverLineItems,
               registerUrl: buildRegisterUrl(studentId),
             };
-            await applyPriorBalance(invoiceData, studentId);
+            await applyPriorBalance(invoiceData, studentId, invoiceMonth.label);
             const pdfBuffer = await generateInvoicePDF(invoiceData);
             const uploadRes = await fetch(
               `https://content.airtableapi.com/v0/${AIRTABLE_BASE_ID}/Invoices/${createdRecord.id}/uploadAttachment`,

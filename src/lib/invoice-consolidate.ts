@@ -35,7 +35,6 @@ export async function getPriorBalance(
   currentMonth: string,
   currentInvoiceId: string,
 ): Promise<Consolidated> {
-  const curKey = monthSortKey(currentMonth);
   let records: any[] = [];
   try {
     const data = await airtableRequestAll('Invoices',
@@ -44,8 +43,29 @@ export async function getPriorBalance(
   } catch {
     return { priorItems: [], priorTotal: 0 };
   }
+  return priorBalanceFrom(records, studentId, currentMonth, currentInvoiceId);
+}
 
-  const open = records.filter((r: any) => {
+// Pure core of getPriorBalance, separated so the money logic is unit-testable.
+//
+// FAILS CLOSED on any month it cannot order. `currentMonth` must be a canonical
+// "Month YYYY" label; if it isn't (empty, or a display span like "July–August
+// 2026"), there is no way to tell earlier from later, so NOTHING is consolidated.
+// The old guard instead skipped the earlier-month check when currentMonth was
+// unparseable, which appended every other open invoice — future months included —
+// as "previous balance" and over-billed. Omitting a prior month only defers it
+// to its own invoice; adding a wrong row bills a parent twice. Same rule for a
+// candidate whose own Month is unparseable: excluded, never included.
+export function priorBalanceFrom(
+  records: { id: string; fields: Record<string, any> }[],
+  studentId: string,
+  currentMonth: string,
+  currentInvoiceId: string,
+): Consolidated {
+  const curKey = monthSortKey(currentMonth);
+  if (curKey < 0) return { priorItems: [], priorTotal: 0 };
+
+  const open = records.filter((r) => {
     const f = r.fields;
     if (r.id === currentInvoiceId) return false;
     if ((f['Student'] || [])[0] !== studentId) return false;
@@ -53,9 +73,10 @@ export async function getPriorBalance(
     if (f['Is Paid'] === true) return false;
     const outstanding = (f['Final Amount'] || 0) - (f['Amount Paid'] || 0);
     if (outstanding <= 0.001) return false;
-    // Only EARLIER months (a current invoice shouldn't show a later month's balance).
+    // Only strictly EARLIER months (a current invoice shouldn't show a later
+    // month's balance); unparseable months fail closed.
     const k = monthSortKey(f['Month'] || '');
-    if (curKey >= 0 && k >= 0 && k >= curKey) return false;
+    if (k < 0 || k >= curKey) return false;
     return true;
   });
 
@@ -80,7 +101,10 @@ export async function getPriorBalance(
 export async function applyPriorBalance(
   invoiceData: { month: string; invoiceId: string; finalAmount: number; lineItemsExtra: any[] },
   studentId: string | undefined,
-  canonicalMonth?: string,   // use when invoiceData.month is a display range, e.g. "April–May 2026"
+  // The stored Airtable Month ("August 2026"). REQUIRED whenever invoiceData.month
+  // can be a display range ("July–August 2026") — a range fails closed and
+  // consolidates nothing. Passing it unconditionally is the drift-proof default.
+  canonicalMonth?: string,
 ): Promise<void> {
   if (!studentId) return;
   const { priorItems, priorTotal } = await getPriorBalance(studentId, canonicalMonth || invoiceData.month, invoiceData.invoiceId);

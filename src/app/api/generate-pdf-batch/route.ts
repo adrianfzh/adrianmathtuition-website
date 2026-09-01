@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
         registerUrl: buildRegisterUrl(studentId),
       };
 
-      await applyPriorBalance(invoiceData, studentId);
+      await applyPriorBalance(invoiceData, studentId, f['Month'] || '');
 
       const pdfBuffer = await generateInvoicePDF(invoiceData);
 
