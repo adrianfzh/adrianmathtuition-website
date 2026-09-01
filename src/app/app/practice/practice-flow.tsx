@@ -46,6 +46,7 @@ import {
 import { bankScope } from '@/lib/qb-levels';
 import { topicOrderComparator } from '@/lib/notes-tree';
 import { familyOf, variantOf } from '@/lib/practice-strands';
+import { lessonForTopic } from '@/lib/lesson-catalog';
 
 // Admin picker only: leading word before "(" → derived chip row.
 function strandOf(topic: string): string {
@@ -503,6 +504,9 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   const selected = topics.find(t => t.topic === topic) || null;
   const sheetCard = sheetTopic ? (topics.find(t => t.topic === sheetTopic) || null) : null;
   const sheetTypes = sheetTopic ? subgroups.filter(s => s.topic === sheetTopic) : [];
+  // Animated lesson for the opened topic (lib/lesson-catalog) — the sheet shows
+  // "▶ Learn this topic first" above the tier chips when one exists.
+  const sheetLesson = sheetCard ? lessonForTopic(bankScope(level).level, sheetCard.topic) : null;
   // Students: once a topic is chosen the picker folds away into a "← Change
   // topic" bar so the tier chooser / question sits at the top of the card
   // instead of below a phone-length list of topic rows. Admin keeps the grid
@@ -1022,6 +1026,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           topic={sheetCard}
           types={sheetTypes}
           tier={sheetCard.advancedCount === 0 ? 'Standard' : tier}
+          lesson={sheetLesson}
           onTier={rememberTier}
           onStart={(sg) => startFromSheet(sheetCard.topic, sheetCard.advancedCount === 0 ? 'Standard' : tier, sg)}
           onClose={() => setSheetTopic(null)}
