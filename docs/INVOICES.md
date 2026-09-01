@@ -43,3 +43,32 @@ Resend returns **200 + an email id even when it SUPPRESSES** a send (address blo
 - **`resend-delivery-read` health check** (6h cron): reads the newest EmailLog row's Resend ID back from `/emails/{id}` and goes red on 401/403 only. The older `resend` check pings `/domains` and proves the API *answers*; this one proves the key can still **read**, which is the exact permission the suppression guard needs. They are not the same check — a send-only key sends perfectly and 403s every read, so without this a guard that had stopped guarding stayed green forever. Fix is always the same: Resend dashboard → API Keys → **Full access**.
 
 Email Log resend (`/api/admin-emails` POST) re-attaches the archived PDF and posts a Telegram confirmation ("↩ Email resent" / "⚠️ Resend NOT delivered").
+
+### Email footer — the WhatsApp assistant line
+
+The invoice footer's reschedule paragraph points parents at the **Twilio assistant
+line** (`KIOSK_WA_NUMBER`), never Adrian's personal number. Its formatting lives in
+`lib/wa-number.ts` (`waDigits` for the `wa.me` link, `waDisplay` for the visible
+text) and is unit-tested — **do not re-inline it into an email template.**
+
+Why the test exists: the inline formatter shipped on 10 Aug 2026 with its
+replacement string written as `'1ドル 2ドル'` — a currency-localised mangling of the
+backreferences `'$1 $2'`. With the backreferences gone the regex still matched all
+eight digits and swapped them for that literal, so the number was not reformatted,
+it was erased: one parent was emailed *"WhatsApp our assistant at 1ドル 2ドル"*
+(Jeanette Tan, 15 Aug). It type-checked, never threw, and reads as ordinary text in
+a diff. Only an assertion on rendered output catches this class of bug, so
+`wa-number.test.ts` asserts the shape `/^\d{4} \d{4}$/` and the absence of `$`.
+The paragraph was pulled 15 Aug and restored 1 Sep 2026 on Adrian's instruction.
+
+### Re-sending an invoice — `resend: true`
+
+`POST /api/send-invoices {recordId, resend: true}` sends an **unchanged** invoice
+again (first email lost, junked, or defective). Without the flag, any invoice whose
+earlier EmailLog row carried a PDF is classified as an AMENDMENT — subject becomes
+"AMENDED Invoice for …" and the body reads *"this replaces the previously sent
+invoice, disregard the earlier email"*. That is correct when the figures changed and
+misleading when they did not; the classifier cannot tell the cases apart, so the
+caller declares which it is. Add `preview: true` to see the exact email without
+sending. Note the Email Log's own resend button replays the ARCHIVED body verbatim —
+use it only when you want the original bytes, mistakes included.

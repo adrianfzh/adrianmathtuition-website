@@ -7,6 +7,7 @@ import { copy } from '@vercel/blob';
 import { generateAndStoreInvoicePdf } from '@/lib/invoice-pdf';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { checkDelivery, alertVerificationBlind } from '@/lib/resend-verify';
+import { waDigits, waDisplay } from '@/lib/wa-number';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -22,11 +23,15 @@ function checkAuth(req: NextRequest): boolean {
 }
 
 // ── Self-service footer (shared by regular / first-invoice / amended emails) ──
-// The WhatsApp reschedules/makeups paragraph was REMOVED 2026-08-15 on Adrian's
-// instruction: he wants to announce that channel himself first. Restore it from
-// git history (commit removing it) once he has made his announcement.
+// The WhatsApp reschedules/makeups paragraph was pulled 2026-08-15 (Adrian wanted
+// to announce the channel himself) and RESTORED 2026-09-01 on his instruction.
+// Its number now comes from lib/wa-number.ts, which is unit-tested — the inline
+// formatter it replaces shipped a mangled replacement string and emailed a parent
+// "WhatsApp our assistant at 1\u30c9\u30eb 2\u30c9\u30eb". Do not re-inline it.
 function buildSelfServiceFooterHtml(): string {
-  return `<p style="font-size: 14px; color: #6b7280;"><strong>🤖 Math help on Telegram</strong></p>
+  return `<p style="font-size: 14px; color: #6b7280;"><strong>📅 Reschedules &amp; makeups — one WhatsApp away</strong></p>
+    <p style="font-size: 14px; color: #6b7280;">Need to change a lesson? <a href="https://wa.me/${waDigits()}?text=Hi"><strong>WhatsApp our assistant at ${waDisplay()}</strong></a> — just send "Hi" and it will recognise your number and open a menu to reschedule, book a makeup for a missed class, switch timeslot, or add extra lessons. Instant confirmation, any time of day, no registration needed.</p>
+    <p style="font-size: 14px; color: #6b7280;"><strong>🤖 Math help on Telegram</strong></p>
     <p style="font-size: 14px; color: #6b7280;">Your child can message our Telegram bot anytime for help with math questions — just snap a photo or type the question and get step-by-step solutions instantly. Search <strong>@AdrianMathBot</strong> on Telegram (if not yet registered, ask Adrian for your registration code).</p>`;
 }
 
