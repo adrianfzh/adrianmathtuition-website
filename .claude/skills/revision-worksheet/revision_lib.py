@@ -222,7 +222,7 @@ FOLDER_LEVELS = {
     "EM": ("EM", None),
     "S1": ("S1", None),
     "S2": ("S2", None),
-    "JC": ("JC", None),
+    "JC": ("JC2", "JC1"),  # bank has no bare 'JC' level; JC2 = full H2, JC1 tops up pure-math topics
     "AM G2": ("AM", None),
     "EM G2": ("EM", None),
 }
@@ -2794,7 +2794,7 @@ def main(argv=None):
     ap.add_argument("--practice-topic", help="DB topic if different from the fragment topic")
     ap.add_argument("--fragment", help="force a specific notes fragment by name")
     ap.add_argument("--base", help="force an explicit base .docx path")
-    ap.add_argument("--level", help="force questions.level (AM, S3_AM, EM, S3_EM, S1, S2, JC)")
+    ap.add_argument("--level", help="force questions.level (AM, S3_AM, EM, S3_EM, S1, S2, JC1, JC2)")
     ap.add_argument("--seed", type=int)
     ap.add_argument("--no-ai", action="store_true", help="exclude AI Generated questions")
     ap.add_argument("--show-source", action="store_true", help="print school/year on the sheet")

@@ -29,7 +29,16 @@ Two entry points:
 
 ## Step 1 — Parse the request
 
-Extract: **level** (`EM` / `AM` / `H2` — map Adrian's phrasing: Sec 3/4 A Math → `AM`, E Math → `EM`, JC/H2 → `H2`), **topic and/or subgroup**, **count**, optional **difficulty**, and the **worked-example : practice mix** if he states one. If level or topic is missing, ask once; don't guess between EM and AM.
+Extract: **level**, **topic and/or subgroup**, **count**, optional **difficulty**, and the **worked-example : practice mix** if he states one. If level or topic is missing, ask once; don't guess between EM and AM.
+
+Map Adrian's phrasing to real `questions.level` values — **there is no bare `H2` or `JC` level in the bank**:
+
+- Sec 4 / IP A-Math → `AM` · Sec 3 A-Math → `S3_AM` (top up from `AM` if thin)
+- Sec 4 E-Math → `EM` · Sec 3 E-Math → `S3_EM` · NA stream → `EM_NA` / `S3_EM_NA`
+- JC / H2 → `JC2` (full syllabus; top up pure-math topics from `JC1` if thin) · H1 → `JC2_H1`
+- Sec 1 / Sec 2 → `S1` / `S2`
+
+Full level table + the exact topic-tag vocabulary per level: **[`references/bank-topics.md`](references/bank-topics.md)** — read it before filtering by topic (tags are granular, e.g. there is no `Differentiation` tag in AM, only `Differentiation (Techniques)` etc.).
 
 Look up subgroups when a topic is given:
 
@@ -40,20 +49,19 @@ WHERE level = '<LEVEL>' AND topic ILIKE '%<topic>%' ORDER BY order_index;
 
 ## Step 2 — Fetch candidates
 
-**From the seed bank (`questions`)** — real past-paper questions:
+**From the seed bank (`questions`)** — real past-paper questions. **One call, no probing:**
 
 ```sql
-SELECT id, left(question_text, 400) AS q, total_marks, difficulty, school, year, exam_type,
-       has_image, verified, ai_generated, solution IS NOT NULL AND solution <> '' AS has_solution
-FROM questions
-WHERE level = '<LEVEL>'
-  AND deleted_at IS NULL
-  AND topics && ARRAY['<Topic>']        -- topics is text[]; match canonical topic names
-ORDER BY verified DESC, year DESC NULLS LAST
-LIMIT 15;
+SELECT * FROM pick_candidates('<LEVEL>', '<topic fragment>', 15);
 ```
 
-Prefer `verified = true` and `has_solution = true`. Flag `has_image = true` rows (diagram questions) — their `image_url` must be embedded in the worksheet.
+- Topic match is **fuzzy + case-insensitive** (`'differentiation'` hits every `Differentiation (…)` tag; `matched_topics` in each row says which). Pass `NULL` or `''` for all topics.
+- Ranking is the house tiering: real past papers before AI-generated, `verified` first, newest year first — so the top rows are the ones to show.
+- Returned columns: `id, q` (first 400 chars), `matched_topics, total_marks, difficulty, school, year, exam_type, has_image, verified, ai_generated, has_solution`.
+- Second round / avoiding repeats: `SELECT * FROM pick_candidates('AM', 'differentiation', 15, ARRAY['<uuid1>','<uuid2>']::uuid[]);`
+- Raw SQL against `questions` is still fine for odd filters (by school, year range, marks, `topics && ARRAY['<Exact Tag>']` exact-match) — the RPC just covers the common case in one round trip.
+
+Prefer `verified = true` and `has_solution = true`. Flag `has_image = true` rows (diagram questions) — fetch their `image_url` (not in the RPC output; `SELECT image_url FROM questions WHERE id = …`) and embed it in the worksheet.
 
 **From the generated pool (`practice_questions`)** — 4-gate-verified AI questions:
 

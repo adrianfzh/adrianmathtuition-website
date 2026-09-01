@@ -82,7 +82,7 @@ Always print the run report (below) back to Adrian.
 | `--practice-topic "<T>"` | DB topic when it differs from the base's topic |
 | `--fragment "<name>"` | force a specific notes fragment, skipping resolution |
 | `--base <path.docx>` | force any base document outright |
-| `--level AM\|S3_AM\|EM\|S3_EM\|S1\|S2\|JC` | override the level mapping |
+| `--level AM\|S3_AM\|EM\|S3_EM\|S1\|S2\|JC1\|JC2` | override the level mapping |
 | `--out <path>` / `--suffix " (TEST)"` | exact output path, taken verbatim / suffix on the **default** filename (ignored when `--out` is given) |
 | `--seed N` | reproducible question pick |
 | `--minutes M` | trim to ~M minutes of working (rule 1); never below 8 questions |
@@ -310,7 +310,10 @@ trailing-`\n`-stripped. Reads `NEXT_PUBLIC_SUPABASE_URL` (or `SUPABASE_URL`) +
 Filter (all applied server-side):
 
 - `deleted_at=is.null`
-- `topics=cs.{"<CanonicalTopic>"}` — array containment
+- `topics=cs.{"<CanonicalTopic>"}` — array containment. **EXACT tag spelling required**
+  (bank tags are granular: AM has no `Differentiation`, only `Differentiation (Techniques)`
+  etc.) — check `../worksheet-clerk/references/bank-topics.md` (or the live `bank_topics`
+  view) before guessing `--topic` / `--practice-topic`
 - figure questions are INCLUDED since 2026-08-12 (their images embed — see below);
   `--no-figures` restores the old `has_image=is.false` exclusion
 - `level=eq.<mapped level>`
@@ -325,7 +328,8 @@ Level mapping:
 | `S3_AM` | `S3_AM` first, topped up from `AM` |
 | `S4_EM`, folder `EM` | `EM` |
 | `S3_EM` | `S3_EM` first, topped up from `EM` |
-| `S1` / `S2` / `JC` | `S1` / `S2` / `JC` (`JC` currently has 0 rows) |
+| `S1` / `S2` | `S1` / `S2` |
+| folder `JC` | `JC2` first, topped up from `JC1` (the bank has **no bare `JC` level**) |
 
 Rows are then quality-gated in Python; every rejection reason is counted in the report:
 
