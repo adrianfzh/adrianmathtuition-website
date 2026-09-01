@@ -701,7 +701,8 @@ export default function StudentProfilePage() {
             {/* From Adrian — assigned work (SPEC-ASSIGN.md): bank question → in-browser
                 grader, worksheet PDF → /app/submit pipeline. */}
             <Section title="🧺 On the shelf" show={tab === 'overview'}>
-          <ShelfSection studentId={studentId} />
+          <ShelfSection studentId={studentId} studentName={data.student.name}
+            studentLevel={data.student.level} subjects={data.student.subjects || []} />
         </Section>
 
         <Section title="📬 From Adrian" show={tab === 'overview'}>

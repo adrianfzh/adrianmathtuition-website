@@ -18,6 +18,7 @@ import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import StudentPicker from '@/components/StudentPicker';
 
 type Topic = { topic: string; awarded: number; max: number; lost: number; pct: number; questions: number };
+type LostQ = { questionNumber: string; awarded: number; max: number; topic: string | null };
 
 type Run = {
   id: string;
@@ -37,6 +38,7 @@ type Run = {
   photosPdfUrl: string | null;
   pdfUrl: string | null;
   topics: Topic[];
+  lostQuestions: LostQ[];
 };
 
 const C = {
@@ -202,6 +204,38 @@ export default function PapersPage() {
       setStats(beforeStats);
       setToast((e as Error).message || 'Connection error');
     }
+  }
+
+  // 🧺 Shelve a lost-marks question for a later teaching round (IDEAS.md
+  // "wave 2 waiting"): the shelf API grabs the prompt, part scores and the
+  // annotated page from the run's own result_json — one tap, no re-diagnosis
+  // when wave 2 gets picked. Only tagged runs: the shelf is per-student.
+  const [shelveOpen, setShelveOpen] = useState<Set<string>>(new Set());
+  const [shelvedQs, setShelvedQs] = useState<Set<string>>(new Set());
+  const [shelving, setShelving] = useState('');
+  async function shelveQuestion(run: Run, q: LostQ) {
+    const key = `${run.id}:${q.questionNumber}`;
+    setShelving(key);
+    try {
+      const r = await fetch('/api/admin/shelf', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromRun: { runId: run.id, questionNumber: q.questionNumber },
+          ...(q.topic ? { topic: q.topic } : {}),
+        }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (r.status === 409) {
+        setShelvedQs(prev => new Set(prev).add(key));
+        setToast(`Q${q.questionNumber} is already on the shelf`);
+      } else if (!r.ok) {
+        setToast(d.error || 'Could not shelve it');
+      } else {
+        setShelvedQs(prev => new Set(prev).add(key));
+        setToast(`🧺 On the shelf — Q${q.questionNumber}${q.topic ? ` · ${q.topic}` : ''}`);
+      }
+    } catch { setToast('Connection error'); }
+    finally { setShelving(''); }
   }
 
   async function deleteRun(runId: string) {
@@ -470,6 +504,15 @@ export default function PapersPage() {
                   {open ? '− fewer topics' : '+ all topics'}
                 </button>
               )}
+              {run.studentId && run.lostQuestions.length > 0 && (
+                <button
+                  onClick={() => setShelveOpen(s => { const n = new Set(s); if (n.has(run.id)) n.delete(run.id); else n.add(run.id); return n; })}
+                  title="Park a weakness for a later teaching round — its question, scores and marked page go with it"
+                  style={{ padding: 0, border: 'none', background: 'none', color: '#6d28d9', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}
+                >
+                  {shelveOpen.has(run.id) ? '🧺 close' : '🧺 Shelve…'}
+                </button>
+              )}
               {/* Far right, away from the everyday taps. Removes the run AND
                   its stored files — the armed state is the only guard. */}
               {confirmingDelete === run.id ? (
@@ -489,6 +532,37 @@ export default function PapersPage() {
                 </button>
               )}
             </div>
+
+            {/* 🧺 The lost-marks questions, one tap each onto the student's
+                shelf. Receipts stay visible so a double-tap can't stack. */}
+            {shelveOpen.has(run.id) && run.studentId && (
+              <div style={{ marginTop: 9, padding: '8px 10px', background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 10 }}>
+                <div style={{ fontSize: 12, color: '#6d28d9', fontWeight: 700, marginBottom: 6 }}>
+                  Shelve for a later wave — evidence rides along
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {run.lostQuestions.map(q => {
+                    const key = `${run.id}:${q.questionNumber}`;
+                    const done = shelvedQs.has(key);
+                    return (
+                      <button
+                        key={key}
+                        disabled={done || shelving === key}
+                        onClick={() => shelveQuestion(run, q)}
+                        title={q.topic || undefined}
+                        style={{
+                          padding: '4px 10px', fontSize: 12.5, fontWeight: 600, borderRadius: 999, cursor: done ? 'default' : 'pointer',
+                          border: `1px solid ${done ? '#ddd6fe' : '#c4b5fd'}`,
+                          background: done ? '#f5f3ff' : '#fff', color: '#5b21b6', opacity: shelving === key ? 0.6 : 1,
+                        }}
+                      >
+                        {done ? '✓' : '🧺'} Q{q.questionNumber} {q.awarded}/{q.max}{q.topic ? ` · ${q.topic}` : ''}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         );
       })}

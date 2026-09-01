@@ -174,11 +174,26 @@ export async function reconcilePlan(plan: PlanRow, items: ItemRow[]): Promise<Re
     // remediation? I should"). Per-attempt pings already ride the practice
     // grader's assignment Telegram; this is the one that says the whole plan
     // cleared. Fire-and-forget — a Telegram hiccup never breaks the student's
-    // page load.
-    sendTelegram(
-      `🎯 ${plan.student_name || plan.airtable_student_id} finished their game plan — all ${items.length} steps cleared.`
-      + `\nhttps://www.adrianmathtuition.com/admin/remediation`
-    ).catch(() => {});
+    // page load. It also names what is still parked on the student's 🧺 shelf
+    // (IDEAS.md "wave 2 waiting"), because a finished plan is exactly the
+    // moment the next wave gets picked — the count query rides inside the same
+    // fire-and-forget so it can never slow the page either.
+    const finished = plan;
+    (async () => {
+      let shelfLine = '';
+      try {
+        const { count } = await sb.from('student_shelf')
+          .select('id', { count: 'exact', head: true })
+          .eq('airtable_student_id', finished.airtable_student_id)
+          .eq('status', 'waiting');
+        if (count) shelfLine = `\n🧺 wave 2 waiting: ${count} topic${count === 1 ? '' : 's'}`;
+      } catch { /* the doorbell still rings without the count */ }
+      await sendTelegram(
+        `🎯 ${finished.student_name || finished.airtable_student_id} finished their game plan — all ${items.length} steps cleared.`
+        + shelfLine
+        + `\nhttps://www.adrianmathtuition.com/admin/remediation`
+      );
+    })().catch(() => {});
   }
 
   return { plan, items, openAssignment };
