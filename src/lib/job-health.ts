@@ -29,6 +29,8 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'payment-reminder':  { kind: 'monthly', day: 14, graceDays: 1, label: '14th 8pm' },
   'progress-digest':   { kind: 'monthly', day: 1,  graceDays: 1, label: '1st 8am' },
   'retention':         { kind: 'monthly', day: 2,  graceDays: 1, label: '2nd 3am' },
+  // Portal auto-offboarding sweep — vercel.json "30 19 2 * *" UTC = 3rd 3:30am SGT.
+  'deactivate-inactive': { kind: 'monthly', day: 3, graceDays: 1, label: '3rd 3:30am' },
   'practice-topup':    { kind: 'interval', hours: 36, label: 'daily 2am' },
   'triage-reminder':   { kind: 'interval', hours: 36, label: 'daily 8am' },
   // Weekly and deliberately quiet — it stamps every run, so a silent Telegram and

@@ -16,7 +16,9 @@ completed but failed at their task — the Mac skills use them.)
 Writers:
 - **Vercel crons** stamp via `lib/job-log.ts` `logJobRun()` at their success
   exits: `generate-invoices`, `send-invoices`, `payment-reminder`,
-  `progress-digest` (month period only), `retention` (non-dry), `practice-topup`,
+  `progress-digest` (month period only), `retention` (non-dry),
+  `deactivate-inactive` (non-dry — the monthly portal offboarding sweep,
+  3rd 3:30am SGT), `practice-topup`,
   `triage-reminder` (daily 8am SGT — Telegrams Adrian when marked scripts are
   waiting unreleased **and unarchived** in /admin/mark/triage; stamps even on
   quiet 0-waiting days, skips the stamp only in `?dry=1` mode), and

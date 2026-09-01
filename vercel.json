@@ -68,6 +68,10 @@
       "schedule": "0 19 1 * *"
     },
     {
+      "path": "/api/cron/deactivate-inactive",
+      "schedule": "30 19 2 * *"
+    },
+    {
       "path": "/api/cron/practice-topup",
       "schedule": "0 18 * * *"
     },
