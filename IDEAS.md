@@ -15,7 +15,7 @@
 - 📐 **Auto-renew subscription option** — S$29/mo second button beside the one-time pass; Stripe recurring price + invoice.paid renewals (skip billing_reason=subscription_create); cancel = message Adrian at current scale.
 - ✅ **JC mock enablement (2026-08-29)** — JC1/JC2 students get the Mock preset: 9758 cover, 3 hours, graphing-calculator instructions, P2 Section A/B headings (40/60 derived from blueprint). WAS: 📐 **JC mock enablement** — blueprint SHIPPED (JC-P1/P2 with 40/60 section boundary); remaining: MOCK_LEVELS + JC↔blueprint key mapping, 9758 cover code, H2 instructions/calculator wording, admin fetchCandidates level scope. One wiring pass.
 - 💡 **Student-own-notes tab** — students writing their own notes (beyond ✂️ clippings). Later.
-- 📐 **Notebook photo-upload** (split out of phone-review #4, 2026-08-29) — student photographs any external work → clippings gallery (`portal_notes` gains source `'upload'`); auto-organization (topic/paper albums) as volume grows.
+- ✅ **Notebook photo-upload (2026-09-02)** — 📷 Add-a-photo in My Notebook (camera/library, caption + topic tag, filter chips past 12 items; photos discriminated by blob filename prefix, no migration).
 - 💡 **Recommendation merge** — Home focus card / Practise "up next" / My Notebook bands share one brain eventually.
 - 💡 **Exam Intensive queue-priority done; consider surfacing "priority marking" copy** on /app/pass Intensive card once first intensive customer exists.
 
@@ -27,8 +27,8 @@
 - 💡 **Subjects picker at stranger signup** — Sec 3–5 signups should declare E/A Math (JOIN_LEVELS has no subject split; scoping currently defaults). Small form + account.subjects write.
 
 ## Automation — money/ops
-- 📐 **Auto-deactivation cron** — monthly: portal account with no active enrollment ≥30d → deactivate + Telegram. Data stays dormant indefinitely (rejoin-friendly); hard-delete only on request or ≥2–3y dormant (see docs/RETENTION.md).
-- 📐 **Auto referral invoice credit** — tuition inviter's −S$10 as a deferred adjustment on next invoice when an invited friend's first payment clears (READ docs/INVOICES.md first; Adrian still eyeballs invoices between the 14th and 15th).
+- ✅ **Auto-deactivation cron (2026-09-02)** — monthly 3:30am SGT on the 3rd; no-Active-enrollment ≥30d → pass gate; fail-safe keeps ambiguous rows; dry-run verified live (0 offboardable today); job_runs rhythm alarm.
+- 🔨 **Auto referral invoice credit** — agent in flight 2026-09-02 (deferred adjustment per docs/INVOICES.md; Telegram demoted to receipt; fallback to manual note on any write failure).
 - 📐 **Retention cron** — docs/RETENTION.md has the policy sketch; Adrian owes 3 sign-offs before anything deletes.
 - 💡 **Privacy-policy copy update** — marking-records retention after deletion + dormancy policy, folded in when retention is signed off.
 
@@ -70,7 +70,7 @@
 3. ✅ Marked-paper stems split one part per line (`promptLines`, no semicolon rule — prose punctuation).
 4. ✅ Practice search gains a ✕ clear button; ✅ "Print a paper" demoted (hidden while a question is open, slim row below the picker); ✅ My Notebook tab gets its own glyph (was the Home house); ✅ `/app` root loading skeleton (Home tap froze on the Supabase batch).
 5. 🔨 **Mock Next-Lesson for the demo account** — blocked mid-build: the demo account's `airtable_student_id` is synthetic (`recTESTE000000000`), so a real Airtable Student + Lessons row + a Supabase identity migration is needed; the auto-mode classifier (configured this same evening) denied the Airtable prod write. Plan is ready (Student "Teste Echo (portal demo)" Trial/no-enrollment → no billing, lesson 2026-09-01 Tue 3-5pm slot recU4GFAJHZX3v6X2, then UPDATE every student-keyed Supabase table from the synthetic id). Needs Adrian's explicit go (or he runs the snippet).
-6. 📐 **Figure axis labels read slanted** — bot-side: the matplotlib figure generator uses italic mathtext for axis labels; add an upright-axis-label style rule to the figure prompt/demos (bot ai/question-gen.js figure pass). Do on the next bot deploy window (check marking queue first, per standing rule).
+6. ✅ **Figure axis labels (2026-09-02)** — upright-mathtext preamble injected in the bot's figure renderer (bot 0a9b9ec); holds regardless of authored script.
 7. **Practice-these-next provenance** (Adrian asked): bank-embedding-matched FIRST (origin "School Year" shown), model-generated + verified only when no bank candidate fits; the demo paper's 4 were all generated because its questions had no close twins. Working as designed.
 8. 💡 **Perceived lag continues** — the remaining lever stays the serial session-auth round-trip (round-4 item 1); root skeleton shipped this round.
 
