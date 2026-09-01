@@ -146,6 +146,26 @@ Picking the wave is teaching judgment — the checkpoint is his.
 
 ## Step 4 — author the sheet
 
+### Adrian's own trap for the skill — check, then usually move on
+
+The diagnosis in Step 2 comes from the student's real script, which beats any
+generic list — do NOT let a stored trap displace what she actually did. But the
+teaching line under a heading states the GENERAL rule, and Adrian has often
+already written that rule down:
+
+```sql
+SELECT wrong_move, why_wrong, corrective_cue FROM pitfalls
+WHERE subject = '<AM|EM|JC|S1|S2>' AND topic = ANY(ARRAY['<canonical topic>']);
+```
+
+(`subject` is the coarse level: `S3_AM`→`AM`, `S3_EM`/`EM_NA`→`EM`, any `JC*`→`JC`.)
+
+Use one ONLY when it is the same slip the script shows, and then only for the
+wording — `corrective_cue` is already in his voice, which is the whole reason to
+look. A trap that does not match this student's error does not go on her sheet:
+the sheet is about what she got wrong, not what students generally get wrong.
+Expect to use none on most sheets.
+
 ### The reference sheet
 
 `/Self-Study/Khoo Ke Er Klaire/Practice Again (Wave 1) — klaire am tys 2021 p1.docx`
