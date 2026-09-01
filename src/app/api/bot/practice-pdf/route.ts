@@ -5,6 +5,7 @@
 // Blob. Auth: x-render-secret, the same pair /api/explanations and
 // /api/bot/worksheet use. `dry: true` answers without touching Puppeteer.
 import { NextRequest, NextResponse } from 'next/server';
+import { safeEqual } from '@/lib/safe-equal';
 import { put } from '@vercel/blob';
 import { renderPracticePDF, type PracticeItem } from '@/lib/render-practice-pdf';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -16,7 +17,8 @@ export const maxDuration = 60;
 const bad = (status: number, body: Record<string, unknown>) => NextResponse.json(body, { status });
 
 export async function POST(req: NextRequest) {
-  if (req.headers.get('x-render-secret') !== process.env.RENDER_MARKING_SECRET) {
+  const secret = req.headers.get('x-render-secret');
+  if (!secret || !process.env.RENDER_MARKING_SECRET || !safeEqual(secret, process.env.RENDER_MARKING_SECRET)) {
     return bad(401, { error: 'Unauthorized' });
   }
 

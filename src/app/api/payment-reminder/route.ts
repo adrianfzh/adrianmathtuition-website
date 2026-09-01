@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { sendTelegram } from '@/lib/telegram';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -11,7 +12,7 @@ function checkAuth(req: NextRequest): boolean {
   const cronSecret = process.env.CRON_SECRET;
   const authHeader = req.headers.get('authorization');
   if (req.headers.get('x-vercel-cron') === '1') return true;
-  if (cronSecret && authHeader === `Bearer ${cronSecret}`) return true;
+  if (cronSecret && safeEqual(authHeader ?? '', `Bearer ${cronSecret}`)) return true;
   return verifyAdminAuth(req);
 }
 

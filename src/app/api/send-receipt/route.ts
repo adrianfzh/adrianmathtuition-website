@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { safeEqual } from '@/lib/safe-equal';
 import { airtableRequest } from '@/lib/airtable';
 import { generateInvoicePDF } from '@/lib/generate-pdf';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
@@ -11,7 +12,7 @@ function checkAuth(req: NextRequest): boolean {
   // RECEIPT_API_TOKEN Bearer (bot caller) or standard admin auth
   // (signed session cookie or legacy ADMIN_PASSWORD Bearer).
   const token = process.env.RECEIPT_API_TOKEN;
-  if (token && req.headers.get('authorization') === `Bearer ${token}`) return true;
+  if (token && safeEqual(req.headers.get('authorization') ?? '', `Bearer ${token}`)) return true;
   return verifyAdminAuth(req);
 }
 

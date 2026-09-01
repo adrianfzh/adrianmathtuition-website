@@ -13,6 +13,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { safeEqual } from '@/lib/safe-equal';
 import { createClient } from '@supabase/supabase-js';
 import { put } from '@vercel/blob';
 import { renderRevisePNG, RenderType, ReviseRenderInput } from '@/lib/render-revise';
@@ -33,7 +34,7 @@ function checkAuth(req: NextRequest): boolean {
   // CRON_SECRET Bearer (bot/cron callers) or standard admin auth
   // (signed session cookie or legacy ADMIN_PASSWORD Bearer).
   const cron = process.env.CRON_SECRET;
-  if (cron && req.headers.get('authorization') === `Bearer ${cron}`) return true;
+  if (cron && safeEqual(req.headers.get('authorization') ?? '', `Bearer ${cron}`)) return true;
   return verifyAdminAuth(req);
 }
 

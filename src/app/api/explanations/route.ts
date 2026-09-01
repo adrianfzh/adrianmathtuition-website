@@ -1,11 +1,12 @@
 import { NextRequest } from 'next/server';
+import { safeEqual } from '@/lib/safe-equal';
 import { createClient } from '@supabase/supabase-js';
 
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   const secret = req.headers.get('x-render-secret');
-  if (secret !== process.env.RENDER_MARKING_SECRET) {
+  if (!secret || !process.env.RENDER_MARKING_SECRET || !safeEqual(secret, process.env.RENDER_MARKING_SECRET)) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
   try {

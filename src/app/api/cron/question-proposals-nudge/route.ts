@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { safeEqual } from '@/lib/safe-equal';
 import { sendTelegramWithButtons } from '@/lib/telegram';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -23,7 +24,7 @@ export const runtime = 'nodejs';
 function checkAuth(req: NextRequest): boolean {
   if (req.headers.get('x-vercel-cron') === '1') return true;
   const secret = process.env.CRON_SECRET;
-  if (secret && req.headers.get('authorization') === `Bearer ${secret}`) return true;
+  if (secret && safeEqual(req.headers.get('authorization') ?? '', `Bearer ${secret}`)) return true;
   return verifyAdminAuth(req);
 }
 

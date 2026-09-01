@@ -31,6 +31,7 @@
 // already alarms by absence if this cron dies, and the route touches no
 // parent/student-facing surface a synthetic probe could exercise.
 import { NextRequest, NextResponse } from 'next/server';
+import { safeEqual } from '@/lib/safe-equal';
 import { airtableRequestAll } from '@/lib/airtable';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { logJobRun } from '@/lib/job-log';
@@ -47,9 +48,9 @@ export const maxDuration = 60;
 
 function authed(req: NextRequest): boolean {
   const auth = req.headers.get('authorization') || '';
-  if (process.env.CRON_SECRET && auth === `Bearer ${process.env.CRON_SECRET}`) return true;
+  if (process.env.CRON_SECRET && safeEqual(auth, `Bearer ${process.env.CRON_SECRET}`)) return true;
   if (req.headers.get('x-vercel-cron')) return true;
-  if (process.env.ADMIN_PASSWORD && auth === `Bearer ${process.env.ADMIN_PASSWORD}`) return true;
+  if (process.env.ADMIN_PASSWORD && safeEqual(auth, `Bearer ${process.env.ADMIN_PASSWORD}`)) return true;
   return false;
 }
 

@@ -2,13 +2,16 @@
 // Replaces the per-grade ping: automation shouldn't page the human per event.
 // Flags low scores so Adrian knows which grades to spot-check first.
 import { NextRequest, NextResponse } from 'next/server';
+import { safeEqual } from '@/lib/safe-equal';
 import { createServiceClient } from '@/lib/supabase-server';
 import { sendTelegram } from '@/lib/telegram';
 
 function cronAuthorized(req: NextRequest): boolean {
   if (req.headers.get('x-vercel-cron')) return true;
   const auth = req.headers.get('authorization') || '';
-  return auth === `Bearer ${process.env.CRON_SECRET}` || auth === `Bearer ${process.env.ADMIN_PASSWORD}`;
+  if (process.env.CRON_SECRET && safeEqual(auth, `Bearer ${process.env.CRON_SECRET}`)) return true;
+  if (process.env.ADMIN_PASSWORD && safeEqual(auth, `Bearer ${process.env.ADMIN_PASSWORD}`)) return true;
+  return false;
 }
 
 export async function GET(req: NextRequest) {

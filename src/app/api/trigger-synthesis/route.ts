@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { safeEqual } from '@/lib/safe-equal';
 
 export const runtime = 'nodejs';
 
@@ -6,7 +7,7 @@ export const runtime = 'nodejs';
 export async function GET(req: NextRequest) {
   // Vercel cron passes Authorization: Bearer <CRON_SECRET>
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && req.headers.get('authorization') !== `Bearer ${cronSecret}`) {
+  if (cronSecret && !safeEqual(req.headers.get('authorization') ?? '', `Bearer ${cronSecret}`)) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 

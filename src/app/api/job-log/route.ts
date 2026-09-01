@@ -8,6 +8,7 @@
 // Reading the logbook is /api/admin/ops; alarming on it is the health check.
 
 import { NextRequest, NextResponse } from 'next/server';
+import { safeEqual } from '@/lib/safe-equal';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { logJobRun } from '@/lib/job-log';
 
@@ -15,7 +16,7 @@ export const runtime = 'nodejs';
 
 function authed(req: NextRequest): boolean {
   const auth = req.headers.get('authorization');
-  if (process.env.CRON_SECRET && auth === `Bearer ${process.env.CRON_SECRET}`) return true;
+  if (process.env.CRON_SECRET && safeEqual(auth ?? '', `Bearer ${process.env.CRON_SECRET}`)) return true;
   return verifyAdminAuth(req);
 }
 

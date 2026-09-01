@@ -29,6 +29,7 @@
 // / never-originating-school invariants hold here by construction.
 
 import { NextRequest, NextResponse } from 'next/server';
+import { safeEqual } from '@/lib/safe-equal';
 import { put } from '@vercel/blob';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { KIOSK_LEVELS } from '@/lib/kiosk-session';
@@ -57,7 +58,8 @@ function dateLabel(iso: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  if (req.headers.get('x-render-secret') !== process.env.RENDER_MARKING_SECRET) {
+  const secret = req.headers.get('x-render-secret');
+  if (!secret || !process.env.RENDER_MARKING_SECRET || !safeEqual(secret, process.env.RENDER_MARKING_SECRET)) {
     return bad(401, { error: 'Unauthorized' });
   }
 

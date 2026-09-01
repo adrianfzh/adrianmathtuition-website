@@ -13,6 +13,7 @@
 // restored the same day: removing it just starves the plan worker's queue.
 // Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer.
 import { NextRequest, NextResponse } from 'next/server';
+import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { type Tier, TIER_DIFFICULTY_VALUES } from '@/lib/practice-tiers';
@@ -53,9 +54,9 @@ const GRAPH_TOPICS = new Set(['Integration (Area)', 'Coordinate Geometry', 'Line
 
 function authed(req: NextRequest): boolean {
   const auth = req.headers.get('authorization') || '';
-  if (process.env.CRON_SECRET && auth === `Bearer ${process.env.CRON_SECRET}`) return true;
+  if (process.env.CRON_SECRET && safeEqual(auth, `Bearer ${process.env.CRON_SECRET}`)) return true;
   if (req.headers.get('x-vercel-cron')) return true;
-  if (process.env.ADMIN_PASSWORD && auth === `Bearer ${process.env.ADMIN_PASSWORD}`) return true;
+  if (process.env.ADMIN_PASSWORD && safeEqual(auth, `Bearer ${process.env.ADMIN_PASSWORD}`)) return true;
   return false;
 }
 

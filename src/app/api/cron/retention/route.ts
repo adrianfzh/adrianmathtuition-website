@@ -12,6 +12,7 @@
 // ?dry=1 reports what WOULD be purged without deleting anything.
 // Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer.
 import { NextRequest, NextResponse } from 'next/server';
+import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { del } from '@vercel/blob';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -24,9 +25,9 @@ export const maxDuration = 60;
 
 function authed(req: NextRequest): boolean {
   const auth = req.headers.get('authorization') || '';
-  if (process.env.CRON_SECRET && auth === `Bearer ${process.env.CRON_SECRET}`) return true;
+  if (process.env.CRON_SECRET && safeEqual(auth, `Bearer ${process.env.CRON_SECRET}`)) return true;
   if (req.headers.get('x-vercel-cron')) return true;
-  if (process.env.ADMIN_PASSWORD && auth === `Bearer ${process.env.ADMIN_PASSWORD}`) return true;
+  if (process.env.ADMIN_PASSWORD && safeEqual(auth, `Bearer ${process.env.ADMIN_PASSWORD}`)) return true;
   return false;
 }
 

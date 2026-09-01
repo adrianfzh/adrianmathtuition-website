@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { safeEqual } from '@/lib/safe-equal';
 import { renderMarkingPNG } from '@/lib/render-marking';
 
 export const runtime = 'nodejs';
@@ -7,7 +8,7 @@ export const maxDuration = 30;
 export async function POST(request: NextRequest) {
   // 1. Validate secret
   const secret = request.headers.get('x-render-secret');
-  if (!secret || secret !== process.env.RENDER_MARKING_SECRET) {
+  if (!secret || !process.env.RENDER_MARKING_SECRET || !safeEqual(secret, process.env.RENDER_MARKING_SECRET)) {
     return NextResponse.json({ error: 'invalid secret' }, { status: 401 });
   }
 
