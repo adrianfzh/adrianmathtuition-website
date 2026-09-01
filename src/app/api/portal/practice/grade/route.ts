@@ -14,6 +14,7 @@ import { sendTelegram } from '@/lib/telegram';
 import { canTransition, type AssignmentRow } from '@/lib/assignments';
 import { portalIdentity } from '@/lib/portal-auth';
 import { requireActiveAccess } from '@/lib/portal-passes';
+import { loadPitfallsForQuestion } from '@/lib/topic-pitfalls';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -108,10 +109,17 @@ export async function POST(req: NextRequest) {
   }
 
   const weaknessTags = await topWeaknessTags(account.id, 3);
+  // Adrian's curated traps for this question's topic. Feedback-wording help
+  // only — see src/lib/topic-pitfalls.ts. Fails soft to [] so a pitfalls
+  // outage can never stop a student being graded.
+  const pitfalls = await loadPitfallsForQuestion(
+    admin, q.level as string, q.topics, 4,
+    `${q.question_text || ''} ${q.answer || ''}`,
+  );
 
   let result;
   try {
-    result = await gradeAttempt({ question: q, lines: cleanLines, image: attemptImage, weaknessTags });
+    result = await gradeAttempt({ question: q, lines: cleanLines, image: attemptImage, weaknessTags, pitfalls });
   } catch {
     return NextResponse.json({ error: 'Marking hiccup — try again in a moment' }, { status: 502 });
   }
