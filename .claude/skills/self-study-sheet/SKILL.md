@@ -133,6 +133,23 @@ missed are not topics at all:
   without earning it. Cheap to fix, invisible in one paper, and it costs marks in
   every paper they will ever sit.
 
+**COUNT THE SLIPS AND THE TRANSFER ERRORS TOO** (Adrian, 1 Sep 2026). An
+arithmetic slip is not a skill, so it earns no practice (triage ② — show, don't
+drill). But it still costs marks, and a student who drops six marks a paper to
+slips has a real, teachable problem that no topic list will ever name. So COUNT
+them and report the total, even though none of them becomes a section:
+
+- **arithmetic slips** — a sign lost, a term dropped, $-48 \div 8$ written as $+6$
+- **transfer errors** — the working says one thing and the answer line another;
+  a value copied wrongly from one part into the next; a correct value rounded
+  away at the end. Eva's script had this repeatedly, and it is the cheapest
+  category of mark there is to win back.
+
+Report them as a line in the wave — *"and 7 marks to slips and answer-line
+transfers across four papers"* — so Adrian can see the size of it and decide
+whether it deserves a habit sheet of its own. Ignore this and the sheet teaches
+the hard things while the easy marks keep leaking.
+
 Say in the wave WHICH papers each skill came from and how often — Adrian is
 choosing what to teach, and "three papers running" is the fact that decides it.
 
