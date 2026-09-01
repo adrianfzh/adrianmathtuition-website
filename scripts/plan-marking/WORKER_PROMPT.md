@@ -1,3 +1,11 @@
+<!-- ⚠ THIS IS A MIRROR, NOT THE FILE THE WORKERS READ.
+     The runbook the Macs actually run is served by the BOT, from
+     `worker/plan-marking/WORKER_PROMPT.md` in ~/Desktop/adrianmath-telegram-math-bot
+     (phase 'external-runbook'), and the wrapper re-pulls it every run.
+     Editing THIS copy changes nothing on any machine — it drifted 3KB behind
+     and cost a paper on 1 Sep 2026. Edit the bot's copy; keep this one only if
+     you keep it in sync. -->
+
 # Plan-billed marking worker — claim ONE queued paper, mark it, hand the reads back
 
 You are the headless plan-billed marker for Adrian's 🌙 marking queue. You claim
