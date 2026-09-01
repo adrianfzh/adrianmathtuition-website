@@ -345,6 +345,7 @@ const LAUNCHERS: Launcher[] = [
   { emoji: '🔍', title: 'Triage marking',  sub: 'Check flagged questions · release to students', href: '/admin/mark/triage' },
   { emoji: '🎯', title: 'Game Plans',      sub: 'Per-student plans from marked papers · review & activate', href: '/admin/remediation' },
   { emoji: '🔎', title: 'Practice checks', sub: 'Spot-check portal practice grades',     href: '/admin/practice-checks' },
+  { emoji: '🎯', title: 'Trap review',     sub: 'Approve the traps students get told about', href: '/admin/pitfalls' },
   { emoji: '📄', title: 'Prelim Builder', sub: 'Assemble full papers from the blueprint', href: '/admin/prelim-builder' },
   { emoji: '📝', title: 'Print a paper', sub: 'Student self-serve mock / topic / weak-spot papers', href: '/app/print' },
   { emoji: '⚡', title: 'Revision Decks', sub: 'Quick recall · worked examples by topic', href: '/revise/am' },
