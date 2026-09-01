@@ -186,6 +186,11 @@ same `.env.local`, and this doc. On a different Mac: clone both repos
   data, or question text baked into the image. Those need the source paper
   (§6), not a redraw.
 
+> **Findings from batches 6–9 that are NOT figure defects** — wrong stored
+> answers, leaked question text, orphaned images, and upstream damage classes —
+> are collected in [`docs/FIGURES-FINDINGS-2026-09.md`](FIGURES-FINDINGS-2026-09.md).
+> Read it before trusting a stored answer on any question those batches touched.
+
 ## 8. State (2026-09-02)
 
 - **3,708** repairs applied across the bank (`figure_clean_log`): 2,284 auto
