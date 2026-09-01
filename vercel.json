@@ -80,6 +80,10 @@
       "schedule": "0 0 1 * *"
     },
     {
+      "path": "/api/cron/question-proposals-nudge",
+      "schedule": "0 1 * * 1"
+    },
+    {
       "path": "/api/health-check",
       "schedule": "0 */6 * * *"
     },

@@ -93,3 +93,52 @@ export function sanitizeProposal(input: unknown): { row: ProposalRow } | { error
     },
   };
 }
+
+// ── The weekly nudge ─────────────────────────────────────────────────────────
+
+/** How long a proposal waits before it is worth interrupting Adrian about.
+ *  Under this it is simply "not got to yet", which needs no Telegram. */
+export const RIPE_DAYS = 3;
+
+type NudgeRow = {
+  level: string;
+  topics: string[] | null;
+  skill: string | null;
+  student_name: string | null;
+  created_at: string;
+};
+
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/**
+ * The Telegram body, or null when nothing is ripe — the caller sends nothing on
+ * null, so silence is the default and the message only appears when there is
+ * something to act on.
+ *
+ * Pure so the wording is testable: a nudge nobody can act on from the notification
+ * itself is a nudge that gets swiped away, so it names what is waiting and how
+ * long the oldest has sat.
+ */
+export function nudgeMessage(rows: NudgeRow[], now = Date.now()): string | null {
+  const ripe = (rows ?? []).filter(r => {
+    const t = Date.parse(r.created_at);
+    return Number.isFinite(t) && now - t >= RIPE_DAYS * 86400_000;
+  });
+  if (!ripe.length) return null;
+
+  const oldestDays = Math.floor(
+    (now - Math.min(...ripe.map(r => Date.parse(r.created_at)))) / 86400_000);
+
+  const lines = [
+    `📥 <b>${ripe.length} question${ripe.length === 1 ? '' : 's'}</b> waiting to be vetted`,
+    `The sheets wrote ${ripe.length === 1 ? 'it' : 'them'} because the bank had nothing that drilled the method. Oldest has waited ${oldestDays} day${oldestDays === 1 ? '' : 's'}.`,
+    '',
+  ];
+  for (const r of ripe.slice(0, 6)) {
+    const topic = (r.topics && r.topics[0]) || r.level;
+    const why = r.skill ? ` — ${esc(r.skill.slice(0, 90))}` : '';
+    lines.push(`• <b>${esc(topic)}</b>${why}`);
+  }
+  if (ripe.length > 6) lines.push(`…and ${ripe.length - 6} more.`);
+  return lines.join('\n');
+}

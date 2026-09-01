@@ -31,6 +31,9 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'retention':         { kind: 'monthly', day: 2,  graceDays: 1, label: '2nd 3am' },
   'practice-topup':    { kind: 'interval', hours: 36, label: 'daily 2am' },
   'triage-reminder':   { kind: 'interval', hours: 36, label: 'daily 8am' },
+  // Weekly and deliberately quiet — it stamps every run, so a silent Telegram and
+  // a dead cron are told apart here rather than by their absence.
+  'question-proposals-nudge': { kind: 'interval', hours: 204, label: 'Mondays 9am' },
   // Self-referential: if the health check itself dies, nothing ALARMS (it is the
   // alarm) — but the /admin/ops board still shows this row going stale, which is
   // the one place that failure is visible at all.

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeProposal, MIN_QUESTION_CHARS } from './question-proposals';
+import { sanitizeProposal, nudgeMessage, MIN_QUESTION_CHARS } from './question-proposals';
 
 const ok = {
   level: 'AM',
@@ -77,5 +77,66 @@ describe('sanitizeProposal', () => {
       expect(() => sanitizeProposal(bad)).not.toThrow();
       expect('error' in sanitizeProposal(bad)).toBe(true);
     }
+  });
+});
+
+describe('nudgeMessage — weekly, and silent unless there is something to act on', () => {
+  const NOW = Date.parse('2026-09-08T01:00:00Z');
+  const aged = (days: number) => new Date(NOW - days * 86400_000).toISOString();
+  const row = (over: Partial<Parameters<typeof nudgeMessage>[0][number]> = {}) => ({
+    level: 'AM', topics: ['Differentiation (Stationary Points)'],
+    skill: 'two stationary points ⇔ discriminant > 0', student_name: 'Kiara',
+    created_at: aged(5), ...over,
+  });
+
+  it('says nothing when the queue is empty', () => {
+    expect(nudgeMessage([], NOW)).toBeNull();
+  });
+
+  it('says nothing while everything is still fresh — that is "not got to yet"', () => {
+    expect(nudgeMessage([row({ created_at: aged(1) }), row({ created_at: aged(2) })], NOW)).toBeNull();
+  });
+
+  it('nudges once something has waited long enough', () => {
+    const m = nudgeMessage([row()], NOW);
+    expect(m).toContain('1 question');
+    expect(m).toContain('waited 5 days');
+  });
+
+  it('counts only the ripe ones, not the whole queue', () => {
+    const m = nudgeMessage([row(), row(), row({ created_at: aged(0) })], NOW);
+    expect(m).toContain('2 questions');
+  });
+
+  it('names what is waiting, so the notification alone is actionable', () => {
+    expect(nudgeMessage([row()], NOW)).toContain('Differentiation (Stationary Points)');
+    expect(nudgeMessage([row()], NOW)).toContain('discriminant');
+  });
+
+  it('falls back to the level when a proposal carries no topic', () => {
+    expect(nudgeMessage([row({ topics: [] })], NOW)).toContain('AM');
+    expect(nudgeMessage([row({ topics: null })], NOW)).toContain('AM');
+  });
+
+  it('caps the list and says how many more', () => {
+    const m = nudgeMessage(Array.from({ length: 9 }, () => row()), NOW)!;
+    expect((m.match(/^• /gm) || []).length).toBe(6);
+    expect(m).toContain('and 3 more');
+  });
+
+  it('escapes HTML — a topic with an ampersand must not break the message', () => {
+    const m = nudgeMessage([row({ skill: 'a < b & c' })], NOW)!;
+    expect(m).toContain('&lt; b &amp; c');
+  });
+
+  it('ignores a row with an unparseable date rather than throwing', () => {
+    expect(() => nudgeMessage([row({ created_at: 'nonsense' })], NOW)).not.toThrow();
+    expect(nudgeMessage([row({ created_at: 'nonsense' })], NOW)).toBeNull();
+  });
+
+  it('singular and plural both read correctly', () => {
+    expect(nudgeMessage([row({ created_at: aged(3) })], NOW)).toContain('waited 3 days');
+    expect(nudgeMessage([row()], NOW)).toContain('<b>1 question</b> waiting');
+    expect(nudgeMessage([row(), row()], NOW)).toContain('2 questions');
   });
 });
