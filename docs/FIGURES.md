@@ -150,6 +150,30 @@ same `.env.local`, and this doc. On a different Mac: clone both repos
    ORIGINAL flag path and clear `claimed_by`.
 6. If you abandon a batch, null out its `claimed_by` so the rows return to the queue.
 
+### What produced these results (match this setup)
+
+- **Model.** Batches 1–2 ran on **Claude Fable 5**; batches 3–4 on **Claude Opus 5**
+  (Adrian switched the session model mid-run with `/model`). Both cleared his
+  review wholesale, so either tier works — but do not drop to a small model:
+  the quality comes from the agent *reading the scan and the question* and
+  deriving geometry, which is vision + reasoning work.
+- **Effort.** No per-agent `model` or `effort` override was ever passed. Agents
+  are spawned with `subagent_type: "general-purpose"` and simply **inherit the
+  session's model and effort**, so set the session where you want it and leave
+  the Agent calls alone.
+- **Shape.** 50 figures per batch → 6–8 agents of 6–7 figures each. Each agent
+  ran long and hot (roughly 80k–360k tokens, 16–170 tool calls) because it views
+  the scan, zooms, computes, renders, re-views and iterates. That per-figure
+  scrutiny IS the product — a cheaper pass produces plausible-looking figures
+  that quietly contradict the paper.
+- **What actually drives quality** (in rough order): telling the agent the
+  stored image is ground truth and the brief is only a hint; making it COMPUTE
+  geometry from the question's own stated values rather than eyeball the scan;
+  demanding the lightest treatment (crop before redraw); and requiring it to
+  view its own output and iterate. Several agents caught paper-level and
+  answer-key errors this way — that only happens if they verify against the
+  marking scheme.
+
 ### Watch-outs that have already cost time
 
 - Applying by the *target* path silently fails to close flags whose path was
