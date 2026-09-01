@@ -193,7 +193,7 @@ function buildAmendedEmailHtml(invoice: {
 }) {
   return `
     <p>Dear Parent/Student,</p>
-    <p>Please find attached the <strong>amended invoice</strong> for ${invoice.studentName} for ${invoice.month} — <strong>${invoice.finalAmount.toFixed(2)}</strong>, due by <strong>${invoice.dueDate}</strong>.</p>
+    <p>Please find attached the <strong>amended invoice</strong> for ${invoice.studentName} for ${invoice.month} — <strong>$${invoice.finalAmount.toFixed(2)}</strong>, due by <strong>${invoice.dueDate}</strong>.</p>
     <p>This replaces the previously sent invoice. Please disregard the earlier email.</p>
     <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${invoice.paymentRef}</strong>.</p>
     <p>Please feel free to reach out if you have any questions.</p>
@@ -255,6 +255,15 @@ export async function POST(req: NextRequest) {
   let body: any = {};
   try { body = await req.json(); } catch { /* no body */ }
   const { recordId: singleRecordId, recordIds } = body;
+  // `resend: true` — send this invoice again UNCHANGED (e.g. the first email was
+  // defective, or the parent lost it). Without it, any invoice whose earlier
+  // EmailLog row carried a PDF is classified as an AMENDMENT: subject becomes
+  // "AMENDED Invoice for …" and the body says "this replaces the previously sent
+  // invoice, disregard the earlier email". That is right when the figures changed
+  // and actively misleading when they did not — the classifier cannot tell the two
+  // apart on its own, so the caller says which it is. (Jeanette Tan, Sep 2026: her
+  // first email carried a mojibake'd WhatsApp number; the invoice was identical.)
+  const plainResend = body.resend === true;
   const notify = body.notify !== false; // per-batch Telegram summary; client bulk-send sets false
 
   // Consolidated-summary mode (used by "Send All Approved"): post ONE Telegram summary
@@ -297,7 +306,7 @@ export async function POST(req: NextRequest) {
         paymentRef: `${studentName.toUpperCase()} – ${month.toUpperCase()}`,
         level: (stu.fields['Level'] || '') as string,
       };
-      const isAmended = (await fetchDeliveredWithPdf([rec.id])).has(rec.id);
+      const isAmended = !plainResend && (await fetchDeliveredWithPdf([rec.id])).has(rec.id);
       const isFirstInvP = ((rec.fields['Auto Notes'] || '') as string).toLowerCase().includes('first invoice');
       // Adjustment invoices must NOT reuse the regular month's subject — the
       // parent already received "Invoice for <month>" and paid it.
@@ -521,7 +530,7 @@ export async function POST(req: NextRequest) {
       };
 
       const pdfBuffer = pdfBuffers[i];
-      const isAmended = deliveredWithPdf.has(invoiceRecord.id);
+      const isAmended = !plainResend && deliveredWithPdf.has(invoiceRecord.id);
       const isFirstInv = ((invoiceRecord.fields['Auto Notes'] || '') as string).toLowerCase().includes('first invoice');
       // Adjustment invoices must NOT reuse the regular month's subject/filename —
       // the parent already received "Invoice for <month>" and paid it.
@@ -681,7 +690,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Log to EmailLog (non-fatal)
-        const isAmendedEmail = deliveredWithPdf.has(invoiceId);
+        const isAmendedEmail = !plainResend && deliveredWithPdf.has(invoiceId);
         at('EmailLog', '', {
           method: 'POST',
           body: JSON.stringify({ fields: {
