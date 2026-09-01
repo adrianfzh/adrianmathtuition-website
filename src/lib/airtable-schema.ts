@@ -1,5 +1,5 @@
 // AUTO-GENERATED — run `npm run sync-schema` to update
-// Last synced: 2026-08-31T02:38:21.931Z
+// Last synced: 2026-09-01T23:09:11.107Z
 // Source: Airtable metadata API (no student data)
 //
 // USAGE: import { SCHEMA } from '@/lib/airtable-schema'
@@ -746,7 +746,8 @@ export const SCHEMA = {
           "Kept",
           "Deleted",
           "student_correction",
-          "low_confidence"
+          "low_confidence",
+          "negative_feedback"
         ]
       },
       "Topic": {
@@ -1026,7 +1027,8 @@ export const SCHEMA = {
         "type": "singleSelect",
         "options": [
           "sent",
-          "failed"
+          "failed",
+          "delivered"
         ]
       },
       "Error": {
