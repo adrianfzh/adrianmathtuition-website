@@ -1,0 +1,1272 @@
+[
+ {
+  "id": 353,
+  "note": "word-level sign rule: space the ×, keep prose",
+  "subs": [
+   [
+    "negative×negative",
+    "negative × negative"
+   ]
+  ]
+ },
+ {
+  "id": 367,
+  "note": "unit superscripts stay unicode (house style); no symbolic runs",
+  "subs": []
+ },
+ {
+  "id": 375,
+  "note": "pure unit-conversion vocabulary (cm², m³) stays unicode prose",
+  "subs": []
+ },
+ {
+  "id": 392,
+  "note": "symbolic equation",
+  "subs": [
+   [
+    "Example: AC = BC and given vertex angle",
+    "Example: $AC = BC$ and given vertex angle"
+   ]
+  ]
+ },
+ {
+  "id": 393,
+  "note": "parallel-segments statement to TeX; degree values stay prose",
+  "subs": [
+   [
+    "Example: PQ ∥ RS with two zig-zag angles",
+    "Example: $PQ \\parallel RS$ with two zig-zag angles"
+   ]
+  ]
+ },
+ {
+  "id": 397,
+  "note": "degree values in prose only — no symbolic runs",
+  "subs": []
+ },
+ {
+  "id": 399,
+  "note": "x = 1.5 is a symbolic run",
+  "subs": [
+   [
+    "find the value of y when x = 1.5",
+    "find the value of $y$ when $x = 1.5$"
+   ]
+  ]
+ },
+ {
+  "id": 421,
+  "note": "algebraic ratios + equation to TeX; escape currency $ so spans cannot mis-pair",
+  "subs": [
+   [
+    "share $680 in p:(2p-1):(2p+1); sweets in 3:x:5 with C = A + 32, find x.",
+    "share \\$680 in $p:(2p-1):(2p+1)$; sweets in $3:x:5$ with $C = A + 32$, find $x$."
+   ]
+  ]
+ },
+ {
+  "id": 424,
+  "note": "map scales and unit areas stay prose; $n^2$ already TeX",
+  "subs": []
+ },
+ {
+  "id": 426,
+  "note": "polygon angle formulas to TeX; bare 156° stays prose",
+  "subs": [
+   [
+    "interior angle = (n−2)·180°/n and exterior angle = 360°/n",
+    "interior angle $= (n-2) \\cdot 180°/n$ and exterior angle $= 360°/n$"
+   ],
+   [
+    "find n. Example:",
+    "find $n$. Example:"
+   ]
+  ]
+ },
+ {
+  "id": 427,
+  "note": "symbolic relations to TeX",
+  "subs": [
+   [
+    "(interior = k·exterior, ratio i:e = a:b, interior + exterior expressions in x, etc.)",
+    "(interior $= k\\,\\cdot{}$ exterior, ratio $i:e = a:b$, interior + exterior expressions in $x$, etc.)"
+   ],
+   [
+    "exterior = 360°/n to find n or the angles",
+    "exterior $= 360°/n$ to find $n$ or the angles"
+   ],
+   [
+    "8 times the exterior angle — find n.\"",
+    "8 times the exterior angle — find $n$.\""
+   ]
+  ]
+ },
+ {
+  "id": 428,
+  "note": "angle-sum formula + algebraic angle expressions to TeX",
+  "subs": [
+   [
+    "Use sum of interior angles = (n−2)·180° to set up",
+    "Use sum of interior angles $= (n-2) \\cdot 180°$ to set up"
+   ],
+   [
+    "algebraic expressions in x (or where",
+    "algebraic expressions in $x$ (or where"
+   ],
+   [
+    "Solve for x or for a missing",
+    "Solve for $x$ or for a missing"
+   ],
+   [
+    "interior angles 79°, (2x+6)°, 120°, 82°, (3x−47)° — find x.",
+    "interior angles $79°$, $(2x+6)°$, $120°$, $82°$, $(3x-47)°$ — find $x$."
+   ]
+  ]
+ },
+ {
+  "id": 429,
+  "note": "(n−3) runs to TeX; listed degree values stay prose",
+  "subs": [
+   [
+    "the rest (typically n−3) are equal; use sum of exterior angles = 360° to find n",
+    "the rest (typically $n-3$) are equal; use sum of exterior angles $= 360°$ to find $n$"
+   ],
+   [
+    "the other (n−3) are 18° each — find n.\"",
+    "the other $(n-3)$ are 18° each — find $n$.\""
+   ]
+  ]
+ },
+ {
+  "id": 431,
+  "note": "prose reasoning; 360°/exterior-angle reads as words",
+  "subs": []
+ },
+ {
+  "id": 437,
+  "note": "arrow is prose punctuation; lengths are unit values",
+  "subs": []
+ },
+ {
+  "id": 438,
+  "note": "Nk and N/k are symbolic",
+  "subs": [
+   [
+    "find the smallest k such that Nk (or N/k) is a perfect square",
+    "find the smallest $k$ such that $Nk$ (or $N/k$) is a perfect square"
+   ]
+  ]
+ },
+ {
+  "id": 448,
+  "note": "the ×5/18 factor is a symbolic run; unit names stay prose",
+  "subs": [
+   [
+    "(e.g., km/h to m/s by ×5/18)",
+    "(e.g., km/h to m/s by $\\times 5/18$)"
+   ]
+  ]
+ },
+ {
+  "id": 449,
+  "note": "word-level formulas (speed = distance / time) are teaching prose",
+  "subs": []
+ },
+ {
+  "id": 450,
+  "note": "word-level formula prose",
+  "subs": []
+ },
+ {
+  "id": 451,
+  "note": "unit values only",
+  "subs": []
+ },
+ {
+  "id": 452,
+  "note": "algebraic speeds to TeX",
+  "subs": [
+   [
+    "\"Travel x km/h for 2 h, then (x+10) km/h for 3 h, average 74 km/h — form an equation in x and solve.\"",
+    "\"Travel $x$ km/h for 2 h, then $(x+10)$ km/h for 3 h, average 74 km/h — form an equation in $x$ and solve.\""
+   ]
+  ]
+ },
+ {
+  "id": 469,
+  "note": "algebraic sector angles to TeX; 360°/100% prose",
+  "subs": [
+   [
+    "unknown values (e.g. x in 3x°, 2x°)",
+    "unknown values (e.g. $x$ in $3x°$, $2x°$)"
+   ]
+  ]
+ },
+ {
+  "id": 480,
+  "note": "per-m² is a unit; stays unicode prose",
+  "subs": []
+ },
+ {
+  "id": 489,
+  "note": "given side equations to TeX",
+  "subs": [
+   [
+    "Construct triangle ABC with AB = 6.8 cm, BC = 8.5 cm, AC = 7.5 cm.",
+    "Construct triangle ABC with $AB = 6.8$ cm, $BC = 8.5$ cm, $AC = 7.5$ cm."
+   ]
+  ]
+ },
+ {
+  "id": 490,
+  "note": "side/angle data to TeX; the word \"degrees\" is prose and stays",
+  "subs": [
+   [
+    "Triangle XYZ with XY = 7 cm, angle ZXY = 70 degrees, angle ZYX = 25 degrees.",
+    "Triangle XYZ with $XY = 7$ cm, angle $ZXY = 70$ degrees, angle $ZYX = 25$ degrees."
+   ]
+  ]
+ },
+ {
+  "id": 491,
+  "note": "side/angle data to TeX",
+  "subs": [
+   [
+    "Quadrilateral ABCD with AB drawn, BC = 7 cm, AD = 6 cm, angle ABC = 80 degrees, angle BAD = 100 degrees; measure diagonal BD.",
+    "Quadrilateral ABCD with $AB$ drawn, $BC = 7$ cm, $AD = 6$ cm, angle $ABC = 80$ degrees, angle $BAD = 100$ degrees; measure diagonal $BD$."
+   ]
+  ]
+ },
+ {
+  "id": 493,
+  "note": "distance conditions to TeX",
+  "subs": [
+   [
+    "with AP = 7 cm and BP = 6 cm; hence measure angle APB.",
+    "with $AP = 7$ cm and $BP = 6$ cm; hence measure angle $APB$."
+   ]
+  ]
+ },
+ {
+  "id": 502,
+  "note": "temperatures are unit values; prose",
+  "subs": []
+ },
+ {
+  "id": 505,
+  "note": "unit values + word-level formula; prose",
+  "subs": []
+ },
+ {
+  "id": 710,
+  "note": "HCF/LCM givens are symbolic equations",
+  "subs": [
+   [
+    "Example: HCF = 18, LCM = 324, both numbers > 20 — find the two numbers.",
+    "Example: $\\text{HCF} = 18$, $\\text{LCM} = 324$, both numbers $> 20$ — find the two numbers."
+   ]
+  ]
+ },
+ {
+  "id": 714,
+  "note": "numeric product run to TeX",
+  "subs": [
+   [
+    "Example: a 120 × 84 × 96 cm box filled",
+    "Example: a $120 \\times 84 \\times 96$ cm box filled"
+   ]
+  ]
+ },
+ {
+  "id": 720,
+  "note": "word-level formula prose",
+  "subs": []
+ },
+ {
+  "id": 721,
+  "note": "unit superscripts stay unicode (house style)",
+  "subs": []
+ },
+ {
+  "id": 751,
+  "note": "unicode subscripts to TeX",
+  "subs": [
+   [
+    "find the linear nth-term Tₙ = an + b",
+    "find the linear nth-term $T_n = an + b$"
+   ],
+   [
+    "Example: 5,9,13,17,... → Tₙ=4n+1; show -317 is the 168th term, or that 50 is not in the sequence because n=12.25.",
+    "Example: 5,9,13,17,... → $T_n = 4n+1$; show $-317$ is the 168th term, or that 50 is not in the sequence because $n = 12.25$."
+   ]
+  ]
+ },
+ {
+  "id": 752,
+  "note": "unicode super/subscripts to TeX",
+  "subs": [
+   [
+    "Example: triangle-and-pin patterns where Tₙ=3n+4, or grey/white square patterns with Gₙ=2n+1, Wₙ=n².",
+    "Example: triangle-and-pin patterns where $T_n = 3n+4$, or grey/white square patterns with $G_n = 2n+1$, $W_n = n^2$."
+   ]
+  ]
+ },
+ {
+  "id": 753,
+  "note": "unicode super/subscripts to TeX",
+  "subs": [
+   [
+    "Express Lₙ in closed form",
+    "Express $L_n$ in closed form"
+   ],
+   [
+    "Example: Lₙ:(n+3)²−n²=6n+9, or 1³+2³+...+n³=(n(n+1)/2)².",
+    "Example: $L_n$: $(n+3)^2 - n^2 = 6n+9$, or $1^3 + 2^3 + \\dots + n^3 = (n(n+1)/2)^2$."
+   ]
+  ]
+ },
+ {
+  "id": 754,
+  "note": "unicode super/subscripts + caret to TeX",
+  "subs": [
+   [
+    "Tₙ involves quadratic n²/n³ or exponential aⁿ (often plus linear)",
+    "$T_n$ involves quadratic $n^2$/$n^3$ or exponential $a^n$ (often plus linear)"
+   ],
+   [
+    "Compute Tₙ₊₁−Tₙ (or sum/product of consecutive terms)",
+    "Compute $T_{n+1} - T_n$ (or sum/product of consecutive terms)"
+   ],
+   [
+    "Example: Tₙ=n²+4n+2 → D=2n+5 always odd; Tₙ=3^(n-1)+2n−1 always even.",
+    "Example: $T_n = n^2 + 4n + 2$ → $D = 2n+5$ always odd; $T_n = 3^{n-1} + 2n - 1$ always even."
+   ]
+  ]
+ },
+ {
+  "id": 755,
+  "note": "telescoping-sum notation to TeX",
+  "subs": [
+   [
+    "Tₙ expressed as a difference of fractions",
+    "$T_n$ expressed as a difference of fractions"
+   ],
+   [
+    "(or as factors (1-1/k) that telescope multiplicatively)",
+    "(or as factors $(1 - 1/k)$ that telescope multiplicatively)"
+   ],
+   [
+    "Example: Tₙ=½(1/n−1/(n+1)) → ΣTₖ telescopes to ½(1−1/(K+1)); or product (1-1/3)(1-1/4)...(1-1/100)=2/100.",
+    "Example: $T_n = \\tfrac{1}{2}(1/n - 1/(n+1))$ → $\\Sigma T_k$ telescopes to $\\tfrac{1}{2}(1 - 1/(K+1))$; or product $(1-1/3)(1-1/4)\\dots(1-1/100) = 2/100$."
+   ]
+  ]
+ },
+ {
+  "id": 756,
+  "note": "Sₙ/Tₙ notation to TeX",
+  "subs": [
+   [
+    "Given a polynomial expression for the sum of the first n terms (e.g. Sₙ=an²+bn or n(3n−2)), recover individual terms using Tₙ=Sₙ−Sₙ₋₁",
+    "Given a polynomial expression for the sum of the first $n$ terms (e.g. $S_n = an^2 + bn$ or $n(3n-2)$), recover individual terms using $T_n = S_n - S_{n-1}$"
+   ],
+   [
+    "then write Tₙ. Reverse direction: deduce constants a,b in Sₙ from",
+    "then write $T_n$. Reverse direction: deduce constants $a$, $b$ in $S_n$ from"
+   ],
+   [
+    "Example: Sₙ=n(2n−1) gives 1,5,9,... and Tₙ=4n−3.",
+    "Example: $S_n = n(2n-1)$ gives 1,5,9,... and $T_n = 4n-3$."
+   ]
+  ]
+ },
+ {
+  "id": 757,
+  "note": "rational-term notation to TeX",
+  "subs": [
+   [
+    "Sequence of fractions where Tₙ=(an+b)/(cn+d) or similar rational form",
+    "Sequence of fractions where $T_n = (an+b)/(cn+d)$ or similar rational form"
+   ],
+   [
+    "simplify Tₙ₊₁−Tₙ (or Tₙ₊₁+Tₙ) into a single combined fraction",
+    "simplify $T_{n+1} - T_n$ (or $T_{n+1} + T_n$) into a single combined fraction"
+   ],
+   [
+    "Example: 13/5, 10/10, 7/15, 4/20 → Tₙ=(16−3n)/(5n), Tₙ₊₁−Tₙ=−16/(5n(n+1)).",
+    "Example: $13/5$, $10/10$, $7/15$, $4/20$ → $T_n = (16-3n)/(5n)$, $T_{n+1} - T_n = -16/(5n(n+1))$."
+   ]
+  ]
+ },
+ {
+  "id": 766,
+  "note": "set expressions to TeX",
+  "subs": [
+   [
+    "shade a given expression like (A∪B')' on the diagram",
+    "shade a given expression like $(A \\cup B')'$ on the diagram"
+   ],
+   [
+    "Example: \"On the Venn diagram, shade A'∪B\" paired",
+    "Example: \"On the Venn diagram, shade $A' \\cup B$\" paired"
+   ]
+  ]
+ },
+ {
+  "id": 767,
+  "note": "set expressions to TeX",
+  "subs": [
+   [
+    "compound expressions such as A∩B', (A∪B)', A'∩B' or P∩Q",
+    "compound expressions such as $A \\cap B'$, $(A \\cup B)'$, $A' \\cap B'$ or $P \\cap Q$"
+   ],
+   [
+    "Example: \"List the elements in (A∪B)'\" giving {4, 8, 10, 14}.",
+    "Example: \"List the elements in $(A \\cup B)'$\" giving $\\{4, 8, 10, 14\\}$."
+   ]
+  ]
+ },
+ {
+  "id": 768,
+  "note": "n(·) expressions to TeX",
+  "subs": [
+   [
+    "Compute n(•) of compound set expressions",
+    "Compute $n(\\bullet)$ of compound set expressions"
+   ],
+   [
+    "find n((A'∪B)∩(A∪B)')\" or \"Find n((P∩Q')∪(P'∩Q))\".",
+    "find $n((A' \\cup B) \\cap (A \\cup B)')$\" or \"Find $n((P \\cap Q') \\cup (P' \\cap Q))$\"."
+   ]
+  ]
+ },
+ {
+  "id": 769,
+  "note": "symbol list + candidate sets to TeX",
+  "subs": [
+   [
+    "choosing from a fixed list of symbols (∈, ∉, ⊂, ⊆, ⊄, ∅).",
+    "choosing from a fixed list of symbols ($\\in$, $\\notin$, $\\subset$, $\\subseteq$, $\\not\\subset$, $\\varnothing$)."
+   ],
+   [
+    "Example: \"{2,5,10} ___ A\" with the choices ⊂, ∈, ∉, ⊆, ∅.",
+    "Example: \"$\\{2,5,10\\}$ ___ $A$\" with the choices $\\subset$, $\\in$, $\\notin$, $\\subseteq$, $\\varnothing$."
+   ]
+  ]
+ },
+ {
+  "id": 772,
+  "note": "set-count expressions to TeX; universal set symbol",
+  "subs": [
+   [
+    "finding maximum or minimum n(•) under given totals",
+    "finding maximum or minimum $n(\\bullet)$ under given totals"
+   ],
+   [
+    "\"Find the largest n((P∪Q)') given n(ξ)=18, n(P)=9, n(Q)=15\"",
+    "\"Find the largest $n((P \\cup Q)')$ given $n(\\xi) = 18$, $n(P) = 9$, $n(Q) = 15$\""
+   ],
+   [
+    "\"List all subsets of {2,3,4} and deduce the number of subsets of Z\".",
+    "\"List all subsets of $\\{2,3,4\\}$ and deduce the number of subsets of $Z$\"."
+   ]
+  ]
+ },
+ {
+  "id": 833,
+  "note": "already TeX; arrows are prose punctuation",
+  "subs": []
+ },
+ {
+  "id": 835,
+  "note": "probability statement to TeX, words preserved via \\text",
+  "subs": [
+   [
+    "find P(both > 360 g).",
+    "find $P(\\text{both} > 360\\text{ g})$."
+   ]
+  ]
+ },
+ {
+  "id": 838,
+  "note": "set expression + universal set to TeX; cross-tab × labels stay prose",
+  "subs": [
+   [
+    "Venn-set probability with universal set ξ and operations like (A∪B)′",
+    "Venn-set probability with universal set $\\xi$ and operations like $(A \\cup B)'$"
+   ]
+  ]
+ },
+ {
+  "id": 897,
+  "note": "formula run to TeX; named angle to TeX",
+  "subs": [
+   [
+    "Use the (n-2)·180° interior sum",
+    "Use the $(n-2) \\cdot 180°$ interior sum"
+   ],
+   [
+    "find ∠TRD.",
+    "find $\\angle TRD$."
+   ]
+  ]
+ },
+ {
+  "id": 898,
+  "note": "named angles to TeX; word-level 2× rule stays prose",
+  "subs": [
+   [
+    "find ∠AOB, ∠DAB, ∠ATB.",
+    "find $\\angle AOB$, $\\angle DAB$, $\\angle ATB$."
+   ]
+  ]
+ },
+ {
+  "id": 899,
+  "note": "given equal sides to TeX",
+  "subs": [
+   [
+    "through A, B, C, D given AB = AD and the listed angles.",
+    "through A, B, C, D given $AB = AD$ and the listed angles."
+   ]
+  ]
+ },
+ {
+  "id": 905,
+  "note": "rate unit values stay prose",
+  "subs": []
+ },
+ {
+  "id": 906,
+  "note": "unit names + arrow stay prose",
+  "subs": []
+ },
+ {
+  "id": 910,
+  "note": "unit values stay prose",
+  "subs": []
+ },
+ {
+  "id": 932,
+  "note": "mixed number to TeX; unit quantities stay prose",
+  "subs": [
+   [
+    "Example: express 1⅔ kg : 450 g : 300 g in simplest form.",
+    "Example: express $1\\tfrac{2}{3}$ kg : 450 g : 300 g in simplest form."
+   ]
+  ]
+ },
+ {
+  "id": 934,
+  "note": "symbolic ratio chain to TeX",
+  "subs": [
+   [
+    "(A:B and B:C → A:B:C)",
+    "($A:B$ and $B:C$ → $A:B:C$)"
+   ]
+  ]
+ },
+ {
+  "id": 939,
+  "note": "segment ratio to TeX; numeric ratio values stay prose",
+  "subs": [
+   [
+    "(e.g. AC:AB on a straight line)",
+    "(e.g. $AC:AB$ on a straight line)"
+   ]
+  ]
+ },
+ {
+  "id": 949,
+  "note": "caret scientific notation to TeX",
+  "subs": [
+   [
+    "into standard form A x 10^n",
+    "into standard form $A \\times 10^n$"
+   ],
+   [
+    "or \"(5.87 x 10^6) / (3.94 x 10^-2).\"",
+    "or \"$(5.87 \\times 10^6) / (3.94 \\times 10^{-2})$.\""
+   ]
+  ]
+ },
+ {
+  "id": 959,
+  "note": "rational equation to TeX",
+  "subs": [
+   [
+    "Example: solve 5/(x+4) = 4 + x/(1-2x).",
+    "Example: solve $5/(x+4) = 4 + x/(1-2x)$."
+   ]
+  ]
+ },
+ {
+  "id": 965,
+  "note": "already TeX; SI-prefix unit conversions stay prose",
+  "subs": []
+ },
+ {
+  "id": 966,
+  "note": "already TeX; km² unit stays unicode",
+  "subs": []
+ },
+ {
+  "id": 967,
+  "note": "already TeX; word-level formula stays prose",
+  "subs": []
+ },
+ {
+  "id": 969,
+  "note": "symbolic scale form to TeX",
+  "subs": [
+   [
+    "express the scale in the form 1 : n by reducing the ratio to a unit ratio",
+    "express the scale in the form $1:n$ by reducing the ratio to a unit ratio"
+   ]
+  ]
+ },
+ {
+  "id": 971,
+  "note": "unit areas + numeric scales stay prose",
+  "subs": []
+ },
+ {
+  "id": 972,
+  "note": "numeric scales + unit areas stay prose",
+  "subs": []
+ },
+ {
+  "id": 982,
+  "note": "power of x to TeX",
+  "subs": [
+   [
+    "\"y is inversely proportional to x², find % change in y when x increases by 25%\".",
+    "\"$y$ is inversely proportional to $x^2$, find % change in $y$ when $x$ increases by 25%\"."
+   ]
+  ]
+ },
+ {
+  "id": 988,
+  "note": "prime factorisations to TeX",
+  "subs": [
+   [
+    "e.g. 2250 = 2 × 3² × 5³ or 1400 = 2³ × 5² × 7.",
+    "e.g. $2250 = 2 \\times 3^2 \\times 5^3$ or $1400 = 2^3 \\times 5^2 \\times 7$."
+   ]
+  ]
+ },
+ {
+  "id": 989,
+  "note": "symbolic k-adjustment runs to TeX",
+  "subs": [
+   [
+    "Find the smallest integer k (or prime fraction p/q) such that N×k, N/k, or N×p/q becomes a perfect square. Includes √(N×k) being a whole number.",
+    "Find the smallest integer $k$ (or prime fraction $p/q$) such that $N \\times k$, $N/k$, or $N \\times p/q$ becomes a perfect square. Includes $\\sqrt{N \\times k}$ being a whole number."
+   ],
+   [
+    "Example: 168k perfect square → k=42.",
+    "Example: $168k$ perfect square → $k = 42$."
+   ]
+  ]
+ },
+ {
+  "id": 990,
+  "note": "symbolic k-adjustment runs to TeX",
+  "subs": [
+   [
+    "Find the smallest integer k (or prime fraction p/q) such that N×k, N/k, or N×p/q becomes a perfect cube. Includes ∛(N×k) being a whole number",
+    "Find the smallest integer $k$ (or prime fraction $p/q$) such that $N \\times k$, $N/k$, or $N \\times p/q$ becomes a perfect cube. Includes $\\sqrt[3]{N \\times k}$ being a whole number"
+   ],
+   [
+    "Example: 1400k cube → k=245.",
+    "Example: $1400k$ cube → $k = 245$."
+   ]
+  ]
+ },
+ {
+  "id": 992,
+  "note": "HCF/LCM givens to TeX",
+  "subs": [
+   [
+    "Example: HCF=84, LCM=504, both > 100 → numbers are 168 and 252.",
+    "Example: $\\text{HCF} = 84$, $\\text{LCM} = 504$, both $> 100$ → numbers are 168 and 252."
+   ]
+  ]
+ },
+ {
+  "id": 993,
+  "note": "symbolic exponent relations to TeX",
+  "subs": [
+   [
+    "relations like LCM(A, B) = ..., HCF(A, B) = ..., A | B, or B/A = constant.",
+    "relations like $\\text{LCM}(A, B) = \\dots$, $\\text{HCF}(A, B) = \\dots$, $A \\mid B$, or $B/A$ = constant."
+   ],
+   [
+    "Example: A = 3^(m+2)×7, B = q×3^m×7, LCM = 3³×5×7 → m=1, q=5.",
+    "Example: $A = 3^{m+2} \\times 7$, $B = q \\times 3^m \\times 7$, $\\text{LCM} = 3^3 \\times 5 \\times 7$ → $m = 1$, $q = 5$."
+   ]
+  ]
+ },
+ {
+  "id": 994,
+  "note": "numeric product run to TeX",
+  "subs": [
+   [
+    "Example: cuboid blocks 24×20×15 packed into a cube of side 120 (LCM).",
+    "Example: cuboid blocks $24 \\times 20 \\times 15$ packed into a cube of side 120 (LCM)."
+   ]
+  ]
+ },
+ {
+  "id": 995,
+  "note": "prime factorisation + root bound to TeX",
+  "subs": [
+   [
+    "primality testing by trial division up to √N.",
+    "primality testing by trial division up to $\\sqrt{N}$."
+   ],
+   [
+    "Example: 126 = 2 × 3² × 7 has odd indices for 2 and 7 → not a perfect square.",
+    "Example: $126 = 2 \\times 3^2 \\times 7$ has odd indices for 2 and 7 → not a perfect square."
+   ]
+  ]
+ },
+ {
+  "id": 996,
+  "note": "ratio equation to TeX; listed ratio values stay prose",
+  "subs": [
+   [
+    "Example: interior:exterior = 5:1, n=12.",
+    "Example: interior:exterior $= 5:1$, $n = 12$."
+   ]
+  ]
+ },
+ {
+  "id": 998,
+  "note": "derived formulas to TeX",
+  "subs": [
+   [
+    "Express n in terms of a variable (y, w)",
+    "Express $n$ in terms of a variable ($y$, $w$)"
+   ],
+   [
+    "(n vs 2n, sides tripled, sides doubled with angle increase)",
+    "($n$ vs $2n$, sides tripled, sides doubled with angle increase)"
+   ],
+   [
+    "derive a formula such as N = 2n/(n-4) for a ring of polygons or X = pn^2 + qn for diagonals.",
+    "derive a formula such as $N = 2n/(n-4)$ for a ring of polygons or $X = pn^2 + qn$ for diagonals."
+   ],
+   [
+    "Example: sides doubled => interior +20°, find n.",
+    "Example: sides doubled => interior $+20°$, find $n$."
+   ]
+  ]
+ },
+ {
+  "id": 1001,
+  "note": "integer bound to TeX",
+  "subs": [
+   [
+    "Reasoning hinges on n having to be a positive integer ≥ 3.",
+    "Reasoning hinges on $n$ having to be a positive integer $\\ge 3$."
+   ]
+  ]
+ },
+ {
+  "id": 1002,
+  "note": "pentagon relations to TeX",
+  "subs": [
+   [
+    "Example: regular pentagon: ABE = 36°, BE ∥ CD, BDXE parallelogram.",
+    "Example: regular pentagon: $ABE = 36°$, $BE \\parallel CD$, $BDXE$ parallelogram."
+   ]
+  ]
+ },
+ {
+  "id": 1012,
+  "note": "formula with root to TeX; unit values stay prose",
+  "subs": [
+   [
+    "(area, volume, BMI, density, T = √(w/d³))",
+    "(area, volume, BMI, density, $T = \\sqrt{w/d^3}$)"
+   ]
+  ]
+ },
+ {
+  "id": 1013,
+  "note": "compound-interest formula to TeX; escape currency $ (row now carries spans)",
+  "subs": [
+   [
+    "Apply compound interest A = P(1+r/n)^(nt) at any compounding frequency",
+    "Apply compound interest $A = P(1 + r/n)^{nt}$ at any compounding frequency"
+   ],
+   [
+    "Example: '$5000 at 4% per annum compounded monthly",
+    "Example: '\\$5000 at 4% per annum compounded monthly"
+   ]
+  ]
+ },
+ {
+  "id": 1030,
+  "note": "word-level formulas; existing $ amounts collide as prices and render literally already",
+  "subs": []
+ },
+ {
+  "id": 1047,
+  "note": "power of d to TeX",
+  "subs": [
+   [
+    "\"F is inversely proportional to d^2; when d increases by 150%, find the percentage reduction in F.\"",
+    "\"$F$ is inversely proportional to $d^2$; when $d$ increases by 150%, find the percentage reduction in $F$.\""
+   ]
+  ]
+ },
+ {
+  "id": 1052,
+  "note": "segment-area formula to TeX; word-level segment = sector − triangle stays prose",
+  "subs": [
+   [
+    "with area ½r²sinθ.",
+    "with area $\\tfrac{1}{2}r^2\\sin\\theta$."
+   ]
+  ]
+ },
+ {
+  "id": 1053,
+  "note": "tangent geometry to TeX",
+  "subs": [
+   [
+    "Use tangent ⊥ radius and the angle sum of quadrilateral OAPB to relate ∠APB and ∠AOB.",
+    "Use tangent $\\perp$ radius and the angle sum of quadrilateral OAPB to relate $\\angle APB$ and $\\angle AOB$."
+   ],
+   [
+    "Show ∠PRQ = 11π/18 and find the area",
+    "Show $\\angle PRQ = 11\\pi/18$ and find the area"
+   ]
+  ]
+ },
+ {
+  "id": 1055,
+  "note": "r and θ to TeX",
+  "subs": [
+   [
+    "solve algebraically for the radius r or the angle θ.",
+    "solve algebraically for the radius $r$ or the angle $\\theta$."
+   ],
+   [
+    "is k times that of minor sector\" problems",
+    "is $k$ times that of minor sector\" problems"
+   ],
+   [
+    "sector is three times the perimeter of the minor sector — find θ.\"",
+    "sector is three times the perimeter of the minor sector — find $\\theta$.\""
+   ]
+  ]
+ },
+ {
+  "id": 1069,
+  "note": "vector scalar-multiple relation to TeX",
+  "subs": [
+   [
+    "in the a,b basis",
+    "in the $a$, $b$ basis"
+   ],
+   [
+    "Example: show O, N, T collinear given OT = (4/3) ON.",
+    "Example: show O, N, T collinear given $OT = (4/3)\\,ON$."
+   ]
+  ]
+ },
+ {
+  "id": 1086,
+  "note": "word-level angle rules stay prose",
+  "subs": []
+ },
+ {
+  "id": 1093,
+  "note": "rational exponents to TeX; main example already TeX",
+  "subs": [
+   [
+    "the outer exponent is a fraction such as ±1/2, ±1/3, ±2/3, ±3/4, ±5/6",
+    "the outer exponent is a fraction such as $\\pm 1/2$, $\\pm 1/3$, $\\pm 2/3$, $\\pm 3/4$, $\\pm 5/6$"
+   ]
+  ]
+ },
+ {
+  "id": 1103,
+  "note": "parabola equation to TeX",
+  "subs": [
+   [
+    "Example: \"Sketch y = 2(x+1)(x−3) showing intercepts and turning point.\"",
+    "Example: \"Sketch $y = 2(x+1)(x-3)$ showing intercepts and turning point.\""
+   ]
+  ]
+ },
+ {
+  "id": 1108,
+  "note": "equal-segment chain to TeX",
+  "subs": [
+   [
+    "squares ABCD with AP=BQ=CR=DS",
+    "squares ABCD with $AP = BQ = CR = DS$"
+   ]
+  ]
+ },
+ {
+  "id": 1137,
+  "note": "triangle data to TeX; rule itself already TeX",
+  "subs": [
+   [
+    "in triangle ABC with AB = 14.6 cm, BC = 7.6 cm, angle BAC = 31°, find the obtuse angle ACB.",
+    "in triangle ABC with $AB = 14.6$ cm, $BC = 7.6$ cm, angle $BAC = 31°$, find the obtuse angle $ACB$."
+   ]
+  ]
+ },
+ {
+  "id": 1138,
+  "note": "triangle data to TeX",
+  "subs": [
+   [
+    "Example: with PQ = 25, QR = 7, find PR using the included angle",
+    "Example: with $PQ = 25$, $QR = 7$, find $PR$ using the included angle"
+   ]
+  ]
+ },
+ {
+  "id": 1139,
+  "note": "already TeX; cm² unit stays unicode",
+  "subs": []
+ },
+ {
+  "id": 1140,
+  "note": "bearing values + compass letters stay prose",
+  "subs": []
+ },
+ {
+  "id": 1142,
+  "note": "trig equations to TeX",
+  "subs": [
+   [
+    "Solving trigonometric equations of the form sin x = k, cos x = k or scaled variants",
+    "Solving trigonometric equations of the form $\\sin x = k$, $\\cos x = k$ or scaled variants"
+   ],
+   [
+    "Example: 3 sin x = 1 in 0° ≤ x ≤ 180°;",
+    "Example: $3 \\sin x = 1$ in $0° \\le x \\le 180°$;"
+   ]
+  ]
+ },
+ {
+  "id": 1143,
+  "note": "arc/sector formulas to TeX",
+  "subs": [
+   [
+    "often using the formulas s = rθ and A = ½r²θ.",
+    "often using the formulas $s = r\\theta$ and $A = \\tfrac{1}{2}r^2\\theta$."
+   ]
+  ]
+ },
+ {
+  "id": 1144,
+  "note": "cm³ unit stays unicode",
+  "subs": []
+ },
+ {
+  "id": 1145,
+  "note": "surface-area expressions to TeX",
+  "subs": [
+   [
+    "via 2πr², πrl and πr².",
+    "via $2\\pi r^2$, $\\pi r l$ and $\\pi r^2$."
+   ]
+  ]
+ },
+ {
+  "id": 1146,
+  "note": "word-level formula stays prose",
+  "subs": []
+ },
+ {
+  "id": 1149,
+  "note": "density unit stays prose",
+  "subs": []
+ },
+ {
+  "id": 1204,
+  "note": "already TeX; V/N-shaped is prose",
+  "subs": []
+ },
+ {
+  "id": 1316,
+  "note": "name-ratios and currency already safe; prose",
+  "subs": []
+ },
+ {
+  "id": 1344,
+  "note": "already TeX; ÷ between words is prose",
+  "subs": []
+ },
+ {
+  "id": 1357,
+  "note": "2×2 system size is idiomatic prose; equations already TeX",
+  "subs": []
+ },
+ {
+  "id": 1390,
+  "note": "already TeX; unit areas stay unicode",
+  "subs": []
+ },
+ {
+  "id": 1392,
+  "note": "symbolic scale form to TeX",
+  "subs": [
+   [
+    "Derive the 1:n (or n value) of a scale",
+    "Derive the $1:n$ (or $n$ value) of a scale"
+   ],
+   [
+    "(e.g. \"25 km² ↔ 16 cm² → 1:n\").",
+    "(e.g. \"25 km² ↔ 16 cm² → $1:n$\")."
+   ]
+  ]
+ },
+ {
+  "id": 1423,
+  "note": "angle equations to TeX; the word \"degrees\" stays",
+  "subs": [
+   [
+    "Example: AB parallel to EDC with angle BDC = 63 degrees, deduce angle ABD = 63 degrees as alternate angles.",
+    "Example: AB parallel to EDC with angle $BDC = 63$ degrees, deduce angle $ABD = 63$ degrees as alternate angles."
+   ]
+  ]
+ },
+ {
+  "id": 1427,
+  "note": "angle relation to TeX",
+  "subs": [
+   [
+    "so angle PSQ = 90 − angle OPS.",
+    "so angle $PSQ$ = 90 − angle $OPS$."
+   ]
+  ]
+ },
+ {
+  "id": 1428,
+  "note": "construction data to TeX; the word \"degrees\" stays",
+  "subs": [
+   [
+    "construct triangle PRQ with QR = 8 cm and angle QPR = 120 degrees, then measure angle PQR.",
+    "construct triangle PRQ with $QR = 8$ cm and angle $QPR = 120$ degrees, then measure angle $PQR$."
+   ]
+  ]
+ },
+ {
+  "id": 1433,
+  "note": "π attached to a hyphenated word",
+  "subs": [
+   [
+    "surds, π-expressions, or values in mixed units",
+    "surds, $\\pi$-expressions, or values in mixed units"
+   ]
+  ]
+ },
+ {
+  "id": 1455,
+  "note": "surd and π values to TeX",
+  "subs": [
+   [
+    "a list containing 1.5π, 2.3 recurring, √12.1, 25.82.",
+    "a list containing $1.5\\pi$, 2.3 recurring, $\\sqrt{12.1}$, 25.82."
+   ]
+  ]
+ },
+ {
+  "id": 1464,
+  "note": "already TeX; degree values prose",
+  "subs": []
+ },
+ {
+  "id": 1465,
+  "note": "already TeX; degree values prose",
+  "subs": []
+ },
+ {
+  "id": 1466,
+  "note": "already TeX",
+  "subs": []
+ },
+ {
+  "id": 1467,
+  "note": "already TeX; numeric ratio prose",
+  "subs": []
+ },
+ {
+  "id": 1468,
+  "note": "already TeX",
+  "subs": []
+ },
+ {
+  "id": 1469,
+  "note": "degree values prose; names in narrative stay prose",
+  "subs": []
+ },
+ {
+  "id": 1482,
+  "note": "word-level formula prose",
+  "subs": []
+ },
+ {
+  "id": 1487,
+  "note": "per-m² unit stays unicode",
+  "subs": []
+ },
+ {
+  "id": 1488,
+  "note": "unit ratio values prose",
+  "subs": []
+ },
+ {
+  "id": 1490,
+  "note": "symbolic ratio chains to TeX",
+  "subs": [
+   [
+    "Combine two pair-wise ratios a:b and b:c into a single chained ratio a:b:c by scaling",
+    "Combine two pair-wise ratios $a:b$ and $b:c$ into a single chained ratio $a:b:c$ by scaling"
+   ],
+   [
+    "Example: a:b = 5:6 and b:c = 9:4 → a:b:c = 15:18:8.",
+    "Example: $a:b = 5:6$ and $b:c = 9:4$ → $a:b:c = 15:18:8$."
+   ]
+  ]
+ },
+ {
+  "id": 1542,
+  "note": "distributive-law computation to TeX",
+  "subs": [
+   [
+    "(e.g. 145 × 0.0234 − 45 × 0.0234 via the distributive law)",
+    "(e.g. $145 \\times 0.0234 - 45 \\times 0.0234$ via the distributive law)"
+   ]
+  ]
+ },
+ {
+  "id": 983,
+  "note": "already TeX; arrows prose",
+  "subs": []
+ },
+ {
+  "id": 985,
+  "note": "already TeX; arrows prose",
+  "subs": []
+ },
+ {
+  "id": 986,
+  "note": "word-level workers × time stays prose",
+  "subs": []
+ },
+ {
+  "id": 997,
+  "note": "degree values + numeric ratio stay prose",
+  "subs": []
+ },
+ {
+  "id": 1000,
+  "note": "degree values stay prose",
+  "subs": []
+ },
+ {
+  "id": 1057,
+  "note": "degree/unit values stay prose",
+  "subs": []
+ },
+ {
+  "id": 519,
+  "note": "already TeX; arrows prose",
+  "subs": []
+ },
+ {
+  "id": 520,
+  "note": "already TeX",
+  "subs": []
+ },
+ {
+  "id": 530,
+  "note": "already TeX (° inside spans is live precedent)",
+  "subs": []
+ },
+ {
+  "id": 544,
+  "note": "already TeX; m² unit unicode",
+  "subs": []
+ },
+ {
+  "id": 546,
+  "note": "line∩curve is idiomatic prose",
+  "subs": []
+ },
+ {
+  "id": 548,
+  "note": "line∩curve idiomatic prose; equations already TeX",
+  "subs": []
+ },
+ {
+  "id": 590,
+  "note": "word-level × stays prose",
+  "subs": []
+ },
+ {
+  "id": 612,
+  "note": "already TeX; arrows prose",
+  "subs": []
+ },
+ {
+  "id": 616,
+  "note": "already TeX; arrows prose",
+  "subs": []
+ },
+ {
+  "id": 639,
+  "note": "already TeX; arrows prose",
+  "subs": []
+ },
+ {
+  "id": 640,
+  "note": "already TeX; arrows prose",
+  "subs": []
+ },
+ {
+  "id": 705,
+  "note": "LHS→RHS arrow is prose",
+  "subs": []
+ },
+ {
+  "id": 1004,
+  "note": "already TeX",
+  "subs": []
+ },
+ {
+  "id": 1005,
+  "note": "already TeX",
+  "subs": []
+ },
+ {
+  "id": 1006,
+  "note": "already TeX",
+  "subs": []
+ },
+ {
+  "id": 1007,
+  "note": "already TeX",
+  "subs": []
+ },
+ {
+  "id": 1008,
+  "note": "already TeX",
+  "subs": []
+ },
+ {
+  "id": 1009,
+  "note": "already TeX",
+  "subs": []
+ }
+]

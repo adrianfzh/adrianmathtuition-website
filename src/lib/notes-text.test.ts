@@ -51,6 +51,28 @@ describe('cleanDescription', () => {
     expect(cleanDescription(raw).example).toBeNull();
   });
 
+  it('keeps inline TeX spans intact in both summary and example (2026-09-02 pass)', () => {
+    // Verbatim from subgroups #756 after the EM TeX pass: the split must land
+    // on "Example:" and never inside a $…$ span, and the dollar delimiters
+    // must survive tidy()/unquote() so mathHtml can still pair them.
+    const raw =
+      'Given a polynomial expression for the sum of the first $n$ terms (e.g. $S_n = an^2 + bn$ ' +
+      'or $n(3n-2)$), recover individual terms using $T_n = S_n - S_{n-1}$. ' +
+      'Example: $S_n = n(2n-1)$ gives 1,5,9,... and $T_n = 4n-3$.';
+    const { summary, example } = cleanDescription(raw);
+    expect(summary).toBe(
+      'Given a polynomial expression for the sum of the first $n$ terms (e.g. $S_n = an^2 + bn$ ' +
+        'or $n(3n-2)$), recover individual terms using $T_n = S_n - S_{n-1}$.',
+    );
+    // An unquoted example keeps its own full stop (only a quote-closing period
+    // is stripped) — existing behaviour, pinned here so a TeX span ending the
+    // sentence never loses its closing "$".
+    expect(example).toBe('$S_n = n(2n-1)$ gives 1,5,9,... and $T_n = 4n-3$.');
+    // Every span still pairs: an odd dollar count would mean a split mid-span.
+    expect((summary.match(/\$/g) ?? []).length % 2).toBe(0);
+    expect((example!.match(/\$/g) ?? []).length % 2).toBe(0);
+  });
+
   it('collapses authoring whitespace', () => {
     expect(cleanDescription('  Two   points\n  and a line.  ').summary).toBe(
       'Two points and a line.',
