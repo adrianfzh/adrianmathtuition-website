@@ -12,8 +12,10 @@
 //      slips, and the worked solution when the run is still inside the
 //      papers window. A bank twin (variant_qb_id) also gets a "Try a similar
 //      one" deep link into /app/practice?qid=….
-//   3. ✂️ My clippings — the existing gallery (edit note / delete, in
-//      my-notes-gallery.tsx, talking to /api/portal/my-notes).
+//   3. ✂️ My clippings & photos — the gallery (edit note / delete, in
+//      my-notes-gallery.tsx, talking to /api/portal/my-notes): clippings cut
+//      from marked papers + 📷 photos of work done outside the app (school
+//      worksheets, homework — added via ➕ Add a photo, 2026-09-02).
 //
 // /app/plan now redirects here. Server component: reads with the service key
 // scoped to the logged-in student's portal identity (rec… / acct:<uuid>,
@@ -32,7 +34,9 @@ import { createServiceClient } from '@/lib/supabase-server';
 import { loadPapersAndNotebook, type NotebookEntryRow, type PapersAndNotebook } from '@/lib/notebook-data';
 import { buildPlan, type RevisionPlan } from '@/lib/plan';
 import { retryOrder, sgtToday } from '@/lib/notebook';
-import { MAX_NOTES_PER_STUDENT, type MyNoteRow } from '@/lib/portal-notes';
+import { MAX_NOTES_PER_STUDENT, type MyNoteRow, type TopicOptionGroup } from '@/lib/portal-notes';
+import { getTopicsForPaperLevel } from '@/lib/canonical-topics';
+import { qbLevelsFor } from '@/lib/qb-levels';
 import type { StudentQuestion } from '@/lib/portal-marking';
 import AnnotatedSolution from '../marking/AnnotatedSolution';
 import { mathHtml } from '@/lib/math-inline';
@@ -126,12 +130,29 @@ export default async function MyNotebookPage() {
   const shown = retry.slice(0, RETRY_CAP);
   const extra = retry.slice(RETRY_CAP);
 
+  // Topic options for the ➕ Add-a-photo tagger: the canonical list for the
+  // student's level(s) — the same qbLevelsFor derivation the practice picker
+  // starts from — merged by category label and deduped (a Sec 3 student's
+  // keys reach both the EM and AM lists twice). Purely optional in the UI.
+  const seenTopics = new Set<string>();
+  const topicGroups: TopicOptionGroup[] = [];
+  for (const { key } of qbLevelsFor(account?.level ?? null, account?.subjects ?? null)) {
+    for (const cat of getTopicsForPaperLevel(key)) {
+      const fresh = cat.topics.filter(t => !seenTopics.has(t));
+      if (fresh.length === 0) continue;
+      fresh.forEach(t => seenTopics.add(t));
+      const existing = topicGroups.find(g => g.label === cat.label);
+      if (existing) existing.topics.push(...fresh);
+      else topicGroups.push({ label: cat.label, topics: fresh });
+    }
+  }
+
   return (
     <div className="space-y-5 pb-24 sm:pb-4">
       <div className="pt-1">
         <h1 className="text-xl font-bold text-navy">My Notebook</h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          Built from your marked papers — focus topics, questions to retry, and your saved clippings.
+          Built from your marked papers and your own photos — focus topics, questions to retry, and everything you&apos;ve saved.
         </p>
       </div>
 
@@ -217,11 +238,12 @@ export default async function MyNotebookPage() {
         </section>
       )}
 
-      {/* Band 3 — the clippings gallery, behaviour unchanged (lightbox, edit
-          note, delete with confirm — my-notes-gallery.tsx). */}
+      {/* Band 3 — the gallery: ✂️ clippings from marked papers + 📷 photos of
+          outside work (lightbox, edit note, delete with confirm, ➕ add a
+          photo — my-notes-gallery.tsx). */}
       <section>
-        <p className={`${BAND} mb-2`}>✂️ My clippings</p>
-        <MyNotesGallery initialNotes={clippings} />
+        <p className={`${BAND} mb-2`}>✂️ My clippings &amp; photos</p>
+        <MyNotesGallery initialNotes={clippings} topicGroups={topicGroups} />
       </section>
     </div>
   );

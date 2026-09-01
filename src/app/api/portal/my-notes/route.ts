@@ -1,12 +1,21 @@
 // /api/portal/my-notes — "Save to My Notebook": clippings a student cuts out
 // of their released marked papers (Adrian, 2026-08-27; the surface was named
-// My Notes until the 2026-08-28 My Notebook merge — the route path stays).
+// My Notes until the 2026-08-28 My Notebook merge — the route path stays),
+// plus 📷 photos of work done outside the app (2026-09-02 — school
+// worksheets, tuition homework, textbook working, straight into the gallery).
 //
-//   GET              the student's own clippings, newest first
-//   POST             save one clipping: {runId?, sourceLabel, topic?, note?, image}
-//                    (image = PNG data URL from the ✂️ clipper's canvas crop)
-//   PATCH            edit the typed note on one clipping: {id, note}
-//   DELETE ?id=      delete one clipping (Blob file + row)
+//   GET              the student's own gallery items, newest first
+//   POST             save one item:
+//                      clipping — {runId?, sourceLabel, topic?, note?, image}
+//                                 (image = PNG data URL from the ✂️ clipper)
+//                      photo    — {kind:'photo', topic?, note?, image}
+//                                 (image = ≤1600px JPEG/PNG data URL from the
+//                                 client downscaler; no runId, no sourceLabel)
+//                    Photos are discriminated by Blob filename, not a column:
+//                    `photo-<uuid>.<ext>` vs the clipper's `<uuid>.<ext>` —
+//                    lib/portal-notes.noteKind() reads it back off image_url.
+//   PATCH            edit the typed note on one item: {id, note}
+//   DELETE ?id=      delete one item (Blob file + row)
 //
 // Access model — the /app/marking + notebook pattern: `portal_notes` has RLS
 // enabled with NO policies, so students never touch it directly. Every query
@@ -23,9 +32,10 @@ import { portalIdentity } from '@/lib/portal-auth';
 import {
   parseCreatePayload,
   parseUpdatePayload,
-  isPngBytes,
+  sniffImageType,
   isUuid,
   MAX_NOTES_PER_STUDENT,
+  PHOTO_BLOB_PREFIX,
   type MyNoteRow,
 } from '@/lib/portal-notes';
 
@@ -78,11 +88,13 @@ export async function POST(req: NextRequest) {
   }
   const parsed = parseCreatePayload(body);
   if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
-  const { runId, sourceLabel, topic, note, imageBase64 } = parsed.value;
+  const { kind, runId, sourceLabel, topic, note, imageBase64 } = parsed.value;
 
   const bytes = Buffer.from(imageBase64, 'base64');
-  if (!isPngBytes(bytes)) {
-    return NextResponse.json({ error: 'image must be a PNG' }, { status: 400 });
+  // The sniff, not the data-url label, decides what the bytes are.
+  const imageType = sniffImageType(bytes);
+  if (!imageType) {
+    return NextResponse.json({ error: 'image must be a PNG or JPEG' }, { status: 400 });
   }
 
   const svc = createServiceClient();
@@ -100,6 +112,7 @@ export async function POST(req: NextRequest) {
   // Keep the run linkage only when the run really is this student's. A
   // mismatch (or a run deleted since the page loaded) degrades to null — the
   // clipping itself is the value; the FK is `on delete set null` anyway.
+  // (Photos never reach here with a runId — parseCreatePayload nulls it.)
   let verifiedRunId: string | null = null;
   if (runId) {
     const { data: run } = await svc
@@ -111,9 +124,12 @@ export async function POST(req: NextRequest) {
     verifiedRunId = run ? runId : null;
   }
 
-  const blob = await put(`portal-notes/${sid}/${crypto.randomUUID()}.png`, bytes, {
+  // The filename IS the kind discriminator — see the header + lib/portal-notes.
+  const baseName = `${kind === 'photo' ? PHOTO_BLOB_PREFIX : ''}${crypto.randomUUID()}`;
+  const ext = imageType === 'png' ? 'png' : 'jpg';
+  const blob = await put(`portal-notes/${sid}/${baseName}.${ext}`, bytes, {
     access: 'public',
-    contentType: 'image/png',
+    contentType: imageType === 'png' ? 'image/png' : 'image/jpeg',
   });
 
   const { data: row, error } = await svc
