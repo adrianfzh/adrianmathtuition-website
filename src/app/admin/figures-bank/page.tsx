@@ -39,6 +39,8 @@ export default function FiguresPage() {
   const [flaggedCount, setFlaggedCount] = useState(0);
   const [withheld, setWithheld] = useState(0);
   const [busy, setBusy] = useState('');
+  const [bulkBusy, setBulkBusy] = useState(false);
+
   const [level, setLevel] = useState('');
   const [tab, setTab] = useState<'all' | 'flagged'>('all');
   // ?flagged=1 opens the review directly — the tab buttons are easy to miss,
@@ -101,6 +103,51 @@ export default function FiguresPage() {
     } catch { load(); }
     finally { setBusy(''); }
   };
+
+  /** Release every figure on this page that no check objects to. Sequential —
+   *  a failure stops the run rather than half-releasing a page silently. */
+  const releaseQuiet = async () => {
+    const quiet = items.filter(isQuiet);
+    if (!quiet.length || bulkBusy) return;
+    setBulkBusy(true);
+    let done = 0;
+    try {
+      for (const it of quiet) {
+        const r = await fetch('/api/admin/figures-bank', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: it.path, questionId: it.qid, resolve: true }),
+        });
+        if (!r.ok) break;
+        done++;
+      }
+    } finally {
+      setBulkBusy(false);
+      setFlaggedCount((c) => Math.max(0, c - done));
+      setWithheld((w) => Math.max(0, w - done));
+      load();                       // re-fetch: the page has shifted under us
+    }
+  };
+
+  /** The chips under a figure. The bulk release reads the SAME function, so it
+   *  can never release a figure the page is warning you about. */
+  const chipsFor = (it: Item): [string, string][] => {
+    const c = it.checks;
+    const chips: [string, string][] = [];
+    if (it.figureMissing) chips.push(['🖼 no figure stored', C.flag]);
+    if (c?.textInCrop) chips.push([`📝 crop looks like it includes question text (${(c.textShare * 100).toFixed(0)}%)`, C.flag]);
+    if (c?.blank) chips.push(['◻ almost no ink', C.flag]);
+    if (c?.small) chips.push([`🔍 small — ${c.width}×${c.height}px`, '#b45309']);
+    if (c?.wideMargins && c.margins) {
+      const m = c.margins, pc = (v: number) => `${Math.round(v * 100)}%`;
+      chips.push([`⬜ blank edges — L ${pc(m.left)} R ${pc(m.right)} T ${pc(m.top)} B ${pc(m.bottom)}`, '#b45309']);
+    }
+    if (it.watermark && it.watermark !== 'clean' && it.watermark !== 'no_image') chips.push([`⚠ image: ${it.watermark}`, '#b45309']);
+    if (it.stemEmpty) chips.push(['· stem is empty — the figure carries the whole question', C.muted]);
+    return chips;
+  };
+  /** Never bulk-release something that could not be measured — no checks means
+   *  no evidence, not a clean bill of health. */
+  const isQuiet = (it: Item) => !!it.checks && chipsFor(it).length === 0;
 
   const toggle = async (it: Item) => {
     const flag = !it.flagged;
@@ -197,7 +244,19 @@ export default function FiguresPage() {
           <span style={{ fontSize: 13, color: C.muted }}>
             page {page + 1} / {lastPage + 1} · {withheld || flaggedCount} flagged figures
           </span>
-          <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+          <span style={{ marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'center' }}>
+            {(() => {
+              const n = items.filter(isQuiet).length;
+              if (!n) return null;
+              return (
+                <button onClick={releaseQuiet} disabled={bulkBusy || loading}
+                  title="Releases only the figures no check objects to. Anything with a chip is left for you."
+                  style={{ fontSize: 13, fontWeight: 700, color: '#fff', background: '#15803d', border: 'none',
+                    borderRadius: 8, padding: '5px 14px', cursor: 'pointer', opacity: bulkBusy ? 0.6 : 1, marginRight: 6 }}>
+                  {bulkBusy ? 'Releasing…' : `✓ Release ${n} with no warnings`}
+                </button>
+              );
+            })()}
             <button disabled={page === 0 || loading} onClick={() => { setPage((p) => Math.max(0, p - 1)); window.scrollTo({ top: 0 }); }}
               style={{ fontSize: 13, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '4px 12px', cursor: 'pointer', opacity: page === 0 ? 0.4 : 1 }}>← Prev</button>
             <button disabled={page >= lastPage || loading} onClick={() => { setPage((p) => p + 1); window.scrollTo({ top: 0 }); }}
@@ -215,6 +274,10 @@ export default function FiguresPage() {
             The chips below each figure are measured, not guessed — but they only catch what is
             measurable. A figure with no chips can still be the wrong figure; the question&apos;s own
             words are printed beside it so you can tell.
+            <br />
+            <strong>Release {items.filter(isQuiet).length} with no warnings</strong> clears only the ones
+            nothing objects to — it cannot tell whether a figure belongs to its question, so use it when
+            you have glanced down the page, not instead of glancing.
           </div>
         </div>
       )}
@@ -241,17 +304,7 @@ export default function FiguresPage() {
               is obvious), and measurements of the figure itself. */}
           {(() => {
             const c = it.checks;
-            const chips: [string, string][] = [];
-            if (it.figureMissing) chips.push(['🖼 no figure stored', C.flag]);
-            if (c?.textInCrop) chips.push([`📝 crop looks like it includes question text (${(c.textShare * 100).toFixed(0)}%)`, C.flag]);
-            if (c?.blank) chips.push(['◻ almost no ink', C.flag]);
-            if (c?.small) chips.push([`🔍 small — ${c.width}×${c.height}px`, '#b45309']);
-            if (c?.wideMargins && c.margins) {
-              const m = c.margins, pc = (v: number) => `${Math.round(v * 100)}%`;
-              chips.push([`⬜ blank edges — L ${pc(m.left)} R ${pc(m.right)} T ${pc(m.top)} B ${pc(m.bottom)}`, '#b45309']);
-            }
-            if (it.watermark && it.watermark !== 'clean' && it.watermark !== 'no_image') chips.push([`⚠ image: ${it.watermark}`, '#b45309']);
-            if (it.stemEmpty) chips.push(['· stem is empty — the figure carries the whole question', C.muted]);
+            const chips = chipsFor(it);
             return (
               <>
                 {chips.length > 0 && (
