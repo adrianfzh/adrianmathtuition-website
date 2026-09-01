@@ -29,6 +29,7 @@ type Run = {
   annotatedPdfUrl: string | null;
   pdfStale?: boolean;
   totalWarning?: string | null;
+  sheetReady?: boolean;
   annotatedPhotos?: { photoIndex: number; url: string }[];
   pdfUrl: string | null;
   flagged: TriageQuestion[];
@@ -174,6 +175,48 @@ export default function TriagePage() {
     } catch (e) {
       setToast(`Upload failed — ${(e as Error).message}`);
     } finally { setAmendBusy(''); }
+  }
+
+  // 📘 One-tap release of ONE paper together with the sheet already sitting in
+  // Dropbox (1 Sep 2026). The bulk release below can also carry a sheet, but it
+  // makes Adrian pick the PDF off his machine — when the worker filed it in
+  // Dropbox minutes earlier. This path resolves it there instead: recorded path,
+  // else the re-export sharing the DOCX's name, else the only PDF in the folder,
+  // and it ASKS rather than guessing between two.
+  const [sheetBusy, setSheetBusy] = useState<string>('');
+  async function releaseWithDropboxSheet(runId: string) {
+    if (sheetBusy) return;
+    setSheetBusy(runId);
+    try {
+      const look = await fetch(`/api/admin/release-with-sheet?runId=${encodeURIComponent(runId)}`);
+      const info = await look.json().catch(() => ({}));
+      if (!look.ok) { setToast(info.error || 'Could not find the sheet.'); return; }
+
+      let pdfPath: string | undefined;
+      if (!info.ready) {
+        // Ambiguous or missing — ask, never guess.
+        if (info.kind === 'ambiguous' && Array.isArray(info.candidates) && info.candidates.length) {
+          const list = info.candidates.map((c: { name: string }, i: number) => `${i + 1}. ${c.name}`).join('\n');
+          const pick = window.prompt(`${info.note}\n\n${list}\n\nWhich number?`, '1');
+          const n = Number(pick);
+          if (!Number.isInteger(n) || n < 1 || n > info.candidates.length) { setToast('Nothing released.'); return; }
+          pdfPath = info.candidates[n - 1].path;
+        } else {
+          setToast(info.note || 'No sheet PDF to send yet.');
+          return;
+        }
+      }
+
+      const r = await fetch('/api/admin/release-with-sheet', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ runId, ...(pdfPath ? { pdfPath } : {}) }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { setToast(d.error || 'Release failed.'); return; }
+      setToast(d.alreadyWasReleased ? 'Sheet sent — the paper was already released.' : 'Released, and the sheet is with them.');
+      load();
+    } catch { setToast('Connection error.'); }
+    finally { setSheetBusy(''); }
   }
 
   // 📘 Release WITH the sheet (SPEC-TEACHING-CYCLE step 7): marks and the
@@ -395,6 +438,19 @@ export default function TriagePage() {
                   a wrong denominator quietly skews the student's percentage and
                   every report built on it. A warning, never a block: practice
                   sets legitimately total anything. */}
+              {/* The sheet is already in Dropbox — release both in one tap
+                  rather than picking the PDF off the machine. Only shown when a
+                  finished sheet exists AND nothing is flagged, because releasing
+                  past an open flag is what triage exists to prevent. */}
+              {run.sheetReady && run.releasable && !run.pdfStale && (
+                <> · <button type="button" disabled={!!sheetBusy}
+                  onClick={() => releaseWithDropboxSheet(run.id)}
+                  title="Release the marked paper and send the self-study sheet from Dropbox, in one action"
+                  style={{ border: 'none', background: 'none', color: '#047857', fontWeight: 700,
+                    cursor: 'pointer', font: 'inherit', padding: 0 }}>
+                  {sheetBusy === run.id ? 'Sending…' : '📘 Release + sheet'}
+                </button></>
+              )}
               {run.totalWarning && (
                 <> · <span style={{ color: '#b91c1c', fontWeight: 600 }} title={run.totalWarning}>
                   ⚠ marks add up to {run.max}

@@ -88,6 +88,18 @@ export async function GET(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+  // One query for every paper on screen: which of them already have a finished
+  // sheet. Cheap, and it decides whether the row offers the one-tap release.
+  const sheetReadyRuns = new Set<string>();
+  try {
+    const ids = (data ?? []).map(r => r.id as string);
+    if (ids.length) {
+      const { data: jobs } = await getSupabaseAdmin()
+        .from('sheet_jobs').select('run_id').eq('status', 'done').in('run_id', ids);
+      for (const j of jobs ?? []) sheetReadyRuns.add(j.run_id as string);
+    }
+  } catch { /* no badge is better than a broken list */ }
+
   const runs = (data ?? [])
     // A run still in the queue has no `results` yet — it isn't reviewable, and
     // showing it as "0 flagged, ready to release" would invite releasing nothing.
@@ -117,6 +129,10 @@ export async function GET(req: NextRequest) {
         // question is invisible in every other view, and it silently skews the
         // percentage on the student's copy and in every report that uses it.
         totalWarning: paperTotalWarning(r.total_max),
+        // Is a finished self-study sheet waiting in Dropbox for this paper? When
+        // there is one, releasing it alongside the marks is one tap and needs no
+        // file picking — the worker already filed it (see /api/admin/release-with-sheet).
+        sheetReady: sheetReadyRuns.has(r.id as string),
         // Why auto-release held (or would have) — the bot's accuracy gates
         // re-derived from the persisted signals. Explanatory only: manual
         // release ignores it.
