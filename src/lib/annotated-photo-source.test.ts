@@ -31,3 +31,12 @@ describe('pickAnnotatedPhotoUrl', () => {
     expect(pickAnnotatedPhotoUrl({ url: PLAIN, url_with_solutions: '' }, 'photos')).toBe(PLAIN);
   });
 });
+
+describe('photos-booklet mode', () => {
+  // The booklet at the back is the solution's one surface, so the marked pages
+  // themselves must be the clean copies — a -sol twin here would print the same
+  // worked solution twice.
+  it('gives the booklet-backed photos PDF the clean copy even when a twin exists', () => {
+    expect(pickAnnotatedPhotoUrl({ url: PLAIN, url_with_solutions: SOL }, 'photos-booklet')).toBe(PLAIN);
+  });
+});

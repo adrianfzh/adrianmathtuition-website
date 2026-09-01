@@ -25,7 +25,13 @@ export async function renderFrontPagePng(input: FrontPageInput): Promise<Buffer 
     const browser = await getBrowser();
     page = await browser.newPage();
     await page.setViewport({ width: WIDTH, height: 1123, deviceScaleFactor: SCALE });
-    await page.setContent(frontPageHtml(input), { waitUntil: 'networkidle0', timeout: 20_000 });
+    // 'load' + an explicit fonts.ready, not networkidle0 — idle tracking is
+    // unreliable against current local Chrome (times out with zero requests
+    // pending — probed 2 Sep 2026), and fonts are this page's only async
+    // dependency: the maths is typeset server-side (mathHtml), no scripts run.
+    await page.setContent(frontPageHtml(input), { waitUntil: 'load', timeout: 20_000 });
+    await page.evaluate(() => (document as unknown as { fonts?: { ready?: Promise<unknown> } }).fonts?.ready);
+    await new Promise((r) => setTimeout(r, 300));
     // The page is one flex column with min-height 297mm, so a short analysis
     // still fills an A4 sheet and a long one grows past it rather than clipping.
     const shot = await page.screenshot({ type: 'png', fullPage: true });

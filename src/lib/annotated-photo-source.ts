@@ -11,6 +11,12 @@
  *              so the photo must NOT — otherwise the same answer is printed twice.
  *   🖼 photos → annotated photos only, no transcript anywhere. The footer strip is the only
  *              surface left, so the solution-bearing copy is the one that goes in.
+ *   🖼 photos-booklet → photos mode WITH the typeset worked-solutions booklet at the back
+ *              (lib/solutions-booklet-html.ts, since 2 Sep 2026). The booklet is now the
+ *              solution's one surface, so the marked pages go back to the clean copies —
+ *              the -sol twins' footers made pages up to 1.97×A4 and printed at half scale.
+ *              The route only picks this mode AFTER the booklet render succeeds; a failed
+ *              booklet falls back to plain 'photos' so a solution is never lost.
  *
  * `url` is the fallback in every direction: it is the same marked page (same ticks, same
  * score boxes, same Marker's notes) minus the solution block. `url_with_solutions` is
@@ -23,7 +29,7 @@
  */
 
 export type AnnotatedPhotoUrls = { url: string; url_with_solutions?: string | null };
-export type MarkedPdfMode = 'full' | 'photos';
+export type MarkedPdfMode = 'full' | 'photos' | 'photos-booklet';
 
 export function pickAnnotatedPhotoUrl(photo: AnnotatedPhotoUrls, mode: MarkedPdfMode): string {
   if (mode === 'photos' && photo.url_with_solutions) return photo.url_with_solutions;

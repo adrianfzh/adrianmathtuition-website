@@ -3,7 +3,7 @@ import { put } from '@vercel/blob';
 import { PDFDocument } from 'pdf-lib';
 import { renderMarkingPNG, type MarkingOutput } from '@/lib/render-marking';
 import { orderMarkedPages } from '@/lib/marked-pdf-order';
-import { pickAnnotatedPhotoUrl } from '@/lib/annotated-photo-source';
+import { pickAnnotatedPhotoUrl, type MarkedPdfMode } from '@/lib/annotated-photo-source';
 import { markedPdfColumn } from '@/lib/marked-pdf-column';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -12,6 +12,8 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { PAGE_W, drawPaperTotal, stripHeight, shouldStampPaperTotal } from '@/lib/marked-pdf-layout';
 import { analyse, worstQuestions, type LostPart } from '@/lib/paper-analysis';
 import { renderFrontPagePng } from '@/lib/render-front-page';
+import { bookletItems } from '@/lib/solutions-booklet-html';
+import { renderSolutionsBookletPng } from '@/lib/render-solutions-booklet';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -46,7 +48,7 @@ async function linkToRun(runId: string | undefined, url: string, mode: string) {
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { results?: ResultIn[]; annotated_photos?: { photo_index: number; url: string; url_with_solutions?: string | null }[]; totals?: { awarded: number; max: number; counted_max?: number; max_source?: string }; student?: { name?: string; level?: string }; multi?: boolean; mode?: string; runId?: string; paperName?: string; frontPage?: boolean };
+  let body: { results?: ResultIn[]; annotated_photos?: { photo_index: number; url: string; url_with_solutions?: string | null }[]; totals?: { awarded: number; max: number; counted_max?: number; max_source?: string }; student?: { name?: string; level?: string }; multi?: boolean; mode?: string; runId?: string; paperName?: string; frontPage?: boolean; booklet?: boolean };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
   const mode = body.mode === 'photos' ? 'photos' : 'full';   // 'photos' = annotated originals only (no typeset)
@@ -86,12 +88,44 @@ export async function POST(req: NextRequest) {
     }
     pngs = paginated;
   }
+
+  // ── Worked-solutions booklet (🖼 photos mode, Adrian 1 Sep 2026) ─────────────
+  // The -sol twins' footers made pages up to 1.97×A4, so "fit to page" printed
+  // them at half scale. Instead: worked solutions render as ONE typeset document,
+  // sliced into A4 chunks for the back of the PDF — and only once that render is
+  // in hand do the marked pages switch to the clean twins ('photos-booklet').
+  // Ordering matters: this must be decided BEFORE the photo fetch below, because
+  // it changes which copy of each page is fetched. Fail-soft in every direction —
+  // a failed booklet falls back to plain 'photos' (solutions in the footers, tall
+  // pages and all), never to a document with no solutions at all.
+  let bookletPages: Buffer[] = [];
+  let photoMode: MarkedPdfMode = mode;
+  if (mode === 'photos' && body.booklet !== false) {
+    try {
+      const items = bookletItems(results);
+      if (!items.length) {
+        // Nothing lost anywhere → no solutions exist on any twin either; the
+        // clean pages are simply the same pages without a redundant block.
+        photoMode = 'photos-booklet';
+      } else {
+        const png = await renderSolutionsBookletPng({
+          paperName: body.paperName ?? null, studentName: student.name || null, items,
+        });
+        if (png) {
+          const { sliceTallPng } = await import('@/lib/pdf-paginate');
+          bookletPages = await sliceTallPng(png);
+          if (bookletPages.length) photoMode = 'photos-booklet';
+        }
+      }
+    } catch (e) { console.warn('[mark-paper-pdf] booklet skipped:', (e as Error).message); }
+  }
+
   // Fetch the annotated ORIGINAL photos (PNGs from Blob) — these go in the PDF first.
   // The marker sends two copies of each page; which one belongs in THIS document is
   // pickAnnotatedPhotoUrl's call (see that module for why it is not inlined here).
   const annotated: { photo_index: number; buf: Buffer }[] = [];
   for (const ap of (body.annotated_photos || [])) {
-    const src = pickAnnotatedPhotoUrl(ap, mode);
+    const src = pickAnnotatedPhotoUrl(ap, photoMode);
     try {
       const r = await fetch(src);
       if (r.ok) annotated.push({ photo_index: ap.photo_index, buf: Buffer.from(await r.arrayBuffer()) });
@@ -175,6 +209,15 @@ export async function POST(req: NextRequest) {
         });
       }
     } catch (e) { console.error('[mark-paper-pdf] embed failed', pg.kind, (e as Error).message); }
+  }
+  // ── Worked solutions at the back — the model-answers booklet ────────────────
+  for (const buf of bookletPages) {
+    try {
+      const img = await pdfDoc.embedPng(buf);
+      const h = Math.round(PAGE_W * (img.height / img.width));
+      const page = pdfDoc.addPage([PAGE_W, h]);
+      page.drawImage(img, { x: 0, y: 0, width: PAGE_W, height: h });
+    } catch (e) { console.error('[mark-paper-pdf] booklet embed failed', (e as Error).message); }
   }
   const pdfBytes = await pdfDoc.save();
   const blob = await put(`mark-paper/${id}.pdf`, Buffer.from(pdfBytes), { access: 'public', contentType: 'application/pdf', allowOverwrite: true });
