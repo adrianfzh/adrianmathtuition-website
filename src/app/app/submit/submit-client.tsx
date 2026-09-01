@@ -25,6 +25,45 @@ type Page = { file: File; preview: string | null };
 // `slotUsed` = today's daily hand-in slot is already spent (server-counted in
 // page.tsx) — show the allowance state up front instead of a rejection after
 // the student has photographed everything. Assignments are cap-exempt.
+
+// One page, up to three attempts.
+//
+// Sophie, 1 Sep 2026: "i couldn't upload the paper into ur app, it keeps saying
+// load failed" — then it went through on a retry. "Load failed" is Safari's
+// wording for a fetch that never completed, so this is a phone dropping wifi for
+// 4G mid-upload, not a rejection: the upload goes straight to Blob with a client
+// token and never touches the marker, so a busy marker cannot cause it.
+//
+// The loop had no retry and no resume, so one blip threw the whole submission
+// away INCLUDING the pages that had already uploaded, and she started at page 1
+// with a five-megabyte photo. Three attempts with a growing pause covers a
+// handover; the caller caches what succeeds so a fourth failure still keeps the
+// finished pages.
+async function uploadPage(file: File, onNote: (s: string) => void): Promise<string> {
+  const upload = await resizeToJpeg(file);
+  let lastErr: Error | null = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      if (attempt > 1) onNote(`retrying (${attempt} of 3)`);
+      const tokenRes = await fetch(`/api/portal/submit-token?filename=${encodeURIComponent(upload.name || 'photo.jpg')}`);
+      if (!tokenRes.ok) throw new Error(`could not start the upload (${tokenRes.status})`);
+      const { token, pathname } = await tokenRes.json();
+      const blob = await put(pathname, upload, {
+        access: 'public', token,
+        contentType: upload.type || 'application/octet-stream',
+        multipart: upload.size > 5 * 1024 * 1024,
+      });
+      return blob.url;
+    } catch (e) {
+      lastErr = e as Error;
+      // A fresh token each attempt, so an expired one is not the reason a retry
+      // fails. Pause 1s then 2s: long enough for a network handover to settle.
+      if (attempt < 3) await new Promise(r => setTimeout(r, attempt * 1000));
+    }
+  }
+  throw new Error(`That page would not upload after three tries (${lastErr?.message || 'connection lost'}). Your signal may be weak — tap Send again and it will carry on from where it stopped.`);
+}
+
 export default function SubmitClient({ assignment = null, paper = null, slotUsed = false }: {
   assignment?: { id: string; title: string } | null;
   paper?: { id: string; title: string } | null;
@@ -39,6 +78,9 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   const [converting, setConverting] = useState('');  // progress line while a PDF rasterises
   const [error, setError] = useState('');
   const [doneRunId, setDoneRunId] = useState<string | null>(null);
+  // Pages that already reached Blob, kept across a failed attempt so tapping Send
+  // again RESUMES instead of starting from page 1 (1 Sep 2026 — see uploadPage).
+  const uploadedRef = useRef<Map<number, string>>(new Map());
   const busy = stage !== '' || converting !== '';
 
   async function onPick(list: FileList | null) {
@@ -99,6 +141,9 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
     setPages(prev => {
       const p = prev[i];
       if (p?.preview) URL.revokeObjectURL(p.preview);
+      // The cache is keyed by index, so removing a page invalidates every entry
+      // after it. Cheaper and safer to drop the lot than to renumber.
+      uploadedRef.current.clear();
       return prev.filter((_, j) => j !== i);
     });
   }
@@ -110,17 +155,13 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
     try {
       const urls: string[] = [];
       for (let i = 0; i < pages.length; i++) {
-        setStage(`Uploading page ${i + 1} of ${pages.length}…`);
-        const upload = await resizeToJpeg(pages[i].file);
-        const tokenRes = await fetch(`/api/portal/submit-token?filename=${encodeURIComponent(upload.name || 'photo.jpg')}`);
-        if (!tokenRes.ok) throw new Error('Could not start the upload — check your connection and try again.');
-        const { token, pathname } = await tokenRes.json();
-        const blob = await put(pathname, upload, {
-          access: 'public', token,
-          contentType: upload.type || 'application/octet-stream',
-          multipart: upload.size > 5 * 1024 * 1024,
-        });
-        urls.push(blob.url);
+        const cached = uploadedRef.current.get(i);
+        if (cached) { urls.push(cached); continue; }   // already up — don't re-send it
+        setStage(pages.length > 1 ? `Uploading page ${i + 1} of ${pages.length}…` : 'Uploading…');
+        const url = await uploadPage(pages[i].file, (note) =>
+          setStage(`Uploading page ${i + 1} of ${pages.length} — ${note}`));
+        uploadedRef.current.set(i, url);
+        urls.push(url);
       }
       setStage('Sending to Adrian…');
       const r = await fetch('/api/portal/submit', {
