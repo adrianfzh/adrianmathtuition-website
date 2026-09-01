@@ -188,6 +188,32 @@ export async function GET(req: NextRequest) {
       };
       try { await ping(); } catch { await ping(); }
     }),
+    // The `resend` check above proves the API answers. This one proves the KEY can
+    // still READ an email back — the exact permission every send path needs to tell
+    // "delivered" from "silently suppressed". They are not the same check: a Resend
+    // key downgraded to "Sending access" keeps sending perfectly and 403s every
+    // read, and the send-time guard was written to fall through on a non-200. So a
+    // guard that had stopped guarding would have looked green from here forever.
+    timed('resend-delivery-read', async () => {
+      if (!process.env.RESEND_API_KEY) throw new Error('RESEND_API_KEY missing');
+      const { classifyDeliveryCheck } = await import('@/lib/resend-verify');
+      const log = await airtableRequest(
+        'EmailLog',
+        `?filterByFormula=${encodeURIComponent("{Resend ID}!=''")}&fields[]=Resend ID` +
+          `&sort[0][field]=${encodeURIComponent('Sent At')}&sort[0][direction]=desc&maxRecords=1`,
+      );
+      const id = log.records?.[0]?.fields?.['Resend ID'];
+      if (!id) return 'no sent email to probe';
+      const r = await fetch(`https://api.resend.com/emails/${id}`, {
+        headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}` },
+        signal: T(10000),
+      });
+      const v = classifyDeliveryCheck(r.status, await r.json().catch(() => null));
+      // Only a PERMANENT fault is the alarm. A 404 (aged out of Resend's retention)
+      // or a slow night says nothing about the key's permission.
+      if (v.kind === 'unavailable' && v.permanent) throw new Error(v.reason);
+      return v.kind === 'unavailable' ? `readable (${v.reason})` : `readable (${v.event})`;
+    }),
     // Kiosk status endpoint
     timed('kiosk', async () => {
       const r = await fetch(`${base}/api/kiosk/status`, { signal: T(10000) });
@@ -530,7 +556,16 @@ export async function GET(req: NextRequest) {
     const { latestJobRuns } = await import('@/lib/job-log');
     const { staleJobs } = await import('@/lib/job-health');
     const latest = await latestJobRuns();
-    const stale = staleJobs(latest, new Date());
+    // Never grade our OWN last run here. This check reads the logbook, the health
+    // check stamps itself into the logbook, and staleJobs() alarms on a job whose
+    // last run failed — so one failure of ANY check latched permanently: run N
+    // fails → stamps ok=false → run N+1's ops-jobs reads it → "health-check: last
+    // run FAILED" → fails → stamps ok=false → forever. A single transient failure
+    // on 29 Aug 2026 alarmed every 6h for four days and could never clear itself,
+    // which is exactly how a real alarm gets tuned out. A genuinely dead health
+    // check is still visible as a stale row on /admin/ops (it cannot alarm about
+    // its own death anyway — it IS the alarm).
+    const stale = staleJobs(latest, new Date(), { exclude: ['health-check'] });
     if (stale.length) throw new Error(stale.map(s => `${s.job}: ${s.reason}`).join(' · '));
     return `${latest.length} jobs stamped, all on rhythm`;
   }));

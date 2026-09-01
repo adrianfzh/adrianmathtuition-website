@@ -47,6 +47,17 @@ older than 2h). Red goes out on the existing Telegram alert. The health check
 also stamps its own `health-check` row — if the watcher dies, /admin/ops is the
 one place that failure is visible (nothing can alarm for the alarm).
 
+> ⚠ **`ops-jobs` passes `{ exclude: ['health-check'] }` — the health check must
+> never grade its own last run.** It reads the logbook, then stamps itself into
+> the logbook, and `staleJobs()` alarms on `ok=false`; so without the exclusion
+> **one** failed check latched the alarm on permanently — run N fails → stamps
+> `ok=false` → run N+1's `ops-jobs` reads it → "health-check: last run FAILED" →
+> fails → stamps `ok=false` → forever. A single transient failure at 00:00 on
+> 29 Aug 2026 fired 🚨 every 6h for four days and could never clear itself; by
+> 1 Sep the only red check in 41 was the latch. That is precisely how a real
+> alarm gets tuned out. `/admin/ops` passes no exclusion, so a genuinely dead
+> health check still shows amber there.
+
 ## The board — `/admin/ops`
 
 Read-only, cookie-auth, hub tile 🩺. `/api/admin/ops` returns the newest logbook

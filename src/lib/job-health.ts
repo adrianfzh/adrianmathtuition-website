@@ -50,10 +50,23 @@ function sgt(d: Date): { y: number; m: number; day: number } {
 
 export type StaleJob = { job: string; reason: string };
 
-export function staleJobs(latest: JobRunRow[], now: Date): StaleJob[] {
+/**
+ * `exclude` exists for one caller: the health check must not grade its own last
+ * run. It reads this, then stamps its own row — so without the exclusion a single
+ * failed run latches the alarm on permanently (its own ok=false becomes the
+ * reason the next run fails). /admin/ops passes no exclusion, so a dead health
+ * check is still visible there — which is the only place it ever could be.
+ */
+export function staleJobs(
+  latest: JobRunRow[],
+  now: Date,
+  opts: { exclude?: string[] } = {},
+): StaleJob[] {
+  const skip = new Set(opts.exclude || []);
   const byJob = new Map(latest.map((r) => [r.job, r]));
   const out: StaleJob[] = [];
   for (const [job, rhythm] of Object.entries(JOB_RHYTHMS)) {
+    if (skip.has(job)) continue;
     const row = byJob.get(job);
     if (!row) continue;   // never stamped — visible on the ops board, never an alarm
     const ranAt = new Date(row.ran_at);

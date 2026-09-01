@@ -70,3 +70,30 @@ describe('staleJobs — failure and edge handling', () => {
     expect(staleJobs([row('qb-topup', 'garbage')], now)).toEqual([]);
   });
 });
+
+describe('staleJobs — the health check must not grade its own last run', () => {
+  const now = new Date('2026-09-01T12:00:00Z');
+  const hc = (ok: boolean) => ({ job: 'health-check', ran_at: '2026-09-01T06:00:00Z', ok, summary: '1/41 checks failing' });
+
+  // The latch: health-check reads staleJobs(), then stamps its own row. Once any
+  // check failed once, its own ok=false became the reason the NEXT run failed —
+  // a self-sustaining 🚨 every 6h that could never clear (29 Aug – 1 Sep 2026).
+  it('reports its own failed run to the ops board', () => {
+    const out = staleJobs([hc(false)], now);
+    expect(out).toHaveLength(1);
+    expect(out[0].job).toBe('health-check');
+  });
+
+  it('but stays silent when the health check excludes itself', () => {
+    expect(staleJobs([hc(false)], now, { exclude: ['health-check'] })).toEqual([]);
+  });
+
+  it('excluding one job does not mute the others', () => {
+    const out = staleJobs(
+      [hc(false), { job: 'qb-topup', ran_at: '2026-09-01T06:00:00Z', ok: false, summary: 'gate rejected all 6' }],
+      now,
+      { exclude: ['health-check'] },
+    );
+    expect(out.map(s => s.job)).toEqual(['qb-topup']);
+  });
+});

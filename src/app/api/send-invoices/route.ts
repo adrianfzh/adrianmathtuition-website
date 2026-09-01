@@ -6,6 +6,7 @@ import { getInvoiceMonth, displaySpanMonth } from '@/lib/invoice-month';
 import { copy } from '@vercel/blob';
 import { generateAndStoreInvoicePdf } from '@/lib/invoice-pdf';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { checkDelivery, alertVerificationBlind } from '@/lib/resend-verify';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -600,6 +601,11 @@ export async function POST(req: NextRequest) {
 
     let sentCount = 0;
     let failedCount = 0;
+    // Delivery verification can itself go blind (a Resend key downgraded to
+    // "Sending access" 403s every read). That is not a passing check — track it
+    // and alarm ONCE for the batch rather than 58 times.
+    let verifyBlind = '';
+    let unverifiedCount = 0;
     const errors: any[] = [];
     const sentDetails: { studentName: string; month: string; isFirstInvoice: boolean }[] = [];
     const invoiceIds = Array.from(invoiceMap.keys());
@@ -622,19 +628,17 @@ export async function POST(req: NextRequest) {
         // is never delivered. Verify the status so we don't mark undelivered mail
         // as "Sent" (this is what silently dropped Ian's invoice).
         if (resendId) {
-          try {
-            const st = await fetch(`https://api.resend.com/emails/${resendId}`, {
-              headers: { Authorization: `Bearer ${RESEND_API_KEY}` },
-            });
-            if (st.ok) {
-              const ev = (await st.json())?.last_event;
-              if (ev === 'suppressed' || ev === 'failed' || ev === 'bounced') {
-                throw new Error(`NOT DELIVERED (${ev}) — recipient blocked by the email provider. Verify the address or clear the suppression in Resend, then resend.`);
-              }
-            }
-          } catch (e: any) {
-            if (typeof e?.message === 'string' && e.message.includes('NOT DELIVERED')) throw e;
-            // status-check network error → don't block the send; the webhook still catches async failures
+          const verdict = await checkDelivery(resendId, RESEND_API_KEY);
+          if (verdict.kind === 'not-delivered') {
+            throw new Error(`NOT DELIVERED (${verdict.event}) — recipient blocked by the email provider. Verify the address or clear the suppression in Resend, then resend.`);
+          }
+          if (verdict.kind === 'unavailable') {
+            // The send still stands — a monitoring failure must never hold up a
+            // parent's invoice. But a PERMANENT fault means every invoice in this
+            // batch went out on nothing but Resend's 200, and that must be said
+            // out loud rather than passing as a green check.
+            unverifiedCount++;
+            if (verdict.permanent && !verifyBlind) verifyBlind = verdict.reason;
           }
         }
 
@@ -721,6 +725,8 @@ export async function POST(req: NextRequest) {
       failedCount += pdfFailures.length;
       errors.push(...pdfFailures);
     }
+
+    if (verifyBlind) await alertVerificationBlind('send-invoices', verifyBlind, unverifiedCount);
 
     const currentMonth = emails[0]?.subject?.match(/for (.+) \u2013/)?.[1] ?? getInvoiceMonth().label;
     const failedLines = errors.map((e) => `• ${e.studentName ?? e.invoiceId}: ${e.error}`).join('\n');

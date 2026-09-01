@@ -3,6 +3,7 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { airtableRequest } from '@/lib/airtable';
 import { isOurBlobUrl } from '@/lib/blob-url';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { checkDelivery, alertVerificationBlind } from '@/lib/resend-verify';
 
 // Email a marked PDF to a student — the "no amendments needed" fast path on
 // /admin/mark-paper. WhatsApp sending is deliberately NOT here: Adrian sends those
@@ -105,17 +106,14 @@ export async function POST(req: NextRequest) {
     // Resend returns 200 + an id even when the address is SUPPRESSED — the mail is never
     // delivered. Same guard as send-invoices; "Resend accepted it" ≠ "delivered".
     if (resendId) {
-      try {
-        const st = await fetch(`https://api.resend.com/emails/${resendId}`, { headers: { Authorization: `Bearer ${RESEND_API_KEY}` } });
-        if (st.ok) {
-          const ev = ((await st.json()) as { last_event?: string }).last_event;
-          if (ev === 'suppressed' || ev === 'failed' || ev === 'bounced') {
-            throw new Error(`NOT DELIVERED (${ev}) — the address is blocked by the email provider. Check it, or clear the suppression in Resend, then resend.`);
-          }
-        }
-      } catch (e) {
-        if ((e as Error).message?.includes('NOT DELIVERED')) throw e;
-        // status-check network error → don't block; the Resend webhook still alerts on async bounces
+      const verdict = await checkDelivery(resendId, RESEND_API_KEY);
+      if (verdict.kind === 'not-delivered') {
+        throw new Error(`NOT DELIVERED (${verdict.event}) — the address is blocked by the email provider. Check it, or clear the suppression in Resend, then resend.`);
+      }
+      // A transient read failure stays quiet (the webhook is the async backstop);
+      // a permanent one means this guard has stopped guarding and must say so.
+      if (verdict.kind === 'unavailable' && verdict.permanent) {
+        await alertVerificationBlind('marked-paper email', verdict.reason);
       }
     }
 

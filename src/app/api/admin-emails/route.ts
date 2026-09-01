@@ -3,6 +3,7 @@ import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
 import { generateAndStoreInvoicePdf } from '@/lib/invoice-pdf';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { checkDelivery, alertVerificationBlind } from '@/lib/resend-verify';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -129,19 +130,17 @@ export async function POST(req: NextRequest) {
     const sendData = await sendRes.json().catch(() => ({}));
     const resendId = (sendData as any).id || '';
 
-    // Detect immediate suppression (address blocked → never delivered).
+    // Detect immediate suppression (address blocked → never delivered). A check
+    // that could not RUN is not a check that passed — a permanently blind one
+    // (403 on a "Sending access" key) alarms instead of logging a clean 'sent'.
     let delivered = true;
     let failEvent = '';
     if (resendId) {
-      try {
-        const st = await fetch(`https://api.resend.com/emails/${resendId}`, {
-          headers: { Authorization: `Bearer ${RESEND_API_KEY}` },
-        });
-        if (st.ok) {
-          const ev = (await st.json())?.last_event;
-          if (ev === 'suppressed' || ev === 'failed' || ev === 'bounced') { delivered = false; failEvent = ev; }
-        }
-      } catch { /* status check failed — assume sent; webhook will catch async failures */ }
+      const verdict = await checkDelivery(resendId, RESEND_API_KEY);
+      if (verdict.kind === 'not-delivered') { delivered = false; failEvent = verdict.event; }
+      else if (verdict.kind === 'unavailable' && verdict.permanent) {
+        await alertVerificationBlind('Email Log resend', verdict.reason);
+      }
     }
 
     // Log the resend as a new entry

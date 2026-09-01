@@ -108,13 +108,17 @@ export async function sendWelcomeEmail(d: WelcomeEmailData, attachment?: Welcome
     // an invoice rides along, verify the send wasn't suppressed before we let the
     // caller mark that invoice Sent. (Same guard as send-invoices.)
     if (attachment && data.id) {
-      try {
-        const st = await fetch(`https://api.resend.com/emails/${data.id}`, { headers: { Authorization: `Bearer ${apiKey}` } });
-        const ev = ((await st.json()) as { last_event?: string }).last_event || '';
-        if (['suppressed', 'failed', 'bounced'].includes(ev)) {
-          return { sent: false, error: `NOT delivered (${ev}) — recipient blocked by email provider` };
-        }
-      } catch { /* status probe is best-effort */ }
+      const { checkDelivery, alertVerificationBlind } = await import('./resend-verify');
+      const verdict = await checkDelivery(data.id, apiKey);
+      if (verdict.kind === 'not-delivered') {
+        return { sent: false, error: `NOT delivered (${verdict.event}) — recipient blocked by email provider` };
+      }
+      // Blind is not the same as clean: a 403 here used to parse as `last_event: ''`
+      // and sail straight past the check, letting a suppressed first invoice be
+      // marked Sent. Permanent faults alarm; a slow read stays quiet.
+      if (verdict.kind === 'unavailable' && verdict.permanent) {
+        await alertVerificationBlind('welcome email', verdict.reason);
+      }
     }
 
     // Log to EmailLog (non-fatal; typecast creates the 'welcome' Type option)
