@@ -64,6 +64,32 @@ export function weekdayLessonDates(
 }
 
 /**
+ * Regular-lesson line dates for one enrollment in one invoice month: every
+ * `weekday` date from `monthFirstISO` (YYYY-MM-01) to that month's end,
+ * clamped to an optional enrollment end date (INCLUSIVE — a lesson on the end
+ * date itself is billed), minus `excluded` dates (e.g. NO_LESSON_DATES).
+ * Replaced generate-invoices' inline countOccurrencesInMonth walk (2026-09-02),
+ * which formatted local-midnight Dates with toISOString() — correct only while
+ * the server timezone is UTC. Parity with that loop is pinned in
+ * billing-math.test.ts.
+ */
+export function invoiceMonthLessonDates(
+  monthFirstISO: string,
+  weekday: number,
+  endISO: string | null = null,
+  excluded: readonly string[] = [],
+): string[] {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(monthFirstISO)) return [];
+  // Fail CLOSED on a malformed end date, exactly as the retired loop did (its
+  // Invalid-Date comparison yielded no dates): under-billing beats billing
+  // past an enrollment's end.
+  if (endISO && !/^\d{4}-\d{2}-\d{2}$/.test(endISO)) return [];
+  const monthEnd = lastDayOfMonthISO(monthFirstISO);
+  const end = endISO && endISO < monthEnd ? endISO : monthEnd;
+  return weekdayLessonDates(monthFirstISO, end, weekday, excluded);
+}
+
+/**
  * First-invoice lesson dates for a signup: the start month (from startISO to
  * month end) plus — when the monthly batch has already run for the next month —
  * the whole next month. Mirrors the signup flow's combined-invoice logic.

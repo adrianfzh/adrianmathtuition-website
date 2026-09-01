@@ -13,4 +13,4 @@ Rules:
 ## Tasks
 
 - [ ] (example — replace me) Add a vitest test for `getInvoiceMonth()` covering the year-rollover (December → January)
-- [ ] (example — replace me) Add a vitest test for `countOccurrencesInMonth()` for a 5-Monday month
+- [ ] (example — replace me) Add a vitest test for `invoiceMonthLessonDates()` for a 5-Monday month

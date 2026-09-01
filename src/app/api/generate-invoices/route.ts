@@ -9,12 +9,17 @@ import { applyPriorBalance } from '@/lib/invoice-consolidate';
 import { parseReferrerMarker } from '@/lib/referral-link';
 import { NO_LESSON_DATES } from '@/lib/holidays';
 import { billableAdditionalFor, mapAdditionalRecord } from '@/lib/additional-lessons';
-import { nextDayISO } from '@/lib/billing-math';
+import { invoiceMonthLessonDates, lastDayOfMonthISO, nextDayISO } from '@/lib/billing-math';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 const DAY_ABBREV: Record<string, string> = {
   Sunday: 'Sun', Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed',
   Thursday: 'Thu', Friday: 'Fri', Saturday: 'Sat',
+};
+
+const DAY_INDICES: Record<string, number> = {
+  Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3,
+  Thursday: 4, Friday: 5, Saturday: 6,
 };
 
 export const runtime = 'nodejs';
@@ -42,30 +47,11 @@ interface InvoiceMonth {
   lastDay: Date;
 }
 
-function countOccurrencesInMonth(
-  dayName: string,
-  invoiceMonth: InvoiceMonth,
-  endDate: Date | null = null
-) {
-  const dayIndices: Record<string, number> = {
-    Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3,
-    Thursday: 4, Friday: 5, Saturday: 6,
-  };
-  const targetDay = dayIndices[dayName];
-  if (targetDay === undefined) return [];
-
-  const dates: { date: string; day: string; type: string }[] = [];
-  const current = new Date(invoiceMonth.firstDay);
-  while (current.getDay() !== targetDay) current.setDate(current.getDate() + 1);
-  while (current <= invoiceMonth.lastDay && (!endDate || current <= endDate)) {
-    const iso = current.toISOString().split('T')[0];
-    if (!NO_LESSON_DATES.includes(iso)) {
-      dates.push({ date: iso, day: dayName, type: 'Regular' });
-    }
-    current.setDate(current.getDate() + 7);
-  }
-  return dates;
-}
+// Regular-lesson dates come from lib/billing-math.ts (invoiceMonthLessonDates)
+// — the canonical, tested weekday walk. The inline loop that lived here until
+// 2026-09-02 formatted local-midnight Dates with toISOString(), which is only
+// correct while the server timezone is UTC; parity with it is pinned in
+// billing-math.test.ts.
 
 function checkAuth(req: NextRequest): boolean {
   // Cron acceptance: Vercel cron header or CRON_SECRET Bearer. Otherwise
@@ -112,6 +98,12 @@ export async function POST(req: NextRequest) {
     } else {
       invoiceMonth = getInvoiceMonth();
     }
+
+    // Month bounds as plain ISO strings — lesson-date math and the prorated
+    // Lessons query run on these, never on Date→toISOString() (which reads out
+    // UTC and skews a day in any non-UTC environment).
+    const monthFirstISO = `${invoiceMonth.year}-${String(invoiceMonth.month).padStart(2, '0')}-01`;
+    const monthLastISO = lastDayOfMonthISO(monthFirstISO);
 
     // IMPORTANT: paginate! A plain airtableRequest() silently caps at 100
     // rows, which previously hid enrollments (and therefore students) past
@@ -267,10 +259,8 @@ export async function POST(req: NextRequest) {
         let hasLessons = false;
 
         if (isProrated) {
-          const monthStart = formatDate(invoiceMonth.firstDay);
-          const monthEnd = formatDate(invoiceMonth.lastDay);
           const lessonFormula = encodeURIComponent(
-            `AND({Student}='${studentId}',{Type}='Regular',{Status}='Completed',{Date}>='${monthStart}',{Date}<='${monthEnd}')`
+            `AND({Student}='${studentId}',{Type}='Regular',{Status}='Completed',{Date}>='${monthFirstISO}',{Date}<='${monthLastISO}')`
           );
           const lessonData = await at('Lessons', `?filterByFormula=${lessonFormula}&sort[0][field]=Date&sort[0][direction]=asc`);
           proratedLessonRecords = lessonData.records || [];
@@ -285,11 +275,13 @@ export async function POST(req: NextRequest) {
             const dayAbbrev = DAY_ABBREV[dayName] || dayName;
             const slotTime = (slot.fields['Time'] || '').trim();
             const dayLabel = slotTime ? `${dayAbbrev} ${slotTime}` : dayAbbrev;
-            const endDateStr = enrollment.fields['End Date'];
-            const endDate = endDateStr ? new Date(endDateStr + 'T00:00:00') : null;
+            const endISO = (enrollment.fields['End Date'] as string | undefined) || null;
             const enrollRate: number = enrollment.fields['Rate Per Lesson'] || ratePerLesson;
-            const lineItems = countOccurrencesInMonth(dayName, invoiceMonth, endDate)
-              .map((li) => ({ ...li, day: dayLabel, enrollRate }));
+            const weekday = DAY_INDICES[dayName];
+            const lineItems = weekday === undefined
+              ? []
+              : invoiceMonthLessonDates(monthFirstISO, weekday, endISO, NO_LESSON_DATES)
+                  .map((date) => ({ date, day: dayLabel, type: 'Regular', enrollRate }));
             if (lineItems.length > 0) hasLessons = true;
             allLineItems.push(...lineItems);
           }

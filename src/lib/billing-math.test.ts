@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { weekdayLessonDates, firstInvoiceLessonDates, lastDayOfMonthISO, firstOfNextMonthISO, nextDayISO } from './billing-math';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { weekdayLessonDates, firstInvoiceLessonDates, invoiceMonthLessonDates, lastDayOfMonthISO, firstOfNextMonthISO, nextDayISO } from './billing-math';
+import { NO_LESSON_DATES } from './holidays';
 
 const FRI = 5, SUN = 0, TUE = 2;
 
@@ -99,5 +100,184 @@ describe('firstInvoiceLessonDates (signup combined invoice)', () => {
     const { startMonth, nextMonth } = firstInvoiceLessonDates('2026-07-03', FRI, false);
     expect(startMonth).toHaveLength(5);
     expect(nextMonth).toEqual([]);
+  });
+});
+
+describe('invoiceMonthLessonDates (generate-invoices regular lessons)', () => {
+  it('counts a 5-occurrence month whose LAST day is the lesson weekday', () => {
+    // July 2026 has five Fridays and ends on one — both the 5-occurrence case
+    // and the Kieran Lai month-end case in a single month.
+    expect(invoiceMonthLessonDates('2026-07-01', FRI, null, NO_LESSON_DATES)).toEqual([
+      '2026-07-03', '2026-07-10', '2026-07-17', '2026-07-24', '2026-07-31',
+    ]);
+  });
+
+  it('drops CNY dates (Feb 2026: Tue 17th and Wed 18th)', () => {
+    const WED = 3;
+    expect(invoiceMonthLessonDates('2026-02-01', TUE, null, NO_LESSON_DATES)).toEqual([
+      '2026-02-03', '2026-02-10', '2026-02-24',
+    ]);
+    expect(invoiceMonthLessonDates('2026-02-01', WED, null, NO_LESSON_DATES)).toEqual([
+      '2026-02-04', '2026-02-11', '2026-02-25',
+    ]);
+  });
+
+  it('drops Christmas (Fri 25 Dec 2026)', () => {
+    expect(invoiceMonthLessonDates('2026-12-01', FRI, null, NO_LESSON_DATES)).toEqual([
+      '2026-12-04', '2026-12-11', '2026-12-18',
+    ]);
+  });
+
+  it('clamps to the enrollment end date, INCLUSIVE of a lesson on it', () => {
+    expect(invoiceMonthLessonDates('2026-07-01', FRI, '2026-07-17')).toEqual([
+      '2026-07-03', '2026-07-10', '2026-07-17',
+    ]);
+    expect(invoiceMonthLessonDates('2026-07-01', FRI, '2026-06-30')).toEqual([]);
+    expect(invoiceMonthLessonDates('2026-07-01', FRI, '2027-01-01')).toHaveLength(5);
+  });
+
+  it('fails closed on malformed input', () => {
+    expect(invoiceMonthLessonDates('garbage', FRI)).toEqual([]);
+    // Malformed end date → no lessons (the retired loop's Invalid-Date
+    // comparison behaved the same way; never bill past an unknown end).
+    expect(invoiceMonthLessonDates('2026-07-01', FRI, 'not-a-date')).toEqual([]);
+    expect(invoiceMonthLessonDates('2026-07-01', 7)).toEqual([]);
+    expect(invoiceMonthLessonDates('2026-07-01', -1)).toEqual([]);
+  });
+
+  it('is timezone-independent (string math, no local Date reads)', () => {
+    const origTZ = process.env.TZ;
+    try {
+      process.env.TZ = 'Asia/Singapore';
+      const sgt = invoiceMonthLessonDates('2026-07-01', FRI, '2026-07-24', NO_LESSON_DATES);
+      process.env.TZ = 'UTC';
+      const utc = invoiceMonthLessonDates('2026-07-01', FRI, '2026-07-24', NO_LESSON_DATES);
+      expect(sgt).toEqual(utc);
+      expect(sgt[0]).toBe('2026-07-03');
+    } finally {
+      if (origTZ === undefined) delete process.env.TZ; else process.env.TZ = origTZ;
+    }
+  });
+});
+
+// ── PARITY PIN — retired generate-invoices loop vs invoiceMonthLessonDates ──
+// The route's countOccurrencesInMonth built local-midnight Dates and formatted
+// them with toISOString(), so its output was only correct while the process
+// timezone was UTC (true on Vercel, where every production run happened; in
+// SGT the same code emits every date one day early). These tests pin the
+// replacement to the retired loop's PRODUCTION behavior: the loop below is a
+// verbatim copy (excluded list parameterized instead of closing over
+// NO_LESSON_DATES), run with TZ forced to UTC.
+describe('invoiceMonthLessonDates — parity with the retired countOccurrencesInMonth', () => {
+  const origTZ = process.env.TZ;
+  beforeAll(() => { process.env.TZ = 'UTC'; });
+  afterAll(() => {
+    if (origTZ === undefined) delete process.env.TZ; else process.env.TZ = origTZ;
+  });
+
+  const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  // Verbatim from src/app/api/generate-invoices/route.ts as of 2026-09-02.
+  function oracleCountOccurrencesInMonth(
+    dayName: string,
+    invoiceMonth: { firstDay: Date; lastDay: Date },
+    endDate: Date | null = null,
+    noLessonDates: readonly string[] = NO_LESSON_DATES,
+  ) {
+    const dayIndices: Record<string, number> = {
+      Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3,
+      Thursday: 4, Friday: 5, Saturday: 6,
+    };
+    const targetDay = dayIndices[dayName];
+    if (targetDay === undefined) return [];
+
+    const dates: { date: string; day: string; type: string }[] = [];
+    const current = new Date(invoiceMonth.firstDay);
+    while (current.getDay() !== targetDay) current.setDate(current.getDate() + 1);
+    while (current <= invoiceMonth.lastDay && (!endDate || current <= endDate)) {
+      const iso = current.toISOString().split('T')[0];
+      if (!noLessonDates.includes(iso)) {
+        dates.push({ date: iso, day: dayName, type: 'Regular' });
+      }
+      current.setDate(current.getDate() + 7);
+    }
+    return dates;
+  }
+
+  // InvoiceMonth Dates exactly as the route constructed them.
+  function oracleMonth(year: number, month1to12: number) {
+    return {
+      firstDay: new Date(year, month1to12 - 1, 1),
+      lastDay: new Date(year, month1to12, 0),
+    };
+  }
+
+  it('TZ pin took effect (the oracle is only meaningful under UTC)', () => {
+    expect(new Date(2026, 6, 1).getTimezoneOffset()).toBe(0);
+  });
+
+  it('matches on every weekday × month of 2026 + Feb 2027/2028, with and without holidays and end dates', () => {
+    const months: [number, number][] = [
+      ...Array.from({ length: 12 }, (_, i) => [2026, i + 1] as [number, number]),
+      [2027, 2], [2028, 2], // Feb across a non-leap and a leap year
+    ];
+    const exclusionLists: readonly string[][] = [
+      [...NO_LESSON_DATES],
+      [], // no holidays at all
+    ];
+    let compared = 0;
+    for (const [year, month] of months) {
+      const mm = String(month).padStart(2, '0');
+      const monthFirstISO = `${year}-${mm}-01`;
+      const endCases: (string | null)[] = [
+        null,
+        `${year}-${mm}-17`,             // mid-month
+        lastDayOfMonthISO(monthFirstISO), // exactly month end
+        '2000-01-01',                    // before every month
+        '2099-12-31',                    // after every month
+      ];
+      for (const dayName of DAY_NAMES) {
+        const weekday = DAY_NAMES.indexOf(dayName);
+        for (const excluded of exclusionLists) {
+          for (const endISO of endCases) {
+            const oracle = oracleCountOccurrencesInMonth(
+              dayName,
+              oracleMonth(year, month),
+              endISO ? new Date(endISO + 'T00:00:00') : null,
+              excluded,
+            ).map((li) => li.date);
+            const actual = invoiceMonthLessonDates(monthFirstISO, weekday, endISO, excluded);
+            expect(actual, `${monthFirstISO} ${dayName} end=${endISO} excl=${excluded.length}`).toEqual(oracle);
+            compared++;
+          }
+        }
+      }
+    }
+    expect(compared).toBe(14 * 7 * 2 * 5);
+  });
+
+  it('matches on the named money cases', () => {
+    // 5-Friday July 2026 ending on a Friday (the Kieran Lai shape).
+    expect(invoiceMonthLessonDates('2026-07-01', FRI, null, NO_LESSON_DATES)).toEqual(
+      oracleCountOccurrencesInMonth('Friday', oracleMonth(2026, 7)).map((li) => li.date),
+    );
+    // CNY month, both affected weekdays.
+    for (const dayName of ['Tuesday', 'Wednesday']) {
+      expect(invoiceMonthLessonDates('2026-02-01', DAY_NAMES.indexOf(dayName), null, NO_LESSON_DATES)).toEqual(
+        oracleCountOccurrencesInMonth(dayName, oracleMonth(2026, 2)).map((li) => li.date),
+      );
+    }
+    // Christmas Friday.
+    expect(invoiceMonthLessonDates('2026-12-01', FRI, null, NO_LESSON_DATES)).toEqual(
+      oracleCountOccurrencesInMonth('Friday', oracleMonth(2026, 12)).map((li) => li.date),
+    );
+    // Enrollment ending ON a lesson date stays inclusive in both.
+    expect(invoiceMonthLessonDates('2026-07-01', FRI, '2026-07-17', NO_LESSON_DATES)).toEqual(
+      oracleCountOccurrencesInMonth('Friday', oracleMonth(2026, 7), new Date('2026-07-17T00:00:00')).map((li) => li.date),
+    );
+    // Unknown day name → [] in both.
+    expect(invoiceMonthLessonDates('2026-07-01', -1)).toEqual(
+      oracleCountOccurrencesInMonth('Freitag', oracleMonth(2026, 7)).map((li) => li.date),
+    );
   });
 });
