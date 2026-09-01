@@ -642,6 +642,46 @@ it), and **tag the backlog**.
   file). Both are two-tap: the armed state ("Tap again…" / "Delete for good?")
   auto-disarms after 4s, and that client confirm is the only delete guard — the
   API asks no questions.
+- **Subject chip + `?subject=` (2026-09-02):** `paper_marking_runs.subject` (text NOT
+  NULL default `'math'`, CHECK math|physics|chemistry|biology —
+  [`../SPEC-SCIENCE-MARKING.md`](../SPEC-SCIENCE-MARKING.md)) rides on the GET row as
+  `subject`; the library and triage rows show a small chip only when it is not
+  math (`components/SubjectChip.tsx`), and `GET /api/admin/papers?subject=physics`
+  filters (400 on an unknown value). The picker that sets it sits on mark-paper
+  next to the model picker and goes out as `subject` in the `save-paper` and
+  `direct` bodies (the proxy forwards the body verbatim). It is deliberately NOT
+  persisted — a sticky non-math choice would silently mis-tag the next math
+  paper. The list lives in `lib/mark-subjects.ts`.
+
+## /admin/calibration — is the marker trusted yet? (2026-09-02)
+
+"The marking SYSTEM is the product" ([`../SPEC-SUBJECTS.md`](../SPEC-SUBJECTS.md)):
+trust comes from measuring the AI against a human marking and gating release on the
+result. This page is the measurement, per subject, read straight from Supabase
+`calibration_results` (rows are written by the bot repo's
+`scripts/eval-mark-model.js --truth … --save`; the website only READS — RLS is on
+with no policies, so only the service-role client sees the table, and an anon read
+would look exactly like "no runs yet").
+
+- **Numbers are pure + tested** — [`../src/lib/calibration-stats.ts`](../src/lib/calibration-stats.ts)
+  (`calibration-stats.test.ts`): per subject → papers, share within the ±2 gate,
+  mean |Δ|, question agreement (Σ agree / Σ total — weighted by paper size, not a
+  mean of per-paper ratios), over/under shares from `per_question[].verdict`, an
+  8-week mean-|Δ| trend (ISO weeks, Monday UTC; empty weeks are `null`, never 0,
+  so "no data" can't draw as "perfect"), latest prompt version, and the gate.
+- **The gate:** `{threshold: 2, minPapers: 10, met: withinGateShare ≥ 0.9 && papers ≥ 10}`.
+  The 10 is the floor of the spec's "10–15 hand-marked scripts" — nine perfect
+  papers still read "⏳ 9/10", because a short streak proves nothing. The stretch
+  criterion is quoted as the target line, not computed (no dual-rater data yet):
+  "human–machine agreement ≥ human dual-rater agreement".
+- **Δ = AI − human.** Positive = the AI over-awarded (lenient, amber); negative =
+  under-awarded (the student was short-changed, red) — the same asymmetry triage's
+  `corrections` tally cares about. Tapping a row expands its per-question verdicts.
+- `GET /api/admin/calibration[?subject=]` → `{ rows (latest 200, newest first), stats }`;
+  stats are computed over the same window the table shows so the two always agree.
+- Empty state is by design ("No calibration runs yet — run …"): the four subject
+  cards still render, zeroed, so the gate each subject has yet to earn is visible.
+- Hub tile: ⚖️ Calibration, last in `LAUNCHERS` (saved orders append it at the end).
 
 ## /app/marking — where the student reads their own marks (2026-08-12)
 

@@ -376,6 +376,9 @@ const LAUNCHERS: Launcher[] = [
   { emoji: '📣', title: 'Marketing Calendar', sub: 'Post ideas vs SG exam calendar', href: '/admin/calendar-marketing-post' },
   { emoji: '🩺', title: 'Bank Health', sub: 'QB coverage · gaps · flagged questions', href: '/admin/bank-health' },
   { emoji: '🧭', title: 'Curriculum', sub: 'Strategy layer · dependency graph', href: '/admin/curriculum' },
+  // Last on purpose (2026-09-02): a saved tile order appends unknown hrefs at the
+  // end, so a new tile lands at the bottom on every device either way.
+  { emoji: '⚖️', title: 'Calibration', sub: 'AI marks vs the human standard · gate per subject', href: '/admin/calibration' },
 ];
 
 // ── Custom launcher order (drag-to-arrange, per-device) ─────────────────────────

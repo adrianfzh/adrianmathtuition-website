@@ -2,7 +2,8 @@
 //
 // GET    → every marking run, newest first, reduced to what's useful when you're
 //          sitting next to the student: score, the topics that bled marks, and
-//          links to the copies you can put on the screen.
+//          links to the copies you can put on the screen. ?subject= narrows to
+//          one marking lane (math | physics | chemistry | biology).
 // POST   → { runId, studentId } tags a run with a student (or untags with null);
 //          { runId, checked } toggles one ✓; { runIds, checked } sweeps many.
 // DELETE → ?id= removes the run AND its stored files (originals, annotated
@@ -24,6 +25,7 @@ import { recomputeTotals, pendingCount } from '@/lib/mark-triage';
 import { cancelMarkingState, stripQueue } from '@/lib/mark-queue-cancel';
 import { aggregateTopicBleed } from '@/lib/report-facts';
 import { lostMarkQuestions } from '@/lib/shelf';
+import { isMarkSubject } from '@/lib/mark-subjects';
 
 export const runtime = 'nodejs';
 
@@ -35,7 +37,7 @@ const DEFAULT_LIMIT = 200;
 const MAX_TOPICS_PER_RUN = 8;
 
 const COLUMNS =
-  'id, created_at, paper_name, student_id, student_name, num_questions, ' +
+  'id, created_at, paper_name, student_id, student_name, num_questions, subject, ' +
   'total_awarded, total_max, pdf_url, photos_pdf_url, annotated_pdf_url, released_at, checked_at, source, superseded_by';
 
 export async function GET(req: NextRequest) {
@@ -46,6 +48,12 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(Number(q.get('limit')) || DEFAULT_LIMIT, 500);
   const studentId = q.get('student') || '';
   const untaggedOnly = q.get('untagged') === '1';
+  // ?subject=physics — the science lanes (SPEC-SCIENCE-MARKING.md). Unknown
+  // values 400 rather than silently returning everything.
+  const subject = q.get('subject') || '';
+  if (subject && !isMarkSubject(subject)) {
+    return NextResponse.json({ error: `unknown subject "${subject}"` }, { status: 400 });
+  }
 
   const supa = getSupabaseAdmin();
   let query = supa
@@ -56,6 +64,7 @@ export async function GET(req: NextRequest) {
     .limit(limit);
   if (studentId) query = query.eq('student_id', studentId);
   if (untaggedOnly) query = query.is('student_id', null);
+  if (subject) query = query.eq('subject', subject);
 
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -82,6 +91,9 @@ export async function GET(req: NextRequest) {
         date,
         createdAt: r.created_at,
         paperName: r.paper_name || 'Untitled paper',
+        // 'math' for every run before the column existed; the row only grows a
+        // chip when it is something else.
+        subject: (r.subject as string | null) || 'math',
         studentId: r.student_id,
         studentName: r.student_name,
         awarded: totals.awarded,

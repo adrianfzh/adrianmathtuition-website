@@ -1,0 +1,12 @@
+{
+  "name": "Calibration — Adrian's Math Tuition",
+  "short_name": "Calibration",
+  "start_url": "/admin/calibration",
+  "display": "standalone",
+  "background_color": "#0F766E",
+  "theme_color": "#0F766E",
+  "icons": [
+    { "src": "/icons/admin-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/admin-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

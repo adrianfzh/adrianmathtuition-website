@@ -11,6 +11,7 @@ import { INLINE_BODY_LIMIT, markInlineBytes, canMarkFromStored } from '@/lib/mar
 import { setNativePencilMirror } from '@/lib/native-pencil-bridge';
 import { pdfToPageImages } from '@/lib/pdf-pages';
 import { splitFileIfSpread } from '@/lib/spread-split';
+import { MARK_SUBJECTS, DEFAULT_MARK_SUBJECT, subjectLabel, type MarkSubject } from '@/lib/mark-subjects';
 import StudentPicker from '@/components/StudentPicker';
 
 // The ✏️ Annotate overlay (Apple Pencil ink over the marked pages) is heavy and
@@ -327,6 +328,12 @@ export default function MarkPaperPage() {
   // page was the one surface still opening on 'classic', so the same paper came back looking
   // like a different product depending on where it was marked (Adrian, Jul 2026).
   const [markStyle, setMarkStyle] = useState<'classic' | 'teacher'>('teacher');
+  // Which marking brain the bot selects (SPEC-SCIENCE-MARKING.md) — stored on the
+  // run as paper_marking_runs.subject. Deliberately NOT persisted: the other
+  // pickers aren't either, and a sticky "physics" would silently mis-tag the next
+  // day's math paper. The spec's "one tap and never wrong" only holds if every
+  // load starts on math.
+  const [markSubject, setMarkSubject] = useState<MarkSubject>(DEFAULT_MARK_SUBJECT);
 
   const [phase, setPhase] = useState<'idle' | 'proposing' | 'proposed' | 'marking' | 'done'>('idle');
   const [error, setError] = useState('');
@@ -630,7 +637,7 @@ export default function MarkPaperPage() {
         const sp = await fetch('/api/admin/mark-paper', {
           method: 'POST', headers: authHeaders,
           body: JSON.stringify({
-            phase: 'save-paper', paperName: paperLabel, totalMax: outOfValue(),
+            phase: 'save-paper', paperName: paperLabel, totalMax: outOfValue(), subject: markSubject,
             source: {
               paper_pdf_url: paperPdfUrl || null,
               photos: originalUrls.map((u, i) => u ? { photo_index: i, original_url: u } : null).filter(Boolean),
@@ -661,7 +668,7 @@ export default function MarkPaperPage() {
             phase: 'direct', pdfBase64, paperPdfUrl: paperPdfUrl || undefined,
             runId: pendingId || undefined,
             images: imgs.map((im, i) => ({ base64: im.base64, mediaType: im.mediaType, originalUrl: originalUrls[i] || undefined })),
-            paperName: paperLabel, totalMax: outOfValue(), model: markModel, style: markStyle,
+            paperName: paperLabel, totalMax: outOfValue(), model: markModel, style: markStyle, subject: markSubject,
           }),
       });
       await applyMarkResponse(resp);
@@ -1231,7 +1238,7 @@ export default function MarkPaperPage() {
     }
     const sp = await fetch('/api/admin/mark-paper', {
       method: 'POST', headers: authHeaders,
-      body: JSON.stringify({ phase: 'save-paper', paperName: paperLabel, totalMax: opts?.totalMax, source: { paper_pdf_url: opts?.paperPdfUrl || null, photos } }),
+      body: JSON.stringify({ phase: 'save-paper', paperName: paperLabel, totalMax: opts?.totalMax, subject: markSubject, source: { paper_pdf_url: opts?.paperPdfUrl || null, photos } }),
     });
     const spd = await sp.json();
     if (!sp.ok || !spd.run_id) throw new Error(spd.error || 'could not save the paper');
@@ -2034,6 +2041,20 @@ export default function MarkPaperPage() {
             >
               <option value="opus">Opus 5 (default)</option>
               <option value="sonnet">Sonnet 5</option>
+            </select>
+          </label>
+          <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#374151' }}>
+            <span>Subject:</span>
+            <select
+              value={markSubject}
+              onChange={(e) => setMarkSubject(e.target.value as MarkSubject)}
+              disabled={busy}
+              title="Which marking brain the bot uses. Resets to Math on every load — a sticky choice could silently mis-tag the next paper."
+              style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13 }}
+            >
+              {MARK_SUBJECTS.map((s) => (
+                <option key={s} value={s}>{subjectLabel(s)}{s === DEFAULT_MARK_SUBJECT ? ' (default)' : ''}</option>
+              ))}
             </select>
           </label>
           <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#374151' }}>

@@ -16,6 +16,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import StudentPicker from '@/components/StudentPicker';
+import SubjectChip from '@/components/SubjectChip';
 
 type Topic = { topic: string; awarded: number; max: number; lost: number; pct: number; questions: number };
 type LostQ = { questionNumber: string; awarded: number; max: number; topic: string | null };
@@ -24,6 +25,8 @@ type Run = {
   id: string;
   date: string;
   paperName: string;
+  /** math | physics | chemistry | biology — chip shown only when not math. */
+  subject: string;
   studentId: string | null;
   studentName: string | null;
   awarded: number;
@@ -376,7 +379,10 @@ export default function PapersPage() {
           <div key={run.id} style={{ border: `1px solid ${C.border}`, borderRadius: 14, padding: 14, marginBottom: 10, background: '#fff' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 16, fontWeight: 700, wordBreak: 'break-word' }}>{run.paperName}</div>
+                <div style={{ fontSize: 16, fontWeight: 700, wordBreak: 'break-word' }}>
+                  {run.paperName}
+                  <SubjectChip subject={run.subject} style={{ marginLeft: 6 }} />
+                </div>
                 <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>
                   {fmtDate(run.date)} · {run.questions} question{run.questions === 1 ? '' : 's'}
                   {run.pending > 0 && <span style={{ color: '#a16207', fontWeight: 700 }}> · ⏳ {run.pending} to check</span>}

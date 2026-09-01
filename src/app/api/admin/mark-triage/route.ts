@@ -65,7 +65,7 @@ const MAX_DAYS = 90;
 // go once he's satisfied with the gated behaviour.
 const AUTO_RELEASE_PAUSED = true;
 const RUN_COLUMNS =
-  'id, created_at, paper_name, student_id, student_name, total_awarded, total_max, num_questions, annotated_pdf_url, pdf_url, released_at';
+  'id, created_at, paper_name, subject, student_id, student_name, total_awarded, total_max, num_questions, annotated_pdf_url, pdf_url, released_at';
 
 function daysAgoIso(days: number) {
   return new Date(Date.now() - days * 86400_000).toISOString();
@@ -110,6 +110,9 @@ export async function GET(req: NextRequest) {
         id: r.id,
         createdAt: r.created_at,
         paperName: r.paper_name || 'Untitled paper',
+        // The marking lane (math | physics | chemistry | biology); the row shows
+        // a chip only when it is not math.
+        subject: (r.subject as string | null) || 'math',
         studentId: r.student_id,
         studentName: r.student_name,
         awarded: summary.awarded,
