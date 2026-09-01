@@ -35,8 +35,13 @@ where student_id = '<rec…>' and result_json->'results' is not null
 order by created_at desc limit 5;
 ```
 
-Use the newest run unless Adrian names one. If several re-marks of the same
-paper exist, use the **best/newest** — earlier ones are superseded.
+The newest run is the sheet's SUBJECT — the paper Adrian releases alongside it,
+and the one whose questions the student will recognise. If several re-marks of the
+same paper exist, use the **best/newest**; earlier ones are superseded.
+
+But it is not the only evidence, and on its own it will mislead you. **Read every
+paper this student has had marked** (Step 2), because the thing worth teaching is
+usually a habit, and a habit is invisible in one script.
 
 ## Step 2 — extract the evidence (never topic labels)
 
@@ -67,6 +72,69 @@ needs first-move teaching), **procedure** (a named rule misapplied), **concept**
 rounding, "show that" endpoints). The mix decides what the sheet teaches: a
 paper losing 29 marks to blanks and 12 to procedure is a first-moves sheet,
 not a rules sheet.
+
+### Read EVERY paper, not just this one (Adrian, 1 Sep 2026 — binding)
+
+The single-paper diagnosis is a measured blind spot, not a theory. Eva's five
+marked papers were analysed together against the wave the sheet worker had
+produced from her newest one alone:
+
+| | marks lost | occasions | papers |
+|---|---|---|---|
+| Shape & space (mensuration, circle, 3-D) | 44 | 23 | 5 / 5 |
+| **Leaving parts blank** | **37** | 14 | 4 / 5 |
+| "Explain / justify" — asserting, not reasoning | 9 | 9 | **5 / 5** |
+| Scale factor not squared or cubed | 6 | 4 | 3 / 5 |
+
+The worker got shape-and-space right — two of its four picks. It missed the other
+three entirely, and the reason is not judgement:
+
+| paper | blank marks | total lost |
+|---|---|---|
+| **the paper it read** | **0** | 37 |
+| the other four | 8 · 15 · 8 · 6 | 97 |
+
+**On the one script it was given, she left nothing blank.** Her largest single
+weakness — 37 marks handed over untouched — does not appear in the evidence it
+had. Same for "explain": two marks on that paper, below any sensible cut; nine
+separate occasions across five.
+
+So pull them all:
+
+```sql
+select r.paper_name, r.created_at,
+       res->>'question_number' as q, p->>'label' as part,
+       (p->>'max')::int - (p->>'awarded')::int as lost,
+       coalesce(p->>'not_attempted','false') as blank,
+       p->>'error_summary' as why
+from paper_marking_runs r,
+     lateral jsonb_array_elements(r.result_json->'results') res,
+     lateral jsonb_array_elements(res->'marking_output'->'parts') p
+where r.student_id = '<rec…>'
+  and jsonb_typeof(r.result_json->'results') = 'array'
+  and (p->>'awarded')::int < (p->>'max')::int
+order by r.created_at desc;
+```
+
+**RECURRENCE OUTRANKS SIZE.** A misconception that costs 2 marks in three
+different papers beats a 6-mark loss that happened once — the first is a hole they
+carry into the exam, the second may be one hard question on one bad day. Adrian's
+ruling on Eva's scale factors, 1 Sep 2026: the worker filed them **Optional** on a
+2-mark showing; across three papers they are the same error verbatim, and he
+ranked them **high**. When you catch yourself putting something in Optional, check
+how many papers it appears in before you do.
+
+**Behaviours count as skills.** Two of the three things the single-paper read
+missed are not topics at all:
+- **Leaving parts blank.** If a student abandons parts, that is the biggest thing
+  you can teach them, whatever the topic — a first-move sheet ("what do you write
+  when you don't know how to finish") beats another rules sheet.
+- **Answering "explain" by restating the claim.** Reaching the right conclusion
+  without earning it. Cheap to fix, invisible in one paper, and it costs marks in
+  every paper they will ever sit.
+
+Say in the wave WHICH papers each skill came from and how often — Adrian is
+choosing what to teach, and "three papers running" is the fact that decides it.
 
 ### What earns practice — Adrian's triage (31 Aug 2026, binding)
 
