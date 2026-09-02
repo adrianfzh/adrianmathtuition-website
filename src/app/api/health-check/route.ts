@@ -40,6 +40,10 @@ async function timed(name: string, fn: () => Promise<string | void>): Promise<Re
 
 const T = (ms: number) => AbortSignal.timeout(ms);
 
+// Marks a job_runs summary as carrying a failure SIGNATURE this route can parse
+// back on the next run to decide whether anything actually changed.
+const SIG_PREFIX = 'failing: ';
+
 export async function GET(req: NextRequest) {
   if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const base = process.env.WEBSITE_URL || 'https://www.adrianmathtuition.com';
@@ -670,21 +674,46 @@ export async function GET(req: NextRequest) {
 
   // The health check stamps its own row too, so /admin/ops shows when the watcher
   // itself last watched. Best-effort like every stamp.
+  const failures = results.filter(r => !r.ok);
+  // Which checks are failing, as a stable string. The alert fires on a CHANGE to
+  // this set, not on every run: 2:01 PM and 8:01 PM on 31 Aug were byte-identical
+  // messages about the same stuck check, which is how a real alert becomes noise.
+  const failSig = failures.map(f => f.name).sort().join(',');
+
+  // Read the previous stamp BEFORE overwriting it. Unknown/old-format ⇒ null ⇒
+  // treated as changed, so an alert is never swallowed by a parsing detail.
+  let prevSig: string | null = null;
+  try {
+    const { latestJobRuns } = await import('@/lib/job-log');
+    const prev = (await latestJobRuns()).find(r => r.job === 'health-check');
+    if (prev?.ok) prevSig = '';                                   // last run was green
+    else if (prev?.summary?.startsWith(SIG_PREFIX)) prevSig = prev.summary.slice(SIG_PREFIX.length);
+  } catch { /* unknown → alert */ }
+
   {
     const { logJobRun } = await import('@/lib/job-log');
-    const bad = results.filter(r => !r.ok).length;
-    await logJobRun('health-check', bad === 0, bad === 0 ? `all ${results.length} checks green` : `${bad}/${results.length} checks failing`);
+    await logJobRun(
+      'health-check',
+      failures.length === 0,
+      failures.length === 0 ? `all ${results.length} checks green` : `${SIG_PREFIX}${failSig}`
+    );
   }
 
-  const failures = results.filter(r => !r.ok);
-  if (failures.length) {
+  if (failures.length && failSig !== prevSig) {
     try {
       await sendTelegram(
         `🚨 <b>Health check FAILED</b> (${failures.length}/${results.length})\n\n` +
         failures.map(f => `❌ <b>${f.name}</b>: ${f.info || 'failed'}`).join('\n') +
-        `\n\n✅ passing: ${results.filter(r => r.ok).map(r => r.name).join(', ') || 'none'}`
+        `\n\n✅ ${results.length - failures.length} others green`,
+        'alerts'
       );
     } catch { /* alert is best-effort */ }
+  } else if (!failures.length && prevSig !== '' && prevSig !== null) {
+    // Alerting only on change means silence has to be earned: say when it clears,
+    // or a fixed problem never gets an all-clear.
+    try {
+      await sendTelegram(`✅ <b>Health check recovered</b> — all ${results.length} checks green`, 'alerts');
+    } catch { /* best-effort */ }
   }
 
   return NextResponse.json({ ok: failures.length === 0, results });
