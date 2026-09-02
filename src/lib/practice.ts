@@ -15,7 +15,7 @@ import { NextRequest } from 'next/server';
 import { verifyAdminAuth } from './schedule-helpers';
 import { createSupabaseServer } from './supabase-server';
 import { getSessionUser, type PortalAccount } from './portal-auth';
-import { qbLevelsFor } from './qb-levels';
+import { ALL_QB_LEVELS, qbLevelsFor } from './qb-levels';
 
 export type PracticeCaller =
   | { kind: 'admin' }
@@ -43,4 +43,28 @@ export function levelAllowed(caller: PracticeCaller, level: string): boolean {
   if (!caller) return false;
   if (caller.kind === 'admin') return true;
   return qbLevelsFor(caller.account.level, caller.account.subjects).some(a => a.key === level);
+}
+
+// ── Science (2026-09-02) ─────────────────────────────────────────────────────
+// The physics bank (lib/science-bank) joins the picker as its own level key.
+// Students reach it only through lib/portal-beta.sciencePracticeAccess —
+// closed until SCIENCE_PRACTICE_OPEN_TO_STUDENTS flips, Adrian's admin cookie
+// previews it — so the science checks are async where the math ones are pure.
+import { isScienceLevel, scienceLevelsFor } from './science-levels';
+import { sciencePracticeAccess } from './portal-beta';
+
+/** The caller's full level list: math (pure) + whichever science levels they may see. */
+export async function practiceLevelsFor(caller: NonNullable<PracticeCaller>): Promise<{ key: string; label: string }[]> {
+  if (caller.kind === 'admin') return ALL_QB_LEVELS;
+  const math = qbLevelsFor(caller.account.level, caller.account.subjects);
+  const science = scienceLevelsFor(caller.account.subjects, await sciencePracticeAccess());
+  return [...math, ...science];
+}
+
+/** levelAllowed, plus the science gate for science keys. */
+export async function practiceLevelAllowed(caller: PracticeCaller, level: string): Promise<boolean> {
+  if (!caller) return false;
+  if (!isScienceLevel(level)) return levelAllowed(caller, level);
+  if (caller.kind === 'admin') return true;
+  return scienceLevelsFor(caller.account.subjects, await sciencePracticeAccess()).some(l => l.key === level);
 }

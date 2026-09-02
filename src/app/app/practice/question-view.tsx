@@ -25,7 +25,35 @@ export type QPart = { label: string; text: string; marks: number | null; subpart
 export type Question = {
   id: string; markdown: string; stem: string; parts: QPart[];
   marks: number | null; figureUrl?: string | null; source: string | null; hasSolution: boolean;
+  /** Science bank rows (lib/science-bank.toPayload): the subject the grade /
+   *  solution routes need to look the id up in the other project, and whether
+   *  the answer is a bare A–D letter (marked deterministically). */
+  subject?: string; mcq?: boolean; topic?: string | null;
 };
+
+// A–D chips for MCQ rows: the option letters found in the stem, else all four.
+export const MCQ_FALLBACK = ['A', 'B', 'C', 'D'] as const;
+export function mcqLettersIn(text: string): string[] {
+  const found: string[] = [];
+  for (const line of (text || '').split('\n')) {
+    const m = line.match(/^\s*\(?([A-D])[).:]\s+\S/);
+    if (m && !found.includes(m[1])) found.push(m[1]);
+  }
+  return found.length >= 2 ? found : [...MCQ_FALLBACK];
+}
+export function McqChips({ letters, value, onPick, disabled }: { letters: string[]; value: string; onPick: (l: string) => void; disabled?: boolean }) {
+  return (
+    <div className="flex flex-wrap gap-2 mb-3">
+      {letters.map(l => (
+        <button key={l} type="button" onClick={() => onPick(l)} disabled={disabled}
+          className={`w-14 h-14 rounded-2xl text-lg font-bold border transition-colors disabled:opacity-50 ${
+            value === l ? 'bg-navy text-[hsl(45,100%,96%)] border-navy' : 'bg-white text-slate-700 border-slate-300 hover:border-navy/40'}`}>
+          {l}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export function Md({ text }: { text: string }) {
   return <MathMarkdown content={text} />;

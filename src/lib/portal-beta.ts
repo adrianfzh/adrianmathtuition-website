@@ -22,6 +22,7 @@
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { isNotesAuthed } from './notes-auth';
+import type { ScienceAccess } from './science-levels';
 
 export const MARKING_ONLY_BETA = true;
 
@@ -89,3 +90,18 @@ export async function requireFullPortal(): Promise<void> {
 // logged with topics yet, so the card would only ever be empty or wrong.
 // Admin cookie sees it; flip to true to open it.
 export const LAST_LESSON_OPEN_TO_STUDENTS = false;
+
+// Science practice (2026-09-02, Adrian: "can we have physics questions
+// practice too? … gatekeep from students first"): the physics bank in the
+// separate science project reaches the practice picker as a 'PHY' level
+// (lib/science-levels + lib/science-bank). Closed to students until this
+// flips; once open, a student needs 'Physics' in Airtable Students.Subjects
+// (the option doesn't exist yet — add it via typecast when opening). Adrian's
+// admin cookie previews every science level.
+export const SCIENCE_PRACTICE_OPEN_TO_STUDENTS = false;
+
+/** 'preview' = Adrian's admin cookie (every science level), 'open' = flag on (by subject), else 'closed'. */
+export async function sciencePracticeAccess(): Promise<ScienceAccess> {
+  if (!(await viewingAsStudent()) && (await isNotesAuthed())) return 'preview';
+  return SCIENCE_PRACTICE_OPEN_TO_STUDENTS ? 'open' : 'closed';
+}

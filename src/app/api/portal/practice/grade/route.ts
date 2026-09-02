@@ -16,6 +16,9 @@ import { portalIdentity } from '@/lib/portal-auth';
 import { requireActiveAccess } from '@/lib/portal-passes';
 import { loadPitfallsForQuestion } from '@/lib/topic-pitfalls';
 import { parseTimedMeta } from '@/lib/timed-set';
+import { gradeMcq, isMcqAnswer, isScienceSubject, normaliseMcqChoice, scienceLevelsFor } from '@/lib/science-levels';
+import { scienceEligible, scienceQuestion } from '@/lib/science-bank';
+import { sciencePracticeAccess } from '@/lib/portal-beta';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -41,8 +44,12 @@ export async function POST(req: NextRequest) {
     image?: { data?: string; mediaType?: string };
     assignmentId?: string;
     timed?: unknown;
+    subject?: unknown;
   };
   if (!questionId) return NextResponse.json({ error: 'questionId required' }, { status: 400 });
+  // Science practice (2026-09-02): `subject: 'physics'` marks a science-bank
+  // question. Handled in full below — the math path is untouched.
+  const scienceSubject = isScienceSubject(body.subject) ? body.subject : null;
   // Timed set (/app/practice/timed, 2026-09-02): the client tags each graded
   // question with the set + elapsed time; malformed → treated as ordinary
   // practice. The attempt row then carries duration_seconds + marking_json.timed
@@ -71,6 +78,81 @@ export async function POST(req: NextRequest) {
   }
 
   const admin = createServiceClient();
+
+  if (scienceSubject) {
+    // Gate: same access rule as the picker (closed to students until
+    // SCIENCE_PRACTICE_OPEN_TO_STUDENTS; Adrian's admin cookie previews).
+    const access = await sciencePracticeAccess();
+    if (!scienceLevelsFor(account.subjects, access).some(l => l.key === 'PHY')) {
+      return NextResponse.json({ error: 'Science practice isn’t open yet' }, { status: 403 });
+    }
+    let sq;
+    try { sq = await scienceQuestion(scienceSubject, questionId); }
+    catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: 502 }); }
+    if (!sq || !scienceEligible(sq)) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
+    const topics = Array.isArray(sq.topics) ? sq.topics : [];
+    const scienceMeta = { subject: scienceSubject, questionId: sq.id };
+
+    // MCQ: a bare-letter answer, marked deterministically — no model, no cap.
+    if (isMcqAnswer(sq.answer)) {
+      if (attemptImage) return NextResponse.json({ error: 'Pick an option (A–D) for this question' }, { status: 400 });
+      const choice = normaliseMcqChoice((cleanLines || []).find(l => l.trim()));
+      if (!choice) return NextResponse.json({ error: 'Answer with the option letter — A, B, C or D' }, { status: 400 });
+      const result = gradeMcq(sq.answer.trim().toUpperCase() as 'A' | 'B' | 'C' | 'D', choice, sq.total_marks);
+      const { data: ins } = await admin
+        .from('student_attempts')
+        .insert({
+          user_id: account.id,
+          airtable_student_id: identity,
+          question_id: null,                 // FK points at the MATH bank
+          attempted_via: 'portal-mcq',       // deterministic → outside the daily cap + digest
+          answer_text: choice,
+          marking_verdict: result.verdict,
+          duration_seconds: timedMeta?.elapsedSec ?? null,
+          marking_json: { ...result, model: 'rule:mcq', lines: [choice], source: 'typed', topics, science: { ...scienceMeta, mcq: true, choice }, ...(timedMeta ? { timed: timedMeta } : {}) },
+        })
+        .select('id').single();
+      return NextResponse.json({ attemptId: ins?.id ?? null, result, weaknessTags: [] });
+    }
+
+    // Structured: the ordinary Opus grader with the physics framing. Daily cap
+    // applies (it costs the same as a math grade); math weakness tags and
+    // pitfalls are not used — they are math vocabulary.
+    const dayStartS = new Date(); dayStartS.setUTCHours(dayStartS.getUTCHours() - 24);
+    const { count: usedS } = await admin
+      .from('student_attempts').select('id', { count: 'exact', head: true })
+      .eq('user_id', account.id).eq('attempted_via', 'portal').gte('attempted_at', dayStartS.toISOString());
+    if ((usedS || 0) >= DAILY_GRADE_CAP) {
+      return NextResponse.json({ error: `Daily limit reached (${DAILY_GRADE_CAP} graded attempts). Back tomorrow!` }, { status: 429 });
+    }
+    let sres;
+    try {
+      sres = await gradeAttempt({
+        question: { ...sq, level: 'O-Level Physics' } as Record<string, unknown>,
+        lines: cleanLines, image: attemptImage, weaknessTags: [], pitfalls: [], subject: 'physics',
+      });
+    } catch {
+      return NextResponse.json({ error: 'Marking hiccup — try again in a moment' }, { status: 502 });
+    }
+    const storedS = sres.transcribedLines || cleanLines || [];
+    const { data: insS } = await admin
+      .from('student_attempts')
+      .insert({
+        user_id: account.id,
+        airtable_student_id: identity,
+        question_id: null,
+        attempted_via: 'portal',
+        answer_text: storedS.join('\n'),
+        marking_verdict: sres.verdict,
+        duration_seconds: timedMeta?.elapsedSec ?? null,
+        marking_json: { ...sres, model: GRADING_MODEL, lines: storedS, source: attemptImage ? 'photo' : 'typed', topics, science: scienceMeta, ...(timedMeta ? { timed: timedMeta } : {}) },
+      })
+      .select('id').single();
+    if (sres.parseRetried) {
+      sendTelegram(`⚠️ Physics practice grade needed a JSON retry — ${account.display_name || account.email}, ${topics[0] || '?'}, ${sres.score}/${sres.outOf}. Worth a spot-check.`).catch(() => {});
+    }
+    return NextResponse.json({ attemptId: insS?.id ?? null, result: sres, weaknessTags: [] });
+  }
 
   // Assignment ownership — the id is client-supplied, so every claim is
   // re-checked server-side against the session's portal identity.

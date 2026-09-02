@@ -32,7 +32,8 @@ import { getStudentAssignment } from '@/lib/portal-assignments';
 import { dueLabel } from '@/lib/assignments';
 import { practiceEligibility } from '@/lib/portal-find';
 import { questionMarkdown, questionStructured, totalMarksOf } from '@/lib/bank-question-markdown';
-import { examPrepVisible } from '@/lib/portal-beta';
+import { examPrepVisible, sciencePracticeAccess } from '@/lib/portal-beta';
+import { scienceLevelsFor } from '@/lib/science-levels';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,7 +58,12 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
     // Per-request cached (lib/portal-auth.ts) — shared with the layout's
     // lookups in the same render pass instead of a second getUser round-trip.
     const data = await sessionAccount();
-    if (data) { account = data; initialLevels = qbLevelsFor(data.level, data.subjects); }
+    if (data) {
+      account = data;
+      // Science practice (2026-09-02) rides the same level chips — closed to
+      // students until SCIENCE_PRACTICE_OPEN_TO_STUDENTS; admin cookie previews.
+      initialLevels = [...qbLevelsFor(data.level, data.subjects), ...scienceLevelsFor(data.subjects, await sciencePracticeAccess())];
+    }
   } catch { /* fall back to client-side detection */ }
 
   let initialAssignment: InitialAssignment | null = null;

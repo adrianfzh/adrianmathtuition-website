@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { practiceAuth, levelAllowed, qbLevelsFor, bankScope } from '@/lib/practice';
+import { practiceAuth, practiceLevelAllowed, practiceLevelsFor, bankScope } from '@/lib/practice';
+import { isScienceLevel } from '@/lib/science-levels';
+import { scienceTopicCounts } from '@/lib/science-bank';
 
 export const runtime = 'nodejs';
 
@@ -15,10 +17,19 @@ export async function GET(req: NextRequest) {
   if (new URL(req.url).searchParams.get('auth') === 'check') return NextResponse.json({ ok: true });
 
   const url = new URL(req.url);
-  const levels = caller.kind === 'student' ? qbLevelsFor(caller.account.level, caller.account.subjects) : null;
+  const levels = caller.kind === 'student' ? await practiceLevelsFor(caller) : null;
   const level = url.searchParams.get('level') || levels?.[0]?.key;
   if (!level) return NextResponse.json({ error: 'level required' }, { status: 400 });
-  if (!levelAllowed(caller, level)) return NextResponse.json({ error: 'Level not available' }, { status: 403 });
+  if (!(await practiceLevelAllowed(caller, level))) return NextResponse.json({ error: 'Level not available' }, { status: 403 });
+  // Science levels (lib/science-bank): counts over the eligible physics pool.
+  if (isScienceLevel(level)) {
+    try {
+      const topics = await scienceTopicCounts(level);
+      return NextResponse.json({ topics, level, ...(levels ? { levels } : {}) });
+    } catch (e) {
+      return NextResponse.json({ error: (e as Error).message, topics: [] }, { status: 500 });
+    }
+  }
 
   const scope = bankScope(level);
   const { data, error } = await getSupabaseAdmin().rpc('practice_topics', { p_level: scope.level, p_qlevel: scope.qlevel });

@@ -20,7 +20,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { MathMarkdown } from '@/lib/math-markdown';
-import { MathText, QuestionView, type Question } from '../question-view';
+import { MathText, McqChips, QuestionView, mcqLettersIn, type Question } from '../question-view';
 import { fileToJpegDataUrl } from '../image-downscale';
 import type { Tier } from '../topic-picker';
 import { topicOrderComparator } from '@/lib/notes-tree';
@@ -36,6 +36,8 @@ type SetQuestion = Question & { topic: string | null };
 type BuiltSet = {
   setId: string; level: string; tier: Tier | null; mixed: boolean; topics: string[];
   count: number; totalMarks: number; timeLimitSec: number; questions: SetQuestion[];
+  /** Science bank sets (lib/science-bank): forwarded to the grade + solution routes. */
+  subject?: string | null;
 };
 type Answer = { text: string; photo: string | null };
 type LineComment = { line: number; ok: boolean; comment: string; fix?: string; tag?: string };
@@ -172,9 +174,10 @@ export default function TimedFlow({ levels, initialLevel, initialTopics }: {
       const text = (a?.text || '').trim();
       if (!a?.photo && !text) { results[q.id] = { status: 'blank' }; return; }
       const lines = (a?.text || '').split('\n');
+      const subject = q.subject ?? set.subject ?? undefined;
       const body = a?.photo
-        ? { questionId: q.id, image: { data: a.photo.split(',')[1], mediaType: 'image/jpeg' }, timed }
-        : { questionId: q.id, lines, timed };
+        ? { questionId: q.id, image: { data: a.photo.split(',')[1], mediaType: 'image/jpeg' }, timed, ...(subject ? { subject } : {}) }
+        : { questionId: q.id, lines, timed, ...(subject ? { subject } : {}) };
       try {
         const d = await portalFetch<{ result: GradeResult }>('/api/portal/practice/grade', {
           json: body, fallback: 'Marking didn’t go through',
@@ -254,7 +257,8 @@ export default function TimedFlow({ levels, initialLevel, initialTopics }: {
   async function showSolution(qid: string) {
     setSolLoading(qid);
     try {
-      const d = await portalFetch<{ markdown?: string }>(`/api/portal/practice/solution?id=${encodeURIComponent(qid)}`);
+      const subj = set?.questions.find(x => x.id === qid)?.subject ?? set?.subject ?? null;
+      const d = await portalFetch<{ markdown?: string }>(`/api/portal/practice/solution?id=${encodeURIComponent(qid)}${subj ? `&subject=${encodeURIComponent(subj)}` : ''}`);
       setSolutions(s => ({ ...s, [qid]: d.markdown || '_Could not load the solution._' }));
     } catch { setSolutions(s => ({ ...s, [qid]: '_Could not load the solution._' })); }
     finally { setSolLoading(null); }
@@ -446,7 +450,10 @@ export default function TimedFlow({ levels, initialLevel, initialTopics }: {
             onChange={(e) => { void pickPhoto(e.target.files?.[0]); e.target.value = ''; }} />
           <input ref={libraryRef} type="file" accept="image/*" className="hidden"
             onChange={(e) => { void pickPhoto(e.target.files?.[0]); e.target.value = ''; }} />
-          {ans.photo ? (
+          {q.mcq ? (
+            <McqChips letters={mcqLettersIn(q.stem || q.markdown)} value={ans.text.trim().toUpperCase()}
+              onPick={(l) => { setPhoto(null); setText(l); }} />
+          ) : ans.photo ? (
             <div className="mb-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={ans.photo} alt="Your working" className="max-h-64 rounded-xl border border-slate-200" />

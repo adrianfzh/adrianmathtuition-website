@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { practiceAuth, levelAllowed, qbLevelsFor, ALL_QB_LEVELS, bankScope } from '@/lib/practice';
+import { practiceAuth, practiceLevelAllowed, practiceLevelsFor, bankScope } from '@/lib/practice';
+import { isScienceLevel, scienceSubjectOf } from '@/lib/science-levels';
+import { scienceMasteryFor, scienceTopicCounts } from '@/lib/science-bank';
 
 export const runtime = 'nodejs';
 
@@ -31,15 +33,45 @@ export async function GET(req: NextRequest) {
   if (!caller) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const isStudent = caller.kind === 'student';
-  const levels = isStudent
-    ? qbLevelsFor(caller.account.level, caller.account.subjects)
-    : ALL_QB_LEVELS;
+  const levels = await practiceLevelsFor(caller);
 
   const url = new URL(req.url);
   const activeLevel = url.searchParams.get('level') || levels[0]?.key;
   if (!activeLevel) return NextResponse.json({ error: 'level required' }, { status: 400 });
-  if (!levelAllowed(caller, activeLevel)) {
+  if (!(await practiceLevelAllowed(caller, activeLevel))) {
     return NextResponse.json({ error: 'Level not available' }, { status: 403 });
+  }
+
+  // Science levels (2026-09-02): counts from the science bank, mastery from
+  // the student's own science attempts (marking_json.science — the attempt
+  // row can't reference a science question id, see lib/science-bank).
+  if (isScienceLevel(activeLevel)) {
+    try {
+      const counts = await scienceTopicCounts(activeLevel);
+      const subject = scienceSubjectOf(activeLevel)!;
+      const mastery = isStudent ? await scienceMasteryFor(caller.account.id, subject) : new Map();
+      const topics: TopicRow[] = counts.map(t => {
+        const m = mastery.get(t.topic);
+        const attempts = m?.attempts ?? 0;
+        return {
+          topic: t.topic,
+          questionCount: t.n,
+          advancedCount: t.advanced_count,
+          attempts,
+          mastery: m?.mastery ?? null,
+          status: statusFor(attempts, m?.mastery ?? null),
+          lastPracticedAt: m?.lastPracticedAt ?? null,
+        };
+      });
+      const recommended = topics
+        .filter(t => t.attempts > 0 && t.mastery != null && t.mastery < 75)
+        .sort((a, b) => (a.mastery! - b.mastery!) || a.topic.localeCompare(b.topic))
+        .slice(0, 3)
+        .map(t => ({ topic: t.topic, level: activeLevel, reason: t.mastery! < 40 ? 'You keep slipping here' : 'Almost there — keep practising' }));
+      return NextResponse.json({ levels, activeLevel, topics, recommended });
+    } catch (e) {
+      return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+    }
   }
 
   const supabase = getSupabaseAdmin();

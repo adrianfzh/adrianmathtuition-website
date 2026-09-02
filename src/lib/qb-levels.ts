@@ -11,6 +11,9 @@ export const ALL_QB_LEVELS: { key: string; label: string }[] = [
   { key: 'EM', label: 'O-Level E-Math' }, { key: 'EM_NA', label: 'E-Math (NA)' },
   { key: 'AM', label: 'O-Level A-Math' }, { key: 'JC1', label: 'JC1 H2 Math' },
   { key: 'JC2', label: 'JC2 H2 Math' },
+  // Science (separate bank — lib/science-levels): admin/testing list only;
+  // students get it through lib/practice.practiceLevelsFor's science gate.
+  { key: 'PHY', label: 'O-Level Physics' },
 ];
 
 // Airtable Subjects (multipleSelects) → the QB level keys that subject unlocks.

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { solutionMarkdown } from '@/lib/bank-question-markdown';
 import { practiceAuth } from '@/lib/practice';
+import { isScienceSubject } from '@/lib/science-levels';
+import { scienceQuestion } from '@/lib/science-bank';
 
 export const runtime = 'nodejs';
 
@@ -14,6 +16,18 @@ export async function GET(req: NextRequest) {
   if (!caller) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const id = new URL(req.url).searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+  // Science bank (2026-09-02): ?subject=physics — the ids live in the other
+  // project; the same markdown renderer applies.
+  const subject = new URL(req.url).searchParams.get('subject');
+  if (isScienceSubject(subject)) {
+    try {
+      const sq = await scienceQuestion(subject, id);
+      if (!sq) return NextResponse.json({ error: 'not found' }, { status: 404 });
+      return NextResponse.json({ markdown: solutionMarkdown(sq) });
+    } catch (e) {
+      return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+    }
+  }
   const { data, error } = await getSupabaseAdmin().rpc('practice_solution', { p_id: id });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   const q = data?.[0];

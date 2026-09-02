@@ -41,8 +41,12 @@ export function buildGradingPrompt(opts: {
   // only — placed after the marking rules, like markAnatomy, so it cannot shift
   // how marks are awarded. Empty/omitted renders nothing.
   pitfalls?: PitfallHint[];
+  // Science practice (2026-09-02): 'physics' swaps the examiner framing and
+  // adds the O-Level physics conventions (units, significant figures, formula
+  // → substitution → answer). The JSON contract is unchanged.
+  subject?: 'math' | 'physics';
 }): string {
-  const { question, lines, isPhoto, weaknessTags, anatomy = true, pitfalls = [] } = opts;
+  const { question, lines, isPhoto, weaknessTags, anatomy = true, pitfalls = [], subject = 'math' } = opts;
 
   const scheme: string[] = [];
   collectScheme(question.parts, scheme);
@@ -80,7 +84,14 @@ In "transcribedLines", return these same lines in the same order — exactly one
     ? `\nmarkAnatomy labels each part's marks with O-Level mark codes — M for a method mark, A for an accuracy mark, B for an independent mark (M1, A1, B1, …). It is EXPLANATORY ONLY: first decide awarded/outOf exactly as instructed above, then describe that decision — markAnatomy must never change or contradict the marks. Give exactly one entry per mark of the part's outOf, each with a short student-readable "for" phrase; set "earned" per whether that specific mark was gained, so the earned entries count to exactly "awarded".`
     : '';
 
-  return `You are an experienced Singapore ${question.level} mathematics examiner marking one student's working against the official mark scheme.
+  const examiner = subject === 'physics'
+    ? 'You are an experienced Singapore O-Level Physics (6091) examiner marking one student\'s working against the official mark scheme.'
+    : `You are an experienced Singapore ${question.level} mathematics examiner marking one student's working against the official mark scheme.`;
+  const physicsRules = subject === 'physics'
+    ? `\n- Physics conventions: a numerical answer needs its unit — a missing or wrong unit loses the accuracy mark for that value (method marks stay). Accept 2–3 significant figures unless the question fixes it; do not penalise sensible rounding. The usual pattern is formula (stated or clearly used) → correct substitution → answer: credit each step the scheme carries. "State", "define" and "explain" marks want the precise physics idea (the named law, the direction, the energy change); vague or circular wording earns 0 for that mark. Use g = 10 m/s² unless the question says otherwise.`
+    : '';
+
+  return `${examiner}
 
 QUESTION (LaTeX in $...$):
 ${question.question_text || ''}
@@ -96,7 +107,7 @@ Mark per the scheme — method marks where the approach is valid, accuracy marks
 - "Explain / show / prove" marks are all-or-nothing: a vague, circular, self-contradictory or incomplete justification, an unjustified assumption (e.g. treating points as collinear without showing it), or an illegal algebraic step earns 0 for those marks — no partial credit for effort. Name the gap precisely ("this shows X but does not prove Y"). Geometry statements need their reasons; a true statement missing its reason loses that mark.
 - Never deduct for presentation, notation style, method policy, or missing working when the required values are correct: a correct answer on a "write down" or 1-mark question earns full marks with no working, and calculator-obtained results (solving, factorising) are acceptable. Raise style concerns as feedback alongside full marks, not as deductions.
 - Estimation questions: rounding to 1 significant figure (or convenient near values) is the REQUIRED technique — never penalise the rounding or demand the exact value.
-- If the attempt is fundamentally off-track, score it honestly, explain why the approach is not relevant to what is asked, and advise re-attempting after studying the correct method (outline it in nextSteps).
+- If the attempt is fundamentally off-track, score it honestly, explain why the approach is not relevant to what is asked, and advise re-attempting after studying the correct method (outline it in nextSteps).${physicsRules}
 
 Reply with ONLY a JSON object (no markdown fences):
 {${transcriptionField}

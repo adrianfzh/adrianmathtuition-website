@@ -92,12 +92,13 @@ export async function gradeAttempt(opts: {
   image?: AttemptImage;
   weaknessTags: string[];
   pitfalls?: PitfallHint[];
+  subject?: 'math' | 'physics';
 }): Promise<GradeResult> {
-  const { question, lines, image, weaknessTags, pitfalls = [] } = opts;
+  const { question, lines, image, weaknessTags, pitfalls = [], subject = 'math' } = opts;
   const isPhoto = !!image;
   if (!isPhoto && !lines?.length) throw new Error('lines or image required');
 
-  const prompt = buildGradingPrompt({ question, lines, isPhoto, weaknessTags, pitfalls });
+  const prompt = buildGradingPrompt({ question, lines, isPhoto, weaknessTags, pitfalls, subject });
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 

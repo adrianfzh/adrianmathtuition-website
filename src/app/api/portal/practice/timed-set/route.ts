@@ -27,7 +27,9 @@ import { randomUUID } from 'node:crypto';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { createServiceClient } from '@/lib/supabase-server';
 import { questionMarkdown, questionStructured, totalMarksOf, type BankQuestion } from '@/lib/bank-question-markdown';
-import { practiceAuth, levelAllowed, bankScope, qbLevelsFor, type PracticeCaller } from '@/lib/practice';
+import { practiceAuth, practiceLevelAllowed, practiceLevelsFor, bankScope, type PracticeCaller } from '@/lib/practice';
+import { isScienceLevel, scienceSubjectOf } from '@/lib/science-levels';
+import { scienceNext, scienceTopicCounts, toPayload } from '@/lib/science-bank';
 import { portalIdentity } from '@/lib/portal-auth';
 import { examPrepVisible } from '@/lib/portal-beta';
 import { DAILY_GRADE_CAP } from '@/lib/practice-grade';
@@ -71,10 +73,10 @@ async function build(caller: NonNullable<PracticeCaller>, body: Record<string, u
   if (caller.kind === 'student' && !(await examPrepVisible())) {
     return NextResponse.json({ error: 'Timed sets aren’t open yet' }, { status: 403 });
   }
-  const levels = caller.kind === 'student' ? qbLevelsFor(caller.account.level, caller.account.subjects) : null;
+  const levels = caller.kind === 'student' ? await practiceLevelsFor(caller) : null;
   const level = typeof body.level === 'string' && body.level ? body.level : levels?.[0]?.key;
   if (!level) return NextResponse.json({ error: 'level required' }, { status: 400 });
-  if (!levelAllowed(caller, level)) return NextResponse.json({ error: 'Level not available' }, { status: 403 });
+  if (!(await practiceLevelAllowed(caller, level))) return NextResponse.json({ error: 'Level not available' }, { status: 403 });
   const tier = body.tier === 'Advanced' || body.tier === 'Standard' ? body.tier : null;
   const count = normaliseCount(body.count);
   const scope = bankScope(level);
@@ -105,12 +107,44 @@ async function build(caller: NonNullable<PracticeCaller>, body: Record<string, u
     ? (body.topics as unknown[]).filter((t): t is string => typeof t === 'string' && !!t.trim()).map(t => t.trim()).slice(0, MAX_TOPICS_PER_SET)
     : [];
   const mixed = topics.length === 0;
+  const science = isScienceLevel(level);
   if (mixed) {
-    const { data, error } = await sb.rpc('practice_topics', { p_level: scope.level, p_qlevel: scope.qlevel });
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    topics = ((data || []) as { topic: string }[]).map(r => r.topic).filter(Boolean);
+    if (science) {
+      try { topics = (await scienceTopicCounts(level)).map(t => t.topic); }
+      catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: 500 }); }
+    } else {
+      const { data, error } = await sb.rpc('practice_topics', { p_level: scope.level, p_qlevel: scope.qlevel });
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      topics = ((data || []) as { topic: string }[]).map(r => r.topic).filter(Boolean);
+    }
   }
   if (!topics.length) return NextResponse.json({ error: 'No questions available for that level yet' }, { status: 409 });
+
+  // Science levels: same slot plan, the science bank's picker per slot.
+  if (science) {
+    const planS = planSlots(topics, count);
+    const pickedS: string[] = [];
+    const qs: ReturnType<typeof toPayload>[] = [];
+    for (const slotTopic of planS) {
+      const order = [slotTopic, ...topics.filter(t => t !== slotTopic)];
+      let row = null;
+      for (const t of order) {
+        try { row = await scienceNext({ levelKey: level, topic: t, exclude: pickedS, tier }); }
+        catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: 500 }); }
+        if (row) break;
+      }
+      if (!row) break;
+      pickedS.push(row.id);
+      qs.push(toPayload(row));
+    }
+    if (!qs.length) return NextResponse.json({ error: 'No questions left for those topics at that tier — widen the topics or switch tier' }, { status: 409 });
+    const totalMarksS = qs.reduce((a, q) => a + marksForTiming(q.marks), 0);
+    await logEvents(caller, ['timed:start']);
+    return NextResponse.json({
+      setId: randomUUID(), level, tier, mixed, topics: mixed ? [] : topics, count: qs.length,
+      subject: scienceSubjectOf(level), totalMarks: totalMarksS, timeLimitSec: timeLimitSeconds(level, totalMarksS), questions: qs,
+    });
+  }
 
   const plan = planSlots(topics, count);
   const pickedIds: string[] = [];

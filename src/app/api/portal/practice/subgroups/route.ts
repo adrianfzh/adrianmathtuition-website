@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { practiceAuth, levelAllowed, qbLevelsFor, bankScope } from '@/lib/practice';
+import { practiceAuth, practiceLevelAllowed, practiceLevelsFor, bankScope } from '@/lib/practice';
+import { isScienceLevel } from '@/lib/science-levels';
 
 export const runtime = 'nodejs';
 
@@ -21,10 +22,13 @@ export async function GET(req: NextRequest) {
   if (!caller) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const url = new URL(req.url);
-  const levels = caller.kind === 'student' ? qbLevelsFor(caller.account.level, caller.account.subjects) : null;
+  const levels = caller.kind === 'student' ? await practiceLevelsFor(caller) : null;
   const level = url.searchParams.get('level') || levels?.[0]?.key;
   if (!level) return NextResponse.json({ error: 'level required' }, { status: 400 });
-  if (!levelAllowed(caller, level)) return NextResponse.json({ error: 'Level not available' }, { status: 403 });
+  if (!(await practiceLevelAllowed(caller, level))) return NextResponse.json({ error: 'Level not available' }, { status: 403 });
+  // Science levels carry no question-type layer in the portal yet — the
+  // sheet shows plain "Start" for the whole topic.
+  if (isScienceLevel(level)) return NextResponse.json({ subgroups: [] });
   const topic = url.searchParams.get('topic') || null;
 
   const scope = bankScope(level);

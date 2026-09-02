@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { questionMarkdown, questionStructured, totalMarksOf } from '@/lib/bank-question-markdown';
-import { practiceAuth, levelAllowed, bankScope } from '@/lib/practice';
+import { practiceAuth, practiceLevelAllowed, bankScope } from '@/lib/practice';
+import { isScienceLevel } from '@/lib/science-levels';
+import { scienceNext, toPayload } from '@/lib/science-bank';
 
 export const runtime = 'nodejs';
 
@@ -21,7 +23,20 @@ export async function POST(req: NextRequest) {
     level?: string; topic?: string; exclude?: string[]; tier?: string; subgroupId?: number | string | null;
   };
   if (!level || !topic) return NextResponse.json({ error: 'level and topic required' }, { status: 400 });
-  if (!levelAllowed(caller, level)) return NextResponse.json({ error: 'Level not available' }, { status: 403 });
+  if (!(await practiceLevelAllowed(caller, level))) return NextResponse.json({ error: 'Level not available' }, { status: 403 });
+
+  // Science levels: the science bank's twin of practice_next (lib/science-bank).
+  if (isScienceLevel(level)) {
+    try {
+      const q = await scienceNext({
+        levelKey: level, topic, exclude: Array.isArray(exclude) ? exclude : [],
+        tier: tier === 'Standard' || tier === 'Advanced' ? tier : null,
+      });
+      return NextResponse.json({ question: q ? toPayload(q) : null });
+    } catch (e) {
+      return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+    }
+  }
 
   const scope = bankScope(level);
   const sg = subgroupId == null || subgroupId === '' ? NaN : Number(subgroupId);

@@ -7,7 +7,8 @@ import { getSupabaseBrowser } from '@/lib/supabase-client';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 // The question renderer + inline-math helpers moved to ./question-view.tsx on
 // 2026-09-02, shared with the timed set (/app/practice/timed).
-import { MathText, QuestionView, type Question } from './question-view';
+import { MathText, McqChips, QuestionView, mcqLettersIn, type Question } from './question-view';
+import { isScienceLevel } from '@/lib/science-levels';
 import { NETWORK_MESSAGE, portalFetch, portalMessage } from '@/lib/portal-fetch';
 
 // Retrieval-first practice (PORTAL.md + tiered-router spec) + the Phase E
@@ -356,7 +357,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     if (!q) return;
     setSolLoading(true);
     try {
-      const d = await portalFetch<{ markdown?: string }>(`/api/portal/practice/solution?id=${q.id}`);
+      const d = await portalFetch<{ markdown?: string }>(`/api/portal/practice/solution?id=${q.id}${q.subject ? `&subject=${encodeURIComponent(q.subject)}` : ''}`);
       setSolution(d.markdown || '_Could not load the solution._');
     } catch { setSolution('_Could not load the solution._'); }
     finally { setSolLoading(false); }
@@ -381,6 +382,8 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           ? { questionId: q.id, image: { data: photo.split(',')[1], mediaType: 'image/jpeg' } }
           : { questionId: q.id, lines }),
         ...(assignment ? { assignmentId: assignment.id } : {}),
+        // Science bank rows: the grade route looks the id up in the other project.
+        ...(q.subject ? { subject: q.subject } : {}),
       };
       const d = await portalFetch<{ result: GradeResult; weaknessTags?: string[] }>('/api/portal/practice/grade', {
         json: body,
@@ -485,6 +488,8 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   // open). Hides the instant any topic is chosen, same as assignment/fixed
   // question mode — "the picker" is the only place it belongs.
   const showPrintEntry = !assignment && !fixedQ && !topic;
+  // Print-a-paper draws from the math bank; science levels keep the Timed row only.
+  const showPrintRow = showPrintEntry && !isScienceLevel(level);
 
   return (
     <div className="pb-20 sm:pb-6 max-w-4xl mx-auto">
@@ -589,7 +594,8 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
         <div className="mb-6">
           {/* Bring-your-own-question doors: 📷 photo → similar, 🔍 describe →
               find/generate. Students only — the API routes are session-authed. */}
-          <QuestionFinder level={level} />
+          {/* The 📷/🔍 finder searches the MATH bank — not offered on science levels. */}
+          {!isScienceLevel(level) && <QuestionFinder level={level} />}
           <TopicPicker
             key={level}
             level={bankScope(level).level}
@@ -665,7 +671,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
       {/* "Print a paper" — slim link below the topic list, gone once a topic
           is picked (showPrintEntry above). Same destination/behaviour as
           before, just demoted from a card above everything. */}
-      {showPrintEntry && (
+      {showPrintRow && (
         <Link
           href="/app/print"
           className="flex items-center gap-2.5 mb-4 px-1 py-2.5 text-sm text-slate-500 hover:text-navy motion-safe:transition-colors"
@@ -803,7 +809,14 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                 onChange={(e) => { handlePhotoPick(e.target.files?.[0]); e.target.value = ''; }}
               />
 
-              {photo ? (
+              {q.mcq ? (
+                /* MCQ (science bank): tap the option — marked instantly, no model. */
+                <>
+                  <p className="text-[11px] text-slate-400 mb-2">Pick the option:</p>
+                  <McqChips letters={mcqLettersIn(q.stem || q.markdown)} value={working.trim().toUpperCase()}
+                    onPick={(l) => { setPhoto(null); setWorking(l); }} disabled={grading || solution !== null} />
+                </>
+              ) : photo ? (
                 <div className="mb-3">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={photo} alt="Your working" className="max-h-64 rounded-xl border border-slate-200" />
@@ -845,7 +858,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                 <button onClick={submitForMarking}
                   disabled={grading || (!photo && !working.trim()) || solution !== null}
                   className="bg-navy text-[hsl(45,100%,96%)] rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40">
-                  {grading ? 'Marking… (≈30s)' : grade ? '✏️ Re-mark my working' : '✅ Get it marked'}
+                  {grading ? (q.mcq ? 'Checking…' : 'Marking… (≈30s)') : grade ? (q.mcq ? '✅ Check again' : '✏️ Re-mark my working') : (q.mcq ? '✅ Check answer' : '✅ Get it marked')}
                 </button>
                 {solution === null && (!assignment || grade) && (
                   <button onClick={showSolution} disabled={solLoading}
