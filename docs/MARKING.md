@@ -238,6 +238,37 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   `2026-08-13 Kieran Lai — Submitted 13 Aug.pdf` — the send row's convention;
   bare default names collided when two students submitted the same day. The
   message TEXT keeps the bare paper name (it already says who).
+- **📂 One folder per student per paper (2026-09-02, Adrian approved):** everything
+  about one student's one paper lives in ONE Dropbox folder, paths relative to the
+  app folder root — `lib/paper-folder.ts` (tested) is the only place the rule lives:
+  ```
+  /Students/<Student Name>/<YYYY-MM-DD> <paper_name>/Marked (AI).pdf       ← assembled images PDF, as built
+  /Students/<Student Name>/<YYYY-MM-DD> <paper_name>/Marked (Adrian).pdf   ← his amended copy, saved there BY HAND
+  /Students/<Student Name>/<YYYY-MM-DD> <paper_name>/Practice Again.docx   ← the self-study sheet (sheet worker)
+  /Students/<Student Name>/<YYYY-MM-DD> <paper_name>/Practice Again.pdf
+  ```
+  `<YYYY-MM-DD>` = the run's `created_at` in **SGT** (`lib/sgt.ts`), `<paper_name>`
+  = `paper_marking_runs.paper_name` with `\/:*?"<>|` → `-`, a trailing `.pdf`
+  dropped, whitespace collapsed (so "kevin 2025:2026 working" → "kevin 2025-2026
+  working"); untagged runs (no `student_id`) file under `/Students/_Untagged/`.
+  `/api/admin/mark-paper-dropbox` derives the path from the RUN ROW, never from the
+  caller's `name`, and every save is `mode:'overwrite'` at `Marked (AI).pdf` — a
+  rebuild/re-mark replaces the machine's copy and can never touch his. The bot's
+  `deliverQueuedRun` sends only `runId` (no path twin in the bot — one rule, one
+  repo). **Amended copy by NAME:** `attach-amended-from-dropbox {runId}` on
+  mark-triage takes the newest PDF whose stem starts with `Marked (Adrian)` (a
+  double save's "(1)" still counts), copies it to Blob `mark-paper/amended/<runId>`
+  and attaches it exactly as `attach-amended` does (`annotated_pdf_url`, clears
+  `pdf_stale`, `pdf_url` untouched, 409 on released runs); `release` (manual, not
+  `auto`) and `release-with-sheet` run the same pass BEFORE the release stamp and
+  attach only when the folder's copy is newer than what is attached (record in
+  `result_json.amended_from_dropbox {path, modified, at}`; `amended_at` /
+  `checked_at` are the fallbacks — an attachment of unknown age is left alone).
+  `release-with-sheet`'s `choosePdf` drops `Marked (…)` PDFs and only ever picks
+  `Practice Again*.pdf`. 📂 Folder links on triage + `/admin/papers` open the folder
+  in Dropbox's web UI (`dropboxWebUrl`). `/Marked Papers/<date> <name>.pdf`
+  (`lib/dropbox-paper-path.ts`) is **legacy** — migrated 2 Sep 2026; old
+  `dropbox_path` values still point there until the run is saved again.
 - **📁 To Dropbox (2026-08-06):** `/api/admin/mark-paper-dropbox` (admin auth,
   60s) fetches a run PDF **from our Blob store only** (`isOurBlobUrl` gate — an
   open URL would make an authenticated write-proxy into Adrian's Dropbox) and
@@ -413,6 +444,25 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   Chromium has no emoji font), one A4 sheet (`scrollHeight` ≤ 1123px is the test).
   The closing "start with Q26 and Q11" line only claims a question "sits under" the top
   theme when that theme's own evidence names it.
+  - **The sheet's diagnosis drives the cover (2026-09-02).** Adrian: *"the sheet's diagnosis
+    should drive the cover, not the cover the sheet."* The self-study worker sends
+    `result.diagnosis` with its `done` call (`/api/admin/sheet-jobs`; shape + example in
+    `scripts/sheet-worker/WORKER_PROMPT.md` step 5) — one `{title, marks, questions, why,
+    tier: teach|show|optional}` per sheet section, in the sheet's order. The route stores it
+    as `paper_marking_runs.result_json.diagnosis = {at, sheetJobId, skills}` via
+    `lib/sheet-diagnosis.ts` (`normaliseDiagnosis`, pure/tested; a malformed one is logged
+    and skipped — never a reason the `done` fails) and then **rebuilds BOTH marked PDFs**
+    (`lib/rebuild-run-pdfs.ts`: the mark-paper-pdf body reconstructed from the row, photos +
+    full in parallel, same-origin with the caller's admin bearer, linked through
+    `marked-pdf-column`; `annotated_pdf_url` is never touched) so the cover is drawn after
+    the diagnosis exists — `done` answers `{diagnosis, rebuilt, rebuild}` and is fail-soft
+    on every step. **Never after release** (`released_at` set → `skipped`): the student
+    already has that copy. When a diagnosis is present, `buildFrontPage` and
+    `/api/admin/paper-analysis` (`source:'sheet'`) build the themes FROM it
+    (`themesFromDiagnosis`): sheet order, `show` skills never in the top three unless
+    nothing else exists (`chooseThemes`), `optional` last, and the closing line says the
+    practice sheet works through them in the same order. No diagnosis → the keyword
+    classifier exactly as before.
 - **✂️ Two-page spreads split at intake (2026-08-12):** `onPickImages` runs every picked photo (and every PDF-raster page, and every inbox attach — they all funnel through it) through `splitFileIfSpread` (`lib/spread-split.ts`, pure geometry unit-tested): landscape past `w > h·1.15` is cut into left/right halves at FULL resolution (3%-of-width gutter overlap each side) BEFORE the 1280px marking copy and 2600px hi-res original are made. Fixes BOTH spread problems at once: printed size (one wide PDF page fit one A4 sheet → each exam page ~A5; split halves each print full-page) and annotation grounding (a spread shrunk to 1280 gave each page ~640px → measured 10/10 margin-fallback correlation with low-res intake). A green `✂️ Split N…` receipt line shows under the drop zone. The same splitter runs on `/app/submit`, so student hand-ins get the same hygiene.
 - **📏 Paper totals are GROUNDED, not counted (2026-08-14):** the red `PAPER TOTAL x / y`
   denominator used to be the sum of the model's per-question `total_max` guesses, which was
@@ -624,7 +674,7 @@ release call failed.
   sent, POST = send). Finds the sheet through `sheet_jobs.result.{pdf_path,docx_path}` → lists
   that Dropbox folder → `lib/release-with-sheet.ts` `choosePdf` (recorded path, else the DOCX's
   re-exported twin, else the only PDF, else ask). Sheets live at
-  `/Self-Study/<Student>/<YYYY-MM-DD> <paper>/Practice Again.{docx,pdf}` (one folder per paper,
+  `/Students/<Student>/<YYYY-MM-DD> <paper>/Practice Again.{docx,pdf}` (one folder per paper,
   2 Sep 2026); the 31 Aug–1 Sep sheets were moved there by hand and their `sheet_jobs.result`
   paths rewritten (`refiled_from` keeps the old ones). ⚠ The route read `path_display` /
   `server_modified` off `lib/dropbox.listFolder`'s entries, which carry `path` / `modified`

@@ -18,6 +18,7 @@ import GroundingChip from '@/components/GroundingChip';
 import { mathHtml } from '@/lib/math-inline';
 import type { TriageQuestion } from '@/lib/mark-triage';
 import { bandForRegion, isPartialBand } from '@/lib/region-crop';
+import { dropboxWebUrl } from '@/lib/paper-folder';
 
 type Run = {
   id: string;
@@ -39,6 +40,8 @@ type Run = {
   sheetReady?: boolean;
   annotatedPhotos?: { photoIndex: number; url: string }[];
   pdfUrl: string | null;
+  /** The paper's Dropbox folder (Marked (AI/Adrian).pdf + the sheet) — the 📂 link. */
+  dropboxFolder?: string | null;
   flagged: TriageQuestion[];
   confident: TriageQuestion[];
   releasable: boolean;
@@ -455,6 +458,7 @@ export default function TriagePage() {
             <div style={{ padding: '10px 12px', fontSize: 13, color: C.muted }}>
               All {run.totalQuestions} questions marked confidently.
               {run.annotatedPdfUrl && <> · <a href={run.annotatedPdfUrl} target="_blank" rel="noreferrer">📄 View</a></>}
+              {run.dropboxFolder && <> · <a href={dropboxWebUrl(run.dropboxFolder)} target="_blank" rel="noreferrer" title={`Dropbox ▸ ${run.dropboxFolder}`}>📂 Folder</a></>}
               {/* Every topic this script dropped marks on, in one link. The
                   per-question 📬 sends one; a paper rarely fails on one thing,
                   and three follow-ups used to mean three trips back here. */}

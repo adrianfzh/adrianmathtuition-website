@@ -11,6 +11,7 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 // see lib/marked-pdf-layout.ts. Change layout there, never inline here.
 import { PAGE_W, drawPaperTotal, stripHeight, shouldStampPaperTotal } from '@/lib/marked-pdf-layout';
 import { analyse, worstQuestions, type LostPart } from '@/lib/paper-analysis';
+import { readDiagnosis, themesFromDiagnosis } from '@/lib/sheet-diagnosis';
 import { renderFrontPagePng } from '@/lib/render-front-page';
 import { bookletItems } from '@/lib/solutions-booklet-html';
 import { renderSolutionsBookletPng } from '@/lib/render-solutions-booklet';
@@ -232,6 +233,14 @@ export async function POST(req: NextRequest) {
  * bad day; Adrian, 2 Sep 2026: "we should just analyze that particular exam
  * paper, not across 5 papers".
  *
+ * THE SHEET'S DIAGNOSIS WINS (Adrian, 2 Sep 2026: "the sheet's diagnosis should
+ * drive the cover, not the cover the sheet"). When the self-study worker has
+ * written its diagnosis back onto the run (`result_json.diagnosis`, via the
+ * sheet-jobs `done` action), the themes are built from it, in the sheet's own
+ * section order — lib/sheet-diagnosis.ts. The keyword classifier over the
+ * marker's notes is the fallback for a paper with no sheet yet. The "Where the
+ * marks went" question bars come from the marker's parts either way.
+ *
  * Returns null — not an error — whenever there is nothing worth fronting: a
  * paper with no losses, a database hiccup. The caller then assembles exactly
  * the PDF it always did. (buildPdf's link-recovery behaviour — docs/MARKING.md —
@@ -266,8 +275,9 @@ async function buildFrontPage(
       }
     }
   }
+  const diagnosis = readDiagnosis(run.result_json);
   // Nothing lost anywhere: a cover page saying so would be noise on a clean script.
-  if (!parts.length) return null;
+  if (!parts.length && !diagnosis) return null;
 
   return renderFrontPagePng({
     studentName: meta.studentName || run.student_name,
@@ -275,7 +285,8 @@ async function buildFrontPage(
     markedOn: null,
     awarded: meta.awarded, max: meta.max,
     papersRead: 1,
-    themes: analyse(parts, runId),
+    themes: diagnosis ? themesFromDiagnosis(diagnosis, run.paper_name || 'this paper') : analyse(parts, runId),
+    themesSource: diagnosis ? 'sheet' : 'marker',
     worstQuestions: worstQuestions(parts, runId),
   });
 }

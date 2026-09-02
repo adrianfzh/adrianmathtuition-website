@@ -209,6 +209,17 @@ sheet-worker) skip this step** and only report `shelved` in the completion
 payload — no auto-shelving without Adrian's approval; he shelves in one tap
 from `/admin/mark/triage` or `/admin/papers`.
 
+**The completion payload also carries the diagnosis** (headless and in-session
+alike — Adrian, 2 Sep 2026: *"the sheet's diagnosis should drive the cover, not
+the cover the sheet"*). `result.diagnosis` is one entry per section of the sheet
+you actually wrote, **in the sheet's order**, each
+`{ title, marks, questions, why, tier }` — `title` the section heading verbatim,
+`marks` lost to it on this paper, `questions` like `["Q11(a)","Q20"]`, `why` one
+checkable sentence (TeX ok), `tier` = `teach` | `show` | `optional` (① ② ③ above).
+The site stores it on the run (`result_json.diagnosis`) and rebuilds both marked
+PDFs so page 1 follows your ranking instead of the keyword classifier's; the
+exact curl is in `scripts/sheet-worker/WORKER_PROMPT.md` step 5.
+
 ## Step 4 — author the sheet
 
 ### Adrian's own trap for the skill — check, then usually move on
@@ -234,7 +245,7 @@ Expect to use none on most sheets.
 
 ### The reference sheet
 
-`/Self-Study/Khoo Ke Er Klaire/Practice Again (Wave 1) — klaire am tys 2021 p1.docx`
+`/Students/Khoo Ke Er Klaire/2026-08-30 klaire am tys 2021 p1/Practice Again.docx` (his amended copy; the worker's draft sits beside it as `Practice Again (worker original).docx`)
 is the sheet Adrian says is closest to what he wants (31 Aug 2026, comparing it
 against Kiara's and Sophie's from the same evening). Read it before authoring.
 What makes it the reference — all of it reproducible, none of it accidental:
@@ -576,7 +587,7 @@ finished.
 
 ### Re-authoring vs a new wave
 
-A sheet already in `/Self-Study/<Student>/` for this paper does NOT always mean
+A sheet already in `/Students/<Student>/<date> <paper>/` for this paper does NOT always mean
 the job is a duplicate. Two different requests look identical from here:
 
 - **A new wave** — the same paper, the skills the last sheet deliberately left
@@ -611,7 +622,7 @@ folder has to live under `$HOME` regardless.
 Render the DOCX **and** a preview PDF, then file both:
 
 ```bash
-node scripts/dropbox-put.mjs "<file>" "/Self-Study/<Student Name>/<YYYY-MM-DD> <paper>/Practice Again.docx" --overwrite
+node scripts/dropbox-put.mjs "<file>" "/Students/<Student Name>/<YYYY-MM-DD> <paper>/Practice Again.docx" --overwrite
 ```
 
 (The script stages to Blob and calls `/api/admin/dropbox-put`; a direct Dropbox
@@ -624,17 +635,22 @@ marked paper + sheet together from triage** (the 📘 attach button there).
 ### The filing path is fixed — one folder per paper (Adrian, 2 Sep 2026)
 
 ```
-/Self-Study/<Student Name>/<YYYY-MM-DD> <paper>/Practice Again.docx
-/Self-Study/<Student Name>/<YYYY-MM-DD> <paper>/Practice Again.pdf
+/Students/<Student Name>/<YYYY-MM-DD> <paper>/Practice Again.docx
+/Students/<Student Name>/<YYYY-MM-DD> <paper>/Practice Again.pdf
 ```
 
 `<YYYY-MM-DD>` is the marking run's date (`paper_marking_runs.created_at`, SGT)
-and `<paper>` its `paper_name` — e.g. `/Self-Study/Sophie Tan/2026-09-01 EM 2025
+and `<paper>` its `paper_name` — e.g. `/Students/Sophie Tan/2026-09-01 EM 2025
 p1 sophie/Practice Again.docx`. Adrian, on a folder holding two papers' worth of
 docx + pdf side by side: *"these docx and pdfs will pile up in the same folder,
 any ways we can keep them more organized?"* A folder per paper keeps each
-paper's sheet and PDF together and sorts by date; the marked script itself
-stays in `/Marked papers/` where the bot files it.
+paper's sheet and PDF together and sorts by date. **The same folder holds the
+marked script too**: the bot files `Marked (AI).pdf` there, and Adrian saves his
+amended copy beside it as `Marked (Adrian).pdf` — the website's
+`src/lib/paper-folder.ts` is the one rule for the folder name (`:` → `-`,
+trailing `.pdf` dropped, whitespace collapsed); a sheet must land in exactly
+that folder or release-with-sheet cannot find it. (`/Self-Study/` was renamed
+to `/Students/` on 2 Sep 2026.)
 
 **No "Wave" in the name.** (*"why are there always the word 'Wave 1'? do we
 need that?"*) The wave was SPEC-TEACHING-CYCLE's idea that one paper could

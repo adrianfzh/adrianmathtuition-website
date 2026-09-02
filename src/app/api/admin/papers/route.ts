@@ -26,6 +26,7 @@ import { cancelMarkingState, stripQueue } from '@/lib/mark-queue-cancel';
 import { aggregateTopicBleed } from '@/lib/report-facts';
 import { lostMarkQuestions } from '@/lib/shelf';
 import { isMarkSubject } from '@/lib/mark-subjects';
+import { paperFolder } from '@/lib/paper-folder';
 
 export const runtime = 'nodejs';
 
@@ -99,6 +100,9 @@ export async function GET(req: NextRequest) {
         rulesVersion: (r.rules_version as string | null) ?? null,
         studentId: r.student_id,
         studentName: r.student_name,
+        // The paper's own Dropbox folder — Marked (AI/Adrian).pdf + the sheet
+        // (lib/paper-folder.ts); the 📂 link on the row.
+        dropboxFolder: paperFolder(r),
         awarded: totals.awarded,
         max: totals.max,
         pct: totals.max > 0 ? Math.round((totals.awarded / totals.max) * 100) : null,

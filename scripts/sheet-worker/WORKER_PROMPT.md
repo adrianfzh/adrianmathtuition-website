@@ -53,12 +53,15 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
 4. **File both files into Dropbox** (from the repo, which is your working dir):
 
 ```bash
-node scripts/dropbox-put.mjs "<the .docx>" "/Self-Study/<Student Name>/<YYYY-MM-DD> <paper>/Practice Again.docx" --overwrite
-node scripts/dropbox-put.mjs "<the .pdf>"  "/Self-Study/<Student Name>/<YYYY-MM-DD> <paper>/Practice Again.pdf" --overwrite
+node scripts/dropbox-put.mjs "<the .docx>" "/Students/<Student Name>/<YYYY-MM-DD> <paper>/Practice Again.docx" --overwrite
+node scripts/dropbox-put.mjs "<the .pdf>"  "/Students/<Student Name>/<YYYY-MM-DD> <paper>/Practice Again.pdf" --overwrite
 ```
 
    One folder per paper (`<YYYY-MM-DD>` = the run's `created_at` in SGT,
-   `<paper>` = its `paper_name`), file named plainly `Practice Again` — no
+   `<paper>` = its `paper_name` with `:` → `-`, a trailing `.pdf` dropped and
+   whitespace collapsed — `src/lib/paper-folder.ts` is the rule). The same
+   folder already holds the marked script (`Marked (AI).pdf`, filed by the bot)
+   and Adrian's `Marked (Adrian).pdf`; the sheet joins them. File named plainly `Practice Again` — no
    "Wave", no date in the file name (the skill's "The filing path is fixed"
    section says why). Export the PDF through Word from the ONE fixed
    folder `~/.adrianmath_word_export/` — Word's sandbox asks Adrian to grant
@@ -71,10 +74,33 @@ node scripts/dropbox-put.mjs "<the .pdf>"  "/Self-Study/<Student Name>/<YYYY-MM-
 curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
   -H "Authorization: Bearer $SHEETS_API_TOKEN" -H 'Content-Type: application/json' \
   -d '{"action":"done","id":"<job id>","result":{
-        "docx_path":"/self-study/…docx","pdf_path":"/self-study/…pdf",
+        "docx_path":"/Students/<Student>/<YYYY-MM-DD> <paper>/Practice Again.docx","pdf_path":"/Students/<Student>/<YYYY-MM-DD> <paper>/Practice Again.pdf",
         "wave":["chain rule","∫1/(ax+b)"],"shelved":["Polynomials","Plane Geometry"],
-        "verified":"42/42 answers checked"}}'
+        "verified":"42/42 answers checked",
+        "diagnosis":[
+          {"title":"Master Finding Area Using Integration","marks":6,"questions":["Q11(a)","Q20"],
+           "why":"Area under a curve is $\\int y\\,dx$ — the shoelace method needs vertices, not a curve.","tier":"teach"},
+          {"title":"Carrying A Constant Through A Derivative","marks":4,"questions":["Q7"],
+           "why":"The 2.4 in $2.4V^{-1}$ survives differentiation; you dropped it.","tier":"teach"},
+          {"title":"Sign Slip When Dividing By A Negative","marks":2,"questions":["Q3"],
+           "why":"Both terms flip when you divide by −14, not just the first.","tier":"show"},
+          {"title":"Trigonometric Identities","marks":3,"questions":["Q15(b)"],
+           "why":"Worth a look if you have time.","tier":"optional"}
+        ]}}'
 ```
+
+   **`diagnosis` is what makes the marked paper's page 1 agree with your
+   sheet** (Adrian, 2 Sep 2026: *"the sheet's diagnosis should drive the cover,
+   not the cover the sheet"*). One entry per section of the sheet, **in the
+   sheet's order**: `title` = the section heading verbatim, `marks` = marks lost
+   to it on THIS paper, `questions` = where it showed (`"Q11(a)"`, `"Q20"`),
+   `why` = one sentence a student can check against their script (TeX allowed),
+   `tier` = `teach` (① Example → Practice), `show` (② the one-line slips — no
+   practice), or `optional` (③ the Optional section). The site stores it on the
+   run and rebuilds both marked PDFs so the cover is drawn from it; without it
+   the cover falls back to a keyword pass over the marker's notes and can rank
+   things differently from your sheet. A malformed `diagnosis` is skipped, never
+   a reason the `done` fails — but send it well-formed.
 
 If you cannot finish — the marking has no lost marks, the bank has nothing
 usable, a render fails twice — report it instead of guessing:

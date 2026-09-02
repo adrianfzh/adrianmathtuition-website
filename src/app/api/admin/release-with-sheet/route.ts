@@ -21,6 +21,7 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { listFolder, dropboxConfigured } from '@/lib/dropbox';
 import { choosePdf, sheetFolder, ambiguityMessage, type SheetFile } from '@/lib/release-with-sheet';
+import { attachAmendedFromDropbox } from '@/lib/attach-amended';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -120,6 +121,20 @@ export async function POST(req: NextRequest) {
   if (auth) fwd.Authorization = auth;
   if (cookie) fwd.cookie = cookie;
 
+  // 📂 Adrian's amended copy first (2 Sep 2026): "Marked (Adrian)*.pdf" in the
+  // same folder as the sheet, attached if newer than what the run carries — so
+  // the marked paper that goes out with the sheet is the one he wrote on. The
+  // release action repeats the check (idempotent); doing it here too means a
+  // Dropbox problem is visible in this response, before anything is sent.
+  let amended: { status: string; name?: string; note?: string } | null = null;
+  if (!r.run.released_at) {
+    const out = await attachAmendedFromDropbox(runId);
+    amended = out.status === 'attached' || out.status === 'unchanged'
+      ? { status: out.status, name: out.name, note: out.status === 'unchanged' ? out.reason : undefined }
+      : out.status === 'error' ? { status: 'error', note: out.message } : { status: out.status };
+    if (out.status === 'error') console.warn('[release-with-sheet] amended-copy check failed:', out.message);
+  }
+
   // The SHEET goes first. If the assignment fails, nothing has been released and
   // Adrian can retry the whole thing; releasing first would leave a student with a
   // marked paper and no work, which is the state this button exists to prevent.
@@ -157,5 +172,6 @@ export async function POST(req: NextRequest) {
     ok: true, released, pdfPath,
     assignmentId: aData.assignment?.id ?? null,
     alreadyWasReleased: !!r.run.released_at,
+    amended,
   });
 }

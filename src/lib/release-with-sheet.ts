@@ -16,6 +16,15 @@
 // So: prefer the recorded path, fall back to the folder, and when the folder is
 // ambiguous ASK rather than guess. A wrong PDF reaching a student is worse than
 // one more tap.
+//
+// SINCE 2 SEP 2026 THE FOLDER IS SHARED. The sheet lives in the paper's own
+// folder (/Students/<Student>/<date> <paper>/, lib/paper-folder.ts) next to
+// "Marked (AI).pdf" and "Marked (Adrian).pdf". Those two are never the sheet:
+// they are dropped from the listing before anything is chosen, and the
+// "only PDF" / "ask" fallbacks look only at PDFs named "Practice Again…" — the
+// fixed sheet name, which a Word re-export keeps.
+
+import { isMarkedCopy, isSheetPdf } from './paper-folder';
 
 export type SheetFile = { path: string; name: string; modified?: string | null };
 
@@ -42,18 +51,21 @@ export function stem(pathOrName: string): string {
  *  2. a PDF whose name matches the DOCX the worker filed — this is the common
  *     case, because exporting from Word keeps the base name and only changes the
  *     extension, and it survives the naming being inconsistent between runs;
- *  3. the only PDF in the folder, when there is exactly one;
- *  4. otherwise ask — every candidate returned, newest first, and nothing chosen.
+ *  3. the only "Practice Again…" PDF in the folder, when there is exactly one;
+ *  4. otherwise ask — every "Practice Again…" candidate returned, newest first,
+ *     and nothing chosen.
  *
- * `folder` is the listing of the sheet's own folder. Passing an empty list is
- * fine: the answer is then 'none', never a guess.
+ * `folder` is the listing of the sheet's own folder — which is also the paper's
+ * folder, so "Marked (AI).pdf" / "Marked (Adrian).pdf" sit in it; they are
+ * excluded before any step. Passing an empty list is fine: the answer is then
+ * 'none', never a guess.
  */
 export function choosePdf(
   recordedPdfPath: string | null | undefined,
   recordedDocxPath: string | null | undefined,
   folder: SheetFile[],
 ): PdfChoice {
-  const files = (folder || []).filter(f => f && f.name && isPdf(f.name));
+  const files = (folder || []).filter(f => f && f.name && isPdf(f.name) && !isMarkedCopy(f.name));
 
   const rec = String(recordedPdfPath || '').trim().toLowerCase();
   if (rec && files.some(f => f.path.toLowerCase() === rec)) {
@@ -68,10 +80,13 @@ export function choosePdf(
     if (twin.length === 1) return { kind: 'recorded', path: twin[0].path };
   }
 
-  if (files.length === 1) return { kind: 'only', path: files[0].path };
-  if (files.length === 0) return { kind: 'none' };
+  // Past the recorded path and the DOCX twin, only the fixed sheet name counts:
+  // a stray differently-named PDF is not "the only PDF" any more.
+  const sheets = files.filter(f => isSheetPdf(f.name));
+  if (sheets.length === 1) return { kind: 'only', path: sheets[0].path };
+  if (sheets.length === 0) return { kind: 'none' };
 
-  const newestFirst = [...files].sort((a, b) =>
+  const newestFirst = [...sheets].sort((a, b) =>
     String(b.modified || '').localeCompare(String(a.modified || '')));
   return { kind: 'ambiguous', candidates: newestFirst };
 }

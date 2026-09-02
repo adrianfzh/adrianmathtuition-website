@@ -17,10 +17,19 @@
 // every paper, it has to be explainable when Adrian disagrees with it, and a
 // theme that cannot be traced to the sentences that produced it is not evidence.
 // Each theme carries its examples for exactly that reason.
+//
+// …UNLESS the self-study sheet has been written for this paper. Its worker read
+// the student's working and ranked what to teach; that diagnosis is written back
+// onto the run (`result_json.diagnosis`, sheet-jobs `done`) and, when present,
+// the themes here ARE the sheet's sections in the sheet's order — the same
+// mapping the PDF cover uses (lib/sheet-diagnosis.ts). `source` says which.
+// Adrian, 2 Sep 2026: "the sheet's diagnosis should drive the cover, not the
+// cover the sheet."
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { analyse, worstQuestions, headline, type LostPart } from '@/lib/paper-analysis';
+import { readDiagnosis, themesFromDiagnosis } from '@/lib/sheet-diagnosis';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -71,13 +80,19 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const themes = analyse(parts, runId);
+  const diagnosis = readDiagnosis(run.result_json);
+  const themes = diagnosis
+    ? themesFromDiagnosis(diagnosis, run.paper_name || 'this paper')
+    : analyse(parts, runId);
   return NextResponse.json({
     studentName: run.student_name,
     paperName: run.paper_name,
     awarded: run.total_awarded,
     max: run.total_max,
     papersRead: 1,
+    source: diagnosis ? 'sheet' : 'marker',
+    sheetJobId: diagnosis?.sheetJobId || null,
+    diagnosedAt: diagnosis?.at || null,
     headline: headline(themes, Number(run.total_awarded) || 0, Number(run.total_max) || 0),
     themes,
     worstQuestions: worstQuestions(parts, runId),

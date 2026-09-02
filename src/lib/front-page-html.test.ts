@@ -132,4 +132,64 @@ describe('frontPageHtml', () => {
     const out = chooseThemes([theme({ key: 'a', marks: 0 }), theme({ key: 'b', marks: 2 })]);
     expect(out.map(t => t.key)).toEqual(['b']);
   });
+
+  // ── themes from the self-study sheet's diagnosis (Adrian, 2 Sep 2026: "the
+  //    sheet's diagnosis should drive the cover, not the cover the sheet") ────
+
+  const sheetThemes = (): Theme[] => [
+    theme({ key: 'sheet-1', title: 'Master Finding Area Using Integration', marks: 6, tier: 'teach',
+      questions: ['Q11(a)', 'Q20'], examples: [{ paperName: 'p', question: 'Q11(a)', why: 'Area under a curve is $\\int y\\,dx$.' }] }),
+    theme({ key: 'sheet-2', title: 'Carrying A Constant Through A Derivative', marks: 4, tier: 'teach',
+      questions: ['Q7'], examples: [{ paperName: 'p', question: 'Q7', why: 'The 2.4 survives.' }] }),
+    theme({ key: 'sheet-3', title: 'Sign Slip When Dividing By A Negative', marks: 2, tier: 'show',
+      questions: ['Q3'], examples: [{ paperName: 'p', question: 'Q3', why: 'Both terms flip.' }] }),
+    theme({ key: 'sheet-4', title: 'Trigonometric Identities', marks: 3, tier: 'optional',
+      questions: ['Q15(b)'], examples: [{ paperName: 'p', question: 'Q15(b)', why: 'If you have time.' }] }),
+  ];
+
+  it('keeps a show-tier slip out of the top three while there is something to learn', () => {
+    const out = chooseThemes(sheetThemes());
+    expect(out.map(t => t.key)).toEqual(['sheet-1', 'sheet-2', 'sheet-4']);
+  });
+
+  it('prints a show-tier slip only when the sheet has nothing else', () => {
+    const only = sheetThemes().filter(t => t.tier === 'show');
+    expect(chooseThemes(only).map(t => t.key)).toEqual(['sheet-3']);
+  });
+
+  it('prints the sheet’s sections in the sheet’s order, not by marks', () => {
+    const h = frontPageHtml({ ...base, themes: sheetThemes(), themesSource: 'sheet' });
+    const i1 = h.indexOf('Master Finding Area Using Integration');
+    const i2 = h.indexOf('Carrying A Constant Through A Derivative');
+    const i4 = h.indexOf('Trigonometric Identities');
+    expect(i1).toBeGreaterThan(-1);
+    expect(i1).toBeLessThan(i2);
+    expect(i2).toBeLessThan(i4);
+    expect(h).not.toContain('Sign Slip When Dividing By A Negative');
+    expect(h).toContain('cost you 6 marks on this paper');
+  });
+
+  it('says the practice sheet follows the same order when the themes came from it', () => {
+    const h = frontPageHtml({ ...base, themes: sheetThemes(), themesSource: 'sheet' });
+    expect(h).toContain('works through these in the same order');
+    expect(h).toContain('In the order your practice sheet takes them');
+    expect(h).not.toContain('drills exactly that');
+  });
+
+  it('keeps the classifier wording when there is no diagnosis (the fallback)', () => {
+    for (const src of [undefined, 'marker'] as const) {
+      const h = frontPageHtml({ ...base, themesSource: src });
+      expect(h).toContain('drills exactly that');
+      expect(h).toContain('Ordered by what cost you most on this paper');
+      expect(h).not.toContain('same order');
+    }
+  });
+
+  it('ties the closing line to every question the sheet named, not only the printed one', () => {
+    const h = frontPageHtml({ ...base, themes: sheetThemes(), themesSource: 'sheet', worstQuestions: [
+      { question: 'Q20', lost: 5, max: 6 }, { question: 'Q11', lost: 4, max: 8 },
+    ] });
+    expect(h).toContain('Start with <b>Q20</b> and <b>Q11</b>');
+    expect(h).toContain('Both sit under <b>master finding area using integration</b> above');
+  });
 });

@@ -19,6 +19,7 @@ import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import StudentPicker from '@/components/StudentPicker';
 import SubjectChip from '@/components/SubjectChip';
 import GroundingChip from '@/components/GroundingChip';
+import { dropboxWebUrl } from '@/lib/paper-folder';
 
 type Topic = { topic: string; awarded: number; max: number; lost: number; pct: number; questions: number };
 type LostQ = { questionNumber: string; awarded: number; max: number; topic: string | null };
@@ -44,6 +45,8 @@ type Run = {
   annotatedPdfUrl: string | null;
   photosPdfUrl: string | null;
   pdfUrl: string | null;
+  /** The paper's Dropbox folder (Marked (AI/Adrian).pdf + the sheet) — the 📂 link. */
+  dropboxFolder?: string | null;
   topics: Topic[];
   lostQuestions: LostQ[];
 };
@@ -496,6 +499,11 @@ export default function PapersPage() {
               {run.pdfUrl && (
                 <a href={run.pdfUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: C.link, textDecoration: 'none' }}>
                   📄 Full PDF ↗
+                </a>
+              )}
+              {run.dropboxFolder && (
+                <a href={dropboxWebUrl(run.dropboxFolder)} target="_blank" rel="noopener noreferrer" title={`Dropbox ▸ ${run.dropboxFolder}`} style={{ fontSize: 14, color: C.link, textDecoration: 'none' }}>
+                  📂 Folder ↗
                 </a>
               )}
               {!run.checked && (

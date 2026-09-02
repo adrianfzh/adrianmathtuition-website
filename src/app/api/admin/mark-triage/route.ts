@@ -42,6 +42,8 @@ import {
 import { buildReviseBlock } from '@/lib/revise-map';
 import { canTransition, validateAssignment, type AssignmentStatus } from '@/lib/assignments';
 import { sendPushToStudent } from '@/lib/portal-push';
+import { paperFolder } from '@/lib/paper-folder';
+import { attachAmendedFromDropbox } from '@/lib/attach-amended';
 
 export const runtime = 'nodejs';
 // Release itself is fast; the ceiling is for the after() enrichment, which
@@ -124,6 +126,9 @@ export async function GET(req: NextRequest) {
         unflaggedCount: summary.unflaggedCount,
         annotatedPdfUrl: r.annotated_pdf_url,
         pdfUrl: r.pdf_url,
+        // The paper's own Dropbox folder — Marked (AI/Adrian).pdf + the sheet
+        // (lib/paper-folder.ts); the 📂 link on the row.
+        dropboxFolder: paperFolder(r),
         annotatedPhotos: extractAnnotatedPhotos(r.result_json),
         flagged: summary.flagged,
         // Not shown by default; correctable, and the denominator for any rate.
@@ -491,10 +496,39 @@ export async function POST(req: NextRequest) {
     if (run.released_at) return NextResponse.json({ error: 'already released — the student has this copy' }, { status: 409 });
     const rj = (run.result_json || {}) as Record<string, unknown>;
     delete rj.pdf_stale;
+    // When it was attached — so the by-name Dropbox pass below can tell whether
+    // a "Marked (Adrian).pdf" saved later should replace this copy.
+    rj.amended_at = now;
+    delete rj.amended_from_dropbox;
     const { error: upErr } = await supa
       .from('paper_marking_runs').update({ annotated_pdf_url: url, result_json: rj }).eq('id', runId);
     if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 });
     return NextResponse.json({ ok: true, runId, annotatedPdfUrl: url });
+  }
+
+  // ── attach-amended-from-dropbox: his copy, found by NAME in the paper's folder ─
+  // Adrian saves the marked-up PDF into /Students/<Student>/<date> <paper>/ as
+  // "Marked (Adrian).pdf" straight from Notability / the AdrianMarker app; this
+  // pulls the newest such file (a double save's "(1)" still counts) into Blob and
+  // attaches it exactly as attach-amended does. Explicit action = whatever is in
+  // the folder wins. The same pass runs by itself inside `release` (below), where
+  // only a NEWER copy replaces what is attached. lib/attach-amended.ts.
+  if (body.action === 'attach-amended-from-dropbox') {
+    const { runId } = body;
+    if (!runId) return NextResponse.json({ error: 'runId is required' }, { status: 400 });
+    const out = await attachAmendedFromDropbox(runId, { force: true });
+    switch (out.status) {
+      case 'attached':
+        return NextResponse.json({ ok: true, runId, annotatedPdfUrl: out.annotatedPdfUrl, path: out.path, name: out.name, folder: out.folder });
+      case 'unchanged':
+        return NextResponse.json({ ok: true, runId, unchanged: true, path: out.path, name: out.name, folder: out.folder, note: out.reason });
+      case 'none':
+        return NextResponse.json({ error: `No "Marked (Adrian)*.pdf" in ${out.folder} yet — save your copy there first.`, folder: out.folder }, { status: 404 });
+      case 'released':
+        return NextResponse.json({ error: 'already released — the student has this copy' }, { status: 409 });
+      default:
+        return NextResponse.json({ error: out.message, folder: out.folder ?? null }, { status: out.notFound ? 404 : 502 });
+    }
   }
 
   // ── release: stamp + nudge ────────────────────────────────────────────────
@@ -527,6 +561,31 @@ export async function POST(req: NextRequest) {
       .select('id, paper_name, student_id, student_name, annotated_pdf_url, photos_pdf_url, result_json, released_at, created_at')
       .in('id', runIds);
     if (readErr) return NextResponse.json({ error: readErr.message }, { status: 500 });
+
+    // 📂 His amended copy, by name, BEFORE anything is stamped (2 Sep 2026). If
+    // "Marked (Adrian)*.pdf" sits in the paper's Dropbox folder and is newer than
+    // whatever the run has attached (or nothing is), it becomes the copy the
+    // student opens — and it clears pdf_stale, so the stale gate below sees the
+    // corrected paper. Best-effort: a Dropbox hiccup is reported on the row, never
+    // allowed to block the release. Skipped for the bot's auto-release — that
+    // path fires seconds after marking, before Adrian has seen the paper.
+    const amendedNote: Record<string, string> = {};
+    if (!auto) {
+      for (const run of runs ?? []) {
+        if (run.released_at) continue;
+        const out = await attachAmendedFromDropbox(run.id);
+        if (out.status === 'attached') {
+          run.annotated_pdf_url = out.annotatedPdfUrl;
+          const rj = (run.result_json && typeof run.result_json === 'object') ? { ...(run.result_json as Record<string, unknown>) } : {};
+          delete rj.pdf_stale;
+          run.result_json = rj;
+          amendedNote[run.id] = `attached ${out.name} from Dropbox`;
+        } else if (out.status === 'error') {
+          console.warn('[mark-triage] amended-copy check failed:', out.message);
+          amendedNote[run.id] = `Dropbox check failed (${out.message}) — released with the copy already attached`;
+        }
+      }
+    }
 
     // A paper whose marks were overridden carries a PDF that still shows the old
     // ones. Releasing it sends the student two different totals — the corrected
@@ -631,7 +690,7 @@ export async function POST(req: NextRequest) {
         studentName: run.student_name,
         released: true,
         via,
-        note: outcome.note,
+        note: [amendedNote[run.id], outcome.note].filter(Boolean).join(' · ') || undefined,
       });
 
       // A re-mark replaces the old marking instead of sitting beside it

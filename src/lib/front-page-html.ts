@@ -65,6 +65,14 @@ export type FrontPageInput = {
   papersRead?: number;
   themes: Theme[];
   worstQuestions: { question: string; lost: number; max: number }[];
+  /**
+   * Where the themes came from. `sheet` = the self-study sheet's own diagnosis,
+   * written back onto the run (lib/sheet-diagnosis.ts), in the sheet's section
+   * order — so the page says the sheet works through them in that order.
+   * Absent or `marker` = the keyword classifier over the marker's notes, the
+   * fallback for a paper with no sheet yet. Changes two sentences, not the layout.
+   */
+  themesSource?: 'sheet' | 'marker';
 };
 
 // ONE A4 SHEET. Adrian asked for "a pdf page attached right in front" —
@@ -83,7 +91,13 @@ const MAX_QUESTIONS = 5;
  * ever hands this page more history than it should have.
  */
 export function chooseThemes(themes: Theme[]): Theme[] {
-  return (themes || []).filter(t => t.live && t.marks > 0).slice(0, MAX_THEMES);
+  const live = (themes || []).filter(t => t.live && t.marks > 0);
+  // A sheet's `show` skills are the slips it points at in one line and does not
+  // drill (its triage ②). They cost marks, so they are real themes, but they
+  // never take one of the three slots from something the student has to LEARN.
+  // Only when the sheet has nothing else does a slip make the cover.
+  const core = live.filter(t => t.tier !== 'show');
+  return (core.length ? core : live).slice(0, MAX_THEMES);
 }
 
 function themeRow(t: Theme, i: number): string {
@@ -119,15 +133,23 @@ function closingLine(input: FrontPageInput): string {
   // Only claim a question "sits under" the top theme when the theme's own
   // evidence names it. Sophie's Q26 (draw a line on the printed curve) was
   // being filed under "giving a reason" because the sentence was unconditional.
-  const under = (q: string) => !!top && top.examples.some(e => e.question === q || e.question.startsWith(q + '('));
+  // A sheet-built theme names every question the skill came from in
+  // `questions`; the printed example only shows the first.
+  const names = (t: Theme) => [...t.examples.map(e => e.question), ...(t.questions || [])];
+  const under = (q: string) => !!top && names(top).some(n => n === q || n.startsWith(q + '('));
   const named = input.worstQuestions.slice(0, 2).filter(q => under(q.question));
   const topName = top ? `<b>${esc(top.title.split('—')[0].trim().toLowerCase())}</b>` : '';
   const tie = !top || !named.length ? ''
     : named.length === qs.length
       ? ` ${qs.length === 2 ? 'Both' : 'It'} sit${qs.length === 2 ? '' : 's'} under ${topName} above.`
       : ` <b>${esc(named[0].question)}</b> sits under ${topName} above.`;
+  // When the themes ARE the sheet's sections, say so: page 1 and the practice
+  // sheet behind it are one document, in one order.
+  const sheet = input.themesSource === 'sheet'
+    ? 'The practice sheet with this paper works through these in the same order.'
+    : 'The practice sheet that came with this paper drills exactly that.';
   return `<div class="close"><span class="close-tag">Your next move</span>
-    <p>Start with ${which}.${tie} The practice sheet that came with this paper drills exactly that.</p></div>`;
+    <p>Start with ${which}.${tie} ${sheet}</p></div>`;
 }
 
 export function frontPageHtml(input: FrontPageInput): string {
@@ -138,6 +160,9 @@ export function frontPageHtml(input: FrontPageInput): string {
     ? `The one thing worth your time is <strong>${esc(top.title.split('—')[0].trim().toLowerCase())}</strong>.
        It cost you ${top.marks} mark${top.marks === 1 ? '' : 's'} on this paper.`
     : 'Your losses on this paper are scattered rather than concentrated — work through the marked script itself.';
+  const sub = input.themesSource === 'sheet'
+    ? 'In the order your practice sheet takes them — with a note on each.'
+    : 'Ordered by what cost you most on this paper — with the marker\'s own note on each.';
 
   return `<!doctype html><html><head><meta charset="utf-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -238,7 +263,7 @@ h2::before{content:"";width:.72rem;height:.72rem;border-radius:4px;background:cu
 </div>
 <div class="sec-work">
 <h2>What to work on</h2>
-<p class="sub">Ordered by what cost you most on this paper — with the marker's own note on each.</p>
+<p class="sub">${sub}</p>
 <div class="themes">${themes.map(themeRow).join('')}</div>
 </div>
 <div class="sec-where">

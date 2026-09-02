@@ -1,3 +1,8 @@
+// ⚠ LEGACY (2 Sep 2026): marked papers now file into one folder per student per
+// paper — lib/paper-folder.ts owns that rule and /api/admin/mark-paper-dropbox
+// uses it. This flat "/Marked Papers/<date> <name>.pdf" layout is kept only so
+// the old paths recorded on runs still make sense; nothing writes here any more.
+//
 // Where a marked paper lands in Dropbox. Extracted from the route on 19 Aug 2026
 // when the images PDF started filing ITSELF the moment it is built: the auto-save
 // and the 📁 button must compute the byte-identical path, or the "already there?"

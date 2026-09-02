@@ -43,6 +43,15 @@ export type Theme = {
   latestMarks: number;
   /** Where it showed up, newest first — the evidence Adrian rules on. */
   examples: { paperName: string; question: string; why: string }[];
+  /** Set only when the theme came from the self-study sheet's diagnosis
+   *  (lib/sheet-diagnosis.ts): the sheet's own triage — `show` skills are slips
+   *  the sheet points at without drilling, and the cover keeps them out of its
+   *  top three. Absent on classifier themes. */
+  tier?: 'teach' | 'show' | 'optional';
+  /** Every question the sheet named for it, e.g. ["Q11(a)", "Q20"] — the
+   *  closing line's tie check reads these beside `examples`. Absent on
+   *  classifier themes. */
+  questions?: string[];
 };
 
 /**

@@ -114,7 +114,7 @@ function asciiHeader(json: string): string {
  * first copy (" (1)"), not silently replace a version Adrian may already have
  * annotated and handed back.
  */
-export async function uploadFile(path: string, body: Buffer | Uint8Array, contentType = 'application/octet-stream', mode: 'add' | 'overwrite' = 'add'): Promise<{ path: string; name: string }> {
+export async function uploadFile(path: string, body: Buffer | Uint8Array, contentType = 'application/octet-stream', mode: 'add' | 'overwrite' = 'add'): Promise<{ path: string; name: string; display?: string }> {
   const token = await getAccessToken();
   // overwrite = replace THAT file (no autorename): the caller is re-filing the same
   // run's copy — e.g. the ✍️ annotated version superseding the auto-filed one.
@@ -133,7 +133,9 @@ export async function uploadFile(path: string, body: Buffer | Uint8Array, conten
     body: body as unknown as BodyInit,
   });
   if (!res.ok) throw new Error(`Dropbox upload failed: ${res.status} ${await res.text()}`);
-  const data = await res.json() as { path_lower: string; name: string };
-  return { path: data.path_lower, name: data.name };
+  const data = await res.json() as { path_lower: string; path_display?: string; name: string };
+  // `path` is path_lower (what later API calls want); `display` keeps the case
+  // the folder was created with — for messages a human reads.
+  return { path: data.path_lower, name: data.name, display: data.path_display };
 }
 

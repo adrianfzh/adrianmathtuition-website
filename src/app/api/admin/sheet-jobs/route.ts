@@ -4,7 +4,11 @@
 //   POST { runId, focus? }       → { job }        queue a sheet for that marked paper
 //   POST { action:'next', by }   → { job|null }   worker claims the next job (lease)
 //   POST { action:'beat', id }   → { ok }         heartbeat while authoring
-//   POST { action:'done', id, result } → { ok }   file paths + wave; Telegrams Adrian
+//   POST { action:'done', id, result } → { ok, diagnosis, rebuilt, rebuild }
+//                                  file paths + wave; Telegrams Adrian. An optional
+//                                  result.diagnosis (lib/sheet-diagnosis.ts) is
+//                                  written onto the run and both marked PDFs are
+//                                  rebuilt so the cover follows the sheet.
 //   POST { action:'fail', id, error }  → { ok }   back on the queue unless attempts are spent
 //   POST { action:'cancel', id } → { ok }         stop it — terminal, never re-picked
 //
@@ -17,9 +21,37 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
 import { logJobRun } from '@/lib/job-log';
 import { pickNextJob, sanitizeResult, completionMessage, cancelState, MAX_ATTEMPTS, type SheetJob } from '@/lib/sheet-jobs';
+import { normaliseDiagnosis, type Diagnosis } from '@/lib/sheet-diagnosis';
+import { rebuildRunPdfs, type RebuildOutcome } from '@/lib/rebuild-run-pdfs';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+// `done` waits for both marked PDFs to rebuild (mark-paper-pdf: seconds for the
+// images copy, up to ~2 min cold for the full script, run in parallel) so it can
+// answer `rebuilt` truthfully. Same ceiling as the PDF route itself.
+export const maxDuration = 300;
+
+/**
+ * Put the sheet's diagnosis on the run — `result_json.diagnosis`. Read-modify-
+ * write of the JSON, the same way `queue` and `practice` are stored on it.
+ * Returns false (never throws) when the row could not be updated.
+ */
+async function storeDiagnosis(runId: string, diagnosis: Diagnosis): Promise<boolean> {
+  try {
+    const sb = getSupabaseAdmin();
+    const { data: run } = await sb.from('paper_marking_runs')
+      .select('result_json').eq('id', runId).maybeSingle<{ result_json: unknown }>();
+    if (!run) return false;
+    const rj = (run.result_json && typeof run.result_json === 'object') ? run.result_json as Record<string, unknown> : {};
+    const { error } = await sb.from('paper_marking_runs')
+      .update({ result_json: { ...rj, diagnosis } }).eq('id', runId);
+    if (error) { console.warn('[sheet-jobs] diagnosis not stored', runId, error.message); return false; }
+    return true;
+  } catch (e) {
+    console.warn('[sheet-jobs] diagnosis not stored', runId, (e as Error).message);
+    return false;
+  }
+}
 
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
@@ -122,7 +154,44 @@ export async function POST(req: NextRequest) {
     // Best-effort: a Telegram hiccup must not undo a finished sheet.
     sendTelegram(completionMessage(job, result)).catch(() => {});
     logJobRun('sheet-worker', true, `${job.student_name || job.airtable_student_id}: sheet filed`).catch(() => {});
-    return NextResponse.json({ ok: true });
+
+    // ── The sheet's diagnosis drives the cover (Adrian, 2 Sep 2026) ────────────
+    // The worker read the student's working and ranked what to teach; the marked
+    // paper's page 1 used to rank the same losses with a keyword classifier and
+    // could disagree with the sheet stapled behind it. Store the diagnosis on the
+    // run, then rebuild both PDFs so the cover is drawn after it exists.
+    // Every step here is fail-soft: the sheet is already done and Adrian already
+    // told — a malformed diagnosis is logged and skipped, a failed rebuild is
+    // reported as `rebuilt:false`, and neither can turn this `done` into an error.
+    // A released run is never rebuilt (the student has that copy); the diagnosis
+    // still lands, so /api/admin/paper-analysis reflects it.
+    let diagnosisStored = false;
+    let rebuild: RebuildOutcome = { rebuilt: false, skipped: 'no diagnosis in the payload' };
+    const rawDiagnosis = (body.result as { diagnosis?: unknown } | null | undefined)?.diagnosis;
+    if (rawDiagnosis !== undefined) {
+      const diagnosis = normaliseDiagnosis(rawDiagnosis, { sheetJobId: job.id });
+      if (!diagnosis) {
+        console.warn('[sheet-jobs] diagnosis ignored — malformed', job.id, JSON.stringify(rawDiagnosis).slice(0, 300));
+        rebuild = { rebuilt: false, skipped: 'diagnosis malformed — ignored' };
+      } else {
+        diagnosisStored = await storeDiagnosis(job.run_id, diagnosis);
+        if (!diagnosisStored) {
+          rebuild = { rebuilt: false, skipped: 'diagnosis not stored' };
+        } else {
+          // Same-origin call with the caller's own admin credentials (the
+          // release-with-sheet pattern); the env bearer only if none were sent.
+          const headers: Record<string, string> = {};
+          const auth = req.headers.get('authorization');
+          const cookie = req.headers.get('cookie');
+          if (auth) headers.Authorization = auth;
+          else if (process.env.ADMIN_PASSWORD) headers.Authorization = `Bearer ${process.env.ADMIN_PASSWORD}`;
+          if (cookie) headers.cookie = cookie;
+          rebuild = await rebuildRunPdfs(job.run_id, { origin: req.nextUrl.origin, headers });
+          if (!rebuild.rebuilt) console.warn('[sheet-jobs] cover rebuild incomplete', job.run_id, JSON.stringify(rebuild));
+        }
+      }
+    }
+    return NextResponse.json({ ok: true, diagnosis: diagnosisStored, rebuilt: rebuild.rebuilt, rebuild });
   }
 
   if (body.action === 'fail') {
