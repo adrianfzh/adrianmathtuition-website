@@ -8,7 +8,7 @@ import { getDashboardData } from '@/lib/portal-dashboard';
 import { getTodayCards } from '@/lib/portal-today';
 import { isNotesAuthed } from '@/lib/notes-auth';
 import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
-import { EXAM_PREP_OPEN_TO_STUDENTS, NOTES_OPEN_TO_STUDENTS, fullPortalVisible, viewingAsStudent } from '@/lib/portal-beta';
+import { EXAM_PREP_OPEN_TO_STUDENTS, LAST_LESSON_OPEN_TO_STUDENTS, NOTES_OPEN_TO_STUDENTS, fullPortalVisible, viewingAsStudent } from '@/lib/portal-beta';
 import { listStudentAssignments } from '@/lib/portal-assignments';
 import { assignmentHref, dueLabel, homeCardSummary, isPending } from '@/lib/assignments';
 import { homeCounts } from '@/lib/portal-home-counts';
@@ -407,8 +407,10 @@ async function LessonRecap({ account, fullPortal, card, caption }: {
   const d = await dashboardOnce(account);
   return (
     <>
-      {/* Last lesson topics + homework */}
-      {(d.lastTopics.length > 0 || d.homeworkAssigned) && (
+      {/* Last lesson topics + homework — student-hidden behind
+          LAST_LESSON_OPEN_TO_STUDENTS (lib/portal-beta) until lessons are
+          logged with topics for this cohort; Adrian's admin cookie sees it. */}
+      {(fullPortal || LAST_LESSON_OPEN_TO_STUDENTS) && (d.lastTopics.length > 0 || d.homeworkAssigned) && (
         <div className={card}>
           <p className={`${caption} mb-2`}>Last lesson</p>
           {d.lastTopics.length > 0 && (

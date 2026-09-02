@@ -82,3 +82,10 @@ export async function examPrepVisible(): Promise<boolean> {
 export async function requireFullPortal(): Promise<void> {
   if (!(await fullPortalVisible())) redirect('/app');
 }
+
+// Home "Last lesson" card (topics covered + homework from the Airtable
+// Lessons log). Adrian, 2026-09-02: "gate keep last lesson topics first — the
+// students won't have any last lessons" — the beta cohort's lessons aren't
+// logged with topics yet, so the card would only ever be empty or wrong.
+// Admin cookie sees it; flip to true to open it.
+export const LAST_LESSON_OPEN_TO_STUDENTS = false;
