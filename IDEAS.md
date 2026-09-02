@@ -101,6 +101,12 @@
 8. Teste Echo demo login: portal-teste@example.com / teste-echo-2026 (password reset 2026-08-29; ~3 junk demo requests in his /admin/requests queue can be rejected/ignored).
 9. OPEN: reopen Notes to students (his browse + say-so flips NOTES_OPEN_TO_STUDENTS); IP flag + gate when S1 notes ship; in-portal gift card; learn-page content formatting pass (key-facts run-ons); viral-invite extras (share-card, golden tickets, stranger caps) still queued.
 
+## Audience / syllabus decisions (Adrian, 2026-09-02) — APPLIED as data, enforcement build in flight
+- **S1-461 "Special factorisation forms"** → moved to **S2** (Algebra (Factorization)), `ip_extra_level='S1'` so IP Sec 1 students still see it.
+- **AM Modulus Functions (809–814)** → `visibility='ip'`: hidden from students, visible to IP-track accounts (`portal_accounts.is_ip`, backfilled from Airtable Students."Subject Level"='IP').
+- **JC-863 integrating factor** → `visibility='hidden'` (not in 9758).
+- Enforcement across every reader (practice picker, mix draw RPC, /notes tree, ?qid= eligibility, print/kiosk pools) + an admin visibility control: agent in flight. Until it lands, the flags exist but nothing filters on them.
+
 ## Parked / decided-against
 - ⏸ Exam-season booklet (dropped).
 - ⏸ Browser E2E tests (solo-maintenance cost).
