@@ -184,10 +184,12 @@ Four more rules from that edit (full account in `teaching_style/FEEDBACK.md`):
 - **Individual practice ITEMS can be marked "(Optional)"**, not only whole
   sections — his Practice 4 marks item 3 alone.
 
-Section headings are numbered, name the BEHAVIOUR, and may join two ideas with
-"+" or give a direct instruction: "3. A constant factor rides along — and read
-what the rate is measured per", "4. Squaring hides a second case + Make Sure You
-Perform Shoelace Method Correctly".
+Section headings are **unnumbered Title Case skill labels** (Adrian, 2 Sep 2026
+— the number went on all four sheets he amended): "Master Finding Area Using
+Integration", "Finding Coefficient of A Specific Term In An Expansion". Not the
+teasing one-liner, not a filing label with a "—" explainer. An Example may carry
+the skill in its own heading, followed by ONE blue key-move line ("Always Form
+Chain Rule") echoed in blue as the `←` where it fires.
 
 ## Step 3 — propose ONE wave, and STOP
 
@@ -237,24 +239,24 @@ is the sheet Adrian says is closest to what he wants (31 Aug 2026, comparing it
 against Kiara's and Sophie's from the same evening). Read it before authoring.
 What makes it the reference — all of it reproducible, none of it accidental:
 
-- **The heading TEACHES; it is not a topic label.** "Make it ONE base before you
-  do anything else", "A curved edge is not a polygon — split the region and
-  integrate", "When the power is −1 the power rule breaks". Kiara's sheet
-  headed the same kind of skill "Always Increasing / Always Positive Leading To
-  The Discriminant Condition" — Title Case, a filing label, and a student who
-  reads only the headings learns nothing from it. A student who reads only
-  Klaire's headings has already been taught four things.
+- **Headings are Title Case skill labels** — this bullet used to say the
+  opposite and cite "Always Increasing / Always Positive Leading To The
+  Discriminant Condition" as the label to avoid. On 2 Sep 2026 Adrian wrote
+  that exact heading himself, and replaced "Make it ONE base before you do
+  anything else" with "Solving Exponential Equations Using Logarithms". The
+  teaching goes in the one blue key-move line under the heading, not in the
+  heading.
 - **Two examples where the skill has two faces.** Example 1a took `12ˣ = 7×4ˣ⁺¹`
   (same base by logs), 1b took `log₂x + log₄(x+3) = 3` (same base by change of
   base) — one skill, both faces, then one practice set covering both. Kiara got
   one example per skill throughout.
-- **The three triage tiers are three visible ZONES, in order**, not tags mixed
-  into the flow: the numbered skills with Example + Practice, then
-  **"Read these once — no practice needed"** (② — one line each, no questions),
-  then **"Optional — do these only if you have time"** (③ — teaching, then a
-  single `(Optional)` question with its answer). Kiara's sheet put a bare
-  `(Optional)` tag above a mid-document skill, so nothing tells a student who is
-  short of time where to stop.
+- **Two zones, not three** (revised 2 Sep 2026 — he deleted the "Read these
+  once" zone from all four sheets he amended, because every line in it narrated
+  the student's own slip). The skills with Example + Practice, then either a
+  bold `(Optional)` line above the last section or a closing `Practice N –
+  Miscellaneous Practice`. ② slips are NOT listed on the sheet: they are
+  reported in the wave for Adrian, and at most one becomes an ordinary
+  practice item.
 - **Diagrams in the Example AND in the Practice.** Klaire's area section carried
   three figures — one in the worked example and one on each practice item.
   Kiara's sheet had none at all.
@@ -264,8 +266,10 @@ What makes it the reference — all of it reproducible, none of it accidental:
   no opening line in plain English, and Klaire's boxes all open with one
   ("You are given dV/dt and asked for dr/dt. Build the chain first, substitute
   second.") and close with a red danger line and a blue ✓ check.
-- **The fixed opening block, all three lines**, and the name as a faded-blue
-  `For <Full Name>` subtitle. Kiara's had one instruction line and no name.
+- **One instruction paragraph** (revised 2 Sep 2026 — he cut the three lines to
+  "Read through each **Example**. Then do the **Practice** under it on your
+  own, before you look at the answers."), and the name as a faded-blue
+  `For <Full Name>` subtitle, tight under the title.
 
 ### Adrian's own explanations — the captured style (2 Sep 2026, binding)
 
@@ -298,6 +302,39 @@ the shape, in one breath:
 - **Gone from the box**: the punchy italic opener, the red "on your paper you…"
   lines, and the Check line on those two examples. ONE red Common Error warning
   per box, not two.
+
+**Four more sheets the same evening — Kiara, Klaire, Rainie, Chloe Zhang**
+(diffed against the worker originals, 2 Sep 2026; full account in FEEDBACK.md
+§ "Four sheets amended in one evening"). The four agree with each other; where
+they contradict an older rule here, they win:
+
+- **The Example IS the exam question**: quote its stem and constraints (a
+  paraphrase that changes the domain is a bug), print `[n]` per part, bold the
+  operative word (`**magnitude**`), the exam's own numbers at the exam's
+  difficulty, the curve's equation written on the diagram.
+- **Two skills that are (a)/(b) of one exam question are ONE Example (a)/(b)
+  and ONE Practice (a)/(b).**
+- **A routine procedure gets a BARE box** — complete equation per line, `←`
+  annotations, no prose between steps, no Common Error, no Check. Prose only
+  where the idea is non-obvious.
+- **A "you stopped here" red line becomes the missing line of working**
+  (`For increasing function, dy/dx > 0`); a show-that ends `(shown)`.
+- **Common Error only when it names the wrong TOOL in one sentence**
+  (`b²−4ac counts the roots of an equation. It says nothing about the y-value
+  of a point.`). No "Test it: with m = 1.5…" disproofs, no picture arguments.
+- **Checks only where a real check exists**, in exact form, green.
+- **Routine `←` names the rule** (`← chain rule`); his own annotations also
+  carry `**must know …` tags and `eg.` micro-examples.
+- **`+C` on every indefinite-integral line; `ln(2x+7)` without modulus bars on
+  A-Math; magnitude = signed value first, then `|a|` with `← magnitude is just
+  the value without the minus sign`.**
+- **Name the method the student knows** (`Perform long division:`), not a
+  trick ("force a 6(x+1) to appear on top").
+- **Page break before each new skill.** Hints go UNDER a practice question in
+  light grey `[Remember: …]`.
+- **Re-verify his amended DOCX before release** — his hand-typed 1b dropped a
+  ×2 (`x³+3x²−8` for `−64`) and Kiara's Example 1 chain ran the inequality
+  the wrong way. The standard is his; the arithmetic still gets checked.
 
 Invoke `create-teaching-notes` and give it this brief:
 
@@ -401,10 +438,14 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/question-proposals" \
 Nothing there reaches the bank until Adrian approves it. Record the FAILED SEARCH
 honestly — the queue cannot tell a genuine gap from a lazy search without it, and
 the gap is the interesting half: it says what the bank is missing.
-- Plain skill-phrase headings ("Differentiating a square root of a linear
-  expression"); teach by contrast in one example where two rules compete;
-  chain examples ("From Example 5: … ← carried forward"); 2–4 practice per
-  skill, escalating into the next idea.
+- Teach by contrast as a trio where two rules compete (Klaire 4a → 4b → 4c: a
+  warm-up box, a stem-less box with the wrong attempt in red and the fix in
+  blue, then the exam question); chain examples ("From Example 5: … ← carried
+  forward"). **Practice volume follows the skill** (2 Sep 2026): a routine skill
+  gets ONE item — the exam question's twin, same parts and marks, function
+  family varied; the conceptual skill gets 3–4 escalating items (increasing →
+  decreasing → two stationary points → none) from the bank; a set may close
+  with a full 12-mark exam question and its figure.
 - Colour: red = the single danger line and the offending term; blue =
   check/verify lines with ✓; grey = ← annotations and Common Error working;
   orange right-aligned `[Ans: …]`.
