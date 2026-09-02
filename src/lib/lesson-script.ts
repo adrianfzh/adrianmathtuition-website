@@ -516,3 +516,22 @@ export function lessonHasAudio(scenes: PlayScene[]): boolean {
     return Array.isArray(scene.audio) ? scene.audio.length > 0 : true;
   });
 }
+
+/**
+ * Why a clip's play() promise rejected — three different responses in the
+ * player. 'refused' is the autoplay policy (no gesture has reached the
+ * element yet) → re-lock, show the play affordance. 'superseded' is an
+ * AbortError: OUR OWN next load or pause interrupted a play that had not
+ * started yet — the silent unlock replaced by the next position's clip inside
+ * the same tap, a replay, a backgrounded tab — nothing failed, nothing to
+ * record. Anything else means the clip itself won't play → skip it, the timer
+ * beat takes that position. (Reverting the unlock on an AbortError re-locked
+ * the player on every tap-to-advance from the poster: 2026-09-02 browser run.)
+ */
+export type PlayRejection = 'refused' | 'superseded' | 'failed';
+export function classifyPlayRejection(err: unknown): PlayRejection {
+  const name = typeof err === 'object' && err !== null ? (err as { name?: unknown }).name : undefined;
+  if (name === 'NotAllowedError') return 'refused';
+  if (name === 'AbortError') return 'superseded';
+  return 'failed';
+}

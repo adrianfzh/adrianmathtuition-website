@@ -4,6 +4,7 @@ import path from 'node:path';
 import {
   validateLessonScript, checkQids, sceneStepCount,
   narrationAt, narrationLayout, nextNarrationAudio, lessonHasAudio, isLessonAudioUrl,
+  classifyPlayRejection,
   NARRATION_MAX_CHARS,
   type LessonScript, type PlayScene,
 } from './lesson-script';
@@ -519,5 +520,36 @@ describe('resolveCheckScene', () => {
       expect(r.narration).toBe('Your turn — pause here.');
       expect(r.audio).toBe('/lessons/t/scene-09.mp3');
     }
+  });
+});
+
+// The narration hook's three responses to a rejected play(). Regression pin
+// for the tap-to-advance unlock (2026-09-02 browser run): the 10 ms silent
+// play() that unlocks the element is replaced by the next position's clip
+// inside the SAME tap, so its promise rejects with AbortError ("interrupted by
+// a new load request") — that is a superseded play, not a refused one. The
+// hook used to treat every rejection there as "unlock failed", re-locking the
+// player mid-scene (poster back, fresh clip paused) on every Continue tap.
+describe('classifyPlayRejection', () => {
+  it("'refused' only for the autoplay policy's NotAllowedError", () => {
+    expect(classifyPlayRejection(new DOMException(
+      "play() failed because the user didn't interact with the document first.", 'NotAllowedError',
+    ))).toBe('refused');
+  });
+
+  it("'superseded' for AbortError — our own load or pause interrupted a pending play", () => {
+    expect(classifyPlayRejection(new DOMException(
+      'The play() request was interrupted by a new load request.', 'AbortError',
+    ))).toBe('superseded');
+    expect(classifyPlayRejection(new DOMException(
+      'The play() request was interrupted by a call to pause().', 'AbortError',
+    ))).toBe('superseded');
+  });
+
+  it("'failed' for anything else — the clip itself will not play", () => {
+    expect(classifyPlayRejection(new DOMException('no supported source', 'NotSupportedError'))).toBe('failed');
+    expect(classifyPlayRejection(new Error('boom'))).toBe('failed');
+    expect(classifyPlayRejection(undefined)).toBe('failed');
+    expect(classifyPlayRejection('NotAllowedError')).toBe('failed'); // a string is not an error
   });
 });

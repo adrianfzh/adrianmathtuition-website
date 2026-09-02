@@ -29,7 +29,7 @@
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import {
-  narrationAt, narrationLayout, nextNarrationAudio, sceneStepCount,
+  classifyPlayRejection, narrationAt, narrationLayout, nextNarrationAudio, sceneStepCount,
   type NarrationLayout, type PlayScene,
 } from '@/lib/lesson-script';
 
@@ -194,8 +194,10 @@ export function useNarration(opts: NarrationOptions): NarrationController {
         if (activeRef.current !== pos) return; // superseded before it started
         if (!firstPlayRef.current) { firstPlayRef.current = true; optsRef.current.onFirstPlay(); }
       }).catch((err: unknown) => {
-        if (activeRef.current !== pos) return;
-        if ((err as { name?: string } | null)?.name === 'NotAllowedError') {
+        if (activeRef.current !== pos) return; // superseded before it started
+        const why = classifyPlayRejection(err);
+        if (why === 'superseded') return;     // our own load/pause (replay, hidden tab): this position stands
+        if (why === 'refused') {
           // Autoplay policy refused — no gesture has reached this element yet.
           // Back to locked: the play affordance returns and the next tap unlocks.
           unlockedRef.current = false;
@@ -312,7 +314,16 @@ export function useNarration(opts: NarrationOptions): NarrationController {
     el.src = SILENT_WAV;
     const played = el.play();
     if (played && typeof played.then === 'function') {
-      played.catch(() => { unlockedRef.current = false; setLocked(true); });
+      // Only a policy refusal means no gesture reached the element. An
+      // AbortError here is the next position's clip replacing the silence
+      // inside this same tap (tap-to-advance → advance → startClip): the
+      // unlock stood. Reverting on it re-locked the player mid-scene — poster
+      // back, the fresh clip paused (browser run, 2026-09-02).
+      played.catch((err: unknown) => {
+        if (classifyPlayRejection(err) !== 'refused') return;
+        unlockedRef.current = false;
+        setLocked(true);
+      });
     }
   }, [ensureEl, currentCue, startClip]);
 
