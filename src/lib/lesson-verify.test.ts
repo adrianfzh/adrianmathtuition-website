@@ -205,6 +205,42 @@ describe('narrationIssues', () => {
     expect(issues.find(i => i.where === 'scenes[2].narration')?.message).toMatch(/words/);
     expect(narrationIssues(s, { require: true }).find(i => i.where === 'scenes[0].narration')?.severity).toBe('error');
   });
+
+  it('checks a per-step array entry by entry, naming the beat it found the problem in', () => {
+    // Regression: the rule used to demand a string, so every per-step array
+    // (the pilot's graph-morph / annotate / equation-steps scenes) read as
+    // "must be a non-empty string" and the gate could never pass a lesson
+    // whose voice is synced to the reveal.
+    const s = script({
+      scenes: [
+        { type: 'title', title: 'T', promise: 'P' },
+        {
+          type: 'graph-morph',
+          states: [
+            { label: 'a', coeffs: [0, 0, 1] },
+            { label: 'b', coeffs: [1, 0, 1] },
+            { label: 'c', coeffs: [2, 0, 1] },
+          ],
+          window: { xMin: -2, xMax: 2, yMin: -1, yMax: 8 },
+          narration: [
+            'Start with the basic curve, its turning point at the origin.',
+            'Lift it by one.',
+            'And lift it once more, so the whole curve sits higher still.',
+          ],
+        },
+        { type: 'caption', text: 'closer' },
+      ] as unknown as LessonScript['scenes'],
+    });
+    // Plant TeX after validation, as above.
+    (s.scenes[1] as unknown as { narration: string[] }).narration[2] = 'And lift it by $1$ once more, so it sits higher';
+    const issues = narrationIssues(s, { require: true });
+    expect(issues.find(i => i.where === 'scenes[1].narration')).toBeUndefined();                // never the whole array
+    expect(issues.find(i => i.where === 'scenes[1].narration[0]')).toBeUndefined();
+    expect(issues.find(i => i.where === 'scenes[1].narration[1]')?.severity).toBe('warn');      // 4 words — thin
+    expect(issues.find(i => i.where === 'scenes[1].narration[2]')?.severity).toBe('error');     // TeX
+    // Scoped to this scene: with require on, the unnarrated title and closer are errors of their own.
+    expect(issues.filter(i => i.severity === 'error' && i.where.startsWith('scenes[1].narration'))).toHaveLength(1);
+  });
 });
 
 describe('answerClass', () => {

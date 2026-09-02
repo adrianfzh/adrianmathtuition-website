@@ -588,11 +588,21 @@ export function narrationIssues(script: LessonScript, opts: { require?: boolean 
     const at = `scenes[${i}].narration`;
     const n = (s as unknown as { narration?: unknown }).narration;
     if (n === undefined) { out.push(issue(opts.require ? 'error' : 'warn', at, 'missing — every scene needs a spoken line')); return; }
-    if (typeof n !== 'string' || !n.trim()) { out.push(issue('error', at, 'must be a non-empty string')); return; }
-    if (/[$\\]/.test(n)) out.push(issue('error', at, 'contains $ or a backslash — narration is spoken English, no TeX'));
-    const words = wordCount(n);
-    if (words < NARRATION_MIN_WORDS) out.push(issue('warn', at, `${words} words — too thin to carry the scene`));
-    if (words > NARRATION_MAX_WORDS) out.push(issue('warn', at, `${words} words — over ~35 s spoken; split the idea or trim`));
+    // A string narrates the whole scene; an array narrates each sub-step in
+    // turn (the schema validator has already pinned its length to the scene's
+    // step count). Every rule here is per spoken beat, so an array is checked
+    // entry by entry and each finding names the entry.
+    if (Array.isArray(n) && n.length === 0) { out.push(issue('error', at, 'per-step array must not be empty')); return; }
+    const beats: Array<[unknown, string]> = Array.isArray(n)
+      ? n.map((t, k): [unknown, string] => [t, `${at}[${k}]`])
+      : [[n, at]];
+    for (const [text, where] of beats) {
+      if (typeof text !== 'string' || !text.trim()) { out.push(issue('error', where, 'must be a non-empty string')); continue; }
+      if (/[$\\]/.test(text)) out.push(issue('error', where, 'contains $ or a backslash — narration is spoken English, no TeX'));
+      const words = wordCount(text);
+      if (words < NARRATION_MIN_WORDS) out.push(issue('warn', where, `${words} words — too thin to carry the scene`));
+      if (words > NARRATION_MAX_WORDS) out.push(issue('warn', where, `${words} words — over ~35 s spoken; split the idea or trim`));
+    }
   });
   return out;
 }
