@@ -18,12 +18,21 @@
 // bleed table and anything downstream) reflects the override, while the PDF the
 // student opens still shows the AI's original red pen. The override note exists
 // to be said out loud — the release nudge carries it.
+//
+// Since 3 Sep 2026 an override can also say WHAT KIND of error Adrian saw
+// (`triage_override.error_kind`, one of lib/error-kinds.ts' eight codes). The
+// marker labels every lost part the same way; his reading is the ground truth
+// those labels are calibrated against, so it is stored beside the mark and
+// never inferred from the marker's own tag.
+import { isErrorKind, type ErrorKind } from './error-kinds';
 
 export interface TriagePart {
   label: string;
   awarded: number;
   max: number;
   errorSummary: string | null;
+  /** The marker's own label for what cost this part its marks (null at full marks, or unlabelled). */
+  errorKind: ErrorKind | null;
 }
 
 export interface TriageQuestion {
@@ -43,7 +52,7 @@ export interface TriageQuestion {
   topic: string | null;
   /** Adrian has agreed with, or overridden, this question — it drops off the list. */
   reviewed: boolean;
-  override: { awarded: number; previous: number; note: string; at: string } | null;
+  override: { awarded: number; previous: number; note: string; at: string; errorKind: ErrorKind | null } | null;
 }
 
 export interface TriageSummary {
@@ -111,6 +120,7 @@ function toTriageQuestion(r: Json, index: number): TriageQuestion {
         awarded: num(part.awarded),
         max: num(part.max),
         errorSummary: typeof part.error_summary === 'string' ? part.error_summary : null,
+        errorKind: isErrorKind(part.error_kind) ? part.error_kind : null,
       };
     }),
     overallComment: str(marking.overall_comment),
@@ -122,6 +132,7 @@ function toTriageQuestion(r: Json, index: number): TriageQuestion {
           previous: num(override.previous),
           note: str(override.note),
           at: str(override.at),
+          errorKind: isErrorKind(override.error_kind) ? override.error_kind : null,
         }
       : null,
   };
@@ -234,13 +245,19 @@ function requireResult(resultJson: unknown, index: number): Json {
  * Clamped to [0, total_max]: the flagged cases include "no question found", where
  * the max is the marker's own allocation, and a typo'd override there would
  * silently skew the paper total and the bleed table.
+ *
+ * `errorKind` is the kind of error Adrian saw (lib/error-kinds.ts). Stored
+ * only when it is one of the eight codes; like `note`, the latest edit is the
+ * whole record — an edit that sends no kind stores none, so the UI pre-fills
+ * the select from the current override rather than this function remembering.
  */
 export function applyOverride(
   resultJson: unknown,
   index: number,
   awarded: number,
   note: string,
-  at: string
+  at: string,
+  errorKind?: unknown
 ): Json {
   const r = requireResult(resultJson, index);
   const marking = asRecord(r.marking) ?? {};
@@ -260,6 +277,7 @@ export function applyOverride(
       previous: asRecord(r.triage_override) ? num(asRecord(r.triage_override)!.previous) : previous,
       note: str(note),
       at,
+      ...(isErrorKind(errorKind) ? { error_kind: errorKind } : {}),
     },
   };
   return replaceResult(resultJson, index, next);

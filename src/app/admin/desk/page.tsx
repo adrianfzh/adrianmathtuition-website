@@ -28,6 +28,7 @@ import GroundingChip from '@/components/GroundingChip';
 import RulesTag from '@/components/RulesTag';
 import { mathHtml } from '@/lib/math-inline';
 import { DESK_LANES, LANE_LABEL, type DeskLane } from '@/lib/desk-state';
+import { ERROR_KINDS, ERROR_KIND_HINT, isErrorKind } from '@/lib/error-kinds';
 import type { TriageQuestion } from '@/lib/mark-triage';
 import type { Diagnosis } from '@/lib/sheet-diagnosis';
 import { pdfToPageImages } from '@/lib/pdf-pages';
@@ -171,6 +172,9 @@ export default function DeskPage() {
   const [editing, setEditing] = useState<number | null>(null);
   const [editAwarded, setEditAwarded] = useState('');
   const [editNote, setEditNote] = useState('');
+  // The kind of error Adrian saw ('' = not said) — stored as triage_override.error_kind,
+  // the ground truth the marker's own labels are calibrated against.
+  const [editKind, setEditKind] = useState('');
   const [focus, setFocus] = useState('');
   const [tagging, setTagging] = useState(false);
 
@@ -312,7 +316,10 @@ export default function DeskPage() {
     const awarded = Number(editAwarded);
     if (!Number.isFinite(awarded)) return;
     setBusy(`q:${q.index}`);
-    const { ok, d } = await postJson('/api/admin/mark-triage', { action: 'override', runId: id, questionIdx: q.index, awarded, note: editNote });
+    const errorKind = isErrorKind(editKind) ? editKind : null;
+    const { ok, d } = await postJson('/api/admin/mark-triage', {
+      action: 'override', runId: id, questionIdx: q.index, awarded, note: editNote, errorKind: errorKind ?? undefined,
+    });
     setBusy('');
     if (!ok) { setToast(d.error || 'Could not save'); return; }
     setDetail(prev => prev && {
@@ -321,10 +328,10 @@ export default function DeskPage() {
       run: { ...prev.run, awarded: typeof d.awarded === 'number' ? d.awarded : prev.run.awarded, pdfStale: true },
       questions: prev.questions.map(x => (x.index === q.index ? {
         ...x, reviewed: true, awarded: Math.min(Math.max(awarded, 0), x.max),
-        override: { awarded, previous: x.override?.previous ?? x.awarded, note: editNote, at: new Date().toISOString() },
+        override: { awarded, previous: x.override?.previous ?? x.awarded, note: editNote, at: new Date().toISOString(), errorKind },
       } : x)),
     });
-    setEditing(null); setEditAwarded(''); setEditNote('');
+    setEditing(null); setEditAwarded(''); setEditNote(''); setEditKind('');
     setToast('Saved. The PDF still prints the old total — save your Marked (Adrian).pdf into the folder, or Rebuild PDFs.');
     refresh(id);
   }
@@ -557,6 +564,7 @@ export default function DeskPage() {
           detail={detail} cover={cover} sheetPages={sheetPages} sheetNote={sheetNote}
           busy={busy} editing={editing} editAwarded={editAwarded} editNote={editNote} focus={focus} tagging={tagging}
           setEditing={setEditing} setEditAwarded={setEditAwarded} setEditNote={setEditNote} setFocus={setFocus} setTagging={setTagging}
+          editKind={editKind} setEditKind={setEditKind}
           onAgree={agree} onOverride={override} onTag={tag} onAttach={attachMyCopy} onRebuild={rebuild}
           onQueueSheet={queueSheet} onCancelSheet={cancelSheet} onApprove={approve} onReleaseOnly={releaseWithoutSheet}
         />
@@ -575,8 +583,8 @@ export default function DeskPage() {
 // ── Detail view ───────────────────────────────────────────────────────────────
 function DetailView(p: {
   detail: Detail; cover: Cover | null; sheetPages: string[] | null; sheetNote: string;
-  busy: string; editing: number | null; editAwarded: string; editNote: string; focus: string; tagging: boolean;
-  setEditing: (v: number | null) => void; setEditAwarded: (v: string) => void; setEditNote: (v: string) => void;
+  busy: string; editing: number | null; editAwarded: string; editNote: string; editKind: string; focus: string; tagging: boolean;
+  setEditing: (v: number | null) => void; setEditAwarded: (v: string) => void; setEditNote: (v: string) => void; setEditKind: (v: string) => void;
   setFocus: (v: string) => void; setTagging: (v: boolean) => void;
   onAgree: (q: Question) => void; onOverride: (q: Question) => void; onTag: (id: string, name: string) => void;
   onAttach: () => void; onRebuild: () => void; onQueueSheet: () => void; onCancelSheet: () => void;
@@ -742,7 +750,7 @@ function DetailView(p: {
               <div style={{ padding: '4px 0' }}>
                 {(byPage.get(pg.photoIndex) ?? []).map(q => (
                   <QuestionCard key={q.index} q={q} released={released} busy={busy} editing={p.editing} editAwarded={p.editAwarded} editNote={p.editNote}
-                    setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} onAgree={p.onAgree} onOverride={p.onOverride} />
+                    setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} onAgree={p.onAgree} onOverride={p.onOverride} />
                 ))}
                 {(byPage.get(pg.photoIndex) ?? []).length === 0 && (
                   <div style={{ padding: '8px 12px', fontSize: 12.5, color: C.faint }}>No questions marked on this page.</div>
@@ -755,7 +763,7 @@ function DetailView(p: {
               <div style={{ padding: '8px 12px', background: '#fafafa', borderBottom: `1px solid ${C.border}`, fontSize: 12.5, color: C.muted }}>Questions not placed on a page</div>
               {unplaced.map(q => (
                 <QuestionCard key={q.index} q={q} released={released} busy={busy} editing={p.editing} editAwarded={p.editAwarded} editNote={p.editNote}
-                  setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} onAgree={p.onAgree} onOverride={p.onOverride} />
+                  setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} onAgree={p.onAgree} onOverride={p.onOverride} />
               ))}
             </section>
           )}
@@ -814,8 +822,8 @@ function CoverCard({ cover }: { cover: Cover | null }) {
 
 // ── One question, with Agree / Override on every one ─────────────────────────
 function QuestionCard(p: {
-  q: Question; released: boolean; busy: string; editing: number | null; editAwarded: string; editNote: string;
-  setEditing: (v: number | null) => void; setEditAwarded: (v: string) => void; setEditNote: (v: string) => void;
+  q: Question; released: boolean; busy: string; editing: number | null; editAwarded: string; editNote: string; editKind: string;
+  setEditing: (v: number | null) => void; setEditAwarded: (v: string) => void; setEditNote: (v: string) => void; setEditKind: (v: string) => void;
   onAgree: (q: Question) => void; onOverride: (q: Question) => void;
 }) {
   const { q, released, busy } = p;
@@ -832,7 +840,7 @@ function QuestionCard(p: {
         {open && <span style={{ color: C.flag, fontSize: 12.5, fontWeight: 700 }}>⚠ flagged</span>}
         {q.override && (
           <span style={{ fontSize: 12, color: C.muted }} title={q.override.note || undefined}>
-            was {q.override.previous}{q.override.note ? ` · ${q.override.note}` : ''}
+            was {q.override.previous}{q.override.errorKind ? ` · ${q.override.errorKind}` : ''}{q.override.note ? ` · ${q.override.note}` : ''}
           </span>
         )}
         {q.topic && <span style={{ fontSize: 12, color: C.muted, marginLeft: 'auto', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220 }}>{q.topic}</span>}
@@ -846,7 +854,10 @@ function QuestionCard(p: {
       )}
       {q.parts.filter(pt => pt.errorSummary && pt.awarded < pt.max).map((pt, i) => (
         <div key={i} style={{ fontSize: 13, marginTop: 4 }}>
-          <strong>{pt.label} {pt.awarded}/{pt.max}</strong> — <Tex text={pt.errorSummary!} />
+          <strong>{pt.label} {pt.awarded}/{pt.max}</strong>
+          {/* The marker's own label for the loss — what the red word beside the cross says. */}
+          {pt.errorKind && <span title={ERROR_KIND_HINT[pt.errorKind]} style={{ marginLeft: 6, fontSize: 11, fontWeight: 700, color: C.danger, background: C.dangerBg, borderRadius: 999, padding: '1px 7px' }}>{pt.errorKind}</span>}
+          {' '}— <Tex text={pt.errorSummary!} />
         </div>
       ))}
       {q.parts.every(pt => !pt.errorSummary || pt.awarded >= pt.max) && lost && q.overallComment && (
@@ -860,6 +871,13 @@ function QuestionCard(p: {
           <span style={{ color: C.muted }}>/ {q.max}</span>
           <input value={p.editNote} onChange={e => p.setEditNote(e.target.value)} placeholder="Why (optional)"
             style={{ flex: 1, minWidth: 140, padding: 8, fontSize: 15, border: `1px solid ${C.border}`, borderRadius: 6 }} />
+          {/* The kind of error he saw — optional, and deliberately NOT pre-filled from
+              the marker's own label: this is the ground truth that label is measured against. */}
+          <select value={p.editKind} onChange={e => p.setEditKind(e.target.value)} title="What kind of error was it? Becomes the truth the marker's labels are calibrated against"
+            style={{ padding: 8, fontSize: 14, border: `1px solid ${C.border}`, borderRadius: 6, background: '#fff', maxWidth: 260 }}>
+            <option value="">— kind of error</option>
+            {ERROR_KINDS.map(k => <option key={k} value={k}>{k} — {ERROR_KIND_HINT[k]}</option>)}
+          </select>
           <button onClick={() => p.onOverride(q)} disabled={isBusy || p.editAwarded === ''} style={btn(C.ink, '#fff')}>{isBusy ? '…' : 'Save'}</button>
           <button onClick={() => p.setEditing(null)} style={btn('#fff', '#374151', C.border)}>Cancel</button>
         </div>
@@ -868,7 +886,7 @@ function QuestionCard(p: {
           {!q.reviewed && (
             <button onClick={() => p.onAgree(q)} disabled={isBusy} style={btn(C.okBg, C.ok, C.okBorder)}>{isBusy ? '…' : '✓ Agree'}</button>
           )}
-          <button onClick={() => { p.setEditing(q.index); p.setEditAwarded(String(q.awarded)); p.setEditNote(''); }}
+          <button onClick={() => { p.setEditing(q.index); p.setEditAwarded(String(q.awarded)); p.setEditNote(''); p.setEditKind(q.override?.errorKind ?? ''); }}
             style={q.reviewed ? { ...btn('#fff', C.muted, C.border), padding: '4px 9px', fontSize: 12.5 } : btn('#fff', '#374151', C.border)}>
             {q.reviewed ? 'change' : '✏️ Override'}
           </button>

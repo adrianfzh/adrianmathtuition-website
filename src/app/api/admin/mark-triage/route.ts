@@ -39,6 +39,7 @@ import {
   pendingCount,
   computeAutoHold,
   TriageIndexError, overrideTally, paperTotalWarning, paperTotalsMismatch } from '@/lib/mark-triage';
+import { ERROR_KINDS, isErrorKind } from '@/lib/error-kinds';
 import { buildReviseBlock } from '@/lib/revise-map';
 import { canTransition, validateAssignment, type AssignmentStatus } from '@/lib/assignments';
 import { sendPushToStudent } from '@/lib/portal-push';
@@ -407,6 +408,8 @@ export async function POST(req: NextRequest) {
     questionIdx?: number;
     awarded?: number;
     note?: string;
+    /** Override only: the kind of error Adrian saw — one of lib/error-kinds.ts' eight codes, or empty. */
+    errorKind?: unknown;
     auto?: boolean;
     /** 📘 Optional sheet to release alongside the marked copy (step 7). */
     sheet?: { pdfUrl?: string; title?: string; note?: string; topic?: string };
@@ -437,12 +440,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'already released — marks are final' }, { status: 409 });
     }
 
+    // The kind of error he saw (3 Sep 2026) — the label truth channel. Empty
+    // means "not said"; anything else must be one of the eight codes, because
+    // a free-text kind here would poison the calibration it exists to feed.
+    const errorKind = body.errorKind == null || body.errorKind === '' ? undefined : body.errorKind;
+    if (errorKind !== undefined && !isErrorKind(errorKind)) {
+      return NextResponse.json({ error: `errorKind must be one of ${ERROR_KINDS.join(', ')}` }, { status: 400 });
+    }
+
     let nextJson: Record<string, unknown>;
     try {
       nextJson =
         body.action === 'agree'
           ? applyAgree(run.result_json, questionIdx, now)
-          : applyOverride(run.result_json, questionIdx, Number(body.awarded), body.note ?? '', now);
+          : applyOverride(run.result_json, questionIdx, Number(body.awarded), body.note ?? '', now, errorKind);
     } catch (err) {
       if (err instanceof TriageIndexError) return NextResponse.json({ error: err.message }, { status: 400 });
       throw err;

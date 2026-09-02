@@ -12,6 +12,7 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { PAGE_W, drawPaperTotal, stripHeight, shouldStampPaperTotal } from '@/lib/marked-pdf-layout';
 import { analyse, worstQuestions, type LostPart } from '@/lib/paper-analysis';
 import { readDiagnosis, themesFromDiagnosis } from '@/lib/sheet-diagnosis';
+import { errorKindTotals } from '@/lib/error-kinds';
 import { renderFrontPagePng } from '@/lib/render-front-page';
 import { bookletItems } from '@/lib/solutions-booklet-html';
 import { renderSolutionsBookletPng } from '@/lib/render-solutions-booklet';
@@ -279,7 +280,17 @@ async function buildFrontPage(
   // Nothing lost anywhere: a cover page saying so would be noise on a clean script.
   if (!parts.length && !diagnosis) return null;
 
+  // Marks lost by KIND of error, from the marker's `parts[].error_kind` labels
+  // (lib/error-kinds.ts — the contract with the bot). The page hides the row
+  // when nothing is labelled, so a run from before the labels is unchanged;
+  // and a bad results shape costs the row, never the cover.
+  let errorKinds = null;
+  try {
+    errorKinds = errorKindTotals((run.result_json as { results?: unknown } | null)?.results);
+  } catch (e) { console.warn('[mark-paper-pdf] error kinds skipped:', (e as Error).message); }
+
   return renderFrontPagePng({
+    errorKinds,
     studentName: meta.studentName || run.student_name,
     paperName: meta.paperName || run.paper_name,
     markedOn: null,

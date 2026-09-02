@@ -16,6 +16,7 @@ import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import SubjectChip from '@/components/SubjectChip';
 import GroundingChip from '@/components/GroundingChip';
 import { mathHtml } from '@/lib/math-inline';
+import { ERROR_KINDS, ERROR_KIND_HINT } from '@/lib/error-kinds';
 import type { TriageQuestion } from '@/lib/mark-triage';
 import { bandForRegion, isPartialBand } from '@/lib/region-crop';
 import { dropboxWebUrl } from '@/lib/paper-folder';
@@ -74,6 +75,18 @@ function Math({ text }: { text: string }) {
   return <span dangerouslySetInnerHTML={{ __html: mathHtml(text) }} />;
 }
 
+/** The kind of error Adrian saw, beside an Override — optional, never pre-filled
+ *  from the marker's own label (his reading is what that label is measured against). */
+function KindSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <select value={value} onChange={e => onChange(e.target.value)} title="What kind of error was it? Becomes the truth the marker's labels are calibrated against"
+      style={{ padding: 8, fontSize: 14, border: `1px solid ${C.border}`, borderRadius: 6, background: '#fff', maxWidth: 260 }}>
+      <option value="">— kind of error</option>
+      {ERROR_KINDS.map(k => <option key={k} value={k}>{k} — {ERROR_KIND_HINT[k]}</option>)}
+    </select>
+  );
+}
+
 export default function TriagePage() {
   const [password, setPassword] = useState('');
   const [authed, setAuthed] = useState(false);
@@ -92,6 +105,8 @@ export default function TriagePage() {
   const [editing, setEditing] = useState<string | null>(null); // `${runId}:${idx}`
   const [editAwarded, setEditAwarded] = useState('');
   const [editNote, setEditNote] = useState('');
+  // The kind of error Adrian saw ('' = not said) → triage_override.error_kind (lib/error-kinds.ts).
+  const [editKind, setEditKind] = useState('');
   const [toast, setToast] = useState('');
 
   const load = useCallback(async (spinner = true) => {
@@ -153,12 +168,12 @@ export default function TriagePage() {
     setBusy(`${runId}:${idx}`);
     const d = await post({
       action: 'override', runId, questionIdx: idx,
-      awarded: Number(editAwarded), note: editNote,
+      awarded: Number(editAwarded), note: editNote, errorKind: editKind || undefined,
     });
     setBusy('');
     if (d.error) { setToast(d.error); return; }
     resolveLocally(runId, idx, Number(editAwarded));
-    setEditing(null); setEditAwarded(''); setEditNote('');
+    setEditing(null); setEditAwarded(''); setEditNote(''); setEditKind('');
   }
 
   // ✍️ Upload the copy Adrian wrote on. Overriding a mark corrects the number
@@ -633,6 +648,7 @@ export default function TriagePage() {
                         value={editNote} onChange={e => setEditNote(e.target.value)} placeholder="Why (optional)"
                         style={{ flex: 1, minWidth: 140, padding: 8, fontSize: 15, border: `1px solid ${C.border}`, borderRadius: 6 }}
                       />
+                      <KindSelect value={editKind} onChange={setEditKind} />
                       <button onClick={() => override(run.id, q.index)} disabled={busy === key || editAwarded === ''}
                         style={btn('#111827', '#fff')}>
                         {busy === key ? '…' : 'Save'}
@@ -645,7 +661,7 @@ export default function TriagePage() {
                         {busy === key ? '…' : '✓ Agree'}
                       </button>
                       <button
-                        onClick={() => { setEditing(key); setEditAwarded(String(q.awarded)); setEditNote(''); }}
+                        onClick={() => { setEditing(key); setEditAwarded(String(q.awarded)); setEditNote(''); setEditKind(q.override?.errorKind ?? ''); }}
                         style={btn('#fff', '#374151', C.border)}
                       >
                         ✏️ Override
@@ -702,6 +718,7 @@ export default function TriagePage() {
                         <span style={{ color: C.muted }}>/ {q.max}</span>
                         <input value={editNote} onChange={e => setEditNote(e.target.value)} placeholder="Why (optional)"
                           style={{ flex: 1, minWidth: 140, padding: 8, fontSize: 15, border: `1px solid ${C.border}`, borderRadius: 6 }} />
+                        <KindSelect value={editKind} onChange={setEditKind} />
                         <button onClick={() => override(run.id, q.index)} disabled={busy === key || editAwarded === ''} style={btn('#111827', '#fff')}>
                           {busy === key ? '…' : 'Save'}
                         </button>
@@ -712,7 +729,7 @@ export default function TriagePage() {
                   return (
                     <button key={key} type="button"
                       title={`Q${q.questionNumber} — ${q.awarded}/${q.max}. Click to correct.`}
-                      onClick={() => { setEditing(key); setEditAwarded(String(q.awarded)); setEditNote(''); }}
+                      onClick={() => { setEditing(key); setEditAwarded(String(q.awarded)); setEditNote(''); setEditKind(q.override?.errorKind ?? ''); }}
                       style={{ fontSize: 12.5, padding: '3px 9px', borderRadius: 999, cursor: 'pointer',
                         border: `1px solid ${full ? '#d1d5db' : '#fbbf24'}`,
                         background: full ? '#fff' : '#fffbeb', color: full ? '#374151' : '#92400e' }}>

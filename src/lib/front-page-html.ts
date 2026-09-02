@@ -24,6 +24,10 @@
 // Puppeteer browser and prepends the image to the assembled PDF.
 import type { Theme } from './paper-analysis';
 import { mathHtml } from './math-inline';
+import {
+  CARELESS_KINDS, CONCEPT_KINDS, ERROR_KIND_LABEL, hasLabelledLoss,
+  type ErrorKind, type ErrorKindTotals,
+} from './error-kinds';
 
 const esc = (s: unknown) =>
   String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -73,6 +77,13 @@ export type FrontPageInput = {
    * fallback for a paper with no sheet yet. Changes two sentences, not the layout.
    */
   themesSource?: 'sheet' | 'marker';
+  /**
+   * Marks lost by error kind (lib/error-kinds.ts `errorKindTotals`), from the
+   * marker's `parts[].error_kind` labels. Absent, or with nothing labelled →
+   * no row at all, and the page is byte-identical to one without it: older
+   * runs never had the labels and must not gain a line saying so.
+   */
+  errorKinds?: ErrorKindTotals | null;
 };
 
 // ONE A4 SHEET. Adrian asked for "a pdf page attached right in front" —
@@ -122,6 +133,53 @@ function questionRow(q: { question: string; lost: number; max: number }): string
     <span class="bar"><span style="width:${pct}%"></span></span>
     <span class="q-marks">&minus;${q.lost} of ${q.max}</span>
   </div>`;
+}
+
+/**
+ * ONE compact row under the score: where the marks went by KIND of error —
+ * "Marks lost · concept 9 · careless 7 (arithmetic 4, sign 3) · incomplete 3".
+ *
+ * Adrian, 3 Sep 2026: label the errors "like arithmetic errors … beside the
+ * crosses". The bot draws the word beside each cross; this line adds them up
+ * so the student sees the SHAPE of the paper before the detail — and the
+ * careless bucket is said the encouraging way, because a slip inside a right
+ * method is the cheapest mark there is to win back.
+ *
+ * Hidden entirely when nothing is labelled, and the row's own styles ride
+ * inside it, so a run from before the labels renders exactly as it did.
+ * One line plus at most one short sub-line: the page is one A4 sheet.
+ */
+function kindsRow(t: ErrorKindTotals | null | undefined): string {
+  if (!hasLabelledLoss(t)) return '';
+  const n = (k: ErrorKind) => t!.byKind[k];
+  const detail = (kinds: readonly ErrorKind[]) =>
+    kinds.filter(k => n(k) > 0).map(k => `${ERROR_KIND_LABEL[k]} ${n(k)}`).join(', ');
+  const cells: string[] = [];
+  if (t!.concept > 0) {
+    // "concept" already reads as the bucket; only spell it out when a misread is inside it.
+    cells.push(`<b>concept</b> ${t!.concept}${n('misread') > 0 ? ` <i>(${detail(CONCEPT_KINDS)})</i>` : ''}`);
+  }
+  if (t!.careless > 0) cells.push(`<b>careless</b> ${t!.careless} <i>(${detail(CARELESS_KINDS)})</i>`);
+  if (t!.incomplete > 0) cells.push(`<b>incomplete</b> ${t!.incomplete}`);
+  // A part the marker left untagged still cost marks; "other" keeps the row honest
+  // about the total without pretending to know why.
+  if (t!.unlabelled > 0) cells.push(`<b>other</b> ${t!.unlabelled}`);
+  const c = t!.careless;
+  const sub = c > 0
+    ? `<p class="kinds-sub">${c} mark${c === 1 ? ' was a' : 's were'} careless slip${c === 1 ? '' : 's'} &mdash; the method was right.</p>`
+    : '';
+  return `<style>
+.kinds{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem .5rem;margin:-.55rem 0 ${sub ? '.3rem' : '1.1rem'};
+       padding:.45rem .9rem;background:var(--teal-tint);border-radius:12px;font-size:.8rem;color:var(--ink-soft)}
+.kinds-tag{font-family:"Quicksand","Nunito",sans-serif;font-weight:700;font-size:.66rem;letter-spacing:.1em;
+           text-transform:uppercase;color:var(--teal-deep);margin-right:.25rem}
+.kinds b{color:var(--ink);font-weight:800}
+.kinds i{font-style:normal;color:var(--ink-faint)}
+.kinds .dot{color:var(--ink-faint)}
+.kinds-sub{margin:0 0 1.1rem .9rem;font-size:.8rem;font-weight:700;color:var(--teal-deep)}
+</style>
+<div class="kinds"><span class="kinds-tag">Marks lost</span> ${cells.join(' <span class="dot">&middot;</span> ')}</div>
+${sub}`;
 }
 
 /** The closing line: two questions to start on, tied to the ranking above. */
@@ -261,7 +319,7 @@ h2::before{content:"";width:.72rem;height:.72rem;border-radius:4px;background:cu
     <p class="verdict">${lead}</p>
   </div>
 </div>
-<div class="sec-work">
+${kindsRow(input.errorKinds)}<div class="sec-work">
 <h2>What to work on</h2>
 <p class="sub">${sub}</p>
 <div class="themes">${themes.map(themeRow).join('')}</div>

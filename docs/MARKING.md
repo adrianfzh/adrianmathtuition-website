@@ -872,6 +872,25 @@ would look exactly like "no runs yet").
   cards still render, zeroed, so the gate each subject has yet to earn is visible.
 - Hub tile: ⚖️ Calibration, last in `LAUNCHERS` (saved orders append it at the end).
 
+### Error-kind labels — WHY a mark was lost (3 Sep 2026)
+
+Adrian: *"labelling errors like arithmetic errors … beside the crosses … okay then build it."*
+**Eight fixed codes, a contract shared with the bot** (`lib/error-kinds.ts` ↔ bot `ai/paper-marker.js`;
+change both or neither): `concept | arithmetic | transfer | sign | rounding | units | misread | incomplete`.
+Buckets: careless = arithmetic+transfer+sign+rounding+units · concept-side = concept+misread · incomplete alone.
+The bot writes `results[].marking_output.parts[].error_kind` (the kind that cost the part; null at full marks)
+and `lines[].error_type` (same codes), and **draws the word in red beside the cross, in clear space**.
+Anything outside the eight (older runs' free-text `error_type` like `ratio_inversion`) is *unlabelled*, never a kind.
+- **Cover page:** `errorKindTotals(results)` (pure, tested) attributes marks lost per part; `front-page-html`
+  prints ONE row under the score — *Marks lost · concept 9 · careless 7 (arithmetic 4, sign 3) · incomplete 3*
+  — plus one encouraging sub-line for the careless bucket. **Hidden when nothing is labelled**, and the row
+  carries its own styles, so an unlabelled run renders byte-identical (test pins it). Student words on the page
+  (`ERROR_KIND_LABEL`: transfer → "copied wrongly"); the codes stay the codes everywhere else.
+- **The truth channel:** Override on the desk / triage has an optional "kind of error" select (never pre-filled
+  from the marker's own label). The route validates it (`isErrorKind`, 400 otherwise) and stores
+  `triage_override.error_kind` beside `awarded/previous/note/at` — the latest edit is the whole record, like
+  `note`. That field, against the marker's `parts[].error_kind`, is what the labels get calibrated on.
+
 ## /app/marking — where the student reads their own marks (2026-08-12)
 
 The student-facing end of the loop, and the destination the release nudge has

@@ -176,6 +176,43 @@ describe('applyOverride', () => {
     expect((raw.triage_override as Record<string, unknown>).awarded).toBe(5);
   });
 
+  // ── the kind of error Adrian saw (3 Sep 2026) — the label truth channel ──
+
+  it('records the error kind beside the mark when it is one of the eight codes', () => {
+    const rj = run(question({ review_recommended: true }));
+    const raw = (applyOverride(rj, 0, 2, 'method was right', 'now', 'arithmetic').results as Record<string, unknown>[])[0];
+    expect(raw.triage_override).toEqual({ awarded: 2, previous: 4, note: 'method was right', at: 'now', error_kind: 'arithmetic' });
+    expect(extractFlagged(applyOverride(rj, 0, 2, '', 'now', 'sign')).confident[0].override?.errorKind).toBe('sign');
+  });
+
+  it('stores no kind for an empty, free-text or otherwise invalid one', () => {
+    const rj = run(question({ review_recommended: true }));
+    for (const bad of [undefined, null, '', 'arithmetic_slip', 'Concept', 42]) {
+      const raw = (applyOverride(rj, 0, 2, '', 'now', bad).results as Record<string, unknown>[])[0];
+      expect(raw.triage_override).not.toHaveProperty('error_kind');
+    }
+  });
+
+  it('the latest edit is the whole record — a re-edit without a kind stores none', () => {
+    const rj = run(question({ review_recommended: true }));
+    const once = applyOverride(rj, 0, 2, 'first', 'now', 'transfer');
+    const twice = applyOverride(once, 0, 3, 'second', 'later');
+    const raw = (twice.results as Record<string, unknown>[])[0];
+    expect(raw.triage_override).toEqual({ awarded: 3, previous: 4, note: 'second', at: 'later' });
+  });
+
+  it('surfaces the marker\'s own per-part label, and only when it is a real code', () => {
+    const q = extractFlagged(run(question({ marking: {
+      parts: [
+        { label: '(a)', awarded: 0, max: 2, error_kind: 'concept' },
+        { label: '(b)', awarded: 1, max: 2, error_kind: 'wrong_setup' },
+        { label: '(c)', awarded: 2, max: 2, error_kind: null },
+      ],
+      total_awarded: 3, total_max: 6,
+    } }))).confident[0];
+    expect(q.parts.map(p => p.errorKind)).toEqual(['concept', null, null]);
+  });
+
   it('clamps to [0, total_max] so a slip cannot skew the paper total', () => {
     const rj = run(question({ review_recommended: true }));
     expect(recomputeTotals(applyOverride(rj, 0, 99, '', 'now'))).toEqual({ awarded: 6, max: 6 });

@@ -193,3 +193,92 @@ describe('frontPageHtml', () => {
     expect(h).toContain('Both sit under <b>master finding area using integration</b> above');
   });
 });
+
+// ── "Marks lost" by kind of error (Adrian, 3 Sep 2026: "labelling errors like
+//    arithmetic errors … beside the crosses … okay then build it") ───────────
+
+import { errorKindTotals, emptyErrorKindTotals } from './error-kinds';
+
+const labelled = () => {
+  const t = emptyErrorKindTotals();
+  t.byKind.concept = 7; t.byKind.misread = 2;
+  t.byKind.arithmetic = 4; t.byKind.transfer = 2; t.byKind.sign = 1;
+  t.byKind.incomplete = 3;
+  t.concept = 9; t.careless = 7; t.incomplete = 3; t.lostTotal = 19;
+  return t;
+};
+
+describe('frontPageHtml — marks lost by kind', () => {
+  it('prints one compact row: the buckets, with the careless slips itemised', () => {
+    const h = frontPageHtml({ ...base, errorKinds: labelled() });
+    const row = h.slice(h.indexOf('<div class="kinds">'), h.indexOf('</div>', h.indexOf('<div class="kinds">')));
+    const text = row.replace(/<[^>]+>/g, '').replace(/&middot;/g, '·').replace(/\s+/g, ' ').trim();
+    expect(text).toBe('Marks lost concept 9 (concept 7, misread 2) · careless 7 (arithmetic 4, copied wrongly 2, sign 1) · incomplete 3');
+  });
+
+  it('says the careless bucket the encouraging way — one short sub-line', () => {
+    const h = frontPageHtml({ ...base, errorKinds: labelled() });
+    expect(h).toContain('7 marks were careless slips &mdash; the method was right.');
+    expect(h.match(/kinds-sub"/g)).toHaveLength(1);
+  });
+
+  it('gets the grammar right for a single careless mark', () => {
+    const t = emptyErrorKindTotals();
+    t.byKind.sign = 1; t.careless = 1; t.lostTotal = 1;
+    expect(frontPageHtml({ ...base, errorKinds: t })).toContain('1 mark was a careless slip &mdash; the method was right.');
+  });
+
+  it('has no sub-line and no "concept" cell when only a method gap cost marks', () => {
+    const t = emptyErrorKindTotals();
+    t.byKind.concept = 5; t.concept = 5; t.lostTotal = 5;
+    const h = frontPageHtml({ ...base, errorKinds: t });
+    expect(h).toContain('<b>concept</b> 5');
+    expect(h).not.toContain('(concept');          // no misread → no breakdown
+    expect(h).not.toContain('careless');
+    expect(h).not.toContain('class="kinds-sub"');
+  });
+
+  it('keeps the row honest about marks the marker left untagged', () => {
+    const t = emptyErrorKindTotals();
+    t.byKind.arithmetic = 2; t.careless = 2; t.unlabelled = 3; t.lostTotal = 5;
+    expect(frontPageHtml({ ...base, errorKinds: t })).toContain('<b>other</b> 3');
+  });
+
+  it('sits under the score and above "What to work on"', () => {
+    const h = frontPageHtml({ ...base, errorKinds: labelled() });
+    const row = h.indexOf('<div class="kinds">');
+    expect(row).toBeGreaterThan(h.indexOf('class="verdict"'));
+    expect(row).toBeLessThan(h.indexOf('class="sec-work"'));
+  });
+
+  it('renders an unlabelled run BYTE-IDENTICAL to a run with no kinds at all', () => {
+    // Older runs (and runs whose marker tagged nothing) must not gain a line, a
+    // style, or a byte: the page they print today is the page they print tomorrow.
+    const today = frontPageHtml(base);
+    const untouched = emptyErrorKindTotals();
+    untouched.unlabelled = 12; untouched.lostTotal = 12;
+    expect(frontPageHtml({ ...base, errorKinds: untouched })).toBe(today);
+    expect(frontPageHtml({ ...base, errorKinds: null })).toBe(today);
+    expect(frontPageHtml({ ...base, errorKinds: emptyErrorKindTotals() })).toBe(today);
+    expect(today).not.toContain('Marks lost');
+    expect(today).not.toContain('kinds');
+  });
+
+  it('ignores the old free-text tags end to end — no row for a pre-contract run', () => {
+    const results = [{ marking_output: { parts: [
+      { label: '(a)', max: 3, awarded: 0, error_kind: 'arithmetic_slip' },
+      { label: '(b)', max: 2, awarded: 1, error_type: 'wrong_setup' },
+    ] } }];
+    expect(frontPageHtml({ ...base, errorKinds: errorKindTotals(results) })).toBe(frontPageHtml(base));
+  });
+
+  it('uses student words, not the marker\'s codes', () => {
+    const h = frontPageHtml({ ...base, errorKinds: labelled() });
+    expect(h).toContain('copied wrongly 2');
+    expect(h).not.toMatch(/\btransfer\b/);
+  });
+
+  it('still uses no emoji with the row in place', () => {
+    expect(frontPageHtml({ ...base, errorKinds: labelled() })).not.toMatch(/\p{Extended_Pictographic}/u);
+  });
+});
