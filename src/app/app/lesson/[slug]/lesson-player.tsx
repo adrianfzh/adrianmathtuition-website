@@ -575,7 +575,7 @@ function CheckView({ scene, slug, onResolved }: {
       <div className="min-h-[64px] mt-3">
         {status === 'retry' && (
           <div className="lsn-rise bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-2.5 text-[13.5px] text-amber-900">
-            Not quite — one more go. Check each power, and keep the sign inside it.
+            Not quite — one more go. Check each sign and each number before you type.
           </div>
         )}
         {status === 'correct' && (
@@ -729,7 +729,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes }: {
           <span className="inline-block text-4xl mb-3 lsn-rise" aria-hidden>🎉</span>
           <h2 className="text-xl font-bold text-navy lsn-rise" style={{ animationDelay: '120ms' }}>Lesson complete</h2>
           <p className="mt-2 max-w-xs text-sm text-slate-600 lsn-rise" style={{ animationDelay: '240ms' }}>
-            The general term is yours now — the fastest way to make it stick is to use it on real questions while it&apos;s fresh.
+            That&apos;s the whole idea — the fastest way to make it stick is to use it on real questions while it&apos;s fresh.
           </p>
           <Link href={practiceHref}
             className="block text-center mt-6 w-full max-w-xs bg-amber-400 text-navy rounded-2xl px-4 py-3.5 font-bold text-[15px] shadow-[0_8px_24px_-10px_rgba(245,158,11,0.8)] hover:bg-amber-300 active:scale-[0.98] motion-safe:transition lsn-rise"

@@ -23,6 +23,7 @@ several of them are paper-shaped and it stops being obvious which is which.
 | See which topics my students actually lose marks on | `bleed-table` |
 | Fill in the question bank's missing answers/solutions | `qb-enrich` |
 | Mark the 🌙 queue by hand on plan usage | `plan-marking` |
+| Draft an animated portal lesson for a topic from my approved notes | `author-lesson` |
 | Touch marking / kiosk / schedule / invoices **code** | the matching area skill — it routes to the runbook |
 
 ## The five paper-makers, disambiguated
@@ -60,6 +61,7 @@ authoritative list.
 | `bleed-table` | Ranks topics by marks lost across all AI-marked papers (`paper_marking_runs`); can seed question generation for the worst |
 | `qb-enrich` | Extracts missing `answer` fields from existing solutions, writes solutions where there are none |
 | `plan-marking` | Runs one cycle of the plan-billed 🌙 marking worker by hand; also the way to debug the launchd worker |
+| `author-lesson` | Drafts a `data/lessons/<slug>.json` animated lesson for one (level, topic) from APPROVED learning units, gated by `scripts/lessons/verify-lesson.mjs` and Adrian's scene-by-scene approval; admin-preview only → [`docs/LESSONS.md`](LESSONS.md) |
 
 ## Adding a skill
 

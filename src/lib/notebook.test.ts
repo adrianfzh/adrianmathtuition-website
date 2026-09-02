@@ -57,6 +57,23 @@ describe('checkTypedAnswer', () => {
   it('symbolic disagreement → unclear, not wrong', () => {
     expect(checkTypedAnswer('2(x+1)', '2x+2')).toBe('unclear');
   });
+  it('coordinate points grade as ordered tuples, brackets optional when typing', () => {
+    // Turning-point answers — the classic Quadratic Functions check.
+    expect(checkTypedAnswer('(2, 8)', '$(2, 8)$')).toBe('correct');
+    expect(checkTypedAnswer('2,8', '$(2, 8)$')).toBe('correct');
+    expect(checkTypedAnswer('h=2, k=8', '$(2, 8)$')).toBe('correct');
+    expect(checkTypedAnswer('(2, -8)', '$(2, 8)$')).toBe('wrong');
+    expect(checkTypedAnswer('(8, 2)', '$(2, 8)$')).toBe('wrong');       // order matters
+    expect(checkTypedAnswer('8', '$(2, 8)$')).toBe('unclear');          // half an answer
+    expect(checkTypedAnswer('(2, 8, 1)', '$(2, 8)$')).toBe('unclear');
+    // Fractions normalise to (a)/(b) and still parse.
+    expect(checkTypedAnswer('(9/2, 19/2)', '$\\left(\\frac{9}{2}, \\frac{19}{2}\\right)$')).toBe('correct');
+    expect(checkTypedAnswer('(4.5, 9.5)', '$\\left(\\frac{9}{2}, \\frac{19}{2}\\right)$')).toBe('correct');
+  });
+  it('a bare comma list is still an unordered root list, not a point', () => {
+    expect(checkTypedAnswer('5, 2', '2, 5')).toBe('correct');
+    expect(checkTypedAnswer('x=5, x=2', 'x = 2 or x = 5')).toBe('correct');
+  });
   it('empty input or missing official answer → unclear', () => {
     expect(checkTypedAnswer('', '3')).toBe('unclear');
     expect(checkTypedAnswer('3', '')).toBe('unclear');
