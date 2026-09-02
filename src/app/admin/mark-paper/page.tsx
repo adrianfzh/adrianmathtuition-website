@@ -984,7 +984,7 @@ export default function MarkPaperPage() {
         d = await r.json().catch(() => ({}));
       }
       if (!r.ok || !d.ok) throw new Error(d.error || `Dropbox failed (${r.status})`);
-      setDbxNote({ ok: true, text: `📁 Saved to Dropbox: ${d.name}${d.replaced ? ' — replaced the earlier copy' : ''}` });
+      setDbxNote({ ok: true, text: `📁 Saved to Dropbox: ${d.display || d.name}${d.replaced ? ' — replaced the earlier copy' : ''}` });
       return true;
     } catch (e) {
       // Never the red error banner: a Dropbox hiccup is not a marking failure, and
@@ -1124,7 +1124,7 @@ export default function MarkPaperPage() {
         d = await r.json().catch(() => ({}));
       }
       if (!r.ok || !d.ok) throw new Error(d.error || `Dropbox failed (${r.status})`);
-      setRowNote((p) => ({ ...p, [run.id]: { ok: true, text: `📁 Saved to Dropbox: ${d.name}${d.replaced ? ' — replaced the earlier copy' : ''}` } }));
+      setRowNote((p) => ({ ...p, [run.id]: { ok: true, text: `📁 Saved to Dropbox: ${d.display || d.name}${d.replaced ? ' — replaced the earlier copy' : ''}` } }));
     } catch (e) { setRowNote((p) => ({ ...p, [run.id]: { ok: false, text: (e as Error).message } })); }
     finally { setRowBusy((p) => ({ ...p, [run.id]: undefined })); }
   }
@@ -1556,6 +1556,7 @@ export default function MarkPaperPage() {
 
   return (
     <div style={{ maxWidth: 820, margin: '0 auto', padding: 20 }}>
+      <div><a href="/admin/desk" style={{ display: 'inline-block', fontSize: 13, color: '#2563eb', textDecoration: 'none', marginBottom: 6 }}>← Marking desk</a></div>
       <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Mark a paper</h1>
       <p style={{ color: '#6b7280', marginBottom: 20 }}>Upload the student&rsquo;s working (photos, or a scanned PDF) — plus the question paper (PDF) if there is one — then Mark. With a paper, each photo is marked against it; without one, the marker reads the printed questions off the pages themselves (self-contained worksheets).</p>
 

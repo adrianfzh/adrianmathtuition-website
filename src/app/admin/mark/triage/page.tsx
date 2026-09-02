@@ -342,6 +342,7 @@ export default function TriagePage() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: 'system-ui, sans-serif' }}>
         <form onSubmit={e => { e.preventDefault(); verify(password); }} style={{ width: '100%', maxWidth: 320 }}>
+          <div style={{ width: '100%' }}><a href="/admin/desk" style={{ display: 'inline-block', fontSize: 13, color: '#2563eb', textDecoration: 'none', marginBottom: 6 }}>← Marking desk</a></div>
           <h1 style={{ fontSize: 20, marginBottom: 16 }}>⏳ Marking triage</h1>
           <input
             type="password" value={password} onChange={e => setPassword(e.target.value)}
@@ -363,6 +364,7 @@ export default function TriagePage() {
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', maxWidth: 760, margin: '0 auto', padding: '16px 12px 96px' }}>
       <header style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+        <div style={{ width: '100%' }}><a href="/admin/desk" style={{ display: 'inline-block', fontSize: 13, color: '#2563eb', textDecoration: 'none', marginBottom: 6 }}>← Marking desk</a></div>
         <h1 style={{ fontSize: 20, margin: 0 }}>⏳ Marking triage</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           {runs.length > 0 && (

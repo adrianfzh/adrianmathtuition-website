@@ -301,7 +301,7 @@ export default function PapersPage() {
     <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif', maxWidth: 860, margin: '0 auto', padding: '16px 14px 80px', color: C.ink }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>📚 Marked papers</h1>
-        <a href="/admin" style={{ fontSize: 13, color: C.link, textDecoration: 'none' }}>← Admin</a>
+        <span style={{ fontSize: 13, display: 'flex', gap: 12 }}><a href="/admin/desk" style={{ color: C.link, textDecoration: 'none' }}>← Marking desk</a><a href="/admin" style={{ color: C.link, textDecoration: 'none' }}>Admin</a></span>
       </div>
       <p style={{ fontSize: 13, color: C.muted, margin: '4px 0 14px' }}>
         {loading ? 'Loading…' : stats
