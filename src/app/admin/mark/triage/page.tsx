@@ -13,6 +13,7 @@ import { useState, useEffect, useCallback } from 'react';
 import 'katex/dist/katex.min.css';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import SubjectChip from '@/components/SubjectChip';
+import GroundingChip from '@/components/GroundingChip';
 import { mathHtml } from '@/lib/math-inline';
 import type { TriageQuestion } from '@/lib/mark-triage';
 import { bandForRegion, isPartialBand } from '@/lib/region-crop';
@@ -23,6 +24,7 @@ type Run = {
   paperName: string;
   /** math | physics | chemistry | biology — chip shown only when not math. */
   subject?: string;
+  grounding?: string | null;
   studentId: string | null;
   studentName: string | null;
   awarded: number;
@@ -422,6 +424,7 @@ export default function TriagePage() {
               </div>
               <div style={{ color: C.muted, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 <SubjectChip subject={run.subject} style={{ marginRight: 6 }} />
+                <GroundingChip source={run.grounding} style={{ marginRight: 6 }} />
                 {run.paperName} · {fmtDate(run.createdAt)}
               </div>
             </div>

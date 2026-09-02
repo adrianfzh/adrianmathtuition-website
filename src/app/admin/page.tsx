@@ -379,6 +379,7 @@ const LAUNCHERS: Launcher[] = [
   // Last on purpose (2026-09-02): a saved tile order appends unknown hrefs at the
   // end, so a new tile lands at the bottom on every device either way.
   { emoji: '⚖️', title: 'Calibration', sub: 'AI marks vs the human standard · gate per subject', href: '/admin/calibration' },
+  { emoji: '📘', title: 'Mark schemes', sub: 'schemes you attached, kept for the next hand-in of that paper', href: '/admin/schemes' },
 ];
 
 // ── Custom launcher order (drag-to-arrange, per-device) ─────────────────────────

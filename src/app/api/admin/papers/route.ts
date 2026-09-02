@@ -94,6 +94,8 @@ export async function GET(req: NextRequest) {
         // 'math' for every run before the column existed; the row only grows a
         // chip when it is something else.
         subject: (r.subject as string | null) || 'math',
+        // What the marking was grounded on (bot result_json.grounding.source) — the 📘 chip.
+        grounding: ((r.result_json as { grounding?: { source?: string | null } } | null)?.grounding?.source) ?? null,
         studentId: r.student_id,
         studentName: r.student_name,
         awarded: totals.awarded,

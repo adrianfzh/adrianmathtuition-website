@@ -17,6 +17,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import StudentPicker from '@/components/StudentPicker';
 import SubjectChip from '@/components/SubjectChip';
+import GroundingChip from '@/components/GroundingChip';
 
 type Topic = { topic: string; awarded: number; max: number; lost: number; pct: number; questions: number };
 type LostQ = { questionNumber: string; awarded: number; max: number; topic: string | null };
@@ -27,6 +28,7 @@ type Run = {
   paperName: string;
   /** math | physics | chemistry | biology — chip shown only when not math. */
   subject: string;
+  grounding?: string | null;
   studentId: string | null;
   studentName: string | null;
   awarded: number;
@@ -382,6 +384,7 @@ export default function PapersPage() {
                 <div style={{ fontSize: 16, fontWeight: 700, wordBreak: 'break-word' }}>
                   {run.paperName}
                   <SubjectChip subject={run.subject} style={{ marginLeft: 6 }} />
+                  <GroundingChip source={run.grounding} style={{ marginLeft: 6 }} />
                 </div>
                 <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>
                   {fmtDate(run.date)} · {run.questions} question{run.questions === 1 ? '' : 's'}

@@ -113,6 +113,8 @@ export async function GET(req: NextRequest) {
         // The marking lane (math | physics | chemistry | biology); the row shows
         // a chip only when it is not math.
         subject: (r.subject as string | null) || 'math',
+        // What the marking was grounded on (bot result_json.grounding.source) — the 📘 chip.
+        grounding: ((r.result_json as { grounding?: { source?: string | null } } | null)?.grounding?.source) ?? null,
         studentId: r.student_id,
         studentName: r.student_name,
         awarded: summary.awarded,
