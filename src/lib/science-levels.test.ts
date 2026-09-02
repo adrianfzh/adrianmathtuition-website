@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   computeScienceMastery, gradeMcq, isMcqAnswer, isScienceLevel, mcqOptionsIn, mcqStemParagraphs, normaliseMcqChoice,
-  scienceImageUrl, scienceLevelForSubject, scienceLevelsFor, scienceSubjectOf,
+  scienceImageUrl, scienceLevelForSubject, scienceLevelsFor, scienceSubjectOf, tsvBlocksToTables,
 } from './science-levels';
 
 describe('science levels + access', () => {
@@ -54,6 +54,13 @@ describe('MCQ', () => {
     expect(mcqStemParagraphs('Prevent?\n\nA  cross\nB  insect\nC  self')).toBe('Prevent?\n\nA  cross\n\nB  insect\n\nC  self');
     expect(mcqStemParagraphs('No options\nhere at all')).toBe('No options\nhere at all');
     expect(mcqStemParagraphs(null)).toBe('');
+  });
+  it('turns tab-separated blocks into pipe tables', () => {
+    expect(tsvBlocksToTables('Which row?\n\np\tStigma\tAnther\nA\tIntact\tRemoved\nB\tRemoved\tIntact'))
+      .toBe('Which row?\n\n| p | Stigma | Anther |\n|---|---|---|\n| A | Intact | Removed |\n| B | Removed | Intact |\n');
+    expect(tsvBlocksToTables('one\ttab only\nnext line')).toBe('one\ttab only\nnext line');
+    expect(tsvBlocksToTables('no tabs at all')).toBe('no tabs at all');
+    expect(tsvBlocksToTables(null)).toBe('');
   });
   it('normalises what students type', () => {
     for (const s of ['b', 'B', 'B)', '(B)', 'B) 330 m/s', 'option B', 'Ans: B', 'B.']) expect(normaliseMcqChoice(s)).toBe('B');

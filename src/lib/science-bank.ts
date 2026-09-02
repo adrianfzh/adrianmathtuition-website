@@ -17,7 +17,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createServiceClient } from './supabase-server';
 import { questionMarkdown, questionStructured, totalMarksOf, type BankQuestion } from './bank-question-markdown';
 import {
-  computeScienceMastery, isMcqAnswer, mcqStemParagraphs, scienceLevel, type ScienceSubject, type TopicMastery,
+  computeScienceMastery, isMcqAnswer, mcqStemParagraphs, scienceLevel, tsvBlocksToTables, type ScienceSubject, type TopicMastery,
 } from './science-levels';
 
 let _client: SupabaseClient | null = null;
@@ -122,8 +122,10 @@ export interface ScienceQuestionPayload {
 
 export function toPayload(q: ScienceQuestionRow): ScienceQuestionPayload {
   const mcq = isMcqAnswer(q.answer);
-  // MCQ options each get their own paragraph (single newlines fold in markdown).
-  const row = mcq ? { ...q, question_text: mcqStemParagraphs(q.question_text) } : q;
+  // Tab-separated tables become pipe tables; MCQ options each get their own
+  // paragraph (single newlines fold in markdown).
+  const text = tsvBlocksToTables(q.question_text);
+  const row = { ...q, question_text: mcq ? mcqStemParagraphs(text) : text };
   const { stem, parts } = questionStructured(row);
   return {
     id: q.id,

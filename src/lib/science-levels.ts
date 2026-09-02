@@ -101,6 +101,32 @@ export function mcqStemParagraphs(text: string | null | undefined): string {
     .replace(/\n{3,}/g, '\n\n');
 }
 
+/** Some science rows carry tab-separated tables ("p\tStigma\tAnther\nA\tIntact\tRemoved").
+ *  Markdown shows those as one run-on line, so a block of 2+ consecutive lines
+ *  with 2+ tabs each becomes a pipe table (first line = header). Other text is
+ *  untouched. */
+export function tsvBlocksToTables(text: string | null | undefined): string {
+  if (!text || !text.includes('\t')) return text ?? '';
+  const lines = text.split('\n');
+  const out: string[] = [];
+  let block: string[] = [];
+  const flush = () => {
+    if (block.length >= 2) {
+      const rows = block.map(l => l.split('\t').map(c => c.trim()));
+      const width = Math.max(...rows.map(r => r.length));
+      const cell = (r: string[]) => `| ${Array.from({ length: width }, (_, i) => r[i] ?? '').join(' | ')} |`;
+      out.push('', cell(rows[0]), `|${Array.from({ length: width }, () => '---').join('|')}|`, ...rows.slice(1).map(cell), '');
+    } else out.push(...block);
+    block = [];
+  };
+  for (const line of lines) {
+    if ((line.match(/\t/g) || []).length >= 2) block.push(line);
+    else { flush(); out.push(line); }
+  }
+  flush();
+  return out.join('\n').replace(/\n{3,}/g, '\n\n');
+}
+
 /** "b", "B)", "(B)", "B) 330 m/s", "option B" → "B"; anything else → null. */
 export function normaliseMcqChoice(input: string | null | undefined): McqLetter | null {
   const s = (input ?? '').trim();
