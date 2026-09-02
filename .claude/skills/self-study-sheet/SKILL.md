@@ -230,12 +230,22 @@ teaching line under a heading states the GENERAL rule, and Adrian has often
 already written that rule down:
 
 ```sql
-SELECT wrong_move, why_wrong, corrective_cue FROM pitfalls
-WHERE status = 'approved'            -- Adrian's sign-off; NEVER drop this filter
-  AND subject = '<AM|EM|JC|S1|S2>' AND topic = ANY(ARRAY['<canonical topic>']);
+-- The teaching-knowledge layer (2026-09-03): ONE accessor over pitfalls +
+-- method_templates for every surface. Approved-only on both tables, strict
+-- canonical-topic match, ranked by overlap with the context you pass.
+SELECT teaching_knowledge(
+  '<the student's level, e.g. S3_AM / EM_NA / JC2>',   -- folded to AM/EM/JC/S1/S2 inside
+  ARRAY['<canonical topic>', '<canonical topic>'],
+  '<the question text she got wrong — drives the ranking>',
+  3,   -- methods: Adrian's method for the question type (the sheet's "Method recap" box)
+  4,   -- pitfalls: his traps
+  0    -- formulae
+);
+-- → jsonb { subject, methods:[{question_type, method, watch_out}], pitfalls:[{wrong_move, why_wrong, corrective_cue}], formulae:[] }
 ```
 
-(`subject` is the coarse level: `S3_AM`→`AM`, `S3_EM`/`EM_NA`→`EM`, any `JC*`→`JC`.)
+(Service-key callers only. Never query the two tables directly for a sheet —
+the function is where the approved gate lives.)
 
 Use one ONLY when it is the same slip the script shows, and then only for the
 wording — `corrective_cue` is already in his voice, which is the whole reason to

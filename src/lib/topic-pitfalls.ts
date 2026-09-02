@@ -94,13 +94,11 @@ export function selectPitfalls(
 }
 
 /**
- * Load this question's traps. Never throws and never blocks grading — any
- * failure returns [] and the grader runs exactly as it did before.
- *
- * `admin` is the Supabase service client. It is deliberately untyped here:
- * threading the generated database generics through this call makes tsc report
- * "type instantiation is excessively deep", and the query result is validated
- * structurally by selectPitfalls anyway.
+ * Load this question's traps. Since 2026-09-03 a thin delegate to the
+ * teaching-knowledge layer (src/lib/teaching-knowledge.ts → the
+ * `teaching_knowledge` RPC), which applies the same approved-only gate, the
+ * same strict topic match and the same overlap ranking as selectPitfalls above
+ * — kept so older callers and the tests keep their signature. Never throws.
  */
 export async function loadPitfallsForQuestion(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -110,24 +108,7 @@ export async function loadPitfallsForQuestion(
   limit = 4,
   context = '',
 ): Promise<PitfallRow[]> {
-  try {
-    const subject = pitfallSubjectForLevel(level);
-    const topicList = Array.isArray(topics) ? (topics as unknown[]).map(String) : [];
-    if (!subject || !topicList.length) return [];
-    // status='approved' is the gate: `pitfalls.status` defaults to 'pending' and
-    // NOTHING has ever moved a row off it, so this filter means only traps
-    // Adrian has personally signed off reach a student. With none approved the
-    // query returns nothing and the grader behaves exactly as it did before —
-    // the safe direction to fail.
-    const { data, error } = await admin
-      .from('pitfalls')
-      .select('subject, topic, wrong_move, why_wrong, corrective_cue')
-      .eq('status', 'approved')
-      .eq('subject', subject)
-      .in('topic', topicList);
-    if (error || !Array.isArray(data)) return [];
-    return selectPitfalls(data as PitfallRow[], topicList, limit, context);
-  } catch {
-    return [];
-  }
+  const { loadTeachingKnowledge } = await import('./teaching-knowledge');
+  const k = await loadTeachingKnowledge(admin, { level, topics, context, methods: 0, pitfalls: limit });
+  return k.pitfalls.map(p => ({ subject: k.subject || '', topic: p.topic || '', wrong_move: p.wrong_move, why_wrong: p.why_wrong, corrective_cue: p.corrective_cue }));
 }

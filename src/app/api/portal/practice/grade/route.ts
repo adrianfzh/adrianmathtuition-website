@@ -14,7 +14,7 @@ import { sendTelegram } from '@/lib/telegram';
 import { canTransition, type AssignmentRow } from '@/lib/assignments';
 import { portalIdentity } from '@/lib/portal-auth';
 import { requireActiveAccess } from '@/lib/portal-passes';
-import { loadPitfallsForQuestion } from '@/lib/topic-pitfalls';
+import { loadTeachingKnowledge } from '@/lib/teaching-knowledge';
 import { parseTimedMeta } from '@/lib/timed-set';
 import { gradeMcq, isMcqAnswer, isScienceSubject, normaliseMcqChoice, scienceLevelForSubject, scienceLevelsFor } from '@/lib/science-levels';
 import { scienceEligible, scienceQuestion } from '@/lib/science-bank';
@@ -201,17 +201,19 @@ export async function POST(req: NextRequest) {
   }
 
   const weaknessTags = await topWeaknessTags(account.id, 3);
-  // Adrian's curated traps for this question's topic. Feedback-wording help
-  // only — see src/lib/topic-pitfalls.ts. Fails soft to [] so a pitfalls
-  // outage can never stop a student being graded.
-  const pitfalls = await loadPitfallsForQuestion(
-    admin, q.level as string, q.topics, 4,
-    `${q.question_text || ''} ${q.answer || ''}`,
-  );
+  // Adrian's method + curated traps for this question's topic, from the
+  // teaching-knowledge layer (src/lib/teaching-knowledge.ts). Feedback-wording
+  // help only. Fails soft to empty so a knowledge outage can never stop a
+  // student being graded.
+  const knowledge = await loadTeachingKnowledge(admin, {
+    level: q.level as string, topics: q.topics,
+    context: `${q.question_text || ''} ${q.answer || ''}`,
+    methods: 2, pitfalls: 4,
+  });
 
   let result;
   try {
-    result = await gradeAttempt({ question: q, lines: cleanLines, image: attemptImage, weaknessTags, pitfalls });
+    result = await gradeAttempt({ question: q, lines: cleanLines, image: attemptImage, weaknessTags, pitfalls: knowledge.pitfalls, methods: knowledge.methods });
   } catch {
     return NextResponse.json({ error: 'Marking hiccup — try again in a moment' }, { status: 502 });
   }

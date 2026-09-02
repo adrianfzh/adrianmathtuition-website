@@ -549,6 +549,14 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 💡 Method hint (/api/portal/practice/hint, the teaching-knowledge layer,
+    // 2026-09-03) — Adrian's method for a question's topic, student-facing on
+    // /app/practice. Anonymous GET must be 401, never a method note.
+    timed('portal-hint', async () => {
+      const r = await fetch(`${base}/api/portal/practice/hint?id=00000000-0000-0000-0000-000000000000`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // 🔬 Science bank (physics/chemistry/biology practice, /app/practice levels PHY/CHEM/BIO — admin-preview
     // until SCIENCE_PRACTICE_OPEN_TO_STUDENTS). Separate Supabase project; a
     // rotated key or paused project would silently empty the picker.

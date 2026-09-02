@@ -29,6 +29,13 @@ export type PitfallHint = {
   corrective_cue?: string | null;
 };
 
+/** One of Adrian's method templates for this question's topic (Supabase `method_templates`). */
+export type MethodHint = {
+  question_type?: string | null;
+  method: string;
+  watch_out?: string | null;
+};
+
 export function buildGradingPrompt(opts: {
   question: Record<string, unknown>;
   lines?: string[];
@@ -41,12 +48,16 @@ export function buildGradingPrompt(opts: {
   // only — placed after the marking rules, like markAnatomy, so it cannot shift
   // how marks are awarded. Empty/omitted renders nothing.
   pitfalls?: PitfallHint[];
+  // Adrian's method templates for this topic (the teaching-knowledge layer,
+  // src/lib/teaching-knowledge.ts, 2026-09-03). Same placement and the same
+  // discipline as `pitfalls`: wording for the feedback, never a mark.
+  methods?: MethodHint[];
   // Science practice (2026-09-02): a science subject swaps the examiner framing
   // and adds that O-Level syllabus's marking conventions. The JSON contract is
   // unchanged.
   subject?: 'math' | 'physics' | 'chemistry' | 'biology';
 }): string {
-  const { question, lines, isPhoto, weaknessTags, anatomy = true, pitfalls = [], subject = 'math' } = opts;
+  const { question, lines, isPhoto, weaknessTags, anatomy = true, pitfalls = [], methods = [], subject = 'math' } = opts;
 
   const scheme: string[] = [];
   collectScheme(question.parts, scheme);
@@ -78,6 +89,14 @@ In "transcribedLines", return these same lines in the same order — exactly one
   const pitfallRule = pitfalls.length
     ? `\nKnown traps for this topic, in Adrian's words. These are NOT a checklist and NOT evidence: say nothing about a trap unless this student's own working actually shows it, and ignore every one of them otherwise. They must never change awarded/outOf — they only sharpen the wording when the error you already found happens to be one of these:\n` +
       pitfalls.map(p => `- ${p.wrong_move}${p.why_wrong ? ` — ${p.why_wrong}` : ''}${p.corrective_cue ? ` Say instead: ${p.corrective_cue}` : ''}`).join('\n')
+    : '';
+
+  // Adrian's method for this question type. Feedback voice only: when a
+  // nextStep or lineComment names the correct route, it names HIS route in his
+  // words. Placed after the marking rules like the traps so it cannot move a mark.
+  const methodRule = methods.length
+    ? `\nAdrian's own method for this question type, in his words. Use it ONLY to phrase the feedback — when a comment or next step names the correct route, name this route the way he does, and quote its watch-out when the student's own working shows that slip. It must never change awarded/outOf, and an alternative valid method the student used still earns full credit:\n` +
+      methods.map(m => `- ${m.question_type ? `${m.question_type}: ` : ''}${m.method}${m.watch_out ? ` Watch out: ${m.watch_out}` : ''}`).join('\n')
     : '';
 
   const anatomyRule = anatomy
@@ -122,6 +141,6 @@ Reply with ONLY a JSON object (no markdown fences):
   "strengths": ["<max 3, genuine>"],
   "nextSteps": ["<2-3 concrete actions>"]
 }
-Comment on every line that earns or loses a mark; skip trivial restatements. "tag" only on ok=false lines.${anatomyRule}${pitfallRule}
+Comment on every line that earns or loses a mark; skip trivial restatements. "tag" only on ok=false lines.${anatomyRule}${methodRule}${pitfallRule}
 Write all mathematics in comments, fixes, partBreakdown comments and nextSteps as LaTeX in $...$ (it is rendered with KaTeX). The reply must be valid JSON — escape LaTeX backslashes (write \\\\sqrt in the JSON string).`;
 }

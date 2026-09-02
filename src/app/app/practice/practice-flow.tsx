@@ -159,6 +159,11 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
 
   const [solution, setSolution] = useState<string | null>(null);
   const [solLoading, setSolLoading] = useState(false);
+  // 💡 Method hint (teaching-knowledge layer, 2026-09-03): Adrian's method for
+  // this question type, shown BEFORE the solution and answer-free, so it never
+  // switches marking off. null = not asked; '' = asked, shelf had nothing.
+  const [hint, setHint] = useState<string | null>(null);
+  const [hintLoading, setHintLoading] = useState(false);
 
   // Grading state (students only)
   const [working, setWorking] = useState('');
@@ -293,7 +298,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   }, [mode, loadingOverview, topics]);
 
   function resetAttempt() {
-    setWorking(''); setGrade(null); setGradedLines([]); setGradedViaPhoto(false); setPrevScore(null); setSolution(null);
+    setWorking(''); setGrade(null); setGradedLines([]); setGradedViaPhoto(false); setPrevScore(null); setSolution(null); setHint(null);
   }
 
   const fetchNext = useCallback(async (excludeIds: string[], topicArg?: string, tierArg?: Tier, sgArg?: Subgroup | null) => {
@@ -351,6 +356,16 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     const nextSeen = q ? [...seen, q.id] : seen;
     setSeen(nextSeen);
     fetchNext(nextSeen);
+  }
+
+  async function showHint() {
+    if (!q) return;
+    setHintLoading(true);
+    try {
+      const d = await portalFetch<{ markdown?: string }>(`/api/portal/practice/hint?id=${q.id}${q.subject ? `&subject=${encodeURIComponent(q.subject)}` : ''}`);
+      setHint(d.markdown || '');
+    } catch { setHint(''); }
+    finally { setHintLoading(false); }
   }
 
   async function showSolution() {
@@ -860,6 +875,12 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                   className="bg-navy text-[hsl(45,100%,96%)] rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40">
                   {grading ? (q.mcq ? 'Checking…' : 'Marking… (≈30s)') : grade ? (q.mcq ? '✅ Check again' : '✏️ Re-mark my working') : (q.mcq ? '✅ Check answer' : '✅ Get it marked')}
                 </button>
+                {hint === null && !q.mcq && !q.subject && (
+                  <button onClick={showHint} disabled={hintLoading}
+                    className="bg-white border border-amber-300 text-amber-800 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
+                    {hintLoading ? 'Loading…' : '💡 How to approach it'}
+                  </button>
+                )}
                 {solution === null && (!assignment || grade) && (
                   <button onClick={showSolution} disabled={solLoading}
                     className="bg-white border border-emerald-300 text-emerald-700 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
@@ -887,6 +908,20 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                   <span className="text-xs text-slate-400">Marking is off once you&apos;ve seen the solution.</span>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* 💡 Method hint — Adrian's method for this question type, answer-free */}
+          {isStudent && hint !== null && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+              <div className="text-xs font-bold uppercase tracking-wide text-amber-800 mb-2">💡 How Adrian would approach it</div>
+              {hint ? (
+                <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed">
+                  <MathMarkdown content={hint} />
+                </div>
+              ) : (
+                <p className="text-sm text-amber-900/80">No method note for this topic yet — try the solution after you&apos;ve had a go.</p>
+              )}
             </div>
           )}
 
@@ -985,6 +1020,19 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           )}
 
           {/* Solution (both modes) */}
+          {!isStudent && q && hint === null && !q.mcq && !q.subject && (
+            <button onClick={showHint} disabled={hintLoading}
+              className="mr-2 bg-amber-500 text-white rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
+              {hintLoading ? 'Loading…' : '💡 How to approach it'}
+            </button>
+          )}
+          {!isStudent && hint !== null && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-3">
+              <div className="text-xs font-bold uppercase tracking-wide text-amber-800 mb-2">💡 How Adrian would approach it</div>
+              {hint ? <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed"><MathMarkdown content={hint} /></div>
+                    : <p className="text-sm text-amber-900/80">No method note for this topic yet.</p>}
+            </div>
+          )}
           {!isStudent && q && solution === null && (
             <button onClick={showSolution} disabled={solLoading}
               className="bg-emerald-600 text-white rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
