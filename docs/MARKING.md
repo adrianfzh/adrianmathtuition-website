@@ -1716,7 +1716,6 @@ Three-endpoint architecture, client-orchestrated, stays within Vercel Hobby 60 s
 | `/api/mark-batch/assemble-pdf` | POST | Stitch annotated pages into PDF, update batch status → `finalized` |
 | `/api/mark-batch/list` | GET | Batch list for landing page (`?status=to-mark\|marked\|all`) |
 | `/api/mark-batch/get` | GET | Single batch + submissions for detail page (`?batchId=...`) |
-| `/api/mark-batch/submissions` | GET | Submissions for a batch (used internally) |
 | `/api/mark-batch/delete` | POST | Soft-delete a batch (sets Status=deleted) |
 | `/api/mark-batch/upload-amended` | POST | Upload amended PDF → overwrites Final PDF URL |
 
@@ -1732,9 +1731,9 @@ Three-endpoint architecture, client-orchestrated, stays within Vercel Hobby 60 s
 > Supabase fallback (its "Supabase fallback" log line was firing on every
 > assembly). The formula + JS record-id confirm now live in
 > [`../src/lib/mark-batch-submissions.ts`](../src/lib/mark-batch-submissions.ts)
-> (tested) — reuse it for any new Submissions-by-batch query. Note
-> `/api/mark-batch/submissions` itself has NO callers (website or bot) — it was
-> fixed for correctness but is effectively dead.
+> (tested) — reuse it for any new Submissions-by-batch query. (The third
+> affected route, `/api/mark-batch/submissions`, had no callers — website or
+> bot — and was deleted 2026-09-02.)
 
 ### Tab filter semantics
 
