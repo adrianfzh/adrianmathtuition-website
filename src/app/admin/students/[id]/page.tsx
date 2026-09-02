@@ -635,16 +635,14 @@ export default function StudentProfilePage() {
                         // from scratch every time; this is paste-and-send, and
                         // the wording is the one that has actually gone out.
                         const first = (s.name || '').split(' ')[0] || 'there';
+                        // Adrian's own wording, 2 Sep 2026 ("for the messages, put …"):
+                        // the paper first, the sign-up as a note, then the sheet.
                         const msg = [
-                          `Hi ${first}! I've set up your student portal — this link is just for you:`,
-                          '',
+                          `Hi ${first}, you can view your marked paper here:`,
                           d.inviteUrl,
-                          '',
-                          'Open it and choose your own login (email + password). Your marked papers are waiting inside, along with any practice I\u2019ve set for you.',
-                          '',
-                          'The link works for 7 days — let me know if you have any trouble getting in.',
-                          '',
-                          'Adrian',
+                          'Do note you have to sign up first: choose your own login (email + password). The link works for 7 days.',
+                          'I have also created a Practice Again worksheet based on your mistakes, highlighting the parts you need to master. Do attempt the worksheet and submit it via the portal. Learn from your mistakes.',
+                          'Let me know if you have any queries.',
                         ].join('\n');
                         try {
                           await navigator.clipboard.writeText(msg);
