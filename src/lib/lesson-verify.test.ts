@@ -191,10 +191,14 @@ describe('narrationIssues', () => {
     const s = script({
       scenes: [
         { type: 'title', title: 'T', promise: 'p' },
-        { type: 'caption', text: 't', narration: 'Read this $x$ aloud with enough words in it' },
+        { type: 'caption', text: 't', narration: 'Read this aloud with enough words in it' },
         { type: 'caption', text: 't', narration: 'Too short' },
       ] as unknown as LessonScript['scenes'],
     });
+    // The schema validator (lesson-script.ts) already rejects TeX in narration,
+    // so the helper above cannot build that scene; plant it after validation to
+    // prove the verifier's own rule fires on a raw script too.
+    (s.scenes[1] as unknown as { narration: string }).narration = 'Read this $x$ aloud with enough words in it';
     const issues = narrationIssues(s);
     expect(issues.find(i => i.where === 'scenes[0].narration')?.severity).toBe('warn');
     expect(issues.find(i => i.where === 'scenes[1].narration')?.severity).toBe('error');
