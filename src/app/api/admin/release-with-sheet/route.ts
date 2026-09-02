@@ -51,11 +51,18 @@ async function resolve(runId: string) {
   if (dropboxConfigured()) {
     try {
       const entries = await listFolder(folderPath);
+      // lib/dropbox's listFolder returns ITS OWN shape — { tag, name, path,
+      // modified, size } with `path` = Dropbox's path_lower — not the raw API
+      // entry. The first version of this read `path_display` / `path_lower` /
+      // `server_modified` off it, every entry mapped to an empty path, the
+      // filter dropped them all, and the button answered "No PDF in the
+      // sheet's folder yet" for every sheet ever filed (found 2 Sep 2026 while
+      // re-filing the sheets into per-paper folders). path_lower is lowercase,
+      // which is fine: choosePdf compares case-insensitively.
       files = (entries || []).map(e => ({
-        path: (e as { path_display?: string; path_lower?: string }).path_display
-          || (e as { path_lower?: string }).path_lower || '',
-        name: (e as { name?: string }).name || '',
-        modified: (e as { server_modified?: string }).server_modified ?? null,
+        path: e.path || '',
+        name: e.name || '',
+        modified: e.modified ?? null,
       })).filter(x => x.path && x.name);
     } catch { /* an unreadable folder degrades to the recorded path alone */ }
   }

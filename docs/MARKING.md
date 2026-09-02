@@ -620,6 +620,15 @@ release call failed.
   it. `total_awarded` (score chip, `/admin/students/[id]`, the bleed table) reflects the
   override while the PDF the student opens still shows the AI's original red pen. Say
   the correction out loud — the release nudge carries the note.
+- **📘 Release WITH the sheet** — `/api/admin/release-with-sheet?runId=` (GET = what would be
+  sent, POST = send). Finds the sheet through `sheet_jobs.result.{pdf_path,docx_path}` → lists
+  that Dropbox folder → `lib/release-with-sheet.ts` `choosePdf` (recorded path, else the DOCX's
+  re-exported twin, else the only PDF, else ask). Sheets live at
+  `/Self-Study/<Student>/<YYYY-MM-DD> <paper>/Practice Again.{docx,pdf}` (one folder per paper,
+  2 Sep 2026); the 31 Aug–1 Sep sheets were moved there by hand and their `sheet_jobs.result`
+  paths rewritten (`refiled_from` keeps the old ones). ⚠ The route read `path_display` /
+  `server_modified` off `lib/dropbox.listFolder`'s entries, which carry `path` / `modified`
+  instead — so it reported "No PDF in the sheet's folder yet" for EVERY sheet until 2 Sep 2026.
 - **Release** (`action:'release'`, single or batch) resolves the recipient
   portal → Airtable (`portal_accounts.telegram_chat_id` first, then the Student
   record's `Student Telegram ID`), sends the portal link when
