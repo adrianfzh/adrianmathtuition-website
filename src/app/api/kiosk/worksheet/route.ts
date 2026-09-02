@@ -12,6 +12,7 @@ import { normalizeTier } from '@/lib/practice-tiers';
 import { studentFromRequest } from '@/lib/kiosk-student';
 import { dailyDraw, drawSeedKey } from '@/lib/kiosk-draw';
 import { fetchWorksheetPool, SEED_LEVELS } from '@/lib/kiosk-pool';
+import { worksheetAudienceFor } from '@/lib/worksheet-audience';
 
 export const runtime = 'nodejs';
 
@@ -45,8 +46,8 @@ export async function GET(req: NextRequest) {
   if (!topic) return NextResponse.json({ error: 'topic required' }, { status: 400 });
 
   // Hard-lock: students can only build worksheets for their own level (admin bypasses).
+  const student = studentFromRequest(req);
   if (!verifyAdminAuth(req)) {
-    const student = studentFromRequest(req);
     if (!student) return NextResponse.json({ error: 'Scan to start', studentRequired: true }, { status: 401 });
     if (!student.entitlements.practice.includes(level)) {
       return NextResponse.json({ error: 'Not your level', forbidden: true }, { status: 403 });
@@ -54,6 +55,15 @@ export async function GET(req: NextRequest) {
   }
 
   const supa = getSupabaseAdmin();
+
+  // Sub-group AUDIENCE (2026-09-02): the PAIRED student's IP flag — their active
+  // portal account first, the Airtable `Subject Level` second, the ordinary
+  // student on any doubt (lib/worksheet-audience.ts, unit-tested). This is what
+  // lets an IP student print 'ip' sub-groups such as AM Modulus Functions.
+  // Admin previewing unpaired stays ordinary: a printed sheet never carries
+  // 'hidden' rows. The seed key below is untouched — the draw stays
+  // deterministic per audience.
+  const audience = await worksheetAudienceFor(supa, { studentId: student?.id });
 
   // Pool = union of both servable sources:
   //  - `questions` (the generation worker's output + real bank): flatten parts,
@@ -68,7 +78,7 @@ export async function GET(req: NextRequest) {
   // in), gates on answer-presence (top-level OR parts), and accepts figures that
   // are either engine-drawn (figure_url) or watermark-scanned clean crops.
   // Ordered by id, so the deterministic daily draw is reproducible.
-  const pool = await fetchWorksheetPool(supa, { seedLevels, topicsKey: cfg.topicsKey, topic, tier });
+  const pool = await fetchWorksheetPool(supa, { seedLevels, topicsKey: cfg.topicsKey, topic, tier, audience });
   if (pool.error) {
     return NextResponse.json({ error: pool.error }, { status: 500 });
   }

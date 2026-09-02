@@ -14,12 +14,20 @@
 //     tier?: 'standard'|'advanced',   // omitted / anything else = Mixed
 //     count?: number,           // default 8, hard cap 12
 //     answers?: boolean,        // default false → no Answers page
+//     studentId?: string,       // Airtable rec id of the student the sheet is for —
+//                               // resolves the sub-group AUDIENCE (IP students get
+//                               // 'ip' sub-groups such as AM Modulus Functions in
+//                               // both the topic list and the pool); see
+//                               // lib/worksheet-audience.ts
+//     isIp?: boolean,           // explicit audience — wins over studentId; neither
+//                               // → the ordinary student (what the dry probe gets)
 //     dry?: true }              // health-check probe, see below
 //
 // Response 200:
-//   { url, title, count, questionIds, filename, level, topic, tier, answers }
-// Dry mode  200: { ok: true, poolSize, level, topic, tier }  — no PDF, no Blob.
-// 400 on an unknown level (`validLevels`) or topic (`validTopics` for the level).
+//   { url, title, count, questionIds, filename, level, topic, tier, answers, isIp }
+// Dry mode  200: { ok: true, poolSize, level, topic, tier, isIp }  — no PDF, no Blob.
+// 400 on an unknown level (`validLevels`) or topic (`validTopics` for the level —
+//     drawn for the SAME audience, so an IP student's menu lists Modulus).
 // 404 when the level+topic+tier pool is empty.
 //
 // The sheet is the SAME deterministic daily draw the kiosk prints
@@ -41,6 +49,7 @@ import {
   worksheetBlobPath, worksheetFilename, worksheetTitle,
 } from '@/lib/bot-worksheet';
 import { renderBotWorksheetPDF } from '@/lib/render-bot-worksheet';
+import { worksheetAudienceFor } from '@/lib/worksheet-audience';
 
 export const runtime = 'nodejs';
 // Puppeteer cold start + KaTeX font fetch push past the 10s default.
@@ -83,9 +92,22 @@ export async function POST(req: NextRequest) {
 
   const supa = getSupabaseAdmin();
 
+  // Sub-group AUDIENCE (2026-09-02): who is this sheet for? `isIp` if the bot
+  // says so, else the student behind `studentId` (active portal account →
+  // Airtable Subject Level), else the ordinary student — never admin, and every
+  // lookup failure narrows to ordinary (lib/worksheet-audience.ts, unit-tested).
+  // Resolved BEFORE the topic list: a topic exists for an audience only while it
+  // has a visible sub-group, so an IP student's "Modulus Functions" must match
+  // here or the request 400s before the pool is ever asked.
+  const audience = await worksheetAudienceFor(supa, { isIp: body.isIp, studentId: body.studentId });
+
   // Topic must be one the level actually has — the 400 lists them so the bot can
   // show the student a menu instead of a dead end.
-  const topicsRes = await supa.rpc('practice_topics', { p_level: cfg.topicsKey });
+  const topicsRes = await supa.rpc('practice_topics', {
+    p_level: cfg.topicsKey,
+    p_is_ip: audience.isIp,
+    p_admin: audience.admin,
+  });
   if (topicsRes.error) return bad(500, { error: topicsRes.error.message });
   const available = (topicsRes.data || []).map((r: { topic: string }) => r.topic);
   const topic = matchTopic(body.topic as string, available);
@@ -102,6 +124,7 @@ export async function POST(req: NextRequest) {
     topicsKey: cfg.topicsKey,
     topic,
     tier,
+    audience,
   });
   if (pool.error) return bad(500, { error: pool.error });
 
@@ -114,6 +137,7 @@ export async function POST(req: NextRequest) {
       level: levelKey,
       topic,
       tier: tier ?? 'mixed',
+      isIp: audience.isIp,
     });
   }
 
@@ -168,5 +192,9 @@ export async function POST(req: NextRequest) {
     topic,
     tier: tier ?? 'mixed',
     answers,
+    // Which audience the sheet was drawn for — the IP pool is a different pool,
+    // so its same-day draw (and fingerprinted Blob path) differ from the
+    // ordinary sheet's; echoing it lets the bot log what it actually sent.
+    isIp: audience.isIp,
   });
 }

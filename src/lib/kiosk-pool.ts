@@ -77,9 +77,12 @@ export type PoolQuery = {
   tier: Tier | null;
   /** Sub-group AUDIENCE (lib/subgroup-visibility.ts, 2026-09-02). Omitted =
    *  the plainest student: only 'all' sub-groups, and never a question filed
-   *  solely under 'ip' / 'hidden' ones. The kiosk scan token and the bot
-   *  carry no IP flag, so they stay on that default; the portal's "Print a
-   *  paper" passes the account's is_ip. */
+   *  solely under 'ip' / 'hidden' ones. Every caller that knows the student
+   *  passes it: the portal's "Print a paper" from the account's is_ip, the
+   *  kiosk (scan token → Airtable id) and the bot (`studentId` / `isIp` in
+   *  the body) through lib/worksheet-audience.ts. Only a caller with no
+   *  student at all — the health-check's dry probe, an unpaired admin
+   *  preview — stays on the default. */
   audience?: { isIp: boolean; admin?: boolean };
 };
 

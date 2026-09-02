@@ -187,8 +187,13 @@ Consequences, all data-driven — no ids are special-cased in code:
   so they gate with `questionServableTo` (the filings vs the account's trees):
   a blocked deep link says "not part of your syllabus".
 - `/notes` applies the same rule per viewer (`lib/notes-viewer.ts`); the public
-  `/revise` decks have no account and show only `'all'`. The kiosk scan token
-  and the bot carry no IP flag → they draw as an ordinary student.
+  `/revise` decks have no account and show only `'all'`. The printed-sheet
+  surfaces that identify a student without a session — the kiosk (scan token →
+  Airtable id: `/api/kiosk/topics` + `/api/kiosk/worksheet`) and the bot
+  (`studentId` / `isIp` in the `/api/bot/worksheet` body) — resolve the flag
+  through `lib/worksheet-audience.ts` (active portal account first, Airtable
+  `Subject Level` second, ordinary on any doubt, never admin — docs/KIOSK.md
+  §7b); a caller with no student at all draws as an ordinary student.
 - `practice_candidates` (From-Adrian picks) and `practice_exemplars`
   (generation context) read the pool as admin — the whole bank, as before.
 - Adrian sets the verdicts in the cards editor (`/admin/edit-cards` → pick a

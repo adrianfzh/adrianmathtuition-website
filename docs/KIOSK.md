@@ -110,13 +110,34 @@ to their own level.** No anonymous browsing.
    particular on the never-worked-solutions / never-originating-school invariants. Behaviour
    for the kiosk is unchanged by the extraction. **Don't re-inline the query in a route.**
 
+7b. **Sub-group AUDIENCE on printed sheets** (2026-09-02) — `kiosk_pool` and `practice_topics`
+   take `p_is_ip` / `p_admin` (PORTAL.md § "Sub-group AUDIENCE"); until today both worksheet
+   surfaces left them at the default, so an IP student could never print **Modulus Functions**
+   (AM sub-groups 809–814, `visibility='ip'`) from the iPad or from Telegram although the portal
+   showed it to them. Now `/api/kiosk/topics` + `/api/kiosk/worksheet` resolve the PAIRED
+   student's flag from the scan token's Airtable id, and `/api/bot/worksheet` from `studentId` /
+   `isIp` in its body — all through **`lib/worksheet-audience.ts`** (pure rule over injectable
+   lookups, unit-tested). **The rule, in order:** an explicit boolean `isIp` from the bot wins
+   (no lookups) → else the student's ACTIVE `portal_accounts.is_ip` (unique on
+   `airtable_student_id`; deactivated rows ignored; an account that exists wins even when
+   Airtable disagrees, so the kiosk shows exactly what the portal shows that student) → else
+   (no account, or that lookup failed) `deriveIsIp` over the Airtable Students `Subject Level`
+   (`lib/portal-ip.ts`; live-schema checked 2026-09-02: singleSelect G1/G2/G3/IP/H1/H2; 4 s
+   timeout) → else the **ORDINARY student**. Never admin — a printed sheet must not carry
+   `'hidden'` rows, and a broken lookup must narrow, never widen. The topics route needs it as
+   much as the worksheet route: a topic exists for an audience only while it has a visible
+   sub-group, so without it Modulus never appeared in the picker to be chosen. The seed key and
+   the eligibility gate are untouched — the draw stays deterministic per audience (the IP pool
+   is a different pool, so an IP and a non-IP student printing the same topic the same day get
+   different sheets; expected). Admin previewing the kiosk unpaired still draws as ordinary.
+
 ## Worksheet-on-demand for the bot — `POST /api/bot/worksheet`
 
 A student or parent asks the Telegram/WhatsApp bot for practice on a topic; the bot POSTs here
 and forwards the returned Blob URL. Auth is the bot↔website `x-render-secret` handshake (same as
 `/api/explanations`), so this is NOT a student-facing route and carries no kiosk cookie/level lock.
 
-- Body `{level, topic, tier?, count?, answers?}`. `level` is a **`questions.level`** value
+- Body `{level, topic, tier?, count?, answers?, studentId?, isIp?}`. `level` is a **`questions.level`** value
   (`S3_AM`, `JC1`, `EM`, …) — `lib/bot-worksheet.ts` maps it onto the kiosk level token, and that
   alias map is unit-tested as the exact inverse of `SEED_LEVELS`. `topic` is matched
   case/punctuation-insensitively against the level's `practice_topics`; an unknown one 400s with
@@ -124,6 +145,16 @@ and forwards the returned Blob URL. Auth is the bot↔website `x-render-secret` 
   (a WhatsApp sheet is a sitting, not a paper — 12 × 17mm/mark is already ~12 pages).
 - Same seeded daily draw as the kiosk (`drawSeedKey(levelKey, topic, tier)`), so a repeat request
   the same SGT day returns the same questions.
+- **Who the sheet is for** (2026-09-02, §7b): `studentId` (the Airtable rec id the bot already
+  holds from `identify()`) resolves the sub-group audience — an IP student's topic list AND pool
+  include `'ip'` sub-groups (AM Modulus Functions); an explicit boolean `isIp` wins over it;
+  neither → the ordinary student, which is exactly what the health-check's dry probe gets
+  (unchanged). Both responses echo `isIp`. The IP pool is a different pool, so its same-day draw
+  differs from the ordinary sheet and the Blob path (fingerprinted on the drawn ids) can't collide.
+  ⚠ **Bot-side TODO** (bot repo `handlers/worksheet.js`): send `studentId: session.studentId` in
+  `callWorksheetApi` — for the real request AND the dry-mode `topicsForLevel` call, whose 6 h
+  per-level topic cache must then be keyed per audience (or IP students never see Modulus in the
+  menu). Until that ships, Telegram sheets stay ordinary.
 - `{dry:true, level, topic}` → `{ok, poolSize}` with no Puppeteer and no Blob write. That's the
   `bot-worksheet` health-check probe (S3_AM · Binomial Theorem), which fails on an EMPTY pool —
   a sheet with no questions is the one thing this must never send a parent.
