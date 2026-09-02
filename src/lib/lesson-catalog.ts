@@ -36,7 +36,7 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     level: 'AM',
     topic: 'Quadratic Functions',
     title: 'Completing the Square',
-    minutes: 4,
+    minutes: 8,
   },
 ];
 

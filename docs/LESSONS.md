@@ -88,7 +88,7 @@ there is exactly one validator, one eligibility gate and one answer checker.
 5. **Craft** — canonical level/topic (verbatim), 8–16 scenes, title first,
    caption last, ≤ 6 tokens per equation line, ≤ 7 steps, ≤ 4 callouts, the
    first check after scene 4, no back-to-back checks, markdown-in-MathText
-   pitfalls, declared minutes vs the autoplay pacing.
+   pitfalls, declared minutes vs the pacing (narrated runtime at ~2.5 words/s when the script carries narration, else the autoplay beats).
 6. **Narration** — present on every scene (a warning by default;
    `--require-narration` makes it an error), spoken English, no TeX,
    6–90 words per entry.

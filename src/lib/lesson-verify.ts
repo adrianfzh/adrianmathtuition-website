@@ -550,11 +550,30 @@ export function craftIssues(script: LessonScript): Issue[] {
   return out;
 }
 
+/** Spoken words across every scene's narration (string or per-step array). */
+export function narrationWordCount(script: LessonScript): number {
+  let words = 0;
+  for (const sc of script.scenes) {
+    const n = (sc as unknown as { narration?: unknown }).narration;
+    const entries = Array.isArray(n) ? n : typeof n === 'string' ? [n] : [];
+    for (const e of entries) if (typeof e === 'string') words += wordCount(e);
+  }
+  return words;
+}
+
 /**
- * Honest running time: the player's autoplay beats plus ~45 s of thinking per
- * check. Coarse on purpose — the entry-point chip says "4 min", not "3:52".
+ * Honest running time: the narrated runtime when the script carries narration,
+ * else the player's autoplay beats; plus ~45 s of thinking per check. Coarse on purpose — the entry-point chip says "4 min", not "3:52".
  */
 export function estimateMinutes(script: LessonScript): number {
+  // A narrated script paces to its clips, not to the autoplay beats: ~2.5 spoken
+  // words/s measured on both narrated lessons (2.47 pilot, 2.5 quadratic), plus
+  // the thinking time on each check. Silent scripts keep the beat estimate below.
+  const words = narrationWordCount(script);
+  if (words > 0) {
+    const checks = script.scenes.filter(s => s.type === 'check').length;
+    return Math.max(1, Math.round((words / 2.5 + 45 * checks) / 60));
+  }
   let ms = 0;
   for (const s of script.scenes) {
     switch (s.type) {

@@ -290,8 +290,21 @@ describe('summarize + estimateMinutes', () => {
   it('counts by severity and paces the pilot to a believable length', () => {
     expect(summarize([{ severity: 'error', where: 'a', message: 'm' }, { severity: 'warn', where: 'a', message: 'm' }])).toEqual({ errors: 1, warnings: 1, infos: 0 });
     const pilot = loadLessonScript('binomial-theorem-am') as LessonScript;
-    expect(estimateMinutes(pilot)).toBeGreaterThanOrEqual(2);
-    expect(estimateMinutes(pilot)).toBeLessThanOrEqual(6);
+    // The pilot is narrated (~1,000 spoken words): the clips set the pace, so the
+    // estimate tracks the narrated runtime and the declared minutes, not the beats.
+    expect(estimateMinutes(pilot)).toBeGreaterThanOrEqual(6);
+    expect(estimateMinutes(pilot)).toBeLessThanOrEqual(9);
+    expect(Math.abs(estimateMinutes(pilot) - pilot.minutes)).toBeLessThanOrEqual(2);
+    // Strip the narration and the silent beat estimate comes back.
+    const silent = {
+      ...pilot,
+      scenes: pilot.scenes.map(sc => {
+        const { narration: _n, audio: _a, ...rest } = sc as unknown as Record<string, unknown>;
+        return rest as unknown as LessonScript['scenes'][number];
+      }),
+    } as LessonScript;
+    expect(estimateMinutes(silent)).toBeGreaterThanOrEqual(2);
+    expect(estimateMinutes(silent)).toBeLessThanOrEqual(6);
   });
 });
 

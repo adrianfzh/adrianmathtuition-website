@@ -3,19 +3,21 @@
   "title": "Completing the Square",
   "level": "AM",
   "topic": "Quadratic Functions",
-  "minutes": 4,
+  "minutes": 8,
   "scenes": [
     {
       "type": "title",
       "title": "Completing the Square",
       "promise": "Turn any quadratic into the form that hands you its turning point — and proves it can never dip below zero.",
-      "narration": "Welcome. In the next few minutes you'll learn one rewrite, completing the square, that turns any quadratic into a form which hands you its turning point on a plate, and lets you prove it never dips below zero."
+      "narration": "Welcome. In the next few minutes you'll learn one rewrite, completing the square, that turns any quadratic into a form which hands you its turning point on a plate, and lets you prove it never dips below zero.",
+      "audio": "/lessons/quadratic-functions-am/scene-01.mp3"
     },
     {
       "type": "caption",
       "heading": "Why the ordinary form hides things",
       "text": "$y = x^2 - 4x$ looks simple, but at a glance it tells you almost nothing: where is its lowest point? What is its smallest value?\n\nThe same curve written as $y = (x-2)^2 - 4$ answers both instantly — lowest point $(2, -4)$, smallest value $-4$.\n\nThis lesson is the rewrite that takes you from the first form to the second, every time.",
-      "narration": "Look at y equals x squared minus four x. It looks simple, but it hides exactly the things exams ask for: where is the lowest point, and what is the smallest value? Write the same curve as x minus two, all squared, minus four, and both answers are sitting right there. This lesson is the rewrite that gets you from one form to the other."
+      "narration": "Look at y equals x squared minus four x. It looks simple, but it hides exactly the things exams ask for: where is the lowest point, and what is the smallest value? Write the same curve as x minus two, all squared, minus four, and both answers are sitting right there. This lesson is the rewrite that gets you from one form to the other.",
+      "audio": "/lessons/quadratic-functions-am/scene-02.mp3"
     },
     {
       "type": "graph-morph",
@@ -40,6 +42,12 @@
         "Replace x by x minus two, and the whole curve slides two to the right. The turning point is now at two comma zero. Nothing else has changed — same shape, just shifted sideways.",
         "Now take four away, and the curve drops by four. The turning point falls to two comma minus four. The number on the end lifts or drops the curve, and that is all it does.",
         "Put a minus in front and it flips upside down. This one peaks at two comma three — a maximum. Every quadratic is x squared moved about, and the completed-square form is simply the record of the moves."
+      ],
+      "audio": [
+        "/lessons/quadratic-functions-am/scene-03-1.mp3",
+        "/lessons/quadratic-functions-am/scene-03-2.mp3",
+        "/lessons/quadratic-functions-am/scene-03-3.mp3",
+        "/lessons/quadratic-functions-am/scene-03-4.mp3"
       ]
     },
     {
@@ -53,15 +61,33 @@
         { "tex": "+ k", "id": "k" }
       ],
       "callouts": [
-        { "target": "a", "label": "$a > 0$: opens upwards, the turning point is a **minimum**. $a < 0$: opens downwards, a **maximum**.", "tone": "sky" },
-        { "target": "sq", "label": "$h$ is the $x$-coordinate of the turning point — sign trap: $(x+3)^2$ means $h = -3$, not $3$.", "tone": "amber" },
-        { "target": "k", "label": "$k$ is the maximum or minimum VALUE of $y$. Turning point $(h, k)$ — read it straight off.", "tone": "emerald" }
+        {
+          "target": "a",
+          "label": "$a > 0$: opens upwards, the turning point is a **minimum**. $a < 0$: opens downwards, a **maximum**.",
+          "tone": "sky"
+        },
+        {
+          "target": "sq",
+          "label": "$h$ is the $x$-coordinate of the turning point — sign trap: $(x+3)^2$ means $h = -3$, not $3$.",
+          "tone": "amber"
+        },
+        {
+          "target": "k",
+          "label": "$k$ is the maximum or minimum VALUE of $y$. Turning point $(h, k)$ — read it straight off.",
+          "tone": "emerald"
+        }
       ],
       "narration": [
         "Here's the form every answer ends in: y equals a, bracket x minus h, all squared, plus k. Three letters, and each one tells you something about the curve. Let's name them one at a time.",
         "The a tells you which way it opens. Positive a: the curve opens upwards, and the turning point is a minimum. Negative a: it opens downwards, and the turning point is a maximum.",
         "The h is the x-coordinate of the turning point. And here's the trap: x plus three, all squared, means h is minus three, not three. The bracket always reads x minus h, so flip the sign you see.",
         "And k is the maximum or minimum value of y — the greatest or least value the curve ever reaches. Put them together and the turning point is simply h comma k. Read it straight off, no working needed."
+      ],
+      "audio": [
+        "/lessons/quadratic-functions-am/scene-04-1.mp3",
+        "/lessons/quadratic-functions-am/scene-04-2.mp3",
+        "/lessons/quadratic-functions-am/scene-04-3.mp3",
+        "/lessons/quadratic-functions-am/scene-04-4.mp3"
       ]
     },
     {
@@ -106,6 +132,11 @@
         "Here's the recipe. Take the coefficient of x — that's minus three. Halve it: minus three over two. Square it: nine over four. Now add that number and subtract it in the same breath, so the value hasn't changed at all.",
         "Look at the first three terms. They are now a perfect square: x minus three over two, all squared. Don't believe me? Expand that bracket and you get exactly those three terms back. The minus nine over four and the plus two are the leftovers.",
         "Tidy the leftovers: minus nine over four plus two is minus a quarter. And you're done. Read the turning point straight off: three over two, minus a quarter — a minimum, because the curve opens upwards."
+      ],
+      "audio": [
+        "/lessons/quadratic-functions-am/scene-05-1.mp3",
+        "/lessons/quadratic-functions-am/scene-05-2.mp3",
+        "/lessons/quadratic-functions-am/scene-05-3.mp3"
       ]
     },
     {
@@ -160,6 +191,12 @@
         "Now complete the square inside the bracket, exactly as before. Half of five over two is five over four. Square it — that's twenty-five over sixteen — and add it and subtract it in the same breath.",
         "The first three terms inside the bracket become x plus five over four, all squared. Tidy the leftovers: minus twenty-five over sixteen plus a half — that's plus eight over sixteen — gives minus seventeen over sixteen.",
         "Then the step people forget: multiply the two back into both terms, not just the bracket. Minus seventeen over sixteen becomes minus seventeen over eight. Leaving it as seventeen over sixteen is the classic slip. Turning point: minus five over four, minus seventeen over eight."
+      ],
+      "audio": [
+        "/lessons/quadratic-functions-am/scene-06-1.mp3",
+        "/lessons/quadratic-functions-am/scene-06-2.mp3",
+        "/lessons/quadratic-functions-am/scene-06-3.mp3",
+        "/lessons/quadratic-functions-am/scene-06-4.mp3"
       ]
     },
     {
@@ -203,6 +240,11 @@
         "A negative in front works exactly the same way. Factorize minus four out of every term — the sign travels with it, so every term inside the bracket comes out positive: x squared plus six x plus thirty-five over four.",
         "Inside the bracket: half of six is three, and three squared is nine. Add and subtract nine, and the first three terms fold into x plus three, all squared. Then minus nine plus thirty-five over four is minus a quarter.",
         "Multiply minus four back in: minus four times minus a quarter is plus one. So it's minus four, bracket x plus three, all squared, plus one. Maximum point: minus three comma one — it opens downwards. And notice h is minus three, because the bracket says x plus three."
+      ],
+      "audio": [
+        "/lessons/quadratic-functions-am/scene-07-1.mp3",
+        "/lessons/quadratic-functions-am/scene-07-2.mp3",
+        "/lessons/quadratic-functions-am/scene-07-3.mp3"
       ]
     },
     {
@@ -211,7 +253,8 @@
       "prompt": "Your turn — a real prelim question (Crescent Girls 2023). Factorize the $-3$ out, complete the square inside, multiply back. Type the turning point as $(h, k)$.",
       "placeholder": "(h, k)",
       "why": "$-3x^2 + 12x - 4 = -3(x-2)^2 + 8$, so the turning point is $(2, 8)$ — a maximum, because $a = -3 < 0$.",
-      "narration": "Your turn, on a real prelim question. Factorize the minus three out, complete the square inside, and multiply back. Then type the turning point as h comma k."
+      "narration": "Your turn, on a real prelim question. Factorize the minus three out, complete the square inside, and multiply back. Then type the turning point as h comma k.",
+      "audio": "/lessons/quadratic-functions-am/scene-08.mp3"
     },
     {
       "type": "equation-steps",
@@ -252,19 +295,26 @@
         "Now the other exam favourite: show that a quadratic is always positive. Same recipe. Half of minus four is minus two; square it, and that's four. Add four and subtract four.",
         "The first three terms fold into x minus two, all squared. Then minus four plus seven is three. So the expression is x minus two, all squared, plus three.",
         "Here's the proof. A square can never be negative, so x minus two, all squared, is at least zero. Add three, and the whole expression is at least three — which is bigger than zero. That single line is the whole proof, and it's the line examiners want to see."
+      ],
+      "audio": [
+        "/lessons/quadratic-functions-am/scene-09-1.mp3",
+        "/lessons/quadratic-functions-am/scene-09-2.mp3",
+        "/lessons/quadratic-functions-am/scene-09-3.mp3"
       ]
     },
     {
       "type": "caption",
       "heading": "The two green lights",
       "text": "To prove a quadratic is **always positive**: complete the square into $a(x-h)^2 + k$, then check two things — $a > 0$ AND $k > 0$.\n\nMiss either and it isn't. Picture it: the curve opens upwards with its lowest point above the $x$-axis.\n\nExams flip it too: \"never greater than 4\" means $a < 0$ with $k = 4$.",
-      "narration": "Two green lights, every time. The a must be positive, and the k must be positive. Miss either one and the proof collapses. In picture terms, the curve opens upwards and its lowest point sits above the x-axis. Exams flip it too: never greater than four means a negative a with k equal to four."
+      "narration": "Two green lights, every time. The a must be positive, and the k must be positive. Miss either one and the proof collapses. In picture terms, the curve opens upwards and its lowest point sits above the x-axis. Exams flip it too: never greater than four means a negative a with k equal to four.",
+      "audio": "/lessons/quadratic-functions-am/scene-10.mp3"
     },
     {
       "type": "caption",
       "heading": "The slip that costs the most marks",
       "text": "Find the minimum value of $y = x^2 - 4x$: complete the square, $(x-2)^2 - 4$, turning point $(2, -4)$.\n\nThe minimum VALUE is $-4$ — the $y$-coordinate. Writing $2$ is the classic slip: $x = 2$ is only *where* it happens.\n\nSay the sentence in full: \"minimum value $-4$, when $x = 2$\".",
-      "narration": "Here's the slip that costs the most marks. Find the minimum value of x squared minus four x. Complete the square: x minus two, squared, minus four. The minimum value is minus four, the y-coordinate, not two. Two is only where it happens. Say the whole sentence: minimum value minus four, when x equals two."
+      "narration": "Here's the slip that costs the most marks. Find the minimum value of x squared minus four x. Complete the square: x minus two, squared, minus four. The minimum value is minus four, the y-coordinate, not two. Two is only where it happens. Say the whole sentence: minimum value minus four, when x equals two.",
+      "audio": "/lessons/quadratic-functions-am/scene-11.mp3"
     },
     {
       "type": "check",
@@ -272,13 +322,15 @@
       "prompt": "Last one (Mayflower 2022). Write it in descending powers first: $-2x^2 + 8x + 5$. Then factorize the $-2$ out, complete the square, multiply back.",
       "placeholder": "(h, k)",
       "why": "$5 + 8x - 2x^2 = -2(x-2)^2 + 13$, so the turning point is $(2, 13)$ — a maximum.",
-      "narration": "Last one. Write it in descending powers first — then it's the same three moves: factorize the negative number in front of x squared out, complete the square inside, multiply back. Pause here, work it through, and type the turning point as h comma k."
+      "narration": "Last one. Write it in descending powers first — then it's the same three moves: factorize the negative number in front of x squared out, complete the square inside, multiply back. Pause here, work it through, and type the turning point as h comma k.",
+      "audio": "/lessons/quadratic-functions-am/scene-12.mp3"
     },
     {
       "type": "caption",
       "heading": "You own the rewrite now",
       "text": "Half it, square it, add and subtract → bracket → read off $(h, k)$.\n\nThat one rewrite answers every classic: turning points, maximum and minimum values, \"always positive\" proofs, and the word problem asking for the greatest height. Go make it automatic.",
-      "narration": "That's the whole topic. Half it, square it, add and subtract, bracket it, read off h and k. One rewrite answers every classic: turning points, greatest and least values, always-positive proofs, and every word problem that asks for a greatest height. Go make it automatic."
+      "narration": "That's the whole topic. Half it, square it, add and subtract, bracket it, read off h and k. One rewrite answers every classic: turning points, greatest and least values, always-positive proofs, and every word problem that asks for a greatest height. Go make it automatic.",
+      "audio": "/lessons/quadratic-functions-am/scene-13.mp3"
     }
   ]
 }
