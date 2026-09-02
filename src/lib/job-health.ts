@@ -27,6 +27,12 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'generate-invoices': { kind: 'monthly', day: 14, graceDays: 1, label: '14th 7am' },
   'send-invoices':     { kind: 'monthly', day: 15, graceDays: 1, label: '15th 10am' },
   'payment-reminder':  { kind: 'monthly', day: 14, graceDays: 1, label: '14th 8pm' },
+  // Prorated-month arrears billing (docs/INVOICES.md): generation on the 1st,
+  // send on the 2nd, for the just-ended month when it was June/Oct–Dec. Both
+  // stamp EVERY month — a quiet "not a prorated month" no-op on the other 8 —
+  // so a dead cron and a quiet month are told apart here.
+  'prorated-arrears':      { kind: 'monthly', day: 1, graceDays: 1, label: '1st 9am' },
+  'prorated-arrears-send': { kind: 'monthly', day: 2, graceDays: 1, label: '2nd 10am' },
   'progress-digest':   { kind: 'monthly', day: 1,  graceDays: 1, label: '1st 8am' },
   'retention':         { kind: 'monthly', day: 2,  graceDays: 1, label: '2nd 3am' },
   // Portal auto-offboarding sweep — vercel.json "30 19 2 * *" UTC = 3rd 3:30am SGT.

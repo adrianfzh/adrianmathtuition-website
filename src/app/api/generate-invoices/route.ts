@@ -5,12 +5,16 @@ import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
 import { sendTelegram } from '@/lib/telegram';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
-import { getInvoiceMonth } from '@/lib/invoice-month';
+import { getInvoiceMonth, sgtTodayISO } from '@/lib/invoice-month';
 import { applyPriorBalance } from '@/lib/invoice-consolidate';
 import { parseReferrerMarker } from '@/lib/referral-link';
 import { NO_LESSON_DATES } from '@/lib/holidays';
 import { billableAdditionalFor, mapAdditionalRecord } from '@/lib/additional-lessons';
-import { mapProratedRecord, proratedLessonsFor, proratedMonthFormula, type ProratedLessonRecord } from '@/lib/prorated-lessons';
+import { mapProratedRecord, proratedLessonsFor, proratedMonthFormula, proratedUnmarkedFormula, type ProratedLessonRecord } from '@/lib/prorated-lessons';
+import {
+  isProratedMonth, justEndedMonth, monthHasEnded, arrearsInvoiceDates,
+  arrearsAdditionalWindowStartISO, arrearsSendAtISO, existingInvoicesMissRegulars,
+} from '@/lib/arrears-invoices';
 import { invoiceMonthLessonDates, nextDayISO } from '@/lib/billing-math';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
@@ -27,15 +31,8 @@ const DAY_INDICES: Record<string, number> = {
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-// Prorated months bill by actual attendance (Completed lessons), generated in arrears.
-// June (6) = holiday month (flexible attendance / revision sprint); Oct–Dec = year-end taper.
-const PRORATION_MONTHS = [6, 10, 11, 12];
-
-function isProratedMonth(monthNum: number) {
-  return PRORATION_MONTHS.includes(monthNum);
-}
-
-// getInvoiceMonth imported from @/lib/invoice-month
+// Prorated months (June + Oct–Dec) bill by actual attendance, in arrears —
+// PRORATION_MONTHS and the arrears rules live in lib/arrears-invoices.ts.
 
 function formatDate(date: Date) {
   return date.toISOString().split('T')[0];
@@ -81,12 +78,31 @@ export async function POST(req: NextRequest) {
   let reqBody: any = {};
   try { reqBody = await req.json(); } catch { /* cron has no body */ }
   const requestedMonth = (reqBody.month as string) || '';
+  // Arrears mode — the 1st-of-month cron (vercel.json `?arrears=1`, 9am SGT):
+  // generate the JUST-ENDED month, and only if it was prorated. A cron GET has
+  // no body, so the flag rides the query string (precedent: progress-digest).
+  const arrearsMode = req.nextUrl.searchParams.get('arrears') === '1' || reqBody.arrears === true;
+  const force = reqBody.force === true;
 
   try {
-    // Determine invoice month — use requested month if provided, else default to next month
+    // Determine invoice month — the arrears cron → the just-ended month; a
+    // requested month if provided; else the default, next month.
+    const FULL_MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     let invoiceMonth: InvoiceMonth;
-    if (requestedMonth) {
-      const FULL_MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    if (arrearsMode) {
+      const ended = justEndedMonth(sgtTodayISO());
+      if (!isProratedMonth(ended.month)) {
+        // Quiet month (8 of 12). Stamp anyway — the monthly rhythm alarms by
+        // absence, so a silent no-op and a dead cron must be told apart.
+        await logJobRun('prorated-arrears', true, `${ended.label} is not a prorated month \u2014 nothing to generate`);
+        return NextResponse.json({ generated: 0, skipped: 0, errors: [], arrears: ended.label, prorated: false });
+      }
+      invoiceMonth = {
+        label: ended.label, year: ended.year, month: ended.month,
+        firstDay: new Date(ended.year, ended.month - 1, 1),
+        lastDay: new Date(ended.year, ended.month, 0),
+      };
+    } else if (requestedMonth) {
       const parts = requestedMonth.trim().split(' ');
       const mIdx = FULL_MONTH_NAMES.indexOf(parts[0]);
       const yr = parseInt(parts[1] || '', 10);
@@ -100,6 +116,52 @@ export async function POST(req: NextRequest) {
     } else {
       invoiceMonth = getInvoiceMonth();
     }
+
+    const isProrated = isProratedMonth(invoiceMonth.month);
+
+    // The 14th cron targeting a prorated month creates NOTHING. It used to: the
+    // month had 0 Completed lessons, so it skipped everyone — except students
+    // with billable Additional lessons, who got an invoice carrying ONLY those.
+    // The arrears run then saw "already has an invoice" and their Completed
+    // lessons were never billed (the "additionals-only trap", docs/INVOICES.md).
+    // Those additionals now ride the arrears invoice instead (widened window
+    // below). Tell Adrian, stamp the day-14 rhythm, leave.
+    if (!arrearsMode && !requestedMonth && isProrated) {
+      const runMonthName = FULL_MONTH_NAMES[invoiceMonth.month % 12];
+      await sendTelegram(
+        `\ud83d\udccb <b>${invoiceMonth.label} bills in arrears \u2014 no drafts today</b>\n\n` +
+          `${invoiceMonth.label} is a prorated month: it's billed from Completed lessons after it's taught.\n\n` +
+          `\u2022 Drafts: 1 ${runMonthName} 9am\n` +
+          `\u2022 Auto-send: 2 ${runMonthName} 10am (after your review)\n\n` +
+          `Additional lessons since the last batch will be billed there too. ` +
+          `Deferred adjustments targeting ${invoiceMonth.label} stay parked until then.`
+      );
+      await logJobRun('generate-invoices', true, `${invoiceMonth.label} is prorated \u2014 no pre-month drafts; the arrears run on the 1st generates`);
+      return NextResponse.json({ generated: 0, skipped: 0, errors: [], proratedDeferred: invoiceMonth.label });
+    }
+
+    // A manual run for a prorated month that hasn't ended would mint the same
+    // trap (or a partial-month invoice). Refuse unless explicitly forced.
+    if (!arrearsMode && isProrated && !force && !monthHasEnded(sgtTodayISO(), invoiceMonth.year, invoiceMonth.month)) {
+      return NextResponse.json({
+        error: `${invoiceMonth.label} is a prorated month \u2014 it bills Completed lessons in arrears. Run this after the month ends (the arrears cron on the 1st does it automatically), or pass {"force":true} to generate a partial-month invoice anyway.`,
+      }, { status: 400 });
+    }
+
+    // Logbook slug follows the SHAPE of the run: any prorated-month generation
+    // (the 1st's cron, or a manual re-run after it failed) is the arrears job.
+    const jobSlug = isProrated ? 'prorated-arrears' : 'generate-invoices';
+
+    // Arrears invoices are issued on the scheduled send day (the 2nd) and due
+    // on the 15th of the following month; the pre-month defaults (Issue = 15th
+    // of the run month, Due = 15th of the invoice month) would put an arrears
+    // invoice's Due Date in the past.
+    const invoiceDates = isProrated
+      ? arrearsInvoiceDates(invoiceMonth.year, invoiceMonth.month)
+      : {
+          issueISO: (() => { const d = new Date(); d.setDate(15); return formatDate(d); })(),
+          dueISO: formatDate(new Date(invoiceMonth.year, invoiceMonth.month - 1, 15)),
+        };
 
     // Month start as a plain ISO string — lesson-date math runs on this, never
     // on Date→toISOString() (which reads out UTC and skews a day in any
@@ -116,7 +178,7 @@ export async function POST(req: NextRequest) {
     );
     console.log(`[generate-invoices] Active enrollments fetched: ${enrollmentsData.records.length}`);
     if (!enrollmentsData.records?.length) {
-      await logJobRun('generate-invoices', true, 'nothing to generate (no active enrollments)');
+      await logJobRun(jobSlug, true, `${invoiceMonth.label}: nothing to generate (no active enrollments)`);
       return NextResponse.json({ generated: 0, skipped: 0, errors: [] });
     }
 
@@ -205,7 +267,13 @@ export async function POST(req: NextRequest) {
     // form silently drops the boundary day on date-typed fields).
     const addToday = new Date();
     const addWindowEnd = formatDate(addToday);
-    const addWindowStart = formatDate(new Date(addToday.getFullYear(), addToday.getMonth() - 1, 15));
+    // Arrears runs reach back to the 15th two months before the prorated
+    // month — the batch the (now no-op) 14th cron would have carried. Overlaps
+    // with neighbouring runs are safe: Billed is the guard, the window only a
+    // fetch bound.
+    const addWindowStart = isProrated
+      ? arrearsAdditionalWindowStartISO(invoiceMonth.year, invoiceMonth.month)
+      : formatDate(new Date(addToday.getFullYear(), addToday.getMonth() - 1, 15));
     // The Billed checkbox is the PRIMARY double-billing guard (a lesson billed
     // on a manual adjustment invoice must never be auto-billed again; windows
     // alone can't know that). The field may not exist yet — an unknown name in
@@ -227,12 +295,20 @@ export async function POST(req: NextRequest) {
     // NOTHING on a linked field, so every prorated month (June/Oct–Dec) found
     // 0 Completed lessons and skipped every student (found 2026-09-02). The
     // window is half-open — {Date}<='monthLast' dropped the month's last day.
-    const isProrated = isProratedMonth(invoiceMonth.month);
     const proratedPool: ProratedLessonRecord[] = isProrated
       ? await airtableRequestAll(
           'Lessons',
           `?filterByFormula=${encodeURIComponent(proratedMonthFormula(invoiceMonth.year, invoiceMonth.month))}&fields[]=Date&fields[]=Student`
         ).then((d: any) => (d.records || []).map(mapProratedRecord))
+      : [];
+    // Lessons still 'Scheduled' (attendance never marked) are NOT billed by an
+    // arrears run — surfaced in the Telegram summary so Adrian marks them and
+    // regenerates, instead of a parent quietly being under-billed.
+    const unmarkedPool: ProratedLessonRecord[] = isProrated
+      ? await airtableRequestAll(
+          'Lessons',
+          `?filterByFormula=${encodeURIComponent(proratedUnmarkedFormula(invoiceMonth.year, invoiceMonth.month))}&fields[]=Date&fields[]=Student`
+        ).then((d: any) => (d.records || []).map(mapProratedRecord)).catch(() => [] as ProratedLessonRecord[])
       : [];
 
     for (const studentId in enrollmentsByStudent) {
@@ -247,8 +323,24 @@ export async function POST(req: NextRequest) {
       try {
         if (existingStudentIds.has(studentId)) {
           skipped += studentEnrollments.length;
-          // Not surfaced in skipReasons — this is the normal "already has
-          // an invoice for this month" case and is expected.
+          // Normally not surfaced — "already has an invoice for this month" is
+          // the expected re-run case. The one exception is the trap: a prorated
+          // month where the existing invoice(s) bill no regular lessons (an
+          // additionals-only or adjustment invoice, or all Voided) while the
+          // student HAS Completed lessons — those lessons are going unbilled.
+          if (isProrated) {
+            const completedCount = proratedLessonsFor(proratedPool, studentId).length;
+            const existing = existingInvoicesData.records
+              .filter((r: any) => r.fields['Student']?.[0] === studentId)
+              .map((r: any) => ({
+                lessonsCount: Number(r.fields['Lessons Count'] || 0),
+                invoiceType: (r.fields['Invoice Type'] as string) || 'Regular',
+                status: (r.fields['Status'] as string) || '',
+              }));
+            if (completedCount > 0 && existingInvoicesMissRegulars(existing)) {
+              recordSkip(studentId, `already has a ${invoiceMonth.label} invoice, but none of them bill regular lessons \u2014 ${completedCount} Completed lesson(s) are NOT billed; add them by hand (\u270f\ufe0f Amend) or \u267b\ufe0f Regenerate that invoice`);
+            }
+          }
           continue;
         }
 
@@ -391,8 +483,8 @@ export async function POST(req: NextRequest) {
           'Line Items Extra': carryOverLineItems.length > 0 ? JSON.stringify(carryOverLineItems) : '',
           'Invoice Type': 'Regular',
           'Status': 'Draft',
-          'Issue Date': (() => { const d = new Date(); d.setDate(15); return formatDate(d); })(),
-          'Due Date': formatDate(new Date(invoiceMonth.year, invoiceMonth.month - 1, 15)),
+          'Issue Date': invoiceDates.issueISO,
+          'Due Date': invoiceDates.dueISO,
           'Auto Notes': autoNotes,
         };
 
@@ -419,8 +511,8 @@ export async function POST(req: NextRequest) {
               studentName: student.fields['Student Name'],
               month: invoiceMonth.label,
               invoiceId: createdRecord.id,
-              issueDate: (() => { const d = new Date(); d.setDate(15); return formatDate(d); })(),
-              dueDate: formatDate(new Date(invoiceMonth.year, invoiceMonth.month - 1, 15)),
+              issueDate: invoiceDates.issueISO,
+              dueDate: invoiceDates.dueISO,
               lessonsCount: lessonCount,
               ratePerLesson,
               baseAmount,
@@ -756,19 +848,47 @@ export async function POST(req: NextRequest) {
         ? `\n\n\u2705 Marked ${billedLessonPatches.length} additional lesson${billedLessonPatches.length === 1 ? '' : 's'} as Billed.`
         : '';
 
+    // Arrears runs: lessons whose attendance was never marked are not billed.
+    let unmarkedSection = '';
+    if (isProrated && unmarkedPool.length) {
+      const byStudent: Record<string, number> = {};
+      for (const l of unmarkedPool) if (l.studentId) byStudent[l.studentId] = (byStudent[l.studentId] || 0) + 1;
+      const names = Object.entries(byStudent)
+        .map(([sid, n]) => `${studentsById[sid]?.fields?.['Student Name'] || sid} (${n})`)
+        .join(', ');
+      unmarkedSection =
+        `\n\n\u2753 <b>${unmarkedPool.length} ${invoiceMonth.label} lesson${unmarkedPool.length === 1 ? '' : 's'} still unmarked \u2014 not billed</b>\n` +
+        `${names}\nMark attendance, then \u267b\ufe0f Regenerate those invoices.`;
+    }
+
+    // What happens next. Arrears drafts are auto-sent by the 2nd-of-month cron
+    // (10am SGT) if they exist before it fires; drafts made after that moment
+    // (a late manual run) have no cron coming and must be sent by hand.
+    let sendNote: string;
+    if (!isProrated) {
+      sendNote = `\n\nReview and hold any before 15th via /amend [name].\n` +
+        `Invoices send automatically at 10am tomorrow.`;
+    } else if (Date.now() < Date.parse(arrearsSendAtISO(invoiceMonth.year, invoiceMonth.month))) {
+      const sendDay = `2 ${FULL_MONTH_NAMES[invoiceMonth.month % 12]}`;
+      sendNote = `\n\nReview and hold any before ${sendDay} 10am via /amend [name].\n` +
+        `Invoices send automatically at 10am on ${sendDay}.`;
+    } else {
+      sendNote = `\n\nThese arrears drafts are past the ${invoiceMonth.label} auto-send window \u2014 review and send them from /admin/invoices.`;
+    }
+
     await sendTelegram(
-      `\ud83d\udccb <b>Draft invoices ready \u2014 ${invoiceMonth.label}</b>\n\n` +
+      `\ud83d\udccb <b>Draft invoices ready \u2014 ${invoiceMonth.label}${isProrated ? ' (arrears)' : ''}</b>\n\n` +
         `${summaryLines}\n\n` +
         `Total: ${generated} invoices \u00b7 ${totalAmount.toFixed(2)}` +
         skipSection +
         referralSection +
         deferredSection +
         billedSection +
-        `\n\nReview and hold any before 15th via /amend [name].\n` +
-        `Invoices send automatically at 10am tomorrow.`
+        unmarkedSection +
+        sendNote
     );
 
-    await logJobRun('generate-invoices', errors.length === 0, `generated ${generated}, skipped ${skipped}${errors.length ? `, ${errors.length} errors` : ''}`);
+    await logJobRun(jobSlug, errors.length === 0, `${invoiceMonth.label}: generated ${generated}, skipped ${skipped}${errors.length ? `, ${errors.length} errors` : ''}`);
     return NextResponse.json({ generated, skipped, errors, skipReasons });
   } catch (err: any) {
     console.error('[generate-invoices] Unhandled error:', err);

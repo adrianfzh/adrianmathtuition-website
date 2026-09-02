@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { safeEqual } from '@/lib/safe-equal';
 import { sendTelegram } from '@/lib/telegram';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { getInvoiceMonth, MONTH_NAMES } from '@/lib/invoice-month';
+import { isProratedMonth } from '@/lib/arrears-invoices';
 
 export const runtime = 'nodejs';
 
@@ -20,14 +22,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const now = new Date();
-  const invoiceMonthDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const monthLabel = `${MONTH_NAMES[invoiceMonthDate.getMonth()]} ${invoiceMonthDate.getFullYear()}`;
+  const invoiceMonth = getInvoiceMonth();
+  const monthLabel = invoiceMonth.label;
+  // Prorated months (June + Oct–Dec) bill in arrears: the 14th run creates no
+  // drafts for them — the arrears crons on the 1st/2nd do (docs/INVOICES.md).
+  const prorated = isProratedMonth(invoiceMonth.month);
+  const nextMonthName = MONTH_NAMES[invoiceMonth.month % 12];
 
   await sendTelegram(
     `📋 <b>Invoice reminder — ${monthLabel}</b>\n\n` +
-    `Draft invoices will be generated on the 14th (in 2 days) at 7am SGT.\n\n` +
+    (prorated
+      ? `⚠️ ${monthLabel} is a prorated month — the 14th run will NOT create drafts. ` +
+        `They're generated in arrears on 1 ${nextMonthName} 9am (after the month is taught) and auto-sent on 2 ${nextMonthName} 10am.\n\n`
+      : `Draft invoices will be generated on the 14th (in 2 days) at 7am SGT.\n\n`) +
     `Check outstanding balances or new students before then — any changes needed should be made in Airtable first.`
   );
 

@@ -23,10 +23,10 @@ import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { NO_LESSON_DATES } from '@/lib/holidays';
 import { billingMonthOf } from '@/lib/lesson-generation';
+import { PRORATION_MONTHS } from '@/lib/arrears-invoices';
 
 export const runtime = 'nodejs';
 
-const PRORATION_MONTHS = [6, 10, 11, 12]; // must match generate-invoices
 const MONTHS_SHOWN = 3;                    // upcoming optional months offered
 const OPTOUT_MARKER = 'Holiday opt-out'; // route files may only export handlers/config
 const AUTO_CREATED = '(auto-created)';

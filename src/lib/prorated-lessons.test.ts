@@ -1,5 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { mapProratedRecord, proratedLessonsFor, proratedMonthFormula, type ProratedLessonRecord } from './prorated-lessons';
+import { mapProratedRecord, proratedLessonsFor, proratedMonthFormula, proratedUnmarkedFormula, type ProratedLessonRecord } from './prorated-lessons';
+
+describe('proratedUnmarkedFormula', () => {
+  // The arrears run bills Completed lessons only; a lesson still 'Scheduled'
+  // (attendance never marked) is silently absent from the invoice. This is the
+  // companion fetch that makes those visible in the Telegram summary. Same
+  // rules as the billing formula: no {Student} clause, half-open window.
+  it('selects unmarked Regular lessons in the same half-open month window', () => {
+    expect(proratedUnmarkedFormula(2026, 10)).toBe(
+      "AND({Type}='Regular',{Status}='Scheduled',{Date}>='2026-10-01',{Date}<'2026-11-01')"
+    );
+    expect(proratedUnmarkedFormula(2026, 10)).not.toContain('{Student}');
+  });
+});
 
 describe('proratedMonthFormula', () => {
   // REGRESSION (found 2026-09-02) — generate-invoices' prorated branch

@@ -22,6 +22,8 @@ type OpsData = {
 const JOB_LINKS: Record<string, string> = {
   'generate-invoices': '/admin/invoices',
   'send-invoices': '/admin/invoices',
+  'prorated-arrears': '/admin/invoices',
+  'prorated-arrears-send': '/admin/invoices',
   'payment-reminder': '/admin/invoices',
   'progress-digest': '/admin/digests',
   'qb-topup': '/admin/bank-health',

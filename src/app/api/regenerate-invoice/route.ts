@@ -7,6 +7,8 @@ import { NO_LESSON_DATES } from '@/lib/holidays';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { resolveInvoiceIssueDate, sgtTodayISO } from '@/lib/invoice-month';
 import { monthWindowClause } from '@/lib/billing-math';
+import { isProratedMonth, arrearsInvoiceDates } from '@/lib/arrears-invoices';
+import { rebuildLineItems } from '@/lib/regenerate-line-items';
 import { applyPriorBalance, stripPersistedCarryOver } from '@/lib/invoice-consolidate';
 
 export const runtime = 'nodejs';
@@ -151,16 +153,25 @@ export async function POST(req: NextRequest) {
       );
       const lessonsData = { records: allLessonsData.records.filter((r: any) => r.fields['Student']?.[0] === studentId) };
 
-      const description = `${level} ${subjects} \u2014 ${month}`;
-      lineItems = lessonsData.records.map((r: any) => ({
-        date: r.fields['Date'],
-        day: slotDayLabel,
-        type: (r.fields['Type'] || 'Regular') as string,
-        description: r.fields['Type'] === 'Additional' ? `Additional Lesson \u2014 ${month}` : description,
-      }));
-
-      regularCount = lessonsData.records.filter((r: any) => r.fields['Type'] !== 'Additional').length;
-      additionalCount = lessonsData.records.filter((r: any) => r.fields['Type'] === 'Additional').length;
+      // Rules in lib/regenerate-line-items.ts (tested): Regular lines are
+      // rebuilt from the schedule — Completed-only for a prorated (arrears)
+      // month; the Additional lines the generator billed are kept as they are.
+      let storedLineItems: any[] = [];
+      try { storedLineItems = JSON.parse((f['Line Items'] || '[]') as string); } catch { /* ignore */ }
+      const rebuilt = rebuildLineItems({
+        stored: Array.isArray(storedLineItems) ? storedLineItems : [],
+        monthLessons: lessonsData.records.map((r: any) => ({
+          date: r.fields['Date'] as string,
+          type: r.fields['Type'] as string | undefined,
+          status: r.fields['Status'] as string | undefined,
+        })),
+        prorated: isProratedMonth(monthIdx + 1),
+        slotDayLabel,
+        regularDescription: `${level} ${subjects} \u2014 ${month}`,
+      });
+      lineItems = rebuilt.lineItems;
+      regularCount = rebuilt.regularCount;
+      additionalCount = rebuilt.additionalCount;
     }
     const baseAmount = regularCount * ratePerLesson;
     const additionalAmount = additionalCount * ratePerLesson;
@@ -182,7 +193,12 @@ export async function POST(req: NextRequest) {
 
     // 8. Update invoice in Airtable. Auto Notes stay untouched — whatever the
     // admin or generator wrote there is preserved.
-    const dueDateStr = `${year}-${String(monthIdx + 1).padStart(2, '0')}-15`;
+    // Arrears (prorated) months are due on the 15th of the FOLLOWING month —
+    // the 15th of the invoice month itself is already in the past by the time
+    // such an invoice exists.
+    const dueDateStr = isProratedMonth(monthIdx + 1)
+      ? arrearsInvoiceDates(year, monthIdx + 1).dueISO
+      : `${year}-${String(monthIdx + 1).padStart(2, '0')}-15`;
     // Issue Date via the one shared rule (lib/invoice-month.ts): a Sent invoice
     // being rebuilt is reissued today; a Draft keeps its send-date/default.
     const issueDateStr = resolveInvoiceIssueDate(f['Status'] || 'Draft', f['Issue Date'], sgtTodayISO());

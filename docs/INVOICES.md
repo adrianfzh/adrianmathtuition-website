@@ -12,12 +12,14 @@
 3. Admin reviews on `/admin/invoices` → adjusts amounts, approves
 4. "Generate Missing PDFs" → `generate-pdf-batch` → Puppeteer → Vercel Blob → PDF URL in Airtable
 5. `send-invoices` (15th **10am SGT** — `0 2 15 * *` UTC in vercel.json; Vercel fires crons up to ~20 min late, e.g. 10:18–10:20 on 15 Jul 2026) → Resend email with PDF attachment → marks Sent
+6. **Prorated months (June, Oct–Dec) bill in arrears instead** — step 1 creates nothing for them; `generate-invoices?arrears=1` (**1st of the following month, 9am**) makes the Drafts from Completed lessons and `send-invoices?arrears=1` (**2nd, 10am**) sends them → "Prorated months" below
 
-**Two regeneration routes, one intent each — don't merge them:** `generate-pdf-batch` renders the invoice **as stored** (the ✏️ Amend form's manual line-item/credit edits, verbatim); `regenerate-invoice` (the ♻️ Regenerate button) **recalculates** line items from the current schedule (preserving manual `Line Items Extra`). **Issue Date is one shared rule for both** — `resolveInvoiceIssueDate(status, currentIssueDate, todayISO)` in `lib/invoice-month.ts` (unit-tested): a **Sent** invoice being regenerated is *reissued* → **today** (SGT, via `sgtTodayISO()`); a fresh Draft → the **15th**; an unsent Draft with a date → **preserved**. Never re-implement this in a route or the `admin-invoices` PATCH — an amended Sent invoice must carry today's issue date, and the split where one path stamped today and another preserved the old date is exactly the bug that put a stale 15 Jul date on Kiara's amended Aug invoice.
+**Two regeneration routes, one intent each — don't merge them:** `generate-pdf-batch` renders the invoice **as stored** (the ✏️ Amend form's manual line-item/credit edits, verbatim); `regenerate-invoice` (the ♻️ Regenerate button) **recalculates** line items from the current schedule (preserving manual `Line Items Extra`) — precisely: **Regular lines are rebuilt** from the month's non-cancelled lessons (**Completed only for a prorated month**), and the **Additional lines stay exactly as the generator billed them** (`lib/regenerate-line-items.ts`, unit-tested). Until 2026-09-02 Regenerate re-derived additionals from the month window, which silently dropped every billed out-of-window Additional line (the generator's window is the 15th of the previous month → run day, so nearly all of them) and re-added in-window ones without ticking `Billed`, so the next generator run billed them again. To drop a billed Additional lesson that was later cancelled, ✏️ Amend. **Issue Date is one shared rule for both** — `resolveInvoiceIssueDate(status, currentIssueDate, todayISO)` in `lib/invoice-month.ts` (unit-tested): a **Sent** invoice being regenerated is *reissued* → **today** (SGT, via `sgtTodayISO()`); a fresh Draft → the **15th**; an unsent Draft with a date → **preserved**. Never re-implement this in a route or the `admin-invoices` PATCH — an amended Sent invoice must carry today's issue date, and the split where one path stamped today and another preserved the old date is exactly the bug that put a stale 15 Jul date on Kiara's amended Aug invoice.
 
 ### Prorated months (June + Oct–Dec) — billed from Completed lessons, in arrears
 
-`PRORATION_MONTHS = [6, 10, 11, 12]` in `generate-invoices`: instead of projecting slot
+`PRORATION_MONTHS = [6, 10, 11, 12]` (`lib/arrears-invoices.ts` — the ONE list; `generate-invoices`,
+`regenerate-invoice`, `holiday-optout` and the 12th/13th reminder crons all import it): instead of projecting slot
 occurrences forward, these months bill the student's actual **Completed Regular lessons**
 inside the invoice month (June = holiday month, Oct–Dec = year-end taper). The lesson pool
 is **ONE window fetch for all students** — formula + per-student JS matching in
@@ -26,20 +28,56 @@ inclusive `{Date}<=` bound to it (see history below). Month windows anywhere in 
 code use the shared half-open `monthWindowClause(year, month)` from `lib/billing-math.ts`
 (also used by `regenerate-invoice`).
 
-**Arrears timing — half-decided, flag to Adrian before "fixing" it:** the cron fires on
-the **14th of the prior month** targeting the *next* month, when a prorated month has no
-Completed lessons yet — so at cron time every prorated-month student is skipped (visible
-in the Telegram summary as "prorated month … has 0 Completed lessons") unless they have
-billable Additional lessons. The branch only produces real invoices on a **manual re-run
-after the month is taught**: `POST /api/generate-invoices {"month":"October 2026"}`
-(students with an existing invoice for that month are skipped, so re-runs are safe).
-One trap inside that skip: a student with billable Additional lessons at cron time
-already GOT a prorated-month invoice (Additional lines only, zero Regular) — the
-arrears re-run then skips them, and their Completed lessons for the month are never
-billed. Before the arrears run, check the cron's drafts for prorated-month invoices
-with no Regular lines and delete-or-amend them (first month this can bite live: Oct 2026).
-Whether the cron itself should behave differently for prorated months (e.g. also fire in
-arrears) is an open product decision — don't change the cron semantics without Adrian.
+**Arrears trigger (built 2026-09-02; October 2026 is the first live month).** Two crons in
+`vercel.json`; both stamp `job_runs` **every month** (a quiet "not a prorated month" no-op
+on the other eight, so the rhythm alarm can tell a quiet month from a dead cron —
+`docs/OPS.md`):
+
+| When (SGT) | Cron | Does |
+|---|---|---|
+| **1st, 9am** | `GET /api/generate-invoices?arrears=1` (`0 1 1 * *`) | Drafts for the **just-ended** month, only if it was prorated. Same Telegram summary as the 14th run, headed "(arrears)", plus a ❓ list of that month's lessons still `Scheduled` (attendance never marked) — those are **not billed**; mark attendance, then ♻️ Regenerate. Stamps `prorated-arrears`. |
+| **2nd, 10am** | `GET /api/send-invoices?arrears=1` (`0 2 2 * *`) | Sends those Drafts through the **same conservative classifier** as the 15th send (`isCleanRegular` — anything with extras / adjustments / Auto Notes is 🚩 held for review). Stamps `prorated-arrears-send`. Needed because the 15th cron only ever looks at `getInvoiceMonth()` = next month, so arrears drafts would otherwise never be sent. |
+
+- **The 14th cron creates NOTHING for a prorated target month.** It used to skip everyone
+  (0 Completed lessons) *except* students with billable Additional lessons, who got an
+  invoice carrying only those — and the arrears run then saw "already has an invoice"
+  and their Completed lessons were never billed (the "additionals-only trap"). Now it
+  early-exits with a Telegram note ("bills in arrears — no drafts today") and still stamps
+  `generate-invoices`. The 12th (`invoice-reminder`) and 13th (`pre-invoice-reminder`)
+  Telegram crons say the same thing in advance.
+- **Additional lessons around a prorated month ride the arrears invoice.** The arrears
+  run's Additional-lesson window starts on the **15th two months before** the prorated
+  month (`arrearsAdditionalWindowStartISO`; October 2026 → 15 Aug 2026) — the batch the
+  now-silent 14th cron would have carried. Trade-off: those lessons are billed ~6 weeks
+  later than they were. Overlap with neighbouring runs is safe: `Billed` is the
+  double-billing guard, the window only a fetch bound.
+- **Backstop for the trap:** an arrears run normally skips a student who already has an
+  invoice for the month silently — but if none of their live invoices bill a regular
+  lesson (`existingInvoicesMissRegulars`: additionals-only / Adjustment / all Voided; a
+  Revision Sprint invoice counts as covering June) while they DO have Completed lessons,
+  the student is listed under "Skipped with a flag" with the unbilled count. Fix by
+  ✏️ Amend or ♻️ Regenerate that invoice.
+- **Dates:** arrears invoices are issued on the **2nd** and due on the **15th of the
+  following month** (`arrearsInvoiceDates`) — the pre-month defaults would stamp a Due
+  Date already in the past. `regenerate-invoice` applies the same rule.
+- **Manual runs:** `POST /api/generate-invoices {"month":"October 2026"}` after the month
+  ends still works (existing invoices skipped; the stamp goes to `prorated-arrears`
+  because the slug follows the run's shape, so a manual re-run after a failed 1st-of-month
+  cron silences the alarm). **Before the month ends it is refused (400)** unless the body
+  carries `{"force":true}` — a partial-month arrears invoice is almost never wanted; the
+  `/admin/invoices` Generate button surfaces that message. Drafts created after 10am on
+  the 2nd have no cron coming — send them from `/admin/invoices` (the Telegram summary
+  says so).
+- **`pause_auto_send` is month-agnostic:** it pauses whichever actual-cron send fires
+  next (15th regular or 2nd arrears) and then clears; a quiet-month arrears no-op exits
+  before the check and never consumes it.
+- Deferred adjustments targeting a prorated month are applied by the arrears run (until
+  then they stay parked and are flagged as unapplied by the 14th run's summary).
+
+Date rules: `lib/arrears-invoices.ts` (`PRORATION_MONTHS`, `justEndedMonth`, `monthHasEnded`,
+`arrearsInvoiceDates`, `arrearsAdditionalWindowStartISO`, `arrearsSendAtISO`,
+`existingInvoicesMissRegulars`) + `arrears-invoices.test.ts`; the unmarked-lesson formula is
+`proratedUnmarkedFormula` in `lib/prorated-lessons.ts` (tested).
 
 > ⚠ History (fixed 2026-09-02): from launch, the prorated branch filtered
 > `{Student}='recXXX'` — matches NOTHING on a linked field (CLAUDE.md Gotchas; the same

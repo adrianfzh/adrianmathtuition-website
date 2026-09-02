@@ -42,6 +42,16 @@ export function proratedMonthFormula(year: number, month: number): string {
 }
 
 /**
+ * Same window, but the Regular lessons whose attendance was never marked
+ * ('Scheduled' = unmarked, lib/unmarked-lessons.ts). An arrears run does NOT
+ * bill these — it surfaces them in the Telegram summary so Adrian marks them
+ * and regenerates, rather than a parent quietly being under-billed.
+ */
+export function proratedUnmarkedFormula(year: number, month: number): string {
+  return `AND({Type}='Regular',{Status}='Scheduled',${monthWindowClause(year, month)})`;
+}
+
+/**
  * The student's Completed Regular lessons from the window-fetched pool,
  * sorted by date ascending (invoice line items print in date order).
  */

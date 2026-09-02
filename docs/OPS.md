@@ -15,7 +15,11 @@ completed but failed at their task — the Mac skills use them.)
 
 Writers:
 - **Vercel crons** stamp via `lib/job-log.ts` `logJobRun()` at their success
-  exits: `generate-invoices`, `send-invoices`, `payment-reminder`,
+  exits: `generate-invoices`, `send-invoices`, `prorated-arrears` (1st 9am SGT —
+  arrears drafts for a just-ended June/Oct–Dec month) + `prorated-arrears-send`
+  (2nd 10am SGT; **both stamp every month**, a quiet "not a prorated month"
+  no-op on the other eight, so a dead cron and a quiet month are told apart —
+  docs/INVOICES.md), `payment-reminder`,
   `progress-digest` (month period only), `retention` (non-dry),
   `deactivate-inactive` (non-dry — the monthly portal offboarding sweep,
   3rd 3:30am SGT), `practice-topup`,
