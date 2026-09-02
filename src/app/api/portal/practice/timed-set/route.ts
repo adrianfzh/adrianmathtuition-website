@@ -29,6 +29,7 @@ import { createServiceClient } from '@/lib/supabase-server';
 import { questionMarkdown, questionStructured, totalMarksOf, type BankQuestion } from '@/lib/bank-question-markdown';
 import { practiceAuth, levelAllowed, bankScope, qbLevelsFor, type PracticeCaller } from '@/lib/practice';
 import { portalIdentity } from '@/lib/portal-auth';
+import { examPrepVisible } from '@/lib/portal-beta';
 import { DAILY_GRADE_CAP } from '@/lib/practice-grade';
 import {
   MAX_TOPICS_PER_SET, TIMED_SET_COUNTS, marksForTiming, normaliseCount, planSlots, timeLimitSeconds,
@@ -62,6 +63,14 @@ export async function POST(req: NextRequest) {
 }
 
 async function build(caller: NonNullable<PracticeCaller>, body: Record<string, unknown>) {
+  // In prod but not student-facing yet (EXAM_PREP_OPEN_TO_STUDENTS, lib/portal-beta):
+  // the page already bounces students, and the builder refuses them too so a
+  // hand-crafted POST can't spend the grader budget through the back door.
+  // Adrian's admin cookie (on his test-student login) passes; admin Bearer is
+  // testing and passes by construction.
+  if (caller.kind === 'student' && !(await examPrepVisible())) {
+    return NextResponse.json({ error: 'Timed sets aren’t open yet' }, { status: 403 });
+  }
   const levels = caller.kind === 'student' ? qbLevelsFor(caller.account.level, caller.account.subjects) : null;
   const level = typeof body.level === 'string' && body.level ? body.level : levels?.[0]?.key;
   if (!level) return NextResponse.json({ error: 'level required' }, { status: 400 });

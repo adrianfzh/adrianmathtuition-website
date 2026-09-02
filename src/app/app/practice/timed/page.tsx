@@ -10,6 +10,7 @@
 import { redirect } from 'next/navigation';
 import { currentAccount } from '@/lib/portal-auth';
 import { qbLevelsFor } from '@/lib/practice';
+import { examPrepVisible } from '@/lib/portal-beta';
 import { MAX_TOPICS_PER_SET } from '@/lib/timed-set';
 import TimedFlow from './timed-flow';
 
@@ -20,6 +21,9 @@ export default async function TimedSetPage({ searchParams }: {
 }) {
   const { level, topics } = await searchParams;
   const account = await currentAccount(); // redirects to /login when signed out
+  // In prod but not student-facing yet (EXAM_PREP_OPEN_TO_STUDENTS, lib/portal-beta):
+  // a student with the URL lands back on the picker; Adrian's admin cookie passes.
+  if (!(await examPrepVisible())) redirect('/app/practice');
   const levels = qbLevelsFor(account.level, account.subjects);
   if (!levels.length) redirect('/app/practice');
   const wanted = (level || '').toUpperCase();

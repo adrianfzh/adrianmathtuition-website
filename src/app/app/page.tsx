@@ -8,7 +8,7 @@ import { getDashboardData } from '@/lib/portal-dashboard';
 import { getTodayCards } from '@/lib/portal-today';
 import { isNotesAuthed } from '@/lib/notes-auth';
 import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
-import { NOTES_OPEN_TO_STUDENTS, fullPortalVisible, viewingAsStudent } from '@/lib/portal-beta';
+import { EXAM_PREP_OPEN_TO_STUDENTS, NOTES_OPEN_TO_STUDENTS, fullPortalVisible, viewingAsStudent } from '@/lib/portal-beta';
 import { listStudentAssignments } from '@/lib/portal-assignments';
 import { assignmentHref, dueLabel, homeCardSummary, isPending } from '@/lib/assignments';
 import { homeCounts } from '@/lib/portal-home-counts';
@@ -381,8 +381,12 @@ async function NextLessonAndStats({ account, fullPortal, card, caption }: {
       </div>
 
       {/* Next exam countdown (2026-09-02) — same island, same Airtable batch;
-          renders nothing when no dated exam is inside the horizon. */}
-      <ExamCountdown exams={d.upcomingExams} card={card} caption={caption} />
+          renders nothing when no dated exam is inside the horizon. Behind
+          EXAM_PREP_OPEN_TO_STUDENTS (lib/portal-beta): in prod but not yet
+          student-facing — Adrian's admin cookie sees it. */}
+      {(fullPortal || EXAM_PREP_OPEN_TO_STUDENTS) && (
+        <ExamCountdown exams={d.upcomingExams} card={card} caption={caption} />
+      )}
 
       {/* Week stats — the "lessons done / coming up" pills were dropped on
           Adrian's request (2026-08-21); only the practice count remains, and
