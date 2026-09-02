@@ -95,15 +95,16 @@ describe('worstQuestions', () => {
 });
 
 describe('headline', () => {
-  it('names the biggest live theme and how widely it recurs', () => {
+  it('names the biggest live theme and what it cost on this paper — never "across N papers"', () => {
     const themes = analyse([
       part({ paperId: NEW, lost: 4, why: 'half cylinder surface' }),
-      part({ paperId: OLD, paperName: 'x', lost: 3, why: 'sector arc left out' }),
+      part({ paperId: NEW, question: '7', lost: 3, why: 'sector arc left out' }),
     ], NEW);
     const h = headline(themes, 60, 90);
     expect(h).toContain('60/90');
     expect(h).toContain('67%');
-    expect(h).toContain('2 papers');
+    expect(h).toContain('7 marks on this paper');
+    expect(h).not.toMatch(/across|\d+ papers/);
   });
 
   it('says so honestly when nothing repeats', () => {

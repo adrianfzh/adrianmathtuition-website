@@ -3,22 +3,21 @@
 // Adrian, 1 Sep 2026: "an analysis in the front page to say where in a paper did
 // the student lose most marks and the topics/questions they need to work on".
 //
-// TWO THINGS THIS HAD TO LEARN, both from Eva's five papers:
+// ONE PAPER — the one the page fronts (Adrian, 2 Sep 2026: "we should just
+// analyze that particular exam paper, not across 5 papers"). The first version
+// read the student's last few scripts so a habit could be told from a bad day,
+// and printed "fixed" rows for weaknesses that had stopped. Adrian's call: the
+// cover is stapled to ONE script, and a student reading about work handed in
+// three weeks ago cannot check it against the paper in their hands. So the
+// routes now hand this module the parts of a single run, and the ranking is
+// simply: which themes cost the most marks on that paper.
 //
-// 1. ONE PAPER IS NOT ENOUGH. The self-study worker read her newest script and
-//    picked shape-and-space, correctly. It missed that she gives away marks by
-//    leaving parts blank, that she answers "explain" by restating the claim, and
-//    that she never squares a scale factor — because on that one paper she left
-//    NOTHING blank, and "explain" cost her two marks, below any sensible cut. A
-//    single script cannot tell a habit from a bad day.
-//
-// 2. THE NEWEST PAPER HAS A VETO (Adrian's correction). Her blanks ran 6, then 8
-//    and 15, then 8, then zero on the most recent paper. Summed they look like her
-//    biggest problem; in date order they look like a problem she is solving.
-//    Ranking them first would teach her something she has already learned.
-//
-// So: aggregate across papers, then check the newest before ranking. Everything
-// here is pure — the route supplies the rows, the renderer draws the result.
+// The `live` / `papers` / `latestMarks` fields survive from the multi-paper
+// version and still mean what they say — with one paper every theme is live,
+// `papers` is 1 and `latestMarks` equals `marks`. They are kept so the shape
+// stays stable for the JSON route and so a stale theme could never outrank a
+// live one if history were ever fed back in. Everything here is pure — the
+// route supplies the rows, the renderer draws the result.
 
 export type LostPart = {
   paperId: string;
@@ -143,8 +142,5 @@ export function headline(themes: Theme[], awarded: number, max: number): string 
   const live = themes.filter(t => t.live);
   if (!live.length) return `${awarded}/${max} (${pct}%). Nothing here repeats — the losses are scattered, so work through the marked script itself.`;
   const first = live[0];
-  const where = first.papers === 1
-    ? 'on this paper'
-    : `across ${first.papers} papers`;
-  return `${awarded}/${max} (${pct}%). The biggest single thing to fix is **${first.title.toLowerCase()}** — ${first.marks} mark${first.marks === 1 ? '' : 's'} ${where}.`;
+  return `${awarded}/${max} (${pct}%). The biggest single thing to fix is **${first.title.toLowerCase()}** — ${first.marks} mark${first.marks === 1 ? '' : 's'} on this paper.`;
 }

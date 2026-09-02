@@ -53,9 +53,15 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
 4. **File both files into Dropbox** (from the repo, which is your working dir):
 
 ```bash
-node scripts/dropbox-put.mjs "<the .docx>" "/Self-Study/<Student Name>/<YYYY-MM-DD> <title> — <paper>.docx"
-node scripts/dropbox-put.mjs "<the .pdf>"  "/Self-Study/<Student Name>/<YYYY-MM-DD> <title> — <paper>.pdf"
+node scripts/dropbox-put.mjs "<the .docx>" "/Self-Study/<Student Name>/Practice Again (Wave <n>) — <paper>.docx" --overwrite
+node scripts/dropbox-put.mjs "<the .pdf>"  "/Self-Study/<Student Name>/Practice Again (Wave <n>) — <paper>.pdf" --overwrite
 ```
+
+   The filename is fixed (no date, no run number — the skill's "The filename is
+   fixed" section says why). Export the PDF through Word from the ONE fixed
+   folder `~/.adrianmath_word_export/` — Word's sandbox asks Adrian to grant
+   access to every new folder it writes into, so a per-job folder is a dialog
+   per job. Copy the DOCX in, export, copy the PDF back.
 
 5. **Complete the job** — this is what Telegrams Adrian:
 

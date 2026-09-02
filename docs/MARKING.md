@@ -398,6 +398,21 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   The list persists in `paper_marking_runs.result_json.practice`, so re-click and
   run reload show the stored list instead of paying for another call.
 - **Exact-form deduction (2026-08-10):** `MARK_SEVERITY_RULES` (bot `ai/paper-marker.js`, shared by the direct AND standalone prompts) docks 1 mark when a final answer whose exact value is a **TERMINATING decimal** is written further-rounded — the cover page instructs exact-or-3-s.f. (The trigger was 10.375 km rounded to "10.4" scoring 1/1 with just a *"leave exact if possible"* comment.) **Terminating decimals ONLY** (Adrian, same day: *"should not include surd or π-multiple"*): surd/π/non-terminating answers are fine at 3 s.f. — the marker must never demand surd or π form — and nothing is penalised where the question fixes the accuracy (2 d.p., money to the cent, angles to 1 d.p.).
+- **📄 "Where your marks went" front page (2026-09-01, single-paper since 2026-09-02):**
+  `lib/front-page-html.ts` (pure HTML, tested) is rendered with the shared Puppeteer
+  browser inside `mark-paper-pdf` (`buildFrontPage`) and prepended to the assembled PDF;
+  `/api/admin/paper-analysis?runId=` returns the same analysis as JSON. The ranking is
+  `lib/paper-analysis.ts` — keyword themes over the marker's `error_summary` sentences,
+  explainable on purpose, with the marker's own note quoted as the evidence per theme.
+  **It reads THIS run only.** The first version aggregated the student's last 12 papers
+  ("This page looks at your last 6 marked papers…", "fixed" rows, "over 4 papers");
+  Adrian, 2 Sep 2026 on Eva's cover: *"we should just analyze that particular exam paper,
+  not across 5 papers"* — cross-paper habit-finding belongs to the self-study wave he
+  reads, not to a page a student reads. Same day: *"make it fun"* — the page is now the
+  coral/teal/yellow rounded-card design (Quicksand + Nunito, no emoji: the Vercel
+  Chromium has no emoji font), one A4 sheet (`scrollHeight` ≤ 1123px is the test).
+  The closing "start with Q26 and Q11" line only claims a question "sits under" the top
+  theme when that theme's own evidence names it.
 - **✂️ Two-page spreads split at intake (2026-08-12):** `onPickImages` runs every picked photo (and every PDF-raster page, and every inbox attach — they all funnel through it) through `splitFileIfSpread` (`lib/spread-split.ts`, pure geometry unit-tested): landscape past `w > h·1.15` is cut into left/right halves at FULL resolution (3%-of-width gutter overlap each side) BEFORE the 1280px marking copy and 2600px hi-res original are made. Fixes BOTH spread problems at once: printed size (one wide PDF page fit one A4 sheet → each exam page ~A5; split halves each print full-page) and annotation grounding (a spread shrunk to 1280 gave each page ~640px → measured 10/10 margin-fallback correlation with low-res intake). A green `✂️ Split N…` receipt line shows under the drop zone. The same splitter runs on `/app/submit`, so student hand-ins get the same hygiene.
 - **📏 Paper totals are GROUNDED, not counted (2026-08-14):** the red `PAPER TOTAL x / y`
   denominator used to be the sum of the model's per-question `total_max` guesses, which was

@@ -172,6 +172,14 @@ the hard things while the easy marks keep leaking.
 Say in the wave WHICH papers each skill came from and how often — Adrian is
 choosing what to teach, and "three papers running" is the fact that decides it.
 
+**That is for the WAVE, which Adrian reads. On the SHEET itself, never name
+which paper or how many papers a mistake came from** (Adrian, 2 Sep 2026: *"no
+need to mention exactly which paper she made the mistakes"*). No "Q23(b) at
+Zhonghua", no "in three of your four papers", no "all four of your marked
+papers". The student's sheet talks about the paper in their hand — "Q14" and
+"on this paper" are fine. Other papers are Adrian's evidence, not the student's
+reading; the cross-paper history stays in the wave and the completion payload.
+
 ### What earns practice — Adrian's triage (31 Aug 2026, binding)
 
 **Practice is for what the student cannot yet do, not for what they got wrong.**
@@ -327,6 +335,21 @@ Invoke `create-teaching-notes` and give it this brief:
   - **Number the items 1, 2, 3 …** — never (a), (b), (c). Letters are for the
     PARTS of one question; using them for separate questions makes a
     three-question practice look like one question with three parts.
+    **And the reverse holds** (Adrian, 2 Sep 2026): the parts of ONE question
+    are (a), (b), (c), never 1, 2. A second part that starts "Hence…" or
+    reuses the first part's figure is a part, not a new item — Sophie's EM
+    sheet numbered "draw the line to solve…" / "Hence solve the inequality…"
+    as 1 and 2, and he sent it back. One stem, one figure, one answer line →
+    lettered parts.
+  - **Source lines carry no school name** (Adrian, 2 Sep 2026: *"no need to
+    write the school's name in the question"*). `[2023 / EM / Prelim / Q9]`,
+    never `[2023 / EM / Prelim / Tanjong Katong Girls / Q9]`. Keep year /
+    level / exam type / question number. "GCE" is the board, not a school, so
+    `[2017 / EM / GCE / Q17]` and `[2023 / EM / Specimen / GCE / Q16]` stay.
+    The with-school citation in `create-teaching-notes` is for Adrian's own
+    materials, not for a student's sheet. `scripts/sheet-worker/repair-sheet.py`
+    strips the school from a filed sheet as a repair, so a sheet that reaches
+    Dropbox with one is an authoring fault twice over.
   - **A question with parts gets ONE answer line, at the end**, carrying every
     part: `[Ans: (a) v = 5π cos(πt/6), max speed 15.7 cm/s; (b) 8.22 cm/s²;
     (c) 50 cm/s, a = −100 cm/s²]`. An answer line under each sub-part breaks the
@@ -428,6 +451,15 @@ the gap is the interesting half: it says what the bank is missing.
   cut — made for them, not talking at them). Nowhere else on the page.
   (This reverses the earlier "name never appears" rule: Adrian wants these
   personalised, just quietly.) The FILE name keeps the student's name as before.
+- **The title block is TIGHT** (Adrian, 2 Sep 2026: *"don't leave such a large
+  gap"*). The name sits directly under the title, and the first instruction
+  line directly under the name. In `worksheet_lib` terms: the title paragraph
+  gets `space_after = Pt(2)` and `line_spacing = 1.0` (grab it with
+  `ws.doc.paragraphs[-1]` right after `ws.title(...)` — `title()` returns
+  nothing), and the `For <Name>` subtitle gets `space_before = 0`,
+  `space_after = Pt(3)`, `line_spacing = 1.0`. The WSTitle style's default
+  `space_after` of 6pt plus a 10pt subtitle gap is what he sent back. Keep the
+  one blank paragraph AFTER the three instruction lines.
 - **Every ② item appears as a single line, not a section.** "Q13(a)(ii): the 500
   was already per second — no ÷ 60." That is the whole treatment.
 - **The Optional section (③) is last, and says it is optional in its heading**,
@@ -529,6 +561,15 @@ file, reporting that all 19 lost marks were already covered by the two sheets
 before it. They were — that was the point.
 
 ## Step 5 — file it for Adrian
+
+**Export the PDF from ONE fixed folder: `~/.adrianmath_word_export/`.** Copy the
+DOCX there, run the Word AppleScript (`document 1` + name guard — recipe in the
+sheet-worker toolchain notes), copy the PDF back. Microsoft Word is sandboxed:
+it puts a "Grant File Access" dialog in front of Adrian for every NEW folder it
+is asked to write into, and a per-job scratch dir means one dialog per job
+(found 2 Sep 2026). One folder, granted once, and the grant persists. Word also
+refuses `save as` into `/private/tmp/...` outright (`-1708`), so the export
+folder has to live under `$HOME` regardless.
 
 Render the DOCX **and** a preview PDF, then file both:
 

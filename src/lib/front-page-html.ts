@@ -4,9 +4,21 @@
 //
 // WRITTEN TO THE STUDENT. Not to Adrian, not to a parent: second person, the
 // topic names off their own syllabus contents page ("mensuration", not "shape &
-// space" — his correction), and one genuine piece of credit where the data
-// supports it. A page a sixteen-year-old will not read is a page that does not
-// exist, whatever it contains.
+// space" — his correction), and the marker's own note as the evidence for every
+// claim. A page a sixteen-year-old will not read is a page that does not exist,
+// whatever it contains.
+//
+// THIS PAPER ONLY (Adrian, 2 Sep 2026: "we should just analyze that particular
+// exam paper, not across 5 papers"). The first version read the student's last
+// few scripts and printed "fixed" rows and "over 4 papers" tallies. Gone: every
+// number on this page comes from the script it is stapled to, and no wording
+// assumes the student has a history here.
+//
+// FOR TEENAGERS (same day: "it looks professional for adults, but we are with
+// young students here, make it fun"). Coral / teal / sunny-yellow on white, one
+// accent per section, rounded cards, a big round score badge, Quicksand for the
+// headings. No emoji — the Chromium on Vercel has no emoji font and prints tofu
+// — and no images: every shape here is CSS.
 //
 // Pure: analysis in, HTML out, no I/O. The route renders it with the shared
 // Puppeteer browser and prepends the image to the assembled PDF.
@@ -49,7 +61,8 @@ export type FrontPageInput = {
   markedOn?: string | null;
   awarded: number;
   max: number;
-  papersRead: number;
+  /** Kept for callers that still send it; the page no longer reads it. */
+  papersRead?: number;
   themes: Theme[];
   worstQuestions: { question: string; lost: number; max: number }[];
 };
@@ -58,59 +71,33 @@ export type FrontPageInput = {
 // singular, and a cover that runs to two pages stops being a cover. The first
 // live render came out at 1603px against A4's 1123 because every theme printed
 // three joined examples. One example per theme, cut to a phrase, fits.
-const MAX_LIVE = 3;
+const MAX_THEMES = 3;
 const MAX_QUESTIONS = 5;
 
 /**
- * The themes to print: the top live ones, plus a RESERVED slot for the best
- * thing they have fixed.
+ * The themes to print: the biggest few from this paper.
  *
- * A plain `slice` cost Eva the only good news on her page. Fixed themes sort
- * last (they can never outrank a gap the student still has), so any cut takes
- * them first — and the fixed row is the whole reason the analysis reads five
- * papers instead of one. Her blanks ran 6, 8, 15, 8, then zero: told she has
- * stopped, that is worth more than a fourth thing to worry about.
+ * Only LIVE themes — ones that cost marks on the paper in the student's hands.
+ * The analysis is now built from that paper alone, so everything it returns is
+ * live; the filter is there so a stale theme can never be printed if a caller
+ * ever hands this page more history than it should have.
  */
 export function chooseThemes(themes: Theme[]): Theme[] {
-  const all = themes || [];
-  const live = all.filter(t => t.live).slice(0, MAX_LIVE);
-  const fixed = all.filter(t => !t.live && t.marks > 0)[0];
-  return fixed ? [...live, fixed] : all.slice(0, MAX_LIVE + 1);
+  return (themes || []).filter(t => t.live && t.marks > 0).slice(0, MAX_THEMES);
 }
 
-/**
- * The note explaining why the page judges more than the paper in their hands.
- * A student being told about work handed in three weeks ago is owed the reason,
- * and it is also the single idea that makes the ranking make sense.
- */
-function whyNote(papersRead: number): string {
-  if (papersRead < 2) return '';
-  return `<div class="why"><span class="n">${papersRead}</span><p>This page looks at your last
-    <b>${papersRead === 2 ? 'two' : papersRead === 3 ? 'three' : papersRead === 4 ? 'four' : papersRead}</b>
-    marked papers, not just this one. One paper cannot tell a topic you have not learnt from one hard
-    question on a bad day — but a mistake you make in three papers running is a gap you will carry into
-    the exam. It also shows what you have <em>fixed</em>.</p></div>`;
-}
-
-function themeRow(t: Theme): string {
-  const cls = t.live ? 'live' : 'eased';
-  const flag = t.live ? '' : '<span class="flag">fixed</span>';
-  const where = t.papers === 1 ? 'this paper' : `${t.papers} papers`;
+function themeRow(t: Theme, i: number): string {
   // The evidence, in the marker's own sentence — a claim a student cannot trace
-  // back to their own script is a claim they will argue with. The NEWEST one
-  // only: three joined notes read as a wall and pushed the page onto a second
-  // sheet, and the oldest of the three is the least like the work in their hand.
+  // back to their own script is a claim they will argue with. ONE note: three
+  // joined notes read as a wall and pushed the page onto a second sheet.
   const note = t.examples.length
     ? `<span class="where">${esc(t.examples[0].question)}</span> ${quote(t.examples[0].why)}`
     : '';
-  const progress = !t.live && t.marks > 0
-    ? ' <b>Not once on this paper.</b> Keep doing whatever changed.'
-    : '';
-  return `<div class="theme ${cls}">
-    <span class="dot"></span>
-    <span class="theme-title">${esc(t.title)}${flag}</span>
-    <span class="tally"><b>${t.marks}</b> marks &middot; ${where}</span>
-    <p class="theme-note">${note}${progress}</p>
+  return `<div class="theme">
+    <span class="num">${i + 1}</span>
+    <span class="theme-title">${esc(t.title)}</span>
+    <span class="tally"><b>&minus;${t.marks}</b> mark${t.marks === 1 ? '' : 's'} &middot; this paper</span>
+    <p class="theme-note">${note}</p>
   </div>`;
 }
 
@@ -125,126 +112,141 @@ function questionRow(q: { question: string; lost: number; max: number }): string
 
 /** The closing line: two questions to start on, tied to the ranking above. */
 function closingLine(input: FrontPageInput): string {
-  const top = input.themes.find(t => t.live);
+  const top = chooseThemes(input.themes || [])[0];
   const qs = input.worstQuestions.slice(0, 2).map(q => `<b>${esc(q.question)}</b>`);
   if (!qs.length) return '';
   const which = qs.length === 2 ? `${qs[0]} and ${qs[1]}` : qs[0];
-  const tie = top ? ` Both sit under <b>${esc(top.title.split('—')[0].trim().toLowerCase())}</b> above.` : '';
-  return `<p class="close">Start with ${which}.${tie} The practice sheet that came with this paper
-    drills exactly that.</p>`;
+  // Only claim a question "sits under" the top theme when the theme's own
+  // evidence names it. Sophie's Q26 (draw a line on the printed curve) was
+  // being filed under "giving a reason" because the sentence was unconditional.
+  const under = (q: string) => !!top && top.examples.some(e => e.question === q || e.question.startsWith(q + '('));
+  const named = input.worstQuestions.slice(0, 2).filter(q => under(q.question));
+  const topName = top ? `<b>${esc(top.title.split('—')[0].trim().toLowerCase())}</b>` : '';
+  const tie = !top || !named.length ? ''
+    : named.length === qs.length
+      ? ` ${qs.length === 2 ? 'Both' : 'It'} sit${qs.length === 2 ? '' : 's'} under ${topName} above.`
+      : ` <b>${esc(named[0].question)}</b> sits under ${topName} above.`;
+  return `<div class="close"><span class="close-tag">Your next move</span>
+    <p>Start with ${which}.${tie} The practice sheet that came with this paper drills exactly that.</p></div>`;
 }
 
 export function frontPageHtml(input: FrontPageInput): string {
   const pct = input.max > 0 ? Math.round((input.awarded / input.max) * 100) : 0;
   const themes = chooseThemes(input.themes || []);
-  const top = themes.find(t => t.live);
+  const top = themes[0];
   const lead = top
     ? `The one thing worth your time is <strong>${esc(top.title.split('—')[0].trim().toLowerCase())}</strong>.
-       It has cost you ${top.marks} mark${top.marks === 1 ? '' : 's'}${
-         top.papers > 1 ? ` over ${top.papers} papers` : ''}${
-         top.latestMarks ? `, and ${top.latestMarks} on this one` : ''}.`
+       It cost you ${top.marks} mark${top.marks === 1 ? '' : 's'} on this paper.`
     : 'Your losses on this paper are scattered rather than concentrated — work through the marked script itself.';
 
   return `<!doctype html><html><head><meta charset="utf-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
 <!-- Same KaTeX the marking PNGs use (lib/marking-pipeline.ts). Stylesheet only:
      mathHtml() has already typeset the notes server-side, so there is no script
      to run and nothing to wait for beyond the fonts. -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 <style>
-/* Single-theme on purpose: this is printed onto paper, so it commits to the
-   marked pages' own palette and never asks what the viewer's device prefers.
-   (A dark-mode query here would produce a black A4 page.) */
-:root{--sheet:#fff;--ink:#1F1D1A;--ink-soft:#6B6257;--ink-faint:#98907F;
-      --teach:#5B4636;--verdict:#C4342C;--earned:#1A7F37;--rule:#E7E1D5;
-      --rail:#F1EBDE;--shade:#FDFBF6;}
+/* Single-theme on purpose: this is printed onto paper, so it commits to one
+   light palette and never asks what the viewer's device prefers. (A dark-mode
+   query here would produce a black A4 page.) */
+:root{--sheet:#fff;--ink:#27293D;--ink-soft:#5D6072;--ink-faint:#9A9DAD;
+      --coral:#FF6F61;--coral-deep:#E4503F;--coral-tint:#FFEFEB;
+      --teal:#20A99F;--teal-deep:#178A82;--teal-tint:#E3F6F3;
+      --sun:#FFCB47;--sun-deep:#C98F00;--sun-tint:#FFF6D9;}
 *{box-sizing:border-box}
-body{margin:0;background:var(--sheet);color:var(--ink);width:210mm;
-     font-family:"Source Serif 4",Georgia,serif;font-size:14.5px;line-height:1.5;
-     -webkit-font-smoothing:antialiased;padding:15mm 17mm;display:flex;flex-direction:column;min-height:297mm}
-.masthead{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
-          padding-bottom:.55rem;border-bottom:1.5px solid var(--ink)}
-.brand{font-family:"IBM Plex Mono",monospace;font-size:.64rem;font-weight:600;
-       letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint)}
-.paper-name{font-size:.78rem;color:var(--ink-soft);font-style:italic}
-h1{font-size:2.05rem;font-weight:700;line-height:1.1;margin:.85rem 0 .2rem;letter-spacing:-.015em}
-.student{font-size:.92rem;color:var(--ink-soft);margin:0 0 1rem}
-.verdict{display:grid;grid-template-columns:auto 1fr;gap:0 1.4rem;align-items:center;
-         background:var(--shade);border:1px solid var(--rule);border-left:4px solid var(--verdict);
-         padding:.85rem 1.2rem;margin-bottom:1rem}
-.score{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
-       font-size:2.2rem;font-weight:600;line-height:1;white-space:nowrap}
-.score .of{color:var(--ink-faint);font-weight:400}
-.pct{font-family:"IBM Plex Mono",monospace;font-size:.7rem;color:var(--ink-faint);
-     letter-spacing:.08em;margin-top:.28rem}
-.verdict p{margin:0;font-size:.95rem}
-.verdict strong{color:var(--teach)}
-.why{display:grid;grid-template-columns:auto 1fr;gap:.75rem;align-items:start;
-     border:1px dashed var(--rule);background:var(--rail);padding:.75rem .95rem;
-     margin-bottom:1.15rem;font-size:.79rem;color:var(--teach);line-height:1.45}
-.why .n{font-family:"IBM Plex Mono",monospace;font-size:1.45rem;font-weight:600;line-height:1}
-.why p{margin:0}
-h2{font-family:"IBM Plex Mono",monospace;font-size:.64rem;font-weight:600;letter-spacing:.16em;
-   text-transform:uppercase;color:var(--ink-faint);margin:0 0 .28rem;padding-bottom:.42rem;
-   border-bottom:1px solid var(--rule)}
-.sub{font-size:.79rem;color:var(--ink-soft);margin:.38rem 0 .68rem;font-style:italic}
-.themes{display:flex;flex-direction:column;margin-bottom:1.15rem}
-.theme{display:grid;grid-template-columns:1.25rem 1fr auto;gap:0 .75rem;align-items:baseline;
-       padding:.52rem 0 .52rem .2rem;border-bottom:1px solid var(--rule)}
-.dot{width:.52rem;height:.52rem;border-radius:50%;align-self:center;justify-self:center}
-.live .dot{background:var(--verdict)}
-.eased .dot{background:transparent;border:1.5px solid var(--earned)}
-.live{border-left:3px solid var(--verdict)}
-.eased{border-left:3px solid var(--earned);opacity:.84}
-.theme-title{font-size:.96rem;font-weight:600;line-height:1.3}
-.eased .theme-title{font-weight:400}
-.theme-note{grid-column:2/4;font-size:.81rem;color:var(--ink-soft);margin-top:.22rem}
-.where{font-family:"IBM Plex Mono",monospace;font-size:.7rem;font-weight:600;color:var(--ink);
-       letter-spacing:.02em;margin-right:.25rem}
+body{margin:0;background:var(--sheet);color:var(--ink);width:210mm;min-height:297mm;
+     font-family:"Nunito","Trebuchet MS","Segoe UI",Arial,sans-serif;font-size:15px;line-height:1.48;
+     -webkit-font-smoothing:antialiased;padding:12mm 15mm 11mm;position:relative;overflow:hidden;
+     display:flex;flex-direction:column}
+/* Soft colour blobs behind the corners — CSS only, no images. They live in their
+   own overflow-hidden layer: a blob hanging off the bottom edge still counts
+   toward body.scrollHeight, and a full-page screenshot would grow past A4. */
+.blobs{position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none}
+.blob{position:absolute;border-radius:50%}
+.blob.a{width:230px;height:230px;right:-90px;top:-100px;background:var(--sun-tint)}
+.blob.b{width:150px;height:150px;left:-70px;top:250px;background:var(--coral-tint)}
+.blob.c{width:190px;height:190px;right:-70px;bottom:-80px;background:var(--teal-tint)}
+.page{position:relative;z-index:1;flex:1;display:flex;flex-direction:column}
+.masthead{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.brand{font-family:"Quicksand","Nunito",sans-serif;font-weight:700;font-size:.72rem;letter-spacing:.08em;
+       text-transform:uppercase;color:#fff;background:var(--teal);padding:.3rem .8rem;border-radius:999px}
+.paper-name{font-size:.8rem;font-weight:700;color:var(--ink-soft)}
+.hero{display:grid;grid-template-columns:auto 1fr;gap:0 1.5rem;align-items:center;margin:1.4rem 0 1.35rem}
+.badge{width:132px;height:132px;border-radius:50%;background:var(--sun);display:flex;flex-direction:column;
+       align-items:center;justify-content:center;box-shadow:0 0 0 8px var(--sun-tint);transform:rotate(-6deg)}
+.score{font-family:"Quicksand","Nunito",sans-serif;font-size:2.5rem;font-weight:700;line-height:1;
+       font-variant-numeric:tabular-nums;white-space:nowrap}
+.score .of{font-size:1.15rem;font-weight:700;color:var(--sun-deep)}
+.pct{font-size:.74rem;font-weight:800;letter-spacing:.08em;color:var(--sun-deep);margin-top:.3rem}
+.student{font-weight:800;font-size:.84rem;letter-spacing:.06em;text-transform:uppercase;color:var(--coral-deep);margin:0}
+h1{font-family:"Quicksand","Nunito",sans-serif;font-size:2.05rem;font-weight:700;line-height:1.08;margin:.15rem 0 .55rem;
+   letter-spacing:-.01em}
+.verdict{margin:0;background:var(--sun-tint);border-radius:14px;padding:.62rem .9rem;font-size:.93rem}
+.verdict strong{color:var(--coral-deep);font-weight:800}
+h2{display:flex;align-items:center;gap:.5rem;font-family:"Quicksand","Nunito",sans-serif;font-size:1.08rem;
+   font-weight:700;margin:0 0 .1rem}
+h2::before{content:"";width:.72rem;height:.72rem;border-radius:4px;background:currentColor;transform:rotate(12deg)}
+.sec-work h2{color:var(--coral-deep)}
+.sec-where h2{color:var(--teal-deep)}
+.sub{font-size:.8rem;color:var(--ink-soft);margin:0 0 .7rem}
+.themes{display:flex;flex-direction:column;gap:.55rem;margin-bottom:1.3rem}
+.theme{display:grid;grid-template-columns:1.75rem 1fr auto;gap:.1rem .7rem;align-items:center;
+       background:var(--coral-tint);border-radius:14px;padding:.65rem .9rem .65rem .7rem}
+.num{width:1.75rem;height:1.75rem;border-radius:50%;background:var(--coral);color:#fff;
+     font-family:"Quicksand","Nunito",sans-serif;font-weight:700;font-size:.95rem;
+     display:flex;align-items:center;justify-content:center}
+.theme-title{font-weight:800;font-size:.97rem;line-height:1.3}
+.tally{background:#fff;color:var(--coral-deep);border-radius:999px;padding:.18rem .62rem;
+       font-size:.74rem;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tally b{font-weight:800}
+.theme-note{grid-column:2/4;font-size:.82rem;color:var(--ink-soft);margin:.12rem 0 0}
+.where{display:inline-block;background:#fff;border:1.5px solid var(--coral);color:var(--coral-deep);
+       border-radius:6px;padding:0 .38rem;font-size:.7rem;font-weight:800;margin-right:.3rem;line-height:1.5}
 /* KaTeX sets its own size; hold it to the sentence it sits in. */
 .theme-note .katex{font-size:1em}
-.tally{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
-       font-size:.73rem;color:var(--ink-soft);white-space:nowrap}
-.tally b{color:var(--ink);font-weight:600}
-.flag{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:.56rem;
-      letter-spacing:.1em;text-transform:uppercase;padding:.06rem .32rem;margin-left:.4rem;
-      vertical-align:.12em;border:1px solid currentColor;color:var(--earned);font-weight:600}
-.questions{display:flex;flex-direction:column;gap:.32rem;margin-bottom:1.1rem}
-.q{display:grid;grid-template-columns:2.7rem 1fr 4rem;gap:.75rem;align-items:center}
-.q-label{font-family:"IBM Plex Mono",monospace;font-size:.83rem;font-weight:600;
+.questions{display:flex;flex-direction:column;gap:.55rem;margin-bottom:1.3rem}
+.q{display:grid;grid-template-columns:3rem 1fr 4.4rem;gap:.7rem;align-items:center}
+.q-label{font-family:"Quicksand","Nunito",sans-serif;font-weight:700;font-size:.92rem;color:var(--teal-deep);
          font-variant-numeric:tabular-nums}
-.bar{height:.52rem;background:var(--rail);position:relative;overflow:hidden}
-.bar span{position:absolute;inset:0 auto 0 0;background:var(--verdict);opacity:.8}
-.q-marks{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
-         font-size:.73rem;color:var(--ink-soft);text-align:right}
-.close{margin-top:auto;border-top:1.5px solid var(--ink);padding-top:.8rem;
-       font-size:.89rem;color:var(--teach)}
-.close b{color:var(--ink)}
-.meta{margin:.9rem 0 0;font-family:"IBM Plex Mono",monospace;font-size:.6rem;
-      letter-spacing:.06em;color:var(--ink-faint)}
+.bar{height:.8rem;border-radius:999px;background:var(--teal-tint);position:relative;overflow:hidden}
+.bar span{position:absolute;inset:0 auto 0 0;background:var(--teal);border-radius:999px}
+.q-marks{font-size:.76rem;font-weight:700;color:var(--ink-soft);text-align:right;font-variant-numeric:tabular-nums}
+.close{margin-top:auto;background:var(--teal);color:#fff;border-radius:16px;padding:.8rem 1.1rem .85rem}
+.close-tag{display:inline-block;font-family:"Quicksand","Nunito",sans-serif;font-weight:700;font-size:.68rem;
+           letter-spacing:.1em;text-transform:uppercase;background:rgba(255,255,255,.22);
+           padding:.14rem .55rem;border-radius:999px;margin-bottom:.32rem}
+.close p{margin:0;font-size:.93rem;font-weight:600}
+.close b{color:var(--sun);font-weight:800}
 </style></head><body>
+<div class="blobs"><span class="blob a"></span><span class="blob b"></span><span class="blob c"></span></div>
+<div class="page">
 <div class="masthead">
   <span class="brand">Adrian's Math Tuition</span>
   <span class="paper-name">${esc(input.paperName || 'Marked paper')}${
     input.markedOn ? ` &middot; marked ${esc(input.markedOn)}` : ''}</span>
 </div>
-<h1>Where your marks went</h1>
-<p class="student">${esc(input.studentName || '')}</p>
-<div class="verdict">
-  <div><div class="score">${input.awarded}<span class="of">/${input.max}</span></div>
+<div class="hero">
+  <div class="badge"><div class="score">${input.awarded}<span class="of">/${input.max}</span></div>
        <div class="pct">${pct}%</div></div>
-  <p>${lead}</p>
+  <div>
+    <p class="student">${esc(input.studentName || '')}</p>
+    <h1>Where your marks went</h1>
+    <p class="verdict">${lead}</p>
+  </div>
 </div>
-${whyNote(input.papersRead)}
+<div class="sec-work">
 <h2>What to work on</h2>
-<p class="sub">Ordered by what you are still doing — not by what has cost you most.</p>
+<p class="sub">Ordered by what cost you most on this paper — with the marker's own note on each.</p>
 <div class="themes">${themes.map(themeRow).join('')}</div>
-<h2>Where the marks went on this paper</h2>
-<p class="sub">The questions that cost you most.</p>
+</div>
+<div class="sec-where">
+<h2>Where the marks went</h2>
+<p class="sub">The questions that cost you most on this paper.</p>
 <div class="questions">${(input.worstQuestions || []).slice(0, MAX_QUESTIONS).map(questionRow).join('')}</div>
-${closingLine(input)}${input.papersRead < 2
-  ? '<p class="meta">Read against this paper alone — the first one you have had marked here.</p>' : ''}
+</div>
+${closingLine(input)}
+</div>
 </body></html>`;
 }

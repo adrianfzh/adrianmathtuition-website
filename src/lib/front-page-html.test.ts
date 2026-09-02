@@ -4,16 +4,20 @@ import type { Theme } from './paper-analysis';
 
 const theme = (over: Partial<Theme> = {}): Theme => ({
   key: 'shape', title: 'Mensuration — volume, surface area, arcs and sectors',
-  marks: 18, occasions: 10, papers: 5, live: true, latestMarks: 7,
+  marks: 7, occasions: 3, papers: 1, live: true, latestMarks: 7,
   examples: [{ paperName: 'p', question: 'Q5', why: 'Volume of a half cylinder is ½πr²h.' }],
   ...over,
 });
 
 const base: FrontPageInput = {
   studentName: 'Eva Isabelle Wong', paperName: 'E-Maths TYS 2022 Paper 2',
-  markedOn: '30 Aug 2026', awarded: 60, max: 90, papersRead: 5,
+  markedOn: '30 Aug 2026', awarded: 60, max: 90,
   themes: [theme()], worstQuestions: [{ question: 'Q5', lost: 7, max: 7 }],
 };
+
+// Every phrase the multi-paper version used. None may come back (Adrian, 2 Sep
+// 2026: "just analyze that particular exam paper, not across 5 papers").
+const HISTORY = /over \d+ papers|\d+ papers|marked papers|still doing|\bfixed\b|Not once|paper alone|first one you have had|bad day/;
 
 describe('frontPageHtml', () => {
   it('leads with the score and the one thing worth their time', () => {
@@ -22,26 +26,35 @@ describe('frontPageHtml', () => {
     expect(h).toContain('/90');
     expect(h).toContain('67%');
     expect(h).toContain('mensuration');       // lowercased topic, not the marker's category
+    expect(h).toContain('cost you 7 marks on this paper');
   });
 
-  it('explains why it read more than one paper', () => {
-    expect(frontPageHtml(base)).toMatch(/last\s+<b>5<\/b>\s+marked papers/);
-    expect(frontPageHtml(base)).toMatch(/bad day/);
-  });
-
-  it('drops that explanation when there is only one paper to go on', () => {
-    const h = frontPageHtml({ ...base, papersRead: 1 });
+  it('never explains a multi-paper read — there is none', () => {
+    const h = frontPageHtml(base);
     expect(h).not.toContain('class="why"');
-    expect(h).toContain('this paper alone');   // and says so, in words
+    expect(h).not.toMatch(HISTORY);
   });
 
-  it('marks an eased weakness as fixed and gives credit for it', () => {
+  it('reads the same whatever papersRead a caller still sends', () => {
+    const one = frontPageHtml({ ...base, papersRead: 1 });
+    const five = frontPageHtml({ ...base, papersRead: 5 });
+    expect(one).toBe(five);
+    expect(five).not.toMatch(HISTORY);
+    expect(five).toContain('this paper');
+  });
+
+  it('tallies each theme against this paper, not a run of them', () => {
+    const h = frontPageHtml({ ...base, themes: [theme({ marks: 5, papers: 4 })] });
+    expect(h).toMatch(/&minus;5<\/b> marks &middot; this paper/);
+    expect(h).not.toMatch(/4 papers/);
+  });
+
+  it('never prints a theme that is not live on this paper', () => {
     const h = frontPageHtml({ ...base, themes: [
-      theme(), theme({ key: 'blank', title: 'Questions you left blank', live: false, marks: 37, papers: 4, latestMarks: 0 }),
+      theme(), theme({ key: 'blank', title: 'Questions you left blank', live: false, marks: 37 }),
     ] });
-    expect(h).toContain('>fixed<');
-    expect(h).toContain('Not once on this paper');
-    expect(h).toContain('class="theme eased"');
+    expect(h).not.toContain('Questions you left blank');
+    expect(h).not.toContain('eased');
   });
 
   it('ties the closing line to the top weakness and the worst questions', () => {
@@ -86,6 +99,10 @@ describe('frontPageHtml', () => {
     expect(h).not.toContain('prefers-color-scheme');
   });
 
+  it('uses no emoji — the Chromium on Vercel has no emoji font', () => {
+    expect(frontPageHtml(base)).not.toMatch(/\p{Extended_Pictographic}/u);
+  });
+
   // ── the two defects the first live render on Eva's paper exposed ──────────
 
   it('typesets the marker\'s TeX instead of printing it at a student', () => {
@@ -103,17 +120,16 @@ describe('frontPageHtml', () => {
     expect((note.match(/\$/g) || []).length % 2).toBe(0);
   });
 
-  it('keeps a slot for what the student has FIXED — a plain slice always cuts it', () => {
+  it('prints at most three themes, biggest first, and only live ones', () => {
     const live = (n: number) => ({ ...base.themes[0], key: `l${n}`, title: `Live ${n}`, live: true, marks: 10 - n });
-    const fixed = { ...base.themes[0], key: 'blank', title: 'Questions you left blank', live: false, marks: 37 };
-    const out = chooseThemes([live(1), live(2), live(3), live(4), live(5), fixed]);
-    expect(out.map(t => t.key)).toContain('blank');
-    expect(out.filter(t => t.live).length).toBeLessThanOrEqual(3);
+    const stale = { ...base.themes[0], key: 'blank', title: 'Questions you left blank', live: false, marks: 37 };
+    const out = chooseThemes([live(1), live(2), live(3), live(4), live(5), stale]);
+    expect(out.map(t => t.key)).toEqual(['l1', 'l2', 'l3']);
+    expect(out.every(t => t.live)).toBe(true);
   });
 
-  it('does not invent a fixed row when there is nothing fixed to report', () => {
-    const live = (n: number) => ({ ...base.themes[0], key: `l${n}`, live: true, marks: 5 });
-    const out = chooseThemes([live(1), live(2)]);
-    expect(out.every(t => t.live)).toBe(true);
+  it('drops a live theme that cost nothing', () => {
+    const out = chooseThemes([theme({ key: 'a', marks: 0 }), theme({ key: 'b', marks: 2 })]);
+    expect(out.map(t => t.key)).toEqual(['b']);
   });
 });

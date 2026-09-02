@@ -227,12 +227,15 @@ export async function POST(req: NextRequest) {
 
 
 /**
- * The front page's data: every marked paper this student has, so a weakness can
- * be told from a bad day, and the newest one deciding what still counts.
+ * The front page's data: the lost parts of THIS run and nothing else. The first
+ * version read the student's last 12 papers so a weakness could be told from a
+ * bad day; Adrian, 2 Sep 2026: "we should just analyze that particular exam
+ * paper, not across 5 papers".
  *
- * Returns null — not an error — whenever there is nothing worth fronting: an
- * untagged paper, a paper with no losses, a database hiccup. The caller then
- * assembles exactly the PDF it always did.
+ * Returns null — not an error — whenever there is nothing worth fronting: a
+ * paper with no losses, a database hiccup. The caller then assembles exactly
+ * the PDF it always did. (buildPdf's link-recovery behaviour — docs/MARKING.md —
+ * is untouched by anything here.)
  */
 async function buildFrontPage(
   runId: string,
@@ -240,23 +243,10 @@ async function buildFrontPage(
 ): Promise<Buffer | null> {
   const sb = getSupabaseAdmin();
   const { data: run } = await sb.from('paper_marking_runs')
-    .select('student_id, student_name, paper_name').eq('id', runId).maybeSingle();
+    .select('id, student_name, paper_name, created_at, result_json').eq('id', runId).maybeSingle();
   if (!run) return null;
 
-  let rows: { id: string; paper_name: string | null; created_at: string; result_json: unknown }[] = [];
-  if (run.student_id) {
-    const { data } = await sb.from('paper_marking_runs')
-      .select('id, paper_name, created_at, result_json')
-      .eq('student_id', run.student_id)
-      .gte('created_at', new Date(Date.now() - 120 * 86400_000).toISOString())
-      .order('created_at', { ascending: false }).limit(12);
-    rows = (data ?? []) as typeof rows;
-  }
-  if (!rows.some(r => r.id === runId)) {
-    const { data } = await sb.from('paper_marking_runs')
-      .select('id, paper_name, created_at, result_json').eq('id', runId).limit(1);
-    rows = [...((data ?? []) as typeof rows), ...rows];
-  }
+  const rows = [run as { id: string; paper_name: string | null; created_at: string; result_json: unknown }];
 
   const parts: LostPart[] = [];
   for (const r of rows) {
@@ -284,7 +274,7 @@ async function buildFrontPage(
     paperName: meta.paperName || run.paper_name,
     markedOn: null,
     awarded: meta.awarded, max: meta.max,
-    papersRead: rows.length,
+    papersRead: 1,
     themes: analyse(parts, runId),
     worstQuestions: worstQuestions(parts, runId),
   });
