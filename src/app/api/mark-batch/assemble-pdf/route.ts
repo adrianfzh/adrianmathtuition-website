@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest } from '@/lib/airtable';
+import { batchSubmissionsFormula, submissionsLinkedToBatch } from '@/lib/mark-batch-submissions';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { put } from '@vercel/blob';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
@@ -171,11 +172,11 @@ export async function POST(req: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let submissions: any[] = [];
   if (batchAirtableId) {
-    const subFormula = encodeURIComponent(`FIND("${batchAirtableId}", ARRAYJOIN({Batches}))`);
+    const subFormula = encodeURIComponent(batchSubmissionsFormula(batchId));
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const subData = await (await import('@/lib/airtable')).airtableRequestAll('Submissions', `?filterByFormula=${subFormula}`) as any;
-      submissions = subData.records || [];
+      submissions = submissionsLinkedToBatch(subData.records || [], batchAirtableId);
     } catch (err) {
       console.error('[assemble-pdf] submissions fetch failed:', err);
     }

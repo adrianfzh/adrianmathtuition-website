@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequestAll } from '@/lib/airtable';
+import { batchSubmissionsFormula, submissionsLinkedToBatch } from '@/lib/mark-batch-submissions';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
@@ -26,11 +27,11 @@ export async function GET(req: NextRequest) {
   }
 
   // Fetch submissions linked to this batch
-  const subFormula = encodeURIComponent(`FIND("${batchAirtableId}", ARRAYJOIN({Batches}))`);
+  const subFormula = encodeURIComponent(batchSubmissionsFormula(batchId));
   let subRecords: any[] = [];
   try {
     const data = await airtableRequestAll('Submissions', `?filterByFormula=${subFormula}`);
-    subRecords = data.records || [];
+    subRecords = submissionsLinkedToBatch(data.records || [], batchAirtableId);
   } catch (err: unknown) {
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }

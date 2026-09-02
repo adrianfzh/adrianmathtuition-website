@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequestAll } from '@/lib/airtable';
+import { batchSubmissionsFormula, submissionsLinkedToBatch } from '@/lib/mark-batch-submissions';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
@@ -75,10 +76,10 @@ export async function GET(req: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let submissions: any[] = [];
   if (atRec?.id) {
-    const subFormula = encodeURIComponent(`FIND("${atRec.id}", ARRAYJOIN({Batches}))`);
+    const subFormula = encodeURIComponent(batchSubmissionsFormula(batchId));
     try {
       const subData = await airtableRequestAll('Submissions', `?filterByFormula=${subFormula}`);
-      const recs = subData.records || [];
+      const recs = submissionsLinkedToBatch(subData.records || [], atRec.id);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recs.sort((a: any, b: any) => {
         const la = a.fields?.['Question Number'] || '';

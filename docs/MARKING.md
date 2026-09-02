@@ -1720,6 +1720,22 @@ Three-endpoint architecture, client-orchestrated, stays within Vercel Hobby 60 s
 | `/api/mark-batch/delete` | POST | Soft-delete a batch (sets Status=deleted) |
 | `/api/mark-batch/upload-amended` | POST | Upload amended PDF → overwrites Final PDF URL |
 
+> ⚠ **Submissions-by-batch lookups FIND the Batch ID text, never the record id
+> (fixed 2026-09-02):** `get`, `submissions` and `assemble-pdf` all filtered
+> `FIND("<recId>", ARRAYJOIN({Batches}))` — but ARRAYJOIN on a linked-record
+> field yields the linked rows' primary-field TEXT (the `batch_<ts>_<rand>`
+> Batch ID), never record ids, so every Airtable submissions lookup returned
+> zero rows from launch (CLAUDE.md "Linked record filtering" — same class as
+> the invoice bugs fixed the same day). Nobody noticed because both consumers
+> paper over an empty list: the batch detail page falls back to Supabase
+> `marking_json` when `submissions` is empty, and assemble-pdf has an explicit
+> Supabase fallback (its "Supabase fallback" log line was firing on every
+> assembly). The formula + JS record-id confirm now live in
+> [`../src/lib/mark-batch-submissions.ts`](../src/lib/mark-batch-submissions.ts)
+> (tested) — reuse it for any new Submissions-by-batch query. Note
+> `/api/mark-batch/submissions` itself has NO callers (website or bot) — it was
+> fixed for correctness but is effectively dead.
+
 ### Tab filter semantics
 
 - **"To be marked"** tab (`?status=to-mark`): `detected` + `marking` only — not yet AI-processed
