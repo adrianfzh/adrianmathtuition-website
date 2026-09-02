@@ -1,20 +1,27 @@
 import { describe, it, expect } from 'vitest';
 import {
   computeScienceMastery, gradeMcq, isMcqAnswer, isScienceLevel, mcqOptionsIn, mcqStemParagraphs, normaliseMcqChoice,
-  scienceImageUrl, scienceLevelsFor, scienceSubjectOf,
+  scienceImageUrl, scienceLevelForSubject, scienceLevelsFor, scienceSubjectOf,
 } from './science-levels';
 
 describe('science levels + access', () => {
-  it('knows PHY and nothing else (yet)', () => {
+  it('knows the three pure sciences and nothing else', () => {
     expect(isScienceLevel('PHY')).toBe(true);
+    expect(isScienceLevel('CHEM')).toBe(true);
+    expect(isScienceLevel('BIO')).toBe(true);
     expect(isScienceLevel('AM')).toBe(false);
     expect(scienceSubjectOf('PHY')).toBe('physics');
+    expect(scienceSubjectOf('CHEM')).toBe('chemistry');
+    expect(scienceSubjectOf('BIO')).toBe('biology');
     expect(scienceSubjectOf('EM')).toBeNull();
+    expect(scienceLevelForSubject('biology')?.key).toBe('BIO');
+    expect(scienceLevelForSubject(null)).toBeNull();
   });
   it('closed → nothing; preview → every science level; open → by Airtable subject', () => {
     expect(scienceLevelsFor(['Physics'], 'closed')).toEqual([]);
-    expect(scienceLevelsFor(null, 'preview')).toEqual([{ key: 'PHY', label: 'Physics' }]);
+    expect(scienceLevelsFor(null, 'preview').map(l => l.key)).toEqual(['PHY', 'CHEM', 'BIO']);
     expect(scienceLevelsFor(['A Math', 'physics '], 'open')).toEqual([{ key: 'PHY', label: 'Physics' }]);
+    expect(scienceLevelsFor(['Biology', 'Chemistry'], 'open').map(l => l.key)).toEqual(['CHEM', 'BIO']);
     expect(scienceLevelsFor(['A Math'], 'open')).toEqual([]);
     expect(scienceLevelsFor(null, 'open')).toEqual([]);
   });

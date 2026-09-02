@@ -92,7 +92,7 @@ export async function gradeAttempt(opts: {
   image?: AttemptImage;
   weaknessTags: string[];
   pitfalls?: PitfallHint[];
-  subject?: 'math' | 'physics';
+  subject?: 'math' | 'physics' | 'chemistry' | 'biology';
 }): Promise<GradeResult> {
   const { question, lines, image, weaknessTags, pitfalls = [], subject = 'math' } = opts;
   const isPhoto = !!image;

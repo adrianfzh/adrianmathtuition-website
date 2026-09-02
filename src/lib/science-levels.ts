@@ -5,12 +5,13 @@
 // server routes and the client flow need: the level keys, subject gating,
 // MCQ handling and mastery arithmetic. No I/O.
 //
-// v1 scope (Adrian, 2026-09-02: "can we have physics questions practice too?
-// … gatekeep from students first"): physics only, behind
-// SCIENCE_PRACTICE_OPEN_TO_STUDENTS (lib/portal-beta). The bank is ~75 %
-// MCQ, and the "never ship another company's watermark" rule keeps the
-// (unscanned) image questions out for now, so the eligible pool is text-only:
-// ≈2,100 MCQ + ≈100 structured questions across the 21 O-Level topics.
+// Scope (Adrian, 2026-09-02: "can we have physics questions practice too?
+// … gatekeep from students first", then "do the same for chemistry and
+// bio"): the three O-Level pure sciences, behind SCIENCE_PRACTICE_OPEN_TO_STUDENTS
+// (lib/portal-beta). The banks are mostly MCQ, and the "never ship another
+// company's watermark" rule keeps the (unscanned) image questions out for now,
+// so the eligible pools are text-only — physics ≈2.2k (21 topics), chemistry
+// ≈3.8k (21 topics), biology ≈1.3k (23 topics); ≈85 % MCQ overall.
 
 export type ScienceSubject = 'physics' | 'chemistry' | 'biology';
 
@@ -27,7 +28,13 @@ export interface ScienceLevel {
 
 export const SCIENCE_LEVELS: ScienceLevel[] = [
   { key: 'PHY', label: 'Physics', subject: 'physics', bankLevel: 'PHYS', airtableSubject: 'Physics' },
+  { key: 'CHEM', label: 'Chemistry', subject: 'chemistry', bankLevel: 'CHEM', airtableSubject: 'Chemistry' },
+  { key: 'BIO', label: 'Biology', subject: 'biology', bankLevel: 'BIO', airtableSubject: 'Biology' },
 ];
+
+export function scienceLevelForSubject(subject: ScienceSubject | null | undefined): ScienceLevel | null {
+  return SCIENCE_LEVELS.find(l => l.subject === subject) ?? null;
+}
 
 export function scienceLevel(key: string | null | undefined): ScienceLevel | null {
   return SCIENCE_LEVELS.find(l => l.key === key) ?? null;

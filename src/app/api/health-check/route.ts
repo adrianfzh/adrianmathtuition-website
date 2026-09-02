@@ -524,19 +524,23 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
-    // 🔬 Science bank (physics practice, /app/practice level PHY — admin-preview
+    // 🔬 Science bank (physics/chemistry/biology practice, /app/practice levels PHY/CHEM/BIO — admin-preview
     // until SCIENCE_PRACTICE_OPEN_TO_STUDENTS). Separate Supabase project; a
     // rotated key or paused project would silently empty the picker.
     timed('science-bank', async () => {
       const url = (process.env.SUPABASE_URL_SCIENCE || '').trim();
       const key = (process.env.SUPABASE_SERVICE_KEY_SCIENCE || '').trim();
       if (!url || !key) throw new Error('SUPABASE_URL_SCIENCE / SUPABASE_SERVICE_KEY_SCIENCE not set');
-      const q = await fetch(`${url}/rest/v1/bank_topics?select=topic&subject=eq.physics&quarantined=eq.false&limit=50`,
-        { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: T(10000) });
-      if (!q.ok) throw new Error(`HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
-      const rows = await q.json();
-      if (!Array.isArray(rows) || rows.length < 15) throw new Error(`physics bank_topics returned ${Array.isArray(rows) ? rows.length : 'non-array'} (expected ≥ 15 topics)`);
-      return `physics ${rows.length} topics`;
+      const out: string[] = [];
+      for (const subject of ['physics', 'chemistry', 'biology']) {
+        const q = await fetch(`${url}/rest/v1/bank_topics?select=topic&subject=eq.${subject}&quarantined=eq.false&limit=50`,
+          { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: T(10000) });
+        if (!q.ok) throw new Error(`${subject}: HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
+        const rows = await q.json();
+        if (!Array.isArray(rows) || rows.length < 15) throw new Error(`${subject} bank_topics returned ${Array.isArray(rows) ? rows.length : 'non-array'} (expected ≥ 15 topics)`);
+        out.push(`${subject} ${rows.length}`);
+      }
+      return out.join(' · ') + ' topics';
     }),
     // The parent-report store the monthly cron writes into. It runs unattended
     // on the 1st, so a broken table or renamed column would mean parents simply

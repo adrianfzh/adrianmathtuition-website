@@ -38,10 +38,10 @@ answer-key fixes applied.
    are **still ACTIVE** (pause+delete was pencilled for ~2026-08-18; never done).
 3. 4 Class-A rows (A2+A6: `0e9634e4`, `af34ac19`, `3ab6dced`, `f832eed5`) still
    await Adrian's source-paper ruling.
-4. Portal integration — **physics practice v1 shipped 2026-09-02 (admin-preview,
-   `SCIENCE_PRACTICE_OPEN_TO_STUDENTS=false`)**: website env vars added, the
-   practice routes read the physics bank as level `PHY` (CLAUDE.md map). Still true:
-   no route reads chemistry/biology/lower-sec yet, portal content tables (`learning_units`, `content_snippets`, `subgroups`
+4. Portal integration — **physics + chemistry + biology practice v1 shipped
+   2026-09-02 (admin-preview, `SCIENCE_PRACTICE_OPEN_TO_STUDENTS=false`)**: website
+   env vars added, the practice routes read the three banks as levels `PHY` /
+   `CHEM` / `BIO` (CLAUDE.md map). Still true: no route reads the lower-sec bank, portal content tables (`learning_units`, `content_snippets`, `subgroups`
    tree) are math-only. Bot-side science Q&A is built (subject classifier, prompt
    additions distilled from real mark schemes, `science_diagrams` curated assets)
    and gated only on Adrian's red-pen review of flagged prompt items.

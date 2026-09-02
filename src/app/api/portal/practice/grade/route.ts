@@ -16,7 +16,7 @@ import { portalIdentity } from '@/lib/portal-auth';
 import { requireActiveAccess } from '@/lib/portal-passes';
 import { loadPitfallsForQuestion } from '@/lib/topic-pitfalls';
 import { parseTimedMeta } from '@/lib/timed-set';
-import { gradeMcq, isMcqAnswer, isScienceSubject, normaliseMcqChoice, scienceLevelsFor } from '@/lib/science-levels';
+import { gradeMcq, isMcqAnswer, isScienceSubject, normaliseMcqChoice, scienceLevelForSubject, scienceLevelsFor } from '@/lib/science-levels';
 import { scienceEligible, scienceQuestion } from '@/lib/science-bank';
 import { sciencePracticeAccess } from '@/lib/portal-beta';
 
@@ -83,7 +83,8 @@ export async function POST(req: NextRequest) {
     // Gate: same access rule as the picker (closed to students until
     // SCIENCE_PRACTICE_OPEN_TO_STUDENTS; Adrian's admin cookie previews).
     const access = await sciencePracticeAccess();
-    if (!scienceLevelsFor(account.subjects, access).some(l => l.key === 'PHY')) {
+    const sciLevel = scienceLevelForSubject(scienceSubject);
+    if (!sciLevel || !scienceLevelsFor(account.subjects, access).some(l => l.key === sciLevel.key)) {
       return NextResponse.json({ error: 'Science practice isn’t open yet' }, { status: 403 });
     }
     let sq;
@@ -129,8 +130,8 @@ export async function POST(req: NextRequest) {
     let sres;
     try {
       sres = await gradeAttempt({
-        question: { ...sq, level: 'O-Level Physics' } as Record<string, unknown>,
-        lines: cleanLines, image: attemptImage, weaknessTags: [], pitfalls: [], subject: 'physics',
+        question: { ...sq, level: `O-Level ${sciLevel.label}` } as Record<string, unknown>,
+        lines: cleanLines, image: attemptImage, weaknessTags: [], pitfalls: [], subject: scienceSubject,
       });
     } catch {
       return NextResponse.json({ error: 'Marking hiccup — try again in a moment' }, { status: 502 });
@@ -151,7 +152,7 @@ export async function POST(req: NextRequest) {
       .select('id').single();
     if (insSErr) console.error('[practice-grade] science attempt insert failed:', insSErr.message);
     if (sres.parseRetried) {
-      sendTelegram(`⚠️ Physics practice grade needed a JSON retry — ${account.display_name || account.email}, ${topics[0] || '?'}, ${sres.score}/${sres.outOf}. Worth a spot-check.`).catch(() => {});
+      sendTelegram(`⚠️ ${sciLevel.label} practice grade needed a JSON retry — ${account.display_name || account.email}, ${topics[0] || '?'}, ${sres.score}/${sres.outOf}. Worth a spot-check.`).catch(() => {});
     }
     return NextResponse.json({ attemptId: insS?.id ?? null, result: sres, weaknessTags: [] });
   }

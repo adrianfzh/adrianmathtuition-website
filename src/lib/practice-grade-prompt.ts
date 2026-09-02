@@ -41,10 +41,10 @@ export function buildGradingPrompt(opts: {
   // only — placed after the marking rules, like markAnatomy, so it cannot shift
   // how marks are awarded. Empty/omitted renders nothing.
   pitfalls?: PitfallHint[];
-  // Science practice (2026-09-02): 'physics' swaps the examiner framing and
-  // adds the O-Level physics conventions (units, significant figures, formula
-  // → substitution → answer). The JSON contract is unchanged.
-  subject?: 'math' | 'physics';
+  // Science practice (2026-09-02): a science subject swaps the examiner framing
+  // and adds that O-Level syllabus's marking conventions. The JSON contract is
+  // unchanged.
+  subject?: 'math' | 'physics' | 'chemistry' | 'biology';
 }): string {
   const { question, lines, isPhoto, weaknessTags, anatomy = true, pitfalls = [], subject = 'math' } = opts;
 
@@ -84,12 +84,16 @@ In "transcribedLines", return these same lines in the same order — exactly one
     ? `\nmarkAnatomy labels each part's marks with O-Level mark codes — M for a method mark, A for an accuracy mark, B for an independent mark (M1, A1, B1, …). It is EXPLANATORY ONLY: first decide awarded/outOf exactly as instructed above, then describe that decision — markAnatomy must never change or contradict the marks. Give exactly one entry per mark of the part's outOf, each with a short student-readable "for" phrase; set "earned" per whether that specific mark was gained, so the earned entries count to exactly "awarded".`
     : '';
 
-  const examiner = subject === 'physics'
-    ? 'You are an experienced Singapore O-Level Physics (6091) examiner marking one student\'s working against the official mark scheme.'
+  const SCIENCE_EXAM: Record<string, string> = { physics: 'O-Level Physics (6091)', chemistry: 'O-Level Chemistry (6092)', biology: 'O-Level Biology (6093)' };
+  const examiner = subject !== 'math' && SCIENCE_EXAM[subject]
+    ? `You are an experienced Singapore ${SCIENCE_EXAM[subject]} examiner marking one student's working against the official mark scheme.`
     : `You are an experienced Singapore ${question.level} mathematics examiner marking one student's working against the official mark scheme.`;
-  const physicsRules = subject === 'physics'
-    ? `\n- Physics conventions: a numerical answer needs its unit — a missing or wrong unit loses the accuracy mark for that value (method marks stay). Accept 2–3 significant figures unless the question fixes it; do not penalise sensible rounding. The usual pattern is formula (stated or clearly used) → correct substitution → answer: credit each step the scheme carries. "State", "define" and "explain" marks want the precise physics idea (the named law, the direction, the energy change); vague or circular wording earns 0 for that mark. Use g = 10 m/s² unless the question says otherwise.`
-    : '';
+  const SCIENCE_RULES: Record<string, string> = {
+    physics: `\n- Physics conventions: a numerical answer needs its unit — a missing or wrong unit loses the accuracy mark for that value (method marks stay). Accept 2–3 significant figures unless the question fixes it; do not penalise sensible rounding. The usual pattern is formula (stated or clearly used) → correct substitution → answer: credit each step the scheme carries. "State", "define" and "explain" marks want the precise physics idea (the named law, the direction, the energy change); vague or circular wording earns 0 for that mark. Use g = 10 m/s² unless the question says otherwise.`,
+    chemistry: `\n- Chemistry conventions: a chemical equation earns its mark only when the formulae are correct AND it is balanced; state symbols only when the question asks for them. Mole calculations follow formula → substitution → answer with the unit (mol, g, dm³, mol/dm³); accept 2–3 significant figures. Use the relative atomic masses given in the question or the Periodic Table. Observations must be specific — the colour change from X to Y, effervescence of a named gas, a precipitate of a stated colour — "a reaction occurs" earns 0. "Explain" marks want the chemical idea (electron transfer, bond breaking and forming, collision frequency, the ion or particle involved); naming the right substance without the reasoning earns only the identification mark.`,
+    biology: `\n- Biology conventions: marks are awarded for specific named structures, processes and terms from the syllabus — a correct idea in vague words ("it goes through", "it helps") earns 0 for that point; the precise term earns it. "Explain" answers need the cause → effect chain in order; "compare" answers must state the point for both things compared; "describe the data" answers must quote figures with their units from the table or graph and name the trend. Definitions must be complete (e.g. osmosis: net movement of water molecules through a partially permeable membrane down a water potential gradient). Restating the question or the stem earns nothing.`,
+  };
+  const physicsRules = subject !== 'math' ? (SCIENCE_RULES[subject] ?? '') : '';
 
   return `${examiner}
 
