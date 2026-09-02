@@ -103,6 +103,54 @@ async function resolveTopic(category?: NotifyCategory): Promise<{ chatId: string
   }
 }
 
+/**
+ * Send a file into the same chat/topic `sendTelegram` would use. Telegram fetches
+ * a URL itself ONLY for PDF/ZIP/GIF (a Dropbox temporary link to a .docx comes
+ * back "failed to get HTTP URL content", 3 Sep 2026) — anything else must be
+ * uploaded as bytes. Best-effort like every notification: false, never a throw.
+ */
+export async function sendTelegramDocument(
+  source: { url: string } | { bytes: Uint8Array | Buffer; filename: string; contentType?: string },
+  caption?: string,
+  category?: NotifyCategory,
+): Promise<boolean> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const routed = await resolveTopic(category);
+  const chatId = routed?.chatId ?? process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) {
+    console.warn('[telegram] Missing bot token or chat ID');
+    return false;
+  }
+  try {
+    let res: Response;
+    if ('url' in source) {
+      res = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId, document: source.url, caption, parse_mode: 'HTML',
+          ...(routed?.threadId ? { message_thread_id: routed.threadId } : {}),
+        }),
+      });
+    } else {
+      const fd = new FormData();
+      fd.append('chat_id', String(chatId));
+      if (caption) { fd.append('caption', caption); fd.append('parse_mode', 'HTML'); }
+      if (routed?.threadId) fd.append('message_thread_id', String(routed.threadId));
+      fd.append('document', new Blob([source.bytes as BlobPart], { type: source.contentType || 'application/octet-stream' }), source.filename);
+      res = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, { method: 'POST', body: fd });
+    }
+    if (!res.ok) {
+      console.error('[telegram] sendTelegramDocument failed:', await res.text());
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('[telegram] sendTelegramDocument threw:', (err as Error).message);
+    return false;
+  }
+}
+
 export async function sendTelegram(text: string, category?: NotifyCategory): Promise<boolean> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const routed = await resolveTopic(category);

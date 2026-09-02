@@ -93,6 +93,15 @@ export async function getTemporaryLink(path: string): Promise<string> {
   return data.link;
 }
 
+/** The file's bytes, via a temporary link — read scope only, no sharing scope needed
+ *  (the app has none: sharing/* endpoints 400 "not permitted", 3 Sep 2026). */
+export async function downloadFile(path: string): Promise<Buffer> {
+  const link = await getTemporaryLink(path);
+  const res = await fetch(link);
+  if (!res.ok) throw new Error(`Dropbox download failed: ${res.status}`);
+  return Buffer.from(await res.arrayBuffer());
+}
+
 // Escape every non-ASCII code unit as \uXXXX. Dropbox-API-Arg is an HTTP header,
 // so anything above 0x7e (a curly apostrophe pasted from Notes, an accented name)
 // throws "Invalid character in header content" before the request leaves Node.

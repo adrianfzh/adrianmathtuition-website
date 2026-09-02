@@ -106,13 +106,27 @@ export function sanitizeResult(input: unknown): {
   };
 }
 
-/** The Telegram Adrian gets when a sheet lands. Pure so its wording is testable. */
+/** The Dropbox folder a filed sheet sits in, as the Files app shows it ("Students › Tan Sijia › 2026-08-31 …"). '' when unknown. */
+export function sheetFolder(docxPath: string | null | undefined): string {
+  const parts = String(docxPath || '').split('/').filter(Boolean);
+  parts.pop();                                   // the file itself
+  return parts.join(' › ');
+}
+
+/**
+ * The Telegram Adrian gets when a sheet lands. Pure so its wording is testable.
+ * The files themselves follow as documents (route.ts sendSheetFiles) — Adrian,
+ * 3 Sep 2026: "can i have the link on telegram to see the learning sheet too?"
+ * The app's Dropbox token has no sharing scope, so there is no permanent link
+ * to give; the message names the folder and the PDF + DOCX ride behind it.
+ */
 export function completionMessage(job: Pick<SheetJob, 'student_name' | 'paper_name'>, result: ReturnType<typeof sanitizeResult>): string {
   const who = job.student_name || 'A student';
   const lines = [`📘 Self-study sheet ready for <b>${who}</b>${job.paper_name ? ` — from ${job.paper_name}` : ''}`];
   if (result?.wave.length) lines.push(`Wave: ${result.wave.join(' · ')}`);
   if (result?.shelved.length) lines.push(`🧺 Shelved for later: ${result.shelved.join(' · ')}`);
   if (result?.verified) lines.push(`✓ ${result.verified}`);
-  lines.push('', 'In Dropbox — edit it, export the PDF beside it, then release the paper + sheet together from triage.');
+  const folder = sheetFolder(result?.docx_path);
+  lines.push('', `${folder ? `📂 Dropbox › ${folder}` : 'In Dropbox'} — ${result?.pdf_path ? 'PDF and DOCX below; ' : ''}edit the DOCX, export the PDF beside it, then release the paper + sheet together from triage.`);
   return lines.join('\n');
 }

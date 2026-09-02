@@ -21,6 +21,8 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
 import { logJobRun } from '@/lib/job-log';
 import { pickNextJob, sanitizeResult, completionMessage, cancelState, MAX_ATTEMPTS, type SheetJob } from '@/lib/sheet-jobs';
+import { sendTelegramDocument } from '@/lib/telegram';
+import { downloadFile, getTemporaryLink } from '@/lib/dropbox';
 import { normaliseDiagnosis, type Diagnosis } from '@/lib/sheet-diagnosis';
 import { rebuildRunPdfs, type RebuildOutcome } from '@/lib/rebuild-run-pdfs';
 import { queueSheetJob } from '@/lib/sheet-queue';
@@ -153,7 +155,9 @@ export async function POST(req: NextRequest) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     if (!job) return NextResponse.json({ ok: false, cancelled: true, error: 'cancelled — this sheet was stopped' }, { status: 409 });
     // Best-effort: a Telegram hiccup must not undo a finished sheet.
-    sendTelegram(completionMessage(job, result)).catch(() => {});
+    sendTelegram(completionMessage(job, result))
+      .then(() => sendSheetFiles(job, result))
+      .catch(() => {});
     logJobRun('sheet-worker', true, `${job.student_name || job.airtable_student_id}: sheet filed`).catch(() => {});
 
     // ── The sheet's diagnosis drives the cover (Adrian, 2 Sep 2026) ────────────
@@ -223,4 +227,31 @@ export async function POST(req: NextRequest) {
   const out = await queueSheetJob(runId, { focus: body.focus });
   if (!out.ok) return NextResponse.json({ error: out.message }, { status: out.http });
   return NextResponse.json({ job: out.job });
+}
+
+/**
+ * The sheet itself, behind its Telegram message (Adrian, 3 Sep 2026: "can i have
+ * the link on telegram to see the learning sheet too?"). The PDF goes by URL —
+ * Telegram fetches a Dropbox temporary link itself for PDFs; the DOCX is uploaded
+ * as bytes (URL sends only work for PDF/ZIP). Both best-effort: the sheet is
+ * already filed and the message already sent, so a Dropbox or Telegram hiccup
+ * is logged and nothing else changes.
+ */
+async function sendSheetFiles(job: Pick<SheetJob, 'student_name' | 'paper_name'>, result: ReturnType<typeof sanitizeResult>): Promise<void> {
+  if (!result) return;
+  const who = job.student_name || 'A student';
+  const tag = job.paper_name ? ` (${job.paper_name})` : '';
+  if (result.pdf_path) {
+    try {
+      await sendTelegramDocument({ url: await getTemporaryLink(result.pdf_path) }, `📘 ${who} — the sheet, PDF${tag}`);
+    } catch (e) { console.warn('[sheet-jobs] pdf to telegram failed:', (e as Error).message); }
+  }
+  try {
+    const bytes = await downloadFile(result.docx_path);
+    const filename = `${who} - ${result.docx_path.split('/').pop() || 'sheet.docx'}`;
+    await sendTelegramDocument(
+      { bytes, filename, contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
+      `📝 ${who} — the editable DOCX${tag}`,
+    );
+  } catch (e) { console.warn('[sheet-jobs] docx to telegram failed:', (e as Error).message); }
 }

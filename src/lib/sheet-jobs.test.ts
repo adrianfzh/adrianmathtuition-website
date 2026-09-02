@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  claimExpired, pickNextJob, sanitizeResult, completionMessage, cancelState,
+  claimExpired, pickNextJob, sanitizeResult, completionMessage, cancelState, sheetFolder,
   LEASE_MS, MAX_ATTEMPTS, type SheetJob,
 } from './sheet-jobs';
 
@@ -132,9 +132,28 @@ describe('completionMessage', () => {
     expect(msg).toContain('🧺 Shelved for later: polynomials');
     expect(msg).toContain('release the paper + sheet together');
   });
+  it('names the Dropbox folder as the Files app shows it, and says the files follow when a PDF exists', () => {
+    const msg = completionMessage(
+      { student_name: 'Tan Sijia', paper_name: 'sijia am tys 2021 p1' },
+      sanitizeResult({ docx_path: '/Students/Tan Sijia/2026-08-31 sijia am tys 2021 p1/Practice Again.docx', pdf_path: '/Students/Tan Sijia/2026-08-31 sijia am tys 2021 p1/Practice Again.pdf' }),
+    );
+    expect(msg).toContain('📂 Dropbox › Students › Tan Sijia › 2026-08-31 sijia am tys 2021 p1');
+    expect(msg).toContain('PDF and DOCX below');
+    const noPdf = completionMessage({ student_name: 'X', paper_name: '' }, sanitizeResult({ docx_path: '/Students/X/p/Practice Again.docx' }));
+    expect(noPdf).not.toContain('PDF and DOCX below');
+  });
   it('survives a bare result', () => {
     const msg = completionMessage({ student_name: '', paper_name: '' }, null);
     expect(msg).toContain('A student');
+    expect(msg).toContain('In Dropbox');
     expect(msg).not.toContain('undefined');
+  });
+});
+
+describe('sheetFolder', () => {
+  it('drops the file and joins the folders with ›', () => {
+    expect(sheetFolder('/Students/Tan Sijia/2026-08-31 sijia am tys 2021 p1/Practice Again.docx')).toBe('Students › Tan Sijia › 2026-08-31 sijia am tys 2021 p1');
+    expect(sheetFolder('x.docx')).toBe('');
+    expect(sheetFolder(null)).toBe('');
   });
 });
