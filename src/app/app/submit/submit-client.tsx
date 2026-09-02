@@ -6,6 +6,7 @@
 // photo hygiene (same spread heuristic, same ~2600px cap) so a student hand-in
 // marks exactly as well as one Adrian photographs himself.
 import { useRef, useState } from 'react';
+import { subjectLabel } from '@/lib/mark-subjects';
 import Link from 'next/link';
 import { put } from '@vercel/blob/client';
 import { pdfToPageImages } from '@/lib/pdf-pages';
@@ -63,14 +64,19 @@ async function uploadPage(file: File, onNote: (s: string) => void): Promise<stri
   throw new Error('That page would not upload after three tries. Your signal may be weak — tap Send again and it will carry on from where it stopped.');
 }
 
-export default function SubmitClient({ assignment = null, paper = null, slotUsed = false }: {
+export default function SubmitClient({ assignment = null, paper = null, slotUsed = false, subjectChoices = [] }: {
   assignment?: { id: string; title: string } | null;
   paper?: { id: string; title: string } | null;
   slotUsed?: boolean;
+  // The subjects this student may mark a hand-in as. Empty (the default for
+  // every student until the flag flips) means no picker and an implicit math
+  // hand-in — nothing on screen changes. First entry is the default.
+  subjectChoices?: string[];
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [pages, setPages] = useState<Page[]>([]);
   const [paperName, setPaperName] = useState(assignment?.title ?? paper?.title ?? '');
+  const [subject, setSubject] = useState(subjectChoices[0] ?? 'math');
   const [splitNote, setSplitNote] = useState('');
   const [capNote, setCapNote] = useState('');       // pages dropped at MAX_PAGES — must be visible, never silent
   const [stage, setStage] = useState('');            // progress line while submitting
@@ -179,6 +185,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
       const body = JSON.stringify({
         photoUrls: urls,
         paperName: paperName.trim(),
+        ...(subjectChoices.length > 1 ? { subject } : {}),
         ...(confirmed ? { confirmed: true } : {}),
         ...(assignment ? { assignmentId: assignment.id } : {}),
         ...(paper ? { paperId: paper.id } : {}),
@@ -363,6 +370,21 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
               ground the run to the official total (e.g. /90) — vague names fall
               back to a counted denominator (Adrian, 2026-08-29). */}
           <p className="text-[11px] text-gray-400 mt-1">School, year and paper — so Adrian knows what he&apos;s marking, and your score comes back out of the official total (e.g. /90).</p>
+        {subjectChoices.length > 1 && (
+          <div className="mt-3">
+            <label className="block text-sm font-semibold text-navy mb-1">Subject</label>
+            <select
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              className="w-full text-sm border border-gray-300 rounded-xl px-3 py-2 bg-white"
+            >
+              {subjectChoices.map((sub) => (
+                <option key={sub} value={sub}>{subjectLabel(sub)}</option>
+              ))}
+            </select>
+            <p className="text-[11px] text-gray-400 mt-1">Pick the subject of this paper so it is marked the right way.</p>
+          </div>
+        )}
         </div>
         )}
 

@@ -29,6 +29,9 @@ import type { HandinCountingClient } from '@/lib/portal-submit-limit';
 import { sendTelegram } from '@/lib/telegram';
 import { canTransition, type AssignmentRow } from '@/lib/assignments';
 import { portalIdentity } from '@/lib/portal-auth';
+import { markSubjectAccess } from '@/lib/portal-beta';
+import { enrolledMarkSubjects } from '@/lib/student-mark-subjects';
+import { resolveHandinSubject } from '@/lib/mark-subject-for-student';
 import {
   dailyHandinCapForTier,
   handinAllowance,
@@ -72,7 +75,7 @@ export async function POST(req: Request) {
   if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
   const meteredPass = access.pass; // null for tuition accounts
 
-  let body: { photoUrls?: unknown; paperName?: unknown; assignmentId?: unknown; paperId?: unknown; confirmed?: boolean };
+  let body: { photoUrls?: unknown; paperName?: unknown; assignmentId?: unknown; paperId?: unknown; confirmed?: boolean; subject?: unknown };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const admin = getSupabaseAdmin();
 
@@ -235,9 +238,25 @@ export async function POST(req: Request) {
     }
   }
 
+  // THE GATE (lib/mark-subject-for-student). The client picker is only UX; the
+  // subject a hand-in is actually marked as is decided here, server-side, and a
+  // student can never reach a subject they are not entitled to: 'closed' (the
+  // default until the flag flips) forces math whatever the browser sent, 'open'
+  // honours only a subject the student is enrolled in, and Adrian's admin cookie
+  // ('preview') may mark anything. Assignments and printed papers are math.
+  let subject: string = 'math';
+  if (!assignment && !(typeof body.paperId === 'string' && body.paperId)) {
+    subject = resolveHandinSubject({
+      requested: body.subject,
+      enrolled: await enrolledMarkSubjects(studentId),
+      access: await markSubjectAccess(),
+    });
+  }
+
   const saved = await bot({
     phase: 'save-paper',
     paperName,
+    subject,
     source: { photos: photoUrls.map(u => ({ original_url: u })) },
   });
   const runId = saved?.run_id;

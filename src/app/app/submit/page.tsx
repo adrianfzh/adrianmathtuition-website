@@ -17,6 +17,9 @@ import {
 import { DAILY_SUBMIT_CAP, countHandinsToday } from '@/lib/portal-submit-limit';
 import type { HandinCountingClient } from '@/lib/portal-submit-limit';
 import SubmitClient from './submit-client';
+import { markSubjectAccess } from '@/lib/portal-beta';
+import { enrolledMarkSubjects } from '@/lib/student-mark-subjects';
+import { pickableSubjects } from '@/lib/mark-subject-for-student';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,5 +76,17 @@ export default async function SubmitPage({ searchParams }: { searchParams: Promi
       }
     } catch { /* degrade to the POST-time check */ }
   }
-  return <SubmitClient assignment={assignment} paper={paper} slotUsed={slotUsed} />;
+  // The subject the hand-in is marked as (SPEC-SCIENCE-MARKING). Off by default:
+  // markSubjectAccess is 'closed' for students until the flag flips, so
+  // pickableSubjects returns [] and the picker never shows — every hand-in is
+  // math, unchanged. Adrian's admin cookie previews the full list; an enrolled
+  // student sees a picker only once the flag is on. An assignment or a
+  // pre-registered printed paper is math (its bank questions decide it), so no
+  // picker there.
+  const access = await markSubjectAccess();
+  const subjectChoices = (assignment || paper)
+    ? []
+    : pickableSubjects({ enrolled: await enrolledMarkSubjects(account.airtable_student_id), access });
+
+  return <SubmitClient assignment={assignment} paper={paper} slotUsed={slotUsed} subjectChoices={subjectChoices} />;
 }

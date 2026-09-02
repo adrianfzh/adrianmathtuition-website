@@ -105,3 +105,16 @@ export async function sciencePracticeAccess(): Promise<ScienceAccess> {
   if (!(await viewingAsStudent()) && (await isNotesAuthed())) return 'preview';
   return SCIENCE_PRACTICE_OPEN_TO_STUDENTS ? 'open' : 'closed';
 }
+
+// Science MARKING for students (2026-09-02, Adrian: "build 1 and 2 now" — know
+// the subject, and a flag, off). A student's hand-in is marked with the subject
+// brain ONLY when this is on AND the student is enrolled in that subject
+// (lib/mark-subject-for-student resolveHandinSubject is the gate). Off = every
+// student hand-in is marked as math, exactly as before this shipped. Flip only
+// once the calibration board shows the ±2 gate met for the subject. Adrian's
+// admin cookie previews it regardless.
+export const MARK_SUBJECT_OPEN_TO_STUDENTS = false;
+export async function markSubjectAccess(): Promise<import('./mark-subject-for-student').MarkSubjectAccess> {
+  if (!(await viewingAsStudent()) && (await isNotesAuthed())) return 'preview';
+  return MARK_SUBJECT_OPEN_TO_STUDENTS ? 'open' : 'closed';
+}
