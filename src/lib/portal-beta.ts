@@ -61,6 +61,20 @@ export async function fullPortalVisible(): Promise<boolean> {
   return isNotesAuthed();
 }
 
+// ⏱ Exam-prep timed sets (2026-09-02): /app/practice shows a timed-set entry
+// alongside the Home "Next exam" countdown, but the row stays admin-preview
+// until Adrian has run one himself. Deliberately its own flag, not a
+// fullPortalVisible() delegate: ending the marking-only beta must not open
+// timed sets to students as a side effect. Flip to true to release the row.
+export const EXAM_PREP_OPEN_TO_STUDENTS = false;
+
+/** True when the caller may see the timed-set entry (flag on, or Adrian's admin preview — unless viewing as a student). */
+export async function examPrepVisible(): Promise<boolean> {
+  if (EXAM_PREP_OPEN_TO_STUDENTS) return true;
+  if (await viewingAsStudent()) return false;
+  return isNotesAuthed();
+}
+
 /**
  * Call at the top of any server component (page or layout) that is NOT part of
  * the marking-only surface. Students land back on the dashboard; Adrian passes.
