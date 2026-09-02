@@ -63,3 +63,15 @@ your push, so always `git fetch && git rebase origin/main` right before pushing.
 - Label calibration: after ~10 papers with Override reasons, measure label agreement before trusting the cover's careless/concept split for parents.
 - `core.worktree` on the bot gitdir: unset it when the peer's tree is clean, then re-verify `git status`.
 - The peer session's own work in the bot checkout is theirs — do not commit or clean it.
+
+## Update 07:45 SGT — the P2 re-mark landed
+
+The re-mark created a NEW run `dbd65de6…` (87/90, Q8 counted correctly this time, so the over-count never
+occurred and the fragment re-read did not need to fire; cost $3.04, PDF rebuilt with the brown cover).
+The old 92/90 run `e667ad84…` still exists and is NOT marked superseded — Adrian trashes it (🗑 on the
+mark-paper history) or leaves it as evidence. The fragment collapse is therefore proven by its unit tests
+and the persisted `allocation_recheck` design, not yet by a live over-count; the next paper that
+over-counts will show `allocation_recheck.applied` in its row. Only this MacBook Pro has ever claimed
+papers as a Mac slot (21-day check), so no other Mac needs the installer re-run today; a future Mac:
+`MARKER_API_TOKEN='<admin password>' bash scripts/plan-marking/bootstrap-marker.sh` (add `--refresh` to update).
+Site `main` = `dev` = `cb2f75f7` (promoted 07:41 SGT): the "needs a check" badge is in prod.
