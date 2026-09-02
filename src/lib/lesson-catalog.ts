@@ -27,7 +27,9 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     level: 'AM',
     topic: 'Binomial Theorem',
     title: 'The Binomial Theorem',
-    minutes: 4,
+    // The narrated runtime (6.8 min of voice + two checks); a silent read is
+    // shorter. Keep it honest — it's the promise on the entry row.
+    minutes: 7,
   },
 ];
 

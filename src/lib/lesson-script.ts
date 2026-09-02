@@ -25,6 +25,11 @@
 //     SERVER resolves the question through the same eligibility gate practice
 //     uses (lib/lesson-load.resolveCheckScene) — the script can never smuggle
 //     an ineligible question in front of a student.
+//   · narration is ADDITIVE and text-first: every scene may carry spoken
+//     English (`narration`) and a committed clip for it (`audio`). Captions
+//     never leave the screen; the voice reads over them. A string narrates the
+//     whole scene, an array narrates each sub-step so the voice and the reveal
+//     line up (docs/LESSONS.md has the authoring rules).
 //
 // Pure module (repo testing policy): no I/O, no React — importable from the
 // client player, the server page, API routes and vitest alike.
@@ -69,20 +74,41 @@ export interface Callout {
   tone?: LessonTone;
 }
 
-export type TitleScene = { type: 'title'; title: string; promise: string };
-export type CaptionScene = { type: 'caption'; heading?: string; text: string };
-export type EquationStepsScene = {
+// ── Narration (the voice track) ──────────────────────────────────────────────
+
+/** Spoken-English narration for a scene, plus its audio. Optional everywhere. */
+export interface NarrationFields {
+  /**
+   * Plain spoken English — NO TeX. Say maths the way a teacher says it aloud
+   * ("five choose three", "two to the power five minus r"). A string narrates
+   * the whole scene; an array narrates each sub-step in turn — exactly one
+   * entry per step (see sceneStepCount) — so the voice and the reveal align.
+   * Check scenes narrate the prompt lead-in only, never the answer.
+   */
+  narration?: string | string[];
+  /**
+   * Audio for `narration`, same shape (one URL, or one per sub-step): a
+   * same-origin path under /lessons/ (a committed file in public/) or an
+   * https URL. Written by scripts/lessons/generate-narration.mjs — or by hand,
+   * for a human recording dropped into the same file names.
+   */
+  audio?: string | string[];
+}
+
+export type TitleScene = NarrationFields & { type: 'title'; title: string; promise: string };
+export type CaptionScene = NarrationFields & { type: 'caption'; heading?: string; text: string };
+export type EquationStepsScene = NarrationFields & {
   type: 'equation-steps'; heading?: string; intro?: string; steps: EquationStep[];
 };
-export type GraphMorphScene = {
+export type GraphMorphScene = NarrationFields & {
   type: 'graph-morph'; heading?: string; caption?: string;
   states: GraphState[]; window: GraphWindow; xLabel?: string; yLabel?: string;
 };
-export type AnnotateScene = {
+export type AnnotateScene = NarrationFields & {
   type: 'annotate'; heading?: string; intro?: string;
   tokens: StepToken[]; callouts: Callout[];
 };
-export type CheckScene = {
+export type CheckScene = NarrationFields & {
   type: 'check';
   /** questions.id of a REAL bank question (uuid). */
   qid: string;
@@ -126,7 +152,7 @@ export interface LessonScript {
 // /api/portal/practice/solution (any signed-in session may fetch the full
 // worked solution for an eligible question), so nothing new leaks.
 
-export interface ResolvedCheckScene {
+export interface ResolvedCheckScene extends NarrationFields {
   type: 'check';
   qid: string;
   prompt: string | null;
@@ -158,6 +184,13 @@ export type ValidationResult =
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+/** Per narration entry (a whole scene or one step) — a spoken beat, not an essay. */
+export const NARRATION_MAX_CHARS = 600;
+/** Characters that only ever mean TeX leaked into a spoken line. */
+const TEX_LIKE_RE = /[$\\^_{}]/;
+/** A committed clip: /lessons/<slug>/<file>.<audio ext> — no query, no `..`. */
+const LESSON_AUDIO_PATH_RE = /^\/lessons\/[a-z0-9]+(?:-[a-z0-9]+)*\/[A-Za-z0-9][A-Za-z0-9._-]*\.(?:mp3|m4a|ogg|wav)$/;
+
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
 }
@@ -172,6 +205,14 @@ function finiteNumber(v: unknown): v is number {
 }
 function isTone(v: unknown): boolean {
   return (LESSON_TONES as readonly string[]).includes(v as string);
+}
+
+/** A same-origin clip under /lessons/ or an https URL — the only audio sources a script may name. */
+export function isLessonAudioUrl(v: unknown): v is string {
+  if (typeof v !== 'string') return false;
+  if (LESSON_AUDIO_PATH_RE.test(v)) return true;
+  if (!v.startsWith('https://')) return false;
+  try { return new URL(v).protocol === 'https:'; } catch { return false; }
 }
 
 /** Validate one token; returns its id (if any) so callers can track scope. */
@@ -198,32 +239,89 @@ function validateToken(
   }
 }
 
+function validateNarrationText(v: unknown, where: string, errors: string[]): void {
+  if (!nonEmptyString(v)) { errors.push(`${where}: narration must be a non-empty string`); return; }
+  const len = v.trim().length;
+  if (len > NARRATION_MAX_CHARS) {
+    errors.push(`${where}: narration is ${len} chars — keep one spoken beat under ${NARRATION_MAX_CHARS}`);
+  }
+  if (TEX_LIKE_RE.test(v)) {
+    errors.push(`${where}: narration must be plain spoken English — no TeX (found one of $ \\ ^ _ { })`);
+  }
+}
+
+/**
+ * narration / audio on one scene. `steps` is the scene's sub-step count (null
+ * when the scene body itself failed, so the per-step length rule is skipped
+ * rather than piling a misleading error on top).
+ */
+function validateNarration(
+  scene: Record<string, unknown>, steps: number | null, at: string, errors: string[],
+): void {
+  const n = scene.narration;
+  const a = scene.audio;
+  if (n !== undefined) {
+    if (Array.isArray(n)) {
+      if (n.length === 0) errors.push(`${at}: narration array must not be empty`);
+      if (steps !== null && n.length !== steps) {
+        errors.push(`${at}: narration array must have exactly ${steps} entries (one per sub-step), got ${n.length}`);
+      }
+      n.forEach((t, i) => validateNarrationText(t, `${at}.narration[${i}]`, errors));
+    } else {
+      validateNarrationText(n, `${at}.narration`, errors);
+    }
+  }
+  if (a === undefined) return;
+  if (n === undefined) {
+    errors.push(`${at}: audio needs narration text (the transcript the voice reads — captions stay on screen)`);
+    return;
+  }
+  if (Array.isArray(a)) {
+    if (!Array.isArray(n)) {
+      errors.push(`${at}: audio must be a single URL when narration is a single string`);
+    } else if (a.length !== n.length) {
+      errors.push(`${at}: audio must have one clip per narration entry (${n.length}), got ${a.length}`);
+    }
+    a.forEach((u, i) => {
+      if (!isLessonAudioUrl(u)) errors.push(`${at}.audio[${i}]: must be a /lessons/<slug>/… path or an https URL (got "${String(u)}")`);
+    });
+  } else {
+    if (Array.isArray(n)) errors.push(`${at}: audio must be an array (one clip per narration entry)`);
+    if (!isLessonAudioUrl(a)) errors.push(`${at}.audio: must be a /lessons/<slug>/… path or an https URL (got "${String(a)}")`);
+  }
+}
+
 function validateScene(scene: unknown, i: number, errors: string[]): void {
   const at = `scenes[${i}]`;
   if (!isRecord(scene)) { errors.push(`${at}: scene must be an object`); return; }
   const type = scene.type;
+  // Sub-step count for the narration rule — mirrors sceneStepCount, computed
+  // from the raw shape once the body validates (null = body broken).
+  let steps: number | null = 1;
   switch (type) {
     case 'title': {
       if (!nonEmptyString(scene.title)) errors.push(`${at} (title): needs title`);
       if (!nonEmptyString(scene.promise)) errors.push(`${at} (title): needs promise`);
-      return;
+      break;
     }
     case 'caption': {
       if (!nonEmptyString(scene.text)) errors.push(`${at} (caption): needs text`);
       if (!optionalString(scene.heading)) errors.push(`${at} (caption): heading must be a non-empty string when present`);
-      return;
+      break;
     }
     case 'equation-steps': {
       if (!optionalString(scene.heading)) errors.push(`${at}: bad heading`);
       if (!optionalString(scene.intro)) errors.push(`${at}: bad intro`);
-      const steps = scene.steps;
-      if (!Array.isArray(steps) || steps.length === 0) {
+      const stepsArr = scene.steps;
+      if (!Array.isArray(stepsArr) || stepsArr.length === 0) {
         errors.push(`${at} (equation-steps): needs at least one step`);
-        return;
+        steps = null;
+        break;
       }
+      steps = stepsArr.length;
       const sceneIds = new Set<string>();
       const earlier = new Set<string>();
-      steps.forEach((step, si) => {
+      stepsArr.forEach((step, si) => {
         const sAt = `${at}.steps[${si}]`;
         if (!isRecord(step)) { errors.push(`${sAt}: step must be an object`); return; }
         if (!Array.isArray(step.tokens) || step.tokens.length === 0) {
@@ -241,7 +339,7 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
           errors.push(`${sAt}: note must be a non-empty string when present`);
         }
       });
-      return;
+      break;
     }
     case 'graph-morph': {
       if (!optionalString(scene.heading)) errors.push(`${at}: bad heading`);
@@ -249,7 +347,9 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
       const states = scene.states;
       if (!Array.isArray(states) || states.length < 2) {
         errors.push(`${at} (graph-morph): needs at least two states to morph between`);
+        steps = null;
       } else {
+        steps = states.length;
         states.forEach((s, si) => {
           const sAt = `${at}.states[${si}]`;
           if (!isRecord(s)) { errors.push(`${sAt}: state must be an object`); return; }
@@ -267,7 +367,7 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
         if (w.xMin >= w.xMax) errors.push(`${at}: window xMin must be < xMax`);
         if (w.yMin >= w.yMax) errors.push(`${at}: window yMin must be < yMax`);
       }
-      return;
+      break;
     }
     case 'annotate': {
       if (!optionalString(scene.heading)) errors.push(`${at}: bad heading`);
@@ -281,7 +381,9 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
       }
       if (!Array.isArray(scene.callouts) || scene.callouts.length === 0) {
         errors.push(`${at} (annotate): needs at least one callout`);
+        steps = null;
       } else {
+        steps = scene.callouts.length + 1; // expression first, then callouts
         scene.callouts.forEach((c, ci) => {
           const cAt = `${at}.callouts[${ci}]`;
           if (!isRecord(c)) { errors.push(`${cAt}: callout must be an object`); return; }
@@ -294,18 +396,20 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
           }
         });
       }
-      return;
+      break;
     }
     case 'check': {
       if (!nonEmptyString(scene.qid)) errors.push(`${at} (check): needs qid (a bank question id)`);
       if (!nonEmptyString(scene.why)) errors.push(`${at} (check): needs a one-line why for the reveal`);
       if (!optionalString(scene.prompt)) errors.push(`${at} (check): prompt must be a non-empty string when present`);
       if (!optionalString(scene.placeholder)) errors.push(`${at} (check): bad placeholder`);
-      return;
+      break;
     }
     default:
       errors.push(`${at}: unknown scene type "${String(type)}"`);
+      return;
   }
+  validateNarration(scene, steps, at, errors);
 }
 
 /**
@@ -351,4 +455,64 @@ export function sceneStepCount(scene: PlayScene): number {
     case 'annotate': return scene.callouts.length + 1; // expression first, then callouts
     default: return 1;
   }
+}
+
+// ── Narration helpers (pure — the player and its tests share them) ───────────
+
+/** How a scene's narration sits against its sub-steps. */
+export type NarrationLayout = 'none' | 'scene' | 'steps';
+
+export interface NarrationCue {
+  /** The spoken text (also the on-screen transcript). */
+  text: string;
+  /** Its clip, or null when the text exists but no audio was generated yet. */
+  audio: string | null;
+}
+
+export function narrationLayout(scene: PlayScene): NarrationLayout {
+  if (scene.type === 'check-skipped' || scene.narration === undefined) return 'none';
+  return Array.isArray(scene.narration) ? 'steps' : 'scene';
+}
+
+/**
+ * The cue that STARTS at (scene, step), or null. Per-step arrays cue every
+ * step; a whole-scene string cues step 0 only — later steps ride inside that
+ * one clip (the player spreads them evenly across its duration).
+ */
+export function narrationAt(scene: PlayScene, step: number): NarrationCue | null {
+  if (scene.type === 'check-skipped' || scene.narration === undefined) return null;
+  const { narration, audio } = scene;
+  if (Array.isArray(narration)) {
+    const text = narration[step];
+    if (text === undefined) return null;
+    const clip = Array.isArray(audio) ? audio[step] : undefined;
+    return { text, audio: clip ?? null };
+  }
+  if (step !== 0) return null;
+  return { text: narration, audio: typeof audio === 'string' ? audio : null };
+}
+
+/**
+ * The next clip the player will need after (sceneIdx, step) — the one to
+ * preload. Walks forward over silent positions; null at the end of the lesson.
+ */
+export function nextNarrationAudio(scenes: PlayScene[], sceneIdx: number, step: number): string | null {
+  let i = sceneIdx;
+  let s = step;
+  for (let guard = 0; guard < 1000; guard++) {
+    if (i >= scenes.length) return null;
+    if (s < sceneStepCount(scenes[i]) - 1) s++;
+    else { i++; s = 0; if (i >= scenes.length) return null; }
+    const cue = narrationAt(scenes[i], s);
+    if (cue?.audio) return cue.audio;
+  }
+  return null;
+}
+
+/** Does any scene carry a clip? A silent lesson never offers the Voice mode. */
+export function lessonHasAudio(scenes: PlayScene[]): boolean {
+  return scenes.some(scene => {
+    if (scene.type === 'check-skipped' || scene.audio === undefined) return false;
+    return Array.isArray(scene.audio) ? scene.audio.length > 0 : true;
+  });
 }

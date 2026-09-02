@@ -24,6 +24,7 @@ The deep documentation (bug archaeology, invariants, field tables) was split out
 | **Turning a marked paper into work a student does** — the per-student teaching round (vet → diagnose → pick a wave → author the sheet → amend → release paper+sheet together → hand-in → vet), its four human checkpoints and binding rules | [`SPEC-TEACHING-CYCLE.md`](SPEC-TEACHING-CYCLE.md) — the CURRENT flow; [`SPEC-REMEDIATION.md`](SPEC-REMEDIATION.md) is the portal-drills lane, built but deliberately not in use |
 | "From Adrian" assigned work — `/app/assignments`, `/api/admin/assignments`, `/api/portal/assignments`, the Send-work card on `/admin/students/[id]`, `portal_assignments` table | [`SPEC-ASSIGN.md`](SPEC-ASSIGN.md) |
 | Margin teaching diagrams beside marking annotations (BUILT 2026-08-29 as `right_triangle` + `integral_region` kinds in the bot's `ai/margin-diagram.js`; deploy + Adrian's first-paper eyeball pending) | [`SPEC-MARGIN-DIAGRAMS.md`](SPEC-MARGIN-DIAGRAMS.md) |
+| **Animated lessons** — `/app/lesson/[slug]`, `data/lessons/*.json` scene scripts, the narration voice track (`public/lessons/`, `scripts/lessons/generate-narration.mjs`), the player's Manual/Auto/🔊 Voice pacing, the release switch (admin-preview only until Adrian releases) | [`docs/LESSONS.md`](docs/LESSONS.md) |
 
 > The four highest-traffic rows (marking, kiosk, schedule, invoices) also exist as
 > auto-loading skills in `.claude/skills/` — belt and suspenders; this table stays

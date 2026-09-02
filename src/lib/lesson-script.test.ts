@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   validateLessonScript, checkQids, sceneStepCount,
+  narrationAt, narrationLayout, nextNarrationAudio, lessonHasAudio, isLessonAudioUrl,
+  NARRATION_MAX_CHARS,
   type LessonScript, type PlayScene,
 } from './lesson-script';
 import {
@@ -147,6 +151,129 @@ describe('validateLessonScript', () => {
   });
 });
 
+// ── Narration (the voice track) ──────────────────────────────────────────────
+
+describe('narration validation', () => {
+  const annotate = () => ({
+    type: 'annotate',
+    tokens: [{ tex: 'a', id: 'x' }],
+    callouts: [{ target: 'x', label: 'one' }, { target: 'x', label: 'two' }], // 3 steps
+  });
+
+  it('accepts a whole-scene string and a per-step array of exactly the step count', () => {
+    const s = baseScript();
+    (s.scenes as Record<string, unknown>[])[1].narration = 'Plain spoken English, no maths markup.';
+    (s.scenes as unknown[]).push({ ...annotate(), narration: ['the expression', 'first callout', 'second callout'] });
+    expect(validateLessonScript(s).ok).toBe(true);
+  });
+
+  it('rejects TeX in narration and over-long beats', () => {
+    const s = baseScript();
+    (s.scenes as Record<string, unknown>[])[1].narration = 'Say $x^2$ aloud';
+    (s.scenes as Record<string, unknown>[])[0].narration = 'a'.repeat(NARRATION_MAX_CHARS + 1);
+    const r = validateLessonScript(s);
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.errors.join(' ')).toMatch(/scenes\[1\]\.narration: .*no TeX/);
+      expect(r.errors.join(' ')).toMatch(/scenes\[0\]\.narration: .*601 chars/);
+    }
+  });
+
+  it('rejects a per-step array whose length is not the step count', () => {
+    const s = baseScript();
+    (s.scenes as unknown[]).push({ ...annotate(), narration: ['only', 'two'] });
+    const r = validateLessonScript(s);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.join(' ')).toMatch(/exactly 3 entries \(one per sub-step\), got 2/);
+  });
+
+  it('rejects audio without narration, shape mismatches and off-site URLs', () => {
+    const s = baseScript();
+    const scenes = s.scenes as Record<string, unknown>[];
+    scenes[0].audio = '/lessons/test-lesson/scene-01.mp3';                                  // no narration
+    scenes[1].narration = 'text';
+    scenes[1].audio = ['/lessons/test-lesson/scene-02.mp3'];                                // array for a string
+    scenes.push({ ...annotate(), narration: ['a', 'b', 'c'], audio: '/lessons/test-lesson/scene-03.mp3' }); // string for an array
+    scenes.push({ type: 'caption', text: 't', narration: 'x', audio: 'http://example.com/a.mp3' });          // not https
+    scenes.push({ type: 'caption', text: 't', narration: 'x', audio: '/other/a.mp3' });                       // outside /lessons/
+    scenes.push({ type: 'caption', text: 't', narration: 'x', audio: '/lessons/test-lesson/../x.mp3' });      // traversal
+    const r = validateLessonScript(s);
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      const msg = r.errors.join(' | ');
+      expect(msg).toMatch(/scenes\[0\]: audio needs narration text/);
+      expect(msg).toMatch(/scenes\[1\]: audio must be a single URL/);
+      expect(msg).toMatch(/scenes\[2\]: audio must be an array/);
+      expect(msg).toMatch(/scenes\[3\]\.audio: must be a \/lessons\/<slug>\/… path or an https URL/);
+      expect(msg).toMatch(/scenes\[4\]\.audio: /);
+      expect(msg).toMatch(/scenes\[5\]\.audio: /);
+    }
+  });
+
+  it('isLessonAudioUrl admits committed clips and https only', () => {
+    expect(isLessonAudioUrl('/lessons/binomial-theorem-am/scene-07-3.mp3')).toBe(true);
+    expect(isLessonAudioUrl('/lessons/x/scene-01.m4a')).toBe(true);
+    expect(isLessonAudioUrl('https://cdn.example.com/voice/scene-01.mp3')).toBe(true);
+    expect(isLessonAudioUrl('http://cdn.example.com/voice/scene-01.mp3')).toBe(false);
+    expect(isLessonAudioUrl('/lessons/x/scene-01.mp3?v=2')).toBe(false);
+    expect(isLessonAudioUrl('/lessons/x/scene-01.txt')).toBe(false);
+    expect(isLessonAudioUrl('lessons/x/scene-01.mp3')).toBe(false);
+    expect(isLessonAudioUrl('https://')).toBe(false);
+    expect(isLessonAudioUrl(42)).toBe(false);
+  });
+});
+
+describe('narration helpers', () => {
+  const stepsScene: PlayScene = {
+    type: 'equation-steps',
+    steps: [{ tokens: [{ tex: 'a' }] }, { tokens: [{ tex: 'b' }] }, { tokens: [{ tex: 'c' }] }],
+    narration: ['one', 'two', 'three'],
+    audio: ['/lessons/t/scene-02-1.mp3', '/lessons/t/scene-02-2.mp3', '/lessons/t/scene-02-3.mp3'],
+  };
+  const sceneClip: PlayScene = {
+    type: 'graph-morph',
+    states: [{ label: 'a', coeffs: [1] }, { label: 'b', coeffs: [1, 1] }],
+    window: { xMin: -1, xMax: 1, yMin: -1, yMax: 1 },
+    narration: 'whole scene', audio: '/lessons/t/scene-03.mp3',
+  };
+  const textOnly: PlayScene = { type: 'caption', text: 't', narration: 'not synthesized yet' };
+  const silent: PlayScene = { type: 'caption', text: 't' };
+  const skipped: PlayScene = { type: 'check-skipped' };
+
+  it('narrationLayout tells per-step arrays from whole-scene strings', () => {
+    expect(narrationLayout(stepsScene)).toBe('steps');
+    expect(narrationLayout(sceneClip)).toBe('scene');
+    expect(narrationLayout(textOnly)).toBe('scene');
+    expect(narrationLayout(silent)).toBe('none');
+    expect(narrationLayout(skipped)).toBe('none');
+  });
+
+  it('narrationAt cues every step of an array, and only step 0 of a string', () => {
+    expect(narrationAt(stepsScene, 1)).toEqual({ text: 'two', audio: '/lessons/t/scene-02-2.mp3' });
+    expect(narrationAt(stepsScene, 3)).toBeNull();
+    expect(narrationAt(sceneClip, 0)).toEqual({ text: 'whole scene', audio: '/lessons/t/scene-03.mp3' });
+    expect(narrationAt(sceneClip, 1)).toBeNull(); // rides inside the step-0 clip
+    expect(narrationAt(textOnly, 0)).toEqual({ text: 'not synthesized yet', audio: null });
+    expect(narrationAt(silent, 0)).toBeNull();
+    expect(narrationAt(skipped, 0)).toBeNull();
+  });
+
+  it('nextNarrationAudio walks forward over silent positions to the next clip', () => {
+    const scenes = [silent, stepsScene, sceneClip, textOnly, skipped];
+    expect(nextNarrationAudio(scenes, 0, 0)).toBe('/lessons/t/scene-02-1.mp3');
+    expect(nextNarrationAudio(scenes, 1, 0)).toBe('/lessons/t/scene-02-2.mp3');
+    expect(nextNarrationAudio(scenes, 1, 2)).toBe('/lessons/t/scene-03.mp3'); // last step → next scene
+    expect(nextNarrationAudio(scenes, 2, 0)).toBeNull();                    // step 1 rides the clip; nothing after
+    expect(nextNarrationAudio(scenes, 4, 0)).toBeNull();
+  });
+
+  it('lessonHasAudio is false for a text-only or silent lesson', () => {
+    expect(lessonHasAudio([silent, textOnly, skipped])).toBe(false);
+    expect(lessonHasAudio([silent, sceneClip])).toBe(true);
+    expect(lessonHasAudio([stepsScene])).toBe(true);
+  });
+});
+
 describe('sceneStepCount', () => {
   it('counts sub-steps per scene type', () => {
     expect(sceneStepCount({ type: 'title', title: 't', promise: 'p' })).toBe(1);
@@ -213,6 +340,76 @@ describe('pilot script: binomial-theorem-am', () => {
     expect(checkTypedAnswer('4', '$a = 4$')).toBe('correct');
     expect(checkTypedAnswer('a = 4', '$a = 4$')).toBe('correct');
     expect(checkTypedAnswer('-4', '$a = 4$')).toBe('wrong');
+  });
+
+  // ── The voice track ──
+  it('narrates every scene — per-step arrays wherever a scene has sub-steps', () => {
+    for (const [i, scene] of script.scenes.entries()) {
+      expect(scene.narration, `scene ${i} narration`).toBeDefined();
+      const steps = sceneStepCount(scene as PlayScene);
+      if (steps > 1) {
+        expect(Array.isArray(scene.narration), `scene ${i} should narrate per step`).toBe(true);
+        expect((scene.narration as string[]).length).toBe(steps);
+      }
+    }
+  });
+
+  it('check scenes narrate the lead-in only — never the answer', () => {
+    // Bank answers: k = 6 (scene 9) and a = 4 (scene 12). Whole-word match on
+    // the digit and the number word, so "2023" in "the 2023 GCE paper" is fine.
+    const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+    const answers: Record<string, string> = {
+      '22303d15-cdcc-4b0c-9fea-70f382242699': '6',
+      '914fe2ab-f1a0-44f8-bb9a-0b9da05af227': '4',
+    };
+    for (const scene of script.scenes) {
+      if (scene.type !== 'check') continue;
+      const digit = answers[scene.qid];
+      expect(digit, `known answer for ${scene.qid}`).toBeDefined();
+      const text = Array.isArray(scene.narration) ? scene.narration.join(' ') : scene.narration ?? '';
+      const words = text.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/);
+      expect(words).not.toContain(digit);
+      expect(words).not.toContain(NUMBER_WORDS[Number(digit)]);
+      expect(text).toMatch(/your turn|pause here/i);
+    }
+  });
+
+  it('every narrated scene has its clip committed under public/lessons/<slug>/ as a real MP3', () => {
+    const publicDir = path.resolve(__dirname, '..', '..', 'public');
+    let clips = 0;
+    for (const [i, scene] of script.scenes.entries()) {
+      if (scene.narration === undefined) continue;
+      // Synthesis succeeded for the pilot: every narrated scene carries audio.
+      expect(scene.audio, `scene ${i} audio`).toBeDefined();
+      const urls = Array.isArray(scene.audio) ? scene.audio : [scene.audio as string];
+      const texts = Array.isArray(scene.narration) ? scene.narration : [scene.narration];
+      expect(urls.length).toBe(texts.length);
+      for (const url of urls) {
+        expect(url.startsWith(`/lessons/${script.slug}/`), `${url} lives with its lesson`).toBe(true);
+        const file = path.join(publicDir, url);
+        expect(fs.existsSync(file), `${url} exists in public/`).toBe(true);
+        const head = Buffer.alloc(4);
+        const fd = fs.openSync(file, 'r');
+        fs.readSync(fd, head, 0, 4, 0);
+        fs.closeSync(fd);
+        // An MP3 starts with an ID3 tag or an MPEG frame sync (11 set bits).
+        const isMp3 = head.toString('latin1', 0, 3) === 'ID3' || (head[0] === 0xff && (head[1] & 0xe0) === 0xe0);
+        expect(isMp3, `${url} is an MP3`).toBe(true);
+        expect(fs.statSync(file).size).toBeGreaterThan(2000);
+        clips++;
+      }
+    }
+    expect(clips).toBeGreaterThanOrEqual(script.scenes.length);
+  });
+
+  it('keeps the whole voice track under the static-asset budget', () => {
+    const publicDir = path.resolve(__dirname, '..', '..', 'public');
+    let bytes = 0;
+    for (const scene of script.scenes) {
+      const urls = Array.isArray(scene.audio) ? scene.audio : scene.audio ? [scene.audio] : [];
+      for (const url of urls) bytes += fs.statSync(path.join(publicDir, url)).size;
+    }
+    expect(bytes).toBeLessThan(2.2 * 1024 * 1024);
   });
 });
 
@@ -308,6 +505,19 @@ describe('resolveCheckScene', () => {
     if (r.type === 'check') {
       expect(r.prompt).toBeNull();
       expect(r.placeholder).toBeNull();
+      expect('narration' in r).toBe(false);
+      expect('audio' in r).toBe(false);
+    }
+  });
+
+  it('carries the lead-in narration and its clip through to the player', () => {
+    const r = resolveCheckScene(
+      { ...scene, narration: 'Your turn — pause here.', audio: '/lessons/t/scene-09.mp3' }, goodRow(),
+    );
+    expect(r.type).toBe('check');
+    if (r.type === 'check') {
+      expect(r.narration).toBe('Your turn — pause here.');
+      expect(r.audio).toBe('/lessons/t/scene-09.mp3');
     }
   });
 });

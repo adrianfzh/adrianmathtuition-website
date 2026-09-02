@@ -80,6 +80,10 @@ export function resolveCheckScene(
     marks: q.total_marks ?? totalMarksOf(questionStructured(q).parts),
     answer,
     why: scene.why,
+    // The voice track rides along (the lead-in only — a check's narration
+    // never contains the answer; see docs/LESSONS.md).
+    ...(scene.narration !== undefined ? { narration: scene.narration } : {}),
+    ...(scene.audio !== undefined ? { audio: scene.audio } : {}),
   };
 }
 
