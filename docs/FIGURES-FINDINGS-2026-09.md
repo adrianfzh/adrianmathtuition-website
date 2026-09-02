@@ -246,3 +246,203 @@ Working copies of the drawn figures, originals and per-figure dossiers:
 ## Cleared answer-leak suspect  [batch 8 g2]
 - **DHS 2024 JC2 P1 Q5** — the two dashed lines are printed in the genuine
   question paper (f's oblique asymptote y=x+3 and its reflection). Not a leak.
+
+## Wrong stored answer  [batch 9 g21]
+- **Ahmad Ibrahim 2024 EM_NA P2 Q2** — the tally from the question's own table is
+  `0→2, 1→6, 2→3, 3→4, 4→3, 5→2` (sums to 20 matches). The stored answer says
+  `2→2`, which sums to only 19. Parts (b) and (c) are correct and unaffected.
+
+## Page-break slicing — now confirmed as a repeat class  [batch 9 g21]
+- **Bowen 2022 EM_NA P2 Q13** — stored a page slab with question text, a
+  sliced-off part (a) diagram, and NO part (c) diagram at all: it was on the next
+  page. Second confirmed instance after Geylang Methodist 2021 EM_NA P1 Q23.
+- **Broadrick 2023 EM_NA P2 Q3** — lost the entire bottom label row including the
+  `3 cm` that part (b) cannot be answered without.
+- **Northbrooks 2021 EM_NA P2 Q3** — stem baked in, bottom of the circle cut off.
+- **Ahmad Ibrahim 2024 EM_NA P2 Q2** — stored strip missed the dot diagram
+  entirely, capturing only the caption plus part (b)'s text.
+
+## More NULL-watermark blockers  [batch 9 g21]
+- **Woodgrove 2025 S2 P1 Q12** — no watermark found on a contrast-stretched scan,
+  only speckle. Needs the field flip.
+
+## Stored answer contradicts its own parts[]  [batch 8 g21]
+- **Riverside 2023 EM P2 Q7 (a)(iii)** — the stored `answer` and `solution` both
+  read **"14.9 cm"** where it should be **14.9 m**; `parts[]` already says "m", so
+  the row contradicts itself. The school's own key carries the same typo.
+  (Q7's empty stem is faithful — the DOCX opens on part (a).)
+
+## Figure out of scale in the paper itself  [batch 8 g21]
+- **Crescent Girls 2016 S2 P2 Q5, Figure 2** — the school's frustum drawing is
+  stretched ~1.5x horizontally against its own vertical scale, and the hemisphere
+  is drawn at 0.66 of the base diameter instead of the true 0.40. The redraw
+  corrects both to the question's own numbers (large cone 25.5, removed cone 5.1,
+  top radius 1.5, hemisphere radius 3). NULL watermark — a redraw carries no
+  school mark, so it can be set clean.
+
+## Figures that are SUPPOSED to be empty — never "restore" them  [batch 8 g20]
+- **Tanjong Katong 2022 S1 P2 Q4** — a plotting grid with three given points;
+  part (a) asks the STUDENT to plot and draw the line. Byte-identical to the DOCX
+  artwork and complete. A later pass must not draw the line on.
+  (Same class: Naval Base 2022 AM P2 Q7, Chung Cheng Main 2022 AM P1 Q11,
+  Queensway 2024 S2 P2 Q11, Gan Eng Seng 2025 EM P2 Q5 — all blank by design.)
+
+## Scan skew that contradicts the question  [batch 8 g20]
+- **Northbrooks 2022 S3_EM_NA P2 Q6** — the art was undamaged but the scan sat
+  0.75 deg off level, so the constant-speed plateau visibly RISES, contradicting
+  part (a)'s own answer. Deskewed; no strokes redrawn. New failure class: skew
+  can make a correct figure state something false.
+
+## A dirty scan produced a FALSE finding — then self-corrected  [batch 8 g20]
+- **West Spring 2022 EM P2 Q2** — an agent first read the ogives off the dirty
+  stored crop and concluded the stored IQR was wrong. After sourcing an
+  independent CamScanner scan from Dropbox, all five stored answers verify
+  (Maths median 55; Science Q1 48, Q3 67 -> IQR 19 vs stored 18, in tolerance).
+  **The question was never broken, only unreadable.** Worth remembering before
+  trusting any "the stored answer is wrong" claim that came off a bad scan.
+
+## Not-to-scale warnings (school's own drawing, left untouched)  [batch 8 g20]
+- **Beatty 2021 EM_NA P1 Q12** — angle at O drawn ~66 deg and the arc bulge ~60%
+  too deep, so the shaded segment looks far bigger than the true 3.98 cm2.
+
+## ⚠ PDFs that over-paint their own text with white patches  [batch 9 g23]
+- **Geylang Methodist 2021 EM_NA P1 Q13** — the source PDF draws the labels P, Q
+  and the "14" on a dimension arrow as REAL DARK TEXT, then over-paints each with
+  a white glyph-sized image patch. Poppler AND pdftocairo both render them
+  invisible, while `pdftotext` still extracts them. The agent restored them at
+  the exact baselines and point size recorded in the PDF's own text operators.
+  **Any other figure re-extracted from this Geylang 2021 PDF may be silently
+  missing labels the same way — check the text layer against the render.** This
+  may also affect other papers from the same source/scanner pipeline.
+
+## Missing part-level figure + a solution typo  [batch 9 g23]
+- **CHIJ Katong Convent 2021 EM_NA P2 Q13** — the stored circle diagram had B and
+  P sliced off, AND part (b)'s P/Q/R/X triangle was missing from the question
+  entirely (recovered from source p.42). Without it (b)(i)/(b)(ii) are
+  unanswerable. Separately the stored SOLUTION for (b)(ii) ends at 55.6 deg where
+  arctan(54/32) = 59.4 deg — the stored ANSWER (59.4) is right, the solution's
+  last line is a typo.
+
+## Don't "improve" these  [batch 9 g23]
+- **Hua Yi 2024 S3_EM P1 Q9** — the grey line colour is the school's own style,
+  not fading. Do not darken it. (Also carries 13 stray blue anchor dots from the
+  school's drawing tool — theirs, not damage.)
+
+## ⚠⚠ THE BIG ONE: 3,098 questions are dark on watermark status alone
+Measured 2026-09-02 with the exact `figureServable()` predicate
+(`!has_image || figure_url || image_watermark_status = 'clean'`):
+
+| gated because | questions |
+|---|---|
+| `image_watermark_status IS NULL` | **3,009** |
+| status = `'no_image'` but the question HAS an image | 88 |
+| status = `'flagged'` | 1 |
+| **total held out of serving by this field** | **3,098** |
+
+These are questions with `has_image = true` and no `figure_url`. **This is roughly
+five times the entire figure_flags queue** (569) and has nothing to do with figure
+quality — the watermark backfill simply never covered them, and the gate fails
+closed. Every batch in this run has hit it: a repaired figure whose flag closes
+still does not reach a student.
+
+The 88 rows marked `'no_image'` while carrying an `image_url` are simply
+mislabelled (spotted on PJC 2018 JC1 MY P1 Q7).
+
+**Worth its own project, and probably a bigger unlock than the flag queue.** It
+needs a watermark scan pass over those 3,009, not eyeball review — most will be
+clean, and the ones that are not are exactly the school-branded scans that must
+never reach a student.
+
+## Whole figures missing from a question  [batch 9 g20]
+- **DHS 2021 JC1 MY P1 Q10** — the question carries only Fig. 1, but parts (ii)
+  and (iii) explicitly say "see Fig. 2" / "see Fig. 3". **6 of 12 marks are
+  unanswerable.** Both recovered from the source DOCX. These are ADDITIONS —
+  the existing image is Fig. 1 and is defect-free, so `image_url` must become
+  three figures in order. Do NOT repoint `image_url[0]`.
+- (Running tally of questions found unanswerable as served: Kranji 2024 EM P2 Q10,
+  Ahmad Ibrahim 2021 EM_NA P2 Q13, Woodgrove 2022 EM_NA P1 Q10, Bendemeer 2022
+  EM_NA P2 Q8, Bowen 2022 EM_NA P2 Q13, Broadrick 2023 EM_NA P2 Q3, CHIJ Katong
+  Convent 2021 EM_NA P2 Q13, DHS 2021 JC1 P1 Q10.)
+
+## A watermark can be deleted at the PDF content-stream level  [batch 9 g20]
+- **Raffles Girls 2015 S1 SA2 P1 Q9** — the tiled RGS watermark lives in an
+  `/Artifact /Watermark` block in the PDF content stream. Deleting that block and
+  re-rendering gives clean vector art at any dpi — far better than pixel-clipping
+  the raster. Worth trying first on any RGS/branded PDF.
+- **Dunearn 2014 S1 SA1 P2 Q8** — the marking scheme (p.23) carries the same graph
+  with the ANSWER CONSTRUCTION drawn on it. Never source that figure from there.
+
+## Adrian's own handwriting leaked into a served figure  [batch 9 g25]
+- **Marsiling 2023 AM P1 Q11** — the serving image carried ORANGE HANDWRITTEN
+  annotation reading `−π + c = a`, which is verbatim the answer to part (a)(ii)
+  ("express a in terms of c"). The graph beneath is the genuine question diagram,
+  so the fix was to colour-separate the orange, whiten it while protecting every
+  black pixel, and repaint the 18-row notch the ink had cut out of the y-axis.
+  Verified against the school's clean paper (Dropbox, p.18).
+- **Route of contamination:** the orange is baked into `image3.jpeg` inside
+  ADRIAN'S OWN annotated compilation DOCX
+  (`/1 ONLINE LESSONS/3 Exam Papers/AM S4/AM Prelim 2023/AM PRELIM 2023 Marsiling.docx`).
+  Figures harvested from his annotated compilations can carry his answers into
+  the bank. The other 7 figures in that DOCX were checked and are clean.
+
+### How big is this class? Measured, and the answer is "not by colour"
+Two detector passes over the live bank, both **100% false positive**:
+1. *Any saturated ink* — 13/60 sampled figures (21.7%) flagged. On inspection all
+   13 are legitimate school-authored colour: blue vector line art, coloured bar
+   charts, red curves, product photos, a green-field vector diagram.
+2. *Pen signature* (sparse warm ink on an otherwise greyscale scan) — 2/200
+   (1.0%). Both false: a drive-in-cinema photograph, and a chart's own dark-red
+   data markers.
+
+**So: no evidence of a widespread problem — zero confirmed annotations in 200
+sampled figures.** Colour is the wrong discriminator; schools print in colour
+constantly. If this is to be sized properly, do it **by source**: enumerate the
+questions whose `source_file` is one of Adrian's annotated compilation DOCXs and
+check only those. That is a targeted check, not a bank-wide sweep.
+
+## Stem text defects that make a question unanswerable  [batch 10 g2]
+- **ACS (Barker Road) 2021 EM_NA P2 Q10** — the bank stem OMITS the sentence
+  "It can be taken that it will cost $3 per 1GB over the given data plan and 20
+  cents per minute for additional talk time" and the 2-year contract note.
+  Without them the question cannot be answered at all. The agent kept both
+  sentences inside the re-extracted image as a stopgap; if the STEM is fixed
+  instead, re-crop the image to end at "Taken from Singtel website."
+  Separately the stem says "would not send more than 100 SMS" where the paper
+  says "would not use any SMS" — that invents an 80-SMS shortfall on VIVIFI Lite
+  with no rate to price it.
+
+## The dossier "source NOT FOUND on disk" line is unreliable for batches 10+
+Two of this group's sources were in `~/Desktop/AdrianMath/papers/processed/` all
+along — one under a different capitalisation (`EM Prelim 2022 CHIJ St Nicholas.docx`,
+lowercase "Prelim"). The disk index for batches 10+ was seeded from batches 7-9
+only (69 papers), so it under-reports. Agents are told not to trust it.
+
+## NEW defect class: the stored "figure" is a different QUESTION  [batch 9 g24]
+- **Greendale 2022 EM_NA P1 Q20(b)** — the stored image was a screenshot of the
+  NEXT question's text (Q21). The parallelogram ABCD (158 deg at A, (3x+5) deg at
+  C) was never captured at all. Recovered at 600 dpi; confirms x = 51.
+  Distinct from "wrong content" (a table instead of graphs) — here the crop
+  landed on an entirely different question.
+
+## Duplicate figures: the student sees every diagram twice  [batch 9 g24]
+- **Anglican High 2024 AM P1 Q11** — `image_url[0]` is a composite that duplicates
+  the school's own three part-level figures (all three fetched and verified
+  correct). Adrian may prefer to DROP `image_url[0]` outright rather than repair
+  it. The composite also had panel (c)'s curve labels SWAPPED (3y = x on the
+  cubic) — i.e. the duplicate was also wrong. `image_watermark_status` is
+  `no_image`, so the question fails the serving gate regardless of the art.
+
+## Missing figure  [batch 9 g24]
+- **Hua Yi 2020 EM_NA P2 Q13** — the box-and-whisker plot for parts (e)/(f) was
+  missing entirely; the question carried only the CF graph, so (e) and (f) were
+  unanswerable. Recovered from source p.14. ADDITION, not a swap.
+
+## The one MEDIUM-confidence result so far  [batch 9 g24]
+- **Ahmad Ibrahim 2025 S1 P2 Q12(b)** — an LTA fare table screenshotted,
+  photocopied, then scanned to 1-bit CCITT: every fare digit is dither speckle
+  and four cleaning approaches failed. Retyped as vector. Every number the
+  QUESTION uses is confirmed three ways (stored answers; early-train column =
+  card − 50 throughout; Express = Trunk Card + 30 throughout). **But the six
+  "Cash" cells (85/95/95/95/115/115) are a best pixel-level reading, not
+  certain** — nothing in the question uses them. The Tamil/Chinese/Malay heading
+  lines are unreadable and were left out rather than guessed.
