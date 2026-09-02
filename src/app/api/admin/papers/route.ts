@@ -27,6 +27,7 @@ import { aggregateTopicBleed } from '@/lib/report-facts';
 import { lostMarkQuestions } from '@/lib/shelf';
 import { isMarkSubject } from '@/lib/mark-subjects';
 import { paperFolder } from '@/lib/paper-folder';
+import { autoQueueSheet } from '@/lib/sheet-queue';
 
 export const runtime = 'nodejs';
 
@@ -199,7 +200,18 @@ export async function POST(req: NextRequest) {
     .eq('id', runId);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json({ ok: true, runId, studentId: studentId || null, studentName });
+  // 📘 Tagging is what makes a sheet possible (it needs someone to be for), so
+  // an untagged marked paper queues its self-study sheet the moment it gets a
+  // student (SPEC-MARKING-DESK.md). The automatic door's guard refuses a run
+  // with no marking yet, one already released, or one with a sheet already —
+  // all silent. Awaited so the desk can show "sheet queued" on the same tap.
+  let sheet: string | null = null;
+  if (studentId) {
+    const out = await autoQueueSheet(runId, 'papers:tag');
+    sheet = out.ok ? 'queued' : out.status;
+  }
+
+  return NextResponse.json({ ok: true, runId, studentId: studentId || null, studentName, sheet });
 }
 
 // ── DELETE: remove a run and everything it stored ────────────────────────────

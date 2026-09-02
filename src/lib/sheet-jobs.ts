@@ -21,6 +21,8 @@ export type SheetJob = {
   claimed_by: string | null;
   claimed_at: string | null;
   heartbeat_at: string | null;
+  /** The worker's heartbeat label (diagnosing · drafting · verifying · rendering · filing) — optional, added 31 Aug 2026. */
+  stage?: string | null;
   attempts: number;
   result: unknown;
   error: string | null;

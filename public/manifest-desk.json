@@ -1,0 +1,12 @@
+{
+  "name": "Marking desk — Adrian's Math Tuition",
+  "short_name": "Marking desk",
+  "start_url": "/admin/desk",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#111827",
+  "icons": [
+    { "src": "/icons/admin-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/admin-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

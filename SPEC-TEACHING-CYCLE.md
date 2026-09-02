@@ -31,6 +31,7 @@ Owner: **A** = Adrian (never automate), **S** = system, **C** = a Claude session
 | 5 | Author the sheet | C | Example → Practice pairs in Adrian's style; worked examples reproduce the failed question's SHAPE with changed numbers; **every answer verified computationally** |
 | 6 | **Amend the sheet** | **A** | he edits the DOCX. **Checkpoint — his name is on it** |
 | 7 | **Release together** | **A** | the marked copy AND the sheet reach the student in ONE delivery: release the run + assign the sheet, with a note tying them ("read your marked paper, then work this"). A bare score with the remedy arriving later is the thing this step exists to prevent |
+| 2–7 | **→ the marking desk** | A | **Since 2 Sep 2026 steps 2–7 happen on ONE screen — [`/admin/desk`](SPEC-MARKING-DESK.md):** the sheet queues itself when a tagged paper finishes marking (3–5 run headless), Adrian vets script + sheet side by side (2, 6 via the folder) and presses **Approve & release** (7) |
 | 8 | Student works + hands in | — | on paper → photo → `/app/submit` (or the assignment's 📷 button) |
 | 9 | Mark the hand-in | S | the normal pipeline; auto-release stays PAUSED for this loop |
 | 10 | **Vet before release** | **A** | so progress is monitored, not merely recorded. **Checkpoint** |

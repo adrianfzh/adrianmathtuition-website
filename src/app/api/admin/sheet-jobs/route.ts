@@ -23,6 +23,7 @@ import { logJobRun } from '@/lib/job-log';
 import { pickNextJob, sanitizeResult, completionMessage, cancelState, MAX_ATTEMPTS, type SheetJob } from '@/lib/sheet-jobs';
 import { normaliseDiagnosis, type Diagnosis } from '@/lib/sheet-diagnosis';
 import { rebuildRunPdfs, type RebuildOutcome } from '@/lib/rebuild-run-pdfs';
+import { queueSheetJob } from '@/lib/sheet-queue';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -213,33 +214,13 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Adrian: queue a sheet for a marked paper ──────────────────────────────
+  // The guard (tagged · marked · nothing in flight) lives in lib/sheet-queue.ts
+  // and is shared with the desk's auto-queue, so the two doors can never
+  // disagree about which papers may have a sheet.
   const runId = String(body.runId || '').trim();
   if (!/^[0-9a-f-]{36}$/i.test(runId)) return NextResponse.json({ error: 'runId required' }, { status: 400 });
 
-  const { data: run } = await sb.from('paper_marking_runs')
-    .select('id, paper_name, student_id, student_name, result_json')
-    .eq('id', runId).maybeSingle<{ id: string; paper_name: string | null; student_id: string | null; student_name: string | null; result_json: unknown }>();
-  if (!run) return NextResponse.json({ error: 'run not found' }, { status: 404 });
-  if (!run.student_id) {
-    return NextResponse.json({ error: 'Tag this paper to a student first — a sheet needs someone to be for.' }, { status: 400 });
-  }
-  const results = (run.result_json as { results?: unknown } | null)?.results;
-  if (!Array.isArray(results) || !results.length) {
-    return NextResponse.json({ error: 'That run has no marking to diagnose yet.' }, { status: 400 });
-  }
-
-  // Don't queue the same paper twice while one is still in flight.
-  const { data: dupes } = await sb.from('sheet_jobs')
-    .select('id, status').eq('run_id', runId).in('status', ['queued', 'claimed']);
-  if (dupes?.length) return NextResponse.json({ error: 'A sheet for this paper is already queued.' }, { status: 409 });
-
-  const { data: job, error } = await sb.from('sheet_jobs').insert({
-    run_id: runId,
-    airtable_student_id: run.student_id,
-    student_name: run.student_name || '',
-    paper_name: run.paper_name || '',
-    focus: body.focus ? String(body.focus).slice(0, 300) : null,
-  }).select('*').single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ job });
+  const out = await queueSheetJob(runId, { focus: body.focus });
+  if (!out.ok) return NextResponse.json({ error: out.message }, { status: out.http });
+  return NextResponse.json({ job: out.job });
 }

@@ -1,9 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { autoQueueSheet } from '@/lib/sheet-queue';
 
 // Paper marking can take minutes (solve + mark per question). 300s is the Vercel ceiling.
 export const maxDuration = 300;
+
+// 📘 The marking desk's auto-queue (SPEC-MARKING-DESK.md, 2 Sep 2026): the
+// self-study sheet is queued THE MOMENT a run is both marked and tagged. The
+// website never writes marking runs itself (the bot does, before it answers),
+// so the hook rides the proxy: after a successful bot answer for one of these
+// phases, the run named by it is offered to lib/sheet-queue's automatic door,
+// whose guard (tagged · has results · unreleased · no job yet) decides. Runs
+// after the response (`after()`), and every refusal is silent — a re-pick of
+// the student, a ⏳ row not yet marked, a paper with a sheet already: all
+// normal, none an error.
+//
+//   direct / remark              → the bot's answer carries `run_id` of the run it just filled
+//   external-marking-result      → the Mac plan-marker's reads landed on `id` (unless superseded)
+//   set-student                  → `id` was tagged (a `studentId` of '' is an untag: nothing to queue)
+//
+// Papers the Fly queue worker marks by itself never pass through here — the
+// bot must POST /api/admin/sheet-jobs {runId} after deliverQueuedRun for those.
+function autoQueueRunIdFor(phase: string, sent: Record<string, unknown>, data: Record<string, unknown>): string | null {
+  if (phase === 'direct' || phase === 'remark') return typeof data.run_id === 'string' ? data.run_id : null;
+  if (phase === 'external-marking-result') {
+    if (data.superseded || data.error) return null;
+    return typeof sent.id === 'string' ? sent.id : null;
+  }
+  if (phase === 'set-student') return sent.studentId && typeof sent.id === 'string' ? sent.id : null;
+  return null;
+}
 
 // Proxy to the bot's /api/mark-paper, injecting the bot secret server-side.
 export async function POST(req: NextRequest) {
@@ -20,6 +48,15 @@ export async function POST(req: NextRequest) {
       body,
     });
     const data = await r.json().catch(() => ({}));
+    if (r.ok && data && !data.error) {
+      try {
+        // The body was forwarded as text; parse it once here for the phase + ids.
+        const sent = (body ? JSON.parse(body) : {}) as Record<string, unknown>;
+        const phase = typeof sent.phase === 'string' ? sent.phase : '';
+        const runId = autoQueueRunIdFor(phase, sent, data as Record<string, unknown>);
+        if (runId) after(() => autoQueueSheet(runId, `mark-paper:${phase}`));
+      } catch { /* an unparseable body is the bot's problem, not the queue's */ }
+    }
     // The bot's stats payload predates checked_at, and re-deploying the bot is
     // gated — the history list's seen/unseen split needs it, so merge it in
     // from Supabase here. Harmless once the bot returns it natively.

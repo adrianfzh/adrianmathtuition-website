@@ -362,6 +362,15 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`table? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
       return 'queue table up';
     }),
+    // 🖊 The marking desk (/admin/desk, SPEC-MARKING-DESK.md) — the hub's
+    // marking tile lands here. Its queue route must hold its auth gate (401
+    // anonymously; a 404 means the desk fell out of the build and the tile
+    // opens on nothing).
+    timed('desk', async () => {
+      const r = await fetch(`${base}/api/admin/desk`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // Student resource requests (/app/requests → /admin/requests, v1
     // human-in-the-loop). The student route must hold its auth gate (401
     // anonymously — a 404 means the tab silently vanishes and asks stop

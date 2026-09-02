@@ -239,7 +239,7 @@ export default function AdminHub() {
                 </a>
               )}
               {triageCard && (
-                <a href="/admin/mark/triage" className="stat-card" style={{ borderLeftColor: '#7c3aed' }}>
+                <a href="/admin/desk" className="stat-card" style={{ borderLeftColor: '#7c3aed' }}>
                   <div className="stat-top">
                     <span className="stat-num">{triageCard.flagged || triageCard.readyToRelease}</span>
                     <span className="stat-arrow">›</span>
@@ -339,10 +339,13 @@ const LAUNCHERS: Launcher[] = [
   { emoji: '🎯', title: 'Lesson prep',   sub: 'One card per student · today at a glance', href: '/admin/prep'      },
   { emoji: '📬', title: 'Parent Digests', sub: 'Weekly · monthly · term drafts',       href: '/admin/digests'      },
   { emoji: '🩺', title: 'Ops',           sub: 'Every job & queue · last run · alarms', href: '/admin/ops'          },
-  { emoji: '📑', title: 'Marked papers', sub: 'Every script · by student · annotate',  href: '/admin/papers'       },
+  // 🖊 The marking desk is the front door for everything after marking (2 Sep
+  // 2026, SPEC-MARKING-DESK.md): the old triage + papers-library tiles fold into
+  // it and stay reachable from its "Other views" row. Mark a paper stays — it is
+  // where a paper enters, not where it is looked at.
+  { emoji: '🖊', title: 'Marking desk', sub: 'Marked papers → vet script + sheet → Approve & release', href: '/admin/desk' },
   { emoji: '🖨️', title: 'Notes',     sub: 'Print revision notes · AirPrint',      href: '/admin/notes'     },
   { emoji: '✍️', title: 'Mark a paper',   sub: 'Question PDF + working photos → marks', href: '/admin/mark-paper'  },
-  { emoji: '🔍', title: 'Triage marking',  sub: 'Check flagged questions · release to students', href: '/admin/mark/triage' },
   { emoji: '🎯', title: 'Game Plans',      sub: 'Per-student plans from marked papers · review & activate', href: '/admin/remediation' },
   { emoji: '🔎', title: 'Practice checks', sub: 'Spot-check portal practice grades',     href: '/admin/practice-checks' },
   { emoji: '🎯', title: 'Trap review',     sub: 'Approve the traps students get told about', href: '/admin/pitfalls' },

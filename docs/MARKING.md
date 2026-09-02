@@ -559,6 +559,77 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
      strip (still level) instead of sagging down the page.
 - **Runs link to their student** (2026-07-30): picking a student in the send row silently fires `phase:'set-student'` (bot store → `student_id`/`student_name` on `paper_marking_runs`, indexed; last pick wins). The organizing principle is the same as Lessons/Invoices — a link to the Airtable Student record, NOT per-student Blob folders (Blob is the shelf, the DB row is the index card). `phase:'by-student'` returns one student's runs; `/admin/students/[id]` renders them in a **Marked papers** section (overview tab, ✍️/🖼/📄 links). History rows show the tagged name. Runs marked before 2026-07-30 are untagged until re-loaded and re-picked.
 
+## The marking desk (2 Sep 2026) — `/admin/desk`
+
+Spec: [`../SPEC-MARKING-DESK.md`](../SPEC-MARKING-DESK.md). Adrian: *"now i have 3
+places to look at for marking — mark paper, triage, and papers … the flow should
+just be a marked paper appears (with analysis and total marks on the first page)
+and self learning sheet auto generates, i vet the marked copy and the self learning
+sheet, approve, then release."* The desk is the front door for everything AFTER
+marking; the hub's 🖊 tile points at it, and mark-paper / triage / papers stay as
+they are, reachable from its "Other views" row. Nothing is deleted.
+
+- **Four lanes, DERIVED, never stored** — `lib/desk-state.ts` (pure, tested).
+  `laneFor(run, latestLiveJob)`: `released_at` → **Released** (outranks all);
+  no `student_id` → **Needs a student**; newest live `sheet_jobs` row `done` →
+  **Ready to vet**; anything else (no job / queued / claimed / failed) → **Marked,
+  sheet on the way**. "Live" = not `cancelled` (`latestLiveJob`): a cancelled
+  re-queue must not hide the finished sheet behind it. Rows with no
+  `result_json.results` or with `archived_at` are not on the desk (same rule as
+  triage). Default tab = Ready to vet when non-empty, else the waiting lane.
+- **Approve & release is grey until** (`approveBlockers`, one reason per line
+  under the button): untagged · N questions still need review (Agree/Override
+  EVERY question here, not only flagged ones) · no `done` sheet (the reason names
+  the stage: queued / being written (stage) / failed — retry) · `pdf_stale`
+  without a NEWER "Marked (Adrian).pdf" in the folder (an older or same copy does
+  not clear it; Dropbox unreadable says so rather than guessing). The button
+  POSTs `/api/admin/release-with-sheet {runId}` unchanged — attach-by-name, assign,
+  release, notify — and asks on an ambiguous folder exactly as triage does.
+  **Release without sheet…** (confirm) uses `releaseBlockers` — the same gates
+  minus the sheet — and POSTs mark-triage `release`.
+- **"My copy"** — `amendedStatusFor(run, folderListing)` reuses `paper-folder.ts`
+  (`pickAmendedCopy` / `isAlreadyAttached` / `amendedCopyIsNewer`): `none` ·
+  `found` (attached, or older than the attached) · `newer-than-attached` (release
+  will attach it) · `unknown` (Dropbox down). 📎 Attach my copy = mark-triage
+  `attach-amended-from-dropbox`. 🔁 Rebuild PDFs = `POST /api/admin/desk/rebuild
+  {runId}` → `lib/rebuild-run-pdfs.ts` (409 on released); a COMPLETE rebuild
+  clears `result_json.pdf_stale` (the strip now prints the corrected total —
+  per-question ink is still the marker's, the toast says so) and stamps
+  `result_json.pdf_rebuilt`.
+- **Data** — `GET /api/admin/desk?lane=&days=60` (runs + newest live sheet job +
+  `portal_assignments` count per `source_run_id`; `counts` for all lanes, `rows`
+  for the lane asked; the newer-copy ⚠ is checked only for ≤12 Ready rows so a
+  list never waits on Dropbox) and `GET /api/admin/desk/run?runId=` (run, every
+  question via `extractFlagged` flagged+confident, annotated photos, `readDiagnosis`,
+  newest live job + all jobs, `pendingCount`, folder path/web URL/listing →
+  `Practice Again*.pdf` present?, amended status, blockers, flags). Service-key
+  reads, `verifyAdminAuth`, **no writes** — every mutation goes through
+  mark-triage / release-with-sheet / sheet-jobs / papers POST / desk/rebuild.
+- **The sheet pane** renders the PDF with pdf.js (`lib/pdf-pages.ts`) from
+  `sheet-open?runId=&kind=pdf&stream=1` (same-origin bytes; `&json=1` returns the
+  temporary link) — an iframe'd PDF on iPadOS shows only page 1. Re-queue with an
+  optional focus → `POST /api/admin/sheet-jobs {runId, focus}`; ✕ Cancel →
+  `{action:'cancel'}`. The diagnosis list under it is `result_json.diagnosis`.
+- **Auto-queue** — `lib/sheet-queue.ts` (`sheetQueueGuard` pure/tested,
+  `queueSheetJob`, `autoQueueSheet`) is the ONE guard, now also what the
+  sheet-jobs POST calls. The automatic door is stricter than the button: tagged ·
+  has results · not released · **no job of any status yet** (the button may
+  re-queue after done/failed/cancelled; the auto path fires on repeating events).
+  Hooks: `/api/admin/mark-paper` proxy after a successful bot answer — `direct`/
+  `remark` (`data.run_id`), `external-marking-result` (`id`, unless superseded),
+  `set-student` (`id` when `studentId` non-empty) — inside `after()`; and the
+  `/api/admin/papers` POST tag handler (awaited; response carries
+  `sheet: 'queued' | <refusal>`). **Not covered: papers the Fly queue worker marks
+  by itself** (bot `deliverQueuedRun`) — the bot must POST
+  `/api/admin/sheet-jobs {runId}` after it, same `Authorization: Bearer
+  ADMIN_PASSWORD` it uses for `mark-paper-pdf`; until then those runs queue on tag
+  or on Adrian's 📘/Re-queue tap.
+- Health check: `timed('desk', …)` — `GET /api/admin/desk` must 401 anonymously.
+  Hub: the 🖊 **Marking desk** tile replaces the 🔍 Triage and 📑 Marked papers
+  tiles (✍️ Mark a paper stays — it is the door IN); the purple triage attention
+  card also lands on the desk. PWA: `admin/desk/layout.tsx` + `manifest-desk.json`
+  (hub icons reused).
+
 ## /admin/mark/triage — flagged-only review + the release gate (2026-08-11)
 
 The screen that makes AI marking safe to hand back at scale. **Nothing Adrian uploads
