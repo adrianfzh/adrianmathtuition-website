@@ -65,6 +65,17 @@ for _i in range(30):
         f'<w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride>'
         f'</w:num>\n'
     )
+# 30 MAIN-question numIds (50..79), each restarting at 1 — one per Practice set
+# on a self-study sheet, so every "Practice N" counts 1, 2, 3 from the top and
+# Adrian can insert or delete an item in Word and the rest renumber themselves
+# (2 Sep 2026: "can we have auto numbering for the question numbers").
+for _i in range(30):
+    NUMBERING_XML += (
+        f'  <w:num w:numId="{50+_i}">'
+        f'<w:abstractNumId w:val="100"/>'
+        f'<w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride>'
+        f'</w:num>\n'
+    )
 NUMBERING_XML += '</w:numbering>'
 
 
@@ -225,6 +236,8 @@ class Worksheet:
         self.one_mark_bonus = float(one_mark_bonus)
         self._auto_subq_id = 9   # increments to 10, 11, ... per Q with sub-parts
         self._current_subq_id = None
+        self._auto_q_id = 49     # increments to 50, 51, ... per restart_numbering()
+        self._current_q_id = 1   # numId 1 = one continuous 1. 2. 3. list
         self._block_paras = []   # paragraphs of the current question block (for keep-together)
         self._blocks = []        # every finished block, for block_heights()
         self._fig_cm = {}        # id(paragraph) -> rendered figure height in cm
@@ -396,8 +409,21 @@ class Worksheet:
         self._auto_subq_id += 1
         self._current_subq_id = self._auto_subq_id
         self._block_paras = []  # a new question starts a new keep-together block
-        # Apply inline numId=1 directly so MS Word picks it up reliably
-        return self._add(parts, style='Question', num_id=1, marks=marks)
+        # Apply the numId inline so MS Word picks it up reliably
+        return self._add(parts, style='Question', num_id=self._current_q_id, marks=marks)
+
+    def restart_numbering(self):
+        """Start a fresh 1. 2. 3. list for the Q() calls that follow.
+
+        A worksheet is one continuous list; a self-study sheet is several
+        "Practice N" sets that each count from 1. Call this right after the
+        Practice heading. Real Word numbering, not typed "1.  " text, so an
+        item Adrian inserts or deletes renumbers the rest (2 Sep 2026)."""
+        self._auto_q_id += 1
+        if self._auto_q_id > 79:
+            raise RuntimeError('more than 30 restarted lists on one sheet')
+        self._current_q_id = self._auto_q_id
+        return self._current_q_id
 
     def SQ(self, parts, marks=None):
         """Sub-question (a)(b)(c) ... auto-tracks under the current main question."""
@@ -495,6 +521,15 @@ class Worksheet:
         the last Q()), the "Solution:" line and the whole box on one page —
         Word pushes the block to a fresh page rather than straddling. A block
         taller than a full page still splits gracefully.
+
+        THAT PUSH IS THE "LARGE SPACE" (Adrian, 2 Sep 2026: "how can i remove
+        the large space between the example and section 3?"). A glued
+        heading + example + figure + box that does not fit in what is left of
+        the page jumps whole to the next one, leaving half a page empty. On a
+        dense teaching sheet pass keep_together=False and let the box flow;
+        in Word the same fix is Paragraph → Line and Page Breaks → untick
+        "Keep with next" on the paragraphs above the box, and Table Properties
+        → Row → tick "Allow row to break across pages".
         """
         spacer = self.doc.add_paragraph()  # breathing space above "Solution:"
         self._block_paras.append(spacer)
@@ -518,7 +553,7 @@ class Worksheet:
             for step in steps:
                 p = work_cell.paragraphs[0] if first else work_cell.add_paragraph()
                 first = False
-                p.paragraph_format.line_spacing = 1.15  # boxes are tighter than the 1.5 body
+                p.paragraph_format.line_spacing = 1.5   # same as the body (Adrian, 2 Sep 2026: 1.5 "improves readability")
                 if isinstance(step, tuple) and step and step[0] == 'figure':
                     self._picture(p, step[1], step[2] if len(step) > 2 else 8.0)
                 elif isinstance(step, str):
@@ -533,7 +568,7 @@ class Worksheet:
                     self._fill(p, step)
             if idx < len(rows) - 1:  # one blank line between parts, none after the last
                 gap = work_cell.add_paragraph()
-                gap.paragraph_format.line_spacing = 1.15
+                gap.paragraph_format.line_spacing = 1.5
         if keep_together:
             for para in self._block_paras:
                 para.paragraph_format.keep_with_next = True

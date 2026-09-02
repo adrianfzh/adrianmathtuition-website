@@ -323,6 +323,38 @@ What makes it the reference — all of it reproducible, none of it accidental:
 - **The fixed opening block, all three lines**, and the name as a faded-blue
   `For <Full Name>` subtitle. Kiara's had one instruction line and no name.
 
+### Adrian's own explanations — the captured style (2 Sep 2026, binding)
+
+He rewrote two of Sophie's worked examples by hand and asked for the difference
+to be followed on every surface. The full diff is in
+`~/Desktop/AdrianMath/teaching_style/FEEDBACK.md` § "How Adrian explains";
+the shape, in one breath:
+
+- **Box opens with 2–3 grey italic principle lines** (general rule → the trick →
+  applied to this question), then a blank line, then the working as
+  **auto-numbered steps** that each say what you are doing.
+- **The general rule sits inside the step in green bold square brackets**:
+  `y = [the expression on the other side of the equal sign] is the graph you
+  need to draw`.
+- **Every algebraic move carries a grey `←` that names its TARGET**: `← divide by
+  −2 to obtain x³ − 3x²`, `← add 2 to obtain x³ − 3x² + 2 (which is the graph
+  drawn)`.
+- **Colour = meaning, same in the principle line and the working**: blue
+  `0432FF` the expression being matched; red `EE0000` the piece added/changed;
+  green `00B050` the rule and the result it produces; bold+underline the BASE
+  in a percentages chain; black bold `←` for a plain instruction.
+- **Percentages**: conversion facts with the reason in brackets first, the unit
+  declared in bold ("Let … in 2019 be 100 units"), one block per base opened
+  with an underlined "From 2019 to 2020 → 2019 is the base (100%)", full-word
+  equation lines ("exports in year 2020 = 100 × 1.12 = 112"), the formula in
+  words before the numbers.
+- **Headings name the skill as an action, in Title Case** — "Find the Required
+  Line To Draw To Solve An Equation Graphically", "Mastering Percentages –
+  Whether To Multiply or Add/Subtract". He replaced the one-line teasers.
+- **Gone from the box**: the punchy italic opener, the red "on your paper you…"
+  lines, and the Check line on those two examples. ONE red Common Error warning
+  per box, not two.
+
 Invoke `create-teaching-notes` and give it this brief:
 
 - **Example → Practice pairs, numbered straight through.** No TRIGGER /
@@ -341,15 +373,24 @@ Invoke `create-teaching-notes` and give it this brief:
     sheet numbered "draw the line to solve…" / "Hence solve the inequality…"
     as 1 and 2, and he sent it back. One stem, one figure, one answer line →
     lettered parts.
-  - **Source lines carry no school name** (Adrian, 2 Sep 2026: *"no need to
-    write the school's name in the question"*). `[2023 / EM / Prelim / Q9]`,
-    never `[2023 / EM / Prelim / Tanjong Katong Girls / Q9]`. Keep year /
-    level / exam type / question number. "GCE" is the board, not a school, so
-    `[2017 / EM / GCE / Q17]` and `[2023 / EM / Specimen / GCE / Q16]` stay.
-    The with-school citation in `create-teaching-notes` is for Adrian's own
-    materials, not for a student's sheet. `scripts/sheet-worker/repair-sheet.py`
-    strips the school from a filed sheet as a repair, so a sheet that reaches
-    Dropbox with one is an authoring fault twice over.
+  - **No source line under a practice question — none at all** (Adrian, 2 Sep
+    2026, twice: first "no need to write the school's name in the question",
+    then, shown `[2023 / EM / Prelim / Q9]`, "questions are still showing their
+    source - remove the sources"). Provenance goes in the completion payload
+    and the question-proposal queue, not on the student's page.
+    `scripts/sheet-worker/repair-sheet.py` deletes any that reach Dropbox.
+  - **Auto-number the items with real Word numbering** (Adrian, 2 Sep 2026:
+    "can we have auto numbering for the question numbers"). Call
+    `ws.restart_numbering()` right after each `practice_head(...)`, then
+    `ws.Q([...], marks=n)` per item and `ws.SQ([...])` per part — the list
+    restarts at 1 for every Practice set and an item he inserts or deletes in
+    Word renumbers the rest. Typed `"1.  "` text does not.
+  - **1.5 line spacing everywhere, solution boxes included** ("improve
+    readability"). `worksheet_lib` boxes are 1.5 since 2 Sep 2026; do not
+    tighten them back to 1.15.
+  - **The word "never" is out** ("avoid the word 'never', use 'not' or something
+    else instead"). "A fall of 15% is × 0.85, not −15." — say not / does not /
+    is not. Sweep the finished text for it before filing.
   - **A question with parts gets ONE answer line, at the end**, carrying every
     part: `[Ans: (a) v = 5π cos(πt/6), max speed 15.7 cm/s; (b) 8.22 cm/s²;
     (c) 50 cm/s, a = −100 cm/s²]`. An answer line under each sub-part breaks the
@@ -532,6 +573,14 @@ the gap is the interesting half: it says what the bank is missing.
   shaded. If the practice item asks the student to FIND the region, draw the
   curves and leave the shading to them — but draw the axes and curves.
 
+**Solution boxes flow — pass `keep_together=False`** (Adrian, 2 Sep 2026: "how
+can I remove the large space between the example and section 3?"). The default
+glues heading + example + figure + box and jumps the whole block to the next
+page when it does not fit, leaving half a page empty. On a teaching sheet let
+the box split across the page. In Word the same fix is Paragraph → Line and
+Page Breaks → untick "Keep with next" on the paragraphs above the box, and
+Table Properties → Row → "Allow row to break across pages".
+
 **Verify everything before rendering**: every worked and practice answer
 recomputed with sympy; any figure verified from its own coordinates (tangency,
 parallels, claimed equal angles). Report the tally. An unverified sheet is not
@@ -574,7 +623,7 @@ folder has to live under `$HOME` regardless.
 Render the DOCX **and** a preview PDF, then file both:
 
 ```bash
-node scripts/dropbox-put.mjs "<file>" "/Self-Study/<Student Name>/Practice Again (Wave <n>) — <paper>.docx" --overwrite
+node scripts/dropbox-put.mjs "<file>" "/Self-Study/<Student Name>/<YYYY-MM-DD> <paper>/Practice Again.docx" --overwrite
 ```
 
 (The script stages to Blob and calls `/api/admin/dropbox-put`; a direct Dropbox
@@ -584,14 +633,29 @@ Then hand Adrian both files in the session and tell him the next step in one
 line: **edit the DOCX in Dropbox, export the PDF beside it, then release the
 marked paper + sheet together from triage** (the 📘 attach button there).
 
-### The filename is fixed
+### The filing path is fixed — one folder per paper (Adrian, 2 Sep 2026)
 
-`/Self-Study/<Student Name>/Practice Again (Wave <n>) — <paper>.docx` (and
-`.pdf`). No date, no title variation, no run number.
+```
+/Self-Study/<Student Name>/<YYYY-MM-DD> <paper>/Practice Again.docx
+/Self-Study/<Student Name>/<YYYY-MM-DD> <paper>/Practice Again.pdf
+```
 
-The wave number IS the identity: wave 2 of a paper is one document, however many
-times it gets rebuilt, so a re-author writes the same path with `--overwrite`
-and the folder keeps one file per wave. A NEW wave increments `<n>`.
+`<YYYY-MM-DD>` is the marking run's date (`paper_marking_runs.created_at`, SGT)
+and `<paper>` its `paper_name` — e.g. `/Self-Study/Sophie Tan/2026-09-01 EM 2025
+p1 sophie/Practice Again.docx`. Adrian, on a folder holding two papers' worth of
+docx + pdf side by side: *"these docx and pdfs will pile up in the same folder,
+any ways we can keep them more organized?"* A folder per paper keeps each
+paper's sheet and PDF together and sorts by date; the marked script itself
+stays in `/Marked papers/` where the bot files it.
+
+**No "Wave" in the name.** (*"why are there always the word 'Wave 1'? do we
+need that?"*) The wave was SPEC-TEACHING-CYCLE's idea that one paper could
+spawn a second sheet later for the skills the first left out. That is rare, and
+the label on every first sheet was noise. The first sheet for a paper is
+`Practice Again`; only if a second sheet is ever built for the SAME paper is it
+`Practice Again 2`. A re-author writes the same path with `--overwrite`.
+No date in the FILE name (the folder carries it), no title variation, no run
+number.
 
 Sophie's folder is what happens without this. Two runs, two conventions —
 "2026-08-31 PRACTICE AGAIN — Learn from A Math 2021 Paper 1 — sophie am tys

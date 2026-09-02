@@ -23,11 +23,14 @@ need fixing without re-authoring them, so this operates on the OOXML directly.
      - a trailing EMPTY paragraph inside a table cell cannot be deleted at all
        (Word keeps the last paragraph of a cell), so it is dropped here.
 
-  3. No school name in a source line.  Adrian, 2 Sep 2026, on Sophie's EM
-     sheet: "no need to write the school's name in the question". A citation
-     `[2023 / EM / Prelim / Tanjong Katong Girls / Q9]` becomes
-     `[2023 / EM / Prelim / Q9]`. "GCE" is the exam board, not a school, so
-     `[2017 / EM / GCE / Q17]` is left alone.
+  3. No source line under a practice question.  Adrian, 2 Sep 2026, on
+     Sophie's EM sheet — first "no need to write the school's name in the
+     question", then, an hour later, on seeing `[2023 / EM / Prelim / Q9]`:
+     "questions are still showing their source - remove the sources". So a
+     body paragraph whose whole text is a bracketed citation
+     (`[<year> / <level> / <exam type> / … / Q<n>]`, four or five segments,
+     GCE or not) is removed outright. Provenance lives in the worker's
+     completion payload and the question-proposal queue, not on the sheet.
 
 Nothing else is touched: no other text, no equations, no figures, no styles.
 Every change is counted and reported, and the file is only written when
@@ -123,17 +126,13 @@ def check_prefixes_survived(before: bytes, after: bytes) -> list[str]:
     return problems
 
 
-# [year / level / exam type / school / Qn] — five segments; the fourth is the
-# school. Four-segment lines (already stripped, or GCE-only) do not match.
-SOURCE_WITH_SCHOOL = re.compile(r'^\[(\d{4}) / ([A-Za-z0-9]+) / ([^/\]]+?) / ([^/\]]+?) / (Q[^\]]*)\]$')
+# [year / level / exam type / (school /) Qn] — four or five segments, and the
+# whole paragraph is nothing but the citation.
+SOURCE_LINE = re.compile(r'^\[(\d{4}) / ([A-Za-z0-9]+) / ([^/\]]+?)( / [^/\]]+?)? / (Q[^\]]*)\]$')
 
 
-def strip_school(text: str):
-    """The source line without its school segment, or None if it has none."""
-    m = SOURCE_WITH_SCHOOL.match((text or '').strip())
-    if not m or m.group(4).strip() == 'GCE':
-        return None
-    return f'[{m.group(1)} / {m.group(2)} / {m.group(3)} / {m.group(5)}]'
+def is_source_line(text: str) -> bool:
+    return bool(SOURCE_LINE.match((text or '').strip()))
 
 
 def para_text(p):
@@ -167,7 +166,7 @@ def set_spacing(p, **attrs):
 def repair(xml_bytes):
     root = ET.fromstring(xml_bytes)
     body = root.find(w('body'))
-    counts = {'linear_fractions': 0, 'trailing_empty': 0, 'gap_above_box': 0, 'school_in_source': 0}
+    counts = {'linear_fractions': 0, 'trailing_empty': 0, 'gap_above_box': 0, 'source_lines': 0}
 
     # ── 1. every fraction stacked ────────────────────────────────────────────
     for f in root.iter(m('f')):
@@ -179,15 +178,16 @@ def repair(xml_bytes):
             fPr.remove(ty)
             counts['linear_fractions'] += 1
 
-    # ── 3. no school name in a source line ───────────────────────────────────
-    for t in root.iter(w('t')):
-        stripped = strip_school(t.text or '')
-        if stripped is not None:
-            t.text = stripped
-            counts['school_in_source'] += 1
-
     if body is None:
         return root, counts
+
+    # ── 3. no source line under a practice question ──────────────────────────
+    # Body paragraphs only (a citation never sits inside a solution box), and
+    # only when the citation is the paragraph's entire text.
+    for p in [el for el in body if el.tag == w('p')]:
+        if is_source_line(para_text(p)) and not has_drawing(p):
+            body.remove(p)
+            counts['source_lines'] += 1
 
     # ── 2a. no trailing empty paragraph inside a table cell ──────────────────
     for tc in root.iter(w('tc')):
