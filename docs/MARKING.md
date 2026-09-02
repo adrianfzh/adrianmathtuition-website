@@ -879,7 +879,7 @@ Adrian: *"labelling errors like arithmetic errors … beside the crosses … oka
 change both or neither): `concept | arithmetic | transfer | sign | rounding | units | misread | incomplete`.
 Buckets: careless = arithmetic+transfer+sign+rounding+units · concept-side = concept+misread · incomplete alone.
 The bot writes `results[].marking_output.parts[].error_kind` (the kind that cost the part; null at full marks)
-and `lines[].error_type` (same codes), and **draws the word in red beside the cross, in clear space**.
+and `lines[].error_type` (same codes), and **draws it as a phrase beside the cross, in clear space** — "arithmetic error", "rounding error", "sign error", "transfer error", "units error", "concept error", and "misread question" / "incomplete answer" (bot `ERROR_KIND_LABEL`) — in the TEACHING ink: brown, bold italic. Adrian picked that from three renders of one page (3 Sep 2026): red is the verdict, brown is the teaching, and the reason a mark went belongs with the teaching. `MARK_KIND_INK` / `MARK_KIND_WEIGHT` / `MARK_KIND_STYLE` on the bot flip it without a deploy.
 Anything outside the eight (older runs' free-text `error_type` like `ratio_inversion`) is *unlabelled*, never a kind.
 - **Cover page:** `errorKindTotals(results)` (pure, tested) attributes marks lost per part; `front-page-html`
   prints ONE row under the score — *Marks lost · concept 9 · careless 7 (arithmetic 4, sign 3) · incomplete 3*
