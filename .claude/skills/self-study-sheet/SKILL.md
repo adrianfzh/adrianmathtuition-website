@@ -39,9 +39,9 @@ The newest run is the sheet's SUBJECT — the paper Adrian releases alongside it
 and the one whose questions the student will recognise. If several re-marks of the
 same paper exist, use the **best/newest**; earlier ones are superseded.
 
-But it is not the only evidence, and on its own it will mislead you. **Read every
-paper this student has had marked** (Step 2), because the thing worth teaching is
-usually a habit, and a habit is invisible in one script.
+That run is the ONLY evidence the sheet diagnoses from (Adrian, 2 Sep 2026:
+*"diagnosis should be single-paper"* — see Step 2). Do not pull the student's
+other marked papers into the diagnosis.
 
 ## Step 2 — extract the evidence (never topic labels)
 
@@ -73,112 +73,56 @@ rounding, "show that" endpoints). The mix decides what the sheet teaches: a
 paper losing 29 marks to blanks and 12 to procedure is a first-moves sheet,
 not a rules sheet.
 
-### Read EVERY paper, not just this one (Adrian, 1 Sep 2026 — binding)
+### One paper — the one in their hand (Adrian, 2 Sep 2026 — binding)
 
-The single-paper diagnosis is a measured blind spot, not a theory. Eva's five
-marked papers were analysed together against the wave the sheet worker had
-produced from her newest one alone:
+**Diagnose from THIS run only.** Adrian, 2 Sep 2026: *"diagnosis should be
+single-paper."* This reverses the 1 Sep rule that pulled every marked paper the
+student had and let the newest one veto. That rule came from Eva's five papers,
+where blanks and "explain" answers were invisible on her newest script alone; it
+was retired the next day because the sheet is a response to the paper the student
+just got back, and dragging older papers in produced sheets that talked about
+"three of your four papers" and taught things the script in their hand did not
+show. Progress ACROSS papers is the portal's job — tracked over time, weighted
+towards the latest work — not the sheet's. (The all-papers SQL lives in git
+history, commit 3243f89a, if Adrian ever asks for the history.)
 
-| | marks lost | occasions | papers |
-|---|---|---|---|
-| Shape & space (mensuration, circle, 3-D) | 44 | 23 | 5 / 5 |
-| **Leaving parts blank** | **37** | 14 | 4 / 5 |
-| "Explain / justify" — asserting, not reasoning | 9 | 9 | **5 / 5** |
-| Scale factor not squared or cubed | 6 | 4 | 3 / 5 |
+Within the one paper, the ranking rules still hold:
 
-The worker got shape-and-space right — two of its four picks. It missed the other
-three entirely, and the reason is not judgement:
-
-| paper | blank marks | total lost |
-|---|---|---|
-| **the paper it read** | **0** | 37 |
-| the other four | 8 · 15 · 8 · 6 | 97 |
-
-**On the one script it was given, she left nothing blank.** Her largest single
-weakness — 37 marks handed over untouched — does not appear in the evidence it
-had. Same for "explain": two marks on that paper, below any sensible cut; nine
-separate occasions across five.
-
-So pull them all:
-
-```sql
-select r.paper_name, r.created_at,
-       res->>'question_number' as q, p->>'label' as part,
-       (p->>'max')::int - (p->>'awarded')::int as lost,
-       coalesce(p->>'not_attempted','false') as blank,
-       p->>'error_summary' as why
-from paper_marking_runs r,
-     lateral jsonb_array_elements(r.result_json->'results') res,
-     lateral jsonb_array_elements(res->'marking_output'->'parts') p
-where r.student_id = '<rec…>'
-  and jsonb_typeof(r.result_json->'results') = 'array'
-  and (p->>'awarded')::int < (p->>'max')::int
-order by r.created_at desc;
-```
-
-**THE LATEST PAPER HAS A VETO** (Adrian, 1 Sep 2026 — the correction that makes
-this rule safe). Past papers tell you whether something is a HABIT; the newest one
-tells you whether they still have it. A weakness that has stopped appearing is
-evidence of LEARNING, and drilling it wastes the sheet on something already fixed.
-
-Eva is the worked example against itself. Blanks were her largest aggregate loss —
-37 marks — and they run 6, then 8 and 15, then 8, then **zero** on her most recent
-paper. Summed, they look like her number one problem. Read in date order they look
-like a problem she is solving. Ranking them first would have taught her something
-she had already learned.
-
-So: count across every paper, but **check the newest before you rank**.
-- Still present in the latest paper → live. Rank it.
-- Absent from the latest but heavy before → say so in the wave as progress
-  ("blanks: 37 marks over four papers, none in the newest"), and do NOT give it a
-  section. Adrian may still want a word about it; that is his call, not a drill.
-- Present ONLY in the latest → a possible one-off; rank it by size and say it has
-  been seen once.
-
-**RECURRENCE OUTRANKS SIZE.** A misconception that costs 2 marks in three
-different papers beats a 6-mark loss that happened once — the first is a hole they
-carry into the exam, the second may be one hard question on one bad day. Adrian's
-ruling on Eva's scale factors, 1 Sep 2026: the worker filed them **Optional** on a
-2-mark showing; across three papers they are the same error verbatim, and he
-ranked them **high**. When you catch yourself putting something in Optional, check
-how many papers it appears in before you do.
-
-**Behaviours count as skills.** Two of the three things the single-paper read
-missed are not topics at all:
-- **Leaving parts blank.** If a student abandons parts, that is the biggest thing
-  you can teach them, whatever the topic — a first-move sheet ("what do you write
-  when you don't know how to finish") beats another rules sheet.
-- **Answering "explain" by restating the claim.** Reaching the right conclusion
-  without earning it. Cheap to fix, invisible in one paper, and it costs marks in
-  every paper they will ever sit.
+- **Rank by damage.** Marks lost to the skill, across every question it touched.
+- **Recurrence outranks size — within the paper.** The same slip in Q9 and Q16
+  is a hole they carry into the exam; a single 6-mark loss may be one hard
+  question. When you catch yourself putting something in Optional, check how
+  many QUESTIONS on this paper show it before you do.
+- **Behaviours count as skills.** Two things that are not topics at all:
+  - **Leaving parts blank.** If a student abandons parts, that is the biggest
+    thing you can teach them, whatever the topic — a first-move sheet ("what do
+    you write when you don't know how to finish") beats another rules sheet.
+  - **Answering "explain" by restating the claim.** Reaching the right
+    conclusion without earning it. Cheap to fix, and it costs marks in every
+    paper they will ever sit.
 
 **COUNT THE SLIPS AND THE TRANSFER ERRORS TOO** (Adrian, 1 Sep 2026). An
 arithmetic slip is not a skill, so it earns no practice (triage ② — show, don't
-drill). But it still costs marks, and a student who drops six marks a paper to
-slips has a real, teachable problem that no topic list will ever name. So COUNT
-them and report the total, even though none of them becomes a section:
+drill). But it still costs marks, and a student who drops six marks to slips has
+a real, teachable problem that no topic list will ever name. So COUNT them and
+report the total, even though none of them becomes a section:
 
 - **arithmetic slips** — a sign lost, a term dropped, $-48 \div 8$ written as $+6$
 - **transfer errors** — the working says one thing and the answer line another;
   a value copied wrongly from one part into the next; a correct value rounded
-  away at the end. Eva's script had this repeatedly, and it is the cheapest
-  category of mark there is to win back.
+  away at the end. The cheapest category of mark there is to win back.
 
 Report them as a line in the wave — *"and 7 marks to slips and answer-line
-transfers across four papers"* — so Adrian can see the size of it and decide
-whether it deserves a habit sheet of its own. Ignore this and the sheet teaches
-the hard things while the easy marks keep leaking.
+transfers"* — so Adrian can see the size of it and decide whether it deserves a
+habit sheet of its own.
 
-Say in the wave WHICH papers each skill came from and how often — Adrian is
-choosing what to teach, and "three papers running" is the fact that decides it.
+Say in the wave WHICH QUESTIONS each skill came from and how many marks — Adrian
+is choosing what to teach, and "Q11 and Q20, 5 marks" is the fact that decides it.
 
-**That is for the WAVE, which Adrian reads. On the SHEET itself, never name
-which paper or how many papers a mistake came from** (Adrian, 2 Sep 2026: *"no
-need to mention exactly which paper she made the mistakes"*). No "Q23(b) at
-Zhonghua", no "in three of your four papers", no "all four of your marked
-papers". The student's sheet talks about the paper in their hand — "Q14" and
-"on this paper" are fine. Other papers are Adrian's evidence, not the student's
-reading; the cross-paper history stays in the wave and the completion payload.
+**On the SHEET itself, never name another paper** (Adrian, 2 Sep 2026: *"no need
+to mention exactly which paper she made the mistakes"*). No "Q23(b) at Zhonghua",
+no "in three of your four papers". The student's sheet talks about the paper in
+their hand — "Q14" and "on this paper" are fine.
 
 ### What earns practice — Adrian's triage (31 Aug 2026, binding)
 
