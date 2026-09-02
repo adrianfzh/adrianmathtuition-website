@@ -2018,8 +2018,19 @@ export default function MarkPaperPage() {
           />
         </div>
         <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <button style={{ ...btn, opacity: busy ? 0.6 : 1 }} disabled={busy} onClick={() => markPaper()}>
-            {phase === 'marking' ? (markRecovering ? 'Waiting for the server…' : 'Marking…') : 'Mark paper'}
+          {/* 🌙 Queue is the DEFAULT path (Adrian, 2 Sep 2026): a queued paper is the
+              Mac's to mark on plan usage, and only falls to the API (~50% batch) if the
+              Mac is not producing. The old primary, ▶ Mark, calls the API synchronously
+              at full price and never enters the queue — 18 of his 25 papers between 28
+              and 30 Aug went that way at ~$2 each while the Mac sat idle. It stays, as
+              the explicit "I need it in minutes" button, styled as the secondary. */}
+          <button style={{ ...btn, background: '#4c1d95', opacity: busy || queueBusy ? 0.6 : 1 }} disabled={busy || queueBusy} onClick={queuePaper}
+            title="Upload now, mark in the background — your Mac marks it on plan usage ($0 API) while it is awake, else ~50% batch API. Telegram pings you per paper.">
+            {queueBusy ? 'Queueing…' : '🌙 Queue for marking'}
+          </button>
+          <button style={{ ...btn, background: '#fff', color: '#111827', border: '1px solid #d1d5db', opacity: busy ? 0.6 : 1 }} disabled={busy} onClick={() => markPaper()}
+            title="Mark right now on the API at full price (~$2 a paper) — skips the queue and the Mac. Use when you need it in minutes.">
+            {phase === 'marking' ? (markRecovering ? 'Waiting for the server…' : 'Marking…') : '▶ Mark now (API, full price)'}
           </button>
           {markRecovering && (
             <span style={{ fontSize: 12, color: '#b45309', fontWeight: 600 }}>
@@ -2027,10 +2038,6 @@ export default function MarkPaperPage() {
               ({Math.round((Date.now() - markRecovering.since) / 60000)} min, checked {markRecovering.checks}×); it loads here by itself when it lands.
             </span>
           )}
-          <button style={{ ...btn, background: '#4c1d95', opacity: busy || queueBusy ? 0.6 : 1 }} disabled={busy || queueBusy} onClick={queuePaper}
-            title="Upload now, mark in the background — Telegram pings you per paper">
-            {queueBusy ? 'Queueing…' : '🌙 Queue for marking'}
-          </button>
           <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#374151' }}>
             <span>Model:</span>
             <select

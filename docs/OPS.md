@@ -24,11 +24,16 @@ Writers:
   quiet 0-waiting days, skips the stamp only in `?dry=1` mode), and
   `health-check` itself.
 - **Mac plan-billed workers** stamp as the last step of their SKILL.md
-  (`qb-topup`, `file-subgroups`, `bot-review`, `plan-marking`, `question-mine`,
+  (`qb-topup`, `file-subgroups`, `bot-review`, `question-mine`,
   `pdf-extract` — the last stamps only on runs that actually claimed a file, so
   it has no rhythm/alarm; the ops board just shows the newest extraction) — a
   direct `insert into job_runs …` through the Supabase access each skill
-  already has.
+  already has. **`plan-marking` is stamped by its launchd WRAPPER, not the
+  session** (bot `worker/plan-marking/run.sh`, 2 Sep 2026): ok=true per paper
+  whose reads landed, ok=false when a session died holding a paper (plan cap,
+  timeout, crash) — via `POST /api/job-log` with `meta {path, slot, run_id,
+  elapsed_sec}`. No rhythm (on-demand), so ok=false is board-amber only. Until
+  that day the runbook had no stamp step and `plan-marking` had never appeared.
 - **Anything shell-ish** can `POST /api/job-log` (`Bearer CRON_SECRET` or admin)
   with `{job, ok?, summary?}` — job must be a kebab-case slug.
 
@@ -64,7 +69,12 @@ one place that failure is visible (nothing can alarm for the alarm).
 
 Read-only, cookie-auth, hub tile 🩺. `/api/admin/ops` returns the newest logbook
 row per job (staleness pre-computed, amber rows sorted first), the never-stamped
-list, and the marking queue's pending count + oldest wait. The page refreshes
+list, the marking queue's pending count + oldest wait, and — since 2 Sep 2026 —
+the **Marking bill**: Adrian's own marked papers over the last 7/30 days split
+into 💻 plan (the Mac) vs ☁️ API, hand-ins apart (always API by design). Read
+straight off `paper_marking_runs` (plan ⟺ `result_json.queue.external_claim.
+delivered_at`) by `lib/marking-path.ts` (pure, tested); amber when ≥3 of his
+papers in a week and under half went to the plan. The page refreshes
 itself every minute while open, and rows deep-link to the relevant screen
 (invoices, digests, triage, papers, bank health).
 

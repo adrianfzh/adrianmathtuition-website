@@ -8,12 +8,14 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
+import { planShareLow, type MarkingShare } from '@/lib/marking-path';
 
 type JobRow = { job: string; ranAt: string; ok: boolean; summary: string | null; rhythm: string | null; staleReason: string | null };
 type OpsData = {
   jobs: JobRow[];
   neverStamped: { job: string; rhythm: string }[];
   queue: { pending: number; oldestMinutes: number | null };
+  marking: { d7: MarkingShare; d30: MarkingShare } | null;
   generatedAt: string;
 };
 
@@ -120,6 +122,39 @@ export default function OpsPage() {
             <a href="/admin/mark/triage" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">triage →</a>
           </div>
         </section>
+
+        {/* Marking bill (2 Sep 2026): whose bill Adrian's own papers landed on — the
+            Mac (plan usage) or the API. Hand-ins are always API by design, so they
+            sit apart. Amber when a busy week is leaking to the API. */}
+        {data?.marking && (() => {
+          const { d7, d30 } = data.marking;
+          const pct = (s: MarkingShare) => (s.planShare == null ? '—' : `${Math.round(s.planShare * 100)}%`);
+          const line = (s: MarkingShare) => {
+            const own = s.own.plan.runs + s.own.api.runs;
+            if (!own && !s.handins.runs) return 'no papers marked';
+            const parts = [
+              `💻 plan ${s.own.plan.runs}${s.own.plan.costUsd ? ` (API extras $${s.own.plan.costUsd.toFixed(2)})` : ''}`,
+              `☁️ API ${s.own.api.runs} ($${s.own.api.costUsd.toFixed(2)})`,
+              `plan share ${pct(s)}`,
+            ];
+            if (s.handins.runs) parts.push(`hand-ins ${s.handins.runs} ($${s.handins.costUsd.toFixed(2)}, always API)`);
+            return parts.join(' · ');
+          };
+          const detail = (s: MarkingShare) => `API split — 🌙 queue ${s.own.byPath['api-queue']}, ⚡ mark now ${s.own.byPath['api-now']}, ▶ sync Mark ${s.own.byPath['api-sync']}`;
+          return (
+            <section className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
+              <div className="px-4 py-3 flex items-center gap-3 text-sm">
+                <span className={`inline-block w-2.5 h-2.5 rounded-full ${planShareLow(d7) ? 'bg-amber-500' : 'bg-green-600'}`} />
+                <span className="font-medium text-neutral-800">Marking bill</span>
+                <div className="text-neutral-500 flex flex-col gap-0.5">
+                  <span title={detail(d7)}><span className="text-neutral-400">7d</span> {line(d7)}</span>
+                  <span title={detail(d30)}><span className="text-neutral-400">30d</span> {line(d30)}</span>
+                </div>
+                <a href="/admin/mark-paper" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700 whitespace-nowrap">mark-paper →</a>
+              </div>
+            </section>
+          );
+        })()}
 
         {/* The logbook: newest row per job. Amber rows float to the top (API sorts). */}
         <section className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-x-auto">

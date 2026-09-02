@@ -146,6 +146,35 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
     install.sh copies everything into `~/.adrianmath_marker/` — the job runs the
     COPIES because the shared checkout flips branches under peer sessions).
     Debug entry: the `plan-marking` skill. Logs: `~/.adrianmath_marker/plan-marking.log`.
+  - **🌙 Queue is the DEFAULT button on /admin/mark-paper (2 Sep 2026).** The cost
+    diagnosis that day: marking was ~80% of all API spend ($201 in Aug, 99 runs, ~$2
+    a paper), and since the Mac marker went live only 7 of 25 papers had reached it —
+    18 went through ▶ Mark, which calls the API synchronously at full price and never
+    enters the queue, so the Mac never saw them. Adrian: "make the default upload path
+    🌙 Queue." The buttons swapped: 🌙 Queue is first and primary; ▶ Mark stays as the
+    secondary, relabelled "▶ Mark now (API, full price)" so choosing it is a choice.
+    Nothing else changed — the history-row ▶ Mark on a ⏳ row is still the retry.
+  - **The queue's reservation follows the WORKER, not the clock** (bot `lib/queue-pick.js`,
+    31 Aug – 1 Sep 2026, deployed): while a Mac session is heartbeating a claim or
+    delivered a paper within the last 10 min, every externally-markable row keeps
+    waiting for it, however long the stack; the 12-min head start only applies to a
+    Mac that is NOT producing. Ceiling is **60 photos** (was 30; a 38-photo paper
+    took 926s). What still leaks a paper to the API, by design: a Mac asleep or
+    plan-capped for >12 min with no live claim, a released claim after 2 external
+    attempts, ⚡/☁️ pressed, or a hand-in (always API). Levers: `MARK_QUEUE_EXTERNAL_GRACE_MS`
+    on Fly lengthens the idle-Mac head start (no deploy; the machine restart kills
+    an in-flight marking, so flip it when the queue is empty); more slots via
+    `worker/plan-marking/install-slot.sh N` (all share one plan's 5-hour window —
+    the extraction fleet hit it 3× in one morning at 6 workers).
+  - **Where the bill landed is on /admin/ops (2 Sep 2026):** the "Marking bill" row
+    splits the last 7/30 days of Adrian's own marked papers into 💻 plan vs ☁️ API
+    (with the API's 🌙/⚡/▶ breakdown on hover) and hand-ins apart; amber when ≥3 of
+    his papers in a week and under half went to the plan. Pure split in
+    `lib/marking-path.ts` (tested) over `paper_marking_runs` — plan ⟺
+    `result_json.queue.external_claim.delivered_at`. The Mac wrapper also stamps
+    `job_runs` `plan-marking` now (ok=true per delivered paper, ok=false on plan-cap /
+    timeout / crash; no rhythm, so never a Telegram) — before this it had never
+    stamped once.
 - **⚠ Never upload the school's solutions with a script (2026-08-19):** everything
   in the upload is marked as the student's work — the marker (Claude) works answers
   out itself and reads no scheme. Alexis's SJC P2 upload included 16 pages of typed
