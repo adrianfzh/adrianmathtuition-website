@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { weekdayLessonDates, firstInvoiceLessonDates, invoiceMonthLessonDates, lastDayOfMonthISO, firstOfNextMonthISO, nextDayISO } from './billing-math';
+import { weekdayLessonDates, firstInvoiceLessonDates, invoiceMonthLessonDates, lastDayOfMonthISO, firstOfNextMonthISO, nextDayISO, addDaysISO } from './billing-math';
 import { NO_LESSON_DATES } from './holidays';
 
 const FRI = 5, SUN = 0, TUE = 2;
@@ -36,6 +36,22 @@ describe('nextDayISO (exclusive upper bound for Airtable single-day filters)', (
   it('handles leap-day boundaries', () => {
     expect(nextDayISO('2028-02-28')).toBe('2028-02-29');
     expect(nextDayISO('2028-02-29')).toBe('2028-03-01');
+  });
+});
+
+describe('addDaysISO', () => {
+  it('spans the signup 9-weeks-ahead horizon', () => {
+    expect(addDaysISO('2026-09-05', 63)).toBe('2026-11-07');
+  });
+  it('rolls over month and year ends', () => {
+    expect(addDaysISO('2026-12-25', 14)).toBe('2027-01-08');
+  });
+  it('handles zero and negative offsets', () => {
+    expect(addDaysISO('2026-07-31', 0)).toBe('2026-07-31');
+    expect(addDaysISO('2026-08-01', -1)).toBe('2026-07-31');
+  });
+  it('lands on a leap day', () => {
+    expect(addDaysISO('2028-02-22', 7)).toBe('2028-02-29');
   });
 });
 
@@ -279,5 +295,101 @@ describe('invoiceMonthLessonDates — parity with the retired countOccurrencesIn
     expect(invoiceMonthLessonDates('2026-07-01', -1)).toEqual(
       oracleCountOccurrencesInMonth('Freitag', oracleMonth(2026, 7)).map((li) => li.date),
     );
+  });
+});
+
+// ── Signup lesson generation (2026-09-02) ───────────────────────────────────
+// The signup route's 9-weeks-ahead walk now uses weekdayLessonDates with NO
+// excluded list: unlike invoices, holiday-dated lessons are still CREATED (as
+// Cancelled 'Public Holiday' placeholders), so NO_LESSON_DATES must stay IN
+// the returned dates and the route checks each date itself.
+describe('signup 9-weeks-ahead lesson window', () => {
+  const SAT = 6;
+
+  it('start date on the slot weekday → 10 dates, horizon endpoint included', () => {
+    const start = '2026-09-05'; // a Saturday
+    const dates = weekdayLessonDates(start, addDaysISO(start, 9 * 7), SAT);
+    expect(dates).toHaveLength(10);
+    expect(dates[0]).toBe('2026-09-05');
+    expect(dates[9]).toBe('2026-11-07');
+  });
+
+  it('keeps NO_LESSON_DATES in the list (created as Cancelled, never skipped)', () => {
+    // Christmas 2026 falls on a Friday inside a 4 Dec signup's window.
+    const dates = weekdayLessonDates('2026-12-04', addDaysISO('2026-12-04', 63), FRI);
+    expect(NO_LESSON_DATES).toContain('2026-12-25');
+    expect(dates).toContain('2026-12-25');
+  });
+
+  it('is timezone-independent (string math, no local Date reads)', () => {
+    const origTZ = process.env.TZ;
+    try {
+      process.env.TZ = 'Asia/Singapore';
+      const sgt = weekdayLessonDates('2026-09-05', addDaysISO('2026-09-05', 63), SAT);
+      process.env.TZ = 'UTC';
+      const utc = weekdayLessonDates('2026-09-05', addDaysISO('2026-09-05', 63), SAT);
+      expect(sgt).toEqual(utc);
+      expect(sgt[0]).toBe('2026-09-05');
+    } finally {
+      if (origTZ === undefined) delete process.env.TZ; else process.env.TZ = origTZ;
+    }
+  });
+});
+
+// ── PARITY PIN — retired signup walk vs weekdayLessonDates ──────────────────
+// The signup route's old inline walk built local-midnight Dates and formatted
+// them with toISOString(), so — like the retired invoice loop above — it was
+// only correct while the process timezone was UTC. The oracle below is a
+// verbatim copy of that walk (date collection only; the route created a
+// Lessons row per date), run with TZ forced to UTC to pin the replacement to
+// its production behavior.
+describe('signup window — parity with the retired inline walk', () => {
+  const origTZ = process.env.TZ;
+  beforeAll(() => { process.env.TZ = 'UTC'; });
+  afterAll(() => {
+    if (origTZ === undefined) delete process.env.TZ; else process.env.TZ = origTZ;
+  });
+
+  // Verbatim from src/app/api/signup/route.ts as of 2026-09-02 (pre-fix).
+  function oracleSignupWalk(startDate: string, targetDay: number): string[] {
+    const WEEKS_AHEAD = 9;
+    const lessonStart = new Date(startDate + 'T00:00:00');
+    const lessonEnd = new Date(lessonStart);
+    lessonEnd.setDate(lessonEnd.getDate() + WEEKS_AHEAD * 7);
+    const dates: string[] = [];
+    const current = new Date(lessonStart);
+    while (current.getDay() !== targetDay) current.setDate(current.getDate() + 1);
+    while (current <= lessonEnd) {
+      dates.push(current.toISOString().split('T')[0]);
+      current.setDate(current.getDate() + 7);
+    }
+    return dates;
+  }
+
+  it('TZ pin took effect (the oracle is only meaningful under UTC)', () => {
+    expect(new Date(2026, 6, 1).getTimezoneOffset()).toBe(0);
+  });
+
+  it('matches across 2026–2028 start dates, on- and off-weekday slots', () => {
+    let compared = 0;
+    // Every ~11 days through 2026–2027 + the 2028 leap window.
+    const starts: string[] = [];
+    for (let d = 0; d < 730; d += 11) starts.push(addDaysISO('2026-01-01', d));
+    starts.push('2028-02-01', '2028-02-22', '2028-02-29', '2026-12-04', '2026-09-05');
+    for (const start of starts) {
+      for (let targetDay = 0; targetDay < 7; targetDay++) {
+        const actual = weekdayLessonDates(start, addDaysISO(start, 9 * 7), targetDay);
+        expect(actual, `${start} day=${targetDay}`).toEqual(oracleSignupWalk(start, targetDay));
+        compared++;
+      }
+    }
+    expect(compared).toBe(starts.length * 7);
+  });
+
+  it('matches on the realistic signup shape: start date IS the slot weekday', () => {
+    const start = '2026-12-04'; // Friday signup crossing Christmas + New Year
+    const walk = oracleSignupWalk(start, FRI);
+    expect(walk).toHaveLength(10);
+    expect(weekdayLessonDates(start, addDaysISO(start, 63), FRI)).toEqual(walk);
   });
 });

@@ -35,8 +35,16 @@ export function firstOfNextMonthISO(isoStr: string): string {
  * filter a single day as AND({Date}>='d',{Date}<nextDayISO(d)).
  */
 export function nextDayISO(isoStr: string): string {
+  return addDaysISO(isoStr, 1);
+}
+
+/**
+ * `days` calendar days after `isoStr` (negative allowed), as YYYY-MM-DD.
+ * Used for fixed-length windows like signup's 9-weeks-ahead lesson horizon.
+ */
+export function addDaysISO(isoStr: string, days: number): string {
   const d = parse(isoStr);
-  return iso(new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1)));
+  return iso(new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + days)));
 }
 
 /**

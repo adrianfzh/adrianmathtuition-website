@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
+import { nextDayISO } from '@/lib/billing-math';
 
 export const runtime = 'nodejs';
 
@@ -24,10 +25,12 @@ export async function GET(req: NextRequest) {
 
   const today = localToday();
 
+  // Exclusive upper bound — `{Date}<='today'` silently drops TODAY's Absent
+  // lessons on the date-typed field (the documented Airtable date-filter bug).
   const data = await airtableRequestAll(
     'Lessons',
     `?filterByFormula=${encodeURIComponent(
-      `AND({Status}='Absent',{Date}<='${today}')`
+      `AND({Status}='Absent',{Date}<'${nextDayISO(today)}')`
     )}&sort[0][field]=Date&sort[0][direction]=desc` +
     `&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Rescheduled+Lesson+ID`
   );

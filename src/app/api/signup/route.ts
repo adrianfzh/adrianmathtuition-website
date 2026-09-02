@@ -7,7 +7,7 @@ import { NO_LESSON_DATES } from '@/lib/holidays';
 import { buildPreviewInvoiceUrl } from '@/lib/invoice-preview-url';
 import { sendWelcomeEmail } from '@/lib/welcome-email';
 import { displaySpanMonth } from '@/lib/invoice-month';
-import { firstInvoiceLessonDates } from '@/lib/billing-math';
+import { firstInvoiceLessonDates, weekdayLessonDates, addDaysISO, nextDayISO } from '@/lib/billing-math';
 import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
 import { REC_ID_RE, appendReferrerMarker } from '@/lib/referral-link';
 
@@ -525,22 +525,24 @@ export async function POST(request: NextRequest) {
 
         if (targetDay !== undefined) {
           const WEEKS_AHEAD = 9;
-          const lessonStart = new Date(String(startDate) + 'T00:00:00');
-          const lessonEnd = new Date(lessonStart);
-          lessonEnd.setDate(lessonEnd.getDate() + WEEKS_AHEAD * 7);
+          const startStr = String(startDate);
+          const endStr = addDaysISO(startStr, WEEKS_AHEAD * 7); // inclusive horizon
 
-          const startStr = lessonStart.toISOString().split('T')[0];
-          const endStr = lessonEnd.toISOString().split('T')[0];
-
-          // Fetch existing lessons for this student in the date range to avoid duplicates
+          // Fetch existing lessons in the window to avoid duplicates on a
+          // re-submitted signup. Date-window filter only: ARRAYJOIN({Student})
+          // yields display names, not record IDs, so no formula can match the
+          // student — match in JS instead. Upper bound is exclusive because
+          // {Date}<='endStr' silently drops records ON endStr (date-typed field).
           const existingSet = new Set<string>();
           try {
-            const existingData = await at(
-              'Lessons',
-              `?filterByFormula=${encodeURIComponent(`AND(FIND('${studentId}',ARRAYJOIN({Student}))>0,{Date}>='${startStr}',{Date}<='${endStr}')`)}&fields[]=Date`
+            const existingData = await airtableRequestAll(
+              baseId, airtableToken, 'Lessons',
+              `?filterByFormula=${encodeURIComponent(`AND({Date}>='${startStr}',{Date}<'${nextDayISO(endStr)}')`)}&fields[]=Student&fields[]=Date`
             );
             for (const r of existingData.records || []) {
-              if (r.fields?.['Date']) existingSet.add(r.fields['Date'] as string);
+              if (r.fields?.['Student']?.[0] === studentId && r.fields?.['Date']) {
+                existingSet.add(r.fields['Date'] as string);
+              }
             }
             if (existingSet.size > 0) {
               console.log(`[signup] Skipping ${existingSet.size} already-existing lessons for student ${studentId}`);
@@ -549,33 +551,30 @@ export async function POST(request: NextRequest) {
             console.error('[signup] Dedup fetch failed (continuing):', (deupErr as Error).message);
           }
 
-          // Advance to first occurrence of target day on or after start date
-          const current = new Date(lessonStart);
-          while (current.getDay() !== targetDay) current.setDate(current.getDate() + 1);
-
-          while (current <= lessonEnd) {
-            const iso = current.toISOString().split('T')[0];
-            if (!existingSet.has(iso)) {
-              const isHoliday = NO_LESSON_DATES.includes(iso);
-              try {
-                await at('Lessons', '', {
-                  method: 'POST',
-                  body: JSON.stringify({ fields: {
-                    Type: 'Regular',
-                    Student: [studentId],
-                    Slot: slotIds,
-                    Date: iso,
-                    Status: isHoliday ? 'Cancelled' : 'Scheduled',
-                    'Billing Month': billingMonthOf(iso),
-                    ...(isHoliday && { Notes: 'Public Holiday' }),
-                  }}),
-                });
-                lessonsCreated++;
-              } catch (lessonErr) {
-                console.error(`[signup] Lesson creation failed for ${iso}:`, (lessonErr as Error).message);
-              }
+          // Weekly dates from the shared tested billing math (the old inline
+          // walk formatted local-midnight Dates with toISOString(), correct
+          // only on a UTC server). NO excluded list on purpose: holiday-dated
+          // lessons are still CREATED, as Cancelled placeholders, not skipped.
+          for (const iso of weekdayLessonDates(startStr, endStr, targetDay)) {
+            if (existingSet.has(iso)) continue;
+            const isHoliday = NO_LESSON_DATES.includes(iso);
+            try {
+              await at('Lessons', '', {
+                method: 'POST',
+                body: JSON.stringify({ fields: {
+                  Type: 'Regular',
+                  Student: [studentId],
+                  Slot: slotIds,
+                  Date: iso,
+                  Status: isHoliday ? 'Cancelled' : 'Scheduled',
+                  'Billing Month': billingMonthOf(iso),
+                  ...(isHoliday && { Notes: 'Public Holiday' }),
+                }}),
+              });
+              lessonsCreated++;
+            } catch (lessonErr) {
+              console.error(`[signup] Lesson creation failed for ${iso}:`, (lessonErr as Error).message);
             }
-            current.setDate(current.getDate() + 7);
           }
           console.log(`[signup] Generated ${lessonsCreated} lessons for student ${studentId}`);
         }
