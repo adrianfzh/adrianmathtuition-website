@@ -34,6 +34,7 @@ import {
   CARELESS_KINDS, CONCEPT_KINDS, ERROR_KIND_LABEL, hasLabelledLoss,
   type ErrorKind, type ErrorKindTotals,
 } from './error-kinds';
+import { overCount } from './paper-total-text';
 
 const esc = (s: unknown) =>
   String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -188,6 +189,30 @@ function kindsRow(t: ErrorKindTotals | null | undefined): string {
 ${sub}`;
 }
 
+/**
+ * The score tile. Normally `60/90` over `67%`.
+ *
+ * When the marks add up to MORE than the paper holds (Adrian, 3 Sep 2026, on
+ * Kassandra's 92/90: "92 out of 90 is not possible … build it"), the page must
+ * never print a clean score: `92 of 90` — "of", not a slash — no percentage, and
+ * a small red `needs a check` tag where the percentage was. The tag's style rides
+ * inside this branch (as the kinds row's does) so every normal cover is
+ * byte-identical to the one it printed yesterday. The rule itself is
+ * `overCount` in lib/paper-total-text.ts, shared with the PAPER TOTAL strip.
+ */
+function badge(input: FrontPageInput): string {
+  if (overCount(input)) {
+    return `<style>
+.check-tag{font-family:"IBM Plex Mono",monospace;font-size:.6rem;font-weight:600;letter-spacing:.16em;
+           text-transform:uppercase;color:var(--verdict);margin-top:.32rem}
+</style><div class="badge"><div class="score">${input.awarded}<span class="of"> of ${input.max}</span></div>
+       <div class="check-tag">needs a check</div></div>`;
+  }
+  const pct = input.max > 0 ? Math.round((input.awarded / input.max) * 100) : 0;
+  return `<div class="badge"><div class="score">${input.awarded}<span class="of">/${input.max}</span></div>
+       <div class="pct">${pct}%</div></div>`;
+}
+
 /** The closing line: two questions to start on, tied to the ranking above. */
 function closingLine(input: FrontPageInput): string {
   const top = chooseThemes(input.themes || [])[0];
@@ -217,10 +242,14 @@ function closingLine(input: FrontPageInput): string {
 }
 
 export function frontPageHtml(input: FrontPageInput): string {
-  const pct = input.max > 0 ? Math.round((input.awarded / input.max) * 100) : 0;
   const themes = chooseThemes(input.themes || []);
   const top = themes[0];
-  const lead = top
+  // A score above the total outranks the top theme: the student must read that the
+  // number is being checked before they read anything built on it. Student words —
+  // the pages they hold are right; only the total is not final.
+  const lead = overCount(input)
+    ? 'The marks add up to more than this paper holds, so this score is being checked — the marked pages are right; the total is not final.'
+    : top
     ? `The one thing worth your time is <strong>${esc(top.title.split('—')[0].trim().toLowerCase())}</strong>.
        It cost you ${top.marks} mark${top.marks === 1 ? '' : 's'} on this paper.`
     : 'Your losses on this paper are scattered rather than concentrated — work through the marked script itself.';
@@ -315,8 +344,7 @@ h2::before{content:none}
     input.markedOn ? ` &middot; marked ${esc(input.markedOn)}` : ''}</span>
 </div>
 <div class="hero">
-  <div class="badge"><div class="score">${input.awarded}<span class="of">/${input.max}</span></div>
-       <div class="pct">${pct}%</div></div>
+  ${badge(input)}
   <div>
     <p class="student">${esc(input.studentName || '')}</p>
     <h1>Where your marks went</h1>

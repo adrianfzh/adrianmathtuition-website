@@ -463,6 +463,7 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
     nothing else exists (`chooseThemes`), `optional` last, and the closing line says the
     practice sheet works through them in the same order. No diagnosis → the keyword
     classifier exactly as before.
+  - **Over-count (3 Sep 2026):** `awarded > max` prints `92 of 90` + a red `needs a check` tag, no `%` — the normal page stays byte-identical; details under the paper-totals note below.
 - **✂️ Two-page spreads split at intake (2026-08-12):** `onPickImages` runs every picked photo (and every PDF-raster page, and every inbox attach — they all funnel through it) through `splitFileIfSpread` (`lib/spread-split.ts`, pure geometry unit-tested): landscape past `w > h·1.15` is cut into left/right halves at FULL resolution (3%-of-width gutter overlap each side) BEFORE the 1280px marking copy and 2600px hi-res original are made. Fixes BOTH spread problems at once: printed size (one wide PDF page fit one A4 sheet → each exam page ~A5; split halves each print full-page) and annotation grounding (a spread shrunk to 1280 gave each page ~640px → measured 10/10 margin-fallback correlation with low-res intake). A green `✂️ Split N…` receipt line shows under the drop zone. The same splitter runs on `/app/submit`, so student hand-ins get the same hygiene.
 - **📏 Paper totals are GROUNDED, not counted (2026-08-14):** the red `PAPER TOTAL x / y`
   denominator used to be the sum of the model's per-question `total_max` guesses, which was
@@ -498,6 +499,12 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   student's copy of the notes was a different version from the PDF uploaded (her Practice
   3 Q3 was a GP/AP question; the uploaded PDF's Practice 3 Q3 is the integer-sets one), so
   the marker marks it from the working alone and says so. Not a marker miss.
+  - **A score above the total never prints clean (3 Sep 2026, Kassandra 92/90; Adrian: *"92 out
+    of 90 is not possible … build it"*):** `lib/paper-total-text.ts` (`overCount` + `paperTotalText`,
+    pure/tested) words it as **"92 of 90 · needs a check"** on both the strip (`PAPER TOTAL · NEEDS A
+    CHECK` over `92 of 90`, never a slash) and the cover badge (no percentage, red `needs a check`
+    tag, verdict line: "the marked pages are right; the total is not final"). Triage's `paperTotalsMismatch`
+    still blocks release; the bot's bracket re-read collapses page-spanning fragments (separate note in the bot).
 - **🔁 Cross-photo reconciliation — the "92/90" double-marking fix (2026-08-28):** photos
   are marked independently, so a question appearing on TWO photos (half-page re-shot,
   cross-page continuation, crossed-out reattempt marked where it lies) landed in

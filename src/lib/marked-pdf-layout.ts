@@ -4,6 +4,7 @@
 // (pdf-lib): import from API routes, never from client components.
 
 import { PDFDocument, PDFPage, StandardFonts, rgb } from 'pdf-lib';
+import { paperTotalText } from './paper-total-text';
 
 // EVERY page is laid out at this width (A4 portrait points) and the image is scaled to
 // it, so the whole document reads as one script. Pages used to be sized to their own
@@ -50,8 +51,11 @@ export async function drawPaperTotal(
   // JPEG's edge tint doesn't bleed into the label.
   page.drawRectangle({ x: 0, y: p.imgHeight, width: p.width, height: strip, color: rgb(1, 1, 1) });
 
-  const label = 'PAPER TOTAL';
-  const score = `${p.totalAwarded} / ${p.totalMax}`;
+  // "PAPER TOTAL" over "89 / 90" — or, when the marks add up to more than the paper
+  // holds, "PAPER TOTAL · NEEDS A CHECK" over "92 of 90" (lib/paper-total-text.ts;
+  // Adrian, 3 Sep 2026: "92 out of 90 is not possible"). The box below is measured
+  // from whichever line is wider, so the longer label widens it and nothing else moves.
+  const { label, score } = paperTotalText({ awarded: p.totalAwarded, max: p.totalMax });
   const labelSize = Math.round(strip * 0.24), scoreSize = Math.round(strip * 0.46);
   const boxW = pad * 2 + Math.max(bold.widthOfTextAtSize(score, scoreSize), reg.widthOfTextAtSize(label, labelSize));
   const boxH = strip * 0.82;

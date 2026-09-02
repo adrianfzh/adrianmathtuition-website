@@ -282,3 +282,76 @@ describe('frontPageHtml — marks lost by kind', () => {
     expect(frontPageHtml({ ...base, errorKinds: labelled() })).not.toMatch(/\p{Extended_Pictographic}/u);
   });
 });
+
+// ── a score above the paper total (Adrian, 3 Sep 2026, Kassandra's 92/90 —
+//    parts summed to 94 against a registry 90: "92 out of 90 is not possible …
+//    build it") ─────────────────────────────────────────────────────────────
+
+describe('frontPageHtml — a score above the paper total', () => {
+  const over: FrontPageInput = { ...base, awarded: 92, max: 90 };
+
+  it('prints "92 of 90" with a red check tag where the percentage was', () => {
+    const h = frontPageHtml(over);
+    expect(h).toContain('<div class="score">92<span class="of"> of 90</span></div>');
+    expect(h).toContain('<div class="check-tag">needs a check</div>');
+    expect(h).not.toContain('class="pct"');
+    expect(h).not.toMatch(/>\d+%</);          // no percentage anywhere a student reads one
+    expect(h).not.toContain('92/90');
+    expect(h).not.toContain('/90<');
+  });
+
+  it('tells the student the pages are right and the total is not final', () => {
+    const h = frontPageHtml(over);
+    expect(h).toContain('<p class="verdict">The marks add up to more than this paper holds, so this score is being checked — the marked pages are right; the total is not final.</p>');
+    expect(h).not.toContain('The one thing worth your time');
+    expect(h).not.toContain('scattered rather than concentrated');
+  });
+
+  it('styles the tag in the verdict red — mono, uppercase, letter-spaced, at most .6rem', () => {
+    const h = frontPageHtml(over);
+    const css = h.slice(h.indexOf('.check-tag{'), h.indexOf('}', h.indexOf('.check-tag{')));
+    expect(css).toContain('IBM Plex Mono');
+    expect(css).toContain('color:var(--verdict)');
+    expect(css).toContain('text-transform:uppercase');
+    expect(css).toMatch(/letter-spacing:\.\d+em/);
+    const size = Number(css.match(/font-size:(\.\d+)rem/)![1]);
+    expect(size).toBeLessThanOrEqual(0.6);
+  });
+
+  it('changes the badge and the verdict line, and nothing else on the page', () => {
+    const rest = (h: string) => h
+      .replace(/<style>\n\.check-tag[\s\S]*?<\/style>/, '')
+      .replace(/<div class="badge">[\s\S]*?<\/div><\/div>/, '')
+      .replace(/<p class="verdict">[\s\S]*?<\/p>/, '');
+    expect(rest(frontPageHtml(over))).toBe(rest(frontPageHtml(base)));
+    expect(rest(frontPageHtml(over))).not.toBe('');
+  });
+
+  it('keeps the page on paper: one palette, no emoji', () => {
+    const h = frontPageHtml(over);
+    expect(h).not.toContain('prefers-color-scheme');
+    expect(h).not.toMatch(/\p{Extended_Pictographic}/u);
+  });
+
+  it('renders every normal score BYTE-IDENTICAL to today — no tag, no style, no "of"', () => {
+    // Full marks is normal, zero is normal; only awarded > max is the case above.
+    for (const [awarded, max] of [[60, 90], [90, 90], [0, 90], [100, 100]] as const) {
+      const h = frontPageHtml({ ...base, awarded, max });
+      expect(h).not.toContain('check-tag');
+      expect(h).not.toContain('needs a check');
+      expect(h).not.toContain('being checked');
+      expect(h).not.toContain('<span class="of"> of');
+      expect(h).toContain(`<div class="score">${awarded}<span class="of">/${max}</span></div>`);
+      expect(h).toContain(`<div class="pct">${Math.round((awarded / max) * 100)}%</div>`);
+      expect(h).toContain('The one thing worth your time');
+    }
+  });
+
+  it('is identical whether the over-count arrives with or without the kinds row', () => {
+    // The two opt-in blocks must not interfere: each carries its own style.
+    const h = frontPageHtml({ ...over, errorKinds: labelled() });
+    expect(h).toContain('<div class="check-tag">needs a check</div>');
+    expect(h).toContain('<div class="kinds">');
+    expect(h.match(/\.check-tag\{/g)).toHaveLength(1);
+  });
+});
