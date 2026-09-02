@@ -35,7 +35,12 @@
         { "expr": "(x-2)^2 - 4", "state": 2 },
         { "expr": "-(x-2)^2 + 3", "state": 3 }
       ],
-      "narration": "Watch the curve. Start with y equals x squared. Replace x by x minus two and the whole curve slides two to the right. Take four away and it drops by four. Put a minus in front and it flips upside down. Every quadratic is x squared moved about, and the completed-square form is the record of the moves."
+      "narration": [
+        "Watch the curve. Start with y equals x squared — the basic parabola, with its turning point at the origin, zero comma zero. Every quadratic you will ever meet is this curve, moved about.",
+        "Replace x by x minus two, and the whole curve slides two to the right. The turning point is now at two comma zero. Nothing else has changed — same shape, just shifted sideways.",
+        "Now take four away, and the curve drops by four. The turning point falls to two comma minus four. The number on the end lifts or drops the curve, and that is all it does.",
+        "Put a minus in front and it flips upside down. This one peaks at two comma three — a maximum. Every quadratic is x squared moved about, and the completed-square form is simply the record of the moves."
+      ]
     },
     {
       "type": "annotate",
@@ -52,7 +57,12 @@
         { "target": "sq", "label": "$h$ is the $x$-coordinate of the turning point — sign trap: $(x+3)^2$ means $h = -3$, not $3$.", "tone": "amber" },
         { "target": "k", "label": "$k$ is the maximum or minimum VALUE of $y$. Turning point $(h, k)$ — read it straight off.", "tone": "emerald" }
       ],
-      "narration": "Here's the form every answer ends in: y equals a, bracket x minus h, squared, plus k. The a tells you which way it opens. Positive means a minimum, negative means a maximum. The h is the x-coordinate of the turning point, and here's the trap: x plus three, squared, means h is minus three. And k is the greatest or least value of y. So the turning point is simply h comma k."
+      "narration": [
+        "Here's the form every answer ends in: y equals a, bracket x minus h, all squared, plus k. Three letters, and each one tells you something about the curve. Let's name them one at a time.",
+        "The a tells you which way it opens. Positive a: the curve opens upwards, and the turning point is a minimum. Negative a: it opens downwards, and the turning point is a maximum.",
+        "The h is the x-coordinate of the turning point. And here's the trap: x plus three, all squared, means h is minus three, not three. The bracket always reads x minus h, so flip the sign you see.",
+        "And k is the maximum or minimum value of y — the greatest or least value the curve ever reaches. Put them together and the turning point is simply h comma k. Read it straight off, no working needed."
+      ]
     },
     {
       "type": "equation-steps",
@@ -92,7 +102,11 @@
         { "expr": "(3/2)^2", "equals": "9/4" },
         { "expr": "-9/4 + 2", "equals": "-1/4" }
       ],
-      "narration": "Here's the recipe. Take the coefficient of x, that's minus three. Halve it: minus three over two. Square it: nine over four. Now add that number and subtract it in the same breath, so nothing has changed. The first three terms are now a perfect square, x minus three over two, all squared. Tidy the leftovers, minus nine over four plus two is minus a quarter, and you're done. The turning point is three over two, minus a quarter."
+      "narration": [
+        "Here's the recipe. Take the coefficient of x — that's minus three. Halve it: minus three over two. Square it: nine over four. Now add that number and subtract it in the same breath, so the value hasn't changed at all.",
+        "Look at the first three terms. They are now a perfect square: x minus three over two, all squared. Don't believe me? Expand that bracket and you get exactly those three terms back. The minus nine over four and the plus two are the leftovers.",
+        "Tidy the leftovers: minus nine over four plus two is minus a quarter. And you're done. Read the turning point straight off: three over two, minus a quarter — a minimum, because the curve opens upwards."
+      ]
     },
     {
       "type": "equation-steps",
@@ -141,7 +155,12 @@
         { "expr": "-(5/4)^2 + 1/2", "equals": "-17/16" },
         { "expr": "2 * (-17/16)", "equals": "-17/8" }
       ],
-      "narration": "Now the coefficient of x squared isn't one. Don't fight it. Factorize the two out of every term first, and complete the square inside the bracket exactly as before. Half of five over two is five over four; square it, add and subtract. Then the step people forget: multiply the two back into both terms. Minus seventeen over sixteen becomes minus seventeen over eight."
+      "narration": [
+        "Now the coefficient of x squared isn't one — it's two. Don't fight it. The recipe only works when x squared has a one in front, so factorize the two out of every term first. Inside the bracket: x squared plus five over two x plus a half.",
+        "Now complete the square inside the bracket, exactly as before. Half of five over two is five over four. Square it — that's twenty-five over sixteen — and add it and subtract it in the same breath.",
+        "The first three terms inside the bracket become x plus five over four, all squared. Tidy the leftovers: minus twenty-five over sixteen plus a half — that's plus eight over sixteen — gives minus seventeen over sixteen.",
+        "Then the step people forget: multiply the two back into both terms, not just the bracket. Minus seventeen over sixteen becomes minus seventeen over eight. Leaving it as seventeen over sixteen is the classic slip. Turning point: minus five over four, minus seventeen over eight."
+      ]
     },
     {
       "type": "equation-steps",
@@ -180,7 +199,11 @@
         { "expr": "-9 + 35/4", "equals": "-1/4" },
         { "expr": "-4 * (-1/4)", "equals": 1 }
       ],
-      "narration": "A negative in front works the same way. Factorize minus four out of every term; the sign travels with it. Inside the bracket, half of six is three, three squared is nine, and minus nine plus thirty-five over four is minus a quarter. Multiply minus four back in: minus four times minus a quarter is plus one. Maximum point: minus three, one. Notice the h is minus three, because the bracket says x plus three."
+      "narration": [
+        "A negative in front works exactly the same way. Factorize minus four out of every term — the sign travels with it, so every term inside the bracket comes out positive: x squared plus six x plus thirty-five over four.",
+        "Inside the bracket: half of six is three, and three squared is nine. Add and subtract nine, and the first three terms fold into x plus three, all squared. Then minus nine plus thirty-five over four is minus a quarter.",
+        "Multiply minus four back in: minus four times minus a quarter is plus one. So it's minus four, bracket x plus three, all squared, plus one. Maximum point: minus three comma one — it opens downwards. And notice h is minus three, because the bracket says x plus three."
+      ]
     },
     {
       "type": "check",
@@ -225,7 +248,11 @@
         { "expr": "(x-2)^2 + 3", "equiv": "x^2 - 4x + 7", "note": "the rewrite is the same function" },
         { "expr": "-2^2 + 7", "equals": 3 }
       ],
-      "narration": "Now the other exam favourite: show that a quadratic is always positive. Complete the square: x minus two, all squared, plus three. A square can never be negative, so the expression is at least three, which is bigger than zero. That single line is the whole proof."
+      "narration": [
+        "Now the other exam favourite: show that a quadratic is always positive. Same recipe. Half of minus four is minus two; square it, and that's four. Add four and subtract four.",
+        "The first three terms fold into x minus two, all squared. Then minus four plus seven is three. So the expression is x minus two, all squared, plus three.",
+        "Here's the proof. A square can never be negative, so x minus two, all squared, is at least zero. Add three, and the whole expression is at least three — which is bigger than zero. That single line is the whole proof, and it's the line examiners want to see."
+      ]
     },
     {
       "type": "caption",
@@ -245,7 +272,7 @@
       "prompt": "Last one (Mayflower 2022). Write it in descending powers first: $-2x^2 + 8x + 5$. Then factorize the $-2$ out, complete the square, multiply back.",
       "placeholder": "(h, k)",
       "why": "$5 + 8x - 2x^2 = -2(x-2)^2 + 13$, so the turning point is $(2, 13)$ — a maximum.",
-      "narration": "Last one. Rewrite it in descending powers first, then it's the same three moves: factorize the minus two out, complete the square inside, multiply back. Type the turning point."
+      "narration": "Last one. Write it in descending powers first — then it's the same three moves: factorize the negative number in front of x squared out, complete the square inside, multiply back. Pause here, work it through, and type the turning point as h comma k."
     },
     {
       "type": "caption",
