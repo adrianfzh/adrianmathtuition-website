@@ -79,7 +79,8 @@ export function mcqOptionsIn(text: string | null | undefined): McqLetter[] | nul
   if (!text) return null;
   const found: McqLetter[] = [];
   for (const line of text.split('\n')) {
-    const m = line.match(/^\s*\(?([A-D])[).:]\s+\S/);
+    // "A) …", "A. …", "(A) …", and the bare "A  …" (letter + 2+ spaces) form
+    const m = line.match(/^\s*\(?([A-D])(?:[).:]\s+|\s{2,})\S/);
     if (m && !found.includes(m[1] as McqLetter)) found.push(m[1] as McqLetter);
   }
   return found.length >= 2 ? found : null;
@@ -91,8 +92,8 @@ export function mcqOptionsIn(text: string | null | undefined): McqLetter[] | nul
 export function mcqStemParagraphs(text: string | null | undefined): string {
   if (!text) return '';
   return text
-    // options on their own lines: "…\nB) …" → paragraph break
-    .replace(/[ \t]*\n[ \t]*(?=\(?[A-D][).:]\s+\S)/g, '\n\n')
+    // options on their own lines: "…\nB) …" or the bare "B  …" form → paragraph break
+    .replace(/[ \t]*\n[ \t]*(?=\(?[A-D](?:[).:]\s+|\s{2,})\S)/g, '\n\n')
     // options inline: "A) constant  B) decreasing  C) …" → break before B/C/D
     .replace(/[ \t]+(?=\(?[B-D][).:]\s+\S)/g, '\n\n')
     // …and before an inline "A)" that follows the question on the same line

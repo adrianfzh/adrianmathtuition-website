@@ -40,6 +40,7 @@ describe('MCQ', () => {
     expect(mcqOptionsIn(stem)).toEqual(['A', 'B', 'C', 'D']);
     expect(mcqOptionsIn('(A) yes\n(B) no')).toEqual(['A', 'B']);
     expect(mcqOptionsIn('A. first\nB. second\nC. third')).toEqual(['A', 'B', 'C']);
+    expect(mcqOptionsIn('What will this prevent?\n\nA  cross-pollination\nB  insect-pollination\nC  self-pollination\nD  wind-pollination')).toEqual(['A', 'B', 'C', 'D']);
     expect(mcqOptionsIn('Calculate the resistance.')).toBeNull();
     expect(mcqOptionsIn('A single line mentioning A) once')).toBeNull();
   });
@@ -50,6 +51,7 @@ describe('MCQ', () => {
     expect(mcqStemParagraphs('Which force?\n\nA) constant  B) decreasing  C) increasing  D) zero'))
       .toBe('Which force?\n\nA) constant\n\nB) decreasing\n\nC) increasing\n\nD) zero');
     expect(mcqStemParagraphs('Which force? A) constant B) decreasing')).toBe('Which force?\n\nA) constant\n\nB) decreasing');
+    expect(mcqStemParagraphs('Prevent?\n\nA  cross\nB  insect\nC  self')).toBe('Prevent?\n\nA  cross\n\nB  insect\n\nC  self');
     expect(mcqStemParagraphs('No options\nhere at all')).toBe('No options\nhere at all');
     expect(mcqStemParagraphs(null)).toBe('');
   });

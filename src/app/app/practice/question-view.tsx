@@ -36,7 +36,7 @@ export const MCQ_FALLBACK = ['A', 'B', 'C', 'D'] as const;
 export function mcqLettersIn(text: string): string[] {
   const found: string[] = [];
   for (const line of (text || '').split('\n')) {
-    const m = line.match(/^\s*\(?([A-D])[).:]\s+\S/);
+    const m = line.match(/^\s*\(?([A-D])(?:[).:]\s+|\s{2,})\S/);
     if (m && !found.includes(m[1])) found.push(m[1]);
   }
   return found.length >= 2 ? found : [...MCQ_FALLBACK];
