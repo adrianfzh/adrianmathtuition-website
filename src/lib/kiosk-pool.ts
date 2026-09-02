@@ -75,6 +75,12 @@ export type PoolQuery = {
   topicsKey: string;
   topic: string;
   tier: Tier | null;
+  /** Sub-group AUDIENCE (lib/subgroup-visibility.ts, 2026-09-02). Omitted =
+   *  the plainest student: only 'all' sub-groups, and never a question filed
+   *  solely under 'ip' / 'hidden' ones. The kiosk scan token and the bot
+   *  carry no IP flag, so they stay on that default; the portal's "Print a
+   *  paper" passes the account's is_ip. */
+  audience?: { isIp: boolean; admin?: boolean };
 };
 
 /**
@@ -84,13 +90,15 @@ export type PoolQuery = {
  */
 export async function fetchWorksheetPool(
   supa: SupabaseClient,
-  { seedLevels, topicsKey, topic, tier }: PoolQuery,
+  { seedLevels, topicsKey, topic, tier, audience }: PoolQuery,
 ): Promise<{ items: PoolItem[]; error: string | null }> {
   const bankRes = await supa.rpc('kiosk_pool', {
     p_tag_levels: seedLevels,
     p_sg_level: topicsKey,
     p_topic: topic,
     p_difficulties: tier ? TIER_DIFFICULTY_VALUES[tier] : null,
+    p_is_ip: Boolean(audience?.isIp),
+    p_admin: Boolean(audience?.admin),
   });
   if (bankRes.error) return { items: [], error: bankRes.error.message };
 

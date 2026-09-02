@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { practiceAuth, levelAllowed, qbLevelsFor, ALL_QB_LEVELS, bankScope } from '@/lib/practice';
+import { practiceAuth, levelAllowed, qbLevelsFor, ALL_QB_LEVELS, bankScope, rpcAudience } from '@/lib/practice';
 
 export const runtime = 'nodejs';
 
@@ -44,10 +44,14 @@ export async function GET(req: NextRequest) {
 
   const supabase = getSupabaseAdmin();
   const scope = bankScope(activeLevel);
+  // Sub-group audience (lib/subgroup-visibility.ts): a topic whose every
+  // sub-group is 'ip'/'hidden' does not exist for a non-IP student — it is
+  // absent from this list, so the picker never offers it.
+  const audience = rpcAudience(caller);
 
   // Admin (testing): authoritative topic list + counts, no per-student mastery.
   if (!isStudent) {
-    const { data, error } = await supabase.rpc('practice_topics', { p_level: scope.level, p_qlevel: scope.qlevel });
+    const { data, error } = await supabase.rpc('practice_topics', { p_level: scope.level, p_qlevel: scope.qlevel, ...audience });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const topics: TopicRow[] = (data || []).map((t: { topic: string; n: number; advanced_count: number }) => ({
       topic: t.topic,
@@ -68,6 +72,7 @@ export async function GET(req: NextRequest) {
     p_user: caller.account.id,
     p_level: scope.level,
     p_qlevel: scope.qlevel,
+    ...audience,
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

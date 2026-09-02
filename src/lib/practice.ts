@@ -39,6 +39,20 @@ export async function practiceAuth(req: NextRequest): Promise<PracticeCaller> {
 // client-safe); re-exported here so existing server imports keep working.
 export { ALL_QB_LEVELS, qbLevelsFor, bankScope } from './qb-levels';
 
+/**
+ * Sub-group AUDIENCE params for the practice RPCs (practice_topics /
+ * practice_overview / practice_subgroups / practice_next — see
+ * migrations/subgroup_audience.sql and lib/subgroup-visibility.ts). Admin
+ * (Adrian's Bearer/cookie without a student session) sees everything; a
+ * student sees the 'all' audience plus 'ip' / lent material when their
+ * account is IP. A student session ALWAYS wins in practiceAuth, so Adrian's
+ * demo-student login shows him exactly that student's view.
+ */
+export function rpcAudience(caller: NonNullable<PracticeCaller>): { p_is_ip: boolean; p_admin: boolean } {
+  if (caller.kind === 'admin') return { p_is_ip: true, p_admin: true };
+  return { p_is_ip: Boolean(caller.account.is_ip), p_admin: false };
+}
+
 export function levelAllowed(caller: PracticeCaller, level: string): boolean {
   if (!caller) return false;
   if (caller.kind === 'admin') return true;

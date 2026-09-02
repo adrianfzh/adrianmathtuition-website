@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 
   const sgQuery = supa
     .from('subgroups')
-    .select('id, name, description, order_index')
+    .select('id, name, description, order_index, visibility, ip_extra_level')
     .eq('level', level)
     .eq('topic', topic)
     .order('order_index', { ascending: true, nullsFirst: false })
@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
     cardCountBySg[c.subgroup_id] = (cardCountBySg[c.subgroup_id] ?? 0) + 1;
   }
 
-  const subgroupsWithCount = (subgroups ?? []).map((sg: { id: number; name: string; description: string }) => ({
+  const subgroupsWithCount = (subgroups ?? []).map((sg: { id: number; name: string; description: string; visibility: string | null; ip_extra_level: string | null }) => ({
     ...sg,
     card_count: cardCountBySg[sg.id] ?? 0,
   }));

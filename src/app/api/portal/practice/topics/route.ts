@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { practiceAuth, levelAllowed, qbLevelsFor, bankScope } from '@/lib/practice';
+import { practiceAuth, levelAllowed, qbLevelsFor, bankScope, rpcAudience } from '@/lib/practice';
 
 export const runtime = 'nodejs';
 
@@ -21,7 +21,8 @@ export async function GET(req: NextRequest) {
   if (!levelAllowed(caller, level)) return NextResponse.json({ error: 'Level not available' }, { status: 403 });
 
   const scope = bankScope(level);
-  const { data, error } = await getSupabaseAdmin().rpc('practice_topics', { p_level: scope.level, p_qlevel: scope.qlevel });
+  // Sub-group audience: topics with no visible sub-group for this caller are absent.
+  const { data, error } = await getSupabaseAdmin().rpc('practice_topics', { p_level: scope.level, p_qlevel: scope.qlevel, ...rpcAudience(caller) });
   if (error) return NextResponse.json({ error: error.message, topics: [] }, { status: 500 });
   return NextResponse.json({ topics: data || [], level, ...(levels ? { levels } : {}) });
 }

@@ -35,6 +35,7 @@ import { safeEqual } from '@/lib/safe-equal';
 import { airtableRequestAll } from '@/lib/airtable';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { logJobRun } from '@/lib/job-log';
+import { deriveIsIp } from '@/lib/portal-ip';
 import { sendTelegram } from '@/lib/telegram';
 import {
   decideDeactivation,
@@ -76,6 +77,7 @@ type AccountRow = {
   email: string | null;
   display_name: string | null;
   airtable_student_id: string | null;
+  is_ip: boolean | null;
 };
 
 async function run(req: NextRequest) {
@@ -89,7 +91,7 @@ async function run(req: NextRequest) {
     const accounts = await allRows<AccountRow>((from, to) =>
       admin
         .from('portal_accounts')
-        .select('id, email, display_name, airtable_student_id')
+        .select('id, email, display_name, airtable_student_id, is_ip')
         .not('airtable_student_id', 'is', null)
         .is('deactivated_at', null)
         .range(from, to),
@@ -105,18 +107,21 @@ async function run(req: NextRequest) {
     // fields are unfilterable by rec id, so we match in JS).
     const [enr, students] = await Promise.all([
       airtableRequestAll('Enrollments', '?fields[]=Student&fields[]=Status&fields[]=End Date'),
-      airtableRequestAll('Students', '?fields[]=Student Name'),
+      airtableRequestAll('Students', '?fields[]=Student Name&fields[]=Subject Level'),
     ]);
     const byStudent = groupEnrollmentsByStudent((enr.records || []) as AirtableEnrollmentRecord[]);
     const nameById = new Map<string, string>();
+    const isIpById = new Map<string, boolean>();
     for (const r of students.records || []) {
       nameById.set(r.id, (r.fields?.['Student Name'] as string) || r.id);
+      isIpById.set(r.id, deriveIsIp(r.fields as Record<string, unknown>));
     }
 
     const deactivated: { accountId: string; studentId: string; name: string; lastEnrollmentEnd: string }[] = [];
     const kept: Record<string, number> = { 'active-enrollment': 0, 'ended-recently': 0, 'no-end-date': 0 };
     const studentMissing: string[] = []; // rec id gone from Airtable — undatable, kept (fail-safe)
     const errors: string[] = [];
+    const ipRefreshed: string[] = []; // portal_accounts.is_ip brought in line with Airtable Subject Level
 
     for (const acc of candidates) {
       const sid = (acc.airtable_student_id as string).trim();
@@ -125,6 +130,19 @@ async function run(req: NextRequest) {
       if (!nameById.has(sid)) {
         studentMissing.push(name);
         continue;
+      }
+
+      // Monthly is_ip refresh (lib/portal-ip.ts) — the one place a stream
+      // change in Airtable reaches the sub-group audience after activation.
+      const wantIp = isIpById.get(sid) ?? false;
+      if (Boolean(acc.is_ip) !== wantIp) {
+        if (!dry) {
+          const { error } = await admin.from('portal_accounts').update({ is_ip: wantIp }).eq('id', acc.id);
+          if (error) errors.push(`${name}: is_ip refresh — ${error.message}`);
+          else ipRefreshed.push(`${name} → ${wantIp ? 'IP' : 'not IP'}`);
+        } else {
+          ipRefreshed.push(`${name} → ${wantIp ? 'IP' : 'not IP'}`);
+        }
       }
 
       const decision = decideDeactivation(byStudent.get(sid) ?? [], now);
@@ -165,8 +183,11 @@ async function run(req: NextRequest) {
         'deactivate-inactive',
         true,
         `checked ${candidates.length} linked accounts, deactivated ${deactivated.length}` +
+          (ipRefreshed.length ? `, is_ip refreshed ${ipRefreshed.length}` : '') +
           (errors.length ? `, ${errors.length} skipped on error` : ''),
-        deactivated.length ? { deactivated: deactivated.map((d) => d.name) } : undefined,
+        deactivated.length || ipRefreshed.length
+          ? { ...(deactivated.length ? { deactivated: deactivated.map((d) => d.name) } : {}), ...(ipRefreshed.length ? { ipRefreshed } : {}) }
+          : undefined,
       );
     }
 
@@ -176,6 +197,7 @@ async function run(req: NextRequest) {
       checked: candidates.length,
       [dry ? 'wouldDeactivate' : 'deactivated']: deactivated,
       kept,
+      ...(ipRefreshed.length ? { [dry ? 'wouldRefreshIp' : 'ipRefreshed']: ipRefreshed } : {}),
       ...(studentMissing.length ? { studentMissing } : {}),
       ...(errors.length ? { errors } : {}),
     });

@@ -157,6 +157,43 @@ definition of "which bank questions belong to this `/revise` tree topic":
 Rule of thumb: **filed under the topic → the filing decides; tagged but not
 filed under that topic → the tag serves.** A two-tag question belongs to both.
 
+### Sub-group AUDIENCE (2026-09-02)
+
+Three live columns decide who may see a sub-group — `subgroups.visibility`
+(`'all' | 'ip' | 'hidden'`, default `'all'`), `subgroups.ip_extra_level` (a
+tree level the row is ALSO lent to for IP students, e.g. S2-461 "Special
+factorisation forms" → `'S1'`) and `portal_accounts.is_ip` (Airtable Students
+`Subject Level = 'IP'`, set at activation via `lib/portal-ip.ts` and refreshed
+by the monthly `deactivate-inactive` sweep). **The rule** (`lib/subgroup-visibility.ts`
+`subgroupVisibleTo`, mirrored in SQL as `public.subgroup_visible`): a student
+sees a sub-group iff `visibility='all'` and the level matches; or `'ip'`, the
+account is IP and the level matches; or `ip_extra_level` = the student's level
+and the account is IP. `'hidden'` → admin only (badged "hidden" / "IP only").
+
+Consequences, all data-driven — no ids are special-cased in code:
+- `practice_pool` (and so `practice_topics` / `practice_overview` /
+  `practice_next` / `practice_subgroups` / `kiosk_pool`, all with
+  `p_is_ip` + `p_admin` params, `migrations/subgroup_audience.sql`) serves only
+  VISIBLE filings; a question filed ONLY under sub-groups the audience cannot
+  see is excluded from the topic-tag path too; **a topic exists for an
+  audience only while it has ≥ 1 visible sub-group** — so "Modulus Functions"
+  (809–814, `'ip'`) is absent from a non-IP A-Math picker, mix, timed set,
+  worksheet and mock, and present for an IP account. **Legacy × IP:** all 60
+  Modulus questions are `legacy_syllabus = true` (the 28 Aug "cut content"
+  leg), so a legacy question serves ONLY through a filing under a visible
+  `'ip'` sub-group — legacy questions filed under `'all'` sub-groups or unfiled
+  stay blocked for everyone, as before.
+- `/app/practice?qid=` and the mock-paper slot draw resolve questions by id,
+  so they gate with `questionServableTo` (the filings vs the account's trees):
+  a blocked deep link says "not part of your syllabus".
+- `/notes` applies the same rule per viewer (`lib/notes-viewer.ts`); the public
+  `/revise` decks have no account and show only `'all'`. The kiosk scan token
+  and the bot carry no IP flag → they draw as an ordinary student.
+- `practice_candidates` (From-Adrian picks) and `practice_exemplars`
+  (generation context) read the pool as admin — the whole bank, as before.
+- Adrian sets the verdicts in the cards editor (`/admin/edit-cards` → pick a
+  sub-group → **Audience**), which PATCHes `/api/admin/cards/subgroups/[id]`.
+
 Why: until 2026-08-22 the draw was filing-only, and ~7,300 eligible questions
 (all of JC1, most of JC2, half of S3_AM, a third of S1/S2) had never been filed
 — students saw JC Vectors as 165 questions when the bank holds ~720. The kiosk

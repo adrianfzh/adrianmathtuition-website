@@ -27,7 +27,7 @@ import { randomUUID } from 'node:crypto';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { createServiceClient } from '@/lib/supabase-server';
 import { questionMarkdown, questionStructured, totalMarksOf, type BankQuestion } from '@/lib/bank-question-markdown';
-import { practiceAuth, levelAllowed, bankScope, qbLevelsFor, type PracticeCaller } from '@/lib/practice';
+import { practiceAuth, levelAllowed, bankScope, qbLevelsFor, rpcAudience, type PracticeCaller } from '@/lib/practice';
 import { portalIdentity } from '@/lib/portal-auth';
 import { DAILY_GRADE_CAP } from '@/lib/practice-grade';
 import {
@@ -70,6 +70,10 @@ async function build(caller: NonNullable<PracticeCaller>, body: Record<string, u
   const count = normaliseCount(body.count);
   const scope = bankScope(level);
   const sb = getSupabaseAdmin();
+  // Sub-group audience: an exam's tested-topics list may name a topic this
+  // student cannot practise (e.g. Modulus for a non-IP A-Math student) — the
+  // RPCs then simply return no question for it and the slot borrows a sibling.
+  const audience = rpcAudience(caller);
 
   // Daily grading cap, checked up front: a set that starts with fewer marked
   // attempts left than questions would end half-unmarked (the grade route's
@@ -97,7 +101,7 @@ async function build(caller: NonNullable<PracticeCaller>, body: Record<string, u
     : [];
   const mixed = topics.length === 0;
   if (mixed) {
-    const { data, error } = await sb.rpc('practice_topics', { p_level: scope.level, p_qlevel: scope.qlevel });
+    const { data, error } = await sb.rpc('practice_topics', { p_level: scope.level, p_qlevel: scope.qlevel, ...audience });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     topics = ((data || []) as { topic: string }[]).map(r => r.topic).filter(Boolean);
   }
@@ -123,6 +127,7 @@ async function build(caller: NonNullable<PracticeCaller>, body: Record<string, u
         p_exclude: pickedIds,
         p_tier: tier,
         p_subgroup: null,
+        ...audience,
       });
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
       const q = (data?.[0] ?? null) as PracticeNextRow | null;

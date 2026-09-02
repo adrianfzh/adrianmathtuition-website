@@ -6,6 +6,7 @@
 // Tree shape (SPEC-NOTES-PORTAL Phase 1): Level → Topic → one page per sub-group.
 
 import { A_MATH_EXAM_TOPICS, EM_OWN_TOPICS } from './canonical-topics';
+import { subgroupInTree } from './subgroup-visibility';
 import { topicSlug } from './topic-slug';
 
 export const NOTES_BASE = '/notes';
@@ -25,11 +26,14 @@ export interface SubgroupRow {
   name: string;
   description: string | null;
   order_index: number | null;
-  /** 'all' | 'hidden' | 'ip' — Adrian's vetting verdicts (2026-08-29).
-   *  loadSubgroups drops everything but 'all', so downstream code only ever
-   *  sees visible rows; the union type stays here for when 'ip' grows a real
-   *  per-student gate. */
-  visibility?: string;
+  /** 'all' | 'ip' | 'hidden' — Adrian's vetting verdicts (2026-08-29), made a
+   *  real per-viewer gate on 2026-09-02 (lib/subgroup-visibility.ts).
+   *  notes-data's loadSubgroups applies it, so downstream code only ever sees
+   *  rows the current viewer may read. */
+  visibility?: string | null;
+  /** Level this row is ALSO lent to for IP students (e.g. an S2 row with
+   *  'S1'), so it can appear in that level's tree. */
+  ip_extra_level?: string | null;
 }
 
 export interface SnippetRow {
@@ -336,9 +340,9 @@ export function buildPageTree(
   convertedTopics: Set<string> = new Set(),
   cardTopics: Set<string> = new Set(),
 ): TreeRoot {
-  const levelRows = subgroups.filter(
-    s => s.level.toUpperCase() === level.toUpperCase(),
-  );
+  // Filed at this level, or lent to it (ip_extra_level) — audience filtering
+  // already happened upstream, this is tree membership only.
+  const levelRows = subgroups.filter(s => subgroupInTree(s, level));
 
   const byTopic = new Map<string, SubgroupRow[]>();
   for (const row of levelRows) {

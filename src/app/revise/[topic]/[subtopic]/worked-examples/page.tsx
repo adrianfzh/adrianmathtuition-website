@@ -4,15 +4,19 @@ import SwipeApp from './SwipeApp';
 import { topicSlug } from '@/lib/topic-slug';
 import { getSupabase } from '@/lib/supabase';
 import { orderDeckCards } from '@/lib/deck-order';
+import { PUBLIC_VISIBILITY_FILTER } from '@/lib/subgroup-visibility';
 
 const VALID_LEVELS = ['am', 'em', 'jc', 's1', 's2'];
 
+// Public page, no account: only the 'all' audience exists here. 'ip' and
+// 'hidden' sub-groups (and their cards) never render — lib/subgroup-visibility.
 async function findCanonicalTopic(level: string, slug: string): Promise<string | null> {
   const supa = getSupabase();
   const { data } = await supa
     .from('subgroups')
     .select('topic')
-    .eq('level', level.toUpperCase());
+    .eq('level', level.toUpperCase())
+    .or(PUBLIC_VISIBILITY_FILTER);
   const topics = [...new Set((data || []).map((r: { topic: string }) => r.topic))];
   return topics.find(t => topicSlug(t) === slug) ?? null;
 }
@@ -88,9 +92,9 @@ export default async function Page({
   }
 
   type Card = { id: string; subgroup_id: number; display_group: string | null; order_index: number; card_title: string; content: string; content_kind: string };
-  const sgIds = [...new Set((cardsRaw as Card[]).map(c => c.subgroup_id))];
+  const allSgIds = [...new Set((cardsRaw as Card[]).map(c => c.subgroup_id))];
   const [{ data: sgs }, { data: sectionsMeta }] = await Promise.all([
-    supa.from('subgroups').select('id, name, description, order_index').in('id', sgIds),
+    supa.from('subgroups').select('id, name, description, order_index').in('id', allSgIds).or(PUBLIC_VISIBILITY_FILTER),
     supa
       .from('sections_meta')
       .select('name, order_index')
@@ -100,11 +104,17 @@ export default async function Page({
   const sgMap = Object.fromEntries(
     (sgs || []).map((s: { id: number; name: string; description: string; order_index: number | null }) => [s.id, s])
   );
+  // Cards whose sub-group is not publicly visible drop out with it.
+  const visibleCards = (cardsRaw as Card[]).filter(c => sgMap[c.subgroup_id]);
+  if (visibleCards.length === 0) {
+    return <EmptyView level={levelLower} topic={canonicalTopic} />;
+  }
+  const sgIds = [...new Set(visibleCards.map(c => c.subgroup_id))];
 
   // Sort so every student-facing section (display_group, falling back to the
   // sub-group name — the key DesktopView groups by) is contiguous: sections_meta
   // order first, everything else in sub-group order. See lib/deck-order.ts.
-  const cards = orderDeckCards(cardsRaw as Card[], sgMap, sectionsMeta || []);
+  const cards = orderDeckCards(visibleCards, sgMap, sectionsMeta || []);
 
   const focusedSubgroupName =
     subgroupId !== null && sgIds.length === 1 && sgMap[subgroupId]

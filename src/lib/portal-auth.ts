@@ -79,6 +79,11 @@ export interface PortalAccount {
    *  and falls through to the S$29 pass gate — but portalIdentity below keeps
    *  returning their Airtable rec id, so their history stays theirs. */
   deactivated_at: string | null;
+  /** IP-stream student (2026-09-02): derived from Airtable Students
+   *  `Subject Level` = 'IP' at activation (lib/portal-ip.ts) and refreshed by
+   *  the monthly offboarding sweep. Unlocks `subgroups.visibility='ip'` and
+   *  `ip_extra_level` material — lib/subgroup-visibility.ts. */
+  is_ip: boolean | null;
 }
 
 /**
