@@ -579,7 +579,10 @@ glues heading + example + figure + box and jumps the whole block to the next
 page when it does not fit, leaving half a page empty. On a teaching sheet let
 the box split across the page. In Word the same fix is Paragraph → Line and
 Page Breaks → untick "Keep with next" on the paragraphs above the box, and
-Table Properties → Row → "Allow row to break across pages".
+Table Properties → Row → "Allow row to break across pages". For a sheet
+already filed with the glue in it, `repair-sheet.py --unglue <file>` drops
+every keep-with-next / cannot-split flag in one go (Klaire's sheet, 2 Sep
+2026: "when i hit enter, the paragraph just goes right to the next page").
 
 **Verify everything before rendering**: every worked and practice answer
 recomputed with sympy; any figure verified from its own coordinates (tangency,

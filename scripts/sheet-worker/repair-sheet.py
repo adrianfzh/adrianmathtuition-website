@@ -32,6 +32,16 @@ need fixing without re-authoring them, so this operates on the OOXML directly.
      GCE or not) is removed outright. Provenance lives in the worker's
      completion payload and the question-proposal queue, not on the sheet.
 
+  4. (--unglue) Nothing is glued to the next page.  Adrian, 2 Sep 2026, editing
+     Klaire's sheet in Word: "when i hit enter, the paragraph just goes right
+     to the next page, leaving a huge space in between". The authoring default
+     marked every paragraph from an Example label to the last line of its box
+     "keep with next" and every box row "cannot split", so the whole block
+     jumps to a fresh page the moment it stops fitting — and a paragraph typed
+     after it inherits the flag. This drops w:keepNext / w:keepLines from
+     every body paragraph and w:cantSplit from every table row. Opt-in, since
+     a sheet authored with keep_together=False has none to drop.
+
 Nothing else is touched: no other text, no equations, no figures, no styles.
 Every change is counted and reported, and the file is only written when
 something actually changed.
@@ -163,10 +173,25 @@ def set_spacing(p, **attrs):
     return changed
 
 
-def repair(xml_bytes):
+def repair(xml_bytes, unglue=False):
     root = ET.fromstring(xml_bytes)
     body = root.find(w('body'))
-    counts = {'linear_fractions': 0, 'trailing_empty': 0, 'gap_above_box': 0, 'source_lines': 0}
+    counts = {'linear_fractions': 0, 'trailing_empty': 0, 'gap_above_box': 0, 'source_lines': 0,
+              'unglued': 0}
+
+    # ── 4. nothing glued to the next page (opt-in) ───────────────────────────
+    if unglue:
+        for pPr in root.iter(w('pPr')):
+            for tag in ('keepNext', 'keepLines'):
+                el = pPr.find(w(tag))
+                if el is not None:
+                    pPr.remove(el)
+                    counts['unglued'] += 1
+        for trPr in root.iter(w('trPr')):
+            el = trPr.find(w('cantSplit'))
+            if el is not None:
+                trPr.remove(el)
+                counts['unglued'] += 1
 
     # ── 1. every fraction stacked ────────────────────────────────────────────
     for f in root.iter(m('f')):
@@ -226,6 +251,8 @@ def main():
     ap.add_argument('src')
     ap.add_argument('dest', nargs='?')
     ap.add_argument('--check', action='store_true', help='report only, never write')
+    ap.add_argument('--unglue', action='store_true',
+                    help='also drop every keep-with-next / keep-lines / cannot-split flag')
     args = ap.parse_args()
 
     src = Path(args.src)
@@ -238,7 +265,7 @@ def main():
 
     original = parts['word/document.xml']
     register_all_namespaces(original)
-    root, counts = repair(original)
+    root, counts = repair(original, unglue=args.unglue)
     total = sum(counts.values())
     for k, v in counts.items():
         print(f'  {k:20s} {v}')
