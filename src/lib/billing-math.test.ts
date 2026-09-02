@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { weekdayLessonDates, firstInvoiceLessonDates, invoiceMonthLessonDates, lastDayOfMonthISO, firstOfNextMonthISO, nextDayISO, addDaysISO } from './billing-math';
+import { weekdayLessonDates, firstInvoiceLessonDates, invoiceMonthLessonDates, lastDayOfMonthISO, firstOfNextMonthISO, nextDayISO, addDaysISO, monthWindowClause } from './billing-math';
 import { NO_LESSON_DATES } from './holidays';
 
 const FRI = 5, SUN = 0, TUE = 2;
@@ -52,6 +52,23 @@ describe('addDaysISO', () => {
   });
   it('lands on a leap day', () => {
     expect(addDaysISO('2028-02-22', 7)).toBe('2028-02-29');
+  });
+});
+
+// REGRESSION (found 2026-09-02) — generate-invoices' prorated branch and
+// regenerate-invoice both ended their month windows with {Date}<='monthEnd',
+// which on Airtable date-typed fields silently EXCLUDES lessons dated ON the
+// month's last day (a regenerated October invoice would drop 31 Oct). Every
+// whole-month filter must be half-open at the first of the next month.
+describe('monthWindowClause (whole-month Airtable filter, half-open)', () => {
+  it('covers the month from the 1st to (exclusive) the 1st of the next month', () => {
+    expect(monthWindowClause(2026, 10)).toBe("{Date}>='2026-10-01',{Date}<'2026-11-01'");
+  });
+  it('rolls over the year end', () => {
+    expect(monthWindowClause(2026, 12)).toBe("{Date}>='2026-12-01',{Date}<'2027-01-01'");
+  });
+  it('zero-pads single-digit months', () => {
+    expect(monthWindowClause(2026, 6)).toBe("{Date}>='2026-06-01',{Date}<'2026-07-01'");
   });
 });
 

@@ -10,7 +10,8 @@ import { applyPriorBalance } from '@/lib/invoice-consolidate';
 import { parseReferrerMarker } from '@/lib/referral-link';
 import { NO_LESSON_DATES } from '@/lib/holidays';
 import { billableAdditionalFor, mapAdditionalRecord } from '@/lib/additional-lessons';
-import { invoiceMonthLessonDates, lastDayOfMonthISO, nextDayISO } from '@/lib/billing-math';
+import { mapProratedRecord, proratedLessonsFor, proratedMonthFormula, type ProratedLessonRecord } from '@/lib/prorated-lessons';
+import { invoiceMonthLessonDates, nextDayISO } from '@/lib/billing-math';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 const DAY_ABBREV: Record<string, string> = {
@@ -100,11 +101,11 @@ export async function POST(req: NextRequest) {
       invoiceMonth = getInvoiceMonth();
     }
 
-    // Month bounds as plain ISO strings — lesson-date math and the prorated
-    // Lessons query run on these, never on Date→toISOString() (which reads out
-    // UTC and skews a day in any non-UTC environment).
+    // Month start as a plain ISO string — lesson-date math runs on this, never
+    // on Date→toISOString() (which reads out UTC and skews a day in any
+    // non-UTC environment). The prorated Lessons window is built the same way
+    // from year+month ints (lib/prorated-lessons.ts).
     const monthFirstISO = `${invoiceMonth.year}-${String(invoiceMonth.month).padStart(2, '0')}-01`;
-    const monthLastISO = lastDayOfMonthISO(monthFirstISO);
 
     // IMPORTANT: paginate! A plain airtableRequest() silently caps at 100
     // rows, which previously hid enrollments (and therefore students) past
@@ -220,6 +221,20 @@ export async function POST(req: NextRequest) {
       .then((d: any) => (d.records || []).map(mapAdditionalRecord));
     const billedLessonPatches: string[] = [];
 
+    // ── Prorated-month Completed lessons — ONE window fetch for ALL students ─
+    // Same shape (and same reason) as the Additional pool above: the old
+    // per-student formula filtered on {Student}='recXXX', which matches
+    // NOTHING on a linked field, so every prorated month (June/Oct–Dec) found
+    // 0 Completed lessons and skipped every student (found 2026-09-02). The
+    // window is half-open — {Date}<='monthLast' dropped the month's last day.
+    const isProrated = isProratedMonth(invoiceMonth.month);
+    const proratedPool: ProratedLessonRecord[] = isProrated
+      ? await airtableRequestAll(
+          'Lessons',
+          `?filterByFormula=${encodeURIComponent(proratedMonthFormula(invoiceMonth.year, invoiceMonth.month))}&fields[]=Date&fields[]=Student`
+        ).then((d: any) => (d.records || []).map(mapProratedRecord))
+      : [];
+
     for (const studentId in enrollmentsByStudent) {
       const studentEnrollments = enrollmentsByStudent[studentId];
       const student = studentsById[studentId];
@@ -254,17 +269,12 @@ export async function POST(req: NextRequest) {
         // Primary rate (first enrollment with a non-zero rate) — used for Additional lessons & invoice header
         const ratePerLesson = studentEnrollments.find((e: any) => e.fields['Rate Per Lesson'] > 0)?.fields['Rate Per Lesson'] || 0;
 
-        const isProrated = isProratedMonth(invoiceMonth.month);
         const allLineItems: { date: string; day: string; type: string }[] = [];
-        let proratedLessonRecords: any[] = [];
+        let proratedLessonRecords: ProratedLessonRecord[] = [];
         let hasLessons = false;
 
         if (isProrated) {
-          const lessonFormula = encodeURIComponent(
-            `AND({Student}='${studentId}',{Type}='Regular',{Status}='Completed',{Date}>='${monthFirstISO}',{Date}<='${monthLastISO}')`
-          );
-          const lessonData = await at('Lessons', `?filterByFormula=${lessonFormula}&sort[0][field]=Date&sort[0][direction]=asc`);
-          proratedLessonRecords = lessonData.records || [];
+          proratedLessonRecords = proratedLessonsFor(proratedPool, studentId);
           if (proratedLessonRecords.length > 0) hasLessons = true;
         } else {
           for (const enrollment of studentEnrollments) {
@@ -335,8 +345,8 @@ export async function POST(req: NextRequest) {
 
         const lineItemsForInvoice: any[] = [];
         if (isProrated) {
-          proratedLessonRecords.forEach((r: any) => {
-            lineItemsForInvoice.push({ date: r.fields['Date'], day: '', type: 'Regular', description });
+          proratedLessonRecords.forEach((r) => {
+            lineItemsForInvoice.push({ date: r.date, day: '', type: 'Regular', description });
           });
         } else {
           allLineItems.forEach((item) => {

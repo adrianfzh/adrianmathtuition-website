@@ -15,6 +15,36 @@
 
 **Two regeneration routes, one intent each — don't merge them:** `generate-pdf-batch` renders the invoice **as stored** (the ✏️ Amend form's manual line-item/credit edits, verbatim); `regenerate-invoice` (the ♻️ Regenerate button) **recalculates** line items from the current schedule (preserving manual `Line Items Extra`). **Issue Date is one shared rule for both** — `resolveInvoiceIssueDate(status, currentIssueDate, todayISO)` in `lib/invoice-month.ts` (unit-tested): a **Sent** invoice being regenerated is *reissued* → **today** (SGT, via `sgtTodayISO()`); a fresh Draft → the **15th**; an unsent Draft with a date → **preserved**. Never re-implement this in a route or the `admin-invoices` PATCH — an amended Sent invoice must carry today's issue date, and the split where one path stamped today and another preserved the old date is exactly the bug that put a stale 15 Jul date on Kiara's amended Aug invoice.
 
+### Prorated months (June + Oct–Dec) — billed from Completed lessons, in arrears
+
+`PRORATION_MONTHS = [6, 10, 11, 12]` in `generate-invoices`: instead of projecting slot
+occurrences forward, these months bill the student's actual **Completed Regular lessons**
+inside the invoice month (June = holiday month, Oct–Dec = year-end taper). The lesson pool
+is **ONE window fetch for all students** — formula + per-student JS matching in
+`lib/prorated-lessons.ts` (unit-tested); never re-add a `{Student}=` clause or an
+inclusive `{Date}<=` bound to it (see history below). Month windows anywhere in invoice
+code use the shared half-open `monthWindowClause(year, month)` from `lib/billing-math.ts`
+(also used by `regenerate-invoice`).
+
+**Arrears timing — half-decided, flag to Adrian before "fixing" it:** the cron fires on
+the **14th of the prior month** targeting the *next* month, when a prorated month has no
+Completed lessons yet — so at cron time every prorated-month student is skipped (visible
+in the Telegram summary as "prorated month … has 0 Completed lessons") unless they have
+billable Additional lessons. The branch only produces real invoices on a **manual re-run
+after the month is taught**: `POST /api/generate-invoices {"month":"October 2026"}`
+(students with an existing invoice for that month are skipped, so re-runs are safe).
+Whether the cron itself should behave differently for prorated months (e.g. also fire in
+arrears) is an open product decision — don't change the cron semantics without Adrian.
+
+> ⚠ History (fixed 2026-09-02): from launch, the prorated branch filtered
+> `{Student}='recXXX'` — matches NOTHING on a linked field (CLAUDE.md Gotchas; the same
+> bug class that unbilled every Additional lesson until 2026-07-26) — and ended its window
+> `{Date}<='monthEnd'`, which drops lessons ON the month's last day. Net effect: **no
+> prorated month had ever billed a single regular lesson**, even on manual arrears re-runs.
+> `regenerate-invoice` carried the same inclusive-bound bug (a regenerated invoice lost
+> its last-day lesson). Regression tests: `lib/prorated-lessons.test.ts` +
+> `monthWindowClause` block in `lib/billing-math.test.ts`.
+
 **`/api/admin-invoices` GET windows PAID invoices to the last ~5 months** (`paidWindowCutoffISO` in `lib/invoice-month.ts`, unit-tested) so the Airtable scan doesn't grow a serial pagination page every ~2 months; unpaid/unsent are always included regardless of age; `?all=1` = full history (the month filter's "Earlier months…" option triggers it).
 
 ### Deferred Adjustments (carry a credit/charge to a FUTURE month's invoice)

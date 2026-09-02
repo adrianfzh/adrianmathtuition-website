@@ -6,6 +6,7 @@ import { buildRegisterUrl } from '@/lib/invoice-register-url';
 import { NO_LESSON_DATES } from '@/lib/holidays';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { resolveInvoiceIssueDate, sgtTodayISO } from '@/lib/invoice-month';
+import { monthWindowClause } from '@/lib/billing-math';
 import { applyPriorBalance, stripPersistedCarryOver } from '@/lib/invoice-consolidate';
 
 export const runtime = 'nodejs';
@@ -137,8 +138,12 @@ export async function POST(req: NextRequest) {
       regularCount = lineItems.length;
       additionalCount = 0;
     } else {
+      // Half-open month window (lib/billing-math.ts monthWindowClause):
+      // {Date}<='lastDayStr' on Airtable's date-typed field silently drops a
+      // lesson ON the month's last day, so regenerating undercounted those
+      // months (found 2026-09-02).
       const lessonFormula = encodeURIComponent(
-        `AND({Date}>='${firstDayStr}',{Date}<='${lastDayStr}',{Status}!='Cancelled',{Status}!='Cancelled - Prorated')`
+        `AND(${monthWindowClause(year, monthIdx + 1)},{Status}!='Cancelled',{Status}!='Cancelled - Prorated')`
       );
       const allLessonsData = await airtableRequestAll(
         'Lessons',

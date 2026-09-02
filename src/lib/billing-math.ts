@@ -48,6 +48,23 @@ export function addDaysISO(isoStr: string, days: number): string {
 }
 
 /**
+ * Airtable filter clause covering one whole calendar month of the date-typed
+ * `{Date}` field, half-open: `{Date}>='YYYY-MM-01',{Date}<'first of next month'`.
+ * `month` is 1–12. Compose into AND(...) with other conditions.
+ *
+ * Exists because `{Date}<='monthEnd'` silently EXCLUDES records dated ON the
+ * month's last day (same Airtable date-field behaviour nextDayISO guards
+ * single-day filters against) — generate-invoices' prorated branch and
+ * regenerate-invoice both shipped with the inclusive form (fixed 2026-09-02).
+ * Built from year+month numbers, not a Date, so no server timezone can skew
+ * the boundaries.
+ */
+export function monthWindowClause(year: number, month: number): string {
+  const startISO = `${year}-${String(month).padStart(2, '0')}-01`;
+  return `{Date}>='${startISO}',{Date}<'${firstOfNextMonthISO(startISO)}'`;
+}
+
+/**
  * Every date of `weekday` (0=Sunday…6=Saturday) from startISO to endISO,
  * BOTH INCLUSIVE, excluding any dates in `excluded` (e.g. NO_LESSON_DATES).
  * A lesson on the period's last day is included — regression: Kieran Lai,
