@@ -14,6 +14,8 @@ import { isNotesViewer } from '@/lib/notes-auth';
 import { notesViewer } from '@/lib/notes-viewer';
 import { approvedSections } from '@/lib/notes-units';
 import { getLevelIndex, getNotesTree, getSubgroupPage, getTopicPage } from '@/lib/notes-data';
+import { getSupabaseAdmin } from '@/lib/supabase';
+import { loadDeckPlan } from '@/lib/teaching-knowledge';
 import { cleanDescription, cleanTitle } from '@/lib/notes-text';
 import {
   groupByFamily,
@@ -309,6 +311,17 @@ async function TopicIndex({ level, topicSlugParam }: { level: string; topicSlugP
 
   const { previous, next } = await footerFor(level, url);
 
+  // 📋 How Adrian approaches it — the topic's method templates from the
+  // teaching-knowledge layer (lib/teaching-knowledge.ts), minus any the
+  // sub-group names, ledes and example titles below already announce. Approved
+  // rows only, in his words; [] when the shelf has nothing. Adrian, 3 Sep 2026.
+  const plan = await loadDeckPlan(getSupabaseAdmin(), {
+    level, topic: data.topic, max: 3,
+    deckText: data.subgroups
+      .flatMap(s => [s.name, cleanDescription(s.description).summary || '', ...s.examples.map(e => e.card_title)])
+      .join('\n'),
+  });
+
   return (
     <PageFrame
       previous={previous}
@@ -341,6 +354,30 @@ async function TopicIndex({ level, topicSlugParam }: { level: string; topicSlugP
         </>
       }
     >
+      {plan.length > 0 && (
+        <section>
+          <h2 className="nx-section">How Adrian approaches it</h2>
+          <div className="nx-list">
+            {plan.map(m => (
+              <details key={m.id} className="nx-fold" open>
+                <summary className="nx-fold-head">
+                  <span className="nx-item-main">
+                    <span className="nx-item-title" dangerouslySetInnerHTML={{ __html: mathHtml(m.question_type) }} />
+                  </span>
+                  <span className="nx-item-side"><Chevron /></span>
+                </summary>
+                <div className="nx-fold-body">
+                  <p className="nx-lede" dangerouslySetInnerHTML={{ __html: mathHtml(m.method) }} />
+                  {m.watch_out && (
+                    <p className="nx-lede" dangerouslySetInnerHTML={{ __html: '⚠️ ' + mathHtml(m.watch_out) }} />
+                  )}
+                </div>
+              </details>
+            ))}
+          </div>
+        </section>
+      )}
+
       {showPages ? (
         <section>
           <h2 id={ANCHOR.pages} className="nx-section">

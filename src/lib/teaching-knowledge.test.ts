@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   EMPTY_KNOWLEDGE, knowledgeSubjectForLevel, topicList, shapeKnowledge,
   methodHintMarkdown, methodsPromptLines, pitfallsPromptLines, loadTeachingKnowledge,
+  contentWords, filterRedundantMethods, loadDeckPlan,
 } from './teaching-knowledge';
 
 describe('knowledgeSubjectForLevel (mirror of SQL teaching_subject_for_level)', () => {
@@ -111,5 +112,35 @@ describe('formatters', () => {
     expect(methodsPromptLines(k.methods.slice(0, 1))).toBe('- Reverse percentage: Decide what percentage the given figure is, then divide. Watch out: Divide to go back; multiplying does not undo it.');
     expect(pitfallsPromptLines(k.pitfalls)).toBe('- Taking 20% off again — The 20% was of the original. Say instead: Divide by 0.8.');
     expect(methodsPromptLines([])).toBe('');
+  });
+});
+
+describe('deck plans — redundancy against what the deck already announces', () => {
+  const deckText = [
+    'Apply product, quotient, power log laws', 'Evaluate log_4 32 by change of base', 'Solve by combining log terms',
+    'Solve a^(f(x)) = b by taking logs', 'Log Law Manipulation & Identities', 'Solving Logarithmic Equations',
+    'Solving Exponential Equations', 'Sketch y = ln(x − 2) + 1',
+  ].join('\n');
+  const workbook = { id: 'w', question_type: 'Log / exponential equation', method: 'Apply log laws / take logs / change of base; convert a^x=y <-> log_a y = x. Solve, then check validity.' };
+  const secNotes = { id: 's', question_type: 'Equation with several logarithms', method: 'Change every logarithm to a common base, combine each side into a single logarithm using the product, quotient and power laws, then cancel the logarithms to leave an ordinary equation.' };
+  it('contentWords stems so combine/combining fall together and drops maths', () => {
+    expect(contentWords('Combining $\\log_2 x$ terms; combine them')).toEqual(['combi', 'terms']);
+  });
+  it('drops the template whose moves the card titles already list, keeps the one that states the general method', () => {
+    const kept = filterRedundantMethods([workbook, secNotes], deckText);
+    expect(kept.map(m => m.id)).toEqual(['s']);
+  });
+  it('keeps everything against an empty deck and nothing with empty words', () => {
+    expect(filterRedundantMethods([workbook], '')).toHaveLength(1);
+    expect(filterRedundantMethods([{ id: 'e', question_type: '', method: '$x$' }], deckText)).toHaveLength(0);
+  });
+  it('loadDeckPlan ranks through the RPC, filters, and caps', async () => {
+    const admin = { rpc: async (_fn: string, args: Record<string, unknown>) => {
+      expect(args.p_methods).toBe(5);   // max + 4 candidates, so the filter has room
+      expect(args.p_pitfalls).toBe(0);
+      return { data: { subject: 'AM', methods: [workbook, secNotes, { id: 'x', question_type: 'Exponential growth or decay word problem', method: 'Initial means substitute time zero. For a stated size, substitute it and take logarithms to release the time.' }], pitfalls: [], formulae: [] } };
+    } };
+    const plan = await loadDeckPlan(admin, { level: 'AM', topic: 'Logarithms', deckText, max: 1 });
+    expect(plan.map(m => m.id)).toEqual(['s']);
   });
 });

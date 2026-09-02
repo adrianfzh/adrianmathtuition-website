@@ -163,3 +163,58 @@ export function pitfallsPromptLines(pitfalls: KnowledgePitfall[]): string {
     .map(p => `- ${p.wrong_move}${p.why_wrong ? ` — ${p.why_wrong}` : ''}${p.corrective_cue ? ` Say instead: ${p.corrective_cue}` : ''}`)
     .join('\n');
 }
+
+// ─── Deck plans: the method above a set of worked examples ─────────────────────
+// Adrian, 3 Sep 2026 ("worked example swipe cards — yes, check for redundancy").
+// The templates were mined from the same notes the cards come from, so a deck's
+// card titles and sub-group ledes often already announce the move ("Solve by
+// combining log terms", "Evaluate log_4 32 by change of base"). A template whose
+// content words are mostly present in that announcing text is redundant there and
+// is dropped; what remains is the general method the deck shows but never states.
+
+const STOP_WORDS = new Set(['the','that','this','with','when','from','into','every','each','your','then','than',
+  'which','what','have','there','their','find','show','given','value','values','hence','where','also','both',
+  'such','using','write','express','state','calculate','determine','them','they','will','only']);
+
+/** Distinct content-word stems of a text: ≥4 letters, no stop words, maths stripped, first five letters so
+ *  combine/combining and logarithm/logarithms fall together. */
+export function contentWords(text: string): string[] {
+  return [...new Set(
+    String(text || '').toLowerCase().replace(/\$[^$]*\$/g, ' ').split(/[^a-z]+/)
+      .filter(w => w.length > 3 && !STOP_WORDS.has(w)).map(w => w.slice(0, 5)),
+  )];
+}
+
+/**
+ * Drop the templates a deck already states. `deckText` is the deck's ANNOUNCING
+ * text — card titles, sub-group names and ledes — never the worked steps (those
+ * mention every law by name, and would flag everything). A template is redundant
+ * when at least `threshold` of its content words appear in that text.
+ */
+export function filterRedundantMethods<T extends { question_type: string; method: string }>(
+  methods: T[], deckText: string, threshold = 0.6,
+): T[] {
+  const deck = new Set(contentWords(deckText));
+  return methods.filter(m => {
+    const words = contentWords(`${m.question_type} ${m.method}`);
+    if (!words.length) return false;
+    const hits = words.filter(w => deck.has(w)).length;
+    return hits / words.length < threshold;
+  });
+}
+
+/**
+ * The plan for one deck (level code + canonical topic): the closest approved
+ * methods (ranked by overlap with the deck's announcing text), minus the ones the
+ * deck already announces, capped at `max`. Used by /revise worked-example decks
+ * and the /notes topic pages. Never throws; [] when the shelf has nothing.
+ */
+export async function loadDeckPlan(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  admin: any,
+  q: { level: string; topic: string; deckText: string; max?: number },
+): Promise<KnowledgeMethod[]> {
+  const max = q.max ?? 3;
+  const k = await loadTeachingKnowledge(admin, { level: q.level, topics: [q.topic], context: q.deckText, methods: max + 4, pitfalls: 0 });
+  return filterRedundantMethods(k.methods, q.deckText).slice(0, max);
+}

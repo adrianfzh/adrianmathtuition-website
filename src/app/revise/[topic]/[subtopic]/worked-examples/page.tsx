@@ -2,7 +2,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import SwipeApp from './SwipeApp';
 import { topicSlug } from '@/lib/topic-slug';
-import { getSupabase } from '@/lib/supabase';
+import { getSupabase, getSupabaseAdmin } from '@/lib/supabase';
+import { loadDeckPlan } from '@/lib/teaching-knowledge';
 import { orderDeckCards } from '@/lib/deck-order';
 import { PUBLIC_VISIBILITY_FILTER } from '@/lib/subgroup-visibility';
 
@@ -116,6 +117,16 @@ export default async function Page({
   // order first, everything else in sub-group order. See lib/deck-order.ts.
   const cards = orderDeckCards(visibleCards, sgMap, sectionsMeta || []);
 
+  // 📋 The plan — Adrian's method for this deck (lib/teaching-knowledge.ts),
+  // minus anything the card titles / sub-group ledes already announce.
+  const plan = await loadDeckPlan(getSupabaseAdmin(), {
+    level: levelLower.toUpperCase(), topic: canonicalTopic, max: 3,
+    deckText: [
+      ...cards.map(c => c.card_title),
+      ...sgIds.map(id => { const s = sgMap[id] as { name: string; description: string }; return `${s.name} ${s.description || ''}`; }),
+    ].join('\n'),
+  });
+
   const focusedSubgroupName =
     subgroupId !== null && sgIds.length === 1 && sgMap[subgroupId]
       ? (sgMap[subgroupId] as { name: string }).name
@@ -128,6 +139,7 @@ export default async function Page({
       level={levelLower}
       topic={canonicalTopic}
       focusedSubgroupName={focusedSubgroupName}
+      plan={plan}
     />
   );
 }

@@ -22,12 +22,36 @@ interface Subgroup {
   description: string;
 }
 
+/** One of Adrian's method templates for this deck (lib/teaching-knowledge.ts loadDeckPlan). */
+export interface PlanItem {
+  id: string;
+  question_type: string;
+  method: string;
+  watch_out: string | null;
+}
+
 interface Props {
   cards: Card[];
   subgroups: Record<number, Subgroup>;
   level: string;
   topic: string;
   focusedSubgroupName?: string;
+  plan?: PlanItem[];
+}
+
+/** 📋 The plan — how Adrian approaches this topic, in his words, above the examples. */
+function PlanList({ plan }: { plan: PlanItem[] }) {
+  return (
+    <ol className="space-y-4 list-decimal pl-5">
+      {plan.map(m => (
+        <li key={m.id}>
+          <div className="font-semibold text-gray-900 leading-snug"><MathMarkdown content={m.question_type} /></div>
+          <div className="prose prose-sm max-w-none text-gray-700 mt-1"><MathMarkdown content={m.method} /></div>
+          {m.watch_out && <div className="text-amber-900/80 mt-1 text-[13px]"><MathMarkdown content={'⚠️ ' + m.watch_out} /></div>}
+        </li>
+      ))}
+    </ol>
+  );
 }
 
 interface ChatMessage {
@@ -95,7 +119,7 @@ function CardMarkdown({ content }: { content: string }) {
 }
 
 // ── Desktop list view ─────────────────────────────────────────────────────────
-function DesktopView({ cards, subgroups, level, topic, focusedSubgroupName }: Props) {
+function DesktopView({ cards, subgroups, level, topic, focusedSubgroupName, plan }: Props) {
   // Group by student-facing section (display_group ?? subgroup name). The server
   // sorts sections contiguous under this same key (lib/deck-order.ts); merging
   // by name keeps each section — and its React key — unique even if not.
@@ -123,6 +147,12 @@ function DesktopView({ cards, subgroups, level, topic, focusedSubgroupName }: Pr
         </div>
       </div>
       <div className="max-w-3xl mx-auto px-6 py-8 space-y-10">
+        {plan && plan.length > 0 && (
+          <section className="bg-amber-50 border border-amber-200 rounded-2xl px-6 py-5">
+            <h2 className="text-xs font-bold uppercase tracking-wide text-amber-800 mb-3">📋 The plan — how Adrian approaches this</h2>
+            <PlanList plan={plan} />
+          </section>
+        )}
         {[...groups.entries()].map(([section, gc]) => (
           <section key={section} id={`section-${section}`}>
             <div className="space-y-4">
@@ -148,8 +178,9 @@ function DesktopView({ cards, subgroups, level, topic, focusedSubgroupName }: Pr
 }
 
 // ── Mobile swipe view ─────────────────────────────────────────────────────────
-function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }: Props) {
+function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName, plan }: Props) {
   const [index, setIndex] = useState(0);
+  const [planOpen, setPlanOpen] = useState(false);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [showHint, setShowHint] = useState(true);
 
@@ -522,8 +553,31 @@ function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }
             <h1 className="truncate" style={{ fontSize: 14, fontWeight: 600, color: '#2C3E50' }}>{topic}</h1>
             {focusedSubgroupName && <p className="truncate" style={{ fontSize: 11, color: '#6366f1', marginTop: 1 }}>Focused on: {focusedSubgroupName}</p>}
           </div>
+          {plan && plan.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setPlanOpen(true)}
+              aria-label="The plan — how Adrian approaches this"
+              style={{ fontSize: 12, fontWeight: 700, color: '#A08F6C', border: '1px solid #E5D9BD', borderRadius: 999, padding: '3px 9px', background: '#FFF9EA', pointerEvents: 'auto' }}
+            >
+              📋 Plan
+            </button>
+          )}
           <span style={{ fontSize: 13, color: '#999', fontVariantNumeric: 'tabular-nums' }}>{index + 1} / {total}</span>
         </div>
+
+        {/* 📋 The plan — an overlay so the deck underneath is untouched */}
+        {planOpen && plan && plan.length > 0 && (
+          <div className="absolute inset-0 z-20 flex flex-col" style={{ background: '#F5EFE2', pointerEvents: 'auto' }} onPointerDown={e => e.stopPropagation()}>
+            <div className="flex-none flex items-center justify-between gap-3 px-4" style={{ height: 52, borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+              <h2 className="truncate" style={{ fontSize: 14, fontWeight: 700, color: '#2C3E50', margin: 0 }}>📋 How Adrian approaches this</h2>
+              <button type="button" onClick={() => setPlanOpen(false)} style={{ fontSize: 13, color: '#6366f1', fontWeight: 600 }}>Close</button>
+            </div>
+            <div className="flex-1 overflow-y-auto" style={{ padding: '16px 20px 32px', fontSize: 15, color: '#2C2C2C', lineHeight: 1.6, touchAction: 'pan-y', userSelect: 'text' }}>
+              <PlanList plan={plan} />
+            </div>
+          </div>
+        )}
 
         {/* Card stack — flex-1 shrinks when response strip is visible */}
         <div className="flex-1 relative" style={{ overflow: 'hidden', minHeight: 0 }}>
