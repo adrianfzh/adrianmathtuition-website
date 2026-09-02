@@ -33,6 +33,11 @@ in the Telegram summary as "prorated month … has 0 Completed lessons") unless 
 billable Additional lessons. The branch only produces real invoices on a **manual re-run
 after the month is taught**: `POST /api/generate-invoices {"month":"October 2026"}`
 (students with an existing invoice for that month are skipped, so re-runs are safe).
+One trap inside that skip: a student with billable Additional lessons at cron time
+already GOT a prorated-month invoice (Additional lines only, zero Regular) — the
+arrears re-run then skips them, and their Completed lessons for the month are never
+billed. Before the arrears run, check the cron's drafts for prorated-month invoices
+with no Regular lines and delete-or-amend them (first month this can bite live: Oct 2026).
 Whether the cron itself should behave differently for prorated months (e.g. also fire in
 arrears) is an open product decision — don't change the cron semantics without Adrian.
 
