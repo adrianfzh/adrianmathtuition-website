@@ -194,16 +194,23 @@ export async function POST(request: NextRequest) {
     });
     const studentId = studentRecord.id;
 
-    // Step 2b: Link trial lesson to new student (non-fatal)
+    // Step 2b: Link trial lesson to new student (non-fatal). The PATCH response
+    // carries the full record, so capture the trial date here for the invoice
+    // notes (Step 6) — a Student created moments ago can have no OTHER linked
+    // Trial, and no Airtable formula can match linked-record IDs anyway.
+    let trialLessonDate: string | null = null;
     if (trialLessonId) {
       try {
-        await at('Lessons', `/${String(trialLessonId)}`, {
+        const trialRecord = await at('Lessons', `/${String(trialLessonId)}`, {
           method: 'PATCH',
           body: JSON.stringify({ fields: {
             Student: [studentId],
             Notes: `Trial student: ${sanitize(studentName)}`,
           }}),
         });
+        if (trialRecord?.fields?.['Type'] === 'Trial' && trialRecord.fields['Date']) {
+          trialLessonDate = trialRecord.fields['Date'] as string;
+        }
       } catch (err) {
         console.error('[signup] Failed to link trial lesson:', (err as Error).message);
       }
@@ -388,19 +395,11 @@ export async function POST(request: NextRequest) {
               ? nextMonthLabel      // "May 2026" — shows in May dropdown
               : startMonthLabel;    // "April 2026" — no next month needed
 
-            // Look up trial lesson. Type filter only: ARRAYJOIN({Student})
-            // yields display names, not record IDs, so no formula can match
-            // the student — fetch all Trial rows and match in JS instead
-            // (same pattern as the lesson dedup in Step 7).
-            let trialLessonFormatted: string | null = null;
-            try {
-              const trialRes = await airtableRequestAll(
-                baseId, airtableToken, 'Lessons',
-                `?filterByFormula=${encodeURIComponent(`{Type}='Trial'`)}&fields[]=Student&fields[]=Date`
-              );
-              const trialRecord = trialRes.records.find((r: any) => r.fields?.['Student']?.[0] === studentId);
-              if (trialRecord?.fields?.['Date']) trialLessonFormatted = formatDateLong(trialRecord.fields['Date'] as string);
-            } catch { /* non-fatal */ }
+            // Trial lesson date, captured when Step 2b linked it. (The old
+            // SEARCH(recId, ARRAYJOIN({Student})) lookup here matched nothing —
+            // ARRAYJOIN yields display names, not record IDs — so this note
+            // line had silently never rendered on any first invoice.)
+            const trialLessonFormatted = trialLessonDate ? formatDateLong(trialLessonDate) : null;
 
             // Auto notes
             const noteParts: string[] = [
