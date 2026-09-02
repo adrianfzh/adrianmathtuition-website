@@ -62,7 +62,7 @@ export function normalizeAnswer(raw: string): string {
 }
 
 /** Parse a normalised token as a number; supports simple fractions "a/b". */
-function asNumber(s: string): number | null {
+export function asNumber(s: string): number | null {
   if (/^-?\d+(\.\d+)?$/.test(s)) return parseFloat(s);
   const frac = s.match(/^\(?(-?\d+(?:\.\d+)?)\)?\/\(?(-?\d+(?:\.\d+)?)\)?$/);
   if (frac) {
@@ -88,8 +88,47 @@ function splitParts(raw: string): string[] {
 }
 
 /** "x=2" → "2"; leaves anything longer than a single-letter lead-in alone. */
-function stripLead(s: string): string {
+export function stripLead(s: string): string {
   return s.replace(/^[a-z]=/, '');
+}
+
+/**
+ * A NORMALISED coordinate point "(2,8)" → [2, 8]; null for anything else.
+ * Only a bracketed tuple whose every entry is a number (fractions included,
+ * "((9)/(2),(19)/(2))" is how \frac normalises) counts — a bare "2, 5" stays
+ * a root list, which is unordered. Typed answers may drop the brackets
+ * (`lenient`) and may label the entries ("h=2,k=8").
+ */
+export function asPoint(s: string, lenient = false): number[] | null {
+  let body = s;
+  if (body.startsWith('(') && body.endsWith(')') && outerBracketWraps(body)) body = body.slice(1, -1);
+  else if (!lenient) return null;
+  const pieces: string[] = [];
+  let depth = 0;
+  let cur = '';
+  for (const ch of body) {
+    if (ch === '(') depth += 1;
+    if (ch === ')') depth -= 1;
+    if (ch === ',' && depth === 0) { pieces.push(cur); cur = ''; continue; }
+    cur += ch;
+  }
+  pieces.push(cur);
+  if (pieces.length < 2) return null;
+  const nums = pieces.map(p => asNumber(stripLead(p)));
+  return nums.every((n): n is number => n !== null) ? nums : null;
+}
+
+/** True when the first "(" of `s` closes at its very last character. */
+function outerBracketWraps(s: string): boolean {
+  let depth = 0;
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] === '(') depth += 1;
+    else if (s[i] === ')') {
+      depth -= 1;
+      if (depth === 0) return i === s.length - 1;
+    }
+  }
+  return false;
 }
 
 function tokensEqual(a: string, b: string): boolean {
@@ -109,6 +148,16 @@ export function checkTypedAnswer(typed: string, official: string): Verdict {
   const o = normalizeAnswer(official);
   if (!t || !o) return 'unclear';
   if (tokensEqual(t, o)) return 'correct';
+
+  // Coordinate points "(2, 8)" are ORDERED tuples, not a root list: compare
+  // entry by entry (brackets optional when typing), a clean mismatch is wrong.
+  // Anything that isn't a same-length tuple of numbers stays 'unclear'.
+  const oPoint = asPoint(o);
+  if (oPoint) {
+    const tPoint = asPoint(t, true);
+    if (!tPoint || tPoint.length !== oPoint.length) return 'unclear';
+    return tPoint.every((v, i) => numbersMatch(v, oPoint[i])) ? 'correct' : 'wrong';
+  }
 
   const oParts = splitParts(official);
   const tParts = splitParts(typed);

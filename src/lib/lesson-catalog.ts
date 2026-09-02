@@ -29,6 +29,13 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     title: 'The Binomial Theorem',
     minutes: 4,
   },
+  {
+    slug: 'quadratic-functions-am',
+    level: 'AM',
+    topic: 'Quadratic Functions',
+    title: 'Completing the Square',
+    minutes: 4,
+  },
 ];
 
 /**
