@@ -446,3 +446,374 @@ only (69 papers), so it under-reports. Agents are told not to trust it.
   "Cash" cells (85/95/95/95/115/115) are a best pixel-level reading, not
   certain** — nothing in the question uses them. The Tamil/Chinese/Malay heading
   lines are unreadable and were left out rather than guessed.
+
+## ⚠ A stored answer that is a FABRICATED PLACEHOLDER  [batch 10 g3]
+- **Broadrick 2024 EM P1 Q16(a)** — the stored answer reads
+  `"e.g. y = x^2 - 2x - 8, min (1,-9)"`. The **"e.g." is the tell**: it is a
+  made-up example, not this paper's answer. The question's own sibling image for
+  part (b) clearly shows roots -4 and 1.5, giving `y = x^2 + 2.5x - 6` and
+  minimum `(-1.25, -7.5625)`. Stem is also empty.
+  **This is a different failure from "wrong answer" — it is an invented one.**
+  Worth grepping `questions.answer` for `e.g.` and similar placeholder markers
+  across the bank; if a generation pass ever filled blanks with examples, there
+  will be more.
+
+## Threshold damage — now THREE confirmed, plus a whole paper at risk  [batch 10 g3]
+- **NJC 2018 JC2 P1 Q4** — the bucket copy is measurably worse than the source:
+  hard-thresholded at grey ~160, leaving ~100 px above 160 where the DOCX artwork
+  has ~30,000. Third instance after Cedar Girls 2022 EM P2 Q10 and Gan Eng Seng
+  2022 AM P2 Q8.
+- **Canberra 2024 EM P1 Q23** — the entire speed-time graph AND both axes were
+  missing; only dashed guides and labels survived. The school draws axes at grey
+  ~223, so the conversion's threshold erased them outright.
+  ⚠ **Other figures from this Canberra 2024 paper are likely damaged identically.**
+
+## Unflagged siblings with the same defect  [batch 10 g3]
+- **Fuhua 2021 EM_NA P2 Q10 part (a)** (`7dab03a0…`, not flagged) has the same
+  baked-in-text/truncation defect as the flagged part (b) image; re-crop from p.36
+  of the same source PDF.
+
+## Don't crop a PDF by page guess  [batch 10 g3]
+- **Canberra 2024 AM P2** holds the full MARKING SCHEME on pp.43-76 (Q7's worked
+  solution with M1/A1 is on p.68). The question page is p.34. Never page-guess in
+  a file like this.
+
+## SECOND annotation case — and it is BLUE, not orange  [batch 10 g6]
+- **St Patrick 2021 AM P2 Q5** — the stored photocopy carries **blue pen
+  annotations**: crosses inked over P and Q, ticks at both roots, and a vertical
+  strip drawn from R down to the curve, which hints at the integration method.
+  The pen crosses sit ON the curve, so erasing would hole the line art — the
+  agent redrew instead, at the scan's own measured scales.
+
+### This corrects the earlier sizing note above
+The "annotation" class is **not orange-specific**, so the warm-hue detector was
+looking for the wrong thing, and the any-colour detector drowns in legitimate
+school colour. Two confirmed cases now (Marsiling orange, St Patrick blue), both
+found by **agents reading the figure**, not by any pixel test — roughly 2 in the
+~200 figures agents have actually examined.
+
+Conclusion stands but for a better reason: **do not try to detect these by
+colour.** Either check by source (Adrian's annotated compilation DOCXs) or accept
+that a human/agent reading the figure is the only reliable detector. Do NOT
+report "no evidence of a problem" on the strength of the pixel sweeps — they
+missed both known cases.
+
+## Crop removed most of the question's data  [batch 10 g6]
+- **Greendale 2022 EM_NA P2 Q10** — the stored crop sliced off all nine country
+  names AND the entire second chart (the Singapore household pie), leaving parts
+  (a), (b) and (c)(ii) unanswerable. Both charts re-extracted in colour.
+  ⚠ **Colour is content here** — the pie legend maps slices by colour, so this
+  must never be greyscaled. The replacement is portrait, not landscape.
+
+## Answer-wording inconsistency  [batch 10 g6]
+- **Anglican High 2022 EM P2 Q14 (c)** — the stored answer text says petrol is
+  about $160 while its own total implies about $116.
+
+## THIRD annotation case — and it was INVISIBLE in the stored image  [batch 10 g4]
+- **Seng Kang 2020 EM_NA P1 Q8** — the stored image is MONOCHROME, so somebody's
+  blue ballpoint working was baked in as plain black and looks like part of the
+  printed figure. The agent only found it by colour-keying the SOURCE scan
+  (1109 blue px vs 3769 black px). What the pen adds is a "60" written inside the
+  triangle plus angle arcs at the common vertex — **exactly the reasoning the
+  4-mark question asks for**. Even the "equal-side tick marks" are pen; the
+  printed figure carries no labels at all. A plain re-extract would not fix it
+  (the pen crosses the printed lines), so the outline was redrawn.
+
+### FINAL correction to the sizing question
+Three confirmed cases now — Marsiling (orange), St Patrick (blue), Seng Kang
+(blue, **rendered mono in the bank**). The third kills the detector idea outright:
+**if the stored image is greyscale, no colour test on the bank can ever find the
+annotation**, because the pen is black by the time it reaches us. The only
+reliable detectors are (a) an agent/human reading the figure and asking "does
+this ink answer the question?", or (b) colour-keying the ORIGINAL source scan,
+which means going paper by paper.
+My two pixel sweeps over the bank found 0 of these 3. Treat their "no evidence of
+a problem" result as **uninformative**, not reassuring.
+
+## More paper-level drawing errors corrected  [batch 10 g4]
+- **North Vista 2022 AM P1 Q12** — the school drew the curve's y-intercept R at
+  about y = 5.8 instead of 7 (tangent and rest of curve accurate). Redraw puts R
+  at the true value, so the shaded region is taller than in the scan.
+- **Seng Kang 2020 EM_NA P1 Q8** — the school drew the two polygon stubs at ~135
+  deg instead of 150; the redraw is correct, so one runs horizontally and one
+  vertically.
+
+## Another unflagged sibling with the same defect  [batch 10 g4]
+- **Fuhua 2021 EM_NA P2 Q10 part (b)** (`55286854-…png`) — identical
+  baked-in-and-truncated-text defect; re-extract from p.36 of the Fuhua PDF.
+  (Part (a)'s sibling was already noted from batch 10 g3 — so BOTH siblings of
+  that question need it.)
+
+## Colour that is the SCHOOL's styling, not pen  [batch 12 g42]
+- **St Joseph Institute 2024 EM P1 Q22** — the dot-plot dots are GREEN, but that
+  is the school's own marker styling, not annotation and not a leak. Do not run a
+  mono clean over it. (Blob count confirms 25 dots and every stored statistic.)
+  A useful counter-example to the pen-annotation hunt: colour alone means nothing.
+
+## Answer-carrying sibling files to avoid  [batch 12 g42]
+- **Bukit Batok 2024 AM P2** — `AM PRELIM 2024 Bukit Batok.pdf` is the
+  WITH-ANSWERS copy carrying the marking scheme. The clean one is
+  `AM PRELIM 2024 Bukit Batok (Without Answers).pdf`. Never re-extract from the
+  former.
+
+## Judgment call: the scan is not the shape the question says it is  [batch 12 g42]
+- **Cedar Girls 2021 EM P1 Q11** — the question states a rhombus; the scan's sides
+  measure 410/402/416/398 px, a 4% spread, and the axes sit ~0.5 deg off
+  perpendicular. The redraw makes it exact, which moved A and D right by 10-14 px.
+  Flag if the scan's proportions should be kept instead. The redraw also
+  reproduces the scan's x-axis running off the canvas edge with no arrowhead
+  rather than inventing one.
+
+## Empty top-level answer despite every part having one  [batch 12 g44]
+- **Beatty 2025 S3_AM P1 Q13** — `questions.answer` is empty while each entry in
+  `parts[]` carries its answer. (Also NULL watermark with no watermark present,
+  so the field flip is what actually unblocks it.)
+
+## Not-to-scale correction worth Adrian's eye  [batch 12 g44]
+- **Bukit Merah 2025 EM P1 Q23** — the scan draws arc DE at roughly 40 deg when
+  the geometry gives 20 deg. The redraw computes the configuration exactly from
+  the stem (angle BAG = 40, AB = BG, OG perpendicular to the tangent) and
+  reproduces all three stored answers — but D and E now sit visibly closer
+  together than in the paper.
+
+## Do NOT "repair" this  [batch 13 g42]
+- **VJC 2017 JC2 P1 Q2** — the `???` in the August water row of the utility bill
+  is DELIBERATE: part (ii) exists precisely because that figure is unreadable on
+  the bill. Anyone tidying it would delete the question.
+
+## Stale flag paths may mean "already fixed"  [batch 13 g42]
+- Several flags in the queue point at image paths no longer referenced, and in at
+  least three cases (VJC 2017 JC2 Q2, Yishun 2024 EM_NA P1 Q16, CHIJ St Nicholas
+  2023 EM P2 Q9) the CURRENT image is already a good replacement — the flag is
+  simply stale. A cheap pre-pass over the remaining queue could identify these
+  and close them without agent time. Note the flag must still be closed by its
+  ORIGINAL path or the question stays gated.
+
+## More NULL-watermark clears  [batch 13 g42]
+- **TPJC 2017 JC2 P1 Q9** and **VJC 2017 JC2 P1 Q2** — both checked (faint-grey
+  band isolation on one, coloured-pixel mapping on the other, which traced glyph
+  outlines exactly, i.e. chroma fringing not ink). Neither carries a watermark.
+
+## Do NOT bleed-clean these  [batch 12 g43]
+- **Pasir Ris 2017 S1 P1 Q18** — the grey staircase IS the flower bed. Part (d)
+  is unanswerable without it. A blanket clean would delete the question.
+
+## A label that is a pasted BITMAP inside the PDF  [batch 12 g43]
+- **PJC 2017 JC2 P1 Q8** — the "y = cos(x^2)" label is an 86x31-px bitmap pasted
+  into the source PDF, so it blows up blocky at any dpi and re-extraction cannot
+  fix it. (The paper's freehand curve is also not a real plot.) Redrawn at the
+  paper's measured geometry with the true cos(x^2); the redraw is flatter near
+  x = 0 because cos(x^2) genuinely has zero gradient there.
+
+## Stem text corrected by recovering the figure  [batch 12 g43]
+- **Outram 2025 S2 P2 Q2** — the bank stem says "and base side 17 cm", but the
+  source stem says only "vertical height VO = 14 cm". The 17 cm was a FIGURE
+  LABEL that the old crop had sliced off, and someone had folded it into the
+  stem. With the label restored, figure and stem agree again.
+
+## Watermark tally from this group  [batch 12 g43]
+- Six of seven were NULL. **Raffles Girls 2015 S2 P1 Q8 genuinely carried the
+  tiled RGS watermark** (removed by redraw). The other five — PJC 2017 JC2 Q8,
+  Outram 2025 S2 Q2, Pasir Ris 2017 S1 Q18, NJC 2017 JC1 Q5, Maris Stella 2016
+  S3_AM Q11 — carry no watermark at all and can be set clean.
+
+## A "source" that is a marking scheme AND clips the figure  [batch 13 g47]
+- **Anglican High 2025 EM Prelim P2 Q12** — vertex B was missing from the stored
+  figure entirely, and every part of the question is about B. It CANNOT be fixed
+  by re-extraction: the only source (Dropbox `EM PRELIM 2025 Anglican High.pdf`
+  and its byte-identical `(Post)` copy) is a MARKING-SCHEME document, and on p.37
+  the figure overflows the page bottom and is clipped there — nothing continues
+  on p.38. Its pp.38-39 hold the full worked scheme; **never crop from those.**
+  Redrawn from the stated bearings (B at 220 deg from A, AB = 60; C at 125,
+  AC = 50).
+
+## Duplicate-row defect + colliding part labels  [batch 13 g47]
+- **Catholic High 2024 EM Prelim P2 Q7** — the stem is empty with part (a)'s text
+  doing the stem's job (looks like the genuine duplicate-row defect), AND part
+  (b)(iii)'s two sub-questions are stored labelled `(a)`/`(b)`, colliding with the
+  real parts (a)/(b).
+
+## Dossier source-lookup bug: apostrophes  [batch 13 g47]
+- **Nanyang Girls 2015 S1 SA2 P2 Q10** — the source IS on disk; the lookup failed
+  only because `questions.source_file` drops the apostrophe. Real filename:
+  `EM S1 SA2 2015 Nanyang Girls'.docx`. Any future index match should normalise
+  punctuation, not just case.
+
+## Captions the stem refers to but the images lack  [batch 13 g47]
+- **RI 2014 S2 SA2 P1 Q14** — the stem names "Figure 1" and "Figure 2", but
+  neither stored image carries its caption. Its sibling `image_url[1]` (Figure 2,
+  the cross-section) is the same poor photocopy and was not in any batch — it
+  deserves the same redraw.
+
+## ⚠ FOURTH ANSWER LEAK — a fully worked possibility diagram  [batch 13 g44]
+- **Presbyterian High 2025 EM P1 Q22** — the stored image is the possibility
+  diagram **fully filled in**, i.e. the whole of part (a) [2 marks]. At 400 dpi
+  the 11 filled cells are in a heavier bold face than the 5 the paper
+  pre-printed, which is how it was caught. This one is PRINTED, not pen — so it
+  is a different mechanism from the three annotation cases (Marsiling, St
+  Patrick, Seng Kang) and would not be caught by looking for handwriting either.
+- **Stored TWICE**: stem `image_url[0]` AND `parts[0](a).image_url_after`
+  (`f5df41ce…`). A fix must cover both references or the leak survives.
+- Deleting both leaves part (a) unanswerable, so the agent built a de-answered
+  version at `fig13/out/fig-38-blank-candidate.png` — offered as an ADDITION for
+  Adrian to rule on, not a swap.
+
+**Running leak tally: 4** — three pen annotations (orange / blue / blue-baked-mono)
+and one printed worked answer. All four found by an agent READING the figure and
+asking "does this ink answer the question?". No pixel test found any of them.
+
+## More "do not fix this"  [batch 13 g44]
+- **SRJC 2017 JC2 P1 Q9** — the light-blue DOTTED lines are content: they are the
+  construction lines the two theta arcs are measured against, not a Word canvas
+  border. A blanket clean must not strip them.
+- **Bartley 2023 S1 P1 Q8** — deliberately not to scale (drawn ~68/69 deg against
+  a printed 77/63).
+- **Manjusri 2017 S2 P1 Q11** — the axes have UNEQUAL scales (x = 2 squares/unit,
+  y = 1 square/unit). That is why the line looks like gradient 1/2 while part
+  (b)'s stored answer of 1 is correct. Preserved deliberately.
+
+## Paper error reproduced faithfully  [batch 13 g44]
+- **Dunman 2024 EM P1 Q9** — the stem-12 girls' leaves are printed `5 4 8 9`, out
+  of order. Reproduced exactly as printed; changes no answer.
+
+## Two figures on one question share a DISTORTED axis — never "fix" one alone  [batch 11 g60]
+- **Nan Chiau 2024 EM P1 Q23** — the blank Distance/Time answer grid has a time
+  axis that is deliberately not to scale (5 sits at 17% of the way to 24, not
+  21%), and the question's OTHER image (the speed-time graph) uses the SAME
+  distorted spacing to within 1%. Regularising either one alone would break the
+  pairing the student reads across. Both stored answers verified (v = 30 m/s,
+  24 m/s = 86.4 km/h).
+
+## A colour figure correctly judged NOT a leak  [batch 11 g60]
+- **Tanjong Katong Girls 2023 AM P2 Q10** — red curve, blue line, grey fill, i.e.
+  the usual leak tell. Judged clean on three grounds: the baked-in question
+  number and page rule prove it was cropped from the QUESTION page; the shading
+  only restates the region the stem already describes in words; and R is labelled
+  by letter alone, so its coordinates are not given away. Stored answer
+  (7pi/2 = 11.0) independently confirmed.
+
+## ⚠ Stored answer contradicts its own figure — orientation flipped  [batch 11 g61]
+- **Geylang Methodist 2024 EM P1 Q27** — the figure puts **42 cm horizontally and
+  30 cm vertically**, so the centre is (21, 15) and part (b) should read
+  A(14,4) B(14,26) C(28,26) D(28,4). The stored set A(8,10) B(8,32) C(22,32)
+  D(22,10) is centred on (15, 21) — i.e. a PORTRAIT 30x42 sheet — and its y = 32
+  falls off the top of the paper as drawn. Part (c) is correct.
+  The figure itself is fine (its odd solid-then-dashed axes and dotted
+  continuations are deliberate original drawing; the stem says "not drawn to
+  scale"). `image_watermark_status` is `no_image` despite an image being present.
+- Its stem carries a stale inline `{{IMG:…c42a77b1….jpg}}` marker naming a file
+  that is neither in `image_url` nor on disk — a dead marker, not a lost figure.
+
+## Judgment call: a gap that is in the printed paper  [batch 11 g61]
+- **NYJC 2025 JC1 P1 Q10** — an 81-px chunk of the cone's rim ellipse is missing
+  **in the printed paper itself** (verified against the source scan). The agent
+  filled the 18.7 deg gap by fitting the rim to its 765 surviving boundary points
+  (mean residual 0.75 px; the detached arc beyond the gap lies on the same fit,
+  which makes it measurement rather than invention). Adrian can reject the fill
+  independently of the crop and stray-mark removal.
+  A re-extract would be a DOWNGRADE here: the source PDF's page bitmap is 151 ppi,
+  giving ~400x350 px against the stored 949x763. That PDF also carries a
+  KiasuExamPaper watermark and holds the full marking scheme on pp.8-23.
+
+## Content gap: options never extracted  [batch 13 g60]
+- **Assumption English 2024 S3_EM_NA P1 Q20 (d)** — the part says "Circle your
+  answer in the given options" but **no options were extracted**, so a student
+  cannot answer (d) as stored. Not a figure problem.
+
+## Stem-glue ingestion quirk (nothing lost)  [batch 13 g60]
+- **CJC 2023 JC2 Prelim P1 Q2** — the paper's stem sentence ("The diagram below
+  shows a sketch of the curve…") was glued onto the FRONT of part (a) instead of
+  stored as the stem. Content intact, structure wrong. Distinct from the
+  duplicate-row defect.
+
+## More "as printed — do not fix"  [batch 13 g60]
+- **TPJC 2017 JC2 Prelim P2 Q4** — the thick highlighted rectangle above the curve
+  at its right edge is the SCHOOL's artwork, not extraction damage. Grey
+  rectangle fills there are content too.
+- **Bendemeer 2021 S3_EM_NA SA2 P2 Q3** — pentagons deliberately not to scale
+  (drawn factor ~1.93 against a stated 2.5) though genuinely similar to each other.
+
+## Another whole figure missing from a question  [batch 13 g61]
+- **St Gabriel 2022 EM P1 Q21** — part (c) refers to a box-and-whisker plot for
+  School B that was **missing from the bank entirely** (the question carried only
+  one image). Recovered from the source DOCX and redrawn: min 0.5, Q1 2.5,
+  median 3.0, Q3 4.0, max 6.0 — median $3.00 and UQ $4.00 match the stored
+  answer. **ADDITION alongside fig-45, not a swap.**
+  (Dossier said "source not on disk" only because the file is named
+  `EM Prelim 2022 St Gabriels.docx` — trailing "s". Second filename-normalisation
+  miss after the Nanyang Girls' apostrophe.)
+
+## Skewed gridlines that change a read-off value  [batch 13 g61]
+- **Hua Yi 2024 EM P2 Q10** — the photocopy's gridlines are skewed enough that
+  Stella's brisk-walking bar reads ~6.3 km/h when it is 6.5 — and part (a) depends
+  on that value. Measuring each bar against its OWN local gridlines cancels the
+  skew (6.487 / 8.017 / 6.487 / 9.504), independently confirmed by the question's
+  own arithmetic. Same family as the Northbrooks skew case: a scan can make a
+  correct figure state something false.
+
+## Inherited redraws were re-verified, not trusted  [batch 13 g61]
+- #39 and #45 were rendered by agents that were later killed. This agent
+  re-measured the scan itself and overlaid the redraw before adopting either
+  (least-squares intercept 2.007 on #39; curve-on-curve match along the whole
+  length on #45). Worth repeating for any other output inherited from a dead run.
+
+## ⚠⚠ FIFTH LEAK CLASS: figures cropped from MARKED STUDENT SCRIPTS  [batch 12 g60]
+Two figures in one group turned out to be **de-annotated marked scripts** — a
+student's working was erased from the scan, imperfectly:
+- **Catholic High 2014 S2 P1 Q8** — the served image still carried a **stroke along
+  y = 2, which is half the answer to part (i)**, plus a white erasure smear along
+  y = −2 that had wiped the grid, red-pen specks, and a rubbed-off minus on the
+  "−2" label. Redrawn. **The Dropbox source PDF (p.6) is the student's answered
+  paper — never re-extract from it.**
+- **CHIJ St Joseph's Convent 2024 S3_EM P1 Q11** — side BC was broken by a 90 px
+  gap exactly where the student's pencilled "59" had been erased, and two
+  fragments of the student's own 121° arc were still visible at B.
+
+**This is a fifth, distinct contamination route**, after pen annotation (x3),
+printed worked answers, and marking-scheme art. It also explains damage we might
+otherwise blame on scanning: the erasure destroys the printed artwork underneath.
+**Worth a targeted sweep of figures sourced from "(Orig)" photo scans.**
+(Related, already recorded: the Dunman PDFs are scans of a marked script, so the
+handwritten answers on them are the student's and are wrong.)
+
+## A paper whose own part is unsound  [batch 12 g60]
+- **Peicai 2022 AM P2 Q9(iii)** — "A lies between B and D" forces θ ≤ 28.74°, but
+  48cosθ − 14sinθ bottoms out at 35.36 and never reaches 30, so the stored answer
+  θ = 36.9° lies OUTSIDE the legal range. The part as printed has no valid answer.
+- Same question: the source DOCX writes part (i)'s result with a **plus**
+  (`48cosθ + 14sinθ`); **our stored stem's minus is the correct one** — do not
+  "correct" the bank to match the school here.
+
+## Empty stem that genuinely breaks a question  [batch 12 g60]
+- **Christ Church 2022 S3_EM P2 Q6** — the art is fine; the fault is the empty
+  stem. The paper reads "A, B, C and D are four points of a playground on level
+  ground with **C due east of B**. AB = 22.8 m, BD = 20 m, BC = 27.1 m,
+  CD = 18 m, angle ADB = 52°." Without "C due east of B", part (a)(iii) is
+  unanswerable. All four stored answers recompute correctly once restored.
+
+## My own error, caught by an agent
+I carried a stalled agent's hint about ITS figures #6/#7 ("rocket + cross-section,
+same question") into a REGROUPED brief where those numbers meant different
+figures. The agent checked and reported the hint was wrong — different papers,
+different questions. Hints tied to figure numbers do not survive regrouping.
+
+## Adrian's redraw round (2026-09-02, after reviewing the full sheet)
+- **CHIJ Katong Convent 2021 EM_NA P1 Q17** — Adrian overruled the earlier
+  "the boxes are the school's typesetting, leave them" note and asked for the
+  labels without boxes. Redrawn accordingly; the redraw also squares up the
+  right-angle mark at Q and re-centres the exterior-angle arc on R (the scan's
+  arc was a drawing-tool artefact, off-centre with a drifting radius).
+- **Fuhua 2021 EM_NA P2 Q10(a)** — the school's drawing **contradicts its own
+  printed data**: AH drawn at 44.8 deg from North against a stated 036, and at
+  0.71 x AB against a true 3.4/7.2 = 0.47 x AB, plus a stray arc running off the
+  crop. Redrawn from the stated data; BH = 5.88 km and bearing of A from H =
+  216.00 deg both reproduce the stored answers exactly.
+
+## ⚠ An unflagged figure with a known defect, in NO batch
+- **Fuhua 2021 EM_NA P2 Q10 part (b)** (`55286854-2795-48fe-866f-eefb81cd2f78.png`,
+  the sector OACB) — same baked-in-and-truncated stem text as part (a), confirmed
+  by opening it. **No `results.jsonl` line anywhere treats it**; it was never
+  flagged, so it was never in the queue. It still needs a pass.
+  (Same shape as the other unflagged siblings recorded above — RI 2014 Figure 2,
+  Nan Chiau 2021 part (a), Assumption English 2025 sibling `ad08929d`,
+  CHIJ St Nicholas Q9's inverted pyramid.)

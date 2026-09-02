@@ -115,6 +115,35 @@ EM_NA Q20's stored answers (mode 2 / median 1.5 / 50%) contradicted the genuine
 recovered figure (0 / 1 / 25%) and were corrected on Adrian's say-so. If a
 recovered figure disagrees with the stored answer, suspect the answer.
 
+## 6a. Applying a batch — five shapes, not one
+
+`figure_clean_log` records which was used. A blind "swap `image_url[idx]`" is
+wrong for four of them:
+
+1. **swap** — replace the reference. The common case (249/265 in the 2026-09-02 run).
+2. **remove** — the image does not belong to the question (answer leak, orphan
+   from another paper, a spare graph-paper page). Log `new_path='(removed)'`, and
+   **also purge `questions.images`** — that column is a FALLBACK that
+   `lib/bank-question-markdown.ts` reads when `image_url` yields nothing, so
+   emptying `image_url` alone can resurface the very image you removed.
+3. **append / restore** — the stored image is fine; figures were DROPPED and must
+   be re-attached alongside it. Never repoint the existing reference.
+4. **split** — one image becomes two, the second attaching to `parts[]`.
+5. **close-only** — no defect; close the flag and check whether
+   `image_watermark_status` is the real blocker.
+
+⚠ **A reference may live in `parts[i].image_url` / `.image_url_after` or
+`images[i]`, not `image_url[n]`.** 15 of 265 did in the 2026-09-02 run. A script
+that only writes `image_url` will skip them — and if it closes their flags anyway,
+those questions end up marked fixed while still serving the broken image. Write
+the part-level slots too, and verify by re-reading each row.
+
+⚠ **The same leaked image can be stored twice under DIFFERENT ids.** Presbyterian
+High 2025 EM P1 Q22 held the completed possibility diagram at both
+`image_url[0]` and `parts[0](a).image_url_after` with different filenames, so a
+removal keyed on the first path left the second live. After any removal, grep the
+whole row (`image_url`, `images`, `parts`) for any image, not just the old path.
+
 ## 7. Handing this work to another session / Claude account
 
 Everything needed to continue lives in **this repo + the database**. A session
@@ -191,17 +220,19 @@ same `.env.local`, and this doc. On a different Mac: clone both repos
 > are collected in [`docs/FIGURES-FINDINGS-2026-09.md`](FIGURES-FINDINGS-2026-09.md).
 > Read it before trusting a stored answer on any question those batches touched.
 
-## 8. State (2026-09-02)
+## 8. State (2026-09-02, evening — QUEUE CLEARED)
 
-- **3,708** repairs applied across the bank (`figure_clean_log`): 2,284 auto
-  bleed-clean · 1,198 vision-approved clean · 14 grey-background normalise ·
-  18 targeted cleans · 57+44+25 redraws/cleans/crops · 11 recovered missing
-  figures · 5+3 re-extractions · 2 answer-sketch removals.
-- **Adrian's flag queue: 569 flagged; 206 fixed; 363 open** (313 unclaimed,
-  50 held by `opus-batch-5`) — worked in 50-figure batches (agents draw →
-  Adrian vets a sheet → apply). Batches 1–4 applied; `opus-batch-6` applied
-  2026-09-02 (28 figures; the other 22 of that claim were released back to the
-  queue unworked, so the heavy extraction-defect cases in it are still open).
+- **~3,970** repairs applied across the bank (`figure_clean_log`), of which
+  **265 in `opus-figures-2026-09-02`**: 249 swaps · 6 removals (5 answer leaks +
+  1 orphan page) · 6 additions of figures that were missing entirely · 1 split ·
+  16 part-level or `images[]` writes.
+- **Adrian's flag queue is CLEARED: 569 flagged → 568 fixed, 1 open.** The single
+  open flag is DHS 2021 JC1 Promo P1 Q5 (a colour rocket illustration; only its
+  cross-section inset is redrawable, awaiting Adrian's call).
+  Batches 6–13 all applied. 103 of the 363 reviewed figures turned out to have
+  **no defect** — Adrian flags fast by eye, so roughly 1 in 3 was already fine.
+- **421 of the 541 questions** behind those flags now pass the serving gate.
+  The remaining ~120 are held by `image_watermark_status`, not by figure quality.
 - **6** questions have no image anywhere; Pierce 2024 EM_NA Q18 is a known total
   loss (absent from every source copy).
 - **A flag is sometimes an answer leak, not a drawing fault.** ASRJC 2021 JC2 P2
