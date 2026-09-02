@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
       const choice = normaliseMcqChoice((cleanLines || []).find(l => l.trim()));
       if (!choice) return NextResponse.json({ error: 'Answer with the option letter — A, B, C or D' }, { status: 400 });
       const result = gradeMcq(sq.answer.trim().toUpperCase() as 'A' | 'B' | 'C' | 'D', choice, sq.total_marks);
-      const { data: ins } = await admin
+      const { data: ins, error: insErr } = await admin
         .from('student_attempts')
         .insert({
           user_id: account.id,
@@ -112,6 +112,7 @@ export async function POST(req: NextRequest) {
           marking_json: { ...result, model: 'rule:mcq', lines: [choice], source: 'typed', topics, science: { ...scienceMeta, mcq: true, choice }, ...(timedMeta ? { timed: timedMeta } : {}) },
         })
         .select('id').single();
+      if (insErr) console.error('[practice-grade] science MCQ attempt insert failed:', insErr.message);
       return NextResponse.json({ attemptId: ins?.id ?? null, result, weaknessTags: [] });
     }
 
@@ -135,7 +136,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Marking hiccup — try again in a moment' }, { status: 502 });
     }
     const storedS = sres.transcribedLines || cleanLines || [];
-    const { data: insS } = await admin
+    const { data: insS, error: insSErr } = await admin
       .from('student_attempts')
       .insert({
         user_id: account.id,
@@ -148,6 +149,7 @@ export async function POST(req: NextRequest) {
         marking_json: { ...sres, model: GRADING_MODEL, lines: storedS, source: attemptImage ? 'photo' : 'typed', topics, science: scienceMeta, ...(timedMeta ? { timed: timedMeta } : {}) },
       })
       .select('id').single();
+    if (insSErr) console.error('[practice-grade] science attempt insert failed:', insSErr.message);
     if (sres.parseRetried) {
       sendTelegram(`⚠️ Physics practice grade needed a JSON retry — ${account.display_name || account.email}, ${topics[0] || '?'}, ${sres.score}/${sres.outOf}. Worth a spot-check.`).catch(() => {});
     }
