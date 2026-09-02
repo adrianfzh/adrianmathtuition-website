@@ -1,14 +1,16 @@
 // POST /api/portal/lesson-event — fire-and-forget lesson telemetry.
-// Body: { slug, scene: number } (scene entered) or { slug, done: true }.
+// Body: { slug, scene: number } (scene entered), { slug, done: true }, or
+// { slug, narrated: true } (the voice track was started — once per visit).
 //
 // Rows land in portal_event_log (identity, kind, created_at — no migration:
 // the scene index is folded into the kind), as:
 //
-//   lesson:<slug>:scene:<n>   and   lesson:<slug>:done
+//   lesson:<slug>:scene:<n>   lesson:<slug>:done   lesson:<slug>:narrated
 //
 // Cardinality is bounded: slugs come only from lib/lesson-catalog.ts and the
 // scene index is capped, so the kind space stays enumerable for funnels
-// ("how far into binomial-theorem-am do students get?" = one GROUP BY kind).
+// ("how far into binomial-theorem-am do students get?" = one GROUP BY kind;
+// "what share of visits use the voice?" = narrated ÷ scene:0).
 //
 // Student session only; anonymous POST must 401 — probed by /api/health-check
 // (the assignments-route pattern). Fail-open counters, fail-soft writes: this
@@ -37,7 +39,7 @@ export async function POST(req: NextRequest) {
     .single<Pick<PortalAccount, 'id' | 'airtable_student_id'>>();
   if (!account) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { slug?: unknown; scene?: unknown; done?: unknown } = {};
+  let body: { slug?: unknown; scene?: unknown; done?: unknown; narrated?: unknown } = {};
   try { body = await req.json(); } catch { /* fall through to validation */ }
 
   const slug = typeof body.slug === 'string' ? body.slug : '';
@@ -46,13 +48,15 @@ export async function POST(req: NextRequest) {
   let kind: string;
   if (body.done === true) {
     kind = `lesson:${slug}:done`;
+  } else if (body.narrated === true) {
+    kind = `lesson:${slug}:narrated`;
   } else if (
     typeof body.scene === 'number' && Number.isInteger(body.scene)
     && body.scene >= 0 && body.scene <= MAX_SCENE_INDEX
   ) {
     kind = `lesson:${slug}:scene:${body.scene}`;
   } else {
-    return NextResponse.json({ error: 'scene (0-based index) or done:true required' }, { status: 400 });
+    return NextResponse.json({ error: 'scene (0-based index), done:true or narrated:true required' }, { status: 400 });
   }
 
   const identity = portalIdentity(account);

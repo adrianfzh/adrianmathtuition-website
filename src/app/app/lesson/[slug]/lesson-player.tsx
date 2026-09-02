@@ -21,6 +21,10 @@
 //   · One easing family throughout: cubic-bezier(.22,1,.36,1) for reveals,
 //     ease-in-out cubic for morphs — nothing snaps.
 //   · prefers-reduced-motion collapses flights and morphs to instant states.
+//   · Three pacings, one control row: Manual (tap), ▶ Auto (silent timer
+//     beats) and 🔊 Voice (the narration clips set the pace — see
+//     lesson-narration.ts). Captions never leave the screen in any of them;
+//     the voice is additive. Reduced-motion users get the voice too.
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
@@ -29,11 +33,12 @@ import 'katex/dist/katex.min.css';
 import { MathMarkdown, katexOptions } from '@/lib/math-markdown';
 import { checkTypedAnswer } from '@/lib/notebook';
 import {
-  sceneStepCount,
+  lessonHasAudio, sceneStepCount,
   type AnnotateScene, type CaptionScene, type EquationStepsScene,
   type GraphMorphScene, type LessonTone, type PlayScene,
   type ResolvedCheckScene, type StepToken, type TitleScene,
 } from '@/lib/lesson-script';
+import { useNarration, usePref, writePref } from './lesson-narration';
 
 // useLayoutEffect measures cloned-token flight paths; on the server it must
 // quietly be useEffect (standard isomorphic guard — avoids the SSR warning).
@@ -629,6 +634,11 @@ function beatDuration(scene: PlayScene, step: number): number | null {
 
 // ── The player ───────────────────────────────────────────────────────────────
 
+type Pacing = 'manual' | 'auto' | 'narrated';
+
+const PILL_ON = 'bg-navy text-[hsl(45,100%,96%)]';
+const PILL_OFF = 'bg-white text-slate-500 shadow-[0_1px_2px_rgba(15,23,42,0.06)] hover:text-navy';
+
 export default function LessonPlayer({ slug, title, topic, minutes, scenes }: {
   slug: string; title: string; topic: string; minutes: number; scenes: PlayScene[];
 }) {
@@ -637,7 +647,16 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes }: {
   const [done, setDone] = useState(false);
   const [auto, setAuto] = useState(false);
   const [resolved, setResolved] = useState<Set<number>>(() => new Set());
+  const [narratedUsed, setNarratedUsed] = useState(false);
   const reduced = useReducedMotion();
+
+  // 🔊 Voice: the persisted choice only counts when this lesson has clips —
+  // a silent lesson never shows the pill, and never pretends to narrate.
+  const narratedPref = usePref('narrated');
+  const muted = usePref('muted');
+  const hasVoice = useMemo(() => lessonHasAudio(scenes), [scenes]);
+  const narrated = narratedPref && hasVoice;
+  const pacing: Pacing = narrated ? 'narrated' : auto ? 'auto' : 'manual';
 
   const scene = scenes[sceneIdx];
   const maxStep = sceneStepCount(scene);
@@ -651,44 +670,109 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes }: {
     setDone(true);
   }, [done, step, maxStep, sceneIdx, scenes.length]);
 
+  const nextScene = useCallback(() => {
+    if (done) return;
+    if (sceneIdx < scenes.length - 1) { setSceneIdx(sceneIdx + 1); setStep(0); return; }
+    setDone(true);
+  }, [done, sceneIdx, scenes.length]);
+
+  // The voice track. A per-step clip ending advances one step; a whole-scene
+  // clip ending moves to the next scene; a check's lead-in ending does nothing
+  // (the answer gate + the longer post-answer beat below own that scene).
+  const narration = useNarration({
+    scenes, sceneIdx, step, done, muted,
+    enabled: pacing === 'narrated',
+    revealStep: setStep,
+    onClipEnded: (layout) => {
+      if (scene.type === 'check') return;
+      if (layout === 'scene') nextScene(); else advance();
+    },
+    onFirstPlay: () => setNarratedUsed(true),
+  });
+
   const back = useCallback(() => {
     if (done) { setDone(false); return; }
+    if (pacing === 'narrated') {
+      // Video-player ⏮: a scene under way restarts from its top; at the top,
+      // the previous scene replays from ITS top (never lands mid-clip).
+      if (step > 0) { setStep(0); return; }
+      if (narration.elapsed() > 2.5 || sceneIdx === 0) { narration.replay(); return; }
+      setSceneIdx(sceneIdx - 1); setStep(0);
+      return;
+    }
     if (step > 0) { setStep(s => s - 1); return; }
     if (sceneIdx === 0) return;
     const prev = sceneIdx - 1;
     setSceneIdx(prev);
     setStep(sceneStepCount(scenes[prev]) - 1); // land on the finished scene
-  }, [done, step, sceneIdx, scenes]);
+  }, [done, pacing, step, sceneIdx, scenes, narration]);
 
   const restart = useCallback(() => {
     setDone(false); setSceneIdx(0); setStep(0); setResolved(new Set());
   }, []);
 
-  // Autoplay: one timer per beat; an unanswered check pauses it, and a freshly
-  // answered one gets a longer beat so the "why" can actually be read.
+  // Timer pacing (▶ Auto, and the silent gaps of 🔊 Voice): one timer per
+  // beat; an unanswered check pauses it, and a freshly answered one gets a
+  // longer beat so the "why" can actually be read. In Voice mode the timer
+  // stands down while a clip is driving — and entirely until the first tap
+  // has unlocked audio, so the lesson never runs off silently on its own.
+  // (Primitives + the stable isDriving are the deps, not the controller
+  // object: a fresh object per render would reset a running beat on every
+  // unrelated re-render; `version` bumps on clip ended/failed.)
+  const { locked: voiceLocked, version: voiceVersion, isDriving: voiceDriving } = narration;
   useEffect(() => {
-    if (!auto || done || gated) return;
+    if (pacing === 'manual' || done || gated) return;
+    if (pacing === 'narrated' && (voiceLocked || voiceDriving())) return;
     const ms = scene.type === 'check' ? 3600 : beatDuration(scene, step);
     if (ms === null) return;
     const t = window.setTimeout(advance, ms);
     return () => window.clearTimeout(t);
-  }, [auto, done, gated, scene, step, advance]);
+  }, [pacing, done, gated, scene, step, advance, voiceLocked, voiceVersion, voiceDriving]);
 
-  // Telemetry — fire-and-forget scene beacons into portal_event_log (bounded
-  // kinds: lesson:<slug>:scene:<n> / lesson:<slug>:done). Deduped per visit;
-  // failures (or Adrian's account-less admin session) are silently dropped.
+  // Telemetry — fire-and-forget beacons into portal_event_log (bounded kinds:
+  // lesson:<slug>:scene:<n> / :done / :narrated). Deduped per visit; failures
+  // (or Adrian's account-less admin session) are silently dropped.
   const sent = useRef<Set<string>>(new Set());
-  useEffect(() => {
-    const key = done ? 'done' : `s${sceneIdx}`;
+  const beacon = useCallback((key: string, body: Record<string, unknown>) => {
     if (sent.current.has(key)) return;
     sent.current.add(key);
     fetch('/api/portal/lesson-event', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(done ? { slug, done: true } : { slug, scene: sceneIdx }),
+      body: JSON.stringify({ slug, ...body }),
       keepalive: true,
     }).catch(() => {});
-  }, [sceneIdx, done, slug]);
+  }, [slug]);
+  useEffect(() => {
+    if (done) beacon('done', { done: true });
+    else beacon(`s${sceneIdx}`, { scene: sceneIdx });
+  }, [sceneIdx, done, beacon]);
+  useEffect(() => {
+    if (narratedUsed) beacon('narrated', { narrated: true });
+  }, [narratedUsed, beacon]);
+
+  // Mode controls. Auto and Voice are exclusive (Voice implies auto-advance);
+  // turning Voice on is a gesture, so the element unlocks right here.
+  const toggleAuto = () => {
+    const next = !auto;
+    setAuto(next);
+    if (next && narratedPref) writePref('narrated', false);
+  };
+  const toggleVoice = () => {
+    if (narrated) { writePref('narrated', false); return; }
+    setAuto(false);
+    writePref('narrated', true);
+    narration.unlock();
+  };
+  const toggleMute = () => writePref('muted', !muted);
+  // Tap-to-advance: a first tap while Voice is still locked also unlocks the
+  // element (silently) so the NEXT position's clip can start on its own.
+  const tapAdvance = () => {
+    if (gated) return;
+    if (pacing === 'narrated' && narration.locked) narration.unlockSilently();
+    advance();
+  };
+  const waitingForTap = pacing === 'narrated' && narration.locked && !done;
 
   const practiceHref = `/app/practice?topic=${encodeURIComponent(topic)}&from=lesson`;
 
@@ -696,7 +780,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes }: {
     <div className="max-w-lg mx-auto pb-24 sm:pb-6">
       <style>{PLAYER_CSS}</style>
 
-      {/* Header: way back + identity + autoplay */}
+      {/* Header: way back + identity + pacing pills (Auto ⇄ Mute swap places
+          so the row keeps its width whichever mode is on) */}
       <div className="flex items-center gap-3 pt-1 mb-3">
         <Link href="/app/practice" aria-label="Back to practice"
           className="shrink-0 w-9 h-9 rounded-xl bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)] text-navy inline-flex items-center justify-center hover:bg-slate-50 active:scale-95 motion-safe:transition-transform">
@@ -706,11 +791,24 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes }: {
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 truncate">▶ Lesson · {minutes} min</p>
           <h1 className="font-bold text-navy text-sm truncate">{title}</h1>
         </div>
-        <button type="button" onClick={() => setAuto(a => !a)} aria-pressed={auto}
-          className={`shrink-0 text-[11px] font-semibold rounded-full px-3 py-1.5 motion-safe:transition-colors ${
-            auto ? 'bg-navy text-[hsl(45,100%,96%)]' : 'bg-white text-slate-500 shadow-[0_1px_2px_rgba(15,23,42,0.06)] hover:text-navy'}`}>
-          {auto ? '⏸ Auto on' : '▶ Auto'}
-        </button>
+        {narrated ? (
+          <button type="button" onClick={toggleMute} aria-pressed={muted}
+            aria-label={muted ? 'Unmute the voice' : 'Mute the voice'}
+            className={`shrink-0 text-[11px] font-semibold rounded-full px-3 py-1.5 motion-safe:transition-colors ${muted ? PILL_ON : PILL_OFF}`}>
+            {muted ? '🔇 Muted' : '🔈 Mute'}
+          </button>
+        ) : (
+          <button type="button" onClick={toggleAuto} aria-pressed={auto}
+            className={`shrink-0 text-[11px] font-semibold rounded-full px-3 py-1.5 motion-safe:transition-colors ${auto ? PILL_ON : PILL_OFF}`}>
+            {auto ? '⏸ Auto on' : '▶ Auto'}
+          </button>
+        )}
+        {hasVoice && (
+          <button type="button" onClick={toggleVoice} aria-pressed={narrated}
+            className={`shrink-0 text-[11px] font-semibold rounded-full px-3 py-1.5 motion-safe:transition-colors ${narrated ? PILL_ON : PILL_OFF}`}>
+            {narrated ? '🔊 Voice on' : '🔊 Voice'}
+          </button>
+        )}
       </div>
 
       {/* Progress dots — one per scene; the current one stretches. */}
@@ -743,8 +841,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes }: {
         </div>
       ) : (
         /* ── The scene card. Tapping it advances (except mid-check). ── */
-        <div key={sceneIdx} onClick={() => { if (!gated) advance(); }}
-          className={`lsn-scene bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-5 min-h-[440px] flex flex-col ${gated ? '' : 'cursor-pointer'}`}>
+        <div key={sceneIdx} onClick={tapAdvance}
+          className={`lsn-scene relative bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-5 min-h-[440px] flex flex-col ${gated ? '' : 'cursor-pointer'}`}>
           {scene.type === 'title' && <TitleView scene={scene} minutes={minutes} />}
           {scene.type === 'caption' && <CaptionView scene={scene} />}
           {scene.type === 'equation-steps' && <EquationStepsView scene={scene} step={step} reduced={reduced} />}
@@ -755,6 +853,20 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes }: {
               onResolved={() => setResolved(prev => new Set(prev).add(sceneIdx))} />
           )}
           {scene.type === 'check-skipped' && <CheckSkippedView />}
+          {/* Voice is on but no gesture has unlocked audio yet (a fresh visit
+              with the choice remembered): a poster-style play affordance. The
+              tap that starts it is the gesture browsers require. */}
+          {waitingForTap && (
+            <div role="button" tabIndex={0} aria-label="Play with voice"
+              onClick={(e) => { e.stopPropagation(); narration.unlock(); }}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); narration.unlock(); } }}
+              className="absolute inset-0 rounded-3xl flex items-center justify-center bg-white/55 backdrop-blur-[2px] lsn-rise cursor-pointer">
+              <span className="inline-flex items-center gap-2.5 bg-navy text-[hsl(45,100%,96%)] rounded-full pl-3 pr-5 py-2.5 font-semibold text-[15px] shadow-[0_10px_28px_-10px_rgba(15,23,42,0.6)]">
+                <span aria-hidden className="w-8 h-8 rounded-full bg-white/15 inline-flex items-center justify-center text-sm">▶</span>
+                Play with voice
+              </span>
+            </div>
+          )}
         </div>
       )}
 
@@ -762,11 +874,11 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes }: {
       {!done && (
         <div className="flex items-center gap-2 mt-4">
           <button type="button" onClick={back} disabled={sceneIdx === 0 && step === 0}
-            aria-label="Back one step"
+            aria-label={pacing === 'narrated' ? 'Replay this scene' : 'Back one step'}
             className="shrink-0 w-12 h-12 rounded-2xl bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)] text-navy inline-flex items-center justify-center disabled:opacity-30 hover:bg-slate-50 active:scale-95 motion-safe:transition-transform">
             <span className="text-xl leading-none" aria-hidden>‹</span>
           </button>
-          <button type="button" onClick={advance} disabled={gated}
+          <button type="button" onClick={tapAdvance} disabled={gated}
             className="flex-1 h-12 bg-navy text-[hsl(45,100%,96%)] rounded-2xl font-semibold text-[15px] disabled:opacity-40 active:scale-[0.99] motion-safe:transition-transform">
             {gated ? 'Answer to continue' : atEnd ? 'Finish' : 'Continue'}
           </button>
