@@ -12,6 +12,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest } from '@/lib/airtable';
 import { createServiceClient } from '@/lib/supabase-server';
 import { POLICY_VERSION } from '@/lib/portal-consent';
+import { deriveIsIp } from '@/lib/portal-ip';
 import { sendTelegram } from '@/lib/telegram';
 
 // Telegram HTML mode: a student's name may contain & < >.
@@ -69,6 +70,10 @@ export async function POST(req: NextRequest) {
   let displayName: string | null = null;
   let level: string | null = null;
   let subjects: string[] | null = null;
+  // IP stream (Subject Level = 'IP') unlocks IP-only sub-groups — lib/portal-ip.ts.
+  // The monthly offboarding sweep refreshes it, so an Airtable miss here only
+  // means "ordinary student until the 3rd".
+  let isIp = false;
   try {
     const student = await airtableRequest('Students', `/${t.row.airtable_student_id}`);
     displayName = student.fields?.['Student Name'] || null;
@@ -76,6 +81,7 @@ export async function POST(req: NextRequest) {
     // Subjects is a multipleSelects field → array of strings; scopes practice.
     const rawSubjects = student.fields?.['Subjects'];
     subjects = Array.isArray(rawSubjects) && rawSubjects.length ? rawSubjects : null;
+    isIp = deriveIsIp(student.fields);
   } catch { /* non-fatal */ }
 
   const supabase = createServiceClient();
@@ -105,6 +111,7 @@ export async function POST(req: NextRequest) {
     display_name: displayName,
     level,
     subjects,
+    is_ip: isIp,
     consent_record: {
       invite_email: t.row.email,
       consented_by: 'student',

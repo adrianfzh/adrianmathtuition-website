@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { questionMarkdown, questionStructured, totalMarksOf } from '@/lib/bank-question-markdown';
-import { practiceAuth, practiceLevelAllowed, bankScope } from '@/lib/practice';
+import { practiceAuth, practiceLevelAllowed, bankScope, rpcAudience } from '@/lib/practice';
 import { isScienceLevel } from '@/lib/science-levels';
 import { scienceNext, toPayload } from '@/lib/science-bank';
 
@@ -47,6 +47,10 @@ export async function POST(req: NextRequest) {
     p_exclude: Array.isArray(exclude) ? exclude : [],
     p_tier: tier === 'Standard' || tier === 'Advanced' ? tier : null,
     p_subgroup: Number.isFinite(sg) && sg > 0 ? sg : null,
+    // Sub-group audience (lib/subgroup-visibility.ts): the RPC serves nothing
+    // from a sub-group this caller may not see, whatever subgroupId they post,
+    // and the topic mix skips questions filed only under such sub-groups.
+    ...rpcAudience(caller),
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

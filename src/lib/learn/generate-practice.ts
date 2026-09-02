@@ -35,7 +35,9 @@ async function gatherContext(level: string, topic: string) {
   const [ex, syl, subs] = await Promise.all([
     sb.rpc('practice_exemplars', { p_level: level, p_topic: topic, p_limit: 4 }),
     sb.from('syllabus_prompts').select('system_prompt_text, includes, excludes').eq('level', level).limit(1),
-    sb.from('subgroups').select('name, description').eq('level', level).eq('topic', topic),
+    // Concept context for the author: never a 'hidden' (out-of-syllabus)
+    // sub-group — its concepts would steer the generated question off-syllabus.
+    sb.from('subgroups').select('name, description').eq('level', level).eq('topic', topic).or('visibility.neq.hidden,visibility.is.null'),
   ]);
   return {
     exemplars: (ex.data || []) as Exemplar[],

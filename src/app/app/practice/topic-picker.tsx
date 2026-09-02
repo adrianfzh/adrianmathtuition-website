@@ -44,7 +44,20 @@ export type Subgroup = {
   order: number | null;
   questionCount: number;
   advancedCount: number;
+  /** Admin only — "IP only" / "hidden" / "also IP S1" (sub-group audience);
+   *  students never receive a row they cannot see, so it is null for them. */
+  badge?: string | null;
 };
+
+/** The small audience label on a question-type row (admin view only). */
+function AudienceBadge({ badge }: { badge?: string | null }) {
+  if (!badge) return null;
+  return (
+    <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-amber-800 bg-amber-100 rounded px-1.5 py-0.5">
+      {badge}
+    </span>
+  );
+}
 
 export const STATUS_META: Record<TopicStatus, { label: string; cls: string; text: string }> = {
   strong: { label: 'Strong', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', text: 'text-emerald-600' },
@@ -276,6 +289,7 @@ function SearchResults({ topics, typesByTopic, query, onPick, onStartType }: {
                 <button key={s.id} type="button" onClick={() => onStartType(t.topic, s)}
                   className="inline-flex items-center gap-1 text-[12px] font-semibold text-amber-800 bg-amber-50 rounded-full pl-2.5 pr-2 py-1 hover:bg-amber-100 motion-safe:transition-colors">
                   {s.name}
+                  <AudienceBadge badge={s.badge} />
                   <PortalIcon name="chevron-right" className="w-3 h-3 opacity-60" />
                 </button>
               ))}
@@ -397,6 +411,7 @@ export function TopicSheet({ topic, types, tier, lesson = null, onTier, onStart,
                       <button key={s.id} type="button" onClick={() => onStart(s)} disabled={n === 0}
                         className={`${ROW} py-2.5 disabled:opacity-40 disabled:cursor-not-allowed`}>
                         <span className="min-w-0 flex-1 text-[14px] font-medium text-navy leading-snug">{s.name}</span>
+                        <AudienceBadge badge={s.badge} />
                         <Chevron />
                       </button>
                     );

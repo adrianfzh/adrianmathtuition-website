@@ -5,16 +5,13 @@ import PageFrame, { type TocEntry } from '../NotesPageFrame';
 import NotesMarkdown from '../NotesMarkdown';
 import NotesUnits from '../NotesUnits';
 import { ReviewBar } from '../ReviewControls';
-import { isNotesAuthed, isNotesViewer } from '@/lib/notes-auth';
-import { viewingAsStudent } from '@/lib/portal-beta';
-
-/** Admin chrome (ReviewBar, DRAFT pills, pending blocks) — admin cookie AND
- *  not currently "viewing as a student" (the portal toggle now covers /notes
- *  too; Adrian, 2026-08-29: draft/review chrome must never look student-facing). */
-async function notesAdmin(): Promise<boolean> {
-  const [a, vs] = await Promise.all([isNotesAuthed(), viewingAsStudent()]);
-  return a && !vs;
-}
+import { isNotesViewer } from '@/lib/notes-auth';
+// Who is reading (lib/notes-viewer.ts): `admin` = admin cookie AND not
+// currently "viewing as a student" (the portal toggle covers /notes too;
+// Adrian, 2026-08-29: draft/review chrome must never look student-facing) —
+// it gates the ReviewBar / DRAFT pills / pending blocks AND, with `isIp`, the
+// sub-group audience every loader applies (lib/subgroup-visibility.ts).
+import { notesViewer } from '@/lib/notes-viewer';
 import { approvedSections } from '@/lib/notes-units';
 import { getLevelIndex, getNotesTree, getSubgroupPage, getTopicPage } from '@/lib/notes-data';
 import { cleanDescription, cleanTitle } from '@/lib/notes-text';
@@ -47,8 +44,18 @@ const ANCHOR = {
 /** Footer prev/next, computed from the unfiltered tree so it never depends on
  *  whatever the browse-panel filter happens to be showing. */
 async function footerFor(level: string, url: string) {
-  const tree = await getNotesTree(level);
+  const tree = await getNotesTree(level, await notesViewer());
   return neighbours(tree, url);
+}
+
+/** Small audience label beside a sub-group title — admin view only. */
+function AudienceBadge({ badge }: { badge: string | null }) {
+  if (!badge) return null;
+  return (
+    <span className="ml-2 align-middle text-[10px] font-semibold uppercase tracking-wide text-amber-800 bg-amber-100 rounded px-1.5 py-0.5">
+      {badge}
+    </span>
+  );
 }
 
 // ── Shared page furniture ────────────────────────────────────────────────────
@@ -149,9 +156,10 @@ async function LevelChooser() {
   // Real numbers and real topic names on the tiles (Adrian, 2026-08-29: the
   // bare colour slabs "can be made better") — same query as the level index,
   // so the tile can never disagree with the page behind it.
+  const viewer = await notesViewer();
   const levels = await Promise.all(
     NOTES_LEVELS.map(async l => {
-      const topics = await getLevelIndex(l.code);
+      const topics = await getLevelIndex(l.code, viewer);
       return {
         ...l,
         topics: topics.length,
@@ -222,7 +230,7 @@ async function LevelChooser() {
 // ── Level index ──────────────────────────────────────────────────────────────
 
 async function LevelIndex({ level }: { level: string }) {
-  const topics = await getLevelIndex(level);
+  const topics = await getLevelIndex(level, await notesViewer());
 
   if (topics.length === 0) {
     return (
@@ -273,10 +281,9 @@ async function LevelIndex({ level }: { level: string }) {
 // ── Topic index ──────────────────────────────────────────────────────────────
 
 async function TopicIndex({ level, topicSlugParam }: { level: string; topicSlugParam: string }) {
-  const [data, admin] = await Promise.all([
-    getTopicPage(level, topicSlugParam),
-    notesAdmin(),
-  ]);
+  const viewer = await notesViewer();
+  const admin = viewer.admin;
+  const data = await getTopicPage(level, topicSlugParam, viewer);
   if (!data) notFound();
 
   const url = topicUrl(level, data.topic);
@@ -349,7 +356,10 @@ async function TopicIndex({ level, topicSlugParam }: { level: string; topicSlugP
                 <details key={s.url} className="nx-fold">
                   <summary className="nx-fold-head">
                     <span className="nx-item-main">
-                      <span className="nx-item-title">{cleanTitle(s.name)}</span>
+                      <span className="nx-item-title">
+                        {cleanTitle(s.name)}
+                        <AudienceBadge badge={s.badge} />
+                      </span>
                       {desc && (
                         <span
                           className="nx-item-desc"
@@ -398,10 +408,9 @@ async function TopicIndex({ level, topicSlugParam }: { level: string; topicSlugP
 // ── Learn page (the teaching stack, split out of the topic page) ─────────────
 
 async function LearnPage({ level, topicSlugParam }: { level: string; topicSlugParam: string }) {
-  const [data, admin] = await Promise.all([
-    getTopicPage(level, topicSlugParam),
-    notesAdmin(),
-  ]);
+  const viewer = await notesViewer();
+  const admin = viewer.admin;
+  const data = await getTopicPage(level, topicSlugParam, viewer);
   if (!data) notFound();
 
   const url = topicUrl(level, data.topic);
@@ -551,7 +560,7 @@ async function SubgroupPage({
   topicSlugParam: string;
   subgroupSlug: string;
 }) {
-  const data = await getSubgroupPage(level, topicSlugParam, subgroupSlug);
+  const data = await getSubgroupPage(level, topicSlugParam, subgroupSlug, await notesViewer());
   if (!data) notFound();
 
   const url = subgroupUrl(level, data.topic, data.subgroup.name);
@@ -603,6 +612,7 @@ async function SubgroupPage({
           {summary && <p className="nx-lede" dangerouslySetInnerHTML={{ __html: mathHtml(summary) }} />}
           <div className="nx-meta">
             <span className="nx-pill">{plural(n, 'worked example')}</span>
+            {data.badge && <span className="nx-pill">{data.badge}</span>}
             {example && (
               <span className="nx-eg">
                 <b>e.g.</b>

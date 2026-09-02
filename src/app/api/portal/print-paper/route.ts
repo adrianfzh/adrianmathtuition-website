@@ -20,6 +20,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { portalIdentity } from '@/lib/portal-auth';
 import { requireActiveAccess } from '@/lib/portal-passes';
 import { fetchWorksheetPool, figureServable, hasPrintableAnswer } from '@/lib/kiosk-pool';
+import { questionServableTo, type SubgroupAudienceRow } from '@/lib/subgroup-visibility';
 import { dailyDraw, sgtDate } from '@/lib/kiosk-draw';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
 import { computeMastery, type MasteryEntry } from '@/lib/mastery';
@@ -84,7 +85,32 @@ async function papersThisWeek(studentId: string): Promise<number> {
  *  - `solution` is never selected, so worked solutions are structurally absent
  *    from this route; school/year are fetched for spread/recency scoring only
  *    and never survive past the assembled refs. */
-async function fetchSlotCandidates(opts: { tagLevels: string[]; topic: string; lo: number; hi: number }): Promise<Candidate[]> {
+/**
+ * Sub-group AUDIENCE gate for the mock draw (lib/subgroup-visibility
+ * questionServableTo): this query is a TOPIC-TAG draw straight off
+ * `questions`, so without it a question filed only under an IP-only /
+ * hidden sub-group (a Modulus-only filing tagged "Quadratic Functions") would
+ * still land on a non-IP student's mock. One filings lookup per slot batch;
+ * a lookup failure throws → the route's 502, never a leak.
+ */
+async function dropAudienceBlocked<T extends { id: string }>(rows: T[], topicsKey: string, isIp: boolean): Promise<T[]> {
+  if (rows.length === 0) return rows;
+  const { data, error } = await getSupabaseAdmin()
+    .from('question_subgroups')
+    .select('question_id, subgroups(level, visibility, ip_extra_level)')
+    .in('question_id', rows.map(r => r.id));
+  if (error) throw new Error(`filings lookup failed: ${error.message}`);
+  const byQuestion = new Map<string, SubgroupAudienceRow[]>();
+  for (const row of (data ?? []) as { question_id: string; subgroups: SubgroupAudienceRow | SubgroupAudienceRow[] | null }[]) {
+    const list = byQuestion.get(row.question_id) ?? [];
+    if (Array.isArray(row.subgroups)) list.push(...row.subgroups);
+    else if (row.subgroups) list.push(row.subgroups);
+    byQuestion.set(row.question_id, list);
+  }
+  return rows.filter(r => questionServableTo(byQuestion.get(r.id) ?? [], { levels: [topicsKey], isIp }));
+}
+
+async function fetchSlotCandidates(opts: { tagLevels: string[]; topicsKey: string; isIp: boolean; topic: string; lo: number; hi: number }): Promise<Candidate[]> {
   const { data, error } = await getSupabaseAdmin()
     .from('questions')
     .select('id, total_marks, school, year, difficulty, parts, answer, has_image, image_url, figure_url, image_watermark_status')
@@ -102,7 +128,8 @@ async function fetchSlotCandidates(opts: { tagLevels: string[]; topic: string; l
     has_image: boolean | null; image_url: string | null; figure_url: string | null;
     image_watermark_status: string | null;
   };
-  return (data as Row[])
+  const servable = await dropAudienceBlocked(data as Row[], opts.topicsKey, opts.isIp);
+  return servable
     .filter(r => hasPrintableAnswer(r) && figureServable(r))
     .map(r => ({
       id: r.id,
@@ -124,7 +151,7 @@ async function fetchSlotCandidates(opts: { tagLevels: string[]; topic: string; l
 
 const MOCK_ATTEMPTS = 3;
 
-async function assembleMock(level: string, paper: string): Promise<{ refs: PrintQuestionRef[]; title: string; totalMarks: number } | { error: string }> {
+async function assembleMock(level: string, paper: string, isIp: boolean): Promise<{ refs: PrintQuestionRef[]; title: string; totalMarks: number } | { error: string }> {
   // Student levels JC1/JC2 share the 'JC' blueprint family (H2 9758); the
   // candidate pool still scopes by the STUDENT level via PRINT_POOL_SCOPE,
   // whose JC entries fan out to the JC/JC1/JC2 tag levels.
@@ -146,7 +173,7 @@ async function assembleMock(level: string, paper: string): Promise<{ refs: Print
     const k = `${topic}|${lo}|${hi}`;
     let hit = cache.get(k);
     if (!hit) {
-      hit = fetchSlotCandidates({ tagLevels: scope.tagLevels, topic, lo, hi });
+      hit = fetchSlotCandidates({ tagLevels: scope.tagLevels, topicsKey: scope.topicsKey, isIp, topic, lo, hi });
       cache.set(k, hit);
     }
     return hit;
@@ -183,7 +210,7 @@ async function assembleMock(level: string, paper: string): Promise<{ refs: Print
   return { error: lastError };
 }
 
-async function drawTopics(levelKey: string, topics: string[], total: number, studentId: string):
+async function drawTopics(levelKey: string, topics: string[], total: number, studentId: string, isIp: boolean):
   Promise<{ refs: PrintQuestionRef[]; used: string[] } | { error: string }> {
   const scope = PRINT_POOL_SCOPE[levelKey];
   if (!scope) return { error: `Unknown level ${levelKey}` };
@@ -194,6 +221,7 @@ async function drawTopics(levelKey: string, topics: string[], total: number, stu
   for (const topic of topics.slice(0, MAX_TOPICS_PER_PAPER)) {
     const { items, error } = await fetchWorksheetPool(getSupabaseAdmin(), {
       seedLevels: scope.tagLevels, topicsKey: scope.topicsKey, topic, tier: null,
+      audience: { isIp }, // sub-group audience — the same pool the picker shows this student
     });
     if (error) return { error };
     // Seeded per student+day: regenerating the same request today reprints the
@@ -265,7 +293,7 @@ export async function POST(req: NextRequest) {
     if (!['P1', 'P2'].includes(p)) return NextResponse.json({ error: 'paper must be P1 or P2' }, { status: 400 });
     let out: Awaited<ReturnType<typeof assembleMock>>;
     try {
-      out = await assembleMock(level, p);
+      out = await assembleMock(level, p, Boolean(account.is_ip));
     } catch {
       return NextResponse.json({ error: 'The question bank is unreachable right now — try again in a minute.' }, { status: 502 });
     }
@@ -299,7 +327,7 @@ export async function POST(req: NextRequest) {
         }, { status: 400 });
       }
     }
-    const out = await drawTopics(level, topics, total, sid);
+    const out = await drawTopics(level, topics, total, sid, Boolean(account.is_ip));
     if ('error' in out) return NextResponse.json({ error: out.error }, { status: 502 });
     refs = out.refs;
     const label = preset === 'weakspots' ? 'Weak-spots practice' : 'Topic practice';

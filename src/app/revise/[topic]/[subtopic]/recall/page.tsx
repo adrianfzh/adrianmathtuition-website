@@ -7,15 +7,19 @@ import { notFound } from 'next/navigation';
 import SwipeApp from '../worked-examples/SwipeApp';
 import { topicSlug } from '@/lib/topic-slug';
 import { getSupabase } from '@/lib/supabase';
+import { PUBLIC_VISIBILITY_FILTER } from '@/lib/subgroup-visibility';
 
 const VALID_LEVELS = ['am', 'em', 'jc', 's1', 's2'];
 
+// Public page, no account: a topic exists here only through its 'all'
+// sub-groups (lib/subgroup-visibility) — recall cards hang off the topic.
 async function findCanonicalTopic(level: string, slug: string): Promise<string | null> {
   const supa = getSupabase();
   const { data } = await supa
     .from('subgroups')
     .select('topic')
-    .eq('level', level.toUpperCase());
+    .eq('level', level.toUpperCase())
+    .or(PUBLIC_VISIBILITY_FILTER);
   const topics = [...new Set((data || []).map((r: { topic: string }) => r.topic))];
   return topics.find(t => topicSlug(t) === slug) ?? null;
 }

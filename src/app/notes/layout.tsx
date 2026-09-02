@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { isNotesAuthed, isNotesViewer, hasPortalSession } from '@/lib/notes-auth';
 import { NOTES_OPEN_TO_STUDENTS, viewingAsStudent } from '@/lib/portal-beta';
 import { getNotesTree, getSearchIndex } from '@/lib/notes-data';
+import { notesViewer } from '@/lib/notes-viewer';
 import { NOTES_LEVELS } from '@/lib/notes-tree';
 import NotesLogin from './NotesLogin';
 import NotesShell, { type ShellLevel } from './NotesShell';
@@ -65,13 +66,16 @@ export default async function NotesLayout({
   // One tree + search index per exposed level. Every loader is cache()d and
   // notesCache()d, so this is a handful of Supabase reads per revalidation
   // window, not per request.
+  // The sub-group audience (lib/subgroup-visibility.ts) is per viewer: the
+  // sidebar and its search index must show exactly what the pages do.
+  const viewer = await notesViewer();
   const [portalHome, ...levelData] = await Promise.all([
     hasPortalSession(),
     ...NOTES_LEVELS.map(async l => ({
       code: l.code,
       chip: CHIP[l.code] ?? l.code,
-      tree: await getNotesTree(l.code),
-      search: await getSearchIndex(l.code),
+      tree: await getNotesTree(l.code, viewer),
+      search: await getSearchIndex(l.code, viewer),
     })),
   ]);
   const levels = levelData as ShellLevel[];

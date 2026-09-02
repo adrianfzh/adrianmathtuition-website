@@ -34,6 +34,32 @@ import { practiceEligibility } from '@/lib/portal-find';
 import { questionMarkdown, questionStructured, totalMarksOf } from '@/lib/bank-question-markdown';
 import { examPrepVisible, sciencePracticeAccess } from '@/lib/portal-beta';
 import { scienceLevelsFor } from '@/lib/science-levels';
+import { bankScope } from '@/lib/qb-levels';
+import { questionServableTo, type SubgroupAudienceRow } from '@/lib/subgroup-visibility';
+
+/**
+ * Sub-group audience gate for a deep-linked question (lib/subgroup-visibility
+ * questionServableTo): every sub-group the question is filed under, checked
+ * against the trees this account may browse. A question filed ONLY under
+ * 'hidden' / IP-only sub-groups (Modulus for a non-IP A-Math student) is "not
+ * part of your syllabus"; an unfiled question passes as before. A lookup
+ * failure fails CLOSED — the notice, never the question.
+ */
+async function qidAudienceOk(qid: string, account: { level: string | null; subjects: string[] | null; is_ip: boolean | null }): Promise<boolean> {
+  const { data, error } = await getSupabaseAdmin()
+    .from('question_subgroups')
+    .select('subgroups(level, visibility, ip_extra_level)')
+    .eq('question_id', qid);
+  if (error) return false;
+  const filings: SubgroupAudienceRow[] = [];
+  for (const row of (data ?? []) as { subgroups: SubgroupAudienceRow | SubgroupAudienceRow[] | null }[]) {
+    const sg = row.subgroups;
+    if (Array.isArray(sg)) filings.push(...sg);
+    else if (sg) filings.push(sg);
+  }
+  const levels = qbLevelsFor(account.level, account.subjects).map(l => bankScope(l.key).level);
+  return questionServableTo(filings, { levels, isIp: Boolean(account.is_ip) });
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -53,7 +79,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
   // testing mode renders a login card instead). No "you are here" flow strip
   // on this tab — Adrian 2026-08-23: the Practise → Hand in → Marked strip
   // was just taking space above the topic list; it stays on /app/marking.
-  let account: { id: string; airtable_student_id: string; level: string | null; subjects: string[] | null } | null = null;
+  let account: { id: string; airtable_student_id: string; level: string | null; subjects: string[] | null; is_ip: boolean | null } | null = null;
   try {
     // Per-request cached (lib/portal-auth.ts) — shared with the layout's
     // lookups in the same render pass instead of a second getUser round-trip.
@@ -106,7 +132,9 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
   // id into a notice rather than a 404 — the student still lands on a working
   // practice page.
   let initialQuestion: FixedQuestion | null = null;
-  let qidBlocked = false;
+  // 'answer' = the practiceEligibility bars; 'syllabus' = filed only under
+  // sub-groups this account may not see (lib/subgroup-visibility.ts).
+  let qidBlocked: null | 'answer' | 'syllabus' = null;
   if (qid && !assignmentId) {
     if (!account) redirect('/login');
     const { data: q } = await getSupabaseAdmin()
@@ -114,7 +142,9 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
       .select('id, question_text, parts, total_marks, has_image, image_url, images, figure_url, solution, answer, topics, deleted_at, flagged_count, ai_generated, verified')
       .eq('id', qid)
       .maybeSingle();
-    if (q && practiceEligibility(q).ok) {
+    if (q && practiceEligibility(q).ok && !(await qidAudienceOk(q.id, account))) {
+      qidBlocked = 'syllabus';
+    } else if (q && practiceEligibility(q).ok) {
       const { stem, parts } = questionStructured(q);
       const fromParam = QID_FROM.find(f => f === from) ?? null;
       const topics = Array.isArray(q.topics) ? q.topics.filter((t): t is string => typeof t === 'string' && !!t.trim()) : [];
@@ -133,7 +163,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
         },
       };
     } else {
-      qidBlocked = true;
+      qidBlocked = 'answer';
     }
   }
 
@@ -151,10 +181,16 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      {qidBlocked && (
+      {qidBlocked === 'answer' && (
         <div className="mb-4 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800">
           That one can&apos;t be practised here — it doesn&apos;t have a marked answer on file yet.
           Pick a topic below instead, or snap the question to find one like it.
+        </div>
+      )}
+      {qidBlocked === 'syllabus' && (
+        <div className="mb-4 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800">
+          That one isn&apos;t part of your syllabus, so it isn&apos;t practised here.
+          Pick a topic below instead, or snap a question to find one like it.
         </div>
       )}
       <PracticeFlow initialLevels={initialLevels} initialAssignment={initialAssignment} initialTarget={initialTarget} initialQuestion={initialQuestion} timedEntry={timedEntry} lessonsVisible={lessonsVisible} />

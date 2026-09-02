@@ -14,6 +14,7 @@ import {
   type UnitSection,
 } from './notes-units';
 import { topicSlug } from './topic-slug';
+import { audienceBadge, subgroupInTree, visibleSubgroups } from './subgroup-visibility';
 import {
   buildPageTree,
   buildSections,
@@ -56,11 +57,17 @@ async function fetchAllRows<T>(
   }
 }
 
-// Topics no longer in the syllabus: kept in the data, dropped from every
-// /notes surface (sidebar, level index, direct URLs). Everything downstream
-// enumerates topics from loadSubgroups, so this is the one chokepoint.
-// Adrian, 2026-08-06: Modulus Functions is no longer examined.
-const RETIRED_TOPICS = new Set(['Modulus Functions']);
+/**
+ * Who is reading — the sub-group AUDIENCE (lib/subgroup-visibility.ts).
+ * Resolved per request by lib/notes-viewer.ts; every exported loader takes
+ * it and defaults to the plainest student, so a caller can never widen an
+ * audience by forgetting the argument.
+ */
+export interface NotesViewer {
+  isIp: boolean;
+  admin: boolean;
+}
+export const STUDENT_VIEWER: NotesViewer = { isIp: false, admin: false };
 
 /**
  * Tag for every /notes read. The review routes call `revalidateTag(NOTES_CACHE_TAG)`
@@ -84,27 +91,39 @@ function notesCache<T>(keyParts: (string | number)[], fn: () => Promise<T>): Pro
   })();
 }
 
-/** All sub-groups for a level, ordered for display. */
-const loadSubgroups = cache((level: string): Promise<SubgroupRow[]> =>
-  notesCache(['subgroups', level], async () => {
+/**
+ * Every sub-group in a level's TREE — filed at the level, or lent to it for
+ * IP students via `ip_extra_level` — UNFILTERED and ordered for display.
+ * Viewer-independent, so it can sit in the persistent cache; the audience
+ * filter is applied per request in loadSubgroups below.
+ */
+const loadSubgroupRows = cache((level: string): Promise<SubgroupRow[]> =>
+  notesCache(['subgroup-rows', level], async () => {
     const supa = getSupabase();
+    const lv = level.toUpperCase();
     const rows = await fetchAllRows<SubgroupRow>((from, to) =>
       supa
         .from('subgroups')
-        .select('id, level, topic, name, description, order_index, visibility')
-        .eq('level', level.toUpperCase())
+        .select('id, level, topic, name, description, order_index, visibility, ip_extra_level')
+        .or(`level.eq.${lv},ip_extra_level.eq.${lv}`)
         .range(from, to),
     );
-    // Vetting verdicts (Adrian, 2026-08-29): 'hidden' rows are retired from
-    // every student surface (old-syllabus / out-of-syllabus folders). 'ip'
-    // rows are reserved for IP-stream students — until portal accounts carry
-    // an IP flag they are conservatively excluded too, never wrongly shown.
-    // This is THE chokepoint: tree, level index, topic pages, search and
-    // prev/next all enumerate from here, so one filter covers them all.
-    return sortSubgroups(
-      rows.filter(r => !RETIRED_TOPICS.has(r.topic) && (r.visibility ?? 'all') === 'all'),
-    );
+    return sortSubgroups(rows);
   }),
+);
+
+/**
+ * The sub-groups THIS viewer may read in a level — Adrian's vetting verdicts
+ * (`visibility` 'all' / 'ip' / 'hidden', 2026-08-29) applied against the
+ * account's IP flag and the admin cookie (lib/subgroup-visibility.ts,
+ * 2026-09-02; before that 'ip' rows were simply excluded, and "Modulus
+ * Functions" was retired by name — now the data decides). This is THE
+ * chokepoint: tree, level index, topic pages, search and prev/next all
+ * enumerate from here, so one filter covers them all. Primitive args so
+ * React's per-request cache() dedupes across the layout and the page.
+ */
+const loadSubgroups = cache(async (level: string, isIp: boolean, admin: boolean): Promise<SubgroupRow[]> =>
+  visibleSubgroups(await loadSubgroupRows(level), { level: level.toUpperCase(), isIp, admin }),
 );
 
 /**
@@ -115,7 +134,7 @@ const loadSubgroups = cache((level: string): Promise<SubgroupRow[]> =>
 const loadSnippetCounts = cache(async (level: string): Promise<Map<number, number>> => {
   const rows = await notesCache(['snippet-counts', level], async () => {
     const supa = getSupabase();
-    return fetchAllRows<{ subgroup_id: number | null }>((from, to) =>
+    const own = await fetchAllRows<{ subgroup_id: number | null }>((from, to) =>
       supa
         .from('content_snippets')
         .select('subgroup_id')
@@ -125,6 +144,23 @@ const loadSnippetCounts = cache(async (level: string): Promise<Map<number, numbe
         .eq('is_published', true)
         .range(from, to),
     );
+    // Sub-groups LENT to this level (ip_extra_level) keep their snippets at
+    // their home level, so those are counted by sub-group id instead.
+    const lv = level.toUpperCase();
+    const lentIds = (await loadSubgroupRows(level))
+      .filter(s => s.level.toUpperCase() !== lv)
+      .map(s => s.id);
+    const lent = lentIds.length === 0 ? [] : await fetchAllRows<{ subgroup_id: number | null }>((from, to) =>
+      supa
+        .from('content_snippets')
+        .select('subgroup_id')
+        .in('subgroup_id', lentIds)
+        .eq('content_kind', PUBLISHABLE.content_kind)
+        .in('feature', [...PUBLISHABLE.features])
+        .eq('is_published', true)
+        .range(from, to),
+    );
+    return [...own, ...lent];
   });
   const counts = new Map<number, number>();
   for (const r of rows) {
@@ -267,10 +303,10 @@ const loadCardTopics = cache(async (level: string): Promise<Set<string>> => {
   return new Set(cards.filter(c => c.content_md).map(c => c.topic));
 });
 
-/** The sidebar tree for a level. */
-export const getNotesTree = cache(async (level: string): Promise<TreeRoot> => {
+/** The sidebar tree for a level, as this viewer may read it. */
+export const getNotesTree = cache(async (level: string, viewer: NotesViewer = STUDENT_VIEWER): Promise<TreeRoot> => {
   const [subgroups, counts, converted, cardTopics] = await Promise.all([
-    loadSubgroups(level),
+    loadSubgroups(level, viewer.isIp, viewer.admin),
     loadSnippetCounts(level),
     loadConvertedTopics(level),
     loadCardTopics(level),
@@ -295,9 +331,9 @@ export interface LevelTopic {
  * cards and the pages in the sidebar can't disagree — and, both being `cache()`d,
  * rendering the index costs no extra Supabase round-trips.
  */
-export const getLevelIndex = cache(async (level: string): Promise<LevelTopic[]> => {
+export const getLevelIndex = cache(async (level: string, viewer: NotesViewer = STUDENT_VIEWER): Promise<LevelTopic[]> => {
   const [subgroups, counts, recall, cardTopics] = await Promise.all([
-    loadSubgroups(level),
+    loadSubgroups(level, viewer.isIp, viewer.admin),
     loadSnippetCounts(level),
     loadRecallCards(level),
     loadCardTopics(level),
@@ -305,7 +341,7 @@ export const getLevelIndex = cache(async (level: string): Promise<LevelTopic[]> 
 
   const out: LevelTopic[] = [];
   for (const row of subgroups) {
-    if (row.level.toUpperCase() !== level.toUpperCase()) continue;
+    if (!subgroupInTree(row, level)) continue;
     const examples = counts.get(row.id) ?? 0;
     if (examples === 0) continue; // empty sub-groups aren't pages
 
@@ -357,22 +393,22 @@ export interface TopicPageData {
      *  folder opens in place instead of navigating — "dropdowns in worked
      *  examples themselves … with further dropdowns to see into each". */
     examples: { id: string; card_title: string | null; content: string }[];
+    /** Admin only: "IP only" / "hidden" / "also IP S1" (sub-group audience). */
+    badge: string | null;
   }[];
 }
 
 /** Topic index page: reflexes and the topic card, then its sub-group list. */
 export const getTopicPage = cache(
-  async (level: string, slug: string): Promise<TopicPageData | null> => {
+  async (level: string, slug: string, viewer: NotesViewer = STUDENT_VIEWER): Promise<TopicPageData | null> => {
     const [subgroups, counts, cards, recall] = await Promise.all([
-      loadSubgroups(level),
+      loadSubgroups(level, viewer.isIp, viewer.admin),
       loadSnippetCounts(level),
       loadTopicCards(level),
       loadRecallCards(level),
     ]);
 
-    const levelRows = subgroups.filter(
-      s => s.level.toUpperCase() === level.toUpperCase(),
-    );
+    const levelRows = subgroups.filter(s => subgroupInTree(s, level));
     // Card-only topics have no sub-group rows — resolve the slug against the
     // union so their pages exist (the Quick Revision card is the content).
     const topics = [
@@ -418,6 +454,7 @@ export const getTopicPage = cache(
         description: s.description,
         count: counts.get(s.id) ?? 0,
         examples: examplesBySubgroup.get(s.id) ?? [],
+        badge: viewer.admin ? audienceBadge(s, level) : null,
       }))
       .filter(s => s.count > 0);
 
@@ -438,23 +475,25 @@ export interface SubgroupPageData {
   topic: string;
   subgroup: SubgroupRow;
   sections: NotesSection[];
+  /** Admin only: "IP only" / "hidden" / "also IP S1" (sub-group audience). */
+  badge: string | null;
 }
 
-/** One sub-group page: its snippets, split into display_group sections. */
+/** One sub-group page: its snippets, split into display_group sections. A
+ *  direct URL to a sub-group this viewer may not read is a 404, not a page. */
 export const getSubgroupPage = cache(
   async (
     level: string,
     topicSlugParam: string,
     subgroupSlug: string,
+    viewer: NotesViewer = STUDENT_VIEWER,
   ): Promise<SubgroupPageData | null> => {
     const [subgroups, meta] = await Promise.all([
-      loadSubgroups(level),
+      loadSubgroups(level, viewer.isIp, viewer.admin),
       loadSectionsMeta(level),
     ]);
 
-    const levelRows = subgroups.filter(
-      s => s.level.toUpperCase() === level.toUpperCase(),
-    );
+    const levelRows = subgroups.filter(s => subgroupInTree(s, level));
     const topics = [...new Set(levelRows.map(s => s.topic))];
     const topic = matchBySlug(topics, topicSlugParam, t => t);
     if (!topic) return null;
@@ -489,6 +528,7 @@ export const getSubgroupPage = cache(
         subgroup.name,
         meta.filter(m => m.topic === topic),
       ),
+      badge: viewer.admin ? audienceBadge(subgroup, level) : null,
     };
   },
 );
@@ -512,9 +552,9 @@ export interface SearchEntry {
  * student searches for). Shares the cached loaders, so building it costs one
  * extra Supabase query (the id/title list) per revalidation window.
  */
-export const getSearchIndex = cache(async (level: string): Promise<SearchEntry[]> => {
+export const getSearchIndex = cache(async (level: string, viewer: NotesViewer = STUDENT_VIEWER): Promise<SearchEntry[]> => {
   const [subgroups, counts, titles, coreRows] = await Promise.all([
-    loadSubgroups(level),
+    loadSubgroups(level, viewer.isIp, viewer.admin),
     loadSnippetCounts(level),
     notesCache(['search-titles', level], async () => {
       const supa = getSupabase();

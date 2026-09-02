@@ -42,11 +42,63 @@ interface Subgroup {
   name: string;
   description: string;
   card_count: number;
+  /** Sub-group AUDIENCE (lib/subgroup-visibility.ts): 'all' | 'ip' | 'hidden'. */
+  visibility?: string | null;
+  /** Level this sub-group is ALSO lent to for IP students (e.g. 'S1'), or null. */
+  ip_extra_level?: string | null;
 }
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 const LEVELS = ['AM', 'EM', 'JC', 'S1', 'S2'];
+
+/** Sub-group AUDIENCE control (lib/subgroup-visibility.ts) — who may see the
+ *  sub-group picked in the filter: everyone / IP students only / hidden
+ *  (admin only), plus an optional level it is ALSO lent to for IP students
+ *  (S2 "Special factorisation forms" → S1). Saves straight to the row; every
+ *  student surface (practice picker + mix, notes, worksheets, mocks) reads it
+ *  live, so this is how Adrian makes those calls without SQL. */
+function SubgroupAudienceControl({ sg, onSaved }: {
+  sg: Subgroup;
+  onSaved: (updated: Pick<Subgroup, 'id' | 'visibility' | 'ip_extra_level'>) => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState('');
+  async function save(patch: { visibility?: string; ip_extra_level?: string | null }) {
+    setSaving(true); setErr('');
+    try {
+      const res = await fetch(`/api/admin/cards/subgroups/${sg.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      onSaved({ id: sg.id, visibility: json.visibility ?? 'all', ip_extra_level: json.ip_extra_level ?? null });
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Failed');
+    } finally {
+      setSaving(false);
+    }
+  }
+  const vis = sg.visibility === 'ip' || sg.visibility === 'hidden' ? sg.visibility : 'all';
+  return (
+    <div className="flex items-center gap-1.5" title="Who may see this sub-group — students' practice picker and mix, notes, worksheets and mocks">
+      <span className="text-slate-500 text-xs">Audience</span>
+      <select className="border border-slate-300 rounded px-2 py-1 text-sm" value={vis} disabled={saving} onChange={(e) => save({ visibility: e.target.value })}>
+        <option value="all">Everyone</option>
+        <option value="ip">IP students only</option>
+        <option value="hidden">Hidden (admin only)</option>
+      </select>
+      <span className="text-slate-500 text-xs" title="Also show to IP students of this level">+ IP</span>
+      <select className="border border-slate-300 rounded px-2 py-1 text-sm" value={sg.ip_extra_level ?? ''} disabled={saving} onChange={(e) => save({ ip_extra_level: e.target.value || null })}>
+        <option value="">—</option>
+        {LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
+      </select>
+      {err && <span className="text-red-600 text-xs">{err}</span>}
+    </div>
+  );
+}
 
 // ── Cross-section drop animation tracker ──────────────────────────────────────
 // Set to the card ID just before the cross-section optimistic state update fires.
@@ -2149,9 +2201,23 @@ export default function EditCardsClient() {
             <span className="text-slate-500 text-xs">Sub-group</span>
             <select className="border border-slate-300 rounded px-2 py-1 text-sm" value={subgroupFilter} onChange={(e) => setSubgroupFilter(e.target.value)} disabled={!topic}>
               <option value="">All</option>
-              {subgroups.map((sg) => <option key={sg.id} value={String(sg.id)}>{sg.name}</option>)}
+              {subgroups.map((sg) => (
+                <option key={sg.id} value={String(sg.id)}>
+                  {sg.name}{sg.visibility && sg.visibility !== 'all' ? ` · ${sg.visibility}` : ''}{sg.ip_extra_level ? ` · +IP ${sg.ip_extra_level}` : ''}
+                </option>
+              ))}
             </select>
           </div>
+          {/* Audience — appears once a single sub-group is picked above. */}
+          {subgroupFilter && (() => {
+            const sg = subgroups.find((s) => String(s.id) === subgroupFilter);
+            return sg ? (
+              <SubgroupAudienceControl
+                sg={sg}
+                onSaved={(u) => setSubgroups((prev) => prev.map((s) => s.id === u.id ? { ...s, ...u } : s))}
+              />
+            ) : null;
+          })()}
           <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
             <input type="checkbox" checked={unpublishedOnly} onChange={(e) => setUnpublishedOnly(e.target.checked)} /> Drafts only
           </label>

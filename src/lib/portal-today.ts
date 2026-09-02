@@ -126,6 +126,8 @@ export async function getTodayCards(account: PortalAccount): Promise<TodayCard[]
           p_user: account.id,
           p_level: scope.level,
           p_qlevel: scope.qlevel,
+          p_is_ip: Boolean(account.is_ip), // sub-group audience — same pool the picker shows
+          p_admin: false,
         });
         if (error) continue;
         for (const r of (data || []) as { topic: string; attempts: number; avg_mastery: number | null }[]) {
