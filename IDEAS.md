@@ -21,6 +21,11 @@
 - 💡 **Recommendation merge** — Home focus card / Practise "up next" / My Notebook bands share one brain eventually.
 - 💡 **Exam Intensive queue-priority done; consider surfacing "priority marking" copy** on /app/pass Intensive card once first intensive customer exists.
 
+## Content queue — Grail harvest (Adrian, 2026-09-02: "queue this next")
+- 🔨 **T3 / T5 / worksheet-mine → extraction inbox** — 16 files staged at the front of `AdrianMath/papers/` (10 Year-4 IP papers into AM/EM, the 2 Sec 2 papers the bank lacked — the other 25 were dups — and 3 worksheet leftovers); batch rules in `AdrianMath/CLAUDE.md`, mapping in `grail-harvest/_INGEST/STAGED-2026-09-02.md`. The cc1–cc6 fleet claimed the first two within minutes.
+- 🔨 **Sec notes miner** — scheduled task `sec-notes-miner` (every 2 h, one file per run) over 34 O-Level A Math / E Math / lower-sec notes files (`grail-harvest/_notes-miner/sec-shelf.md`, law `AdrianMath/SPEC-SEC-NOTES-MINER.md`, tag `source='sec-notes'`). Feeds `pitfalls` (review gate: approve rows for the practice grader) + the thin Sec `method_templates`. Appends SHELF COMPLETE when done → disable the task.
+- 🔨 **Biology ingestion** — scheduled task `bio-extract` (every 2 h, one QP+MS pair per run) over 49 grail PDFs staged into `papers/biology/Pure Biology 2016…2022/` — only school+years the merged science bank lacked; task doc `papers/biology/BIO_GRAIL_EXTRACTION_TASK.md`. Bank was 3,589 biology rows before.
+
 ## Growth / virality (Adrian asked for organic loops, 2026-08-29)
 - 💡 **Shareable result cards** — after a marked paper, a branded score-card image ("71/75 · marked overnight") one tap to WhatsApp with the student's invite link baked in. The strongest teen-share loop available.
 - 💡 **Referral reward ladder** — 3 paying referrals → a free month / merch; visible progress on the invite sheet.
