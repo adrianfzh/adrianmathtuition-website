@@ -5,7 +5,8 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import crypto from 'crypto';
 import { NextRequest } from 'next/server';
-import { verifyAdminAuth } from './schedule-helpers';
+import { daysAgo, localToday, verifyAdminAuth } from './schedule-helpers';
+import { sgtDaysAgoISO, sgtTodayISO } from './sgt';
 import { ADMIN_SESSION_COOKIE, signAdminSession } from './admin-session';
 
 const PW = 'test-admin-password';
@@ -138,5 +139,19 @@ describe('verifyAdminAuth — session cookie path', () => {
     // Cookie can no longer verify, but the Bearer fallback must still work.
     expect(verifyAdminAuth(makeReq({ cookie }))).toBe(false);
     expect(verifyAdminAuth(makeReq({ cookie, auth: `Bearer ${PW}` }))).toBe(true);
+  });
+});
+
+// localToday/daysAgo are Singapore dates now, not server-local ones — the
+// difference is a whole day on Vercel (UTC) between 00:00 and 08:00 SGT, which
+// silently shifted every "today" filter these two feed. Pin them to lib/sgt so
+// a future edit can't quietly reintroduce server-local components.
+describe('localToday / daysAgo delegate to lib/sgt', () => {
+  it('localToday() is the Singapore date', () => {
+    expect(localToday()).toBe(sgtTodayISO());
+  });
+
+  it('daysAgo(1) is yesterday in Singapore', () => {
+    expect(daysAgo(1)).toBe(sgtDaysAgoISO(1));
   });
 });

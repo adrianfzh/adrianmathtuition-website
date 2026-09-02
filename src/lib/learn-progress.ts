@@ -2,6 +2,8 @@
 // Key: learn_done_v1 → { [unitId]: true }.
 'use client';
 
+import { sgtTodayISO } from '@/lib/sgt';
+
 const KEY = 'learn_done_v1';
 
 function read(): Record<string, boolean> {
@@ -37,23 +39,19 @@ export function markDone(id: string): void {
 // per tab/session. Key: learn_session_v1 → { date: 'YYYY-MM-DD', count: number }.
 const SESSION_KEY = 'learn_session_v1';
 
-function todayLocal(): string {
-  return new Date(Date.now() + 8 * 3600_000).toISOString().slice(0, 10); // SGT day
-}
-
 function readSession(): { date: string; count: number } {
-  if (typeof window === 'undefined') return { date: todayLocal(), count: 0 };
+  if (typeof window === 'undefined') return { date: sgtTodayISO(), count: 0 };
   try {
     const raw = JSON.parse(window.sessionStorage.getItem(SESSION_KEY) || 'null');
-    if (raw && raw.date === todayLocal() && typeof raw.count === 'number') return raw;
+    if (raw && raw.date === sgtTodayISO() && typeof raw.count === 'number') return raw;
   } catch { /* ignore */ }
-  return { date: todayLocal(), count: 0 };
+  return { date: sgtTodayISO(), count: 0 };
 }
 
 // Bumps and returns the new session count. Call once when a unit is finished.
 export function bumpSessionCleared(): number {
   const s = readSession();
-  const next = { date: todayLocal(), count: s.count + 1 };
+  const next = { date: sgtTodayISO(), count: s.count + 1 };
   if (typeof window !== 'undefined') {
     try { window.sessionStorage.setItem(SESSION_KEY, JSON.stringify(next)); } catch { /* non-fatal */ }
   }

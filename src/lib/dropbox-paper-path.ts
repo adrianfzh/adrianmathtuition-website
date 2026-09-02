@@ -7,6 +7,8 @@
 // (Dropbox/Apps/AdrianMathNotes/) — flat, no month subfolders (Adrian, 14 Aug 2026);
 // the date prefix is what keeps a flat folder sorted.
 
+import { sgtDateISO } from './sgt';
+
 /** Filename body: the paper name, stripped of anything Dropbox or iOS would choke on. */
 export function dropboxPaperStem(name: string | null | undefined): string {
   return String(name || 'marked paper')
@@ -23,7 +25,7 @@ export function dropboxPaperFolder(folder: string | null | undefined): string {
 /** SGT date, not UTC: a paper marked at 1am Singapore carries THAT day's date,
  *  where toISOString() would stamp the previous one. */
 export function sgtDateStamp(nowMs: number): string {
-  return new Date(nowMs + 8 * 3600 * 1000).toISOString().slice(0, 10);
+  return sgtDateISO(nowMs);
 }
 
 export function dropboxPaperPath(name: string | null | undefined, folder: string | null | undefined, nowMs: number): string {

@@ -10,6 +10,7 @@ import { displaySpanMonth } from '@/lib/invoice-month';
 import { firstInvoiceLessonDates, weekdayLessonDates, addDaysISO, nextDayISO } from '@/lib/billing-math';
 import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
 import { REC_ID_RE, appendReferrerMarker } from '@/lib/referral-link';
+import { sgtDateISO } from '@/lib/sgt';
 
 const sanitize = (str: unknown) => String(str || '').trim().replace(/[<>]/g, '').slice(0, 500);
 
@@ -331,9 +332,9 @@ export async function POST(request: NextRequest) {
       if (ratePerLesson && slotIds.length > 0) {
         const start = new Date(String(startDate) + 'T00:00:00');
         const todayForInvoice = new Date();
-        // Use SGT (UTC+8) for the issue date — plain toISOString() is UTC, which
+        // Use SGT for the issue date — plain toISOString() is UTC, which
         // lands on the PREVIOUS day for signups in the early-morning SGT hours.
-        const todayStr = new Date(todayForInvoice.getTime() + 8 * 3600 * 1000).toISOString().split('T')[0];
+        const todayStr = sgtDateISO(todayForInvoice);
 
         const batchAlreadyRan =
           (todayForInvoice.getFullYear() > start.getFullYear()) ||

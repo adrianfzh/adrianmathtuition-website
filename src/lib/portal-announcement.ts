@@ -11,6 +11,8 @@
 // This is the in-portal half of announcing a feature. The Telegram half stays a
 // separate, manual act (Adrian sends it, or a future bot /announce command) —
 // admin web actions are silent by policy, so nothing here messages anyone.
+import { sgtDateISO } from './sgt';
+
 export type PortalAnnouncement = {
   /** Stable unique id — dismissal is stored against it. Convention: YYYY-MM-slug. */
   id: string;
@@ -51,7 +53,7 @@ export function activeAnnouncement(now: Date = new Date()): PortalAnnouncement |
   if (!a) return null;
   if (a.until) {
     // SGT day comparison — the card dies at midnight Singapore time.
-    const today = new Date(now.getTime() + 8 * 3600e3).toISOString().slice(0, 10);
+    const today = sgtDateISO(now);
     if (today > a.until) return null;
   }
   return a;

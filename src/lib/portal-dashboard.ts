@@ -10,6 +10,7 @@ import { airtableRequestAll, airtableRequest } from './airtable';
 import { createSupabaseServer } from './supabase-server';
 import type { PortalAccount } from './portal-auth';
 import { shapeUpcomingExams, type ExamRecordLike, type UpcomingExam } from './portal-exams';
+import { sgtTodayISO } from './sgt';
 
 export interface DashboardLesson {
   date: string;          // YYYY-MM-DD
@@ -34,10 +35,10 @@ export interface DashboardData {
 const cache = new Map<string, { at: number; data: Omit<DashboardData, 'attemptsThisWeek' | 'recentAttempts'> }>();
 const CACHE_MS = 60_000;
 
+/** UTC midnight of today's SINGAPORE date — the anchor the iso()/addDays()
+ *  window maths below build on; not an instant in SGT. */
 function todaySGT(): Date {
-  // SGT = UTC+8, no DST
-  const now = new Date(Date.now() + 8 * 60 * 60 * 1000);
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  return new Date(`${sgtTodayISO()}T00:00:00Z`);
 }
 function iso(d: Date): string {
   return d.toISOString().slice(0, 10);

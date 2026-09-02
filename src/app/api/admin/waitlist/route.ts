@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { sgtTodayISO } from '@/lib/sgt';
 
 export const runtime = 'nodejs';
 
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
     const fields: Record<string, any> = {
       'Student Name': String(name).trim(),
       Status: 'Waiting',
-      'Added Date': new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10),
+      'Added Date': sgtTodayISO(),
     };
     if (contact) fields['Contact'] = contact;
     if (parentContact) fields['Parent Contact'] = parentContact;

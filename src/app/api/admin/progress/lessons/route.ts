@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { resolveActiveExamType, checkExamInfoStatus, seasonSatisfyingTypes, ExamType, ExamRecord } from '@/lib/exam-season';
-import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 
 // Progress page only needs student names for display. If contact info is ever
 // needed (modal, mailto links), call /api/admin-schedule/student-contact
 // on demand instead of fetching those fields here.
-
-function localToday(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-}
 
 // GET /api/admin/progress/lessons?date=YYYY-MM-DD
 export async function GET(req: NextRequest) {

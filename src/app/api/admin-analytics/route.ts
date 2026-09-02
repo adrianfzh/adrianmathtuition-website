@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequestAll } from '@/lib/airtable';
 import { costFor } from '@/lib/model-pricing';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { sgtDateISO } from '@/lib/sgt';
 
 export const runtime = 'nodejs';
 
@@ -74,14 +75,14 @@ export async function GET(req: NextRequest) {
   };
   const trendByDay: Record<string, DayBucket> = {};
   for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(Date.now() - i * 86400_000 + 8 * 3600_000).toISOString().slice(0, 10);
+    const d = sgtDateISO(Date.now() - i * 86400_000);
     trendByDay[d] = { count: 0, cost: 0, tokIn: 0, tokOut: 0, totalTime: 0, models: {} };
   }
   for (const r of records) {
     const ts = r.fields['Timestamp'] || '';
     if (!ts) continue;
     // Convert to SGT day
-    const sgt = new Date(new Date(ts).getTime() + 8 * 3600_000).toISOString().slice(0, 10);
+    const sgt = sgtDateISO(new Date(ts));
     const bucket = trendByDay[sgt];
     if (!bucket) continue;
     const model = r.fields['Model Used'] || 'Unknown';

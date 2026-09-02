@@ -1,3 +1,5 @@
+import { sgtMMDD } from './sgt';
+
 export type ExamType = 'WA1' | 'WA2' | 'WA3' | 'EOY';
 
 export interface ExamWindow {
@@ -19,8 +21,7 @@ export const EXAM_WINDOWS: ExamWindow[] = [
  * Uses SGT (Asia/Singapore) for date comparison.
  */
 export function getActiveExamTypeByDate(today: Date = new Date()): ExamType | null {
-  const sgt = new Date(today.toLocaleString('en-US', { timeZone: 'Asia/Singapore' }));
-  const mmdd = `${String(sgt.getMonth() + 1).padStart(2, '0')}-${String(sgt.getDate()).padStart(2, '0')}`;
+  const mmdd = sgtMMDD(today);
   for (const w of EXAM_WINDOWS) {
     if (mmdd >= w.start && mmdd <= w.end) return w.type;
   }
@@ -126,11 +127,6 @@ export function checkExamInfoStatus(
 // EOY rows were invisible until 20 Sep and the chip kept saying "WA3". Now the
 // route fetches the active season AND the next one, and each student shows
 // whichever season is actually upcoming for them.
-
-function sgtMMDD(today: Date): string {
-  const sgt = new Date(today.toLocaleString('en-US', { timeZone: 'Asia/Singapore' }));
-  return `${String(sgt.getMonth() + 1).padStart(2, '0')}-${String(sgt.getDate()).padStart(2, '0')}`;
-}
 
 /**
  * The season that follows `active` (WA3 → EOY). When no window is active

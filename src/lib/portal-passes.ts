@@ -22,6 +22,7 @@
 // the expensive routes (grade / generate / similar / submit / print POST).
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from './supabase';
+import { sgtDateISO } from './sgt';
 
 export type PassSource = 'hitpay' | 'stripe' | 'manual' | 'referral' | 'trial';
 
@@ -202,12 +203,6 @@ export interface PassEndingNudge {
   when: 'today' | 'tomorrow';
 }
 
-/** SGT calendar date (YYYY-MM-DD) of an epoch-ms instant — SGT has no DST, so
- *  a fixed +8h shift is exact. */
-function sgtDateOf(ms: number): string {
-  return new Date(ms + 8 * 3600_000).toISOString().slice(0, 10);
-}
-
 /**
  * The Home-page "⏳ your trial/pass is about to end" banner decision: fires
  * only for a pass that is ACTIVE (strict >, matching every other gate here),
@@ -226,9 +221,9 @@ export function passEndingNudge(
   if (!Number.isFinite(t) || t <= now.getTime()) return null; // lapsed (or garbage) — the paywall's job, not a nudge
   if (t - now.getTime() > 48 * 3600_000) return null; // not soon enough to nag
   const kind: PassEndingNudge['kind'] = pass.source === 'trial' ? 'trial' : 'pass';
-  const endDay = sgtDateOf(t);
-  if (endDay === sgtDateOf(now.getTime())) return { kind, when: 'today' };
-  if (endDay === sgtDateOf(now.getTime() + 86_400_000)) return { kind, when: 'tomorrow' };
+  const endDay = sgtDateISO(t);
+  if (endDay === sgtDateISO(now.getTime())) return { kind, when: 'today' };
+  if (endDay === sgtDateISO(now.getTime() + 86_400_000)) return { kind, when: 'tomorrow' };
   return null;
 }
 

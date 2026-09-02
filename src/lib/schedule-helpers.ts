@@ -4,21 +4,22 @@ import { verifyAdminSession, ADMIN_SESSION_COOKIE } from '@/lib/admin-session';
 import { safeEqual } from '@/lib/safe-equal';
 import { nextDayISO } from '@/lib/billing-math';
 import { SEC_CAP_SETTING, parseSecCapOverride } from '@/lib/capacity-override';
+import { sgtDayStart, sgtDaysAgoISO, sgtTodayISO } from '@/lib/sgt';
 
 /** Number of days within which a lesson's progress fields may be edited. */
 export const EDIT_WINDOW_DAYS = 14;
 
-/** Today's date in SGT as YYYY-MM-DD (server-side, no TZ dependency). */
+/** Today's date in Singapore as YYYY-MM-DD. These two read the SINGAPORE
+ *  calendar, not the server's: they used to build the string from server-local
+ *  date components, which on Vercel (UTC) is a day behind between 00:00 and
+ *  08:00 SGT. Name kept so the ~40 callers don't churn. */
 export function localToday(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  return sgtTodayISO();
 }
 
-/** Date n calendar days before today in YYYY-MM-DD (SGT). */
+/** Date n calendar days before today in YYYY-MM-DD (Singapore). */
 export function daysAgo(n: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return sgtDaysAgoISO(n);
 }
 
 export function verifyAdminAuth(req: NextRequest): boolean {
@@ -38,7 +39,7 @@ export function formatDateSlotLabel(
   dateStr: string,
   slotFields: { Day?: string; Time?: string }
 ): string {
-  const d = new Date(dateStr + 'T00:00:00+08:00');
+  const d = sgtDayStart(dateStr);
   const day = d.toLocaleDateString('en-SG', { weekday: 'short', timeZone: 'Asia/Singapore' });
   const date = d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short', timeZone: 'Asia/Singapore' });
   return `${day}, ${date} ${slotFields.Time ?? ''}`.trim();

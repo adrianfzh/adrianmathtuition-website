@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
+import { sgtDayStart } from '@/lib/sgt';
 import { resolveActiveExamType, nextExamType, scheduleExamTypes, pickDisplaySeason, ExamType } from '@/lib/exam-season';
 import { decodeExamNotes } from '@/lib/exam-notes-markers';
 import { subjectsFromRevisionLineItems, assignRevisionSessions } from '@/lib/revision-sessions';
@@ -344,7 +345,7 @@ export async function GET(req: NextRequest) {
   }
   const fmtDayDate = (iso: string): string => {
     try {
-      return new Date(iso + 'T00:00:00+08:00').toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Singapore' });
+      return sgtDayStart(iso).toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Singapore' });
     } catch { return iso; }
   };
   function rescheduledFromLabel(lessonId: string, type: string, rawNote: string): string | null {

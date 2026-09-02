@@ -11,6 +11,7 @@ import { resolveActiveExamType } from '@/lib/exam-season';
 import { getExamTopicsForSubject } from '@/lib/canonical-topics';
 import { EXAM_TYPES, examPercent, gradeFromScore, resultTone, RESULT_TONE_COLORS, examTypeLabel } from '@/lib/exam-grade';
 import { slotOpenOnDate } from '@/lib/slot-windows';
+import { sgtTodayISO } from '@/lib/sgt';
 
 // Same JC/Sec category (Mixed/Adhoc/unknown count as available to all).
 function sameLevelSlot(studentLevel: string, slotLevel: string): boolean {
@@ -1402,7 +1403,7 @@ function examTokens(str: string): string[] { return (str || '').split(',').map(t
 function SummaryStrip({ exams, lastLesson, attendance, studentLevel }: {
   exams: Exam[]; lastLesson: { date: string; mastery: string } | null; attendance: AttRow[]; studentLevel: string;
 }) {
-  const todayStr = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10); // SGT
+  const todayStr = sgtTodayISO();
   // Next dated exam (soonest upcoming); else most recent past dated exam with a result.
   const dated = exams.filter(e => !e.noExam && e.examDate);
   const upcoming = dated.filter(e => e.examDate >= todayStr).sort((a, b) => a.examDate.localeCompare(b.examDate))[0];

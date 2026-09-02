@@ -14,6 +14,7 @@
 // the incident.
 
 import type { JobRunRow } from './job-log';
+import { sgtClock } from './sgt';
 
 export type Rhythm =
   | { kind: 'interval'; hours: number; label: string }
@@ -48,12 +49,11 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'health-check':      { kind: 'interval', hours: 13, label: 'every 6h' },
 };
 
-const SGT_OFFSET_MS = 8 * 3600 * 1000;
-
-/** Calendar parts of a moment, in Singapore time. */
+/** Calendar parts of a moment, in Singapore time. `m` is 0-based (the checks
+ *  below only ever compare it to another `sgt()` month, never to a label). */
 function sgt(d: Date): { y: number; m: number; day: number } {
-  const t = new Date(d.getTime() + SGT_OFFSET_MS);
-  return { y: t.getUTCFullYear(), m: t.getUTCMonth(), day: t.getUTCDate() };
+  const c = sgtClock(d);
+  return { y: c.year, m: c.month - 1, day: c.day };
 }
 
 export type StaleJob = { job: string; reason: string };

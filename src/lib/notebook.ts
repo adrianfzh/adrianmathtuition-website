@@ -11,6 +11,7 @@
 // reads/writes; this file owns every judgement call.
 
 import type { StudentPaper } from './portal-marking';
+import { addDaysISO as addDaysIso, sgtTodayISO as sgtToday } from './sgt';
 
 /** Consecutive correct re-attempts that archive ("conquer") an entry. */
 export const ARCHIVE_STREAK = 2;
@@ -21,16 +22,10 @@ export const DUE_AFTER_WRONG_DAYS = 3;
 
 export type Verdict = 'correct' | 'wrong' | 'unclear';
 
-/** Today's date in Singapore, as YYYY-MM-DD (Vercel runs in UTC). */
-export function sgtToday(now: Date = new Date()): string {
-  return new Date(now.getTime() + 8 * 3600e3).toISOString().slice(0, 10);
-}
-
-export function addDaysIso(iso: string, days: number): string {
-  const d = new Date(`${iso}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
-}
+/** Today's date in Singapore (YYYY-MM-DD) + pure calendar-day arithmetic.
+ *  Both live in lib/sgt now; re-exported under the names this module's callers
+ *  already import. */
+export { sgtToday, addDaysIso };
 
 // ---------------------------------------------------------------------------
 // Answer checking

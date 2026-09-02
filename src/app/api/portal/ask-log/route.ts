@@ -22,6 +22,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server';
 import { airtableRequest } from '@/lib/airtable';
 import { portalIdentity, type PortalAccount } from '@/lib/portal-auth';
+import { sgtDayStart } from '@/lib/sgt';
 
 export const runtime = 'nodejs';
 
@@ -51,10 +52,7 @@ export async function POST(req: NextRequest) {
   const identity = portalIdentity({ id: user.id, airtable_student_id: account.airtable_student_id });
   try {
     const svc = createServiceClient();
-    const sgtMidnight = new Date();
-    sgtMidnight.setTime(sgtMidnight.getTime() + 8 * 3600e3);
-    sgtMidnight.setUTCHours(0, 0, 0, 0);
-    sgtMidnight.setTime(sgtMidnight.getTime() - 8 * 3600e3);
+    const sgtMidnight = sgtDayStart();
     const { count } = await svc
       .from('portal_event_log')
       .select('id', { count: 'exact', head: true })

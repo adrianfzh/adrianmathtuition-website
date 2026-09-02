@@ -2,6 +2,8 @@
 // the student list/Home card and the marking hooks. See SPEC-ASSIGN.md.
 // Keep this file free of I/O so it stays unit-testable (repo policy).
 
+import { sgtDateISO } from './sgt';
+
 export type AssignmentKind = 'question' | 'worksheet';
 export type AssignmentStatus = 'assigned' | 'submitted' | 'marked' | 'revoked';
 
@@ -138,7 +140,7 @@ export function pendingCount(rows: Pick<AssignmentRow, 'status'>[]): number {
 
 /** Local-date helper (SGT): 'YYYY-MM-DD' for "now" in Singapore. */
 export function sgToday(now: Date = new Date()): string {
-  return new Date(now.getTime() + 8 * 3600_000).toISOString().slice(0, 10);
+  return sgtDateISO(now);
 }
 
 function dayDiff(dueOn: string, today: string): number {

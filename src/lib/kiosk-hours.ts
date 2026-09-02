@@ -5,6 +5,8 @@
 //   scheduled → open only within OPENING_HOURS (below)
 // Admin callers bypass all of this (see the API routes).
 
+import { sgtClock } from './sgt';
+
 // Opening hours in Asia/Singapore, per weekday, as [openMin, closeMin] from midnight.
 // Adrian's centre: Mon/Tue/Fri 3–7pm, Sat/Sun 9am–7pm, closed Wed/Thu — with a
 // ±30-min buffer applied (2:30–7:30pm / 8:30am–7:30pm). Weekday: 0=Sun … 6=Sat.
@@ -25,13 +27,8 @@ const DAY_LABEL = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 // Current weekday + minutes-since-midnight in Singapore time, from server UTC.
 function sgtNow(): { weekday: number; minutes: number } {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Asia/Singapore', weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false,
-  }).formatToParts(new Date());
-  const wd = parts.find(p => p.type === 'weekday')?.value ?? 'Sun';
-  const hh = Number(parts.find(p => p.type === 'hour')?.value ?? '0');
-  const mm = Number(parts.find(p => p.type === 'minute')?.value ?? '0');
-  return { weekday: DAY_LABEL.indexOf(wd === 'Sun' ? 'Sun' : wd), minutes: (hh % 24) * 60 + mm };
+  const c = sgtClock();
+  return { weekday: c.weekday, minutes: c.minutesOfDay };
 }
 
 export function isWithinHours(): boolean {

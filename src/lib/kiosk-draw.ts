@@ -13,9 +13,11 @@
 // (kiosk-draw.test.ts pins the exact permutation — changing the hash or PRNG
 // mid-day would silently break the shared-sheet promise).
 
+import { sgtDateISO } from './sgt';
+
 /** SGT calendar date (YYYY-MM-DD); the draw seed rotates at SGT midnight. */
 export function sgtDate(now: number = Date.now()): string {
-  return new Date(now + 8 * 3600_000).toISOString().slice(0, 10);
+  return sgtDateISO(now);
 }
 
 // FNV-1a string hash → 32-bit seed.

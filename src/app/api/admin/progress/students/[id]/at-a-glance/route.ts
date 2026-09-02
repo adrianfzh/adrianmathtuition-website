@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { sgtTodayISO } from '@/lib/sgt';
 
 export const runtime = 'nodejs';
 
@@ -33,7 +34,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       }))
       .sort((a: any, b: any) => (a.examDate || '').localeCompare(b.examDate || ''));
 
-    const todayIso = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().split('T')[0]; // SGT
+    const todayIso = sgtTodayISO();
     const upcomingExam = exams.find((e: any) => !e.noExam && e.examDate && e.examDate >= todayIso) ?? null;
 
     // ── Weak topics from marked Submissions (wrong final answers by topic) ────

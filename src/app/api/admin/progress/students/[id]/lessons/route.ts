@@ -18,7 +18,7 @@ export async function GET(
   // NOTE: linked-record fields coerce to display names in Airtable formulas,
   // so {Student}='recXXX' matches NOTHING — window-fetch by Date and match the
   // student link in JS (CLAUDE.md Gotchas).
-  const windowStart = (() => { const d = new Date(localToday() + 'T00:00:00'); d.setMonth(d.getMonth() - 6); return d.toISOString().slice(0, 10); })();
+  const windowStart = (() => { const d = new Date(localToday() + 'T00:00:00Z'); d.setMonth(d.getMonth() - 6); return d.toISOString().slice(0, 10); })();
   const filter = encodeURIComponent(`{Date}>='${windowStart}'`);
   const data = await airtableRequestAll(
     'Lessons',

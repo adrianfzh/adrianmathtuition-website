@@ -19,6 +19,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server';
 import { portalIdentity, type PortalAccount } from '@/lib/portal-auth';
 import { lessonBySlug } from '@/lib/lesson-catalog';
+import { sgtDayStart } from '@/lib/sgt';
 
 export const runtime = 'nodejs';
 
@@ -62,11 +63,8 @@ export async function POST(req: NextRequest) {
   const identity = portalIdentity(account);
   const svc = createServiceClient();
   try {
-    // SGT-midnight window, same arithmetic as ask-log's cap.
-    const sgtMidnight = new Date();
-    sgtMidnight.setTime(sgtMidnight.getTime() + 8 * 3600e3);
-    sgtMidnight.setUTCHours(0, 0, 0, 0);
-    sgtMidnight.setTime(sgtMidnight.getTime() - 8 * 3600e3);
+    // SGT-midnight window, same bound as ask-log's cap.
+    const sgtMidnight = sgtDayStart();
     const { count } = await svc
       .from('portal_event_log')
       .select('id', { count: 'exact', head: true })

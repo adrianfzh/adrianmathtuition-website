@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ensureAdminSession } from '@/lib/admin-client';
+import { sgtTodayISO } from '@/lib/sgt';
 
 interface FU { id: string; note: string; due: string | null; done: boolean; studentId: string | null }
 interface Stu { id: string; name: string; level: string }
@@ -15,10 +16,6 @@ function fmtDue(iso: string | null): string {
   if (!iso) return '';
   try { return new Date(iso + 'T00:00:00').toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' }); } catch { return iso; }
 }
-const todayISO = () => {
-  const d = new Date(Date.now() + 8 * 3600 * 1000); // SGT
-  return d.toISOString().slice(0, 10);
-};
 
 export default function FollowupsPage() {
   const router = useRouter();
@@ -89,7 +86,7 @@ export default function FollowupsPage() {
   if (!authed) return null;
 
   const nameOf = (sid: string | null) => students.find(s => s.id === sid)?.name || null;
-  const today = todayISO();
+  const today = sgtTodayISO();
   const overdue = (rows || []).filter(f => f.due && f.due < today);
   const dueToday = (rows || []).filter(f => f.due === today);
   const upcoming = (rows || []).filter(f => !f.due || f.due > today);

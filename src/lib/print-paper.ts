@@ -15,6 +15,7 @@ import {
   type Candidate,
   type SlotPick,
 } from './prelim-builder';
+import { addDaysISO, sgtClock, sgtDayStartISO } from './sgt';
 
 /** Papers a student may generate per SGT week (Monday-anchored). Cost brake —
  * Puppeteer renders + figure bandwidth — and it keeps each paper meaningful. */
@@ -25,15 +26,12 @@ export const DEFAULT_QUESTION_COUNT = 8;
 export const MAX_QUESTION_COUNT = 15;
 export const MAX_TOPICS_PER_PAPER = 4;
 
-/** UTC ISO timestamp of the most recent Monday 00:00 in Singapore (UTC+8, no
- * DST — same shifted-clock trick as portal-submit-limit's sgtStartOfDayIso). */
+/** UTC ISO timestamp of the most recent Monday 00:00 in Singapore. */
 export function sgtStartOfWeekIso(now: Date = new Date()): string {
-  const shifted = new Date(now.getTime() + 8 * 60 * 60 * 1000);
-  shifted.setUTCHours(0, 0, 0, 0);
-  // getUTCDay: Sunday=0 … Monday=1. Roll back to the week's Monday.
-  const back = (shifted.getUTCDay() + 6) % 7;
-  shifted.setUTCDate(shifted.getUTCDate() - back);
-  return new Date(shifted.getTime() - 8 * 60 * 60 * 1000).toISOString();
+  const { weekday, dateISO } = sgtClock(now);
+  // weekday: Sunday=0 … Monday=1. Roll back to the week's Monday.
+  const back = (weekday + 6) % 7;
+  return sgtDayStartISO(addDaysISO(dateISO, -back));
 }
 
 /** One pre-registered question on a generated paper (ordered). */

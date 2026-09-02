@@ -26,10 +26,10 @@ export function getInvoiceMonth(today = new Date()): {
   };
 }
 
-/** Today's date in SGT (UTC+8) as YYYY-MM-DD, independent of server timezone. */
-export function sgtTodayISO(now = Date.now()): string {
-  return new Date(now + 8 * 3600 * 1000).toISOString().slice(0, 10);
-}
+/** Today's date in SGT (UTC+8) as YYYY-MM-DD, independent of server timezone.
+ *  Lives in lib/sgt now; re-exported here because the invoice callers (and
+ *  invoice-month.test.ts) have always reached for it through this module. */
+export { sgtTodayISO } from './sgt';
 
 /**
  * First day of the month `monthsBack` months before todayISO's month — the

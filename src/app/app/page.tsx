@@ -16,6 +16,7 @@ import { createServiceClient } from '@/lib/supabase-server';
 import { loadPapersAndNotebook } from '@/lib/notebook-data';
 import { buildPlan } from '@/lib/plan';
 import { sgtToday } from '@/lib/notebook';
+import { sgtDaysAgoISO, sgtTodayISO } from '@/lib/sgt';
 import { activeAnnouncement } from '@/lib/portal-announcement';
 import { loadActivePlan } from '@/lib/remediation-data';
 import { relockItems, nextOpenItem } from '@/lib/remediation';
@@ -26,11 +27,9 @@ import ExamCountdown from './exam-countdown';
 
 export const dynamic = 'force-dynamic';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-
 function friendlyDate(dateStr: string): string {
-  const today = new Date(Date.now() + 8 * 3600_000).toISOString().slice(0, 10);
-  const tomorrow = new Date(Date.now() + 8 * 3600_000 + DAY_MS).toISOString().slice(0, 10);
+  const today = sgtTodayISO();
+  const tomorrow = sgtDaysAgoISO(-1);
   if (dateStr === today) return 'Today';
   if (dateStr === tomorrow) return 'Tomorrow';
   return new Date(dateStr + 'T00:00:00Z').toLocaleDateString('en-SG', {

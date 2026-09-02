@@ -11,6 +11,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { PortalFetchError, portalFetch, portalMessage } from '@/lib/portal-fetch';
+import { sgtTodayISO } from '@/lib/sgt';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 
@@ -52,7 +53,7 @@ export default function RescheduleClient() {
   useEffect(() => { load(); }, [load]);
 
   const lesson = data?.lessons.find(l => l.id === lessonId) ?? null;
-  const todayStr = new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 10); // SGT
+  const todayStr = sgtTodayISO();
   const groups = useMemo(() => {
     if (!data) return [];
     const m = new Map<string, Option[]>();

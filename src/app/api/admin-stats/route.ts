@@ -5,14 +5,9 @@ import { unmarkedLessonsFilterFormula } from '@/lib/unmarked-lessons';
 import { resolveActiveExamType, checkExamInfoStatus, seasonSatisfyingTypes, ExamType, ExamRecord } from '@/lib/exam-season';
 import { getSupabaseAdmin, getSecretKey } from '@/lib/supabase';
 import { extractFlagged } from '@/lib/mark-triage';
+import { sgtTodayISO } from '@/lib/sgt';
 
 export const runtime = 'nodejs';
-
-// SGT = UTC+8
-function sgtDateStr(): string {
-  const sgt = new Date(Date.now() + 8 * 60 * 60 * 1000);
-  return `${sgt.getUTCFullYear()}-${String(sgt.getUTCMonth() + 1).padStart(2, '0')}-${String(sgt.getUTCDate()).padStart(2, '0')}`;
-}
 
 function addDays(iso: string, n: number): string {
   const d = new Date(iso + 'T00:00:00Z');
@@ -198,7 +193,7 @@ async function fetchExamGaps(): Promise<{ examType: ExamType; count: number } | 
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const today = sgtDateStr();
+  const today = sgtTodayISO();
   const monday = getMondayStr(today);
   const nextMonday = addDays(monday, 7); // exclusive upper bound for week range
   const sunday = addDays(monday, 6);

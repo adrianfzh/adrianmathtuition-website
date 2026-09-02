@@ -14,14 +14,16 @@ import { unresolvedFails } from './learn-review';
 import { qbLevelsFor, bankScope } from './practice';
 import { airtableRequestAll } from './airtable';
 import type { PortalAccount } from './portal-auth';
+import { sgtTodayISO } from './sgt';
 
 export type TodayCard = { topic: string; subject: string; reason: string; chip: string };
 
 const norm = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
 
+/** UTC midnight of today's SINGAPORE date — the anchor the day walks below
+ *  add to; not an instant in SGT. */
 function todaySGT(): Date {
-  const now = new Date(Date.now() + 8 * 60 * 60 * 1000); // SGT = UTC+8
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  return new Date(`${sgtTodayISO()}T00:00:00Z`);
 }
 function iso(d: Date): string {
   return d.toISOString().slice(0, 10);
