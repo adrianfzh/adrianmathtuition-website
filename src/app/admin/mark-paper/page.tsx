@@ -130,6 +130,19 @@ async function uploadPaperPdf(file: File): Promise<string | null> {
   } catch { return null; }
 }
 
+async function uploadScheme(file: File): Promise<string | null> {
+  try {
+    const tokenRes = await fetch('/api/admin/mark-paper-annotated-token?type=paper');
+    if (!tokenRes.ok) return null;
+    const { token, pathname } = await tokenRes.json();
+    const blob = await put(pathname, file, {
+      access: 'public', token, contentType: file.type || 'application/octet-stream',
+      multipart: file.size > 5 * 1024 * 1024,
+    });
+    return blob.url;
+  } catch { return null; }
+}
+
 type MarkPart = { label?: string; awarded?: number; max?: number; error_summary?: string | null };
 type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; checked_at?: string | null; released_at?: string | null; archived_at?: string | null; marked_by?: string | null; mark_now?: string | null; skip_external?: string | null; claim_at?: string | null; claim_released?: string | null; sheet_status?: string | null; sheet_error?: string | null; sheet_at?: string | null; sheet_stage?: string | null; pages_done?: string | null; pages_total?: string | null };
 type Result = {
@@ -334,6 +347,10 @@ export default function MarkPaperPage() {
   // day's math paper. The spec's "one tap and never wrong" only holds if every
   // load starts on math.
   const [markSubject, setMarkSubject] = useState<MarkSubject>(DEFAULT_MARK_SUBJECT);
+  // An OPTIONAL school mark scheme (SPEC-SCIENCE-MARKING): when attached, the bot
+  // grounds this paper on it instead of guessing from the question bank. A PDF or
+  // image pages. Resets each load like the subject does.
+  const [schemeFiles, setSchemeFiles] = useState<File[]>([]);
 
   const [phase, setPhase] = useState<'idle' | 'proposing' | 'proposed' | 'marking' | 'done'>('idle');
   const [error, setError] = useState('');
@@ -623,10 +640,19 @@ export default function MarkPaperPage() {
       // ride its body). The originals feed the hi-res red pen; together with the PDF
       // they are also what 🔁 Re-mark rebuilds from. Each upload is best-effort.
       setRasterizing('Uploading full-resolution pages…');
-      const [originalUrls, paperPdfUrl] = await Promise.all([
+      const [originalUrls, paperPdfUrl, schemeUrls] = await Promise.all([
         Promise.all(images.map((f, i) => uploadOriginal(f, imgs[i]))),
         pdf ? uploadPaperPdf(pdf) : Promise.resolve(null),
+        Promise.all(schemeFiles.map((f) => uploadScheme(f))),
       ]).finally(() => setRasterizing(''));
+      // scheme_source: a single PDF, or image pages — whichever was attached.
+      const schemeSource = (() => {
+        const urls = (schemeUrls || []).filter(Boolean) as string[];
+        if (!urls.length) return null;
+        const pdfUrl = schemeFiles.findIndex((f) => f.type === 'application/pdf');
+        if (pdfUrl >= 0 && urls[pdfUrl]) return { pdf_url: urls[pdfUrl], pages: [] };
+        return { pdf_url: null, pages: urls.map((url) => ({ url })) };
+      })();
       const paperLabel = paperName.trim() || autoPaperLabel();
       // SAVE the uploaded inputs as a run row BEFORE marking — a 502'd marking then
       // leaves a "⏳ not marked yet" entry in history whose files are already in
@@ -641,6 +667,7 @@ export default function MarkPaperPage() {
             source: {
               paper_pdf_url: paperPdfUrl || null,
               photos: originalUrls.map((u, i) => u ? { photo_index: i, original_url: u } : null).filter(Boolean),
+              ...(schemeSource ? { scheme_source: schemeSource } : {}),
             },
           }),
         });
@@ -1263,7 +1290,7 @@ export default function MarkPaperPage() {
       const { position, etaMinutes, batchDiscount } = await queueFilesAsPaper(images, paperLabel, { paperPdfUrl, totalMax: outOfValue() });
       // Clear the slots — the whole point is attaching the NEXT paper immediately.
       imgPreviews.forEach((u) => { if (u) URL.revokeObjectURL(u); });
-      setImages([]); setImgPreviews([]); setPdf(null); setSplitNote(''); workingNameRef.current = ''; setPaperName(''); setOutOf('');
+      setImages([]); setImgPreviews([]); setPdf(null); setSchemeFiles([]); setSplitNote(''); workingNameRef.current = ''; setPaperName(''); setOutOf('');
       // Say the price route and the wait out loud (Adrian, 26 Aug 2026: "put it
       // clearly as queue markings at 50% discount … and mention roughly when").
       const eta = Array.isArray(etaMinutes) && etaMinutes.length === 2 ? ` — expect it marked in ~${etaMinutes[0]}–${etaMinutes[1]} min` : '';
@@ -2063,6 +2090,20 @@ export default function MarkPaperPage() {
                 <option key={s} value={s}>{subjectLabel(s)}{s === DEFAULT_MARK_SUBJECT ? ' (default)' : ''}</option>
               ))}
             </select>
+          </label>
+          <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#374151' }}
+            title="Optional: attach the school's mark scheme (PDF or photos) and the bot grounds this paper on it instead of the question bank. Best for a paper not in your bank.">
+            <span>Scheme:</span>
+            <input
+              type="file" accept="application/pdf,image/*" multiple disabled={busy}
+              onChange={(e) => setSchemeFiles(Array.from(e.target.files || []))}
+              style={{ fontSize: 12, maxWidth: 190 }}
+            />
+            {schemeFiles.length > 0 && (
+              <span style={{ fontSize: 12, color: '#1a7f37' }}>
+                {schemeFiles.length} file{schemeFiles.length === 1 ? '' : 's'} ✓
+              </span>
+            )}
           </label>
           <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#374151' }}>
             <span>Marks:</span>
