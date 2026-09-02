@@ -17,7 +17,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createServiceClient } from './supabase-server';
 import { questionMarkdown, questionStructured, totalMarksOf, type BankQuestion } from './bank-question-markdown';
 import {
-  computeScienceMastery, isMcqAnswer, scienceLevel, type ScienceSubject, type TopicMastery,
+  computeScienceMastery, isMcqAnswer, mcqStemParagraphs, scienceLevel, type ScienceSubject, type TopicMastery,
 } from './science-levels';
 
 let _client: SupabaseClient | null = null;
@@ -121,11 +121,13 @@ export interface ScienceQuestionPayload {
 }
 
 export function toPayload(q: ScienceQuestionRow): ScienceQuestionPayload {
-  const { stem, parts } = questionStructured(q);
   const mcq = isMcqAnswer(q.answer);
+  // MCQ options each get their own paragraph (single newlines fold in markdown).
+  const row = mcq ? { ...q, question_text: mcqStemParagraphs(q.question_text) } : q;
+  const { stem, parts } = questionStructured(row);
   return {
     id: q.id,
-    markdown: questionMarkdown(q),
+    markdown: questionMarkdown(row),
     stem,
     parts,
     marks: q.total_marks ?? totalMarksOf(parts) ?? (mcq ? 1 : null),

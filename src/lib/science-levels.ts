@@ -78,6 +78,14 @@ export function mcqOptionsIn(text: string | null | undefined): McqLetter[] | nul
   return found.length >= 2 ? found : null;
 }
 
+/** The bank stores MCQ options as single-newline lines ("…?\nA) 1 N\nB) 2 N");
+ *  markdown folds single newlines into spaces, so the options ran together on
+ *  one line. Put each option on its own paragraph. Non-MCQ text is untouched. */
+export function mcqStemParagraphs(text: string | null | undefined): string {
+  if (!text) return '';
+  return text.replace(/[ \t]*\n[ \t]*(?=\(?[A-D][).:]\s+\S)/g, '\n\n').replace(/\n{3,}/g, '\n\n');
+}
+
 /** "b", "B)", "(B)", "B) 330 m/s", "option B" → "B"; anything else → null. */
 export function normaliseMcqChoice(input: string | null | undefined): McqLetter | null {
   const s = (input ?? '').trim();

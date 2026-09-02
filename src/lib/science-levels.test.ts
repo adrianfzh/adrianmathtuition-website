@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  computeScienceMastery, gradeMcq, isMcqAnswer, isScienceLevel, mcqOptionsIn, normaliseMcqChoice,
+  computeScienceMastery, gradeMcq, isMcqAnswer, isScienceLevel, mcqOptionsIn, mcqStemParagraphs, normaliseMcqChoice,
   scienceImageUrl, scienceLevelsFor, scienceSubjectOf,
 } from './science-levels';
 
@@ -35,6 +35,12 @@ describe('MCQ', () => {
     expect(mcqOptionsIn('A. first\nB. second\nC. third')).toEqual(['A', 'B', 'C']);
     expect(mcqOptionsIn('Calculate the resistance.')).toBeNull();
     expect(mcqOptionsIn('A single line mentioning A) once')).toBeNull();
+  });
+  it('puts each option on its own paragraph for markdown', () => {
+    expect(mcqStemParagraphs('What is F?\nA) 1 N\nB) 2 N\nC) 3 N')).toBe('What is F?\n\nA) 1 N\n\nB) 2 N\n\nC) 3 N');
+    expect(mcqStemParagraphs('Already\n\nA) x\n\nB) y')).toBe('Already\n\nA) x\n\nB) y');
+    expect(mcqStemParagraphs('No options\nhere at all')).toBe('No options\nhere at all');
+    expect(mcqStemParagraphs(null)).toBe('');
   });
   it('normalises what students type', () => {
     for (const s of ['b', 'B', 'B)', '(B)', 'B) 330 m/s', 'option B', 'Ans: B', 'B.']) expect(normaliseMcqChoice(s)).toBe('B');
