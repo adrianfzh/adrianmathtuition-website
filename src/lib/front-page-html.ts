@@ -14,11 +14,17 @@
 // number on this page comes from the script it is stapled to, and no wording
 // assumes the student has a history here.
 //
-// FOR TEENAGERS (same day: "it looks professional for adults, but we are with
-// young students here, make it fun"). Coral / teal / sunny-yellow on white, one
-// accent per section, rounded cards, a big round score badge, Quicksand for the
-// headings. No emoji — the Chromium on Vercel has no emoji font and prints tofu
-// — and no images: every shape here is CSS.
+// LOOK. 2 Sep: "it looks professional for adults, but we are with young students
+// here, make it fun" → coral / teal / sunny-yellow, rounded cards, a tilted round
+// score badge, Quicksand. 3 Sep, seeing it stapled to a marked paper: "bring back
+// the original one (the one in brown) — the colour scheme does not match, but
+// change the marks so it is not tilted." So: the 1 Sep scheme again — cream,
+// brown teaching ink, one red for the verdict, Source Serif + Plex Mono, the
+// marked pages' own palette — on TODAY's markup (sheet-driven themes, the
+// marks-lost row, one A4), and nothing rotated. The coral version is kept for
+// iterating at f85af8c6 (git show f85af8c6:src/lib/front-page-html.ts). No emoji
+// — the Chromium on Vercel has no emoji font and prints tofu — and no images:
+// every shape here is CSS.
 //
 // Pure: analysis in, HTML out, no I/O. The route renders it with the shared
 // Puppeteer browser and prepends the image to the assembled PDF.
@@ -169,14 +175,14 @@ function kindsRow(t: ErrorKindTotals | null | undefined): string {
     ? `<p class="kinds-sub">${c} mark${c === 1 ? ' was a' : 's were'} careless slip${c === 1 ? '' : 's'} &mdash; the method was right.</p>`
     : '';
   return `<style>
-.kinds{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem .5rem;margin:-.55rem 0 ${sub ? '.3rem' : '1.1rem'};
-       padding:.45rem .9rem;background:var(--teal-tint);border-radius:12px;font-size:.8rem;color:var(--ink-soft)}
-.kinds-tag{font-family:"Quicksand","Nunito",sans-serif;font-weight:700;font-size:.66rem;letter-spacing:.1em;
-           text-transform:uppercase;color:var(--teal-deep);margin-right:.25rem}
-.kinds b{color:var(--ink);font-weight:800}
+.kinds{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem .5rem;margin:-.3rem 0 ${sub ? '.3rem' : '1.1rem'};
+       padding:.45rem .85rem;background:var(--shade);border:1px solid var(--rule);font-size:.8rem;color:var(--ink-soft)}
+.kinds-tag{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:.6rem;letter-spacing:.16em;
+           text-transform:uppercase;color:var(--ink-faint);margin-right:.3rem}
+.kinds b{color:var(--ink);font-weight:600}
 .kinds i{font-style:normal;color:var(--ink-faint)}
 .kinds .dot{color:var(--ink-faint)}
-.kinds-sub{margin:0 0 1.1rem .9rem;font-size:.8rem;font-weight:700;color:var(--teal-deep)}
+.kinds-sub{margin:0 0 1.1rem .85rem;font-size:.8rem;font-style:italic;color:var(--teach)}
 </style>
 <div class="kinds"><span class="kinds-tag">Marks lost</span> ${cells.join(' <span class="dot">&middot;</span> ')}</div>
 ${sub}`;
@@ -225,83 +231,81 @@ export function frontPageHtml(input: FrontPageInput): string {
   return `<!doctype html><html><head><meta charset="utf-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <!-- Same KaTeX the marking PNGs use (lib/marking-pipeline.ts). Stylesheet only:
      mathHtml() has already typeset the notes server-side, so there is no script
      to run and nothing to wait for beyond the fonts. -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 <style>
-/* Single-theme on purpose: this is printed onto paper, so it commits to one
-   light palette and never asks what the viewer's device prefers. (A dark-mode
-   query here would produce a black A4 page.) */
-:root{--sheet:#fff;--ink:#27293D;--ink-soft:#5D6072;--ink-faint:#9A9DAD;
-      --coral:#FF6F61;--coral-deep:#E4503F;--coral-tint:#FFEFEB;
-      --teal:#20A99F;--teal-deep:#178A82;--teal-tint:#E3F6F3;
-      --sun:#FFCB47;--sun-deep:#C98F00;--sun-tint:#FFF6D9;}
+/* Single-theme on purpose: this is printed onto paper, so it commits to the
+   marked pages' own palette — cream, brown teaching ink, one red for the verdict —
+   and never asks what the viewer's device prefers. (A dark-mode query here would
+   produce a black A4 page.) The 1 Sep 2026 scheme, brought back on 3 Sep at
+   Adrian's request over the coral/teal/yellow one (kept at f85af8c6 to iterate on);
+   nothing on this page is rotated. */
+:root{--sheet:#fff;--ink:#1F1D1A;--ink-soft:#6B6257;--ink-faint:#98907F;
+      --teach:#5B4636;--verdict:#C4342C;--earned:#1A7F37;--rule:#E7E1D5;
+      --rail:#F1EBDE;--shade:#FDFBF6;}
 *{box-sizing:border-box}
 body{margin:0;background:var(--sheet);color:var(--ink);width:210mm;min-height:297mm;
-     font-family:"Nunito","Trebuchet MS","Segoe UI",Arial,sans-serif;font-size:15px;line-height:1.48;
-     -webkit-font-smoothing:antialiased;padding:12mm 15mm 11mm;position:relative;overflow:hidden;
+     font-family:"Source Serif 4",Georgia,serif;font-size:14.5px;line-height:1.5;
+     -webkit-font-smoothing:antialiased;padding:15mm 17mm 13mm;position:relative;overflow:hidden;
      display:flex;flex-direction:column}
-/* Soft colour blobs behind the corners — CSS only, no images. They live in their
-   own overflow-hidden layer: a blob hanging off the bottom edge still counts
-   toward body.scrollHeight, and a full-page screenshot would grow past A4. */
-.blobs{position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none}
-.blob{position:absolute;border-radius:50%}
-.blob.a{width:230px;height:230px;right:-90px;top:-100px;background:var(--sun-tint)}
-.blob.b{width:150px;height:150px;left:-70px;top:250px;background:var(--coral-tint)}
-.blob.c{width:190px;height:190px;right:-70px;bottom:-80px;background:var(--teal-tint)}
-.page{position:relative;z-index:1;flex:1;display:flex;flex-direction:column}
-.masthead{display:flex;align-items:center;justify-content:space-between;gap:1rem}
-.brand{font-family:"Quicksand","Nunito",sans-serif;font-weight:700;font-size:.72rem;letter-spacing:.08em;
-       text-transform:uppercase;color:#fff;background:var(--teal);padding:.3rem .8rem;border-radius:999px}
-.paper-name{font-size:.8rem;font-weight:700;color:var(--ink-soft)}
-.hero{display:grid;grid-template-columns:auto 1fr;gap:0 1.5rem;align-items:center;margin:1.4rem 0 1.35rem}
-.badge{width:132px;height:132px;border-radius:50%;background:var(--sun);display:flex;flex-direction:column;
-       align-items:center;justify-content:center;box-shadow:0 0 0 8px var(--sun-tint);transform:rotate(-6deg)}
-.score{font-family:"Quicksand","Nunito",sans-serif;font-size:2.5rem;font-weight:700;line-height:1;
-       font-variant-numeric:tabular-nums;white-space:nowrap}
-.score .of{font-size:1.15rem;font-weight:700;color:var(--sun-deep)}
-.pct{font-size:.74rem;font-weight:800;letter-spacing:.08em;color:var(--sun-deep);margin-top:.3rem}
-.student{font-weight:800;font-size:.84rem;letter-spacing:.06em;text-transform:uppercase;color:var(--coral-deep);margin:0}
-h1{font-family:"Quicksand","Nunito",sans-serif;font-size:2.05rem;font-weight:700;line-height:1.08;margin:.15rem 0 .55rem;
-   letter-spacing:-.01em}
-.verdict{margin:0;background:var(--sun-tint);border-radius:14px;padding:.62rem .9rem;font-size:.93rem}
-.verdict strong{color:var(--coral-deep);font-weight:800}
-h2{display:flex;align-items:center;gap:.5rem;font-family:"Quicksand","Nunito",sans-serif;font-size:1.08rem;
-   font-weight:700;margin:0 0 .1rem}
-h2::before{content:"";width:.72rem;height:.72rem;border-radius:4px;background:currentColor;transform:rotate(12deg)}
-.sec-work h2{color:var(--coral-deep)}
-.sec-where h2{color:var(--teal-deep)}
-.sub{font-size:.8rem;color:var(--ink-soft);margin:0 0 .7rem}
-.themes{display:flex;flex-direction:column;gap:.55rem;margin-bottom:1.3rem}
-.theme{display:grid;grid-template-columns:1.75rem 1fr auto;gap:.1rem .7rem;align-items:center;
-       background:var(--coral-tint);border-radius:14px;padding:.65rem .9rem .65rem .7rem}
-.num{width:1.75rem;height:1.75rem;border-radius:50%;background:var(--coral);color:#fff;
-     font-family:"Quicksand","Nunito",sans-serif;font-weight:700;font-size:.95rem;
-     display:flex;align-items:center;justify-content:center}
-.theme-title{font-weight:800;font-size:.97rem;line-height:1.3}
-.tally{background:#fff;color:var(--coral-deep);border-radius:999px;padding:.18rem .62rem;
-       font-size:.74rem;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
-.tally b{font-weight:800}
-.theme-note{grid-column:2/4;font-size:.82rem;color:var(--ink-soft);margin:.12rem 0 0}
-.where{display:inline-block;background:#fff;border:1.5px solid var(--coral);color:var(--coral-deep);
-       border-radius:6px;padding:0 .38rem;font-size:.7rem;font-weight:800;margin-right:.3rem;line-height:1.5}
+.blobs{display:none}
+.page{position:relative;flex:1;display:flex;flex-direction:column}
+.masthead{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
+          padding-bottom:.55rem;border-bottom:1.5px solid var(--ink)}
+.brand{font-family:"IBM Plex Mono",monospace;font-size:.64rem;font-weight:600;
+       letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint)}
+.paper-name{font-size:.78rem;color:var(--ink-soft);font-style:italic}
+.hero{display:grid;grid-template-columns:auto 1fr;gap:0 1.4rem;align-items:center;margin:1.1rem 0 1.15rem}
+/* The score: a cream tile with the red verdict rule — upright. */
+.badge{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+       background:var(--shade);border:1px solid var(--rule);border-left:4px solid var(--verdict);
+       padding:.85rem 1.15rem .8rem;min-width:9rem}
+.score{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+       font-size:2.2rem;font-weight:600;line-height:1;white-space:nowrap}
+.score .of{font-size:1.1rem;color:var(--ink-faint);font-weight:400}
+.pct{font-family:"IBM Plex Mono",monospace;font-size:.7rem;color:var(--ink-faint);
+     letter-spacing:.08em;margin-top:.32rem}
+.student{font-size:.92rem;color:var(--ink-soft);margin:0}
+h1{font-size:2.05rem;font-weight:700;line-height:1.1;margin:.15rem 0 .45rem;letter-spacing:-.015em}
+.verdict{margin:0;font-size:.95rem;color:var(--ink);background:var(--rail);
+         border:1px dashed var(--rule);padding:.55rem .85rem}
+.verdict strong{color:var(--teach);font-weight:600}
+h2{display:block;font-family:"IBM Plex Mono",monospace;font-size:.64rem;font-weight:600;letter-spacing:.16em;
+   text-transform:uppercase;color:var(--ink-faint);margin:0 0 .28rem;padding-bottom:.42rem;
+   border-bottom:1px solid var(--rule)}
+h2::before{content:none}
+.sec-work h2,.sec-where h2{color:var(--ink-faint)}
+.sub{font-size:.79rem;color:var(--ink-soft);margin:.38rem 0 .68rem;font-style:italic}
+.themes{display:flex;flex-direction:column;margin-bottom:1.15rem}
+.theme{display:grid;grid-template-columns:1.25rem 1fr auto;gap:0 .75rem;align-items:baseline;
+       padding:.52rem 0 .52rem .45rem;border-bottom:1px solid var(--rule);border-left:3px solid var(--verdict)}
+.num{font-family:"IBM Plex Mono",monospace;font-size:.78rem;font-weight:600;color:var(--verdict)}
+.theme-title{font-size:.96rem;font-weight:600;line-height:1.3}
+.tally{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+       font-size:.73rem;color:var(--ink-soft);white-space:nowrap}
+.tally b{color:var(--ink);font-weight:600}
+.theme-note{grid-column:2/4;font-size:.81rem;color:var(--ink-soft);margin:.22rem 0 0}
+.where{font-family:"IBM Plex Mono",monospace;font-size:.7rem;font-weight:600;color:var(--ink);
+       letter-spacing:.02em;margin-right:.25rem}
 /* KaTeX sets its own size; hold it to the sentence it sits in. */
 .theme-note .katex{font-size:1em}
-.questions{display:flex;flex-direction:column;gap:.55rem;margin-bottom:1.3rem}
-.q{display:grid;grid-template-columns:3rem 1fr 4.4rem;gap:.7rem;align-items:center}
-.q-label{font-family:"Quicksand","Nunito",sans-serif;font-weight:700;font-size:.92rem;color:var(--teal-deep);
+.questions{display:flex;flex-direction:column;gap:.32rem;margin-bottom:1.1rem}
+.q{display:grid;grid-template-columns:2.7rem 1fr 4.4rem;gap:.75rem;align-items:center}
+.q-label{font-family:"IBM Plex Mono",monospace;font-size:.83rem;font-weight:600;
          font-variant-numeric:tabular-nums}
-.bar{height:.8rem;border-radius:999px;background:var(--teal-tint);position:relative;overflow:hidden}
-.bar span{position:absolute;inset:0 auto 0 0;background:var(--teal);border-radius:999px}
-.q-marks{font-size:.76rem;font-weight:700;color:var(--ink-soft);text-align:right;font-variant-numeric:tabular-nums}
-.close{margin-top:auto;background:var(--teal);color:#fff;border-radius:16px;padding:.8rem 1.1rem .85rem}
-.close-tag{display:inline-block;font-family:"Quicksand","Nunito",sans-serif;font-weight:700;font-size:.68rem;
-           letter-spacing:.1em;text-transform:uppercase;background:rgba(255,255,255,.22);
-           padding:.14rem .55rem;border-radius:999px;margin-bottom:.32rem}
-.close p{margin:0;font-size:.93rem;font-weight:600}
-.close b{color:var(--sun);font-weight:800}
+.bar{height:.52rem;background:var(--rail);position:relative;overflow:hidden}
+.bar span{position:absolute;inset:0 auto 0 0;background:var(--verdict);opacity:.8}
+.q-marks{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+         font-size:.73rem;color:var(--ink-soft);text-align:right}
+.close{margin-top:auto;border-top:1.5px solid var(--ink);padding-top:.8rem;
+       font-size:.89rem;color:var(--teach)}
+.close-tag{display:block;font-family:"IBM Plex Mono",monospace;font-size:.6rem;font-weight:600;
+           letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.3rem}
+.close p{margin:0}
+.close b{color:var(--ink);font-weight:600}
 </style></head><body>
 <div class="blobs"><span class="blob a"></span><span class="blob b"></span><span class="blob c"></span></div>
 <div class="page">
