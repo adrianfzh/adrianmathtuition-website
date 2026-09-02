@@ -388,11 +388,17 @@ export async function POST(request: NextRequest) {
               ? nextMonthLabel      // "May 2026" — shows in May dropdown
               : startMonthLabel;    // "April 2026" — no next month needed
 
-            // Look up trial lesson
+            // Look up trial lesson. Type filter only: ARRAYJOIN({Student})
+            // yields display names, not record IDs, so no formula can match
+            // the student — fetch all Trial rows and match in JS instead
+            // (same pattern as the lesson dedup in Step 7).
             let trialLessonFormatted: string | null = null;
             try {
-              const trialRes = await at('Lessons', `?filterByFormula=AND(SEARCH('${studentId}',ARRAYJOIN({Student})),{Type}='Trial')&maxRecords=1`);
-              const trialRecord = trialRes.records?.[0];
+              const trialRes = await airtableRequestAll(
+                baseId, airtableToken, 'Lessons',
+                `?filterByFormula=${encodeURIComponent(`{Type}='Trial'`)}&fields[]=Student&fields[]=Date`
+              );
+              const trialRecord = trialRes.records.find((r: any) => r.fields?.['Student']?.[0] === studentId);
               if (trialRecord?.fields?.['Date']) trialLessonFormatted = formatDateLong(trialRecord.fields['Date'] as string);
             } catch { /* non-fatal */ }
 
