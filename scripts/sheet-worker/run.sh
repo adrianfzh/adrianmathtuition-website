@@ -83,14 +83,32 @@ export SHEETS_STATE="$STATE"
 # session must tolerate the shared checkout being on any branch.
 export SHEETS_REPO="${SHEETS_REPO:-$HOME/Desktop/adrianmathtuition-website}"
 
-# --- peek: is anything queued? (one curl — no Claude spend) -----------------
+# --- peek: is anything waiting? (one curl — no Claude spend) ----------------
+# "Waiting" = queued, OR claimed by a session that stopped heartbeating more
+# than LEASE_MS ago (40 min, lib/sheet-jobs.ts). The peek used to count only
+# 'queued', so a job whose session died mid-authoring sat at 'claimed ·
+# diagnosing' for 33 hours (Tan Sijia, 1–2 Sep 2026): the API's `next` action
+# knows how to reclaim an expired lease, but no session was ever started to
+# call it. The lease is 40 min server-side; mirror it here.
 JOBS=$(curl -s -m 30 "$SHEETS_API_BASE/api/admin/sheet-jobs" \
   -H "Authorization: Bearer $SHEETS_API_TOKEN") || JOBS=""
 WAITING=$(printf '%s' "$JOBS" | python3 -c "
-import json,sys
+import json,sys,datetime
+LEASE_S = 40*60
+now = datetime.datetime.now(datetime.timezone.utc)
+def expired(j):
+    beat = j.get('heartbeat_at') or j.get('claimed_at')
+    if not beat: return True
+    try:
+        t = datetime.datetime.fromisoformat(beat.replace('Z','+00:00'))
+    except Exception:
+        return True
+    return (now - t).total_seconds() > LEASE_S
 try:
     jobs = json.load(sys.stdin).get('jobs', [])
-    print(sum(1 for j in jobs if j.get('status') == 'queued' and (j.get('attempts') or 0) < 3))
+    print(sum(1 for j in jobs
+              if (j.get('attempts') or 0) < 3
+              and (j.get('status') == 'queued' or (j.get('status') == 'claimed' and expired(j)))))
 except Exception:
     print(-1)")
 date '+%Y-%m-%d %H:%M:%S' > "$STATE/last_peek"
