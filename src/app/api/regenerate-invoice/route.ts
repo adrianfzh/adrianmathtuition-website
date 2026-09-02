@@ -5,11 +5,16 @@ import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
 import { NO_LESSON_DATES } from '@/lib/holidays';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
-import { resolveInvoiceIssueDate, sgtTodayISO } from '@/lib/invoice-month';
+import { displaySpanMonth, resolveInvoiceIssueDate, sgtTodayISO } from '@/lib/invoice-month';
 import { monthWindowClause } from '@/lib/billing-math';
-import { isProratedMonth, arrearsInvoiceDates } from '@/lib/arrears-invoices';
-import { rebuildLineItems } from '@/lib/regenerate-line-items';
 import { applyPriorBalance, stripPersistedCarryOver } from '@/lib/invoice-consolidate';
+import {
+  arrearsMachineryCovers, billingModeFor, examCutoffFor, invoiceDueDateISO, isCombinedJanuary, monthLabel,
+  type StudentBillingProfile,
+} from '@/lib/year-end-billing';
+import { attendedLessonLines, descriptionBase, projectedLessonLines, sumLineRates, type SlotLine } from '@/lib/arrears-lines';
+import { fetchArrearsPool, fetchInvoicedMonthsByStudent } from '@/lib/arrears-fetch';
+import { rebuildLineItems, type MonthLesson } from '@/lib/regenerate-line-items';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -69,17 +74,32 @@ export async function POST(req: NextRequest) {
     const student = await at('Students', `/${studentId}`);
     const studentName = (student.fields['Student Name'] || '') as string;
     const level = (student.fields['Level'] || '') as string;
-    const subjects = Array.isArray(student.fields['Subjects'])
-      ? (student.fields['Subjects'] as string[]).join(' & ')
-      : '';
+    const subjectsArr: string[] = Array.isArray(student.fields['Subjects']) ? (student.fields['Subjects'] as string[]) : [];
+    const subjects = subjectsArr.join(' & ');
+    const profile: StudentBillingProfile = { level, subjects: subjectsArr, subjectLevel: (student.fields['Subject Level'] || '') as string };
 
-    // 4. Fetch active enrollments — can't filter by linked Student field by record ID in Airtable formulas;
-    // fetch all active enrollments and filter by studentId in JS (same pattern as generate-invoices).
+    // Year-end rules (lib/year-end-billing.ts) — only for months the machinery
+    // covers (Oct 2026 →); older invoices rebuild exactly as they were billed.
+    //   combinedJan   : the 1 Jan invoice = December attended + January projected
+    //   arrearsRebuild: rebuild from ATTENDED lessons (Completed Regular/Rescheduled)
+    //   cutoff        : an exam-year student's lessons stop at the last paper
+    const monthNum = monthIdx + 1;
+    const combinedJan = monthNum === 1 && isCombinedJanuary(profile, 1) && arrearsMachineryCovers(year - 1, 12);
+    const arrearsRebuild = combinedJan || (billingModeFor(profile, monthNum) === 'arrears' && arrearsMachineryCovers(year, monthNum));
+    const cutoff = examCutoffFor(profile, year);
+    const billYear = combinedJan ? year - 1 : year;
+    const billMonth = combinedJan ? 12 : monthNum;
+    const billFirstISO = `${billYear}-${String(billMonth).padStart(2, '0')}-01`;
+
+    // 4. Fetch enrollments — can't filter by linked Student field by record ID in Airtable formulas;
+    // fetch all and filter by studentId in JS (same pattern as generate-invoices). Enrollments that
+    // ENDED during the bill month come too: an arrears rebuild still bills what that slot attended.
     const enrollData = await airtableRequestAll(
       'Enrollments',
-      `?filterByFormula=${encodeURIComponent("{Status}='Active'")}&fields[]=Student&fields[]=Rate Per Lesson&fields[]=Slot&fields[]=Start Date`
+      `?filterByFormula=${encodeURIComponent(`OR({Status}='Active',AND({Status}='Ended',{End Date}>='${billFirstISO}'))`)}&fields[]=Student&fields[]=Rate Per Lesson&fields[]=Slot&fields[]=Start Date&fields[]=End Date&fields[]=Status`
     );
-    const enrollment = enrollData.records.find((r: any) => r.fields['Student']?.[0] === studentId);
+    const studentEnrollments = enrollData.records.filter((r: any) => r.fields['Student']?.[0] === studentId);
+    const enrollment = studentEnrollments.find((r: any) => r.fields['Status'] === 'Active') ?? studentEnrollments[0];
     const ratePerLesson = (enrollment?.fields['Rate Per Lesson'] as number) || 0;
     const slotId = enrollment?.fields['Slot']?.[0] as string | undefined;
     const enrollStartDate = (enrollment?.fields['Start Date'] as string) || firstDayStr;
@@ -101,6 +121,28 @@ export async function POST(req: NextRequest) {
       slotDayIndex = DAY_INDEX[dayName] ?? -1;
     }
 
+    // 5b. Every enrollment's slot, for the arrears rebuild (a moved lesson keeps
+    // its slot link, so a two-slot student sees the right label and rate).
+    const slots: SlotLine[] = [];
+    if (arrearsRebuild) {
+      for (const enr of studentEnrollments) {
+        const sid = (enr.fields['Slot']?.[0] as string | undefined) ?? null;
+        const slot = sid ? await at('Slots', `/${sid}`).catch(() => null) : null;
+        const dayName = ((slot?.fields['Day'] || '') as string).replace(/^\d+\s+/, '').trim();
+        const slotTime = ((slot?.fields['Time'] || '') as string).trim();
+        const dayAbbrev = DAY_ABBREV[dayName] || dayName;
+        const enrollEnd = (enr.fields['End Date'] as string | undefined)
+          || (enr.fields['Status'] === 'Ended' ? lastDayStr : null);
+        slots.push({
+          slotId: sid,
+          dayLabel: slotTime ? `${dayAbbrev} ${slotTime}` : dayAbbrev,
+          weekday: slot ? DAY_INDEX[dayName] : undefined,
+          rate: (enr.fields['Rate Per Lesson'] as number) || ratePerLesson,
+          endISO: enrollEnd,
+        });
+      }
+    }
+
     // 6. Fetch lessons for this month — can't filter by linked Student field by record ID in Airtable formulas;
     // fetch all lessons for the date range and filter by studentId in JS (same pattern as generate-invoices).
     // Exception: for "First invoice" combined invoices (autoNotes contains "first invoice" AND stored line items
@@ -111,6 +153,7 @@ export async function POST(req: NextRequest) {
     let lineItems: any[];
     let regularCount: number;
     let additionalCount: number;
+    let baseAmount: number;
 
     if (isFirstInvoice && slotDayIndex >= 0 && enrollStartDate) {
       // First invoice: use the same date math as signup so the regenerated line
@@ -139,7 +182,38 @@ export async function POST(req: NextRequest) {
       }
       regularCount = lineItems.length;
       additionalCount = 0;
+      baseAmount = regularCount * ratePerLesson;
+    } else if (arrearsRebuild) {
+      // Arrears (Oct–Dec for non-exam-year students; the combined January):
+      // the same libs the 1st-of-month run uses, so a rebuild can never
+      // disagree with what the cron drafted. Regular lines = ATTENDED lessons
+      // of the bill month (+ January projected on the combined invoice).
+      // Additional lines stay as stored — the run's sweep already marked them
+      // Billed; an extra added since is picked up by the NEXT run's sweep.
+      const [pool, invoicedMonths] = await Promise.all([fetchArrearsPool(billYear, billMonth), fetchInvoicedMonthsByStudent()]);
+      const ctx = { ...profile, invoicedMonths: invoicedMonths.get(studentId) ?? new Set<string>() };
+      const descBase = descriptionBase(level, subjectsArr);
+      const attended = attendedLessonLines(pool, studentId, ctx, {
+        descriptionBase: descBase, billLabel: monthLabel(billYear, billMonth), slots, defaultRate: ratePerLesson,
+      });
+      const projected = combinedJan
+        ? projectedLessonLines(firstDayStr, { descriptionBase: descBase, label: month, slots, defaultRate: ratePerLesson, excluded: NO_LESSON_DATES })
+        : [];
+      let stored: any[] = [];
+      try { stored = JSON.parse((f['Line Items'] || '[]') as string); } catch { /* ignore */ }
+      const storedExtras = Array.isArray(stored) ? stored.filter((l: any) => l?.type === 'Additional') : [];
+      const regularLines = [...attended, ...projected];
+      lineItems = [...regularLines, ...storedExtras];
+      regularCount = regularLines.length;
+      additionalCount = storedExtras.length;
+      baseAmount = sumLineRates(regularLines, ratePerLesson);
     } else {
+      // Advance months. Regular lines are re-projected from the month's lesson
+      // records; Additional lines are KEPT as stored (lib/regenerate-line-items.ts):
+      // the generator bills additionals from a rolling window that mostly falls
+      // OUTSIDE the invoice month and ticks their Billed box, so re-deriving them
+      // from the month window dropped every billed line and re-billed in-window
+      // ones (found 2026-09-02).
       // Half-open month window (lib/billing-math.ts monthWindowClause):
       // {Date}<='lastDayStr' on Airtable's date-typed field silently drops a
       // lesson ON the month's last day, so regenerating undercounted those
@@ -151,29 +225,30 @@ export async function POST(req: NextRequest) {
         'Lessons',
         `?filterByFormula=${lessonFormula}&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Student&sort[0][field]=Date&sort[0][direction]=asc`
       );
-      const lessonsData = { records: allLessonsData.records.filter((r: any) => r.fields['Student']?.[0] === studentId) };
-
-      // Rules in lib/regenerate-line-items.ts (tested): Regular lines are
-      // rebuilt from the schedule — Completed-only for a prorated (arrears)
-      // month; the Additional lines the generator billed are kept as they are.
-      let storedLineItems: any[] = [];
-      try { storedLineItems = JSON.parse((f['Line Items'] || '[]') as string); } catch { /* ignore */ }
-      const rebuilt = rebuildLineItems({
-        stored: Array.isArray(storedLineItems) ? storedLineItems : [],
-        monthLessons: lessonsData.records.map((r: any) => ({
+      // Exam-year students: nothing regular after the last paper (the recurring
+      // generator doesn't know about exams; the advance run stops there too).
+      const monthLessons: MonthLesson[] = allLessonsData.records
+        .filter((r: any) => r.fields['Student']?.[0] === studentId)
+        .filter((r: any) => !cutoff || (r.fields['Date'] as string) <= cutoff.iso)
+        .map((r: any) => ({
           date: r.fields['Date'] as string,
-          type: r.fields['Type'] as string | undefined,
+          type: (r.fields['Type'] || 'Regular') as string,
           status: r.fields['Status'] as string | undefined,
-        })),
-        prorated: isProratedMonth(monthIdx + 1),
+        }));
+      let stored: any[] = [];
+      try { stored = JSON.parse((f['Line Items'] || '[]') as string); } catch { /* ignore */ }
+      const rebuilt = rebuildLineItems({
+        stored: Array.isArray(stored) ? stored : [],
+        monthLessons,
+        prorated: false,
         slotDayLabel,
         regularDescription: `${level} ${subjects} \u2014 ${month}`,
       });
       lineItems = rebuilt.lineItems;
       regularCount = rebuilt.regularCount;
       additionalCount = rebuilt.additionalCount;
+      baseAmount = regularCount * ratePerLesson;
     }
-    const baseAmount = regularCount * ratePerLesson;
     const additionalAmount = additionalCount * ratePerLesson;
 
     // 7. Per-month model (lib/invoice-consolidate.ts): the STORED invoice carries
@@ -193,15 +268,11 @@ export async function POST(req: NextRequest) {
 
     // 8. Update invoice in Airtable. Auto Notes stay untouched — whatever the
     // admin or generator wrote there is preserved.
-    // Arrears (prorated) months are due on the 15th of the FOLLOWING month —
-    // the 15th of the invoice month itself is already in the past by the time
-    // such an invoice exists.
-    const dueDateStr = isProratedMonth(monthIdx + 1)
-      ? arrearsInvoiceDates(year, monthIdx + 1).dueISO
-      : `${year}-${String(monthIdx + 1).padStart(2, '0')}-15`;
     // Issue Date via the one shared rule (lib/invoice-month.ts): a Sent invoice
     // being rebuilt is reissued today; a Draft keeps its send-date/default.
     const issueDateStr = resolveInvoiceIssueDate(f['Status'] || 'Draft', f['Issue Date'], sgtTodayISO());
+    // Due: the 15th of the invoice month in advance; issue + 7 days in arrears.
+    const dueDateStr = invoiceDueDateISO(arrearsRebuild ? 'arrears' : 'advance', year, monthNum, issueDateStr);
     const patchFields: Record<string, any> = {
       'Lessons Count': regularCount + additionalCount,
       'Rate Per Lesson': ratePerLesson,
@@ -224,7 +295,8 @@ export async function POST(req: NextRequest) {
     try {
       const invoiceData = {
         studentName,
-        month,
+        // "December–January 2027" when the first line is a December lesson.
+        month: displaySpanMonth(month, JSON.stringify(lineItems)),
         invoiceId: recordId,
         issueDate: issueDateStr,
         dueDate: dueDateStr,

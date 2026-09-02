@@ -230,7 +230,12 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 - `edit-cards-ai/route.ts` — SSE stream for AI card edits
 
 ### Invoices (cron + admin) → `docs/INVOICES.md`
-- `admin-invoices/` (GET/PATCH; paid-window ~5 months, `?all=1` full history), `generate-invoices` (cron 14th 7am; **prorated months June/Oct–Dec bill in arrears instead** — `?arrears=1` cron on the 1st 9am SGT generates the just-ended month, the 14th run creates nothing for them → `docs/INVOICES.md`), `generate-pdf-batch`, `regenerate-invoice`, `preview-invoice`, `send-invoices` (cron 15th 10am SGT — `0 2 15 * *` UTC; Vercel fires it up to ~20 min late, last months ~10:18; `?arrears=1` cron on the 2nd 10am SGT sends the arrears drafts), `send-receipt`, `payment-reminder` (cron 14th 8pm), `admin-emails` (Email Log + resend), `resend-webhook`
+- `admin-invoices/` (GET/PATCH; paid-window ~5 months, `?all=1` full history), `generate-invoices` (cron 14th 7am), `generate-pdf-batch`, `regenerate-invoice`, `preview-invoice`, `send-invoices` (cron 15th 10am SGT — `0 2 15 * *` UTC; Vercel fires it up to ~20 min late, last months ~10:18), `send-receipt`, `payment-reminder` (cron 14th 8pm), `admin-emails` (Email Log + resend), `resend-webhook`
+- **Year-end arrears cycle (Oct→Jan only)** — the same three routes with `?mode=arrears`, on their own crons (Nov/Dec/Jan; `job_runs` slugs get an `-arrears` suffix):
+  - `generate-invoices?mode=arrears` — `0 0 1 11,12,1 *` UTC = **1st 8am SGT**
+  - `payment-reminder?mode=arrears` — `0 12 1 11,12,1 *` UTC = **1st 8pm SGT**
+  - `send-invoices?mode=arrears` — `0 2 2 11,12,1 *` UTC = **2nd 10am SGT**
+  - Who's billed in which lane, the exam cut-offs, combined Dec+Jan, regenerate rules, gaps → **`docs/INVOICES.md` §Year-end billing**. Rules live in `lib/year-end-billing.ts`; never re-derive them in a route.
 
 ### Signup
 - `signup/route.ts` — registration form → Student + Enrollment + Token in Airtable
@@ -297,8 +302,8 @@ This takes 2 seconds and returns **no student data** — only field names, types
 - `lib/canonical-topics.ts` — canonical O-Level Sec and JC H2 topic lists; `getTopicsForLevel(level)` returns categories with topic arrays
 - **🎨 FIGURE LIBRARY — never hand-write SVG for a math figure before checking it**: the BOT repo (`~/Desktop/adrianmath-telegram-math-bot`) has `lib/figures/` — a typed-spec registry of 23 figure families (triangle/circle/similarity/quad configs, box-plot, cumulative-frequency, histogram, dot-stem, sector, number-line, venn, parallel-lines, coordinate-plane, function-graph, speed-time, polygon-angles, argand, normal-curve, vector-3d, tree-diagram, mensuration-3d, trig-3d, scatter-regression). Contract per family: `{ FAMILY, verify(spec), render(spec) }`, verify re-derives the maths and **fails closed** — inconsistent specs draw nothing. Also `ai/figure-render.js` (computed matplotlib figures). Use the registry for question/notes/redraw figures; bespoke SVG only for out-of-registry art (floor plans, real-world illustrations). Known gaps: blank fine-grid graph-paper sheets, pie charts.
 - Invoice `Line Items` and `Line Items Extra` stored as JSON strings in Airtable long text fields — always `JSON.parse()` when reading
-- `getInvoiceMonth()` returns next month from today (used by generate-invoices)
-- `invoiceMonthLessonDates()` in `lib/billing-math.ts` gives an invoice month's regular-lesson dates (weekday walk + End Date clamp + NO_LESSON_DATES) — it replaced generate-invoices' inline `countOccurrencesInMonth` loop 2026-09-02; parity is pinned in `billing-math.test.ts`
+- `getInvoiceMonth()` returns next month from today — the **advance** run's target only; the arrears run resolves its month via `arrearsRunTarget()` / `arrearsTargetForMonth()` in `lib/year-end-billing.ts`
+- `invoiceMonthLessonDates()` in `lib/billing-math.ts` gives an invoice month's **projected** regular-lesson dates (weekday walk + End Date clamp + NO_LESSON_DATES) — it replaced generate-invoices' inline `countOccurrencesInMonth` loop 2026-09-02; parity is pinned in `billing-math.test.ts`. Arrears months bill **attended** lessons instead (`arrearsRegularLessonsFor` + `lib/arrears-lines.ts`); projection is still used for the January half of the combined Dec+Jan invoice
 - `NO_LESSON_DATES` — CNY + Christmas, same list as bot
 - PDF generation uses Puppeteer with `@sparticuz/chromium` on Vercel, local Chrome path for dev; reuse `getBrowser()`, call `closeBrowser()` after batches
 - PayNow logo in invoice template is embedded as base64 — read from `public/paynow.png`

@@ -183,7 +183,8 @@ export default function StudentProfilePage() {
     } catch { showToast('err', 'Discontinue failed'); setDiscModal(prev => prev ? { ...prev, saving: false } : prev); }
   }
 
-  // Holiday opt-out — June/Oct/Nov/Dec are optional (billed per attendance).
+  // Holiday opt-out — Oct/Nov/Dec are billed per attendance for non-exam-year
+  // students (ARREARS_MONTHS, lib/year-end-billing.ts; June dropped 2026-09-02).
   // Skipping a date cancels its lesson record (creating it as Cancelled if it
   // doesn't exist yet — durably blocks the generators); unticking restores.
   type OptoutDate = { date: string; slotId: string; slotLabel: string; state: string; lessonId?: string; lockReason?: string; skip: boolean; orig: boolean };
@@ -1179,7 +1180,8 @@ export default function StudentProfilePage() {
       {holidayModal && (
         <ModalShell title="Holiday opt-out" onClose={() => !holidayModal.saving && setHolidayModal(null)}>
           <div style={{ fontSize: 13, color: '#64748b', marginBottom: 12, lineHeight: 1.5 }}>
-            June / Oct / Nov / Dec are <strong>optional months</strong> — billed only for attended lessons.
+            Oct / Nov / Dec are <strong>optional months</strong> — billed only for attended lessons (Sec 1–3, JC1, IP).
+            Sec 4/5 and JC2 are billed in advance up to their exams, so skipping a date does not change their invoice — amend it by hand.
             Tick the dates <strong>{s?.name}</strong> will <strong>skip</strong>; unticked dates stay on the schedule.
           </div>
           {holidayModal.loading ? (

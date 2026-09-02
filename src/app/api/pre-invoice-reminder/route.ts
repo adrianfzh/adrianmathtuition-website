@@ -3,7 +3,7 @@ import { safeEqual } from '@/lib/safe-equal';
 import { sendTelegram } from '@/lib/telegram';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getInvoiceMonth } from '@/lib/invoice-month';
-import { isProratedMonth } from '@/lib/arrears-invoices';
+import { advanceRunNote } from '@/lib/year-end-billing';
 
 export const runtime = 'nodejs';
 
@@ -22,18 +22,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Prorated months bill in arrears — tomorrow's run creates no drafts for them.
+  // Oct→Jan: tomorrow's run drafts only the exam-year students; everyone else
+  // is billed in arrears on the 1st (lib/year-end-billing.ts advanceRunNote,
+  // null outside those months).
   const invoiceMonth = getInvoiceMonth();
-  const proratedNote = isProratedMonth(invoiceMonth.month)
-    ? `\n\nNote: ${invoiceMonth.label} is prorated — tomorrow's run creates no drafts (they come in arrears on the 1st).`
-    : '';
+  const yearEnd = advanceRunNote(invoiceMonth.year, invoiceMonth.month);
+  const yearEndNote = yearEnd ? `\n\n⚠️ ${yearEnd}` : '';
 
   await sendTelegram(
     `📋 <b>Heads up: Invoice generation runs tomorrow at 7am.</b>\n\n` +
     `Please mark any outstanding payments before then so they're not double-billed.\n\n` +
     `→ Use /invoices in Telegram to check\n` +
     `→ Or review at adrianmathtuition.com/admin/invoices` +
-    proratedNote
+    yearEndNote
   );
 
   return NextResponse.json({ ok: true });

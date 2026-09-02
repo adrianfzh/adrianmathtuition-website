@@ -47,6 +47,37 @@ describe('staleJobs — monthly jobs (SGT calendar)', () => {
   });
 });
 
+describe('staleJobs — month-restricted monthly jobs (year-end arrears billing)', () => {
+  it('a Nov/Dec/Jan-only job is never expected in August, however old its last stamp', () => {
+    const now = new Date('2026-08-20T02:00:00Z');
+    expect(staleJobs([row('generate-invoices-arrears', '2026-01-01T00:30:00Z')], now)).toEqual([]);
+  });
+  it('in November, past the grace day, a missing run alarms', () => {
+    const now = new Date('2026-11-03T02:00:00Z');   // 3 Nov SGT — grace ran to the 2nd
+    const out = staleJobs([row('generate-invoices-arrears', '2026-01-01T00:30:00Z')], now);
+    expect(out).toHaveLength(1);
+    expect(out[0].reason).toMatch(/no run this month/);
+  });
+  it('in November, a run stamped on the 1st is fresh', () => {
+    const now = new Date('2026-11-03T02:00:00Z');
+    expect(staleJobs([row('generate-invoices-arrears', '2026-11-01T00:05:00Z')], now)).toEqual([]);
+  });
+  it('the send job on the 2nd has its own window', () => {
+    const now = new Date('2026-12-04T02:00:00Z');   // 4 Dec SGT
+    expect(staleJobs([row('send-invoices-arrears', '2026-11-02T02:10:00Z')], now)).toHaveLength(1);
+    expect(staleJobs([row('send-invoices-arrears', '2026-12-02T02:10:00Z')], now)).toEqual([]);
+  });
+  it('January is a firing month (the combined December+January invoice)', () => {
+    const now = new Date('2027-01-05T02:00:00Z');
+    expect(staleJobs([row('generate-invoices-arrears', '2026-12-01T00:05:00Z')], now)).toHaveLength(1);
+    expect(staleJobs([row('generate-invoices-arrears', '2027-01-01T00:05:00Z')], now)).toEqual([]);
+  });
+  it('October is quiet even though the arrears season has started (first run is 1 Nov)', () => {
+    const now = new Date('2026-10-20T02:00:00Z');
+    expect(staleJobs([row('send-invoices-arrears', '2026-01-02T02:10:00Z')], now)).toEqual([]);
+  });
+});
+
 describe('staleJobs — failure and edge handling', () => {
   it('a latest run with ok=false is flagged even when recent', () => {
     const now = new Date('2026-08-27T02:00:00Z');

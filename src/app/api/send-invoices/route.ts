@@ -4,7 +4,8 @@ import { logJobRun } from '@/lib/job-log';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
 import { getInvoiceMonth, displaySpanMonth, sgtTodayISO } from '@/lib/invoice-month';
-import { isProratedMonth, justEndedMonth } from '@/lib/arrears-invoices';
+import { resolveRunMode, resolveTargetMonthLabel, jobNameFor } from '@/lib/invoice-run-mode';
+import { yearEndHoldReason } from '@/lib/year-end-billing';
 import { copy } from '@vercel/blob';
 import { generateAndStoreInvoicePdf } from '@/lib/invoice-pdf';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -258,11 +259,6 @@ export async function POST(req: NextRequest) {
   let body: any = {};
   try { body = await req.json(); } catch { /* no body */ }
   const { recordId: singleRecordId, recordIds } = body;
-  // Arrears send — the 2nd-of-month cron (vercel.json `?arrears=1`, 10am SGT):
-  // sends the drafts the 1st's arrears generation made for the JUST-ENDED
-  // prorated month. The 15th cron only ever looks at getInvoiceMonth() (next
-  // month), so without this leg those drafts would never be sent.
-  const arrearsMode = req.nextUrl.searchParams.get('arrears') === '1' || body.arrears === true;
   // `resend: true` — send this invoice again UNCHANGED (e.g. the first email was
   // defective, or the parent lost it). Without it, any invoice whose earlier
   // EmailLog row carried a PDF is classified as an AMENDMENT: subject becomes
@@ -273,6 +269,24 @@ export async function POST(req: NextRequest) {
   // first email carried a mojibake'd WhatsApp number; the invoice was identical.)
   const plainResend = body.resend === true;
   const notify = body.notify !== false; // per-batch Telegram summary; client bulk-send sets false
+
+  // ── Which run is this? ─────────────────────────────────────────────────────
+  // The normal ADVANCE cycle (15th, billing the month ahead) or the year-end
+  // ARREARS cycle (2nd of Nov/Dec/Jan, sending the drafts made on the 1st for
+  // Oct/Nov/Dec attendance — lib/year-end-billing.ts). The Vercel cron fires
+  // GET /api/send-invoices?mode=arrears; a manual run can post { mode:'arrears' }.
+  const runMode = resolveRunMode(req.nextUrl.searchParams, body);
+  const jobName = jobNameFor('send-invoices', runMode);
+  // The Month label the cron branch scopes to. Advance keeps getInvoiceMonth();
+  // arrears asks year-end-billing (1 Nov → "October 2026", 1 Jan → "January 2027",
+  // the combined Dec+Jan invoice). An explicit body month re-runs an older
+  // arrears month; the advance path ignores it, exactly as before.
+  const targetMonthLabel = resolveTargetMonthLabel({
+    mode: runMode,
+    todayISO: sgtTodayISO(),
+    advanceLabel: getInvoiceMonth().label,
+    explicitMonth: runMode === 'arrears' ? body.month : undefined,
+  });
 
   // Consolidated-summary mode (used by "Send All Approved"): post ONE Telegram summary
   // for a whole bulk send from aggregated client data — no invoices are sent here.
@@ -371,9 +385,6 @@ export async function POST(req: NextRequest) {
     let invoiceRecords: any[];
     // Conservative auto-send: invoices the classifier holds back for manual review (cron only).
     let heldForReview: any[] = [];
-    // Which logbook row this run stamps, and the month the cron path scoped to.
-    let jobSlug = 'send-invoices';
-    let cronMonthLabel: string | null = null;
     // True cron: called by Vercel scheduler (x-vercel-cron header) or CRON_SECRET
     // Manual send from admin UI uses ADMIN_PASSWORD — pause flag should NOT block it
     const cronSecret = process.env.CRON_SECRET;
@@ -386,23 +397,7 @@ export async function POST(req: NextRequest) {
     } else if (singleRecordId) {
       invoiceRecords = [await at('Invoices', `/${singleRecordId}`)];
     } else {
-      // Cron path. Resolve the month first: an arrears send in a non-prorated
-      // month is a quiet no-op (stamped, so the rhythm doesn't alarm) and exits
-      // BEFORE the pause check so a quiet month never consumes the flag.
-      if (arrearsMode) {
-        const ended = justEndedMonth(sgtTodayISO());
-        if (!isProratedMonth(ended.month)) {
-          await logJobRun('prorated-arrears-send', true, `${ended.label} is not a prorated month — nothing to send`);
-          return NextResponse.json({ sent: 0, failed: 0, errors: [], arrears: ended.label, prorated: false });
-        }
-        cronMonthLabel = ended.label;
-        jobSlug = 'prorated-arrears-send';
-      } else {
-        cronMonthLabel = getInvoiceMonth().label;
-      }
-      // Check the pause flag ONLY for actual cron calls, not manual admin sends.
-      // The flag is month-agnostic: it pauses whichever actual-cron send fires
-      // next (the 15th regular send or the 2nd arrears send), then clears.
+      // Cron path — check pause flag ONLY for actual cron calls, not manual admin sends
       const settingsData = await airtableRequest('Settings',
         `?filterByFormula=${encodeURIComponent(`{Setting Name}='pause_auto_send'`)}&maxRecords=1`
       ).catch(() => ({ records: [] }));
@@ -414,12 +409,12 @@ export async function POST(req: NextRequest) {
           method: 'PATCH',
           body: JSON.stringify({ fields: { Value: '' } }),
         }).catch(() => {});
-        await logJobRun(jobSlug, true, `${cronMonthLabel}: paused — nothing sent`);
+        await logJobRun(jobName, true, 'paused — nothing sent');
         return NextResponse.json({ sent: 0, failed: 0, errors: [], paused: true });
       }
-      // Scope to the cron's month only so stale rows from previous cycles
-      // don't get re-sent automatically.
-      const formula = `AND(OR({Status}='Draft',{Status}='Approved'),{Month}='${cronMonthLabel}')`;
+      // Scope to this run's invoice month only so stale rows from previous
+      // cycles don't get re-sent automatically.
+      const formula = `AND(OR({Status}='Draft',{Status}='Approved'),{Month}='${targetMonthLabel}')`;
       const data = await airtableRequestAll('Invoices', `?filterByFormula=${encodeURIComponent(formula)}`);
       const candidates: any[] = data.records || [];
 
@@ -461,7 +456,7 @@ export async function POST(req: NextRequest) {
         const ex = (f['Line Items Extra'] || '').trim();
         if (ex && ex !== '[]') return 'carry-over / credit';
         if (/first invoice/i.test(f['Auto Notes'] || '')) return 'first invoice';
-        if ((f['Auto Notes'] || '').trim()) return 'proration / note';
+        if ((f['Auto Notes'] || '').trim()) return yearEndHoldReason(f['Auto Notes']) || 'note';
         if ((f['Custom Email Message'] || '').trim()) return 'custom email';
         return 'review';
       };
@@ -476,9 +471,8 @@ export async function POST(req: NextRequest) {
     };
 
     if (!invoiceRecords.length) {
-      const monthLabel = cronMonthLabel ?? getInvoiceMonth().label;
-      await flagHeld(monthLabel);
-      await logJobRun(jobSlug, true, `${monthLabel}: all ${heldForReview.length} held for review — nothing sent`);
+      await flagHeld(targetMonthLabel);
+      await logJobRun(jobName, true, `all ${heldForReview.length} held for review — nothing sent`);
       return NextResponse.json({ sent: 0, failed: 0, errors: [], held: heldForReview.length });
     }
 
@@ -764,15 +758,24 @@ export async function POST(req: NextRequest) {
 
     if (verifyBlind) await alertVerificationBlind('send-invoices', verifyBlind, unverifiedCount);
 
-    const currentMonth = emails[0]?.subject?.match(/for (.+) \u2013/)?.[1] ?? cronMonthLabel ?? getInvoiceMonth().label;
+    const currentMonth = emails[0]?.subject?.match(/for (.+) \u2013/)?.[1] ?? targetMonthLabel;
     const failedLines = errors.map((e) => `• ${e.studentName ?? e.invoiceId}: ${e.error}`).join('\n');
     const sentLines = sentDetails
       .map((d) => `• ${d.studentName} (${d.month})${d.isFirstInvoice ? ' \u{1F195} New student' : ''}`)
       .join('\n');
+    // Arrears runs get their own headline so Adrian can tell the 15th's advance
+    // batch from the 2nd's arrears batch at a glance.
+    const summaryHeader = runMode === 'arrears'
+      ? (failedCount > 0
+          ? '\u{1F4E8} <b>Arrears invoices \u2014 DELIVERY ISSUES</b>'
+          : '\u{1F4E8} <b>Arrears invoices delivered</b>')
+      : (failedCount > 0
+          ? '\u26a0\ufe0f <b>Invoices \u2014 DELIVERY ISSUES</b>'
+          : '\u2705 <b>Invoices delivered</b>');
     // Skipped when notify=false (bulk "Send All Approved" posts ONE consolidated summary at the end).
     if (notify) {
       await sendTelegram(
-        `${failedCount > 0 ? '\u26a0\ufe0f <b>Invoices \u2014 DELIVERY ISSUES</b>' : '\u2705 <b>Invoices delivered</b>'} \u2014 ${currentMonth}\n\n` +
+        `${summaryHeader} \u2014 ${currentMonth}\n\n` +
           `Delivered: ${sentCount} | Not delivered: ${failedCount}` +
           (sentLines ? `\n\n${sentLines}` : '') +
           (failedCount > 0
@@ -784,7 +787,7 @@ export async function POST(req: NextRequest) {
     // Flag the invoices the classifier held back, so Adrian can review + send them with a tap.
     await flagHeld(currentMonth);
 
-    await logJobRun(jobSlug, failedCount === 0, `${currentMonth}: sent ${sentCount}, failed ${failedCount}, held ${heldForReview.length}`);
+    await logJobRun(jobName, failedCount === 0, `sent ${sentCount}, failed ${failedCount}, held ${heldForReview.length}`);
     return NextResponse.json({ sent: sentCount, failed: failedCount, errors, total: emails.length, sentDetails, held: heldForReview.length });
   } catch (err: any) {
     console.error('[send-invoices] Unhandled error:', err);

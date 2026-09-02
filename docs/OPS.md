@@ -15,11 +15,11 @@ completed but failed at their task — the Mac skills use them.)
 
 Writers:
 - **Vercel crons** stamp via `lib/job-log.ts` `logJobRun()` at their success
-  exits: `generate-invoices`, `send-invoices`, `prorated-arrears` (1st 9am SGT —
-  arrears drafts for a just-ended June/Oct–Dec month) + `prorated-arrears-send`
-  (2nd 10am SGT; **both stamp every month**, a quiet "not a prorated month"
-  no-op on the other eight, so a dead cron and a quiet month are told apart —
-  docs/INVOICES.md), `payment-reminder`,
+  exits: `generate-invoices`, `send-invoices`, `payment-reminder`,
+  their year-end twins `generate-invoices-arrears`, `send-invoices-arrears`,
+  `payment-reminder-arrears` (the SAME three routes run with `?mode=arrears`;
+  `jobNameFor()` in `lib/invoice-run-mode.ts` picks the slug, so a run can never
+  stamp the other cycle's row → [`INVOICES.md`](INVOICES.md#year-end-billing-octjan--2026-09-02)),
   `progress-digest` (month period only), `retention` (non-dry),
   `deactivate-inactive` (non-dry — the monthly portal offboarding sweep,
   3rd 3:30am SGT), `practice-topup`,
@@ -50,6 +50,22 @@ run that month (a UTC stamp on the SGT-eve gets a day of early slack), and a
 latest row with `ok=false` alarms as "last run FAILED". **A job that has never
 stamped is skipped, not alarmed** — no day-one alarm storm; it shows on the ops
 board as "not stamped yet" until its first run.
+
+**A monthly rhythm may also carry `months: [...]` (1-based)** — the job is only
+expected in those months, and `staleJobs()` skips every other month outright.
+The three year-end invoice jobs use it, since their crons only fire Nov/Dec/Jan
+(`0 0 1 11,12,1 *` and friends) and a February absence is correct, not a fault:
+
+| Job | Rhythm | Fires |
+|---|---|---|
+| `generate-invoices-arrears` | `day 1`, grace 1, `months: [1, 11, 12]` | 1st 8am SGT (Nov, Dec, Jan) |
+| `payment-reminder-arrears` | `day 1`, grace 1, `months: [1, 11, 12]` | 1st 8pm SGT (Nov, Dec, Jan) |
+| `send-invoices-arrears` | `day 2`, grace 1, `months: [1, 11, 12]` | 2nd 10am SGT (Nov, Dec, Jan) |
+
+Without `months` these would have alarmed amber for nine months of the year and
+trained the alarm to be ignored — the same tune-out failure as the health-check
+latch below. Any future seasonal job (a June-only or exam-season run) gets the
+same treatment; **never** silence one by deleting its rhythm.
 
 The 6-hourly `/api/health-check` runs two new checks: `ops-jobs` (the rules
 above → one red line naming every stale job) and `marking-queue-lag` (the queue

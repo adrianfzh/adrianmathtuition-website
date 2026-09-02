@@ -3,6 +3,8 @@ import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { sendTelegram } from '@/lib/telegram';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { getInvoiceMonth, sgtTodayISO } from '@/lib/invoice-month';
+import { resolveRunMode, resolveTargetMonthLabel, jobNameFor, buildPaymentReminderMessage } from '@/lib/invoice-run-mode';
 
 export const runtime = 'nodejs';
 
@@ -20,13 +22,19 @@ export async function GET(req: NextRequest) {
   if (!checkAuth(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  await sendTelegram(
-    `💰 <b>Payment Reminder</b>\n\n` +
-      `Remember to check payments received and update Airtable before ` +
-      `invoices generate tomorrow at 7am.\n\n` +
-      `Go to Airtable → Invoices → tick Is Paid for received payments.`
-  );
-  await logJobRun('payment-reminder', true, 'reminder Telegram sent');
+  // Two rhythms: the advance cycle (14th 8pm, invoices generate next morning)
+  // and the year-end ARREARS cycle (1st of Nov/Dec/Jan 8pm — drafts were made
+  // that morning and auto-send on the 2nd). Cron fires `?mode=arrears`.
+  let body: unknown = null;
+  try { body = await req.json(); } catch { /* no body */ }
+  const mode = resolveRunMode(req.nextUrl.searchParams, body);
+  const monthLabel = resolveTargetMonthLabel({
+    mode,
+    todayISO: sgtTodayISO(),
+    advanceLabel: getInvoiceMonth().label,
+  });
+  await sendTelegram(buildPaymentReminderMessage(mode, monthLabel));
+  await logJobRun(jobNameFor('payment-reminder', mode), true, 'reminder Telegram sent');
   return NextResponse.json({ ok: true });
 }
 

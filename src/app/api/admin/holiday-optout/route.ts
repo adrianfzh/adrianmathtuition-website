@@ -1,12 +1,17 @@
 // GET/POST /api/admin/holiday-optout — per-student holiday opt-out for the
-// optional (prorated) months: June, Oct, Nov, Dec.
+// year-end arrears months: Oct, Nov, Dec (ARREARS_MONTHS in
+// lib/year-end-billing.ts). June left the list 2026-09-02 — it is billed in
+// advance like any other month (docs/INVOICES.md §June is untouched).
 //
 // Design: an opt-out is MATERIALIZED as Cancelled lesson records, not stored as
 // intent. Both lesson generators (website generateRegularLessonsForSlot and the
 // bot's Monday generateUpcomingLessons cron) dedup against existing records with
 // NO status filter, so a pre-created Cancelled record durably blocks that date
 // from ever being (re)generated — no bot change, no schema change. Billing needs
-// nothing: prorated months bill Completed lessons only, in arrears.
+// nothing for the students these months are arrears-billed for (Sec 1–3, JC1,
+// IP — Completed lessons only). Exam-year students (Sec 4/5, JC2) are billed in
+// ADVANCE with an exam cut-off, so an opt-out does not change their invoice —
+// amend it by hand (docs/INVOICES.md §Year-end billing).
 //
 //   skip an existing Scheduled lesson  → PATCH Status='Cancelled' + marker note
 //   skip a date with no record yet     → CREATE the record as Cancelled + marker
@@ -23,7 +28,7 @@ import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { NO_LESSON_DATES } from '@/lib/holidays';
 import { billingMonthOf } from '@/lib/lesson-generation';
-import { PRORATION_MONTHS } from '@/lib/arrears-invoices';
+import { ARREARS_MONTHS } from '@/lib/year-end-billing';
 
 export const runtime = 'nodejs';
 
@@ -43,14 +48,14 @@ type DateEntry = {
   lockReason?: string;
 };
 
-/** Next N proration months from today (never the current month — it's underway). */
+/** Next N arrears months from today (never the current month — it's underway). */
 function upcomingOptionalMonths(now: Date): { year: number; month: number; label: string }[] {
   const out: { year: number; month: number; label: string }[] = [];
   let y = now.getFullYear();
   let m = now.getMonth() + 2; // 1-based next month
   while (out.length < MONTHS_SHOWN) {
     if (m > 12) { m -= 12; y++; }
-    if (PRORATION_MONTHS.includes(m)) out.push({ year: y, month: m, label: `${MONTH_NAMES[m - 1]} ${y}` });
+    if (ARREARS_MONTHS.includes(m)) out.push({ year: y, month: m, label: `${MONTH_NAMES[m - 1]} ${y}` });
     m++;
   }
   return out;
@@ -172,8 +177,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Bad change entry: ${JSON.stringify(c)}` }, { status: 400 });
     }
     const m = Number(c.date.slice(5, 7));
-    if (!PRORATION_MONTHS.includes(m)) {
-      return NextResponse.json({ error: `${c.date} is not in an optional (prorated) month` }, { status: 400 });
+    if (!ARREARS_MONTHS.includes(m)) {
+      return NextResponse.json({ error: `${c.date} is not in a year-end arrears month (Oct–Dec)` }, { status: 400 });
     }
   }
 

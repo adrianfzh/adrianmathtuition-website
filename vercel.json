@@ -56,12 +56,16 @@
       "schedule": "0 2 15 * *"
     },
     {
-      "path": "/api/generate-invoices?arrears=1",
-      "schedule": "0 1 1 * *"
+      "path": "/api/generate-invoices?mode=arrears",
+      "schedule": "0 0 1 11,12,1 *"
     },
     {
-      "path": "/api/send-invoices?arrears=1",
-      "schedule": "0 2 2 * *"
+      "path": "/api/payment-reminder?mode=arrears",
+      "schedule": "0 12 1 11,12,1 *"
+    },
+    {
+      "path": "/api/send-invoices?mode=arrears",
+      "schedule": "0 2 2 11,12,1 *"
     },
     {
       "path": "/api/june-revision-followup",

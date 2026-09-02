@@ -7,6 +7,9 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { dropboxConfigured, listFolder } from '@/lib/dropbox';
 import { listPrintablesForLevel, dropboxFolderFor } from '@/lib/notes-list';
 import { publishedSolutions } from '@/data/model-solutions';
+import { fetchArrearsPool } from '@/lib/arrears-fetch';
+import { arrearsRunTarget } from '@/lib/year-end-billing';
+import { sgtTodayISO } from '@/lib/invoice-month';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -115,6 +118,15 @@ export async function GET(req: NextRequest) {
       const buf = await r.arrayBuffer();
       if (buf.byteLength < 5_000) throw new Error(`blob suspiciously small (${buf.byteLength}b)`);
       return `${Math.round(buf.byteLength / 1024)}KB`;
+    }),
+    // Year-end arrears run (docs/INVOICES.md §Year-end billing): the Lessons
+    // window formula + optional-field cascade must still match the live schema
+    // — a renamed Type/Status option would otherwise surface as "0 attended"
+    // for everyone on 1 Nov. Probes last month, the cron's own target.
+    timed('arrears-lessons', async () => {
+      const t = arrearsRunTarget(sgtTodayISO());
+      const pool = await fetchArrearsPool(t.billYear, t.billMonth);
+      return `${pool.length} attended in ${t.billLabel}`;
     }),
     // Dropbox notes — kiosk "Learn" + /admin/notes
     timed('dropbox-notes', async () => {

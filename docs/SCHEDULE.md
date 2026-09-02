@@ -481,4 +481,4 @@ Sign-ups tab: Sign-up (`/api/admin-revision-signup`) does: (1) mark Student `Jun
 
 - Regular-lesson cancel/restore lives in `src/lib/revision-regular-lessons.ts` (`cancelJuneRegularLessons` / `restoreJuneRegularLessons`).
 - Cancelled lessons get `Status='Cancelled'` and a Notes marker `Cancelled — June Revision Sprint sign-up`; restore matches that marker so only the auto-cancelled ones come back.
-- Soft-cancel (not hard delete) → reversible, auditable, and dropped from the schedule (the schedule filters out `Status='Cancelled'`). Doesn't affect June invoicing (June isn't prorated; invoice generation counts slot occurrences, not these records).
+- Soft-cancel (not hard delete) → reversible, auditable, and dropped from the schedule (the schedule filters out `Status='Cancelled'`). Doesn't affect June invoicing (June is billed in **advance** from projected slot occurrences, not from these records). ⚠ Don't generalise that to **Oct–Dec**: those months bill non-exam-year students from **attended** lessons, so a cancelled/absent lesson there genuinely isn't billed → [`INVOICES.md` §Year-end billing](INVOICES.md#year-end-billing-octjan--2026-09-02).

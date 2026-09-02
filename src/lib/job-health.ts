@@ -18,7 +18,8 @@ import { sgtClock } from './sgt';
 
 export type Rhythm =
   | { kind: 'interval'; hours: number; label: string }
-  | { kind: 'monthly'; day: number; graceDays: number; label: string };
+  /** `months` (1–12) restricts a monthly job to the months it fires in — no expectation in the others. */
+  | { kind: 'monthly'; day: number; graceDays: number; label: string; months?: number[] };
 
 export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'qb-topup':          { kind: 'interval', hours: 36, label: 'nightly 3:30am' },
@@ -28,12 +29,12 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'generate-invoices': { kind: 'monthly', day: 14, graceDays: 1, label: '14th 7am' },
   'send-invoices':     { kind: 'monthly', day: 15, graceDays: 1, label: '15th 10am' },
   'payment-reminder':  { kind: 'monthly', day: 14, graceDays: 1, label: '14th 8pm' },
-  // Prorated-month arrears billing (docs/INVOICES.md): generation on the 1st,
-  // send on the 2nd, for the just-ended month when it was June/Oct–Dec. Both
-  // stamp EVERY month — a quiet "not a prorated month" no-op on the other 8 —
-  // so a dead cron and a quiet month are told apart here.
-  'prorated-arrears':      { kind: 'monthly', day: 1, graceDays: 1, label: '1st 9am' },
-  'prorated-arrears-send': { kind: 'monthly', day: 2, graceDays: 1, label: '2nd 10am' },
+  // Year-end arrears billing (lib/year-end-billing.ts): Oct/Nov/Dec attended
+  // lessons billed on the 1st of the next month (Dec+Jan combined on 1 Jan),
+  // reminder that evening, sent on the 2nd. vercel.json "… 1 11,12,1 *".
+  'generate-invoices-arrears': { kind: 'monthly', day: 1, graceDays: 1, months: [1, 11, 12], label: '1st 8am (Nov, Dec, Jan)' },
+  'payment-reminder-arrears':  { kind: 'monthly', day: 1, graceDays: 1, months: [1, 11, 12], label: '1st 8pm (Nov, Dec, Jan)' },
+  'send-invoices-arrears':     { kind: 'monthly', day: 2, graceDays: 1, months: [1, 11, 12], label: '2nd 10am (Nov, Dec, Jan)' },
   'progress-digest':   { kind: 'monthly', day: 1,  graceDays: 1, label: '1st 8am' },
   'retention':         { kind: 'monthly', day: 2,  graceDays: 1, label: '2nd 3am' },
   // Portal auto-offboarding sweep — vercel.json "30 19 2 * *" UTC = 3rd 3:30am SGT.
@@ -95,6 +96,7 @@ export function staleJobs(
     // or after (day − 1) of the current SGT month counts — crons fire in SGT but
     // stamp in UTC, so the day boundary gets a day of slack on the early side.
     const n = sgt(now);
+    if (rhythm.months && !rhythm.months.includes(n.m + 1)) continue;   // doesn't fire this month
     if (n.day <= rhythm.day + rhythm.graceDays) continue;   // window still open
     const r = sgt(ranAt);
     const ranThisWindow = r.y === n.y && r.m === n.m && r.day >= rhythm.day - 1;
