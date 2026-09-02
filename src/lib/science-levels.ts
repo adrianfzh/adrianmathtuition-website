@@ -83,7 +83,14 @@ export function mcqOptionsIn(text: string | null | undefined): McqLetter[] | nul
  *  one line. Put each option on its own paragraph. Non-MCQ text is untouched. */
 export function mcqStemParagraphs(text: string | null | undefined): string {
   if (!text) return '';
-  return text.replace(/[ \t]*\n[ \t]*(?=\(?[A-D][).:]\s+\S)/g, '\n\n').replace(/\n{3,}/g, '\n\n');
+  return text
+    // options on their own lines: "…\nB) …" → paragraph break
+    .replace(/[ \t]*\n[ \t]*(?=\(?[A-D][).:]\s+\S)/g, '\n\n')
+    // options inline: "A) constant  B) decreasing  C) …" → break before B/C/D
+    .replace(/[ \t]+(?=\(?[B-D][).:]\s+\S)/g, '\n\n')
+    // …and before an inline "A)" that follows the question on the same line
+    .replace(/([^\n])[ \t]+(?=\(?A[).:]\s+\S)/g, '$1\n\n')
+    .replace(/\n{3,}/g, '\n\n');
 }
 
 /** "b", "B)", "(B)", "B) 330 m/s", "option B" → "B"; anything else → null. */

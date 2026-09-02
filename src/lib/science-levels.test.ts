@@ -39,6 +39,10 @@ describe('MCQ', () => {
   it('puts each option on its own paragraph for markdown', () => {
     expect(mcqStemParagraphs('What is F?\nA) 1 N\nB) 2 N\nC) 3 N')).toBe('What is F?\n\nA) 1 N\n\nB) 2 N\n\nC) 3 N');
     expect(mcqStemParagraphs('Already\n\nA) x\n\nB) y')).toBe('Already\n\nA) x\n\nB) y');
+    // the bank also stores options inline, double-spaced
+    expect(mcqStemParagraphs('Which force?\n\nA) constant  B) decreasing  C) increasing  D) zero'))
+      .toBe('Which force?\n\nA) constant\n\nB) decreasing\n\nC) increasing\n\nD) zero');
+    expect(mcqStemParagraphs('Which force? A) constant B) decreasing')).toBe('Which force?\n\nA) constant\n\nB) decreasing');
     expect(mcqStemParagraphs('No options\nhere at all')).toBe('No options\nhere at all');
     expect(mcqStemParagraphs(null)).toBe('');
   });
