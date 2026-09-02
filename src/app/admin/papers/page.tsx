@@ -1,4 +1,5 @@
 'use client';
+import RulesTag from '@/components/RulesTag';
 
 // /admin/papers — every marked script, in one place, filterable by student.
 //
@@ -29,6 +30,7 @@ type Run = {
   /** math | physics | chemistry | biology — chip shown only when not math. */
   subject: string;
   grounding?: string | null;
+  rulesVersion?: string | null;
   studentId: string | null;
   studentName: string | null;
   awarded: number;
@@ -384,7 +386,7 @@ export default function PapersPage() {
                 <div style={{ fontSize: 16, fontWeight: 700, wordBreak: 'break-word' }}>
                   {run.paperName}
                   <SubjectChip subject={run.subject} style={{ marginLeft: 6 }} />
-                  <GroundingChip source={run.grounding} style={{ marginLeft: 6 }} />
+                  <GroundingChip source={run.grounding} style={{ marginLeft: 6 }} /><RulesTag v={run.rulesVersion} style={{ marginLeft: 6 }} />
                 </div>
                 <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>
                   {fmtDate(run.date)} · {run.questions} question{run.questions === 1 ? '' : 's'}

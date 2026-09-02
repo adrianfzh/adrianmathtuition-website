@@ -65,7 +65,7 @@ const MAX_DAYS = 90;
 // go once he's satisfied with the gated behaviour.
 const AUTO_RELEASE_PAUSED = true;
 const RUN_COLUMNS =
-  'id, created_at, paper_name, subject, student_id, student_name, total_awarded, total_max, num_questions, annotated_pdf_url, pdf_url, released_at';
+  'id, created_at, paper_name, subject, rules_version, student_id, student_name, total_awarded, total_max, num_questions, annotated_pdf_url, pdf_url, released_at';
 
 function daysAgoIso(days: number) {
   return new Date(Date.now() - days * 86400_000).toISOString();
@@ -115,6 +115,7 @@ export async function GET(req: NextRequest) {
         subject: (r.subject as string | null) || 'math',
         // What the marking was grounded on (bot result_json.grounding.source) — the 📘 chip.
         grounding: ((r.result_json as { grounding?: { source?: string | null } } | null)?.grounding?.source) ?? null,
+        rulesVersion: (r.rules_version as string | null) ?? null,
         studentId: r.student_id,
         studentName: r.student_name,
         awarded: summary.awarded,

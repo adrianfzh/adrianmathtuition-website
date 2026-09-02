@@ -1,4 +1,5 @@
 'use client';
+import RulesTag from '@/components/RulesTag';
 
 // Batch triage — the flagged-only review pass over recent marking runs.
 //
@@ -25,6 +26,7 @@ type Run = {
   /** math | physics | chemistry | biology — chip shown only when not math. */
   subject?: string;
   grounding?: string | null;
+  rulesVersion?: string | null;
   studentId: string | null;
   studentName: string | null;
   awarded: number;
@@ -424,7 +426,7 @@ export default function TriagePage() {
               </div>
               <div style={{ color: C.muted, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 <SubjectChip subject={run.subject} style={{ marginRight: 6 }} />
-                <GroundingChip source={run.grounding} style={{ marginRight: 6 }} />
+                <GroundingChip source={run.grounding} style={{ marginRight: 6 }} /><RulesTag v={run.rulesVersion} style={{ marginRight: 6 }} />
                 {run.paperName} · {fmtDate(run.createdAt)}
               </div>
             </div>

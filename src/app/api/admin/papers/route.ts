@@ -38,7 +38,7 @@ const MAX_TOPICS_PER_RUN = 8;
 
 const COLUMNS =
   'id, created_at, paper_name, student_id, student_name, num_questions, subject, ' +
-  'total_awarded, total_max, pdf_url, photos_pdf_url, annotated_pdf_url, released_at, checked_at, source, superseded_by';
+  'total_awarded, total_max, rules_version, pdf_url, photos_pdf_url, annotated_pdf_url, released_at, checked_at, source, superseded_by';
 
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
@@ -96,6 +96,7 @@ export async function GET(req: NextRequest) {
         subject: (r.subject as string | null) || 'math',
         // What the marking was grounded on (bot result_json.grounding.source) — the 📘 chip.
         grounding: ((r.result_json as { grounding?: { source?: string | null } } | null)?.grounding?.source) ?? null,
+        rulesVersion: (r.rules_version as string | null) ?? null,
         studentId: r.student_id,
         studentName: r.student_name,
         awarded: totals.awarded,

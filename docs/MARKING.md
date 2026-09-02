@@ -699,6 +699,21 @@ it), and **tag the backlog**.
 
 ## /admin/calibration — is the marker trusted yet? (2026-09-02)
 
+**Rules version stamp (2 Sep 2026, evening).** Every run now carries `paper_marking_runs.rules_version`
+(also `result_json.marker`): a content hash of the marking prompts in force for that subject —
+the two marking system prompts (severity rules + JSON spec + the subject's block) and the page
+classifier — computed by the bot's `ai/paper-marker.js rulesVersion(subject)` over
+`lib/rules-hash.js`. Nobody bumps it; editing any rule text changes it, and the per-part hashes in
+`marker.components` name WHICH prompt changed. Read it with `model`: same model + same tag ⇒ two
+markings differ only by the model's variance (the same paper marked three times gave 71, 70, 67);
+a different tag ⇒ the rules were edited in between. Shown as a grey mono tag on papers / triage /
+mark-paper history rows (`components/RulesTag.tsx`), null on runs before the stamp shipped. The
+calibration harness writes a stored run's OWN stamp into `calibration_results.prompt_version`
+(null for pre-stamp runs — never borrowed from today's rules); a fresh re-mark carries the live one.
+Grounding provenance (scheme / bank / rules alone) is deliberately NOT part of the hash — it is
+per-paper data, recorded separately in `result_json.grounding.source` (the 📘 chip).
+
+
 "The marking SYSTEM is the product" ([`../SPEC-SUBJECTS.md`](../SPEC-SUBJECTS.md)):
 trust comes from measuring the AI against a human marking and gating release on the
 result. This page is the measurement, per subject, read straight from Supabase

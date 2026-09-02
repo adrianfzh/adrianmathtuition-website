@@ -1,4 +1,5 @@
 'use client';
+import RulesTag from '@/components/RulesTag';
 
 import { useState, useRef, useEffect, memo, type CSSProperties } from 'react';
 import dynamic from 'next/dynamic';
@@ -144,7 +145,7 @@ async function uploadScheme(file: File): Promise<string | null> {
 }
 
 type MarkPart = { label?: string; awarded?: number; max?: number; error_summary?: string | null };
-type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; checked_at?: string | null; released_at?: string | null; archived_at?: string | null; marked_by?: string | null; mark_now?: string | null; skip_external?: string | null; claim_at?: string | null; claim_released?: string | null; sheet_status?: string | null; sheet_error?: string | null; sheet_at?: string | null; sheet_stage?: string | null; pages_done?: string | null; pages_total?: string | null };
+type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; rules_version?: string | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; checked_at?: string | null; released_at?: string | null; archived_at?: string | null; marked_by?: string | null; mark_now?: string | null; skip_external?: string | null; claim_at?: string | null; claim_released?: string | null; sheet_status?: string | null; sheet_error?: string | null; sheet_at?: string | null; sheet_stage?: string | null; pages_done?: string | null; pages_total?: string | null };
 type Result = {
   question_number: string; working_index: number; match_confidence: string; photo_index?: number | null;
   marking?: { total_awarded?: number; total_max?: number; overall_comment?: string; parts?: MarkPart[] };
@@ -1762,7 +1763,7 @@ export default function MarkPaperPage() {
                         : run.queued_at ? 'Marked through the batch API (~50% discount)'
                         : 'Marked live through the API (full price)'}
                     >
-                      {run.marked_by ? '💻' : run.queued_at ? '☁️' : '⚡'} ${(run.cost_usd ?? 0).toFixed(3)}
+                      {run.marked_by ? '💻' : run.queued_at ? '☁️' : '⚡'} ${(run.cost_usd ?? 0).toFixed(3)}{run.rules_version ? <> <RulesTag v={run.rules_version} /></> : null}
                     </span>
                   </span>
                 )}
