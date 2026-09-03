@@ -105,8 +105,12 @@ is the served object when present, so "missing figure" means EVERY reference 404
 `image_watermark_status = 'no_image'` is the watermark scan's mark for rows with nothing to
 scan, not a defect.
 
-**Open bug (found 3 Sep 2026 by the figure-repair session): figures that live only at PART level
-are invisible to the row-level checks.** 14 rows bank-wide carried their figure in
+**Fixed the same evening (3 Sep 2026): figures that live only at PART level, or as inline
+`{{IMG:…}}` markers, were invisible to the row-level checks.** `partImagePaths()` and
+`inlineImagePaths()` in `lib/bank-question-markdown.ts` are the one way to read a slot now: every
+renderer (question markdown, structured parts, kiosk worksheets) accepts a JSON-array string in a
+part slot, and the figures-bank enumerator (`stemPaths`) walks parts, sub-parts and inline markers,
+so the flagged/fitness lanes and any sweep built on it can reach them. Original finding: 14 rows bank-wide carried their figure in
 `parts[].image_url` / `parts[].image_url_after` (sometimes as a JSON-array STRING, not a bare
 path) with the row-level `image_url` unset — so `figureServable`'s inputs, the watermark scan and
 every "no file linked" count read the wrong place and withheld them. Nine were judged clean and

@@ -4,6 +4,8 @@
 
 /* Bucket-relative path or full URL → public question_images URL.
  * Mirrors lib/bank-question-markdown.ts toStorageUrl. */
+import { partImagePaths } from './bank-question-markdown';
+
 const IMG_BASE = () =>
   `${process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/question_images/`;
 
@@ -40,7 +42,7 @@ export function flattenParts(stem: string, parts: Part[] | null): { text: string
   const walk = (list: Part[], prefix: string) => {
     for (const p of list) {
       const label = p.label ? `${prefix}(${p.label})` : prefix;
-      if (isPlausibleImagePath(p.image_url)) textLines.push(`![diagram](${imgSrc(p.image_url)})`);
+      for (const u of partImagePaths(p.image_url)) textLines.push(`![diagram](${imgSrc(u)})`);
       if (p.text) {
         // Marks right-aligned like a real exam paper (span floats right in print CSS),
         // followed by marks-proportional working space.
@@ -48,7 +50,7 @@ export function flattenParts(stem: string, parts: Part[] | null): { text: string
         textLines.push(`**${label}** ${p.text}${mk}`);
         if (p.marks) textLines.push(`<div class="ws-sp" style="height:${spaceMm(p.marks)}mm"></div>`);
       }
-      if (isPlausibleImagePath(p.image_url_after)) textLines.push(`![diagram](${imgSrc(p.image_url_after)})`);
+      for (const u of partImagePaths(p.image_url_after)) textLines.push(`![diagram](${imgSrc(u)})`);
       if (p.answer) answers.push(`${label} ${p.answer}`);
       if (p.subparts?.length) walk(p.subparts, label);
     }

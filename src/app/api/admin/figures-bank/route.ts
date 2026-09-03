@@ -60,6 +60,7 @@ import { inspectFigure } from '@/lib/figure-checks';
 import {
   replaceSolutionImageRefs, containsImageRef, partLabelFor, cleanedObjectKey,
 } from '@/lib/solution-image-apply';
+import { partImagePaths, inlineImagePaths } from '@/lib/bank-question-markdown';
 
 export const runtime = 'nodejs';
 
@@ -79,6 +80,20 @@ function stemPaths(row: Row): string[] {
       }
     } catch { /* unparseable */ }
   }
+  // Part-level slots and inline {{IMG:…}} markers (3 Sep 2026): 14 rows carried
+  // their only figure in parts[].image_url / image_url_after, and 31 figures live
+  // as inline markers in text — none reachable by a row-column walk, so no
+  // sweep, gate or lane could ever flag, clean or hide them.
+  const walkParts = (parts: unknown) => {
+    for (const p of (Array.isArray(parts) ? parts : []) as Record<string, unknown>[]) {
+      if (!p || typeof p !== 'object') continue;
+      for (const slot of ['image_url', 'image_url_after']) for (const q of partImagePaths(p[slot])) if (!/^https?:/i.test(q)) out.push(q);
+      for (const q of inlineImagePaths(p.text)) if (!/^https?:/i.test(q)) out.push(q);
+      if (Array.isArray(p.subparts)) walkParts(p.subparts);
+    }
+  };
+  walkParts(row.parts);
+  for (const q of inlineImagePaths(row.question_text)) if (!/^https?:/i.test(q)) out.push(q);
   return [...new Set(out.map((p) => p.replace(/^question_images\//, '')))];
 }
 
@@ -443,7 +458,7 @@ export async function GET(req: NextRequest) {
       for (let i = 0; i < qids.length; i += 200) {
         const { data: qs } = await supa
           .from('questions')
-          .select('id, level, school, year, question_number, image_url, figure_url, question_text, has_image, image_watermark_status')
+          .select('id, level, school, year, question_number, image_url, figure_url, question_text, parts, has_image, image_watermark_status')
           .in('id', qids.slice(i, i + 200));
         for (const q of qs ?? []) meta[q.id as string] = q;
       }

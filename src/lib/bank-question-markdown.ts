@@ -100,8 +100,45 @@ function renderInlineImagesInText(text: string | null | undefined, gate?: Soluti
     return isPlausibleFilename(cleaned) && solutionImageAllowed(cleaned, gate) ? imgTag(cleaned) : '';
   });
 }
+/**
+ * The image paths held in ONE part-level slot (`parts[].image_url` /
+ * `image_url_after`). Usually a bare path; sometimes — 12 rows found on 3 Sep
+ * 2026 — a JSON-ARRAY STRING like '["a.png","b.png"]', which every renderer
+ * treated as one implausible filename, so those figures rendered for nobody.
+ */
+export function partImagePaths(value: unknown): string[] {
+  if (typeof value !== 'string') return [];
+  const raw = value.trim();
+  if (!raw) return [];
+  if (raw.startsWith('[')) {
+    try {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) {
+        return arr
+          .map((e) => (e && typeof e === 'object' ? (e as { url?: unknown }).url : e))
+          .filter((p): p is string => isPlausibleFilename(p));
+      }
+    } catch { /* not JSON — fall through and treat as a path */ }
+  }
+  return isPlausibleFilename(raw) ? [raw] : [];
+}
+
+/** Every `{{IMG:…}}` marker inside a text field — the figures no slot walker sees. */
+export function inlineImagePaths(text: unknown): string[] {
+  if (typeof text !== 'string' || !text) return [];
+  const out: string[] = [];
+  for (const m of text.matchAll(/\{\{IMG:([^}]+)\}\}/g)) {
+    const p = m[1].trim();
+    if (isPlausibleFilename(p)) out.push(p);
+  }
+  return out;
+}
+
 function partImageHtml(path: string | null | undefined, gate?: SolutionImageGate): string {
-  return isPlausibleFilename(path) && solutionImageAllowed(path, gate) ? imgTag(path) : '';
+  return partImagePaths(path)
+    .filter((p) => solutionImageAllowed(p, gate))
+    .map((p) => imgTag(p))
+    .join('\n\n');
 }
 function getStemImageRecords(q: BankQuestion): StemImageRecord[] {
   const records: StemImageRecord[] = [];

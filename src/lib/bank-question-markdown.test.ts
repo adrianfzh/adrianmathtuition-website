@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { questionStructured, questionMarkdown, solutionMarkdown, splitInlineParts, totalMarksOf, normaliseImagePath } from './bank-question-markdown';
+import { partImagePaths, inlineImagePaths } from './bank-question-markdown';
 
 // The portal renders questions from questionStructured() in an exam-style grid
 // (label / sub-part label / text / marks). These pin the shape the grid relies
@@ -254,5 +255,21 @@ describe('solutionMarkdown with a gate', () => {
   it('accepts solution_images as a real array (the jsonb column read directly)', () => {
     expect(solutionMarkdown({ solution_images: ['sol_arr666.png'] })).toContain('sol_arr666.png');
     expect(solutionMarkdown({ solution_images: ['sol_arr666.png'] }, { blocked: new Set(['sol_arr666.png']) })).not.toContain('sol_arr666.png');
+  });
+});
+
+describe('part-level image slots and inline markers (3 Sep 2026)', () => {
+  it('partImagePaths reads a bare path, a JSON-array string, and object entries', () => {
+    expect(partImagePaths('sol_a.png')).toEqual(['sol_a.png']);
+    expect(partImagePaths('["question_images/a1.png","question_images/a2.png"]')).toEqual(['question_images/a1.png', 'question_images/a2.png']);
+    expect(partImagePaths('[{"url":"q12345.png"}]')).toEqual(['q12345.png']);
+    expect(partImagePaths('[]')).toEqual([]);
+    expect(partImagePaths(null)).toEqual([]);
+    expect(partImagePaths('null')).toEqual([]);
+  });
+  it('inlineImagePaths finds every {{IMG:…}} marker', () => {
+    expect(inlineImagePaths('Find x. {{IMG:fig1.png}} Then {{IMG: fig2.png }}.')).toEqual(['fig1.png', 'fig2.png']);
+    expect(inlineImagePaths('no markers')).toEqual([]);
+    expect(inlineImagePaths(undefined)).toEqual([]);
   });
 });
