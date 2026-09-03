@@ -86,6 +86,7 @@ export function resolveCheckScene(
     // never contains the answer; see docs/LESSONS.md).
     ...(scene.narration !== undefined ? { narration: scene.narration } : {}),
     ...(scene.audio !== undefined ? { audio: scene.audio } : {}),
+    ...(scene.timing !== undefined ? { timing: scene.timing } : {}),
   };
 }
 

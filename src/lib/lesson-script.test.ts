@@ -3,8 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   validateLessonScript, checkQids, sceneStepCount,
-  narrationAt, narrationLayout, nextNarrationAudio, lessonHasAudio, isLessonAudioUrl,
-  classifyPlayRejection,
+  narrationAt, narrationLayout, nextNarrationAudio, nextNarrationCue, lessonHasAudio, isLessonAudioUrl,
+  isLessonTimingUrl, classifyPlayRejection,
   NARRATION_MAX_CHARS,
   type LessonScript, type PlayScene,
 } from './lesson-script';
@@ -222,6 +222,55 @@ describe('narration validation', () => {
     expect(isLessonAudioUrl('https://')).toBe(false);
     expect(isLessonAudioUrl(42)).toBe(false);
   });
+
+  it('timing sidecars: same shape as audio, null allowed per step, .timing.json beside the clip', () => {
+    const s = baseScript();
+    const scenes = s.scenes as Record<string, unknown>[];
+    scenes[1].narration = 'text';
+    scenes[1].audio = '/lessons/test-lesson/scene-02.mp3';
+    scenes[1].timing = '/lessons/test-lesson/scene-02.timing.json';
+    scenes.push({
+      ...annotate(), narration: ['a', 'b', 'c'],
+      audio: ['/lessons/test-lesson/scene-03-1.mp3', '/lessons/test-lesson/scene-03-2.mp3', '/lessons/test-lesson/scene-03-3.mp3'],
+      timing: ['/lessons/test-lesson/scene-03-1.timing.json', null, 'https://cdn.example.com/scene-03-3.timing.json'],
+    });
+    expect(validateLessonScript(s).ok).toBe(true);
+  });
+
+  it('rejects timing that does not match its audio, or names a non-sidecar', () => {
+    const s = baseScript();
+    const scenes = s.scenes as Record<string, unknown>[];
+    scenes[1].narration = 'text';
+    scenes[1].audio = '/lessons/test-lesson/scene-02.mp3';
+    scenes[1].timing = ['/lessons/test-lesson/scene-02.timing.json'];                  // array for a single clip
+    scenes.push({ ...annotate(), narration: ['a', 'b', 'c'],
+      audio: ['/lessons/t/a.mp3', '/lessons/t/b.mp3', '/lessons/t/c.mp3'],
+      timing: '/lessons/t/a.timing.json' });                                           // string for an array
+    scenes.push({ ...annotate(), narration: ['a', 'b', 'c'],
+      audio: ['/lessons/t/a.mp3', '/lessons/t/b.mp3', '/lessons/t/c.mp3'],
+      timing: ['/lessons/t/a.timing.json', null] });                                   // wrong length
+    scenes.push({ type: 'caption', text: 't', narration: 'x', audio: '/lessons/t/a.mp3', timing: '/lessons/t/a.json' });   // not .timing.json
+    scenes.push({ type: 'caption', text: 't', narration: 'x', audio: '/lessons/t/a.mp3', timing: 'http://x.com/a.timing.json' }); // not https
+    const r = validateLessonScript(s);
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      const msg = r.errors.join(' | ');
+      expect(msg).toMatch(/scenes\[1\]: timing must be a single path/);
+      expect(msg).toMatch(/scenes\[2\]: timing must be an array/);
+      expect(msg).toMatch(/scenes\[3\]: timing must have one entry per audio clip \(3\), got 2/);
+      expect(msg).toMatch(/scenes\[4\]\.timing: must be a \/lessons\/<slug>\/….timing.json path/);
+      expect(msg).toMatch(/scenes\[5\]\.timing: /);
+    }
+  });
+
+  it('isLessonTimingUrl admits committed sidecars and https only', () => {
+    expect(isLessonTimingUrl('/lessons/binomial-theorem-am/scene-07-3.timing.json')).toBe(true);
+    expect(isLessonTimingUrl('https://cdn.example.com/voice/scene-01.timing.json')).toBe(true);
+    expect(isLessonTimingUrl('/lessons/x/scene-01.json')).toBe(false);
+    expect(isLessonTimingUrl('/lessons/x/scene-01.mp3')).toBe(false);
+    expect(isLessonTimingUrl('/lessons/x/../y/scene-01.timing.json')).toBe(false);
+    expect(isLessonTimingUrl(null)).toBe(false);
+  });
 });
 
 describe('narration helpers', () => {
@@ -230,6 +279,7 @@ describe('narration helpers', () => {
     steps: [{ tokens: [{ tex: 'a' }] }, { tokens: [{ tex: 'b' }] }, { tokens: [{ tex: 'c' }] }],
     narration: ['one', 'two', 'three'],
     audio: ['/lessons/t/scene-02-1.mp3', '/lessons/t/scene-02-2.mp3', '/lessons/t/scene-02-3.mp3'],
+    timing: ['/lessons/t/scene-02-1.timing.json', null, '/lessons/t/scene-02-3.timing.json'],
   };
   const sceneClip: PlayScene = {
     type: 'graph-morph',
@@ -250,13 +300,23 @@ describe('narration helpers', () => {
   });
 
   it('narrationAt cues every step of an array, and only step 0 of a string', () => {
-    expect(narrationAt(stepsScene, 1)).toEqual({ text: 'two', audio: '/lessons/t/scene-02-2.mp3' });
+    expect(narrationAt(stepsScene, 1)).toEqual({ text: 'two', audio: '/lessons/t/scene-02-2.mp3', timing: null });
     expect(narrationAt(stepsScene, 3)).toBeNull();
-    expect(narrationAt(sceneClip, 0)).toEqual({ text: 'whole scene', audio: '/lessons/t/scene-03.mp3' });
+    expect(narrationAt(sceneClip, 0)).toEqual({ text: 'whole scene', audio: '/lessons/t/scene-03.mp3', timing: null });
     expect(narrationAt(sceneClip, 1)).toBeNull(); // rides inside the step-0 clip
-    expect(narrationAt(textOnly, 0)).toEqual({ text: 'not synthesized yet', audio: null });
+    expect(narrationAt(textOnly, 0)).toEqual({ text: 'not synthesized yet', audio: null, timing: null });
     expect(narrationAt(silent, 0)).toBeNull();
     expect(narrationAt(skipped, 0)).toBeNull();
+  });
+
+  it('narrationAt carries the declared timing sidecar (per step, or for the whole-scene clip)', () => {
+    expect(narrationAt(stepsScene, 0)?.timing).toBe('/lessons/t/scene-02-1.timing.json');
+    expect(narrationAt(stepsScene, 1)?.timing).toBeNull();
+    expect(narrationAt(stepsScene, 2)?.timing).toBe('/lessons/t/scene-02-3.timing.json');
+    const timedClip: PlayScene = { ...sceneClip, timing: '/lessons/t/scene-03.timing.json' };
+    expect(narrationAt(timedClip, 0)?.timing).toBe('/lessons/t/scene-03.timing.json');
+    // prefetch sees the sidecar too
+    expect(nextNarrationCue([silent, stepsScene], 0, 0)).toEqual({ text: 'one', audio: '/lessons/t/scene-02-1.mp3', timing: '/lessons/t/scene-02-1.timing.json' });
   });
 
   it('nextNarrationAudio walks forward over silent positions to the next clip', () => {
@@ -401,6 +461,26 @@ describe('pilot script: binomial-theorem-am', () => {
       }
     }
     expect(clips).toBeGreaterThanOrEqual(script.scenes.length);
+  });
+
+  it('every declared timing sidecar is committed beside its clip and honours the contract', async () => {
+    const { parseTimingSidecar } = await import('./lesson-speech');
+    let declared = 0;
+    for (const { slug } of LESSON_CATALOG) {
+      const s = loadLessonScript(slug)!;
+      for (const scene of s.scenes) {
+        const t = scene.timing;
+        if (t === undefined) continue;
+        const paths = (Array.isArray(t) ? t : [t]).filter((u): u is string => typeof u === 'string' && u.startsWith('/'));
+        for (const u of paths) {
+          declared++;
+          const file = path.join(process.cwd(), 'public', u);
+          expect(fs.existsSync(file), `${slug}: ${u} missing`).toBe(true);
+          expect(parseTimingSidecar(JSON.parse(fs.readFileSync(file, 'utf8'))), `${slug}: ${u} off-contract`).not.toBeNull();
+        }
+      }
+    }
+    expect(declared).toBeGreaterThanOrEqual(0); // none yet — the contract is defined, the provider is Adrian's call
   });
 
   it('keeps the whole voice track under the static-asset budget', () => {

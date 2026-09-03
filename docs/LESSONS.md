@@ -25,9 +25,10 @@ Square" — narration authored, clips not yet generated).
 | Scripts | `data/lessons/<slug>.json` | Scenes + narration + audio paths. Static imports, never fs reads (Vercel tracing). |
 | Registry + check resolution | `src/lib/lesson-load.ts` | `RAW_SCRIPTS` map; `usableCheckAnswer` / `resolveCheckScene` run the SAME eligibility gate as the practice `?qid=` deep link. |
 | Catalog | `src/lib/lesson-catalog.ts` | The tiny client-safe map entry points read (`lessonForTopic`, `lessonBySlug`); slug / level / topic / minutes. |
-| Player | `src/app/app/lesson/[slug]/lesson-player.tsx` | Six scene renderers, three pacings (manual / Auto / 🔊 Voice), moved-term FLIP, coefficient-space graph morphs, reduced-motion. |
-| Voice hook | `src/app/app/lesson/[slug]/lesson-narration.ts` | One `<audio>`, iOS unlock, prefetch, clip-driven pacing. |
-| Committed clips | `public/lessons/<slug>/scene-NN[-K].mp3` | Written by the TTS script; Adrian's own takes drop in under the same names. |
+| Player | `src/app/app/lesson/[slug]/lesson-player.tsx` | Six scene renderers, three pacings (manual / Auto / 🔊 Voice), speed 1×–3× + pause, the teacher's cursor + spoken-line ribbon, moved-term FLIP, coefficient-space graph morphs, reduced-motion. |
+| Voice hook | `src/app/app/lesson/[slug]/lesson-narration.ts` | One `<audio>`, iOS unlock, prefetch (clip + sidecar), clip-driven pacing, playbackRate, pause/resume, the per-frame `clock()`. |
+| Spoken-text timing (pure) | `src/lib/lesson-speech.ts` (+ `.test.ts`) | Sentence splitter (TeX/markdown-aware), speaking weights, proportional timing, the sidecar parser, shown↔spoken alignment, cursor states; `PLAYBACK_RATES` + `scaleBeat`. |
+| Committed clips | `public/lessons/<slug>/scene-NN[-K].mp3` | Written by the TTS script; Adrian's own takes drop in under the same names. An optional `scene-NN[-K].timing.json` beside a clip (§ Timing sidecars) times its words exactly. |
 | Page | `src/app/app/lesson/[slug]/page.tsx` | Resolves check questions server-side; `requireFullPortal` gate. |
 | Check recording | `src/app/api/portal/lesson-check/route.ts` | Re-grades server-side, writes `student_attempts` (mastery accrues). |
 | Telemetry | `src/app/api/portal/lesson-event/route.ts` | `lesson:<slug>:scene:<n>` / `:done` / `:narrated` in `portal_event_log`. |
@@ -156,6 +157,7 @@ Every scene may also carry the **voice track**:
 |---|---|
 | `narration` | Spoken English. A **string** narrates the whole scene; an **array** narrates each sub-step in turn — exactly one entry per sub-step, so the voice and the reveal line up. ≤ 600 chars per entry, no TeX. |
 | `audio` | The clip(s) for `narration`, same shape: one `/lessons/<slug>/….mp3` path, or one per entry. Written by the script; `https://` URLs are also accepted. |
+| `timing` | Optional (2026-09-03). The word/sentence timing sidecar(s) for `audio`, same shape — one `/lessons/<slug>/….timing.json` path, or one per entry with `null` for a step that has none. Contract in § Timing sidecars. Without it the player times the words proportionally; the player never probes for an undeclared sidecar (no 404 per clip). |
 
 `validateLessonScript` collects every error in one pass (length, TeX
 characters, array length ≠ step count, audio without narration, shape
@@ -225,21 +227,87 @@ files that exist. The narration text in the JSON is the script to read from.
 
 ## The player
 
-Three pacings, one control row (header pills):
+Three pacings, one control row (header pills), plus a speed and a pause that
+belong to the two timed pacings:
 
-- **Manual** — tap the card / Continue; ‹ steps back one beat.
-- **▶ Auto** — silent timer beats per scene type (`beatDuration`).
+- **Manual** — tap the card / Continue; ‹ steps back one beat. Every sentence
+  on the card sits at full ink.
+- **▶ Auto** — silent timer beats per scene type (`beatDuration`), each
+  divided by the playback rate. The sentences of the current beat's prose
+  wake one after another across the beat (no underline — there is no voice
+  to sweep with).
 - **🔊 Voice** — the clips set the pace: a per-step clip ending advances one
   step, a whole-scene clip ending moves to the next scene (after a 650 ms
-  beat, `NARRATION_BEAT_MS`). Positions without a clip fall back to the Auto
-  timers, so a half-narrated lesson still flows; a clip that fails to load
-  falls back the same way. Checks: the lead-in plays on entry, the answer
-  gate holds, the answered "why" gets its 3.6 s beat, then on.
-  Tapping ahead stops the current clip and starts the next position's.
+  beat, `NARRATION_BEAT_MS`, ÷ rate). Positions without a clip fall back to
+  the Auto timers, so a half-narrated lesson still flows; a clip that fails
+  to load falls back the same way. Checks: the lead-in plays on entry, the
+  answer gate holds, the answered "why" gets its 3.6 s beat (÷ rate), then
+  on. Tapping ahead stops the current clip and starts the next position's.
   ‹ becomes a video-style ⏮: restart this scene, or the previous scene from
-  its top. Muted keeps the clock (the clip plays muted). Reduced-motion users
-  get the voice too. Auto and Voice are exclusive; the Auto pill becomes the
-  mute pill while Voice is on, so the header keeps its width.
+  its top. Muted keeps the clock (the clip plays muted; the cursor and the
+  ribbon keep moving). Reduced-motion users get the voice too. Auto and Voice
+  are exclusive; the Auto pill becomes the mute pill while Voice is on.
+- **Speed (2026-09-03)** — a pill showing the rate (`1×`) opens a row of six
+  chips: 1× · 1.25× · 1.5× · 2× · 2.5× · 3× (`PLAYBACK_RATES`). It sets the
+  element's `playbackRate` with `preservesPitch = true` **and** divides every
+  silent beat (`scaleBeat`: Auto timers, the 650 ms breath, the 3.6 s "why"
+  beat), so silent and voiced pacing speed up together; a rate change
+  mid-beat rescales the remainder. Persisted as `lsn:rate` (same try/catch +
+  `useSyncExternalStore` store as `lsn:narrated`); default 1×; the pill turns
+  navy-text when off 1×. The row is anchored to the whole pill group, so it
+  never runs off a phone's left edge (measured 278 px wide at 390 px). ⚠ A
+  new `src` runs the media load algorithm, which resets `playbackRate` to
+  `defaultPlaybackRate` — the hook sets BOTH and re-applies after every src
+  assignment (a replayed clip came back at 1× until it did, browser run
+  2026-09-03). Chrome holds 3× with pitch preserved; WebKit historically
+  clamps pitch-preserved rates lower — untested here, listen on the iPhone
+  before trusting 2.5×/3× there.
+- **Pause / resume (2026-09-03)** — a ⏸/▶ pill in both timed pacings (space
+  bar on a keyboard; hidden in Manual, disabled while the Voice poster is
+  up). Pausing freezes the clip **and** whichever beat is running (the Auto
+  beat, the post-clip breath, the check beat) with its remaining time;
+  resume continues from exactly there — the same clip at the same
+  `currentTime`, the same remainder — never a restart and never a re-lock
+  (pausing a clip before its `play()` settled rejects with `AbortError` →
+  `superseded` → the position stands, the classification the tap-to-advance
+  fix relies on). A position change while paused (Continue, ‹) releases the
+  pause and moves on — navigation is always "go on". Tapping the **card**
+  while paused resumes in place instead of advancing (a quiet "⏸ Paused ·
+  tap to resume" chip sits top-right). A backgrounded tab still pauses and
+  resumes on its own, unless the student had paused it themselves. Mode
+  changes release a pause.
+- **The teacher's cursor (2026-09-03)** — the prose on the card comes alive
+  as the voice reads it, the way a teacher builds a slide, never karaoke.
+  The card's prose (caption text, the title's promise, an equation step's
+  note, an annotate callout's label and its intro, a check's prompt) is
+  split into sentences (`splitSentences`: never inside `$…$`, `**…**`,
+  brackets; abbreviations, decimals and initials survive). The sentence
+  being spoken sits at full ink under a slim amber underline that sweeps
+  along it at the spoken pace (`--sweep`, a bottom-anchored gradient, runs
+  on as one line across a wrapped sentence); sentences still to come wait at
+  40 % opacity and lift 4 px + fade (300 ms) into place as their moment
+  arrives; spoken ones settle to 85 %. **Never animated:** equation tokens
+  (they arrive per step already), graph-morph labels and captions (TeX /
+  summary), the equation-steps intro (the question stays at full ink), the
+  check question itself. Narration text ≠ on-screen text, so on-screen
+  sentences map onto the spoken timeline one-to-one when the counts match,
+  else proportionally by character weight (`alignShownToSpoken`; punctuation
+  carries a pause weight). Per-step narration animates that step's prose
+  only — earlier steps settle, later ones wait; a whole-scene clip on a
+  multi-step scene walks every step's prose in order. The cursor runs 120 ms
+  ahead of the voice so the eye is there first.
+- **The spoken-line ribbon** — under the card in Voice mode (fixed 42 px
+  slot, so the controls never jump): the narration sentence being said, an
+  amber rule on its left, its words brightening slate → navy as the voice
+  reaches them. This is the exact "words as they are spoken" feel, without
+  touching the maths on the card.
+- **Timing source**, in order: (a) a timing sidecar the script declares
+  (§ Timing sidecars); (b) proportional timing from `audio.duration` ×
+  character weight. Driven from `audio.currentTime` in one `requestAnimationFrame`
+  loop — playbackRate and pause are honoured for free — and written straight
+  onto the DOM (`data-state`, `--sweep`, `data-on`); React re-renders only
+  when the ribbon's sentence changes. `prefers-reduced-motion`: the opacity
+  states stay, the lift and the sweep go.
 - **Audio unlock (iOS Safari / Chrome autoplay policy).** One `<audio>`
   element serves the whole lesson. It is first `play()`ed inside a user
   gesture — the 🔊 pill tap, the "▶ Play with voice" poster on the card (shown
@@ -247,11 +315,64 @@ Three pacings, one control row (header pills):
   (which unlocks with 10 ms of silence and lets the next position's clip
   start on its own). After that, programmatic `play()` with a new `src` is
   allowed, which is what lets scene→scene auto-advance keep talking. A
-  `NotAllowedError` puts the poster back. The next clip is prefetched into a
-  blob URL so scene entry never waits on the network.
+  `NotAllowedError` puts the poster back. The next clip (and its sidecar) is
+  prefetched into a blob URL so scene entry never waits on the network.
 - **Preferences** persist in `localStorage` (`lsn:narrated`, `lsn:muted`,
-  behind try/catch, read through `useSyncExternalStore` so SSR never
-  mismatches). Auto is deliberately not remembered.
+  `lsn:rate`, behind try/catch, read through `useSyncExternalStore` so SSR
+  never mismatches). Auto and pause are deliberately not remembered.
+
+### The header on a phone (measured 390 × 844, 2026-09-03)
+
+One row in every state. Long labels are `sm:`-only; a phone gets the icon
+and the fill colour. Left to right after ‹ (36 px) and the truncating title:
+
+| State | Pills (width) | Title width |
+|---|---|---|
+| Manual | ▶ Auto (58) · 🔊 Voice (66) | ~180 px |
+| Auto on | 1× (30–33) · ⏸ (30) · Auto on (62) · 🔊 Voice (66) | ~95 px |
+| Voice on | 1× (30–33) · ⏸ (30) · 🔈 (34) · 🔊 Voice, filled (66) | ~123 px |
+| Speed row open | 278 px row of chips 26–42 px each, right-aligned under the pills | — |
+
+Gaps are 6 px between pills, 10 px around the title. "The Binomial Theorem"
+truncates to "The Binomial Th…" once the timed pills are up; that is the
+accepted trade for keeping every control on one row.
+
+## Timing sidecars — the contract (2026-09-03)
+
+A sidecar times one clip's words so the cursor and the ribbon follow the
+voice exactly instead of proportionally. **No sidecars exist yet** — which
+provider produces them (Gemini's audio understanding with timestamps, a
+forced aligner such as whisperX/aeneas over the committed MP3, or Adrian's
+own recording tool) is Adrian's decision; the player ships the fallback and
+this contract so that decision is a script, not a player change.
+
+- **File:** `public/lessons/<slug>/scene-NN[-K].timing.json`, beside the
+  clip it times, and **declared** in the scene's `timing` field (same shape
+  as `audio`; `null` per step without one). The player never probes for an
+  undeclared sidecar. `validateLessonScript` checks the shape; the vitest
+  suite checks every declared file exists and parses.
+- **Body:** seconds, clip-relative, at 1× (the player reads the clip's own
+  `currentTime`, which already runs at the playback rate):
+
+  ```json
+  {
+    "words":     [["Welcome.", 0.00, 0.52], ["In", 0.61, 0.70], ["the", 0.70, 0.78]],
+    "sentences": [[0.00, 0.52], [0.61, 4.80]]
+  }
+  ```
+
+  `words` = `[text, startSec, endSec]` for the narration's whitespace-separated
+  tokens **in order** (punctuation attached as written — the player pairs
+  them positionally with `narration.split(/\s+/)`, so a count mismatch
+  ignores the words); `sentences` = `[startSec, endSec]` per sentence of the
+  narration's own split (`splitSentences`). Either key may be omitted:
+  sentences without words spread the words proportionally inside each
+  sentence; words without sentences derive the sentences from the narration
+  split. Starts must be non-decreasing, `0 ≤ start ≤ end`. Anything
+  malformed → `null` → the proportional fallback, never a broken lesson
+  (`parseTimingSidecar`).
+- **Loading:** fetched with the clip's prefetch, cached per URL for the
+  visit; a 404 or bad JSON is remembered as "no sidecar".
 
 ## Telemetry (`portal_event_log`, bounded kinds)
 
@@ -270,6 +391,14 @@ present in `public/` and a real MP3 (ID3 tag or frame sync), total under the
 asset budget; catalog ↔ script coherence for every registered lesson.
 `src/lib/lesson-verify.test.ts`: the arithmetic parser, `equiv`/`state`
 sampling, graph-window sanity, craft rules, narration rules, answer classes.
+`src/lib/lesson-speech.test.ts`: the six rates + `scaleBeat`; the sentence
+splitter (TeX, bold, brackets, abbreviations, decimals, initials — and a
+round-trip over every prose field of every registered lesson); speaking
+weights; proportional timing; the sidecar parser (contract + every
+off-contract shape → null); shown↔spoken alignment (equal counts, weighted
+shares, a sidecar gap); cursor states and the lead. Schema tests for
+`timing` live in `lesson-script.test.ts` (shape, `.timing.json` paths, the
+cue carrying it, declared files present).
 
 ## Release switch
 

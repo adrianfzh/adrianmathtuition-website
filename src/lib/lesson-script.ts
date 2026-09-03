@@ -93,6 +93,15 @@ export interface NarrationFields {
    * for a human recording dropped into the same file names.
    */
   audio?: string | string[];
+  /**
+   * Optional word/sentence timing sidecar(s) for `audio`, same shape (one
+   * path, or one per sub-step — `null` for a step without one). Sits beside
+   * the clip as `/lessons/<slug>/scene-NN[-K].timing.json` (contract in
+   * lib/lesson-speech.ts). Drives the spoken-text animation exactly; without
+   * it the player times the words proportionally over the clip. The player
+   * never probes for a sidecar that is not declared here (no 404 per clip).
+   */
+  timing?: string | (string | null)[];
 }
 
 export type TitleScene = NarrationFields & { type: 'title'; title: string; promise: string };
@@ -190,6 +199,8 @@ export const NARRATION_MAX_CHARS = 600;
 const TEX_LIKE_RE = /[$\\^_{}]/;
 /** A committed clip: /lessons/<slug>/<file>.<audio ext> — no query, no `..`. */
 const LESSON_AUDIO_PATH_RE = /^\/lessons\/[a-z0-9]+(?:-[a-z0-9]+)*\/[A-Za-z0-9][A-Za-z0-9._-]*\.(?:mp3|m4a|ogg|wav)$/;
+/** A committed timing sidecar beside its clip: /lessons/<slug>/<file>.timing.json. */
+const LESSON_TIMING_PATH_RE = /^\/lessons\/[a-z0-9]+(?:-[a-z0-9]+)*\/[A-Za-z0-9][A-Za-z0-9._-]*\.timing\.json$/;
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -211,6 +222,14 @@ function isTone(v: unknown): boolean {
 export function isLessonAudioUrl(v: unknown): v is string {
   if (typeof v !== 'string') return false;
   if (LESSON_AUDIO_PATH_RE.test(v)) return true;
+  if (!v.startsWith('https://')) return false;
+  try { return new URL(v).protocol === 'https:'; } catch { return false; }
+}
+
+/** A same-origin `.timing.json` under /lessons/ or an https URL. */
+export function isLessonTimingUrl(v: unknown): v is string {
+  if (typeof v !== 'string') return false;
+  if (LESSON_TIMING_PATH_RE.test(v)) return true;
   if (!v.startsWith('https://')) return false;
   try { return new URL(v).protocol === 'https:'; } catch { return false; }
 }
@@ -288,6 +307,23 @@ function validateNarration(
   } else {
     if (Array.isArray(n)) errors.push(`${at}: audio must be an array (one clip per narration entry)`);
     if (!isLessonAudioUrl(a)) errors.push(`${at}.audio: must be a /lessons/<slug>/… path or an https URL (got "${String(a)}")`);
+  }
+  // timing (optional): the sidecar for each clip — same shape as audio, null
+  // allowed per step (a clip timed later, or never).
+  const t = scene.timing;
+  if (t === undefined) return;
+  if (Array.isArray(t)) {
+    if (!Array.isArray(a)) {
+      errors.push(`${at}: timing must be a single path when audio is a single clip`);
+    } else if (t.length !== a.length) {
+      errors.push(`${at}: timing must have one entry per audio clip (${a.length}), got ${t.length}`);
+    }
+    t.forEach((u, i) => {
+      if (u !== null && !isLessonTimingUrl(u)) errors.push(`${at}.timing[${i}]: must be a /lessons/<slug>/….timing.json path, an https URL or null (got "${String(u)}")`);
+    });
+  } else {
+    if (Array.isArray(a)) errors.push(`${at}: timing must be an array (one sidecar or null per clip)`);
+    if (!isLessonTimingUrl(t)) errors.push(`${at}.timing: must be a /lessons/<slug>/….timing.json path or an https URL (got "${String(t)}")`);
   }
 }
 
@@ -467,6 +503,8 @@ export interface NarrationCue {
   text: string;
   /** Its clip, or null when the text exists but no audio was generated yet. */
   audio: string | null;
+  /** Its timing sidecar, or null (the player then times words proportionally). */
+  timing: string | null;
 }
 
 export function narrationLayout(scene: PlayScene): NarrationLayout {
@@ -481,22 +519,24 @@ export function narrationLayout(scene: PlayScene): NarrationLayout {
  */
 export function narrationAt(scene: PlayScene, step: number): NarrationCue | null {
   if (scene.type === 'check-skipped' || scene.narration === undefined) return null;
-  const { narration, audio } = scene;
+  const { narration, audio, timing } = scene;
   if (Array.isArray(narration)) {
     const text = narration[step];
     if (text === undefined) return null;
     const clip = Array.isArray(audio) ? audio[step] : undefined;
-    return { text, audio: clip ?? null };
+    const side = Array.isArray(timing) ? timing[step] : undefined;
+    return { text, audio: clip ?? null, timing: clip ? (side ?? null) : null };
   }
   if (step !== 0) return null;
-  return { text: narration, audio: typeof audio === 'string' ? audio : null };
+  const clip = typeof audio === 'string' ? audio : null;
+  return { text: narration, audio: clip, timing: clip && typeof timing === 'string' ? timing : null };
 }
 
 /**
- * The next clip the player will need after (sceneIdx, step) — the one to
- * preload. Walks forward over silent positions; null at the end of the lesson.
+ * The next cue with a clip after (sceneIdx, step) — what to prefetch (clip +
+ * sidecar). Walks forward over silent positions; null at the end of the lesson.
  */
-export function nextNarrationAudio(scenes: PlayScene[], sceneIdx: number, step: number): string | null {
+export function nextNarrationCue(scenes: PlayScene[], sceneIdx: number, step: number): NarrationCue | null {
   let i = sceneIdx;
   let s = step;
   for (let guard = 0; guard < 1000; guard++) {
@@ -504,9 +544,17 @@ export function nextNarrationAudio(scenes: PlayScene[], sceneIdx: number, step: 
     if (s < sceneStepCount(scenes[i]) - 1) s++;
     else { i++; s = 0; if (i >= scenes.length) return null; }
     const cue = narrationAt(scenes[i], s);
-    if (cue?.audio) return cue.audio;
+    if (cue?.audio) return cue;
   }
   return null;
+}
+
+/**
+ * The next clip the player will need after (sceneIdx, step) — the one to
+ * preload. Walks forward over silent positions; null at the end of the lesson.
+ */
+export function nextNarrationAudio(scenes: PlayScene[], sceneIdx: number, step: number): string | null {
+  return nextNarrationCue(scenes, sceneIdx, step)?.audio ?? null;
 }
 
 /** Does any scene carry a clip? A silent lesson never offers the Voice mode. */
