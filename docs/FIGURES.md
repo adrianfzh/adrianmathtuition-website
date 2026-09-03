@@ -105,6 +105,16 @@ is the served object when present, so "missing figure" means EVERY reference 404
 `image_watermark_status = 'no_image'` is the watermark scan's mark for rows with nothing to
 scan, not a defect.
 
+**Open bug (found 3 Sep 2026 by the figure-repair session): figures that live only at PART level
+are invisible to the row-level checks.** 14 rows bank-wide carried their figure in
+`parts[].image_url` / `parts[].image_url_after` (sometimes as a JSON-array STRING, not a bare
+path) with the row-level `image_url` unset — so `figureServable`'s inputs, the watermark scan and
+every "no file linked" count read the wrong place and withheld them. Nine were judged clean and
+stamped by hand that day. Any new two-figure question lands in the same class automatically.
+Fix to make: whatever decides "does this question have a picture" walks the parts tree; the
+watermark stamp and the fitness pass judge part-level figures too. Do it after the EM/AM fitness
+pass reports, with the affected count measured first.
+
 **Unjudged levels are allow-listed regardless of the switch (3 Sep 2026).**
 `JUDGED_SOLUTION_LEVELS` in `lib/solution-image-gate.ts` names the levels the judge pass has
 covered (Sec: AM/EM/S1/S2 + NA). `solutionImageGateFor` reads each question's level; a question
