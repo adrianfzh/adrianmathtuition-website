@@ -323,6 +323,21 @@ export default function MarkPaperPage() {
   const [inboxToken, setInboxToken] = useState<string | null>(null);
   const [annotatedBusy, setAnnotatedBusy] = useState(false);
   const [annotateOpen, setAnnotateOpen] = useState(false);
+  // Keep the open overlay in the URL (?run=<id>&annotate=1) so a Safari reload —
+  // iPad Safari drops heavy tabs under memory pressure, and the overlay's canvases
+  // are heavy — lands back INSIDE the annotation with the draft restored, not on a
+  // bare /admin/mark-paper (Adrian, 3 Sep 2026: "halfway through marking, the page
+  // will just go back to /mark-paper"). Opening from the history ✏️ button never
+  // set the query before; the deep link from /admin/papers always did.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !runId) return;
+    try {
+      const u = new URL(window.location.href);
+      if (annotateOpen) { u.searchParams.set('run', runId); u.searchParams.set('annotate', '1'); }
+      else if (u.searchParams.get('annotate') === '1') u.searchParams.delete('annotate');
+      if (u.toString() !== window.location.href) window.history.replaceState(null, '', u.toString());
+    } catch { /* URL housekeeping only */ }
+  }, [annotateOpen, runId]);
   const [practiceItems, setPracticeItems] = useState<PracticeItem[] | null>(null);
   const [practiceBusy, setPracticeBusy] = useState(false);
   const annotatedInputRef = useRef<HTMLInputElement>(null);

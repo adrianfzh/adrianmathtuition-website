@@ -17,7 +17,10 @@
 //  · Draw-and-hold ≥500ms at the end of a stroke snaps it to a clean line/rect/
 //    ellipse (lib/annotate/shape-fit). Lift early to keep freehand.
 //  · Drafts autosave to localStorage per run (tab-eviction insurance) and are
-//    KEPT after Done — reopening offers "restore previous ink" for re-editing.
+//    KEPT after Done — reopening RESTORES the ink by default and offers
+//    "Start fresh" as the way back (Adrian, 3 Sep 2026: "make the inked copy
+//    the default when going back to annotations done halfway, and allow for
+//    revert (currently, it's the opposite)").
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { put } from '@vercel/blob/client';
@@ -645,8 +648,6 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
 
   const bumpInk = useCallback(() => {
     dirtyRef.current = true;
-    // Fresh ink supersedes the restore offer — restoring now would eat the new stroke.
-    setRestoreOffer(null);
     setInkTick((t) => t + 1);
   }, []);
 
@@ -714,6 +715,20 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     });
     doneAtRef.current = d.doneAt;
     dirtyRef.current = false;
+    setRestoreOffer(null);
+    setInkTick((t) => t + 1);
+    scheduleBase();
+  }, [pages, runId, scheduleBase]);
+
+  // The revert: wipe every page's ink AND the stored draft, after one confirm —
+  // this is the only action here that can throw ink away, so it asks.
+  const startFresh = useCallback(() => {
+    if (busyRef.current) return;
+    if (!window.confirm('Start fresh? The ink on every page of this run will be discarded.')) return;
+    pages.forEach((_, i) => { strokesRef.current[i] = []; undoRef.current[i] = []; redoRef.current[i] = []; });
+    doneAtRef.current = null;
+    dirtyRef.current = true;
+    try { localStorage.removeItem(draftKey(runId)); } catch { /* ignore */ }
     setRestoreOffer(null);
     setInkTick((t) => t + 1);
     scheduleBase();
@@ -1615,9 +1630,18 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       img.src = p.url;
       imgsRef.current[i] = img;
     });
-    // Offer to restore a draft (crash recovery, or post-Done re-edit).
+    // A saved draft (crash recovery, a Safari reload mid-paper, or a post-Done
+    // re-edit) comes back ON THE PAGES straight away — the inked copy is the
+    // default, and the banner's "Start fresh" is the revert. Before 3 Sep 2026
+    // the pages opened clean with a "Restore ink" offer, which read as the ink
+    // being gone.
     const d = parseDraft(localStorage.getItem(draftKey(runId)));
-    if (d && !draftIsEmpty(d)) setRestoreOffer({ savedAt: d.savedAt, wasDone: d.doneAt !== null });
+    if (d && !draftIsEmpty(d)) {
+      pages.forEach((p, i) => { strokesRef.current[i] = (d.pages[p.photoIndex] || []).slice(); });
+      doneAtRef.current = d.doneAt;
+      dirtyRef.current = false;
+      setRestoreOffer({ savedAt: d.savedAt, wasDone: d.doneAt !== null });
+    }
 
     try {
       const t = JSON.parse(localStorage.getItem(TOOLS_KEY) || 'null');
@@ -1912,11 +1936,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       {restoreOffer && (
         <div style={{ background: '#eff6ff', color: '#1d4ed8', padding: '8px 14px', fontSize: 13, borderBottom: '1px solid #bfdbfe', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           <span>
-            {restoreOffer.wasDone ? '✍️ You annotated this run before —' : '💾 Unsaved ink from a previous session —'}
-            {' '}saved {new Date(restoreOffer.savedAt).toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+            {restoreOffer.wasDone ? '✍️ Your ink from before is back on the pages —' : '💾 Your unsaved ink is back on the pages —'}
+            {' '}saved {new Date(restoreOffer.savedAt).toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}. Keep going, or
           </span>
-          <button style={{ ...btn, height: 32, fontSize: 13, fontWeight: 700 }} onClick={applyDraft}>Restore ink</button>
-          <button style={{ ...btn, height: 32, fontSize: 13 }} onClick={() => { try { localStorage.removeItem(draftKey(runId)); } catch { /* ignore */ } setRestoreOffer(null); }}>Start fresh</button>
+          <button style={{ ...btn, height: 32, fontSize: 13 }} onClick={startFresh}>Start fresh</button>
+          <button style={{ ...btn, height: 32, fontSize: 13, fontWeight: 700 }} onClick={() => setRestoreOffer(null)}>OK</button>
         </div>
       )}
 
