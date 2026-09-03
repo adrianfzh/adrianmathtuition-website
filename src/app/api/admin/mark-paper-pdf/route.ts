@@ -263,7 +263,8 @@ async function buildFrontPage(
     const res = (r.result_json as { results?: unknown[] } | null)?.results;
     if (!Array.isArray(res)) continue;
     for (const q of res as Record<string, never>[]) {
-      const mo = (q as { marking_output?: { parts?: Record<string, unknown>[] } }).marking_output;
+      const mo = (q as { marking_output?: { parts?: Record<string, unknown>[]; meta?: { topic_detected?: unknown } } }).marking_output;
+      const topic = String(mo?.meta?.topic_detected ?? '');
       for (const p of (mo?.parts ?? [])) {
         const mx = Number(p.max), aw = Number(p.awarded);
         if (!Number.isFinite(mx) || !Number.isFinite(aw) || aw >= mx) continue;
@@ -271,7 +272,7 @@ async function buildFrontPage(
           paperId: r.id, paperName: r.paper_name || 'a paper', createdAt: r.created_at,
           question: String((q as { question_number?: unknown }).question_number ?? '?'),
           label: String(p.label ?? ''), lost: mx - aw, max: mx,
-          blank: p.not_attempted === true, why: String(p.error_summary ?? ''),
+          blank: p.not_attempted === true, why: String(p.error_summary ?? ''), topic,
         });
       }
     }

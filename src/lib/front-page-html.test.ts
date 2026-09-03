@@ -78,6 +78,24 @@ describe('frontPageHtml', () => {
     expect(h).toContain('width:75%');
   });
 
+  it('prints the topic beside each bar when the run carries one (Adrian, 3 Sep 2026: "say what topic Q9 is")', () => {
+    const h = frontPageHtml({ ...base, worstQuestions: [
+      { question: 'Q9', lost: 1, max: 5, topic: 'Differentiation' },
+      { question: 'Q3', lost: 1, max: 5 },
+    ] });
+    expect(h).toContain('class="questions with-topics"');
+    expect(h).toContain('<span class="q-topic">Differentiation</span>');
+    // A row without a topic keeps the column so the bars still line up.
+    expect(h).toContain('<span class="q-topic"></span>');
+  });
+
+  it('renders a run from before the topic field exactly as it did — no column, no class', () => {
+    const h = frontPageHtml({ ...base, worstQuestions: [{ question: 'Q5', lost: 7, max: 7 }] });
+    // The stylesheet names both; no element carries them.
+    expect(h).not.toContain('class="questions with-topics"');
+    expect(h).not.toContain('class="q-topic"');
+  });
+
   it('escapes anything that came from the marker', () => {
     const h = frontPageHtml({ ...base, studentName: 'A <script>alert(1)</script> B',
       themes: [theme({ examples: [{ paperName: 'p', question: 'Q1', why: 'a < b & c' }] })] });

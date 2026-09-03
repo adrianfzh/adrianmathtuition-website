@@ -29,6 +29,13 @@ export type LostPart = {
   max: number;
   blank: boolean;
   why: string;
+  /**
+   * The marker's own topic for the question (`marking_output.meta.topic_detected`,
+   * one per question, e.g. "Surds; sum and product of roots of a quadratic").
+   * Optional: runs from before the field, and parts the caller built without
+   * it, simply print no topic.
+   */
+  topic?: string;
 };
 
 export type Theme = {
@@ -129,17 +136,46 @@ export function analyse(parts: LostPart[], latestPaperId: string): Theme[] {
     (Number(b.live) - Number(a.live)) || (b.marks - a.marks));
 }
 
+/**
+ * The marker's topic string, cut to what fits beside a bar on the cover.
+ *
+ * Adrian, 3 Sep 2026, on Kassandra's cover: "it will be useful to say what
+ * topic Q9 is on the cover page". The marker writes the topic as a list —
+ * "Surds; sum and product of roots of a quadratic", "Differentiation —
+ * maxima and minima", "Integration (area under a curve)". The FIRST clause is
+ * the syllabus topic; the rest is the sub-skill, which the theme rows already
+ * cover. So: first clause, then a hard cap on a word boundary, so a long
+ * label can never wrap a bar row onto a second line and push the page past
+ * one A4 sheet.
+ */
+export const TOPIC_LABEL_MAX = 34;
+export function topicLabel(raw: unknown): string {
+  let s = String(raw ?? '').replace(/\s+/g, ' ').trim();
+  if (!s) return '';
+  s = s.split(/\s*(?:;|—|–| - |:|\(|\/)\s*/)[0].trim();
+  s = s.replace(/[,.\s]+$/, '');
+  if (s.length > TOPIC_LABEL_MAX) {
+    const cut = s.slice(0, TOPIC_LABEL_MAX);
+    const sp = cut.lastIndexOf(' ');
+    s = (sp > TOPIC_LABEL_MAX * 0.5 ? cut.slice(0, sp) : cut).replace(/[,.\s]+$/, '') + '…';
+  }
+  return s;
+}
+
 /** Which questions bled most on THIS paper — the "where in the paper" half. */
 export function worstQuestions(parts: LostPart[], paperId: string, limit = 5) {
-  const byQ = new Map<string, { question: string; lost: number; max: number; why: string }>();
+  const byQ = new Map<string, { question: string; lost: number; max: number; why: string; topic: string }>();
   for (const p of (parts || []).filter(x => x.paperId === paperId)) {
     // The marker's question_number is not always a number — it comes back as
     // "(b)", "c" or "?" when a page carried no printed question number. Prefixing
     // those with Q produced "Q(b)" and "Qc" on the first live run. A label with no
     // digit in it is not a question number, so it is shown as the marker wrote it.
     const k = /\d/.test(p.question) ? `Q${p.question}` : (p.question || '?');
-    const cur = byQ.get(k) || { question: k, lost: 0, max: 0, why: p.why };
+    const cur = byQ.get(k) || { question: k, lost: 0, max: 0, why: p.why, topic: '' };
     cur.lost += p.lost; cur.max += p.max;
+    // The first part that carries a topic names the question; parts of one
+    // question share the marker's meta, so this is the only one there is.
+    if (!cur.topic) cur.topic = topicLabel(p.topic);
     byQ.set(k, cur);
   }
   return [...byQ.values()].sort((a, b) => b.lost - a.lost).slice(0, limit);

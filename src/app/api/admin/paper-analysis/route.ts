@@ -62,6 +62,7 @@ export async function GET(req: NextRequest) {
     const rj = (r.result_json || {}) as ResultJson;
     if (!Array.isArray(rj.results)) continue;
     for (const res of rj.results) {
+      const topic = String((res.marking_output as { meta?: { topic_detected?: unknown } } | undefined)?.meta?.topic_detected ?? '');
       for (const p of (res.marking_output?.parts ?? [])) {
         const max = Number(p.max), aw = Number(p.awarded);
         if (!Number.isFinite(max) || !Number.isFinite(aw) || aw >= max) continue;
@@ -75,6 +76,7 @@ export async function GET(req: NextRequest) {
           max,
           blank: p.not_attempted === true,
           why: String(p.error_summary ?? ''),
+          topic,
         });
       }
     }

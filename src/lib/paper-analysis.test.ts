@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { analyse, classify, worstQuestions, headline, type LostPart } from './paper-analysis';
+import { analyse, classify, worstQuestions, headline, topicLabel, type LostPart } from './paper-analysis';
 
 const NEW = 'run-newest';
 const OLD = 'run-older';
@@ -91,6 +91,40 @@ describe('worstQuestions', () => {
     expect(w[0]).toMatchObject({ question: 'Q10', lost: 6 });
     expect(w[1]).toMatchObject({ question: 'Q5', lost: 5 });
     expect(w.find(x => x.question === 'Q9')).toBeUndefined();
+  });
+});
+
+describe('topicLabel — the marker\'s topic, cut to fit beside a bar', () => {
+  it('keeps the first clause: the syllabus topic, not the sub-skill list', () => {
+    expect(topicLabel('Surds; sum and product of roots of a quadratic')).toBe('Surds');
+    expect(topicLabel('Differentiation — maxima and minima')).toBe('Differentiation');
+    expect(topicLabel('Integration (area under a curve)')).toBe('Integration');
+    expect(topicLabel('Trigonometry: R-formula')).toBe('Trigonometry');
+    expect(topicLabel('Indices / logarithms')).toBe('Indices');
+  });
+  it('caps a long first clause on a word boundary so a row never wraps', () => {
+    const l = topicLabel('Coordinate geometry of circles and their tangents in the plane');
+    expect(l.length).toBeLessThanOrEqual(35);
+    expect(l.endsWith('…')).toBe(true);
+    expect(l).not.toMatch(/\s…$/);
+  });
+  it('is empty for nothing, and never throws on junk', () => {
+    expect(topicLabel(undefined)).toBe('');
+    expect(topicLabel('   ')).toBe('');
+    expect(topicLabel(42)).toBe('42');
+  });
+});
+
+describe('worstQuestions carries the topic', () => {
+  it('names each question with the marker\'s topic, shortened, once per question', () => {
+    const parts = [
+      part({ question: '9', label: '(a)', lost: 1, max: 3, topic: 'Differentiation — maxima and minima' }),
+      part({ question: '9', label: '(b)', lost: 2, max: 2, topic: 'Differentiation — maxima and minima' }),
+      part({ question: '3', label: '', lost: 1, max: 5 }),                      // pre-field run: no topic
+    ];
+    const w = worstQuestions(parts, NEW);
+    expect(w[0]).toMatchObject({ question: 'Q9', lost: 3, topic: 'Differentiation' });
+    expect(w[1]).toMatchObject({ question: 'Q3', lost: 1, topic: '' });
   });
 });
 

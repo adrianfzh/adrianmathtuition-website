@@ -75,7 +75,9 @@ export type FrontPageInput = {
   /** Kept for callers that still send it; the page no longer reads it. */
   papersRead?: number;
   themes: Theme[];
-  worstQuestions: { question: string; lost: number; max: number }[];
+  /** `topic` = the marker's topic for the question, already cut to size by
+   *  paper-analysis `topicLabel`; absent on runs from before the field. */
+  worstQuestions: { question: string; lost: number; max: number; topic?: string }[];
   /**
    * Where the themes came from. `sheet` = the self-study sheet's own diagnosis,
    * written back onto the run (lib/sheet-diagnosis.ts), in the sheet's section
@@ -133,10 +135,16 @@ function themeRow(t: Theme, i: number): string {
   </div>`;
 }
 
-function questionRow(q: { question: string; lost: number; max: number }): string {
+// Adrian, 3 Sep 2026: "it will be useful to say what topic Q9 is on the cover
+// page". The topic sits in its own column between the label and the bar, one
+// line, clipped with an ellipsis — the row never grows taller, so the one-A4
+// rule holds. The column exists only when at least one row has a topic:
+// older runs render exactly as they did.
+function questionRow(q: { question: string; lost: number; max: number; topic?: string }, withTopics: boolean): string {
   const pct = q.max > 0 ? Math.round((q.lost / q.max) * 100) : 0;
+  const topic = withTopics ? `<span class="q-topic">${esc(q.topic || '')}</span>` : '';
   return `<div class="q">
-    <span class="q-label">${esc(q.question)}</span>
+    <span class="q-label">${esc(q.question)}</span>${topic}
     <span class="bar"><span style="width:${pct}%"></span></span>
     <span class="q-marks">&minus;${q.lost} of ${q.max}</span>
   </div>`;
@@ -243,6 +251,8 @@ function closingLine(input: FrontPageInput): string {
 
 export function frontPageHtml(input: FrontPageInput): string {
   const themes = chooseThemes(input.themes || []);
+  const worst = (input.worstQuestions || []).slice(0, MAX_QUESTIONS);
+  const withTopics = worst.some(q => !!(q.topic || '').trim());
   const top = themes[0];
   // A score above the total outranks the top theme: the student must read that the
   // number is being checked before they read anything built on it. Student words —
@@ -323,6 +333,9 @@ h2::before{content:none}
 .theme-note .katex{font-size:1em}
 .questions{display:flex;flex-direction:column;gap:.32rem;margin-bottom:1.1rem}
 .q{display:grid;grid-template-columns:2.7rem 1fr 4.4rem;gap:.75rem;align-items:center}
+.questions.with-topics .q{grid-template-columns:2.7rem 11.5rem 1fr 4.4rem}
+.q-topic{font-size:.78rem;color:var(--ink-soft);white-space:nowrap;overflow:hidden;
+         text-overflow:ellipsis;min-width:0}
 .q-label{font-family:"IBM Plex Mono",monospace;font-size:.83rem;font-weight:600;
          font-variant-numeric:tabular-nums}
 .bar{height:.52rem;background:var(--rail);position:relative;overflow:hidden}
@@ -359,7 +372,7 @@ ${kindsRow(input.errorKinds)}<div class="sec-work">
 <div class="sec-where">
 <h2>Where the marks went</h2>
 <p class="sub">The questions that cost you most on this paper.</p>
-<div class="questions">${(input.worstQuestions || []).slice(0, MAX_QUESTIONS).map(questionRow).join('')}</div>
+<div class="questions${withTopics ? ' with-topics' : ''}">${worst.map(q => questionRow(q, withTopics)).join('')}</div>
 </div>
 ${closingLine(input)}
 </div>

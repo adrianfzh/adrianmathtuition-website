@@ -29,6 +29,26 @@ const pictorial = {
         <path d="M${36 * u},${64 * u} L${46 * u},${76 * u} L${68 * u},${50 * u}" fill="none" stroke="#C4342C" stroke-width="${8.5 * u}" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>`;
   },
+  // desk (3 Sep 2026, Adrian: "is there a good icon for desk also?") — the
+  // marking desk is the in-tray: a cream tray on the cover's brown, three
+  // sheets stacked in it (the queue), and the red marking pen resting across.
+  'desk': (size) => {
+    const s = size, u = s / 100;
+    const sheet = (x, y, w, h) =>
+      `<rect x="${x * u}" y="${y * u}" width="${w * u}" height="${h * u}" rx="${2.5 * u}" fill="#FFF8E7" stroke="#D6CBB5" stroke-width="${1.2 * u}"/>`;
+    return `
+      <svg width="${s}" height="${s}" xmlns="http://www.w3.org/2000/svg">
+        <rect width="${s}" height="${s}" fill="#5C3A21"/>
+        ${sheet(30, 18, 40, 26)}
+        ${sheet(26, 26, 48, 26)}
+        ${sheet(22, 34, 56, 26)}
+        <path d="M${14 * u},${52 * u} V${80 * u} a${4 * u},${4 * u} 0 0 0 ${4 * u},${4 * u} H${82 * u} a${4 * u},${4 * u} 0 0 0 ${4 * u},-${4 * u} V${52 * u}"
+              fill="#E8DFC8" stroke="#FFF8E7" stroke-width="${2.5 * u}" stroke-linejoin="round"/>
+        <rect x="${14 * u}" y="${52 * u}" width="${72 * u}" height="${7 * u}" fill="#FFF8E7"/>
+        <path d="M${26 * u},${76 * u} L${70 * u},${62 * u}" stroke="#C4342C" stroke-width="${7 * u}" stroke-linecap="round"/>
+        <path d="M${70 * u},${62 * u} L${78 * u},${59.5 * u} L${73 * u},${67.5 * u} Z" fill="#C4342C"/>
+      </svg>`;
+  },
 };
 
 const outDir = path.join(__dirname, '..', 'public', 'icons');

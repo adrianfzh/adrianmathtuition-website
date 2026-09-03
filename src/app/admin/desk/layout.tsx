@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 
-// PWA metadata like the other admin pages. Reuses the hub's icon set — no new
-// binaries; give it its own the day it earns a home-screen spot on the iPad.
+// PWA metadata like the other admin pages. Its own icon since 3 Sep 2026 (Adrian:
+// "is there a good icon for desk also?") — the in-tray on the cover's brown,
+// drawn by scripts/generate-icons.js.
 export const metadata: Metadata = {
   title: "Marking desk — Adrian's Math Tuition",
   manifest: '/manifest-desk.json',
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
     title: 'Marking desk',
   },
   icons: {
-    apple: '/icons/admin-180.png',
+    apple: '/icons/desk-180.png',
   },
 };
 
