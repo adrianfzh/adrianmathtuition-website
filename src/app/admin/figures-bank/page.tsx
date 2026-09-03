@@ -517,13 +517,13 @@ export default function FiguresPage() {
                 )}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 8 }}>
                   <figure style={{ margin: 0 }}>
-                    <figcaption style={{ fontSize: 11.5, color: C.muted, marginBottom: 3 }}>In the bank now</figcaption>
+                    <figcaption style={{ fontSize: 11.5, color: C.muted, marginBottom: 3 }}>In the bank now · tap to open full size</figcaption>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <a href={it.liveUrl} target="_blank" rel="noreferrer"><img src={it.liveUrl} alt="" loading="lazy"
                       style={{ width: '100%', maxHeight: 380, objectFit: 'contain', background: '#fff', border: '1px solid #94a3b8', borderRadius: 6 }} /></a>
                   </figure>
                   <figure style={{ margin: 0 }}>
-                    <figcaption style={{ fontSize: 11.5, color: C.muted, marginBottom: 3 }}>Cleaned candidate</figcaption>
+                    <figcaption style={{ fontSize: 11.5, color: C.muted, marginBottom: 3 }}>Cleaned candidate · tap to open full size — check pale lines and curves at 1:1</figcaption>
                     {cand ? (
                       <>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
