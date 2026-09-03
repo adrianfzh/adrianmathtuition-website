@@ -905,3 +905,27 @@ opposite actions; the row cannot tell you which it wants.
 
 Lists: `wmsweep/never-swept.json` (the 97 with a resolvable key, of which 12 then 404)
 and the 41 keyless rows derived alongside it.
+
+### Consolidated: 139 rows point at an image that isn't there (both sessions, 2026-09-03)
+
+Folding this session's count with the solution-image session's, so there is one number:
+
+| Class | Rows | What a student gets |
+|---|---|---|
+| Solution image, object missing | **86** (77 part-level + 9 question-level) | Question serves normally; the **solution renders a broken image**. Not gated — `figureServable()` never looks at solution images. |
+| Question figure, object missing | **12** | Question is **blocked from serving** entirely. |
+| `has_image` true, no reference at all | **41** | Question is **blocked from serving** entirely. |
+
+**53 blocked, 86 quietly broken in front of students.** Different symptoms, so possibly
+different fixes: the blocked ones need `has_image` resolved, the 86 need either the
+object restored or the reference dropped from the solution.
+
+⚠ **Verifying a missing object: the HTTP status lies.** Supabase's public storage
+endpoint returns **400**, not 404, for an absent object — the body carries
+`{"statusCode":"404","error":"not_found","code":"NoSuchKey"}`. A check that keys on
+`res.status === 404` will conclude the file is fine. Confirm with the body, or with
+`storage.from(bucket).list('', {search: key})` returning empty, which is authoritative
+(the CDN is not).
+
+Lists: `wmsweep/never-swept.json` here; `solimg-2026-09-03/build/download-report.json`
+and `build2/download-report.json` for the 86.
