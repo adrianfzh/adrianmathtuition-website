@@ -390,6 +390,15 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // The student's marked-script download (/api/portal/marking-pdf, 3 Sep 2026 —
+    // the properly named same-origin copy behind both PDF links on /app/marking).
+    // Anonymous → the login redirect proves the route exists and its gate is up;
+    // a 404 means every "Open your marked script" tap dies quietly.
+    timed('portal-marking-pdf', async () => {
+      const r = await fetch(`${base}/api/portal/marking-pdf?run=00000000-0000-4000-8000-000000000000`, { redirect: 'manual', signal: T(10000) });
+      if (![301, 302, 303, 307, 308, 401].includes(r.status)) throw new Error(`expected a login redirect or 401, got HTTP ${r.status}`);
+      return `gate up (${r.status})`;
+    }),
     // Student resource requests (/app/requests → /admin/requests, v1
     // human-in-the-loop). The student route must hold its auth gate (401
     // anonymously — a 404 means the tab silently vanishes and asks stop

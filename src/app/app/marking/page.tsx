@@ -252,7 +252,7 @@ function Paper({ paper }: { paper: StudentPaper }) {
         <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
           {paper.pdfUrl && (
             <a
-              href={paper.pdfUrl}
+              href={`/api/portal/marking-pdf?run=${paper.id}&kind=marked`}
               target="_blank"
               rel="noopener noreferrer"
               data-track="marking:open"
@@ -271,7 +271,7 @@ function Paper({ paper }: { paper: StudentPaper }) {
               PDF") — the full report stays one tap away. */}
           {paper.fullPdfUrl && (
             <a
-              href={paper.fullPdfUrl}
+              href={`/api/portal/marking-pdf?run=${paper.id}&kind=full`}
               target="_blank"
               rel="noopener noreferrer"
               data-track="marking:open"
