@@ -57,7 +57,10 @@ export const SOLUTION_IMAGES_REQUIRE_CLEAN = false;
  * (Adrian, 3 Sep 2026), and /app/practice IS open to students during the
  * marking-only beta. Add a level here only when its judge pass has landed.
  */
-export const JUDGED_SOLUTION_LEVELS: ReadonlySet<string> = new Set(['AM', 'EM', 'S1', 'S2', 'EM_NA', 'AM_NA']);
+// Exactly the levels in the Sec pass's build sets (build/set.json + build2/set.json,
+// 3 Sep 2026): AM 268 · EM 194 · EM_NA 75 · S3_EM 94 · S1 79 · S2 26 · S3_AM 19 ·
+// S3_EM_NT 3 · AM_NA 3 images. Not a guess at "Sec" — the set the judge saw.
+export const JUDGED_SOLUTION_LEVELS: ReadonlySet<string> = new Set(['AM', 'EM', 'EM_NA', 'AM_NA', 'S1', 'S2', 'S3_EM', 'S3_AM', 'S3_EM_NT']);
 export function solutionImagesJudgedFor(level: string | null | undefined): boolean {
   return !!level && JUDGED_SOLUTION_LEVELS.has(String(level).trim().toUpperCase());
 }

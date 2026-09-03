@@ -73,7 +73,7 @@ describe('unjudged levels — served on the allow-list whatever the switch says 
   const q = (id: string, img: string) => ({ id, solution_images: [img] } as unknown as BankQuestion);
 
   it('only Sec levels count as judged', () => {
-    for (const l of ['AM', 'EM', 'S1', 'S2', 'EM_NA', 'AM_NA', 'am']) expect(solutionImagesJudgedFor(l)).toBe(true);
+    for (const l of ['AM', 'EM', 'S1', 'S2', 'EM_NA', 'AM_NA', 'S3_EM', 'S3_AM', 'S3_EM_NT', 'am']) expect(solutionImagesJudgedFor(l)).toBe(true);
     for (const l of ['JC1', 'JC2', 'H2', 'H1', 'PHY', '', null, undefined]) expect(solutionImagesJudgedFor(l)).toBe(false);
   });
 
