@@ -13,9 +13,11 @@
 //   GET  ?flagged=1                          → every open flag, with the figure
 //        AS FLAGGED and the question's figure AS IT IS NOW
 //   GET  ?kind=solution                      → the SOLUTION VET LANE (below)
+//   GET  ?kind=fitness                       → the FITNESS LANE (below)
 //   POST { path, questionId, flag: boolean } → set/clear a flag
 //   POST { path, resolve: true }             → mark 'fixed' (releases the question)
 //   POST { kind:'solution', action, … }      → the vet lane's five actions
+//   POST { kind:'fitness', action, … }       → the fitness lane's three actions
 //
 // A flag records the bucket path at the moment it was raised. Cleaning a figure
 // writes a NEW bucket object and repoints the question, so that path goes stale
@@ -33,6 +35,21 @@
 // solutions." This lane is that surface. Putting an image back follows the
 // binding write contract mirrored in lib/solution-image-apply.ts — new object,
 // recursive ref swap, absence proof, clean-log row, THEN the flag flip.
+//
+// ── The fitness lane (2026-09-03) ─────────────────────────────────────────────
+// A fitness-verification pass (claimed_by 'figfit-2026-09-03' and a peer
+// session's cropsweep) writes figure_flags rows with kind='question',
+// status='held' whenever a question figure may be the wrong figure, cropped
+// short, illegible, or carrying foreign content. 'held' (not 'open') on
+// purpose: an open QUESTION flag withdraws the whole question from serving
+// immediately, and most fitness failures are cosmetic — Adrian needs to look
+// before anything is pulled. This lane is where he looks. Three actions, none
+// of them touching the bucket or the question row — only figure_flags status
+// and note: 🙈 Hide (status→'open', pulls the question until repaired),
+// ✓ Figure is fine (status→'fixed', keeps serving), 🛠 Send to repair (status
+// stays 'held' — stays in the queue without un-serving). Every action PREFIXES
+// Adrian's verdict onto the fitness pass's own note rather than replacing it,
+// so the original verdict/reason survives alongside his decision.
 import { createHash } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -300,12 +317,114 @@ async function solutionLanePost(
   return NextResponse.json({ error: `unknown solution action: ${action || '(none)'}` }, { status: 400 });
 }
 
+/* ── fitness lane ────────────────────────────────────────────────────────────
+ * Held kind='question' flags from the fitness-verification pass. The note is
+ * free text the pass wrote — "figfit 3 Sep 2026 · <verdict> · <reason>" is the
+ * common shape, but severity is read from anywhere in the text so it still
+ * works for notes that don't follow that exact template. */
+
+function parseFitnessNote(note: string | null): {
+  severity: 'blocks-answering' | 'cosmetic' | null;
+  verdict: string | null;
+} {
+  if (!note) return { severity: null, verdict: null };
+  const severity = /blocks-answering/i.test(note) ? 'blocks-answering'
+    : /cosmetic/i.test(note) ? 'cosmetic' : null;
+  const parts = note.split('·').map((s) => s.trim()).filter(Boolean);
+  // "figfit 3 Sep 2026 · <verdict> · <reason>" — the verdict is the segment
+  // after the first '·', when the note has one.
+  const verdict = parts.length > 1 ? parts[1] : null;
+  return { severity, verdict };
+}
+
+async function fitnessLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
+  const { data: flags, error } = await supa
+    .from('figure_flags').select('path, question_id, note, claimed_by, created_at')
+    .eq('kind', 'question').eq('status', 'held')
+    .order('created_at', { ascending: false }).limit(1000);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const all = flags ?? [];
+
+  let blocking = 0;
+  let cosmetic = 0;
+  for (const f of all) {
+    const { severity } = parseFitnessNote((f.note as string | null) ?? null);
+    if (severity === 'blocks-answering') blocking++;
+    else if (severity === 'cosmetic') cosmetic++;
+  }
+
+  const page = Math.max(0, Number(sp.get('page') ?? 0) || 0);
+  const pageSize = Math.min(60, Math.max(1, Number(sp.get('pageSize') ?? 20) || 20));
+  const slice = all.slice(page * pageSize, page * pageSize + pageSize);
+
+  const qids = [...new Set(slice.map((f) => f.question_id as string))];
+  const meta: Record<string, Row> = {};
+  if (qids.length) {
+    const { data: qs } = await supa.from('questions')
+      .select('id, level, school, year, paper, question_number, question_text, image_url, figure_url')
+      .in('id', qids);
+    for (const q of qs ?? []) meta[q.id as string] = q as Row;
+  }
+
+  const items = slice.map((f) => {
+    const path = f.path as string;
+    const q = meta[f.question_id as string];
+    const note = (f.note as string | null) ?? null;
+    const { severity, verdict } = parseFitnessNote(note);
+    const stem = ((q?.question_text as string) ?? '').replace(/\s+/g, ' ').trim().slice(0, 220);
+    return {
+      path, qid: f.question_id,
+      level: q?.level ?? null, school: q?.school ?? null, year: q?.year ?? null,
+      paper: q?.paper ?? null, qnum: q?.question_number ?? null,
+      stem,
+      figureUrl: imgSrc(`${BUCKET}/${path}`),
+      severity, verdict, note,
+      claimedBy: (f.claimed_by as string | null) ?? null,
+    };
+  });
+
+  return NextResponse.json({ items, page, pageSize, totals: { held: all.length, blocking, cosmetic } });
+}
+
+const FITNESS_PREFIXES: Record<string, string> = {
+  hide: 'Adrian: hide · ',
+  accept: 'Adrian: figure is fine · ',
+  repair: 'Adrian: repair · ',
+};
+
+async function fitnessLanePost(
+  supa: SupabaseClient, body: Record<string, unknown>, path: string, questionId: string,
+) {
+  const action = typeof body.action === 'string' ? body.action : '';
+  const prefix = FITNESS_PREFIXES[action];
+  if (!prefix) return NextResponse.json({ error: `unknown fitness action: ${action || '(none)'}` }, { status: 400 });
+
+  const { data: rows, error: readErr } = await supa.from('figure_flags')
+    .select('note, question_id').eq('path', path).eq('kind', 'question').eq('status', 'held').limit(1);
+  if (readErr) return step('read', readErr.message);
+  if (!rows?.length) return step('read', 'no held question flag at that path');
+  if (rows[0].question_id !== questionId) return step('read', 'questionId does not match the flag');
+
+  const note = `${prefix}${(rows[0].note as string | null) ?? ''}`.slice(0, 500);
+  const patch: Record<string, unknown> = { note };
+  if (action === 'hide') patch.status = 'open';
+  if (action === 'accept') patch.status = 'fixed';
+  // 'repair': status stays 'held' — the row remains in the repair queue
+  // without withdrawing the question from serving.
+
+  const { error } = await supa.from('figure_flags').update(patch)
+    .eq('path', path).eq('kind', 'question');
+  if (error) return step('flag', error.message);
+  return NextResponse.json({ ok: true, status: (patch.status as string | undefined) ?? 'held', note });
+}
+
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const supa = getSupabaseAdmin();
   const sp = req.nextUrl.searchParams;
 
   if (sp.get('kind') === 'solution') return solutionLaneGet(supa, sp);
+  if (sp.get('kind') === 'fitness') return fitnessLaneGet(supa, sp);
 
   if (sp.get('flagged') === '1') {
     const { data: allFlags, error } = await supa
@@ -406,9 +525,10 @@ export async function POST(req: NextRequest) {
   const path = typeof body.path === 'string' ? body.path.replace(/^question_images\//, '') : '';
   const questionId = typeof body.questionId === 'string' ? body.questionId : '';
   if (!path || !questionId) return NextResponse.json({ error: 'path and questionId required' }, { status: 400 });
-  // The solution vet lane is a separate verb set on the same table; every
-  // question-figure behaviour below is untouched.
+  // The solution vet lane and the fitness lane are separate verb sets on the
+  // same table; every question-figure behaviour below is untouched.
   if (body.kind === 'solution') return solutionLanePost(supa, body, path, questionId);
+  if (body.kind === 'fitness') return fitnessLanePost(supa, body, path, questionId);
   // Resolve, don't delete: 'fixed' releases the question to every serving pool
   // (the gate excludes only status='open') AND keeps the record that it was
   // once looked at — which is how the 76 from 28 Aug are recorded.

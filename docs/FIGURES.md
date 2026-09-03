@@ -146,6 +146,27 @@ withholds everything. The RPC clause above stays kind-agnostic on purpose: an
 open flag of EITHER kind keeps the whole question out of the selection pools —
 the intended stopgap while a solution image is bad.
 
+### Fitness lane — `/admin/figures-bank` → 🔍 Fitness
+
+A **question**-figure counterpart to the Solutions lane, added 2026-09-03 for
+the fitness-verification pass (`claimed_by 'figfit-2026-09-03'` plus a peer
+session's cropsweep): a QUESTION figure that may be the wrong figure, cropped
+short, illegible, or carrying foreign content gets `figure_flags kind='question'
+status='held'` — held, not open, because an open QUESTION flag pulls the whole
+question from serving immediately (§4 above), and most fitness failures are
+cosmetic; Adrian needs to look before anything is withdrawn. `GET
+?kind=fitness` on `/api/admin/figures-bank` lists the held rows joined with
+their question, with a severity read out of the pass's note (`blocks-answering`
+/ `cosmetic`, or `null` when the note doesn't say). Three actions, each
+PREFIXING Adrian's verdict onto the pass's own note rather than replacing it:
+🙈 **Hide from students** flips status to `open` (withdraws the question from
+serving until the figure is repaired — the confirm dialog says so); ✓ **Figure
+is fine** flips status to `fixed` (the question keeps serving; the row stays as
+a record it was looked at); 🛠 **Send to repair** leaves status at `held` (stays
+in the queue without touching what students see). None of the three writes to
+the bucket or the question row — this lane is a judgment call, not a repair
+tool.
+
 ## 5. Repairing figures — what actually works
 
 Proven order of preference:

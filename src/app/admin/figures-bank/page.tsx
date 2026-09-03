@@ -45,6 +45,22 @@ type SolItem = {
 const MAX_AMEND = 3.5 * 1024 * 1024;
 const SOL_PAGE = 20;
 
+/* ── the fitness lane ───────────────────────────────────────────────────────
+ * A fitness-verification pass flags question figures that may be the wrong
+ * figure, cropped short, illegible, or carry foreign content — as figure_flags
+ * kind='question' status='held' (not 'open': an open QUESTION flag withdraws
+ * the whole question from serving immediately, and most fitness failures are
+ * cosmetic). This lane is where Adrian sees each one and decides: hide it,
+ * accept it as fine, or send it to the repair queue. */
+type FitItem = {
+  path: string; qid: string; level: string | null; school: string | null;
+  year: number | null; paper: string | null; qnum: string | null;
+  stem: string; figureUrl: string;
+  severity: 'blocks-answering' | 'cosmetic' | null; verdict: string | null;
+  note: string | null; claimedBy: string | null;
+};
+const FIT_PAGE = 20;
+
 /** The chip beside a candidate. hold_kind is EXPLICIT — never inferred from the
  *  reason text, because a keyword guess once called an uninspected image
  *  inspected. No hold_kind → a neutral chip and the raw reason underneath. */
@@ -64,7 +80,16 @@ function verdictChip(c: Candidate): { text: string; colour: string; hint?: strin
   return { text: '❓ no verdict recorded', colour: '#64748b' };
 }
 
-type Tab = 'all' | 'flagged' | 'solutions';
+/** The severity chip on a fitness card. Red only for a verdict that blocks
+ *  answering the question; everything else (cosmetic, or no verdict parsed
+ *  at all) reads as a neutral grey — the pass itself may not have rated it. */
+function severityChip(it: FitItem): { text: string; colour: string; bg: string } {
+  if (it.severity === 'blocks-answering') return { text: '⛔ blocks answering', colour: '#b91c1c', bg: '#fef2f2' };
+  if (it.severity === 'cosmetic') return { text: 'cosmetic', colour: '#475569', bg: '#f1f5f9' };
+  return { text: 'unrated', colour: '#475569', bg: '#f1f5f9' };
+}
+
+type Tab = 'all' | 'flagged' | 'solutions' | 'fitness';
 
 const LEVELS = ['', 'AM', 'EM', 'EM_NA', 'S1', 'S2', 'S3_AM', 'S3_EM', 'S3_EM_NA', 'JC1', 'JC2'];
 const lsKey = (level: string) => `figures-page-${level || 'all'}`;
@@ -88,13 +113,18 @@ export default function FiguresPage() {
   const [solTotals, setSolTotals] = useState({ held: 0, withCandidate: 0 });
   const [solBusy, setSolBusy] = useState('');
   const [solErr, setSolErr] = useState<Record<string, string>>({});
+  const [fits, setFits] = useState<FitItem[]>([]);
+  const [fitTotals, setFitTotals] = useState({ held: 0, blocking: 0, cosmetic: 0 });
+  const [fitBusy, setFitBusy] = useState('');
+  const [fitErr, setFitErr] = useState<Record<string, string>>({});
   // ?flagged=1 opens the review directly — the tab buttons are easy to miss,
-  // and a link is something that can be sent. ?kind=solution does the same for
-  // the solution lane.
+  // and a link is something that can be sent. ?kind=solution / ?kind=fitness
+  // do the same for those lanes.
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const p = new URLSearchParams(window.location.search);
     if (p.get('kind') === 'solution') { setTab('solutions'); setPage(0); }
+    else if (p.get('kind') === 'fitness') { setTab('fitness'); setPage(0); }
     else if (p.get('flagged') === '1') { setTab('flagged'); setPage(0); }
   }, []);
   const goTab = (t: Tab) => {
@@ -104,6 +134,7 @@ export default function FiguresPage() {
       u.searchParams.delete('flagged'); u.searchParams.delete('kind');
       if (t === 'flagged') u.searchParams.set('flagged', '1');
       if (t === 'solutions') u.searchParams.set('kind', 'solution');
+      if (t === 'fitness') u.searchParams.set('kind', 'fitness');
       window.history.replaceState(null, '', u.toString());
     }
   };
@@ -115,12 +146,16 @@ export default function FiguresPage() {
     setPage(Number.isFinite(saved) ? saved : 0);
   }, [level]);
 
-  // The count on the Solutions tab, so the lane announces itself before it is opened.
+  // The count on the Solutions / Fitness tabs, so each lane announces itself before it is opened.
   useEffect(() => {
     if (!authed) return;
     fetch('/api/admin/figures-bank?kind=solution&page=0&pageSize=1')
       .then((r) => r.json())
       .then((d) => { if (d?.totals) setSolTotals(d.totals); })
+      .catch(() => { /* a count is a nicety, not a precondition */ });
+    fetch('/api/admin/figures-bank?kind=fitness&page=0&pageSize=1')
+      .then((r) => r.json())
+      .then((d) => { if (d?.totals) setFitTotals(d.totals); })
       .catch(() => { /* a count is a nicety, not a precondition */ });
   }, [authed]);
 
@@ -129,15 +164,22 @@ export default function FiguresPage() {
     try {
       const qs = tab === 'solutions'
         ? `kind=solution&page=${page}&pageSize=${SOL_PAGE}`
-        : tab === 'flagged'
-          ? `flagged=1&page=${page}&pageSize=20`
-          : `page=${page}&pageSize=${pageSize}${level ? `&level=${level}` : ''}`;
+        : tab === 'fitness'
+          ? `kind=fitness&page=${page}&pageSize=${FIT_PAGE}`
+          : tab === 'flagged'
+            ? `flagged=1&page=${page}&pageSize=20`
+            : `page=${page}&pageSize=${pageSize}${level ? `&level=${level}` : ''}`;
       const r = await fetch(`/api/admin/figures-bank?${qs}`);
       const d = await r.json();
       if (d.error) return;
       if (tab === 'solutions') {
         setSols(d.items ?? []);
         if (d.totals) setSolTotals(d.totals);
+        return;
+      }
+      if (tab === 'fitness') {
+        setFits(d.items ?? []);
+        if (d.totals) setFitTotals(d.totals);
         return;
       }
       setItems(d.items ?? []);
@@ -261,6 +303,34 @@ export default function FiguresPage() {
     }
   };
 
+  /** One fitness-lane decision — hide / accept / repair. The card leaves the
+   *  list on success (repair too: it's Adrian's decision recorded, the row
+   *  moves on to the actual repair queue); errors stay inline on the card. */
+  const fitAct = async (it: FitItem, action: 'hide' | 'accept' | 'repair') => {
+    if (fitBusy) return;
+    setFitBusy(it.path);
+    setFitErr((e) => ({ ...e, [it.path]: '' }));
+    try {
+      const r = await fetch('/api/admin/figures-bank', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kind: 'fitness', action, path: it.path, questionId: it.qid }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        setFitErr((e) => ({ ...e, [it.path]: d.step ? `${d.step}: ${d.error}` : (d.error ?? `failed (${r.status})`) }));
+        return;
+      }
+      setFits((cur) => cur.filter((x) => x.path !== it.path));
+      setFitTotals((t) => ({
+        held: Math.max(0, t.held - 1),
+        blocking: Math.max(0, t.blocking - (it.severity === 'blocks-answering' ? 1 : 0)),
+        cosmetic: Math.max(0, t.cosmetic - (it.severity === 'cosmetic' ? 1 : 0)),
+      }));
+    } catch {
+      setFitErr((e) => ({ ...e, [it.path]: 'network error — nothing was written' }));
+    } finally { setFitBusy(''); }
+  };
+
   const toggle = async (it: Item) => {
     const flag = !it.flagged;
     setItems((cur) => cur.map((x) => (x.path === it.path ? { ...x, flagged: flag } : x)));
@@ -302,9 +372,11 @@ export default function FiguresPage() {
   const FLAG_PAGE = 20;
   const lastPage = tab === 'solutions'
     ? Math.max(0, Math.ceil(solTotals.held / SOL_PAGE) - 1)
-    : tab === 'flagged'
-      ? Math.max(0, Math.ceil((withheld || flaggedCount) / FLAG_PAGE) - 1)
-      : Math.max(0, Math.ceil(totalQuestions / pageSize) - 1);
+    : tab === 'fitness'
+      ? Math.max(0, Math.ceil(fitTotals.held / FIT_PAGE) - 1)
+      : tab === 'flagged'
+        ? Math.max(0, Math.ceil((withheld || flaggedCount) / FLAG_PAGE) - 1)
+        : Math.max(0, Math.ceil(totalQuestions / pageSize) - 1);
   return (
     <main style={{ minHeight: '100vh', background: C.bg, padding: '14px 12px 80px', maxWidth: 900, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
@@ -312,7 +384,8 @@ export default function FiguresPage() {
         <span style={{ color: C.muted, fontSize: 13 }}>
           {tab === 'all' ? 'tap a figure to flag it for rectification'
             : tab === 'solutions' ? 'switched-off solution images — approve, amend, or leave hidden'
-              : 'each figure with its question and what the checks found'}
+              : tab === 'fitness' ? 'question figures the fitness pass held for a look — hide, accept, or send to repair'
+                : 'each figure with its question and what the checks found'}
         </span>
         <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
           {/* Filled = where you are. The old pair read as two buttons rather
@@ -334,6 +407,12 @@ export default function FiguresPage() {
               border: '1px solid #7c3aed', background: tab === 'solutions' ? '#7c3aed' : '#fff',
               borderRadius: 8, padding: '6px 14px', cursor: 'pointer' }}>
             🖼 Solutions{solTotals.held ? ` · ${solTotals.held}` : ''}
+          </button>
+          <button onClick={() => goTab('fitness')}
+            style={{ fontSize: 13.5, fontWeight: 700, color: tab === 'fitness' ? '#fff' : '#0369a1',
+              border: '1px solid #0369a1', background: tab === 'fitness' ? '#0369a1' : '#fff',
+              borderRadius: 8, padding: '6px 14px', cursor: 'pointer' }}>
+            🔍 Fitness{fitTotals.held ? ` · ${fitTotals.held}` : ''}
           </button>
         </span>
       </div>
@@ -569,6 +648,83 @@ export default function FiguresPage() {
                   </label>
                   <button disabled={busy} onClick={() => solAct(it, 'keep-hidden')} style={btn}>🙈 Keep hidden</button>
                   <button disabled={busy} onClick={() => solAct(it, 'redraw')} style={btn}>✏️ Redraw</button>
+                </div>
+              </div>
+            );
+          })}
+        </>
+      )}
+
+      {tab === 'fitness' && (
+        <>
+          <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '8px 12px', marginBottom: 10, fontSize: 13.5 }}>
+            <strong>{fitTotals.held} question figures</strong> were held by the fitness pass —
+            {fitTotals.blocking} rated as blocking answering, {fitTotals.cosmetic} cosmetic.
+            <div style={{ marginTop: 4, color: C.muted }}>
+              These are held, not open, so the questions keep serving while you look. <em>Hide from
+              students</em> withdraws the question from the kiosk and practice pools until the figure
+              is repaired. <em>Figure is fine</em> keeps it serving and closes the row. <em>Send to
+              repair</em> leaves it exactly as held, for the repair queue.
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+            <span style={{ fontSize: 13, color: C.muted }}>page {page + 1} / {lastPage + 1}</span>
+            <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+              <button disabled={page === 0 || loading} onClick={() => { setPage((p) => Math.max(0, p - 1)); window.scrollTo({ top: 0 }); }}
+                style={{ fontSize: 13, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '4px 12px', cursor: 'pointer', opacity: page === 0 ? 0.4 : 1 }}>← Prev</button>
+              <button disabled={page >= lastPage || loading} onClick={() => { setPage((p) => p + 1); window.scrollTo({ top: 0 }); }}
+                style={{ fontSize: 13, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '4px 12px', cursor: 'pointer', opacity: page >= lastPage ? 0.4 : 1 }}>Next →</button>
+            </span>
+          </div>
+          {!loading && fits.length === 0 && (
+            <div style={{ color: C.muted, fontSize: 14, padding: 20, textAlign: 'center' }}>Nothing held — every fitness flag has been judged.</div>
+          )}
+          {fits.map((it) => {
+            const busy = fitBusy === it.path;
+            const chip = severityChip(it);
+            const btn = {
+              fontSize: 13, fontWeight: 600, border: `1px solid ${C.border}`, background: '#fff',
+              color: '#111', borderRadius: 8, padding: '6px 12px', cursor: busy ? 'default' : 'pointer',
+              opacity: busy ? 0.5 : 1,
+            } as const;
+            return (
+              <div key={it.path} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: 10, marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', fontSize: 13.5, marginBottom: 6 }}>
+                  <strong>
+                    {it.level ?? '?'} · {it.school ?? '?'} {it.year ?? ''}
+                    {it.paper ? ` P${it.paper}` : ''}{it.qnum ? ` Q${it.qnum}` : ''}
+                  </strong>
+                  <span style={{ fontSize: 11.5, color: chip.colour, background: chip.bg, border: `1px solid ${chip.colour}`, borderRadius: 999, padding: '1px 9px' }}>{chip.text}</span>
+                  {it.verdict && <span style={{ color: '#0369a1', fontSize: 12.5 }}>{it.verdict}</span>}
+                  <a href={`/admin/questions?id=${it.qid}`} target="_blank" rel="noreferrer"
+                    style={{ marginLeft: 'auto', fontSize: 12.5, border: `1px solid ${C.border}`, borderRadius: 8, padding: '3px 10px', textDecoration: 'none', color: '#111' }}>Open question ↗</a>
+                </div>
+                <figure style={{ margin: '0 0 8px' }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <a href={it.figureUrl} target="_blank" rel="noreferrer" title="open full size"><img src={it.figureUrl} alt="" loading="lazy"
+                    style={{ width: '100%', maxHeight: 340, objectFit: 'contain', background: '#fff', border: '1px solid #94a3b8', borderRadius: 6 }} /></a>
+                </figure>
+                {it.stem && (
+                  <div style={{ fontSize: 12.5, color: '#374151', background: '#f8fafc', border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 9px', marginBottom: 8, maxHeight: 92, overflow: 'auto' }}>
+                    {it.stem}
+                  </div>
+                )}
+                {it.note && (
+                  <div style={{ fontSize: 12, color: C.muted, marginBottom: 8, maxHeight: 60, overflow: 'auto' }}>{it.note}</div>
+                )}
+                {fitErr[it.path] && (
+                  <div style={{ fontSize: 12.5, color: '#b91c1c', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '5px 9px', marginBottom: 8 }}>
+                    {fitErr[it.path]}
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <button disabled={busy}
+                    onClick={() => { if (window.confirm('This withdraws the whole question from practice and the kiosk until the figure is repaired. Continue?')) fitAct(it, 'hide'); }}
+                    title="Withdraws this question from the kiosk, portal practice and print until the figure is repaired."
+                    style={{ ...btn, color: '#fff', background: C.flag, border: 'none' }}>🙈 Hide from students</button>
+                  <button disabled={busy} onClick={() => fitAct(it, 'accept')}
+                    style={{ ...btn, color: '#fff', background: '#15803d', border: 'none' }}>✓ Figure is fine</button>
+                  <button disabled={busy} onClick={() => fitAct(it, 'repair')} style={btn}>🛠 Send to repair</button>
                 </div>
               </div>
             );
