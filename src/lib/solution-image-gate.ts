@@ -60,7 +60,14 @@ export const SOLUTION_IMAGES_REQUIRE_CLEAN = false;
 // Exactly the levels in the Sec pass's build sets (build/set.json + build2/set.json,
 // 3 Sep 2026): AM 268 · EM 194 · EM_NA 75 · S3_EM 94 · S1 79 · S2 26 · S3_AM 19 ·
 // S3_EM_NT 3 · AM_NA 3 images. Not a guess at "Sec" — the set the judge saw.
-export const JUDGED_SOLUTION_LEVELS: ReadonlySet<string> = new Set(['AM', 'EM', 'EM_NA', 'AM_NA', 'S1', 'S2', 'S3_EM', 'S3_AM', 'S3_EM_NT']);
+// JC judge pass, 3 Sep 2026 (jc/DONE-jc.md): 2,555 images judged by eye on the
+// 244–255 stretch — 2,355 clean, 187 stamped + 13 unsure → 200 held. JC1 · JC2 ·
+// JC2_H1 are therefore judged; S3_EM_NA has 1,491 live questions and zero
+// solution images (vacuously judged).
+export const JUDGED_SOLUTION_LEVELS: ReadonlySet<string> = new Set([
+  'AM', 'EM', 'EM_NA', 'AM_NA', 'S1', 'S2', 'S3_EM', 'S3_AM', 'S3_EM_NT', 'S3_EM_NA',
+  'JC1', 'JC2', 'JC2_H1',
+]);
 export function solutionImagesJudgedFor(level: string | null | undefined): boolean {
   return !!level && JUDGED_SOLUTION_LEVELS.has(String(level).trim().toUpperCase());
 }
