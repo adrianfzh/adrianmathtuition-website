@@ -138,6 +138,22 @@ export async function GET(req: NextRequest) {
       photosPdfUrl: run.photos_pdf_url,
       pdfStale: pdfStaleOf(run),
       grounding: ((rj as { grounding?: { source?: string | null } } | null)?.grounding?.source) ?? null,
+      // SPEC-PAPER-MATCH Phase 1 (bot, 3 Sep 2026): what the paper was identified
+      // as and whether the bank/scheme match was trusted. Absent on older runs.
+      paperMatch: (() => {
+        const pm = (rj as { paper_match?: Record<string, unknown> } | null)?.paper_match;
+        if (!pm || typeof pm !== 'object') return null;
+        const ov = (pm.overlap && typeof pm.overlap === 'object') ? pm.overlap as { shared?: number; share?: number } : null;
+        return {
+          key: typeof pm.key === 'string' ? pm.key : null,
+          source: typeof pm.source === 'string' ? pm.source : 'none',
+          trusted: pm.trusted === true,
+          shared: ov && Number.isFinite(Number(ov.shared)) ? Number(ov.shared) : null,
+          share: ov && Number.isFinite(Number(ov.share)) ? Number(ov.share) : null,
+          matched: Number.isFinite(Number(pm.questions_matched)) ? Number(pm.questions_matched) : null,
+          reasons: Array.isArray(pm.reasons) ? (pm.reasons as unknown[]).map(String).slice(0, 4) : [],
+        };
+      })(),
       unattempted: Array.isArray((rj as { unattempted_questions?: unknown } | null)?.unattempted_questions)
         ? ((rj as { unattempted_questions: unknown[] }).unattempted_questions).map(String) : [],
       portalSubmission: (rj as { portal_submission?: unknown } | null)?.portal_submission === true,

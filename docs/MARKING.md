@@ -652,6 +652,18 @@ they are, reachable from its "Other views" row. Nothing is deleted.
   card also lands on the desk. PWA: `admin/desk/layout.tsx` + `manifest-desk.json`
   (hub icons reused).
 
+### Desk additions, 3 Sep 2026
+
+- **📤 Open in…** on the detail view's file row (`OpenInApp` in `desk/page.tsx`): fetches the
+  annotated (else full) PDF as a File and hands it to `navigator.share` — the iPad share sheet,
+  where Notability / GoodNotes / Files are one tap. iOS has no URL scheme that opens a GIVEN
+  file in Notability, so this is the shortest route; where files can't be shared it opens a tab.
+- **🔍 Paper-match chip** beside the grounding chip (`PaperMatchChip`, from `result_json.paper_match`
+  written by the bot's SPEC-PAPER-MATCH Phase 1): "🔍 gce 2021 am p1 · 9 matched" when the bank /
+  stored-scheme match passed the fingerprint guard, "🔍 <key> · not matched" with the reason when
+  it did not (marked on rules alone). Silent on runs from before the stamp. `desk/run/route.ts`
+  shapes it as `paperMatch {key, source, trusted, shared, share, matched, reasons}`.
+
 ## /admin/mark/triage — flagged-only review + the release gate (2026-08-11)
 
 The screen that makes AI marking safe to hand back at scale. **Nothing Adrian uploads
@@ -1000,6 +1012,18 @@ mapping failure must never block or delay a release.
   released papers (the block rides inside result_json, so all /app/marking
   access rules apply unchanged). A stale mapping naming a full-marks question is
   ignored at render time.
+
+### The download name, 3 Sep 2026
+
+Both PDF links on `/app/marking` go through **`GET /api/portal/marking-pdf?run=<id>&kind=marked|full`**
+(session student + released-only, same gate as the page), which streams the Blob file with
+`Content-Disposition: inline; filename="Kassandra Lim — am tys 2021 p1 — 3 Sep 2026.pdf"`
+(`lib/marked-pdf-filename.ts`, pure + tested; `(full report)` suffix for `kind=full`). Before this
+the links pointed straight at Blob, so a saved copy was named by the Blob timestamp path — Adrian:
+"the pdf should be properly named". "Marked (AI).pdf" / "Marked (Adrian).pdf" are ONLY the Dropbox
+filing names inside the per-paper folder (`lib/paper-folder.ts`); students never see them, and the
+code finds the amended copy and the sheet by those fixed names. Health-check `portal-marking-pdf`
+probes the login redirect.
 
 ## /app/submit — student paper hand-ins (2026-08-12)
 
@@ -2144,3 +2168,16 @@ flattens inked pages client-side, uploads via the client-token flow (`type=page`
   price-collision check in `mathHtml` + a function-words rule in `looksLikeMath`,
   validated by sweeping every mathHtml-rendered DB field (119 garbled spans fixed,
   zero legit TeX flipped) — the file header carries the details.
+
+### Restore-by-default and the reload guard (3 Sep 2026)
+
+- Reopening a run that has a saved draft now puts the ink BACK ON THE PAGES immediately
+  (`AnnotateOverlay` mount) with a banner "Your ink from before is back — Keep going, or **Start
+  fresh**" (one confirm; wipes every page + the stored draft). Before, the pages opened clean with
+  a "Restore ink" offer, which Adrian read as the ink being gone: "make the inked copy the default
+  when going back to annotations done halfway, and allow for revert (currently, it's the opposite)".
+- The open overlay keeps `?run=<id>&annotate=1` in the URL (`history.replaceState`, effect in
+  `mark-paper/page.tsx` below `runId`'s declaration — it once sat above it, TS2448). iPad Safari
+  drops heavy tabs under memory pressure; a reload now re-enters the annotation with the draft
+  instead of landing on a bare `/admin/mark-paper` ("halfway through marking, the page will just
+  go back to /mark-paper").

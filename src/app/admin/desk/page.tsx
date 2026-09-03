@@ -57,6 +57,7 @@ type Detail = {
     releasedAt: string | null; releasedVia: string | null; archivedAt: string | null; checkedAt: string | null;
     pdfUrl: string | null; annotatedPdfUrl: string | null; photosPdfUrl: string | null;
     pdfStale: boolean; grounding: string | null; unattempted: string[]; portalSubmission: boolean;
+    paperMatch: PaperMatch | null;
   };
   lane: DeskLane;
   pending: number;
@@ -114,6 +115,28 @@ const LANE_TONE: Record<DeskLane, { bg: string; fg: string }> = {
   ready: { bg: '#f0fdf4', fg: '#15803d' },
   released: { bg: '#f3f4f6', fg: '#374151' },
 };
+
+type PaperMatch = {
+  key: string | null; source: string; trusted: boolean;
+  shared: number | null; share: number | null; matched: number | null; reasons: string[];
+};
+
+// 🔍 What the paper was identified as (SPEC-PAPER-MATCH Phase 1, 3 Sep 2026)
+// and whether the match was trusted. GroundingChip beside it says WHAT the
+// marking was grounded on; this says WHICH paper and how sure. Silent when the
+// run predates the stamp — an older run must not gain a "not matched" badge.
+function PaperMatchChip({ pm }: { pm: PaperMatch | null }) {
+  if (!pm) return null;
+  const key = pm.key || 'paper not identified';
+  if (pm.trusted) {
+    const n = pm.matched ?? pm.shared;
+    return <Chip label={`🔍 ${key}${n != null ? ` · ${n} matched` : ''}`} bg="#ecfdf5" color="#065f46"
+      title={`Identified as "${key}" and matched on the printed questions (${pm.shared ?? '?'} shared, ${pm.share != null ? Math.round(pm.share * 100) : '?'}% of the smaller set). Source: ${pm.source}.`} />;
+  }
+  const why = pm.reasons.length ? pm.reasons.join(', ') : (pm.key ? 'no trusted match' : 'name carries no level or year');
+  return <Chip label={`🔍 ${key} · not matched`} bg="#f3f4f6" color="#6b7280"
+    title={`Marked on the rules alone. ${why}${pm.shared != null ? ` (${pm.shared} shared openings)` : ''}. A wrong match would mean a wrong scheme, so below the threshold nothing is used.`} />;
+}
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
@@ -665,7 +688,7 @@ function DetailView(p: {
             </div>
             <div style={{ fontSize: 13.5, color: C.muted, marginTop: 4, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
               <span style={{ color: C.ink, fontWeight: 500 }}>{run.paperName}</span>
-              <SubjectChip subject={run.subject} /><GroundingChip source={run.grounding} /><RulesTag v={run.rulesVersion} />
+              <SubjectChip subject={run.subject} /><GroundingChip source={run.grounding} /><PaperMatchChip pm={run.paperMatch} /><RulesTag v={run.rulesVersion} />
               <span>· marked {fmtWhen(run.createdAt)} · {run.totalQuestions} question{run.totalQuestions === 1 ? '' : 's'}</span>
               {run.portalSubmission && <Chip label="📱 hand-in" bg="#eff6ff" color={C.link} />}
             </div>
