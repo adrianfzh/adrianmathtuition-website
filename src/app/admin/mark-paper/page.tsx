@@ -323,6 +323,13 @@ export default function MarkPaperPage() {
   const [inboxToken, setInboxToken] = useState<string | null>(null);
   const [annotatedBusy, setAnnotatedBusy] = useState(false);
   const [annotateOpen, setAnnotateOpen] = useState(false);
+  const [practiceItems, setPracticeItems] = useState<PracticeItem[] | null>(null);
+  const [practiceBusy, setPracticeBusy] = useState(false);
+  const annotatedInputRef = useRef<HTMLInputElement>(null);
+  const [generating, setGenerating] = useState(false);
+  const [stats, setStats] = useState<{ count: number; totalCost: number; avgCost: number; avgTime: number } | null>(null);
+  const [annotatedPhotos, setAnnotatedPhotos] = useState<AnnotatedPhoto[]>([]);
+  const [runId, setRunId] = useState<string | null>(null);
   // Keep the open overlay in the URL (?run=<id>&annotate=1) so a Safari reload —
   // iPad Safari drops heavy tabs under memory pressure, and the overlay's canvases
   // are heavy — lands back INSIDE the annotation with the draft restored, not on a
@@ -338,13 +345,6 @@ export default function MarkPaperPage() {
       if (u.toString() !== window.location.href) window.history.replaceState(null, '', u.toString());
     } catch { /* URL housekeeping only */ }
   }, [annotateOpen, runId]);
-  const [practiceItems, setPracticeItems] = useState<PracticeItem[] | null>(null);
-  const [practiceBusy, setPracticeBusy] = useState(false);
-  const annotatedInputRef = useRef<HTMLInputElement>(null);
-  const [generating, setGenerating] = useState(false);
-  const [stats, setStats] = useState<{ count: number; totalCost: number; avgCost: number; avgTime: number } | null>(null);
-  const [annotatedPhotos, setAnnotatedPhotos] = useState<AnnotatedPhoto[]>([]);
-  const [runId, setRunId] = useState<string | null>(null);
   const [recentRuns, setRecentRuns] = useState<Run[]>([]);
   // Server-side paging for the history list. `runsTotal` is an exact count
   // from Supabase, so the summary can say "25 of 118" instead of a constant.
