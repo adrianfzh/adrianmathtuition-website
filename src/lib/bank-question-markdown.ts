@@ -73,11 +73,13 @@ export function normaliseImagePath(raw: string): string {
 }
 
 /** True when the gate lets this image render (no gate = always). */
-export function solutionImageAllowed(path: string, gate?: SolutionImageGate): boolean {
+export function solutionImageAllowed(path: string, gate?: SolutionImageGate, questionId?: string | null): boolean {
   if (!gate) return true;
   const n = normaliseImagePath(path);
   if (gate.blocked.has(n)) return false;
-  if (gate.requireClean) return !!gate.clean?.has(n);
+  // An unjudged question is on the allow-list whatever the global switch says —
+  // every consumer that filters images itself must pass the question's id.
+  if (gate.requireClean || (questionId && gate.unjudged?.has(questionId))) return !!gate.clean?.has(n);
   return true;
 }
 function isPlausibleFilename(s: unknown): s is string {

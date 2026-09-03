@@ -96,3 +96,13 @@ describe('unjudged levels — served on the allow-list whatever the switch says 
     expect(g.requireClean).toBeUndefined();
   });
 });
+
+describe('solutionImageAllowed with a question id — consumers that filter images themselves', () => {
+  it('withholds an unexamined image of an unjudged question, lets a fixed one through, ignores judged questions', () => {
+    const g = gateFromFlagRows([{ path: 'sol_fixed.png', status: 'fixed' }], false, ['jc-q']);
+    expect(solutionImageAllowed('sol_never.png', g, 'jc-q')).toBe(false);
+    expect(solutionImageAllowed('sol_fixed.png', g, 'jc-q')).toBe(true);
+    expect(solutionImageAllowed('sol_never.png', g, 'sec-q')).toBe(true);
+    expect(solutionImageAllowed('sol_never.png', g)).toBe(true);   // no id = the caller could not say; deny-list only
+  });
+});

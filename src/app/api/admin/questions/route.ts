@@ -125,18 +125,18 @@ function cardExcerpt(row: Row): string {
 /** Part image paths → public URLs, recursively, so the client renders them directly.
  *  `gate` (lib/solution-image-gate.ts) drops a part's `solution_image` when it
  *  is flagged, so the admin detail shows what a student's reveal would. */
-function resolveParts(parts: unknown, gate?: SolutionImageGate): unknown {
+function resolveParts(parts: unknown, gate?: SolutionImageGate, questionId?: string): unknown {
   if (!Array.isArray(parts)) return [];
   return parts.map((pt) => {
     if (!pt || typeof pt !== 'object') return pt;
     const o = { ...(pt as Record<string, unknown>) };
-    if (typeof o.solution_image === 'string' && !solutionImageAllowed(o.solution_image, gate)) delete o.solution_image;
+    if (typeof o.solution_image === 'string' && !solutionImageAllowed(o.solution_image, gate, questionId)) delete o.solution_image;
     for (const k of ['image_url', 'image_url_after', 'solution_image'] as const) {
       if (typeof o[k] === 'string' && o[k] && !/^https?:/i.test(o[k] as string) && isPlausibleImagePath(o[k])) {
         o[k] = imgSrc(o[k] as string);
       }
     }
-    if (o.subparts) o.subparts = resolveParts(o.subparts, gate);
+    if (o.subparts) o.subparts = resolveParts(o.subparts, gate, questionId);
     // Solutions stay in — this is the ADMIN detail view; every other consumer
     // of parts (kiosk, worksheets) must keep using flattenParts, never this.
     return o;
@@ -173,7 +173,7 @@ function solutionItemsFrom(rows: Row[], gate?: SolutionImageGate): { items: Solu
     const solution = rollupSolution(row.solution as string | null, row.parts);
     // A flagged (watermarked) solution scan stays out of the handout too.
     const solutionImages = Array.isArray(row.solution_images)
-      ? (row.solution_images as string[]).filter(isPlausibleImagePath).filter((u) => solutionImageAllowed(u, gate)).map(imgSrc).slice(0, 6)
+      ? (row.solution_images as string[]).filter(isPlausibleImagePath).filter((u) => solutionImageAllowed(u, gate, String(row.id ?? ''))).map(imgSrc).slice(0, 6)
       : [];
     if (!solution && !solutionImages.length) missing++;
     items.push({
@@ -238,7 +238,7 @@ function detail(row: Row, flagged: Set<string> = new Set(), gate?: SolutionImage
       return !!n && flagged.has(n);
     }),
     questionMd: row.question_text ?? '',
-    parts: resolveParts(row.parts, gate),
+    parts: resolveParts(row.parts, gate, String(row.id ?? '')),
     solution: row.solution ?? null,
     answer: row.answer ?? null,
     difficulty: row.difficulty ?? null,
@@ -246,7 +246,7 @@ function detail(row: Row, flagged: Set<string> = new Set(), gate?: SolutionImage
     watermarkStatus: row.image_watermark_status ?? null,
     images,
     solutionImages: Array.isArray(row.solution_images)
-      ? row.solution_images.filter(isPlausibleImagePath).filter((u: string) => solutionImageAllowed(u, gate)).map(imgSrc).slice(0, 6)
+      ? row.solution_images.filter(isPlausibleImagePath).filter((u: string) => solutionImageAllowed(u, gate, String(row.id ?? ''))).map(imgSrc).slice(0, 6)
       : [],
   };
 }

@@ -86,7 +86,7 @@ async function workedSolution(
     // solution scan never reaches the reveal. Only consulted when there is
     // something to show.
     const gate = stored.length ? await solutionImageGateFor([entry.variant_qb_id]) : undefined;
-    const images = stored.filter((p) => solutionImageAllowed(p, gate)).map(imgSrc).slice(0, 4);
+    const images = stored.filter((p) => solutionImageAllowed(p, gate, entry.variant_qb_id)).map(imgSrc).slice(0, 4);
     return { text: sol || null, images };
   } catch {
     return none;
