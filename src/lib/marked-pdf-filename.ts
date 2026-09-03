@@ -57,11 +57,16 @@ export function markedPdfFilename(input: {
  * RFC 5987 `filename*=UTF-8''…` carries the real name for clients that read it.
  */
 export function contentDisposition(filename: string, disposition: 'inline' | 'attachment' = 'inline'): string {
-  const ascii = String(filename || '')
+  const folded = String(filename || '')
     .replace(/[\u2014\u2013\u2012\u2010]/g, '-')
     .replace(/[^\x20-\x7e]/g, '')
     .replace(/["\\]/g, '')
     .replace(/\s+/g, ' ')
-    .trim() || 'marked-paper.pdf';
+    .trim();
+  // `|| 'marked-paper.pdf'` was not enough: a name that is ALL non-ASCII folds to
+  // punctuation, not to "". "—" becomes "-", which is truthy, so the fallback never
+  // fired and the student's download was called `-`. A name needs a letter or digit
+  // to be a name at all.
+  const ascii = /[A-Za-z0-9]/.test(folded) ? folded : 'marked-paper.pdf';
   return `${disposition}; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(filename)}`;
 }
