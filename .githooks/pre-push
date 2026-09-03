@@ -1,7 +1,15 @@
 #!/bin/sh
 # Blocking pre-push gate: tests must pass before anything reaches main (= prod).
-# Type errors are already caught by Vercel's build, so this only runs the suite
-# Vercel never runs. Bypass in an emergency with:  git push --no-verify
+# Vercel's build catches type errors too, but a failed PREVIEW build fails
+# silently (the dev alias just stays on the old build) — on 3 Sep 2026 two
+# pushes reached dev with a TS error that way. So the typecheck runs here first.
+# Bypass in an emergency with:  git push --no-verify
+echo "▶ pre-push: typecheck…"
+npx tsc --noEmit -p tsconfig.json
+if [ $? -ne 0 ]; then
+  echo "✗ Type errors — push aborted. Fix them, or bypass with: git push --no-verify"
+  exit 1
+fi
 echo "▶ pre-push: running test suite…"
 npm test --silent
 status=$?
