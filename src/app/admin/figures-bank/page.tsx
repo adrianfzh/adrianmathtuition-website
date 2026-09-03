@@ -7,6 +7,7 @@
 // Progress resumes: last page is remembered per level filter (localStorage).
 
 import { useState, useEffect, useCallback } from 'react';
+import { CORRECTNESS_HOLD } from '@/lib/figure-flag-release';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 
 const C = {
@@ -207,6 +208,23 @@ export default function FiguresPage() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ path: it.path, questionId: it.qid, resolve: true }),
       });
+      if (r.status === 409) {
+        // A correctness hold: the fault is not in the pixels (wrong figure,
+        // leaked answer). The route refuses a blind release; say why and ask.
+        const j = await r.json().catch(() => ({})) as { reason?: string | null };
+        const reason = (j.reason ?? it.note ?? '').slice(0, 600);
+        const go = window.confirm(
+          `This figure was flagged for a reason the image alone cannot show:\n\n${reason}\n\n` +
+          'Release it anyway? Only do this if you have checked it against the paper.',
+        );
+        if (!go) { load(); return; }
+        const r2 = await fetch('/api/admin/figures-bank', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: it.path, questionId: it.qid, resolve: true, force: true, note: 'confirmed on the flagged tab' }),
+        });
+        if (!r2.ok) throw new Error('failed');
+        return;
+      }
       if (!r.ok) throw new Error('failed');
     } catch { load(); }
     finally { setBusy(''); }
@@ -259,7 +277,7 @@ export default function FiguresPage() {
   // fitness pass re-opened) is NEVER "quiet": the pixel checks cannot see those
   // faults, and on 3 Sep 2026 a bulk release put a leaked answer and two wrong
   // figures back in front of students an hour after they were hidden.
-  const CORRECTNESS = /blocks-answering|wrong-figure|answer-leak|RE-OPENED|hide/i;
+  const CORRECTNESS = CORRECTNESS_HOLD;   // one definition, shared with the route
   const isQuiet = (it: Item) => !!it.checks && chipsFor(it).length === 0 && !CORRECTNESS.test(it.note ?? '');
 
   /** One vet-lane action. The card leaves the list on success; the error stays
@@ -512,8 +530,14 @@ export default function FiguresPage() {
           {(() => {
             const c = it.checks;
             const chips = chipsFor(it);
+            const hold = CORRECTNESS.test(it.note ?? '');
             return (
               <>
+                {it.note && (
+                  <div style={{ fontSize: 12.5, color: hold ? '#9a3412' : C.muted, background: hold ? '#fff7ed' : 'transparent', border: hold ? '1px solid #fdba74' : 'none', borderRadius: 8, padding: hold ? '6px 9px' : 0, marginBottom: 6, maxHeight: 96, overflow: 'auto' }}>
+                    <strong>{hold ? 'Why it is flagged (not visible in the image): ' : 'Flag note: '}</strong>{it.note}
+                  </div>
+                )}
                 {chips.length > 0 && (
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
                     {chips.map(([t, col]) => (

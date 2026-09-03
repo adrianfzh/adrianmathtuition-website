@@ -192,6 +192,106 @@ in the queue without touching what students see). None of the three writes to
 the bucket or the question row — this lane is a judgment call, not a repair
 tool.
 
+### Ingestion gate + nightly catch-up (3 Sep 2026)
+
+The sweeps above are history work. Papers are being extracted every day, so
+without a gate at ingestion the bank re-acquires wrong, cropped, leaked and
+stamped figures as fast as they are cleaned out. Adrian: *"we can do the sweep,
+but there are questions being ingested too — what about those new questions?"*
+Two pieces, and the first one carries the weight.
+
+**1 · The extraction law judges every figure before it is stored.** The canonical
+worker law (Supabase `extraction_worker_prompt` id `exam-extraction`, section
+`## Figure fitness`, v2026-09-03-fitness; prior text archived as
+`exam-extraction-2026-09-03-figfit`) makes every extraction worker run five
+checks per figure, **while the source page is still in front of it** — the one
+moment anybody ever sees the paper beside the crop:
+
+| | check | fails → |
+|---|---|---|
+| (a) | **belongs** to THIS question/part — every self-label (equation, value, coordinate, point name, scale) agrees with the stem | **not stored** (wired to the right part if visible, else recorded in `pending_images_*`) |
+| (b) | **whole** — no sliced axis/glyph/label/table row/legend, and no page furniture, other question's drawing or handwriting inside the frame | **re-cropped from the source**; if the object itself never made it into the image, re-extracted |
+| (c) | **no answer in it** — no completed construction, no shaded answer region, no pre-drawn read-off, no mark-scheme value the working must derive (colour is the tell) | **not stored** in `image_url` (a sketch answer belongs in `solution_image`/`solution_images`; if it is the only image, `has_image=false`) |
+| (d) | **legible** at print size — ink fraction as the cheap screen | stored **withheld** |
+| (e) | **watermark-free** — judged on a stretch of the pale band, not the plain image | stored **withheld** |
+
+**Only a figure that passes all five may set `image_watermark_status='clean'`** —
+that column is `figureServable`'s gate, so it is what decides whether a student
+ever sees the crop. Anything else is stored with the status left **NULL**
+(withheld, whole row), plus one `figure_flags` row per failed figure:
+`kind='question'`, `status='held'` (never `open`), `claimed_by='ingest-fitness'`,
+note `ingest-fitness <date> · <severity> · <verdict> · <reason>`. Both outcomes
+also append a `fitness:…` stamp to `image_watermark_notes`, which is how the
+catch-up below tells a judged row from an unjudged one.
+
+**2 · A nightly catch-up re-judges what ingestion missed.** Desktop scheduled
+task **`figure-fitness`** (3:10am SGT daily, `~/.claude/scheduled-tasks/figure-fitness/SKILL.md`,
+registry row in [`docs/OPS.md`](OPS.md)). It takes up to 120 figures per run —
+questions with `has_image` whose `created_at` is inside 7 days, plus older
+questions whose figure actually changed (a `figure_clean_log` or
+`question_image_placement_log` row inside 7 days) — that carry no `fitness:`
+stamp, and judges them by the same five checks. **`questions.updated_at` is NOT
+the freshness signal**: measured 3 Sep 2026, 5,827 image-carrying rows had
+`updated_at` inside 7 days with no figure change (bulk column sweeps bump it)
+against 1,048 genuinely new rows; the two log tables are the durable record of a
+figure moving. The task is thin on purpose — the rubric lives in the law row, not
+in the SKILL.md, so one edit propagates to ingestion and catch-up together. It
+calibrates on 4 planted swaps before any real verdict, is judge-only (it never
+writes `image_watermark_status`, an image reference or a bucket object), stamps
+`job_runs` slug `figure-fitness`, and is resumable per
+[`docs/RESUMABLE-JOBS.md`](RESUMABLE-JOBS.md) — its per-item state is the
+`fitness:` stamp in the database, so a killed run loses nothing and re-running is
+a no-op. Strong model only (Opus/Fable class); a weak run exits without judging.
+
+**Who may un-serve.** Adrian, by tapping 🙈 in the fitness lane — with two
+exceptions the catch-up may set to `open` itself, because they are correctness
+failures rather than cosmetics: **`wrong-figure`** (the figure belongs to another
+question or part) and **`answer-leak`** (the figure carries the answer). A student
+must not be shown another question's figure or handed the answer while a hold
+waits for a human, and both verdicts are `blocks-answering` by definition. The
+task Telegrams once when it does this, naming the questions. ⚠ Those two rows
+then live in the **flagged** queue (`?flagged=1`, which lists `open`
+`kind='question'` rows), NOT in the fitness lane — the lane filters
+`status='held'`, so an auto-opened row would otherwise seem to vanish.
+Everything else — tight crops, question-number bleed, minor blur — queues quietly
+as `held` and keeps serving until he looks. Ingestion has no such exception: a
+fresh figure that fails (a) or (c) is simply never stored.
+
+### Releasing a flagged question figure — what a tap may clear (3 Sep 2026)
+
+**The incident.** At 23:28 SGT on 3 Sep 2026 three question figures the fitness pass had
+flagged as a **wrong figure** (BPGH 2021 AM Q11, Chung Cheng Yishun 2025 EM Q19) and a
+**leaked answer** (Anglican High 2025 EM Q23 — the completed construction in colour) were
+released one after another with "✓ Looks fine — release" on the flagged tab (three single-row
+PATCHes 2–5 s apart, the website's release path, human-paced). All three looked fine — those
+faults are invisible in the pixels — and the flagged card showed the green "nothing measurable
+wrong" line and the stem but **never the reason the row was flagged**. The release path then
+overwrote the note with `null`, so the reason was gone the moment the tap landed, and a leaked
+answer served under a green tick until the peer session caught it. Supabase's edge log
+(`query_logs`, source `edge_logs`, `request.path like '%figure_flags%'`) is how the writer was
+identified: method + search string + timing tell a route apart from a script.
+
+**Rules now in code** (`lib/figure-flag-release.ts`, shared by the route and the page, tested):
+- `resolve:true` **reads the row first and never nulls the note** — the previous note survives
+  behind `Adrian: released · ` (or `Adrian: released despite hold (…) · `).
+- A **correctness hold** (`wrong-figure`, `answer-leak`, `blocks-answering`, a `RE-OPENED` row,
+  an `Adrian: hide`) returns **409** unless `force:true`. The page shows the reason in a confirm
+  ("Release it anyway? Only if you have checked it against the paper") and only then retries
+  with `force`. The bulk "Release N with no warnings" button uses the same regex (`isQuiet`) and
+  never sends `force`, so it cannot clear one at all.
+- The flagged card now prints the flag note above the pixel chips — amber, headed "Why it is
+  flagged (not visible in the image)", when it is a correctness hold.
+- `parseFitnessNote` reads the **verdict** as the first verdict word in the note (grammar:
+  `<writer> <date> · <severity> · <verdict> · <reason>`), not "the segment after the first ·"
+  (which is the severity — the fitness lane's verdict field showed the severity on all 536 held
+  rows until 3 Sep 2026).
+
+The peer session's framing is the one to keep: every other figure bug today *over*-hid (a good
+figure withheld). This one marked a known-bad figure repaired **without the repair** — the
+system reporting success on the exact thing it failed to do. A status that can be reached
+without the work it certifies will eventually be reached without it.
+
+
 ## 5. Repairing figures — what actually works
 
 Proven order of preference:

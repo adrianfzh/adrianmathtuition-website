@@ -390,6 +390,17 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 🔍 The figure FITNESS lane (/admin/figures-bank?kind=fitness, docs/FIGURES.md
+    // §4) — the only surface where a held question-figure hold reaches Adrian.
+    // Both the ingestion gate and the nightly `figure-fitness` catch-up write
+    // `figure_flags` rows that are invisible everywhere else, so a 404 here means
+    // holds pile up unseen and un-judged while their questions keep serving.
+    // Anonymous 401 proves the route and its auth gate are alive.
+    timed('figures-fitness-lane', async () => {
+      const r = await fetch(`${base}/api/admin/figures-bank?kind=fitness`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // The student's marked-script download (/api/portal/marking-pdf, 3 Sep 2026 —
     // the properly named same-origin copy behind both PDF links on /app/marking).
     // Anonymous → the login redirect proves the route exists and its gate is up;

@@ -29,6 +29,9 @@ Writers:
   `health-check` itself.
 - **Mac plan-billed workers** stamp as the last step of their SKILL.md
   (`qb-topup`, `file-subgroups`, `bot-review`, `question-mine`,
+  `figure-fitness` — the nightly question-figure fitness catch-up, which stamps
+  every run including quiet ones (`queue empty`) and `ok=false` when it exits on
+  a weak model or a failed calibration → [`FIGURES.md`](FIGURES.md) §4,
   `pdf-extract` — the last stamps only on runs that actually claimed a file, so
   it has no rhythm/alarm; the ops board just shows the newest extraction) — a
   direct `insert into job_runs …` through the Supabase access each skill
@@ -61,6 +64,15 @@ The three year-end invoice jobs use it, since their crons only fire Nov/Dec/Jan
 | `generate-invoices-arrears` | `day 1`, grace 1, `months: [1, 11, 12]` | 1st 8am SGT (Nov, Dec, Jan) |
 | `payment-reminder-arrears` | `day 1`, grace 1, `months: [1, 11, 12]` | 1st 8pm SGT (Nov, Dec, Jan) |
 | `send-invoices-arrears` | `day 2`, grace 1, `months: [1, 11, 12]` | 2nd 10am SGT (Nov, Dec, Jan) |
+
+**`figure-fitness`** (nightly 3:10am SGT — the ingestion figure-fitness catch-up,
+[`FIGURES.md`](FIGURES.md) §4) takes the nightly shape every plan-billed Mac
+worker uses: `'figure-fitness': { kind: 'interval', hours: 36, label: 'nightly 3:10am' }`
+— the same 36h grace as `qb-topup`, so one skipped night (a sleeping laptop) is
+quiet and a genuinely dead task ambers on the board and alarms on the next
+6-hourly check. It stamps on quiet nights too, so a dead task and an empty queue
+are never confused. The line is in `lib/job-health.ts` (armed 3 Sep 2026, same
+commit as the task, the docs and the health-check probe).
 
 Without `months` these would have alarmed amber for nine months of the year and
 trained the alarm to be ignored — the same tune-out failure as the health-check
@@ -143,5 +155,6 @@ Rules:
 | `siteground-vercel-migration-reminder` | one-time 1 Nov 2026 | A (MacBook Pro) | ✅ armed | domain + hosting expiry reminder |
 | `exam-extraction-cc1..6` | `*/5 * * * *` (was `*/30`; cadence pre-set 2026-09-02) | **this MacBook Pro** (registered on Adrian's main account — the machine the rows above call "A") | ⏸ DISABLED by Adrian 2026-09-02 ~14:15 (flip `enabled` to resume; cadence already set) | the main paper→bank producer (40 of ~57 DONE on 2026-09-02); thin shims, law = Supabase `extraction_worker_prompt` id `exam-extraction`. The runner never double-starts a task and launches a missed fire the moment a run ends, so `*/5` ≈ continuous. Budget note (measured 2026-09-02): 6 workers ≈ 300M context tokens/h and hit the 5-hour session limit 3× in a morning; a run that hits it PARKS with its claim held until the reset (85-min and 4-hour parks measured). 3 workers at `*/5` ≈ 175M/h is the no-park size — drop cc4–cc6 if limit hits recur. Does NOT stamp `job_runs` (the law has no stamp step) |
 | *(extraction fleet)* | various | B | ❓ list from Mac B | the `pdf-pipeline-cc-*` shims (RUNNER `PDF-Pipeline-CC`) — also seen running on the main account 2026-09-02 02:12–08:41; keep only ONE family enabled per account |
+| `figure-fitness` | `10 3 * * *` (3:10am SGT daily; the app adds ~6 min jitter) | **this MacBook Pro**, the account whose registry holds `solution-image-pass` + `pdf-pipeline-cc-*` | ✅ live (2026-09-03) | the ingestion figure-fitness catch-up: judges question figures ingested in the last 7 days that carry no `fitness:` stamp, holds failures for Adrian's `/admin/figures-bank?kind=fitness` lane, may un-serve only `wrong-figure`/`answer-leak`. **Rubric is NOT in the SKILL.md** — it is the `## Figure fitness` section of the Supabase law row `extraction_worker_prompt` id `exam-extraction`, shared with every extraction worker, so one edit moves both. Ceiling 120 figures/run, strong model only, stamps `figure-fitness` → [`FIGURES.md`](FIGURES.md) §4 |
 
 <!-- preview-build tick 2026-08-29a — dev-only nudge so Vercel builds a preview when dev == main (same-commit builds get skipped) -->

@@ -52,6 +52,7 @@
 // so the original verdict/reason survives alongside his decision.
 import { createHash } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
+import { isCorrectnessHold, parseFitnessNote, releaseNote } from '@/lib/figure-flag-release';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -338,20 +339,6 @@ async function solutionLanePost(
  * common shape, but severity is read from anywhere in the text so it still
  * works for notes that don't follow that exact template. */
 
-function parseFitnessNote(note: string | null): {
-  severity: 'blocks-answering' | 'cosmetic' | null;
-  verdict: string | null;
-} {
-  if (!note) return { severity: null, verdict: null };
-  const severity = /blocks-answering/i.test(note) ? 'blocks-answering'
-    : /cosmetic/i.test(note) ? 'cosmetic' : null;
-  const parts = note.split('·').map((s) => s.trim()).filter(Boolean);
-  // "figfit 3 Sep 2026 · <verdict> · <reason>" — the verdict is the segment
-  // after the first '·', when the note has one.
-  const verdict = parts.length > 1 ? parts[1] : null;
-  return { severity, verdict };
-}
-
 async function fitnessLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
   const { data: flags, error } = await supa
     .from('figure_flags').select('path, question_id, note, claimed_by, created_at')
@@ -548,11 +535,29 @@ export async function POST(req: NextRequest) {
   // (the gate excludes only status='open') AND keeps the record that it was
   // once looked at — which is how the 76 from 28 Aug are recorded.
   if (body.resolve === true) {
+    // Read before writing: a release must keep the reason the row was flagged
+    // (3 Sep 2026 — this branch used to overwrite the note with null, and a
+    // tap cleared a leaked answer and two wrong figures with nothing left on
+    // the row to say so). A correctness hold — wrong figure, leaked answer, a
+    // re-opened row — cannot be cleared blind: the page shows the reason and
+    // sends `force: true` only after Adrian confirms.
+    const { data: existing, error: readErr } = await supa.from('figure_flags')
+      .select('note, status').eq('path', path).limit(1);
+    if (readErr) return NextResponse.json({ error: readErr.message }, { status: 500 });
+    const prevNote = (existing?.[0]?.note as string | null | undefined) ?? null;
+    const force = body.force === true;
+    if (isCorrectnessHold(prevNote) && !force) {
+      return NextResponse.json({
+        error: 'correctness hold — this figure was flagged as not being this question\'s answer-free figure; releasing it needs an explicit override',
+        hold: true, reason: prevNote,
+      }, { status: 409 });
+    }
+    const extra = typeof body.note === 'string' ? body.note.slice(0, 200) : '';
     const { error } = await supa.from('figure_flags')
-      .update({ status: 'fixed', note: typeof body.note === 'string' ? body.note.slice(0, 500) : null })
+      .update({ status: 'fixed', note: releaseNote(prevNote, { force, extra }) })
       .eq('path', path);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ ok: true, status: 'fixed' });
+    return NextResponse.json({ ok: true, status: 'fixed', forced: force });
   }
   if (body.flag === true) {
     const { error } = await supa.from('figure_flags')

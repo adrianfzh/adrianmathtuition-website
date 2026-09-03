@@ -26,6 +26,7 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'file-subgroups':    { kind: 'interval', hours: 36, label: 'nightly 4:15am' },
   'bot-review':        { kind: 'interval', hours: 204, label: 'Mondays 8am' },   // 8.5 days
   'question-mine':     { kind: 'interval', hours: 108, label: 'Mon & Thu 7am' },
+  'figure-fitness':    { kind: 'interval', hours: 36, label: 'nightly 3:10am' },
   'generate-invoices': { kind: 'monthly', day: 14, graceDays: 1, label: '14th 7am' },
   'send-invoices':     { kind: 'monthly', day: 15, graceDays: 1, label: '15th 10am' },
   'payment-reminder':  { kind: 'monthly', day: 14, graceDays: 1, label: '14th 8pm' },
