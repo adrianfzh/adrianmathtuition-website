@@ -15,6 +15,7 @@ export type BankPart = {
   subparts?: BankPart[];
 };
 export type BankQuestion = {
+  id?: string;
   question_text?: string | null;
   parts?: BankPart[] | null;
   image_url?: string | null;            // JSON array of {url,pos} or legacy bare string
@@ -43,6 +44,14 @@ export type SolutionImageGate = {
   /** When true, a path renders ONLY if it is in `clean` (the dormant allow-list mode). */
   requireClean?: boolean;
   clean?: ReadonlySet<string>;
+  /**
+   * Question ids whose solution images have NEVER been judged for a watermark
+   * (3 Sep 2026: every non-Sec level — the classification pass covered Sec
+   * only). For these, `solutionMarkdown` behaves as if `requireClean` were on:
+   * a path renders only when it sits on a `fixed` flag. Adrian: "There must be
+   * no watermark images — important." Lifted per level as the judge pass lands.
+   */
+  unjudged?: Set<string>;
 };
 
 /**
@@ -288,6 +297,11 @@ function workedSolution(text: string, gate?: SolutionImageGate): string {
  * No gate = every image renders, as before.
  */
 export function solutionMarkdown(q: BankQuestion, gate?: SolutionImageGate): string {
+  // An unjudged question is served on the allow-list regardless of the global
+  // switch: nothing unexamined renders, only paths a pass has passed as fixed.
+  if (gate?.unjudged && q.id && gate.unjudged.has(q.id)) {
+    gate = { blocked: gate.blocked, requireClean: true, clean: gate.clean ?? new Set<string>() };
+  }
   const out: string[] = [];
   const parts = Array.isArray(q.parts) ? q.parts : [];
   // Multi-part rows carry the combined working in `solution` AND the same

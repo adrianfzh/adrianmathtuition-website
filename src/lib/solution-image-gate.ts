@@ -49,6 +49,19 @@ export type { SolutionImageGate };
 
 export const SOLUTION_IMAGES_REQUIRE_CLEAN = false;
 
+/**
+ * Levels whose solution images the classification pass has covered (3 Sep 2026:
+ * every Sec solution image was judged — 520 clean, 155 flagged). A question at
+ * any OTHER level is served on the allow-list until its level is judged, whatever
+ * the global switch says: "There must be no watermark images — important"
+ * (Adrian, 3 Sep 2026), and /app/practice IS open to students during the
+ * marking-only beta. Add a level here only when its judge pass has landed.
+ */
+export const JUDGED_SOLUTION_LEVELS: ReadonlySet<string> = new Set(['AM', 'EM', 'S1', 'S2', 'EM_NA', 'AM_NA']);
+export function solutionImagesJudgedFor(level: string | null | undefined): boolean {
+  return !!level && JUDGED_SOLUTION_LEVELS.has(String(level).trim().toUpperCase());
+}
+
 /** A figure_flags row of kind='solution', as the gate needs it. */
 // STATUS VALUES FOR SOLUTION ROWS (3 Sep 2026, agreed with the figure-repair
 // session): use `held`, not `open`, when flagging a stamped solution image. The
@@ -79,6 +92,7 @@ export function closedGate(): SolutionImageGate {
 export function gateFromFlagRows(
   rows: readonly SolutionFlagRow[],
   requireClean: boolean = SOLUTION_IMAGES_REQUIRE_CLEAN,
+  unjudgedIds: readonly string[] = [],
 ): SolutionImageGate {
   const blocked = new Set<string>();
   const clean = new Set<string>();
@@ -89,7 +103,11 @@ export function gateFromFlagRows(
     if (r.status === 'open' || r.status === 'held') blocked.add(p);
     else if (r.status === 'fixed') clean.add(p);
   }
-  return requireClean ? { blocked, requireClean: true, clean } : { blocked };
+  const unjudged = new Set(unjudgedIds.filter(Boolean));
+  const base: SolutionImageGate = requireClean ? { blocked, requireClean: true, clean } : { blocked };
+  // The clean set rides along whenever some question is unjudged: it is what
+  // solutionMarkdown lets through for those questions.
+  return unjudged.size ? { ...base, clean, unjudged } : base;
 }
 
 /**
@@ -104,12 +122,31 @@ export async function solutionImageGateFor(
   const ids = [...new Set(questionIds.filter((id) => typeof id === 'string' && id))];
   if (!ids.length) return requireClean ? closedGate() : openGate();
   const rows: SolutionFlagRow[] = [];
+  // Which of these questions sit at an unjudged level. Fail CLOSED here even in
+  // deny-list mode: if the levels cannot be read, every id is treated as unjudged
+  // — "we could not check" must never become "show it" for images nobody has
+  // looked at. (Known-bad containment below keeps its own outage posture.)
+  let unjudged: string[] = ids;
+  try {
+    const supa = getSupabaseAdmin();
+    const judged = new Set<string>();
+    for (let i = 0; i < ids.length; i += 200) {
+      const { data, error } = await supa.from('questions').select('id, level').in('id', ids.slice(i, i + 200));
+      if (error) throw new Error(error.message);
+      for (const r of (data ?? []) as { id: string; level: string | null }[]) if (solutionImagesJudgedFor(r.level)) judged.add(r.id);
+    }
+    unjudged = ids.filter((id) => !judged.has(id));
+  } catch (e) {
+    console.warn('[solution-image-gate] level read failed — treating every question as unjudged:', (e as Error).message);
+  }
   try {
     const supa = getSupabaseAdmin();
     for (let i = 0; i < ids.length; i += 200) {
       let q = supa.from('figure_flags').select('path, status')
         .eq('kind', 'solution').in('question_id', ids.slice(i, i + 200));
-      if (!requireClean) q = q.in('status', ['open', 'held']); // deny-list needs the blocking rows only
+      // Deny-list mode needs only the blocking rows — unless some question here
+      // is unjudged, whose `fixed` rows are the only thing it may render.
+      if (!requireClean && !unjudged.length) q = q.in('status', ['open', 'held']);
       const { data, error } = await q;
       if (error) throw new Error(error.message);
       rows.push(...((data ?? []) as SolutionFlagRow[]));
@@ -119,7 +156,10 @@ export async function solutionImageGateFor(
       `[solution-image-gate] figure_flags read failed — ${requireClean ? 'withholding every solution image' : 'serving unfiltered'}:`,
       (e as Error).message,
     );
-    return requireClean ? closedGate() : openGate();
+    if (requireClean) return closedGate();
+    // Deny-list outage: known-bad rows unavailable, but unjudged questions still
+    // render nothing (empty clean set), which is the safe half.
+    return gateFromFlagRows([], false, unjudged);
   }
-  return gateFromFlagRows(rows, requireClean);
+  return gateFromFlagRows(rows, requireClean, unjudged);
 }

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { gateFromFlagRows, openGate, closedGate, SOLUTION_IMAGES_REQUIRE_CLEAN } from './solution-image-gate';
+import { gateFromFlagRows, openGate, closedGate, SOLUTION_IMAGES_REQUIRE_CLEAN, solutionImagesJudgedFor } from './solution-image-gate';
+import { solutionMarkdown, type BankQuestion } from './bank-question-markdown';
 import { solutionImageAllowed } from './bank-question-markdown';
 
 // The pure half of the solution-image gate: rows → gate, and the two outage
@@ -65,5 +66,33 @@ describe('held rows', () => {
     const g = gateFromFlagRows([{ path: 'solutions/a.png', status: 'held' }, { path: 'solutions/b.png', status: 'fixed' }], false);
     expect(g.blocked.has('solutions/a.png')).toBe(true);
     expect(g.blocked.has('solutions/b.png')).toBe(false);
+  });
+});
+
+describe('unjudged levels — served on the allow-list whatever the switch says (3 Sep 2026)', () => {
+  const q = (id: string, img: string) => ({ id, solution_images: [img] } as unknown as BankQuestion);
+
+  it('only Sec levels count as judged', () => {
+    for (const l of ['AM', 'EM', 'S1', 'S2', 'EM_NA', 'AM_NA', 'am']) expect(solutionImagesJudgedFor(l)).toBe(true);
+    for (const l of ['JC1', 'JC2', 'H2', 'H1', 'PHY', '', null, undefined]) expect(solutionImagesJudgedFor(l)).toBe(false);
+  });
+
+  it('an unjudged question renders only fixed paths; a judged one keeps deny-list behaviour', () => {
+    const g = gateFromFlagRows([
+      { path: 'sol_fixed.png', status: 'fixed' },
+      { path: 'sol_held.png', status: 'held' },
+    ], false, ['jc-q']);
+    expect(g.unjudged?.has('jc-q')).toBe(true);
+    expect(solutionMarkdown(q('jc-q', 'sol_never_looked_at.png'), g)).not.toContain('<img');   // unexamined → hidden
+    expect(solutionMarkdown(q('jc-q', 'sol_fixed.png'), g)).toContain('sol_fixed.png');           // passed → renders
+    expect(solutionMarkdown(q('jc-q', 'sol_held.png'), g)).not.toContain('<img');
+    expect(solutionMarkdown(q('sec-q', 'sol_never_looked_at.png'), g)).toContain('sol_never_looked_at.png'); // judged level, deny-list
+    expect(solutionMarkdown(q('sec-q', 'sol_held.png'), g)).not.toContain('<img');
+  });
+
+  it('no unjudged ids → the gate is exactly what it was before', () => {
+    const g = gateFromFlagRows([{ path: 'a.png', status: 'held' }], false);
+    expect(g.unjudged).toBeUndefined();
+    expect(g.requireClean).toBeUndefined();
   });
 });

@@ -94,6 +94,15 @@ figures take no gate. The dormant switch **`SOLUTION_IMAGES_REQUIRE_CLEAN`**
 (`false`) flips the gate from deny-list to allow-list — only paths on a
 `kind='solution'` `status='fixed'` row render, everything unclassified
 disappears — flip it only once the classification pass has covered the bank.
+**Unjudged levels are allow-listed regardless of the switch (3 Sep 2026).**
+`JUDGED_SOLUTION_LEVELS` in `lib/solution-image-gate.ts` names the levels the judge pass has
+covered (Sec: AM/EM/S1/S2 + NA). `solutionImageGateFor` reads each question's level; a question
+at any other level goes into `gate.unjudged`, and `solutionMarkdown` then renders only its
+`fixed` paths — so the ~2,700 JC solution images nobody has judged are withheld from
+`/app/practice` (which IS open to students in the marking-only beta) until a JC judge pass
+lands and JC is added to the set. A failed level read treats every question as unjudged.
+Adrian: "There must be no watermark images — important."
+
 Outage posture: deny-list mode serves unfiltered and logs (it contains KNOWN bad
 images; a Supabase hiccup must not blank every honest diagram), allow-list mode
 withholds everything. The RPC clause above stays kind-agnostic on purpose: an
