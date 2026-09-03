@@ -817,3 +817,63 @@ different questions. Hints tied to figure numbers do not survive regrouping.
   (Same shape as the other unflagged siblings recorded above — RI 2014 Figure 2,
   Nan Chiau 2021 part (a), Assumption English 2025 sibling `ad08929d`,
   CHIJ St Nicholas Q9's inverted pyramid.)
+
+---
+
+# Watermark-cleaning pass (2026-09-03) — defects surfaced while removing stamps
+
+These came out of the 19-figure watermark removal. They are question-bank defects,
+independent of the watermark, and none of them has been written to the database.
+
+## A question that cannot be answered from its own figure
+- **Raffles Girls 2015 S1 P1 Q1** (`9cd61354…`, key `4976966e…`) — **the question needs
+  TWO number lines and the bank holds ONE.** Stored answer (b)(i) is "dots at −2, −1, 0,
+  1 and 2", but the stored image only reaches **1.5**: a student cannot mark 2 on it. The
+  paper has a second, separate number line for (b)(i) running −3.5 to 3.5 with ticks at
+  every integer −3..3. It is `word/media/image1.png` (958×92) in the source DOCX, was
+  **never given a bucket key**, and this row's `image_url` is `[]` — so the row references
+  no image at all while still serving a question that depends on one.
+  A cleaned copy of the second line is held at
+  `wmfix/out/9cd61354-EXTRA-bi-numberline.png` (1511×154, 300 dpi). **Not written
+  anywhere — needs Adrian's call on whether (b)(i) should be illustrated.**
+
+## A label the bank clipped into a different letter
+- **ACS (Barker Road) 2018 S2 P1 Q13** (`77afe190…`, key `0a20d4bc…`) — the bottom-right
+  vertex label is **Q**, but the bank crop cuts its descender so it reads as **O**,
+  contradicting the stem. Confirmed by zooming the re-extracted figure: the tail is
+  present in the source PDF and absent from the bank copy. The cleaned version extends
+  the bottom edge 5.1 pt to restore it. Also: removing the page number "12" (which the
+  crop had included) **uncovers DC's second parallel-mark arrowhead**, a real piece of
+  the diagram the page number was sitting on top of.
+  A strict-parity variant that keeps the "12" is at `wmfix/out/77afe190-with-pagenum.png`.
+  Separately, the **C** label is clipped at its baseline **in the source PDF** —
+  pre-existing, not introduced, and not fixable without redrawing.
+
+## A figure that is not to scale (paper's own drawing, NOT introduced by cleaning)
+- **Raffles Girls 2019 S1 P1 Q11** (`0806a962…`) — the shaded sector measures **127°
+  (8.47/24)** against the **9/24 = 135°** the stem states. Measuring the *watermarked*
+  original with the identical routine returns the same centre, radius and 127°, so the
+  geometry is the paper's, untouched by the cleaning. It does not contradict the stored
+  answers (the 9/24 is given in the text, not read off the figure), but the figure must
+  never be used to teach angle estimation.
+
+## Corrections to earlier sweep records
+- **s107 t20** was recorded as "100% solid black, looks like a broken figure". It is
+  **not broken** — raw levels centre on 148; it is a photograph of concrete bollards in a
+  car park, the question's own frustum illustration.
+- **s107 t14**'s top-edge text is real, but it is the paper's own black print clipped by
+  the crop (pixel minima 20–57, where a pale stamp sits at 240–252) — not a stamp.
+
+## Watermark-detection blind spots (measured, not assumed)
+Worth knowing before anyone trusts a future scan:
+- **The band pass has ~89% sensitivity.** Against the 18 known-stamped figures it
+  re-found 16, missed 2, and found 1 the first pass had missed. Neither pass alone is
+  complete.
+- **Both misses are graph-paper figures.** The grid fills the pale band and masks the
+  lattice. The fix that works is cropping to the **margins**, where there is no grid —
+  that is how Raffles Girls 2015 Q4 was caught after one pass had cleared it.
+- **Not every stamp lives in the pale band.** Raffles Girls 2015 Q5's stamp prints
+  *below 249*, at ink level, on a tile that is 96.2% pure white — a pale-band-only view
+  would never raise it.
+- **Autocorrelation cannot be used as a stamp test** on graph paper, dotted grids or
+  hatching: they are themselves periodic and score exactly like a tiled stamp.
