@@ -15,7 +15,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { currentStudent, portalIdentity } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { isOurBlobUrl } from '@/lib/blob-url';
-import { markedPdfFilename } from '@/lib/marked-pdf-filename';
+import { markedPdfFilename, contentDisposition } from '@/lib/marked-pdf-filename';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
       'Content-Type': 'application/pdf',
       // inline: it still opens in the tab the link targets; the name is what
       // Safari's Share / "Save to Files" and a desktop download use.
-      'Content-Disposition': `inline; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
+      'Content-Disposition': contentDisposition(filename, 'inline'),
       'Cache-Control': 'private, no-store',
     },
   });

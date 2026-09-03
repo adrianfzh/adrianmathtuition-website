@@ -43,3 +43,25 @@ export function markedPdfFilename(input: {
   if (base.length > 120) base = base.slice(0, 120).trim();
   return `${base}.pdf`;
 }
+
+/**
+ * The Content-Disposition header for a marked-script download.
+ *
+ * HTTP header values must be ISO-8859-1 bytes; the pretty filename carries
+ * an em dash (U+2014), and `new Headers({...})` throws "Cannot convert
+ * argument to a ByteString" on it — which is exactly what happened on
+ * production on 3 Sep 2026: every "Open your marked script" tap 500'd from
+ * the moment the named download shipped until Chloe Zhang reported "cannot
+ * see the paper". So: the quoted `filename=` gets an ASCII fold (dashes → "-",
+ * anything non-printable-ASCII dropped) that every client accepts, and the
+ * RFC 5987 `filename*=UTF-8''…` carries the real name for clients that read it.
+ */
+export function contentDisposition(filename: string, disposition: 'inline' | 'attachment' = 'inline'): string {
+  const ascii = String(filename || '')
+    .replace(/[\u2014\u2013\u2012\u2010]/g, '-')
+    .replace(/[^\x20-\x7e]/g, '')
+    .replace(/["\\]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim() || 'marked-paper.pdf';
+  return `${disposition}; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(filename)}`;
+}
