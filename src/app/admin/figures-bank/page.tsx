@@ -21,9 +21,9 @@ type Item = {
   stem?: string; stemEmpty?: boolean; figureMissing?: boolean; watermark?: string | null;
   checks?: { width: number; height: number; inkShare: number; textShare: number;
              small: boolean; blank: boolean; textInCrop: boolean;
-             margins: { left: number; right: number; top: number; bottom: number   note?: string | null;
-} | null;
+             margins: { left: number; right: number; top: number; bottom: number } | null;
              wideMargins: boolean } | null;
+  note?: string | null;
 };
 
 /* ── the solution vet lane ─────────────────────────────────────────────────────
