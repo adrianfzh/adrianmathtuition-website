@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   laneFor, sheetStageLabel, approveBlockers, releaseBlockers, deskFlags, defaultLane,
-  amendedStatusFor, latestLiveJob, pdfStaleOf, DESK_LANES, LANE_LABEL,
+  amendedStatusFor, latestLiveJob, noSheetOf, pdfStaleOf, DESK_LANES, LANE_LABEL,
 } from './desk-state';
 
 const tagged = { student_id: 'recStudent', released_at: null, annotated_pdf_url: null, result_json: { results: [] } };
@@ -100,6 +100,50 @@ describe('approveBlockers — the reasons the big button is grey', () => {
       '2 questions still need review — Agree or Override each one',
       'no self-study sheet yet — queue one',
     ]);
+  });
+});
+
+// ── "no sheet needed" (Adrian, 3 Sep 2026) ───────────────────────────────────
+// Kassandra Lim's 89/90 and 87/90: the worker read both papers correctly and
+// concluded there was nothing to teach. That closes the job as `done` with
+// `result.noSheet`, so the paper is Ready to vet and Approve & release sends it
+// on its own — the old route was `fail`, which requeued twice and then alarmed.
+describe('a done job that says "nothing to teach"', () => {
+  const nothing = { status: 'done', stage: 'no sheet needed', error: null,
+    result: { noSheet: true, reason: '89/90 — the one lost mark was a misread' } };
+
+  it('is a finished job, so the paper is Ready to vet', () => {
+    expect(laneFor(tagged, nothing)).toBe('ready');
+  });
+  it('says so in the row, with the reason', () => {
+    expect(sheetStageLabel(nothing)).toBe('no sheet needed — 89/90 — the one lost mark was a misread');
+  });
+  it('truncates a long reason so it still fits a queue row', () => {
+    const label = sheetStageLabel({ status: 'done', result: { noSheet: true, reason: 'x'.repeat(200) } });
+    expect(label.length).toBeLessThan(90);
+    expect(label.endsWith('…')).toBe(true);
+  });
+  it('NEVER blocks Approve & release — that is the whole point of it', () => {
+    expect(approveBlockers(tagged, nothing, 0, 'none')).toEqual([]);
+  });
+  it('holds on everything else exactly as before', () => {
+    expect(approveBlockers(tagged, nothing, 2, 'none')).toEqual(['2 questions still need review — Agree or Override each one']);
+    expect(approveBlockers({ student_id: null, released_at: null }, nothing, 0, 'none')).toEqual(['tag the paper to a student first']);
+    const stale = { ...tagged, result_json: { results: [], pdf_stale: true } };
+    expect(approveBlockers(stale, nothing, 0, 'none')).toHaveLength(1);
+  });
+  it('is not a flag — nothing went wrong', () => {
+    expect(deskFlags(tagged, nothing, 'none')).toEqual([]);
+  });
+  it('noSheetOf only reads a FINISHED job', () => {
+    expect(noSheetOf(nothing)).toEqual({ noSheet: true, reason: '89/90 — the one lost mark was a misread' });
+    expect(noSheetOf({ status: 'claimed', result: { noSheet: true, reason: 'x' } }).noSheet).toBe(false);
+    expect(noSheetOf({ status: 'done', result: { docx_path: '/a.docx' } }).noSheet).toBe(false);
+    expect(noSheetOf(null).noSheet).toBe(false);
+  });
+  it('an ordinary finished sheet still reads "sheet ready"', () => {
+    expect(sheetStageLabel({ status: 'done', result: { docx_path: '/a.docx' } })).toBe('sheet ready');
+    expect(sheetStageLabel(done)).toBe('sheet ready');
   });
 });
 

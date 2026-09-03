@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   claimExpired, pickNextJob, sanitizeResult, completionMessage, cancelState, sheetFolder,
-  LEASE_MS, MAX_ATTEMPTS, type SheetJob,
+  isNoSheet, readNoSheet, NO_SHEET_REASON, LEASE_MS, MAX_ATTEMPTS,
+  type SheetJob, type SheetFiledResult,
 } from './sheet-jobs';
 
 const t0 = Date.parse('2026-08-30T10:00:00Z');
@@ -97,12 +98,15 @@ describe('pickNextJob', () => {
   });
 });
 
+/** sanitizeResult narrowed to a FILED sheet — the noSheet shape is asserted separately below. */
+const filed = (input: unknown) => sanitizeResult(input) as SheetFiledResult;
+
 describe('sanitizeResult', () => {
   it('keeps the paths and lists, trims and caps', () => {
-    const r = sanitizeResult({
+    const r = filed({
       docx_path: '  /Self-Study/A/sheet.docx ', pdf_path: '/Self-Study/A/sheet.pdf',
       wave: ['chain rule', ' ', 'integration'], shelved: ['polynomials'], verified: '42/42 checks',
-    })!;
+    });
     expect(r.docx_path).toBe('/Self-Study/A/sheet.docx');
     expect(r.wave).toEqual(['chain rule', 'integration']);
     expect(r.shelved).toEqual(['polynomials']);
@@ -114,7 +118,7 @@ describe('sanitizeResult', () => {
     expect(sanitizeResult({ docx_path: '   ' })).toBeNull();
   });
   it('junk lists degrade to empty rather than throwing', () => {
-    const r = sanitizeResult({ docx_path: '/a.docx', wave: 'nope', shelved: null })!;
+    const r = filed({ docx_path: '/a.docx', wave: 'nope', shelved: null });
     expect(r.wave).toEqual([]);
     expect(r.shelved).toEqual([]);
   });
@@ -147,6 +151,70 @@ describe('completionMessage', () => {
     expect(msg).toContain('A student');
     expect(msg).toContain('In Dropbox');
     expect(msg).not.toContain('undefined');
+  });
+});
+
+// ── "nothing to teach" is a completion, not a failure (Adrian, 3 Sep 2026) ────
+// Kassandra Lim's 89/90 (one misread) and 87/90 (three careless slips, same
+// score at a previous sitting): the worker was right both times, but `fail` was
+// the only way to close the job, so each conclusion was reached three times and
+// alarmed as "⚠️ Self-study sheet failed 3×".
+describe('sanitizeResult — noSheet needs no files', () => {
+  it('accepts a completion with no docx at all, and keeps the reason', () => {
+    const r = sanitizeResult({ noSheet: true, reason: '89/90 — the one lost mark was a misread, not a gap' })!;
+    expect(isNoSheet(r)).toBe(true);
+    expect(r).toEqual({ noSheet: true, reason: '89/90 — the one lost mark was a misread, not a gap' });
+  });
+  it('a missing reason falls back rather than being blank', () => {
+    expect(sanitizeResult({ noSheet: true })).toEqual({ noSheet: true, reason: NO_SHEET_REASON });
+    expect(sanitizeResult({ noSheet: true, reason: '   ' })).toEqual({ noSheet: true, reason: NO_SHEET_REASON });
+  });
+  it('caps a runaway reason', () => {
+    const r = sanitizeResult({ noSheet: true, reason: 'x'.repeat(900) })!;
+    expect((r as { reason: string }).reason).toHaveLength(300);
+  });
+  it('noSheet:false is an ordinary sheet — still needs its docx', () => {
+    expect(sanitizeResult({ noSheet: false })).toBeNull();
+    const r = sanitizeResult({ noSheet: false, docx_path: '/a.docx' })!;
+    expect(isNoSheet(r)).toBe(false);
+  });
+  it('a filed sheet is never mistaken for one', () => {
+    expect(isNoSheet(sanitizeResult({ docx_path: '/a.docx' }))).toBe(false);
+    expect(isNoSheet(null)).toBe(false);
+  });
+});
+
+describe('readNoSheet — the flag as STORED on the row', () => {
+  it('reads the reason back out of the jsonb', () => {
+    expect(readNoSheet({ noSheet: true, reason: '87/90, three careless slips' }))
+      .toEqual({ noSheet: true, reason: '87/90, three careless slips' });
+  });
+  it('a filed sheet, a null result and junk are all "there is a sheet"', () => {
+    expect(readNoSheet({ docx_path: '/a.docx' })).toEqual({ noSheet: false, reason: '' });
+    expect(readNoSheet(null)).toEqual({ noSheet: false, reason: '' });
+    expect(readNoSheet('nope')).toEqual({ noSheet: false, reason: '' });
+    expect(readNoSheet({ noSheet: false, reason: 'x' })).toEqual({ noSheet: false, reason: '' });
+  });
+  it('falls back when the reason went missing', () => {
+    expect(readNoSheet({ noSheet: true }).reason).toBe(NO_SHEET_REASON);
+  });
+});
+
+describe('completionMessage — a right answer must not read like an alarm', () => {
+  it('names the student, the paper and the reason, and says what to do', () => {
+    const msg = completionMessage(
+      { student_name: 'Kassandra Lim', paper_name: 'AM 2022 P2' },
+      sanitizeResult({ noSheet: true, reason: '89/90 — the one lost mark was a misread' }),
+    );
+    expect(msg).toBe('📘 No sheet for <b>Kassandra Lim</b> (AM 2022 P2) — 89/90 — the one lost mark was a misread. Release the paper on its own from the desk.');
+    expect(msg).not.toContain('⚠️');
+    expect(msg).not.toMatch(/fail/i);
+  });
+  it('survives a nameless job', () => {
+    const msg = completionMessage({ student_name: '', paper_name: '' }, sanitizeResult({ noSheet: true }));
+    expect(msg).toContain('A student');
+    expect(msg).not.toContain('undefined');
+    expect(msg).not.toContain('()');
   });
 });
 

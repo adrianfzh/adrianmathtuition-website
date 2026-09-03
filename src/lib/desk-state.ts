@@ -15,6 +15,7 @@
 // can never disagree about why a paper is held.
 
 import { amendedCopyIsNewer, isAlreadyAttached, pickAmendedCopy, type FolderEntry } from './paper-folder';
+import { readNoSheet } from './sheet-jobs';
 
 export type DeskLane = 'untagged' | 'awaiting-sheet' | 'ready' | 'released';
 
@@ -43,6 +44,8 @@ export type DeskSheetJob = {
   /** The worker's heartbeat label — diagnosing · drafting · verifying · rendering · filing. */
   stage?: string | null;
   error?: string | null;
+  /** The completion payload as stored — `{ noSheet, reason }` when there was nothing to teach. */
+  result?: unknown;
 } | null | undefined;
 
 /** Adrian's own "Marked (Adrian).pdf" in the paper's Dropbox folder, vs what the run carries. */
@@ -83,13 +86,32 @@ export function laneFor(run: DeskRun, latestSheetJob: DeskSheetJob): DeskLane {
   return 'awaiting-sheet';
 }
 
+/**
+ * A FINISHED job whose answer was "there is nothing here worth practising"
+ * (sheet_jobs.result.noSheet — see lib/sheet-jobs.ts). Only a `done` job counts:
+ * a queued or claimed row has not concluded anything yet.
+ */
+export function noSheetOf(job: DeskSheetJob): { noSheet: boolean; reason: string } {
+  if (!job || job.status !== 'done') return { noSheet: false, reason: '' };
+  return readNoSheet(job.result);
+}
+
+/** The reason, short enough to sit in a queue row. */
+function shortReason(reason: string, max = 64): string {
+  const r = reason.trim();
+  return r.length > max ? `${r.slice(0, max - 1).trimEnd()}…` : r;
+}
+
 /** The row's sheet column, as a phrase. */
 export function sheetStageLabel(job: DeskSheetJob): string {
   if (!job) return 'no sheet yet';
   switch (job.status) {
     case 'queued': return 'queued';
     case 'claimed': return `${(job.stage || 'drafting').trim()}…`;
-    case 'done': return 'sheet ready';
+    case 'done': {
+      const { noSheet, reason } = noSheetOf(job);
+      return noSheet ? `no sheet needed — ${shortReason(reason)}` : 'sheet ready';
+    }
     case 'failed': return `failed: ${(job.error || 'unknown').trim()}`;
     case 'cancelled': return 'cancelled';
     default: return job.status;
@@ -132,6 +154,11 @@ export function releaseBlockers(run: DeskRun, pending: number, amended: AmendedS
  * Why "Approve & release" is disabled: everything releaseBlockers says, plus the
  * sheet must be finished — the whole point of the desk is that marks and the
  * practice that goes with them reach the student together.
+ *
+ * A `done` job whose answer was "nothing to teach" (`result.noSheet`) is
+ * FINISHED, so it blocks nothing: the paper goes out on its own, and the button
+ * says so. Pinned in the tests — a future edit that starts demanding files here
+ * would put those papers back in the trap `noSheet` exists to end.
  */
 export function approveBlockers(run: DeskRun, sheetJob: DeskSheetJob, pending: number, amended: AmendedStatus): string[] {
   const out = releaseBlockers(run, pending, amended);

@@ -594,6 +594,21 @@ they are, reachable from its "Other views" row. Nothing is deleted.
   release, notify — and asks on an ambiguous folder exactly as triage does.
   **Release without sheet…** (confirm) uses `releaseBlockers` — the same gates
   minus the sheet — and POSTs mark-triage `release`.
+- **"No sheet needed" is a COMPLETION** (3 Sep 2026) — a paper with nothing worth
+  practising closes with `POST /api/admin/sheet-jobs {action:'done', id,
+  result:{noSheet:true, reason}}`: status `done`, `stage:'no sheet needed'`, no
+  files, **no diagnosis and no PDF rebuild**, and a calm Telegram (*"📘 No sheet
+  for X (paper) — reason. Release the paper on its own from the desk."*). The run
+  is **Ready to vet**, `sheetStageLabel` reads "no sheet needed — <reason>",
+  `approveBlockers` holds nothing, and the desk's button becomes **✅ Approve &
+  release (paper only — no sheet needed)** → plain mark-triage `release`
+  (`release-with-sheet` takes the same branch, answering `kind:'no-sheet'` instead
+  of 404 "No PDF"). Every other gate is unchanged. Before this the only way to
+  close a sheetless job was `fail`, which requeues: two of Kassandra Lim's papers
+  (89/90 one misread; 87/90 three careless slips) burned three plan sessions each
+  on the same correct conclusion and then alarmed "⚠️ Self-study sheet failed 3×".
+  `fail` is for genuine failures only — the worker prompt and the
+  `self-study-sheet` skill's hard rule both say so now.
 - **"My copy"** — `amendedStatusFor(run, folderListing)` reuses `paper-folder.ts`
   (`pickAmendedCopy` / `isAlreadyAttached` / `amendedCopyIsNewer`): `none` ·
   `found` (attached, or older than the attached) · `newer-than-attached` (release

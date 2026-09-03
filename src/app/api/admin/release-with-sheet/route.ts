@@ -16,11 +16,18 @@
 //
 // GET is deliberately separate: the button can show what it is about to send, and
 // the ambiguous case can be resolved before anything is released rather than after.
+//
+// ONE PAPER IN THIS QUEUE HAS NO SHEET ON PURPOSE (3 Sep 2026). When the newest
+// done job carries `{noSheet:true, reason}` — the worker read the paper and there
+// was nothing worth practising — there is no PDF to choose and no assignment to
+// write: the marked paper is released on its own and the response says why
+// (`kind:'no-sheet'`), rather than 404-ing "No PDF in the sheet's folder yet".
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { listFolder, dropboxConfigured } from '@/lib/dropbox';
-import { choosePdf, sheetFolder, ambiguityMessage, type SheetFile } from '@/lib/release-with-sheet';
+import { choosePdf, sheetFolder, ambiguityMessage, noSheetNote, type SheetFile } from '@/lib/release-with-sheet';
+import { readNoSheet } from '@/lib/sheet-jobs';
 import { attachAmendedFromDropbox } from '@/lib/attach-amended';
 
 export const runtime = 'nodejs';
@@ -43,6 +50,13 @@ async function resolve(runId: string) {
     .eq('run_id', runId).eq('status', 'done')
     .order('created_at', { ascending: false }).limit(1).maybeSingle();
   if (!job) return { error: 'No finished sheet for this paper yet.', status: 404 as const };
+
+  // The worker's honest "nothing here is worth practising" (3 Sep 2026) is a
+  // finished job with no files. There is no PDF to choose and no assignment to
+  // write — the marked paper is released on its own, deliberately, instead of
+  // this answering 404 "No PDF in the sheet's folder yet".
+  const noSheet = readNoSheet(job.result);
+  if (noSheet.noSheet) return { run, noSheet: true as const, reason: noSheet.reason };
 
   const result = (job.result || {}) as SheetResult;
   const folderPath = sheetFolder(result.pdf_path, result.docx_path);
@@ -68,7 +82,8 @@ async function resolve(runId: string) {
     } catch { /* an unreadable folder degrades to the recorded path alone */ }
   }
 
-  return { run, result, folderPath, choice: choosePdf(result.pdf_path, result.docx_path, files) };
+  // `noSheet` is the discriminant the two callers branch on.
+  return { run, noSheet: false as const, result, folderPath, choice: choosePdf(result.pdf_path, result.docx_path, files) };
 }
 
 export async function GET(req: NextRequest) {
@@ -78,6 +93,15 @@ export async function GET(req: NextRequest) {
 
   const r = await resolve(runId);
   if ('error' in r) return NextResponse.json({ error: r.error }, { status: r.status });
+
+  if (r.noSheet) {
+    return NextResponse.json({
+      ready: true, kind: 'no-sheet', noSheet: true, reason: r.reason,
+      pdfPath: null, candidates: [], note: noSheetNote(r.reason),
+      alreadyReleased: !!r.run.released_at,
+      studentName: r.run.student_name, paperName: r.run.paper_name,
+    });
+  }
 
   return NextResponse.json({
     ready: r.choice.kind === 'recorded' || r.choice.kind === 'only',
@@ -100,6 +124,59 @@ export async function POST(req: NextRequest) {
   const r = await resolve(runId);
   if ('error' in r) return NextResponse.json({ error: r.error }, { status: r.status });
 
+  const origin = req.nextUrl.origin;
+  const auth = req.headers.get('authorization');
+  const cookie = req.headers.get('cookie');
+  const fwd: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (auth) fwd.Authorization = auth;
+  if (cookie) fwd.cookie = cookie;
+
+  // 📂 Adrian's amended copy first (2 Sep 2026): "Marked (Adrian)*.pdf" in the
+  // same folder as the sheet, attached if newer than what the run carries — so
+  // the marked paper that goes out with the sheet is the one he wrote on. The
+  // release action repeats the check (idempotent); doing it here too means a
+  // Dropbox problem is visible in this response, before anything is sent.
+  async function attachMyCopy(alreadyReleased: boolean) {
+    if (alreadyReleased) return null;
+    const out = await attachAmendedFromDropbox(runId);
+    if (out.status === 'error') console.warn('[release-with-sheet] amended-copy check failed:', out.message);
+    return out.status === 'attached' || out.status === 'unchanged'
+      ? { status: out.status, name: out.name, note: out.status === 'unchanged' ? out.reason : undefined }
+      : out.status === 'error' ? { status: 'error', note: out.message } : { status: out.status };
+  }
+
+  /** The release itself — mark-triage owns it, and its own gates still apply. */
+  async function releasePaper() {
+    const res = await fetch(`${origin}/api/admin/mark-triage`, {
+      method: 'POST', headers: fwd, body: JSON.stringify({ action: 'release', runId }),
+    });
+    const data = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, data };
+  }
+
+  // ── nothing to teach: the paper goes on its own ───────────────────────────
+  // A `done` job carrying `{noSheet:true, reason}` is finished, not failed —
+  // there is no sheet to look for and no assignment to write. Every other gate
+  // (untagged, pending reviews, pdf_stale) is untouched: they live in
+  // mark-triage's release action and in attachMyCopy, both still called here.
+  if (r.noSheet) {
+    const alreadyReleased = !!r.run.released_at;
+    const amended = await attachMyCopy(alreadyReleased);
+    if (!alreadyReleased) {
+      const rel = await releasePaper();
+      if (!rel.ok) {
+        return NextResponse.json({
+          error: `The paper did NOT release: ${rel.data.error || rel.status}. Release it from the desk.`,
+          noSheet: true, reason: r.reason,
+        }, { status: 502 });
+      }
+    }
+    return NextResponse.json({
+      ok: true, released: true, noSheet: true, reason: r.reason, note: noSheetNote(r.reason),
+      pdfPath: null, assignmentId: null, alreadyWasReleased: alreadyReleased, amended,
+    });
+  }
+
   // An explicit pick from the ambiguous case wins; otherwise it must have resolved
   // on its own. Never fall through to "the first one" — the whole point of the
   // ambiguous state is that guessing sends a student the wrong paper.
@@ -114,26 +191,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'That PDF is not in the sheet’s folder.' }, { status: 400 });
   }
 
-  const origin = req.nextUrl.origin;
-  const auth = req.headers.get('authorization');
-  const cookie = req.headers.get('cookie');
-  const fwd: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (auth) fwd.Authorization = auth;
-  if (cookie) fwd.cookie = cookie;
-
-  // 📂 Adrian's amended copy first (2 Sep 2026): "Marked (Adrian)*.pdf" in the
-  // same folder as the sheet, attached if newer than what the run carries — so
-  // the marked paper that goes out with the sheet is the one he wrote on. The
-  // release action repeats the check (idempotent); doing it here too means a
-  // Dropbox problem is visible in this response, before anything is sent.
-  let amended: { status: string; name?: string; note?: string } | null = null;
-  if (!r.run.released_at) {
-    const out = await attachAmendedFromDropbox(runId);
-    amended = out.status === 'attached' || out.status === 'unchanged'
-      ? { status: out.status, name: out.name, note: out.status === 'unchanged' ? out.reason : undefined }
-      : out.status === 'error' ? { status: 'error', note: out.message } : { status: out.status };
-    if (out.status === 'error') console.warn('[release-with-sheet] amended-copy check failed:', out.message);
-  }
+  const amended = await attachMyCopy(!!r.run.released_at);
 
   // The SHEET goes first. If the assignment fails, nothing has been released and
   // Adrian can retry the whole thing; releasing first would leave a student with a
@@ -152,16 +210,12 @@ export async function POST(req: NextRequest) {
 
   let released = !!r.run.released_at;
   if (!released) {
-    const rRes = await fetch(`${origin}/api/admin/mark-triage`, {
-      method: 'POST', headers: fwd,
-      body: JSON.stringify({ action: 'release', runId }),
-    });
-    const rData = await rRes.json().catch(() => ({}));
-    if (!rRes.ok) {
+    const rel = await releasePaper();
+    if (!rel.ok) {
       // The sheet is already with the student; say so plainly rather than
       // implying nothing happened.
       return NextResponse.json({
-        error: `Sheet sent, but the paper did NOT release: ${rData.error || rRes.status}. Release it from triage.`,
+        error: `Sheet sent, but the paper did NOT release: ${rel.data.error || rel.status}. Release it from triage.`,
         assignmentId: aData.assignment?.id ?? null,
       }, { status: 502 });
     }

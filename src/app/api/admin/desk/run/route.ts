@@ -22,7 +22,8 @@ import {
 import { readDiagnosis } from '@/lib/sheet-diagnosis';
 import { MARKED_AI_NAME, dropboxWebUrl, isSheetPdf, paperFolder } from '@/lib/paper-folder';
 import {
-  amendedStatusFor, approveBlockers, deskFlags, laneFor, latestLiveJob, pdfStaleOf, releaseBlockers, sheetStageLabel,
+  amendedStatusFor, approveBlockers, deskFlags, laneFor, latestLiveJob, noSheetOf, pdfStaleOf,
+  releaseBlockers, sheetStageLabel,
 } from '@/lib/desk-state';
 
 export const runtime = 'nodejs';
@@ -159,6 +160,9 @@ export async function GET(req: NextRequest) {
         wave: Array.isArray(jobResult.wave) ? jobResult.wave.map(String) : [],
         shelved: Array.isArray(jobResult.shelved) ? jobResult.shelved.map(String) : [],
         verified: typeof jobResult.verified === 'string' ? jobResult.verified : '',
+        // "Nothing worth practising" — a finished job with no files (3 Sep 2026).
+        // The desk relabels Approve & release and never looks for a sheet PDF.
+        ...noSheetOf(job),
       } : null,
     } : null,
     sheetJobs: jobs.map(j => ({ id: j.id, status: j.status, stage: j.stage, error: j.error, createdAt: j.created_at, completedAt: j.completed_at })),

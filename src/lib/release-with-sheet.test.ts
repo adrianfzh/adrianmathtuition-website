@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { choosePdf, stem, sheetFolder, ambiguityMessage } from './release-with-sheet';
+import { choosePdf, stem, sheetFolder, ambiguityMessage, noSheetNote } from './release-with-sheet';
+import { readNoSheet } from './sheet-jobs';
 
 // The paper's folder (lib/paper-folder.ts) — the sheet shares it with the marked copies.
 const F = '/Students/Khoo Ke Er Klaire/2026-08-30 klaire am tys 2021 p1';
@@ -132,6 +133,25 @@ describe('stem / sheetFolder', () => {
     expect(sheetFolder(null, DOCX)).toBe(F);
     expect(sheetFolder(null, null)).toBeNull();
     expect(sheetFolder('noslash', null)).toBeNull();
+  });
+});
+
+// The release path's noSheet branch turns on this pair: the stored flag decides
+// whether a PDF is looked for at all, and the note is what the response says
+// instead of "No PDF in the sheet's folder yet" (3 Sep 2026).
+describe('the no-sheet release branch', () => {
+  it('a done job that says "nothing to teach" is not a missing PDF', () => {
+    const job = { noSheet: true, reason: '87/90 — three careless slips she already gets right' };
+    expect(readNoSheet(job).noSheet).toBe(true);
+    expect(noSheetNote(readNoSheet(job).reason))
+      .toBe('No self-study sheet for this paper — 87/90 — three careless slips she already gets right. Released the marked paper on its own.');
+  });
+  it('an ordinary sheet job takes the PDF-choosing path, untouched', () => {
+    expect(readNoSheet({ docx_path: DOCX, pdf_path: PDF }).noSheet).toBe(false);
+    expect(choosePdf(PDF, DOCX, [f('Practice Again.pdf')]).kind).toBe('recorded');
+  });
+  it('the note survives an empty reason without a dangling dash', () => {
+    expect(noSheetNote('')).toBe('No self-study sheet for this paper. Released the marked paper on its own.');
   });
 });
 

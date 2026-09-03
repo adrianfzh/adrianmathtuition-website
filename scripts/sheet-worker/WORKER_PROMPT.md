@@ -102,8 +102,32 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
    things differently from your sheet. A malformed `diagnosis` is skipped, never
    a reason the `done` fails — but send it well-formed.
 
-If you cannot finish — the marking has no lost marks, the bank has nothing
-usable, a render fails twice — report it instead of guessing:
+6. **If there is nothing to teach, say so — that is a `done`, not a `fail`.**
+   The skill's hard rule stands: a paper with no real gap gets no sheet, and you
+   never invent weaknesses to have something to write. Close the job like this:
+
+```bash
+curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
+  -H "Authorization: Bearer $SHEETS_API_TOKEN" -H 'Content-Type: application/json' \
+  -d '{"action":"done","id":"<job id>","result":{"noSheet":true,
+        "reason":"89/90 — the single lost mark was a misread of the question, not a gap"}}'
+```
+
+   `reason` is ONE sentence Adrian can act on: the score, what the lost marks
+   actually were, and why they do not earn practice. No files are needed, no
+   diagnosis, and nothing is rebuilt — the desk moves the paper to **Ready to
+   vet**, relabels the button "Approve & release (paper only — no sheet needed)",
+   and Adrian's Telegram reads *"📘 No sheet for … — <reason>."*
+
+   **Do not use `fail` for this.** `fail` requeues the job, so the same correct
+   conclusion gets reached three times on three plan sessions and then alarms as
+   "⚠️ Self-study sheet failed 3×" — which is exactly what happened to two of
+   Kassandra Lim's papers (89/90 with one misread; 87/90 with three careless
+   slips she had already got right at a previous sitting) on 3 Sep 2026.
+
+If you genuinely cannot finish — the bank has nothing usable, a render fails
+twice, verification will not pass, the repo is mid-conflict — report it instead
+of guessing:
 
 ```bash
 curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \

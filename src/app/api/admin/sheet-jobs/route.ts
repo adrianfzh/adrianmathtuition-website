@@ -9,7 +9,12 @@
 //                                  result.diagnosis (lib/sheet-diagnosis.ts) is
 //                                  written onto the run and both marked PDFs are
 //                                  rebuilt so the cover follows the sheet.
-//   POST { action:'fail', id, error }  → { ok }   back on the queue unless attempts are spent
+//   POST { action:'done', id, result:{noSheet:true, reason} } → { ok, noSheet, reason }
+//                                  the paper had nothing worth practising. A real
+//                                  completion: no files, no diagnosis, no rebuild,
+//                                  and a calm Telegram — NOT the ⚠️ failed wording.
+//   POST { action:'fail', id, error }  → { ok }   a GENUINE failure — back on the
+//                                  queue unless attempts are spent
 //   POST { action:'cancel', id } → { ok }         stop it — terminal, never re-picked
 //
 // Everything is admin-authed: the worker is a headless Claude session on
@@ -20,7 +25,10 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
 import { logJobRun } from '@/lib/job-log';
-import { pickNextJob, sanitizeResult, completionMessage, cancelState, MAX_ATTEMPTS, type SheetJob } from '@/lib/sheet-jobs';
+import {
+  pickNextJob, sanitizeResult, completionMessage, cancelState, isNoSheet, MAX_ATTEMPTS,
+  type SheetJob, type SheetFiledResult,
+} from '@/lib/sheet-jobs';
 import { sendTelegramDocument } from '@/lib/telegram';
 import { downloadFile, getTemporaryLink } from '@/lib/dropbox';
 import { normaliseDiagnosis, type Diagnosis } from '@/lib/sheet-diagnosis';
@@ -144,17 +152,34 @@ export async function POST(req: NextRequest) {
   if (body.action === 'done') {
     if (!body.id) return NextResponse.json({ error: 'id required' }, { status: 400 });
     const result = sanitizeResult(body.result);
-    if (!result) return NextResponse.json({ error: 'result.docx_path is required' }, { status: 400 });
+    if (!result) {
+      return NextResponse.json({ error: 'result.docx_path is required — or result.noSheet with a reason' }, { status: 400 });
+    }
+    // ── "Nothing to teach" is a COMPLETION (Adrian, 3 Sep 2026) ───────────────
+    // 89/90 with one misread, 87/90 with three careless slips: the worker was
+    // right that neither paper earns practice, but `fail` was the only way to
+    // close the job, so it requeued twice and alarmed on the third. A noSheet
+    // done needs no files, no diagnosis and no PDF rebuild — there is no sheet
+    // for the cover to follow — and its Telegram is calm.
+    const noSheet = isNoSheet(result);
     // A cancelled job stays cancelled. The worker may have filed a DOCX before
     // it noticed — that file is left in Dropbox rather than deleted, but the row
     // does not flip to done and Adrian is not Telegrammed about a sheet he
     // stopped. The .neq below is what enforces it: no matching row, no update.
     const { data: job, error } = await sb.from('sheet_jobs')
-      .update({ status: 'done', result, completed_at: new Date().toISOString(), error: null })
+      .update({
+        status: 'done', result, completed_at: new Date().toISOString(), error: null,
+        ...(noSheet ? { stage: 'no sheet needed' } : {}),
+      })
       .eq('id', body.id).neq('status', 'cancelled').select('*').maybeSingle<SheetJob>();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     if (!job) return NextResponse.json({ ok: false, cancelled: true, error: 'cancelled — this sheet was stopped' }, { status: 409 });
     // Best-effort: a Telegram hiccup must not undo a finished sheet.
+    if (noSheet) {
+      sendTelegram(completionMessage(job, result)).catch(() => {});
+      logJobRun('sheet-worker', true, `${job.student_name || job.airtable_student_id}: no sheet needed`).catch(() => {});
+      return NextResponse.json({ ok: true, noSheet: true, reason: result.reason, diagnosis: false, rebuilt: false });
+    }
     sendTelegram(completionMessage(job, result))
       .then(() => sendSheetFiles(job, result))
       .catch(() => {});
@@ -237,7 +262,7 @@ export async function POST(req: NextRequest) {
  * already filed and the message already sent, so a Dropbox or Telegram hiccup
  * is logged and nothing else changes.
  */
-async function sendSheetFiles(job: Pick<SheetJob, 'student_name' | 'paper_name'>, result: ReturnType<typeof sanitizeResult>): Promise<void> {
+async function sendSheetFiles(job: Pick<SheetJob, 'student_name' | 'paper_name'>, result: SheetFiledResult | null): Promise<void> {
   if (!result) return;
   const who = job.student_name || 'A student';
   const tag = job.paper_name ? ` (${job.paper_name})` : '';

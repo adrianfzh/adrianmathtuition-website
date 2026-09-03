@@ -25,7 +25,7 @@ import { pendingCount, recomputeTotals } from '@/lib/mark-triage';
 import { dropboxWebUrl, paperFolder } from '@/lib/paper-folder';
 import {
   DESK_LANES, amendedStatusFor, defaultLane, deskFlags, laneFor, latestLiveJob,
-  pdfStaleOf, sheetStageLabel, type AmendedStatus, type DeskLane,
+  noSheetOf, pdfStaleOf, sheetStageLabel, type AmendedStatus, type DeskLane,
 } from '@/lib/desk-state';
 
 export const runtime = 'nodejs';
@@ -53,6 +53,8 @@ type RunRow = {
 type SheetJobLite = {
   id: string; run_id: string; status: string; stage: string | null; error: string | null;
   attempts: number; created_at: string; completed_at: string | null;
+  /** `{noSheet, reason}` when the paper had nothing worth practising — the row label says so. */
+  result: unknown;
 };
 
 /** `.in()` on hundreds of uuids makes a URL some proxies refuse — chunk it. */
@@ -100,7 +102,7 @@ export async function GET(req: NextRequest) {
   const assignmentsByRun = new Map<string, number>();
   if (ids.length) {
     try {
-      const jobs = await selectIn<SheetJobLite>('sheet_jobs', 'id, run_id, status, stage, error, attempts, created_at, completed_at', 'run_id', ids);
+      const jobs = await selectIn<SheetJobLite>('sheet_jobs', 'id, run_id, status, stage, error, attempts, created_at, completed_at, result', 'run_id', ids);
       for (const j of jobs) {
         const list = jobsByRun.get(j.run_id) ?? [];
         list.push(j);
@@ -156,6 +158,7 @@ export async function GET(req: NextRequest) {
       sheet: job ? {
         jobId: job.id, status: job.status, stage: job.stage, error: job.error,
         label: sheetStageLabel(job), completedAt: job.completed_at,
+        noSheet: noSheetOf(job).noSheet,
       } : null,
       flags: deskFlags(r, job, amended),
       amended,

@@ -694,4 +694,10 @@ Dates belong in Dropbox's own modified column, not in the name.
   Step 2; getting this wrong wastes the scarcest thing they have.
 - **The sheet cannot look worse than the marked paper.** Typeset equations and
   a diagram wherever the idea is visual.
-- If the paper has no lost marks, say so and stop — do not invent weaknesses.
+- If the paper has no lost marks — or the only ones lost are slips a sheet cannot
+  fix — **say so and stop; do not invent weaknesses.** Running as the headless
+  worker, that is a COMPLETION, not a failure: close the job with
+  `{"action":"done","id":"<job id>","result":{"noSheet":true,"reason":"<one
+  sentence: the score, what the lost marks were, why they do not earn practice>"}}`.
+  Never `fail` it — `fail` requeues, so the same right answer is reached three
+  times and then alarms (two of Kassandra Lim's papers, 3 Sep 2026).

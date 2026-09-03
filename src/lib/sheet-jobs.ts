@@ -88,11 +88,49 @@ export function pickNextJob(jobs: SheetJob[], now = Date.now()): SheetJob | null
   return stale[0] ?? null;
 }
 
-/** Validate the completion payload the worker posts back. Returns null when unusable. */
-export function sanitizeResult(input: unknown): {
+/** A sheet that was actually written and filed. */
+export type SheetFiledResult = {
   docx_path: string; pdf_path: string | null; wave: string[]; shelved: string[]; verified: string;
-} | null {
+};
+
+/**
+ * The worker's honest "there is nothing here worth practising" — a COMPLETION,
+ * not a failure (Adrian, 3 Sep 2026).
+ *
+ * Two of Kassandra Lim's papers came back 89/90 (one misread) and 87/90 (three
+ * careless slips she had already got right at a previous sitting). The worker
+ * read them correctly and concluded there was nothing to teach — but the only
+ * way to close a job without a sheet was `fail`, which requeues. So the same
+ * correct conclusion was reached three times, three plan sessions were spent on
+ * it, and Adrian was Telegrammed "⚠️ Self-study sheet failed 3×" — an alarm for
+ * a right answer. `fail` is for genuine failures now; this is for this.
+ */
+export type SheetNoResult = { noSheet: true; reason: string };
+
+export type SheetJobResult = SheetFiledResult | SheetNoResult;
+
+/** Said when the worker gives no reason of its own. */
+export const NO_SHEET_REASON = 'nothing on this paper is worth practice';
+
+export function isNoSheet(result: SheetJobResult | null | undefined): result is SheetNoResult {
+  return !!result && (result as SheetNoResult).noSheet === true;
+}
+
+/**
+ * `result.noSheet` as STORED on the row (jsonb, any shape) — for the desk and
+ * the release path, which read the job back rather than the posted payload.
+ */
+export function readNoSheet(result: unknown): { noSheet: boolean; reason: string } {
+  const r = result && typeof result === 'object' ? result as Record<string, unknown> : null;
+  if (!r || !r.noSheet) return { noSheet: false, reason: '' };
+  return { noSheet: true, reason: String(r.reason ?? '').trim().slice(0, 300) || NO_SHEET_REASON };
+}
+
+/** Validate the completion payload the worker posts back. Returns null when unusable. */
+export function sanitizeResult(input: unknown): SheetJobResult | null {
   const r = (input ?? {}) as Record<string, unknown>;
+  // "Nothing to teach" needs no files — that is the whole point of it.
+  if (r.noSheet) return { noSheet: true, reason: String(r.reason ?? '').trim().slice(0, 300) || NO_SHEET_REASON };
   const docx = String(r.docx_path ?? '').trim();
   if (!docx) return null;
   const list = (v: unknown) => (Array.isArray(v) ? v : [])
@@ -120,8 +158,13 @@ export function sheetFolder(docxPath: string | null | undefined): string {
  * The app's Dropbox token has no sharing scope, so there is no permanent link
  * to give; the message names the folder and the PDF + DOCX ride behind it.
  */
-export function completionMessage(job: Pick<SheetJob, 'student_name' | 'paper_name'>, result: ReturnType<typeof sanitizeResult>): string {
+export function completionMessage(job: Pick<SheetJob, 'student_name' | 'paper_name'>, result: SheetJobResult | null): string {
   const who = job.student_name || 'A student';
+  // "Nothing to teach" is a right answer, so it reads like one: calm, specific,
+  // and it says what to do next. Never the ⚠️ failed wording.
+  if (isNoSheet(result)) {
+    return `📘 No sheet for <b>${who}</b>${job.paper_name ? ` (${job.paper_name})` : ''} — ${result.reason}. Release the paper on its own from the desk.`;
+  }
   const lines = [`📘 Self-study sheet ready for <b>${who}</b>${job.paper_name ? ` — from ${job.paper_name}` : ''}`];
   if (result?.wave.length) lines.push(`Wave: ${result.wave.join(' · ')}`);
   if (result?.shelved.length) lines.push(`🧺 Shelved for later: ${result.shelved.join(' · ')}`);

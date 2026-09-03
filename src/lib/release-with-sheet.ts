@@ -98,6 +98,18 @@ export function sheetFolder(pdfPath?: string | null, docxPath?: string | null): 
   return p.slice(0, p.lastIndexOf('/')) || null;
 }
 
+/**
+ * What the response says when the sheet job's honest answer was "nothing to
+ * teach" (sheet_jobs.result.noSheet — see lib/sheet-jobs.ts). There is no PDF to
+ * look for and no assignment to write: the marked paper goes out on its own, and
+ * saying so is the difference between "released, deliberately without a sheet"
+ * and the old 404 "No PDF in the sheet's folder yet".
+ */
+export function noSheetNote(reason: string): string {
+  const why = String(reason || '').trim();
+  return `No self-study sheet for this paper${why ? ` — ${why}` : ''}. Released the marked paper on its own.`;
+}
+
 /** What to tell Adrian when the PDF cannot be picked for him. */
 export function ambiguityMessage(choice: PdfChoice): string | null {
   if (choice.kind === 'none') {

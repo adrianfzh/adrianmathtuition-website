@@ -69,7 +69,11 @@ type Detail = {
   sheetJob: {
     id: string; status: string; stage: string | null; error: string | null; attempts: number; focus: string | null;
     claimedBy: string | null; createdAt: string; completedAt: string | null; label: string;
-    result: { docxPath: string | null; pdfPath: string | null; wave: string[]; shelved: string[]; verified: string } | null;
+    result: {
+      docxPath: string | null; pdfPath: string | null; wave: string[]; shelved: string[]; verified: string;
+      /** The worker read the paper and there was nothing worth practising (3 Sep 2026). */
+      noSheet: boolean; reason: string;
+    } | null;
   } | null;
   assignments: number;
   folder: { path: string; url: string; listed: boolean; exists: boolean; error: string | null; sheetPdf: boolean; sheetPdfName: string | null; markedAi: boolean };
@@ -255,7 +259,9 @@ export default function DeskPage() {
         const cd = await c.json().catch(() => null);
         if (c.ok && cd && !cd.error) setCover(cd as Cover);
       }
-      const done = (d as Detail).sheetJob?.status === 'done';
+      // A "no sheet needed" job is done and has no PDF — never go looking for one.
+      const job = (d as Detail).sheetJob;
+      const done = job?.status === 'done' && !job.result?.noSheet;
       if (done && sheetForRef.current !== id) { sheetForRef.current = id; loadSheet(id); }
       if (!done) { sheetForRef.current = ''; setSheetPages(null); setSheetNote(''); }
     } catch { if (!quiet) setRunError('Connection error'); }
@@ -404,6 +410,20 @@ export default function DeskPage() {
     const id = detail.run.id;
     setBusy('approve');
     try {
+      // Nothing on this paper was worth practising, and the worker said so
+      // (sheet job `result.noSheet`, 3 Sep 2026). There is no sheet to send, so
+      // Approve is a plain release — no assignment, no PDF to hunt for.
+      if (detail.sheetJob?.result?.noSheet) {
+        const { ok, d } = await postJson('/api/admin/mark-triage', { action: 'release', runId: id });
+        if (!ok) { setToast(d.error || 'Release failed.'); refresh(id); return; }
+        const res = Array.isArray(d.results) ? d.results[0] : null;
+        if (res && !res.released) { setToast(`Not released — ${res.note || 'see triage'}`); refresh(id); return; }
+        setToast(res?.via === 'none'
+          ? '✅ Released (no sheet needed) — no Telegram linked, hand it back yourself.'
+          : '✅ Released — no sheet needed for this one.');
+        refresh(id);
+        return;
+      }
       const look = await fetch(`/api/admin/release-with-sheet?runId=${encodeURIComponent(id)}`);
       const info = await look.json().catch(() => ({}));
       if (!look.ok) { setToast(info.error || 'Could not find the sheet.'); return; }
@@ -597,6 +617,9 @@ function DetailView(p: {
   const pct = run.max > 0 ? Math.round((run.awarded / run.max) * 100) : null;
   const canApprove = d.approveBlockers.length === 0 && !released;
   const canReleaseOnly = d.releaseBlockers.length === 0 && !released && !canApprove;
+  // The sheet worker's honest "nothing here is worth practising" — the paper
+  // still goes out, on its own, and the button says which it is doing.
+  const noSheet = !!d.sheetJob?.result?.noSheet;
   const pages = d.annotatedPhotos;
   const byPage = new Map<number, Question[]>();
   const unplaced: Question[] = [];
@@ -707,9 +730,14 @@ function DetailView(p: {
         {!released && (
           <div style={{ marginTop: 14, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
             <button onClick={p.onApprove} disabled={!canApprove || busy === 'approve'}
-              title={canApprove ? 'Attach your copy if newer, assign the sheet, release the paper, and tell the student — one tap' : d.approveBlockers.join(' · ')}
+              title={canApprove
+                ? (noSheet
+                  ? 'Attach your copy if newer, release the paper, and tell the student — there is no sheet for this one on purpose'
+                  : 'Attach your copy if newer, assign the sheet, release the paper, and tell the student — one tap')
+                : d.approveBlockers.join(' · ')}
               style={{ ...btn(canApprove ? C.ok : '#e5e7eb', canApprove ? '#fff' : '#9ca3af'), padding: '13px 18px', fontSize: 16, fontWeight: 700, flex: '1 1 260px', cursor: canApprove ? 'pointer' : 'not-allowed' }}>
-              {busy === 'approve' ? 'Releasing…' : '✅ Approve & release (paper + sheet)'}
+              {busy === 'approve' ? 'Releasing…'
+                : noSheet ? '✅ Approve & release (paper only — no sheet needed)' : '✅ Approve & release (paper + sheet)'}
             </button>
             {canReleaseOnly && (
               <button onClick={p.onReleaseOnly} disabled={busy === 'approve'} style={{ ...btn('#fff', '#374151', C.border), fontSize: 13 }}
@@ -905,7 +933,10 @@ function SheetPane(p: {
   const job = d.sheetJob;
   const released = !!d.run.releasedAt;
   const inFlight = job?.status === 'queued' || job?.status === 'claimed';
-  const done = job?.status === 'done';
+  // A "no sheet needed" job is finished but has no files — it gets its own
+  // panel rather than the PDF viewer and an error where the sheet would be.
+  const noSheet = job?.status === 'done' && !!job.result?.noSheet;
+  const done = job?.status === 'done' && !noSheet;
   const openHref = (kind: 'pdf' | 'docx') => `/api/admin/sheet-open?runId=${encodeURIComponent(d.run.id)}&kind=${kind}`;
   return (
     <>
@@ -944,7 +975,17 @@ function SheetPane(p: {
           </div>
         )}
 
-        {!done && (
+        {noSheet && (
+          <div style={{ padding: 14, fontSize: 13.5, color: C.ink, background: C.okBg, borderBottom: `1px solid ${C.okBorder}` }}>
+            <b>No sheet needed.</b> {job?.result?.reason}
+            <div style={{ marginTop: 6, color: C.muted, fontSize: 12.5 }}>
+              The worker read this paper and found nothing worth practising. Approve &amp; release sends the marked
+              paper on its own — or re-queue below if you want a sheet anyway.
+            </div>
+          </div>
+        )}
+
+        {!done && !noSheet && (
           <div style={{ padding: 14, fontSize: 13.5, color: C.muted }}>
             {!job && (d.run.studentId
               ? 'No sheet has been queued for this paper.'
