@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { solutionMarkdown } from '@/lib/bank-question-markdown';
+import { solutionImageGateFor } from '@/lib/solution-image-gate';
 import { practiceAuth } from '@/lib/practice';
 import { isScienceSubject } from '@/lib/science-levels';
 import { scienceQuestion } from '@/lib/science-bank';
@@ -16,6 +17,12 @@ export async function GET(req: NextRequest) {
   if (!caller) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const id = new URL(req.url).searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+  // Solution-image gate (lib/solution-image-gate.ts): a solution image on an
+  // open kind='solution' figure_flags row is withheld from the markdown. Keyed
+  // by question id in the MATH project's ledger — a science id has no rows
+  // there, so science images pass the deny-list untouched (and would ALL be
+  // withheld once the allow-list switch flips, until science gets a ledger).
+  const gate = await solutionImageGateFor([id]);
   // Science bank (2026-09-02): ?subject=physics — the ids live in the other
   // project; the same markdown renderer applies.
   const subject = new URL(req.url).searchParams.get('subject');
@@ -23,7 +30,7 @@ export async function GET(req: NextRequest) {
     try {
       const sq = await scienceQuestion(subject, id);
       if (!sq) return NextResponse.json({ error: 'not found' }, { status: 404 });
-      return NextResponse.json({ markdown: solutionMarkdown(sq) });
+      return NextResponse.json({ markdown: solutionMarkdown(sq, gate) });
     } catch (e) {
       return NextResponse.json({ error: (e as Error).message }, { status: 500 });
     }
@@ -32,5 +39,5 @@ export async function GET(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   const q = data?.[0];
   if (!q) return NextResponse.json({ error: 'not found' }, { status: 404 });
-  return NextResponse.json({ markdown: solutionMarkdown(q) });
+  return NextResponse.json({ markdown: solutionMarkdown(q, gate) });
 }

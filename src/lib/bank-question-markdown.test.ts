@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { questionStructured, questionMarkdown, splitInlineParts, totalMarksOf } from './bank-question-markdown';
+import { questionStructured, questionMarkdown, solutionMarkdown, splitInlineParts, totalMarksOf, normaliseImagePath } from './bank-question-markdown';
 
 // The portal renders questions from questionStructured() in an exam-style grid
 // (label / sub-part label / text / marks). These pin the shape the grid relies
@@ -158,5 +158,101 @@ describe('totalMarksOf', () => {
     const { parts } = questionStructured({ question_text: '(a) Show this.\n(b) Hence that.', parts: null });
     expect(totalMarksOf(parts)).toBeNull();
     expect(totalMarksOf([])).toBeNull();
+  });
+});
+
+// ── Solution-image gate (2026-09-03) ────────────────────────────────────────
+// A watermarked solution scan must never render. The gate is built elsewhere
+// (lib/solution-image-gate.ts); these pin the pure half — one spelling per
+// path, and the renderer honouring the gate at every solution-image site.
+const BUCKET = 'https://nempslbewxtlikfzachi.supabase.co/storage/v1/object/public/question_images/';
+
+describe('normaliseImagePath', () => {
+  it('reduces every spelling of a bucket object to one bucket-relative path', () => {
+    expect(normaliseImagePath(`${BUCKET}abc123.png`)).toBe('abc123.png');
+    expect(normaliseImagePath(`${BUCKET}2025/em/abc123.png?width=400`)).toBe('2025/em/abc123.png');
+    expect(normaliseImagePath('question_images/abc123.png')).toBe('abc123.png');
+    expect(normaliseImagePath('/abc123.png')).toBe('abc123.png');
+    expect(normaliseImagePath('abc123.png')).toBe('abc123.png');
+    expect(normaliseImagePath('  abc123.png ')).toBe('abc123.png');
+  });
+
+  it('keeps sub-folders and strips a doubled prefix', () => {
+    expect(normaliseImagePath('thumbs/abc123.jpg')).toBe('thumbs/abc123.jpg');
+    expect(normaliseImagePath('question_images/thumbs/abc123.jpg')).toBe('thumbs/abc123.jpg');
+    expect(normaliseImagePath('question_images/question_images/abc123.png')).toBe('abc123.png');
+    expect(normaliseImagePath(`${BUCKET}question_images/abc123.png`)).toBe('abc123.png');
+  });
+
+  it('keeps the decoded pathname of a URL outside the bucket (it can never match a bucket path)', () => {
+    expect(normaliseImagePath('https://blob.vercel-storage.com/x/sol%20a.png')).toBe('x/sol a.png');
+  });
+
+  it('is idempotent', () => {
+    for (const s of ['abc123.png', 'question_images/a/b.png', '/a.png', `${BUCKET}c.png`]) {
+      expect(normaliseImagePath(normaliseImagePath(s))).toBe(normaliseImagePath(s));
+    }
+  });
+});
+
+describe('solutionMarkdown with a gate', () => {
+  const q = {
+    answer: '$x = 2$',
+    parts: [
+      { label: 'a', solution: 'Working for a.', solution_image: 'sol_aaa111.png' },
+      { label: 'b', solution: 'Working for b.', solution_image: 'question_images/sol_bbb222.png' },
+      { label: 'c', subparts: [{ label: 'i', solution: 'Working for c(i).', solution_image: `${BUCKET}sol_ccc333.png` }] },
+    ],
+    solution_images: '["sol_top444.png"]',
+  };
+  const every = ['sol_aaa111.png', 'sol_bbb222.png', 'sol_ccc333.png', 'sol_top444.png'];
+
+  it('renders every image with no gate (unchanged behaviour)', () => {
+    const md = solutionMarkdown(q);
+    for (const f of every) expect(md).toContain(f);
+  });
+
+  it('withholds a blocked part image, renders the others, keeps the working, emits no placeholder', () => {
+    const md = solutionMarkdown(q, { blocked: new Set(['sol_bbb222.png']) });
+    expect(md).not.toContain('sol_bbb222.png');
+    for (const f of every.filter(f => f !== 'sol_bbb222.png')) expect(md).toContain(f);
+    expect(md).toContain('**(b)**');
+    expect(md).toContain('Working for b.');
+    expect(md.split('\n\n').some(block => block.trim() === '')).toBe(false);
+  });
+
+  it('matches a blocked path however the row spelt it (prefix, full URL, sub-part, top-level)', () => {
+    const md = solutionMarkdown(q, { blocked: new Set(['sol_aaa111.png', 'sol_bbb222.png', 'sol_ccc333.png', 'sol_top444.png']) });
+    expect(md).not.toContain('<img');
+    expect(md).toContain('**Answer:** $x = 2$');
+    expect(md).toContain('**(c)(i)**');
+  });
+
+  it('requireClean with an empty clean set renders no image at all', () => {
+    const md = solutionMarkdown(q, { blocked: new Set(), requireClean: true, clean: new Set() });
+    expect(md).not.toContain('<img');
+    expect(md).toContain('**Answer:**');
+  });
+
+  it('requireClean renders only the clean set', () => {
+    const md = solutionMarkdown(q, { blocked: new Set(), requireClean: true, clean: new Set(['sol_top444.png', 'sol_ccc333.png']) });
+    expect(md).toContain('sol_top444.png');
+    expect(md).toContain('sol_ccc333.png');
+    expect(md).not.toContain('sol_aaa111.png');
+    expect(md).not.toContain('sol_bbb222.png');
+  });
+
+  it('gates {{IMG:…}} inside solution text too, and leaves question figures alone', () => {
+    const withInline = { solution: 'Step one.\n{{IMG:sol_inline555.png}}\nStep two.' };
+    expect(solutionMarkdown(withInline)).toContain('sol_inline555.png');
+    expect(solutionMarkdown(withInline, { blocked: new Set(['sol_inline555.png']) })).not.toContain('sol_inline555.png');
+    // The question side takes no gate: a part figure renders regardless.
+    const md = questionMarkdown({ parts: [{ label: 'a', text: 'See the figure.', image_url: 'sol_inline555.png' }] });
+    expect(md).toContain('sol_inline555.png');
+  });
+
+  it('accepts solution_images as a real array (the jsonb column read directly)', () => {
+    expect(solutionMarkdown({ solution_images: ['sol_arr666.png'] })).toContain('sol_arr666.png');
+    expect(solutionMarkdown({ solution_images: ['sol_arr666.png'] }, { blocked: new Set(['sol_arr666.png']) })).not.toContain('sol_arr666.png');
   });
 });

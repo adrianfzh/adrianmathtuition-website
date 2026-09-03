@@ -28,7 +28,7 @@ A question can carry its figure in three places, and code must check all three:
 
 | Table | Written by | Purpose |
 |---|---|---|
-| `figure_flags` | **Adrian's eyeball review** (`/admin/figures-bank`) + repair batches | one row per image he flagged as needing work. `status` `open`→`fixed`; `claimed_by`/`claimed_at` = cross-session claim. |
+| `figure_flags` | **Adrian's eyeball review** (`/admin/figures-bank`) + repair batches + the solution-image watermark pass | one row per image flagged as needing work. `status` `open`→`fixed`; `claimed_by`/`claimed_at` = cross-session claim. **`kind`** (2026-09-03, migration `figure_flags_kind`): `question` = a question figure for the redraw flow (every pre-existing row); `solution` = a SOLUTION image (`solution_images[]` / `parts[].solution_image`) for the watermark gate in §4 — those rows carry the note "SOLUTION IMAGE — not a question figure; do not redraw via the figures-bank flow". |
 | `figure_clean_log` | repair batches | every swap: `old_path` → `new_path`, `batch`. **The revert ledger** — originals are never deleted from the bucket, so repointing `image_url` back to `old_path` undoes any fix. |
 | `question_image_placement_log` | the image-placement pass | stem↔part relocation, with `before_*`/`after_*` and the model's reasoning. |
 | `question_image_audit` | bank-wide image audit | per-image audit rows. |
@@ -43,10 +43,15 @@ Two sessions redrawing the same figure is the failure this prevents:
 update figure_flags set claimed_by = '<who>', claimed_at = now()
 where path in (
   select path from figure_flags
-  where status = 'open' and claimed_by is null
+  where status = 'open' and kind = 'question' and claimed_by is null
   order by created_at limit 50
 );
 ```
+
+Claim queries filter **`kind = 'question'`** (2026-09-03) — `/admin/figures-bank`,
+`/api/admin/figures-bank`, the 🚩 highlights in `/admin/questions` and the
+`scripts/figure-maintenance` surveys all do; a `kind='solution'` row is the
+serving gate's (§4), never a redraw job, and must not reach a redraw session.
 
 `status` **stays `open` while claimed** — the serving gate keys off
 `status='open'`, so reusing `status` as a claim marker would silently re-expose
@@ -70,6 +75,29 @@ second step. Keep this clause when editing those RPCs.
 Separately, the watermark gate (`figureServable()` in `lib/kiosk-pool.ts`) fails
 CLOSED: a scanned figure serves only when `image_watermark_status='clean'`. After
 attaching a recovered figure, set that column or the question stays unservable.
+
+**Solution images (2026-09-03)** — `solution_images[]`, `parts[].solution_image`,
+sub-part `solution_image` and `{{IMG:…}}` inside solution text had NO gate:
+`solutionMarkdown()` rendered them unconditionally, so a scan carrying another
+school's or tuition centre's branding showed the moment a solution was revealed
+(Adrian: never ship another company's watermark). `lib/solution-image-gate.ts`
+now builds a `SolutionImageGate` from `figure_flags` rows with `kind='solution'`
+(`open` = blocked, matched by normalised bucket path — `normaliseImagePath()` in
+`lib/bank-question-markdown.ts`), and every student-facing solution renderer
+passes it: `/api/portal/practice/solution` (math and science branches — the
+practice and timed-set flows both reveal through it), the notebook reveal
+(`POST /api/portal/notebook`), and — so Adrian sees what a student sees — the
+`/admin/questions` detail view and its worked-solutions PDF. A withheld image
+emits nothing (no placeholder); the working around it still shows. Question
+figures take no gate. The dormant switch **`SOLUTION_IMAGES_REQUIRE_CLEAN`**
+(`false`) flips the gate from deny-list to allow-list — only paths on a
+`kind='solution'` `status='fixed'` row render, everything unclassified
+disappears — flip it only once the classification pass has covered the bank.
+Outage posture: deny-list mode serves unfiltered and logs (it contains KNOWN bad
+images; a Supabase hiccup must not blank every honest diagram), allow-list mode
+withholds everything. The RPC clause above stays kind-agnostic on purpose: an
+open flag of EITHER kind keeps the whole question out of the selection pools —
+the intended stopgap while a solution image is bad.
 
 ## 5. Repairing figures — what actually works
 

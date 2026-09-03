@@ -4,6 +4,9 @@
 // Adrian eyeballs every bank figure and flags the ones needing rectification;
 // flags land in Supabase `figure_flags` (path pk, status open|fixed) and form
 // the work queue for targeted fixes (♻️ replace-figure, cleans, redraws).
+// Since 2026-09-03 the same table also holds kind='solution' rows (watermarked
+// SOLUTION images, served through lib/solution-image-gate.ts) — every read
+// here filters kind='question' so a redraw session never receives one.
 //
 //   GET  ?page=0&pageSize=60&level=AM        → page of questions-with-figures,
 //        each with its stem figures, thumb URLs and flag state
@@ -58,7 +61,7 @@ export async function GET(req: NextRequest) {
   if (sp.get('flagged') === '1') {
     const { data: allFlags, error } = await supa
       .from('figure_flags').select('path, question_id, status, created_at')
-      .eq('status', 'open').order('created_at', { ascending: true }).limit(1000);
+      .eq('status', 'open').eq('kind', 'question').order('created_at', { ascending: true }).limit(1000);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     // Paginated, because every item is MEASURED — the checks below need the
     // pixels, and 493 image fetches in one request is not a page load.
@@ -136,12 +139,12 @@ export async function GET(req: NextRequest) {
     })));
   const paths = items.map((i) => i.path);
   if (paths.length) {
-    const { data: flags } = await supa.from('figure_flags').select('path').in('path', paths).eq('status', 'open');
+    const { data: flags } = await supa.from('figure_flags').select('path').in('path', paths).eq('status', 'open').eq('kind', 'question');
     const flaggedSet = new Set((flags ?? []).map((f) => f.path));
     for (const it of items) it.flagged = flaggedSet.has(it.path);
   }
   const { count: flaggedCount } = await supa
-    .from('figure_flags').select('path', { count: 'exact', head: true }).eq('status', 'open');
+    .from('figure_flags').select('path', { count: 'exact', head: true }).eq('status', 'open').eq('kind', 'question');
   return NextResponse.json({ items, page, pageSize, totalQuestions: count ?? 0, flaggedCount: flaggedCount ?? 0 });
 }
 

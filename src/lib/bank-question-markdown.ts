@@ -20,7 +20,7 @@ export type BankQuestion = {
   image_url?: string | null;            // JSON array of {url,pos} or legacy bare string
   images?: { filename: string }[] | null;
   solution?: string | null;
-  solution_images?: string | null;      // JSON array of URLs
+  solution_images?: string | string[] | null;  // JSON array of URLs (text via the practice_solution RPC; a real array off the jsonb column)
   answer?: string | null;
 };
 
@@ -28,6 +28,48 @@ type StemImageRecord = { url: string; pos: 'before' | 'after' };
 
 function toStorageUrl(s: string): string {
   return s.startsWith('http') ? s : STORAGE_BUCKET + s.replace(/^question_images\//, '');
+}
+
+// ── Solution-image gate (2026-09-03) ─────────────────────────────────────────
+// Question figures fail closed (kiosk-pool.figureServable + the open-flag
+// exclusion in the serving RPCs); solution images had no gate at all, so a
+// watermarked solution scan showed the moment a solution was revealed. The
+// gate is DATA: lib/solution-image-gate.ts builds it (the only module that
+// reads the DB for it) and callers hand it in here — this module stays pure.
+// Absent gate = every image renders, exactly as before.
+export type SolutionImageGate = {
+  /** Normalised bucket paths that must never render (open kind='solution' flags). */
+  blocked: ReadonlySet<string>;
+  /** When true, a path renders ONLY if it is in `clean` (the dormant allow-list mode). */
+  requireClean?: boolean;
+  clean?: ReadonlySet<string>;
+};
+
+/**
+ * One spelling for an image path, so gate lookups match however a row spelt
+ * it: bucket-relative, no leading slash, no `question_images/` prefix, no
+ * host or query string. Sub-folders are kept (`thumbs/a.jpg` stays
+ * `thumbs/a.jpg`). A full URL outside the bucket keeps its (decoded) pathname
+ * — it can never match a bucket path, which is the right answer.
+ */
+export function normaliseImagePath(raw: string): string {
+  let s = (raw ?? '').trim();
+  if (/^https?:\/\//i.test(s)) {
+    const i = s.lastIndexOf('question_images/');
+    s = i === -1 ? s.replace(/^https?:\/\/[^/]+/i, '') : s.slice(i + 'question_images/'.length);
+    s = s.split(/[?#]/)[0];
+    try { s = decodeURIComponent(s); } catch { /* keep the raw spelling */ }
+  }
+  return s.replace(/^\/+/, '').replace(/^(question_images\/)+/, '');
+}
+
+/** True when the gate lets this image render (no gate = always). */
+export function solutionImageAllowed(path: string, gate?: SolutionImageGate): boolean {
+  if (!gate) return true;
+  const n = normaliseImagePath(path);
+  if (gate.blocked.has(n)) return false;
+  if (gate.requireClean) return !!gate.clean?.has(n);
+  return true;
 }
 function isPlausibleFilename(s: unknown): s is string {
   return typeof s === 'string' && s.length >= 6
@@ -38,15 +80,17 @@ function imgTag(url: string, alt = ''): string {
 }
 // Also normalises \( \) / \[ \] to $-delimiters — remark-math only parses the
 // dollar forms, and ~90 (mostly AI-authored) rows carry the backslash forms.
-function renderInlineImagesInText(text: string | null | undefined): string {
+// `gate` is only ever passed from the SOLUTION side (solutionMarkdown →
+// workedSolution); question-side callers pass none and render as before.
+function renderInlineImagesInText(text: string | null | undefined, gate?: SolutionImageGate): string {
   if (!text) return '';
   return normalizeMathDelimiters(text).replace(/\{\{IMG:([^}]+)\}\}/g, (_m, url: string) => {
     const cleaned = url.trim();
-    return isPlausibleFilename(cleaned) ? imgTag(cleaned) : '';
+    return isPlausibleFilename(cleaned) && solutionImageAllowed(cleaned, gate) ? imgTag(cleaned) : '';
   });
 }
-function partImageHtml(path: string | null | undefined): string {
-  return isPlausibleFilename(path) ? imgTag(path) : '';
+function partImageHtml(path: string | null | undefined, gate?: SolutionImageGate): string {
+  return isPlausibleFilename(path) && solutionImageAllowed(path, gate) ? imgTag(path) : '';
 }
 function getStemImageRecords(q: BankQuestion): StemImageRecord[] {
   const records: StemImageRecord[] = [];
@@ -67,8 +111,9 @@ function getStemImageRecords(q: BankQuestion): StemImageRecord[] {
   }
   return records;
 }
-function getSolutionImageUrls(raw: string | null | undefined): string[] {
+function getSolutionImageUrls(raw: string | string[] | null | undefined): string[] {
   if (!raw) return [];
+  if (Array.isArray(raw)) return raw.filter(isPlausibleFilename);   // the jsonb column read directly
   const trimmed = raw.trim();
   if (!trimmed || trimmed === '[]') return [];
   try {
@@ -230,12 +275,19 @@ export function questionStructured(q: BankQuestion): { stem: string; parts: Stru
 // Worked-solution text → one block per step, runs of equations aligned on `=`
 // (lib/solution-format.ts). Images are substituted AFTER formatting so the
 // {{IMG:…}} lines pass through the formatter untouched.
-function workedSolution(text: string): string {
-  return renderInlineImagesInText(formatSolution(text));
+function workedSolution(text: string, gate?: SolutionImageGate): string {
+  return renderInlineImagesInText(formatSolution(text), gate);
 }
 
-/** Markdown for the answer + worked solution (revealed on demand). */
-export function solutionMarkdown(q: BankQuestion): string {
+/**
+ * Markdown for the answer + worked solution (revealed on demand).
+ * `gate` (lib/solution-image-gate.ts) withholds flagged solution images —
+ * top-level `solution_images[]`, `parts[].solution_image`, sub-part
+ * `solution_image` and `{{IMG:…}}` inside solution text alike. A withheld
+ * image emits nothing (no placeholder); the working around it still shows.
+ * No gate = every image renders, as before.
+ */
+export function solutionMarkdown(q: BankQuestion, gate?: SolutionImageGate): string {
   const out: string[] = [];
   const parts = Array.isArray(q.parts) ? q.parts : [];
   // Multi-part rows carry the combined working in `solution` AND the same
@@ -243,14 +295,14 @@ export function solutionMarkdown(q: BankQuestion): string {
   // (pre-2026-08-21 both were emitted, so every solution appeared twice).
   const hasPartSolutions = parts.some(p => p?.solution || p?.subparts?.some(sp => sp?.solution));
   if (q.answer && q.answer.trim()) out.push(`**Answer:** ${normalizeMathDelimiters(q.answer.trim())}`);
-  if (!hasPartSolutions && q.solution && q.solution.trim()) out.push(workedSolution(q.solution));
-  for (const u of getSolutionImageUrls(q.solution_images)) out.push(imgTag(u, 'solution diagram'));
+  if (!hasPartSolutions && q.solution && q.solution.trim()) out.push(workedSolution(q.solution, gate));
+  for (const u of getSolutionImageUrls(q.solution_images)) if (solutionImageAllowed(u, gate)) out.push(imgTag(u, 'solution diagram'));
   for (const p of parts) {
-    if (p?.solution) out.push(`**(${p.label ?? ''})**\n\n${workedSolution(p.solution)}`);
-    if (p?.solution_image) { const t = partImageHtml(p.solution_image); if (t) out.push(t); }
+    if (p?.solution) out.push(`**(${p.label ?? ''})**\n\n${workedSolution(p.solution, gate)}`);
+    if (p?.solution_image) { const t = partImageHtml(p.solution_image, gate); if (t) out.push(t); }
     for (const sp of (Array.isArray(p?.subparts) ? p.subparts : [])) {
-      if (sp?.solution) out.push(`**(${p.label ?? ''})(${sp.label ?? ''})**\n\n${workedSolution(sp.solution)}`);
-      if (sp?.solution_image) { const t = partImageHtml(sp.solution_image); if (t) out.push(t); }
+      if (sp?.solution) out.push(`**(${p.label ?? ''})(${sp.label ?? ''})**\n\n${workedSolution(sp.solution, gate)}`);
+      if (sp?.solution_image) { const t = partImageHtml(sp.solution_image, gate); if (t) out.push(t); }
     }
   }
   return out.join('\n\n') || '_No worked solution recorded for this question._';

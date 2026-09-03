@@ -28,6 +28,8 @@ import { isOurBlobUrl } from '@/lib/blob-url';
 import { paperFileNames } from '@/lib/paper-filename';
 import Anthropic from '@anthropic-ai/sdk';
 import { cleanScan } from '@/lib/figure-clean';
+import { solutionImageAllowed, type SolutionImageGate } from '@/lib/bank-question-markdown';
+import { solutionImageGateFor } from '@/lib/solution-image-gate';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // the worksheet action renders a Puppeteer PDF
@@ -120,18 +122,21 @@ function cardExcerpt(row: Row): string {
   return excerptText(firstPartText);
 }
 
-/** Part image paths → public URLs, recursively, so the client renders them directly. */
-function resolveParts(parts: unknown): unknown {
+/** Part image paths → public URLs, recursively, so the client renders them directly.
+ *  `gate` (lib/solution-image-gate.ts) drops a part's `solution_image` when it
+ *  is flagged, so the admin detail shows what a student's reveal would. */
+function resolveParts(parts: unknown, gate?: SolutionImageGate): unknown {
   if (!Array.isArray(parts)) return [];
   return parts.map((pt) => {
     if (!pt || typeof pt !== 'object') return pt;
     const o = { ...(pt as Record<string, unknown>) };
+    if (typeof o.solution_image === 'string' && !solutionImageAllowed(o.solution_image, gate)) delete o.solution_image;
     for (const k of ['image_url', 'image_url_after', 'solution_image'] as const) {
       if (typeof o[k] === 'string' && o[k] && !/^https?:/i.test(o[k] as string) && isPlausibleImagePath(o[k])) {
         o[k] = imgSrc(o[k] as string);
       }
     }
-    if (o.subparts) o.subparts = resolveParts(o.subparts);
+    if (o.subparts) o.subparts = resolveParts(o.subparts, gate);
     // Solutions stay in — this is the ADMIN detail view; every other consumer
     // of parts (kiosk, worksheets) must keep using flattenParts, never this.
     return o;
@@ -159,15 +164,16 @@ function card(row: Row) {
 /** The worked-solution items for a set of question rows, in the order given.
  *  Shared so solutions appended to a paper and the standalone solutions
  *  document can never drift apart. Also reports how many had nothing to show. */
-function solutionItemsFrom(rows: Row[]): { items: SolutionsItem[]; missing: number } {
+function solutionItemsFrom(rows: Row[], gate?: SolutionImageGate): { items: SolutionsItem[]; missing: number } {
   let missing = 0;
   const items: SolutionsItem[] = [];
   for (const row of rows) {
     // Rollup: since the 2026-08-27 canonicalisation the worked solution may
     // live only in parts[].solution — never read the top-level column alone.
     const solution = rollupSolution(row.solution as string | null, row.parts);
+    // A flagged (watermarked) solution scan stays out of the handout too.
     const solutionImages = Array.isArray(row.solution_images)
-      ? (row.solution_images as string[]).filter(isPlausibleImagePath).map(imgSrc).slice(0, 6)
+      ? (row.solution_images as string[]).filter(isPlausibleImagePath).filter((u) => solutionImageAllowed(u, gate)).map(imgSrc).slice(0, 6)
       : [];
     if (!solution && !solutionImages.length) missing++;
     items.push({
@@ -195,15 +201,17 @@ async function concatPdfs(parts: Buffer[]): Promise<Buffer> {
   return Buffer.from(await out.save());
 }
 
-/** Bucket object names with an OPEN redraw flag, for these questions. Fails
- *  open: a flags outage costs the 🚩 highlight, never the question itself. */
+/** Bucket object names with an OPEN redraw flag (kind='question' — solution-
+ *  image flags belong to lib/solution-image-gate, not the redraw queue), for
+ *  these questions. Fails open: a flags outage costs the 🚩 highlight, never
+ *  the question itself. */
 async function openFlagPaths(
   supa: ReturnType<typeof getSupabaseAdmin>, questionIds: string[],
 ): Promise<Set<string>> {
   if (!questionIds.length) return new Set();
   try {
     const { data } = await supa.from('figure_flags')
-      .select('path').eq('status', 'open').in('question_id', questionIds);
+      .select('path').eq('status', 'open').eq('kind', 'question').in('question_id', questionIds);
     return new Set(((data ?? []) as { path: string }[]).map(r => r.path));
   } catch { return new Set(); }
 }
@@ -220,7 +228,7 @@ function historyDepth(row: Row): { canUndo: number; canRedo: number } {
 /** One question, everything the detail panel shows.
  *  `flagged` holds bucket object NAMES already flagged for redraw; the caller
  *  fetches them in bulk so opening a paper stays one query, not one per page. */
-function detail(row: Row, flagged: Set<string> = new Set()) {
+function detail(row: Row, flagged: Set<string> = new Set(), gate?: SolutionImageGate) {
   const images = resolveImages(row);
   return {
     ...card(row),
@@ -230,7 +238,7 @@ function detail(row: Row, flagged: Set<string> = new Set()) {
       return !!n && flagged.has(n);
     }),
     questionMd: row.question_text ?? '',
-    parts: resolveParts(row.parts),
+    parts: resolveParts(row.parts, gate),
     solution: row.solution ?? null,
     answer: row.answer ?? null,
     difficulty: row.difficulty ?? null,
@@ -238,7 +246,7 @@ function detail(row: Row, flagged: Set<string> = new Set()) {
     watermarkStatus: row.image_watermark_status ?? null,
     images,
     solutionImages: Array.isArray(row.solution_images)
-      ? row.solution_images.filter(isPlausibleImagePath).map(imgSrc).slice(0, 6)
+      ? row.solution_images.filter(isPlausibleImagePath).filter((u: string) => solutionImageAllowed(u, gate)).map(imgSrc).slice(0, 6)
       : [],
   };
 }
@@ -257,7 +265,8 @@ export async function GET(req: NextRequest) {
       .eq('id', id)
       .single();
     if (error || !row) return NextResponse.json({ error: error?.message || 'not found' }, { status: 404 });
-    return NextResponse.json({ question: detail(row, await openFlagPaths(supa, [id])) });
+    const [flagged, gate] = await Promise.all([openFlagPaths(supa, [id]), solutionImageGateFor([id])]);
+    return NextResponse.json({ question: detail(row, flagged, gate) });
   }
 
   // ── a whole paper, in reading order ───────────────────────────────────────
@@ -286,10 +295,12 @@ export async function GET(req: NextRequest) {
     const { data, error } = await q.limit(120);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const rows = (data ?? []).sort((a, b) => compareQnum(a.question_number as string, b.question_number as string));
-    const flagged = withDetails ? await openFlagPaths(supa, rows.map(r => r.id as string)) : new Set<string>();
+    const paperIds = rows.map(r => r.id as string);
+    const flagged = withDetails ? await openFlagPaths(supa, paperIds) : new Set<string>();
+    const gate = withDetails ? await solutionImageGateFor(paperIds) : undefined;
     return NextResponse.json({
       paper: { school, year: Number(year), level, paper, examType },
-      questions: withDetails ? rows.map(r => detail(r as Row, flagged)) : rows.map(r => card(r as Row)),
+      questions: withDetails ? rows.map(r => detail(r as Row, flagged, gate)) : rows.map(r => card(r as Row)),
     });
   }
 
@@ -411,7 +422,7 @@ export async function POST(req: NextRequest) {
    *  figure action returns this, so the client never patches URLs by hand. */
   const freshDetail = async (id: string) => {
     const { data } = await supa.from('questions').select('*').eq('id', id).single();
-    return data ? detail(data as Row) : null;
+    return data ? detail(data as Row, undefined, await solutionImageGateFor([id])) : null;
   };
 
   // ── ✨ clean: lift the white point on a faded scan ─────────────────────────
@@ -790,7 +801,7 @@ export async function POST(req: NextRequest) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const byId = new Map((data ?? []).map((row) => [row.id as string, row]));
     const ordered = ids.map(qid => byId.get(qid)).filter(Boolean) as Row[];
-    const { items, missing } = solutionItemsFrom(ordered);
+    const { items, missing } = solutionItemsFrom(ordered, await solutionImageGateFor(ids));
     if (!items.length) return NextResponse.json({ error: 'no questions found' }, { status: 400 });
     const title = typeof body.title === 'string' && body.title.trim() ? body.title.trim().slice(0, 80) : 'Selected questions';
     try {
@@ -910,7 +921,7 @@ export async function POST(req: NextRequest) {
         coverageWarning: cov.label || null,
       });
       if (withSolutions) {
-        const { items, missing } = solutionItemsFrom(rows as Row[]);
+        const { items, missing } = solutionItemsFrom(rows as Row[], await solutionImageGateFor((rows as Row[]).map(r => r.id as string)));
         if (missing) warnings.push(`${missing} question${missing === 1 ? '' : 's'} with no worked solution — the answer alone is printed`);
         const solPdf = await renderSolutionsPDF({
           title: `${titleBits} — worked solutions`,

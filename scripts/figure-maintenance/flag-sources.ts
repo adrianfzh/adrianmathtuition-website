@@ -22,7 +22,7 @@ const tokens = (s: string) =>
     .filter(d => d.crops.length);
   console.log(`extraction folders still holding crops: ${dirs.length}`);
 
-  const { data: flags } = await supa.from('figure_flags').select('path, question_id').eq('status', 'open');
+  const { data: flags } = await supa.from('figure_flags').select('path, question_id').eq('status', 'open').eq('kind', 'question');
   const ids = [...new Set((flags ?? []).map(f => f.question_id as string))];
   const qs = new Map<string, Record<string, unknown>>();
   for (let i = 0; i < ids.length; i += 200) {

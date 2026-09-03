@@ -22,6 +22,8 @@ import { computeMastery } from '@/lib/mastery';
 import { fullPortalVisible } from '@/lib/portal-beta';
 import { imgSrc, isPlausibleImagePath } from '@/lib/kiosk-worksheet-images';
 import { rollupSolution } from '@/lib/solution-rollup';
+import { solutionImageAllowed } from '@/lib/bank-question-markdown';
+import { solutionImageGateFor } from '@/lib/solution-image-gate';
 
 export const dynamic = 'force-dynamic';
 
@@ -77,9 +79,14 @@ async function workedSolution(
       .single();
     // Rollup: post-canonicalisation the text may live only in parts[].solution.
     const sol = rollupSolution(data?.solution, data?.parts);
-    const images = Array.isArray(data?.solution_images)
-      ? (data.solution_images as unknown[]).filter(isPlausibleImagePath).map(imgSrc).slice(0, 4)
+    const stored = Array.isArray(data?.solution_images)
+      ? (data.solution_images as unknown[]).filter(isPlausibleImagePath)
       : [];
+    // Solution-image gate (lib/solution-image-gate.ts): a flagged (watermarked)
+    // solution scan never reaches the reveal. Only consulted when there is
+    // something to show.
+    const gate = stored.length ? await solutionImageGateFor([entry.variant_qb_id]) : undefined;
+    const images = stored.filter((p) => solutionImageAllowed(p, gate)).map(imgSrc).slice(0, 4);
     return { text: sol || null, images };
   } catch {
     return none;

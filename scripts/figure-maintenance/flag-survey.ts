@@ -31,7 +31,7 @@ const ROOTS = [
   }
   console.log(`indexed ${onDisk.size} source papers on disk\n`);
 
-  const { data } = await supa.from('figure_flags').select('path, question_id').eq('status', 'open');
+  const { data } = await supa.from('figure_flags').select('path, question_id').eq('status', 'open').eq('kind', 'question');
   const flags = data ?? [];
   const ids = [...new Set(flags.map(f => f.question_id as string))];
   const qs = new Map<string, Record<string, unknown>>();
