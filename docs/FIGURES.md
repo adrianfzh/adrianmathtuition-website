@@ -94,6 +94,17 @@ figures take no gate. The dormant switch **`SOLUTION_IMAGES_REQUIRE_CLEAN`**
 (`false`) flips the gate from deny-list to allow-list — only paths on a
 `kind='solution'` `status='fixed'` row render, everything unclassified
 disappears — flip it only once the classification pass has covered the bank.
+**Counting shown vs not-shown — the three-valued-logic trap (bit three times on 3 Sep 2026).**
+`image_watermark_status` is NULL on every never-judged row, so `NOT (figure_url IS NOT NULL OR
+image_watermark_status = 'clean')` is NULL there and the row falls out of BOTH branches — 15
+rows vanished from a 5,952-row count that way. Always write the serving predicate as
+`coalesce(figure_url is not null or image_watermark_status = 'clean', false)` (this is
+`figureServable` in SQL), and check that shown + not-shown = has_image rows before reporting.
+Two more facts the same day: a row whose `image_url` object 404s can still serve — `figure_url`
+is the served object when present, so "missing figure" means EVERY reference 404s; and
+`image_watermark_status = 'no_image'` is the watermark scan's mark for rows with nothing to
+scan, not a defect.
+
 **Unjudged levels are allow-listed regardless of the switch (3 Sep 2026).**
 `JUDGED_SOLUTION_LEVELS` in `lib/solution-image-gate.ts` names the levels the judge pass has
 covered (Sec: AM/EM/S1/S2 + NA). `solutionImageGateFor` reads each question's level; a question
