@@ -877,3 +877,31 @@ Worth knowing before anyone trusts a future scan:
   would never raise it.
 - **Autocorrelation cannot be used as a stamp test** on graph paper, dotted grids or
   hatching: they are themselves periodic and score exactly like a tiled stamp.
+
+## 53 questions held out of serving by a DATA defect, not a watermark (2026-09-03)
+
+Closing the watermark sweep left 138 questions blocked that had never been examined.
+Only 85 of them are a watermark question at all. The other **53 have no image to
+check** — they are held out of serving by `has_image = true` on a row that cannot
+produce an image:
+
+- **12 — broken reference.** `has_image` true, a path stored in the row, but **no such
+  object in the bucket**: fetching it 404s. Something wrote the reference and either
+  never uploaded the file or the object was later removed.
+- **41 — orphaned flag.** `has_image` true and **no image reference anywhere in the
+  row** — not `image_url`, not `images[]`, not `figure_url`, not any `parts[]` or
+  sub-part field (checked by walking the whole row, not by naming fields).
+
+Both classes fail the serving gate exactly like a watermarked figure would
+(`figureServable()` returns false on `has_image && !figure_url && status !== 'clean'`),
+so they have been silently unservable. Neither can be fixed by cleaning.
+
+**Not corrected — Adrian's call.** The fix is to set `has_image = false` where the
+question genuinely has no figure, but that is a flag that gates what students see, and
+some of these may be questions whose figure was lost and ought to be recovered instead
+(cf. the GCE 2022 Q12 placeholder box containing the word "Image", and Pierce 2024
+EM_NA Q18, a known total loss). Recovering a lost figure and hiding a missing one are
+opposite actions; the row cannot tell you which it wants.
+
+Lists: `wmsweep/never-swept.json` (the 97 with a resolvable key, of which 12 then 404)
+and the 41 keyless rows derived alongside it.
