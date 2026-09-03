@@ -54,6 +54,7 @@ describe('contentDisposition — a header a browser will actually accept', () =>
   });
 
   it('never yields an empty quoted name', () => {
-    expect(contentDisposition('—')).toContain('filename="marked-paper.pdf"');
+    expect(contentDisposition('')).toContain('filename="marked-paper.pdf"');
+    expect(contentDisposition('日本')).toContain('filename="marked-paper.pdf"');
   });
 });

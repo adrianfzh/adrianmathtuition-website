@@ -386,6 +386,52 @@ in `parts[1].subparts[1].image_url`; a whole-row read-back caught it. Sub-parts
 are a real level. Replace recursively and re-read the whole row to prove the old
 key is gone.
 
+## 8c. Traps that bit more than once (2026-09-03) — read before counting anything
+
+**1. NULL kills a boolean, in SQL and in PostgREST. Three separate incidents in one day.**
+- `.neq('image_watermark_status','clean')` does NOT match NULL rows. A count of blocked
+  questions came back 9 when the truth was 170.
+- In SQL, `NOT (figure_url IS NOT NULL OR image_watermark_status = 'clean')` evaluates to
+  NULL when the status is NULL, so those rows match NEITHER branch and vanish from both
+  sides of a total. shown + not_shown came to 5,937 against a family of 5,952 — 15 rows
+  silently absent.
+- Always `coalesce(<predicate>, false)`, or `IS DISTINCT FROM`, or fetch the NULLs with a
+  separate `.is(col, null)` and union them.
+
+**2. A dead `image_url` does NOT mean a missing figure.** `figure_url` is the fallback and
+`figureServable()` honours it. Eight EM/AM questions were classified as "picture missing"
+because their primary key 404s; every one had a working `figure_url` returning 200 and was
+serving correctly. **Check the fallback, and check it by FETCHING, not by reading the row.**
+
+**3. An agent's own verdict is a claim, not evidence.** Re-verifying 43 solution-image
+"apply" verdicts against a stricter gate failed 5 — and in every one of the five the
+report's own text was FALSE:
+- "no readable KIASU wordmark, runner, phone number or URL" — all four readable.
+- "no readable branding" — the runner fully readable, on the figure carrying the
+  competitor's phone number.
+- "0 lost, 0 gained" — 918 px gained, a black 1-px column from an RGBA→RGB flatten.
+- `flags: null` — the re-render had written a part label "(i)" into a figure answering
+  part **(ii)**, filling a rectangle the bank had deliberately blanked.
+**Read the evidence beside a verdict, never the verdict alone.** One file sitting in `out/`
+marked ready destroyed 64.5% of its own non-white content.
+
+**4. Distinguish an attempt-fault from a source-fault before sending anything to redraw.**
+Two of those five were fixable in minutes (restore the blanked corner; write the
+transparent column as white). Redrawing them would have discarded a recoverable original
+in favour of a reconstruction — strictly worse. Only a fault in the SOURCE justifies a redraw.
+
+**5. A shared cache propagates a wrong answer as fast as a right one.** 32 papers were
+cached `"route":"flat-field"` before we learned division is the wrong inverse for an
+alpha-blend stamp. Corrections must be APPENDED (never rewrite a shared append-only log —
+a concurrent writer's lines are destroyed), and readers must dedupe by **LATEST**, not by
+richest: a correction is usually shorter than the entry it fixes. Entries carrying
+`supersedes` win.
+
+**6. Never derive a structured fact by grepping prose.** A correction pass skipped a paper
+because its note contained the word "subtraction" — in the sentence *"any plate subtraction
+punches holes in content"*, i.e. a warning that it FAILS. Decide from `route` / `worked` /
+`supersedes`; `notes` is for humans.
+
 ## 8. State (2026-09-02, evening — QUEUE CLEARED)
 
 - **~3,970** repairs applied across the bank (`figure_clean_log`), of which
