@@ -54,6 +54,9 @@ describe('contentDisposition — a header a browser will actually accept', () =>
   });
 
   it('never yields an empty quoted name', () => {
+    // The one that was failing for a real reason: an em dash folds to '-', which is
+    // truthy, so a plain `|| fallback` let a file called "-" through (peer, 3 Sep 2026).
+    expect(contentDisposition('—')).toContain('filename="marked-paper.pdf"');
     expect(contentDisposition('')).toContain('filename="marked-paper.pdf"');
     expect(contentDisposition('日本')).toContain('filename="marked-paper.pdf"');
   });
