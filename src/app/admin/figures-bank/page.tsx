@@ -34,7 +34,7 @@ type Item = {
  * but its button reads "Use it anyway" so approving a remnant is a conscious act. */
 type Candidate = {
   url: string; verdict: string; route: string | null; note: string | null;
-  holdKind: string | null; holdReason: string | null;
+  holdKind: string | null; holdReason: string | null; methodNote: string | null;
 };
 type SolItem = {
   path: string; qid: string; level: string | null; school: string | null;
@@ -49,7 +49,13 @@ const SOL_PAGE = 20;
  *  reason text, because a keyword guess once called an uninspected image
  *  inspected. No hold_kind → a neutral chip and the raw reason underneath. */
 function verdictChip(c: Candidate): { text: string; colour: string; hint?: string } {
-  if (c.verdict === 'apply') return { text: `✅ judged clean${c.route ? ` · ${c.route}` : ''}`, colour: '#15803d' };
+  if (c.verdict === 'apply') {
+    // An exact removal deletes the stamp object and leaves the artwork untouched; a
+    // reconstruction estimates the pixels under the stamp. Say which, every time.
+    return c.methodNote
+      ? { text: `✅ judged clean · ${c.route || 'reconstructed'} · pixels under the stamp RECONSTRUCTED`, colour: '#15803d', hint: c.methodNote.slice(0, 240) }
+      : { text: `✅ judged clean${c.route ? ` · ${c.route}` : ''} · exact removal`, colour: '#15803d' };
+  }
   if (c.holdKind === 'residue') return { text: '⚠️ checked — faint lettering survives the strict stretch', colour: '#b45309' };
   if (c.holdKind === 'unverified') {
     return { text: '❓ not verified — produced by a method we no longer trust', colour: '#64748b', hint: 'nobody has inspected this one' };

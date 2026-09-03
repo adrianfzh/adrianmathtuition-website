@@ -99,6 +99,10 @@ for (const file of files) {
       confidence: meta.confidence ?? null,
       note: meta.note ?? null,
       hold_reason: meta.hold_reason ?? null,
+    // An 'apply' whose pixels under the stamp were RECONSTRUCTED (plate subtraction)
+    // rather than recovered (structural delete of the stamp object) — Adrian may hold
+    // an exact-removals-only line, and he cannot apply it unseen.
+    method_note: meta.method_note ?? null,
       by: meta.by ?? file.replace(/\.json$/, ''),
       cand: meta.cand ?? null,
       source: file,

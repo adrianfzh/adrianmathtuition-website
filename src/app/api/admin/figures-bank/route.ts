@@ -86,6 +86,8 @@ type Candidate = {
    *  guessed hold_kind once labelled an uninspected image as inspected. */
   holdKind: string | null;
   holdReason: string | null;
+  /** Set when the clean is an ESTIMATE (pixels under the stamp reconstructed) rather than an exact removal. */
+  methodNote: string | null;
 };
 
 const step = (name: string, message: string) =>
@@ -153,6 +155,7 @@ async function solutionLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
         note: str(side.note),
         holdKind: str(side.hold_kind),
         holdReason: str(side.hold_reason),
+        methodNote: str(side.method_note),
       };
     }
     return {
