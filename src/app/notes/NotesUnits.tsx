@@ -17,6 +17,7 @@
 import type { ReactNode } from 'react';
 import { UnitMd } from './UnitMarkdown';
 import { BlockReview } from './ReviewControls';
+import ReorderUnits from './ReorderUnits';
 import {
   asAutopsy,
   asCheck,
@@ -312,6 +313,36 @@ function Unit({ unit, admin }: { unit: NotesUnit; admin: boolean }) {
 }
 
 /**
+ * Review mode only: one group of cards (a section's teaching blocks, or its
+ * practice expander) becomes a hold-and-drag list — the ⠿ handle on each card,
+ * the fixed-slots rule in lib/unit-reorder. Students get the children exactly
+ * as rendered: ReorderUnits is never in their tree, so its chunk (dnd-kit) is
+ * never sent to them. A lone card has nowhere to go, so it gets no handle.
+ * The section's lead core is not in any group — a section IS its core's
+ * position, so moving the core is a job for /admin/learn-review.
+ */
+function Sortable({
+  admin,
+  level,
+  topic,
+  units,
+  children,
+}: {
+  admin: boolean;
+  level: string;
+  topic: string;
+  units: NotesUnit[];
+  children: ReactNode;
+}) {
+  if (!admin || units.length < 2) return <>{children}</>;
+  return (
+    <ReorderUnits level={level} topic={topic} units={units.map(u => ({ id: u.id, order: u.order }))}>
+      {children}
+    </ReorderUnits>
+  );
+}
+
+/**
  * A topic's units, one <details> dropdown per section. The dropdown's label is
  * the section title — the question-form name from the style pass ("How do I
  * read off the turning point?"), which is the thing the student actually wants
@@ -319,15 +350,21 @@ function Unit({ unit, admin }: { unit: NotesUnit; admin: boolean }) {
  * then the blocks that work the idea. Adrian, 2026-08-21: no "Key Concepts"
  * heading, no counts — a topic is a list of these, click one and read.
  *
- * With `admin`, every block grows a flag control; a section holding a flagged
- * block is forced open so the flag can't hide behind a collapsed dropdown.
+ * With `admin`, every block grows a flag control and a ⠿ drag handle (see
+ * Sortable above — `level`/`topic` are what the reorder write is keyed on); a
+ * section holding a flagged block is forced open so the flag can't hide behind
+ * a collapsed dropdown.
  */
 export default function NotesUnits({
   sections,
   admin = false,
+  level,
+  topic,
 }: {
   sections: UnitSection[];
   admin?: boolean;
+  level: string;
+  topic: string;
 }) {
   return (
     <div className="not-prose nx-acc-list">
@@ -361,9 +398,11 @@ export default function NotesUnits({
                   <Core unit={section.lead} />
                 </div>
               )}
-              {teaching.map(unit => (
-                <Unit key={unit.id} unit={unit} admin={admin} />
-              ))}
+              <Sortable admin={admin} level={level} topic={topic} units={teaching}>
+                {teaching.map(unit => (
+                  <Unit key={unit.id} unit={unit} admin={admin} />
+                ))}
+              </Sortable>
               {practice.length > 0 && (
                 // Nested expander stays: even inside an open concept, doing
                 // questions is opt-in. Forced open for Adrian when one of them
@@ -375,9 +414,11 @@ export default function NotesUnits({
                   <summary>
                     💪 Practice — {practice.length} question{practice.length === 1 ? '' : 's'}
                   </summary>
-                  {practice.map(unit => (
-                    <Unit key={unit.id} unit={unit} admin={admin} />
-                  ))}
+                  <Sortable admin={admin} level={level} topic={topic} units={practice}>
+                    {practice.map(unit => (
+                      <Unit key={unit.id} unit={unit} admin={admin} />
+                    ))}
+                  </Sortable>
                 </details>
               )}
             </div>

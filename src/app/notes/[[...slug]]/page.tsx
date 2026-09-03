@@ -524,7 +524,7 @@ async function LearnPage({ level, topicSlugParam }: { level: string; topicSlugPa
       {sections.length > 0 && (
         <>
           <h2 className="nx-section">Notes &amp; formulas</h2>
-          <NotesUnits sections={sections} admin={admin} />
+          <NotesUnits sections={sections} admin={admin} level={level} topic={data.topic} />
         </>
       )}
     </PageFrame>

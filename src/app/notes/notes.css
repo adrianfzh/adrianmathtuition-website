@@ -2063,6 +2063,85 @@ a.nx-eyebrow:hover {
   cursor: default;
 }
 
+/* ── Review mode: hold-and-drag reorder (admin only) ─────────────────────────
+ * Adrian, 3 Sep 2026: "arrange the order of the cards by holding and moving
+ * them with the finger". The ⠿ handle sits in the card's colour bar at its left
+ * edge — a 44px target, `touch-action: none` on the handle ONLY so the page
+ * still scrolls from anywhere else on the card. Quiet at rest (a translucent
+ * glyph in the bar), lit while dragging (solid glyph, gold ring on the card).
+ * Island: app/notes/ReorderUnits.tsx; slot rule: lib/unit-reorder.ts. */
+.nx-sort {
+  position: relative;
+}
+.nx-sort[data-dragging='true'] {
+  z-index: 10;
+}
+.nx-sort-handle {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: rgb(255 255 255 / 0.62);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.nx-sort-handle:hover {
+  color: #fff;
+  background: rgb(255 255 255 / 0.16);
+}
+.nx-sort-handle:focus-visible {
+  outline: 2px solid var(--nx-gold);
+  outline-offset: 1px;
+}
+.nx-sort-handle:active,
+.nx-sort[data-dragging='true'] .nx-sort-handle {
+  cursor: grabbing;
+  color: #fff;
+  background: rgb(255 255 255 / 0.24);
+}
+/* The header bar makes room for the handle (the flag pill already reserves the
+ * right side the same way). */
+.nx-sort > .nx-u > .nx-u-head {
+  padding-left: 3.7rem;
+}
+.nx-sort[data-dragging='true'] > .nx-u {
+  box-shadow: 0 0 0 3px var(--nx-gold), var(--nx-shadow-lift);
+}
+.nx-sort-status {
+  margin: 0.6rem 0 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-fd-muted-foreground);
+}
+.nx-sort-status[data-kind='saved'] {
+  color: var(--nx-green);
+}
+.nx-sort-status[data-kind='error'] {
+  color: var(--nx-rose-deep);
+}
+@media print {
+  /* Review chrome, like the flag pill: never the handout's. */
+  .nx-sort-handle,
+  .nx-sort-status {
+    display: none !important;
+  }
+  .nx-sort > .nx-u > .nx-u-head {
+    padding-left: 1.4rem;
+  }
+}
+
 /* ── Print ───────────────────────────────────────────────────────────────────
  * These pages get printed for lessons, so make a print actually usable: drop
  * the app chrome, flatten the cards to rules, and keep a worked example whole

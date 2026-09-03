@@ -10,6 +10,7 @@ import { revalidateTag } from 'next/cache';
 import { isNotesAuthed } from '@/lib/notes-auth';
 import { NOTES_CACHE_TAG } from '@/lib/notes-data';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { checkSlotPermutation } from '@/lib/unit-reorder';
 
 export async function POST(req: Request) {
   if (!(await isNotesAuthed())) {
@@ -97,6 +98,48 @@ export async function POST(req: Request) {
     if (cleared) return cleared;
     revalidateTag(NOTES_CACHE_TAG, 'max');
     return NextResponse.json({ ok: true });
+  }
+
+  // Hold-and-drag reorder from the /notes review mode (app/notes/ReorderUnits).
+  // The client sends only the units whose slot changed; the fixed-slots rule
+  // is enforced here, not trusted: every id must belong to (level, topic) —
+  // 400 otherwise — and the requested unit_orders must be exactly a
+  // permutation of those units' current ones — 409 otherwise. So the route can
+  // move units between slots the topic already has and can never mint a number,
+  // collide with a unit outside the request, or touch another topic.
+  if (action === 'reorder') {
+    const level = body?.level;
+    const topic = body?.topic;
+    const orders = body?.orders;
+    if (
+      typeof level !== 'string' || !level ||
+      typeof topic !== 'string' || !topic ||
+      !Array.isArray(orders) || orders.length === 0 || orders.length > 500
+    ) {
+      return NextResponse.json({ error: 'level, topic and orders[] required' }, { status: 400 });
+    }
+    const { data: units, error: readErr } = await supa
+      .from('learning_units')
+      .select('id, unit_order')
+      .eq('subject', level.toUpperCase())
+      .eq('topic', topic);
+    if (readErr) return NextResponse.json({ error: readErr.message }, { status: 500 });
+    const requested = (orders as unknown[]).map(o => {
+      const r = o && typeof o === 'object' ? (o as { id?: unknown; unit_order?: unknown }) : {};
+      return { id: r.id, unit_order: r.unit_order };
+    });
+    const check = checkSlotPermutation(units ?? [], requested);
+    if (!check.ok) return NextResponse.json({ error: check.error }, { status: check.status });
+    const now = new Date().toISOString();
+    for (const c of check.changes) {
+      const { error } = await supa
+        .from('learning_units')
+        .update({ unit_order: c.unit_order, updated_at: now })
+        .eq('id', c.id);
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    if (check.changes.length > 0) revalidateTag(NOTES_CACHE_TAG, 'max');
+    return NextResponse.json({ ok: true, changed: check.changes.length });
   }
 
   return NextResponse.json({ error: 'unknown action' }, { status: 400 });

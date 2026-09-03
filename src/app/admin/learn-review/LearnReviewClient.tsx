@@ -8,8 +8,9 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { reassignSlots } from '@/lib/unit-reorder';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
@@ -618,7 +619,9 @@ export default function LearnReviewClient() {
 
   // Drag-to-reorder. The topic's existing unit_order values are fixed slots;
   // the new visual order decides which unit occupies which slot (Part headers
-  // stay in place, units move across them). Optimistic; reverts on failure.
+  // stay in place, units move across them) — the rule is lib/unit-reorder's
+  // reassignSlots, shared with the /notes review mode. Optimistic; reverts on
+  // failure.
   const dndSensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 6 } }),
@@ -630,8 +633,7 @@ export default function LearnReviewClient() {
     const newIndex = units.findIndex(u => u.id === over.id);
     if (oldIndex < 0 || newIndex < 0) return;
     const prev = units;
-    const slots = [...units.map(u => u.unit_order)].sort((a, b) => (a ?? 0) - (b ?? 0));
-    const moved = arrayMove(units, oldIndex, newIndex).map((u, i) => ({ ...u, unit_order: slots[i] }));
+    const moved = reassignSlots(units, oldIndex, newIndex);
     setUnits(moved);
     try {
       await post({ action: 'reorder', subject, topic: selectedTopic, orderedIds: moved.map(u => u.id) });
