@@ -16,6 +16,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { answerLines, promptLines, buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/lib/portal-marking';
 import AnnotatedSolution from './AnnotatedSolution';
 import ClipToNotes from './ClipToNotes';
+import MarkingBeacon from './MarkingBeacon';
 import { mathHtml } from '@/lib/math-inline';
 import { SURFACES } from '@/lib/portal-theme';
 import PortalIcon from '@/components/PortalIcon';
@@ -154,6 +155,10 @@ export default async function MarkingPage() {
         </div>
       ) : (
         <>
+          {/* Portal activity visibility (2026-09-03) — invisible; only fires
+              the 'marking:view' beacon once mounted here, i.e. only when the
+              student has at least one released paper. */}
+          <MarkingBeacon />
           <Summary papers={papers} averagePct={averagePct} trendPts={trendPts} />
 
           {streakNote && (
@@ -250,6 +255,7 @@ function Paper({ paper }: { paper: StudentPaper }) {
               href={paper.pdfUrl}
               target="_blank"
               rel="noopener noreferrer"
+              data-track="marking:open"
               className={`inline-block text-sm font-semibold ${M.tile} rounded-xl px-4 py-2 hover:opacity-90 transition-opacity`}
             >
               📄 Open your marked script
@@ -268,6 +274,7 @@ function Paper({ paper }: { paper: StudentPaper }) {
               href={paper.fullPdfUrl}
               target="_blank"
               rel="noopener noreferrer"
+              data-track="marking:open"
               className="text-[12px] text-gray-500 underline underline-offset-2 hover:text-navy"
             >
               Full report (PDF)

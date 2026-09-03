@@ -217,3 +217,19 @@ is removed by hand). First batch 2026-08-22: JC Vectors, 28 filed / 2 held.
 
 Guard: `/api/health-check` `practice-picker` fails if the JC pool drops below
 4,000 topic-rows (a redefined RPC that forgot the pool would do that).
+
+## Activity (2026-09-03)
+
+Adrian: "are we able to see if students are active on the portal?" —
+`portal_accounts.last_seen_at` is now touched once per Singapore day by
+`sessionAccount()` (`lib/portal-auth.ts`, service-client write so it survives
+whatever RLS the user-scoped client has). `/app/marking` also fires
+`marking:view`/`marking:open` beacons into `portal_event_log` (`MarkingBeacon.tsx`
+→ `POST /api/portal/event`) so "opened a marked paper" is visible, not just
+"signed in". `lib/portal-activity.ts` (`summariseActivity` + `relativeDay`,
+unit-tested) turns those plus `student_attempts` and portal hand-ins into
+active/quiet/never per student. It shows up in two places: the hub's 📱
+attention card (`/admin/page.tsx`, active-this-week count + never-signed-in),
+and one compact line on `/admin/students/[id]` (last seen / hand-in / practice
+/ marked-paper-opened, above "Marked papers"). Data route:
+`GET /api/admin/portal-activity`.

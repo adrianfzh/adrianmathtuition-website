@@ -371,6 +371,15 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // Portal activity visibility (2026-09-03, lib/portal-activity.ts) — the
+    // hub's attention card and the student-profile row both read this route.
+    // Anonymous 401 proves the auth gate is up; a 404 means the card and the
+    // profile row silently go blank instead of showing anything wrong.
+    timed('portal-activity', async () => {
+      const r = await fetch(`${base}/api/admin/portal-activity`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // Student resource requests (/app/requests → /admin/requests, v1
     // human-in-the-loop). The student route must hold its auth gate (401
     // anonymously — a 404 means the tab silently vanishes and asks stop

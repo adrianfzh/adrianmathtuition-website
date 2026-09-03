@@ -11,6 +11,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import PasswordInput from '@/components/PasswordInput';
+import type { ActivitySummary } from '@/lib/portal-activity';
 
 // Mini calculator icon for the launcher (replaces the abacus emoji).
 const CalcIcon = (
@@ -154,6 +155,20 @@ export default function AdminHub() {
     return () => { cancelled = true; };
   }, [authed]);
 
+  // Portal activity visibility (2026-09-03, lib/portal-activity.ts) — same
+  // fail-soft shape as the stats fetch above: a failed call just leaves the
+  // card hidden, never blocks the grid.
+  const [portalActivity, setPortalActivity] = useState<ActivitySummary | null>(null);
+  useEffect(() => {
+    if (!authed) return;
+    let cancelled = false;
+    fetch('/api/admin/portal-activity')
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (!cancelled && d) setPortalActivity(d); })
+      .catch(() => { /* card stays hidden */ });
+    return () => { cancelled = true; };
+  }, [authed]);
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setAuthError('');
@@ -204,7 +219,8 @@ export default function AdminHub() {
   const logCard = typeof stats?.lessonsToLog === 'number' && stats.lessonsToLog > 0 ? stats.lessonsToLog : null;
   const examGapsCard = stats?.examGaps && stats.examGaps.count > 0 ? stats.examGaps : null;
   const triageCard = stats?.triage && (stats.triage.flagged > 0 || stats.triage.readyToRelease > 0) ? stats.triage : null;
-  const hasAttentionCards = !!(papersCard || unmarkedCard || examGapsCard || triageCard || logCard);
+  const portalCard = portalActivity && portalActivity.totals.accounts > 0 ? portalActivity.totals : null;
+  const hasAttentionCards = !!(papersCard || unmarkedCard || examGapsCard || triageCard || logCard || portalCard);
 
   return (
     <>
@@ -277,6 +293,18 @@ export default function AdminHub() {
                     <span className="stat-arrow">›</span>
                   </div>
                   <div className="stat-label">⚠ {examGapsCard.examType} info gaps</div>
+                </a>
+              )}
+              {portalCard && (
+                <a href="/admin/students" className="stat-card" style={{ borderLeftColor: '#0891b2' }}>
+                  <div className="stat-top">
+                    <span className="stat-num">{portalCard.active7d}</span>
+                    <span className="stat-arrow">›</span>
+                  </div>
+                  <div className="stat-label">📱 active on the portal this week</div>
+                  {portalCard.neverSignedIn > 0 && (
+                    <div className="stat-label">{portalCard.neverSignedIn} never signed in</div>
+                  )}
                 </a>
               )}
             </div>

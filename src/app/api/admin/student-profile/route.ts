@@ -12,6 +12,8 @@ import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
 import { computePerMonthPayments } from '@/lib/invoice-payments';
 import { resolveRescheduleChain, ChainLesson } from '@/lib/reschedule-chain';
 import { SLOT_WINDOWS_SETTING, parseSlotWindows } from '@/lib/slot-windows';
+import { getSupabaseAdmin } from '@/lib/supabase';
+import { summariseActivity, type ActivityAccount, type ActivityEvent, type ActivityAttempt, type ActivityHandin } from '@/lib/portal-activity';
 
 export const runtime = 'nodejs';
 
@@ -279,6 +281,60 @@ export async function GET(req: NextRequest) {
       }));
   } catch { /* EmailLog optional */ }
 
+  // Portal activity (2026-09-03, lib/portal-activity.ts) — fail-soft, null on
+  // any error. Reuses the exact same summariser the hub-wide
+  // /api/admin/portal-activity route uses, so "status" and the relative-day
+  // fields agree everywhere. Only the LATEST row of each signal is fetched
+  // (not the 30-day window that route uses for its whole-roster scan) — a
+  // single student's profile wants the true most-recent event even if it
+  // happened months ago, not just "within the last 30 days". `id` IS the
+  // portal identity for a tuition student (lib/portal-auth.ts
+  // portalIdentity() — a non-blank Airtable rec id passes through unchanged).
+  type PortalBlock = {
+    hasAccount: boolean; lastSeenAt: string | null; lastHandinAt: string | null;
+    lastAttemptAt: string | null; lastMarkingViewAt: string | null; status: 'active' | 'quiet' | 'never';
+  };
+  let portal: PortalBlock | null = null;
+  try {
+    const sb = getSupabaseAdmin();
+    const { data: acctRows } = await sb
+      .from('portal_accounts')
+      .select('id, airtable_student_id, display_name, level, created_at, last_seen_at, deactivated_at')
+      .eq('airtable_student_id', id)
+      .limit(1);
+    const account = (acctRows ?? [])[0] as ActivityAccount | undefined;
+    if (!account) {
+      portal = { hasAccount: false, lastSeenAt: null, lastHandinAt: null, lastAttemptAt: null, lastMarkingViewAt: null, status: 'never' };
+    } else {
+      const [eventsRes, attemptsRes, handinsRes] = await Promise.all([
+        sb.from('portal_event_log').select('identity, kind, created_at')
+          .eq('identity', id).in('kind', ['marking:view', 'marking:open'])
+          .order('created_at', { ascending: false }).limit(1),
+        sb.from('student_attempts').select('airtable_student_id, user_id, attempted_at')
+          .eq('airtable_student_id', id)
+          .order('attempted_at', { ascending: false }).limit(1),
+        sb.from('paper_marking_runs').select('student_id, created_at')
+          .eq('student_id', id).not('result_json->portal_submission', 'is', null)
+          .order('created_at', { ascending: false }).limit(1),
+      ]);
+      const summary = summariseActivity({
+        accounts: [account],
+        events: (eventsRes.data ?? []) as ActivityEvent[],
+        attempts: (attemptsRes.data ?? []) as ActivityAttempt[],
+        handins: (handinsRes.data ?? []) as ActivityHandin[],
+        now: new Date(),
+      });
+      const row = summary.rows[0];
+      portal = {
+        hasAccount: true, lastSeenAt: row.lastSeenAt, lastHandinAt: row.lastHandinAt,
+        lastAttemptAt: row.lastAttemptAt, lastMarkingViewAt: row.lastMarkingViewAt, status: row.status,
+      };
+    }
+  } catch (e) {
+    console.error('[student-profile] portal activity read failed:', (e as Error).message);
+    portal = null;
+  }
+
   // Active slot list for the switch/add pickers
   const slots = slotsData.records
     .filter((r: any) => r.fields['Is Active'])
@@ -311,5 +367,6 @@ export async function GET(req: NextRequest) {
     payments,
     sentInvoices,
     slots,
+    portal,
   });
 }

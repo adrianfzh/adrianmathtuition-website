@@ -9,8 +9,9 @@
 import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from 'jose';
-import { createSupabaseServer } from './supabase-server';
+import { createSupabaseServer, createServiceClient } from './supabase-server';
 import { airtableRequest } from './airtable';
+import { sgtDayStart } from './sgt';
 
 /**
  * What the portal actually needs from a session: the auth user's uuid (every
@@ -154,7 +155,31 @@ export const sessionAccount = cache(async (): Promise<PortalAccount | null> => {
     .select('*')
     .eq('id', user.id)
     .maybeSingle<PortalAccount>();
-  return account ?? null;
+  if (!account) return null;
+
+  // Touch last_seen_at once per Singapore day (2026-09-03, "are we able to
+  // see if students are active on the portal?"): this column existed but
+  // NOTHING wrote it — the retention cron reads it as its "still signs in"
+  // signal and the admin activity view (lib/portal-activity.ts) reads it as
+  // the headline stat, so both were blind. Gated to once/day so a page with
+  // several server-rendered pieces (layout + page, cache()d per request) never
+  // issues more than one write across a student's whole day of browsing. The
+  // user-scoped client can only touch its own row under RLS, but that row is
+  // also the read path above — use the service client instead so a stricter
+  // future RLS policy can't silently break this. Fire-and-forget: never let a
+  // write hiccup turn a page render into a 500.
+  const seenToday = account.last_seen_at && Date.parse(account.last_seen_at) >= sgtDayStart().getTime();
+  if (!seenToday) {
+    try {
+      createServiceClient()
+        .from('portal_accounts')
+        .update({ last_seen_at: new Date().toISOString() })
+        .eq('id', account.id)
+        .then(({ error }) => { if (error) console.error('[sessionAccount] last_seen_at touch failed:', error.message); });
+    } catch (e) { console.error('[sessionAccount] last_seen_at touch threw:', (e as Error).message); }
+  }
+
+  return account;
 });
 
 // Returns the authenticated Supabase user or redirects to /login.

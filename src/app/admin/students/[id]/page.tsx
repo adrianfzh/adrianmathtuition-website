@@ -12,6 +12,7 @@ import { getExamTopicsForSubject } from '@/lib/canonical-topics';
 import { EXAM_TYPES, examPercent, gradeFromScore, resultTone, RESULT_TONE_COLORS, examTypeLabel } from '@/lib/exam-grade';
 import { slotOpenOnDate } from '@/lib/slot-windows';
 import { sgtTodayISO } from '@/lib/sgt';
+import { relativeDay } from '@/lib/portal-activity';
 
 // Same JC/Sec category (Mixed/Adhoc/unknown count as available to all).
 function sameLevelSlot(studentLevel: string, slotLevel: string): boolean {
@@ -58,6 +59,16 @@ interface ProgressBlock {
   mastery: { strong: number; ok: number; slow: number };
   recent: ProgressRecent[];
 }
+// Portal activity visibility (2026-09-03) — mirrors the `portal` block
+// src/app/api/admin/student-profile/route.ts adds, built from lib/portal-activity.ts.
+interface PortalActivity {
+  hasAccount: boolean;
+  lastSeenAt: string | null;
+  lastHandinAt: string | null;
+  lastAttemptAt: string | null;
+  lastMarkingViewAt: string | null;
+  status: 'active' | 'quiet' | 'never';
+}
 interface Profile {
   student: { id: string; name: string; level: string; subjects: string[]; subjectLevel: string; status: string; juneRevision: string };
   enrollments: Enrollment[];
@@ -70,6 +81,7 @@ interface Profile {
   payments: PaymentSummary;
   sentInvoices: SentInvoice[];
   slots: SlotOpt[];
+  portal: PortalActivity | null;
 }
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -715,6 +727,24 @@ export default function StudentProfilePage() {
                 prefillTopic={sendTopic}
               />
             </Section>
+
+            {/* Portal activity visibility (2026-09-03) — one compact line, no
+                Section box of its own; "are we able to see if students are
+                active on the portal?" (Adrian). */}
+            {tab === 'overview' && (
+              <div style={{ fontSize: 13, color: '#374151', margin: '0 0 14px' }}>
+                {data.portal?.hasAccount ? (
+                  <>
+                    <span style={{ color: '#9ca3af' }}>Portal ·</span> last seen {relativeDay(data.portal.lastSeenAt, new Date())}
+                    {' · '}<span style={{ color: '#9ca3af' }}>last hand-in</span> {relativeDay(data.portal.lastHandinAt, new Date())}
+                    {' · '}<span style={{ color: '#9ca3af' }}>last practice</span> {relativeDay(data.portal.lastAttemptAt, new Date())}
+                    {' · '}<span style={{ color: '#9ca3af' }}>last opened a marked paper</span> {relativeDay(data.portal.lastMarkingViewAt, new Date())}
+                  </>
+                ) : (
+                  <span style={{ color: '#9ca3af' }}>Portal · no account yet</span>
+                )}
+              </div>
+            )}
 
             {/* Marked papers — runs tagged with this student on /admin/mark-paper.
                 ✍️ = Adrian's annotated copy (the hand-back), 🖼/📄 the AI outputs. */}
