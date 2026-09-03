@@ -103,6 +103,43 @@ at any other level goes into `gate.unjudged`, and `solutionMarkdown` then render
 lands and JC is added to the set. A failed level read treats every question as unjudged.
 Adrian: "There must be no watermark images — important."
 
+### Solution lane — `/admin/figures-bank` → 🖼 Solutions
+
+The held rows above are Adrian's to judge, and since 2026-09-03 they have a
+surface: the **Solutions** tab (`?kind=solution`, `GET/POST /api/admin/figures-bank`
+with `kind:'solution'`). Each card is one held image — the live bank image beside
+the **cleaned candidate** when one exists (`question_images/candidates/<flag path>`,
+seeded by `scripts/figures/upload-solution-candidates.mjs` from the cleaning
+sessions' `~/.adrianmath-figures/candidates-*.json`, each PNG carrying a
+`<path>.json` sidecar with the session's verdict). A candidate the cleaning
+session **held** is still shown — never hidden — but its chip says why and its
+button reads *Use it anyway*, so approving a remnant is a conscious act. The chip
+switches on an EXPLICIT `hold_kind` only (`residue` = inspected, faint lettering
+survives the strict stretch; `unverified` = nobody has looked); absent, it reads
+"❓ held — see note" and prints the raw reason. **Never infer `hold_kind` from the
+reason text** — a keyword guess once labelled an uninspected image as inspected.
+
+Five actions, and only three of them write to the question row:
+
+| Action | What it does |
+|---|---|
+| ✓ **Approve as-is** | flag → `fixed`, note "Adrian approved as-is · …". Nothing else — the image was always fine. |
+| ✓ **Use cleaned candidate** / *Use it anyway* | the full write contract below, note "Adrian approved cleaned candidate". |
+| ✍️ **Amend…** | same contract with Adrian's own upload (≤ 3.5MB decoded — Vercel's 4.5MB body cap), note "Adrian amended". |
+| 🙈 **Keep hidden** | note only, status unchanged. |
+| ✏️ **Redraw** | note "redraw requested", status unchanged. |
+
+The two applying actions mirror `apply.py` exactly (`lib/solution-image-apply.ts`,
+pure + tested): upload as a NEW object `question_images/solutions/cleaned/<qid>-<part>-<sha8>.png`
+→ replace every reference **recursively** (`solution_images[]`,
+`parts[].solution_image`, `parts[].subparts[].solution_image`, inline `{{IMG:…}}`),
+writing the full public URL → re-read the whole row and **prove the old key is
+absent**, reverting if it survived → a `figure_clean_log` row with batch
+**`admin-vet-lane`** → and only then the flag flip. Any failed step returns a 500
+naming the step with nothing half-applied. `fixed` is what the render gate serves —
+including at **unjudged levels**, where only `fixed` paths render at all, so
+approving here is what makes a JC solution image visible again.
+
 Outage posture: deny-list mode serves unfiltered and logs (it contains KNOWN bad
 images; a Supabase hiccup must not blank every honest diagram), allow-list mode
 withholds everything. The RPC clause above stays kind-agnostic on purpose: an

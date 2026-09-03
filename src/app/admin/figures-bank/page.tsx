@@ -25,6 +25,41 @@ type Item = {
              wideMargins: boolean } | null;
 };
 
+/* ── the solution vet lane ─────────────────────────────────────────────────────
+ * 152 SOLUTION images are switched off (figure_flags kind='solution'
+ * status='held') because they carry another school's or centre's watermark.
+ * Adrian: "i do want to see them and if approve, or amended, put them back into
+ * solutions." Each card shows what is in the bank now beside the cleaned
+ * candidate, WITH the cleaning session's own verdict — a hold is never hidden,
+ * but its button reads "Use it anyway" so approving a remnant is a conscious act. */
+type Candidate = {
+  url: string; verdict: string; route: string | null; note: string | null;
+  holdKind: string | null; holdReason: string | null;
+};
+type SolItem = {
+  path: string; qid: string; level: string | null; school: string | null;
+  year: number | null; paper: string | null; qnum: string | null;
+  partLabel: string | null; note: string | null; claimedBy: string | null;
+  liveUrl: string; candidateUrl: string | null; candidate: Candidate | null;
+};
+const MAX_AMEND = 3.5 * 1024 * 1024;
+const SOL_PAGE = 20;
+
+/** The chip beside a candidate. hold_kind is EXPLICIT — never inferred from the
+ *  reason text, because a keyword guess once called an uninspected image
+ *  inspected. No hold_kind → a neutral chip and the raw reason underneath. */
+function verdictChip(c: Candidate): { text: string; colour: string; hint?: string } {
+  if (c.verdict === 'apply') return { text: `✅ judged clean${c.route ? ` · ${c.route}` : ''}`, colour: '#15803d' };
+  if (c.holdKind === 'residue') return { text: '⚠️ checked — faint lettering survives the strict stretch', colour: '#b45309' };
+  if (c.holdKind === 'unverified') {
+    return { text: '❓ not verified — produced by a method we no longer trust', colour: '#64748b', hint: 'nobody has inspected this one' };
+  }
+  if (c.verdict === 'hold') return { text: '❓ held — see note', colour: '#64748b' };
+  return { text: '❓ no verdict recorded', colour: '#64748b' };
+}
+
+type Tab = 'all' | 'flagged' | 'solutions';
+
 const LEVELS = ['', 'AM', 'EM', 'EM_NA', 'S1', 'S2', 'S3_AM', 'S3_EM', 'S3_EM_NA', 'JC1', 'JC2'];
 const lsKey = (level: string) => `figures-page-${level || 'all'}`;
 
@@ -42,19 +77,27 @@ export default function FiguresPage() {
   const [bulkBusy, setBulkBusy] = useState(false);
 
   const [level, setLevel] = useState('');
-  const [tab, setTab] = useState<'all' | 'flagged'>('all');
+  const [tab, setTab] = useState<Tab>('all');
+  const [sols, setSols] = useState<SolItem[]>([]);
+  const [solTotals, setSolTotals] = useState({ held: 0, withCandidate: 0 });
+  const [solBusy, setSolBusy] = useState('');
+  const [solErr, setSolErr] = useState<Record<string, string>>({});
   // ?flagged=1 opens the review directly — the tab buttons are easy to miss,
-  // and a link is something that can be sent.
+  // and a link is something that can be sent. ?kind=solution does the same for
+  // the solution lane.
   useEffect(() => {
-    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('flagged') === '1') {
-      setTab('flagged'); setPage(0);
-    }
+    if (typeof window === 'undefined') return;
+    const p = new URLSearchParams(window.location.search);
+    if (p.get('kind') === 'solution') { setTab('solutions'); setPage(0); }
+    else if (p.get('flagged') === '1') { setTab('flagged'); setPage(0); }
   }, []);
-  const goTab = (t: 'all' | 'flagged') => {
+  const goTab = (t: Tab) => {
     setTab(t); setPage(0);
     if (typeof window !== 'undefined') {
       const u = new URL(window.location.href);
-      if (t === 'flagged') u.searchParams.set('flagged', '1'); else u.searchParams.delete('flagged');
+      u.searchParams.delete('flagged'); u.searchParams.delete('kind');
+      if (t === 'flagged') u.searchParams.set('flagged', '1');
+      if (t === 'solutions') u.searchParams.set('kind', 'solution');
       window.history.replaceState(null, '', u.toString());
     }
   };
@@ -66,15 +109,31 @@ export default function FiguresPage() {
     setPage(Number.isFinite(saved) ? saved : 0);
   }, [level]);
 
+  // The count on the Solutions tab, so the lane announces itself before it is opened.
+  useEffect(() => {
+    if (!authed) return;
+    fetch('/api/admin/figures-bank?kind=solution&page=0&pageSize=1')
+      .then((r) => r.json())
+      .then((d) => { if (d?.totals) setSolTotals(d.totals); })
+      .catch(() => { /* a count is a nicety, not a precondition */ });
+  }, [authed]);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const qs = tab === 'flagged'
-        ? `flagged=1&page=${page}&pageSize=20`
-        : `page=${page}&pageSize=${pageSize}${level ? `&level=${level}` : ''}`;
+      const qs = tab === 'solutions'
+        ? `kind=solution&page=${page}&pageSize=${SOL_PAGE}`
+        : tab === 'flagged'
+          ? `flagged=1&page=${page}&pageSize=20`
+          : `page=${page}&pageSize=${pageSize}${level ? `&level=${level}` : ''}`;
       const r = await fetch(`/api/admin/figures-bank?${qs}`);
       const d = await r.json();
       if (d.error) return;
+      if (tab === 'solutions') {
+        setSols(d.items ?? []);
+        if (d.totals) setSolTotals(d.totals);
+        return;
+      }
       setItems(d.items ?? []);
       if (tab === 'all') {
         setTotalQuestions(d.totalQuestions ?? 0);
@@ -149,6 +208,53 @@ export default function FiguresPage() {
    *  no evidence, not a clean bill of health. */
   const isQuiet = (it: Item) => !!it.checks && chipsFor(it).length === 0;
 
+  /** One vet-lane action. The card leaves the list on success; the error stays
+   *  on the card (with the failed STEP named) so a half-applied write is
+   *  impossible to mistake for a done one. */
+  const solAct = async (it: SolItem, action: string, extra?: Record<string, unknown>) => {
+    if (solBusy) return;
+    setSolBusy(it.path);
+    setSolErr((e) => ({ ...e, [it.path]: '' }));
+    try {
+      const r = await fetch('/api/admin/figures-bank', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kind: 'solution', action, path: it.path, questionId: it.qid, ...extra }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        setSolErr((e) => ({ ...e, [it.path]: d.step ? `${d.step}: ${d.error}` : (d.error ?? `failed (${r.status})`) }));
+        return;
+      }
+      setSols((cur) => cur.filter((x) => x.path !== it.path));
+      if (d.status === 'fixed') {
+        setSolTotals((t) => ({
+          held: Math.max(0, t.held - 1),
+          withCandidate: Math.max(0, t.withCandidate - (it.candidate ? 1 : 0)),
+        }));
+      }
+    } catch {
+      setSolErr((e) => ({ ...e, [it.path]: 'network error — nothing was written' }));
+    } finally { setSolBusy(''); }
+  };
+
+  const amend = async (it: SolItem, file: File) => {
+    if (file.size > MAX_AMEND) {
+      setSolErr((e) => ({ ...e, [it.path]: `that image is ${(file.size / 1048576).toFixed(1)}MB — 3.5MB max` }));
+      return;
+    }
+    try {
+      const b64 = await new Promise<string>((res, rej) => {
+        const fr = new FileReader();
+        fr.onload = () => res(String(fr.result).split(',')[1] ?? '');
+        fr.onerror = () => rej(new Error('read failed'));
+        fr.readAsDataURL(file);
+      });
+      await solAct(it, 'amend', { imageBase64: b64, contentType: file.type || 'image/png' });
+    } catch {
+      setSolErr((e) => ({ ...e, [it.path]: 'could not read that file' }));
+    }
+  };
+
   const toggle = async (it: Item) => {
     const flag = !it.flagged;
     setItems((cur) => cur.map((x) => (x.path === it.path ? { ...x, flagged: flag } : x)));
@@ -188,15 +294,19 @@ export default function FiguresPage() {
   // Each tab has its own length and its own page size — the review is measured
   // 20 at a time, the grid shows 60 thumbnails.
   const FLAG_PAGE = 20;
-  const lastPage = tab === 'flagged'
-    ? Math.max(0, Math.ceil((withheld || flaggedCount) / FLAG_PAGE) - 1)
-    : Math.max(0, Math.ceil(totalQuestions / pageSize) - 1);
+  const lastPage = tab === 'solutions'
+    ? Math.max(0, Math.ceil(solTotals.held / SOL_PAGE) - 1)
+    : tab === 'flagged'
+      ? Math.max(0, Math.ceil((withheld || flaggedCount) / FLAG_PAGE) - 1)
+      : Math.max(0, Math.ceil(totalQuestions / pageSize) - 1);
   return (
     <main style={{ minHeight: '100vh', background: C.bg, padding: '14px 12px 80px', maxWidth: 900, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
         <h1 style={{ fontSize: 18, fontWeight: 700 }}>🖼 Figure Review</h1>
         <span style={{ color: C.muted, fontSize: 13 }}>
-          {tab === 'all' ? 'tap a figure to flag it for rectification' : 'each figure with its question and what the checks found'}
+          {tab === 'all' ? 'tap a figure to flag it for rectification'
+            : tab === 'solutions' ? 'switched-off solution images — approve, amend, or leave hidden'
+              : 'each figure with its question and what the checks found'}
         </span>
         <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
           {/* Filled = where you are. The old pair read as two buttons rather
@@ -212,6 +322,12 @@ export default function FiguresPage() {
               border: `1px solid ${C.flag}`, background: tab === 'flagged' ? C.flag : '#fff',
               borderRadius: 8, padding: '6px 14px', cursor: 'pointer' }}>
             🚩 Review {flaggedCount || ''} flagged →
+          </button>
+          <button onClick={() => goTab('solutions')}
+            style={{ fontSize: 13.5, fontWeight: 700, color: tab === 'solutions' ? '#fff' : '#7c3aed',
+              border: '1px solid #7c3aed', background: tab === 'solutions' ? '#7c3aed' : '#fff',
+              borderRadius: 8, padding: '6px 14px', cursor: 'pointer' }}>
+            🖼 Solutions{solTotals.held ? ` · ${solTotals.held}` : ''}
           </button>
         </span>
       </div>
@@ -345,7 +461,116 @@ export default function FiguresPage() {
         </div>
       ))}
 
-      <div style={{ display: tab === 'flagged' ? 'none' : 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8 }}>
+      {tab === 'solutions' && (
+        <>
+          <div style={{ background: '#faf5ff', border: '1px solid #ddd6fe', borderRadius: 10, padding: '8px 12px', marginBottom: 10, fontSize: 13.5 }}>
+            <strong>{solTotals.held} solution images are switched off</strong> — they carry another
+            school&apos;s or centre&apos;s watermark, so the render gate withholds them wherever a
+            solution is revealed. {solTotals.withCandidate} have a cleaned candidate.
+            <div style={{ marginTop: 4, color: C.muted }}>
+              <em>Approve as-is</em> puts the image back untouched. <em>Use cleaned candidate</em> writes
+              the cleaned copy as a new object and repoints every reference to it — the original is
+              never deleted, so it is revertible. A candidate the cleaning session held is still shown,
+              with its reason; its button says <em>Use it anyway</em>.
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+            <span style={{ fontSize: 13, color: C.muted }}>page {page + 1} / {lastPage + 1}</span>
+            <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+              <button disabled={page === 0 || loading} onClick={() => { setPage((p) => Math.max(0, p - 1)); window.scrollTo({ top: 0 }); }}
+                style={{ fontSize: 13, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '4px 12px', cursor: 'pointer', opacity: page === 0 ? 0.4 : 1 }}>← Prev</button>
+              <button disabled={page >= lastPage || loading} onClick={() => { setPage((p) => p + 1); window.scrollTo({ top: 0 }); }}
+                style={{ fontSize: 13, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '4px 12px', cursor: 'pointer', opacity: page >= lastPage ? 0.4 : 1 }}>Next →</button>
+            </span>
+          </div>
+          {!loading && sols.length === 0 && (
+            <div style={{ color: C.muted, fontSize: 14, padding: 20, textAlign: 'center' }}>Nothing held — every solution image has been judged.</div>
+          )}
+          {sols.map((it) => {
+            const busy = solBusy === it.path;
+            const cand = it.candidate;
+            const chip = cand ? verdictChip(cand) : null;
+            const btn = {
+              fontSize: 13, fontWeight: 600, border: `1px solid ${C.border}`, background: '#fff',
+              color: '#111', borderRadius: 8, padding: '6px 12px', cursor: busy ? 'default' : 'pointer',
+              opacity: busy ? 0.5 : 1,
+            } as const;
+            return (
+              <div key={it.path} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: 10, marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', fontSize: 13.5, marginBottom: 6 }}>
+                  <strong>
+                    {it.level ?? '?'} · {it.school ?? '?'} {it.year ?? ''}
+                    {it.paper ? ` P${it.paper}` : ''}{it.qnum ? ` Q${it.qnum}` : ''}
+                  </strong>
+                  <span style={{ color: '#7c3aed', fontWeight: 700 }}>{it.partLabel ?? ''}</span>
+                  <a href={`/admin/questions?id=${it.qid}`} target="_blank" rel="noreferrer"
+                    style={{ marginLeft: 'auto', fontSize: 12.5, border: `1px solid ${C.border}`, borderRadius: 8, padding: '3px 10px', textDecoration: 'none', color: '#111' }}>Open question ↗</a>
+                </div>
+                {it.note && (
+                  <div style={{ fontSize: 12, color: C.muted, marginBottom: 8, maxHeight: 60, overflow: 'auto' }}>{it.note}</div>
+                )}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 8 }}>
+                  <figure style={{ margin: 0 }}>
+                    <figcaption style={{ fontSize: 11.5, color: C.muted, marginBottom: 3 }}>In the bank now</figcaption>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <a href={it.liveUrl} target="_blank" rel="noreferrer"><img src={it.liveUrl} alt="" loading="lazy"
+                      style={{ width: '100%', maxHeight: 380, objectFit: 'contain', background: '#fff', border: '1px solid #94a3b8', borderRadius: 6 }} /></a>
+                  </figure>
+                  <figure style={{ margin: 0 }}>
+                    <figcaption style={{ fontSize: 11.5, color: C.muted, marginBottom: 3 }}>Cleaned candidate</figcaption>
+                    {cand ? (
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <a href={cand.url} target="_blank" rel="noreferrer"><img src={cand.url} alt="" loading="lazy"
+                          style={{ width: '100%', maxHeight: 380, objectFit: 'contain', background: '#fff', border: '1px solid #94a3b8', borderRadius: 6 }} /></a>
+                        {chip && (
+                          <div style={{ marginTop: 5 }}>
+                            <span style={{ fontSize: 11.5, color: chip.colour, border: `1px solid ${chip.colour}`, borderRadius: 999, padding: '1px 9px' }}>{chip.text}</span>
+                            {chip.hint && <div style={{ fontSize: 11.5, color: C.muted, marginTop: 3 }}>{chip.hint}</div>}
+                            {(cand.holdReason ?? cand.note) && (
+                              <div style={{ fontSize: 11.5, color: C.muted, marginTop: 3, maxHeight: 54, overflow: 'auto' }}>
+                                {(cand.holdReason ?? cand.note ?? '').slice(0, 300)}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div style={{ fontSize: 13, color: C.muted, border: `1px dashed ${C.border}`, borderRadius: 6, padding: '24px 10px', textAlign: 'center' }}>
+                        no cleaned candidate yet
+                      </div>
+                    )}
+                  </figure>
+                </div>
+                {solErr[it.path] && (
+                  <div style={{ fontSize: 12.5, color: '#b91c1c', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '5px 9px', marginBottom: 8 }}>
+                    {solErr[it.path]}
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <button disabled={busy} onClick={() => solAct(it, 'approve-as-is')}
+                    style={{ ...btn, color: '#fff', background: '#15803d', border: 'none' }}>✓ Approve as-is</button>
+                  {cand && (
+                    <button disabled={busy} onClick={() => solAct(it, 'approve-candidate')}
+                      style={{ ...btn, color: '#fff', background: cand.verdict === 'apply' ? '#15803d' : '#b45309', border: 'none' }}>
+                      {cand.verdict === 'apply' ? '✓ Use cleaned candidate' : 'Use it anyway'}
+                    </button>
+                  )}
+                  <label style={{ ...btn, display: 'inline-block' }}>
+                    ✍️ Amend…
+                    <input type="file" accept="image/png,image/jpeg" disabled={busy} style={{ display: 'none' }}
+                      onChange={(e) => { const f = e.target.files?.[0]; e.currentTarget.value = ''; if (f) amend(it, f); }} />
+                  </label>
+                  <button disabled={busy} onClick={() => solAct(it, 'keep-hidden')} style={btn}>🙈 Keep hidden</button>
+                  <button disabled={busy} onClick={() => solAct(it, 'redraw')} style={btn}>✏️ Redraw</button>
+                </div>
+              </div>
+            );
+          })}
+        </>
+      )}
+
+      <div style={{ display: tab === 'all' ? 'grid' : 'none', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8 }}>
         {items.map((it) => (
           <div key={it.path}
             style={{ background: C.card, border: `2px solid ${it.flagged ? C.flag : C.border}`, borderRadius: 10, overflow: 'hidden', position: 'relative' }}>
