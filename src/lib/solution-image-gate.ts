@@ -50,6 +50,14 @@ export type { SolutionImageGate };
 export const SOLUTION_IMAGES_REQUIRE_CLEAN = false;
 
 /** A figure_flags row of kind='solution', as the gate needs it. */
+// STATUS VALUES FOR SOLUTION ROWS (3 Sep 2026, agreed with the figure-repair
+// session): use `held`, not `open`, when flagging a stamped solution image. The
+// three serving RPCs exclude a question on ANY figure_flags row with
+// status='open' (no kind filter), so an `open` solution row would pull the whole
+// question out of practice/kiosk pools — far blunter than hiding one image, and
+// it silently shrinks the pool. `held` is invisible to the pools and blocks
+// only here, in the render gate. `open` is still honoured (blocked) for safety;
+// `fixed` = cleaned, which the allow-list treats as clean.
 export type SolutionFlagRow = { path: string; status: string };
 
 /** Everything renders — "nothing is flagged", and the deny-list's outage posture. */
@@ -78,7 +86,7 @@ export function gateFromFlagRows(
     if (!r || typeof r.path !== 'string') continue;
     const p = normaliseImagePath(r.path);
     if (!p) continue;
-    if (r.status === 'open') blocked.add(p);
+    if (r.status === 'open' || r.status === 'held') blocked.add(p);
     else if (r.status === 'fixed') clean.add(p);
   }
   return requireClean ? { blocked, requireClean: true, clean } : { blocked };
@@ -101,7 +109,7 @@ export async function solutionImageGateFor(
     for (let i = 0; i < ids.length; i += 200) {
       let q = supa.from('figure_flags').select('path, status')
         .eq('kind', 'solution').in('question_id', ids.slice(i, i + 200));
-      if (!requireClean) q = q.eq('status', 'open');     // deny-list only needs the open rows
+      if (!requireClean) q = q.in('status', ['open', 'held']); // deny-list needs the blocking rows only
       const { data, error } = await q;
       if (error) throw new Error(error.message);
       rows.push(...((data ?? []) as SolutionFlagRow[]));

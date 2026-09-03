@@ -59,3 +59,11 @@ describe('solution-image gate — builders', () => {
     expect(solutionImageAllowed('anything.png', closedGate())).toBe(false);
   });
 });
+
+describe('held rows', () => {
+  it("a 'held' solution row blocks in the render gate exactly like 'open'", () => {
+    const g = gateFromFlagRows([{ path: 'solutions/a.png', status: 'held' }, { path: 'solutions/b.png', status: 'fixed' }], false);
+    expect(g.blocked.has('solutions/a.png')).toBe(true);
+    expect(g.blocked.has('solutions/b.png')).toBe(false);
+  });
+});

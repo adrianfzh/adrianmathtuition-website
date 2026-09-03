@@ -81,6 +81,7 @@ sub-part `solution_image` and `{{IMG:…}}` inside solution text had NO gate:
 `solutionMarkdown()` rendered them unconditionally, so a scan carrying another
 school's or tuition centre's branding showed the moment a solution was revealed
 (Adrian: never ship another company's watermark). `lib/solution-image-gate.ts`
+  **Flag a stamped solution image with `status='held'`, not `open`** (3 Sep 2026): the serving RPCs exclude a question on any `open` row regardless of `kind`, so an open solution row would drop the whole question from practice/kiosk pools; `held` is ignored by the pools and blocks only in the render gate (pool bite = 0), and becomes `fixed` when the image is cleaned.
 now builds a `SolutionImageGate` from `figure_flags` rows with `kind='solution'`
 (`open` = blocked, matched by normalised bucket path — `normaliseImagePath()` in
 `lib/bank-question-markdown.ts`), and every student-facing solution renderer
