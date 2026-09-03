@@ -707,6 +707,7 @@ function DetailView(p: {
           {run.photosPdfUrl && <a href={run.photosPdfUrl} target="_blank" rel="noreferrer" style={{ color: C.link, textDecoration: 'none' }}>🖼 Images ↗</a>}
           {run.pdfUrl && <a href={run.pdfUrl} target="_blank" rel="noreferrer" style={{ color: C.link, textDecoration: 'none' }}>📄 Full ↗</a>}
           <a href={`/admin/mark-paper?run=${run.id}&annotate=1`} style={{ color: C.pen, textDecoration: 'none' }}>✏️ Annotate</a>
+          <OpenInApp url={run.annotatedPdfUrl || run.pdfUrl} name={`${run.paperName || 'marked paper'}.pdf`} />
         </div>
         <div style={{ marginTop: 8, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', fontSize: 13.5 }}>
           <span style={{ color: C.muted }}>My copy:</span>
@@ -808,6 +809,41 @@ function DetailView(p: {
 }
 
 // ── The cover: "where the marks went", from /api/admin/paper-analysis ────────
+// 📤 Open in… — hand the marked PDF to the iPad's share sheet so Adrian can
+// pick Notability (or GoodNotes, Files…) and annotate there. Adrian, 3 Sep
+// 2026: "for annotation, is it possible for another button when click launch
+// the pdf on notability also?" iOS has no URL scheme that opens a GIVEN file
+// in Notability, so the share sheet is the one-tap-short-of-direct route: the
+// PDF is fetched as a File and handed to navigator.share, which Safari on
+// iPadOS supports for files. Where files can't be shared (desktop browsers,
+// old iOS) the button opens the PDF in a new tab instead, whose own share
+// button does the same job. Nothing here writes anything.
+function OpenInApp({ url, name }: { url: string | null; name: string }) {
+  const [busy, setBusy] = useState(false);
+  if (!url) return null;
+  const canShareFiles = typeof navigator !== 'undefined' && typeof navigator.share === 'function' && typeof navigator.canShare === 'function';
+  const open = async () => {
+    if (!canShareFiles) { window.open(url, '_blank', 'noopener'); return; }
+    setBusy(true);
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const file = new File([blob], name.replace(/[\\/:*?"<>|]/g, '-'), { type: 'application/pdf' });
+      if (!navigator.canShare({ files: [file] })) { window.open(url, '_blank', 'noopener'); return; }
+      await navigator.share({ files: [file], title: name });
+    } catch (e) {
+      // AbortError = the sheet was dismissed; anything else falls back to a tab.
+      if (!(e instanceof Error && e.name === 'AbortError')) window.open(url, '_blank', 'noopener');
+    } finally { setBusy(false); }
+  };
+  return (
+    <button type="button" onClick={open} disabled={busy} title="Share sheet → Notability, GoodNotes, Files…"
+      style={{ ...btn('#fff', C.pen, C.pen), padding: '2px 8px', fontSize: 13 }}>
+      {busy ? '📤 Preparing…' : '📤 Open in…'}
+    </button>
+  );
+}
+
 function CoverCard({ cover }: { cover: Cover | null }) {
   if (!cover) return null;
   const themes = cover.themes.slice(0, 6);
