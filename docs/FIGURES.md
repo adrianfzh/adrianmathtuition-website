@@ -411,6 +411,42 @@ in `parts[1].subparts[1].image_url`; a whole-row read-back caught it. Sub-parts
 are a real level. Replace recursively and re-read the whole row to prove the old
 key is gone.
 
+## 8d. THE UNIT OF JUDGEMENT IS THE IMAGE, NOT THE QUESTION (2026-09-03)
+
+Nearly every gap found on 3 Sep traces to one assumption: that a question has *a* figure.
+It does not. A question can carry a stem image, a figure per part, a figure per SUB-part,
+`image_url_after` on any of those, a question-level `solution_images[]`, and inline
+`{{IMG:…}}` markers in its text. Anything keyed on the question silently covers one of them.
+
+**What that assumption cost, in one day:**
+- The 3,224-figure watermark sweep indexed **one image per question**. **149 questions
+  stamped `clean` carry 163 part-level images the sweep never rendered, never judged and
+  never compared to a control** — and at least one of them (`5179b4a0…` on Raffles Girls
+  2021 AM Q8, `parts[(ii)].image_url_after`) carries the full tiled RGS lattice while its
+  question sat marked clean and serving.
+- The apply script updated `parts[1].image_url` and left the identical key in
+  `parts[1].subparts[1].image_url`; only a whole-row read-back caught it.
+- 14 questions bank-wide were **blocked from serving while their figure sat safely in
+  storage**, because the serving check reads the row-level column and their figures live at
+  part level. Four of them have TWO part figures — which is *why* they were never at row
+  level: one column cannot hold two.
+- 31 figures referenced only by inline `{{IMG:…}}` markers sat in no slot at all, reachable
+  by no slot-walking enumerator.
+- 12 part slots hold a **JSON-array STRING** (`'["question_images/x.png"]'`) rather than a
+  bare path; a reader that does not parse it fetches nothing and concludes "missing".
+
+**The rule.** Enumerate images by walking the whole row — every part, every sub-part, every
+`*_after`, `solution_images[]`, and a regex for `{{IMG:…}}` in text — and read each slot
+through one shared accessor that accepts *bare path | JSON-array string | array of {url}*.
+Never write a figure reference by naming a field path; replace recursively and then prove
+the old key is absent from the ENTIRE row. `lib/bank-question-markdown.ts`'s
+`partImagePaths()` / `inlineImagePaths()` are that accessor — use them, do not re-derive.
+
+**And check the right object before you contradict someone.** I told the other session their
+stamped-figure finding was a stale read, having re-fetched the three ROW-LEVEL keys and found
+them clean. The stamp was on a part-level object I had not looked at. They were right; the
+question went back to serving for several minutes on my say-so.
+
 ## 8c. Traps that bit more than once (2026-09-03) — read before counting anything
 
 **1. NULL kills a boolean, in SQL and in PostgREST. Three separate incidents in one day.**
