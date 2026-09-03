@@ -34,6 +34,35 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json().catch(() => ({}));
+
+  // A Dropbox-sourced worksheet (`pdfSource: 'dropbox:<path>'`, no https pdfUrl)
+  // is copied to Blob BEFORE validation. Until 3 Sep 2026 the copy sat after
+  // validateAssignment, whose worksheet rule demands an https pdfUrl — so the
+  // desk's one-tap Approve & release (release-with-sheet sends exactly this
+  // shape) died on production with "pdfUrl (https) is required for a worksheet"
+  // for every paper, and four releases had to be done by hand. The temp link
+  // dies in ~4h, so the bytes go to Blob under a stable public URL the student
+  // can keep.
+  const srcRaw = typeof body?.pdfSource === 'string' ? body.pdfSource.trim() : '';
+  const hasHttps = typeof body?.pdfUrl === 'string' && /^https:\/\//.test(body.pdfUrl.trim());
+  if (body?.kind === 'worksheet' && srcRaw.startsWith('dropbox:') && !hasHttps) {
+    if (!dropboxConfigured()) return NextResponse.json({ error: 'Dropbox not configured' }, { status: 503 });
+    const path = srcRaw.slice('dropbox:'.length);
+    try {
+      const tmp = await getTemporaryLink(path);
+      const res = await fetch(tmp);
+      if (!res.ok) throw new Error(`Dropbox fetch ${res.status}`);
+      const buf = Buffer.from(await res.arrayBuffer());
+      if (buf.length > 50 * 1024 * 1024) throw new Error('PDF over 50MB');
+      const blob = await put(`assignments/${crypto.randomUUID()}.pdf`, buf, {
+        access: 'public', contentType: 'application/pdf', addRandomSuffix: false,
+      });
+      body.pdfUrl = blob.url;
+    } catch (e) {
+      return NextResponse.json({ error: `Could not copy the Dropbox PDF: ${(e as Error).message}` }, { status: 502 });
+    }
+  }
+
   const v = validateAssignment(body);
   if (!v.ok) return NextResponse.json({ error: v.error }, { status: 400 });
   const row = v.row;
@@ -45,28 +74,8 @@ export async function POST(req: NextRequest) {
     const { data: q } = await supabase
       .from('questions').select('id, deleted_at').eq('id', row.question_id!).maybeSingle();
     if (!q || q.deleted_at) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
-  } else {
-    // Dropbox picks arrive as `dropbox:<path>` — the temp link dies in ~4h, so
-    // copy the bytes to Blob under a stable public URL the student can keep.
-    const src = row.pdf_source || '';
-    if (src.startsWith('dropbox:')) {
-      if (!dropboxConfigured()) return NextResponse.json({ error: 'Dropbox not configured' }, { status: 503 });
-      const path = src.slice('dropbox:'.length);
-      try {
-        const tmp = await getTemporaryLink(path);
-        const res = await fetch(tmp);
-        if (!res.ok) throw new Error(`Dropbox fetch ${res.status}`);
-        const buf = Buffer.from(await res.arrayBuffer());
-        if (buf.length > 50 * 1024 * 1024) throw new Error('PDF over 50MB');
-        const blob = await put(`assignments/${crypto.randomUUID()}.pdf`, buf, {
-          access: 'public', contentType: 'application/pdf', addRandomSuffix: false,
-        });
-        row.pdf_url = blob.url;
-      } catch (e) {
-        return NextResponse.json({ error: `Could not copy the Dropbox PDF: ${(e as Error).message}` }, { status: 502 });
-      }
-    }
   }
+  // (A worksheet's Dropbox source was already copied to Blob above, before validation.)
 
   const { data, error } = await supabase
     .from('portal_assignments').insert(row).select('*').single();
