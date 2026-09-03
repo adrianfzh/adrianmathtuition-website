@@ -21,6 +21,8 @@ import { activeAnnouncement } from '@/lib/portal-announcement';
 import { loadActivePlan } from '@/lib/remediation-data';
 import { relockItems, nextOpenItem } from '@/lib/remediation';
 import PortalAnnouncementCard from '@/components/PortalAnnouncementCard';
+import InstallCard from '@/components/InstallCard';
+import PushNudgeCard from '@/components/PushNudgeCard';
 import { SURFACES } from '@/lib/portal-theme';
 import PortalIcon from '@/components/PortalIcon';
 import ExamCountdown from './exam-countdown';
@@ -49,9 +51,12 @@ export default async function DashboardPage() {
   // week-stats and recent-practice cards only render for the full portal
   // (Adrian's admin cookie, unless he is "viewing as student").
   const fullPortal = await fullPortalVisible();
+  // Adrian's admin cookie, not flipped to "view as student" — the install /
+  // push nudges below are for students only (he sees them by viewing as one).
+  const adminViewer = (await isNotesAuthed()) && !(await viewingAsStudent());
   // Learn units aren't released to students — the "start here" stack (which
   // deep-links into /app/learn) only renders for Adrian's admin cookie.
-  const learnVisible = LEARN_OPEN_TO_STUDENTS || ((await isNotesAuthed()) && !(await viewingAsStudent()));
+  const learnVisible = LEARN_OPEN_TO_STUDENTS || adminViewer;
   // rec… for tuition, acct:<uuid> for strangers — the key every portal-owned
   // Supabase table uses (lib/portal-auth.portalIdentity).
   const sid = portalIdentity(account);
@@ -139,6 +144,15 @@ export default async function DashboardPage() {
       {announcement && (fullPortal || !announcement.fullPortalOnly) && (
         <PortalAnnouncementCard announcement={announcement} />
       )}
+
+      {/* 📱 Install + 🔔 push nudges (2026-09-03, Adrian: students should
+          "STAY in the app"). Mutually exclusive by state — the install card
+          needs a browser tab on a phone, the push nudge needs the installed
+          app with permission not yet asked — so at most one renders. Both
+          students-only, once per page load, ✕ = 14-day snooze, all decided
+          in lib/install-prompt.ts (tested); telemetry → /api/portal/event. */}
+      <InstallCard variant="home" adminViewer={adminViewer} />
+      <PushNudgeCard adminViewer={adminViewer} />
 
       {/* From Adrian — assigned work, at the top because it's the one thing
           Adrian specifically asked this student to do. Hidden when nothing is

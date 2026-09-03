@@ -6,6 +6,7 @@ import { getSupabaseBrowser } from '@/lib/supabase-client';
 import { PORTAL_TOUR_KEY } from '@/lib/portal-tour';
 import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 import PushToggle from './PushToggle';
+import InstallCard from '@/components/InstallCard';
 
 const card = 'bg-white rounded-2xl border border-black/5 shadow-sm p-5';
 const input = 'w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy/30';
@@ -156,14 +157,10 @@ export default function SettingsClient({
         </button>
       </div>
 
-      <div className={card}>
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Add to Home Screen</p>
-        <p className="text-sm text-gray-600">
-          iPhone: open this site in Safari → Share → <span className="font-semibold">Add to Home Screen</span>.
-          Android: Chrome menu → <span className="font-semibold">Install app</span>. The portal then opens
-          like a normal app.
-        </p>
-      </div>
+      {/* Platform-aware install row (components/InstallCard.tsx) — the same
+          instructions as the Home card and PushToggle's install-first line;
+          says ✓ once the portal is running as an installed app. */}
+      <InstallCard variant="settings" />
 
       <div className={card}>
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Your data</p>

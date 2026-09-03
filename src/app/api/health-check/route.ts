@@ -335,6 +335,16 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`table? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
       return 'auth gate up';
     }),
+    // 📱 Install card + 🔔 push nudge telemetry (/api/portal/event, kinds
+    // bounded in lib/install-prompt.ts). Anonymous POST must 401 — a 404
+    // means the route fell out of the build and the funnel goes dark
+    // silently (the cards themselves never surface a telemetry failure).
+    // Its table, portal_event_log, is probed by lesson-engine above.
+    timed('portal-event', async () => {
+      const r = await fetch(`${base}/api/portal/event`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // 🎯 Fix-it plans (SPEC-REMEDIATION.md). The student route must hold its
     // auth gate (401 anonymously — a 404 means the Home card and /app/fixit
     // silently vanish), and the tables + the columns the lane reads must

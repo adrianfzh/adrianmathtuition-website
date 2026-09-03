@@ -1,31 +1,27 @@
 'use client';
 
 // "🔔 Notify me when my marked paper is ready" — the web-push opt-in card on
-// /app/settings. Enable: register /sw.js → ask permission → subscribe → POST
+// /app/settings. Enable: ask permission → register /sw.js → subscribe → POST
 // /api/portal/push. Disable: unsubscribe → DELETE. State reflects the
 // browser's actual subscription on load, not a stored preference.
 //
+// The enable/disable flow itself lives in lib/portal-push-client.ts since
+// 2026-09-03 — the Home push nudge (components/PushNudgeCard.tsx) runs the
+// identical steps; this file only maps outcomes to the toggle's messages.
+//
 // iPhone: Safari only exposes PushManager to web apps installed on the Home
-// Screen (iOS 16.4+), so an un-installed visit shows the install hint instead
-// of a toggle that could never work.
+// Screen (iOS 16.4+), so an un-installed visit shows the install steps
+// (components/InstallCard InstallSteps — the same words as everywhere else)
+// instead of a toggle that could never work.
 import { useEffect, useState } from 'react';
-import { urlBase64ToUint8Array } from '@/lib/push-payload';
-import { portalFetch } from '@/lib/portal-fetch';
+import { currentPushSubscription, disablePush, enablePush, pushSupported } from '@/lib/portal-push-client';
+import { InstallSteps } from '@/components/InstallCard';
+import { useInstallStore } from '@/components/portal-install-store';
 
 const card = 'bg-white rounded-2xl border border-black/5 shadow-sm p-5';
 
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '';
-
-function pushSupported(): boolean {
-  return (
-    typeof window !== 'undefined' &&
-    'serviceWorker' in navigator &&
-    'PushManager' in window &&
-    typeof Notification !== 'undefined'
-  );
-}
-
 export default function PushToggle() {
+  const snap = useInstallStore();
   const [support, setSupport] = useState<'checking' | 'ok' | 'none'>('checking');
   const [enabled, setEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -38,15 +34,10 @@ export default function PushToggle() {
         if (!cancelled) setSupport('none');
         return;
       }
-      try {
-        const reg = await navigator.serviceWorker.getRegistration();
-        const sub = await reg?.pushManager.getSubscription();
-        if (!cancelled) {
-          setEnabled(!!sub);
-          setSupport('ok');
-        }
-      } catch {
-        if (!cancelled) setSupport('ok');
+      const sub = await currentPushSubscription();
+      if (!cancelled) {
+        setEnabled(!!sub);
+        setSupport('ok');
       }
     })();
     return () => { cancelled = true; };
@@ -55,37 +46,17 @@ export default function PushToggle() {
   async function enable() {
     setBusy(true);
     setMsg('');
-    try {
-      if (!VAPID_PUBLIC_KEY) throw new Error('push key not configured');
-      await navigator.serviceWorker.register('/sw.js');
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') {
-        setMsg(permission === 'denied'
-          ? 'Notifications are blocked for this site — allow them in your browser settings, then try again.'
-          : 'Notification permission was not granted.');
-        return;
-      }
-      // `ready` waits for the worker to activate — subscribing on a
-      // just-registered, not-yet-active worker throws in Chrome.
-      const reg = await navigator.serviceWorker.ready;
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-      });
-      try {
-        await portalFetch('/api/portal/push', { json: sub.toJSON() });
-      } catch (e) {
-        // Server didn't store it — undo the browser side so the toggle never
-        // shows "on" for a subscription no push will ever reach.
-        await sub.unsubscribe().catch(() => { /* best effort */ });
-        throw e;
-      }
+    const r = await enablePush();
+    setBusy(false);
+    if (r.ok) {
       setEnabled(true);
       setMsg('✓ On — you\'ll get a notification when a marked paper is released.');
-    } catch {
+    } else if (r.reason === 'denied') {
+      setMsg('Notifications are blocked for this site — allow them in your browser settings, then try again.');
+    } else if (r.reason === 'default') {
+      setMsg('Notification permission was not granted.');
+    } else {
       setMsg('Could not turn notifications on — try again.');
-    } finally {
-      setBusy(false);
     }
   }
 
@@ -93,17 +64,7 @@ export default function PushToggle() {
     setBusy(true);
     setMsg('');
     try {
-      const reg = await navigator.serviceWorker.getRegistration();
-      const sub = await reg?.pushManager.getSubscription();
-      if (sub) {
-        const endpoint = sub.endpoint;
-        await sub.unsubscribe().catch(() => { /* best effort */ });
-        await fetch('/api/portal/push', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ endpoint }),
-        }).catch(() => { /* row self-cleans on the next expired send */ });
-      }
+      await disablePush();
       setEnabled(false);
       setMsg('Notifications are off.');
     } catch {
@@ -114,15 +75,18 @@ export default function PushToggle() {
   }
 
   return (
-    <div className={card}>
+    <div className={card} data-push-toggle={support}>
       <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Notifications</p>
 
       {support === 'none' ? (
-        <p className="text-sm text-gray-600">
-          On iPhone: open this site in Safari → Share →{' '}
-          <span className="font-semibold">Add to Home Screen</span>, then turn this on from the
-          installed app.
-        </p>
+        <>
+          <p className="text-sm text-gray-600">
+            {snap.platform === 'ios'
+              ? 'On iPhone, notifications only work from the installed app — add AdrianMath to your Home Screen, then turn this on from there.'
+              : 'This browser can’t show notifications for the portal — install AdrianMath on your phone and turn them on from there.'}
+          </p>
+          {snap.ready && <InstallSteps snap={snap} />}
+        </>
       ) : (
         <>
           <div className="flex items-center justify-between gap-3">

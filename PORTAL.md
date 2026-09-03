@@ -135,6 +135,58 @@ See migration `student_portal_v1_schema` for full DDL. Tables created:
 
 RLS policies: students can only `SELECT` their own rows from each table. Service-role bypass for the admin invite flow + cron jobs.
 
+## Install + push (2026-09-03)
+
+Adrian (2026-09-02): students should "STAY in the app". Safari never offers an
+install by itself, Chrome's mini-infobar is easy to miss, and the push toggle
+sat unnoticed in Settings — so the portal now asks once, politely, on Home.
+Everything that decides *what shows where* is pure and tested in
+`lib/install-prompt.ts`; the DOM facts (UA, touch points, standalone, Chrome's
+captured `beforeinstallprompt`, `Notification.permission`, the two snoozes)
+are gathered once in `components/portal-install-store.ts` (a
+`useSyncExternalStore` store, SSR-safe — nothing renders on the server or
+during hydration).
+
+**Install card** (`components/InstallCard.tsx`) — "Put AdrianMath on your Home
+Screen · Opens like an app — and it's how you get a ping when your paper is
+marked."
+
+| Device / state | Home card (`variant="home"`) | Settings row (`variant="settings"`) |
+|---|---|---|
+| Already installed (`display-mode: standalone` or `navigator.standalone`) | hidden | "✓ You're using AdrianMath as an app on this device." |
+| Desktop UA (no-touch Mac, Windows, ChromeOS) | hidden | phone hint (iPhone: Share → Add to Home Screen · Android: ⋮ → Add to Home screen) |
+| iPhone / iPad — incl. iPadOS's Mac UA, unmasked by `maxTouchPoints > 1` | 2-step card: ① Tap **Share** ⬆ *(in the bar at the bottom / at the top right on iPad / next to the address bar on iOS Chrome)* ② Tap **Add to Home Screen** ⊞ | same two steps |
+| Android, Chrome's `beforeinstallprompt` captured | **Install** button → `prompt()`; accepted / `appinstalled` → hidden | Install button |
+| Android, no prompt (Firefox, Samsung, or Chrome before it fires) | hidden (a button that can't prompt is worse than no card) | ⋮ → Add to Home screen steps |
+| Adrian's admin cookie, not "viewing as student" | hidden (students only) | shown (he can read the copy) |
+| ✕ "Not now" | snoozed **14 days** (`localStorage portal_install_snooze_until`, try/catch — private mode just doesn't persist) | ignores the snooze |
+
+The Home card shows **once per page load**: a claim token in the store means
+a later Home visit in the same load stays quiet; a fresh launch/reload asks
+again until installed or snoozed. PushToggle's old "install first" prose is
+the same `<InstallSteps>` component — one source of truth for the words.
+
+**Push nudge** (`components/PushNudgeCard.tsx`) — "Turn on notifications ·
+We'll tell you when your paper is marked — and when Adrian sends you work."
+The mirror image: shows only **inside the installed app** (standalone), only
+while `Notification.permission === 'default'`, students only, once per load,
+✕ = its own 14-day snooze (`portal_push_nudge_snooze_until`). The tap runs
+`lib/portal-push-client.ts enablePush()` — the SAME flow as the Settings
+toggle (permission is requested first, inside the tap handler, before the
+service-worker `await`s, because Safari honours it only while the tap's
+activation is live). Granted → subscribed → ✓ for 2.5 s → gone. Denied → the
+browser remembers, gone for good. `'granted'` with the toggle switched off is
+a choice — the nudge never shows for it. Never prompts on load.
+
+**Telemetry** — `POST /api/portal/event {kind}` → `portal_event_log`, bounded
+kinds (`PORTAL_CLIENT_EVENT_KINDS`): `install:shown` (Android card),
+`install:accepted`, `install:dismissed`, `install:ios-shown`,
+`push:nudge-shown`, `push:nudge-on`, `push:nudge-denied`, `push:nudge-dismissed`.
+Deduped per page load, keepalive, fail-soft; 100 rows/student/SGT-day cap;
+health-check `portal-event` probes the 401. Funnel: `install:shown ÷
+install:accepted` = Android take-up; `push:nudge-shown ÷ push:nudge-on` =
+notification take-up.
+
 ## Practice pool — which questions a topic serves (2026-08-22)
 
 The portal practice draw (`/api/portal/practice/{next,overview,topics}`, plus
