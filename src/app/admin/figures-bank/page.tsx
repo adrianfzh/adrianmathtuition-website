@@ -21,7 +21,8 @@ type Item = {
   stem?: string; stemEmpty?: boolean; figureMissing?: boolean; watermark?: string | null;
   checks?: { width: number; height: number; inkShare: number; textShare: number;
              small: boolean; blank: boolean; textInCrop: boolean;
-             margins: { left: number; right: number; top: number; bottom: number } | null;
+             margins: { left: number; right: number; top: number; bottom: number   note?: string | null;
+} | null;
              wideMargins: boolean } | null;
 };
 
@@ -254,7 +255,12 @@ export default function FiguresPage() {
   };
   /** Never bulk-release something that could not be measured — no checks means
    *  no evidence, not a clean bill of health. */
-  const isQuiet = (it: Item) => !!it.checks && chipsFor(it).length === 0;
+  // A correctness hold (wrong figure, answer leak, blocks-answering, or one the
+  // fitness pass re-opened) is NEVER "quiet": the pixel checks cannot see those
+  // faults, and on 3 Sep 2026 a bulk release put a leaked answer and two wrong
+  // figures back in front of students an hour after they were hidden.
+  const CORRECTNESS = /blocks-answering|wrong-figure|answer-leak|RE-OPENED|hide/i;
+  const isQuiet = (it: Item) => !!it.checks && chipsFor(it).length === 0 && !CORRECTNESS.test(it.note ?? '');
 
   /** One vet-lane action. The card leaves the list on success; the error stays
    *  on the card (with the failed STEP named) so a half-applied write is

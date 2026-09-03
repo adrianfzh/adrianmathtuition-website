@@ -443,7 +443,7 @@ export async function GET(req: NextRequest) {
 
   if (sp.get('flagged') === '1') {
     const { data: allFlags, error } = await supa
-      .from('figure_flags').select('path, question_id, status, created_at')
+      .from('figure_flags').select('path, question_id, status, created_at, note')
       .eq('status', 'open').eq('kind', 'question').order('created_at', { ascending: true }).limit(1000);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     // Paginated, because every item is MEASURED — the checks below need the
@@ -478,7 +478,7 @@ export async function GET(req: NextRequest) {
       }
       const stem = ((q?.question_text as string) ?? '').replace(/\s+/g, ' ').trim();
       return {
-        path: f.path, qid: f.question_id, flagged: true,
+        path: f.path, qid: f.question_id, flagged: true, note: (f.note as string | null) ?? null,
         url: imgSrc(`question_images/${f.path}`), thumb: thumbUrl(f.path),
         currentUrl: now ? imgSrc(`question_images/${now}`) : null,
         changed: !!now && now !== f.path,
