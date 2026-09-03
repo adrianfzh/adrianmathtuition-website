@@ -256,10 +256,10 @@ signed off by Adrian; originals kept, every swap in `figure_clean_log`.
 
 - **Two sweeps over all 3,224 swept figures found 19 stamped**, not 18 — the
   second pass caught Raffles Girls 2013 Q13 that the first missed.
-- **3,054 figures stamped `clean` + the 19 replaced → 2,998 questions returned to
-  serving** (3,168 blocked → 170).
-- Still blocked: **32** held back pending the grey-fill third pass, **138 never
-  swept at all** (they were not in the sweep index — they still need a pass).
+- **3,030 questions returned to serving** (3,168 blocked → 138). The swept corpus
+  is fully resolved: **zero swept-but-unstamped** remain.
+- Still blocked: **138 figures that were never in the sweep index at all.** They
+  have had no examination of any kind. That is the whole remaining gap.
 
 **Four stamp mechanisms**, so probe before reaching for pixels:
 1. a deletable `/Artifact <</Subtype /Watermark>>` block wrapping a form, at
@@ -284,10 +284,27 @@ the ink threshold. Check their original grey before calling it damage.
   pure-white tile; a pale-band view never raises it.
 - **Levels-clipped crops with grey fill.** Raffles Girls 2013 Q13 scores 0.17%
   pale, so both passes cleared it — the stamp survives only where it lies over
-  the figure's own halftone grey. Isolate **196–236** to see it. The tell is
-  **grey coverage, not pale coverage**: that figure is 30.5% grey (180–235),
-  line art is 0–5%. Only **40 figures** bank-wide fit the profile
-  (grey ≥ 10% and pale < 1%).
+  the figure's own halftone grey. The tell is **grey coverage, not pale
+  coverage**: that figure is 30.5% grey (180–235), line art is 0–5%. Only
+  **40 figures** bank-wide fit the profile (grey ≥ 10% and pale < 1%).
+  **All 40 were swept 2026-09-03: 39 clean, 1 stamped (the known positive).
+  This lane is CLOSED.**
+
+  How to look, if it recurs — a plain **196–236 binarisation does NOT work**: it
+  saturates the fill solid black and eats the letterforms. Two views do:
+  a **band-pass** (blur r=3 − blur r=22), which keeps stamp-sized structure while
+  killing dither grain and page-scale shading; and a **high-pass whose gain is
+  measured inside the grey fill only** — take gain from the whole image and the
+  black line art sets the scale, compressing a ~15-level stamp to nothing.
+  Embed a known positive in every contact sheet as a live control so review
+  sensitivity is proven rather than assumed.
+
+  Three populations account for the 39 clean, and each is safe for a structural
+  reason, not merely "no glyphs seen": **flat vector fills** (zero internal
+  variance at 2–10× gain — no texture for a stamp to ride on at any opacity),
+  **printed halftone/stipple** (irregular, no repeating unit), and
+  **photographs** (structure follows the subject; apparent lattices converge and
+  foreshorten rather than tiling at constant pitch).
 
 ⚠ **Autocorrelation is NOT a stamp test.** Graph paper, dotted grids and hatching
 are periodic and score exactly like a tiled stamp. My automated verifier flagged
