@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useEffect, useRef, type ReactNode, type RefObject } from 'react';
 import {
   DndContext, closestCenter, useSensor, useSensors,
@@ -296,7 +297,7 @@ export default function AdminHub() {
                 </a>
               )}
               {portalCard && (
-                <a href="/admin/students" className="stat-card" style={{ borderLeftColor: '#0891b2' }}>
+                <Link href="/admin/students" className="stat-card" style={{ borderLeftColor: '#0891b2' }}>
                   <div className="stat-top">
                     <span className="stat-num">{portalCard.active7d}</span>
                     <span className="stat-arrow">›</span>
@@ -305,7 +306,7 @@ export default function AdminHub() {
                   {portalCard.neverSignedIn > 0 && (
                     <div className="stat-label">{portalCard.neverSignedIn} never signed in</div>
                   )}
-                </a>
+                </Link>
               )}
             </div>
           )}
