@@ -46,4 +46,13 @@ describe('parseFitnessNote', () => {
     expect(parseFitnessNote(null)).toEqual({ severity: null, verdict: null });
     expect(parseFitnessNote('shard25 scan 2026-07-16')).toEqual({ severity: null, verdict: null });
   });
+  it("names the whole vocabulary, including the ingestion gate's watermark and the 404 verdict", () => {
+    expect(parseFitnessNote('ingest-fitness 2026-09-04 · cosmetic · watermark · pale-band stamp').verdict).toBe('watermark');
+    expect(parseFitnessNote('figure-fitness 2026-09-04 · blocks-answering · missing-object · every reference 404s').verdict).toBe('missing-object');
+  });
+  it('never takes the leading prefix or the severity as the verdict, and does not guess from the reason sentence', () => {
+    expect(parseFitnessNote('ok · cosmetic · zero margin')).toEqual({ severity: 'cosmetic', verdict: null });
+    expect(parseFitnessNote('figfit 3 Sep 2026 · cosmetic · the crop is incomplete on the right')).toEqual({ severity: 'cosmetic', verdict: null });
+    expect(parseFitnessNote('figfit 3 Sep 2026 · cosmetic · foreign · ok apart from the stamp').verdict).toBe('foreign');
+  });
 });

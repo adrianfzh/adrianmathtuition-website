@@ -37,15 +37,27 @@ export function releaseNote(previous: string | null | undefined, opts: { force?:
 
 export type FitnessSeverity = 'blocks-answering' | 'cosmetic';
 
+/** The verdict vocabulary across all three writers. The figfit pass and the
+ *  nightly figure-fitness task use ok · wrong-figure · answer-leak · mismatch ·
+ *  incomplete · illegible · foreign · wrong-kind · unsure; the extraction law's
+ *  ingestion gate adds watermark; missing-object is the every-reference-404s
+ *  verdict — recorded, never flagged, but named so a note carrying it reads. */
 const VERDICTS = new Set([
-  'ok', 'mismatch', 'wrong-figure', 'answer-leak', 'incomplete', 'illegible',
-  'foreign', 'wrong-kind', 'watermark', 'unsure',
+  'ok', 'wrong-figure', 'answer-leak', 'mismatch', 'incomplete', 'illegible',
+  'foreign', 'wrong-kind', 'unsure', 'watermark', 'missing-object',
 ]);
 
-/** Fitness notes read `<writer> <date> · <severity> · <verdict> · <reason>`
- *  (the grammar the figfit pass set and both later writers follow). A human
- *  action may prefix `Adrian: … · `. The verdict is the first segment that is
- *  a verdict word — NOT "the segment after the first ·", which is the severity. */
+/** Fitness notes read `<writer> <date> · <severity> · <verdict> · <reason>` —
+ *  SEVERITY FIRST — the grammar the figfit pass set (RESUME-figfit.md rule 2)
+ *  and both later writers follow: `ingest-fitness <date> · …` from the
+ *  extraction law's gate and `figure-fitness <date> · …` from the nightly task
+ *  (docs/FIGURES.md §4). A human action may prefix another segment
+ *  (`Adrian: repair · …`, `RE-OPENED … · …`). Severity is read from anywhere in
+ *  the text. The verdict is the first segment AFTER the leading prefix that is a
+ *  verdict word, skipping the segment that is the severity — NOT "the segment
+ *  after the first ·": that is the severity, and reading it as the verdict
+ *  showed 'cosmetic' / 'blocks-answering' twice on every held row and never the
+ *  real verdict (3 Sep 2026). A note that follows no template parses to nulls. */
 export function parseFitnessNote(note: string | null | undefined): {
   severity: FitnessSeverity | null;
   verdict: string | null;
@@ -54,6 +66,13 @@ export function parseFitnessNote(note: string | null | undefined): {
   const severity: FitnessSeverity | null = /blocks-answering/i.test(note) ? 'blocks-answering'
     : /cosmetic/i.test(note) ? 'cosmetic' : null;
   const parts = note.split('·').map((s) => s.trim()).filter(Boolean);
-  const verdict = parts.find((p) => VERDICTS.has(p.toLowerCase())) ?? null;
+  // parts[0] is always a prefix — the writer + date, or a human action in front
+  // of it — never the verdict.
+  let verdict: string | null = null;
+  for (const p of parts.slice(1)) {
+    const word = p.toLowerCase();
+    if (word === severity) continue;
+    if (VERDICTS.has(word)) { verdict = p; break; }
+  }
   return { severity, verdict };
 }

@@ -334,10 +334,17 @@ async function solutionLanePost(
 }
 
 /* ── fitness lane ────────────────────────────────────────────────────────────
- * Held kind='question' flags from the fitness-verification pass. The note is
- * free text the pass wrote — "figfit 3 Sep 2026 · <verdict> · <reason>" is the
- * common shape, but severity is read from anywhere in the text so it still
- * works for notes that don't follow that exact template. */
+ * Held kind='question' flags from the fitness writers — the figfit pass, the
+ * extraction law's ingestion gate and the nightly figure-fitness task. All
+ * three write the same note grammar, SEVERITY FIRST:
+ *
+ *   <writer> <date> · <severity> · <verdict> · <reason>
+ *   e.g. "figfit scope2 3 Sep 2026 · cosmetic · incomplete · zero right margin"
+ *
+ * parseFitnessNote (lib/figure-flag-release.ts, tested) reads severity from
+ * anywhere in the text and the verdict by vocabulary, never by position — the
+ * segment after the first '·' is the severity, and reading it as the verdict
+ * showed 'cosmetic' / 'blocks-answering' twice on every held row (3 Sep 2026). */
 
 async function fitnessLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
   const { data: flags, error } = await supa
