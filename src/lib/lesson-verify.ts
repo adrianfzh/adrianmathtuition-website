@@ -21,7 +21,8 @@
 // implicit multiplication (2x, 3(x-2)), sqrt/abs/C/choose/nCr/fact/min/max,
 // pi. They go through evalExpr's own parser — nothing is ever eval'd.
 
-import type { LessonScript, Scene, GraphMorphScene, CheckScene } from './lesson-script';
+import { hasBeats, sceneNarration, type LessonScript, type Scene, type GraphMorphScene, type CheckScene } from './lesson-script';
+import { lineKey, paragraphCount, resolveActionTimes, sceneTargets, sceneTokens, targetKeys, tokKey } from './lesson-beats';
 import { getTopicsForPaperLevel } from './canonical-topics';
 import { usableCheckAnswer, type CheckQuestionRow } from './lesson-load';
 import { practiceEligibility } from './portal-find';
@@ -112,6 +113,12 @@ export function texUnits(script: LessonScript): { units: TexUnit[]; issues: Issu
         prose(`${at}.prompt`, s.prompt);
         prose(`${at}.why`, s.why);
         break;
+    }
+    // A handwritten aside may carry inline maths too.
+    if (hasBeats(s)) {
+      s.beats.forEach((b, k) => b.do.forEach((a, j) => {
+        if (a.do === 'note') prose(`${at}.beats[${k}].do[${j}].text`, a.text);
+      }));
     }
   });
   return { units, issues };
@@ -462,6 +469,11 @@ function mathTextFields(script: LessonScript): { where: string; text: string | u
         break;
       default: break;
     }
+    if (hasBeats(s)) {
+      s.beats.forEach((b, k) => b.do.forEach((a, j) => {
+        if (a.do === 'note') out.push({ where: `${at}.beats[${k}].do[${j}].text`, text: a.text });
+      }));
+    }
   });
   return out;
 }
@@ -520,7 +532,14 @@ export function craftIssues(script: LessonScript): Issue[] {
             if (t.from) referenced.add(t.from);
           }
         });
-        for (const id of declared) if (!referenced.has(id)) out.push(issue('info', at, `token id "${id}" is never flown from`));
+        // Beat actions address ids too (write / highlight / mark / focus / note near).
+        if (hasBeats(s)) {
+          for (const b of s.beats) for (const a of b.do) {
+            if ('token' in a && a.token !== undefined) for (const id of Array.isArray(a.token) ? a.token : [a.token]) referenced.add(id);
+            if (a.do === 'note' && a.near) referenced.add(a.near);
+          }
+        }
+        for (const id of declared) if (!referenced.has(id)) out.push(issue('info', at, `token id "${id}" is never flown from${hasBeats(s) ? ' or addressed by a beat' : ''}`));
         if (s.steps.length > 1 && referenced.size === 0) out.push(issue('info', at, 'no moved-term animation — add `from` where a substitution assembles'));
         break;
       }
@@ -554,7 +573,7 @@ export function craftIssues(script: LessonScript): Issue[] {
 export function narrationWordCount(script: LessonScript): number {
   let words = 0;
   for (const sc of script.scenes) {
-    const n = (sc as unknown as { narration?: unknown }).narration;
+    const n: unknown = sceneNarration(sc);
     const entries = Array.isArray(n) ? n : typeof n === 'string' ? [n] : [];
     for (const e of entries) if (typeof e === 'string') words += wordCount(e);
   }
@@ -594,6 +613,8 @@ export function estimateMinutes(script: LessonScript): number {
 
 const NARRATION_MIN_WORDS = 6;
 const NARRATION_MAX_WORDS = 90;
+/** A beat is one idea: the verifier warns above this many words. */
+export const BEAT_MAX_WORDS = 40;
 
 /**
  * Spoken-English lines per scene (`narration`, an optional key the narration
@@ -604,6 +625,19 @@ const NARRATION_MAX_WORDS = 90;
 export function narrationIssues(script: LessonScript, opts: { require?: boolean } = {}): Issue[] {
   const out: Issue[] = [];
   script.scenes.forEach((s, i) => {
+    // A beat scene speaks through beats[].say — one short idea each. The
+    // rules below run per beat (≤ ~40 words: the beat model's whole point is
+    // that an action lands with ONE sentence, not a paragraph).
+    if (hasBeats(s)) {
+      s.beats.forEach((b, k) => {
+        const where = `scenes[${i}].beats[${k}].say`;
+        if (/[$\\]/.test(b.say)) out.push(issue('error', where, 'contains $ or a backslash — narration is spoken English, no TeX'));
+        const words = wordCount(b.say);
+        if (words < NARRATION_MIN_WORDS) out.push(issue('warn', where, `${words} words — too thin to carry a beat`));
+        if (words > BEAT_MAX_WORDS) out.push(issue('warn', where, `${words} words — a beat is one idea (≤ ~${BEAT_MAX_WORDS}); split it and cue the actions to the halves`));
+      });
+      return;
+    }
     const at = `scenes[${i}].narration`;
     const n = (s as unknown as { narration?: unknown }).narration;
     if (n === undefined) { out.push(issue(opts.require ? 'error' : 'warn', at, 'missing — every scene needs a spoken line')); return; }
@@ -623,6 +657,72 @@ export function narrationIssues(script: LessonScript, opts: { require?: boolean 
       if (words > NARRATION_MAX_WORDS) out.push(issue('warn', where, `${words} words — over ~35 s spoken; split the idea or trim`));
     }
   });
+  return out;
+}
+
+// ── Beats: craft ─────────────────────────────────────────────────────────────
+
+/**
+ * The beat model's craft rules (the validator already guarantees every action
+ * reference resolves). Warnings: a line / callout / expression that no beat
+ * ever shows (it would stay hidden for good), a beat scene that never draws
+ * anything, an action cued into a clip's last tenth (it lands after the
+ * sentence). Info: say-only beats, the count.
+ */
+export function beatIssues(script: LessonScript): Issue[] {
+  const out: Issue[] = [];
+  let beats = 0;
+  script.scenes.forEach((s, i) => {
+    if (!hasBeats(s)) return;
+    const at = `scenes[${i}]`;
+    beats += s.beats.length;
+    const { targeted, movable } = sceneTargets(s);
+    const shows = (key: string) => targeted.has(key);
+    const tokens = sceneTokens(s);
+    const lineShown = (line: number) =>
+      shows(lineKey(line))
+      || tokens.some(r => r.line === line && (shows(tokKey(r.line, r.index)) || (r.from !== undefined && movable.has(r.from))));
+
+    if (s.type === 'equation-steps') {
+      s.steps.forEach((_, line) => {
+        if (!lineShown(line)) out.push(issue('warn', `${at}.steps[${line}]`, 'no beat ever writes or reveals this line — it would never appear'));
+      });
+    }
+    if (s.type === 'annotate') {
+      if (!lineShown(0)) out.push(issue('warn', `${at}.tokens`, 'no beat writes the expression (text: "expression" or a token) — it would never appear'));
+      s.callouts.forEach((_, c) => {
+        if (!shows(`callout:${c}`)) out.push(issue('warn', `${at}.callouts[${c}]`, 'no beat ever reveals this callout — it would never appear'));
+      });
+    }
+    if (s.type === 'graph-morph') {
+      const morphed = new Set<number>([0]);
+      for (const b of s.beats) for (const a of b.do) if (a.do === 'morph') morphed.add(a.state);
+      s.states.forEach((_, k) => {
+        if (!morphed.has(k)) out.push(issue('warn', `${at}.states[${k}]`, 'no beat morphs to this state — it is never seen'));
+      });
+    }
+    if (s.type === 'caption') {
+      const n = paragraphCount(s);
+      const written = new Set<string>();
+      for (const b of s.beats) for (const a of b.do) if (a.do === 'write' || a.do === 'reveal') for (const k of targetKeys(s, a)) written.add(k);
+      const some = Array.from({ length: n }, (_, p) => `para:${p}`).some(k => written.has(k));
+      const all = Array.from({ length: n }, (_, p) => `para:${p}`).every(k => written.has(k));
+      if (some && !all) out.push(issue('warn', `${at}.text`, 'some paragraphs are written by beats and some are static — the static ones sit on the board before the voice reaches them'));
+    }
+
+    const kinds = new Set<string>();
+    s.beats.forEach((b, k) => {
+      const where = `${at}.beats[${k}]`;
+      if (b.do.length === 0) out.push(issue('info', where, 'say-only beat (nothing moves while it speaks)'));
+      const times = resolveActionTimes(b.do);
+      b.do.forEach((a, j) => {
+        kinds.add(a.do);
+        if (times[j] > 0.9) out.push(issue('warn', `${where}.do[${j}]`, `at ${times[j].toFixed(2)} fires in the clip's last tenth — cue it earlier or move it to the next beat`));
+      });
+    });
+    if (kinds.size === 0) out.push(issue('warn', at, 'a beat scene with no actions at all — plain narration would do the same'));
+  });
+  if (beats > 0) out.push(issue('info', 'beats', `${beats} beat${beats === 1 ? '' : 's'} across ${script.scenes.filter(hasBeats).length} scene${script.scenes.filter(hasBeats).length === 1 ? '' : 's'}`));
   return out;
 }
 

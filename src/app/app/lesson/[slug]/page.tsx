@@ -53,6 +53,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
       title={script.title}
       topic={script.topic}
       minutes={script.minutes}
+      theme={script.theme ?? 'slide'}
       scenes={buildPlayScenes(script, rows)}
     />
   );

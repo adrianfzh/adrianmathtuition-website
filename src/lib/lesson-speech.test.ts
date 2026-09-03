@@ -131,6 +131,7 @@ describe('splitSentences', () => {
         if (scene.type === 'annotate') for (const c of scene.callouts) texts.push(c.label);
         const narr = Array.isArray(scene.narration) ? scene.narration : scene.narration ? [scene.narration] : [];
         texts.push(...narr);
+        if (scene.beats) for (const b of scene.beats) { texts.push(b.say); for (const a of b.do) if (a.do === 'note') texts.push(a.text); }
         for (const t of texts) {
           fields++;
           const back = splitProse(t).map(p => p.join(' ')).join(' ');

@@ -13,15 +13,27 @@ verifier and Adrian's scene-by-scene approval.
 > lesson as student facing yet". The release switch is at the bottom of this
 > file — two gate removals.
 
-Lessons live: `binomial-theorem-am` (pilot, narrated + clips),
-`quadratic-functions-am` (first pipeline-drafted lesson, "Completing the
-Square" — narration authored, clips not yet generated).
+Lessons live: `binomial-theorem-am` (pilot, narrated + clips — per-step
+narration, the slide theme: the backward-compatibility control),
+`quadratic-functions-am` ("Completing the Square" — re-cut into **43 beats on
+the chalk theme** on 2026-09-04, 43 clips; the proof lesson for § The beat
+model below).
+
+> **2026-09-04 — the beat model + the chalk theme.** Adrian: "narration goes
+> with the animation" — the JensenMath look (a board, handwritten words that
+> draw themselves out as they are spoken, print maths, a pen leading) and
+> 3Blue1Brown's discipline (an object transforms exactly as the sentence about
+> it lands). Both shipped, additive: every script without `beats` / `theme`
+> validates and plays exactly as before.
 
 ## Map
 
 | Piece | Where | Notes |
 |---|---|---|
-| Schema + validator + narration helpers | `src/lib/lesson-script.ts` (+ `.test.ts`) | Six scene types; `validateLessonScript` collects every error in one pass. The header comment lists the design decisions the player leans on — change schema and player together. |
+| Schema + validator + narration helpers | `src/lib/lesson-script.ts` (+ `.test.ts`) | Six scene types; `validateLessonScript` collects every error in one pass. The header comment lists the design decisions the player leans on — change schema and player together. Since 2026-09-04 also `beats` / `BeatAction` / `theme` and their validation (every action reference must resolve), and the derived-narration helpers (`hasBeats`, `sceneNarration`, `sceneAudio`, `beatClipPath`). |
+| The beat model (pure) | `src/lib/lesson-beats.ts` (+ `.test.ts`) | What actions MEAN: canonical element keys, `resolveActionTimes` (the `at` estimate), `boardStateAt(scene, beat, fired)` → a `BoardState` the views render from, the left-to-right token rule, `proseGroup` (which beat reads which words), `beatAutoMs`. |
+| Themes (pure tokens) | `src/lib/lesson-theme.ts` (+ `.test.ts`) | `THEME_TOKENS` for slide / chalk / paper → `--lsn-*` custom properties; slide's tokens are the values the player always used. |
+| The board layer | `src/app/app/lesson/[slug]/lesson-board.tsx` | Wraps a beat scene's view: the draw-on sweeps (Web Animations on `clip-path`), the pen tip, hand-drawn marks, notes, focus. Diffs the DOM against what it animated last. |
 | Scripts | `data/lessons/<slug>.json` | Scenes + narration + audio paths. Static imports, never fs reads (Vercel tracing). |
 | Registry + check resolution | `src/lib/lesson-load.ts` | `RAW_SCRIPTS` map; `usableCheckAnswer` / `resolveCheckScene` run the SAME eligibility gate as the practice `?qid=` deep link. |
 | Catalog | `src/lib/lesson-catalog.ts` | The tiny client-safe map entry points read (`lessonForTopic`, `lessonBySlug`); slug / level / topic / minutes. |
@@ -49,7 +61,8 @@ node scripts/lessons/pull-notes.mjs AM Quadratic Functions        # exit 1 if no
 # 2. real bank questions that will grade cleanly as pause-predict checks
 node scripts/lessons/pick-checks.mjs AM Quadratic Functions --n 2 # prints candidates + paste-ready stubs
 
-# 3. write data/lessons/<slug>.json  (craft checklist: the skill, § 3; narration on every scene)
+# 3. write data/lessons/<slug>.json  (craft checklist: the skill, § 3; narration on every scene —
+#    or, preferably, `beats` on every scene: say this, do this — § The beat model)
 
 # 4. the gate — repeat until PASS with no warnings you can't defend
 node scripts/lessons/verify-lesson.mjs quadratic-functions-am     # [--offline] [--require-narration] [--json]
@@ -140,6 +153,178 @@ has been taught, with a `prompt` that coaches the first step and a `why` that
 is the one-line working. Narration on every scene, spoken English. Full
 checklist: `.claude/skills/author-lesson/SKILL.md` § 3.
 
+## The beat model (2026-09-04) — say this, do this
+
+A scene may carry `beats` instead of `narration`: the narration cut into short
+spoken ideas, each with the visual actions cued to **its own clip**.
+
+```json
+{
+  "type": "equation-steps",
+  "intro": "Express $y = x^2 - 3x + 2$ in the form $(x-h)^2 + k$.",
+  "steps": [ … tokens with ids … ],
+  "beats": [
+    { "say": "Here's the recipe. Start by copying the expression.",
+      "do": [ { "do": "write", "text": "intro" }, { "do": "write", "token": "lhs", "at": 0.5 } ],
+      "audio": "/lessons/quadratic-functions-am/scene-05-b1.mp3" },
+    { "say": "Take the coefficient of x — minus three. Halve it, square it: nine over four.",
+      "do": [ { "do": "note", "text": "half it: $-\\tfrac{3}{2}$ · square it: $\\tfrac{9}{4}$", "near": "lhs", "at": 0.25 } ] },
+    { "say": "Look at the first three terms. They are now a perfect square.",
+      "do": [ { "do": "mark", "kind": "underline", "token": "sq", "at": 0.1 },
+              { "do": "focus", "token": "sq", "at": 0.15, "hold": 2.4 },
+              { "do": "move", "from": "sq", "at": 0.6 } ] }
+  ]
+}
+```
+
+The types, verbatim (`src/lib/lesson-script.ts`):
+
+```ts
+export interface Beat {
+  say: string;          // one spoken idea — plain English, no TeX, ≤ ~40 words (the verifier warns above)
+  do: BeatAction[];     // the visual actions cued to THIS beat's clip, in firing order (may be empty)
+  audio?: string;       // its clip, /lessons/<slug>/scene-NN-bK.mp3 — written by generate-narration
+  timing?: string;      // optional timing sidecar for the clip (§ Timing sidecars)
+}
+export interface BeatTarget { step?: number; callout?: number; token?: string; text?: ProseField; para?: number }
+export type BeatAction =
+  | ({ do: 'write' } & BeatTarget & Timed)                              // appears by draw-on (a pen sweep)
+  | ({ do: 'reveal' } & BeatTarget & Timed)                             // appears by the plain reveal
+  | ({ do: 'highlight'; token: string | string[] } & Timed)             // pulse a token
+  | ({ do: 'move'; from: string } & Timed)                              // the FLIP: fly the id onto its `from` line
+  | ({ do: 'morph'; state: number } & Timed)                            // graph-morph: ease to states[state]
+  | ({ do: 'mark'; kind: 'underline' | 'circle' | 'box'; token: string | string[] } & Timed)
+  | ({ do: 'note'; text: string; near?: string } & Timed)               // a handwritten aside (inline $…$ ok)
+  | ({ do: 'focus'; hold?: number } & BeatTarget & Timed)               // ease the view onto the target, dim the rest, release after `hold` s
+  | ({ do: 'clear'; what?: 'pen' | 'marks' | 'notes' | 'focus' | 'board' } & Timed);
+interface Timed { at?: number }   // fraction 0…1 into the beat's clip (estimated)
+```
+
+**A beat IS the scene's sub-step** (`sceneStepCount` = `beats.length`). That is
+the whole trick: one clip per beat drops into the per-step machinery that
+already existed — clip ends advance a beat, Auto beats pace to the words
+(`beatAutoMs`), ‹ / Continue / the teacher's cursor / the ribbon all work per
+beat — and `narration` / `audio` are **derived** from `say` / `beat.audio`
+(the validator refuses a beat scene that also hand-writes them; a check keeps
+exactly one beat, the lead-in).
+
+### Actions and their targets
+
+| Action | Target | On the board |
+|---|---|---|
+| `write` | `step: n` (an equation line) · `callout: n` · `token: "id"` · `text: "title" \| "promise" \| "heading" \| "intro" \| "text" \| "caption" \| "prompt" \| "expression"` (+ `para: p` for one paragraph of a caption's `text`) | The target appears by **draw-on**: a left-to-right pen sweep per token (Web Animations on `clip-path`, no library), a line-by-line wipe for prose; the pen tip rides the sweep. |
+| `reveal` | same | The target appears by the plain fade / rise (no pen). |
+| `highlight` | `token: "id"` or a list | A pulse on the token (scale + a halo in the pen colour). |
+| `move` | `from: "id"` | The moved-term FLIP: the earlier token flies onto the later line that declared `from: "id"`. A `from` token **with** a `move` waits for it; one **without** flies the moment its line is shown (the original behaviour). |
+| `morph` | `state: i` | graph-morph: the curve eases to `states[i]` (state 0 holds from entry). |
+| `mark` | `kind` + `token(s)` | A hand-drawn underline / circle / box (a wobbled SVG path drawn with `stroke-dashoffset`, the pen on it), measured from the tokens' resting rects, re-measured on resize. |
+| `note` | `text` (+ `near: "id"`) | A handwritten aside in the pen colour. Its SLOT is laid out from mount — under the token row of the line `near` sits in (equation-steps / annotate), else in the margin under the working — and drawn on when the action fires: never positioned over other glyphs, never a layout shift. ≤ 140 chars. |
+| `focus` | same targets as `write` (+ `hold` s, default 2.2) | A lean-in, not a zoom: the board scales ≤ 1.14× (less for a whole line) centred on the target vertically, anchored at its left edge and sliding only as far as keeps the target on screen; everything else dims to 45 %; released after `hold` ÷ rate. |
+| `clear` | `what` (default `pen`) | Wipes marks + notes + focus; `board` also wipes everything written (a second worked example on the same board). |
+
+Every reference is validated (`validateLessonScript`, the same pass that checks
+`from` and callout `target`): a `step` must exist, a `token` must be an id in
+the scene, `move.from` must be an id some later line flies from, `morph`
+only on graph-morph, `callout` only on annotate, a `text` field only when the
+scene has it, `para` only inside a caption's paragraph count. `at` is a
+fraction 0…1 that never decreases within a beat. An invalid script fails the
+vitest suite before it can ship.
+
+### What is shown when — the rules authors lean on (`lib/lesson-beats.ts`)
+
+- **Lines, tokens and callouts are hidden until an action shows them.** The
+  verifier warns about a line / callout / graph state no beat ever shows.
+- **Prose fields are the other way round:** a field NO action targets is
+  static (on the board from entry — the question stays), a targeted one
+  waits for its action. So `write text: "intro"` draws the question on;
+  leaving it untargeted keeps it printed.
+- **The pen writes left to right.** A token targeted on its own (by id, or a
+  `move` for its `from`) waits for that action even when its line is written;
+  an untargeted token is visible once its line is on and every targeted
+  token before it has been written — `x² − 3x + 2 =` appears, the pen pauses,
+  the square is written when the voice says so, then `+ 2` follows.
+- `write step: n` marks every untargeted token of the line as written (they
+  draw on in order); `reveal step: n` fades them in.
+- The pen layer (marks, notes, focus) accumulates across beats until `clear`.
+- **Whose words are they?** A prose element's sentences are walked by the
+  teacher's cursor in the beat that writes it (`proseGroup`), from the
+  fraction it appears at: written at `at: 0.5`, its sentences spread over the
+  second half of that clip. A line's `note` belongs to the beat with the
+  explicit `step: n` reveal, not the beat whose flight showed the line first.
+  Static prose (no action) is never walked — it sits at full ink.
+
+### Exact vs estimated
+
+- **Exact — every beat boundary.** A beat's clip starts and its `at: 0`
+  actions fire in the same frame (the director reads the clip's own clock;
+  measured ≤ 120 ms from `play()` in the browser run). No timestamps needed:
+  the cut IS the sync. Cut the narration finer and more of the sync becomes
+  exact.
+- **Estimated — inside a clip.** `at` is the author's guess of where in the
+  sentence the object should move. Unspecified `at`s spread in listed order:
+  the first fires with the clip's first frame, the rest across the first
+  70 % (or between explicit neighbours) — `resolveActionTimes`. A timing
+  sidecar (§ Timing sidecars) would make word positions exact; the beat
+  boundary already carries most of the feel.
+- Speed and pause come free: `at` is a fraction of the clip, and the clip
+  runs at `playbackRate`; a paused clip fires nothing. Auto mode fires the
+  same fractions against the silent beat's timer; Manual plays a beat's
+  actions over a 900 ms tap clock (÷ rate); moving BACK to a beat, or reduced
+  motion, shows the finished state at once (never a replay).
+
+### Authoring beats — say this, do this
+
+- **One idea per beat, ≤ ~40 words** (the verifier warns above; the proof
+  lesson averages 26). If a sentence names two things that should move at
+  two moments, cut it into two beats — that makes both moments exact.
+- **Say the thing, then move the thing.** Put `at` where the voice reaches the
+  object: "add that number and subtract it" → `write token: "sq"` at 0.05,
+  `write token: "magic"` at 0.45. Anything the voice names first goes at 0.
+- **Give every token the pen will touch an `id`.** Ids are what `write`,
+  `highlight`, `mark`, `focus` and `note near` address; a line written
+  without ids still draws on token by token, but nothing inside it can be
+  pointed at.
+- **A `move` per flight you want to time.** Without one the flight fires with
+  the line (fine for a reveal-all beat); with one, it waits for its sentence.
+- **Reveal the line proper** (`reveal step: n` at ~0.02) in the beat whose
+  words explain it, even when an earlier beat's flight already showed it —
+  that is what gives the line's `note` to the right voice.
+- **Mark sparingly**: one underline / circle / box per idea; the pen layer
+  accumulates until `clear`, so a scene's last beat can carry a boxed answer
+  and a `focus` on it.
+- **Checks: one beat**, the lead-in, `write text: "prompt"`. Never the answer.
+- `scripts/lessons/verify-lesson.mjs` gates all of it: references (errors),
+  a line / callout / state no beat shows, an action cued into a clip's last
+  tenth, mixed static + written paragraphs (warnings), say-only beats (info).
+- Clips: `node scripts/lessons/generate-narration.mjs <slug>` writes one clip
+  per beat as `scene-NN-bK.mp3` (K 1-based) and stamps `beats[K-1].audio`
+  independently (a partial run still leaves the script valid — a beat without
+  a clip falls back to the Auto timer). `--verify` transcribes them back as
+  before.
+
+## Themes (2026-09-04)
+
+`theme?: 'slide' | 'chalk' | 'paper'` on the script (default `slide`).
+
+| | `slide` | `chalk` | `paper` |
+|---|---|---|---|
+| Ground | the original white card | a dark green-black board, SVG-noise grain + a soft vignette (CSS only, no image files) | a light ruled sheet (repeating gradients, a faint red margin) |
+| Ink | navy / slate | chalk white `#f3efe3`; chalk-coloured tints for highlights and callout chips | navy / ink-blue |
+| Prose | DM Sans | **Caveat** (Google Fonts, hoisted `<link>` like the site's own faces) at 1.28× — the handwriting; maths stays KaTeX print | Caveat, navy |
+| Pen | portal amber (the cursor's sweep) | chalk amber `#f5c96a` — the pen tip, marks, notes, the ribbon rule | amber-dark |
+| Spoken words | 40 % → sweep underline → 85 % | **not on the board until said**: the sentence being spoken draws out left to right along the sweep (a `mask-image`, so its inline maths draws on with it); said ones stay | same as chalk |
+| Graph | slate grid / navy curve | translucent grid, chalk curve | slate grid, navy curve |
+
+Tokens live in `lib/lesson-theme.ts` (`THEME_TOKENS` → `themeCssVars` →
+`--lsn-*` on the player root); the CSS reads only those and applies only under
+`[data-lsn-themed]`, so the slide cascade is untouched (tested: slide's
+tokens equal the literal values the player always used; chalk's ink : board
+contrast > 12 : 1). The header, dots, pills and Continue stay portal-styled
+in every theme; the ribbon becomes a ledge of the board. The phone header
+(§ below) is unchanged. `prefers-reduced-motion`: sweeps, pen, marks'
+draw, the focus zoom and the word mask all go — opacity states only, the
+focus keeps its dim.
+
 ## Scene schema (one JSON object per scene)
 
 | `type` | Shape | Sub-steps (`sceneStepCount`) |
@@ -151,7 +336,8 @@ checklist: `.claude/skills/author-lesson/SKILL.md` § 3.
 | `annotate` | `tokens[]`, `callouts[]` of `{ target, label, tone? }` | callouts + 1 (expression first) |
 | `check` | `qid` (bank question uuid), `prompt?`, `placeholder?`, `why` — the server resolves the question or skips it | 1 (interactive) |
 
-Every scene may also carry the **voice track**:
+Every scene may also carry `beats` (§ The beat model — then `narration` /
+`audio` below are derived, never written) or the **voice track**:
 
 | Field | Meaning |
 |---|---|
@@ -301,6 +487,14 @@ belong to the two timed pacings:
   amber rule on its left, its words brightening slate → navy as the voice
   reaches them. This is the exact "words as they are spoken" feel, without
   touching the maths on the card.
+- **Beat scenes (2026-09-04)** — the same pacings, with a board underneath:
+  the views render from `boardStateAt(scene, beat, fired)` and a director
+  rAF (`useBeatDirector`) advances `fired` as the clip's fraction (Voice),
+  the beat timer (Auto) or a 900 ms tap clock (Manual) crosses each action's
+  `at`; `lesson-board.tsx` diffs the DOM and animates what changed — the pen
+  sweeps, marks, notes, focus. It dispatches `lsn:beat` / `lsn:action` DOM
+  events on the card (what the browser driver logs; nothing in the app
+  listens).
 - **Timing source**, in order: (a) a timing sidecar the script declares
   (§ Timing sidecars); (b) proportional timing from `audio.duration` ×
   character weight. Driven from `audio.currentTime` in one `requestAnimationFrame`
@@ -391,6 +585,21 @@ present in `public/` and a real MP3 (ID3 tag or frame sync), total under the
 asset budget; catalog ↔ script coherence for every registered lesson.
 `src/lib/lesson-verify.test.ts`: the arithmetic parser, `equiv`/`state`
 sampling, graph-window sanity, craft rules, narration rules, answer classes.
+`src/lib/lesson-beats.test.ts`: `resolveActionTimes` (explicit / spread /
+interpolated / never backwards), `firedCountAt`, `beatAutoMs`, addressing,
+the board through the recipe scene beat by beat (the left-to-right token
+rule, a `move` that waits vs one that flies with its line, write-step marks
+tokens written, `clear` pen vs board), graph state, caption paragraphs,
+`proseGroup` (explicit reveal wins), a beat as the sub-step + derived
+narration + `beatClipPath`. `src/lib/lesson-theme.test.ts`: tokens per theme,
+slide = the original values, chalk/paper contrast, CSS-only textures, the
+`--lsn-*` emission. `lesson-script.test.ts` adds the beat validator negatives
+(narration beside beats, every reference kind, target shape, `at`
+monotonic, note length, one beat per check, the theme enum) and the proof
+lesson's shape (13 beat scenes, 40–55 beats ≤ 40 words, the action kinds on
+the named scenes, check beats answer-free, 43 committed `-bK` clips, no
+orphans). `lesson-verify.test.ts` adds `beatIssues` + per-beat narration
+rules.
 `src/lib/lesson-speech.test.ts`: the six rates + `scaleBeat`; the sentence
 splitter (TeX, bold, brackets, abbreviations, decimals, initials — and a
 round-trip over every prose field of every registered lesson); speaking
@@ -408,7 +617,8 @@ cue carrying it, declared files present).
    (`fullPortalVisible()`) hides the "▶ Learn this topic first" row from
    students; pass `true` / drop the prop.
 3. Turn `--require-narration` on in the verifier and generate clips for every
-   registered lesson (the pipeline's scripts already carry `narration`).
+   registered lesson (the pipeline's scripts already carry `narration` or
+   `beats`).
 4. Add a `timed('lesson-audio', …)` probe to `/api/health-check` (HEAD one
    clip, expect 200 + `audio/mpeg`) — the repo rule for every new
    student-facing surface.

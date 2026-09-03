@@ -87,6 +87,8 @@ export function resolveCheckScene(
     ...(scene.narration !== undefined ? { narration: scene.narration } : {}),
     ...(scene.audio !== undefined ? { audio: scene.audio } : {}),
     ...(scene.timing !== undefined ? { timing: scene.timing } : {}),
+    // A beat-narrated check: the one lead-in beat (and its actions) ride along.
+    ...(scene.beats !== undefined ? { beats: scene.beats } : {}),
   };
 }
 

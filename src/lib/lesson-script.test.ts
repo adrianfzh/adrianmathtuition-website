@@ -4,9 +4,9 @@ import path from 'node:path';
 import {
   validateLessonScript, checkQids, sceneStepCount,
   narrationAt, narrationLayout, nextNarrationAudio, nextNarrationCue, lessonHasAudio, isLessonAudioUrl,
-  isLessonTimingUrl, classifyPlayRejection,
-  NARRATION_MAX_CHARS,
-  type LessonScript, type PlayScene,
+  isLessonTimingUrl, classifyPlayRejection, hasBeats, sceneNarration, beatClipPath,
+  NARRATION_MAX_CHARS, NOTE_MAX_CHARS,
+  type LessonScript, type PlayScene, type Beat,
 } from './lesson-script';
 import {
   loadLessonScript, usableCheckAnswer, resolveCheckScene,
@@ -273,6 +273,145 @@ describe('narration validation', () => {
   });
 });
 
+// ── Beats (the beat model) ───────────────────────────────────────────────────
+
+describe('beat validation', () => {
+  const steps = () => ({
+    type: 'equation-steps',
+    intro: 'Express $x^2 - 3x + 2$ in completed-square form.',
+    steps: [
+      { tokens: [{ tex: 'x^2 - 3x + 2', id: 'lhs' }, { tex: '=' }, { tex: 'x^2 - 3x + (3/2)^2', id: 'sq' }, { tex: '- (3/2)^2', id: 'magic' }], note: 'Half it.' },
+      { tokens: [{ tex: '=' }, { tex: '(x - 3/2)^2', from: 'sq' }, { tex: '- 9/4', from: 'magic' }] },
+    ],
+  });
+  const withBeats = (beats: unknown, scene: Record<string, unknown> = steps()) => {
+    const s = baseScript();
+    (s.scenes as unknown[]).push({ ...scene, beats });
+    return validateLessonScript(s);
+  };
+  const errorsOf = (r: ReturnType<typeof validateLessonScript>) => (r.ok ? '' : r.errors.join(' | '));
+
+  it('accepts every action kind against the objects the scene has', () => {
+    const r = withBeats([
+      { say: 'Copy it down and take the coefficient.', do: [{ do: 'write', text: 'intro' }, { do: 'write', token: 'lhs', at: 0.4 }] },
+      { say: 'Add and subtract the square, then look.', do: [
+        { do: 'write', step: 0, at: 0.1 }, { do: 'highlight', token: ['sq', 'magic'], at: 0.5 },
+        { do: 'mark', kind: 'underline', token: 'sq', at: 0.6 }, { do: 'note', text: 'half of $-3$ is $-3/2$', near: 'lhs', at: 0.7 },
+        { do: 'focus', token: 'sq', hold: 2, at: 0.75 }, { do: 'move', from: 'sq', at: 0.9 }, { do: 'reveal', step: 1, at: 0.9 }, { do: 'clear', what: 'pen', at: 1 },
+      ] },
+      { say: 'A beat that only speaks is fine too.', do: [] },
+    ]);
+    expect(r.ok, errorsOf(r)).toBe(true);
+  });
+
+  it('refuses hand-written narration / audio beside beats — the beats ARE the narration', () => {
+    const s = baseScript();
+    (s.scenes as unknown[]).push({ ...steps(), beats: [{ say: 'One idea here.', do: [] }], narration: ['x', 'y'], audio: ['/lessons/t/a.mp3', '/lessons/t/b.mp3'] });
+    const r = validateLessonScript(s);
+    expect(r.ok).toBe(false);
+    expect(errorsOf(r)).toMatch(/derives its narration from beats\[\]\.say/);
+    expect(errorsOf(r)).toMatch(/derives its audio/);
+  });
+
+  it('every reference must exist in the scene', () => {
+    const r = withBeats([{ say: 'Pointing at things that are not there.', do: [
+      { do: 'write', step: 2 }, { do: 'write', token: 'ghost' }, { do: 'highlight', token: 'nope' },
+      { do: 'move', from: 'lhs' }, { do: 'mark', kind: 'circle', token: ['sq', 'zzz'] }, { do: 'note', text: 'n', near: 'q' },
+      { do: 'morph', state: 0 }, { do: 'write', callout: 0 }, { do: 'write', text: 'caption' }, { do: 'reveal', text: 'heading' },
+    ] }]);
+    expect(r.ok).toBe(false);
+    const msg = errorsOf(r);
+    expect(msg).toMatch(/do\[0\]: step must be an integer in 0…1/);
+    expect(msg).toMatch(/do\[1\]: token "ghost" is not a token id/);
+    expect(msg).toMatch(/do\[2\]: token "nope"/);
+    expect(msg).toMatch(/do\[3\]: no later line flies from "lhs"/);
+    expect(msg).toMatch(/do\[4\]: token "zzz"/);
+    expect(msg).toMatch(/do\[5\]: near "q"/);
+    expect(msg).toMatch(/do\[6\]: morph only applies to graph-morph/);
+    expect(msg).toMatch(/do\[7\]: callout targets only exist on annotate/);
+    expect(msg).toMatch(/do\[8\]: this equation-steps scene has no "caption"/);
+    expect(msg).toMatch(/do\[9\]: this equation-steps scene has no "heading"/); // steps() has no heading
+  });
+
+  it('a target is exactly one of step / callout / token / text; para only narrows a caption', () => {
+    const r = withBeats([{ say: 'Ambiguous and empty targets.', do: [
+      { do: 'write' }, { do: 'write', step: 0, token: 'lhs' }, { do: 'focus', text: 'intro', para: 1 },
+    ] }]);
+    const msg = errorsOf(r);
+    expect(msg).toMatch(/do\[0\]: needs exactly one of step \/ callout \/ token \/ text \(got none\)/);
+    expect(msg).toMatch(/do\[1\]: needs exactly one .* \(got step, token\)/);
+    expect(msg).toMatch(/do\[2\]: para only narrows text: "text"/);
+    const cap = withBeats([{ say: 'Paragraph three of two.', do: [{ do: 'write', text: 'text', para: 2 }] }], { type: 'caption', text: 'One.\n\nTwo.' });
+    expect(errorsOf(cap)).toMatch(/para must be an integer in 0…1 \(the caption has 2 paragraphs\)/);
+    const ok = withBeats([{ say: 'Paragraph two of two.', do: [{ do: 'write', text: 'text', para: 1 }] }], { type: 'caption', text: 'One.\n\nTwo.' });
+    expect(ok.ok, errorsOf(ok)).toBe(true);
+  });
+
+  it('at is a fraction that never runs backwards inside a beat; hold is bounded; kinds are known', () => {
+    const r = withBeats([{ say: 'Timing gone wrong in here.', do: [
+      { do: 'write', step: 0, at: 1.5 }, { do: 'highlight', token: 'sq', at: 0.8 }, { do: 'highlight', token: 'sq', at: 0.3 },
+      { do: 'focus', token: 'sq', hold: 40 }, { do: 'mark', kind: 'wiggle', token: 'sq' }, { do: 'clear', what: 'everything' }, { do: 'explode' },
+    ] }]);
+    const msg = errorsOf(r);
+    expect(msg).toMatch(/do\[0\]: at must be a fraction 0…1/);
+    expect(msg).toMatch(/do\[2\]: at 0.3 runs backwards/);
+    expect(msg).toMatch(/do\[3\]: hold is seconds/);
+    expect(msg).toMatch(/do\[4\]: kind must be one of underline\/circle\/box/);
+    expect(msg).toMatch(/do\[5\]: what must be one of/);
+    expect(msg).toMatch(/do\[6\]: unknown action "explode"/);
+  });
+
+  it('say follows the narration rules (spoken English, no TeX); notes are short; audio paths are clips', () => {
+    const r = withBeats([
+      { say: 'Say $x^2$ aloud', do: [] },
+      { say: 'Fine words.', do: [{ do: 'note', text: 'n'.repeat(NOTE_MAX_CHARS + 1) }], audio: '/other/a.mp3' },
+      { say: 'Fine words.', do: [], timing: '/lessons/t/scene-03-b3.timing.json' },
+      { say: '', do: [] },
+      { say: 'No do at all.' },
+    ]);
+    const msg = errorsOf(r);
+    expect(msg).toMatch(/beats\[0\]\.say: .*no TeX/);
+    expect(msg).toMatch(/beats\[1\]\.do\[0\]: note is 141 chars/);
+    expect(msg).toMatch(/beats\[1\]\.audio: must be a \/lessons\/<slug>\/… path/);
+    expect(msg).toMatch(/beats\[2\]: timing needs audio/);
+    expect(msg).toMatch(/beats\[3\]\.say: narration must be a non-empty string/);
+    expect(msg).toMatch(/beats\[4\]: do must be an array/);
+  });
+
+  it('a check carries exactly one beat; beats must be a non-empty array; the script theme is an enum', () => {
+    const s = baseScript();
+    (s.scenes as unknown[]).push({ type: 'check', qid: 'q', why: 'w', beats: [{ say: 'Your turn now, pause here.', do: [] }, { say: 'And another.', do: [] }] });
+    (s.scenes as unknown[]).push({ type: 'caption', text: 't', beats: [] });
+    s.theme = 'neon';
+    const r = validateLessonScript(s);
+    const msg = errorsOf(r);
+    expect(msg).toMatch(/scenes\[2\]: a check carries exactly one beat/);
+    expect(msg).toMatch(/scenes\[3\]: beats must be a non-empty array/);
+    expect(msg).toMatch(/theme must be one of slide\/chalk\/paper \(got "neon"\)/);
+    const ok = baseScript(); ok.theme = 'paper';
+    expect(validateLessonScript(ok).ok).toBe(true);
+  });
+
+  it('the beat is the sub-step; narration derives from say and audio from beat.audio', () => {
+    const beats: Beat[] = [
+      { say: 'First idea.', do: [], audio: '/lessons/t/scene-03-b1.mp3' },
+      { say: 'Second idea.', do: [{ do: 'write', step: 0 }] },
+      { say: 'Third idea.', do: [{ do: 'reveal', step: 1 }], audio: '/lessons/t/scene-03-b3.mp3', timing: '/lessons/t/scene-03-b3.timing.json' },
+    ];
+    const scene = { ...steps(), beats } as unknown as PlayScene;
+    expect(hasBeats(scene)).toBe(true);
+    expect(sceneStepCount(scene)).toBe(3);      // NOT the two equation lines
+    expect(narrationLayout(scene)).toBe('steps');
+    expect(sceneNarration(scene)).toEqual(['First idea.', 'Second idea.', 'Third idea.']);
+    expect(narrationAt(scene, 0)).toEqual({ text: 'First idea.', audio: '/lessons/t/scene-03-b1.mp3', timing: null });
+    expect(narrationAt(scene, 1)).toEqual({ text: 'Second idea.', audio: null, timing: null });
+    expect(narrationAt(scene, 2)).toEqual({ text: 'Third idea.', audio: '/lessons/t/scene-03-b3.mp3', timing: '/lessons/t/scene-03-b3.timing.json' });
+    expect(lessonHasAudio([scene])).toBe(true);
+    expect(nextNarrationAudio([scene], 0, 0)).toBe('/lessons/t/scene-03-b3.mp3'); // walks over the silent beat
+    expect(beatClipPath('t', 3, 1)).toBe('/lessons/t/scene-03-b1.mp3');
+  });
+});
+
 describe('narration helpers', () => {
   const stepsScene: PlayScene = {
     type: 'equation-steps',
@@ -491,6 +630,93 @@ describe('pilot script: binomial-theorem-am', () => {
       for (const url of urls) bytes += fs.statSync(path.join(publicDir, url)).size;
     }
     expect(bytes).toBeLessThan(2.2 * 1024 * 1024);
+  });
+});
+
+// ── The proof lesson: Completing the Square, cut into beats on the chalk theme ──
+
+describe('quadratic-functions-am (the beat model + chalk theme)', () => {
+  const script = loadLessonScript('quadratic-functions-am') as LessonScript;
+  const publicDir = path.resolve(__dirname, '..', '..', 'public');
+
+  it('keeps its 13-scene teaching and both checks; every scene is a beat scene; chalk theme', () => {
+    expect(script.scenes).toHaveLength(13);
+    expect(script.theme).toBe('chalk');
+    expect(checkQids(script)).toEqual(['296472a0-a5bc-4a34-8f07-53cdc5c8dd27', '0551c757-00c0-4030-a305-df135ff9674c']);
+    for (const [i, s] of script.scenes.entries()) {
+      expect(hasBeats(s), `scene ${i} has beats`).toBe(true);
+      expect(s.narration, `scene ${i} derives narration`).toBeUndefined();
+      expect(s.audio).toBeUndefined();
+    }
+  });
+
+  it('is cut into 40–55 beats of at most ~40 words, one idea each', () => {
+    const beats = script.scenes.flatMap(s => s.beats ?? []);
+    expect(beats.length).toBeGreaterThanOrEqual(40);
+    expect(beats.length).toBeLessThanOrEqual(55);
+    for (const b of beats) {
+      const words = b.say.trim().split(/\s+/).length;
+      expect(words, b.say).toBeLessThanOrEqual(40);
+      expect(words, b.say).toBeGreaterThanOrEqual(6);
+    }
+  });
+
+  it('shows write / mark / morph / highlight / focus / move / note in use on the scenes the proof names', () => {
+    const kinds = (i: number) => new Set((script.scenes[i].beats ?? []).flatMap(b => b.do.map(a => a.do)));
+    expect(kinds(2).has('morph')).toBe(true);                       // the graph scene
+    for (const i of [4, 5, 6, 8]) {                                 // the worked-steps scenes
+      const k = kinds(i);
+      for (const need of ['write', 'mark', 'highlight', 'focus', 'move']) expect(k.has(need as never), `scene ${i} uses ${need}`).toBe(true);
+    }
+    expect(kinds(4).has('note')).toBe(true);
+    expect(kinds(3).has('highlight') && kinds(3).has('mark') && kinds(3).has('write')).toBe(true); // annotate
+    expect(kinds(1).has('write')).toBe(true);                       // the caption writes its paragraphs
+    const all = new Set(script.scenes.flatMap(s => (s.beats ?? []).flatMap(b => b.do.map(a => a.do))));
+    for (const k of ['write', 'reveal', 'highlight', 'move', 'morph', 'mark', 'note', 'focus']) expect(all.has(k as never), k).toBe(true);
+  });
+
+  it('check beats narrate the lead-in only — never the answer', () => {
+    // Bank answers: (2, 8) and (2, 13). Whole-word match on the digits/words.
+    const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen'];
+    const answers: Record<string, number[]> = {
+      '296472a0-a5bc-4a34-8f07-53cdc5c8dd27': [8],
+      '0551c757-00c0-4030-a305-df135ff9674c': [13],
+    };
+    for (const scene of script.scenes) {
+      if (scene.type !== 'check') continue;
+      expect(scene.beats).toHaveLength(1);
+      const text = (sceneNarration(scene) as string[]).join(' ');
+      const words = text.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/);
+      for (const n of answers[scene.qid]) {
+        expect(words).not.toContain(String(n));
+        expect(words).not.toContain(NUMBER_WORDS[n]);
+      }
+      expect(text).toMatch(/your turn|pause here|last one/i);
+    }
+  });
+
+  it('every beat has its clip committed as scene-NN-bK.mp3, a real MP3, under public/', () => {
+    let clips = 0; let bytes = 0;
+    script.scenes.forEach((scene, i) => {
+      (scene.beats ?? []).forEach((b, k) => {
+        expect(b.audio, `scene ${i} beat ${k} audio`).toBe(beatClipPath(script.slug, i + 1, k + 1));
+        const file = path.join(publicDir, b.audio as string);
+        expect(fs.existsSync(file), `${b.audio} exists`).toBe(true);
+        const head = Buffer.alloc(4);
+        const fd = fs.openSync(file, 'r');
+        fs.readSync(fd, head, 0, 4, 0);
+        fs.closeSync(fd);
+        const isMp3 = head.toString('latin1', 0, 3) === 'ID3' || (head[0] === 0xff && (head[1] & 0xe0) === 0xe0);
+        expect(isMp3, `${b.audio} is an MP3`).toBe(true);
+        bytes += fs.statSync(file).size;
+        clips++;
+      });
+    });
+    expect(clips).toBeGreaterThanOrEqual(40);
+    expect(bytes).toBeLessThan(3 * 1024 * 1024);
+    // no orphans from the per-step cut sit beside them
+    const orphans = fs.readdirSync(path.join(publicDir, 'lessons', script.slug)).filter(f => /^scene-\d\d(-\d+)?\.mp3$/.test(f));
+    expect(orphans).toEqual([]);
   });
 });
 

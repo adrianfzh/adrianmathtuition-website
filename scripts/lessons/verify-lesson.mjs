@@ -14,7 +14,9 @@
 //   3. assertions      the script's own `verify` lists (numeric / identity / graph-state)
 //   4. graph-morph     finite coefficients, curves inside the window, sane ranges
 //   5. craft           the pilot's rules — token-line length, teach-before-check, closer
-//   6. narration       present, spoken English (no TeX), sane length
+//   6. narration       present, spoken English (no TeX), sane length; a beat scene's
+//                      beats[].say one idea each (≤ ~40 words) and every line /
+//                      callout / state shown by some beat (lib/lesson-verify.beatIssues)
 //   7. checks          each qid exists, passes the practice eligibility gate, carries a
 //                      short official answer that grades against itself, matches level
 // Rules 3–7 live in src/lib/lesson-verify.ts (pure, unit-tested); this file only
@@ -77,6 +79,7 @@ script.scenes.forEach((s, i) => {
 // 5 + 6. craft + narration
 issues.push(...V.craftIssues(script));
 issues.push(...V.narrationIssues(script, { require: Boolean(args['require-narration']) }));
+issues.push(...V.beatIssues(script));
 
 // 7. checks against the bank
 const qids = checkQids(script);
@@ -107,8 +110,9 @@ function report(script) {
     console.log(JSON.stringify({ file: rel, ok: errors === 0, errors, warnings, infos, issues, stats }, null, 2));
     process.exit(errors === 0 ? 0 : 1);
   }
+  const beats = script ? script.scenes.reduce((n, s) => n + (Array.isArray(s.beats) ? s.beats.length : 0), 0) : 0;
   const head = script
-    ? `${fmt.bold(script.title)} · ${script.level} · ${script.topic} · ${script.scenes.length} scenes · ${script.minutes} min`
+    ? `${fmt.bold(script.title)} · ${script.level} · ${script.topic} · ${script.scenes.length} scenes${beats ? ` · ${beats} beats` : ''}${script.theme ? ` · ${script.theme}` : ''} · ${script.minutes} min`
     : fmt.dim('(did not validate)');
   console.log(`▶ ${rel} — ${head}`);
   if (script) {

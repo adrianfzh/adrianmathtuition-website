@@ -81,6 +81,16 @@ the first only after the move has been shown in worked steps, never two in a row
   answer's shape (`k = ?`, `(h, k)`), `why` is the one-line working.
 - **`narration`** on **every** scene: spoken English in a teacher's voice,
   6–90 words, no TeX, no `$`, no backslashes — say "x minus two, all squared".
+- **Prefer `beats`** (2026-09-04, docs/LESSONS.md § The beat model): cut the
+  narration into ≤ 40-word ideas — `{ "say": …, "do": [actions] }` — and cue
+  each beat's actions to ITS clip (`write` a token / line / paragraph, `reveal`,
+  `highlight`, `move` the FLIP, `morph` a graph state, `mark` underline /
+  circle / box, `note` a handwritten aside, `focus`, `clear`), with `at` = the
+  fraction of the sentence where the object should move. Say the thing, then
+  move the thing. Give every token the pen touches an `id`. A check keeps one
+  beat (the lead-in). A beat scene carries NO `narration` / `audio` — they
+  derive. Set `"theme": "chalk"` for the board look (the exemplar is
+  `data/lessons/quadratic-functions-am.json`).
 - **`verify`** lists on every scene that computes something: `equals` for
   numbers, `equiv` for identities in x, `state` for graph states. If a number
   appears on screen, the verifier should be checking it.

@@ -30,9 +30,22 @@
 //     never leave the screen; the voice reads over them. A string narrates the
 //     whole scene, an array narrates each sub-step so the voice and the reveal
 //     line up (docs/LESSONS.md has the authoring rules).
+//   · BEATS (2026-09-04) are the finer cut of the same idea: a scene may carry
+//     `beats` — short spoken ideas (`say`), each with the visual actions (`do`)
+//     cued to ITS OWN clip. A beat IS the scene's sub-step (sceneStepCount =
+//     beats.length), so the whole per-step machinery — one clip per step, the
+//     Auto timers, ‹ / Continue, the teacher's cursor — carries over unchanged;
+//     `narration` / `audio` are DERIVED from the beats (never hand-written
+//     beside them — the validator refuses both on one scene). Actions address
+//     the scene's own objects (a step, a token id, a callout, a graph state, a
+//     prose field) and the validator checks every reference exists, exactly
+//     as it does for `from` and callout `target`. What the actions mean on the
+//     board is lib/lesson-beats.ts (pure); how they look is the player.
 //
 // Pure module (repo testing policy): no I/O, no React — importable from the
 // client player, the server page, API routes and vitest alike.
+
+import { splitParagraphs } from './lesson-speech';
 
 /** Highlight / callout tones — the portal's soft tint palette. */
 export const LESSON_TONES = ['amber', 'sky', 'rose', 'emerald'] as const;
@@ -104,20 +117,101 @@ export interface NarrationFields {
   timing?: string | (string | null)[];
 }
 
-export type TitleScene = NarrationFields & { type: 'title'; title: string; promise: string };
-export type CaptionScene = NarrationFields & { type: 'caption'; heading?: string; text: string };
-export type EquationStepsScene = NarrationFields & {
+// ── Beats (the beat model, 2026-09-04) ───────────────────────────────────────
+//
+// A scene with `beats` is narrated as short ideas, one clip each; every beat's
+// actions are cued to its own clip, so the visual and the sentence about it
+// land together at every beat boundary — exact there, estimated (`at`) inside
+// a clip. Scenes without `beats` behave exactly as before.
+
+/** The look of the stage. `slide` is the original card; `chalk` a dark board
+ *  with a pen; `paper` the same mechanics on a light ruled ground. */
+export const LESSON_THEMES = ['slide', 'chalk', 'paper'] as const;
+export type LessonTheme = (typeof LESSON_THEMES)[number];
+
+/** The prose fields an action may write: which exist depends on the scene type
+ *  (`expression` is an annotate scene's token row). */
+export const PROSE_FIELDS = ['title', 'promise', 'heading', 'intro', 'text', 'caption', 'prompt', 'expression'] as const;
+export type ProseField = (typeof PROSE_FIELDS)[number];
+
+export const MARK_KINDS = ['underline', 'circle', 'box'] as const;
+export type MarkKind = (typeof MARK_KINDS)[number];
+
+/** What `clear` wipes: the pen layer (marks + notes + focus, the default), one
+ *  part of it, or the whole board (everything written so far). */
+export const CLEAR_SCOPES = ['pen', 'marks', 'notes', 'focus', 'board'] as const;
+export type ClearScope = (typeof CLEAR_SCOPES)[number];
+
+/**
+ * What a write / reveal / focus points at — exactly ONE of these per action.
+ * `step` = an equation-steps line, `callout` = an annotate callout, `token` = a
+ * token id (equation-steps / annotate), `text` = a prose field of the scene;
+ * `para` narrows `text: "text"` to one paragraph of a caption.
+ */
+export interface BeatTarget {
+  step?: number;
+  callout?: number;
+  token?: string;
+  text?: ProseField;
+  para?: number;
+}
+
+/** `at` — fraction (0‥1) into the beat's clip at which the action fires.
+ *  Estimated by the author; unspecified actions spread across the clip's
+ *  first part in listed order (lib/lesson-beats.resolveActionTimes). */
+interface Timed { at?: number }
+
+export type BeatAction =
+  /** The target appears by DRAW-ON (a pen sweep in the chalk/paper themes). */
+  | ({ do: 'write' } & BeatTarget & Timed)
+  /** The target appears by the plain reveal (fade/rise) — no pen. */
+  | ({ do: 'reveal' } & BeatTarget & Timed)
+  /** Pulse a token (or several) — the eye goes there. */
+  | ({ do: 'highlight'; token: string | string[] } & Timed)
+  /** Fly the earlier token with this id onto the later line that declared `from` for it (the FLIP). */
+  | ({ do: 'move'; from: string } & Timed)
+  /** graph-morph: ease the curve to states[state]. */
+  | ({ do: 'morph'; state: number } & Timed)
+  /** A hand-drawn underline / circle / box around one or more tokens. */
+  | ({ do: 'mark'; kind: MarkKind; token: string | string[] } & Timed)
+  /** A handwritten aside (inline `$…$` allowed), beside a token or under the working. */
+  | ({ do: 'note'; text: string; near?: string } & Timed)
+  /** Ease the board's view onto the target for `hold` seconds (at 1×; default 2.2), then release. */
+  | ({ do: 'focus'; hold?: number } & BeatTarget & Timed)
+  /** Wipe the pen layer (default) or the whole board. */
+  | ({ do: 'clear'; what?: ClearScope } & Timed);
+
+export type BeatActionKind = BeatAction['do'];
+export const BEAT_ACTION_KINDS: readonly BeatActionKind[] = ['write', 'reveal', 'highlight', 'move', 'morph', 'mark', 'note', 'focus', 'clear'];
+
+export interface Beat {
+  /** One spoken idea — plain English, no TeX, ≤ ~40 words (the verifier warns above). */
+  say: string;
+  /** The visual actions cued to THIS beat's clip, in firing order. May be empty (a beat that only speaks). */
+  do: BeatAction[];
+  /** Its clip, /lessons/<slug>/scene-NN-bK.mp3 — written by scripts/lessons/generate-narration.mjs. */
+  audio?: string;
+  /** Optional timing sidecar for the clip (same contract as NarrationFields.timing). */
+  timing?: string;
+}
+
+/** Every scene may carry beats instead of narration. */
+export interface BeatFields { beats?: Beat[] }
+
+export type TitleScene = NarrationFields & BeatFields & { type: 'title'; title: string; promise: string };
+export type CaptionScene = NarrationFields & BeatFields & { type: 'caption'; heading?: string; text: string };
+export type EquationStepsScene = NarrationFields & BeatFields & {
   type: 'equation-steps'; heading?: string; intro?: string; steps: EquationStep[];
 };
-export type GraphMorphScene = NarrationFields & {
+export type GraphMorphScene = NarrationFields & BeatFields & {
   type: 'graph-morph'; heading?: string; caption?: string;
   states: GraphState[]; window: GraphWindow; xLabel?: string; yLabel?: string;
 };
-export type AnnotateScene = NarrationFields & {
+export type AnnotateScene = NarrationFields & BeatFields & {
   type: 'annotate'; heading?: string; intro?: string;
   tokens: StepToken[]; callouts: Callout[];
 };
-export type CheckScene = NarrationFields & {
+export type CheckScene = NarrationFields & BeatFields & {
   type: 'check';
   /** questions.id of a REAL bank question (uuid). */
   qid: string;
@@ -150,6 +244,8 @@ export interface LessonScript {
   topic: string;
   /** Honest estimate shown on entry points ("4 min"). */
   minutes: number;
+  /** The stage's look (default `slide` — the original card, untouched). */
+  theme?: LessonTheme;
   scenes: Scene[];
 }
 
@@ -161,7 +257,7 @@ export interface LessonScript {
 // /api/portal/practice/solution (any signed-in session may fetch the full
 // worked solution for an eligible question), so nothing new leaks.
 
-export interface ResolvedCheckScene extends NarrationFields {
+export interface ResolvedCheckScene extends NarrationFields, BeatFields {
   type: 'check';
   qid: string;
   prompt: string | null;
@@ -327,6 +423,166 @@ function validateNarration(
   }
 }
 
+// ── Beat validation ──────────────────────────────────────────────────────────
+
+/** What a scene exposes for actions to address — built while its body validates. */
+interface BeatScope {
+  type: string;
+  /** equation-steps: line count. */
+  steps: number;
+  /** annotate: callout count. */
+  callouts: number;
+  /** graph-morph: state count. */
+  states: number;
+  /** Token ids (equation-steps / annotate). */
+  tokenIds: Set<string>;
+  /** `from` ids some later token flies from (equation-steps). */
+  fromIds: Set<string>;
+  /** Prose fields present on this scene (only these may be written). */
+  prose: Set<ProseField>;
+  /** Paragraphs of a caption's `text`. */
+  paragraphs: number;
+}
+
+/** Per beat: the longest a handwritten aside may run (it sits beside a token). */
+export const NOTE_MAX_CHARS = 140;
+
+function integerIn(v: unknown, n: number): v is number {
+  return typeof v === 'number' && Number.isInteger(v) && v >= 0 && v < n;
+}
+
+function tokenList(v: unknown): string[] | null {
+  if (typeof v === 'string') return v.trim() ? [v] : null;
+  if (Array.isArray(v) && v.length > 0 && v.every(nonEmptyString)) return v as string[];
+  return null;
+}
+
+/** One target (write / reveal / focus): exactly one field, resolvable in this scene. */
+function validateTarget(a: Record<string, unknown>, scope: BeatScope, where: string, errors: string[]): void {
+  const fields = (['step', 'callout', 'token', 'text'] as const).filter(k => a[k] !== undefined);
+  if (fields.length !== 1) {
+    errors.push(`${where}: needs exactly one of step / callout / token / text (got ${fields.length ? fields.join(', ') : 'none'})`);
+    return;
+  }
+  if (a.para !== undefined && a.text !== 'text') errors.push(`${where}: para only narrows text: "text"`);
+  switch (fields[0]) {
+    case 'step':
+      if (scope.type !== 'equation-steps') errors.push(`${where}: step targets only exist on equation-steps scenes`);
+      else if (!integerIn(a.step, scope.steps)) errors.push(`${where}: step must be an integer in 0…${scope.steps - 1} (got ${String(a.step)})`);
+      break;
+    case 'callout':
+      if (scope.type !== 'annotate') errors.push(`${where}: callout targets only exist on annotate scenes`);
+      else if (!integerIn(a.callout, scope.callouts)) errors.push(`${where}: callout must be an integer in 0…${scope.callouts - 1} (got ${String(a.callout)})`);
+      break;
+    case 'token':
+      if (!nonEmptyString(a.token) || !scope.tokenIds.has(a.token)) errors.push(`${where}: token "${String(a.token)}" is not a token id in this scene`);
+      break;
+    case 'text': {
+      const f = a.text as ProseField;
+      if (!(PROSE_FIELDS as readonly string[]).includes(f)) errors.push(`${where}: text must be one of ${PROSE_FIELDS.join('/')}`);
+      else if (!scope.prose.has(f)) errors.push(`${where}: this ${scope.type} scene has no "${f}" to write`);
+      else if (a.para !== undefined && !integerIn(a.para, scope.paragraphs)) {
+        errors.push(`${where}: para must be an integer in 0…${scope.paragraphs - 1} (the caption has ${scope.paragraphs} paragraph${scope.paragraphs === 1 ? '' : 's'})`);
+      }
+      break;
+    }
+  }
+}
+
+function validateAction(raw: unknown, scope: BeatScope, where: string, errors: string[]): void {
+  if (!isRecord(raw)) { errors.push(`${where}: action must be an object`); return; }
+  const a = raw;
+  const kind = a.do;
+  if (!(BEAT_ACTION_KINDS as readonly unknown[]).includes(kind)) {
+    errors.push(`${where}: unknown action "${String(kind)}" (one of ${BEAT_ACTION_KINDS.join('/')})`);
+    return;
+  }
+  if (a.at !== undefined && (!finiteNumber(a.at) || a.at < 0 || a.at > 1)) {
+    errors.push(`${where}: at must be a fraction 0…1 of the clip (got ${String(a.at)})`);
+  }
+  const tokens = (field: string) => {
+    const list = tokenList(a[field]);
+    if (!list) { errors.push(`${where}: ${field} must be a token id or a non-empty list of ids`); return; }
+    for (const id of list) if (!scope.tokenIds.has(id)) errors.push(`${where}: token "${id}" is not a token id in this scene`);
+  };
+  switch (kind) {
+    case 'write':
+    case 'reveal':
+      validateTarget(a, scope, where, errors);
+      break;
+    case 'focus':
+      validateTarget(a, scope, where, errors);
+      if (a.hold !== undefined && (!finiteNumber(a.hold) || a.hold <= 0 || a.hold > 10)) errors.push(`${where}: hold is seconds, 0 < hold ≤ 10`);
+      break;
+    case 'highlight':
+      tokens('token');
+      break;
+    case 'move':
+      if (scope.type !== 'equation-steps') errors.push(`${where}: move only applies to equation-steps scenes`);
+      else if (!nonEmptyString(a.from) || !scope.fromIds.has(a.from)) {
+        errors.push(`${where}: no later line flies from "${String(a.from)}" — a move needs a token with from: "${String(a.from)}"`);
+      }
+      break;
+    case 'morph':
+      if (scope.type !== 'graph-morph') errors.push(`${where}: morph only applies to graph-morph scenes`);
+      else if (!integerIn(a.state, scope.states)) errors.push(`${where}: state must be an integer in 0…${scope.states - 1} (got ${String(a.state)})`);
+      break;
+    case 'mark':
+      if (!(MARK_KINDS as readonly unknown[]).includes(a.kind)) errors.push(`${where}: kind must be one of ${MARK_KINDS.join('/')}`);
+      tokens('token');
+      break;
+    case 'note':
+      if (!nonEmptyString(a.text)) errors.push(`${where}: note needs text`);
+      else if (a.text.trim().length > NOTE_MAX_CHARS) errors.push(`${where}: note is ${a.text.trim().length} chars — an aside, not a paragraph (≤ ${NOTE_MAX_CHARS})`);
+      if (a.near !== undefined && (!nonEmptyString(a.near) || !scope.tokenIds.has(a.near))) {
+        errors.push(`${where}: near "${String(a.near)}" is not a token id in this scene`);
+      }
+      break;
+    case 'clear':
+      if (a.what !== undefined && !(CLEAR_SCOPES as readonly unknown[]).includes(a.what)) {
+        errors.push(`${where}: what must be one of ${CLEAR_SCOPES.join('/')}`);
+      }
+      break;
+  }
+}
+
+/**
+ * The beats of one scene. A beat scene derives its narration from `say`, so
+ * hand-written narration / audio / timing beside it is refused — one source
+ * of truth for the voice. A check keeps ONE beat (the lead-in): the answer
+ * gate owns everything after it.
+ */
+function validateBeats(scene: Record<string, unknown>, scope: BeatScope | null, at: string, errors: string[]): void {
+  const beats = scene.beats;
+  if (beats === undefined) return;
+  if (!Array.isArray(beats) || beats.length === 0) { errors.push(`${at}: beats must be a non-empty array`); return; }
+  for (const k of ['narration', 'audio', 'timing'] as const) {
+    if (scene[k] !== undefined) errors.push(`${at}: a beat scene derives its ${k} from beats[].say — remove the hand-written ${k}`);
+  }
+  if (scene.type === 'check' && beats.length !== 1) errors.push(`${at}: a check carries exactly one beat (the lead-in); got ${beats.length}`);
+  beats.forEach((b, k) => {
+    const bAt = `${at}.beats[${k}]`;
+    if (!isRecord(b)) { errors.push(`${bAt}: beat must be an object`); return; }
+    validateNarrationText(b.say, `${bAt}.say`, errors);
+    if (b.audio !== undefined && !isLessonAudioUrl(b.audio)) errors.push(`${bAt}.audio: must be a /lessons/<slug>/… path or an https URL (got "${String(b.audio)}")`);
+    if (b.timing !== undefined) {
+      if (b.audio === undefined) errors.push(`${bAt}: timing needs audio`);
+      if (!isLessonTimingUrl(b.timing)) errors.push(`${bAt}.timing: must be a /lessons/<slug>/….timing.json path or an https URL`);
+    }
+    if (!Array.isArray(b.do)) { errors.push(`${bAt}: do must be an array of actions (empty for a beat that only speaks)`); return; }
+    if (scope === null) return; // the scene body failed — references cannot be judged
+    let lastAt = -1;
+    b.do.forEach((action, j) => {
+      const aAt = `${bAt}.do[${j}]`;
+      validateAction(action, scope, aAt, errors);
+      if (isRecord(action) && finiteNumber(action.at)) {
+        if (action.at < lastAt) errors.push(`${aAt}: at ${action.at} runs backwards — actions fire in listed order, so at must not decrease within a beat`);
+        lastAt = Math.max(lastAt, action.at);
+      }
+    });
+  });
+}
+
 function validateScene(scene: unknown, i: number, errors: string[]): void {
   const at = `scenes[${i}]`;
   if (!isRecord(scene)) { errors.push(`${at}: scene must be an object`); return; }
@@ -334,14 +590,22 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
   // Sub-step count for the narration rule — mirrors sceneStepCount, computed
   // from the raw shape once the body validates (null = body broken).
   let steps: number | null = 1;
+  // What this scene's beats may address; null once the body is broken.
+  const scope: BeatScope = {
+    type: String(type), steps: 0, callouts: 0, states: 0,
+    tokenIds: new Set(), fromIds: new Set(), prose: new Set(), paragraphs: 0,
+  };
+  if (nonEmptyString(scene.heading)) scope.prose.add('heading');
   switch (type) {
     case 'title': {
       if (!nonEmptyString(scene.title)) errors.push(`${at} (title): needs title`);
       if (!nonEmptyString(scene.promise)) errors.push(`${at} (title): needs promise`);
+      scope.prose.add('title').add('promise');
       break;
     }
     case 'caption': {
       if (!nonEmptyString(scene.text)) errors.push(`${at} (caption): needs text`);
+      else { scope.prose.add('text'); scope.paragraphs = splitParagraphs(scene.text).length; }
       if (!optionalString(scene.heading)) errors.push(`${at} (caption): heading must be a non-empty string when present`);
       break;
     }
@@ -355,6 +619,8 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
         break;
       }
       steps = stepsArr.length;
+      scope.steps = stepsArr.length;
+      if (nonEmptyString(scene.intro)) scope.prose.add('intro');
       const sceneIds = new Set<string>();
       const earlier = new Set<string>();
       stepsArr.forEach((step, si) => {
@@ -370,11 +636,13 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
           validateToken(t, `${sAt}.tokens[${ti}]`, errors, sceneIds, earlier));
         for (const t of step.tokens) {
           if (isRecord(t) && nonEmptyString(t.id)) earlier.add(t.id);
+          if (isRecord(t) && nonEmptyString(t.from)) scope.fromIds.add(t.from);
         }
         if (step.note !== undefined && !nonEmptyString(step.note)) {
           errors.push(`${sAt}: note must be a non-empty string when present`);
         }
       });
+      scope.tokenIds = sceneIds;
       break;
     }
     case 'graph-morph': {
@@ -386,6 +654,8 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
         steps = null;
       } else {
         steps = states.length;
+        scope.states = states.length;
+        if (nonEmptyString(scene.caption)) scope.prose.add('caption');
         states.forEach((s, si) => {
           const sAt = `${at}.states[${si}]`;
           if (!isRecord(s)) { errors.push(`${sAt}: state must be an object`); return; }
@@ -414,12 +684,16 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
       } else {
         scene.tokens.forEach((t, ti) =>
           validateToken(t, `${at}.tokens[${ti}]`, errors, ids, null));
+        scope.prose.add('expression');
       }
+      scope.tokenIds = ids;
+      if (nonEmptyString(scene.intro)) scope.prose.add('intro');
       if (!Array.isArray(scene.callouts) || scene.callouts.length === 0) {
         errors.push(`${at} (annotate): needs at least one callout`);
         steps = null;
       } else {
         steps = scene.callouts.length + 1; // expression first, then callouts
+        scope.callouts = scene.callouts.length;
         scene.callouts.forEach((c, ci) => {
           const cAt = `${at}.callouts[${ci}]`;
           if (!isRecord(c)) { errors.push(`${cAt}: callout must be an object`); return; }
@@ -439,6 +713,7 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
       if (!nonEmptyString(scene.why)) errors.push(`${at} (check): needs a one-line why for the reveal`);
       if (!optionalString(scene.prompt)) errors.push(`${at} (check): prompt must be a non-empty string when present`);
       if (!optionalString(scene.placeholder)) errors.push(`${at} (check): bad placeholder`);
+      if (nonEmptyString(scene.prompt)) scope.prose.add('prompt');
       break;
     }
     default:
@@ -446,6 +721,7 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
       return;
   }
   validateNarration(scene, steps, at, errors);
+  validateBeats(scene, steps === null ? null : scope, at, errors);
 }
 
 /**
@@ -464,6 +740,9 @@ export function validateLessonScript(input: unknown): ValidationResult {
   if (!nonEmptyString(input.topic)) errors.push('topic is required');
   if (!finiteNumber(input.minutes) || input.minutes <= 0 || input.minutes > 60) {
     errors.push('minutes must be a number between 1 and 60');
+  }
+  if (input.theme !== undefined && !(LESSON_THEMES as readonly unknown[]).includes(input.theme)) {
+    errors.push(`theme must be one of ${LESSON_THEMES.join('/')} (got "${String(input.theme)}")`);
   }
   if (!Array.isArray(input.scenes) || input.scenes.length === 0) {
     errors.push('scenes must be a non-empty array');
@@ -485,6 +764,7 @@ export function checkQids(script: LessonScript): string[] {
  * (Checks are interactive: the player owns their pacing, so 1 here.)
  */
 export function sceneStepCount(scene: PlayScene): number {
+  if (hasBeats(scene)) return scene.beats.length; // a beat IS the sub-step
   switch (scene.type) {
     case 'equation-steps': return scene.steps.length;
     case 'graph-morph': return scene.states.length;
@@ -508,7 +788,9 @@ export interface NarrationCue {
 }
 
 export function narrationLayout(scene: PlayScene): NarrationLayout {
-  if (scene.type === 'check-skipped' || scene.narration === undefined) return 'none';
+  if (scene.type === 'check-skipped') return 'none';
+  if (hasBeats(scene)) return 'steps';
+  if (scene.narration === undefined) return 'none';
   return Array.isArray(scene.narration) ? 'steps' : 'scene';
 }
 
@@ -518,7 +800,13 @@ export function narrationLayout(scene: PlayScene): NarrationLayout {
  * one clip (the player spreads them evenly across its duration).
  */
 export function narrationAt(scene: PlayScene, step: number): NarrationCue | null {
-  if (scene.type === 'check-skipped' || scene.narration === undefined) return null;
+  if (scene.type === 'check-skipped') return null;
+  if (hasBeats(scene)) {
+    const b = scene.beats[step];
+    if (!b) return null;
+    return { text: b.say, audio: b.audio ?? null, timing: b.audio ? (b.timing ?? null) : null };
+  }
+  if (scene.narration === undefined) return null;
   const { narration, audio, timing } = scene;
   if (Array.isArray(narration)) {
     const text = narration[step];
@@ -560,9 +848,41 @@ export function nextNarrationAudio(scenes: PlayScene[], sceneIdx: number, step: 
 /** Does any scene carry a clip? A silent lesson never offers the Voice mode. */
 export function lessonHasAudio(scenes: PlayScene[]): boolean {
   return scenes.some(scene => {
-    if (scene.type === 'check-skipped' || scene.audio === undefined) return false;
+    if (scene.type === 'check-skipped') return false;
+    if (hasBeats(scene)) return scene.beats.some(b => b.audio !== undefined);
+    if (scene.audio === undefined) return false;
     return Array.isArray(scene.audio) ? scene.audio.length > 0 : true;
   });
+}
+
+// ── Beat helpers (pure) ──────────────────────────────────────────────────────
+
+/** A scene narrated as beats (the validator guarantees a non-empty array). */
+export function hasBeats(scene: PlayScene | Scene): scene is (PlayScene | Scene) & { beats: Beat[] } {
+  return scene.type !== 'check-skipped' && Array.isArray(scene.beats) && scene.beats.length > 0;
+}
+
+/**
+ * The spoken entries of a scene, whatever its shape: a beat scene's `say`
+ * lines, else `narration` as written (a whole-scene string stays a string).
+ * What the voice generator, the verifier and the tests read.
+ */
+export function sceneNarration(scene: Scene | PlayScene): string | string[] | undefined {
+  if (scene.type === 'check-skipped') return undefined;
+  if (hasBeats(scene)) return scene.beats.map(b => b.say);
+  return scene.narration;
+}
+
+/** The clip(s) of a scene, same shape as sceneNarration (null per beat without one). */
+export function sceneAudio(scene: Scene | PlayScene): string | (string | null)[] | undefined {
+  if (scene.type === 'check-skipped') return undefined;
+  if (hasBeats(scene)) return scene.beats.map(b => b.audio ?? null);
+  return scene.audio;
+}
+
+/** The served path of beat K (1-based) of scene NN (1-based): /lessons/<slug>/scene-NN-bK.mp3. */
+export function beatClipPath(slug: string, sceneNo: number, beatNo: number): string {
+  return `/lessons/${slug}/scene-${String(sceneNo).padStart(2, '0')}-b${beatNo}.mp3`;
 }
 
 /**

@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import katex from 'katex';
 import {
   mathFragments, texUnits, evalExpr, polyAt, sampledEqual, runAssertions,
-  graphIssues, craftIssues, narrationIssues, answerClass, checkIssues,
-  estimateMinutes, summarize, MAX_TOKENS_PER_LINE, type CheckRow,
+  graphIssues, craftIssues, narrationIssues, answerClass, checkIssues, beatIssues,
+  estimateMinutes, summarize, narrationWordCount, MAX_TOKENS_PER_LINE, BEAT_MAX_WORDS, type CheckRow,
 } from './lesson-verify';
 import { validateLessonScript, checkQids, type LessonScript, type GraphMorphScene } from './lesson-script';
 import { loadLessonScript } from './lesson-load';
@@ -310,6 +310,73 @@ describe('summarize + estimateMinutes', () => {
 
 // ── The second lesson, drafted with the phase-2 pipeline ─────────────────────
 
+describe('beats (verifier craft rules)', () => {
+  const beatScript = (scenes: unknown[]) => script({ scenes: scenes as unknown as LessonScript['scenes'] });
+  const line = (tex: string, id?: string, from?: string) => ({ tex, ...(id ? { id } : {}), ...(from ? { from } : {}) });
+
+  it('checks each beat\'s say: TeX is an error, over ~40 words a warning, too thin a warning', () => {
+    const s = beatScript([
+      { type: 'title', title: 'T', promise: 'P', beats: [
+        { say: 'Welcome to the lesson, this is a fine opening line.', do: [] },
+        { say: 'Too short', do: [] },
+        { say: Array(BEAT_MAX_WORDS + 1).fill('word').join(' '), do: [] },
+      ] },
+      { type: 'caption', text: 'closer', beats: [{ say: 'And a closer that is long enough.', do: [] }] },
+    ]);
+    (s.scenes[0] as unknown as { beats: { say: string }[] }).beats[0].say = 'Welcome to $x$';
+    const issues = narrationIssues(s, { require: true });
+    expect(issues.find(i => i.where === 'scenes[0].beats[0].say')?.severity).toBe('error');
+    expect(issues.find(i => i.where === 'scenes[0].beats[1].say')?.message).toMatch(/too thin/);
+    expect(issues.find(i => i.where === 'scenes[0].beats[2].say')?.message).toMatch(/a beat is one idea/);
+    expect(issues.find(i => i.where === 'scenes[0].narration')).toBeUndefined(); // never "missing" — the beats speak
+    expect(narrationWordCount(s)).toBeGreaterThan(BEAT_MAX_WORDS);
+  });
+
+  it('warns about lines, callouts and states no beat ever shows, and actions cued into the tail', () => {
+    const s = beatScript([
+      { type: 'title', title: 'T', promise: 'P', beats: [{ say: 'Opening words that are long enough.', do: [] }] },
+      { type: 'equation-steps', steps: [{ tokens: [line('a', 'a')] }, { tokens: [line('b', 'b')] }, { tokens: [line('c', 'c')] }],
+        beats: [
+          { say: 'Write the first line only, then.', do: [{ do: 'write', step: 0 }, { do: 'highlight', token: 'a', at: 0.95 }] },
+          { say: 'Write the second by its token.', do: [{ do: 'write', token: 'b' }] },
+        ] },
+      { type: 'annotate', tokens: [line('x', 'x')], callouts: [{ target: 'x', label: 'one' }, { target: 'x', label: 'two' }],
+        beats: [{ say: 'Name the first part only here.', do: [{ do: 'reveal', callout: 0 }] }] },
+      { type: 'graph-morph', states: [{ label: 'a', coeffs: [0, 0, 1] }, { label: 'b', coeffs: [1, 0, 1] }, { label: 'c', coeffs: [2, 0, 1] }],
+        window: { xMin: -2, xMax: 2, yMin: -1, yMax: 8 },
+        beats: [{ say: 'Lift it once, and leave it there.', do: [{ do: 'morph', state: 1 }] }] },
+      { type: 'caption', text: 'One.\n\nTwo.', beats: [{ say: 'Write only the first paragraph here.', do: [{ do: 'write', text: 'text', para: 0 }] }] },
+      { type: 'caption', text: 'closer', beats: [{ say: 'A closer with no actions at all.', do: [] }] },
+    ]);
+    const issues = beatIssues(s);
+    const w = (where: string) => issues.find(i => i.where === where);
+    expect(w('scenes[1].steps[0]')).toBeUndefined();
+    expect(w('scenes[1].steps[1]')).toBeUndefined();               // shown through its token
+    expect(w('scenes[1].steps[2]')?.severity).toBe('warn');
+    expect(w('scenes[1].beats[0].do[1]')?.message).toMatch(/last tenth/);
+    expect(w('scenes[2].tokens')?.severity).toBe('warn');          // expression never written
+    expect(w('scenes[2].callouts[1]')?.severity).toBe('warn');
+    expect(w('scenes[3].states[2]')?.severity).toBe('warn');
+    expect(w('scenes[4].text')?.message).toMatch(/some paragraphs/);
+    expect(w('scenes[5]')?.message).toMatch(/no actions at all/);
+    expect(w('scenes[5].beats[0]')?.severity).toBe('info');
+    expect(w('beats')?.message).toMatch(/7 beats across 6 scenes/);
+  });
+
+  it('KaTeX units include a note\'s inline maths; craft ids addressed by beats are not "never flown from"', () => {
+    const s = beatScript([
+      { type: 'title', title: 'T', promise: 'P', beats: [{ say: 'Opening words that are long enough.', do: [] }] },
+      { type: 'equation-steps', steps: [{ tokens: [line('x^2', 'sq')] }, { tokens: [line('y', 'k')] }],
+        beats: [{ say: 'Write the line and note the half.', do: [{ do: 'write', step: 0 }, { do: 'note', text: 'half of $\\tfrac{3}{2}$', near: 'sq' }, { do: 'write', step: 1 }, { do: 'mark', kind: 'box', token: 'k' }] }] },
+      { type: 'caption', text: 'closer', beats: [{ say: 'A closer with words enough.', do: [] }] },
+    ]);
+    const { units } = texUnits(s);
+    expect(units.find(u => u.where === 'scenes[1] (equation-steps).beats[0].do[1].text $1')?.tex).toBe('\\tfrac{3}{2}');
+    const craft = craftIssues(s);
+    expect(craft.filter(i => /never flown from/.test(i.message))).toEqual([]);
+  });
+});
+
 describe('quadratic-functions-am (drafted via the authoring pipeline)', () => {
   const lesson = loadLessonScript('quadratic-functions-am') as LessonScript;
 
@@ -350,8 +417,12 @@ describe('quadratic-functions-am (drafted via the authoring pipeline)', () => {
     expect(graphIssues(graph, 'g').filter(i => i.severity !== 'info')).toEqual([]);
   });
 
-  it('carries spoken narration on every scene, free of TeX', () => {
+  it('carries spoken narration on every scene, free of TeX — as beats, with no craft warnings', () => {
     expect(narrationIssues(lesson, { require: true }).filter(i => i.severity === 'error')).toEqual([]);
+    expect(narrationIssues(lesson, { require: true }).filter(i => i.severity === 'warn')).toEqual([]);
+    expect(beatIssues(lesson).filter(i => i.severity !== 'info')).toEqual([]);
+    expect(estimateMinutes(lesson)).toBeGreaterThanOrEqual(7);
+    expect(estimateMinutes(lesson)).toBeLessThanOrEqual(10);
   });
 
   it('grades its two turning-point checks through the shared answer checker', () => {

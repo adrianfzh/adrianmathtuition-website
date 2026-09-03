@@ -41,31 +41,45 @@
 //     Driven from audio.currentTime in a rAF, so rate and pause come free;
 //     the DOM is mutated in place (data-state / --sweep), never re-rendered
 //     per frame. Reduced motion keeps the opacity states, drops the sweep.
+//   · THE BEAT MODEL (2026-09-04). A scene with `beats` is narrated as short
+//     ideas, one clip each; every beat's actions are cued to ITS OWN clip. A
+//     beat is the sub-step, so the pacing machinery above is untouched — what
+//     changes is what a step SHOWS: the views render from a BoardState
+//     (lib/lesson-beats.ts) derived from "beat k, `fired` actions in", and a
+//     director rAF advances `fired` as the clip's fraction (Voice), the beat
+//     timer (Auto) or a short tap clock (Manual) crosses each action's `at`.
+//     Sync is exact at every beat boundary (a clip starts, its actions start),
+//     estimated inside a clip (`at` is the author's guess). The pen layer —
+//     draw-on, marks, notes, focus — lives in lesson-board.tsx.
+//   · THEMES. `slide` is the original card (its tokens are the values this
+//     file always used, so unthemed scripts render as before); `chalk` and
+//     `paper` restyle the stage through `--lsn-*` custom properties only
+//     (lib/lesson-theme.ts). The header, dots and controls stay portal-styled.
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { MathMarkdown, katexOptions } from '@/lib/math-markdown';
 import { checkTypedAnswer } from '@/lib/notebook';
 import {
-  lessonHasAudio, narrationLayout, sceneStepCount,
+  hasBeats, lessonHasAudio, narrationLayout, sceneStepCount,
   type AnnotateScene, type CaptionScene, type EquationStepsScene,
-  type GraphMorphScene, type LessonTone, type PlayScene,
+  type GraphMorphScene, type LessonTheme, type LessonTone, type PlayScene,
   type ResolvedCheckScene, type StepToken, type TitleScene,
 } from '@/lib/lesson-script';
 import {
   PLAYBACK_RATES, alignShownToSpoken, buildSpeechTrack, isBlockMarkdown, rateLabel, scaleBeat,
   speechStatesAt, speechWeight, splitProse, wordsLitAt,
-  type PlaybackRate, type SpeechTrack, type SpeechState,
+  type PlaybackRate, type SpeechTrack, type SpeechState, type Window as SpeechWindow,
 } from '@/lib/lesson-speech';
+import {
+  beatAutoMs, beatTimeline, boardStateAt, elementShown, firedCountAt, lineKey, lineOn, proseGroup, sceneNotes,
+  tokKey, tokenShown, tokenWritten, type BoardState,
+} from '@/lib/lesson-beats';
+import { HAND_FONT_HREF, needsHandFont, normalizeTheme, themeCssVars } from '@/lib/lesson-theme';
 import { useNarration, usePref, useRatePref, writePref, writeRate } from './lesson-narration';
-
-// useLayoutEffect measures cloned-token flight paths; on the server it must
-// quietly be useEffect (standard isomorphic guard — avoids the SSR warning).
-const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
-
-const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+import BoardLayer, { EASE, MathText, NoteSlotView, offsetRect, useIsoLayoutEffect } from './lesson-board';
 
 // ── Small shared renderers ───────────────────────────────────────────────────
 
@@ -81,10 +95,14 @@ function Tex({ tex, className }: { tex: string; className?: string }) {
 // Inline prose with $…$ math — same guard as practice-flow's MathText: plain
 // strings never enter markdown, so nothing gets accidentally italicised.
 const INLINE_P = { p: ({ children }: { children?: React.ReactNode }) => <>{children}</> };
-function MathText({ text }: { text: string }) {
-  if (!text.includes('$')) return <>{text}</>;
-  return <MathMarkdown content={text} components={INLINE_P} />;
-}
+
+/** A beat scene's element: the key the board addresses it by, and its state. */
+interface ElementBits { key: string; on: boolean; written: boolean }
+/** The classes an element carries (empty outside beat scenes). */
+const elCls = (b: ElementBits | null) => (b ? `lsn-el ${b.on ? 'on' : ''} ${b.written ? 'w' : ''}` : '');
+
+/** Per-paragraph overrides for a caption written paragraph by paragraph. */
+interface ParaMeta { group: number; from: number; bits: ElementBits | null }
 
 /**
  * Prose that the teacher's cursor can walk: one <span data-sent> per sentence,
@@ -93,55 +111,71 @@ function MathText({ text }: { text: string }) {
  * DOM); `data-state` starts at `waiting` in a timed pacing and `idle` (full
  * ink) in Manual — the rAF cursor then owns it. Markdown and `$…$` survive per
  * sentence (the splitter never cuts inside them); a block-markdown paragraph
- * (list, display math) renders whole as one unit.
+ * (list, display math) renders whole as one unit. `group` −1 = static prose
+ * no beat reads (idle, never walked). `from` = the fraction into the group's
+ * clip at which the prose appears (beat scenes: its write's `at`), so the
+ * cursor spreads its sentences over the rest of the clip.
  */
-function Prose({ text, group, timed, markdown = false, className }: {
+function Prose({ text, group, timed, markdown = false, className, from = 0, para }: {
   text: string; group: number; timed: boolean; markdown?: boolean; className?: string;
+  from?: number;
+  para?: (p: number) => ParaMeta;
 }) {
   const paras = useMemo(() => splitProse(text), [text]);
-  const state = timed ? 'waiting' : 'idle';
   let idx = 0;
-  const sentence = (sent: string) => {
+  const sentence = (sent: string, g: number, f: number) => {
     const i = idx++;
     const rich = markdown || /[$*`]/.test(sent);
+    const state = g < 0 || !timed ? 'idle' : 'waiting';
     return (
-      <span key={i} className="lsn-sent" data-sent-group={group} data-sent={i} data-w={speechWeight(sent)} data-state={state}>
+      <span key={i} className="lsn-sent" data-sent-group={g} data-sent={i} data-w={speechWeight(sent)} data-state={state}
+        data-sent-from={f > 0 ? f.toFixed(3) : undefined} data-rich={rich ? '' : undefined}>
         {rich ? <MathMarkdown content={sent} components={INLINE_P} /> : sent}
       </span>
     );
   };
-  const inline = (sents: string[]) => sents.flatMap((sent, i) => (i === 0 ? [sentence(sent)] : [' ', sentence(sent)]));
-  if (paras.length === 1 && !isBlockMarkdown(paras[0][0])) {
-    return className ? <span className={className}>{inline(paras[0])}</span> : <>{inline(paras[0])}</>;
+  const inline = (sents: string[], g: number, f: number) =>
+    sents.flatMap((sent, i) => (i === 0 ? [sentence(sent, g, f)] : [' ', sentence(sent, g, f)]));
+  if (paras.length === 1 && !isBlockMarkdown(paras[0][0]) && !para) {
+    return className ? <span className={className}>{inline(paras[0], group, from)}</span> : <>{inline(paras[0], group, from)}</>;
   }
   return (
     <div className={className}>
-      {paras.map((sents, p) =>
-        isBlockMarkdown(sents[0]) ? (
-          <div key={p} className="lsn-sent" data-sent-group={group} data-sent={idx++} data-w={speechWeight(sents[0])} data-state={state}>
-            <MathMarkdown content={sents[0]} />
-          </div>
-        ) : (
-          <p key={p}>{inline(sents)}</p>
-        ),
-      )}
+      {paras.map((sents, p) => {
+        const meta = para?.(p);
+        const g = meta ? meta.group : group;
+        const f = meta ? meta.from : from;
+        const bits = meta?.bits ?? null;
+        const attrs = bits ? { 'data-key': bits.key, 'data-prose': '1', className: elCls(bits) } : {};
+        if (isBlockMarkdown(sents[0])) {
+          const block = (
+            <div key={p} className={bits ? 'lsn-sent' : `lsn-sent ${elCls(bits)}`} data-sent-group={g} data-sent={idx++} data-w={speechWeight(sents[0])}
+              data-state={g < 0 || !timed ? 'idle' : 'waiting'} data-sent-from={f > 0 ? f.toFixed(3) : undefined} data-rich="">
+              <MathMarkdown content={sents[0]} />
+            </div>
+          );
+          return bits ? <div key={p} {...attrs}>{block}</div> : block;
+        }
+        return <p key={p} {...attrs}>{inline(sents, g, f)}</p>;
+      })}
     </div>
   );
 }
 
 const TONE = {
-  amber: { hl: 'lsn-hl-amber', chip: 'bg-amber-50 border-amber-200 text-amber-900', stroke: '#f59e0b' },
-  sky: { hl: 'lsn-hl-sky', chip: 'bg-sky-50 border-sky-200 text-sky-900', stroke: '#0ea5e9' },
-  rose: { hl: 'lsn-hl-rose', chip: 'bg-rose-50 border-rose-200 text-rose-900', stroke: '#f43f5e' },
-  emerald: { hl: 'lsn-hl-emerald', chip: 'bg-emerald-50 border-emerald-200 text-emerald-900', stroke: '#10b981' },
+  amber: { hl: 'lsn-hl-amber', chip: 'lsn-chip-amber bg-amber-50 border-amber-200 text-amber-900', stroke: '#f59e0b' },
+  sky: { hl: 'lsn-hl-sky', chip: 'lsn-chip-sky bg-sky-50 border-sky-200 text-sky-900', stroke: '#0ea5e9' },
+  rose: { hl: 'lsn-hl-rose', chip: 'lsn-chip-rose bg-rose-50 border-rose-200 text-rose-900', stroke: '#f43f5e' },
+  emerald: { hl: 'lsn-hl-emerald', chip: 'lsn-chip-emerald bg-emerald-50 border-emerald-200 text-emerald-900', stroke: '#10b981' },
 } as const satisfies Record<LessonTone, { hl: string; chip: string; stroke: string }>;
 
-function TokenSpan({ t }: { t: StepToken }) {
+function TokenSpan({ t, bits }: { t: StepToken; bits?: ElementBits | null }) {
   return (
     <span
       data-token-id={t.id || undefined}
       data-from={t.from || undefined}
-      className={`lsn-tok inline-block ${t.hl ? `lsn-hl ${TONE[t.hl].hl}` : ''}`}
+      data-key={bits?.key}
+      className={`lsn-tok inline-block ${t.hl ? `lsn-hl ${TONE[t.hl].hl}` : ''} ${elCls(bits ?? null)}`}
     >
       <Tex tex={t.tex} />
     </span>
@@ -163,21 +197,42 @@ function useReducedMotion(): boolean {
   );
 }
 
+// ── Beat-scene helpers shared by the views ───────────────────────────────────
+
+/** Element bits for a board key (null outside beat scenes). */
+function bitsOf(board: BoardState | null, key: string): ElementBits | null {
+  if (!board) return null;
+  return { key, on: elementShown(board, key), written: board.written.has(key) };
+}
+
+/** The prose group + start fraction for an element in a beat scene; the given default otherwise. */
+function groupOf(board: BoardState | null, scene: PlayScene, key: string, fallback: number): { group: number; from: number } {
+  if (!board) return { group: fallback, from: 0 };
+  const g = proseGroup(scene, key);
+  return g ? { group: g.beat, from: g.at } : { group: -1, from: 0 };
+}
+
 // ── Scene: title ─────────────────────────────────────────────────────────────
 
-function TitleView({ scene, minutes, timed }: { scene: TitleScene; minutes: number; timed: boolean }) {
+function TitleView({ scene, minutes, timed, board }: { scene: TitleScene; minutes: number; timed: boolean; board: BoardState | null }) {
+  const title = bitsOf(board, 'text:title');
+  const promise = bitsOf(board, 'text:promise');
+  const pg = groupOf(board, scene, 'text:promise', 0);
   return (
     <div className="flex-1 flex flex-col items-center justify-center text-center px-2 py-10">
       {/* inline-block: transforms are ignored on plain inline boxes, and the
           rise animation translates. Same reason on every lsn-rise span below. */}
-      <span className="inline-block text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-rise" style={{ animationDelay: '80ms' }}>
+      <span className="inline-block text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted lsn-rise" style={{ animationDelay: '80ms' }}>
         ▶ Animated lesson · ≈ {minutes} min
       </span>
-      <h2 className="mt-3 text-[27px] leading-tight font-bold text-navy lsn-rise" style={{ animationDelay: '200ms' }}>
+      <h2 data-key={title?.key} className={`mt-3 text-[27px] leading-tight font-bold text-navy lsn-ink lsn-hand-title ${board ? elCls(title) : 'lsn-rise'}`}
+        style={board ? undefined : { animationDelay: '200ms' }}>
         {scene.title}
       </h2>
-      <p className="mt-4 max-w-xs text-[15px] text-slate-600 leading-relaxed lsn-rise" style={{ animationDelay: '380ms' }}>
-        <Prose text={scene.promise} group={0} timed={timed} />
+      <p data-key={promise?.key} data-prose={board ? '1' : undefined}
+        className={`mt-4 max-w-xs text-[15px] text-slate-600 leading-relaxed lsn-ink-2 lsn-hand ${board ? elCls(promise) : 'lsn-rise'}`}
+        style={board ? undefined : { animationDelay: '380ms' }}>
+        <Prose text={scene.promise} group={pg.group} from={pg.from} timed={timed} />
       </p>
     </div>
   );
@@ -185,39 +240,29 @@ function TitleView({ scene, minutes, timed }: { scene: TitleScene; minutes: numb
 
 // ── Scene: caption ───────────────────────────────────────────────────────────
 
-function CaptionView({ scene, timed }: { scene: CaptionScene; timed: boolean }) {
+function CaptionView({ scene, timed, board }: { scene: CaptionScene; timed: boolean; board: BoardState | null }) {
+  const heading = bitsOf(board, 'text:heading');
+  const para = board
+    ? (p: number): ParaMeta => {
+        const key = `para:${p}`;
+        const g = groupOf(board, scene, key, 0);
+        return { group: g.group, from: g.from, bits: bitsOf(board, key) };
+      }
+    : undefined;
   return (
     <div className="flex-1 flex flex-col justify-center px-1 py-6">
       {scene.heading && (
-        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3 lsn-rise">{scene.heading}</p>
+        <p data-key={heading?.key} className={`text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted mb-3 ${board ? elCls(heading) : 'lsn-rise'}`}>{scene.heading}</p>
       )}
-      <div className="lsn-rise" style={{ animationDelay: '120ms' }}>
-        <Prose text={scene.text} group={0} timed={timed} markdown
-          className="prose prose-sm max-w-none text-slate-700 leading-relaxed text-[15px] [&>p]:my-0 [&>*+*]:mt-3 block" />
+      <div className={board ? '' : 'lsn-rise'} style={board ? undefined : { animationDelay: '120ms' }}>
+        <Prose text={scene.text} group={0} timed={timed} markdown para={para}
+          className="prose prose-sm max-w-none text-slate-700 lsn-ink-2 lsn-hand leading-relaxed text-[15px] [&>p]:my-0 [&>*+*]:mt-3 block" />
       </div>
     </div>
   );
 }
 
 // ── Scene: equation-steps (with moved-term FLIP) ─────────────────────────────
-
-/**
- * An element's LAYOUT box relative to `container`, via the offsetParent chain.
- * Deliberately not getBoundingClientRect: a freshly revealed line is mid
- * translateY(6px)→0 transition when the layout effect measures, so client
- * rects come back 6px low — offsets are transform-immune, so flights and
- * connectors land on the glyph's RESTING position, exactly.
- */
-function offsetRect(el: HTMLElement, container: HTMLElement) {
-  let x = 0, y = 0;
-  let node: HTMLElement | null = el;
-  while (node && node !== container) {
-    x += node.offsetLeft;
-    y += node.offsetTop;
-    node = node.offsetParent as HTMLElement | null;
-  }
-  return { left: x, top: y, width: el.offsetWidth, height: el.offsetHeight };
-}
 
 function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLElement) {
   const s = offsetRect(source, container);
@@ -226,7 +271,9 @@ function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLEleme
 
   const clone = source.cloneNode(true) as HTMLElement;
   clone.removeAttribute('data-token-id');
+  clone.removeAttribute('data-key');
   clone.setAttribute('aria-hidden', 'true');
+  for (const a of clone.getAnimations?.() ?? []) a.cancel();
   Object.assign(clone.style, {
     position: 'absolute',
     left: `${s.left}px`,
@@ -235,6 +282,7 @@ function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLEleme
     height: `${s.height}px`,
     margin: '0',
     opacity: '1',
+    clipPath: 'none',
     transformOrigin: 'top left',
     transition: `transform 620ms cubic-bezier(0.3, 0.85, 0.25, 1), opacity 200ms ease 440ms`,
     willChange: 'transform',
@@ -266,16 +314,42 @@ function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLEleme
   window.setTimeout(finish, 800); // belt-and-braces if transitionend is swallowed
 }
 
-function EquationStepsView({ scene, step, reduced, timed }: {
-  scene: EquationStepsScene; step: number; reduced: boolean; timed: boolean;
+function EquationStepsView({ scene, step, reduced, timed, board }: {
+  scene: EquationStepsScene; step: number; reduced: boolean; timed: boolean; board: BoardState | null;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const prevRevealed = useRef(0);
+  const prevMoved = useRef<Set<string>>(new Set());
   const revealed = step + 1;
+
+  // Fly a token from the earlier line that declared its `from` id.
+  const fly = useCallback((cont: HTMLElement, fromId: string, lineIdx: number) => {
+    const line = cont.querySelector<HTMLElement>(`[data-line="${lineIdx}"]`);
+    if (!line) return;
+    for (const target of Array.from(line.querySelectorAll<HTMLElement>(`[data-from="${CSS.escape(fromId)}"]`))) {
+      const source = Array.from(cont.querySelectorAll<HTMLElement>(`[data-token-id="${CSS.escape(fromId)}"]`))
+        .find(el => {
+          const l = el.closest('[data-line]');
+          return l && Number(l.getAttribute('data-line')) < lineIdx;
+        });
+      if (source) flyClone(cont, source, target);
+    }
+  }, []);
 
   useIsoLayoutEffect(() => {
     const cont = containerRef.current;
     if (!cont) return;
+    if (board) {
+      // Beat scene: a flight per `from` id whose move has fired since last commit.
+      const was = prevMoved.current;
+      prevMoved.current = new Set(board.moved);
+      if (reduced) return;
+      for (const fromId of board.moved) {
+        if (was.has(fromId)) continue;
+        scene.steps.forEach((s, li) => { if (s.tokens.some(t => t.from === fromId)) fly(cont, fromId, li); });
+      }
+      return;
+    }
     const prev = prevRevealed.current;
     prevRevealed.current = revealed;
     // Fly tokens only when moving FORWARD by exactly one line (tap/beat) —
@@ -286,42 +360,51 @@ function EquationStepsView({ scene, step, reduced, timed }: {
     if (!newLine) return;
     for (const target of Array.from(newLine.querySelectorAll<HTMLElement>('[data-from]'))) {
       const fromId = target.getAttribute('data-from');
-      if (!fromId) continue;
-      const source = Array.from(cont.querySelectorAll<HTMLElement>(`[data-token-id="${CSS.escape(fromId)}"]`))
-        .find(el => {
-          const line = el.closest('[data-line]');
-          return line && Number(line.getAttribute('data-line')) < lineIdx;
-        });
-      if (source) flyClone(cont, source, target);
+      if (fromId) fly(cont, fromId, lineIdx);
     }
-  }, [revealed, reduced]);
+  }, [revealed, reduced, board, scene.steps, fly]);
 
+  const intro = bitsOf(board, 'text:intro');
+  const notes = useMemo(() => (board ? sceneNotes(scene) : []), [board, scene]);
   return (
     <div className="flex-1 px-1 py-2">
       {scene.heading && (
-        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">{scene.heading}</p>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted mb-1.5">{scene.heading}</p>
       )}
       {scene.intro && (
-        <p className="text-[15px] text-slate-700 mb-4"><MathText text={scene.intro} /></p>
+        <p data-key={intro?.key} data-prose={board ? '1' : undefined} className={`text-[15px] text-slate-700 lsn-ink-2 lsn-hand mb-4 ${elCls(intro)}`}><MathText text={scene.intro} /></p>
       )}
       {/* relative: FLIP clones are positioned against this box. Every line is
           laid out from mount (hidden by opacity), so revealing never shifts
           layout and flight destinations are measurable in advance. */}
       <div ref={containerRef} className="relative space-y-4">
-        {scene.steps.map((s, i) => (
-          <div key={i} data-line={i} aria-hidden={i >= revealed}
-            className={`lsn-line ${i < revealed ? 'on' : ''}`}>
-            <div className="text-[17px] text-slate-800 leading-relaxed flex flex-wrap items-baseline gap-x-1.5 gap-y-1.5">
-              {s.tokens.map((t, ti) => <TokenSpan key={ti} t={t} />)}
+        {scene.steps.map((s, i) => {
+          const on = board ? lineOn(board, i) : i < revealed;
+          const ng = groupOf(board, scene, lineKey(i), i);
+          return (
+            <div key={i} data-line={i} data-key={board ? lineKey(i) : undefined} aria-hidden={!on}
+              className={`lsn-line ${on ? 'on' : ''}`}>
+              <div className="text-[17px] text-slate-800 lsn-ink leading-relaxed flex flex-wrap items-baseline gap-x-1.5 gap-y-1.5">
+                {s.tokens.map((t, ti) => (
+                  <TokenSpan key={ti} t={t}
+                    bits={board ? { key: tokKey(i, ti), on: tokenShown(board, scene, i, ti), written: tokenWritten(board, i, ti) } : null} />
+                ))}
+              </div>
+              {/* Handwritten asides beside this line's tokens: slots from mount, drawn on when their beat says so. */}
+              {board && notes.some(n => n.line === i) && (
+                <div className="lsn-note-row">
+                  {notes.filter(n => n.line === i).map(n => <NoteSlotView key={n.id} note={n} board={board} />)}
+                </div>
+              )}
+              {/* The note is the prose the voice reads for this line; the
+                  tokens above it arrive per step and are never walked word by
+                  word. The intro (the question) stays at full ink throughout. */}
+              {s.note && (
+                <p className="mt-1.5 text-[13px] text-slate-500 lsn-muted-2 lsn-hand leading-snug"><Prose text={s.note} group={ng.group} from={ng.from} timed={timed} /></p>
+              )}
             </div>
-            {/* The note is the prose the voice reads for this line; the
-                tokens above it arrive per step and are never walked word by
-                word. The intro (the question) stays at full ink throughout. */}
-            {s.note && (
-              <p className="mt-1.5 text-[13px] text-slate-500 leading-snug"><Prose text={s.note} group={i} timed={timed} /></p>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -337,14 +420,16 @@ function polyAt(coeffs: number[], x: number): number {
   return y;
 }
 
-function GraphMorphView({ scene, step, reduced }: {
-  scene: GraphMorphScene; step: number; reduced: boolean;
+function GraphMorphView({ scene, step, reduced, board }: {
+  scene: GraphMorphScene; step: number; reduced: boolean; board: BoardState | null;
 }) {
   const W = 360, H = 250, L = 38, R = 12, T = 12, B = 30;
   const plotW = W - L - R, plotH = H - T - B;
   const { xMin, xMax, yMin, yMax } = scene.window;
   const px = useCallback((x: number) => L + ((x - xMin) / (xMax - xMin)) * plotW, [xMin, xMax, plotW]);
   const py = useCallback((y: number) => T + ((yMax - y) / (yMax - yMin)) * plotH, [yMin, yMax, plotH]);
+  // Beat scenes: the state a `morph` action set; otherwise the sub-step.
+  const state = board ? board.state : step;
 
   const maxLen = Math.max(...scene.states.map(s => s.coeffs.length));
   const padded = useMemo(
@@ -380,7 +465,7 @@ function GraphMorphView({ scene, step, reduced }: {
   // Layout effect: the FIRST draw must land before paint (a plain effect
   // would let one frame through with an empty path — a visible blink).
   useIsoLayoutEffect(() => {
-    const target = Math.min(step, padded.length - 1);
+    const target = Math.min(state, padded.length - 1);
     const start = tRef.current;
     const setPath = (t: number) => pathRef.current?.setAttribute('d', pathFor(t));
     if (start === target || reduced) {
@@ -405,7 +490,7 @@ function GraphMorphView({ scene, step, reduced }: {
     cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [step, pathFor, reduced, padded.length]);
+  }, [state, pathFor, reduced, padded.length]);
 
   // Axes + ticks: static for the whole scene — only the curve ever moves.
   const xTicks: number[] = [];
@@ -415,18 +500,20 @@ function GraphMorphView({ scene, step, reduced }: {
   for (let v = Math.ceil(yMin / yStep) * yStep; v <= yMax; v += yStep) if (v !== 0) yTicks.push(v);
   const x0 = xMin <= 0 && 0 <= xMax ? px(0) : L;
   const y0 = yMin <= 0 && 0 <= yMax ? py(0) : T + plotH;
+  const current = Math.min(state, scene.states.length - 1);
+  const caption = bitsOf(board, 'text:caption');
 
   return (
     <div className="flex-1 px-1 py-2">
       {scene.heading && (
-        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">{scene.heading}</p>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted mb-2">{scene.heading}</p>
       )}
       {/* Fixed-height label slot — states crossfade in place, no reflow. */}
       <div className="relative h-12 mb-1">
         {scene.states.map((s, i) => (
-          <div key={i} aria-hidden={i !== Math.min(step, scene.states.length - 1)}
-            className="absolute inset-0 flex items-center justify-center text-center text-[15px] text-navy font-medium"
-            style={{ opacity: i === Math.min(step, scene.states.length - 1) ? 1 : 0, transition: `opacity 360ms ${EASE}` }}>
+          <div key={i} aria-hidden={i !== current}
+            className="absolute inset-0 flex items-center justify-center text-center text-[15px] text-navy lsn-ink font-medium"
+            style={{ opacity: i === current ? 1 : 0, transition: `opacity 360ms ${EASE}` }}>
             <MathText text={s.label} />
           </div>
         ))}
@@ -438,37 +525,37 @@ function GraphMorphView({ scene, step, reduced }: {
         </defs>
         {/* gridlines */}
         {xTicks.map(v => (
-          <line key={`gx${v}`} x1={px(v)} y1={T} x2={px(v)} y2={T + plotH} stroke="#e2e8f0" strokeWidth="1" />
+          <line key={`gx${v}`} x1={px(v)} y1={T} x2={px(v)} y2={T + plotH} stroke="#e2e8f0" strokeWidth="1" className="lsn-grid" />
         ))}
         {yTicks.map(v => (
-          <line key={`gy${v}`} x1={L} y1={py(v)} x2={L + plotW} y2={py(v)} stroke="#e2e8f0" strokeWidth="1" />
+          <line key={`gy${v}`} x1={L} y1={py(v)} x2={L + plotW} y2={py(v)} stroke="#e2e8f0" strokeWidth="1" className="lsn-grid" />
         ))}
         {/* axes */}
-        <line x1={L} y1={y0} x2={L + plotW} y2={y0} stroke="#94a3b8" strokeWidth="1.2" />
-        <line x1={x0} y1={T} x2={x0} y2={T + plotH} stroke="#94a3b8" strokeWidth="1.2" />
+        <line x1={L} y1={y0} x2={L + plotW} y2={y0} stroke="#94a3b8" strokeWidth="1.2" className="lsn-axis" />
+        <line x1={x0} y1={T} x2={x0} y2={T + plotH} stroke="#94a3b8" strokeWidth="1.2" className="lsn-axis" />
         {/* tick labels — upright, small, steady */}
         {xTicks.map(v => (
-          <text key={`tx${v}`} x={px(v)} y={y0 + 14} fontSize="10" fill="#94a3b8" textAnchor="middle">{v}</text>
+          <text key={`tx${v}`} x={px(v)} y={y0 + 14} fontSize="10" fill="#94a3b8" textAnchor="middle" className="lsn-tick">{v}</text>
         ))}
         {yTicks.map(v => (
-          <text key={`ty${v}`} x={x0 - 5} y={py(v) + 3.5} fontSize="10" fill="#94a3b8" textAnchor="end">{v}</text>
+          <text key={`ty${v}`} x={x0 - 5} y={py(v) + 3.5} fontSize="10" fill="#94a3b8" textAnchor="end" className="lsn-tick">{v}</text>
         ))}
         {scene.xLabel && (
-          <text x={L + plotW - 2} y={y0 - 6} fontSize="11" fill="#64748b" textAnchor="end" fontStyle="italic">{scene.xLabel}</text>
+          <text x={L + plotW - 2} y={y0 - 6} fontSize="11" fill="#64748b" textAnchor="end" fontStyle="italic" className="lsn-axis-label">{scene.xLabel}</text>
         )}
         {scene.yLabel && (
-          <text x={x0 + 7} y={T + 10} fontSize="11" fill="#64748b" fontStyle="italic">{scene.yLabel}</text>
+          <text x={x0 + 7} y={T + 10} fontSize="11" fill="#64748b" fontStyle="italic" className="lsn-axis-label">{scene.yLabel}</text>
         )}
         <g clipPath="url(#lsn-plot-clip)">
           {/* outgoing curve, frozen faint while the live one morphs away from it */}
           <path ref={ghostRef} d="" fill="none" stroke="#cbd5e1" strokeWidth="1.6"
-            strokeDasharray="4 4" style={{ opacity: 0, transition: 'opacity 300ms ease' }} />
+            strokeDasharray="4 4" style={{ opacity: 0, transition: 'opacity 300ms ease' }} className="lsn-ghost" />
           <path ref={pathRef} d="" fill="none" stroke="hsl(220, 60%, 20%)" strokeWidth="2.4"
-            strokeLinecap="round" strokeLinejoin="round" />
+            strokeLinecap="round" strokeLinejoin="round" className="lsn-curve" />
         </g>
       </svg>
       {scene.caption && (
-        <p className="mt-3 text-[13px] text-slate-500 leading-snug"><MathText text={scene.caption} /></p>
+        <p data-key={caption?.key} data-prose={board ? '1' : undefined} className={`mt-3 text-[13px] text-slate-500 lsn-muted-2 lsn-hand leading-snug ${elCls(caption)}`}><MathText text={scene.caption} /></p>
       )}
     </div>
   );
@@ -478,10 +565,12 @@ function GraphMorphView({ scene, step, reduced }: {
 
 type ConnLine = { x1: number; y1: number; x2: number; y2: number; tone: LessonTone };
 
-function AnnotateView({ scene, step, timed }: { scene: AnnotateScene; step: number; timed: boolean }) {
+function AnnotateView({ scene, step, timed, board }: { scene: AnnotateScene; step: number; timed: boolean; board: BoardState | null }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [lines, setLines] = useState<ConnLine[]>([]);
   const shownCallouts = Math.max(0, step); // step 0 = expression only
+  const calloutOn = (i: number) => (board ? elementShown(board, `callout:${i}`) : i < shownCallouts);
+  const exprOn = board ? lineOn(board, 0) : true;
 
   const measure = useCallback(() => {
     const cont = containerRef.current;
@@ -521,19 +610,23 @@ function AnnotateView({ scene, step, timed }: { scene: AnnotateScene; step: numb
     return () => { fontsCancelled = true; ro.disconnect(); };
   }, [measure, step]);
 
+  const intro = bitsOf(board, 'text:intro');
+  const ig = groupOf(board, scene, 'text:intro', 0);
+  const notes = useMemo(() => (board ? sceneNotes(scene).filter(n => n.line === 0) : []), [board, scene]);
   return (
     <div className="flex-1 px-1 py-2">
       {scene.heading && (
-        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">{scene.heading}</p>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted mb-1.5">{scene.heading}</p>
       )}
       {/* The intro is step 0's prose (the expression reveal has no other words). */}
       {scene.intro && (
-        <p className="text-[15px] text-slate-700 mb-2"><Prose text={scene.intro} group={0} timed={timed} /></p>
+        <p data-key={intro?.key} data-prose={board ? '1' : undefined} className={`text-[15px] text-slate-700 lsn-ink-2 lsn-hand mb-2 ${elCls(intro)}`}><Prose text={scene.intro} group={ig.group} from={ig.from} timed={timed} /></p>
       )}
       <div ref={containerRef} className="relative">
         {/* connector overlay — pointer-transparent, px coordinates vs container */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden>
-          {lines.slice(0, shownCallouts).map((l, i) => {
+          {lines.map((l, i) => {
+            if (!calloutOn(i)) return null;
             const len = Math.hypot(l.x2 - l.x1, l.y2 - l.y1);
             return (
               <g key={i}>
@@ -545,27 +638,37 @@ function AnnotateView({ scene, step, timed }: { scene: AnnotateScene; step: numb
             );
           })}
         </svg>
-        {/* the expression — tokens stagger up on scene entry */}
+        {/* the expression — tokens stagger up on scene entry (beat scenes: when written) */}
         <div className="min-h-[96px] flex items-center justify-center py-5">
-          <div className="text-[19px] text-navy flex flex-wrap items-baseline justify-center gap-x-1.5 gap-y-2">
+          <div data-key={board ? lineKey(0) : undefined} className={`text-[19px] text-navy lsn-ink flex flex-wrap items-baseline justify-center gap-x-1.5 gap-y-2 ${board ? `lsn-line ${exprOn ? 'on' : ''}` : ''}`}>
             {scene.tokens.map((t, i) => (
-              <span key={i} className="inline-block lsn-rise" style={{ animationDelay: `${i * 70}ms` }}>
-                <TokenSpan t={t} />
+              <span key={i} className={`inline-block ${board ? '' : 'lsn-rise'}`} style={board ? undefined : { animationDelay: `${i * 70}ms` }}>
+                <TokenSpan t={t}
+                  bits={board ? { key: tokKey(0, i), on: tokenShown(board, scene, 0, i), written: tokenWritten(board, 0, i) } : null} />
               </span>
             ))}
           </div>
         </div>
+        {board && notes.length > 0 && (
+          <div className="lsn-note-row justify-center -mt-3 mb-2">
+            {notes.map(n => <NoteSlotView key={n.id} note={n} board={board} />)}
+          </div>
+        )}
         {/* callouts — every slot laid out from mount; reveal is opacity-only */}
         <div className="space-y-2 pt-2">
-          {scene.callouts.map((c, i) => (
-            <div key={i} aria-hidden={i >= shownCallouts}
-              className={`lsn-line ${i < shownCallouts ? 'on' : ''} flex items-start gap-2.5 border rounded-xl px-3 py-2 ${TONE[c.tone ?? 'amber'].chip}`}>
-              <span data-conn-dot={i} aria-hidden
-                className="mt-1.5 w-2 h-2 rounded-full shrink-0"
-                style={{ background: TONE[c.tone ?? 'amber'].stroke }} />
-              <span className="text-[13.5px] leading-snug"><Prose text={c.label} group={i + 1} timed={timed} /></span>
-            </div>
-          ))}
+          {scene.callouts.map((c, i) => {
+            const on = calloutOn(i);
+            const cg = groupOf(board, scene, `callout:${i}`, i + 1);
+            return (
+              <div key={i} data-key={board ? `callout:${i}` : undefined} aria-hidden={!on}
+                className={`lsn-line ${on ? 'on' : ''} flex items-start gap-2.5 border rounded-xl px-3 py-2 lsn-chip ${TONE[c.tone ?? 'amber'].chip}`}>
+                <span data-conn-dot={i} aria-hidden
+                  className="mt-1.5 w-2 h-2 rounded-full shrink-0"
+                  style={{ background: TONE[c.tone ?? 'amber'].stroke }} />
+                <span className="text-[13.5px] leading-snug lsn-hand"><Prose text={c.label} group={cg.group} from={cg.from} timed={timed} /></span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -576,8 +679,8 @@ function AnnotateView({ scene, step, timed }: { scene: AnnotateScene; step: numb
 
 type CheckStatus = 'idle' | 'retry' | 'correct' | 'reveal' | 'unclear';
 
-function CheckView({ scene, slug, onResolved, timed }: {
-  scene: ResolvedCheckScene; slug: string; onResolved: () => void; timed: boolean;
+function CheckView({ scene, slug, onResolved, timed, board }: {
+  scene: ResolvedCheckScene; slug: string; onResolved: () => void; timed: boolean; board: BoardState | null;
 }) {
   const [value, setValue] = useState('');
   const [status, setStatus] = useState<CheckStatus>('idle');
@@ -610,23 +713,25 @@ function CheckView({ scene, slug, onResolved, timed }: {
   }
 
   const settled = status === 'correct' || status === 'reveal' || status === 'unclear';
+  const prompt = bitsOf(board, 'text:prompt');
+  const pg = groupOf(board, scene, 'text:prompt', 0);
 
   return (
     // Stop card-level tap-to-advance while the student is answering.
     <div className="flex-1 px-1 py-2" onClick={(e) => e.stopPropagation()}>
-      <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600 mb-1.5">
+      <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600 lsn-accent mb-1.5">
         ✋ Quick check — a real exam question
       </p>
       {scene.prompt && (
-        <p className="text-[13px] text-slate-500 mb-3 leading-snug"><Prose text={scene.prompt} group={0} timed={timed} /></p>
+        <p data-key={prompt?.key} data-prose={board ? '1' : undefined} className={`text-[13px] text-slate-500 lsn-muted-2 lsn-hand mb-3 leading-snug ${elCls(prompt)}`}><Prose text={scene.prompt} group={pg.group} from={pg.from} timed={timed} /></p>
       )}
-      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-3">
+      <div className="bg-slate-50 border border-slate-200 lsn-well rounded-2xl p-4 mb-3">
         <div className="flex justify-between items-start gap-3">
-          <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed [&>p]:my-0 [&>p+p]:mt-2">
+          <div className="prose prose-sm max-w-none text-slate-800 lsn-ink leading-relaxed [&>p]:my-0 [&>p+p]:mt-2">
             <MathMarkdown content={scene.markdown} />
           </div>
           {scene.marks ? (
-            <span className="shrink-0 text-xs text-slate-400 font-semibold whitespace-nowrap">[{scene.marks}]</span>
+            <span className="shrink-0 text-xs text-slate-400 lsn-muted font-semibold whitespace-nowrap">[{scene.marks}]</span>
           ) : null}
         </div>
       </div>
@@ -637,7 +742,7 @@ function CheckView({ scene, slug, onResolved, timed }: {
           placeholder={scene.placeholder ?? 'Your answer'}
           disabled={settled}
           autoCapitalize="off" autoCorrect="off" spellCheck={false} enterKeyHint="done"
-          className="flex-1 min-w-0 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base font-mono focus:outline-none focus:ring-2 focus:ring-amber-400/60 disabled:bg-slate-50 disabled:text-slate-500"
+          className="flex-1 min-w-0 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base font-mono bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-400/60 disabled:bg-slate-50 disabled:text-slate-500"
         />
         <button type="submit" disabled={settled || !value.trim()}
           className="shrink-0 bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5 text-sm font-semibold disabled:opacity-40 active:scale-[0.97] motion-safe:transition-transform">
@@ -688,6 +793,8 @@ function CheckSkippedView() {
 
 /** Silent beat per position at 1× (ms); null = interactive, autoplay waits. */
 function beatDuration(scene: PlayScene, step: number): number | null {
+  // A beat scene paces to its beats: a tutor's speed over the words said.
+  if (hasBeats(scene) && scene.type !== 'check') return beatAutoMs(scene.beats[step] ?? scene.beats[0]);
   switch (scene.type) {
     case 'title': return 3200;
     case 'caption': return Math.min(9000, 2200 + scene.text.length * 26);
@@ -706,6 +813,8 @@ function beatDuration(scene: PlayScene, step: number): number | null {
 const CHECK_WHY_BEAT_MS = 3600;
 /** The cursor runs this far ahead of the voice, so the eye is there first (s). */
 const CURSOR_LEAD_S = 0.12;
+/** Manual pacing of a beat's actions: their `at` fractions play out over this span (ms at 1×). */
+const MANUAL_SPREAD_MS = 900;
 
 // ── The teacher's cursor (rAF, imperative DOM) ───────────────────────────────
 
@@ -713,6 +822,28 @@ interface BeatClock { elapsedMs: number; totalMs: number }
 
 /** The ribbon's current sentence — React state, changed only at sentence boundaries. */
 interface RibbonLine { key: string; words: string[] }
+
+/**
+ * Time windows for the shown sentences of one group. All from 0: aligned to
+ * the spoken sentences (the original map). Otherwise (beat scenes: prose that
+ * appears part-way through a clip) each cluster of sentences sharing a start
+ * fraction takes the clip from that fraction to the next cluster's, spread by
+ * weight — the words wake once they are on the board, never before.
+ */
+function windowsFor(shown: HTMLElement[], track: SpeechTrack | null, duration: number): SpeechWindow[] {
+  const froms = shown.map(el => Number(el.dataset.sentFrom) || 0);
+  const weights = shown.map(el => Number(el.dataset.w) || 1);
+  if (froms.every(f => f === 0)) return alignShownToSpoken(weights, track ? track.sentences : null, duration);
+  const starts = Array.from(new Set(froms)).sort((a, b) => a - b);
+  const out: SpeechWindow[] = new Array(shown.length);
+  starts.forEach((f, k) => {
+    const end = k + 1 < starts.length ? starts[k + 1] : 1;
+    const idx = froms.map((v, i) => (v === f ? i : -1)).filter(i => i >= 0);
+    const ws = alignShownToSpoken(idx.map(i => weights[i]), null, 1);
+    idx.forEach((i, j) => { out[i] = { start: (f + ws[j].start * (end - f)) * duration, end: (f + ws[j].end * (end - f)) * duration }; });
+  });
+  return out;
+}
 
 /**
  * Walks the sentences on the card each frame. Source of time, in order: the
@@ -771,11 +902,13 @@ function useSpeechCursor({ cardRef, ribbonRef, active, sceneIdx, step, scene, cl
         groups = [step];
       }
 
-      // Sentence spans by group, in DOM order.
+      // Sentence spans by group, in DOM order. Group −1 is static prose no
+      // beat reads — it stays idle (full ink) and is never walked.
       const spans = Array.from(card.querySelectorAll<HTMLElement>('[data-sent]'));
       const byGroup = new Map<number, HTMLElement[]>();
       for (const el of spans) {
         const g = Number(el.dataset.sentGroup);
+        if (g < 0) continue;
         const list = byGroup.get(g);
         if (list) list.push(el); else byGroup.set(g, [el]);
       }
@@ -788,8 +921,7 @@ function useSpeechCursor({ cardRef, ribbonRef, active, sceneIdx, step, scene, cl
         for (const el of list) setState(el, g < first ? 'spoken' : 'waiting');
       }
       if (shown.length > 0) {
-        const weights = shown.map(el => Number(el.dataset.w) || 1);
-        const windows = alignShownToSpoken(weights, track ? track.sentences : null, duration);
+        const windows = windowsFor(shown, track, duration);
         const cur = speechStatesAt(windows, t, track ? CURSOR_LEAD_S : 0);
         shown.forEach((el, i) => {
           setState(el, cur.states[i]);
@@ -824,6 +956,94 @@ function useSpeechCursor({ cardRef, ribbonRef, active, sceneIdx, step, scene, cl
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [active, sceneIdx, step, steps, layout, cardRef, ribbonRef, clip, beatClock, setRibbon]);
+}
+
+// ── The beat director (rAF: which of this beat's actions have fired) ─────────
+
+/**
+ * Advances `fired` for the current beat as time crosses each action's `at`.
+ * Time source, in order: the live clip's fraction (Voice — exact at the clip's
+ * start, rate and pause for free); the running silent beat (Auto, or a silent
+ * position in Voice); a short tap clock in Manual (the `at`s play out over
+ * MANUAL_SPREAD_MS). Moving BACK to a beat, or reduced motion, fires
+ * everything at once — the finished state, never a replay. Dispatches
+ * `lsn:beat` / `lsn:action` DOM events on the card (what a browser driver
+ * listens to; nothing in the app does).
+ */
+function useBeatDirector({ cardRef, scene, sceneIdx, step, done, pacing, locked, reduced, rate, clip, beatClock }: {
+  cardRef: React.RefObject<HTMLDivElement | null>;
+  scene: PlayScene; sceneIdx: number; step: number; done: boolean;
+  pacing: Pacing;
+  /** Voice is on but no gesture has unlocked audio (the poster is up): nothing fires until it does. */
+  locked: boolean;
+  reduced: boolean; rate: number;
+  clip: () => ReturnType<ReturnType<typeof useNarration>['clock']>;
+  beatClock: () => BeatClock | null;
+}): number {
+  const posKey = `${sceneIdx}:${step}`;
+  const [firedState, setFiredState] = useState<{ key: string; n: number }>({ key: '', n: 0 });
+  const firedRef = useRef(firedState);
+  useEffect(() => { firedRef.current = firedState; });
+  const lastPosRef = useRef<{ scene: number; step: number } | null>(null);
+  const timeline = useMemo(() => beatTimeline(scene, step), [scene, step]);
+  const beat = hasBeats(scene);
+
+  useEffect(() => {
+    const prev = lastPosRef.current;
+    lastPosRef.current = { scene: sceneIdx, step };
+    if (!beat || done) return;
+    const total = timeline.length;
+    const card = cardRef.current;
+    const emit = (name: string, detail: Record<string, unknown>) =>
+      card?.dispatchEvent(new CustomEvent(name, { detail: { scene: sceneIdx, beat: step, t: performance.now(), ...detail }, bubbles: true }));
+    // Moving BACK onto a beat shows its finished state — except landing on a
+    // scene's FIRST beat (‹ in Voice, a restart), which is a fresh entry and
+    // replays, exactly as the clip does.
+    const backwards = prev !== null && step > 0 && (prev.scene > sceneIdx || (prev.scene === sceneIdx && prev.step > step));
+    const startN = firedRef.current.key === posKey ? firedRef.current.n : 0;
+    if (startN === 0) emit('lsn:beat', { actions: total, backwards });
+    if (total === 0) return;
+    const times = timeline.map(x => x.at);
+    const entered = performance.now();
+    let n = startN;
+    let raf = 0;
+    if (backwards || reduced) {
+      // The finished state, on the next frame (never a replay).
+      if (startN < total) raf = requestAnimationFrame(() => setFiredState({ key: posKey, n: total }));
+      return () => cancelAnimationFrame(raf);
+    }
+    const tick = () => {
+      let frac: number;
+      let clipElapsed: number | null = null;
+      const c = clip();
+      if (pacing === 'narrated' && locked) {
+        // The poster is up: the board waits for the tap that starts the voice.
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      if (c && c.scene === sceneIdx && c.step === step) {
+        clipElapsed = c.elapsed;
+        frac = c.duration ? Math.min(1, c.elapsed / c.duration) : 0;
+        if (!c.playing && c.duration && c.elapsed >= c.duration - 0.05) frac = 1;
+      } else if (pacing !== 'manual') {
+        const b = beatClock();
+        frac = b ? Math.min(1, b.elapsedMs / Math.max(1, b.totalMs)) : 0;
+      } else {
+        frac = Math.min(1, (performance.now() - entered) / scaleBeat(MANUAL_SPREAD_MS, rate));
+      }
+      const k = firedCountAt(times, frac);
+      if (k > n) {
+        for (let j = n; j < k; j++) emit('lsn:action', { index: j, kind: timeline[j].action.do, at: timeline[j].at, frac, clipElapsed, source: clipElapsed !== null ? 'clip' : pacing === 'manual' ? 'tap' : 'timer' });
+        n = k;
+        setFiredState({ key: posKey, n });
+      }
+      if (n < total) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [beat, done, sceneIdx, step, posKey, timeline, pacing, locked, reduced, rate, clip, beatClock, cardRef]);
+
+  return firedState.key === posKey ? firedState.n : 0;
 }
 
 // ── Header controls ──────────────────────────────────────────────────────────
@@ -871,9 +1091,10 @@ function RateMenu({ rate, open, onOpen, onPick }: {
 
 type Pacing = 'manual' | 'auto' | 'narrated';
 
-export default function LessonPlayer({ slug, title, topic, minutes, scenes }: {
-  slug: string; title: string; topic: string; minutes: number; scenes: PlayScene[];
+export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp }: {
+  slug: string; title: string; topic: string; minutes: number; scenes: PlayScene[]; theme?: LessonTheme;
 }) {
+  const theme = normalizeTheme(themeProp);
   const [sceneIdx, setSceneIdx] = useState(0);
   const [step, setStep] = useState(0);
   const [done, setDone] = useState(false);
@@ -1005,6 +1226,14 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes }: {
     clip: narration.clock, beatClock, setRibbon,
   });
 
+  // The beat director + the board it implies (null outside beat scenes).
+  const fired = useBeatDirector({
+    cardRef, scene, sceneIdx, step, done, pacing, locked: narration.locked, reduced, rate,
+    clip: narration.clock, beatClock,
+  });
+  const board = useMemo(() => (hasBeats(scene) ? boardStateAt(scene, step, fired) : null), [scene, step, fired]);
+  const marginNotes = useMemo(() => (board ? sceneNotes(scene).filter(n => n.line === null) : []), [board, scene]);
+
   // Telemetry — fire-and-forget beacons into portal_event_log (bounded kinds:
   // lesson:<slug>:scene:<n> / :done / :narrated). Deduped per visit; failures
   // (or Adrian's account-less admin session) are silently dropped.
@@ -1091,10 +1320,16 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes }: {
   }, [rateOpen]);
 
   const practiceHref = `/app/practice?topic=${encodeURIComponent(topic)}&from=lesson`;
+  const themed = theme !== 'slide';
+  const themeStyle = useMemo(() => themeCssVars(theme) as React.CSSProperties, [theme]);
 
   return (
-    <div className="max-w-lg mx-auto pb-24 sm:pb-6">
+    <div className="max-w-lg mx-auto pb-24 sm:pb-6" data-lsn-theme={theme} data-lsn-themed={themed ? '' : undefined} style={themeStyle}>
       <style>{PLAYER_CSS}</style>
+      {/* The handwriting face for the chalk / paper stages — hoisted to <head>
+          by React (precedence), the same Google Fonts route the site's own
+          faces take. The slide theme loads nothing. */}
+      {needsHandFont(theme) && <link rel="stylesheet" precedence="lesson-fonts" href={HAND_FONT_HREF} />}
 
       {/* Header: way back + identity + pacing pills. Speed and pause appear
           with the timed pacings they control; Auto ⇄ Mute swap places so the
@@ -1159,8 +1394,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes }: {
         /* ── Completion — the closer CTA ── */
         <div className="bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-6 min-h-[440px] flex flex-col items-center justify-center text-center lsn-scene">
           <span className="inline-block text-4xl mb-3 lsn-rise" aria-hidden>🎉</span>
-          <h2 className="text-xl font-bold text-navy lsn-rise" style={{ animationDelay: '120ms' }}>Lesson complete</h2>
-          <p className="mt-2 max-w-xs text-sm text-slate-600 lsn-rise" style={{ animationDelay: '240ms' }}>
+          <h2 className="text-xl font-bold text-navy lsn-ink lsn-rise" style={{ animationDelay: '120ms' }}>Lesson complete</h2>
+          <p className="mt-2 max-w-xs text-sm text-slate-600 lsn-ink-2 lsn-rise" style={{ animationDelay: '240ms' }}>
             That&apos;s the whole idea — the fastest way to make it stick is to use it on real questions while it&apos;s fresh.
           </p>
           <Link href={practiceHref}
@@ -1169,25 +1404,27 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes }: {
             ✏️ Practise {topic} →
           </Link>
           <button type="button" onClick={restart}
-            className="mt-3 text-sm font-semibold text-slate-500 hover:text-navy">
+            className="mt-3 text-sm font-semibold text-slate-500 lsn-muted hover:text-navy">
             ↺ Watch again
           </button>
         </div>
       ) : (
         /* ── The scene card. Tapping it advances (except mid-check); while
               paused, a tap resumes instead. ── */
-        <div key={sceneIdx} ref={cardRef} onClick={onCardTap} data-paused={paused || undefined}
+        <div key={sceneIdx} ref={cardRef} onClick={onCardTap} data-paused={paused || undefined} data-beats={board ? maxStep : undefined}
           className={`lsn-scene relative bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-5 min-h-[440px] flex flex-col ${gated ? '' : 'cursor-pointer'}`}>
-          {scene.type === 'title' && <TitleView scene={scene} minutes={minutes} timed={timed} />}
-          {scene.type === 'caption' && <CaptionView scene={scene} timed={timed} />}
-          {scene.type === 'equation-steps' && <EquationStepsView scene={scene} step={step} reduced={reduced} timed={timed} />}
-          {scene.type === 'graph-morph' && <GraphMorphView scene={scene} step={step} reduced={reduced} />}
-          {scene.type === 'annotate' && <AnnotateView scene={scene} step={step} timed={timed} />}
-          {scene.type === 'check' && (
-            <CheckView scene={scene} slug={slug} timed={timed}
-              onResolved={() => setResolved(prev => new Set(prev).add(sceneIdx))} />
-          )}
-          {scene.type === 'check-skipped' && <CheckSkippedView />}
+          <BoardLayer board={board} notes={marginNotes} reduced={reduced} rate={rate}>
+            {scene.type === 'title' && <TitleView scene={scene} minutes={minutes} timed={timed} board={board} />}
+            {scene.type === 'caption' && <CaptionView scene={scene} timed={timed} board={board} />}
+            {scene.type === 'equation-steps' && <EquationStepsView scene={scene} step={step} reduced={reduced} timed={timed} board={board} />}
+            {scene.type === 'graph-morph' && <GraphMorphView scene={scene} step={step} reduced={reduced} board={board} />}
+            {scene.type === 'annotate' && <AnnotateView scene={scene} step={step} timed={timed} board={board} />}
+            {scene.type === 'check' && (
+              <CheckView scene={scene} slug={slug} timed={timed} board={board}
+                onResolved={() => setResolved(prev => new Set(prev).add(sceneIdx))} />
+            )}
+            {scene.type === 'check-skipped' && <CheckSkippedView />}
+          </BoardLayer>
           {/* Paused: a quiet chip; the card itself is the resume surface. */}
           {paused && (
             <span aria-hidden data-paused-chip
@@ -1203,7 +1440,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes }: {
             <div role="button" tabIndex={0} aria-label="Play with voice"
               onClick={(e) => { e.stopPropagation(); narration.unlock(); }}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); narration.unlock(); } }}
-              className="absolute inset-0 rounded-3xl flex items-center justify-center bg-white/55 backdrop-blur-[2px] lsn-rise cursor-pointer">
+              className="absolute inset-0 rounded-3xl flex items-center justify-center bg-white/55 backdrop-blur-[2px] lsn-poster lsn-rise cursor-pointer">
               <span className="inline-flex items-center gap-2.5 bg-navy text-[hsl(45,100%,96%)] rounded-full pl-3 pr-5 py-2.5 font-semibold text-[15px] shadow-[0_10px_28px_-10px_rgba(15,23,42,0.6)]">
                 <span aria-hidden className="w-8 h-8 rounded-full bg-white/15 inline-flex items-center justify-center text-sm">▶</span>
                 Play with voice
@@ -1249,7 +1486,9 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes }: {
 // Scoped-by-prefix player styles: reveal/entrance transitions, highlight
 // pulses, connector draws, the teacher's cursor. Kept as CSS (not JS timers)
 // so the compositor owns the easing and reduced-motion can switch everything
-// off in one block.
+// off in one block. The theme block at the end reads only `--lsn-*` custom
+// properties (lib/lesson-theme.ts) and applies ONLY under [data-lsn-themed],
+// so the slide theme's cascade is exactly what it was.
 const PLAYER_CSS = `
 @keyframes lsnSceneIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes lsnRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -1257,6 +1496,7 @@ const PLAYER_CSS = `
 @keyframes lsnConnDraw { from { stroke-dashoffset: var(--len); } to { stroke-dashoffset: 0; } }
 @keyframes lsnDotIn { from { opacity: 0; transform: scale(0.4); } 60% { opacity: 1; } to { opacity: 1; transform: none; } }
 @keyframes lsnFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lsnPulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 var(--lsn-pen-soft, rgba(245,158,11,0.25)); } 35% { transform: scale(1.12); box-shadow: 0 0 0 6px var(--lsn-pen-soft, rgba(245,158,11,0.25)); } 100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; } }
 .lsn-scene { animation: lsnSceneIn 300ms ${EASE} both; }
 .lsn-rise { animation: lsnRise 420ms ${EASE} both; }
 .lsn-line { opacity: 0; transform: translateY(6px); transition: opacity 420ms ${EASE}, transform 420ms ${EASE}; }
@@ -1286,11 +1526,83 @@ const PLAYER_CSS = `
 .lsn-ribbon-line { animation: lsnFade 180ms ease both; color: #94a3b8; }
 .lsn-ribbon-line [data-w] { transition: color 160ms ease; }
 .lsn-ribbon-line [data-w][data-on] { color: hsl(220, 60%, 20%); }
+
+/* ── The beat model: elements a board shows, the pen layer ── */
+.lsn-board { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.lsn-zoom { flex: 1; display: flex; flex-direction: column; position: relative; transform-origin: 0 0; transition: transform 700ms ${EASE}; }
+.lsn-scene[data-focus] { overflow: hidden; }
+.lsn-el { opacity: 0; transition: opacity 420ms ${EASE}, transform 420ms ${EASE}; }
+.lsn-el.on { opacity: 1; }
+.lsn-el.w.on { transition: none; }
+.lsn-line .lsn-el { transform: translateY(4px); }
+.lsn-line .lsn-el.on { transform: none; }
+.lsn-line .lsn-el.w { transform: none; }
+.lsn-pulse { animation: lsnPulse 900ms ${EASE} both; border-radius: 0.375rem; }
+.lsn-marks { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 5; }
+.lsn-marks path { fill: none; stroke: var(--lsn-pen, hsl(40, 85%, 52%)); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; opacity: 0.92; }
+.lsn-pen { position: absolute; left: 0; top: 0; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: var(--lsn-pen, hsl(40, 85%, 52%));
+  box-shadow: 0 0 0 3px var(--lsn-pen-soft, rgba(245,158,11,0.25)); opacity: 0; transition: opacity 200ms ease; pointer-events: none; z-index: 6; will-change: transform; }
+.lsn-pen.on { opacity: 1; }
+.lsn-note { display: inline-block; font-family: var(--lsn-hand, inherit); font-size: calc(13.5px * var(--lsn-hand-scale, 1)); line-height: 1.25; color: var(--lsn-pen, hsl(40, 80%, 42%)); }
+.lsn-note-row { display: flex; flex-wrap: wrap; gap: 0.1rem 0.9rem; margin-top: 0.15rem; }
+.lsn-note-row .lsn-note::before { content: '↳ '; opacity: 0.7; }
+.lsn-notes-flow { margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; }
+.lsn-zoom[data-focus] .lsn-line:not([data-focused]):not(:has([data-focused])), .lsn-zoom[data-focus] .lsn-el:not([data-focused]):not(:has([data-focused])):not([data-focused] *) { opacity: 0.45; }
+.lsn-zoom[data-focus] .lsn-line.on:has([data-focused]) .lsn-el:not([data-focused]) { opacity: 0.45; }
+.lsn-zoom[data-focus] [data-focused], .lsn-zoom[data-focus] [data-focused] .lsn-el.on { opacity: 1; }
+
+/* ── Themes: only under [data-lsn-themed] (chalk / paper) — the slide theme's cascade is untouched ── */
+[data-lsn-themed] .lsn-scene { background: var(--lsn-board); background-image: var(--lsn-texture); box-shadow: inset 0 0 0 1px var(--lsn-edge), 0 1px 2px rgba(15,23,42,0.06), 0 10px 28px -12px rgba(15,23,42,0.45); }
+[data-lsn-themed] .lsn-ink { color: var(--lsn-ink); }
+[data-lsn-themed] .lsn-ink-2 { color: var(--lsn-ink-2); }
+[data-lsn-themed] .lsn-muted { color: var(--lsn-muted); }
+[data-lsn-themed] .lsn-muted-2 { color: var(--lsn-ink-2); opacity: 0.86; }
+[data-lsn-themed] .lsn-accent { color: var(--lsn-pen); }
+[data-lsn-themed] .lsn-hand { font-family: var(--lsn-hand); font-size: calc(1em * var(--lsn-hand-scale)); line-height: 1.32; }
+[data-lsn-themed] .lsn-hand .katex { font-size: calc(1em / var(--lsn-hand-scale) * 1.08); }
+[data-lsn-themed] .lsn-hand-title { font-family: var(--lsn-hand); font-size: calc(27px * var(--lsn-hand-scale)); font-weight: 600; letter-spacing: 0.005em; }
+[data-lsn-themed] .lsn-scene .prose { color: var(--lsn-ink-2); }
+[data-lsn-themed] .lsn-scene .prose strong, [data-lsn-themed] .lsn-scene .prose b { color: var(--lsn-ink); }
+[data-lsn-themed] .lsn-hl-amber { background: var(--lsn-hl-amber); }
+[data-lsn-themed] .lsn-hl-sky { background: var(--lsn-hl-sky); }
+[data-lsn-themed] .lsn-hl-rose { background: var(--lsn-hl-rose); }
+[data-lsn-themed] .lsn-hl-emerald { background: var(--lsn-hl-emerald); }
+[data-lsn-themed] .lsn-chip-amber { background: var(--lsn-chip-amber-bg); border-color: var(--lsn-chip-amber-border); color: var(--lsn-chip-amber-text); }
+[data-lsn-themed] .lsn-chip-sky { background: var(--lsn-chip-sky-bg); border-color: var(--lsn-chip-sky-border); color: var(--lsn-chip-sky-text); }
+[data-lsn-themed] .lsn-chip-rose { background: var(--lsn-chip-rose-bg); border-color: var(--lsn-chip-rose-border); color: var(--lsn-chip-rose-text); }
+[data-lsn-themed] .lsn-chip-emerald { background: var(--lsn-chip-emerald-bg); border-color: var(--lsn-chip-emerald-border); color: var(--lsn-chip-emerald-text); }
+[data-lsn-themed] .lsn-well { background: var(--lsn-well); border-color: var(--lsn-well-edge); }
+[data-lsn-themed] .lsn-grid { stroke: var(--lsn-grid); }
+[data-lsn-themed] .lsn-axis { stroke: var(--lsn-axis); }
+[data-lsn-themed] .lsn-tick, [data-lsn-themed] .lsn-axis-label { fill: var(--lsn-muted); }
+[data-lsn-themed] .lsn-curve { stroke: var(--lsn-curve); }
+[data-lsn-themed] .lsn-ghost { stroke: var(--lsn-ghost); }
+[data-lsn-themed] .lsn-poster { background: rgba(8, 12, 10, 0.42); }
+[data-lsn-themed] .lsn-ribbon { background: var(--lsn-board); background-image: var(--lsn-texture); border-radius: 14px; padding: 8px 12px; box-shadow: inset 0 0 0 1px var(--lsn-edge); }
+[data-lsn-themed] .lsn-ribbon-line { color: var(--lsn-ribbon); border-color: var(--lsn-pen); }
+[data-lsn-themed] .lsn-ribbon-line [data-w][data-on] { color: var(--lsn-ribbon-lit); }
+/* Chalk / paper: words are WRITTEN as they are spoken — a sentence not yet
+   said is not on the board; the one being said draws out left to right along
+   the sweep (a mask, so its maths draws on with it); said ones stay. */
+[data-lsn-themed] .lsn-sent { background-image: none; transition: opacity 260ms ${EASE}; top: 0; }
+[data-lsn-themed] .lsn-sent[data-state="waiting"] { opacity: 0; top: 0; }
+[data-lsn-themed] .lsn-sent[data-state="speaking"] { opacity: 1;
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(var(--sweep, 0) * 100%), transparent calc(var(--sweep, 0) * 100% + 3.5%));
+  mask-image: linear-gradient(90deg, #000 calc(var(--sweep, 0) * 100%), transparent calc(var(--sweep, 0) * 100% + 3.5%)); }
+[data-lsn-themed] .lsn-sent[data-state="spoken"] { opacity: 0.92; }
+[data-lsn-theme="chalk"] .lsn-scene .katex { text-shadow: 0 0 0.6px rgba(243, 239, 227, 0.55); }
+[data-lsn-theme="chalk"] .lsn-scene input { color: #0f172a; }
+[data-lsn-theme="chalk"] .lsn-marks path { filter: drop-shadow(0 0 0.6px rgba(245, 201, 106, 0.6)); }
+
 @media (prefers-reduced-motion: reduce) {
-  .lsn-scene, .lsn-rise, .lsn-line, .lsn-conn, .lsn-conn-dot, .lsn-ribbon-line { animation: none !important; transition: none !important; }
+  .lsn-scene, .lsn-rise, .lsn-line, .lsn-conn, .lsn-conn-dot, .lsn-ribbon-line, .lsn-pulse { animation: none !important; transition: none !important; }
   .lsn-line { opacity: 0; }
   .lsn-line.on { opacity: 1; transform: none; }
   .lsn-sent { transition: opacity 200ms ease; top: 0 !important; background-image: none !important; }
   .lsn-ribbon-line [data-w] { transition: none; }
+  .lsn-el { transition: opacity 200ms ease !important; transform: none !important; }
+  .lsn-zoom { transition: none !important; transform: none !important; }
+  .lsn-pen { display: none; }
+  [data-lsn-themed] .lsn-sent[data-state="speaking"] { -webkit-mask-image: none; mask-image: none; }
 }
 `;

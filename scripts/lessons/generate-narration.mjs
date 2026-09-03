@@ -15,6 +15,10 @@
 // File names (1-based, zero-padded, so they sort like the lesson plays):
 //   scene-07.mp3        a scene narrated by ONE string (whole-scene clip)
 //   scene-07-3.mp3      the 3rd sub-step of a scene narrated by an ARRAY
+//   scene-07-b3.mp3     the 3rd BEAT of a scene narrated by `beats` (the beat
+//                       model, 2026-09-04): one clip per beat, its `say` is the
+//                       text, and the path is written to beats[2].audio — the
+//                       scene carries no `narration`/`audio` of its own
 //
 // Idempotent: a scene whose clip(s) already exist is skipped, so a re-run after
 // editing ONE scene's narration (delete its files, or --scene N --force) only
@@ -134,12 +138,27 @@ const servedBase = `/lessons/${slug}`;
 const pad2 = n => String(n).padStart(2, '0');
 const words = t => t.trim().split(/\s+/).filter(Boolean).length;
 
-/** One synthesizable unit: a whole-scene string or one entry of a per-step array. */
+/** One synthesizable unit: a whole-scene string, one entry of a per-step array, or one beat. */
 function planSegments() {
   const segments = [];
   script.scenes.forEach((scene, i) => {
     const n = i + 1;
     if (ONLY_SCENE !== null && n !== ONLY_SCENE) return;
+    if (Array.isArray(scene.beats) && scene.beats.length > 0) {
+      if (scene.narration !== undefined || scene.audio !== undefined) {
+        throw new Error(`scene ${n} carries beats AND narration/audio — a beat scene derives both from beats[].say (run verify-lesson)`);
+      }
+      scene.beats.forEach((b, j) => {
+        if (typeof b.say !== 'string' || !b.say.trim()) throw new Error(`scene ${n} beat ${j + 1}: say must be a non-empty string`);
+        const key = `scene-${pad2(n)}-b${j + 1}`;
+        const served = `${servedBase}/${key}.mp3`;
+        const existing = typeof b.audio === 'string' ? b.audio : undefined;
+        const existingFile = existing && existing.startsWith('/') ? path.join(ROOT, 'public', existing) : null;
+        const present = !!existingFile && fs.existsSync(existingFile) && fs.statSync(existingFile).size > 0;
+        segments.push({ sceneIdx: i, sceneNo: n, stepIdx: j, perStep: false, beat: true, key, text: b.say, served, file: path.join(outDir, `${key}.mp3`), existing, present });
+      });
+      return;
+    }
     const narration = scene.narration;
     if (narration === undefined) return;
     const list = Array.isArray(narration) ? narration : [narration];
@@ -416,6 +435,14 @@ function writeScript(segments) {
   let changed = false;
   for (const [sceneIdx, segs] of byScene) {
     const scene = script.scenes[sceneIdx];
+    if (segs[0].beat) {
+      // Beats are independent: each beat's audio is written the moment its clip exists.
+      for (const seg of segs) {
+        if (!(fs.existsSync(seg.file) && fs.statSync(seg.file).size > 0)) continue;
+        if (scene.beats[seg.stepIdx].audio !== seg.served) { scene.beats[seg.stepIdx].audio = seg.served; changed = true; }
+      }
+      continue;
+    }
     const complete = segs.every(s => fs.existsSync(s.file) && fs.statSync(s.file).size > 0);
     if (!complete) continue;
     const next = segs[0].perStep ? segs.map(s => s.served) : segs[0].served;
