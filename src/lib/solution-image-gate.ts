@@ -31,6 +31,17 @@
 //     honest diagram too. (Science-bank ids have no rows in this ledger, so
 //     their solution images would ALL be withheld under the allow-list.)
 //
+// TWO ROWS PER CLEANED IMAGE (issue D, 3 Sep 2026). A flag's `path` is the image,
+// not the question, so when a stamped image is cleaned the repointed object is a
+// DIFFERENT path with no row of its own — flipping the old row to 'fixed' says
+// "the stamped path is fine", which is both wrong and useless. Every apply
+// therefore also writes a 'fixed' row for the CLEANED path, under its own
+// claimed_by ('solimg-2026-09-03-cleaned' for the classification pass's scripts,
+// 'admin-vet-lane' for this route) so the pass's 155-row ledger keeps its counts.
+// Without it the allow-list withholds precisely the images that were cleaned —
+// today already, on any level outside JUDGED_SOLUTION_LEVELS. The batch-end sweep
+// (solimg-2026-09-03/clean/scripts/verify_batch_end.sql, check 5) asserts it.
+//
 // Outage posture — fail CLOSED in the sense that matters for each mode. With
 // the allow-list on, a failed read returns a gate with an EMPTY clean set:
 // nothing renders, because "we could not check" must never become "show it".

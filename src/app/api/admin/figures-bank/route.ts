@@ -272,8 +272,24 @@ async function applyCleanedSolutionImage(
     return step('flag', flag.error.message);
   }
 
+  // The flag above still names the STAMPED path; the cleaned object we just repointed
+  // to has no row at all. Invisible under today's deny-list — but this gate serves an
+  // UNJUDGED level (and the whole bank under SOLUTION_IMAGES_REQUIRE_CLEAN) from `fixed`
+  // rows ONLY, so without this record Adrian approving a candidate would hide the very
+  // image he approved. Additive, its own claim, so the classification pass's ledger
+  // (claimed_by='solimg-…') keeps its counts. Never overwrites an existing verdict, and
+  // never fails the apply: the image is live and correct either way.
+  const allowRow = await supa.from('figure_flags')
+    .upsert({
+      path: `${BUCKET}/${dest}`, question_id: o.questionId, kind: 'solution', status: 'fixed',
+      claimed_by: VET_BATCH, claimed_at: new Date().toISOString(),
+      note: `ALLOW-LIST RECORD for the CLEANED object — the stamped original is ${o.path}, `
+        + `whose own flag carries the verdict. ${o.note}`.slice(0, 500),
+    }, { onConflict: 'path', ignoreDuplicates: true });
+  if (allowRow.error) console.warn('[figures-bank] cleaned-path allow-list row failed:', allowRow.error.message);
+
   return NextResponse.json({
-    ok: true, status: 'fixed', partLabel,
+    ok: true, status: 'fixed', partLabel, allowListed: !allowRow.error,
     newPath: `${BUCKET}/${dest}`, newUrl, replaced: swap.replaced, fields: swap.fields,
   });
 }
