@@ -249,6 +249,59 @@ same `.env.local`, and this doc. On a different Mac: clone both repos
 > are collected in [`docs/FIGURES-FINDINGS-2026-09.md`](FIGURES-FINDINGS-2026-09.md).
 > Read it before trusting a stored answer on any question those batches touched.
 
+## 8b. Watermarks (2026-09-03 — 19 CLEANED AND APPLIED)
+
+Batch `opus-watermark-2026-09-03`. All 19 verified by eye before writing and
+signed off by Adrian; originals kept, every swap in `figure_clean_log`.
+
+- **Two sweeps over all 3,224 swept figures found 19 stamped**, not 18 — the
+  second pass caught Raffles Girls 2013 Q13 that the first missed.
+- **3,054 figures stamped `clean` + the 19 replaced → 2,998 questions returned to
+  serving** (3,168 blocked → 170).
+- Still blocked: **32** held back pending the grey-fill third pass, **138 never
+  swept at all** (they were not in the sweep index — they still need a pass).
+
+**Four stamp mechanisms**, so probe before reaching for pixels:
+1. a deletable `/Artifact <</Subtype /Watermark>>` block wrapping a form, at
+   `/ca .0599976` (6% opacity);
+2. a **PDF annotation** `/Type /Annot /Subtype /Watermark` with an `/AP` stream —
+   and on that paper `/TT7` Calibri is REAL question text, so a font-based strip
+   destroys content;
+3. **flattened into the pixels** (OCR'd scan, no watermark token) — recover the
+   plate as the per-pixel MEDIAN across all pages, then invert
+   `displayed = 0.94·true + 15.3`;
+4. **baked into the bank PNG** by the extraction pipeline (the bank image is
+   byte-identical to the DOCX media) — re-extract from the paper's PDF twin.
+
+**Removing a 6% overlay makes a figure DARKER.** Pixels that "appear" after
+cleaning are recovered content, not invention — the wash had lifted them above
+the ink threshold. Check their original grey before calling it damage.
+
+### Three ways a stamp evades a scan — all measured, not assumed
+- **Graph paper.** The grid fills the pale band and masks the lattice. Both of
+  the band pass's two false negatives were graph paper. Crop to the **margins**.
+- **Ink-level stamps.** Raffles Girls 2015 Q5 prints *below 249* on a 96%
+  pure-white tile; a pale-band view never raises it.
+- **Levels-clipped crops with grey fill.** Raffles Girls 2013 Q13 scores 0.17%
+  pale, so both passes cleared it — the stamp survives only where it lies over
+  the figure's own halftone grey. Isolate **196–236** to see it. The tell is
+  **grey coverage, not pale coverage**: that figure is 30.5% grey (180–235),
+  line art is 0–5%. Only **40 figures** bank-wide fit the profile
+  (grey ≥ 10% and pale < 1%).
+
+⚠ **Autocorrelation is NOT a stamp test.** Graph paper, dotted grids and hatching
+are periodic and score exactly like a tiled stamp. My automated verifier flagged
+4 figures on this basis and **all 4 were false alarms**. Judge by eye, in-band.
+Equally, an **ink-diff is meaningless across a resolution change** — downsampling
+a higher-dpi re-render onto the bank grid shifts thin grid lines half a pixel and
+manufactures thousands of phantom lost pixels.
+
+**Write references by walking the row, not by naming fields.** The apply's first
+pass updated `parts[1].image_url` on Raffles Girls 2015 Q1 and left the SAME key
+in `parts[1].subparts[1].image_url`; a whole-row read-back caught it. Sub-parts
+are a real level. Replace recursively and re-read the whole row to prove the old
+key is gone.
+
 ## 8. State (2026-09-02, evening — QUEUE CLEARED)
 
 - **~3,970** repairs applied across the bank (`figure_clean_log`), of which
