@@ -1025,6 +1025,17 @@ filing names inside the per-paper folder (`lib/paper-folder.ts`); students never
 code finds the amended copy and the sheet by those fixed names. Health-check `portal-marking-pdf`
 probes the login redirect.
 
+⚠ **Shipped bug, same day (3 Sep 2026, ~17:20–19:10 SGT):** the first version put the pretty
+name straight into `Content-Disposition`. Header values must be ISO-8859-1 bytes; the em dash
+(U+2014) is not, so `new NextResponse(body, { headers })` threw "Cannot convert argument to a
+ByteString" and **every "Open your marked script" tap 500'd** for the two hours it was live —
+found because Chloe Zhang said "cannot see the paper" (three `marking:open` events, no PDF).
+The health-check probe could not see it: an anonymous request never reaches the header. Fix:
+`contentDisposition()` in `lib/marked-pdf-filename.ts` ASCII-folds the quoted `filename=` and
+keeps the real name in `filename*=UTF-8''…`; its test builds a real `Headers` object so the
+regression cannot return. Rule for any route that names a download: **never put a raw
+user-facing string in a header — fold it, and test it with `new Headers(...)`.**
+
 ## /app/submit — student paper hand-ins (2026-08-12)
 
 The door IN from the student side: photograph the worked paper on a phone →
