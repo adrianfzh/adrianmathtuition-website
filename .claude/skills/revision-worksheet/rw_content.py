@@ -95,6 +95,31 @@ def normalise_figure(fig: dict, stem: Path):
         return None
 
 
-def figure_width_cm(fig: dict) -> float:
+# A figure is bounded on BOTH sides, aspect ratio intact. Capping width alone let a
+# portrait diagram (590 x 771 px) render 10.5 cm wide and 13.7 cm TALL — two-thirds of
+# a page for one practice question (Adrian, 5 Sep 2026). The height cap is what makes a
+# scan "a suitable size"; worksheet_lib never upscales past the image's natural size, so
+# a small render still stays small.
+FIG_MAX_W = 10.5      # cm — the text column is 16 cm; wider reads as a plate, not a figure
+FIG_MAX_H_EXAMPLE = 6.5   # glued to a solution box, so it has to leave room for one
+FIG_MAX_H_PRACTICE = 7.5  # stands alone under its question
+# A tall portrait scan — a graph-paper grid is the usual one — hits the height cap first
+# and comes out 4.3 cm wide, too small to read the axis labels on. Give every figure a
+# floor on WIDTH, and let it grow past the soft height cap up to a hard ceiling to honour
+# that floor. 9.5 cm is about a third of the text height: big enough to read, small
+# enough that it never takes the page over.
+FIG_MIN_W = 6.0
+FIG_HARD_H = 9.5
+
+
+def figure_width_cm(fig: dict, max_h: float = FIG_MAX_H_PRACTICE) -> float:
+    """Width in cm that keeps the figure inside the caps at its own aspect ratio."""
     px = fig.get("px") or (0, 0)
-    return min(10.5, max(6.0, (px[0] or 600) / 96 * 2.54))
+    w_px, h_px = (px[0] or 600), (px[1] or 400)
+    ratio = (h_px / w_px) if w_px else 1.0
+    w = min(FIG_MAX_W, w_px / 96 * 2.54)
+    if w * ratio > max_h:
+        w = max_h / ratio
+    if w < FIG_MIN_W:
+        w = min(FIG_MIN_W, FIG_HARD_H / ratio)
+    return round(w, 2)

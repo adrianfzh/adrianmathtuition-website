@@ -304,17 +304,24 @@ def chapter_prefix(level, topics, sheet_path):
     return ""
 
 
+def _ordinal(n: int) -> str:
+    if 10 <= n % 100 <= 20:
+        return f"{n}th"
+    return f"{n}{ {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th') }"
+
+
 def unique_path(path: Path) -> Path:
-    """Never overwrite: `… (another version)`, then `… (another version 2)`, …"""
+    """Never overwrite an existing sheet — Adrian keeps every version. A clash becomes
+    `… (2nd version)`, `… (3rd version)`, … The base name is his own, so the FIRST
+    generated sheet for a topic he already has normally lands as the 2nd version."""
     if not path.exists():
         return path
-    stem, suf = path.stem, path.suffix
-    cand = path.with_name(f"{stem} (another version){suf}")
     n = 2
-    while cand.exists():
-        cand = path.with_name(f"{stem} (another version {n}){suf}")
+    while True:
+        cand = path.with_name(f"{path.stem} ({_ordinal(n)} version){path.suffix}")
+        if not cand.exists():
+            return cand
         n += 1
-    return cand
 
 
 def notes_source(level, topics):
@@ -565,17 +572,18 @@ def _notes_from_list(ws, notes):
             raise SystemExit(f"NOTES entry kind {kind!r} not understood")
 
 
-def _figures(ws, row, figdir, inside_box=False):
+def _figures(ws, row, figdir, inside_box=False, max_h=C.FIG_MAX_H_PRACTICE):
     steps = []
     for j, f in enumerate(row.get("_figures") or []):
         fp = C.normalise_figure(f, figdir / f"{id8(row['id'])}_{j}")
         if fp is None:
             print(f"  !! figure unreadable, laid out without it: {id8(row['id'])}")
             continue
+        w = C.figure_width_cm(f, max_h)
         if inside_box:
-            steps.append(("figure", str(fp), min(8.0, C.figure_width_cm(f))))
+            steps.append(("figure", str(fp), w))
         else:
-            ws.figure(str(fp), width_cm=C.figure_width_cm(f))
+            ws.figure(str(fp), width_cm=w)
     return steps
 
 
@@ -641,7 +649,7 @@ def cmd_render(a):
         stem = (r.get("question_text") or "").strip()
         if stem:
             ws.para(C.sm(stem), marks=None if parts else r.get("total_marks"))
-        _figures(ws, r, figdir)
+        _figures(ws, r, figdir, max_h=C.FIG_MAX_H_EXAMPLE)
         for p in parts:
             ws.para([C.T(C.pad_label(p.get("label")))] + C.sm(p.get("text")), marks=p.get("marks"))
             for sp in p.get("subparts") or []:
@@ -695,7 +703,7 @@ def cmd_render(a):
         out = Path(a.out)
     else:
         prefix = (plan.get("prefix") or "").strip()
-        name = f"{prefix + ' ' if prefix else ''}REV {plan['topic']} Revision (With Worked Examples).docx"
+        name = f"{prefix + ' ' if prefix else ''}REV {plan['topic']} (With Worked Examples).docx"
         out = R.REVISION_ROOT / plan["folder"] / re.sub(r"[/:]", "-", name)
     out.parent.mkdir(parents=True, exist_ok=True)
     out = unique_path(out)          # Adrian: DO NOT override existing copies
