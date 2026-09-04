@@ -89,16 +89,32 @@ function isPlausibleFilename(s: unknown): s is string {
 function imgTag(url: string, alt = ''): string {
   return `<img src="${toStorageUrl(url)}" alt="${alt}" style="max-width:100%;display:block;margin:8px 0" />`;
 }
+/**
+ * A markdown image in solution text — `![alt](url)`, optional angle brackets and
+ * title. THE FOURTH IMAGE CHANNEL, and until 4 Sep 2026 the only one the gate did
+ * not see: extraction writes some solution diagrams straight into the working as
+ * markdown instead of `{{IMG:…}}`/`solution_image`, and markdown renders them
+ * downstream, so a flagged image kept serving through the prose. Found by running
+ * the shipped render path over every held flag (stage-7 unit 8 of the
+ * solution-image pass): S2 Broadrick 2024 P2 Q6 `sol_c38db2e41ac6.png` was on a
+ * `held` flag, blocked on `solution_images[]`, and shown anyway from `parts[1]
+ * .solution`. Gated on exactly the same terms as `{{IMG:…}}` — including
+ * non-bucket URLs, which the allow-list withholds because nobody has judged them.
+ */
+const MD_IMAGE_RE = /!\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+["'(][^)]*)?\s*\)/g;
+
 // Also normalises \( \) / \[ \] to $-delimiters — remark-math only parses the
 // dollar forms, and ~90 (mostly AI-authored) rows carry the backslash forms.
 // `gate` is only ever passed from the SOLUTION side (solutionMarkdown →
 // workedSolution); question-side callers pass none and render as before.
 function renderInlineImagesInText(text: string | null | undefined, gate?: SolutionImageGate): string {
   if (!text) return '';
-  return normalizeMathDelimiters(text).replace(/\{\{IMG:([^}]+)\}\}/g, (_m, url: string) => {
-    const cleaned = url.trim();
-    return isPlausibleFilename(cleaned) && solutionImageAllowed(cleaned, gate) ? imgTag(cleaned) : '';
-  });
+  return normalizeMathDelimiters(text)
+    .replace(/\{\{IMG:([^}]+)\}\}/g, (_m, url: string) => {
+      const cleaned = url.trim();
+      return isPlausibleFilename(cleaned) && solutionImageAllowed(cleaned, gate) ? imgTag(cleaned) : '';
+    })
+    .replace(MD_IMAGE_RE, (m: string, url: string) => (solutionImageAllowed(url.trim(), gate) ? m : ''));
 }
 /**
  * The image paths held in ONE part-level slot (`parts[].image_url` /

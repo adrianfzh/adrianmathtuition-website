@@ -252,6 +252,44 @@ describe('solutionMarkdown with a gate', () => {
     expect(md).toContain('sol_inline555.png');
   });
 
+  // REGRESSION, 4 Sep 2026 — the markdown-image channel. Extraction writes some
+  // solution diagrams into the working as `![alt](url)` rather than `{{IMG:…}}`,
+  // and the gate never saw them: S2 Broadrick 2024 P2 Q6 `sol_c38db2e41ac6.png`
+  // sat on a `held` flag, was correctly withheld from `solution_images[]`, and
+  // rendered anyway out of `parts[1].solution`. Found by running the shipped
+  // render path over every held flag (solution-image pass, stage-7 unit 8).
+  it('gates a markdown ![](…) image inside solution text — every part of the tree', () => {
+    // Top-level working and per-part working are never both rendered (a
+    // multi-part row carries the same solution twice), so cover both shapes.
+    const q = {
+      solution: 'Plot it.\n\n![Graph](https://nempslbewxtlikfzachi.supabase.co/storage/v1/object/public/question_images/sol_md777.png)\n\nRead off x.',
+      parts: [] as { label: string; solution: string }[],
+    };
+    const withPart = {
+      parts: [{ label: 'b', solution: 'From the sketch:\n![Graph of y](question_images/sol_md888.png "the sketch")' }],
+    };
+    expect(solutionMarkdown(q)).toContain('sol_md777.png');
+    expect(solutionMarkdown(withPart)).toContain('sol_md888.png');
+    const gated = solutionMarkdown(q, { blocked: new Set(['sol_md777.png']) });
+    const gatedPart = solutionMarkdown(withPart, { blocked: new Set(['sol_md888.png']) });
+    expect(gated).not.toContain('sol_md777.png');
+    expect(gatedPart).not.toContain('sol_md888.png');
+    // The prose around the hole survives, and no placeholder is emitted.
+    expect(gated).toContain('Plot it.');
+    expect(gated).toContain('Read off x.');
+    expect(gatedPart).toContain('From the sketch:');
+    expect(gated).not.toContain('![');
+    expect(gatedPart).not.toContain('![');
+    // Allow-list mode: only a `fixed` path renders.
+    const allow = solutionMarkdown(q, { blocked: new Set(), requireClean: true, clean: new Set(['sol_md777.png']) });
+    expect(allow).toContain('sol_md777.png');
+    expect(solutionMarkdown(withPart, { blocked: new Set(), requireClean: true, clean: new Set(['sol_md777.png']) }))
+      .not.toContain('sol_md888.png');
+    // A markdown LINK is not an image and must be left alone.
+    expect(solutionMarkdown({ solution: 'See [the notes](sol_md999.png).' }, { blocked: new Set(['sol_md999.png']) }))
+      .toContain('sol_md999.png');
+  });
+
   it('accepts solution_images as a real array (the jsonb column read directly)', () => {
     expect(solutionMarkdown({ solution_images: ['sol_arr666.png'] })).toContain('sol_arr666.png');
     expect(solutionMarkdown({ solution_images: ['sol_arr666.png'] }, { blocked: new Set(['sol_arr666.png']) })).not.toContain('sol_arr666.png');

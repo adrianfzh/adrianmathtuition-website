@@ -5,7 +5,8 @@
 // scanned figure only when image_watermark_status='clean', and the serving
 // RPCs skip any question with an open figure_flags row. Solution images
 // (questions.solution_images[], parts[].solution_image and sub-part
-// solution_image, plus {{IMG:…}} inside solution text) had NO gate:
+// solution_image, plus {{IMG:…}} AND markdown `![](…)` inside solution text —
+// four channels, the last of them gated only on 4 Sep 2026) had NO gate:
 // bank-question-markdown rendered them unconditionally, so a solution scan
 // carrying another school's or tuition centre's branding showed the moment a
 // student revealed the solution. This module is the containment that makes
