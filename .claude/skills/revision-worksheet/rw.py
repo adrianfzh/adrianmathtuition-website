@@ -103,7 +103,10 @@ def _get(base, headers, path):
 
 
 def _in(values) -> str:
-    return "(" + ",".join(urllib.parse.quote(str(v), safe="") for v in values) + ")"
+    """PostgREST `in.(…)` list. Values are double-quoted: a tag like
+    `Algebra (Linear Equations)` carries parentheses that otherwise end the list
+    early and silently match nothing (S1 plan returned 0 aspects, 5 Sep 2026)."""
+    return "(" + ",".join(urllib.parse.quote('"%s"' % str(v).replace('"', '\\"'), safe="") for v in values) + ")"
 
 
 def _batched(base, headers, path_fmt, ids, size=120):
@@ -118,9 +121,12 @@ def id8(qid) -> str:
 
 
 # ---------------------------------------------------------------- pool
-def fetch_family_pool(env, levels, topic, figures=True):
-    """Every usable row tagged `topic` (or an alias) at any pooled level."""
-    tags = [topic] + ALIASES.get(topic, [])
+def fetch_family_pool(env, levels, topics, figures=True):
+    """Every usable row tagged with any of `topics` (or an alias) at any pooled level."""
+    topics = [topics] if isinstance(topics, str) else list(topics)
+    tags = []
+    for t in topics:
+        tags += [t] + ALIASES.get(t, [])
     seen, rows, per_level, rejected = set(), [], {}, defaultdict(int)
     for lv in levels:
         n_lv = 0
@@ -139,9 +145,12 @@ def fetch_family_pool(env, levels, topic, figures=True):
     return rows, per_level, dict(rejected)
 
 
-def fetch_aspects(base, headers, levels, topic, ids):
-    """Bank subgroups for the topic at the pooled levels, and which rows carry them."""
-    tags = [topic] + ALIASES.get(topic, [])
+def fetch_aspects(base, headers, levels, topics, ids):
+    """Bank subgroups for the topic(s) at the pooled levels, and which rows carry them."""
+    topics = [topics] if isinstance(topics, str) else list(topics)
+    tags = []
+    for t in topics:
+        tags += [t] + ALIASES.get(t, [])
     sgs = _get(base, headers,
                f"subgroups?select=id,level,topic,name,order_index&topic=in.{_in(tags)}"
                f"&level=in.{_in(levels)}&order=level,order_index")
@@ -166,7 +175,11 @@ def merge_aspects(sgs, links, levels):
     target level's own order first, then the richest other level's."""
     rank = {lv: i for i, lv in enumerate(levels)}
     aspects = []
-    for s in sorted(sgs, key=lambda s: (rank.get(s["level"], 99), s.get("order_index") or 99)):
+    topic_order = {}
+    for s in sgs:
+        topic_order.setdefault(s["topic"], len(topic_order))
+    for s in sorted(sgs, key=lambda s: (topic_order.get(s["topic"], 99), rank.get(s["level"], 99),
+                                        s.get("order_index") or 99)):
         k = _key(s["name"])
         home = None
         for a in aspects:
@@ -227,49 +240,120 @@ def aspect_hints(base, headers, aspects, rows):
         asp["like"] = sorted(asp["like"], reverse=True)[:3]
 
 
-def sheet_overlap(folder, topic, rows):
-    """Questions already on Adrian's own worked sheet for this topic — his authored
+def _tag_name(tag: str) -> str:
+    """'Algebra (Simultaneous Equations)' -> 'Simultaneous Equations'; 'Polygons' -> 'Polygons'."""
+    m = re.match(r"^[A-Za-z ]+\((.+)\)$", tag.strip())
+    return m.group(1) if m else tag
+
+
+def adrian_sheets(folder, topics, title):
+    """EVERY sheet of Adrian's in Revision/<folder> that is about this topic — he keeps
+    several per topic ("11 Congruency and Similarity", "… 2", "… (NA)", "… Revision
+    Practice"), and a fuzzy best-match on the title picked "07 Quadratic Equations and
+    Applications" for "Simultaneous Equations and Applications" (5 Sep 2026). Match on
+    token containment of the tag's own name instead, and take all of them."""
+    names = {_tag_name(t) for t in topics} | {title}
+    keys = [set(R.tokens(n)) for n in names if R.tokens(n)]
+    out = []
+    try:
+        for stem in R.list_worked(folder):
+            wk = set(R._worked_key(stem).split())
+            if any(k and k <= wk for k in keys):
+                out.append(R.REVISION_ROOT / folder / f"{stem}.docx")
+    except Exception:
+        pass
+    return out
+
+
+def sheet_overlap(folder, topics, title, rows):
+    """Questions already on any of Adrian's own sheets for this topic — his authored
     Practice sections are bank-sourced, so a new sheet must not repeat them."""
-    try:
-        res = R.resolve_worked(folder, topic)
-    except Exception:
-        return None, set()
-    try:
-        txt = subprocess.run(["pandoc", str(res.path), "-t", "plain", "--wrap=none"],
-                             capture_output=True, text=True, timeout=60).stdout
-    except Exception:
-        return str(res.path), set()
-    hay = re.sub(r"[^a-z0-9]", "", txt.lower())
+    sheets = adrian_sheets(folder, topics, title)
+    hay = ""
+    for sh in sheets:
+        try:
+            hay += re.sub(r"[^a-z0-9]", "", subprocess.run(
+                ["pandoc", str(sh), "-t", "plain", "--wrap=none"],
+                capture_output=True, text=True, timeout=60).stdout.lower())
+        except Exception:
+            pass
     hit = set()
     for r in rows:
         stem = re.sub(r"[^a-z0-9]", "", (r.get("question_text") or "").lower())
         if len(stem) >= 40 and stem[:60] in hay:
             hit.add(r["id"])
-    return str(res.path), hit
+    return [str(sh) for sh in sheets], hit
 
 
-def notes_source(level, topic):
-    """Reuse a hand-authored Notes function from the August builders when one exists."""
+def chapter_prefix(level, topics, sheet_path):
+    """Adrian files revision sheets under a textbook chapter number — `2 REV Polygons …`,
+    `06 Algebra Revision`. Reuse his: from his own sheet for the topic when there is one,
+    else from the August builder's filename for a sheet that covers the topic."""
+    mod = {"S1": "build_s1", "S2": "build_s2"}.get(level)
+    if mod and (BUILDERS / f"{mod}.py").exists():
+        src = (BUILDERS / f"{mod}.py").read_text()
+        topics = {topics} if isinstance(topics, str) else set(topics)
+        for m in re.finditer(r"tags=\[([^\]]*)\].*?filename='(\d+) ", src, re.S):
+            tags = {a or b for a, b in re.findall(r"'([^']+)'|\"([^\"]+)\"", m.group(1))}
+            if tags & topics:
+                return m.group(2)
+    if sheet_path:
+        m = re.match(r"\s*(\d+)\b", Path(sheet_path).stem)
+        if m:
+            return m.group(1)
+    return ""
+
+
+def unique_path(path: Path) -> Path:
+    """Never overwrite: `… (another version)`, then `… (another version 2)`, …"""
+    if not path.exists():
+        return path
+    stem, suf = path.stem, path.suffix
+    cand = path.with_name(f"{stem} (another version){suf}")
+    n = 2
+    while cand.exists():
+        cand = path.with_name(f"{stem} (another version {n}){suf}")
+        n += 1
+    return cand
+
+
+def notes_source(level, topics):
+    """Reuse a hand-authored Notes function from the August builders when one covers
+    the sheet's tags (any overlap; a sheet spanning several tags matches the builder
+    entry that lists them)."""
+    topics = {topics} if isinstance(topics, str) else set(topics)
     mod = {"S1": "build_s1", "S2": "build_s2"}.get(level)
     if not mod or not (BUILDERS / f"{mod}.py").exists():
         return None
     src = (BUILDERS / f"{mod}.py").read_text()
+    best = None
     for m in re.finditer(r"tags=\[([^\]]*)\].*?notes=(n_\w+)", src, re.S):
-        tags = re.findall(r"'([^']+)'|\"([^\"]+)\"", m.group(1))
-        tags = [a or b for a, b in tags]
-        if topic in tags:
-            return f"{mod}:{m.group(2)}"
-    return None
+        tags = {a or b for a, b in re.findall(r"'([^']+)'|\"([^\"]+)\"", m.group(1))}
+        overlap = len(tags & topics)
+        if overlap and (best is None or overlap > best[0]):
+            best = (overlap, f"{mod}:{m.group(2)}")
+    return best[1] if best else None
+
+
+IP_SCHOOLS = re.compile(r"\bRI\b|Raffles|Hwa Chong|NUS High|Temasek Junior|Nanyang Girls|"
+                        r"Dunman High|\(IP\)|River Valley|Victoria Junior|Cedar Girls|"
+                        r"Catholic High \(IP\)|St\.? Joseph.*Institution|SJI", re.I)
 
 
 def rank_candidates(rows_by_id, ids, levels, k=4):
+    """Real school first, target level first, 3–8 marks, more parts, newer. For Sec 1/2
+    sheets IP-stream papers rank last: an RI Sec 1 question is IP-level (simultaneous
+    inequalities, y² + 1/y²) and misleads a mainstream sheet (seen on S1 Linear
+    Equations, 5 Sep 2026)."""
     rank = {lv: i for i, lv in enumerate(levels)}
+    sec_low = levels and levels[0] in ("S1", "S2")
 
     def score(r):
         marks = int(r.get("total_marks") or 0)
         parts = len(C.sorted_parts(r))
         band = 0 if 3 <= marks <= 8 else 1
-        return (R._tier(r), rank.get(r.get("level"), 9), band, -parts, -marks,
+        ip = 1 if (sec_low and IP_SCHOOLS.search(str(r.get("school") or ""))) else 0
+        return (R._tier(r), ip, rank.get(r.get("level"), 9), band, -parts, -marks,
                 -(int(r.get("year") or 0)))
     cands = sorted((rows_by_id[i] for i in ids if i in rows_by_id), key=score)
     return cands[:k]
@@ -295,17 +379,20 @@ def cmd_plan(a):
     levels = list(FAMILY[level]) + (NA_LEVELS if a.include_na and level in ("S1", "S2", "S3_EM", "EM") else [])
     if a.no_pool:
         levels = [level]
+    topics = a.topic
+    title = a.title or (topics[0] if len(topics) == 1 else " and ".join(topics))
     env, base, headers = _creds()
-    rows, per_level, rejected = fetch_family_pool(env, levels, a.topic)
+    rows, per_level, rejected = fetch_family_pool(env, levels, topics)
     if not rows:
-        raise SystemExit(f"no usable questions tagged {a.topic!r} at {levels}; check the tag "
+        raise SystemExit(f"no usable questions tagged {topics!r} at {levels}; check the tag "
                          f"spelling against worksheet-clerk/references/bank-topics.md")
     by_id = {r["id"]: r for r in rows}
-    sgs, extra = fetch_aspects(base, headers, levels, a.topic, list(by_id))
+    sgs, extra = fetch_aspects(base, headers, levels, topics, list(by_id))
     aspects = merge_aspects(sgs, extra.get("links", []), levels) if sgs else []
     tagged = {q for asp in aspects for q in asp["primary"] + asp["any"]}
     untagged = [i for i in by_id if i not in tagged]
-    sheet_path, on_sheet = sheet_overlap(FOLDER[level], a.topic, rows)
+    sheet_paths, on_sheet = sheet_overlap(FOLDER[level], topics, title, rows)
+    sheet_path = sheet_paths[0] if sheet_paths else None
     aspect_hints(base, headers, aspects, rows)
     for asp in aspects:
         pool_ids = [i for i in asp["primary"] + asp["any"] if i not in on_sheet]
@@ -314,13 +401,15 @@ def cmd_plan(a):
         asp["count_by_level"] = dict(sorted(
             ((lv, sum(1 for i in pool_ids if by_id[i].get("level") == lv)) for lv in levels)))
     plan = {
-        "level": level, "topic": a.topic, "levels": levels, "folder": FOLDER[level],
+        "level": level, "topic": title, "topics": topics, "levels": levels, "folder": FOLDER[level],
         "level_line": LEVEL_LINE[level], "level_tag": LEVEL_TAG[level],
         "examples_wanted": a.examples,
         "pool": {"total": len(rows), "by_level": per_level, "rejected": rejected,
                  "untagged": len(untagged)},
-        "adrian_sheet": sheet_path, "on_sheet": sorted(id8(i) for i in on_sheet),
-        "notes_source": notes_source(level, a.topic) or "draft",
+        "adrian_sheet": sheet_path, "adrian_sheets": sheet_paths,
+        "on_sheet": sorted(id8(i) for i in on_sheet),
+        "notes_source": notes_source(level, topics) or "draft",
+        "prefix": a.prefix if a.prefix is not None else chapter_prefix(level, topics, sheet_path),
         "aspects": aspects,
         "untagged_candidates": [lite(r) for r in rank_candidates(by_id, untagged, levels, k=6)],
         "rows": {r["id"]: r for r in rows},
@@ -333,13 +422,14 @@ def cmd_plan(a):
 
 def print_plan(plan, out):
     p = plan["pool"]
-    print(f"\n# {plan['level']} · {plan['topic']}  —  pool {p['total']} usable "
+    tags = plan.get("topics", [plan["topic"]])
+    print(f"\n# {plan['level']} · {plan['topic']}{'  (tags: ' + ', '.join(tags) + ')' if len(tags) > 1 else ''}  —  pool {p['total']} usable "
           f"({', '.join(f'{k} {v}' for k, v in p['by_level'].items())}); "
           f"rejected {sum(p['rejected'].values())}; untagged {p['untagged']}")
-    if plan["adrian_sheet"]:
-        print(f"  Adrian's sheet: {Path(plan['adrian_sheet']).name} — "
-              f"{len(plan['on_sheet'])} pool questions already on it (excluded)")
-    print(f"  Notes source: {plan['notes_source']}")
+    if plan.get("adrian_sheets"):
+        names = ", ".join(Path(x).name for x in plan["adrian_sheets"])
+        print(f"  Adrian's sheets: {names} — {len(plan['on_sheet'])} pool questions already on them (excluded)")
+    print(f"  Notes source: {plan['notes_source']}   chapter prefix: {plan.get('prefix') or '(none)'}")
     print(f"\n## Aspects ({len(plan['aspects'])}) — want ~{plan['examples_wanted']} examples, one per aspect")
     for asp in plan["aspects"]:
         lv = ", ".join(f"{k} {v}" for k, v in asp["count_by_level"].items() if v)
@@ -360,6 +450,11 @@ def print_plan(plan, out):
 # ---------------------------------------------------------------- practice
 def _vec(s):
     return json.loads(s) if isinstance(s, str) else list(s)
+
+
+def _qtext(r) -> str:
+    bits = [r.get("question_text") or ""] + [p.get("text") or "" for p in C.sorted_parts(r)]
+    return re.sub(r"[^a-z0-9 ]", " ", " ".join(bits).lower())
 
 
 def _cos(u, v):
@@ -392,13 +487,23 @@ def cmd_practice(a):
             print(f"  !! {id8(seed)} has no embedding; falling back to same-aspect pool")
         same_aspect = {q for asp in plan["aspects"] if seed in asp["primary"] + asp["any"]
                        for q in asp["primary"] + asp["any"]}
+        seed_txt = _qtext(rows[seed])
+        sec_low = plan["level"] in ("S1", "S2")
         scored = []
         for qid, r in rows.items():
-            if qid in excluded or qid in chosen:
+            if qid in excluded or qid in chosen or not r.get("total_marks"):
                 continue
-            if sv is None and qid not in same_aspect:
-                continue
-            sim = _cos(sv, emb[qid]) if (sv is not None and qid in emb) else 0.0
+            if sv is not None and qid in emb:
+                sim = _cos(sv, emb[qid])
+            else:
+                # no embedding on one side: text similarity, kept inside the seed's aspect
+                if same_aspect and qid not in same_aspect:
+                    continue
+                sim = difflib.SequenceMatcher(None, seed_txt, _qtext(r)).ratio() * 0.9
+            if sim >= 0.985:
+                continue            # the same question under another school — not practice
+            if sec_low and IP_SCHOOLS.search(str(r.get("school") or "")):
+                sim -= 0.08         # IP-stream paper on a Sec 1/2 sheet: last resort only
             scored.append((sim, -R._tier(r), qid))
         scored.sort(reverse=True)
         take = [q for _, _, q in scored[:want[seed]]]
@@ -407,7 +512,7 @@ def cmd_practice(a):
             chosen.add(q)
             sim = next(s for s, _, qq in scored if qq == q)
             out.append({"id": q, "id8": id8(q), "seed": id8(seed),
-                        "sim": round(sim, 3) if sv is not None else None,
+                        "sim": round(sim, 3), "by": "embedding" if sv is not None else "text",
                         "marks": rows[q].get("total_marks"), "level": rows[q].get("level"),
                         "school": rows[q].get("school"), "year": rows[q].get("year"),
                         "stem": preview(rows[q], 110)})
@@ -427,7 +532,7 @@ def cmd_practice(a):
     (d / "practice.json").write_text(json.dumps(practice, indent=1, default=str))
     print(f"\n## Practice — {len(out)} questions, {budget['marks']} marks, ~{budget['minutes']} min")
     for o in out:
-        how = f"sim {o['sim']:.2f}" if o['sim'] is not None else "same aspect"
+        how = f"sim {o['sim']:.2f}" + ("" if o.get("by", "embedding") == "embedding" else "t")
         print(f"   {o['id8']}  ← {o['seed']} {how:<11} {o['level']:<5} "
               f"{str(o['school'] or '')[:20]:<20} {o['year'] or ''} [{o['marks']}]  {o['stem'][:80]}")
     for w in budget["warnings"]:
@@ -562,11 +667,21 @@ def cmd_render(a):
                     pp = ws.para([C.T(f"({sp['label']}) ".ljust(5))] + C.sm(sp.get("text")), marks=sp.get("marks"))
                     pp.paragraph_format.left_indent = C.Cm(1.4)
         elif parts:
+            # parts-only question: first part rides the number line, the rest are literal
+            # labels; a part with subparts carries its marks on the subparts, not itself
+            def _subparts(p):
+                for sp in p.get("subparts") or []:
+                    pp = ws.para([C.T(f"({sp['label']}) ".ljust(5))] + C.sm(sp.get("text")), marks=sp.get("marks"))
+                    pp.paragraph_format.left_indent = C.Cm(2.4)
             first, rest = parts[0], parts[1:]
-            C.hoist_Q(ws, first.get("label"), C.sm(first.get("text")), marks=first.get("marks"))
+            C.hoist_Q(ws, first.get("label"), C.sm(first.get("text")),
+                      marks=None if first.get("subparts") else first.get("marks"))
+            _subparts(first)
             _figures(ws, r, figdir)
             for p in rest:
-                C.lit_part(ws, p.get("label"), C.sm(p.get("text")), marks=p.get("marks"))
+                C.lit_part(ws, p.get("label"), C.sm(p.get("text")),
+                           marks=None if p.get("subparts") else p.get("marks"))
+                _subparts(p)
         ws.ans(C.sm(content.ANSWERS[o["id8"]]))
         for para in ws._block_paras[:-1]:
             para.paragraph_format.keep_with_next = True
@@ -579,9 +694,11 @@ def cmd_render(a):
     if a.out:
         out = Path(a.out)
     else:
-        name = f"{plan['topic']} Revision (With Worked Examples) (Past Papers) ({plan['level_tag']}).docx"
+        prefix = (plan.get("prefix") or "").strip()
+        name = f"{prefix + ' ' if prefix else ''}REV {plan['topic']} Revision (With Worked Examples).docx"
         out = R.REVISION_ROOT / plan["folder"] / re.sub(r"[/:]", "-", name)
     out.parent.mkdir(parents=True, exist_ok=True)
+    out = unique_path(out)          # Adrian: DO NOT override existing copies
     ws.save(str(out))
     n_omml = subprocess.run(["bash", "-c", f"unzip -p '{out}' word/document.xml | grep -o 'm:oMath' | wc -l"],
                             capture_output=True, text=True).stdout.strip()
@@ -612,12 +729,26 @@ def cmd_render(a):
             pages.mkdir(exist_ok=True)
             subprocess.run(["pdftoppm", "-r", "60", "-png", str(pdf), str(pages / "p")])
             print(f"\nPDF → {pdf}\npage images → {pages}  (LOOK at every page before handing over)")
+        else:
+            html = d / "preview.html"
+            subprocess.run(["pandoc", str(out), "-s", "--mathjax",
+                            f"--extract-media={d / 'preview_media'}", "-o", str(html)],
+                           capture_output=True)
+            print(f"\nWord would not export a PDF; HTML preview → {html}\n"
+                  "  (content, order, figures and equations are checkable there; page breaks are not —\n"
+                  "   open the DOCX in Word for the page-level look)")
 
 
 def to_pdf(docx: Path):
     """Export through Microsoft Word (the only converter on the Mac that renders
-    Cambria Math correctly). Returns the PDF path or None."""
-    pdf = docx.with_suffix(".pdf")
+    Cambria Math correctly). Returns the PDF path or None.
+
+    Word 16.111 (Sep 2026) answers `save as … file format format PDF` with -1708
+    "doesn't understand the save as message" whatever the path or document
+    reference, and `do Visual Basic` no longer exists — so this fails on Adrian's
+    Mac today and render falls back to an HTML preview. Kept because the command
+    is correct and a future Word may honour it again."""
+    pdf = unique_path(docx.with_suffix(".pdf"))
     script = f'''
     set inFile to POSIX file "{docx}"
     set outFile to POSIX file "{pdf}"
@@ -641,11 +772,14 @@ def main():
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("plan")
     p.add_argument("--level", required=True)
-    p.add_argument("--topic", required=True)
+    p.add_argument("--topic", required=True, action="append",
+                   help="bank tag; repeat for a sheet that spans several tags")
+    p.add_argument("--title", help="sheet topic line + filename when --topic is given more than once")
     p.add_argument("--examples", type=int, default=6)
     p.add_argument("--include-na", action="store_true", help="also pool EM_NA / S3_EM_NA")
     p.add_argument("--no-pool", action="store_true", help="target level only")
     p.add_argument("--dir", help="working dir (default: a fresh temp dir)")
+    p.add_argument("--prefix", help="chapter number for the filename (default: taken from Adrian's sheet / the builders)")
     p.set_defaults(fn=cmd_plan)
     p = sub.add_parser("practice")
     p.add_argument("--dir", required=True)

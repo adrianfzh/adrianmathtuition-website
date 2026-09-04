@@ -95,7 +95,10 @@ that links two aspects if the pool has one. Rules of thumb:
 - An aspect above the target level's syllabus (area/perimeter of polygons, symmetry, for
   a Sec 2 sheet) → drop, and say so.
 - Open the candidates: pick the question whose parts walk through the aspect, not the
-  shortest one. Real-school questions before `AI Generated`. A stored figure (`◪`) is
+  shortest one. Real-school questions before `AI Generated`. For a Sec 1/2 sheet the
+  ranker already pushes IP-stream papers (RI, RGS, HCI, NUS High, TJC…) to the bottom —
+  their "Sec 1" questions run well above the mainstream syllabus; use them only when
+  the aspect has nothing else. A stored figure (`◪`) is
   fine — it is embedded — but read its stem to be sure the figure is needed and present.
 - Two questions that teach one aspect as warm-up → exam-level are an `a`/`b` pair.
 
@@ -139,15 +142,21 @@ Follow [`authoring.md`](authoring.md). `content.py` holds `TITLE`, `SUBTITLE`, `
 page break, concept → `Example N` → stem and parts verbatim with `[n]` → `solution_box`,
 page break, Practice with real Word numbering and one `[Ans:]` per question), embeds
 stored figures, checks part marks against `total_marks`, counts the OMML equations,
-exports a PDF through Word and writes page PNGs into `<workdir>/pages/`. **Look at every
-page** before handing over: a solution box pushed to a fresh page, a figure that is not
-the question's, a `[Ans:]` stranded at a page top — those are yours to fix, not Adrian's.
+tries to export a PDF through Word and rasterise pages into `<workdir>/pages/`. **On
+Adrian's Mac today that export fails** — Word 16.111 refuses scripted `save as` (error
+-1708) and has no VBA bridge — so `render` writes `<workdir>/preview.html` instead
+(pandoc + MathJax, figures extracted). Open it in the browser and check content, order,
+figures and every equation; page breaks are Word's and are not visible there. Say so in
+the hand-over: the page-level look happens when Adrian opens the DOCX. (LibreOffice
+would give a headless PDF path — his call to install it.)
 
-Output lands as
-`Revision/<folder>/<Topic> Revision (With Worked Examples) (Past Papers) (<S2>).docx`.
-That name is deliberate: it matches Adrian's own naming (so `crw` will find it as a base)
-and does not match the `REV … (Worked Examples)` pattern that `revision_lib` treats as
-generated output. `--out` overrides.
+Output lands as `Revision/<folder>/<n> REV <Topic> Revision (With Worked Examples).docx`
+(Adrian, 5 Sep 2026) — `<n>` is his chapter number, taken from his own sheet for the topic
+or from the August builders' filename (`--prefix` overrides; empty when neither exists).
+**Existing files are never overwritten**: a clash becomes `… (another version).docx`, then
+`(another version 2)`, for the PDF too. The name matches his own sheets (so `crw` finds it
+as a base) and does not match the `REV … (Worked Examples)` pattern that `revision_lib`
+treats as generated output. `--out` gives an exact path (still never overwritten).
 
 Then tell Adrian: the path, the arc (aspect → example), the practice count and minutes,
 which Notes block he is getting (reused / drafted), and every warning from `report.md`.
