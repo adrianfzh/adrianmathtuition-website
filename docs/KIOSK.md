@@ -216,11 +216,11 @@ student kinds (`entitlements.practice` separately gates the question-bank genera
   (Dropbox `not_found` is swallowed), so a typo'd path fails SILENTLY — hence the test.
 - The site NEVER writes to Dropbox (`lib/dropbox.ts` = `listFolder` + `getTemporaryLink`
   only), so it can't create these folders — they're made by hand in Dropbox.
-- **The `revision-worksheet` skill writes into these same folders**, and its `kind` decides
+- **The `copy-revision-worksheet-with-different-practice` skill writes into these same folders**, and its `kind` decides
   the kiosk button: `worked` → `Revision/<folder>` (Revise), `notes` → `Practice/<folder>`
   (Practice, S3/S4 collapsed onto the subject folder). Both kinds landed in `Revision/`
   until 2026-08-11, which filed summary+questions sheets in the worked-examples pile —
-  routing now lives in `out_folder()` (`.claude/skills/revision-worksheet/revision_lib.py`).
+  routing now lives in `out_folder()` (`.claude/skills/copy-revision-worksheet-with-different-practice/revision_lib.py`).
 - Filename is the display title (`titleFromFilename`: strip `.pdf`, `-`/`_` → spaces).
 - `/api/admin-notes?level=am&kind=notes|revision|practice|prelim` (400 on a bad kind);
   `/api/admin-notes/counts` returns `{counts, revisionCounts, practiceCounts, prelimCounts, total}`

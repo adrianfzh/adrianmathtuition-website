@@ -11,9 +11,10 @@ description: >
   marks, inline answers in orange in the format [Ans: ...], correct page margins, and
   consistent typography matching Adrian's house style. This skill also owns Adrian's
   Revision "(With Worked Examples)" sheet format — notes summary, concept-titled boxed
-  Examples, practice set — so use it for those too; the separate revision-worksheet
-  skill is only for building worksheets out of real past-paper questions from the
-  question bank. Use THIS skill when the worksheet should be produced straight from
+  Examples, practice set — and two sibling skills drive it for bank-sourced sheets:
+  revision-worksheet (`rw`) builds a whole worked-examples sheet for a topic from the
+  question bank, and copy-revision-worksheet-with-different-practice (`crw`) appends
+  practice to a sheet Adrian already has. Use THIS skill when the worksheet should be produced straight from
   a topic and a count, with no round of choosing first. If Adrian wants to SEE
   candidate questions from the question bank and pick which ones go in before
   anything is built, that is worksheet-clerk — which calls this skill to render
@@ -254,7 +255,7 @@ Supported genres (`figure_lib.GENRES`) and their key spec fields:
   scale, complicated circle-theorem configs), write the question WITHOUT a figure
   or pick a different question. A described-but-missing diagram is the one output
   this system exists to prevent.
-- Real past-paper diagrams are a different pipeline: the `revision-worksheet`
+- Real past-paper diagrams are a different pipeline: the `copy-revision-worksheet-with-different-practice`
   skill embeds the bank's stored `question_images` — don't re-render those here.
 - Requires `matplotlib` (present on Adrian's Mac; in Cowork check with
   `python3 -c "import matplotlib"` and `pip install matplotlib` if missing).

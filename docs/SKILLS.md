@@ -15,7 +15,8 @@ several of them are paper-shaped and it stops being obvious which is which.
 | I want to… | Skill |
 |---|---|
 | Write a worksheet from scratch, on a topic | `create-worksheet` |
-| Add practice questions to one of my existing revision sheets | `revision-worksheet` (or just `rw, am circles, worked`) |
+| Build a worked-examples revision sheet for a topic from the bank — Notes, one example per skill, similar practice | `revision-worksheet` (or just `rw, s2 polygons`) |
+| Add a different practice set to one of my EXISTING revision sheets | `copy-revision-worksheet-with-different-practice` (or just `crw, am circles, worked`) |
 | Browse the bank, pick questions myself, then get a sheet | `worksheet-clerk` |
 | Generate a whole S4 prelim paper to blueprint | `prelim-paper` |
 | Second-guess a prelim draft I already saved | `setter-pass` |
@@ -34,13 +35,15 @@ from**:
 | Skill | Starts from | Produces |
 |---|---|---|
 | `create-worksheet` | nothing — a topic and a count | a new `.docx` in house style. Also owns the "(With Worked Examples)" revision format |
-| `revision-worksheet` | **an existing document of Adrian's** (a notes-bank fragment, or a worked-examples sheet) | that same document with a fresh Practice section of real QB questions appended |
+| `revision-worksheet` | **the question bank + a topic** — the bank's skill map (subgroups) decides which aspects get an example; the whole E-Math family (S1–S4) pools for thin topics | a NEW `(With Worked Examples)` sheet in `Revision/<folder>`: Notes box → one worked example per aspect, solutions in Adrian's captured style, every number machine-verified → similar-by-embedding practice. The base that `crw` later extends. Two checkpoints: Adrian approves the arc before anything is written, and amends the DOCX before the PDF goes on the kiosk |
+| `copy-revision-worksheet-with-different-practice` | **an existing document of Adrian's** (a notes-bank fragment, or a worked-examples sheet) | that same document, byte-cloned, with a fresh Practice section of real QB questions appended. Was named `revision-worksheet` until 5 Sep 2026 |
 | `worksheet-clerk` | **a conversation** — it shows candidates and Adrian picks | a physical worksheet from the picks (it calls `create-worksheet` to render); can also read jobs off `/admin/todo` |
 | `prelim-paper` | **the blueprint** (`data/paper-blueprints.json`) + the QB | a full S4 prelim paper, DOCX, with answer key |
 | `finish-practice-set` | **a PDF that already exists** — a compiled past paper | the same paper, cleaned of its source's header/footer/mark-up, titled, with a QB answer key appended |
 | `self-study-sheet` | **one student's MARKED PAPER** — the questions they actually lost marks on | a per-student sheet they learn from (Example → Practice pairs, verified), filed to Dropbox `/Self-Study/<Student>/` for Adrian to vet, edit and release with the marked copy. Steps 3–6 of [`SPEC-TEACHING-CYCLE.md`](../SPEC-TEACHING-CYCLE.md) |
 
-Rule of thumb: `create-worksheet` **authors**, `revision-worksheet` **extends**,
+Rule of thumb: `create-worksheet` **authors**, `revision-worksheet` **builds the base**,
+`copy-revision-worksheet-with-different-practice` **extends** it,
 `worksheet-clerk` **curates**, `prelim-paper` **assembles**, `finish-practice-set`
 **finishes**, `self-study-sheet` **diagnoses** (it is the only one that starts
 from a student's own marked work, and the only one whose content is chosen by

@@ -25,7 +25,7 @@ import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, "/Users/adrianfong/dev/adrianmathtuition-website/.claude/skills/create-worksheet")
-sys.path.insert(0, "/Users/adrianfong/dev/adrianmathtuition-website/.claude/skills/revision-worksheet")
+sys.path.insert(0, "/Users/adrianfong/dev/adrianmathtuition-website/.claude/skills/copy-revision-worksheet-with-different-practice")
 from worksheet_lib import Worksheet
 import revision_lib as rl
 from docx.shared import Cm

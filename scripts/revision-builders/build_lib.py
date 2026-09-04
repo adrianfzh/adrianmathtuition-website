@@ -9,7 +9,7 @@ import sys, tempfile, os
 from pathlib import Path
 
 SKILL = Path.home()/"dev/adrianmathtuition-website/.claude/skills"
-sys.path.insert(0, str(SKILL/"revision-worksheet"))
+sys.path.insert(0, str(SKILL/"copy-revision-worksheet-with-different-practice"))
 sys.path.insert(0, str(SKILL/"create-worksheet"))
 import revision_lib as R                      # noqa: E402
 from worksheet_lib import Worksheet           # noqa: E402

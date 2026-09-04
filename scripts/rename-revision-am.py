@@ -9,7 +9,7 @@ the topic number says WHERE in the syllabus a sheet sits, and cannot say which
 YEAR it is for -- `O REV 03 Surds` is topic 07, early, but is a Sec 4 sheet.
 
 TWO FILES ARE DELIBERATELY NOT RENAMED. `REV AM Binomial Theorem (Worked
-Examples)` and `REV S4_AM Binomial Theorem (Notes)` are the revision-worksheet
+Examples)` and `REV S4_AM Binomial Theorem (Notes)` are the copy-revision-worksheet-with-different-practice
 skill's OWN output. revision_lib's GENERATED_RE matches exactly that shape so a
 later run doesn't clone its own output and compound the practice section.
 Renaming them would break that guard.

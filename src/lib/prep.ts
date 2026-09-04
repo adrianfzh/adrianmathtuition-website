@@ -19,7 +19,7 @@ export function deriveBankLevels(level: string, subjects: string[]): string[] {
     case 'Sec 2': out.push('S2'); break;
     case 'Sec 3':
       // S3 banks first, topped up from the S4 pool — same order the
-      // revision-worksheet skill uses.
+      // copy-revision-worksheet-with-different-practice skill uses.
       if (am) out.push('S3_AM', 'AM');
       if (em) out.push('S3_EM', 'EM');
       break;

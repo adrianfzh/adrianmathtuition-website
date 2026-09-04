@@ -318,7 +318,7 @@ def _import_worksheet_lib():
             import worksheet_lib  # noqa: F401
             return worksheet_lib
     raise ImportError(
-        "worksheet_lib.py not found (searched: %s). revision-worksheet reuses the "
+        "worksheet_lib.py not found (searched: %s). copy-revision-worksheet-with-different-practice reuses the "
         "create-worksheet skill's OMML converter; copy worksheet_lib.py next to "
         "revision_lib.py or keep the create-worksheet skill installed."
         % ", ".join(str(c) for c in candidates)

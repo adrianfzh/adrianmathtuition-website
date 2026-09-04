@@ -77,6 +77,6 @@ SELECT * FROM pick_candidates('<LEVEL>', '<topic fragment>', 15);
 ```
 
 Ranked real-past-paper-first (verified, newest), AI-generated last. NOTE:
-`revision_lib.py` (revision-worksheet skill) filters PostgREST with
+`revision_lib.py` (copy-revision-worksheet-with-different-practice skill) filters PostgREST with
 `topics=cs.{…}` — that is EXACT containment, so `--topic` there must be the
 exact spelling from the lists above.
