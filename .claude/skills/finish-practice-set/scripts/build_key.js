@@ -8,7 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const REPO = '/Users/adrianfong/Desktop/adrianmathtuition-website';
+const REPO = '/Users/adrianfong/dev/adrianmathtuition-website';
 const katex = require(path.join(REPO, 'node_modules/katex'));
 const puppeteer = require(path.join(REPO, 'node_modules/puppeteer-core'));
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';

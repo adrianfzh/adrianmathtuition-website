@@ -423,7 +423,7 @@ If `context` is empty or missing, fix the swipe app's chat send code to include 
 
 ### (b) Verify the bot uses the context to scope its answer
 
-In `~/Desktop/adrianmath-telegram-math-bot/handlers/webchat.js`, the `/api/chat` handler needs to:
+In `~/dev/adrianmath-telegram-math-bot/handlers/webchat.js`, the `/api/chat` handler needs to:
 
 1. Read the incoming `context` field from the request body
 2. If present, **prepend** an instruction to the system prompt or wrap the user message with explicit guidance like:

@@ -290,7 +290,7 @@ and never explicitly confirmed:
   extras sweep still runs.
 - **Absent lessons are never billed in arrears** — by design (attendance-based terms), but
   it does mean a no-show in an arrears month costs nothing, unlike an advance month.
-- **The bot repo (`~/Desktop/adrianmath-telegram-math-bot`) has its own invoice code and
+- **The bot repo (`~/dev/adrianmath-telegram-math-bot`) has its own invoice code and
   knows nothing about any of this.** Anything it generates or amends for Oct–Jan follows
   the old advance assumptions — check it before letting it touch a year-end invoice.
 

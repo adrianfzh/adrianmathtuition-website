@@ -81,7 +81,7 @@ export SHEETS_STATE="$STATE"
 # The repo the session works in — sheets are authored with the skills that live
 # there. A COPY is not possible here (python envs, skills, scripts), so the
 # session must tolerate the shared checkout being on any branch.
-export SHEETS_REPO="${SHEETS_REPO:-$HOME/Desktop/adrianmathtuition-website}"
+export SHEETS_REPO="${SHEETS_REPO:-$HOME/dev/adrianmathtuition-website}"
 
 # --- peek: is anything waiting? (one curl — no Claude spend) ----------------
 # "Waiting" = queued, OR claimed by a session that stopped heartbeating more

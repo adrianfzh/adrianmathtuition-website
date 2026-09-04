@@ -8,7 +8,7 @@ code.
 import sys, tempfile, os
 from pathlib import Path
 
-SKILL = Path.home()/"Desktop/adrianmathtuition-website/.claude/skills"
+SKILL = Path.home()/"dev/adrianmathtuition-website/.claude/skills"
 sys.path.insert(0, str(SKILL/"revision-worksheet"))
 sys.path.insert(0, str(SKILL/"create-worksheet"))
 import revision_lib as R                      # noqa: E402

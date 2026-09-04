@@ -1,7 +1,7 @@
 # SPEC-MARGIN-DIAGRAMS — tiny teaching diagrams beside marking annotations
 
 > Approved by Adrian 2026-08-29 ("margin diagrams > yes"). v1 scope locked to the
-> two families below. **Build home is the BOT repo** (`~/Desktop/adrianmath-telegram-math-bot`)
+> two families below. **Build home is the BOT repo** (`~/dev/adrianmath-telegram-math-bot`)
 > — this spec lives website-side with the other SPEC-* docs so every session finds it.
 >
 > ✅ **BUILT 2026-08-29** (bot commits `45b1b4c` + `9235b29`, 22 new tests, suite

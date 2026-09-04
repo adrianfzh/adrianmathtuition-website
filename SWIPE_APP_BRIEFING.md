@@ -12,7 +12,7 @@ A mobile-first, TikTok-style swipe-card page that shows students worked examples
   - `/revise/am/differentiation-techniques/worked-examples`
   - `/revise/em/numbers-percentages/worked-examples`
 
-**Why it matters:** the Telegram bot's `/revise` command already sends students this URL when they tap "💡 Worked Examples" on a topic menu (see `~/Desktop/adrianmath-telegram-math-bot/handlers/revise.js`, `topicSlug()`). Right now the page 404s. Students start hitting the bot's worked-examples flow, so this is a real blocker.
+**Why it matters:** the Telegram bot's `/revise` command already sends students this URL when they tap "💡 Worked Examples" on a topic menu (see `~/dev/adrianmath-telegram-math-bot/handlers/revise.js`, `topicSlug()`). Right now the page 404s. Students start hitting the bot's worked-examples flow, so this is a real blocker.
 
 ## Data source
 
@@ -67,7 +67,7 @@ export function topicSlug(topic: string): string {
 // 'Numbers (Percentages)'              → 'numbers-percentages'
 ```
 
-The bot's source of truth is `~/Desktop/adrianmath-telegram-math-bot/handlers/revise.js` line ~191. Mirror that exactly.
+The bot's source of truth is `~/dev/adrianmath-telegram-math-bot/handlers/revise.js` line ~191. Mirror that exactly.
 
 ## Page route + structure
 
@@ -212,7 +212,7 @@ The harvesting UI (`AdrianMath/kb_harvesting_viewer.html`) is what populates `co
 
 ## Sync after build
 
-When this lands, update `~/Desktop/adrianmathtuition-website/CLAUDE.md` "Key Pages" section with:
+When this lands, update `~/dev/adrianmathtuition-website/CLAUDE.md` "Key Pages" section with:
 
 ```
 - `revise/[level]/[topic]/worked-examples/page.tsx` — TikTok-style swipe cards over content_snippets

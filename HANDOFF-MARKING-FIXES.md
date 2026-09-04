@@ -2,7 +2,7 @@
 
 > **For the next session (any account/machine).** Adrian reviewed re-mark #2 and approved
 > this fix list; decisions below are his, verbatim where quoted. Read
-> [`docs/MARKING.md`](docs/MARKING.md) first. Bot repo: `~/Desktop/adrianmath-telegram-math-bot`
+> [`docs/MARKING.md`](docs/MARKING.md) first. Bot repo: `~/dev/adrianmath-telegram-math-bot`
 > (Fly.io, `npm run deploy` manual, **node test runner not vitest**). Website repo: this one.
 >
 > ⚠ **Student data**: Alessi Tay's page images, marking JSONs, annotated PNGs and any

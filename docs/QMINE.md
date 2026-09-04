@@ -107,7 +107,7 @@ the env var overrides frontmatter and would silently unpin this.
 Run with the website repo (`~/dev/adrianmathtuition-website`) as cwd. Airtable:
 `AIRTABLE_TOKEN`/`AIRTABLE_BASE_ID` from `.env.local` (values are quoted —
 strip). Supabase writes: the same access the Mac skills use (bot repo
-`~/Desktop/adrianmath-telegram-math-bot/.env` carries the Supabase keys) — or
+`~/dev/adrianmath-telegram-math-bot/.env` carries the Supabase keys) — or
 `SUPABASE_URL` + `SUPABASE_SECRET_KEY` when present locally. No git commits, no
 pushes — this loop edits nothing in the repo.
 

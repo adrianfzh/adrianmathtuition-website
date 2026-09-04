@@ -3,8 +3,8 @@
 > **For a fresh Claude Code session on another Mac.** Written 2026-08-10 by a strategy
 > session that audited both repos + live data. Everything below was verified against
 > live Supabase/Airtable/code that day — re-verify contracts marked ⚠ before relying
-> on them. Work in `~/Desktop/adrianmathtuition-website` (web) and
-> `~/Desktop/adrianmath-telegram-math-bot` (bot, only if Build 2 needs it).
+> on them. Work in `~/dev/adrianmathtuition-website` (web) and
+> `~/dev/adrianmath-telegram-math-bot` (bot, only if Build 2 needs it).
 
 ## Why (context in 4 sentences)
 

@@ -9,7 +9,7 @@ Fix this chat issue on adrianmathtuition.com: $ARGUMENTS
 - Page layout/CSS, KaTeX not rendering, image upload broken
 - SSE stream not displaying, "Verifying..." stuck, mobile issues
 
-**Backend (needs bot repo fix — the bot repo is at `~/Desktop/adrianmath-telegram-math-bot`; fix it there via its `/fix-bot` command, or output a prompt for it):**
+**Backend (needs bot repo fix — the bot repo is at `~/dev/adrianmath-telegram-math-bot`; fix it there via its `/fix-bot` command, or output a prompt for it):**
 - Wrong AI response, timeout, CORS error, jStat wrong, graph sketching broken
 
 ## Step 2: If frontend
