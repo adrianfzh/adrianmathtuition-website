@@ -130,3 +130,15 @@ export function chainIdsFrom(
   }
   return out;
 }
+
+/**
+ * A move is "brought forward" when the lesson finally landed on an EARLIER
+ * date than the one it was moved from (Klaire: Sat 5 Sep → Mon 24 Aug 2026).
+ * The schedule hides moved-away lessons on future dates as noise, but a
+ * brought-forward one is the opposite case — the makeup may already have
+ * happened, so the original slot should say so before its date arrives.
+ * ISO dates compare as strings; a missing final date is never "forward".
+ */
+export function isBroughtForward(sourceDate: string, finalDate: string | null | undefined): boolean {
+  return !!sourceDate && !!finalDate && finalDate < sourceDate;
+}

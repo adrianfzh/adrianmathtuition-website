@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { findDoubleBookedIds } from '@/lib/double-booking';
+import { isBroughtForward } from '@/lib/reschedule-chain';
 import { getExamTopicsForSubject } from '@/lib/canonical-topics';
 import { defaultEditExamType, levelSpecificExamType, type ExamType } from '@/lib/exam-season';
 import { SLOT_TIMES, SLOT_LEVELS, LEVEL_DEFAULT_CAPACITY, slotLevelLabel, isSlotLevel, slotOpenOnDate, dayFieldForDate, windowOccurrences, type SlotLevel } from '@/lib/slot-windows';
@@ -966,15 +967,17 @@ function DraggableLessonChip({ lesson, onTap, onStudentClick, onMarkPresent, onM
         {/* Faded status sub-lines. Colour reflects what ACTUALLY became of the
             lesson at the END of its reschedule chain (server resolves it), not
             the first hop: a makeup the student also missed must not look like
-            one that is still to come. */}
+            one that is still to come. A move to an EARLIER date reads
+            "Brought forward to …" instead of "Rescheduled → …". */}
         {isRescheduledAway && (() => {
           const o = lesson.rescheduledOutcome;
           const v = RESCHEDULE_OUTCOME[o ?? 'broken'] ?? RESCHEDULE_OUTCOME.broken;
+          const verb = isBroughtForward(lesson.date, lesson.rescheduledToDate) ? 'Brought forward to' : 'Rescheduled →';
           return (
             <span style={{ display: 'block', fontSize: 10, marginTop: 2, fontWeight: 600, color: v.color }}
               title={v.title}>
               {lesson.rescheduledToDate
-                ? `Rescheduled → ${formatDayDate(lesson.rescheduledToDate)}${lesson.rescheduledToSlotTime ? ` ${lesson.rescheduledToSlotTime}` : ''}${v.suffix}`
+                ? `${verb} ${formatDayDate(lesson.rescheduledToDate)}${lesson.rescheduledToSlotTime ? ` ${lesson.rescheduledToSlotTime}` : ''}${v.suffix}`
                 : `Rescheduled${v.suffix}`}
               {/* Moved more than once — the date above is where it finally landed. */}
               {(lesson.rescheduledHops ?? 1) > 1 && (
@@ -3222,11 +3225,15 @@ export default function SchedulePage() {
 
     // Visibility rules:
     // - Future: only Scheduled/Completed (clean view — no Absent/Rescheduled noise)
+    //   EXCEPT a lesson brought FORWARD to an earlier date: its makeup may already
+    //   have happened, so the original slot reads "Brought forward to …" now, not
+    //   only once the date has passed (Adrian, 2026-09-04: Klaire's 5 Sep lesson
+    //   taught on 24 Aug had no card in her Saturday slot — looked like a missing record).
     // - Today + past: show Absent and Rescheduled-away so undo/info is accessible
     const visibleLessons = lessons.filter(l => {
       if (l.status === 'Cancelled') return false;
       if (l.status === 'Absent') return true; // show on all dates, faded
-      if (l.status === 'Rescheduled') return !isFuture;
+      if (l.status === 'Rescheduled') return !isFuture || isBroughtForward(l.date, l.rescheduledToDate);
       return true;
     }).sort((a, b) => {
       // Faded (Absent or Rescheduled-away) chips sink to the bottom of their slot group

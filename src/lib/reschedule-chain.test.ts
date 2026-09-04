@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveRescheduleChain, chainIdsFrom, ChainLesson } from './reschedule-chain';
+import { resolveRescheduleChain, chainIdsFrom, isBroughtForward, ChainLesson } from './reschedule-chain';
 
 const TODAY = '2026-07-17';
 
@@ -147,5 +147,19 @@ describe('chainIdsFrom — ids needed to fetch a whole chain', () => {
       ['c', '2026-03-08', 'Rescheduled', 'b'],
     );
     expect(chainIdsFrom('b', m)).toEqual(['c']);
+  });
+});
+
+describe('isBroughtForward — the makeup landed BEFORE the original date', () => {
+  it('true when the final date is earlier than the source date (Klaire, 5 Sep → 24 Aug 2026)', () => {
+    expect(isBroughtForward('2026-09-05', '2026-08-24')).toBe(true);
+  });
+
+  it('false for the usual pushed-back move, a same-day move, or no final date', () => {
+    expect(isBroughtForward('2026-09-05', '2026-09-12')).toBe(false);
+    expect(isBroughtForward('2026-09-05', '2026-09-05')).toBe(false);
+    expect(isBroughtForward('2026-09-05', '')).toBe(false);
+    expect(isBroughtForward('2026-09-05', null)).toBe(false);
+    expect(isBroughtForward('2026-09-05', undefined)).toBe(false);
   });
 });
