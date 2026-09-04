@@ -12,7 +12,8 @@
 //        each with its stem figures, thumb URLs and flag state
 //   GET  ?flagged=1                          → every open flag, with the figure
 //        AS FLAGGED and the question's figure AS IT IS NOW
-//   GET  ?kind=solution                      → the SOLUTION VET LANE (below)
+//   GET  ?kind=solution&scope=sec|jc|all     → the SOLUTION VET LANE (below);
+//        scope defaults to 'sec' — see the scope note in solutionLaneGet
 //   GET  ?kind=fitness                       → the FITNESS LANE (below)
 //   POST { path, questionId, flag: boolean } → set/clear a flag
 //   POST { path, resolve: true }             → mark 'fixed' (releases the question)
@@ -150,13 +151,39 @@ async function readSidecar(supa: SupabaseClient, path: string): Promise<Record<s
 
 const str = (v: unknown): string | null => (typeof v === 'string' && v.trim() ? v.trim() : null);
 
+/** JC levels, for the lane's scope split. Everything else — including a row
+ *  whose question carries no level at all — counts as Sec, so a filter can
+ *  never make a row invisible in the default view. */
+const JC_LEVELS = new Set(['JC1', 'JC2', 'JC2_H1']);
+const isJcLevel = (level: unknown) =>
+  typeof level === 'string' && JC_LEVELS.has(level.trim().toUpperCase());
+
 async function solutionLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
   const { data: flags, error } = await supa
     .from('figure_flags').select('path, question_id, note, claimed_by, created_at')
     .eq('kind', 'solution').eq('status', 'held')
     .order('created_at', { ascending: false }).limit(1000);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  const all = flags ?? [];
+  const everything = flags ?? [];
+
+  // SCOPE (4 Sep 2026). The JC judge pass holds 200 images and the Sec pass 112,
+  // in ONE list ordered by created_at — which put every Sec decision on page 11
+  // of 16, behind 202 JC rows Adrian has explicitly paused ("Sec must complete
+  // before JC images gets to start"). The queue this whole pass waits on was
+  // unreachable without ten taps. Split by the QUESTION's level, not by
+  // claimed_by: two NJC images found by the Sec pass's markdown-channel sweep
+  // are JC work, and belong in the JC lane whoever flagged them.
+  const levelOf = new Map<string, unknown>();
+  const allQids = [...new Set(everything.map((f) => f.question_id as string))];
+  for (let i = 0; i < allQids.length; i += 200) {
+    const { data: ls } = await supa.from('questions')
+      .select('id, level').in('id', allQids.slice(i, i + 200));
+    for (const q of ls ?? []) levelOf.set(q.id as string, q.level);
+  }
+  const jc = everything.filter((f) => isJcLevel(levelOf.get(f.question_id as string)));
+  const sec = everything.filter((f) => !isJcLevel(levelOf.get(f.question_id as string)));
+  const scope = sp.get('scope') === 'jc' ? 'jc' : sp.get('scope') === 'all' ? 'all' : 'sec';
+  const all = scope === 'jc' ? jc : scope === 'all' ? everything : sec;
 
   // One prefix listing per request — not one existence probe per card.
   const names = await listCandidateNames(supa, all.map((f) => f.path as string));
@@ -204,7 +231,15 @@ async function solutionLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
     };
   }));
 
-  return NextResponse.json({ items, page, pageSize, totals: { held: all.length, withCandidate } });
+  return NextResponse.json({
+    items, page, pageSize, scope,
+    // `held` is the IN-SCOPE count (the client pages off it); sec/jc/allHeld
+    // keep every number on screen, so a scope never hides work silently.
+    totals: {
+      held: all.length, withCandidate,
+      sec: sec.length, jc: jc.length, allHeld: everything.length,
+    },
+  });
 }
 
 /**

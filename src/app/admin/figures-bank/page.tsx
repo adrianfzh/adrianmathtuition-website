@@ -94,6 +94,9 @@ function severityChip(it: FitItem): { text: string; colour: string; bg: string }
 type Tab = 'all' | 'flagged' | 'solutions' | 'fitness';
 
 const LEVELS = ['', 'AM', 'EM', 'EM_NA', 'S1', 'S2', 'S3_AM', 'S3_EM', 'S3_EM_NA', 'JC1', 'JC2'];
+/** Mirrors JC_LEVELS in the route — the solution lane's Sec/JC scope split. */
+const isJc = (level: unknown) =>
+  typeof level === 'string' && ['JC1', 'JC2', 'JC2_H1'].includes(level.trim().toUpperCase());
 const lsKey = (level: string) => `figures-page-${level || 'all'}`;
 
 export default function FiguresPage() {
@@ -112,7 +115,10 @@ export default function FiguresPage() {
   const [level, setLevel] = useState('');
   const [tab, setTab] = useState<Tab>('all');
   const [sols, setSols] = useState<SolItem[]>([]);
-  const [solTotals, setSolTotals] = useState({ held: 0, withCandidate: 0 });
+  const [solTotals, setSolTotals] = useState({ held: 0, withCandidate: 0, sec: 0, jc: 0, allHeld: 0 });
+  // Sec first: Adrian paused JC cleaning until Sec completes, and one undivided
+  // list put the 112 Sec decisions on page 11 behind 202 paused JC rows.
+  const [solScope, setSolScope] = useState<'sec' | 'jc' | 'all'>('sec');
   const [solBusy, setSolBusy] = useState('');
   const [solErr, setSolErr] = useState<Record<string, string>>({});
   const [fits, setFits] = useState<FitItem[]>([]);
@@ -125,7 +131,11 @@ export default function FiguresPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const p = new URLSearchParams(window.location.search);
-    if (p.get('kind') === 'solution') { setTab('solutions'); setPage(0); }
+    if (p.get('kind') === 'solution') {
+      setTab('solutions'); setPage(0);
+      const s = p.get('scope');
+      if (s === 'jc' || s === 'all' || s === 'sec') setSolScope(s);
+    }
     else if (p.get('kind') === 'fitness') { setTab('fitness'); setPage(0); }
     else if (p.get('flagged') === '1') { setTab('flagged'); setPage(0); }
   }, []);
@@ -151,7 +161,7 @@ export default function FiguresPage() {
   // The count on the Solutions / Fitness tabs, so each lane announces itself before it is opened.
   useEffect(() => {
     if (!authed) return;
-    fetch('/api/admin/figures-bank?kind=solution&page=0&pageSize=1')
+    fetch('/api/admin/figures-bank?kind=solution&scope=sec&page=0&pageSize=1')
       .then((r) => r.json())
       .then((d) => { if (d?.totals) setSolTotals(d.totals); })
       .catch(() => { /* a count is a nicety, not a precondition */ });
@@ -165,7 +175,7 @@ export default function FiguresPage() {
     setLoading(true);
     try {
       const qs = tab === 'solutions'
-        ? `kind=solution&page=${page}&pageSize=${SOL_PAGE}`
+        ? `kind=solution&scope=${solScope}&page=${page}&pageSize=${SOL_PAGE}`
         : tab === 'fitness'
           ? `kind=fitness&page=${page}&pageSize=${FIT_PAGE}`
           : tab === 'flagged'
@@ -192,7 +202,7 @@ export default function FiguresPage() {
         localStorage.setItem(lsKey(level), String(page));
       }
     } finally { setLoading(false); }
-  }, [tab, page, pageSize, level]);
+  }, [tab, page, pageSize, level, solScope]);
   useEffect(() => { if (authed) load(); }, [authed, load]);
 
   /** "Looks fine" — mark the flag fixed, which releases the question back into
@@ -300,8 +310,14 @@ export default function FiguresPage() {
       setSols((cur) => cur.filter((x) => x.path !== it.path));
       if (d.status === 'fixed') {
         setSolTotals((t) => ({
+          ...t,
           held: Math.max(0, t.held - 1),
           withCandidate: Math.max(0, t.withCandidate - (it.candidate ? 1 : 0)),
+          // Keep the other tallies honest too — by the CARD's own level, which is
+          // the only thing that is right in the 'all' scope as well.
+          sec: Math.max(0, t.sec - (isJc(it.level) ? 0 : 1)),
+          jc: Math.max(0, t.jc - (isJc(it.level) ? 1 : 0)),
+          allHeld: Math.max(0, t.allHeld - 1),
         }));
       }
     } catch {
@@ -579,9 +595,10 @@ export default function FiguresPage() {
       {tab === 'solutions' && (
         <>
           <div style={{ background: '#faf5ff', border: '1px solid #ddd6fe', borderRadius: 10, padding: '8px 12px', marginBottom: 10, fontSize: 13.5 }}>
-            <strong>{solTotals.held} solution images are switched off</strong> — they carry another
-            school&apos;s or centre&apos;s watermark, so the render gate withholds them wherever a
-            solution is revealed. {solTotals.withCandidate} have a cleaned candidate.
+            <strong>{solTotals.held} solution images are switched off</strong>
+            {solScope !== 'all' && solTotals.allHeld > solTotals.held ? ` of ${solTotals.allHeld}` : ''} — they
+            carry another school&apos;s or centre&apos;s watermark, so the render gate withholds them
+            wherever a solution is revealed. {solTotals.withCandidate} have a cleaned candidate.
             <div style={{ marginTop: 4, color: C.muted }}>
               <em>Approve as-is</em> puts the image back untouched. <em>Use cleaned candidate</em> writes
               the cleaned copy as a new object and repoints every reference to it — the original is
@@ -590,6 +607,19 @@ export default function FiguresPage() {
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+            {([
+              ['sec', `Sec · ${solTotals.sec}`],
+              ['jc', `JC · ${solTotals.jc}`],
+              ['all', `All · ${solTotals.allHeld}`],
+            ] as const).map(([s, label]) => (
+              <button key={s} onClick={() => { if (s !== solScope) { setSolScope(s); setPage(0); } }}
+                style={{
+                  fontSize: 13, fontWeight: solScope === s ? 700 : 500,
+                  color: solScope === s ? '#fff' : '#7c3aed',
+                  border: '1px solid #7c3aed', background: solScope === s ? '#7c3aed' : '#fff',
+                  borderRadius: 8, padding: '4px 10px', cursor: 'pointer',
+                }}>{label}</button>
+            ))}
             <span style={{ fontSize: 13, color: C.muted }}>page {page + 1} / {lastPage + 1}</span>
             <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
               <button disabled={page === 0 || loading} onClick={() => { setPage((p) => Math.max(0, p - 1)); window.scrollTo({ top: 0 }); }}
