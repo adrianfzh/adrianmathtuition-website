@@ -127,6 +127,11 @@ function LoginForm() {
             Forgot password?
           </Link>
           <p className="text-xs text-gray-400">Don&apos;t have an account? Ask Adrian for an invite.</p>
+          <p className="text-xs text-gray-400">
+            <Link href="/privacy" className="underline underline-offset-2">Privacy</Link>
+            {' · '}
+            <Link href="/terms" className="underline underline-offset-2">Terms</Link>
+          </p>
         </div>
       </div>
     </main>

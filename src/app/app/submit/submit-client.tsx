@@ -8,7 +8,7 @@
 import { useRef, useState } from 'react';
 import { subjectLabel } from '@/lib/mark-subjects';
 import Link from 'next/link';
-import { put } from '@vercel/blob/client';
+import { uploadStudentFile } from '@/lib/student-files-client';
 import { pdfToPageImages } from '@/lib/pdf-pages';
 import { friendlyPortalMessage } from '@/lib/portal-fetch';
 import { splitFileIfSpread, resizeToJpeg } from '@/lib/spread-split';
@@ -46,15 +46,16 @@ async function uploadPage(file: File, onNote: (s: string) => void): Promise<stri
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       if (attempt > 1) onNote(`retrying (${attempt} of 3)`);
-      const tokenRes = await fetch(`/api/portal/submit-token?filename=${encodeURIComponent(upload.name || 'photo.jpg')}`);
-      if (!tokenRes.ok) throw new Error('could not start the upload');
-      const { token, pathname } = await tokenRes.json();
-      const blob = await put(pathname, upload, {
-        access: 'public', token,
-        contentType: upload.type || 'application/octet-stream',
-        multipart: upload.size > 5 * 1024 * 1024,
-      });
-      return blob.url;
+      // Signed upload straight into the private student-files bucket (5 Sep 2026;
+      // was a Vercel Blob client token). The server pins the key under this
+      // student's own prefix; the URL that comes back is what /api/portal/submit
+      // checks ownership against.
+      const up = await uploadStudentFile(
+        `/api/portal/submit-token?filename=${encodeURIComponent(upload.name || 'photo.jpg')}`,
+        upload,
+        { contentType: upload.type || 'application/octet-stream' },
+      );
+      return up.url;
     } catch {
       // A fresh token each attempt, so an expired one is not the reason a retry
       // fails. Pause 1s then 2s: long enough for a network handover to settle.

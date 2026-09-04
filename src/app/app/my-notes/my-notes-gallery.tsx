@@ -24,6 +24,7 @@ import {
 import AddPhoto from './add-photo';
 import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 
+import { fileHref } from '@/lib/student-files-url';
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 
 function niceDate(iso: string): string {
@@ -121,7 +122,7 @@ export default function MyNotesGallery({ initialNotes, topicGroups }: {
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element -- student-saved Blob image of arbitrary aspect; plain img matches the rest of the portal */}
                     <img
-                      src={n.image_url}
+                      src={fileHref(n.image_url)}
                       alt={n.note || (g.kind === 'photo' ? 'Saved photo' : 'Saved clipping')}
                       loading="lazy"
                       className="w-full h-36 object-cover object-top bg-white border-b border-black/5"
@@ -234,7 +235,7 @@ function NoteLightbox({ note, onClose, onSaved, onDeleted }: {
       <div className="flex-1 min-h-0 overflow-auto px-3 flex items-center justify-center">
         {/* eslint-disable-next-line @next/next/no-img-element -- full-size view of the saved Blob image */}
         <img
-          src={note.image_url}
+          src={fileHref(note.image_url)}
           alt={note.note || `Saved ${noun}`}
           className="max-w-full max-h-full w-auto h-auto rounded-lg bg-white"
         />

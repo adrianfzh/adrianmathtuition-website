@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
-import { isOurBlobUrl } from '@/lib/blob-url';
+import { isOurFileUrl, fetchOurFile } from '@/lib/student-files';
 import { dropboxConfigured, uploadFile } from '@/lib/dropbox';
 
 // File ANY of our Blob files into the Dropbox app folder at an explicit path
@@ -19,7 +19,7 @@ import { dropboxConfigured, uploadFile } from '@/lib/dropbox';
 //
 // Guards, in order of what they prevent:
 //   • admin auth — obvious;
-//   • isOurBlobUrl — without it this is an authenticated open proxy that writes
+//   • isOurFileUrl — without it this is an authenticated open proxy that writes
 //     whatever it can fetch into Adrian's Dropbox (same reasoning as the
 //     download/send/dropbox routes);
 //   • path sanitising — no `..`, no absolute escapes; the path is always
@@ -51,11 +51,11 @@ export async function POST(req: NextRequest) {
   let body: { url?: string; path?: string; overwrite?: boolean };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
-  if (!isOurBlobUrl(body.url || '')) return NextResponse.json({ error: 'Bad URL' }, { status: 400 });
+  if (!isOurFileUrl(body.url || '')) return NextResponse.json({ error: 'Bad URL' }, { status: 400 });
   const path = cleanPath(body.path || '');
   if (!path) return NextResponse.json({ error: 'Bad path' }, { status: 400 });
 
-  const res = await fetch(body.url as string);
+  const res = await fetchOurFile(body.url as string);
   if (!res.ok) return NextResponse.json({ error: `Could not fetch the file (HTTP ${res.status})` }, { status: 502 });
   const buf = Buffer.from(await res.arrayBuffer());
   if (buf.length > MAX_BYTES) return NextResponse.json({ error: `File is ${(buf.length / 1024 / 1024).toFixed(1)}MB — over the ${MAX_BYTES / 1024 / 1024}MB limit` }, { status: 413 });

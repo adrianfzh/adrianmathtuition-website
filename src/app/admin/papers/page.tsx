@@ -21,6 +21,7 @@ import SubjectChip from '@/components/SubjectChip';
 import GroundingChip from '@/components/GroundingChip';
 import { dropboxWebUrl } from '@/lib/paper-folder';
 
+import { fileHref } from '@/lib/student-files-url';
 type Topic = { topic: string; awarded: number; max: number; lost: number; pct: number; questions: number };
 type LostQ = { questionNumber: string; awarded: number; max: number; topic: string | null };
 
@@ -487,17 +488,17 @@ export default function PapersPage() {
                 ✍️ Annotate
               </a>
               {run.annotatedPdfUrl && (
-                <a href={run.annotatedPdfUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: C.pen, textDecoration: 'none' }}>
+                <a href={fileHref(run.annotatedPdfUrl)} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: C.pen, textDecoration: 'none' }}>
                   ✍️ Annotated PDF ↗
                 </a>
               )}
               {run.photosPdfUrl && (
-                <a href={run.photosPdfUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: C.link, textDecoration: 'none' }}>
+                <a href={fileHref(run.photosPdfUrl)} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: C.link, textDecoration: 'none' }}>
                   🖼 Images ↗
                 </a>
               )}
               {run.pdfUrl && (
-                <a href={run.pdfUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: C.link, textDecoration: 'none' }}>
+                <a href={fileHref(run.pdfUrl)} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: C.link, textDecoration: 'none' }}>
                   📄 Full PDF ↗
                 </a>
               )}

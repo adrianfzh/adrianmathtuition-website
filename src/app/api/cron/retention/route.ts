@@ -17,6 +17,7 @@ import { logJobRun } from '@/lib/job-log';
 import { del } from '@vercel/blob';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { isOurBlobUrl } from '@/lib/blob-url';
+import { collectFileKeys, removeStudentFiles } from '@/lib/student-files';
 import { RETENTION_MONTHS, retentionCutoffIso, latestActivityIso, isExpired } from '@/lib/retention';
 import { sendTelegram } from '@/lib/telegram';
 
@@ -106,6 +107,16 @@ export async function GET(req: NextRequest) {
       )];
 
       let blobsOk = true;
+      // Private-store files referenced by the same rows (5 Sep 2026).
+      const keys = collectFileKeys(rows);
+      if (keys.length) {
+        try { deletedBlobs += await removeStudentFiles(keys); }
+        catch (err) {
+          blobsOk = false;
+          blobFailures += keys.length;
+          console.warn('[retention] student-files delete failed, rows kept for retry:', (err as Error).message);
+        }
+      }
       for (let i = 0; i < urls.length; i += 50) {
         const chunk = urls.slice(i, i + 50);
         try {

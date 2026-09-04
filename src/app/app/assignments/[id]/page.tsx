@@ -9,6 +9,7 @@ import { getStudentAssignment } from '@/lib/portal-assignments';
 import { assignmentHref, dueLabel, isOverdue } from '@/lib/assignments';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
+import { fileHref } from '@/lib/student-files-url';
 export const dynamic = 'force-dynamic';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
@@ -72,11 +73,11 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
 
         {a.pdf_url && (
           <div className="flex gap-2">
-            <a href={a.pdf_url} target="_blank" rel="noopener noreferrer"
+            <a href={fileHref(a.pdf_url)} target="_blank" rel="noopener noreferrer"
               className="flex-1 text-center text-sm font-semibold text-navy rounded-xl px-4 py-2.5 border border-black/10 hover:bg-navy/5">
               ↗ Open PDF
             </a>
-            <a href={a.pdf_url} download
+            <a href={fileHref(a.pdf_url)} download
               className="flex-1 text-center text-sm font-semibold text-navy rounded-xl px-4 py-2.5 border border-black/10 hover:bg-navy/5">
               ⬇ Download to print
             </a>
@@ -87,7 +88,7 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
       {a.pdf_url && (
         <div className={`${CARD} overflow-hidden`}>
           <iframe
-            src={`${a.pdf_url}#toolbar=0&view=FitH`}
+            src={`${fileHref(a.pdf_url)}#toolbar=0&view=FitH`}
             title={a.title}
             className="w-full bg-white"
             style={{ height: '70vh' }}

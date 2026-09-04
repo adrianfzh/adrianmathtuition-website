@@ -29,6 +29,7 @@ export default function Footer() {
           <a href="/jc-h2-math-tuition" className="text-[#d1d5db] hover:text-white no-underline">JC H2 Math Tuition</a>
           <Link href="/solutions" className="text-[#d1d5db] hover:text-white no-underline">Model Solutions</Link>
           <a href="/terms" className="text-[#d1d5db] hover:text-white no-underline">Terms</a>
+          <a href="/privacy" className="text-[#d1d5db] hover:text-white no-underline">Privacy</a>
         </nav>
         <p className="mb-1">&copy; {new Date().getFullYear()} Adrian&apos;s Math Tuition &middot; Singapore</p>
         <p className="mb-1">Adrian&apos;s Math Tuition operates under Kix Education.</p>

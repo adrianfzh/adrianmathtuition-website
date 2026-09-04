@@ -44,9 +44,13 @@ export default function PrivacyPage() {
         <h2 className={h2}>Who processes it</h2>
         <ul className="list-disc pl-5 space-y-1.5 text-[15px] text-gray-700 mb-3">
           <li><strong>Anthropic</strong> (Claude API) — grades submitted work. Submissions are sent without the student&apos;s name, and Anthropic does not train on this data.</li>
-          <li><strong>Supabase</strong> — database and login system (data encrypted at rest).</li>
+          <li><strong>Google</strong> (Gemini API) — reads the page image once more after grading to find where each answer sits, so ticks and comments land in the right place. No name is sent, and Google does not train on API data.</li>
+          <li><strong>Supabase</strong> — database, login system and the private file store for submitted pages and marked copies, hosted in Singapore (encrypted at rest; files are readable only through a signed-in session).</li>
           <li><strong>Vercel</strong> — website hosting.</li>
+          <li><strong>Fly.io</strong> — hosts the marking service and the Telegram bot (Singapore region).</li>
+          <li><strong>Telegram</strong> — if you choose to use the bot, your messages and photos pass through Telegram under its own terms. Telegram is optional; everything is also available on this site.</li>
           <li><strong>Resend</strong> — transactional email (invites, password resets).</li>
+          <li><strong>Dropbox</strong> — Adrian&apos;s own teaching materials only (notes, worksheets). Student submissions and marked copies are not stored there.</li>
         </ul>
 
         <h2 className={h2}>How it&apos;s protected</h2>

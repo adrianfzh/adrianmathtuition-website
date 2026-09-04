@@ -17,7 +17,7 @@
 // Every failure is reported, none thrown: a Dropbox hiccup on the automatic path
 // must not turn into a release that never happens.
 
-import { put } from '@vercel/blob';
+import { putStudentFile, runKey } from '@/lib/student-files';
 import { dropboxConfigured, getTemporaryLink, listFolder } from './dropbox';
 import { getSupabaseAdmin } from './supabase';
 import { amendedCopyIsNewer, isAlreadyAttached, paperFolder, pickAmendedCopy } from './paper-folder';
@@ -77,8 +77,8 @@ export async function attachAmendedFromDropbox(runId: string, opts: { force?: bo
     if (!res.ok) throw new Error(`Dropbox fetch ${res.status}`);
     const buf = Buffer.from(await res.arrayBuffer());
     if (buf.length > MAX_BYTES) throw new Error('PDF over 50MB');
-    const blob = await put(`mark-paper/amended/${runId}.pdf`, buf, {
-      access: 'public', contentType: 'application/pdf', addRandomSuffix: true,
+    const blob = await putStudentFile({
+      key: runKey(runId, `amended-${Date.now()}.pdf`), body: buf, contentType: 'application/pdf',
     });
     annotatedPdfUrl = blob.url;
   } catch (e) {

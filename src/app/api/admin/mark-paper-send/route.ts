@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { airtableRequest } from '@/lib/airtable';
-import { isOurBlobUrl } from '@/lib/blob-url';
+import { isOurFileUrl, fetchOurFile } from '@/lib/student-files';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { checkDelivery, alertVerificationBlind } from '@/lib/resend-verify';
 
@@ -66,10 +66,10 @@ export async function POST(req: NextRequest) {
 
   const to = (body.to || '').trim();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
-  if (!body.pdfUrl || !isOurBlobUrl(body.pdfUrl)) return NextResponse.json({ error: 'Bad PDF URL' }, { status: 400 });
+  if (!body.pdfUrl || !isOurFileUrl(body.pdfUrl)) return NextResponse.json({ error: 'Bad PDF URL' }, { status: 400 });
 
   // Fetch the PDF to attach. Resend's total-message cap is 40MB; leave headroom.
-  const pdfRes = await fetch(body.pdfUrl);
+  const pdfRes = await fetchOurFile(body.pdfUrl);
   if (!pdfRes.ok) return NextResponse.json({ error: `PDF fetch failed (${pdfRes.status})` }, { status: 502 });
   const pdfBuf = Buffer.from(await pdfRes.arrayBuffer());
   if (pdfBuf.length > 35 * 1024 * 1024) return NextResponse.json({ error: 'PDF too large to email (>35MB) — use Download and send it manually' }, { status: 413 });

@@ -17,6 +17,17 @@
 // run belongs to nobody and can never appear in one.
 import { NextRequest, NextResponse } from 'next/server';
 import { del } from '@vercel/blob';
+import { isOurFileUrl, collectFileKeys, removeStudentFiles } from '@/lib/student-files';
+
+/** Delete a mixed list of legacy Blob URLs and private-store key URLs. */
+async function purgeFiles(urls: string[]): Promise<number> {
+  const legacy = urls.filter(isOurBlobUrl);
+  const keys = collectFileKeys(urls);
+  let n = 0;
+  if (legacy.length) { await del(legacy); n += legacy.length; }
+  if (keys.length) n += await removeStudentFiles(keys);
+  return n;
+}
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { isOurBlobUrl } from '@/lib/blob-url';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -236,8 +247,9 @@ export async function DELETE(req: NextRequest) {
   // the files live in different corners (source photo originals and the question
   // paper inside result_json, annotated pages + their solutions twins, the three
   // assembled-PDF columns), and shapes have drifted across marker versions. A
-  // sweep of the whole row catches them all; isOurBlobUrl keeps it to our store.
-  const urls = [...new Set(JSON.stringify(row).match(/https:\/\/[^"\\\s]+/g) || [])].filter(isOurBlobUrl);
+  // sweep of the whole row catches them all; isOurFileUrl keeps it to our store
+  // (legacy Blob URLs and private-store key URLs alike — purgeFiles splits them).
+  const urls = [...new Set(JSON.stringify(row).match(/https:\/\/[^"\\\s]+/g) || [])].filter(isOurFileUrl);
 
   // Into the bin first, THEN out of the table — and the files stay put for 30
   // days (Adrian, 31 Aug 2026). This used to delete the row and every Blob in
@@ -269,8 +281,8 @@ export async function DELETE(req: NextRequest) {
 
   let blobsDeleted = 0;
   if (purgeNow && urls.length) {
-    try { await del(urls); blobsDeleted = urls.length; }
-    catch (e) { console.error('[papers] blob cleanup failed for', id, (e as Error).message); }
+    try { blobsDeleted = await purgeFiles(urls); }
+    catch (e) { console.error('[papers] file cleanup failed for', id, (e as Error).message); }
   }
 
   // Opportunistic purge of anything past its 30 days — no cron to forget, and
@@ -281,7 +293,7 @@ export async function DELETE(req: NextRequest) {
       .from('paper_marking_runs_bin').select('id, blob_urls').lt('purge_after', new Date().toISOString()).limit(20);
     for (const e of expired ?? []) {
       const old = (e.blob_urls as string[] | null) ?? [];
-      if (old.length) { try { await del(old); } catch { /* orphaned files are cheap */ } }
+      if (old.length) { try { await purgeFiles(old); } catch { /* orphaned files are cheap */ } }
       await supa.from('paper_marking_runs_bin').delete().eq('id', e.id);
       purged++;
     }

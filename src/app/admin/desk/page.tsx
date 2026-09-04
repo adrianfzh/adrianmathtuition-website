@@ -33,6 +33,7 @@ import type { TriageQuestion } from '@/lib/mark-triage';
 import type { Diagnosis } from '@/lib/sheet-diagnosis';
 import { pdfToPageImages } from '@/lib/pdf-pages';
 
+import { fileHref } from '@/lib/student-files-url';
 // ── Shapes the two desk routes return ────────────────────────────────────────
 type Row = {
   id: string; createdAt: string; paperName: string; subject: string;
@@ -726,9 +727,9 @@ function DetailView(p: {
         {/* files + my copy + rebuild */}
         <div style={{ marginTop: 12, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', fontSize: 13.5 }}>
           <a href={d.folder.url} target="_blank" rel="noreferrer" title={`Dropbox ▸ ${d.folder.path}`} style={{ color: C.link, textDecoration: 'none', fontWeight: 600 }}>📂 Folder ↗</a>
-          {run.annotatedPdfUrl && <a href={run.annotatedPdfUrl} target="_blank" rel="noreferrer" style={{ color: C.pen, textDecoration: 'none' }}>✍️ Annotated ↗</a>}
-          {run.photosPdfUrl && <a href={run.photosPdfUrl} target="_blank" rel="noreferrer" style={{ color: C.link, textDecoration: 'none' }}>🖼 Images ↗</a>}
-          {run.pdfUrl && <a href={run.pdfUrl} target="_blank" rel="noreferrer" style={{ color: C.link, textDecoration: 'none' }}>📄 Full ↗</a>}
+          {run.annotatedPdfUrl && <a href={fileHref(run.annotatedPdfUrl)} target="_blank" rel="noreferrer" style={{ color: C.pen, textDecoration: 'none' }}>✍️ Annotated ↗</a>}
+          {run.photosPdfUrl && <a href={fileHref(run.photosPdfUrl)} target="_blank" rel="noreferrer" style={{ color: C.link, textDecoration: 'none' }}>🖼 Images ↗</a>}
+          {run.pdfUrl && <a href={fileHref(run.pdfUrl)} target="_blank" rel="noreferrer" style={{ color: C.link, textDecoration: 'none' }}>📄 Full ↗</a>}
           <a href={`/admin/mark-paper?run=${run.id}&annotate=1`} style={{ color: C.pen, textDecoration: 'none' }}>✏️ Annotate</a>
           <OpenInApp url={run.annotatedPdfUrl || run.pdfUrl} name={`${run.paperName || 'marked paper'}.pdf`} />
         </div>
@@ -795,9 +796,9 @@ function DetailView(p: {
                 <span>Page {pg.photoIndex + 1}</span>
                 {pg.method && pg.method !== 'line' && <span style={{ color: C.flag }} title="Tick placement fell back on this page — the marks are the same, the ink is coarser">{pg.method} ticks</span>}
               </div>
-              <a href={pg.urlWithSolutions || pg.url} target="_blank" rel="noreferrer">
+              <a href={fileHref(pg.urlWithSolutions || pg.url)} target="_blank" rel="noreferrer">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={pg.urlWithSolutions || pg.url} alt={`Marked page ${pg.photoIndex + 1}`} loading="lazy" style={{ width: '100%', display: 'block' }} />
+                <img src={fileHref(pg.urlWithSolutions || pg.url)} alt={`Marked page ${pg.photoIndex + 1}`} loading="lazy" style={{ width: '100%', display: 'block' }} />
               </a>
               <div style={{ padding: '4px 0' }}>
                 {(byPage.get(pg.photoIndex) ?? []).map(q => (

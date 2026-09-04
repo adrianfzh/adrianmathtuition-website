@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
-import { isOurBlobUrl } from '@/lib/blob-url';
+import { isOurFileUrl, fetchOurFile } from '@/lib/student-files';
 import { dropboxConfigured, uploadFile } from '@/lib/dropbox';
 import { markedAiPath, paperFolder, type PaperRun } from '@/lib/paper-folder';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -49,7 +49,18 @@ export async function POST(req: NextRequest) {
   const url = body.url || '';
   // Same guard as the download/send routes: an unchecked URL here would make an
   // authenticated open proxy that writes whatever it fetches into Adrian's Dropbox.
-  if (!isOurBlobUrl(url)) return NextResponse.json({ error: 'Bad URL' }, { status: 400 });
+  if (!isOurFileUrl(url)) return NextResponse.json({ error: 'Bad URL' }, { status: 400 });
+
+  // 5 Sep 2026 — student files no longer go to the personal Dropbox (they live in
+  // the private student-files bucket; see lib/student-files.ts). The bot and the
+  // mark-paper page still call this after every marking; answer calmly so neither
+  // reports an error, and keep the old behaviour one env flag away.
+  if (process.env.STUDENT_FILES_TO_DROPBOX !== '1') {
+    return NextResponse.json({
+      ok: false, skipped: true,
+      error: 'Marked PDFs stay in the private store now (not filed to Dropbox) — open them from the desk or /admin/papers.',
+    });
+  }
 
   const runId = typeof body.runId === 'string' && /^[0-9a-f-]{36}$/i.test(body.runId) ? body.runId : null;
   let run: PaperRun | null = null;
@@ -79,7 +90,7 @@ export async function POST(req: NextRequest) {
   const folder = paperFolder(target);
 
   try {
-    const r = await fetch(url, { signal: AbortSignal.timeout(45_000) });
+    const r = await fetchOurFile(url, { signal: AbortSignal.timeout(45_000) });
     if (!r.ok) return NextResponse.json({ error: `fetch failed (${r.status})` }, { status: 502 });
     const buf = Buffer.from(await r.arrayBuffer());
     // /files/upload is the single-shot endpoint — 150MB ceiling, far above any

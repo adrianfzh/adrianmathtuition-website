@@ -1095,6 +1095,61 @@ Adrian's own intake) → straight-to-Blob via client token → one POST files it
 - ⚠ Same localhost caveat as /app/marking: the full flow needs a preview/prod
   student session; locally only the 401/redirect gates are checkable.
 
+## Student files — the private store (5 Sep 2026)
+
+Adrian, after the children's-data review: *"The storage move, simply. → do it."* Every
+file that is a student's own data now lives in the **private Supabase Storage bucket
+`student-files`** (Singapore, same project as the database) instead of public-by-URL
+Vercel Blob addresses and the personal Dropbox. One module owns it: **`lib/student-files.ts`**
+(server: `putStudentFile` / `downloadStudentFile` / `fetchOurFile` / `createUploadUrl` /
+`removeStudentFiles[ByPrefix]` / `listStudentFiles`) over the pure, client-safe
+**`lib/student-files-url.ts`** (keys, `fileUrl` ↔ `keyFromUrl`, `isOurFileUrl`, `fileHref`,
+`ownerOf`, the key builders; tested in `student-files.test.ts`).
+
+- **The door is `GET /api/files/<key>`** (`app/api/files/[...key]/route.ts`): Adrian's admin
+  session or the `ADMIN_PASSWORD` bearer (the bot's existing bearer), or a portal session that
+  OWNS the key — `runs/<runId>/…` only when the run is tagged to that student AND released;
+  `handins|clippings|assignments/<identity>/…` when the identity matches; `uploads/<uuid>/…`
+  (pre-run originals + the direct ▶ Mark path's annotated pages) only when one of that
+  student's own released runs references the key. 401, never a redirect. Health-check
+  `student-files` asserts the anonymous 401.
+- **The stored reference is the canonical URL** `https://www.adrianmathtuition.com/api/files/<key>`,
+  so every column / JSON field that held a Blob URL still holds a URL. Readers call
+  `fetchOurFile(url)` (bucket download for a key URL, plain fetch for a legacy Blob URL, 400 for
+  anything else — never a plain `fetch(url)`); gates use `isOurFileUrl` (replaces `isOurBlobUrl`
+  everywhere a student file is checked); pages render `fileHref(url)` — the same-origin
+  `/api/files/…` path, because a cross-site `<img>` never carries a Lax cookie and the preview
+  deploy would 401 on a prod-origin URL.
+- **Browser uploads** (portal `/app/submit`, mark-paper originals/paper/Notability PDF, ✏️
+  overlay pages, Send-work worksheets) PUT straight to a **signed upload URL** the token routes
+  mint (`createUploadUrl`; `{uploadUrl, key, url}`), via `lib/student-files-client.ts`
+  `uploadStudentFile(tokenUrl, file)` — the 4.5MB body cap never sees them, same as the old
+  Blob client tokens. The server pins the key, so "URL under my prefix" is still the ownership
+  proof in `/api/portal/submit` (`handins/<identity>/…`).
+- **Keys:** `runs/<runId>/{originals|pages|annotated}/…`, `runs/<runId>/marked-photos.pdf` +
+  `marked-full.pdf` (FIXED names — a rebuild overwrites the machine's copy, the old Dropbox
+  "Marked (AI).pdf" rule), `runs/<runId>/annotated-<uuid>.pdf` / `amended-<ts>.pdf`,
+  `uploads/<uuid>/<file>`, `handins/<identity>/<uuid>.<ext>`, `clippings/<identity>/<file>`
+  (the filename still carries the photo/clip kind for `lib/portal-notes.noteKind`),
+  `assignments/<identity>/<uuid>.pdf`, `inbox/<kind?>/<ts>-<name>`.
+- **Deletes:** `/admin/papers` DELETE and the bin purge sweep BOTH legacy Blob URLs and key URLs
+  (`collectFileKeys`); `delete-account` clears `clippings/<identity>` + `assignments/<identity>`
+  (hand-in photos stay with their retained runs — the same stance as the runs themselves);
+  the retention cron removes referenced keys beside its Blob deletes.
+- **Dropbox:** `mark-paper-dropbox` no longer files `Marked (AI).pdf` — it answers
+  `{ok:false, skipped:true}` calmly unless `STUDENT_FILES_TO_DROPBOX=1`. The desk's
+  "My copy" (Marked (Adrian).pdf by name) and `release-with-sheet` still READ the per-paper
+  Dropbox folder; the sheet worker still writes `Practice Again.*` there (a workflow decision
+  Adrian has not made yet — flagged, not changed).
+- **The bot's twin is `lib/student-files.js`** (`storeFile`, `fetchOurFile`, `pageKey`): reads
+  accept both URL kinds always; WRITES go to the bucket only when the Fly secret
+  `STUDENT_FILES_BUCKET=1` — flip it after the site that serves `/api/files` is on prod, so a
+  bot deploy can never race the site deploy into broken links. Order of rollout:
+  site → prod, then the flag.
+- **Legacy Blob URLs stay readable** everywhere until a backfill copies them into the bucket
+  and rewrites the references (not written yet — `scripts/migrate-blob-to-storage.ts` is the
+  intended home).
+
 ## /admin/mark-paper — scanned-PDF working (client-side rasterisation)
 
 Adrian can drop the student's working in as **a scanned PDF** instead of phone photos.

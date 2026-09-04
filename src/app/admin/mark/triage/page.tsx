@@ -21,6 +21,7 @@ import type { TriageQuestion } from '@/lib/mark-triage';
 import { bandForRegion, isPartialBand } from '@/lib/region-crop';
 import { dropboxWebUrl } from '@/lib/paper-folder';
 
+import { fileHref } from '@/lib/student-files-url';
 type Run = {
   id: string;
   createdAt: string;
@@ -474,7 +475,7 @@ export default function TriagePage() {
           {run.flagged.length === 0 ? (
             <div style={{ padding: '10px 12px', fontSize: 13, color: C.muted }}>
               All {run.totalQuestions} questions marked confidently.
-              {run.annotatedPdfUrl && <> · <a href={run.annotatedPdfUrl} target="_blank" rel="noreferrer">📄 View</a></>}
+              {run.annotatedPdfUrl && <> · <a href={fileHref(run.annotatedPdfUrl)} target="_blank" rel="noreferrer">📄 View</a></>}
               {run.dropboxFolder && <> · <a href={dropboxWebUrl(run.dropboxFolder)} target="_blank" rel="noreferrer" title={`Dropbox ▸ ${run.dropboxFolder}`}>📂 Folder</a></>}
               {/* Every topic this script dropped marks on, in one link. The
                   per-question 📬 sends one; a paper rarely fails on one thing,
@@ -573,7 +574,7 @@ export default function TriagePage() {
                         <div style={{ marginBottom: 6 }}>
                           <div style={{ position: 'relative', width: '100%', overflow: 'hidden',
                             borderRadius: 8, border: `1px solid ${C.border}`, aspectRatio: `1 / ${band.height * 1.414}` }}>
-                            <img src={pagePhoto.url} alt={`Q${q.questionNumber} working`} loading="lazy"
+                            <img src={fileHref(pagePhoto.url)} alt={`Q${q.questionNumber} working`} loading="lazy"
                               style={{ position: 'absolute', left: 0, width: '100%',
                                 top: `${-(band.top / band.height) * 100}%`, height: `${(1 / band.height) * 100}%`,
                                 objectFit: 'cover', objectPosition: 'top' }} />
@@ -585,9 +586,9 @@ export default function TriagePage() {
                         <summary style={{ fontSize: 12, fontWeight: 600, color: '#1d4ed8', cursor: 'pointer' }}>
                           📷 {isPartialBand(band) ? 'Show the whole page' : `Show page ${q.photoIndex! + 1}`}
                         </summary>
-                        <a href={pagePhoto.url} target="_blank" rel="noreferrer">
+                        <a href={fileHref(pagePhoto.url)} target="_blank" rel="noreferrer">
                           <img
-                            src={pagePhoto.url}
+                            src={fileHref(pagePhoto.url)}
                             alt={`Marked page ${q.photoIndex! + 1}`}
                             loading="lazy"
                             style={{ width: '100%', marginTop: 6, borderRadius: 8, border: `1px solid ${C.border}` }}
@@ -681,7 +682,7 @@ export default function TriagePage() {
                         )
                       )}
                       {run.annotatedPdfUrl && (
-                        <a href={run.annotatedPdfUrl} target="_blank" rel="noreferrer" style={{ ...btn('#fff', '#374151', C.border), textDecoration: 'none', display: 'inline-block' }}>
+                        <a href={fileHref(run.annotatedPdfUrl)} target="_blank" rel="noreferrer" style={{ ...btn('#fff', '#374151', C.border), textDecoration: 'none', display: 'inline-block' }}>
                           🔁 View page
                         </a>
                       )}

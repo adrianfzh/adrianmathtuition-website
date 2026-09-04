@@ -3,7 +3,7 @@ import RulesTag from '@/components/RulesTag';
 
 import { useState, useRef, useEffect, memo, type CSSProperties } from 'react';
 import dynamic from 'next/dynamic';
-import { put } from '@vercel/blob/client';
+import { uploadStudentFile } from '@/lib/student-files-client';
 import 'katex/dist/katex.min.css';
 import { ensureAdminSession } from '@/lib/admin-client';
 import { pickAnnotatedPhotoUrl } from '@/lib/annotated-photo-source';
@@ -104,15 +104,12 @@ async function uploadOriginal(file: File, up: { mediaType: string; origWidth?: n
         payload = hi; name = 'photo.jpg';
       }
     }
-    const tokenRes = await fetch(`/api/admin/mark-paper-annotated-token?type=original&filename=${encodeURIComponent(name)}`);
-    if (!tokenRes.ok) return null;
-    const { token, pathname } = await tokenRes.json();
-    const blob = await put(pathname, payload, {
-      access: 'public', token,
-      contentType: payload.type || 'application/octet-stream',
-      multipart: payload.size > 5 * 1024 * 1024,
-    });
-    return blob.url;
+    const uploaded = await uploadStudentFile(
+      `/api/admin/mark-paper-annotated-token?type=original&filename=${encodeURIComponent(name)}`,
+      payload,
+      { contentType: payload.type || 'application/octet-stream' },
+    );
+    return uploaded.url;
   } catch { return null; }
 }
 
@@ -120,27 +117,15 @@ async function uploadOriginal(file: File, up: { mediaType: string; origWidth?: n
 // itself still reads the base64 in the request body). Best-effort like originals.
 async function uploadPaperPdf(file: File): Promise<string | null> {
   try {
-    const tokenRes = await fetch('/api/admin/mark-paper-annotated-token?type=paper');
-    if (!tokenRes.ok) return null;
-    const { token, pathname } = await tokenRes.json();
-    const blob = await put(pathname, file, {
-      access: 'public', token, contentType: 'application/pdf',
-      multipart: file.size > 5 * 1024 * 1024,
-    });
-    return blob.url;
+    const up = await uploadStudentFile('/api/admin/mark-paper-annotated-token?type=paper', file, { contentType: 'application/pdf' });
+    return up.url;
   } catch { return null; }
 }
 
 async function uploadScheme(file: File): Promise<string | null> {
   try {
-    const tokenRes = await fetch('/api/admin/mark-paper-annotated-token?type=paper');
-    if (!tokenRes.ok) return null;
-    const { token, pathname } = await tokenRes.json();
-    const blob = await put(pathname, file, {
-      access: 'public', token, contentType: file.type || 'application/octet-stream',
-      multipart: file.size > 5 * 1024 * 1024,
-    });
-    return blob.url;
+    const up = await uploadStudentFile('/api/admin/mark-paper-annotated-token?type=paper', file, { contentType: file.type || 'application/octet-stream' });
+    return up.url;
   } catch { return null; }
 }
 
@@ -1197,12 +1182,11 @@ export default function MarkPaperPage() {
     if (!/pdf$/i.test(file.type) && !/\.pdf$/i.test(file.name)) { setSendNote({ ok: false, text: 'That is not a PDF — export the note as PDF from Notability.' }); return; }
     setAnnotatedBusy(true); setSendNote(null);
     try {
-      const tokenRes = await fetch(`/api/admin/mark-paper-annotated-token?runId=${encodeURIComponent(runId)}&filename=${encodeURIComponent(file.name)}`);
-      if (!tokenRes.ok) throw new Error('upload token failed');
-      const { token, pathname } = await tokenRes.json();
-      const blob = await put(pathname, file, {
-        access: 'public', token, multipart: file.size > 5 * 1024 * 1024, contentType: 'application/pdf',
-      });
+      const blob = await uploadStudentFile(
+        `/api/admin/mark-paper-annotated-token?runId=${encodeURIComponent(runId)}&filename=${encodeURIComponent(file.name)}`,
+        file,
+        { contentType: 'application/pdf' },
+      );
       const link = await fetch('/api/admin/mark-paper', {
         method: 'POST', headers: authHeaders,
         body: JSON.stringify({ phase: 'link-pdf', id: runId, url: blob.url, kind: 'annotated' }),

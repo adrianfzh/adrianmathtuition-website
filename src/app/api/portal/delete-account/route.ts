@@ -19,6 +19,7 @@
 // has to keep up with what the portal stores.
 import { NextRequest, NextResponse } from 'next/server';
 import { del } from '@vercel/blob';
+import { keyFromUrl, removeStudentFilesByPrefix } from '@/lib/student-files';
 import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server';
 import { portalIdentity } from '@/lib/portal-auth';
 
@@ -71,9 +72,17 @@ export async function POST(req: NextRequest) {
     const imageUrls = (noteRows ?? [])
       .map(r => (r as { image_url: string | null }).image_url)
       .filter((u): u is string => !!u);
-    if (imageUrls.length) {
-      try { await del(imageUrls); }
+    const legacyUrls = imageUrls.filter(u => keyFromUrl(u) === null);
+    if (legacyUrls.length) {
+      try { await del(legacyUrls); }
       catch (e) { console.error('[delete-account] clipping blob cleanup failed:', (e as Error).message); }
+    }
+    // The private store: every clipping and assignment worksheet under this
+    // identity, whether or not a row still points at it. (Hand-in photos stay
+    // with their marking runs — the same retention stance as the runs above.)
+    for (const prefix of [`clippings/${identity}`, `assignments/${identity}`]) {
+      try { await removeStudentFilesByPrefix(prefix); }
+      catch (e) { console.error('[delete-account] student-files cleanup failed for', prefix, (e as Error).message); }
     }
 
     // The identity-keyed portal tables (rec… / acct:<uuid> — same key the

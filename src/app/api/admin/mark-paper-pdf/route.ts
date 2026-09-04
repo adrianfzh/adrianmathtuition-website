@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
+import { putStudentFile, fetchOurFile, runKey, uploadKey } from '@/lib/student-files';
 import { PDFDocument } from 'pdf-lib';
 import { renderMarkingPNG, type MarkingOutput } from '@/lib/render-marking';
 import { orderMarkedPages } from '@/lib/marked-pdf-order';
@@ -129,10 +129,10 @@ export async function POST(req: NextRequest) {
   for (const ap of (body.annotated_photos || [])) {
     const src = pickAnnotatedPhotoUrl(ap, photoMode);
     try {
-      const r = await fetch(src);
+      const r = await fetchOurFile(src);
       if (r.ok) annotated.push({ photo_index: ap.photo_index, buf: Buffer.from(await r.arrayBuffer()) });
       else if (src !== ap.url) {
-        const r2 = await fetch(ap.url);   // twin went missing from Blob — the plain page still marks the work
+        const r2 = await fetchOurFile(ap.url);   // twin went missing — the plain page still marks the work
         if (r2.ok) annotated.push({ photo_index: ap.photo_index, buf: Buffer.from(await r2.arrayBuffer()) });
       }
     } catch (e) { console.error('[mark-paper-pdf] fetch annotated failed', (e as Error).message); }
@@ -145,7 +145,10 @@ export async function POST(req: NextRequest) {
   const single = !body.multi && pngs.length === 1 && annotated.length === 0;
 
   if (single) {
-    const blob = await put(`mark-paper/${id}.png`, pngs[0].buf, { access: 'public', contentType: 'image/png', allowOverwrite: true });
+    const blob = await putStudentFile({
+      key: runId ? runKey(runId, `marked-${mode}.png`) : uploadKey(`marked-${id}.png`),
+      body: pngs[0].buf, contentType: 'image/png',
+    });
     await linkToRun(runId, blob.url, mode);
     return NextResponse.json({ url: blob.url, kind: 'image', totalAwarded: pngs[0].awarded, totalMax: pngs[0].max });
   }
@@ -222,7 +225,13 @@ export async function POST(req: NextRequest) {
     } catch (e) { console.error('[mark-paper-pdf] booklet embed failed', (e as Error).message); }
   }
   const pdfBytes = await pdfDoc.save();
-  const blob = await put(`mark-paper/${id}.pdf`, Buffer.from(pdfBytes), { access: 'public', contentType: 'application/pdf', allowOverwrite: true });
+  // One fixed name per run and mode — a rebuild REPLACES the machine's copy
+  // (the Dropbox "Marked (AI).pdf" rule, now in the private store). Runs without
+  // an id (a bare page build) land under uploads/.
+  const blob = await putStudentFile({
+    key: runId ? runKey(runId, mode === 'photos' ? 'marked-photos.pdf' : 'marked-full.pdf') : uploadKey(`marked-${mode}-${id}.pdf`),
+    body: Buffer.from(pdfBytes), contentType: 'application/pdf',
+  });
   await linkToRun(runId, blob.url, mode);
   return NextResponse.json({ url: blob.url, kind: 'pdf', totalAwarded, totalMax });
 }

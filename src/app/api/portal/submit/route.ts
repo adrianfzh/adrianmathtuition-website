@@ -24,6 +24,7 @@ import { NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { isOurBlobUrl } from '@/lib/blob-url';
+import { keyFromUrl } from '@/lib/student-files-url';
 import { DAILY_SUBMIT_CAP, countHandinsToday } from '@/lib/portal-submit-limit';
 import type { HandinCountingClient } from '@/lib/portal-submit-limit';
 import { sendTelegram } from '@/lib/telegram';
@@ -127,7 +128,12 @@ export async function POST(req: Request) {
   }
   for (const u of photoUrls) {
     let ok = false;
-    if (isOurBlobUrl(u)) {
+    const key = keyFromUrl(u);
+    if (key) {
+      // Private-store upload (5 Sep 2026): the submit-token route pinned the key
+      // under handins/<identity>/, so the prefix IS the ownership proof.
+      ok = key.startsWith(`handins/${studentId}/`);
+    } else if (isOurBlobUrl(u)) {
       // decodeURIComponent: a stranger's identity segment (`acct:<uuid>`)
       // contains a colon, which a URL serializer MAY percent-encode — decode
       // before comparing so both spellings match the prefix the submit-token

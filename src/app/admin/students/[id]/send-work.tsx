@@ -19,7 +19,8 @@ import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
-import { put } from '@vercel/blob/client';
+import { uploadStudentFile } from '@/lib/student-files-client';
+import { fileHref } from '@/lib/student-files-url';
 import { ALL_QB_LEVELS, qbLevelsFor } from '@/lib/qb-levels';
 import { dueLabel, isPending, statusLabel, type AssignmentRow } from '@/lib/assignments';
 
@@ -157,10 +158,11 @@ export default function SendWorkCard({ studentId, studentName, studentLevel, sub
     if (f.type && f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)) { setMsg({ ok: false, text: 'Worksheets must be PDFs.' }); return; }
     setUploading(true); setMsg(null);
     try {
-      const tr = await fetch(`/api/admin/assignments/upload-token?filename=${encodeURIComponent(f.name)}`);
-      if (!tr.ok) throw new Error('Could not start the upload');
-      const { token, pathname } = await tr.json();
-      const blob = await put(pathname, f, { access: 'public', token, contentType: 'application/pdf', multipart: f.size > 5 * 1024 * 1024 });
+      const blob = await uploadStudentFile(
+        `/api/admin/assignments/upload-token?studentId=${encodeURIComponent(studentId)}&filename=${encodeURIComponent(f.name)}`,
+        f,
+        { contentType: 'application/pdf' },
+      );
       setUploaded({ url: blob.url, name: f.name });
       if (!title) setTitle(f.name.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ').trim());
     } catch (e) {
@@ -410,7 +412,7 @@ function Row({ a, onRevoke }: { a: AssignmentRow; onRevoke?: (id: string) => voi
       <span style={{ fontSize: 12, fontWeight: 600, color: a.status === 'marked' ? '#166534' : a.status === 'submitted' ? '#92400e' : '#1e3a5f' }}>
         {statusLabel(a)}
       </span>
-      {a.kind === 'worksheet' && a.pdf_url && <a href={a.pdf_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: '#2563eb' }}>PDF ↗</a>}
+      {a.kind === 'worksheet' && a.pdf_url && <a href={fileHref(a.pdf_url)} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: '#2563eb' }}>PDF ↗</a>}
       {onRevoke && <button style={{ ...btnGhost, padding: '2px 8px', fontSize: 12, color: '#b91c1c', borderColor: '#fecaca' }} onClick={() => onRevoke(a.id)}>Take back</button>}
     </div>
   );

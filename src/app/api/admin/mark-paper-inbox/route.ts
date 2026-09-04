@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { put, list, del } from '@vercel/blob';
+import { list, del } from '@vercel/blob';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { inboxKindFrom, parseInboxPath, resolveInboxFileName } from '@/lib/inbox-filename';
+import { putStudentFile, listStudentFiles, removeStudentFiles, inboxKey, fileUrl, safeName } from '@/lib/student-files';
 
 // The iPad share-sheet inbox. A Shortcut on Adrian's iPad ("✍️ Mark paper", in the
 // WhatsApp/Files share sheet) POSTs the shared PDF or photos here; the mark-paper page
@@ -13,11 +14,16 @@ import { inboxKindFrom, parseInboxPath, resolveInboxFileName } from '@/lib/inbox
 // scoped to THIS inbox only, so the share-sheet automation never holds the admin
 // password. The page's own calls ride the normal admin session. Body size needs the
 // vercel.json memory bump (Notability-grade scans run past the 4.5MB default cap).
+//
+// Storage (5 Sep 2026): files land in the private student-files bucket under
+// inbox/<kind?>/<ts>-<name> (lib/student-files.ts); anything still sitting in the
+// old Vercel Blob prefix is listed beside them and consumed the old way.
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
-const PREFIX = 'mark-paper/inbox/';
+const LEGACY_PREFIX = 'mark-paper/inbox/';
+const PREFIX = 'inbox/';
 const MAX_BYTES = 50 * 1024 * 1024;
 const OK_EXT = /\.(pdf|jpe?g|png|webp|heic|heif)$/i;
 
@@ -33,6 +39,11 @@ const TYPE_TO_EXT: Record<string, string> = {
   'application/pdf': 'pdf', 'image/jpeg': 'jpg', 'image/jpg': 'jpg',
   'image/png': 'png', 'image/webp': 'webp', 'image/heic': 'heic', 'image/heif': 'heif',
 };
+
+async function store(kindDir: string, name: string, buf: Buffer, contentType: string) {
+  const key = inboxKey(`${kindDir ? kindDir + '/' : ''}${Date.now()}-${safeName(name, 'shared.pdf')}`);
+  await putStudentFile({ key, body: buf, contentType });
+}
 
 // POST — the Shortcut drops files in. Accepts BOTH multipart form-data (field 'file',
 // the documented recipe) AND a raw file body — which is what Shortcuts sends when
@@ -57,10 +68,7 @@ export async function POST(req: NextRequest) {
       if (!OK_EXT.test(name)) return NextResponse.json({ error: `${name}: only PDF and photo files` }, { status: 415 });
       if (f.size > MAX_BYTES) return NextResponse.json({ error: `${name}: over 50MB` }, { status: 413 });
       const buf = Buffer.from(await f.arrayBuffer());
-      await put(`${PREFIX}${kindDir ? kindDir + '/' : ''}${Date.now()}-${name}`, buf, {
-        access: 'public',
-        contentType: f.type || (/\.pdf$/i.test(name) ? 'application/pdf' : 'application/octet-stream'),
-      });
+      await store(kindDir, name, buf, f.type || (/\.pdf$/i.test(name) ? 'application/pdf' : 'application/octet-stream'));
       stored.push({ name, size: f.size });
     }
   } else {
@@ -86,7 +94,7 @@ export async function POST(req: NextRequest) {
     const kindDir = inboxKindFrom(req.headers.get('x-file-kind')) ?? '';
     const putType = TYPE_TO_EXT[contentType] ? contentType
       : (ext === 'pdf' ? 'application/pdf' : ext === 'png' ? 'image/png' : ext === 'heic' ? 'image/heic' : 'image/jpeg');
-    await put(`${PREFIX}${kindDir ? kindDir + '/' : ''}${Date.now()}-${name}`, buf, { access: 'public', contentType: putType });
+    await store(kindDir, name, buf, putType);
     stored.push({ name, size: buf.length });
   }
   return NextResponse.json({ ok: true, stored: stored.length, files: stored });
@@ -96,15 +104,24 @@ export async function POST(req: NextRequest) {
 // page can render the one-time Shortcut recipe (admin session required either way).
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  const { blobs } = await list({ prefix: PREFIX, limit: 100 });
-  const files = blobs
-    .map(b => {
+  type Row = { pathname: string; url: string; name: string; kind: string | null; size: number; uploadedAt: string };
+  const files: Row[] = [];
+  try {
+    for (const f of await listStudentFiles(PREFIX)) {
       // Strip the kind segment (if tagged) + the timestamp we prepended, so the
       // row reads as the shared filename; the tag rides along for the banner.
-      const { kind, name } = parseInboxPath(b.pathname.slice(PREFIX.length));
-      return { pathname: b.pathname, url: b.url, name, kind, size: b.size, uploadedAt: b.uploadedAt };
-    })
-    .sort((a, b) => String(b.uploadedAt).localeCompare(String(a.uploadedAt)));
+      const { kind, name } = parseInboxPath(f.key.slice(PREFIX.length));
+      files.push({ pathname: f.key, url: fileUrl(f.key), name, kind, size: f.size, uploadedAt: f.createdAt });
+    }
+  } catch (e) { console.warn('[mark-paper-inbox] list failed', (e as Error).message); }
+  try {
+    const { blobs } = await list({ prefix: LEGACY_PREFIX, limit: 100 });
+    for (const b of blobs) {
+      const { kind, name } = parseInboxPath(b.pathname.slice(LEGACY_PREFIX.length));
+      files.push({ pathname: b.pathname, url: b.url, name, kind, size: b.size, uploadedAt: String(b.uploadedAt) });
+    }
+  } catch (e) { console.warn('[mark-paper-inbox] legacy list failed', (e as Error).message); }
+  files.sort((a, b) => String(b.uploadedAt).localeCompare(String(a.uploadedAt)));
   const body: Record<string, unknown> = { files };
   if (req.nextUrl.searchParams.get('setup') === '1') {
     body.token = process.env.MARK_INBOX_TOKEN || null;
@@ -119,7 +136,8 @@ export async function DELETE(req: NextRequest) {
   let body: { pathname?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const p = body.pathname || '';
-  if (!p.startsWith(PREFIX)) return NextResponse.json({ error: 'not an inbox file' }, { status: 400 });
-  await del(p);
+  if (p.startsWith(PREFIX)) await removeStudentFiles([p]);
+  else if (p.startsWith(LEGACY_PREFIX)) await del(p);
+  else return NextResponse.json({ error: 'not an inbox file' }, { status: 400 });
   return NextResponse.json({ ok: true });
 }

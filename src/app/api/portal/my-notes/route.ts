@@ -26,7 +26,8 @@
 //
 // Probed by /api/health-check (`portal-my-notes`) — anonymous GET must 401.
 import { NextRequest, NextResponse } from 'next/server';
-import { put, del } from '@vercel/blob';
+import { del } from '@vercel/blob';
+import { putStudentFile, removeStudentFiles, clippingKey, keyFromUrl } from '@/lib/student-files';
 import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server';
 import { portalIdentity } from '@/lib/portal-auth';
 import {
@@ -127,8 +128,8 @@ export async function POST(req: NextRequest) {
   // The filename IS the kind discriminator — see the header + lib/portal-notes.
   const baseName = `${kind === 'photo' ? PHOTO_BLOB_PREFIX : ''}${crypto.randomUUID()}`;
   const ext = imageType === 'png' ? 'png' : 'jpg';
-  const blob = await put(`portal-notes/${sid}/${baseName}.${ext}`, bytes, {
-    access: 'public',
+  const blob = await putStudentFile({
+    key: clippingKey(sid, `${baseName}.${ext}`), body: bytes,
     contentType: imageType === 'png' ? 'image/png' : 'image/jpeg',
   });
 
@@ -146,7 +147,7 @@ export async function POST(req: NextRequest) {
     .single<MyNoteRow>();
   if (error || !row) {
     // Don't strand the freshly-uploaded file if the row never landed.
-    try { await del(blob.url); } catch { /* best-effort */ }
+    try { await removeStudentFiles([blob.key]); } catch { /* best-effort */ }
     return NextResponse.json({ error: 'Could not save the clipping' }, { status: 500 });
   }
 
@@ -207,8 +208,10 @@ export async function DELETE(req: NextRequest) {
   if (delErr) return NextResponse.json({ error: 'Could not delete' }, { status: 500 });
 
   if (row.image_url) {
-    try { await del(row.image_url); }
-    catch (e) { console.error('[my-notes] blob cleanup failed for', id, (e as Error).message); }
+    // Key URL → the private store; legacy Blob URL → Blob (until the backfill).
+    const key = keyFromUrl(row.image_url);
+    try { if (key) await removeStudentFiles([key]); else await del(row.image_url); }
+    catch (e) { console.error('[my-notes] file cleanup failed for', id, (e as Error).message); }
   }
 
   return NextResponse.json({ ok: true });

@@ -23,7 +23,7 @@
 //    revert (currently, it's the opposite)").
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { put } from '@vercel/blob/client';
+import { uploadStudentFile } from '@/lib/student-files-client';
 import type { Stroke, StrokePoint, ToolKind } from '@/lib/annotate/types';
 import { fitStroke, shapeToPolyline } from '@/lib/annotate/shape-fit';
 import { outlineToPath, strokeOutline } from '@/lib/annotate/ink-outline';
@@ -1761,12 +1761,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         const blob: Blob | null = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.92));
         if (!blob) throw new Error(`page ${entry.photoIndex + 1} could not be flattened (canvas tainted? reload and retry)`);
         setBusy(`Uploading page ${done}/${inkedPhotoIdx.length}…`);
-        const tokenRes = await fetch(`/api/admin/mark-paper-annotated-token?runId=${encodeURIComponent(runId)}&type=page&filename=page-${entry.photoIndex}.jpg`);
-        if (!tokenRes.ok) throw new Error('upload token failed');
-        const { token, pathname } = await tokenRes.json();
-        const up = await put(pathname, blob, {
-          access: 'public', token, contentType: 'image/jpeg', multipart: blob.size > 5 * 1024 * 1024,
-        });
+        const up = await uploadStudentFile(
+          `/api/admin/mark-paper-annotated-token?runId=${encodeURIComponent(runId)}&type=page&filename=page-${entry.photoIndex}.jpg`,
+          blob,
+          { contentType: 'image/jpeg' },
+        );
         finalPages.push({ photo_index: entry.photoIndex, url: up.url });
       }
       setBusy('Assembling PDF…');

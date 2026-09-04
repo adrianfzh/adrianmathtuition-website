@@ -19,6 +19,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { PortalFetchError, portalFetch } from '@/lib/portal-fetch';
 
+import { fileHref } from '@/lib/student-files-url';
 interface Page {
   index: number;
   url: string;
@@ -508,7 +509,7 @@ export default function ClipToNotes({ runId, paperName, pages }: {
                 {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary-size Blob image drawn to a canvas; next/image would re-proxy and break the CORS crop */}
                 <img
                   ref={imgRef}
-                  src={page.url}
+                  src={fileHref(page.url)}
                   crossOrigin="anonymous"
                   alt={`Marked page ${pageIdx + 1}`}
                   draggable={false}

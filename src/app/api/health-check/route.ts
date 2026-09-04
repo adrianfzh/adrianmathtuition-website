@@ -381,6 +381,14 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // Student files (5 Sep 2026, lib/student-files.ts): the ONE door to the private
+    // bucket must refuse an anonymous reader — a 200 here would mean every marked
+    // paper is public-by-URL again.
+    timed('student-files', async () => {
+      const r = await fetch(`${base}/api/files/runs/00000000-0000-4000-8000-000000000000/marked-photos.pdf`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // Portal activity visibility (2026-09-03, lib/portal-activity.ts) — the
     // hub's attention card and the student-profile row both read this route.
     // Anonymous 401 proves the auth gate is up; a 404 means the card and the

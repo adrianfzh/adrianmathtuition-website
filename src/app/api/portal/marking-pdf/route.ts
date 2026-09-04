@@ -14,7 +14,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentStudent, portalIdentity } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { isOurBlobUrl } from '@/lib/blob-url';
+import { isOurFileUrl, fetchOurFile } from '@/lib/student-files';
 import { markedPdfFilename, contentDisposition } from '@/lib/marked-pdf-filename';
 
 export const dynamic = 'force-dynamic';
@@ -42,13 +42,13 @@ export async function GET(req: NextRequest) {
   const url = kind === 'full'
     ? row.pdf_url
     : (row.annotated_pdf_url || row.photos_pdf_url || row.pdf_url);
-  if (!url || !isOurBlobUrl(url)) return NextResponse.json({ error: 'no pdf' }, { status: 404 });
+  if (!url || !isOurFileUrl(url)) return NextResponse.json({ error: 'no pdf' }, { status: 404 });
 
   const filename = markedPdfFilename({
     studentName: account.display_name, paperName: row.paper_name, dateISO: row.created_at, kind,
   });
 
-  const r = await fetch(url);
+  const r = await fetchOurFile(url);
   if (!r.ok) return NextResponse.json({ error: `fetch failed (${r.status})` }, { status: 502 });
   return new NextResponse(r.body, {
     headers: {

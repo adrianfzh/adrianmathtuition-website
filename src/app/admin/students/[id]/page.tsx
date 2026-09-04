@@ -14,6 +14,7 @@ import { slotOpenOnDate } from '@/lib/slot-windows';
 import { sgtTodayISO } from '@/lib/sgt';
 import { relativeDay } from '@/lib/portal-activity';
 
+import { fileHref } from '@/lib/student-files-url';
 // Same JC/Sec category (Mixed/Adhoc/unknown count as available to all).
 function sameLevelSlot(studentLevel: string, slotLevel: string): boolean {
   const stu = (studentLevel || '').toLowerCase();
@@ -759,9 +760,9 @@ export default function StudentProfilePage() {
                   <span style={{ width: 92, color: '#111', fontWeight: 600 }}>{fmtDate(r.created_at.slice(0, 10))}</span>
                   <span style={{ flex: 1, minWidth: 120, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.paper_name || 'Paper'}</span>
                   <span style={{ color: '#111', fontWeight: 600 }}>{r.total_awarded ?? 0}/{r.total_max ?? 0}</span>
-                  {r.annotated_pdf_url && <a href={r.annotated_pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600, fontSize: 13 }}>✍️ Annotated ↗</a>}
-                  {r.photos_pdf_url && <a href={r.photos_pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontSize: 13 }}>🖼 Images ↗</a>}
-                  {r.pdf_url && <a href={r.pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontSize: 13 }}>📄 Full ↗</a>}
+                  {r.annotated_pdf_url && <a href={fileHref(r.annotated_pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600, fontSize: 13 }}>✍️ Annotated ↗</a>}
+                  {r.photos_pdf_url && <a href={fileHref(r.photos_pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontSize: 13 }}>🖼 Images ↗</a>}
+                  {r.pdf_url && <a href={fileHref(r.pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontSize: 13 }}>📄 Full ↗</a>}
                 </div>
               ))}
             </Section>

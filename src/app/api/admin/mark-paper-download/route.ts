@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
-import { isOurBlobUrl } from '@/lib/blob-url';
+import { isOurFileUrl, fetchOurFile } from '@/lib/student-files';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
 // Hand the marked PDF to the Mac with a real filename. Blob URLs serve inline under a
@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const url = req.nextUrl.searchParams.get('url') || '';
-  if (!isOurBlobUrl(url)) return NextResponse.json({ error: 'Bad URL' }, { status: 400 });
+  if (!isOurFileUrl(url)) return NextResponse.json({ error: 'Bad URL' }, { status: 400 });
 
   const name = (req.nextUrl.searchParams.get('name') || 'marked-paper.pdf')
     .replace(/[^\w.\- ()]/g, '').slice(0, 120) || 'marked-paper.pdf';
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     catch (e) { console.warn('[mark-paper-download] checked_at failed', (e as Error).message); }
   }
 
-  const r = await fetch(url);
+  const r = await fetchOurFile(url);
   if (!r.ok) return NextResponse.json({ error: `fetch failed (${r.status})` }, { status: 502 });
   return new NextResponse(r.body, {
     headers: {

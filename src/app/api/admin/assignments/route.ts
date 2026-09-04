@@ -5,7 +5,7 @@
 //   PATCH { id, action:'revoke' }     → { assignment }
 // All writes are service-role; the student only ever SELECTs their own rows (RLS).
 import { NextRequest, NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
+import { putStudentFile, assignmentKey } from '@/lib/student-files';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { validateAssignment, canTransition, dueLabel, type AssignmentRow } from '@/lib/assignments';
@@ -54,9 +54,10 @@ export async function POST(req: NextRequest) {
       if (!res.ok) throw new Error(`Dropbox fetch ${res.status}`);
       const buf = Buffer.from(await res.arrayBuffer());
       if (buf.length > 50 * 1024 * 1024) throw new Error('PDF over 50MB');
-      const blob = await put(`assignments/${crypto.randomUUID()}.pdf`, buf, {
-        access: 'public', contentType: 'application/pdf', addRandomSuffix: false,
-      });
+      const sid = typeof body?.studentId === 'string' ? body.studentId.trim() : '';
+      if (!/^rec[A-Za-z0-9]{14}$/.test(sid)) throw new Error('studentId is required before the PDF can be filed');
+      // Under the student's own prefix so /api/files lets exactly them open it.
+      const blob = await putStudentFile({ key: assignmentKey(sid), body: buf, contentType: 'application/pdf' });
       body.pdfUrl = blob.url;
     } catch (e) {
       return NextResponse.json({ error: `Could not copy the Dropbox PDF: ${(e as Error).message}` }, { status: 502 });

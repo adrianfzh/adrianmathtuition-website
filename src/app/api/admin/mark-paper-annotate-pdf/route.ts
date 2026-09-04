@@ -11,10 +11,9 @@
 // through the normal proxy, exactly as uploadAnnotated does.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
+import { putStudentFile, fetchOurFile, isOurFileUrl, runKey } from '@/lib/student-files';
 import { PDFDocument } from 'pdf-lib';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
-import { isOurBlobUrl } from '@/lib/blob-url';
 import { PAGE_W, drawPaperTotal, stripHeight, shouldStampPaperTotal } from '@/lib/marked-pdf-layout';
 
 export const runtime = 'nodejs';
@@ -41,14 +40,14 @@ export async function POST(req: NextRequest) {
   const pages = (body.pages || []).slice().sort((a, b) => a.photo_index - b.photo_index);
   if (!pages.length) return NextResponse.json({ error: 'no pages' }, { status: 400 });
   for (const p of pages) {
-    if (!isOurBlobUrl(p.url)) return NextResponse.json({ error: 'page url is not our Blob store' }, { status: 400 });
+    if (!isOurFileUrl(p.url)) return NextResponse.json({ error: 'page url is not our file store' }, { status: 400 });
   }
 
   // Fetch pages in order. Any single failure aborts — a hand-annotated document with
   // a silently missing page is worse than an error Adrian can retry.
   const bufs: Buffer[] = [];
   for (const p of pages) {
-    const r = await fetch(p.url);
+    const r = await fetchOurFile(p.url);
     if (!r.ok) return NextResponse.json({ error: `page ${p.photo_index + 1} fetch failed (${r.status})` }, { status: 502 });
     bufs.push(Buffer.from(await r.arrayBuffer()));
   }
@@ -78,11 +77,10 @@ export async function POST(req: NextRequest) {
   }
 
   const pdfBytes = await pdfDoc.save();
-  const blob = await put(
-    `mark-paper/annotated-final/${runId}-${crypto.randomUUID()}.pdf`,
-    Buffer.from(pdfBytes),
-    { access: 'public', contentType: 'application/pdf', allowOverwrite: true },
-  );
+  const blob = await putStudentFile({
+    key: runKey(runId, `annotated-${crypto.randomUUID()}.pdf`),
+    body: Buffer.from(pdfBytes), contentType: 'application/pdf',
+  });
 
   // Best-effort server-side link to the run (same phase the client proxy uses). The
   // client falls back to linking through /api/admin/mark-paper when linked=false, so
