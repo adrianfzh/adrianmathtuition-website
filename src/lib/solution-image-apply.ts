@@ -15,6 +15,20 @@
 //   5. re-read the whole row and PROVE the old key is absent; if it survived
 //      anywhere, revert.
 //
+// CONTRACT AMENDMENT (3 Sep 2026, binding for both sides; ported into TypeScript
+// 4 Sep 2026 so the vet lane obeys it too). Steps 2+5 used to be a whole-row
+// read-modify-write whose verify could only see the candidate it had just
+// written. Two applies on the SAME question 0.48 s apart (clean-log #4013/#4014,
+// Anglican High 2023 AM P1 Q15) therefore wrote a stale `parts` array over an
+// earlier apply: the question went back to the STAMPED path while its flag stayed
+// 'fixed', so the render gate stopped hiding it and the watermark was served.
+// The write now goes through the guarded loop the caller builds from
+//   replaceSolutionImageRefsMany + repairPairsFor + verifyRefPairs:
+// recompute from a FRESH read each attempt, carry a repair pair for every earlier
+// logged apply on this question whose cleaned object has gone missing while its
+// stamped path is live, prove the re-read row against ALL pairs, retry when a
+// concurrent writer wins, revert on final failure.
+//
 // Why recursion and not "write the field": on Raffles Girls 2015 Q1 the first pass
 // updated parts[1].image_url and left the SAME key alive in
 // parts[1].subparts[1].image_url (docs/FIGURES.md §8b). Sub-parts are a real level.
@@ -116,6 +130,60 @@ function walk(node: unknown, at: string, key: string, newUrl: string, fields: st
   return { value: node, n: 0 };
 }
 
+const COLUMNS = ['solution_images', 'parts', 'solution'] as const;
+
+/** One old-image → new-object swap. The unit the guarded write is built from. */
+export type RefPair = { oldPath: string; newUrl: string };
+
+export type PairResult = RefPair & { replaced: number; fields: string[] };
+
+export type ReplaceManyResult = ReplaceResult & { pairs: PairResult[] };
+
+/**
+ * Swap SEVERAL (oldPath → newUrl) pairs in ONE read-modify-write.
+ *
+ * This is the shape the lost-update fix needs (contract amendment, 3 Sep 2026):
+ * an apply carries not only its own pair but a REPAIR PAIR for every earlier
+ * apply on the same question that has been clobbered, so the clobber is undone
+ * in the same PATCH rather than surviving. Pairs are applied in order over one
+ * working copy, so two pairs touching the same subtree compose instead of
+ * racing, and only the columns that actually changed come back.
+ */
+export function replaceSolutionImageRefsMany(
+  row: SolutionRowFields,
+  pairs: RefPair[],
+): ReplaceManyResult {
+  const working: Record<string, unknown> = {
+    solution_images: row?.solution_images,
+    parts: row?.parts,
+    solution: row?.solution,
+  };
+  const changed = new Set<string>();
+  const perPair: PairResult[] = [];
+  const fields: string[] = [];
+  let replaced = 0;
+
+  for (const p of pairs) {
+    const key = imageKey(p.oldPath);
+    const pr: PairResult = { oldPath: p.oldPath, newUrl: p.newUrl, replaced: 0, fields: [] };
+    if (key) {
+      for (const f of COLUMNS) {
+        const v = working[f];
+        if (v === undefined || v === null) continue;
+        const r = walk(v, f, key, p.newUrl, pr.fields);
+        if (r.n) { working[f] = r.value; changed.add(f); pr.replaced += r.n; }
+      }
+    }
+    perPair.push(pr);
+    replaced += pr.replaced;
+    fields.push(...pr.fields);
+  }
+
+  const out: SolutionRowFields = {};
+  for (const f of COLUMNS) if (changed.has(f)) out[f] = working[f];
+  return { row: out, replaced, fields, pairs: perPair };
+}
+
 /**
  * Swap every reference to `oldPath` for `newUrl`, recursively, across the three
  * solution-bearing columns. Returns ONLY the columns that changed, so the caller
@@ -126,18 +194,74 @@ export function replaceSolutionImageRefs(
   oldPath: string,
   newUrl: string,
 ): ReplaceResult {
-  const key = imageKey(oldPath);
-  const out: SolutionRowFields = {};
-  const fields: string[] = [];
-  let replaced = 0;
-  if (!key) return { row: out, replaced, fields };
-  for (const f of ['solution_images', 'parts', 'solution'] as const) {
-    const v = row?.[f];
-    if (v === undefined || v === null) continue;
-    const r = walk(v, f, key, newUrl, fields);
-    if (r.n) { out[f] = r.value; replaced += r.n; }
-  }
+  const { row: out, replaced, fields } = replaceSolutionImageRefsMany(row, [{ oldPath, newUrl }]);
   return { row: out, replaced, fields };
+}
+
+/** One row of `figure_clean_log`, as the repair scan reads it. */
+export type CleanLogRow = {
+  id?: number | string | null;
+  old_path?: string | null;
+  new_path?: string | null;
+};
+
+export type RepairScan = {
+  /** Pairs to carry along on the next write so a clobbered apply is restored. */
+  pairs: RefPair[];
+  /** One human line per prior apply that was not simply intact — for the log. */
+  notes: string[];
+};
+
+/**
+ * Earlier logged applies on this question that the row no longer reflects.
+ *
+ * A clobbered apply looks exactly like this: its cleaned object is nowhere in
+ * the row and its STAMPED path is live again (that is how cand #59 came to be
+ * served with a `fixed` flag on 3 Sep 2026). Carrying it as a repair pair
+ * restores it atomically. An apply whose two paths are BOTH absent is left
+ * alone and reported — something outside this contract rewrote that reference,
+ * and guessing at it would be a second lost update.
+ *
+ * `toUrl` turns a bare bucket key into the public URL the row stores.
+ */
+export function repairPairsFor(
+  row: unknown,
+  priorLog: CleanLogRow[],
+  toUrl: (key: string) => string,
+  skipOldPath?: string,
+): RepairScan {
+  const skip = imageKey(skipOldPath);
+  const pairs: RefPair[] = [];
+  const notes: string[] = [];
+  for (const r of priorLog ?? []) {
+    const oldKey = imageKey(r?.old_path);
+    const newKey = imageKey(r?.new_path);
+    if (!oldKey || !newKey) continue;
+    if (skip && oldKey === skip) continue;
+    if (containsImageRef(row, newKey)) continue;           // intact — nothing to do
+    if (containsImageRef(row, oldKey)) {
+      pairs.push({ oldPath: oldKey, newUrl: toUrl(newKey) });
+      notes.push(`repairing clobbered log #${r?.id ?? '?'} (${oldKey} → ${newKey})`);
+    } else {
+      notes.push(`log #${r?.id ?? '?'}: neither path is in the row — LEFT ALONE, look at it`);
+    }
+  }
+  return { pairs, notes };
+}
+
+/**
+ * The verification the lost update slipped through: every pair proved against
+ * the WHOLE re-read row, not just the one this apply wrote. Empty = clean.
+ */
+export function verifyRefPairs(row: unknown, pairs: RefPair[]): string[] {
+  const problems: string[] = [];
+  for (const p of pairs) {
+    const oldKey = imageKey(p.oldPath);
+    if (oldKey && containsImageRef(row, oldKey)) problems.push(`old key still live: ${oldKey}`);
+    const newKey = imageKey(p.newUrl);
+    if (newKey && !containsImageRef(row, newKey)) problems.push(`new object absent: ${newKey}`);
+  }
+  return problems;
 }
 
 /**

@@ -35,7 +35,9 @@
 // "i do want to see them and if approve, or amended, put them back into
 // solutions." This lane is that surface. Putting an image back follows the
 // binding write contract mirrored in lib/solution-image-apply.ts — new object,
-// recursive ref swap, absence proof, clean-log row, THEN the flag flip.
+// GUARDED recursive ref swap (fresh read per attempt + repair pairs for an
+// earlier clobbered apply on the same question), absence proof against every
+// pair, clean-log row, THEN the flag flip.
 //
 // ── The fitness lane (2026-09-03) ─────────────────────────────────────────────
 // A fitness-verification pass (claimed_by 'figfit-2026-09-03' and a peer
@@ -60,7 +62,8 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { imgSrc, isPlausibleImagePath } from '@/lib/kiosk-worksheet-images';
 import { inspectFigure } from '@/lib/figure-checks';
 import {
-  replaceSolutionImageRefs, containsImageRef, partLabelFor, cleanedObjectKey,
+  replaceSolutionImageRefsMany, repairPairsFor, verifyRefPairs,
+  containsImageRef, partLabelFor, cleanedObjectKey, imageKey, type RefPair,
 } from '@/lib/solution-image-apply';
 import { partImagePaths, inlineImagePaths } from '@/lib/bank-question-markdown';
 
@@ -243,19 +246,43 @@ async function solutionLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
 }
 
 /**
- * The binding write contract (lib/solution-image-apply.ts): NEW object → recursive
- * ref swap → absence proof on the whole re-read row → clean-log → flag flip.
- * Every failure past the upload reverts the row, so nothing is ever half-applied;
- * the uploaded object is left behind (inert — originals are never deleted either).
+ * The binding write contract (lib/solution-image-apply.ts): NEW object → GUARDED
+ * recursive ref swap → absence proof on the whole re-read row against every pair
+ * → clean-log → flag flip. Every failure past the upload reverts the row, so
+ * nothing is ever half-applied; the uploaded object is left behind (inert —
+ * originals are never deleted either).
+ *
+ * GUARDED since 4 Sep 2026 (unit 14 of the solution-image pass). This lane used
+ * to read `parts`, mutate it and PATCH it back, and verify only its OWN old path
+ * — the exact shape that clobbered clean-log #4013 (cand #59, Anglican High 2023
+ * AM P1 Q15) on 3 Sep and put a stamped image back in front of students under a
+ * 'fixed' flag. apply.py was fixed then; this lane was not, and Adrian taps it by
+ * hand: `d3965821…` (Xinmin 2025 AM P2 Q10) has both of its held cards side by
+ * side in the Sec queue, so two quick approvals reproduced it in the UI. Now the
+ * write recomputes from a fresh read on every attempt, carries a repair pair for
+ * any earlier apply on this question that has been clobbered, proves the re-read
+ * row against ALL of them, retries a lost race and reverts if it cannot win.
  */
+const WRITE_TRIES = 3;
+
 async function applyCleanedSolutionImage(
   supa: SupabaseClient,
   o: { path: string; questionId: string; bytes: Buffer; contentType: string; note: string },
 ) {
-  const { data: rows, error: readErr } = await supa.from('questions')
-    .select('id, parts, solution_images, solution').eq('id', o.questionId).limit(1);
-  if (readErr || !rows?.length) return step('read', readErr?.message ?? 'question row not found');
-  const row = rows[0] as Row;
+  const readCols = async () => {
+    const { data, error } = await supa.from('questions')
+      .select('id, parts, solution_images, solution').eq('id', o.questionId).limit(1);
+    return { row: (data?.[0] ?? null) as Row | null, error };
+  };
+  const readWhole = async () => {
+    const { data, error } = await supa.from('questions')
+      .select('*').eq('id', o.questionId).limit(1);
+    return { row: (data?.[0] ?? null) as Row | null, error };
+  };
+
+  const first = await readCols();
+  if (first.error || !first.row) return step('read', first.error?.message ?? 'question row not found');
+  const row = first.row;
   const before = {
     parts: row.parts ?? null,
     solution_images: row.solution_images ?? null,
@@ -276,25 +303,91 @@ async function applyCleanedSolutionImage(
   if (up.error) return step('upload', up.error.message);
   const newUrl = imgSrc(`${BUCKET}/${dest}`);
 
-  const swap = replaceSolutionImageRefs(row, o.path, newUrl);
-  if (!swap.replaced) return step('replace', 'no reference matched the old key');
-  const patch = await supa.from('questions').update(swap.row).eq('id', o.questionId);
-  if (patch.error) return step('patch', patch.error.message);
+  // Every earlier apply on THIS question, so a clobbered one rides along and is
+  // repaired by the same PATCH. A log we cannot read is a refusal, not a shrug:
+  // without it we cannot tell a clobber from an untouched row (apply.py does the
+  // same — `repair_pairs` returning None aborts the apply).
+  const priorLog = await supa.from('figure_clean_log')
+    .select('id, old_path, new_path, applied_at')
+    .eq('question_id', o.questionId).order('applied_at', { ascending: true });
+  if (priorLog.error) return step('repair', `could not read figure_clean_log: ${priorLog.error.message}`);
+  const toUrl = (k: string) => imgSrc(`${BUCKET}/${k}`);
+  const repair = repairPairsFor(row, priorLog.data ?? [], toUrl, o.path);
+  // Keyed by old path so a rescan never queues the same repair twice, and never
+  // drops one that has already been put right: the union is what gets verified.
+  const pairs = new Map<string, RefPair>([[imageKey(o.path), { oldPath: o.path, newUrl }]]);
+  for (const p of repair.pairs) pairs.set(imageKey(p.oldPath), p);
+  const pairList = () => [...pairs.values()];
 
-  const { data: fresh, error: reReadErr } = await supa.from('questions')
-    .select('*').eq('id', o.questionId).limit(1);
-  if (reReadErr || !fresh?.length || containsImageRef(fresh[0], o.path)) {
+  let swap = replaceSolutionImageRefsMany(row, pairList());
+  if (!swap.pairs[0].replaced) return step('replace', 'no reference matched the old key');
+  // Where OUR image lived, read once: a later attempt starts from a row that may
+  // already carry the swap, and an empty field list there would mislabel the log.
+  const own = swap.pairs[0].fields;
+
+  /** Any clobber this row has picked up that we are not already repairing. */
+  const absorbRepairs = (fresh: Row, attempt: number): string[] => {
+    const late = repairPairsFor(fresh, priorLog.data ?? [], toUrl, o.path).pairs
+      .filter((p) => !pairs.has(imageKey(p.oldPath)));
+    for (const p of late) {
+      pairs.set(imageKey(p.oldPath), p);
+      repair.notes.push(`${p.oldPath} was clobbered mid-flight `
+        + `— repairing on attempt ${attempt + 1}`);
+    }
+    return late.map((p) => `an earlier apply was clobbered: ${imageKey(p.oldPath)}`);
+  };
+
+  let problems: string[] = [];
+  let attempts = 0;
+  for (; attempts < WRITE_TRIES; attempts++) {
+    if (attempts) {
+      // A concurrent writer beat us: recompute from what is in the row NOW,
+      // repairs included (apply.py fixes its pairs once; here a rescan is free).
+      const again = await readCols();
+      if (again.error || !again.row) return step('patch', 'could not re-read the question row');
+      absorbRepairs(again.row, attempts);
+      swap = replaceSolutionImageRefsMany(again.row, pairList());
+    }
+    const patch = await supa.from('questions').update(swap.row).eq('id', o.questionId);
+    if (patch.error) return step('patch', patch.error.message);
+
+    const fresh = await readWhole();
+    if (fresh.error || !fresh.row) { problems = ['could not re-read the row']; continue; }
+    problems = verifyRefPairs(fresh.row, pairList());
+    // Our pairs can all hold while an EARLIER apply on this question has just
+    // been clobbered — invisible to a pair check, because that pair is not ours,
+    // and it means a stamped image is live again under a 'fixed' flag. Treat it
+    // as a failed attempt so the next one carries the repair.
+    if (!problems.length) problems = absorbRepairs(fresh.row, attempts + 1);
+    if (!problems.length) break;
+  }
+  if (problems.length) {
     await supa.from('questions').update(before).eq('id', o.questionId);
-    return step('verify', 'the old key survived the re-read — the write was reverted');
+    return step('verify', `the row did not verify after ${WRITE_TRIES} attempts `
+      + `— the write was reverted: ${problems.join('; ')}`);
   }
 
-  const field = swap.fields.some((f) => f.startsWith('parts')) ? 'part'
-    : swap.fields.some((f) => f.startsWith('solution_images')) ? 'solution_images' : 'solution';
+  // Undo OUR pair after a verified write, keeping any repair it made: a repair
+  // ends a live leak (an earlier apply was clobbered, so a stamped image is being
+  // served under a 'fixed' flag), and rolling that back for a bookkeeping failure
+  // that has nothing to do with it would put the watermark back in front of
+  // students. Our own old path stays 'held' until the flag flip below, so the
+  // gate keeps hiding it either way.
+  const undoOwnWrite = async () => {
+    const repairs = pairList().slice(1);
+    const restored = repairs.length
+      ? { ...before, ...replaceSolutionImageRefsMany(before, repairs).row }
+      : before;
+    await supa.from('questions').update(restored).eq('id', o.questionId);
+  };
+
+  const field = own.some((f) => f.startsWith('parts')) ? 'part'
+    : own.some((f) => f.startsWith('solution_images')) ? 'solution_images' : 'solution';
   const log = await supa.from('figure_clean_log')
     .insert({ question_id: o.questionId, field, old_path: o.path, new_path: `${BUCKET}/${dest}`, batch: VET_BATCH })
     .select('id').single();
   if (log.error) {
-    await supa.from('questions').update(before).eq('id', o.questionId);
+    await undoOwnWrite();
     return step('clean_log', log.error.message);
   }
 
@@ -302,7 +395,7 @@ async function applyCleanedSolutionImage(
     .update({ status: 'fixed', note: o.note.slice(0, 500) })
     .eq('path', o.path).eq('kind', 'solution');
   if (flag.error) {
-    await supa.from('questions').update(before).eq('id', o.questionId);
+    await undoOwnWrite();
     if (log.data?.id) await supa.from('figure_clean_log').delete().eq('id', log.data.id);
     return step('flag', flag.error.message);
   }
@@ -325,7 +418,12 @@ async function applyCleanedSolutionImage(
 
   return NextResponse.json({
     ok: true, status: 'fixed', partLabel, allowListed: !allowRow.error,
-    newPath: `${BUCKET}/${dest}`, newUrl, replaced: swap.replaced, fields: swap.fields,
+    newPath: `${BUCKET}/${dest}`, newUrl,
+    replaced: swap.pairs[0].replaced, fields: own,
+    attempts: attempts + 1,
+    // Empty on the normal path. Non-empty means this apply also put right an
+    // earlier one on the same question — worth seeing in the response.
+    repaired: repair.notes,
   });
 }
 

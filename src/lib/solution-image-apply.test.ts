@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   replaceSolutionImageRefs,
+  replaceSolutionImageRefsMany,
+  repairPairsFor,
+  verifyRefPairs,
   containsImageRef,
   partLabelFor,
   imageKey,
@@ -169,5 +172,100 @@ describe('the new object key mirrors apply.py', () => {
     expect(cleanedObjectKey('7b86d1b0-c8b3-4f29-8327-027f1ec1d818', '(b)', 'deadbeef'))
       .toBe('solutions/cleaned/7b86d1b0-c8b3-4f29-8327-027f1ec1d818-b-deadbeef.png');
     expect(cleanedObjectKey('q1', null, 'abc12345', 'jpg')).toBe('solutions/cleaned/q1-x-abc12345.jpg');
+  });
+});
+
+/* ── the guarded write (the cand #59 lost update) ───────────────────────────
+ * On 3 Sep 2026 two applies on Anglican High 2023 AM P1 Q15 landed 0.48 s
+ * apart; the second read `parts` before the first wrote it and PATCHed a stale
+ * array back, so the question returned to the STAMPED path while its flag said
+ * 'fixed' and the render gate stopped hiding it. These cover the three pieces
+ * that stop it: many-pair writes, the repair scan, and a verify that proves
+ * EVERY pair rather than only the one this apply wrote. */
+const OLD2 = 'sol_11112222333344445555666677778888.png';
+const NEW2 = 'https://nempslbewxtlikfzachi.supabase.co/storage/v1/object/public/question_images/solutions/cleaned/abc-a-87654321.png';
+const toUrl = (k: string) => `https://nempslbewxtlikfzachi.supabase.co/storage/v1/object/public/question_images/${k}`;
+
+describe('replaceSolutionImageRefsMany', () => {
+  it('applies two pairs in ONE body — both parts entries land together', () => {
+    const row = { parts: [{ label: '(a)', solution_image: OLD2 }, { label: '(b)', solution_image: OLD }] };
+    const r = replaceSolutionImageRefsMany(row, [
+      { oldPath: OLD, newUrl: NEW },
+      { oldPath: OLD2, newUrl: NEW2 },
+    ]);
+    expect(r.replaced).toBe(2);
+    expect(r.row.parts).toEqual([
+      { label: '(a)', solution_image: NEW2 },
+      { label: '(b)', solution_image: NEW },
+    ]);
+    // per-pair bookkeeping: the caller logs its OWN pair, not the repair's
+    expect(r.pairs[0]).toMatchObject({ oldPath: OLD, replaced: 1, fields: ['parts[1].solution_image'] });
+    expect(r.pairs[1]).toMatchObject({ oldPath: OLD2, replaced: 1, fields: ['parts[0].solution_image'] });
+  });
+
+  it('reports a pair that matched nothing without failing the others', () => {
+    const row = { solution_images: [OLD] };
+    const r = replaceSolutionImageRefsMany(row, [
+      { oldPath: OLD, newUrl: NEW },
+      { oldPath: 'sol_absent.png', newUrl: NEW2 },
+    ]);
+    expect(r.pairs[0].replaced).toBe(1);
+    expect(r.pairs[1].replaced).toBe(0);
+    expect(r.row.solution_images).toEqual([NEW]);
+  });
+
+  it('touches no column when no pair matches — an empty PATCH body', () => {
+    const r = replaceSolutionImageRefsMany({ parts: [{ solution_image: 'sol_other.png' }] },
+      [{ oldPath: OLD, newUrl: NEW }]);
+    expect(r.replaced).toBe(0);
+    expect(Object.keys(r.row)).toEqual([]);
+  });
+});
+
+describe('repairPairsFor — carrying a clobbered apply along', () => {
+  const log = [{ id: 4013, old_path: OLD2, new_path: `question_images/${imageKey(NEW2)}` }];
+
+  it('spots the clobber: the cleaned object gone, the stamped path live again', () => {
+    const clobbered = { parts: [{ label: '(a)', solution_image: OLD2 }, { label: '(b)', solution_image: OLD }] };
+    const r = repairPairsFor(clobbered, log, toUrl, OLD);
+    expect(r.pairs).toEqual([{ oldPath: OLD2, newUrl: NEW2 }]);
+    expect(r.notes[0]).toContain('repairing clobbered log #4013');
+  });
+
+  it('says nothing when the earlier apply is intact', () => {
+    const intact = { parts: [{ solution_image: NEW2 }, { solution_image: OLD }] };
+    expect(repairPairsFor(intact, log, toUrl, OLD)).toEqual({ pairs: [], notes: [] });
+  });
+
+  it('never repairs the pair this apply is writing itself', () => {
+    const row = { parts: [{ solution_image: OLD }] };
+    const ownLog = [{ id: 9, old_path: OLD, new_path: `question_images/${imageKey(NEW)}` }];
+    expect(repairPairsFor(row, ownLog, toUrl, OLD).pairs).toEqual([]);
+  });
+
+  it('leaves an apply alone (and says so) when NEITHER path is in the row', () => {
+    const r = repairPairsFor({ parts: [{ solution_image: OLD }] }, log, toUrl, OLD);
+    expect(r.pairs).toEqual([]);
+    expect(r.notes[0]).toContain('LEFT ALONE');
+  });
+});
+
+describe('verifyRefPairs — the check the lost update slipped through', () => {
+  const pairs = [{ oldPath: OLD, newUrl: NEW }, { oldPath: OLD2, newUrl: NEW2 }];
+
+  it('passes only when every pair holds in the whole row', () => {
+    expect(verifyRefPairs({ parts: [{ solution_image: NEW2 }, { solution_image: NEW }] }, pairs)).toEqual([]);
+  });
+
+  it('fails on the OTHER pair — the exact miss that served a stamped image', () => {
+    // this apply's own path is gone and its object is live, so the old
+    // single-pair verify would have passed; the earlier apply was clobbered.
+    const problems = verifyRefPairs({ parts: [{ solution_image: OLD2 }, { solution_image: NEW }] }, pairs);
+    expect(problems).toEqual([`old key still live: ${OLD2}`, `new object absent: ${imageKey(NEW2)}`]);
+  });
+
+  it('fails when the new object never landed in the row', () => {
+    expect(verifyRefPairs({ parts: [{ solution_image: NEW2 }] }, pairs))
+      .toEqual([`new object absent: ${imageKey(NEW)}`]);
   });
 });
