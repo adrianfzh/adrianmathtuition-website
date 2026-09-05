@@ -21,6 +21,7 @@
 
 import 'katex/dist/katex.min.css';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import Link from 'next/link';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import StudentPicker from '@/components/StudentPicker';
 import SubjectChip from '@/components/SubjectChip';
@@ -534,7 +535,7 @@ export default function DeskPage() {
           ) : '🖊 Marking desk'}
         </h1>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          <a href="/admin/students" style={{ ...btn('#fff', '#374151', C.border), textDecoration: 'none', padding: '6px 10px', fontSize: 13 }}>👥 Students</a>
+          <Link href="/admin/students" style={{ ...btn('#fff', '#374151', C.border), textDecoration: 'none', padding: '6px 10px', fontSize: 13 }}>👥 Students</Link>
           <a href="/admin/mark-paper" style={{ ...btn(C.ink, '#fff'), textDecoration: 'none', padding: '6px 10px', fontSize: 13 }}>✍️ Mark a new paper</a>
           <button onClick={() => { loadQueue(); if (runId) loadRun(runId); }} style={{ ...btn('#fff', '#374151', C.border), padding: '6px 10px', fontSize: 13 }}>↻ Refresh</button>
         </div>

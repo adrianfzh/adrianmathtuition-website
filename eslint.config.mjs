@@ -21,6 +21,12 @@ const eslintConfig = defineConfig([
     ".claude/**",
   ]),
   {
+    // Same glob as eslint-config-next's own `next` object — the only place the
+    // react-hooks plugin is registered. Unscoped, this object also reached `.cjs`
+    // files, where that plugin is not loaded, so ESLint refused to start
+    // ("could not find plugin react-hooks") once scripts/leak-test/leaktest.cjs
+    // landed (5 Sep 2026).
+    files: ["**/*.{js,jsx,mjs,ts,tsx,mts,cts}"],
     rules: {
       // ~730 pre-existing `any`s — keep them visible as warnings instead of a
       // permanent red wall; new code should still prefer real types.
@@ -35,7 +41,7 @@ const eslintConfig = defineConfig([
   },
   {
     // Node CommonJS utility scripts — require() is correct there.
-    files: ["scripts/**/*.js"],
+    files: ["scripts/**/*.{js,cjs}"],
     rules: { "@typescript-eslint/no-require-imports": "off" },
   },
 ]);
