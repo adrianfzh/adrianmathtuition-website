@@ -5,9 +5,11 @@
 //   slide  the original card: white board, navy ink, portal amber pen. Its
 //          tokens ARE the values the player used before themes existed, so a
 //          script without `theme` renders byte-identically.
-//   chalk  THE SLATE (2026-09-05 — Adrian's pick from the ink probe): a dark
-//          green-grey radial board, fractal-noise grain blended over it, a
-//          low-frequency chalk-dust haze, two erased ghosts and a vignette.
+//   chalk  THE SLATE (2026-09-05 — Adrian's pick from the ink probe; re-cut
+//          2026-09-06 after his phone review said it looked smeared): a dark
+//          green-grey radial board that barely varies, a fine even fractal
+//          grain, a whisper of chalk dust, two nearly-gone erased ghosts and a
+//          gentle vignette.
 //          All CSS/SVG, no image files, and the whole stack lives in ONE
 //          element's background (background-blend-mode does the probe's
 //          overlay pass, so there are no texture divs to keep in step) plus
@@ -20,6 +22,15 @@
 // Pure module: no I/O, no React.
 
 import type { LessonTheme, MarkKind } from './lesson-script';
+
+/**
+ * What is drawn at the point the hand is writing.
+ *   none   nothing at all — the ink appearing IS the cue (the default)
+ *   glow   a very faint soft spot, ≤ 8 px, no shadow
+ *   stick  the chalk stick, its shadow and its contact glow
+ */
+export type TipStyle = 'none' | 'glow' | 'stick';
+export const TIP_STYLES: readonly TipStyle[] = ['none', 'glow', 'stick'] as const;
 
 export interface ThemeTokens {
   /** The card / board ground — the flat colour under the texture stack. */
@@ -52,8 +63,18 @@ export interface ThemeTokens {
   handScale: number;
   /** Typeset maths inside handwritten prose, relative to the un-scaled size. */
   mathScale: number;
-  /** The writing tip's body colour (chalk stick / pencil). */
-  tip: string;
+  /**
+   * What rides the writing point. `none` (the default everywhere since Adrian's
+   * 2026-09-06 review — "the pen looks distracting") shows NOTHING: the ink
+   * appearing along the pen path is itself the "someone is writing" cue, which
+   * is what JensenMath does. `glow` adds a very faint soft spot at the tip;
+   * `stick` is the drawn chalk with its shadow and contact glow.
+   */
+  tip: TipStyle;
+  /** The tip's colour when it is drawn at all (chalk stick / pencil / the glow's tint). */
+  tipColor: string;
+  /** Scene headings — on a board these are chalk in the marker face, not a sans label. */
+  heading: string;
   /** Graph paper. */
   grid: string;
   axis: string;
@@ -73,32 +94,44 @@ export interface ThemeTokens {
   ribbonLit: string;
 }
 
-// ── The slate, as data: URIs (the ink probe's layers, verbatim in feel) ──────
+// ── The slate, as data: URIs (calm and even — the 2026-09-06 re-cut) ────────
+//
+// Adrian's phone review of the first slate: it read "smeared". The cause was
+// three loud layers stacked — a low-frequency dust haze at 0.29 alpha (big
+// cloudy patches), two erased ghosts at 0.075 white, and a 70 px inset
+// black vignette on top of the gradient's own. All three are now whispers and
+// the base gradient barely varies: what is left is a fine even tooth on a
+// dark green-black board, which is what a real slate looks like from a metre.
 
 /**
  * Fractal-noise grain, tiled and blended `overlay` over the base — the tooth of
- * the board. The alpha row is a CONSTANT (0.38): the probe carried that as a
- * CSS `opacity` on its own layer, and a background layer cannot have one.
+ * the board, and the only texture that should be noticeable at all. The alpha
+ * row is a CONSTANT (a background layer cannot carry an `opacity`).
  */
 const SLATE_GRAIN =
-  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='g' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='3' stitchTiles='stitch' seed='2'/><feColorMatrix type='saturate' values='0'/><feColorMatrix type='matrix' values='1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0 0.38'/></filter><rect width='260' height='260' filter='url(%23g)'/></svg>\")";
+  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='g' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch' seed='2'/><feColorMatrix type='saturate' values='0'/><feColorMatrix type='matrix' values='1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0 0.28'/></filter><rect width='220' height='220' filter='url(%23g)'/></svg>\")";
 
-/** Low-frequency chalk dust hanging on the board (alpha pre-multiplied by the probe's 0.36). */
+/**
+ * A WHISPER of chalk dust — 0.05 alpha at six times the old frequency, so it
+ * reads as a slightly uneven wash rather than the old cloud bank. It is the
+ * layer that got Adrian's "smeared"; it survives only because a board with no
+ * low-frequency variation at all reads as painted plastic.
+ */
 const SLATE_DUST =
-  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='640' height='400'><filter id='d' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.0125 0.02' numOctaves='3' stitchTiles='stitch' seed='5'/><feColorMatrix type='matrix' values='0 0 0 0 0.93  0 0 0 0 0.95  0 0 0 0 0.90  0 0 0 0.29 -0.094'/></filter><rect width='640' height='400' filter='url(%23d)'/></svg>\")";
+  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='420' height='300'><filter id='d' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.055 0.075' numOctaves='2' stitchTiles='stitch' seed='5'/><feColorMatrix type='matrix' values='0 0 0 0 0.93  0 0 0 0 0.95  0 0 0 0 0.90  0 0 0 0.09 -0.032'/></filter><rect width='420' height='300' filter='url(%23d)'/></svg>\")";
 
-/** The base board: lighter where a lamp would fall, darker at the frame. */
+/** The base board: an even green-black, a hint of lamp near the top. */
 const SLATE_BASE =
-  'radial-gradient(ellipse at 50% 38%, #3d4c45 0%, #33423c 40%, #27342f 78%, #1e2925 100%)';
+  'radial-gradient(ellipse at 50% 34%, #313d38 0%, #2d3833 44%, #29332f 76%, #242d29 100%)';
 
-/** The corners fall away — the probe's vignette, on top of everything. */
+/** The corners fall away — gently; the old one plus its inset twin made a tunnel. */
 const SLATE_VIGNETTE =
-  'radial-gradient(ellipse at 50% 42%, rgba(0,0,0,0) 46%, rgba(0,0,0,0.30) 78%, rgba(0,0,0,0.55) 100%)';
+  'radial-gradient(ellipse at 50% 40%, rgba(0,0,0,0) 54%, rgba(0,0,0,0.14) 84%, rgba(0,0,0,0.26) 100%)';
 
 /** Layer order is top-first, so the blend list reads the same way. */
 const SLATE_TEXTURE = `${SLATE_VIGNETTE}, ${SLATE_DUST}, ${SLATE_GRAIN}, ${SLATE_BASE}`;
 const SLATE_BLEND = 'normal, normal, overlay, normal';
-const SLATE_SIZE = '100% 100%, 640px 400px, 260px 260px, 100% 100%';
+const SLATE_SIZE = '100% 100%, 420px 300px, 220px 220px, 100% 100%';
 
 /** Ruled lines for the paper board: one rule every 28 px, a faint margin. */
 const PAPER_RULES =
@@ -129,12 +162,18 @@ export const HAND_FONT_FACES = `
 const HAND_FONT = `'${HAND_FONT_FAMILY}', 'Segoe Print', 'Bradley Hand', cursive`;
 const TITLE_FONT = `'${TITLE_FONT_FAMILY}', '${HAND_FONT_FAMILY}', 'Segoe Print', cursive`;
 
-// Chalk sticks, as they come out of the box.
-const CHALK_WHITE = '#f3f1e6';
-const CHALK_CYAN = '#9de5f5';
-const CHALK_YELLOW = '#ffe58a';
+// Chalk sticks, as they come out of the box. Whiter and more saturated than
+// the first cut: the 2026-09-06 review wanted crisp, vivid chalk, and the halo
+// that used to fake "brightness" is gone (see PLAYER_CSS), so the colour has to
+// carry it. Every one of these clears 7 : 1 on the LIGHTEST point of the slate
+// (lesson-theme.test.ts measures it).
+const CHALK_WHITE = '#fbfaf3';
+const CHALK_CYAN = '#a8ecfb';
+const CHALK_YELLOW = '#ffe89a';
 const CHALK_PINK = '#ffc2d2';
 const CHALK_GREEN = '#b6e8b0';
+/** Headings are chalk too — a quieter cyan, in the marker face. */
+const CHALK_HEADING = '#a3dbe6';
 
 export const THEME_TOKENS: Record<LessonTheme, ThemeTokens> = {
   slide: {
@@ -151,9 +190,13 @@ export const THEME_TOKENS: Record<LessonTheme, ThemeTokens> = {
     penSoft: 'rgba(245, 158, 11, 0.25)',
     hand: 'inherit',
     title: 'inherit',
+    heading: '#94a3b8',
     handScale: 1,
     mathScale: 1,
-    tip: 'hsl(40, 85%, 52%)',
+    // The slide's pen dot is part of its draw-on and predates the board themes:
+    // 'stick' keeps it exactly where it was (an unthemed script is byte-identical).
+    tip: 'stick',
+    tipColor: 'hsl(40, 85%, 52%)',
     grid: '#e2e8f0',
     axis: '#94a3b8',
     curve: 'hsl(220, 60%, 20%)',
@@ -174,24 +217,32 @@ export const THEME_TOKENS: Record<LessonTheme, ThemeTokens> = {
     ribbonLit: 'hsl(220, 60%, 20%)',
   },
   chalk: {
-    board: '#2f3d37',
-    boardLit: '#3d4c45',
+    board: '#28322d',
+    boardLit: '#313d38',
     texture: SLATE_TEXTURE,
     textureBlend: SLATE_BLEND,
     textureSize: SLATE_SIZE,
-    edge: 'rgba(255, 255, 255, 0.07)',
+    edge: 'rgba(255, 255, 255, 0.06)',
     ink: CHALK_WHITE,
-    ink2: '#e9e5d8',
-    muted: '#b2bfb6',
+    ink2: '#f2efe4',
+    muted: '#b9c6bd',
     pen: CHALK_YELLOW,
-    penSoft: 'rgba(255, 229, 138, 0.35)',
+    penSoft: 'rgba(255, 232, 154, 0.30)',
     hand: HAND_FONT,
     title: TITLE_FONT,
-    // Kalam at 1.6× a 15 px base = 24 px — the size the probe read best at on a
-    // phone, and the size the writer's strokes were tuned against.
+    heading: CHALK_HEADING,
+    // Kalam at 1.6× a 15 px base = 24 px on a wide board. On a phone the CSS
+    // reads `--lsn-hand-body` instead (fluidPx below): 24 px measured ~22
+    // characters a line at 390 px and ran off the board, so the same roles
+    // shrink to 85 % there — ~20.4 px, ~36 characters. handScale stays the
+    // NOMINAL multiplier: the KaTeX rule divides by it, and that ratio holds at
+    // every width because it is expressed in `em`.
     handScale: 1.6,
-    mathScale: 1.22,
-    tip: '#fbfbf5',
+    mathScale: 1.24,
+    // NO PEN by default (Adrian, 2026-09-06: "the pen looks distracting").
+    // The ink appearing along the path is the cue — what JensenMath shows.
+    tip: 'none',
+    tipColor: '#fbfbf5',
     grid: 'rgba(255, 255, 255, 0.09)',
     axis: 'rgba(243, 241, 230, 0.55)',
     curve: CHALK_WHITE,
@@ -227,9 +278,11 @@ export const THEME_TOKENS: Record<LessonTheme, ThemeTokens> = {
     penSoft: 'rgba(214, 143, 26, 0.25)',
     hand: HAND_FONT,
     title: TITLE_FONT,
+    heading: '#5c6a86',
     handScale: 1.5,
     mathScale: 1.2,
-    tip: '#5b6478',
+    tip: 'none',
+    tipColor: '#5b6478',
     grid: '#e3e6ee',
     axis: '#8a93a6',
     curve: 'hsl(220, 60%, 20%)',
@@ -256,6 +309,42 @@ export function normalizeTheme(v: unknown): LessonTheme {
   return v === 'chalk' || v === 'paper' ? v : DEFAULT_THEME;
 }
 
+// ── Fluid sizes: the board is 358 px wide on a phone and 512 on a desk ───────
+
+/** The narrow end of the scale (a 390 px phone) and the wide end (the card at full width). */
+export const FLUID_MIN_VW = 390;
+export const FLUID_MAX_VW = 520;
+
+/**
+ * A size that is `maxPx` on a board at full width and `maxPx * floor` on a
+ * 390 px phone, interpolating linearly between the two — one `clamp()`, no
+ * media query, no step.
+ *
+ * This exists because the first chalk cut hard-coded absolute px (24 px Kalam,
+ * 19.4 px worked lines) and those sizes ran off a phone board: 24 px Kalam
+ * measured ~22 characters a line at 390 px, and the equation rows overflowed
+ * the card. Kalam at 85 % is ~20.4 px — the ~36-character line Adrian asked
+ * for — while a desk board keeps the size the probe was read at.
+ */
+export function fluidPx(maxPx: number, floor = 0.85): string {
+  // Rounded, not raw: 12.4 * 1.6 is 19.840000000000003 in binary floating point
+  // and that is not a length anybody should read in a stylesheet.
+  const max = Math.round(maxPx * 100) / 100;
+  const min = Math.round(max * floor * 100) / 100;
+  const slope = (max - min) / (FLUID_MAX_VW - FLUID_MIN_VW);          // px of size per px of viewport
+  const intercept = Math.round((min - slope * FLUID_MIN_VW) * 1000) / 1000;
+  const vw = Math.round(slope * 100 * 10000) / 10000;
+  return `clamp(${min}px, calc(${intercept}px + ${vw}vw), ${max}px)`;
+}
+
+/** What `fluidPx` resolves to at a given viewport width — the same maths, for tests. */
+export function fluidPxAt(maxPx: number, viewport: number, floor = 0.85): number {
+  const max = Math.round(maxPx * 100) / 100;
+  const min = Math.round(max * floor * 100) / 100;
+  const slope = (max - min) / (FLUID_MAX_VW - FLUID_MIN_VW);
+  return Math.min(max, Math.max(min, min + slope * (viewport - FLUID_MIN_VW)));
+}
+
 /** Does a theme need the handwriting faces loaded? */
 export function needsHandFont(theme: LessonTheme): boolean {
   return THEME_TOKENS[theme].hand !== 'inherit';
@@ -278,9 +367,22 @@ export function themeCssVars(theme: LessonTheme): Record<string, string> {
     '--lsn-pen-soft': t.penSoft,
     '--lsn-hand': t.hand,
     '--lsn-title': t.title,
+    '--lsn-heading': t.heading,
     '--lsn-hand-scale': String(t.handScale),
     '--lsn-math-scale': String(t.mathScale),
-    '--lsn-tip': t.tip,
+    // The three prose roles and the worked line, as fluid lengths. `handScale`
+    // stays the nominal multiplier the KaTeX `em` rule divides by.
+    '--lsn-hand-body': fluidPx(15 * t.handScale),
+    '--lsn-hand-label': fluidPx(13.5 * t.handScale),
+    // 12.4, not 13: a step's note is an ASIDE beside the working, and on a
+    // phone board eight lines of it at the old size was what pushed Continue
+    // under the tab bar.
+    '--lsn-hand-small': fluidPx(12.4 * t.handScale),
+    '--lsn-title-px': fluidPx(Math.round(27 * 1.12 * 10) / 10, 0.82),
+    '--lsn-heading-px': fluidPx(17, 0.88),
+    '--lsn-line-px': fluidPx(Math.round(17 * 1.14 * 100) / 100, 0.87),
+    '--lsn-tip-style': t.tip,
+    '--lsn-tip-color': t.tipColor,
     '--lsn-grid': t.grid,
     '--lsn-axis': t.axis,
     '--lsn-curve': t.curve,

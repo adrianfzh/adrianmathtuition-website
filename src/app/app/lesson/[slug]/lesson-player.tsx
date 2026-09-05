@@ -88,9 +88,12 @@ import {
   tokKey, tokenShown, tokenWritten, type BoardState,
 } from '@/lib/lesson-beats';
 import {
-  HAND_FONT_FACES, HAND_FONT_FAMILY, HAND_FONT_URL, TITLE_FONT_FAMILY, TITLE_FONT_URL,
+  HAND_FONT_FACES, HAND_FONT_FAMILY, HAND_FONT_URL, THEME_TOKENS, TITLE_FONT_FAMILY, TITLE_FONT_URL,
   needsHandFont, normalizeTheme, themeCssVars,
 } from '@/lib/lesson-theme';
+import {
+  FIT_MIN_PX, TAP_GLYPH_MS, TAP_INTERACTIVE_SELECTOR, boardTapAction, fitDone, fitFontPx, tapGlyph,
+} from '@/lib/lesson-stage';
 import { useNarration, usePref, useRatePref, writePref, writeRate } from './lesson-narration';
 import BoardLayer, { EASE, MathText, NoteSlotView, offsetRect, useIsoLayoutEffect } from './lesson-board';
 import { ChalkWriter } from './chalk-writer';
@@ -233,10 +236,10 @@ function TitleView({ scene, minutes, timed, board }: { scene: TitleScene; minute
   const promise = bitsOf(board, 'text:promise');
   const pg = groupOf(board, scene, 'text:promise', 0);
   return (
-    <div className="flex-1 flex flex-col items-center justify-center text-center px-2 py-10">
+    <div className="lsn-body lsn-body-title flex-1 flex flex-col items-center justify-center text-center px-2 py-10">
       {/* inline-block: transforms are ignored on plain inline boxes, and the
           rise animation translates. Same reason on every lsn-rise span below. */}
-      <span className="inline-block text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted lsn-rise" style={{ animationDelay: '80ms' }}>
+      <span className="inline-block text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted lsn-kicker lsn-rise" style={{ animationDelay: '80ms' }}>
         ▶ Animated lesson · ≈ {minutes} min
       </span>
       <h2 data-key={title?.key} className={`mt-3 text-[27px] leading-tight font-bold text-navy lsn-ink lsn-hand-title ${board ? elCls(title) : 'lsn-rise'}`}
@@ -264,11 +267,11 @@ function CaptionView({ scene, timed, board }: { scene: CaptionScene; timed: bool
       }
     : undefined;
   return (
-    <div className="flex-1 flex flex-col justify-center px-1 py-6">
+    <div className="lsn-body lsn-body-caption flex-1 flex flex-col justify-center px-1 py-6">
       {scene.heading && (
-        <p data-key={heading?.key} className={`text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted mb-3 ${board ? elCls(heading) : 'lsn-rise'}`}>{scene.heading}</p>
+        <p data-key={heading?.key} className={`text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted lsn-heading mb-3 ${board ? elCls(heading) : 'lsn-rise'}`}>{scene.heading}</p>
       )}
-      <div className={board ? '' : 'lsn-rise'} style={board ? undefined : { animationDelay: '120ms' }}>
+      <div data-fit className={board ? '' : 'lsn-rise'} style={board ? undefined : { animationDelay: '120ms' }}>
         <Prose text={scene.text} group={0} timed={timed} markdown para={para}
           className="prose prose-sm max-w-none text-slate-700 lsn-ink-2 lsn-hand leading-relaxed text-[15px] [&>p]:my-0 [&>*+*]:mt-3 block" />
       </div>
@@ -381,24 +384,28 @@ function EquationStepsView({ scene, step, reduced, timed, board }: {
   const intro = bitsOf(board, 'text:intro');
   const notes = useMemo(() => (board ? sceneNotes(scene) : []), [board, scene]);
   return (
-    <div className="flex-1 px-1 py-2">
+    <div className="lsn-body lsn-body-steps flex-1 px-1 py-2">
       {scene.heading && (
-        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted mb-1.5">{scene.heading}</p>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted lsn-heading mb-1.5">{scene.heading}</p>
       )}
+      {/* The question, in the Kalam BODY size — not the marker face and not a
+          headline: it is the thing being worked on, and it has to sit on one or
+          two lines of a phone board. `data-fit` is the last-resort guard. */}
       {scene.intro && (
-        <p data-key={intro?.key} data-prose={board ? '1' : undefined} className={`text-[15px] text-slate-700 lsn-ink-2 lsn-hand mb-4 ${elCls(intro)}`}><MathText text={scene.intro} /></p>
+        <p data-key={intro?.key} data-prose={board ? '1' : undefined} data-fit
+          className={`text-[15px] text-slate-700 lsn-ink-2 lsn-hand mb-4 ${elCls(intro)}`}><MathText text={scene.intro} /></p>
       )}
       {/* relative: FLIP clones are positioned against this box. Every line is
           laid out from mount (hidden by opacity), so revealing never shifts
           layout and flight destinations are measurable in advance. */}
-      <div ref={containerRef} className="relative space-y-4">
+      <div ref={containerRef} className="lsn-steps relative space-y-4">
         {scene.steps.map((s, i) => {
           const on = board ? lineOn(board, i) : i < revealed;
           const ng = groupOf(board, scene, lineKey(i), i);
           return (
             <div key={i} data-line={i} data-key={board ? lineKey(i) : undefined} aria-hidden={!on}
               className={`lsn-line ${on ? 'on' : ''}`}>
-              <div className="text-[17px] text-slate-800 lsn-ink leading-relaxed flex flex-wrap items-baseline gap-x-1.5 gap-y-1.5">
+              <div data-fit className="lsn-tokrow text-[17px] text-slate-800 lsn-ink leading-relaxed flex flex-wrap items-baseline gap-x-1.5 gap-y-1.5">
                 {s.tokens.map((t, ti) => (
                   <TokenSpan key={ti} t={t}
                     bits={board ? { key: tokKey(i, ti), on: tokenShown(board, scene, i, ti), written: tokenWritten(board, i, ti) } : null} />
@@ -414,7 +421,7 @@ function EquationStepsView({ scene, step, reduced, timed, board }: {
                   tokens above it arrive per step and are never walked word by
                   word. The intro (the question) stays at full ink throughout. */}
               {s.note && (
-                <p className="mt-1.5 text-[13px] text-slate-500 lsn-muted-2 lsn-hand leading-snug"><Prose text={s.note} group={ng.group} from={ng.from} timed={timed} /></p>
+                <p data-fit className="lsn-step-note mt-1.5 text-[13px] text-slate-500 lsn-muted-2 lsn-hand leading-snug"><Prose text={s.note} group={ng.group} from={ng.from} timed={timed} /></p>
               )}
             </div>
           );
@@ -518,9 +525,9 @@ function GraphMorphView({ scene, step, reduced, board }: {
   const caption = bitsOf(board, 'text:caption');
 
   return (
-    <div className="flex-1 px-1 py-2">
+    <div className="lsn-body lsn-body-graph flex-1 px-1 py-2">
       {scene.heading && (
-        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted mb-2">{scene.heading}</p>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted lsn-heading mb-2">{scene.heading}</p>
       )}
       {/* Fixed-height label slot — states crossfade in place, no reflow. */}
       <div className="relative h-12 mb-1">
@@ -569,7 +576,7 @@ function GraphMorphView({ scene, step, reduced, board }: {
         </g>
       </svg>
       {scene.caption && (
-        <p data-key={caption?.key} data-prose={board ? '1' : undefined} className={`mt-3 text-[13px] text-slate-500 lsn-muted-2 lsn-hand leading-snug ${elCls(caption)}`}><MathText text={scene.caption} /></p>
+        <p data-key={caption?.key} data-prose={board ? '1' : undefined} data-fit className={`mt-3 text-[13px] text-slate-500 lsn-muted-2 lsn-hand leading-snug ${elCls(caption)}`}><MathText text={scene.caption} /></p>
       )}
     </div>
   );
@@ -628,13 +635,13 @@ function AnnotateView({ scene, step, timed, board }: { scene: AnnotateScene; ste
   const ig = groupOf(board, scene, 'text:intro', 0);
   const notes = useMemo(() => (board ? sceneNotes(scene).filter(n => n.line === 0) : []), [board, scene]);
   return (
-    <div className="flex-1 px-1 py-2">
+    <div className="lsn-body lsn-body-annotate flex-1 px-1 py-2">
       {scene.heading && (
-        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted mb-1.5">{scene.heading}</p>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted lsn-heading mb-1.5">{scene.heading}</p>
       )}
       {/* The intro is step 0's prose (the expression reveal has no other words). */}
       {scene.intro && (
-        <p data-key={intro?.key} data-prose={board ? '1' : undefined} className={`text-[15px] text-slate-700 lsn-ink-2 lsn-hand mb-2 ${elCls(intro)}`}><Prose text={scene.intro} group={ig.group} from={ig.from} timed={timed} /></p>
+        <p data-key={intro?.key} data-prose={board ? '1' : undefined} data-fit className={`text-[15px] text-slate-700 lsn-ink-2 lsn-hand mb-2 ${elCls(intro)}`}><Prose text={scene.intro} group={ig.group} from={ig.from} timed={timed} /></p>
       )}
       <div ref={containerRef} className="relative">
         {/* connector overlay — pointer-transparent, px coordinates vs container */}
@@ -654,7 +661,7 @@ function AnnotateView({ scene, step, timed, board }: { scene: AnnotateScene; ste
         </svg>
         {/* the expression — tokens stagger up on scene entry (beat scenes: when written) */}
         <div className="min-h-[96px] flex items-center justify-center py-5">
-          <div data-key={board ? lineKey(0) : undefined} className={`text-[19px] text-navy lsn-ink flex flex-wrap items-baseline justify-center gap-x-1.5 gap-y-2 ${board ? `lsn-line ${exprOn ? 'on' : ''}` : ''}`}>
+          <div data-fit data-key={board ? lineKey(0) : undefined} className={`lsn-tokrow text-[19px] text-navy lsn-ink flex flex-wrap items-baseline justify-center gap-x-1.5 gap-y-2 ${board ? `lsn-line ${exprOn ? 'on' : ''}` : ''}`}>
             {scene.tokens.map((t, i) => (
               <span key={i} className={`inline-block ${board ? '' : 'lsn-rise'}`} style={board ? undefined : { animationDelay: `${i * 70}ms` }}>
                 <TokenSpan t={t}
@@ -732,8 +739,8 @@ function CheckView({ scene, slug, onResolved, timed, board }: {
 
   return (
     // Stop card-level tap-to-advance while the student is answering.
-    <div className="flex-1 px-1 py-2" onClick={(e) => e.stopPropagation()}>
-      <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600 lsn-accent mb-1.5">
+    <div className="lsn-body lsn-body-check flex-1 px-1 py-2" onClick={(e) => e.stopPropagation()}>
+      <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600 lsn-accent lsn-heading lsn-heading-accent mb-1.5">
         ✋ Quick check — a real exam question
       </p>
       {scene.prompt && (
@@ -1106,6 +1113,60 @@ function RateMenu({ rate, open, onOpen, onPick }: {
   );
 }
 
+/**
+ * NOTHING OVERFLOWS THE BOARD (2026-09-06). Prose wraps and the token rows wrap
+ * on their own, but a single KaTeX island cannot break — so any `[data-fit]`
+ * row still wider than its box has its font-size taken down until it fits
+ * (never below FIT_MIN_PX). Runs in a LAYOUT effect, so the smaller size is in
+ * the first painted frame: no shift, and the chalk writer measures the size
+ * that actually shipped. Only the board themes run it; the slide card is
+ * untouched.
+ */
+function useFitToBoard(cardRef: React.RefObject<HTMLDivElement | null>, active: boolean, key: string) {
+  useIsoLayoutEffect(() => {
+    const card = cardRef.current;
+    if (!card || !active) return;
+    let lastWidth = -1;
+    // The widest thing in this row that CANNOT break: a typeset formula
+    // (.katex-html — never the invisible .katex-mathml, whose 1 px clipped box
+    // still reports a full-width rect and would trigger a phantom shrink) or a
+    // whole equation token. Everything else wraps on its own.
+    const widestAtom = (el: HTMLElement): number => {
+      let w = 0;
+      for (const atom of Array.from(el.querySelectorAll<HTMLElement>('.katex-html, .lsn-tok'))) {
+        w = Math.max(w, atom.getBoundingClientRect().width);
+      }
+      return w;
+    };
+    const fit = () => {
+      for (const el of Array.from(card.querySelectorAll<HTMLElement>('[data-fit]'))) {
+        el.style.removeProperty('font-size');
+        let px = parseFloat(getComputedStyle(el).fontSize) || 16;
+        // Bounded: each step is at least 0.25 px, and the guess is the linear
+        // one — two or three passes in practice, never a spin.
+        for (let i = 0; i < 20; i++) {
+          const natural = widestAtom(el);
+          if (fitDone(natural, el.clientWidth, px)) break;
+          px = fitFontPx(px, natural, el.clientWidth);
+          el.style.fontSize = `${px}px`;
+          if (px <= FIT_MIN_PX) break;
+        }
+      }
+    };
+    fit();
+    lastWidth = card.clientWidth;
+    // Re-fit on a real WIDTH change only: fitting changes the card's height,
+    // and observing that would chase its own tail.
+    const ro = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(() => { if (card.clientWidth !== lastWidth) { lastWidth = card.clientWidth; fit(); } })
+      : null;
+    ro?.observe(card);
+    let cancelled = false;
+    document.fonts?.ready?.then(() => { if (!cancelled) fit(); });
+    return () => { cancelled = true; ro?.disconnect(); };
+  }, [cardRef, active, key]);
+}
+
 // ── The player ───────────────────────────────────────────────────────────────
 
 type Pacing = 'manual' | 'auto' | 'narrated';
@@ -1123,6 +1184,10 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   const [resolved, setResolved] = useState<Set<number>>(() => new Set());
   const [narratedUsed, setNarratedUsed] = useState(false);
   const [ribbon, setRibbon] = useState<RibbonLine | null>(null);
+  /** The ⏸ / ▶ that flashes in the middle of the board when a tap changes the play state. */
+  const [gesture, setGesture] = useState<{ glyph: string; id: number } | null>(null);
+  const gestureSeq = useRef(0);
+  const gestureTimer = useRef(0);
   const reduced = useReducedMotion();
   const cardRef = useRef<HTMLDivElement>(null);
   const ribbonRef = useRef<HTMLDivElement>(null);
@@ -1308,9 +1373,37 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   };
   const onContinue = () => { setPaused(false); tapAdvance(); };
   const onBack = () => { setPaused(false); back(); };
-  const onCardTap = () => {
-    if (paused) { setPaused(false); return; }
-    tapAdvance();
+
+  /** The YouTube gesture: a glyph in the middle of the board, gone in half a second. */
+  const flashGesture = useCallback((glyph: string) => {
+    gestureSeq.current += 1;
+    setGesture({ glyph, id: gestureSeq.current });
+    window.clearTimeout(gestureTimer.current);
+    gestureTimer.current = window.setTimeout(() => setGesture(null), TAP_GLYPH_MS + 60);
+  }, []);
+  useEffect(() => () => window.clearTimeout(gestureTimer.current), []);
+
+  /**
+   * TAP THE BOARD (Adrian, 2026-09-06: "can i click/tap at the video itself and
+   * it pauses/unpauses?"). In a timed pacing a tap anywhere on the board is
+   * pause ⇄ resume — the same state the header pill and the space bar own, so
+   * all three stay in step — and resume continues exactly where it stopped
+   * (the existing pause path: the clip keeps its currentTime, the beat timer
+   * keeps its remainder). Manual pacing still taps to advance. A tap that
+   * landed on a control does nothing: the check's answer gate is untouched.
+   * The rule itself is pure — lib/lesson-stage.boardTapAction.
+   */
+  const onCardTap = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement | null;
+    const action = boardTapAction({
+      interactive: !!target?.closest(TAP_INTERACTIVE_SELECTOR),
+      gated, canPause, paused,
+    });
+    if (action === 'ignore') return;
+    if (action === 'advance') { tapAdvance(); return; }
+    setPaused(action === 'pause');
+    const glyph = tapGlyph(action);
+    if (glyph) flashGesture(glyph);
   };
 
   // Space toggles pause on a keyboard (never while typing an answer or with a
@@ -1321,13 +1414,16 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
       if (e.key === 'Escape') { setRateOpen(false); return; }
       if (e.code !== 'Space' || e.repeat || !canPause) return;
       const t = e.target as HTMLElement | null;
-      if (t?.closest('input, textarea, select, button, a, [contenteditable="true"], [role="button"]')) return;
+      if (t?.closest(TAP_INTERACTIVE_SELECTOR)) return;
       e.preventDefault();
-      setPaused(p => !p);
+      const action = boardTapAction({ canPause, paused });
+      setPaused(action === 'pause');
+      const glyph = tapGlyph(action);
+      if (glyph) flashGesture(glyph);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [canPause]);
+  }, [canPause, paused, flashGesture]);
   useEffect(() => {
     if (!rateOpen) return;
     const onDown = (e: PointerEvent) => {
@@ -1359,10 +1455,13 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   }, [theme]);
   const engineOk = useMemo(() => ChalkWriter.available(), []);
   const writing = themed && faceReady && engineOk && !reduced;
+  const tipStyle = THEME_TOKENS[theme].tip;
+  // Re-fit whenever the scene, the step or the face changes the measurements.
+  useFitToBoard(cardRef, themed, `${sceneIdx}:${step}:${faceReady}:${done}`);
 
   return (
     <div className="max-w-lg mx-auto pb-24 sm:pb-6" data-lsn-theme={theme} data-lsn-themed={themed ? '' : undefined}
-      data-lsn-write={writing ? 'on' : undefined} style={themeStyle}>
+      data-lsn-tip={tipStyle} data-lsn-write={writing ? 'on' : undefined} style={themeStyle}>
       <style>{PLAYER_CSS}</style>
       {/* The two handwriting faces for the board stages: SELF-HOSTED subsets
           (public/lessons/fonts, ~43 KB the pair), because the chalk writer has
@@ -1427,7 +1526,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
       </div>
 
       {/* Progress dots — one per scene; the current one stretches. */}
-      <div className="flex items-center gap-1 mb-3 px-0.5" aria-hidden>
+      <div className="lsn-dots flex items-center gap-1 mb-3 px-0.5" aria-hidden>
         {scenes.map((_, i) => (
           <span key={i}
             className={`h-1.5 rounded-full ${
@@ -1458,7 +1557,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
         /* ── The scene card. Tapping it advances (except mid-check); while
               paused, a tap resumes instead. ── */
         <div key={sceneIdx} ref={cardRef} onClick={onCardTap} data-paused={paused || undefined} data-beats={board ? maxStep : undefined}
-          className={`lsn-scene relative bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-5 min-h-[440px] flex flex-col ${gated ? '' : 'cursor-pointer'}`}>
+          data-step={step}
+          className={`lsn-scene relative bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-5 flex flex-col ${themed ? 'lsn-stage' : 'min-h-[440px]'} ${gated ? '' : 'cursor-pointer'}`}>
           <BoardLayer board={board} notes={marginNotes} reduced={reduced} rate={rate} writing={writing} paused={paused}>
             {scene.type === 'title' && <TitleView scene={scene} minutes={minutes} timed={timed} board={board} />}
             {scene.type === 'caption' && <CaptionView scene={scene} timed={timed} board={board} />}
@@ -1471,10 +1571,16 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
             )}
             {scene.type === 'check-skipped' && <CheckSkippedView />}
           </BoardLayer>
+          {/* The tap's own feedback: ⏸ / ▶ in the middle of the board, grown and
+              gone inside half a second — the gesture every video player uses. */}
+          {gesture && (
+            <span key={gesture.id} aria-hidden data-lsn-gesture={gesture.glyph === '⏸' ? 'pause' : 'play'}
+              className="lsn-gesture">{gesture.glyph}</span>
+          )}
           {/* Paused: a quiet chip; the card itself is the resume surface. */}
           {paused && (
             <span aria-hidden data-paused-chip
-              className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-white/90 border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-500 shadow-[0_1px_2px_rgba(15,23,42,0.06)] lsn-rise"
+              className="lsn-paused-chip absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-white/90 border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-500 shadow-[0_1px_2px_rgba(15,23,42,0.06)] lsn-rise"
               style={{ animationDuration: '220ms' }}>
               ⏸ Paused · tap to resume
             </span>
@@ -1513,7 +1619,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
 
       {/* Bottom controls — fixed shape, never jumps between scenes. */}
       {!done && (
-        <div className={`flex items-center gap-2 ${pacing === 'narrated' ? 'mt-3' : 'mt-4'}`}>
+        <div className={`lsn-controls flex items-center gap-2 ${pacing === 'narrated' ? 'mt-3' : 'mt-4'}`}>
           <button type="button" onClick={onBack} disabled={sceneIdx === 0 && step === 0}
             aria-label={pacing === 'narrated' ? 'Replay this scene' : 'Back one step'}
             className="shrink-0 w-12 h-12 rounded-2xl bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)] text-navy inline-flex items-center justify-center disabled:opacity-30 hover:bg-slate-50 active:scale-95 motion-safe:transition-transform">
@@ -1538,13 +1644,18 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
 /**
  * The chalk grain — a fine-noise ALPHA tile used as a `mask-image` on typeset
  * maths, on the title and on the hand-drawn marks. It nibbles the anti-aliased
- * rim of every glyph and thins the interior unevenly, which is what makes print
- * type read as chalk. A mask (not an SVG filter graph) on purpose: it is
- * rasterised once per tile and never re-runs, where an feDisplacementMap over a
- * whole card re-runs on every repaint.
+ * rim of every glyph, which is what makes print type read as chalk. A mask (not
+ * an SVG filter graph) on purpose: it is rasterised once per tile and never
+ * re-runs, where an feDisplacementMap over a whole card re-runs on every
+ * repaint.
+ *
+ * 2026-09-06: the alpha row was `0.62 · noise + 0.38` — it took up to 62 % of
+ * the ink out of the INTERIOR of every glyph, and with a 6 px glow on top the
+ * maths read as out of focus. Now `0.26 · noise + 0.74`: the same rough rim, a
+ * solid letter.
  */
 const CHALK_GRAIN =
-  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><filter id='c' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch' seed='7'/><feColorMatrix type='matrix' values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.62 0.38'/></filter><rect width='64' height='64' filter='url(%23c)'/></svg>\")";
+  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><filter id='c' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch' seed='7'/><feColorMatrix type='matrix' values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.26 0.74'/></filter><rect width='64' height='64' filter='url(%23c)'/></svg>\")";
 
 const PLAYER_CSS = `
 @keyframes lsnSceneIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
@@ -1621,36 +1732,89 @@ const PLAYER_CSS = `
   background-color: var(--lsn-board); background-image: var(--lsn-texture);
   background-size: var(--lsn-texture-size); background-blend-mode: var(--lsn-texture-blend);
   box-shadow: inset 0 0 0 1px var(--lsn-edge), 0 1px 2px rgba(15,23,42,0.06), 0 10px 28px -12px rgba(15,23,42,0.45); }
-[data-lsn-theme="chalk"] .lsn-scene { box-shadow: inset 0 0 0 1px var(--lsn-edge), inset 0 0 70px rgba(0,0,0,0.42), 0 14px 40px -18px rgba(0,0,0,0.75); }
+/* One vignette, not two: the gradient's own plus a 70 px inset black made the
+   board a tunnel. 46 px at 0.20 is a frame, not a shadow. */
+[data-lsn-theme="chalk"] .lsn-scene { box-shadow: inset 0 0 0 1px var(--lsn-edge), inset 0 0 46px rgba(0,0,0,0.20), 0 14px 40px -18px rgba(0,0,0,0.7); }
+/* The erased ghosts. At 0.075 white they were the "blotchy patches" in Adrian's
+   screenshots; at 0.022 they are the history of a board you only notice when
+   you look for it. */
 [data-lsn-theme="chalk"] .lsn-scene::before, [data-lsn-theme="chalk"] .lsn-scene::after {
-  content: ''; position: absolute; z-index: -1; pointer-events: none; border-radius: 50%; filter: blur(1.3px);
-  background: repeating-linear-gradient(104deg, rgba(255,255,255,0.042) 0 1.5px, rgba(255,255,255,0) 1.5px 6px),
-              radial-gradient(ellipse at center, rgba(255,255,255,0.075), rgba(255,255,255,0) 70%);
-  -webkit-mask-image: radial-gradient(ellipse at center, #000 25%, transparent 70%);
-  mask-image: radial-gradient(ellipse at center, #000 25%, transparent 70%); }
-[data-lsn-theme="chalk"] .lsn-scene::before { left: 50%; top: 28%; width: 46%; height: 36%; transform: rotate(-9deg); }
-[data-lsn-theme="chalk"] .lsn-scene::after { left: -8%; top: 62%; width: 42%; height: 32%; transform: rotate(7deg); opacity: 0.8; }
+  content: ''; position: absolute; z-index: -1; pointer-events: none; border-radius: 50%; filter: blur(3px);
+  background: repeating-linear-gradient(104deg, rgba(255,255,255,0.012) 0 1.5px, rgba(255,255,255,0) 1.5px 7px),
+              radial-gradient(ellipse at center, rgba(255,255,255,0.022), rgba(255,255,255,0) 72%);
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 20%, transparent 72%);
+  mask-image: radial-gradient(ellipse at center, #000 20%, transparent 72%); }
+[data-lsn-theme="chalk"] .lsn-scene::before { left: 46%; top: 22%; width: 52%; height: 40%; transform: rotate(-9deg); }
+[data-lsn-theme="chalk"] .lsn-scene::after { left: -10%; top: 58%; width: 48%; height: 36%; transform: rotate(7deg); opacity: 0.85; }
+/* The board stands this tall EMPTY and grows with its content (lib/lesson-stage
+   stageMinHeightPx mirrors it). The flat 440 px it replaces left a two-line
+   scene floating in an empty slate and pushed Continue below a phone's fold. */
+.lsn-stage { min-height: clamp(280px, 46vh, 420px); }
+/* A phone board buys its margins back from the card: 16 px of slate round the
+   working is comfortable, and the 4 px a side it returns is 4 px the Continue
+   button does not have to be scrolled to. */
+[data-lsn-themed] .lsn-stage { padding: 1rem; }
+@media (min-width: 520px) { [data-lsn-themed] .lsn-stage { padding: 1.25rem; } }
 [data-lsn-themed] .lsn-ink { color: var(--lsn-ink); }
 [data-lsn-themed] .lsn-ink-2 { color: var(--lsn-ink-2); }
 [data-lsn-themed] .lsn-muted { color: var(--lsn-muted); }
 [data-lsn-themed] .lsn-muted-2 { color: var(--lsn-ink-2); opacity: 0.86; }
 [data-lsn-themed] .lsn-accent { color: var(--lsn-pen); }
-/* Absolute sizes, not \`1em\`: this rule REPLACES the element's own text-[..px]
-   utility, so an em would resolve against the PARENT and every role would come
-   out the same size. The three roles the prose classes encode: body 15 px,
-   callout label 13.5 px, note / caption 13 px — × the theme's hand scale
-   (chalk 1.6 → 24 px body, the size the probe read best at on a phone). */
-[data-lsn-themed] .lsn-hand { font-family: var(--lsn-hand); font-size: calc(13.5px * var(--lsn-hand-scale)); line-height: 1.34; }
-[data-lsn-themed] .lsn-ink-2.lsn-hand, [data-lsn-themed] .lsn-hand.prose { font-size: calc(15px * var(--lsn-hand-scale)); }
-[data-lsn-themed] .lsn-muted-2.lsn-hand { font-size: calc(13px * var(--lsn-hand-scale)); }
+/* Scene headings are chalk, not a sans label: the marker face, sentence case,
+   modest, in a quiet cyan (Adrian, 2026-09-06 — "WHY THE ORDINARY FORM HIDES
+   THINGS" in uppercase sans does not belong on a slate). */
+[data-lsn-themed] .lsn-heading { font-family: var(--lsn-title); font-size: var(--lsn-heading-px);
+  font-weight: 400; text-transform: none; letter-spacing: 0.005em; line-height: 1.2; color: var(--lsn-heading); }
+[data-lsn-themed] .lsn-heading-accent { color: var(--lsn-pen); }
+/* FLUID sizes, not absolute px: these rules REPLACE the element's own
+   text-[..px] utility, so an em would resolve against the PARENT and every role
+   would come out the same size. The three roles the prose classes encode —
+   body 15 px, callout label 13.5 px, note / caption 13 px — are multiplied by
+   the theme's hand scale (chalk 1.6 → 24 px body) at a full-width board and
+   drop to 85 % of that on a 390 px phone: 24 px Kalam measured ~22 characters a
+   line there and ran off the slate; 20.4 px measures ~36. lib/lesson-theme
+   fluidPx() builds the clamps. */
+[data-lsn-themed] .lsn-hand { font-family: var(--lsn-hand); font-size: var(--lsn-hand-label); line-height: 1.34; }
+[data-lsn-themed] .lsn-ink-2.lsn-hand, [data-lsn-themed] .lsn-hand.prose { font-size: var(--lsn-hand-body); }
+[data-lsn-themed] .lsn-muted-2.lsn-hand { font-size: var(--lsn-hand-small); }
 /* Worked lines are the maths of the lesson: they must not read SMALLER than
-   the words beside them once the hand is 24 px. A modest bump only — the token
-   row wraps, so this never scrolls the board sideways. */
-[data-lsn-themed] .lsn-line .lsn-tok { font-size: calc(17px * 1.14); }
-/* Kalam runs large for its point size, so typeset maths inside it is pulled
-   back up (--lsn-math-scale) or it reads small beside the words. */
-[data-lsn-themed] .lsn-hand .katex { font-size: calc(1em / var(--lsn-hand-scale) * var(--lsn-math-scale)); }
-[data-lsn-themed] .lsn-hand-title { font-family: var(--lsn-title); font-size: calc(27px * 1.12); font-weight: 400; letter-spacing: 0.01em; line-height: 1.15; }
+   the words beside them. The token row wraps AND shrinks to fit (data-fit), so
+   this never scrolls the board sideways. */
+[data-lsn-themed] .lsn-line .lsn-tok { font-size: var(--lsn-line-px); }
+/* Room to breathe: a wrapped row of fractions needs more than 6 px, and the
+   hand-drawn marks live in these gaps. */
+[data-lsn-themed] .lsn-tokrow { column-gap: 0.5rem; row-gap: 0.55rem; }
+[data-lsn-themed] .lsn-steps > * + * { margin-top: 1rem; }
+[data-lsn-themed] .lsn-step-note { margin-top: 0.45rem; }
+/* Content sits in the UPPER part of the board with comfortable margins — a
+   short scene should not float in the middle of a tall empty slate. */
+[data-lsn-themed] .lsn-body-caption { justify-content: flex-start; padding-top: 0.5rem; }
+/* One idea, one paragraph: at 12 px the break between them read as a slightly
+   wide line gap rather than a new thought. */
+[data-lsn-themed] .lsn-body-caption .prose > * + * { margin-top: 0.85rem; }
+[data-lsn-themed] .lsn-body-steps, [data-lsn-themed] .lsn-body-annotate, [data-lsn-themed] .lsn-body-graph { padding-top: 0; }
+/* Every millimetre the chrome gives back is a millimetre of board that does
+   not push Continue under the phone's tab bar. Themed only: the slide card's
+   chrome is untouched. */
+[data-lsn-themed] .lsn-dots { margin-bottom: 0.5rem; }
+[data-lsn-themed] .lsn-controls { margin-top: 0.75rem; }
+/* Typeset maths inside handwriting — Kalam runs large for its point size, so
+   the maths is pulled back up (--lsn-math-scale) or it reads small beside the
+   words. white-space: nowrap, because KaTeX will otherwise break an
+   inline formula at its own binary operators, and "a(x − h)² +" / "k" across
+   two lines of a phone board is worse than moving the whole formula down — if
+   a formula really is wider than the board, the fit pass takes the row down
+   instead. The margin is breathing room: an italic KaTeX x butted straight
+   against a Kalam l read as one word ("4xlooks"). */
+[data-lsn-themed] .lsn-hand .katex { font-size: calc(1em / var(--lsn-hand-scale) * var(--lsn-math-scale));
+  white-space: nowrap; margin-inline: 0.1em; }
+/* No orphan last line: the browser looks ahead so a wrapped question does not
+   leave one token alone on its own row. */
+[data-lsn-themed] .lsn-hand, [data-lsn-themed] .lsn-heading { text-wrap: pretty; }
+/* A kicker on a board is quiet handwriting, not a tracked-out sans label. */
+[data-lsn-themed] .lsn-kicker { font-family: var(--lsn-hand); font-size: var(--lsn-hand-small);
+  font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--lsn-muted); }
+[data-lsn-themed] .lsn-hand-title { font-family: var(--lsn-title); font-size: var(--lsn-title-px); font-weight: 400; letter-spacing: 0.01em; line-height: 1.15; }
 [data-lsn-themed] .lsn-scene .prose { color: var(--lsn-ink-2); }
 [data-lsn-themed] .lsn-scene .prose strong, [data-lsn-themed] .lsn-scene .prose b { color: var(--lsn-ink); }
 /* A highlight on a board is a CHANGE OF CHALK, not a pill: the colour moves
@@ -1661,7 +1825,9 @@ const PLAYER_CSS = `
 [data-lsn-themed] .lsn-hl-rose { color: var(--lsn-hl-rose); }
 [data-lsn-themed] .lsn-hl-emerald { color: var(--lsn-hl-emerald); }
 [data-lsn-themed] .lsn-hl .katex, [data-lsn-themed] .lsn-hl .katex * { color: inherit; }
-[data-lsn-theme="chalk"] .lsn-hl { text-shadow: 0 0 9px currentColor, 0 0 2px currentColor; }
+/* A highlight is a change of chalk. The 9 px bloom this replaces washed the
+   cyan and the yellow out into the board; the colour carries it now. */
+[data-lsn-theme="chalk"] .lsn-hl { text-shadow: 0 0 1px currentColor; }
 [data-lsn-themed] .lsn-line.on .lsn-hl { animation: none; }
 [data-lsn-themed] .lsn-pulse { animation: lsnGlow 900ms ${EASE} both; box-shadow: none; }
 [data-lsn-themed] .lsn-chip-amber { background: var(--lsn-chip-amber-bg); border-color: var(--lsn-chip-amber-border); color: var(--lsn-chip-amber-text); }
@@ -1682,18 +1848,26 @@ const PLAYER_CSS = `
 .lsn-marks path[data-mark="underline"] { stroke: var(--lsn-mark-underline, var(--lsn-pen, hsl(40, 85%, 52%))); }
 .lsn-marks path[data-mark="circle"] { stroke: var(--lsn-mark-circle, var(--lsn-pen, hsl(40, 85%, 52%))); }
 .lsn-marks path[data-mark="box"] { stroke: var(--lsn-mark-box, var(--lsn-pen, hsl(40, 85%, 52%))); }
-[data-lsn-theme="chalk"] .lsn-marks path { stroke-width: 2.6; opacity: 0.95;
-  -webkit-mask-image: ${CHALK_GRAIN}; mask-image: ${CHALK_GRAIN}; -webkit-mask-size: 72px 72px; mask-size: 72px 72px;
-  filter: drop-shadow(0 0 3px currentColor); }
+[data-lsn-theme="chalk"] .lsn-marks path { stroke-width: 2.4; opacity: 0.96;
+  -webkit-mask-image: ${CHALK_GRAIN}; mask-image: ${CHALK_GRAIN}; -webkit-mask-size: 72px 72px; mask-size: 72px 72px; }
 [data-lsn-theme="chalk"] .lsn-pen { width: 15px; height: 15px; margin: -7.5px 0 0 -7.5px;
   background: radial-gradient(circle, rgba(255,255,250,0.85), rgba(255,255,250,0) 68%); box-shadow: none; }
-/* Chalk lettering: a roughened edge (a fine-noise mask nibbles the anti-aliased
-   rim), grainy opacity, and a faint glow. Cheap on purpose — a mask never
-   re-runs a filter graph per frame, which an feDisplacementMap over a whole
-   card does. */
-[data-lsn-theme="chalk"] .lsn-scene .katex, [data-lsn-theme="chalk"] .lsn-hand-title {
-  -webkit-mask-image: ${CHALK_GRAIN}; mask-image: ${CHALK_GRAIN}; -webkit-mask-size: 64px 64px; mask-size: 64px 64px;
-  text-shadow: 0 0 6px rgba(243, 241, 230, 0.22), 0 0 1.5px rgba(243, 241, 230, 0.45); }
+/* NO PEN by default (Adrian, 2026-09-06). The board's own pen dot rides the
+   clip-path sweeps and the marks; with tip: 'none' the growing stroke is the
+   cue and nothing leads it. The MOTION is untouched — only the dot is gone.
+   The slide theme is tip: 'stick', so its pen is exactly where it was. */
+[data-lsn-tip="none"] .lsn-pen { display: none; }
+/* TYPESET MATHS IS CRISP. It used to carry the grain mask and a 6 px glow, and
+   both had to go: the glow is what made it read out of focus, and the mask ATE
+   SMALL GLYPHS — a superscript 2 at ~11 px came out as a stray diagonal (a
+   masked/unmasked pair of the same token proved it in the browser, 2026-09-06).
+   The maths gets its chalk from the colour and from dusting in; the roughness
+   belongs to the written words, where the hand paints it per pixel.
+   The title keeps the mask: it is the FALLBACK texture for when the writer is
+   not running (reduced motion, no canvas) — with the hand on, the element's own
+   glyphs are transparent and the mask is inert. */
+[data-lsn-theme="chalk"] .lsn-hand-title {
+  -webkit-mask-image: ${CHALK_GRAIN}; mask-image: ${CHALK_GRAIN}; -webkit-mask-size: 64px 64px; mask-size: 64px 64px; }
 [data-lsn-theme="chalk"] .lsn-scene input { color: #0f172a; }
 [data-lsn-theme="chalk"] .lsn-scene input::placeholder { color: #64748b; }
 
@@ -1701,7 +1875,9 @@ const PLAYER_CSS = `
 .lsn-ink-canvas, .lsn-tip-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .lsn-ink-canvas { z-index: 2; }
 .lsn-tip-canvas { z-index: 7; }
-[data-lsn-theme="chalk"] .lsn-ink-canvas { filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.22)); }
+/* No drop-shadow on the ink canvas: a 2 px white glow under every written
+   letter is exactly the "out of focus" Adrian saw. The writer's own edge noise
+   (chalk-writer EDGE_NOISE_PX) is the roughness now. */
 /* An element the hand has taken over keeps its text — layout, selection and a
    screen reader all still see it — and simply stops painting it; the canvas
    carries the ink. Its maths keeps the element's own colour and dusts in. */
@@ -1716,6 +1892,23 @@ const PLAYER_CSS = `
 /* Without the hand (reduced motion, no canvas, the face not in yet) a sentence
    is simply not on the board until it is said — the words appear. */
 [data-lsn-themed] .lsn-sent { background-image: none; transition: opacity 260ms ${EASE}; top: 0; }
+/* Notes get their OWN slot with clear air above: at 0.15rem the yellow aside
+   sat on the fraction it was annotating (Adrian's screenshot, 2026-09-06). */
+[data-lsn-themed] .lsn-note-row { margin-top: 0.6rem; gap: 0.2rem 1.1rem; }
+[data-lsn-themed] .lsn-note { min-width: 0; max-width: 100%; font-size: var(--lsn-hand-label); overflow-wrap: anywhere; }
+[data-lsn-themed] .lsn-notes-flow { margin-top: 1rem; }
+/* Focus is the DIM plus a hair of lift on the target — never a scale on the
+   board (that could only crop; lesson-board.tsx has the archaeology). */
+.lsn-zoom[data-focus] [data-focused] { transition: filter 320ms ${EASE}; }
+[data-lsn-themed] .lsn-zoom[data-focus] [data-focused] { filter: brightness(1.1); }
+/* The tap gesture: the glyph a video player flashes when you tap to pause. */
+@keyframes lsnGesture { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.72); } 18% { opacity: 0.92; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); } }
+.lsn-gesture { position: absolute; left: 50%; top: 50%; z-index: 9; pointer-events: none;
+  width: 62px; height: 62px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  font-size: 24px; line-height: 1; color: #fff; background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(2px);
+  animation: lsnGesture ${TAP_GLYPH_MS}ms ease-out both; }
+[data-lsn-theme="chalk"] .lsn-gesture { background: rgba(8, 14, 11, 0.5); color: var(--lsn-ink); }
+[data-lsn-themed] .lsn-paused-chip { background: rgba(10, 16, 13, 0.55); border-color: var(--lsn-edge); color: var(--lsn-muted); }
 [data-lsn-themed] .lsn-sent[data-state="waiting"] { opacity: 0; top: 0; }
 [data-lsn-themed] .lsn-sent[data-state="speaking"] { opacity: 1; }
 [data-lsn-themed] .lsn-sent[data-state="spoken"] { opacity: 1; }
@@ -1729,6 +1922,7 @@ const PLAYER_CSS = `
   .lsn-el { transition: opacity 200ms ease !important; transform: none !important; }
   .lsn-zoom { transition: none !important; transform: none !important; }
   .lsn-pen { display: none; }
+  .lsn-gesture { animation: none !important; opacity: 0.9; transform: translate(-50%, -50%); }
   .lsn-dust, [data-ink] .katex[data-dust="on"] { animation: none !important; }
 }
 `;

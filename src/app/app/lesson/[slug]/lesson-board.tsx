@@ -31,10 +31,15 @@
 //                  the working (this layer renders those) — hidden until its
 //                  action fires, then drawn on like any written element. Never
 //                  absolutely positioned over other glyphs, never a layout shift.
-//   · focus        the view eases onto the target (scale + translate on the
-//                  zoom wrapper), the rest of the board dims, and it releases
-//                  after `hold` seconds ÷ rate. Reduced motion keeps the dim,
-//                  drops the transform.
+//   · focus        the rest of the board dims and the target is lifted, for
+//                  `hold` seconds ÷ rate. It used to SCALE the zoom wrapper
+//                  (≤ 1.14×) as well — and that is what pushed a phone board's
+//                  content off its own right edge and cut the top off (Adrian's
+//                  2026-09-06 review: half of scene 5 was outside the slate).
+//                  A scale > 1 on a wrapper with `overflow: hidden` can only
+//                  crop, so the transform is gone: focus is now the dim plus a
+//                  hair of lift on the target itself, which never moves a glyph
+//                  outside the board. Reduced motion keeps the dim.
 //
 // Nothing here changes the board's LAYOUT: marks, notes and the pen sit in an
 // overlay, and every written element is laid out from mount (hidden by
@@ -136,13 +141,16 @@ const wob = (k: number, amp = 1.4) => Math.sin(k * 1.7) * amp + Math.cos(k * 0.9
 export function markPath(kind: BoardMark['kind'], b: Box): string {
   const pts: [number, number][] = [];
   if (kind === 'underline') {
-    for (let k = 0; k <= 24; k++) { const t = k / 24; pts.push([b.x0 - 2 + t * (b.x1 - b.x0 + 4), b.y1 + 3 + wob(k, 1.2)]); }
+    for (let k = 0; k <= 24; k++) { const t = k / 24; pts.push([b.x0 - 2 + t * (b.x1 - b.x0 + 4), b.y1 + 3.5 + wob(k, 1)]); }
   } else if (kind === 'circle') {
     const cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
-    const rx = (b.x1 - b.x0) / 2 + 10, ry = (b.y1 - b.y0) / 2 + 7;
+    // Tight on purpose: a loop that inflated by (10, 7) reached into the row
+    // above and into the boxes of the tokens either side of it on a phone
+    // board. +5 keeps it inside the row and column gaps the themed CSS opens.
+    const rx = (b.x1 - b.x0) / 2 + 5, ry = (b.y1 - b.y0) / 2 + 5;
     for (let k = 0; k <= 52; k++) { const t = -0.9 + (k / 48) * Math.PI * 2.15; pts.push([cx + Math.cos(t) * (rx + wob(k)), cy + Math.sin(t) * (ry + wob(k + 3))]); }
   } else {
-    const p = 6;
+    const p = 5;
     const c: [number, number][] = [[b.x0 - p, b.y0 - p], [b.x1 + p, b.y0 - p], [b.x1 + p, b.y1 + p], [b.x0 - p, b.y1 + p], [b.x0 - p, b.y0 - p + 5]];
     for (let s = 0; s < 4; s++) for (let k = 0; k <= 8; k++) {
       const t = k / 8;
@@ -371,6 +379,7 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.setAttribute('d', markPath(m.kind, box));
         path.setAttribute('data-mark', m.kind);
+        path.setAttribute('data-mark-tokens', m.tokens.join(' '));   // which glyphs it belongs to (debug + the browser check)
         svg.appendChild(path);
         marksDrawn.current.set(m.seq, path);
         if (reduced) continue;
@@ -404,19 +413,11 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
         target.setAttribute('data-focused', '');
         zoom.setAttribute('data-focus', '');
         card?.setAttribute('data-focus', '');
-        if (!reduced) {
-          // A lean-in, not a zoom: ≤ 1.14× (less for a whole line), centred on
-          // the target vertically; horizontally the board stays anchored at its
-          // left edge and slides only as far as keeps the target on screen — the
-          // dim does the pointing, the scale just brings the eye closer.
-          const rect = offsetRect(target, zoom);
-          const W = zoom.offsetWidth, H = zoom.offsetHeight;
-          const s = Math.min(1.14, Math.max(1.05, (0.7 * W) / Math.max(1, rect.width)));
-          const cy = rect.top + rect.height / 2;
-          const tx = Math.min(0, W - (rect.left + rect.width) * s - 12);
-          const ty = Math.min(0, Math.max(H - H * s, H / 2 - cy * s));
-          zoom.style.transform = `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${s.toFixed(3)})`;
-        }
+        // NO transform on the wrapper. A lean-in that scales the board can only
+        // ever push content past the board's edge (the wrapper crops), and on a
+        // 390 px phone that is exactly what happened. The dim is the pointing;
+        // the CSS gives the focused element a hair of lift, which stays inside
+        // its own line box. Reduced motion changes nothing here now.
         focusTimer.current = window.setTimeout(() => { focusTimer.current = 0; release(); }, scaleBeat(f.hold * 1000, r));
       }
     }

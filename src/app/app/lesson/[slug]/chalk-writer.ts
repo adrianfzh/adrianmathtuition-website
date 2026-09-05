@@ -16,6 +16,13 @@
 // that sits over them. So a resize, a font swap or a different phone width is
 // still the browser's layout — the hand simply re-measures.
 //
+//   NO PEN, by default (Adrian, 2026-09-06: "the pen looks distracting"). The
+//   ink appearing along the path IS the "someone is writing" cue — JensenMath
+//   shows no hand and no chalk either. `--lsn-tip-style` chooses: 'none' (the
+//   default), 'glow' (a faint soft spot, no shadow) or 'stick' (the drawn chalk
+//   with its shadow and contact glow, the 5-Sep look). The MOTION is identical
+//   in all three — only what rides the writing point changes.
+//
 //   WORDS ARE WRITTEN, MATHS APPEARS. A KaTeX island inside prose is an ATOM:
 //   the pen never traces it (the probe showed written maths reads uncanny). It
 //   is skipped, the tip lifts over it, and it chalk-dusts in at the moment the
@@ -36,6 +43,7 @@ import {
   smoothPath, thinBitmap, traceSkeleton, valueNoise,
   type Pt, type PlanStroke, type WritePlan,
 } from '@/lib/chalk-strokes';
+import type { TipStyle } from '@/lib/lesson-theme';
 
 /** Em box the skeleton is derived at — big enough to thin cleanly, small enough to be quick. */
 const SK_EM = 160;
@@ -43,6 +51,17 @@ const SK_EM = 160;
 const SPACING = 1.5;
 /** Per-letter jitter: a hand is never twice the same. */
 const TILT = 0.022, DRIFT_X = 0.4, DRIFT_Y = 0.9, SCALE_J = 0.025;
+/**
+ * How far the glyph is sampled through noise — the chalk-rough edge. Was ±1 CSS
+ * px, which at 20 px Kalam blurred the letterforms ("the chalk lettering looks
+ * out of focus", 2026-09-06); ±0.42 px is a roughness you notice up close and
+ * not at reading distance.
+ */
+const EDGE_NOISE_PX = 0.42;
+/** Alpha modulation: the grain in the ink. `k` runs [LOW, 1] — the higher the floor, the denser the chalk. */
+const GRAIN_FINE = 0.2, GRAIN_PATCH = 0.09;
+/** The board's tooth: this share of grains never take. */
+const SKIP_RATE = 0.02;
 /** The tip fades out this long after the last stroke lands (ms). */
 const TIP_LINGER_MS = 420, TIP_FADE_MS = 380;
 
@@ -551,17 +570,17 @@ export class ChalkWriter {
           const cxp = wx / dpr, cyp = wy / dpr;
           // Nibble the edge: sample the glyph through a little noise so the
           // outline is chalk-rough rather than font-crisp.
-          const nx = (valueNoise(cxp * 0.45, cyp * 0.45, seed + 1) - 0.5) * 2 * dpr;
-          const ny = (valueNoise(cxp * 0.45, cyp * 0.45, seed + 2) - 0.5) * 2 * dpr;
+          const nx = (valueNoise(cxp * 0.7, cyp * 0.7, seed + 1) - 0.5) * 2 * EDGE_NOISE_PX * dpr;
+          const ny = (valueNoise(cxp * 0.7, cyp * 0.7, seed + 2) - 0.5) * 2 * EDGE_NOISE_PX * dpr;
           const sx = Math.round(xx + nx), sy = Math.round(yy + ny);
           if (sx < 0 || sy < 0 || sx >= gw || sy >= gh) continue;
           const a = src[(sy * gw + sx) * 4 + 3];
           if (!a) continue;
           const fine = valueNoise(cxp * 1.7, cyp * 1.7, seed + 3);
           const patch = valueNoise(cxp * 0.16, cyp * 0.16, seed + 4);
-          let k = (0.58 + 0.42 * fine) * (0.78 + 0.22 * patch);
-          if (hash2(wx, wy, seed + 5) < 0.04) k *= 0.4;         // the board's tooth: skipped grains
-          const alpha = Math.min(255, Math.round(a * k * 1.12));
+          let k = (1 - GRAIN_FINE + GRAIN_FINE * fine) * (1 - GRAIN_PATCH + GRAIN_PATCH * patch);
+          if (hash2(wx, wy, seed + 5) < SKIP_RATE) k *= 0.55;   // the board's tooth: skipped grains
+          const alpha = Math.min(255, Math.round(a * k * 1.2));
           if (alpha < 6) continue;
           let bd = Infinity, bt = lastT;
           for (let i = 0; i < np; i++) {
@@ -631,21 +650,41 @@ export class ChalkWriter {
     }
   }
 
-  /** The stick in the hand — a chalk on the slate, a pencil on paper (`--lsn-tip`). */
+  /** The stick in the hand — a chalk on the slate, a pencil on paper (`--lsn-tip-color`). */
   private tipColour(): Rgb {
     if (!this.tipRgb) {
-      const v = getComputedStyle(this.host).getPropertyValue('--lsn-tip').trim();
+      const v = getComputedStyle(this.host).getPropertyValue('--lsn-tip-color').trim();
       this.tipRgb = v ? parseColour(v) : [251, 251, 245];
     }
     return this.tipRgb;
   }
 
-  /** The chalk stick itself: contact glow, a shadow on the board, a lift when travelling. */
+  /**
+   * What rides the writing point (`--lsn-tip-style`). Read once and cached with
+   * the colour; a theme never changes under a live board.
+   */
+  private tipStyle(): TipStyle {
+    if (!this.tipKind) {
+      const v = getComputedStyle(this.host).getPropertyValue('--lsn-tip-style').trim();
+      this.tipKind = v === 'stick' || v === 'glow' ? v : 'none';
+    }
+    return this.tipKind;
+  }
+  private tipKind: TipStyle | null = null;
+
+  /**
+   * The tip. `none` — nothing at all: the ink appearing is the cue, and the
+   * canvas is only cleared. `glow` — a single soft spot (8 px, low alpha, no
+   * shadow, no stick). `stick` — the drawn chalk with its shadow and contact
+   * glow. The pen PATH is unchanged in every case; this only draws.
+   */
   private drawTip(now: number): void {
     const c = this.tctx;
     if (!c) return;
     c.setTransform(1, 0, 0, 1, 0, 0);
     c.clearRect(0, 0, this.W, this.H);
+    const style = this.tipStyle();
+    if (style === 'none') { if (now - this.lastActiveAt > TIP_LINGER_MS + TIP_FADE_MS) this.activeUnit = null; return; }
     const u = this.activeUnit;
     if (!u || !u.plan) return;
     const since = now - this.lastActiveAt;
@@ -661,6 +700,20 @@ export class ChalkWriter {
     c.save();
     c.globalAlpha = alpha;
     c.translate(x, y);
+    if (style === 'glow') {
+      // A very faint soft spot at the writing point — no shadow, no body.
+      if (!p.lifted) {
+        const [gr, gg, gb] = this.tipColour();
+        const g = c.createRadialGradient(0, 0, 0, 0, 0, 8);
+        g.addColorStop(0, `rgba(${gr}, ${gg}, ${gb}, 0.30)`);
+        g.addColorStop(0.55, `rgba(${gr}, ${gg}, ${gb}, 0.12)`);
+        g.addColorStop(1, `rgba(${gr}, ${gg}, ${gb}, 0)`);
+        c.fillStyle = g;
+        c.beginPath(); c.arc(0, 0, 8, 0, Math.PI * 2); c.fill();
+      }
+      c.restore();
+      return;
+    }
     if (!p.lifted) {
       const g = c.createRadialGradient(0, 0, 0, 0, 0, 9);
       g.addColorStop(0, 'rgba(255,255,250,.35)');

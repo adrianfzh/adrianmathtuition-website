@@ -32,6 +32,16 @@ model below).
 > WRITTEN by a chalk tip along pen paths derived from the Kalam glyphs the
 > browser laid out — while typeset maths chalk-dusts in and is never written.
 > § Themes has the whole of it. Still additive: `slide` is byte-unchanged.
+>
+> **2026-09-06 — the polish pass.** Adrian on his phone: *"the pen looks
+> distracting → are there better ways? / but can i click/tap at the video
+> itself and it pauses/unpauses? / and can the chalkboard look better?"* All
+> three, plus what his screenshots showed (half of the worked scenes running
+> off the right edge of the board and the top cut off):
+> **no pen** by default (§ The tip), **tap the board to pause** (§ Tap the
+> board), and a calm, even slate with crisp chalk at sizes that fit a phone
+> (§ The slate, re-cut · § Sizes). Still additive: `slide` is byte-unchanged
+> — proved again by a screenshot diff of the binomial pilot.
 
 ## Map
 
@@ -41,8 +51,9 @@ model below).
 | The beat model (pure) | `src/lib/lesson-beats.ts` (+ `.test.ts`) | What actions MEAN: canonical element keys, `resolveActionTimes` (the `at` estimate), `boardStateAt(scene, beat, fired)` → a `BoardState` the views render from, the left-to-right token rule, `proseGroup` (which beat reads which words), `beatAutoMs`. |
 | Themes (pure tokens) | `src/lib/lesson-theme.ts` (+ `.test.ts`) | `THEME_TOKENS` for slide / chalk / paper → `--lsn-*` custom properties; slide's tokens are the values the player always used. Since 2026-09-05 also the slate's texture stack (+ its blend / size lists), the chalk sticks, the per-kind mark colours, and the two self-hosted faces. |
 | The hand (pure) | `src/lib/chalk-strokes.ts` (+ `.test.ts`) | Zhang–Suen thinning · skeleton tracing · smoothing · writing order · the stroke timeline (`buildWritePlan`, normalised 0‥1) · `penAt` · the chalk grain noise. No DOM. |
-| The hand (browser) | `src/app/app/lesson/[slug]/chalk-writer.ts` | Measures the laid-out text with a `Range`, rasterises the loaded webfont, stamps every ink pixel with the moment the tip reaches it, paints and draws the chalk stick. Reads its progress off the DOM (`--lsn-p`) — it owns no clock. |
+| The hand (browser) | `src/app/app/lesson/[slug]/chalk-writer.ts` | Measures the laid-out text with a `Range`, rasterises the loaded webfont, stamps every ink pixel with the moment the tip reaches it, paints it, and draws whatever `tip` asks for (2026-09-06: **nothing**, by default). Reads its progress off the DOM (`--lsn-p`) — it owns no clock. |
 | The board layer | `src/app/app/lesson/[slug]/lesson-board.tsx` | Wraps a beat scene's view: the draw-on sweeps (Web Animations on `clip-path`), the pen tip, hand-drawn marks, notes, focus. Diffs the DOM against what it animated last. |
+| The stage rules (pure) | `src/lib/lesson-stage.ts` (+ `.test.ts`) | What a tap on the board MEANS (`boardTapAction`, `tapGlyph`), the shrink-to-fit arithmetic that keeps a row inside the board (`fitFontPx` / `fitDone`), and the board's resting height (`stageMinHeightPx`). No DOM. |
 | Scripts | `data/lessons/<slug>.json` | Scenes + narration + audio paths. Static imports, never fs reads (Vercel tracing). |
 | Registry + check resolution | `src/lib/lesson-load.ts` | `RAW_SCRIPTS` map; `usableCheckAnswer` / `resolveCheckScene` run the SAME eligibility gate as the practice `?qid=` deep link. |
 | Catalog | `src/lib/lesson-catalog.ts` | The tiny client-safe map entry points read (`lessonForTopic`, `lessonBySlug`); slug / level / topic / minutes. |
@@ -228,7 +239,7 @@ exactly one beat, the lead-in).
 | `morph` | `state: i` | graph-morph: the curve eases to `states[i]` (state 0 holds from entry). |
 | `mark` | `kind` + `token(s)` | A hand-drawn underline / circle / box (a wobbled SVG path drawn with `stroke-dashoffset`, the pen on it), measured from the tokens' resting rects, re-measured on resize. |
 | `note` | `text` (+ `near: "id"`) | A handwritten aside in the pen colour. Its SLOT is laid out from mount — under the token row of the line `near` sits in (equation-steps / annotate), else in the margin under the working — and drawn on when the action fires: never positioned over other glyphs, never a layout shift. ≤ 140 chars. |
-| `focus` | same targets as `write` (+ `hold` s, default 2.2) | A lean-in, not a zoom: the board scales ≤ 1.14× (less for a whole line) centred on the target vertically, anchored at its left edge and sliding only as far as keeps the target on screen; everything else dims to 45 %; released after `hold` ÷ rate. |
+| `focus` | same targets as `write` (+ `hold` s, default 2.2) | **The dim IS the pointing** (2026-09-06): everything but the target drops to 45 % and the target lifts a hair (`brightness(1.1)`); released after `hold` ÷ rate. It used to also scale the board ≤ 1.14×, and that is what pushed a phone board's content off its own right edge and cut the top off — a scale > 1 on a wrapper that crops can only ever crop, so the transform is gone. |
 | `clear` | `what` (default `pen`) | Wipes marks + notes + focus; `board` also wipes everything written (a second worked example on the same board). |
 
 Every reference is validated (`validateLessonScript`, the same pass that checks
@@ -331,14 +342,16 @@ vitest suite before it can ship.
 
 | | `slide` | `chalk` | `paper` |
 |---|---|---|---|
-| Ground | the original white card | **the slate**: a dark green-grey radial board, fractal-noise grain blended `overlay` over it, a low-frequency chalk-dust haze, two erased ghosts, a vignette — CSS/SVG only, no image files | a light ruled sheet (repeating gradients, a faint red margin) |
-| Ink | navy / slate | chalk white `#f3f1e6`, and the sticks: cyan `#9de5f5` · yellow `#ffe58a` · pink `#ffc2d2` · green `#b6e8b0` | navy / ink-blue |
-| Prose | DM Sans | **Kalam**, 24 px on a 15 px base (`handScale` 1.6 — the size the probe read best at on a phone), **written** by the hand | Kalam, navy, 1.5× |
-| Titles | DM Sans | **Permanent Marker** at 30 px, written by the same hand | Permanent Marker |
-| Maths | KaTeX, navy | KaTeX, chalk white, **dusted in** — plus a grain mask that nibbles the glyph edge and a faint glow (`--lsn-math-scale` keeps it from reading small beside 24 px Kalam; worked lines run 19 px) | KaTeX, navy |
-| Highlight | a coloured pill | **a change of chalk**: the token's colour moves to the tone and a fresh stick leaves a soft glow — no box | a coloured pill |
-| Marks | amber, all kinds | one stick per kind: underline = **cyan** (pointing) · circle = **yellow** (attention) · box = **pink** (the answer), each masked with the same grain | ink-blue / amber / rose |
-| Notes | amber | yellow chalk, Kalam 21.6 px, **written** | amber-dark |
+| Ground | the original white card | **the slate**: an even green-black radial board (`#313d38` lit → `#242d29` at the frame), a fine fractal grain blended `overlay`, a whisper of chalk dust, two nearly-gone erased ghosts, a gentle vignette — CSS/SVG only, no image files | a light ruled sheet (repeating gradients, a faint red margin) |
+| Ink | navy / slate | chalk white `#fbfaf3` (10.8 : 1 on the board's lightest point), and the sticks: cyan `#a8ecfb` · yellow `#ffe89a` · pink `#ffc2d2` · green `#b6e8b0` | navy / ink-blue |
+| Prose | DM Sans | **Kalam**, fluid 20.4 px on a 390 px phone → 24 px on a full-width board (§ Sizes), **written** by the hand | Kalam, navy, 1.5× |
+| Titles | DM Sans | **Permanent Marker**, fluid 24.8 → 30.2 px, written by the same hand | Permanent Marker |
+| Headings | a tracked-out uppercase sans label | **chalk**: the marker face in a quiet cyan `#a3dbe6`, sentence case, 15 → 17 px | the marker face, ink-blue |
+| Maths | KaTeX, navy | KaTeX, chalk white, **dusted in**, and CRISP — no mask, no glow (`--lsn-math-scale` keeps it from reading small beside the Kalam; worked lines run 16.9 → 19.4 px) | KaTeX, navy |
+| Highlight | a coloured pill | **a change of chalk**: the token's colour moves to the tone — vivid, no bloom | a coloured pill |
+| Marks | amber, all kinds | one stick per kind: underline = **cyan** (pointing) · circle = **yellow** (attention) · box = **pink** (the answer), each masked with the grain | ink-blue / amber / rose |
+| Notes | amber | yellow chalk, Kalam at the callout size, **written**, in their own slot with clear air | amber-dark |
+| The writing point | the pen dot (unchanged) | **nothing** — `tip: 'none'` (§ The tip) | nothing |
 | Spoken words | 40 % → sweep underline → 85 % | **written as they are said** (§ The hand) | same as chalk |
 | Graph | slate grid / navy curve | translucent grid, chalk curve | slate grid, navy curve |
 
@@ -402,12 +415,23 @@ bundle and no second copy of the face.
    0‥1.
 4. **Ink.** Every ink pixel is stamped with the time of the **nearest sample on
    that letter's own pen path**, then roughened — the sampling coordinate is
-   displaced by value noise (a chalk-rough edge), the alpha modulated by a fine
-   and a coarse noise, and 4 % of grains dropped (the board's tooth). Painting
+   displaced by value noise (a chalk-rough edge, ±0.42 px: at ±1 px the letters
+   read out of focus at 20 px Kalam), the alpha modulated by a fine and a coarse
+   noise into [0.70, 1] and 2 % of grains dropped (the board's tooth). Painting
    is one sorted walk per frame into a shared `ImageData`, `putImageData` with a
    dirty rect.
-5. **The tip.** A chalk stick (`--lsn-tip`) with a contact glow while it is
-   touching, a shadow on the board, and an arc up when it lifts.
+5. **The tip — nothing, by default.** `tip: 'none' | 'glow' | 'stick'` in the
+   theme tokens (`--lsn-tip-style`; `--lsn-tip-color` is the colour when one is
+   drawn). Adrian, 2026-09-06: *"the pen looks distracting"*. **The ink
+   appearing along the path IS the "someone is writing" cue** — JensenMath shows
+   no hand and no chalk either — so the default everywhere is `none`: no stick,
+   no shadow, no contact glow, and the board's own pen dot (`.lsn-pen`, which
+   rides the clip-path sweeps and the marks) is hidden with it. `glow` is a
+   single soft spot ≤ 8 px at low alpha, no shadow; `stick` is the 5-Sep chalk
+   with its shadow and contact glow. **The MOTION is identical in all three** —
+   only what rides the writing point changes, so a theme can put the stick back
+   without touching the engine. The slide theme keeps `stick`: its pen dot
+   predates the board themes and is part of its draw-on.
 6. **Maths is an atom.** A `.katex` island inside prose is skipped: the pen
    lifts over it and it dusts in at the moment the pen reaches it.
 
@@ -450,6 +474,121 @@ glyph, word, size }` in em units with the origin on the baseline — and steps 3
 would play it unchanged. That is the only route where the letter ORDER is real
 (the honest weakness of a synthesised hand is that stroke order is guessed from
 geometry) and the only one where maths could be written naturally too.
+
+### The slate, re-cut (2026-09-06)
+
+Adrian's phone review of the first slate: it read **smeared**. Three loud layers
+were stacked on one board — a low-frequency dust haze at 0.29 alpha (big cloudy
+patches), two erased ghosts at 0.075 white, and a 70 px inset black vignette on
+top of the gradient's own. The re-cut makes all three whispers and evens the
+base; what is left is a fine tooth on a dark green-black board, which is what a
+real slate looks like from a metre.
+
+| Layer | was | is |
+|---|---|---|
+| Base gradient | `#3d4c45` → `#1e2925` (lum 0.066 → 0.018) | `#313d38` → `#242d29` (lum 0.043 → 0.026) — the lit-to-frame swing is a fifth of what it was |
+| Fractal grain (`overlay`) | alpha 0.38, `baseFrequency` 0.72, 260 px tile | alpha **0.28**, 0.9, 220 px tile — finer and quieter |
+| Chalk-dust haze | alpha 0.29 at `0.0125 0.02` — the clouds | alpha **0.05** at `0.055 0.075` — a wash you have to look for |
+| Erased ghosts | 0.075 white, blur 1.3 px | **0.022** white, blur 3 px |
+| Vignette | gradient to 0.55 **plus** `inset 0 0 70px rgba(0,0,0,.42)` | gradient to 0.26 plus `inset 0 0 46px rgba(0,0,0,.20)` |
+
+And the chalk itself is crisper and whiter, because the halo that used to fake
+brightness is gone:
+
+- **Ink** `#f3f1e6` → `#fbfaf3`. Against the board's LIGHTEST point that is
+  **10.8 : 1** (was 8.0 : 1); body ink 9.8 : 1, the pen 9.3 : 1, every stick
+  and every mark colour ≥ 7 : 1. `lesson-theme.test.ts` measures all of it.
+- **No halo.** `text-shadow: 0 0 6px` on the maths and the title: gone.
+  `drop-shadow(0 0 2px)` on the ink canvas: gone. The 9 px `text-shadow` bloom
+  on a highlighted token: gone (a whisper of 1 px is left). The 3 px
+  `drop-shadow` on the marks: gone.
+- **No grain mask on typeset maths.** It ATE SMALL GLYPHS — a superscript 2 at
+  ~11 px came out as a stray diagonal, in the 5-Sep build too (a masked /
+  unmasked pair of the same token proved it in the browser). The maths gets its
+  chalk from the colour and from dusting in. The mask stays on the title, where
+  it is the FALLBACK texture for when the writer is not running; with the hand
+  on, the element's own glyphs are transparent and the mask is inert.
+- The writer's own edge noise came down from ±1 px to **±0.42 px** and its
+  alpha floor up from 0.45 to **0.70** — a rough edge you notice up close, a
+  solid letter at reading distance.
+
+### Sizes — the board is 358 px wide on a phone (2026-09-06)
+
+The first cut hard-coded absolute px (24 px Kalam, 19.4 px worked lines) and
+those sizes did not fit: 24 px Kalam measured ~22 characters a line at 390 px,
+the equation rows ran off the card, and with the old `focus` scale on top the
+top of the board was cut off as well. **Nothing may ever be clipped or overflow
+the board**; three things enforce it.
+
+1. **Fluid roles.** `fluidPx(max, floor)` in `lib/lesson-theme.ts` emits one
+   `clamp()` per role: `floor × max` at a 390 px viewport, `max` at 520 px (the
+   card's full width), linear between. Emitted as `--lsn-hand-body` /
+   `-label` / `-small`, `--lsn-title-px`, `--lsn-heading-px`, `--lsn-line-px`.
+   `handScale` stays the NOMINAL multiplier — the KaTeX rule divides by it in
+   `em`, so that ratio holds at every width.
+
+   | Role | 390 px phone | full-width board |
+   |---|---|---|
+   | Prose body (the question, a caption) | **20.4 px** (~36–42 chars a line) | 24 px |
+   | Callout label / a written note | 18.4 px | 21.6 px |
+   | A step's aside | 16.9 px | 19.8 px |
+   | A worked line's tokens | 16.9 px | 19.4 px |
+   | Scene heading (marker face) | 15.0 px | 17 px |
+   | Scene title (marker face) | 24.8 px | 30.2 px |
+
+2. **Wrapping that behaves.** Token rows are `flex-wrap` with real gaps
+   (0.5 rem × 0.55 rem); typeset maths inside handwriting is `white-space:
+   nowrap` (KaTeX will otherwise break an inline formula at its own binary
+   operators — `a(x − h)² +` / `k` across two lines is worse than moving the
+   whole formula down) with `margin-inline: 0.1em` (an italic KaTeX *x* butted
+   against a Kalam *l* read as one word); prose is `text-wrap: pretty` so a
+   wrapped question never leaves one token alone on its own row.
+
+3. **A shrink-to-fit last resort.** Anything that still cannot fit — a single
+   unbreakable KaTeX island or one very wide token — has its row's font-size
+   taken down until it does, in a LAYOUT effect so the smaller size is in the
+   first painted frame. The rows are marked `data-fit`; the arithmetic is pure
+   (`fitFontPx` / `fitDone`, floor 12 px) and the DOM pass measures the widest
+   **`.katex-html` / `.lsn-tok`**, never `scrollWidth` — KaTeX's screen-reader
+   MathML is a clipped 1 × 1 box whose children still report full-width rects
+   and would trigger a phantom shrink.
+
+**And the board's height follows its content.** `.lsn-stage` replaces the flat
+`min-h-[440px]` with `clamp(280px, 46vh, 420px)` (mirrored by
+`stageMinHeightPx`), content sits in the UPPER part of the board rather than
+floating in the middle of it, notes get their own slot with 0.6 rem of air
+above (they used to sit on the fraction they annotate), and the marks were
+tightened — a circle inflates by (5, 5) rather than (10, 7) — so no mark
+crosses another token's glyphs. Measured on the four densest scenes at 390 ×
+844 and 1280 × 900: **zero elements outside the board's padding box** on all
+eight, and Continue reachable without scrolling on seven (the two densest
+scenes clear it for a student and sit 8 px under the tab bar behind Adrian's
+32 px admin banner).
+
+### Tap the board (2026-09-06)
+
+> *"but can i click/tap at the video itself and it pauses/unpauses?"*
+
+Yes. `boardTapAction` in `lib/lesson-stage.ts` is the whole rule, pure and
+tested; the player reads it and nothing else decides:
+
+| the tap | what happens |
+|---|---|
+| on a control (`TAP_INTERACTIVE_SELECTOR`: input, button, a, label, `[role=button]`, …) | **nothing** — the control owns it. The check's answer gate is untouched. |
+| while a check is unanswered | **nothing** — the board is not a play surface mid-check. |
+| in a timed pacing (▶ Auto / 🔊 Voice), playing | **pause**, and a ⏸ flashes in the middle of the board for 520 ms |
+| in a timed pacing, paused | **resume**, exactly where it stopped, and a ▶ flashes |
+| in Manual pacing | **advance one beat** — as it always did |
+
+Pause is one piece of state, so the header ⏸/▶ pill, the space bar and the tap
+are always in step (the space bar goes through the same function, and skips
+controls the same way). Resume uses the pause path that already existed — the
+clip keeps its `currentTime`, the beat timer keeps its remainder, the hand
+freezes mid-word and carries on — so the unlock / AbortError rules in
+`lesson-narration.ts` are untouched, and "Continue while locked" still unlocks
+silently and advances. Measured in the browser: tap → `audio.currentTime` and
+the ink pixel count both constant over 1.6 s, `data-paused` on, the glyph
+flashed; tap (or the pill) again → the clip runs on from 1.95 s.
 
 ## Scene schema (one JSON object per scene)
 
@@ -583,10 +722,12 @@ belong to the two timed pacings:
   (pausing a clip before its `play()` settled rejects with `AbortError` →
   `superseded` → the position stands, the classification the tap-to-advance
   fix relies on). A position change while paused (Continue, ‹) releases the
-  pause and moves on — navigation is always "go on". Tapping the **card**
-  while paused resumes in place instead of advancing (a quiet "⏸ Paused ·
-  tap to resume" chip sits top-right). A backgrounded tab still pauses and
-  resumes on its own, unless the student had paused it themselves. Mode
+  pause and moves on — navigation is always "go on". **Since 2026-09-06 a tap
+  anywhere on the board toggles pause in a timed pacing** (§ Tap the board), so
+  the tap, the pill and the space bar are three doors onto one piece of state;
+  a quiet "⏸ Paused · tap to resume" chip sits top-right and the tap itself
+  flashes a ⏸ / ▶ in the middle of the board. A backgrounded tab still pauses
+  and resumes on its own, unless the student had paused it themselves. Mode
   changes release a pause.
 - **The teacher's cursor (2026-09-03)** — the prose on the card comes alive
   as the voice reads it, the way a teacher builds a slide, never karaoke.
@@ -718,11 +859,22 @@ rule, a `move` that waits vs one that flies with its line, write-step marks
 tokens written, `clear` pen vs board), graph state, caption paragraphs,
 `proseGroup` (explicit reveal wins), a beat as the sub-step + derived
 narration + `beatClipPath`. `src/lib/lesson-theme.test.ts`: tokens per theme,
-slide = the original values (its three mark colours all its one amber), the
-chalk contrast guards run against the slate's LIGHTEST point (`boardLit`: ink
-8.0 : 1, every chalk stick > 5.5 : 1), CSS-only textures with matching
+slide = the original values (its three mark colours all its one amber, its pen
+`tip: 'stick'`), the chalk contrast guards run against the slate's LIGHTEST
+point (`boardLit`: ink 10.8 : 1, body 9.8 : 1, every chalk stick and every mark
+> 7 : 1) and the lit-to-frame swing bounded, `tip: 'none'` on both board
+themes, the fluid size clamps (20.4 px at 390, 24 px at 520, clamped both
+ways, and the exact `clamp()` string), CSS-only textures with matching
 image / blend / size layer counts, the self-hosted face URLs, the
-`--lsn-*` emission. `src/lib/chalk-strokes.test.ts`: thinning a fat bar to one
+`--lsn-*` emission.
+`src/lib/lesson-stage.test.ts`: `boardTapAction` — a timed pacing toggles
+pause, Manual advances, a control or an unanswered check is ignored — the
+interactive selector's contents, `tapGlyph` only on a state change; the
+shrink-to-fit arithmetic (a row that fits is left alone, an over-wide one comes
+down by the width ratio and always by at least a 0.25 px step, the 12 px floor
+terminates the loop, convergence in under four passes, degenerate measurements
+change nothing); `stageMinHeightPx` at a phone, a desk, a tall window and a
+short one. `src/lib/chalk-strokes.test.ts`: thinning a fat bar to one
 pixel per row and keeping a cross connected; a bar as one chain, a cross as two
 strokes THROUGH the junction, a closed loop as a cycle, spurs pruned; RDP and
 smoothing; writing order (longest first, left to right, dots last, a cycle from
