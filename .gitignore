@@ -60,3 +60,6 @@ __pycache__/
 * [0-9][0-9].*
 * [0-9]
 * [0-9][0-9]
+
+# two-account leak test state (holds minted session tokens) — scripts/leak-test
+.leak-test/

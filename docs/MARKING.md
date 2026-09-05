@@ -1150,6 +1150,32 @@ Vercel Blob addresses and the personal Dropbox. One module owns it: **`lib/stude
   and rewrites the references (not written yet — `scripts/migrate-blob-to-storage.ts` is the
   intended home).
 
+
+### Leak test — run it after touching the door or any ownership filter
+
+`scripts/leak-test/leaktest.cjs` is the two-account leak test PLAN-PORTAL-SOLO.md
+makes mandatory per phase, aimed at the file door and every student-facing route.
+Four actors — anonymous, A (the test student *Teste Echo*), B (Adrian's own portal
+account), the admin bearer — against 13 fixture objects covering every key root
+(`runs/` own · other's · unreleased · nonexistent, `handins/`, `clippings/`,
+`assignments/`, unreferenced `uploads/`, `inbox/`), eight path tricks (`%2e%2e`,
+encoded slashes, uppercase root, NUL, trailing dot, backslash, double encoding),
+cross-account reads on marking-pdf / practice-pdf / my-notes / assignments /
+dashboard / notebook / export / requests / practice-history / plan / reschedule,
+cross-account DELETE and PATCH on a clipping, the `/app/marking` and
+`/app/assignments/[id]` pages, and the own-run-while-unreleased case. Sessions are
+minted server-side (`auth.admin.generateLink` → `verifyOtp`), so no password is
+typed; cleanup removes the fixtures, revokes both sessions and prints the bucket
+root, which must come back empty.
+
+**First full run 5 Sep 2026, prod, right after the promote: 117 checks, 0 leaks.**
+Two things that look like failures and are not: `/app/assignments/<someone
+else's id>` answers **HTTP 200 carrying the 404 page** (Next has already streamed
+the `loading.tsx` shell, so the status cannot change — the body holds nothing of
+the assignment), and the Teste demo run's export mentions Adrian's own run id
+because its `result_json` was copied from that run when the fixture was made.
+The reschedule proxy to the bot returned one transient 502 and 200 on retry.
+
 ## /admin/mark-paper — scanned-PDF working (client-side rasterisation)
 
 Adrian can drop the student's working in as **a scanned PDF** instead of phone photos.
