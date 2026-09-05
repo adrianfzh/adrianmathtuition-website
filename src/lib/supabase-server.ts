@@ -27,6 +27,7 @@
 //   portal_generated_papers     airtable_student_id = identity
 //   portal_generation_log       airtable_student_id = identity
 //   portal_assignments          airtable_student_id = identity
+//   notebook_mistakes           airtable_student_id = identity (the fading mistakes list, SPEC-PORTAL-V2 §6)
 //   portal_push_subscriptions   airtable_student_id = identity
 //   portal_passes               account_id = account.id (the money gate)
 //   portal_invite_tokens        token-addressed (activate flow) / admin

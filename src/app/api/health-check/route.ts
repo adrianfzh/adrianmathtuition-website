@@ -318,6 +318,22 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`notebook_entries? HTTP ${q.status}`);
       return 'auth gate up';
     }),
+    // The Notebook's fading mistakes list (SPEC-PORTAL-V2 §6, /app/my-notes
+    // "Your mistakes"). 401 anonymously proves the route is deployed with its
+    // gate up; the REST probe proves notebook_mistakes still answers — the
+    // release hook and the grade hook both write to it fail-soft, so a dropped
+    // table would otherwise surface only as the band silently emptying.
+    timed('notebook-mistakes', async () => {
+      const r = await fetch(`${base}/api/portal/notebook/mistakes`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      const q = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/notebook_mistakes?select=id&limit=1`,
+        { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: T(10000) }
+      );
+      if (!q.ok) throw new Error(`notebook_mistakes? HTTP ${q.status}`);
+      return 'auth gate up';
+    }),
     // The plan API (SPEC-REVISION-PLAN.md; its page merged into My Notebook,
     // /app/my-notes, on 2026-08-28). Anonymous 401 proves the route is
     // deployed with its auth gate up; the tables it reads are already probed

@@ -3,9 +3,15 @@
 // marking-derived fragments into a single page at the URL My Notes already
 // owned (no URL churn):
 //
-//   1. This week's focus — buildPlan (lib/plan.ts, pure) over the shared
-//      papers+notebook assembly (lib/notebook-data.ts), the same derivation
-//      Home's focus card uses. Fail-soft: hidden when there is nothing to say.
+//   1. Your mistakes — the living list of the student's mistake patterns
+//      (SPEC-PORTAL-V2 §6, notebook_mistakes via lib/notebook-mistakes-store):
+//      one row per pattern, born from released papers and graded practice,
+//      fading as clean results arrive — Still happening, then Getting better,
+//      then a compact Fixed line. "Corrected" (mistake-actions.tsx) lets the
+//      student mark one fixed; evidence can bring it back. Each row links to
+//      the Practice items that fix it when the hand-back has named any.
+//      Fail-soft: hidden at zero. ("This week's focus", buildPlan over the
+//      papers, sat here 2026-08-28 → 6 Sep 2026 and was removed with §0/§6.)
 //   2. Questions to retry — the notebook's dropped-marks entries (live only,
 //      retryOrder in lib/notebook.ts), each expandable to the full picture
 //      from the run: the question as marked, the marker's comment, per-part
@@ -32,8 +38,10 @@ import { portalIdentity, sessionAccount } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { createServiceClient } from '@/lib/supabase-server';
 import { loadPapersAndNotebook, type NotebookEntryRow, type PapersAndNotebook } from '@/lib/notebook-data';
-import { buildPlan, type RevisionPlan } from '@/lib/plan';
 import { retryOrder, sgtToday } from '@/lib/notebook';
+import { loadMistakes, type MistakeRow } from '@/lib/notebook-mistakes-store';
+import { bandOf, displayOrder, latestSighting, shortDate, sightingLine, stateLabel } from '@/lib/notebook-mistakes';
+import { CorrectedButton } from './mistake-actions';
 import { MAX_NOTES_PER_STUDENT, type MyNoteRow, type TopicOptionGroup } from '@/lib/portal-notes';
 import { getTopicsForPaperLevel } from '@/lib/canonical-topics';
 import { qbLevelsFor } from '@/lib/qb-levels';
@@ -79,10 +87,11 @@ export default async function MyNotebookPage() {
     );
   }
 
-  // The clippings and the papers+notebook assembly are independent — one
-  // parallel batch. Both fail soft: a load error hides its band, never the page.
+  // The clippings, the papers+notebook assembly and the mistakes list are
+  // independent — one parallel batch. All fail soft: a load error hides its
+  // band, never the page.
   const svc = createServiceClient();
-  const [assembly, clippings] = await Promise.all([
+  const [assembly, clippings, mistakes] = await Promise.all([
     loadPapersAndNotebook(svc, sid, sgtToday()).catch(
       (): PapersAndNotebook => ({ ok: false, error: 'papers' }),
     ),
@@ -93,24 +102,42 @@ export default async function MyNotebookPage() {
       .order('created_at', { ascending: false })
       .limit(MAX_NOTES_PER_STUDENT)
       .then(r => (r.data ?? []) as MyNoteRow[], () => [] as MyNoteRow[]),
+    // The read applies the 14-day "Corrected" → Fixed sweep on the way out.
+    loadMistakes(svc, sid).catch((): MistakeRow[] => []),
   ]);
 
-  let plan: RevisionPlan | null = null;
+  // Band 1 — the mistakes list in display order (entries with no evidence yet,
+  // i.e. placeholders the hand-back linked before the paper released, are left
+  // out by displayOrder). The Practice items that fix them: one scoped query
+  // for every linked assignment across the list, titles only; anything
+  // revoked or not yet released to the student is simply not linked here.
+  const bands = displayOrder(mistakes);
+  const liveMistakes = bands.stillHappening.length + bands.gettingBetter.length;
+  const practiceById = new Map<string, { id: string; title: string }>();
+  const linkedIds = [...new Set(mistakes.flatMap(m => m.practice_ids))];
+  if (linkedIds.length) {
+    try {
+      const { data } = await svc
+        .from('portal_assignments')
+        .select('id, title, status')
+        .eq('airtable_student_id', sid)
+        .in('id', linkedIds.slice(0, 200));
+      for (const a of data ?? []) {
+        if (a.status === 'assigned' || a.status === 'submitted' || a.status === 'marked') {
+          practiceById.set(String(a.id), { id: String(a.id), title: String(a.title || 'Practice') });
+        }
+      }
+    } catch { /* the list still renders without its practice links */ }
+  }
+  const practiceFor = (m: MistakeRow) =>
+    m.practice_ids.map(id => practiceById.get(id)).filter((p): p is { id: string; title: string } => !!p);
+
   let retry: NotebookEntryRow[] = [];
   // The solution reveal lives on the run, never on the notebook row (a
   // dropped-marks entry only mirrors the score) — index every marked
   // question by run+number once so each card can look its own up in O(1).
   const questionByKey = new Map<string, StudentQuestion>();
   if (assembly.ok) {
-    plan = buildPlan(
-      assembly.papers,
-      assembly.entries.map(e => ({
-        topic: e.topic,
-        attempts: e.attempts,
-        questionNumber: e.question_number,
-        paperName: e.paper_name,
-      })),
-    );
     retry = retryOrder(assembly.entries);
     for (const paper of assembly.papers) {
       for (const q of paper.questions) questionByKey.set(`${paper.id}|${q.questionNumber}`, q);
@@ -120,13 +147,6 @@ export default async function MyNotebookPage() {
   // is otherwise orphaned — RetryCard treats that as fail-soft, not an error.
   const questionFor = (e: NotebookEntryRow): StudentQuestion | null =>
     questionByKey.get(`${e.run_id}|${e.question_number}`) ?? null;
-  // Under EVIDENCE_MIN marks of evidence the plan has nothing honest to say —
-  // treat it as absent (the old /app/plan showed its hand-in funnel here; on
-  // this page the clippings band's empty state carries that job).
-  const planHasContent =
-    !!plan && !plan.empty &&
-    (plan.focus.length > 0 || plan.keepWarm.length > 0 || plan.wins.length > 0);
-
   const shown = retry.slice(0, RETRY_CAP);
   const extra = retry.slice(RETRY_CAP);
 
@@ -152,61 +172,42 @@ export default async function MyNotebookPage() {
       <div className="pt-1">
         <h1 className="text-xl font-bold text-navy">My Notebook</h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          Built from your marked papers and your own photos — focus topics, questions to retry, and everything you&apos;ve saved.
+          Built from your marked papers and your own photos — your mistakes as they fade, questions to retry, and everything you&apos;ve saved.
         </p>
       </div>
 
-      {/* Band 1 — This week's focus (Home's derivation; hidden when empty) */}
-      {plan && planHasContent && (
+      {/* Band 1 — Your mistakes (SPEC-PORTAL-V2 §6): one row per mistake
+          pattern, fading as clean results arrive. Still happening first, then
+          Getting better, then the compact Fixed line so progress stays
+          visible. Hidden at zero. */}
+      {(liveMistakes > 0 || bands.fixed.length > 0) && (
         <section>
-          <p className={`${BAND} mb-2`}>This week&apos;s focus</p>
-          <div className={`${CARD} p-4 space-y-3`}>
-            {plan.focus.length > 0 && (
-              <div>
-                <div className="flex flex-wrap gap-2">
-                  {plan.focus.map(f => (
-                    <Link
-                      key={f.topic}
-                      href={f.practiceHref}
-                      className="text-sm bg-rose-50 text-rose-800 rounded-full px-3 py-1 hover:bg-rose-100 transition-colors"
-                    >
-                      {f.topic} <span className="text-rose-500">›</span>
-                    </Link>
-                  ))}
-                </div>
-                <p className="text-[11px] text-slate-400 mt-2">
-                  Where your marked papers say the marks are going — tap one to practise it.
-                </p>
-              </div>
-            )}
-            {plan.keepWarm.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700/80">Keep warm</span>
-                {plan.keepWarm.map(t => (
-                  <Link
-                    key={t.topic}
-                    href={t.practiceHref}
-                    className="text-[13px] bg-amber-50 text-amber-800 rounded-full px-2.5 py-0.5 hover:bg-amber-100 transition-colors"
-                  >
-                    {t.topic} <span className="font-semibold">{t.score}%</span>
-                  </Link>
+          <p className={`${BAND} mb-2`}>
+            Your mistakes{liveMistakes > 0 && <span className="normal-case font-medium"> · {liveMistakes}</span>}
+          </p>
+          {liveMistakes > 0 && (
+            <div className="space-y-2">
+              {bands.stillHappening.map(m => (
+                <MistakeCard key={m.id} m={m} practice={practiceFor(m)} />
+              ))}
+              {bands.gettingBetter.map(m => (
+                <MistakeCard key={m.id} m={m} practice={practiceFor(m)} />
+              ))}
+            </div>
+          )}
+          {bands.fixed.length > 0 && (
+            <div className={`${CARD} ${liveMistakes > 0 ? 'mt-2' : ''} px-4 py-3`}>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700/80">Fixed</p>
+              <ul className="mt-1 space-y-0.5">
+                {bands.fixed.map(m => (
+                  <li key={m.id} className="flex items-center justify-between gap-3 text-[12px] text-gray-600">
+                    <span className="min-w-0 truncate">✓ {m.title}</span>
+                    <span className="shrink-0 text-gray-400">{shortDate(m.last_clean_at ?? m.student_fixed_at)}</span>
+                  </li>
                 ))}
-              </div>
-            )}
-            {plan.wins.length > 0 && (
-              <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700/80">Wins</span>
-                <ul className="mt-1 space-y-0.5">
-                  {plan.wins.map((w, i) => (
-                    <li key={i} className="flex items-center justify-between gap-3 text-[12px] text-gray-600">
-                      <span className="min-w-0 truncate">{w.kind === 'paper' ? '📄' : '🏆'} {w.label}</span>
-                      <span className="shrink-0 text-gray-400">{w.dateLabel}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
+              </ul>
+            </div>
+          )}
         </section>
       )}
 
@@ -245,6 +246,60 @@ export default async function MyNotebookPage() {
         <p className={`${BAND} mb-2`}>✂️ My clippings &amp; photos</p>
         <MyNotesGallery initialNotes={clippings} topicGroups={topicGroups} />
       </section>
+    </div>
+  );
+}
+
+/**
+ * One mistake pattern: its title, where it was last seen (paper + question, or
+ * the practice topic), its state word, the "came back" tag, the Practice items
+ * that fix it, and — while it is still live — the Corrected button. Dark rows
+ * carry the full ink; Getting-better rows fade so the eye lands on what is
+ * still happening.
+ */
+function MistakeCard({ m, practice }: { m: MistakeRow; practice: { id: string; title: string }[] }) {
+  const dark = bandOf(m.state) === 'still-happening';
+  const seen = latestSighting(m);
+  const where = sightingLine(seen);
+  const live = m.state === 'dark' || m.state === 'light';
+  return (
+    <div className={`${CARD} p-4 ${dark ? '' : 'opacity-75'}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className={`text-sm font-bold ${dark ? 'text-navy' : 'text-gray-600'}`}>{m.title}</p>
+          {where && (
+            <p className="text-[12px] text-gray-500 mt-0.5">
+              {where}
+              {m.seen_count > 1 ? ` · seen ${m.seen_count} times` : ''}
+            </p>
+          )}
+          {m.state === 'student_fixed' && (
+            <p className="text-[11px] text-gray-400 mt-0.5">you marked this fixed</p>
+          )}
+        </div>
+        <div className="shrink-0 flex flex-col items-end gap-1">
+          <span className={`text-[11px] rounded-full px-2.5 py-0.5 font-semibold whitespace-nowrap ${dark ? 'bg-rose-50 text-rose-800' : 'bg-amber-50 text-amber-800'}`}>
+            {stateLabel(m.state)}
+          </span>
+          {m.came_back && (
+            <span className="text-[10px] rounded-full bg-rose-100 text-rose-700 px-2 py-0.5 font-semibold whitespace-nowrap">came back</span>
+          )}
+        </div>
+      </div>
+      {(practice.length > 0 || live) && (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {practice.map(p => (
+            <Link
+              key={p.id}
+              href={`/app/assignments/${p.id}`}
+              className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-800 rounded-xl px-3 py-1.5 text-[13px] font-semibold hover:bg-amber-100 transition-colors"
+            >
+              ✏️ {p.title} →
+            </Link>
+          ))}
+          {live && <CorrectedButton id={m.id} />}
+        </div>
+      )}
     </div>
   );
 }

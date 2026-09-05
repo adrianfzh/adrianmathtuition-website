@@ -21,6 +21,7 @@ import { parseTimedMeta } from '@/lib/timed-set';
 import { gradeMcq, isMcqAnswer, isScienceSubject, normaliseMcqChoice, scienceLevelForSubject, scienceLevelsFor } from '@/lib/science-levels';
 import { scienceEligible, scienceQuestion } from '@/lib/science-bank';
 import { sciencePracticeAccess } from '@/lib/portal-beta';
+import { applyGradedAttempt } from '@/lib/notebook-mistakes-store';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -277,6 +278,26 @@ export async function POST(req: NextRequest) {
 
   const newTags = result.lineComments.filter(c => !c.ok && c.tag).map(c => c.tag!) ;
   await upsertWeaknessTags(account.id, identity, newTags);
+
+  // 📓 The Notebook's mistakes list (SPEC-PORTAL-V2 §6): a wrong or partial
+  // grade darkens "<kind> in <topic>" (or the entries this assignment was sent
+  // to fix); a correct one is a clean result on the topic / the linked entries.
+  // The attempt id is the idempotency key, so only a persisted attempt counts.
+  // Fail-soft — a notebook hiccup never turns a grade into an error.
+  if (inserted?.id != null) {
+    try {
+      await applyGradedAttempt(admin, identity, {
+        attemptId: inserted.id,
+        verdict: result.verdict,
+        topic: Array.isArray(q.topics) && typeof q.topics[0] === 'string' ? q.topics[0] : null,
+        tags: newTags,
+        assignmentId: assignment?.id ?? null,
+        at: new Date().toISOString(),
+      });
+    } catch (e) {
+      console.warn('[practice-grade] notebook mistakes skipped:', (e as Error).message);
+    }
+  }
 
   // "From Adrian": mark the assignment done (a re-mark overwrites the score)
   // and tell Adrian — D1's spot-check hook.

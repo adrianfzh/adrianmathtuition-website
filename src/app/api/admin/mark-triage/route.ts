@@ -56,6 +56,7 @@ import { PAPER_SUBJECTS } from '@/lib/portal-subjects';
 /** What paper_subject may hold — the three maths plus the desk's "Other" (SPEC-PORTAL-V2 §1). */
 const PAPER_SUBJECT_VALUES: readonly string[] = [...PAPER_SUBJECTS, 'Other'];
 import { releaseHeldPracticeItems } from '@/lib/practice-again-store';
+import { applyRunRelease } from '@/lib/notebook-mistakes-store';
 
 export const runtime = 'nodejs';
 // Release itself is fast; the ceiling is for the after() enrichment, which
@@ -582,7 +583,7 @@ export async function POST(req: NextRequest) {
 
     const { data: runs, error: readErr } = await supa
       .from('paper_marking_runs')
-      .select('id, paper_name, student_id, student_name, annotated_pdf_url, photos_pdf_url, result_json, released_at, created_at')
+      .select('id, paper_name, paper_subject, student_id, student_name, annotated_pdf_url, photos_pdf_url, result_json, released_at, created_at')
       .in('id', runIds);
     if (readErr) return NextResponse.json({ error: readErr.message }, { status: 500 });
 
@@ -725,6 +726,23 @@ export async function POST(req: NextRequest) {
           heldItems.released ? `${heldItems.released} practice item${heldItems.released === 1 ? '' : 's'} released` : '',
         ].filter(Boolean).join(' · ') || undefined,
       });
+
+      // 📓 The Notebook's mistakes list (SPEC-PORTAL-V2 §6): every lost part /
+      // sheet-diagnosis skill on this paper creates or darkens the student's
+      // entries, every topic with nothing lost is a clean result. This is the
+      // ONE release path — manual, the bot's auto-release and the
+      // release-with-sheet button all stamp here — so the hook lives here
+      // once. Idempotent per run (the run id is the evidence ref), and
+      // fail-soft: a notebook hiccup never undoes or delays a release.
+      if (run.student_id) {
+        try {
+          await applyRunRelease(supa, run.student_id, {
+            id: run.id, paper_name: run.paper_name, paper_subject: run.paper_subject, result_json: run.result_json,
+          }, now, new Date(now));
+        } catch (e) {
+          console.warn('[mark-triage] notebook mistakes skipped:', (e as Error).message);
+        }
+      }
 
       // A re-mark replaces the old marking instead of sitting beside it
       // (Adrian, 2026-08-31: "re-mark lands, previous run auto-archive").

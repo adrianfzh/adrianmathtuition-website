@@ -102,6 +102,18 @@ tick on the desk releases it.
 
 ## 6. The Notebook: mistakes that fade
 
+**Built 6 Sep 2026 (branch `build/notebook`):** `notebook_mistakes` (migration
+`migrations/notebook_mistakes.sql`, RLS on / no policies), `lib/notebook-mistakes.ts`
+(pure state machine + extraction, 43 tests), `lib/notebook-mistakes-store.ts`
+(identity predicate in every query; exports `addPracticeLinks(identity, skillTitle,
+assignmentIds)` for §7), hooks in mark-triage's release action and the practice
+grader, `GET/POST /api/portal/notebook/mistakes`, the "Your mistakes" band on
+`/app/my-notes`, health-check `notebook-mistakes`, backfill
+`scripts/notebook-mistakes-backfill.ts`. The focus card and band are gone.
+The thresholds shipped are the 6 Sep rules as given to the build (ONE clean result →
+light, TWO → fixed, a clean paper = two), not the "two attempts → light, a third →
+fixed" wording below — reconcile whichever way Adrian prefers.
+
 **Sources that already exist:** every lost part's `error_kind` + `study_note` +
 `verdict_line`; the sheet diagnosis `skills[]` (titled, with marks and questions);
 practice `weakness_tags`; `notebook_entries` (questions to retry); `student_attempts`.

@@ -12,10 +12,6 @@ import { EXAM_PREP_OPEN_TO_STUDENTS, LAST_LESSON_OPEN_TO_STUDENTS, NOTES_OPEN_TO
 import { listStudentAssignments } from '@/lib/portal-assignments';
 import { assignmentHref, dueLabel, homeCardSummary, isPending } from '@/lib/assignments';
 import { homeCounts } from '@/lib/portal-home-counts';
-import { createServiceClient } from '@/lib/supabase-server';
-import { loadPapersAndNotebook } from '@/lib/notebook-data';
-import { buildPlan } from '@/lib/plan';
-import { sgtToday } from '@/lib/notebook';
 import { sgtDaysAgoISO, sgtTodayISO } from '@/lib/sgt';
 import { activeAnnouncement } from '@/lib/portal-announcement';
 import { loadActivePlan } from '@/lib/remediation-data';
@@ -65,7 +61,7 @@ export default async function DashboardPage() {
   // streams in via the two <Suspense> islands below and the shell paints
   // immediately after login (Adrian, 2026-08-28: "still taking a bit of time
   // to load initially"). Everything awaited here is fast Supabase.
-  const [todayCards, assignments, counts, focus, passNudge, fixit] = await Promise.all([
+  const [todayCards, assignments, counts, passNudge, fixit] = await Promise.all([
     learnVisible ? getTodayCards(account).catch(() => []) : Promise.resolve([]),
     // "From Adrian" assigned work (SPEC-ASSIGN.md) — fail-soft, hidden at zero;
     // gated to the account's subjects (SPEC-PORTAL-V2 §2).
@@ -73,18 +69,6 @@ export default async function DashboardPage() {
     // Live numbers on the Hand in / Marked tiles — fail-soft zeros. The account
     // carries the subject gate, so the Marked count matches the Papers list.
     homeCounts(sid, account),
-    // This week's focus (Adrian, 2026-08-28): the Plan TAB is gone — real
-    // suggestions surface HERE, and only when they exist. Fail-soft.
-    (async () => {
-      try {
-        const res = await loadPapersAndNotebook(createServiceClient(), sid, sgtToday());
-        if (!res.ok) return [];
-        return buildPlan(res.papers, res.entries.map(e => ({
-          topic: e.topic, attempts: e.attempts,
-          questionNumber: e.question_number, paperName: e.paper_name,
-        }))).focus;
-      } catch { return []; }
-    })(),
     // ⏳ pass-ending nudge (HOME ONLY): a pass-riding account whose current
     // pass ends today/tomorrow gets one slim amber line to /app/pass. Tuition
     // accounts short-circuit on the pure isTuitionAccount check — zero DB
@@ -118,7 +102,7 @@ export default async function DashboardPage() {
   // practise, teal = hand in, violet = marked" without reading.
   const card = 'bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-5';
   const caption = 'text-[11px] font-bold uppercase tracking-wider text-slate-400';
-  const P = SURFACES.practice, S = SURFACES.submit, M = SURFACES.marking, A = SURFACES.assignments, L = SURFACES.lesson, PL = SURFACES.plan, N = SURFACES.notes;
+  const P = SURFACES.practice, S = SURFACES.submit, M = SURFACES.marking, A = SURFACES.assignments, L = SURFACES.lesson, N = SURFACES.notes;
 
   return (
     <div className="space-y-4 pb-20 sm:pb-4">
@@ -323,30 +307,9 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* This week's focus — renders ONLY when the plan derived real
-          suggestions from this student's marked papers + notebook (Adrian,
-          2026-08-28: no standing Plan tab; suggestions earn their place on
-          Home or appear nowhere). The detail lives in My Notebook
-          (/app/my-notes — /app/plan redirects there since 2026-08-28). */}
-      {focus.length > 0 && (
-        <div className={`${card} !p-4`}>
-          <div className="flex items-center gap-2 mb-2">
-            <span className={`flex items-center justify-center w-8 h-8 rounded-xl shrink-0 ${PL.tile}`}><PortalIcon name={PL.icon} className="w-4 h-4" /></span>
-            <span className="font-bold text-navy text-sm">This week&apos;s focus</span>
-            <Link href="/app/my-notes" className={`ml-auto text-[11px] font-semibold ${PL.text} hover:underline`}>My Notebook ›</Link>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {focus.map(f => (
-              <Link key={f.topic} href={`/app/practice?topic=${encodeURIComponent(f.topic)}`}
-                className="text-sm bg-rose-50 text-rose-800 rounded-full px-3 py-1 hover:bg-rose-100 transition-colors">
-                {f.topic} <span className="text-rose-500">›</span>
-              </Link>
-            ))}
-          </div>
-          <p className="text-[11px] text-slate-400 mt-2">Where your marked papers say the marks are going — tap one to practise it.</p>
-        </div>
-      )}
-
+      {/* "This week's focus" used to sit here (buildPlan over the marked
+          papers, 2026-08-28 → 6 Sep 2026). Removed with SPEC-PORTAL-V2 §0/§6:
+          the Notebook's living mistakes list (/app/my-notes) is the record now. */}
 
       <Suspense fallback={null}>
         <LessonRecap account={account} fullPortal={fullPortal} card={card} caption={caption} />
