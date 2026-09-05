@@ -7,6 +7,7 @@ labels in Examples, hoisted first parts on parts-only Practice questions, and
 literal labels for every part after a hoist (SQ's auto-numbering would restart).
 """
 from __future__ import annotations
+import re
 import sys
 from pathlib import Path
 
@@ -123,3 +124,122 @@ def figure_width_cm(fig: dict, max_h: float = FIG_MAX_H_PRACTICE) -> float:
     if w < FIG_MIN_W:
         w = min(FIG_MIN_W, FIG_HARD_H / ratio)
     return round(w, 2)
+
+
+# ---------------------------------------------------------------------------
+# Data tables inside a question's text
+# ---------------------------------------------------------------------------
+# Extractor generations stored tables two ways and pandoc renders NEITHER as a
+# table: a markdown pipe run collapses to literal "| | Mean mass | Standard
+# deviation | | Papayas | 1.85 |" text (Adrian, 5 Sep 2026), and a LaTeX array
+# becomes a borderless OMML matrix. Both are turned into real Word tables here.
+# The markdown form has no newlines — rows run together, so the row boundary is
+# the "| |" between a row's closing pipe and the next row's opening one.
+
+MD_TABLE_RE = re.compile(r"(?:\|[^|\n]*){3,}\|")
+TEX_TABLE_RE = re.compile(
+    r"\$\$\s*\\begin\{(?P<e>array|tabular)\}(?:\{[^}]*\})?(?P<body>.*?)\\end\{(?P=e)\}\s*\$\$"
+    r"|\\begin\{(?P<e2>array|tabular)\}(?:\{[^}]*\})?(?P<body2>.*?)\\end\{(?P=e2)\}",
+    re.S)
+_RULE_CELL = re.compile(r"^:?-{2,}:?$")
+
+
+def _pad(rows):
+    """A row that lost a leading EMPTY cell to the row-split is short by one."""
+    rows = [r for r in rows if r and not all(_RULE_CELL.match(c) for c in r)]
+    if len(rows) < 2:
+        return None
+    w = max(len(r) for r in rows)
+    return [[""] * (w - len(r)) + r for r in rows] if w >= 2 else None
+
+
+def md_table_rows(seg: str):
+    rows = []
+    for chunk in re.split(r"\|\s*\|", seg.strip()):
+        cells = [c.strip() for c in chunk.split("|")]
+        while cells and cells[0] == "":
+            cells.pop(0)
+        while cells and cells[-1] == "":
+            cells.pop()
+        if cells:
+            rows.append(cells)
+    return _pad(rows)
+
+
+def tex_table_rows(body: str):
+    body = body.replace(r"\hline", " ").replace(r"\\[", r"\\ [")
+    rows = []
+    for line in re.split(r"\\\\", body):
+        if not line.strip():
+            continue
+        rows.append([c.strip() for c in line.split("&")])
+    return _pad(rows)
+
+
+def _table_segments(text: str):
+    """[(kind, payload), …] with kind 'text' | 'md' | 'tex', in reading order."""
+    spans = []
+    for m in TEX_TABLE_RE.finditer(text):
+        body = m.group("body") if m.group("body") is not None else m.group("body2")
+        rows = tex_table_rows(body)
+        if rows:
+            spans.append((m.start(), m.end(), "tex", rows))
+    for m in MD_TABLE_RE.finditer(text):
+        if any(s < m.end() and m.start() < e for s, e, _, _ in spans):
+            continue
+        rows = md_table_rows(m.group(0))
+        if rows:
+            spans.append((m.start(), m.end(), "md", rows))
+    spans.sort()
+    out, pos = [], 0
+    for s, e, kind, rows in spans:
+        if text[pos:s].strip():
+            out.append(("text", text[pos:s]))
+        out.append((kind, rows))
+        pos = e
+    if text[pos:].strip():
+        out.append(("text", text[pos:]))
+    return out or [("text", text)]
+
+
+def data_table(ws, rows, as_math=False):
+    """A real Word table, bordered, centred cells, sized to the text column."""
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    ncol = max(len(r) for r in rows)
+    t = ws.doc.add_table(rows=len(rows), cols=ncol)
+    t.style = ws.doc.styles["Table Grid"]
+    t.autofit = True
+    for trow, row in zip(t.rows, rows):
+        for cell, val in zip(trow.cells, list(row) + [""] * (ncol - len(row))):
+            p = cell.paragraphs[0]
+            p.paragraph_format.line_spacing = 1.0
+            p.paragraph_format.space_before = p.paragraph_format.space_after = None
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            if val.strip():
+                ws._fill(p, [("math", val)] if as_math else sm(val))
+    ws.doc.add_paragraph()
+    return t
+
+
+def emit_text(ws, text, emitter=None, marks=None, lead=None):
+    """Lay out question text, rendering any embedded data table as a real table.
+
+    `emitter(parts, marks=…)` places the FIRST prose chunk (so Q/SQ numbering and
+    hanging indents still apply); later chunks are plain paragraphs. The mark
+    allocation rides the last prose chunk — never a table, which cannot carry the
+    right-aligned tab stop.
+    """
+    emitter = emitter or ws.para
+    segs = _table_segments(str(text or ""))
+    last_text = max((i for i, (k, _) in enumerate(segs) if k == "text"), default=-1)
+    first_done = False
+    for i, (kind, payload) in enumerate(segs):
+        if kind == "text":
+            parts = (lead or []) + sm(payload.strip()) if not first_done else sm(payload.strip())
+            m = marks if i == last_text else None
+            (emitter if not first_done else ws.para)(parts, marks=m)
+            first_done = True
+        else:
+            data_table(ws, payload, as_math=(kind == "tex"))
+    if not first_done:                      # text was nothing but a table
+        emitter((lead or []) + [("text", "")], marks=marks)
