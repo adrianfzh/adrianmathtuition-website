@@ -72,7 +72,7 @@ beta lifts for Practice only when §1, §2 and §7 are live.
 
 ## 4. Find a question
 
-**What exists** (built as the practice-tab "finder", `lib/portal-find.ts`): photo or typed question → bot vision + embedding match against the bank
+**What exists** (built as the practice-tab photo/search tool, `lib/portal-find.ts`): photo or typed question → bot vision + embedding match against the bank
 → else a generated twin through the four-gate worker; 5 generations a day;
 `portal_generation_log` ledger; `lib/portal-find.ts` pure gates.
 
@@ -82,11 +82,11 @@ beta lifts for Practice only when §1, §2 and §7 are live.
   when tier 1 is empty, labelled), *made for you* (generated). The sub-skill comes from
   the bank row's subgroup / question type; the embedding match becomes the candidate
   pool the tiers filter.
-- Cap: generations **10 a day**; bank finds stay generous (today's finder ledger cap).
+- Cap: generations **10 a day**; bank finds stay generous (today's per-day ledger cap on searches).
 - A found question is inserted into Practice at once (`portal_assignments`, source
   `find`, tier stamped). The student sees nothing of caps or reviews except the cap
   message when they reach it.
-- **Nightly similarity review** (`scripts/finder-review/`, plan-billed like
+- **Nightly similarity review** (`scripts/find-review/`, plan-billed like
   `day-review`): read yesterday's ledger rows, judge each match "same skill / same
   chapter / off", write misses as eval cases, one-line digest to Adrian, `job_runs`
   slug `finder-review`, `JOB_RHYTHMS` line.
