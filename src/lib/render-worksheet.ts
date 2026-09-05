@@ -3,7 +3,7 @@
  *
  * Builds the house-styled worksheet HTML (Worked Examples + Practice) and
  * renders it to an A4 PDF via the shared Puppeteer browser singleton
- * (getBrowser from lib/generate-pdf — same @sparticuz/chromium-min setup).
+ * (getBrowser from lib/generate-pdf — same bundled @sparticuz/chromium setup).
  * KaTeX math is typeset client-side inside Puppeteer via auto-render,
  * mirroring lib/render-revise.ts.
  */

@@ -18,10 +18,15 @@ export async function getBrowser() {
 
   const isProd = process.env.VERCEL === '1';
   if (isProd) {
-    const chromium = await import('@sparticuz/chromium-min');
-    const executablePath = await chromium.default.executablePath(
-      'https://github.com/Sparticuz/chromium/releases/download/v143.0.4/chromium-v143.0.4-pack.x64.tar'
-    );
+    // Bundled Chromium (5 Sep 2026): @sparticuz/chromium ships the brotli-packed
+    // binary inside the function and inflates it into /tmp on first use. Until
+    // now this was @sparticuz/chromium-min, which DOWNLOADED a 50MB pack from
+    // GitHub on every cold start — ~8s of the 14.5s a cold "Print this paper"
+    // took, and the same tax on every cold marked-PDF build. next.config.ts
+    // lists the package in serverExternalPackages + outputFileTracingIncludes so
+    // the bin/ files travel with each route that renders.
+    const chromium = await import('@sparticuz/chromium');
+    const executablePath = await chromium.default.executablePath();
     browserInstance = await puppeteer.launch({
       args: chromium.default.args,
       executablePath,

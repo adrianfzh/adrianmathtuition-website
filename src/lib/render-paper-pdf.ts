@@ -30,6 +30,7 @@ import { getBrowser } from '@/lib/generate-pdf';
 import { workingSpaceMm } from '@/lib/paper-reconstruction';
 import type { Part } from '@/lib/kiosk-worksheet-images';
 import { splitPipeTables } from '@/lib/pipe-tables';
+import { katexInlineHead, katexAutoRenderScript, waitForPageReady } from '@/lib/katex-inline';
 
 const NAVY = '#1c3a5e';
 const ANSWER_ORANGE = '#843C0C';
@@ -39,7 +40,9 @@ const ANSWER_ORANGE = '#843C0C';
 // v2 (2026-08-29): richText pipe tables — bump on ANY visual change or the
 // blob cache keeps serving PDFs rendered by the old code.
 // v3 (2026-08-31): "End of Paper" after the last question.
-export const PAPER_PDF_RENDER_VERSION = 3;
+// v4 (2026-09-05): KaTeX inlined (was jsDelivr CDN 0.16.9, now the installed
+// 0.16.45 package) — cached PDFs must rebuild once to pick up the version bump.
+export const PAPER_PDF_RENDER_VERSION = 4;
 
 export interface PaperPdfQuestion {
   /** Printed question number (original or resequenced by the caller). */
@@ -175,20 +178,7 @@ export function buildPaperHTML(input: PaperPdfInput): string {
 <head>
 <meta charset="UTF-8">
 <title>${esc(title)}</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
-  onload="renderMathInElement(document.body,{
-    delimiters:[
-      {left:'$$',right:'$$',display:true},
-      {left:'$',right:'$',display:false},
-      {left:'\\\\(',right:'\\\\)',display:false},
-      {left:'\\\\[',right:'\\\\]',display:true}
-    ],
-    throwOnError:false,
-    strict:false,
-    trust:true
-  });window.__katexDone=true;"></script>
+${katexInlineHead()}
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   @page{size:A4;margin:15mm 22mm 13mm}
@@ -255,6 +245,7 @@ ${questions.map((q) => questionHtml(q, workingSpace)).join('\n')}
   <div class="pp-end">End of Paper</div>
 
 ${answerKey ? answerKeyHtml(questions) : ''}
+${katexAutoRenderScript()}
 </body>
 </html>`;
 }
@@ -263,22 +254,8 @@ export async function renderPaperPDF(input: PaperPdfInput): Promise<Buffer> {
   const browser = await getBrowser();
   const page = await browser.newPage();
   try {
-    await page.setContent(buildPaperHTML(input), { waitUntil: 'networkidle0', timeout: 30000 });
-    await page.evaluate(
-      () =>
-        new Promise<void>((resolve) => {
-          const w = window as unknown as Record<string, boolean>;
-          if (w.__katexDone) return resolve();
-          const t0 = Date.now();
-          const iv = setInterval(() => {
-            if (w.__katexDone || Date.now() - t0 > 8000) {
-              clearInterval(iv);
-              resolve();
-            }
-          }, 50);
-        }),
-    );
-    await page.evaluate(() => document.fonts?.ready);
+    await page.setContent(buildPaperHTML(input), { waitUntil: 'load', timeout: 30000 });
+    await waitForPageReady(page);
     // Figure-sharpness pass: the bank's crops are ~850–1000px scans, and
     // stretching one across the full 166mm text width prints at ~130 DPI —
     // visibly soft. Cap each figure's on-page size so it never renders below

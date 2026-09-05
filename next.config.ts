@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['@napi-rs/canvas', 'pdfjs-dist', 'sharp'],
+  serverExternalPackages: ['@napi-rs/canvas', 'pdfjs-dist', 'sharp', '@sparticuz/chromium'],
   async rewrites() {
     return [
       // The paywall page must live OUTSIDE the /app layout — that layout's
@@ -14,6 +14,11 @@ const nextConfig: NextConfig = {
     ];
   },
   outputFileTracingIncludes: {
+    // The bundled Chromium's brotli-packed binary (5 Sep 2026, replaces the
+    // runtime-downloaded chromium-min) must ride along with every API route that
+    // can render a PDF through lib/generate-pdf.ts getBrowser — the tracer
+    // cannot see the package's readdir-based file loading on its own.
+    '/api/**/*': ['./node_modules/@sparticuz/chromium/bin/**'],
     '/api/mark-batch/init': [
       './node_modules/@napi-rs/canvas/**/*',
       './node_modules/@napi-rs/canvas-linux-x64-gnu/**/*',

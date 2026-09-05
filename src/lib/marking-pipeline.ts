@@ -582,10 +582,8 @@ async function getNarrativeBrowser(): Promise<unknown | null> {
     const { default: puppeteer } = await import('puppeteer-core');
     if (process.env.VERCEL === '1') {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const chromium = await import('@sparticuz/chromium-min') as any;
-      const executablePath = await chromium.default.executablePath(
-        'https://github.com/Sparticuz/chromium/releases/download/v143.0.4/chromium-v143.0.4-pack.x64.tar'
-      );
+      const chromium = await import('@sparticuz/chromium') as any;
+      const executablePath = await chromium.default.executablePath();
       _narrativeBrowser = await puppeteer.launch({
         args: chromium.default.args,
         executablePath,

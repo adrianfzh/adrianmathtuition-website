@@ -14,6 +14,7 @@
  */
 
 import { getBrowser } from '@/lib/generate-pdf';
+import { katexInlineHead, katexAutoRenderScript, waitForPageReady } from '@/lib/katex-inline';
 
 const NAVY = '#1c3a5e';
 const ANSWER_ORANGE = '#843C0C';
@@ -99,20 +100,7 @@ export function buildSolutionsHTML(input: SolutionsInput): string {
 <head>
 <meta charset="UTF-8">
 <title>${esc(input.title)} — Solutions</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
-  onload="renderMathInElement(document.body,{
-    delimiters:[
-      {left:'$$',right:'$$',display:true},
-      {left:'$',right:'$',display:false},
-      {left:'\\\\(',right:'\\\\)',display:false},
-      {left:'\\\\[',right:'\\\\]',display:true}
-    ],
-    throwOnError:false,
-    strict:false,
-    trust:true
-  });window.__katexDone=true;"></script>
+${katexInlineHead()}
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   @page{size:A4;margin:15mm 22mm 13mm}
@@ -148,6 +136,7 @@ export function buildSolutionsHTML(input: SolutionsInput): string {
 ${input.items.map((it, i) => itemHtml(it, i, input.includeStems !== false)).join('\n')}
   </ol>
 
+${katexAutoRenderScript()}
 </body>
 </html>`;
 }
@@ -156,22 +145,8 @@ export async function renderSolutionsPDF(input: SolutionsInput): Promise<Buffer>
   const browser = await getBrowser();
   const page = await browser.newPage();
   try {
-    await page.setContent(buildSolutionsHTML(input), { waitUntil: 'networkidle0', timeout: 30000 });
-    await page.evaluate(
-      () =>
-        new Promise<void>((resolve) => {
-          const w = window as unknown as Record<string, boolean>;
-          if (w.__katexDone) return resolve();
-          const t0 = Date.now();
-          const iv = setInterval(() => {
-            if (w.__katexDone || Date.now() - t0 > 8000) {
-              clearInterval(iv);
-              resolve();
-            }
-          }, 50);
-        }),
-    );
-    await page.evaluate(() => document.fonts?.ready);
+    await page.setContent(buildSolutionsHTML(input), { waitUntil: 'load', timeout: 30000 });
+    await waitForPageReady(page);
     await new Promise((r) => setTimeout(r, 250));
     const pdf = await page.pdf({ format: 'A4', printBackground: true, preferCSSPageSize: true });
     return Buffer.from(pdf);
