@@ -656,13 +656,16 @@ def cmd_render(a):
         ws.example(letter or None)
         stem = (r.get("question_text") or "").strip()
         if stem:
-            ws.para(C.sm(stem), marks=None if parts else r.get("total_marks"))
+            C.emit_text(ws, stem, ws.para, marks=None if parts else r.get("total_marks"))
         _figures(ws, r, figdir, max_h=C.FIG_MAX_H_EXAMPLE)
         for p in parts:
-            ws.para([C.T(C.pad_label(p.get("label")))] + C.sm(p.get("text")), marks=p.get("marks"))
+            C.emit_text(ws, p.get("text"), ws.para, marks=p.get("marks"),
+                        lead=[C.T(C.pad_label(p.get("label")))])
             for sp in p.get("subparts") or []:
-                pp = ws.para([C.T(f"({sp['label']}) ".ljust(5))] + C.sm(sp.get("text")), marks=sp.get("marks"))
-                pp.paragraph_format.left_indent = C.Cm(1.4)
+                C.emit_text(ws, sp.get("text"), ws.para, marks=sp.get("marks"),
+                            lead=[C.T(f"({sp['label']}) ".ljust(5))])
+                if ws._block_paras:
+                    ws._block_paras[-1].paragraph_format.left_indent = C.Cm(1.4)
         ws.solution_box(sol_rows, keep_together=not a.flow)
 
     ws.page_break()
@@ -674,29 +677,35 @@ def cmd_render(a):
         parts = C.sorted_parts(r)
         stem = (r.get("question_text") or "").strip()
         if stem:
-            ws.Q(C.sm(stem), marks=None if parts else r.get("total_marks"))
+            C.emit_text(ws, stem, ws.Q, marks=None if parts else r.get("total_marks"))
             _figures(ws, r, figdir)
             for p in parts:
                 subs = p.get("subparts") or []
-                ws.SQ(C.sm(p.get("text")), marks=None if subs else p.get("marks"))
+                C.emit_text(ws, p.get("text"), ws.SQ, marks=None if subs else p.get("marks"))
                 for sp in subs:
-                    pp = ws.para([C.T(f"({sp['label']}) ".ljust(5))] + C.sm(sp.get("text")), marks=sp.get("marks"))
-                    pp.paragraph_format.left_indent = C.Cm(1.4)
+                    C.emit_text(ws, sp.get("text"), ws.para, marks=sp.get("marks"),
+                                lead=[C.T(f"({sp['label']}) ".ljust(5))])
+                    if ws._block_paras:
+                        ws._block_paras[-1].paragraph_format.left_indent = C.Cm(1.4)
         elif parts:
             # parts-only question: first part rides the number line, the rest are literal
             # labels; a part with subparts carries its marks on the subparts, not itself
             def _subparts(p):
                 for sp in p.get("subparts") or []:
-                    pp = ws.para([C.T(f"({sp['label']}) ".ljust(5))] + C.sm(sp.get("text")), marks=sp.get("marks"))
-                    pp.paragraph_format.left_indent = C.Cm(2.4)
+                    C.emit_text(ws, sp.get("text"), ws.para, marks=sp.get("marks"),
+                                lead=[C.T(f"({sp['label']}) ".ljust(5))])
+                    if ws._block_paras:
+                        ws._block_paras[-1].paragraph_format.left_indent = C.Cm(2.4)
             first, rest = parts[0], parts[1:]
-            C.hoist_Q(ws, first.get("label"), C.sm(first.get("text")),
-                      marks=None if first.get("subparts") else first.get("marks"))
+            C.emit_text(ws, first.get("text"),
+                        lambda pr, marks=None: C.hoist_Q(ws, first.get("label"), pr, marks=marks),
+                        marks=None if first.get("subparts") else first.get("marks"))
             _subparts(first)
             _figures(ws, r, figdir)
             for p in rest:
-                C.lit_part(ws, p.get("label"), C.sm(p.get("text")),
-                           marks=None if p.get("subparts") else p.get("marks"))
+                C.emit_text(ws, p.get("text"),
+                            lambda pr, marks=None, lab=p.get("label"): C.lit_part(ws, lab, pr, marks=marks),
+                            marks=None if p.get("subparts") else p.get("marks"))
                 _subparts(p)
         ws.ans(C.sm(content.ANSWERS[o["id8"]]))
         for para in ws._block_paras[:-1]:
