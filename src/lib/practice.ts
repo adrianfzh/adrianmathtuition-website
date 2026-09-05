@@ -16,6 +16,7 @@ import { verifyAdminAuth } from './schedule-helpers';
 import { createSupabaseServer } from './supabase-server';
 import { getSessionUser, type PortalAccount } from './portal-auth';
 import { ALL_QB_LEVELS, qbLevelsFor } from './qb-levels';
+import { gateLevelsBySubject } from './practice-subject-gate';
 
 export type PracticeCaller =
   | { kind: 'admin' }
@@ -53,10 +54,22 @@ export function rpcAudience(caller: NonNullable<PracticeCaller>): { p_is_ip: boo
   return { p_is_ip: Boolean(caller.account.is_ip), p_admin: false };
 }
 
+/**
+ * The maths QB levels a student may practise: their level's list, narrowed by
+ * their Airtable subjects (qbLevelsFor), then passed through the subject gate
+ * (SPEC-PORTAL-V2 §2 — lib/practice-subject-gate over allowedSubjects) so an
+ * E Math-only account can never be offered the A Math topic list, whichever
+ * of the two rules a future edit loosens. Admin (Bearer / cookie with no
+ * student session) is not gated — practiceLevelsFor hands it ALL_QB_LEVELS.
+ */
+export function studentMathLevels(account: PortalAccount): { key: string; label: string }[] {
+  return gateLevelsBySubject(qbLevelsFor(account.level, account.subjects), account);
+}
+
 export function levelAllowed(caller: PracticeCaller, level: string): boolean {
   if (!caller) return false;
   if (caller.kind === 'admin') return true;
-  return qbLevelsFor(caller.account.level, caller.account.subjects).some(a => a.key === level);
+  return studentMathLevels(caller.account).some(a => a.key === level);
 }
 
 // ── Science (2026-09-02) ─────────────────────────────────────────────────────
@@ -70,7 +83,7 @@ import { sciencePracticeAccess } from './portal-beta';
 /** The caller's full level list: math (pure) + whichever science levels they may see. */
 export async function practiceLevelsFor(caller: NonNullable<PracticeCaller>): Promise<{ key: string; label: string }[]> {
   if (caller.kind === 'admin') return ALL_QB_LEVELS;
-  const math = qbLevelsFor(caller.account.level, caller.account.subjects);
+  const math = studentMathLevels(caller.account);
   const science = scienceLevelsFor(caller.account.subjects, await sciencePracticeAccess());
   return [...math, ...science];
 }

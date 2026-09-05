@@ -67,10 +67,12 @@ export default async function DashboardPage() {
   // to load initially"). Everything awaited here is fast Supabase.
   const [todayCards, assignments, counts, focus, passNudge, fixit] = await Promise.all([
     learnVisible ? getTodayCards(account).catch(() => []) : Promise.resolve([]),
-    // "From Adrian" assigned work (SPEC-ASSIGN.md) — fail-soft, hidden at zero.
-    listStudentAssignments(sid).catch(() => []),
-    // Live numbers on the Hand in / Marked tiles — fail-soft zeros.
-    homeCounts(sid),
+    // "From Adrian" assigned work (SPEC-ASSIGN.md) — fail-soft, hidden at zero;
+    // gated to the account's subjects (SPEC-PORTAL-V2 §2).
+    listStudentAssignments(sid, account).catch(() => []),
+    // Live numbers on the Hand in / Marked tiles — fail-soft zeros. The account
+    // carries the subject gate, so the Marked count matches the Papers list.
+    homeCounts(sid, account),
     // This week's focus (Adrian, 2026-08-28): the Plan TAB is gone — real
     // suggestions surface HERE, and only when they exist. Fail-soft.
     (async () => {

@@ -13,13 +13,15 @@ export async function GET() {
   const supabase = await createSupabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // `subjects` + `level` feed the subject gate (SPEC-PORTAL-V2 §2).
   const { data: account } = await supabase
-    .from('portal_accounts').select('id, airtable_student_id').eq('id', user.id).single<Pick<PortalAccount, 'id' | 'airtable_student_id'>>();
+    .from('portal_accounts').select('id, airtable_student_id, subjects, level').eq('id', user.id)
+    .single<Pick<PortalAccount, 'id' | 'airtable_student_id' | 'subjects' | 'level'>>();
   if (!account) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     // Identity, not the raw airtable id: strangers get an (empty) list instead
     // of every-row-matches-'' surprises if rows are ever keyed acct:<uuid>.
-    const assignments = await listStudentAssignments(portalIdentity(account));
+    const assignments = await listStudentAssignments(portalIdentity(account), account);
     return NextResponse.json({ assignments, pending: pendingCount(assignments), summary: homeCardSummary(assignments) });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });

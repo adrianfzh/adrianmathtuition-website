@@ -33,6 +33,13 @@ export interface MarkingRunRow {
   pdf_url: string | null;
   released_at: string | null;
   result_json: unknown;
+  /**
+   * 'A Math' | 'E Math' | 'H2 Math' | 'Other' | null (SPEC-PORTAL-V2 §1) —
+   * the pill on the card and which per-subject tile block the paper counts
+   * in. Optional: callers that never show a subject (the PDF routes, the
+   * notebook) select without it and read `undefined`.
+   */
+  paper_subject?: string | null;
 }
 
 export interface StudentQuestion {
@@ -102,6 +109,12 @@ export interface StudentPaper {
   max: number;
   /** Null when the paper carries no marks at all (nothing to be a percent of). */
   pct: number | null;
+  /**
+   * The paper's subject as stamped on the run — 'A Math' | 'E Math' | 'H2 Math'
+   * | 'Other' | null. Always set by toPaper; optional in the type so the
+   * notebook/plan/mastery test fixtures that hand-build papers need not know it.
+   */
+  subject?: string | null;
   /** Every marked question, paper order. */
   questions: StudentQuestion[];
   /** Questions that dropped marks, biggest loss first — the revision list. */
@@ -434,6 +447,7 @@ function toPaper(row: MarkingRunRow): StudentPaper | null {
     awarded: totals.awarded,
     max: totals.max,
     pct: totals.max > 0 ? Math.round((totals.awarded / totals.max) * 100) : null,
+    subject: str(row.paper_subject) || null,
     questions,
     dropped: questions
       .filter(q => q.max > 0 && q.awarded < q.max)

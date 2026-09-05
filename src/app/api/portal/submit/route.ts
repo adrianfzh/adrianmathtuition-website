@@ -35,6 +35,7 @@ import { portalIdentity } from '@/lib/portal-auth';
 import { markSubjectAccess } from '@/lib/portal-beta';
 import { enrolledMarkSubjects } from '@/lib/student-mark-subjects';
 import { resolveHandinSubject } from '@/lib/mark-subject-for-student';
+import { paperSubjectFromName } from '@/lib/portal-subjects';
 import {
   dailyHandinCapForTier,
   handinAllowance,
@@ -279,10 +280,23 @@ export async function POST(req: Request) {
   // Stamp HOW it arrived, so student-facing surfaces can show "with Adrian" for
   // portal hand-ins without ever picking up papers Adrian uploaded himself.
   // Read-merge-write on a row created milliseconds ago — nothing else has it yet.
+  //
+  // And WHICH maths it is (SPEC-PORTAL-V2 §1, paper_subject): the Papers page
+  // pills and per-subject tiles key on it, and the health check wants every
+  // released run to carry one. The hand-in form's own subject choice is the
+  // marking lane (math / physics / …, lib/mark-subjects) — a science paper is
+  // 'Other' outright; a maths paper reads the assignment's level first (the
+  // Send-work card set it), then the paper name (kiara am tys 2022 p1 → A Math),
+  // else null for Adrian to tag on the desk. Never overwrites a value the bot
+  // already stamped at save-paper.
+  const paperSubject = subject !== 'math'
+    ? 'Other'
+    : paperSubjectFromName(assignment?.level) ?? paperSubjectFromName(paperName);
   try {
-    const { data: row } = await admin.from('paper_marking_runs').select('result_json').eq('id', runId).single();
+    const { data: row } = await admin.from('paper_marking_runs').select('result_json, paper_subject').eq('id', runId).single();
     const rj = (row?.result_json && typeof row.result_json === 'object') ? row.result_json as Record<string, unknown> : {};
     await admin.from('paper_marking_runs').update({
+      paper_subject: (row?.paper_subject as string | null | undefined) ?? paperSubject,
       result_json: {
         ...rj,
         portal_submission: true,
@@ -294,7 +308,7 @@ export async function POST(req: Request) {
       },
     }).eq('id', runId);
   } catch (e) {
-    console.warn('[portal-submit] portal_submission stamp failed:', (e as Error).message);
+    console.warn('[portal-submit] portal_submission / paper_subject stamp failed:', (e as Error).message);
   }
 
   // Spend one hand-in on the stranger's pass meter — AFTER the run is saved,

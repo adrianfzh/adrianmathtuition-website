@@ -18,7 +18,8 @@ function sentOn(iso: string): string {
 
 export default async function AssignmentsPage() {
   const account = await currentAccount();
-  const rows = await listStudentAssignments(portalIdentity(account)).catch(() => []);
+  // The account carries the subject gate (SPEC-PORTAL-V2 §2).
+  const rows = await listStudentAssignments(portalIdentity(account), account).catch(() => []);
   const pending = rows.filter(r => isPending(r.status));
   const done = rows.filter(r => !isPending(r.status));
 

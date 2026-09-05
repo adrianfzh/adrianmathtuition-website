@@ -14,9 +14,13 @@ import Link from 'next/link';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { answerLines, promptLines, buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/lib/portal-marking';
+import { allowedSubjects, subjectAllowed } from '@/lib/portal-subjects';
+import { statsBySubject } from '@/lib/portal-papers-stats';
+import PaperSubjectPill from '@/components/PaperSubjectPill';
 import AnnotatedSolution from './AnnotatedSolution';
 import ClipToNotes from './ClipToNotes';
 import MarkingBeacon from './MarkingBeacon';
+import SubjectTiles from './SubjectTiles';
 import { mathHtml } from '@/lib/math-inline';
 import { SURFACES } from '@/lib/portal-theme';
 import PortalIcon from '@/components/PortalIcon';
@@ -33,7 +37,7 @@ const MAX_PAPERS = 40;
 // One literal, not a concatenation: supabase-js parses the select string at the
 // type level, and a `+` here widens it to `string` and loses the row type.
 const COLUMNS =
-  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json';
+  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, paper_subject';
 
 // Home's soft elevated card (lib/portal-theme's visual language) — this tab
 // wears the marked-work violet and the hand-in teal the way Home's tiles do,
@@ -95,7 +99,16 @@ export default async function MarkingPage() {
   ]);
   const pending = pendingRows ?? [];
 
-  const { papers, averagePct, trendPts, focus, streakNote } = buildStudentMarking((data ?? []) as MarkingRunRow[]);
+  // The subject gate (SPEC-PORTAL-V2 §2): an E Math-only account never sees an
+  // A Math paper, whoever tagged it. Applied to the rows BEFORE the build so
+  // the tiles, the streak note and "Work on next" all describe the same list
+  // the student is looking at. "Other" and untagged rows pass (they list, but
+  // count in no tile — lib/portal-papers-stats).
+  const rows = ((data ?? []) as MarkingRunRow[]).filter(r => subjectAllowed(account, r.paper_subject));
+  const { papers, focus, streakNote } = buildStudentMarking(rows);
+  // Per-subject tiles, in the account's display order; tabs only when the
+  // student has papers in more than one subject.
+  const stats = statsBySubject(papers, allowedSubjects(account));
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
@@ -159,7 +172,7 @@ export default async function MarkingPage() {
               the 'marking:view' beacon once mounted here, i.e. only when the
               student has at least one released paper. */}
           <MarkingBeacon />
-          <Summary papers={papers} averagePct={averagePct} trendPts={trendPts} />
+          <SubjectTiles stats={stats} />
 
           {streakNote && (
             <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
@@ -195,39 +208,8 @@ export default async function MarkingPage() {
   );
 }
 
-function Summary({ papers, averagePct, trendPts }: {
-  papers: StudentPaper[]; averagePct: number | null; trendPts: number | null;
-}) {
-  const latest = papers.find(p => p.pct !== null);
-  if (!latest) return null;
-
-  // ±5 points is the band inside which a score change is just paper-to-paper
-  // noise. Calling a 2-point move "improving" would be dishonest encouragement.
-  const trend =
-    trendPts === null ? null
-      : trendPts >= 5 ? { text: `↑ ${trendPts} pts`, cls: 'text-emerald-700' }
-      : trendPts <= -5 ? { text: `↓ ${Math.abs(trendPts)} pts`, cls: 'text-rose-700' }
-      : { text: 'steady', cls: 'text-gray-500' };
-
-  return (
-    <div className="grid grid-cols-3 gap-3">
-      <div className={`${CARD} p-4 text-center`}>
-        <p className="text-2xl font-bold text-navy">
-          {latest.pct}%{latest.pct !== null && latest.pct >= 75 ? ' 🎉' : ''}
-        </p>
-        <p className="text-xs text-gray-500 mt-0.5">latest paper</p>
-      </div>
-      <div className={`${CARD} p-4 text-center`}>
-        <p className="text-2xl font-bold text-navy">{averagePct}%</p>
-        <p className="text-xs text-gray-500 mt-0.5">average of {papers.length}</p>
-      </div>
-      <div className={`${CARD} p-4 text-center`}>
-        <p className={`text-2xl font-bold ${trend ? trend.cls : 'text-gray-300'}`}>{trend ? trend.text : '—'}</p>
-        <p className="text-xs text-gray-500 mt-0.5">{trend ? 'since your first' : 'no trend yet'}</p>
-      </div>
-    </div>
-  );
-}
+// The latest / average / trend tiles moved into ./SubjectTiles (per subject,
+// SPEC-PORTAL-V2 §1); their arithmetic lives in lib/portal-papers-stats.
 
 function Paper({ paper }: { paper: StudentPaper }) {
   return (
@@ -239,7 +221,11 @@ function Paper({ paper }: { paper: StudentPaper }) {
           </span>
           <div className="min-w-0">
             <p className="font-bold text-navy leading-snug break-words">{paper.name}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{niceDate(paper.date)}</p>
+            <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1.5">
+              {/* AM / EM / H2, colour-coded; "Other" and untagged papers carry no pill. */}
+              <PaperSubjectPill subject={paper.subject} />
+              <span>{niceDate(paper.date)}</span>
+            </p>
           </div>
         </div>
         <span className={`shrink-0 text-sm font-bold rounded-full px-3 py-1 ${scoreChip(paper.pct)}`}>
