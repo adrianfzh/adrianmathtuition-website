@@ -62,6 +62,24 @@ export async function fullPortalVisible(): Promise<boolean> {
   return isNotesAuthed();
 }
 
+// 📝 Practice is the student's TO-DO LIST (SPEC-PORTAL-V2 §3, Adrian 6 Sep
+// 2026): work he assigned, Practice Again questions handed back from their own
+// marked papers, questions they found. The open topic picker, the topic deep
+// links and the timed set stay behind his admin cookie. This is its own flag,
+// not a fullPortalVisible() delegate, for the same reason as the timed set
+// below: ending the marking-only beta must not reopen the picker to students
+// as a side effect. Flip to true to give students the picker back.
+export const PRACTICE_PICKER_OPEN_TO_STUDENTS = false;
+
+/** 'full' = the whole practice page (picker, topics, timed set — Adrian's admin
+ *  cookie, or the flag); 'list' = the to-do list only, plus opening one of its
+ *  items (`?assignment=`). */
+export async function practiceAccess(): Promise<'full' | 'list'> {
+  if (PRACTICE_PICKER_OPEN_TO_STUDENTS) return 'full';
+  if (await viewingAsStudent()) return 'list';
+  return (await isNotesAuthed()) ? 'full' : 'list';
+}
+
 // ⏱ Exam-prep timed sets (2026-09-02): /app/practice shows a timed-set entry
 // alongside the Home "Next exam" countdown, but the row stays admin-preview
 // until Adrian has run one himself. Deliberately its own flag, not a

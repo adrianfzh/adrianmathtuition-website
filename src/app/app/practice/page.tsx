@@ -9,9 +9,19 @@
 // (Adrian spotted it on his phone). Admin (no student session) still resolves
 // client-side: the page passes null and the flow falls back to its own check.
 //
-// ?assignment=<id> — "From Adrian" mode (SPEC-ASSIGN.md): the assigned bank
-// question is resolved here (service role, ownership-checked against the
-// student's Airtable id) and handed to the flow as `initialAssignment`.
+// STUDENTS SEE THE TO-DO LIST (SPEC-PORTAL-V2 §3, Adrian 6 Sep 2026): a
+// 'list' caller (lib/portal-beta practiceAccess — every student while
+// PRACTICE_PICKER_OPEN_TO_STUDENTS is off) gets ./todo-list.tsx instead of the
+// picker: From Adrian · Practice Again · Found by you. Only an item deep link
+// (?assignment=) or a fixed question (?qid=, the marked paper's "Try it now"
+// and the notebook's retries) opens the graded flow for them; the topic deep
+// links (?topic=, ?level=) and the timed set stay with Adrian's admin cookie.
+//
+// ?assignment=<id> — an item from the list (SPEC-ASSIGN.md + SPEC-PORTAL-V2
+// §7): a bank question is resolved here (service role, ownership-checked
+// against the student's identity); a `generated` question — one the sheet
+// worker wrote, with its text and answer on the assignment row — is built from
+// the row itself. Both are handed to the flow as `initialAssignment`.
 //
 // ?qid=<questions.id> — fixed-question mode: EXACTLY that bank question in the
 // graded flow. This is the landing pad for /app/marking's "Try it now" twins,
@@ -22,14 +32,15 @@
 // answer to mark against) — so a deep link can never open a question the
 // normal flow would refuse; an ineligible id degrades to a friendly notice
 // over the ordinary picker, never a broken screen.
-import { fullPortalVisible } from '@/lib/portal-beta';
+import { fullPortalVisible, practiceAccess } from '@/lib/portal-beta';
 import { notFound, redirect } from 'next/navigation';
 import PracticeFlow, { type FixedQuestion, type InitialAssignment } from './practice-flow';
+import PracticeTodo from './todo-list';
 import { portalIdentity, sessionAccount } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { qbLevelsFor } from '@/lib/practice';
-import { getStudentAssignment } from '@/lib/portal-assignments';
-import { dueLabel } from '@/lib/assignments';
+import { getStudentAssignment, paperNamesForStudent } from '@/lib/portal-assignments';
+import { dueLabel, opensInGrader } from '@/lib/assignments';
 import { practiceEligibility } from '@/lib/portal-find';
 import { questionMarkdown, questionStructured, totalMarksOf } from '@/lib/bank-question-markdown';
 import { examPrepVisible, sciencePracticeAccess } from '@/lib/portal-beta';
@@ -92,18 +103,58 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
     }
   } catch { /* fall back to client-side detection */ }
 
+  // The to-do list (SPEC-PORTAL-V2 §3). A 'list' caller with no item or fixed
+  // question to open gets the list — the ?topic= / ?level= deep links are
+  // simply not honoured for them (those open the picker).
+  const access = await practiceAccess();
+  if (access === 'list' && !assignmentId && !qid) {
+    if (!account) redirect('/login');
+    return <PracticeTodo account={account} />;
+  }
+
   let initialAssignment: InitialAssignment | null = null;
   if (assignmentId) {
     if (!account) redirect('/login');
-    const a = await getStudentAssignment(assignmentId, portalIdentity(account));
+    const identity = portalIdentity(account);
+    const a = await getStudentAssignment(assignmentId, identity);
     if (!a) notFound();
-    if (a.kind !== 'question' || !a.question_id) redirect(`/app/assignments/${a.id}`);
-    const { data: q } = await getSupabaseAdmin()
-      .from('questions')
-      .select('id, question_text, parts, total_marks, has_image, image_url, images, figure_url, solution, answer')
-      .eq('id', a.question_id).maybeSingle();
-    if (!q) notFound();
-    const { stem, parts } = questionStructured(q);
+    if (!opensInGrader(a.kind)) redirect(`/app/assignments/${a.id}`);
+    let question: InitialAssignment['question'];
+    if (a.kind === 'generated') {
+      // Written by the sheet worker (SPEC-PORTAL-V2 §7): no bank row. The
+      // grader addresses it by the assignment id, so that is the question id
+      // the client sends back. No solution to reveal — the answer stays
+      // server-side for marking.
+      if (!a.question_text || !a.answer_latex) notFound();
+      const gq = { id: a.id, question_text: a.question_text, parts: null };
+      const { stem, parts } = questionStructured(gq);
+      question = {
+        id: a.id, markdown: questionMarkdown(gq), stem, parts,
+        marks: a.marks ?? totalMarksOf(parts), figureUrl: null, source: null, hasSolution: false,
+      };
+    } else {
+      if (!a.question_id) redirect(`/app/assignments/${a.id}`);
+      const { data: q } = await getSupabaseAdmin()
+        .from('questions')
+        .select('id, question_text, parts, total_marks, has_image, image_url, images, figure_url, solution, answer')
+        .eq('id', a.question_id).maybeSingle();
+      if (!q) notFound();
+      const { stem, parts } = questionStructured(q);
+      question = {
+        id: q.id,
+        markdown: questionMarkdown(q),
+        stem,
+        parts,
+        marks: q.total_marks ?? totalMarksOf(parts),
+        figureUrl: q.figure_url ?? null,
+        source: null,
+        hasSolution: !!(q.solution && q.solution.trim()),
+      };
+    }
+    // Practice Again names the paper it came from in the banner.
+    const paperName = a.source === 'practice-again' && a.source_run_id
+      ? (await paperNamesForStudent(identity, [a.source_run_id])).get(a.source_run_id) ?? null
+      : null;
     initialAssignment = {
       id: a.id,
       title: a.title,
@@ -115,16 +166,9 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
       status: a.status === 'marked' ? 'marked' : a.status === 'submitted' ? 'submitted' : 'assigned',
       score: a.score,
       outOf: a.out_of,
-      question: {
-        id: q.id,
-        markdown: questionMarkdown(q),
-        stem,
-        parts,
-        marks: q.total_marks ?? totalMarksOf(parts),
-        figureUrl: q.figure_url ?? null,
-        source: null,
-        hasSolution: !!(q.solution && q.solution.trim()),
-      },
+      question,
+      source: a.source === 'practice-again' || a.source === 'find' ? a.source : 'adrian',
+      paperName,
     };
   }
   // ?qid= fixed-question mode. Student session required (the links that carry

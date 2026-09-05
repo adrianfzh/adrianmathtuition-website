@@ -327,20 +327,35 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
-    // "From Adrian" assigned work (SPEC-ASSIGN.md). The student list route must
-    // hold its auth gate (401 anonymously — a 404 means the Home card and
-    // /app/assignments silently vanish), and the table + the columns the Home
-    // card reads must still resolve.
+    // "From Adrian" assigned work (SPEC-ASSIGN.md) — since 6 Sep 2026 the whole
+    // Practice to-do list (SPEC-PORTAL-V2 §3). The student list route must hold
+    // its auth gate (401 anonymously — a 404 means the Home card, /app/assignments
+    // and the Practice tab silently vanish), and the table + the columns the
+    // list reads — including the §7 hand-back columns (source, skill_title,
+    // subject, sheet_job_id, sheet_index) — must still resolve: a missing one
+    // means the migration did not reach this database.
     timed('assignments', async () => {
       const r = await fetch(`${base}/api/portal/assignments`, { redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
       const q = await fetch(
-        `${process.env.SUPABASE_URL}/rest/v1/portal_assignments?select=id,status,kind,title,due_on,airtable_student_id&limit=1`,
+        `${process.env.SUPABASE_URL}/rest/v1/portal_assignments?select=id,status,kind,title,due_on,airtable_student_id,source,skill_title,subject,sheet_job_id,sheet_index&limit=1`,
         { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: T(10000) }
       );
       if (!q.ok) throw new Error(`table? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
       return 'auth gate up';
+    }),
+    // 📝 Practice as the to-do list (SPEC-PORTAL-V2 §3, 6 Sep 2026): /app/practice
+    // is where a student's Practice Again items and Adrian's work now land, and
+    // where the release nudge's "the parts worth another go" points. An anonymous
+    // GET must redirect to /login (the app-shell auth gate): a 404 means the tab
+    // is gone, a 200 means the gate is down.
+    timed('practice-todo', async () => {
+      const r = await fetch(`${base}/app/practice`, { redirect: 'manual', signal: T(10000) });
+      if (r.status === 404) throw new Error('/app/practice is missing — the Practice tab 404s');
+      if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
+      if (r.status === 200) throw new Error('anonymous 200 — the auth gate is down');
+      return `page ${r.status}`;
     }),
     // 🎬 Animated lessons (/app/lesson/[slug]). The telemetry route must hold
     // its auth gate (401 anonymously — a 404 means the lesson engine's routes

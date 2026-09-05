@@ -83,6 +83,17 @@ export type InitialAssignment = {
   id: string; title: string; note: string | null; reminder: string | null; dueLabel: string | null;
   topic: string | null; tier: Tier | null; status: 'assigned' | 'submitted' | 'marked';
   score: number | null; outOf: number | null; question: Question;
+  /** Which Practice section it came from (SPEC-PORTAL-V2 §3) — the banner and the
+   *  way back change with it. Absent = Adrian's own send. */
+  source?: 'adrian' | 'practice-again' | 'find';
+  /** Practice Again: the paper it was written from ("From AM 2021 P1"). */
+  paperName?: string | null;
+};
+
+const SOURCE_META: Record<NonNullable<InitialAssignment['source']>, { label: string; back: string; backLabel: string }> = {
+  adrian: { label: '📬 From Adrian', back: '/app/assignments', backLabel: '← From Adrian' },
+  'practice-again': { label: '🔁 Practice Again', back: '/app/practice', backLabel: '← Practice' },
+  find: { label: '🔍 Found by you', back: '/app/practice', backLabel: '← Practice' },
 };
 
 // ?qid= deep-link mode (the page resolves + eligibility-checks the question
@@ -122,6 +133,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   initialQuestion?: FixedQuestion | null;
 }) {
   const assignment = initialAssignment;
+  const assignMeta = SOURCE_META[assignment?.source ?? 'adrian'];
   // Fixed ?qid= question — assignment wins if both somehow arrive.
   const fixedQ = assignment ? null : initialQuestion;
   const targetRef = useRef(initialTarget);
@@ -511,11 +523,11 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
       {/* Assignment banner — replaces the title row + picker entirely. */}
       {assignment && (
         <div className="mb-4 pt-1">
-          <Link href="/app/assignments" className="text-sm text-gray-500 hover:text-navy">← From Adrian</Link>
+          <Link href={assignMeta.back} className="text-sm text-gray-500 hover:text-navy">{assignMeta.backLabel}</Link>
           <div className="mt-2 bg-navy text-[hsl(45,100%,96%)] rounded-2xl px-4 py-3.5 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-wide opacity-75">📬 From Adrian</p>
+                <p className="text-[11px] font-semibold uppercase tracking-wide opacity-75">{assignMeta.label}{assignment.paperName ? ` · from ${assignment.paperName}` : ''}</p>
                 <h1 className="font-bold text-base truncate">{assignment.title}</h1>
                 <p className="text-[11px] opacity-75 mt-0.5">
                   {[assignment.topic, assignment.tier === 'Advanced' ? '🔥 Advanced' : assignment.tier, !assignDone ? assignment.dueLabel : null].filter(Boolean).join(' · ')}
@@ -894,7 +906,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                 </button>
                 )}
                 {assignment && grade && (
-                  <Link href="/app/assignments" className="text-sm font-semibold text-navy underline ml-auto">Done — back to From Adrian →</Link>
+                  <Link href={assignMeta.back} className="text-sm font-semibold text-navy underline ml-auto">Done — back to {assignMeta.backLabel.replace('← ', '')} →</Link>
                 )}
                 {fixedQ && grade && (
                   // Plain href on purpose — a Link would keep ?qid= in the URL
