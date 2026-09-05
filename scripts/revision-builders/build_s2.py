@@ -196,6 +196,11 @@ def n_mapscales(ws):
 # --------------------------------------------------- Simultaneous Equations
 def n_simeq(ws):
     ws.para([B('Notes:')])
+    ws.para([B('Graphical')])
+    ws.para([T('Draw both lines on one grid. The solution is the point where they '
+               'cross — read off '), M('x'), T(' and '), M('y'),
+             T('. Use it when the question asks for it or has already drawn one line; '
+               'a grid cannot give an exact answer such as '), M(r'x = \tfrac{2}{7}'), T('.')])
     ws.para([B('Elimination')])
     ws.para([T('Make the coefficients of one letter match, then add or subtract.')])
     ws.para([T('Same sign — '), B('subtract'), T('. Different signs — '), B('add'), T('.')])
