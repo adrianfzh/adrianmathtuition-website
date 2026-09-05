@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.adrianmath.findreview</string>
+
+	<!-- The wrapper is the COPY install.sh puts in ~/.adrianmath_find_review,
+	     not the repo file: the shared website checkout flips branches under
+	     peer Claude sessions, and a launchd job must not break when it does. -->
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/bash</string>
+		<string>/Users/adrianfong/.adrianmath_find_review/run.sh</string>
+	</array>
+
+	<key>WorkingDirectory</key>
+	<string>/Users/adrianfong/.adrianmath_find_review</string>
+
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<key>LANG</key>
+		<string>en_US.UTF-8</string>
+	</dict>
+
+	<!-- 05:30 SGT daily — after the bot's day-review (05:00) so the two
+	     digests arrive together, before Adrian's morning. RunAtLoad is the
+	     catch-up for a Mac that was off at 05:30; the wrapper's per-day stamp
+	     makes the extra fire a no-op once the day is reviewed. -->
+	<key>StartCalendarInterval</key>
+	<dict>
+		<key>Hour</key>
+		<integer>5</integer>
+		<key>Minute</key>
+		<integer>30</integer>
+	</dict>
+
+	<key>RunAtLoad</key>
+	<true/>
+
+	<key>StandardOutPath</key>
+	<string>/Users/adrianfong/.adrianmath_find_review/launchd.log</string>
+	<key>StandardErrorPath</key>
+	<string>/Users/adrianfong/.adrianmath_find_review/launchd.log</string>
+</dict>
+</plist>

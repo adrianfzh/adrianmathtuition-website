@@ -76,21 +76,34 @@ beta lifts for Practice only when §1, §2 and §7 are live.
 → else a generated twin through the four-gate worker; 5 generations a day;
 `portal_generation_log` ledger; `lib/portal-find.ts` pure gates.
 
-**To build:**
-- **Two tiers, named on the card the student sees** (Adrian, 6 Sep: "same chapter is not
-  enough — must be a similar question, testing similar concepts"): **Similar question**
-  (same topic AND same sub-skill / question type, marks within one) and **Made for you**
-  (generated when nothing similar exists). A same-chapter-only match is never offered.
-  The sub-skill comes from the bank row's subgroup / question type; the embedding match
-  is only the candidate pool the rule filters.
-- Cap: generations **10 a day** (Adrian, 6 Sep); bank finds stay generous (today's per-day ledger cap on searches).
-- A found question is inserted into Practice at once (`portal_assignments`, source
-  `find`, tier stamped). The student sees nothing of caps or reviews except the cap
-  message when they reach it.
-- **Nightly similarity review** (`scripts/find-review/`, plan-billed like
-  `day-review`): read yesterday's ledger rows, judge each match "same skill / same
-  chapter / off", write misses as eval cases, one-line digest to Adrian, `job_runs`
-  slug `Find a question-review`, `JOB_RHYTHMS` line.
+**Built 6 Sep 2026** (branch `build/find`; Adrian's ruling the same day: *a returned
+match must be a genuinely SIMILAR question — same topic AND same sub-skill, testing the
+same concept, marks within one; "same chapter" is NOT enough and is never offered*):
+- **Two tiers, named on the card:** *Similar question* (bank) and *Made for you*
+  (generated). There is no "same chapter" tier. The rule (`lib/portal-find.ts`
+  `classifyFindCandidates`, pure + tested): the bot's embedding matches are enriched
+  from the bank's `question_subgroups → subgroups` filing; the sub-skill the most
+  matches share is the reference and must be corroborated by **at least two** of them
+  (measured 6 Sep: the single nearest neighbour shares the source's primary sub-group
+  only ~45% of the time); a match is similar when it is filed under that sub-skill as
+  what it is ABOUT (primary filing, or the topic among its tags) and sits within one
+  mark of the student's printed marks (else of the top-ranked member). Nothing similar
+  → `/api/portal/generate` writes one. Subject gate (§2) applies to the pool first.
+- Caps: generations **10 a day** (`DAILY_GENERATE_CAP`); bank finds stay generous
+  (`DAILY_FIND_CAP` 25 over every ledger row).
+- A found or generated question is inserted into Practice at once
+  (`portal_assignments` source `find`, `find_tier` stamped, kind `question` → the
+  instant grader); `/app/find` shows the card and deep-links to it. The student sees
+  nothing of caps or reviews except the cap message.
+- **Nightly similarity review** (`scripts/find-review/`, plan-billed like `day-review`,
+  05:30 SGT): `GET /api/admin/find-review?date=` → judge every question that reached a
+  student *Similar / Same-chapter-only / Off* with one line why → `POST` stores the
+  verdicts in `portal_generation_log.review` and the route Telegrams one digest (Ops
+  topic); `job_runs` slug `find-review`, `JOB_RHYTHMS` line, health-check probes
+  `portal-find` + `find-review`. Misses live in `review` (the eval-case export is
+  still to write).
+- Home's "Request materials" door became "Find a question"; `/app/requests` stays
+  reachable for Adrian (full-portal nav) and is no longer linked for students.
 
 ## 5. Requests become one pipeline
 

@@ -42,7 +42,13 @@ Writers:
   elapsed_sec}`. No rhythm (on-demand), so ok=false is board-amber only. Until
   that day the runbook had no stamp step and `plan-marking` had never appeared.
 - **Anything shell-ish** can `POST /api/job-log` (`Bearer CRON_SECRET` or admin)
-  with `{job, ok?, summary?}` — job must be a kebab-case slug.
+  with `{job, ok?, summary?}` — job must be a kebab-case slug. **`find-review`**
+  (the nightly Find-a-question similarity review, `scripts/find-review/`,
+  launchd `com.adrianmath.findreview`, 05:30 SGT + login catch-up, 6 Sep 2026)
+  stamps this way as the last step of its runbook (`REVIEW_PROMPT.md`) — every
+  night, quiet days included (`ok=true`, summary `<date>: N finds · N judged ·
+  N misses`); its wrapper `run.sh` stamps `ok=false` with the reason when the
+  session never starts or dies (no credentials, plan cap, timeout).
 
 ## The alarm — health-check rules
 
@@ -64,6 +70,16 @@ The three year-end invoice jobs use it, since their crons only fire Nov/Dec/Jan
 | `generate-invoices-arrears` | `day 1`, grace 1, `months: [1, 11, 12]` | 1st 8am SGT (Nov, Dec, Jan) |
 | `payment-reminder-arrears` | `day 1`, grace 1, `months: [1, 11, 12]` | 1st 8pm SGT (Nov, Dec, Jan) |
 | `send-invoices-arrears` | `day 2`, grace 1, `months: [1, 11, 12]` | 2nd 10am SGT (Nov, Dec, Jan) |
+
+**`find-review`** (nightly 5:30am SGT — reads yesterday's `portal_generation_log`
+through `GET /api/admin/find-review`, judges every question that reached a student
+Similar / Same-chapter-only / Off, `POST`s the verdicts into
+`portal_generation_log.review`, and the route Telegrams one digest to the Ops
+topic; SPEC-PORTAL-V2 §4) takes the same nightly shape:
+`'find-review': { kind: 'interval', hours: 36, label: 'nightly 5:30am' }` in
+`lib/job-health.ts` (armed 6 Sep 2026 with the route, the scripts and the
+`find-review` health-check probe). Install on the Mac with
+`bash scripts/find-review/install.sh`.
 
 **`figure-fitness`** (nightly 3:10am SGT — the ingestion figure-fitness catch-up,
 [`FIGURES.md`](FIGURES.md) §4) takes the nightly shape every plan-billed Mac
