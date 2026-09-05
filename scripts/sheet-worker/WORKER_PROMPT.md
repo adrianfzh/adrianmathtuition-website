@@ -94,7 +94,9 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
    Q14(b) area were all left blank — the marker filed those pages as untouched
    question paper, `unattempted_questions` said only "7", and the sheet shelved
    it as "never graded" while the other two were invisible). Read
-   `result_json.unattempted_questions`, `review.unmapped_max` and every
+   `result_json.blank_questions` (every printed question or part left empty —
+   "7", "8(b)", "14(b)" — written by the bot since 5 Sep 2026 and merged into
+   `unattempted_questions`), `review.unmapped_max` and every
    `question_found`/"not attempted" part as TEACH items by default: a student
    who wrote nothing did not know where to start, which is exactly what the
    sheet exists for. When the marker's results carry fewer marks than the paper
