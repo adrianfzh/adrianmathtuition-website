@@ -1,6 +1,6 @@
 // Telegram worksheet queue — pure logic (SPEC-WORKSHEET-MENU.md).
 //
-// Adrian taps /make in Telegram; a headless Claude session on his Mac claims the
+// Adrian taps /ws in Telegram; a headless Claude session on his Mac claims the
 // job, runs the skill that makes that KIND of worksheet, files the DOCX into
 // Dropbox and completes the row, which Telegrams him the file. Same shape as
 // lib/sheet-jobs.ts (the self-study sheet queue) and the same hard-won rule:

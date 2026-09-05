@@ -374,7 +374,7 @@ export async function GET(req: NextRequest) {
     }),
     // 🛠 Telegram worksheet queue (SPEC-WORKSHEET-MENU): the bot inserts here and
     // the Mac worksheet worker polls it. Same failure shape as sheet-jobs — a
-    // broken table means /make queues into nothing and Adrian never learns why.
+    // broken table means /ws queues into nothing and Adrian never learns why.
     timed('worksheet-jobs', async () => {
       const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
       const q = await fetch(

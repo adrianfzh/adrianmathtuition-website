@@ -1,6 +1,6 @@
 # SPEC — Telegram worksheet menu (agreed 5 Sep 2026)
 
-One `/make` menu in Adrian's Telegram, five kinds of worksheet behind it, two
+One `/ws` menu in Adrian's Telegram, five kinds of worksheet behind it, two
 lanes underneath. Adrian's words: *"give me 1–5 … allow me to select the
 levels, allow me to key in the topics manually (I can write the difficulty
 level + number of questions as well)."*
@@ -32,7 +32,7 @@ student sees it.
 ## The three flows behind one menu
 
 ```
-/make
+/ws
   → kind (5 buttons)
   → level (S1 · S2 · S3 EM · S3 AM · S4 EM · S4 AM · JC)      [kinds 1–4]
   → ⋯ then, by kind:
@@ -48,7 +48,7 @@ student sees it.
               → confirm
 ```
 
-Typed shortcuts everywhere: `/make 3 s3 am binomial theorem advanced 6` reuses
+Typed shortcuts everywhere: `/ws 3 s3 am binomial theorem advanced 6` reuses
 `lib/worksheet.js` `parseWorksheetArgs`. Kind 3 typed = the existing
 `/worksheet` one-liner, unchanged.
 
@@ -127,7 +127,7 @@ checkpoint is the .docx he edits; nothing reaches a student from here.
 ## Phases
 
 1. Website: `lib/worksheet-jobs.ts` + tests, `/api/admin/worksheet-jobs`, health-check probe. *(this PR)*
-2. Bot: migration `0009`, `/make` menu (`lib/make.js` pure + tests, `handlers/make.js`), `wk_*` callbacks, /help + command menu. *(this PR)*
+2. Bot: migration `0009`, `/ws` menu (`lib/make.js` pure + tests, `handlers/make.js`), `wk_*` callbacks, /help + command menu. *(this PR)*
 3. Website: `lib/marks-band.ts` + tests; `band` on `/api/bot/worksheet`. *(this PR)*
 4. Worker: `scripts/worksheet-worker/{run.sh, WORKER_PROMPT.md, install.sh, plist}`. *(this PR; Adrian runs install.sh)*
 5. `prelim-paper`: honour `exclude` (slot pools re-normalised, fallbacks reported). *(this PR)*
