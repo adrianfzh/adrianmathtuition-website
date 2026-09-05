@@ -49,19 +49,17 @@ def n_proportion(ws):
 def n_congruency(ws):
     ws.para([B('Notes:')])
     ws.para([B('Congruent — same shape, same size')])
-    ws.para([T('Prove congruency with one of: '), B('SSS, SAS, AAS, ASA, RHS'), T('.')])
-    ws.para([T('There is no such test as SSA or AAA for congruency.')])
+    ws.para([T('Every pair of corresponding sides is equal and every pair of corresponding '
+               'angles is equal — one figure is an exact copy of the other, possibly turned '
+               'over or turned round.')])
     ws.para([B('Similar — same shape, different size')])
     ws.para([T('Two triangles are similar if either:')])
     ws.para([T('   all three angles are equal (AA is enough, since the third follows), or')])
     ws.para([T('   all three pairs of sides are in the same ratio, or')])
     ws.para([T('   two pairs of sides are in the same ratio and the '), I('included'),
              T(' angles are equal.')])
-    ws.para([B('Writing a proof')])
-    ws.para([T('Name the triangles with the vertices in '), B('matching order'),
-             T(' — that ordering is what tells the reader which side corresponds to which.')])
-    ws.para([T('Give a reason for every statement: "common angle", "vertically opposite angles", '
-               '"alternate angles, '), M('AB \\parallel CD'), T('".')])
+    ws.para([T('Name the two figures with the vertices in '), B('matching order'),
+             T(' — that ordering is what tells you which side pairs with which.')])
     ws.para([B('Ratios of length, area and volume')])
     ws.math_block(r'\dfrac{\text{length}_1}{\text{length}_2} = k \quad\Rightarrow\quad \dfrac{\text{area}_1}{\text{area}_2} = k^2 \quad\Rightarrow\quad \dfrac{\text{volume}_1}{\text{volume}_2} = k^3')
     ws.para([T('Given an area ratio, take the square root before working with lengths. '
@@ -69,8 +67,8 @@ def n_congruency(ws):
     _mistakes(ws, [
         'Naming triangles in the wrong order, so the sides paired up are not corresponding.',
         'Using the area ratio directly as a length ratio.',
-        'Quoting AAA as a congruency test — it proves similarity only.',
-        'Giving a statement with no reason; the reason usually carries the mark.',
+        'Taking the scale factor the wrong way round — check that the smaller figure comes '
+        'out smaller.',
     ])
 
 
