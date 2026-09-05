@@ -122,7 +122,7 @@ Vars are in `.env.local` (trim quotes/trailing newline before interpolating — 
 
 ## Architecture
 
-Next.js App Router (`src/app/`) with TypeScript. API routes in `src/app/api/*/route.ts`. Shared components in `src/`. Deployed on Vercel. The Telegram/WhatsApp bot is a SEPARATE repo (`~/dev/adrianmath-telegram-math-bot`, Fly.io, manual `npm run deploy`).
+Next.js App Router (`src/app/`) with TypeScript. API routes in `src/app/api/*/route.ts`. Shared components in `src/`. Deployed on Vercel. The Telegram/WhatsApp bot is a SEPARATE repo (`~/dev/adrianmath-telegram-math-bot`, Fly.io — **a push to its `main` AUTO-DEPLOYS** via `.github/workflows/fly-deploy.yml`: the Checks job (`npm test` + model/content gates) must go green first, and a red check SKIPS the deploy silently, so look at `gh run list -R adrianfzh/adrianmath-telegram-bot` after pushing; `npm run deploy` is only the manual fallback).
 
 ## Testing & monitoring policy (2026-07-16)
 
