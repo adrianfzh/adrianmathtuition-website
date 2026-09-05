@@ -824,6 +824,7 @@ export async function POST(req: NextRequest) {
   // skill's 2.5-lines-per-mark rule), optional answer key, optional original
   // numbering. Admin-only school papers for Adrian's own teaching use.
   if (body.action === 'paper-pdf') {
+    const tReq = Date.now();
     const school = typeof body.school === 'string' ? body.school.trim() : '';
     const year = Number(body.year);
     if (!school || !Number.isFinite(year)) {
@@ -911,6 +912,10 @@ export async function POST(req: NextRequest) {
     const { data: hit } = await supa.from('paper_pdf_cache').select('url').eq('key', cacheKey).maybeSingle();
     if (hit?.url) return NextResponse.json({ url: hit.url, cached: true, ...payload });
 
+    // Timings ride the response (5 Sep 2026): the cold/warm split told Adrian
+    // where a 15s build went; these say where the remaining seconds go.
+    const tStart = Date.now();
+    const timings: Record<string, number> = { query_ms: tStart - tReq };
     try {
       let pdf = await renderPaperPDF({
         title: titleBits,
@@ -920,6 +925,7 @@ export async function POST(req: NextRequest) {
         answerKey,
         coverageWarning: cov.label || null,
       });
+      timings.render_ms = Date.now() - tStart;
       if (withSolutions) {
         const { items, missing } = solutionItemsFrom(rows as Row[], await solutionImageGateFor((rows as Row[]).map(r => r.id as string)));
         if (missing) warnings.push(`${missing} question${missing === 1 ? '' : 's'} with no worked solution — the answer alone is printed`);
@@ -932,11 +938,16 @@ export async function POST(req: NextRequest) {
         });
         pdf = await concatPdfs([pdf, solPdf]);
       }
+      const tUp = Date.now();
+      timings.solutions_ms = withSolutions ? tUp - tStart - timings.render_ms : 0;
       const blob = await put(`mark-paper/paper-pdfs/${Date.now()}.pdf`, pdf, {
         access: 'public', contentType: 'application/pdf', token: process.env.BLOB_READ_WRITE_TOKEN,
       });
+      timings.upload_ms = Date.now() - tUp;
+      timings.pdf_bytes = pdf.length;
       await supa.from('paper_pdf_cache').upsert({ key: cacheKey, url: blob.url, meta: { title: titleBits, ...payload } });
-      return NextResponse.json({ url: blob.url, cached: false, ...payload });
+      timings.total_ms = Date.now() - tReq;
+      return NextResponse.json({ url: blob.url, cached: false, ...payload, timings });
     } catch (e) {
       return NextResponse.json({ error: (e as Error).message || 'render failed' }, { status: 500 });
     }
