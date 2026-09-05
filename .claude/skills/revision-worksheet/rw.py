@@ -153,9 +153,11 @@ def fetch_aspects(base, headers, levels, topics, ids):
     tags = []
     for t in topics:
         tags += [t] + ALIASES.get(t, [])
+    # JC subgroups are filed under the bare level "JC" while questions carry JC1/JC2
+    sg_levels = list(levels) + (["JC"] if any(l.startswith("JC") for l in levels) else [])
     sgs = _get(base, headers,
                f"subgroups?select=id,level,topic,name,order_index&topic=in.{_in(tags)}"
-               f"&level=in.{_in(levels)}&order=level,order_index")
+               f"&level=in.{_in(sg_levels)}&order=level,order_index")
     by_sg = {s["id"]: s for s in sgs}
     if not sgs:
         return [], {}
