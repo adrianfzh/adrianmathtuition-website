@@ -644,7 +644,8 @@ def cmd_render(a):
         C.finish_notes(ws, notes_start)
 
     ws.page_break()
-    ws.para([C.B("Examples")])
+    # No "Examples" heading — the first concept line says what it is (Adrian,
+    # 5 Sep 2026). "Practice" stays: that one marks the change of activity.
     for r, concept, sol_rows, letter in examples:
         parts = C.sorted_parts(r)
         psum = sum(int(p.get("marks") or 0) for p in parts)

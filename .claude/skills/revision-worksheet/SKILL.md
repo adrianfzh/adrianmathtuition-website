@@ -138,9 +138,11 @@ Follow [`authoring.md`](authoring.md). `content.py` holds `TITLE`, `SUBTITLE`, `
 
 ### 5 · render — build, check, look — CHECKPOINT 2
 
-`render --pdf` lays the sheet out with `create-worksheet/worksheet_lib` (title, Notes,
-page break, concept → `Example N` → stem and parts verbatim with `[n]` → `solution_box`,
-page break, Practice with real Word numbering and one `[Ans:]` per question), embeds
+`render --pdf` lays the sheet out with `create-worksheet/worksheet_lib` (running head,
+Notes, page break, then straight into concept → `Example N` → stem and parts verbatim
+with `[n]` → `solution_box` — there is no "Examples" heading, the concept line says what
+it is — then a page break, `Practice` with real Word numbering and one `[Ans:]` per
+question), embeds
 stored figures, checks part marks against `total_marks`, counts the OMML equations,
 tries to export a PDF through Word and rasterise pages into `<workdir>/pages/`. **On
 Adrian's Mac today that export fails** — Word 16.111 refuses scripted `save as` (error
