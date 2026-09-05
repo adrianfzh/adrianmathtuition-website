@@ -8,6 +8,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { CORRECTNESS_HOLD } from '@/lib/figure-flag-release';
+import {
+  candidateChip, candidateCaption, candidateButtonLabel, candidateButtonColour,
+} from '@/lib/solution-candidate-chip';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 
 const C = {
@@ -63,24 +66,12 @@ type FitItem = {
 };
 const FIT_PAGE = 20;
 
-/** The chip beside a candidate. hold_kind is EXPLICIT — never inferred from the
- *  reason text, because a keyword guess once called an uninspected image
- *  inspected. No hold_kind → a neutral chip and the raw reason underneath. */
-function verdictChip(c: Candidate): { text: string; colour: string; hint?: string } {
-  if (c.verdict === 'apply') {
-    // An exact removal deletes the stamp object and leaves the artwork untouched; a
-    // reconstruction estimates the pixels under the stamp. Say which, every time.
-    return c.methodNote
-      ? { text: `✅ judged clean · ${c.route || 'reconstructed'} · pixels under the stamp RECONSTRUCTED`, colour: '#15803d', hint: c.methodNote.slice(0, 240) }
-      : { text: `✅ judged clean${c.route ? ` · ${c.route}` : ''} · exact removal`, colour: '#15803d' };
-  }
-  if (c.holdKind === 'residue') return { text: '⚠️ checked — faint lettering survives the strict stretch', colour: '#b45309' };
-  if (c.holdKind === 'unverified') {
-    return { text: '❓ not verified — produced by a method we no longer trust', colour: '#64748b', hint: 'nobody has inspected this one' };
-  }
-  if (c.verdict === 'hold') return { text: '❓ held — see note', colour: '#64748b' };
-  return { text: '❓ no verdict recorded', colour: '#64748b' };
-}
+/** The chip beside a candidate, the caption above it and the approve button's
+ *  label all come from lib/solution-candidate-chip (pure + tested). hold_kind and
+ *  route are EXPLICIT fields — never inferred from the reason text, because a
+ *  keyword guess once called an uninspected image inspected, and a null
+ *  method_note once made five REDRAWN figures read "exact removal". */
+const verdictChip = candidateChip;
 
 /** The severity chip on a fitness card. Red only for a verdict that blocks
  *  answering the question; everything else (cosmetic, or no verdict parsed
@@ -662,7 +653,7 @@ export default function FiguresPage() {
                       style={{ width: '100%', maxHeight: 380, objectFit: 'contain', background: '#fff', border: '1px solid #94a3b8', borderRadius: 6 }} /></a>
                   </figure>
                   <figure style={{ margin: 0 }}>
-                    <figcaption style={{ fontSize: 11.5, color: C.muted, marginBottom: 3 }}>Cleaned candidate · tap to open full size — check pale lines and curves at 1:1</figcaption>
+                    <figcaption style={{ fontSize: 11.5, color: C.muted, marginBottom: 3 }}>{candidateCaption(cand)}</figcaption>
                     {cand ? (
                       <>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -697,8 +688,8 @@ export default function FiguresPage() {
                     style={{ ...btn, color: '#fff', background: '#15803d', border: 'none' }}>✓ Approve as-is</button>
                   {cand && (
                     <button disabled={busy} onClick={() => solAct(it, 'approve-candidate')}
-                      style={{ ...btn, color: '#fff', background: cand.verdict === 'apply' ? '#15803d' : '#b45309', border: 'none' }}>
-                      {cand.verdict === 'apply' ? '✓ Use cleaned candidate' : 'Use it anyway'}
+                      style={{ ...btn, color: '#fff', background: candidateButtonColour(cand), border: 'none' }}>
+                      {candidateButtonLabel(cand)}
                     </button>
                   )}
                   <label style={{ ...btn, display: 'inline-block' }}>
