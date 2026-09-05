@@ -130,7 +130,7 @@ function themeRow(t: Theme, i: number): string {
   return `<div class="theme">
     <span class="num">${i + 1}</span>
     <span class="theme-title">${esc(t.title)}</span>
-    <span class="tally"><b>&minus;${t.marks}</b> mark${t.marks === 1 ? '' : 's'} &middot; this paper</span>
+    <span class="tally"><b>&minus;${t.marks}</b> mark${t.marks === 1 ? '' : 's'}</span>
     <p class="theme-note">${note}</p>
   </div>`;
 }
@@ -140,13 +140,18 @@ function themeRow(t: Theme, i: number): string {
 // line, clipped with an ellipsis — the row never grows taller, so the one-A4
 // rule holds. The column exists only when at least one row has a topic:
 // older runs render exactly as they did.
-function questionRow(q: { question: string; lost: number; max: number; topic?: string }, withTopics: boolean): string {
-  const pct = q.max > 0 ? Math.round((q.lost / q.max) * 100) : 0;
+// The bar is MARKS LOST, absolute — the longest bar is the question that cost
+// the most, at a glance (Adrian, 5 Sep 2026: "it is showing a percentage, should
+// show absolute marks lost"). Scaled to the worst question on the page, so the
+// top row is always full width; the label says the loss first and the question's
+// worth second.
+function questionRow(q: { question: string; lost: number; max: number; topic?: string }, withTopics: boolean, maxLost: number): string {
+  const pct = maxLost > 0 ? Math.round((q.lost / maxLost) * 100) : 0;
   const topic = withTopics ? `<span class="q-topic">${esc(q.topic || '')}</span>` : '';
   return `<div class="q">
     <span class="q-label">${esc(q.question)}</span>${topic}
     <span class="bar"><span style="width:${pct}%"></span></span>
-    <span class="q-marks">&minus;${q.lost} of ${q.max}</span>
+    <span class="q-marks"><b>&minus;${q.lost}</b> mark${q.lost === 1 ? '' : 's'} <span class="q-of">of ${q.max}</span></span>
   </div>`;
 }
 
@@ -253,6 +258,7 @@ export function frontPageHtml(input: FrontPageInput): string {
   const themes = chooseThemes(input.themes || []);
   const worst = (input.worstQuestions || []).slice(0, MAX_QUESTIONS);
   const withTopics = worst.some(q => !!(q.topic || '').trim());
+  const maxLost = worst.reduce((m, q) => Math.max(m, q.lost), 0);
   const top = themes[0];
   // A score above the total outranks the top theme: the student must read that the
   // number is being checked before they read anything built on it. Student words —
@@ -265,7 +271,7 @@ export function frontPageHtml(input: FrontPageInput): string {
     : 'Your losses on this paper are scattered rather than concentrated — work through the marked script itself.';
   const sub = input.themesSource === 'sheet'
     ? 'In the order your practice sheet takes them — with a note on each.'
-    : 'Ordered by what cost you most on this paper — with the marker\'s own note on each.';
+    : 'Ordered by what cost you most, with the marker\'s own note on each.';
 
   return `<!doctype html><html><head><meta charset="utf-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -332,8 +338,10 @@ h2::before{content:none}
 /* KaTeX sets its own size; hold it to the sentence it sits in. */
 .theme-note .katex{font-size:1em}
 .questions{display:flex;flex-direction:column;gap:.32rem;margin-bottom:1.1rem}
-.q{display:grid;grid-template-columns:2.7rem 1fr 4.4rem;gap:.75rem;align-items:center}
-.questions.with-topics .q{grid-template-columns:2.7rem 11.5rem 1fr 4.4rem}
+.q{display:grid;grid-template-columns:2.7rem 1fr 6.2rem;gap:.75rem;align-items:center}
+.questions.with-topics .q{grid-template-columns:2.7rem 11.5rem 1fr 6.2rem}
+.q-marks b{color:var(--ink);font-weight:600}
+.q-of{color:var(--ink-soft);opacity:.8}
 .q-topic{font-size:.78rem;color:var(--ink-soft);white-space:nowrap;overflow:hidden;
          text-overflow:ellipsis;min-width:0}
 .q-label{font-family:"IBM Plex Mono",monospace;font-size:.83rem;font-weight:600;
@@ -371,8 +379,8 @@ ${kindsRow(input.errorKinds)}<div class="sec-work">
 </div>
 <div class="sec-where">
 <h2>Where the marks went</h2>
-<p class="sub">The questions that cost you most on this paper.</p>
-<div class="questions${withTopics ? ' with-topics' : ''}">${worst.map(q => questionRow(q, withTopics)).join('')}</div>
+<p class="sub">The questions that cost you most.</p>
+<div class="questions${withTopics ? ' with-topics' : ''}">${worst.map(q => questionRow(q, withTopics, maxLost)).join('')}</div>
 </div>
 ${closingLine(input)}
 </div>

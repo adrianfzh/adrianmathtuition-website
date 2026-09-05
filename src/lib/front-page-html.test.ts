@@ -43,9 +43,10 @@ describe('frontPageHtml', () => {
     expect(five).toContain('this paper');
   });
 
-  it('tallies each theme against this paper, not a run of them', () => {
+  it('tallies each theme as a plain loss — no "this paper" suffix (Adrian, 5 Sep 2026), never a run of papers', () => {
     const h = frontPageHtml({ ...base, themes: [theme({ marks: 5, papers: 4 })] });
-    expect(h).toMatch(/&minus;5<\/b> marks &middot; this paper/);
+    expect(h).toMatch(/&minus;5<\/b> marks<\/span>/);
+    expect(h).not.toMatch(/marks &middot; this paper/);
     expect(h).not.toMatch(/4 papers/);
   });
 
@@ -70,12 +71,15 @@ describe('frontPageHtml', () => {
     expect(h).toMatch(/scattered rather than concentrated/);
   });
 
-  it('draws each question bar in proportion to what it cost', () => {
+  it('draws each question bar as ABSOLUTE marks lost, scaled to the worst question (Adrian, 5 Sep 2026)', () => {
     const h = frontPageHtml({ ...base, worstQuestions: [
-      { question: 'Q5', lost: 7, max: 7 }, { question: 'Q10', lost: 6, max: 8 },
+      { question: 'Q5', lost: 7, max: 7 }, { question: 'Q10', lost: 6, max: 8 }, { question: 'Q3', lost: 1, max: 4 },
     ] });
-    expect(h).toContain('width:100%');
-    expect(h).toContain('width:75%');
+    expect(h).toContain('width:100%');   // 7 lost — the longest bar
+    expect(h).toContain('width:86%');    // 6 of the worst 7, not 75% of its own 8
+    expect(h).toContain('width:14%');    // 1 of 7 — a short bar, not 25% of 4
+    expect(h).toMatch(/&minus;7<\/b> marks <span class="q-of">of 7/);
+    expect(h).toMatch(/&minus;1<\/b> mark <span class="q-of">of 4/);
   });
 
   it('prints the topic beside each bar when the run carries one (Adrian, 3 Sep 2026: "say what topic Q9 is")', () => {
@@ -198,7 +202,7 @@ describe('frontPageHtml', () => {
     for (const src of [undefined, 'marker'] as const) {
       const h = frontPageHtml({ ...base, themesSource: src });
       expect(h).toContain('drills exactly that');
-      expect(h).toContain('Ordered by what cost you most on this paper');
+      expect(h).toContain('Ordered by what cost you most, with the marker');
       expect(h).not.toContain('same order');
     }
   });

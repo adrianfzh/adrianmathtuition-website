@@ -71,6 +71,26 @@ verdicts, `parts[]` with marks, `correct.full_solution_latex`. Plus, from 5 Sep 
 8. **Chip captions** are plain text: a part label never carries `$…$`; strip it, and never
    let the model put a description in `label`.
 
+## 2b. Next on the pen (agreed 5 Sep evening, not built)
+
+- **A missing sign or symbol is drawn in, not ringed.** Shipped: when the fix is a lone
+  "−", "+" or bracket and the token box is trusted, the symbol is written at the token's
+  left edge. A wrong value is written just above its ring (Adrian's "(−4)" → "16").
+- **Skipped questions get their solution in the blank space.** Today a part with no ink
+  has no region, so its solution falls to the footer. The overlay should ask for the box
+  of the PRINTED question text for a not-attempted part and write the solution beneath
+  it, where the student would have worked (Sijia's Q7).
+- **Solutions read like Adrian's.** Each step of a skipped part's solution carries its
+  reason in words before the numbers: "c is the centre line: c = (2 + (−8))/2 = −3";
+  "period = 2π/b, the amount of x for one cycle; from the graph, period = π/2". Rule added
+  to the marker's prompt.
+- **Drawing on the printed diagram.** Adrian draws the centre line at c, labels a, and
+  marks 2 and −8 on the axis so the student sees where c and a live. Design: ask
+  placement for the boxes of the printed features (the max point, the min point, the
+  axes), then draw the dashed line at the midpoint height, the label, and the axis ticks
+  from those boxes; fail closed like a ring. Same for sign tables: a cross inside the
+  wrong cell needs cell boxes.
+
 ## 3. Writing rules for every note (the clarity rule)
 
 - One idea per note. ≤ 12 words at the line; ≤ 25 in the column; ≤ 8 for a verdict.

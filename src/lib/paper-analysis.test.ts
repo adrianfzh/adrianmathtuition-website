@@ -145,3 +145,31 @@ describe('headline', () => {
     expect(headline([], 80, 90)).toMatch(/scattered/);
   });
 });
+
+
+describe('analyse — the marker\'s topic is the theme (Adrian, 5 Sep 2026: "the topics are not correct")', () => {
+  const part = (over: Partial<import('./paper-analysis').LostPart>): import('./paper-analysis').LostPart => ({
+    paperId: 'p1', paperName: 'TYS 2021 P1', createdAt: '2026-09-03', question: '8', label: '(b)', lost: 1, max: 4, blank: false, why: '', ...over,
+  });
+  it('a stationary-point note that mentions tangents is Differentiation, not Circle properties', () => {
+    const themes = analyse([
+      part({ why: 'your tangent sketches are drawn the wrong way round; A = 1600 is a minimum', topic: 'Differentiation — stationary points' }),
+      part({ question: '14', label: '(b)', lost: 2, max: 5, why: 'the triangle base is 5½ − 4, giving 3 units²', topic: 'Differentiation and integration — normals and area' }),
+    ], 'p1');
+    expect(themes.map(t => t.title)).toEqual(['Differentiation and integration', 'Differentiation']);
+    expect(themes.map(t => t.title)).not.toContain('Circle properties');
+    expect(themes.map(t => t.title)).not.toContain('Writing the answer the way the question asked');
+  });
+  it('parts of one topic add up under one theme, and a blank part keeps its own habit theme', () => {
+    const themes = analyse([
+      part({ question: '5', label: '', lost: 3, max: 6, why: 'substituted −3/2', topic: 'Partial fractions' }),
+      part({ question: '9', label: '(c)', lost: 1, max: 2, why: 'sign inside the bracket', topic: 'Partial fractions; something else' }),
+      part({ question: '10', label: '(a)', lost: 4, max: 4, why: '', blank: true, topic: 'Trigonometric identities' }),
+    ], 'p1');
+    expect(themes.map(t => [t.title, t.marks])).toEqual([['Partial fractions', 4], ['Questions you left blank', 4]]);
+  });
+  it('a run without topics still falls back to the keyword classifier', () => {
+    const themes = analyse([part({ why: 'wrong number of significant figures on the answer line', lost: 1 })], 'p1');
+    expect(themes[0].title).toBe('Writing the answer the way the question asked');
+  });
+});

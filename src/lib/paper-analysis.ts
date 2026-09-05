@@ -105,16 +105,40 @@ export function classify(part: Pick<LostPart, 'why' | 'blank'>): string | null {
  * what decides `live`, and a theme that has stopped is reported as progress
  * rather than ranked as a gap.
  */
+/**
+ * Which theme a lost part belongs to — THE MARKER'S OWN TOPIC first.
+ *
+ * Adrian, 5 Sep 2026, on Kassandra's cover: "the topics are not correct — why
+ * are they not correct in the first place?" Because the cover was built from the
+ * keyword classifier below whenever the sheet's diagnosis had not landed yet:
+ * "tangent sketches" in a stationary-point note matched Circle properties, and
+ * "units²" in an area note matched Writing the answer the way the question
+ * asked. The marker already names every question's topic (meta.topic_detected —
+ * "Differentiation — stationary points"), so that is the theme now, cut by
+ * topicLabel. Blank parts keep their own habit theme (a part nobody attempted
+ * teaches nothing about its topic); the keyword classifier remains only for
+ * runs from before topics were stored.
+ */
+export function themeOf(part: Pick<LostPart, 'why' | 'blank' | 'topic'>): { key: string; title: string } | null {
+  const why = String(part.why || '');
+  if (part.blank || THEMES[0].test.test(why)) return { key: 'blank', title: THEMES[0].title };
+  const topic = topicLabel(part.topic);
+  if (topic) return { key: `topic:${topic.toLowerCase()}`, title: topic };
+  const key = classify(part);
+  if (!key) return null;
+  return { key, title: THEMES.find(t => t.key === key)!.title };
+}
+
 export function analyse(parts: LostPart[], latestPaperId: string): Theme[] {
   const byKey = new Map<string, Theme>();
 
   for (const p of parts || []) {
-    const key = classify(p);
-    if (!key) continue;
-    const meta = THEMES.find(t => t.key === key)!;
+    const theme = themeOf(p);
+    if (!theme) continue;
+    const { key } = theme;
     let th = byKey.get(key);
     if (!th) {
-      th = { key, title: meta.title, marks: 0, occasions: 0, papers: 0, live: false, latestMarks: 0, examples: [] };
+      th = { key, title: theme.title, marks: 0, occasions: 0, papers: 0, live: false, latestMarks: 0, examples: [] };
       byKey.set(key, th);
     }
     th.marks += p.lost;
@@ -126,7 +150,7 @@ export function analyse(parts: LostPart[], latestPaperId: string): Theme[] {
   }
 
   for (const th of byKey.values()) {
-    th.papers = new Set((parts || []).filter(p => classify(p) === th.key).map(p => p.paperId)).size;
+    th.papers = new Set((parts || []).filter(p => themeOf(p)?.key === th.key).map(p => p.paperId)).size;
   }
 
   // Live themes first, then by marks. A theme absent from the newest paper is
