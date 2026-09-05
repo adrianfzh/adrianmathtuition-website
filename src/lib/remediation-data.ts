@@ -7,6 +7,8 @@
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { validateAssignment } from '@/lib/assignments';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the students topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_students = (text: string) => sendTelegram(text, 'students');
 import {
   attemptClears, relockItems, nextOpenItem, planDone,
   type ClearRule, type ItemKind, type ItemState, type LossClass, type PlanStatus,
@@ -188,7 +190,7 @@ export async function reconcilePlan(plan: PlanRow, items: ItemRow[]): Promise<Re
           .eq('status', 'waiting');
         if (count) shelfLine = `\n🧺 wave 2 waiting: ${count} topic${count === 1 ? '' : 's'}`;
       } catch { /* the doorbell still rings without the count */ }
-      await sendTelegram(
+      await notify_students(
         `🎯 ${finished.student_name || finished.airtable_student_id} finished their game plan — all ${items.length} steps cleared.`
         + shelfLine
         + `\nhttps://www.adrianmathtuition.com/admin/remediation`
@@ -210,7 +212,7 @@ async function notifyStuckOnce(plan: PlanRow, item: ItemRow, why: string): Promi
   await sb.from('remediation_items')
     .update({ material: { ...item.material, stuck_notified: true } })
     .eq('id', item.id);
-  sendTelegram(
+  notify_students(
     `⚠️ ${plan.student_name || plan.airtable_student_id} is stuck on game plan step ${item.seq} (“${item.skill}”) — ${why}.`
     + `\nhttps://www.adrianmathtuition.com/admin/remediation`
   ).catch(() => {});

@@ -4,6 +4,8 @@ import { logJobRun } from '@/lib/job-log';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the money topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_money = (text: string) => sendTelegram(text, 'money');
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
 import { displaySpanMonth, getInvoiceMonth, sgtTodayISO } from '@/lib/invoice-month';
 import { applyPriorBalance } from '@/lib/invoice-consolidate';
@@ -999,7 +1001,7 @@ export async function POST(req: NextRequest) {
     const footer = mode === 'arrears'
       ? `\n\nReview and hold any via /amend [name].\nInvoices send automatically at 10am on the 2nd.`
       : `\n\nReview and hold any before 15th via /amend [name].\nInvoices send automatically at 10am tomorrow.`;
-    await sendTelegram(
+    await notify_money(
       `${header}\n\n` +
         `${summaryLines || '(none)'}\n\n` +
         `Total: ${generated} invoices \u00b7 ${totalAmount.toFixed(2)}` +

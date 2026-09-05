@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the students topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_students = (text: string) => sendTelegram(text, 'students');
 import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
 
 export const runtime = 'nodejs';
@@ -137,7 +139,7 @@ export async function POST(req: NextRequest) {
     const reviewLine = result.invoicesToReview.length
       ? `\n⚠️ Review ${result.invoicesToReview.length} sent invoice(s): ${result.invoicesToReview.map((i: any) => `${i.month} $${i.amount} (${i.status})`).join(', ')}`
       : '';
-    await sendTelegram(
+    await notify_students(
       `⏹ <b>Discontinued: ${studentName}</b>\n` +
       `Effective: ${effectiveDate}${reason ? `\nReason: ${String(reason).trim()}` : ''}\n` +
       `Enrolments ended: ${result.enrollmentsEnded} · Future lessons removed: ${result.lessonsDeleted}\n` +

@@ -16,6 +16,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { grantPass } from './portal-passes';
 import { sendTelegram } from './telegram';
+// Every notification from this file belongs in the students topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_students = (text: string) => sendTelegram(text, 'students');
 import {
   applyReferralInvoiceCredit,
   creditManualFallbackMessage,
@@ -79,12 +81,12 @@ export async function rewardInviterForPaidPass(
         paymentReference: args.paymentReference,
       });
       if (credit.status === 'applied') {
-        await sendTelegram(
+        await notify_students(
           creditReceiptMessage({ payerName, inviterName, targetMonth: credit.targetMonth }),
         );
       } else if (credit.status === 'failed') {
         console.error(`[referral-reward] invoice credit failed: ${credit.reason}`);
-        await sendTelegram(
+        await notify_students(
           creditManualFallbackMessage({ payerName, inviterName, reason: credit.reason }),
         );
       }
@@ -98,7 +100,7 @@ export async function rewardInviterForPaidPass(
         reference: `referral:${args.paymentReference}`,
       });
       if (!r.duplicate) {
-        await sendTelegram(
+        await notify_students(
           `🎁 Referral converted: ${payerName} paid — ${inviterName} auto-earned +${REFERRAL_REWARD_DAYS} days ` +
             `(S$10 of pass time; now expires ${r.expiresAt}).`,
         );

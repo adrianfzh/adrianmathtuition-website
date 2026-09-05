@@ -5,6 +5,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { safeEqual } from '@/lib/safe-equal';
 import { createServiceClient } from '@/lib/supabase-server';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the students topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_students = (text: string) => sendTelegram(text, 'students');
 
 function cronAuthorized(req: NextRequest): boolean {
   if (req.headers.get('x-vercel-cron')) return true;
@@ -50,7 +52,7 @@ export async function GET(req: NextRequest) {
   const lines = [...byStudent.entries()].map(([name, s]) =>
     `• ${name}: ${s.n} attempt${s.n === 1 ? '' : 's'}${s.low ? ` — ⚠ ${s.low} low` : ''}\n   ${s.scores.slice(0, 6).join(', ')}`);
 
-  await sendTelegram(
+  await notify_students(
     `🎓 Portal practice — last 24h\n${attempts.length} graded attempt${attempts.length === 1 ? '' : 's'} from ${byStudent.size} student${byStudent.size === 1 ? '' : 's'}\n\n${lines.join('\n')}\n\nSpot-check low scores in /admin (attempts are stored with full feedback).`
   );
 

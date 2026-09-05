@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { safeEqual } from '@/lib/safe-equal';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the money topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_money = (text: string) => sendTelegram(text, 'money');
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getInvoiceMonth } from '@/lib/invoice-month';
 import { advanceRunNote } from '@/lib/year-end-billing';
@@ -30,7 +32,7 @@ export async function GET(req: NextRequest) {
   // docs/INVOICES.md §Year-end billing). Null outside those months.
   const yearEndNote = advanceRunNote(invoiceMonth.year, invoiceMonth.month);
 
-  await sendTelegram(
+  await notify_money(
     `📋 <b>Invoice reminder — ${monthLabel}</b>\n\n` +
     `Draft invoices will be generated on the 14th (in 2 days) at 7am SGT.\n\n` +
     (yearEndNote ? `⚠️ ${yearEndNote}\n\n` : '') +

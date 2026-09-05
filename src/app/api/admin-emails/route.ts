@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the money topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_money = (text: string) => sendTelegram(text, 'money');
 import { generateAndStoreInvoicePdf } from '@/lib/invoice-pdf';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { checkDelivery, alertVerificationBlind } from '@/lib/resend-verify';
@@ -163,7 +165,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Notify on Telegram (the admin explicitly wants resend confirmations).
-    await sendTelegram(
+    await notify_money(
       delivered
         ? `↩ <b>Email resent</b>\n${subject}\nTo: ${toEmail}${pdfUrl ? '\n📎 PDF attached' : ''}`
         : `⚠️ <b>Resend NOT delivered (${failEvent})</b>\n${subject}\nTo: ${toEmail}\nThe address is blocked by the email provider — verify it / clear the suppression in Resend.`,

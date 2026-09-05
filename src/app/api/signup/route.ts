@@ -2,6 +2,8 @@ import { createHmac } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
 import { sendTelegram, sendTelegramWithButtons } from '@/lib/telegram';
+// Every notification from this file belongs in the students topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_students = (text: string) => sendTelegram(text, 'students');
 import { billingMonthOf } from '@/lib/lesson-generation';
 import { NO_LESSON_DATES } from '@/lib/holidays';
 import { buildPreviewInvoiceUrl } from '@/lib/invoice-preview-url';
@@ -592,7 +594,7 @@ export async function POST(request: NextRequest) {
     // Send Telegram notification if no invoice was generated (invoice block sends its own)
     if (!invoiceGenerated) {
       try {
-        await sendTelegram(
+        await notify_students(
           `📝 <b>New student signup: ${sanitize(studentName)} (${level})</b>\n` +
           `Start date: ${startDate}\n` +
           `Lessons created: ${lessonsCreated}\n` +
@@ -643,9 +645,9 @@ export async function POST(request: NextRequest) {
             }}),
           });
         } catch (markErr) { console.error('[signup] mark-sent failed (non-fatal):', (markErr as Error).message); }
-        try { await sendTelegram(`📤 First invoice <b>auto-emailed</b> to ${sanitize(parentName)} with the welcome email ✓ ($${firstInvoiceMeta!.amount.toFixed(2)}, marked Sent)`); } catch { /**/ }
+        try { await notify_students(`📤 First invoice <b>auto-emailed</b> to ${sanitize(parentName)} with the welcome email ✓ ($${firstInvoiceMeta!.amount.toFixed(2)}, marked Sent)`); } catch { /**/ }
       } else if (attachInvoice && !welcome.sent) {
-        try { await sendTelegram(`⚠️ First-invoice auto-send FAILED for ${sanitize(studentName)} (${welcome.error || 'unknown'}). Invoice is still Draft — use 📤 Review &amp; Send.`); } catch { /**/ }
+        try { await notify_students(`⚠️ First-invoice auto-send FAILED for ${sanitize(studentName)} (${welcome.error || 'unknown'}). Invoice is still Draft — use 📤 Review &amp; Send.`); } catch { /**/ }
       } else if (!welcome.sent) {
         console.error('[signup] Welcome email not sent:', welcome.error);
       }

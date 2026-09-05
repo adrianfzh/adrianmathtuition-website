@@ -11,6 +11,8 @@ import { practiceAuth } from '@/lib/practice';
 import { createServiceClient } from '@/lib/supabase-server';
 import { gradeAttempt, upsertWeaknessTags, topWeaknessTags, DAILY_GRADE_CAP, GRADING_MODEL } from '@/lib/practice-grade';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the students topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_students = (text: string) => sendTelegram(text, 'students');
 import { canTransition, type AssignmentRow } from '@/lib/assignments';
 import { portalIdentity } from '@/lib/portal-auth';
 import { requireActiveAccess } from '@/lib/portal-passes';
@@ -152,7 +154,7 @@ export async function POST(req: NextRequest) {
       .select('id').single();
     if (insSErr) console.error('[practice-grade] science attempt insert failed:', insSErr.message);
     if (sres.parseRetried) {
-      sendTelegram(`⚠️ ${sciLevel.label} practice grade needed a JSON retry — ${account.display_name || account.email}, ${topics[0] || '?'}, ${sres.score}/${sres.outOf}. Worth a spot-check.`).catch(() => {});
+      notify_students(`⚠️ ${sciLevel.label} practice grade needed a JSON retry — ${account.display_name || account.email}, ${topics[0] || '?'}, ${sres.score}/${sres.outOf}. Worth a spot-check.`).catch(() => {});
     }
     return NextResponse.json({ attemptId: insS?.id ?? null, result: sres, weaknessTags: [] });
   }
@@ -258,7 +260,7 @@ export async function POST(req: NextRequest) {
     if (flipErr) console.error('[practice-grade] assignment flip failed:', flipErr.message);
     const who = account.display_name || account.email;
     const what = assignment.topic ? `${assignment.topic}${assignment.tier ? ` · ${assignment.tier}` : ''}` : assignment.title;
-    sendTelegram(
+    notify_students(
       `📬 ${who} did your assigned question (${what}) — ${result.score}/${result.outOf}`
       + (assignment.status === 'marked' ? ' (re-marked)' : '')
       + `\nhttps://www.adrianmathtuition.com/admin/students/${account.airtable_student_id}`
@@ -269,7 +271,7 @@ export async function POST(req: NextRequest) {
   // covers normal grades — see /api/portal/practice-digest). Anomaly = the model
   // needed a retry to produce valid JSON, i.e. lower confidence in the grade.
   if (result.parseRetried) {
-    sendTelegram(
+    notify_students(
       `⚠️ Portal grade needed a JSON retry (lower confidence) — ${account.display_name || account.email}, ${q.topics?.[0] || '?'}, ${result.score}/${result.outOf}. Worth a spot-check.`
     ).catch(() => {});
   }

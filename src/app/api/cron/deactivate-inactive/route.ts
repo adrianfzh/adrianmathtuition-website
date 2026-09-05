@@ -37,6 +37,8 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { logJobRun } from '@/lib/job-log';
 import { deriveIsIp } from '@/lib/portal-ip';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the ops topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_ops = (text: string) => sendTelegram(text, 'ops');
 import {
   decideDeactivation,
   groupEnrollmentsByStudent,
@@ -170,7 +172,7 @@ async function run(req: NextRequest) {
     // Dry mode is silent by design — it's a preview, not an event.
     if (!dry && deactivated.length > 0) {
       const names = deactivated.map((d) => escapeHtml(d.name)).join(', ');
-      sendTelegram(
+      notify_ops(
         `🎓 Offboarded ${deactivated.length} graduated student${deactivated.length === 1 ? '' : 's'} ` +
           `from the portal: ${names}. No active enrollment for ${INACTIVITY_DAYS}+ days — they now see the ` +
           `S$29 pass gate; all their data stays. Reactivate any time: /api/admin/passes {action:'reactivate'}.` +
@@ -204,7 +206,7 @@ async function run(req: NextRequest) {
   } catch (err) {
     const msg = (err as Error).message;
     console.error('[deactivate-inactive] sweep failed:', msg);
-    sendTelegram(`⚠ Portal offboarding cron failed: ${escapeHtml(msg.slice(0, 200))}`).catch(() => {});
+    notify_ops(`⚠ Portal offboarding cron failed: ${escapeHtml(msg.slice(0, 200))}`).catch(() => {});
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

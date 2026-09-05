@@ -8,6 +8,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { safeEqual } from '@/lib/safe-equal';
 import { airtableRequestAll } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the students topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_students = (text: string) => sendTelegram(text, 'students');
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
@@ -34,7 +36,7 @@ export async function GET(req: NextRequest) {
   );
 
   if (!students.records.length) {
-    await sendTelegram(`✅ June Revision Sprint — all S4 and JC2 students have responded. No follow-up needed.`);
+    await notify_students(`✅ June Revision Sprint — all S4 and JC2 students have responded. No follow-up needed.`);
     return NextResponse.json({ count: 0 });
   }
 
@@ -66,7 +68,7 @@ export async function GET(req: NextRequest) {
 
   msg += `Total: ${students.records.length} student${students.records.length !== 1 ? 's' : ''} yet to respond.`;
 
-  await sendTelegram(msg);
+  await notify_students(msg);
   return NextResponse.json({ sent: true, count: students.records.length, sec4: sec4.length, jc2: jc2.length });
 }
 

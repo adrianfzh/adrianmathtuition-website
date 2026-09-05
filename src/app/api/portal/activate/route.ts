@@ -14,6 +14,8 @@ import { createServiceClient } from '@/lib/supabase-server';
 import { POLICY_VERSION } from '@/lib/portal-consent';
 import { deriveIsIp } from '@/lib/portal-ip';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the students topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_students = (text: string) => sendTelegram(text, 'students');
 
 // Telegram HTML mode: a student's name may contain & < >.
 const escapeHtml = (t: string) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -134,7 +136,7 @@ export async function POST(req: NextRequest) {
   // /api/portal/join have always pinged him; his OWN invited students
   // activating did not, so a sent invite just went quiet either way).
   // Best-effort: a Telegram failure must never fail an activation.
-  sendTelegram(
+  notify_students(
     `🎓 <b>${escapeHtml(displayName || email)}</b> activated their student portal account` +
     `${level ? ` (${escapeHtml(level)})` : ''}.`
   ).catch(() => {});

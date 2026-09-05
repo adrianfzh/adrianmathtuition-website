@@ -40,6 +40,8 @@ import {
 } from '@/lib/portal-passes';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the money topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_money = (text: string) => sendTelegram(text, 'money');
 import { rewardInviterForPaidPass } from '@/lib/referral-reward';
 
 export const runtime = 'nodejs';
@@ -99,7 +101,7 @@ export async function POST(req: NextRequest) {
   // Manual-note path: anything that shouldn't auto-grant answers 200 with
   // nothing recorded, and Adrian gets a Telegram to grant by hand in admin.
   const manual = async (reason: string) => {
-    await sendTelegram(
+    await notify_money(
       `💰 HitPay payment ${label} received — ${reason}; grant manually in admin.`
     ).catch(() => {});
     console.warn(`[hitpay-webhook] completed payment ${paymentId} not auto-granted: ${reason} (ref=${ref})`);

@@ -94,6 +94,7 @@ export async function alertVerificationBlind(where: string, reason: string, coun
       `${where}: ${reason}\n\n` +
       `${count === 1 ? 'That email was' : `${count} emails were`} sent UNVERIFIED — Resend's 200 is ` +
       `all we have, so a suppressed or blocked address would look identical to a delivered one.`,
+      'money', // invoice/receipt email delivery → the Money topic (6 Sept 2026)
     );
   } catch { /* the alarm is best-effort; never fail a completed send on it */ }
 }

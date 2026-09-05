@@ -4,6 +4,8 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { extractFlagged } from '@/lib/mark-triage';
 import { triageReminderMessage, type WaitingRun } from '@/lib/triage-reminder';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the marking topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_marking = (text: string) => sendTelegram(text, 'marking');
 import { logJobRun } from '@/lib/job-log';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
@@ -69,7 +71,7 @@ export async function GET(req: NextRequest) {
   }
 
   let sent = false;
-  if (message) sent = await sendTelegram(message);
+  if (message) sent = await notify_marking(message);
 
   // Stamp even on quiet days — the job RAN; a silent morning must stay
   // distinguishable from a dead cron (that's the whole job_runs contract).

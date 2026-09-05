@@ -25,6 +25,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase-server';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the students topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_students = (text: string) => sendTelegram(text, 'students');
 import { grantPass, TRIAL_PASS_DAYS, qualifiesToGrantTrials } from '@/lib/portal-passes';
 import {
   buildSelfServeConsentRecord,
@@ -130,7 +132,7 @@ export async function POST(req: NextRequest) {
           const capForInviter = inviter.airtable_student_id && !inviter.deactivated_at ? 10 : 5;
           if ((count ?? 0) >= capForInviter) {
             inviterQualifies = false;
-            sendTelegram(`🎟⚠ ${inviter.display_name || 'An inviter'} hit their trial cap (${capForInviter}/30d) — latest invitee signed up WITHOUT a trial. Legit streak? Grant manually via /api/admin/passes or say the word to raise caps.`).catch(() => {});
+            notify_students(`🎟⚠ ${inviter.display_name || 'An inviter'} hit their trial cap (${capForInviter}/30d) — latest invitee signed up WITHOUT a trial. Legit streak? Grant manually via /api/admin/passes or say the word to raise caps.`).catch(() => {});
           }
         }
       } catch { inviterQualifies = false; }
@@ -194,7 +196,7 @@ export async function POST(req: NextRequest) {
   // Doorbell to Adrian — fire-and-forget (same policy as portal requests: the
   // account is already saved; a Telegram hiccup must never fail the signup).
   try {
-    await sendTelegram(selfServeSignupTelegramText(v.name, v.level, inviter?.display_name ?? null, trialGranted));
+    await notify_students(selfServeSignupTelegramText(v.name, v.level, inviter?.display_name ?? null, trialGranted));
   } catch (e) {
     console.warn('[portal-join] telegram notify failed:', (e as Error).message);
   }

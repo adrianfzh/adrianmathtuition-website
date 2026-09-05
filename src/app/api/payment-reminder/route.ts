@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the money topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_money = (text: string) => sendTelegram(text, 'money');
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getInvoiceMonth, sgtTodayISO } from '@/lib/invoice-month';
 import { resolveRunMode, resolveTargetMonthLabel, jobNameFor, buildPaymentReminderMessage } from '@/lib/invoice-run-mode';
@@ -33,7 +35,7 @@ export async function GET(req: NextRequest) {
     todayISO: sgtTodayISO(),
     advanceLabel: getInvoiceMonth().label,
   });
-  await sendTelegram(buildPaymentReminderMessage(mode, monthLabel));
+  await notify_money(buildPaymentReminderMessage(mode, monthLabel));
   await logJobRun(jobNameFor('payment-reminder', mode), true, 'reminder Telegram sent');
   return NextResponse.json({ ok: true });
 }

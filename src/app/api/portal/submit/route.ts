@@ -28,6 +28,8 @@ import { keyFromUrl } from '@/lib/student-files-url';
 import { DAILY_SUBMIT_CAP, countHandinsToday } from '@/lib/portal-submit-limit';
 import type { HandinCountingClient } from '@/lib/portal-submit-limit';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the marking topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_marking = (text: string) => sendTelegram(text, 'marking');
 import { canTransition, type AssignmentRow } from '@/lib/assignments';
 import { portalIdentity } from '@/lib/portal-auth';
 import { markSubjectAccess } from '@/lib/portal-beta';
@@ -339,7 +341,7 @@ export async function POST(req: Request) {
   if (!queued) {
     // The run is saved either way — but with no queue entry nobody would ever
     // hear about it, so fall back to the old "come tap ▶ Mark" doorbell.
-    sendTelegram(
+    notify_marking(
       `📬 <b>${who}</b> submitted a paper for marking — ${photoUrls.length} page${photoUrls.length === 1 ? '' : 's'}` +
       ` — “${paperName}”.\nAuto-queue failed, so it's waiting as ⏳ in /admin/mark-paper history — tap ▶ Mark yourself.`
     ).catch(() => {});

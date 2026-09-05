@@ -24,6 +24,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the marking topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_marking = (text: string) => sendTelegram(text, 'marking');
 import { logJobRun } from '@/lib/job-log';
 import {
   pickNextJob, sanitizeResult, completionMessage, cancelState, isNoSheet, MAX_ATTEMPTS,
@@ -179,11 +181,11 @@ export async function POST(req: NextRequest) {
     if (!job) return NextResponse.json({ ok: false, cancelled: true, error: 'cancelled — this sheet was stopped' }, { status: 409 });
     // Best-effort: a Telegram hiccup must not undo a finished sheet.
     if (noSheet) {
-      sendTelegram(completionMessage(job, result)).catch(() => {});
+      notify_marking(completionMessage(job, result)).catch(() => {});
       logJobRun('sheet-worker', true, `${job.student_name || job.airtable_student_id}: no sheet needed`).catch(() => {});
       return NextResponse.json({ ok: true, noSheet: true, reason: result.reason, diagnosis: false, rebuilt: false });
     }
-    sendTelegram(completionMessage(job, result))
+    notify_marking(completionMessage(job, result))
       .then(() => sendSheetFiles(job, result))
       .catch(() => {});
     logJobRun('sheet-worker', true, `${job.student_name || job.airtable_student_id}: sheet filed`).catch(() => {});
@@ -245,7 +247,7 @@ export async function POST(req: NextRequest) {
       await sb.from('sheet_jobs')
         .update({ status: 'done', result, stage: 'no sheet needed', completed_at: new Date().toISOString(), error: null, claimed_by: null, claimed_at: null, heartbeat_at: null })
         .eq('id', body.id);
-      sendTelegram(completionMessage(job, result)).catch(() => {});
+      notify_marking(completionMessage(job, result)).catch(() => {});
       logJobRun('sheet-worker', true, `${job.student_name || job.airtable_student_id}: no sheet needed`).catch(() => {});
       return NextResponse.json({ ok: true, noSheet: true, reason: result.reason, requeued: false });
     }
@@ -254,7 +256,7 @@ export async function POST(req: NextRequest) {
       .update({ status: spent ? 'failed' : 'queued', error: msg, claimed_by: null, claimed_at: null, heartbeat_at: null })
       .eq('id', body.id);
     if (spent && job) {
-      sendTelegram(`⚠️ Self-study sheet failed ${MAX_ATTEMPTS}× for <b>${job.student_name || job.airtable_student_id}</b> (${job.paper_name || 'paper'})\n${msg}`).catch(() => {});
+      notify_marking(`⚠️ Self-study sheet failed ${MAX_ATTEMPTS}× for <b>${job.student_name || job.airtable_student_id}</b> (${job.paper_name || 'paper'})\n${msg}`).catch(() => {});
     }
     return NextResponse.json({ ok: true, requeued: !spent });
   }

@@ -19,6 +19,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the ops topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_ops = (text: string) => sendTelegram(text, 'ops');
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { createServiceClient } from '@/lib/supabase-server';
 import { resolveActiveExamType, type ExamType } from '@/lib/exam-season';
@@ -104,7 +106,7 @@ async function runWeekly() {
     weekLabel, weekStart, weekEndExclusive, today: isoDate(now), lessons, students,
   });
   for (const msg of digest.messages) {
-    await sendTelegram(msg);
+    await notify_ops(msg);
   }
   return NextResponse.json({
     ok: true, period: 'week', weekStart, weekEndExclusive,
@@ -195,7 +197,7 @@ async function generateAndStore(opts: {
   // One nudge, only when there is something waiting.
   if (stored > 0) {
     const withPapers = [...facts.values()].filter(f => f.papers.length > 0).length;
-    await sendTelegram(
+    await notify_ops(
       `\ud83d\udcec <b>${stored} parent draft${stored === 1 ? '' : 's'} ready</b> \u2014 ${periodLabel}\n` +
       `${withPapers} include marked-paper scores.\n` +
       `Review and send: ${SITE_URL}/admin/digests`

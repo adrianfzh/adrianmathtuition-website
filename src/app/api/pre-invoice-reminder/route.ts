@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { safeEqual } from '@/lib/safe-equal';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the money topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_money = (text: string) => sendTelegram(text, 'money');
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getInvoiceMonth } from '@/lib/invoice-month';
 import { advanceRunNote } from '@/lib/year-end-billing';
@@ -29,7 +31,7 @@ export async function GET(req: NextRequest) {
   const yearEnd = advanceRunNote(invoiceMonth.year, invoiceMonth.month);
   const yearEndNote = yearEnd ? `\n\n⚠️ ${yearEnd}` : '';
 
-  await sendTelegram(
+  await notify_money(
     `📋 <b>Heads up: Invoice generation runs tomorrow at 7am.</b>\n\n` +
     `Please mark any outstanding payments before then so they're not double-billed.\n\n` +
     `→ Use /invoices in Telegram to check\n` +

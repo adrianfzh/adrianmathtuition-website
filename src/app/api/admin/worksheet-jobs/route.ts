@@ -17,6 +17,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram, sendTelegramDocument } from '@/lib/telegram';
+// Every notification from this file belongs in the marking topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_marking = (text: string) => sendTelegram(text, 'marking');
 import { logJobRun } from '@/lib/job-log';
 import { downloadFile, getTemporaryLink, listFolder } from '@/lib/dropbox';
 import {
@@ -131,7 +133,7 @@ export async function POST(req: NextRequest) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     if (!job) return NextResponse.json({ ok: false, cancelled: true, error: 'cancelled — this job was stopped' }, { status: 409 });
     // Best-effort: a Telegram hiccup must not undo a finished sheet.
-    sendTelegram(completionMessage(job, result))
+    notify_marking(completionMessage(job, result))
       .then(() => sendFiles(job, result))
       .catch(() => {});
     logJobRun(JOB, true, `${job.label}: filed`, { job_id: job.id, kind: job.kind }).catch(() => {});
@@ -148,7 +150,7 @@ export async function POST(req: NextRequest) {
       .update({ status: spent ? 'failed' : 'queued', error: msg, claimed_by: null, claimed_at: null, heartbeat_at: null })
       .eq('id', id);
     if (spent && job) {
-      sendTelegram(`⚠️ Worksheet failed ${MAX_ATTEMPTS}× — <b>${job.label}</b>\n${msg}`).catch(() => {});
+      notify_marking(`⚠️ Worksheet failed ${MAX_ATTEMPTS}× — <b>${job.label}</b>\n${msg}`).catch(() => {});
       logJobRun(JOB, false, `${job.label}: ${msg}`, { job_id: job.id, kind: job.kind }).catch(() => {});
     }
     return NextResponse.json({ ok: true, requeued: !spent });

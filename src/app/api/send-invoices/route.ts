@@ -3,6 +3,8 @@ import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the money topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_money = (text: string) => sendTelegram(text, 'money');
 import { getInvoiceMonth, displaySpanMonth, sgtTodayISO } from '@/lib/invoice-month';
 import { resolveRunMode, resolveTargetMonthLabel, jobNameFor } from '@/lib/invoice-run-mode';
 import { yearEndHoldReason } from '@/lib/year-end-billing';
@@ -296,7 +298,7 @@ export async function POST(req: NextRequest) {
       .map((d: any) => `• ${d.studentName} (${d.month})${d.isFirstInvoice ? ' \u{1F195} New student' : ''}`).join('\n');
     const failedLines = (sm.errors || [])
       .map((e: any) => `• ${e.studentName ?? e.invoiceId}: ${e.error}`).join('\n');
-    await sendTelegram(
+    await notify_money(
       `${(sm.failed || 0) > 0 ? '⚠️ <b>Invoices — DELIVERY ISSUES</b>' : '✅ <b>Invoices delivered</b>'} — ${sm.month || getInvoiceMonth().label}\n\n` +
         `Delivered: ${sm.sent || 0} | Not delivered: ${sm.failed || 0}` +
         (sentLines ? `\n\n${sentLines}` : '') +
@@ -463,7 +465,7 @@ export async function POST(req: NextRequest) {
       const heldLines = heldForReview
         .map((r) => `• ${heldStudents[r.fields['Student']?.[0]] || '?'} — $${r.fields['Final Amount'] ?? '?'} (${reason(r.fields)})`)
         .join('\n');
-      await sendTelegram(
+      await notify_money(
         `\u{1F6A9} <b>Held for review</b> — ${monthLabel}\n\n` +
           `${heldForReview.length} invoice(s) were NOT auto-sent (non-routine). ` +
           `Review + send them from /admin/invoices:\n\n${heldLines}`
@@ -620,7 +622,7 @@ export async function POST(req: NextRequest) {
     if (!emails.length) {
       // Could still have PDF failures (every invoice failed to render) — surface them.
       if (pdfFailures.length) {
-        await sendTelegram(
+        await notify_money(
           `⚠️ <b>Invoices NOT sent — PDF errors</b>\n\n` +
             pdfFailures.map((p) => `• ${p.studentName}: ${p.error}`).join('\n') +
             `\n\nRegenerate the PDF from /admin/invoices, then resend.`
@@ -774,7 +776,7 @@ export async function POST(req: NextRequest) {
           : '\u2705 <b>Invoices delivered</b>');
     // Skipped when notify=false (bulk "Send All Approved" posts ONE consolidated summary at the end).
     if (notify) {
-      await sendTelegram(
+      await notify_money(
         `${summaryHeader} \u2014 ${currentMonth}\n\n` +
           `Delivered: ${sentCount} | Not delivered: ${failedCount}` +
           (sentLines ? `\n\n${sentLines}` : '') +

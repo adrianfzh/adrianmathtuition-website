@@ -20,6 +20,8 @@ import { isOurBlobUrl } from '@/lib/blob-url';
 import { collectFileKeys, removeStudentFiles } from '@/lib/student-files';
 import { RETENTION_MONTHS, retentionCutoffIso, latestActivityIso, isExpired } from '@/lib/retention';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the ops topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_ops = (text: string) => sendTelegram(text, 'ops');
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -141,7 +143,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (!dry && (purgedStudents > 0 || blobFailures > 0)) {
-      sendTelegram(
+      notify_ops(
         `🗑 Retention sweep: purged ${purgedAttempts} practice attempt${purgedAttempts === 1 ? '' : 's'} ` +
         `from ${purgedStudents} student${purgedStudents === 1 ? '' : 's'} inactive over ${RETENTION_MONTHS} months` +
         (deletedBlobs ? ` (+${deletedBlobs} files)` : '') +
@@ -158,7 +160,7 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     const msg = (err as Error).message;
     console.error('[retention] sweep failed:', msg);
-    sendTelegram(`⚠ Retention cron failed: ${msg.slice(0, 200)}`).catch(() => {});
+    notify_ops(`⚠ Retention cron failed: ${msg.slice(0, 200)}`).catch(() => {});
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

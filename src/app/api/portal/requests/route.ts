@@ -17,6 +17,8 @@ import { NextResponse, after } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram, sendTelegramDocumentTo } from '@/lib/telegram';
+// Every notification from this file belongs in the students topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_students = (text: string) => sendTelegram(text, 'students');
 import { generateRequestDraft } from '@/lib/request-draft';
 import {
   DAILY_REQUEST_CAP,
@@ -119,7 +121,7 @@ export async function POST(req: Request) {
   // the send leaves, but wrapped so no Telegram hiccup ever fails the creation
   // (sendTelegram already swallows non-OK responses; this catches network throws).
   try {
-    await sendTelegram(requestTelegramText(account.display_name || 'A student', kind, detail.detail));
+    await notify_students(requestTelegramText(account.display_name || 'A student', kind, detail.detail));
   } catch (e) {
     console.warn('[portal-requests] telegram notify failed:', (e as Error).message);
   }

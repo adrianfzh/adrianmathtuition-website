@@ -20,6 +20,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
+// Every notification from this file belongs in the money topic (6 Sept 2026; falls back to the DM when unbound).
+const notify_money = (text: string) => sendTelegram(text, 'money');
 import { STATUS_BY_EVENT, statusPatchBody } from '@/lib/email-status';
 
 export const runtime = 'nodejs';
@@ -89,7 +91,7 @@ export async function POST(req: NextRequest) {
     const reason = event?.data?.bounce?.message
       || event?.data?.bounce?.subType
       || (type === 'email.complained' ? 'marked as spam' : 'bounced');
-    await sendTelegram(
+    await notify_money(
       `⚠️ <b>Email NOT delivered</b>\n` +
       `${type.replace('email.', '').toUpperCase()}: ${subj}\n` +
       `To: ${to}\nReason: ${reason}\n\n` +
