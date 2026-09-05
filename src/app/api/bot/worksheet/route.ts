@@ -43,6 +43,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { KIOSK_LEVELS } from '@/lib/kiosk-session';
 import { normalizeTier } from '@/lib/practice-tiers';
 import { dailyDraw, drawSeedKey, sgtDate } from '@/lib/kiosk-draw';
+import { applyBand, bandKey, parseBand } from '@/lib/marks-band';
 import { fetchWorksheetPool, SEED_LEVELS } from '@/lib/kiosk-pool';
 import {
   clampCount, matchTopic, resolveLevelKey, validLevels,
@@ -151,9 +152,16 @@ export async function POST(req: NextRequest) {
   const count = clampCount(body.count);
   const answers = body.answers === true;
   const date = sgtDate();
+  // Marks band (SPEC-WORKSHEET-MENU): 'standard' | 'intermediate' | 'advanced'
+  // | 'a/b/c'. Tertiles of total_marks over THIS pool (lib/marks-band), because
+  // `difficulty` is ~98% "Standard" and bands nothing. Mixed = the plain draw.
+  const band = parseBand(body.band);
+  const bandLabel = bandKey(band);
   // Same seed as the kiosk: two students asking for the same sheet on the same
   // day get the same questions, and asking for more extends one shared order.
-  const picked = dailyDraw(pool.items, drawSeedKey(levelKey, topic, tier), count);
+  // A banded request seeds on the band too, so it is its own stable draw.
+  const seed = drawSeedKey(levelKey, topic, band ? `${tier ?? 'mixed'}|${bandLabel}` : tier);
+  const { items: picked, bandFallback } = applyBand(pool.items, band, count, (items, n) => dailyDraw(items, seed, n));
   const title = worksheetTitle(cfg.label, topic);
 
   const pdf = await renderBotWorksheetPDF({
@@ -168,7 +176,7 @@ export async function POST(req: NextRequest) {
 
   const questionIds = picked.map((q) => q.id);
   const blob = await put(
-    worksheetBlobPath({ date, levelKey, topic, tier, count: picked.length, answers, questionIds }),
+    worksheetBlobPath({ date, levelKey, topic, tier, band: bandLabel, count: picked.length, answers, questionIds }),
     pdf,
     {
       access: 'public',
@@ -191,6 +199,10 @@ export async function POST(req: NextRequest) {
     level: levelKey,
     topic,
     tier: tier ?? 'mixed',
+    // The marks band asked for, and whether a thin band had to borrow from the
+    // whole pool to fill the sheet — the bot tells Adrian when it did.
+    band: bandLabel,
+    bandFallback,
     answers,
     // Which audience the sheet was drawn for — the IP pool is a different pool,
     // so its same-day draw (and fingerprinted Blob path) differ from the

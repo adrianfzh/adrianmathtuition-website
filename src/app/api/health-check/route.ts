@@ -372,6 +372,18 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`table? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
       return 'queue table up';
     }),
+    // 🛠 Telegram worksheet queue (SPEC-WORKSHEET-MENU): the bot inserts here and
+    // the Mac worksheet worker polls it. Same failure shape as sheet-jobs — a
+    // broken table means /make queues into nothing and Adrian never learns why.
+    timed('worksheet-jobs', async () => {
+      const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      const q = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/worksheet_jobs?select=id,status,kind,attempts&limit=1`,
+        { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: T(10000) }
+      );
+      if (!q.ok) throw new Error(`table? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
+      return 'queue table up';
+    }),
     // 🖊 The marking desk (/admin/desk, SPEC-MARKING-DESK.md) — the hub's
     // marking tile lands here. Its queue route must hold its auth gate (401
     // anonymously; a 404 means the desk fell out of the build and the tile

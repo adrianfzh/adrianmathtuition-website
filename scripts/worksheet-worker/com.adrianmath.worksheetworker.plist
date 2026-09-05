@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.adrianmath.worksheetworker</string>
+
+	<!-- The wrapper is the COPY install.sh puts in ~/.adrianmath_worksheets, not
+	     the repo file: the shared website checkout flips branches under peer
+	     Claude sessions, and a launchd job must not break when it does. -->
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/bash</string>
+		<string>/Users/adrianfong/.adrianmath_worksheets/run.sh</string>
+	</array>
+
+	<key>WorkingDirectory</key>
+	<string>/Users/adrianfong/.adrianmath_worksheets</string>
+
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<key>LANG</key>
+		<string>en_US.UTF-8</string>
+	</dict>
+
+	<!-- Every 15 minutes, like the sheet worker. The wrapper's first move is a
+	     single peek curl, so an empty queue costs nothing; its PID lock means a
+	     fire during a long build is a no-op, never a second worker. -->
+	<key>StartInterval</key>
+	<integer>900</integer>
+
+	<key>RunAtLoad</key>
+	<false/>
+
+	<key>StandardOutPath</key>
+	<string>/Users/adrianfong/.adrianmath_worksheets/launchd.log</string>
+	<key>StandardErrorPath</key>
+	<string>/Users/adrianfong/.adrianmath_worksheets/launchd.log</string>
+</dict>
+</plist>

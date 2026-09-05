@@ -17,6 +17,19 @@ Read `data/paper-blueprints.json` (repo root). Resolve the paper key
 multiply matching topics' pool weights by its multipliers, renormalize per
 slot, and apply any mark-band shift. Default preset: `standard`.
 
+## 1b. Excluded topics (Telegram /make, kind 5 — SPEC-WORKSHEET-MENU.md)
+
+The request may carry `exclude: [canonical topics]` — schools that skip Sec 1
+topics at a Sec 2 EOY, or a class that has not reached Vectors. Apply it to the
+BUILDER, never as a filter at the end (a filter at the end leaves a short
+paper): drop the excluded topics from every slot's `topic_pool` and
+re-normalise the remaining weights per slot; drop them from `must_appear` too.
+A slot whose pool empties falls back to the paper's overall pool (all
+non-excluded topics, weighted by how often they appear across the blueprint)
+— and you REPORT every such slot in the completion payload as `fallbacks`
+(e.g. `["Q4", "Q11"]`), so Adrian's Telegram says which questions changed
+shape. Total marks and question count still follow the blueprint.
+
 ## 2. Walk the slots
 
 For each slot in order, sample a topic from its (overlaid) `topic_pool`

@@ -105,12 +105,16 @@ export function drawFingerprint(ids: string[]): string {
  */
 export function worksheetBlobPath(o: {
   date: string; levelKey: string; topic: string; tier: string | null;
+  /** marks band key (lib/marks-band bandKey) — 'mixed' when none; rides the path so a
+   *  banded sheet and the plain same-day sheet never overwrite each other */
+  band?: string;
   count: number; answers: boolean; questionIds: string[];
 }): string {
   const parts = [
     o.levelKey.toLowerCase(),
     slugify(o.topic),
     o.tier ?? 'mixed',
+    ...(o.band && o.band !== 'mixed' ? [`b-${o.band}`] : []),
     `q${o.count}`,
     o.answers ? 'ans' : 'noans',
     drawFingerprint(o.questionIds),
