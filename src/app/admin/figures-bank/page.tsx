@@ -147,10 +147,16 @@ export default function FiguresPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => { ensureAdminSession().then(setAuthed); }, []);
+  // Resume where the ALL-FIGURES grid left off — and only there. The save below
+  // is guarded by `tab === 'all'`; this read was not, so the grid's page number
+  // was applied to whichever lane you opened. Adrian had browsed the grid to
+  // page 146 (2,920 figures / 20 = 146), then opened Fitness — 9 pages long —
+  // and every page rendered empty (5 Sep 2026).
   useEffect(() => {
+    if (tab !== 'all') return;
     const saved = Number(localStorage.getItem(lsKey(level)) ?? 0);
     setPage(Number.isFinite(saved) ? saved : 0);
-  }, [level]);
+  }, [level, tab]);
 
   // The count on the Solutions / Fitness tabs, so each lane announces itself before it is opened.
   useEffect(() => {
@@ -181,11 +187,16 @@ export default function FiguresPage() {
       if (tab === 'solutions') {
         setSols(d.items ?? []);
         if (d.totals) setSolTotals(d.totals);
+        if (!(d.items ?? []).length && page > 0) setPage(0);
         return;
       }
       if (tab === 'fitness') {
         setFits(d.items ?? []);
         if (d.totals) setFitTotals(d.totals);
+        // An empty page that is not the first means we are past the end of this
+        // lane — from a stale saved page, or a lane that shrank under us while
+        // figures were being repaired. Walk back rather than show blank.
+        if (!(d.items ?? []).length && page > 0) setPage(0);
         return;
       }
       setItems(d.items ?? []);
