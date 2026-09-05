@@ -89,7 +89,7 @@ beta lifts for Practice only when §1, §2 and §7 are live.
 - **Nightly similarity review** (`scripts/find-review/`, plan-billed like
   `day-review`): read yesterday's ledger rows, judge each match "same skill / same
   chapter / off", write misses as eval cases, one-line digest to Adrian, `job_runs`
-  slug `finder-review`, `JOB_RHYTHMS` line.
+  slug `Find a question-review`, `JOB_RHYTHMS` line.
 
 ## 5. Requests become one pipeline
 
