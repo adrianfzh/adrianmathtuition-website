@@ -60,15 +60,20 @@ def n_congruency(ws):
              T(' angles are equal.')])
     ws.para([T('Name the two figures with the vertices in '), B('matching order'),
              T(' — that ordering is what tells you which side pairs with which.')])
-    ws.para([B('Ratios of length, area and volume')])
-    ws.math_block(r'\dfrac{\text{length}_1}{\text{length}_2} = k \quad\Rightarrow\quad \dfrac{\text{area}_1}{\text{area}_2} = k^2 \quad\Rightarrow\quad \dfrac{\text{volume}_1}{\text{volume}_2} = k^3')
-    ws.para([T('Given an area ratio, take the square root before working with lengths. '
-               'Given a volume ratio, take the cube root.')])
+    ws.para([B('Scale factor')])
+    ws.math_block(r'k = \dfrac{\text{a length on the new figure}}{\text{the matching length on the old figure}}')
+    ws.para([T('Every pair of matching lengths gives the SAME '), M('k'),
+             T(', so work it out once from a pair you know and use it on all the others. '
+               'Enlarging gives '), M('k > 1'), T('; reducing gives '), M('k < 1'), T('.')])
+    ws.para([B('When the lengths are given in terms of x')])
+    ws.para([T('Two matching ratios are equal, so set them equal and cross-multiply — that is '
+               'the equation. Solve it, then go back and answer what was actually asked.')])
     _mistakes(ws, [
         'Naming triangles in the wrong order, so the sides paired up are not corresponding.',
-        'Using the area ratio directly as a length ratio.',
         'Taking the scale factor the wrong way round — check that the smaller figure comes '
         'out smaller.',
+        'Keeping a negative root when the letter stands for a length.',
+        'Stopping at the value of x when the question asked for a length or an angle.',
     ])
 
 
