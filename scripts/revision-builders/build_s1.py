@@ -13,6 +13,42 @@ def _mistakes(ws, items):
         ws.para([T(f'{i}.  ')] + R.split_math(e))
 
 
+def _gradient_table(ws):
+    """The four gradients as pictures, side by side (Adrian, 5 Sep 2026 — "put in
+    diagrams ... perhaps in table form for visual explanation"). Sketches are
+    committed PNGs; regenerate with scripts/revision-builders/make_gradient_sketches.py."""
+    from pathlib import Path
+    from docx.shared import Cm
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    assets = Path(__file__).resolve().parent / "assets"
+    cols = [
+        ("grad-positive",  "Positive",  "m > 0",       "rises left to right"),
+        ("grad-negative",  "Negative",  "m < 0",       "falls left to right"),
+        ("grad-zero",      "Zero",      "m = 0",       "horizontal, y = c"),
+        ("grad-undefined", "Undefined", "no m",        "vertical, x = k"),
+    ]
+    t = ws.doc.add_table(rows=4, cols=len(cols))
+    t.style = ws.doc.styles["Table Grid"]
+    t.autofit = False
+    for r, row in enumerate(t.rows):
+        for c, cell in enumerate(row.cells):
+            cell.width = Cm(3.9)
+            para = cell.paragraphs[0]
+            para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            para.paragraph_format.space_before = para.paragraph_format.space_after = None
+            name, label, sym, note = cols[c]
+            if r == 0:
+                para.add_run().add_picture(str(assets / f"{name}.png"), width=Cm(2.7))
+            elif r == 1:
+                ws._fill(para, [B(label)])
+            elif r == 2:
+                ws._fill(para, [M(sym)])
+            else:
+                ws._fill(para, R.split_math(note))
+    ws.doc.add_paragraph()
+    return t
+
+
 def n_primes(ws):
     ws.para([B('Notes:')])
     ws.para([B('Prime factorisation')])
@@ -117,9 +153,9 @@ def n_linear(ws):
              'the value of '), M('y'), T(' where the line crosses the '), M('y'), T('-axis.')])
     ws.para([B('Gradient')])
     ws.math_block(r'm = \dfrac{\text{rise}}{\text{run}} = \dfrac{y_2 - y_1}{x_2 - x_1}')
-    ws.para([T('Positive gradient rises left to right; negative falls. A horizontal line has '
-               'gradient 0 and equation '), M('y = c'), T('; a vertical line has no gradient and '
-               'equation '), M('x = k'), T('.')])
+    ws.para([T('Which way the line leans is the whole of '), M('m'),
+             T(' — read the sign off the picture before you read anything else.')])
+    _gradient_table(ws)
     ws.para([B('Reading a graph')])
     ws.para([T('Pick two points that sit '), I('exactly'), T(' on grid intersections, as far '
              'apart as you can, and use them for the gradient. Two close points make a small '
@@ -138,7 +174,7 @@ def n_linear(ws):
         'Subtracting the coordinates in a different order on the top and the bottom of the gradient.',
         'Reading the gradient off the graph without checking the scales on the two axes.',
         'Confusing the $x$- and $y$-intercepts.',
-        'Giving a vertical line the equation $y = k$.',
+        'Giving a vertical line the equation $y = k$; it is $x = k$, and it has no gradient.',
     ])
 
 
