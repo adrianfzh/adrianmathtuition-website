@@ -25,6 +25,9 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'qb-topup':          { kind: 'interval', hours: 36, label: 'nightly 3:30am' },
   'file-subgroups':    { kind: 'interval', hours: 36, label: 'nightly 4:15am' },
   'bot-review':        { kind: 'interval', hours: 204, label: 'Mondays 8am' },   // 8.5 days
+  // Nightly plan-billed review of the day's bot questions (bot repo
+  // scripts/day-review-nightly.sh, launchd com.adrianmath.day-review, 5 Sept 2026).
+  'day-review':        { kind: 'interval', hours: 36, label: 'nightly 5am' },
   'question-mine':     { kind: 'interval', hours: 108, label: 'Mon & Thu 7am' },
   'figure-fitness':    { kind: 'interval', hours: 36, label: 'nightly 3:10am' },
   'generate-invoices': { kind: 'monthly', day: 14, graceDays: 1, label: '14th 7am' },
