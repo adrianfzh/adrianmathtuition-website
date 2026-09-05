@@ -21,7 +21,7 @@ import { renderPaperPDF, PAPER_PDF_RENDER_VERSION, type PaperPdfQuestion } from 
 import { createHash } from 'crypto';
 import { assessCoverage, answerKeyLines, type AnswerPart } from '@/lib/paper-reconstruction';
 import { KIOSK_LEVELS } from '@/lib/kiosk-session';
-import { put } from '@vercel/blob';
+import { storeBankFile } from '@/lib/bank-pdf-store';
 import { PDFDocument } from 'pdf-lib';
 import JSZip from 'jszip';
 import { isOurBlobUrl } from '@/lib/blob-url';
@@ -739,9 +739,7 @@ export async function POST(req: NextRequest) {
         title, levelLabel: 'Custom', topic: title, tier: null, dateLabel, questions, answers: body.answers === true,
         workspace: body.workspace !== false,
       });
-      const blob = await put(`mark-paper/custom-worksheets/${Date.now()}.pdf`, pdf, {
-        access: 'public', contentType: 'application/pdf', token: process.env.BLOB_READ_WRITE_TOKEN,
-      });
+      const blob = await storeBankFile(`custom-worksheets/${Date.now()}.pdf`, pdf, 'application/pdf');
       return NextResponse.json({ url: blob.url, count: questions.length, warnings });
     } catch (e) {
       return NextResponse.json({ error: (e as Error).message || 'render failed' }, { status: 500 });
@@ -783,9 +781,7 @@ export async function POST(req: NextRequest) {
     const buf = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE', compressionOptions: { level: 1 } });
     const zipName = typeof body.zipName === 'string' && body.zipName.trim()
       ? paperFileNames([body.zipName.trim()], '.zip')[0] : 'papers.zip';
-    const blob = await put(`mark-paper/paper-zips/${Date.now()}-${zipName}`, buf, {
-      access: 'public', contentType: 'application/zip', token: process.env.BLOB_READ_WRITE_TOKEN,
-    });
+    const blob = await storeBankFile(`paper-zips/${Date.now()}-${zipName}`, buf, 'application/zip');
     return NextResponse.json({ url: blob.url, count: added, failed, name: zipName });
   }
 
@@ -809,9 +805,7 @@ export async function POST(req: NextRequest) {
         title, items,
         includeStems: body.includeQuestions !== false,
       });
-      const blob = await put(`mark-paper/solutions-pdfs/${Date.now()}.pdf`, pdf, {
-        access: 'public', contentType: 'application/pdf', token: process.env.BLOB_READ_WRITE_TOKEN,
-      });
+      const blob = await storeBankFile(`solutions-pdfs/${Date.now()}.pdf`, pdf, 'application/pdf');
       return NextResponse.json({ url: blob.url, count: items.length, missingSolutions: missing });
     } catch (e) {
       return NextResponse.json({ error: (e as Error).message || 'render failed' }, { status: 500 });
@@ -940,9 +934,7 @@ export async function POST(req: NextRequest) {
       }
       const tUp = Date.now();
       timings.solutions_ms = withSolutions ? tUp - tStart - timings.render_ms : 0;
-      const blob = await put(`mark-paper/paper-pdfs/${Date.now()}.pdf`, pdf, {
-        access: 'public', contentType: 'application/pdf', token: process.env.BLOB_READ_WRITE_TOKEN,
-      });
+      const blob = await storeBankFile(`paper-pdfs/${Date.now()}.pdf`, pdf, 'application/pdf');
       timings.upload_ms = Date.now() - tUp;
       timings.pdf_bytes = pdf.length;
       await supa.from('paper_pdf_cache').upsert({ key: cacheKey, url: blob.url, meta: { title: titleBits, ...payload } });
