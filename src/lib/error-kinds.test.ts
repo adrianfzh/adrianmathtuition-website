@@ -18,7 +18,7 @@ const question = (parts: unknown[]) => ({
 
 describe('the contract', () => {
   it('is exactly the eight codes the bot writes, in this order', () => {
-    expect([...ERROR_KINDS]).toEqual(['concept', 'arithmetic', 'transfer', 'sign', 'rounding', 'units', 'misread', 'incomplete']);
+    expect([...ERROR_KINDS]).toEqual(['concept', 'arithmetic', 'transfer', 'sign', 'rounding', 'units', 'misread', 'incomplete', 'careless']);
   });
 
   it('every code has a student label and a desk hint', () => {

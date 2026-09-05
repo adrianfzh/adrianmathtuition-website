@@ -27,6 +27,11 @@ const asRecord = (v: unknown): Json | null =>
 
 export const ERROR_KINDS = [
   'concept', 'arithmetic', 'transfer', 'sign', 'rounding', 'units', 'misread', 'incomplete',
+  // careless — the ninth code (5 Sep 2026, Adrian: "this is very common"): a
+  // mechanical slip inside a method the student clearly knows that is none of the
+  // five specific slips (dropped term, lost factor, wrong coefficient in the same
+  // line). Appended, so stored codes and rollups keyed on the first eight still read.
+  'careless',
 ] as const;
 export type ErrorKind = (typeof ERROR_KINDS)[number];
 
@@ -48,6 +53,7 @@ export const ERROR_KIND_LABEL: Record<ErrorKind, string> = {
   units: 'units',
   misread: 'misread',
   incomplete: 'incomplete',
+  careless: 'careless',
 };
 
 /** What each code means — the hint beside it in the desk's Override select. */
@@ -60,6 +66,7 @@ export const ERROR_KIND_HINT: Record<ErrorKind, string> = {
   units: 'missing or wrong units',
   misread: 'answered a different question / missed a condition',
   incomplete: 'stopped short, or not attempted',
+  careless: 'a slip in a step they know how to do — dropped term, lost factor',
 };
 
 /**
@@ -67,7 +74,7 @@ export const ERROR_KIND_HINT: Record<ErrorKind, string> = {
  * concept-side = the method was not right; incomplete stands on its own,
  * because "did not finish" says nothing about whether they could have.
  */
-export const CARELESS_KINDS: readonly ErrorKind[] = ['arithmetic', 'transfer', 'sign', 'rounding', 'units'];
+export const CARELESS_KINDS: readonly ErrorKind[] = ['arithmetic', 'transfer', 'sign', 'rounding', 'units', 'careless'];
 export const CONCEPT_KINDS: readonly ErrorKind[] = ['concept', 'misread'];
 
 export type ErrorKindTotals = {
