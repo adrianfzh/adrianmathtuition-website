@@ -29,6 +29,7 @@ import { listFolder, dropboxConfigured } from '@/lib/dropbox';
 import { choosePdf, sheetFolder, ambiguityMessage, noSheetNote, type SheetFile } from '@/lib/release-with-sheet';
 import { readNoSheet } from '@/lib/sheet-jobs';
 import { attachAmendedFromDropbox } from '@/lib/attach-amended';
+import { releaseHeldPracticeItems } from '@/lib/practice-again-store';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -222,9 +223,16 @@ export async function POST(req: NextRequest) {
     released = true;
   }
 
+  // 🔁 Practice Again items (SPEC-PORTAL-V2 §7). mark-triage's release flips
+  // them itself, but when the paper was ALREADY released (Adrian released by
+  // hand before the sheet finished) that call never happens — so the flip is
+  // repeated here, idempotently, and this button is the one that lets them out.
+  const heldItems = await releaseHeldPracticeItems(getSupabaseAdmin(), runId);
+
   return NextResponse.json({
     ok: true, released, pdfPath,
     assignmentId: aData.assignment?.id ?? null,
+    practiceItems: heldItems.released,
     alreadyWasReleased: !!r.run.released_at,
     amended,
   });

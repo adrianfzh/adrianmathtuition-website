@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { getStudentAssignment } from '@/lib/portal-assignments';
-import { assignmentHref, dueLabel, isOverdue } from '@/lib/assignments';
+import { assignmentHref, dueLabel, isOverdue, opensInGrader } from '@/lib/assignments';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
 import { fileHref } from '@/lib/student-files-url';
@@ -19,7 +19,7 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
   const account = await currentAccount();
   const a = await getStudentAssignment(id, portalIdentity(account));
   if (!a) notFound();
-  if (a.kind === 'question') redirect(assignmentHref(a));
+  if (opensInGrader(a.kind)) redirect(assignmentHref(a));
 
   const due = dueLabel(a.due_on);
   const overdue = isOverdue(a);

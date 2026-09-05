@@ -77,6 +77,15 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
         "docx_path":"/Students/<Student>/<YYYY-MM-DD> <paper>/Practice Again.docx","pdf_path":"/Students/<Student>/<YYYY-MM-DD> <paper>/Practice Again.pdf",
         "wave":["chain rule","∫1/(ax+b)"],"shelved":["Polynomials","Plane Geometry"],
         "verified":"42/42 answers checked",
+        "questions":[
+          {"section":"Practice 1","index":1,"skill_title":"Master Finding Area Using Integration",
+           "question_id":"6f1d2c3b-4a5e-4f60-8a9b-0c1d2e3f4a5b","text_latex":null,
+           "answer_latex":"$\\frac{32}{3}$ units$^2$","marks":4,"topic":"Integration"},
+          {"section":"Practice 1","index":2,"skill_title":"Master Finding Area Using Integration",
+           "question_id":null,
+           "text_latex":"The curve $y = 4 - x^2$ meets the $x$-axis at $A$ and $B$. Find the area of the region bounded by the curve and the $x$-axis.",
+           "answer_latex":"$\\frac{32}{3}$ units$^2$","marks":3,"topic":"Integration"}
+        ],
         "diagnosis":[
           {"title":"Master Finding Area Using Integration","marks":6,"questions":["Q11(a)","Q20"],
            "why":"Area under a curve is $\\int y\\,dx$ — the shoelace method needs vertices, not a curve.","tier":"teach"},
@@ -102,6 +111,40 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
    sheet exists for. When the marker's results carry fewer marks than the paper
    (`totals.counted_max < totals.max`), open the marked PDF and name the blank
    questions yourself before choosing the wave.
+
+   **`questions` is how the sheet's practice reaches the portal** (SPEC-PORTAL-V2
+   §7, 6 Sep 2026). Until now the portal knew a FILE existed and nothing about
+   what was on it; the student did the sheet on paper and handed the whole
+   thing in. Now the site makes **one Practice item per practice question** in
+   the student's Practice tab ("Practice Again" section, labelled with the paper
+   and the skill it fixes), each marked line by line in the browser the moment
+   the student tries it. Send one entry **per practice question on the sheet,
+   in sheet order** — worked examples are NOT listed, only the questions the
+   student attempts:
+
+   - `section` = the practice heading it sits under ("Practice 1"), `index` =
+     its number within that section — for the label only.
+   - `skill_title` = the section heading verbatim, the same string you send in
+     `diagnosis[].title` — this is what links the item to the skill.
+   - `question_id` = the bank `questions.id` (uuid) when the question IS a bank
+     question (the skill's practice picks normally are). The site checks it is a
+     live bank row; a wrong id is treated as "not in the bank".
+   - `text_latex` + `answer_latex` = **required when you WROTE the question**
+     (the bank had none that fit the mistake): the full question as you set it
+     on the sheet and the verified answer, both with maths in `$…$`. The grader
+     marks the student against `answer_latex`, so it must be the answer you
+     verified — never an unverified one. Send them for bank questions too if
+     you like; they are ignored when the bank row is found.
+   - `marks` = what the question is worth on your sheet; `topic` = its bank
+     topic (canonical name).
+
+   The items are created **held** — the student sees none of them until
+   Adrian's **Approve & release** on the desk releases the paper, the sheet and
+   the items together (his release covers every question on the sheet, the
+   ones you wrote included — he reads them all in the PDF). Cancelling the job
+   deletes them. A malformed `questions` is counted and skipped, never a reason
+   the `done` fails — but an entry with neither a bank id nor a written
+   question+answer yields no item, so check the list before you post it.
 
    **`diagnosis` is what makes the marked paper's page 1 agree with your
    sheet** (Adrian, 2 Sep 2026: *"the sheet's diagnosis should drive the cover,

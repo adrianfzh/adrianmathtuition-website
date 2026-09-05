@@ -6,6 +6,13 @@ import { getSupabaseAdmin } from './supabase';
 import { portalIdentity, sessionAccount } from './portal-auth';
 import { pendingCount, type AssignmentRow } from './assignments';
 import { paperSubjectFromName, subjectAllowed, type SubjectAccount } from './portal-subjects';
+import { pendingCount, STUDENT_HIDDEN_STATUSES, type AssignmentRow } from './assignments';
+
+// PostgREST `not.in` filter for the statuses a student must never see. 'held'
+// (6 Sep 2026) joined 'revoked' here: a Practice Again row exists from the
+// moment the sheet worker finishes but must stay invisible until Adrian's
+// Approve & release — so the exclusion lives in the QUERY, not after the fetch.
+const HIDDEN = `(${STUDENT_HIDDEN_STATUSES.join(',')})`;
 
 /**
  * The subject gate on an assignment (SPEC-PORTAL-V2 §2). A row carries its
@@ -24,9 +31,9 @@ export async function listStudentAssignments(airtableStudentId: string, account?
   const { data, error } = await getSupabaseAdmin()
     .from('portal_assignments').select('*')
     .eq('airtable_student_id', airtableStudentId)
-    .neq('status', 'revoked')
+    .not('status', 'in', HIDDEN)
     .order('created_at', { ascending: false })
-    .limit(100);
+    .limit(200);
   if (error) throw new Error(error.message);
   const rows = (data || []) as AssignmentRow[];
   return account ? rows.filter(r => assignmentVisible(r, account)) : rows;
@@ -36,9 +43,29 @@ export async function getStudentAssignment(id: string, airtableStudentId: string
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
   const { data } = await getSupabaseAdmin()
     .from('portal_assignments').select('*')
-    .eq('id', id).eq('airtable_student_id', airtableStudentId).neq('status', 'revoked')
+    .eq('id', id).eq('airtable_student_id', airtableStudentId).not('status', 'in', HIDDEN)
     .maybeSingle();
   return (data as AssignmentRow | null) || null;
+}
+
+/**
+ * Paper names for Practice Again items ("From AM 2021 P1"), keyed by run id.
+ * Scoped to the student's OWN runs in the query — a source_run_id is server-
+ * written, but the identity predicate rides every student read regardless.
+ * Fail-soft: an empty map only drops the label.
+ */
+export async function paperNamesForStudent(airtableStudentId: string, runIds: string[]): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  if (!runIds.length) return out;
+  try {
+    const { data } = await getSupabaseAdmin()
+      .from('paper_marking_runs').select('id, paper_name')
+      .in('id', runIds.slice(0, 100)).eq('student_id', airtableStudentId);
+    for (const r of (data || []) as { id: string; paper_name: string | null }[]) {
+      if (r.paper_name) out.set(r.id, r.paper_name);
+    }
+  } catch { /* the label is a nicety */ }
+  return out;
 }
 
 /** Pending count for the 🏠 tab dot. Resolves the student via the per-request

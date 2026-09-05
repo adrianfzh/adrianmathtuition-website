@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   validateAssignment, isPending, pendingCount, dueLabel, isOverdue,
   assignmentHref, statusLabel, canTransition, homeCardSummary,
+  opensInGrader, STUDENT_HIDDEN_STATUSES,
 } from './assignments';
 
 const SID = 'recAbCdEfGhIjKlMn';
@@ -108,5 +109,36 @@ describe('routing + transitions', () => {
     expect(canTransition('marked', 'revoked')).toBe(false);
     expect(canTransition('revoked', 'assigned')).toBe(false);
     expect(canTransition('assigned', 'revoked')).toBe(true);
+  });
+});
+
+// ── 'held' + 'generated' (SPEC-PORTAL-V2 §7, 6 Sep 2026) ─────────────────────
+describe('held rows — created by the sheet hand-back, released with the paper', () => {
+  it('a held row is not pending and never counts on the Home card', () => {
+    expect(isPending('held')).toBe(false);
+    expect(pendingCount([{ status: 'held' }, { status: 'held' }, { status: 'assigned' }])).toBe(1);
+    expect(homeCardSummary([{ status: 'held' }])).toBeNull();
+  });
+  it('release is the only way out of held (besides withdrawing it); nothing goes back to held', () => {
+    expect(canTransition('held', 'assigned')).toBe(true);
+    expect(canTransition('held', 'revoked')).toBe(true);
+    expect(canTransition('held', 'submitted')).toBe(false);
+    expect(canTransition('held', 'marked')).toBe(false);
+    for (const from of ['assigned', 'submitted', 'marked', 'revoked'] as const) {
+      expect(canTransition(from, 'held')).toBe(false);
+    }
+  });
+  it('labels a held row for admin surfaces', () => {
+    expect(statusLabel({ status: 'held', kind: 'question', score: null, out_of: null })).toBe('Not released yet');
+  });
+  it('a generated (worker-written) question opens in the grader like a bank question', () => {
+    expect(opensInGrader('question')).toBe(true);
+    expect(opensInGrader('generated')).toBe(true);
+    expect(opensInGrader('worksheet')).toBe(false);
+    expect(assignmentHref({ id: 'g1', kind: 'generated', status: 'assigned' })).toBe('/app/practice?assignment=g1');
+    expect(statusLabel({ status: 'assigned', kind: 'generated', score: null, out_of: null })).toBe('To do');
+  });
+  it('the student-hidden statuses are exactly held and revoked', () => {
+    expect([...STUDENT_HIDDEN_STATUSES].sort()).toEqual(['held', 'revoked']);
   });
 });

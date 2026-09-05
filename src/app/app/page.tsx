@@ -175,7 +175,7 @@ export default async function DashboardPage() {
               return (
                 <li key={a.id}>
                   <Link href={assignmentHref(a)} className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 active:bg-white/10">
-                    <PortalIcon name={a.kind === 'question' ? 'pencil' : 'file-check'} className="w-4 h-4 opacity-80 shrink-0" />
+                    <PortalIcon name={a.kind === 'worksheet' ? 'file-check' : 'pencil'} className="w-4 h-4 opacity-80 shrink-0" />
                     <span className="flex-1 min-w-0">
                       <span className="block text-sm font-medium truncate">{a.title}</span>
                       <span className="block text-[11px] opacity-75 truncate">

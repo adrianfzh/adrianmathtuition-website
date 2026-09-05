@@ -4,8 +4,20 @@
 
 import { sgtDateISO } from './sgt';
 
-export type AssignmentKind = 'question' | 'worksheet';
-export type AssignmentStatus = 'assigned' | 'submitted' | 'marked' | 'revoked';
+// 'generated' (6 Sep 2026, SPEC-PORTAL-V2 §7): a question with NO bank row —
+// the sheet worker wrote it because the bank had nothing that fit the mistake.
+// Its text, answer and marks live on the assignment itself (question_text /
+// answer_latex / marks) and the practice grader marks against those.
+export type AssignmentKind = 'question' | 'worksheet' | 'generated';
+// 'held' (same build): created but not yet released — invisible to the student
+// until Adrian's Approve & release flips it to 'assigned' together with the
+// paper and the sheet it came from (SPEC-TEACHING-CYCLE step 7).
+export type AssignmentStatus = 'held' | 'assigned' | 'submitted' | 'marked' | 'revoked';
+// Which section of the student's Practice to-do list a row sits in
+// (SPEC-PORTAL-V2 §3): 'adrian' = the Send-work card / release-with-sheet's PDF
+// / remediation drills (every row before this build), 'practice-again' = one
+// row per question the sheet worker handed back, 'find' = Find a question.
+export type AssignmentSource = 'adrian' | 'practice-again' | 'find';
 
 export type AssignmentRow = {
   id: string;
@@ -31,7 +43,28 @@ export type AssignmentRow = {
   submitted_at: string | null;
   marked_at: string | null;
   revoked_at: string | null;
+  // ── SPEC-PORTAL-V2 §3/§7 columns (migration portal_assignments_practice_again) ──
+  source: AssignmentSource;
+  /** Practice Again: the sheet section heading — the skill this question fixes. */
+  skill_title: string | null;
+  /** 'A Math' | 'E Math' | 'H2 Math' | 'Other' | null — the subject gate filters on it. */
+  subject: string | null;
+  /** Practice Again: the sheet_jobs row + 0-based sheet position that created this row (unique together). */
+  sheet_job_id: string | null;
+  sheet_index: number | null;
+  /** kind 'generated' only: the written question, its answer, its marks. */
+  question_text: string | null;
+  answer_latex: string | null;
+  marks: number | null;
 };
+
+/** Opens in the in-browser practice grader (a bank question or a written one), as opposed to a worksheet's own page. */
+export function opensInGrader(kind: AssignmentKind | string): boolean {
+  return kind === 'question' || kind === 'generated';
+}
+
+/** Statuses a STUDENT must never see a row in — every student read excludes both. */
+export const STUDENT_HIDDEN_STATUSES: readonly AssignmentStatus[] = ['held', 'revoked'];
 
 export type CreateAssignmentInput = {
   studentId: string;
@@ -171,14 +204,15 @@ export function isOverdue(row: Pick<AssignmentRow, 'due_on' | 'status'>, today: 
 
 /** Which student-facing page an assignment opens on. */
 export function assignmentHref(row: Pick<AssignmentRow, 'id' | 'kind' | 'status'>): string {
-  if (row.kind === 'question') return `/app/practice?assignment=${row.id}`;
+  if (opensInGrader(row.kind)) return `/app/practice?assignment=${row.id}`;
   return `/app/assignments/${row.id}`;
 }
 
 /** Student-facing status chip text. */
 export function statusLabel(row: Pick<AssignmentRow, 'status' | 'kind' | 'score' | 'out_of'>): string {
   switch (row.status) {
-    case 'assigned': return row.kind === 'question' ? 'To do' : 'To do · print or view';
+    case 'held': return 'Not released yet';   // admin surfaces only — students never see a held row
+    case 'assigned': return opensInGrader(row.kind) ? 'To do' : 'To do · print or view';
     case 'submitted': return 'Being marked';
     case 'marked':
       return row.score != null && row.out_of != null ? `Marked · ${row.score}/${row.out_of}` : 'Marked';
@@ -187,10 +221,13 @@ export function statusLabel(row: Pick<AssignmentRow, 'status' | 'kind' | 'score'
 }
 
 /** Allowed status transitions. Re-marks of the same attempt keep `marked`
- *  (latest wins); revoke only from a live state. */
+ *  (latest wins); revoke only from a live state. A held row can only be
+ *  released (→ assigned) or withdrawn; nothing ever goes BACK to held. */
 export function canTransition(from: AssignmentStatus, to: AssignmentStatus): boolean {
   if (from === to) return to === 'marked';            // re-mark overwrites score
-  if (to === 'revoked') return from === 'assigned' || from === 'submitted';
+  if (to === 'held') return false;
+  if (to === 'revoked') return from === 'held' || from === 'assigned' || from === 'submitted';
+  if (from === 'held') return to === 'assigned';
   if (from === 'assigned') return to === 'submitted' || to === 'marked';
   if (from === 'submitted') return to === 'marked';
   return false;

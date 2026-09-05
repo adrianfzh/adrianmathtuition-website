@@ -168,13 +168,24 @@ export async function POST(req: NextRequest) {
       .eq('id', String(assignmentId)).eq('airtable_student_id', identity)
       .maybeSingle();
     const row = a as AssignmentRow | null;
-    if (!row || row.kind !== 'question' || row.question_id !== questionId || row.status === 'revoked') {
+    // A bank question must be THE question. A `generated` question (SPEC-PORTAL-V2
+    // §7 — the sheet worker wrote it, no bank row) is addressed by the assignment
+    // id itself and must carry its text and answer. A `held` row is not the
+    // student's yet: it goes live only with Adrian's Approve & release.
+    const matches = !!row && (
+      (row.kind === 'question' && row.question_id === questionId)
+      || (row.kind === 'generated' && row.id === questionId && !!row.question_text && !!row.answer_latex)
+    );
+    if (!row || !matches || row.status === 'revoked' || row.status === 'held') {
       return NextResponse.json({ error: 'That assignment isn’t available' }, { status: 404 });
     }
     assignment = row;
   }
 
-  // Daily cap (assignments exempt — D3)
+  // Daily cap — Adrian-initiated work is exempt (D3: the Send-work card, a
+  // Practice Again item he released). A question the STUDENT found (source
+  // 'find') is not: that is student-initiated volume, exactly what the cap brakes.
+  const capExempt = !!assignment && assignment.source !== 'find';
   const dayStart = new Date(); dayStart.setUTCHours(dayStart.getUTCHours() - 24);
   const { count } = await admin
     .from('student_attempts')
@@ -182,24 +193,44 @@ export async function POST(req: NextRequest) {
     .eq('user_id', account.id)
     .eq('attempted_via', 'portal')
     .gte('attempted_at', dayStart.toISOString());
-  if (!assignment && (count || 0) >= DAILY_GRADE_CAP) {
+  if (!capExempt && (count || 0) >= DAILY_GRADE_CAP) {
     return NextResponse.json({ error: `Daily limit reached (${DAILY_GRADE_CAP} graded attempts). Back tomorrow!` }, { status: 429 });
   }
 
   // Question WITH mark scheme (service role; never sent to the client)
-  const { data: q } = await admin
-    .from('questions')
-    .select('id, level, question_text, parts, answer, solution, total_marks, topics, ai_generated, solution_source')
-    .eq('id', questionId)
-    .maybeSingle();
-  if (!q) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
-  if (q.ai_generated === true && q.solution_source !== 'ai_opus') {
-    // E7 rule (amended 2026-07-06): AI questions that passed the bot worker's
-    // four verification gates (code/blind/skill/grade — solution_source='ai_opus',
-    // written ONLY by the bot's generation worker) are gradable. Any other
-    // ai_generated row (e.g. /similar's weaker-verified 'ai_generated_v1' cache)
-    // stays ungraded until it goes through the gates.
-    return NextResponse.json({ error: 'This AI practice question isn’t gradable yet — check the solution instead' }, { status: 409 });
+  type GradeQuestion = {
+    id: string; level: string | null; question_text: string | null; parts: unknown; answer: string | null;
+    solution: string | null; total_marks: number | null; topics: string[] | null;
+    ai_generated?: boolean | null; solution_source?: string | null;
+  };
+  let q: GradeQuestion;
+  const generated = assignment?.kind === 'generated' ? assignment : null;
+  if (generated) {
+    // The sheet worker wrote this one (SPEC-PORTAL-V2 §7): its text, verified
+    // answer and marks live on the assignment row, and the grader marks against
+    // them exactly as it would a bank row's OVERALL ANSWER. No bank lookup, and
+    // the attempt row carries no question FK (below).
+    q = {
+      id: generated.id, level: generated.level, question_text: generated.question_text, parts: null,
+      answer: generated.answer_latex, solution: null, total_marks: generated.marks,
+      topics: generated.topic ? [generated.topic] : [],
+    };
+  } else {
+    const { data } = await admin
+      .from('questions')
+      .select('id, level, question_text, parts, answer, solution, total_marks, topics, ai_generated, solution_source')
+      .eq('id', questionId)
+      .maybeSingle();
+    if (!data) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
+    if (data.ai_generated === true && data.solution_source !== 'ai_opus') {
+      // E7 rule (amended 2026-07-06): AI questions that passed the bot worker's
+      // four verification gates (code/blind/skill/grade — solution_source='ai_opus',
+      // written ONLY by the bot's generation worker) are gradable. Any other
+      // ai_generated row (e.g. /similar's weaker-verified 'ai_generated_v1' cache)
+      // stays ungraded until it goes through the gates.
+      return NextResponse.json({ error: 'This AI practice question isn’t gradable yet — check the solution instead' }, { status: 409 });
+    }
+    q = data as GradeQuestion;
   }
 
   const weaknessTags = await topWeaknessTags(account.id, 3);
@@ -215,7 +246,7 @@ export async function POST(req: NextRequest) {
 
   let result;
   try {
-    result = await gradeAttempt({ question: q, lines: cleanLines, image: attemptImage, weaknessTags, pitfalls: knowledge.pitfalls, methods: knowledge.methods });
+    result = await gradeAttempt({ question: q as Record<string, unknown>, lines: cleanLines, image: attemptImage, weaknessTags, pitfalls: knowledge.pitfalls, methods: knowledge.methods });
   } catch {
     return NextResponse.json({ error: 'Marking hiccup — try again in a moment' }, { status: 502 });
   }
@@ -228,7 +259,9 @@ export async function POST(req: NextRequest) {
     .insert({
       user_id: account.id,
       airtable_student_id: identity,
-      question_id: q.id,
+      // The FK points at the math bank; a generated question has no row there —
+      // marking_json.generated names the assignment instead.
+      question_id: generated ? null : q.id,
       attempted_via: 'portal',
       answer_text: storedLines.join('\n'),
       marking_verdict: result.verdict,
@@ -236,6 +269,7 @@ export async function POST(req: NextRequest) {
       marking_json: {
         ...result, model: GRADING_MODEL, lines: storedLines, source: attemptImage ? 'photo' : 'typed', topics: q.topics,
         ...(timedMeta ? { timed: timedMeta } : {}),
+        ...(generated ? { generated: { assignmentId: generated.id, source: generated.source, skillTitle: generated.skill_title } } : {}),
       },
     })
     .select('id')
@@ -260,8 +294,16 @@ export async function POST(req: NextRequest) {
     if (flipErr) console.error('[practice-grade] assignment flip failed:', flipErr.message);
     const who = account.display_name || account.email;
     const what = assignment.topic ? `${assignment.topic}${assignment.tier ? ` · ${assignment.tier}` : ''}` : assignment.title;
+    // The wording names where the item came from (SPEC-PORTAL-V2 §3): Adrian's
+    // own send, a Practice Again item from a marked paper, or a question the
+    // student found — so the spot-check reads right.
+    const lead = assignment.source === 'practice-again'
+      ? `🔁 ${who} did a Practice Again question (${assignment.skill_title || what})`
+      : assignment.source === 'find'
+        ? `🔍 ${who} did a question they found (${what})`
+        : `📬 ${who} did your assigned question (${what})`;
     notify_students(
-      `📬 ${who} did your assigned question (${what}) — ${result.score}/${result.outOf}`
+      `${lead} — ${result.score}/${result.outOf}`
       + (assignment.status === 'marked' ? ' (re-marked)' : '')
       + `\nhttps://www.adrianmathtuition.com/admin/students/${account.airtable_student_id}`
     ).catch(() => {});

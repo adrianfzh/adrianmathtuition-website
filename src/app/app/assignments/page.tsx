@@ -32,7 +32,7 @@ export default async function AssignmentsPage() {
     return (
       <Link href={assignmentHref(r)} className={`${CARD} block p-4 hover:bg-[hsl(45,100%,99%)] active:scale-[0.99] transition`}>
         <div className="flex items-start gap-3">
-          <span className="text-xl leading-none mt-0.5" aria-hidden>{r.kind === 'question' ? '✏️' : '📄'}</span>
+          <span className="text-xl leading-none mt-0.5" aria-hidden>{r.kind === 'worksheet' ? '📄' : '✏️'}</span>
           <div className="flex-1 min-w-0">
             <div className="font-semibold text-navy truncate">{r.title}</div>
             <div className="text-xs text-gray-500 mt-0.5 flex flex-wrap gap-x-2">

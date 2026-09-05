@@ -152,6 +152,15 @@ describe('completionMessage', () => {
     expect(msg).toContain('In Dropbox');
     expect(msg).not.toContain('undefined');
   });
+  it('carries the Practice Again hand-back line when items were held (SPEC-PORTAL-V2 §7)', () => {
+    const result = sanitizeResult({ docx_path: '/Students/X/p/Practice Again.docx', wave: ['chain rule'] });
+    const msg = completionMessage({ student_name: 'X', paper_name: 'AM P1' }, result, { heldItemsLine: '🔁 5 practice items held for release (3 from the bank, 2 written)' });
+    expect(msg).toContain('🔁 5 practice items held for release');
+    expect(msg).toContain('the practice items go out with them');
+    const plain = completionMessage({ student_name: 'X', paper_name: 'AM P1' }, result);
+    expect(plain).not.toContain('🔁');
+    expect(plain).not.toContain('practice items go out');
+  });
 });
 
 // ── "nothing to teach" is a completion, not a failure (Adrian, 3 Sep 2026) ────

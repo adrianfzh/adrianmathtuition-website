@@ -4,11 +4,16 @@
 //   POST { runId, focus? }       → { job }        queue a sheet for that marked paper
 //   POST { action:'next', by }   → { job|null }   worker claims the next job (lease)
 //   POST { action:'beat', id }   → { ok }         heartbeat while authoring
-//   POST { action:'done', id, result } → { ok, diagnosis, rebuilt, rebuild }
+//   POST { action:'done', id, result } → { ok, diagnosis, rebuilt, rebuild, practiceItems }
 //                                  file paths + wave; Telegrams Adrian. An optional
 //                                  result.diagnosis (lib/sheet-diagnosis.ts) is
 //                                  written onto the run and both marked PDFs are
-//                                  rebuilt so the cover follows the sheet.
+//                                  rebuilt so the cover follows the sheet. An
+//                                  optional result.questions[] (SPEC-PORTAL-V2 §7,
+//                                  lib/practice-again.ts) becomes one HELD
+//                                  portal_assignments row per practice question —
+//                                  released with the paper by Approve & release.
+//                                  Idempotent on (job, position); fail-soft.
 //   POST { action:'done', id, result:{noSheet:true, reason} } → { ok, noSheet, reason }
 //                                  the paper had nothing worth practising. A real
 //                                  completion: no files, no diagnosis, no rebuild,
@@ -36,6 +41,8 @@ import { downloadFile, getTemporaryLink } from '@/lib/dropbox';
 import { normaliseDiagnosis, type Diagnosis } from '@/lib/sheet-diagnosis';
 import { rebuildRunPdfs, type RebuildOutcome } from '@/lib/rebuild-run-pdfs';
 import { queueSheetJob } from '@/lib/sheet-queue';
+import { sanitizeSheetQuestions } from '@/lib/practice-again';
+import { createHeldPracticeItems, deleteHeldPracticeItems } from '@/lib/practice-again-store';
 
 /** A worker's 'fail' whose reason is really 'no gap to teach' — treated as a noSheet completion. */
 const NO_SHEET_RE = /nothing to teach|no sheet needed|no real gap|no action needed|nothing to practise|nothing to practice/i;
@@ -130,7 +137,10 @@ export async function POST(req: NextRequest) {
       .select('id').maybeSingle();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     if (!done) return NextResponse.json({ error: 'that job changed while you tapped — refresh and look again' }, { status: 409 });
-    return NextResponse.json({ ok: true, cancelled: true, wasRunning: state.running });
+    // A stopped sheet leaves no held Practice Again rows behind (SPEC-PORTAL-V2
+    // §7). Only HELD rows go — a released item is the student's. Fail-soft.
+    const held = await deleteHeldPracticeItems(sb, job!.id);
+    return NextResponse.json({ ok: true, cancelled: true, wasRunning: state.running, heldItemsDeleted: held.deleted });
   }
 
   if (body.action === 'beat') {
@@ -167,13 +177,20 @@ export async function POST(req: NextRequest) {
     // done needs no files, no diagnosis and no PDF rebuild — there is no sheet
     // for the cover to follow — and its Telegram is calm.
     const noSheet = isNoSheet(result);
+    // 🔁 The hand-back (SPEC-PORTAL-V2 §7): the practice questions on the sheet,
+    // one per entry in sheet order. The CLEANED list is stored on the row beside
+    // the file paths so the items can be rebuilt from the job if they ever need
+    // to be; the rows themselves are created below, after the job is done.
+    const rawQuestions = (body.result as { questions?: unknown } | null | undefined)?.questions;
+    const handback = noSheet ? { questions: [], skipped: 0 } : sanitizeSheetQuestions(rawQuestions);
+    const stored = handback.questions.length ? { ...result, questions: handback.questions } : result;
     // A cancelled job stays cancelled. The worker may have filed a DOCX before
     // it noticed — that file is left in Dropbox rather than deleted, but the row
     // does not flip to done and Adrian is not Telegrammed about a sheet he
     // stopped. The .neq below is what enforces it: no matching row, no update.
     const { data: job, error } = await sb.from('sheet_jobs')
       .update({
-        status: 'done', result, completed_at: new Date().toISOString(), error: null,
+        status: 'done', result: stored, completed_at: new Date().toISOString(), error: null,
         ...(noSheet ? { stage: 'no sheet needed' } : {}),
       })
       .eq('id', body.id).neq('status', 'cancelled').select('*').maybeSingle<SheetJob>();
@@ -185,10 +202,19 @@ export async function POST(req: NextRequest) {
       logJobRun('sheet-worker', true, `${job.student_name || job.airtable_student_id}: no sheet needed`).catch(() => {});
       return NextResponse.json({ ok: true, noSheet: true, reason: result.reason, diagnosis: false, rebuilt: false });
     }
-    notify_marking(completionMessage(job, result))
+    // ── Practice Again hands back its questions (SPEC-PORTAL-V2 §7) ───────────
+    // One HELD portal_assignments row per practice question — a bank row when
+    // the worker named one that exists, a `generated` row (text + answer on the
+    // assignment) when it wrote the question itself. Invisible to the student
+    // until Adrian's Approve & release flips them with the paper and the sheet.
+    // Idempotent on (sheet_job_id, position); a bad questions[] never fails the
+    // job — it is counted and reported, and the sheet is already filed.
+    const held = await createHeldPracticeItems(sb, job, rawQuestions);
+    if (held.error) console.warn('[sheet-jobs] practice items degraded', job.id, held.error);
+    notify_marking(completionMessage(job, result, { heldItemsLine: held.line }))
       .then(() => sendSheetFiles(job, result))
       .catch(() => {});
-    logJobRun('sheet-worker', true, `${job.student_name || job.airtable_student_id}: sheet filed`).catch(() => {});
+    logJobRun('sheet-worker', true, `${job.student_name || job.airtable_student_id}: sheet filed${held.created || held.already ? ` · ${held.created + held.already} practice items held` : ''}`).catch(() => {});
 
     // ── The sheet's diagnosis drives the cover (Adrian, 2 Sep 2026) ────────────
     // The worker read the student's working and ranked what to teach; the marked
@@ -226,7 +252,10 @@ export async function POST(req: NextRequest) {
         }
       }
     }
-    return NextResponse.json({ ok: true, diagnosis: diagnosisStored, rebuilt: rebuild.rebuilt, rebuild });
+    return NextResponse.json({
+      ok: true, diagnosis: diagnosisStored, rebuilt: rebuild.rebuilt, rebuild,
+      practiceItems: { created: held.created, already: held.already, bank: held.bank, generated: held.generated, skipped: held.skipped, ...(held.error ? { error: held.error } : {}) },
+    });
   }
 
   if (body.action === 'fail') {

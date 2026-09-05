@@ -55,6 +55,7 @@ import { PAPER_SUBJECTS } from '@/lib/portal-subjects';
 
 /** What paper_subject may hold — the three maths plus the desk's "Other" (SPEC-PORTAL-V2 §1). */
 const PAPER_SUBJECT_VALUES: readonly string[] = [...PAPER_SUBJECTS, 'Other'];
+import { releaseHeldPracticeItems } from '@/lib/practice-again-store';
 
 export const runtime = 'nodejs';
 // Release itself is fast; the ceiling is for the after() enrichment, which
@@ -708,12 +709,21 @@ export async function POST(req: NextRequest) {
         results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: writeErr.message });
         continue;
       }
+      // 🔁 Practice Again items (SPEC-PORTAL-V2 §7): every HELD row the sheet
+      // worker wrote FROM this paper goes live in the same step as the paper,
+      // so the student sees marks, sheet and items at one moment (step 7 of the
+      // teaching round). A run with no sheet has none. Fail-soft — never undoes
+      // the release it rides.
+      const heldItems = await releaseHeldPracticeItems(supa, run.id);
       results.push({
         runId: run.id,
         studentName: run.student_name,
         released: true,
         via,
-        note: [amendedNote[run.id], outcome.note].filter(Boolean).join(' · ') || undefined,
+        note: [
+          amendedNote[run.id], outcome.note,
+          heldItems.released ? `${heldItems.released} practice item${heldItems.released === 1 ? '' : 's'} released` : '',
+        ].filter(Boolean).join(' · ') || undefined,
       });
 
       // A re-mark replaces the old marking instead of sitting beside it

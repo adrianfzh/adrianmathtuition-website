@@ -94,7 +94,7 @@ export async function POST(req: Request) {
       .eq('id', body.assignmentId).eq('airtable_student_id', studentId)
       .maybeSingle();
     const row = a as AssignmentRow | null;
-    if (!row || row.kind !== 'worksheet' || row.status === 'revoked') {
+    if (!row || row.kind !== 'worksheet' || row.status === 'revoked' || row.status === 'held') {
       return NextResponse.json({ error: 'That worksheet isn’t available any more.' }, { status: 404 });
     }
     if (!canTransition(row.status, 'submitted')) {

@@ -158,7 +158,12 @@ export function sheetFolder(docxPath: string | null | undefined): string {
  * The app's Dropbox token has no sharing scope, so there is no permanent link
  * to give; the message names the folder and the PDF + DOCX ride behind it.
  */
-export function completionMessage(job: Pick<SheetJob, 'student_name' | 'paper_name'>, result: SheetJobResult | null): string {
+export function completionMessage(
+  job: Pick<SheetJob, 'student_name' | 'paper_name'>,
+  result: SheetJobResult | null,
+  /** The Practice Again hand-back (SPEC-PORTAL-V2 §7): one ready-made line, e.g. "🔁 5 practice items held for release". */
+  extra: { heldItemsLine?: string | null } = {},
+): string {
   const who = job.student_name || 'A student';
   // "Nothing to teach" is a right answer, so it reads like one: calm, specific,
   // and it says what to do next. Never the ⚠️ failed wording.
@@ -169,7 +174,8 @@ export function completionMessage(job: Pick<SheetJob, 'student_name' | 'paper_na
   if (result?.wave.length) lines.push(`Wave: ${result.wave.join(' · ')}`);
   if (result?.shelved.length) lines.push(`🧺 Shelved for later: ${result.shelved.join(' · ')}`);
   if (result?.verified) lines.push(`✓ ${result.verified}`);
+  if (extra.heldItemsLine) lines.push(extra.heldItemsLine);
   const folder = sheetFolder(result?.docx_path);
-  lines.push('', `${folder ? `📂 Dropbox › ${folder}` : 'In Dropbox'} — ${result?.pdf_path ? 'PDF and DOCX below; ' : ''}edit the DOCX, export the PDF beside it, then release the paper + sheet together from triage.`);
+  lines.push('', `${folder ? `📂 Dropbox › ${folder}` : 'In Dropbox'} — ${result?.pdf_path ? 'PDF and DOCX below; ' : ''}edit the DOCX, export the PDF beside it, then release the paper + sheet together from the desk${extra.heldItemsLine ? ' — the practice items go out with them' : ''}.`);
   return lines.join('\n');
 }
