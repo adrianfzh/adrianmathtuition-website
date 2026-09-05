@@ -10,7 +10,7 @@ import { isNotesAuthed } from '@/lib/notes-auth';
 import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
 import { EXAM_PREP_OPEN_TO_STUDENTS, LAST_LESSON_OPEN_TO_STUDENTS, NOTES_OPEN_TO_STUDENTS, fullPortalVisible, viewingAsStudent } from '@/lib/portal-beta';
 import { listStudentAssignments } from '@/lib/portal-assignments';
-import { assignmentHref, dueLabel, homeCardSummary, isPending } from '@/lib/assignments';
+import { assignmentHref, dueLabel, fromAdrian, homeCardSummary, isPending } from '@/lib/assignments';
 import { homeCounts } from '@/lib/portal-home-counts';
 import { sgtDaysAgoISO, sgtTodayISO } from '@/lib/sgt';
 import { activeAnnouncement } from '@/lib/portal-announcement';
@@ -92,8 +92,11 @@ export default async function DashboardPage() {
       } catch { return null; }
     })(),
   ]);
-  const pendingWork = assignments.filter(a => isPending(a.status));
-  const workSummary = homeCardSummary(assignments);
+  // Only what Adrian sent: the student's own finds (/app/find, source 'find')
+  // live in Practice, never under "From Adrian".
+  const adrianWork = fromAdrian(assignments);
+  const pendingWork = adrianWork.filter(a => isPending(a.status));
+  const workSummary = homeCardSummary(adrianWork);
   const announcement = activeAnnouncement();
 
   // Home visual language (2026-08-22, lib/portal-theme.ts): soft elevated
@@ -234,8 +237,9 @@ export default async function DashboardPage() {
       )}
 
       {/* Quick links — the surfaces that lost their phone tab slot in the
-          six-tab squeeze (reading Notes, Requests) still need a thumb-reachable
-          door; on desktop the nav also has them, harmless duplication. */}
+          six-tab squeeze (reading Notes, Find a question) still need a
+          thumb-reachable door; on desktop the nav also has them, harmless
+          duplication. */}
       <div className="flex gap-2">
         {/* Notes pill hides with the carve-out flag (closed 2026-08-29 for the
             content vetting pass) — Adrian's admin view keeps the door. */}
@@ -244,8 +248,13 @@ export default async function DashboardPage() {
             📖 Notes
           </Link>
         )}
-        <Link href="/app/requests" className={`${card} !py-3 flex-1 text-center text-sm font-semibold text-navy active:scale-95 transition-transform select-none`}>
-          🙋 Request materials
+        {/* 🔍 Find a question (SPEC-PORTAL-V2 §4, 6 Sep 2026) replaced the
+            students' "Request materials" door: photo or typed question → a
+            similar bank question or a made-for-you one, straight into
+            Practice. The request flow (/app/requests) stays for Adrian's
+            full-portal view; nothing on the student Home links it. */}
+        <Link href="/app/find" className={`${card} !py-3 flex-1 text-center text-sm font-semibold text-navy active:scale-95 transition-transform select-none`}>
+          🔍 Find a question
         </Link>
       </div>
 

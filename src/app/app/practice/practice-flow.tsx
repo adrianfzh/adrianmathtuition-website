@@ -65,10 +65,10 @@ type GradeResult = {
   transcribedLines?: string[];
 };
 
-// Camera-photo downscale lives in ./image-downscale.ts, shared with the
-// question-finder ("Snap a question"), which sends the same kind of photo.
+// Camera-photo downscale lives in ./image-downscale.ts, shared with
+// /app/find's finder ("Snap a question"), which sends the same kind of photo.
 import { fileToJpegDataUrl } from './image-downscale';
-import QuestionFinder from './question-finder';
+import { findTierLabel } from '@/lib/assignments';
 
 // `initialLevels` comes from the server page for a signed-in student (their
 // scoped QB levels) so the level control is right on first paint; null means
@@ -86,6 +86,8 @@ export type InitialAssignment = {
   /** Which Practice section it came from (SPEC-PORTAL-V2 §3) — the banner and the
    *  way back change with it. Absent = Adrian's own send. */
   source?: 'adrian' | 'practice-again' | 'find';
+  /** Found by you: which tier the match was ("Similar question" / "Made for you"). */
+  findTier?: 'similar' | 'made-for-you' | null;
   /** Practice Again: the paper it was written from ("From AM 2021 P1"). */
   paperName?: string | null;
 };
@@ -527,7 +529,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           <div className="mt-2 bg-navy text-[hsl(45,100%,96%)] rounded-2xl px-4 py-3.5 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-wide opacity-75">{assignMeta.label}{assignment.paperName ? ` · from ${assignment.paperName}` : ''}</p>
+                <p className="text-[11px] font-semibold uppercase tracking-wide opacity-75">{assignMeta.label}{assignment.findTier ? ` · ${findTierLabel(assignment.findTier)}` : ''}{assignment.paperName ? ` · from ${assignment.paperName}` : ''}</p>
                 <h1 className="font-bold text-base truncate">{assignment.title}</h1>
                 <p className="text-[11px] opacity-75 mt-0.5">
                   {[assignment.topic, assignment.tier === 'Advanced' ? '🔥 Advanced' : assignment.tier, !assignDone ? assignment.dueLabel : null].filter(Boolean).join(' · ')}
@@ -619,10 +621,16 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           topic sheet. Redesigned 2026-08-22 — see the file header there. */}
       {pickerOpen && isStudent && (
         <div className="mb-6">
-          {/* Bring-your-own-question doors: 📷 photo → similar, 🔍 describe →
-              find/generate. Students only — the API routes are session-authed. */}
-          {/* The 📷/🔍 finder searches the MATH bank — not offered on science levels. */}
-          {!isScienceLevel(level) && <QuestionFinder level={level} />}
+          {/* Bring-your-own-question door → /app/find (SPEC-PORTAL-V2 §4): the
+              finder that used to sit here now answers with ONE question, already
+              on the Practice list. Searches the MATH bank — not on science levels. */}
+          {!isScienceLevel(level) && (
+            <Link href="/app/find" className="mb-3 flex items-center gap-3 rounded-xl border-2 border-dashed border-slate-300 px-3 py-2.5 text-sm font-semibold text-slate-500 hover:border-navy/40 hover:text-navy transition-colors">
+              <span aria-hidden>🔍</span>
+              <span className="flex-1">Find a question — snap or type one from homework, get one like it</span>
+              <span aria-hidden>›</span>
+            </Link>
+          )}
           <TopicPicker
             key={level}
             level={bankScope(level).level}

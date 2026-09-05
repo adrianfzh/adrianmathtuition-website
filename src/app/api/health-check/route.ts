@@ -521,6 +521,36 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`portal_generation_log? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
       return 'auth gate up';
     }),
+    // 🔍 Find a question (/app/find, SPEC-PORTAL-V2 §4). The student route must
+    // hold its auth gate (401 anonymously — a 404 means the Home door opens on
+    // nothing), and the ledger columns the tier rule writes and the nightly
+    // find-review reads (seed_text, tier, assignment_id, candidates, review)
+    // must still resolve — a dropped column fails every find, not just the review.
+    timed('portal-find', async () => {
+      const r = await fetch(`${base}/api/portal/find`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      const q = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/portal_generation_log?select=id,seed_text,level,tier,assignment_id,parent_log_id,candidates,review&limit=1`,
+        { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: T(10000) }
+      );
+      if (!q.ok) throw new Error(`ledger columns? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
+      return 'auth gate up';
+    }),
+    // The nightly find-review's admin door (scripts/find-review reads + posts
+    // through it) and the Practice-list columns a found question is stamped
+    // with (portal_assignments.source / find_tier — what "Found by you" filters on).
+    timed('find-review', async () => {
+      const r = await fetch(`${base}/api/admin/find-review`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      const q = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/portal_assignments?select=id,source,find_tier&limit=1`,
+        { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: T(10000) }
+      );
+      if (!q.ok) throw new Error(`assignment columns? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
+      return 'auth gate up';
+    }),
     // Portal reschedule (Home "Change" → /app/reschedule → bot lib/reschedule.js).
     // The route must hold its auth gate — a 404 here means students silently
     // lose self-service lesson moves and fall back to messaging Adrian.

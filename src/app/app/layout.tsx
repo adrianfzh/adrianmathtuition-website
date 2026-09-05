@@ -87,7 +87,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         ...(NOTES_OPEN_TO_STUDENTS ? [{ href: '/app/notes', label: 'Notes' }] : []),
         { href: '/app/marking', label: 'Papers' },
         { href: '/app/my-notes', label: 'My Notebook' },
-        { href: '/app/requests', label: 'Requests' },
+        // Requests left the student nav on 6 Sep 2026 — Find a question
+        // (/app/find, via Home) took its place; the route stays for Adrian.
       ];
   const mobileTabs = fullPortal
     ? [

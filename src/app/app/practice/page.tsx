@@ -164,6 +164,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
       topic: a.topic,
       tier: a.tier === 'Advanced' || a.tier === 'Standard' ? a.tier : null,
       status: a.status === 'marked' ? 'marked' : a.status === 'submitted' ? 'submitted' : 'assigned',
+      findTier: a.find_tier ?? null,
       score: a.score,
       outOf: a.out_of,
       question,

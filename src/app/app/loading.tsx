@@ -9,7 +9,7 @@ export default function Loading() {
     <div className="space-y-4 pb-20 sm:pb-4">
       <Sk className="h-8 w-44 rounded-lg mt-1" />
 
-      {/* Quick links — 📖 Notes / 🙋 Request materials */}
+      {/* Quick links — 📖 Notes / 🔍 Find a question */}
       <div className="flex gap-2">
         <Sk className="h-11 flex-1 rounded-3xl" />
         <Sk className="h-11 flex-1 rounded-3xl" />

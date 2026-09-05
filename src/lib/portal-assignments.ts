@@ -79,6 +79,7 @@ export async function pendingAssignmentCountForSession(): Promise<number> {
       .from('portal_assignments').select('status, level')
       // portalIdentity: rec… for tuition, acct:<uuid> for strangers.
       .eq('airtable_student_id', portalIdentity(acct))
+      .neq('source', 'find')   // the student's own finds are Practice, not "From Adrian"
       .in('status', ['assigned', 'submitted']);
     // Same subject gate as the list, so the dot never counts a row the list hides.
     const rows = ((data || []) as { status: AssignmentRow['status']; level: string | null }[])

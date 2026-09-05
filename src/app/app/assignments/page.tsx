@@ -6,7 +6,7 @@
 import Link from 'next/link';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { listStudentAssignments } from '@/lib/portal-assignments';
-import { assignmentHref, dueLabel, isOverdue, isPending, statusLabel } from '@/lib/assignments';
+import { assignmentHref, dueLabel, findTierLabel, fromAdrian, isFound, isOverdue, isPending, statusLabel } from '@/lib/assignments';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +19,11 @@ function sentOn(iso: string): string {
 export default async function AssignmentsPage() {
   const account = await currentAccount();
   // The account carries the subject gate (SPEC-PORTAL-V2 §2).
-  const rows = await listStudentAssignments(portalIdentity(account), account).catch(() => []);
+  const all = await listStudentAssignments(portalIdentity(account), account).catch(() => []);
+  // The student's own finds (/app/find, source 'find') get their own section —
+  // they are "Found by you" (SPEC-PORTAL-V2 §3), not "From Adrian".
+  const rows = fromAdrian(all);
+  const found = all.filter(isFound);
   const pending = rows.filter(r => isPending(r.status));
   const done = rows.filter(r => !isPending(r.status));
 
@@ -38,7 +42,8 @@ export default async function AssignmentsPage() {
             <div className="text-xs text-gray-500 mt-0.5 flex flex-wrap gap-x-2">
               {r.topic && <span>{r.topic}</span>}
               {r.tier && <span>· {r.tier}</span>}
-              <span>· sent {sentOn(r.created_at)}</span>
+              {isFound(r) && findTierLabel(r.find_tier) && <span>· {findTierLabel(r.find_tier)}</span>}
+              <span>· {isFound(r) ? 'found' : 'sent'} {sentOn(r.created_at)}</span>
               {due && isPending(r.status) && <span className={overdue ? 'text-amber-700' : ''}>· {due}</span>}
             </div>
             {r.note && <p className="text-sm text-gray-700 mt-2 italic">“{r.note}”</p>}
@@ -56,7 +61,7 @@ export default async function AssignmentsPage() {
         <Link href="/app" className="text-sm text-gray-500 hover:text-navy">← Home</Link>
       </div>
 
-      {rows.length === 0 && (
+      {all.length === 0 && (
         <div className={`${CARD} p-5 text-sm text-gray-600`}>
           Nothing here yet. When Adrian sends you a question or a worksheet, it shows up here and on your Home page.
         </div>
@@ -73,6 +78,16 @@ export default async function AssignmentsPage() {
         <section className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Done</p>
           {done.map(r => <Row key={r.id} r={r} />)}
+        </section>
+      )}
+
+      {found.length > 0 && (
+        <section className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Found by you</p>
+          {found.map(r => <Row key={r.id} r={r} />)}
+          <p className="text-[11px] text-gray-400">
+            Questions you found with <Link href="/app/find" className="underline">Find a question</Link> — similar ones from the bank, or written for you.
+          </p>
         </section>
       )}
 
