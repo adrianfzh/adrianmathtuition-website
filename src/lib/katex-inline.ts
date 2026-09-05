@@ -36,7 +36,13 @@ function escapeScriptClose(js: string): string {
 }
 
 function buildHead(): string {
-  const distDir = path.join(path.dirname(require.resolve('katex/package.json')), 'dist');
+  // Inside a webpack bundle `require.resolve` returns a module ID (a number), not
+  // a path — katex is listed in next.config serverExternalPackages so it stays a
+  // real Node require on Vercel, and this guard keeps a bundled build from taking
+  // the whole route down (5 Sep 2026: every /api/admin/questions action 500'd).
+  const resolved: unknown = require.resolve('katex/package.json');
+  const pkgDir = typeof resolved === 'string' ? path.dirname(resolved) : path.join(process.cwd(), 'node_modules', 'katex');
+  const distDir = path.join(pkgDir, 'dist');
   const fontsDir = path.join(distDir, 'fonts');
 
   let css = fs.readFileSync(path.join(distDir, 'katex.min.css'), 'utf8');

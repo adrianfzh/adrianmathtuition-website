@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['@napi-rs/canvas', 'pdfjs-dist', 'sharp', '@sparticuz/chromium'],
+  // katex is external so lib/katex-inline.ts can `require.resolve` its real
+  // on-disk path: inside the webpack bundle require.resolve returns a module
+  // ID (a number), which took every /api/admin/questions action down with
+  // 'The "path" argument must be of type string' on the first deploy (5 Sep 2026).
+  serverExternalPackages: ['@napi-rs/canvas', 'pdfjs-dist', 'sharp', '@sparticuz/chromium', 'katex'],
   async rewrites() {
     return [
       // The paywall page must live OUTSIDE the /app layout — that layout's
@@ -18,7 +22,7 @@ const nextConfig: NextConfig = {
     // runtime-downloaded chromium-min) must ride along with every API route that
     // can render a PDF through lib/generate-pdf.ts getBrowser — the tracer
     // cannot see the package's readdir-based file loading on its own.
-    '/api/**/*': ['./node_modules/@sparticuz/chromium/bin/**'],
+    '/api/**/*': ['./node_modules/@sparticuz/chromium/bin/**', './node_modules/katex/dist/**'],
     '/api/mark-batch/init': [
       './node_modules/@napi-rs/canvas/**/*',
       './node_modules/@napi-rs/canvas-linux-x64-gnu/**/*',
