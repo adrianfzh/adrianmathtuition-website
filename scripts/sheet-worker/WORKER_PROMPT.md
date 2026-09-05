@@ -89,6 +89,18 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
         ]}}'
 ```
 
+   **A blank question is the biggest gap on the paper, not an ungraded one**
+   (Adrian, 5 Sep 2026, Sijia's AM TYS: Q7 trig graphs, Q8(b) max/min and
+   Q14(b) area were all left blank — the marker filed those pages as untouched
+   question paper, `unattempted_questions` said only "7", and the sheet shelved
+   it as "never graded" while the other two were invisible). Read
+   `result_json.unattempted_questions`, `review.unmapped_max` and every
+   `question_found`/"not attempted" part as TEACH items by default: a student
+   who wrote nothing did not know where to start, which is exactly what the
+   sheet exists for. When the marker's results carry fewer marks than the paper
+   (`totals.counted_max < totals.max`), open the marked PDF and name the blank
+   questions yourself before choosing the wave.
+
    **`diagnosis` is what makes the marked paper's page 1 agree with your
    sheet** (Adrian, 2 Sep 2026: *"the sheet's diagnosis should drive the cover,
    not the cover the sheet"*). One entry per section of the sheet, **in the

@@ -200,6 +200,17 @@ tool survives to the next paper. Write the heading in the form he uses in class
 ("Using …", "… = … × … + …") and put the situation in the blue key-move line
 under it. The same string goes into the `diagnosis` title (it drives the cover).
 
+**Blank questions are teach items, never "ungraded" (Adrian, 5 Sep 2026).**
+On Sijia's AM TYS the marker filed her blank answer pages as untouched
+question paper — Q7 (trig graphs, 6 marks), Q8(b) (max/min, 4) and Q14(b)
+(area by integration, 5) never entered `results`, `unattempted_questions`
+listed only "7", and the sheet shelved it as "never graded" while the other two
+were missed entirely; Adrian's vetted cover named all three. Whenever
+`totals.counted_max < totals.max` or `review.unmapped_max > 0`, open the marked
+PDF, find every printed question or part with nothing written under it, and
+treat each as a teach-tier skill: a student who wrote nothing did not know
+where to begin, which is the sheet's whole purpose.
+
 ## Step 3 — propose ONE wave, and STOP
 
 Cluster into 6–8 teachable skills for a single sheet. Everything else is
