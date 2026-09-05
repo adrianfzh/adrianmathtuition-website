@@ -1555,7 +1555,11 @@ export default function MarkPaperPage() {
 
   return (
     <div style={{ maxWidth: 820, margin: '0 auto', padding: 20 }}>
-      <div><a href="/admin/desk" style={{ display: 'inline-block', fontSize: 13, color: '#2563eb', textDecoration: 'none', marginBottom: 6 }}>← Marking desk</a></div>
+      {/* Back to the hub on the left, the desk as a button on the right (Adrian, 5 Sep 2026). */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+        <a href="/admin" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none' }}>← Admin</a>
+        <a href="/admin/desk" style={{ fontSize: 13, color: '#fff', background: '#111827', textDecoration: 'none', padding: '6px 10px', borderRadius: 8 }}>🖊 Marking desk</a>
+      </div>
       <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Mark a paper</h1>
       <p style={{ color: '#6b7280', marginBottom: 20 }}>Upload the student&rsquo;s working (photos, or a scanned PDF) — plus the question paper (PDF) if there is one — then Mark. With a paper, each photo is marked against it; without one, the marker reads the printed questions off the pages themselves (self-contained worksheets).</p>
 

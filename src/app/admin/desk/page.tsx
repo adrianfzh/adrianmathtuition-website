@@ -525,6 +525,8 @@ export default function DeskPage() {
         .desk-tab.on .n { background: rgba(255,255,255,.2); }
       `}</style>
 
+      {/* Adrian, 5 Sep 2026: a way back to the hub above the desk, and the student hub beside the mark button. */}
+      <div style={{ marginBottom: 6 }}><a href="/admin" style={{ fontSize: 13, color: C.link, textDecoration: 'none' }}>← Admin</a></div>
       <header style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
         <h1 style={{ fontSize: 20, margin: 0 }}>
           {runId ? (
@@ -532,6 +534,7 @@ export default function DeskPage() {
           ) : '🖊 Marking desk'}
         </h1>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <a href="/admin/students" style={{ ...btn('#fff', '#374151', C.border), textDecoration: 'none', padding: '6px 10px', fontSize: 13 }}>👥 Students</a>
           <a href="/admin/mark-paper" style={{ ...btn(C.ink, '#fff'), textDecoration: 'none', padding: '6px 10px', fontSize: 13 }}>✍️ Mark a new paper</a>
           <button onClick={() => { loadQueue(); if (runId) loadRun(runId); }} style={{ ...btn('#fff', '#374151', C.border), padding: '6px 10px', fontSize: 13 }}>↻ Refresh</button>
         </div>

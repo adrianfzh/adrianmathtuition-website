@@ -35,6 +35,9 @@ import { normaliseDiagnosis, type Diagnosis } from '@/lib/sheet-diagnosis';
 import { rebuildRunPdfs, type RebuildOutcome } from '@/lib/rebuild-run-pdfs';
 import { queueSheetJob } from '@/lib/sheet-queue';
 
+/** A worker's 'fail' whose reason is really 'no gap to teach' — treated as a noSheet completion. */
+const NO_SHEET_RE = /nothing to teach|no sheet needed|no real gap|no action needed|nothing to practise|nothing to practice/i;
+
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 // `done` waits for both marked PDFs to rebuild (mark-paper-pdf: seconds for the
@@ -232,6 +235,20 @@ export async function POST(req: NextRequest) {
     // on the queue — 'failed' requeues, which is exactly the trap that made a
     // hand-written DELETE the only way to stop one.
     if (job?.status === 'cancelled') return NextResponse.json({ ok: true, cancelled: true, requeued: false });
+    // "Nothing to teach" reported as a FAILURE is still a completion (Adrian,
+    // 5 Sep 2026: "if there is nothing to teach, don't create the sheet — just
+    // give a note"). The worker prompt says so, but a Mac running a stale copy
+    // of it alarmed "failed 3×" for Kassandra's 87/90 this morning. Whatever the
+    // worker called it, a no-gap verdict closes the job calmly, first time.
+    if (job && NO_SHEET_RE.test(msg)) {
+      const result = { noSheet: true as const, reason: msg.slice(0, 300) };
+      await sb.from('sheet_jobs')
+        .update({ status: 'done', result, stage: 'no sheet needed', completed_at: new Date().toISOString(), error: null, claimed_by: null, claimed_at: null, heartbeat_at: null })
+        .eq('id', body.id);
+      sendTelegram(completionMessage(job, result)).catch(() => {});
+      logJobRun('sheet-worker', true, `${job.student_name || job.airtable_student_id}: no sheet needed`).catch(() => {});
+      return NextResponse.json({ ok: true, noSheet: true, reason: result.reason, requeued: false });
+    }
     const spent = (job?.attempts ?? 0) >= MAX_ATTEMPTS;
     await sb.from('sheet_jobs')
       .update({ status: spent ? 'failed' : 'queued', error: msg, claimed_by: null, claimed_at: null, heartbeat_at: null })

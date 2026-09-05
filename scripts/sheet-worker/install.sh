@@ -21,7 +21,10 @@ AGENT="$HOME/Library/LaunchAgents/com.adrianmath.sheetworker.plist"
 
 mkdir -p "$STATE/work"
 cp "$HERE/run.sh" "$STATE/run.sh" && chmod 755 "$STATE/run.sh"
-cp "$HERE/WORKER_PROMPT.md" "$STATE/WORKER_PROMPT.md"
+# A SYMLINK, not a copy (5 Sep 2026): the copy sat at its 31 Aug text while the repo
+# gained the "nothing to teach is a done, not a fail" rule, and Kassandra's job alarmed
+# "failed 3×" for a paper with no gap. The worker now always reads the repo's own file.
+ln -sf "$HERE/WORKER_PROMPT.md" "$STATE/WORKER_PROMPT.md"
 
 # --- env file ---------------------------------------------------------------
 # dotenv-PARSED, never grepped (pulled env files are dotenv-escaped and values
