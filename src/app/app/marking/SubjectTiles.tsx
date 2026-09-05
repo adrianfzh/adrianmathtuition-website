@@ -20,7 +20,8 @@ const TREND_CLS = { up: 'text-emerald-700', down: 'text-rose-700', steady: 'text
 export default function SubjectTiles({ stats }: { stats: SubjectStats[] }) {
   const [active, setActive] = useState(0);
   if (stats.length === 0) return null;
-  const s = stats[Math.min(active, stats.length - 1)];
+  const idx = Math.min(active, stats.length - 1);
+  const s = stats[idx];
 
   return (
     <div className="space-y-2.5">
@@ -29,7 +30,7 @@ export default function SubjectTiles({ stats }: { stats: SubjectStats[] }) {
           {stats.map((st, i) => {
             const pill = subjectPill(st.subject);
             if (!pill || pill.tone === 'other') return null;
-            const on = i === (active < stats.length ? active : 0);
+            const on = i === idx;
             const tone = SUBJECT_TONE[pill.tone];
             return (
               <button
