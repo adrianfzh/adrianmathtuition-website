@@ -648,7 +648,12 @@ def cmd_render(a):
     # 5 Sep 2026). "Practice" stays: that one marks the change of activity.
     for r, concept, sol_rows, letter in examples:
         parts = C.sorted_parts(r)
-        psum = sum(int(p.get("marks") or 0) for p in parts)
+        # A part that splits into subparts carries its marks on THOSE, not on
+        # itself — sum whichever the bank actually filled in, or the check fires
+        # on every question shaped that way.
+        psum = sum(int(p.get("marks") or 0)
+                   or sum(int(sp.get("marks") or 0) for sp in (p.get("subparts") or []))
+                   for p in parts)
         if parts and psum != int(r.get("total_marks") or 0):
             warnings.append(f"example {id8(r['id'])}: part marks {psum} ≠ total_marks {r.get('total_marks')}")
         if letter in (None, "", "a"):
