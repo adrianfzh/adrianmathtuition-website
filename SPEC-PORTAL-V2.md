@@ -11,10 +11,10 @@ except the data sort in §1 (every marked paper now carries a subject).** Build 
 - A student sees only the subjects on their account. E Math only → E Math. Both → both.
   JC → H2.
 - The student's Practice tab is their **to-do list**: work Adrian assigned, Practice
-  Again questions from their own marked papers, questions the finder brought in.
+  Again questions from their own marked papers, questions they found with Find a question.
   Nothing else. The open topic picker and the timed set stay **admin-only**.
-- The finder ("find me a question like this") replaces the students' Request materials
-  button. Generated questions capped at **10 a day**. Found questions go **straight into
+- **Find a question** (photograph or type a question, get one like it) replaces the
+  students' Request materials button on Home. Generated questions capped at **10 a day**. Found questions go **straight into
   Practice**. A **nightly review on plan usage** checks how similar yesterday's matches
   really were.
 - The request pipeline stays for Adrian and merges with the Telegram `/ws` worksheet
@@ -50,7 +50,7 @@ majority over the paper's questions ("Additional" beats "A-Level"; "Elementary" 
 `portal_accounts.subjects` already holds the Airtable list ("E Math, A Math"). One
 helper, `lib/portal-subjects.ts` (pure, tested): `allowedSubjects(account)` →
 `['E Math','A Math']`, `['H2 Math']`, … with `IP Math` mapped to both O-Level lists and
-JC accounts to H2. Every student read of topics, assignments, finder results, Papers
+JC accounts to H2. Every student read of topics, assignments, Find a question results, Papers
 tabs and hand-in choices filters through it. Admin sees all. A stranger account (no
 Airtable record) keeps today's behaviour (level-only).
 
@@ -65,26 +65,27 @@ marked):
 1. **From Adrian** — assignments as today.
 2. **Practice Again** — one item per question handed back by the sheet worker (§7),
    labelled with the paper and the skill it fixes.
-3. **Found by you** — finder results (§4), labelled with the tier.
+3. **Found by you** — questions from Find a question (§4), labelled with the tier.
 
 The topic picker, timed set and exam card remain behind the admin cookie. Marking-only
 beta lifts for Practice only when §1, §2 and §7 are live.
 
-## 4. The finder
+## 4. Find a question
 
-**What exists:** photo or typed question → bot vision + embedding match against the bank
+**What exists** (built as the practice-tab "finder", `lib/portal-find.ts`): photo or typed question → bot vision + embedding match against the bank
 → else a generated twin through the four-gate worker; 5 generations a day;
 `portal_generation_log` ledger; `lib/portal-find.ts` pure gates.
 
 **To build:**
-- **Three tiers, named on the card:** *same skill* (same topic and sub-skill, marks
+- **Three tiers, named on the card the student sees:** *same skill* (same topic and sub-skill, marks
   within one — the default), *same chapter* (same topic, another sub-skill — offered
   when tier 1 is empty, labelled), *made for you* (generated). The sub-skill comes from
   the bank row's subgroup / question type; the embedding match becomes the candidate
   pool the tiers filter.
 - Cap: generations **10 a day**; bank finds stay generous (today's finder ledger cap).
 - A found question is inserted into Practice at once (`portal_assignments`, source
-  `finder`, tier stamped).
+  `find`, tier stamped). The student sees nothing of caps or reviews except the cap
+  message when they reach it.
 - **Nightly similarity review** (`scripts/finder-review/`, plan-billed like
   `day-review`): read yesterday's ledger rows, judge each match "same skill / same
   chapter / off", write misses as eval cases, one-line digest to Adrian, `job_runs`
@@ -92,7 +93,7 @@ beta lifts for Practice only when §1, §2 and §7 are live.
 
 ## 5. Requests become one pipeline
 
-Student button → the finder. Adrian's own requests, the Telegram `/ws` menu (kinds 1/2/4/5
+The Home button becomes Find a question. Adrian's own requests, the Telegram `/ws` menu (kinds 1/2/4/5
 already queue through `worksheet_jobs` to the Mac worker) and the skills sheet share one
 queue with kinds. When that queue has run clean for a fortnight, students get "ask Adrian
 for a worksheet" back: a `worksheet_jobs` row in state `awaiting-approval`, Adrian's
@@ -107,7 +108,7 @@ practice `weakness_tags`; `notebook_entries` (questions to retry); `student_atte
 **Entry model** (`notebook_mistakes`, one row per student × skill):
 `title` (the diagnosis skill title, e.g. "Solving a trigonometric equation in a double
 angle"), `error_kind`, `subject`, `evidence[]` (run/attempt links with dates),
-`seen_count`, `clean_count`, `state ∈ dark | light | fixed | student_fixed`,
+`seen_count`, `clean_count`, `state ∈ dark | light | fixed | student_fixed` — shown to the student as **Still happening / Getting better / Fixed** (a `student_fixed` entry reads "Getting better · you marked this fixed"),
 `practice_ids[]` (the Practice items that fix it).
 
 **Rules:**
@@ -156,6 +157,8 @@ reaches a student that Adrian has not seen once on the desk.
 ## 10. Still open
 
 - §1: a paper the rule cannot sort shows as "Other" until Adrian tags it — confirmed.
-- §6: the exact wording of the three states on the student's screen.
-- §7: whether a generated Practice Again question needs Adrian's tick per question or
-  only the sheet's release. Proposed: the sheet's release covers them.
+- §6: wording proposed 6 Sep — Still happening / Getting better / Fixed.
+- §7: a question the sheet worker WROTE (when the bank had none that fit the mistake —
+  most sheets have some) — does it need Adrian's tick per question, or does the sheet's
+  Approve & release cover it, since he reads every question in the PDF? Proposed: the
+  release covers them.
