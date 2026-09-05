@@ -356,6 +356,8 @@ class Worksheet:
                     run.bold = True
                 if attrs.get('italic'):
                     run.italic = True
+                if attrs.get('underline'):
+                    run.underline = True
                 if attrs.get('color'):
                     run.font.color.rgb = attrs['color']
             elif kind == 'math':

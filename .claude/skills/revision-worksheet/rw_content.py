@@ -283,7 +283,7 @@ def house_header(ws, level_line: str, topic: str, page_numbers: bool = True):
 
     sec = ws.doc.sections[0]
     sec.header_distance = _Cm(1.27)
-    sec.footer_distance = _Cm(1.27)
+    sec.footer_distance = _Cm(0.8)      # Adrian, 5 Sep 2026 — tighter than the header
     hdr = sec.header
     hdr.is_linked_to_previous = False
     paras = list(hdr.paragraphs)
@@ -309,15 +309,53 @@ def house_header(ws, level_line: str, topic: str, page_numbers: bool = True):
         p = ftr.paragraphs[0]
         for r in list(p.runs):
             r._element.getparent().remove(r._element)
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        for txt, instr in (("Page ", None), (None, " PAGE "),
-                           (" of ", None), (None, " NUMPAGES ")):
-            if instr:
-                _page_field(p, instr)
-            else:
-                run = p.add_run(txt)
+        # Just the number, right-aligned (Adrian, 5 Sep 2026) — "Page 1 of 7"
+        # centred read as a report footer rather than a worksheet's.
+        p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        _page_field(p, " PAGE ")
         for run in p.runs:
             run.font.name = "Times New Roman"
             run.font.size = Pt(8)
             run.font.color.rgb = RGBColor(0x7F, 0x7F, 0x7F)
     return hdr
+
+
+# ---------------------------------------------------------------------------
+# Notes block finishing (Adrian, 5 Sep 2026)
+# ---------------------------------------------------------------------------
+
+U = lambda s: ("text", s, {"bold": True, "underline": True})   # noqa: E731
+
+NOTES_GAP_PT = 10.0
+
+
+def _bold_lead(para) -> bool:
+    """Does this paragraph OPEN with bold text? That is how every little
+    sub-section of a Notes block starts — "Brackets — expand first", "Word
+    problems", "Mistakes to avoid". A display-equation paragraph holds OMML and
+    no runs at all, so it never matches."""
+    runs = [r for r in para.runs if (r.text or "").strip()]
+    return bool(runs) and bool(runs[0].bold)
+
+
+def finish_notes(ws, start: int, gap_pt: float = NOTES_GAP_PT):
+    """Underline the "Notes:" label and give each sub-section air above it.
+
+    `start` is len(ws.doc.paragraphs) taken BEFORE the notes were written, so this
+    only touches the notes block. Spacing is set as space_before rather than by
+    emitting empty paragraphs: Word leaves stray empties for Adrian to delete by
+    hand, and a real paragraph would also break the keep-with-next chains. Works
+    for either notes source — the hand-authored builder functions and content.py's
+    NOTES list both just write paragraphs.
+    """
+    from docx.shared import Pt
+    paras = ws.doc.paragraphs[start:]
+    seen_lead = False
+    for para in paras:
+        for run in para.runs:
+            if (run.text or "").strip().rstrip(":").lower() == "notes":
+                run.underline = True
+        if _bold_lead(para):
+            if seen_lead:                       # never above the first line
+                para.paragraph_format.space_before = Pt(gap_pt)
+            seen_lead = True

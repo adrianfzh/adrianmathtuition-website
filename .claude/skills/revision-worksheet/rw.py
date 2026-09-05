@@ -558,7 +558,7 @@ def _notes_from_builder(ws, spec):
 
 
 def _notes_from_list(ws, notes):
-    ws.para([C.B("Notes:")])
+    ws.para([C.U("Notes:")])
     for kind, val in notes:
         if kind == "head":
             ws.para([C.B(val)])
@@ -633,12 +633,15 @@ def cmd_render(a):
                    getattr(content, "TITLE", plan["level_line"]),
                    getattr(content, "SUBTITLE", plan["topic"]))
     notes = getattr(content, "NOTES", None)
+    notes_start = len(ws.doc.paragraphs)
     if isinstance(notes, str) and ":" in notes:
         _notes_from_builder(ws, notes)
     elif notes:
         _notes_from_list(ws, notes)
     else:
         warnings.append("no Notes block")
+    if notes:
+        C.finish_notes(ws, notes_start)
 
     ws.page_break()
     ws.para([C.B("Examples")])
