@@ -21,6 +21,7 @@ import {
   bankIdsNamed, heldItemsLine, practiceAgainRows, sanitizeSheetQuestions,
   type PracticeAgainJob, type SheetQuestion,
 } from './practice-again';
+import { addPracticeLinks } from './notebook-mistakes-store';
 
 export type HeldItemsOutcome = {
   /** Rows this call inserted. */
@@ -88,8 +89,8 @@ export async function createHeldPracticeItems(
     }
 
     const { data: all } = await sb.from('portal_assignments')
-      .select('id, kind').eq('sheet_job_id', job.id).eq('status', 'held');
-    const allRows = (all || []) as { id: string; kind: string }[];
+      .select('id, kind, skill_title').eq('sheet_job_id', job.id).eq('status', 'held');
+    const allRows = (all || []) as { id: string; kind: string; skill_title: string | null }[];
     const summary = {
       created,
       already: Math.max(0, allRows.length - created),
@@ -98,7 +99,25 @@ export async function createHeldPracticeItems(
       skipped: malformed + skipped.length,
     };
 
-    // TODO(notebook-mistakes): call addPracticeLinks(job.airtable_student_id, skillTitle, ids) from '@/lib/notebook-mistakes-store' per skill_title once the §6 module lands — it does not exist in this build.
+    // The Notebook's mistake entry for each skill points at the items that fix it
+    // (SPEC-PORTAL-V2 §6 "linked to the Practice items"). Best-effort, per skill:
+    // a failed link never fails the hand-back.
+    if (job.airtable_student_id) {
+      const bySkill = new Map<string, string[]>();
+      for (const r of allRows) {
+        const t = (r.skill_title || '').trim();
+        if (!t) continue;
+        bySkill.set(t, [...(bySkill.get(t) || []), r.id]);
+      }
+      for (const [skill, ids] of bySkill) {
+        try {
+          const res = await addPracticeLinks(job.airtable_student_id, skill, ids, sb);
+          if (!res.ok) console.warn('[practice-again] notebook link skipped', job.id, skill, res.error);
+        } catch (e) {
+          console.warn('[practice-again] notebook link failed', job.id, skill, (e as Error).message);
+        }
+      }
+    }
 
     return { ...summary, ids: allRows.map(r => r.id), line: heldItemsLine(summary) };
   } catch (e) {
