@@ -272,6 +272,28 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`columns? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
       return `page ${r.status}`;
     }),
+    // Every released paper carries a subject (SPEC-PORTAL-V2 §1): the Papers
+    // page pills, the per-subject tiles and the subject gate all key on
+    // paper_subject. The bot stamps it at save-paper and /api/portal/submit
+    // stamps hand-ins; a null on a RELEASED run means one of those stamps
+    // failed and a student is looking at a paper the tiles cannot place —
+    // Adrian tags it on the desk (Subject select). 30-day window, so an old
+    // pre-backfill row can never keep this red.
+    timed('papers-subject', async () => {
+      const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      const since = new Date(Date.now() - 30 * 86400_000).toISOString();
+      const q = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/paper_marking_runs?select=id&released_at=gte.${encodeURIComponent(since)}&paper_subject=is.null&limit=100`,
+        { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: T(10000) }
+      );
+      if (!q.ok) throw new Error(`paper_subject? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
+      const rows = await q.json();
+      if (!Array.isArray(rows)) throw new Error('unexpected response shape');
+      if (rows.length) {
+        throw new Error(`${rows.length} released run${rows.length === 1 ? '' : 's'} in the last 30 days with no paper_subject — set it on /admin/desk`);
+      }
+      return 'every released run has a subject';
+    }),
     // Student paper hand-ins (/app/submit). The token route must answer — 401
     // without a session is the healthy signal (the route is deployed and its
     // auth gate is up); a 404 means students silently lose the submit path,

@@ -1036,6 +1036,35 @@ keeps the real name in `filename*=UTF-8''…`; its test builds a real `Headers` 
 regression cannot return. Rule for any route that names a download: **never put a raw
 user-facing string in a header — fold it, and test it with `new Headers(...)`.**
 
+### Every paper has a subject — pills, per-subject tiles, the gate (6 Sep 2026)
+
+SPEC-PORTAL-V2.md §1–§2. `paper_marking_runs.paper_subject` ∈ `A Math | E Math | H2 Math |
+Other | null` (backfilled 6 Sep; the bot stamps new runs by name-then-level majority).
+
+- **Papers page:** every card wears a colour-coded **AM / EM / H2** pill
+  (`components/PaperSubjectPill.tsx`; "Other" and untagged → no pill). The three tiles
+  (latest / average / trend) are **per subject** — `lib/portal-papers-stats.ts`
+  (pure, tested) computes one block per subject the student has papers in, in
+  `allowedSubjects(account)` order; `SubjectTiles.tsx` (client, state = active tab only)
+  shows tabs when there is more than one block, plain tiles for one, nothing when every
+  paper is "Other". "Other" papers list but count in no tile.
+- **The gate:** rows are filtered with `subjectAllowed(account, paper_subject)` BEFORE
+  `buildStudentMarking`, so tiles, streak note and "Work on next" describe the same list.
+  Home's Marked count (`lib/portal-home-counts.ts`) takes the account and applies the same
+  predicate. The same gate covers the practice level list (`lib/practice-subject-gate.ts`
+  over `qbLevelsFor`, belt on top of the subjects filter) and "From Adrian" lists
+  (`assignmentVisible` in `lib/portal-assignments.ts`, reading the row's `level` through
+  `paperSubjectFromName` — rows naming no subject pass). A student session is always the
+  student (practice convention); admin Bearer without a student session is ungated.
+- **Stamping hand-ins:** `/api/portal/submit` writes `paper_subject` on the run it creates —
+  `Other` for a non-math marking lane, else the assignment's `level`, else the paper name
+  (`paperSubjectFromName`), else null — never overwriting a value the bot already set.
+- **Desk:** the AM/EM/H2 chip on every row and a **Subject** select in the run detail →
+  `mark-triage POST {action:'subject', runId, subject}` (value-checked, 400 otherwise;
+  writes `paper_subject` only, so it is allowed after release — no mark changes).
+- **Health check:** `papers-subject` asserts no run released in the last 30 days has a null
+  `paper_subject`; the failure text carries the count.
+
 ## /app/submit — student paper hand-ins (2026-08-12)
 
 The door IN from the student side: photograph the worked paper on a phone →
