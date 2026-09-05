@@ -41,6 +41,15 @@ type Page = { file: File; preview: string | null };
 // with a five-megabyte photo. Three attempts with a growing pause covers a
 // handover; the caller caches what succeeds so a fourth failure still keeps the
 // finished pages.
+/** The message for a page that would not upload after every retry. Pure — tested. */
+export function uploadFailureMessage(index: number, total: number): string {
+  const kept = index;
+  const keptNote = kept === 0
+    ? 'Nothing has been sent yet.'
+    : `The ${kept} page${kept === 1 ? '' : 's'} before it ${kept === 1 ? 'is' : 'are'} already with us and will not be sent twice.`;
+  return `Page ${index + 1} of ${total} did not upload after three tries — usually a weak signal. ${keptNote} Check your connection and tap Send again.`;
+}
+
 async function uploadPage(file: File, onNote: (s: string) => void): Promise<string> {
   const upload = await resizeToJpeg(file);
   for (let attempt = 1; attempt <= 3; attempt++) {
@@ -168,8 +177,16 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         const cached = uploadedRef.current.get(i);
         if (cached) { urls.push(cached); continue; }   // already up — don't re-send it
         setStage(pages.length > 1 ? `Uploading page ${i + 1} of ${pages.length}…` : 'Uploading…');
-        const url = await uploadPage(pages[i].file, (note) =>
-          setStage(`Uploading page ${i + 1} of ${pages.length} — ${note}`));
+        let url: string;
+        try {
+          url = await uploadPage(pages[i].file, (note) =>
+            setStage(`Uploading page ${i + 1} of ${pages.length} — ${note}`));
+        } catch {
+          // Safari's own words for a dropped connection are "Load failed" — which is
+          // what Sophie saw with no page number and no idea whether anything had
+          // arrived (5 Sep 2026). Say which page, what is kept, and what to do.
+          throw new Error(uploadFailureMessage(i, pages.length));
+        }
         uploadedRef.current.set(i, url);
         urls.push(url);
       }

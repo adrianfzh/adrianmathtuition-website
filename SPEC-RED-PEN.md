@@ -52,7 +52,8 @@ verdicts, `parts[]` with marks, `correct.full_solution_latex`. Plus, from 5 Sep 
    the box lies inside the line's box, is under 60% of its width and under 1.3× its
    height. Otherwise **underline the whole line** and write the fix beside it. A circle in
    the wrong place is worse than none — it is never a guess.
-3. **Missing brackets.** `notation_slip` prints beside the ✓ in teaching ink. Shipped.
+3. **Missing brackets.** `notation_slip` prints beside the ✓ in teaching ink, and when the
+   overlay can box the span (`span_token`) a red `(` `)` pair is drawn round it. Shipped.
 4. **The verdict line.** One per lost part, red, with a bracket along the wrong lines'
    right edge, in Adrian's voice. Never more than one per part; never on a full-marks part.
 5. **Continue from here.** For an attempted part that lost marks, print the
@@ -107,7 +108,7 @@ From his red pen, 5 Sep 2026:
 | Q12(b) logs | `lg x lg 3 / lg 9` | "lg x / lg 3 = 2 lg x / lg 9, not lg x lg 3 / lg 9" |
 | JC Q9(a) discriminant | factorised instead of discriminant | beside it: "quadratic graph > 0 ⇒ graph above x-axis ⇒ discriminant < 0" |
 | JC Q8(b) Argand | `i·→BC = →BA` | complex numbers are not vectors: `i(z_C − z_B)`, never `i·→BC` |
-| JC Q13(a) explain | "no solutions for x, hence no stationary point" | **open** — Adrian to rule whether SEAB accepts it without "2 ≠ 0" (marker gave B0) |
+| JC Q13(a) explain | "no solutions for x, hence no stationary point" | **ruled 5 Sep: give the mark** — a non-zero constant numerator makes the reason plain; the marker's prompt now says so, and Kiara's run was overridden to 3/3 |
 
 Phrase bank (approved so far): "must know how to solve trig equations!", "which quadrant?",
 "positive or negative?", "use the 2nd derivative for nature", "missing brackets",
@@ -117,12 +118,17 @@ before it reaches a student.
 
 ## 6. Gate and phases
 
-- **Flag:** `MARKING_PEN_V2=1` on Fly turns on the phase-2 fields and drawing. Off by
-  default. The marker still emits the shipped fields (notation_slip, is_second_pen,
-  careless) with the flag off.
-- **Trial:** one already-marked paper (Kassandra's TYS 2021 P1, the 3 Sep run) re-rendered
-  with the flag on; both versions side by side on the desk; Adrian counts where the new pen
-  matches his own on the parts he annotated. Three papers with his tick → flag on for all.
+- **Flag:** `MARKING_PEN_V2=1` on Fly turns on the phase-2 fields and drawing. **On since
+  5 Sep 2026** (Adrian: "able to do it if confidence is high?" → yes, with the gate below).
+- **Confidence gate, per page:** the pen's reach follows the rung that placed the marks.
+  Whole-page line pass → rings, drawn-in brackets and verdict braces. Per-question retry →
+  fix labels only. Coarse rung → nothing beyond phase 1. A ring or bracket is also dropped
+  when its mark landed far from the token. Continuations and notes are text and ride every
+  rung.
+- **Trial done 5 Sep:** Kassandra's TYS 2021 P1 re-marked with the pen on (73/90, same as
+  the 3 Sep run); pages sent to Adrian. Known: crowding on dense columns; the side strip
+  overran the edge on the trial's low-resolution pages (production pages draw on the
+  high-resolution original).
 - **Log + alarm:** `job_runs` slug `pen-v2-trial` for each trial render; the desk's
   calibration page gets a "pen matches Adrian" column when the trial starts.
 
