@@ -605,6 +605,129 @@ function examSummaryLines(lesson: EnrichedLesson): ExamChipLine[] {
   return lines;
 }
 
+// Revision worksheets planned for this student ahead of the exam (typed by
+// topic). Self-contained: loads + writes /api/admin-schedule/worksheets on
+// its own, so ticks/deletes land immediately and are independent of the
+// dialog's Save. ☐ in front = given to the student; ✓ done = completed.
+type WorksheetRow = { id: string; topic: string; examType: string | null; given: boolean; completed: boolean };
+function ExamWorksheetsPanel({ studentId, examType }: { studentId: string; examType: string }) {
+  const [rows, setRows] = useState<WorksheetRow[] | null>(null);
+  const [draft, setDraft] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    setRows(null); setErr(null);
+    fetch(`/api/admin-schedule/worksheets?studentId=${encodeURIComponent(studentId)}`)
+      .then(r => r.json())
+      .then(d => { if (alive) { if (d.error) setErr(d.error); setRows(d.worksheets || []); } })
+      .catch(e => { if (alive) { setErr(String(e?.message || e)); setRows([]); } });
+    return () => { alive = false; };
+  }, [studentId]);
+
+  async function add() {
+    const topic = draft.trim();
+    if (!topic || busy) return;
+    setBusy(true); setErr(null);
+    try {
+      const res = await fetch('/api/admin-schedule/worksheets', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, topic, examType: examType || null }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Failed');
+      setRows(prev => [...(prev || []), d.worksheet]);
+      setDraft('');
+    } catch (e: unknown) { setErr((e as Error).message); }
+    finally { setBusy(false); }
+  }
+
+  async function patch(id: string, fields: Partial<Pick<WorksheetRow, 'given' | 'completed'>>) {
+    // Optimistic: flip locally, roll back on failure.
+    const before = rows;
+    setRows(prev => (prev || []).map(r => r.id === id ? { ...r, ...fields } : r));
+    try {
+      const res = await fetch('/api/admin-schedule/worksheets', {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...fields }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Failed');
+    } catch (e: unknown) { setRows(before); setErr((e as Error).message); }
+  }
+
+  async function remove(id: string) {
+    const before = rows;
+    setRows(prev => (prev || []).filter(r => r.id !== id));
+    try {
+      const res = await fetch('/api/admin-schedule/worksheets', {
+        method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Failed');
+    } catch (e: unknown) { setRows(before); setErr((e as Error).message); }
+  }
+
+  const givenCount = (rows || []).filter(r => r.given).length;
+  const doneCount = (rows || []).filter(r => r.completed).length;
+
+  return (
+    <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 12px', marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.05em', color: '#334155', textTransform: 'uppercase' }}>📄 Worksheets</div>
+        {rows && rows.length > 0 && (
+          <div style={{ fontSize: 11.5, color: '#94a3b8' }}>{givenCount}/{rows.length} given · {doneCount} done</div>
+        )}
+      </div>
+      <div style={{ fontSize: 11.5, color: '#94a3b8', margin: '2px 0 8px' }}>
+        Revision worksheets to prepare for {examType || 'the exam'}. Tick the box once handed over; ✓ done once completed.
+      </div>
+      {rows === null ? (
+        <div style={{ fontSize: 12, color: '#94a3b8', fontStyle: 'italic' }}>Loading…</div>
+      ) : rows.length === 0 ? (
+        <div style={{ fontSize: 12, color: '#94a3b8', fontStyle: 'italic', marginBottom: 6 }}>No worksheets yet.</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 8 }}>
+          {rows.map(r => (
+            <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 6px', borderRadius: 8,
+              background: r.completed ? '#f0fdf4' : r.given ? '#f8fafc' : '#fff' }}>
+              <input type="checkbox" checked={r.given} title="Given to the student" aria-label={`Given: ${r.topic}`}
+                onChange={e => patch(r.id, { given: e.target.checked, ...(e.target.checked ? {} : { completed: false }) })}
+                style={{ width: 17, height: 17, cursor: 'pointer', accentColor: '#1e3a5f', flexShrink: 0 }} />
+              <span style={{ flex: 1, fontSize: 13, color: r.completed ? '#15803d' : '#1e293b',
+                textDecoration: r.completed ? 'line-through' : 'none', wordBreak: 'break-word' }}>
+                {r.topic}
+                {r.examType && r.examType !== examType && <span style={{ fontSize: 10.5, color: '#94a3b8', marginLeft: 6 }}>{r.examType}</span>}
+              </span>
+              <label title={r.given ? 'Completed by the student' : 'Tick "given" first'}
+                style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap',
+                  color: r.completed ? '#15803d' : r.given ? '#475569' : '#cbd5e1', cursor: r.given ? 'pointer' : 'not-allowed' }}>
+                <input type="checkbox" checked={r.completed} disabled={!r.given} aria-label={`Completed: ${r.topic}`}
+                  onChange={e => patch(r.id, { completed: e.target.checked })}
+                  style={{ width: 15, height: 15, accentColor: '#15803d', cursor: r.given ? 'pointer' : 'not-allowed' }} />
+                done
+              </label>
+              <button type="button" onClick={() => { if (confirm(`Delete worksheet "${r.topic}"?`)) remove(r.id); }}
+                title="Delete this worksheet" aria-label={`Delete worksheet ${r.topic}`}
+                style={{ border: 'none', background: 'transparent', color: '#94a3b8', fontSize: 14, cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>✕</button>
+            </div>
+          ))}
+        </div>
+      )}
+      <div style={{ display: 'flex', gap: 6 }}>
+        <input value={draft} onChange={e => setDraft(e.target.value)} placeholder="Worksheet topic, e.g. Quadratic inequalities"
+          disabled={busy} maxLength={200}
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add(); } }}
+          style={{ flex: 1, fontSize: 13, padding: '7px 9px', border: '1px solid #e5e7eb', borderRadius: 8, minWidth: 0 }} />
+        <button type="button" onClick={add} disabled={busy || !draft.trim()}
+          style={{ fontSize: 12.5, fontWeight: 700, padding: '7px 12px', borderRadius: 8, cursor: busy || !draft.trim() ? 'default' : 'pointer',
+            background: '#1e3a5f', color: '#fff', border: '1px solid #1e3a5f', opacity: busy || !draft.trim() ? 0.5 : 1, whiteSpace: 'nowrap' }}>
+          ＋ Add
+        </button>
+      </div>
+      {err && <div style={{ fontSize: 11.5, color: '#b91c1c', marginTop: 6 }}>⚠ {err}</div>}
+    </div>
+  );
+}
+
 // The original photo a row's topics were extracted from (kept on Blob so
 // Adrian can verify the extraction later). Opens in a new tab; ✕ forgets it.
 function ExamPhotoLink({ url, onRemove }: { url: string; onRemove: () => void }) {
@@ -3923,6 +4046,9 @@ export default function SchedulePage() {
                 </div>
                 );
               })}
+              {/* Revision worksheets planned for this exam — own store, saves
+                  immediately (not part of the exam Save). */}
+              <ExamWorksheetsPanel studentId={examEdit.studentId} examType={examEdit.examType} />
               {/* Same school = same paper: tick classmates to write this exam
                   info to them too on Save (subjects filtered per student). */}
               {(() => {
