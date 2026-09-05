@@ -91,6 +91,25 @@ the first only after the move has been shown in worked steps, never two in a row
   beat (the lead-in). A beat scene carries NO `narration` / `audio` — they
   derive. Set `"theme": "chalk"` for the board look (the exemplar is
   `data/lessons/quadratic-functions-am.json`).
+- **On the board themes: WORDS ARE WRITTEN, MATHS APPEARS** (2026-09-05,
+  docs/LESSONS.md § Themes). A chalk tip writes every prose field letter by
+  letter in Kalam; typeset maths (`$…$` inside prose, every equation token)
+  chalk-dusts in on its beat and is never traced. What this asks of you:
+  · **Put the words in prose fields and the maths in tokens** — a `write` on a
+    prose field buys a hand; a `write` on a token buys a puff of dust. Prose
+    that is really an equation ("$x^2-3x+2$" alone in an `intro`) gets neither.
+  · **Keep a written field short.** It is drawn over the remainder of its
+    clip, so a 40-word paragraph on a 4-second beat writes at a scribble. One
+    idea per beat is already the rule; this is why.
+  · **A `note` is written too**, in chalk yellow — so it reads as an aside in
+    Adrian's hand. Keep it under ~10 words, not the 140-character maximum.
+  · **`highlight` is a change of chalk on the board** (the token's colour moves
+    to the tone, with a glow), not a coloured box — so a highlight on a whole
+    line reads as "this bit is in yellow now", and one on a single token is
+    what you want.
+  · **`mark` colours are fixed by kind**: underline = cyan (pointing),
+    circle = yellow (attention), box = pink (the answer). Choose the kind for
+    the meaning, not the colour.
 - **`verify`** lists on every scene that computes something: `equals` for
   numbers, `equiv` for identities in x, `state` for graph states. If a number
   appears on screen, the verifier should be checking it.

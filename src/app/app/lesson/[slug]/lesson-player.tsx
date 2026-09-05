@@ -55,6 +55,16 @@
 //     file always used, so unthemed scripts render as before); `chalk` and
 //     `paper` restyle the stage through `--lsn-*` custom properties only
 //     (lib/lesson-theme.ts). The header, dots and controls stay portal-styled.
+//   · THE SLATE + THE HAND (2026-09-05). On the board themes the card IS a
+//     slate — a radial ground, blended fractal grain, a dust haze, two erased
+//     ghosts, a vignette, all in one element's background stack — and the
+//     prose is WRITTEN on it: a chalk tip travels the letters and the ink
+//     appears behind it (./chalk-writer.ts, paced by `--lsn-p`, the fraction
+//     of its clip the sentence being spoken has reached, so speed and pause
+//     come free). MATHS IS NEVER WRITTEN: KaTeX chalk-dusts in on its beat.
+//     Everything the hand needs is a class and two custom properties; when it
+//     cannot run (reduced motion, no canvas, the face not in yet) the root
+//     drops `data-lsn-write` and the words simply appear.
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
@@ -77,9 +87,13 @@ import {
   beatAutoMs, beatTimeline, boardStateAt, elementShown, firedCountAt, lineKey, lineOn, proseGroup, sceneNotes,
   tokKey, tokenShown, tokenWritten, type BoardState,
 } from '@/lib/lesson-beats';
-import { HAND_FONT_HREF, needsHandFont, normalizeTheme, themeCssVars } from '@/lib/lesson-theme';
+import {
+  HAND_FONT_FACES, HAND_FONT_FAMILY, HAND_FONT_URL, TITLE_FONT_FAMILY, TITLE_FONT_URL,
+  needsHandFont, normalizeTheme, themeCssVars,
+} from '@/lib/lesson-theme';
 import { useNarration, usePref, useRatePref, writePref, writeRate } from './lesson-narration';
 import BoardLayer, { EASE, MathText, NoteSlotView, offsetRect, useIsoLayoutEffect } from './lesson-board';
+import { ChalkWriter } from './chalk-writer';
 
 // ── Small shared renderers ───────────────────────────────────────────────────
 
@@ -928,6 +942,11 @@ function useSpeechCursor({ cardRef, ribbonRef, active, sceneIdx, step, scene, cl
           // The sweep is the voice's pace — a silent beat only lifts the sentence.
           const sweep = track && cur.states[i] === 'speaking' ? cur.progress.toFixed(3) : '0';
           if (el.style.getPropertyValue('--sweep') !== sweep) el.style.setProperty('--sweep', sweep);
+          // …but the chalk HAND writes at the beat's pace whether or not there
+          // is a voice, so it gets its own fraction: how far into this
+          // sentence's share of the clip (or the silent beat) we are.
+          const p = cur.states[i] === 'speaking' ? cur.progress.toFixed(3) : '0';
+          if (el.style.getPropertyValue('--lsn-p') !== p) el.style.setProperty('--lsn-p', p);
         });
       }
 
@@ -1323,13 +1342,40 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   const themed = theme !== 'slide';
   const themeStyle = useMemo(() => themeCssVars(theme) as React.CSSProperties, [theme]);
 
+  // The chalk hand needs three things: a board theme, an engine this browser
+  // can run, and the FACE ALREADY IN — it derives its pen paths by rasterising
+  // the very glyphs the browser laid out, so measuring against a fallback font
+  // would write one hand over another's layout. Until all three hold (and
+  // always under reduced motion) `data-lsn-write` is off and the CSS simply
+  // shows each sentence as it is reached.
+  const [faceReady, setFaceReady] = useState(false);
+  useEffect(() => {
+    if (!needsHandFont(theme) || !document.fonts) return;
+    let cancelled = false;
+    Promise.all([`16px "${HAND_FONT_FAMILY}"`, `16px "${TITLE_FONT_FAMILY}"`].map(f => document.fonts.load(f)))
+      .then(() => { if (!cancelled) setFaceReady(document.fonts.check(`16px "${HAND_FONT_FAMILY}"`)); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [theme]);
+  const engineOk = useMemo(() => ChalkWriter.available(), []);
+  const writing = themed && faceReady && engineOk && !reduced;
+
   return (
-    <div className="max-w-lg mx-auto pb-24 sm:pb-6" data-lsn-theme={theme} data-lsn-themed={themed ? '' : undefined} style={themeStyle}>
+    <div className="max-w-lg mx-auto pb-24 sm:pb-6" data-lsn-theme={theme} data-lsn-themed={themed ? '' : undefined}
+      data-lsn-write={writing ? 'on' : undefined} style={themeStyle}>
       <style>{PLAYER_CSS}</style>
-      {/* The handwriting face for the chalk / paper stages — hoisted to <head>
-          by React (precedence), the same Google Fonts route the site's own
-          faces take. The slide theme loads nothing. */}
-      {needsHandFont(theme) && <link rel="stylesheet" precedence="lesson-fonts" href={HAND_FONT_HREF} />}
+      {/* The two handwriting faces for the board stages: SELF-HOSTED subsets
+          (public/lessons/fonts, ~43 KB the pair), because the chalk writer has
+          to read the same file the CSS laid the text out with. Preloaded so the
+          hand can start on the first beat rather than after a swap. The slide
+          theme loads nothing. */}
+      {needsHandFont(theme) && (
+        <>
+          <link rel="preload" as="font" type="font/woff" href={HAND_FONT_URL} crossOrigin="anonymous" />
+          <link rel="preload" as="font" type="font/woff" href={TITLE_FONT_URL} crossOrigin="anonymous" />
+          <style>{HAND_FONT_FACES}</style>
+        </>
+      )}
 
       {/* Header: way back + identity + pacing pills. Speed and pause appear
           with the timed pacings they control; Auto ⇄ Mute swap places so the
@@ -1413,7 +1459,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
               paused, a tap resumes instead. ── */
         <div key={sceneIdx} ref={cardRef} onClick={onCardTap} data-paused={paused || undefined} data-beats={board ? maxStep : undefined}
           className={`lsn-scene relative bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-5 min-h-[440px] flex flex-col ${gated ? '' : 'cursor-pointer'}`}>
-          <BoardLayer board={board} notes={marginNotes} reduced={reduced} rate={rate}>
+          <BoardLayer board={board} notes={marginNotes} reduced={reduced} rate={rate} writing={writing} paused={paused}>
             {scene.type === 'title' && <TitleView scene={scene} minutes={minutes} timed={timed} board={board} />}
             {scene.type === 'caption' && <CaptionView scene={scene} timed={timed} board={board} />}
             {scene.type === 'equation-steps' && <EquationStepsView scene={scene} step={step} reduced={reduced} timed={timed} board={board} />}
@@ -1489,6 +1535,17 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
 // off in one block. The theme block at the end reads only `--lsn-*` custom
 // properties (lib/lesson-theme.ts) and applies ONLY under [data-lsn-themed],
 // so the slide theme's cascade is exactly what it was.
+/**
+ * The chalk grain — a fine-noise ALPHA tile used as a `mask-image` on typeset
+ * maths, on the title and on the hand-drawn marks. It nibbles the anti-aliased
+ * rim of every glyph and thins the interior unevenly, which is what makes print
+ * type read as chalk. A mask (not an SVG filter graph) on purpose: it is
+ * rasterised once per tile and never re-runs, where an feDisplacementMap over a
+ * whole card re-runs on every repaint.
+ */
+const CHALK_GRAIN =
+  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><filter id='c' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch' seed='7'/><feColorMatrix type='matrix' values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.62 0.38'/></filter><rect width='64' height='64' filter='url(%23c)'/></svg>\")";
+
 const PLAYER_CSS = `
 @keyframes lsnSceneIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes lsnRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -1497,6 +1554,10 @@ const PLAYER_CSS = `
 @keyframes lsnDotIn { from { opacity: 0; transform: scale(0.4); } 60% { opacity: 1; } to { opacity: 1; transform: none; } }
 @keyframes lsnFade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes lsnPulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 var(--lsn-pen-soft, rgba(245,158,11,0.25)); } 35% { transform: scale(1.12); box-shadow: 0 0 0 6px var(--lsn-pen-soft, rgba(245,158,11,0.25)); } 100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; } }
+/* On a board a token is not pulsed, it is gone over again with a fresh stick. */
+@keyframes lsnGlow { 0% { transform: scale(1); } 35% { transform: scale(1.06); text-shadow: 0 0 16px currentColor, 0 0 4px currentColor; } 100% { transform: scale(1); } }
+/* Typeset maths arrives as a puff of chalk dust — it is never written. */
+@keyframes lsnDust { 0% { opacity: 0; filter: blur(3px); } 55% { opacity: 1; } 100% { opacity: 1; filter: none; } }
 .lsn-scene { animation: lsnSceneIn 300ms ${EASE} both; }
 .lsn-rise { animation: lsnRise 420ms ${EASE} both; }
 .lsn-line { opacity: 0; transform: translateY(6px); transition: opacity 420ms ${EASE}, transform 420ms ${EASE}; }
@@ -1552,21 +1613,57 @@ const PLAYER_CSS = `
 .lsn-zoom[data-focus] [data-focused], .lsn-zoom[data-focus] [data-focused] .lsn-el.on { opacity: 1; }
 
 /* ── Themes: only under [data-lsn-themed] (chalk / paper) — the slide theme's cascade is untouched ── */
-[data-lsn-themed] .lsn-scene { background: var(--lsn-board); background-image: var(--lsn-texture); box-shadow: inset 0 0 0 1px var(--lsn-edge), 0 1px 2px rgba(15,23,42,0.06), 0 10px 28px -12px rgba(15,23,42,0.45); }
+/* The SLATE. One element's background carries the whole stack, top layer first:
+   vignette · chalk-dust haze · fractal grain (blended "overlay", the probe's
+   pass) · the radial ground. The two erased ghosts are pseudo-elements at
+   z-index −1, which is why the card isolates. */
+[data-lsn-themed] .lsn-scene { position: relative; isolation: isolate; overflow: hidden;
+  background-color: var(--lsn-board); background-image: var(--lsn-texture);
+  background-size: var(--lsn-texture-size); background-blend-mode: var(--lsn-texture-blend);
+  box-shadow: inset 0 0 0 1px var(--lsn-edge), 0 1px 2px rgba(15,23,42,0.06), 0 10px 28px -12px rgba(15,23,42,0.45); }
+[data-lsn-theme="chalk"] .lsn-scene { box-shadow: inset 0 0 0 1px var(--lsn-edge), inset 0 0 70px rgba(0,0,0,0.42), 0 14px 40px -18px rgba(0,0,0,0.75); }
+[data-lsn-theme="chalk"] .lsn-scene::before, [data-lsn-theme="chalk"] .lsn-scene::after {
+  content: ''; position: absolute; z-index: -1; pointer-events: none; border-radius: 50%; filter: blur(1.3px);
+  background: repeating-linear-gradient(104deg, rgba(255,255,255,0.042) 0 1.5px, rgba(255,255,255,0) 1.5px 6px),
+              radial-gradient(ellipse at center, rgba(255,255,255,0.075), rgba(255,255,255,0) 70%);
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 25%, transparent 70%);
+  mask-image: radial-gradient(ellipse at center, #000 25%, transparent 70%); }
+[data-lsn-theme="chalk"] .lsn-scene::before { left: 50%; top: 28%; width: 46%; height: 36%; transform: rotate(-9deg); }
+[data-lsn-theme="chalk"] .lsn-scene::after { left: -8%; top: 62%; width: 42%; height: 32%; transform: rotate(7deg); opacity: 0.8; }
 [data-lsn-themed] .lsn-ink { color: var(--lsn-ink); }
 [data-lsn-themed] .lsn-ink-2 { color: var(--lsn-ink-2); }
 [data-lsn-themed] .lsn-muted { color: var(--lsn-muted); }
 [data-lsn-themed] .lsn-muted-2 { color: var(--lsn-ink-2); opacity: 0.86; }
 [data-lsn-themed] .lsn-accent { color: var(--lsn-pen); }
-[data-lsn-themed] .lsn-hand { font-family: var(--lsn-hand); font-size: calc(1em * var(--lsn-hand-scale)); line-height: 1.32; }
-[data-lsn-themed] .lsn-hand .katex { font-size: calc(1em / var(--lsn-hand-scale) * 1.08); }
-[data-lsn-themed] .lsn-hand-title { font-family: var(--lsn-hand); font-size: calc(27px * var(--lsn-hand-scale)); font-weight: 600; letter-spacing: 0.005em; }
+/* Absolute sizes, not \`1em\`: this rule REPLACES the element's own text-[..px]
+   utility, so an em would resolve against the PARENT and every role would come
+   out the same size. The three roles the prose classes encode: body 15 px,
+   callout label 13.5 px, note / caption 13 px — × the theme's hand scale
+   (chalk 1.6 → 24 px body, the size the probe read best at on a phone). */
+[data-lsn-themed] .lsn-hand { font-family: var(--lsn-hand); font-size: calc(13.5px * var(--lsn-hand-scale)); line-height: 1.34; }
+[data-lsn-themed] .lsn-ink-2.lsn-hand, [data-lsn-themed] .lsn-hand.prose { font-size: calc(15px * var(--lsn-hand-scale)); }
+[data-lsn-themed] .lsn-muted-2.lsn-hand { font-size: calc(13px * var(--lsn-hand-scale)); }
+/* Worked lines are the maths of the lesson: they must not read SMALLER than
+   the words beside them once the hand is 24 px. A modest bump only — the token
+   row wraps, so this never scrolls the board sideways. */
+[data-lsn-themed] .lsn-line .lsn-tok { font-size: calc(17px * 1.14); }
+/* Kalam runs large for its point size, so typeset maths inside it is pulled
+   back up (--lsn-math-scale) or it reads small beside the words. */
+[data-lsn-themed] .lsn-hand .katex { font-size: calc(1em / var(--lsn-hand-scale) * var(--lsn-math-scale)); }
+[data-lsn-themed] .lsn-hand-title { font-family: var(--lsn-title); font-size: calc(27px * 1.12); font-weight: 400; letter-spacing: 0.01em; line-height: 1.15; }
 [data-lsn-themed] .lsn-scene .prose { color: var(--lsn-ink-2); }
 [data-lsn-themed] .lsn-scene .prose strong, [data-lsn-themed] .lsn-scene .prose b { color: var(--lsn-ink); }
-[data-lsn-themed] .lsn-hl-amber { background: var(--lsn-hl-amber); }
-[data-lsn-themed] .lsn-hl-sky { background: var(--lsn-hl-sky); }
-[data-lsn-themed] .lsn-hl-rose { background: var(--lsn-hl-rose); }
-[data-lsn-themed] .lsn-hl-emerald { background: var(--lsn-hl-emerald); }
+/* A highlight on a board is a CHANGE OF CHALK, not a pill: the colour moves
+   and a fresh stick leaves a soft glow round it. */
+[data-lsn-themed] .lsn-hl { background: none; padding: 0; margin: 0; }
+[data-lsn-themed] .lsn-hl-amber { color: var(--lsn-hl-amber); }
+[data-lsn-themed] .lsn-hl-sky { color: var(--lsn-hl-sky); }
+[data-lsn-themed] .lsn-hl-rose { color: var(--lsn-hl-rose); }
+[data-lsn-themed] .lsn-hl-emerald { color: var(--lsn-hl-emerald); }
+[data-lsn-themed] .lsn-hl .katex, [data-lsn-themed] .lsn-hl .katex * { color: inherit; }
+[data-lsn-theme="chalk"] .lsn-hl { text-shadow: 0 0 9px currentColor, 0 0 2px currentColor; }
+[data-lsn-themed] .lsn-line.on .lsn-hl { animation: none; }
+[data-lsn-themed] .lsn-pulse { animation: lsnGlow 900ms ${EASE} both; box-shadow: none; }
 [data-lsn-themed] .lsn-chip-amber { background: var(--lsn-chip-amber-bg); border-color: var(--lsn-chip-amber-border); color: var(--lsn-chip-amber-text); }
 [data-lsn-themed] .lsn-chip-sky { background: var(--lsn-chip-sky-bg); border-color: var(--lsn-chip-sky-border); color: var(--lsn-chip-sky-text); }
 [data-lsn-themed] .lsn-chip-rose { background: var(--lsn-chip-rose-bg); border-color: var(--lsn-chip-rose-border); color: var(--lsn-chip-rose-text); }
@@ -1578,21 +1675,50 @@ const PLAYER_CSS = `
 [data-lsn-themed] .lsn-curve { stroke: var(--lsn-curve); }
 [data-lsn-themed] .lsn-ghost { stroke: var(--lsn-ghost); }
 [data-lsn-themed] .lsn-poster { background: rgba(8, 12, 10, 0.42); }
-[data-lsn-themed] .lsn-ribbon { background: var(--lsn-board); background-image: var(--lsn-texture); border-radius: 14px; padding: 8px 12px; box-shadow: inset 0 0 0 1px var(--lsn-edge); }
+[data-lsn-themed] .lsn-ribbon { background-color: var(--lsn-board); background-image: var(--lsn-texture); background-size: var(--lsn-texture-size); background-blend-mode: var(--lsn-texture-blend); border-radius: 14px; padding: 8px 12px; box-shadow: inset 0 0 0 1px var(--lsn-edge); }
 [data-lsn-themed] .lsn-ribbon-line { color: var(--lsn-ribbon); border-color: var(--lsn-pen); }
 [data-lsn-themed] .lsn-ribbon-line [data-w][data-on] { color: var(--lsn-ribbon-lit); }
-/* Chalk / paper: words are WRITTEN as they are spoken — a sentence not yet
-   said is not on the board; the one being said draws out left to right along
-   the sweep (a mask, so its maths draws on with it); said ones stay. */
+/* Marks are chalk too: one colour per kind (pointing / attention / the answer). */
+.lsn-marks path[data-mark="underline"] { stroke: var(--lsn-mark-underline, var(--lsn-pen, hsl(40, 85%, 52%))); }
+.lsn-marks path[data-mark="circle"] { stroke: var(--lsn-mark-circle, var(--lsn-pen, hsl(40, 85%, 52%))); }
+.lsn-marks path[data-mark="box"] { stroke: var(--lsn-mark-box, var(--lsn-pen, hsl(40, 85%, 52%))); }
+[data-lsn-theme="chalk"] .lsn-marks path { stroke-width: 2.6; opacity: 0.95;
+  -webkit-mask-image: ${CHALK_GRAIN}; mask-image: ${CHALK_GRAIN}; -webkit-mask-size: 72px 72px; mask-size: 72px 72px;
+  filter: drop-shadow(0 0 3px currentColor); }
+[data-lsn-theme="chalk"] .lsn-pen { width: 15px; height: 15px; margin: -7.5px 0 0 -7.5px;
+  background: radial-gradient(circle, rgba(255,255,250,0.85), rgba(255,255,250,0) 68%); box-shadow: none; }
+/* Chalk lettering: a roughened edge (a fine-noise mask nibbles the anti-aliased
+   rim), grainy opacity, and a faint glow. Cheap on purpose — a mask never
+   re-runs a filter graph per frame, which an feDisplacementMap over a whole
+   card does. */
+[data-lsn-theme="chalk"] .lsn-scene .katex, [data-lsn-theme="chalk"] .lsn-hand-title {
+  -webkit-mask-image: ${CHALK_GRAIN}; mask-image: ${CHALK_GRAIN}; -webkit-mask-size: 64px 64px; mask-size: 64px 64px;
+  text-shadow: 0 0 6px rgba(243, 241, 230, 0.22), 0 0 1.5px rgba(243, 241, 230, 0.45); }
+[data-lsn-theme="chalk"] .lsn-scene input { color: #0f172a; }
+[data-lsn-theme="chalk"] .lsn-scene input::placeholder { color: #64748b; }
+
+/* ── The hand (chalk-writer.ts): words written, maths appearing ── */
+.lsn-ink-canvas, .lsn-tip-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.lsn-ink-canvas { z-index: 2; }
+.lsn-tip-canvas { z-index: 7; }
+[data-lsn-theme="chalk"] .lsn-ink-canvas { filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.22)); }
+/* An element the hand has taken over keeps its text — layout, selection and a
+   screen reader all still see it — and simply stops painting it; the canvas
+   carries the ink. Its maths keeps the element's own colour and dusts in. */
+[data-lsn-write="on"] [data-ink], [data-lsn-write="on"] [data-ink] * { color: transparent !important; text-shadow: none !important; }
+[data-lsn-write="on"] [data-ink] .katex, [data-lsn-write="on"] [data-ink] .katex * { color: var(--lsn-own-color, var(--lsn-ink)) !important; }
+[data-lsn-write="on"] [data-ink] .katex[data-dust="wait"] { opacity: 0; }
+[data-lsn-write="on"] [data-ink] .katex[data-dust="on"] { animation: lsnDust 560ms ${EASE} both; }
+[data-lsn-write="on"] .lsn-sent[data-ink] { transition: none; }
+[data-lsn-write="on"] .lsn-sent[data-ink][data-state="speaking"], [data-lsn-write="on"] .lsn-sent[data-ink][data-state="spoken"] { opacity: 1; }
+/* Typeset maths the board reveals on its own beat: it dusts in, never drawn. */
+.lsn-dust { animation: lsnDust 560ms ${EASE} both; }
+/* Without the hand (reduced motion, no canvas, the face not in yet) a sentence
+   is simply not on the board until it is said — the words appear. */
 [data-lsn-themed] .lsn-sent { background-image: none; transition: opacity 260ms ${EASE}; top: 0; }
 [data-lsn-themed] .lsn-sent[data-state="waiting"] { opacity: 0; top: 0; }
-[data-lsn-themed] .lsn-sent[data-state="speaking"] { opacity: 1;
-  -webkit-mask-image: linear-gradient(90deg, #000 calc(var(--sweep, 0) * 100%), transparent calc(var(--sweep, 0) * 100% + 3.5%));
-  mask-image: linear-gradient(90deg, #000 calc(var(--sweep, 0) * 100%), transparent calc(var(--sweep, 0) * 100% + 3.5%)); }
-[data-lsn-themed] .lsn-sent[data-state="spoken"] { opacity: 0.92; }
-[data-lsn-theme="chalk"] .lsn-scene .katex { text-shadow: 0 0 0.6px rgba(243, 239, 227, 0.55); }
-[data-lsn-theme="chalk"] .lsn-scene input { color: #0f172a; }
-[data-lsn-theme="chalk"] .lsn-marks path { filter: drop-shadow(0 0 0.6px rgba(245, 201, 106, 0.6)); }
+[data-lsn-themed] .lsn-sent[data-state="speaking"] { opacity: 1; }
+[data-lsn-themed] .lsn-sent[data-state="spoken"] { opacity: 1; }
 
 @media (prefers-reduced-motion: reduce) {
   .lsn-scene, .lsn-rise, .lsn-line, .lsn-conn, .lsn-conn-dot, .lsn-ribbon-line, .lsn-pulse { animation: none !important; transition: none !important; }
@@ -1603,6 +1729,6 @@ const PLAYER_CSS = `
   .lsn-el { transition: opacity 200ms ease !important; transform: none !important; }
   .lsn-zoom { transition: none !important; transform: none !important; }
   .lsn-pen { display: none; }
-  [data-lsn-themed] .lsn-sent[data-state="speaking"] { -webkit-mask-image: none; mask-image: none; }
+  .lsn-dust, [data-ink] .katex[data-dust="on"] { animation: none !important; }
 }
 `;

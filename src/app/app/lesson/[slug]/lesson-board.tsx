@@ -14,6 +14,13 @@
 //                  clipped: no flash). Prose blocks wipe line by line; while
 //                  the teacher's cursor is walking their sentences the cursor
 //                  is the writer and the wipe stands down.
+//                  ON THE BOARD THEMES (2026-09-05) the sweep is not what
+//                  happens: WORDS ARE WRITTEN and MATHS APPEARS. A `.w`
+//                  element with real words is handed to the chalk writer
+//                  (chalk-writer.ts), which draws it letter by letter under a
+//                  chalk tip; a `.w` element that is only KaTeX chalk-DUSTS in
+//                  — the pen never traces maths (the probe showed that reads
+//                  uncanny). Everything else in this file is unchanged.
 //   · highlight    a pulse on the token(s) named.
 //   · mark         a hand-drawn underline / circle / box (a wobbled SVG path,
 //                  stroke-dashoffset drawn with the pen on it), measured from
@@ -37,6 +44,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { MathMarkdown } from '@/lib/math-markdown';
 import type { BoardState, BoardMark, NoteSlot } from '@/lib/lesson-beats';
 import { scaleBeat } from '@/lib/lesson-speech';
+import { ChalkWriter, plainTextOf } from './chalk-writer';
 
 // useLayoutEffect measures; on the server it must quietly be useEffect.
 export const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
@@ -159,6 +167,8 @@ const CLIP_SHUT = 'inset(-0.35em -0.25em -0.4em 100%)';
 const CLIP_OPEN = 'inset(-0.35em -0.25em -0.4em -0.2em)';
 const WIPE_SHUT = 'inset(-0.1em -0.1em 100% -0.1em)';
 const WIPE_OPEN = 'inset(-0.1em -0.1em -0.2em -0.1em)';
+/** How long typeset maths takes to chalk-dust in (ms at 1×) — the CSS keyframe's length. */
+const DUST_MS = 560;
 
 export interface BoardLayerProps {
   board: BoardState | null;
@@ -166,7 +176,51 @@ export interface BoardLayerProps {
   notes: NoteSlot[];
   reduced: boolean;
   rate: number;
+  /**
+   * The chalk hand is on: words are written by a tip on a canvas over the
+   * board, maths dusts in. False (slide theme, reduced motion, no engine, fonts
+   * not in yet) keeps the original clip-path sweeps exactly as they were.
+   */
+  writing?: boolean;
+  /** A frozen clip freezes the hand: the tip stops mid-word rather than running on. */
+  paused?: boolean;
   children: React.ReactNode;
+}
+
+/** One chalk writer per board, alive for as long as the scene is. */
+function useWriter(
+  zoomRef: React.RefObject<HTMLDivElement | null>,
+  inkRef: React.RefObject<HTMLCanvasElement | null>,
+  tipRef: React.RefObject<HTMLCanvasElement | null>,
+  writing: boolean,
+  paused: boolean,
+) {
+  const ref = useRef<ChalkWriter | null>(null);
+  const rafRef = useRef(0);
+
+  useIsoLayoutEffect(() => {
+    const host = zoomRef.current, ink = inkRef.current, tip = tipRef.current;
+    if (!writing || !host || !ink || !tip) return;
+    const w = new ChalkWriter({ host, ink, tip });
+    w.resize();
+    ref.current = w;
+    const tick = () => { w.frame(); if (!w.broken) rafRef.current = requestAnimationFrame(tick); };
+    rafRef.current = requestAnimationFrame(tick);
+    // The board is laid out by the browser, so any reflow (rotation, a font
+    // landing, the phone's URL bar) invalidates every measured pen path.
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => w.resize()) : null;
+    ro?.observe(host);
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
+      ro?.disconnect();
+      w.release();
+      ref.current = null;
+    };
+  }, [writing, zoomRef, inkRef, tipRef]);
+
+  useEffect(() => { if (ref.current) ref.current.paused = paused; }, [paused]);
+  return ref;
 }
 
 /** One note slot: laid out from mount, drawn on when its action fires. */
@@ -182,11 +236,14 @@ export function NoteSlotView({ note, board }: { note: NoteSlot; board: BoardStat
  * Wraps a scene view in beat scenes. `board === null` (no beats) renders the
  * children untouched — the original card, byte for byte.
  */
-export default function BoardLayer({ board, notes, reduced, rate, children }: BoardLayerProps) {
+export default function BoardLayer({ board, notes, reduced, rate, writing = false, paused = false, children }: BoardLayerProps) {
   const zoomRef = useRef<HTMLDivElement>(null);
   const marksRef = useRef<SVGSVGElement>(null);
   const penRef = useRef<HTMLDivElement>(null);
+  const inkRef = useRef<HTMLCanvasElement>(null);
+  const tipRef = useRef<HTMLCanvasElement>(null);
   const pen = usePen(penRef);
+  const writerRef = useWriter(zoomRef, inkRef, tipRef, writing && board !== null, paused);
   const onRef = useRef<Set<string>>(new Set());        // keys animated as shown
   const pulseRef = useRef(0);                            // pulses handled
   const marksDrawn = useRef<Map<number, SVGPathElement>>(new Map());
@@ -243,6 +300,23 @@ export default function BoardLayer({ board, notes, reduced, rate, children }: Bo
       // The teacher's cursor is walking this prose: it writes the words itself.
       if (isProse && el.querySelector('[data-sent][data-state="waiting"], [data-sent][data-state="speaking"]')) continue;
       const delay = Math.max(0, cursor - now);
+      const writer = writerRef.current;
+      if (writer) {
+        // The board themes: words go to the hand, maths dusts in.
+        const lh = parseFloat(getComputedStyle(el).lineHeight) || 22;
+        const lines = Math.max(1, Math.round(rect.height / lh));
+        if (plainTextOf(el).trim()) {
+          const dur = scaleBeat(isProse ? wipeMs(lines) : sweepMs(rect.width), r);
+          writer.animate(el, dur, delay);          // claims it NOW, so no frame of bare text
+          cursor = now + delay + dur + 60;
+        } else {
+          el.classList.remove('lsn-dust');
+          void el.offsetWidth;                      // restart the keyframe
+          el.classList.add('lsn-dust');
+          cursor = now + delay + scaleBeat(DUST_MS, r) * 0.5;
+        }
+        continue;
+      }
       if (isProse) {
         const lh = parseFloat(getComputedStyle(el).lineHeight) || 22;
         const lines = Math.max(1, Math.round(rect.height / lh));
@@ -346,7 +420,7 @@ export default function BoardLayer({ board, notes, reduced, rate, children }: Bo
         focusTimer.current = window.setTimeout(() => { focusTimer.current = 0; release(); }, scaleBeat(f.hold * 1000, r));
       }
     }
-  }, [board, reduced, pen, boxOf]);
+  }, [board, reduced, pen, boxOf, writerRef]);
 
   // Re-measure on resize / font load (the marks), like the annotate connectors.
   useIsoLayoutEffect(() => {
@@ -373,6 +447,15 @@ export default function BoardLayer({ board, notes, reduced, rate, children }: Bo
           <div className="lsn-notes-flow">
             {notes.map(n => <NoteSlotView key={n.id} note={n} board={board} />)}
           </div>
+        )}
+        {/* The hand's two surfaces, inside the zoom wrapper so a `focus` lean-in
+            carries the ink with the words it belongs to. Always mounted when
+            the theme writes, so the engine never waits on a React commit. */}
+        {writing && board && (
+          <>
+            <canvas ref={inkRef} className="lsn-ink-canvas" aria-hidden />
+            <canvas ref={tipRef} className="lsn-tip-canvas" aria-hidden />
+          </>
         )}
         <svg ref={marksRef} className="lsn-marks" aria-hidden />
         <div ref={penRef} className="lsn-pen" aria-hidden />

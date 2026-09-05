@@ -25,6 +25,13 @@ model below).
 > 3Blue1Brown's discipline (an object transforms exactly as the sentence about
 > it lands). Both shipped, additive: every script without `beats` / `theme`
 > validates and plays exactly as before.
+>
+> **2026-09-05 — the slate + the hand.** The 4-Sep chalk reveal was a
+> left-to-right mask, and Adrian's verdict on it was *"a curtain, not a hand"*.
+> Replaced: the board is now the probe's JensenMath slate and the prose is
+> WRITTEN by a chalk tip along pen paths derived from the Kalam glyphs the
+> browser laid out — while typeset maths chalk-dusts in and is never written.
+> § Themes has the whole of it. Still additive: `slide` is byte-unchanged.
 
 ## Map
 
@@ -32,7 +39,9 @@ model below).
 |---|---|---|
 | Schema + validator + narration helpers | `src/lib/lesson-script.ts` (+ `.test.ts`) | Six scene types; `validateLessonScript` collects every error in one pass. The header comment lists the design decisions the player leans on — change schema and player together. Since 2026-09-04 also `beats` / `BeatAction` / `theme` and their validation (every action reference must resolve), and the derived-narration helpers (`hasBeats`, `sceneNarration`, `sceneAudio`, `beatClipPath`). |
 | The beat model (pure) | `src/lib/lesson-beats.ts` (+ `.test.ts`) | What actions MEAN: canonical element keys, `resolveActionTimes` (the `at` estimate), `boardStateAt(scene, beat, fired)` → a `BoardState` the views render from, the left-to-right token rule, `proseGroup` (which beat reads which words), `beatAutoMs`. |
-| Themes (pure tokens) | `src/lib/lesson-theme.ts` (+ `.test.ts`) | `THEME_TOKENS` for slide / chalk / paper → `--lsn-*` custom properties; slide's tokens are the values the player always used. |
+| Themes (pure tokens) | `src/lib/lesson-theme.ts` (+ `.test.ts`) | `THEME_TOKENS` for slide / chalk / paper → `--lsn-*` custom properties; slide's tokens are the values the player always used. Since 2026-09-05 also the slate's texture stack (+ its blend / size lists), the chalk sticks, the per-kind mark colours, and the two self-hosted faces. |
+| The hand (pure) | `src/lib/chalk-strokes.ts` (+ `.test.ts`) | Zhang–Suen thinning · skeleton tracing · smoothing · writing order · the stroke timeline (`buildWritePlan`, normalised 0‥1) · `penAt` · the chalk grain noise. No DOM. |
+| The hand (browser) | `src/app/app/lesson/[slug]/chalk-writer.ts` | Measures the laid-out text with a `Range`, rasterises the loaded webfont, stamps every ink pixel with the moment the tip reaches it, paints and draws the chalk stick. Reads its progress off the DOM (`--lsn-p`) — it owns no clock. |
 | The board layer | `src/app/app/lesson/[slug]/lesson-board.tsx` | Wraps a beat scene's view: the draw-on sweeps (Web Animations on `clip-path`), the pen tip, hand-drawn marks, notes, focus. Diffs the DOM against what it animated last. |
 | Scripts | `data/lessons/<slug>.json` | Scenes + narration + audio paths. Static imports, never fs reads (Vercel tracing). |
 | Registry + check resolution | `src/lib/lesson-load.ts` | `RAW_SCRIPTS` map; `usableCheckAnswer` / `resolveCheckScene` run the SAME eligibility gate as the practice `?qid=` deep link. |
@@ -302,28 +311,145 @@ vitest suite before it can ship.
   a clip falls back to the Auto timer). `--verify` transcribes them back as
   before.
 
-## Themes (2026-09-04)
+## Themes — the slate and the hand (2026-09-05)
 
 `theme?: 'slide' | 'chalk' | 'paper'` on the script (default `slide`).
 
+> **2026-09-05 — the slate + the writing hand.** Adrian reviewed a design probe
+> (three boards × five hands, written stroke by stroke) and picked: the
+> **JensenMath slate** for the board, **Kalam** for the prose, **Permanent
+> Marker** for titles — and rejected the 4-Sep chalk reveal outright: the
+> left-to-right mask was *"a curtain, not a hand"*. The rule he settled on is
+> one line long, and everything below is its consequence:
+>
+> ### **WORDS ARE WRITTEN. MATHS APPEARS.**
+>
+> Prose is drawn by a chalk tip travelling real pen paths. Typeset maths
+> (KaTeX) chalk-dusts in on its beat and is **never** written stroke by stroke —
+> the probe showed written maths reads uncanny, and a font's fake stroke order
+> is most obvious exactly where a student is looking hardest.
+
 | | `slide` | `chalk` | `paper` |
 |---|---|---|---|
-| Ground | the original white card | a dark green-black board, SVG-noise grain + a soft vignette (CSS only, no image files) | a light ruled sheet (repeating gradients, a faint red margin) |
-| Ink | navy / slate | chalk white `#f3efe3`; chalk-coloured tints for highlights and callout chips | navy / ink-blue |
-| Prose | DM Sans | **Caveat** (Google Fonts, hoisted `<link>` like the site's own faces) at 1.28× — the handwriting; maths stays KaTeX print | Caveat, navy |
-| Pen | portal amber (the cursor's sweep) | chalk amber `#f5c96a` — the pen tip, marks, notes, the ribbon rule | amber-dark |
-| Spoken words | 40 % → sweep underline → 85 % | **not on the board until said**: the sentence being spoken draws out left to right along the sweep (a `mask-image`, so its inline maths draws on with it); said ones stay | same as chalk |
+| Ground | the original white card | **the slate**: a dark green-grey radial board, fractal-noise grain blended `overlay` over it, a low-frequency chalk-dust haze, two erased ghosts, a vignette — CSS/SVG only, no image files | a light ruled sheet (repeating gradients, a faint red margin) |
+| Ink | navy / slate | chalk white `#f3f1e6`, and the sticks: cyan `#9de5f5` · yellow `#ffe58a` · pink `#ffc2d2` · green `#b6e8b0` | navy / ink-blue |
+| Prose | DM Sans | **Kalam**, 24 px on a 15 px base (`handScale` 1.6 — the size the probe read best at on a phone), **written** by the hand | Kalam, navy, 1.5× |
+| Titles | DM Sans | **Permanent Marker** at 30 px, written by the same hand | Permanent Marker |
+| Maths | KaTeX, navy | KaTeX, chalk white, **dusted in** — plus a grain mask that nibbles the glyph edge and a faint glow (`--lsn-math-scale` keeps it from reading small beside 24 px Kalam; worked lines run 19 px) | KaTeX, navy |
+| Highlight | a coloured pill | **a change of chalk**: the token's colour moves to the tone and a fresh stick leaves a soft glow — no box | a coloured pill |
+| Marks | amber, all kinds | one stick per kind: underline = **cyan** (pointing) · circle = **yellow** (attention) · box = **pink** (the answer), each masked with the same grain | ink-blue / amber / rose |
+| Notes | amber | yellow chalk, Kalam 21.6 px, **written** | amber-dark |
+| Spoken words | 40 % → sweep underline → 85 % | **written as they are said** (§ The hand) | same as chalk |
 | Graph | slate grid / navy curve | translucent grid, chalk curve | slate grid, navy curve |
 
 Tokens live in `lib/lesson-theme.ts` (`THEME_TOKENS` → `themeCssVars` →
 `--lsn-*` on the player root); the CSS reads only those and applies only under
-`[data-lsn-themed]`, so the slide cascade is untouched (tested: slide's
-tokens equal the literal values the player always used; chalk's ink : board
-contrast > 12 : 1). The header, dots, pills and Continue stay portal-styled
-in every theme; the ribbon becomes a ledge of the board. The phone header
-(§ below) is unchanged. `prefers-reduced-motion`: sweeps, pen, marks'
-draw, the focus zoom and the word mask all go — opacity states only, the
-focus keeps its dim.
+`[data-lsn-themed]`, so the slide cascade is untouched (tested: slide's tokens
+equal the literal values the player always used, and slide's three mark colours
+are all its one amber). The whole slate is **one element's background stack** —
+`background-blend-mode` does the probe's overlay pass — plus two pseudo-elements
+for the erased ghosts, so there are no texture divs to keep in step. The header,
+dots, pills and Continue stay portal-styled in every theme. The phone header
+(§ below) is unchanged: measured one row at 390 px.
+
+> ⚠ The themed prose sizes are **absolute px**, not `em`. `.lsn-hand` replaces
+> the element's own `text-[15px]` utility, so `calc(1em * scale)` would resolve
+> against the PARENT and every role would come out the same size. The three
+> roles the classes encode — body 15 px (`.lsn-ink-2.lsn-hand`), callout label
+> 13.5 px (bare `.lsn-hand`), note/caption 13 px (`.lsn-muted-2.lsn-hand`) —
+> are each multiplied by `handScale`.
+
+### The faces — self-hosted subsets
+
+`public/lessons/fonts/Kalam-Regular.subset.woff` (17.5 KB) and
+`PermanentMarker-Regular.subset.woff` (25.2 KB): ASCII + the punctuation the
+lesson prose uses, 127 characters, built by
+`scripts/lessons/subset-hand-fonts.py` (system `python3` has fontTools; no
+brotli on this Mac, hence WOFF not WOFF2). Licences and attribution:
+`public/lessons/fonts/ABOUT.txt` (Kalam = OFL, Permanent Marker = Apache-2.0).
+
+Self-hosted, **not** Google Fonts, for a load-bearing reason: the writer derives
+its pen paths by rasterising the very face the browser laid the text out with,
+so the file the CSS loads and the file the engine reads have to be one and the
+same. The player preloads both when the theme needs them and injects the
+`@font-face` rules itself (`HAND_FONT_FACES`); the slide theme loads nothing.
+
+### The hand — how a word gets written
+
+`src/lib/chalk-strokes.ts` (pure, tested) + `lesson/[slug]/chalk-writer.ts` (the
+browser half). **No new dependency**: the glyph outlines come from rasterising
+the loaded webfont with canvas `fillText`, so there is no font parser in the
+bundle and no second copy of the face.
+
+1. **Measure, never re-lay-out.** The text stays in the DOM — selectable,
+   screen-readable, wrapped by the browser. The writer walks it, takes each
+   character's box from a `Range`, and works out the baseline from the line box
+   and the canvas font metrics (`(rect.height − (asc+desc))/2 + asc`, the CSS
+   half-leading rule, so it is right whether the rect is the font box or the
+   line box). A resize simply re-measures.
+2. **Skeleton → strokes.** Each glyph is rasterised once at a 160 px em,
+   **Zhang–Suen thinned** to a 1-px skeleton, traced into chains (junction
+   clusters resolved, spurs pruned, collinear chains merged back through
+   junctions so a crossed "t" is a stem plus a bar, not four stubs), smoothed
+   and RDP-simplified, then **ordered**: longest stroke first, then left to
+   right, dots and accents last; a closed bowl starts at its top and turns
+   anticlockwise. Cached per `(font, weight, style, character)` for the visit.
+3. **A timeline.** Stroke duration grows with length but sub-linearly
+   (`11·L^0.72`), with pen moves between strokes, lifts between words, and
+   pauses that are longest between words, shorter between letters, shortest
+   between the strokes of one letter. ±1.3° tilt, ±1 px drift and ±2.5 % scale
+   per letter hide the fact that every "e" is the same glyph. Normalised to
+   0‥1.
+4. **Ink.** Every ink pixel is stamped with the time of the **nearest sample on
+   that letter's own pen path**, then roughened — the sampling coordinate is
+   displaced by value noise (a chalk-rough edge), the alpha modulated by a fine
+   and a coarse noise, and 4 % of grains dropped (the board's tooth). Painting
+   is one sorted walk per frame into a shared `ImageData`, `putImageData` with a
+   dirty rect.
+5. **The tip.** A chalk stick (`--lsn-tip`) with a contact glow while it is
+   touching, a shadow on the board, and an arc up when it lifts.
+6. **Maths is an atom.** A `.katex` island inside prose is skipped: the pen
+   lifts over it and it dusts in at the moment the pen reaches it.
+
+**Cost, measured in the browser run:** 17 ms to build a 19-character title
+(33 strokes, 17.4 k ink pixels) — the skeletons are the expensive step and are
+paid once per glyph per visit. The build happens when a write fires, not on a
+frame budget, and it never blocks the clip: the element is claimed (and its own
+glyphs made transparent) synchronously in the layout effect, so there is never a
+frame of bare text.
+
+**Where the timing comes from — the hand reads it off the DOM.** The writer owns
+no clock of its own:
+
+- A sentence the teacher's cursor is walking carries `--lsn-p`, the fraction of
+  its share of the beat's clip it has reached (set every frame beside the
+  existing `--sweep`; unlike `--sweep` it is also set for a silent Auto beat).
+  The hand draws exactly that far. So **a `write` at `at` runs over the
+  remainder of that clip** — the sentence windows already spread from the
+  fraction the prose appears at to the next cluster's, or to the clip's end —
+  and speed, pause and the timing sidecar all come free: at 2× the clip's
+  fraction advances twice as fast and the hand writes twice as fast; a paused
+  clip freezes the fraction and the tip stops mid-word.
+- Prose no cursor is walking (Manual pacing, a note, an equation's intro) is
+  driven by the board's own `wipeMs` / `sweepMs` clock, which honours pause too.
+- **Exact vs estimated** is unchanged from § Exact vs estimated: the beat
+  boundary is exact, `at` inside a clip is the author's estimate, and the hand
+  inherits both.
+
+**Fallback — the words simply appear.** The root carries `data-lsn-write="on"`
+only when the theme is a board theme, the browser has canvas + the
+`actualBoundingBox` text metrics, the faces have actually loaded, and reduced
+motion is off. Otherwise the CSS shows each sentence as it is reached, with no
+tip and no canvas. `prefers-reduced-motion` also drops the sweeps, marks' draw,
+the focus zoom and the dust animation.
+
+**Deferred — Adrian's own hand.** `buildWritePlan` takes strokes and does not
+care where they came from. A "record a phrase" mode in the AdrianMarker Pencil
+shell would emit exactly what step 2 produces — `{ strokes: [{ pts: [[x, y], …] }],
+glyph, word, size }` in em units with the origin on the baseline — and steps 3–5
+would play it unchanged. That is the only route where the letter ORDER is real
+(the honest weakness of a synthesised hand is that stroke order is guessed from
+geometry) and the only one where maths could be written naturally too.
 
 ## Scene schema (one JSON object per scene)
 
@@ -592,8 +718,19 @@ rule, a `move` that waits vs one that flies with its line, write-step marks
 tokens written, `clear` pen vs board), graph state, caption paragraphs,
 `proseGroup` (explicit reveal wins), a beat as the sub-step + derived
 narration + `beatClipPath`. `src/lib/lesson-theme.test.ts`: tokens per theme,
-slide = the original values, chalk/paper contrast, CSS-only textures, the
-`--lsn-*` emission. `lesson-script.test.ts` adds the beat validator negatives
+slide = the original values (its three mark colours all its one amber), the
+chalk contrast guards run against the slate's LIGHTEST point (`boardLit`: ink
+8.0 : 1, every chalk stick > 5.5 : 1), CSS-only textures with matching
+image / blend / size layer counts, the self-hosted face URLs, the
+`--lsn-*` emission. `src/lib/chalk-strokes.test.ts`: thinning a fat bar to one
+pixel per row and keeping a cross connected; a bar as one chain, a cross as two
+strokes THROUGH the junction, a closed loop as a cycle, spurs pruned; RDP and
+smoothing; writing order (longest first, left to right, dots last, a cycle from
+the top anticlockwise); the timeline (normalised, monotone, a longer word pause
+than a letter pause, a lift between words, sub-linear stroke duration,
+deterministic per phrase, an empty phrase → an empty plan); `penAt` at both
+ends, monotone along a stroke, lifted mid-hop, still during a pause; the noise
+helpers and the stroke easing. `lesson-script.test.ts` adds the beat validator negatives
 (narration beside beats, every reference kind, target shape, `at`
 monotonic, note length, one beat per check, the theme enum) and the proof
 lesson's shape (13 beat scenes, 40–55 beats ≤ 40 words, the action kinds on

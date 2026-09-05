@@ -1,0 +1,17 @@
+Handwriting faces for the lesson player's chalk / paper stages.
+Subset by scripts/lessons/subset-hand-fonts.py (ASCII + the punctuation the
+lesson prose uses). The subsets carry the upstream name table, so the
+licence notice below is the fonts' own:
+
+── Kalam-Regular.subset.woff
+   Family:    Kalam
+   Copyright: Copyright (c) 2014 Indian Type Foundry (info@indiantypefoundry.com)
+   Licence:   ?
+   Licence URL: http://scripts.sil.org/OFL
+
+── PermanentMarker-Regular.subset.woff
+   Family:    Permanent Marker
+   Copyright: Copyright (c) 2010 by Font Diner, Inc. All rights reserved.
+   Licence:   ?
+   Licence URL: http://www.apache.org/licenses/LICENSE-2.0
+
