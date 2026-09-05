@@ -1,8 +1,8 @@
 # SPEC — Student portal v2: subjects, Practice as the to-do list, the Notebook as the record
 
-**Status:** plan agreed in discussion with Adrian on 5–6 Sep 2026. **Nothing built yet
-except the data sort in §1 (every marked paper now carries a subject).** Build order in
-§9. Owner of the standard: Adrian. This file is the source of truth; `PORTAL.md`,
+**Status:** plan agreed with Adrian on 5–6 Sep 2026; **build started 6 Sep on dev** ("build
+all on dev now"). The data sort in §1 is done; the bot stamps every new run; the gate
+helper (`lib/portal-subjects.ts`) is in. Build order in §9. Owner of the standard: Adrian. This file is the source of truth; `PORTAL.md`,
 `SPEC-ASSIGN.md`, `SPEC-REMEDIATION.md` describe what exists today and stay as history.
 
 ## 0. Decisions already taken (Adrian, 6 Sep 2026)
@@ -77,12 +77,13 @@ beta lifts for Practice only when §1, §2 and §7 are live.
 `portal_generation_log` ledger; `lib/portal-find.ts` pure gates.
 
 **To build:**
-- **Three tiers, named on the card the student sees:** *same skill* (same topic and sub-skill, marks
-  within one — the default), *same chapter* (same topic, another sub-skill — offered
-  when tier 1 is empty, labelled), *made for you* (generated). The sub-skill comes from
-  the bank row's subgroup / question type; the embedding match becomes the candidate
-  pool the tiers filter.
-- Cap: generations **10 a day**; bank finds stay generous (today's per-day ledger cap on searches).
+- **Two tiers, named on the card the student sees** (Adrian, 6 Sep: "same chapter is not
+  enough — must be a similar question, testing similar concepts"): **Similar question**
+  (same topic AND same sub-skill / question type, marks within one) and **Made for you**
+  (generated when nothing similar exists). A same-chapter-only match is never offered.
+  The sub-skill comes from the bank row's subgroup / question type; the embedding match
+  is only the candidate pool the rule filters.
+- Cap: generations **10 a day** (Adrian, 6 Sep); bank finds stay generous (today's per-day ledger cap on searches).
 - A found question is inserted into Practice at once (`portal_assignments`, source
   `find`, tier stamped). The student sees nothing of caps or reviews except the cap
   message when they reach it.
@@ -114,10 +115,14 @@ angle"), `error_kind`, `subject`, `evidence[]` (run/attempt links with dates),
 **Rules:**
 - New evidence from a released paper or a graded attempt creates or darkens the entry
   (papers count double).
-- Two clean attempts on the skill, or one later paper with no loss on it → `light`.
-  A third → `fixed`, shown in a "fixed" line at the bottom so progress is visible.
+- **One** clean result on the skill → `light`; **two** → `fixed`, shown in a "fixed" line
+  at the bottom so progress is visible (Adrian, 6 Sep). A clean result is a graded
+  attempt right on that skill, or a later released paper with no loss on it (a paper
+  counts as two).
 - **Student taps "corrected"** → `student_fixed` (light, labelled "you marked this
-  fixed"). Any later evidence of the same mistake → `dark` again, labelled "came back".
+  fixed"); it becomes `fixed` after one clean result on any surface, or after 14 days
+  with no recurrence. Any later evidence of the same mistake, in any state → `dark`
+  again, labelled "came back".
 - Each dark entry links to its Practice items (§3); a Practice item done right counts as
   a clean attempt.
 - "This week's focus" (Home card, Notebook band, `lib/plan.ts`) is removed when the
@@ -157,8 +162,9 @@ reaches a student that Adrian has not seen once on the desk.
 ## 10. Still open
 
 - §1: a paper the rule cannot sort shows as "Other" until Adrian tags it — confirmed.
-- §6: wording proposed 6 Sep — Still happening / Getting better / Fixed.
-- §7: a question the sheet worker WROTE (when the bank had none that fit the mistake —
-  most sheets have some) — does it need Adrian's tick per question, or does the sheet's
-  Approve & release cover it, since he reads every question in the PDF? Proposed: the
-  release covers them.
+- §6: wording **agreed 6 Sep** — Still happening / Getting better / Fixed.
+- §7: **decided 6 Sep** — the sheet's Approve & release covers every question on it,
+  including the ones the worker wrote (Adrian reads them all in the PDF). Models today:
+  the sheet worker runs Claude Opus on plan usage (`claude -p --model opus`); the bank's
+  generated twins use Claude Opus 4.8 with a Claude Sonnet 4.6 blind gate
+  (`lib/models.js` in the bot).
