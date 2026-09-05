@@ -28,6 +28,9 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // Nightly plan-billed review of the day's bot questions (bot repo
   // scripts/day-review-nightly.sh, launchd com.adrianmath.day-review, 5 Sept 2026).
   'day-review':        { kind: 'interval', hours: 36, label: 'nightly 5am' },
+  // Nightly plan-billed review of yesterday's Find-a-question matches (website
+  // scripts/find-review, launchd com.adrianmath.findreview, 5:30am SGT, 6 Sept 2026).
+  'find-review':       { kind: 'interval', hours: 36, label: 'nightly 5:30am' },
   'question-mine':     { kind: 'interval', hours: 108, label: 'Mon & Thu 7am' },
   'figure-fitness':    { kind: 'interval', hours: 36, label: 'nightly 3:10am' },
   'generate-invoices': { kind: 'monthly', day: 14, graceDays: 1, label: '14th 7am' },

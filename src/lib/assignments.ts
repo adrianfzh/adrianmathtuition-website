@@ -18,6 +18,8 @@ export type AssignmentStatus = 'held' | 'assigned' | 'submitted' | 'marked' | 'r
 // / remediation drills (every row before this build), 'practice-again' = one
 // row per question the sheet worker handed back, 'find' = Find a question.
 export type AssignmentSource = 'adrian' | 'practice-again' | 'find';
+/** Find a question: which tier the match was (SPEC-PORTAL-V2 §4). */
+export type AssignmentFindTier = 'similar' | 'made-for-you';
 
 export type AssignmentRow = {
   id: string;
@@ -56,6 +58,8 @@ export type AssignmentRow = {
   question_text: string | null;
   answer_latex: string | null;
   marks: number | null;
+  /** Find a question tier shown on the card — non-null only for source 'find'. */
+  find_tier: AssignmentFindTier | null;
 };
 
 /** Opens in the in-browser practice grader (a bank question or a written one), as opposed to a worksheet's own page. */
@@ -158,6 +162,23 @@ export function validateAssignment(input: CreateAssignmentInput):
     ok: true,
     row: { airtable_student_id: studentId, kind: 'worksheet', question_id: null, title, topic, level, tier, note, reminder, source_run_id: sourceRunId, pdf_url: pdfUrl, pdf_source: pdfSource, due_on },
   };
+}
+
+/** The student's own finds (/app/find) — listed under "Found by you", never as "From Adrian". */
+export function isFound(row: Pick<AssignmentRow, 'source'>): boolean {
+  return row.source === 'find';
+}
+
+/** Rows Adrian actually sent — what the Home "From Adrian" card and its badge count. */
+export function fromAdrian<T extends Pick<AssignmentRow, 'source'>>(rows: T[]): T[] {
+  return rows.filter(r => r.source !== 'find');
+}
+
+/** The card label for a found question: "Similar question" / "Made for you". */
+export function findTierLabel(tier: AssignmentFindTier | string | null | undefined): string | null {
+  if (tier === 'similar') return 'Similar question';
+  if (tier === 'made-for-you') return 'Made for you';
+  return null;
 }
 
 /** Still needs the student's action (shows in the Home count / tab dot).

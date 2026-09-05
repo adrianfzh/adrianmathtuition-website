@@ -136,3 +136,10 @@ export async function markSubjectAccess(): Promise<import('./mark-subject-for-st
   if (!(await viewingAsStudent()) && (await isNotesAuthed())) return 'preview';
   return MARK_SUBJECT_OPEN_TO_STUDENTS ? 'open' : 'closed';
 }
+
+// 🔍 Find a question (/app/find, SPEC-PORTAL-V2 §4, 6 Sep 2026): photo or typed
+// question → a genuinely similar bank question or a made-for-you one, straight
+// into Practice. It replaced the students' "Request materials" door on Home, so
+// it is part of the marking-only surface. Flip to false to hide the page from
+// students in one place; Adrian's admin cookie still sees it.
+export const FIND_OPEN_TO_STUDENTS = true;

@@ -13,6 +13,19 @@ import {
   MAX_IMAGE_BASE64,
   MAX_SEARCH_TEXT,
   MAX_SEED_TEXT,
+  parseMarksFromText,
+  bankLevelSubject,
+  subjectGateCandidates,
+  classifyFindCandidates,
+  findLevelOptions,
+  resolveFindLevel,
+  previewOf,
+  primaryFiling,
+  candidateTopic,
+  FIND_TIERS,
+  FIND_TIER_LABEL,
+  type FindCandidate,
+  type FindFiling,
   type GenerationCountingClient,
 } from './portal-find';
 
@@ -134,8 +147,8 @@ describe('countGenerationsToday', () => {
     expect(await countGenerationsToday(broken, 'recA', now)).toBe(0);
   });
 
-  it('cap is five a day', () => {
-    expect(DAILY_GENERATE_CAP).toBe(5);
+  it('cap is ten a day (SPEC-PORTAL-V2 §4)', () => {
+    expect(DAILY_GENERATE_CAP).toBe(10);
   });
 
   // ── The finder cap (/similar + the /generate attempts backstop) ────────────
@@ -224,6 +237,12 @@ describe('parseGenerateBody', () => {
     expect(r.ok && r.value.kind).toBe('search');
     expect(r.ok && r.value.topic).toBeNull();
   });
+  it('findLogId survives only as a uuid', () => {
+    const withId = parseGenerateBody({ seedText: 'solve x', findLogId: UUID });
+    expect(withId.ok && withId.value.findLogId).toBe(UUID);
+    const junk = parseGenerateBody({ seedText: 'solve x', findLogId: 'row-1' });
+    expect(junk.ok && junk.value.findLogId).toBeNull();
+  });
   it('keeps a real topic', () => {
     const r = parseGenerateBody({ seedText: 'solve x', topic: ' Quadratic Equations ' });
     expect(r.ok && r.value.topic).toBe('Quadratic Equations');
@@ -283,5 +302,181 @@ describe('extractQuestionId', () => {
     expect(extractQuestionId({})).toBeNull();
     expect(extractQuestionId(null)).toBeNull();
     expect(extractQuestionId('id')).toBeNull();
+  });
+});
+
+// ── Find a question: the tier rule (SPEC-PORTAL-V2 §4) ───────────────────────
+describe('parseMarksFromText', () => {
+  it('sums bracketed part marks', () => {
+    expect(parseMarksFromText('Find x. [2] Hence find y. [3]')).toBe(5);
+    expect(parseMarksFromText('Solve the equation. [ 4 ]')).toBe(4);
+  });
+  it('reads "(4 marks)" / "4 marks" when there are no brackets', () => {
+    expect(parseMarksFromText('Solve … (4 marks)')).toBe(4);
+    expect(parseMarksFromText('Total 6 Marks')).toBe(6);
+  });
+  it('null when nothing is printed, zero, a whole page (>20), or no text', () => {
+    expect(parseMarksFromText('Solve x^2 = 4')).toBeNull();
+    expect(parseMarksFromText('[0]')).toBeNull();
+    expect(parseMarksFromText('[8] [8] [8]')).toBeNull();
+    expect(parseMarksFromText(null)).toBeNull();
+    expect(parseMarksFromText('')).toBeNull();
+  });
+});
+
+describe('bankLevelSubject + subjectGateCandidates', () => {
+  it('maps every bank level variant onto the three subjects; Sec 1–2 sit in the O-Level family', () => {
+    expect(bankLevelSubject('AM')).toBe('A Math');
+    expect(bankLevelSubject('S3_AM')).toBe('A Math');
+    expect(bankLevelSubject('AM_NA')).toBe('A Math');
+    expect(bankLevelSubject('EM')).toBe('E Math');
+    expect(bankLevelSubject('S3_EM_NT')).toBe('E Math');
+    expect(bankLevelSubject('S1')).toBe('E Math');
+    expect(bankLevelSubject('S2')).toBe('E Math');
+    expect(bankLevelSubject('JC1')).toBe('H2 Math');
+    expect(bankLevelSubject('JC2_H1')).toBe('H2 Math');
+    expect(bankLevelSubject('IB')).toBeNull();
+    expect(bankLevelSubject(null)).toBeNull();
+  });
+  it('drops candidates outside the student’s subjects, keeps the order of the rest', () => {
+    const { kept, dropped } = subjectGateCandidates(
+      [{ id: 'a', level: 'AM' }, { id: 'b', level: 'EM' }, { id: 'c', level: 'JC2' }, { id: 'd', level: null }],
+      ['E Math'],
+    );
+    expect(kept.map((k) => k.id)).toEqual(['b']);
+    expect(dropped.map((d) => d.id)).toEqual(['a', 'c', 'd']);
+    expect(dropped[0].reason).toMatch(/A Math/);
+    expect(dropped[2].reason).toMatch(/unknown bank level/);
+  });
+});
+
+const TAN: FindFiling = { id: 1, topic: 'Circles', name: 'Tangent at a Point on the Circle', primary: true };
+const GEN: FindFiling = { id: 2, topic: 'Circles', name: 'Standard and general form of a circle', primary: true };
+const CHORD: FindFiling = { id: 3, topic: 'Circles', name: 'Chords and where a line cuts a circle', primary: true };
+const AREA: FindFiling = { id: 9, topic: 'Coordinate Geometry', name: 'Area of polygon / shoelace / triangle', primary: true };
+
+function cand(id: string, filings: FindFiling[], o: Partial<FindCandidate> = {}): FindCandidate {
+  return { id, preview: 'q', level: 'AM', topics: ['Circles'], marks: 4, filings, ...o };
+}
+
+describe('classifyFindCandidates — the tier rule', () => {
+  it('two candidates sharing a sub-skill are similar; the other sub-skill is rejected with its reason', () => {
+    const r = classifyFindCandidates([cand('a', [TAN]), cand('b', [GEN]), cand('c', [TAN])]);
+    expect(r.similar.map((c) => c.id)).toEqual(['a', 'c']);
+    expect(r.reference).toMatchObject({ subgroupId: 1, subgroupName: TAN.name, topic: 'Circles', marks: 4, marksFrom: 'anchor' });
+    const b = r.verdicts.find((v) => v.id === 'b')!;
+    expect(b.tier).toBeNull();
+    expect(b.reason).toMatch(/different sub-skill/);
+    expect(r.verdicts[0].reason).toMatch(/shares “Tangent at a Point on the Circle” \(Circles\) with 1 other match$/);
+  });
+  it('one candidate alone is never similar — the sub-skill needs corroboration', () => {
+    const r = classifyFindCandidates([cand('a', [TAN])]);
+    expect(r.similar).toEqual([]);
+    expect(r.verdicts[0].reason).toMatch(/corroboration/);
+    expect(r.reference.subgroupId).toBe(1);
+  });
+  it('three different sub-skills of one topic → nothing similar (same chapter is not enough)', () => {
+    const r = classifyFindCandidates([cand('a', [TAN]), cand('b', [GEN]), cand('c', [CHORD])]);
+    expect(r.similar).toEqual([]);
+    expect(r.verdicts.every((v) => v.tier === null)).toBe(true);
+  });
+  it('unfiled candidates are rejected and cannot vote', () => {
+    const r = classifyFindCandidates([cand('a', []), cand('b', [])]);
+    expect(r.similar).toEqual([]);
+    expect(r.verdicts.every((v) => /not filed/.test(v.reason))).toBe(true);
+    expect(r.reference.subgroupId).toBeNull();
+  });
+  it('marks: the student’s printed marks are the reference; more than one apart is rejected', () => {
+    const r = classifyFindCandidates(
+      [cand('a', [TAN], { marks: 4 }), cand('b', [TAN], { marks: 7 }), cand('c', [TAN], { marks: 5 })],
+      { studentMarks: 5 },
+    );
+    expect(r.similar.map((c) => c.id)).toEqual(['a', 'c']);
+    expect(r.reference).toMatchObject({ marks: 5, marksFrom: 'student' });
+    expect(r.verdicts[1].reason).toMatch(/7 marks vs 5/);
+  });
+  it('marks: without printed marks the top-ranked member anchors; unknown bank marks are rejected', () => {
+    const r = classifyFindCandidates([cand('a', [TAN], { marks: 6 }), cand('b', [TAN], { marks: null }), cand('c', [TAN], { marks: 4 })]);
+    expect(r.similar.map((c) => c.id)).toEqual(['a']);
+    expect(r.reference).toMatchObject({ marks: 6, marksFrom: 'anchor' });
+    expect(r.verdicts[1].reason).toMatch(/marks unknown/);
+    expect(r.verdicts[2].reason).toMatch(/4 marks vs 6/);
+  });
+  it('no marks anywhere → the marks check is skipped', () => {
+    const r = classifyFindCandidates([cand('a', [TAN], { marks: null }), cand('b', [TAN], { marks: null })]);
+    expect(r.similar.map((c) => c.id)).toEqual(['a', 'b']);
+    expect(r.reference.marksFrom).toBeNull();
+  });
+  it('a secondary filing counts only when the question is tagged with that topic', () => {
+    const passing = cand('b', [AREA, { ...TAN, primary: false }], { topics: ['Coordinate Geometry'] });
+    const tagged = cand('c', [AREA, { ...TAN, primary: false }], { topics: ['Coordinate Geometry', 'Circles'] });
+    const r = classifyFindCandidates([cand('a', [TAN]), passing, tagged]);
+    expect(r.reference.subgroupId).toBe(1);
+    expect(r.similar.map((c) => c.id)).toEqual(['a', 'c']);
+    expect(r.verdicts[1].reason).toMatch(/in passing/);
+  });
+  it('a tie between sub-skills goes to the one seen first in bot order', () => {
+    const r = classifyFindCandidates([cand('a', [GEN]), cand('b', [TAN]), cand('c', [TAN]), cand('d', [GEN])]);
+    expect(r.reference.subgroupId).toBe(2);
+    expect(r.similar.map((c) => c.id)).toEqual(['a', 'd']);
+  });
+  it('never emits a tier other than similar; the two tiers and their labels are fixed', () => {
+    const r = classifyFindCandidates([cand('a', [TAN]), cand('b', [GEN])]);
+    for (const v of r.verdicts) expect([null, 'similar']).toContain(v.tier);
+    expect(FIND_TIERS).toEqual(['similar', 'made-for-you']);
+    expect(FIND_TIER_LABEL.similar).toBe('Similar question');
+    expect(FIND_TIER_LABEL['made-for-you']).toBe('Made for you');
+  });
+  it('empty pool → empty result', () => {
+    expect(classifyFindCandidates([])).toEqual({
+      similar: [], verdicts: [],
+      reference: { subgroupId: null, subgroupName: null, topic: null, marks: null, marksFrom: null },
+    });
+  });
+});
+
+describe('primaryFiling / candidateTopic', () => {
+  it('two primary filings → the one matching the row’s own topic tag wins the headline', () => {
+    const c = cand('a', [AREA, TAN], { topics: ['Circles', 'Coordinate Geometry'] });
+    expect(primaryFiling(c)).toBe(TAN);
+    expect(candidateTopic(c)).toBe('Circles');
+  });
+  it('no primary → first filing; no filing → first tag; nothing → null', () => {
+    expect(primaryFiling(cand('a', [{ ...GEN, primary: false }, { ...TAN, primary: false }]))).toEqual({ ...GEN, primary: false });
+    expect(candidateTopic(cand('a', [], { topics: ['Vectors'] }))).toBe('Vectors');
+    expect(candidateTopic(cand('a', [], { topics: [] }))).toBeNull();
+  });
+});
+
+describe('findLevelOptions / resolveFindLevel', () => {
+  it('Sec 4 with both subjects → E Math + A Math; E Math only → E Math; A Math only → A Math', () => {
+    expect(findLevelOptions({ level: 'Sec 4', subjects: ['E Math', 'A Math'] })).toEqual([{ key: 'EM', label: 'E Math' }, { key: 'AM', label: 'A Math' }]);
+    expect(findLevelOptions({ level: 'Sec 4', subjects: ['E Math'] })).toEqual([{ key: 'EM', label: 'E Math' }]);
+    expect(findLevelOptions({ level: 'Sec 4', subjects: ['A Math'] })).toEqual([{ key: 'AM', label: 'A Math' }]);
+  });
+  it('Sec 3 collapses the S3_* and Sec 4 keys onto the two families', () => {
+    expect(findLevelOptions({ level: 'Sec 3', subjects: ['E Math', 'A Math'] }).map((o) => o.key)).toEqual(['EM', 'AM']);
+  });
+  it('JC → H2 only; Sec 1 → Sec 1; an account with no subjects listed keeps its level family', () => {
+    expect(findLevelOptions({ level: 'JC2', subjects: ['H2 Math'] })).toEqual([{ key: 'JC', label: 'H2 Math' }]);
+    expect(findLevelOptions({ level: 'Sec 1', subjects: ['Math'] })).toEqual([{ key: 'S1', label: 'Sec 1' }]);
+    expect(findLevelOptions({ level: 'Sec 4', subjects: null }).map((o) => o.key)).toEqual(['EM', 'AM']);
+  });
+  it('resolveFindLevel keeps a valid pick, else the first option', () => {
+    const acct = { level: 'Sec 4', subjects: ['E Math', 'A Math'] };
+    expect(resolveFindLevel('AM', acct)).toBe('AM');
+    expect(resolveFindLevel('JC', acct)).toBe('EM');
+    expect(resolveFindLevel(null, acct)).toBe('EM');
+  });
+});
+
+describe('previewOf', () => {
+  it('stem + part texts with labels, never answers, capped with an ellipsis', () => {
+    expect(previewOf({
+      question_text: 'Given f(x).',
+      parts: [{ label: 'a', text: 'Find f(2).', answer: '7' }, { label: 'b', text: '', subparts: [{ label: 'i', text: 'Show it.' }] }],
+    })).toBe('Given f(x). (a) Find f(2). (i) Show it.');
+    expect(previewOf({ question_text: 'x'.repeat(300) }).length).toBe(201);
+    expect(previewOf({ question_text: null, parts: 'junk' })).toBe('');
   });
 });
