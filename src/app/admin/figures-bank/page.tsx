@@ -113,7 +113,10 @@ export default function FiguresPage() {
   const [solBusy, setSolBusy] = useState('');
   const [solErr, setSolErr] = useState<Record<string, string>>({});
   const [fits, setFits] = useState<FitItem[]>([]);
-  const [fitTotals, setFitTotals] = useState({ held: 0, blocking: 0, cosmetic: 0 });
+  const [fitTotals, setFitTotals] = useState({ held: 0, blocking: 0, cosmetic: 0, sentToRepair: 0 });
+  // Rows already sent to repair are decided, so they leave the working lane.
+  // `?sent=1` shows them — the count is a door, never a disappearance.
+  const [fitSent, setFitSent] = useState(false);
   const [fitBusy, setFitBusy] = useState('');
   const [fitErr, setFitErr] = useState<Record<string, string>>({});
   // ?flagged=1 opens the review directly — the tab buttons are easy to miss,
@@ -168,7 +171,7 @@ export default function FiguresPage() {
       const qs = tab === 'solutions'
         ? `kind=solution&scope=${solScope}&page=${page}&pageSize=${SOL_PAGE}`
         : tab === 'fitness'
-          ? `kind=fitness&page=${page}&pageSize=${FIT_PAGE}`
+          ? `kind=fitness&page=${page}&pageSize=${FIT_PAGE}${fitSent ? '&sent=1' : ''}`
           : tab === 'flagged'
             ? `flagged=1&page=${page}&pageSize=20`
             : `page=${page}&pageSize=${pageSize}${level ? `&level=${level}` : ''}`;
@@ -193,7 +196,7 @@ export default function FiguresPage() {
         localStorage.setItem(lsKey(level), String(page));
       }
     } finally { setLoading(false); }
-  }, [tab, page, pageSize, level, solScope]);
+  }, [tab, page, pageSize, level, solScope, fitSent]);
   useEffect(() => { if (authed) load(); }, [authed, load]);
 
   /** "Looks fine" — mark the flag fixed, which releases the question back into
@@ -353,9 +356,11 @@ export default function FiguresPage() {
       }
       setFits((cur) => cur.filter((x) => x.path !== it.path));
       setFitTotals((t) => ({
+        ...t,
         held: Math.max(0, t.held - 1),
         blocking: Math.max(0, t.blocking - (it.severity === 'blocks-answering' ? 1 : 0)),
         cosmetic: Math.max(0, t.cosmetic - (it.severity === 'cosmetic' ? 1 : 0)),
+        sentToRepair: t.sentToRepair + (action === 'repair' && !fitSent ? 1 : 0),
       }));
     } catch {
       setFitErr((e) => ({ ...e, [it.path]: 'network error — nothing was written' }));
@@ -709,13 +714,21 @@ export default function FiguresPage() {
       {tab === 'fitness' && (
         <>
           <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '8px 12px', marginBottom: 10, fontSize: 13.5 }}>
-            <strong>{fitTotals.held} question figures</strong> were held by the fitness pass —
+            <strong>{fitTotals.held} question figures</strong>{fitSent ? ' already sent to repair' : ' still need a look'} —
             {fitTotals.blocking} rated as blocking answering, {fitTotals.cosmetic} cosmetic.
+            {fitTotals.sentToRepair > 0 && (
+              <button onClick={() => { setFitSent((v) => !v); setPage(0); }}
+                style={{ marginLeft: 8, fontSize: 12.5, fontWeight: 700, color: '#0369a1', background: '#fff',
+                  border: '1px solid #bfdbfe', borderRadius: 999, padding: '2px 10px', cursor: 'pointer' }}>
+                {fitSent ? '← back to the queue' : `🛠 ${fitTotals.sentToRepair} sent to repair`}
+              </button>
+            )}
             <div style={{ marginTop: 4, color: C.muted }}>
               These are held, not open, so the questions keep serving while you look. <em>Hide from
               students</em> withdraws the question from the kiosk and practice pools until the figure
               is repaired. <em>Figure is fine</em> keeps it serving and closes the row. <em>Send to
-              repair</em> leaves it exactly as held, for the repair queue.
+              repair</em> leaves the figure exactly as held — still blocked, still serving the
+              question — and moves the row out of this queue onto the 🛠 list above.
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
@@ -728,7 +741,7 @@ export default function FiguresPage() {
             </span>
           </div>
           {!loading && fits.length === 0 && (
-            <div style={{ color: C.muted, fontSize: 14, padding: 20, textAlign: 'center' }}>Nothing held — every fitness flag has been judged.</div>
+            <div style={{ color: C.muted, fontSize: 14, padding: 20, textAlign: 'center' }}>{fitSent ? 'Nothing sent to repair yet.' : 'Nothing held — every fitness flag has been judged.'}</div>
           )}
           {fits.map((it) => {
             const busy = fitBusy === it.path;

@@ -501,7 +501,14 @@ async function fitnessLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
     .eq('kind', 'question').eq('status', 'held')
     .order('created_at', { ascending: false }).limit(1000);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  const all = flags ?? [];
+  const held = flags ?? [];
+
+  // Rows Adrian has already sent to repair stay `held` on purpose — the render
+  // gate must keep blocking them — but they are DECIDED, so they leave the lane
+  // he is working. Counted, never silently dropped: `?sent=1` lists them.
+  const wantSent = sp.get('sent') === '1';
+  const all = held.filter((f) => sentToRepair(f.note as string | null) === wantSent);
+  const sentCount = held.filter((f) => sentToRepair(f.note as string | null)).length;
 
   let blocking = 0;
   let cosmetic = 0;
@@ -541,7 +548,10 @@ async function fitnessLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
     };
   });
 
-  return NextResponse.json({ items, page, pageSize, totals: { held: all.length, blocking, cosmetic } });
+  return NextResponse.json({
+    items, page, pageSize,
+    totals: { held: all.length, blocking, cosmetic, sentToRepair: sentCount },
+  });
 }
 
 const FITNESS_PREFIXES: Record<string, string> = {
@@ -549,6 +559,16 @@ const FITNESS_PREFIXES: Record<string, string> = {
   accept: 'Adrian: figure is fine · ',
   repair: 'Adrian: repair · ',
 };
+
+/** Has this row already been sent to repair? The lane hides these (below), and
+ *  the POST refuses to prefix a second time. `hide`/`accept` change `status`, so
+ *  they leave the lane on their own; `repair` deliberately does not, and without
+ *  this marker the row reappeared on every refresh (Adrian, 5 Sep 2026:
+ *  "i thought i had already hit send this for repair, it is still showing up").
+ *  74 of the 221 held rows were in that state — a third of the lane was work he
+ *  had already done. */
+export const SENT_TO_REPAIR = FITNESS_PREFIXES.repair;
+const sentToRepair = (note: string | null | undefined) => (note ?? '').startsWith(SENT_TO_REPAIR);
 
 async function fitnessLanePost(
   supa: SupabaseClient, body: Record<string, unknown>, path: string, questionId: string,
@@ -563,7 +583,17 @@ async function fitnessLanePost(
   if (!rows?.length) return step('read', 'no held question flag at that path');
   if (rows[0].question_id !== questionId) return step('read', 'questionId does not match the flag');
 
-  const note = `${prefix}${(rows[0].note as string | null) ?? ''}`.slice(0, 500);
+  // Idempotent, and the reason is never trimmed. The old `.slice(0, 500)` was a
+  // code-only cap (the column is text — the longest note in the table is 1103),
+  // and because the prefix goes on the FRONT, every tap pushed the fitness
+  // pass's own evidence off the END: Anglican High 2023 AM P1 Q15 lost its
+  // source citation mid-word ("… page 97 (PD"). A second tap would eat 17 more
+  // characters, so the un-actionable UI was quietly destroying the reason.
+  const prior = (rows[0].note as string | null) ?? '';
+  if (action === 'repair' && sentToRepair(prior)) {
+    return NextResponse.json({ ok: true, status: 'held', note: prior, alreadySent: true });
+  }
+  const note = prior.startsWith(prefix) ? prior : `${prefix}${prior}`;
   const patch: Record<string, unknown> = { note };
   if (action === 'hide') patch.status = 'open';
   if (action === 'accept') patch.status = 'fixed';

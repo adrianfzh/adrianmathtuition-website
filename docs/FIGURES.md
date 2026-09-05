@@ -192,6 +192,32 @@ in the queue without touching what students see). None of the three writes to
 the bucket or the question row — this lane is a judgment call, not a repair
 tool.
 
+**The lane must key off the note, not just the status** (5 Sep 2026). `hide` and
+`accept` change `status`, so those rows leave the lane on their own. `repair`
+deliberately does not — and the lane listed every `held` row, so a figure Adrian
+had already sent to repair came straight back on the next refresh. The client
+removed the card optimistically, so the tap *looked* like it worked and only the
+refresh betrayed it; its comment even claimed "the row moves on to the actual
+repair queue", and no such queue exists. **74 of the 221 held rows were work he
+had already done.** Adrian: *"i thought i had already hit send this for repair,
+it is still showing up on fitness tab after i refresh"*. Fixed by filtering the
+lane on the `Adrian: repair · ` prefix — status stays `held`, so the render gate
+is untouched and nothing can fail open — with `?sent=1` + a header count as the
+door back to them.
+
+Two things that made it worse, both fixed with it:
+- The POST **prefixed unconditionally**, so a second tap (which the invisible
+  first tap invites) wrote `Adrian: repair · Adrian: repair · …`. It is now
+  idempotent and returns `alreadySent` without writing. One row had already
+  stacked twice.
+- The note was **`.slice(0, 500)`** — a code-only cap (the column is `text`; the
+  longest note in the table is 1103). Because the prefix goes on the FRONT, each
+  tap pushed the fitness pass's own evidence off the END: Anglican High 2023 AM
+  P1 Q15 lost its source citation mid-word ("… page 97 (PD"), and it is **not
+  recoverable** — `image_watermark_notes` keeps only the verdict (`fitness:
+  incomplete 2026-09-04`), never the reason. The cap is gone. **A verdict
+  prefix must never be able to truncate the evidence it is commenting on.**
+
 ### Ingestion gate + nightly catch-up (3 Sep 2026)
 
 The sweeps above are history work. Papers are being extracted every day, so
