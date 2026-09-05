@@ -2,7 +2,7 @@
 # ---------------------------------------------------------------------------
 # Telegram worksheet worker — wrapper for launchd (com.adrianmath.worksheetworker).
 #
-# Polls the /make queue (SPEC-WORKSHEET-MENU.md; Adrian's Telegram menu, kinds
+# Polls the /ws queue (SPEC-WORKSHEET-MENU.md; Adrian's Telegram menu, kinds
 # 1 · 2 · 4 · 5) and, only when a job is waiting, starts a headless Claude Code
 # session that builds that KIND of worksheet with the skill that owns it —
 # revision-worksheet, copy-revision-worksheet-with-different-practice (notes or
