@@ -19,6 +19,7 @@ The deep documentation (bug archaeology, invariants, field tables) was split out
 | Invoices, deferred adjustments, Resend email delivery | [`docs/INVOICES.md`](docs/INVOICES.md) |
 | `/tools` static pages, house style, photo-extraction service (`/api/tools/vision`) | [`docs/TOOLS.md`](docs/TOOLS.md) |
 | Student Portal | [`PORTAL.md`](PORTAL.md) + [`PLAN-PORTAL-SOLO.md`](PLAN-PORTAL-SOLO.md) |
+| **Portal v2 plan** — subjects on every paper (AM/EM pills, per-subject tiles, the subject gate), Practice as the to-do list, the finder's similarity tiers, the Notebook's fading mistakes list, Practice Again handing back its questions (agreed 6 Sep 2026; only the paper sort is done) | [`SPEC-PORTAL-V2.md`](SPEC-PORTAL-V2.md) |
 | In-browser Pencil annotation spec | [`SPEC-ANNOTATE.md`](SPEC-ANNOTATE.md) |
 | Subject expansion — Science / English / Chinese for the portal (research + phasing; nothing built yet) | [`SPEC-SUBJECTS.md`](SPEC-SUBJECTS.md) |
 | **Turning a marked paper into work a student does** — the per-student teaching round (vet → diagnose → pick a wave → author the sheet → amend → release paper+sheet together → hand-in → vet), its four human checkpoints and binding rules | [`SPEC-TEACHING-CYCLE.md`](SPEC-TEACHING-CYCLE.md) — the CURRENT flow; [`SPEC-REMEDIATION.md`](SPEC-REMEDIATION.md) is the portal-drills lane, built but deliberately not in use |
