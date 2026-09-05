@@ -4,9 +4,8 @@
 // Pure helpers live in lib/assignments.ts; this file is the I/O.
 import { getSupabaseAdmin } from './supabase';
 import { portalIdentity, sessionAccount } from './portal-auth';
-import { pendingCount, type AssignmentRow } from './assignments';
-import { paperSubjectFromName, subjectAllowed, type SubjectAccount } from './portal-subjects';
 import { pendingCount, STUDENT_HIDDEN_STATUSES, type AssignmentRow } from './assignments';
+import { paperSubjectFromName, subjectAllowed, type SubjectAccount } from './portal-subjects';
 
 // PostgREST `not.in` filter for the statuses a student must never see. 'held'
 // (6 Sep 2026) joined 'revoked' here: a Practice Again row exists from the
