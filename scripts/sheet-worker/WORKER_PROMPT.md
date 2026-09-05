@@ -92,7 +92,10 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
    **`diagnosis` is what makes the marked paper's page 1 agree with your
    sheet** (Adrian, 2 Sep 2026: *"the sheet's diagnosis should drive the cover,
    not the cover the sheet"*). One entry per section of the sheet, **in the
-   sheet's order**: `title` = the section heading verbatim, `marks` = marks lost
+   sheet's order**: `title` = the section heading verbatim — and a heading names
+   the TOOL the student must reach for, never the task type (Adrian, 5 Sep 2026:
+   "Using f(x) = divisor × quotient + remainder", not "Factorising A Cubic When
+   One Factor Is Given"; the situation goes in the blue key-move line) —, `marks` = marks lost
    to it on THIS paper, `questions` = where it showed (`"Q11(a)"`, `"Q20"`),
    `why` = one sentence a student can check against their script (TeX allowed),
    `tier` = `teach` (① Example → Practice), `show` (② the one-line slips — no

@@ -191,6 +191,15 @@ teasing one-liner, not a filing label with a "—" explainer. An Example may car
 the skill in its own heading, followed by ONE blue key-move line ("Always Form
 Chain Rule") echoed in blue as the `←` where it fires.
 
+**The heading names the TOOL, not the task** (Adrian, 5 Sep 2026, Sijia's AM
+TYS sheet): "Factorising A Cubic When One Factor Is Given" was wrong; the concept
+she must learn is **"Using f(x) = divisor × quotient + remainder"** — the identity
+he teaches on the board, which also covers unknown-coefficient divisors,
+remainders and "find a and b". A task-shaped name describes one situation; the
+tool survives to the next paper. Write the heading in the form he uses in class
+("Using …", "… = … × … + …") and put the situation in the blue key-move line
+under it. The same string goes into the `diagnosis` title (it drives the cover).
+
 ## Step 3 — propose ONE wave, and STOP
 
 Cluster into 6–8 teachable skills for a single sheet. Everything else is
