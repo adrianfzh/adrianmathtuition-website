@@ -503,12 +503,20 @@ async function fitnessLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   const held = flags ?? [];
 
-  // Rows Adrian has already sent to repair stay `held` on purpose — the render
-  // gate must keep blocking them — but they are DECIDED, so they leave the lane
-  // he is working. Counted, never silently dropped: `?sent=1` lists them.
-  const wantSent = sp.get('sent') === '1';
-  const all = held.filter((f) => sentToRepair(f.note as string | null) === wantSent);
-  const sentCount = held.filter((f) => sentToRepair(f.note as string | null)).length;
+  // A decided row stays `held` on purpose — the render gate must keep blocking
+  // it — but it leaves the lane Adrian is working. Counted, never silently
+  // dropped: `?view=repair` / `?view=table` list them (`?sent=1` is the old
+  // spelling of `view=repair` and still works).
+  const viewParam = sp.get('view');
+  const view = viewParam && DECIDED[viewParam] ? viewParam
+    : (sp.get('sent') === '1' ? 'repair' : null);
+  const all = held.filter((f) => decidedKind(f.note as string | null) === view);
+  const decidedCounts: Record<string, number> = {};
+  for (const k of Object.keys(DECIDED)) decidedCounts[k] = 0;
+  for (const f of held) {
+    const k = decidedKind(f.note as string | null);
+    if (k) decidedCounts[k] += 1;
+  }
 
   let blocking = 0;
   let cosmetic = 0;
@@ -550,7 +558,10 @@ async function fitnessLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
 
   return NextResponse.json({
     items, page, pageSize,
-    totals: { held: all.length, blocking, cosmetic, sentToRepair: sentCount },
+    totals: {
+      held: all.length, blocking, cosmetic,
+      sentToRepair: decidedCounts.repair, tables: decidedCounts.table,
+    },
   });
 }
 
@@ -558,7 +569,24 @@ const FITNESS_PREFIXES: Record<string, string> = {
   hide: 'Adrian: hide · ',
   accept: 'Adrian: figure is fine · ',
   repair: 'Adrian: repair · ',
+  table: 'Adrian: table · ',
 };
+
+/** The verdicts that DECIDE a row without changing its status. Both leave the
+ *  working queue and wait on their own list.
+ *
+ *  `table` exists because some of these "figures" are not figures — they are a
+ *  printed TABLE that belongs in `question_text` as text, so it reflows on a
+ *  phone, is searchable, and needs no image at all. Adrian, 5 Sep 2026, on
+ *  Broadrick 2023 P1 Q15 (a pattern table stored as a PNG): "this image is of a
+ *  table, we should just extract the table and put it in the question itself,
+ *  instead of an image — but i have no way to say that in the page". */
+const DECIDED: Record<string, string> = {
+  repair: FITNESS_PREFIXES.repair,
+  table: FITNESS_PREFIXES.table,
+};
+const decidedKind = (note: string | null | undefined) =>
+  Object.keys(DECIDED).find((k) => (note ?? '').startsWith(DECIDED[k])) ?? null;
 
 /** Has this row already been sent to repair? The lane hides these (below), and
  *  the POST refuses to prefix a second time. `hide`/`accept` change `status`, so
@@ -590,7 +618,7 @@ async function fitnessLanePost(
   // source citation mid-word ("… page 97 (PD"). A second tap would eat 17 more
   // characters, so the un-actionable UI was quietly destroying the reason.
   const prior = (rows[0].note as string | null) ?? '';
-  if (action === 'repair' && sentToRepair(prior)) {
+  if (DECIDED[action] && prior.startsWith(DECIDED[action])) {
     return NextResponse.json({ ok: true, status: 'held', note: prior, alreadySent: true });
   }
   const note = prior.startsWith(prefix) ? prior : `${prefix}${prior}`;
