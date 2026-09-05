@@ -1151,6 +1151,19 @@ Vercel Blob addresses and the personal Dropbox. One module owns it: **`lib/stude
   intended home).
 
 
+### The red pen — annotation standard (5 Sep 2026)
+
+**[`SPEC-RED-PEN.md`](../SPEC-RED-PEN.md)** is the standard for what the marked page
+says and where: notes beside the line first (the side column is the fallback), circle +
+fix beside the mistake, one verdict line per lost part in Adrian's voice, "From your
+line" continuations instead of solutions from scratch, the clarity rule (one idea, the
+student's numbers, no universal laws), the second-pen and missing-bracket rulings, and
+solution placement (lost parts only, where the part lives, once, in blank space with its
+figure). Phase 1 shipped in the bot on 5 Sep (verdict-owned glyphs, per-part coarse
+marks, per-photo solution cut, `notation_slip`, `is_second_pen`, the `careless` kind —
+mirrored in `lib/error-kinds.ts`); phase 2 is behind the bot's `MARKING_PEN_V2` flag
+and a one-paper trial on the desk.
+
 ### Leak test — run it after touching the door or any ownership filter
 
 `scripts/leak-test/leaktest.cjs` is the two-account leak test PLAN-PORTAL-SOLO.md
