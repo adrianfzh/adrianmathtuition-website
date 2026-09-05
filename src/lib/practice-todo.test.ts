@@ -13,7 +13,7 @@ function row(over: Partial<AssignmentRow> = {}): AssignmentRow {
     topic: null, level: null, tier: null, note: null, reminder: null, source_run_id: null, pdf_url: null, pdf_source: null,
     due_on: null, status: 'assigned', attempt_id: null, run_id: null, score: null, out_of: null,
     created_at: `2026-09-0${(n % 9) + 1}T00:00:00Z`, submitted_at: null, marked_at: null, revoked_at: null,
-    source: 'adrian', skill_title: null, subject: null, sheet_job_id: null, sheet_index: null,
+    source: 'adrian', find_tier: null, skill_title: null, subject: null, sheet_job_id: null, sheet_index: null,
     question_text: null, answer_latex: null, marks: null,
     ...over,
   };
