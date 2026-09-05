@@ -60,11 +60,13 @@ FAMILY = {
 NA_LEVELS = ["EM_NA", "S3_EM_NA"]
 FOLDER = {"S1": "S1", "S2": "S2", "S3_EM": "EM", "EM": "EM",
           "S3_AM": "AM", "AM": "AM", "JC1": "JC", "JC2": "JC"}
+# The level line as Adrian writes it in his own sheets' headers — "Sec 2 Math
+# Revision", "O Level Revision", "A LEVEL REVISION" (read off them 5 Sep 2026).
 LEVEL_LINE = {
-    "S1": "Sec 1 Mathematics Revision", "S2": "Sec 2 Mathematics Revision",
-    "S3_EM": "Sec 3 E Math Revision", "EM": "O Level E Math Revision",
-    "S3_AM": "Sec 3 Additional Math Revision", "AM": "O Level Additional Math Revision",
-    "JC1": "JC1 H2 Math Revision", "JC2": "H2 Math Revision",
+    "S1": "Sec 1 Math Revision", "S2": "Sec 2 Math Revision",
+    "S3_EM": "Sec 3 Math Revision", "EM": "O Level Revision",
+    "S3_AM": "Sec 3 A Math Revision", "AM": "O Level A Math Revision",
+    "JC1": "A Level Revision", "JC2": "A Level Revision",
 }
 LEVEL_TAG = {"S1": "S1", "S2": "S2", "S3_EM": "S3", "EM": "S4",
              "S3_AM": "S3", "AM": "S4", "JC1": "JC1", "JC2": "JC2"}
@@ -626,8 +628,10 @@ def cmd_render(a):
     figdir.mkdir(exist_ok=True)
 
     ws = Worksheet()
-    ws.title(getattr(content, "TITLE", plan["level_line"]))
-    ws.subtitle(getattr(content, "SUBTITLE", f"{plan['topic']} (Past-Paper Edition)"))
+    # Adrian's sheets carry the title in the running head, not the body.
+    C.house_header(ws,
+                   getattr(content, "TITLE", plan["level_line"]),
+                   getattr(content, "SUBTITLE", plan["topic"]))
     notes = getattr(content, "NOTES", None)
     if isinstance(notes, str) and ":" in notes:
         _notes_from_builder(ws, notes)

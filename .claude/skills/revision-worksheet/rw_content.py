@@ -243,3 +243,81 @@ def emit_text(ws, text, emitter=None, marks=None, lead=None):
             data_table(ws, payload, as_math=(kind == "tex"))
     if not first_done:                      # text was nothing but a table
         emitter((lead or []) + [("text", "")], marks=marks)
+
+
+# ---------------------------------------------------------------------------
+# House header (Adrian's own revision sheets, read off them 5 Sep 2026)
+# ---------------------------------------------------------------------------
+# His sheets carry the title in the PAGE HEADER, not the body: two centred bold
+# Times New Roman lines — the level line at 9.5 pt, the topic at 12 pt (the
+# document default) — repeating on every page. There is no body title block and
+# no footer. In Word's Print Layout the header text is dimmed grey; that is
+# Word showing an inactive header, not a colour on the runs.
+
+HDR_LEVEL_PT = 9.5
+HDR_TOPIC_PT = 12.0
+
+
+def _page_field(paragraph, instr: str):
+    """A live Word field (PAGE / NUMPAGES) — python-docx has no helper for it."""
+    from docx.oxml.ns import qn
+    from docx.oxml import OxmlElement
+    for kind, text in (("begin", None), (None, instr), ("separate", None),
+                       ("text", "1"), ("end", None)):
+        r = OxmlElement("w:r")
+        if kind == "text":
+            t = OxmlElement("w:t"); t.text = text; r.append(t)
+        elif kind is None:
+            it = OxmlElement("w:instrText")
+            it.set(qn("xml:space"), "preserve"); it.text = text; r.append(it)
+        else:
+            fc = OxmlElement("w:fldChar"); fc.set(qn("w:fldCharType"), kind); r.append(fc)
+        paragraph._p.append(r)
+
+
+def house_header(ws, level_line: str, topic: str, page_numbers: bool = True):
+    """Adrian's two-line running head, plus an optional page-number footer."""
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.shared import Pt, RGBColor
+    from docx.shared import Cm as _Cm
+
+    sec = ws.doc.sections[0]
+    sec.header_distance = _Cm(1.27)
+    sec.footer_distance = _Cm(1.27)
+    hdr = sec.header
+    hdr.is_linked_to_previous = False
+    paras = list(hdr.paragraphs)
+    while len(paras) < 2:
+        paras.append(hdr.add_paragraph())
+    for extra in paras[2:]:
+        extra._element.getparent().remove(extra._element)
+    for para, text, size in ((paras[0], level_line, HDR_LEVEL_PT),
+                             (paras[1], topic, HDR_TOPIC_PT)):
+        for r in list(para.runs):
+            r._element.getparent().remove(r._element)
+        para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        para.paragraph_format.space_before = Pt(0)
+        para.paragraph_format.space_after = Pt(0)
+        run = para.add_run(text)
+        run.font.name = "Times New Roman"
+        run.font.size = Pt(size)
+        run.bold = True
+
+    if page_numbers:
+        ftr = sec.footer
+        ftr.is_linked_to_previous = False
+        p = ftr.paragraphs[0]
+        for r in list(p.runs):
+            r._element.getparent().remove(r._element)
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        for txt, instr in (("Page ", None), (None, " PAGE "),
+                           (" of ", None), (None, " NUMPAGES ")):
+            if instr:
+                _page_field(p, instr)
+            else:
+                run = p.add_run(txt)
+        for run in p.runs:
+            run.font.name = "Times New Roman"
+            run.font.size = Pt(8)
+            run.font.color.rgb = RGBColor(0x7F, 0x7F, 0x7F)
+    return hdr

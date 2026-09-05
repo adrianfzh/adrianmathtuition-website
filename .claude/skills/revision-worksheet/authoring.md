@@ -70,6 +70,15 @@ Two of his own sheets are the reference for this surface, and worth opening once
 - No hint unless a `[Remember: …]` line genuinely unlocks the question; light grey.
 - **No source line under a question.** None.
 
+## The running head
+
+`render` puts TITLE and SUBTITLE in the PAGE HEADER, copied off his own sheets: two
+centred bold Times New Roman lines, the level line at 9.5 pt over the topic at 12 pt,
+repeating on every page. There is no body title block — the first thing on the page is
+`Notes:`. Word dims header text in Print Layout, which is why his look grey; the runs
+carry no colour. A centred grey "Page x of y" footer is added (`page_numbers=False`
+turns it off); his own sheets have no footer, so that is the one deliberate addition.
+
 ## The Notes block
 
 His own sheets open with a Notes block: the definitions, the two or three formulas
@@ -100,8 +109,8 @@ Helpers available inside it: `sm(text)` splits bank text with `$…$` into parts
 ```python
 from rw_content import sm, GREY, T, B, I, M
 
-TITLE    = "Sec 2 Mathematics Revision"          # the level line, as on his sheets
-SUBTITLE = "Polygons (Past-Paper Edition)"       # topic + the differentiator
+TITLE    = "Sec 2 Math Revision"                 # header line 1 — the level line
+SUBTITLE = "Polygons"                            # header line 2 — the topic
 
 # ── Notes block ───────────────────────────────────────────────────────────────
 # Each entry: ('head', text) | ('para', parts) | ('math', latex) | ('mistakes', [text, …])
