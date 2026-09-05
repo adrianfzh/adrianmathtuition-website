@@ -38,11 +38,13 @@ const MAX_ROWS = 400;
 const AMENDED_CHECKS = 12;
 
 const RUN_COLUMNS =
-  'id, created_at, paper_name, subject, student_id, student_name, total_awarded, total_max, num_questions, ' +
+  'id, created_at, paper_name, subject, paper_subject, student_id, student_name, total_awarded, total_max, num_questions, ' +
   'released_at, released_via, annotated_pdf_url, pdf_url, photos_pdf_url, checked_at, result_json';
 
 type RunRow = {
   id: string; created_at: string; paper_name: string | null; subject: string | null;
+  /** 'A Math' | 'E Math' | 'H2 Math' | 'Other' | null — the AM/EM/H2 pill (SPEC-PORTAL-V2 §1). */
+  paper_subject: string | null;
   student_id: string | null; student_name: string | null;
   total_awarded: number | null; total_max: number | null; num_questions: number | null;
   released_at: string | null; released_via: string | null;
@@ -144,6 +146,7 @@ export async function GET(req: NextRequest) {
       createdAt: r.created_at,
       paperName: r.paper_name || 'Untitled paper',
       subject: r.subject || 'math',
+      paperSubject: r.paper_subject,
       studentId: r.student_id,
       studentName: r.student_name,
       awarded: totals.awarded,

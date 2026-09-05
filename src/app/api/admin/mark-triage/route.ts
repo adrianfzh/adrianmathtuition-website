@@ -2,7 +2,13 @@
 //
 // GET  → unreleased, unarchived runs from the last N days, each reduced to ONLY
 //        the questions the marker asked a human to look at.
-// POST → { action: 'agree' | 'override' | 'release' | 'archive' | 'archive-all' }.
+// POST → { action: 'agree' | 'override' | 'release' | 'archive' | 'archive-all'
+//                 | 'attach-amended' | 'attach-amended-from-dropbox' | 'subject' }.
+//
+// `subject` (SPEC-PORTAL-V2 §1, 6 Sep 2026) writes paper_subject ONLY — which
+// maths the paper is (A Math / E Math / H2 Math / Other), the value the student
+// Papers page pills and per-subject tiles key on. It changes no mark, so it is
+// allowed after release; the desk's Subject select is its one caller.
 //
 // Archive = "seen": Adrian handled the paper outside the system (marked it
 // physically, handed it back in class), so it leaves triage / the hub card /
@@ -45,6 +51,10 @@ import { canTransition, validateAssignment, type AssignmentStatus } from '@/lib/
 import { sendPushToStudent } from '@/lib/portal-push';
 import { paperFolder } from '@/lib/paper-folder';
 import { attachAmendedFromDropbox } from '@/lib/attach-amended';
+import { PAPER_SUBJECTS } from '@/lib/portal-subjects';
+
+/** What paper_subject may hold — the three maths plus the desk's "Other" (SPEC-PORTAL-V2 §1). */
+const PAPER_SUBJECT_VALUES: readonly string[] = [...PAPER_SUBJECTS, 'Other'];
 
 export const runtime = 'nodejs';
 // Release itself is fast; the ceiling is for the after() enrichment, which
@@ -413,6 +423,8 @@ export async function POST(req: NextRequest) {
     auto?: boolean;
     /** 📘 Optional sheet to release alongside the marked copy (step 7). */
     sheet?: { pdfUrl?: string; title?: string; note?: string; topic?: string };
+    /** action 'subject' only: 'A Math' | 'E Math' | 'H2 Math' | 'Other'. */
+    subject?: unknown;
   };
   try {
     body = await req.json();
@@ -790,6 +802,26 @@ export async function POST(req: NextRequest) {
   }
 
   // ── archive: "seen" — out of the queue WITHOUT releasing ──────────────────
+  // ── subject: which maths the paper is — paper_subject only, no mark touched ─
+  if (body.action === 'subject') {
+    if (!body.runId) return NextResponse.json({ error: 'runId is required' }, { status: 400 });
+    const subject = body.subject;
+    if (typeof subject !== 'string' || !PAPER_SUBJECT_VALUES.includes(subject)) {
+      return NextResponse.json({ error: `subject must be one of ${PAPER_SUBJECT_VALUES.join(', ')}` }, { status: 400 });
+    }
+    // Allowed on a released run on purpose: the student sees a different pill
+    // and tile, never a different mark.
+    const { data: run, error: writeErr } = await supa
+      .from('paper_marking_runs')
+      .update({ paper_subject: subject })
+      .eq('id', body.runId)
+      .select('id')
+      .maybeSingle();
+    if (writeErr) return NextResponse.json({ error: writeErr.message }, { status: 500 });
+    if (!run) return NextResponse.json({ error: 'run not found' }, { status: 404 });
+    return NextResponse.json({ ok: true, runId: body.runId, subject });
+  }
+
   if (body.action === 'archive') {
     if (!body.runId) return NextResponse.json({ error: 'runId is required' }, { status: 400 });
     const { data: run, error: readErr } = await supa

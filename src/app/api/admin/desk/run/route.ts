@@ -30,11 +30,13 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const RUN_COLUMNS =
-  'id, created_at, paper_name, subject, rules_version, student_id, student_name, total_awarded, total_max, num_questions, ' +
+  'id, created_at, paper_name, subject, paper_subject, rules_version, student_id, student_name, total_awarded, total_max, num_questions, ' +
   'released_at, released_via, archived_at, annotated_pdf_url, pdf_url, photos_pdf_url, checked_at, dropbox_path, result_json';
 
 type RunRow = {
   id: string; created_at: string; paper_name: string | null; subject: string | null; rules_version: string | null;
+  /** 'A Math' | 'E Math' | 'H2 Math' | 'Other' | null — the desk's Subject select writes it (SPEC-PORTAL-V2 §1). */
+  paper_subject: string | null;
   student_id: string | null; student_name: string | null;
   total_awarded: number | null; total_max: number | null; num_questions: number | null;
   released_at: string | null; released_via: string | null; archived_at: string | null;
@@ -123,6 +125,7 @@ export async function GET(req: NextRequest) {
       createdAt: run.created_at,
       paperName: run.paper_name || 'Untitled paper',
       subject: run.subject || 'math',
+      paperSubject: run.paper_subject,
       rulesVersion: run.rules_version,
       studentId: run.student_id,
       studentName: run.student_name,

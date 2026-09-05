@@ -30,6 +30,7 @@ import RulesTag from '@/components/RulesTag';
 import { mathHtml } from '@/lib/math-inline';
 import { DESK_LANES, LANE_LABEL, type DeskLane } from '@/lib/desk-state';
 import { ERROR_KINDS, ERROR_KIND_HINT, isErrorKind } from '@/lib/error-kinds';
+import { PAPER_SUBJECTS, subjectPill } from '@/lib/portal-subjects';
 import type { TriageQuestion } from '@/lib/mark-triage';
 import type { Diagnosis } from '@/lib/sheet-diagnosis';
 import { pdfToPageImages } from '@/lib/pdf-pages';
@@ -38,6 +39,8 @@ import { fileHref } from '@/lib/student-files-url';
 // ── Shapes the two desk routes return ────────────────────────────────────────
 type Row = {
   id: string; createdAt: string; paperName: string; subject: string;
+  /** Which maths (A Math / E Math / H2 Math / Other / null) — the AM/EM/H2 pill. `subject` above is the marking lane. */
+  paperSubject: string | null;
   studentId: string | null; studentName: string | null;
   awarded: number; max: number; pct: number | null; questions: number; pending: number;
   lane: DeskLane; releasedAt: string | null; releasedVia: string | null; pdfStale: boolean;
@@ -53,7 +56,7 @@ type Question = TriageQuestion & { flagged: boolean };
 
 type Detail = {
   run: {
-    id: string; createdAt: string; paperName: string; subject: string; rulesVersion: string | null;
+    id: string; createdAt: string; paperName: string; subject: string; paperSubject: string | null; rulesVersion: string | null;
     studentId: string | null; studentName: string | null;
     awarded: number; max: number; totalQuestions: number;
     releasedAt: string | null; releasedVia: string | null; archivedAt: string | null; checkedAt: string | null;
@@ -163,6 +166,25 @@ function Tex({ text }: { text: string }) {
 }
 function Chip({ label, bg = '#f3f4f6', color = '#374151', title }: { label: string; bg?: string; color?: string; title?: string }) {
   return <span title={title} style={{ background: bg, color, borderRadius: 999, padding: '3px 9px', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>{label}</span>;
+}
+
+// Which maths the paper is (paper_subject, SPEC-PORTAL-V2 §1) — the same
+// AM / EM / H2 letters and hues the student's Papers page wears
+// (components/PaperSubjectPill), inline-styled like the rest of this page.
+// "Other" shows as a grey chip here (Adrian needs to see the untagged ones);
+// null shows nothing.
+const PAPER_SUBJECT_TONE: Record<string, { bg: string; fg: string }> = {
+  am: { bg: '#e0e7ff', fg: '#3730a3' },
+  em: { bg: '#e0f2fe', fg: '#075985' },
+  h2: { bg: '#fae8ff', fg: '#86198f' },
+  other: { bg: '#f3f4f6', fg: '#6b7280' },
+};
+const PAPER_SUBJECT_OPTIONS: readonly string[] = [...PAPER_SUBJECTS, 'Other'];
+function PaperSubjectChip({ subject }: { subject: string | null | undefined }) {
+  const pill = subjectPill(subject);
+  if (!pill) return null;
+  const t = PAPER_SUBJECT_TONE[pill.tone];
+  return <span title={`${subject} paper`} style={{ background: t.bg, color: t.fg, borderRadius: 999, padding: '1px 7px', fontSize: 11, fontWeight: 700, lineHeight: '16px', whiteSpace: 'nowrap' }}>{pill.text}</span>;
 }
 
 const LANE_HINT: Record<DeskLane, string> = {
@@ -378,6 +400,20 @@ export default function DeskPage() {
     refresh(id);
   }
 
+  // Which maths the paper is — paper_subject only (mark-triage {action:'subject'}).
+  // Allowed after release: the student sees a different pill, never a different mark.
+  async function setPaperSubject(subject: string) {
+    if (!detail) return;
+    const id = detail.run.id;
+    setBusy('subject');
+    const { ok, d } = await postJson('/api/admin/mark-triage', { action: 'subject', runId: id, subject });
+    setBusy('');
+    if (!ok) { setToast(d.error || 'Could not save the subject'); return; }
+    setDetail(prev => prev && { ...prev, run: { ...prev.run, paperSubject: subject } });
+    setToast(`Subject set to ${subject}.`);
+    loadQueue(false);
+  }
+
   async function attachMyCopy() {
     if (!detail) return;
     const id = detail.run.id;
@@ -572,6 +608,7 @@ export default function DeskPage() {
                     {row.studentName || <span style={{ color: C.flag }}>⚠ Needs a student</span>}
                     <span style={{ color: C.muted, fontWeight: 400 }}>·</span>
                     <span style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{row.paperName}</span>
+                    <PaperSubjectChip subject={row.paperSubject} />
                     <SubjectChip subject={row.subject} />
                   </div>
                   <div style={{ fontSize: 12.5, color: C.muted, marginTop: 3, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -613,7 +650,7 @@ export default function DeskPage() {
           busy={busy} editing={editing} editAwarded={editAwarded} editNote={editNote} focus={focus} tagging={tagging}
           setEditing={setEditing} setEditAwarded={setEditAwarded} setEditNote={setEditNote} setFocus={setFocus} setTagging={setTagging}
           editKind={editKind} setEditKind={setEditKind}
-          onAgree={agree} onOverride={override} onTag={tag} onAttach={attachMyCopy} onRebuild={rebuild}
+          onAgree={agree} onOverride={override} onTag={tag} onSubject={setPaperSubject} onAttach={attachMyCopy} onRebuild={rebuild}
           onQueueSheet={queueSheet} onCancelSheet={cancelSheet} onApprove={approve} onReleaseOnly={releaseWithoutSheet}
         />
       )}
@@ -635,6 +672,7 @@ function DetailView(p: {
   setEditing: (v: number | null) => void; setEditAwarded: (v: string) => void; setEditNote: (v: string) => void; setEditKind: (v: string) => void;
   setFocus: (v: string) => void; setTagging: (v: boolean) => void;
   onAgree: (q: Question) => void; onOverride: (q: Question) => void; onTag: (id: string, name: string) => void;
+  onSubject: (subject: string) => void;
   onAttach: () => void; onRebuild: () => void; onQueueSheet: () => void; onCancelSheet: () => void;
   onApprove: () => void; onReleaseOnly: () => void;
 }) {
@@ -693,6 +731,16 @@ function DetailView(p: {
             </div>
             <div style={{ fontSize: 13.5, color: C.muted, marginTop: 4, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
               <span style={{ color: C.ink, fontWeight: 500 }}>{run.paperName}</span>
+              <PaperSubjectChip subject={run.paperSubject} />
+              {/* Which maths this is — writes paper_subject only, so it stays live after release. */}
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12.5 }} title="Which maths this paper is — the student's Papers page pill and per-subject tiles key on it. Changes no mark.">
+                <span>Subject:</span>
+                <select value={run.paperSubject ?? ''} disabled={busy === 'subject'} onChange={e => { if (e.target.value) p.onSubject(e.target.value); }}
+                  style={{ font: 'inherit', fontSize: 12.5, padding: '2px 6px', borderRadius: 6, border: `1px solid ${C.border}`, background: '#fff', color: run.paperSubject ? C.ink : C.flag }}>
+                  {!run.paperSubject && <option value="">not set</option>}
+                  {PAPER_SUBJECT_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </label>
               <SubjectChip subject={run.subject} /><GroundingChip source={run.grounding} /><PaperMatchChip pm={run.paperMatch} /><RulesTag v={run.rulesVersion} />
               <span>· marked {fmtWhen(run.createdAt)} · {run.totalQuestions} question{run.totalQuestions === 1 ? '' : 's'}</span>
               {run.portalSubmission && <Chip label="📱 hand-in" bg="#eff6ff" color={C.link} />}
