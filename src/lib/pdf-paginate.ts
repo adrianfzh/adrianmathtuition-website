@@ -42,6 +42,18 @@ export function chooseCutRows(rowInk: number[], maxChunk: number, window: number
         if (ink === 0) break;   // first blank row scanning UP from the ideal — nearest-to-ideal wins
       }
     }
+    // A SEAM BEATS A NEAR MISS (Adrian, 6 Sep 2026: "solutions are sometimes cut
+    // off"). Inside a solution card every row carries the card's border, so the
+    // whitest row in the small window sat between two lines of working and the
+    // page ended mid-card. When the small window found no truly blank row, look
+    // further up — as far as the middle of the chunk — for one: the white gap
+    // between cards. A slightly shorter page is better than a card sliced in two.
+    if (bestInk > 0) {
+      const far = Math.max(p + Math.floor(maxChunk * 0.5), ideal - Math.floor(maxChunk * 0.45));
+      for (let r = lo - 1; r >= far; r--) {
+        if ((rowInk[r] ?? 0) === 0) { best = r; bestInk = 0; break; }
+      }
+    }
     if (best <= p) break;       // safety: no progress means no cut
     cuts.push(best);
     p = best;

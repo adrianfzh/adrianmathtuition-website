@@ -51,3 +51,24 @@ describe('chooseCutRows', () => {
     expect(A4_RATIO).toBeCloseTo(842 / 595, 5);
   });
 });
+
+describe('chooseCutRows — a seam beats a near miss (6 Sep 2026)', () => {
+  it('cuts at the blank gap between cards even when it lies above the small window', () => {
+    // 1000-px chunks. A card border puts 4 px of ink on every row from 600 to 1400,
+    // a 30-px blank gap sits at rows 570–599, and lines of working alternate 0/40.
+    const rowInk: number[] = [];
+    for (let r = 0; r < 2000; r++) {
+      if (r >= 570 && r < 600) rowInk.push(0);
+      else if (r >= 600 && r < 1400) rowInk.push(4 + (r % 30 < 15 ? 40 : 0));
+      else rowInk.push(r % 30 < 15 ? 40 : 0);
+    }
+    const cuts = chooseCutRows(rowInk, 1000, 120);
+    expect(cuts[0]).toBeGreaterThanOrEqual(570);
+    expect(cuts[0]).toBeLessThan(600);
+  });
+  it('keeps the old behaviour when no blank row exists anywhere in reach', () => {
+    const rowInk = new Array(2000).fill(4);
+    const cuts = chooseCutRows(rowInk, 1000, 120);
+    expect(cuts[0]).toBe(1000);
+  });
+});

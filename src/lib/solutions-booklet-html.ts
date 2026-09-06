@@ -188,8 +188,9 @@ export function solutionsBookletHtml(input: BookletInput): string {
 /* Pure-white body with white gaps between panels: sliceTallPng cuts this tall
    render into A4 chunks at the whitest rows, so every seam lands between
    questions, never through a line of working. */
+html{font-size:60%}   /* rem-based sizes follow the body: 40% smaller (Adrian, 6 Sep 2026) */
 body{margin:0;background:var(--sheet);color:var(--ink);width:210mm;
-     font-family:"Source Serif 4",Georgia,serif;font-size:15px;line-height:1.75;
+     font-family:"Source Serif 4",Georgia,serif;font-size:9px;line-height:1.65;
      -webkit-font-smoothing:antialiased;padding:13mm 17mm 15mm}
 .masthead{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
           padding-bottom:.55rem;border-bottom:1.5px solid var(--ink)}
@@ -199,7 +200,7 @@ body{margin:0;background:var(--sheet);color:var(--ink);width:210mm;
 h1{font-size:1.6rem;font-weight:700;line-height:1.1;margin:.8rem 0 .15rem;letter-spacing:-.015em}
 .lede{font-size:.85rem;color:var(--ink-soft);font-style:italic;margin:0 0 1.05rem}
 .sol{background:var(--shade);border:1px solid var(--rule);border-left:3px solid var(--earned);
-     border-radius:10px;padding:14px 20px 16px;margin-bottom:14px}
+     border-radius:10px;padding:10px 14px 12px;margin-bottom:22px}
 .sol-head{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
           margin-bottom:6px}
 .sol-q{font-family:"IBM Plex Mono",monospace;font-size:.83rem;font-weight:600;
