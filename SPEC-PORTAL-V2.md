@@ -1,8 +1,11 @@
 # SPEC — Student portal v2: subjects, Practice as the to-do list, the Notebook as the record
 
-**Status:** plan agreed with Adrian on 5–6 Sep 2026; **build started 6 Sep on dev** ("build
-all on dev now"). The data sort in §1 is done; the bot stamps every new run; the gate
-helper (`lib/portal-subjects.ts`) is in. Build order in §9. Owner of the standard: Adrian. This file is the source of truth; `PORTAL.md`,
+**Status:** plan agreed with Adrian on 5–6 Sep 2026; **§1–§4, §6 and §7 built on `dev`
+6 Sep 2026** ("build all on dev now" — four parallel builds merged 08:40 SGT, preview at
+adrianmath-dev.vercel.app, three migrations applied live, the Notebook backfilled: 103
+entries across 9 students). **Not promoted to prod**; §5 not built; students are still
+in marking-only beta (`MARKING_ONLY_BETA`), so the Practice, Find and Notebook surfaces
+are admin-visible until Adrian lifts it. Build order in §9. Owner of the standard: Adrian. This file is the source of truth; `PORTAL.md`,
 `SPEC-ASSIGN.md`, `SPEC-REMEDIATION.md` describe what exists today and stay as history.
 
 ## 0. Decisions already taken (Adrian, 6 Sep 2026)
@@ -33,14 +36,16 @@ Zane's Sec 2 sheet went to E Math). Rule: the paper name first (`am`, `a math`,
 majority over the paper's questions ("Additional" beats "A-Level"; "Elementary" /
 "E-Math" / plain "O-Level Mathematics" is EM; "H2"/"JC"/"9758" is H2).
 
-**To build:**
+**Built 6 Sep 2026** (bot `9f67fe3`+, site branch `build/subjects`):
 - The bot sets `paper_subject` when a run is created (same rule, `lib/paper-subject.js`,
-  pure + tested), and the hand-in's subject choice (`/app/submit`) is honoured first.
+  pure + tested), and the hand-in's subject choice (`/app/submit`) is honoured first
+  (science hand-ins → 'Other').
 - The desk shows the subject on every row and lets Adrian change it (a select on the
-  run's detail; writes the column only).
+  run's detail → `mark-triage {action:'subject'}`; writes the column only).
 - **Student Papers page:** a colour-coded pill on every paper card — **AM** and **EM**
-  (and **H2**) — and the three tiles (latest, average, trend) shown **per subject** as
-  tabs, only when the account has more than one subject. "Other" papers list without a
+  (and **H2**; `components/PaperSubjectPill.tsx`) — and the three tiles (latest, average,
+  trend) shown **per subject** (`app/marking/SubjectTiles.tsx`, `lib/portal-papers-stats.ts`),
+  only when the account has more than one subject. "Other" papers list without a
   pill and count in no tile.
 - Health check: `papers-subject` probes that no released run in the last 30 days has a
   null subject.
@@ -60,15 +65,18 @@ Airtable record) keeps today's behaviour (level-only).
 worksheet PDF → hand-in flow; the Send-work card on the student's profile. Students are
 in marking-only beta and see no Practice tab at all today.
 
-**To build:** the student Practice tab lists, newest first, with a state (to do / done /
-marked):
+**Built 6 Sep 2026** (branch `build/practice`; `lib/practice-todo.ts` pure + tested,
+`app/practice/todo-list.tsx`; `/api/portal/assignments` returns the three sections): the
+student Practice tab lists, newest first, with a state (to do / done / marked):
 1. **From Adrian** — assignments as today.
 2. **Practice Again** — one item per question handed back by the sheet worker (§7),
    labelled with the paper and the skill it fixes.
 3. **Found by you** — questions from Find a question (§4), labelled with the tier.
 
-The topic picker, timed set and exam card remain behind the admin cookie. Marking-only
-beta lifts for Practice only when §1, §2 and §7 are live.
+The topic picker, timed set and exam card remain behind the admin cookie
+(`PRACTICE_PICKER_OPEN_TO_STUDENTS = false`, `practiceAccess()` in `lib/portal-beta.ts`).
+§1, §2 and §7 are live on dev, so marking-only beta may lift for Practice when Adrian
+has looked at the preview — his call, not made yet.
 
 ## 4. Find a question
 
@@ -123,9 +131,12 @@ assignmentIds)` for §7), hooks in mark-triage's release action and the practice
 grader, `GET/POST /api/portal/notebook/mistakes`, the "Your mistakes" band on
 `/app/my-notes`, health-check `notebook-mistakes`, backfill
 `scripts/notebook-mistakes-backfill.ts`. The focus card and band are gone.
-The thresholds shipped are the 6 Sep rules as given to the build (ONE clean result →
-light, TWO → fixed, a clean paper = two), not the "two attempts → light, a third →
-fixed" wording below — reconcile whichever way Adrian prefers.
+The thresholds shipped are the 6 Sep rules (ONE clean result → light, TWO → fixed, a
+clean paper = two). Backfill run 6 Sep 08:35 SGT over 16 released runs: 103 entries /
+9 students. A lost part the marker did not classify (every run before 3 Sep 2026 — the
+marker only stamps `parts[].error_kind` since then) still seeds an entry, filed under
+the topic alone as "Marks lost in <topic>"; it never merges with a classified entry.
+§7's held items link into the matching entry per skill title (`addPracticeLinks`).
 
 **Sources that already exist:** every lost part's `error_kind` + `study_note` +
 `verdict_line`; the sheet diagnosis `skills[]` (titled, with marks and questions);
@@ -159,13 +170,18 @@ angle"), `error_kind`, `subject`, `evidence[]` (run/attempt links with dates),
 the file paths; Adrian vets the PDF; the student receives it with the paper. The portal
 knows a file exists and nothing about its questions.
 
-**To build:** the worker's `done` result also carries `questions[]`: for each practice
-question, either a bank `question_id` or the generated text (+ answer + marks + skill
-title). The server creates one `portal_assignments` row per question (kind
-`practice-again`, linked to the run and the skill) in state `held` until Adrian's
-**Approve & release** on the desk, which releases the paper, the sheet AND the items
-together. Bank items grade instantly; generated items go through the same grader once
-their answer is stored. The DOCX/PDF stays exactly as it is.
+**Built 6 Sep 2026** (branch `build/practice`; migration
+`portal_assignments_practice_again`): the worker's `done` result also carries
+`questions[]` (`{section, index, skill_title, question_id|null, text_latex, answer_latex,
+marks, topic}` — `scripts/sheet-worker/WORKER_PROMPT.md`). `/api/admin/sheet-jobs` `done`
+→ `lib/practice-again-store.ts createHeldPracticeItems`: one `portal_assignments` row per
+question, **source `practice-again`**, kind `question` (a live bank id) or **`generated`**
+(text + answer + marks on the row), **status `held`** — invisible to the student — unique
+on (sheet_job_id, sheet_index) so a re-posted `done` adds nothing. Adrian's **Approve &
+release** (mark-triage `release` / `release-with-sheet`) flips every held row from that
+run to `assigned` in the same step as `released_at`; `cancel` deletes held rows. Bank
+items grade instantly; generated items go through the practice grader against
+`answer_latex`. The DOCX/PDF stays exactly as it is.
 
 ## 8. What each piece needs to be "done"
 

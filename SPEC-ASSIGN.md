@@ -51,6 +51,14 @@ Spec defaults that stand (from the original proposal):
    rows via `portal_accounts` on `auth.uid()`; all writes server-side (service role).
    RPC `practice_candidates(p_level, p_topic, p_tier, p_limit)` = `practice_next`'s quality
    filters without the random-one limit, for the admin picker.
+   **v2 columns (6 Sep 2026, SPEC-PORTAL-V2 §3/§4/§7 — migrations
+   `portal_assignments_practice_again` + `find_a_question_v1`):** `source`
+   ('adrian' | 'practice-again' | 'find'), `find_tier` ('similar' | 'made-for-you'),
+   `skill_title`, `subject`, `sheet_job_id → sheet_jobs`, `sheet_index` (unique together),
+   `question_text`, `answer_latex`, `marks`; kind gains **`generated`** (must carry
+   question_text + answer_latex); status gains **`held`** (created, not yet released —
+   every student read excludes it). "From Adrian" = source 'adrian' only; the student's
+   Practice tab shows all three sources as sections.
 2. **Pure logic** — `src/lib/assignments.ts` (+ `.test.ts`): input validation, due-date
    label, pending count, status transitions.
 3. **Admin** — `POST/GET/PATCH /api/admin/assignments` (create / list by student / revoke),
