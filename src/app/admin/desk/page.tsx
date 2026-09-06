@@ -75,6 +75,7 @@ type Detail = {
   sheetJob: {
     id: string; status: string; stage: string | null; error: string | null; attempts: number; focus: string | null;
     claimedBy: string | null; createdAt: string; completedAt: string | null; label: string;
+    autoReleaseAt?: string | null; heldAt?: string | null; autoReleasedAt?: string | null;
     result: {
       docxPath: string | null; pdfPath: string | null; wave: string[]; shelved: string[]; verified: string;
       /** The worker read the paper and there was nothing worth practising (3 Sep 2026). */
@@ -451,6 +452,19 @@ export default function DeskPage() {
     refresh(id);
   }
 
+  // Release-by-silence (6 Sep 2026): hold keeps the sheet on the desk; resume restarts the window.
+  async function autoRelease(action: 'hold' | 'unhold') {
+    if (!detail?.sheetJob) return;
+    const id = detail.run.id;
+    setBusy('sheet');
+    const { ok, d } = await postJson('/api/admin/sheet-jobs', { action, id: detail.sheetJob.id });
+    setBusy('');
+    if (!ok) { setToast(d.error || 'Could not update the auto-release'); return; }
+    setToast(action === 'hold' ? 'Held — release it from the desk when you are ready.' : 'Auto-release resumed — the 12-hour window restarts now.');
+    refresh(id);
+  }
+
+
   async function cancelSheet() {
     if (!detail?.sheetJob) return;
     const id = detail.run.id;
@@ -651,7 +665,7 @@ export default function DeskPage() {
           setEditing={setEditing} setEditAwarded={setEditAwarded} setEditNote={setEditNote} setFocus={setFocus} setTagging={setTagging}
           editKind={editKind} setEditKind={setEditKind}
           onAgree={agree} onOverride={override} onTag={tag} onSubject={setPaperSubject} onAttach={attachMyCopy} onRebuild={rebuild}
-          onQueueSheet={queueSheet} onCancelSheet={cancelSheet} onApprove={approve} onReleaseOnly={releaseWithoutSheet}
+          onQueueSheet={queueSheet} onCancelSheet={cancelSheet} onAutoRelease={autoRelease} onApprove={approve} onReleaseOnly={releaseWithoutSheet}
         />
       )}
 
@@ -674,6 +688,7 @@ function DetailView(p: {
   onAgree: (q: Question) => void; onOverride: (q: Question) => void; onTag: (id: string, name: string) => void;
   onSubject: (subject: string) => void;
   onAttach: () => void; onRebuild: () => void; onQueueSheet: () => void; onCancelSheet: () => void;
+  onAutoRelease: (action: 'hold' | 'unhold') => void;
   onApprove: () => void; onReleaseOnly: () => void;
 }) {
   const { detail: d, cover, busy } = p;
@@ -877,7 +892,7 @@ function DetailView(p: {
         {/* ── right: the sheet ── */}
         <div className="desk-right" style={{ minWidth: 0 }}>
           <SheetPane d={d} sheetPages={p.sheetPages} sheetNote={p.sheetNote} busy={busy} focus={p.focus} setFocus={p.setFocus}
-            onQueueSheet={p.onQueueSheet} onCancelSheet={p.onCancelSheet} />
+            onQueueSheet={p.onQueueSheet} onCancelSheet={p.onCancelSheet} onAutoRelease={p.onAutoRelease} />
         </div>
       </div>
     </>
@@ -1039,7 +1054,7 @@ function QuestionCard(p: {
 // ── The sheet pane: the PDF, re-queue, and the diagnosis it was built on ─────
 function SheetPane(p: {
   d: Detail; sheetPages: string[] | null; sheetNote: string; busy: string; focus: string; setFocus: (v: string) => void;
-  onQueueSheet: () => void; onCancelSheet: () => void;
+  onQueueSheet: () => void; onCancelSheet: () => void; onAutoRelease: (action: 'hold' | 'unhold') => void;
 }) {
   const { d, busy } = p;
   const job = d.sheetJob;
@@ -1094,6 +1109,16 @@ function SheetPane(p: {
               The worker read this paper and found nothing worth practising. Approve &amp; release sends the marked
               paper on its own — or re-queue below if you want a sheet anyway.
             </div>
+          </div>
+        )}
+
+        {done && !released && job && (job.autoReleaseAt || job.heldAt) && (
+          <div style={{ padding: '10px 14px', fontSize: 13.5, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', borderTop: `1px solid ${C.border}` }}>
+            {job.heldAt
+              ? <><span>🖐 Held by you — release with the button below when ready.</span>
+                  <button onClick={() => p.onAutoRelease('unhold')} disabled={busy === 'sheet'} style={btn('#fff', C.ink, C.border)}>{busy === 'sheet' ? '…' : '▶ Resume auto-release'}</button></>
+              : <><span>⏱ Goes out with the paper automatically at <b>{new Date(job.autoReleaseAt as string).toLocaleString('en-SG', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Singapore' })}</b> unless you hold it.</span>
+                  <button onClick={() => p.onAutoRelease('hold')} disabled={busy === 'sheet'} style={btn('#fff', C.danger, C.border)}>{busy === 'sheet' ? '…' : '🖐 Hold'}</button></>}
           </div>
         )}
 

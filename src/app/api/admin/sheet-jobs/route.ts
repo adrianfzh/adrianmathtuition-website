@@ -41,6 +41,7 @@ import { downloadFile, getTemporaryLink } from '@/lib/dropbox';
 import JSZip from 'jszip';
 import Anthropic from '@anthropic-ai/sdk';
 import { docxXmlToText, extractExamples, runExampleCheck } from '@/lib/sheet-example-check';
+import { autoReleaseGate, holdHours, scheduledLine } from '@/lib/sheet-auto-release';
 import { normaliseDiagnosis, type Diagnosis } from '@/lib/sheet-diagnosis';
 import { rebuildRunPdfs, type RebuildOutcome } from '@/lib/rebuild-run-pdfs';
 import { queueSheetJob } from '@/lib/sheet-queue';
@@ -269,6 +270,27 @@ export async function POST(req: NextRequest) {
         }).eq('id', job.id);
         if (held) {
           notify_marking(`⚠️ ${who} — the sheet is HELD: after ${MAX_REVISIONS} rewrites a second reader still disagrees with ${nDis} worked example${nDis === 1 ? '' : 's'}.\n${lines}\nFix on the desk before release.`).catch(() => {});
+        } else {
+          // ── Release by silence (Adrian, 6 Sep 2026: "12 hours") ──────────────
+          // The sheet passed its gates: schedule paper + sheet to go out after the
+          // hold window. Telegram says when and where to hold; the desk shows the
+          // countdown and a Hold button; /api/cron/sheet-auto-release does the
+          // release. SHEET_AUTO_RELEASE_HOURS=0 turns the automation off.
+          const hours = holdHours();
+          const { data: runRow } = await sb.from('paper_marking_runs').select('released_at, result_json->paper_match->>source').eq('id', job.run_id).maybeSingle();
+          const groundedSrc = (runRow as { source?: string | null } | null)?.source ?? null;
+          const gate = autoReleaseGate({
+            noSheet: false, verified: result.verified, wave: result.wave, exampleCheck: check,
+            grounded: groundedSrc == null ? null : groundedSrc !== 'none',
+          });
+          if (hours > 0 && gate.ok) {
+            const at = new Date(Date.now() + hours * 3600_000).toISOString();
+            await sb.from('sheet_jobs').update({ auto_release_at: at, held_at: null, stage: `auto-release at ${at}` }).eq('id', job.id);
+            const deskUrl = `https://www.adrianmathtuition.com/admin/desk?run=${job.run_id}`;
+            notify_marking(scheduledLine(at, deskUrl)).catch(() => {});
+          } else if (hours > 0) {
+            notify_marking(`🖐 ${who} — the sheet waits for you on the desk (not auto-released): ${gate.reasons.join('; ')}.`).catch(() => {});
+          }
         }
         console.log(`[sheet-jobs] example check ${job.id}: ${check.checked} checked, ${check.disagreements.length} disagreement(s)${check.skipped ? ` (${check.skipped})` : ''}`);
       } catch (e) {
@@ -316,6 +338,20 @@ export async function POST(req: NextRequest) {
       ok: true, diagnosis: diagnosisStored, rebuilt: rebuild.rebuilt, rebuild,
       practiceItems: { created: held.created, already: held.already, bank: held.bank, generated: held.generated, skipped: held.skipped, ...(held.error ? { error: held.error } : {}) },
     });
+  }
+
+  // ── Adrian: hold / resume an auto-release (6 Sep 2026) ────────────────────
+  if (body.action === 'hold' || body.action === 'unhold') {
+    if (!body.id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+    const { data: j } = await sb.from('sheet_jobs').select('id, status, run_id, auto_release_at, held_at').eq('id', body.id).maybeSingle();
+    if (!j) return NextResponse.json({ error: 'no such sheet job' }, { status: 404 });
+    if (body.action === 'hold') {
+      await sb.from('sheet_jobs').update({ held_at: new Date().toISOString(), auto_release_at: null, stage: 'held by Adrian — release from the desk' }).eq('id', body.id);
+      return NextResponse.json({ ok: true, held: true });
+    }
+    const at = new Date(Date.now() + holdHours() * 3600_000).toISOString();
+    await sb.from('sheet_jobs').update({ held_at: null, auto_release_at: at, stage: `auto-release at ${at}` }).eq('id', body.id);
+    return NextResponse.json({ ok: true, held: false, autoReleaseAt: at });
   }
 
   if (body.action === 'fail') {

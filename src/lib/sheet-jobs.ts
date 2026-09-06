@@ -28,6 +28,10 @@ export type SheetJob = {
   error: string | null;
   created_at: string;
   completed_at: string | null;
+  /** Release-by-silence (6 Sep 2026): when the cron may release paper + sheet; Adrian's Hold; the cron's stamp. */
+  auto_release_at?: string | null;
+  held_at?: string | null;
+  auto_released_at?: string | null;
 };
 
 /** How long a claim survives without a heartbeat before anyone may retake it. */

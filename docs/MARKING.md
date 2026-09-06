@@ -553,6 +553,17 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   note on the run, and the sheet worker / self-study skill SHELVE `agree:false` parts instead of
   teaching them ("disputed by second look — check on the desk"). Adrian's ask: the sheet must not
   teach a misread. Not a re-mark — a full second marking was ruled out on cost.
+- **⏱ Release by silence (6 Sep 2026, Adrian: "12 hours"):** a finished sheet that passes the gates
+  (`lib/sheet-auto-release.ts` `autoReleaseGate`, tested — every practice answer verified, a non-empty
+  wave, the second reader agreed with every worked example, the run not known-ungrounded) gets
+  `sheet_jobs.auto_release_at = now + SHEET_AUTO_RELEASE_HOURS` (default 12; `0` = off). Telegram
+  says when and links the desk; the desk's sheet pane shows the time with **Hold** / **Resume**
+  (`sheet-jobs {action:'hold'|'unhold'}` → `held_at`). `/api/cron/sheet-auto-release` (every 30 min,
+  `job_runs` slug `sheet-auto-release`) releases due jobs through the SAME `release-with-sheet` call
+  the desk's button makes, stamps `auto_released_at`, and Telegrams ✅; a release the route cannot do
+  alone (ambiguous PDF) clears the schedule and tells Adrian instead. A sheet that fails a gate waits
+  on the desk with the reasons in the Telegram. Review after 20 auto-releases: if ≥ 18 went out
+  untouched (no hold, no edit), set the window to 0.
 - **📘 Worked-example check on every sheet (6 Sep 2026, `lib/sheet-example-check.ts`):** when the
   sheet worker posts `done`, the site downloads the DOCX, splits out each Example (question +
   worked solution) and has a second model (Sonnet; `MARKING_EXAMPLE_CHECK_MODEL`, `=0` off) solve

@@ -31,6 +31,8 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // Nightly plan-billed review of yesterday's Find-a-question matches (website
   // scripts/find-review, launchd com.adrianmath.findreview, 5:30am SGT, 6 Sept 2026).
   'find-review':       { kind: 'interval', hours: 36, label: 'nightly 5:30am' },
+  // Release-by-silence sweep for Practice Again sheets (Vercel cron every 30 min, 6 Sep 2026).
+  'sheet-auto-release': { kind: 'interval', hours: 2, label: 'every 30 min' },
   'question-mine':     { kind: 'interval', hours: 108, label: 'Mon & Thu 7am' },
   'figure-fitness':    { kind: 'interval', hours: 36, label: 'nightly 3:10am' },
   'generate-invoices': { kind: 'monthly', day: 14, graceDays: 1, label: '14th 7am' },

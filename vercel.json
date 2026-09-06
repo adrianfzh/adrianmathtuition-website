@@ -83,6 +83,10 @@
       "schedule": "30 13 * * *"
     },
     {
+      "path": "/api/cron/sheet-auto-release",
+      "schedule": "*/30 * * * *"
+    },
+    {
       "path": "/api/cron/retention",
       "schedule": "0 19 1 * *"
     },
