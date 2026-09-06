@@ -144,7 +144,7 @@ export function releaseBlockers(run: DeskRun, pending: number, amended: AmendedS
     out.push(
       amended === 'unknown'
         ? 'a mark was overridden after the PDF was drawn, and Dropbox could not be checked for your amended copy — try again, or Rebuild PDFs'
-        : 'a mark was overridden after the PDF was drawn, so it prints the old total — save "Marked (Adrian).pdf" into the folder, or Rebuild PDFs',
+        : 'a mark was overridden after the PDF was drawn, so it prints the old total — save "2 Marked by Adrian.pdf" into the folder, or Rebuild PDFs',
     );
   }
   return out;

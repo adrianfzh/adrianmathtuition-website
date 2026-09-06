@@ -84,7 +84,7 @@ describe('approveBlockers — the reasons the big button is grey', () => {
   it('a stale PDF blocks unless a NEWER amended copy is in the folder', () => {
     const stale = { ...tagged, result_json: { results: [], pdf_stale: { at: 'x', reason: 'Q3 overridden' } } };
     expect(approveBlockers(stale, done, 0, 'none')).toEqual([
-      'a mark was overridden after the PDF was drawn, so it prints the old total — save "Marked (Adrian).pdf" into the folder, or Rebuild PDFs',
+      'a mark was overridden after the PDF was drawn, so it prints the old total — save "2 Marked by Adrian.pdf" into the folder, or Rebuild PDFs',
     ]);
     // An older copy does not resolve it.
     expect(approveBlockers(stale, done, 0, 'found')).toHaveLength(1);

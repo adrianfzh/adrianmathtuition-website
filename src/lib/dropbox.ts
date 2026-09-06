@@ -63,6 +63,25 @@ export interface DbxEntry {
   size?: number;
 }
 
+/** Move a file or folder (files/move_v2). autorename keeps a name clash from failing — the caller sees the final path. */
+export async function movePath(fromPath: string, toPath: string, opts: { autorename?: boolean } = {}): Promise<{ path: string; name: string }> {
+  const r = await rpc<{ metadata: { path_lower: string; name: string } }>('/files/move_v2', {
+    from_path: fromPath, to_path: toPath, autorename: opts.autorename !== false, allow_ownership_transfer: false,
+  });
+  return { path: r.metadata.path_lower, name: r.metadata.name };
+}
+
+/** Delete a file or folder (files/delete_v2). Dropbox keeps it recoverable for the account's history window. */
+export async function deletePath(path: string): Promise<void> {
+  await rpc<unknown>('/files/delete_v2', { path });
+}
+
+/** Create a folder (files/create_folder_v2); an existing one is fine. */
+export async function ensureFolder(path: string): Promise<void> {
+  try { await rpc<unknown>('/files/create_folder_v2', { path, autorename: false }); }
+  catch (e) { if (!/conflict/.test((e as Error).message)) throw e; }
+}
+
 /** List a folder (path '' = app-folder root). Handles pagination. */
 export async function listFolder(path: string): Promise<DbxEntry[]> {
   const out: DbxEntry[] = [];

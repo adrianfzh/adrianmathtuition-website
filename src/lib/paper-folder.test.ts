@@ -14,7 +14,7 @@ const SOPHIE = {
 describe('paperFolder', () => {
   it('files a tagged run under the student, dated by the run (SGT)', () => {
     expect(paperFolder(SOPHIE)).toBe('/Students/Sophie Tan/2026-09-01 EM 2025 p1 sophie');
-    expect(markedAiPath(SOPHIE)).toBe('/Students/Sophie Tan/2026-09-01 EM 2025 p1 sophie/Marked (AI).pdf');
+    expect(markedAiPath(SOPHIE)).toBe('/Students/Sophie Tan/2026-09-01 EM 2025 p1 sophie/1 Marked by AI.pdf');
   });
 
   it('agrees with the folder the sheet worker already filed into', () => {
@@ -87,6 +87,9 @@ describe('paperFolder', () => {
 describe('the marked copies', () => {
   it('matches Adrian\'s copy by name, including a double-save "(1)"', () => {
     expect(markedAdrianPattern.test('Marked (Adrian).pdf')).toBe(true);
+    expect(markedAdrianPattern.test('2 Marked by Adrian.pdf')).toBe(true);
+    expect(markedAdrianPattern.test('2 Marked by Adrian (1).pdf')).toBe(true);
+    expect(markedAdrianPattern.test('1 Marked by AI.pdf')).toBe(false);
     expect(markedAdrianPattern.test('Marked (Adrian) (1).pdf')).toBe(true);
     expect(markedAdrianPattern.test('marked (adrian).PDF')).toBe(true);
     expect(markedAdrianPattern.test('Marked (AI).pdf')).toBe(false);
@@ -96,6 +99,10 @@ describe('the marked copies', () => {
 
   it('tells marked copies and the sheet apart', () => {
     expect(isMarkedCopy('Marked (AI).pdf')).toBe(true);
+    expect(isMarkedCopy('1 Marked by AI.pdf')).toBe(true);
+    expect(isMarkedCopy('4 Practice Again — returned.pdf')).toBe(true);
+    expect(isSheetPdf('3 Practice Again.pdf')).toBe(true);
+    expect(isSheetPdf('4 Practice Again — returned.pdf')).toBe(false);
     expect(isMarkedCopy('Marked (Adrian) (1).pdf')).toBe(true);
     expect(isMarkedCopy('Practice Again.pdf')).toBe(false);
     expect(isSheetPdf('Practice Again.pdf')).toBe(true);

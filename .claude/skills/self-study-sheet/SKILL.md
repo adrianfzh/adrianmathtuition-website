@@ -281,7 +281,7 @@ Expect to use none on most sheets.
 
 ### The reference sheet
 
-`/Students/Khoo Ke Er Klaire/2026-08-30 klaire am tys 2021 p1/Practice Again.docx` (his amended copy; the worker's draft sits beside it as `Practice Again (worker original).docx`)
+`/Students/Khoo Ke Er Klaire/2026-08-30 klaire am tys 2021 p1/3 Practice Again.docx` (his amended copy; the worker's draft sits beside it as `Practice Again (worker original).docx`)
 is the sheet Adrian says is closest to what he wants (31 Aug 2026, comparing it
 against Kiara's and Sophie's from the same evening). Read it before authoring.
 What makes it the reference — all of it reproducible, none of it accidental:
@@ -695,7 +695,7 @@ folder has to live under `$HOME` regardless.
 Render the DOCX **and** a preview PDF, then file both:
 
 ```bash
-node scripts/dropbox-put.mjs "<file>" "/Students/<Student Name>/<YYYY-MM-DD> <paper>/Practice Again.docx" --overwrite
+node scripts/dropbox-put.mjs "<file>" "/Students/<Student Name>/<YYYY-MM-DD> <paper>/3 Practice Again.docx" --overwrite
 ```
 
 (The script stages to Blob and calls `/api/admin/dropbox-put`; a direct Dropbox
@@ -708,13 +708,13 @@ marked paper + sheet together from triage** (the 📘 attach button there).
 ### The filing path is fixed — one folder per paper (Adrian, 2 Sep 2026)
 
 ```
-/Students/<Student Name>/<YYYY-MM-DD> <paper>/Practice Again.docx
-/Students/<Student Name>/<YYYY-MM-DD> <paper>/Practice Again.pdf
+/Students/<Student Name>/<YYYY-MM-DD> <paper>/3 Practice Again.docx
+/Students/<Student Name>/<YYYY-MM-DD> <paper>/3 Practice Again.pdf
 ```
 
 `<YYYY-MM-DD>` is the marking run's date (`paper_marking_runs.created_at`, SGT)
 and `<paper>` its `paper_name` — e.g. `/Students/Sophie Tan/2026-09-01 EM 2025
-p1 sophie/Practice Again.docx`. Adrian, on a folder holding two papers' worth of
+p1 sophie/3 Practice Again.docx`. Adrian, on a folder holding two papers' worth of
 docx + pdf side by side: *"these docx and pdfs will pile up in the same folder,
 any ways we can keep them more organized?"* A folder per paper keeps each
 paper's sheet and PDF together and sorts by date. **The same folder holds the

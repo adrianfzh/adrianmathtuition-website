@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { isOurFileUrl, fetchOurFile } from '@/lib/student-files';
 import { dropboxConfigured, uploadFile } from '@/lib/dropbox';
-import { markedAiPath, paperFolder, type PaperRun } from '@/lib/paper-folder';
+import { markedAiPath, paperFolder, RETURNED_NAME, type PaperRun } from '@/lib/paper-folder';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
 // File a marked PDF into Dropbox (6 Aug 2026). Adrian's ask: after a queued paper
@@ -55,7 +55,12 @@ export async function POST(req: NextRequest) {
   // the private student-files bucket; see lib/student-files.ts). The bot and the
   // mark-paper page still call this after every marking; answer calmly so neither
   // reports an error, and keep the old behaviour one env flag away.
-  if (process.env.STUDENT_FILES_TO_DROPBOX !== '1') {
+  // 6 Sep 2026 — Adrian chose the Dropbox TRAY: he vets in Notability from the
+  // Files app, so the marked copy is filed again (one folder per paper, four
+  // fixed names), and /api/cron/dropbox-tray deletes the folder one month after
+  // release. The private store stays the source. STUDENT_FILES_TO_DROPBOX=0
+  // returns to the 5 Sep behaviour (private store only).
+  if (process.env.STUDENT_FILES_TO_DROPBOX === '0') {
     return NextResponse.json({
       ok: false, skipped: true,
       error: 'Marked PDFs stay in the private store now (not filed to Dropbox) — open them from the desk or /admin/papers.',
@@ -65,14 +70,28 @@ export async function POST(req: NextRequest) {
   const runId = typeof body.runId === 'string' && /^[0-9a-f-]{36}$/i.test(body.runId) ? body.runId : null;
   let run: PaperRun | null = null;
   let recordedPath: string | null = null;
+  let returnedInto: PaperRun | null = null;
   if (runId) {
     const { data } = await getSupabaseAdmin()
       .from('paper_marking_runs')
-      .select('student_id, student_name, paper_name, created_at, dropbox_path')
+      .select('student_id, student_name, paper_name, created_at, dropbox_path, assignment_id:result_json->>assignment_id')
       .eq('id', runId).maybeSingle();
     if (data) {
       run = data;
       recordedPath = (data.dropbox_path as string | null) || null;
+      // A RETURNED Practice Again (a hand-in answering a sheet assignment) files
+      // under the PAPER the sheet came from, as "4 Practice Again — returned.pdf",
+      // never in a folder of its own (Adrian, 6 Sep 2026).
+      const assignmentId = (data as { assignment_id?: string | null }).assignment_id;
+      if (assignmentId) {
+        const { data: a } = await getSupabaseAdmin().from('portal_assignments').select('source_run_id').eq('id', assignmentId).maybeSingle();
+        const parentId = (a as { source_run_id?: string | null } | null)?.source_run_id;
+        if (parentId) {
+          const { data: parent } = await getSupabaseAdmin().from('paper_marking_runs')
+            .select('student_id, student_name, paper_name, created_at').eq('id', parentId).maybeSingle();
+          if (parent) returnedInto = parent as PaperRun;
+        }
+      }
     }
   }
   if (recordedPath && !body.confirmOverwrite) {
@@ -85,9 +104,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const target: PaperRun = run ?? { student_id: null, student_name: null, paper_name: body.name, created_at: Date.now() };
-  const path = markedAiPath(target);
+  const target: PaperRun = returnedInto ?? run ?? { student_id: null, student_name: null, paper_name: body.name, created_at: Date.now() };
   const folder = paperFolder(target);
+  const path = returnedInto ? `${folder}/${RETURNED_NAME}` : markedAiPath(target);
 
   try {
     const r = await fetchOurFile(url, { signal: AbortSignal.timeout(45_000) });

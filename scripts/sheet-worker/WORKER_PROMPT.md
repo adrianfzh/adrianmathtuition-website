@@ -79,11 +79,11 @@ python3 -c "import zipfile,re,sys; t=re.sub(r'<[^>]+>',' ',zipfile.ZipFile(sys.a
     - Parts in their own column of the solution table; 1.5 spacing everywhere
       (the library enforces spacing at save).
 
-4. **File both files into Dropbox** (from the repo, which is your working dir):
+4. **File both files into Dropbox** — the sheet's fixed names are `3 Practice Again.docx` / `3 Practice Again.pdf` (one folder per paper holds `1 Marked by AI.pdf`, `2 Marked by Adrian.pdf`, `3 Practice Again.*`, `4 Practice Again — returned.pdf`; Adrian, 6 Sep 2026) (from the repo, which is your working dir):
 
 ```bash
-node scripts/dropbox-put.mjs "<the .docx>" "/Students/<Student Name>/<YYYY-MM-DD> <paper>/Practice Again.docx" --overwrite
-node scripts/dropbox-put.mjs "<the .pdf>"  "/Students/<Student Name>/<YYYY-MM-DD> <paper>/Practice Again.pdf" --overwrite
+node scripts/dropbox-put.mjs "<the .docx>" "/Students/<Student Name>/<YYYY-MM-DD> <paper>/3 Practice Again.docx" --overwrite
+node scripts/dropbox-put.mjs "<the .pdf>"  "/Students/<Student Name>/<YYYY-MM-DD> <paper>/3 Practice Again.pdf" --overwrite
 ```
 
    One folder per paper (`<YYYY-MM-DD>` = the run's `created_at` in SGT,
@@ -103,7 +103,7 @@ node scripts/dropbox-put.mjs "<the .pdf>"  "/Students/<Student Name>/<YYYY-MM-DD
 curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
   -H "Authorization: Bearer $SHEETS_API_TOKEN" -H 'Content-Type: application/json' \
   -d '{"action":"done","id":"<job id>","result":{
-        "docx_path":"/Students/<Student>/<YYYY-MM-DD> <paper>/Practice Again.docx","pdf_path":"/Students/<Student>/<YYYY-MM-DD> <paper>/Practice Again.pdf",
+        "docx_path":"/Students/<Student>/<YYYY-MM-DD> <paper>/3 Practice Again.docx","pdf_path":"/Students/<Student>/<YYYY-MM-DD> <paper>/3 Practice Again.pdf",
         "wave":["chain rule","∫1/(ax+b)"],"shelved":["Polynomials","Plane Geometry"],
         "verified":"42/42 answers checked",
         "questions":[

@@ -24,8 +24,18 @@ import { sgtDateISO } from './sgt';
 
 export const STUDENTS_ROOT = '/Students';
 export const UNTAGGED_FOLDER = '_Untagged';
-export const MARKED_AI_NAME = 'Marked (AI).pdf';
-export const MARKED_ADRIAN_STEM = 'Marked (Adrian)';
+// ONE FOLDER PER PAPER, FOUR FIXED NAMES (Adrian, 6 Sep 2026): the Dropbox copy is a
+// tray he works from in Notability and Word, not the source (the private
+// student-files store is). A re-run overwrites the file with the same name; his
+// own saves use the "2 …" name; the legacy "Marked (AI)" / "Marked (Adrian)"
+// names from before 6 Sep stay recognised so older folders keep working.
+export const MARKED_AI_NAME = '1 Marked by AI.pdf';
+export const LEGACY_MARKED_AI_NAME = 'Marked (AI).pdf';
+export const MARKED_ADRIAN_STEM = '2 Marked by Adrian';
+export const LEGACY_MARKED_ADRIAN_STEM = 'Marked (Adrian)';
+export const SHEET_DOCX_NAME = '3 Practice Again.docx';
+export const SHEET_PDF_NAME = '3 Practice Again.pdf';
+export const RETURNED_NAME = '4 Practice Again — returned.pdf';
 /** The Dropbox app folder, as the web UI addresses it. */
 export const DROPBOX_APP_ROOT = '/Apps/AdrianMathNotes';
 
@@ -105,16 +115,20 @@ export function markedAiPath(run: PaperRun): string {
  * save leaves "Marked (Adrian) (1).pdf" — which still counts. Any PDF whose
  * stem starts with "Marked (Adrian)" matches; pickAmendedCopy takes the newest.
  */
-export const markedAdrianPattern = /^Marked \(Adrian\).*\.pdf$/i;
+export const markedAdrianPattern = /^(2 Marked by Adrian|Marked \(Adrian\)).*\.pdf$/i;
 
 /** Either of the marked copies — what the sheet chooser must never pick up. */
 export function isMarkedCopy(name: string | null | undefined): boolean {
-  return /^Marked \((AI|Adrian)\)/i.test(String(name ?? '').trim());
+  const n = String(name ?? '').trim();
+  // the two marked copies (new and legacy names) and the student's returned sheet
+  return /^Marked \((AI|Adrian)\)/i.test(n) || /^[12] Marked by (AI|Adrian)/i.test(n) || /^4 Practice Again/i.test(n);
 }
 
 /** The self-study sheet's PDF: "Practice Again.pdf", "Practice Again 2.pdf", "Practice Again (1).pdf". */
 export function isSheetPdf(name: string | null | undefined): boolean {
-  return /^Practice Again.*\.pdf$/i.test(String(name ?? '').trim());
+  const n = String(name ?? '').trim();
+  // "3 Practice Again.pdf" (6 Sep 2026) and the older "Practice Again*.pdf"; never the returned "4 …"
+  return /^(3 )?Practice Again.*\.pdf$/i.test(n) && !/^4 /.test(n);
 }
 
 export type FolderEntry = { name: string; path: string; modified?: string | null; tag?: string };
