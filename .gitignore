@@ -63,3 +63,4 @@ __pycache__/
 
 # two-account leak test state (holds minted session tokens) — scripts/leak-test
 .leak-test/
+scripts/.sweep-log.json

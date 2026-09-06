@@ -5,7 +5,8 @@
 // reversible by hand. Dry-run by default; --apply performs the moves.
 //
 //   node scripts/students-folder-sweep.mjs            # plan only
-//   node scripts/students-folder-sweep.mjs --apply    # do it
+//   node scripts/students-folder-sweep.mjs --apply    # do it (writes scripts/.sweep-log.json)
+//   node scripts/students-folder-sweep.mjs --undo     # move everything back, newest log first
 //
 // Rules per paper folder (one level under /Students/<name>/):
 //   Marked (AI).pdf                      → 1 Marked by AI.pdf
@@ -17,6 +18,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const APPLY = process.argv.includes('--apply');
+const UNDO = process.argv.includes('--undo');
+const LOG = path.join(process.cwd(), 'scripts', '.sweep-log.json');
 const env = Object.fromEntries(fs.readFileSync(path.join(process.cwd(), '.env.local'), 'utf8').split('\n')
   .filter(l => /^[A-Z_]+=/.test(l)).map(l => { const i = l.indexOf('='); return [l.slice(0, i), l.slice(i + 1).replace(/^"|"$/g, '').trim()]; }));
 const API = 'https://api.dropboxapi.com/2';
@@ -41,6 +44,21 @@ async function list(p) {
 }
 const stem = n => n.replace(/\.[^.]+$/, '').trim().toLowerCase();
 const newest = arr => [...arr].sort((a, b) => String(b.server_modified || '').localeCompare(String(a.server_modified || '')))[0];
+
+if (UNDO) {
+  // Reverse every recorded move, last first. A file Adrian has since renamed or
+  // removed just reports as failed; nothing else is touched.
+  const log = fs.existsSync(LOG) ? JSON.parse(fs.readFileSync(LOG, 'utf8')) : [];
+  if (!log.length) { console.log('nothing to undo (no scripts/.sweep-log.json)'); process.exit(0); }
+  let back = 0, failed = 0;
+  for (const m of [...log].reverse()) {
+    try { await rpc('/files/move_v2', { from_path: m.to, to_path: m.from, autorename: false }); back++; }
+    catch (e) { failed++; console.error('FAILED', m.to, '→', m.from, String(e.message).slice(0, 120)); }
+  }
+  fs.writeFileSync(LOG, '[]');
+  console.log(`undone: ${back} moved back, ${failed} failed`);
+  process.exit(0);
+}
 
 const plan = []; // { folder, from, to }
 const students = (await list('/Students')).filter(e => e['.tag'] === 'folder' && e.name !== '_Untagged');
@@ -82,9 +100,15 @@ const byFolder = {}; for (const p of plan) (byFolder[p.folder] ||= []).push(`${p
 for (const [f, moves] of Object.entries(byFolder)) console.log(`\n${f.replace('/Apps/AdrianMathNotes/Students/', '')}\n  ` + moves.join('\n  '));
 if (!APPLY) { console.log('\n(dry run — add --apply to perform the moves)'); process.exit(0); }
 let done = 0, failed = 0;
+const log = fs.existsSync(LOG) ? JSON.parse(fs.readFileSync(LOG, 'utf8')) : [];
 for (const p of plan) {
   const from = `${p.folder}/${p.from}`.replace('/Apps/AdrianMathNotes', ''), to = `${p.folder}/${p.to}`.replace('/Apps/AdrianMathNotes', '');
-  try { await rpc('/files/move_v2', { from_path: from, to_path: to, autorename: true }); done++; }
-  catch (e) { failed++; console.error('FAILED', from, '→', to, String(e.message).slice(0, 120)); }
+  try {
+    const r = await rpc('/files/move_v2', { from_path: from, to_path: to, autorename: true });
+    // record the REAL destination (autorename may have appended " (1)") so --undo can find it
+    log.push({ from, to: r.metadata.path_display || to, at: new Date().toISOString() });
+    fs.writeFileSync(LOG, JSON.stringify(log, null, 1));
+    done++;
+  } catch (e) { failed++; console.error('FAILED', from, '→', to, String(e.message).slice(0, 120)); }
 }
-console.log(`\napplied: ${done} moved, ${failed} failed`);
+console.log(`\napplied: ${done} moved, ${failed} failed — log in scripts/.sweep-log.json (node scripts/students-folder-sweep.mjs --undo reverses it)`);
