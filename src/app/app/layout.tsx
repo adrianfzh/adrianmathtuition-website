@@ -3,6 +3,7 @@
 // Adrian's signed admin cookie also passes the gate (review/testing) — the
 // per-page APIs decide what an admin caller may see (e.g. pending units).
 import type { Metadata } from 'next';
+import { APP_STARTUP_IMAGES } from '@/lib/app-splash';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -22,11 +23,19 @@ import { DesktopLinks, MobileTabs } from '@/components/PortalTabs';
 
 // PWA identity for the student portal: the manifest + apple-touch-icon are what
 // let an iPhone install /app to the Home Screen — which is the ONLY way web
-// push works on iOS. Keep in step with public/app-manifest.webmanifest.
+// push works on iOS. The icon (cream paper + amber tick on navy) and the
+// per-device startup images are drawn by scripts/app-icons/generate.mjs;
+// re-run it after changing the drawing. Keep in step with
+// public/app-manifest.webmanifest.
 export const metadata: Metadata = {
   manifest: '/app-manifest.webmanifest',
-  icons: { apple: '/icons/admin-180.png' },
-  appleWebApp: { capable: true, title: 'AdrianMath' },
+  icons: { apple: '/icons/app-180.png' },
+  appleWebApp: {
+    capable: true,
+    title: 'AdrianMath',
+    statusBarStyle: 'default',
+    startupImage: APP_STARTUP_IMAGES,
+  },
 };
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
