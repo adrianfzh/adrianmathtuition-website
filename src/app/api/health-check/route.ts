@@ -483,6 +483,17 @@ export async function GET(req: NextRequest) {
       if (![301, 302, 303, 307, 308, 401].includes(r.status)) throw new Error(`expected a login redirect or 401, got HTTP ${r.status}`);
       return `gate up (${r.status})`;
     }),
+    // The exam library (SPEC-PAPER-MATCH phase 2, 7 Sep 2026): paper_library must
+    // resolve and hold rows, or every queued paper silently marks ungrounded.
+    timed('paper-library', async () => {
+      const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      const q = await fetch(`${process.env.SUPABASE_URL}/rest/v1/paper_library?select=id&limit=1`,
+        { headers: { apikey: key, Authorization: `Bearer ${key}`, Prefer: 'count=exact' }, signal: T(10000) });
+      if (!q.ok) throw new Error(`table? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
+      const n = Number((q.headers.get('content-range') || '').split('/')[1] || 0);
+      if (!n) throw new Error('paper_library is empty — run scripts/paper-library/index.mjs --apply');
+      return `${n} papers indexed`;
+    }),
     // Photo→similar + search→generate on the practice tab (lib/portal-find).
     // Anonymous 401 proves each route is deployed with its session gate up —
     // a 404 means the 📷/🔍 finder silently dies for every student.

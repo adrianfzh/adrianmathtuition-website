@@ -9,7 +9,7 @@ Adrian, 3 Sep 2026, after Kassandra's TYS 2021 P1 had to be re-queued by hand wi
 > upload the questions as well if their workings are not together with the questions),
 > and also extract the paper/questions/images/solutions to the question bank" — "build it"
 
-Status: **SPEC AGREED 3 Sep 2026, build in phases below.** Follows the 5-step recipe in
+Status: **Phase 1 BUILT 3 Sep 2026 (bank grounding). Phase 2 BUILT 7 Sep 2026 — the library lives in SUPABASE, not Dropbox** (Adrian: "is it better if the exam library is in supabase?" → yes): the private `paper-library` bucket + `paper_library` table, filled by `scripts/paper-library/index.mjs` from the bank's own `source_file` list (299 PDFs on 7 Sep; 314 PDF sources not on this Mac, 1,120 DOCX sources awaiting a Word export job); the bot's `lib/paper-library.js` attaches questions + solutions as signed URLs at enqueue and again before marking (`result_json.paper_match.library`). Phase 3 (extraction hand-off + the Submit-page ask) not built. Original: **SPEC AGREED 3 Sep 2026, build in phases below.** Follows the 5-step recipe in
 CLAUDE.md §Building doctrine. Owner of the standard: Adrian, at the desk.
 
 ## What exists today (do not rebuild)

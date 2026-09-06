@@ -553,6 +553,17 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   note on the run, and the sheet worker / self-study skill SHELVE `agree:false` parts instead of
   teaching them ("disputed by second look — check on the desk"). Adrian's ask: the sheet must not
   teach a misread. Not a re-mark — a full second marking was ruled out on cost.
+- **📚 The exam library in Supabase (SPEC-PAPER-MATCH phase 2, 7 Sep 2026):** private bucket
+  `paper-library` + table `paper_library` keyed like `lib/paper-key bankFilterFor` — (school, year,
+  level, paper) + kind (questions | solutions | answers | combined). `scripts/paper-library/index.mjs`
+  (Mac, run by hand; dry-run by default, `--apply` uploads) takes the bank's own `questions.source_file`
+  list, finds each PDF under the Dropbox exam folder or `~/Desktop/AdrianMath/papers`, uploads it and
+  upserts the row (sha256-skipped when unchanged). The bot's `lib/paper-library.js` attaches the
+  questions (`source.paper_pdf_url`) and the solutions (`source.scheme_source.pdf_url`) as 24-hour
+  signed URLs at enqueue and again before marking; hand-attached files always win;
+  `result_json.paper_match.library` records what was used. Health-check `paper-library` fails on an
+  empty table. Gaps on 7 Sep: 314 PDF sources are not on this Mac (find them on Mac A / re-source),
+  and 1,120 DOCX sources need a Word-export job before they can be attached.
 - **📂 The Dropbox tray — one folder per paper, four fixed names, one-month life (6 Sep 2026):**
   Adrian vets in Notability from the Files app, so student files go to Dropbox again, as a TRAY:
   `/Students/<Student>/<YYYY-MM-DD paper>/` holds `1 Marked by AI.pdf`, `2 Marked by Adrian.pdf`
