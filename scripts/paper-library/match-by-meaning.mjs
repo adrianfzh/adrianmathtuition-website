@@ -67,6 +67,9 @@ const files = [];
 for (const p of listing) {
   const rel = path.relative(ROOT, p); const parts = rel.split('/'); const top = parts[0]; const name = parts[parts.length - 1];
   if (/question bank|\bqb\b|revision|notes|worksheet|topical|by topic|keywords/i.test(rel) && !/prelim|tys|gce|o level|a level/i.test(name)) continue;
+  // A multi-year compilation ("TYS 1982-1998", "2008-2019") is not one paper and is far
+  // over the upload limit; the per-year papers are what the marker attaches.
+  if (/\b(19|20)\d\d\s*[-–]\s*(19|20)\d\d\b/.test(name)) continue;
   const parsed = parsePaperKey({ paperName: `${parts.slice(1, -1).join(' ')} ${name.replace(/\.pdf$/i, '')}` });
   let level = levelFromFolder(top) || (parsed.level === 'AM' ? 'AM' : parsed.level === 'EM' ? 'EM' : parsed.level === 'H2' ? 'JC2' : null);
   // JC promos and H1 sit under the same "H2 JC" tree: the path says which year / syllabus.
