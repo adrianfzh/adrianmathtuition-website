@@ -353,64 +353,11 @@ function Paper({ paper }: { paper: StudentPaper }) {
         )
       )}
 
-      {paper.practice.length > 0 && (
-        <details className="mt-3 group/pr">
-          <summary className="cursor-pointer text-sm font-semibold text-navy list-none flex items-center gap-1.5">
-            <span className="text-gray-400 group-open/pr:rotate-90 transition-transform inline-block">›</span>
-            📝 Practice these next ({paper.practice.length})
-          </summary>
-          <p className="text-[11px] text-gray-400 mt-1.5">
-            One follow-up question for each question that dropped marks. Try it on paper before peeking at the answer.
-          </p>
-          <a
-            href={`/api/portal/practice-pdf?run=${paper.id}`}
-            className="inline-block mt-2 text-xs font-semibold text-navy border border-navy/20 rounded-lg px-3 py-1.5 hover:bg-navy/5"
-          >
-            ⬇ Download as a worksheet (PDF)
-          </a>
-          <ul className="mt-2 space-y-2.5">
-            {paper.practice.map((it, i) => (
-              <li key={i} className="rounded-xl border border-amber-100 bg-amber-50/40 p-3">
-                <p className="text-[11px] font-bold text-amber-800 mb-1">
-                  For Q{it.for}
-                  {it.topic && <span className="font-medium"> · {it.topic}</span>}
-                  {it.origin && <span className="font-medium text-amber-700/70"> · {it.origin}</span>}
-                </p>
-                <MathText text={it.question} className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed" />
-                {it.note && <MathText text={it.note} className="text-[12px] text-gray-500 italic mt-1.5" />}
-                {/* Bank picks (id = questions.id) open in the graded practice
-                    flow — attempt it, get it marked, close the loop. Freshly
-                    written items (id null) aren't in the bank, so they stay
-                    try-on-paper with the answer below. */}
-                {it.id && (
-                  <div className="mt-2">
-                    <Link
-                      href={`/app/practice?qid=${it.id}&from=marked`}
-                      className="inline-block text-[12px] font-semibold bg-[hsl(45,80%,94%)] text-navy rounded-full px-3 py-1.5 hover:bg-[hsl(45,80%,88%)] transition-colors"
-                    >
-                      ✏️ Try it now <span className="text-gray-400">›</span>
-                    </Link>
-                  </div>
-                )}
-                {it.answer && (
-                  <details className="mt-2">
-                    <summary className="cursor-pointer text-xs font-semibold text-emerald-700 list-none">
-                      Show answer
-                    </summary>
-                    {/* One line per part/statement (answerLines) — packed
-                        multi-part answers used to cram onto a single line. */}
-                    <div className="mt-1 space-y-1">
-                      {answerLines(it.answer).map((line, j) => (
-                        <MathText key={j} text={line} className="text-[13px] text-emerald-800" />
-                      ))}
-                    </div>
-                  </details>
-                )}
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
+      {/* "Practice these next" + "Download as a worksheet" were removed on 6 Sep 2026
+          (Adrian: "remove the current practice these next since it's random") — the
+          list was an automatic bank draw, one question per lost part, with no
+          teaching in it. The Practice Again sheet (From Adrian) is the follow-up now.
+          paper.practice still comes back from buildStudentMarking for the desk/triage. */}
     </div>
   );
 }
