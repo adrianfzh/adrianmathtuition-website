@@ -8,6 +8,9 @@
 //
 //   node scripts/paper-library/match-by-meaning.mjs           # plan
 //   node scripts/paper-library/match-by-meaning.mjs --apply   # upload + index
+//   … --all      # ALSO index every Dropbox exam PDF whose name yields a KNOWN school + year + level + paper,
+//                 # even when the bank has no rows for it (Adrian, 7 Sep 2026: "what about the other exam pdfs") —
+//                 # the marker still grounds on the printed questions; only bank-known schools, so no junk keys
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -18,6 +21,7 @@ import { createClient } from '@supabase/supabase-js';
 const require = createRequire(import.meta.url);
 const { parsePaperKey, SCHOOL_ALIASES } = require(path.join(process.env.HOME, 'dev/adrianmath-telegram-math-bot/lib/paper-key.js'));
 const APPLY = process.argv.includes('--apply');
+const ALL = process.argv.includes('--all');
 const env = Object.fromEntries(fs.readFileSync(path.join(process.cwd(), '.env.local'), 'utf8').split('\n')
   .filter(l => /^[A-Z_]+=/.test(l)).map(l => { const i = l.indexOf('='); return [l.slice(0, i), l.slice(i + 1).replace(/^"|"$/g, '').trim()]; }));
 const sb = createClient(env.SUPABASE_URL, env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
@@ -64,7 +68,13 @@ for (const p of listing) {
   const rel = path.relative(ROOT, p); const parts = rel.split('/'); const top = parts[0]; const name = parts[parts.length - 1];
   if (/question bank|\bqb\b|revision|notes|worksheet|topical|by topic|keywords/i.test(rel) && !/prelim|tys|gce|o level|a level/i.test(name)) continue;
   const parsed = parsePaperKey({ paperName: `${parts.slice(1, -1).join(' ')} ${name.replace(/\.pdf$/i, '')}` });
-  const level = levelFromFolder(top) || (parsed.level === 'AM' ? 'AM' : parsed.level === 'EM' ? 'EM' : parsed.level === 'H2' ? 'JC2' : null);
+  let level = levelFromFolder(top) || (parsed.level === 'AM' ? 'AM' : parsed.level === 'EM' ? 'EM' : parsed.level === 'H2' ? 'JC2' : null);
+  // JC promos and H1 sit under the same "H2 JC" tree: the path says which year / syllabus.
+  if (level === 'JC2' && /\bpromo|\bjc ?1\b|\bj1\b|year ?5|\by5\b/i.test(rel)) level = 'JC1';
+  if ((level === 'JC2' || level === 'JC1') && /\bh1\b/i.test(rel) && !/\bh2\b/i.test(name)) level = 'JC2_H1';
+  // Sec 3 papers filed under the S4 folders say so in the path or name.
+  if (level === 'AM' && /\bsec ?3\b|\bs3\b/i.test(rel)) level = 'S3_AM';
+  if (level === 'EM' && /\bsec ?3\b|\bs3\b/i.test(rel)) level = 'S3_EM';
   const year = parsed.year || (rel.match(/\b(20\d\d)\b/) || [])[1] && Number((rel.match(/\b(20\d\d)\b/) || [])[1]);
   const paper = parsed.paper ? `p${parsed.paper}` : null;
   const gce = parsed.exam === 'GCE' || /\btys\b|o[- ]level|gce/i.test(rel);
@@ -86,6 +96,30 @@ for (const w of missing) {
   const pickS = s.sort((a, b) => a.name.length - b.name.length)[0];
   if (pickQ) plan.push({ w, f: pickQ, kind: pickQ.paper ? 'questions' : 'combined' });
   if (pickS && !w.hasS) plan.push({ w, f: pickS, kind: pickS.paper ? 'solutions' : 'combined' });
+}
+// --all: every Dropbox PDF with a full, KNOWN key that the library lacks — a school is
+// "known" when the bank has ever seen it (any level/year), so a parser leftover like
+// "Final Exam" never becomes a school. TYS files without a paper number serve p1 + p2 as
+// 'combined'.
+if (ALL) {
+  const knownSchools = new Map(); for (const r of bank) if (r.school) knownSchools.set(schoolTokens(r.school), r.school);
+  const planned = new Set(plan.map(p => `${p.w.school}|${p.w.year}|${p.w.level}|${p.w.paper}|${p.kind}`));
+  const byKey = new Map();
+  for (const f of files) {
+    if (!f.year || !f.level) continue;
+    const school = f.gce ? 'GCE' : knownSchools.get(f.tokens);
+    if (!school) continue;
+    const papers = f.paper ? [f.paper] : (f.gce ? ['p1', 'p2'] : []);
+    for (const paper of papers) {
+      const kind = f.paper ? f.kind : 'combined';
+      const k = `${school}|${f.year}|${f.level}|${paper}|${kind}`;
+      if (have.has(k) || planned.has(k)) continue;
+      const cur = byKey.get(k);
+      if (!cur || f.name.length < cur.f.name.length) byKey.set(k, { w: { school, year: f.year, level: f.level, paper, hasS: false }, f, kind });
+    }
+  }
+  for (const v of byKey.values()) { plan.push(v); planned.add(`${v.w.school}|${v.w.year}|${v.w.level}|${v.w.paper}|${v.kind}`); }
+  console.log(`--all: ${byKey.size} more file(s) from Dropbox papers the bank does not hold`);
 }
 console.log(`matched: ${new Set(plan.map(p => `${p.w.school}|${p.w.year}|${p.w.level}|${p.w.paper}`)).size} papers (${plan.length} files) · still unmatched: ${unmatched.length}`);
 for (const p of plan.slice(0, 14)) console.log(`  ${p.w.level} ${p.w.year} ${p.w.paper} ${p.w.school}  ←  ${p.f.rel}  [${p.kind}]`);
