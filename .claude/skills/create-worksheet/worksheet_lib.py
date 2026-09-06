@@ -689,8 +689,33 @@ class Worksheet:
         self.doc.add_page_break()
         self._block_paras = []  # a manual break ends any keep-together block
 
+    def _enforce_line_spacing(self, spacing=1.5):
+        """Adrian's house rule (6 Sep 2026: "line spacing 1.5"): EVERY paragraph on
+        the sheet sits on 1.5 — body, headings, practice items, [Ans] lines and
+        every cell of every solution table. Rainie's 2 Sep sheet still carried
+        single/1.15 paragraphs inside the tables and the practice lists, because
+        only Normal and the solution boxes had been set. Walk everything."""
+        from docx.enum.text import WD_LINE_SPACING
+        def fix(par):
+            pf = par.paragraph_format
+            pf.line_spacing_rule = WD_LINE_SPACING.MULTIPLE
+            pf.line_spacing = spacing
+        for par in self.doc.paragraphs:
+            fix(par)
+        for tbl in self.doc.tables:
+            for row in tbl.rows:
+                for cell in row.cells:
+                    for par in cell.paragraphs:
+                        fix(par)
+                    for inner in cell.tables:
+                        for r2 in inner.rows:
+                            for c2 in r2.cells:
+                                for par in c2.paragraphs:
+                                    fix(par)
+
     def save(self, path):
         """Save the worksheet, injecting clean numbering.xml."""
+        self._enforce_line_spacing(1.5)
         self._finish_block()    # the last question has no Q() after it
         # Save to a temp buffer first, then rewrite numbering.xml
         buf = io.BytesIO()

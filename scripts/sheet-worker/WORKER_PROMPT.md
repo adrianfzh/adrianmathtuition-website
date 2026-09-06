@@ -50,6 +50,20 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
    the lease is about to lapse. `done` on a cancelled job is refused anyway, so
    carrying on only wastes the session.
 
+3b. **Before filing, check the sheet against Adrian's rules (6 Sep 2026)** — run
+    from the repo root; fix and re-render on any hit, do not file with one in:
+
+```bash
+python3 -c "import zipfile,re,sys; t=re.sub(r'<[^>]+>',' ',zipfile.ZipFile(sys.argv[1]).read('word/document.xml').decode('utf8','ignore')); n=len(re.findall(r'\\bnever\\b',t,re.I)); c=t.count('Common Error'); print('never:',n,'| Common Error:',c); sys.exit(1 if n else 0)" "<the .docx>"
+```
+
+    - `never` must be 0 (say *not* / *does not* / *only when*).
+    - `Common Error` above 2 means you are writing one under every example —
+      keep only the ones that name the wrong tool or a trap that costs marks.
+    - Answers: one `[Ans: …]` per practice question, after the whole question.
+    - Parts in their own column of the solution table; 1.5 spacing everywhere
+      (the library enforces spacing at save).
+
 4. **File both files into Dropbox** (from the repo, which is your working dir):
 
 ```bash

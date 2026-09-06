@@ -38,6 +38,9 @@ import {
 } from '@/lib/sheet-jobs';
 import { sendTelegramDocument } from '@/lib/telegram';
 import { downloadFile, getTemporaryLink } from '@/lib/dropbox';
+import JSZip from 'jszip';
+import Anthropic from '@anthropic-ai/sdk';
+import { docxXmlToText, extractExamples, runExampleCheck } from '@/lib/sheet-example-check';
 import { normaliseDiagnosis, type Diagnosis } from '@/lib/sheet-diagnosis';
 import { rebuildRunPdfs, type RebuildOutcome } from '@/lib/rebuild-run-pdfs';
 import { queueSheetJob } from '@/lib/sheet-queue';
@@ -215,6 +218,42 @@ export async function POST(req: NextRequest) {
       .then(() => sendSheetFiles(job, result))
       .catch(() => {});
     logJobRun('sheet-worker', true, `${job.student_name || job.airtable_student_id}: sheet filed${held.created || held.already ? ` · ${held.created + held.already} practice items held` : ''}`).catch(() => {});
+
+    // ── The worked examples are re-derived by a second reader (6 Sep 2026) ────
+    // Practice answers were sympy-verified by the worker; the EXAMPLES — the
+    // teaching, in Adrian's voice — were not checked by anyone. A second model
+    // solves each example from its question alone and compares. A different
+    // final answer or a wrong line HOLDS the sheet on the desk (stage says so,
+    // Telegram says which example) instead of letting it release. Fail-open:
+    // a download or model hiccup records `skipped` and changes nothing.
+    // MARKING_EXAMPLE_CHECK=0 turns it off.
+    if (process.env.MARKING_EXAMPLE_CHECK !== '0' && result.docx_path && process.env.ANTHROPIC_API_KEY) {
+      try {
+        const buf = await downloadFile(result.docx_path);
+        const zip = await JSZip.loadAsync(buf);
+        const xml = await zip.file('word/document.xml')?.async('string');
+        const examples = extractExamples(docxXmlToText(xml || ''));
+        const model = process.env.MARKING_EXAMPLE_CHECK_MODEL || 'claude-sonnet-5';
+        const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+        const check = await runExampleCheck(examples, async (prompt) => {
+          const msg = await anthropic.messages.create({ model, max_tokens: 4000, messages: [{ role: 'user', content: prompt }] });
+          return msg.content.map(c => (c.type === 'text' ? c.text : '')).join('');
+        }, model);
+        const held = check.disagreements.length > 0;
+        await sb.from('sheet_jobs').update({
+          result: { ...stored, example_check: check },
+          ...(held ? { stage: `held — example check: ${check.disagreements.length} disagreement${check.disagreements.length === 1 ? '' : 's'}` } : {}),
+        }).eq('id', job.id);
+        if (held) {
+          const who = job.student_name || job.airtable_student_id;
+          const lines = check.disagreements.map(d => `Example ${d.example}: ${d.issue || 'final answer differs'}`).join('\n');
+          notify_marking(`⚠️ ${who} — the sheet is HELD: a second reader disagrees with ${check.disagreements.length} worked example${check.disagreements.length === 1 ? '' : 's'}.\n${lines}\nFix on the desk before release.`).catch(() => {});
+        }
+        console.log(`[sheet-jobs] example check ${job.id}: ${check.checked} checked, ${check.disagreements.length} disagreement(s)${check.skipped ? ` (${check.skipped})` : ''}`);
+      } catch (e) {
+        console.warn('[sheet-jobs] example check skipped:', job.id, (e as Error).message);
+      }
+    }
 
     // ── The sheet's diagnosis drives the cover (Adrian, 2 Sep 2026) ────────────
     // The worker read the student's working and ranked what to teach; the marked

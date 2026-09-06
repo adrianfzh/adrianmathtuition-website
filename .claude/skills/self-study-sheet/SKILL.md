@@ -383,6 +383,43 @@ they contradict an older rule here, they win:
   ×2 (`x³+3x²−8` for `−64`) and Kiara's Example 1 chain ran the inequality
   the wrong way. The standard is his; the arithmetic still gets checked.
 
+## Adrian's formatting and voice — the binding rules (6 Sep 2026)
+
+Adrian diffed the worker's sheets against his own notes docx. These win over
+anything older in this file:
+
+- **Line spacing 1.5 on every paragraph** — body, headings, practice items,
+  `[Ans]` lines and every cell of every solution table. `worksheet_lib.save()`
+  enforces it since 6 Sep 2026; do not hand-set anything tighter.
+- **Parts sit in their own column.** A worked solution is a two-column table:
+  the part label `(i)` / `(ii)` / `(a)` in the left column, the working in the
+  right. One row per part. A one-part example has a single row with an empty
+  label cell — the layout stays the same.
+- **Answers once, at the end of the question.** A practice question with
+  parts carries ONE `[Ans: (a) …; (b) …]` line after the whole question, not
+  an answer line after each part.
+- **The word "never" does not appear on a student's sheet.** Say *not*, *does
+  not*, *is not*, *only when*. Before filing, search the docx text for the
+  word and rewrite the sentence; the worker checks and refuses to file with it
+  in.
+- **A Common Error only when it is really useful** — it names the wrong TOOL
+  or a trap that costs marks in this exact place, in one sentence. Most
+  routine examples carry none. Two per sheet is plenty; a sheet with one under
+  every example is wrong.
+- **Write errors the way Adrian writes them to a Singapore student.** Short,
+  concrete, the student's own symbols, the "X, not Y" shape or a plain
+  instruction. His own Reminders lines are the model:
+  - "The expansion of (a + b)ⁿ has (n + 1) terms, not n."
+  - "If b is negative, signs alternate — keep the minus sign inside the bracket."
+  - "Powers apply to coefficients too: (2x)³ = 8x³, not 2x³."
+  - "'Coefficient' is the number only; 'term' includes the power of x."
+  - "To find a specific term, form and solve the index equation for r first."
+  Not this: "A common misconception students hold is that…", "It is crucial to
+  remember that…", "This error typically arises when…". No preamble, no
+  explaining what the error type is called, no second sentence of reassurance.
+  The approved `pitfalls` rows mined from his notes (teaching-knowledge layer)
+  are in this voice — read a few for the topic before writing one.
+
 Invoke `create-teaching-notes` and give it this brief:
 
 - **Example → Practice pairs, numbered straight through.** No TRIGGER /

@@ -553,6 +553,19 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   note on the run, and the sheet worker / self-study skill SHELVE `agree:false` parts instead of
   teaching them ("disputed by second look — check on the desk"). Adrian's ask: the sheet must not
   teach a misread. Not a re-mark — a full second marking was ruled out on cost.
+- **📘 Worked-example check on every sheet (6 Sep 2026, `lib/sheet-example-check.ts`):** when the
+  sheet worker posts `done`, the site downloads the DOCX, splits out each Example (question +
+  worked solution) and has a second model (Sonnet; `MARKING_EXAMPLE_CHECK_MODEL`, `=0` off) solve
+  it from the question alone and compare. A different final answer or a wrong line sets the job's
+  stage to "held — example check: N disagreement(s)" and Telegrams which example; agreement is
+  stored as `result.example_check`. Practice answers were already sympy-verified — this closes the
+  gap on the teaching itself. Prerequisite for the release-by-silence automation Adrian asked for.
+- **✍️ Sheet formatting and voice (6 Sep 2026):** `worksheet_lib.save()` now forces 1.5 line spacing
+  on every paragraph including table cells; the self-study-sheet skill carries Adrian's binding
+  rules — parts in their own column, one `[Ans]` per question after the whole question, no "never"
+  on a student's sheet (the worker refuses to file with it), a Common Error only when it names the
+  wrong tool or a trap, written the way his own Reminders lines are. The automatic "Practice these
+  next" list and its worksheet download were removed from the student Papers page the same day.
 - **➡️ One arrow per mistake (6 Sep 2026, bot `ai/annotate.js` + `ai/photo-overlay.js`):** a ✗
   that queued its red fix label used to queue a second label + leader for the error kind, and the
   value copied onto the printed "Answer ……" blank (the marker's own final line per part) drew a
