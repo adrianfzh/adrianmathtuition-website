@@ -562,8 +562,13 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   questions (`source.paper_pdf_url`) and the solutions (`source.scheme_source.pdf_url`) as 24-hour
   signed URLs at enqueue and again before marking; hand-attached files always win;
   `result_json.paper_match.library` records what was used. Health-check `paper-library` fails on an
-  empty table. Gaps on 7 Sep: 314 PDF sources are not on this Mac (find them on Mac A / re-source),
-  and 1,120 DOCX sources need a Word-export job before they can be attached.
+  empty table. Second pass `scripts/paper-library/match-by-meaning.mjs` matches Dropbox PDFs by MEANING —
+  folder + filename through `lib/paper-key` → (school, year, level, paper) — so the school's own
+  file names count (398 more papers on 7 Sep). Weekly refresh: `scripts/paper-library/run.sh` runs
+  both scripts `--apply` and stamps `job_runs` `paper-library` (launchd `com.adrianmath.paperlibrary`,
+  Sundays 04:10 SGT — Adrian runs `install.sh` once). The real gap is the bank's DOCX sources
+  (~1,500 papers were extracted from Word files): they need a Word-export job before the marker can
+  attach them — the next piece of phase 2.
 - **📂 The Dropbox tray — one folder per paper, four fixed names, one-month life (6 Sep 2026):**
   Adrian vets in Notability from the Files app, so student files go to Dropbox again, as a TRAY:
   `/Students/<Student>/<YYYY-MM-DD paper>/` holds `1 Marked by AI.pdf`, `2 Marked by Adrian.pdf`

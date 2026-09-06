@@ -35,6 +35,8 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'sheet-auto-release': { kind: 'interval', hours: 2, label: 'every 30 min' },
   // The Dropbox tray's one-month life: a paper's folder goes 30 days after release (daily 03:30 SGT, 6 Sep 2026).
   'dropbox-tray':      { kind: 'interval', hours: 30, label: 'daily 3:30am' },
+  // Weekly exam-library refresh on the Mac (scripts/paper-library/run.sh, launchd com.adrianmath.paperlibrary, Sun 04:10 SGT, 7 Sep 2026).
+  'paper-library':     { kind: 'interval', hours: 180, label: 'Sundays 4:10am' },
   'question-mine':     { kind: 'interval', hours: 108, label: 'Mon & Thu 7am' },
   'figure-fitness':    { kind: 'interval', hours: 36, label: 'nightly 3:10am' },
   'generate-invoices': { kind: 'monthly', day: 14, graceDays: 1, label: '14th 7am' },
