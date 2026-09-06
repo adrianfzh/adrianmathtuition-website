@@ -25,7 +25,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { listFolder, dropboxConfigured } from '@/lib/dropbox';
+import { listFolder, dropboxConfigured, downloadFile } from '@/lib/dropbox';
+import { putStudentFile, runKey } from '@/lib/student-files';
 import { choosePdf, sheetFolder, ambiguityMessage, noSheetNote, type SheetFile } from '@/lib/release-with-sheet';
 import { readNoSheet } from '@/lib/sheet-jobs';
 import { attachAmendedFromDropbox } from '@/lib/attach-amended';
@@ -208,6 +209,27 @@ export async function POST(req: NextRequest) {
   });
   const aData = await aRes.json().catch(() => ({}));
   if (!aRes.ok) return NextResponse.json({ error: `Sheet not sent: ${aData.error || aRes.status}` }, { status: 502 });
+
+  // ── Archive the sheet into the private store (6 Sep 2026) ────────────────
+  // The Dropbox folder is a one-month tray (/api/cron/dropbox-tray deletes it):
+  // the PDF that went out and the DOCX Adrian edited are copied into the run's
+  // own store first, so nothing of the sheet lives only in Dropbox. Fail-soft.
+  try {
+    const files = await listFolder(r.folderPath);
+    const docx = files.filter(f => f.tag === 'file' && /\.docx$/i.test(f.name) && !/worker original/i.test(f.name))
+      .sort((a, b) => String(b.modified || '').localeCompare(String(a.modified || '')))[0];
+    const archive: Record<string, string> = { at: new Date().toISOString() };
+    const pdfBuf = await downloadFile(pdfPath);
+    archive.pdf_url = (await putStudentFile({ key: runKey(runId, 'practice-again.pdf'), body: pdfBuf, contentType: 'application/pdf' })).url;
+    if (docx) {
+      const docxBuf = await downloadFile(docx.path);
+      archive.docx_url = (await putStudentFile({ key: runKey(runId, 'practice-again.docx'), body: docxBuf, contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' })).url;
+    }
+    const supa = getSupabaseAdmin();
+    const { data: row } = await supa.from('paper_marking_runs').select('result_json').eq('id', runId).maybeSingle();
+    const rj = (row?.result_json && typeof row.result_json === 'object') ? row.result_json as Record<string, unknown> : {};
+    await supa.from('paper_marking_runs').update({ result_json: { ...rj, practice_again_archive: archive } }).eq('id', runId);
+  } catch (e) { console.warn('[release-with-sheet] sheet archive skipped:', (e as Error).message); }
 
   let released = !!r.run.released_at;
   if (!released) {

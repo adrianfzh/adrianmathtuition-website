@@ -553,6 +553,21 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   note on the run, and the sheet worker / self-study skill SHELVE `agree:false` parts instead of
   teaching them ("disputed by second look — check on the desk"). Adrian's ask: the sheet must not
   teach a misread. Not a re-mark — a full second marking was ruled out on cost.
+- **📂 The Dropbox tray — one folder per paper, four fixed names, one-month life (6 Sep 2026):**
+  Adrian vets in Notability from the Files app, so student files go to Dropbox again, as a TRAY:
+  `/Students/<Student>/<YYYY-MM-DD paper>/` holds `1 Marked by AI.pdf`, `2 Marked by Adrian.pdf`
+  (his Notability export; legacy `Marked (Adrian)*` still recognised), `3 Practice Again.docx/.pdf`
+  (the worker's, and the DOCX he edits — release picks the newest PDF in the folder, so his
+  re-export wins), and `4 Practice Again — returned.pdf` (a hand-in answering a sheet assignment
+  files under its PARENT paper via `result_json.assignment_id → portal_assignments.source_run_id`).
+  `lib/paper-folder.ts` owns the names. The private store is the source: `release-with-sheet`
+  archives the sent PDF + newest DOCX into `runs/<id>/practice-again.*`
+  (`result_json.practice_again_archive`) so nothing lives only in Dropbox, and
+  `/api/cron/dropbox-tray` (daily 03:30 SGT, `job_runs` `dropbox-tray`, `?dry=1`) deletes a paper's
+  folder 30 days after release — only student folders, only when any sheet is archived, once per
+  run (`result_json.tray_deleted_at`). `scripts/students-folder-sweep.mjs` renamed the existing
+  folders on 7 Sep 2026 (143 moves, older copies into `_versions/`, nothing deleted).
+  `STUDENT_FILES_TO_DROPBOX=0` returns to the 5 Sep store-only behaviour.
 - **⏱ Release by silence (6 Sep 2026, Adrian: "12 hours"):** a finished sheet that passes the gates
   (`lib/sheet-auto-release.ts` `autoReleaseGate`, tested — every practice answer verified, a non-empty
   wave, the second reader agreed with every worked example, the run not known-ungrounded) gets
