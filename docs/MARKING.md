@@ -565,8 +565,9 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   (`result_json.practice_again_archive`) so nothing lives only in Dropbox, and
   `/api/cron/dropbox-tray` (daily 03:30 SGT, `job_runs` `dropbox-tray`, `?dry=1`) deletes a paper's
   folder 30 days after release — only student folders, only when any sheet is archived, once per
-  run (`result_json.tray_deleted_at`). `scripts/students-folder-sweep.mjs` renamed the existing
-  folders on 7 Sep 2026 (143 moves, older copies into `_versions/`, nothing deleted).
+  run (`result_json.tray_deleted_at`). `scripts/students-folder-sweep.mjs` renames the existing
+  folders (dry-run by default; `--apply` moves — 143 moves planned on 7 Sep 2026, older copies into
+  `_versions/`, nothing deleted; Adrian runs it from the repo).
   `STUDENT_FILES_TO_DROPBOX=0` returns to the 5 Sep store-only behaviour.
 - **⏱ Release by silence (6 Sep 2026, Adrian: "12 hours"):** a finished sheet that passes the gates
   (`lib/sheet-auto-release.ts` `autoReleaseGate`, tested — every practice answer verified, a non-empty
