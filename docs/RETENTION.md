@@ -24,7 +24,7 @@
 | 5 | **Finder ledger** | `portal_generation_log` | ≤ `DAILY_FIND_CAP` (25)/student/day | kind/hit/generated flags only | None. Powers the daily caps (needs ~1 day) and `/admin` analytics (wants months). |
 | 6 | **Push subscriptions** | `portal_push_subscriptions` | 1 row/device; re-subscribes upsert in place | Endpoint URLs + keys | Dead endpoints linger only if the send path never prunes on 404/410 — `lib/portal-push.ts` **already deletes gone endpoints on send failure**, so this is self-cleaning in practice. |
 | 7 | **Notebook entries** | `notebook_entries` | One per losing question on a released paper | Question prompts, attempts, confidence | Archived ("conquered") entries keep forever; that IS the product (revision history). |
-| 8 | **Requests** | `portal_requests` | ≤2/student/day | Free-text asks + admin notes | None; tiny. |
+| 8 | **Requests** (lane retired 6 Sep 2026; table kept) | `portal_requests` | none new | Free-text asks + admin notes | None; tiny. |
 | 9 | **Passes** | `portal_passes` | One row per purchase/trial/referral grant | Entitlement state (Stripe holds the payment record of record) | Expired rows stay; `getCurrentPass` scans all of an account's rows (fine at this scale). |
 | 10 | **Assignment PDFs** | Blob `assignments/<uuid>.pdf` (copied from Dropbox at assign time) + `portal_assignments` rows | Adrian-driven | Worksheets (content, not PII) | None. Revoked/marked assignments keep their Blob copy forever. |
 

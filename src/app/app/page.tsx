@@ -251,7 +251,7 @@ export default async function DashboardPage() {
         {/* 🔍 Find a question (SPEC-PORTAL-V2 §4, 6 Sep 2026) replaced the
             students' "Request materials" door: photo or typed question → a
             similar bank question or a made-for-you one, straight into
-            Practice. The request flow (/app/requests) stays for Adrian's
+            Practice. The student request flow was retired on 6 Sep 2026;
             full-portal view; nothing on the student Home links it. */}
         <Link href="/app/find" className={`${card} !py-3 flex-1 text-center text-sm font-semibold text-navy active:scale-95 transition-transform select-none`}>
           🔍 Find a question

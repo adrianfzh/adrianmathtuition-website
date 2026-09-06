@@ -110,7 +110,7 @@ same concept, marks within one; "same chapter" is NOT enough and is never offere
   topic); `job_runs` slug `find-review`, `JOB_RHYTHMS` line, health-check probes
   `portal-find` + `find-review`. Misses live in `review` (the eval-case export is
   still to write).
-- Home's "Request materials" door became "Find a question"; `/app/requests` stays
+- Home's "Request materials" door became "Find a question"; the request lane was retired on 6 Sep 2026 (routes + pages deleted, table kept for export/retention)
   reachable for Adrian (full-portal nav) and is no longer linked for students.
 
 ## 5. Requests become one pipeline

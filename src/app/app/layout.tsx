@@ -78,7 +78,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: '/app/notebook', label: 'Notebook' },
         { href: '/app/marking', label: 'Papers' },
         { href: '/app/my-notes', label: 'My Notebook' },
-        { href: '/app/requests', label: 'Requests' },
       ]
     : [
         { href: '/app', label: 'Dashboard' },
@@ -87,8 +86,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         ...(NOTES_OPEN_TO_STUDENTS ? [{ href: '/app/notes', label: 'Notes' }] : []),
         { href: '/app/marking', label: 'Papers' },
         { href: '/app/my-notes', label: 'My Notebook' },
-        // Requests left the student nav on 6 Sep 2026 — Find a question
-        // (/app/find, via Home) took its place; the route stays for Adrian.
+        // Student requests were retired on 6 Sep 2026 — Find a question
+        // (/app/find, via Home) is the door for a question a student needs.
       ];
   const mobileTabs = fullPortal
     ? [

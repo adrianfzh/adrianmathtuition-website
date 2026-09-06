@@ -12,7 +12,7 @@
 // Everything here is pure (tested in portal-join.test.ts); the I/O lives in
 // /api/portal/join and the /join + /pass pages.
 import { POLICY_VERSION } from './portal-consent';
-import { escapeTelegramHtml } from './requests';
+import { escapeTelegramHtml } from './telegram-html';
 
 // ── Levels ───────────────────────────────────────────────────────────────────
 // The exact Airtable Students.Level vocabulary ("Sec 1"…"Sec 5", "JC1", "JC2")

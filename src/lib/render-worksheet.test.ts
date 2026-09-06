@@ -28,3 +28,18 @@ describe('mdToHtml pipe tables', () => {
     expect(html).not.toContain('<table>');
   });
 });
+
+describe('mdToHtml inline HTML from the bank', () => {
+  it('renders <b>/<i>/<sup> as markup instead of printing the tags (6 Sep 2026)', () => {
+    const html = mdToHtml('<b>Do not use a calculator.</b> Using <i>part b(i)</i>, find x<sup>2</sup>.');
+    expect(html).toContain('<strong>Do not use a calculator.</strong>');
+    expect(html).toContain('<em>part b(i)</em>');
+    expect(html).toContain('x<sup>2</sup>');
+    expect(html).not.toContain('&lt;b&gt;');
+  });
+  it('still escapes tags outside the whitelist', () => {
+    const html = mdToHtml('<script>alert(1)</script> and 3 < 4');
+    expect(html).toContain('&lt;script&gt;');
+    expect(html).toContain('3 &lt; 4');
+  });
+});

@@ -63,6 +63,18 @@ export function mdToHtml(src: string): string {
   text = text.replace(/\$\$[\s\S]+?\$\$/g, m => keep(esc(m)));
   text = text.replace(/\$[^$\n]+\$/g, m => keep(esc(m)));
 
+  // 2b. Inline HTML the bank carries in a handful of stems/parts (13 rows on
+  // 6 Sep 2026: "<b>Do not use a calculator…</b>", <i>, <sup>) used to print
+  // LITERALLY on every questions-only sheet — "<b>part b(i)</b>" — because
+  // step 3 escapes everything. Keep a small whitelist as real markup
+  // (normalised to <strong>/<em>); anything else, e.g. <script>, still escapes.
+  text = text.replace(/<(\/?)(b|strong|i|em|u|sup|sub)\s*>|<br\s*\/?>/gi, (m, slash: string | undefined, tag: string | undefined) => {
+    if (!tag) return keep('<br>');
+    const t = tag.toLowerCase();
+    const name = t === 'b' ? 'strong' : t === 'i' ? 'em' : t;
+    return keep(`<${slash ? '/' : ''}${name}>`);
+  });
+
   // 3. Escape the remaining plain text
   text = esc(text);
 

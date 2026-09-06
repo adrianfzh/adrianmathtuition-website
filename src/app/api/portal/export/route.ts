@@ -16,7 +16,7 @@
 //   recall_messages    timestamps of Recall chats (content is not stored)
 //   notebook_entries   the error notebook built from their marked papers
 //   clippings          "Save to My Notebook" crops (incl. the image URLs)
-//   requests           resource requests filed on /app/requests
+//   requests           resource requests (lane retired 6 Sep 2026; rows kept for export)
 //   generated_papers   self-printed practice papers (SPEC-PRINT-PAPER)
 //   finder_log         the similar/generate usage ledger
 //   passes             their portal passes (entitlements they paid for)
