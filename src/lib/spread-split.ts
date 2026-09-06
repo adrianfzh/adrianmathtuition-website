@@ -45,7 +45,7 @@ export function spreadSplitPlan(
  * original file untouched when the browser can't decode it (HEIC on Chrome) or
  * it's already within bounds — best-effort, never rejects. Browser-only.
  */
-export async function resizeToJpeg(file: File, maxEdge = 2600, quality = 0.88): Promise<File> {
+export async function resizeToJpeg(file: File, maxEdge = 3500, quality = 0.88): Promise<File> {
   let bmp: ImageBitmap;
   try { bmp = await createImageBitmap(file); } catch { return file; }
   try {

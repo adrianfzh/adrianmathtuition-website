@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { orderMarkedPages } from './marked-pdf-order';
+import { coverPhotoIndexes, orderMarkedPages } from './marked-pdf-order';
 
 const photo = (i: number) => ({ photo_index: i, item: `photo${i}` });
 const sheet = (label: string, photo_index?: number | null) => ({ photo_index, label, item: `Q${label}` });
@@ -41,5 +41,16 @@ describe('orderMarkedPages', () => {
   it('tags each page with what it is, so the caller embeds the right image type', () => {
     const out = orderMarkedPages([photo(0)], [sheet('1', 0)]);
     expect(out.map(p => p.kind)).toEqual(['photo', 'sheet']);
+  });
+});
+
+describe('coverPhotoIndexes', () => {
+  it('returns the classified cover pages in photo order, once each', () => {
+    expect(coverPhotoIndexes([{ photo_index: 3, kind: 'student_work' }, { photo_index: 0, kind: 'cover' }, { photo_index: 0, kind: 'cover' }, { photo_index: 5, kind: 'cover' }])).toEqual([0, 5]);
+  });
+  it('is empty for missing, malformed or cover-less classifications', () => {
+    expect(coverPhotoIndexes(undefined)).toEqual([]);
+    expect(coverPhotoIndexes('cover')).toEqual([]);
+    expect(coverPhotoIndexes([{ photo_index: '0', kind: 'cover' }, { kind: 'cover' }, { photo_index: 1, kind: 'question_paper' }])).toEqual([]);
   });
 });

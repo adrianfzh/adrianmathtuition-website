@@ -66,7 +66,7 @@ async function fileToUpload(file: File, maxEdge = 1280, quality = 0.72): Promise
 // to 2600px via a client token, and its URL rides the 'direct' body as `originalUrl`;
 // the bot re-renders the same overlay onto it (ai/hires-original.js there). Every step
 // is best-effort: a failed original upload costs resolution, never the marking.
-const HIRES_MAX_EDGE = 2600;
+const HIRES_MAX_EDGE = 3500;   // ≈300 dpi on A4 (was 2600 ≈ 216 dpi; Adrian, 6 Sep 2026: prints looked blurry)
 
 // Re-encode through canvas rather than uploading the raw file: uniform JPEG (the bot's
 // sharp lacks HEIC support), EXIF baked exactly like the marking copy (so the two can

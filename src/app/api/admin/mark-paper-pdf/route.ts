@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { putStudentFile, fetchOurFile, runKey, uploadKey } from '@/lib/student-files';
 import { PDFDocument } from 'pdf-lib';
 import { renderMarkingPNG, type MarkingOutput } from '@/lib/render-marking';
-import { orderMarkedPages } from '@/lib/marked-pdf-order';
+import { coverPhotoIndexes, orderMarkedPages } from '@/lib/marked-pdf-order';
 import { pickAnnotatedPhotoUrl, type MarkedPdfMode } from '@/lib/annotated-photo-source';
 import { markedPdfColumn } from '@/lib/marked-pdf-column';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -161,6 +161,49 @@ export async function POST(req: NextRequest) {
   // Assemble a PDF: each annotated photo followed by ITS OWN transcript sheets.
   const pdfDoc = await PDFDocument.create();
 
+  // ── The paper's own cover sheet goes first (Adrian, 6 Sep 2026) ──────────────
+  // "Cover page is the first page": when the hand-in includes the printed MOE /
+  // school front sheet (page classification kind 'cover'), it opens the PDF,
+  // the "Where your marks went" page follows, then the marked pages. A paper
+  // without a cover sheet is unchanged. The paper-total strip lands on the first
+  // page drawn, so on such a paper it sits on the cover — where a total belongs.
+  let coverSet = new Set<number>();
+  if (runId && annotated.length) {
+    try {
+      const { data } = await getSupabaseAdmin().from('paper_marking_runs')
+        .select('page_classification:result_json->page_classification').eq('id', runId).maybeSingle();
+      coverSet = new Set(coverPhotoIndexes((data as { page_classification?: unknown } | null)?.page_classification));
+    } catch (e) { console.warn('[mark-paper-pdf] page classification unavailable, no cover-first:', (e as Error).message); }
+  }
+  const coverPhotos = annotated.filter(a => coverSet.has(a.photo_index));
+  const bodyPhotos = annotated.filter(a => !coverSet.has(a.photo_index));
+  // Practices get no PAPER TOTAL strip — only papers with an OFFICIAL denominator
+  // (registry-matched or the "out of ___" box) are exam/test papers. Starting
+  // totalDrawn true skips the strip and the stamp entirely.
+  let totalDrawn = !shouldStampPaperTotal(body.totals?.max_source);
+  const embedPage = async (pg: ReturnType<typeof orderMarkedPages<typeof annotated[number], typeof pngs[number]>>[number]) => {
+    try {
+      const buf = pg.item.buf;
+      // Annotated photos come off Blob as JPEG; typeset sheets are always PNG.
+      const img = pg.kind === 'photo'
+        ? await pdfDoc.embedJpg(buf).catch(() => pdfDoc.embedPng(buf))
+        : await pdfDoc.embedPng(buf);
+      // Uniform width, proportional height — see PAGE_W.
+      const drawH = Math.round(PAGE_W * (img.height / img.width));
+      // First page only: grow the sheet by a header strip and stamp the paper total there.
+      const strip = totalDrawn ? 0 : stripHeight(PAGE_W);
+      const page = pdfDoc.addPage([PAGE_W, drawH + strip]);
+      page.drawImage(img, { x: 0, y: 0, width: PAGE_W, height: drawH });
+      if (!totalDrawn) {
+        totalDrawn = true;   // set first: a failed stamp must not push the strip onto page 2
+        await drawPaperTotal(pdfDoc, page, {
+          width: PAGE_W, imgHeight: drawH,
+          studentName: student.name, studentLevel: student.level, totalAwarded, totalMax,
+        });
+      }
+    } catch (e) { console.error('[mark-paper-pdf] embed failed', pg.kind, (e as Error).message); }
+  };
+  for (const cp of coverPhotos) await embedPage({ kind: 'photo', item: cp });
   // ── Page 1: where the marks went (Adrian, 1 Sep 2026) ──────────────────────
   // A student opening a marked script sees twenty pages of red before they see
   // what to DO about it. This puts the answer first: what to work on, ranked by
@@ -186,35 +229,10 @@ export async function POST(req: NextRequest) {
   }
 
   const pages = orderMarkedPages(
-    annotated.map(a => ({ photo_index: a.photo_index, item: a })),
+    bodyPhotos.map(a => ({ photo_index: a.photo_index, item: a })),
     pngs.map(p => ({ photo_index: p.photo_index, label: p.label, item: p })),
   );
-  // Practices get no PAPER TOTAL strip — only papers with an OFFICIAL denominator
-  // (registry-matched or the "out of ___" box) are exam/test papers. Starting
-  // totalDrawn true skips the strip and the stamp entirely.
-  let totalDrawn = !shouldStampPaperTotal(body.totals?.max_source);
-  for (const pg of pages) {
-    try {
-      const buf = pg.item.buf;
-      // Annotated photos come off Blob as JPEG; typeset sheets are always PNG.
-      const img = pg.kind === 'photo'
-        ? await pdfDoc.embedJpg(buf).catch(() => pdfDoc.embedPng(buf))
-        : await pdfDoc.embedPng(buf);
-      // Uniform width, proportional height — see PAGE_W.
-      const drawH = Math.round(PAGE_W * (img.height / img.width));
-      // First page only: grow the sheet by a header strip and stamp the paper total there.
-      const strip = totalDrawn ? 0 : stripHeight(PAGE_W);
-      const page = pdfDoc.addPage([PAGE_W, drawH + strip]);
-      page.drawImage(img, { x: 0, y: 0, width: PAGE_W, height: drawH });
-      if (!totalDrawn) {
-        totalDrawn = true;   // set first: a failed stamp must not push the strip onto page 2
-        await drawPaperTotal(pdfDoc, page, {
-          width: PAGE_W, imgHeight: drawH,
-          studentName: student.name, studentLevel: student.level, totalAwarded, totalMax,
-        });
-      }
-    } catch (e) { console.error('[mark-paper-pdf] embed failed', pg.kind, (e as Error).message); }
-  }
+  for (const pg of pages) await embedPage(pg);
   // ── Worked solutions at the back — the model-answers booklet ────────────────
   for (const buf of bookletPages) {
     try {

@@ -21,7 +21,7 @@ async function loadPdfjs() {
 /**
  * Rasterise every page of `file` to a JPEG File named `<base>-pN.jpg`.
  *
- * `maxEdge` defaults to 2600 — the same cap as the original-photo uploads: these
+ * `maxEdge` defaults to 3500 — the same cap as the original-photo uploads: these
  * page images are also what gets uploaded to Blob as the full-res base the bot
  * draws the red pen onto, so rendering small here would put the resolution
  * ceiling right back (the marking copy is still downscaled separately, so model
@@ -30,7 +30,7 @@ async function loadPdfjs() {
 export async function pdfToPageImages(
   file: File,
   onPage: (done: number, total: number) => void,
-  maxEdge = 2600,
+  maxEdge = 3500,
 ): Promise<File[]> {
   const pdfjs = await loadPdfjs();
   // disableFontFace draws glyphs as paths instead of installing @font-face rules —
@@ -43,7 +43,9 @@ export async function pdfToPageImages(
     for (let n = 1; n <= doc.numPages; n++) {
       const page = await doc.getPage(n);
       const unit = page.getViewport({ scale: 1 });
-      const viewport = page.getViewport({ scale: Math.min(3, maxEdge / Math.max(unit.width, unit.height)) });
+      // Scale cap 4.2 ≈ 300 dpi on A4 (Adrian, 6 Sep 2026: printed marked pages
+      // looked soft — the old cap of 3 gave ~216 dpi, fine on a screen, not on paper).
+      const viewport = page.getViewport({ scale: Math.min(4.2, maxEdge / Math.max(unit.width, unit.height)) });
       const canvas = document.createElement('canvas');
       canvas.width = Math.round(viewport.width);
       canvas.height = Math.round(viewport.height);

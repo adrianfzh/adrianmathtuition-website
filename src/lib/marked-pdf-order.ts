@@ -59,3 +59,21 @@ export function orderMarkedPages<P, S>(
   }
   return out;
 }
+
+/**
+ * The paper's OWN cover page(s) — the printed MOE/school front sheet with the
+ * candidate's name — go first, before the "Where your marks went" page (Adrian,
+ * 6 Sep 2026: "cover page is the first page"). The bot's page classification
+ * tags them `kind: 'cover'`; anything else (student work, question pages, an
+ * answer key) keeps its place. Order preserved; missing or malformed input → [].
+ */
+export function coverPhotoIndexes(classification: unknown): number[] {
+  if (!Array.isArray(classification)) return [];
+  const out: number[] = [];
+  for (const p of classification) {
+    if (!p || typeof p !== 'object') continue;
+    const { photo_index, kind } = p as { photo_index?: unknown; kind?: unknown };
+    if (kind === 'cover' && typeof photo_index === 'number' && Number.isInteger(photo_index) && photo_index >= 0) out.push(photo_index);
+  }
+  return [...new Set(out)].sort((a, b) => a - b);
+}
