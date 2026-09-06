@@ -1092,7 +1092,7 @@ export default function QuestionBankPage() {
               </div>
             </div>
           ))}
-          {results.length === 0 && !loading && <div style={{ color: C.muted, fontSize: 14, padding: 20, textAlign: 'center' }}>No matches — try fewer words, or the semantic search coming in v1.5.</div>}
+          {results.length === 0 && !loading && <div style={{ color: C.muted, fontSize: 14, padding: 20, textAlign: 'center' }}>No matches — try fewer words, or switch to ✨ Smart (searches by meaning, not exact words).</div>}
           {moreOffset != null && (
             <button onClick={() => search(moreOffset)} disabled={loading}
               style={{ width: '100%', padding: 10, fontSize: 14, border: `1px dashed ${C.border}`, background: '#fff', borderRadius: 10, cursor: 'pointer' }}>
