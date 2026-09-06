@@ -145,7 +145,7 @@ export default function SettingsClient({
       <div className={card}>
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Show me around</p>
         <p className="text-sm text-gray-600 mb-3">
-          The quick tour of the portal — practice, handing a paper in, and where the marks land.
+          The quick tour of the app — practice, handing a paper in, and where the marks land.
           Takes about half a minute.
         </p>
         <button
@@ -165,7 +165,7 @@ export default function SettingsClient({
       <div className={card}>
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Your data</p>
         <p className="text-sm text-gray-600 mb-3">
-          Download a copy of everything the portal stores about you — account details, every practice
+          Download a copy of everything the app stores about you — account details, every practice
           attempt and its marking, your marked papers, work from Adrian, and your Learn activity — as one
           JSON file. Or permanently delete the account. Details in the{' '}
           <a href="/privacy" target="_blank" className="text-navy underline underline-offset-2">privacy policy</a>.
@@ -179,7 +179,7 @@ export default function SettingsClient({
         <p className="text-xs font-semibold uppercase tracking-wide text-red-400 mb-2">Danger zone</p>
         <p className="text-sm text-gray-600 mb-2.5">
           Deleting the account removes the login, all practice attempts, feedback, and the consent
-          record — permanently. Lessons and billing with Adrian are unaffected (those live outside the portal).
+          record — permanently. Lessons and billing with Adrian are unaffected (those live outside the app).
         </p>
         <form onSubmit={deleteAccount} className="flex gap-2 items-start">
           <input placeholder='Type DELETE to confirm'

@@ -16,6 +16,7 @@
 // Pure (repo testing policy: marks logic never inline in a route or component).
 // Input is already-fetched rows; no I/O.
 
+import { displayPaperName } from './paper-display-name';
 import { aggregateTopicBleed, type TopicBleed, type ReportPaper } from '@/lib/report-facts';
 import { recomputeTotals } from '@/lib/mark-triage';
 import { topicSlug } from '@/lib/topic-slug';
@@ -105,6 +106,8 @@ export interface StudentPaper {
   /** YYYY-MM-DD, from created_at. */
   date: string;
   name: string;
+  /** The internal name Adrian typed (file names, admin surfaces). */
+  rawName?: string;
   awarded: number;
   max: number;
   /** Null when the paper carries no marks at all (nothing to be a percent of). */
@@ -405,7 +408,7 @@ function toPracticeItem(raw: unknown): StudentPracticeItem | null {
   };
 }
 
-function toPaper(row: MarkingRunRow): StudentPaper | null {
+function toPaper(row: MarkingRunRow, studentName?: string | null): StudentPaper | null {
   const rj = asRecord(row.result_json);
   const results = rj?.results;
   // No `results` means the run failed or is still queued. It has nothing to
@@ -443,7 +446,9 @@ function toPaper(row: MarkingRunRow): StudentPaper | null {
   return {
     id: row.id,
     date: String(row.created_at).slice(0, 10),
-    name: str(row.paper_name) || 'Marked paper',
+    // The name the student knows (Adrian, 7 Sep 2026): 'A Math · GCE 2022 · Paper 1', their own name dropped.
+    name: displayPaperName(str(row.paper_name), studentName),
+    rawName: str(row.paper_name) || 'Marked paper',
     awarded: totals.awarded,
     max: totals.max,
     pct: totals.max > 0 ? Math.round((totals.awarded / totals.max) * 100) : null,
@@ -466,12 +471,12 @@ function toPaper(row: MarkingRunRow): StudentPaper | null {
  * `rows` must already be scoped to this student — this function has no way to
  * check ownership and will happily render whatever it is handed.
  */
-export function buildStudentMarking(rows: MarkingRunRow[]): StudentMarking {
+export function buildStudentMarking(rows: MarkingRunRow[], opts: { studentName?: string | null } = {}): StudentMarking {
   // Release gate, enforced again here — see the header.
   const released = rows.filter(r => !!r.released_at);
 
   const papers = released
-    .map(toPaper)
+    .map(r => toPaper(r, opts.studentName))
     .filter((p): p is StudentPaper => p !== null)
     .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
 

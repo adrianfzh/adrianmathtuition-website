@@ -475,7 +475,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
         <div className="w-full max-w-sm bg-white border border-slate-200 rounded-2xl p-7 text-center">
           <div className="text-3xl mb-2">🔒</div>
           <h1 className="text-lg font-bold text-slate-800">Practice</h1>
-          <p className="text-xs text-slate-400 mb-5">Log in to the portal to practise — or enter the admin password (testing).</p>
+          <p className="text-xs text-slate-400 mb-5">Log in to the app to practise — or enter the admin password (testing).</p>
           <a href="/login" className="block w-full bg-navy text-[hsl(45,100%,96%)] rounded-lg py-2.5 text-sm font-semibold mb-4">Log in</a>
           <form onSubmit={(e) => { e.preventDefault(); setAuthError(''); verifyAdmin(password); }}>
             <input type="password" value={password} onChange={(e) => { setPassword(e.target.value); setAuthError(''); }} placeholder="Admin password"

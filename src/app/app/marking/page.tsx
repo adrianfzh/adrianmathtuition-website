@@ -23,6 +23,7 @@ import MarkingBeacon from './MarkingBeacon';
 import SubjectTiles from './SubjectTiles';
 import { mathHtml } from '@/lib/math-inline';
 import { SURFACES } from '@/lib/portal-theme';
+import { fileHref } from '@/lib/student-files-url';
 import PortalIcon from '@/components/PortalIcon';
 // Practice questions carry inline $…$ TeX — mathHtml KaTeXes only the math
 // spans, and this stylesheet is what makes the output render as maths.
@@ -105,7 +106,18 @@ export default async function MarkingPage() {
   // the student is looking at. "Other" and untagged rows pass (they list, but
   // count in no tile — lib/portal-papers-stats).
   const rows = ((data ?? []) as MarkingRunRow[]).filter(r => subjectAllowed(account, r.paper_subject));
-  const { papers, focus, streakNote } = buildStudentMarking(rows);
+  const { papers, focus, streakNote } = buildStudentMarking(rows, { studentName: account?.display_name ?? null });
+  // The Practice Again sheet belongs with its paper (Adrian, 7 Sep 2026), not on a
+  // separate to-do page: one released worksheet assignment per source run.
+  type SheetRow = { id: string; source_run_id: string | null; status: string; pdf_url: string | null; submitted_at: string | null; marked_at: string | null; score: number | null; out_of: number | null };
+  const sheetsByRun = new Map<string, SheetRow>();
+  if (papers.length) {
+    const { data: sheetRows } = await sb.from('portal_assignments')
+      .select('id, source_run_id, status, pdf_url, submitted_at, marked_at, score, out_of')
+      .eq('airtable_student_id', sid).eq('source', 'practice-again').eq('kind', 'worksheet').neq('status', 'held').neq('status', 'revoked')
+      .in('source_run_id', papers.map(p => p.id));
+    for (const r of (sheetRows ?? []) as SheetRow[]) if (r.source_run_id && !sheetsByRun.has(r.source_run_id)) sheetsByRun.set(r.source_run_id, r);
+  }
   // Per-subject tiles, in the account's display order; tabs only when the
   // student has papers in more than one subject.
   const stats = statsBySubject(papers, allowedSubjects(account));
@@ -134,7 +146,9 @@ export default async function MarkingPage() {
       {pending.length > 0 && (
         // Teal = the hand-in surface, so papers sitting with Adrian wear it too.
         <div className="bg-teal-50 rounded-3xl p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-teal-700/80 mb-2">With Adrian</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-teal-700/80 mb-1">With Adrian</p>
+          {/* A status line, not a spinner (Adrian, 7 Sep 2026): what is happening and how long it usually takes. */}
+          <p className="text-[13px] text-teal-900/80 mb-2">Being marked — usually back within the hour. You will get a notification when it is ready.</p>
           <ul className="space-y-1.5">
             {pending.map(p => (
               <li key={p.id} className="text-sm text-teal-900 flex items-baseline justify-between gap-3">
@@ -201,7 +215,7 @@ export default async function MarkingPage() {
             </div>
           )}
 
-          {papers.map(p => <Paper key={p.id} paper={p} />)}
+          {papers.map(p => <Paper key={p.id} paper={p} sheet={sheetsByRun.get(p.id) ?? null} />)}
         </>
       )}
     </div>
@@ -211,7 +225,7 @@ export default async function MarkingPage() {
 // The latest / average / trend tiles moved into ./SubjectTiles (per subject,
 // SPEC-PORTAL-V2 §1); their arithmetic lives in lib/portal-papers-stats.
 
-function Paper({ paper }: { paper: StudentPaper }) {
+function Paper({ paper, sheet }: { paper: StudentPaper; sheet: { id: string; status: string; pdf_url: string | null; score: number | null; out_of: number | null } | null }) {
   return (
     <div className={`${CARD} p-4`}>
       <div className="flex items-start justify-between gap-3">
@@ -236,36 +250,42 @@ function Paper({ paper }: { paper: StudentPaper }) {
 
       {(paper.pdfUrl || paper.pages.length > 0) && (
         <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
-          {paper.pdfUrl && (
-            <a
-              href={`/api/portal/marking-pdf?run=${paper.id}&kind=marked`}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-track="marking:open"
-              className={`inline-block text-sm font-semibold ${M.tile} rounded-xl px-4 py-2 hover:opacity-90 transition-opacity`}
-            >
-              📄 Open your marked script
-            </a>
-          )}
+          {/* Opens the in-app view — cover page first, marked pages below (7 Sep 2026). The PDF is on that page. */}
+          <Link href={`/app/marking/${paper.id}`} data-track="marking:open"
+            className={`inline-block text-sm font-semibold ${M.tile} rounded-xl px-4 py-2 hover:opacity-90 transition-opacity`}>
+            📄 Open your marked paper
+          </Link>
           {/* ✂️ clip a region of the marked pages into /app/my-notes — only
               offered when the run has annotated page images to draw on. */}
           {paper.pages.length > 0 && (
             <ClipToNotes runId={paper.id} paperName={paper.name} pages={paper.pages} />
           )}
-          {/* The primary button now opens the red-pen page images (Adrian's
-              phone review: "open the IMAGE pages, not the full assembled
-              PDF") — the full report stays one tap away. */}
-          {paper.fullPdfUrl && (
-            <a
-              href={`/api/portal/marking-pdf?run=${paper.id}&kind=full`}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-track="marking:open"
-              className="text-[12px] text-gray-500 underline underline-offset-2 hover:text-navy"
-            >
-              Full report (PDF)
-            </a>
-          )}
+          {/* The typed-transcript 'Full report' link was removed for students on 7 Sep 2026 — one PDF per paper. */}
+        </div>
+      )}
+
+      {sheet && (
+        <div className="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3 flex flex-wrap items-center justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-emerald-900">📘 Practice Again — written from this paper</p>
+            <p className="text-[12px] text-emerald-800/80 mt-0.5">
+              {sheet.status === 'marked'
+                ? `Marked${sheet.score != null && sheet.out_of ? ` · ${sheet.score}/${sheet.out_of}` : ''}`
+                : sheet.status === 'submitted' ? 'Handed in — being marked' : 'To do — work through the examples, then hand the practice in'}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {sheet.pdf_url && (
+              <a href={fileHref(sheet.pdf_url)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold bg-emerald-700 text-white rounded-xl px-3 py-1.5">Open sheet</a>
+            )}
+            {sheet.status !== 'marked' && sheet.status !== 'submitted' && (
+              <Link href={`/app/submit?assignment=${sheet.id}`} className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white">Hand in</Link>
+            )}
+          </div>
+        </div>
+      )}
+      {false && (
+        <div>
         </div>
       )}
 

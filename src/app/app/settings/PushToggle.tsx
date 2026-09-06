@@ -83,7 +83,7 @@ export default function PushToggle() {
           <p className="text-sm text-gray-600">
             {snap.platform === 'ios'
               ? 'On iPhone, notifications only work from the installed app — add AdrianMath to your Home Screen, then turn this on from there.'
-              : 'This browser can’t show notifications for the portal — install AdrianMath on your phone and turn them on from there.'}
+              : 'This browser can’t show notifications for the app — install AdrianMath on your phone and turn them on from there.'}
           </p>
           {snap.ready && <InstallSteps snap={snap} />}
         </>

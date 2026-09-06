@@ -41,64 +41,17 @@ export const PORTAL_TOUR_KEY = 'portal_tour_v1';
  * pushing the tour to six taps on a phone).
  */
 export function buildTourSteps(s: PortalSurfaces): TourStep[] {
-  const steps: TourStep[] = [
-    {
-      key: 'welcome',
-      emoji: '👋',
-      title: 'This is your portal',
-      body: 'Your practice, your papers and your marks, all in one place. Thirty seconds and you are set.',
-      target: null,
-    },
-  ];
-
-  if (s.practice) {
-    steps.push({
-      key: 'practice',
-      emoji: '✏️',
-      title: 'Practise a topic',
-      body: 'Pick a topic, choose Standard or Advanced, then snap a photo of your working or type it in. It comes back marked line by line, straight away.',
-      target: 'practice',
-    });
-  }
-
-  steps.push({
-    key: 'submit',
-    emoji: '📷',
-    title: 'Hand in a paper',
-    body: 'Finished a paper at home? Photograph the pages here and hand it in — no need to message Adrian separately.',
-    target: 'submit',
-  });
-
-  steps.push({
-    key: 'marking',
-    emoji: '📄',
-    title: 'Your marked work',
-    body: 'Every paper you hand in comes back here once it is marked — your marks, question by question.',
+  // One screen (Adrian, 7 Sep 2026: "shorten the welcome tour to one screen"):
+  // what the app is for, in one sentence, and the one thing to do first. The
+  // surfaces argument stays so a fuller tour can return later without changing callers.
+  void s;
+  return [{
+    key: 'welcome',
+    emoji: '👋',
+    title: 'This is your AdrianMath app',
+    body: 'Hand in a paper, get it back marked with a cover page that shows where your marks went, then practise exactly that. Start with Papers.',
     target: 'marking',
-  });
-
-  const notesLive = s.notes || s.learn;
-  steps.push(
-    notesLive
-      ? {
-          key: 'notes',
-          emoji: '📚',
-          title: 'Notes and settings',
-          body: 'Revision notes sit under Notes. In Settings, link your Telegram so you hear the moment a paper is marked — the tour lives there too.',
-          // Notes has no nav item of its own, so ring Learn when it is in the
-          // nav and fall back to Settings (always there) when it is not.
-          target: s.learn ? 'learn' : 'settings',
-        }
-      : {
-          key: 'settings',
-          emoji: '⚙️',
-          title: 'Settings',
-          body: 'Link your Telegram there so you hear the moment a paper comes back marked. You can replay this tour from the same page.',
-          target: 'settings',
-        }
-  );
-
-  return steps;
+  }];
 }
 
 export type FlowStageKey = 'practice' | 'submit' | 'marking' | 'notes';

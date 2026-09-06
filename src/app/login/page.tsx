@@ -68,11 +68,15 @@ function LoginForm() {
   return (
     <main className="min-h-screen flex items-center justify-center p-4 bg-[hsl(45,100%,97%)]">
       <div className="max-w-sm w-full bg-white rounded-2xl shadow-md border border-black/5 p-8">
-        <div className="text-center mb-6">
-          <div className="font-display font-bold text-lg tracking-tight text-navy">ADRIAN&apos;S</div>
-          <div className="text-sm text-gray-500">math tuition</div>
+        <div className="text-center mb-5">
+          <div className="font-display font-bold text-2xl tracking-tight text-navy">ADRIAN&apos;S</div>
+          <div className="text-sm text-gray-500 -mt-0.5">math tuition</div>
         </div>
-        <h1 className="text-xl font-bold text-navy text-center mb-6">Log in to AdrianMath</h1>
+        <h1 className="text-xl font-bold text-navy text-center">Log in to the AdrianMath app</h1>
+        {/* What this is, in one line (Adrian, 7 Sep 2026: "add the centre's name, logo and one line saying what the app is for"). */}
+        <p className="text-sm text-gray-500 text-center mt-1.5 mb-6 leading-snug">
+          Hand in your papers, get them back marked, and practise exactly what you got wrong.
+        </p>
 
         <button
           onClick={handleGoogle}

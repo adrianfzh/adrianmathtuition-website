@@ -71,18 +71,18 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // absorbed /app/plan (My Plan) on 2026-08-28, which now redirects there.
   const desktopLinks = fullPortal
     ? [
-        { href: '/app', label: 'Dashboard' },
-        { href: '/app/practice', label: 'Practice' },
-        { href: '/app/ask', label: 'Ask Bot' },
+        { href: '/app', label: 'Home' },
+        { href: '/app/practice', label: 'Practise' },
+        { href: '/app/ask', label: 'Ask' },
         ...(learnVisible ? [{ href: '/app/learn', label: 'Learn' }] : []),
         { href: '/app/notebook', label: 'Notebook' },
         { href: '/app/marking', label: 'Papers' },
         { href: '/app/my-notes', label: 'My Notebook' },
       ]
     : [
-        { href: '/app', label: 'Dashboard' },
+        { href: '/app', label: 'Home' },
         { href: '/app/practice', label: 'Practise' },
-        { href: '/app/ask', label: 'Ask Bot' },
+        { href: '/app/ask', label: 'Ask' },
         ...(NOTES_OPEN_TO_STUDENTS ? [{ href: '/app/notes', label: 'Notes' }] : []),
         { href: '/app/marking', label: 'Papers' },
         { href: '/app/my-notes', label: 'My Notebook' },
@@ -92,15 +92,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const mobileTabs = fullPortal
     ? [
         { href: '/app', label: 'Home' },
-        { href: '/app/practice', label: 'Practice' },
-        { href: '/app/ask', label: 'Ask Bot', fab: true },
+        { href: '/app/practice', label: 'Practise' },
+        { href: '/app/ask', label: 'Ask', fab: true },
         { href: '/app/marking', label: 'Papers' },
         { href: '/app/my-notes', label: 'My Notebook' },
       ]
     : [
         { href: '/app', label: 'Home' },
         { href: '/app/practice', label: 'Practise' },
-        { href: '/app/ask', label: 'Ask Bot', fab: true },
+        { href: '/app/ask', label: 'Ask', fab: true },
         { href: '/app/marking', label: 'Papers' },
         { href: '/app/my-notes', label: 'My Notebook' },
       ];

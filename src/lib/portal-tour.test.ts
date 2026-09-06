@@ -11,47 +11,13 @@ const BETA_NO_PRACTICE: PortalSurfaces = { practice: false, learn: false, notes:
 const FULL: PortalSurfaces = { practice: true, learn: true, notes: true };
 
 describe('buildTourSteps', () => {
-  it('beta: welcome → practise → submit → marked → settings', () => {
-    expect(buildTourSteps(BETA).map(s => s.key)).toEqual([
-      'welcome', 'practice', 'submit', 'marking', 'settings',
-    ]);
-  });
-
-  it('never points a student at a surface the beta closed', () => {
-    // Regression guard for the whole reason this lib exists: a tour step
-    // landing on /app/notes during the beta bounces the student to /app.
-    const keys = buildTourSteps(BETA).map(s => s.key);
-    expect(keys).not.toContain('notes');
-    expect(buildTourSteps(BETA_NO_PRACTICE).map(s => s.key)).not.toContain('practice');
-  });
-
-  it('stays at five steps or fewer on every configuration', () => {
-    for (const s of [BETA, BETA_NO_PRACTICE, FULL]) {
-      expect(buildTourSteps(s).length).toBeLessThanOrEqual(5);
-      expect(buildTourSteps(s).length).toBeGreaterThanOrEqual(4);
-    }
-  });
-
-  it('full portal folds notes into the last step and rings the Learn tab', () => {
-    const last = buildTourSteps(FULL).at(-1)!;
-    expect(last.key).toBe('notes');
-    // Notes has no nav item; Learn is the one the student can see.
-    expect(last.target).toBe('learn');
-  });
-
-  it('falls back to Settings when the notes reader is live but Learn is not', () => {
-    const last = buildTourSteps({ practice: true, learn: false, notes: true }).at(-1)!;
-    expect(last.key).toBe('notes');
-    expect(last.target).toBe('settings');
-  });
-
-  it('gives every step a title and body, and unique keys', () => {
-    const steps = buildTourSteps(FULL);
-    expect(new Set(steps.map(s => s.key)).size).toBe(steps.length);
-    for (const s of steps) {
-      expect(s.title.length).toBeGreaterThan(0);
-      expect(s.body.length).toBeGreaterThan(0);
-      expect(s.body.includes('!')).toBe(false); // no exclamation spam
+  it('is one screen (Adrian, 7 Sep 2026): welcome, pointing at Papers, whatever the surfaces', () => {
+    for (const surfaces of [BETA, BETA_NO_PRACTICE]) {
+      const steps = buildTourSteps(surfaces);
+      expect(steps.map(s => s.key)).toEqual(['welcome']);
+      expect(steps[0].target).toBe('marking');
+      expect(steps[0].title).toMatch(/AdrianMath app/);
+      expect(steps[0].body.split('. ').length).toBeLessThanOrEqual(2);
     }
   });
 });

@@ -284,6 +284,18 @@ export default async function DashboardPage() {
            white tiles with their own coloured icon squares and a live number
            each. Distinct shape + colour per door = the heuristic. */
         <div className="grid grid-cols-2 gap-3 auto-rows-fr">
+          {/* A new student's first Home (Adrian, 7 Sep 2026: "tell a new student what
+              happens next instead of showing blank tiles"). Gone the moment a paper is back. */}
+          {counts.marked === 0 && (
+            <div className="col-span-2 bg-white rounded-3xl p-4 border border-navy/10 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1.5">What happens next</p>
+              <ol className="text-sm text-navy space-y-1 list-decimal list-inside">
+                <li><span className="font-semibold">Hand in a paper</span> — photograph the pages, that is all.</li>
+                <li>It comes back <span className="font-semibold">marked, usually within the hour</span>, with a cover page showing where your marks went.</li>
+                <li>Then <span className="font-semibold">practise exactly that</span> — the questions land on your Practise list.</li>
+              </ol>
+            </div>
+          )}
           <Link href="/app/practice"
             className={`row-span-2 ${P.tile} rounded-3xl p-4 flex flex-col justify-between shadow-[0_8px_24px_-10px_rgba(245,158,11,0.8)] hover:brightness-105 active:scale-[0.99] transition`}>
             <span className="flex items-center justify-center w-11 h-11 rounded-2xl bg-white/35"><PortalIcon name={P.icon} className="w-6 h-6" /></span>
@@ -307,7 +319,7 @@ export default async function DashboardPage() {
             className={`${card} !p-4 flex items-center gap-3 hover:shadow-md active:scale-[0.99] transition`}>
             <span className={`flex items-center justify-center w-11 h-11 rounded-2xl shrink-0 ${M.tile}`}><PortalIcon name={M.icon} className="w-5.5 h-5.5" /></span>
             <span className="min-w-0">
-              <span className="block font-bold text-navy text-sm leading-tight">Marked papers</span>
+              <span className="block font-bold text-navy text-sm leading-tight">Papers</span>
               <span className="block text-[11px] text-slate-500 mt-0.5">
                 {counts.marked > 0 ? `${counts.marked} paper${counts.marked === 1 ? '' : 's'} marked` : 'Nothing back yet'}
               </span>
