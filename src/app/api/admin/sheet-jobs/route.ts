@@ -239,15 +239,36 @@ export async function POST(req: NextRequest) {
           const msg = await anthropic.messages.create({ model, max_tokens: 4000, messages: [{ role: 'user', content: prompt }] });
           return msg.content.map(c => (c.type === 'text' ? c.text : '')).join('');
         }, model);
-        const held = check.disagreements.length > 0;
+        const nDis = check.disagreements.length;
+        const who = job.student_name || job.airtable_student_id;
+        const lines = check.disagreements.map(d => `Example ${d.example}: ${d.issue || 'final answer differs'}`).join('\n');
+        // ROUNDS, NOT A HOLD (Adrian, 6 Sep 2026: "why not just rewrite the solution
+        // and check again until it passes, or choose another example"): a
+        // disagreement sends the job BACK to the worker as a revision round —
+        // rewrite or replace only the named examples, keep the rest, re-file, and
+        // this check runs again on the new file. Two rounds; a sheet that still
+        // disagrees after that is held for Adrian. `attempts` resets on a revision
+        // so the crash cap keeps counting crashes, not rounds.
+        const prevRound = Number((stored as { revise?: { round?: number } }).revise?.round || 0);
+        const MAX_REVISIONS = 2;
+        if (nDis > 0 && prevRound < MAX_REVISIONS) {
+          const round = prevRound + 1;
+          await sb.from('sheet_jobs').update({
+            status: 'queued', claimed_by: null, claimed_at: null, heartbeat_at: null, attempts: 0, completed_at: null,
+            stage: `revise ${round}/${MAX_REVISIONS} — example check: ${nDis} disagreement${nDis === 1 ? '' : 's'}`,
+            result: { ...stored, example_check: check, revise: { round, examples: check.disagreements.map(d => ({ example: d.example, issue: d.issue })) } },
+          }).eq('id', job.id);
+          notify_marking(`🔁 ${who} — sheet sent back to the worker (round ${round}/${MAX_REVISIONS}): a second reader disagrees with ${nDis} worked example${nDis === 1 ? '' : 's'}.\n${lines}`).catch(() => {});
+          console.log(`[sheet-jobs] example check ${job.id}: ${nDis} disagreement(s) → revision round ${round}`);
+          return NextResponse.json({ ok: true, revise: { round, examples: check.disagreements }, diagnosis: false, rebuilt: false });
+        }
+        const held = nDis > 0;
         await sb.from('sheet_jobs').update({
           result: { ...stored, example_check: check },
-          ...(held ? { stage: `held — example check: ${check.disagreements.length} disagreement${check.disagreements.length === 1 ? '' : 's'}` } : {}),
+          ...(held ? { stage: `held — example check: ${nDis} disagreement${nDis === 1 ? '' : 's'} after ${MAX_REVISIONS} rewrites` } : {}),
         }).eq('id', job.id);
         if (held) {
-          const who = job.student_name || job.airtable_student_id;
-          const lines = check.disagreements.map(d => `Example ${d.example}: ${d.issue || 'final answer differs'}`).join('\n');
-          notify_marking(`⚠️ ${who} — the sheet is HELD: a second reader disagrees with ${check.disagreements.length} worked example${check.disagreements.length === 1 ? '' : 's'}.\n${lines}\nFix on the desk before release.`).catch(() => {});
+          notify_marking(`⚠️ ${who} — the sheet is HELD: after ${MAX_REVISIONS} rewrites a second reader still disagrees with ${nDis} worked example${nDis === 1 ? '' : 's'}.\n${lines}\nFix on the desk before release.`).catch(() => {});
         }
         console.log(`[sheet-jobs] example check ${job.id}: ${check.checked} checked, ${check.disagreements.length} disagreement(s)${check.skipped ? ` (${check.skipped})` : ''}`);
       } catch (e) {

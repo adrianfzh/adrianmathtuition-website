@@ -16,6 +16,21 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
 `job.id`, `job.run_id`, `job.airtable_student_id`, `job.student_name`,
 `job.paper_name`, `job.focus`.
 
+1b. **A revision round** (6 Sep 2026). If `job.result.revise` exists, this job
+    is NOT a fresh sheet: the sheet was filed, and the site's second reader
+    disagreed with the worked examples listed in `job.result.revise.examples`
+    (`{example, issue}`). Do not re-diagnose and do not touch anything else:
+
+    - Download the existing DOCX from `job.result.docx_path` (Dropbox).
+    - For each listed example, either FIX the working (re-derive it yourself,
+      verify with sympy) or REPLACE it with another example of the same skill in
+      the same shape, verified the same way. Keep its Practice and its `[Ans]`.
+    - Re-render the PDF, run the 3b checks, re-file both files with
+      `--overwrite` to the SAME paths, and post `done` with the same payload as
+      before (`docx_path`, `pdf_path`, `wave`, `shelved`, `questions`,
+      `diagnosis` unchanged). The check runs again on the new file; after two
+      rounds a sheet that still disagrees is held for Adrian.
+
 2. **Invoke the `self-study-sheet` skill** and follow it exactly. It is the
    authority on how to diagnose, how to cluster the wave, how to write in
    Adrian's style, and how to verify. Two adaptations because you are headless:
