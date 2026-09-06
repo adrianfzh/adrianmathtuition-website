@@ -58,13 +58,19 @@ select r->>'question_number' as q,
        (select jsonb_agg(jsonb_build_object(
           'label', p->>'label', 'aw', p->'awarded', 'mx', p->'max',
           'na', p->'not_attempted', 'err', p->>'error_summary',
-          'note', p->>'study_note'))
+          'note', p->>'study_note', 'sl', p->'second_look'))
         from jsonb_array_elements(r->'marking'->'parts') p) as parts
 from paper_marking_runs, jsonb_array_elements(result_json->'results') r
 where id = '<run-id>'
   and (r->'marking'->>'total_awarded')::numeric < (r->'marking'->>'total_max')::numeric
 order by (regexp_match(r->>'question_number','\d+'))[1]::int;
 ```
+
+A part whose `sl.agree` is `false` is DISPUTED — the bot's second look
+(`ai/second-look.js`, 6 Sep 2026) read the page differently (working found
+where the first read said blank, or a different award). Its mark stands, its
+diagnosis does not: never build a teaching item on it; shelve it as "disputed
+by second look — check on the desk".
 
 Classify each loss: **blank** (nothing written / abandoned at the setup —
 needs first-move teaching), **procedure** (a named rule misapplied), **concept**

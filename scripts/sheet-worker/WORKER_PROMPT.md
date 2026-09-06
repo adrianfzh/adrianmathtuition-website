@@ -112,6 +112,18 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
    (`totals.counted_max < totals.max`), open the marked PDF and name the blank
    questions yourself before choosing the wave.
 
+   **A part the second look disputes is never taught** (6 Sep 2026). After
+   marking, the bot sends every page that carries a lost or blank part back for
+   a narrow second read (`ai/second-look.js`); each such part carries
+   `second_look: { agree, awarded, attempted_here, why }` and the run's
+   `result_json.second_look` summarises it. `agree:false` means the two reads
+   disagree — a blank that has working on the page, or a different award. The
+   mark is unchanged, but the DIAGNOSIS is in doubt: do not build a teaching
+   item on that part. List it under `shelved` as "disputed by second look —
+   check on the desk" so Adrian sees it, and pick the wave from the agreed
+   parts. A part with no `second_look` at all (the pass was off or failed) is
+   treated as agreed.
+
    **`questions` is how the sheet's practice reaches the portal** (SPEC-PORTAL-V2
    §7, 6 Sep 2026). Until now the portal knew a FILE existed and nothing about
    what was on it; the student did the sheet on paper and handed the whole

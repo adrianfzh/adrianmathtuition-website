@@ -536,6 +536,29 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   (28 Aug): TYS re-marked 74/98 → 74/90 (both dups dropped, `tys` registry-grounds the
   denominator), Set 3 92/90 → 89/90 (double-shot merged, 4 relabels, one genuinely
   ambiguous page flagged to triage instead of guessed).
+- **🔁 Roman-only sub-part labels (6 Sep 2026, bot `ai/marker-reconcile.js` pass A3):** a page
+  that carries the working for Q7(b)(ii) but reads it as "(ii)" (the "(b)" sits on the previous
+  page) never merged with the synthetic "(b)(ii) 0/2" not-attempted row from a later page —
+  `normLabel` keeps `ii` and `b.ii` apart — so both survived, the counted max grew, the overflow
+  guard shed a genuine blank row (Q6(c)) to force the total, and the self-study sheet taught
+  "(b)(ii) left blank" against a 2/2 answer (Joey, AM TYS 2021 P2, run `df8e2624`). Now a
+  roman-only label adopts the ONE letter that carries that roman sub-label elsewhere on the same
+  question, before the merge; two candidates or none leave it alone (flagged). Joey-shaped tests.
+- **👀 Second look on lost/blank parts (6 Sep 2026, bot `ai/second-look.js`):** after
+  reconciliation, every page carrying a part that lost marks or was read as blank goes back once
+  (Sonnet, cents a paper; `MARKING_SECOND_LOOK=0` off, `MARKING_SECOND_LOOK_MODEL=opus` upgrades)
+  with the first verdicts + ground truth for a narrow "is this verdict right?" read. **Marks never
+  move.** Each checked part carries `second_look {agree, awarded, attempted_here, why}` and the run
+  stores `result_json.second_look`; a disagreement adds a review reason on the entry and a review
+  note on the run, and the sheet worker / self-study skill SHELVE `agree:false` parts instead of
+  teaching them ("disputed by second look — check on the desk"). Adrian's ask: the sheet must not
+  teach a misread. Not a re-mark — a full second marking was ruled out on cost.
+- **➡️ One arrow per mistake (6 Sep 2026, bot `ai/annotate.js` + `ai/photo-overlay.js`):** a ✗
+  that queued its red fix label used to queue a second label + leader for the error kind, and the
+  value copied onto the printed "Answer ……" blank (the marker's own final line per part) drew a
+  second fix + ring + leader for the same slip — two arrows per mistake (Tze Hin, EM 2022 P2
+  Q1(d)). Now the kind folds onto the fix label ("4x − 3 · careless") and an Answer-line echo of an
+  earlier wrong line keeps its ✗ and nothing else (`answerLineEcho`, tested).
 - **🖋 The ink agrees with the reconciled marks — post-reconcile redraw + chip guarantee
   (2026-08-28, bot `b43901e`):** Adrian's review of the reconcile fix found the annotated
   PHOTOS — the images PDF is what he actually works from — never saw it: superseded score
