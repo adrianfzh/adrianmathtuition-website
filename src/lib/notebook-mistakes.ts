@@ -131,6 +131,12 @@ export function mistakeTitle(kind: ErrorKind, topic: string): string {
   return `${capitalise(ERROR_KIND_LABEL[kind])} in ${t}`.slice(0, MAX_TITLE);
 }
 
+/** A lost part with no error kind on it: the topic is all we know. */
+export function unclassifiedTitle(topic: string): string {
+  const t = topic.replace(/\s+/g, ' ').trim().slice(0, MAX_TOPIC_IN_TITLE);
+  return `Marks lost in ${t}`.slice(0, MAX_TITLE);
+}
+
 /** Topics compare case-insensitively, whitespace-collapsed. */
 export function topicKey(topic: string | null | undefined): string {
   return String(topic ?? '').replace(/\s+/g, ' ').trim().toLowerCase();
@@ -297,13 +303,16 @@ export function entriesFromRun(
       }
     }
   } else {
-    // (topic, kind) → the parts that lost marks to it
-    const groups = new Map<string, { topic: string; kind: ErrorKind; labels: string[] }>();
+    // (topic, kind) → the parts that lost marks to it. A lost part the marker
+    // did not classify (every run before 3 Sep 2026, and any part it left
+    // unstamped) still counts: the mistake is real, only its kind is unknown,
+    // so it files under the topic alone ("Marks lost in …").
+    const groups = new Map<string, { topic: string; kind: ErrorKind | null; labels: string[] }>();
     for (const q of questions) {
       if (!q.topic) continue;
       for (const p of q.parts) {
-        if (!p.kind || p.max - p.awarded <= 0) continue;
-        const key = `${topicKey(q.topic)}|${p.kind}`;
+        if (p.max - p.awarded <= 0) continue;
+        const key = `${topicKey(q.topic)}|${p.kind ?? '-'}`;
         const g = groups.get(key) ?? { topic: q.topic, kind: p.kind, labels: [] };
         g.labels.push(partLabel(q.number, p.label));
         groups.set(key, g);
@@ -312,7 +321,7 @@ export function entriesFromRun(
     for (const g of groups.values()) {
       out.push({
         kind: 'mistake',
-        title: mistakeTitle(g.kind, g.topic),
+        title: g.kind ? mistakeTitle(g.kind, g.topic) : unclassifiedTitle(g.topic),
         errorKind: g.kind, topic: g.topic, subject,
         evidence: ev(g.labels.join(', '), false),
       });

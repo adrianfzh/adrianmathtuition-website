@@ -123,17 +123,21 @@ describe('entriesFromRun — no diagnosis (parts with error kinds)', () => {
 
   it('groups lost parts by (topic, kind) into one mistake each, labelled with every part', () => {
     const mistakes = obs.filter(o => o.kind === 'mistake');
-    expect(mistakes.map(m => m.title).sort()).toEqual(['Concept in Vectors', 'Sign in Trigonometry']);
+    expect(mistakes.map(m => m.title).sort()).toEqual(['Concept in Vectors', 'Marks lost in Vectors', 'Sign in Trigonometry']);
     const trig = mistakes.find(m => m.title === 'Sign in Trigonometry')!;
     expect(trig.evidence).toEqual({ kind: 'paper', ref: 'run-1', label: 'Q3(b), Q7', paper: 'Prelim P1', date: '2026-09-01T02:00:00Z', clean: false });
     expect(trig.kind === 'mistake' && trig.errorKind).toBe('sign');
     expect(trig.kind === 'mistake' && trig.topic).toBe('Trigonometry');
     expect(trig.kind === 'mistake' && trig.subject).toBe('A Math');
   });
-  it('skips lost parts with no kind and questions with no topic — never guesses a pattern', () => {
-    const titles = obs.filter(o => o.kind === 'mistake').map(m => m.title ?? '');
-    expect(titles.some(t => /arithmetic/i.test(t))).toBe(false);          // Q9 has no topic
-    expect(titles.filter(t => t.endsWith('in Vectors'))).toEqual(['Concept in Vectors']); // the unlabelled Vectors part adds nothing
+  it('files a lost part with no kind under its topic alone ("Marks lost in …"); a question with no topic is still skipped', () => {
+    const mistakes = obs.filter(o => o.kind === 'mistake');
+    expect(mistakes.some(m => /arithmetic/i.test(m.title ?? ''))).toBe(false);   // Q9 has no topic
+    const unclassified = mistakes.find(m => m.title === 'Marks lost in Vectors')!;   // Q8's second part: lost 1, no kind
+    expect(unclassified.kind === 'mistake' && unclassified.errorKind).toBeNull();
+    expect(unclassified.evidence).toMatchObject({ ref: 'run-1', label: 'Q8', clean: false });
+    // the classified Vectors part keeps its own entry — the two never merge
+    expect(mistakes.find(m => m.title === 'Concept in Vectors')!.evidence).toMatchObject({ label: 'Q8' });
   });
   it('emits a paper-weight clean result for every topic tested with nothing lost', () => {
     const cleans = obs.filter(o => o.kind === 'clean');
