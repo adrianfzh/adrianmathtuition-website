@@ -39,8 +39,14 @@ export function autoReleaseGate(g: GateInput): GateResult {
   const reasons: string[] = [];
   if (g.noSheet) reasons.push('no sheet was written for this paper');
   const v = String(g.verified || '').match(/^(\d+)\s*\/\s*(\d+)/);
-  if (!v) reasons.push('the practice answers carry no verification stamp');
-  else if (v[1] !== v[2]) reasons.push(`only ${v[1]} of ${v[2]} practice answers verified`);
+  // Adrian, 8 Sep 2026: "what does it mean by the practice answers carry no
+  // verification stamp?" — say what the stamp is and what the worker wrote.
+  if (!v) {
+    const wrote = String(g.verified || '').trim();
+    reasons.push(wrote
+      ? `the worker did not stamp the answers as verified in the form "N/N" — it wrote "${wrote.slice(0, 70)}${wrote.length > 70 ? '…' : ''}", so nothing here proves every answer was checked`
+      : 'the worker did not stamp the answers as verified (no "N/N answers checked" line), so nothing proves every answer was checked');
+  } else if (v[1] !== v[2]) reasons.push(`only ${v[1]} of ${v[2]} practice answers verified`);
   if (!g.wave || !g.wave.length) reasons.push('the sheet teaches nothing (empty wave)');
   if (!g.exampleCheck) reasons.push('the worked examples were not checked by a second reader');
   else if (g.exampleCheck.skipped) reasons.push(`the example check was skipped: ${g.exampleCheck.skipped}`);
@@ -60,8 +66,15 @@ export function sgtShort(at: string | number | Date): string {
   return `${DAYS[c.weekday]} ${h12}:${String(c.minute).padStart(2, '0')}${c.hour < 12 ? 'am' : 'pm'}`;
 }
 
-export function scheduledLine(at: string, deskUrl: string): string {
-  return `⏱ Goes out with the marked paper at ${sgtShort(at)} unless you hold it on the desk: ${deskUrl}`;
+/** The two lines Telegram gets after a sheet passes or fails the gate — both name the student and the paper (Adrian, 8 Sep 2026: "doesn't say which marked pdf"). */
+export function scheduledLine(at: string, deskUrl: string, who?: string | null, paper?: string | null): string {
+  const head = who ? `⏱ <b>${who}</b>${paper ? ` — ${paper}` : ''}: the marked paper and the Practice Again sheet go out` : '⏱ Goes out with the marked paper';
+  return `${head} at ${sgtShort(at)} unless you hold them on the desk.\nDesk: ${deskUrl}`;
+}
+
+export function heldLine(who: string, paper: string | null | undefined, reasons: string[], deskUrl: string): string {
+  const why = reasons.length ? reasons.map(r => `• ${r}`).join('\n') : '• (no reason recorded)';
+  return `🖐 <b>${who}</b>${paper ? ` — ${paper}` : ''}: the sheet is filed but waits for you on the desk — it will NOT go out on its own. Why:\n${why}\nRelease it from the desk when you are happy with it: ${deskUrl}`;
 }
 
 export function releasedLine(who: string, paper: string | null): string {

@@ -45,7 +45,7 @@ import { downloadFile, getTemporaryLink } from '@/lib/dropbox';
 import JSZip from 'jszip';
 import Anthropic from '@anthropic-ai/sdk';
 import { docxXmlToText, extractExamples, runExampleCheck } from '@/lib/sheet-example-check';
-import { autoReleaseGate, holdHours, scheduledLine } from '@/lib/sheet-auto-release';
+import { autoReleaseGate, holdHours, scheduledLine, heldLine } from '@/lib/sheet-auto-release';
 import { normaliseDiagnosis, type Diagnosis } from '@/lib/sheet-diagnosis';
 import { rebuildRunPdfs, type RebuildOutcome } from '@/lib/rebuild-run-pdfs';
 import { queueSheetJob } from '@/lib/sheet-queue';
@@ -360,9 +360,9 @@ export async function POST(req: NextRequest) {
             const at = new Date(Date.now() + hours * 3600_000).toISOString();
             await sb.from('sheet_jobs').update({ auto_release_at: at, held_at: null, stage: `auto-release at ${at}` }).eq('id', job.id);
             const deskUrl = `https://www.adrianmathtuition.com/admin/desk?run=${job.run_id}`;
-            notify_marking(scheduledLine(at, deskUrl)).catch(() => {});
+            notify_marking(scheduledLine(at, deskUrl, who, job.paper_name)).catch(() => {});
           } else if (hours > 0) {
-            notify_marking(`🖐 ${who} — the sheet waits for you on the desk (not auto-released): ${gate.reasons.join('; ')}.`).catch(() => {});
+            notify_marking(heldLine(who, job.paper_name, gate.reasons, `https://www.adrianmathtuition.com/admin/desk?run=${job.run_id}`)).catch(() => {});
           }
         }
         console.log(`[sheet-jobs] example check ${job.id}: ${check.checked} checked, ${check.disagreements.length} disagreement(s)${check.skipped ? ` (${check.skipped})` : ''}`);

@@ -53,6 +53,10 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
     - Post `done` with the same payload as before plus
       `"revised": {"round": <n>, "instructions": "<the note>"}`; keep
       `diagnosis` unless the change altered a section's title, marks or gap.
+      `verified` keeps its `"<checked>/<total> …"` shape — count EVERY answer on
+      the revised sheet, not only the ones you re-checked ("77/77 sympy; 7
+      re-checked on the reshaped Example 2(b)"), or the sheet is held as
+      unverified.
 
 2. **Invoke the `self-study-sheet` skill** and follow it exactly. It is the
    authority on how to diagnose, how to cluster the wave, how to write in
@@ -132,7 +136,7 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
   -d '{"action":"done","id":"<job id>","result":{
         "docx_path":"/Students/<Student>/<YYYY-MM-DD> <paper>/3 Practice Again.docx","pdf_path":"/Students/<Student>/<YYYY-MM-DD> <paper>/3 Practice Again.pdf",
         "wave":["chain rule","∫1/(ax+b)"],"shelved":["Polynomials","Plane Geometry"],
-        "verified":"42/42 answers checked",
+        "verified":"42/42 answers checked",   ← MUST begin "<checked>/<total>"; anything after is a note. A stamp that does not start with N/N holds the sheet for Adrian (8 Sep 2026: "77 sympy checks on this re-render…" was read as unverified)
         "questions":[
           {"section":"Practice 1","index":1,"skill_title":"Master Finding Area Using Integration",
            "question_id":"6f1d2c3b-4a5e-4f60-8a9b-0c1d2e3f4a5b","text_latex":null,

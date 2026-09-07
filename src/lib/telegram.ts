@@ -163,7 +163,9 @@ export async function sendTelegram(text: string, category?: NotifyCategory): Pro
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      chat_id: chatId, text, parse_mode: 'HTML',
+      // No link card: a desk URL used to unfurl the homepage's generic preview
+      // under every notice (Adrian, 8 Sep 2026: "doesn't say which marked pdf").
+      chat_id: chatId, text, parse_mode: 'HTML', disable_web_page_preview: true,
       ...(routed?.threadId ? { message_thread_id: routed.threadId } : {}),
     }),
   });
@@ -191,6 +193,7 @@ export async function sendTelegramWithButtons(
       chat_id: chatId,
       text,
       parse_mode: 'HTML',
+      disable_web_page_preview: true,
       reply_markup: { inline_keyboard: buttons },
     }),
   });

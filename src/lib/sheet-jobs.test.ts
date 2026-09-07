@@ -133,8 +133,8 @@ describe('completionMessage', () => {
     expect(msg).toContain('A Student');
     expect(msg).toContain('AM 2021 P1');
     expect(msg).toContain('chain rule');
-    expect(msg).toContain('🧺 Shelved for later: polynomials');
-    expect(msg).toContain('release the paper + sheet together');
+    expect(msg).toContain('<b>Shelved for later</b>\n• polynomials');
+    expect(msg).toContain('sends the marked paper, this sheet and the practice items together');
   });
   it('names the Dropbox folder as the Files app shows it, and says the files follow when a PDF exists', () => {
     const msg = completionMessage(
@@ -142,7 +142,7 @@ describe('completionMessage', () => {
       sanitizeResult({ docx_path: '/Students/Tan Sijia/2026-08-31 sijia am tys 2021 p1/Practice Again.docx', pdf_path: '/Students/Tan Sijia/2026-08-31 sijia am tys 2021 p1/Practice Again.pdf' }),
     );
     expect(msg).toContain('📂 Dropbox › Students › Tan Sijia › 2026-08-31 sijia am tys 2021 p1');
-    expect(msg).toContain('PDF and DOCX below');
+    expect(msg).toContain('PDF and DOCX follow');
     const noPdf = completionMessage({ student_name: 'X', paper_name: '' }, sanitizeResult({ docx_path: '/Students/X/p/Practice Again.docx' }));
     expect(noPdf).not.toContain('PDF and DOCX below');
   });
@@ -156,7 +156,7 @@ describe('completionMessage', () => {
     const result = sanitizeResult({ docx_path: '/Students/X/p/Practice Again.docx', wave: ['chain rule'] });
     const msg = completionMessage({ student_name: 'X', paper_name: 'AM P1' }, result, { heldItemsLine: '🔁 5 practice items held for release (3 from the bank, 2 written)' });
     expect(msg).toContain('🔁 5 practice items held for release');
-    expect(msg).toContain('the practice items go out with them');
+    expect(msg).toContain('sends the marked paper, this sheet and the practice items together');
     const plain = completionMessage({ student_name: 'X', paper_name: 'AM P1' }, result);
     expect(plain).not.toContain('🔁');
     expect(plain).not.toContain('practice items go out');

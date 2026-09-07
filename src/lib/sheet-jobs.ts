@@ -8,6 +8,8 @@
 //
 // Everything here is pure (no I/O) and unit-tested — the route only orchestrates.
 
+import { escapeTelegramHtml } from './telegram-html';
+
 export type SheetJobStatus = 'queued' | 'claimed' | 'done' | 'failed' | 'cancelled';
 
 export type SheetJob = {
@@ -149,6 +151,15 @@ export function sanitizeResult(input: unknown): SheetJobResult | null {
 }
 
 /** The Dropbox folder a filed sheet sits in, as the Files app shows it ("Students › Tan Sijia › 2026-08-31 …"). '' when unknown. */
+/** Cut on a word boundary with an ellipsis, never mid-word. */
+function clipText(text: string, max: number): string {
+  const s = String(text ?? '').trim();
+  if (s.length <= max) return s;
+  const cut = s.slice(0, max - 1);
+  const at = cut.lastIndexOf(' ');
+  return `${(at > max * 0.6 ? cut.slice(0, at) : cut).trimEnd()}…`;
+}
+
 export function sheetFolder(docxPath: string | null | undefined): string {
   const parts = String(docxPath || '').split('/').filter(Boolean);
   parts.pop();                                   // the file itself
@@ -174,12 +185,19 @@ export function completionMessage(
   if (isNoSheet(result)) {
     return `📘 No sheet for <b>${who}</b>${job.paper_name ? ` (${job.paper_name})` : ''} — ${result.reason}. Release the paper on its own from the desk.`;
   }
-  const lines = [`📘 Self-study sheet ready for <b>${who}</b>${job.paper_name ? ` — from ${job.paper_name}` : ''}`];
-  if (result?.wave.length) lines.push(`Wave: ${result.wave.join(' · ')}`);
-  if (result?.shelved.length) lines.push(`🧺 Shelved for later: ${result.shelved.join(' · ')}`);
-  if (result?.verified) lines.push(`✓ ${result.verified}`);
-  if (extra.heldItemsLine) lines.push(extra.heldItemsLine);
+  // Readable on a phone (Adrian, 8 Sep 2026: "the messages are hard to read"):
+  // a bold title, one bullet per section, the worker's text HTML-escaped and
+  // clipped — the full wording is on the desk.
+  const esc = (x: string) => escapeTelegramHtml(x);
+  const bullet = (items: string[]) => items.map(x => `• ${esc(clipText(x, 170))}`).join('\n');
+  const lines = [`📘 <b>Self-study sheet ready — ${esc(who)}</b>${job.paper_name ? `\n${esc(job.paper_name)}` : ''}`];
+  if (result?.wave.length) lines.push('', `<b>What it teaches</b> (${result.wave.length} section${result.wave.length === 1 ? '' : 's'})`, bullet(result.wave));
+  if (result?.shelved.length) lines.push('', '<b>Shelved for later</b>', bullet(result.shelved));
+  const stamp = String(result?.verified || '');
+  const v = stamp.match(/^(\d+)\s*\/\s*(\d+)/);
+  if (stamp) lines.push('', v ? `✓ Answers verified: ${v[1]} of ${v[2]} checked${v[1] === v[2] ? '' : ' ⚠️'}` : `⚠️ Verification stamp not in the "N/N" form — ${esc(clipText(stamp, 120))}`);
+  if (extra.heldItemsLine) lines.push(esc(extra.heldItemsLine));
   const folder = sheetFolder(result?.docx_path);
-  lines.push('', `${folder ? `📂 Dropbox › ${folder}` : 'In Dropbox'} — ${result?.pdf_path ? 'PDF and DOCX below; ' : ''}edit the DOCX, export the PDF beside it, then release the paper + sheet together from the desk${extra.heldItemsLine ? ' — the practice items go out with them' : ''}.`);
+  lines.push('', folder ? `📂 Dropbox › ${esc(folder)}` : '📂 In Dropbox', `${result?.pdf_path ? 'The sheet\u2019s PDF and DOCX follow. ' : ''}Approve &amp; release on the desk sends the marked paper, this sheet and the practice items together. To change anything first, edit the DOCX and export the PDF beside it.`);
   return lines.join('\n');
 }
