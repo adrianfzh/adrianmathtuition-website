@@ -20,7 +20,11 @@
 //      renamed in /Scans to the convention name, one Telegram line.
 // The FIRST run baselines whatever is already in the folder without touching it
 // (those scans were marked by hand). ≤ 2 scans per tick; ?dry=1 lists the plan.
-// Stamps job_runs 'scan-inbox' every tick (JOB_RHYTHMS alarms by absence).
+// The same tick then runs the auto-tag sweep (lib/auto-tag-sweep.ts): recent
+// marked papers with no student are tagged from the typed name, or from the
+// first page when the name fits two students — and tagged papers with no sheet
+// job get one queued. Stamps job_runs 'scan-inbox' every tick (JOB_RHYTHMS
+// alarms by absence).
 import { NextRequest, NextResponse } from 'next/server';
 import sharp from 'sharp';
 import { safeEqual } from '@/lib/safe-equal';
@@ -30,7 +34,8 @@ import { dropboxConfigured, ensureFolder, listFolder, downloadFile, movePath } f
 import { putStudentFile } from '@/lib/student-files';
 import { pdfPageToImage } from '@/lib/batch-marking';
 import { readScanCover } from '@/lib/scan-reader';
-import { airtableRequestAll } from '@/lib/airtable';
+import { loadRoster } from '@/lib/roster';
+import { sweepAutoTag, type AutoTagResult } from '@/lib/auto-tag-sweep';
 import { sendTelegram } from '@/lib/telegram';
 import {
   buildScanPaperName, isPdf, isSettled, matchStudent, parseScanFilename, scanLine,
@@ -63,12 +68,6 @@ async function bot(phase: string, body: Record<string, unknown>): Promise<Record
   const d = await r.json().catch(() => ({})) as Record<string, unknown>;
   if (!r.ok || d.error) throw new Error(`${phase}: ${String(d.error || r.status)}`);
   return d;
-}
-
-async function roster(): Promise<RosterStudent[]> {
-  const { records } = await airtableRequestAll('Students', `?filterByFormula=${encodeURIComponent("OR({Status}='Active',{Status}='Trial')")}&fields%5B%5D=Student%20Name&fields%5B%5D=Level`);
-  return records.map((r: { id: string; fields: Record<string, unknown> }) => ({ id: r.id, name: String(r.fields['Student Name'] || ''), level: (r.fields['Level'] as string) || null }))
-    .filter(s => s.name);
 }
 
 type Row = { id: string; path: string; name: string; size: number | null; modified: string | null };
@@ -140,7 +139,7 @@ export async function GET(req: NextRequest) {
       let paperName: string | null = named?.paperName ?? null;
       let readName: string | null = null;
       let student: RosterStudent | null = null;
-      students = students ?? await roster();
+      students = students ?? await loadRoster();
 
       if (!named) {
         let second: Buffer | null = null;
@@ -204,7 +203,15 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // Auto-tag sweep — fail-soft: a bad tick here never costs a scan.
+  let autoTag: AutoTagResult | { error: string } | null = null;
+  try { autoTag = await sweepAutoTag({ dry, now, roster: students ?? undefined }); }
+  catch (e) { autoTag = { error: (e as Error).message.slice(0, 200) }; }
+  const tagLine = autoTag && !('error' in autoTag)
+    ? `tags: ${autoTag.tagged} tagged, ${autoTag.coverReads} cover read, ${autoTag.pendingCover} waiting, ${autoTag.left} left, ${autoTag.sheetsQueued} sheet(s) caught up`
+    : `tags: error ${autoTag && 'error' in autoTag ? autoTag.error : ''}`.trim();
+
   const processed = out.filter(o => typeof o.action === 'string' && String(o.action).startsWith('📠')).length;
-  if (!dry) await logJobRun('scan-inbox', true, `${processed} queued, ${out.length - processed} other, ${waiting} waiting`).catch(() => {});
-  return NextResponse.json({ ok: true, dry, folder: SCAN_FOLDER, results: out, waiting });
+  if (!dry) await logJobRun('scan-inbox', true, `${processed} queued, ${out.length - processed} other, ${waiting} waiting · ${tagLine}`).catch(() => {});
+  return NextResponse.json({ ok: true, dry, folder: SCAN_FOLDER, results: out, waiting, autoTag });
 }

@@ -31,10 +31,10 @@ describe('buildScanPaperName — the convention every run is named by', () => {
 
 describe('parseScanFilename — a scan Adrian named himself', () => {
   it('takes a convention name at its word', () => {
-    expect(parseScanFilename('joey am tys 2021 p2.pdf')).toEqual({ paperName: 'joey am tys 2021 p2', firstName: 'joey' });
+    expect(parseScanFilename('joey am tys 2021 p2.pdf')).toEqual({ paperName: 'joey am tys 2021 p2', firstName: 'joey', name: 'joey' });
     expect(parseScanFilename('isabelle TYS 2025 EM P1.pdf')).toBeNull();   // subject not second → let the cover decide
-    expect(parseScanFilename('tze hin em tys 2022 p2.pdf')).toEqual({ paperName: 'tze hin em tys 2022 p2', firstName: 'tze' });
-    expect(parseScanFilename('megan jc2 practice set 1 p1.pdf')).toEqual({ paperName: 'megan jc2 practice set 1 p1', firstName: 'megan' });
+    expect(parseScanFilename('tze hin em tys 2022 p2.pdf')).toEqual({ paperName: 'tze hin em tys 2022 p2', firstName: 'tze', name: 'tze hin' });
+    expect(parseScanFilename('megan jc2 practice set 1 p1.pdf')).toEqual({ paperName: 'megan jc2 practice set 1 p1', firstName: 'megan', name: 'megan' });
   });
   it("the scanner's own names are not names", () => {
     expect(parseScanFilename('06092026.pdf')).toBeNull();

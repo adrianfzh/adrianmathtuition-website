@@ -116,12 +116,15 @@ export function buildScanPaperName(reading: CoverReading, givenNameOverride?: st
  * somewhere ("p1", "paper 2") or a year. Returned lower-cased without the
  * extension; anything else (the scanner's "06092026.pdf") is null.
  */
-export function parseScanFilename(name: string): { paperName: string; firstName: string } | null {
+export function parseScanFilename(name: string): { paperName: string; firstName: string; name: string } | null {
   const stem = String(name || '').replace(/\.pdf$/i, '').trim().toLowerCase().replace(/\s+/g, ' ');
   const m = stem.match(/^([a-z][a-z' -]{1,30}?)\s+(am|em|h2|h1|jc1|jc2)\b/);
   if (!m) return null;
   if (!/\b(p[1-4]|paper ?[1-4]|20\d\d)\b/.test(stem)) return null;
-  return { paperName: stem, firstName: m[1].trim().split(' ')[0] };
+  // `name` is the whole phrase before the subject code ("gavin woon") — two
+  // words settle a first name two students share (lib/auto-tag.ts).
+  const phrase = m[1].trim();
+  return { paperName: stem, firstName: phrase.split(' ')[0], name: phrase };
 }
 
 const norm = (s: string) => String(s || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();

@@ -761,6 +761,30 @@ they are, reachable from its "Other views" row. Nothing is deleted.
   to the convention name → one Telegram line (`scanLine`). `result_json.scan` on the run
   keeps the file + reading. Pure pieces in `lib/scan-inbox.ts`, tested. ≤ 2 scans a tick,
   ≤ 80 MB, ≤ 40 pages.
+- **🏷 The auto-tag sweep** (7 Sep 2026 — Adrian, at "+ tag · denise am tys 2021 p2": "can
+  these pdfs be auto-tagged? … if there are two students with the same name, why not just
+  read the pdf first page for the name?"). Same 5-min tick, after the scans
+  (`lib/auto-tag-sweep.ts`; decisions in `lib/auto-tag.ts`, tested; roster =
+  `lib/roster.ts`, Active+Trial). Every run ≤ 14 days old with no student, not a hand-in
+  (`portal_submission`/`telegram_handin` — those arrive tagged): **step 1** the typed name
+  in front of the subject code (`parseScanFilename(...).name` — "gavin woon" keeps both
+  words) through `matchStudent` → one roster student → tagged; **step 2** a name two
+  students share (three Lucases, two Gavins, "isabelle" vs Eva Isabelle) or nobody has → the
+  first page or two (`result_json.source.photos`, fetched via `fetchOurFile`, downscaled to
+  1450 px) go to the same cover reader (`readScanCover`) ONCE, and its name is matched
+  **inside the candidates the title pointed at** (a "lucas" paper can land on any Lucas,
+  never on a Gavin; the whole roster only when the title named nobody). ≤ 3 cover reads a
+  tick; `result_json.auto_tag {at, by:'name'|'cover', read_name, cover_tried, reason}` is
+  the ledger (never read twice). A tag is exactly "+ tag": `student_id`+`student_name` (the
+  update is `.is('student_id', null)` so a tap on the desk in the same minute wins),
+  `autoQueueSheet('auto-tag')`, `refileUntaggedFolder`, one Telegram line (`autoTagLine`,
+  also one per paper the cover could not settle — "still 3 possible · tag the student on
+  the desk"). **Sheet catch-up** in the same sweep: tagged · marked · unreleased · not a
+  hand-in · NO `sheet_jobs` row of any status → `autoQueueSheet('auto-tag:catch-up')` — the
+  "papers the Fly queue worker marks by itself" gap below (Megan's JC2 set sat in "Marked,
+  sheet on the way" for a week). `?dry=1` on the cron lists both plans; `job_runs`
+  `scan-inbox` detail carries `tags: N tagged, N cover read, N waiting, N left, N sheet(s)
+  caught up`.
 - **Auto-queue** — `lib/sheet-queue.ts` (`sheetQueueGuard` pure/tested,
   `queueSheetJob`, `autoQueueSheet`) is the ONE guard, now also what the
   sheet-jobs POST calls. The automatic door is stricter than the button: tagged ·
@@ -775,8 +799,9 @@ they are, reachable from its "Other views" row. Nothing is deleted.
   `sheet: 'queued' | <refusal>`). **Not covered: papers the Fly queue worker marks
   by itself** (bot `deliverQueuedRun`) — the bot must POST
   `/api/admin/sheet-jobs {runId}` after it, same `Authorization: Bearer
-  ADMIN_PASSWORD` it uses for `mark-paper-pdf`; until then those runs queue on tag
-  or on Adrian's 📘/Re-queue tap.
+  ADMIN_PASSWORD` it uses for `mark-paper-pdf`; until then those runs queue on tag,
+  on Adrian's 📘/Re-queue tap, **or within 5 min by the auto-tag sweep's sheet
+  catch-up** (`lib/auto-tag-sweep.ts`, 7 Sep 2026 — see the ScanSnap watcher above).
 - Health check: `timed('desk', …)` — `GET /api/admin/desk` must 401 anonymously.
   Hub: the 🖊 **Marking desk** tile replaces the 🔍 Triage and 📑 Marked papers
   tiles (✍️ Mark a paper stays — it is the door IN); the purple triage attention
