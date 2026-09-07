@@ -17,12 +17,16 @@ through the invite sent to the parent's email.
 
 **What we keep and why**
 
-- Your child's name, school level and sign-in email, and your contact details as the
-  parent, so we know whose work is whose and can reach you.
-- Photos of the papers your child hands in, the marked copies, the marks and comments,
-  practice attempts, and questions asked in the app. We use these only to mark the work,
-  return it, choose what to practise next, and plan lessons.
-- Lesson dates, attendance and invoices, which Adrian already keeps as your tutor.
+- Contact and account details: your child's name and school level, the email used to sign
+  in, and your contact details as the parent, so we know whose work is whose and can
+  reach you.
+- Your child's schoolwork and our feedback on it: the work handed in, our marking and
+  comments, practice done in the app, and questions asked, so we can mark the work,
+  return it, and choose what to practise next.
+- Tuition records: lessons, attendance and invoices, which Adrian already keeps as your
+  tutor.
+- App usage: when the app was last used and which parts, so we can keep it working and
+  notice who needs a nudge.
 
 We do not sell your child's data, show advertising, or use it for anything other than
 tuition. Marking and feedback are produced with the help of AI tools that Adrian checks;
