@@ -17,6 +17,8 @@ import StudentPicker from '@/components/StudentPicker';
 
 // The ✏️ Annotate overlay (Apple Pencil ink over the marked pages) is heavy and
 // only opens on demand — load it when first rendered, never in the initial bundle.
+import type { LayerMeta } from '@/lib/annotate/layer';
+import { fileHref } from '@/lib/student-files';
 const AnnotateOverlay = dynamic(() => import('@/components/AnnotateOverlay'), { ssr: false });
 
 // ── file helpers ────────────────────────────────────────────────────────────
@@ -142,7 +144,11 @@ type Usage = { costUsd?: number; timeSec?: number; inputTokens?: number; outputT
 // sheet carries it), `url_with_solutions` has it in the footer (🖼 images-only, which has no
 // transcript). Both are forwarded to the PDF route, which picks by mode. Absent on runs
 // marked before 29 Jul 2026, and on pages where nothing was wrong — then 🖼 uses `url`.
-type AnnotatedPhoto = { photo_index: number; url: string; url_with_solutions?: string | null; method?: string | null };
+type AnnotatedPhoto = {
+  photo_index: number; url: string; url_with_solutions?: string | null; method?: string | null;
+  /** SPEC-ANNOTATE §14: the editable marker layer beside the page (runs marked from 8 Sep 2026). */
+  layer_url?: string | null; layer?: LayerMeta | null; ink_url?: string | null; marker_url?: string | null;
+};
 // One practice question per below-max question — QB pick ('db', with its school/year
 // origin) or freshly generated. Built ON REQUEST only (📝 button) and stored on the
 // run, so a reload shows the same list without another model call.
@@ -314,6 +320,9 @@ export default function MarkPaperPage() {
   const [generating, setGenerating] = useState(false);
   const [stats, setStats] = useState<{ count: number; totalCost: number; avgCost: number; avgTime: number } | null>(null);
   const [annotatedPhotos, setAnnotatedPhotos] = useState<AnnotatedPhoto[]>([]);
+  // Per page: the clean original the marker drew on and the rotation it applied —
+  // what the Annotate overlay needs to show the editable layer over the real page.
+  const pageSrcRef = useRef<{ photos: Record<number, string>; rot: Record<number, number> }>({ photos: {}, rot: {} });
   const [runId, setRunId] = useState<string | null>(null);
   // Keep the open overlay in the URL (?run=<id>&annotate=1) so a Safari reload —
   // iPad Safari drops heavy tabs under memory pressure, and the overlay's canvases
@@ -422,6 +431,10 @@ export default function MarkPaperPage() {
       setTotals(rj.totals || null);
       setReview(rj.review?.recommended ? rj.review : null);
       setAnnotatedPhotos(photos);
+      pageSrcRef.current = {
+        photos: Object.fromEntries(((rj.source?.photos || []) as Array<{ photo_index: number; original_url?: string }>).filter(x => x && x.original_url).map(x => [x.photo_index, x.original_url as string])),
+        rot: Object.fromEntries(((rj.annotation_debug || []) as Array<{ photo_index: number; rot?: number }>).map(x => [x.photo_index, Number(x.rot) || 0])),
+      };
       setPracticeItems(rj.practice?.items?.length ? rj.practice.items : null);
       setUnattempted(rj.unattempted_questions || []);
       // Surface a stored "out of" the same way the name prefills — a re-mark of
@@ -2442,7 +2455,20 @@ export default function MarkPaperPage() {
           // Annotate the WITH-SOLUTIONS copy: the output replaces the 🖼 images PDF,
           // whose footer is the only surface carrying the worked solution (see
           // lib/annotated-photo-source.ts).
-          pages={annotatedPhotos.map((p) => ({ photoIndex: p.photo_index, url: pickAnnotatedPhotoUrl(p, 'photos') }))}
+          pages={annotatedPhotos.map((p) => {
+            const original = pageSrcRef.current.photos[p.photo_index];
+            return {
+              photoIndex: p.photo_index,
+              url: pickAnnotatedPhotoUrl(p, 'photos'),
+              // The editable layer (SPEC-ANNOTATE §14) — same-origin paths so the
+              // admin cookie rides along on the preview deploy too.
+              layerUrl: p.layer_url ? fileHref(p.layer_url) : null,
+              layer: p.layer ?? null,
+              inkUrl: p.ink_url ? fileHref(p.ink_url) : null,
+              originalUrl: original ? fileHref(original) : null,
+              rot: pageSrcRef.current.rot[p.photo_index] ?? 0,
+            };
+          })}
           student={{ name: sendStudentName, level: '' }}
           totals={totals}
           onClose={() => setAnnotateOpen(false)}

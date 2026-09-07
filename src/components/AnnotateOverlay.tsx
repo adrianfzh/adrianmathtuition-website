@@ -31,12 +31,27 @@ import { hitStrokes, strokeHit } from '@/lib/annotate/hit-test';
 import { splitStrokeAtCircle } from '@/lib/annotate/stroke-split';
 import { lassoSelect, strokesBBox } from '@/lib/annotate/lasso';
 import { planFlatten } from '@/lib/annotate/flatten-plan';
+import {
+  parseLayer, serializeLayer, strokesToSvg, layerDocument, layerDirty, objectHasText, objectTextLines,
+  type LayerMeta, type LayerObj, type ParsedLayer,
+} from '@/lib/annotate/layer';
 import { setNativePencilMirror } from '@/lib/native-pencil-bridge';
 import {
   draftIsEmpty, draftKey, makeDraft, parseDraft, serializeDraft,
 } from '@/lib/annotate/draft-store';
 
-export type AnnotatePageInput = { photoIndex: number; url: string };
+export type AnnotatePageInput = {
+  photoIndex: number;
+  url: string;
+  /** SPEC-ANNOTATE §14 — a page whose marker ink is an editable layer: the layer
+   *  SVG, its geometry, the clean original it was drawn on, the rotation the
+   *  marker applied, and (after an earlier Done) Adrian's saved strokes. */
+  layerUrl?: string | null;
+  layer?: LayerMeta | null;
+  originalUrl?: string | null;
+  rot?: number;
+  inkUrl?: string | null;
+};
 
 type Props = {
   runId: string;
@@ -72,10 +87,14 @@ type Op =
   | { t: 'remove'; items: { index: number; stroke: Stroke }[] }
   // Whole-page snapshot — partial-eraser drags and lasso move/delete touch many
   // strokes at once; restoring the exact array is simpler and safer than replaying.
-  | { t: 'page'; before: Stroke[]; after: Stroke[] };
+  | { t: 'page'; before: Stroke[]; after: Stroke[] }
+  // The marker's layer objects on one page — moved / deleted / retyped as a whole-page snapshot.
+  | { t: 'layer'; before: LayerSnap[]; after: LayerSnap[] };
+type LayerSnap = { id: string; dx: number; dy: number; deleted: boolean; textOverride: string | null };
+type LayerBox = { x: number; y: number; w: number; h: number };
 type PageDim = { w: number; h: number } | null;
 type DisplayBitmap = { src: CanvasImageSource; w: number };
-type ToolSel = ToolKind | 'eraser' | 'lasso';
+type ToolSel = ToolKind | 'eraser' | 'lasso' | 'select';
 type EraserMode = 'stroke' | 'partial';
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
@@ -123,6 +142,67 @@ const IconLasso = () => (
     <ellipse cx="12" cy="9.5" rx="8.5" ry="6" strokeDasharray="3.4 2.6" />
     <path d="M7.5 14.5c-1.8 1.4-2.3 3.3-1 5.2" />
     <circle cx="6" cy="20.5" r="1.4" />
+  </svg>
+);
+
+// ── the marker's editable layer: font, original, hit boxes (SPEC-ANNOTATE §14) ──
+// The bot draws in Patrick Hand (installed in its image). For the layer to look and
+// MEASURE the same here, the face is fetched once from Google Fonts and embedded as a
+// data URI: into the document (so getBBox measures with it) and into the SVG we
+// rasterise for the canvas (an <img>-loaded SVG cannot see page fonts).
+let patrickHandCss: Promise<string> | null = null;
+function loadPatrickHandCss(): Promise<string> {
+  if (!patrickHandCss) {
+    patrickHandCss = (async () => {
+      try {
+        const css = await (await fetch('https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap')).text();
+        const m = css.match(/url\((https:[^)]+\.woff2)\)/);
+        if (!m) return '';
+        const bytes = new Uint8Array(await (await fetch(m[1])).arrayBuffer());
+        let bin = '';
+        for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        const face = `@font-face{font-family:'Patrick Hand';font-style:normal;font-weight:400;src:url(data:font/woff2;base64,${btoa(bin)}) format('woff2');}`;
+        if (!document.getElementById('annotate-patrick-hand')) {
+          const st = document.createElement('style');
+          st.id = 'annotate-patrick-hand';
+          st.textContent = face;
+          document.head.appendChild(st);
+        }
+        try { await document.fonts.load("16px 'Patrick Hand'"); } catch { /* measured with the fallback face */ }
+        return face;
+      } catch { return ''; }
+    })();
+  }
+  return patrickHandCss;
+}
+function loadImage(url: string): Promise<HTMLImageElement> {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => res(img);
+    img.onerror = () => rej(new Error(`image failed to load: ${url.slice(0, 80)}`));
+    img.src = url;
+  });
+}
+/** Mount the layer off-screen once and let the browser measure every object's box. */
+function measureLayer(body: string, meta: LayerMeta, fontCss: string): Map<string, LayerBox> {
+  const host = document.createElement('div');
+  host.style.cssText = 'position:fixed;left:-100000px;top:0;visibility:hidden;pointer-events:none;';
+  host.innerHTML = layerDocument(body, meta, fontCss);
+  document.body.appendChild(host);
+  const out = new Map<string, LayerBox>();
+  try {
+    host.querySelectorAll<SVGGElement>('svg [data-obj]').forEach((g) => {
+      const id = g.getAttribute('data-id');
+      if (!id) return;
+      try { const b = g.getBBox(); out.set(id, { x: b.x, y: b.y, w: b.width, h: b.height }); } catch { /* unmeasurable */ }
+    });
+  } finally { host.remove(); }
+  return out;
+}
+const IconSelect = () => (
+  <svg {...iconProps}>
+    <path d="M5 3l14 8.5-6.5 1.5L10 20 5 3z" />
   </svg>
 );
 
@@ -211,6 +291,14 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   // selection uniformly about the OPPOSITE corner. Live preview only — strokes
   // are untouched until pen-up commits one 'page' op.
   const resizeSelRef = useRef<{ anchor: { x: number; y: number }; startDist: number; scale: number } | null>(null);
+  // ── the marker's editable layer (SPEC-ANNOTATE §14) ────────────────────────
+  const layerRef = useRef<(ParsedLayer | null)[]>(pages.map(() => null));
+  const layerImgRef = useRef<(HTMLImageElement | null)[]>(pages.map(() => null));
+  const layerBBoxRef = useRef<Map<string, LayerBox>[]>(pages.map(() => new Map()));
+  const layerSelRef = useRef<{ pageIdx: number; id: string } | null>(null);
+  const layerMoveRef = useRef<{ startX: number; startY: number; dx: number; dy: number } | null>(null);
+  const fontCssRef = useRef<string>('');
+  const hasLayers = pages.some((p) => !!p.layerUrl && !!p.layer && !!p.originalUrl);
   const pageNoRef = useRef(1);
   const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mouseAllowed = useMemo(
@@ -239,6 +327,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const clearSelection = useCallback(() => {
     selRef.current = null;
     moveSelRef.current = null;
+    layerSelRef.current = null;
+    layerMoveRef.current = null;
     resizeSelRef.current = null;
     lassoPathRef.current = null;
     chipPosRef.current = null;
@@ -247,7 +337,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
 
   const setToolRemember = useCallback((t: ToolSel) => {
     setTool(t);
-    if (t !== 'eraser' && t !== 'lasso') lastInkToolRef.current = t;
+    if (t !== 'eraser' && t !== 'lasso' && t !== 'select') lastInkToolRef.current = t;
     if (t !== 'lasso') clearSelection();
   }, [clearSelection]);
 
@@ -414,6 +504,39 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         ctx.font = '14px system-ui, sans-serif';
         ctx.fillText(imgErrRef.current[i] ? `page ${i + 1} failed to load` : `loading page ${i + 1}…`, x + 14, y + 26);
       }
+      {
+        // The marker's layer, as Adrian has it right now, between the page and his ink.
+        const dl = dimsRef.current[i];
+        const li = layerImgRef.current[i];
+        if (dl && li) {
+          const fl = (DOC_W * k) / dl.w;
+          ctx.setTransform(dpr * fl, 0, 0, dpr * fl, dpr * x, dpr * y);
+          ctx.drawImage(li, 0, 0, dl.w, dl.h);
+          const ls = layerSelRef.current;
+          if (ls && ls.pageIdx === i) {
+            const parsed = layerRef.current[i];
+            const o = parsed?.objects.find((q) => q.id === ls.id);
+            const b = o && !o.deleted ? layerBBoxRef.current[i].get(o.id) : null;
+            if (o && b) {
+              const mv = layerMoveRef.current;
+              const ox = o.dx + (mv?.dx ?? 0), oy = o.dy + (mv?.dy ?? 0);
+              const pad = 6 / fl;
+              ctx.strokeStyle = '#7c3aed';
+              ctx.lineWidth = 1.5 / fl;
+              ctx.setLineDash([6 / fl, 4 / fl]);
+              ctx.strokeRect(b.x + ox - pad, b.y + oy - pad, b.w + pad * 2, b.h + pad * 2);
+              ctx.setLineDash([]);
+              const cssX = x + (b.x + ox - pad) * fl, cssY = y + (b.y + oy - pad) * fl;
+              const next = { x: Math.max(8, cssX), y: Math.max(58, cssY - 44) };
+              const prev = chipPosRef.current;
+              if (!prev || Math.abs(prev.x - next.x) > 1 || Math.abs(prev.y - next.y) > 1) {
+                chipPosRef.current = next;
+                setSelChip(next);
+              }
+            }
+          }
+        }
+      }
       const d = dimsRef.current[i];
       if (d) {
         const f2 = (DOC_W * k) / d.w;
@@ -479,7 +602,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         }
       }
     }
-    if ((!selRef.current || !selRef.current.set.size) && chipPosRef.current) {
+    if ((!selRef.current || !selRef.current.set.size) && !layerSelRef.current && chipPosRef.current) {
       chipPosRef.current = null;
       setSelChip(null);
     }
@@ -651,6 +774,51 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     setInkTick((t) => t + 1);
   }, []);
 
+  // ── layer objects: rasterise, snapshot, restore, hit-test ──────────────────
+  const rebuildLayerImage = useCallback((i: number) => {
+    const parsed = layerRef.current[i];
+    const meta = pages[i]?.layer;
+    if (!parsed || !meta) return;
+    const doc = layerDocument(serializeLayer(parsed), meta, fontCssRef.current);
+    const url = URL.createObjectURL(new Blob([doc], { type: 'image/svg+xml' }));
+    const img = new Image();
+    img.onload = () => {
+      const prev = layerImgRef.current[i];
+      layerImgRef.current[i] = img;
+      if (prev && prev.src.startsWith('blob:')) URL.revokeObjectURL(prev.src);
+      scheduleBase();
+    };
+    img.onerror = () => URL.revokeObjectURL(url);
+    img.src = url;
+  }, [pages, scheduleBase]);
+  const layerSnap = (parsed: ParsedLayer): LayerSnap[] =>
+    parsed.objects.map((o) => ({ id: o.id, dx: o.dx, dy: o.dy, deleted: o.deleted, textOverride: o.textOverride }));
+  const layerRestore = useCallback((i: number, snap: LayerSnap[]) => {
+    const parsed = layerRef.current[i];
+    if (!parsed) return;
+    const by = new Map(snap.map((x) => [x.id, x]));
+    for (const o of parsed.objects) {
+      const x = by.get(o.id);
+      if (x) { o.dx = x.dx; o.dy = x.dy; o.deleted = x.deleted; o.textOverride = x.textOverride; }
+    }
+    rebuildLayerImage(i);
+  }, [rebuildLayerImage]);
+  const hitLayerObject = (pageIdx: number, x: number, y: number): LayerObj | null => {
+    const parsed = layerRef.current[pageIdx];
+    if (!parsed) return null;
+    const boxes = layerBBoxRef.current[pageIdx];
+    const d = dimsRef.current[pageIdx];
+    const slack = d ? 10 * (d.w / (kFactor() * DOC_W)) : 8;
+    for (let k = parsed.objects.length - 1; k >= 0; k--) {
+      const o = parsed.objects[k];
+      if (o.deleted) continue;
+      const b = boxes.get(o.id);
+      if (!b) continue;
+      if (x >= b.x + o.dx - slack && x <= b.x + o.dx + b.w + slack && y >= b.y + o.dy - slack && y <= b.y + o.dy + b.h + slack) return o;
+    }
+    return null;
+  };
+
   const undo = useCallback((pageIdx: number) => {
     const op = undoRef.current[pageIdx].pop();
     if (!op) return;
@@ -663,13 +831,15 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         const it = op.items[j];
         strokes.splice(Math.min(it.index, strokes.length), 0, it.stroke);
       }
+    } else if (op.t === 'layer') {
+      layerRestore(pageIdx, op.before);
     } else {
       strokesRef.current[pageIdx] = op.before.slice();
     }
     redoRef.current[pageIdx].push(op);
     clearSelection();   // selection may reference strokes that just changed identity
     bumpInk(); scheduleBase();
-  }, [bumpInk, clearSelection, scheduleBase]);
+  }, [bumpInk, clearSelection, layerRestore, scheduleBase]);
 
   const redo = useCallback((pageIdx: number) => {
     const op = redoRef.current[pageIdx].pop();
@@ -681,13 +851,15 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         const i = strokes.indexOf(it.stroke);
         if (i >= 0) strokes.splice(i, 1);
       }
+    } else if (op.t === 'layer') {
+      layerRestore(pageIdx, op.after);
     } else {
       strokesRef.current[pageIdx] = op.after.slice();
     }
     undoRef.current[pageIdx].push(op);
     clearSelection();
     bumpInk(); scheduleBase();
-  }, [bumpInk, clearSelection, scheduleBase]);
+  }, [bumpInk, clearSelection, layerRestore, scheduleBase]);
 
   // ── draft persistence ───────────────────────────────────────────────────────
   const saveDraft = useCallback(() => {
@@ -951,6 +1123,19 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           scheduleLive();
           return;
         }
+        if (tool === 'select') {
+          // The marker's ink: tap an object to select it, drag to move it.
+          const pt = toImage(x, y);
+          if (!pt) { penDownRef.current = false; return; }
+          const hit = hitLayerObject(pt.pageIdx, pt.x, pt.y);
+          clearSelection();
+          if (hit) {
+            layerSelRef.current = { pageIdx: pt.pageIdx, id: hit.id };
+            layerMoveRef.current = { startX: pt.x, startY: pt.y, dx: 0, dy: 0 };
+          }
+          scheduleBase();
+          return;
+        }
         if (tool === 'lasso') {
           const pt = toImage(x, y);
           if (!pt) { penDownRef.current = false; return; }
@@ -1038,6 +1223,14 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         cursorRef.current = { x, y, mode: tool === 'eraser' ? 'ring' : 'dot' };
         if (!penDownRef.current) { scheduleLive(); return; }   // hover (M2 iPads / mouse)
         e.preventDefault();
+        if (tool === 'select') {
+          const ls = layerSelRef.current, mv = layerMoveRef.current;
+          if (ls && mv) {
+            const pt = toImage(x, y, ls.pageIdx);
+            if (pt) { mv.dx = pt.x - mv.startX; mv.dy = pt.y - mv.startY; scheduleBase(); }
+          }
+          return;
+        }
         if (tool === 'eraser') {
           const fn = eraserMode === 'partial' ? eraseAtPartial : eraseAt;
           const list = e.getCoalescedEvents?.();
@@ -1151,6 +1344,24 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       strokeSrcRef.current = null;
       touchStrokeIdRef.current = null;
       if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+      if (tool === 'select') {
+        // Commit a move of the marker's object as one undo step; the selection stays.
+        const ls = layerSelRef.current, mv = layerMoveRef.current;
+        if (ls && mv && (Math.abs(mv.dx) > 0.5 || Math.abs(mv.dy) > 0.5)) {
+          const parsed = layerRef.current[ls.pageIdx];
+          const o = parsed?.objects.find((q) => q.id === ls.id);
+          if (parsed && o) {
+            const before = layerSnap(parsed);
+            o.dx += mv.dx; o.dy += mv.dy;
+            pushUndo(ls.pageIdx, { t: 'layer', before, after: layerSnap(parsed) });
+            bumpInk();
+            rebuildLayerImage(ls.pageIdx);
+          }
+        }
+        layerMoveRef.current = null;
+        scheduleBase();
+        return;
+      }
       if (tool === 'lasso') {
         const rs = resizeSelRef.current;
         const selR = selRef.current;
@@ -1618,7 +1829,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
 
   useEffect(() => {
     // Natural dimensions first (layout), bitmaps lazily near the viewport.
-    pages.forEach((p, i) => {
+    const loadFlat = (p: AnnotatePageInput, i: number) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
@@ -1629,6 +1840,55 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       img.onerror = () => { imgErrRef.current[i] = true; scheduleBase(); };
       img.src = p.url;
       imgsRef.current[i] = img;
+    };
+    // A page with an editable marker layer (SPEC-ANNOTATE §14): the base is the
+    // CLEAN original, turned as the marker turned it and laid in the layer's own
+    // coordinate space (so strokes and objects share one space), with the cream
+    // side strip / footer the marker added; the marker's ink comes in as objects.
+    const loadLayered = async (p: AnnotatePageInput, i: number) => {
+      const meta = p.layer!;
+      try {
+        if (!fontCssRef.current) fontCssRef.current = await loadPatrickHandCss();
+        const orig = await loadImage(p.originalUrl!);
+        const S = 2;
+        const c = document.createElement('canvas');
+        c.width = meta.canvasW * S; c.height = meta.totalH * S;
+        const cx = c.getContext('2d')!;
+        cx.fillStyle = '#fdfcf7';
+        cx.fillRect(0, 0, c.width, c.height);
+        const rot = (((p.rot || 0) % 360) + 360) % 360;
+        cx.save();
+        cx.translate((meta.width * S) / 2, (meta.height * S) / 2);
+        cx.rotate((rot * Math.PI) / 180);
+        const [dw, dh] = rot % 180 === 0 ? [meta.width * S, meta.height * S] : [meta.height * S, meta.width * S];
+        cx.drawImage(orig, -dw / 2, -dh / 2, dw, dh);
+        cx.restore();
+        const blob: Blob | null = await new Promise((res) => c.toBlob(res, 'image/jpeg', 0.92));
+        if (!blob) throw new Error('could not build the page base');
+        imgsRef.current[i] = await loadImage(URL.createObjectURL(blob));
+        dimsRef.current[i] = { w: meta.canvasW, h: meta.totalH };
+        const text = await (await fetch(p.layerUrl!, { credentials: 'include' })).text();
+        const body = text.replace(/^[\s\S]*?<svg\b[^>]*>/, '').replace(/<\/svg>\s*$/, '');
+        layerRef.current[i] = parseLayer(body);
+        layerBBoxRef.current[i] = measureLayer(body, meta, fontCssRef.current);
+        if (p.inkUrl && !strokesRef.current[i].length) {
+          try {
+            const arr = await (await fetch(p.inkUrl, { credentials: 'include' })).json();
+            if (Array.isArray(arr)) strokesRef.current[i] = arr as Stroke[];
+          } catch { /* no earlier ink */ }
+        }
+        setDimsTick((t) => t + 1);
+        rebuildLayerImage(i);
+        scheduleBase();
+      } catch (e) {
+        console.warn('[annotate] layered page fell back to the flat copy:', (e as Error).message);
+        layerRef.current[i] = null;
+        loadFlat(p, i);
+      }
+    };
+    pages.forEach((p, i) => {
+      if (p.layerUrl && p.layer && p.originalUrl) void loadLayered(p, i);
+      else loadFlat(p, i);
     });
     // A saved draft (crash recovery, a Safari reload mid-paper, or a post-Done
     // re-edit) comes back ON THE PAGES straight away — the inked copy is the
@@ -1681,13 +1941,13 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     if (!toolsLoadedRef.current) { toolsLoadedRef.current = true; return; }
     try {
       localStorage.setItem(TOOLS_KEY, JSON.stringify({
-        tool: tool === 'eraser' || tool === 'lasso' ? lastInkToolRef.current : tool,
+        tool: tool === 'eraser' || tool === 'lasso' || tool === 'select' ? lastInkToolRef.current : tool,
         penColor, penWidthPt, hlColor, eraserMode,
       }));
     } catch { /* best-effort */ }
   }, [tool, penColor, penWidthPt, hlColor, eraserMode]);
 
-  const hasInk = () => strokesRef.current.some((s) => s.length > 0);
+  const hasInk = () => strokesRef.current.some((s) => s.length > 0) || layerRef.current.some((l) => !!l && layerDirty(l));
   const inkedCount = strokesRef.current.filter((s) => s.length > 0).length;
   void inkTick; // ink mutations re-render through this
 
@@ -1711,6 +1971,43 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     bumpInk();
     scheduleBase();
   }, [bumpInk, clearSelection, pushUndo, scheduleBase]);
+
+  const deleteLayerObject = useCallback(() => {
+    const ls = layerSelRef.current;
+    if (!ls) return;
+    const parsed = layerRef.current[ls.pageIdx];
+    const o = parsed?.objects.find((q) => q.id === ls.id);
+    if (!parsed || !o) return;
+    const before = layerSnap(parsed);
+    o.deleted = true;
+    pushUndo(ls.pageIdx, { t: 'layer', before, after: layerSnap(parsed) });
+    clearSelection();
+    bumpInk();
+    rebuildLayerImage(ls.pageIdx);
+    scheduleBase();
+  }, [bumpInk, clearSelection, pushUndo, rebuildLayerImage, scheduleBase]);
+  const editLayerText = useCallback(() => {
+    const ls = layerSelRef.current;
+    if (!ls) return;
+    const parsed = layerRef.current[ls.pageIdx];
+    const o = parsed?.objects.find((q) => q.id === ls.id);
+    if (!parsed || !o || !objectHasText(o)) return;
+    const current = o.textOverride ?? objectTextLines(o).join(' ');
+    const next = window.prompt("Edit the marker's text", current);
+    if (next == null || next === current) return;
+    const before = layerSnap(parsed);
+    o.textOverride = next;
+    pushUndo(ls.pageIdx, { t: 'layer', before, after: layerSnap(parsed) });
+    bumpInk();
+    rebuildLayerImage(ls.pageIdx);
+    scheduleBase();
+  }, [bumpInk, pushUndo, rebuildLayerImage, scheduleBase]);
+  const layerSelHasText = () => {
+    const ls = layerSelRef.current;
+    if (!ls) return false;
+    const o = layerRef.current[ls.pageIdx]?.objects.find((q) => q.id === ls.id);
+    return !!o && objectHasText(o);
+  };
 
   // Notability-style: clone the selection offset a little, select the clones —
   // repeat-marking the same correction across a page becomes two taps.
@@ -1743,10 +2040,28 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       const finalPages: { photo_index: number; url: string }[] = [];
       let done = 0;
       for (const entry of plan) {
+        const i = pages.findIndex((p) => p.photoIndex === entry.photoIndex);
+        // A page with an editable marker layer is composed on the SERVER from its
+        // layers (SPEC-ANNOTATE §14): the fonts and the hi-res original live there.
+        const parsedL = layerRef.current[i];
+        if (parsedL && (strokesRef.current[i].length > 0 || layerDirty(parsedL))) {
+          done += 1;
+          setBusy(`Composing page ${entry.photoIndex + 1} on the server (up to a minute)…`);
+          const cr = await fetch('/api/admin/mark-paper-compose-page', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              runId, photoIndex: entry.photoIndex,
+              layerSvg: serializeLayer(parsedL), inkSvg: strokesToSvg(strokesRef.current[i]), strokes: strokesRef.current[i],
+            }),
+          });
+          const cj = await cr.json().catch(() => ({}));
+          if (!cr.ok || !cj.url) throw new Error(cj.error || `page ${entry.photoIndex + 1} could not be composed`);
+          finalPages.push({ photo_index: entry.photoIndex, url: cj.url });
+          continue;
+        }
         if (!entry.reencode) { finalPages.push({ photo_index: entry.photoIndex, url: entry.url }); continue; }
         done += 1;
         setBusy(`Flattening page ${done}/${inkedPhotoIdx.length}…`);
-        const i = pages.findIndex((p) => p.photoIndex === entry.photoIndex);
         const img = imgsRef.current[i];
         const d = dimsRef.current[i];
         if (!img || !d) throw new Error(`page ${entry.photoIndex + 1} isn't loaded — scroll to it once, then Done again`);
@@ -1870,6 +2185,10 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         <button style={tool === 'pen' ? activeBtn : btn} onClick={() => setToolRemember('pen')} aria-label="Pen" title="Pen"><IconPen /></button>
         <button style={tool === 'highlighter' ? activeBtn : btn} onClick={() => setToolRemember('highlighter')} aria-label="Highlighter" title="Highlighter"><IconHighlighter /></button>
         <button style={tool === 'eraser' ? activeBtn : btn} onClick={() => setToolRemember('eraser')} aria-label="Eraser" title="Eraser"><IconEraser /></button>
+        {hasLayers && (
+          <button style={tool === 'select' ? activeBtn : btn} onClick={() => setToolRemember('select')} aria-label="Select the marker's ink"
+            title="Select: tap a tick, cross, box or note the marker drew — drag to move it; the chip deletes it or edits its text"><IconSelect /></button>
+        )}
         <button style={tool === 'lasso' ? activeBtn : btn} onClick={() => setToolRemember('lasso')} aria-label="Lasso select" title="Lasso: circle strokes to select, then drag to move"><IconLasso /></button>
 
         {tool === 'eraser' && (
@@ -1969,9 +2288,19 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
             display: 'flex', gap: 6, background: '#fff', border: '1px solid #d1d5db',
             borderRadius: 10, padding: 5, boxShadow: '0 4px 14px rgba(0,0,0,0.16)',
           }}>
-            <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13, color: '#b91c1c', border: '1px solid #fca5a5' }} onClick={deleteSelection}>🗑 Delete</button>
-            <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={duplicateSelection}>⧉ Duplicate</button>
-            <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={() => { clearSelection(); scheduleBase(); }}>Deselect</button>
+            {layerSelRef.current ? (
+              <>
+                <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13, color: '#b91c1c', border: '1px solid #fca5a5' }} onClick={deleteLayerObject}>🗑 Delete</button>
+                {layerSelHasText() && <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={editLayerText}>✏️ Edit text</button>}
+                <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={() => { clearSelection(); scheduleBase(); }}>Deselect</button>
+              </>
+            ) : (
+              <>
+                <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13, color: '#b91c1c', border: '1px solid #fca5a5' }} onClick={deleteSelection}>🗑 Delete</button>
+                <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={duplicateSelection}>⧉ Duplicate</button>
+                <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={() => { clearSelection(); scheduleBase(); }}>Deselect</button>
+              </>
+            )}
           </div>
         )}
       </div>
