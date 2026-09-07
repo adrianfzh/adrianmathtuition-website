@@ -93,11 +93,16 @@ export async function GET(req: NextRequest) {
   const job = latestLiveJob(jobs);
   const jobResult = (job?.result && typeof job.result === 'object') ? job.result as Record<string, unknown> : null;
 
-  // "From Adrian" assignments written from this paper (release-with-sheet).
+  // The Practice Again sheet's questions as app to-do items (portal_assignments
+  // with this run as source): HELD until Approve & release, then live. The chip
+  // used to read "sheet assigned ×4" — four rows, not four sheets (Adrian, 8 Sep
+  // 2026: "what does it mean by sheet assigned x 4?") — so the count is split.
   let assignments = 0;
+  let assignmentsHeld = 0;
   try {
-    const { count } = await sb.from('portal_assignments').select('id', { count: 'exact', head: true }).eq('source_run_id', runId);
-    assignments = count ?? 0;
+    const { data: rows } = await sb.from('portal_assignments').select('status').eq('source_run_id', runId);
+    assignments = (rows ?? []).length;
+    assignmentsHeld = (rows ?? []).filter(a => a.status === 'held').length;
   } catch { /* the count is a nicety */ }
 
   // The paper's Dropbox folder: what is in it decides "My copy" and whether
@@ -188,6 +193,7 @@ export async function GET(req: NextRequest) {
     } : null,
     sheetJobs: jobs.map(j => ({ id: j.id, status: j.status, stage: j.stage, error: j.error, createdAt: j.created_at, completedAt: j.completed_at })),
     assignments,
+    assignmentsHeld,
     folder: {
       path: folder,
       url: dropboxWebUrl(folder),

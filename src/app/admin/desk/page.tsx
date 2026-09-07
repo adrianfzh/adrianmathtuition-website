@@ -46,7 +46,7 @@ type Row = {
   awarded: number; max: number; pct: number | null; questions: number; pending: number;
   lane: DeskLane; releasedAt: string | null; releasedVia: string | null; pdfStale: boolean;
   sheet: { jobId: string; status: string; stage: string | null; error: string | null; label: string; completedAt: string | null } | null;
-  flags: string[]; amended: string | null; assignments: number;
+  flags: string[]; amended: string | null; assignments: number; assignmentsHeld?: number;
   folder: string; folderUrl: string;
   annotatedPdfUrl: string | null; photosPdfUrl: string | null; pdfUrl: string | null;
 };
@@ -83,7 +83,7 @@ type Detail = {
       noSheet: boolean; reason: string;
     } | null;
   } | null;
-  assignments: number;
+  assignments: number; assignmentsHeld?: number;
   folder: { path: string; url: string; listed: boolean; exists: boolean; error: string | null; sheetPdf: boolean; sheetPdfName: string | null; markedAi: boolean };
   amended: { status: 'none' | 'found' | 'newer-than-attached' | 'unknown'; name?: string; modified?: string | null };
   flags: string[];
@@ -786,7 +786,18 @@ function DetailView(p: {
                 <Chip label={`${d.overrides.reviewed} checked · +${d.overrides.against} for the student · −${d.overrides.forStudent}`}
                   title="Corrections you have made on this paper: marks added (the marker withheld them wrongly) and marks removed" />
               )}
-              {d.assignments > 0 && <Chip label={`📘 sheet assigned${d.assignments > 1 ? ` ×${d.assignments}` : ''}`} bg={C.okBg} color={C.ok} />}
+              {d.assignments > 0 && (() => {
+                // The sheet's practice questions as app items — held until Approve &
+                // release, live after (Adrian, 8 Sep 2026: "what does it mean by
+                // sheet assigned x 4?" — it was four questions, not four sheets).
+                const held = d.assignmentsHeld ?? 0;
+                const live = d.assignments - held;
+                const q = (n: number) => `${n} practice question${n === 1 ? '' : 's'}`;
+                const label = held > 0 && live === 0 ? `📘 ${q(held)} held for release`
+                  : held > 0 ? `📘 ${q(live)} in the app · ${q(held)} held`
+                  : `📘 ${q(live)} in the app`;
+                return <Chip label={label} bg={held > 0 && live === 0 ? C.flagBg : C.okBg} color={held > 0 && live === 0 ? C.flag : C.ok} />;
+              })()}
               {released && <Chip label={`released ${fmtWhen(run.releasedAt!)}${run.releasedVia ? ` · ${run.releasedVia}` : ''}`} />}
             </div>
           </div>
