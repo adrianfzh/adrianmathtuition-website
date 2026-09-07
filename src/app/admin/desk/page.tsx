@@ -65,6 +65,7 @@ type Detail = {
     pdfStale: boolean; grounding: string | null; unattempted: string[]; portalSubmission: boolean;
     paperMatch: PaperMatch | null;
     remarking: boolean; remarkPages: number[];
+    scheme: SchemeState | null;
   };
   lane: DeskLane;
   pending: number;
@@ -123,6 +124,35 @@ const LANE_TONE: Record<DeskLane, { bg: string; fg: string }> = {
   ready: { bg: '#f0fdf4', fg: '#15803d' },
   released: { bg: '#f3f4f6', fg: '#374151' },
 };
+
+// 📐 The paper's mark scheme as a state (8 Sep 2026): the split the first
+// marking used is recorded per paper and every later marking of that paper is
+// held to it; Adrian's approval freezes it. `used` = what THIS marking marked to.
+type SchemeState = {
+  key: string; status: string; hasAllocation: boolean; approvedAt: string | null;
+  allocationRunId: string | null; uses: number; used: string | null; recordedByThisRun: boolean;
+};
+
+function SchemeChip({ s, runId, busy, onApprove }: { s: SchemeState | null; runId: string; busy: string; onApprove: () => void }) {
+  if (!s) return null;
+  if (s.status === 'approved') {
+    return <Chip label={`📐 scheme approved${s.approvedAt ? ` · ${fmtDate(s.approvedAt)}` : ''}`} bg="#ecfdf5" color="#065f46"
+      title={`"${s.key}": every marking of this paper uses the approved per-part marks and split. ${s.used === 'approved' ? 'This marking used it.' : 'This marking was made before the approval.'}`} />;
+  }
+  if (!s.hasAllocation) return null;
+  const from = s.recordedByThisRun ? 'recorded from this marking' : s.allocationRunId === runId ? 'recorded from this marking' : 'recorded from an earlier marking';
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+      <Chip label={`📐 scheme ${from}${s.used ? ' · used here' : ''}`} bg="#fffbeb" color="#92400e"
+        title={`"${s.key}": the per-part marks and M/A split ${from}. Later markings of this paper are held to the same split; approving freezes it as this paper's scheme. Releasing a paper marked to it approves it too.`} />
+      <button onClick={onApprove} disabled={busy === 'scheme'}
+        style={{ background: 'transparent', border: '1px solid #f59e0b', borderRadius: 7, padding: '1px 8px', fontSize: 12, color: '#92400e', cursor: 'pointer' }}
+        title="Freeze this paper's per-part marks and split — every later marking of it uses exactly these.">
+        {busy === 'scheme' ? '…' : '✓ Approve scheme'}
+      </button>
+    </span>
+  );
+}
 
 type PaperMatch = {
   key: string | null; source: string; trusted: boolean;
@@ -530,6 +560,19 @@ export default function DeskPage() {
     refresh(id);
   }
 
+  // 📐 Approve this paper's scheme (8 Sep 2026): the recorded per-part marks and
+  // split become the paper's fixed allocation. `quiet` = on release, fail-soft.
+  async function approveScheme(quiet = false) {
+    const s = detail?.run.scheme;
+    if (!detail || !s || s.status === 'approved' || !s.hasAllocation) return;
+    const id = detail.run.id;
+    if (!quiet) setBusy('scheme');
+    const { ok, d } = await postJson('/api/admin/paper-scheme', { action: 'approve', key: s.key, runId: id });
+    if (!quiet) setBusy('');
+    if (!ok) { if (!quiet) setToast(d.error || 'Could not approve the scheme'); return; }
+    if (!quiet) { setToast(`📐 Scheme approved — every marking of "${s.key}" now uses this split.`); refresh(id); }
+  }
+
   // Approve & release — the one big button. release-with-sheet attaches the
   // amended copy by name, assigns the sheet, releases, notifies. The ambiguous
   // case (two "Practice Again…" PDFs) asks, exactly as triage does.
@@ -557,6 +600,7 @@ export default function DeskPage() {
         setToast(res?.via === 'none'
           ? '✅ Released (no sheet needed) — no Telegram linked, hand it back yourself.'
           : '✅ Released — no sheet needed for this one.');
+        await approveScheme(true);
         refresh(id);
         return;
       }
@@ -579,6 +623,8 @@ export default function DeskPage() {
       const { ok, d } = await postJson('/api/admin/release-with-sheet', { runId: id, ...(pdfPath ? { pdfPath } : {}) });
       if (!ok) { setToast(d.error || 'Release failed.'); refresh(id); return; }
       setToast(d.alreadyWasReleased ? 'Sheet sent — the paper was already released.' : '✅ Released, and the sheet is with them.');
+      // Releasing = these marks are right = the split they were marked to is right.
+      await approveScheme(true);
       refresh(id);
     } catch { setToast('Connection error.'); }
     finally { setBusy(''); }
@@ -729,7 +775,7 @@ export default function DeskPage() {
           editKind={editKind} setEditKind={setEditKind} editParts={editParts} setEditParts={setEditParts}
           onAgree={agree} onOverride={override} onTag={tag} onSubject={setPaperSubject} onAttach={attachMyCopy} onRebuild={rebuild}
           onQueueSheet={queueSheet} onCancelSheet={cancelSheet} onAutoRelease={autoRelease} onApprove={approve} onReleaseOnly={releaseWithoutSheet} onToast={setToast}
-          onRevise={reviseSheet} onRemarkPage={remarkPage}
+          onRevise={reviseSheet} onRemarkPage={remarkPage} onApproveScheme={() => approveScheme(false)}
         />
       )}
 
@@ -755,6 +801,7 @@ function DetailView(p: {
   onAutoRelease: (action: 'hold' | 'unhold') => void;
   onApprove: () => void; onReleaseOnly: () => void;
   onRevise: (instructions: string) => void; onRemarkPage: (photoIndex: number) => void;
+  onApproveScheme: () => void;
 }) {
   const { detail: d, cover, busy } = p;
   const run = d.run;
@@ -827,7 +874,7 @@ function DetailView(p: {
                   {PAPER_SUBJECT_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </label>
-              <SubjectChip subject={run.subject} /><GroundingChip source={run.grounding} /><PaperMatchChip pm={run.paperMatch} /><RulesTag v={run.rulesVersion} />
+              <SubjectChip subject={run.subject} /><GroundingChip source={run.grounding} /><PaperMatchChip pm={run.paperMatch} /><SchemeChip s={run.scheme} runId={run.id} busy={busy} onApprove={p.onApproveScheme} /><RulesTag v={run.rulesVersion} />
               <span>· marked {fmtWhen(run.createdAt)} · {run.totalQuestions} question{run.totalQuestions === 1 ? '' : 's'}</span>
               {run.portalSubmission && <Chip label="📱 hand-in" bg="#eff6ff" color={C.link} />}
             </div>

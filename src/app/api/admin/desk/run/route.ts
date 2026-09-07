@@ -86,6 +86,34 @@ export async function GET(req: NextRequest) {
 
   // Every sheet job for the run (newest live one decides the lane; the full
   // list is what "re-queue" and "retry" reason over).
+  // 📐 The paper's mark scheme as a state (8 Sep 2026): the bot stamps
+  // grounding.scheme {key, status, used, recorded_by_this_run} on a marking;
+  // the row's LIVE status is read here so an approval shows at once.
+  const schemeStamp = (() => {
+    const g = ((run.result_json ?? null) as { grounding?: { scheme?: Record<string, unknown> } } | null)?.grounding?.scheme;
+    return g && typeof g === 'object' ? g : null;
+  })();
+  const schemeKey = (() => {
+    const pm = ((run.result_json ?? null) as { paper_match?: { key?: unknown; trusted?: unknown } } | null)?.paper_match;
+    if (pm && pm.trusted === true && typeof pm.key === 'string' && pm.key) return pm.key;
+    return typeof schemeStamp?.key === 'string' ? schemeStamp.key : null;
+  })();
+  const schemeSubject = String(((run.result_json ?? null) as { subject?: unknown } | null)?.subject || 'math');
+  const schemeLive = schemeKey
+    ? (await sb.from('paper_schemes').select('id, status, approved_at, allocation_run_id, allocation, uses')
+        .eq('subject', schemeSubject).eq('paper_key', schemeKey).maybeSingle<{ id: string; status: string; approved_at: string | null; allocation_run_id: string | null; allocation: unknown; uses: number | null }>()).data
+    : null;
+  const scheme = schemeKey && (schemeLive || schemeStamp) ? {
+    key: schemeKey,
+    status: schemeLive?.status ?? String(schemeStamp?.status || ''),
+    hasAllocation: Array.isArray(schemeLive?.allocation) && schemeLive!.allocation.length > 0,
+    approvedAt: schemeLive?.approved_at ?? null,
+    allocationRunId: schemeLive?.allocation_run_id ?? null,
+    uses: schemeLive?.uses ?? 0,
+    used: typeof schemeStamp?.used === 'string' ? schemeStamp.used : null,
+    recordedByThisRun: schemeStamp?.recorded_by_this_run === true,
+  } : null;
+
   const { data: jobRows } = await sb.from('sheet_jobs')
     .select('id, status, stage, error, attempts, focus, claimed_by, created_at, completed_at, result, auto_release_at, held_at, auto_released_at')
     .eq('run_id', runId).order('created_at', { ascending: false });
@@ -147,6 +175,7 @@ export async function GET(req: NextRequest) {
       photosPdfUrl: run.photos_pdf_url,
       pdfStale: pdfStaleOf(run),
       grounding: ((rj as { grounding?: { source?: string | null } } | null)?.grounding?.source) ?? null,
+      scheme,
       // SPEC-PAPER-MATCH Phase 1 (bot, 3 Sep 2026): what the paper was identified
       // as and whether the bank/scheme match was trusted. Absent on older runs.
       paperMatch: (() => {

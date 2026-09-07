@@ -854,6 +854,53 @@ Why the two are separate doors: a page re-mark changes the MARKING and the
 sheet follows it; a revision changes the SHEET with the marking untouched.
 Neither re-reads pages that were fine, and neither costs a full paper.
 
+### The mark scheme as a state — recorded allocation, approval (8 Sep 2026)
+
+Adrian: "why the discrepancy in her marks? are our marking not consistent?"
+Denise's AM TYS 2021 P2 went 56 → 55 → 54 across three markings, seven parts
+moving ±1. Cause: every run re-derived the per-part M/A split. The library's
+solutions PDF is auto-attached as the "scheme", extracted into `paper_schemes`
+(status `extracted`) — answers, **no marks anywhere** — and the marker was told
+it was "the authoritative allocation". It was not one.
+
+**Now (bot `lib/scheme-derive.js`, `lib/scheme-store.js`; migration
+`paper_schemes_status_allocation`):**
+- `paper_schemes` rows live under the paper's **canonical key**
+  (`canonicalSchemeKey`: the trusted paper match → `lib/paper-key` parse of the
+  name → the name with the student's tokens stripped), so "denise am tys 2021
+  p2" and "joey am tys 2021 p2" share one row, `gce 2021 am p2`. Columns:
+  `status` (`extracted` | `bank` | `derived` | `approved`), `allocation`,
+  `allocation_run_id/at`, `approved_at/run_id/by`.
+- **Grounding precedence** in `remarkRun`: mock → a stored scheme WITH marks
+  (`approved`, or `schemeHasMarks` — the bank's) → the attached PDF (re-extracted,
+  saved as `extracted`) → the stored scheme by key (markless) → inside the marker,
+  fingerprint → bank. A markless answers block no longer stops the bank rung
+  (`opts.groundTruthHasMarks`), so a trusted bank match with per-part marks wins
+  over the library solutions.
+- **The allocation layer.** After a math marking whose parts add up to the
+  paper's counted total, `allocationFrom(results)` (per question/part: label,
+  max, the marker's `scheme` text) is written to `paper_schemes.allocation` under
+  the key — once; never over an approved one. Every later marking of the paper
+  receives it as a block appended to the ground truth
+  (`renderAllocationBlock`: "RECORDED FROM AN EARLIER MARKING… use the same
+  split", or "APPROVED BY THE TEACHER… use exactly this"). The Mac claim carries
+  the same text as `ground_truth` (runbook §5a) so plan-marked papers are held
+  to it too. `result_json.grounding.scheme = {key, id, status, used,
+  recorded_by_this_run}` says what happened on each run.
+- **Adrian's checkpoint.** The desk shows a 📐 chip: *scheme recorded from this /
+  an earlier marking · used here* with **✓ Approve scheme**, or *scheme approved ·
+  date*. Approve & release (either release door) approves the paper's recorded
+  scheme quietly — releasing says the marks are right, so the split they were
+  marked to is right. `POST /api/admin/paper-scheme {action:'approve'|'rederive'}`
+  (`rederive` replaces a recorded allocation with the one a given run used;
+  refused on an approved scheme without `force`). No marks are ever changed by
+  approving.
+
+What this fixes: allocation drift between students and between re-marks of one
+paper. What it does not: judgement drift on the student's own working (was M1
+earned?) — that is the marker reading the page, and the calibration harness
+measures it.
+
 ### Graph sheets — the companion, the grid zoom, and the 1280px copy (8 Sep 2026)
 
 Adrian, on Denise's AM TYS 2021 P2 Q7: "straight line graph could be attached
