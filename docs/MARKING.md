@@ -2599,6 +2599,17 @@ Page image **uploads** are parallelised (independent). Only the Gemini detection
 > hand; the chip offers ✓→✗ / ✗→✓ on a mark; a retyped or deleted note/verdict writes back to
 > the part's `error_summary` / `verdict_line` on Done (bot `applyRecordEdits`); every desk page
 > header has **✏️ Annotate this page**.
+> **Desk round 3 (8 Sep 2026, verified headlessly the same day on Gavin Woon's unreleased run):**
+> tapping a marked page on the desk opens the pen IN PLACE on that page; Done clears the flags
+> of the pages Adrian edited (`triage_reviewed_via:'annotate'`, response `flagsCleared`) and
+> marks the PDF stale; a flipped ✓/✗ becomes an ink hint (`result_json.ink_hints[]` → the desk's
+> "🖊 Your ink says otherwise … Set (b) → 3/3" card, one tap pre-fills the per-part editor).
+> Two bugs shipped past the API-only test and were fixed the same morning: a swap-only edit
+> left Done disabled (`LayerObj.swapped` now counts as dirty), and the website proxy dropped
+> `markSwaps`. **Every field the overlay sends to the bot goes through
+> `lib/annotate/compose-forward.ts` (tested) — add new fields THERE or they silently vanish.**
+> Verify overlay changes by pressing Done on a real run and restoring it, never by calling
+> `/api/compose-page` directly.
 
 Full spec + as-built deviations: **`SPEC-ANNOTATE.md`** (repo root, §11–13). Status: built.
 > ⚠ **Annotate in the AdrianMarker shell app, not Safari** (resolved 2026-08-04):

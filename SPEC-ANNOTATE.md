@@ -410,5 +410,12 @@ Done sends `recordEdits` (`recordEditsFor`: retyped / deleted `note` / `verdict`
 with a question and part) and the bot's `applyRecordEdits` sets `error_summary` /
 `verdict_line` on both marking lists, breadcrumb `result_json.record_edits[]` → ⑥ the desk's
 page headers carry **✏️ Annotate this page** (`?page=<photoIndex>` → overlay `initialPage`).
+**Desk round 3 (8 Sep 2026):** the pen opens in place when a desk page is tapped; Done clears
+the flags of edited pages (`editedPhotoIndexes` → `triage_reviewed_via:'annotate'`); a swapped
+✓/✗ is sent as `markSwaps` (centre in layer space) and the bot's `inkHintsFor` matches it to the
+part region → `result_json.ink_hints[]` → the desk's one-tap Set button. Verified end-to-end
+headlessly the same day after two fixes: `LayerObj.swapped` makes a swap-only edit dirty (Done
+was disabled), and the proxy's body is now `lib/annotate/compose-forward.ts` (it had dropped
+`markSwaps`). The initial-page jump re-settles until every page above is sized.
 The iPad checklist (§8) has not yet been run on the layered pages.
 
