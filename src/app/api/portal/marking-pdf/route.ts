@@ -16,6 +16,7 @@ import { currentStudent, portalIdentity } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { isOurFileUrl, fetchOurFile } from '@/lib/student-files';
 import { markedPdfFilename, contentDisposition } from '@/lib/marked-pdf-filename';
+import { displayPaperName } from '@/lib/paper-display-name';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,7 +46,9 @@ export async function GET(req: NextRequest) {
   if (!url || !isOurFileUrl(url)) return NextResponse.json({ error: 'no pdf' }, { status: 404 });
 
   const filename = markedPdfFilename({
-    studentName: account.display_name, paperName: row.paper_name, dateISO: row.created_at, kind,
+    // The paper's name the way the student knows it ("A Math · GCE 2022 · Paper 1"),
+    // not the internal one Adrian typed ("rainie am tys 2022 p1") — same as the list.
+    studentName: account.display_name, paperName: displayPaperName(row.paper_name, account.display_name), dateISO: row.created_at, kind,
   });
 
   const r = await fetchOurFile(url);

@@ -25,6 +25,20 @@ function titleCase(s: string): string {
   return s.replace(/\b([a-z])/g, (m) => m.toUpperCase());
 }
 
+// School codes stay upper-case ("SJC Prelim", not "Sjc Prelim"). A token with no
+// vowel is a code (sjc, vjc, dhs, nygh, tkss); the ones with vowels are listed.
+// Everything else is a word and title-cases (St Theresa, Nan Hua, Hwa Chong).
+const CODES_WITH_VOWELS = new Set(['acs', 'acsi', 'acsb', 'ri', 'rgs', 'hci', 'ajc', 'sajc', 'ejc', 'asrjc', 'nush', 'chij', 'sota', 'nus', 'ntu', 'ip', 'sap']);
+// vowel-less abbreviations that are words, not codes ("St Theresa", "Mt Sinai")
+const SHORT_WORDS = new Set(['st', 'mt', 'dr']);
+function schoolCase(s: string): string {
+  return s.split(' ').map((t) => {
+    const low = t.toLowerCase();
+    const isCode = /^[a-z]{2,5}$/.test(low) && !SHORT_WORDS.has(low) && (!/[aeiou]/.test(low) || CODES_WITH_VOWELS.has(low));
+    return isCode ? low.toUpperCase() : titleCase(low);
+  }).join(' ');
+}
+
 /**
  * @param raw        the run's paper_name
  * @param studentName the student's display name — its words are dropped from the raw name
@@ -33,9 +47,15 @@ export function displayPaperName(raw: string | null | undefined, studentName?: s
   const src = String(raw || '').replace(/\.(pdf|jpe?g|png|heic)$/i, '').replace(/[_]+/g, ' ').trim();
   if (!src) return 'Marked paper';
   const drop = new Set(String(studentName || '').toLowerCase().split(/\s+/).filter(t => t.length >= 2));
+  // A handed-in Practice Again sheet is named after its paper ("Practice Again —
+  // AM TYS 2022 P1"); it must not display as the paper itself, or the student
+  // sees two rows with one name. The prefix is kept and the rest reads as usual.
+  const isPracticeAgain = /\bpractice again\b/i.test(src);
+  const body = src.replace(/\bpractice again\b/gi, ' ');
   // separate "O2022" / "P1"-style glue so the tokens read
-  const spaced = src.replace(/\b([oa])(20\d\d)\b/gi, '$1 level $2').replace(/\b(p|paper)\s*([1-4])\b/gi, 'paper $2');
-  const tokens = spaced.split(/\s+/).filter(t => t && !drop.has(t.toLowerCase()));
+  const spaced = body.replace(/\b([oa])(20\d\d)\b/gi, '$1 level $2').replace(/\b(p|paper)\s*([1-4])\b/gi, 'paper $2');
+  // punctuation-only tokens ("—", "-") never name a school
+  const tokens = spaced.split(/\s+/).filter(t => t && /[a-z0-9]/i.test(t) && !drop.has(t.toLowerCase()));
   const text = tokens.join(' ');
   const level = LEVELS.find(([re]) => re.test(text))?.[1] ?? null;
   const year = (text.match(/\b(20\d\d)\b/) || [])[1] ?? null;
@@ -49,12 +69,13 @@ export function displayPaperName(raw: string | null | undefined, studentName?: s
     .replace(/\b(tys|gce|o ?level|a ?level|level|prelims?|promo(tional)?|eoy|end[- ]of[- ]year|mye|mid[- ]year|sa[12]|wa[12]|ca[12]|practice set|test set|mock|sec(ondary)?|s[1-4]|paper|set)\b/gi, ' ')
     .replace(/\b20\d\d\b|\b[1-4]\b/g, ' ')
     .replace(/\s+/g, ' ').trim();
-  const school = leftover ? titleCase(leftover) : null;
+  const school = leftover ? schoolCase(leftover) : null;
   const parts: string[] = [];
   if (level) parts.push(level);
   if (exam === 'GCE') parts.push(year ? `GCE ${year}` : 'GCE');
   else if (exam && (setNo || year || school)) parts.push([school, exam, setNo ?? year].filter(Boolean).join(' '));
   else if (school || year) parts.push([school, year].filter(Boolean).join(' '));
   if (paper) parts.push(`Paper ${paper}`);
-  return parts.join(' · ');
+  const name = parts.join(' · ');
+  return isPracticeAgain ? `Practice Again · ${name}` : name;
 }
