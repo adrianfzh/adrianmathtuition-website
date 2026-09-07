@@ -83,6 +83,40 @@ describe('questionStructured', () => {
     expect(s.parts[0].text).toBe('Part a.');
     expect(s.parts[0].subparts[0].text).toBe('Sub i.');
   });
+
+  // 2026-09-08: the part walk was hand-unrolled to exactly two levels, so a
+  // third-level sub-part — its TEXT and its figure — rendered for nobody.
+  // Two live rows were in that state (ACS Barker Road 2025 EM P2 Q4,
+  // Catholic High 2025 AM P2 Q6).
+  it('renders sub-parts nested three levels deep, indenting by depth', () => {
+    const md = questionMarkdown({
+      question_text: 'Stem.',
+      parts: [{ label: 'a', text: 'Part a.', subparts: [
+        { label: 'ii', text: 'Angle $EQF = x^\\circ$.', subparts: [
+          { label: 'a', text: 'Find angle $EGF$.', marks: 2 },
+          { label: 'b', text: 'Find angle $OCB$.', marks: 3, image_url: 'deep.png' },
+        ] },
+      ] }],
+    });
+    expect(md).toContain('**(a)** Part a.');
+    expect(md).toContain('&nbsp;&nbsp;**(ii)** Angle $EQF = x^\\circ$.');
+    expect(md).toContain('&nbsp;&nbsp;&nbsp;&nbsp;**(a)** Find angle $EGF$. _[2m]_');
+    expect(md).toContain('&nbsp;&nbsp;&nbsp;&nbsp;**(b)** Find angle $OCB$. _[3m]_');
+    expect(md).toContain('deep.png');
+  });
+
+  it('leaves one- and two-level questions byte-identical to the unrolled form', () => {
+    const md = questionMarkdown({
+      question_text: 'Stem.',
+      parts: [
+        { label: 'a', text: 'Part a.', marks: 2 },
+        { label: 'b', text: 'Part b.', subparts: [{ label: 'i', text: 'Sub i.', marks: 1 }] },
+      ],
+    });
+    expect(md).toBe(
+      'Stem.\n\n**(a)** Part a. _[2m]_\n\n**(b)** Part b.\n\n&nbsp;&nbsp;**(i)** Sub i. _[1m]_',
+    );
+  });
 });
 
 // Rows with no `parts` array keep their parts inside question_text — the

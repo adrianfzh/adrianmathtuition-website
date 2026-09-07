@@ -71,6 +71,45 @@ rows from unjudged ones.
   see those, so the question is withheld even though its figure is present and fine.
   **24 questions were in exactly this state on 7 Sep.** Always search the whole row
   for `{{IMG:` and markdown `![](…)` before concluding a figure is missing.
+- **Inline tokens are not the only hiding place — walk the `parts[]` slots too.**
+  `parts[].image_url`, `parts[].image_url_after` and the same two on every subpart.
+  On 7 Sep morning a pass checked `image_url`, `images`, `figure_url` and inline
+  `{{IMG:}}`, found nothing, and wrote "FIGURE LOST" onto **five** questions whose
+  figure was sitting in a part slot the whole time. `docs/FIGURES.md` §1 already warns
+  about this; the warning was read and not applied. Enumerate every slot, then decide.
+- **A part slot can hold a real jsonb ARRAY, not just a JSON-array *string*.**
+  `partImagePaths()` starts `if (typeof value !== 'string') return []`, so
+  `["question_images/x.png"]` stored as an actual array renders for **nobody** — and
+  from outside the row it looks exactly like a lost figure. Two of the five above were
+  in this state. The fix is the plain string form; check `typeof`, not truthiness.
+- **"Not in `papers/processed`" is not the same as "no source".** Five of the six
+  source files an earlier pass recorded as absent were in `papers/processed` or Dropbox
+  all along, including a PDF parked as unrecoverable since July. `mdfind -name '<exact
+  filename>'` costs two seconds. Note that `source_file` is often spelt differently
+  from the file on disk (`… Bukit Panjang Government High P1.pdf` on the row vs
+  `AM PRELIM 2021 Bukit Panjang.pdf` on disk), so search the school and year, not the
+  literal string.
+- **The bank's school codes are abbreviations; Dropbox files spell them out.**
+  **`RI` = Raffles Institution** (Adrian, 2026-09-08) — `EM S2 SA2 2014 RI.docx` on the
+  row is `EM S2 SA2 2014 Raffles Institution.docx` on disk, and searching for "RI" finds
+  nothing. Same shape of miss for any initialism. Search the expansion too.
+- **A paper can be filed under the wrong subject, or bundled inside another one.**
+  `AM S4/AM Prelim 2021/AM PRELIM 2021 Bukit Panjang.pdf` is *mostly the E-Math paper*;
+  the A-Math paper it is named for starts at **page 50** of the same file. Before
+  concluding a question is not in its paper, page through the whole file — a thumbnail
+  contact sheet at 36 dpi is enough — rather than trusting the filename or the first
+  few pages. (Also: `EM PRELIM 2025 Chung Cheng High (Yishun).docx` in Dropbox is a
+  Beatty 2024 paper.)
+- **Before planning a re-crop from a DOCX, check `<a:srcRect/>` in `word/document.xml`.**
+  Empty means Word is hiding no cropped-away area, so `word/media/imageN.png` is all
+  there is — if that file is already truncated, the truncation predates the docx and no
+  re-crop exists. (MJC 2014 JC1 P1 Q7: media image byte-identical to the stored crop,
+  empty `srcRect`. Nothing to recover.)
+- **A PDF can be the broken thing.** Word floating-object collapse survives the export:
+  in `EM S4 PRELIM (NA) 2024 Pierce.pdf` every Paper-1 diagram lost its anchor, so four
+  questions' text labels are piled on the formula sheet and the line-work exists nowhere
+  in the file. Enumerate `page.get_images()` and `page.get_drawings()` before concluding
+  a figure can be traced out of a page render.
 - **Never derive a judgement from a keyword regex.** On 7 Sep a keyword filter said
   "34 questions need no figure"; reading them showed 24 had figures and the true
   number was 11. It then also mis-sorted two more in opposite directions. The words
@@ -89,89 +128,291 @@ figureServable(row) = !row.has_image || !!row.figure_url || row.image_watermark_
 ```
 plus: no `figure_flags` row for that `question_id` with `status='open'`.
 
-## Where things stand (7 Sep 2026)
+## Where things stand (after the 7 Sep evening pass)
 
-9,466 live questions carry an image. **15 do not serve.** Everything else is clean.
+**Of the 15 questions this queue named, 12 are fixed and 4 remain** — Pierce ×3 and
+RI 2014 S2 Q6, all four blocked on a paper that does not exist in a usable state (below).
+Nothing else in this queue is waiting on a decision.
+A bank-wide sweep closed **22 more** that the queue never saw, because they were serving
+BROKEN rather than withheld; that is its own section below, and it is the more important
+half. The bank-wide count moves under you while a peer session ingests, so measure it,
+don't quote it: at 2026-09-08 ~01:10 SGT it was 9,534 rows with an image, 9,528 serving.
+Anything in that gap beyond the 5 named here is a freshly ingested row awaiting its own
+fitness pass, not a regression — check `created_at` before treating one as a defect.
 
-### A. Three questions whose TEXT is broken, not just the figure — these need Adrian
+**The 8 Sep round (Adrian: "go ahead") closed three more and fixed the renderer.**
+MJC 2014 JC1 P1 Q7 was released once the original paper showed the figure was never
+defective (§C); Bukit Panjang 2021 AM P1 Q11 and Chung Cheng (Yishun) 2025 EM P1 Q19 had
+their text re-extracted from source and were released (§A); Anglican High 2025 EM P1 Q23
+was redrawn on Adrian's instruction and released (§A); and `questionMarkdown()` now
+recurses through sub-parts of any depth (§"Known and NOT fixed", now fixed).
 
-Do not release any of these by fixing the image alone.
+The evening pass closed 8 of the 15. Two findings did most of that work, and both are
+now traps above: five "lost" figures were never lost (they sat in `parts[]` slots the
+7 Sep morning pass did not walk), and five of the six "missing" source papers were
+sitting in `papers/processed` or Dropbox the whole time.
 
-1. **Anglican High 2025 EM Prelim P1 Q23** — id `16648399-9491-4165-8225-e3b66e3fcca8`,
-   flag path `e4095a11-24b4-4aa1-ac27-6b697816281e.png`, source `EM PRELIM 2025 Anglican High.pdf`.
-   The stored image is a **worked-solution overlay**: blue construction arcs with both
-   the perpendicular bisector and the angle bisector already drawn, plus red and green
-   loci lines. The three tents A, B, C are not even labelled, so it is unusable as the
-   question figure even after de-leaking. Needs the blank answer-space diagram from the
-   source PDF, which is **not** in `~/Desktop/AdrianMath/papers/processed`. An earlier
-   pass reconstructed the labels by inference — that must not ship.
+**The lesson that generalises: count what the RENDERER emits, not what the columns say.**
+Every defect the sweep found was invisible to a column walk and invisible to the
+withheld-question count, because the rows were stamped `clean` and serving. Parse
+`questionMarkdown()`'s `<img>` tags, compare that to every reference in the row, and
+compare both to a **recursive** bucket listing — a one-level `storage.list()` misses
+`AM/<school>/…` and `EM/<school>/…` entirely and will hand you five phantom
+"missing objects" (it did, on the first pass here).
 
-2. **Bukit Panjang Government High 2021 AM Prelim P1 Q11** — id `c91d75e0-6b05-4413-aee2-eb766f967455`,
-   flag path `716a700a-ef99-45b0-88bf-49bacea0b40a.png`, source
-   `AM PRELIM 2021 Bukit Panjang Government High P1.pdf` (also not in `processed`).
-   **The figure is correct; the stored text and answers are wrong.** The figure shows
-   `y = x^(3/2)` and `y = -x^(3/2)` with a tangent touching at A (x=4) and meeting the
-   lower curve at B. The stored stem says "y = x^2 - 3 and y = sqrt(3-x)" — both wrong —
-   and the stored answer (i) `y = 8x - 19` is the tangent to that wrong curve.
-   Correct: at x=4, y = 4^(3/2) = 8; dy/dx = (3/2)x^(1/2) = 3; tangent **y = 3x - 4**
-   (x-intercept 4/3, which matches the drawing); **B = (1, -1)**. Part (ii)'s area must
-   be recomputed. Re-extract the text from the source paper.
+### Fixed on 7 Sep evening — 8 questions, all judged by eye against their stems
 
-3. **Chung Cheng High (Yishun) 2025 EM Prelim P1 Q19** — id `9efc7fd2-e9e7-49cf-a915-447dc027a1e1`,
-   `source_file` is null. The wrong figure (a rectangle with shaded triangles X and Y,
-   belonging to another question) was **already detached on 7 Sep**. Still open for a
-   non-figure reason: `parts` is empty and `question_text` does not contain the table of
-   true/false statements, so it is unanswerable. The `answer` field implies three
-   statements (n^2>1 True; 1/n > 1/n^2 True; (n-1)(n+3) always odd False, n=3 gives 12)
-   but an earlier pass read the paper as **n^3 > 1**, and True/True does not
-   disambiguate. Needs the source paper.
+Every one passed all five checks (belongs · whole · no answer shown · legible · no
+watermark) and is stamped `image_watermark_status='clean'` with the evidence appended
+to `image_watermark_notes`. Verified end-to-end afterwards through the repo's own
+`questionMarkdown()` + `figureServable()`: each emits exactly one `<img>`, every URL
+returns HTTP 200, no open flag blocks any of them.
 
-### B. Eight questions whose figure is LOST
-
-`has_image = true`, `image_url` empty, no inline `{{IMG:}}` anywhere, but the text
-refers to a diagram the paper supplied. Clearing `has_image` would publish a question
-whose own words point at a picture that is not there — do not do that. Recover the
-figure from the source paper, or leave blocked.
-
-| question | id | the cue in its text |
+| question | what was actually wrong | what was done |
 |---|---|---|
-| IJC or SRJC or YJC 2013 JC1 P1 Q2 | `9df595d0-dbe3-4a63-9d2f-b8ccd4bfa4de` | "The diagram shows" |
-| MI 2015 JC1 P1 Q7 | `7b8ee155-83fd-4938-b986-c3ca2af86ee4` | "The diagram shows" (circle x²+(y−1)²=1) |
-| NYJC 2013 JC1 P1 Q7 | `f0c28f16-b84e-4b15-a4d5-91e463690206` | "The diagram shows" |
-| TPJC 2015 JC2 P1 Q10 | `a0cfcbb4-a1d0-41c0-9cb5-950c5b69bb1e` | "The diagram shows" |
-| TPJC 2015 JC2 P2 Q4 | `20453a3b-add2-4da7-bc0b-81773a639caa` | "The diagram shows" |
-| Pierce 2024 EM_NA P1 Q1 | `d2dcd162-bd23-49ce-b099-d1bedd119968` | spinner, numbers 1–8 |
-| Pierce 2024 EM_NA P1 Q18 | `e3b3b79c-0b31-499f-8152-2e7a6694c31d` | "Draw an enlargement of **the polygon**" |
-| Pierce 2024 EM_NA P1 Q21 | `2d81a524-022c-4627-a6bd-ed0c8c5e2c81` | part (b) triangle ABC, "not drawn to scale" |
+| IJC or SRJC or YJC 2013 JC1 P1 Q2 | figure present in `parts[a].image_url_after` but stored as a **jsonb array**, which `partImagePaths()` (string-only) drops — rendered for nobody | array → plain string; stamped clean |
+| NYJC 2013 JC1 P1 Q7 | same: `parts[a].image_url` held a jsonb array | array → plain string; stamped clean, with (b) recorded as a **qualified** pass — see below |
+| TPJC 2015 JC2 P1 Q10 | nothing — `parts[i].image_url_after` was fine, just never judged | stamped clean |
+| TPJC 2015 JC2 P2 Q4 | nothing — `parts[a].subparts[ii].image_url` was fine, never judged | stamped clean |
+| MI 2015 JC1 P1 Q7 | figure fine, but the docx paste **sliced the x-axis label** — the top 3 pixel rows of an "x" at the bottom edge (rows 311–313; 306–310 blank) | re-cropped 518×314 → 518×308, new object, slot repointed, `figure_clean_log` batch `figure-recover-2026-09-07`; stamped clean |
+| CJC 2016 JC2 P1 Q1 | bucket object missing (stored key 400s) | re-extracted `media/image1.png` from `JC2 Prelim 2016 CJC.docx`, uploaded under a new key, `image_url` repointed, logged; stamped clean |
+| CJC 2016 JC2 P1 Q4 | bucket object missing | same, from `media/image4.png` |
+| CJC 2016 JC2 P2 Q3 | bucket object missing | same, from `media/image9.png` |
 
-Several of these are reconstructible from the question's own algebra (e.g. MI 2015 P1 Q7
-gives the circle's equation). A redraw is legitimate **only** if every feature comes from
-the question text — never inferred. Check the bot's figure registry first (see below).
+Sources used, all verified byte-identical to what was already in the bucket where a
+bucket copy existed: `JC1 MY 2013 IJC or SRJC or YJC.docx`, `JC1 MY 2013 NYJC.docx`,
+`JC2 Prelim 2015 TPJC.docx`, `JC1 MY 2015 MI.docx`, `JC2 Prelim 2016 CJC.docx` — every
+one of them in `~/Desktop/AdrianMath/papers/processed`.
 
-### C. Three files missing from the bucket
+**One qualified pass, recorded in the row's own note.** NYJC 2013 P1 Q7's scan is very
+slightly skewed, so the page edge shows as thin black wedges along parts of the frame
+(top rows 0–7; left cols 0–4; top-right col 946 rows 0–198; bottom-right rows 765–767
+from x 685) — 5–8 px on a 947×768 image, all outside the drawing, touching no label.
+Left in place: the bottom edge carries the bottom of the "(0,−3)" parentheses and row 7
+the top of the "y" label, so a rectangular trim clips real content, and a bespoke
+paint-out risks more than the hairline costs. It is an edge-bleed clean of the kind the
+2026-08-28 sweep already did if Adrian wants it gone. Every figure in the batch was
+measured the same way; the other seven carry 0.1–0.4 % ink in the 3 px frame band,
+i.e. nothing.
 
-`https://nempslbewxtlikfzachi.supabase.co/storage/v1/object/public/question_images/<key>`
-returns HTTP 400 for all three. Never judged. Find the source papers and re-extract.
+### The bank-wide sweep — "everything else is clean" was not true
 
-- CJC 2016 JC2 P1 Q1 — id `5fc07576-9404-4afd-be89-f7c8a973cfb7`
-- CJC 2016 JC2 P1 Q4 — id `79c69ca0-5c94-4bb8-bfc8-2a426da7fa9e`
-- CJC 2016 JC2 P2 Q3 — id `d00d3c79-2ef8-472a-afc8-3bf66f548902`
+The queue above named 15 questions. Asked what about the other ~9,450, the evening pass
+swept the whole bank with the RENDERER as ground truth (`questionMarkdown()` → count the
+`<img>` tags) rather than a column walk, and diffed every reference against a **recursive**
+listing of the bucket. That found three classes the withheld-question count could never
+show, because **every row in them was stamped `clean` and serving**.
 
-### D. One bad crop
+| class | found | outcome |
+|---|---|---|
+| Part slot holds a **jsonb array** → renders for nobody | 14 rows / 20 slots | 13 rows fixed (array → string) after judging all 20 figures; 1 withheld |
+| `has_image` true, gate passed, **no figure reference at all** | 9 rows | 7 cleared (`has_image` false), 2 figures recovered |
+| Rendered `<img>` pointing at a **missing bucket object** | 0 | — |
+
+**The array class is the one that mattered.** These questions served the words "The
+diagram shows…" with no diagram at all — worse than the withheld ones, because nothing
+flagged them. Same defect as IJC and NYJC above, 13 more instances: RVHS 2015 JC2 P1 Q10,
+GCE 2003 EM P1 Q23, CJC 2013 JC1 P1 Q9, SAJC 2013 JC1 P1 Q10, CJC 2015 JC1 P1 Q8,
+Raffles Girls 2021 AM P1 Q8/Q10/Q11, RI 2014 JC1 P1 Q10, NJC 2014 JC1 P1 Q8,
+GCE 2004 EM P2 Q5, GCE 2003 EM P1 Q7, TMJC 2022 JC2 P1 Q6.
+
+Two things the shape fix alone would have got wrong, both caught by looking first:
+
+- **TMJC 2022 JC2 P1 Q6 was a duplicate.** Its stem `image_url` held copies of *both*
+  part figures — `ec5e2524….png` is a PNG twin of part (a)'s `2dfb33f6….jpeg`, and
+  `b881c671….jpeg` is literally the same key as part (b)'s — with `question_text` empty,
+  so they rendered as two captionless images at the top. Converting the part slots alone
+  would have shown every figure twice. The stem was cleared to `[]`; each figure now
+  renders once, beside its own part. (By contrast Raffles Girls 2021 AM P1 Q8 renders the
+  *same* diagram twice on purpose: the paper prints it once as the given and again as the
+  answer space for (b)(ii), whose text says "Insert the line on the following diagram".)
+- **RI 2014 S2 P1 Q6 was not repaired — it was withdrawn.** Both its Venn diagrams are
+  scans of an **annotated script**: continuous diagonal pencil hatching over the whole
+  frame that runs past the rectangle's border, teal pen marks, a hand-drawn squiggle
+  inside A∩B, blue handwriting bleeding through at the foot of the second. The question
+  asks the student to *shade* a region, and for (C∩D)' — where C and D are disjoint, so
+  the answer is the whole universal set — the hatching reads as the answer itself.
+  Serving it with no diagram and serving it with that diagram are both wrong, so
+  `image_watermark_status` was cleared to NULL and a `held` flag added. **The array slots
+  are left as they are on purpose — do not "fix the shape" without replacing the images.**
+  **Source checked 2026-09-08 and it is a dead end:** the paper is in Dropbox at
+  `1 ONLINE LESSONS/3 Exam Papers/EM S2 (G3)/EM S2 SA2 2014/EM S2 SA2 2014 Raffles Institution.docx`
+  (filed under the expansion, not "RI"), its Q6 images are `media/image2.png` and
+  `image3.png`, and both are **byte-identical** to what the bank already holds. There is
+  no PDF beside it. Adrian's only copy of that paper is the marked-up script, so this one
+  needs a different copy of the paper or nothing. Do not re-hunt it.
+
+**The no-reference class needed the source paper, not a keyword.** Seven of the nine turn
+out to need no figure at all: in ACJC 2016 P1 Q6/Q10/Q12 and P2 Q2/Q3/Q10, and TPJC 2015
+P1 Q3, every image in the question's block sits *after* the answers begin — they are
+SOLUTION sketches, and each mention of a diagram in the question ("show the graph of M
+against t", "sketch this locus on an Argand diagram") is an instruction to the student.
+Verified block by block in the source docx. `has_image` cleared on all seven. (Watch for
+`image6.png`/`image7.png` in the ACJC docx: 1×1-pixel spacers, not figures.)
+
+The other two were real losses and both were recovered:
+
+- **DHS 2014 JC1 P1 Q8** — the stem says the graph "is given below". The figure is in
+  `JC1 Promo 2014 DHS.docx` as `word/media/image4.emf`, an Enhanced Metafile nothing on
+  this Mac renders; the embedded DIB was pulled straight out of its single
+  `EMR_STRETCHDIBITS` record (285×160, 32bpp) and written as PNG. Matches the stem
+  exactly: y = −4x²(x²−2), maxima (−1,4) and (1,4), roots at O and ±√2.
+- **Tampines 2021 EM_NA P2 Q10** — part (b) says "in the grid paper provided on the next
+  page". That grid is the full-page image on page 26 of the source PDF; extracted at its
+  native 595×856 rather than re-rendered. The `www.KiasuExamPaper.com` branding on that
+  page is page TEXT below the image, not part of it, so the extract is clean; a printer
+  registration mark in the top-right corner was cropped off with the top 26 blank rows.
+
+### Known and NOT fixed: the renderer stops at two levels of subpart
+
+`questionMarkdown()` walked `parts[] → subparts[]` and no deeper, so anything at
+`subparts[].subparts[]` — text as well as images — rendered for nobody. Exactly **2 rows,
+4 nodes** bank-wide: Anglo Chinese School (Barker Road) 2025 EM P2 Q4
+(`bcc5d1af-…`, which lost parts (a)(ii)(a) and (a)(ii)(b) plus one figure) and
+Catholic High 2025 AM P2 Q6 (`4d59a7fb-…`, which lost (a)(ii)(a) and (a)(ii)(b)).
+
+**FIXED 2026-09-08 on Adrian's go-ahead** (uncommitted, in the working tree). The
+hand-unrolled inner loop in `src/lib/bank-question-markdown.ts` is now a recursive
+`emitPart(part, depth)`; the indent is `'&nbsp;&nbsp;'.repeat(depth)`, which is exactly
+what the old code hard-coded at depth 1, so **every question with two levels or fewer
+renders byte-for-byte as before** — 34,198 of 34,200 rows — and only the two deep ones
+change, from silently-truncated to complete. Two regression tests were added to
+`bank-question-markdown.test.ts` (one asserting the three-level output, one pinning the
+two-level output byte-for-byte); the full suite passes, 188 files / 2,950 tests. Both
+rows were then re-rendered and confirmed: ACS now emits 2 images and 8 blocks, Catholic
+High 1 image and 8 blocks.
+
+### A. The three "text is broken" questions — two now FIXED from source (8 Sep)
+
+**Bukit Panjang Government High 2021 AM P1 Q11 — FIXED, released.** The paper was
+never missing; it was *inside the wrong file*.
+`1 ONLINE LESSONS/3 Exam Papers/AM S4/AM Prelim 2021/AM PRELIM 2021 Bukit Panjang.pdf`
+is mostly the **E-Math (4048)** paper — the **Additional Mathematics 4047/1** paper
+starts at **page 50** of it, Q11 is on **page 67**, with the marking scheme handwritten
+under each printed question. Stem, all three parts, their marks (3+1+5 = 9, matching the
+stored total) and every answer were taken verbatim. The stored figure was always right;
+the stem, the part-(i) answer, the part marks and a **missing part (ii)** were all wrong
+and are now replaced:
+> The diagram shows part of the curve y = x^(3/2) and y = −x^(3/2). The tangent meets
+> the curve y = x^(3/2) at the point A where x = 4.
+> (i) Find the equation of the tangent. **[3]** → A(4, 8), gradient 3, **y = 3x − 4**
+> (ii) The tangent meets y = −x^(3/2) at B. Given the x-coordinate of B is 1, find the
+> y-coordinate. **[1]** → **−1**, so B(1, −1)
+> (iii) Find the total area of the shaded region. **[5]** → 32/15 + 21/10 = **127/30 ≈ 4.23**
+
+**Chung Cheng High (Yishun) 2025 EM P1 Q19 — FIXED, released.** Found at
+`~/Documents/Claude/Projects/AdrianMath/papers/processed/EM PRELIM 2025 Chung Cheng High (Yishun).pdf`,
+**page 12**, table printed with the scheme filled in. The first statement is **n³ > 1**,
+not n² > 1 — an earlier pass read n³ correctly and a later note guessed n²; the paper
+settles it. The three statements had only ever existed in the `answer` field, never in
+the question, so it was unanswerable; they are now parts (a)–(c) at 1 mark each:
+n³ > 1 → True · 1/n > 1/n² → True · (n−1)(n+3) always odd → False, n = 3 gives 12.
+⚠ The Dropbox file `EM PRELIM 2025 Chung Cheng High (Yishun).docx` is **NOT this paper** —
+it is a Beatty 2024 paper, mislabelled.
+
+**Anglican High 2025 EM P1 Q23 — REDRAWN and released** (Adrian, 8 Sep: *"just redraw
+anglican figure"*). The wording and parts were already correct in the row and match
+p20–21 of `Dropbox/…/EM Prelim 2025/EM PRELIM 2025 Anglican High.pdf`; only the figure
+was wrong. **Both** Dropbox copies (the plain one and `(Post)`) are the *answered*
+version — there is no blank one — and the stored image was that overlay.
+
+De-leaking it was not possible: the coloured construction crosses the black original, so
+stripping colour and its anti-aliased halo leaves gaps in both segments, and the labels
+A, B, C were never in the image at all — they were page text that the Word
+floating-object collapse threw into the left margin. So the figure now in the bank is
+**ours, not a scan**.
+
+How the geometry was established, so nobody has to take it on trust:
+- The two arms were least-squares-fitted to the surviving black pixels — residual std
+  2.6–2.9 px, i.e. the stroke width, so they really are straight. They meet at
+  (381.4, 669.8) in the stored image's pixel space, far ends (381.5, 211.0) and
+  (1373.0, 829.6); angle ABC = 99.1°.
+- The labels are **derived**, and each derivation is corroborated by measuring the mark
+  scheme's own answer lines against the fitted arms: the **red** line is 87.3° to the
+  right arm and 8 px from its midpoint → it is the perpendicular bisector of AB, so the
+  right arm is AB; the **green** line is 88.8° to the vertical arm and 19 px from its
+  midpoint → that arm is BC; the **blue** line passes 1.3 px from the vertex and splits
+  it 47.0°/52.1° → it is the bisector of angle ABC, so the vertex is B. Hence
+  **B = vertex, A = far end of the right arm, C = top of the vertical arm.**
+- End-to-end check: performing (a)(i) and (a)(ii) on the redrawn figure puts **M** at
+  (971, 168) and **T** at (927, 441), within **37 px** and **33 px** of where the
+  school's own hand-drawn lines intersect — inside their drawing error, given their
+  angle bisector is 2.5° off true — and on our figure |TA| = |TB| = |TC| = 591.8 and
+  |MA| = |MB| = 774.4 exactly.
+
+The old overlay is still in the bucket and in `figure_clean_log`
+(batch `anglican-redraw-2026-09-08`); repointing `image_url` back to
+`e4095a11-24b4-4aa1-ac27-6b697816281e.png` reverts it.
+
+### B. Three Pierce questions — source found, and it is the source that is broken
+
+`Pierce 2024 EM_NA P1 Q1` (`d2dcd162-…`), `Q18` (`e3b3b79c-…`), `Q21` (`2d81a524-…`).
+All three flagged `held`. **Do not go looking for the paper again.**
+
+`EM S4 PRELIM (NA) 2024 Pierce.pdf`
+(sha256 `99d9ddcd36f3260157b63df3032ad76c1d93b05fff91035a86b2e4c59aed95f4`) is in
+`Dropbox/1 ONLINE LESSONS/3 Exam Papers/EM S4 (NA)/EM S4 SA2 (NA) 2024/`, with a
+byte-identical copy in `~/Documents/Claude/Projects/AdrianMath/solutions/done/`. The
+2026-07-18 note blamed the *archive renders* for the Word floating-object collapse; the
+collapse is **in the PDF itself**. Every embedded image and every vector path on
+Paper 1 (pp. 1–17) was enumerated: the only rasters are the school logo (p1), a black
+mask (p3), the Q13 parallelogram (p10) and the Q17 sector (p14/15). Every other diagram
+lost its anchor and its line-work is absent from the file — page 2 carries the surviving
+text labels of four different questions piled on top of the formula sheet.
+
+What survives, for whoever gets a clean copy:
+- **Q1** — the spinner's number labels only, spread into an ellipse, reading round as
+  7, 8, 1, 2, 3, 4, 5, 6, so the numbers ran in order. The circle and its eight sector
+  lines are gone. The stem does fix the content ("an equal chance of landing on each of
+  the numbers 1…8"), so a registry redraw is arguable — **left for Adrian**, because it
+  would be our drawing standing in for the school's.
+- **Q18** — nothing. The polygon and its grid left no path anywhere in Paper 1, and
+  "the polygon" is never described in words, so no redraw is possible even in principle.
+- **Q21** — the labels A, B, C and the values 10, 40, 42, without their side assignment
+  (A above, B and C on one row, so BC is the base). The mathematics does not care
+  (10² + 40² = 1700 ≠ 42² = 1764 either way), but a figure that contradicts the paper is
+  worse than none. Part (a)'s ladder diagram (5 m, 1.2 m) is gone too.
+
+### C. The "bad crop" that turned out not to be a crop — RELEASED
 
 **MJC 2014 JC1 P1 Q7** — id `c08a143c-167a-4f49-acff-fa562a4c6ff3`, inline figure
-`e8f7dffb-ec68-4285-ab9d-980ddd589430.png`. The crop has no y-axis, no axis labels, no
-origin and no scale; the rule along the bottom is page furniture, not the x-axis. The
-stem promises "horizontal asymptote y = 0 and turning points at x = 1 and x = 5" and
-none of it is identifiable, so part (a) cannot be attempted. Needs a re-crop from source
-or a redraw. Flagged `held`.
+`e8f7dffb-ec68-4285-ab9d-980ddd589430.png`. **Released 2026-09-08; flag closed.**
+
+Two passes called this figure defective ("no axes, no origin, no scale — part (a) cannot
+be attempted"). Both were wrong, and the original paper proves it. It is in Dropbox at
+`1 ONLINE LESSONS/3 Exam Papers/H2 JC/JC Math JC1 MY 2014/JC MY 2014 MJC.pdf` — a
+3-page landscape 2-up scan, Q7 on page 2, right column, footer `9740/01/MYE/2014`.
+Compared side by side with the stored crop they are the same drawing, speck for speck:
+**MJC printed this figure with no axes.** The heavy horizontal rule is the bottom edge
+of the printed drawing box, not page furniture and not the x-axis — the curve is clipped
+by it on both descending branches. Nothing was ever lost in extraction.
+
+The question is answerable exactly as the school set it: the stem supplies the only
+numbers there are (asymptote y = 0, turning points x = 1 and x = 5), which is why the
+stored answers are qualitative — 1/f(1), ±√f(5) — rather than numeric.
+
+**The general lesson: "this figure looks incomplete" is a hypothesis about the
+extraction, and the paper is the only thing that can test it.** Two sessions measured
+the pixels in ever-finer detail (asymptotes at x-px 181.5 and 427.5, tails 16 px apart,
+turning points at 285 and 487) and grew more confident of a conclusion the source
+refuted in one look. Find the paper before you write "needs the real paper".
+
+### D. Freshly ingested, not part of this queue
+
+**RI 2015 JC2 P1 Q8** (`7ab22336-b60d-45d9-87a9-cc0b2ba7e576`), **Q10**
+(`f89db196-8f06-4f0b-bb3b-0d14f0d59c2a`), and however many more have landed by the time
+you read this — another session was ingesting `JC2 Prelim 2015 RI.docx` while this pass
+ran, first row created 2026-09-07 10:37. Q8's figure is at `parts[b].image_url_after` as
+a JSON-array *string*, so it renders; it is simply unjudged, and will be picked up by
+its own session or the nightly `figure-fitness` catch-up. **Left alone deliberately** —
+stamping rows out from under a live ingestion is how two sessions collide.
 
 ### E. The review backlog — Adrian's, not yours
 
-At `/admin/figures-bank`: **131 question figures** and **313 solution figures** with
-`status='held'`. These are already serving (held does not withhold). Do not bulk-release
-them. Do not "release every quiet figure" — that button is how three known-bad figures
-went live.
+At `/admin/figures-bank`: **446 `status='held'` rows** across the question and solution
+lanes. These are already serving (held does not withhold). Do not bulk-release them.
+Do not "release every quiet figure" — that button is how three known-bad figures went
+live.
 
 ## Before you redraw anything
 

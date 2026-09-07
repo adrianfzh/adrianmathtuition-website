@@ -194,20 +194,23 @@ export function questionMarkdown(q: BankQuestion): string {
   if (q.question_text) out.push(renderInlineImagesInText(q.question_text));
   for (const r of stem.filter((r) => r.pos === 'after')) out.push(imgTag(r.url, 'diagram'));
 
-  for (const p of (Array.isArray(q.parts) ? q.parts : [])) {
-    if (!p?.label && !p?.text) continue;
+  // Parts nest arbitrarily deep. The loop used to be hand-unrolled to exactly two
+  // levels (part → subpart), so anything at subparts[].subparts[] — TEXT as well as
+  // figures — rendered for nobody: 2 rows bank-wide on 2026-09-08 (ACS Barker Road
+  // 2025 EM P2 Q4 lost parts (a)(ii)(a) and (a)(ii)(b) plus a figure, Catholic High
+  // 2025 AM P2 Q6 likewise). Recursing reproduces the old output byte-for-byte at
+  // depths 0 and 1 — the indent below is the `&nbsp;&nbsp;` the unrolled loop
+  // hard-coded for subparts — and simply stops dropping the deeper ones.
+  const emitPart = (p: BankPart, depth: number) => {
+    if (!p?.label && !p?.text) return;
     const marks = p.marks ? ` _[${p.marks}m]_` : '';
+    const indent = '&nbsp;&nbsp;'.repeat(depth);
     if (p.image_url) out.push(partImageHtml(p.image_url));
-    out.push(`**(${p.label ?? ''})** ${renderInlineImagesInText(p.text)}${marks}`.trim());
+    out.push(`${indent}**(${p.label ?? ''})** ${renderInlineImagesInText(p.text)}${marks}`.trim());
     if (p.image_url_after) out.push(partImageHtml(p.image_url_after));
-    for (const sp of (Array.isArray(p.subparts) ? p.subparts : [])) {
-      if (!sp?.label && !sp?.text) continue;
-      const spMarks = sp.marks ? ` _[${sp.marks}m]_` : '';
-      if (sp.image_url) out.push(partImageHtml(sp.image_url));
-      out.push(`&nbsp;&nbsp;**(${sp.label ?? ''})** ${renderInlineImagesInText(sp.text)}${spMarks}`.trim());
-      if (sp.image_url_after) out.push(partImageHtml(sp.image_url_after));
-    }
-  }
+    for (const sp of (Array.isArray(p.subparts) ? p.subparts : [])) emitPart(sp, depth + 1);
+  };
+  for (const p of (Array.isArray(q.parts) ? q.parts : [])) emitPart(p, 0);
   return out.join('\n\n');
 }
 
