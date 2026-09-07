@@ -64,6 +64,7 @@ type Detail = {
     pdfUrl: string | null; annotatedPdfUrl: string | null; photosPdfUrl: string | null;
     pdfStale: boolean; grounding: string | null; unattempted: string[]; portalSubmission: boolean;
     paperMatch: PaperMatch | null;
+    remarking: boolean; remarkPages: number[];
   };
   lane: DeskLane;
   pending: number;
@@ -498,6 +499,37 @@ export default function DeskPage() {
     refresh(id);
   }
 
+  // ✏️ Revise the sheet (Adrian, 8 Sep 2026: "changes to be made just to a
+  // certain section, a certain example, a certain phrasing"): a note to the
+  // worker. Only what the note names changes; the previous version is kept.
+  async function reviseSheet(instructions: string) {
+    if (!detail?.sheetJob) return;
+    const id = detail.run.id;
+    setBusy('sheet');
+    const { ok, d } = await postJson('/api/admin/sheet-jobs', { action: 'revise', id: detail.sheetJob.id, instructions });
+    setBusy('');
+    if (!ok) { setToast(d.error || 'Could not send the revision'); return; }
+    setToast(`Revision ${d.round} sent — the Mac changes only what you named and re-files the sheet.`);
+    refresh(id);
+  }
+
+  // 🔁 Re-mark ONE page (Adrian, 8 Sep 2026: "sometimes there is no need to
+  // remark an entire pdf because of a small change"): every other page keeps
+  // its marking; the Mac reads this page again, the paper is redrawn, and the
+  // sheet is revised for whatever changed. Through the 🌙 queue, like a re-mark.
+  async function remarkPage(photoIndex: number) {
+    if (!detail) return;
+    const id = detail.run.id;
+    const released = !!detail.run.releasedAt;
+    if (!window.confirm(`Re-mark page ${photoIndex + 1} only? The other pages keep their marking. The Mac reads this page again on your plan when a slot is free, the paper is redrawn, and the Practice Again sheet is revised for what changed.${released ? ' The student\u2019s released copy is replaced.' : ''}`)) return;
+    setBusy('remark');
+    const { ok, d } = await postJson('/api/admin/mark-paper', { phase: 'enqueue', id, model: 'opus', style: 'teacher', remark: true, pages: [photoIndex] });
+    setBusy('');
+    if (!ok) { setToast(d.error || 'Could not queue the page'); return; }
+    setToast(`Page ${photoIndex + 1} queued for re-marking${typeof d.etaMinutes === 'number' ? ` — about ${d.etaMinutes} min` : ''}.`);
+    refresh(id);
+  }
+
   // Approve & release — the one big button. release-with-sheet attaches the
   // amended copy by name, assigns the sheet, releases, notifies. The ambiguous
   // case (two "Practice Again…" PDFs) asks, exactly as triage does.
@@ -697,6 +729,7 @@ export default function DeskPage() {
           editKind={editKind} setEditKind={setEditKind} editParts={editParts} setEditParts={setEditParts}
           onAgree={agree} onOverride={override} onTag={tag} onSubject={setPaperSubject} onAttach={attachMyCopy} onRebuild={rebuild}
           onQueueSheet={queueSheet} onCancelSheet={cancelSheet} onAutoRelease={autoRelease} onApprove={approve} onReleaseOnly={releaseWithoutSheet} onToast={setToast}
+          onRevise={reviseSheet} onRemarkPage={remarkPage}
         />
       )}
 
@@ -721,6 +754,7 @@ function DetailView(p: {
   onAttach: () => void; onRebuild: () => void; onQueueSheet: () => void; onCancelSheet: () => void; onToast: (message: string) => void;
   onAutoRelease: (action: 'hold' | 'unhold') => void;
   onApprove: () => void; onReleaseOnly: () => void;
+  onRevise: (instructions: string) => void; onRemarkPage: (photoIndex: number) => void;
 }) {
   const { detail: d, cover, busy } = p;
   const run = d.run;
@@ -931,14 +965,31 @@ function DetailView(p: {
           )}
           <CoverCard cover={cover} />
 
-          {pages.length === 0 && (
+          {run.remarking && (
+            <p style={{ background: '#f3e8ff', color: '#6b21a8', border: '1px solid #d8b4fe', borderRadius: 10, padding: '8px 12px', fontSize: 13, lineHeight: 1.5 }}>
+              🔁 {run.remarkPages.length
+                ? `Page ${run.remarkPages.map(i => i + 1).join(', ')} is being re-marked — the other pages keep their marking. When it lands the paper is redrawn and the sheet is revised for what changed.`
+                : 'This paper is being re-marked. When it lands the paper is redrawn and a new sheet is written.'}
+              {' '}Progress shows on the <a href={`/admin/mark-paper?run=${run.id}`} style={{ color: C.link }}>marking page</a>.
+            </p>
+          )}
+          {pages.length === 0 && !run.remarking && (
             <p style={{ color: C.muted, fontSize: 13.5 }}>No annotated page images on this run.</p>
           )}
           {pages.map(pg => (
             <section key={pg.photoIndex} id={`page-${pg.photoIndex}`} style={{ border: `1px solid ${C.border}`, borderRadius: 12, background: '#fff', marginBottom: 14, overflow: 'hidden' }}>
               <div style={{ padding: '8px 12px', background: '#fafafa', borderBottom: `1px solid ${C.border}`, fontSize: 12.5, color: C.muted, display: 'flex', justifyContent: 'space-between' }}>
                 <span>Page {pg.photoIndex + 1}</span>
-                {pg.method && pg.method !== 'line' && <span style={{ color: C.flag }} title="Tick placement fell back on this page — the marks are the same, the ink is coarser">{pg.method} ticks</span>}
+                <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  {pg.method && pg.method !== 'line' && <span style={{ color: C.flag }} title="Tick placement fell back on this page — the marks are the same, the ink is coarser">{pg.method} ticks</span>}
+                  {!run.remarking && (
+                    <button onClick={() => p.onRemarkPage(pg.photoIndex)} disabled={busy === 'remark'}
+                      title="Read this page again and redraw the paper; every other page keeps its marking. The sheet is revised for what changed."
+                      style={{ background: 'transparent', border: `1px solid ${C.border}`, borderRadius: 7, padding: '2px 8px', fontSize: 12, color: C.muted, cursor: 'pointer' }}>
+                      {busy === 'remark' ? '…' : '🔁 Re-mark this page'}
+                    </button>
+                  )}
+                </span>
               </div>
               <a href={fileHref(pg.urlWithSolutions || pg.url)} target="_blank" rel="noreferrer">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -971,7 +1022,7 @@ function DetailView(p: {
         {/* ── right: the sheet ── */}
         <div className="desk-right" style={{ minWidth: 0 }}>
           <SheetPane d={d} sheetPages={p.sheetPages} sheetNote={p.sheetNote} busy={busy} focus={p.focus} setFocus={p.setFocus}
-            onQueueSheet={p.onQueueSheet} onCancelSheet={p.onCancelSheet} onAutoRelease={p.onAutoRelease} />
+            onQueueSheet={p.onQueueSheet} onCancelSheet={p.onCancelSheet} onAutoRelease={p.onAutoRelease} onRevise={p.onRevise} />
         </div>
       </div>
     </>
@@ -1193,9 +1244,11 @@ function QuestionCard(p: {
 function SheetPane(p: {
   d: Detail; sheetPages: string[] | null; sheetNote: string; busy: string; focus: string; setFocus: (v: string) => void;
   onQueueSheet: () => void; onCancelSheet: () => void; onAutoRelease: (action: 'hold' | 'unhold') => void;
+  onRevise: (instructions: string) => void;
 }) {
   const { d, busy } = p;
   const job = d.sheetJob;
+  const [revise, setRevise] = useState('');
   const released = !!d.run.releasedAt;
   const inFlight = job?.status === 'queued' || job?.status === 'claimed';
   // A "no sheet needed" job is finished but has no files — it gets its own
@@ -1305,6 +1358,23 @@ function SheetPane(p: {
                 </span>
               </>
             )}
+          </div>
+        )}
+        {job?.status === 'done' && job.result?.docxPath && (
+          <div style={{ padding: '10px 12px', borderTop: `1px solid ${C.border}` }}>
+            <div style={{ fontSize: 12, color: C.muted, marginBottom: 6, lineHeight: 1.5 }}>
+              <b>✏️ Revise this sheet</b> — say what to change: a section, an example, a practice set, a phrasing. The Mac changes only
+              that, keeps everything else as it is, and re-files the sheet; the version before is kept in the folder&rsquo;s <code>_versions</code>.
+              {released && <> The student already has this sheet — the re-filed copy replaces it in the app.</>}
+            </div>
+            <textarea value={revise} onChange={e => setRevise(e.target.value)} rows={2}
+              placeholder="e.g. Example 3: say “remove the denominator”, not “clears it”. Add a practice question where the power is −1 so the integral becomes ln."
+              style={{ width: '100%', boxSizing: 'border-box', padding: '8px 10px', fontSize: 14, border: `1px solid ${C.border}`, borderRadius: 8, fontFamily: 'inherit', lineHeight: 1.45 }} />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 6 }}>
+              <button onClick={() => { const t = revise.trim(); if (!t) return; p.onRevise(t); setRevise(''); }} disabled={busy === 'sheet' || !revise.trim()} style={btn(C.ink, '#fff')}>
+                {busy === 'sheet' ? '…' : '✏️ Send the revision'}
+              </button>
+            </div>
           </div>
         )}
       </section>

@@ -31,6 +31,29 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
       `diagnosis` unchanged). The check runs again on the new file; after two
       rounds a sheet that still disagrees is held for Adrian.
 
+1c. **A revision with INSTRUCTIONS** (8 Sep 2026). If `job.result.revise.instructions`
+    is a non-empty string, the note is from Adrian (or from the bot after a page
+    re-mark — `revise.source` says which) and it names exactly what to change:
+    a section, an example, a practice set, a phrasing, a rule to add. Do ONLY
+    what it says. Everything else on the sheet stays byte-for-byte the same.
+
+    - Reuse this job's own scratch dir if it is still on this Mac
+      (`$SHEETS_STATE/work/<job id>/` holds `author.py`): edit the script for
+      the named change, re-render, re-verify (sympy on anything you touched, the
+      full 3b sweep), and re-file. If the dir is gone, download the DOCX from
+      `job.result.docx_path`, make the change with python-docx (same house style,
+      same numbering, same `('check', …)` and `parts()` conventions), re-verify,
+      re-file.
+    - BEFORE overwriting, save the current files as
+      `<folder>/_versions/<name> (before revise <round>).docx|.pdf` (dropbox-put
+      with those paths), so Adrian can compare or go back.
+    - When the note says a marking changed ("Page 2 was re-marked. Marks that
+      changed: …"), re-read those questions' marking on the run and revise the
+      diagnosis, gap and example shape for THOSE questions only.
+    - Post `done` with the same payload as before plus
+      `"revised": {"round": <n>, "instructions": "<the note>"}`; keep
+      `diagnosis` unless the change altered a section's title, marks or gap.
+
 2. **Invoke the `self-study-sheet` skill** and follow it exactly. It is the
    authority on how to diagnose, how to cluster the wave, how to write in
    Adrian's style, and how to verify. Two adaptations because you are headless:

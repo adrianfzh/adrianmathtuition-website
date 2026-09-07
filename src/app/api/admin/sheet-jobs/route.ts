@@ -21,6 +21,9 @@
 //   POST { action:'fail', id, error }  → { ok }   a GENUINE failure — back on the
 //                                  queue unless attempts are spent
 //   POST { action:'cancel', id } → { ok }         stop it — terminal, never re-picked
+//   POST { action:'revise', id|runId, instructions } → { ok, jobId, round } — a filed sheet goes
+//                                  back to the worker with Adrian's note (or the bot's, after a
+//                                  page re-mark); only what the note names changes (8 Sep 2026)
 //
 // Everything is admin-authed: the worker is a headless Claude session on
 // Adrian's Mac holding the same admin bearer (identical posture to the
@@ -91,7 +94,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  let body: { runId?: string; focus?: string; remark?: boolean; action?: string; by?: string; id?: string; result?: unknown; error?: string ; stage?: string};
+  let body: { runId?: string; focus?: string; remark?: boolean; action?: string; by?: string; id?: string; result?: unknown; error?: string ; stage?: string; instructions?: string; source?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const sb = getSupabaseAdmin();
 
@@ -131,6 +134,46 @@ export async function POST(req: NextRequest) {
       ? NextResponse.json({ ok: true, runId: job.run_id, archive: out.archive })
       : NextResponse.json({ error: out.error }, { status: 502 });
   }
+  // ✏️ REVISE (8 Sep 2026 — Adrian: "changes to be made just to a certain
+  // section, a certain example, a certain phrasing… can this be done?"). The
+  // same revision round the example check uses, driven by a person's words: the
+  // finished sheet goes back to the worker with `result.revise.instructions`,
+  // and the worker changes only what the note names, re-verifies, and re-files
+  // a new version. Addressed by job id (the desk) or by runId (the bot after a
+  // page re-mark — it picks the paper's latest filed sheet). Held practice items
+  // from the old filing are dropped; the re-file writes fresh ones.
+  if (body.action === 'revise') {
+    const instructions = String(body.instructions || '').replace(/\s+/g, ' ').trim().slice(0, 2000);
+    if (!instructions) return NextResponse.json({ error: 'say what to change' }, { status: 400 });
+    let job: SheetJob | null = null;
+    if (body.id) {
+      ({ data: job } = await sb.from('sheet_jobs').select('*').eq('id', body.id).maybeSingle<SheetJob>());
+    } else if (body.runId) {
+      ({ data: job } = await sb.from('sheet_jobs').select('*')
+        .eq('run_id', body.runId).eq('status', 'done')
+        .order('created_at', { ascending: false }).limit(1).maybeSingle<SheetJob>());
+    } else {
+      return NextResponse.json({ error: 'id or runId required' }, { status: 400 });
+    }
+    if (!job) return NextResponse.json({ error: 'no filed sheet to revise' }, { status: 404 });
+    if (job.status !== 'done') return NextResponse.json({ error: `that sheet is ${job.status} — revise it once it is filed` }, { status: 409 });
+    const stored = (job.result || {}) as SheetFiledResult & { revise?: { round?: number } };
+    if (isNoSheet(stored) || !stored.docx_path) return NextResponse.json({ error: 'this job has no sheet to revise' }, { status: 409 });
+    const round = Number(stored.revise?.round || 0) + 1;
+    const source = body.source === 'page-remark' ? 'page-remark' : 'adrian';
+    const { data: done, error } = await sb.from('sheet_jobs').update({
+      status: 'queued', claimed_by: null, claimed_at: null, heartbeat_at: null, attempts: 0, completed_at: null,
+      auto_release_at: null, auto_released_at: null,
+      stage: `revise ${round} (${source === 'adrian' ? 'Adrian' : 'page re-mark'}): ${instructions.slice(0, 60)}${instructions.length > 60 ? '…' : ''}`,
+      result: { ...stored, revise: { round, instructions, source, requested_at: new Date().toISOString(), examples: [] } },
+    }).eq('id', job.id).eq('status', 'done').select('id').maybeSingle();
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!done) return NextResponse.json({ error: 'that job changed while you typed — refresh and look again' }, { status: 409 });
+    const held = await deleteHeldPracticeItems(sb, job.id);
+    notify_marking(`✏️ ${job.student_name || job.airtable_student_id} — sheet sent back to the worker for a revision (${source === 'adrian' ? 'your note' : 'after a page re-mark'}): ${instructions.slice(0, 200)}`).catch(() => {});
+    return NextResponse.json({ ok: true, jobId: job.id, round, heldItemsDeleted: held.deleted });
+  }
+
   if (body.action === 'cancel') {
     // Addressed by runId from the paper row (which knows the paper, not the job)
     // or by job id from anywhere holding one. runId picks the OPEN job, so a

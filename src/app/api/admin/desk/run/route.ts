@@ -166,6 +166,13 @@ export async function GET(req: NextRequest) {
       unattempted: Array.isArray((rj as { unattempted_questions?: unknown } | null)?.unattempted_questions)
         ? ((rj as { unattempted_questions: unknown[] }).unattempted_questions).map(String) : [],
       portalSubmission: (rj as { portal_submission?: unknown } | null)?.portal_submission === true,
+      // 🔁 A re-mark in flight (8 Sep 2026): the old marking stepped aside and the
+      // queue holds the row; `remarkPages` names the pages when only some are read again.
+      remarking: !!(rj as { queue?: { remark?: unknown } } | null)?.queue?.remark && !(rj as { results?: unknown[] } | null)?.results?.length,
+      remarkPages: (() => {
+        const q = (rj as { queue?: { remark_pages?: unknown } } | null)?.queue;
+        return Array.isArray(q?.remark_pages) ? (q!.remark_pages as unknown[]).map(Number).filter(Number.isInteger) : [];
+      })(),
     },
     lane,
     pending,
