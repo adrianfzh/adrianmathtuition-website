@@ -756,6 +756,16 @@ export default function MarkPaperPage() {
     await markFromStored(runId);
   }
 
+  // 🔁 Re-mark straight from a history row (Adrian, 8 Sep 2026: "can you put a
+  // re-mark button?"): the same stored-inputs re-mark as the loaded run's 🔁,
+  // without loading first. The marking is replaced in place and the proxy's
+  // auto-queue (remark:true) rebuilds the Practice Again sheet.
+  async function remarkRun(run: { id: string; paper_name?: string | null }) {
+    const name = run.paper_name || 'this paper';
+    if (!window.confirm(`Re-mark "${name}" from its stored photos? Costs about the same as the original marking (~1–2 min). Its Practice Again sheet is rebuilt afterwards.`)) return;
+    await markFromStored(run.id);
+  }
+
   // Mark (or re-mark) a run from its server-stored inputs — the history-row ▶ Mark
   // on a saved-but-unmarked paper, and the tail of remarkPaper above. The bot fills
   // a never-marked row in place, so the ⏳ entry becomes the marked run.
@@ -1837,6 +1847,14 @@ export default function MarkPaperPage() {
                         <button type="button" disabled={!!loadingRun} onClick={() => loadRun(run.id)}
                           style={{ ...btn, padding: '4px 10px', fontSize: 12, opacity: loadingRun ? 0.6 : 1 }}>
                           {loadingRun === run.id ? 'Loading…' : 'Load'}
+                        </button>
+                        {/* 🔁 Re-mark from the row (Adrian, 8 Sep 2026: "can you put a
+                            re-mark button?") — the loaded run's 🔁, one tap from the list. */}
+                        <button type="button" disabled={!!loadingRun || busy || generating || !!rowBusy[run.id]}
+                          title="Mark this paper again from its stored photos — full marking cost (~1–2 min); its Practice Again sheet is rebuilt afterwards"
+                          onClick={() => remarkRun(run)}
+                          style={{ ...btn, background: '#4338ca', padding: '4px 10px', fontSize: 12, opacity: (loadingRun || busy || generating) ? 0.6 : 1 }}>
+                          🔁 Re-mark
                         </button>
                       </>
                     )}
