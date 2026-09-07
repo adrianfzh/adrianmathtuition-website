@@ -338,3 +338,70 @@ annotation in Safari remains unreliable — annotate in the app.** All the
 defence layers built during the hunt (rAF watchdog, compositor nudge, surface
 resets, stylus-touch fallback, native pencil bridge, ink log + probes) stay in
 place as instrumentation and defence in depth.
+
+## 14. The editable marker layer (agreed 8 Sep 2026 — "can the drawing itself be editable, like strokes in Notability?")
+
+**Why.** The marker draws every tick, cross, code, fix, verdict, score box, margin note,
+solution block, diagram, side-strip item and footer as SVG, then flattens it onto the
+photo and keeps only the JPEG. Adrian's own ink was already vector and Notability-like
+(lasso, move, resize, delete, undo); the marker's ink was not in that layer. Now it is.
+
+**What the bot stores (shipped, bot commit "editable layer", 8 Sep 2026).** Beside every
+annotated page: `annotated_photos[].layer_url` → a standalone SVG document
+(`runs/<id>/annotated/<label>-layer-<ts>.svg`, served as octet-stream), and
+`annotated_photos[].layer` = `{ width, height, canvasW, totalH, panelH, stripW, font,
+style }`. Coordinates are the **normalised page space** the marker drew in (`width ×
+height` = the ≤1600px working copy; `canvasW = width + stripW`, `totalH = height +
+panelH` when a side strip / footer was added). The hi-res JPEG was produced by scaling
+this very SVG onto the full-resolution original via `viewBox`, so the layer is
+resolution-independent. Every logical element is one group:
+
+```
+<g data-obj="mark|label|verdict|score|note|solution|diagram|banner|footer"
+   data-id="mark-7" data-q="10" data-part="(b)" data-text="Q10(b) 2/3">…</g>
+```
+
+`data-text` is the element's printed text (the code beside a tick, a note's prose, a
+score chip's caption). Fragments outside any group are static background and are
+drawn but not editable. `reannotate-page` (the marks-driven redraw) stores a fresh
+layer each time. **Papers marked before the layer shipped have no `layer_url`** and stay
+flat — the overlay falls back to today's behaviour for them.
+
+**What the overlay does with it (to build).** A page WITH a layer loads three layers on
+top of the clean original photo (`source.photos[].original_url`, rotated by
+`annotation_debug[].rot`, extended by `panelH`/`stripW` with the cream fill the bot
+uses): (1) the marker's objects, parsed from the layer SVG (`DOMParser`, one object per
+`<g data-obj>`; `getBBox()` gives its hit box after mounting in an inline `<svg>` with
+the layer's `viewBox`); (2) Adrian's strokes as now; (3) typed text boxes (new).
+A new **select** tool: tap selects an object (dashed bbox + chip: Delete · Duplicate ·
+Edit text where the group has `<text>`); drag moves it (a `translate` on the group);
+corner handles scale; lasso selects marker objects and pen strokes together. Ticks and
+crosses can be swapped (the chip offers ✓⇄✗). Undo/redo covers all of it. Patrick Hand
+is loaded from Google Fonts so text measures as the bot measured it.
+
+**Done composes on the server, never in the browser.** The client sends, per edited
+page, the edited layer SVG body (groups kept, moved groups wrapped in a `translate`,
+deleted groups removed, retyped `<text>` contents replaced) and the stroke/text
+layers as SVG, plus the untouched pages' URLs. A bot endpoint (`/api/compose-page`,
+same drain rules as `reannotate-page`) fetches the hi-res original, extends it, and
+composites the three SVG layers with `sharp` exactly as `createAnnotatedImage` does —
+same fonts, same scaling — then stores the page as the run's annotated page
+(`annotated_photos[].url` + a new `layer_url`, the marker's original kept as
+`marker_url` the first time) and marks `pdf_stale`. The website then assembles
+"Marked (Adrian).pdf" from the page URLs as `mark-paper-annotate-pdf` does today, and
+Rebuild PDFs & release picks the same pages up. **The app's page images and the PDF
+therefore never disagree.** Quality is equal or better than today: one encode from the
+original instead of a re-encode per edit.
+
+**The words are the record.** Retyping or deleting a `note`/`verdict`/`score` object
+with `data-q` + `data-part` writes back to `results[].marking.parts[]`
+(`error_summary`, `verdict_line`) so the cover and the sheet say the same words. Ticks
+and crosses are ink only; marks change through the per-part editor (§ desk). Adrian's
+own strokes and typed text are ink only, saved as a layer so they stay editable on
+every visit until release.
+
+**Order of work.** ① bot layer (done) → ② overlay: load original + parse layer + select
+tool (move/delete/retype) → ③ bot `compose-page` + website Done path → ④ strokes/text
+saved as a layer (re-editable) → ⑤ record write-back → ⑥ desk: tap a page to open
+Annotate on that page.
+
