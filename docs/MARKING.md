@@ -2571,6 +2571,18 @@ Page image **uploads** are parallelised (independent). Only the Gemini detection
 
 ## Mark-paper ✏️ Annotate (in-browser Apple Pencil ink) — 2026-08-01
 
+> **The marker's ink is editable too (8 Sep 2026, SPEC-ANNOTATE §14).** A page whose run
+> carries `annotated_photos[].layer_url` (every paper marked from 8 Sep 2026; the bot
+> stores the tagged vector layer beside the JPEG) opens in the overlay on the CLEAN
+> original with the marker's ticks, crosses, codes, score chips, notes, solutions and
+> strip items as objects. **Select** tool: tap → move by drag, chip → 🗑 Delete / ✏️ Edit
+> text; one undo step each. Done composes those pages on the BOT (`/api/compose-page`,
+> fonts + hi-res original live there) and stores the page, the edited layer and the
+> strokes (`ink_url`, reloaded next visit); the PDF is assembled from page URLs as before.
+> Older runs have no layer and keep the flat behaviour. Pure pieces: `lib/annotate/layer.ts`
+> (parse/serialise/retype/strokesToSvg, tested). A retyped note that carried typeset maths
+> comes back as plain text. Not yet: typed text boxes, ✓⇄✗, record write-back (§14 ④–⑥).
+
 Full spec + as-built deviations: **`SPEC-ANNOTATE.md`** (repo root, §11–13). Status: built.
 > ⚠ **Annotate in the AdrianMarker shell app, not Safari** (resolved 2026-08-04):
 > iPadOS **Live Text** system-intercepts Pencil strokes over the printed text in
