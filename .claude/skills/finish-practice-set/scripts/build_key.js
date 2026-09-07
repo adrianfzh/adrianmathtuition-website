@@ -75,7 +75,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8">
   p.ans { margin: 0 0 8.5pt 0; padding-left: 24pt; text-indent: -24pt; line-height: 1.62; }
   b.qn { display: inline-block; width: 24pt; text-indent: 0; }
   span.sep { display: inline-block; width: 12pt; }
-  div.qblock { margin: 0 0 5pt 0; }
+  div.qblock { margin: 0 0 5pt 0; break-inside: avoid; page-break-inside: avoid; }
   p.qnum { margin: 0; line-height: 1.5; }
   p.part { margin: 0; line-height: 1.62; }   /* level with the question number */
   .katex { font-size: 1.13em; }
