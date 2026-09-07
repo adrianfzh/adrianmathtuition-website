@@ -419,6 +419,13 @@ anything older in this file:
   explaining what the error type is called, no second sentence of reassurance.
   The approved `pitfalls` rows mined from his notes (teaching-knowledge layer)
   are in this voice — read a few for the topic before writing one.
+- **Plain Singapore classroom English in every lede and note — no idioms.**
+  Adrian, 7 Sep 2026, on "That same line hands you the factor (x − a) to
+  divide by": "don't say 'hands you', Singapore students don't speak like
+  that." Say *gives*, *gives you*, *tells you*, *is*: "That same line gives the
+  factor (x − a) to divide by." The same goes for *buys you*, *for free*,
+  *do the heavy lifting*, *nail down*, *unlock*, *the trick is*, and any other
+  figure of speech — a student should be able to read the line aloud in class.
 
 Invoke `create-teaching-notes` and give it this brief:
 

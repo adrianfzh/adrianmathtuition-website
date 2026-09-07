@@ -10,6 +10,13 @@ Two of his own sheets are the reference for this surface, and worth opening once
 `Revision/S2/2 REV Polygons (With Worked Examples).docx` and
 `Revision/EM/O REV Number Patterns (With Worked Examples).docx`.
 
+**Plain Singapore classroom English in every lede, note and annotation — no idioms**
+(Adrian, 7 Sep 2026, on "That same line hands you the factor (x − a) to divide by":
+"don't say 'hands you', Singapore students don't speak like that"). Say *gives*, *gives
+you*, *tells you*, *is*. Not *hands you*, *buys you*, *for free*, *do the heavy lifting*,
+*nail down*, *unlock*, *the trick is*, or any other figure of speech — a student should be
+able to read the line aloud in class. FEEDBACK.md carries the dated entry.
+
 ## What a worked example is on this sheet
 
 - **The Example IS the exam question.** Stem and parts come from the bank verbatim

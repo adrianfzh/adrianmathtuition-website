@@ -568,6 +568,15 @@ class Worksheet:
                         p._element.append(elem)
                 else:
                     self._fill(p, step)
+            if idx == 0:
+                # A hair of air above the FIRST line only (Adrian, 7 Sep 2026:
+                # "2px spacing from the top of the box for the first line only
+                # — the '(a)' on the left and the top of the line"). 2 pt is
+                # Word's nearest unit. Both cells, so the label and the working
+                # stay level; later rows keep the blank-line gap and nothing else.
+                tops = [work_cell.paragraphs[0]] + ([lab_cell.paragraphs[0]] if labelled else [])
+                for tp in tops:
+                    tp.paragraph_format.space_before = Pt(2)
             if idx < len(rows) - 1:  # one blank line between parts, none after the last
                 gap = work_cell.add_paragraph()
                 gap.paragraph_format.line_spacing = 1.5
