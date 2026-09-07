@@ -50,6 +50,19 @@ describe('runExampleCheck', () => {
     expect(boom.disagreements).toEqual([]);
     expect(buildCheckPrompt(ex)).toContain('### Example 2');
   });
+  it('a narrated first reply is followed by one JSON-only retry, and the verdicts come from that (8 Sep 2026)', async () => {
+    const ex = extractExamples(SHEET);
+    let calls = 0;
+    const out = await runExampleCheck(ex, async (prompt) => {
+      calls += 1;
+      if (calls === 1) return '**Example 1:** Verified independently: R = 5 … correct.\n\n**Example 2:** the expansion is fine.';
+      expect(prompt).toMatch(/OUTPUT ONLY THE JSON OBJECT/);
+      return '{"verdicts":[{"example":1,"agree":true,"final_answer_matches":true,"issue":""},{"example":2,"agree":true,"final_answer_matches":true,"issue":""}]}';
+    }, 'm');
+    expect(calls).toBe(2);
+    expect(out.checked).toBe(2);
+    expect(out.skipped).toBeUndefined();
+  });
   it('a narrated reply with no JSON is a SKIP with a reason, never "0 examples"', async () => {
     const ex = extractExamples(SHEET);
     const prose = await runExampleCheck(ex, async () => 'Looking at each example:\n\n**Example 1:** R = 5 … all correct.\n\n**Example 2:** the derivation is fine', 'm');

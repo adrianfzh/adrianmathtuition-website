@@ -77,7 +77,7 @@ export function buildCheckPrompt(examples: SheetExample[]): string {
   return `You are checking the worked examples on a Singapore O-Level / A-Level maths revision sheet before it goes to a student.
 For EACH example: first solve the QUESTION yourself from scratch, without reading the sheet's solution. Then compare.
 Report a disagreement when (a) your final answer differs from the sheet's, (b) a line of the sheet's working is mathematically wrong, or (c) the sheet's method does not actually answer what the question asks. A different but valid method, different rounding within the stated accuracy, or a notational choice is NOT a disagreement.
-Work briefly — a few lines per example at most — then answer with the JSON object as the LAST thing in your reply, nothing after it:
+Work briefly — a few lines per example at most — then answer with the JSON object as the LAST thing in your reply, nothing after it. The JSON object is REQUIRED: a reply without it is discarded.
 {"verdicts":[{"example":1,"agree":true,"final_answer_matches":true,"issue":""},{"example":2,"agree":false,"final_answer_matches":false,"issue":"one short sentence naming the wrong line and what it should be"}]}
 
 ${blocks}`;
@@ -112,8 +112,17 @@ export type CheckModelCall = (prompt: string) => Promise<string>;
 export async function runExampleCheck(examples: SheetExample[], call: CheckModelCall, model: string): Promise<ExampleCheckResult> {
   if (!examples.length) return { model, checked: 0, disagreements: [], verdicts: [], skipped: 'no examples found on the sheet' };
   try {
-    const text = await call(buildCheckPrompt(examples));
-    const verdicts = parseCheck(text, examples.map(e => e.n));
+    let text = await call(buildCheckPrompt(examples));
+    let verdicts = parseCheck(text, examples.map(e => e.n));
+    if (!verdicts.length) {
+      // The reader worked the examples and stopped before the verdict block —
+      // every real sheet from 6 Sep to 8 Sep 2026 came back this way ("**Example
+      // 1:** Verified independently …", 1,286 chars, no JSON), so the gate never
+      // once produced a verdict. Ask ONCE more for the JSON alone: the model
+      // has already done the solving in the first reply, so this answer is short.
+      text = await call(`${buildCheckPrompt(examples)}\n\nOUTPUT ONLY THE JSON OBJECT described above — no headings, no working, no prose before or after it. Begin your reply with "{".`);
+      verdicts = parseCheck(text, examples.map(e => e.n));
+    }
     if (!verdicts.length) {
       // parseCheck returns [] only when the reply carried no JSON object at all —
       // a narrated reply that ran out of tokens before its verdict block. Say so:
