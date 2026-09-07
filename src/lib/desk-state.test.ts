@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   laneFor, sheetStageLabel, approveBlockers, releaseBlockers, deskFlags, defaultLane,
-  amendedStatusFor, latestLiveJob, noSheetOf, pdfStaleOf, DESK_LANES, LANE_LABEL,
+  amendedStatusFor, latestLiveJob, noSheetOf, pdfStaleOf, DESK_LANES, LANE_LABEL, orderLane,
 } from './desk-state';
 
 const tagged = { student_id: 'recStudent', released_at: null, annotated_pdf_url: null, result_json: { results: [] } };
@@ -208,5 +208,26 @@ describe('amendedStatusFor — reuses the paper-folder attach rules', () => {
   it('newer-than-attached when he saved again after attaching', () => {
     const run = { ...tagged, annotated_pdf_url: 'https://blob/x.pdf', result_json: { amended_at: '2026-09-01T12:00:00Z' } };
     expect(amendedStatusFor(run, [adrian]).status).toBe('newer-than-attached');
+  });
+});
+
+describe('orderLane — the oldest waiting paper is at the top', () => {
+  const rows = [
+    { id: 'c', createdAt: '2026-09-07T01:36:00Z' },
+    { id: 'a', createdAt: '2026-09-03T01:35:00Z' },
+    { id: 'b', createdAt: '2026-09-06T00:42:00Z' },
+  ];
+  it('work lanes run oldest first', () => {
+    expect(orderLane(rows, 'ready').map(r => r.id)).toEqual(['a', 'b', 'c']);
+    expect(orderLane(rows, 'awaiting-sheet').map(r => r.id)).toEqual(['a', 'b', 'c']);
+    expect(orderLane(rows, 'untagged').map(r => r.id)).toEqual(['a', 'b', 'c']);
+  });
+  it('Released is a history and stays newest first', () => {
+    expect(orderLane(rows, 'released').map(r => r.id)).toEqual(['c', 'b', 'a']);
+  });
+  it('does not mutate its input and keeps ties in their given order', () => {
+    const tie = [{ id: 'x', createdAt: '2026-09-01T00:00:00Z' }, { id: 'y', createdAt: '2026-09-01T00:00:00Z' }];
+    expect(orderLane(tie, 'ready').map(r => r.id)).toEqual(['x', 'y']);
+    expect(rows[0].id).toBe('c');
   });
 });

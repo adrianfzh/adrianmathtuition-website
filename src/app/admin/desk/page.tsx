@@ -28,7 +28,7 @@ import SubjectChip from '@/components/SubjectChip';
 import GroundingChip from '@/components/GroundingChip';
 import RulesTag from '@/components/RulesTag';
 import { mathHtml } from '@/lib/math-inline';
-import { DESK_LANES, LANE_LABEL, type DeskLane } from '@/lib/desk-state';
+import { DESK_LANES, LANE_LABEL, orderLane, type DeskLane } from '@/lib/desk-state';
 import { ERROR_KINDS, ERROR_KIND_HINT, isErrorKind } from '@/lib/error-kinds';
 import { PAPER_SUBJECTS, subjectPill } from '@/lib/portal-subjects';
 import type { TriageQuestion } from '@/lib/mark-triage';
@@ -559,7 +559,9 @@ export default function DeskPage() {
   }
 
   const activeLane: DeskLane = lane ?? 'awaiting-sheet';
-  const laneRows = rows.filter(r => r.lane === activeLane);
+  // Work lanes oldest first — the paper that has waited longest is at the top;
+  // Released stays newest first (lib/desk-state orderLane, Adrian 7 Sep 2026).
+  const laneRows = orderLane(rows.filter(r => r.lane === activeLane), activeLane);
 
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', maxWidth: runId ? 1400 : 820, margin: '0 auto', padding: '14px 12px 96px', color: C.ink }}>

@@ -186,6 +186,20 @@ export function defaultLane(counts: Partial<Record<DeskLane, number>>): DeskLane
 }
 
 /**
+ * The order rows appear in a lane (Adrian, 7 Sep 2026: "the earliest submission
+ * or the things to do should appear at the top of the list"): work lanes run
+ * OLDEST first, so the paper that has waited longest is the first thing seen;
+ * Released is a history and stays newest first. Ties keep their given order.
+ */
+export function orderLane<T extends { createdAt: string }>(rows: T[], lane: DeskLane): T[] {
+  const dir = lane === 'released' ? -1 : 1;
+  return rows
+    .map((r, i) => ({ r, i, t: Date.parse(r.createdAt) || 0 }))
+    .sort((a, b) => (a.t - b.t) * dir || a.i - b.i)
+    .map(x => x.r);
+}
+
+/**
  * Classify the folder's "Marked (Adrian)*.pdf" against the run. Reuses the
  * paper-folder rules the release path attaches with, so the desk's "My copy"
  * line predicts exactly what Approve & release will do.
