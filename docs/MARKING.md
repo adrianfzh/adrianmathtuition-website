@@ -809,6 +809,51 @@ they are, reachable from its "Other views" row. Nothing is deleted.
   card also lands on the desk. PWA: `admin/desk/layout.tsx` + `manifest-desk.json`
   (hub icons reused).
 
+### Compartmentalised marking and sheet edits (8 Sep 2026)
+
+Adrian: "sometimes there is no need to remark an entire pdf because of a small
+change… marking can be made to be very compartmentalized… perhaps for the
+practice again worksheet this can happen too."
+
+**🔁 Re-mark this page** — a button on every marked page of the desk's detail
+view. It posts the ordinary queue re-mark with a page list:
+`POST /api/admin/mark-paper {phase:'enqueue', id, remark:true, pages:[photoIndex]}`.
+The bot (`enqueuePaper` → `lib/page-remark.js`) validates the pages, moves the
+old marking aside exactly as a full re-mark does, and then **seeds the reads
+table** (`paper_external_reads`, by `page-remark-seed`) with a read for every
+page NOT named, rebuilt from the row's stored `results` (a stored result is the
+read's attempt plus what the assembler added — the seed hands back the attempt's
+own fields only, `normalizeAttempt` needs `marking_output.lines`). The Mac
+claim's `saved_reads` therefore lists every other page, the worker reads only
+the page asked, and the hand-back assembles the whole paper from the table as it
+always has; Fly then redraws every page (second look, reconciliation, overlay)
+and delivers. `queue.remark_pages` records which pages; the run route exposes
+`run.remarking` + `run.remarkPages` and the desk shows a purple in-flight note.
+Refused when the drawn page count differs from the photo count — a paper the
+spread splitter cut cannot be re-marked page-by-page (its photo indices no
+longer map one-to-one), so re-mark the whole paper.
+
+On delivery a page re-mark does NOT rewrite the sheet: `deliverQueuedRun` posts
+`sheet-jobs {action:'revise', runId, instructions}` with one line per part
+whose marks changed on those pages (`pageRemarkInstructions`, tested), so the
+worker revises only the sections that depend on them.
+
+**✏️ Revise this sheet** — a note box on the desk's sheet pane, shown once a
+sheet is filed. `POST /api/admin/sheet-jobs {action:'revise', id|runId,
+instructions}` re-queues the DONE job with `result.revise = {round, instructions,
+source:'adrian'|'page-remark', requested_at, examples:[]}` (attempts reset,
+auto-release cleared, held practice items deleted; the stage reads
+`revise N (Adrian): …`). The sheet worker's `WORKER_PROMPT.md` §1c: reuse the
+job's own `author.py` if it is still on the Mac, else edit the DOCX with
+python-docx; change ONLY what the note names; save the current files under
+`<folder>/_versions/<name> (before revise N)` first; re-verify; re-file to the
+same paths; `done` with the same payload plus `revised:{round, instructions}`.
+A released sheet can be revised too — the re-filed copy replaces the student's.
+
+Why the two are separate doors: a page re-mark changes the MARKING and the
+sheet follows it; a revision changes the SHEET with the marking untouched.
+Neither re-reads pages that were fine, and neither costs a full paper.
+
 ### Desk additions, 3 Sep 2026
 
 - **📤 Open in…** on the detail view's file row (`OpenInApp` in `desk/page.tsx`): fetches the
