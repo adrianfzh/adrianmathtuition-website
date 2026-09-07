@@ -38,6 +38,19 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
   const sheet = (sheetRows ?? [])[0] as { id: string; status: string; pdf_url: string | null; score: number | null; out_of: number | null } | undefined;
   const hasCover = paper.dropped.length > 0;
   const supersededBy = (row as { superseded_by?: string | null }).superseded_by ?? null;
+  // Why it was archived (Adrian, 7 Sep 2026: "should say the reason") — a
+  // per-run line in result_json.superseded_reason when he wrote one, else the
+  // honest default: the marking itself was wrong, so the paper was marked again.
+  let supersededNote: string | null = null;
+  if (supersededBy) {
+    const rj = (row as { result_json?: Record<string, unknown> | null }).result_json ?? {};
+    const reason = typeof rj.superseded_reason === 'string' && rj.superseded_reason.trim()
+      ? rj.superseded_reason.trim()
+      : 'This marking was not done correctly, so the paper was marked again.';
+    const { data: current } = await sb.from('paper_marking_runs').select('created_at').eq('id', supersededBy).maybeSingle();
+    const when = current?.created_at ? ` The current marking is from ${niceDate(String(current.created_at).slice(0, 10))}.` : '';
+    supersededNote = `${reason}${when}`;
+  }
 
   return (
     <div className="space-y-4 pb-8">
@@ -60,8 +73,8 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
           deleted (Adrian, 7 Sep 2026) — but says so, and points at the current one. */}
       {supersededBy && (
         <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl px-3 py-2">
-          This is an earlier marking of this paper.{' '}
-          <Link href={`/app/marking/${supersededBy}`} className="font-semibold underline underline-offset-2">See the current marking</Link>.
+          <span className="font-semibold">Earlier marking, archived.</span> {supersededNote}{' '}
+          <Link href={`/app/marking/${supersededBy}`} className="font-semibold underline underline-offset-2">Open the current marking</Link>
         </p>
       )}
 
