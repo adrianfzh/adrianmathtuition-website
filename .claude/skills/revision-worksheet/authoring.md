@@ -31,6 +31,13 @@ never plain working; a diagram you draw goes in the solution box at the part tha
 uses it, and the question shows a diagram only when the bank question has one; figure
 labels are placed clear of every stroke by `figure_lib` — look at the PNG anyway.
 
+Content, 8 Sep 2026: **every Example — lettered ones too — has at least two practice items
+of its own shape** ("there is no corresponding practice questions for example 5a"); and **a
+rule with a known exception shows it** in one example and its practice — ∫(ax+b)ⁿ dx at
+n = −1 gives (1/a) ln|ax+b| ("there should be examples and practices where the power is −1,
+which will result in the integral being ln instead"); dividing an inequality by a negative;
+√(x²) = |x|.
+
 ## What a worked example is on this sheet
 
 - **The Example IS the exam question.** Stem and parts come from the bank verbatim

@@ -508,6 +508,22 @@ Invoke `create-teaching-notes` and give it this brief:
   FIRST LINE / WHY-IT-IS-SAFE scaffolding boxes, no memory-aid chants, no recap
   box — those were explicitly cut. Teaching lives inside the annotated worked
   solution, with at most a one-line italic strategy opener.
+- **EVERY example has practice of its own — lettered examples included.**
+  Adrian, 8 Sep 2026, Denise's sheet: "there is no corresponding practice
+  questions for example 5a." An Example (or an Example 5a / 5b pair) with no
+  practice under it teaches nothing the student can try; at least TWO practice
+  items per example, the same shape as the example, in that example's own
+  Practice section. The worker's own pre-filing check counts them (see the
+  sweep below) and refuses to file otherwise.
+- **A rule with a known exception shows the exception.** Adrian, 8 Sep 2026:
+  "there should be examples and practices where the power is −1, which will
+  result in the integral being ln instead." When the rule taught has a case
+  where it changes shape or fails, the section carries one worked example ON
+  that case and practice that uses it: ∫(ax+b)ⁿ dx at n = −1 → (1/a) ln|ax+b|;
+  dividing an inequality by a negative flips it; √(x²) = |x|; the R-formula's
+  α sits in the quadrant the signs give; tan is undefined at 90°. The concept
+  line names the exception in one clause ("… and when the power is −1 the
+  answer is a log").
 - **Worked examples reproduce the SHAPE of the question they got wrong**, with
   changed numbers — never a generic textbook example of the same topic.
 - **Practice layout is fixed (Adrian, 31 Aug 2026):**
@@ -688,6 +704,10 @@ the gap is the interesting half: it says what the bank is missing.
   The same applies to slashes typed in PROSE: "so v = dx/dt" inside a sentence
   is still maths, so it is still an equation object.
   Sweep the finished file before filing it:
+  - **Every Example has at least two practice items of its own shape** (8 Sep
+    2026) — count "Example N" / "Example Na" headings against the numbered
+    items in that skill's Practice section; a shortfall is a rewrite, not a
+    file.
 
   ```
   python3 -c "import zipfile,re,sys; x=zipfile.ZipFile(sys.argv[1]).read('word/document.xml').decode(); \
