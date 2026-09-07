@@ -854,6 +854,46 @@ Why the two are separate doors: a page re-mark changes the MARKING and the
 sheet follows it; a revision changes the SHEET with the marking untouched.
 Neither re-reads pages that were fine, and neither costs a full paper.
 
+### Graph sheets — the companion, the grid zoom, and the 1280px copy (8 Sep 2026)
+
+Adrian, on Denise's AM TYS 2021 P2 Q7: "straight line graph could be attached
+at the end of the paper — can the marker search for it and mark accordingly?"
+and "why is image downscaled? will this affect reading? for graphs, don't
+downscale".
+
+**What already existed (bot, 31 Aug + 5 Sep 2026).** The page-classification
+pre-pass (`classifyPagesForContext`, Sonnet, one call over every page) flags a
+student-drawn graph on grid paper with `graph_for` = the question it serves and
+boxes the grid (`grid_box`). `ai/graph-companion.js` pairs each graph sheet with
+the page that reads values off it, and that page's read gets the sheet as a
+SECOND image plus a **grid zoom cut from the ~2600px original** (`ai/grid-zoom.js`,
+`ai/hires-original.js`). The graph sheet's own read gets the same zoom.
+
+**What was wrong.** The pre-pass was gated on there being NO question-paper PDF
+(`!pdfBase64`). Since the library auto-attach (SPEC-PAPER-MATCH) most papers
+have one, so the whole chain was silently off: Denise's Q7(b)(ii) was marked
+with her line seven pages away and unseen ("the (ii) read-off could not be
+checked"), and the sheet itself was read "from a downscaled photo". Fixed: the
+pre-pass runs with a PDF too; only the lifted printed-question context is left
+out then (the PDF carries it). `graph_for` + `grid_box` are now stored in
+`result_json.page_classification`.
+
+**The Mac (plan) path** never had any of this — the runbook downscales every
+photo to 1280px and reads pages one at a time. Now (`worker/plan-marking/
+WORKER_PROMPT.md` §4 + §6.0): the session builds one PIL contact sheet, reads
+it once to list the graph sheets (`GRAPHS`; a re-mark's claim also carries
+`graph_sheets` from the stored classification), reads a graph sheet from its
+**original** file (cropping the grid if it is small in the frame), and shows
+that original beside any page whose part uses the graph — the same companion
+rule as the API: the student's own line is the only evidence for a read-off,
+and the plotting is marked on the sheet's own read, never twice.
+
+**Why 1280px at all.** The site uploads a ~1280px q0.72 copy for marking and
+the ~2600px original to storage. The model API resizes images to roughly 1.15
+megapixels anyway, so 1280px loses almost nothing on handwriting and keeps the
+JSON body under Vercel's 4.5MB cap. Fine read-offs on a grid are the one place
+it matters — hence the zoom / the original, not a bigger copy of every page.
+
 ### Desk additions, 3 Sep 2026
 
 - **📤 Open in…** on the detail view's file row (`OpenInApp` in `desk/page.tsx`): fetches the
