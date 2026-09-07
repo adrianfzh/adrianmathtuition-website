@@ -79,8 +79,8 @@ curl -s -X POST "$WORKSHEETS_API_BASE/api/admin/worksheet-jobs" \
    skills file there themselves via the Dropbox app folder
    (`~/Library/CloudStorage/Dropbox/Apps/AdrianMathNotes/…`); record the path
    RELATIVE to that folder (starting `/Revision/…`) — that is what `done`
-   takes. Export a PDF beside the DOCX only if Word export works on this Mac;
-   it is optional (Word 16.111 refuses scripted export — do not fight it).
+   takes. Export a PDF beside the DOCX (`rw.py render --pdf`; Word export works on this Mac since
+   7 Sep 2026 as long as the target is under `$HOME` or the Dropbox app folder, not `/tmp`).
 
 5. **Complete the job** — this is what Telegrams Adrian the files:
 

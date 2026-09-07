@@ -402,6 +402,9 @@ def cmd_plan(a):
     aspects = merge_aspects(sgs, extra.get("links", []), levels) if sgs else []
     tagged = {q for asp in aspects for q in asp["primary"] + asp["any"]}
     untagged = [i for i in by_id if i not in tagged]
+    focus = None
+    if getattr(a, "focus", None):
+        aspects, untagged, focus = apply_focus(a.focus, aspects, by_id, untagged)
     sheet_paths, on_sheet = sheet_overlap(FOLDER[level], topics, title, rows)
     sheet_path = sheet_paths[0] if sheet_paths else None
     aspect_hints(base, headers, aspects, rows)
@@ -421,6 +424,7 @@ def cmd_plan(a):
         "on_sheet": sorted(id8(i) for i in on_sheet),
         "notes_source": notes_source(level, topics) or "draft",
         "prefix": a.prefix if a.prefix is not None else chapter_prefix(level, topics, sheet_path),
+        "focus": focus,
         "aspects": aspects,
         "untagged_candidates": [lite(r) for r in rank_candidates(by_id, untagged, levels, k=6)],
         "rows": {r["id"]: r for r in rows},
@@ -441,6 +445,11 @@ def print_plan(plan, out):
         names = ", ".join(Path(x).name for x in plan["adrian_sheets"])
         print(f"  Adrian's sheets: {names} — {len(plan['on_sheet'])} pool questions already on them (excluded)")
     print(f"  Notes source: {plan['notes_source']}   chapter prefix: {plan.get('prefix') or '(none)'}")
+    if plan.get("focus"):
+        f = plan["focus"]
+        print(f"  Focus /{f['pattern']}/: {f['rows']} questions match the text; aspects kept {f['aspects_kept']}"
+              + (f" (by name: {', '.join(f['aspects_by_name'])})" if f["aspects_by_name"] else "")
+              + " — practice picks prefer these questions")
     print(f"\n## Aspects ({len(plan['aspects'])}) — want ~{plan['examples_wanted']} examples, one per aspect")
     for asp in plan["aspects"]:
         lv = ", ".join(f"{k} {v}" for k, v in asp["count_by_level"].items() if v)
@@ -468,6 +477,41 @@ def _qtext(r) -> str:
     return re.sub(r"[^a-z0-9 ]", " ", " ".join(bits).lower())
 
 
+def _rawtext(r) -> str:
+    """Stem + every part and subpart, raw (LaTeX kept) — what --focus greps."""
+    bits = [r.get("question_text") or ""]
+    for p in C.sorted_parts(r):
+        bits.append(p.get("text") or "")
+        for sp in p.get("subparts") or []:
+            bits.append(sp.get("text") or "")
+    return " ".join(bits)
+
+
+def apply_focus(pattern, aspects, by_id, untagged):
+    """--focus: narrow a topic-wide plan to one technique. An aspect whose NAME matches
+    is kept whole; any other aspect keeps only the questions whose raw text matches;
+    aspects left empty are dropped. Returns (aspects, untagged, focus_record)."""
+    pat = re.compile(pattern, re.I)
+    focus_ids = {i for i, r in by_id.items() if pat.search(_rawtext(r))}
+    name_hits = [a for a in aspects if pat.search(" ".join(a["names"]))]
+    kept = []
+    for a in aspects:
+        if a in name_hits:
+            kept.append(a)
+            continue
+        prim = [i for i in a["primary"] if i in focus_ids]
+        anyq = [i for i in a["any"] if i in focus_ids]
+        if prim or anyq:
+            a["primary"], a["any"], a["focused"] = prim, anyq, True
+            kept.append(a)
+    if not kept and not focus_ids:
+        raise SystemExit(f"--focus {pattern!r} matches no aspect name and no question text in the pool")
+    focus = {"pattern": pattern, "rows": len(focus_ids), "ids": sorted(focus_ids),
+             "aspects_by_name": [a["label"] for a in name_hits],
+             "aspects_kept": [a["n"] for a in kept]}
+    return kept, [i for i in untagged if i in focus_ids], focus
+
+
 def _cos(u, v):
     dot = sum(a * b for a, b in zip(u, v))
     nu = math.sqrt(sum(a * a for a in u)) or 1.0
@@ -491,39 +535,60 @@ def cmd_practice(a):
     emb = {e["id"]: _vec(e["embedding"]) for e in _batched(
         base, headers, "questions?select=id,embedding&embedding=not.is.null&id=in.{ids}", list(rows))}
     excluded = set(picks) | {i for i in rows if id8(i) in set(plan["on_sheet"])}
+    focus_ids = set((plan.get("focus") or {}).get("ids") or [])
     chosen, out = set(), []
     for seed in picks:
         sv = emb.get(seed)
-        if sv is None:
-            print(f"  !! {id8(seed)} has no embedding; falling back to same-aspect pool")
+        # The seed's aspect = its sub-group filing = "drills the same method". That is
+        # the deterministic signal and it goes FIRST; the embedding only ranks inside
+        # it. Measured 7 Sep 2026 on 60 AM/EM seeds: embedding top-5 neighbours share
+        # a sub-group 82% of the time, random same-level questions 3.7% — so the two
+        # agree, but a seed with no vector (all of JC1 that day) used to fall to text
+        # matching, and a seed WITH one used to rank the whole pool and could wander
+        # into a neighbouring aspect. Tiers: 0 = --focus rows inside the aspect,
+        # 1 = the rest of the aspect, 2 = the rest of the pool (only when the aspect runs dry).
         same_aspect = {q for asp in plan["aspects"] if seed in asp["primary"] + asp["any"]
                        for q in asp["primary"] + asp["any"]}
+        if not same_aspect:
+            print(f"  !! {id8(seed)} is not filed under any aspect — ranking the whole pool")
+        if sv is None:
+            print(f"  !! {id8(seed)} has no embedding — ranking by text similarity inside its aspect")
         seed_txt = _qtext(rows[seed])
         sec_low = plan["level"] in ("S1", "S2")
-        scored = []
+
+        def tier(qid):
+            if same_aspect:
+                if qid not in same_aspect:
+                    return 2
+                return 0 if qid in focus_ids else 1
+            return 0 if qid in focus_ids else 1
+
+        scored, how_by = [], {}
         for qid, r in rows.items():
             if qid in excluded or qid in chosen or not r.get("total_marks"):
                 continue
             if sv is not None and qid in emb:
-                sim = _cos(sv, emb[qid])
+                sim, how = _cos(sv, emb[qid]), "embedding"
             else:
-                # no embedding on one side: text similarity, kept inside the seed's aspect
-                if same_aspect and qid not in same_aspect:
-                    continue
-                sim = difflib.SequenceMatcher(None, seed_txt, _qtext(r)).ratio() * 0.9
+                sim, how = difflib.SequenceMatcher(None, seed_txt, _qtext(r)).ratio() * 0.9, "text"
             if sim >= 0.985:
                 continue            # the same question under another school — not practice
             if sec_low and IP_SCHOOLS.search(str(r.get("school") or "")):
                 sim -= 0.08         # IP-stream paper on a Sec 1/2 sheet: last resort only
-            scored.append((sim, -R._tier(r), qid))
+            how_by[qid] = (sim, how)
+            scored.append((-tier(qid), sim, -R._tier(r), qid))
         scored.sort(reverse=True)
-        take = [q for _, _, q in scored[:want[seed]]]
+        take = [q for _, _, _, q in scored[:want[seed]]]
+        outside = [q for q in take if tier(q) == 2]
+        if outside:
+            print(f"  !! {id8(seed)}: its aspect ran dry — {len(outside)} practice item(s) from outside it")
         take.sort(key=lambda q: (int(rows[q].get("total_marks") or 0), str(rows[q].get("year") or "")))
         for q in take:
             chosen.add(q)
-            sim = next(s for s, _, qq in scored if qq == q)
+            sim, how = how_by[q]
+            where = "focus" if tier(q) == 0 and focus_ids else ("aspect" if tier(q) <= 1 else "pool")
             out.append({"id": q, "id8": id8(q), "seed": id8(seed),
-                        "sim": round(sim, 3), "by": "embedding" if sv is not None else "text",
+                        "sim": round(sim, 3), "by": f"{where}+{how}",
                         "marks": rows[q].get("total_marks"), "level": rows[q].get("level"),
                         "school": rows[q].get("school"), "year": rows[q].get("year"),
                         "stem": preview(rows[q], 110)})
@@ -543,8 +608,8 @@ def cmd_practice(a):
     (d / "practice.json").write_text(json.dumps(practice, indent=1, default=str))
     print(f"\n## Practice — {len(out)} questions, {budget['marks']} marks, ~{budget['minutes']} min")
     for o in out:
-        how = f"sim {o['sim']:.2f}" + ("" if o.get("by", "embedding") == "embedding" else "t")
-        print(f"   {o['id8']}  ← {o['seed']} {how:<11} {o['level']:<5} "
+        how = f"sim {o['sim']:.2f} {o.get('by', '')}"
+        print(f"   {o['id8']}  ← {o['seed']} {how:<26} {o['level']:<5} "
               f"{str(o['school'] or '')[:20]:<20} {o['year'] or ''} [{o['marks']}]  {o['stem'][:80]}")
     for w in budget["warnings"]:
         print("   ⚠", w)
@@ -772,33 +837,43 @@ def cmd_render(a):
 
 
 def to_pdf(docx: Path):
-    """Export through Microsoft Word (the only converter on the Mac that renders
-    Cambria Math correctly). Returns the PDF path or None.
+    """Export through Microsoft Word (the only converter on this Mac that renders
+    Cambria Math / OMML correctly). Returns the PDF path or None.
 
-    Word 16.111 (Sep 2026) answers `save as … file format format PDF` with -1708
-    "doesn't understand the save as message" whatever the path or document
-    reference, and `do Visual Basic` no longer exists — so this fails on Adrian's
-    Mac today and render falls back to an HTML preview. Kept because the command
-    is correct and a future Word may honour it again."""
+    Verified on Word 16.111.3, 7 Sep 2026, with Word idle and with peer documents
+    open: keep the DOCUMENT OBJECT that `open file name` returns and address the
+    save-as to it, with a POSIX string path, guarded on the file name so a peer
+    session's document is never exported. Two things answer -1708 "doesn't
+    understand the save as message": a by-name `document "…"` reference, and ANY
+    target under /private/tmp (Word's sandbox refuses it — that, not the verb, is
+    what the 5 Sep "Word refuses scripted export" note hit). So `--out` must not
+    point into /tmp; the Dropbox app folder and $HOME are fine."""
     pdf = unique_path(docx.with_suffix(".pdf"))
+    if str(pdf.resolve()).startswith(("/private/tmp/", "/tmp/")):
+        print(f"  !! Word will not export into {pdf.parent} (sandbox, -1708) — render with --out under $HOME")
+        return None
+    guard = docx.stem[:40].replace('"', "")
     script = f'''
-    set inFile to POSIX file "{docx}"
-    set outFile to POSIX file "{pdf}"
+    set d to missing value
     tell application "Microsoft Word"
-        open inFile
-        set d to active document
-        save as d file name (outFile as text) file format format PDF
+        set d to open file name POSIX file "{docx}"
+        delay 2
+        if d is missing value then set d to document 1
+        if (name of d) does not contain "{guard}" then error "document is not mine: " & (name of d)
+        save as d file name "{pdf}" file format format PDF
         close d saving no
     end tell'''
     try:
-        subprocess.run(["osascript", "-e", script], check=True, capture_output=True, timeout=120)
+        subprocess.run(["osascript", "-e", script], check=True, capture_output=True, text=True, timeout=180)
         return pdf if pdf.exists() else None
+    except subprocess.CalledProcessError as e:
+        print(f"  !! Word export failed: {(e.stderr or '').strip()[-200:]}")
+        return None
     except Exception as e:
         print(f"  !! Word export failed: {e}")
         return None
 
 
-# ---------------------------------------------------------------- main
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -812,6 +887,9 @@ def main():
     p.add_argument("--no-pool", action="store_true", help="target level only")
     p.add_argument("--dir", help="working dir (default: a fresh temp dir)")
     p.add_argument("--prefix", help="chapter number for the filename (default: taken from Adrian's sheet / the builders)")
+    p.add_argument("--focus", help="regex, case-insensitive: narrow the plan to one technique — an aspect whose name "
+                   "matches is kept whole, other aspects keep only questions whose text matches "
+                   "(e.g. 'factorial', 'sum_\\{r=n', 'r=n\\+1')")
     p.set_defaults(fn=cmd_plan)
     p = sub.add_parser("practice")
     p.add_argument("--dir", required=True)

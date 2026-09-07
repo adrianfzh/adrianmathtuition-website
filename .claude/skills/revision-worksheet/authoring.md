@@ -221,7 +221,7 @@ What render does, in order — each **stop** is a `SystemExit` before any file i
 5. Page break → `Practice` → Word numbering restarted → each question with its
    `ANSWERS` line; parts-only questions hoist the first part onto the number line.
 6. Writes the DOCX to `Revision/<folder>/…` named as SKILL.md §5 says, **never
-   overwriting** (`--out` for an exact path). `--pdf` attempts a Word export, which
-   fails on Adrian's Mac today and falls back to `<workdir>/preview.html`. Every
+   overwriting** (`--out` for an exact path). `--pdf` exports through Word (works since 7 Sep 2026;
+   refuses a target under `/private/tmp`) and falls back to `<workdir>/preview.html`. Every
    warning lands in `<workdir>/report.md`; repeat them in the hand-over.
 

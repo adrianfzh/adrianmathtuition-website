@@ -54,11 +54,18 @@ before running.
 ```bash
 RW=.claude/skills/revision-worksheet/rw.py
 /usr/bin/python3 $RW plan     --level S2 --topic Polygons --dir <workdir>     # step 1
+/usr/bin/python3 $RW plan     --level JC1 --topic "Series and Sequences" --focus 'r=n\+1' --dir <workdir>   # one technique only
 /usr/bin/python3 $RW practice --dir <workdir> --picks "d62ff6c5 7bb9fe92:3 …"   # step 3
 /usr/bin/python3 $RW render   --dir <workdir> --pdf                            # step 5
 ```
 
 ### 1 · plan — pool, map, rank
+
+`--focus '<regex>'` narrows a topic-wide plan to ONE technique (Adrian, 7 Sep 2026: "summation,
+change of variables" inside Series and Sequences): an aspect whose *name* matches is kept whole,
+every other aspect keeps only the questions whose raw text (stem, parts, LaTeX) matches, empty
+aspects drop, and `practice` prefers the matching questions. Match the maths, not the method's
+name — `'r=n\+1|sum_\{r=n'` finds index shifts; `'change of variables'` finds nothing.
 
 `plan` fetches every usable question tagged with the topic across the pooled levels
 (quality gate = `revision_lib.usable`: has an answer, no missing figure, no broken
@@ -108,6 +115,12 @@ This is the checkpoint; nothing is written before it.
 
 ### 3 · practice — similar questions under each example
 
+Picks are **sub-group first**: a practice question comes from the seed's own aspect (its
+sub-group filing = "drills the same method"), ranked by embedding when both sides have one
+and by text similarity otherwise; the rest of the pool is used only when the aspect runs dry
+(printed as `!!`). Measured 7 Sep 2026: embedding top-5 neighbours share a sub-group 82% of the
+time, random same-level questions 3.7% — the two signals agree, the filing is the deterministic one.
+
 `practice --picks "id8 id8:3 …"` fetches the pool's embeddings and, for each example,
 takes its nearest neighbours **inside the pool** (never an example, never a question on
 Adrian's sheet, never a repeat), ordered by marks so a group escalates. `:N` is the
@@ -145,13 +158,14 @@ with `[n]` → `solution_box` — there is no "Examples" heading, the concept li
 it is — then a page break, `Practice` with real Word numbering and one `[Ans:]` per
 question), embeds
 stored figures, checks part marks against `total_marks`, counts the OMML equations,
-tries to export a PDF through Word and rasterise pages into `<workdir>/pages/`. **On
-Adrian's Mac today that export fails** — Word 16.111 refuses scripted `save as` (error
--1708) and has no VBA bridge — so `render` writes `<workdir>/preview.html` instead
-(pandoc + MathJax, figures extracted). Open it in the browser and check content, order,
-figures and every equation; page breaks are Word's and are not visible there. Say so in
-the hand-over: the page-level look happens when Adrian opens the DOCX. (LibreOffice
-would give a headless PDF path — his call to install it.)
+tries to export a PDF through Word and rasterise pages into `<workdir>/pages/`. **Word export works** (verified 7 Sep 2026, Word 16.111.3): `to_pdf` keeps the document
+object `open file name` returns, addresses `save as` to it with a POSIX string path, and
+guards on the file name so a peer session's document is never exported. It refuses any
+target under `/private/tmp` (-1708, Word's sandbox) — `--out` must stay under `$HOME` or
+the Dropbox app folder. If the export still fails, `render` writes `<workdir>/preview.html`
+instead (pandoc + MathJax, figures extracted); open it and check content, order, figures and
+every equation, and say in the hand-over that the page-level look happens in Word.
+(LibreOffice is not an option — it mangles OMML `&` alignment; tried 31 Aug 2026.)
 
 Output lands as `Revision/<folder>/<n> REV <Topic> Revision (With Worked Examples).docx`
 (Adrian, 5 Sep 2026) — `<n>` is his chapter number, taken from his own sheet for the topic
