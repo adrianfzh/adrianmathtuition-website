@@ -27,6 +27,7 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { listFolder, dropboxConfigured, downloadFile } from '@/lib/dropbox';
 import { putStudentFile, runKey } from '@/lib/student-files';
+import { displayPaperName } from '@/lib/paper-display-name';
 import { choosePdf, sheetFolder, ambiguityMessage, noSheetNote, type SheetFile } from '@/lib/release-with-sheet';
 import { readNoSheet } from '@/lib/sheet-jobs';
 import { attachAmendedFromDropbox } from '@/lib/attach-amended';
@@ -198,7 +199,9 @@ export async function POST(req: NextRequest) {
   // The SHEET goes first. If the assignment fails, nothing has been released and
   // Adrian can retry the whole thing; releasing first would leave a student with a
   // marked paper and no work, which is the state this button exists to prevent.
-  const title = `Practice again — ${r.run.paper_name || 'your marked paper'}`;
+  // The paper's name the way the student knows it ("A Math · GCE 2021 · Paper 1"),
+  // not the internal one ("wanqing am tys 2021 p1") — same rule as the Papers list.
+  const title = `Practice Again — ${r.run.paper_name ? displayPaperName(r.run.paper_name, r.run.student_name) : 'your marked paper'}`;
   const aRes = await fetch(`${origin}/api/admin/assignments`, {
     method: 'POST', headers: fwd,
     body: JSON.stringify({
