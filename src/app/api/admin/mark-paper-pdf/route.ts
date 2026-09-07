@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { putStudentFile, fetchOurFile, runKey, uploadKey } from '@/lib/student-files';
 import { PDFDocument } from 'pdf-lib';
 import { renderMarkingPNG, type MarkingOutput } from '@/lib/render-marking';
-import { coverPhotoIndexes, orderMarkedPages } from '@/lib/marked-pdf-order';
+import { coverPhotoIndexes, frontMatterPages, orderMarkedPages } from '@/lib/marked-pdf-order';
 import { pickAnnotatedPhotoUrl, type MarkedPdfMode } from '@/lib/annotated-photo-source';
 import { markedPdfColumn } from '@/lib/marked-pdf-column';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -168,8 +168,11 @@ export async function POST(req: NextRequest) {
   if (runId && annotated.length) {
     try {
       const { data } = await getSupabaseAdmin().from('paper_marking_runs')
-        .select('page_classification:result_json->page_classification').eq('id', runId).maybeSingle();
-      coverSet = new Set(coverPhotoIndexes((data as { page_classification?: unknown } | null)?.page_classification));
+        .select('page_classification:result_json->page_classification, results:result_json->results, annotated_photos:result_json->annotated_photos').eq('id', runId).maybeSingle();
+      // With a classification the 'cover' pages lead; without one (Mac
+      // hand-backs) the leading pages no marked question sits on do — lib/marked-pdf-order.
+      const row = data as { page_classification?: unknown; results?: unknown; annotated_photos?: unknown } | null;
+      coverSet = new Set(coverPhotoIndexes(row?.page_classification, frontMatterPages(row)));
     } catch (e) { console.warn('[mark-paper-pdf] page classification unavailable, no cover-first:', (e as Error).message); }
   }
   const coverPhotos = annotated.filter(a => coverSet.has(a.photo_index));

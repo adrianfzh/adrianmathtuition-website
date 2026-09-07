@@ -15,7 +15,7 @@
 // per-student view showed almost nothing. Tagging is also what unblocks
 // marked-paper evidence in the parent reports (`report-facts.ts`) — an untagged
 // run belongs to nobody and can never appear in one.
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { del } from '@vercel/blob';
 import { isOurFileUrl, collectFileKeys, removeStudentFiles } from '@/lib/student-files';
 
@@ -39,6 +39,7 @@ import { lostMarkQuestions } from '@/lib/shelf';
 import { isMarkSubject } from '@/lib/mark-subjects';
 import { paperFolder } from '@/lib/paper-folder';
 import { autoQueueSheet } from '@/lib/sheet-queue';
+import { refileUntaggedFolder } from '@/lib/refile-untagged';
 
 export const runtime = 'nodejs';
 
@@ -220,6 +221,8 @@ export async function POST(req: NextRequest) {
   if (studentId) {
     const out = await autoQueueSheet(runId, 'papers:tag');
     sheet = out.ok ? 'queued' : out.status;
+    // …and its Dropbox folder leaves /Students/_Untagged (7 Sep 2026).
+    after(() => refileUntaggedFolder(runId));
   }
 
   return NextResponse.json({ ok: true, runId, studentId: studentId || null, studentName, sheet });

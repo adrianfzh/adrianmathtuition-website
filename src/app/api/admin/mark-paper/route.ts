@@ -3,6 +3,7 @@ import { after } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { autoQueueSheet } from '@/lib/sheet-queue';
+import { refileUntaggedFolder } from '@/lib/refile-untagged';
 
 // Paper marking can take minutes (solve + mark per question). 300s is the Vercel ceiling.
 export const maxDuration = 300;
@@ -57,6 +58,9 @@ export async function POST(req: NextRequest) {
         // A re-mark replaces the sheet too (Adrian, 7 Sep 2026: "it should"):
         // the old sheet was built on marking that no longer exists.
         if (runId) after(() => autoQueueSheet(runId, `mark-paper:${phase}`, { remark: phase === 'remark' }));
+        // A paper tagged after marking takes its Dropbox folder with it, out of
+        // /Students/_Untagged (Gavin Woon, 7 Sep 2026).
+        if (runId && phase === 'set-student') after(() => refileUntaggedFolder(runId));
       } catch { /* an unparseable body is the bot's problem, not the queue's */ }
     }
     // The bot's stats payload predates checked_at, and re-deploying the bot is
