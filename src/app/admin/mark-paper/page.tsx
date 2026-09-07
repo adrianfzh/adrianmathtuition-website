@@ -130,7 +130,7 @@ async function uploadScheme(file: File): Promise<string | null> {
 }
 
 type MarkPart = { label?: string; awarded?: number; max?: number; error_summary?: string | null };
-type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; rules_version?: string | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; checked_at?: string | null; released_at?: string | null; archived_at?: string | null; marked_by?: string | null; mark_now?: string | null; skip_external?: string | null; claim_at?: string | null; claim_released?: string | null; sheet_status?: string | null; sheet_error?: string | null; sheet_at?: string | null; sheet_stage?: string | null; pages_done?: string | null; pages_total?: string | null };
+type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; rules_version?: string | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; checked_at?: string | null; released_at?: string | null; archived_at?: string | null; marked_by?: string | null; mark_now?: string | null; skip_external?: string | null; claim_at?: string | null; claim_released?: string | null; claim_delivered_at?: string | null; sheet_status?: string | null; sheet_error?: string | null; sheet_at?: string | null; sheet_stage?: string | null; pages_done?: string | null; pages_total?: string | null };
 type Result = {
   question_number: string; working_index: number; match_confidence: string; photo_index?: number | null;
   marking?: { total_awarded?: number; total_max?: number; overall_comment?: string; parts?: MarkPart[] };
@@ -1763,9 +1763,14 @@ export default function MarkPaperPage() {
                   // double-cost marking, so canMark waits out the window.
                   <span style={{ color: run.queue_failed ? '#b91c1c' : run.queued_at ? '#4c1d95' : '#b45309', fontSize: 12, fontWeight: 600 }}>
                     {run.queue_failed ? '⚠ queue failed twice'
+                      // The stages, in order (Adrian, 8 Sep 2026: "perhaps the purple note can
+                      // explain what is currently happening now, and give a progress indicator"):
+                      // reads handed back → the bot is drawing; pages counted → reading, with
+                      // the pages left; claimed, nothing counted yet → starting up.
+                      : run.queued_at && run.claim_delivered_at ? '🎨 reads are in — drawing the marks, building the PDF, filing (about a minute)'
                       : run.queued_at && macMarking(run) ? (pageProgress(run)
-                          ? `💻 page ${pageProgress(run)!.done} of ${pageProgress(run)!.total} · ${pageProgress(run)!.pct}%`
-                          : '💻 your Mac is marking it now — free, ~25 min for a full paper')
+                          ? `💻 reading page ${pageProgress(run)!.done} of ${pageProgress(run)!.total} · ${pageProgress(run)!.pct}% · about ${Math.max(1, Math.ceil((pageProgress(run)!.total - pageProgress(run)!.done) * 5 / 60))} min of reading left`
+                          : '💻 your Mac has it — starting up and fetching the pages (a full paper reads in about 2–3 min, then a minute of drawing)')
                       : run.queued_at && run.skip_external ? '☁️ queued for the batch API (~50% price) — 10–60 min, then Telegram + Dropbox'
                       : run.queued_at && run.total_max == null ? '🌙 queued — waiting for your Mac (free) while it is awake, else ~50% batch API. 10–60 min, then Telegram + Dropbox'
                       : canMark ? '⏳ uploaded — not marked yet'
