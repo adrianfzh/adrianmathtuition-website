@@ -3,7 +3,15 @@
 //
 //   POST  { runId?, sheetJobId?, level, topics[], questionText, … }  → { proposal }
 //   GET   ?status=pending&limit=                                     → { proposals }
-//   PATCH { id, action:'approve'|'reject', notes? }                  → { ok }
+//   PATCH { id, action:'publish'|'approve'|'reject', notes? }        → { ok }
+//
+//   'publish' (7 Sept 2026, Adrian: "combine the approve and publish button") is
+//   approve + move into `questions` in one tap. It refuses a row without a
+//   verification stamp — the worker verifies BEFORE filing, so by the time a
+//   proposal is on this page its arithmetic has already been checked; Adrian
+//   rules on fit and wording. The bank row is inserted WITHOUT an embedding
+//   (Vercel holds no OpenAI key); the bot's hourly sweep (lib/proposal-embed-sweep)
+//   embeds published proposals so the finder and practice can see them.
 //
 // Why this exists: every practice question on every sheet so far was invented,
 // used once inside one student's DOCX, and lost. The bank never grew, so the next
@@ -58,8 +66,34 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json().catch(() => ({} as { id?: number; action?: string; notes?: string }));
   const id = Number(body.id);
   if (!Number.isInteger(id)) return NextResponse.json({ error: 'id is required' }, { status: 400 });
-  if (body.action !== 'approve' && body.action !== 'reject') {
-    return NextResponse.json({ error: 'action must be approve or reject' }, { status: 400 });
+  if (body.action !== 'approve' && body.action !== 'reject' && body.action !== 'publish') {
+    return NextResponse.json({ error: 'action must be publish, approve or reject' }, { status: 400 });
+  }
+
+  if (body.action === 'publish') {
+    const sb = getSupabaseAdmin();
+    const { data: p, error: e0 } = await sb.from('authored_question_proposals').select('*').eq('id', id).maybeSingle();
+    if (e0) return NextResponse.json({ error: e0.message }, { status: 500 });
+    if (!p) return NextResponse.json({ error: 'no such proposal' }, { status: 404 });
+    if (p.status !== 'pending' && p.status !== 'approved') return NextResponse.json({ error: 'that proposal was already reviewed' }, { status: 409 });
+    if (!p.verification || p.verification.ok !== true) {
+      return NextResponse.json({ error: 'not verified — the worker must re-file this question with a verification stamp before it can be published' }, { status: 422 });
+    }
+    const { data: q, error: e1 } = await sb.from('questions').insert({
+      question_text: p.question_text, answer: p.answer, solution: p.solution, total_marks: p.marks,
+      topics: p.topics || [], level: p.level,
+      school: 'AI Generated', year: new Date().getUTCFullYear(), exam_type: 'Prelim', paper: 'Self-Study Practice',
+      has_image: false, ai_generated: true, verified: true,
+      embedding_text: [(p.topics || []).join(', '), p.skill].filter(Boolean).join(' — ') || p.question_text,
+      gen_meta: { source: 'authored_question_proposal', proposal_id: p.id, skill: p.skill, verification: p.verification, published_at: new Date().toISOString() },
+    }).select('id').single();
+    if (e1) return NextResponse.json({ error: `bank insert failed: ${e1.message}` }, { status: 500 });
+    const notes = [p.notes, typeof body.notes === 'string' && body.notes.trim() ? body.notes.trim().slice(0, 2000) : null].filter(Boolean).join(' ');
+    const { error: e2 } = await sb.from('authored_question_proposals')
+      .update({ status: 'published', reviewed_at: new Date().toISOString(), published_question_id: q.id, ...(notes ? { notes } : {}) })
+      .eq('id', id);
+    if (e2) return NextResponse.json({ error: `published as ${q.id} but the proposal could not be marked: ${e2.message}` }, { status: 500 });
+    return NextResponse.json({ ok: true, id, status: 'published', questionId: q.id });
   }
 
   // Guarded on 'pending': a proposal already ruled on stays ruled on, so a stale

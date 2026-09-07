@@ -30,7 +30,21 @@ export type ProposalRow = {
   skill: string | null;
   search_query: string | null;
   search_hits: unknown;
+  verification: Verification;
 };
+/** The worker's own check that the answer is right, made BEFORE filing (Adrian,
+ *  7 Sept 2026: "make sure they are verified first, even before asking me to
+ *  approve/publish"). A proposal without `ok: true` is refused at the door. */
+export type Verification = { ok: true; method: string; evidence: string; at: string };
+function verification(v: unknown): Verification | null {
+  const o = (v ?? {}) as Record<string, unknown>;
+  if (o.ok !== true) return null;
+  const method = typeof o.method === 'string' ? o.method.trim().slice(0, 40) : '';
+  const evidence = typeof o.evidence === 'string' ? o.evidence.trim().slice(0, 4000) : '';
+  if (!method || evidence.length < 10) return null;
+  const at = typeof o.at === 'string' && !Number.isNaN(Date.parse(o.at)) ? o.at : new Date().toISOString();
+  return { ok: true, method, evidence, at };
+}
 
 const uuid = (v: unknown): string | null =>
   (typeof v === 'string' && /^[0-9a-f-]{36}$/i.test(v)) ? v : null;
@@ -63,6 +77,13 @@ export function sanitizeProposal(input: unknown): { row: ProposalRow } | { error
     return { error: 'searchQuery is required — record the bank search that found nothing, or use the bank question it found' };
   }
 
+  // Verified before it is even filed — the queue asks Adrian to rule on wording
+  // and fit, never on whether the arithmetic holds.
+  const ver = verification(b.verification);
+  if (!ver) {
+    return { error: 'verification is required — {ok:true, method, evidence}: recompute the answer (sympy/python) before filing' };
+  }
+
   const topicsIn = Array.isArray(b.topics) ? b.topics : [];
   const topics = topicsIn
     .map(t => (typeof t === 'string' ? t.trim() : '')).filter(Boolean).slice(0, MAX_TOPICS);
@@ -90,6 +111,7 @@ export function sanitizeProposal(input: unknown): { row: ProposalRow } | { error
         const hits = b.searchHits ?? b.search_hits;
         return Array.isArray(hits) ? hits.slice(0, 20) : null;
       })(),
+      verification: ver,
     },
   };
 }

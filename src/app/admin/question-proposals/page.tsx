@@ -39,6 +39,8 @@ type Proposal = {
   status: string;
   created_at: string;
   notes: string | null;
+  verification: { ok: boolean; method: string; evidence: string; at: string } | null;
+  published_question_id: string | null;
 };
 
 // Questions arrive as prose with `$…$` maths, the same way they are stored in the
@@ -124,7 +126,7 @@ export default function QuestionProposalsPage() {
     finally { setAuthLoading(false); }
   }
 
-  async function decide(p: Proposal, action: 'approve' | 'reject') {
+  async function decide(p: Proposal, action: 'publish' | 'reject') {
     if (busy) return;
     setBusy(p.id);
     try {
@@ -248,6 +250,17 @@ export default function QuestionProposalsPage() {
                 <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 8px', fontStyle: 'italic' }}>“{p.notes}”</p>
               )}
 
+              {/* The worker's own check, made before filing (7 Sept 2026). Without it the
+                  publish button is refused server-side, so say so here rather than on tap. */}
+              {p.verification?.ok ? (
+                <details style={{ marginBottom: 10 }}>
+                  <summary style={{ fontSize: 12.5, color: '#047857', fontWeight: 600, cursor: 'pointer' }}>✓ answer verified ({p.verification.method}) before filing</summary>
+                  <p style={{ fontSize: 12.5, color: '#4b5563', margin: '6px 0 0', whiteSpace: 'pre-wrap' }}>{p.verification.evidence}</p>
+                </details>
+              ) : (
+                <p style={{ fontSize: 12.5, color: '#b45309', fontWeight: 600, margin: '0 0 10px' }}>⚠ not verified — filed before the check existed; the worker must re-file it before it can be published</p>
+              )}
+
               {p.status === 'pending' && (
                 <>
                   {noteFor === p.id && (
@@ -264,9 +277,10 @@ export default function QuestionProposalsPage() {
                       style={{ border: '1px solid #fca5a5', background: '#fff', color: '#b91c1c', borderRadius: 8, padding: '7px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: busy === p.id ? 0.45 : 1 }}>
                       ✕ Reject
                     </button>
-                    <button onClick={() => decide(p, 'approve')} disabled={busy === p.id}
-                      style={{ border: 'none', background: '#047857', color: '#fff', borderRadius: 8, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: busy === p.id ? 0.45 : 1 }}>
-                      {busy === p.id ? 'Saving…' : '✓ Approve'}
+                    <button onClick={() => decide(p, 'publish')} disabled={busy === p.id || !p.verification?.ok}
+                      title={p.verification?.ok ? 'Approve and put it in the bank' : 'Cannot publish an unverified question'}
+                      style={{ border: 'none', background: p.verification?.ok ? '#047857' : '#9ca3af', color: '#fff', borderRadius: 8, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: p.verification?.ok ? 'pointer' : 'not-allowed', opacity: busy === p.id ? 0.45 : 1 }}>
+                      {busy === p.id ? 'Publishing…' : '✓ Approve & publish'}
                     </button>
                   </div>
                 </>

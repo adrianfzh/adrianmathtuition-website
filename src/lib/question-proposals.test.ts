@@ -8,6 +8,7 @@ const ok = {
   answer: '$a = -1.125$',
   searchQuery: 'coefficient from pairing two powers in a product',
   marks: 5,
+  verification: { ok: true, method: 'sympy', evidence: 'expanded (5+ax^2)(3-2/x)^5, constant term 5·243 + a·(−1080)·… = 0 gives a = −1.125', at: '2026-09-07T00:00:00Z' },
 };
 
 describe('sanitizeProposal', () => {
@@ -19,6 +20,14 @@ describe('sanitizeProposal', () => {
       expect(r.row.topics).toEqual(['Binomial Expansion']);
       expect(r.row.marks).toBe(5);
     }
+  });
+
+  it('refuses a proposal the worker has not verified — Adrian rules on fit, never on arithmetic', () => {
+    expect('error' in sanitizeProposal({ ...ok, verification: undefined })).toBe(true);
+    expect('error' in sanitizeProposal({ ...ok, verification: { ok: false, method: 'sympy', evidence: 'answer came out as -1.2' } })).toBe(true);
+    expect('error' in sanitizeProposal({ ...ok, verification: { ok: true } })).toBe(true);
+    const r = sanitizeProposal(ok);
+    expect('row' in r && r.row.verification.method).toBe('sympy');
   });
 
   it('demands the failed search — authoring without looking is the bug it fixes', () => {
@@ -38,7 +47,7 @@ describe('sanitizeProposal', () => {
 
   it('accepts snake_case as well as camelCase — the worker composes JSON by hand', () => {
     const r = sanitizeProposal({
-      level: 'AM', question_text: ok.questionText, search_query: 'x', topics: [],
+      level: 'AM', question_text: ok.questionText, search_query: 'x', topics: [], verification: ok.verification,
     });
     expect('row' in r).toBe(true);
   });

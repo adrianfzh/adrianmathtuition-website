@@ -516,8 +516,16 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/question-proposals" \
   -H "Authorization: Bearer $SHEETS_API_TOKEN" -H 'Content-Type: application/json' \
   -d '{"runId":"<run id>","sheetJobId":"<job id>","level":"AM","topics":["Binomial"],
        "skill":"pairing powers for a coefficient","questionText":"…","answer":"…",
-       "solution":"…","marks":5,"searchQuery":"<what you searched>","searchHits":[…]}'
+       "solution":"…","marks":5,"searchQuery":"<what you searched>","searchHits":[…],
+       "verification":{"ok":true,"method":"sympy","evidence":"<what you recomputed and what it gave>"}}'
 ```
+
+**`verification` is required and must say `ok: true`** (7 Sept 2026, Adrian: "make
+sure they are verified first, even before asking me to approve/publish"). Recompute
+the answer the same way you verify the sheet's practice answers and put the working
+in `evidence`; the API refuses a filing without it, and the vetting page's
+"Approve & publish" button is disabled for anything unverified. Adrian rules on
+fit and wording, never on arithmetic.
 
 Nothing there reaches the bank until Adrian approves it. Record the FAILED SEARCH
 honestly — the queue cannot tell a genuine gap from a lazy search without it, and
