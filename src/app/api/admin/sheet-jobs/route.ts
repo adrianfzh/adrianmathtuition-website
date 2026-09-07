@@ -47,6 +47,7 @@ import { rebuildRunPdfs, type RebuildOutcome } from '@/lib/rebuild-run-pdfs';
 import { queueSheetJob } from '@/lib/sheet-queue';
 import { sanitizeSheetQuestions } from '@/lib/practice-again';
 import { createHeldPracticeItems, deleteHeldPracticeItems } from '@/lib/practice-again-store';
+import { archiveSheetToStore } from '@/lib/sheet-archive';
 
 /** A worker's 'fail' whose reason is really 'no gap to teach' — treated as a noSheet completion. */
 const NO_SHEET_RE = /nothing to teach|no sheet needed|no real gap|no action needed|nothing to practise|nothing to practice/i;
@@ -116,6 +117,20 @@ export async function POST(req: NextRequest) {
   // A mis-tap on 📘 (it sits next to 🗑 on a phone-sized row) used to need a
   // hand-written DELETE: 'failed' requeues, and nothing else meant "I changed
   // my mind". Terminal, and never re-picked — see cancelState + pickNextJob.
+  // Copy a finished job's sheet into the run's store on demand — the backfill
+  // for sheets filed before 7 Sep 2026 (they were only archived at release).
+  if (body.action === 'archive-sheet') {
+    if (!body.id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+    const { data: job, error } = await sb.from('sheet_jobs').select('id, run_id, status, result').eq('id', body.id).maybeSingle<SheetJob>();
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!job) return NextResponse.json({ error: 'job not found' }, { status: 404 });
+    const r = (job.result || null) as SheetFiledResult | null;
+    if (!r || isNoSheet(r)) return NextResponse.json({ error: 'this job has no sheet to archive' }, { status: 409 });
+    const out = await archiveSheetToStore(job.run_id, { pdfPath: r.pdf_path, docxPath: r.docx_path }, 'done');
+    return out.ok
+      ? NextResponse.json({ ok: true, runId: job.run_id, archive: out.archive })
+      : NextResponse.json({ error: out.error }, { status: 502 });
+  }
   if (body.action === 'cancel') {
     // Addressed by runId from the paper row (which knows the paper, not the job)
     // or by job id from anywhere holding one. runId picks the OPEN job, so a
@@ -215,6 +230,13 @@ export async function POST(req: NextRequest) {
     // job — it is counted and reported, and the sheet is already filed.
     const held = await createHeldPracticeItems(sb, job, rawQuestions);
     if (held.error) console.warn('[sheet-jobs] practice items degraded', job.id, held.error);
+    // ── The sheet goes into the private store NOW, not only at release (7 Sep
+    // 2026): the bot attaches `practice_again_archive.pdf_url` as the question
+    // paper when the student hands the sheet back, so the marker reads the
+    // sheet's own questions instead of "marking from the working alone".
+    // Fail-soft: Dropbox or storage trouble is logged; the sheet is already filed.
+    const archived = await archiveSheetToStore(job.run_id, { pdfPath: result.pdf_path, docxPath: result.docx_path }, 'done');
+    if (!archived.ok) console.warn('[sheet-jobs] sheet archive skipped', job.id, archived.error);
     notify_marking(completionMessage(job, result, { heldItemsLine: held.line }))
       .then(() => sendSheetFiles(job, result))
       .catch(() => {});
