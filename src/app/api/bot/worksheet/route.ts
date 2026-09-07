@@ -38,7 +38,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { safeEqual } from '@/lib/safe-equal';
-import { put } from '@vercel/blob';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { KIOSK_LEVELS } from '@/lib/kiosk-session';
 import { normalizeTier } from '@/lib/practice-tiers';
@@ -47,14 +46,18 @@ import { applyBand, bandKey, parseBand } from '@/lib/marks-band';
 import { fetchWorksheetPool, SEED_LEVELS } from '@/lib/kiosk-pool';
 import {
   clampCount, matchTopic, resolveLevelKey, validLevels,
-  worksheetBlobPath, worksheetFilename, worksheetTitle,
+  worksheetBlobPath, worksheetFilename, worksheetTitle, TtlCache,
 } from '@/lib/bot-worksheet';
+import { storeBankFile } from '@/lib/bank-pdf-store';
 import { renderBotWorksheetPDF } from '@/lib/render-bot-worksheet';
 import { worksheetAudienceFor } from '@/lib/worksheet-audience';
 
 export const runtime = 'nodejs';
 // Puppeteer cold start + KaTeX font fetch push past the 10s default.
 export const maxDuration = 60;
+
+// One topic list per (level, audience) per 10 minutes — see TtlCache.
+const topicsCache = new TtlCache<string[]>(10 * 60_000);
 
 function bad(status: number, body: Record<string, unknown>) {
   return NextResponse.json(body, { status });
@@ -111,14 +114,22 @@ export async function POST(req: NextRequest) {
 
   // Topic must be one the level actually has — the 400 lists them so the bot can
   // show the student a menu instead of a dead end.
-  const topicsRes = await supa.rpc('practice_topics', {
-    p_level: cfg.topicsKey,
-    p_is_ip: audience.isIp,
-    p_admin: audience.admin,
-  });
+  const topicsCacheKey = `${cfg.topicsKey}|${audience.isIp ? 'ip' : 'std'}|${audience.admin ? 'admin' : 'student'}`;
+  const cachedTopics = topicsCache.get(topicsCacheKey);
+  let available: string[];
+  if (cachedTopics) {
+    available = cachedTopics;
+  } else {
+    const topicsRes = await supa.rpc('practice_topics', {
+      p_level: cfg.topicsKey,
+      p_is_ip: audience.isIp,
+      p_admin: audience.admin,
+    });
+    if (topicsRes.error) return bad(500, { error: topicsRes.error.message });
+    available = (topicsRes.data || []).map((r: { topic: string }) => r.topic);
+    topicsCache.set(topicsCacheKey, available);
+  }
   lap('topics');
-  if (topicsRes.error) return bad(500, { error: topicsRes.error.message });
-  const available = (topicsRes.data || []).map((r: { topic: string }) => r.topic);
   const topic = matchTopic(body.topic as string, available);
   if (!topic) {
     return bad(400, {
@@ -185,17 +196,16 @@ export async function POST(req: NextRequest) {
   lap('render');
 
   const questionIds = picked.map((q) => q.id);
-  const blob = await put(
-    worksheetBlobPath({ date, levelKey, topic, tier, band: bandLabel, count: picked.length, answers, questionIds }),
+  // Singapore Storage (lib/bank-pdf-store, same project as the bank) instead of
+  // Vercel Blob in the US: the Blob upload of this 70 KB PDF was 1.1–1.9 s of a
+  // 2.3–2.7 s warm build (route timings, 7 Sep 2026); the Storage upsert is ~0.4 s.
+  // The path is deterministic and upserted, so re-asking for the same sheet the
+  // same day lands on the SAME url instead of littering the store. Blob remains
+  // the helper's fallback.
+  const stored = await storeBankFile(
+    `bot/${worksheetBlobPath({ date, levelKey, topic, tier, band: bandLabel, count: picked.length, answers, questionIds })}`,
     pdf,
-    {
-      access: 'public',
-      contentType: 'application/pdf',
-      // Deterministic path + overwrite: re-asking for the same sheet the same
-      // day lands on the SAME url instead of littering the store.
-      addRandomSuffix: false,
-      allowOverwrite: true,
-    },
+    'application/pdf',
   );
 
   lap('blob');
@@ -203,7 +213,8 @@ export async function POST(req: NextRequest) {
   console.log('[bot-worksheet] timings', JSON.stringify(timings));
 
   return NextResponse.json({
-    url: blob.url,
+    url: stored.url,
+    store: stored.store,
     title,
     count: picked.length,
     questionIds,

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { TtlCache } from './bot-worksheet';
 import {
   DEFAULT_WORKSHEET_COUNT,
   MAX_WORKSHEET_COUNT,
@@ -183,3 +184,17 @@ describe('protectWorksheetHtml / restoreWorksheetHtml', () => {
     expect(restoreWorksheetHtml(src, stash)).toBe(md);
   });
 });
+
+describe('TtlCache', () => {
+  it('returns a value inside its TTL and forgets it after', () => {
+    let now = 1_000_000;
+    const c = new TtlCache<string[]>(10 * 60_000, () => now);
+    expect(c.get('AM|std|student')).toBeUndefined();
+    c.set('AM|std|student', ['Binomial Theorem']);
+    now += 9 * 60_000;
+    expect(c.get('AM|std|student')).toEqual(['Binomial Theorem']);
+    now += 2 * 60_000;
+    expect(c.get('AM|std|student')).toBeUndefined();
+  });
+});
+

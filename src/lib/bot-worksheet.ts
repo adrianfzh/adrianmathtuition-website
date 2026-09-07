@@ -161,3 +161,23 @@ export function protectWorksheetHtml(md: string): { src: string; stash: string[]
 export function restoreWorksheetHtml(html: string, stash: string[]): string {
   return String(html ?? '').replace(/@@WSH(\d+)@@/g, (m, i: string) => stash[Number(i)] ?? m);
 }
+
+/**
+ * Small in-memory TTL cache for a warm function. The `practice_topics` RPC costs
+ * 300–650 ms per call (measured 7 Sep 2026, Singapore to Singapore) and a level's
+ * topic list changes only when the bank is re-filed, so one lookup per
+ * (level, audience) per few minutes is plenty. Module-scoped, so it lives as long
+ * as the function instance and is empty on a cold start — never a source of truth.
+ */
+export class TtlCache<T> {
+  private readonly m = new Map<string, { at: number; v: T }>();
+  constructor(private readonly ttlMs: number, private readonly now: () => number = Date.now) {}
+  get(k: string): T | undefined {
+    const e = this.m.get(k);
+    if (!e) return undefined;
+    if (this.now() - e.at > this.ttlMs) { this.m.delete(k); return undefined; }
+    return e.v;
+  }
+  set(k: string, v: T): void { this.m.set(k, { at: this.now(), v }); }
+}
+
