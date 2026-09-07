@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  let body: { runId?: string; focus?: string; action?: string; by?: string; id?: string; result?: unknown; error?: string ; stage?: string};
+  let body: { runId?: string; focus?: string; remark?: boolean; action?: string; by?: string; id?: string; result?: unknown; error?: string ; stage?: string};
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const sb = getSupabaseAdmin();
 
@@ -393,7 +393,10 @@ export async function POST(req: NextRequest) {
   const runId = String(body.runId || '').trim();
   if (!/^[0-9a-f-]{36}$/i.test(runId)) return NextResponse.json({ error: 'runId required' }, { status: 400 });
 
-  const out = await queueSheetJob(runId, { focus: body.focus });
+  // `remark: true` (the bot after marking a paper again) lets a sheet in
+  // progress be cancelled and replaced; any new job clears the old sheet's
+  // held practice items either way (lib/sheet-queue).
+  const out = await queueSheetJob(runId, { focus: body.focus, remark: body.remark === true });
   if (!out.ok) return NextResponse.json({ error: out.message }, { status: out.http });
   return NextResponse.json({ job: out.job });
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sheetQueueGuard, sheetJobInsert, type SheetQueueRun } from './sheet-queue';
+import { sheetQueueGuard, sheetJobInsert, supersededByNewSheet, type SheetQueueRun } from './sheet-queue';
 
 const run: SheetQueueRun = {
   id: 'f0d82c18-0000-4000-8000-000000000000',
@@ -71,5 +71,27 @@ describe('sheetJobInsert', () => {
     });
     expect(sheetJobInsert(run, 'x'.repeat(400)).focus).toHaveLength(300);
     expect(sheetJobInsert({ ...run, student_name: null, paper_name: null }, 'logs')).toMatchObject({ student_name: '', paper_name: '', focus: 'logs' });
+  });
+});
+
+describe('supersededByNewSheet — a new sheet replaces the old one', () => {
+  const jobs = [
+    { id: 'old-done', status: 'done' },
+    { id: 'old-failed', status: 'failed' },
+    { id: 'writing', status: 'claimed' },
+    { id: 'waiting', status: 'queued' },
+  ];
+  it('on a re-mark, cancels the sheets still being written and clears every earlier job\'s held items', () => {
+    const out = supersededByNewSheet(jobs, { remark: true });
+    expect(out.cancel).toEqual(['writing', 'waiting']);
+    expect(out.clearHeld).toEqual(['old-done', 'old-failed', 'writing', 'waiting']);
+  });
+  it('on a plain re-queue, cancels nothing (the guard refuses while one is in flight) but still clears held items', () => {
+    const out = supersededByNewSheet([jobs[0], jobs[1]]);
+    expect(out.cancel).toEqual([]);
+    expect(out.clearHeld).toEqual(['old-done', 'old-failed']);
+  });
+  it('a first sheet has nothing to supersede', () => {
+    expect(supersededByNewSheet([])).toEqual({ cancel: [], clearHeld: [] });
   });
 });

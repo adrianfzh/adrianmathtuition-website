@@ -1143,9 +1143,19 @@ function SheetPane(p: {
                 <input value={p.focus} onChange={e => p.setFocus(e.target.value)} placeholder="Focus (optional) — e.g. logs only, skip vectors"
                   style={{ flex: 1, minWidth: 180, padding: '8px 10px', fontSize: 14, border: `1px solid ${C.border}`, borderRadius: 8 }} />
                 <button onClick={p.onQueueSheet} disabled={busy === 'sheet' || !d.run.studentId} style={btn(C.ink, '#fff')}
-                  title={d.run.studentId ? undefined : 'Tag a student first'}>
-                  {busy === 'sheet' ? '…' : job ? (job.status === 'failed' ? '🔁 Retry sheet' : '🔁 Re-queue sheet') : '📘 Queue sheet'}
+                  title={d.run.studentId
+                    ? 'Writes a NEW sheet and diagnosis from the marking as it stands now. Does not re-mark. The old sheet is replaced.'
+                    : 'Tag a student first'}>
+                  {busy === 'sheet' ? '…' : job ? (job.status === 'failed' ? '🔁 Retry sheet' : '🔁 New sheet from this marking') : '📘 Queue sheet'}
                 </button>
+                {/* Adrian, 7 Sep 2026: "make Re-queue clearer" — say what it does
+                    and what it does not, and put the re-mark door right beside it. */}
+                <span style={{ flexBasis: '100%', fontSize: 12, color: C.muted, lineHeight: 1.5 }}>
+                  {job ? 'New sheet' : 'Queue sheet'} = the Mac writes a fresh diagnosis and Practice Again sheet from the <b>current</b> marking; the old sheet
+                  and its questions are replaced. It does <b>not</b> re-mark. To mark the paper again, use{' '}
+                  <a href={`/admin/mark-paper?run=${d.run.id}`} style={{ color: C.link, fontWeight: 600 }}>✍️ Re-mark on the marking page</a>
+                  {' '}— a re-mark then queues a new sheet by itself.
+                </span>
               </>
             )}
           </div>
@@ -1154,7 +1164,11 @@ function SheetPane(p: {
 
       {d.diagnosis && d.diagnosis.skills.length > 0 && (
         <section style={{ border: `1px solid ${C.border}`, borderRadius: 12, background: '#fff', padding: 12, marginBottom: 14 }}>
-          <div style={{ fontSize: 12, color: C.muted, marginBottom: 6 }}>The sheet&rsquo;s diagnosis — in the sheet&rsquo;s order; compare with the front page</div>
+          <div style={{ fontSize: 12, color: C.muted, marginBottom: 6, lineHeight: 1.5 }}>
+            <b>The sheet&rsquo;s diagnosis</b> — what the worker decided this student should work on, in the sheet&rsquo;s order.
+            It drives the paper&rsquo;s cover page (&ldquo;Where your marks went&rdquo;) and the student&rsquo;s Notebook mistakes list.
+            Check it targets the right things; if not, type a focus line above and make a new sheet.
+          </div>
           <ol style={{ margin: 0, paddingLeft: 20, fontSize: 13.5 }}>
             {d.diagnosis.skills.map((s, i) => (
               <li key={i} style={{ marginBottom: 5 }}>

@@ -711,14 +711,29 @@ they are, reachable from its "Other views" row. Nothing is deleted.
   mark-triage / release-with-sheet / sheet-jobs / papers POST / desk/rebuild.
 - **The sheet pane** renders the PDF with pdf.js (`lib/pdf-pages.ts`) from
   `sheet-open?runId=&kind=pdf&stream=1` (same-origin bytes; `&json=1` returns the
-  temporary link) — an iframe'd PDF on iPadOS shows only page 1. Re-queue with an
-  optional focus → `POST /api/admin/sheet-jobs {runId, focus}`; ✕ Cancel →
-  `{action:'cancel'}`. The diagnosis list under it is `result_json.diagnosis`.
+  temporary link) — an iframe'd PDF on iPadOS shows only page 1. **🔁 New sheet from
+  this marking** (was "Re-queue", reworded 7 Sep 2026 — Adrian: "make Re-queue
+  clearer") with an optional focus → `POST /api/admin/sheet-jobs {runId, focus}`; a
+  caption under it says it re-diagnoses from the CURRENT marking, never re-marks,
+  and links ✍️ Re-mark on the marking page. ✕ Cancel → `{action:'cancel'}`. The
+  diagnosis list under it is `result_json.diagnosis` — captioned as what drives the
+  cover and the Notebook mistakes list.
+  **A new sheet replaces the old one** (`supersededByNewSheet`, pure/tested): every
+  earlier job's HELD practice items are deleted when a new job is inserted
+  (`releaseHeldPracticeItems` releases by RUN, so without this a re-queue released
+  both sheets' questions), and on a RE-MARK (`remark:true` — the mark-paper proxy's
+  `phase:'remark'`, or `{remark:true}` in the sheet-jobs POST) a sheet still being
+  written is cancelled (`error: 'superseded by a re-mark'`) and a finished one no
+  longer blocks the automatic door. Note the bot re-marks a COMPLETED run into a
+  NEW row (bot `remarkRun`), which has no jobs and queues normally; the in-place
+  case is a never-marked row being filled.
 - **Auto-queue** — `lib/sheet-queue.ts` (`sheetQueueGuard` pure/tested,
   `queueSheetJob`, `autoQueueSheet`) is the ONE guard, now also what the
   sheet-jobs POST calls. The automatic door is stricter than the button: tagged ·
   has results · not released · **no job of any status yet** (the button may
-  re-queue after done/failed/cancelled; the auto path fires on repeating events).
+  re-queue after done/failed/cancelled; the auto path fires on repeating events)
+  — except on a re-mark (`remark:true`), where an existing job is what needs
+  replacing and only "released" still refuses.
   Hooks: `/api/admin/mark-paper` proxy after a successful bot answer — `direct`/
   `remark` (`data.run_id`), `external-marking-result` (`id`, unless superseded),
   `set-student` (`id` when `studentId` non-empty) — inside `after()`; and the

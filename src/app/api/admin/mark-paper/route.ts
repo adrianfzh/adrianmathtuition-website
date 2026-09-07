@@ -54,7 +54,9 @@ export async function POST(req: NextRequest) {
         const sent = (body ? JSON.parse(body) : {}) as Record<string, unknown>;
         const phase = typeof sent.phase === 'string' ? sent.phase : '';
         const runId = autoQueueRunIdFor(phase, sent, data as Record<string, unknown>);
-        if (runId) after(() => autoQueueSheet(runId, `mark-paper:${phase}`));
+        // A re-mark replaces the sheet too (Adrian, 7 Sep 2026: "it should"):
+        // the old sheet was built on marking that no longer exists.
+        if (runId) after(() => autoQueueSheet(runId, `mark-paper:${phase}`, { remark: phase === 'remark' }));
       } catch { /* an unparseable body is the bot's problem, not the queue's */ }
     }
     // The bot's stats payload predates checked_at, and re-deploying the bot is
