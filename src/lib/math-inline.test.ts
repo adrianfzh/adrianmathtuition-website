@@ -196,3 +196,12 @@ describe('mathHtml — escaped currency dollars', () => {
     }
   });
 });
+
+// Denise's Q9(c) note, 8 Sep 2026: a coordinate pair with symbols is maths.
+describe('looksLikeMath — symbolic coordinates', () => {
+  it('accepts (-2a, a) and (√5 a, 0), rejects a bracketed phrase', () => {
+    expect(looksLikeMath('(-2a, a)')).toBe(true);
+    expect(looksLikeMath('(√5 a, 0)')).toBe(true);
+    expect(looksLikeMath('(see, above)')).toBe(false);
+  });
+});

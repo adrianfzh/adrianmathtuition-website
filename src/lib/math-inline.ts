@@ -38,6 +38,11 @@ export function looksLikeMath(c: string): boolean {
   // Numeric coordinates/tuples — "(1, 6)", "(-1.5, 2)". Anchored to the parens
   // so a numeric span between two prices ("$5, $6") never matches.
   if (/^\(\s*-?\d+(\.\d+)?(\s*,\s*-?\d+(\.\d+)?)+\s*\)$/.test(c)) return true;
+  // Symbolic coordinates — "(-2a, a)", "(√5 a, 0)" — kept in step with the
+  // bot's pen-math (Denise's Q9(c) note, 8 Sep 2026). No 2+-letter word, so
+  // "(see, above)" stays prose.
+  if (c.length <= 32 && !/[a-zA-Z]{2,}/.test(c) &&
+      /^\(\s*[-+−]?[\w√.]+(\s*[-+−]?\s*[\w√.]+)*(\s*,\s*[-+−]?[\w√.]+(\s*[-+−]?\s*[\w√.]+)*)+\s*\)$/.test(c.trim())) return true;
   // Bare numeric lists — "$2, 3$" in a study note (Kayla's P2 script printed the
   // raw dollars, 2026-08-29). A digit is REQUIRED after every comma, so the
   // "5, " caught between two prices ("$5, $6") still reads as prose.
