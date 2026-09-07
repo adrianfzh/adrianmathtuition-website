@@ -180,6 +180,14 @@ Value        = {"recXXX": {"from": "2026-08-19", "until": "2026-08-20"}, …}
   (`/tt`, `/available`, attendance pickers) still list every active slot, unwindowed. Full
   notes in the bot repo's `CLAUDE.md` → "Slots, capacity & dated ad-hoc sessions".
 - To retire an ad-hoc week for good, clear its entries from the row (or untick `Is Active`).
+- **Undated Adhoc slots are listed in the ⚡ modal too** (7 Sep 2026): an active slot with
+  `Level='Adhoc'` and no window entry — a leftover like the "Tuesday 1-3pm Adhoc" built for a
+  1 Sep makeup — showed every week as an empty ADHOC card and nothing on the page could remove
+  it (the modal listed only windowed slots and DELETE refused undated ones). The GET now
+  includes them flagged `undated`, the row says "shows EVERY week until you remove it", and
+  DELETE accepts an undated slot **only when its Level is Adhoc** — a weekly Secondary/JC class
+  without a window is still refused. Removing = `Is Active` false; booked lessons stay
+  (extraSlotIds).
 
 #### Creating them from the UI — ⚡ Ad-hoc sessions (2026-08-18)
 

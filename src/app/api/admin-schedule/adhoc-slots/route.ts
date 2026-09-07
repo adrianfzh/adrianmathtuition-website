@@ -112,11 +112,17 @@ export async function GET(req: NextRequest) {
     const windows = parseSlotWindows(windowsRow?.value ?? null);
     const secCap = parseSecCapOverride(secCapRow?.value ?? null);
 
+    // Dated sessions, PLUS any active Adhoc-level slot that has no window at
+    // all (Adrian, 7 Sep 2026: an empty "Tuesday 1-3pm Adhoc" built for a 1 Sep
+    // makeup kept showing every week and nothing on the page could remove it).
+    // An undated ad-hoc slot is admin-only anyway (the bot never offers it), so
+    // listing it here with a Remove button is the safe way out.
     const sessions = slots
-      .filter((r) => windows[r.id])
-      .map((r) => describeSlot(r, windows[r.id], secCap))
-      // Soonest first, so the list reads like a diary.
-      .sort((a, b) => (a.window?.from || '').localeCompare(b.window?.from || '')
+      .filter((r) => windows[r.id] || r.fields['Level'] === 'Adhoc')
+      .map((r) => ({ ...describeSlot(r, windows[r.id], secCap), undated: !windows[r.id] }))
+      // Soonest first, so the list reads like a diary; undated ones at the end.
+      .sort((a, b) => Number(a.undated) - Number(b.undated)
+        || (a.window?.from || '').localeCompare(b.window?.from || '')
         || a.time.localeCompare(b.time));
 
     return NextResponse.json({ sessions, secCap, today: localToday() });
@@ -334,10 +340,14 @@ export async function DELETE(req: NextRequest) {
   try {
     const windowsRow = await fetchSetting(SLOT_WINDOWS_SETTING);
     const windows = parseSlotWindows(windowsRow?.value ?? null);
-    // Only ever touch a DATED slot — a bad id must never deactivate a weekly
-    // class and quietly empty the timetable.
+    // Only ever touch a DATED slot or an Adhoc-LEVEL one — a bad id must never
+    // deactivate a weekly Secondary/JC class and quietly empty the timetable.
+    // (Undated Adhoc slots allowed since 7 Sep 2026; see GET.)
     if (!windows[slotId]) {
-      return NextResponse.json({ error: 'Not an ad-hoc session — refusing to deactivate' }, { status: 400 });
+      const rec = await airtableRequest('Slots', `/${slotId}`) as { fields?: Record<string, unknown> };
+      if (rec?.fields?.['Level'] !== 'Adhoc') {
+        return NextResponse.json({ error: 'Not an ad-hoc session — refusing to deactivate' }, { status: 400 });
+      }
     }
 
     await airtableRequest('Slots', `/${slotId}`, {

@@ -4347,7 +4347,11 @@ export default function SchedulePage() {
                       )}
                       <br />
                       <span style={{ color: '#7e22ce', fontSize: 12.5 }}>
-                        {sess.dates.length ? sess.dates.map(d => formatExamDate(d)).join(' · ') : 'no dates'}
+                        {sess.dates.length
+                          ? sess.dates.map(d => formatExamDate(d)).join(' · ')
+                          : (sess as { undated?: boolean }).undated
+                            ? 'no dates — this slot shows EVERY week until you remove it'
+                            : 'no dates'}
                         {sess.lessonCount > 0 && ` · ${sess.lessonCount} lesson${sess.lessonCount === 1 ? '' : 's'} booked`}
                       </span>
                     </span>
