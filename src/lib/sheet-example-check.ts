@@ -77,7 +77,7 @@ export function buildCheckPrompt(examples: SheetExample[]): string {
   return `You are checking the worked examples on a Singapore O-Level / A-Level maths revision sheet before it goes to a student.
 For EACH example: first solve the QUESTION yourself from scratch, without reading the sheet's solution. Then compare.
 Report a disagreement when (a) your final answer differs from the sheet's, (b) a line of the sheet's working is mathematically wrong, or (c) the sheet's method does not actually answer what the question asks. A different but valid method, different rounding within the stated accuracy, or a notational choice is NOT a disagreement.
-Answer JSON only:
+Work briefly — a few lines per example at most — then answer with the JSON object as the LAST thing in your reply, nothing after it:
 {"verdicts":[{"example":1,"agree":true,"final_answer_matches":true,"issue":""},{"example":2,"agree":false,"final_answer_matches":false,"issue":"one short sentence naming the wrong line and what it should be"}]}
 
 ${blocks}`;
@@ -114,6 +114,17 @@ export async function runExampleCheck(examples: SheetExample[], call: CheckModel
   try {
     const text = await call(buildCheckPrompt(examples));
     const verdicts = parseCheck(text, examples.map(e => e.n));
+    if (!verdicts.length) {
+      // parseCheck returns [] only when the reply carried no JSON object at all —
+      // a narrated reply that ran out of tokens before its verdict block. Say so:
+      // a silent `checked: 0` read as "no examples on the sheet" and failed the
+      // auto-release gate on every sheet from 6 Sep 2026 until this line (Gavin
+      // Woon, Megan, Denise: three examples found, zero verdicts recorded).
+      return {
+        model, checked: 0, disagreements: [], verdicts: [],
+        skipped: `the model reply carried no JSON verdicts (${text.length} chars, begins "${text.slice(0, 60).replace(/\s+/g, ' ')}…")`,
+      };
+    }
     const disagreements = verdicts.filter(v => !v.agree);
     return { model, checked: verdicts.length, disagreements, verdicts };
   } catch (e) {

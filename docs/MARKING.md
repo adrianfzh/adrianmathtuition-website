@@ -920,6 +920,23 @@ release call failed.
   resolve the flag — parking a topic is not agreeing with the mark. 409 = already
   shelved. Views: `/admin/students/[id]` "🧺 On the shelf", `/admin/remediation`
   "Later" lane.
+- **The desk, 8 Sep 2026 round** (Adrian: "bring all the flagged to the top", "what does
+  Rebuild PDFs do", "if we override … is the pdf rebuilt", "I don't see the timer"):
+  **⚠ To check** — every `flagged && !reviewed` question renders FIRST, above the cover, each
+  with a "↓ see page N" anchor (`id="page-<photoIndex>"` on the page sections); its place on
+  the page shows a one-line stub until it is answered, then the card returns there.
+  **Rebuild PDFs & release** — when the stale-PDF reason is the only approve blocker, the big
+  button stays enabled with that label and `approve()` POSTs `desk/rebuild` first, then releases
+  (a failed rebuild stops there). **📋 Copy local path** beside 📂 Folder puts
+  `~/Library/CloudStorage/Dropbox/Apps/AdrianMathNotes<folder.path>` on the clipboard — a web page
+  cannot open Finder. **⏱ No auto-release timer on this sheet — why** — the sheet-jobs `done`
+  handler now stores `result.auto_release_gate {ok, hours, reasons}` and the sheet pane prints the
+  reasons under a done sheet with no timer. The reason every sheet since 6 Sep had no timer:
+  `runExampleCheck` recorded `checked: 0` with no `skipped` whenever the model's reply carried no
+  JSON (it narrated five solutions and hit `max_tokens: 4000` before the verdict block), which the
+  gate read as "no worked example was found to check". Now: `max_tokens: 12000`, the prompt asks
+  for the JSON LAST, and a JSON-less reply is `skipped: "the model reply carried no JSON verdicts …"`
+  (tested).
 - **The buttons say what they do** (7 Sep 2026, Adrian: "when I hit agree — what am I agreeing
   with?"): `✓ Agree — keep 7/8` and `✏️ Override — set the mark myself`, with one line under an
   open question ("Agree = the marker's 7/8 stands. Override = you type the mark that should

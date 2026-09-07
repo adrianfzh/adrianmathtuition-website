@@ -486,6 +486,14 @@ export default function DeskPage() {
     const id = detail.run.id;
     setBusy('approve');
     try {
+      // An override after the PDF was drawn leaves the score strip printing the old
+      // total. Rebuild first, then release — one tap (Adrian, 8 Sep 2026: "if we
+      // override … is the pdf rebuilt or something?"). A rebuild that fails stops here.
+      if (detail.run.pdfStale && !detail.run.annotatedPdfUrl) {
+        setToast('Rebuilding the PDFs with the corrected total before release — a minute or two…');
+        const rb = await postJson('/api/admin/desk/rebuild', { runId: id });
+        if (!rb.ok) { setToast(rb.d.error || (rb.d.errors && rb.d.errors.join(' · ')) || rb.d.skipped || 'Rebuild failed — nothing released.'); refresh(id); return; }
+      }
       // Nothing on this paper was worth practising, and the worker said so
       // (sheet job `result.noSheet`, 3 Sep 2026). There is no sheet to send, so
       // Approve is a plain release — no assignment, no PDF to hunt for.
@@ -668,7 +676,7 @@ export default function DeskPage() {
           setEditing={setEditing} setEditAwarded={setEditAwarded} setEditNote={setEditNote} setFocus={setFocus} setTagging={setTagging}
           editKind={editKind} setEditKind={setEditKind}
           onAgree={agree} onOverride={override} onTag={tag} onSubject={setPaperSubject} onAttach={attachMyCopy} onRebuild={rebuild}
-          onQueueSheet={queueSheet} onCancelSheet={cancelSheet} onAutoRelease={autoRelease} onApprove={approve} onReleaseOnly={releaseWithoutSheet}
+          onQueueSheet={queueSheet} onCancelSheet={cancelSheet} onAutoRelease={autoRelease} onApprove={approve} onReleaseOnly={releaseWithoutSheet} onToast={setToast}
         />
       )}
 
@@ -690,7 +698,7 @@ function DetailView(p: {
   setFocus: (v: string) => void; setTagging: (v: boolean) => void;
   onAgree: (q: Question) => void; onOverride: (q: Question) => void; onTag: (id: string, name: string) => void;
   onSubject: (subject: string) => void;
-  onAttach: () => void; onRebuild: () => void; onQueueSheet: () => void; onCancelSheet: () => void;
+  onAttach: () => void; onRebuild: () => void; onQueueSheet: () => void; onCancelSheet: () => void; onToast: (message: string) => void;
   onAutoRelease: (action: 'hold' | 'unhold') => void;
   onApprove: () => void; onReleaseOnly: () => void;
 }) {
@@ -700,11 +708,17 @@ function DetailView(p: {
   const tone = LANE_TONE[d.lane];
   const pct = run.max > 0 ? Math.round((run.awarded / run.max) * 100) : null;
   const canApprove = d.approveBlockers.length === 0 && !released;
+  // The stale-PDF blocker is one the button can clear itself: rebuild, then release.
+  const staleOnly = !released && !canApprove && run.pdfStale && !run.annotatedPdfUrl
+    && d.approveBlockers.every(b => /overridden after the PDF was drawn/.test(b));
+  const approveEnabled = canApprove || staleOnly;
   const canReleaseOnly = d.releaseBlockers.length === 0 && !released && !canApprove;
   // The sheet worker's honest "nothing here is worth practising" — the paper
   // still goes out, on its own, and the button says which it is doing.
   const noSheet = !!d.sheetJob?.result?.noSheet;
   const pages = d.annotatedPhotos;
+  const isOpenFlag = (q: Question) => q.flagged && !q.reviewed && !released;
+  const toCheck = d.questions.filter(isOpenFlag);
   const byPage = new Map<number, Question[]>();
   const unplaced: Question[] = [];
   for (const q of d.questions) {
@@ -797,6 +811,11 @@ function DetailView(p: {
         {/* files + my copy + rebuild */}
         <div style={{ marginTop: 12, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', fontSize: 13.5 }}>
           <a href={d.folder.url} target="_blank" rel="noreferrer" title={`Dropbox ▸ ${d.folder.path}`} style={{ color: C.link, textDecoration: 'none', fontWeight: 600 }}>📂 Folder ↗</a>
+          {/* A web page cannot open Finder; the next best thing is the local path on
+              the clipboard — ⌘⇧G in Finder and paste (Adrian, 8 Sep 2026). */}
+          <button type="button" title="Copy this folder's path on your Mac — then ⌘⇧G in Finder and paste"
+            onClick={() => { const local = `~/Library/CloudStorage/Dropbox/Apps/AdrianMathNotes${d.folder.path}`; navigator.clipboard?.writeText(local).then(() => p.onToast('Copied the folder path — in Finder press ⌘⇧G and paste.')).catch(() => p.onToast(local)); }}
+            style={{ ...btn('#fff', C.link, C.border), padding: '3px 8px', fontSize: 12.5 }}>📋 Copy local path</button>
           {run.annotatedPdfUrl && <a href={fileHref(run.annotatedPdfUrl)} target="_blank" rel="noreferrer" style={{ color: C.pen, textDecoration: 'none' }}>✍️ Annotated ↗</a>}
           {run.photosPdfUrl && <a href={fileHref(run.photosPdfUrl)} target="_blank" rel="noreferrer" style={{ color: C.link, textDecoration: 'none' }}>🖼 Images ↗</a>}
           {run.pdfUrl && <a href={fileHref(run.pdfUrl)} target="_blank" rel="noreferrer" style={{ color: C.link, textDecoration: 'none' }}>📄 Full ↗</a>}
@@ -824,14 +843,17 @@ function DetailView(p: {
         {/* the one big button */}
         {!released && (
           <div style={{ marginTop: 14, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-            <button onClick={p.onApprove} disabled={!canApprove || busy === 'approve'}
-              title={canApprove
+            <button onClick={p.onApprove} disabled={!approveEnabled || busy === 'approve'}
+              title={staleOnly
+                ? 'A mark was changed after the PDF was drawn — this rebuilds both PDFs with the corrected total, then releases. One tap.'
+                : canApprove
                 ? (noSheet
                   ? 'Attach your copy if newer, release the paper, and tell the student — there is no sheet for this one on purpose'
                   : 'Attach your copy if newer, assign the sheet, release the paper, and tell the student — one tap')
                 : d.approveBlockers.join(' · ')}
-              style={{ ...btn(canApprove ? C.ok : '#e5e7eb', canApprove ? '#fff' : '#9ca3af'), padding: '13px 18px', fontSize: 16, fontWeight: 700, flex: '1 1 260px', cursor: canApprove ? 'pointer' : 'not-allowed' }}>
+              style={{ ...btn(approveEnabled ? C.ok : '#e5e7eb', approveEnabled ? '#fff' : '#9ca3af'), padding: '13px 18px', fontSize: 16, fontWeight: 700, flex: '1 1 260px', cursor: approveEnabled ? 'pointer' : 'not-allowed' }}>
               {busy === 'approve' ? 'Releasing…'
+                : staleOnly ? (noSheet ? '🔁 Rebuild PDFs & release (paper only)' : '🔁 Rebuild PDFs & release (paper + sheet)')
                 : noSheet ? '✅ Approve & release (paper only — no sheet needed)' : '✅ Approve & release (paper + sheet)'}
             </button>
             {canReleaseOnly && (
@@ -855,13 +877,34 @@ function DetailView(p: {
       <div className="desk-grid">
         {/* ── left: the marked script ── */}
         <div style={{ minWidth: 0 }}>
+          {/* Every question still waiting for a decision, first (Adrian, 8 Sep 2026:
+              "bring all the flagged to the top so it's easy to vet"). Answer one and it
+              leaves this block and reappears in its own place on its page below. */}
+          {toCheck.length > 0 && !released && (
+            <section style={{ border: `2px solid ${C.flagBorder}`, borderRadius: 12, background: '#fffdf5', marginBottom: 14, overflow: 'hidden' }}>
+              <div style={{ padding: '9px 12px', background: C.flagBg, borderBottom: `1px solid ${C.flagBorder}`, fontSize: 13, fontWeight: 700, color: C.flag }}>
+                ⚠ To check — {toCheck.length} question{toCheck.length === 1 ? '' : 's'} waiting for your decision. Each one goes back to its page once you have answered it.
+              </div>
+              {toCheck.map(q => (
+                <div key={`chk-${q.index}`}>
+                  {q.photoIndex != null && (
+                    <div style={{ padding: '6px 12px 0', fontSize: 12, color: C.muted }}>
+                      <a href={`#page-${q.photoIndex}`} style={{ color: C.link }}>↓ see page {q.photoIndex + 1}</a>
+                    </div>
+                  )}
+                  <QuestionCard q={q} released={released} busy={busy} editing={p.editing} editAwarded={p.editAwarded} editNote={p.editNote}
+                    setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} onAgree={p.onAgree} onOverride={p.onOverride} />
+                </div>
+              ))}
+            </section>
+          )}
           <CoverCard cover={cover} />
 
           {pages.length === 0 && (
             <p style={{ color: C.muted, fontSize: 13.5 }}>No annotated page images on this run.</p>
           )}
           {pages.map(pg => (
-            <section key={pg.photoIndex} style={{ border: `1px solid ${C.border}`, borderRadius: 12, background: '#fff', marginBottom: 14, overflow: 'hidden' }}>
+            <section key={pg.photoIndex} id={`page-${pg.photoIndex}`} style={{ border: `1px solid ${C.border}`, borderRadius: 12, background: '#fff', marginBottom: 14, overflow: 'hidden' }}>
               <div style={{ padding: '8px 12px', background: '#fafafa', borderBottom: `1px solid ${C.border}`, fontSize: 12.5, color: C.muted, display: 'flex', justifyContent: 'space-between' }}>
                 <span>Page {pg.photoIndex + 1}</span>
                 {pg.method && pg.method !== 'line' && <span style={{ color: C.flag }} title="Tick placement fell back on this page — the marks are the same, the ink is coarser">{pg.method} ticks</span>}
@@ -871,9 +914,10 @@ function DetailView(p: {
                 <img src={fileHref(pg.urlWithSolutions || pg.url)} alt={`Marked page ${pg.photoIndex + 1}`} loading="lazy" style={{ width: '100%', display: 'block' }} />
               </a>
               <div style={{ padding: '4px 0' }}>
-                {(byPage.get(pg.photoIndex) ?? []).map(q => (
-                  <QuestionCard key={q.index} q={q} released={released} busy={busy} editing={p.editing} editAwarded={p.editAwarded} editNote={p.editNote}
-                    setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} onAgree={p.onAgree} onOverride={p.onOverride} />
+                {(byPage.get(pg.photoIndex) ?? []).map(q => (isOpenFlag(q)
+                  ? <div key={q.index} style={{ padding: '7px 12px', fontSize: 12.5, color: C.flag, borderTop: `1px solid ${C.border}` }}>⚠ Q{q.questionNumber} {q.awarded}/{q.max} — waiting for your decision in “To check” at the top ↑</div>
+                  : <QuestionCard key={q.index} q={q} released={released} busy={busy} editing={p.editing} editAwarded={p.editAwarded} editNote={p.editNote}
+                      setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} onAgree={p.onAgree} onOverride={p.onOverride} />
                 ))}
                 {(byPage.get(pg.photoIndex) ?? []).length === 0 && (
                   <div style={{ padding: '8px 12px', fontSize: 12.5, color: C.faint }}>No questions marked on this page.</div>
@@ -884,9 +928,10 @@ function DetailView(p: {
           {unplaced.length > 0 && (
             <section style={{ border: `1px solid ${C.border}`, borderRadius: 12, background: '#fff', marginBottom: 14, overflow: 'hidden' }}>
               <div style={{ padding: '8px 12px', background: '#fafafa', borderBottom: `1px solid ${C.border}`, fontSize: 12.5, color: C.muted }}>Questions not placed on a page</div>
-              {unplaced.map(q => (
-                <QuestionCard key={q.index} q={q} released={released} busy={busy} editing={p.editing} editAwarded={p.editAwarded} editNote={p.editNote}
-                  setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} onAgree={p.onAgree} onOverride={p.onOverride} />
+              {unplaced.map(q => (isOpenFlag(q)
+                ? <div key={q.index} style={{ padding: '7px 12px', fontSize: 12.5, color: C.flag }}>⚠ Q{q.questionNumber} {q.awarded}/{q.max} — waiting for your decision in “To check” at the top ↑</div>
+                : <QuestionCard key={q.index} q={q} released={released} busy={busy} editing={p.editing} editAwarded={p.editAwarded} editNote={p.editNote}
+                    setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} onAgree={p.onAgree} onOverride={p.onOverride} />
               ))}
             </section>
           )}
@@ -1151,6 +1196,15 @@ function SheetPane(p: {
           </div>
         )}
 
+        {done && !released && job && !job.autoReleaseAt && !job.heldAt && !noSheet && (() => {
+          const gate = (job.result as { auto_release_gate?: { ok?: boolean; reasons?: string[] } } | null | undefined)?.auto_release_gate;
+          return (
+            <div style={{ padding: '10px 14px', fontSize: 12.5, color: C.muted, borderTop: `1px solid ${C.border}`, lineHeight: 1.5 }}>
+              ⏱ <b>No auto-release timer on this sheet</b> — it goes out only when you press Approve &amp; release.
+              {gate?.reasons?.length ? <> Why: {gate.reasons.join('; ')}.</> : <> (This sheet predates the gate record, so the reason was not kept.)</>}
+            </div>
+          );
+        })()}
         {done && !released && job && (job.autoReleaseAt || job.heldAt) && (
           <div style={{ padding: '10px 14px', fontSize: 13.5, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', borderTop: `1px solid ${C.border}` }}>
             {job.heldAt
@@ -1166,7 +1220,7 @@ function SheetPane(p: {
             {!job && (d.run.studentId
               ? 'No sheet has been queued for this paper.'
               : 'Tag the paper to a student — the sheet queues itself the moment it has someone to be for.')}
-            {job?.status === 'queued' && 'Queued — the Mac worker polls every ~15 min and writes a sheet in about 15 more.'}
+            {job?.status === 'queued' && 'Queued — the Mac worker polls every ~5 min and writes a sheet in about 20 more.'}
             {job?.status === 'claimed' && <>Being written now{job.claimedBy ? ` by ${job.claimedBy}` : ''} — stage: <b>{job.stage || 'drafting'}</b>. Vet the marking meanwhile.</>}
             {job?.status === 'failed' && <span style={{ color: C.danger }}>Failed after {job.attempts} attempt{job.attempts === 1 ? '' : 's'}: {job.error || 'unknown'}</span>}
             {job?.focus && <div style={{ marginTop: 6, fontSize: 12.5 }}>Focus: {job.focus}</div>}

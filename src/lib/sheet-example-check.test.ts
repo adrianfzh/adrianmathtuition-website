@@ -50,4 +50,12 @@ describe('runExampleCheck', () => {
     expect(boom.disagreements).toEqual([]);
     expect(buildCheckPrompt(ex)).toContain('### Example 2');
   });
+  it('a narrated reply with no JSON is a SKIP with a reason, never "0 examples"', async () => {
+    const ex = extractExamples(SHEET);
+    const prose = await runExampleCheck(ex, async () => 'Looking at each example:\n\n**Example 1:** R = 5 … all correct.\n\n**Example 2:** the derivation is fine', 'm');
+    expect(prose.checked).toBe(0);
+    expect(prose.skipped).toMatch(/no JSON verdicts/);
+    expect(prose.skipped).toMatch(/Looking at each example/);
+    expect(buildCheckPrompt(ex)).toMatch(/LAST thing in your reply/);
+  });
 });

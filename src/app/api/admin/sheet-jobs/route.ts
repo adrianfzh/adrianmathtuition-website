@@ -259,7 +259,9 @@ export async function POST(req: NextRequest) {
         const model = process.env.MARKING_EXAMPLE_CHECK_MODEL || 'claude-sonnet-5';
         const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
         const check = await runExampleCheck(examples, async (prompt) => {
-          const msg = await anthropic.messages.create({ model, max_tokens: 4000, messages: [{ role: 'user', content: prompt }] });
+          // 12k: five examples solved from scratch ran past 4k and the JSON never
+          // came, which the check recorded as zero examples (7 Sep 2026).
+          const msg = await anthropic.messages.create({ model, max_tokens: 12000, messages: [{ role: 'user', content: prompt }] });
           return msg.content.map(c => (c.type === 'text' ? c.text : '')).join('');
         }, model);
         const nDis = check.disagreements.length;
@@ -305,6 +307,9 @@ export async function POST(req: NextRequest) {
             noSheet: false, verified: result.verified, wave: result.wave, exampleCheck: check,
             grounded: groundedSrc == null ? null : groundedSrc !== 'none',
           });
+          // The desk shows this beside the (missing) timer, so "I don't see the
+          // timer" (Adrian, 8 Sep 2026) has an answer on the page itself.
+          await sb.from('sheet_jobs').update({ result: { ...stored, example_check: check, auto_release_gate: { ok: gate.ok, hours, reasons: gate.reasons } } }).eq('id', job.id);
           if (hours > 0 && gate.ok) {
             const at = new Date(Date.now() + hours * 3600_000).toISOString();
             await sb.from('sheet_jobs').update({ auto_release_at: at, held_at: null, stage: `auto-release at ${at}` }).eq('id', job.id);
