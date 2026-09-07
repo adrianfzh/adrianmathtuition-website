@@ -193,3 +193,15 @@ describe('a revealed gap outranks marks', () => {
     expect(themes[1].gap).toBeUndefined();
   });
 });
+
+// Adrian, 8 Sep 2026, Denise's cover: "what does R sin even mean?" — the
+// marker's "R sin(θ + α) form and maximum value" had been cut at its bracket.
+describe('topicLabel keeps a topic whose name carries a bracket', () => {
+  it('names the R-formula as itself and never cuts to a two-letter stub', () => {
+    expect(topicLabel('R sin(θ + α) form and maximum value')).toBe('R-formula');
+    expect(topicLabel('R cos(x − α)')).toBe('R-formula');
+    expect(topicLabel('Trigonometry — R-formula / height modelling')).toBe('Trigonometry');
+    expect(topicLabel('Integration (area under a curve)')).toBe('Integration');
+    expect(topicLabel('f(x) notation and inverses')).toBe('f(x) notation and inverses');
+  });
+});

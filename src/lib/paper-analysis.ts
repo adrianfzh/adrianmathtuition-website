@@ -185,7 +185,15 @@ export const TOPIC_LABEL_MAX = 34;
 export function topicLabel(raw: unknown): string {
   let s = String(raw ?? '').replace(/\s+/g, ' ').trim();
   if (!s) return '';
-  s = s.split(/\s*(?:;|—|–| - |:|\(|\/)\s*/)[0].trim();
+  // "R sin(θ + α) form and maximum value" is a topic whose NAME contains a
+  // bracket: cutting at "(" printed "R sin" on Denise's cover (Adrian, 8 Sep
+  // 2026: "what does R sin even mean?"). The R-formula is named as itself, and
+  // a bracket is a cut point only when what precedes it is a topic-length
+  // phrase, never a two-letter stub.
+  if (/^R\s*(sin|cos)\b/i.test(s)) return 'R-formula';
+  const first = s.split(/\s*(?:;|—|–| - |:|\/)\s*/)[0].trim();
+  const beforeBracket = first.split(/\s*\(\s*/)[0].trim();
+  s = beforeBracket.length >= 8 ? beforeBracket : first;
   s = s.replace(/[,.\s]+$/, '');
   if (s.length > TOPIC_LABEL_MAX) {
     const cut = s.slice(0, TOPIC_LABEL_MAX);
