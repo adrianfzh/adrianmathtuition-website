@@ -22,6 +22,8 @@
 import 'katex/dist/katex.min.css';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import type { LayerMeta } from '@/lib/annotate/layer';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import StudentPicker from '@/components/StudentPicker';
 import SubjectChip from '@/components/SubjectChip';
@@ -31,6 +33,8 @@ import { mathHtml } from '@/lib/math-inline';
 import { DESK_LANES, LANE_LABEL, orderLane, type DeskLane } from '@/lib/desk-state';
 import { ERROR_KINDS, ERROR_KIND_HINT, isErrorKind } from '@/lib/error-kinds';
 import { PAPER_SUBJECTS, subjectPill } from '@/lib/portal-subjects';
+// The pen, in place (desk round 3, 8 Sep 2026): the same overlay mark-paper uses.
+const AnnotateOverlay = dynamic(() => import('@/components/AnnotateOverlay'), { ssr: false });
 import type { TriageQuestion } from '@/lib/mark-triage';
 import { secondLookSuggestedMark } from '@/lib/mark-triage';
 import type { Diagnosis } from '@/lib/sheet-diagnosis';
@@ -53,7 +57,8 @@ type Row = {
 
 type Counts = Record<DeskLane, number>;
 
-type Question = TriageQuestion & { flagged: boolean };
+type InkHint = { photo_index: number; q: string; part: string | null; to: 'tick' | 'cross'; awarded_now?: number; max?: number; suggested?: number };
+type Question = TriageQuestion & { flagged: boolean; inkHints?: InkHint[] };
 
 type Detail = {
   run: {
@@ -74,7 +79,9 @@ type Detail = {
   totalWarning: string | null;
   autoHold: { hold: boolean; reasons: string[] };
   questions: Question[];
-  annotatedPhotos: { photoIndex: number; url: string; urlWithSolutions: string | null; method: string | null }[];
+  annotatedPhotos: { photoIndex: number; url: string; urlWithSolutions: string | null; method: string | null; layerUrl?: string | null; layer?: LayerMeta | null; inkUrl?: string | null; editedAt?: string | null }[];
+  pageSources?: Record<number, { originalUrl: string | null; rot: number }>;
+  inkHints?: InkHint[];
   diagnosis: Diagnosis | null;
   sheetJob: {
     id: string; status: string; stage: string | null; error: string | null; attempts: number; focus: string | null;
@@ -783,7 +790,7 @@ export default function DeskPage() {
           setEditing={setEditing} setEditAwarded={setEditAwarded} setEditNote={setEditNote} setFocus={setFocus} setTagging={setTagging}
           editKind={editKind} setEditKind={setEditKind} editParts={editParts} setEditParts={setEditParts}
           onAgree={agree} onOverride={override} onTag={tag} onSubject={setPaperSubject} onAttach={attachMyCopy} onRebuild={rebuild}
-          onQueueSheet={queueSheet} onCancelSheet={cancelSheet} onAutoRelease={autoRelease} onApprove={approve} onReleaseOnly={releaseWithoutSheet} onToast={setToast}
+          onQueueSheet={queueSheet} onCancelSheet={cancelSheet} onAutoRelease={autoRelease} onApprove={approve} onReleaseOnly={releaseWithoutSheet} onToast={setToast} onRefresh={() => refresh(detail.run.id)}
           onRevise={reviseSheet} onRemarkPage={remarkPage} onApproveScheme={() => approveScheme(false)}
         />
       )}
@@ -806,12 +813,14 @@ function DetailView(p: {
   setFocus: (v: string) => void; setTagging: (v: boolean) => void;
   onAgree: (q: Question) => void; onOverride: (q: Question) => void; onTag: (id: string, name: string) => void;
   onSubject: (subject: string) => void;
-  onAttach: () => void; onRebuild: () => void; onQueueSheet: () => void; onCancelSheet: () => void; onToast: (message: string) => void;
+  onAttach: () => void; onRebuild: () => void; onQueueSheet: () => void; onCancelSheet: () => void; onToast: (message: string) => void; onRefresh: () => void;
   onAutoRelease: (action: 'hold' | 'unhold') => void;
   onApprove: () => void; onReleaseOnly: () => void;
   onRevise: (instructions: string) => void; onRemarkPage: (photoIndex: number) => void;
   onApproveScheme: () => void;
 }) {
+  // The pen opens on the page you tapped, right here on the desk (round 3).
+  const [annotatePage, setAnnotatePage] = useState<number | null>(null);
   const { detail: d, cover, busy } = p;
   const run = d.run;
   const released = !!run.releasedAt;
@@ -827,11 +836,13 @@ function DetailView(p: {
   // still goes out, on its own, and the button says which it is doing.
   const noSheet = !!d.sheetJob?.result?.noSheet;
   const pages = d.annotatedPhotos;
+  // Ink hints (a mark Adrian swapped in the pen) ride on their question.
+  const questions: Question[] = d.questions.map(q => ({ ...q, inkHints: (d.inkHints || []).filter(h => h.part && String(h.q) === String(q.questionNumber)) }));
   const isOpenFlag = (q: Question) => q.flagged && !q.reviewed && !released;
-  const toCheck = d.questions.filter(isOpenFlag);
+  const toCheck = questions.filter(isOpenFlag);
   const byPage = new Map<number, Question[]>();
   const unplaced: Question[] = [];
-  for (const q of d.questions) {
+  for (const q of questions) {
     if (q.photoIndex == null || !pages.some(pg => pg.photoIndex === q.photoIndex)) unplaced.push(q);
     else byPage.set(q.photoIndex, [...(byPage.get(q.photoIndex) ?? []), q]);
   }
@@ -1056,7 +1067,8 @@ function DetailView(p: {
             <section key={pg.photoIndex} id={`page-${pg.photoIndex}`} style={{ border: `1px solid ${C.border}`, borderRadius: 12, background: '#fff', marginBottom: 14, overflow: 'hidden' }}>
               <div style={{ padding: '8px 12px', background: '#fafafa', borderBottom: `1px solid ${C.border}`, fontSize: 12.5, color: C.muted, display: 'flex', justifyContent: 'space-between' }}>
                 <span>Page {pg.photoIndex + 1}
-                  {!released && <a href={`/admin/mark-paper?run=${run.id}&annotate=1&page=${pg.photoIndex}`} style={{ marginLeft: 10, color: C.pen, textDecoration: 'none', fontWeight: 600 }} title="Open the pen on this page — the marker's ink is editable there">✏️ Annotate this page</a>}
+                  {!released && <button type="button" onClick={() => setAnnotatePage(pg.photoIndex)} style={{ ...btn('#fff', C.pen, '#ddd6fe'), marginLeft: 10, padding: '3px 9px', fontSize: 12.5 }} title="Open the pen on this page, right here — the marker's ink is editable">✏️ Annotate this page</button>}
+                  <a href={fileHref(pg.urlWithSolutions || pg.url)} target="_blank" rel="noreferrer" style={{ marginLeft: 8, color: C.link, textDecoration: 'none', fontSize: 12 }} title="Open the page image on its own">open ↗</a>
                 </span>
                 <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                   {pg.method && pg.method !== 'line' && <span style={{ color: C.flag }} title="Tick placement fell back on this page — the marks are the same, the ink is coarser">{pg.method} ticks</span>}
@@ -1069,10 +1081,12 @@ function DetailView(p: {
                   )}
                 </span>
               </div>
-              <a href={fileHref(pg.urlWithSolutions || pg.url)} target="_blank" rel="noreferrer">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={fileHref(pg.urlWithSolutions || pg.url)} alt={`Marked page ${pg.photoIndex + 1}`} loading="lazy" style={{ width: '100%', display: 'block' }} />
-              </a>
+              {/* Tap the page to annotate it in place (released papers keep the plain image). */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={fileHref(pg.urlWithSolutions || pg.url)} alt={`Marked page ${pg.photoIndex + 1}`} loading="lazy"
+                onClick={() => { if (!released) setAnnotatePage(pg.photoIndex); }}
+                title={released ? undefined : 'Tap to annotate this page'}
+                style={{ width: '100%', display: 'block', cursor: released ? 'default' : 'pointer' }} />
               <div style={{ padding: '4px 0' }}>
                 {(byPage.get(pg.photoIndex) ?? []).map(q => (isOpenFlag(q)
                   ? <div key={q.index} style={{ padding: '7px 12px', fontSize: 12.5, color: C.flag, borderTop: `1px solid ${C.border}` }}>⚠ Q{q.questionNumber} {q.awarded}/{q.max} — waiting for your decision in “To check” at the top ↑</div>
@@ -1103,6 +1117,29 @@ function DetailView(p: {
             onQueueSheet={p.onQueueSheet} onCancelSheet={p.onCancelSheet} onAutoRelease={p.onAutoRelease} onRevise={p.onRevise} />
         </div>
       </div>
+      {annotatePage != null && !released && (
+        <AnnotateOverlay
+          runId={run.id}
+          pages={d.annotatedPhotos.map(ph => ({
+            photoIndex: ph.photoIndex,
+            url: fileHref(ph.urlWithSolutions || ph.url),
+            layerUrl: ph.layerUrl ? fileHref(ph.layerUrl) : null,
+            layer: ph.layer ?? null,
+            inkUrl: ph.inkUrl ? fileHref(ph.inkUrl) : null,
+            originalUrl: d.pageSources?.[ph.photoIndex]?.originalUrl ? fileHref(d.pageSources[ph.photoIndex].originalUrl as string) : null,
+            rot: d.pageSources?.[ph.photoIndex]?.rot ?? 0,
+          }))}
+          student={{ name: run.studentName || '', level: '' }}
+          totals={{ awarded: run.awarded, max: run.max }}
+          initialPage={annotatePage}
+          onClose={() => setAnnotatePage(null)}
+          onDone={({ linked }) => {
+            setAnnotatePage(null);
+            p.onToast(linked ? 'Saved — your copy is attached and the page images are updated.' : 'Saved — the copy could not be linked; attach it from the folder.');
+            p.onRefresh();
+          }}
+        />
+      )}
     </>
   );
 }
@@ -1232,6 +1269,19 @@ function QuestionCard(p: {
           </div>
         );
       })()}
+      {/* Ink that contradicts the marks (round 3): a mark swapped in the pen suggests the
+          obvious mark for that part — one tap opens the per-part editor pre-filled. */}
+      {!released && (q.inkHints || []).map((h, i) => (
+        <div key={`ink-${i}`} style={{ marginTop: 6, background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#166534', borderRadius: 6, padding: '7px 9px', fontSize: 12.5, lineHeight: 1.45 }}>
+          <strong>🖊 Your ink says otherwise:</strong> you turned a {h.to === 'tick' ? 'cross into a tick' : 'tick into a cross'} on {h.part}; the marks still say {h.awarded_now}/{h.max}.
+          {h.suggested != null && h.part && (
+            <button onClick={() => { p.setEditing(q.index); p.setEditAwarded(''); p.setEditNote(`ink: ${h.part} → ${h.to}`); p.setEditKind(q.override?.errorKind ?? ''); p.setEditParts({ [h.part as string]: String(h.suggested) }); }}
+              style={{ ...btn('#dcfce7', '#166534', '#bbf7d0'), marginLeft: 8, padding: '4px 10px', fontSize: 12.5 }}>
+              Set {h.part} → {h.suggested}/{h.max}
+            </button>
+          )}
+        </div>
+      ))}
       {q.reviewReasons
         .filter(reason => !(q.secondLook.length > 0 && /^second look disagrees/i.test(reason)))
         .map((reason, i) => (

@@ -51,6 +51,17 @@ type SheetJobRow = {
   auto_release_at?: string | null; held_at?: string | null; auto_released_at?: string | null;
 };
 
+/** Per page: the original photo URL and the rotation applied at marking time. */
+function pageSources(resultJson: unknown): Record<number, { originalUrl: string | null; rot: number }> {
+  const rj = resultJson as { source?: { photos?: unknown }; annotation_debug?: unknown } | null;
+  const out: Record<number, { originalUrl: string | null; rot: number }> = {};
+  const photos = Array.isArray(rj?.source?.photos) ? (rj!.source!.photos as Array<{ photo_index?: unknown; original_url?: unknown }>) : [];
+  for (const p of photos) if (typeof p?.photo_index === 'number') out[p.photo_index] = { originalUrl: typeof p.original_url === 'string' ? p.original_url : null, rot: 0 };
+  const dbg = Array.isArray(rj?.annotation_debug) ? (rj!.annotation_debug as Array<{ photo_index?: unknown; rot?: unknown }>) : [];
+  for (const d of dbg) if (typeof d?.photo_index === 'number') out[d.photo_index] = { originalUrl: out[d.photo_index]?.originalUrl ?? null, rot: Number(d.rot) || 0 };
+  return out;
+}
+
 /** Annotated page images in photo order — the desk's left pane. */
 function annotatedPhotos(resultJson: unknown) {
   const arr = (resultJson as { annotated_photos?: unknown } | null)?.annotated_photos;
@@ -63,6 +74,11 @@ function annotatedPhotos(resultJson: unknown) {
       url: p.url as string,
       urlWithSolutions: typeof p.url_with_solutions === 'string' ? p.url_with_solutions : null,
       method: typeof p.method === 'string' ? p.method : null,
+      // The editable marker layer (SPEC-ANNOTATE §14) — the desk opens the pen in place.
+      layerUrl: typeof p.layer_url === 'string' ? p.layer_url : null,
+      layer: p.layer && typeof p.layer === 'object' ? p.layer : null,
+      inkUrl: typeof p.ink_url === 'string' ? p.ink_url : null,
+      editedAt: typeof p.edited_at === 'string' ? p.edited_at : null,
     }))
     .filter(p => p.photoIndex >= 0)
     .sort((a, b) => a.photoIndex - b.photoIndex);
@@ -228,6 +244,10 @@ export async function GET(req: NextRequest) {
     autoHold: computeAutoHold(rj),
     questions,
     annotatedPhotos: annotatedPhotos(rj),
+    // Clean originals + the rotation the marker applied, per page — what the pen
+    // overlay draws the editable layer on. And the ink hints (swapped marks).
+    pageSources: pageSources(rj),
+    inkHints: Array.isArray((rj as { ink_hints?: unknown } | null)?.ink_hints) ? (rj as { ink_hints: unknown[] }).ink_hints : [],
     diagnosis: readDiagnosis(rj),
     sheetJob: job ? {
       id: job.id, status: job.status, stage: job.stage, error: job.error, attempts: job.attempts,

@@ -11,6 +11,8 @@
 // through the normal proxy, exactly as uploadAnnotated does.
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getSupabaseAdmin } from '@/lib/supabase';
+import { applyAgree } from '@/lib/mark-triage';
 import { putStudentFile, fetchOurFile, isOurFileUrl, runKey } from '@/lib/student-files';
 import { PDFDocument } from 'pdf-lib';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -24,6 +26,8 @@ type PageIn = { photo_index: number; url: string };
 type Body = {
   runId?: string;
   pages?: PageIn[];
+  /** Pages Adrian changed (ink or the marker's layer) — vetted by editing (desk round 3). */
+  editedPhotoIndexes?: number[];
   totals?: { awarded: number; max: number; counted_max?: number; max_source?: string } | null;
   student?: { name?: string; level?: string };
 };
@@ -99,5 +103,34 @@ export async function POST(req: NextRequest) {
     } catch { /* linked stays false; client retries via proxy */ }
   }
 
-  return NextResponse.json({ url: blob.url, linked });
+  // ── Vetted by editing (Adrian, 8 Sep 2026: "do I still have to click through
+  // agree/override even after annotating?"): a flagged question on a page he
+  // changed has been looked at — clear its flag as an Agree would, stamped
+  // 'annotate' so the record says how. Flags on untouched pages stay.
+  let flagsCleared = 0;
+  const edited = Array.isArray(body.editedPhotoIndexes) ? body.editedPhotoIndexes.map(Number).filter(Number.isInteger) : [];
+  if (edited.length) {
+    try {
+      const supa = getSupabaseAdmin();
+      const { data: row } = await supa.from('paper_marking_runs').select('result_json, released_at').eq('id', runId).single();
+      const rj = row?.result_json as { results?: Array<Record<string, unknown>> } | null;
+      if (rj && !row?.released_at && Array.isArray(rj.results)) {
+        const now = new Date().toISOString();
+        let next: Record<string, unknown> = rj as Record<string, unknown>;
+        rj.results.forEach((res, i) => {
+          if (res && edited.includes(Number(res.photo_index)) && res.review_recommended === true && res.triage_reviewed !== true) {
+            next = applyAgree(next, i, now);
+            const arr = (next.results as Record<string, unknown>[]);
+            arr[i] = { ...arr[i], triage_reviewed_via: 'annotate' };
+            flagsCleared += 1;
+          }
+        });
+        if (flagsCleared) await supa.from('paper_marking_runs').update({ result_json: next }).eq('id', runId);
+      }
+    } catch (e) {
+      console.warn('[annotate-pdf] flag clearing skipped:', (e as Error).message);
+    }
+  }
+
+  return NextResponse.json({ flagsCleared, url: blob.url, linked });
 }

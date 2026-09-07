@@ -300,6 +300,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const layerSelRef = useRef<{ pageIdx: number; id: string } | null>(null);
   const layerMoveRef = useRef<{ startX: number; startY: number; dx: number; dy: number } | null>(null);
   const fontCssRef = useRef<string>('');
+  // Marks Adrian swapped (✗⇄✓), per page: id → what it is now. Feeds the desk's ink hints.
+  const layerSwapsRef = useRef<Map<string, 'tick' | 'cross'>[]>(pages.map(() => new Map()));
   const hasLayers = pages.some((p) => !!p.layerUrl && !!p.layer && !!p.originalUrl);
   const pageNoRef = useRef(1);
   const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -2043,6 +2045,9 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     if (!parsed || !o || !markType(o)) return;
     const before = layerSnap(parsed);
     if (!swapMark(o)) return;
+    const now = markType(o);
+    const swaps = layerSwapsRef.current[ls.pageIdx];
+    if (swaps.has(o.id)) swaps.delete(o.id); else if (now) swaps.set(o.id, now);
     pushUndo(ls.pageIdx, { t: 'layer', before, after: layerSnap(parsed) });
     bumpInk();
     rebuildLayerImage(ls.pageIdx);
@@ -2106,6 +2111,12 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
               layerSvg: serializeLayer(parsedL), inkSvg: strokesToSvg(strokesRef.current[i]), strokes: strokesRef.current[i],
               // The words are the record (§14 ⑤): retyped / deleted notes reach results[].
               recordEdits: recordEditsFor(parsedL),
+              // Ink that contradicts the marks: swapped marks with their centre, for the desk's hints.
+              markSwaps: [...layerSwapsRef.current[i].entries()].flatMap(([id, to]) => {
+                const o = parsedL.objects.find((q) => q.id === id);
+                const b = layerBBoxRef.current[i].get(id);
+                return o && b && !o.deleted && o.q ? [{ q: o.q, x: b.x + o.dx + b.w / 2, y: b.y + o.dy + b.h / 2, to }] : [];
+              }),
             }),
           });
           const cj = await cr.json().catch(() => ({}));
@@ -2140,7 +2151,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       setBusy('Assembling PDF…');
       const resp = await fetch('/api/admin/mark-paper-annotate-pdf', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ runId, pages: finalPages, totals, student }),
+        body: JSON.stringify({
+          runId, pages: finalPages, totals, student,
+          // Vetted by editing: the pages Adrian changed clear their flags on the desk.
+          editedPhotoIndexes: pages.filter((_, i) => strokesRef.current[i].length > 0 || (layerRef.current[i] ? layerDirty(layerRef.current[i]!) : false)).map((p) => p.photoIndex),
+        }),
       });
       const dResp = await resp.json().catch(() => ({}));
       if (!resp.ok) throw new Error(dResp.error || `assemble failed (${resp.status})`);
