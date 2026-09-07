@@ -101,7 +101,20 @@ export type ValidatedAssignment = {
   pdf_url: string | null;
   pdf_source: string | null;
   due_on: string | null;
+  /** Set only for a released Practice Again sheet (withSource); the column defaults to 'adrian'. */
+  source?: 'practice-again';
 };
+
+/**
+ * A released Practice Again sheet is filed as the paper's own (7 Sep 2026):
+ * source 'practice-again' + the source run are what the Papers list's card and
+ * the Practice tab's "Practice Again" group look for. Only that one value is
+ * accepted from the caller; everything else keeps the column default 'adrian'.
+ * Pure — tested.
+ */
+export function withSource<T extends { source?: 'practice-again' }>(row: T, input: { source?: unknown } | null | undefined): T {
+  return input && input.source === 'practice-again' ? { ...row, source: 'practice-again' } : row;
+}
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;

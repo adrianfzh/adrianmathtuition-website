@@ -169,3 +169,18 @@ describe('ambiguityMessage', () => {
     expect(ambiguityMessage({ kind: 'only', path: 'x' })).toBeNull();
   });
 });
+
+describe('choosePdf — _versions/ is never the sheet (7 Sep 2026)', () => {
+  const folder = [
+    { name: '3 Practice Again.pdf', path: '/Students/X/2026-08-31 x/3 Practice Again.pdf', modified: '2026-09-06T02:52:01Z' },
+    { name: 'Practice Again.pdf', path: '/Students/X/2026-08-31 x/_versions/Practice Again.pdf', modified: '2026-09-01T07:28:55Z' },
+    { name: '1 Marked by AI.pdf', path: '/Students/X/2026-08-31 x/1 Marked by AI.pdf', modified: '2026-08-30T19:08:57Z' },
+  ];
+  it('a recorded path that moved into _versions/ no longer counts; the fixed name wins', () => {
+    expect(choosePdf('/Students/X/2026-08-31 x/_versions/Practice Again.pdf', null, folder))
+      .toEqual({ kind: 'only', path: '/Students/X/2026-08-31 x/3 Practice Again.pdf' });
+  });
+  it('a versioned file is not a candidate even when nothing else is there', () => {
+    expect(choosePdf(null, null, [folder[1], folder[2]])).toEqual({ kind: 'none' });
+  });
+});

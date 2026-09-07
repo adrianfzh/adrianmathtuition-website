@@ -65,10 +65,16 @@ export function choosePdf(
   recordedDocxPath: string | null | undefined,
   folder: SheetFile[],
 ): PdfChoice {
-  const files = (folder || []).filter(f => f && f.name && isPdf(f.name) && !isMarkedCopy(f.name));
+  // Anything under _versions/ is an OLDER copy the sweep set aside (7 Sep 2026):
+  // it is never "the sheet", however the job recorded it. Wanqing's release
+  // went out with the worker's 1 Sep original instead of the sheet Adrian
+  // edited on 6 Sep because the recorded path had been rewritten to follow the
+  // file into _versions/ and rule 1 found it "still there".
+  const versioned = (p: string) => /\/_versions\//i.test(p);
+  const files = (folder || []).filter(f => f && f.name && isPdf(f.name) && !isMarkedCopy(f.name) && !versioned(f.path));
 
   const rec = String(recordedPdfPath || '').trim().toLowerCase();
-  if (rec && files.some(f => f.path.toLowerCase() === rec)) {
+  if (rec && !versioned(rec) && files.some(f => f.path.toLowerCase() === rec)) {
     return { kind: 'recorded', path: recordedPdfPath as string };
   }
 

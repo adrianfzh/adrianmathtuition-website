@@ -205,6 +205,11 @@ export async function POST(req: NextRequest) {
       studentId: r.run.student_id, kind: 'worksheet', title,
       pdfSource: `dropbox:${pdfPath}`,
       note: 'From the paper you just got back — the parts worth another go.',
+      // Filed as the paper's own Practice Again sheet (7 Sep 2026): the Papers
+      // list's card and the Practice tab's "Practice Again" group both look for
+      // source 'practice-again' + the source run — without them the sheet sat
+      // under "From Adrian" and the paper showed no sheet at all.
+      source: 'practice-again', sourceRunId: runId,
     }),
   });
   const aData = await aRes.json().catch(() => ({}));

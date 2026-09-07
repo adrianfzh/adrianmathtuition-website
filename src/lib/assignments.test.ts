@@ -142,3 +142,15 @@ describe('held rows — created by the sheet hand-back, released with the paper'
     expect([...STUDENT_HIDDEN_STATUSES].sort()).toEqual(['held', 'revoked']);
   });
 });
+
+import { withSource } from './assignments';
+describe('withSource — a released Practice Again sheet is filed as the paper\'s own', () => {
+  const row: { airtable_student_id: string; kind: 'worksheet'; title: string; source?: 'practice-again' } =
+    { airtable_student_id: 'recX', kind: 'worksheet', title: 'Practice again — x' };
+  it('sets source only for practice-again, and leaves everything else on the column default', () => {
+    expect(withSource(row, { source: 'practice-again' })).toEqual({ ...row, source: 'practice-again' });
+    expect(withSource(row, { source: 'find' })).toEqual(row);
+    expect(withSource(row, {})).toEqual(row);
+    expect(withSource(row, null)).toEqual(row);
+  });
+});

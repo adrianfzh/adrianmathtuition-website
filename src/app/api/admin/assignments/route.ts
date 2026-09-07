@@ -6,6 +6,7 @@
 // All writes are service-role; the student only ever SELECTs their own rows (RLS).
 import { NextRequest, NextResponse } from 'next/server';
 import { putStudentFile, assignmentKey } from '@/lib/student-files';
+import { withSource } from '@/lib/assignments';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { validateAssignment, canTransition, dueLabel, type AssignmentRow } from '@/lib/assignments';
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
   // (A worksheet's Dropbox source was already copied to Blob above, before validation.)
 
   const { data, error } = await supabase
-    .from('portal_assignments').insert(row).select('*').single();
+    .from('portal_assignments').insert(withSource(row, body)).select('*').single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   const a = data as AssignmentRow;
 
