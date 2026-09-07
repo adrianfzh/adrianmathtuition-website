@@ -164,3 +164,34 @@ describe('relativeDay', () => {
     expect(relativeDay(future, NOW)).toBe('today');
   });
 });
+
+describe('failed hand-ins on students\' phones (submit:failed)', () => {
+  const acct = (id: string, sid: string, name: string) => ({
+    id, airtable_student_id: sid, display_name: name, level: 'Sec 4',
+    created_at: '2026-08-01T00:00:00Z', last_seen_at: '2026-09-03T02:00:00Z', deactivated_at: null,
+  });
+  it('lists the last 24 hours newest first, named by account, and counts nothing older', () => {
+    const { failedHandins } = summariseActivity(baseInput({
+      accounts: [acct('u1', 'recRainie', 'Rainie Cheng')],
+      events: [
+        { identity: 'recRainie', kind: 'submit:failed', created_at: new Date(NOW.getTime() - 2 * 3600_000).toISOString(), detail: { stage: 'upload', reason: 'Load failed', pages: 6, uploaded: 4 } },
+        { identity: 'recRainie', kind: 'submit:failed', created_at: new Date(NOW.getTime() - 30 * 60_000).toISOString(), detail: { stage: 'send', reason: 'no reply', pages: 6, uploaded: 6, paperName: 'AM TYS 2022 P1' } },
+        { identity: 'recRainie', kind: 'submit:failed', created_at: new Date(NOW.getTime() - 2 * DAY_MS).toISOString(), detail: { stage: 'upload', reason: 'old', pages: 1, uploaded: 0 } },
+        { identity: 'recRainie', kind: 'marking:view', created_at: new Date(NOW.getTime() - 60_000).toISOString() },
+        { identity: 'acct:stranger', kind: 'submit:failed', created_at: new Date(NOW.getTime() - 60_000).toISOString(), detail: { stage: 'rejected', reason: 'HTTP 500', pages: 2, uploaded: 2 } },
+      ],
+    }));
+    expect(failedHandins.map(f => [f.displayName, f.stage, f.reason, `${f.uploaded}/${f.pages}`, f.paperName])).toEqual([
+      [null, 'rejected', 'HTTP 500', '2/2', null],
+      ['Rainie Cheng', 'send', 'no reply', '6/6', 'AM TYS 2022 P1'],
+      ['Rainie Cheng', 'upload', 'Load failed', '4/6', null],
+    ]);
+  });
+  it('is empty when nothing failed, and survives a malformed detail', () => {
+    expect(summariseActivity(baseInput({})).failedHandins).toEqual([]);
+    const { failedHandins } = summariseActivity(baseInput({
+      events: [{ identity: 'x', kind: 'submit:failed', created_at: NOW.toISOString(), detail: 'garbage' }],
+    }));
+    expect(failedHandins).toEqual([{ identity: 'x', displayName: null, at: NOW.toISOString(), stage: 'unknown', reason: 'unknown', pages: 0, uploaded: 0, paperName: null }]);
+  });
+});

@@ -21,6 +21,7 @@
 // hand if that convention ever changes.
 import { latestActivityIso } from './retention';
 import { sgtDateISO } from './sgt';
+import { SUBMIT_FAILED_KIND, sanitizeSubmitFailure } from './submit-failure';
 
 const DAY_MS = 86_400_000;
 
@@ -43,6 +44,20 @@ export interface ActivityEvent {
   identity: string;
   kind: string;
   created_at: string;
+  /** portal_event_log.detail — only 'submit:failed' rows carry one (lib/submit-failure.ts). */
+  detail?: unknown;
+}
+
+/** A hand-in that failed on a student's phone in the last 24 hours (7 Sep 2026). */
+export interface FailedHandin {
+  identity: string;
+  displayName: string | null;
+  at: string;
+  stage: string;
+  reason: string;
+  pages: number;
+  uploaded: number;
+  paperName: string | null;
 }
 
 export interface ActivityAttempt {
@@ -81,6 +96,30 @@ export interface PortalActivityRow {
 export interface ActivitySummary {
   totals: { accounts: number; active7d: number; active30d: number; neverSignedIn: number };
   rows: PortalActivityRow[];
+  /** Newest first, last 24 hours — the hub's red card and the student profile read it. */
+  failedHandins: FailedHandin[];
+}
+
+/** The last 24 hours of 'submit:failed' events, newest first, named where the identity has an account. Pure. */
+export function failedHandinsFrom(events: ActivityEvent[], accounts: ActivityAccount[], now: Date): FailedHandin[] {
+  const since = now.getTime() - DAY_MS;
+  const nameOf = new Map(accounts.map(a => [identityOf(a), a.display_name] as const));
+  return events
+    .filter(e => e.kind === SUBMIT_FAILED_KIND && Date.parse(e.created_at) >= since)
+    .map(e => {
+      const f = sanitizeSubmitFailure(e.detail);
+      return {
+        identity: e.identity,
+        displayName: nameOf.get(e.identity) ?? null,
+        at: e.created_at,
+        stage: f?.stage ?? 'unknown',
+        reason: f?.reason ?? 'unknown',
+        pages: f?.pages ?? 0,
+        uploaded: f?.uploaded ?? 0,
+        paperName: f?.paperName ?? null,
+      };
+    })
+    .sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
 }
 
 const MARKING_VIEW_KINDS = new Set(['marking:view', 'marking:open']);
@@ -151,7 +190,7 @@ export function summariseActivity(input: ActivityInput): ActivitySummary {
     neverSignedIn: live.filter(a => !a.last_seen_at).length,
   };
 
-  return { totals, rows };
+  return { totals, rows, failedHandins: failedHandinsFrom(events, accounts, now) };
 }
 
 /**

@@ -22,6 +22,13 @@ import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server
 import { portalIdentity, type PortalAccount } from '@/lib/portal-auth';
 import { PORTAL_CLIENT_EVENT_KINDS, isPortalClientEventKind } from '@/lib/install-prompt';
 import { sgtDayStart } from '@/lib/sgt';
+import { SUBMIT_FAILED_KIND, sanitizeSubmitFailure, shouldNotifySubmitFailure, submitFailureLine } from '@/lib/submit-failure';
+import { sendTelegram } from '@/lib/telegram';
+
+// A hand-in that failed on the phone after every retry (lib/submit-failure.ts,
+// 7 Sep 2026): its own family, a small cap, a detail payload, and one Telegram
+// line per student per hour so Adrian hears before a parent does.
+const SUBMIT_DAILY_CAP = 20;
 
 export const runtime = 'nodejs';
 
@@ -38,24 +45,27 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { data: account } = await supabase
     .from('portal_accounts')
-    .select('id, airtable_student_id')
+    .select('id, airtable_student_id, display_name')
     .eq('id', user.id)
-    .single<Pick<PortalAccount, 'id' | 'airtable_student_id'>>();
+    .single<Pick<PortalAccount, 'id' | 'airtable_student_id' | 'display_name'>>();
   if (!account) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { kind?: unknown } = {};
+  let body: { kind?: unknown; detail?: unknown } = {};
   try { body = await req.json(); } catch { /* fall through to validation */ }
   const kind = typeof body.kind === 'string' ? body.kind : '';
   const family = (MARKING_KINDS as readonly string[]).includes(kind)
     ? 'marking'
+    : kind === SUBMIT_FAILED_KIND ? 'submit'
     : isPortalClientEventKind(kind) ? 'client' : null;
   if (!family) return NextResponse.json({ error: 'Unknown kind' }, { status: 400 });
+  const failure = family === 'submit' ? sanitizeSubmitFailure(body.detail) : null;
+  if (family === 'submit' && !failure) return NextResponse.json({ error: 'Bad detail' }, { status: 400 });
 
   const identity = portalIdentity(account);
   try {
     const svc = createServiceClient();
-    const familyKinds = family === 'marking' ? [...MARKING_KINDS] : [...PORTAL_CLIENT_EVENT_KINDS];
-    const cap = family === 'marking' ? MARKING_DAILY_CAP : CLIENT_DAILY_CAP;
+    const familyKinds = family === 'marking' ? [...MARKING_KINDS] : family === 'submit' ? [SUBMIT_FAILED_KIND] : [...PORTAL_CLIENT_EVENT_KINDS];
+    const cap = family === 'marking' ? MARKING_DAILY_CAP : family === 'submit' ? SUBMIT_DAILY_CAP : CLIENT_DAILY_CAP;
     const { count } = await svc
       .from('portal_event_log')
       .select('id', { count: 'exact', head: true })
@@ -63,7 +73,19 @@ export async function POST(req: NextRequest) {
       .in('kind', familyKinds)
       .gte('created_at', sgtDayStart().toISOString());
     if ((count ?? 0) >= cap) return NextResponse.json({ ok: true, capped: true });
-    await svc.from('portal_event_log').insert({ identity, kind });
+    if (failure) {
+      // Was there already a failure from this student inside the hour? Read
+      // BEFORE inserting this one, so the first of a burst is the one that talks.
+      const { data: prev } = await svc.from('portal_event_log').select('created_at')
+        .eq('identity', identity).eq('kind', SUBMIT_FAILED_KIND)
+        .order('created_at', { ascending: false }).limit(1).maybeSingle<{ created_at: string }>();
+      await svc.from('portal_event_log').insert({ identity, kind, detail: failure });
+      if (shouldNotifySubmitFailure(prev?.created_at, new Date())) {
+        await sendTelegram(submitFailureLine(account.display_name, failure), 'marking').catch(() => {});
+      }
+    } else {
+      await svc.from('portal_event_log').insert({ identity, kind });
+    }
   } catch (e) {
     // Telemetry is best-effort by contract — report ok so the client never retries.
     console.error('[portal/event] write failed:', (e as Error).message);

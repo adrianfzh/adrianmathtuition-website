@@ -221,7 +221,9 @@ export default function AdminHub() {
   const examGapsCard = stats?.examGaps && stats.examGaps.count > 0 ? stats.examGaps : null;
   const triageCard = stats?.triage && (stats.triage.flagged > 0 || stats.triage.readyToRelease > 0) ? stats.triage : null;
   const portalCard = portalActivity && portalActivity.totals.accounts > 0 ? portalActivity.totals : null;
-  const hasAttentionCards = !!(papersCard || unmarkedCard || examGapsCard || triageCard || logCard || portalCard);
+  // Hand-ins that failed on a student's phone in the last 24 h (lib/submit-failure.ts, 7 Sep 2026) — red, first.
+  const failedCard = portalActivity?.failedHandins?.length ? portalActivity.failedHandins : null;
+  const hasAttentionCards = !!(papersCard || unmarkedCard || examGapsCard || triageCard || logCard || portalCard || failedCard);
 
   return (
     <>
@@ -243,6 +245,18 @@ export default function AdminHub() {
           {/* Status strip — live attention counts */}
           {hasAttentionCards && (
             <div className="status-grid">
+              {failedCard && (
+                <Link href="/admin/students" className="stat-card" style={{ borderLeftColor: '#dc2626' }}>
+                  <div className="stat-top">
+                    <span className="stat-num">{failedCard.length}</span>
+                    <span className="stat-arrow">›</span>
+                  </div>
+                  <div className="stat-label">⚠️ Hand-in{failedCard.length === 1 ? '' : 's'} failed on a phone (24h)</div>
+                  <div className="stat-label">
+                    {failedCard.slice(0, 3).map(f => `${(f.displayName || 'A student').split(' ')[0]}: ${f.reason} (${f.uploaded}/${f.pages} pages)`).join(' · ')}
+                  </div>
+                </Link>
+              )}
               {papersCard && (
                 <a href="/admin/mark-paper" className="stat-card" style={{ borderLeftColor: '#b45309' }}>
                   <div className="stat-top">

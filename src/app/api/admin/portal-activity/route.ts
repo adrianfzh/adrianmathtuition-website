@@ -35,8 +35,8 @@ export async function GET(req: NextRequest) {
     sb.from('portal_accounts')
       .select('id, airtable_student_id, display_name, level, created_at, last_seen_at, deactivated_at'),
     sb.from('portal_event_log')
-      .select('identity, kind, created_at')
-      .in('kind', ['marking:view', 'marking:open'])
+      .select('identity, kind, created_at, detail')
+      .in('kind', ['marking:view', 'marking:open', 'submit:failed'])
       .gte('created_at', since),
     sb.from('student_attempts')
       .select('airtable_student_id, user_id, attempted_at')

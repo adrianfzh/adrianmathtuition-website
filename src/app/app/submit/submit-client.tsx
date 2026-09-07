@@ -12,6 +12,19 @@ import { uploadStudentFile } from '@/lib/student-files-client';
 import { pdfToPageImages } from '@/lib/pdf-pages';
 import { friendlyPortalMessage } from '@/lib/portal-fetch';
 import { splitFileIfSpread, resizeToJpeg } from '@/lib/spread-split';
+import { SUBMIT_FAILED_KIND, type SubmitFailure } from '@/lib/submit-failure';
+
+// Tell Adrian a hand-in failed after every retry (7 Sep 2026: "monitor failures
+// on students' end"). Fire-and-forget with keepalive, so it survives the student
+// closing the tab; the route never answers anything but ok. No photos travel.
+function reportSubmitFailure(detail: Omit<SubmitFailure, 'attempts'> & { attempts?: number }) {
+  try {
+    fetch('/api/portal/event', {
+      method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kind: SUBMIT_FAILED_KIND, detail: { attempts: 3, ...detail } }),
+    }).catch(() => {});
+  } catch { /* telemetry never blocks the student */ }
+}
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 const MAX_PAGES = 20;
@@ -52,6 +65,7 @@ export function uploadFailureMessage(index: number, total: number): string {
 
 async function uploadPage(file: File, onNote: (s: string) => void): Promise<string> {
   const upload = await resizeToJpeg(file);
+  let lastReason = '';
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       if (attempt > 1) onNote(`retrying (${attempt} of 3)`);
@@ -65,13 +79,16 @@ async function uploadPage(file: File, onNote: (s: string) => void): Promise<stri
         { contentType: upload.type || 'application/octet-stream' },
       );
       return up.url;
-    } catch {
+    } catch (e) {
+      lastReason = (e as Error)?.message || String(e);
       // A fresh token each attempt, so an expired one is not the reason a retry
       // fails. Pause 1s then 2s: long enough for a network handover to settle.
       if (attempt < 3) await new Promise(r => setTimeout(r, attempt * 1000));
     }
   }
-  throw new Error('That page would not upload after three tries. Your signal may be weak — tap Send again and it will carry on from where it stopped.');
+  const err = new Error('That page would not upload after three tries. Your signal may be weak — tap Send again and it will carry on from where it stopped.');
+  (err as Error & { reason?: string }).reason = lastReason;   // the browser's own words, for the report to Adrian
+  throw err;
 }
 
 export default function SubmitClient({ assignment = null, paper = null, slotUsed = false, subjectChoices = [] }: {
@@ -181,10 +198,11 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         try {
           url = await uploadPage(pages[i].file, (note) =>
             setStage(`Uploading page ${i + 1} of ${pages.length} — ${note}`));
-        } catch {
+        } catch (e) {
           // Safari's own words for a dropped connection are "Load failed" — which is
           // what Sophie saw with no page number and no idea whether anything had
           // arrived (5 Sep 2026). Say which page, what is kept, and what to do.
+          reportSubmitFailure({ stage: 'upload', reason: (e as Error & { reason?: string })?.reason || 'upload failed', pages: pages.length, uploaded: i, paperName: paperName.trim() || null });
           throw new Error(uploadFailureMessage(i, pages.length));
         }
         uploadedRef.current.set(i, url);
@@ -222,6 +240,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
           if (attempt < 3) await new Promise(res => setTimeout(res, attempt * 1000));
         }
       }
+      if (!r) reportSubmitFailure({ stage: 'send', reason: 'no reply after 3 tries (connection dropped)', pages: pages.length, uploaded: urls.length, paperName: paperName.trim() || null });
       if (!r) throw new Error(`Your ${pages.length} page${pages.length === 1 ? '' : 's'} uploaded safely, but the last step could not reach us. Tap Send again — it will not upload them a second time.`);
       // 409 with findings: the hand-in looks wrong. Show it and let them decide —
       // their pages stay uploaded, so sending again costs nothing.
@@ -230,7 +249,10 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         setStage('');
         return;
       }
-      if (!r.ok) throw new Error(friendlyPortalMessage(r.status, d.error, 'The submission failed — try again.'));
+      if (!r.ok) {
+        reportSubmitFailure({ stage: 'rejected', reason: `HTTP ${r.status}${d.error ? `: ${String(d.error).slice(0, 120)}` : ''}`, pages: pages.length, uploaded: urls.length, paperName: paperName.trim() || null, attempts: 1 });
+        throw new Error(friendlyPortalMessage(r.status, d.error, 'The submission failed — try again.'));
+      }
       setDoneRunId(d.runId || 'ok');
       pages.forEach(p => { if (p.preview) URL.revokeObjectURL(p.preview); });
     } catch (e) {
