@@ -561,12 +561,14 @@ function formatDayDate(iso: string): string {
 }
 
 // "What to expect" lines for a chip during exam season — one per subject:
-// "A Math · 24 Jul — Differentiation, Integration", or with a P1/P2 split
-// "A Math · P1 24 Jul, P2 26 Jul". The exam type lives on the date pill (not
-// here) and topics render in full, wrapped — no per-line truncation
-// (Adrian 2026-07-18). Exception: EOY/Promo test everything, so their topic
-// lists run 20+ entries and swamp the chip — those collapse to "N topics ▸"
-// and expand on tap (Adrian 2026-08-26); WAs/Prelim stay inline.
+// "A Math · 24 Jul", or with a P1/P2 split "A Math · P1 24 Jul, P2 26 Jul".
+// The exam type lives on the date pill (not here). Topics + notes sit behind
+// a blue "N topics ▸" and expand in full, wrapped, on tap. That collapse was
+// EOY/Promo-only from 2026-08-26 (they test everything) while WA/Prelim
+// stayed inline (Adrian 2026-07-18) — until a WA3 that tested all of Sec 3
+// plus lower-sec review put a 35-topic wall on a chip (Lucas, 7 Sep 2026:
+// "shouldn't topics be hidden by default, tap only when needed?"). Every
+// exam type collapses now; the exam sheet still shows everything.
 interface ExamChipLine { head: string; detail: string; collapsed: boolean; topicCount: number }
 function examSummaryLines(lesson: EnrichedLesson): ExamChipLine[] {
   const entries = lesson.examEntries || [];
@@ -600,7 +602,7 @@ function examSummaryLines(lesson: EnrichedLesson): ExamChipLine[] {
     // (Adrian 2026-07-26: clearer than the bare subject).
     let head = [type, subject].filter(Boolean).join(' · ');
     if (dates) head += head ? ` · ${dates}` : dates;
-    const collapsed = (type === 'EOY' || type === 'Promo') && !!detail;
+    const collapsed = !!detail;
     const topicCount = topics ? topics.split(',').filter(t => t.trim()).length : 0;
     lines.push({ head, detail, collapsed, topicCount });
   }
@@ -1140,7 +1142,7 @@ function DraggableLessonChip({ lesson, onTap, onStudentClick, onMarkPresent, onM
           <span key={idx} style={{ display: 'block', fontSize: 10, lineHeight: 1.35, marginTop: idx === 0 ? 6 : 4, color: '#475569', overflowWrap: 'break-word' }}>
             📅 {ln.head}
             {ln.detail && (!ln.collapsed || examDetailsOpen ? (
-              // Expanded EOY details collapse again on tap (no-op for WA/Prelim).
+              // Expanded details collapse again on tap.
               <span
                 onClick={ln.collapsed ? e => { e.stopPropagation(); setExamDetailsOpen(false); } : undefined}
                 style={ln.collapsed ? { cursor: 'pointer' } : undefined}
