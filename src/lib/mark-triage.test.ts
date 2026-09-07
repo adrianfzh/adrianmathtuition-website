@@ -489,3 +489,37 @@ describe('second reader disagreements', () => {
   });
 });
 
+describe('per-part override (8 Sep 2026)', () => {
+  const q10 = question({ question_number: '10', review_recommended: true, marking: {
+    parts: [
+      { label: '(a)', awarded: 2, max: 2, error_summary: null },
+      { label: '(b)', awarded: 2, max: 3, error_summary: 'starts at (0,0)', error_kind: 'concept' },
+      { label: '(c)', awarded: 3, max: 3, error_summary: null },
+    ], total_awarded: 7, total_max: 8 } });
+  it('the question total is the sum of the parts, and a part at full marks loses its reason', () => {
+    const next = applyOverride(run(q10), 0, 999, 'second reader', 'T', undefined, [{ label: 'b', awarded: 3 }]);
+    const m = (next.results as Array<{ marking: { total_awarded: number; parts: Array<{ awarded: number; error_summary: unknown }> } }>)[0].marking;
+    expect(m.total_awarded).toBe(8);
+    expect(m.parts[1].awarded).toBe(3);
+    expect(m.parts[1].error_summary).toBeNull();
+    expect(m.parts[0].awarded).toBe(2);
+    const ov = (next.results as Array<{ triage_override: { awarded: number; previous: number; parts: unknown } }>)[0].triage_override;
+    expect(ov.awarded).toBe(8);
+    expect(ov.previous).toBe(7);
+    expect(ov.parts).toEqual([{ label: 'b', awarded: 3 }]);
+    expect(recomputeTotals(next).awarded).toBe(8);
+  });
+  it('clamps a part to its max and keeps a lowered part\'s reason', () => {
+    const next = applyOverride(run(q10), 0, 0, '', 'T', undefined, [{ label: '(b)', awarded: 9 }, { label: '(c)', awarded: 1 }]);
+    const m = (next.results as Array<{ marking: { total_awarded: number; parts: Array<{ awarded: number; error_summary: unknown }> } }>)[0].marking;
+    expect(m.parts[1].awarded).toBe(3);
+    expect(m.parts[2].awarded).toBe(1);
+    expect(m.parts[2].error_summary).toBeNull();
+    expect(m.total_awarded).toBe(6);
+  });
+  it('without parts the old whole-question override is unchanged', () => {
+    const next = applyOverride(run(q10), 0, 5, 'x', 'T');
+    expect((next.results as Array<{ marking: { total_awarded: number } }>)[0].marking.total_awarded).toBe(5);
+  });
+});
+

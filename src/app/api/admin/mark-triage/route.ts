@@ -421,7 +421,7 @@ export async function POST(req: NextRequest) {
     awarded?: number;
     note?: string;
     /** Override only: the kind of error Adrian saw — one of lib/error-kinds.ts' eight codes, or empty. */
-    errorKind?: unknown;
+    errorKind?: unknown; parts?: unknown;
     auto?: boolean;
     /** 📘 Optional sheet to release alongside the marked copy (step 7). */
     sheet?: { pdfUrl?: string; title?: string; note?: string; topic?: string };
@@ -462,12 +462,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `errorKind must be one of ${ERROR_KINDS.join(', ')}` }, { status: 400 });
     }
 
+    // Per-part marks (8 Sep 2026) — optional; [{label, awarded}] for the parts
+    // the run has. The question total becomes their sum (lib/mark-triage).
+    const partOverrides = Array.isArray(body.parts)
+      ? (body.parts as unknown[]).flatMap(p => {
+          const o = p && typeof p === 'object' ? (p as { label?: unknown; awarded?: unknown }) : null;
+          return o && typeof o.label === 'string' && Number.isFinite(Number(o.awarded)) ? [{ label: o.label, awarded: Number(o.awarded) }] : [];
+        })
+      : undefined;
     let nextJson: Record<string, unknown>;
     try {
       nextJson =
         body.action === 'agree'
           ? applyAgree(run.result_json, questionIdx, now)
-          : applyOverride(run.result_json, questionIdx, Number(body.awarded), body.note ?? '', now, errorKind);
+          : applyOverride(run.result_json, questionIdx, Number(body.awarded), body.note ?? '', now, errorKind, partOverrides);
     } catch (err) {
       if (err instanceof TriageIndexError) return NextResponse.json({ error: err.message }, { status: 400 });
       throw err;

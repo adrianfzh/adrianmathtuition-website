@@ -953,11 +953,21 @@ release call failed.
   `previous`** across repeated edits — that's the AI's original mark, unrecoverable
   the moment a second edit overwrites it. Overriding an already-released run 409s:
   released marks are final.
-- ⚠ **An override corrects the RECORD, not the annotated PDF.** The PDF is drawn once
-  at marking time by the bot's `deliverQueuedRun`; nothing on this screen can redraw
-  it. `total_awarded` (score chip, `/admin/students/[id]`, the bleed table) reflects the
-  override while the PDF the student opens still shows the AI's original red pen. Say
-  the correction out loud — the release nudge carries the note.
+- **An override now redraws the page (8 Sep 2026, Adrian: "why can't we fix the marker's
+  red pen on the page itself?").** The editor is per PART when the question has parts
+  (`applyOverride(…, parts)` — the total is their sum, a part at full marks loses its
+  reason; `triage_override.parts` records it), and Save & redraw page then POSTs
+  `/api/admin/desk/redraw {runId, photoIndex}` → bot `/api/reannotate-page` →
+  `ai/reannotate-page.js`: the stored original (`source.photos[].original_url`) is run
+  through the same overlay ladder at the same rotation (`annotation_debug[].rot`) with
+  the run's current part marks (~20 s, a few cents), and `annotated_photos[]` /
+  `annotation_debug[]` / `results[].marking_output` are updated (`result_json.redraws[]`
+  is the breadcrumb). **The one rule about ink** (`applyPartMarks`, tested in the bot):
+  boxes print Adrian's numbers; a part at full marks loses its reason text; crosses on
+  individual lines are removed only when the WHOLE question is at full marks (lines carry
+  the question, not the part). A whole-question override without parts still leaves the
+  ink alone. Either way the PDFs are stale until Rebuild PDFs & release. The placement is a
+  fresh model pass, so ticks can land a few millimetres from the first draw.
 - **📘 Release WITH the sheet** — `/api/admin/release-with-sheet?runId=` (GET = what would be
   sent, POST = send). Finds the sheet through `sheet_jobs.result.{pdf_path,docx_path}` → lists
   that Dropbox folder → `lib/release-with-sheet.ts` `choosePdf` (recorded path, else the DOCX's

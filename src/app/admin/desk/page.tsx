@@ -228,6 +228,8 @@ export default function DeskPage() {
   // The kind of error Adrian saw ('' = not said) — stored as triage_override.error_kind,
   // the ground truth the marker's own labels are calibrated against.
   const [editKind, setEditKind] = useState('');
+  // Per-part marks while editing one question: label → typed value (8 Sep 2026).
+  const [editParts, setEditParts] = useState<Record<string, string>>({});
   const [focus, setFocus] = useState('');
   const [tagging, setTagging] = useState(false);
 
@@ -368,12 +370,18 @@ export default function DeskPage() {
   async function override(q: Question) {
     if (!detail) return;
     const id = detail.run.id;
-    const awarded = Number(editAwarded);
-    if (!Number.isFinite(awarded)) return;
+    // With parts, the marks are the per-part values and the total is their sum.
+    const parts = q.parts.length
+      ? q.parts.map(pt => ({ label: pt.label, awarded: Number(editParts[pt.label] ?? pt.awarded) }))
+      : null;
+    const awarded = parts ? parts.reduce((s, pt) => s + (Number.isFinite(pt.awarded) ? pt.awarded : 0), 0) : Number(editAwarded);
+    if (!Number.isFinite(awarded) || (parts && parts.some(pt => !Number.isFinite(pt.awarded)))) return;
+    const partsChanged = !!parts && parts.some(pt => pt.awarded !== (q.parts.find(x => x.label === pt.label)?.awarded ?? NaN));
     setBusy(`q:${q.index}`);
     const errorKind = isErrorKind(editKind) ? editKind : null;
     const { ok, d } = await postJson('/api/admin/mark-triage', {
       action: 'override', runId: id, questionIdx: q.index, awarded, note: editNote, errorKind: errorKind ?? undefined,
+      ...(parts ? { parts } : {}),
     });
     setBusy('');
     if (!ok) { setToast(d.error || 'Could not save'); return; }
@@ -386,8 +394,20 @@ export default function DeskPage() {
         override: { awarded, previous: x.override?.previous ?? x.awarded, note: editNote, at: new Date().toISOString(), errorKind },
       } : x)),
     });
-    setEditing(null); setEditAwarded(''); setEditNote(''); setEditKind('');
-    setToast('Saved. The PDF still prints the old total — save your Marked (Adrian).pdf into the folder, or Rebuild PDFs.');
+    setEditing(null); setEditAwarded(''); setEditNote(''); setEditKind(''); setEditParts({});
+    // The red pen follows the record (8 Sep 2026): a part-level change redraws
+    // that page from the original with the new marks. ~20 s, a few cents.
+    if (partsChanged && q.photoIndex != null) {
+      setToast(`Saved. Redrawing page ${q.photoIndex + 1} with the new marks — about 20 seconds…`);
+      setBusy('redraw');
+      const rd = await postJson('/api/admin/desk/redraw', { runId: id, photoIndex: q.photoIndex });
+      setBusy('');
+      setToast(rd.ok
+        ? `Page ${q.photoIndex + 1} redrawn with the new marks. The PDFs still print the old total — the release button rebuilds them.`
+        : `Saved, but the page could not be redrawn: ${rd.d.error || 'bot error'}. The marks are right; the ink on that page is still the marker's.`);
+    } else {
+      setToast('Saved. The PDF still prints the old total — the release button rebuilds it, or Rebuild PDFs now.');
+    }
     refresh(id);
   }
 
@@ -674,7 +694,7 @@ export default function DeskPage() {
           detail={detail} cover={cover} sheetPages={sheetPages} sheetNote={sheetNote}
           busy={busy} editing={editing} editAwarded={editAwarded} editNote={editNote} focus={focus} tagging={tagging}
           setEditing={setEditing} setEditAwarded={setEditAwarded} setEditNote={setEditNote} setFocus={setFocus} setTagging={setTagging}
-          editKind={editKind} setEditKind={setEditKind}
+          editKind={editKind} setEditKind={setEditKind} editParts={editParts} setEditParts={setEditParts}
           onAgree={agree} onOverride={override} onTag={tag} onSubject={setPaperSubject} onAttach={attachMyCopy} onRebuild={rebuild}
           onQueueSheet={queueSheet} onCancelSheet={cancelSheet} onAutoRelease={autoRelease} onApprove={approve} onReleaseOnly={releaseWithoutSheet} onToast={setToast}
         />
@@ -693,7 +713,7 @@ export default function DeskPage() {
 // ── Detail view ───────────────────────────────────────────────────────────────
 function DetailView(p: {
   detail: Detail; cover: Cover | null; sheetPages: string[] | null; sheetNote: string;
-  busy: string; editing: number | null; editAwarded: string; editNote: string; editKind: string; focus: string; tagging: boolean;
+  busy: string; editing: number | null; editAwarded: string; editNote: string; editKind: string; editParts: Record<string, string>; setEditParts: (v: Record<string, string>) => void; focus: string; tagging: boolean;
   setEditing: (v: number | null) => void; setEditAwarded: (v: string) => void; setEditNote: (v: string) => void; setEditKind: (v: string) => void;
   setFocus: (v: string) => void; setTagging: (v: boolean) => void;
   onAgree: (q: Question) => void; onOverride: (q: Question) => void; onTag: (id: string, name: string) => void;
@@ -904,7 +924,7 @@ function DetailView(p: {
                     </div>
                   )}
                   <QuestionCard q={q} released={released} busy={busy} editing={p.editing} editAwarded={p.editAwarded} editNote={p.editNote}
-                    setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} onAgree={p.onAgree} onOverride={p.onOverride} />
+                    setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} editParts={p.editParts} setEditParts={p.setEditParts} onAgree={p.onAgree} onOverride={p.onOverride} />
                 </div>
               ))}
             </section>
@@ -928,7 +948,7 @@ function DetailView(p: {
                 {(byPage.get(pg.photoIndex) ?? []).map(q => (isOpenFlag(q)
                   ? <div key={q.index} style={{ padding: '7px 12px', fontSize: 12.5, color: C.flag, borderTop: `1px solid ${C.border}` }}>⚠ Q{q.questionNumber} {q.awarded}/{q.max} — waiting for your decision in “To check” at the top ↑</div>
                   : <QuestionCard key={q.index} q={q} released={released} busy={busy} editing={p.editing} editAwarded={p.editAwarded} editNote={p.editNote}
-                      setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} onAgree={p.onAgree} onOverride={p.onOverride} />
+                      setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} editParts={p.editParts} setEditParts={p.setEditParts} onAgree={p.onAgree} onOverride={p.onOverride} />
                 ))}
                 {(byPage.get(pg.photoIndex) ?? []).length === 0 && (
                   <div style={{ padding: '8px 12px', fontSize: 12.5, color: C.faint }}>No questions marked on this page.</div>
@@ -942,7 +962,7 @@ function DetailView(p: {
               {unplaced.map(q => (isOpenFlag(q)
                 ? <div key={q.index} style={{ padding: '7px 12px', fontSize: 12.5, color: C.flag }}>⚠ Q{q.questionNumber} {q.awarded}/{q.max} — waiting for your decision in “To check” at the top ↑</div>
                 : <QuestionCard key={q.index} q={q} released={released} busy={busy} editing={p.editing} editAwarded={p.editAwarded} editNote={p.editNote}
-                    setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} onAgree={p.onAgree} onOverride={p.onOverride} />
+                    setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} editParts={p.editParts} setEditParts={p.setEditParts} onAgree={p.onAgree} onOverride={p.onOverride} />
               ))}
             </section>
           )}
@@ -1036,7 +1056,7 @@ function CoverCard({ cover }: { cover: Cover | null }) {
 
 // ── One question, with Agree / Override on every one ─────────────────────────
 function QuestionCard(p: {
-  q: Question; released: boolean; busy: string; editing: number | null; editAwarded: string; editNote: string; editKind: string;
+  q: Question; released: boolean; busy: string; editing: number | null; editAwarded: string; editNote: string; editKind: string; editParts: Record<string, string>; setEditParts: (v: Record<string, string>) => void;
   setEditing: (v: number | null) => void; setEditAwarded: (v: string) => void; setEditNote: (v: string) => void; setEditKind: (v: string) => void;
   onAgree: (q: Question) => void; onOverride: (q: Question) => void;
 }) {
@@ -1075,7 +1095,7 @@ function QuestionCard(p: {
               Look at {q.secondLook.map(d => d.label || 'the working').join(' and ')} on the page. If the second reader is right, Q{q.questionNumber} should be <strong>{suggested}/{q.max}</strong>; if the marker is right, it stays <strong>{q.awarded}/{q.max}</strong>.
             </div>
             {suggested !== q.awarded && (
-              <button onClick={() => { p.setEditing(q.index); p.setEditAwarded(String(suggested)); p.setEditNote(note); p.setEditKind(q.override?.errorKind ?? ''); }}
+              <button onClick={() => { p.setEditing(q.index); p.setEditAwarded(String(suggested)); p.setEditNote(note); p.setEditKind(q.override?.errorKind ?? ''); p.setEditParts(Object.fromEntries(q.secondLook.map(d => [d.label, String(d.second)]))); }}
                 style={{ ...btn('#dbeafe', '#1e3a8a', '#bfdbfe'), marginTop: 6, padding: '5px 10px', fontSize: 12.5 }}>
                 ✏️ Use the second reader&apos;s mark → {suggested}/{q.max}
               </button>
@@ -1107,9 +1127,31 @@ function QuestionCard(p: {
 
       {!released && (isEditing ? (
         <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-          <input type="number" inputMode="numeric" min={0} max={q.max} value={p.editAwarded} onChange={e => p.setEditAwarded(e.target.value)} autoFocus
-            style={{ width: 68, padding: 8, fontSize: 16, border: `1px solid ${C.border}`, borderRadius: 6 }} />
-          <span style={{ color: C.muted }}>/ {q.max}</span>
+          {q.parts.length > 0 ? (
+            <>
+              {/* One box per part: the question total is their sum, and the page is
+                  redrawn from these so the boxes on the photo say the same numbers. */}
+              {q.parts.map((pt, i) => (
+                <label key={pt.label || i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 14 }}>
+                  <span style={{ color: C.muted }}>{pt.label || 'Q'}</span>
+                  <input type="number" inputMode="numeric" min={0} max={pt.max} autoFocus={i === 0}
+                    value={p.editParts[pt.label] ?? String(pt.awarded)}
+                    onChange={e => p.setEditParts({ ...p.editParts, [pt.label]: e.target.value })}
+                    style={{ width: 56, padding: 8, fontSize: 16, border: `1px solid ${C.border}`, borderRadius: 6 }} />
+                  <span style={{ color: C.muted }}>/ {pt.max}</span>
+                </label>
+              ))}
+              <strong style={{ fontSize: 15 }}>
+                = {q.parts.reduce((s, pt) => s + (Number(p.editParts[pt.label] ?? pt.awarded) || 0), 0)}/{q.max}
+              </strong>
+            </>
+          ) : (
+            <>
+              <input type="number" inputMode="numeric" min={0} max={q.max} value={p.editAwarded} onChange={e => p.setEditAwarded(e.target.value)} autoFocus
+                style={{ width: 68, padding: 8, fontSize: 16, border: `1px solid ${C.border}`, borderRadius: 6 }} />
+              <span style={{ color: C.muted }}>/ {q.max}</span>
+            </>
+          )}
           <input value={p.editNote} onChange={e => p.setEditNote(e.target.value)} placeholder="Why (optional)"
             style={{ flex: 1, minWidth: 140, padding: 8, fontSize: 15, border: `1px solid ${C.border}`, borderRadius: 6 }} />
           {/* The kind of error he saw — optional, and deliberately NOT pre-filled from
@@ -1119,7 +1161,8 @@ function QuestionCard(p: {
             <option value="">— kind of error</option>
             {ERROR_KINDS.map(k => <option key={k} value={k}>{k} — {ERROR_KIND_HINT[k]}</option>)}
           </select>
-          <button onClick={() => p.onOverride(q)} disabled={isBusy || p.editAwarded === ''} style={btn(C.ink, '#fff')}>{isBusy ? '…' : 'Save'}</button>
+          <button onClick={() => p.onOverride(q)} disabled={isBusy || (q.parts.length === 0 && p.editAwarded === '')} style={btn(C.ink, '#fff')}
+            title={q.parts.length ? 'Save the marks, then redraw this page so the ink matches' : 'Save the mark'}>{isBusy ? '…' : q.parts.length && q.photoIndex != null ? 'Save & redraw page' : 'Save'}</button>
           <button onClick={() => p.setEditing(null)} style={btn('#fff', '#374151', C.border)}>Cancel</button>
         </div>
       ) : (
@@ -1129,7 +1172,7 @@ function QuestionCard(p: {
               <button onClick={() => p.onAgree(q)} disabled={isBusy} style={btn(C.okBg, C.ok, C.okBorder)}
                 title={`Keep the marker's ${q.awarded}/${q.max} for Q${q.questionNumber}`}>{isBusy ? '…' : `✓ Agree — keep ${q.awarded}/${q.max}`}</button>
             )}
-            <button onClick={() => { p.setEditing(q.index); p.setEditAwarded(String(q.awarded)); p.setEditNote(''); p.setEditKind(q.override?.errorKind ?? ''); }}
+            <button onClick={() => { p.setEditing(q.index); p.setEditAwarded(String(q.awarded)); p.setEditNote(''); p.setEditKind(q.override?.errorKind ?? ''); p.setEditParts({}); }}
               title={`Set Q${q.questionNumber}'s mark yourself`}
               style={q.reviewed ? { ...btn('#fff', C.muted, C.border), padding: '4px 9px', fontSize: 12.5 } : btn('#fff', '#374151', C.border)}>
               {q.reviewed ? 'change' : '✏️ Override — set the mark myself'}

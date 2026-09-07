@@ -298,19 +298,52 @@ function requireResult(resultJson: unknown, index: number): Json {
  * whole record — an edit that sends no kind stores none, so the UI pre-fills
  * the select from the current override rather than this function remembering.
  */
+export interface PartOverride { label: string; awarded: number }
+
+const normLabel = (s: unknown) => str(s).replace(/[()\s.]/g, '').toLowerCase();
+
+/**
+ * Per-part marks for an override (8 Sep 2026): the desk lets Adrian set each
+ * part, the question total becomes their sum, and the bot can then redraw the
+ * page from the parts (ai/reannotate-page.js). Unknown labels are ignored here
+ * — the desk only offers the parts the run has.
+ */
+function applyPartOverrides(marking: Json, parts: PartOverride[]): { marking: Json; changed: boolean } {
+  const rawParts = Array.isArray(marking.parts) ? (marking.parts as unknown[]) : [];
+  let changed = false;
+  const nextParts = rawParts.map(p => {
+    const part = asRecord(p) ?? {};
+    const hit = parts.find(o => normLabel(o.label) === normLabel(part.label));
+    if (!hit) return part;
+    const clamped = Math.min(Math.max(num(hit.awarded), 0), num(part.max));
+    if (clamped !== num(part.awarded)) changed = true;
+    const full = num(part.max) > 0 && clamped >= num(part.max);
+    return { ...part, awarded: clamped, ...(full ? { error_summary: null, error_kind: null } : {}) };
+  });
+  return { marking: { ...marking, parts: nextParts }, changed };
+}
+
 export function applyOverride(
   resultJson: unknown,
   index: number,
   awarded: number,
   note: string,
   at: string,
-  errorKind?: unknown
+  errorKind?: unknown,
+  parts?: PartOverride[]
 ): Json {
   const r = requireResult(resultJson, index);
-  const marking = asRecord(r.marking) ?? {};
+  let marking = asRecord(r.marking) ?? {};
   const max = num(marking.total_max);
   const previous = num(marking.total_awarded);
-  const clamped = Math.min(Math.max(num(awarded), 0), max);
+  // With parts, the question total is their sum — the number typed for the
+  // question is ignored, so the boxes and the total can never disagree.
+  const hasParts = Array.isArray(parts) && parts.length > 0 && Array.isArray(marking.parts) && (marking.parts as unknown[]).length > 0;
+  if (hasParts) marking = applyPartOverrides(marking, parts!).marking;
+  const wanted = hasParts
+    ? (marking.parts as unknown[]).reduce<number>((s, p) => s + num(asRecord(p)?.awarded), 0)
+    : num(awarded);
+  const clamped = Math.min(Math.max(wanted, 0), max);
 
   const next: Json = {
     ...r,
@@ -325,6 +358,7 @@ export function applyOverride(
       note: str(note),
       at,
       ...(isErrorKind(errorKind) ? { error_kind: errorKind } : {}),
+      ...(hasParts ? { parts: parts!.map(p => ({ label: str(p.label), awarded: num(p.awarded) })) } : {}),
     },
   };
   return replaceResult(resultJson, index, next);
