@@ -2459,7 +2459,8 @@ export default function MarkPaperPage() {
             const original = pageSrcRef.current.photos[p.photo_index];
             return {
               photoIndex: p.photo_index,
-              url: pickAnnotatedPhotoUrl(p, 'photos'),
+              // Same-origin path: the canonical www URL fails CORS on the preview deploy.
+              url: fileHref(pickAnnotatedPhotoUrl(p, 'photos')),
               // The editable layer (SPEC-ANNOTATE §14) — same-origin paths so the
               // admin cookie rides along on the preview deploy too.
               layerUrl: p.layer_url ? fileHref(p.layer_url) : null,
