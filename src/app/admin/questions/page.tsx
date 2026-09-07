@@ -149,6 +149,20 @@ export default function QuestionBankPage() {
   const [mode, setMode] = useState<'text' | 'smart'>('text');
   const [ocrBusy, setOcrBusy] = useState(false);
   const cameraRef = useRef<HTMLInputElement | null>(null);
+  // A photo can be DROPPED anywhere on the page or PASTED (⌘V) instead of
+  // picked through the file dialog (Adrian, 7 Sep 2026: "can I just drop a
+  // photo… drag and drop into the search bar?"). `dragging` lights the search
+  // bar up while a file is over the page.
+  const [dragging, setDragging] = useState(false);
+  const imageFrom = (list: FileList | DataTransferItemList | null | undefined): File | null => {
+    if (!list) return null;
+    for (let i = 0; i < list.length; i++) {
+      const item = list[i] as File | DataTransferItem;
+      const file = item instanceof File ? item : item.kind === 'file' ? item.getAsFile() : null;
+      if (file && /^image\//.test(file.type)) return file;
+    }
+    return null;
+  };
 
   const [basket, setBasket] = useState<string[]>([]);
   const [basketOpen, setBasketOpen] = useState(false);
@@ -670,6 +684,19 @@ export default function QuestionBankPage() {
     } catch (e) { setApiError((e as Error).message); }
     finally { setOcrBusy(false); if (cameraRef.current) cameraRef.current.value = ''; }
   };
+  // Paste a screenshot anywhere on the page (no need to focus the search box).
+  // Only an image on the clipboard is taken; ordinary text pastes are untouched.
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      const file = imageFrom(e.clipboardData?.files) ?? imageFrom(e.clipboardData?.items);
+      if (!file || ocrBusy) return;
+      e.preventDefault();
+      void onPhotoPicked(file);
+    };
+    document.addEventListener('paste', onPaste);
+    return () => document.removeEventListener('paste', onPaste);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ocrBusy, level]);
 
   // ── assign to student ──────────────────────────────────────────────────────
   const openAssign = async (c: Card) => {
@@ -867,7 +894,18 @@ export default function QuestionBankPage() {
   );
 
   return (
-    <main style={{ minHeight: '100vh', background: C.bg, padding: '14px 12px 60px', maxWidth: 760, margin: '0 auto' }}>
+    <main style={{ minHeight: '100vh', background: C.bg, padding: '14px 12px 60px', maxWidth: 760, margin: '0 auto' }}
+      // Drop a photo anywhere on the page — the whole page is the target, so a
+      // file dragged from Finder/Photos never opens in the tab instead.
+      onDragOver={e => { if (e.dataTransfer.types.includes('Files')) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; if (!dragging) setDragging(true); } }}
+      onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDragging(false); }}
+      onDrop={e => {
+        const file = imageFrom(e.dataTransfer.files) ?? imageFrom(e.dataTransfer.items);
+        if (!file) return;
+        e.preventDefault(); setDragging(false);
+        if (tab !== 'search') { setTab('search'); setPaperView(null); }
+        void onPhotoPicked(file);
+      }}>
       <header style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
         <h1 style={{ fontSize: 20, fontWeight: 700 }}>📚 Question Bank</h1>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
@@ -884,8 +922,9 @@ export default function QuestionBankPage() {
         {tab === 'search' && (
           <div style={{ flex: '1 1 100%', display: 'flex', gap: 6 }}>
             <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && search(0)}
-              placeholder={mode === 'smart' ? 'Describe the question — "ladder against wall trig"…' : 'Search question text or school…'} inputMode="search"
-              style={{ flex: 1, padding: '10px 12px', fontSize: 16, border: `1px solid ${C.border}`, borderRadius: 10 }} />
+              placeholder={dragging ? 'Drop the photo here' : mode === 'smart' ? 'Describe the question — "ladder against wall trig"…' : 'Search question text or school… or drop / paste a photo'} inputMode="search"
+              style={{ flex: 1, padding: '10px 12px', fontSize: 16, borderRadius: 10,
+                border: dragging ? `2px dashed ${C.navy}` : `1px solid ${C.border}`, background: dragging ? 'rgba(20,41,82,0.05)' : '#fff' }} />
             <button onClick={() => cameraRef.current?.click()} disabled={ocrBusy} title="Snap a question to find it"
               style={{ padding: '0 12px', fontSize: 18, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 10, cursor: 'pointer' }}>
               {ocrBusy ? '…' : '📷'}
