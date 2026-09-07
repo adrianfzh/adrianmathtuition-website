@@ -760,10 +760,27 @@ export default function MarkPaperPage() {
   // re-mark button?"): the same stored-inputs re-mark as the loaded run's 🔁,
   // without loading first. The marking is replaced in place and the proxy's
   // auto-queue (remark:true) rebuilds the Practice Again sheet.
-  async function remarkRun(run: { id: string; paper_name?: string | null }) {
+  async function remarkRun(run: Run) {
+    // 🌙 Through the queue, not the direct API (Adrian, 8 Sep 2026: "why is the
+    // latest marked copy of denise pdf costing $3+?"): the Mac plan-marker
+    // claims it when a slot is awake (~$0.20, ~3–4 min); otherwise the API
+    // path takes it after the head start. The bot moves the old marking aside,
+    // reads every page afresh and rewrites the Practice Again sheet on delivery.
     const name = run.paper_name || 'this paper';
-    if (!window.confirm(`Re-mark "${name}" from its stored photos? Costs about the same as the original marking (~1–2 min). Its Practice Again sheet is rebuilt afterwards.`)) return;
-    await markFromStored(run.id);
+    if (!window.confirm(`Re-mark "${name}" through the 🌙 queue? The Mac marks it on your plan when a slot is free (~20¢, 3–4 min); otherwise the API path takes it after a few minutes (~$3). The old marking steps aside now, and the Practice Again sheet is rewritten afterwards.`)) return;
+    setRowBusy((p) => ({ ...p, [run.id]: 'remark' })); setRowNote((p) => ({ ...p, [run.id]: undefined }));
+    try {
+      const r = await fetch('/api/admin/mark-paper', {
+        method: 'POST', headers: authHeaders,
+        body: JSON.stringify({ phase: 'enqueue', id: run.id, model: markModel, style: markStyle, remark: true }),
+      });
+      const d = await r.json();
+      if (!r.ok || d.error) throw new Error(d.error || 'could not queue it');
+      setRowNote((p) => ({ ...p, [run.id]: { ok: true, text: `🌙 queued for re-marking${typeof d.etaMinutes === 'number' ? ` — ~${d.etaMinutes} min` : ''}; the sheet follows the new marking` } }));
+      loadStats();
+    } catch (e) {
+      setRowNote((p) => ({ ...p, [run.id]: { ok: false, text: `🔁 failed: ${(e as Error).message}` } }));
+    } finally { setRowBusy((p) => ({ ...p, [run.id]: undefined })); }
   }
 
   // Mark (or re-mark) a run from its server-stored inputs — the history-row ▶ Mark
@@ -1032,7 +1049,7 @@ export default function MarkPaperPage() {
   // only covers the paper currently loaded — Adrian wanted it on past rows too,
   // plus a way to delete junk (abandoned ⏳ uploads, duplicate runs). State is
   // keyed by run id so a slow save on one row never freezes another's buttons.
-  const [rowBusy, setRowBusy] = useState<Record<string, 'dbx' | 'del' | 'now' | 'batch' | 'sheet' | 'cancel' | undefined>>({});
+  const [rowBusy, setRowBusy] = useState<Record<string, 'dbx' | 'del' | 'now' | 'batch' | 'sheet' | 'cancel' | 'remark' | undefined>>({});
   const [rowNote, setRowNote] = useState<Record<string, { ok: boolean; text: string } | undefined>>({});
   const [deletedNote, setDeletedNote] = useState<{ id: string; name: string } | null>(null);
   async function undoDelete() {
@@ -1851,10 +1868,10 @@ export default function MarkPaperPage() {
                         {/* 🔁 Re-mark from the row (Adrian, 8 Sep 2026: "can you put a
                             re-mark button?") — the loaded run's 🔁, one tap from the list. */}
                         <button type="button" disabled={!!loadingRun || busy || generating || !!rowBusy[run.id]}
-                          title="Mark this paper again from its stored photos — full marking cost (~1–2 min); its Practice Again sheet is rebuilt afterwards"
+                          title="Mark this paper again through the 🌙 queue — the Mac on your plan when a slot is awake (~20¢), else the API after a few minutes; the Practice Again sheet is rewritten afterwards"
                           onClick={() => remarkRun(run)}
                           style={{ ...btn, background: '#4338ca', padding: '4px 10px', fontSize: 12, opacity: (loadingRun || busy || generating) ? 0.6 : 1 }}>
-                          🔁 Re-mark
+                          {rowBusy[run.id] === 'remark' ? '…' : '🔁 Re-mark'}
                         </button>
                       </>
                     )}
@@ -2239,10 +2256,10 @@ export default function MarkPaperPage() {
               <button
                 style={{ ...btn, background: '#4338ca', opacity: generating || busy ? 0.6 : 1 }}
                 disabled={generating || busy}
-                title="Mark this paper again from its stored photos — full marking cost"
+                title="Mark this paper again NOW on the API — about the original marking cost (~$3 for a full paper), 1–2 min. The list row's 🔁 Re-mark goes through the 🌙 queue instead (Mac on your plan, ~20¢)"
                 onClick={remarkPaper}
               >
-                🔁 Re-mark
+                ⚡ Re-mark now
               </button>
             )}
             {marked.map((m) => (
