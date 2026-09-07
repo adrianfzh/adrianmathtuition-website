@@ -30,7 +30,7 @@ describe('sgtStartOfDayIso', () => {
 // portal and the Telegram bot's /handin (Adrian, 24 Aug 2026). Papers Adrian
 // uploads himself on /admin/mark-paper carry neither marker and are not counted.
 describe('countHandinsToday', () => {
-  type Row = { student_id: string; portal?: boolean; telegram?: boolean; created_at: string };
+  type Row = { student_id: string; portal?: boolean; telegram?: boolean; assignment?: boolean; printed?: boolean; created_at: string };
 
   function client(rows: Row[], asked: string[][] = []): HandinCountingClient {
     return {
@@ -44,6 +44,11 @@ describe('countHandinsToday', () => {
           eq: (c: string, v: string) => {
             log.push(`${c}=${v}`);
             preds.push(c === 'student_id' ? (r => r.student_id === v) : (r => r.portal === true));
+            return b;
+          },
+          is: (c: string) => {
+            log.push(`${c} is null`);
+            preds.push(c === 'result_json->assignment_id' ? (r => !r.assignment) : (r => !r.printed));
             return b;
           },
           not: (c: string, op: string) => { log.push(`${c} not ${op} null`); preds.push(r => r.telegram === true); return b; },
@@ -87,7 +92,28 @@ describe('countHandinsToday', () => {
     expect(n).toBe(0);
   });
 
-  it('both queries are bounded to SGT midnight and to the student', async () => {
+  // Adrian, 7 Sep 2026: only an EXAM paper spends the day. A Practice Again /
+  // From Adrian sheet and a printed bank paper are handed in through the same
+  // door but never count — before this they were exempt only at their own
+  // submit, and still blocked the exam paper that came after them.
+  it('a Practice Again / From Adrian hand-in never spends the day', async () => {
+    const n = await countHandinsToday(client([{ student_id: 'recA', portal: true, assignment: true, created_at: TODAY }]), 'recA', NOW);
+    expect(n).toBe(0);
+  });
+  it('a printed bank paper never spends the day either', async () => {
+    const n = await countHandinsToday(client([{ student_id: 'recA', portal: true, printed: true, created_at: TODAY }]), 'recA', NOW);
+    expect(n).toBe(0);
+  });
+  it('a sheet in the morning leaves the exam-paper slot open in the afternoon', async () => {
+    const rows: Row[] = [
+      { student_id: 'recA', portal: true, assignment: true, created_at: TODAY },
+      { student_id: 'recA', portal: true, printed: true, created_at: TODAY },
+    ];
+    expect(await countHandinsToday(client(rows), 'recA', NOW)).toBe(0);
+    expect(await countHandinsToday(client([...rows, { student_id: 'recA', portal: true, created_at: TODAY }]), 'recA', NOW)).toBe(1);
+  });
+
+  it('both queries are bounded to SGT midnight and to the student; the portal one excludes sheets and printed papers', async () => {
     const asked: string[][] = [];
     await countHandinsToday(client([], asked), 'recA', NOW);
     expect(asked).toHaveLength(2);
@@ -95,5 +121,8 @@ describe('countHandinsToday', () => {
       expect(q).toContain('created_at>=2026-08-23T16:00:00.000Z');
       expect(q).toContain('student_id=recA');
     }
+    const portalQuery = asked.find(q => q.includes('result_json->>portal_submission=true'))!;
+    expect(portalQuery).toContain('result_json->assignment_id is null');
+    expect(portalQuery).toContain('result_json->generated_paper_id is null');
   });
 });

@@ -1,6 +1,12 @@
-// One paper hand-in per student per Singapore calendar day (Adrian, 21 Aug
+// One EXAM-PAPER hand-in per student per Singapore calendar day (Adrian, 21 Aug
 // 2026, Phase G hardening — every hand-in is auto-queued into Opus marking and
 // Telegrams a finished PDF, so the cap is a cost brake as much as a UX one).
+// Since 7 Sep 2026 only a FREE hand-in spends the day: a Practice Again / From
+// Adrian sheet (result_json.assignment_id) and a printed bank paper
+// (result_json.generated_paper_id) are exempt at submit time AND in the count —
+// before this they were exempt only at submit time, so a sheet handed in at
+// breakfast blocked the exam paper at dinner (Adrian: "can only put the quota of
+// 1 only for exam papers submission … printed papers don't count").
 // SGT is UTC+8 with no DST, so the day boundary needs no timezone library.
 import { sgtDayStartISO } from './sgt';
 
@@ -30,6 +36,7 @@ type CountResult = { count: number | null; error: unknown };
 interface CountQuery extends PromiseLike<CountResult> {
   gte(column: string, value: string): CountQuery;
   eq(column: string, value: string): CountQuery;
+  is(column: string, value: null): CountQuery;
   not(column: string, operator: string, value: null): CountQuery;
 }
 
@@ -51,9 +58,13 @@ export async function countHandinsToday(
     .gte('created_at', since)
     .eq('student_id', studentId);
 
+  // A missing JSON key reads as SQL NULL through `->`, so `.is(…, null)` keeps
+  // exactly the free hand-ins: no assignment behind it, no printed paper behind it.
   const [telegram, portal] = await Promise.all([
     forStudent().not('result_json->telegram_handin', 'is', null),
-    forStudent().eq('result_json->>portal_submission', 'true'),
+    forStudent().eq('result_json->>portal_submission', 'true')
+      .is('result_json->assignment_id', null)
+      .is('result_json->generated_paper_id', null),
   ]);
   return (telegram.count ?? 0) + (portal.count ?? 0);
 }

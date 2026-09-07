@@ -51,7 +51,7 @@ slips, ship Mock + My topics first — the preset enum leaves room.
 | D2 | Rollout gate | Rides the full-portal switch (`MARKING_ONLY_BETA` off) OR a `PRINT_PAPER_STUDENTS` allowlist for a pilot, same pattern as `WORKSHEET_STUDENTS` | Beta stays marking-only |
 | D3 | Generation allowance | **2 papers per SGT week** per student (const in `lib/portal-print-limit.ts`, tested) — allowance-framed copy like the daily hand-in slot | Cost brake (Puppeteer + figure bandwidth) and keeps papers meaningful |
 | D4 | Pre-registration storage | **New table `portal_generated_papers`** (below), NOT a new `portal_assignments.kind` | Assignments are cap-EXEMPT and auto-release — self-generated papers must stay cap-COUNTED and manually released; overloading `kind` would fork every status rule |
-| D5 | Hand-in cap | Submitting a generated paper **spends the normal daily slot** | Adrian-initiated work is exempt; self-initiated is not (same cost brake as today) |
+| D5 | Hand-in cap | Submitting a generated paper is **exempt from the daily slot** (flipped 7 Sep 2026 — it spent the slot from launch until then) | Adrian, 7 Sep 2026: "can only put the quota of 1 only for exam papers submission … printed papers don't count" — only a free exam-paper hand-in spends the day, on both surfaces (`countHandinsToday` here and in the bot) |
 | D6 | Release | Manual, via triage, like portal hand-ins today | The one-human-glance rule stands |
 | D7 | Answers on the sheet | Mock: answer-key final page. Topics/weak-spots: answers-at-back page. **Never worked solutions** | Kiosk invariant; solutions arrive via marking or /solutions |
 | D8 | Determinism | Mock: fresh draw per generation (it's a one-off artifact, stored). Topics: reuse the kiosk daily-draw seed | Shared-sheet promise stays intact for kiosk; a stored paper needs no seed |
@@ -95,7 +95,7 @@ brake, not expiry.
 4. **`/api/portal/submit`** — when `paperId` present: verify ownership +
    `status='open'`, stamp `result_json.generated_paper_id` + the ordered
    `question_ids` onto the run, flip the row to `submitted` + `run_id`. Daily
-   slot still spends (D5).
+   slot no longer spends (D5, flipped 7 Sep 2026 — only an exam paper counts).
 
 ## Bot-side (separate repo, separate session — do NOT bundle)
 

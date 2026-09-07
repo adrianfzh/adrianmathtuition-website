@@ -278,9 +278,9 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
               {assignment ? 'Back to From Adrian' : 'Go to Marked papers'}
             </Link>
           </div>
-          {!assignment && (
+          {!assignment && !paper && (
             <p className="text-[13px] text-gray-500 mt-3">
-              🎟️ That was today&apos;s hand-in slot — a fresh one opens at midnight.
+              🎟️ That was today&apos;s exam-paper hand-in — a fresh one opens at midnight. Practice Again sheets and printed papers can still go in.
             </p>
           )}
         </div>
@@ -288,19 +288,21 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
     );
   }
 
-  // Slot already spent today (and this isn't a cap-exempt assignment): say so
-  // up front, before any photographing happens. The POST-time 429 stays as the
+  // Slot already spent today (and this isn't a cap-exempt assignment or
+  // printed paper — only an exam paper spends the day, 7 Sep 2026): say so up
+  // front, before any photographing happens. The POST-time 429 stays as the
   // backstop for a slot spent from the Telegram side mid-visit.
-  if (slotUsed && !assignment) {
+  if (slotUsed && !assignment && !paper) {
     return (
       <div className="space-y-4 pb-24 sm:pb-4">
         <h1 className="text-xl font-bold text-navy pt-1">Submit a paper</h1>
         <div className={`${CARD} p-5 text-center`}>
           <p className="text-4xl">🎟️</p>
-          <p className="font-bold text-navy mt-2">Today&apos;s hand-in slot is used</p>
+          <p className="font-bold text-navy mt-2">Today&apos;s exam-paper hand-in is used</p>
           <p className="text-sm text-gray-600 mt-1.5">
-            One paper a day gets every script marked properly. A fresh slot opens at midnight —
-            line the next paper up for tomorrow.
+            One exam paper a day gets every script marked properly. A fresh slot opens at midnight —
+            line the next paper up for tomorrow. Practice Again sheets and printed papers don&apos;t count,
+            so those can still go in today.
           </p>
           <div className="mt-4 flex justify-center">
             <Link href="/app/marking" className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
@@ -328,7 +330,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
       ) : (
         <div className="pt-1">
           <h1 className="text-xl font-bold text-navy">Submit a paper</h1>
-          <p className="text-[13px] text-gray-500 mt-0.5">🎟️ Today&apos;s hand-in slot is open — one marked paper per day.</p>
+          <p className="text-[13px] text-gray-500 mt-0.5">🎟️ Today&apos;s exam-paper hand-in is open — one a day; practice sheets and printed papers don&apos;t count.</p>
         </div>
       )}
 

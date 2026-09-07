@@ -39,8 +39,8 @@ export default async function SubmitPage({ searchParams }: { searchParams: Promi
 
   // ?paper=<id> — a self-generated printed paper (SPEC-PRINT-PAPER.md): lock
   // the name to its title so marking links back to the pre-registered
-  // questions. Ownership-checked here; unlike assignments it SPENDS the daily
-  // slot (spec D5 — self-initiated work keeps the cost brake).
+  // questions. Ownership-checked here. Cap-exempt like an assignment since
+  // 7 Sep 2026 (only an exam paper spends the day; spec D5 flipped).
   let paper: { id: string; title: string } | null = null;
   if (!assignment && paperId) {
     const { data } = await getSupabaseAdmin()
@@ -59,7 +59,7 @@ export default async function SubmitPage({ searchParams }: { searchParams: Promi
   // (route D3), so their flow never checks. Best-effort — a count failure just
   // means the server-side cap catches it at submit instead.
   let slotUsed = false;
-  if (!assignment) {
+  if (!assignment && !paper) {
     try {
       // Strangers: the ceiling comes from their pass tier (Standard 1/day,
       // Intensive 3/day) and an exhausted pass meter also greys the form —

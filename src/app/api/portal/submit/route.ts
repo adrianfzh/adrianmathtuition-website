@@ -105,8 +105,9 @@ export async function POST(req: Request) {
 
   // A self-generated printed paper (SPEC-PRINT-PAPER.md): re-check ownership
   // and status here (the id is client-supplied). Its stored question ids get
-  // stamped onto the run below — the pre-registration the marker reads. NOT
-  // cap-exempt: self-initiated work spends the day's slot (spec D5).
+  // stamped onto the run below — the pre-registration the marker reads.
+  // Cap-exempt since 7 Sep 2026 (Adrian: "printed papers don't count" — only an
+  // exam paper spends the day; spec D5 flipped).
   let printedPaper: { id: string; question_ids: unknown } | null = null;
   if (!assignment && typeof body.paperId === 'string' && body.paperId) {
     const { data: p } = await admin
@@ -178,13 +179,15 @@ export async function POST(req: Request) {
   // Daily ceiling: tuition students keep the global cap (1/SGT day, shared
   // with the bot's /handin); a stranger's ceiling comes from their pass tier
   // (Standard 1/day, Intensive 3/day — trials meter as Standard).
+  // Only an EXAM paper spends the day (7 Sep 2026): a sheet or a printed paper
+  // neither checks the cap here nor counts in it (countHandinsToday).
   const dailyCap = tuition ? DAILY_SUBMIT_CAP : dailyHandinCapForTier(meteredPass?.tier);
-  const count = assignment ? 0 : await countHandinsToday(admin as unknown as HandinCountingClient, studentId);
+  const count = (assignment || printedPaper) ? 0 : await countHandinsToday(admin as unknown as HandinCountingClient, studentId);
   if ((count ?? 0) >= dailyCap) {
     return NextResponse.json({
       error: dailyCap === 1
-        ? 'Today’s hand-in slot is used — a fresh one opens at midnight. One paper a day gets every script marked properly.'
-        : `You’ve handed in ${dailyCap} papers today — a fresh allowance opens at midnight.`,
+        ? 'Today’s exam-paper hand-in is used — a fresh one opens at midnight. Practice Again sheets and printed papers don’t count, so those can still go in.'
+        : `You’ve handed in ${dailyCap} exam papers today — a fresh allowance opens at midnight. Practice Again sheets and printed papers don’t count.`,
     }, { status: 429 });
   }
 
