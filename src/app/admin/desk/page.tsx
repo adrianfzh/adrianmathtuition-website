@@ -398,7 +398,7 @@ export default function DeskPage() {
     // The red pen follows the record (8 Sep 2026): a part-level change redraws
     // that page from the original with the new marks. ~20 s, a few cents.
     if (partsChanged && q.photoIndex != null) {
-      setToast(`Saved. Redrawing page ${q.photoIndex + 1} with the new marks — about 20 seconds…`);
+      setToast(`Saved. Redrawing page ${q.photoIndex + 1} with the new marks — up to a minute…`);
       setBusy('redraw');
       const rd = await postJson('/api/admin/desk/redraw', { runId: id, photoIndex: q.photoIndex });
       setBusy('');
