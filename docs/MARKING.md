@@ -727,6 +727,19 @@ they are, reachable from its "Other views" row. Nothing is deleted.
   longer blocks the automatic door. Note the bot re-marks a COMPLETED run into a
   NEW row (bot `remarkRun`), which has no jobs and queues normally; the in-place
   case is a never-marked row being filled.
+- **A returned Practice Again sheet is marked against the sheet** (7 Sep 2026 —
+  Rainie's hand-in came back "no question found — marked from the working alone"
+  with the questions sitting in the sheet she answered). `lib/sheet-archive.ts`
+  copies every finished sheet into the source run's store at `done`
+  (`runs/<id>/practice-again.pdf|docx`, `result_json.practice_again_archive`;
+  release-with-sheet overwrites with the released copy; `{action:'archive-sheet',
+  id}` backfills). The bot's `lib/practice-again-attach.js` then attaches that PDF
+  as `source.paper_pdf_url` with `source.paper_kind = 'practice-again'` for a
+  hand-in named "Practice Again — …" (or one from a practice-again assignment),
+  preferring the sheet whose paper key matches the name inside, and the marker's
+  PDF-mode read carries `PRACTICE_AGAIN_NOTE` (Examples are teaching, Practice
+  items are the questions, printed answers are the key, sheet labels are the
+  question numbers). `paper_match.practice_again` stamps what was used.
 - **Auto-queue** — `lib/sheet-queue.ts` (`sheetQueueGuard` pure/tested,
   `queueSheetJob`, `autoQueueSheet`) is the ONE guard, now also what the
   sheet-jobs POST calls. The automatic door is stricter than the button: tagged ·
