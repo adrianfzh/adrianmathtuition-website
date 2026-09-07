@@ -32,6 +32,7 @@ import { DESK_LANES, LANE_LABEL, orderLane, type DeskLane } from '@/lib/desk-sta
 import { ERROR_KINDS, ERROR_KIND_HINT, isErrorKind } from '@/lib/error-kinds';
 import { PAPER_SUBJECTS, subjectPill } from '@/lib/portal-subjects';
 import type { TriageQuestion } from '@/lib/mark-triage';
+import { secondLookSuggestedMark } from '@/lib/mark-triage';
 import type { Diagnosis } from '@/lib/sheet-diagnosis';
 import { pdfToPageImages } from '@/lib/pdf-pages';
 
@@ -1003,9 +1004,36 @@ function QuestionCard(p: {
         {q.topic && <span style={{ fontSize: 12, color: C.muted, marginLeft: 'auto', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220 }}>{q.topic}</span>}
       </div>
 
-      {q.reviewReasons.map((reason, i) => (
-        <div key={i} style={{ marginTop: 6, background: C.flagBg, border: `1px solid ${C.flagBorder}`, color: C.flag, borderRadius: 6, padding: '5px 8px', fontSize: 12.5 }}>⚠ {reason}</div>
-      ))}
+      {/* The second reader's verdict, from result_json.second_look — structured, so it
+          reads as a decision: which part, the marker's mark, the second reader's mark,
+          and what each button would do about it. Its prose twin in reviewReasons
+          ("Second look disagrees on …") is dropped when this card is shown. */}
+      {q.secondLook.length > 0 && !q.reviewed && !released && (() => {
+        const suggested = secondLookSuggestedMark(q);
+        const partsText = q.secondLook.map(d => `${d.label || 'the question'}: marker ${d.first}/${d.max}, second reader ${d.second}/${d.max}`).join(' · ');
+        const note = `second reader: ${q.secondLook.map(d => `${d.label || 'Q'} ${d.second}/${d.max} (marker ${d.first})`).join(', ')}`;
+        return (
+          <div style={{ marginTop: 6, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e3a8a', borderRadius: 6, padding: '7px 9px', fontSize: 12.5, lineHeight: 1.45 }}>
+            <div><strong>👀 A second reader disagrees with the marker</strong> — {partsText}.</div>
+            <div style={{ marginTop: 3 }}>
+              Look at {q.secondLook.map(d => d.label || 'the working').join(' and ')} on the page. If the second reader is right, Q{q.questionNumber} should be <strong>{suggested}/{q.max}</strong>; if the marker is right, it stays <strong>{q.awarded}/{q.max}</strong>.
+            </div>
+            {suggested !== q.awarded && (
+              <button onClick={() => { p.setEditing(q.index); p.setEditAwarded(String(suggested)); p.setEditNote(note); p.setEditKind(q.override?.errorKind ?? ''); }}
+                style={{ ...btn('#dbeafe', '#1e3a8a', '#bfdbfe'), marginTop: 6, padding: '5px 10px', fontSize: 12.5 }}>
+                ✏️ Use the second reader&apos;s mark → {suggested}/{q.max}
+              </button>
+            )}
+          </div>
+        );
+      })()}
+      {q.reviewReasons
+        .filter(reason => !(q.secondLook.length > 0 && /^second look disagrees/i.test(reason)))
+        .map((reason, i) => (
+          <div key={i} style={{ marginTop: 6, background: C.flagBg, border: `1px solid ${C.flagBorder}`, color: C.flag, borderRadius: 6, padding: '5px 8px', fontSize: 12.5 }}>
+            <strong>Marker&apos;s note:</strong> {reason}
+          </div>
+        ))}
       {!q.questionFound && (
         <div style={{ marginTop: 4, fontSize: 12, color: C.muted }}>Max marks here are the marker&apos;s own allocation, not the paper&apos;s.</div>
       )}
@@ -1039,14 +1067,23 @@ function QuestionCard(p: {
           <button onClick={() => p.setEditing(null)} style={btn('#fff', '#374151', C.border)}>Cancel</button>
         </div>
       ) : (
-        <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {!q.reviewed && (
-            <button onClick={() => p.onAgree(q)} disabled={isBusy} style={btn(C.okBg, C.ok, C.okBorder)}>{isBusy ? '…' : '✓ Agree'}</button>
+        <div style={{ marginTop: 8 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {!q.reviewed && (
+              <button onClick={() => p.onAgree(q)} disabled={isBusy} style={btn(C.okBg, C.ok, C.okBorder)}
+                title={`Keep the marker's ${q.awarded}/${q.max} for Q${q.questionNumber}`}>{isBusy ? '…' : `✓ Agree — keep ${q.awarded}/${q.max}`}</button>
+            )}
+            <button onClick={() => { p.setEditing(q.index); p.setEditAwarded(String(q.awarded)); p.setEditNote(''); p.setEditKind(q.override?.errorKind ?? ''); }}
+              title={`Set Q${q.questionNumber}'s mark yourself`}
+              style={q.reviewed ? { ...btn('#fff', C.muted, C.border), padding: '4px 9px', fontSize: 12.5 } : btn('#fff', '#374151', C.border)}>
+              {q.reviewed ? 'change' : '✏️ Override — set the mark myself'}
+            </button>
+          </div>
+          {open && (
+            <div style={{ marginTop: 5, fontSize: 12, color: C.muted }}>
+              Agree = the marker&apos;s {q.awarded}/{q.max} stands. Override = you type the mark that should stand (and why).
+            </div>
           )}
-          <button onClick={() => { p.setEditing(q.index); p.setEditAwarded(String(q.awarded)); p.setEditNote(''); p.setEditKind(q.override?.errorKind ?? ''); }}
-            style={q.reviewed ? { ...btn('#fff', C.muted, C.border), padding: '4px 9px', fontSize: 12.5 } : btn('#fff', '#374151', C.border)}>
-            {q.reviewed ? 'change' : '✏️ Override'}
-          </button>
         </div>
       ))}
     </div>

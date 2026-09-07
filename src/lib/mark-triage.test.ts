@@ -9,7 +9,8 @@ import {
   pendingCount,
   computeAutoHold,
   TriageIndexError,
-  overrideTally, paperTotalWarning, paperTotalsMismatch } from './mark-triage';
+  overrideTally, paperTotalWarning, paperTotalsMismatch,
+  secondLookDisagreements, secondLookSuggestedMark } from './mark-triage';
 
 // Shaped from a real `paper_marking_runs.result_json` row (2026-08-11) — the
 // nesting is load-bearing: marks live at results[].marking.total_awarded, and
@@ -454,3 +455,37 @@ describe('paperTotalsMismatch — the run’s own two numbers', () => {
     expect(paperTotalsMismatch(totals(90, 94), 91)).toMatch(/HIGHER/);
   });
 });
+
+describe('second reader disagreements', () => {
+  // Shaped from Gavin Woon's AM 2024 P1 run (7 Sep 2026): the second reader
+  // gave Q10(b) 3/3 where the marker gave 2/3, and agreed everywhere else.
+  const withSecondLook = {
+    ...run(
+      question({ question_number: '10', review_recommended: true,
+        review_reasons: ['Second look disagrees on Q10(b): first read 2/3, second look says 3/3 — curve starts at (0,4). Mark unchanged.'],
+        marking: { parts: [{ label: '(b)', awarded: 2, max: 3, error_summary: 'starts at (0,0)' }], total_awarded: 7, total_max: 8 } }),
+      question({ question_number: '11' }),
+    ),
+    second_look: { model: 'x', checked: 2, disagreements: 1, parts: [
+      { question: '10', label: '(b)', first: 2, second: 3, max: 3, agree: false, blank: false },
+      { question: '11', label: '(c)', first: 1, second: 1, max: 2, agree: true, blank: false },
+    ] },
+  };
+  it('groups only the disagreeing parts by question number', () => {
+    const m = secondLookDisagreements(withSecondLook);
+    expect([...m.keys()]).toEqual(['10']);
+    expect(m.get('10')).toEqual([{ label: '(b)', first: 2, second: 3, max: 3 }]);
+  });
+  it('rides on the triage question, and suggests the whole-question mark if the second reader is right', () => {
+    const q10 = extractFlagged(withSecondLook).flagged[0];
+    expect(q10.secondLook).toEqual([{ label: '(b)', first: 2, second: 3, max: 3 }]);
+    expect(secondLookSuggestedMark(q10)).toBe(8);
+    const q11 = extractFlagged(withSecondLook).confident[0];
+    expect(q11.secondLook).toEqual([]);
+  });
+  it('is empty on a run with no second look, and clamps to the question max', () => {
+    expect(secondLookDisagreements(run(question()))).toEqual(new Map());
+    expect(secondLookSuggestedMark({ awarded: 7, max: 8, secondLook: [{ label: '', first: 0, second: 5, max: 5 }] })).toBe(8);
+  });
+});
+

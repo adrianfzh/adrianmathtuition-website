@@ -53,6 +53,21 @@ export interface TriageQuestion {
   /** Adrian has agreed with, or overridden, this question — it drops off the list. */
   reviewed: boolean;
   override: { awarded: number; previous: number; note: string; at: string; errorKind: ErrorKind | null } | null;
+  /** Parts where the second reader (result_json.second_look) disagreed with the
+   *  marker — the desk shows these as a plain "second reader says" card with a
+   *  one-tap "use its mark", instead of the prose review reason (Adrian, 7 Sep 2026:
+   *  "it is not clear what the error is … what am I agreeing with"). */
+  secondLook: SecondLookDisagreement[];
+}
+
+export interface SecondLookDisagreement {
+  /** Part label as the marker wrote it — '(b)', or '' for a whole-question read. */
+  label: string;
+  /** The marker's mark for that part. */
+  first: number;
+  /** The second reader's mark for that part. */
+  second: number;
+  max: number;
 }
 
 export interface TriageSummary {
@@ -95,7 +110,36 @@ export function isFlagged(result: Json): boolean {
   return result.review_recommended === true && result.triage_reviewed !== true;
 }
 
-function toTriageQuestion(r: Json, index: number): TriageQuestion {
+/**
+ * result_json.second_look.parts[] (bot `lib/second-look.js`, 3 Sep 2026) —
+ * `{question, label, first, second, max, agree}` per checked part — grouped by
+ * question number, disagreements only. Pure; empty when the run has none.
+ */
+export function secondLookDisagreements(resultJson: unknown): Map<string, SecondLookDisagreement[]> {
+  const out = new Map<string, SecondLookDisagreement[]>();
+  const root = asRecord(resultJson);
+  const sl = asRecord(root?.second_look);
+  const parts = Array.isArray(sl?.parts) ? sl!.parts : [];
+  for (const raw of parts) {
+    const p = asRecord(raw);
+    if (!p || p.agree !== false) continue;
+    const qn = str(p.question);
+    if (!qn) continue;
+    const list = out.get(qn) ?? [];
+    list.push({ label: str(p.label), first: num(p.first), second: num(p.second), max: num(p.max) });
+    out.set(qn, list);
+  }
+  return out;
+}
+
+/** The whole-question mark if the second reader were right on every part it
+ *  disputed: the marker's total plus each (second − first), clamped to [0, max]. */
+export function secondLookSuggestedMark(q: Pick<TriageQuestion, 'awarded' | 'max' | 'secondLook'>): number {
+  const delta = q.secondLook.reduce((s, d) => s + (d.second - d.first), 0);
+  return Math.max(0, Math.min(q.max, q.awarded + delta));
+}
+
+function toTriageQuestion(r: Json, index: number, secondLook: SecondLookDisagreement[] = []): TriageQuestion {
   const marking = asRecord(r.marking) ?? {};
   const markingOutput = asRecord(r.marking_output) ?? {};
   const meta = asRecord(markingOutput.meta) ?? {};
@@ -135,6 +179,7 @@ function toTriageQuestion(r: Json, index: number): TriageQuestion {
           errorKind: isErrorKind(override.error_kind) ? override.error_kind : null,
         }
       : null,
+    secondLook,
   };
 }
 
@@ -151,8 +196,10 @@ export function extractFlagged(resultJson: unknown): TriageSummary {
   // alone samples the marker's own doubts, which will always flatter it; a rate
   // over every question is the real one.
   const confident: TriageQuestion[] = [];
+  const disagreements = secondLookDisagreements(resultJson);
   for (let i = 0; i < results.length; i++) {
-    (isFlagged(results[i]) ? flagged : confident).push(toTriageQuestion(results[i], i));
+    const q = toTriageQuestion(results[i], i, disagreements.get(str(results[i].question_number)) ?? []);
+    (isFlagged(results[i]) ? flagged : confident).push(q);
   }
   const { awarded, max } = recomputeTotals(resultJson);
   return {

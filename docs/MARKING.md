@@ -920,6 +920,15 @@ release call failed.
   resolve the flag — parking a topic is not agreeing with the mark. 409 = already
   shelved. Views: `/admin/students/[id]` "🧺 On the shelf", `/admin/remediation`
   "Later" lane.
+- **The buttons say what they do** (7 Sep 2026, Adrian: "when I hit agree — what am I agreeing
+  with?"): `✓ Agree — keep 7/8` and `✏️ Override — set the mark myself`, with one line under an
+  open question ("Agree = the marker's 7/8 stands. Override = you type the mark that should
+  stand"). A **second-reader disagreement** (`result_json.second_look.parts[]`, `agree:false`)
+  renders as its own blue card — part, marker's mark, second reader's mark, what each button
+  would make the question — with **"Use the second reader's mark → 8/8"**, which opens the
+  override pre-filled (`secondLookSuggestedMark`, `TriageQuestion.secondLook`, pure/tested in
+  `mark-triage.ts`). The prose twin in `review_reasons` ("Second look disagrees on …") is hidden
+  when the card is shown; every other reason is labelled *Marker's note*.
 - **Agree / Override.** Both stamp `triage_reviewed: true` so the row drops off and
   can't re-appear on the next load. Override also writes `triage_override
   {awarded, previous, note, at}`, clamped to `[0, total_max]`, and **keeps the first
