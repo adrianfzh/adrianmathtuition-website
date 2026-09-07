@@ -1990,8 +1990,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     if (jumpedRef.current || initialPage == null) return;
     const idx = pages.findIndex((p) => p.photoIndex === initialPage);
     if (idx < 0 || !dimsRef.current[idx]) return;
-    jumpedRef.current = true;
+    // Re-settle on every size arrival until every page ABOVE this one has its real
+    // height — a page that sizes later shifts everything below it (the desk's
+    // in-place pen opened ~130 px into page 13 on 8 Sep 2026 for exactly this).
     jumpToPage(idx);
+    if (pages.slice(0, idx).every((_, i) => !!dimsRef.current[i])) jumpedRef.current = true;
   }, [dimsTick, initialPage, jumpToPage, pages]);
 
   // Lasso selection actions (floating chip next to the dashed box).
