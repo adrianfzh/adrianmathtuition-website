@@ -123,7 +123,7 @@ async function getPdfjs() {
   return pdfjsLib;
 }
 
-async function pdfPageToImage(
+export async function pdfPageToImage(
   pdfBuffer: Buffer,
   pageNumber: number,
   scale = 2.0

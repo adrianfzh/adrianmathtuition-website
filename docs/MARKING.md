@@ -744,6 +744,23 @@ they are, reachable from its "Other views" row. Nothing is deleted.
   PDF-mode read carries `PRACTICE_AGAIN_NOTE` (Examples are teaching, Practice
   items are the questions, printed answers are the key, sheet labels are the
   question numbers). `paper_match.practice_again` stamps what was used.
+- **📠 The ScanSnap watcher** (7 Sep 2026 — Adrian: "once scanned, put into the marking
+  queue… give a suitable name by reading the cover page… tag the student; non-exam
+  papers leave alone"). `/api/cron/scan-inbox` every 5 min (`job_runs` `scan-inbox`,
+  `?dry=1`) watches **`/Scans` in the app folder** — ScanSnap Home's destination must be
+  `Dropbox/Apps/AdrianMathNotes/Scans`; the token cannot see the top-level `/ScanSnap`.
+  Ledger `scan_inbox` (unique on path+size+modified; the first run BASELINES what is already
+  there). A PDF that has sat 90 s: named by hand ("joey am tys 2021 p2.pdf",
+  `parseScanFilename`) → taken as is; else pages 1–2 go to the cover reader
+  (`lib/scan-reader.ts`, `SCAN_READER_MODEL` default claude-sonnet-5) → not a student's
+  answered script → `status 'other'`, file untouched, silent. Exam script → every page to
+  JPEG (`pdfPageToImage`, ~1450 px) into the store as `inbox/scan-<ledger>-pNN.jpg` → bot
+  `save-paper` (name = `buildScanPaperName`: `<given name> <am|em|h2> <exam> [school]
+  <year> p<n>`) → `set-student` when `matchStudent` finds exactly ONE roster match (else
+  the desk's Needs-a-student lane) → `enqueue` opus/teacher → the PDF renamed in `/Scans`
+  to the convention name → one Telegram line (`scanLine`). `result_json.scan` on the run
+  keeps the file + reading. Pure pieces in `lib/scan-inbox.ts`, tested. ≤ 2 scans a tick,
+  ≤ 80 MB, ≤ 40 pages.
 - **Auto-queue** — `lib/sheet-queue.ts` (`sheetQueueGuard` pure/tested,
   `queueSheetJob`, `autoQueueSheet`) is the ONE guard, now also what the
   sheet-jobs POST calls. The automatic door is stricter than the button: tagged ·

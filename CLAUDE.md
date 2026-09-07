@@ -260,6 +260,7 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 - `admin/mark-paper*` routes (proxy, pdf, download, send, annotated-token, annotate-pdf, inbox) → `docs/MARKING.md`
 - `mark-batch/{init,execute,assemble-pdf,list,get,submissions,delete,upload-amended}` → `docs/MARKING.md`
 - `health-check/route.ts` — synthetic monitoring cron (6h)
+- `cron/scan-inbox/route.ts` — 📠 **the ScanSnap watcher** (7 Sep 2026, every 5 min): a PDF landing in the app folder's `/Scans` is read (cover → student, paper), named by the convention, tagged, put in the 🌙 queue and renamed; non-exam scans are left alone. Ledger `scan_inbox`; pure pieces `lib/scan-inbox.ts` → `docs/MARKING.md` §The ScanSnap watcher
 
 ### Bot integrations
 - `explanations/route.ts` — bot writes annotated-explain content here (auth: `x-render-secret`), gets back a UUID used for the `/explain/{id}` public page

@@ -87,6 +87,10 @@
       "schedule": "*/30 * * * *"
     },
     {
+      "path": "/api/cron/scan-inbox",
+      "schedule": "*/5 * * * *"
+    },
+    {
       "path": "/api/cron/dropbox-tray",
       "schedule": "30 19 * * *"
     },
