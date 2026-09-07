@@ -583,7 +583,10 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   folder 30 days after release — only student folders, only when any sheet is archived, once per
   run (`result_json.tray_deleted_at`). `scripts/students-folder-sweep.mjs` renames the existing
   folders (dry-run by default; `--apply` moves — 143 moves planned on 7 Sep 2026, older copies into
-  `_versions/`, nothing deleted; Adrian runs it from the repo).
+  `_versions/`, nothing deleted; Adrian runs it from the repo). **It needs the Production Dropbox
+  token**: the Development-scope one in `.env.local` lacks `files.content.write` (every move 401'd
+  on 7 Sep) — `vercel env pull .env.production.local --environment=production --yes`, then
+  `--apply --env .env.production.local`.
   `STUDENT_FILES_TO_DROPBOX=0` returns to the 5 Sep store-only behaviour.
 - **⏱ Release by silence (6 Sep 2026, Adrian: "12 hours"):** a finished sheet that passes the gates
   (`lib/sheet-auto-release.ts` `autoReleaseGate`, tested — every practice answer verified, a non-empty

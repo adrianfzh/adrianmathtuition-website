@@ -19,8 +19,15 @@ import path from 'node:path';
 
 const APPLY = process.argv.includes('--apply');
 const UNDO = process.argv.includes('--undo');
+// --env <file>: read the Dropbox credentials from another dotenv file. The
+// Development-scope token `vercel env pull` writes into .env.local can list and
+// read but NOT move (7 Sep 2026: all 143 moves failed 401 missing_scope
+// files.content.write); the Production token can. Adrian runs:
+//   vercel env pull .env.production.local --environment=production --yes
+//   node scripts/students-folder-sweep.mjs --apply --env .env.production.local
+const ENV_FILE = (() => { const i = process.argv.indexOf('--env'); return i > -1 && process.argv[i + 1] ? process.argv[i + 1] : '.env.local'; })();
 const LOG = path.join(process.cwd(), 'scripts', '.sweep-log.json');
-const env = Object.fromEntries(fs.readFileSync(path.join(process.cwd(), '.env.local'), 'utf8').split('\n')
+const env = Object.fromEntries(fs.readFileSync(path.resolve(process.cwd(), ENV_FILE), 'utf8').split('\n')
   .filter(l => /^[A-Z_]+=/.test(l)).map(l => { const i = l.indexOf('='); return [l.slice(0, i), l.slice(i + 1).replace(/^"|"$/g, '').trim()]; }));
 const API = 'https://api.dropboxapi.com/2';
 let token = null;
