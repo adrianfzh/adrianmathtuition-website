@@ -98,6 +98,14 @@ describe('§14 ④–⑤: snapshots, typed text, ✓⇄✗, record edits', () =>
     expect(markType(o)).toBe('tick');
     expect((o.inner.match(/<path\b/g) || []).length).toBe(1);
   });
+  it('a swapped mark makes the layer dirty (Done enables); swapping it back cleans it', () => {
+    const p = parseLayer(TICK);
+    expect(layerDirty(p)).toBe(false);
+    swapMark(p.objects[0]);
+    expect(layerDirty(p)).toBe(true);
+    swapMark(p.objects[0]);
+    expect(layerDirty(p)).toBe(false);
+  });
   it('markType falls back to the path count on a layer stored before data-type existed', () => {
     const p = parseLayer(TICK.replace(' data-type="tick"', ''));
     expect(markType(p.objects[0])).toBe('tick');

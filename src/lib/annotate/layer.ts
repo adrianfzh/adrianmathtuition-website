@@ -29,6 +29,8 @@ export type LayerObj = {
   deleted: boolean;
   /** Adrian's replacement text, applied at serialise time; null = untouched. */
   textOverride: string | null;
+  /** A ✓/✗ Adrian flipped (swapMark); flipping it back clears this. */
+  swapped: boolean;
 };
 
 export type LayerItem = { type: 'bg'; svg: string } | { type: 'obj'; obj: LayerObj };
@@ -84,7 +86,7 @@ export function parseLayer(body: string): ParsedLayer {
       text: attr(open, 'data-text') || '',
       open,
       inner: body.slice(innerStart, end),
-      dx: 0, dy: 0, deleted: false, textOverride: null,
+      dx: 0, dy: 0, deleted: false, textOverride: null, swapped: false,
     };
     objects.push(obj);
     items.push({ type: 'obj', obj });
@@ -166,7 +168,7 @@ const round = (n: number) => Math.round(n * 10) / 10;
 
 /** Has anything changed against the stored layer? */
 export function layerDirty(parsed: ParsedLayer): boolean {
-  return parsed.objects.some(o => o.deleted || o.dx || o.dy || o.textOverride != null);
+  return parsed.objects.some(o => o.deleted || o.dx || o.dy || o.textOverride != null || o.swapped);
 }
 
 /** Adrian's ink as SVG in the same coordinate space as the layer. */
@@ -207,7 +209,7 @@ export function addTextObject(parsed: ParsedLayer, o: { x: number; y: number; te
   const id = `${ADRIAN_TEXT_KIND}-${Date.now().toString(36)}-${++textSeq}`;
   const open = `<g data-obj="${ADRIAN_TEXT_KIND}" data-id="${id}" data-text="${escapeXml(o.text.slice(0, 400))}">`;
   const inner = `<text x="${round(o.x)}" y="${round(o.y)}" font-size="${round(o.fontSize)}" fill="${escapeXml(o.color)}" font-family="${escapeXml(o.font)}">${escapeXml(o.text)}</text>`;
-  const obj: LayerObj = { id, kind: ADRIAN_TEXT_KIND, q: null, part: null, text: o.text, open, inner, dx: 0, dy: 0, deleted: false, textOverride: null };
+  const obj: LayerObj = { id, kind: ADRIAN_TEXT_KIND, q: null, part: null, text: o.text, open, inner, dx: 0, dy: 0, deleted: false, textOverride: null, swapped: false };
   parsed.items.push({ type: 'obj', obj });
   parsed.objects.push(obj);
   return obj;
@@ -250,6 +252,9 @@ export function swapMark(obj: LayerObj): boolean {
   obj.inner = obj.inner.replace(gm[0], `<g transform="rotate(${gm[0].match(/rotate\(([^ ]+) /)![1]} ${gm[1]} ${gm[2]})"${gm[3]}>${glyph}${rest}</g>`);
   const next = type === 'tick' ? 'cross' : 'tick';
   obj.open = /\sdata-type="/.test(obj.open) ? obj.open.replace(/\sdata-type="[^"]*"/, ` data-type="${next}"`) : obj.open.replace(/>$/, ` data-type="${next}">`);
+  // A swap-only edit must count as an edit — Done stayed disabled on the desk
+  // (8 Sep 2026) because the dirty check only knew moves, deletions and retypes.
+  obj.swapped = !obj.swapped;
   return true;
 }
 
