@@ -14,8 +14,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { deletePath, dropboxConfigured, listFolder } from '@/lib/dropbox';
-import { paperFolder, STUDENTS_ROOT, UNTAGGED_FOLDER } from '@/lib/paper-folder';
+import { deletePath, dropboxConfigured, listFolder, movePath } from '@/lib/dropbox';
+import { ARCHIVE_FOLDER, paperFolder, STUDENTS_ROOT, UNTAGGED_FOLDER } from '@/lib/paper-folder';
 import { sendTelegram } from '@/lib/telegram';
 
 export const dynamic = 'force-dynamic';
@@ -60,12 +60,51 @@ export async function GET(req: NextRequest) {
       out.push({ run: run.id, folder, action: 'deleted' });
     } catch (e) { out.push({ run: run.id, folder, action: `failed: ${(e as Error).message.slice(0, 80)}` }); }
   }
+  // ── Archived papers → /Students/<name>/_archive/<folder> (7 Sep 2026) ────
+  // Adrian: "all previously marked pdfs before 24 Aug should be archived — create
+  // an archive folder or something and organise them properly". A paper he
+  // archived on the desk (archived_at, never released) keeps its folder for the
+  // record but leaves the student's root: it moves under _archive/, once
+  // (result_json.tray_archived_at), ≤ 25 per run, same fail-closed folder rules.
+  const { data: archivedRuns, error: archErr } = await sb.from('paper_marking_runs')
+    .select('id, student_id, student_name, paper_name, created_at')
+    .not('archived_at', 'is', null).is('released_at', null).not('student_id', 'is', null)
+    .is('result_json->>tray_archived_at', null)
+    .order('archived_at', { ascending: true }).limit(25);
+  if (archErr) out.push({ run: '-', folder: '-', action: `archive pass skipped: ${archErr.message.slice(0, 80)}` });
+  for (const run of archivedRuns ?? []) {
+    const folder = paperFolder(run);
+    if (!folder.startsWith(`${STUDENTS_ROOT}/`) || folder.includes(`/${UNTAGGED_FOLDER}/`)) continue;
+    const cut = folder.lastIndexOf('/');
+    const dest = `${folder.slice(0, cut)}/${ARCHIVE_FOLDER}/${folder.slice(cut + 1)}`;
+    let exists = true;
+    try { await listFolder(folder); } catch (e) { if (/not_found/.test((e as Error).message)) exists = false; else { out.push({ run: run.id, folder, action: `skip: ${(e as Error).message.slice(0, 80)}` }); continue; } }
+    if (!exists) {
+      if (!dry) await stampArchived(sb, run.id, 'absent');
+      out.push({ run: run.id, folder, action: 'archived paper: folder already gone' }); continue;
+    }
+    if (dry) { out.push({ run: run.id, folder, action: `would move to ${ARCHIVE_FOLDER}/` }); continue; }
+    try {
+      await movePath(folder, dest, { autorename: true });
+      await stampArchived(sb, run.id, 'moved');
+      out.push({ run: run.id, folder, action: 'moved to _archive' });
+    } catch (e) { out.push({ run: run.id, folder, action: `failed: ${(e as Error).message.slice(0, 80)}` }); }
+  }
+
   const deleted = out.filter(o => o.action === 'deleted').length;
+  const moved = out.filter(o => o.action === 'moved to _archive').length;
   if (!dry) {
-    await logJobRun('dropbox-tray', true, `${deleted} folder(s) deleted, ${out.length - deleted} other`).catch(() => {});
+    await logJobRun('dropbox-tray', true, `${deleted} folder(s) deleted, ${moved} archived, ${out.length - deleted - moved} other`).catch(() => {});
+    if (moved) await sendTelegram(`🗄 Dropbox tray: ${moved} archived paper folder${moved === 1 ? '' : 's'} moved under ${ARCHIVE_FOLDER}/.`, 'marking').catch(() => {});
     if (deleted) await sendTelegram(`🗑 Dropbox tray: ${deleted} paper folder${deleted === 1 ? '' : 's'} removed — released more than ${TRAY_DAYS} days ago; the app keeps every copy.`).catch(() => {});
   }
   return NextResponse.json({ ok: true, dry, cutoff, results: out });
+}
+
+async function stampArchived(sb: ReturnType<typeof getSupabaseAdmin>, runId: string, how: string) {
+  const { data: row } = await sb.from('paper_marking_runs').select('result_json').eq('id', runId).maybeSingle();
+  const rj = (row?.result_json && typeof row.result_json === 'object') ? row.result_json as Record<string, unknown> : {};
+  await sb.from('paper_marking_runs').update({ result_json: { ...rj, tray_archived_at: new Date().toISOString(), tray_archived_how: how } }).eq('id', runId);
 }
 
 async function stamp(sb: ReturnType<typeof getSupabaseAdmin>, runId: string, how: string) {

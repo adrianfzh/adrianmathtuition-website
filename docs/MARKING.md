@@ -581,7 +581,11 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   (`result_json.practice_again_archive`) so nothing lives only in Dropbox, and
   `/api/cron/dropbox-tray` (daily 03:30 SGT, `job_runs` `dropbox-tray`, `?dry=1`) deletes a paper's
   folder 30 days after release — only student folders, only when any sheet is archived, once per
-  run (`result_json.tray_deleted_at`). `scripts/students-folder-sweep.mjs` renames the existing
+  run (`result_json.tray_deleted_at`). **The same cron moves an ARCHIVED paper's folder** (desk
+  archive, `archived_at`, never released) into `/Students/<name>/_archive/` (`ARCHIVE_FOLDER` in
+  `lib/paper-folder.ts`), once per run (`result_json.tray_archived_at`) — Adrian, 7 Sep 2026:
+  "all previously marked pdfs before 24 Aug should be archived — create an archive folder and
+  organise them properly". Records stay; the student's root shows only live papers. `scripts/students-folder-sweep.mjs` renames the existing
   folders (dry-run by default; `--apply` moves — 143 moves planned on 7 Sep 2026, older copies into
   `_versions/`, nothing deleted; Adrian runs it from the repo). **It needs the Production Dropbox
   token**: the Development-scope one in `.env.local` lacks `files.content.write` (every move 401'd

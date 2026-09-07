@@ -23,6 +23,8 @@
 import { sgtDateISO } from './sgt';
 
 export const STUDENTS_ROOT = '/Students';
+/** Under each student: where the folders of ARCHIVED (never released) papers go — kept for the record, out of the way (Adrian, 7 Sep 2026). */
+export const ARCHIVE_FOLDER = '_archive';
 export const UNTAGGED_FOLDER = '_Untagged';
 // ONE FOLDER PER PAPER, FOUR FIXED NAMES (Adrian, 6 Sep 2026): the Dropbox copy is a
 // tray he works from in Notability and Word, not the source (the private

@@ -25,8 +25,9 @@ export const DESK_LANES: readonly DeskLane[] = ['untagged', 'awaiting-sheet', 'r
 export const LANE_LABEL: Record<DeskLane, string> = {
   untagged: 'Needs a student',
   'awaiting-sheet': 'Marked, sheet on the way',
+  // "Completed" not "Released" — Adrian, 7 Sep 2026: "completed is easier to understand".
   ready: 'Ready to vet',
-  released: 'Released',
+  released: 'Completed',
 };
 
 /** The run columns the lane rules read. */
