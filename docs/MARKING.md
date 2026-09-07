@@ -896,6 +896,20 @@ it was "the authoritative allocation". It was not one.
   refused on an approved scheme without `force`). No marks are ever changed by
   approving.
 
+**🧮 The allocation audit (8 Sep 2026 — Joey's 85/90, Adrian: "can't the
+marker check the total marks?").** Once a paper has a recorded allocation, every
+marking of it is compared with it (`auditAllocation`): a part the paper
+allocates that the marking never scored is ADDED as a flagged 0-mark part —
+on the question's own entry when the question was marked somewhere, else as an
+entry with no page (the desk's "unplaced" list) — so the paper counts to its
+total and each one waits for Agree/Override ("Agree if it was not attempted;
+Override if the working is on a page"); a part marked out of a different max
+is reported, never changed. Runs at delivery (`remarkRun`, stamped
+`result_json.allocation_audit`) and on demand for a stored run: the desk's
+total-mismatch banner gains **🧮 Fill from the paper's scheme** (bot phase
+`audit-allocation` → PDFs redrawn). Joey's 85 was Q5(c) [2], Q6(c) [3] and
+Q7(b) [2] never scored, and Q7(b)(i) marked out of 4 where the paper gives 2.
+
 What this fixes: allocation drift between students and between re-marks of one
 paper. What it does not: judgement drift on the student's own working (was M1
 earned?) — that is the marker reading the page, and the calibration harness

@@ -72,6 +72,7 @@ type Detail = {
     remarking: boolean; remarkPages: number[];
     remark: RemarkPanel | null;
     scheme: SchemeState | null;
+    allocationAudit: { at: string | null; added: { q: string; part: string; marks: number }[]; maxDiffs: { q: string; part: string; marked: number; recorded: number }[]; countedBefore: number | null; countedAfter: number | null } | null;
   };
   lane: DeskLane;
   pending: number;
@@ -576,6 +577,24 @@ export default function DeskPage() {
     refresh(id);
   }
 
+  // 🧮 Fill the parts the marker never scored from the paper's recorded
+  // allocation (Adrian, 8 Sep 2026: "can't the marker check the total marks?"),
+  // then redraw the PDFs so the cover prints the right total.
+  async function auditAllocation() {
+    if (!detail) return;
+    const id = detail.run.id;
+    setBusy('audit');
+    try {
+      const { ok, d } = await postJson('/api/admin/mark-paper', { phase: 'audit-allocation', id });
+      if (!ok) { setToast(d.error || 'Could not audit the allocation'); return; }
+      if (!Array.isArray(d.added) || !d.added.length) { setToast(d.line || 'Every allocated part is already marked.'); return; }
+      setToast(`${d.line} — redrawing the PDFs…`);
+      const rb = await postJson('/api/admin/desk/rebuild', { runId: id });
+      setToast(rb.ok ? `${d.line}. PDFs redrawn.` : `${d.line}. PDFs not redrawn (${rb.d.error || 'try Rebuild PDFs'}).`);
+    } catch { setToast('Connection error.'); }
+    finally { setBusy(''); refresh(id); }
+  }
+
   // 📐 Approve this paper's scheme (8 Sep 2026): the recorded per-part marks and
   // split become the paper's fixed allocation. `quiet` = on release, fail-soft.
   async function approveScheme(quiet = false) {
@@ -791,7 +810,7 @@ export default function DeskPage() {
           editKind={editKind} setEditKind={setEditKind} editParts={editParts} setEditParts={setEditParts}
           onAgree={agree} onOverride={override} onTag={tag} onSubject={setPaperSubject} onAttach={attachMyCopy} onRebuild={rebuild}
           onQueueSheet={queueSheet} onCancelSheet={cancelSheet} onAutoRelease={autoRelease} onApprove={approve} onReleaseOnly={releaseWithoutSheet} onToast={setToast} onRefresh={() => refresh(detail.run.id)}
-          onRevise={reviseSheet} onRemarkPage={remarkPage} onApproveScheme={() => approveScheme(false)}
+          onRevise={reviseSheet} onRemarkPage={remarkPage} onApproveScheme={() => approveScheme(false)} onAuditAllocation={auditAllocation}
         />
       )}
 
@@ -817,7 +836,7 @@ function DetailView(p: {
   onAutoRelease: (action: 'hold' | 'unhold') => void;
   onApprove: () => void; onReleaseOnly: () => void;
   onRevise: (instructions: string) => void; onRemarkPage: (photoIndex: number) => void;
-  onApproveScheme: () => void;
+  onApproveScheme: () => void; onAuditAllocation: () => void;
 }) {
   // The pen opens on the page you tapped, right here on the desk (round 3).
   const [annotatePage, setAnnotatePage] = useState<number | null>(null);
@@ -929,7 +948,23 @@ function DetailView(p: {
         </div>
 
         {d.totalWarning && (
-          <div style={{ marginTop: 10, padding: '8px 10px', background: C.dangerBg, border: '1px solid #fecaca', borderRadius: 8, color: C.danger, fontSize: 13 }}>⚠ {d.totalWarning}</div>
+          <div style={{ marginTop: 10, padding: '8px 10px', background: C.dangerBg, border: '1px solid #fecaca', borderRadius: 8, color: C.danger, fontSize: 13, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+            <span>⚠ {d.totalWarning}</span>
+            {run.scheme?.hasAllocation && !released && (
+              <button onClick={p.onAuditAllocation} disabled={busy === 'audit'}
+                title="Compare this marking with the paper's recorded allocation: every part the marker never scored is added as 0 for you to check, and the PDFs are redrawn."
+                style={{ background: '#fff', border: `1px solid ${C.danger}`, borderRadius: 7, padding: '2px 10px', fontSize: 12.5, color: C.danger, cursor: 'pointer' }}>
+                {busy === 'audit' ? '…' : '🧮 Fill from the paper\u2019s scheme'}
+              </button>
+            )}
+          </div>
+        )}
+        {run.allocationAudit && (run.allocationAudit.added.length > 0 || run.allocationAudit.maxDiffs.length > 0) && (
+          <div style={{ marginTop: 8, padding: '8px 10px', background: C.flagBg, border: `1px solid ${C.flagBorder}`, borderRadius: 8, color: C.flag, fontSize: 13, lineHeight: 1.5 }}>
+            🧮 <b>Checked against the paper&rsquo;s recorded allocation</b>{run.allocationAudit.at ? ` · ${fmtDate(run.allocationAudit.at)}` : ''}
+            {run.allocationAudit.added.length > 0 && <div>Added as 0 for you to check: {run.allocationAudit.added.map(x => `Q${x.q}${x.part} [${x.marks}]`).join(', ')}{run.allocationAudit.countedBefore != null && run.allocationAudit.countedAfter != null ? ` — counted ${run.allocationAudit.countedBefore} → ${run.allocationAudit.countedAfter}` : ''}.</div>}
+            {run.allocationAudit.maxDiffs.length > 0 && <div>Marked out of a different max than the paper gives: {run.allocationAudit.maxDiffs.map(x => `Q${x.q}${x.part} ${x.marked} here, ${x.recorded} on the paper`).join('; ')} — Override if the paper is right.</div>}
+          </div>
         )}
         {d.autoHold.hold && run.portalSubmission && (
           <div style={{ marginTop: 8, padding: '8px 10px', background: C.flagBg, border: `1px solid ${C.flagBorder}`, borderRadius: 8, color: C.flag, fontSize: 13 }}>

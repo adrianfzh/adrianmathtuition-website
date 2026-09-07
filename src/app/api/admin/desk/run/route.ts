@@ -193,6 +193,19 @@ export async function GET(req: NextRequest) {
       pdfStale: pdfStaleOf(run),
       grounding: ((rj as { grounding?: { source?: string | null } } | null)?.grounding?.source) ?? null,
       scheme,
+      // 🧮 The allocation audit's record (bot lib/scheme-derive, 8 Sep 2026).
+      allocationAudit: (() => {
+        const a = (rj as { allocation_audit?: Record<string, unknown> } | null)?.allocation_audit;
+        if (!a || typeof a !== 'object') return null;
+        const list = (v: unknown) => Array.isArray(v) ? v as Record<string, unknown>[] : [];
+        return {
+          at: typeof a.at === 'string' ? a.at : null,
+          added: list(a.added).map(x => ({ q: String(x.q ?? ''), part: String(x.part ?? ''), marks: Number(x.marks) || 0 })),
+          maxDiffs: list(a.max_diffs).map(x => ({ q: String(x.q ?? ''), part: String(x.part ?? ''), marked: Number(x.marked) || 0, recorded: Number(x.recorded) || 0 })),
+          countedBefore: Number.isFinite(Number(a.counted_before)) ? Number(a.counted_before) : null,
+          countedAfter: Number.isFinite(Number(a.counted_after)) ? Number(a.counted_after) : null,
+        };
+      })(),
       // SPEC-PAPER-MATCH Phase 1 (bot, 3 Sep 2026): what the paper was identified
       // as and whether the bank/scheme match was trusted. Absent on older runs.
       paperMatch: (() => {
