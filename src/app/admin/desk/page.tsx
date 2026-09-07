@@ -1055,7 +1055,9 @@ function DetailView(p: {
           {pages.map(pg => (
             <section key={pg.photoIndex} id={`page-${pg.photoIndex}`} style={{ border: `1px solid ${C.border}`, borderRadius: 12, background: '#fff', marginBottom: 14, overflow: 'hidden' }}>
               <div style={{ padding: '8px 12px', background: '#fafafa', borderBottom: `1px solid ${C.border}`, fontSize: 12.5, color: C.muted, display: 'flex', justifyContent: 'space-between' }}>
-                <span>Page {pg.photoIndex + 1}</span>
+                <span>Page {pg.photoIndex + 1}
+                  {!released && <a href={`/admin/mark-paper?run=${run.id}&annotate=1&page=${pg.photoIndex}`} style={{ marginLeft: 10, color: C.pen, textDecoration: 'none', fontWeight: 600 }} title="Open the pen on this page — the marker's ink is editable there">✏️ Annotate this page</a>}
+                </span>
                 <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                   {pg.method && pg.method !== 'line' && <span style={{ color: C.flag }} title="Tick placement fell back on this page — the marks are the same, the ink is coarser">{pg.method} ticks</span>}
                   {!run.remarking && (

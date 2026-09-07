@@ -400,8 +400,15 @@ and crosses are ink only; marks change through the per-part editor (§ desk). Ad
 own strokes and typed text are ink only, saved as a layer so they stay editable on
 every visit until release.
 
-**Order of work.** ① bot layer (done) → ② overlay: load original + parse layer + select
-tool (move/delete/retype) → ③ bot `compose-page` + website Done path → ④ strokes/text
-saved as a layer (re-editable) → ⑤ record write-back → ⑥ desk: tap a page to open
-Annotate on that page.
+**Order of work — all six built 8 Sep 2026.** ① bot layer (d345619) → ② overlay Select
+tool: move / delete / retype with undo (website a81a3ac0) → ③ bot `compose-page` + website
+Done path (bot e9a8800) → ④ **Type text** tool (`adrian-text` objects, movable / retypeable /
+composed like the marker's), ✓⇄✗ on the chip (`swapMark` regenerates the other glyph at
+the same anchor and radius, code kept; marks carry `data-type` from bot 9738ea8, older
+layers fall back to the path count), strokes reloaded from `ink_url` → ⑤ record write-back:
+Done sends `recordEdits` (`recordEditsFor`: retyped / deleted `note` / `verdict` objects
+with a question and part) and the bot's `applyRecordEdits` sets `error_summary` /
+`verdict_line` on both marking lists, breadcrumb `result_json.record_edits[]` → ⑥ the desk's
+page headers carry **✏️ Annotate this page** (`?page=<photoIndex>` → overlay `initialPage`).
+The iPad checklist (§8) has not yet been run on the layered pages.
 

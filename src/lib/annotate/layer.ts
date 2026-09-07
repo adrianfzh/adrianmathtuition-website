@@ -185,3 +185,84 @@ export function strokesToSvg(strokes: Stroke[]): string {
 export function layerDocument(body: string, meta: LayerMeta, fontFaceCss = ''): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${meta.canvasW}" height="${meta.totalH}" viewBox="0 0 ${meta.canvasW} ${meta.totalH}">${fontFaceCss ? `<style>${fontFaceCss}</style>` : ''}${body}</svg>`;
 }
+
+// ── §14 step ④–⑤ helpers ─────────────────────────────────────────────────────
+
+/** A whole-page snapshot of the layer for undo: items and objects, cloned. */
+export type LayerSnapshot = { items: LayerItem[] };
+export function layerSnapshot(parsed: ParsedLayer): LayerSnapshot {
+  return { items: parsed.items.map(it => (it.type === 'bg' ? { type: 'bg', svg: it.svg } : { type: 'obj', obj: { ...it.obj } })) };
+}
+/** Put a snapshot back in place (mutates `parsed` so refs stay valid). */
+export function layerRestore(parsed: ParsedLayer, snap: LayerSnapshot): void {
+  parsed.items = snap.items.map(it => (it.type === 'bg' ? { type: 'bg', svg: it.svg } : { type: 'obj', obj: { ...it.obj } }));
+  parsed.objects = parsed.items.flatMap(it => (it.type === 'obj' ? [it.obj] : []));
+}
+
+export const ADRIAN_TEXT_KIND = 'adrian-text';
+let textSeq = 0;
+/** Adrian's typed text, as a layer object like the marker's — selectable, movable,
+ *  retypeable, composed by the bot and reloaded next visit. */
+export function addTextObject(parsed: ParsedLayer, o: { x: number; y: number; text: string; fontSize: number; color: string; font: string }): LayerObj {
+  const id = `${ADRIAN_TEXT_KIND}-${Date.now().toString(36)}-${++textSeq}`;
+  const open = `<g data-obj="${ADRIAN_TEXT_KIND}" data-id="${id}" data-text="${escapeXml(o.text.slice(0, 400))}">`;
+  const inner = `<text x="${round(o.x)}" y="${round(o.y)}" font-size="${round(o.fontSize)}" fill="${escapeXml(o.color)}" font-family="${escapeXml(o.font)}">${escapeXml(o.text)}</text>`;
+  const obj: LayerObj = { id, kind: ADRIAN_TEXT_KIND, q: null, part: null, text: o.text, open, inner, dx: 0, dy: 0, deleted: false, textOverride: null };
+  parsed.items.push({ type: 'obj', obj });
+  parsed.objects.push(obj);
+  return obj;
+}
+
+/** 'tick' | 'cross' for a mark object, from data-type or the glyph's path count. */
+export function markType(obj: LayerObj): 'tick' | 'cross' | null {
+  if (obj.kind !== 'mark') return null;
+  const t = attr(obj.open, 'data-type');
+  if (t === 'tick' || t === 'cross') return t;
+  const g = obj.inner.match(/<g transform="rotate\([^"]*\)"[^>]*>([\s\S]*?)<\/g>/);
+  if (!g) return null;
+  const n = (g[1].match(/<path\b/g) || []).length;
+  return n === 1 ? 'tick' : n === 2 ? 'cross' : null;
+}
+
+/**
+ * ✓⇄✗: regenerate the other glyph at the same anchor and size. The marker draws
+ * both as paths inside a rotated <g> whose transform names the anchor (x, y); the
+ * radius s comes from the first path's start point (tick starts at x − 0.8s,
+ * cross at x − 0.7s). The code text beside the mark is kept. Returns false when
+ * the object is not a mark it can read.
+ */
+export function swapMark(obj: LayerObj): boolean {
+  const type = markType(obj);
+  if (!type) return false;
+  const gm = obj.inner.match(/<g transform="rotate\([^ ]+ ([\d.-]+) ([\d.-]+)\)"([^>]*)>([\s\S]*?)<\/g>/);
+  if (!gm) return false;
+  const x = Number(gm[1]), y = Number(gm[2]);
+  const paths = gm[4].match(/<path\b[^>]*\/>/g) || [];
+  const first = paths[0] && paths[0].match(/\bd="M ([\d.-]+) /);
+  if (!first) return false;
+  const startX = Number(first[1]);
+  const s = Math.abs(x - startX) / (type === 'tick' ? 0.8 : 0.7) || 10;
+  const r = (v: number) => Math.round(v * 100) / 100;
+  const glyph = type === 'tick'
+    ? `<path d="M ${r(x - s * 0.7)} ${r(y - s * 0.65)} Q ${r(x + s * 0.02)} ${r(y + s * 0.02)}, ${r(x + s * 0.75)} ${r(y + s * 0.7)}"/><path d="M ${r(x + s * 0.7)} ${r(y - s * 0.7)} Q ${r(x - s * 0.02)} ${r(y + s * 0.02)}, ${r(x - s * 0.72)} ${r(y + s * 0.68)}"/>`
+    : `<path d="M ${r(x - s * 0.8)} ${r(y - s * 0.05)} Q ${r(x - s * 0.5)} ${r(y + s * 0.45)}, ${r(x - s * 0.28)} ${r(y + s * 0.68)} L ${r(x + s * 0.95)} ${r(y - s * 0.8)}"/>`;
+  const rest = gm[4].replace(/<path\b[^>]*\/>/g, '');
+  obj.inner = obj.inner.replace(gm[0], `<g transform="rotate(${gm[0].match(/rotate\(([^ ]+) /)![1]} ${gm[1]} ${gm[2]})"${gm[3]}>${glyph}${rest}</g>`);
+  const next = type === 'tick' ? 'cross' : 'tick';
+  obj.open = /\sdata-type="/.test(obj.open) ? obj.open.replace(/\sdata-type="[^"]*"/, ` data-type="${next}"`) : obj.open.replace(/>$/, ` data-type="${next}">`);
+  return true;
+}
+
+export type RecordEdit = { q: string; part: string; kind: 'note' | 'verdict'; text: string | null };
+/** The edits that must write back to the marking record (§14 ⑤): notes and
+ *  verdicts the marker tied to a (question, part) that Adrian retyped or deleted. */
+export function recordEditsFor(parsed: ParsedLayer): RecordEdit[] {
+  const out: RecordEdit[] = [];
+  for (const o of parsed.objects) {
+    if ((o.kind !== 'note' && o.kind !== 'verdict') || !o.q || !o.part) continue;
+    if (o.deleted) out.push({ q: o.q, part: o.part, kind: o.kind, text: null });
+    else if (o.textOverride != null) out.push({ q: o.q, part: o.part, kind: o.kind, text: o.textOverride });
+  }
+  return out;
+}
+

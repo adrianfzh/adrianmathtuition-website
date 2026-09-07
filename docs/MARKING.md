@@ -2580,8 +2580,11 @@ Page image **uploads** are parallelised (independent). Only the Gemini detection
 > fonts + hi-res original live there) and stores the page, the edited layer and the
 > strokes (`ink_url`, reloaded next visit); the PDF is assembled from page URLs as before.
 > Older runs have no layer and keep the flat behaviour. Pure pieces: `lib/annotate/layer.ts`
-> (parse/serialise/retype/strokesToSvg, tested). A retyped note that carried typeset maths
-> comes back as plain text. Not yet: typed text boxes, ✓⇄✗, record write-back (§14 ④–⑥).
+> (parse/serialise/retype/strokesToSvg/swapMark/addTextObject/recordEditsFor, tested). A retyped
+> note that carried typeset maths comes back as plain text. **T** types a note in the marker's
+> hand; the chip offers ✓→✗ / ✗→✓ on a mark; a retyped or deleted note/verdict writes back to
+> the part's `error_summary` / `verdict_line` on Done (bot `applyRecordEdits`); every desk page
+> header has **✏️ Annotate this page**.
 
 Full spec + as-built deviations: **`SPEC-ANNOTATE.md`** (repo root, §11–13). Status: built.
 > ⚠ **Annotate in the AdrianMarker shell app, not Safari** (resolved 2026-08-04):

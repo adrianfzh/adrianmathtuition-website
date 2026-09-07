@@ -323,6 +323,7 @@ export default function MarkPaperPage() {
   // Per page: the clean original the marker drew on and the rotation it applied —
   // what the Annotate overlay needs to show the editable layer over the real page.
   const pageSrcRef = useRef<{ photos: Record<number, string>; rot: Record<number, number> }>({ photos: {}, rot: {} });
+  const [annotateInitialPage, setAnnotateInitialPage] = useState<number | null>(null);
   const [runId, setRunId] = useState<string | null>(null);
   // Keep the open overlay in the URL (?run=<id>&annotate=1) so a Safari reload —
   // iPad Safari drops heavy tabs under memory pressure, and the overlay's canvases
@@ -408,6 +409,9 @@ export default function MarkPaperPage() {
       // and hands the run over to this page's loader.
       const q = new URLSearchParams(window.location.search);
       const runParam = q.get('run');
+      // &page=<photoIndex>: the desk's per-page ✏️ link opens the overlay on that page.
+      const pageParam = q.get('page');
+      if (pageParam != null && /^\d+$/.test(pageParam)) setAnnotateInitialPage(Number(pageParam));
       if (runParam) (q.get('annotate') === '1' ? annotateRun : loadRun)(runParam);
     });
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
@@ -2472,6 +2476,7 @@ export default function MarkPaperPage() {
           })}
           student={{ name: sendStudentName, level: '' }}
           totals={totals}
+          initialPage={annotateInitialPage}
           onClose={() => setAnnotateOpen(false)}
           onDone={({ url, linked }) => {
             setAnnotateOpen(false);

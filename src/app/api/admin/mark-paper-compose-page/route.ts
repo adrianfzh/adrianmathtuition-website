@@ -14,9 +14,9 @@ export const maxDuration = 180;
 
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  let body: { runId?: string; photoIndex?: number; layerSvg?: string; inkSvg?: string; strokes?: unknown };
+  let body: { runId?: string; photoIndex?: number; layerSvg?: string; inkSvg?: string; strokes?: unknown; recordEdits?: unknown };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
-  const { runId, layerSvg, inkSvg, strokes } = body;
+  const { runId, layerSvg, inkSvg, strokes, recordEdits } = body;
   const photoIndex = Number(body.photoIndex);
   if (!runId || !/^[0-9a-f-]{36}$/i.test(runId) || !Number.isInteger(photoIndex) || photoIndex < 0) {
     return NextResponse.json({ error: 'runId and photoIndex are required' }, { status: 400 });
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     const r = await fetch(`${botBase.replace(/\/+$/, '')}/api/compose-page`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${secret}` },
-      body: JSON.stringify({ runId, photoIndex, layerSvg, inkSvg, strokes: Array.isArray(strokes) ? strokes : undefined }),
+      body: JSON.stringify({ runId, photoIndex, layerSvg, inkSvg, strokes: Array.isArray(strokes) ? strokes : undefined, recordEdits: Array.isArray(recordEdits) ? recordEdits : undefined }),
       signal: AbortSignal.timeout(170_000),
     });
     const out = await r.json().catch(() => ({}));
