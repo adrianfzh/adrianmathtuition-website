@@ -651,3 +651,13 @@ punches holes in content"*, i.e. a warning that it FAILS. Decide from `route` / 
   Q1 has the stem on one row and the parts on the other). That is an extraction
   defect, not a figure defect, and it is why some wrong figures are attached to
   the empty-stem twin.
+
+## Open handoff — 7 Sep 2026
+
+The 15 questions whose figures still do not serve, each with its id, bucket key and
+what it needs, plus the traps that produced wrong answers on this work (the 1000-row
+PostgREST cap, `image_sizes` keying on the path, figures living as inline `{{IMG:}}`
+tokens that `figureServable()` cannot see, and why a keyword regex must never stand in
+for reading the question): **[`FIGURES-HANDOFF-2026-09-07.md`](FIGURES-HANDOFF-2026-09-07.md)**.
+
+Self-contained — hand it to a fresh session or another account as its first message.
