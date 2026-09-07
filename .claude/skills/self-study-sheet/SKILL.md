@@ -94,6 +94,25 @@ history, commit 3243f89a, if Adrian ever asks for the history.)
 
 Within the one paper, the ranking rules still hold:
 
+- **A revealed GAP is never Optional — it enters the wave whatever it cost.**
+  Adrian, 7 Sep 2026, Denise's Q3(b): she multiplied by $(4x^2 + x)$ when
+  integrating $(2x+1)^{-3/2}$ — two marks, and the sheet filed it as
+  "Optional: integrating a power of a linear bracket". *"This working reveals
+  a very important conceptual error which is not reflected in analysis and in
+  the learn again sheet … integration has a very high weightage in exams.
+  Analysis should capture important conceptual errors or gaps in knowledge
+  even for small slipups that reveal deeper or fundamental
+  gaps/misunderstanding."* So: every part whose marking carries a `gap` (the
+  marker names the rule or exam habit the student does not have, since 7 Sep
+  2026), or whose `error_kind` is `concept`/`misread`, or whose slip is the
+  same misunderstanding twice, is a tier-① section — its concept line states
+  the rule, its worked example targets exactly that gap, its practice drills
+  it. Ranking by damage orders the teach tier; it never decides what enters
+  it. In the wave line say it plainly: *"Q3(b), 2 marks — GAP: integrating a
+  power of a linear bracket"*. A missed instruction is a gap too (Q2: "show
+  that x = −1 is a solution" was never done — the habit is *read the
+  instruction and answer it first*). Copy the marker's `gap` text into the
+  diagnosis entry's `gap` field, so page 1 names it.
 - **Rank by damage.** Marks lost to the skill, across every question it touched.
 - **Recurrence outranks size — within the paper.** The same slip in Q9 and Q16
   is a hole they carry into the exam; a single 6-mark loss may be one hard

@@ -53,6 +53,7 @@ export async function buildFrontPage(
           question: String((q as { question_number?: unknown }).question_number ?? '?'),
           label: String(p.label ?? ''), lost: mx - aw, max: mx,
           blank: p.not_attempted === true, why: String(p.error_summary ?? ''), topic,
+          gap: typeof p.gap === 'string' && p.gap.trim() ? p.gap.trim() : null,
         });
       }
     }

@@ -180,3 +180,20 @@ describe('fallback — no diagnosis means the keyword classifier, exactly as bef
     expect(themes[0].key).toBe('sheet-1');
   });
 });
+
+// Adrian, 7 Sep 2026: a 2-mark integration slip that was a fundamental gap
+// landed in Denise's Optional tail. A skill that names a gap is teaching
+// material whatever it cost, and the gap rides through to the cover.
+describe('a named gap is never optional', () => {
+  it('promotes an optional skill with a gap to teach and keeps the gap text', () => {
+    const d = normaliseDiagnosis([
+      { title: 'Integrating A Power Of A Linear Bracket', marks: 2, questions: ['Q3(b)'], why: 'no chain-rule factor in an integral', tier: 'optional', gap: 'integrating (ax+b)^n: divide by (n+1) and by a, multiply by nothing' },
+      { title: 'Trigonometric Identities', marks: 3, questions: ['Q15(b)'], why: 'Worth a look.', tier: 'optional' },
+    ], CTX)!;
+    expect(d.skills[0].tier).toBe('teach');
+    expect(d.skills[0].gap).toMatch(/divide by/);
+    expect(d.skills[1].tier).toBe('optional');
+    expect(d.skills[1].gap).toBeUndefined();
+    expect(themesFromDiagnosis(d)[0].gap).toMatch(/divide by/);
+  });
+});

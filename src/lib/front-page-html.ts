@@ -131,7 +131,8 @@ function themeRow(t: Theme, i: number): string {
     <span class="num">${i + 1}</span>
     <span class="theme-title">${esc(t.title)}</span>
     <span class="tally"><b>&minus;${t.marks}</b> mark${t.marks === 1 ? '' : 's'}</span>
-    <p class="theme-note">${note}</p>
+    <p class="theme-note">${note}</p>${t.gap ? `
+    <p class="theme-gap">Gap: ${quote(t.gap)}</p>` : ''}
   </div>`;
 }
 
@@ -333,6 +334,7 @@ h2::before{content:none}
        font-size:.73rem;color:var(--ink-soft);white-space:nowrap}
 .tally b{color:var(--ink);font-weight:600}
 .theme-note{grid-column:2/4;font-size:.81rem;color:var(--ink-soft);margin:.22rem 0 0}
+.theme-gap{grid-column:2/4;font-size:.8rem;font-weight:600;color:#9a3412;margin:.12rem 0 0}
 .where{font-family:"IBM Plex Mono",monospace;font-size:.7rem;font-weight:600;color:var(--ink);
        letter-spacing:.02em;margin-right:.25rem}
 /* KaTeX sets its own size; hold it to the sentence it sits in. */

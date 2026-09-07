@@ -121,7 +121,8 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
         ],
         "diagnosis":[
           {"title":"Master Finding Area Using Integration","marks":6,"questions":["Q11(a)","Q20"],
-           "why":"Area under a curve is $\\int y\\,dx$ — the shoelace method needs vertices, not a curve.","tier":"teach"},
+           "why":"Area under a curve is $\\int y\\,dx$ — the shoelace method needs vertices, not a curve.","tier":"teach",
+           "gap":"area under a curve is the integral of y, not a formula on two points"},
           {"title":"Carrying A Constant Through A Derivative","marks":4,"questions":["Q7"],
            "why":"The 2.4 in $2.4V^{-1}$ survives differentiation; you dropped it.","tier":"teach"},
           {"title":"Sign Slip When Dividing By A Negative","marks":2,"questions":["Q3"],
@@ -130,6 +131,11 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
            "why":"Worth a look if you have time.","tier":"optional"}
         ]}}'
 ```
+
+   **`gap` — the rule or habit the student does not have** (7 Sep 2026): copy the
+   marker's part-level `gap` (or your own reading of it) onto the diagnosis entry.
+   An entry with a gap is teaching material and is never `optional`, whatever it
+   cost — the route promotes it, and page 1 prints "Gap: …" under the theme.
 
    **A blank question is the biggest gap on the paper, not an ungraded one**
    (Adrian, 5 Sep 2026, Sijia's AM TYS: Q7 trig graphs, Q8(b) max/min and

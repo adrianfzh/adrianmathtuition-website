@@ -36,6 +36,9 @@ export type LostPart = {
    * it, simply print no topic.
    */
   topic?: string;
+  /** The marker's part-level `gap` — the rule or habit the error revealed
+   *  (7 Sep 2026). A theme with one outranks a bigger one without. */
+  gap?: string | null;
 };
 
 export type Theme = {
@@ -59,6 +62,9 @@ export type Theme = {
    *  closing line's tie check reads these beside `examples`. Absent on
    *  classifier themes. */
   questions?: string[];
+  /** The gap the theme revealed — printed on the cover so a 2-mark slip that
+   *  is really a missing rule reads as one (Adrian, 7 Sep 2026). */
+  gap?: string;
 };
 
 /**
@@ -143,6 +149,7 @@ export function analyse(parts: LostPart[], latestPaperId: string): Theme[] {
     }
     th.marks += p.lost;
     th.occasions += 1;
+    if (!th.gap && typeof p.gap === 'string' && p.gap.trim()) th.gap = p.gap.trim().slice(0, 160);
     if (p.paperId === latestPaperId) { th.live = true; th.latestMarks += p.lost; }
     if (th.examples.length < 3 && p.why) {
       th.examples.push({ paperName: p.paperName, question: `Q${p.question}${p.label || ''}`, why: p.why });
@@ -153,11 +160,13 @@ export function analyse(parts: LostPart[], latestPaperId: string): Theme[] {
     th.papers = new Set((parts || []).filter(p => themeOf(p)?.key === th.key).map(p => p.paperId)).size;
   }
 
-  // Live themes first, then by marks. A theme absent from the newest paper is
-  // still returned — Adrian decides whether it is worth a word — but it can
-  // never outrank one the student still has.
+  // Live themes first, then a theme that revealed a GAP before one that did not
+  // (Adrian, 7 Sep 2026: "capture important conceptual errors … even for small
+  // slipups that reveal deeper or fundamental gaps"), then by marks. A theme
+  // absent from the newest paper is still returned — Adrian decides whether it
+  // is worth a word — but it can never outrank one the student still has.
   return [...byKey.values()].sort((a, b) =>
-    (Number(b.live) - Number(a.live)) || (b.marks - a.marks));
+    (Number(b.live) - Number(a.live)) || (Number(!!b.gap) - Number(!!a.gap)) || (b.marks - a.marks));
 }
 
 /**

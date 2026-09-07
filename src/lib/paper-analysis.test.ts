@@ -173,3 +173,23 @@ describe('analyse — the marker\'s topic is the theme (Adrian, 5 Sep 2026: "the
     expect(themes[0].title).toBe('Writing the answer the way the question asked');
   });
 });
+
+// Adrian, 7 Sep 2026: "analysis should capture important conceptual errors or
+// gaps in knowledge even for small slipups". A part whose marker note carries a
+// gap outranks a bigger loss that revealed none, and the gap reaches the theme.
+describe('a revealed gap outranks marks', () => {
+  const part = (over: Partial<LostPart>): LostPart => ({
+    paperId: 'p1', paperName: 'AM TYS 2021 P2', createdAt: '2026-09-07', question: '1', label: '',
+    lost: 1, max: 5, blank: false, why: '', ...over,
+  });
+  it('a 2-mark slip that names a gap comes before a 6-mark loss that does not', () => {
+    const themes = analyse([
+      part({ question: '10', lost: 6, topic: 'Coordinate Geometry', why: 'the wrong gradient was used' }),
+      part({ question: '3', label: '(b)', lost: 2, topic: 'Integration', why: 'there is no (4x² + x)', gap: 'integrating a power of a linear bracket: divide by the coefficient, no chain-rule factor' }),
+    ], 'p1');
+    expect(themes[0].title).toMatch(/Integration/);
+    expect(themes[0].gap).toMatch(/linear bracket/);
+    expect(themes[1].title).toMatch(/Coordinate/);
+    expect(themes[1].gap).toBeUndefined();
+  });
+});

@@ -37,7 +37,7 @@ export const dynamic = 'force-dynamic';
 type ResultJson = {
   results?: { question_number?: string; marking_output?: {
     marks?: { awarded?: number; max?: number };
-    parts?: { label?: string; awarded?: number; max?: number; not_attempted?: boolean; error_summary?: string }[];
+    parts?: { label?: string; awarded?: number; max?: number; not_attempted?: boolean; error_summary?: string; gap?: string }[];
   } }[];
 };
 
@@ -77,6 +77,7 @@ export async function GET(req: NextRequest) {
           blank: p.not_attempted === true,
           why: String(p.error_summary ?? ''),
           topic,
+          gap: typeof p.gap === 'string' && p.gap.trim() ? p.gap.trim() : null,
         });
       }
     }

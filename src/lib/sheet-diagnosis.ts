@@ -38,6 +38,12 @@ export type DiagnosisSkill = {
   /** One sentence — the marker's or the worker's note. TeX allowed. */
   why: string;
   tier: DiagnosisTier;
+  /** The rule or habit the student does not have, when the error revealed one
+   *  (the marker's part-level `gap`, or the worker's own reading). A skill
+   *  with a gap is never `optional`, whatever it cost — Adrian, 7 Sep 2026,
+   *  Denise's Q3(b): a 2-mark integration slip that was a fundamental gap and
+   *  landed in the sheet's Optional tail. */
+  gap?: string;
 };
 
 export type Diagnosis = {
@@ -86,7 +92,10 @@ function normaliseSkill(input: unknown): DiagnosisSkill | null {
   // An unknown tier is read as the core: a section on the sheet is something to
   // learn unless the worker said otherwise.
   const tier = (TIERS as readonly string[]).includes(tierRaw) ? (tierRaw as DiagnosisTier) : 'teach';
-  return { title, marks: Math.min(marks, 200), questions, why, tier };
+  const gap = typeof r.gap === 'string' && r.gap.trim() ? r.gap.replace(/\s+/g, ' ').trim().slice(0, 160) : null;
+  // A named gap is teaching material, never an optional tail (7 Sep 2026).
+  const finalTier: DiagnosisTier = gap && tier === 'optional' ? 'teach' : tier;
+  return { title, marks: Math.min(marks, 200), questions, why, tier: finalTier, ...(gap ? { gap } : {}) };
 }
 
 /**
@@ -147,5 +156,6 @@ export function themesFromDiagnosis(d: Diagnosis, paperName = 'this paper'): The
       : [],
     tier: s.tier,
     questions: s.questions,
+    ...(s.gap ? { gap: s.gap } : {}),
   }));
 }
