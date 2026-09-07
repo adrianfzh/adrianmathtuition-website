@@ -68,6 +68,12 @@ function dateLabel(iso: string): string {
 }
 
 export async function POST(req: NextRequest) {
+  // Phase timings, echoed in the response and logged, so a slow sheet says
+  // WHERE it was slow (draw vs Chromium vs Blob) instead of being guessed at.
+  const t0 = Date.now();
+  let tLast = t0;
+  const timings: Record<string, number> = {};
+  const lap = (k: string) => { const now = Date.now(); timings[k] = now - tLast; tLast = now; };
   const secret = req.headers.get('x-render-secret');
   if (!secret || !process.env.RENDER_MARKING_SECRET || !safeEqual(secret, process.env.RENDER_MARKING_SECRET)) {
     return bad(401, { error: 'Unauthorized' });
@@ -101,6 +107,7 @@ export async function POST(req: NextRequest) {
   // has a visible sub-group, so an IP student's "Modulus Functions" must match
   // here or the request 400s before the pool is ever asked.
   const audience = await worksheetAudienceFor(supa, { isIp: body.isIp, studentId: body.studentId });
+  lap('audience');
 
   // Topic must be one the level actually has — the 400 lists them so the bot can
   // show the student a menu instead of a dead end.
@@ -109,6 +116,7 @@ export async function POST(req: NextRequest) {
     p_is_ip: audience.isIp,
     p_admin: audience.admin,
   });
+  lap('topics');
   if (topicsRes.error) return bad(500, { error: topicsRes.error.message });
   const available = (topicsRes.data || []).map((r: { topic: string }) => r.topic);
   const topic = matchTopic(body.topic as string, available);
@@ -127,6 +135,7 @@ export async function POST(req: NextRequest) {
     tier,
     audience,
   });
+  lap('pool');
   if (pool.error) return bad(500, { error: pool.error });
 
   // Dry mode: the health-check probe. Proves auth + level/topic resolution + the
@@ -172,7 +181,8 @@ export async function POST(req: NextRequest) {
     dateLabel: dateLabel(date),
     questions: picked,
     answers,
-  });
+  }, timings);
+  lap('render');
 
   const questionIds = picked.map((q) => q.id);
   const blob = await put(
@@ -187,6 +197,10 @@ export async function POST(req: NextRequest) {
       allowOverwrite: true,
     },
   );
+
+  lap('blob');
+  timings.total = Date.now() - t0;
+  console.log('[bot-worksheet] timings', JSON.stringify(timings));
 
   return NextResponse.json({
     url: blob.url,
@@ -208,5 +222,8 @@ export async function POST(req: NextRequest) {
     // so its same-day draw (and fingerprinted Blob path) differ from the
     // ordinary sheet's; echoing it lets the bot log what it actually sent.
     isIp: audience.isIp,
+    // Milliseconds per phase (audience · topics · pool · browser · newPage ·
+    // setContent · ready · pdf · render · blob · total) — for /ws speed work.
+    timings,
   });
 }

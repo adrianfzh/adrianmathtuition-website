@@ -311,21 +311,33 @@ ${katexAutoRenderScript()}
 </html>`;
 }
 
-export async function renderBotWorksheetPDF(input: BotWorksheetInput): Promise<Buffer> {
+export async function renderBotWorksheetPDF(
+  input: BotWorksheetInput,
+  timings?: Record<string, number>,
+): Promise<Buffer> {
+  let tLast = Date.now();
+  const lap = (k: string) => { if (!timings) return; const now = Date.now(); timings[k] = now - tLast; tLast = now; };
+  const html = buildBotWorksheetHTML(input);
+  lap('html');
   const browser = await getBrowser();
+  lap('browser');
   const page = await browser.newPage();
+  lap('newPage');
   try {
     // Nothing on the page loads from the network (fonts + KaTeX are inlined),
     // so 'load' fires as soon as the DOM is parsed; waitForPageReady then waits
     // for the auto-render flag, document.fonts and any bank figures.
-    await page.setContent(buildBotWorksheetHTML(input), { waitUntil: 'load', timeout: 30000 });
+    await page.setContent(html, { waitUntil: 'load', timeout: 30000 });
+    lap('setContent');
     await waitForPageReady(page);
+    lap('ready');
 
     const pdf = await page.pdf({
       format: 'A4',
       printBackground: true,
       preferCSSPageSize: true,
     });
+    lap('pdf');
     return Buffer.from(pdf);
   } finally {
     await page.close().catch(() => {});
