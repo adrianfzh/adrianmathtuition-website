@@ -100,6 +100,24 @@ export default async function MarkingPage() {
   ]);
   const pending = pendingRows ?? [];
 
+  // Earlier markings (Adrian, 7 Sep 2026: Alessi's defective 38/66 "should be
+  // archived — still allow access, but not shown at the main screen"): a paper
+  // marked again keeps its old released marking reachable under a folded
+  // "Earlier markings" list at the bottom, never in the main list or the tiles.
+  // Same released + subject gates; the paper view opens them like any other.
+  const { data: earlierRows } = await sb
+    .from('paper_marking_runs')
+    .select(COLUMNS)
+    .eq('student_id', sid)
+    .not('released_at', 'is', null)
+    .not('superseded_by', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(20);
+  const earlier = buildStudentMarking(
+    ((earlierRows ?? []) as MarkingRunRow[]).filter(r => subjectAllowed(account, r.paper_subject)),
+    { studentName: account?.display_name ?? null },
+  ).papers;
+
   // The subject gate (SPEC-PORTAL-V2 §2): an E Math-only account never sees an
   // A Math paper, whoever tagged it. Applied to the rows BEFORE the build so
   // the tiles, the streak note and "Work on next" all describe the same list
@@ -216,6 +234,25 @@ export default async function MarkingPage() {
           )}
 
           {papers.map(p => <Paper key={p.id} paper={p} sheet={sheetsByRun.get(p.id) ?? null} />)}
+
+          {earlier.length > 0 && (
+            <details className={`${CARD} p-4`}>
+              <summary className="cursor-pointer text-sm font-semibold text-gray-500 select-none">
+                Earlier markings <span className="text-gray-400 font-normal">({earlier.length})</span>
+              </summary>
+              <p className="text-[11px] text-gray-400 mt-1">Papers that were marked again later. The current marking is in the list above.</p>
+              <ul className="mt-2 divide-y divide-black/5">
+                {earlier.map(p => (
+                  <li key={p.id}>
+                    <Link href={`/app/marking/${p.id}`} className="flex items-center justify-between gap-3 py-2 text-sm hover:bg-black/[0.02] rounded-lg">
+                      <span className="min-w-0 truncate text-navy">{p.name} <span className="text-gray-400">· {niceDate(p.date)}</span></span>
+                      <span className="shrink-0 text-gray-500">{p.max > 0 ? `${p.awarded}/${p.max}` : '—'}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
         </>
       )}
     </div>

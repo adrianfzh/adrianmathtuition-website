@@ -12,7 +12,7 @@ import { fileHref } from '@/lib/student-files-url';
 import PaperSubjectPill from '@/components/PaperSubjectPill';
 import ClipToNotes from '../ClipToNotes';
 
-const COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, paper_subject';
+const COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, paper_subject, superseded_by';
 
 function niceDate(iso: string): string {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
@@ -37,6 +37,7 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
     .neq('status', 'held').neq('status', 'revoked').limit(1);
   const sheet = (sheetRows ?? [])[0] as { id: string; status: string; pdf_url: string | null; score: number | null; out_of: number | null } | undefined;
   const hasCover = paper.dropped.length > 0;
+  const supersededBy = (row as { superseded_by?: string | null }).superseded_by ?? null;
 
   return (
     <div className="space-y-4 pb-8">
@@ -53,6 +54,16 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
           </span>
         </div>
       </header>
+
+      {/* An earlier marking of a paper marked again (superseded_by) stays
+          reachable from "Earlier markings" on the Papers list — archived, not
+          deleted (Adrian, 7 Sep 2026) — but says so, and points at the current one. */}
+      {supersededBy && (
+        <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl px-3 py-2">
+          This is an earlier marking of this paper.{' '}
+          <Link href={`/app/marking/${supersededBy}`} className="font-semibold underline underline-offset-2">See the current marking</Link>.
+        </p>
+      )}
 
       {hasCover && (
         <section aria-label="Where your marks went" className="bg-white rounded-3xl border border-black/5 shadow-sm overflow-hidden">
