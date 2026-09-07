@@ -17,6 +17,20 @@ you*, *tells you*, *is*. Not *hands you*, *buys you*, *for free*, *do the heavy 
 *nail down*, *unlock*, *the trick is*, or any other figure of speech — a student should be
 able to read the line aloud in class. FEEDBACK.md carries the dated entry.
 
+Three more from the same review (Adrian, 7 Sep 2026): **concrete verbs** — "remove the
+denominator", not "clears it"; **reject in the original variable** — with u = eˣ, write
+"eˣ = 2/5 or eˣ = −1" and reject "eˣ = −1, since eˣ > 0", never "reject u = −1";
+**conclude plainly** — "So there is only one solution. (shown)", not "one root
+survives". And a **Common Error is a concrete wrong move in one sentence, or nothing** —
+"b² − 4ac counts the roots of the quadratic in eˣ …" is commentary, not an error, and
+was cut.
+
+Layout, same day: an Example's parts go through `ws.parts()` + `ws.SQ()` so `(a)(b)(c)`
+sit flush with the stem; a sanity check is the `('check', parts)` step (green "✓ Check:"),
+never plain working; a diagram you draw goes in the solution box at the part that first
+uses it, and the question shows a diagram only when the bank question has one; figure
+labels are placed clear of every stroke by `figure_lib` — look at the PNG anyway.
+
 ## What a worked example is on this sheet
 
 - **The Example IS the exam question.** Stem and parts come from the bank verbatim

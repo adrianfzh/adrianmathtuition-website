@@ -18,8 +18,9 @@ need fixing without re-authoring them, so this operates on the OOXML directly.
 
   2. Boxes hug their content.  Two gaps, neither removable by hand in Word:
      - the space under "Solution:" is paragraph spacing, so there is no empty
-       line to backspace over. Zero the label's space-after and the first
-       in-cell paragraph's space-before.
+       line to backspace over. Zero the label's space-after; the label stays
+       at 1.5 line spacing and the first in-cell paragraph keeps 2 pt above
+       (both Adrian, 7 Sep 2026).
      - a trailing EMPTY paragraph inside a table cell cannot be deleted at all
        (Word keeps the last paragraph of a cell), so it is dropped here.
 
@@ -236,10 +237,15 @@ def repair(xml_bytes, unglue=False):
         # whose spacing is doing real work.
         if not label or len(label) > 40:
             continue
-        touched = set_spacing(prev, after='0', line='240', lineRule='auto')
+        # The label keeps 1.5 line spacing (Adrian, 7 Sep 2026: "Solution: should
+        # have line spacing of 1.5" — this used to flatten it to single) and the
+        # first line in the box keeps its 2 pt of air (same day: "2px spacing from
+        # the top of the box for the first line only"); only the label's
+        # space-after is zeroed.
+        touched = set_spacing(prev, after='0', line='360', lineRule='auto')
         first = el.find(w('tr') + '/' + w('tc') + '/' + w('p'))
         if first is not None:
-            touched |= set_spacing(first, before='0')
+            touched |= set_spacing(first, before='40')
         if touched:
             counts['gap_above_box'] += 1
 

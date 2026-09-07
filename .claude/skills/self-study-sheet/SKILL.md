@@ -426,6 +426,62 @@ anything older in this file:
   factor (x − a) to divide by." The same goes for *buys you*, *for free*,
   *do the heavy lifting*, *nail down*, *unlock*, *the trick is*, and any other
   figure of speech — a student should be able to read the line aloud in class.
+- **Concrete verbs for concrete moves.** Adrian, 7 Sep 2026, on "multiplying every
+  term by that exponential clears it": "don't say 'clears it', say 'remove the
+  denominator'." Name the thing done to the thing it is done to: *remove the
+  denominator*, *make the subject*, *take out the common factor*, *substitute
+  back*. Not *clears*, *kills*, *gets rid of*, *knocks out*.
+- **Reject in the original variable, after substituting back.** Adrian, 7 Sep
+  2026: "don't reject u = −1, sub back eˣ and then reject eˣ = −1." With a
+  substitution (u = eˣ, y = x², t = tan x) the roots in u are written, then EACH
+  is substituted back — "eˣ = 2/5 or eˣ = −1" — and the rejection happens
+  there, with its reason: "eˣ = −1 has no solution since eˣ > 0 for all x." A
+  root is never rejected at the u level.
+- **State the conclusion plainly.** Adrian, 7 Sep 2026: "don't say 'one root
+  survives', just say 'there is only 1 solution'." A show-that ends "So there
+  is only one solution. (shown)" — not *survives*, *is left standing*, *the
+  only one to make it*.
+- **A Common Error is a concrete wrong MOVE, or nothing.** Adrian, 7 Sep 2026,
+  on "Common Error: b² − 4ac counts the roots of the quadratic in eˣ. It says
+  nothing about how many of them survive as values of x": "Is that necessary?
+  doesn't seem to help but being a confusing message." That is commentary on
+  a theorem, not a mistake a student makes at this step. The test: it names
+  what a student WRITES wrongly here and what belongs instead, in one sentence
+  ("Rejecting u = −1 without substituting back loses the reason: it is eˣ = −1
+  that has no solution"). If it needs a second sentence to explain itself, or
+  the reader has to think about what it is warning against, leave it out.
+- **Quadrant errors are said as quadrants.** Adrian, 7 Sep 2026: "saying SINE
+  PARTNER is weird." A Common Error or note about a trig equation names the
+  quadrant used and the quadrant wanted ("you found the answer in the 2nd
+  quadrant instead of the 1st; cos > 0 puts the angle in quadrants 1 and 4"),
+  never "π − θ is the sine partner" or any "partner" language.
+- **A sanity check is a check, not working.** Adrian, 7 Sep 2026, on a black
+  "✓ 4√2 − 4 − π/2 = 0.086, a small positive number" line: "a check beside the
+  tick and the fonts in green will signify to the student … that check is not
+  part of the working." Write it as the `('check', parts)` step of
+  `solution_box` — it renders "✓ Check: …" in green. Never as a plain step.
+- **An Example's parts sit flush with its stem.** Adrian, 7 Sep 2026: "(a) (b)
+  (c) should be vertically aligned with the first line 'The equation of a
+  circle…'." After `ws.para(stem)` (and its figure) call `ws.parts()`, then
+  `ws.SQ()` per part — real Word numbering, labels at the left margin. Do NOT
+  poke `ws._auto_subq_id` by hand. Under a numbered practice `ws.Q()` the parts
+  keep their tab, level with the question's text. Every list on the sheet is
+  live Word numbering already (examples, parts, practice items) — insert or
+  delete in Word and the rest renumber.
+- **A diagram belongs where it is used.** Adrian, 7 Sep 2026, on a circle
+  example whose figure showed the tangent and Q from part (c) above part (a):
+  "the diagram doesn't seem to match part (a) — it is misleading … in worked
+  solutions that diagram should be provided, but for (b) onwards (not for (a))."
+  The QUESTION carries a diagram only when the bank question itself has one
+  (then as given). A diagram YOU draw goes inside the solution box, as a
+  `('figure', …)` step of the first part that uses it, showing only what that
+  part has established so far. A student can draw the rest; the sheet must not
+  hand them a picture of a later part's answer.
+- **Figure labels sit clear of every stroke.** Adrian, 7 Sep 2026: "diagram
+  generation for A and B, they are not block by the lines." `figure_lib`
+  places point labels at the first of eight offsets no curve, line, circle or
+  axis passes through (since 7 Sep 2026). Still LOOK at the PNG before
+  embedding — a label crossed by ink is a rejected sheet.
 
 Invoke `create-teaching-notes` and give it this brief:
 

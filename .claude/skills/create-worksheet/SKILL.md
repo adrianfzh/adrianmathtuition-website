@@ -98,6 +98,7 @@ The `Worksheet` class exposes these methods. All take a `parts` list (described 
 | `ws.example(letter=None)` | Bold auto-numbered `Example N` label. `example('a')` starts a lettered group (`Example 3a`); `example('b')` reuses the number. |
 | `ws.Q(parts, marks=None)` | Main question. Auto-numbered `1.`, `2.`, `3.`, ... Each call also opens a fresh sub-question pool, so any `SQ()` calls that follow restart at `(a)`. |
 | `ws.SQ(parts, marks=None)` | Sub-question under the most recent `Q()`. Auto-numbered `(a)`, `(b)`, `(c)`, ... Restarts when a new `Q()` is called. |
+| `ws.parts()` | Start a fresh `(a)`, `(b)`, `(c)` list under an UNNUMBERED stem (an Example written with `para()`): labels flush with the stem's left edge, text one tab in. Call after the stem and its figure, then `SQ()` per part (7 Sep 2026). |
 | `ws.para(parts, marks=None)` | Plain paragraph with no numbering. |
 | `ws.section(text)` | Bold section header, glued to the question that follows so it cannot be stranded at the foot of a page. |
 | `ws.block_heights()` | Estimated cm height of each question block. Informative — shows which questions span pages. |

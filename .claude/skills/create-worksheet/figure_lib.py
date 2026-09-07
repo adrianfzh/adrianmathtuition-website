@@ -48,6 +48,68 @@ def _f(expr: str):
     return lambda x: eval(code, {"__builtins__": {}}, {**_SAFE, "x": x})
 
 
+# ── point labels that no stroke crosses (Adrian, 7 Sep 2026: "diagram generation
+# for A and B, they are not block by the lines") ──────────────────────────────
+# A point on a curve, a line or a circle gets its label at the FIRST of eight
+# offsets whose text box no drawn stroke passes through; ties keep the earlier
+# candidate (north-east first, the textbook habit). Strokes = every Line2D and
+# circle patch on the axes plus the two axis lines, sampled densely, all in
+# display pixels after the limits are final — so place labels LAST.
+_LABEL_OFFSETS = [(6, 5), (-6, 5), (6, -9), (-6, -9), (0, 8), (0, -11), (9, 0), (-9, 0)]
+
+
+def _stroke_samples(ax):
+    pts = []
+    for ln in ax.lines:
+        xy = np.asarray(ln.get_xydata(), dtype=float)
+        if not len(xy) or ln.get_transform() is not ax.transData:
+            continue
+        ok = np.isfinite(xy).all(axis=1)
+        xy = xy[ok]
+        if len(xy) >= 2 and len(xy) < 50:          # a segment: densify it
+            dense = [np.linspace(xy[i], xy[i + 1], 60) for i in range(len(xy) - 1)]
+            xy = np.vstack(dense)
+        if len(xy):
+            pts.append(ax.transData.transform(xy))
+    for pa in ax.patches:
+        if isinstance(pa, plt.Circle):
+            c, r = np.asarray(pa.center, dtype=float), float(pa.radius)
+            th = np.linspace(0, 2 * math.pi, 240)
+            pts.append(ax.transData.transform(np.c_[c[0] + r * np.cos(th), c[1] + r * np.sin(th)]))
+    x0, x1 = ax.get_xlim(); y0, y1 = ax.get_ylim()
+    if x0 <= 0 <= x1 and ax.spines["left"].get_visible():
+        pts.append(ax.transData.transform(np.c_[np.zeros(200), np.linspace(y0, y1, 200)]))
+    if y0 <= 0 <= y1 and ax.spines["bottom"].get_visible():
+        pts.append(ax.transData.transform(np.c_[np.linspace(x0, x1, 200), np.zeros(200)]))
+    return np.vstack(pts) if pts else np.zeros((0, 2))
+
+
+def _place_label(ax, fig, text, xy, first=None, **kw):
+    """Annotate `xy` with `text` at the first offset (in points) no stroke crosses."""
+    renderer = fig.canvas.get_renderer()
+    strokes = _stroke_samples(ax)
+    cands = ([tuple(first)] if first is not None else []) + _LABEL_OFFSETS
+    best, best_hits = None, None
+    for dx, dy in cands:
+        ha = "left" if dx > 0 else "right" if dx < 0 else "center"
+        va = "bottom" if dy > 0 else "top" if dy < 0 else "center"
+        ann = ax.annotate(text, xy, xytext=(dx, dy), textcoords="offset points", ha=ha, va=va, **kw)
+        bb = ann.get_window_extent(renderer=renderer).expanded(1.15, 1.25)
+        hits = 0
+        if len(strokes):
+            inside = (strokes[:, 0] >= bb.x0) & (strokes[:, 0] <= bb.x1) & (strokes[:, 1] >= bb.y0) & (strokes[:, 1] <= bb.y1)
+            hits = int(inside.sum())
+        if best is None or hits < best_hits:
+            if best is not None:
+                best.remove()
+            best, best_hits = ann, hits
+        else:
+            ann.remove()
+        if best_hits == 0:
+            break
+    return best
+
+
 def _axes_through_origin(ax, xlim, ylim, names=("x", "y")):
     """School-style axes: spines through 0 with arrowheads, ticks kept light."""
     ax.set_xlim(*xlim)
@@ -106,10 +168,11 @@ def _render_graph(spec, out_path):
         y = np.asarray(_f(shade["expr"])(x), dtype=float)
         base = np.asarray(_f(shade["to_expr"])(x), dtype=float) if shade.get("to_expr") else 0
         ax.fill_between(x, y, base, color="0.82", zorder=0)
+    pending = []
     for p in spec.get("points", []):
         ax.plot(p["x"], p["y"], "ko", markersize=4)
-        ax.annotate(p.get("label", ""), (p["x"], p["y"]),
-                    xytext=(5, 5), textcoords="offset points", fontsize=10, style="italic")
+        if p.get("label"):
+            pending.append((p["label"], (p["x"], p["y"])))
     for v in spec.get("vlines", []):
         ax.axvline(v["x"] if isinstance(v, dict) else v, color="k", lw=0.9, linestyle="--")
     for h in spec.get("hlines", []):
@@ -143,6 +206,8 @@ def _render_graph(spec, out_path):
             ax.set_xticklabels(spec["xtick_labels"])
         if spec.get("ytick_labels"):
             ax.set_yticklabels(spec["ytick_labels"])
+    for text, xy in pending:            # limits are final now — labels go off the strokes
+        _place_label(ax, fig, text, xy, fontsize=10, style="italic")
     return _finish(fig, out_path)
 
 
@@ -274,6 +339,7 @@ def _render_points(spec, out_path):
             lp = B + (r + 0.28) * np.array([math.cos(mid), math.sin(mid)])
             ax.annotate(arc["label"], lp, ha="center", va="center", fontsize=10, style="italic")
 
+    pending = []
     if P:
         centroid = sum(P.values()) / len(P)
         for name, pt in P.items():
@@ -283,8 +349,7 @@ def _render_points(spec, out_path):
             d = pt - centroid
             n = np.linalg.norm(d)
             off = (d / n * 12) if n > 1e-9 else np.array([8, 8])
-            ax.annotate(name, pt, xytext=tuple(off), textcoords="offset points",
-                        ha="center", va="center", style="italic", fontsize=11)
+            pending.append((name, pt, (float(off[0]), float(off[1]))))
     for lab in spec.get("labels", []):
         kw = {}
         if lab.get("halo"):
@@ -304,6 +369,8 @@ def _render_points(spec, out_path):
         ax.set_yticks([])
     else:
         ax.set_axis_off()
+    for name, pt, off in pending:       # axes decided, limits final — now off the strokes
+        _place_label(ax, fig, name, tuple(pt), first=off, style="italic", fontsize=11)
     return _finish(fig, out_path)
 
 

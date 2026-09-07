@@ -55,6 +55,16 @@ NUMBERING_XML = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
       <w:pPr><w:ind w:left="1134" w:hanging="567"/></w:pPr>
     </w:lvl>
   </w:abstractNum>
+  <w:abstractNum w:abstractNumId="102">
+    <w:multiLevelType w:val="singleLevel"/>
+    <w:lvl w:ilvl="0">
+      <w:start w:val="1"/>
+      <w:numFmt w:val="lowerLetter"/>
+      <w:lvlText w:val="(%1)"/>
+      <w:lvlJc w:val="left"/>
+      <w:pPr><w:ind w:left="567" w:hanging="567"/></w:pPr>
+    </w:lvl>
+  </w:abstractNum>
   <w:num w:numId="1"><w:abstractNumId w:val="100"/></w:num>
 '''
 # 30 sub-question numIds, each with startOverride so (a)(b)(c) restarts per question
@@ -73,6 +83,18 @@ for _i in range(30):
     NUMBERING_XML += (
         f'  <w:num w:numId="{50+_i}">'
         f'<w:abstractNumId w:val="100"/>'
+        f'<w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride>'
+        f'</w:num>\n'
+    )
+# 30 EXAMPLE-part numIds (90..119): (a)(b)(c) under an UNNUMBERED stem — an
+# Example's question sits at the left margin, so its parts sit there too
+# (Adrian, 7 Sep 2026: "the parts (a) (b) (c) should be vertically aligned with
+# the first line 'The equation of a circle…'"). Under a numbered practice
+# question the parts stay one tab in, level with the question's own text.
+for _i in range(30):
+    NUMBERING_XML += (
+        f'  <w:num w:numId="{90+_i}">'
+        f'<w:abstractNumId w:val="102"/>'
         f'<w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride>'
         f'</w:num>\n'
     )
@@ -149,6 +171,39 @@ def _left_align_math(elem):
     if jc is None:
         jc = etree.SubElement(pr, f'{{{M_NS}}}jc')
     jc.set(f'{{{M_NS}}}val', 'left')
+
+
+CHECK_GREEN = '2E7D32'
+
+def _colour_math(elem, hex_rgb):
+    """Colour every math run inside a converted OMML element (font left alone)."""
+    if elem is None:
+        return
+    for r in elem.iter(f'{{{M_NS}}}r'):
+        wrpr = r.find(qn('w:rPr'))
+        if wrpr is None:
+            wrpr = OxmlElement('w:rPr')
+            mrpr = r.find(f'{{{M_NS}}}rPr')
+            if mrpr is not None:
+                mrpr.addnext(wrpr)
+            else:
+                r.insert(0, wrpr)
+        old = wrpr.find(qn('w:color'))
+        if old is not None:
+            wrpr.remove(old)
+        col = OxmlElement('w:color')
+        col.set(qn('w:val'), hex_rgb)
+        wrpr.append(col)
+
+
+def _recolour_paragraph(p, hex_rgb):
+    """Text runs and inline maths of one paragraph in one colour."""
+    rgb = RGBColor.from_string(hex_rgb)
+    for run in p.runs:
+        run.font.color.rgb = rgb
+    for child in p._element:
+        if child.tag in (f'{{{M_NS}}}oMath', f'{{{M_NS}}}oMathPara'):
+            _colour_math(child, hex_rgb)
 
 
 def _style_annotations(elem):
@@ -236,6 +291,7 @@ class Worksheet:
         self.one_mark_bonus = float(one_mark_bonus)
         self._auto_subq_id = 9   # increments to 10, 11, ... per Q with sub-parts
         self._current_subq_id = None
+        self._auto_parts_id = 89 # increments to 90, 91, ... per parts() (example sub-parts, flush left)
         self._auto_q_id = 49     # increments to 50, 51, ... per restart_numbering()
         self._current_q_id = 1   # numId 1 = one continuous 1. 2. 3. list
         self._block_paras = []   # paragraphs of the current question block (for keep-together)
@@ -434,6 +490,20 @@ class Worksheet:
         return self._add(parts, style='SubQuestion',
                          num_id=self._current_subq_id, marks=marks)
 
+    def parts(self):
+        """Start a fresh (a)(b)(c) list under an UNNUMBERED stem — an Example's
+        question written with para(). The labels sit flush with the stem's left
+        edge and the text one tab in (Adrian, 7 Sep 2026: "(a) (b) (c) should be
+        vertically aligned with the first line"). Call it right after the stem
+        (and its figure), then SQ() as usual. Q() keeps its own indented pool
+        for practice questions, where the parts line up with the question's
+        text instead. Real Word numbering either way."""
+        self._auto_parts_id += 1
+        if self._auto_parts_id > 119:
+            raise RuntimeError('more than 30 example part-lists on one sheet')
+        self._current_subq_id = self._auto_parts_id
+        return self._current_subq_id
+
     def para(self, parts, marks=None):
         """Plain paragraph (no numbering)."""
         return self._add(parts, marks=marks)
@@ -518,6 +588,11 @@ class Worksheet:
           — for prose steps and inline-math sentences.
         - ('figure', path[, width_cm]) — a centred figure_lib PNG inside the
           box, for a sketch that explains the working (default 8 cm).
+        - ('check', parts) — a sanity check that is NOT part of the working:
+          "✓ Check: " and the parts, all in green (Adrian, 7 Sep 2026, on a
+          black "✓ 4√2 − 4 − π/2 = 0.086, a small positive number" line: "a
+          check beside the tick and the fonts in green/light grey will signify
+          to the student … that check is not part of the working").
 
         keep_together (default True) keeps the question paragraphs (since
         the last Q()), the "Solution:" line and the whole box on one page —
@@ -558,6 +633,10 @@ class Worksheet:
                 p.paragraph_format.line_spacing = 1.5   # same as the body (Adrian, 2 Sep 2026: 1.5 "improves readability")
                 if isinstance(step, tuple) and step and step[0] == 'figure':
                     self._picture(p, step[1], step[2] if len(step) > 2 else 8.0)
+                elif isinstance(step, tuple) and step and step[0] == 'check':
+                    p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                    self._fill(p, [('text', '✓ Check: ', {'bold': True})] + list(step[1]))
+                    _recolour_paragraph(p, CHECK_GREEN)
                 elif isinstance(step, str):
                     p.alignment = WD_ALIGN_PARAGRAPH.LEFT
                     p.paragraph_format.left_indent = Cm(0.5)
