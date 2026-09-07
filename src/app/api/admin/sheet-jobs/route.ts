@@ -29,6 +29,7 @@
 // Adrian's Mac holding the same admin bearer (identical posture to the
 // plan-marking worker). Claim/lease logic is pure in lib/sheet-jobs.ts.
 import { NextRequest, NextResponse } from 'next/server';
+import { plainMath, clip } from '@/lib/remark-diff';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
@@ -170,7 +171,9 @@ export async function POST(req: NextRequest) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     if (!done) return NextResponse.json({ error: 'that job changed while you typed — refresh and look again' }, { status: 409 });
     const held = await deleteHeldPracticeItems(sb, job.id);
-    notify_marking(`✏️ ${job.student_name || job.airtable_student_id} — sheet sent back to the worker for a revision (${source === 'adrian' ? 'your note' : 'after a page re-mark'}): ${instructions.slice(0, 200)}`).catch(() => {});
+    // Telegram gets plain maths and a whole sentence (Adrian, 8 Sep 2026: "telegram
+    // message sent cut halfway" — 200 characters of raw LaTeX).
+    notify_marking(`✏️ ${job.student_name || job.airtable_student_id} — sheet sent back to the worker for a revision (${source === 'adrian' ? 'your note' : 'after a page re-mark'}):\n${clip(plainMath(instructions), 600)}`).catch(() => {});
     return NextResponse.json({ ok: true, jobId: job.id, round, heldItemsDeleted: held.deleted });
   }
 

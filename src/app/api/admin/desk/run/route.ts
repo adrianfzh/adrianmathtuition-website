@@ -13,6 +13,7 @@
 // folder that cannot be listed comes back as `amended.status: 'unknown'` and
 // the page says so instead of guessing.
 import { NextRequest, NextResponse } from 'next/server';
+import { remarkDiff, plainMath } from '@/lib/remark-diff';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { dropboxConfigured, listFolder } from '@/lib/dropbox';
@@ -201,6 +202,23 @@ export async function GET(req: NextRequest) {
       remarkPages: (() => {
         const q = (rj as { queue?: { remark_pages?: unknown } } | null)?.queue;
         return Array.isArray(q?.remark_pages) ? (q!.remark_pages as unknown[]).map(Number).filter(Number.isInteger) : [];
+      })(),
+      // 🔁 What the last re-mark changed (lib/remark-diff, 8 Sep 2026) — present
+      // while the marking that stepped aside is still on the row.
+      remark: (() => {
+        const prev = (rj as { previous_results?: unknown } | null)?.previous_results;
+        const results = (rj as { results?: unknown } | null)?.results;
+        if (!Array.isArray(prev) || !prev.length || !Array.isArray(results) || !results.length) return null;
+        const q = (rj as { queue?: { remark_pages?: unknown } } | null)?.queue;
+        const pages = Array.isArray(q?.remark_pages) ? (q!.remark_pages as unknown[]).map(Number).filter(Number.isInteger) : null;
+        const d = remarkDiff(prev, results, pages);
+        const pt = (rj as { previous_totals?: { awarded?: unknown; max?: unknown } } | null)?.previous_totals;
+        return {
+          pages: d.pages, at: (rj as { previous_marked_at?: unknown } | null)?.previous_marked_at ?? null,
+          previousAwarded: Number.isFinite(Number(pt?.awarded)) ? Number(pt!.awarded) : null,
+          parts: d.parts.map(x => ({ q: x.q, part: x.part, before: x.before, after: x.after ? { awarded: x.after.awarded, max: x.after.max, why: plainMath(x.after.why).slice(0, 160) } : null })),
+          changed: d.changed.length,
+        };
       })(),
     },
     lane,

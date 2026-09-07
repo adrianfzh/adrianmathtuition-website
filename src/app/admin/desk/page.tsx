@@ -65,6 +65,7 @@ type Detail = {
     pdfStale: boolean; grounding: string | null; unattempted: string[]; portalSubmission: boolean;
     paperMatch: PaperMatch | null;
     remarking: boolean; remarkPages: number[];
+    remark: RemarkPanel | null;
     scheme: SchemeState | null;
   };
   lane: DeskLane;
@@ -153,6 +154,14 @@ function SchemeChip({ s, runId, busy, onApprove }: { s: SchemeState | null; runI
     </span>
   );
 }
+
+// 🔁 What the last re-mark changed (8 Sep 2026: "i remarked denise page 12 but
+// i can't see what changed"). Shown while the marking that stepped aside is on
+// the row; the next re-mark replaces it.
+type RemarkPanel = {
+  pages: number[] | null; at: string | null; previousAwarded: number | null; changed: number;
+  parts: { q: string; part: string; before: { awarded: number; max: number } | null; after: { awarded: number; max: number; why: string } | null }[];
+};
 
 type PaperMatch = {
   key: string | null; source: string; trusted: boolean;
@@ -1012,6 +1021,26 @@ function DetailView(p: {
           )}
           <CoverCard cover={cover} />
 
+          {!run.remarking && run.remark && (
+            <div style={{ background: '#f3e8ff', color: '#3b0764', border: '1px solid #d8b4fe', borderRadius: 10, padding: '8px 12px', fontSize: 13, lineHeight: 1.6, marginBottom: 12 }}>
+              <b>🔁 {run.remark.pages ? `Page ${run.remark.pages.map(i => i + 1).join(', ')} re-marked` : 'Re-marked in full'}{run.remark.at ? ` · ${fmtDate(run.remark.at)}` : ''}</b>
+              {' — '}
+              {run.remark.changed === 0
+                ? <>no marks changed{run.remark.previousAwarded != null ? ` (still ${run.awarded}/${run.max})` : ''}. What differs is the marker&rsquo;s reasoning — read the notes on the page below.</>
+                : <>{run.remark.changed} part{run.remark.changed === 1 ? '' : 's'} changed{run.remark.previousAwarded != null ? `; total ${run.remark.previousAwarded} → ${run.awarded} / ${run.max}` : ''}.</>}
+              <div style={{ marginTop: 4, display: 'flex', flexWrap: 'wrap', gap: '4px 14px' }}>
+                {run.remark.parts.map((x, i) => {
+                  const moved = !!x.before && !!x.after && x.before.awarded !== x.after.awarded;
+                  const gone = !x.after, fresh = !x.before;
+                  return (
+                    <span key={i} title={x.after?.why || ''} style={{ fontWeight: moved || gone || fresh ? 700 : 400 }}>
+                      Q{x.q}{x.part} {x.before ? `${x.before.awarded}/${x.before.max}` : '—'} → {x.after ? `${x.after.awarded}/${x.after.max}` : 'not marked'}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           {run.remarking && (
             <p style={{ background: '#f3e8ff', color: '#6b21a8', border: '1px solid #d8b4fe', borderRadius: 10, padding: '8px 12px', fontSize: 13, lineHeight: 1.5 }}>
               🔁 {run.remarkPages.length
