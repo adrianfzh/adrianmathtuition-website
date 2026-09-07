@@ -118,7 +118,8 @@ size budget). Writes `practice.json`.
 
 ### 4 · author `content.py` and `verify.py` — the part that is the point
 
-Follow [`authoring.md`](authoring.md). `content.py` holds `TITLE`, `SUBTITLE`, `NOTES`,
+Follow [`authoring.md`](authoring.md) — its **§Render contract** is the complete list of
+what `render` reads and enforces; do not read `rw.py` to learn it. `content.py` holds `TITLE`, `SUBTITLE`, `NOTES`,
 `EXAMPLES` and `ANSWERS`; it is the only file you write for the sheet.
 
 - **Solve every example yourself.** The bank's `solution` and part-level `answer` fields

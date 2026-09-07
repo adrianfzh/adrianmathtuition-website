@@ -107,7 +107,7 @@ Helpers available inside it: `sm(text)` splits bank text with `$…$` into parts
 `GREY` is the annotation grey, `B`/`I`/`T`/`M` are the usual part constructors.
 
 ```python
-from rw_content import sm, GREY, T, B, I, M
+from rw_content import sm, GREY, T, B, I, M, P, U   # P = grey italic principle line, U = bold underline
 
 TITLE    = "Sec 2 Math Revision"                 # header line 1 — the level line
 SUBTITLE = "Polygons"                            # header line 2 — the topic
@@ -180,3 +180,48 @@ Principle lines are prose steps: `[('text', '…', {'italic': True, 'color': GRE
 The renderer greys `←` annotations automatically when they are written as
 `\quad\text{← …}` at the end of a maths line — that is the only colour that lives
 inside maths; keep colour to prose lines otherwise.
+
+## Render contract — what `rw.py render` reads and enforces
+
+Everything below is what `cmd_render` does; **read this, not `rw.py`** (a session
+spent 40 s re-reading the source for exactly these facts, 7 Sep 2026).
+
+`render --dir <workdir> [--out <path.docx>] [--pdf] [--flow]` imports
+`<workdir>/content.py` and reads `plan.json` + `practice.json` beside it.
+
+| Name in `content.py` | Required | Shape | Default |
+|---|---|---|---|
+| `TITLE` | no | str — header line 1 (the level line) | `plan.level_line` |
+| `SUBTITLE` | no | str — header line 2 (the topic) | `plan.topic` |
+| `NOTES` | no (warns) | list of `('head', str)` · `('para', parts)` · `('math', latex)` · `('mistakes', [str, …])` — **or** a builder string `"module:function"` naming a hand-authored Notes function in `scripts/revision-builders` (e.g. `"build_s2:notes_polygons"`) | none → warning *no Notes block* |
+| `EXAMPLES` | yes | list of `(id8, concept, rows)` or `(id8, concept, rows, letter)` | |
+| `ANSWERS` | yes | dict `id8 → str` — the whole answer line, `$…$` inline maths (split with `sm`) | |
+
+- `rows` = list of `(label, steps)`; `label` is `'(a)'` / `'(i)'` or `''` for one
+  unlabelled cell. A step is a bare latex string (display maths), a parts list
+  (prose — `[T(…), M(…)]`, `[B(…)]`, `[P(…)]`), or `('figure', path, width_cm)` for a
+  sketch **you** drew. Bank figures are placed by render itself — do not add them.
+- `letter`: `None`/`''`/`'a'` prints the concept line, then `Example N` / `Example Na`;
+  `'b'` prints only `Example Nb` under the previous concept.
+- Helpers importable from `rw_content`: `sm`, `GREY`, `LIGHT`, `T`, `B`, `I`, `M`, `P`, `U`.
+
+What render does, in order — each **stop** is a `SystemExit` before any file is written:
+
+1. Runs `<workdir>/verify.py` with `/usr/bin/python3` if it exists → non-zero exit **stops**;
+   no `verify.py` → warning *numbers not machine-checked*.
+2. Every `EXAMPLES` id8 must be in `plan.json`'s pool → else **stop**. Every practice
+   id8 in `practice.json` must have an `ANSWERS` entry → else **stop**.
+3. Fetches the bank figures for every example and practice question into
+   `<workdir>/figs` and lays them out itself (examples: under the stem, max height
+   6.5 cm; practice: 7.5 cm; unreadable figure → warning, laid out without it).
+4. Header from `TITLE`/`SUBTITLE` (running head, every page) → Notes → page break →
+   per example: concept line, `Example N`, stem and parts **verbatim from the bank**
+   with `[marks]`, then `solution_box(rows)`. The question + box are kept on one page
+   unless `--flow`. Part marks ≠ `total_marks` → warning, not a stop.
+5. Page break → `Practice` → Word numbering restarted → each question with its
+   `ANSWERS` line; parts-only questions hoist the first part onto the number line.
+6. Writes the DOCX to `Revision/<folder>/…` named as SKILL.md §5 says, **never
+   overwriting** (`--out` for an exact path). `--pdf` attempts a Word export, which
+   fails on Adrian's Mac today and falls back to `<workdir>/preview.html`. Every
+   warning lands in `<workdir>/report.md`; repeat them in the hand-over.
+
