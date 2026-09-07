@@ -404,6 +404,9 @@ export async function GET(req: NextRequest) {
       // / 'Bot (student)' / 'Bot (admin)' / 'WhatsApp (…)'); null on records
       // created before the field existed. Shown in the chip action sheet.
       bookedVia: (r.fields['Booked Via'] as string) || null,
+      // When the record was made (Airtable createdTime) — with bookedVia this
+      // answers "who moved this, and when" from the chip (Adrian, 7 Sep 2026).
+      bookedAt: (r as { createdTime?: string }).createdTime || null,
     };
   });
 

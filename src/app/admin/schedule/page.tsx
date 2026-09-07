@@ -61,6 +61,8 @@ interface Lesson {
   revisionMakeup?: boolean;
   /** Who booked it — 'Web admin' / 'Bot (parent)' / 'Bot (student)' / 'Bot (admin)' / 'WhatsApp (…)'. Null on pre-attribution records. */
   bookedVia?: string | null;
+  /** Airtable createdTime of the lesson record — when it was booked or moved. */
+  bookedAt?: string | null;
 }
 
 interface Student {
@@ -4179,9 +4181,12 @@ export default function SchedulePage() {
               <div className="action-sheet-sub">{formatDateSlot(actionSheet.date, actionSheet.slotId)}</div>
               {/* Actor attribution — who booked this lesson (null on records
                   created before the 'Booked Via' field existed). */}
-              {actionSheet.lesson.bookedVia && (
+              {(actionSheet.lesson.bookedVia || actionSheet.lesson.bookedAt) && (
                 <div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>
-                  ✍️ Booked via <span style={{ fontWeight: 600, color: '#475569' }}>{actionSheet.lesson.bookedVia}</span>
+                  ✍️ Booked{actionSheet.lesson.bookedVia && <> via <span style={{ fontWeight: 600, color: '#475569' }}>{actionSheet.lesson.bookedVia}</span></>}
+                  {actionSheet.lesson.bookedAt && (
+                    <> · {new Date(actionSheet.lesson.bookedAt).toLocaleString('en-SG', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Singapore' })}</>
+                  )}
                 </div>
               )}
             </div>
