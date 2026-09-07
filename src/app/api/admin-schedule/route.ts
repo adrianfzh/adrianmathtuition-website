@@ -288,8 +288,15 @@ export async function GET(req: NextRequest) {
 
   const slots = visibleSlots.map(mapSlot);
 
-  // Merge in the extra (inactive/adhoc) slots pre-fetched in stage 2.
-  for (const r of extraSlotsData) slots.push(mapSlot(r));
+  // Merge in the extra (inactive/adhoc) slots pre-fetched in stage 2 — but
+  // ONLY those this week's lessons actually sit in. A slot fetched purely as a
+  // reschedule SOURCE (for the "↩ from …" label, built server-side above) must
+  // not become a grid card: the retired 1 Sep "Tuesday 1-3pm Adhoc" slot showed
+  // up on 8 Sep as a second, empty ADHOC card that nothing could remove
+  // (Adrian, 7 Sep 2026) — it was only there because one lesson had been moved
+  // out of it.
+  const weekLessonSlotIds = new Set(lessonsData.map((r: any) => r.fields['Slot']?.[0]).filter(Boolean));
+  for (const r of extraSlotsData) if (weekLessonSlotIds.has(r.id)) slots.push(mapSlot(r));
 
   // EVERY active dated session, whatever week it falls in. `slots` above is
   // week-filtered, which is right for the grid and wrong for the date pickers:
