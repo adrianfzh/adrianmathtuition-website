@@ -92,10 +92,14 @@ node scripts/dropbox-put.mjs "<the .pdf>"  "/Students/<Student Name>/<YYYY-MM-DD
    folder already holds the marked script (`Marked (AI).pdf`, filed by the bot)
    and Adrian's `Marked (Adrian).pdf`; the sheet joins them. File named plainly `Practice Again` — no
    "Wave", no date in the file name (the skill's "The filing path is fixed"
-   section says why). Export the PDF through Word from the ONE fixed
-   folder `~/.adrianmath_word_export/` — Word's sandbox asks Adrian to grant
-   access to every new folder it writes into, so a per-job folder is a dialog
-   per job. Copy the DOCX in, export, copy the PDF back.
+   section says why). Export the PDF through Word from INSIDE Word's own
+   sandbox container: `~/Library/Containers/com.microsoft.Word/Data/Documents/adrianmath-export/`
+   (`mkdir -p` it). Word never asks for permission there. The old fixed folder
+   `~/.adrianmath_word_export/` put a "Grant File Access" dialog in front of
+   Adrian on EVERY Word launch (7 Sep 2026, twice in one evening — the grant does
+   not persist for script-opened files); it is now a symlink into the container
+   folder, so an old prompt still lands in the right place. Copy the DOCX in,
+   export, copy the PDF back.
 
 5. **Complete the job** — this is what Telegrams Adrian:
 

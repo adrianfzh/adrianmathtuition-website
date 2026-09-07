@@ -691,14 +691,17 @@ before it. They were — that was the point.
 
 ## Step 5 — file it for Adrian
 
-**Export the PDF from ONE fixed folder: `~/.adrianmath_word_export/`.** Copy the
-DOCX there, run the Word AppleScript (`document 1` + name guard — recipe in the
-sheet-worker toolchain notes), copy the PDF back. Microsoft Word is sandboxed:
-it puts a "Grant File Access" dialog in front of Adrian for every NEW folder it
-is asked to write into, and a per-job scratch dir means one dialog per job
-(found 2 Sep 2026). One folder, granted once, and the grant persists. Word also
-refuses `save as` into `/private/tmp/...` outright (`-1708`), so the export
-folder has to live under `$HOME` regardless.
+**Export the PDF from INSIDE Word's own sandbox container:
+`~/Library/Containers/com.microsoft.Word/Data/Documents/adrianmath-export/`**
+(`mkdir -p` it). Copy the DOCX there, run the Word AppleScript (`document 1` +
+name guard — recipe in the sheet-worker toolchain notes), copy the PDF back.
+Microsoft Word is sandboxed: it puts a "Grant File Access" dialog in front of
+Adrian for a folder outside its container, and for a script-opened file that
+grant does NOT persist across Word launches — the earlier fixed folder
+`~/.adrianmath_word_export/` asked him twice in one evening (7 Sep 2026; it is
+now a symlink into the container folder). Inside the container Word never asks
+(tested 7 Sep 2026: export in 4 s, no dialog). Word also refuses `save as` into
+`/private/tmp/...` outright (`-1708`).
 
 Render the DOCX **and** a preview PDF, then file both:
 
