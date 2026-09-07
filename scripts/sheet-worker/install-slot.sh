@@ -75,7 +75,7 @@ cat > "$PLIST" <<PLIST_EOF
 		<string>$DELAY</string>
 	</dict>
 	<key>StartInterval</key>
-	<integer>900</integer>
+	<integer>300</integer>
 	<key>RunAtLoad</key>
 	<false/>
 	<key>StandardOutPath</key>

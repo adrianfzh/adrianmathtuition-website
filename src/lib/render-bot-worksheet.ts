@@ -21,9 +21,56 @@
  * lib/render-worksheet and lib/render-revise.
  */
 
+import fs from 'fs';
+import path from 'path';
 import { getBrowser } from '@/lib/generate-pdf';
+import { katexInlineHead, katexAutoRenderScript, waitForPageReady } from '@/lib/katex-inline';
 import { mdToHtml } from '@/lib/render-worksheet';
 import { protectWorksheetHtml, restoreWorksheetHtml } from '@/lib/bot-worksheet';
+
+// Tinos = metric-compatible Times New Roman. The Vercel render lambda has no
+// system TNR, which silently fell back to a sans (Adrian caught it, 2026-08-29).
+// Until 7 Sep 2026 the sheet pulled Tinos from Google Fonts on every render —
+// two CDN round trips (CSS, then woff2) on a cold Chromium, plus KaTeX from
+// jsDelivr and a `networkidle0` wait with a 500 ms idle floor: ~3 s warm, 7 s
+// cold for a 70 KB PDF. The four latin faces are 80 KB in @fontsource/tinos,
+// so they are inlined as data URIs exactly like the KaTeX fonts, and nothing
+// on the page touches the network any more.
+let cachedTinos: string | null = null;
+const TINOS_FACES: Array<[style: string, weight: number, file: string]> = [
+  ['normal', 400, 'tinos-latin-400-normal.woff2'],
+  ['italic', 400, 'tinos-latin-400-italic.woff2'],
+  ['normal', 700, 'tinos-latin-700-normal.woff2'],
+  ['italic', 700, 'tinos-latin-700-italic.woff2'],
+];
+/** `<style>` with the four Tinos faces embedded; '' if the package is missing
+ * (the head then falls back to the Google Fonts link so a sheet still renders). */
+export function tinosInlineStyle(): string {
+  if (cachedTinos !== null) return cachedTinos;
+  try {
+    // Same guard as lib/katex-inline: inside a webpack bundle require.resolve
+    // returns a module id, not a path; the real Node require on Vercel returns
+    // the path (the package is in serverExternalPackages + traced into /api).
+    // fontsource packages ship an `exports` map without `./package.json`, so
+    // resolve one of the font files themselves; if that fails (webpack module
+    // id, or exports blocking it) fall back to the traced node_modules path.
+    let filesDir = path.join(process.cwd(), 'node_modules', '@fontsource', 'tinos', 'files');
+    try {
+      const resolved: unknown = require.resolve('@fontsource/tinos/files/tinos-latin-400-normal.woff2');
+      if (typeof resolved === 'string') filesDir = path.dirname(resolved);
+    } catch { /* keep the cwd fallback */ }
+    const faces = TINOS_FACES.map(([style, weight, file]) => {
+      const b64 = fs.readFileSync(path.join(filesDir, file)).toString('base64');
+      return `@font-face{font-family:Tinos;font-style:${style};font-weight:${weight};font-display:block;` +
+        `src:url(data:font/woff2;base64,${b64}) format("woff2")}`;
+    });
+    cachedTinos = `<style>${faces.join('\n')}</style>`;
+  } catch (e) {
+    console.warn('[render-bot-worksheet] Tinos not inlined, falling back to Google Fonts:', (e as Error).message);
+    cachedTinos = '';
+  }
+  return cachedTinos;
+}
 
 const NAVY = '#1c3a5e';
 const ANSWER_ORANGE = '#843C0C'; // STYLE.md practice-answer colour
@@ -165,24 +212,8 @@ export function buildBotWorksheetHTML(input: BotWorksheetInput): string {
 <head>
 <meta charset="UTF-8">
 <title>${esc(input.title)}</title>
-<!-- Tinos = metric-compatible Times New Roman. The Vercel render lambda has
-     no system TNR, which silently fell back to a sans (Adrian caught it,
-     2026-08-29) — a webfont renders the same everywhere. -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
-  onload="renderMathInElement(document.body,{
-    delimiters:[
-      {left:'$$',right:'$$',display:true},
-      {left:'$',right:'$',display:false},
-      {left:'\\\\(',right:'\\\\)',display:false},
-      {left:'\\\\[',right:'\\\\]',display:true}
-    ],
-    throwOnError:false,
-    strict:false,
-    trust:true
-  });window.__katexDone=true;"></script>
+${tinosInlineStyle() || '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap">'}
+${katexInlineHead()}
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   @page{size:A4;margin:15mm 22mm 13mm}
@@ -275,6 +306,7 @@ ${questions.map((q, i) => questionHtml(q, i, workspace)).join('\n')}
     <span class="ws-foot-url">adrianmathtuition.com</span>
   </div>
 ${answers ? answersHtml(questions) : ''}
+${katexAutoRenderScript()}
 </body>
 </html>`;
 }
@@ -283,24 +315,11 @@ export async function renderBotWorksheetPDF(input: BotWorksheetInput): Promise<B
   const browser = await getBrowser();
   const page = await browser.newPage();
   try {
-    await page.setContent(buildBotWorksheetHTML(input), { waitUntil: 'networkidle0', timeout: 30000 });
-    // Wait for KaTeX auto-render (flag set by the onload handler above).
-    await page.evaluate(
-      () =>
-        new Promise<void>((resolve) => {
-          const w = window as unknown as Record<string, boolean>;
-          if (w.__katexDone) return resolve();
-          const t0 = Date.now();
-          const iv = setInterval(() => {
-            if (w.__katexDone || Date.now() - t0 > 8000) {
-              clearInterval(iv);
-              resolve();
-            }
-          }, 50);
-        }),
-    );
-    await page.evaluate(() => document.fonts?.ready);
-    await new Promise((r) => setTimeout(r, 250)); // layout settle
+    // Nothing on the page loads from the network (fonts + KaTeX are inlined),
+    // so 'load' fires as soon as the DOM is parsed; waitForPageReady then waits
+    // for the auto-render flag, document.fonts and any bank figures.
+    await page.setContent(buildBotWorksheetHTML(input), { waitUntil: 'load', timeout: 30000 });
+    await waitForPageReady(page);
 
     const pdf = await page.pdf({
       format: 'A4',

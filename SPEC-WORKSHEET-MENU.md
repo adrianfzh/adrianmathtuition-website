@@ -100,7 +100,7 @@ Pure logic in `lib/worksheet-jobs.ts` (tested): `pickNextJob`, `claimExpired`,
 
 ## Worker — `scripts/worksheet-worker/` (clone of `scripts/sheet-worker/`)
 
-launchd `com.adrianmath.worksheetworker`, tick 900 s, PID lock, one peek curl,
+launchd `com.adrianmath.worksheetworker`, tick 300 s (was 900 until 7 Sep 2026 — an empty tick is one curl, so the shorter wait is free), PID lock, one peek curl,
 headless `claude -p` with `WORKER_PROMPT.md`, Opus, effort high, 70 min cap.
 The runbook dispatches on `job.kind`:
 

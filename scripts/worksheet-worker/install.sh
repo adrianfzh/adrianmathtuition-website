@@ -67,7 +67,7 @@ echo "✓ Claude credentials: $CREDS"
 CHECK="$(curl -s -m 30 "https://www.adrianmathtuition.com/api/admin/worksheet-jobs" \
   -H "Authorization: Bearer $TOKEN")"
 if printf '%s' "$CHECK" | grep -q '"jobs"'; then
-  echo "✓ installed — worker polls every 15 min; logs: $STATE/worksheet-worker.log"
+  echo "✓ installed — worker polls every 5 min; logs: $STATE/worksheet-worker.log"
 else
   echo "⚠ installed, but the queue call did not answer with a job list:"
   echo "  $(printf '%s' "$CHECK" | head -c 200)"

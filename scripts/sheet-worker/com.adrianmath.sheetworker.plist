@@ -30,7 +30,7 @@
 	     marking is a no-op, never a second worker. 5 min beats the queue's
 	     12-min Mac head start (EXTERNAL_GRACE_MS) with room to spare. -->
 	<key>StartInterval</key>
-	<integer>900</integer>
+	<integer>300</integer>
 
 	<key>RunAtLoad</key>
 	<false/>

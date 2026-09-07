@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildBotWorksheetHTML, type BotWorksheetInput } from './render-bot-worksheet';
+import { buildBotWorksheetHTML, tinosInlineStyle, type BotWorksheetInput } from './render-bot-worksheet';
 
 const base: BotWorksheetInput = {
   title: 'Selected Questions',
@@ -31,5 +31,15 @@ describe('buildBotWorksheetHTML workspace option', () => {
     const html = buildBotWorksheetHTML({ ...base, workspace: false, answers: true });
     expect(html).toContain('Expand $(1+x)^5$');
     expect(html).toContain('ws-answers');
+  });
+
+  it('touches no CDN: Tinos and KaTeX are inlined, auto-render stamps __katexDone', () => {
+    const html = buildBotWorksheetHTML(base);
+    expect(html).not.toContain('jsdelivr');
+    expect(html).not.toContain('googleapis');
+    expect(html).toContain('@font-face{font-family:Tinos;font-style:normal;font-weight:400');
+    expect(html).toContain('@font-face{font-family:Tinos;font-style:italic;font-weight:700');
+    expect(html).toContain('window.__katexDone = true');
+    expect(tinosInlineStyle().length).toBeGreaterThan(80_000);
   });
 });

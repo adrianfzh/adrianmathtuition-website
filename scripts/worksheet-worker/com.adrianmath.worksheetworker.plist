@@ -29,7 +29,7 @@
 	     single peek curl, so an empty queue costs nothing; its PID lock means a
 	     fire during a long build is a no-op, never a second worker. -->
 	<key>StartInterval</key>
-	<integer>900</integer>
+	<integer>300</integer>
 
 	<key>RunAtLoad</key>
 	<false/>
