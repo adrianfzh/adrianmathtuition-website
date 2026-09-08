@@ -53,6 +53,13 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
     - Post `done` with the same payload as before plus
       `"revised": {"round": <n>, "instructions": "<the note>"}`; keep
       `diagnosis` unless the change altered a section's title, marks or gap.
+
+1d. **ALWAYS post `diagnosis`** — on a fresh sheet, a revision, and when you
+    decide an existing sheet stands unchanged after a re-mark ("identical
+    diagnosis, not rebuilt"). The paper's cover page ("Where your marks went")
+    is drawn FROM it; a `done` without it leaves the cover ranked by the
+    marker's topic buckets, which do not match the sheet's sections (Joey, 8
+    Sep 2026). Re-read the sheet you are reusing and post its sections.
       `verified` keeps its `"<checked>/<total> …"` shape — count EVERY answer on
       the revised sheet, not only the ones you re-checked ("77/77 sympy; 7
       re-checked on the reshaped Example 2(b)"), or the sheet is held as
