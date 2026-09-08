@@ -1942,6 +1942,16 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     } catch { /* defaults are fine */ }
 
     document.body.style.overflow = 'hidden';
+    // iPad Safari: a page that was pinch-zoomed BEFORE the pen opened keeps that zoom,
+    // which pushes this fixed toolbar off screen and leaves only the canvas, at 2×,
+    // with no way to zoom out or change tool (the desk, 8 Sep 2026). Re-declaring
+    // the viewport with maximum-scale=1 makes iOS snap the page back to 1× and lock
+    // it while the pen is open; the old rule comes back on close.
+    const viewportMeta = document.querySelector('meta[name="viewport"]') as HTMLMetaElement | null;
+    const prevViewport = viewportMeta?.getAttribute('content') ?? null;
+    const lockMeta = viewportMeta ?? Object.assign(document.createElement('meta'), { name: 'viewport' });
+    if (!viewportMeta) document.head.appendChild(lockMeta);
+    lockMeta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
     let lock: { release?: () => Promise<void> } | null = null;
     const requestLock = () => {
       (navigator as Navigator & { wakeLock?: { request: (t: 'screen') => Promise<{ release?: () => Promise<void> }> } })
@@ -1954,6 +1964,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     const imgs = imgsRef.current;
     return () => {
       document.body.style.overflow = '';
+      if (viewportMeta) viewportMeta.setAttribute('content', prevViewport ?? 'width=device-width, initial-scale=1');
+      else lockMeta.remove();
       document.removeEventListener('visibilitychange', onVis);
       lock?.release?.().catch(() => {});
       for (const b of bitmaps) if (b && b.src instanceof ImageBitmap) b.src.close();

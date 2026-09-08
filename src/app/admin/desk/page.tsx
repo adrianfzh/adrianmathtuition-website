@@ -973,6 +973,16 @@ function DetailView(p: {
   // the twin with the solution drawn on the page. Default = the clean copy;
   // the toggle shows the solution-on-page twin for checking its placement.
   const [solutionsOnPage, setSolutionsOnPage] = useState(true);
+  // "see page N" shows the page in the RIGHT pane, beside the question and in place
+  // of the sheet, instead of scrolling the script down to it (Adrian, 8 Sep 2026:
+  // "why not just have page 2 appear on the right panel"). 📘/📄 chips switch the
+  // pane; on a one-column layout (phone) the old scroll-to-anchor stays.
+  const [rightPane, setRightPane] = useState<'sheet' | 'page'>('sheet');
+  const [rightPage, setRightPage] = useState<number | null>(null);
+  const seePage = (photoIndex: number) => {
+    if (typeof window !== 'undefined' && !window.matchMedia('(min-width: 1024px)').matches) { document.getElementById(`page-${photoIndex}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+    setRightPage(photoIndex); setRightPane('page');
+  };
   const tone = LANE_TONE[d.lane];
   const pct = run.max > 0 ? Math.round((run.awarded / run.max) * 100) : null;
   const canApprove = d.approveBlockers.length === 0 && !released;
@@ -1218,7 +1228,8 @@ function DetailView(p: {
                 <div key={`chk-${q.index}`}>
                   {q.photoIndex != null && (
                     <div style={{ padding: '6px 12px 0', fontSize: 12, color: C.muted }}>
-                      <a href={`#page-${q.photoIndex}`} style={{ color: C.link }}>↓ see page {q.photoIndex + 1}</a>
+                      <button type="button" onClick={() => seePage(q.photoIndex as number)} title="Show this page on the right, beside the question"
+                        style={{ border: 'none', background: 'none', padding: 0, font: 'inherit', color: C.link, cursor: 'pointer' }}>📄 see page {q.photoIndex + 1}</button>
                     </div>
                   )}
                   <QuestionCard q={q} released={released} busy={busy} editing={p.editing} editAwarded={p.editAwarded} editNote={p.editNote}
@@ -1328,10 +1339,56 @@ function DetailView(p: {
           )}
         </div>
 
-        {/* ── right: the sheet ── */}
+        {/* ── right: the sheet, or the page a "see page" asked for ── */}
         <div className="desk-right" style={{ minWidth: 0 }}>
-          <SheetPane d={d} sheetPages={p.sheetPages} sheetNote={p.sheetNote} busy={busy} focus={p.focus} setFocus={p.setFocus}
-            onQueueSheet={p.onQueueSheet} onCancelSheet={p.onCancelSheet} onAutoRelease={p.onAutoRelease} onRevise={p.onRevise} />
+          {rightPage != null && (() => {
+            const order = pages.map(pg => pg.photoIndex);
+            const at = order.indexOf(rightPage);
+            return (
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 8, flexWrap: 'wrap' }}>
+                <button className={`desk-tab${rightPane === 'sheet' ? ' on' : ''}`} onClick={() => setRightPane('sheet')} title="Show the Practice Again sheet here">📘 Practice Again</button>
+                <button className={`desk-tab${rightPane === 'page' ? ' on' : ''}`} onClick={() => setRightPane('page')} title="Show the marked page here">📄 Page {rightPage + 1}</button>
+                {rightPane === 'page' && (
+                  <span style={{ display: 'flex', gap: 4, marginLeft: 'auto' }}>
+                    <button className="desk-tab" disabled={at <= 0} onClick={() => setRightPage(order[at - 1])} title="Previous page" style={{ opacity: at <= 0 ? 0.4 : 1 }}>‹</button>
+                    <button className="desk-tab" disabled={at < 0 || at >= order.length - 1} onClick={() => setRightPage(order[at + 1])} title="Next page" style={{ opacity: at < 0 || at >= order.length - 1 ? 0.4 : 1 }}>›</button>
+                  </span>
+                )}
+              </div>
+            );
+          })()}
+          {rightPane === 'page' && rightPage != null ? (() => {
+            const pg = pages.find(x => x.photoIndex === rightPage);
+            if (!pg) return <p style={{ color: C.muted, fontSize: 13 }}>Page {rightPage + 1} has no image on this run.</p>;
+            const src = fileHref(solutionsOnPage && pg.urlWithSolutions ? pg.urlWithSolutions : pg.url);
+            return (
+              <section style={{ border: `1px solid ${C.border}`, borderRadius: 12, background: '#fff', overflow: 'hidden' }}>
+                <div style={{ padding: '8px 12px', background: '#fafafa', borderBottom: `1px solid ${C.border}`, fontSize: 12.5, color: C.muted, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <span>Page {pg.photoIndex + 1}
+                    {!released && <button type="button" onClick={() => setAnnotatePage(pg.photoIndex)} style={{ ...btn('#fff', C.pen, '#ddd6fe'), marginLeft: 10, padding: '3px 9px', fontSize: 12.5 }} title="Open the pen on this page">✏️ Annotate this page</button>}
+                    <a href={src} target="_blank" rel="noreferrer" style={{ marginLeft: 8, color: C.link, textDecoration: 'none', fontSize: 12 }}>open ↗</a>
+                  </span>
+                  {!run.remarking && (
+                    <button onClick={() => p.onRemarkPage(pg.photoIndex)} disabled={busy === 'remark'}
+                      title="Read this page again and redraw the paper; every other page keeps its marking. The sheet is revised for what changed."
+                      style={{ background: 'transparent', border: `1px solid ${C.border}`, borderRadius: 7, padding: '2px 8px', fontSize: 12, color: C.muted, cursor: 'pointer' }}>
+                      {busy === 'remark' ? '…' : '🔁 Re-mark this page'}
+                    </button>
+                  )}
+                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={src} alt={`Marked page ${pg.photoIndex + 1}`} onClick={() => { if (!released) setAnnotatePage(pg.photoIndex); }}
+                  title={released ? undefined : 'Tap to annotate this page'} style={{ width: '100%', display: 'block', cursor: released ? 'default' : 'pointer' }} />
+                {solutionsOnPage && pg.urlWithSolutions && pg.overflowUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={fileHref(pg.overflowUrl)} alt={`Worked solution sheet after page ${pg.photoIndex + 1}`} loading="lazy" style={{ width: '100%', display: 'block', borderTop: `1px dashed ${C.border}` }} />
+                )}
+              </section>
+            );
+          })() : (
+            <SheetPane d={d} sheetPages={p.sheetPages} sheetNote={p.sheetNote} busy={busy} focus={p.focus} setFocus={p.setFocus}
+              onQueueSheet={p.onQueueSheet} onCancelSheet={p.onCancelSheet} onAutoRelease={p.onAutoRelease} onRevise={p.onRevise} />
+          )}
         </div>
       </div>
       {annotatePage != null && !released && (
