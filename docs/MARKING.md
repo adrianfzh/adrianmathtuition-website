@@ -964,6 +964,17 @@ flagged, and his vetting changed 5 of the 98 flags he looked at.
   looked at; ≥5 released and >10 % changed → the switch is paused and he is
   told. `job_runs` `auto-release-report`, `JOB_RHYTHMS` line, `docs/OPS.md`.
 - Doctrine (CLAUDE.md, Accountability) revised in the open the same day.
+- **Same day, what the first re-marks taught (8 Sep 2026):** a Mac-claimed
+  Practice Again hand-in was marked with NO sheet — the bot's Mac claim query
+  never selected `student_id`, so the attach answered "untagged" (bot
+  2393dca: the query carries it, the attach fetches it when missing). The
+  `reissue` action never rebuilt anything — `rebuildRunPdfs`' released-run
+  guard skipped it and the skip reason was swallowed as "unknown"
+  (`allowReleased` on a re-issue; the error names the skip). The "From Adrian"
+  row is flipped to marked by ONE helper on release and re-issue, found by
+  `run_id` when the run carries no `assignment_id`. And a Mac session that
+  heart-beats without a page landing for 20 min is stale (`externalClaimStalled`,
+  bot ca21313) — Alessi's 12/16-pages-then-silence paper.
 - **Iteration 2, the same afternoon (Adrian: "can't all be auto-released?
   there are too many flags for me to check individually… we should just
   release them, but ping me for anything important to watch out for… anything
