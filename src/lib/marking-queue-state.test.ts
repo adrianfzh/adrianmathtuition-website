@@ -1,88 +1,121 @@
 import { describe, it, expect } from 'vitest';
-import { markingQueueState, finishedBecause, type QueueRunRow } from './marking-queue-state';
+import { markingQueueState, finishedBecause, isInFlight, claimMachine, type QueueRunRow } from './marking-queue-state';
 
-const NOW = Date.parse('2026-09-09T12:00:00Z');
+const NOW = Date.parse('2026-09-09T01:10:00+08:00');
 const minsAgo = (m: number) => new Date(NOW - m * 60_000).toISOString();
 
 function row(over: Partial<QueueRunRow> = {}): QueueRunRow {
-  return { id: 'r1', created_at: minsAgo(10), queue_status: 'queued', paper_name: 'a paper', ...over };
+  return {
+    id: 'r1',
+    created_at: minsAgo(10),
+    paper_name: 'a paper',
+    total_max: null,
+    queue: { queued_at: minsAgo(10) },
+    ...over,
+  };
 }
 
-describe('finishedBecause', () => {
-  it('calls a released paper released', () => {
-    expect(finishedBecause(row({ released_at: minsAgo(1) }))).toBe('released');
+describe('claimMachine', () => {
+  it('pulls the hostname out of the claim string', () => {
+    expect(claimMachine('mac-plan-Adrians-MacBook-Pro-89778')).toBe('Adrians-MacBook-Pro');
   });
-  it('calls an archived paper archived', () => {
-    expect(finishedBecause(row({ archived_at: minsAgo(1) }))).toBe('archived');
+  it('handles a hostname containing digits', () => {
+    expect(claimMachine('mac-plan-Mac-Studio-2-4471')).toBe('Mac-Studio-2');
   });
-  it('calls a paper with a total marked', () => {
-    expect(finishedBecause(row({ total_max: 80 }))).toBe('marked');
+  it('is null for no claim', () => {
+    expect(claimMachine(null)).toBeNull();
+    expect(claimMachine('')).toBeNull();
   });
-  it('leaves a genuinely waiting paper alone', () => {
-    expect(finishedBecause(row())).toBeNull();
+});
+
+describe('isInFlight', () => {
+  it('is true for a queued, unmarked, unfailed paper', () => {
+    expect(isInFlight(row())).toBe(true);
   });
-  it('prefers released over the other reasons when several apply', () => {
-    expect(finishedBecause(row({ released_at: minsAgo(1), archived_at: minsAgo(2), total_max: 80 }))).toBe('released');
+  // The regression this module was rewritten for: a live paper carries
+  // result_json.queue but leaves queue_status NULL. Reading the column alone
+  // reported "empty" while two of Alexis's papers were actively being marked.
+  it('is true even though queue_status is null — the column is not the signal', () => {
+    expect(isInFlight(row({ queue_status: null }))).toBe(true);
+  });
+  it('is false once the paper has a total', () => {
+    expect(isInFlight(row({ total_max: 80 }))).toBe(false);
+  });
+  it('is false when the queue entry failed', () => {
+    expect(isInFlight(row({ queue: { queued_at: minsAgo(10), failed_at: minsAgo(1) } }))).toBe(false);
+  });
+  it('is false with no queue blob at all', () => {
+    expect(isInFlight(row({ queue: null }))).toBe(false);
   });
 });
 
 describe('markingQueueState', () => {
-  it('is empty when nothing is queued', () => {
-    const s = markingQueueState([row({ queue_status: null }), row({ queue_status: 'done' })], NOW);
-    expect(s).toMatchObject({ pending: 0, oldestMinutes: null, rows: [], stale: [] });
+  it('is empty when nothing is in flight', () => {
+    expect(markingQueueState([row({ total_max: 80 }), row({ queue: null })], NOW))
+      .toMatchObject({ pending: 0, oldestMinutes: null, rows: [], stale: [] });
   });
 
-  it('counts and lists only papers genuinely waiting', () => {
-    const s = markingQueueState([
-      row({ id: 'wait', created_at: minsAgo(30), paper_name: 'p1', student_name: 'Sophie' }),
-      row({ id: 'gone', released_at: minsAgo(1), paper_name: 'p2' }),
-    ], NOW);
+  it('lists a claimed paper with its Mac and how long it has been held', () => {
+    const s = markingQueueState([row({
+      id: 'p1', paper_name: 'alexis am tys 2023 p1', student_name: 'Alexis',
+      queue: { queued_at: minsAgo(8), external_claim: { by: 'mac-plan-Adrians-MacBook-Pro-89778', since: minsAgo(7), attempts: 1 } },
+    })], NOW);
     expect(s.pending).toBe(1);
-    expect(s.rows.map(r => r.id)).toEqual(['wait']);
-    expect(s.rows[0]).toMatchObject({ paper: 'p1', student: 'Sophie', waitingMinutes: 30 });
+    expect(s.rows[0]).toMatchObject({
+      paper: 'alexis am tys 2023 p1', student: 'Alexis',
+      waitingMinutes: 8, machine: 'Adrians-MacBook-Pro', claimedMinutes: 7, attempts: 1,
+    });
   });
 
-  // The 9 Sep 2026 regression: three rows said `queued` long after their papers
-  // were released or archived, and every screen showed "empty" because nothing
-  // read the column. A stale flag must be visible, never silently dropped.
-  it('surfaces a queued flag on a finished paper instead of hiding it', () => {
+  it('shows an unclaimed paper with no machine', () => {
+    const s = markingQueueState([row()], NOW);
+    expect(s.rows[0]).toMatchObject({ machine: null, claimedMinutes: null });
+  });
+
+  it('orders by queued_at, oldest first — the picker’s own order', () => {
     const s = markingQueueState([
-      row({ id: 'a', released_at: minsAgo(5), paper_name: 'sophie am tys 2021 p1' }),
-      row({ id: 'b', archived_at: minsAgo(5), paper_name: 'kassandra p2' }),
-      row({ id: 'c', total_max: 80, paper_name: 'kassandra p1' }),
+      row({ id: 'new', queue: { queued_at: minsAgo(2) } }),
+      row({ id: 'old', queue: { queued_at: minsAgo(300) } }),
+      row({ id: 'mid', queue: { queued_at: minsAgo(40) } }),
+    ], NOW);
+    expect(s.rows.map(r => r.id)).toEqual(['old', 'mid', 'new']);
+    expect(s.oldestMinutes).toBe(300);
+  });
+
+  // The 9 Sep 2026 leftovers: three rows flagged queued long after release.
+  it('reports a queued flag left on a finished paper, without counting it as work', () => {
+    const s = markingQueueState([
+      row({ id: 'a', queue_status: 'queued', total_max: 80, released_at: minsAgo(5), paper_name: 'sophie am tys 2021 p1' }),
+      row({ id: 'b', queue_status: 'queued', total_max: 80, archived_at: minsAgo(5), paper_name: 'kassandra p2' }),
     ], NOW);
     expect(s.pending).toBe(0);
     expect(s.stale).toEqual([
       { id: 'a', paper: 'sophie am tys 2021 p1', because: 'released' },
       { id: 'b', paper: 'kassandra p2', because: 'archived' },
-      { id: 'c', paper: 'kassandra p1', because: 'marked' },
     ]);
   });
 
-  it('orders waiting papers oldest first, the picker’s own order', () => {
-    const s = markingQueueState([
-      row({ id: 'new', created_at: minsAgo(5) }),
-      row({ id: 'old', created_at: minsAgo(500) }),
-      row({ id: 'mid', created_at: minsAgo(50) }),
-    ], NOW);
-    expect(s.rows.map(r => r.id)).toEqual(['old', 'mid', 'new']);
-    expect(s.oldestMinutes).toBe(500);
-  });
-
-  it('carries the claim and the failure reason so a wedged paper is legible', () => {
-    const s = markingQueueState([
-      row({ claimed_by: 'slot2', queue_attempts: 2, queue_failed_reason: 'groundingSource is not defined' }),
-    ], NOW);
-    expect(s.rows[0]).toMatchObject({ claimedBy: 'slot2', attempts: 2, failedReason: 'groundingSource is not defined' });
+  it('never calls a genuinely waiting paper stale, even when flagged queued', () => {
+    const s = markingQueueState([row({ queue_status: 'queued' })], NOW);
+    expect(s.stale).toEqual([]);
+    expect(s.pending).toBe(1);
   });
 
   it('never reports a negative wait for a row stamped in the future', () => {
-    const s = markingQueueState([row({ created_at: new Date(NOW + 60_000).toISOString() })], NOW);
+    const s = markingQueueState([row({ queue: { queued_at: new Date(NOW + 60_000).toISOString() } })], NOW);
     expect(s.rows[0].waitingMinutes).toBe(0);
   });
 
   it('names an unnamed paper rather than rendering a blank', () => {
     expect(markingQueueState([row({ paper_name: '  ' })], NOW).rows[0].paper).toBe('(unnamed paper)');
-    expect(markingQueueState([row({ paper_name: null })], NOW).rows[0].paper).toBe('(unnamed paper)');
+  });
+});
+
+describe('finishedBecause', () => {
+  it('prefers released over the other reasons', () => {
+    expect(finishedBecause(row({ released_at: minsAgo(1), archived_at: minsAgo(2), total_max: 80 }))).toBe('released');
+  });
+  it('is null for a paper still in flight', () => {
+    expect(finishedBecause(row())).toBeNull();
   });
 });

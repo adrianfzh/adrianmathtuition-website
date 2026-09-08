@@ -40,13 +40,20 @@ export async function GET(req: NextRequest) {
     // and the disagreement itself is reported as `stale`.
     let queue: MarkingQueueState = { pending: 0, oldestMinutes: null, rows: [], stale: [] };
     try {
-      const { data } = await getSupabaseAdmin()
-        .from('paper_marking_runs')
-        .select('id, created_at, paper_name, student_name, queue_status, total_max, released_at, archived_at, claimed_by, queue_attempts, queue_failed_reason')
-        .eq('queue_status', 'queued')
-        .order('created_at', { ascending: true })
-        .limit(50);
-      queue = markingQueueState((data || []) as QueueRunRow[]);
+      // Two reads, because the two signals live in different places: papers in
+      // flight (no total yet) and any row still FLAGGED queued. A live paper
+      // leaves queue_status null, so the flag alone would report "empty" while
+      // the Mac was marking — that shipped briefly on 9 Sep and is why both are
+      // fetched. JSON-path alias keeps the fat result_json off the wire.
+      const cols = 'id, created_at, paper_name, student_name, queue_status, total_max, released_at, archived_at, queue:result_json->queue';
+      const sb = getSupabaseAdmin();
+      const [inFlight, flagged] = await Promise.all([
+        sb.from('paper_marking_runs').select(cols).is('total_max', null).order('created_at', { ascending: true }).limit(50),
+        sb.from('paper_marking_runs').select(cols).eq('queue_status', 'queued').limit(50),
+      ]);
+      const byId = new Map<string, QueueRunRow>();
+      for (const r of [...(inFlight.data || []), ...(flagged.data || [])] as QueueRunRow[]) byId.set(r.id, r);
+      queue = markingQueueState([...byId.values()]);
     } catch { /* queue read is best-effort — the jobs table is the core */ }
 
     // Marking bill (2 Sep 2026): which papers the Mac marked on plan usage and

@@ -17,7 +17,7 @@ type OpsData = {
   queue: {
     pending: number;
     oldestMinutes: number | null;
-    rows: { id: string; paper: string; student: string | null; waitingMinutes: number; claimedBy: string | null; attempts: number; failedReason: string | null }[];
+    rows: { id: string; paper: string; student: string | null; waitingMinutes: number; machine: string | null; claimedMinutes: number | null; attempts: number }[];
     stale: { id: string; paper: string; because: 'released' | 'archived' | 'marked' }[];
   };
   marking: { d7: MarkingShare; d30: MarkingShare } | null;
@@ -139,9 +139,10 @@ export default function OpsPage() {
                   <span className="text-neutral-800">{r.paper}</span>
                   {r.student && <span className="text-neutral-500">{r.student}</span>}
                   <span className="ml-auto tabular-nums text-neutral-500">{r.waitingMinutes}m</span>
-                  {r.claimedBy && <span className="text-xs text-neutral-400">💻 {r.claimedBy}</span>}
-                  {r.attempts > 0 && <span className="text-xs text-amber-700">attempt {r.attempts}</span>}
-                  {r.failedReason && <span className="text-xs text-red-700 truncate max-w-[16rem]" title={r.failedReason}>{r.failedReason}</span>}
+                  {r.machine
+                    ? <span className="text-xs text-neutral-400" title={`claimed ${r.claimedMinutes}m ago`}>💻 {r.machine}</span>
+                    : <span className="text-xs text-neutral-400">unclaimed</span>}
+                  {r.attempts > 1 && <span className="text-xs text-amber-700">attempt {r.attempts}</span>}
                 </li>
               ))}
             </ul>
