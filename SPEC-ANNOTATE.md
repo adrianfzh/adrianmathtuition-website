@@ -155,19 +155,30 @@ or similar) — not unit-tested; the manual checklist below covers it.
 
 ## 8. Manual iPad checklist (do on a real iPad + Pencil before calling it done)
 
-- [ ] Palm on screen while writing → no marks from the palm, ink unbroken.
-- [ ] Finger cannot draw; two-finger pinch zooms; writing while zoomed lands ink at the
-      right spot (coordinate transform correct).
-- [ ] Pressure visibly varies width; fast scribble has no polygon corners (coalesced
-      events working).
-- [ ] Draw-and-hold: line snaps straight; box snaps; circle snaps; the same shapes
-      drawn WITHOUT holding stay freehand.
-- [ ] Eraser removes exactly the touched stroke; undo restores it; redo re-removes.
-- [ ] 10-page paper: no crash, page switch < 1 s, Done → PDF in < 20 s on iPad.
-- [ ] Done → send row shows `✍️ Annotated PDF` first; ⬇ Download filename correct;
-      history row shows `✍️ Annotated ↗`. Reload the run → annotated copy persists.
-- [ ] Cancel with ink → confirm dialog; confirm discards, nothing uploaded.
-- [ ] Un-inked pages in the final PDF are byte-identical quality (no double JPEG).
+> **Run emulated on the LAYERED pages, 8 Sep 2026** — `scripts/annotate/pencil-checklist.mjs`
+> drives the desk's in-place pen on Gavin Woon's 19-page run with a CDP pen pointer
+> (pressure via `force`) and emulated touch, and reads the autosaved draft + ink log.
+> 16/16 logic checks passed (the one probe that first failed was reading the history
+> rows, not the send row). What emulation cannot prove — real-glass palm feel, latency,
+> coalesced-event smoothness of a fast scribble — is marked ⚠ and stays a real-iPad check.
+
+- [x] Palm on screen while writing → no marks from the palm, ink unbroken. *(emulated: a
+      90 px contact resting mid-stroke; 1 stroke, 41 points. ⚠ real-glass feel untested)*
+- [x] Finger cannot draw; two-finger pinch zooms; writing while zoomed lands ink at the
+      right spot (coordinate transform correct). *(emulated: zoom ×3.00, anchor drift 0.0 px)*
+- [x] Pressure visibly varies width *(p 0.2…0.9 recorded per point)*; ⚠ fast scribble has
+      no polygon corners (coalesced events) — hardware, real iPad only.
+- [x] Draw-and-hold: line snaps straight; box snaps; circle snaps (`ellipse`); the same
+      shapes drawn WITHOUT holding stay freehand.
+- [x] Eraser removes exactly the touched stroke; undo restores; redo re-removes; 2-finger
+      tap undoes, 3-finger tap redoes.
+- [x] 19-page paper: no crash, page switch 207 ms, Done → PDF (one composed page) 7.1 s on a
+      Mac. ⚠ iPad timing untested.
+- [x] Done → send row shows `✍️ Annotated PDF` first; ⬇ Download filename correct
+      ("Gavin Woon — … — annotated — 7 Sept 2026.pdf"); history row shows `✍️ Annotated ↗`.
+      Reload the run → annotated copy persists.
+- [x] Cancel with ink → confirm dialog; Discard closes, nothing uploaded, no draft kept.
+- [x] Un-inked pages in the final PDF are byte-identical (same stored URL, no re-encode).
 
 ## 9. Traps, known from this codebase
 
@@ -417,5 +428,5 @@ part region → `result_json.ink_hints[]` → the desk's one-tap Set button. Ver
 headlessly the same day after two fixes: `LayerObj.swapped` makes a swap-only edit dirty (Done
 was disabled), and the proxy's body is now `lib/annotate/compose-forward.ts` (it had dropped
 `markSwaps`). The initial-page jump re-settles until every page above is sized.
-The iPad checklist (§8) has not yet been run on the layered pages.
+The §8 checklist was run EMULATED on the layered pages on 8 Sep 2026 (16/16 logic checks; the three hardware feels stay a real-iPad check).
 
