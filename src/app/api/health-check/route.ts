@@ -441,6 +441,14 @@ export async function GET(req: NextRequest) {
     // marking tile lands here. Its queue route must hold its auth gate (401
     // anonymously; a 404 means the desk fell out of the build and the tile
     // opens on nothing).
+    // The extraction queue door (8 Sep 2026, /api/admin/extraction-queue): workers
+    // on any machine claim source papers through it with the admin bearer — an
+    // anonymous 200 here would hand out signed URLs to the private paper library.
+    timed('extraction-queue', async () => {
+      const r = await fetch(`${base}/api/admin/extraction-queue`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     timed('desk', async () => {
       const r = await fetch(`${base}/api/admin/desk`, { redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);

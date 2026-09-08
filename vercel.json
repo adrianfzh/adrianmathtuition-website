@@ -95,6 +95,10 @@
       "schedule": "*/5 * * * *"
     },
     {
+      "path": "/api/cron/extraction-inbox",
+      "schedule": "*/10 * * * *"
+    },
+    {
       "path": "/api/cron/dropbox-tray",
       "schedule": "30 19 * * *"
     },

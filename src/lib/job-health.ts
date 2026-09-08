@@ -36,6 +36,8 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // The weekly auto-release number (8 Sep 2026): released on their own, changed after, auto-pause rule.
   'auto-release-report': { kind: 'interval', hours: 204, label: 'Mondays 8am' },
   'scan-inbox':         { kind: 'interval', hours: 1, label: 'every 5 min' },
+  // The extraction inbox watcher: Dropbox /Extraction Inbox → paper-library bucket + queue (Vercel cron every 10 min, 8 Sep 2026).
+  'extraction-inbox':   { kind: 'interval', hours: 1, label: 'every 10 min' },
   // The Dropbox tray's one-month life: a paper's folder goes 30 days after release (daily 03:30 SGT, 6 Sep 2026).
   'dropbox-tray':      { kind: 'interval', hours: 30, label: 'daily 3:30am' },
   // Weekly exam-library refresh on the Mac (scripts/paper-library/run.sh, launchd com.adrianmath.paperlibrary, Sun 04:10 SGT, 7 Sep 2026).
