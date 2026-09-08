@@ -79,3 +79,23 @@ export function displayPaperName(raw: string | null | undefined, studentName?: s
   const name = parts.join(' · ');
   return isPracticeAgain ? `Practice Again · ${name}` : name;
 }
+
+/**
+ * One name for a Practice Again hand-in (Adrian, 8 Sep 2026: "why are Practice
+ * Again named differently for different students?"). The sheet's title was
+ * worded three ways across a week of releases — "from your A Math 2021 Paper 1",
+ * "A Math 2021 Paper 1", "AM TYS 2022 P1" — and the hand-in copied whichever it
+ * got. Given the SOURCE paper's own name when the assignment is known, else the
+ * title's tail, the result is always "Practice Again — <display name>".
+ * Anything that is not a Practice Again name comes back untouched.
+ */
+export function practiceAgainHandinName(sent: string | null | undefined, sourcePaperName?: string | null, studentName?: string | null): string {
+  const raw = String(sent ?? '').trim();
+  const m = raw.match(/^practice\s+again\s*(?:[—–-]\s*)?(.*)$/i);
+  if (!m && !sourcePaperName) return raw;
+  const src = String(sourcePaperName ?? '').trim();
+  let tail = src || (m ? m[1] : '');
+  tail = tail.replace(/^(?:from\s+your|learn\s+from|from)\s+/i, '').replace(/\s+paper\s*$/i, '').replace(/^your\s+/i, '').trim();
+  const shown = tail ? displayPaperName(tail, studentName) : '';
+  return shown ? `Practice Again — ${shown}` : 'Practice Again';
+}

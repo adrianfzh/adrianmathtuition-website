@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { displayPaperName } from './paper-display-name';
+import { displayPaperName, practiceAgainHandinName } from './paper-display-name';
 
 describe('displayPaperName', () => {
   it('reads the internal name the way a student would say it', () => {
@@ -25,5 +25,17 @@ describe('displayPaperName', () => {
     expect(displayPaperName('Handed in 22 Aug', 'Adrian Fong')).toBe('Handed In 22 Aug');
     expect(displayPaperName('', 'x')).toBe('Marked paper');
     expect(displayPaperName(null)).toBe('Marked paper');
+  });
+});
+
+describe('practiceAgainHandinName (8 Sep 2026)', () => {
+  it('gives every Practice Again hand-in the same shape, from the source paper when known', () => {
+    expect(practiceAgainHandinName('Practice Again — from your A Math 2021 Paper 1', 'alessi am tys 2021 p1', 'Alessi Tay')).toBe('Practice Again — A Math · GCE 2021 · Paper 1');
+    expect(practiceAgainHandinName('Practice Again — AM TYS 2022 P1', null, 'Rainie Cheng')).toBe('Practice Again — A Math · GCE 2022 · Paper 1');
+    expect(practiceAgainHandinName('Practice Again — from your A Math 2021 Paper 1', null, 'Alessi Tay')).toBe('Practice Again — A Math · 2021 · Paper 1');
+  });
+  it('leaves an ordinary paper name alone', () => {
+    expect(practiceAgainHandinName('Emath O2022', null, 'Alessi Tay')).toBe('Emath O2022');
+    expect(practiceAgainHandinName('', null)).toBe('');
   });
 });

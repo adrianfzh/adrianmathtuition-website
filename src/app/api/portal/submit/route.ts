@@ -31,6 +31,7 @@ import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the marking topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_marking = (text: string) => sendTelegram(text, 'marking');
 import { canTransition, type AssignmentRow } from '@/lib/assignments';
+import { practiceAgainHandinName } from '@/lib/paper-display-name';
 import { portalIdentity } from '@/lib/portal-auth';
 import { markSubjectAccess } from '@/lib/portal-beta';
 import { enrolledMarkSubjects } from '@/lib/student-mark-subjects';
@@ -150,8 +151,20 @@ export async function POST(req: Request) {
 
   // Required since 2026-08-21 (Adrian: "let's just have the student fill it up
   // properly") — the client disables Send until it's typed; this is the backstop.
-  const paperName = (typeof body.paperName === 'string' ? body.paperName.trim().slice(0, 80) : '')
+  let paperName = (typeof body.paperName === 'string' ? body.paperName.trim().slice(0, 80) : '')
     || (assignment ? assignment.title.slice(0, 80) : '');
+  // A Practice Again hand-in is named after its SOURCE paper, one shape for every
+  // student (Adrian, 8 Sep 2026: "why are Practice Again named differently?" —
+  // the sheet title's wording changed across a week of releases and each hand-in
+  // copied whichever it got). lib/paper-display-name practiceAgainHandinName.
+  if (assignment || /^practice\s+again\b/i.test(paperName)) {
+    let sourceName: string | null = null;
+    if (assignment?.source_run_id) {
+      const { data: src } = await admin.from('paper_marking_runs').select('paper_name').eq('id', assignment.source_run_id).maybeSingle<{ paper_name: string | null }>();
+      sourceName = src?.paper_name ?? null;
+    }
+    paperName = practiceAgainHandinName(paperName || 'Practice Again', sourceName, account.display_name ?? null).slice(0, 80);
+  }
   if (!paperName) {
     return NextResponse.json({ error: 'Tell us which paper this is (e.g. "Xinmin 2021 Prelim P2") before sending.' }, { status: 400 });
   }
