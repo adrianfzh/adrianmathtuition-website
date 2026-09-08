@@ -62,8 +62,8 @@ export default async function PracticeTodo({ account }: { account: Pick<PortalAc
         <div className={`${CARD} p-5 space-y-2`}>
           <p className="text-sm font-semibold text-navy">Nothing to practise yet.</p>
           <p className="text-sm text-gray-600">
-            This is your to-do list. Work Adrian sends you, Practice Again questions from your marked papers,
-            and questions you find all land here — and you get them marked line by line.
+            This is your to-do list. Work Adrian sends you, your Practice Again sheets,
+            and questions you find all land here.
           </p>
           <p className="text-xs text-gray-400">
             Handed a paper in? Your marked copy and its practice arrive together in <Link href="/app/marking" className="underline">Papers</Link>.
@@ -106,7 +106,7 @@ export default async function PracticeTodo({ account }: { account: Pick<PortalAc
 
       {sections.length > 0 && (
         <p className="text-[11px] text-gray-400">
-          Questions are marked line by line right away. Worksheets come back in <Link href="/app/marking" className="underline">Papers</Link> once marked.
+          Questions are marked line by line right away. Sheets come back in <Link href="/app/marking" className="underline">Papers</Link> once marked.
         </p>
       )}
     </div>
