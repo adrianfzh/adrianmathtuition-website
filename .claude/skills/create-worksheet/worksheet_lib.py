@@ -616,7 +616,7 @@ class Worksheet:
         table.style = self.doc.styles['Table Grid']
         table.autofit = False
         _outer_border_only(table)
-        for idx, ((label, steps), row) in enumerate(zip(rows, table.rows)):
+        for (label, steps), row in zip(rows, table.rows):
             if labelled:
                 lab_cell, work_cell = row.cells
                 lab_cell.width = Cm(1.0)
@@ -626,6 +626,17 @@ class Worksheet:
             else:
                 work_cell = row.cells[0]
                 work_cell.width = Cm(16.0)
+        # cell.width only writes w:tcW, which Word honours; LibreOffice (and
+        # the soffice PDF preview) size columns from w:tblGrid instead and
+        # split 50/50, clipping long display math in the working column
+        # (found 9 Sep 2026 on the GCE solutions export). Set both.
+        for col, w in zip(table.columns, ([1.0, 15.0] if labelled else [16.0])):
+            col.width = Cm(w)
+        for idx, ((label, steps), row) in enumerate(zip(rows, table.rows)):
+            if labelled:
+                lab_cell, work_cell = row.cells
+            else:
+                work_cell = row.cells[0]
             first = True
             for step in steps:
                 p = work_cell.paragraphs[0] if first else work_cell.add_paragraph()

@@ -287,7 +287,18 @@ async function brief() {
   const paperNo = Number(KEY.split('-P')[1]);
   const shape = SHAPE[fam];
   if (!shape) throw new Error(`no SEAB shape brief for family ${fam} yet (AM only in v1)`);
-  const def = libs.applyPreset(def0, bp.presets?.standard?.overlay);
+  let def = libs.applyPreset(def0, bp.presets?.standard?.overlay);
+  // --companion <paper.json>: the sister paper already generated (P1 when
+  // planning P2). SEAB's two papers cover the syllabus between them, so topics
+  // that paper already used are down-weighted here (never zeroed — the walk
+  // still needs a candidate in every pool) and the untouched ones come forward.
+  const companionPath = argOf('--companion', null);
+  if (companionPath) {
+    const comp = JSON.parse(readFileSync(resolve(companionPath), 'utf8'));
+    const used = new Set(comp.questions.flatMap((s) => (s.question ?? s.draft)?.topics ?? []));
+    def = { ...def, slots: def.slots.map((sl) => ({ ...sl, topic_pool: sl.topic_pool.map((t) => ({ ...t, weight: used.has(t.topic) ? t.weight * 0.1 : t.weight })) })) };
+    log(`companion ${comp.key} seed ${comp.seed}: down-weighting ${used.size} topics it already covers`);
+  }
   const rng = libs.mulberry32(SEED);
   const topics = libs.walkTopics(def, rng);
   const targets = libs.targetMarks(def, { difficulty: 'standard' });
@@ -383,6 +394,15 @@ function check() {
 }
 
 // ------------------------------------------------------- assemble mode ----
+// A drawn figure lives beside its draft as Q<n>.figure.svg (written by
+// scripts/gce-paper/figure.mjs from Q<n>.figure.json). Embedded as a data URI
+// so the rendered PDF needs no file host; the JSON keeps the svg path only.
+function figureDataUri(runDir, pos) {
+  const p = resolve(runDir, `Q${pos}.figure.svg`);
+  if (!existsSync(p)) return null;
+  return `data:image/svg+xml;base64,${readFileSync(p).toString('base64')}`;
+}
+
 async function assemble() {
   if (!RUN) throw new Error('--run <dir> required');
   const dir = resolve(RUN);
@@ -411,15 +431,17 @@ async function assemble() {
 
   const libs = await loadLibs();
   const toParts = (parts) => (parts ?? []).map((p) => ({
-    label: normLabel(p.label), text: String(p.text ?? ''), marks: p.marks ?? null, answer: p.answer ?? null,
+    // a part that carries subparts prints no bracket of its own — GCE brackets only (i), (ii)
+    label: normLabel(p.label), text: String(p.text ?? ''), marks: p.subparts?.length ? null : (p.marks ?? null), answer: p.answer ?? null,
     subparts: p.subparts?.length ? toParts(p.subparts) : null,
   }));
   const pdfQs = ok.map((s) => {
     const q = s.question;
-    const stem = q.needs_figure && q.figure_description
+    const figure = figureDataUri(dir, s.pos);
+    const stem = q.needs_figure && q.figure_description && !figure
       ? `${String(q.stem ?? '').trim()}\n[Figure to be drawn: ${q.figure_description}]`
       : String(q.stem ?? '').trim();
-    return { qnum: String(s.pos), marks: s.target, stem, images: [], missingFigure: false, parts: toParts(q.parts), answerLines: answerKeyLines(q.parts, q.answer) };
+    return { qnum: String(s.pos), marks: s.target, stem, images: figure ? [figure] : [], missingFigure: false, parts: toParts(q.parts), answerLines: answerKeyLines(q.parts, q.answer) };
   });
   const title = `${planJ.shape.subject} ${planJ.shape.code} · Paper ${planJ.paperNo} · Practice paper in the GCE format`;
   const total = ok.reduce((a, s) => a + s.target, 0);

@@ -41,8 +41,10 @@ agent under the plan** — the script never touches the Anthropic API (Adrian, 8
 ```
 node scripts/gce-paper/generate.mjs brief    --key GCE-AM-P1 --seed 1 [--out <dir>]
 node scripts/gce-paper/generate.mjs check    --run <run dir> [--slots 1,2]
+node scripts/gce-paper/figure.mjs   --run <run dir> [--slots 7,9] [--density 288]
 node scripts/gce-paper/generate.mjs assemble --run <run dir> [--pdf-dir <dir>]
 node scripts/gce-paper/manifest.mjs <paper.json> --md
+python3 scripts/gce-paper/export-docx.py <paper.json> --figures <run dir> --out <dir>
 ```
 
 `brief` walks the blueprint (the prelim builder's own `walkTopics`/`targetMarks`, seeded)
@@ -69,6 +71,39 @@ renders the paper (answer key on) and a solutions booklet through the SAME rende
 `/app/print` uses. Nothing is inserted into the bank — the paper is a file for Adrian
 to read first.
 
-Known v1 gaps: no drawn figures (a Plane Geometry question carries a "[Figure to be
-drawn: …]" description — the bot's `lib/figures/` registry is the next step); AM only
-(`SHAPE.AM`); the run folder lives wherever `--out` points (scratchpad for trials).
+### Figures (9 Sep 2026)
+
+A slot with `needs_figure` gets ONE of two files in the run dir, written by the session
+from the question's `figure_description` (no model call — the maths is re-derived by
+the drawing code and fails closed):
+
+- `Q<n>.figure.json` — a typed spec for the bot's `lib/figures/` registry
+  (`{ family, spec }`; e.g. `coordinate-plane` with `points`/`shapes`, `trig-3d`,
+  `function-graph`). `verifyFigure` refuses an inconsistent spec, so a wrong figure is
+  never drawn.
+- `Q<n>.figure.cjs` — a construction for the bot's `ai/figure-engine` (`Construction`
+  + `el`) for shapes outside the registry (the P1 circle-geometry figure, the P2 cone
+  with an inscribed sphere).
+
+`figure.mjs` renders both to `Q<n>.figure.svg` + `Q<n>.figure.png` (sharp from the bot's
+node_modules; `BOT_REPO` overrides the repo path). Engine SVGs carry only a `viewBox`, so
+it gives them `width`/`height` (600 px wide) — without that Chromium printed them as
+thumbnails in the PDF. `assemble` embeds the SVG as a data URI in `figure` and the
+renderer's `.pp-figure` caps it at 300 pt tall.
+
+### Word export
+
+`export-docx.py` turns the assembled JSON into `<name>.docx` (front page, formulae,
+questions with writing space) and `<name>-solutions.docx` (each question with its boxed
+working, then an answer key) through the create-worksheet skill's `worksheet_lib.py`
+(pandoc → native Word equations). A part that carries subparts prints no bracket of its
+own, matching the GCE layout; figures come from `Q<n>.figure.png` in `--figures`.
+`solution_box` sets `w:tblGrid` widths as well as `w:tcW` since 9 Sep 2026 — LibreOffice
+(and the soffice PDF preview) split the columns 50/50 otherwise and clipped display math.
+
+First complete set: `GCE-AM-P1-seed1` (13 Q, figures on Q7/Q9/Q10/Q13) + `GCE-AM-P2-seed1`
+(10 Q, figures on Q6/Q10), 8 Sep 2026, in `data/gce-generated/` (untracked — Adrian reads
+them first; nothing is in the bank).
+
+Known gaps: AM only (`SHAPE.AM`); the run folder lives wherever `--out` points (scratchpad
+for trials); figures are hand-specified per slot, not authored by the agent.
