@@ -100,14 +100,26 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   `tickQuality()` checks the finished run's `annotated_photos[].method`, and 30%+
   margin pages puts a ⚠️ re-mark nudge in the result Telegram (a page or two of
   margin on dense photos is normal and stays silent).
-- **💻 Plan-billed Mac marker (2026-08-26):** Adrian's split, agreed 26 Aug 2026 —
-  **hand-ins (portal `/app/submit` + Telegram `/handin`) ALWAYS mark on the API
-  path, untouched; Adrian's OWN queued papers may instead be marked by a headless
-  Claude Code job on his Mac at $0 API (plan usage).** How it works:
+- **💻 Plan-billed Mac marker (2026-08-26; hand-ins joined 8 Sep 2026):** the
+  26 Aug split was **hand-ins (portal `/app/submit` + Telegram `/handin`) ALWAYS
+  mark on the API path; Adrian's OWN queued papers may instead be marked by a
+  headless Claude Code job on his Mac at $0 API (plan usage).** **Reversed for
+  hand-ins on 8 Sep 2026** (Adrian: "Hand-in → goes to marking directly, if any
+  mac is open"; bot commits 251fc8f + 829c87d, deployed): a hand-in is now a Mac
+  candidate too, with its OWN short head start — `EXTERNAL_HANDIN_GRACE_MS` (3 min)
+  and nothing else: never the worker-following reservation, never the awake grace,
+  so a student never waits behind a stack or an idle Mac beyond 3 min before the
+  API path takes it exactly as before. The same commit shortened every Mac wait
+  (`EXTERNAL_GRACE_MS` 12 → 6 min, `EXTERNAL_AWAKE_GRACE_MS` 30 → 15,
+  `EXTERNAL_HANDOVER_MS` 10 → 6) and the slots now tick every **30 s**, staggered,
+  so a queued paper is seen within ~7 s. First live morning (8 Sep): five portal
+  hand-ins (Alessi ×3, Rainie, Sophie) were marked on the Mac on plan usage
+  (`external_claim.delivered_at` set, `job_runs` `plan-marking` ok=true). The
+  description below is otherwise unchanged. How it works:
   - **Policy lives in bot `lib/queue-pick.js` (pure, tested) — never re-derive it
-    in a route.** A non-hand-in, non-⚡ queued paper waits out `EXTERNAL_GRACE_MS`
-    (12 min) reserved for the Mac before the Fly worker takes it; the Mac (launchd
-    `com.adrianmath.planmarking`, every 5 min) claims via `phase:'external-next'`,
+    in a route.** A non-⚡ queued paper waits out `EXTERNAL_GRACE_MS`
+    (6 min since 8 Sep; hand-ins 3 min) reserved for the Mac before the Fly worker takes it; the Mac (launchd
+    `com.adrianmath.planmarking`, every 30 s since 8 Sep) claims via `phase:'external-next'`,
     which stamps `result_json.queue.external_claim {by, at, attempts}` with a
     **conditional update** (queue generation unchanged since read — the
     staging-vs-prod claim race, relearned). The lease is 10 min,
@@ -162,7 +174,7 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
     Mac that is NOT producing. Ceiling is **60 photos** (was 30; a 38-photo paper
     took 926s). What still leaks a paper to the API, by design: a Mac asleep or
     plan-capped for >12 min with no live claim, a released claim after 2 external
-    attempts, ⚡/☁️ pressed, or a hand-in (always API). Levers: `MARK_QUEUE_EXTERNAL_GRACE_MS`
+    attempts, ⚡/☁️ pressed, or a hand-in whose 3-min head start lapsed with no Mac claim (8 Sep 2026 — before that, every hand-in). Levers: `MARK_QUEUE_EXTERNAL_GRACE_MS`
     on Fly lengthens the idle-Mac head start (no deploy; the machine restart kills
     an in-flight marking, so flip it when the queue is empty); more slots via
     `worker/plan-marking/install-slot.sh N` (all share one plan's 5-hour window —
