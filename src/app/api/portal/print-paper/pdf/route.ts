@@ -26,7 +26,10 @@ import {
   mockCoverInstructions,
   questionMarkdown,
   sectionHeadings,
+  shapeFromTitle,
   storageUrl,
+  toPaperShape,
+  type PaperShape,
   type QbPrintRow,
   type PrintQuestionRef,
 } from '@/lib/print-paper';
@@ -39,12 +42,12 @@ export const maxDuration = 60;
 /** The stored blueprint entry for a mock row — the H2 P2 render reads its
  * section_boundary to draw the Section A/B headings. Null for levels/papers
  * without a blueprint (topics sheets never look here). */
-function blueprintPaperFor(level: string, paper: string): PaperDef | null {
+function blueprintPaperFor(level: string, paper: string, shape: PaperShape): PaperDef | null {
   try {
     const file = JSON.parse(
       fs.readFileSync(path.join(process.cwd(), 'data', 'paper-blueprints.json'), 'utf8'),
     ) as { papers: Record<string, PaperDef> };
-    return file.papers[blueprintKeyFor(level, paper)] ?? null;
+    return file.papers[blueprintKeyFor(level, paper, shape)] ?? null;
   } catch {
     return null; // a missing/unreadable blueprint only costs the headings
   }
@@ -92,6 +95,12 @@ export async function GET(req: NextRequest) {
 
   const printed = new Date(row.created_at).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Singapore' });
   const isMock = row.preset === 'mock' && (row.paper === 'P1' || row.paper === 'P2');
+  // Which SHAPE this paper was built to. The row has no column for it (no
+  // request-details jsonb on portal_generated_papers), so the stored title is
+  // the carrier — ?shape= is only an override for a caller that knows better.
+  const shape: PaperShape = req.nextUrl.searchParams.has('shape')
+    ? toPaperShape(req.nextUrl.searchParams.get('shape'))
+    : shapeFromTitle(row.title);
   const pdf = await renderPrelimPDF({
     title: row.title.toUpperCase(),
     subtitle: `Printed for ${account.display_name || 'you'} · ${printed} · AdrianMath`,
@@ -102,10 +111,11 @@ export async function GET(req: NextRequest) {
           cover: mockCover(row.level, row.paper as string, {
             printedFor: account.display_name,
             printedOn: printed,
+            shape,
           }),
           instructions: mockCoverInstructions(row.level),
           // H2 P2 carries section_boundary → Section A/B headings; [] elsewhere.
-          sections: sectionHeadings(blueprintPaperFor(row.level, row.paper as string)),
+          sections: sectionHeadings(blueprintPaperFor(row.level, row.paper as string, shape)),
         }
       : {}),
   });

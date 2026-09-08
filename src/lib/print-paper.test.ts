@@ -12,14 +12,18 @@ import {
   blueprintKeyFor,
   mockCover,
   mockCoverInstructions,
+  mockTitle,
   paperCodeFull,
   paperDuration,
   questionMarkdown,
   rankWeakTopics,
   sectionHeadings,
   sgtStartOfWeekIso,
+  shapeFromTitle,
+  shapeLabel,
   subjectCode,
   subjectName,
+  toPaperShape,
   type MockSlotInput,
   type QbPrintRow,
 } from './print-paper';
@@ -112,6 +116,77 @@ describe('blueprintKeyFor', () => {
     }
     expect(blueprint.papers[blueprintKeyFor('JC2', 'P1')].total_marks).toBe(100);
   });
+
+  it('prefixes GCE- for the national-exam shape, on every family', () => {
+    expect(blueprintKeyFor('AM', 'P1', 'gce')).toBe('GCE-AM-P1');
+    expect(blueprintKeyFor('AM', 'P2', 'gce')).toBe('GCE-AM-P2');
+    expect(blueprintKeyFor('EM', 'P1', 'gce')).toBe('GCE-EM-P1');
+    expect(blueprintKeyFor('EM', 'P2', 'gce')).toBe('GCE-EM-P2');
+    // student levels collapse to the JC family before the prefix goes on
+    expect(blueprintKeyFor('JC1', 'P1', 'gce')).toBe('GCE-JC-P1');
+    expect(blueprintKeyFor('JC2', 'P2', 'gce')).toBe('GCE-JC-P2');
+    // an explicit 'prelim' is exactly the default
+    expect(blueprintKeyFor('AM', 'P1', 'prelim')).toBe('AM-P1');
+  });
+
+  it('resolves a real blueprint entry for every mock level in the GCE shape too', () => {
+    for (const level of MOCK_LEVELS) {
+      for (const paper of ['P1', 'P2']) {
+        expect(
+          blueprint.papers[blueprintKeyFor(level, paper, 'gce')],
+          `${level} ${paper} gce`
+        ).toBeTruthy();
+      }
+    }
+  });
+});
+
+describe('paper shape', () => {
+  it('narrows an untrusted value — only the literal "gce" is the national shape', () => {
+    expect(toPaperShape('gce')).toBe('gce');
+    expect(toPaperShape('prelim')).toBe('prelim');
+    expect(toPaperShape('GCE')).toBe('prelim');
+    expect(toPaperShape(undefined)).toBe('prelim');
+    expect(toPaperShape(null)).toBe('prelim');
+    expect(toPaperShape(1)).toBe('prelim');
+  });
+
+  it('labels the shape by the level a student sits (JC reads A-Level)', () => {
+    expect(shapeLabel('AM', 'prelim')).toBe('School prelim format');
+    expect(shapeLabel('JC2', 'prelim')).toBe('School prelim format');
+    expect(shapeLabel('AM', 'gce')).toBe('O-Level format');
+    expect(shapeLabel('EM', 'gce')).toBe('O-Level format');
+    expect(shapeLabel('JC1', 'gce')).toBe('A-Level format');
+    expect(shapeLabel('JC2', 'gce')).toBe('A-Level format');
+    expect(shapeLabel('JC', 'gce')).toBe('A-Level format');
+  });
+
+  it('round-trips the shape through the stored title (the only carrier there is)', () => {
+    // portal_generated_papers has no request-details column, so the title is
+    // what /pdf reads back. A prelim title stays byte-identical to the old one.
+    expect(mockTitle('AM', 'P1')).toBe('A Math mock Paper 1');
+    expect(mockTitle('EM', 'P2')).toBe('E Math mock Paper 2');
+    expect(mockTitle('JC2', 'P1')).toBe('H2 Mathematics mock Paper 1');
+    expect(mockTitle('AM', 'P1', 'gce')).toBe('A Math mock Paper 1 · O-Level format');
+    expect(mockTitle('JC1', 'P2', 'gce')).toBe('H2 Mathematics mock Paper 2 · A-Level format');
+    for (const level of MOCK_LEVELS) {
+      for (const paper of ['P1', 'P2']) {
+        expect(shapeFromTitle(mockTitle(level, paper, 'gce'))).toBe('gce');
+        expect(shapeFromTitle(mockTitle(level, paper))).toBe('prelim');
+      }
+    }
+    // an old row, and a student-typed title that merely mentions a level
+    expect(shapeFromTitle('A Math mock Paper 1')).toBe('prelim');
+    expect(shapeFromTitle('O-Level revision')).toBe('prelim');
+  });
+
+  it('says so on the cover only for a GCE-shaped paper', () => {
+    const gce = mockCover('AM', 'P1', { printedFor: 'Wei Jie', printedOn: '28 Aug 2026', shape: 'gce' });
+    expect(gce.candidateLine).toBe('Printed for Wei Jie · 28 Aug 2026 · O-Level format · AdrianMath');
+    const jc = mockCover('JC2', 'P2', { printedOn: '28 Aug 2026', shape: 'gce' });
+    expect(jc.candidateLine).toBe('28 Aug 2026 · A-Level format · AdrianMath');
+    expect(jc.duration).toBe('3 hours');
+  });
 });
 
 describe('exam-format facts', () => {
@@ -128,6 +203,22 @@ describe('exam-format facts', () => {
     // the mapping this pin used to demand of enablement, now live
     expect(paperDuration('JC2', 'P1')).toBe('3 hours');
     expect(paperDuration('JC1', 'P2')).toBe('3 hours');
+  });
+
+  it('carries a duration for the GCE shape too — all 12 blueprint keys', () => {
+    // A GCE key must answer for itself: a missing row would silently fall the
+    // cover back to the '2 hours 15 minutes' default, wrong for H2.
+    expect(DURATIONS['GCE-AM-P1']).toBe('2 hours 15 minutes');
+    expect(DURATIONS['GCE-AM-P2']).toBe('2 hours 15 minutes');
+    expect(DURATIONS['GCE-EM-P1']).toBe('2 hours 15 minutes');
+    expect(DURATIONS['GCE-EM-P2']).toBe('2 hours 15 minutes');
+    expect(DURATIONS['GCE-JC-P1']).toBe('3 hours');
+    expect(DURATIONS['GCE-JC-P2']).toBe('3 hours');
+    expect(Object.keys(DURATIONS)).toHaveLength(12);
+    expect(paperDuration('AM', 'P2', 'gce')).toBe('2 hours 15 minutes');
+    expect(paperDuration('JC2', 'P1', 'gce')).toBe('3 hours');
+    // every key in the table is a real blueprint entry, and vice versa
+    expect(Object.keys(DURATIONS).sort()).toEqual(Object.keys(blueprint.papers).sort());
   });
 
   it('derives SEAB subject codes the same way the admin export always has', () => {

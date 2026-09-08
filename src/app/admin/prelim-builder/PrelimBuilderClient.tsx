@@ -5,6 +5,7 @@
 // saved draft and writes swaps back.
 import { useCallback, useEffect, useState } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
+import { shapeLabel, type PaperShape } from '@/lib/print-paper';
 
 interface Candidate {
   id: string;
@@ -33,6 +34,7 @@ interface Slot {
 interface Paper {
   level: string;
   paper: string;
+  shape: PaperShape;
   preset: string;
   difficulty: string;
   excludeSchool: string | null;
@@ -72,6 +74,9 @@ export default function PrelimBuilderClient() {
   const [presets, setPresets] = useState<PresetMeta[]>([]);
   const [level, setLevel] = useState('AM');
   const [paperNum, setPaperNum] = useState('P2');
+  // Which blueprint the assembly follows: the school-prelim shape (default) or
+  // the national exam's own shape (the GCE-* entries).
+  const [shape, setShape] = useState<PaperShape>('prelim');
   const [preset, setPreset] = useState('standard');
   const [difficulty, setDifficulty] = useState<'standard' | 'hard'>('standard');
   const [excludeSchool, setExcludeSchool] = useState('');
@@ -127,6 +132,7 @@ export default function PrelimBuilderClient() {
         body: JSON.stringify({
           level,
           paper: paperNum,
+          shape,
           preset,
           difficulty,
           excludeSchool: excludeSchool || undefined,
@@ -160,6 +166,7 @@ export default function PrelimBuilderClient() {
         body: JSON.stringify({
           level: paper.level,
           paper: paper.paper,
+          shape: paper.shape,
           preset: paper.preset,
           difficulty: paper.difficulty,
           excludeSchool: paper.excludeSchool || undefined,
@@ -219,7 +226,9 @@ export default function PrelimBuilderClient() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: `${paper.level} ${paper.paper} · ${paper.preset}${paper.difficulty === 'hard' ? ' · hard' : ''}`,
+          // paper_drafts has no shape column, so a GCE-shaped draft says so in
+          // its title — otherwise a reopened draft looks like a prelim one.
+          title: `${paper.level} ${paper.paper} · ${paper.preset}${paper.difficulty === 'hard' ? ' · hard' : ''}${paper.shape === 'gce' ? ' · GCE' : ''}`,
           level: paper.level,
           paper: paper.paper,
           preset: paper.preset,
@@ -251,6 +260,9 @@ export default function PrelimBuilderClient() {
       setPaper({
         level: dr.level,
         paper: dr.paper,
+        // Drafts store no shape; the title is the only record of it, so a
+        // reopened draft rerolls against the prelim blueprint.
+        shape: 'prelim',
         preset: dr.preset,
         difficulty: dr.difficulty,
         excludeSchool: dr.exclude_school,
@@ -339,6 +351,13 @@ export default function PrelimBuilderClient() {
           </select>
         </label>
         <label className="flex flex-col gap-1 text-xs font-semibold text-slate-500">
+          Paper shape
+          <select value={shape} onChange={(e) => setShape(e.target.value as PaperShape)} className="border border-slate-200 rounded-lg px-2 py-1.5 text-sm text-navy">
+            <option value="prelim">School prelim</option>
+            <option value="gce">GCE national exam</option>
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-xs font-semibold text-slate-500">
           Preset
           <select value={preset} onChange={(e) => setPreset(e.target.value)} className="border border-slate-200 rounded-lg px-2 py-1.5 text-sm text-navy max-w-56">
             {availablePresets.map((p) => (
@@ -407,6 +426,7 @@ export default function PrelimBuilderClient() {
             <h2 className="font-bold text-navy">
               {paper.level} {paper.paper} · {paper.preset}
               {paper.difficulty === 'hard' ? ' · hard' : ''}
+              {paper.shape === 'gce' ? ` · ${shapeLabel(paper.level, 'gce')}` : ''}
             </h2>
             <span
               className={`text-sm font-semibold ${total === paper.totalTarget ? 'text-emerald-700' : 'text-red-600'}`}

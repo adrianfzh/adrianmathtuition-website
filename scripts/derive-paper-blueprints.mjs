@@ -13,6 +13,8 @@
 //   node scripts/derive-paper-blueprints.mjs                       # dump if present, else live
 //   node scripts/derive-paper-blueprints.mjs --from-dump data/prelim-rows.json
 //   node scripts/derive-paper-blueprints.mjs --live --save-dump data/prelim-rows.json
+//   node scripts/derive-paper-blueprints.mjs --gce                 # GCE family (live; dumps data/gce-rows.json)
+//   node scripts/derive-paper-blueprints.mjs --gce --from-dump data/gce-rows.json
 //   node scripts/derive-paper-blueprints.mjs --top-up-jc   # one-time: append the JC (H2)
 //                                  # prelim rows to the existing dump — the pinned O-Level
 //                                  # rows are untouched, so AM/EM entries stay byte-identical
@@ -52,6 +54,11 @@ const SAVE_DUMP = argOf('--save-dump');
 const OUT = argOf('--out') ?? OUT_DEFAULT;
 const LIVE = argv.includes('--live');
 const TOP_UP_JC = argv.includes('--top-up-jc');
+// --gce: derive the GCE (national exam) family — school='GCE', exam_type IN
+// ('GCE','Specimen') — into the SAME blueprint file under GCE-<level>-P<n> keys.
+// The six prelim entries are read back from the file and left byte-identical.
+const GCE = argv.includes('--gce');
+const GCE_DUMP_DEFAULT = join(ROOT, 'data', 'gce-rows.json');
 
 // ------------------------------------------------------------- helpers ----
 const pct = (sorted, p) => {
@@ -178,6 +185,52 @@ async function rowsFromLive(bankLevels = ['AM', 'EM', 'JC2']) {
         level: q.level === 'JC2' ? 'JC' : q.level,
         paper: q.paper,
         qn: parseInt(q.question_number, 10),
+        marks: q.total_marks,
+        difficulty: q.difficulty ?? null,
+        diagram: Boolean(
+          (q.image_url && q.image_url !== '') || (q.figure_url && q.figure_url !== '') ||
+          (q.question_image_url && q.question_image_url !== '') ||
+          (Array.isArray(q.images) && q.images.length > 0),
+        ),
+        nParts: Array.isArray(q.parts) ? q.parts.length : null,
+        topics: q.topics ?? [],
+      });
+    }
+    if (page.length < 1000) break;
+  }
+  return rows;
+}
+
+// GCE rows: the real national papers (school='GCE') plus SEAB's specimen papers
+// (exam_type='Specimen'). A specimen shares its year with a real sitting, so it
+// is packed under its own school name ('GCE Specimen') — otherwise the two
+// papers would collapse into one group with conflicting marks and both would
+// be lost as PARTIAL.
+async function rowsFromLiveGce(bankLevels = ['AM', 'EM', 'JC2']) {
+  const env = loadEnv();
+  const url = (env.SUPABASE_URL ?? '').trim();
+  const key = (env.SUPABASE_SECRET_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim();
+  if (!url || !key) {
+    throw new Error('live mode needs SUPABASE_URL + SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY) in env or .env.local');
+  }
+  const cols = 'school,year,level,paper,question_number,total_marks,topics,difficulty,image_url,figure_url,question_image_url,images,parts,exam_type';
+  const rows = [];
+  for (let offset = 0; ; offset += 1000) {
+    const res = await fetch(
+      `${url}/rest/v1/questions?select=${cols}&school=eq.GCE&exam_type=in.(GCE,Specimen)&deleted_at=is.null&level=in.(${bankLevels.join(',')})&order=id.asc&limit=1000&offset=${offset}`,
+      { headers: { apikey: key, Authorization: `Bearer ${key}` } },
+    );
+    if (!res.ok) throw new Error(`supabase ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    const page = await res.json();
+    for (const q of page) {
+      const qn = parseInt(String(q.question_number ?? '').replace(/\D/g, ''), 10);
+      if (!Number.isFinite(qn)) continue;
+      rows.push({
+        school: q.exam_type === 'Specimen' ? 'GCE Specimen' : 'GCE',
+        year: q.year,
+        level: q.level === 'JC2' ? 'JC' : q.level,
+        paper: q.paper,
+        qn,
         marks: q.total_marks,
         difficulty: q.difficulty ?? null,
         diagram: Boolean(
@@ -849,8 +902,239 @@ function sanityCheck(bp) {
   console.log('sanity checks passed: weights sum to 1, typicals within ±4 of totals (exact per section where sectioned), must-appear topics all present in pools and within section capacity');
 }
 
+// ------------------------------------------------ GCE (national) family ----
+// The national papers are FEW (five current-syllabus AM papers per paper number,
+// three EM, eighteen H2) so the prelim miner's statistics (p10/p90 mark bands,
+// top-8 pools with a 3% floor, co-occurrence rules at support >= 8, slot merging)
+// would be noise here. This branch keeps the same reconstruction + slot mapping
+// and swaps every population statistic for the thin-data version:
+//   base            = ONLY current-syllabus papers (4049 AM from 2021, 4052 EM from
+//                     2023, 9758 H2 unchanged) — an older-shape paper never feeds a
+//                     GCE slot, however many there are
+//   slot mark range = min..max actually seen at that position
+//   slot pool       = EVERY topic seen at that position, weighted by count
+//   must_appear     = topics in >= 80% of base papers (capped to the slot count)
+//   rules           = no mined never_together pairs (no support to mine them)
+//   slots           = never merged into position ranges
+// Output keys are GCE-<level>-P<n>; presets are untouched (the standard overlay
+// is empty, so every consumer's default path works on a GCE key unchanged).
+const GCE_CUT = { AM: 2021, EM: 2023, JC: null };
+const GCE_MIN_BASE = 2;
+
+function deriveGce(rows) {
+  const papers = reconstructPapers(rows);
+  const complete = papers.filter((p) => p.status === 'COMPLETE');
+  const say = (s) => console.log(s);
+  const out = { papers: {}, papers_complete: {}, base_years: {} };
+
+  say('== GCE: recovered papers ==');
+  for (const key of PAPER_KEYS) {
+    const all = papers.filter((p) => lpOf(p) === key);
+    const comp = all.filter((p) => p.status === 'COMPLETE');
+    const partial = all.filter((p) => p.status !== 'COMPLETE').map((p) => `${p.school} ${p.year} (${p.n}q/${p.total}m${p.contiguous ? '' : ', gap'})`);
+    say(`${key}: ${comp.length} COMPLETE / ${all.length} groups` + (partial.length ? ` — partial: ${partial.join('; ')}` : ''));
+  }
+
+  for (const key of PAPER_KEYS) {
+    const comp = complete.filter((p) => lpOf(p) === key);
+    const cut = GCE_CUT[famOf(key)];
+    let base = cut ? comp.filter((p) => p.year >= cut) : comp;
+    if (base.length < GCE_MIN_BASE) {
+      say(`\n== GCE-${key}: only ${base.length} current-syllabus paper(s) — skipped`);
+      continue;
+    }
+    say(`\n== GCE-${key} ==`);
+
+    const sectioned = key === 'JC-P2';
+    let pureN = 0, statsN = 0, pureTotal = 0, statsTotal = 0;
+    if (sectioned) {
+      for (const p of base) {
+        p.pureQ = p.questions.filter((q) => !q.topics.some(isJcStats));
+        p.statsQ = p.questions.filter((q) => q.topics.some(isJcStats));
+      }
+      const clean = base.filter((p) => {
+        if (p.pureQ.length === 0 || p.statsQ.length === 0) return false;
+        return Math.max(...p.pureQ.map((q) => q.qn)) < Math.min(...p.statsQ.map((q) => q.qn));
+      });
+      if (clean.length < base.length) say(`sectioning: dropped ${base.length - clean.length} base paper(s) without a clean pure->stats split`);
+      base = clean;
+      pureN = mode(base.map((p) => p.pureQ.length));
+      statsN = mode(base.map((p) => p.statsQ.length));
+      pureTotal = mode(base.map((p) => p.pureQ.reduce((a, q) => a + q.marks, 0)));
+      statsTotal = mode(base.map((p) => p.statsQ.reduce((a, q) => a + q.marks, 0)));
+    }
+
+    const canonicalTotal = mode(base.map((p) => p.total));
+    const ns = base.map((p) => p.n);
+    const typN = sectioned ? pureN + statsN : mode(ns);
+    if (sectioned && pureTotal + statsTotal !== canonicalTotal) {
+      say(`WARN: section mark modes ${pureTotal}+${statsTotal} != total ${canonicalTotal}; pinning stats to the remainder`);
+      statsTotal = canonicalTotal - pureTotal;
+    }
+    const years = base.map((p) => `${p.year}${p.school === 'GCE Specimen' ? 's' : ''}`).sort();
+    say(`base = ${base.length} papers [${years.join(', ')}]${cut ? ` (year>=${cut})` : ''}; total mode=${canonicalTotal}; Q-count mode=${mode(ns)} range=[${Math.min(...ns)},${Math.max(...ns)}]`);
+    if (sectioned) say(`sections: pure ${pureN} slots / ${pureTotal} marks, stats ${statsN} slots / ${statsTotal} marks`);
+
+    // ---- must-appear over the base
+    const basePresence = new Map();
+    for (const p of base) {
+      for (const t of new Set(p.questions.flatMap((q) => q.topics))) basePresence.set(t, (basePresence.get(t) ?? 0) + 1);
+    }
+    let mustAppear = [...basePresence.entries()].filter(([, k]) => k / base.length >= 0.8).map(([t]) => t).sort();
+    const capMusts = (list, cap, label) => {
+      if (list.length <= cap) return list;
+      const kept = [...list].sort((a, b) => basePresence.get(b) - basePresence.get(a)).slice(0, cap).sort();
+      say(`must-appear trimmed to ${label} capacity ${cap}: dropped ${list.filter((t) => !kept.includes(t)).join(', ')}`);
+      return kept;
+    };
+    mustAppear = sectioned
+      ? [
+          ...capMusts(mustAppear.filter((t) => !isJcStats(t)), pureN, 'pure-section'),
+          ...capMusts(mustAppear.filter(isJcStats), statsN, 'stats-section'),
+        ].sort()
+      : capMusts(mustAppear, typN, 'slot');
+    say(`must-appear (>=80% of ${base.length} base papers): ${mustAppear.join(', ')}`);
+
+    // ---- slots: every base question mapped onto 1..typN normalized positions
+    const slotSamples = Array.from({ length: typN }, () => ({ marks: [], topics: new Map(), parts: [], diagrams: [] }));
+    const pushSample = (idx, q) => {
+      const slot = slotSamples[idx];
+      slot.marks.push(q.marks);
+      slot.diagrams.push(q.diagram ? 1 : 0);
+      if (q.nParts !== null) slot.parts.push(Math.max(1, q.nParts));
+      for (const t of q.topics) slot.topics.set(t, (slot.topics.get(t) ?? 0) + 1);
+    };
+    const mapOnto = (list, offset, width) => {
+      list.forEach((q, i) => {
+        const s = list.length === 1 ? 0 : Math.round((i / (list.length - 1)) * (width - 1));
+        pushSample(offset + s, q);
+      });
+    };
+    for (const p of base) {
+      if (sectioned) { mapOnto(p.pureQ, 0, pureN); mapOnto(p.statsQ, pureN, statsN); }
+      else mapOnto(p.questions, 0, typN);
+    }
+    if (sectioned) {
+      slotSamples.forEach((s, i) => {
+        for (const t of [...s.topics.keys()]) if (isJcStats(t) !== i >= pureN) s.topics.delete(t);
+      });
+    }
+    const typs = new Array(typN).fill(0);
+    const scaleRange = (from, to, target) => {
+      const raw = slotSamples.slice(from, to).map((s) => mean(s.marks));
+      const scale = target / raw.reduce((a, b) => a + b, 0);
+      const scaled = raw.map((m) => m * scale);
+      const floors = scaled.map(Math.floor);
+      const deficit = target - floors.reduce((a, b) => a + b, 0);
+      const rema = scaled.map((x, i) => [x - Math.floor(x), i]).sort((a, b) => b[0] - a[0]);
+      for (let i = 0; i < deficit; i++) floors[rema[i][1]]++;
+      floors.forEach((v, i) => { typs[from + i] = v; });
+    };
+    if (sectioned) { scaleRange(0, pureN, pureTotal); scaleRange(pureN, typN, statsTotal); }
+    else scaleRange(0, typN, canonicalTotal);
+
+    const slots = slotSamples.map((s, i) => {
+      const totalT = [...s.topics.values()].reduce((a, b) => a + b, 0);
+      let pool = [...s.topics.entries()].map(([t, c]) => ({ topic: t, weight: round3(c / totalT) }))
+        .sort((a, b) => b.weight - a.weight || a.topic.localeCompare(b.topic));
+      const d = round3(1 - pool.reduce((a, p) => a + p.weight, 0));
+      if (pool.length) pool[0].weight = round3(pool[0].weight + d);
+      const partsSorted = [...s.parts].sort((a, b) => a - b);
+      return {
+        pos: i + 1,
+        marks: [Math.min(...s.marks), Math.max(...s.marks)],
+        typ: typs[i],
+        topic_pool: pool,
+        ...(partsSorted.length ? { parts: [partsSorted[0], partsSorted[partsSorted.length - 1]] } : {}),
+        diagram_rate: round2(mean(s.diagrams)),
+      };
+    });
+    const minDistinct = Math.min(...base.map((p) => new Set(p.questions.flatMap((q) => q.topics)).size));
+
+    // ---- feasibility: walkTopics gives every must_appear topic a DISTINCT slot whose
+    // pool contains it. With thin data a must can be seen only at slots the other
+    // musts also need (GCE-EM-P2: 9 musts, 9 slots, one slot whose pool holds none),
+    // so trim the least-present musts until a perfect bipartite matching exists.
+    const matchable = (musts) => {
+      const match = new Array(slots.length).fill(-1);
+      const tryPlace = (mi, seen) => {
+        for (let si = 0; si < slots.length; si++) {
+          if (seen[si] || !slots[si].topic_pool.some((p) => p.topic === musts[mi])) continue;
+          seen[si] = true;
+          if (match[si] < 0 || tryPlace(match[si], seen)) { match[si] = mi; return true; }
+        }
+        return false;
+      };
+      return musts.every((_, mi) => tryPlace(mi, new Array(slots.length).fill(false)));
+    };
+    while (mustAppear.length && !matchable(mustAppear)) {
+      const weakest = [...mustAppear].sort((a, b) => basePresence.get(a) - basePresence.get(b) || b.localeCompare(a))[0];
+      mustAppear = mustAppear.filter((t) => t !== weakest);
+      say(`must-appear trimmed for slot feasibility: dropped ${weakest}`);
+    }
+
+    const shapeNote = {
+      AM: 'GCE O-Level Additional Mathematics 4049 (first examined 2021): each paper 90 marks, 2 h 15 min.',
+      EM: 'GCE O-Level Mathematics 4052 (first examined 2023): each paper 90 marks, 2 h 15 min.',
+      JC: 'GCE A-Level H2 Mathematics 9758: each paper 100 marks, 3 h.',
+    }[famOf(key)];
+    out.papers[`GCE-${key}`] = {
+      total_marks: canonicalTotal,
+      question_count: [Math.min(...ns), typN, Math.max(...ns)],
+      ...(sectioned
+        ? { section_boundary: pureN + 1 }
+        : {}),
+      notes:
+        `${shapeNote} Derived from ${base.length} real papers [${years.join(', ')}; s = SEAB specimen] — thin-data rules: ` +
+        'slot mark ranges are the min..max seen at that position, pools list every topic seen there, no mined co-occurrence rules.' +
+        (sectioned ? ` Slots 1-${pureN} Section A (Pure, ${pureTotal} marks), ${pureN + 1}-${typN} Section B (Statistics, ${statsTotal} marks).` : ''),
+      slots,
+      must_appear: mustAppear,
+      rules: { never_together: [], min_distinct_topics: minDistinct },
+    };
+    out.papers_complete[`GCE-${key}`] = comp.length;
+    out.base_years[`GCE-${key}`] = years;
+    say('slots: ' + slots.map((s) => `${s.pos}:${s.typ}[${s.marks.join('-')}]×${s.topic_pool.length}`).join(' '));
+  }
+  return out;
+}
+
+async function mainGce() {
+  let rows;
+  const dumpPath = FROM_DUMP ?? (!LIVE && existsSync(GCE_DUMP_DEFAULT) ? GCE_DUMP_DEFAULT : null);
+  if (dumpPath) {
+    console.log(`reading GCE dump: ${dumpPath}`);
+    rows = rowsFromDump(dumpPath);
+  } else {
+    console.log('live mode: fetching GCE rows (school=GCE, exam_type in GCE/Specimen) from Supabase…');
+    rows = await rowsFromLiveGce();
+    console.log(`fetched ${rows.length} rows`);
+    saveDump(rows, SAVE_DUMP ?? GCE_DUMP_DEFAULT, {
+      source: "supabase questions table: school='GCE', exam_type IN ('GCE','Specimen'), deleted_at IS NULL; level IN ('AM','EM') plus level='JC2' packed as family J (H2 9758). SEAB specimen papers are packed under school 'GCE Specimen'.",
+    });
+  }
+  const gce = deriveGce(rows);
+  if (!existsSync(OUT)) throw new Error(`${OUT} does not exist — derive the prelim family first`);
+  const blueprint = JSON.parse(readFileSync(OUT, 'utf8'));
+  for (const k of Object.keys(blueprint.papers)) if (k.startsWith('GCE-')) delete blueprint.papers[k];
+  Object.assign(blueprint.papers, gce.papers);
+  blueprint.source = {
+    ...blueprint.source,
+    gce: {
+      derived_at: new Date().toISOString().slice(0, 10),
+      rows: rows.length,
+      papers_complete: gce.papers_complete,
+      base_years: gce.base_years,
+    },
+  };
+  sanityCheck(blueprint);
+  writeFileSync(OUT, JSON.stringify(blueprint, null, 1) + '\n');
+  console.log(`\nwrote ${OUT} (${Object.keys(gce.papers).length} GCE entries; prelim entries untouched)`);
+}
+
 // ---------------------------------------------------------------- main ----
 async function main() {
+  if (GCE) return mainGce();
   let rows;
   if (TOP_UP_JC) {
     // One-time JC append: keep the pinned O-Level rows exactly as dumped (so

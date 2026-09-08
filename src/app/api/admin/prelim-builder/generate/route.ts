@@ -1,12 +1,15 @@
 // POST /api/admin/prelim-builder/generate — deterministic paper assembly from
 // data/paper-blueprints.json + the QB. No model calls. Two modes:
-//   full paper: { level, paper, preset?, difficulty?, excludeSchool?, seed? }
+//   full paper: { level, paper, shape?, preset?, difficulty?, excludeSchool?, seed? }
 //   reroll one slot: same + { reroll: { pos, topic, excludeIds: [] } }
+// shape: 'prelim' (default, the school-prelim blueprint) | 'gce' (the national
+// exam's own shape — the GCE-* blueprint entries).
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'node:fs';
 import path from 'node:path';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { createServiceClient } from '@/lib/supabase-server';
+import { blueprintKeyFor, toPaperShape } from '@/lib/print-paper';
 import {
   applyPreset,
   bleedOverlay,
@@ -121,13 +124,18 @@ async function fetchCandidates(
   return (data as QbRow[]).filter((r) => !opts.excludeIds.includes(r.id)).map(toCandidate);
 }
 
-// GET — picker metadata: paper keys + presets (name, description, applies_to).
+// GET — picker metadata: paper keys + shapes + presets (name, description,
+// applies_to).
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const blueprint = loadBlueprint();
   return NextResponse.json({
     derivedAt: blueprint.derived_at,
-    papers: Object.keys(blueprint.papers),
+    // The picker chooses level+paper and the SHAPE separately, so it wants the
+    // shape-free keys only — listing the GCE-* twins here would show every
+    // paper twice.
+    papers: Object.keys(blueprint.papers).filter((k) => !k.startsWith('GCE-')),
+    shapes: ['prelim', 'gce'],
     presets: [
       ...Object.entries(blueprint.presets).map(([name, p]) => ({
         name,
@@ -154,8 +162,13 @@ export async function POST(req: NextRequest) {
     const difficulty: Difficulty = body.difficulty === 'hard' ? 'hard' : 'standard';
     const excludeSchool: string | undefined = body.excludeSchool || undefined;
     const seed: number = Number.isFinite(body.seed) ? body.seed : Math.floor(Math.random() * 1e9);
+    const shape = toPaperShape(body.shape);
 
-    const key = `${level}-${paperNum}`;
+    const key = blueprintKeyFor(level, paperNum, shape);
+    // Presets are mined per level+paper, not per shape, so their applies_to
+    // lists only ever name the bare keys — check membership with the SHAPE-FREE
+    // key, or every preset would 400 on a GCE paper.
+    const presetKey = blueprintKeyFor(level, paperNum);
     const blueprint = loadBlueprint();
     const paperDef = blueprint.papers[key];
     if (!paperDef) return NextResponse.json({ error: `Unknown paper ${key}` }, { status: 400 });
@@ -180,8 +193,8 @@ export async function POST(req: NextRequest) {
     } else {
       const found = blueprint.presets[presetName];
       if (!found) return NextResponse.json({ error: `Unknown preset ${presetName}` }, { status: 400 });
-      if (found.applies_to && !found.applies_to.includes(key)) {
-        return NextResponse.json({ error: `Preset ${presetName} does not apply to ${key}` }, { status: 400 });
+      if (found.applies_to && !found.applies_to.includes(presetKey)) {
+        return NextResponse.json({ error: `Preset ${presetName} does not apply to ${presetKey}` }, { status: 400 });
       }
       preset = found;
     }
@@ -213,7 +226,7 @@ export async function POST(req: NextRequest) {
         },
         rng
       );
-      return NextResponse.json({ pos, topic, pick, alternates, seed });
+      return NextResponse.json({ pos, topic, pick, alternates, seed, shape });
     }
 
     // ---- full assembly ----
@@ -256,6 +269,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       level,
       paper: paperNum,
+      shape,
       preset: presetName,
       difficulty,
       excludeSchool: excludeSchool ?? null,

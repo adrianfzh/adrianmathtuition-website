@@ -32,11 +32,13 @@ import {
   PRINT_POOL_SCOPE,
   WEEKLY_PRINT_CAP,
   assembleMockFromCandidates,
-  blueprintFamily,
   blueprintKeyFor,
+  mockTitle,
   rankWeakTopics,
   sgtStartOfWeekIso,
   storageUrl,
+  toPaperShape,
+  type PaperShape,
   type PrintQuestionRef,
 } from '@/lib/print-paper';
 import {
@@ -151,11 +153,14 @@ async function fetchSlotCandidates(opts: { tagLevels: string[]; topicsKey: strin
 
 const MOCK_ATTEMPTS = 3;
 
-async function assembleMock(level: string, paper: string, isIp: boolean): Promise<{ refs: PrintQuestionRef[]; title: string; totalMarks: number } | { error: string }> {
+async function assembleMock(level: string, paper: string, isIp: boolean, shape: PaperShape): Promise<{ refs: PrintQuestionRef[]; title: string; totalMarks: number } | { error: string }> {
   // Student levels JC1/JC2 share the 'JC' blueprint family (H2 9758); the
   // candidate pool still scopes by the STUDENT level via PRINT_POOL_SCOPE,
-  // whose JC entries fan out to the JC/JC1/JC2 tag levels.
-  const key = blueprintKeyFor(level, paper);
+  // whose JC entries fan out to the JC/JC1/JC2 tag levels. The SHAPE picks
+  // which blueprint entry that family reads — the school-prelim one or the
+  // national exam's (GCE-…); the candidate pool itself is unchanged, only the
+  // slot/topic/mark structure the questions are poured into.
+  const key = blueprintKeyFor(level, paper, shape);
   const blueprint = loadBlueprint();
   const paperDef = blueprint.papers[key];
   if (!paperDef) return { error: `No mock blueprint for ${key}` };
@@ -197,12 +202,12 @@ async function assembleMock(level: string, paper: string, isIp: boolean): Promis
       rng,
     );
     if (out.ok) {
-      const family = blueprintFamily(level);
-      const subject = family === 'AM' ? 'A Math' : family === 'JC' ? 'H2 Mathematics' : 'E Math';
       return {
         refs: out.refs,
         totalMarks: out.totalMarks,
-        title: `${subject} mock ${paper === 'P1' ? 'Paper 1' : 'Paper 2'}`,
+        // The title is where the shape is stored (mockTitle) — the table has
+        // no request-details column and this ships without a migration.
+        title: mockTitle(level, paper, shape),
       };
     }
     lastError = out.error;
@@ -267,7 +272,7 @@ export async function POST(req: NextRequest) {
   const access = await requireActiveAccess(account);
   if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
 
-  let body: { preset?: unknown; level?: unknown; paper?: unknown; topics?: unknown; count?: unknown };
+  let body: { preset?: unknown; level?: unknown; paper?: unknown; topics?: unknown; count?: unknown; shape?: unknown };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const preset = String(body.preset ?? '');
   const level = String(body.level ?? '');
@@ -291,9 +296,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Mock papers are available for E Math, A Math and H2 Math' }, { status: 400 });
     }
     if (!['P1', 'P2'].includes(p)) return NextResponse.json({ error: 'paper must be P1 or P2' }, { status: 400 });
+    // 'gce' = the national exam's shape; anything else is the school prelim.
+    const shape = toPaperShape(body.shape);
     let out: Awaited<ReturnType<typeof assembleMock>>;
     try {
-      out = await assembleMock(level, p, Boolean(account.is_ip));
+      out = await assembleMock(level, p, Boolean(account.is_ip), shape);
     } catch {
       return NextResponse.json({ error: 'The question bank is unreachable right now — try again in a minute.' }, { status: 502 });
     }

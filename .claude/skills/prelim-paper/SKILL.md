@@ -1,6 +1,6 @@
 ---
 name: prelim-paper
-description: Generate a complete S4 prelim exam paper (AM or EM, Paper 1 or 2) by assembling real past-prelim questions from the Supabase QB against the living blueprint (data/paper-blueprints.json), applying a setter-quality review pass, and rendering Adrian's house-style DOCX with answer key. Trigger on "prelim paper", "generate a test paper", "mock prelim", "full paper" — e.g. "prelim paper: AM P2, hard", "generate an EM P1 for Wei Jie", "test paper, em p2, stats-forward". Args (any order): level (AM|EM), paper (P1|P2), optional preset (standard | top-school-hard | calculus-forward-am-p2 | stats-forward-em-p2 | vintage-pre2023), optional student name (excludes their school's questions).
+description: Generate a complete S4 prelim exam paper (AM or EM, Paper 1 or 2) by assembling real past-prelim questions from the Supabase QB against the living blueprint (data/paper-blueprints.json), applying a setter-quality review pass, and rendering Adrian's house-style DOCX with answer key. Trigger on "prelim paper", "generate a test paper", "mock prelim", "full paper" — e.g. "prelim paper: AM P2, hard", "generate an EM P1 for Wei Jie", "test paper, em p2, stats-forward". Args (any order): level (AM|EM), paper (P1|P2), optional shape (prelim|gce — default prelim), optional preset (standard | top-school-hard | calculus-forward-am-p2 | stats-forward-em-p2 | vintage-pre2023), optional student name (excludes their school's questions).
 ---
 
 # Prelim paper generator
@@ -16,6 +16,16 @@ Read `data/paper-blueprints.json` (repo root). Resolve the paper key
 (`AM-P1` | `AM-P2` | `EM-P1` | `EM-P2`) and preset. A preset is an overlay:
 multiply matching topics' pool weights by its multipliers, renormalize per
 slot, and apply any mark-band shift. Default preset: `standard`.
+
+**Paper shape** (`shape=prelim` | `shape=gce`, default `prelim`). `prelim` is
+the school-prelim structure mined from 474 real papers — every key above.
+`shape=gce` builds the NATIONAL exam's own shape instead: use the `GCE-`
+prefixed twin of the key (`GCE-AM-P1`, `GCE-EM-P2`, `GCE-JC-P1`, …), which
+lives in the same file under the same schema. It changes the structure only —
+question count, mark spread and topic pools follow the national paper — while
+the candidate questions, presets, selection rules and rendering below are
+unchanged. Presets are mined per level+paper, not per shape, so an
+`applies_to` list naming `AM-P2` is equally valid on `GCE-AM-P2`.
 
 ## 1b. Excluded topics (Telegram /make, kind 5 — SPEC-WORKSHEET-MENU.md)
 

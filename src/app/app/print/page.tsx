@@ -9,12 +9,12 @@
 import Link from 'next/link';
 import { sessionAccount } from '@/lib/portal-auth';
 import { qbLevelsFor } from '@/lib/qb-levels';
-import { PRINT_POOL_SCOPE } from '@/lib/print-paper';
+import { PRINT_POOL_SCOPE, toPaperShape } from '@/lib/print-paper';
 import PrintClient from './print-client';
 
 export const dynamic = 'force-dynamic';
 
-export default async function PrintPage({ searchParams }: { searchParams: Promise<{ preset?: string }> }) {
+export default async function PrintPage({ searchParams }: { searchParams: Promise<{ preset?: string; shape?: string }> }) {
   // Open to ALL students since 2026-08-28 (Adrian: "open mock papers to
   // students") — the first surface deliberately promoted out of the
   // marking-only beta. The rest of the beta gate is untouched.
@@ -23,9 +23,12 @@ export default async function PrintPage({ searchParams }: { searchParams: Promis
   // landed here with the weak-spot preset preselected (plan merged into My
   // Notebook 2026-08-28); the param stays supported for old links and any
   // future door. Anything unknown → default.
-  const { preset } = await searchParams;
+  const { preset, shape } = await searchParams;
   const initialPreset =
     preset === 'weakspots' || preset === 'topics' || preset === 'mock' ? preset : undefined;
+  // ?shape=gce deep-links straight to the national-exam shape of the mock
+  // (SEAB O-Level 4049/4052, A-Level H2 9758); anything else = school prelim.
+  const initialShape = toPaperShape(shape);
 
   let levels: { key: string; label: string }[] | null = null;
   // Per-request cached (lib/portal-auth.ts) — shares the layout's auth lookup
@@ -51,5 +54,5 @@ export default async function PrintPage({ searchParams }: { searchParams: Promis
     );
   }
 
-  return <PrintClient levels={levels} initialPreset={initialPreset} />;
+  return <PrintClient levels={levels} initialPreset={initialPreset} initialShape={initialShape} />;
 }

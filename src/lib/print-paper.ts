@@ -68,11 +68,50 @@ export function blueprintFamily(level: string): string {
   return level === 'JC1' || level === 'JC2' ? 'JC' : level;
 }
 
+/** Which SHAPE a mock follows. 'prelim' = the school-prelim blueprint mined
+ * from 474 real prelim papers (the default everywhere); 'gce' = the national
+ * exam's own shape (SEAB 4049/4052, A-Level H2 9758), whose blueprint entries
+ * live under the same schema with a `GCE-` prefixed key. */
+export type PaperShape = 'prelim' | 'gce';
+
+/** Narrow an untrusted body/query value to a PaperShape — anything else is
+ * the default 'prelim', so a typo never 404s a student's mock. */
+export function toPaperShape(value: unknown): PaperShape {
+  return value === 'gce' ? 'gce' : 'prelim';
+}
+
 /** The data/paper-blueprints.json key (and DURATIONS key) for a level+paper —
  * use this everywhere a `<level>-<paper>` key is built so the JC1/JC2 → 'JC'
- * mapping can never be forgotten at one call site. */
-export function blueprintKeyFor(level: string, paper: string): string {
-  return `${blueprintFamily(level)}-${paper}`;
+ * mapping (and the GCE- prefix) can never be forgotten at one call site. */
+export function blueprintKeyFor(level: string, paper: string, shape: PaperShape = 'prelim'): string {
+  const key = `${blueprintFamily(level)}-${paper}`;
+  return shape === 'gce' ? `GCE-${key}` : key;
+}
+
+/** How a shape is named to a human. The national exam has a different name per
+ * level — O-Level for AM/EM, A-Level for H2 — so this takes the level, not
+ * just the shape. Used on the /app/print chooser, the paper title and the
+ * printed cover's meta line, so all three say the same words. */
+export function shapeLabel(level: string, shape: PaperShape = 'prelim'): string {
+  if (shape !== 'gce') return 'School prelim format';
+  return blueprintFamily(level) === 'JC' ? 'A-Level format' : 'O-Level format';
+}
+
+/** The stored title of a generated mock. portal_generated_papers has no
+ * request-details column, so the SHAPE rides the title: this is the only
+ * carrier, and shapeFromTitle() reads it back when the PDF is rendered. A
+ * prelim-shaped mock keeps its original title verbatim (old rows stay right). */
+export function mockTitle(level: string, paper: string, shape: PaperShape = 'prelim'): string {
+  const family = blueprintFamily(level);
+  const subject = family === 'AM' ? 'A Math' : family === 'JC' ? 'H2 Mathematics' : 'E Math';
+  const base = `${subject} mock ${paper === 'P1' ? 'Paper 1' : 'Paper 2'}`;
+  return shape === 'gce' ? `${base} · ${shapeLabel(level, shape)}` : base;
+}
+
+/** The inverse of mockTitle for a stored row — see mockTitle for why the title
+ * is the carrier. Anything without the national-exam marker is a prelim. */
+export function shapeFromTitle(title: string): PaperShape {
+  return /\b[OA]-Level format\b/.test(title) ? 'gce' : 'prelim';
 }
 
 // ── Exam-format facts (cover page + the /app/print duration chip) ────────────
@@ -91,10 +130,19 @@ export const DURATIONS: Record<string, string> = {
   // H2 Math 9758: both papers are 3 hours.
   'JC-P1': '3 hours',
   'JC-P2': '3 hours',
+  // The GCE shapes carry the SAME timings — a prelim copies the national
+  // paper's clock, so these rows are duplicates on purpose rather than a
+  // fallback to the prelim key (a shape must always answer for itself).
+  'GCE-AM-P1': '2 hours 15 minutes',
+  'GCE-AM-P2': '2 hours 15 minutes',
+  'GCE-EM-P1': '2 hours 15 minutes',
+  'GCE-EM-P2': '2 hours 15 minutes',
+  'GCE-JC-P1': '3 hours',
+  'GCE-JC-P2': '3 hours',
 };
 
-export function paperDuration(level: string, paper: string): string | null {
-  return DURATIONS[blueprintKeyFor(level, paper)] ?? null;
+export function paperDuration(level: string, paper: string, shape: PaperShape = 'prelim'): string | null {
+  return DURATIONS[blueprintKeyFor(level, paper, shape)] ?? null;
 }
 
 /** SEAB subject codes — the same derivation /api/admin/prelim-builder/export
@@ -167,18 +215,26 @@ export function mockCoverInstructions(level: string): string[] {
 export function mockCover(
   level: string,
   paper: string,
-  opts: { printedFor?: string | null; printedOn?: string | null } = {},
+  opts: { printedFor?: string | null; printedOn?: string | null; shape?: PaperShape } = {},
 ): PrelimCover {
   const who = opts.printedFor?.trim();
+  const shape = opts.shape ?? 'prelim';
   return {
     centre: 'ADRIAN MATH TUITION',
     examLabel: 'MOCK EXAMINATION',
     subjectName: subjectName(level),
     subjectCode: paperCodeFull(level, paper),
     paperLabel: paper === 'P1' ? 'Paper 1' : 'Paper 2',
-    duration: paperDuration(level, paper) ?? '2 hours 15 minutes',
+    duration: paperDuration(level, paper, shape) ?? '2 hours 15 minutes',
     materials: ['Candidates answer on the Question Paper.', 'No additional materials are required.'],
-    candidateLine: [who ? `Printed for ${who}` : null, opts.printedOn ?? null, 'AdrianMath']
+    // A national-shape mock says so on the cover; the prelim shape is the
+    // default and its meta line stays exactly what it has always printed.
+    candidateLine: [
+      who ? `Printed for ${who}` : null,
+      opts.printedOn ?? null,
+      shape === 'gce' ? shapeLabel(level, shape) : null,
+      'AdrianMath',
+    ]
       .filter(Boolean)
       .join(' · '),
   };

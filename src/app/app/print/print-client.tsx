@@ -6,7 +6,7 @@
 // the one the POST enforces can never disagree.
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { MAX_TOPICS_PER_PAPER, MOCK_LEVELS, paperDuration } from '@/lib/print-paper';
+import { MAX_TOPICS_PER_PAPER, MOCK_LEVELS, paperDuration, shapeLabel, type PaperShape } from '@/lib/print-paper';
 import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
@@ -30,10 +30,13 @@ const PRESETS: { key: Preset; emoji: string; title: string; body: string }[] = [
   { key: 'weakspots', emoji: '🩹', title: 'Fix my weak spots', body: 'Built from your own marked papers — the topics where you dropped marks.' },
 ];
 
-export default function PrintClient({ levels, initialPreset }: { levels: { key: string; label: string }[]; initialPreset?: Preset }) {
+export default function PrintClient({ levels, initialPreset, initialShape }: { levels: { key: string; label: string }[]; initialPreset?: Preset; initialShape?: PaperShape }) {
   const [preset, setPreset] = useState<Preset>(initialPreset ?? 'mock');
   const [level, setLevel] = useState(levels[0]?.key ?? 'EM');
   const [paper, setPaper] = useState<'P1' | 'P2'>('P1');
+  // Which shape of mock: the school-prelim blueprint (default) or the real
+  // national paper's shape. Deep-linkable as ?shape=gce.
+  const [shape, setShape] = useState<PaperShape>(initialShape ?? 'prelim');
   const [count, setCount] = useState(8);
   const [allTopics, setAllTopics] = useState<string[]>([]);
   const [topics, setTopics] = useState<string[]>([]);
@@ -82,7 +85,7 @@ export default function PrintClient({ levels, initialPreset }: { levels: { key: 
       const d = await portalFetch<{ paperId: string }>('/api/portal/print-paper', {
         json: {
           preset, level,
-          ...(preset === 'mock' ? { paper } : { count }),
+          ...(preset === 'mock' ? { paper, shape } : { count }),
           ...(preset === 'topics' ? { topics } : {}),
         },
         fallback: 'Could not generate the paper — try again.',
@@ -142,19 +145,41 @@ export default function PrintClient({ levels, initialPreset }: { levels: { key: 
         )}
 
         {preset === 'mock' && (
-          <div className="flex items-center gap-1.5">
-            {(['P1', 'P2'] as const).map(p => (
-              <button
-                key={p} type="button" onClick={() => setPaper(p)}
-                className={`text-[13px] font-semibold rounded-full px-3 py-1.5 border ${paper === p ? 'bg-navy text-[hsl(45,100%,96%)] border-navy' : 'border-gray-200 text-gray-600'}`}
-              >
-                {p === 'P1' ? 'Paper 1' : 'Paper 2'}
-              </button>
-            ))}
-            {/* Real exam duration for the chosen paper (O-Level 2 h 15 min,
-                H2 3 hours) — same DURATIONS table the printed cover reads, so
-                they can never disagree. */}
-            <span className="text-[12px] text-gray-400 ml-1">⏱ {paperDuration(level, paper) ?? 'About 2 hours'} — sit it in one go.</span>
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5">
+              {(['P1', 'P2'] as const).map(p => (
+                <button
+                  key={p} type="button" onClick={() => setPaper(p)}
+                  className={`text-[13px] font-semibold rounded-full px-3 py-1.5 border ${paper === p ? 'bg-navy text-[hsl(45,100%,96%)] border-navy' : 'border-gray-200 text-gray-600'}`}
+                >
+                  {p === 'P1' ? 'Paper 1' : 'Paper 2'}
+                </button>
+              ))}
+              {/* Real exam duration for the chosen paper+shape (O-Level 2 h 15
+                  min, H2 3 hours) — same DURATIONS table the printed cover
+                  reads, so they can never disagree. */}
+              <span className="text-[12px] text-gray-400 ml-1">⏱ {paperDuration(level, paper, shape) ?? 'About 2 hours'} — sit it in one go.</span>
+            </div>
+            {/* Which SHAPE the paper is built to: the school-prelim blueprint
+                (the default) or the real national paper's own structure. */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {([
+                { key: 'prelim' as const, label: 'School prelim' },
+                { key: 'gce' as const, label: shapeLabel(level, 'gce') },
+              ]).map(s => (
+                <button
+                  key={s.key} type="button" onClick={() => setShape(s.key)}
+                  className={`text-[13px] font-semibold rounded-full px-3 py-1.5 border ${shape === s.key ? 'bg-navy text-[hsl(45,100%,96%)] border-navy' : 'border-gray-200 text-gray-600'}`}
+                >
+                  {s.label}
+                </button>
+              ))}
+              <span className="text-[12px] text-gray-400 ml-1">
+                {shape === 'gce'
+                  ? 'Built to the real national paper — same question count and mark spread.'
+                  : 'Built like a school prelim paper.'}
+              </span>
+            </div>
           </div>
         )}
 
