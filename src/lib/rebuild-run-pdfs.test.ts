@@ -104,3 +104,11 @@ describe('buildBothPdfs', () => {
     expect(out.errors).toEqual(['photos: fetch failed', 'full: fetch failed']);
   });
 });
+
+describe('re-issue (8 Sep 2026)', () => {
+  it('a released run rebuilds only when the caller says so', () => {
+    const run = { id: 'r', released_at: '2026-09-08T04:00:00Z', result_json: { results: [{ question_number: '1', marking_output: 'x', photo_index: 0 }], annotated_photos: [] } } as never;
+    expect('skip' in rebuildBodyFromRun(run)).toBe(true);
+    expect('body' in rebuildBodyFromRun(run, { allowReleased: true })).toBe(true);
+  });
+});

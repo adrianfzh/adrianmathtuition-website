@@ -67,8 +67,11 @@ export type RebuildOutcome = {
  * released guard and the "is there anything to draw" check live here so they
  * are tested, not re-derived.
  */
-export function rebuildBodyFromRun(run: RunRow): { body: RebuildBody } | { skip: string } {
-  if (run.released_at) return { skip: 'released — the student already has this copy' };
+export function rebuildBodyFromRun(run: RunRow, opts: { allowReleased?: boolean } = {}): { body: RebuildBody } | { skip: string } {
+  // A released run keeps its copy — except on a RE-ISSUE (mark-triage
+  // 'reissue', 8 Sep 2026): a re-mark or an override of a paper the student
+  // already has rebuilds the PDFs on purpose and tells them.
+  if (run.released_at && !opts.allowReleased) return { skip: 'released — the student already has this copy' };
   const rj = (run.result_json || {}) as ResultJson;
   const results = Array.isArray(rj.results) ? rj.results : [];
   const photos = Array.isArray(rj.annotated_photos) ? rj.annotated_photos : [];
@@ -162,7 +165,7 @@ export async function buildBothPdfs(
  */
 export async function rebuildRunPdfs(
   runId: string,
-  opts: { origin: string; headers: Record<string, string>; fetchImpl?: typeof fetch },
+  opts: { origin: string; headers: Record<string, string>; fetchImpl?: typeof fetch; allowReleased?: boolean },
 ): Promise<RebuildOutcome> {
   try {
     const { data: run, error } = await getSupabaseAdmin()
@@ -171,7 +174,7 @@ export async function rebuildRunPdfs(
       .eq('id', runId).maybeSingle<RunRow>();
     if (error) return { rebuilt: false, skipped: error.message };
     if (!run) return { rebuilt: false, skipped: 'run not found' };
-    const prep = rebuildBodyFromRun(run);
+    const prep = rebuildBodyFromRun(run, { allowReleased: !!opts.allowReleased });
     if ('skip' in prep) return { rebuilt: false, skipped: prep.skip };
     return await buildBothPdfs(prep.body, opts);
   } catch (e) {

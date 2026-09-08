@@ -414,6 +414,41 @@ function queuePostReleaseEnrichment(runIds: string[], practiceIds?: string[]) {
 }
 
 // ── POST ─────────────────────────────────────────────────────────────────────
+/**
+ * "From Adrian" worksheet (SPEC-ASSIGN.md): releasing (or re-issuing) the
+ * marking is what flips the assignment to marked; a re-mark overwrites the
+ * score. The hand-in stamps `assignment_id` on the run; a row linked the other
+ * way round — `portal_assignments.run_id` set by hand or by the attach step —
+ * is found by run id (Sophie's and Alessi's sheets, 8 Sep 2026: released twice,
+ * never flipped). Fail-soft: never undoes the release it rides.
+ */
+async function flipAssignmentMarked(
+  supa: ReturnType<typeof getSupabaseAdmin>,
+  runId: string,
+  rj: Record<string, unknown>,
+  totals: { awarded: number; max: number },
+  now: string,
+): Promise<void> {
+  try {
+    let assignmentId = typeof rj.assignment_id === 'string' ? rj.assignment_id : null;
+    if (!assignmentId) {
+      const { data: byRun } = await supa.from('portal_assignments').select('id').eq('run_id', runId).is('revoked_at', null).limit(1).maybeSingle();
+      assignmentId = byRun?.id ?? null;
+    }
+    if (!assignmentId) return;
+    const { data: a } = await supa.from('portal_assignments').select('id, status').eq('id', assignmentId).maybeSingle();
+    if (!a) return;
+    const already = a.status === 'marked';
+    if (already || canTransition(a.status as AssignmentStatus, 'marked')) {
+      await supa.from('portal_assignments')
+        .update({ status: 'marked', marked_at: now, run_id: runId, score: totals.awarded, out_of: totals.max })
+        .eq('id', assignmentId);
+    }
+  } catch (e) {
+    console.warn('[mark-triage] assignment flip failed:', (e as Error).message);
+  }
+}
+
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
@@ -595,8 +630,8 @@ export async function POST(req: NextRequest) {
     const headers: Record<string, string> = {};
     const auth = req.headers.get('authorization'); const cookie = req.headers.get('cookie');
     if (auth) headers.Authorization = auth; if (cookie) headers.cookie = cookie;
-    const outcome = await rebuildRunPdfs(runId, { origin: req.nextUrl.origin, headers });
-    if (!outcome.rebuilt) return NextResponse.json({ error: `PDFs not rebuilt: ${(outcome.errors || []).join(' · ') || 'unknown'}` }, { status: 500 });
+    const outcome = await rebuildRunPdfs(runId, { origin: req.nextUrl.origin, headers, allowReleased: true });
+    if (!outcome.rebuilt) return NextResponse.json({ error: `PDFs not rebuilt: ${(outcome.errors || []).join(' · ') || outcome.skipped || 'unknown'}` }, { status: 500 });
     const at = new Date().toISOString();
     const rj = (run.result_json && typeof run.result_json === 'object') ? { ...(run.result_json as Record<string, unknown>) } : {};
     delete rj.pdf_stale;
@@ -606,6 +641,8 @@ export async function POST(req: NextRequest) {
     // Tell the student: the Telegram hand-in chat if there is one, else their linked Telegram.
     const paper = run.paper_name || 'your paper';
     const { awarded, max } = recomputeTotals(rj);
+    // The "From Adrian" row this hand-in answers takes the new score too (8 Sep 2026).
+    await flipAssignmentMarked(supa, runId, rj, { awarded, max }, at);
     const line = `✏️ Adrian checked your marked <b>${escapeHtml(paper)}</b> and updated it${max > 0 ? ` — it is now <b>${awarded}/${max}</b>` : ''}. The copy in the app is the new one.`;
     let via: 'telegram' | 'none' = 'none';
     const tg = telegramHandinOf(rj);
@@ -883,19 +920,7 @@ export async function POST(req: NextRequest) {
       // assignment id on the run; releasing the marking is what flips the
       // assignment to marked (a re-mark + re-release overwrites the score).
       const rj = (run.result_json && typeof run.result_json === 'object') ? run.result_json as Record<string, unknown> : {};
-      const assignmentId = typeof rj.assignment_id === 'string' ? rj.assignment_id : null;
-      if (assignmentId) {
-        try {
-          const { data: a } = await supa.from('portal_assignments').select('id, status').eq('id', assignmentId).maybeSingle();
-          if (a && canTransition(a.status as AssignmentStatus, 'marked')) {
-            await supa.from('portal_assignments')
-              .update({ status: 'marked', marked_at: now, run_id: run.id, score: totals.awarded, out_of: totals.max })
-              .eq('id', assignmentId);
-          }
-        } catch (e) {
-          console.warn('[mark-triage] assignment flip failed:', (e as Error).message);
-        }
-      }
+      await flipAssignmentMarked(supa, run.id, rj, totals, now);
     }
 
     queuePostReleaseEnrichment(enrichQueue, practiceQueue);
