@@ -119,7 +119,22 @@ rows from unjudged ones.
   `not exists (select 1 from figure_flags ff where ff.question_id = q.id and ff.status='open')`
   and it is kind-agnostic. `held` does not withhold anything.
 - **A wrong figure has no pixel defect.** Three known-bad figures were released by a
-  bulk "release every quiet figure" tap. Quiet is not the same as correct.
+  bulk "release every quiet figure" tap. Quiet is not the same as correct. A *clean,
+  engine-drawn* figure is no safer: RI 2014 S2 Q6 carried a tidy vector pair of Venn
+  diagrams that drew C and D **overlapping** where the paper draws them **disjoint** —
+  which flips the answer to (C ∩ D)′ from "everything but the lens" to "the whole
+  universal set". It looked perfect. Check the geometry against the paper, not the
+  pixels against a threshold.
+- **A missing glyph fails SILENTLY in PIL** — no exception, no warning, just `.notdef`
+  boxes in the output. Times New Roman has ∩ (U+2229) but not ∪ (U+222A) or ∅, and a
+  `ImageFont.truetype()` on a font path that does not exist falls back without saying so.
+  An ink-pixel count will NOT catch it, because a `.notdef` box has ink (63 px, against
+  129 for a real ∩). What catches it is the interior fill ratio of the glyph's bounding
+  box: ~0.7 for a real glyph, 0.0 for the hollow box. On this Mac use
+  `/System/Library/Fonts/Supplemental/STIXGeneral.otf` for anything with set-theory or
+  maths symbols — DejaVu is NOT installed. (This only ever affected a preview PNG; the
+  bank stores LaTeX and KaTeX renders `\cup` correctly — verified against the repo's own
+  katex 0.16.45.)
 
 ## The serving gate
 
@@ -130,22 +145,25 @@ plus: no `figure_flags` row for that `question_id` with `status='open'`.
 
 ## Where things stand (after the 7 Sep evening pass)
 
-**Of the 15 questions this queue named, 12 are fixed and 4 remain** — Pierce ×3 and
-RI 2014 S2 Q6, all four blocked on a paper that does not exist in a usable state (below).
-Nothing else in this queue is waiting on a decision.
+**Of the 15 questions this queue named, 14 are fixed and 1 remains** — only
+Pierce 2024 EM_NA P1 Q18, whose polygon is described nowhere and cannot be reconstructed
+by anyone (§B). Nothing in this queue is waiting on a decision.
 A bank-wide sweep closed **22 more** that the queue never saw, because they were serving
 BROKEN rather than withheld; that is its own section below, and it is the more important
 half. The bank-wide count moves under you while a peer session ingests, so measure it,
-don't quote it: at 2026-09-08 ~01:10 SGT it was 9,534 rows with an image, 9,528 serving.
-Anything in that gap beyond the 5 named here is a freshly ingested row awaiting its own
+don't quote it: at 2026-09-08 ~08:10 SGT it was 9,614 rows with an image, 9,608 serving.
+Anything in that gap beyond Pierce Q18 is a freshly ingested row awaiting its own
 fitness pass, not a regression — check `created_at` before treating one as a defect.
 
 **The 8 Sep round (Adrian: "go ahead") closed three more and fixed the renderer.**
 MJC 2014 JC1 P1 Q7 was released once the original paper showed the figure was never
 defective (§C); Bukit Panjang 2021 AM P1 Q11 and Chung Cheng (Yishun) 2025 EM P1 Q19 had
 their text re-extracted from source and were released (§A); Anglican High 2025 EM P1 Q23
-was redrawn on Adrian's instruction and released (§A); and `questionMarkdown()` now
-recurses through sub-parts of any depth (§"Known and NOT fixed", now fixed).
+was redrawn on Adrian's instruction and released (§A); `questionMarkdown()` now recurses
+through sub-parts of any depth (§"Known and NOT fixed", now fixed); and later that day
+three more figures were built from the questions themselves — both RI 2014 S2 Q6 Venn
+diagrams and the Pierce Q1 spinner, Q21 ladder and Q21 triangle (§"Figures built from
+the question").
 
 The evening pass closed 8 of the 15. Two findings did most of that work, and both are
 now traps above: five "lost" figures were never lost (they sat in `parts[]` slots the
@@ -235,12 +253,16 @@ Two things the shape fix alone would have got wrong, both caught by looking firs
   Serving it with no diagram and serving it with that diagram are both wrong, so
   `image_watermark_status` was cleared to NULL and a `held` flag added. **The array slots
   are left as they are on purpose — do not "fix the shape" without replacing the images.**
-  **Source checked 2026-09-08 and it is a dead end:** the paper is in Dropbox at
+  **Source checked 2026-09-08:** the paper is in Dropbox at
   `1 ONLINE LESSONS/3 Exam Papers/EM S2 (G3)/EM S2 SA2 2014/EM S2 SA2 2014 Raffles Institution.docx`
   (filed under the expansion, not "RI"), its Q6 images are `media/image2.png` and
   `image3.png`, and both are **byte-identical** to what the bank already holds. There is
-  no PDF beside it. Adrian's only copy of that paper is the marked-up script, so this one
-  needs a different copy of the paper or nothing. Do not re-hunt it.
+  no PDF beside it, so no clean scan of that paper exists. Do not re-hunt it.
+  **RESOLVED ANYWAY, 8 Sep — both diagrams REDRAWN and the question released.** Calling
+  it "needs a paper you don't have" was wrong: the pencil obscured the printed diagram
+  but did not destroy it, and the printed ink separates from the pencil by grey level.
+  Full method, and the wrong pre-existing figure that turned up on the same row, in
+  §"Figures built from the question".
 
 **The no-reference class needed the source paper, not a keyword.** Seven of the nine turn
 out to need no figure at all: in ACJC 2016 P1 Q6/Q10/Q12 and P2 Q2/Q3/Q10, and TPJC 2015
@@ -344,10 +366,10 @@ The old overlay is still in the bucket and in `figure_clean_log`
 (batch `anglican-redraw-2026-09-08`); repointing `image_url` back to
 `e4095a11-24b4-4aa1-ac27-6b697816281e.png` reverts it.
 
-### B. Three Pierce questions — source found, and it is the source that is broken
+### B. The Pierce questions — two DRAWN FROM THE QUESTION, one still impossible
 
 `Pierce 2024 EM_NA P1 Q1` (`d2dcd162-…`), `Q18` (`e3b3b79c-…`), `Q21` (`2d81a524-…`).
-All three flagged `held`. **Do not go looking for the paper again.**
+**Do not go looking for the paper again.**
 
 `EM S4 PRELIM (NA) 2024 Pierce.pdf`
 (sha256 `99d9ddcd36f3260157b63df3032ad76c1d93b05fff91035a86b2e4c59aed95f4`) is in
@@ -360,18 +382,73 @@ mask (p3), the Q13 parallelogram (p10) and the Q17 sector (p14/15). Every other 
 lost its anchor and its line-work is absent from the file — page 2 carries the surviving
 text labels of four different questions piled on top of the formula sheet.
 
-What survives, for whoever gets a clean copy:
-- **Q1** — the spinner's number labels only, spread into an ellipse, reading round as
-  7, 8, 1, 2, 3, 4, 5, 6, so the numbers ran in order. The circle and its eight sector
-  lines are gone. The stem does fix the content ("an equal chance of landing on each of
-  the numbers 1…8"), so a registry redraw is arguable — **left for Adrian**, because it
-  would be our drawing standing in for the school's.
-- **Q18** — nothing. The polygon and its grid left no path anywhere in Paper 1, and
-  "the polygon" is never described in words, so no redraw is possible even in principle.
-- **Q21** — the labels A, B, C and the values 10, 40, 42, without their side assignment
-  (A above, B and C on one row, so BC is the base). The mathematics does not care
-  (10² + 40² = 1700 ≠ 42² = 1764 either way), but a figure that contradicts the paper is
-  worse than none. Part (a)'s ladder diagram (5 m, 1.2 m) is gone too.
+**Q1 and Q21 were then drawn from the question instead (8 Sep, Adrian: "do all"), and
+both are released.** See §"Figures built from the question" below for how far the
+evidence went in each case. **Q18 stays blocked and cannot be built by anyone:** its
+stem is only *"Draw an enlargement of the polygon using the scale factor of 2."* — the
+polygon is described nowhere, in the text or in the file, and the question also needs
+the squared grid it was drawn on. There is nothing to reconstruct from. It needs a
+cleanly re-supplied paper (a fresh scan or the school DOCX).
+
+### Figures built from the question, 8 Sep — how far the evidence went
+
+Adrian: *"are you able to build the images from the question alone?"* → *"do all"*. Four
+figures were unbuildable-by-paper; three of the four got built, and they sit on very
+different amounts of evidence. **The distinction below is the point of this section** —
+"we drew it" is not one category.
+
+**1. RI 2014 S2 P1 Q6 — nothing inferred.** The scans are of an annotated script, but
+the PRINTED geometry survives underneath and separates by grey level: printed ink is
+below 110, the pencil hatching and pen sit in the 110–200 band. Rectangle bounds read
+straight off the full-width/full-height dark rows and columns; each circle fitted by
+algebraic (Kasa) least squares to the ink on its arc after dropping the label glyphs,
+**radial residual mean 0.78–0.95 px**. (a) circles (208.3, 152.3) r 113.6 and
+(340.5, 148.6) r 113.3 — centres 132.2 apart against radii summing 226.9, so
+**overlapping**. (b) circles (160.5, 144.5) r 94.6 and (361.5, 145.1) r 93.7 — centres
+201.0 apart against radii summing 188.3, so **disjoint, gap 12.7 px**. The labels ε, A,
+B / ε, C, D are printed on the diagrams, so their positions came from glyph centroids,
+not from reasoning. Both are blank answer spaces, so nothing is given away.
+
+> ⚠ **And the row already had a WRONG clean figure.** Its stem carried
+> `0f7da418-2c83-42f5-b552-7203e267158c.png`, a tidy engine-drawn pair somebody made
+> earlier — which draws **C and D overlapping**. That is not cosmetic: with C and D
+> disjoint, C ∩ D is empty and (C ∩ D)′ is the **whole** universal set, where the
+> overlapping version implies shading everything except the lens. It was the only thing
+> rendering on that question. Detached (referenced by this row only; object kept, swap
+> logged). **A clean, confident-looking figure is not evidence that it is the right
+> figure** — this one had no pixel defect at all.
+>
+> Both diagrams also had to move from `parts[].image_url` to `parts[].image_url_after`,
+> because the part texts say "in the following Venn diagram" and "in the diagram below"
+> — the `image_url` slot renders ABOVE the part's words.
+
+**2. Pierce 2024 P1 Q1, the spinner — determined by the stem.** *"an equal chance of
+landing on each of the numbers 1, 2, 3, 4, 5, 6, 7 and 8"* fixes everything that
+matters: a circle in eight EQUAL sectors labelled 1–8. The only free choice is the
+arrangement round the rim, and it changes neither answer — P(prime) = 4/8 and
+P(>3) = 5/8 on any arrangement. It is not arbitrary either: the surviving collapsed
+labels sit in two columns reading 7, 8, 1, 2 down the left and 6, 5, 4, 3 down the
+right — consecutive, increasing anticlockwise — and that is what was drawn. No pointer,
+so no outcome is implied.
+
+**3. Pierce 2024 P1 Q21 — one part from the text, one carrying a flagged assumption.**
+(a) The ladder is fully specified in words: 5 m ladder, foot 1.2 m from a vertical wall,
+so height √23.56 = 4.854 m at 76.06° to the horizontal — which is what makes the answer
+"not safe" against the stated 70°–74° band. Drawn to those dimensions, nothing invented.
+(b) The triangle's side lengths 10, 40 and 42 are **not in the question text** — they
+survive only as loose labels — and **which side is which is not recoverable**: the four
+surviving words sit at x = 99.6, 135.6, 171.6, 207.6, **exactly 36.0 pt apart**, which is
+the collapse's fixed tab, not their original positions. A is above and B and C share a
+row, so BC is the base; past that it is a choice. Drawn as AB = 10, BC = 40, CA = 42 and
+flagged in the row note. It does not change the answer — 42 is the longest side on any
+assignment and 10² + 40² = 1700 ≠ 42² = 1764 — but it would still be a different figure
+from the school's.
+
+**The rule this suggests for the next session:** before drawing anything, say out loud
+which of these three you are in — *measured from the source*, *determined by the stem*,
+or *a choice that the answer happens not to depend on* — and put that sentence in
+`image_watermark_notes`. All three are legitimate; conflating them is what shipped
+inferred labels the first time round.
 
 ### C. The "bad crop" that turned out not to be a crop — RELEASED
 
