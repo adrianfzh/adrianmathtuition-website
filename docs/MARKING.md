@@ -915,6 +915,41 @@ paper. What it does not: judgement drift on the student's own working (was M1
 earned?) — that is the marker reading the page, and the calibration harness
 measures it.
 
+### Blank printed parts, footer columns, pen-safe superscripts (8 Sep 2026)
+
+Joey's AM TYS 2021 P2, three things Adrian saw on the marked pages:
+
+- **"Q5(c) is left blank but no solutions written in the space?"** Each of
+  Q5(c) and Q6(c) sat alone on a page with an empty answer space. The
+  `question_paper` page prior said "print, reply attempts:[]", so neither part
+  was scored (the 85/90) nor answered. The prior now carries an exception: a
+  printed part with its OWN empty answer space and [n] is a NOT ATTEMPTED part
+  of this paper — emit it with awarded 0, max n, no lines, and the full
+  solution (`correct.full_solution_latex`), so the solution box is drawn into
+  the empty space. Question text that merely continues onto a page is still
+  print. Duplicates (the part attempted elsewhere) reconcile as before — the
+  real attempt wins. A page re-mark of the blank page is the door for older
+  runs; the seeded reads drop the allocation audit's placeholders first.
+- **"there is a funny symbol rendered"** — "abᵗ" in a margin note drew as a
+  tofu box reading 1D57. The Phonetic-Extensions superscript letters
+  (U+1D2C+) are in neither Patrick Hand nor DejaVu Sans. `lib/helpers.js`
+  keeps only the Superscripts block (digits, signs, ⁿ, ⁱ); a letter exponent
+  is written `^t`.
+- **"there are space on the right, so … put (b) on the right of (a)"** — a
+  footer solution whose rows are ALL narrower than half the strip is dealt
+  into two columns by part: the `(a)`/`(b)` label rows start segments, each
+  part goes to the shorter column, the header spans the top. Anything wider
+  stays single-column. `ai/annotate.js` footer block, `columns` entries.
+
+**Why the same paper looks different on two surfaces.** Every page is drawn
+twice off one placement pass: `url` (ticks, boxes, notes, no solution) and
+`url_with_solutions` (the same plus the solution block). The solution block
+goes to in-page white space if the page has room (Q8(c)'s near-empty page —
+the box beside the working), else the side strip, else the footer (Q8(a)(b)'s
+full page). The desk and the 🖼 photos PDF both show `url_with_solutions`; the
+📄 full PDF shows `url` because its typeset transcript carries the solution
+once (`lib/annotated-photo-source.ts`).
+
 ### Graph sheets — the companion, the grid zoom, and the 1280px copy (8 Sep 2026)
 
 Adrian, on Denise's AM TYS 2021 P2 Q7: "straight line graph could be attached
