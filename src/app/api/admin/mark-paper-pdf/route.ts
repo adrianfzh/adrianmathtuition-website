@@ -3,7 +3,7 @@ import { putStudentFile, fetchOurFile, runKey, uploadKey } from '@/lib/student-f
 import { PDFDocument } from 'pdf-lib';
 import { renderMarkingPNG, type MarkingOutput } from '@/lib/render-marking';
 import { coverPhotoIndexes, frontMatterPages, orderMarkedPages } from '@/lib/marked-pdf-order';
-import { pickAnnotatedPhotoUrl, type MarkedPdfMode } from '@/lib/annotated-photo-source';
+import { pageImages, type MarkedPdfMode } from '@/lib/annotated-photo-source';
 import { markedPdfColumn } from '@/lib/marked-pdf-column';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -47,7 +47,7 @@ async function linkToRun(runId: string | undefined, url: string, mode: string) {
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { results?: ResultIn[]; annotated_photos?: { photo_index: number; url: string; url_with_solutions?: string | null }[]; totals?: { awarded: number; max: number; counted_max?: number; max_source?: string }; student?: { name?: string; level?: string }; multi?: boolean; mode?: string; runId?: string; paperName?: string; frontPage?: boolean; booklet?: boolean };
+  let body: { results?: ResultIn[]; annotated_photos?: { photo_index: number; url: string; url_with_solutions?: string | null; overflow_url?: string | null }[]; totals?: { awarded: number; max: number; counted_max?: number; max_source?: string }; student?: { name?: string; level?: string }; multi?: boolean; mode?: string; runId?: string; paperName?: string; frontPage?: boolean; booklet?: boolean };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
   const mode = body.mode === 'photos' ? 'photos' : 'full';   // 'photos' = annotated originals only (no typeset)
@@ -97,9 +97,14 @@ export async function POST(req: NextRequest) {
   // it changes which copy of each page is fetched. Fail-soft in every direction —
   // a failed booklet falls back to plain 'photos' (solutions in the footers, tall
   // pages and all), never to a document with no solutions at all.
+  // Since 8 Sep 2026 the DEFAULT photos PDF is the solutions-on-page copy again,
+  // with the overflow sheet after any page whose solution did not fit (Adrian:
+  // "i do like the desk version better … we will use that for students; the
+  // booklet version can just leave it as an option"). The booklet is built only
+  // when the caller asks for it (`booklet: true`).
   let bookletPages: Buffer[] = [];
   let photoMode: MarkedPdfMode = mode;
-  if (mode === 'photos' && body.booklet !== false) {
+  if (mode === 'photos' && body.booklet === true) {
     try {
       const items = bookletItems(results);
       if (!items.length) {
@@ -124,15 +129,18 @@ export async function POST(req: NextRequest) {
   // pickAnnotatedPhotoUrl's call (see that module for why it is not inlined here).
   const annotated: { photo_index: number; buf: Buffer }[] = [];
   for (const ap of (body.annotated_photos || [])) {
-    const src = pickAnnotatedPhotoUrl(ap, photoMode);
-    try {
-      const r = await fetchOurFile(src);
-      if (r.ok) annotated.push({ photo_index: ap.photo_index, buf: Buffer.from(await r.arrayBuffer()) });
-      else if (src !== ap.url) {
-        const r2 = await fetchOurFile(ap.url);   // twin went missing — the plain page still marks the work
-        if (r2.ok) annotated.push({ photo_index: ap.photo_index, buf: Buffer.from(await r2.arrayBuffer()) });
-      }
-    } catch (e) { console.error('[mark-paper-pdf] fetch annotated failed', (e as Error).message); }
+    for (const img of pageImages(ap, photoMode)) {
+      try {
+        const r = await fetchOurFile(img.url);
+        if (r.ok) annotated.push({ photo_index: img.photo_index, buf: Buffer.from(await r.arrayBuffer()) });
+        else if (!img.overflow && img.url !== ap.url) {
+          const r2 = await fetchOurFile(ap.url);   // twin went missing — the plain page still marks the work
+          if (r2.ok) annotated.push({ photo_index: ap.photo_index, buf: Buffer.from(await r2.arrayBuffer()) });
+        }
+        // A missing overflow sheet costs the solution, not the page — logged, never fatal.
+        else console.warn('[mark-paper-pdf] overflow sheet missing for page', ap.photo_index);
+      } catch (e) { console.error('[mark-paper-pdf] fetch annotated failed', (e as Error).message); }
+    }
   }
   annotated.sort((a, b) => a.photo_index - b.photo_index);
 

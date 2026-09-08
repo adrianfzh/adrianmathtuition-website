@@ -73,6 +73,7 @@ function annotatedPhotos(resultJson: unknown) {
       photoIndex: typeof p.photo_index === 'number' ? p.photo_index : -1,
       url: p.url as string,
       urlWithSolutions: typeof p.url_with_solutions === 'string' ? p.url_with_solutions : null,
+      overflowUrl: typeof p.overflow_url === 'string' ? p.overflow_url : null,
       method: typeof p.method === 'string' ? p.method : null,
       // The editable marker layer (SPEC-ANNOTATE §14) — the desk opens the pen in place.
       layerUrl: typeof p.layer_url === 'string' ? p.layer_url : null,

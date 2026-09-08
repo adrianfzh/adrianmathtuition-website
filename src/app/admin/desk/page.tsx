@@ -81,7 +81,7 @@ type Detail = {
   totalWarning: string | null;
   autoHold: { hold: boolean; reasons: string[] };
   questions: Question[];
-  annotatedPhotos: { photoIndex: number; url: string; urlWithSolutions: string | null; method: string | null; layerUrl?: string | null; layer?: LayerMeta | null; inkUrl?: string | null; editedAt?: string | null }[];
+  annotatedPhotos: { photoIndex: number; url: string; urlWithSolutions: string | null; overflowUrl: string | null; method: string | null; layerUrl?: string | null; layer?: LayerMeta | null; inkUrl?: string | null; editedAt?: string | null }[];
   pageSources?: Record<number, { originalUrl: string | null; rot: number }>;
   inkHints?: InkHint[];
   diagnosis: Diagnosis | null;
@@ -928,7 +928,7 @@ function DetailView(p: {
   // the worked solutions in a booklet at the back; the desk had kept showing
   // the twin with the solution drawn on the page. Default = the clean copy;
   // the toggle shows the solution-on-page twin for checking its placement.
-  const [solutionsOnPage, setSolutionsOnPage] = useState(false);
+  const [solutionsOnPage, setSolutionsOnPage] = useState(true);
   const tone = LANE_TONE[d.lane];
   const pct = run.max > 0 ? Math.round((run.awarded / run.max) * 100) : null;
   const canApprove = d.approveBlockers.length === 0 && !released;
@@ -1178,12 +1178,14 @@ function DetailView(p: {
           {pages.length > 0 && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, fontSize: 12.5, color: C.muted, marginBottom: 10, flexWrap: 'wrap' }}>
               <span>
-                These are the pages as the student gets them — marks and notes on the page, the worked solutions in the booklet at the back of the Images PDF.
+                {solutionsOnPage
+                  ? 'These are the pages as the student gets them — the worked solution in the blank space or a small footer, and on its own sheet right after the page when it did not fit.'
+                  : 'The clean copies — marks and notes only, no solutions (what the Full PDF and the booklet option use).'}
               </span>
               <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', whiteSpace: 'nowrap' }}
-                title="The other copy of each page, with the marker's worked solution drawn into the blank space, the side strip or a footer. Not what the student receives — for checking where the solution would sit.">
+                title="Untick to see the clean copy of each page (marks and notes, no solution).">
                 <input type="checkbox" checked={solutionsOnPage} onChange={e => setSolutionsOnPage(e.target.checked)} />
-                Show solutions drawn on the page
+                Solutions on the page (what students get)
               </label>
             </div>
           )}
@@ -1242,6 +1244,12 @@ function DetailView(p: {
                 onClick={() => { if (!released) setAnnotatePage(pg.photoIndex); }}
                 title={released ? undefined : 'Tap to annotate this page'}
                 style={{ width: '100%', display: 'block', cursor: released ? 'default' : 'pointer' }} />
+              {solutionsOnPage && pg.urlWithSolutions && pg.overflowUrl && (
+                <a href={fileHref(pg.overflowUrl)} target="_blank" rel="noreferrer" title="The worked solution did not fit on the page, so it is a sheet of its own, right after the page — the student sees it the same way.">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={fileHref(pg.overflowUrl)} alt={`Worked solution sheet after page ${pg.photoIndex + 1}`} loading="lazy" style={{ width: '100%', display: 'block', borderTop: `1px dashed ${C.border}` }} />
+                </a>
+              )}
               <div style={{ padding: '4px 0' }}>
                 {(byPage.get(pg.photoIndex) ?? []).map(q => (isOpenFlag(q)
                   ? <div key={q.index} style={{ padding: '7px 12px', fontSize: 12.5, color: C.flag, borderTop: `1px solid ${C.border}` }}>⚠ Q{q.questionNumber} {q.awarded}/{q.max} — waiting for your decision in “To check” at the top ↑</div>

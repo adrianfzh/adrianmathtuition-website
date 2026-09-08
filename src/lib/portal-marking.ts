@@ -143,7 +143,7 @@ export interface StudentPaper {
    * plumbing. Empty for runs that never rendered annotations (the clipper
    * simply doesn't offer itself).
    */
-  pages: { index: number; url: string }[];
+  pages: { index: number; url: string; overflow?: true }[];
   /** Follow-up practice, one item per dropped-marks question. Often empty. */
   practice: StudentPracticeItem[];
   /**
@@ -309,16 +309,23 @@ function reviseLinks(
  * every entry is re-validated: a malformed block degrades to no clipper, never
  * to a broken image. https-only — these are public Vercel Blob JPEGs.
  */
-function annotatedPages(raw: unknown): { index: number; url: string }[] {
+function annotatedPages(raw: unknown): { index: number; url: string; overflow?: true }[] {
   if (!Array.isArray(raw)) return [];
-  const pages: { index: number; url: string }[] = [];
+  const pages: { index: number; url: string; overflow?: true }[] = [];
   for (const rawEntry of raw) {
     const entry = asRecord(rawEntry);
     if (!entry) continue;
-    const url = str(entry.url);
+    // The student sees the solutions-on-page copy (8 Sep 2026), and the overflow
+    // sheet right after any page whose solution did not fit — the same pages as
+    // the Images PDF. Older runs without a twin fall back to the plain page.
+    const plain = str(entry.url);
+    const withSol = str(entry.url_with_solutions);
+    const url = /^https:\/\//.test(withSol) ? withSol : plain;
     const index = Number(entry.photo_index);
     if (!/^https:\/\//.test(url) || !Number.isInteger(index)) continue;
     pages.push({ index, url });
+    const over = str(entry.overflow_url);
+    if (/^https:\/\//.test(withSol) && /^https:\/\//.test(over)) pages.push({ index: index + 0.5, url: over, overflow: true });
   }
   return pages.sort((a, b) => a.index - b.index);
 }

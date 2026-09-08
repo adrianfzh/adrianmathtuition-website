@@ -395,20 +395,21 @@ describe('buildStudentMarking — SEAB scheme chips', () => {
 });
 
 describe('buildStudentMarking — annotated pages (the ✂️ clipper)', () => {
-  it('exposes annotated_photos as pages in page order, index + url only', () => {
+  it('exposes annotated_photos as pages in page order — the solutions copy, with the overflow sheet after its page (8 Sep 2026)', () => {
     const { papers } = buildStudentMarking([run({
       id: 'a',
       result_json: {
         results: [q({ n: '1', awarded: 1, max: 2 })],
         annotated_photos: [
-          { photo_index: 2, url: 'https://blob.example/p2.jpg', url_with_solutions: 'https://blob.example/p2s.jpg', method: 'gemini' },
+          { photo_index: 2, url: 'https://blob.example/p2.jpg', url_with_solutions: 'https://blob.example/p2s.jpg', overflow_url: 'https://blob.example/p2o.jpg', method: 'gemini' },
           { photo_index: 0, url: 'https://blob.example/p0.jpg', method: 'tick-grid' },
         ],
       },
     })]);
     expect(papers[0].pages).toEqual([
       { index: 0, url: 'https://blob.example/p0.jpg' },
-      { index: 2, url: 'https://blob.example/p2.jpg' },
+      { index: 2, url: 'https://blob.example/p2s.jpg' },
+      { index: 2.5, url: 'https://blob.example/p2o.jpg', overflow: true },
     ]);
     // `method` is plumbing — it must not ride into the student payload.
     expect(JSON.stringify(papers[0].pages)).not.toContain('gemini');

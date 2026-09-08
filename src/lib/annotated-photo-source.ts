@@ -28,10 +28,27 @@
  * answered twice.
  */
 
-export type AnnotatedPhotoUrls = { url: string; url_with_solutions?: string | null };
+export type AnnotatedPhotoUrls = { url: string; url_with_solutions?: string | null; overflow_url?: string | null };
 export type MarkedPdfMode = 'full' | 'photos' | 'photos-booklet';
 
 export function pickAnnotatedPhotoUrl(photo: AnnotatedPhotoUrls, mode: MarkedPdfMode): string {
   if (mode === 'photos' && photo.url_with_solutions) return photo.url_with_solutions;
   return photo.url;
+}
+
+/**
+ * THE OVERFLOW SHEET (8 Sep 2026 — Adrian: "build the overflow page and we will
+ * use that for students (image pdf)"). When a page's worked solution would have
+ * made its footer taller than a fraction of the page, the bot draws the
+ * solution on its own sheet instead (`overflow_url`) and keeps the page
+ * A4-shaped. In 🖼 photos mode that sheet is a page of its own, IMMEDIATELY
+ * after the page it belongs to — the student reads the working, turns the
+ * page, reads the solution. The booklet mode and the 📄 full PDF never show it
+ * (their solutions live elsewhere). Returns the page and, when it has one, its
+ * overflow sheet, as fractional photo indices so ordering stays by page.
+ */
+export function pageImages(photo: AnnotatedPhotoUrls & { photo_index: number }, mode: MarkedPdfMode): { photo_index: number; url: string; overflow?: true }[] {
+  const out: { photo_index: number; url: string; overflow?: true }[] = [{ photo_index: photo.photo_index, url: pickAnnotatedPhotoUrl(photo, mode) }];
+  if (mode === 'photos' && photo.url_with_solutions && photo.overflow_url) out.push({ photo_index: photo.photo_index + 0.5, url: photo.overflow_url, overflow: true });
+  return out;
 }

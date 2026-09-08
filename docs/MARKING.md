@@ -955,6 +955,24 @@ Joey's AM TYS 2021 P2, three things Adrian saw on the marked pages:
   part goes to the shorter column, the header spans the top. Anything wider
   stays single-column. `ai/annotate.js` footer block, `columns` entries.
 
+**The overflow sheet (8 Sep 2026 — Adrian: "i do like the desk version better
+… is there a workaround?" for the tall footer; "build the overflow page and we
+will use that for students (image pdf); the booklet version can just leave it
+as an option").** `createAnnotatedImage` takes `overflowOut`: when the footer
+(notices + notes + solutions + figures) would exceed `SOLUTION_OVERFLOW_FRAC`
+(default 0.22) of the page height, the worked solutions and unplaced figures
+are drawn on their OWN cream sheet of the same width (hires-scaled with the
+page) and the page keeps only notices and notes below it, so it stays A4-shaped
+and prints at full size. `photo-overlay` uploads it as `-over` and stores
+`annotated_photos[].overflow_url`; `reannotate-page` keeps it on a redraw.
+Surfaces (`lib/annotated-photo-source pageImages`): the **Images PDF** is the
+solutions-on-page copy again with the overflow sheet as a page of its own
+immediately after the page it belongs to (fractional `photo_index` n+0.5);
+the **booklet** is built only on request (`booklet: true`); the **app** shows
+the same pages; the **desk** shows them by default with an "Solutions on the
+page (what students get)" toggle to the clean copies. Pages marked before this
+shipped have tall footers until redrawn (🔁 Re-mark this page, or ✏️ Annotate).
+
 **Which copy of a marked page each surface shows (verified 8 Sep 2026 — an
 earlier version of this paragraph was wrong).** Every page is drawn twice off
 one placement pass: `url` (ticks, boxes, notes, no solution) and

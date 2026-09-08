@@ -93,7 +93,7 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
           </div>
           {paper.pages.map(p => (
             // eslint-disable-next-line @next/next/no-img-element
-            <img key={p.index} src={fileHref(p.url)} alt={`Page ${p.index + 1}`} loading="lazy" className="w-full rounded-2xl border border-black/5 bg-white" />
+            <img key={p.index} src={fileHref(p.url)} alt={p.overflow ? `Worked solution after page ${Math.floor(p.index) + 1}` : `Page ${p.index + 1}`} loading="lazy" className="w-full rounded-2xl border border-black/5 bg-white" />
           ))}
         </section>
       )}
