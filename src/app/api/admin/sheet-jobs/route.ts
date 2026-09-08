@@ -300,6 +300,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, noSheet: true, reason: result.reason, diagnosis: false, rebuilt: false });
     }
     // ── Practice Again hands back its questions (SPEC-PORTAL-V2 §7) ───────────
+    // OFF since 8 Sep 2026 (`PRACTICE_AGAIN_HANDS_BACK_QUESTIONS`, Adrian:
+    // "should just be the pdf sheet") — the store writes nothing and reports
+    // nothing while the flag is off; the block below is what it does when on.
     // One HELD portal_assignments row per practice question — a bank row when
     // the worker named one that exists, a `generated` row (text + answer on the
     // assignment) when it wrote the question itself. Invisible to the student

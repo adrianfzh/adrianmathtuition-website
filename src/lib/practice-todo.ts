@@ -19,7 +19,7 @@ export type TodoSectionKey = AssignmentSource;
 /** The three sections, in display order. */
 export const TODO_SECTIONS: readonly { key: TodoSectionKey; title: string; icon: string; blurb: string }[] = [
   { key: 'adrian', title: 'From Adrian', icon: '📬', blurb: 'Work Adrian sent you.' },
-  { key: 'practice-again', title: 'Practice Again', icon: '🔁', blurb: 'From your marked papers — the skills worth another go.' },
+  { key: 'practice-again', title: 'Practice Again', icon: '🔁', blurb: 'Your Practice Again sheets, one for each marked paper.' },
   { key: 'find', title: 'Found by you', icon: '🔍', blurb: 'Questions you found with Find a question.' },
 ];
 

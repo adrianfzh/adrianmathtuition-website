@@ -1033,6 +1033,18 @@ worksheets, so only generate when they request. Optionally, i can generate for
 them by clicking on desk, and vetting it and asking them to do → that is
 compulsory, so we should build a mechanism that reminds them it is not done."
 
+- **Sheet only — no in-app questions (later on 8 Sep 2026).** Adrian, seeing the
+  Practise tab fill with the sheet's questions: "why are practice questions
+  emitted? should just be the pdf sheet … can leave practice in the bottom
+  menu, will be useful when i ask students to do particular questions."
+  `PRACTICE_AGAIN_HANDS_BACK_QUESTIONS = false` (`lib/practice-again.ts`,
+  re-exported from `portal-beta.ts`): `createHeldPracticeItems` writes nothing
+  and `releaseHeldPracticeItems` flips nothing while it is off, so `done` and
+  both release doors run as before with 0 items; the cancel/re-mark deletes
+  still run. The worker keeps returning `questions[]`. The 29 assigned + 92
+  held `practice-again` question/generated rows on prod were revoked by hand
+  that day (no student had answered one). The Practise tab stays for the work
+  Adrian sends by hand. Spec trail: SPEC-PORTAL-V2 §7.
 - **The auto-queue is gone.** `lib/sheet-queue.ts` lost `autoQueueSheet`; the
   papers-route tag, `mark-paper` marking-done, `auto-tag-sweep`, `scan-inbox`
   and the bot's hand-in path (`handlers/webchat.js`) no longer queue a sheet.

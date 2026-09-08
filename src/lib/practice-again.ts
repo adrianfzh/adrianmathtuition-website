@@ -215,3 +215,19 @@ export function heldItemsLine(summary: { created: number; bank: number; generate
   if (summary.skipped) parts.push(`${summary.skipped} skipped`);
   return parts.join(' · ');
 }
+
+/**
+ * Does Practice Again hand its questions back as in-app Practice items?
+ *
+ * OFF since 8 Sep 2026 (Adrian: "why are practice questions emitted? should
+ * just be the pdf sheet. students do the practice sheet on paper, take photo,
+ * upload to app to mark, marked and paper is done" … "can leave practice in
+ * the bottom menu, will be useful when i ask students to do particular
+ * questions"). The sheet is the only Practice Again work: the worker still
+ * returns `questions[]` (kept for the record and the day this flips), but
+ * `createHeldPracticeItems` writes nothing and `releaseHeldPracticeItems`
+ * flips nothing while this is false. The Practise tab stays for the work
+ * Adrian sends by hand. The 6 Sep hand-back (SPEC-PORTAL-V2 §7) was built on
+ * a yes about vetting, not about hand-back — see §7's 8 Sep note.
+ */
+export const PRACTICE_AGAIN_HANDS_BACK_QUESTIONS = false;

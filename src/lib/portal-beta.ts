@@ -71,6 +71,11 @@ export async function fullPortalVisible(): Promise<boolean> {
 // as a side effect. Flip to true to give students the picker back.
 export const PRACTICE_PICKER_OPEN_TO_STUDENTS = false;
 
+// Practice Again is the PDF sheet only (Adrian, 8 Sep 2026) — the in-app
+// per-question hand-back is off. The flag lives in the pure file so the store
+// can read it; re-exported here so every portal gate is findable in one place.
+export { PRACTICE_AGAIN_HANDS_BACK_QUESTIONS } from './practice-again';
+
 /** 'full' = the whole practice page (picker, topics, timed set — Adrian's admin
  *  cookie, or the flag); 'list' = the to-do list only, plus opening one of its
  *  items (`?assignment=`). */

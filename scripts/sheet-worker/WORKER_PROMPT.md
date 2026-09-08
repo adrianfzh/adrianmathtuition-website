@@ -153,6 +153,8 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
            "text_latex":"The curve $y = 4 - x^2$ meets the $x$-axis at $A$ and $B$. Find the area of the region bounded by the curve and the $x$-axis.",
            "answer_latex":"$\\frac{32}{3}$ units$^2$","marks":3,"topic":"Integration"}
         ],
+        ↑ questions[]: keep sending it (the record of what the sheet holds) — since 8 Sep 2026 the
+          website files NO in-app practice items from it (sheet only, Adrian); it is not shown to students.
         "diagnosis":[
           {"title":"Master Finding Area Using Integration","marks":6,"questions":["Q11(a)","Q20"],
            "why":"Area under a curve is $\\int y\\,dx$ — the shoelace method needs vertices, not a curve.","tier":"teach",

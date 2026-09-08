@@ -18,6 +18,7 @@
 // The shape-checking and row-building are pure in lib/practice-again.ts.
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
+  PRACTICE_AGAIN_HANDS_BACK_QUESTIONS,
   bankIdsNamed, heldItemsLine, practiceAgainRows, sanitizeSheetQuestions,
   type PracticeAgainJob, type SheetQuestion,
 } from './practice-again';
@@ -50,6 +51,8 @@ export async function createHeldPracticeItems(
   job: PracticeAgainJob,
   rawQuestions: unknown,
 ): Promise<HeldItemsOutcome> {
+  // Sheet only (Adrian, 8 Sep 2026) — no in-app items while the flag is off.
+  if (!PRACTICE_AGAIN_HANDS_BACK_QUESTIONS) return NOTHING;
   try {
     const { questions, skipped: malformed } = isSanitised(rawQuestions)
       ? { questions: rawQuestions, skipped: 0 }
@@ -137,6 +140,9 @@ function isSanitised(v: unknown): v is SheetQuestion[] {
  * Idempotent; never throws.
  */
 export async function releaseHeldPracticeItems(sb: SupabaseClient, runId: string): Promise<{ released: number; error?: string }> {
+  // Sheet only (Adrian, 8 Sep 2026): nothing is released while the flag is
+  // off — the rows that existed on 8 Sep were revoked by hand that day.
+  if (!PRACTICE_AGAIN_HANDS_BACK_QUESTIONS) return { released: 0 };
   try {
     const { data, error } = await sb.from('portal_assignments')
       .update({ status: 'assigned' })

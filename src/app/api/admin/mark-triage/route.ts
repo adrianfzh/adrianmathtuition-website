@@ -796,7 +796,8 @@ export async function POST(req: NextRequest) {
         results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: writeErr.message });
         continue;
       }
-      // 🔁 Practice Again items (SPEC-PORTAL-V2 §7): every HELD row the sheet
+      // 🔁 Practice Again items (SPEC-PORTAL-V2 §7 — OFF since 8 Sep 2026, sheet
+      // only: `PRACTICE_AGAIN_HANDS_BACK_QUESTIONS`; the store returns 0): every HELD row the sheet
       // worker wrote FROM this paper goes live in the same step as the paper,
       // so the student sees marks, sheet and items at one moment (step 7 of the
       // teaching round). A run with no sheet has none. Fail-soft — never undoes

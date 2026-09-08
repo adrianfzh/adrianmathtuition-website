@@ -16,6 +16,9 @@ are admin-visible until Adrian lifts it. Build order in §9. Owner of the standa
 - The student's Practice tab is their **to-do list**: work Adrian assigned, Practice
   Again questions from their own marked papers, questions they found with Find a question.
   Nothing else. The open topic picker and the timed set stay **admin-only**.
+  **Revised 8 Sep 2026:** Practice Again is the **PDF sheet only** — no per-question
+  items (§7). The tab stays for the work Adrian sends by hand ("will be useful when i
+  ask students to do particular questions").
 - **Find a question** (photograph or type a question, get one like it) replaces the
   students' Request materials button on Home. Generated questions capped at **10 a day**. Found questions go **straight into
   Practice**. A **nightly review on plan usage** checks how similar yesterday's matches
@@ -69,7 +72,9 @@ in marking-only beta and see no Practice tab at all today.
 `app/practice/todo-list.tsx`; `/api/portal/assignments` returns the three sections): the
 student Practice tab lists, newest first, with a state (to do / done / marked):
 1. **From Adrian** — assignments as today.
-2. **Practice Again** — one item per question handed back by the sheet worker (§7),
+2. **Practice Again** — the sheet itself, one worksheet row per released sheet
+   (**8 Sep 2026** — the per-question hand-back below is switched off, §7). Was:
+   one item per question handed back by the sheet worker (§7),
    labelled with the paper and the skill it fixes.
 3. **Found by you** — questions from Find a question (§4), labelled with the tier.
 
@@ -166,6 +171,20 @@ angle"), `error_kind`, `subject`, `evidence[]` (run/attempt links with dates),
 
 ## 7. Practice Again hands back its questions
 
+> **SWITCHED OFF 8 Sep 2026** — `PRACTICE_AGAIN_HANDS_BACK_QUESTIONS = false`
+> (`lib/practice-again.ts`). Adrian, on seeing the items: "why are practice questions
+> emitted? should just be the pdf sheet. students do the practice sheet on paper, take
+> photo, upload to app to mark, marked and paper is done." The 6 Sep yes recorded in
+> §10 was about *vetting* the worker's own questions, not about handing them back;
+> nobody had asked him whether the questions should exist in the app at all. Two ways
+> to do one job (sheet on paper, items on the phone) with nothing reconciling them
+> would have meant double work or items that never clear. What stays: the worker still
+> returns `questions[]` (the record of what the sheet holds), `lib/practice-again.ts`
+> and the store keep their tests, and the store's create/release return nothing while
+> the flag is off; the delete-on-cancel paths run as before. The 29 live + 92 held
+> items that existed on prod were **revoked** that day (nobody had answered one).
+> The Practise tab stays as the to-do list for work Adrian sends by hand.
+
 **Today:** the Mac sheet worker writes a DOCX + PDF into Dropbox and posts `done` with
 the file paths; Adrian vets the PDF; the student receives it with the paper. The portal
 knows a file exists and nothing about its questions.
@@ -205,7 +224,8 @@ reaches a student that Adrian has not seen once on the desk.
 - §1: a paper the rule cannot sort shows as "Other" until Adrian tags it — confirmed.
 - §6: wording **agreed 6 Sep** — Still happening / Getting better / Fixed.
 - §7: **decided 6 Sep** — the sheet's Approve & release covers every question on it,
-  including the ones the worker wrote (Adrian reads them all in the PDF). Models today:
+  including the ones the worker wrote (Adrian reads them all in the PDF).
+  **Overtaken 8 Sep** — hand-back is off; the sheet is the only Practice Again work. Models today:
   the sheet worker runs Claude Opus on plan usage (`claude -p --model opus`); the bank's
   generated twins use Claude Opus 4.8 with a Claude Sonnet 4.6 blind gate
   (`lib/models.js` in the bot).

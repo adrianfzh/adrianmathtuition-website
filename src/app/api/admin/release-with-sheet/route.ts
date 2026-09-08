@@ -263,7 +263,8 @@ export async function POST(req: NextRequest) {
     released = true;
   }
 
-  // 🔁 Practice Again items (SPEC-PORTAL-V2 §7). mark-triage's release flips
+  // 🔁 Practice Again items (SPEC-PORTAL-V2 §7 — OFF since 8 Sep 2026, sheet
+  // only: `PRACTICE_AGAIN_HANDS_BACK_QUESTIONS`; the store returns 0). mark-triage's release flips
   // them itself, but when the paper was ALREADY released (Adrian released by
   // hand before the sheet finished) that call never happens — so the flip is
   // repeated here, idempotently, and this button is the one that lets them out.
