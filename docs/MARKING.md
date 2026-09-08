@@ -955,14 +955,21 @@ Joey's AM TYS 2021 P2, three things Adrian saw on the marked pages:
   part goes to the shorter column, the header spans the top. Anything wider
   stays single-column. `ai/annotate.js` footer block, `columns` entries.
 
-**Why the same paper looks different on two surfaces.** Every page is drawn
-twice off one placement pass: `url` (ticks, boxes, notes, no solution) and
-`url_with_solutions` (the same plus the solution block). The solution block
-goes to in-page white space if the page has room (Q8(c)'s near-empty page —
-the box beside the working), else the side strip, else the footer (Q8(a)(b)'s
-full page). The desk and the 🖼 photos PDF both show `url_with_solutions`; the
-📄 full PDF shows `url` because its typeset transcript carries the solution
-once (`lib/annotated-photo-source.ts`).
+**Which copy of a marked page each surface shows (verified 8 Sep 2026 — an
+earlier version of this paragraph was wrong).** Every page is drawn twice off
+one placement pass: `url` (ticks, boxes, notes, no solution) and
+`url_with_solutions` (the same plus the solution block, placed into in-page
+white space if there is room, else the side strip, else a footer). Since 2 Sep
+the **Images PDF** is built in `photos-booklet` mode whenever the typeset
+worked-solutions booklet renders: the CLEAN copies as pages, the booklet at the
+back (`lib/annotated-photo-source.ts`; the twins' footers had made pages up to
+1.97×A4). The **student's app** shows the clean copies and links the PDFs. The
+**desk** used to show the twin — so it disagreed with the PDF on every page
+with a lost mark (Adrian: "i am seeing it differently"). The desk now shows the
+clean copy by default with a "Show solutions drawn on the page" toggle for the
+twin. The two-column footer layout above therefore appears on the twin (desk
+toggle, and the plain `photos` fallback when the booklet fails); the booklet has
+its own typeset layout (`lib/solutions-booklet-html.ts`).
 
 ### Graph sheets — the companion, the grid zoom, and the 1280px copy (8 Sep 2026)
 
