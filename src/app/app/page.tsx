@@ -19,6 +19,8 @@ import { relockItems, nextOpenItem } from '@/lib/remediation';
 import PortalAnnouncementCard from '@/components/PortalAnnouncementCard';
 import InstallCard from '@/components/InstallCard';
 import PushNudgeCard from '@/components/PushNudgeCard';
+import TelegramLinkCard from '@/components/TelegramLinkCard';
+import { ensureTelegramLinked } from '@/lib/telegram-link-state';
 import { SURFACES } from '@/lib/portal-theme';
 import PortalIcon from '@/components/PortalIcon';
 import ExamCountdown from './exam-countdown';
@@ -61,7 +63,7 @@ export default async function DashboardPage() {
   // streams in via the two <Suspense> islands below and the shell paints
   // immediately after login (Adrian, 2026-08-28: "still taking a bit of time
   // to load initially"). Everything awaited here is fast Supabase.
-  const [todayCards, assignments, counts, passNudge, fixit] = await Promise.all([
+  const [todayCards, assignments, counts, passNudge, fixit, tgState] = await Promise.all([
     learnVisible ? getTodayCards(account).catch(() => []) : Promise.resolve([]),
     // "From Adrian" assigned work (SPEC-ASSIGN.md) — fail-soft, hidden at zero;
     // gated to the account's subjects (SPEC-PORTAL-V2 §2).
@@ -91,6 +93,9 @@ export default async function DashboardPage() {
         return { total: items.length, cleared: clearedN, nextSkill: next?.skill ?? null };
       } catch { return null; }
     })(),
+    // 📨 Telegram link nudge (8 Sep 2026): 'unlinked' shows the one-tap card;
+    // 'unknown' (Airtable down) hides it — never nag someone who may be linked.
+    ensureTelegramLinked(account).catch(() => 'unknown' as const),
   ]);
   // Only what Adrian sent: the student's own finds (/app/find, source 'find')
   // live in Practice, never under "From Adrian".
@@ -142,6 +147,7 @@ export default async function DashboardPage() {
           in lib/install-prompt.ts (tested); telemetry → /api/portal/event. */}
       <InstallCard variant="home" adminViewer={adminViewer} />
       <PushNudgeCard adminViewer={adminViewer} />
+      {tgState === 'unlinked' && <TelegramLinkCard variant="home" adminViewer={adminViewer} />}
 
       {/* From Adrian — assigned work, at the top because it's the one thing
           Adrian specifically asked this student to do. Hidden when nothing is

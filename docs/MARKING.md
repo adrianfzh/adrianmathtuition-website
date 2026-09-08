@@ -1080,6 +1080,16 @@ compulsory, so we should build a mechanism that reminds them it is not done."
   `source_run_id` exists → stage "sent from the desk before the clock").
 - **Desk copy:** the lane is "Marked, no sheet yet"; chips say "asked by the
   student"; the tag toast no longer promises a sheet.
+- **Where the marked sheet lives in the app (8 Sep 2026, Adrian: "grouping the
+  marked pdf with the Practice Again — not individual pdfs"):** a Practice
+  Again sheet's own marking run is NOT a second row on `/app/marking`. The
+  assignment's `run_id` (set by mark-triage's `flipAssignmentMarked` on
+  release) is the key: `lib/portal-marking-group.ts` `groupPracticeAgain`
+  (pure/tested) lifts a marked sheet's run out of the Papers list and shows it
+  as "📄 Open your marked sheet" inside its paper's Practice Again block (list
+  and `/app/marking/[id]` both). A sheet whose paper is not listed (older than
+  the window, other subject) stays a top-level row so it is never unreachable.
+  The Papers count and per-subject stats count papers, not sheets.
 - **Open choices Adrian has not confirmed:** student-requested sheets go out
   unvetted when clean; the reminder cadence (3 d, weekly, ×4); Adrian's own
   uploads/scans lose the auto-sheet too (one rule); a paper with no sheet stays

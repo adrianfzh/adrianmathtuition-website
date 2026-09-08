@@ -16,6 +16,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { answerLines, promptLines, buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/lib/portal-marking';
 import { allowedSubjects, subjectAllowed } from '@/lib/portal-subjects';
 import { statsBySubject } from '@/lib/portal-papers-stats';
+import { groupPracticeAgain } from '@/lib/portal-marking-group';
 import PaperSubjectPill from '@/components/PaperSubjectPill';
 import AnnotatedSolution from './AnnotatedSolution';
 import ClipToNotes from './ClipToNotes';
@@ -128,15 +129,23 @@ export default async function MarkingPage() {
   const { papers, focus, streakNote } = buildStudentMarking(rows, { studentName: account?.display_name ?? null });
   // The Practice Again sheet belongs with its paper (Adrian, 7 Sep 2026), not on a
   // separate to-do page: one released worksheet assignment per source run.
-  type SheetRow = { id: string; source_run_id: string | null; status: string; pdf_url: string | null; submitted_at: string | null; marked_at: string | null; score: number | null; out_of: number | null; required_at: string | null };
+  // `run_id` = the sheet's OWN marking run once its hand-in is marked — what
+  // groups that marked sheet under this paper below (lib/portal-marking-group).
+  type SheetRow = { id: string; source_run_id: string | null; run_id: string | null; status: string; pdf_url: string | null; submitted_at: string | null; marked_at: string | null; score: number | null; out_of: number | null; required_at: string | null };
   const sheetsByRun = new Map<string, SheetRow>();
+  let sheetRowsAll: SheetRow[] = [];
   if (papers.length) {
     const { data: sheetRows } = await sb.from('portal_assignments')
-      .select('id, source_run_id, status, pdf_url, submitted_at, marked_at, score, out_of, required_at')
+      .select('id, source_run_id, run_id, status, pdf_url, submitted_at, marked_at, score, out_of, required_at')
       .eq('airtable_student_id', sid).eq('source', 'practice-again').eq('kind', 'worksheet').neq('status', 'held').neq('status', 'revoked')
       .in('source_run_id', papers.map(p => p.id));
-    for (const r of (sheetRows ?? []) as SheetRow[]) if (r.source_run_id && !sheetsByRun.has(r.source_run_id)) sheetsByRun.set(r.source_run_id, r);
+    sheetRowsAll = (sheetRows ?? []) as SheetRow[];
+    for (const r of sheetRowsAll) if (r.source_run_id && !sheetsByRun.has(r.source_run_id)) sheetsByRun.set(r.source_run_id, r);
   }
+  // A marked Practice Again sheet is one card with its paper, not a second
+  // top-level PDF (Adrian, 8 Sep 2026): its marking run leaves the list and is
+  // opened from the paper's Practice Again row. `top` is what the student sees.
+  const { top, markedSheetByParent } = groupPracticeAgain(papers, sheetRowsAll);
   // Papers with no sheet yet: is one being written, waiting on Adrian, or was
   // there nothing worth practising? (Practice Again on request, 8 Sep 2026 —
   // the request button itself lives on the paper's own page.)
@@ -150,7 +159,8 @@ export default async function MarkingPage() {
   }
   // Per-subject tiles, in the account's display order; tabs only when the
   // student has papers in more than one subject.
-  const stats = statsBySubject(papers, allowedSubjects(account));
+  // Tiles describe the papers on screen — a nested sheet is not a paper.
+  const stats = statsBySubject(top, allowedSubjects(account));
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
@@ -245,7 +255,7 @@ export default async function MarkingPage() {
             </div>
           )}
 
-          {papers.map(p => <Paper key={p.id} paper={p} sheet={sheetsByRun.get(p.id) ?? null} sheetJob={jobByRun.get(p.id) ?? null} />)}
+          {top.map(p => <Paper key={p.id} paper={p} sheet={sheetsByRun.get(p.id) ?? null} sheetJob={jobByRun.get(p.id) ?? null} markedSheet={markedSheetByParent.get(p.id) ?? null} />)}
 
           {earlier.length > 0 && (
             <details className={`${CARD} p-4`}>
@@ -274,11 +284,13 @@ export default async function MarkingPage() {
 // The latest / average / trend tiles moved into ./SubjectTiles (per subject,
 // SPEC-PORTAL-V2 §1); their arithmetic lives in lib/portal-papers-stats.
 
-function Paper({ paper, sheet, sheetJob }: {
+function Paper({ paper, sheet, sheetJob, markedSheet }: {
   paper: StudentPaper;
-  sheet: { id: string; status: string; pdf_url: string | null; score: number | null; out_of: number | null; required_at: string | null } | null;
+  sheet: { id: string; run_id: string | null; status: string; pdf_url: string | null; score: number | null; out_of: number | null; required_at: string | null } | null;
   /** The latest sheet job when no sheet is with the student yet — says where it is. */
   sheetJob: { status: string; noSheet: boolean } | null;
+  /** The sheet's own marked run, grouped under this paper (null until marked, or when it is not in the list). */
+  markedSheet: StudentPaper | null;
 }) {
   return (
     <div className={`${CARD} p-4`}>
@@ -321,7 +333,7 @@ function Paper({ paper, sheet, sheetJob }: {
       {sheet && (
         <div className="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3 flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-emerald-900">📘 Practice Again — written from this paper</p>
+            <p className="text-sm font-semibold text-emerald-900">📘 Practice Again — from this paper</p>
             <p className="text-[12px] text-emerald-800/80 mt-0.5">
               {sheet.status === 'marked'
                 ? `Marked${sheet.score != null && sheet.out_of ? ` · ${sheet.score}/${sheet.out_of}` : ''}`
@@ -338,6 +350,17 @@ function Paper({ paper, sheet, sheetJob }: {
               <Link href={`/app/submit?assignment=${sheet.id}`} className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white">Hand in</Link>
             )}
           </div>
+          {/* The marked sheet lives HERE, under its paper — one card per paper,
+              not a second PDF in the list (Adrian, 8 Sep 2026). */}
+          {sheet.status === 'marked' && (markedSheet || sheet.run_id) && (
+            <Link href={`/app/marking/${markedSheet?.id ?? sheet.run_id}`} data-track="marking:open"
+              className="basis-full flex items-center justify-between gap-3 rounded-xl bg-white border border-emerald-200 px-3 py-2 hover:bg-emerald-50 transition-colors">
+              <span className="min-w-0 truncate text-sm font-semibold text-emerald-900">
+                📄 Open your marked sheet{markedSheet ? <span className="font-normal text-emerald-800/70"> · {niceDate(markedSheet.date)}</span> : null}
+              </span>
+              <span className="shrink-0 text-emerald-800 text-sm">›</span>
+            </Link>
+          )}
         </div>
       )}
       {!sheet && sheetJob && (sheetJob.status === 'queued' || sheetJob.status === 'claimed') && (

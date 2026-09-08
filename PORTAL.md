@@ -66,7 +66,7 @@ Gate the homepage "Log in" button visibility behind `NEXT_PUBLIC_PORTAL_ENABLED=
 5. **Dashboard page** — `/app` (greeting + next lesson card + week stats + quick actions + recent activity)
 6. **Practice page** — `/app/practice` (Find practice question form + history list + click-through to past attempts)
 7. **Notes page** — `/app/notes` (topic list filtered by student level + click-through to KB entry display)
-8. **Settings page** — `/app/settings` (change password, link Telegram chat ID)
+8. **Settings page** — `/app/settings` (change password, link Telegram — one tap since 8 Sep 2026: `TelegramLinkCard` mints a signed t.me deep link, the bot's `/start tg_…` posts back to `/api/portal/telegram-link`, the card polls and shows ✓ Linked · Unlink; pasting a chat ID survives under a fold. Home shows the same card as a nudge until the account is linked — `lib/telegram-link-state.ts`)
 9. **PWA manifest + service worker** — for "Add to Home Screen"
 10. **Stage 1 alpha test** — Adrian creates own account, walks the flows
 11. **Stage 2 beta** — invite 2-3 students, gather feedback

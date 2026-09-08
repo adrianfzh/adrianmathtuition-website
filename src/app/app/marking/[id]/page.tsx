@@ -34,10 +34,10 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
   if (!paper) notFound();
 
   const { data: sheetRows } = await sb.from('portal_assignments')
-    .select('id, status, pdf_url, score, out_of, required_at')
+    .select('id, run_id, status, pdf_url, score, out_of, required_at')
     .eq('airtable_student_id', sid).eq('source', 'practice-again').eq('kind', 'worksheet').eq('source_run_id', id)
     .neq('status', 'held').neq('status', 'revoked').limit(1);
-  const sheet = (sheetRows ?? [])[0] as { id: string; status: string; pdf_url: string | null; score: number | null; out_of: number | null; required_at: string | null } | undefined;
+  const sheet = (sheetRows ?? [])[0] as { id: string; run_id: string | null; status: string; pdf_url: string | null; score: number | null; out_of: number | null; required_at: string | null } | undefined;
   // No sheet with the student yet: is one being written, waiting on Adrian, or
   // was there nothing worth practising? Else offer the request button
   // (Practice Again on request, 8 Sep 2026 — /api/portal/practice-again/request).
@@ -115,7 +115,7 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
       {sheet && (
         <section className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-emerald-900">📘 Practice Again — written from this paper</p>
+            <p className="text-sm font-semibold text-emerald-900">📘 Practice Again — from this paper</p>
             <p className="text-[12px] text-emerald-800/80 mt-0.5">
               {sheet.status === 'marked' ? `Marked${sheet.score != null && sheet.out_of ? ` · ${sheet.score}/${sheet.out_of}` : ''}`
                 : sheet.status === 'submitted' ? 'Handed in — being marked'
@@ -127,6 +127,14 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
             {sheet.pdf_url && <a href={fileHref(sheet.pdf_url)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold bg-emerald-700 text-white rounded-xl px-3 py-1.5">Open sheet</a>}
             {sheet.status !== 'marked' && sheet.status !== 'submitted' && <Link href={`/app/submit?assignment=${sheet.id}`} className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white">Hand in</Link>}
           </div>
+          {/* The marked sheet opens from its paper (grouped, 8 Sep 2026) — same view as a paper. */}
+          {sheet.status === 'marked' && sheet.run_id && (
+            <Link href={`/app/marking/${sheet.run_id}`} data-track="marking:open"
+              className="basis-full flex items-center justify-between gap-3 rounded-xl bg-white border border-emerald-200 px-3 py-2 hover:bg-emerald-50 transition-colors">
+              <span className="text-sm font-semibold text-emerald-900">📄 Open your marked sheet</span>
+              <span className="shrink-0 text-emerald-800 text-sm">›</span>
+            </Link>
+          )}
         </section>
       )}
 

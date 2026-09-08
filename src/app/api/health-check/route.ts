@@ -406,6 +406,13 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 📨 In-app Telegram linking (8 Sep 2026): the bot posts the /start token
+    // here; an open or missing route means every tap "links" nothing.
+    timed('telegram-link', async () => {
+      const r = await fetch(`${base}/api/portal/telegram-link`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // 🎯 Fix-it plans (SPEC-REMEDIATION.md). The student route must hold its
     // auth gate (401 anonymously — a 404 means the Home card and /app/fixit
     // silently vanish), and the tables + the columns the lane reads must

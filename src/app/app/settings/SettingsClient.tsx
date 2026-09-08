@@ -7,19 +7,19 @@ import { PORTAL_TOUR_KEY } from '@/lib/portal-tour';
 import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 import PushToggle from './PushToggle';
 import InstallCard from '@/components/InstallCard';
+import TelegramLinkCard from '@/components/TelegramLinkCard';
 
 const card = 'bg-white rounded-2xl border border-black/5 shadow-sm p-5';
 const input = 'w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy/30';
 const btn = 'bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50';
 
 export default function SettingsClient({
-  email, displayName, level, telegramChatId,
+  email, displayName, level, telegramChatId, telegramLinked,
 }: {
-  email: string; displayName: string; level: string; telegramChatId: string;
+  email: string; displayName: string; level: string; telegramChatId: string; telegramLinked: boolean;
 }) {
   const router = useRouter();
   const [pw, setPw] = useState({ next: '', confirm: '', msg: '', busy: false });
-  const [tg, setTg] = useState({ value: telegramChatId, msg: '', busy: false });
   const [del, setDel] = useState({ confirm: '', msg: '', busy: false });
   const [nm, setNm] = useState({ value: displayName, msg: '', busy: false });
 
@@ -46,17 +46,6 @@ export default function SettingsClient({
       router.refresh();
     } catch {
       setNm(s => ({ ...s, busy: false, msg: 'Could not save.' }));
-    }
-  }
-
-  async function saveTelegram(e: React.FormEvent) {
-    e.preventDefault();
-    setTg(s => ({ ...s, busy: true, msg: '' }));
-    try {
-      await portalFetch('/api/portal/settings', { json: { telegram_chat_id: tg.value.trim() || null } });
-      setTg(s => ({ ...s, busy: false, msg: '✓ Saved.' }));
-    } catch {
-      setTg(s => ({ ...s, busy: false, msg: 'Could not save — check the ID.' }));
     }
   }
 
@@ -124,21 +113,10 @@ export default function SettingsClient({
         </form>
       </div>
 
-      <div className={card}>
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Telegram</p>
-        <p className="text-sm text-gray-600 mb-2.5">
-          Link your Telegram to get a message the moment a marked paper is ready for you
-          (and so practice you do with the AdrianMath bot shows up here too).
-          Send <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">/start</code> to the bot and it
-          replies with your chat ID.
-        </p>
-        <form onSubmit={saveTelegram} className="flex gap-2">
-          <input inputMode="numeric" placeholder="Telegram chat ID"
-            value={tg.value} onChange={e => setTg(s => ({ ...s, value: e.target.value }))} className={input} />
-          <button className={btn} disabled={tg.busy}>{tg.busy ? '…' : 'Save'}</button>
-        </form>
-        {tg.msg && <p className={`text-sm mt-1.5 ${tg.msg.startsWith('✓') ? 'text-green-700' : 'text-red-600'}`}>{tg.msg}</p>}
-      </div>
+      {/* In-app Telegram linking (8 Sep 2026): one tap, no chat IDs to paste;
+          the card shows ✓ Linked + Unlink once portal_accounts.telegram_chat_id
+          is set (or inherited from Airtable — lib/telegram-link-state.ts). */}
+      <TelegramLinkCard variant="settings" linked={telegramLinked} chatId={telegramChatId} />
 
       <PushToggle />
 

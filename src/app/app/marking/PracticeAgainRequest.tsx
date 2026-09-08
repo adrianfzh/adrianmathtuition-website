@@ -62,7 +62,7 @@ export default function PracticeAgainRequest({ runId, state: initial }: { runId:
     <section id="practice-again" className={`${CARD} flex flex-wrap items-center justify-between gap-3`}>
       <div className="min-w-0">
         <p className="text-sm font-semibold text-emerald-900">📘 Want practice on what went wrong here?</p>
-        <p className="text-[12px] text-emerald-800/80 mt-0.5">Ask for a Practice Again sheet — worked examples plus practice, written from this paper. You get a message when it’s ready.</p>
+        <p className="text-[12px] text-emerald-800/80 mt-0.5">Ask for a Practice Again sheet — worked examples plus practice, from this paper. You get a message when it’s ready.</p>
         {err && <p className="text-[12px] text-red-700 mt-1">{err}</p>}
       </div>
       <button type="button" onClick={request} disabled={busy}
