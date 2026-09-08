@@ -100,8 +100,12 @@ async function loadLibs() {
   const stale = !existsSync(out) || statSync(out).mtimeMs < newest || !existsSync(entry) || readFileSync(entry, 'utf8') !== exportsSrc;
   if (stale) {
     writeFileSync(entry, exportsSrc);
+    // katex-inline locates KaTeX's assets with require.resolve; esbuild's ESM
+    // output shims `require` as `__require`, which has no .resolve unless a real
+    // `require` is in scope — so give the bundle one from createRequire.
+    const banner = "import { createRequire as __cr } from 'node:module'; const require = __cr(import.meta.url);";
     const r = spawnSync('npx', ['esbuild', entry, '--bundle', '--platform=node', '--format=esm', '--packages=external',
-      `--alias:@=${join(ROOT, 'src')}`, `--outfile=${out}`, '--log-level=warning'], { cwd: ROOT, stdio: 'inherit' });
+      `--alias:@=${join(ROOT, 'src')}`, `--outfile=${out}`, `--banner:js=${banner}`, '--log-level=warning'], { cwd: ROOT, stdio: 'inherit' });
     if (r.status !== 0) throw new Error('esbuild bundle failed');
   }
   return import(pathToFileURL(out).href);
