@@ -439,4 +439,4 @@ async function assemble() {
 
 const modes = { brief, check, assemble };
 if (!modes[MODE]) { console.error(`unknown mode ${MODE}; use brief | check | assemble`); process.exit(2); }
-modes[MODE]().catch((e) => { console.error(e); process.exit(1); });
+Promise.resolve().then(() => modes[MODE]()).catch((e) => { console.error(e); process.exit(1); });
