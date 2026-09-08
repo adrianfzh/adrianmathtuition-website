@@ -231,7 +231,7 @@ ${shape.scope}
 DISCIPLINE
 - The numbers must work out the way examination numbers do: exact answers exact, otherwise 3 significant figures; choose constants so the working is clean. Every "show that" target must be TRUE — derive it yourself before you write it. Every part must be solvable, unambiguously, from what is given.
 - A question may span two syllabus topics where SEAB would (a circle question that ends in coordinate geometry; a differentiation question that ends in an integral). Name every topic tested using ONLY these bank names: ${topicList.join(' | ')}.
-- Prefer a question that needs no figure. Where the topic truly demands one (a plane geometry proof), describe the configuration exactly so the question is answerable from the text alone, and set needs_figure true with a precise figure_description.
+- Prefer a question that needs no figure. Where the topic truly demands one (a plane geometry proof), describe the configuration exactly so the question is answerable from the text alone, and set needs_figure true with a precise figure_description: the configuration, the axis window (x and y ranges), which points are labelled and how, whether the curve's equation is printed on the figure, what is shaded, and that NOTHING the candidate is asked to find or prove appears on it — a separate agent draws the figure from this text alone.
 - All mathematics in LaTeX between $…$: \\frac, \\sqrt, ^{ }, \\mathrm{e}^{x}, \\ln, \\lg, \\sin, \\cos, \\tan, \\sec, \\operatorname{cosec}, \\cot, \\pi, \\le, \\ge, ^\\circ, \\frac{dy}{dx}, \\int … \\,dx. No display environments, no \\[ \\], no markdown.
 - Answer key: the final answer of every part exactly as a marker writes it, and a full worked solution.
 

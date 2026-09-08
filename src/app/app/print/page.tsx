@@ -25,7 +25,7 @@ export default async function PrintPage({ searchParams }: { searchParams: Promis
   // future door. Anything unknown → default.
   const { preset, shape } = await searchParams;
   const initialPreset =
-    preset === 'weakspots' || preset === 'topics' || preset === 'mock' ? preset : undefined;
+    preset === 'weakspots' || preset === 'topics' || preset === 'mock' || preset === 'set' ? preset : undefined;
   // ?shape=gce deep-links straight to the national-exam shape of the mock
   // (SEAB O-Level 4049/4052, A-Level H2 9758); anything else = school prelim.
   const initialShape = toPaperShape(shape);

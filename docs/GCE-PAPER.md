@@ -36,7 +36,10 @@ shape changes the slot walk, not the pool. `paper_drafts` has no shape column.
 
 Writes a genuinely NEW paper in the GCE shape. **Every model call is a Claude Code
 agent under the plan** — the script never touches the Anthropic API (Adrian, 8 Sep:
-"what api? use plan usage"). The script does the deterministic half:
+"what api? use plan usage"). **The end-to-end method — waves, prompts, model per spawn,
+checkpoints, publishing — is the committed `gce-paper` skill**
+(`.claude/skills/gce-paper/SKILL.md`), so any session or account can run it. The script
+does the deterministic half:
 
 ```
 node scripts/gce-paper/generate.mjs brief    --key GCE-AM-P1 --seed 1 [--out <dir>]
@@ -68,14 +71,20 @@ word-trigram Jaccard vs every real GCE question of the level ≤ 0.4 (nearest re
 `assemble` accepts a slot only when the gates pass, the blind solver and the key agree
 on every part, the style score is ≥ 4/5 and no exemplar is named as re-skinned; then it
 renders the paper (answer key on) and a solutions booklet through the SAME renderers
-`/app/print` uses. Nothing is inserted into the bank — the paper is a file for Adrian
-to read first.
+`/app/print` uses. `assemble` inserts nothing — the paper is a file for Adrian to read
+first; filing it in the bank is the separate, explicit `publish.mjs` step below.
 
 ### Figures (9 Sep 2026)
 
-A slot with `needs_figure` gets ONE of two files in the run dir, written by the session
-from the question's `figure_description` (no model call — the maths is re-derived by
-the drawing code and fails closed):
+A slot with `needs_figure` gets ONE of two files in the run dir, written from the
+question's `figure_description` by a **figure-author agent** (Opus; prompt in
+`.claude/skills/gce-paper/prompts/figure-author.md`) — seed 1's were hand-written by the
+session, which is what made a fresh seed need a human step. The agent works from the
+script's own docs: `figure.mjs --families` (every registry family), `--doc <family>`
+(that family's SPEC_DOC) and `--doc engine` (the construction contract + the examples
+under `.claude/skills/gce-paper/examples/`), renders, views the PNG and iterates. The
+maths is re-derived by the drawing code and fails closed, so the agent cannot ship an
+inconsistent figure — only report one:
 
 - `Q<n>.figure.json` — a typed spec for the bot's `lib/figures/` registry
   (`{ family, spec }`; e.g. `coordinate-plane` with `points`/`shapes`, `trig-3d`,
@@ -101,9 +110,39 @@ own, matching the GCE layout; figures come from `Q<n>.figure.png` in `--figures`
 `solution_box` sets `w:tblGrid` widths as well as `w:tcW` since 9 Sep 2026 — LibreOffice
 (and the soffice PDF preview) split the columns 50/50 otherwise and clipped display math.
 
-First complete set: `GCE-AM-P1-seed1` (13 Q, figures on Q7/Q9/Q10/Q13) + `GCE-AM-P2-seed1`
-(10 Q, figures on Q6/Q10), 8 Sep 2026, in `data/gce-generated/` (untracked — Adrian reads
-them first; nothing is in the bank).
+### Publishing a Set (9 Sep 2026)
+
+```
+node scripts/gce-paper/publish.mjs --paper <assembled json> --figures <run dir> --set <n> [--dry] [--retract]
+```
+
+Files the paper in the bank as the Print-a-paper **Set** preset
+(SPEC-PRINT-PAPER.md §Set papers, `lib/print-sets.ts`): one `questions` row per slot —
+`school='AdrianMath'`, `exam_type='Set <n>'`, `paper='1'|'2'`, `question_number` = slot,
+`level` = the blueprint family (AM/EM/JC), `year` = generation year, `difficulty
+'Standard'`, `verified=false` (Adrian flips it), `ai_generated=true`,
+`solution_source='fable_session'`, parts with bank-style bare labels (`a`, `i`), and
+`gen_meta {kind:'gce-set', set_key, set_item, seed, gates, blind_agree, figure, …}`.
+Figures: `Q<n>.figure.png` → the public `practice-figures` bucket at
+`gce-sets/<key>-set<n>/Q<n>.png` → `figure_url` + `has_image` (`image_watermark_status`
+stays NULL — `figureServable` accepts `figure_url` on its own). Idempotent on
+`gen_meta.set_item`: a re-run updates in place and revives a retracted row; `--retract`
+soft-deletes the paper's rows. Before any write it checks slots 1..n are contiguous, marks
+sum to the paper total and a PNG exists for every `needs_figure` slot; `--dry` prints the
+plan and stops (no env needed). Students of the level see "Set n · Paper 1/2" on
+`/app/print` the moment every question of that paper is in; the health-check `print-sets`
+probe alarms on an incomplete set.
+
+First set: `GCE-AM-P1-seed1` (13 Q, figures on Q7/Q9/Q10/Q13) + `GCE-AM-P2-seed1`
+(10 Q, figures on Q6/Q10), written 8 Sep 2026, JSON in `data/gce-generated/` (untracked),
+**published as A Math Set 1 on 9 Sep 2026** (23 rows).
+
+The agent step was validated blind on 9 Sep 2026: an Opus agent given only P1 Q13's
+`figure_description` and the `--families`/`--doc` output chose `function-graph`, wrote a
+spec whose region area verify() re-derived to the answer, and matched the hand-written
+figure in two render iterations; the tricks it had to discover (tick suppression, solid
+tangent, unlabelled answer-curve) are now in the prompt, and the author brief asks for
+the axis window and the labelling in every `figure_description`.
 
 Known gaps: AM only (`SHAPE.AM`); the run folder lives wherever `--out` points (scratchpad
-for trials); figures are hand-specified per slot, not authored by the agent.
+for trials); `function-graph` has no `ticks:false` (the step trick stands in for it).

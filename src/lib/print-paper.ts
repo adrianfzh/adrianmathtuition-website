@@ -97,14 +97,19 @@ export function shapeLabel(level: string, shape: PaperShape = 'prelim'): string 
   return blueprintFamily(level) === 'JC' ? 'A-Level format' : 'O-Level format';
 }
 
+/** The subject as a student says it — "A Math", "E Math", "H2 Mathematics" —
+ * for paper titles (mockTitle, lib/print-sets setPaperTitle). */
+export function subjectShortName(level: string): string {
+  const family = blueprintFamily(level);
+  return family === 'AM' ? 'A Math' : family === 'JC' ? 'H2 Mathematics' : 'E Math';
+}
+
 /** The stored title of a generated mock. portal_generated_papers has no
  * request-details column, so the SHAPE rides the title: this is the only
  * carrier, and shapeFromTitle() reads it back when the PDF is rendered. A
  * prelim-shaped mock keeps its original title verbatim (old rows stay right). */
 export function mockTitle(level: string, paper: string, shape: PaperShape = 'prelim'): string {
-  const family = blueprintFamily(level);
-  const subject = family === 'AM' ? 'A Math' : family === 'JC' ? 'H2 Mathematics' : 'E Math';
-  const base = `${subject} mock ${paper === 'P1' ? 'Paper 1' : 'Paper 2'}`;
+  const base = `${subjectShortName(level)} mock ${paper === 'P1' ? 'Paper 1' : 'Paper 2'}`;
   return shape === 'gce' ? `${base} · ${shapeLabel(level, shape)}` : base;
 }
 
@@ -215,13 +220,14 @@ export function mockCoverInstructions(level: string): string[] {
 export function mockCover(
   level: string,
   paper: string,
-  opts: { printedFor?: string | null; printedOn?: string | null; shape?: PaperShape } = {},
+  opts: { printedFor?: string | null; printedOn?: string | null; shape?: PaperShape; examLabel?: string } = {},
 ): PrelimCover {
   const who = opts.printedFor?.trim();
   const shape = opts.shape ?? 'prelim';
   return {
     centre: 'ADRIAN MATH TUITION',
-    examLabel: 'MOCK EXAMINATION',
+    // A Set paper (lib/print-sets) names itself here — "MOCK EXAMINATION · SET 1".
+    examLabel: opts.examLabel ?? 'MOCK EXAMINATION',
     subjectName: subjectName(level),
     subjectCode: paperCodeFull(level, paper),
     paperLabel: paper === 'P1' ? 'Paper 1' : 'Paper 2',
@@ -388,6 +394,9 @@ export interface QbPrintRow {
   answer: string | null;
   has_image: boolean | null;
   image_url: string | null;
+  /** A redrawn/authored figure as a full public URL (Set papers, repaired
+   * figures) — wins over image_url when present. */
+  figure_url?: string | null;
 }
 
 /** First image path out of a bare path or JSON-encoded array, as a public

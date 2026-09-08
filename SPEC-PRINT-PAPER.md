@@ -23,13 +23,35 @@ paper is pre-registered as an expected hand-in**, so when the student submits
 their attempt, the marker already knows every question, mark scheme and solution
 on it. Grail prints and forgets; we print and collect.
 
-## The three presets
+## The four presets
 
 | Preset | What the student gets | Draws from |
 |---|---|---|
 | **Mock exam** | Full AM/EM P1 or P2, exam header, marks-scaled working space, answer key on the last page | `lib/prelim-builder.ts` slot walk over `data/paper-blueprints.json` (mined from 474 real papers) |
 | **My topics** | Chosen topics + question count each, working space, answers gathered at the back | `lib/kiosk-pool.ts` (`fetchWorksheetPool`) + `lib/kiosk-draw.ts` |
 | **Fix my weak spots** | Same sheet shape as My topics, but topics come weighted by the student's own dropped marks | mastery/notebook rollup (`lib/mastery.ts`, `lib/notebook.ts`, `paper_marking_runs`) → then the My-topics draw |
+| **Set papers** (9 Sep 2026) | A FIXED paper of NEW SEAB-style questions — "Set 1 · Paper 1", same cover/shape as a GCE-format mock, the same sheet every time it is printed | no draw: the bank rows filed as that Set, in question order (`lib/print-sets.ts`) |
+
+### Set papers (9 Sep 2026)
+
+Adrian: "put the paper into question bank, as a paper available when student ask for
+Print a Paper in the app — call it set 1 or something". A Set is a paper the GCE
+generator wrote (`docs/GCE-PAPER.md`, the `gce-paper` skill) and `publish.mjs` filed as
+bank rows: `school='AdrianMath'`, `exam_type='Set <n>'`, `paper='1'|'2'`,
+`question_number` = slot, `verified=false` until Adrian flips it, figures as
+`figure_url` in the public `practice-figures` bucket. `lib/print-sets.ts`
+(`groupSetPapers`, pure/tested) turns the rows into papers and marks one **complete**
+only when the numbers run 1..n with no gap or duplicate, every question carries marks,
+and the total matches the GCE blueprint's — a half-published set is never offered
+(health-check `print-sets` alarms on one). GET `/api/portal/print-paper` returns `sets`
+for the student's levels (a JC1 student sees the `JC` filing through
+`PRINT_POOL_SCOPE`); POST `{preset:'set', level, paper, set}` stores the fixed refs —
+the weekly cap applies, the title is `setPaperTitle` ("A Math · Set 1 · Paper 1 ·
+O-Level format", so the PDF route reads the GCE shape from it) and the cover says
+"MOCK EXAMINATION · SET 1". First set: A Math Set 1 (P1 13 Q / P2 10 Q, 90 marks each),
+published 9 Sep 2026. Trade-offs: Set rows join topic sheets, mock draws and practice
+pools like any bank row of that level; they carry no embedding, so Find a question does
+not see them.
 
 Weak spots is the differentiator (needs marking history no competitor has). If it
 slips, ship Mock + My topics first — the preset enum leaves room.
@@ -62,7 +84,7 @@ slips, ship Mock + My topics first — the preset enum leaves room.
 create table portal_generated_papers (
   id uuid primary key default gen_random_uuid(),
   airtable_student_id text not null,
-  preset text not null check (preset in ('mock','topics','weakspots')),
+  preset text not null check (preset in ('mock','topics','weakspots','set')),  -- 'set' added 9 Sep 2026 (migration print_paper_set_preset)
   level text not null,            -- EM | AM | JC…, resolved server-side
   paper text,                     -- P1 | P2 (mock only)
   title text not null,            -- "AM Paper 1 — printed 26 Aug", editable never
@@ -82,7 +104,8 @@ brake, not expiry.
 ## Routes
 
 1. **`POST /api/portal/print-paper`** — session auth → resolve level → check
-   weekly allowance → draw per preset → insert `portal_generated_papers` →
+   weekly allowance → draw per preset (a `set` takes the bank's fixed rows instead;
+   GET lists the printable `sets`) → insert `portal_generated_papers` →
    render PDF (render-prelim for mock, practice-pdf layout for the others) →
    return `{ paperId, pdfUrl }` (Blob-stored PDF under the student's portal
    prefix, like submit photos). 60s maxDuration, `runtime: nodejs`.

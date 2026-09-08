@@ -193,6 +193,22 @@ export async function GET(req: NextRequest) {
       if (error) throw new Error(error.message);
       return 'ok';
     }),
+    // Set papers (lib/print-sets): every Set filed in the bank must be a
+    // COMPLETE paper — the route hides a half-published set from students,
+    // so this probe is the only place one gets noticed.
+    timed('print-sets', async () => {
+      const { getSupabaseAdmin } = await import('@/lib/supabase');
+      const { SET_EXAM_TYPE_LIKE, SET_QUESTION_COLUMNS, SET_SCHOOL, groupSetPapers } = await import('@/lib/print-sets');
+      const { data, error } = await getSupabaseAdmin().from('questions')
+        .select(SET_QUESTION_COLUMNS).eq('school', SET_SCHOOL).like('exam_type', SET_EXAM_TYPE_LIKE).is('deleted_at', null);
+      if (error) throw new Error(error.message);
+      const papers = groupSetPapers((data ?? []) as import('@/lib/print-sets').SetQuestionRow[]);
+      const broken = papers.filter(p => !p.complete);
+      if (broken.length) {
+        throw new Error(`incomplete set papers: ${broken.map(p => `${p.level} Set ${p.set} ${p.paper} (missing ${p.missing.join(',') || 'marks'})`).join('; ')}`);
+      }
+      return `${papers.length} set papers`;
+    }),
     // Resend (welcome emails, invoices, receipts)
     timed('resend', async () => {
       if (!process.env.RESEND_API_KEY) throw new Error('RESEND_API_KEY missing');

@@ -19,6 +19,7 @@ several of them are paper-shaped and it stops being obvious which is which.
 | Add a different practice set to one of my EXISTING revision sheets | `copy-revision-worksheet-with-different-practice` (or just `crw, am circles, worked`) |
 | Browse the bank, pick questions myself, then get a sheet | `worksheet-clerk` |
 | Generate a whole S4 prelim paper to blueprint | `prelim-paper` |
+| Write a NEW paper in the SEAB O-Level shape and file it as a Print-a-paper Set | `gce-paper` |
 | Second-guess a prelim draft I already saved | `setter-pass` |
 | Clean up a past-paper PDF I downloaded and add its answer key | `finish-practice-set` |
 | See which topics my students actually lose marks on | `bleed-table` |
@@ -27,7 +28,7 @@ several of them are paper-shaped and it stops being obvious which is which.
 | Draft an animated portal lesson for a topic from my approved notes | `author-lesson` |
 | Touch marking / kiosk / schedule / invoices **code** | the matching area skill — it routes to the runbook |
 
-## The five paper-makers, disambiguated
+## The six paper-makers, disambiguated
 
 This is where the names collide. The distinguishing question is **what you start
 from**:
@@ -39,12 +40,14 @@ from**:
 | `copy-revision-worksheet-with-different-practice` | **an existing document of Adrian's** (a notes-bank fragment, or a worked-examples sheet) | that same document, byte-cloned, with a fresh Practice section of real QB questions appended. Was named `revision-worksheet` until 5 Sep 2026 |
 | `worksheet-clerk` | **a conversation** — it shows candidates and Adrian picks | a physical worksheet from the picks (it calls `create-worksheet` to render); can also read jobs off `/admin/todo` |
 | `prelim-paper` | **the blueprint** (`data/paper-blueprints.json`) + the QB | a full S4 prelim paper, DOCX, with answer key |
+| `gce-paper` | **the GCE blueprint + nothing else** — it WRITES new questions with plan-billed agents (author → gates → blind solve → moderate → repair, agent-authored figures) | a new SEAB-style paper (DOCX + PDF) for Adrian to read, then `publish.mjs` files it in the bank as a Print-a-paper **Set** students print in the app → [`docs/GCE-PAPER.md`](GCE-PAPER.md) |
 | `finish-practice-set` | **a PDF that already exists** — a compiled past paper | the same paper, cleaned of its source's header/footer/mark-up, titled, with a QB answer key appended |
 | `self-study-sheet` | **one student's MARKED PAPER** — the questions they actually lost marks on | a per-student sheet they learn from (Example → Practice pairs, verified), filed to Dropbox `/Self-Study/<Student>/` for Adrian to vet, edit and release with the marked copy. Steps 3–6 of [`SPEC-TEACHING-CYCLE.md`](../SPEC-TEACHING-CYCLE.md) |
 
 Rule of thumb: `create-worksheet` **authors**, `revision-worksheet` **builds the base**,
 `copy-revision-worksheet-with-different-practice` **extends** it,
-`worksheet-clerk` **curates**, `prelim-paper` **assembles**, `finish-practice-set`
+`worksheet-clerk` **curates**, `prelim-paper` **assembles**, `gce-paper` **writes a whole
+paper from scratch**, `finish-practice-set`
 **finishes**, `self-study-sheet` **diagnoses** (it is the only one that starts
 from a student's own marked work, and the only one whose content is chosen by
 what that student got wrong). `setter-pass` is not a maker — it reviews what `prelim-paper` saved.

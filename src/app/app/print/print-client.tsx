@@ -11,7 +11,18 @@ import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 
-type Preset = 'mock' | 'topics' | 'weakspots';
+type Preset = 'mock' | 'topics' | 'weakspots' | 'set';
+
+/** A complete Set paper the bank holds for one of this student's levels
+ * (GET /api/portal/print-paper `sets`, lib/print-sets). */
+type SetPaperRow = {
+  level: string;
+  set: number;
+  paper: 'P1' | 'P2';
+  title: string;
+  questionCount: number;
+  totalMarks: number;
+};
 
 type PaperRow = {
   id: string;
@@ -28,6 +39,7 @@ const PRESETS: { key: Preset; emoji: string; title: string; body: string }[] = [
   { key: 'mock', emoji: '📝', title: 'Mock exam', body: 'A full paper with a realistic topic mix — print it, sit it in one go, hand it in.' },
   { key: 'topics', emoji: '🎯', title: 'My topics', body: 'Pick the topics, we pick real past-paper questions for them.' },
   { key: 'weakspots', emoji: '🩹', title: 'Fix my weak spots', body: 'Built from your own marked papers — the topics where you dropped marks.' },
+  { key: 'set', emoji: '📚', title: 'Set papers', body: 'New exam-style papers written for AdrianMath — questions you will not find in any past paper.' },
 ];
 
 export default function PrintClient({ levels, initialPreset, initialShape }: { levels: { key: string; label: string }[]; initialPreset?: Preset; initialShape?: PaperShape }) {
@@ -41,6 +53,8 @@ export default function PrintClient({ levels, initialPreset, initialShape }: { l
   const [allTopics, setAllTopics] = useState<string[]>([]);
   const [topics, setTopics] = useState<string[]>([]);
   const [papers, setPapers] = useState<PaperRow[]>([]);
+  const [sets, setSets] = useState<SetPaperRow[]>([]);
+  const [setChoice, setSetChoice] = useState<string | null>(null); // `${set}|${paper}`
   const [remaining, setRemaining] = useState<number | null>(null);
   const [cap, setCap] = useState(2);
   const [busy, setBusy] = useState(false);
@@ -48,11 +62,13 @@ export default function PrintClient({ levels, initialPreset, initialShape }: { l
   const [made, setMade] = useState<string | null>(null); // paperId just generated
 
   const mockAvailable = (MOCK_LEVELS as readonly string[]).includes(level);
+  const levelSets = sets.filter(s => s.level === level);
+  const setsAvailable = levelSets.length > 0;
 
   const refresh = useCallback(async () => {
     try {
-      const d = await portalFetch<{ papers?: PaperRow[]; remaining?: number | null; cap?: number }>('/api/portal/print-paper');
-      setPapers(d.papers || []); setRemaining(d.remaining ?? null); setCap(d.cap ?? 2);
+      const d = await portalFetch<{ papers?: PaperRow[]; remaining?: number | null; cap?: number; sets?: SetPaperRow[] }>('/api/portal/print-paper');
+      setPapers(d.papers || []); setRemaining(d.remaining ?? null); setCap(d.cap ?? 2); setSets(d.sets || []);
     } catch { /* list stays as-is */ }
   }, []);
   useEffect(() => { refresh(); }, [refresh]);
@@ -71,6 +87,11 @@ export default function PrintClient({ levels, initialPreset, initialShape }: { l
   }, [preset, level]);
   useEffect(() => { setTopics([]); }, [level]);
   useEffect(() => { if (!mockAvailable && preset === 'mock') setPreset('topics'); }, [mockAvailable, preset]);
+  // The Set card only exists where the bank holds a complete set for this
+  // level; a ?preset=set deep link on a level without one falls back.
+  useEffect(() => { if (sets.length && !setsAvailable && preset === 'set') setPreset(mockAvailable ? 'mock' : 'topics'); }, [sets.length, setsAvailable, preset, mockAvailable]);
+  useEffect(() => { setSetChoice(null); }, [level]);
+  const chosenSet = levelSets.find(s => `${s.set}|${s.paper}` === setChoice) ?? null;
 
   function toggleTopic(t: string) {
     setTopics(prev => prev.includes(t)
@@ -85,7 +106,9 @@ export default function PrintClient({ levels, initialPreset, initialShape }: { l
       const d = await portalFetch<{ paperId: string }>('/api/portal/print-paper', {
         json: {
           preset, level,
-          ...(preset === 'mock' ? { paper, shape } : { count }),
+          ...(preset === 'mock' ? { paper, shape } : {}),
+          ...(preset === 'set' && chosenSet ? { paper: chosenSet.paper, set: chosenSet.set } : {}),
+          ...(preset === 'topics' || preset === 'weakspots' ? { count } : {}),
           ...(preset === 'topics' ? { topics } : {}),
         },
         fallback: 'Could not generate the paper — try again.',
@@ -100,7 +123,8 @@ export default function PrintClient({ levels, initialPreset, initialShape }: { l
   }
 
   const canGenerate = !busy && (remaining === null || remaining > 0)
-    && (preset !== 'topics' || topics.length > 0);
+    && (preset !== 'topics' || topics.length > 0)
+    && (preset !== 'set' || !!chosenSet);
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
@@ -117,7 +141,7 @@ export default function PrintClient({ levels, initialPreset, initialShape }: { l
 
       <div className={`${CARD} p-4 space-y-3`}>
         <div className="grid gap-2 sm:grid-cols-3">
-          {PRESETS.filter(p => p.key !== 'mock' || mockAvailable).map(p => (
+          {PRESETS.filter(p => (p.key !== 'mock' || mockAvailable) && (p.key !== 'set' || setsAvailable)).map(p => (
             <button
               key={p.key}
               type="button"
@@ -183,7 +207,33 @@ export default function PrintClient({ levels, initialPreset, initialShape }: { l
           </div>
         )}
 
-        {preset !== 'mock' && (
+        {preset === 'set' && (
+          <div className="space-y-1.5">
+            {levelSets.map(s => {
+              const key = `${s.set}|${s.paper}`;
+              const on = setChoice === key;
+              return (
+                <button
+                  key={key} type="button" onClick={() => setSetChoice(key)}
+                  className={`w-full text-left rounded-xl border px-3 py-2.5 flex items-center gap-3 ${on ? 'border-navy bg-[hsl(45,100%,96%)]' : 'border-gray-200 hover:border-gray-300'}`}
+                >
+                  <span className={`h-4 w-4 rounded-full border-2 shrink-0 ${on ? 'border-navy bg-navy' : 'border-gray-300'}`} aria-hidden />
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-navy">Set {s.set} · {s.paper === 'P1' ? 'Paper 1' : 'Paper 2'}</span>
+                    <span className="block text-[12px] text-gray-500">
+                      {s.questionCount} questions · {s.totalMarks} marks · ⏱ {paperDuration(level, s.paper, 'gce') ?? 'About 2 hours'}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+            <p className="text-[12px] text-gray-400">
+              Built to the real national paper — same question count and mark spread. Sit it in one go and hand it in.
+            </p>
+          </div>
+        )}
+
+        {preset !== 'mock' && preset !== 'set' && (
           <div className="flex items-center gap-2 text-[13px] text-gray-600">
             <label htmlFor="print-count" className="font-semibold">Questions:</label>
             <select

@@ -7,7 +7,8 @@
 // generated, figures included.
 //
 // All presets render through renderPrelimPDF, marks-scaled working space and
-// the answer KEY on its own final page. A MOCK renders in exam format — page-1
+// the answer KEY on its own final page. A MOCK (and a SET paper — the same
+// exam shape with a fixed question list, lib/print-sets) renders in exam format — page-1
 // cover (centre name, subject code, duration, candidate boxes), questions from
 // page 2, Page N of M footers, [Turn over, END OF PAPER — while topics/
 // weak-spots sheets keep the worksheet-style header (a topic sheet is not an
@@ -34,6 +35,7 @@ import {
   type PrintQuestionRef,
 } from '@/lib/print-paper';
 import type { PaperDef } from '@/lib/prelim-builder';
+import { setNumberFromTitle } from '@/lib/print-sets';
 
 export const dynamic = 'force-dynamic';
 // Puppeteer cold start + KaTeX fonts can push past the 10s default.
@@ -74,7 +76,7 @@ export async function GET(req: NextRequest) {
 
   const { data: qRows, error } = await sb
     .from('questions')
-    .select('id, question_text, total_marks, parts, answer, has_image, image_url')
+    .select('id, question_text, total_marks, parts, answer, has_image, image_url, figure_url')
     .in('id', refs.map(r => r.id));
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   const byId = new Map((qRows as QbPrintRow[]).map(q => [q.id, q]));
@@ -87,14 +89,17 @@ export async function GET(req: NextRequest) {
       pos: ref.pos,
       marks: q.total_marks,
       text: questionMarkdown(q),
-      imageUrl: q.has_image ? storageUrl(q.image_url) : null,
+      // A redrawn/authored figure (figure_url — a public Storage URL, the
+      // Set papers' figures live there) wins over the scanned crop.
+      imageUrl: q.figure_url || (q.has_image ? storageUrl(q.image_url) : null),
       answer: answerMarkdown(q),
     });
   }
   if (!questions.length) return NextResponse.json({ error: 'no questions left on this paper' }, { status: 404 });
 
   const printed = new Date(row.created_at).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Singapore' });
-  const isMock = row.preset === 'mock' && (row.paper === 'P1' || row.paper === 'P2');
+  const isMock = (row.preset === 'mock' || row.preset === 'set') && (row.paper === 'P1' || row.paper === 'P2');
+  const setNo = row.preset === 'set' ? setNumberFromTitle(row.title) : null;
   // Which SHAPE this paper was built to. The row has no column for it (no
   // request-details jsonb on portal_generated_papers), so the stored title is
   // the carrier — ?shape= is only an override for a caller that knows better.
@@ -112,6 +117,7 @@ export async function GET(req: NextRequest) {
             printedFor: account.display_name,
             printedOn: printed,
             shape,
+            ...(setNo ? { examLabel: `MOCK EXAMINATION · SET ${setNo}` } : {}),
           }),
           instructions: mockCoverInstructions(row.level),
           // H2 P2 carries section_boundary → Section A/B headings; [] elsewhere.

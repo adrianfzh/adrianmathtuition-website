@@ -1,8 +1,11 @@
 // POST /api/portal/print-paper — a student generates a printable paper
-// (SPEC-PRINT-PAPER.md). Three presets:
+// (SPEC-PRINT-PAPER.md). Four presets:
 //   mock      — full EM/AM P1/P2 assembled by the prelim-builder blueprint walk
 //   topics    — chosen topics drawn from the kiosk-pool eligibility gate
 //   weakspots — same draw, topics ranked by the student's own mastery ledger
+//   set       — a fixed Set paper of NEW SEAB-style questions the GCE generator
+//               wrote and publish.mjs filed in the bank (lib/print-sets.ts);
+//               no draw — the rows ARE the paper, in question order
 //
 // The insert into portal_generated_papers IS the pre-registration: the ordered
 // question ids are what the marking loop reads when this paper is handed back
@@ -15,7 +18,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'node:fs';
 import path from 'node:path';
-import { practiceAuth, levelAllowed } from '@/lib/practice';
+import { practiceAuth, levelAllowed, studentMathLevels } from '@/lib/practice';
+import {
+  SET_EXAM_TYPE_LIKE,
+  SET_QUESTION_COLUMNS,
+  SET_SCHOOL,
+  blueprintTotal,
+  groupSetPapers,
+  setPaperTitle,
+  type SetPaper,
+  type SetQuestionRow,
+} from '@/lib/print-sets';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { portalIdentity } from '@/lib/portal-auth';
 import { requireActiveAccess } from '@/lib/portal-passes';
@@ -243,6 +256,37 @@ async function drawTopics(levelKey: string, topics: string[], total: number, stu
   return { refs: picked.map((p, i) => ({ id: p.id, pos: i + 1, marks: p.marks })), used };
 }
 
+/** The Set papers (lib/print-sets) a student may print: every COMPLETE Set
+ * in the bank whose filing level sits in the student level's PRINT_POOL_SCOPE
+ * (a JC1 student sees the 'JC' filing), re-keyed to the STUDENT level so the
+ * stored row's cover, duration and blueprint lookups keep working. One bank
+ * query for all levels; a partial set is never offered (it would print short). */
+async function setPapersFor(levels: string[]): Promise<SetPaper[]> {
+  const { data, error } = await getSupabaseAdmin()
+    .from('questions')
+    .select(SET_QUESTION_COLUMNS)
+    .eq('school', SET_SCHOOL)
+    .like('exam_type', SET_EXAM_TYPE_LIKE)
+    .is('deleted_at', null);
+  if (error) throw new Error(`set papers query failed: ${error.message}`);
+  const rows = (data ?? []) as SetQuestionRow[];
+  const bp = loadBlueprint();
+  const out: SetPaper[] = [];
+  for (const level of levels) {
+    const scope = PRINT_POOL_SCOPE[level];
+    if (!scope) continue;
+    const seen = new Set<string>();
+    const mine = rows.filter(r => scope.tagLevels.includes(r.level));
+    for (const sp of groupSetPapers(mine, (_l, paper) => blueprintTotal(bp.papers[blueprintKeyFor(level, paper, 'gce')]))) {
+      const k = `${sp.set}|${sp.paper}`;
+      if (!sp.complete || seen.has(k)) continue;
+      seen.add(k);
+      out.push({ ...sp, level, title: setPaperTitle(level, sp.set, sp.paper) });
+    }
+  }
+  return out;
+}
+
 export async function GET(req: NextRequest) {
   const caller = await practiceAuth(req);
   if (!caller || caller.kind !== 'student') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -253,10 +297,15 @@ export async function GET(req: NextRequest) {
     .eq('airtable_student_id', sid)
     .order('created_at', { ascending: false })
     .limit(30);
+  // Set papers are a fail-soft extra on the page: an unreachable bank hides
+  // the card rather than failing the list of papers already printed.
+  let sets: SetPaper[] = [];
+  try { sets = await setPapersFor(studentMathLevels(caller.account).map(l => l.key)); } catch { sets = []; }
   return NextResponse.json({
     papers: data ?? [],
     remaining: Math.max(0, WEEKLY_PRINT_CAP - await papersThisWeek(sid)),
     cap: WEEKLY_PRINT_CAP,
+    sets,
   });
 }
 
@@ -272,11 +321,11 @@ export async function POST(req: NextRequest) {
   const access = await requireActiveAccess(account);
   if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
 
-  let body: { preset?: unknown; level?: unknown; paper?: unknown; topics?: unknown; count?: unknown; shape?: unknown };
+  let body: { preset?: unknown; level?: unknown; paper?: unknown; topics?: unknown; count?: unknown; shape?: unknown; set?: unknown };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const preset = String(body.preset ?? '');
   const level = String(body.level ?? '');
-  if (!['mock', 'topics', 'weakspots'].includes(preset)) return NextResponse.json({ error: 'Unknown preset' }, { status: 400 });
+  if (!['mock', 'topics', 'weakspots', 'set'].includes(preset)) return NextResponse.json({ error: 'Unknown preset' }, { status: 400 });
   if (!levelAllowed(caller, level)) return NextResponse.json({ error: 'Level not available' }, { status: 403 });
 
   const usedThisWeek = await papersThisWeek(sid);
@@ -308,6 +357,23 @@ export async function POST(req: NextRequest) {
     // mock is a 422 the client shows, and no allowance is spent (no insert).
     if ('error' in out) return NextResponse.json({ error: out.error }, { status: 422 });
     refs = out.refs; title = out.title; paper = p;
+  } else if (preset === 'set') {
+    // A Set is fixed: the bank rows in question order ARE the paper. No draw,
+    // no seeding — the same refs every time, so a re-print is the same sheet.
+    const p = String(body.paper ?? 'P1');
+    const setNo = Number(body.set);
+    if (!['P1', 'P2'].includes(p) || !Number.isInteger(setNo) || setNo <= 0) {
+      return NextResponse.json({ error: 'Pick a set and a paper' }, { status: 400 });
+    }
+    let sets: SetPaper[];
+    try {
+      sets = await setPapersFor([level]);
+    } catch {
+      return NextResponse.json({ error: 'The question bank is unreachable right now — try again in a minute.' }, { status: 502 });
+    }
+    const sp = sets.find(x => x.set === setNo && x.paper === p);
+    if (!sp) return NextResponse.json({ error: 'That set paper is not available for this level.' }, { status: 404 });
+    refs = sp.refs; title = sp.title; paper = p;
   } else {
     const total = Math.min(MAX_QUESTION_COUNT, Math.max(4, Number(body.count) || DEFAULT_QUESTION_COUNT));
     let topics: string[];

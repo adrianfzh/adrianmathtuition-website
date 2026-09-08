@@ -83,7 +83,7 @@ const STYLES = `
 
   .section-h{text-align:center;font-weight:700;font-size:12.5pt;letter-spacing:.5px;margin:16px 0 12px}
   .q{margin-bottom:14px}
-  .q-row{display:flex;gap:10px}
+  .q-row{display:flex;gap:10px;break-inside:avoid;page-break-inside:avoid} /* keep a question's text, figure and [marks] on one page; the working space below may still break */
   .q-num{font-weight:700;min-width:24px;font-size:12.5pt}
   .q-body{flex:1}
   .q-marks{text-align:right;font-weight:600;color:#333;margin-top:2px}

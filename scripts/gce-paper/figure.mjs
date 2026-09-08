@@ -12,6 +12,13 @@
 //
 //   node scripts/gce-paper/figure.mjs --run <dir> [--slots 7,9] [--density 288]
 //
+// The two spec languages are documented by the code that draws them — an agent
+// authoring a figure reads these BEFORE writing a spec (the gce-paper skill's
+// figure step), never from memory:
+//   node scripts/gce-paper/figure.mjs --families          every registry family, one line each
+//   node scripts/gce-paper/figure.mjs --doc <family>      that family's SPEC_DOC (fields, ranges, an example)
+//   node scripts/gce-paper/figure.mjs --doc engine        the construction engine's API + file contract
+//
 // Both engines are zero-dep CommonJS in the bot repo; nothing here calls a model.
 import { createRequire } from 'node:module';
 import { existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
@@ -27,6 +34,48 @@ try { sharp = botRequire('sharp'); } catch { /* PNG step skipped */ }
 const args = process.argv.slice(2);
 const argOf = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
 const runDir = resolve(argOf('--run', '.'));
+
+// ── --families / --doc: print the spec language and exit ─────────────────────
+const familyNames = () => (registry.figureFamilies?.() ?? Object.keys(registry.FAMILY_MODULES ?? {}))
+  .map((f) => (typeof f === 'string' ? f : f?.FAMILY))
+  .filter(Boolean);
+if (args.includes('--families')) {
+  for (const name of familyNames()) {
+    const fam = registry.getFamily(name);
+    const first = String(fam?.SPEC_DOC ?? '').split('\n').find((l) => l.trim()) ?? '';
+    console.log(`${name.padEnd(32)} ${first.trim().slice(0, 110)}`);
+  }
+  console.log(`\n${familyNames().length} families · node scripts/gce-paper/figure.mjs --doc <family> for one · --doc engine for the construction engine`);
+  process.exit(0);
+}
+if (args.includes('--doc')) {
+  const want = argOf('--doc', '');
+  if (want === 'engine') {
+    const methods = Object.getOwnPropertyNames(engine.Construction.prototype).filter((m) => m !== 'constructor');
+    console.log(`ai/figure-engine — a CONSTRUCTION engine for geometry the registry has no family for.
+File contract (Q<n>.figure.cjs, CommonJS, no requires):
+  module.exports = ({ Construction, el }) => ({
+    cons,                 // the Construction (its assert* calls are the proof the drawing is consistent — they THROW, so a wrong figure draws nothing)
+    width, height,        // px of the drawing box (≈ 260–320 × 200–300)
+    tall: true?,          // portrait box
+    margin,               // px padding
+    base: [ …el.* ],      // what is always drawn
+    layers: [[ …el.* ]],  // reveal layers for solutions; a single empty layer [[]] for a question figure
+  });
+Points are named ('A'); every el.* takes point names or {x, y}. Labels: el.label(point, 'A', dx, dy, { italic: true, fs: 13 }); el.mathlabel for TeX.
+Construction methods (chainable): ${methods.join(', ')}
+el constructors: ${Object.keys(engine.el).join(', ')}
+Rules: build the geometry from the question's given lengths/angles, then assert every relation the question states (assertOnCircle, assertTangentAt, assertParallel, assertEqualLength, assertBetween …); read the PNG after rendering and fix labels that collide; never draw a relation the question asks the student to prove as if it were given (no right-angle mark on an angle to be proved right).
+Example: the plane-geometry figure in .claude/skills/gce-paper/examples/Q7.figure.cjs`);
+    process.exit(0);
+  }
+  const fam = registry.getFamily(want);
+  if (!fam) { console.error(`unknown family "${want}" — --families lists them`); process.exit(1); }
+  console.log(`family: ${fam.FAMILY}  spec_version: ${fam.SPEC_VERSION ?? '?'}\n`);
+  console.log(fam.SPEC_DOC ?? '(no SPEC_DOC on this family — read lib/figures/' + want + '.js in the bot repo)');
+  process.exit(0);
+}
+
 const only = argOf('--slots', null)?.split(',').map((s) => Number(s.trim())).filter(Boolean) ?? null;
 const density = Number(argOf('--density', '288'));
 
