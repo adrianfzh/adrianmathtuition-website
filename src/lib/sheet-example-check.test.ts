@@ -21,6 +21,32 @@ describe('extractExamples', () => {
     expect(ex[1].solution).toContain('= 96');
     expect(ex[1].question).not.toContain('Practice');
   });
+  it('a heading that names the tool — "Example 1 : Finding The Normal…" — is still an example (Kassandra, 8 Sep 2026)', () => {
+    // The real shape of every sheet since the "heading names the TOOL" rule:
+    // title after a colon, an (Optional) tag on the last one, and the Optional
+    // tail's own line. Zero of these matched the bare-number pattern.
+    const real = [
+      'PRACTICE AGAIN — Learn from A Math 2021 Paper 1',
+      'Example 1 : Finding The Normal To A Curve And The Area It Cuts Off',
+      'The curve y = x² − 4x + 3 has a normal at x = 1. Find its equation.',
+      'Solution:', 'dy/dx = 2x − 4 = −2 at x = 1, so the normal has gradient ½.', 'y = ½x − ½',
+      'Practice 1', 'Practice 1.1 The curve y = x³ … [3]',
+      '(Optional) — do this last section only if you have time.',
+      'Example 2 : Clearing A Fraction By Multiplying Every Term (Optional)',
+      'Solve 3/x + 2 = 5.', 'Solution:', '3 + 2x = 5x, so x = 1.',
+      'Practice 2', 'Practice 2.1 Solve 4/x − 1 = 3. [2]',
+    ].join('\n');
+    const ex = extractExamples(real);
+    expect(ex.map(e => e.n)).toEqual([1, 2]);
+    expect(ex[0].question).toBe('The curve y = x² − 4x + 3 has a normal at x = 1. Find its equation.');
+    expect(ex[0].solution).toContain('y = ½x − ½');
+    expect(ex[0].solution).not.toContain('Practice 1.1');
+    expect(ex[1].question).toBe('Solve 3/x + 2 = 5.');
+    expect(ex[1].solution).toBe('3 + 2x = 5x, so x = 1.');
+    // prose that merely starts with the word is not a heading
+    expect(extractExamples('Example 3 shows the idea.\nSolution:\nx = 2').length).toBe(0);
+  });
+
   it('docxXmlToText keeps table cells on one line with a separator', () => {
     const xml = '<w:body><w:p><w:r><w:t>Example 1</w:t></w:r></w:p><w:tbl><w:tr><w:tc><w:p><w:r><w:t>(a)</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>x = 5</w:t></w:r></w:p></w:tc></w:tr></w:tbl></w:body>';
     expect(docxXmlToText(xml)).toBe('Example 1\n(a) | x = 5');

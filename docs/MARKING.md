@@ -623,6 +623,15 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   stage to "held — example check: N disagreement(s)" and Telegrams which example; agreement is
   stored as `result.example_check`. Practice answers were already sympy-verified — this closes the
   gap on the teaching itself. Prerequisite for the release-by-silence automation Adrian asked for.
+  **The splitter must match the headings the worker actually writes** — since the "heading names
+  the TOOL" rule every heading reads `Example 1 : Finding The Normal To A Curve` (the last one
+  tagged `(Optional)`, the tail opening with `(Optional) — do this last section…`), and the
+  original bare-`Example N` pattern matched none of them: every real sheet came back "the example
+  check was skipped: no examples found on the sheet" and the release gate held all of them, so
+  neither the 12-hour clock nor a student's request ever sent a sheet (Kassandra's TYS 2021 P1,
+  found 8 Sep 2026). `extractExamples` now accepts a title after `:`/`—` and an `(Optional)`
+  tag; the regression test carries the real heading shape. If the worker's heading style changes
+  again, change the splitter with it — a skipped check is a HOLD, not a pass.
 - **✍️ Sheet formatting and voice (6 Sep 2026):** `worksheet_lib.save()` now forces 1.5 line spacing
   on every paragraph including table cells; the self-study-sheet skill carries Adrian's binding
   rules — parts in their own column, one `[Ans]` per question after the whole question, no "never"

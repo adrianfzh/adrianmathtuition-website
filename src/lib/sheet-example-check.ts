@@ -49,7 +49,18 @@ export function docxXmlToText(xml: string): string {
  * Split the sheet's text into its worked examples: "Example N" … "Solution:" …
  * up to the next "Practice N" / "Example N" / end. The question is everything
  * between the Example heading and "Solution:"; the solution is what follows.
+ *
+ * A heading carries the section's title since the "heading names the TOOL" rule
+ * (5 Sep 2026): "Example 1 : Finding The Normal To A Curve", "Example 4 : … (Optional)",
+ * and the Optional tail opens with "(Optional) — do this last section only…".
+ * The bare-number pattern this started with matched none of them, so every real
+ * sheet came back "no examples found on the sheet" and the release gate held
+ * all of them (Kassandra, 8 Sep 2026). The title is not part of the question.
  */
+const EXAMPLE_HEADING = /^Example\s+(\d+)(?:\s*[:—–-]\s*.*|\s*\(.*)?$/i;
+const PRACTICE_HEADING = /^Practice\s+\d+(?:\s*[:—–-]\s*.*|\s*\(.*)?$/i;
+const OPTIONAL_LINE = /^\(Optional\)/i;
+
 export function extractExamples(text: string): SheetExample[] {
   const lines = text.split('\n');
   const out: SheetExample[] = [];
@@ -61,9 +72,9 @@ export function extractExamples(text: string): SheetExample[] {
     cur = null;
   };
   for (const line of lines) {
-    const ex = line.match(/^Example\s+(\d+)\s*$/i);
+    const ex = line.match(EXAMPLE_HEADING);
     if (ex) { flush(); cur = { n: Number(ex[1]), q: [], s: [], inSolution: false }; continue; }
-    if (/^Practice\s+\d+\s*$/i.test(line) || /^\(Optional\)\s*$/i.test(line)) { flush(); continue; }
+    if (PRACTICE_HEADING.test(line) || OPTIONAL_LINE.test(line)) { flush(); continue; }
     if (!cur) continue;
     if (/^Solution\s*:?\s*$/i.test(line)) { cur.inSolution = true; continue; }
     (cur.inSolution ? cur.s : cur.q).push(line);
