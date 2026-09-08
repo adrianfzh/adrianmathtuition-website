@@ -30,7 +30,7 @@ export interface GateInput {
   paperHold?: string[] | null;
 }
 
-export interface GateResult { ok: boolean; reasons: string[] }
+export interface GateResult { ok: boolean; reasons: string[]; watch: string[] }
 
 /**
  * May this sheet release without Adrian? Every reason is a sentence he can
@@ -55,11 +55,12 @@ export function autoReleaseGate(g: GateInput): GateResult {
   else if (g.exampleCheck.checked === 0) reasons.push('no worked example was found to check');
   else if (g.exampleCheck.disagreements.length) reasons.push(`a second reader disagrees with ${g.exampleCheck.disagreements.length} worked example(s)`);
   if (g.grounded === false) reasons.push('the marking was not grounded on the real paper');
-  // The paper's own accuracy hold (8 Sep 2026): a paper the immediate release
-  // would refuse must not go out on the sheet's clock either. Flags Adrian has
-  // not reviewed no longer hold by themselves — the narrowed gates decide.
-  for (const r of Array.isArray(g.paperHold) ? g.paperHold : []) reasons.push(`the paper is held: ${r}`);
-  return { ok: reasons.length === 0, reasons };
+  // The paper's accuracy signals are WATCH-OUTS, not a refusal (Adrian, 8 Sep
+  // 2026: "we should just release them, but ping me for anything important").
+  // Only a paper with nothing marked stops the clock.
+  const watch = (Array.isArray(g.paperHold) ? g.paperHold : []).filter(r => r !== 'no questions were marked');
+  if ((g.paperHold || []).includes('no questions were marked')) reasons.push('the paper has nothing marked');
+  return { ok: reasons.length === 0, reasons, watch };
 }
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -79,9 +80,15 @@ export function heldByPaperLine(who: string, paper: string | null | undefined, r
 }
 
 /** The two lines Telegram gets after a sheet passes or fails the gate — both name the student and the paper (Adrian, 8 Sep 2026: "doesn't say which marked pdf"). */
-export function scheduledLine(at: string, deskUrl: string, who?: string | null, paper?: string | null): string {
+export function scheduledLine(at: string, deskUrl: string, who?: string | null, paper?: string | null, watch: string[] = []): string {
   const head = who ? `⏱ <b>${who}</b>${paper ? ` — ${paper}` : ''}: the marked paper and the Practice Again sheet go out` : '⏱ Goes out with the marked paper';
-  return `${head} at ${sgtShort(at)} unless you hold them on the desk.\nDesk: ${deskUrl}`;
+  const w = watch.length ? `\n⚠️ Watch out for: ${watch.join(' · ')}` : '';
+  return `${head} at ${sgtShort(at)} unless you hold them on the desk.${w}\nDesk: ${deskUrl}`;
+}
+
+/** The released line with the paper's watch-outs (the cron, 8 Sep 2026). */
+export function releasedWithWatchLine(who: string, paper: string | null, watch: string[]): string {
+  return releasedLine(who, paper) + (watch.length ? `\n⚠️ Watch out for: ${watch.join(' · ')}` : '');
 }
 
 export function heldLine(who: string, paper: string | null | undefined, reasons: string[], deskUrl: string): string {

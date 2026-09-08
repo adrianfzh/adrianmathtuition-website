@@ -77,14 +77,22 @@ async function tagRun(run: AutoTagRun, student: RosterStudent, how: AutoTagStamp
   return `tagged → ${student.name} (${how.by}) · sheet ${sheet.ok ? 'queued' : sheet.status}${moved.moved ? ' · folder moved' : ''}`;
 }
 
-/** Tagged, marked, unreleased, no sheet job at all → queue one. */
+/**
+ * Tagged, marked, no sheet job at all → queue one. Unreleased papers as before;
+ * since 8 Sep 2026 ALSO papers the system released (`released_via` auto:…),
+ * hand-ins included: auto-release sends the marked paper at once and the sheet
+ * follows on the clock, so a released hand-in with no sheet is the gap this
+ * closes (Alessi's 2021 AM P2, released with "no sheet job yet").
+ */
 async function sheetCatchUp(since: string, dry: boolean): Promise<{ queued: number; items: AutoTagResult['items'] }> {
   const sb = getSupabaseAdmin();
   const { data: runs } = await sb.from('paper_marking_runs')
-    .select('id, paper_name, portal_submission:result_json->portal_submission, telegram_handin:result_json->telegram_handin')
-    .not('student_id', 'is', null).is('released_at', null).is('archived_at', null).gte('created_at', since);
-  const rows = ((runs ?? []) as unknown as Array<{ id: string; paper_name: string | null; portal_submission?: unknown; telegram_handin?: unknown }>)
-    .filter(r => !r.portal_submission && !r.telegram_handin);
+    .select('id, paper_name, released_at, released_via, portal_submission:result_json->portal_submission, telegram_handin:result_json->telegram_handin')
+    .not('student_id', 'is', null).is('archived_at', null).gte('created_at', since)
+    .or('released_at.is.null,released_via.like.auto:*');
+  const rows = ((runs ?? []) as unknown as Array<{ id: string; paper_name: string | null; released_at: string | null; released_via: string | null; portal_submission?: unknown; telegram_handin?: unknown }>)
+    // Adrian's own uploads wait for the desk unless still unreleased (as before); hand-ins always.
+    .filter(r => !r.released_at || String(r.released_via || '').startsWith('auto:'));
   if (!rows.length) return { queued: 0, items: [] };
   const { data: jobs } = await sb.from('sheet_jobs').select('run_id').in('run_id', rows.map(r => r.id));
   const has = new Set((jobs ?? []).map(j => j.run_id as string));
@@ -94,7 +102,7 @@ async function sheetCatchUp(since: string, dry: boolean): Promise<{ queued: numb
     if (has.has(r.id)) continue;
     if (dry) { items.push({ runId: r.id, paperName: r.paper_name, action: 'would queue the sheet (no job yet)' }); continue; }
     // The guard refuses a run with no marking yet (still in the queue) — quietly.
-    const out = await autoQueueSheet(r.id, 'auto-tag:catch-up');
+    const out = await autoQueueSheet(r.id, 'auto-tag:catch-up', { afterAutoRelease: !!r.released_at });
     if (out.ok) { queued++; items.push({ runId: r.id, paperName: r.paper_name, action: 'sheet queued (none existed)' }); }
     else if (out.status !== 'no-marking') items.push({ runId: r.id, paperName: r.paper_name, action: `sheet not queued: ${out.status}` });
   }

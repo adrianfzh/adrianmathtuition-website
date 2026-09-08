@@ -12,7 +12,7 @@ import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
-import { releasedLine, heldByPaperLine } from '@/lib/sheet-auto-release';
+import { releasedWithWatchLine, heldByPaperLine } from '@/lib/sheet-auto-release';
 import { computeAutoHold } from '@/lib/mark-triage';
 
 export const dynamic = 'force-dynamic';
@@ -52,13 +52,15 @@ export async function GET(req: NextRequest) {
         out.push({ id: j.id, ok: true, note: 'already released' });
         continue;
       }
-      // The paper's own accuracy hold (the narrowed rule, 8 Sep 2026): a paper
-      // the immediate release would refuse does not go out on the clock either.
+      // The paper's accuracy signals are watch-outs on the released line (Adrian,
+      // 8 Sep 2026: "just release them, but ping me for anything important").
+      // Only a paper with nothing marked stops here.
       const hold = run ? computeAutoHold(run.result_json) : { hold: false, reasons: [] };
-      if (hold.hold) {
-        await sb.from('sheet_jobs').update({ auto_release_at: null, stage: `held — ${hold.reasons[0]}` }).eq('id', j.id);
-        await sendTelegram(heldByPaperLine(who, j.paper_name, hold.reasons, `${base}/admin/desk?run=${j.run_id}`)).catch(() => {});
-        out.push({ id: j.id, ok: false, note: `held: ${hold.reasons.join('; ')}` });
+      const watch = hold.reasons.filter(x => x !== 'no questions were marked');
+      if (hold.reasons.includes('no questions were marked')) {
+        await sb.from('sheet_jobs').update({ auto_release_at: null, stage: 'held — the paper has nothing marked' }).eq('id', j.id);
+        await sendTelegram(heldByPaperLine(who, j.paper_name, ['the paper has nothing marked'], `${base}/admin/desk?run=${j.run_id}`)).catch(() => {});
+        out.push({ id: j.id, ok: false, note: 'held: nothing marked' });
         continue;
       }
       const r = await fetch(`${base}/api/admin/release-with-sheet`, {
@@ -68,7 +70,7 @@ export async function GET(req: NextRequest) {
       const d = await r.json().catch(() => ({} as { error?: string }));
       if (r.ok) {
         await sb.from('sheet_jobs').update({ auto_released_at: new Date().toISOString(), stage: 'auto-released' }).eq('id', j.id);
-        await sendTelegram(releasedLine(who, j.paper_name)).catch(() => {});
+        await sendTelegram(releasedWithWatchLine(who, j.paper_name, watch)).catch(() => {});
         out.push({ id: j.id, ok: true, note: 'released' });
       } else {
         // Not something a cron should decide: hand it back to the desk, once.

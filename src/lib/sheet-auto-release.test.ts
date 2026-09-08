@@ -5,7 +5,7 @@ const good = { noSheet: false, verified: '73/73 sympy', wave: ['chain rule'], ex
 
 describe('autoReleaseGate', () => {
   it('passes a verified, checked, non-empty sheet', () => {
-    expect(autoReleaseGate(good)).toEqual({ ok: true, reasons: [] });
+    expect(autoReleaseGate(good)).toEqual({ ok: true, reasons: [], watch: [] });
   });
   it('names every reason it will not release on its own', () => {
     const r = autoReleaseGate({ noSheet: false, verified: '70/73 sympy', wave: [], exampleCheck: { checked: 2, disagreements: [{}] }, grounded: false });
@@ -35,11 +35,11 @@ describe('holdHours / sgtShort', () => {
 });
 
 describe('the paper\'s hold holds the 12-hour clock (8 Sep 2026)', () => {
-  it('a sheet that passes every check still waits while the paper is held', () => {
+  it('the paper\'s signals are watch-outs, not a refusal; only nothing-marked stops the clock (8 Sep 2026)', () => {
     const r = autoReleaseGate({ ...good, paperHold: ['2 pages could not be read'] });
-    expect(r.ok).toBe(false);
-    expect(r.reasons).toEqual(['the paper is held: 2 pages could not be read']);
-    expect(autoReleaseGate({ ...good, paperHold: [] }).ok).toBe(true);
+    expect(r.ok).toBe(true);
+    expect(r.watch).toEqual(['2 pages could not be read']);
+    expect(autoReleaseGate({ ...good, paperHold: ['no questions were marked'] }).ok).toBe(false);
     expect(autoReleaseGate({ ...good, paperHold: null }).ok).toBe(true);
   });
   it('the cron names the student, the paper and the reasons when it holds', () => {

@@ -461,7 +461,11 @@ export function computeAutoHold(resultJson: unknown): AutoHold {
     reasons.push('no questions were marked');
   } else {
     const noQ = results.filter(r => r.question_found === false).length;
-    if (!lenient && noQ / results.length >= 0.5) {
+    // Gate Q is NOT relaxed for a Practice Again sheet: with the right sheet
+    // attached every item is found, so a blind majority on a sheet means the
+    // wrong sheet (Sophie's and Alessi's re-marks, 8 Sep 2026). Only a
+    // grounded exam paper is exempt.
+    if (!grounded && noQ / results.length >= 0.5) {
       reasons.push(`${noQ}/${results.length} questions marked without their question`);
     }
   }

@@ -363,7 +363,7 @@ export async function POST(req: NextRequest) {
             const at = new Date(Date.now() + hours * 3600_000).toISOString();
             await sb.from('sheet_jobs').update({ auto_release_at: at, held_at: null, stage: `auto-release at ${at}` }).eq('id', job.id);
             const deskUrl = `https://www.adrianmathtuition.com/admin/desk?run=${job.run_id}`;
-            notify_marking(scheduledLine(at, deskUrl, who, job.paper_name)).catch(() => {});
+            notify_marking(scheduledLine(at, deskUrl, who, job.paper_name, gate.watch)).catch(() => {});
           } else if (hours > 0) {
             notify_marking(heldLine(who, job.paper_name, gate.reasons, `https://www.adrianmathtuition.com/admin/desk?run=${job.run_id}`)).catch(() => {});
           }

@@ -964,6 +964,21 @@ flagged, and his vetting changed 5 of the 98 flags he looked at.
   looked at; ≥5 released and >10 % changed → the switch is paused and he is
   told. `job_runs` `auto-release-report`, `JOB_RHYTHMS` line, `docs/OPS.md`.
 - Doctrine (CLAUDE.md, Accountability) revised in the open the same day.
+- **Iteration 2, the same afternoon (Adrian: "can't all be auto-released?
+  there are too many flags for me to check individually… we should just
+  release them, but ping me for anything important to watch out for… anything
+  that the marker can resolve by itself, it should do so"):** the accuracy
+  signals no longer HOLD a hand-in. `mark-triage {release, auto:true}` refuses
+  only a paper with nothing marked; every other reason rides the result as
+  `watch` and the bot's Telegram line as "⚠️ Watch out for: …" with the desk
+  link. The sheet clock likewise (`autoReleaseGate` returns `watch`; the cron
+  releases and says them). The desk's amber banner reads "Watch out for".
+  Self-resolution: a page that could not be read is re-read ONCE as a page
+  re-mark queued behind the delivery (`queue.auto_reread`), and a re-mark of a
+  paper the student already has is re-issued (`mark-triage reissue`) — copy
+  updated, Telegram "updated". A wrongly attached Practice Again sheet is
+  prevented at the source (the assignment's sheet wins; level+year+paper
+  match; no guess among several sheets).
 - **First live day (8 Sep 2026):** Sophie's and Rainie's re-marked sheet
   hand-ins released themselves within minutes (`auto:telegram`). Alessi's was
   held by the new total gate — the sheet's 18 items add to 74 but the name

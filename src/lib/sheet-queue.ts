@@ -56,7 +56,7 @@ const IN_FLIGHT = new Set(['queued', 'claimed']);
 export function sheetQueueGuard(
   run: SheetQueueRun | null | undefined,
   jobs: SheetQueueJobRow[],
-  opts: { auto?: boolean } = {},
+  opts: { auto?: boolean; afterAutoRelease?: boolean } = {},
 ): { ok: true } | SheetQueueRefusal {
   if (!run) return { ok: false, status: 'not-found', http: 404, message: 'run not found' };
   if (!run.student_id) {
@@ -71,7 +71,9 @@ export function sheetQueueGuard(
     return { ok: false, status: 'duplicate', http: 409, message: 'A sheet for this paper is already queued.', jobId: inFlight.id };
   }
   if (opts.auto) {
-    if (run.released_at) {
+    // A paper the SYSTEM released (8 Sep 2026) still gets its sheet: the sheet
+    // follows on the 12-hour clock and attaches to the already-released paper.
+    if (run.released_at && !opts.afterAutoRelease) {
       return { ok: false, status: 'released', http: 409, message: 'already released — the student has this paper; queue a sheet by hand if you still want one' };
     }
     // Done, failed, cancelled: something already happened for this paper.
@@ -125,7 +127,7 @@ export function supersededByNewSheet(jobs: SheetQueueJobRow[], opts: { remark?: 
  */
 export async function queueSheetJob(
   runId: string,
-  opts: { focus?: string | null; auto?: boolean; remark?: boolean } = {},
+  opts: { focus?: string | null; auto?: boolean; remark?: boolean; afterAutoRelease?: boolean } = {},
 ): Promise<SheetQueueOutcome> {
   try {
     const sb = getSupabaseAdmin();
@@ -153,7 +155,7 @@ export async function queueSheetJob(
     }
     // On a re-mark the automatic door must not refuse "a sheet job already
     // exists": that sheet is exactly what needs replacing.
-    const gate = sheetQueueGuard(run, jobs, { auto: opts.auto && !opts.remark });
+    const gate = sheetQueueGuard(run, jobs, { auto: opts.auto && !opts.remark, afterAutoRelease: opts.afterAutoRelease });
     if (!gate.ok) return gate;
 
     const { data: job, error } = await sb.from('sheet_jobs')
@@ -178,8 +180,8 @@ export async function queueSheetJob(
  * that could otherwise fail (next/server `after()` at every call site).
  * `remark` = the run was marked again: the old sheet is replaced, not kept.
  */
-export async function autoQueueSheet(runId: string, source: string, opts: { remark?: boolean } = {}): Promise<SheetQueueOutcome> {
-  const out = await queueSheetJob(runId, { auto: true, remark: opts.remark });
+export async function autoQueueSheet(runId: string, source: string, opts: { remark?: boolean; afterAutoRelease?: boolean } = {}): Promise<SheetQueueOutcome> {
+  const out = await queueSheetJob(runId, { auto: true, remark: opts.remark, afterAutoRelease: opts.afterAutoRelease });
   if (out.ok) console.log(`[sheet-queue] auto-queued sheet for ${runId} (${source})`);
   else if (out.status === 'error') console.warn(`[sheet-queue] auto-queue failed for ${runId} (${source}):`, out.message);
   // Refusals are the normal case on repeat events — quiet.

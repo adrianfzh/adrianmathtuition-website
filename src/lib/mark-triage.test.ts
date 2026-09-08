@@ -530,7 +530,9 @@ describe('computeAutoHold — the narrowed rule (8 Sep 2026)', () => {
     const base = { ...run(blind, blind, question()), reconciliation: { notes: ['Unnumbered attempt on page 1'] } };
     expect(computeAutoHold(base).hold).toBe(true);
     expect(computeAutoHold(grounded(base)).hold).toBe(false);
-    expect(computeAutoHold({ ...base, source: { paper_kind: 'practice-again' } }).hold).toBe(false);
+    // a sheet keeps gate Q (a blind majority on a sheet = the wrong sheet attached); only its reconcile notes are forgiven
+    expect(computeAutoHold({ ...base, source: { paper_kind: 'practice-again' } }).reasons).toEqual(['2/3 questions marked without their question']);
+    expect(computeAutoHold({ ...run(question()), reconciliation: { notes: ['Unnumbered attempt on page 1'] }, source: { paper_kind: 'practice-again' } }).hold).toBe(false);
   });
   it('a structural reconciliation still holds a grounded run', () => {
     const rj = grounded({ ...run(question()), reconciliation: { superseded_parts: [{}] } });

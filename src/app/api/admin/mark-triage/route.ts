@@ -691,6 +691,8 @@ export async function POST(req: NextRequest) {
       runId: string;
       studentName: string | null;
       released: boolean;
+      /** The paper's accuracy signals — pinged, never a hold (8 Sep 2026). */
+      watch?: string[];
       via: string;
       note?: string;
     }[] = [];
@@ -706,15 +708,20 @@ export async function POST(req: NextRequest) {
         results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: 'auto-release is switched off — release from the desk' });
         continue;
       }
+      let watch: string[] = [];
       if (auto) {
-        // ONE truth for "may this go out unvetted": the narrowed accuracy hold
-        // over the persisted run (lib/mark-triage computeAutoHold). The bot's
-        // own gate is a mirror; this is the one that decides.
+        // RELEASE EVERYTHING, PING THE WATCH-OUTS (Adrian, 8 Sep 2026: "we should
+        // just release them, but ping me for anything important to watch out
+        // for, then we iterate from there"). The accuracy signals
+        // (computeAutoHold) no longer hold a hand-in; they ride the result as
+        // `watch` for the Telegram line and the desk. The one refusal left: a
+        // paper with nothing marked at all — there is nothing to release.
         const hold = computeAutoHold(run.result_json);
-        if (hold.hold) {
-          results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: `held for your review — ${hold.reasons.join('; ')}` });
+        if (hold.reasons.includes('no questions were marked')) {
+          results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: 'nothing was marked — check it on the desk' });
           continue;
         }
+        watch = hold.reasons;
       }
       if (auto && !isPortalSubmission(run.result_json) && !telegramHandinOf(run.result_json)) {
         // Auto-release is for papers students handed in themselves (portal or
@@ -792,6 +799,7 @@ export async function POST(req: NextRequest) {
         studentName: run.student_name,
         released: true,
         via,
+        watch: watch.length ? watch : undefined,
         note: [
           amendedNote[run.id], outcome.note,
           heldItems.released ? `${heldItems.released} practice item${heldItems.released === 1 ? '' : 's'} released` : '',

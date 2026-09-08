@@ -1119,9 +1119,9 @@ function DetailView(p: {
             {run.allocationAudit.maxDiffs.length > 0 && <div>Marked out of a different max than the paper gives: {run.allocationAudit.maxDiffs.map(x => `Q${x.q}${x.part} ${x.marked} here, ${x.recorded} on the paper`).join('; ')} — Override if the paper is right.</div>}
           </div>
         )}
-        {d.autoHold.hold && run.portalSubmission && (
+        {d.autoHold.hold && (
           <div style={{ marginTop: 8, padding: '8px 10px', background: C.flagBg, border: `1px solid ${C.flagBorder}`, borderRadius: 8, color: C.flag, fontSize: 13 }}>
-            ⚠ Held from auto-release: {d.autoHold.reasons.join(' · ')}
+            ⚠ Watch out for: {d.autoHold.reasons.join(' · ')}
           </div>
         )}
         {run.unattempted.length > 0 && (
