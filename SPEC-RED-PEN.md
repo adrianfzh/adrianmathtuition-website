@@ -20,7 +20,9 @@ marker (`ai/paper-marker.js` prompt) + overlay (`ai/photo-overlay.js` placement,
 - Strong advice is allowed and wanted: *"must know how to solve trig equations!"*
 - Missing brackets: draw them in and say "missing brackets" — no mark lost.
 - "Careless" is a real category and very common.
-- Green-pen (second-colour) work is the student's own later correction — not marked.
+- Green-pen (second-colour) work is the student's own later correction — not marked. The
+  colour decides, never the amount: a page written wholly in green is wholly corrections
+  (Adrian, 9 Sep 2026).
 - Notes must be plain and to the point, in the student's own numbers, never obscure.
 - Solutions: only for the parts that lost marks, only where that part's working is, once;
   in the blank space when there is any, **together with** the quadrant figure; and never
@@ -34,7 +36,7 @@ verdicts, `parts[]` with marks, `correct.full_solution_latex`. Plus, from 5 Sep 
 | field | on | meaning |
 |---|---|---|
 | `lines[].notation_slip` | a **correct** line | ≤ 60 chars: the slip and the right form ("missing brackets: write lg(5×3^(x+1))"). Shipped. |
-| `lines[].is_second_pen` | any line | second ink colour = later self-correction → neutral, no credit. Shipped. |
+| `lines[].is_second_pen` | any line | second ink colour = later self-correction → neutral, no credit. Shipped. Categorical since 9 Sep 2026: green/red/purple are the correction pen by hue, even when they cover the whole page; a part whose only standing work is green scores 0 and is flagged (`correction_pass` + `uncertainty.notes`). |
 | `lines[].error_type` | a wrong line | one of the **nine** kinds (concept, arithmetic, transfer, sign, rounding, units, misread, incomplete, **careless**). Shipped. |
 | `lines[].slip_token` | a wrong line | phase 2 — the exact wrong token as written, ≤ 12 chars ("+48", "lg 5") |
 | `lines[].fix_short` | a wrong line | phase 2 — ≤ 20 chars, what belongs there ("−48", "( )", "which quadrant?") |
@@ -68,6 +70,10 @@ verdicts, `parts[]` with marks, `correct.full_solution_latex`. Plus, from 5 Sep 
    Footer wrapping never leaves a one-token last line.
 7. **Second pen.** Green/red/purple lines get nothing drawn and earn nothing; the part's
    summary says once: "green-pen corrections not counted — marked on your original".
+   The colour decides, never the amount (9 Sep 2026, Alexis's 2023 P2 Q4(a): thirteen
+   green lines were credited 5/5 as "the page's main pen"): a whole page or part in
+   green is a page of corrections — scored 0 for absence of standing work, with
+   `correction_pass` filled and an `uncertainty.notes` line so the desk flags it.
 8. **Chip captions** are plain text: a part label never carries `$…$`; strip it, and never
    let the model put a description in `label`.
 

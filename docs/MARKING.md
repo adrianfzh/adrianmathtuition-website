@@ -1796,6 +1796,21 @@ marks, per-photo solution cut, `notation_slip`, `is_second_pen`, the `careless` 
 mirrored in `lib/error-kinds.ts`); phase 2 is behind the bot's `MARKING_PEN_V2` flag
 and a one-paper trial on the desk.
 
+**9 Sep 2026 — the second-pen rule is categorical.** Alexis's "alexis am tys 2023 p2"
+(run `886b795c`, Mac plan-marker lane, rules `r91a88eae`): Q4(a) had four cancelled blue
+lines then thirteen green lines, and the reader decided green was "the page's main pen"
+and gave the correction 5/5; Q9(b) credited a green dT/dx block as "original working the
+blue lines depend on". The rule was keyed to "a different colour from the page's main
+pen", judged per page, so a page that is mostly green sailed through. Now (bot
+`ai/paper-marker.js`, both the `correction_pass` block and the SECOND-PEN rule; the Mac
+lane fetches the same prompt through `phase:'external-prompts'`, so one Fly deploy covers
+both lanes): the exam attempt is blue/black; green, red and purple are the correction pen
+by HUE regardless of amount; a part whose only standing work is green scores 0, with
+`correction_pass` filled and an `uncertainty.notes` line so the desk flags it (and the
+auto-release watch-outs carry it). A sweep of every run since 5 Sep found the rule held
+wherever green sat against blue (Alexis P1 Q6/Q7/Q10, P2 Q6(c)/Q7(b)(i), Isabelle's
+purple 10(b)(ii)); only the two "green is the main pen / original working" parts slipped.
+
 ### Leak test — run it after touching the door or any ownership filter
 
 `scripts/leak-test/leaktest.cjs` is the two-account leak test PLAN-PORTAL-SOLO.md
