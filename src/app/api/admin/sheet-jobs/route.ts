@@ -30,7 +30,7 @@
 // plan-marking worker). Claim/lease logic is pure in lib/sheet-jobs.ts.
 import { NextRequest, NextResponse } from 'next/server';
 import { plainMath, clip } from '@/lib/remark-diff';
-import { pendingCount } from '@/lib/mark-triage';
+import { computeAutoHold } from '@/lib/mark-triage';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
@@ -354,7 +354,7 @@ export async function POST(req: NextRequest) {
           const gate = autoReleaseGate({
             noSheet: false, verified: result.verified, wave: result.wave, exampleCheck: check,
             grounded: groundedSrc == null ? null : groundedSrc !== 'none',
-            pendingReviews: pendingCount(runJson),
+            paperHold: computeAutoHold(runJson).reasons,
           });
           // The desk shows this beside the (missing) timer, so "I don't see the
           // timer" (Adrian, 8 Sep 2026) has an answer on the page itself.

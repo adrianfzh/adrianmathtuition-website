@@ -915,6 +915,44 @@ paper. What it does not: judgement drift on the student's own working (was M1
 earned?) — that is the marker reading the page, and the calibration harness
 measures it.
 
+### Auto-release without vetting — the checkpoint moves after release (8 Sep 2026)
+
+Adrian: "right now when student submit through the portal, mark and release
+back to students is too slow as all is waiting for me to vet… can we automate
+the release of the marking and the practice again without my vetting? … build
+all, but for sheet put it on a 12 hour clock". The numbers behind it: 36
+papers since 18 Aug, 657 questions, 153 flagged (23 %), 11 of 11 hand-ins
+flagged, and his vetting changed 5 of the 98 flags he looked at.
+
+- **The narrowed rule** (`lib/mark-triage.ts computeAutoHold`, mirrored in the
+  bot's `lib/release-gates.js`): hold on unreadable pages, nothing marked, a
+  structural reconciliation, a total that does not add up, an allocation-audit
+  placeholder, corrections in another pen, an uncertain question match. Blind
+  questions and reconciliation NOTES hold only when the run is not grounded
+  (no trusted paper match / scheme / bank) and is not a Practice Again sheet.
+  The site's `mark-triage {action:'release', auto:true}` applies it — one truth.
+- **The switch is a setting**: Airtable `Settings` `auto_release_paused`
+  (`lib/auto-release-setting.ts`, 60 s cache, unreadable = paused),
+  `/api/admin/auto-release` GET/POST, the desk header's ▶️/⏸ button. Default
+  not paused. The old code constant (paused since 29 Aug) is gone.
+- **Paper first, sheet on the clock**: a clean hand-in releases the moment it
+  is marked. The Practice Again sheet keeps the 12-hour silence window
+  (`autoReleaseGate` now takes `paperHold` — the paper's own hold — instead of
+  open flags; the cron re-checks it and holds with `heldByPaperLine`). Adrian
+  may release the sheet early from the desk; otherwise it goes at 12 h.
+- **The checkpoint after release**: desk lane **"Released by the system — not
+  yet looked at"** (`laneFor`: `released_via` starts with `auto:` and no
+  `checked_at`). There, Agree/Override still work; an override calls
+  `mark-triage {action:'reissue'}` — PDFs rebuilt on a released run,
+  `result_json.reissued_at` (the app's cover re-renders off it), Telegram to
+  the student "Adrian checked your marked … and updated it". **✓ Looked at**
+  (`{action:'checked'}`) stamps `checked_at` and moves it to Completed.
+- **The number**: Mondays 8am `/api/cron/auto-release-report`
+  (`lib/auto-release-report.ts`, tested): released on their own, changed after,
+  looked at; ≥5 released and >10 % changed → the switch is paused and he is
+  told. `job_runs` `auto-release-report`, `JOB_RHYTHMS` line, `docs/OPS.md`.
+- Doctrine (CLAUDE.md, Accountability) revised in the open the same day.
+
 ### The 12-hour clock respects the desk's flags (8 Sep 2026)
 
 Adrian: "does this apply to the 12 hour clock too?" It did not. The

@@ -132,8 +132,33 @@ const LANE_TONE: Record<DeskLane, { bg: string; fg: string }> = {
   untagged: { bg: '#fffbeb', fg: '#a16207' },
   'awaiting-sheet': { bg: '#eff6ff', fg: '#1d4ed8' },
   ready: { bg: '#f0fdf4', fg: '#15803d' },
+  auto: { bg: '#ecfeff', fg: '#0e7490' },
   released: { bg: '#f3f4f6', fg: '#374151' },
 };
+
+// ▶️ The auto-release switch (8 Sep 2026): a setting, flipped here, reachable on
+// a phone. Off = every marked hand-in waits for Adrian, as before 8 Sep.
+function AutoReleaseSwitch() {
+  const [state, setState] = useState<{ paused: boolean; at: string | null; by: string | null } | null>(null);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { fetch('/api/admin/auto-release').then(r => r.json()).then(d => setState(d && typeof d.paused === 'boolean' ? d : null)).catch(() => {}); }, []);
+  if (!state) return null;
+  const on = !state.paused;
+  return (
+    <button disabled={busy} title={on
+      ? 'Marked hand-ins that clear the accuracy gates go to students on their own. Tap to switch off.'
+      : 'Every marked hand-in waits for you on the desk. Tap to switch on.'}
+      onClick={async () => {
+        if (!window.confirm(on ? 'Switch auto-release OFF? Every marked hand-in will wait for you.' : 'Switch auto-release ON? Hand-ins that clear the accuracy gates go to students as soon as they are marked; held ones still wait for you.')) return;
+        setBusy(true);
+        try { const r = await fetch('/api/admin/auto-release', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paused: on }) }); const d = await r.json(); if (r.ok) setState(d); }
+        finally { setBusy(false); }
+      }}
+      style={{ border: `1px solid ${on ? '#67e8f9' : '#fca5a5'}`, background: on ? '#ecfeff' : '#fef2f2', color: on ? '#0e7490' : '#b91c1c', borderRadius: 8, padding: '4px 10px', fontSize: 12.5, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+      {busy ? '…' : on ? '▶️ Auto-release on' : '⏸ Auto-release off'}
+    </button>
+  );
+}
 
 // 📐 The paper's mark scheme as a state (8 Sep 2026): the split the first
 // marking used is recorded per paper and every later marking of that paper is
@@ -242,6 +267,7 @@ const LANE_HINT: Record<DeskLane, string> = {
   untagged: 'A paper with no student reaches nobody — tag it and the sheet queues itself.',
   'awaiting-sheet': 'The self-study sheet is being written on the Mac. Vet the marking meanwhile; the paper moves to Ready to vet when the sheet lands.',
   ready: 'Script and sheet are both here. Open one, agree or override every question, read the sheet, then Approve & release.',
+  auto: 'Went to the student on its own after clearing the accuracy gates. Look it over: Agree or Override still work here (an override re-issues their copy), then ✓ Looked at moves it to Completed.',
   released: 'With the student. Read-only — the folder link is the record.',
 };
 
@@ -459,6 +485,11 @@ export default function DeskPage() {
     } else {
       setToast('Saved. The PDF still prints the old total — the release button rebuilds it, or Rebuild PDFs now.');
     }
+    if (detail.run.releasedAt) {
+      // The student already has this paper — rebuild their copy and tell them.
+      const re = await postJson('/api/admin/mark-triage', { action: 'reissue', runId: id });
+      setToast(re.ok ? `Mark changed and re-issued to the student${re.d.via === 'telegram' ? ' — Telegram sent' : ''}.` : `Mark changed, but not re-issued: ${re.d.error || 'try again'}`);
+    }
     refresh(id);
   }
 
@@ -665,6 +696,18 @@ export default function DeskPage() {
     finally { setBusy(''); refresh(id); }
   }
 
+  // ✓ Looked at (8 Sep 2026): an auto-released paper leaves the system lane.
+  async function markChecked() {
+    if (!detail) return;
+    const id = detail.run.id;
+    setBusy('checked');
+    const { ok, d } = await postJson('/api/admin/mark-triage', { action: 'checked', runId: id });
+    setBusy('');
+    if (!ok) { setToast(d.error || 'Could not mark it'); return; }
+    setToast('Marked as looked at.');
+    refresh(id);
+  }
+
   // 📐 Approve this paper's scheme (8 Sep 2026): the recorded per-part marks and
   // split become the paper's fixed allocation. `quiet` = on release, fail-soft.
   async function approveScheme(quiet = false) {
@@ -808,7 +851,8 @@ export default function DeskPage() {
       {/* ── queue ─────────────────────────────────────────────────────────── */}
       {!runId && (
         <>
-          <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 6, marginBottom: 6 }}>
+          <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 6, marginBottom: 6, alignItems: 'center' }}>
+            <AutoReleaseSwitch />
             {DESK_LANES.map(l => (
               <button key={l} className={`desk-tab${activeLane === l ? ' on' : ''}`} onClick={() => go({ lane: l })}>
                 {LANE_LABEL[l]}<span className="n">{counts ? counts[l] : '·'}</span>
@@ -888,7 +932,7 @@ export default function DeskPage() {
           onAgree={agree} onOverride={override} onTag={tag} onSubject={setPaperSubject} onAttach={attachMyCopy} onRebuild={rebuild}
           onQueueSheet={queueSheet} onCancelSheet={cancelSheet} onAutoRelease={autoRelease} onApprove={approve} onReleaseOnly={releaseWithoutSheet} onToast={setToast} onRefresh={() => refresh(detail.run.id)}
           onSeen={markSeen} onUploadAmended={uploadAmended} onShelve={shelve} shelved={shelved}
-          onRevise={reviseSheet} onRemarkPage={remarkPage} onApproveScheme={() => approveScheme(false)} onAuditAllocation={auditAllocation}
+          onRevise={reviseSheet} onRemarkPage={remarkPage} onApproveScheme={() => approveScheme(false)} onAuditAllocation={auditAllocation} onChecked={markChecked}
         />
       )}
 
@@ -915,7 +959,7 @@ function DetailView(p: {
   onApprove: () => void; onReleaseOnly: () => void;
   onSeen: () => void; onUploadAmended: (file: File) => void; onShelve: (q: Question) => void; shelved: Set<string>;
   onRevise: (instructions: string) => void; onRemarkPage: (photoIndex: number) => void;
-  onApproveScheme: () => void; onAuditAllocation: () => void;
+  onApproveScheme: () => void; onAuditAllocation: () => void; onChecked: () => void;
 }) {
   // The pen opens on the page you tapped, right here on the desk (round 3).
   const [annotatePage, setAnnotatePage] = useState<number | null>(null);
@@ -943,7 +987,10 @@ function DetailView(p: {
   const pages = d.annotatedPhotos;
   // Ink hints (a mark Adrian swapped in the pen) ride on their question.
   const questions: Question[] = d.questions.map(q => ({ ...q, inkHints: (d.inkHints || []).filter(h => h.part && String(h.q) === String(q.questionNumber)) }));
-  const isOpenFlag = (q: Question) => q.flagged && !q.reviewed && !released;
+  // An auto-released paper (the 'auto' lane) is still reviewable: Agree/Override
+  // work on it and an override re-issues the student's copy (8 Sep 2026).
+  const reviewable = !released || d.lane === 'auto';
+  const isOpenFlag = (q: Question) => q.flagged && !q.reviewed && reviewable;
   const toCheck = questions.filter(isOpenFlag);
   const byPage = new Map<number, Question[]>();
   const unplaced: Question[] = [];
@@ -1028,6 +1075,13 @@ function DetailView(p: {
                 return <Chip label={label} bg={held > 0 && live === 0 ? C.flagBg : C.okBg} color={held > 0 && live === 0 ? C.flag : C.ok} />;
               })()}
               {released && <Chip label={`released ${fmtWhen(run.releasedAt!)}${run.releasedVia ? ` · ${run.releasedVia}` : ''}`} />}
+              {d.lane === 'auto' && (
+                <button onClick={p.onChecked} disabled={busy === 'checked'}
+                  title="Released by the system without your vetting. Marks it as looked at — it leaves this lane; Agree/Override still work here and re-issue the student's copy."
+                  style={{ border: '1px solid #67e8f9', background: '#ecfeff', color: '#0e7490', borderRadius: 8, padding: '3px 10px', fontSize: 12.5, cursor: 'pointer' }}>
+                  {busy === 'checked' ? '…' : '✓ Looked at'}
+                </button>
+              )}
             </div>
           </div>
           <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -1253,7 +1307,7 @@ function DetailView(p: {
               <div style={{ padding: '4px 0' }}>
                 {(byPage.get(pg.photoIndex) ?? []).map(q => (isOpenFlag(q)
                   ? <div key={q.index} style={{ padding: '7px 12px', fontSize: 12.5, color: C.flag, borderTop: `1px solid ${C.border}` }}>⚠ Q{q.questionNumber} {q.awarded}/{q.max} — waiting for your decision in “To check” at the top ↑</div>
-                  : <QuestionCard key={q.index} q={q} released={released} busy={busy} editing={p.editing} editAwarded={p.editAwarded} editNote={p.editNote}
+                  : <QuestionCard key={q.index} q={q} released={!reviewable} busy={busy} editing={p.editing} editAwarded={p.editAwarded} editNote={p.editNote}
                       setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} editParts={p.editParts} setEditParts={p.setEditParts} onAgree={p.onAgree} onOverride={p.onOverride} studentId={run.studentId} onShelve={p.onShelve} shelved={p.shelved} />
                 ))}
                 {(byPage.get(pg.photoIndex) ?? []).length === 0 && (

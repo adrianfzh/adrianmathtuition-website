@@ -17,12 +17,13 @@
 import { amendedCopyIsNewer, isAlreadyAttached, pickAmendedCopy, type FolderEntry } from './paper-folder';
 import { readNoSheet } from './sheet-jobs';
 
-export type DeskLane = 'untagged' | 'awaiting-sheet' | 'ready' | 'released';
+export type DeskLane = 'untagged' | 'awaiting-sheet' | 'ready' | 'auto' | 'released';
 
-export const DESK_LANES: readonly DeskLane[] = ['untagged', 'awaiting-sheet', 'ready', 'released'];
+export const DESK_LANES: readonly DeskLane[] = ['untagged', 'awaiting-sheet', 'ready', 'auto', 'released'];
 
 /** What the tab says. */
 export const LANE_LABEL: Record<DeskLane, string> = {
+  auto: 'Released by the system — not yet looked at',
   untagged: 'Needs a student',
   'awaiting-sheet': 'Marked, sheet on the way',
   // "Completed" not "Released" — Adrian, 7 Sep 2026: "completed is easier to understand".
@@ -37,6 +38,7 @@ export type DeskRun = {
   annotated_pdf_url?: string | null;
   checked_at?: string | null;
   result_json?: unknown;
+  released_via?: string | null;
 };
 
 /** The newest live sheet_jobs row for the run (see latestLiveJob), or none. */
@@ -81,6 +83,10 @@ export function latestLiveJob<T extends { status: string; created_at: string }>(
 
 /** Which lane a run sits in. Released outranks everything; untagged next; then the sheet decides. */
 export function laneFor(run: DeskRun, latestSheetJob: DeskSheetJob): DeskLane {
+  // 🤖 Released by the system (8 Sep 2026): a hand-in that cleared the accuracy
+  // gates and went out without Adrian. It stays in its own lane until he has
+  // looked at it (checked_at) — his checkpoint moved after release, not away.
+  if (run.released_at && String(run.released_via || '').startsWith('auto:') && !run.checked_at) return 'auto';
   if (run.released_at) return 'released';
   if (!run.student_id) return 'untagged';
   if (latestSheetJob && latestSheetJob.status === 'done') return 'ready';
@@ -193,7 +199,7 @@ export function defaultLane(counts: Partial<Record<DeskLane, number>>): DeskLane
  * Released is a history and stays newest first. Ties keep their given order.
  */
 export function orderLane<T extends { createdAt: string }>(rows: T[], lane: DeskLane): T[] {
-  const dir = lane === 'released' ? -1 : 1;
+  const dir = lane === 'released' || lane === 'auto' ? -1 : 1;
   return rows
     .map((r, i) => ({ r, i, t: Date.parse(r.createdAt) || 0 }))
     .sort((a, b) => (a.t - b.t) * dir || a.i - b.i)

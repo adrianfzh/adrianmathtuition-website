@@ -26,8 +26,8 @@ export interface GateInput {
   exampleCheck: { checked: number; disagreements: unknown[]; skipped?: string } | null | undefined;
   /** The run is grounded on the real paper — `paper_match.source` when the run has it; null = unknown (older runs). */
   grounded: boolean | null;
-  /** Questions the marker flagged that Adrian has not yet agreed or overridden (lib/mark-triage pendingCount). null = not checked (older callers). */
-  pendingReviews?: number | null;
+  /** The paper's own accuracy hold (lib/mark-triage computeAutoHold reasons) — the sheet must not carry a held paper out. null = not checked. */
+  paperHold?: string[] | null;
 }
 
 export interface GateResult { ok: boolean; reasons: string[] }
@@ -55,11 +55,10 @@ export function autoReleaseGate(g: GateInput): GateResult {
   else if (g.exampleCheck.checked === 0) reasons.push('no worked example was found to check');
   else if (g.exampleCheck.disagreements.length) reasons.push(`a second reader disagrees with ${g.exampleCheck.disagreements.length} worked example(s)`);
   if (g.grounded === false) reasons.push('the marking was not grounded on the real paper');
-  // The desk's Approve & release is blocked while any question is still flagged;
-  // the clock must not walk round that (Adrian, 8 Sep 2026: "does this apply to
-  // the 12 hour clock too?" — Denise had four open flags and a 7:04pm release).
-  const pending = Number(g.pendingReviews);
-  if (Number.isFinite(pending) && pending > 0) reasons.push(pendingLine(pending));
+  // The paper's own accuracy hold (8 Sep 2026): a paper the immediate release
+  // would refuse must not go out on the sheet's clock either. Flags Adrian has
+  // not reviewed no longer hold by themselves — the narrowed gates decide.
+  for (const r of Array.isArray(g.paperHold) ? g.paperHold : []) reasons.push(`the paper is held: ${r}`);
   return { ok: reasons.length === 0, reasons };
 }
 
@@ -73,13 +72,10 @@ export function sgtShort(at: string | number | Date): string {
   return `${DAYS[c.weekday]} ${h12}:${String(c.minute).padStart(2, '0')}${c.hour < 12 ? 'am' : 'pm'}`;
 }
 
-export function pendingLine(n: number): string {
-  return `${n} question${n === 1 ? '' : 's'} still flagged for your review — Agree or Override each on the desk`;
-}
-
-/** The cron's line when the clock ran out but flags are still open: nothing goes out. */
-export function heldByReviewLine(who: string, paper: string | null | undefined, n: number, deskUrl: string): string {
-  return `🖐 <b>${who}</b>${paper ? ` — ${paper}` : ''}: the 12-hour window passed but NOT released — ${pendingLine(n)}. When they are all reviewed, Approve &amp; release from the desk: ${deskUrl}`;
+/** The cron's line when the clock ran out but the paper is held: nothing goes out. */
+export function heldByPaperLine(who: string, paper: string | null | undefined, reasons: string[], deskUrl: string): string {
+  const why = reasons.length ? reasons.map(r => `• ${r}`).join('\n') : '• (no reason recorded)';
+  return `🖐 <b>${who}</b>${paper ? ` — ${paper}` : ''}: the 12-hour window passed but NOT released — the paper is held:\n${why}\nCheck it, then Approve &amp; release from the desk: ${deskUrl}`;
 }
 
 /** The two lines Telegram gets after a sheet passes or fails the gate — both name the student and the paper (Adrian, 8 Sep 2026: "doesn't say which marked pdf"). */

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { autoReleaseGate, holdHours, sgtShort, heldByReviewLine } from './sheet-auto-release';
+import { autoReleaseGate, holdHours, sgtShort, heldByPaperLine } from './sheet-auto-release';
 
 const good = { noSheet: false, verified: '73/73 sympy', wave: ['chain rule'], exampleCheck: { checked: 3, disagreements: [] }, grounded: null };
 
@@ -34,16 +34,15 @@ describe('holdHours / sgtShort', () => {
   });
 });
 
-describe('open flags hold the 12-hour clock (8 Sep 2026)', () => {
-  it('a sheet that passes every check still waits while questions are flagged for review', () => {
-    const r = autoReleaseGate({ ...good, pendingReviews: 4 });
+describe('the paper\'s hold holds the 12-hour clock (8 Sep 2026)', () => {
+  it('a sheet that passes every check still waits while the paper is held', () => {
+    const r = autoReleaseGate({ ...good, paperHold: ['2 pages could not be read'] });
     expect(r.ok).toBe(false);
-    expect(r.reasons).toEqual(['4 questions still flagged for your review — Agree or Override each on the desk']);
-    expect(autoReleaseGate({ ...good, pendingReviews: 0 }).ok).toBe(true);
-    expect(autoReleaseGate({ ...good, pendingReviews: null }).ok).toBe(true);
+    expect(r.reasons).toEqual(['the paper is held: 2 pages could not be read']);
+    expect(autoReleaseGate({ ...good, paperHold: [] }).ok).toBe(true);
+    expect(autoReleaseGate({ ...good, paperHold: null }).ok).toBe(true);
   });
-  it('the cron names the student, the paper and the count when it holds', () => {
-    expect(heldByReviewLine('Denise Chan', 'denise am tys 2021 p2', 1, 'https://x')).toContain('1 question still flagged');
-    expect(heldByReviewLine('Denise Chan', null, 4, 'https://x')).toMatch(/NOT released — 4 questions/);
+  it('the cron names the student, the paper and the reasons when it holds', () => {
+    expect(heldByPaperLine('Denise Chan', 'denise am tys 2021 p2', ['the questions add up to 85 but the paper is out of 90'], 'https://x')).toContain('NOT released — the paper is held:\n• the questions add up to 85');
   });
 });

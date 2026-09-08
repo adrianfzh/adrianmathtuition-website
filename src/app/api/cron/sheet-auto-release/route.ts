@@ -12,8 +12,8 @@ import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
-import { releasedLine, heldByReviewLine } from '@/lib/sheet-auto-release';
-import { pendingCount } from '@/lib/mark-triage';
+import { releasedLine, heldByPaperLine } from '@/lib/sheet-auto-release';
+import { computeAutoHold } from '@/lib/mark-triage';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -52,11 +52,13 @@ export async function GET(req: NextRequest) {
         out.push({ id: j.id, ok: true, note: 'already released' });
         continue;
       }
-      const open = run ? pendingCount(run.result_json) : 0;
-      if (open > 0) {
-        await sb.from('sheet_jobs').update({ auto_release_at: null, stage: `held — ${open} question${open === 1 ? '' : 's'} still flagged for review` }).eq('id', j.id);
-        await sendTelegram(heldByReviewLine(who, j.paper_name, open, `${base}/admin/desk?run=${j.run_id}`)).catch(() => {});
-        out.push({ id: j.id, ok: false, note: `held: ${open} flagged` });
+      // The paper's own accuracy hold (the narrowed rule, 8 Sep 2026): a paper
+      // the immediate release would refuse does not go out on the clock either.
+      const hold = run ? computeAutoHold(run.result_json) : { hold: false, reasons: [] };
+      if (hold.hold) {
+        await sb.from('sheet_jobs').update({ auto_release_at: null, stage: `held — ${hold.reasons[0]}` }).eq('id', j.id);
+        await sendTelegram(heldByPaperLine(who, j.paper_name, hold.reasons, `${base}/admin/desk?run=${j.run_id}`)).catch(() => {});
+        out.push({ id: j.id, ok: false, note: `held: ${hold.reasons.join('; ')}` });
         continue;
       }
       const r = await fetch(`${base}/api/admin/release-with-sheet`, {

@@ -117,7 +117,7 @@ export async function GET(req: NextRequest) {
     } catch (e) { console.warn('[desk] portal_assignments read failed:', (e as Error).message); }
   }
 
-  const counts: Record<DeskLane, number> = { untagged: 0, 'awaiting-sheet': 0, ready: 0, released: 0 };
+  const counts: Record<DeskLane, number> = { untagged: 0, 'awaiting-sheet': 0, ready: 0, auto: 0, released: 0 };
   const prelim = runs.map(r => {
     const job = latestLiveJob(jobsByRun.get(r.id) ?? []);
     const runLane = laneFor(r, job);

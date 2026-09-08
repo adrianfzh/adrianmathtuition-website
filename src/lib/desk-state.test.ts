@@ -24,8 +24,8 @@ describe('laneFor — every run lands in exactly one lane', () => {
     expect(laneFor(tagged, { status: 'claimed', stage: 'drafting' })).toBe('awaiting-sheet');
     expect(laneFor(tagged, { status: 'failed', error: 'plan cap' })).toBe('awaiting-sheet');
   });
-  it('the four lanes are the four tabs, each labelled', () => {
-    expect(DESK_LANES).toEqual(['untagged', 'awaiting-sheet', 'ready', 'released']);
+  it('the five lanes are the five tabs, each labelled', () => {
+    expect(DESK_LANES).toEqual(['untagged', 'awaiting-sheet', 'ready', 'auto', 'released']);
     for (const l of DESK_LANES) expect(LANE_LABEL[l]).toBeTruthy();
   });
 });
@@ -229,5 +229,14 @@ describe('orderLane — the oldest waiting paper is at the top', () => {
     const tie = [{ id: 'x', createdAt: '2026-09-01T00:00:00Z' }, { id: 'y', createdAt: '2026-09-01T00:00:00Z' }];
     expect(orderLane(tie, 'ready').map(r => r.id)).toEqual(['x', 'y']);
     expect(rows[0].id).toBe('c');
+  });
+});
+
+describe('laneFor — released by the system (8 Sep 2026)', () => {
+  const tagged = { student_id: 'recX', released_at: null } as const;
+  it('an auto-released run waits in its own lane until Adrian has looked at it', () => {
+    expect(laneFor({ ...tagged, released_at: '2026-09-08T10:00:00Z', released_via: 'auto:portal', checked_at: null }, null)).toBe('auto');
+    expect(laneFor({ ...tagged, released_at: '2026-09-08T10:00:00Z', released_via: 'auto:portal', checked_at: '2026-09-08T12:00:00Z' }, null)).toBe('released');
+    expect(laneFor({ ...tagged, released_at: '2026-09-08T10:00:00Z', released_via: 'portal', checked_at: null }, null)).toBe('released');
   });
 });

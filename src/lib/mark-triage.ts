@@ -407,9 +407,49 @@ export interface AutoHold {
  * Display + explanation only on this side: the actual auto-release decision is
  * the bot's, made before the release call ever reaches this API.
  */
+/** The marking was grounded on the real paper: a trusted paper match, or a scheme/bank/attached grounding. */
+export function isGroundedRun(resultJson: unknown): boolean {
+  const root = asRecord(resultJson) ?? {};
+  const pm = asRecord(root.paper_match);
+  if (pm && pm.trusted === true) return true;
+  const g = asRecord(root.grounding);
+  const src = typeof g?.source === 'string' ? g.source : '';
+  return /^(attached|bank|mock|stored)/.test(src);
+}
+
+/** A returned Practice Again sheet — its questions are the sheet's own, so "no printed question on this page" is expected. */
+export function isPracticeAgainRun(resultJson: unknown): boolean {
+  const root = asRecord(resultJson) ?? {};
+  const src = asRecord(root.source);
+  return src?.paper_kind === 'practice-again';
+}
+
+/**
+ * Would auto-release hold this run for Adrian? THE NARROWED RULE (8 Sep 2026 —
+ * Adrian: "can we automate the release of the marking and the practice again
+ * without my vetting?"). Since 29 Aug every hand-in tripped a gate (11 of 11 this
+ * month), mostly "no question found" and reconciliation notes on working-only
+ * pages, while his vetting changed 5 of 98 flagged questions. So the gates now
+ * hold on what predicts a WRONG MARK, and the two noisy signals hold only when
+ * the marking had nothing to lean on:
+ *   U  a page with real writing could not be read;
+ *   E  nothing was marked;
+ *   Q  half or more questions marked blind — only when the run is not grounded
+ *      and is not a Practice Again sheet;
+ *   R  reconciliation changed marks (relabels / superseded); its prose notes
+ *      alone hold only when not grounded and not a Practice Again sheet;
+ *   T  the parts do not add up to the paper's total;
+ *   A  the allocation audit had to add a part the marker never scored;
+ *   P  corrections in another pen were detected;
+ *   M  a question match the marker called uncertain.
+ * Mirror of the bot's lib/release-gates.js — keep the two in lockstep.
+ */
 export function computeAutoHold(resultJson: unknown): AutoHold {
   const root = asRecord(resultJson) ?? {};
   const reasons: string[] = [];
+  const grounded = isGroundedRun(resultJson);
+  const practiceAgain = isPracticeAgainRun(resultJson);
+  const lenient = grounded || practiceAgain;
 
   const unreadable = Array.isArray(root.unreadable_pages) ? root.unreadable_pages : [];
   if (unreadable.length) {
@@ -421,7 +461,7 @@ export function computeAutoHold(resultJson: unknown): AutoHold {
     reasons.push('no questions were marked');
   } else {
     const noQ = results.filter(r => r.question_found === false).length;
-    if (noQ / results.length >= 0.5) {
+    if (!lenient && noQ / results.length >= 0.5) {
       reasons.push(`${noQ}/${results.length} questions marked without their question`);
     }
   }
@@ -433,10 +473,28 @@ export function computeAutoHold(resultJson: unknown): AutoHold {
       (Array.isArray(rec.superseded_parts) ? rec.superseded_parts.length : 0) +
       (Array.isArray(rec.superseded_results) ? rec.superseded_results.length : 0);
     const flagged = Array.isArray(rec.notes) ? rec.notes.length : 0;
-    if (structural || flagged) {
-      reasons.push('reconciliation merged or flagged reads');
-    }
+    if (structural) reasons.push('reconciliation merged or renumbered reads');
+    else if (flagged && !lenient) reasons.push('reconciliation flagged reads');
   }
+
+  const totals = asRecord(root.totals);
+  const counted = Number(totals?.counted_max), max = Number(totals?.max);
+  if (Number.isFinite(counted) && Number.isFinite(max) && counted > 0 && max > 0 && counted !== max) {
+    reasons.push(`the questions add up to ${counted} but the paper is out of ${max}`);
+  }
+
+  let audited = 0, pen = 0, uncertain = 0;
+  for (const r of results) {
+    const mo = asRecord(r.marking_output);
+    const parts = Array.isArray(mo?.parts) ? mo!.parts : [];
+    for (const part of parts) { const pr = asRecord(part); if (pr?.added_by_audit === true) audited += 1; }
+    const rr = Array.isArray(r.review_reasons) ? r.review_reasons.map(String) : [];
+    if (rr.some(t => /Corrections in a different pen/i.test(t))) pen += 1;
+    if (rr.some(t => /Question match was uncertain/i.test(t))) uncertain += 1;
+  }
+  if (audited) reasons.push(`${audited} part${audited === 1 ? '' : 's'} the marker never scored — added as 0, check the pages`);
+  if (pen) reasons.push(`corrections in another pen on ${pen} question${pen === 1 ? '' : 's'}`);
+  if (uncertain) reasons.push(`question match uncertain on ${uncertain} question${uncertain === 1 ? '' : 's'}`);
 
   return { hold: reasons.length > 0, reasons };
 }

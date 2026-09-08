@@ -523,3 +523,35 @@ describe('per-part override (8 Sep 2026)', () => {
   });
 });
 
+describe('computeAutoHold — the narrowed rule (8 Sep 2026)', () => {
+  const grounded = (rj: Record<string, unknown>) => ({ ...rj, paper_match: { key: 'gce 2021 am p2', trusted: true } });
+  it('blind questions and reconciliation notes no longer hold a grounded run or a Practice Again sheet', () => {
+    const blind = question({ question_found: false });
+    const base = { ...run(blind, blind, question()), reconciliation: { notes: ['Unnumbered attempt on page 1'] } };
+    expect(computeAutoHold(base).hold).toBe(true);
+    expect(computeAutoHold(grounded(base)).hold).toBe(false);
+    expect(computeAutoHold({ ...base, source: { paper_kind: 'practice-again' } }).hold).toBe(false);
+  });
+  it('a structural reconciliation still holds a grounded run', () => {
+    const rj = grounded({ ...run(question()), reconciliation: { superseded_parts: [{}] } });
+    expect(computeAutoHold(rj).reasons).toEqual(['reconciliation merged or renumbered reads']);
+  });
+  it('the new gates: total mismatch, audit placeholders, another pen, uncertain match', () => {
+    const rj = grounded({
+      ...run(
+        { ...question(), marking_output: { parts: [{ label: '(a)', awarded: 0, max: 2, added_by_audit: true }] } },
+        { ...question(), review_reasons: ['Corrections in a different pen (green) detected — marked on the ORIGINAL ink only'] },
+        { ...question(), review_reasons: ['Question match was uncertain — check it.'] },
+      ),
+      totals: { awarded: 10, max: 90, counted_max: 85, max_source: 'registry' },
+    });
+    const h = computeAutoHold(rj);
+    expect(h.hold).toBe(true);
+    expect(h.reasons).toEqual([
+      'the questions add up to 85 but the paper is out of 90',
+      '1 part the marker never scored — added as 0, check the pages',
+      'corrections in another pen on 1 question',
+      'question match uncertain on 1 question',
+    ]);
+  });
+});

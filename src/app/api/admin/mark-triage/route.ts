@@ -30,6 +30,8 @@
 // which releases were automatic. Same student nudge + post-release enrichment
 // as a manual release.
 import { NextRequest, NextResponse } from 'next/server';
+import { isAutoReleasePaused } from '@/lib/auto-release-setting';
+import { rebuildRunPdfs } from '@/lib/rebuild-run-pdfs';
 import { after } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -79,7 +81,9 @@ const MAX_DAYS = 90;
 // reconcile findings — `computeAutoHold` in lib/mark-triage.ts is the same logic
 // over the persisted run, driving the amber chip below). Flip to false on Adrian's
 // go once he's satisfied with the gated behaviour.
-const AUTO_RELEASE_PAUSED = true;
+// 8 Sep 2026: the switch is a SETTING now (lib/auto-release-setting — Airtable
+// Settings `auto_release_paused`, default not paused), flipped from the desk.
+// The accuracy gates (computeAutoHold, the narrowed rule) decide per paper.
 const RUN_COLUMNS =
   'id, created_at, paper_name, subject, rules_version, student_id, student_name, total_awarded, total_max, num_questions, annotated_pdf_url, pdf_url, released_at';
 
@@ -451,9 +455,9 @@ export async function POST(req: NextRequest) {
       .eq('id', runId)
       .single();
     if (readErr || !run) return NextResponse.json({ error: readErr?.message || 'run not found' }, { status: 404 });
-    if (run.released_at) {
-      return NextResponse.json({ error: 'already released — marks are final' }, { status: 409 });
-    }
+    // A released paper CAN be corrected (8 Sep 2026): auto-release moved Adrian's
+    // checkpoint after the fact, so an override here is followed by a re-issue
+    // (action 'reissue') that rebuilds the student's copy and tells them.
 
     // The kind of error he saw (3 Sep 2026) — the label truth channel. Empty
     // means "not said"; anything else must be one of the eight codes, because
@@ -568,11 +572,57 @@ export async function POST(req: NextRequest) {
   }
 
   // ── release: stamp + nudge ────────────────────────────────────────────────
+  // ✓ Looked at (8 Sep 2026): an auto-released paper leaves the desk's "released
+  // by the system" lane once Adrian has seen it.
+  if (body.action === 'checked') {
+    if (!body.runId) return NextResponse.json({ error: 'runId is required' }, { status: 400 });
+    const { error } = await supa.from('paper_marking_runs').update({ checked_at: new Date().toISOString() }).eq('id', body.runId);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  }
+
+  // 🔁 Re-issue (8 Sep 2026): after an override on a released paper, rebuild the
+  // student's PDFs, stamp reissued_at (the cover re-renders off it) and tell them.
+  if (body.action === 'reissue') {
+    const runId = String(body.runId || '');
+    if (!/^[0-9a-f-]{36}$/i.test(runId)) return NextResponse.json({ error: 'runId is required' }, { status: 400 });
+    const { data: run, error: rErr } = await supa.from('paper_marking_runs')
+      .select('id, paper_name, student_id, student_name, released_at, result_json, total_awarded, total_max')
+      .eq('id', runId).maybeSingle();
+    if (rErr) return NextResponse.json({ error: rErr.message }, { status: 500 });
+    if (!run) return NextResponse.json({ error: 'run not found' }, { status: 404 });
+    if (!run.released_at) return NextResponse.json({ error: 'not released yet — rebuild from the desk instead' }, { status: 409 });
+    const headers: Record<string, string> = {};
+    const auth = req.headers.get('authorization'); const cookie = req.headers.get('cookie');
+    if (auth) headers.Authorization = auth; if (cookie) headers.cookie = cookie;
+    const outcome = await rebuildRunPdfs(runId, { origin: req.nextUrl.origin, headers });
+    if (!outcome.rebuilt) return NextResponse.json({ error: `PDFs not rebuilt: ${(outcome.errors || []).join(' · ') || 'unknown'}` }, { status: 500 });
+    const at = new Date().toISOString();
+    const rj = (run.result_json && typeof run.result_json === 'object') ? { ...(run.result_json as Record<string, unknown>) } : {};
+    delete rj.pdf_stale;
+    rj.reissued_at = at;
+    rj.pdf_rebuilt = { at, photos: outcome.photos ?? null, full: outcome.full ?? null, reissue: true };
+    await supa.from('paper_marking_runs').update({ result_json: rj }).eq('id', runId);
+    // Tell the student: the Telegram hand-in chat if there is one, else their linked Telegram.
+    const paper = run.paper_name || 'your paper';
+    const { awarded, max } = recomputeTotals(rj);
+    const line = `✏️ Adrian checked your marked <b>${escapeHtml(paper)}</b> and updated it${max > 0 ? ` — it is now <b>${awarded}/${max}</b>` : ''}. The copy in the app is the new one.`;
+    let via: 'telegram' | 'none' = 'none';
+    const tg = telegramHandinOf(rj);
+    if (tg?.chat_id) { if (await sendTelegramTo(tg.chat_id, line)) via = 'telegram'; }
+    else {
+      const recipient = await resolveRecipient(run.student_id);
+      if (recipient) { if (await sendTelegramTo(recipient.chatId, line)) via = 'telegram'; }
+    }
+    return NextResponse.json({ ok: true, via, awarded, max });
+  }
+
   if (body.action === 'release') {
     const runIds = body.runIds?.length ? body.runIds : body.runId ? [body.runId] : [];
     if (!runIds.length) return NextResponse.json({ error: 'runIds is required' }, { status: 400 });
 
     const auto = body.auto === true;
+    const autoPaused = auto ? await isAutoReleasePaused() : false;
     // 📘 Release WITH the sheet (SPEC-TEACHING-CYCLE step 7). Optional: without
     // it this is exactly the old release. The assignment is created BEFORE the
     // release stamp so a failed assignment can never leave the student holding
@@ -652,9 +702,19 @@ export async function POST(req: NextRequest) {
         results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: 'already released' });
         continue;
       }
-      if (auto && AUTO_RELEASE_PAUSED) {
-        results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: 'auto-release paused — accuracy gates pending; review in triage' });
+      if (auto && autoPaused) {
+        results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: 'auto-release is switched off — release from the desk' });
         continue;
+      }
+      if (auto) {
+        // ONE truth for "may this go out unvetted": the narrowed accuracy hold
+        // over the persisted run (lib/mark-triage computeAutoHold). The bot's
+        // own gate is a mirror; this is the one that decides.
+        const hold = computeAutoHold(run.result_json);
+        if (hold.hold) {
+          results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: `held for your review — ${hold.reasons.join('; ')}` });
+          continue;
+        }
       }
       if (auto && !isPortalSubmission(run.result_json) && !telegramHandinOf(run.result_json)) {
         // Auto-release is for papers students handed in themselves (portal or

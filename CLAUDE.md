@@ -61,7 +61,7 @@ Apply this whenever designing a NEW feature, process, or automation — it's the
 
 **What stays human (the moat)** — design so these four keep Adrian in the loop, and automate everything else:
 - **Standard** — Adrian's marking/teaching judgment is the calibration ground truth. Setting and correcting the standard is expert work; the system executes it at scale.
-- **Accountability** — parents pay a person who answers for outcomes. Parent-facing output carries his name and passes his sign-off checkpoint.
+- **Accountability** — parents pay a person who answers for outcomes. Parent-facing output carries his name. **Revised 8 Sep 2026 (Adrian: "can we automate the release of the marking and the practice again without my vetting?"):** the sign-off checkpoint sits AFTER release for marked hand-ins — a paper that clears the accuracy gates (`lib/mark-triage.ts computeAutoHold`, the narrowed rule) goes to the student at once; held ones wait for him; an override after release re-issues the copy; the switch is a Setting he can flip from the desk; the Monday `auto-release-report` counts what he changed and pauses the switch when it exceeds one in ten. Sheets go out on the 12-hour clock unless the paper is held.
 - **Relationships** — trust with parents and students is the distribution channel. Agents draft; Adrian delivers in his own voice.
 - **Novelty** — noticing the spec itself is wrong (new syllabus, new failure mode) is human work. Surface anomalies to him; never smooth them over.
 

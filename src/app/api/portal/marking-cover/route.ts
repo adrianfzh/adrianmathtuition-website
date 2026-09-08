@@ -20,10 +20,13 @@ export async function GET(req: NextRequest) {
   if (!/^[0-9a-f-]{36}$/i.test(runId)) return NextResponse.json({ error: 'run is required' }, { status: 400 });
   const sb = getSupabaseAdmin();
   const { data: run } = await sb.from('paper_marking_runs')
-    .select('id, paper_name, student_name, total_awarded, total_max, released_at')
+    .select('id, paper_name, student_name, total_awarded, total_max, released_at, reissued_at:result_json->>reissued_at')
     .eq('id', runId).eq('student_id', portalIdentity(account)).not('released_at', 'is', null).maybeSingle();
   if (!run) return NextResponse.json({ error: 'not found' }, { status: 404 });
-  const stamp = String(run.released_at).replace(/[^0-9]/g, '').slice(0, 12);
+  // A re-issue after an override (8 Sep 2026) renders a fresh cover: the stamp
+  // follows the latest of release and re-issue.
+  const stampSrc = (run as { reissued_at?: string | null }).reissued_at || run.released_at;
+  const stamp = String(stampSrc).replace(/[^0-9]/g, '').slice(0, 12);
   const key = runKey(runId, `cover-${stamp}.png`);
   const headers = { 'Content-Type': 'image/png', 'Cache-Control': 'private, max-age=3600' };
   try {
