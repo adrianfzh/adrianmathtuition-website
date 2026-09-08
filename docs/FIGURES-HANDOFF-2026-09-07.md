@@ -82,6 +82,12 @@ rows from unjudged ones.
   `["question_images/x.png"]` stored as an actual array renders for **nobody** — and
   from outside the row it looks exactly like a lost figure. Two of the five above were
   in this state. The fix is the plain string form; check `typeof`, not truthiness.
+  **This class had a LIVE PRODUCER and cleaning it was not enough** (8 Sep): the class
+  was cleared to zero on 7 Sep and was back to two within a day, both rows written that
+  morning by the extraction fleet. Root cause found and fixed at source — see
+  §"The extraction fleet was still producing this". Before you spend a session cleaning
+  a defect class, check `created_at` on the members: if any of them are hours old, you
+  are bailing out a boat with a hole in it.
 - **"Not in `papers/processed`" is not the same as "no source".** Five of the six
   source files an earlier pass recorded as absent were in `papers/processed` or Dropbox
   all along, including a PDF parked as unrecoverable since July. `mdfind -name '<exact
@@ -145,15 +151,17 @@ plus: no `figure_flags` row for that `question_id` with `status='open'`.
 
 ## Where things stand (after the 7 Sep evening pass)
 
-**Of the 15 questions this queue named, 14 are fixed and 1 remains** — only
-Pierce 2024 EM_NA P1 Q18, whose polygon is described nowhere and cannot be reconstructed
-by anyone (§B). Nothing in this queue is waiting on a decision.
+**All 15 questions this queue named are now closed** — the last, Pierce 2024 EM_NA P1
+Q18, with a SUBSTITUTE figure of our own rather than a recovery, on Adrian's explicit
+instruction (§B). Nothing in this queue is waiting on a decision.
 A bank-wide sweep closed **22 more** that the queue never saw, because they were serving
 BROKEN rather than withheld; that is its own section below, and it is the more important
 half. The bank-wide count moves under you while a peer session ingests, so measure it,
-don't quote it: at 2026-09-08 ~08:10 SGT it was 9,614 rows with an image, 9,608 serving.
-Anything in that gap beyond Pierce Q18 is a freshly ingested row awaiting its own
-fitness pass, not a regression — check `created_at` before treating one as a defect.
+don't quote it: at 2026-09-08 ~09:30 SGT it was 9,645 rows with an image, 9,644 serving.
+The single row not serving is SAJC 2012 JC2 P1 Q6, withheld on purpose (§"The extraction
+fleet was still producing this"). Anything else that appears in that gap is a freshly
+ingested row awaiting its own fitness pass, not a regression — check `created_at` before
+treating one as a defect.
 
 **The 8 Sep round (Adrian: "go ahead") closed three more and fixed the renderer.**
 MJC 2014 JC1 P1 Q7 was released once the original paper showed the figure was never
@@ -366,7 +374,7 @@ The old overlay is still in the bucket and in `figure_clean_log`
 (batch `anglican-redraw-2026-09-08`); repointing `image_url` back to
 `e4095a11-24b4-4aa1-ac27-6b697816281e.png` reverts it.
 
-### B. The Pierce questions — two DRAWN FROM THE QUESTION, one still impossible
+### B. The Pierce questions — two drawn from the question, one closed with a substitute
 
 `Pierce 2024 EM_NA P1 Q1` (`d2dcd162-…`), `Q18` (`e3b3b79c-…`), `Q21` (`2d81a524-…`).
 **Do not go looking for the paper again.**
@@ -384,18 +392,76 @@ text labels of four different questions piled on top of the formula sheet.
 
 **Q1 and Q21 were then drawn from the question instead (8 Sep, Adrian: "do all"), and
 both are released.** See §"Figures built from the question" below for how far the
-evidence went in each case. **Q18 stays blocked and cannot be built by anyone:** its
-stem is only *"Draw an enlargement of the polygon using the scale factor of 2."* — the
-polygon is described nowhere, in the text or in the file, and the question also needs
-the squared grid it was drawn on. There is nothing to reconstruct from. It needs a
-cleanly re-supplied paper (a fresh scan or the school DOCX).
+evidence went in each case.
+
+**Q18 could not be reconstructed, and was closed with a SUBSTITUTE instead** (8 Sep,
+Adrian: *"just create a diagram that fulfills the question"*). Its stem is only *"Draw an
+enlargement of the polygon using the scale factor of 2."*: the polygon is described
+nowhere, and the shape and its grid are absent from the file — page 13 ends with the Q18
+line and page 14 is blank from the top down to the `[2]` at y=467, which is where the
+floating objects sat. So the figure now on the row is **ours**: a pentagon on 1-unit
+squared paper, vertices (1,1), (4,1), (4,3), (2,3), (1,2), sides 3, 2, 2, √2 and 1, one
+edge deliberately diagonal so a scale-factor-2 enlargement is not trivially axis-aligned;
+the grid is 16 × 11 so the 6 × 4 image fits several times over, and no centre of
+enlargement is marked, matching the stem. A real `answer` and `solution` were written
+against it. ⚠ **The question is now a valid practice item on enlargement by scale factor
+2, but it is NO LONGER A FAITHFUL REPRODUCTION of Pierce 2024 EM (NA) P1 Q18** — a
+student's answer is not comparable to that school's mark scheme. The flag is closed as
+"closed with a substitute, not a recovery". If the real paper ever turns up, replace the
+figure and say so on the row.
+
+### The extraction fleet was still producing this — fixed at source, 8 Sep
+
+The jsonb-array defect above was cleared to **zero** on 7 Sep. By the next morning it
+was back to **two**, and both rows had been written that morning by the extraction
+fleet (`PDF-Pipeline-CC1`):
+
+| row | what the fleet did |
+|---|---|
+| TJC 2016 JC1 P1 Q13 (`918c82d0-…`) | wrote `parts[b].image_url` as a jsonb **array**, so the cartridge diagram rendered for nobody — while stamping `fitness:ok … (2 figures)` and `clean`. Both objects existed. **Fixed** (shape only; the figure checks out against the stem). |
+| SAJC 2012 JC2 P1 Q6 (`b993ff5c-…`) | same array shape, **and the object it names 404s** (`NoSuchKey`). Stamped `fitness:ok … (1 figure)` and `clean`, so it served part (a)'s *"as shown in the diagram"* with nothing at all. Fixing the shape would not help — there is nothing to point at. **Withheld** (status → NULL, `held` flag); its array slot is left as-is on purpose. |
+
+**The fleet is not code — it is an instruction sheet**, the `exam-extraction` row of
+Supabase `extraction_worker_prompt`, which every worker reads before each run. Both
+defects were gaps in that sheet, not carelessness by the workers:
+
+1. It gave the wiring form for the ROW-level `image_url` — a JSON-array *string* in a
+   text column — and later listed `parts[i].image_url` / `image_url_after` in a
+   placement table, but **never said those take a bare string**. A worker who has just
+   been shown the array form naturally reuses it, `parts` is jsonb, and the array is
+   what lands. Nothing downstream complains.
+2. It had a "run the SQL storage cross-check" step in the images section, but the
+   fitness stamp — the actual gate — did not require that check to have passed. So a
+   worker could certify a figure it had never confirmed uploading.
+
+**Both are now rules in the live sheet** (`v2026-09-08-slotshape`), each naming the two
+rows above as the evidence, and each saying what the symptom looks like: "renders for
+NOBODY while the row still looks correct in the database". The pre-edit text is archived
+byte-for-byte as `exam-extraction-2026-09-08-slotshape` and was verified equal after the
+write — that is the rollback. It takes effect on the next worker run; nothing to deploy.
+
+> **The lesson worth carrying:** a defect class with a live producer will refill faster
+> than you can clean it, and the cleaning session is exactly the one positioned to
+> notice. Check `created_at` on the members of any class you are about to sweep. If some
+> of them are hours old, find the writer before you spend the session on the rows.
 
 ### Figures built from the question, 8 Sep — how far the evidence went
 
-Adrian: *"are you able to build the images from the question alone?"* → *"do all"*. Four
-figures were unbuildable-by-paper; three of the four got built, and they sit on very
-different amounts of evidence. **The distinction below is the point of this section** —
-"we drew it" is not one category.
+Adrian: *"are you able to build the images from the question alone?"* → *"do all"*, and
+later *"just create a diagram that fulfills the question"* for the last one. Four figures
+were unbuildable-by-paper; all four now carry a drawing, and they sit on **four different
+amounts of evidence**. **That distinction is the point of this section** — "we drew it"
+is not one category, and the row notes say which kind each one is:
+
+| | kind | example |
+|---|---|---|
+| 1 | measured from the source | RI 2014 S2 Q6 — circle fits, sub-pixel residuals |
+| 2 | determined by the stem | the Pierce Q1 spinner, the Q21 ladder |
+| 3 | a choice the answer does not depend on | the Q21 triangle's side assignment |
+| 4 | **a substitute — not the paper's figure at all** | the Pierce Q18 polygon |
+
+Kind 4 is the one to be loudest about: it makes a question usable while quietly changing
+what it is. It was done once, on Adrian's explicit instruction, and the row says so.
 
 **1. RI 2014 S2 P1 Q6 — nothing inferred.** The scans are of an annotated script, but
 the PRINTED geometry survives underneath and separates by grey level: printed ink is
