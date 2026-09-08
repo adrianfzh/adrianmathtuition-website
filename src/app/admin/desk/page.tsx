@@ -922,6 +922,13 @@ function DetailView(p: {
   const { detail: d, cover, busy } = p;
   const run = d.run;
   const released = !!run.releasedAt;
+  // 🖼 The desk shows the copy the STUDENT gets (Adrian, 8 Sep 2026: "both desk
+  // and images pdf should show the same thing? but i am seeing it differently").
+  // Since 2 Sep the Images PDF and the app carry the clean marked page and put
+  // the worked solutions in a booklet at the back; the desk had kept showing
+  // the twin with the solution drawn on the page. Default = the clean copy;
+  // the toggle shows the solution-on-page twin for checking its placement.
+  const [solutionsOnPage, setSolutionsOnPage] = useState(false);
   const tone = LANE_TONE[d.lane];
   const pct = run.max > 0 ? Math.round((run.awarded / run.max) * 100) : null;
   const canApprove = d.approveBlockers.length === 0 && !released;
@@ -1168,6 +1175,18 @@ function DetailView(p: {
           )}
           <CoverCard cover={cover} />
 
+          {pages.length > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, fontSize: 12.5, color: C.muted, marginBottom: 10, flexWrap: 'wrap' }}>
+              <span>
+                These are the pages as the student gets them — marks and notes on the page, the worked solutions in the booklet at the back of the Images PDF.
+              </span>
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                title="The other copy of each page, with the marker's worked solution drawn into the blank space, the side strip or a footer. Not what the student receives — for checking where the solution would sit.">
+                <input type="checkbox" checked={solutionsOnPage} onChange={e => setSolutionsOnPage(e.target.checked)} />
+                Show solutions drawn on the page
+              </label>
+            </div>
+          )}
           {!run.remarking && run.remark && (
             <div style={{ background: '#f3e8ff', color: '#3b0764', border: '1px solid #d8b4fe', borderRadius: 10, padding: '8px 12px', fontSize: 13, lineHeight: 1.6, marginBottom: 12 }}>
               <b>🔁 {run.remark.pages ? `Page ${run.remark.pages.map(i => i + 1).join(', ')} re-marked` : 'Re-marked in full'}{run.remark.at ? ` · ${fmtDate(run.remark.at)}` : ''}</b>
@@ -1204,7 +1223,7 @@ function DetailView(p: {
               <div style={{ padding: '8px 12px', background: '#fafafa', borderBottom: `1px solid ${C.border}`, fontSize: 12.5, color: C.muted, display: 'flex', justifyContent: 'space-between' }}>
                 <span>Page {pg.photoIndex + 1}
                   {!released && <button type="button" onClick={() => setAnnotatePage(pg.photoIndex)} style={{ ...btn('#fff', C.pen, '#ddd6fe'), marginLeft: 10, padding: '3px 9px', fontSize: 12.5 }} title="Open the pen on this page, right here — the marker's ink is editable">✏️ Annotate this page</button>}
-                  <a href={fileHref(pg.urlWithSolutions || pg.url)} target="_blank" rel="noreferrer" style={{ marginLeft: 8, color: C.link, textDecoration: 'none', fontSize: 12 }} title="Open the page image on its own">open ↗</a>
+                  <a href={fileHref(solutionsOnPage && pg.urlWithSolutions ? pg.urlWithSolutions : pg.url)} target="_blank" rel="noreferrer" style={{ marginLeft: 8, color: C.link, textDecoration: 'none', fontSize: 12 }} title="Open the page image on its own">open ↗</a>
                 </span>
                 <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                   {pg.method && pg.method !== 'line' && <span style={{ color: C.flag }} title="Tick placement fell back on this page — the marks are the same, the ink is coarser">{pg.method} ticks</span>}
@@ -1219,7 +1238,7 @@ function DetailView(p: {
               </div>
               {/* Tap the page to annotate it in place (released papers keep the plain image). */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={fileHref(pg.urlWithSolutions || pg.url)} alt={`Marked page ${pg.photoIndex + 1}`} loading="lazy"
+              <img src={fileHref(solutionsOnPage && pg.urlWithSolutions ? pg.urlWithSolutions : pg.url)} alt={`Marked page ${pg.photoIndex + 1}`} loading="lazy"
                 onClick={() => { if (!released) setAnnotatePage(pg.photoIndex); }}
                 title={released ? undefined : 'Tap to annotate this page'}
                 style={{ width: '100%', display: 'block', cursor: released ? 'default' : 'pointer' }} />
