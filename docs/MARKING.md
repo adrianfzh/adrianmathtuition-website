@@ -952,6 +952,15 @@ flagged, and his vetting changed 5 of the 98 flags he looked at.
   looked at; ≥5 released and >10 % changed → the switch is paused and he is
   told. `job_runs` `auto-release-report`, `JOB_RHYTHMS` line, `docs/OPS.md`.
 - Doctrine (CLAUDE.md, Accountability) revised in the open the same day.
+- **First live day (8 Sep 2026):** Sophie's and Rainie's re-marked sheet
+  hand-ins released themselves within minutes (`auto:telegram`). Alessi's was
+  held by the new total gate — the sheet's 18 items add to 74 but the name
+  inside "Practice Again — from your A Math 2021 Paper 1" hit the registry's
+  90 — fixed: a `practice-again` run takes the counted total and carries no
+  scheme, allocation or audit (bot `groundArgsFor`, remarkRun guards).
+  Alessi's fresh exam paper got stuck at 12/16 pages on a Mac session whose
+  wrapper kept heart-beating after the session died — released by hand
+  (`external-release`), resumed from the saved reads on another slot.
 
 ### The 12-hour clock respects the desk's flags (8 Sep 2026)
 
