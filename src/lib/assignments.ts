@@ -60,6 +60,12 @@ export type AssignmentRow = {
   marks: number | null;
   /** Find a question tier shown on the card — non-null only for source 'find'. */
   find_tier: AssignmentFindTier | null;
+  // ── Compulsory sheets (migration practice_again_on_request, 8 Sep 2026) ──
+  /** When Adrian made this sheet compulsory; NULL for student-requested sheets and ordinary sent work. */
+  required_at?: string | null;
+  /** The reminder cron's last nudge + how many it has sent (lib/practice-again-reminders). */
+  reminded_at?: string | null;
+  reminder_count?: number;
 };
 
 /** Opens in the in-browser practice grader (a bank question or a written one), as opposed to a worksheet's own page. */
@@ -85,6 +91,8 @@ export type CreateAssignmentInput = {
   pdfUrl?: string | null;
   pdfSource?: string | null;
   dueOn?: string | null;
+  /** A Practice Again sheet Adrian released himself — compulsory; the app reminds until it is handed in (withRequired). */
+  required?: boolean;
 };
 
 export type ValidatedAssignment = {
@@ -103,6 +111,8 @@ export type ValidatedAssignment = {
   due_on: string | null;
   /** Set only for a released Practice Again sheet (withSource); the column defaults to 'adrian'. */
   source?: 'practice-again';
+  /** Set by withRequired: when the sheet became compulsory. NULL = the student asked for it (or ordinary sent work). */
+  required_at?: string;
 };
 
 /**
@@ -114,6 +124,17 @@ export type ValidatedAssignment = {
  */
 export function withSource<T extends { source?: 'practice-again' }>(row: T, input: { source?: unknown } | null | undefined): T {
   return input && input.source === 'practice-again' ? { ...row, source: 'practice-again' } : row;
+}
+
+/**
+ * Compulsory work (8 Sep 2026). A Practice Again sheet Adrian queued from the
+ * desk, vetted and released is one the student MUST do: `required_at` marks
+ * it, and /api/cron/practice-again-reminders nags until it is handed in. A
+ * sheet the student asked for themselves carries no stamp — it was their idea.
+ * Only `required: true` (a boolean, not a truthy string) sets it.
+ */
+export function withRequired<T extends { required_at?: string }>(row: T, input: { required?: unknown } | null | undefined, now: Date = new Date()): T {
+  return input && input.required === true ? { ...row, required_at: now.toISOString() } : row;
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

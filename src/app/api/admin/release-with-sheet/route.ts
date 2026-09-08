@@ -49,7 +49,7 @@ async function resolve(runId: string) {
   if (!run.student_id) return { error: 'Tag this paper to a student first.', status: 400 as const };
 
   const { data: job } = await sb
-    .from('sheet_jobs').select('result')
+    .from('sheet_jobs').select('result, requested_by')
     .eq('run_id', runId).eq('status', 'done')
     .order('created_at', { ascending: false }).limit(1).maybeSingle();
   if (!job) return { error: 'No finished sheet for this paper yet.', status: 404 as const };
@@ -58,8 +58,12 @@ async function resolve(runId: string) {
   // finished job with no files. There is no PDF to choose and no assignment to
   // write — the marked paper is released on its own, deliberately, instead of
   // this answering 404 "No PDF in the sheet's folder yet".
+  // Who asked for this sheet decides what it is to the student (8 Sep 2026):
+  // one Adrian queued and released is COMPULSORY (required_at, reminders);
+  // one the student asked for from the app is theirs to do — no nag.
+  const requestedBy = (job as { requested_by?: string | null }).requested_by === 'student' ? 'student' as const : 'adrian' as const;
   const noSheet = readNoSheet(job.result);
-  if (noSheet.noSheet) return { run, noSheet: true as const, reason: noSheet.reason };
+  if (noSheet.noSheet) return { run, noSheet: true as const, reason: noSheet.reason, requestedBy };
 
   const result = (job.result || {}) as SheetResult;
   const folderPath = sheetFolder(result.pdf_path, result.docx_path);
@@ -86,7 +90,7 @@ async function resolve(runId: string) {
   }
 
   // `noSheet` is the discriminant the two callers branch on.
-  return { run, noSheet: false as const, result, folderPath, choice: choosePdf(result.pdf_path, result.docx_path, files) };
+  return { run, noSheet: false as const, result, folderPath, choice: choosePdf(result.pdf_path, result.docx_path, files), requestedBy };
 }
 
 export async function GET(req: NextRequest) {
@@ -207,7 +211,13 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({
       studentId: r.run.student_id, kind: 'worksheet', title,
       pdfSource: `dropbox:${pdfPath}`,
-      note: 'From the paper you just got back — the parts worth another go.',
+      note: r.requestedBy === 'student'
+        ? 'From the paper you just got back — the parts worth another go.'
+        : 'Adrian asked you to do this one — work through the examples, then hand the practice in.',
+      // Compulsory when Adrian set it (lib/assignments withRequired → required_at;
+      // /api/cron/practice-again-reminders nags until it is handed in). A sheet
+      // the student asked for carries no stamp.
+      required: r.requestedBy !== 'student',
       // Filed as the paper's own Practice Again sheet (7 Sep 2026): the Papers
       // list's card and the Practice tab's "Practice Again" group both look for
       // source 'practice-again' + the source run — without them the sheet sat
@@ -265,5 +275,7 @@ export async function POST(req: NextRequest) {
     practiceItems: heldItems.released,
     alreadyWasReleased: !!r.run.released_at,
     amended,
+    required: r.requestedBy !== 'student',
+    requestedBy: r.requestedBy,
   });
 }

@@ -11,6 +11,8 @@ import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
 import { fileHref } from '@/lib/student-files-url';
 import PaperSubjectPill from '@/components/PaperSubjectPill';
 import ClipToNotes from '../ClipToNotes';
+import PracticeAgainRequest, { type PracticeAgainState } from '../PracticeAgainRequest';
+import { readNoSheet } from '@/lib/sheet-jobs';
 
 const COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, paper_subject, superseded_by';
 
@@ -32,10 +34,22 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
   if (!paper) notFound();
 
   const { data: sheetRows } = await sb.from('portal_assignments')
-    .select('id, status, pdf_url, score, out_of')
+    .select('id, status, pdf_url, score, out_of, required_at')
     .eq('airtable_student_id', sid).eq('source', 'practice-again').eq('kind', 'worksheet').eq('source_run_id', id)
     .neq('status', 'held').neq('status', 'revoked').limit(1);
-  const sheet = (sheetRows ?? [])[0] as { id: string; status: string; pdf_url: string | null; score: number | null; out_of: number | null } | undefined;
+  const sheet = (sheetRows ?? [])[0] as { id: string; status: string; pdf_url: string | null; score: number | null; out_of: number | null; required_at: string | null } | undefined;
+  // No sheet with the student yet: is one being written, waiting on Adrian, or
+  // was there nothing worth practising? Else offer the request button
+  // (Practice Again on request, 8 Sep 2026 — /api/portal/practice-again/request).
+  let requestState: PracticeAgainState = 'none';
+  if (!sheet) {
+    const { data: jobRows } = await sb.from('sheet_jobs').select('status, result')
+      .eq('run_id', id).order('created_at', { ascending: false }).limit(1);
+    const job = (jobRows ?? [])[0] as { status: string; result: unknown } | undefined;
+    if (job?.status === 'queued' || job?.status === 'claimed') requestState = 'queued';
+    else if (job?.status === 'done') requestState = readNoSheet(job.result).noSheet ? 'nothing' : 'checking';
+    // failed / cancelled: they may ask again
+  }
   const hasCover = paper.dropped.length > 0;
   const supersededBy = (row as { superseded_by?: string | null }).superseded_by ?? null;
   // Why it was archived (Adrian, 7 Sep 2026: "should say the reason") — a
@@ -104,7 +118,9 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
             <p className="text-sm font-semibold text-emerald-900">📘 Practice Again — written from this paper</p>
             <p className="text-[12px] text-emerald-800/80 mt-0.5">
               {sheet.status === 'marked' ? `Marked${sheet.score != null && sheet.out_of ? ` · ${sheet.score}/${sheet.out_of}` : ''}`
-                : sheet.status === 'submitted' ? 'Handed in — being marked' : 'To do — work through the examples, then hand the practice in'}
+                : sheet.status === 'submitted' ? 'Handed in — being marked'
+                : sheet.required_at ? 'To do — Adrian asked you to do this one. Work through the examples, then hand the practice in'
+                : 'To do — work through the examples, then hand the practice in'}
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -113,6 +129,8 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
           </div>
         </section>
       )}
+
+      {!sheet && !supersededBy && <PracticeAgainRequest runId={paper.id} state={requestState} />}
 
       {paper.pdfUrl && (
         <p className="text-center">

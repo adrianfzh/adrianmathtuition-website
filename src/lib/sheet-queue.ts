@@ -1,23 +1,22 @@
-// Queueing a self-study sheet for a marked paper — the ONE guard, shared.
+// Queueing a Practice Again sheet — the ONE guard behind every door.
 //
-// Adrian's 📘 tap (POST /api/admin/sheet-jobs) and the desk's auto-queue
-// (SPEC-MARKING-DESK.md: "a sheet job is created the moment marking finishes
-// for a tagged run … untagged runs queue the sheet automatically the moment
-// they get tagged") must agree on when a sheet may be queued, or the automatic
-// path would queue papers the button refuses — and vice versa. The rule lives
-// here once: `sheetQueueGuard` is pure and tested; `queueSheetJob` is the I/O
-// wrapper both doors call.
+// Since 8 Sep 2026 (Adrian: "allow them to request for Practice Again
+// worksheets, so only generate when they request … optionally, i can generate
+// for them by clicking on desk") a sheet is written only when SOMEONE ASKS:
 //
-// The automatic door is STRICTER than the button. Adrian may re-queue a sheet
-// for a paper that already has one (a second wave, a re-cut), so the button
-// only refuses while a job is in flight. The auto path fires on events that
-// repeat — every re-pick of the student in the send row, every re-mark — so it
-// also refuses when ANY job already exists for the run (done included) and
-// when the run is already released: nothing automatic may queue the same
-// sheet twice, or write one for a paper the student already has.
-
+//   • the STUDENT, from the marked paper in the app (`requestedBy: 'student'`)
+//     — allowed once the paper is released, and only while no sheet exists;
+//   • ADRIAN, from the desk (`requestedBy: 'adrian'`) — any tagged marked paper,
+//     any number of times (a new sheet replaces the old one's held items).
+//
+// A finished marking no longer queues a sheet by itself. The only automatic
+// path left is `requeueSheetAfterRemark`: a paper marked AGAIN that already
+// had a sheet gets a fresh one on the same terms (same requester) — a sheet
+// built on marking that no longer stands is worse than none.
 import { getSupabaseAdmin } from './supabase';
 import { deleteHeldPracticeItems } from './practice-again-store';
+
+export type SheetRequestedBy = 'student' | 'adrian';
 
 export type SheetQueueRun = {
   id: string;
@@ -28,162 +27,137 @@ export type SheetQueueRun = {
   result_json: unknown;
 };
 
-export type SheetQueueJobRow = { id: string; status: string };
+export type SheetQueueJobRow = { id: string; status: string; requested_by?: string | null; created_at?: string | null };
 
 export type SheetQueueRefusal = {
   ok: false;
-  status: 'not-found' | 'untagged' | 'no-marking' | 'released' | 'duplicate' | 'exists';
+  status: 'not-found' | 'untagged' | 'no-marking' | 'not-released' | 'duplicate' | 'exists';
   http: 400 | 404 | 409;
   message: string;
-  /** The job that already covers this paper (duplicate / exists). */
   jobId?: string;
 };
 
-export type SheetQueueOutcome =
-  | { ok: true; job: Record<string, unknown> }
-  | SheetQueueRefusal
-  | { ok: false; status: 'error'; http: 500; message: string };
+export type SheetQueueOutcome = SheetQueueRefusal | { ok: true; job: Record<string, unknown>; cancelled: number };
 
 const IN_FLIGHT = new Set(['queued', 'claimed']);
 
 /**
- * May a sheet be queued for this run? `jobs` is EVERY sheet_jobs row for the
- * run (any status). `auto` = the automatic door (stricter — see above).
- *
- * The messages are the ones /api/admin/sheet-jobs has always answered with;
- * the desk shows them verbatim.
+ * May a sheet be queued for this run? Pure — the same answer for both doors,
+ * plus the student door's two extra rules (the paper must be out; a sheet that
+ * already exists is not written twice — Adrian re-queues, students don't).
  */
 export function sheetQueueGuard(
   run: SheetQueueRun | null | undefined,
   jobs: SheetQueueJobRow[],
-  opts: { auto?: boolean; afterAutoRelease?: boolean } = {},
-): { ok: true } | SheetQueueRefusal {
+  opts: { requestedBy?: SheetRequestedBy } = {},
+): SheetQueueRefusal | { ok: true } {
   if (!run) return { ok: false, status: 'not-found', http: 404, message: 'run not found' };
-  if (!run.student_id) {
-    return { ok: false, status: 'untagged', http: 400, message: 'Tag this paper to a student first — a sheet needs someone to be for.' };
-  }
-  const results = (run.result_json as { results?: unknown } | null)?.results;
-  if (!Array.isArray(results) || !results.length) {
-    return { ok: false, status: 'no-marking', http: 400, message: 'That run has no marking to diagnose yet.' };
-  }
-  const inFlight = (jobs || []).find(j => IN_FLIGHT.has(j.status));
-  if (inFlight) {
-    return { ok: false, status: 'duplicate', http: 409, message: 'A sheet for this paper is already queued.', jobId: inFlight.id };
-  }
-  if (opts.auto) {
-    // A paper the SYSTEM released (8 Sep 2026) still gets its sheet: the sheet
-    // follows on the 12-hour clock and attaches to the already-released paper.
-    if (run.released_at && !opts.afterAutoRelease) {
-      return { ok: false, status: 'released', http: 409, message: 'already released — the student has this paper; queue a sheet by hand if you still want one' };
-    }
-    // Done, failed, cancelled: something already happened for this paper.
-    // Automatic means "first time only"; a retry is Adrian's tap.
-    const any = (jobs || []).find(j => j.status !== 'cancelled') ?? (jobs || [])[0];
-    if (any) {
-      return { ok: false, status: 'exists', http: 409, message: `a sheet job already exists for this paper (${any.status})`, jobId: any.id };
-    }
+  if (!run.student_id) return { ok: false, status: 'untagged', http: 400, message: 'Tag this paper to a student first — a sheet needs someone to be for.' };
+  if (!run.result_json) return { ok: false, status: 'no-marking', http: 400, message: 'That run has no marking to diagnose yet.' };
+  const inFlight = jobs.find(j => IN_FLIGHT.has(j.status));
+  if (inFlight) return { ok: false, status: 'duplicate', http: 409, message: 'A sheet for this paper is already queued.', jobId: inFlight.id };
+  if (opts.requestedBy === 'student') {
+    if (!run.released_at) return { ok: false, status: 'not-released', http: 409, message: 'This paper is not out yet — ask for the sheet once it is.' };
+    const done = jobs.find(j => j.status === 'done');
+    if (done) return { ok: false, status: 'exists', http: 409, message: 'A Practice Again sheet for this paper already exists.', jobId: done.id };
   }
   return { ok: true };
 }
 
-/** The sheet_jobs row to insert — the shape the worker's `next` claim reads. */
-export function sheetJobInsert(run: SheetQueueRun, focus: string | null | undefined) {
+/** The row a new sheet job is born with. */
+export function sheetJobInsert(run: SheetQueueRun, focus?: unknown, requestedBy: SheetRequestedBy = 'adrian') {
   return {
     run_id: run.id,
-    airtable_student_id: run.student_id as string,
+    airtable_student_id: run.student_id,
     student_name: run.student_name || '',
     paper_name: run.paper_name || '',
     focus: focus ? String(focus).slice(0, 300) : null,
+    requested_by: requestedBy,
   };
 }
 
 /**
- * A NEW sheet replaces the old one (Adrian, 7 Sep 2026: a re-mark "should"
- * regenerate Practice Again). What that means for the run's earlier jobs:
- *  - `cancel`: jobs still being written — only on a RE-MARK, where the sheet in
- *    progress is being built on marking that no longer exists;
- *  - `clearHeld`: every earlier job's HELD practice items, so Approve & release
- *    hands out the new sheet's questions and not the old sheet's as well
- *    (releaseHeldPracticeItems releases by run, not by job).
- * Pure; tested.
+ * What a NEW sheet job does to the old ones: a re-mark cancels anything still
+ * in flight (the marking it was reading is gone); every earlier job's held
+ * practice items are dropped either way, so the student never gets two sheets'
+ * worth of items from one paper.
  */
 export function supersededByNewSheet(jobs: SheetQueueJobRow[], opts: { remark?: boolean } = {}): { cancel: string[]; clearHeld: string[] } {
   const inFlight = jobs.filter(j => IN_FLIGHT.has(j.status)).map(j => j.id);
-  return {
-    cancel: opts.remark ? inFlight : [],
-    clearHeld: jobs.map(j => j.id),
-  };
+  return { cancel: opts.remark ? inFlight : [], clearHeld: jobs.map(j => j.id) };
 }
 
 /**
- * Queue a sheet for a run, guard and all. Never throws — the outcome says what
- * happened, with the HTTP status the button route answers.
- *
- * `remark`: the run was just marked AGAIN. Any sheet in progress is cancelled
- * (it was reading the old marking), a finished sheet no longer blocks the
- * automatic door, and the old sheet's held practice items are cleared — the
- * new job writes its own. A released run still refuses on the automatic door:
- * the student already has that sheet; a new one is Adrian's tap.
+ * Who a replacement sheet is for, after a re-mark: the newest job that was not
+ * cancelled decides. Null when the paper never had a sheet — then a re-mark
+ * queues nothing (nobody asked).
+ */
+export function remarkRequester(jobs: SheetQueueJobRow[]): SheetRequestedBy | null {
+  const live = jobs.filter(j => j.status !== 'cancelled');
+  if (live.length === 0) return null;
+  const newest = [...live].sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')))[0];
+  return newest.requested_by === 'student' ? 'student' : 'adrian';
+}
+
+/**
+ * Queue a sheet for a run. Reads the run + its jobs, applies the guard, and
+ * inserts. `remark: true` (a paper marked again) first cancels any job still
+ * in flight so a sheet is never written from marking that no longer stands.
  */
 export async function queueSheetJob(
   runId: string,
-  opts: { focus?: string | null; auto?: boolean; remark?: boolean; afterAutoRelease?: boolean } = {},
+  opts: { focus?: unknown; remark?: boolean; requestedBy?: SheetRequestedBy } = {},
 ): Promise<SheetQueueOutcome> {
-  try {
-    const sb = getSupabaseAdmin();
-    const { data: run, error: runErr } = await sb.from('paper_marking_runs')
-      .select('id, paper_name, student_id, student_name, released_at, result_json')
-      .eq('id', runId).maybeSingle<SheetQueueRun>();
-    if (runErr) return { ok: false, status: 'error', http: 500, message: runErr.message };
+  const sb = getSupabaseAdmin();
+  const requestedBy: SheetRequestedBy = opts.requestedBy === 'student' ? 'student' : 'adrian';
+  const { data: run } = await sb.from('paper_marking_runs')
+    .select('id, paper_name, student_id, student_name, released_at, result_json')
+    .eq('id', runId).maybeSingle<SheetQueueRun>();
+  const { data: jobRows } = await sb.from('sheet_jobs')
+    .select('id, status, requested_by, created_at').eq('run_id', runId);
+  let jobs: SheetQueueJobRow[] = (jobRows ?? []) as SheetQueueJobRow[];
 
-    const { data: jobRows, error: jobErr } = await sb.from('sheet_jobs')
-      .select('id, status').eq('run_id', runId);
-    if (jobErr) return { ok: false, status: 'error', http: 500, message: jobErr.message };
-    let jobs = (jobRows ?? []) as SheetQueueJobRow[];
-
-    const stale = supersededByNewSheet(jobs, { remark: opts.remark });
-    if (stale.cancel.length) {
-      // The worker learns it was cancelled at its next heartbeat and stops.
-      await sb.from('sheet_jobs')
-        .update({ status: 'cancelled', claimed_by: null, heartbeat_at: null, completed_at: new Date().toISOString(), error: 'superseded by a re-mark' })
-        .in('id', stale.cancel);
-      jobs = jobs.filter(j => !stale.cancel.includes(j.id));
-    }
-
-    if (opts.remark && opts.auto && run?.released_at) {
-      return { ok: false, status: 'released', http: 409, message: 'already released — the student has this paper; queue a sheet by hand if you still want one' };
-    }
-    // On a re-mark the automatic door must not refuse "a sheet job already
-    // exists": that sheet is exactly what needs replacing.
-    const gate = sheetQueueGuard(run, jobs, { auto: opts.auto && !opts.remark, afterAutoRelease: opts.afterAutoRelease });
-    if (!gate.ok) return gate;
-
-    const { data: job, error } = await sb.from('sheet_jobs')
-      .insert(sheetJobInsert(run as SheetQueueRun, opts.focus)).select('*').single();
-    if (error) return { ok: false, status: 'error', http: 500, message: error.message };
-
-    // The old sheet's held practice items would otherwise be released alongside
-    // the new sheet's. Best-effort: a miss here is logged, never a refusal.
-    for (const id of stale.clearHeld) {
-      const out = await deleteHeldPracticeItems(sb, id);
-      if (out.error) console.warn('[sheet-queue] could not clear held items of', id, out.error);
-    }
-    return { ok: true, job: job as Record<string, unknown> };
-  } catch (e) {
-    return { ok: false, status: 'error', http: 500, message: (e as Error).message };
+  const plan = supersededByNewSheet(jobs, { remark: opts.remark });
+  if (plan.cancel.length) {
+    await sb.from('sheet_jobs').update({
+      status: 'cancelled', claimed_by: null, heartbeat_at: null,
+      completed_at: new Date().toISOString(), error: 'superseded by a re-mark',
+    }).in('id', plan.cancel);
+    jobs = jobs.map(j => (plan.cancel.includes(j.id) ? { ...j, status: 'cancelled' } : j));
   }
+
+  const guard = sheetQueueGuard(run, jobs, { requestedBy });
+  if (!guard.ok) return guard;
+
+  const { data: job, error } = await sb.from('sheet_jobs')
+    .insert(sheetJobInsert(run as SheetQueueRun, opts.focus, requestedBy)).select('*').single();
+  if (error || !job) {
+    return { ok: false, status: 'no-marking', http: 400, message: error?.message || 'could not queue the sheet' };
+  }
+  for (const id of plan.clearHeld) {
+    await deleteHeldPracticeItems(sb, id).catch(() => ({ deleted: 0 }));
+  }
+  return { ok: true, job: job as Record<string, unknown>, cancelled: plan.cancel.length };
 }
 
 /**
- * The automatic door, fail-soft: log the outcome and move on. Called from the
- * places a run becomes "marked AND tagged" — never awaited on a response path
- * that could otherwise fail (next/server `after()` at every call site).
- * `remark` = the run was marked again: the old sheet is replaced, not kept.
+ * A paper marked again: replace its sheet IF it had one — same requester, so a
+ * student-requested sheet is sent again on build and Adrian's goes back to the
+ * desk. A paper nobody asked a sheet for stays that way. Never throws.
  */
-export async function autoQueueSheet(runId: string, source: string, opts: { remark?: boolean; afterAutoRelease?: boolean } = {}): Promise<SheetQueueOutcome> {
-  const out = await queueSheetJob(runId, { auto: true, remark: opts.remark, afterAutoRelease: opts.afterAutoRelease });
-  if (out.ok) console.log(`[sheet-queue] auto-queued sheet for ${runId} (${source})`);
-  else if (out.status === 'error') console.warn(`[sheet-queue] auto-queue failed for ${runId} (${source}):`, out.message);
-  // Refusals are the normal case on repeat events — quiet.
-  return out;
+export async function requeueSheetAfterRemark(runId: string, source: string): Promise<SheetQueueOutcome | { ok: false; status: 'no-sheet' }> {
+  try {
+    const sb = getSupabaseAdmin();
+    const { data: jobRows } = await sb.from('sheet_jobs')
+      .select('id, status, requested_by, created_at').eq('run_id', runId);
+    const requestedBy = remarkRequester((jobRows ?? []) as SheetQueueJobRow[]);
+    if (!requestedBy) return { ok: false, status: 'no-sheet' };
+    const out = await queueSheetJob(runId, { remark: true, requestedBy });
+    if (out.ok) console.log(`[sheet-queue] ${source}: re-queued ${(out.job as { id?: string }).id} for run ${runId} (${requestedBy}, cancelled ${out.cancelled})`);
+    else console.log(`[sheet-queue] ${source}: not re-queued for run ${runId} — ${out.status}: ${out.message}`);
+    return out;
+  } catch (e) {
+    console.warn(`[sheet-queue] ${source}: re-queue failed for run ${runId}:`, (e as Error).message);
+    return { ok: false, status: 'no-sheet' };
+  }
 }

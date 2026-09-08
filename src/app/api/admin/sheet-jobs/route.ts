@@ -1,7 +1,7 @@
 // /api/admin/sheet-jobs — the self-study sheet queue (SPEC-TEACHING-CYCLE).
 //
 //   GET                          → { jobs } (newest 30)
-//   POST { runId, focus? }       → { job }        queue a sheet for that marked paper
+//   POST { runId, focus?, remark? } → { job }   Adrian queues a sheet (compulsory once released); remark:true replaces an existing sheet
 //   POST { action:'next', by }   → { job|null }   worker claims the next job (lease)
 //   POST { action:'beat', id }   → { ok }         heartbeat while authoring
 //   POST { action:'done', id, result } → { ok, diagnosis, rebuilt, rebuild, practiceItems }
@@ -46,10 +46,10 @@ import { downloadFile, getTemporaryLink } from '@/lib/dropbox';
 import JSZip from 'jszip';
 import Anthropic from '@anthropic-ai/sdk';
 import { docxXmlToText, extractExamples, runExampleCheck } from '@/lib/sheet-example-check';
-import { autoReleaseGate, holdHours, scheduledLine, heldLine } from '@/lib/sheet-auto-release';
+import { autoReleaseGate, holdHours, scheduledLine, heldLine, requestedSentLine, requestedHeldLine, requestedStoppedLine, type GateInput } from '@/lib/sheet-auto-release';
 import { normaliseDiagnosis, type Diagnosis } from '@/lib/sheet-diagnosis';
 import { rebuildRunPdfs, type RebuildOutcome } from '@/lib/rebuild-run-pdfs';
-import { queueSheetJob } from '@/lib/sheet-queue';
+import { queueSheetJob, requeueSheetAfterRemark } from '@/lib/sheet-queue';
 import { sanitizeSheetQuestions } from '@/lib/practice-again';
 import { createHeldPracticeItems, deleteHeldPracticeItems } from '@/lib/practice-again-store';
 import { archiveSheetToStore } from '@/lib/sheet-archive';
@@ -83,6 +83,32 @@ async function storeDiagnosis(runId: string, diagnosis: Diagnosis): Promise<bool
   } catch (e) {
     console.warn('[sheet-jobs] diagnosis not stored', runId, (e as Error).message);
     return false;
+  }
+}
+
+/**
+ * A sheet the student asked for goes out through the desk's own release call
+ * (/api/admin/release-with-sheet) the moment it clears the gate — same PDF
+ * choice, same assignment row, same stamps as Approve & release, so the two
+ * doors can never hand a student a different thing. Same-origin, with the
+ * caller's auth forwarded (the worker's bearer, or Adrian's cookie).
+ */
+async function deliverRequestedSheet(req: NextRequest, runId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const auth = req.headers.get('authorization');
+  const cookie = req.headers.get('cookie');
+  if (auth) headers.Authorization = auth;
+  else if (process.env.ADMIN_PASSWORD) headers.Authorization = `Bearer ${process.env.ADMIN_PASSWORD}`;
+  if (cookie) headers.cookie = cookie;
+  try {
+    const r = await fetch(`${process.env.WEBSITE_URL || 'https://www.adrianmathtuition.com'}/api/admin/release-with-sheet`, {
+      method: 'POST', headers, body: JSON.stringify({ runId }), signal: AbortSignal.timeout(120_000),
+    });
+    const d = await r.json().catch(() => ({} as { error?: string }));
+    if (!r.ok) return { ok: false, error: String(d.error || `HTTP ${r.status}`) };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
   }
 }
 
@@ -264,6 +290,11 @@ export async function POST(req: NextRequest) {
     if (!job) return NextResponse.json({ ok: false, cancelled: true, error: 'cancelled — this sheet was stopped' }, { status: 409 });
     // Best-effort: a Telegram hiccup must not undo a finished sheet.
     if (noSheet) {
+      // The student asked for this one (8 Sep 2026): the app tells them there
+      // was nothing worth another go; Adrian hears it too, once.
+      if (job.requested_by === 'student') {
+        notify_marking(`📘 <b>${job.student_name || job.airtable_student_id}</b>${job.paper_name ? ` — ${job.paper_name}` : ''}: asked for Practice Again from the app — the worker found nothing worth practising, so no sheet goes out and the app says so.`).catch(() => {});
+      }
       notify_marking(completionMessage(job, result)).catch(() => {});
       logJobRun('sheet-worker', true, `${job.student_name || job.airtable_student_id}: no sheet needed`).catch(() => {});
       return NextResponse.json({ ok: true, noSheet: true, reason: result.reason, diagnosis: false, rebuilt: false });
@@ -297,6 +328,53 @@ export async function POST(req: NextRequest) {
     // Telegram says which example) instead of letting it release. Fail-open:
     // a download or model hiccup records `skipped` and changes nothing.
     // MARKING_EXAMPLE_CHECK=0 turns it off.
+    //
+    // ── After the gates: Adrian's clock, or the student's door (8 Sep 2026) ──
+    // A sheet Adrian queued from the desk keeps the 12-hour release-by-silence
+    // clock — it is compulsory once it goes out, so he gets a look first. A
+    // sheet the STUDENT asked for from the app goes out the moment it clears
+    // the SAME gate: they are waiting for it and the paper is already theirs.
+    // A gate failure holds it on the desk either way; the line says who asked.
+    const who = job.student_name || job.airtable_student_id;
+    const deskUrl = `https://www.adrianmathtuition.com/admin/desk?run=${job.run_id}`;
+    const studentAsked = job.requested_by === 'student';
+    const settle = async (check: GateInput['exampleCheck']) => {
+      const hours = holdHours();
+      const { data: runRow } = await sb.from('paper_marking_runs').select('released_at, result_json').eq('id', job.run_id).maybeSingle();
+      const runJson = (runRow as { result_json?: unknown } | null)?.result_json ?? null;
+      const groundedSrc = ((runJson as { paper_match?: { source?: string | null } } | null)?.paper_match?.source) ?? null;
+      const gate = autoReleaseGate({
+        noSheet: false, verified: result.verified, wave: result.wave, exampleCheck: check,
+        grounded: groundedSrc == null ? null : groundedSrc !== 'none',
+        paperHold: computeAutoHold(runJson).reasons,
+      });
+      // The desk shows this beside the (missing) timer, so "I don't see the
+      // timer" (Adrian, 8 Sep 2026) has an answer on the page itself.
+      await sb.from('sheet_jobs').update({ result: { ...stored, example_check: check, auto_release_gate: { ok: gate.ok, hours, reasons: gate.reasons } } }).eq('id', job.id);
+      if (studentAsked) {
+        if (!gate.ok) {
+          await sb.from('sheet_jobs').update({ stage: `held — ${gate.reasons[0]}` }).eq('id', job.id);
+          notify_marking(requestedHeldLine(who, job.paper_name, gate.reasons, deskUrl)).catch(() => {});
+          return;
+        }
+        const sent = await deliverRequestedSheet(req, job.run_id);
+        if (sent.ok) {
+          await sb.from('sheet_jobs').update({ auto_released_at: new Date().toISOString(), stage: 'sent — the student asked for it' }).eq('id', job.id);
+          notify_marking(requestedSentLine(who, job.paper_name, gate.watch)).catch(() => {});
+        } else {
+          await sb.from('sheet_jobs').update({ stage: `send stopped — ${sent.error.slice(0, 120)}` }).eq('id', job.id);
+          notify_marking(requestedStoppedLine(who, job.paper_name, sent.error, deskUrl)).catch(() => {});
+        }
+        return;
+      }
+      if (hours > 0 && gate.ok) {
+        const at = new Date(Date.now() + hours * 3600_000).toISOString();
+        await sb.from('sheet_jobs').update({ auto_release_at: at, held_at: null, stage: `auto-release at ${at}` }).eq('id', job.id);
+        notify_marking(scheduledLine(at, deskUrl, who, job.paper_name, gate.watch)).catch(() => {});
+      } else if (hours > 0) {
+        notify_marking(heldLine(who, job.paper_name, gate.reasons, deskUrl)).catch(() => {});
+      }
+    };
     if (process.env.MARKING_EXAMPLE_CHECK !== '0' && result.docx_path && process.env.ANTHROPIC_API_KEY) {
       try {
         const buf = await downloadFile(result.docx_path);
@@ -312,7 +390,6 @@ export async function POST(req: NextRequest) {
           return msg.content.map(c => (c.type === 'text' ? c.text : '')).join('');
         }, model);
         const nDis = check.disagreements.length;
-        const who = job.student_name || job.airtable_student_id;
         const lines = check.disagreements.map(d => `Example ${d.example}: ${d.issue || 'final answer differs'}`).join('\n');
         // ROUNDS, NOT A HOLD (Adrian, 6 Sep 2026: "why not just rewrite the solution
         // and check again until it passes, or choose another example"): a
@@ -343,35 +420,24 @@ export async function POST(req: NextRequest) {
           notify_marking(`⚠️ ${who} — the sheet is HELD: after ${MAX_REVISIONS} rewrites a second reader still disagrees with ${nDis} worked example${nDis === 1 ? '' : 's'}.\n${lines}\nFix on the desk before release.`).catch(() => {});
         } else {
           // ── Release by silence (Adrian, 6 Sep 2026: "12 hours") ──────────────
-          // The sheet passed its gates: schedule paper + sheet to go out after the
-          // hold window. Telegram says when and where to hold; the desk shows the
-          // countdown and a Hold button; /api/cron/sheet-auto-release does the
-          // release. SHEET_AUTO_RELEASE_HOURS=0 turns the automation off.
-          const hours = holdHours();
-          const { data: runRow } = await sb.from('paper_marking_runs').select('released_at, result_json').eq('id', job.run_id).maybeSingle();
-          const runJson = (runRow as { result_json?: unknown } | null)?.result_json ?? null;
-          const groundedSrc = ((runJson as { paper_match?: { source?: string | null } } | null)?.paper_match?.source) ?? null;
-          const gate = autoReleaseGate({
-            noSheet: false, verified: result.verified, wave: result.wave, exampleCheck: check,
-            grounded: groundedSrc == null ? null : groundedSrc !== 'none',
-            paperHold: computeAutoHold(runJson).reasons,
-          });
-          // The desk shows this beside the (missing) timer, so "I don't see the
-          // timer" (Adrian, 8 Sep 2026) has an answer on the page itself.
-          await sb.from('sheet_jobs').update({ result: { ...stored, example_check: check, auto_release_gate: { ok: gate.ok, hours, reasons: gate.reasons } } }).eq('id', job.id);
-          if (hours > 0 && gate.ok) {
-            const at = new Date(Date.now() + hours * 3600_000).toISOString();
-            await sb.from('sheet_jobs').update({ auto_release_at: at, held_at: null, stage: `auto-release at ${at}` }).eq('id', job.id);
-            const deskUrl = `https://www.adrianmathtuition.com/admin/desk?run=${job.run_id}`;
-            notify_marking(scheduledLine(at, deskUrl, who, job.paper_name, gate.watch)).catch(() => {});
-          } else if (hours > 0) {
-            notify_marking(heldLine(who, job.paper_name, gate.reasons, `https://www.adrianmathtuition.com/admin/desk?run=${job.run_id}`)).catch(() => {});
-          }
+          // The sheet passed its gates: Adrian's sheets are scheduled to go out
+          // after the hold window (Telegram says when, the desk shows the
+          // countdown and a Hold button, /api/cron/sheet-auto-release does the
+          // release; SHEET_AUTO_RELEASE_HOURS=0 turns that off); a student's
+          // sheet goes out now. Both in `settle` above.
+          await settle(check);
         }
         console.log(`[sheet-jobs] example check ${job.id}: ${check.checked} checked, ${check.disagreements.length} disagreement(s)${check.skipped ? ` (${check.skipped})` : ''}`);
       } catch (e) {
         console.warn('[sheet-jobs] example check skipped:', job.id, (e as Error).message);
+        // The check is fail-open, and a student is waiting: settle through the
+        // gate with the check recorded as not run (the gate holds on that, so
+        // Adrian hears why rather than the student hearing nothing).
+        if (studentAsked) await settle({ checked: 0, disagreements: [], skipped: `example check did not run: ${(e as Error).message.slice(0, 80)}` }).catch(err => console.warn('[sheet-jobs] settle failed:', job.id, (err as Error).message));
       }
+    } else if (studentAsked) {
+      // No second reader configured: the gate says so and holds it for Adrian.
+      await settle(null).catch(err => console.warn('[sheet-jobs] settle failed:', job.id, (err as Error).message));
     }
 
     // ── The sheet's diagnosis drives the cover (Adrian, 2 Sep 2026) ────────────
@@ -469,10 +535,22 @@ export async function POST(req: NextRequest) {
   const runId = String(body.runId || '').trim();
   if (!/^[0-9a-f-]{36}$/i.test(runId)) return NextResponse.json({ error: 'runId required' }, { status: 400 });
 
-  // `remark: true` (the bot after marking a paper again) lets a sheet in
-  // progress be cancelled and replaced; any new job clears the old sheet's
-  // held practice items either way (lib/sheet-queue).
-  const out = await queueSheetJob(runId, { focus: body.focus, remark: body.remark === true });
+  // `remark: true` (the bot after marking a paper again) REPLACES a sheet that
+  // already existed, on the same terms it was first asked for, and queues
+  // nothing for a paper that never had one (8 Sep 2026 — a sheet is written
+  // only when someone asks). Any new job clears the old sheet's held practice
+  // items either way (lib/sheet-queue).
+  if (body.remark === true) {
+    const out = await requeueSheetAfterRemark(runId, 'sheet-jobs:remark');
+    if (!out.ok) {
+      if (out.status === 'no-sheet') return NextResponse.json({ ok: true, job: null, note: 'no sheet existed for this paper — none queued' });
+      return NextResponse.json({ error: out.message }, { status: out.http });
+    }
+    return NextResponse.json({ job: out.job, cancelled: out.cancelled });
+  }
+  // Adrian's door: a sheet he queues and releases is COMPULSORY for the
+  // student — the app reminds them until it is handed in.
+  const out = await queueSheetJob(runId, { focus: body.focus, requestedBy: 'adrian' });
   if (!out.ok) return NextResponse.json({ error: out.message }, { status: out.http });
   return NextResponse.json({ job: out.job });
 }

@@ -99,3 +99,22 @@ export function heldLine(who: string, paper: string | null | undefined, reasons:
 export function releasedLine(who: string, paper: string | null): string {
   return `✅ Auto-released ${who}${paper ? ` — ${paper}` : ''}: marked paper + Practice Again sheet (the 12-hour window passed with no hold).`;
 }
+
+// ── Practice Again on request (8 Sep 2026) ───────────────────────────────────
+// A sheet the STUDENT asked for from the app goes out the moment it clears the
+// gate — no clock, nobody waiting on Adrian. These three lines tell him what
+// happened; a held one names the reasons so the desk has something to act on.
+
+export function requestedSentLine(who: string, paper: string | null | undefined, watch: string[] = []): string {
+  const w = watch.length ? `\n⚠️ Watch out for: ${watch.join(' · ')}` : '';
+  return `📘 <b>${who}</b>${paper ? ` — ${paper}` : ''}: asked for Practice Again from the app — the sheet is written and with them now.${w}`;
+}
+
+export function requestedHeldLine(who: string, paper: string | null | undefined, reasons: string[], deskUrl: string): string {
+  const why = reasons.length ? reasons.map(r => `• ${r}`).join('\n') : '• (no reason recorded)';
+  return `🖐 <b>${who}</b>${paper ? ` — ${paper}` : ''}: asked for Practice Again from the app, but the sheet waits for you on the desk — it will NOT go out on its own. Why:\n${why}\nThe app tells them Adrian is checking it. Release it from the desk: ${deskUrl}`;
+}
+
+export function requestedStoppedLine(who: string, paper: string | null | undefined, error: string, deskUrl: string): string {
+  return `⚠️ <b>${who}</b>${paper ? ` — ${paper}` : ''}: asked for Practice Again from the app, but the sheet could not be sent: ${error}. Release it from the desk: ${deskUrl}`;
+}

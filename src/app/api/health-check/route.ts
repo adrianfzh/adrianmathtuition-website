@@ -398,6 +398,14 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 📘 Practice Again on request (8 Sep 2026): the student's door on
+    // /app/marking/[id] must hold its auth gate — a 404 means the request
+    // button silently stops working and no sheet is ever written.
+    timed('practice-again-request', async () => {
+      const r = await fetch(`${base}/api/portal/practice-again/request`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // 🎯 Fix-it plans (SPEC-REMEDIATION.md). The student route must hold its
     // auth gate (401 anonymously — a 404 means the Home card and /app/fixit
     // silently vanish), and the tables + the columns the lane reads must

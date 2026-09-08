@@ -25,7 +25,12 @@ Writers:
   3rd 3:30am SGT), `practice-topup`,
   `triage-reminder` (daily 8am SGT — Telegrams Adrian when marked scripts are
   waiting unreleased **and unarchived** on /admin/desk (triage retired 8 Sep 2026); stamps even on
-  quiet 0-waiting days, skips the stamp only in `?dry=1` mode), and
+  quiet 0-waiting days, skips the stamp only in `?dry=1` mode),
+  `practice-again-reminders` (daily 9am SGT — nudges students whose COMPULSORY
+  Practice Again sheet is still not handed in: `portal_assignments.required_at`
+  is set when Adrian releases a sheet he queued himself; day 3, then weekly,
+  four nudges at most, Telegram + web push, one summary line to Adrian; stamps
+  even on quiet days, skips the stamp only in `?dry=1` mode), and
   `health-check` itself.
 - **Mac plan-billed workers** stamp as the last step of their SKILL.md
   (`qb-topup`, `file-subgroups`, `bot-review`, `question-mine`,

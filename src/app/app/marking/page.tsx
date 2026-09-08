@@ -19,6 +19,7 @@ import { statsBySubject } from '@/lib/portal-papers-stats';
 import PaperSubjectPill from '@/components/PaperSubjectPill';
 import AnnotatedSolution from './AnnotatedSolution';
 import ClipToNotes from './ClipToNotes';
+import { readNoSheet } from '@/lib/sheet-jobs';
 import MarkingBeacon from './MarkingBeacon';
 import SubjectTiles from './SubjectTiles';
 import { mathHtml } from '@/lib/math-inline';
@@ -127,14 +128,25 @@ export default async function MarkingPage() {
   const { papers, focus, streakNote } = buildStudentMarking(rows, { studentName: account?.display_name ?? null });
   // The Practice Again sheet belongs with its paper (Adrian, 7 Sep 2026), not on a
   // separate to-do page: one released worksheet assignment per source run.
-  type SheetRow = { id: string; source_run_id: string | null; status: string; pdf_url: string | null; submitted_at: string | null; marked_at: string | null; score: number | null; out_of: number | null };
+  type SheetRow = { id: string; source_run_id: string | null; status: string; pdf_url: string | null; submitted_at: string | null; marked_at: string | null; score: number | null; out_of: number | null; required_at: string | null };
   const sheetsByRun = new Map<string, SheetRow>();
   if (papers.length) {
     const { data: sheetRows } = await sb.from('portal_assignments')
-      .select('id, source_run_id, status, pdf_url, submitted_at, marked_at, score, out_of')
+      .select('id, source_run_id, status, pdf_url, submitted_at, marked_at, score, out_of, required_at')
       .eq('airtable_student_id', sid).eq('source', 'practice-again').eq('kind', 'worksheet').neq('status', 'held').neq('status', 'revoked')
       .in('source_run_id', papers.map(p => p.id));
     for (const r of (sheetRows ?? []) as SheetRow[]) if (r.source_run_id && !sheetsByRun.has(r.source_run_id)) sheetsByRun.set(r.source_run_id, r);
+  }
+  // Papers with no sheet yet: is one being written, waiting on Adrian, or was
+  // there nothing worth practising? (Practice Again on request, 8 Sep 2026 —
+  // the request button itself lives on the paper's own page.)
+  type JobLite = { run_id: string; status: string; result: unknown };
+  const jobByRun = new Map<string, { status: string; noSheet: boolean }>();
+  const noSheetIds = papers.filter(p => !sheetsByRun.has(p.id)).map(p => p.id);
+  if (noSheetIds.length) {
+    const { data: jobRows } = await sb.from('sheet_jobs').select('run_id, status, result')
+      .in('run_id', noSheetIds).order('created_at', { ascending: false });
+    for (const j of (jobRows ?? []) as JobLite[]) if (!jobByRun.has(j.run_id)) jobByRun.set(j.run_id, { status: j.status, noSheet: readNoSheet(j.result).noSheet });
   }
   // Per-subject tiles, in the account's display order; tabs only when the
   // student has papers in more than one subject.
@@ -233,7 +245,7 @@ export default async function MarkingPage() {
             </div>
           )}
 
-          {papers.map(p => <Paper key={p.id} paper={p} sheet={sheetsByRun.get(p.id) ?? null} />)}
+          {papers.map(p => <Paper key={p.id} paper={p} sheet={sheetsByRun.get(p.id) ?? null} sheetJob={jobByRun.get(p.id) ?? null} />)}
 
           {earlier.length > 0 && (
             <details className={`${CARD} p-4`}>
@@ -262,7 +274,12 @@ export default async function MarkingPage() {
 // The latest / average / trend tiles moved into ./SubjectTiles (per subject,
 // SPEC-PORTAL-V2 §1); their arithmetic lives in lib/portal-papers-stats.
 
-function Paper({ paper, sheet }: { paper: StudentPaper; sheet: { id: string; status: string; pdf_url: string | null; score: number | null; out_of: number | null } | null }) {
+function Paper({ paper, sheet, sheetJob }: {
+  paper: StudentPaper;
+  sheet: { id: string; status: string; pdf_url: string | null; score: number | null; out_of: number | null; required_at: string | null } | null;
+  /** The latest sheet job when no sheet is with the student yet — says where it is. */
+  sheetJob: { status: string; noSheet: boolean } | null;
+}) {
   return (
     <div className={`${CARD} p-4`}>
       <div className="flex items-start justify-between gap-3">
@@ -308,7 +325,9 @@ function Paper({ paper, sheet }: { paper: StudentPaper; sheet: { id: string; sta
             <p className="text-[12px] text-emerald-800/80 mt-0.5">
               {sheet.status === 'marked'
                 ? `Marked${sheet.score != null && sheet.out_of ? ` · ${sheet.score}/${sheet.out_of}` : ''}`
-                : sheet.status === 'submitted' ? 'Handed in — being marked' : 'To do — work through the examples, then hand the practice in'}
+                : sheet.status === 'submitted' ? 'Handed in — being marked'
+                : sheet.required_at ? 'To do — Adrian asked you to do this one. Work through the examples, then hand the practice in'
+                : 'To do — work through the examples, then hand the practice in'}
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -321,9 +340,16 @@ function Paper({ paper, sheet }: { paper: StudentPaper; sheet: { id: string; sta
           </div>
         </div>
       )}
-      {false && (
-        <div>
-        </div>
+      {!sheet && sheetJob && (sheetJob.status === 'queued' || sheetJob.status === 'claimed') && (
+        <p className="mt-3 text-[12px] text-emerald-800/80">📘 Practice Again is being written for this paper — you’ll get a message when it’s ready.</p>
+      )}
+      {!sheet && sheetJob?.status === 'done' && !sheetJob.noSheet && (
+        <p className="mt-3 text-[12px] text-emerald-800/80">📘 Your Practice Again sheet is written — Adrian is checking it before it comes to you.</p>
+      )}
+      {!sheet && (!sheetJob || sheetJob.status === 'failed' || sheetJob.status === 'cancelled') && (
+        <p className="mt-3 text-[12px]">
+          <Link href={`/app/marking/${paper.id}#practice-again`} className="font-semibold text-emerald-900 underline underline-offset-2">📘 Want practice on what went wrong here? Request Practice Again ›</Link>
+        </p>
       )}
 
       {paper.dropped.length > 0 ? (

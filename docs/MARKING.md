@@ -952,6 +952,8 @@ flagged, and his vetting changed 5 of the 98 flags he looked at.
   (`autoReleaseGate` now takes `paperHold` — the paper's own hold — instead of
   open flags; the cron re-checks it and holds with `heldByPaperLine`). Adrian
   may release the sheet early from the desk; otherwise it goes at 12 h.
+  **Later on 8 Sep 2026 a sheet exists only on request — § Practice Again on
+  request below.**
 - **The checkpoint after release**: desk lane **"Released by the system — not
   yet looked at"** (`laneFor`: `released_via` starts with `auto:` and no
   `checked_at`). There, Agree/Override still work; an override calls
@@ -1013,6 +1015,58 @@ still flagged for review", Telegram `heldByReviewLine`; already released from
 the desk → stamped, nothing sent. The immediate hand-in auto-release is a
 separate switch (`AUTO_RELEASE_PAUSED` in `mark-triage`, off since 29 Aug 2026)
 with its own accuracy gates (`computeAutoHold`).
+
+### Practice Again on request (8 Sep 2026)
+
+Adrian, the same afternoon: "when student hands up a paper … should just auto
+mark their paper and released … allow them to request for Practice Again
+worksheets, so only generate when they request. Optionally, i can generate for
+them by clicking on desk, and vetting it and asking them to do → that is
+compulsory, so we should build a mechanism that reminds them it is not done."
+
+- **The auto-queue is gone.** `lib/sheet-queue.ts` lost `autoQueueSheet`; the
+  papers-route tag, `mark-paper` marking-done, `auto-tag-sweep`, `scan-inbox`
+  and the bot's hand-in path (`handlers/webchat.js`) no longer queue a sheet.
+  Two doors remain: `queueSheetJob(runId, { focus?, requestedBy })` and
+  `requeueSheetAfterRemark(runId, source)` — a re-mark REPLACES a sheet that
+  exists (cancels the live job, queues a new one on the same terms) and never
+  creates one. `sheet_jobs.requested_by` = `'student' | 'adrian'` (legacy rows
+  NULL / `'auto'` count as Adrian's). Migration `practice_again_on_request`
+  (applied 8 Sep 2026) also added `portal_assignments.required_at`,
+  `reminded_at`, `reminder_count`.
+- **Adrian's door — desk 📘 Queue** (`POST /api/admin/sheet-jobs`). On `done`
+  the route keeps the 12-hour clock / held / example-check behaviour; on
+  release (`release-with-sheet`, desk tap or the clock) the assignment is
+  inserted with `required: true` → `portal_assignments.required_at`
+  (`lib/assignments.ts withRequired`, tested) and the nudge says "he asked you
+  to do this one" (`lib/assignment-nudge.ts`, tested). **Reminders:**
+  `/api/cron/practice-again-reminders` (daily 09:00 SGT in `vercel.json`;
+  `lib/practice-again-reminders.ts`, tested): day 3 after `required_at`, then
+  every 7 days, `MAX_NUDGES` 4, five per run; Telegram via
+  `lib/student-recipient.ts resolveRecipient` (portal chat, else the Airtable
+  Telegram ID — the same rule a release uses) + web push; stamps `reminded_at`
+  / `reminder_count` even with no channel (Adrian's summary line says NO
+  CHANNEL); `job_runs` `practice-again-reminders`. The hub's `admin-stats`
+  `compulsorySheets` feeds "📘 N Practice Again sheet(s) you set, not handed in".
+- **The student's door — Request Practice Again** on `/app/marking/[id]`
+  (`PracticeAgainRequest.tsx` → `POST /api/portal/practice-again/request`
+  `{runId}`; own released run else 404; a duplicate is 200 `already`; the
+  health-check probes the 401). `requested_by='student'`; the worker writes it;
+  on `done` `sheet-jobs` runs `autoReleaseGate` (the example check + "nothing
+  marked"; the paper's other signals ride as ⚠️ watch-outs on the line, per
+  iteration 2 above) and, if clean, calls `release-with-sheet` at once
+  (`deliverRequestedSheet`; stage "sent — the student asked for it",
+  `requestedSentLine`); a gate failure → stage "held — …", `requestedHeldLine`,
+  the app says Adrian is checking it; a send error → `requestedStoppedLine`.
+  Not compulsory (no `required_at`). The Papers list and the paper page show
+  the state: being written · Adrian is checking it · nothing worth practising
+  (`readNoSheet`) · the request door.
+- **Desk copy:** the lane is "Marked, no sheet yet"; chips say "asked by the
+  student"; the tag toast no longer promises a sheet.
+- **Open choices Adrian has not confirmed:** student-requested sheets go out
+  unvetted when clean; the reminder cadence (3 d, weekly, ×4); Adrian's own
+  uploads/scans lose the auto-sheet too (one rule); a paper with no sheet stays
+  without one after a re-mark.
 
 ### Blank printed parts, footer columns, pen-safe superscripts (8 Sep 2026)
 

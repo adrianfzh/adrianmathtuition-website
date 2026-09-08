@@ -106,6 +106,33 @@ async function fetchTriage(): Promise<{ flagged: number; readyToRelease: number 
   }
 }
 
+/**
+ * Compulsory Practice Again sheets not yet handed in (8 Sep 2026) — the hub's
+ * 📘 card. A sheet Adrian queued and released carries required_at; while it
+ * sits 'assigned' the reminder cron nags the student and this counts it.
+ */
+async function fetchCompulsorySheets(): Promise<{ count: number; oldestDays: number; names: string[] } | null> {
+  if (!getSecretKey()) return null;
+  try {
+    const sb = getSupabaseAdmin();
+    const { data, error } = await sb.from('portal_assignments')
+      .select('airtable_student_id, required_at')
+      .eq('status', 'assigned').not('required_at', 'is', null)
+      .order('required_at', { ascending: true }).limit(100);
+    if (error || !data) return null;
+    if (!data.length) return { count: 0, oldestDays: 0, names: [] };
+    const ids = [...new Set(data.map(r => String(r.airtable_student_id)))];
+    const { data: accts } = await sb.from('portal_accounts').select('airtable_student_id, display_name').in('airtable_student_id', ids);
+    const nameOf = new Map<string, string>();
+    for (const a of accts ?? []) if (a.airtable_student_id) nameOf.set(String(a.airtable_student_id), String(a.display_name || '').split(' ')[0]);
+    const names = ids.map(id => nameOf.get(id) || 'A student');
+    const oldestDays = Math.max(0, Math.floor((Date.now() - Date.parse(String(data[0].required_at))) / 86400_000));
+    return { count: data.length, oldestDays, names };
+  } catch {
+    return null;
+  }
+}
+
 /** Past lessons with no attendance status — see lib/unmarked-lessons.ts. */
 async function fetchUnmarkedLessons(todayISO: string): Promise<number | null> {
   try {
@@ -210,7 +237,7 @@ export async function GET(req: NextRequest) {
   );
   const absentFilter = encodeURIComponent(`{Status}='Absent'`);
 
-  const [todayLessons, weekLessons, invoices, absentLessons, pendingPapers, unmarkedLessons, examGaps, triage, lessonsToLog] = await Promise.all([
+  const [todayLessons, weekLessons, invoices, absentLessons, pendingPapers, unmarkedLessons, examGaps, triage, lessonsToLog, compulsorySheets] = await Promise.all([
     airtableRequestAll('Lessons', `?filterByFormula=${todayFilter}&fields[]=Topics+Covered`),
     airtableRequestAll('Lessons', `?filterByFormula=${weekFilter}&fields[]=Date`),
     airtableRequestAll('Invoices', `?filterByFormula=${invoiceFilter}&fields[]=Final+Amount`),
@@ -221,6 +248,7 @@ export async function GET(req: NextRequest) {
     fetchExamGaps(),
     fetchTriage(),
     fetchLessonsToLog(),
+    fetchCompulsorySheets(),
   ]);
 
   const todayTotal = todayLessons.records.length;
@@ -252,6 +280,8 @@ export async function GET(req: NextRequest) {
       examGaps,
       triage,
       lessonsToLog,
+      // 📘 compulsory Practice Again sheets not handed in (8 Sep 2026; null when the fetch failed)
+      compulsorySheets,
     },
     {
       headers: {

@@ -34,6 +34,8 @@ export type SheetJob = {
   auto_release_at?: string | null;
   held_at?: string | null;
   auto_released_at?: string | null;
+  /** Who asked for the sheet (8 Sep 2026): 'student' from the app, 'adrian' from the desk; 'auto'/null = the retired auto-queue. */
+  requested_by?: 'student' | 'adrian' | 'auto' | null;
 };
 
 /** How long a claim survives without a heartbeat before anyone may retake it. */

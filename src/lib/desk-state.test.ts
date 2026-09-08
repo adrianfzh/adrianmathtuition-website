@@ -18,7 +18,7 @@ describe('laneFor — every run lands in exactly one lane', () => {
   it('a finished sheet makes it ready to vet', () => {
     expect(laneFor(tagged, done)).toBe('ready');
   });
-  it('no job, a queued, a claimed or a failed job all mean "sheet on the way"', () => {
+  it('no job, a queued, a claimed or a failed job all mean "no sheet yet"', () => {
     expect(laneFor(tagged, null)).toBe('awaiting-sheet');
     expect(laneFor(tagged, { status: 'queued' })).toBe('awaiting-sheet');
     expect(laneFor(tagged, { status: 'claimed', stage: 'drafting' })).toBe('awaiting-sheet');

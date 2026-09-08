@@ -208,7 +208,7 @@ export async function GET(req: NextRequest) {
   try { autoTag = await sweepAutoTag({ dry, now, roster: students ?? undefined }); }
   catch (e) { autoTag = { error: (e as Error).message.slice(0, 200) }; }
   const tagLine = autoTag && !('error' in autoTag)
-    ? `tags: ${autoTag.tagged} tagged, ${autoTag.coverReads} cover read, ${autoTag.pendingCover} waiting, ${autoTag.left} left, ${autoTag.sheetsQueued} sheet(s) caught up`
+    ? `tags: ${autoTag.tagged} tagged, ${autoTag.coverReads} cover read, ${autoTag.pendingCover} waiting, ${autoTag.left} left`
     : `tags: error ${autoTag && 'error' in autoTag ? autoTag.error : ''}`.trim();
 
   const processed = out.filter(o => typeof o.action === 'string' && String(o.action).startsWith('📠')).length;

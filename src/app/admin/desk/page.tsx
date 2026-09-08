@@ -50,7 +50,7 @@ type Row = {
   studentId: string | null; studentName: string | null;
   awarded: number; max: number; pct: number | null; questions: number; pending: number;
   lane: DeskLane; releasedAt: string | null; releasedVia: string | null; pdfStale: boolean;
-  sheet: { jobId: string; status: string; stage: string | null; error: string | null; label: string; completedAt: string | null } | null;
+  sheet: { jobId: string; status: string; stage: string | null; error: string | null; label: string; completedAt: string | null; requestedBy?: string | null } | null;
   flags: string[]; amended: string | null; assignments: number; assignmentsHeld?: number;
   folder: string; folderUrl: string;
   annotatedPdfUrl: string | null; photosPdfUrl: string | null; pdfUrl: string | null;
@@ -89,6 +89,8 @@ type Detail = {
     id: string; status: string; stage: string | null; error: string | null; attempts: number; focus: string | null;
     claimedBy: string | null; createdAt: string; completedAt: string | null; label: string;
     autoReleaseAt?: string | null; heldAt?: string | null; autoReleasedAt?: string | null;
+    /** 'student' = asked for from the app (goes out on its own once it clears the gate); 'adrian' = queued here (compulsory once released). */
+    requestedBy?: string | null;
     result: {
       docxPath: string | null; pdfPath: string | null; wave: string[]; shelved: string[]; verified: string;
       /** The worker read the paper and there was nothing worth practising (3 Sep 2026). */
@@ -264,8 +266,8 @@ function PaperSubjectChip({ subject }: { subject: string | null | undefined }) {
 }
 
 const LANE_HINT: Record<DeskLane, string> = {
-  untagged: 'A paper with no student reaches nobody — tag it and the sheet queues itself.',
-  'awaiting-sheet': 'The self-study sheet is being written on the Mac. Vet the marking meanwhile; the paper moves to Ready to vet when the sheet lands.',
+  untagged: 'A paper with no student reaches nobody — tag it so it reaches them.',
+  'awaiting-sheet': 'Marked, and nobody has asked for a sheet. Vet the marking; Approve & release sends the paper on its own. A sheet you queue here and release is compulsory — the app reminds the student until it is handed in. Students can ask for their own from the app once the paper is out; those go out by themselves once they clear the gate.',
   ready: 'Script and sheet are both here. Open one, agree or override every question, read the sheet, then Approve & release.',
   auto: 'Went to the student on its own after clearing the accuracy gates. Look it over if you want: Agree or Override still work here (an override re-issues their copy), ✓ Looked at moves it to Completed. Anything you leave files itself under Completed after 7 days.',
   released: 'With the student. Read-only — the folder link is the record.',
@@ -500,7 +502,7 @@ export default function DeskPage() {
     const { ok, d } = await postJson('/api/admin/papers', { runId: id, studentId });
     setBusy('');
     if (!ok) { setToast(d.error || 'Could not tag'); return; }
-    setToast(`Tagged to ${d.studentName || name}${d.sheet === 'queued' ? ' — self-study sheet queued' : ''}`);
+    setToast(`Tagged to ${d.studentName || name}`);
     refresh(id);
   }
 
@@ -895,7 +897,7 @@ export default function DeskPage() {
                     <span>marked {fmtDate(row.createdAt)}</span>
                     {row.lane !== 'released' && (
                       <span style={{ color: row.sheet?.status === 'done' ? C.ok : row.sheet?.status === 'failed' ? C.danger : C.link }}>
-                        📘 {row.sheet?.label ?? 'no sheet yet'}
+                        📘 {row.sheet?.label ?? 'no sheet yet'}{row.sheet?.requestedBy === 'student' ? ' · asked by the student' : ''}
                       </span>
                     )}
                     {row.lane === 'released' && row.releasedAt && <span>released {fmtDate(row.releasedAt)}{row.assignments ? ' + sheet' : ''}</span>}
@@ -1683,6 +1685,8 @@ function SheetPane(p: {
         <div style={{ padding: '10px 12px', background: '#fafafa', borderBottom: `1px solid ${C.border}`, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <strong style={{ fontSize: 15 }}>📘 Practice Again</strong>
           <span style={{ fontSize: 13, color: done ? C.ok : job?.status === 'failed' ? C.danger : C.link, fontWeight: 600 }}>{job ? job.label : 'no sheet yet'}</span>
+          {job?.requestedBy === 'student' && <span style={{ fontSize: 12, color: C.muted }}>· asked by the student from the app — goes out on its own once it clears the gate</span>}
+          {job && job.requestedBy !== 'student' && <span style={{ fontSize: 12, color: C.muted }}>· compulsory once released — the app reminds them until it is handed in</span>}
           {job?.completedAt && done && <span style={{ fontSize: 12, color: C.faint }}>· {fmtWhen(job.completedAt)}</span>}
           <span style={{ marginLeft: 'auto', display: 'flex', gap: 10, fontSize: 13 }}>
             {done && <a href={openHref('pdf')} target="_blank" rel="noreferrer" style={{ color: C.link, textDecoration: 'none' }}>PDF ↗</a>}
@@ -1747,7 +1751,7 @@ function SheetPane(p: {
           <div style={{ padding: 14, fontSize: 13.5, color: C.muted }}>
             {!job && (d.run.studentId
               ? 'No sheet has been queued for this paper.'
-              : 'Tag the paper to a student — the sheet queues itself the moment it has someone to be for.')}
+              : 'Tag the paper to a student first — a sheet needs someone to be for.')}
             {job?.status === 'queued' && 'Queued — the Mac worker polls every ~5 min and writes a sheet in about 20 more.'}
             {job?.status === 'claimed' && <>Being written now{job.claimedBy ? ` by ${job.claimedBy}` : ''} — stage: <b>{job.stage || 'drafting'}</b>. Vet the marking meanwhile.</>}
             {job?.status === 'failed' && <span style={{ color: C.danger }}>Failed after {job.attempts} attempt{job.attempts === 1 ? '' : 's'}: {job.error || 'unknown'}</span>}
@@ -1775,7 +1779,9 @@ function SheetPane(p: {
                   {job ? 'New sheet' : 'Queue sheet'} = the Mac writes a fresh diagnosis and Practice Again sheet from the <b>current</b> marking; the old sheet
                   and its questions are replaced. It does <b>not</b> re-mark. To mark the paper again, use{' '}
                   <a href={`/admin/mark-paper?run=${d.run.id}`} style={{ color: C.link, fontWeight: 600 }}>✍️ Re-mark on the marking page</a>
-                  {' '}— a re-mark then queues a new sheet by itself.
+                  {' '}— a re-mark replaces a sheet that already exists by itself; a paper with no sheet stays without one.
+                  {' '}A sheet you queue here and release is <b>compulsory</b>: the app reminds the student until it is handed in.
+                  {' '}Students can ask for their own from the app once the paper is out.
                 </span>
               </>
             )}

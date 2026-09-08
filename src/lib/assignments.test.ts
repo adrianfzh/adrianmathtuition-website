@@ -143,7 +143,7 @@ describe('held rows — created by the sheet hand-back, released with the paper'
   });
 });
 
-import { withSource } from './assignments';
+import { withSource, withRequired } from './assignments';
 describe('withSource — a released Practice Again sheet is filed as the paper\'s own', () => {
   const row: { airtable_student_id: string; kind: 'worksheet'; title: string; source?: 'practice-again' } =
     { airtable_student_id: 'recX', kind: 'worksheet', title: 'Practice again — x' };
@@ -152,5 +152,21 @@ describe('withSource — a released Practice Again sheet is filed as the paper\'
     expect(withSource(row, { source: 'find' })).toEqual(row);
     expect(withSource(row, {})).toEqual(row);
     expect(withSource(row, null)).toEqual(row);
+  });
+});
+
+describe('withRequired — a sheet Adrian released is compulsory; one the student asked for is not', () => {
+  const at = new Date('2026-09-08T04:00:00Z');
+  const base: { title: string; source?: 'practice-again'; required_at?: string } = { title: 'x' };
+  it('stamps required_at only for required: true (a real boolean)', () => {
+    expect(withRequired(base, { required: true }, at)).toEqual({ title: 'x', required_at: '2026-09-08T04:00:00.000Z' });
+    expect(withRequired(base, { required: 'true' }, at)).toEqual({ title: 'x' });
+    expect(withRequired(base, { required: false }, at)).toEqual({ title: 'x' });
+    expect(withRequired(base, {}, at)).toEqual({ title: 'x' });
+    expect(withRequired(base, null, at)).toEqual({ title: 'x' });
+  });
+  it('composes with withSource for a released Practice Again sheet', () => {
+    const row = withRequired(withSource(base, { source: 'practice-again' }), { required: true }, at);
+    expect(row).toEqual({ title: 'x', source: 'practice-again', required_at: '2026-09-08T04:00:00.000Z' });
   });
 });

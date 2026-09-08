@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { autoReleaseGate, holdHours, sgtShort, heldByPaperLine } from './sheet-auto-release';
+import { autoReleaseGate, holdHours, sgtShort, heldByPaperLine, requestedSentLine } from './sheet-auto-release';
 
 const good = { noSheet: false, verified: '73/73 sympy', wave: ['chain rule'], exampleCheck: { checked: 3, disagreements: [] }, grounded: null };
 
@@ -44,5 +44,12 @@ describe('the paper\'s hold holds the 12-hour clock (8 Sep 2026)', () => {
   });
   it('the cron names the student, the paper and the reasons when it holds', () => {
     expect(heldByPaperLine('Denise Chan', 'denise am tys 2021 p2', ['the questions add up to 85 but the paper is out of 90'], 'https://x')).toContain('NOT released — the paper is held:\n• the questions add up to 85');
+  });
+});
+
+describe('requestedSentLine', () => {
+  it('names the student and the paper, and carries the paper\'s watch-outs', () => {
+    expect(requestedSentLine('Kassandra', 'A Math · GCE 2021 · Paper 1')).toBe('📘 <b>Kassandra</b> — A Math · GCE 2021 · Paper 1: asked for Practice Again from the app — the sheet is written and with them now.');
+    expect(requestedSentLine('Denise', null, ['3/12 questions marked without their question'])).toContain('\n⚠️ Watch out for: 3/12 questions marked without their question');
   });
 });

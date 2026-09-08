@@ -23,7 +23,6 @@ import { getSupabaseAdmin } from './supabase';
 import { fetchOurFile } from './student-files';
 import { readScanCover } from './scan-reader';
 import { sendTelegram } from './telegram';
-import { autoQueueSheet } from './sheet-queue';
 import { refileUntaggedFolder } from './refile-untagged';
 import { loadRoster } from './roster';
 import type { RosterStudent } from './scan-inbox';
@@ -40,7 +39,6 @@ export type AutoTagResult = {
   pendingCover: number;
   /** Runs left for the desk after everything was tried. */
   left: number;
-  sheetsQueued: number;
   items: Array<{ runId: string; paperName: string | null; action: string }>;
 };
 
@@ -72,48 +70,17 @@ async function tagRun(run: AutoTagRun, student: RosterStudent, how: AutoTagStamp
   if (error) throw new Error(error.message);
   if (!updated?.length) return 'tagged by hand meanwhile';
   await stamp(run.id, how);
-  const sheet = await autoQueueSheet(run.id, 'auto-tag');
+  // No sheet is queued here since 8 Sep 2026 — Practice Again is on request
+  // (the student from the app, Adrian from the desk; lib/sheet-queue.ts).
   const moved = await refileUntaggedFolder(run.id);
-  return `tagged → ${student.name} (${how.by}) · sheet ${sheet.ok ? 'queued' : sheet.status}${moved.moved ? ' · folder moved' : ''}`;
-}
-
-/**
- * Tagged, marked, no sheet job at all → queue one. Unreleased papers as before;
- * since 8 Sep 2026 ALSO papers the system released (`released_via` auto:…),
- * hand-ins included: auto-release sends the marked paper at once and the sheet
- * follows on the clock, so a released hand-in with no sheet is the gap this
- * closes (Alessi's 2021 AM P2, released with "no sheet job yet").
- */
-async function sheetCatchUp(since: string, dry: boolean): Promise<{ queued: number; items: AutoTagResult['items'] }> {
-  const sb = getSupabaseAdmin();
-  const { data: runs } = await sb.from('paper_marking_runs')
-    .select('id, paper_name, released_at, released_via, portal_submission:result_json->portal_submission, telegram_handin:result_json->telegram_handin')
-    .not('student_id', 'is', null).is('archived_at', null).gte('created_at', since)
-    .or('released_at.is.null,released_via.like.auto:*');
-  const rows = ((runs ?? []) as unknown as Array<{ id: string; paper_name: string | null; released_at: string | null; released_via: string | null; portal_submission?: unknown; telegram_handin?: unknown }>)
-    // Adrian's own uploads wait for the desk unless still unreleased (as before); hand-ins always.
-    .filter(r => !r.released_at || String(r.released_via || '').startsWith('auto:'));
-  if (!rows.length) return { queued: 0, items: [] };
-  const { data: jobs } = await sb.from('sheet_jobs').select('run_id').in('run_id', rows.map(r => r.id));
-  const has = new Set((jobs ?? []).map(j => j.run_id as string));
-  const items: AutoTagResult['items'] = [];
-  let queued = 0;
-  for (const r of rows) {
-    if (has.has(r.id)) continue;
-    if (dry) { items.push({ runId: r.id, paperName: r.paper_name, action: 'would queue the sheet (no job yet)' }); continue; }
-    // The guard refuses a run with no marking yet (still in the queue) — quietly.
-    const out = await autoQueueSheet(r.id, 'auto-tag:catch-up', { afterAutoRelease: !!r.released_at });
-    if (out.ok) { queued++; items.push({ runId: r.id, paperName: r.paper_name, action: 'sheet queued (none existed)' }); }
-    else if (out.status !== 'no-marking') items.push({ runId: r.id, paperName: r.paper_name, action: `sheet not queued: ${out.status}` });
-  }
-  return { queued, items };
+  return `tagged → ${student.name} (${how.by})${moved.moved ? ' · folder moved' : ''}`;
 }
 
 export async function sweepAutoTag(opts: { dry?: boolean; now?: Date; roster?: RosterStudent[] } = {}): Promise<AutoTagResult> {
   const dry = !!opts.dry;
   const now = opts.now ?? new Date();
   const since = new Date(now.getTime() - AUTO_TAG_WINDOW_DAYS * 86_400_000).toISOString();
-  const res: AutoTagResult = { considered: 0, tagged: 0, coverReads: 0, pendingCover: 0, left: 0, sheetsQueued: 0, items: [] };
+  const res: AutoTagResult = { considered: 0, tagged: 0, coverReads: 0, pendingCover: 0, left: 0, items: [] };
   const sb = getSupabaseAdmin();
 
   const { data, error } = await sb.from('paper_marking_runs')
@@ -163,14 +130,6 @@ export async function sweepAutoTag(opts: { dry?: boolean; now?: Date; roster?: R
       item.action = `error: ${(e as Error).message.slice(0, 160)}`;
       res.left++;
     }
-  }
-
-  try {
-    const c = await sheetCatchUp(since, dry);
-    res.sheetsQueued = c.queued;
-    res.items.push(...c.items);
-  } catch (e) {
-    res.items.push({ runId: '', paperName: null, action: `sheet catch-up error: ${(e as Error).message.slice(0, 160)}` });
   }
   return res;
 }

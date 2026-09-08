@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { after } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { autoQueueSheet } from '@/lib/sheet-queue';
+import { requeueSheetAfterRemark } from '@/lib/sheet-queue';
 import { refileUntaggedFolder } from '@/lib/refile-untagged';
 
 // Paper marking can take minutes (solve + mark per question). 300s is the Vercel ceiling.
@@ -55,9 +55,11 @@ export async function POST(req: NextRequest) {
         const sent = (body ? JSON.parse(body) : {}) as Record<string, unknown>;
         const phase = typeof sent.phase === 'string' ? sent.phase : '';
         const runId = autoQueueRunIdFor(phase, sent, data as Record<string, unknown>);
-        // A re-mark replaces the sheet too (Adrian, 7 Sep 2026: "it should"):
-        // the old sheet was built on marking that no longer exists.
-        if (runId) after(() => autoQueueSheet(runId, `mark-paper:${phase}`, { remark: phase === 'remark' }));
+        // A finished marking queues NO sheet by itself since 8 Sep 2026 (Practice
+        // Again is on request — lib/sheet-queue.ts). A re-mark still replaces a
+        // sheet that already existed (Adrian, 7 Sep 2026: "it should"): the old
+        // one was built on marking that no longer exists.
+        if (runId && phase === 'remark') after(() => requeueSheetAfterRemark(runId, 'mark-paper:remark'));
         // A paper tagged after marking takes its Dropbox folder with it, out of
         // /Students/_Untagged (Gavin Woon, 7 Sep 2026).
         if (runId && phase === 'set-student') after(() => refileUntaggedFolder(runId));

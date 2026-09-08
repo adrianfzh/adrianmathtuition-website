@@ -6,10 +6,11 @@
 // All writes are service-role; the student only ever SELECTs their own rows (RLS).
 import { NextRequest, NextResponse } from 'next/server';
 import { putStudentFile, assignmentKey } from '@/lib/student-files';
-import { withSource } from '@/lib/assignments';
+import { withSource, withRequired } from '@/lib/assignments';
+import { assignmentNudge } from '@/lib/assignment-nudge';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { validateAssignment, canTransition, dueLabel, type AssignmentRow } from '@/lib/assignments';
+import { validateAssignment, canTransition, type AssignmentRow } from '@/lib/assignments';
 import { sendTelegramTo } from '@/lib/telegram';
 import { sendPushToStudent } from '@/lib/portal-push';
 import { dropboxConfigured, getTemporaryLink } from '@/lib/dropbox';
@@ -80,24 +81,21 @@ export async function POST(req: NextRequest) {
   // (A worksheet's Dropbox source was already copied to Blob above, before validation.)
 
   const { data, error } = await supabase
-    .from('portal_assignments').insert(withSource(row, body)).select('*').single();
+    .from('portal_assignments').insert(withRequired(withSource(row, body), body)).select('*').single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   const a = data as AssignmentRow;
 
   // D4: nudge the student on Telegram only if they linked it; otherwise silent.
+  // The wording is chosen by what the work is (lib/assignment-nudge, 8 Sep 2026):
+  // a compulsory Practice Again sheet says Adrian asked for it; one the student
+  // asked for says it is ready; anything else keeps the original nudge.
+  const nudge = assignmentNudge(a, SITE);
   let notified = false;
   try {
     const { data: acct } = await supabase
       .from('portal_accounts').select('telegram_chat_id')
       .eq('airtable_student_id', a.airtable_student_id).not('telegram_chat_id', 'is', null).limit(1).maybeSingle();
-    if (acct?.telegram_chat_id) {
-      const due = dueLabel(a.due_on);
-      const what = a.kind === 'question' ? 'a question' : 'a worksheet';
-      const text = `📬 Adrian sent you ${what}: <b>${escapeHtml(a.title)}</b>${due ? ` (${due})` : ''}`
-        + (a.note ? `\n\n“${escapeHtml(a.note)}”` : '')
-        + `\n\nOpen it: ${SITE}/app`;
-      notified = await sendTelegramTo(acct.telegram_chat_id, text);
-    }
+    if (acct?.telegram_chat_id) notified = await sendTelegramTo(acct.telegram_chat_id, nudge.text);
   } catch { /* never fail the send over a notification */ }
 
   // Web push too (2026-08-28) — every device this student turned notifications
@@ -105,11 +103,7 @@ export async function POST(req: NextRequest) {
   // rows carry (rec… or acct:…). Fire-and-forget: sendPushToStudent never
   // throws, and the extra .catch belts the promise — a push failure must never
   // fail (or delay) the assignment create.
-  sendPushToStudent(a.airtable_student_id, {
-    title: '📬 New work from Adrian',
-    body: a.title,
-    url: '/app/assignments',
-  }).catch(() => {});
+  sendPushToStudent(a.airtable_student_id, nudge.push).catch(() => {});
 
   return NextResponse.json({ assignment: a, notified });
 }
@@ -133,6 +127,3 @@ export async function PATCH(req: NextRequest) {
   return NextResponse.json({ assignment: data });
 }
 
-function escapeHtml(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}

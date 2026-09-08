@@ -31,14 +31,19 @@ Owner: **A** = Adrian (never automate), **S** = system, **C** = a Claude session
 | 5 | Author the sheet | C | Example → Practice pairs in Adrian's style; worked examples reproduce the failed question's SHAPE with changed numbers; **every answer verified computationally** |
 | 6 | **Amend the sheet** | **A** | he edits the DOCX. **Checkpoint — his name is on it** |
 | 7 | **Release together** | **A** | the marked copy AND the sheet reach the student in ONE delivery: release the run + assign the sheet, with a note tying them ("read your marked paper, then work this"). A bare score with the remedy arriving later is the thing this step exists to prevent |
-| 2–7 | **→ the marking desk** | A | **Since 2 Sep 2026 steps 2–7 happen on ONE screen — [`/admin/desk`](SPEC-MARKING-DESK.md):** the sheet queues itself when a tagged paper finishes marking (3–5 run headless), Adrian vets script + sheet side by side (2, 6 via the folder) and presses **Approve & release** (7) |
+| 2–7 | **→ the marking desk** | A | **Since 2 Sep 2026 steps 2–7 happen on ONE screen — [`/admin/desk`](SPEC-MARKING-DESK.md).** **Since 8 Sep 2026 the paper goes out by itself** once it clears the accuracy gates, and **a sheet exists only when someone asks for it**: Adrian's 📘 Queue on the desk (3–5 run headless; he vets it and releases it — then it is COMPULSORY and the app reminds the student until it is handed in) or the student's **Request Practice Again** button in the app (goes out on its own once written and checked). See the amendment below |
 | 8 | Student works + hands in | — | on paper → photo → `/app/submit` (or the assignment's 📷 button) |
-| 9 | Mark the hand-in | S | the normal pipeline; auto-release stays PAUSED for this loop |
-| 10 | **Vet before release** | **A** | so progress is monitored, not merely recorded. **Checkpoint** |
+| 9 | Mark the hand-in | S | the normal pipeline — auto-release live since 8 Sep 2026, the same gates as any hand-in |
+| 10 | **Vet after release** | **A** | the sign-off checkpoint sits AFTER release since 8 Sep 2026 — he looks at the returned work on the desk's Completed lane; an override re-issues the copy. **Checkpoint** |
 | 11 | Next wave | A | pull the next cluster off the shelf → back to step 4 |
 
-**Release happens at step 7, not before.** Steps 3–6 run while the marked copy
-is still held in triage; the student sees marks and remedy at the same moment.
+**Release happens at step 7, not before** — *as written on 2 Sep 2026.* **Amended
+8 Sep 2026:** the marked copy goes out the moment it clears the gates (marking is
+near-fully accurate); the remedy follows only when asked for. A sheet Adrian
+queues and releases arrives on the paper's own page in the app and is
+compulsory; a sheet the student asks for arrives when written. The "bare score
+with the remedy later" worry is answered by the request button on every marked
+paper and by the reminder that a compulsory sheet is still to do.
 
 The four human checkpoints — vet the marking, pick the wave, amend the sheet,
 vet the return — are the moat (standard, accountability). Automate around them,
@@ -60,8 +65,41 @@ never through them.
    equation steps aligned at the `=`.
 5. **Verify** — every worked and practice answer recomputed (sympy) before the
    sheet is shown to anyone; figures verified from their coordinates.
-6. **No auto-release in this loop** — the student's returned work waits for
-   Adrian's tap.
+6. **Auto-release, checkpoint after** (was "no auto-release in this loop" until
+   8 Sep 2026) — the student's returned work goes out through the same gates as
+   any hand-in; Adrian's sign-off sits after release, and a compulsory sheet is
+   reminded until it is handed in.
+
+## Amendment — Practice Again on request (8 Sep 2026)
+
+Adrian: *"when student hands up a paper via the student portal or telegram
+handin, should just auto mark their paper and released (marking is almost fully
+accurate), and allow them to request for Practice Again worksheets, so only
+generate when they request. Optionally, i can generate for them by clicking on
+desk, and vetting it and asking them to do → that is compulsory, so we should
+build a mechanism that reminds them it is not done."*
+
+- **No sheet is written unless someone asks.** The auto-queue on tagging /
+  marking done / the ScanSnap sweep / the bot's hand-in path is gone.
+  `lib/sheet-queue.ts` has two doors: `queueSheetJob(runId, {requestedBy})` and
+  `requeueSheetAfterRemark`, which only REPLACES a sheet that already exists.
+- **Adrian's door** — 📘 Queue on the desk (`POST /api/admin/sheet-jobs`,
+  `sheet_jobs.requested_by='adrian'`). When it lands it keeps the 12-hour clock /
+  hold rules; when released (desk tap or clock) the assignment carries
+  `portal_assignments.required_at` — **compulsory** — and
+  `/api/cron/practice-again-reminders` (daily 9am SGT) nudges the student on
+  day 3, then weekly, four times at most, Telegram + push, one summary line to
+  Adrian. The hub shows "📘 N Practice Again sheets you set, not handed in".
+- **The student's door** — **Request Practice Again** on their marked paper in
+  the app (`/app/marking/[id]`, `POST /api/portal/practice-again/request`, their
+  own released run only, `requested_by='student'`). When the worker finishes,
+  `sheet-jobs` runs the same gate (`autoReleaseGate` — the example check; the
+  paper's accuracy signals are watch-outs on Adrian's line, not holds) and, if
+  clean, sends it AT ONCE through
+  `release-with-sheet` — no clock, not compulsory. A gate failure holds it on
+  the desk and Telegram says the student asked. The app shows where the sheet
+  is (being written · Adrian is checking it · nothing worth practising).
+- Rows 2–7, 9, 10 and rule 6 above are read with this amendment.
 
 ## How a round is started
 

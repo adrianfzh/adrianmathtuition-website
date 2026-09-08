@@ -49,6 +49,7 @@ type SheetJobRow = {
   id: string; status: string; stage: string | null; error: string | null; attempts: number;
   focus: string | null; claimed_by: string | null; created_at: string; completed_at: string | null; result: unknown;
   auto_release_at?: string | null; held_at?: string | null; auto_released_at?: string | null;
+  requested_by?: string | null;
 };
 
 /** Per page: the original photo URL and the rotation applied at marking time. */
@@ -133,7 +134,7 @@ export async function GET(req: NextRequest) {
   } : null;
 
   const { data: jobRows } = await sb.from('sheet_jobs')
-    .select('id, status, stage, error, attempts, focus, claimed_by, created_at, completed_at, result, auto_release_at, held_at, auto_released_at')
+    .select('id, status, stage, error, attempts, focus, claimed_by, created_at, completed_at, result, auto_release_at, held_at, auto_released_at, requested_by')
     .eq('run_id', runId).order('created_at', { ascending: false });
   const jobs = (jobRows ?? []) as SheetJobRow[];
   const job = latestLiveJob(jobs);
@@ -267,6 +268,7 @@ export async function GET(req: NextRequest) {
       id: job.id, status: job.status, stage: job.stage, error: job.error, attempts: job.attempts,
       focus: job.focus, claimedBy: job.claimed_by, createdAt: job.created_at, completedAt: job.completed_at,
       autoReleaseAt: job.auto_release_at ?? null, heldAt: job.held_at ?? null, autoReleasedAt: job.auto_released_at ?? null,
+      requestedBy: job.requested_by ?? null,
       label: sheetStageLabel(job),
       result: jobResult ? {
         docxPath: typeof jobResult.docx_path === 'string' ? jobResult.docx_path : null,

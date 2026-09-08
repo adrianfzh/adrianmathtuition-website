@@ -25,7 +25,9 @@ export const DESK_LANES: readonly DeskLane[] = ['untagged', 'awaiting-sheet', 'r
 export const LANE_LABEL: Record<DeskLane, string> = {
   auto: 'Released by the system — not yet looked at',
   untagged: 'Needs a student',
-  'awaiting-sheet': 'Marked, sheet on the way',
+  // "no sheet yet" since 8 Sep 2026 — a sheet is written only when someone asks
+  // (Adrian from this desk, or the student from the app after release).
+  'awaiting-sheet': 'Marked, no sheet yet',
   // "Completed" not "Released" — Adrian, 7 Sep 2026: "completed is easier to understand".
   ready: 'Ready to vet',
   released: 'Completed',

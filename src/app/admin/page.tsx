@@ -74,6 +74,8 @@ interface Stats {
   lessonsToLog?: number | null;
   examGaps?: { examType: string; count: number } | null;
   triage?: { flagged: number; readyToRelease: number } | null;
+  /** Compulsory Practice Again sheets (Adrian queued + released) still not handed in — 8 Sep 2026. */
+  compulsorySheets?: { count: number; oldestDays: number; names: string[] } | null;
 }
 
 interface BotStats {
@@ -220,10 +222,12 @@ export default function AdminHub() {
   const logCard = typeof stats?.lessonsToLog === 'number' && stats.lessonsToLog > 0 ? stats.lessonsToLog : null;
   const examGapsCard = stats?.examGaps && stats.examGaps.count > 0 ? stats.examGaps : null;
   const triageCard = stats?.triage && (stats.triage.flagged > 0 || stats.triage.readyToRelease > 0) ? stats.triage : null;
+  // Sheets Adrian set as compulsory that the student has not handed in (the reminder cron nags them; this shows him).
+  const compulsoryCard = stats?.compulsorySheets && stats.compulsorySheets.count > 0 ? stats.compulsorySheets : null;
   const portalCard = portalActivity && portalActivity.totals.accounts > 0 ? portalActivity.totals : null;
   // Hand-ins that failed on a student's phone in the last 24 h (lib/submit-failure.ts, 7 Sep 2026) — red, first.
   const failedCard = portalActivity?.failedHandins?.length ? portalActivity.failedHandins : null;
-  const hasAttentionCards = !!(papersCard || unmarkedCard || examGapsCard || triageCard || logCard || portalCard || failedCard);
+  const hasAttentionCards = !!(papersCard || unmarkedCard || examGapsCard || triageCard || logCard || portalCard || failedCard || compulsoryCard);
 
   return (
     <>
@@ -281,6 +285,18 @@ export default function AdminHub() {
                   {triageCard.flagged > 0 && triageCard.readyToRelease > 0 && (
                     <div className="stat-label">+{triageCard.readyToRelease} ready to release</div>
                   )}
+                </a>
+              )}
+              {compulsoryCard && (
+                <a href="/admin/desk" className="stat-card" style={{ borderLeftColor: '#047857' }}>
+                  <div className="stat-top">
+                    <span className="stat-num">{compulsoryCard.count}</span>
+                    <span className="stat-arrow">›</span>
+                  </div>
+                  <div className="stat-label">📘 Practice Again sheet{compulsoryCard.count === 1 ? '' : 's'} you set, not handed in</div>
+                  <div className="stat-label">
+                    {compulsoryCard.names.slice(0, 4).join(' · ')}{compulsoryCard.oldestDays >= 3 ? ` · oldest ${compulsoryCard.oldestDays}d` : ''}
+                  </div>
                 </a>
               )}
               {logCard !== null && (

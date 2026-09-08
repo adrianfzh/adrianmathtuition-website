@@ -1,97 +1,91 @@
 import { describe, it, expect } from 'vitest';
-import { sheetQueueGuard, sheetJobInsert, supersededByNewSheet, type SheetQueueRun } from './sheet-queue';
+import { sheetQueueGuard, sheetJobInsert, supersededByNewSheet, remarkRequester, type SheetQueueRun } from './sheet-queue';
 
 const run: SheetQueueRun = {
-  id: 'f0d82c18-0000-4000-8000-000000000000',
-  paper_name: 'am tys 2021 p1',
-  student_id: 'recStudent',
-  student_name: 'Sophie Tan',
-  released_at: null,
-  result_json: { results: [{ question_number: '1' }] },
+  id: 'run-1', paper_name: 'am tys 2021 p1', student_id: 'recStudent', student_name: 'Sophie Tan',
+  released_at: null, result_json: { pages: [] },
 };
+const released: SheetQueueRun = { ...run, released_at: '2026-09-08T04:00:00Z' };
 
-describe('sheetQueueGuard — the button and the auto-queue share one rule', () => {
-  it('a tagged, marked, unreleased run with no jobs may be queued by either door', () => {
-    expect(sheetQueueGuard(run, [])).toEqual({ ok: true });
-    expect(sheetQueueGuard(run, [], { auto: true })).toEqual({ ok: true });
-  });
-
-  it('refuses a missing run (404)', () => {
+describe('sheetQueueGuard — shared rules', () => {
+  it('refuses a missing run', () => {
     expect(sheetQueueGuard(null, [])).toMatchObject({ ok: false, status: 'not-found', http: 404 });
   });
-
-  it('refuses an untagged run with the message the button has always shown', () => {
-    expect(sheetQueueGuard({ ...run, student_id: null }, [])).toMatchObject({
-      ok: false, status: 'untagged', http: 400,
-      message: 'Tag this paper to a student first — a sheet needs someone to be for.',
-    });
+  it('refuses an untagged run — a sheet needs someone to be for', () => {
+    expect(sheetQueueGuard({ ...run, student_id: null }, [])).toMatchObject({ ok: false, status: 'untagged', http: 400 });
   });
-
-  it('refuses a run with no marking yet (a ⏳ pending row)', () => {
-    expect(sheetQueueGuard({ ...run, result_json: { source: {} } }, [])).toMatchObject({ ok: false, status: 'no-marking', http: 400 });
-    expect(sheetQueueGuard({ ...run, result_json: { results: [] } }, [])).toMatchObject({ ok: false, status: 'no-marking' });
+  it('refuses a run with no marking', () => {
+    expect(sheetQueueGuard({ ...run, result_json: null }, [])).toMatchObject({ ok: false, status: 'no-marking', http: 400 });
   });
-
-  it('never queues twice while one is in flight — either door', () => {
-    for (const status of ['queued', 'claimed']) {
-      const r = sheetQueueGuard(run, [{ id: 'j1', status }]);
-      expect(r).toMatchObject({ ok: false, status: 'duplicate', http: 409, jobId: 'j1', message: 'A sheet for this paper is already queued.' });
-      expect(sheetQueueGuard(run, [{ id: 'j1', status }], { auto: true })).toMatchObject({ ok: false, status: 'duplicate' });
-    }
+  it('refuses while a job is queued or claimed, naming it', () => {
+    expect(sheetQueueGuard(run, [{ id: 'j1', status: 'claimed' }])).toMatchObject({ ok: false, status: 'duplicate', http: 409, jobId: 'j1' });
+    expect(sheetQueueGuard(run, [{ id: 'j2', status: 'queued' }], { requestedBy: 'student' })).toMatchObject({ status: 'duplicate' });
   });
+});
 
-  it('the BUTTON may re-queue after a done, failed or cancelled job', () => {
-    for (const status of ['done', 'failed', 'cancelled']) {
-      expect(sheetQueueGuard(run, [{ id: 'j1', status }])).toEqual({ ok: true });
-    }
-  });
-
-  it('the AUTO door is first-time only: any earlier job refuses it', () => {
-    expect(sheetQueueGuard(run, [{ id: 'j1', status: 'done' }], { auto: true })).toMatchObject({ ok: false, status: 'exists', http: 409, jobId: 'j1' });
-    expect(sheetQueueGuard(run, [{ id: 'j1', status: 'failed' }], { auto: true })).toMatchObject({ ok: false, status: 'exists' });
-    // A cancelled job still counts for the auto door — Adrian stopped one on purpose.
-    expect(sheetQueueGuard(run, [{ id: 'j1', status: 'cancelled' }], { auto: true })).toMatchObject({ ok: false, status: 'exists', jobId: 'j1' });
-  });
-
-  it('the AUTO door refuses a released run; the button does not', () => {
-    const released = { ...run, released_at: '2026-09-02T10:00:00Z' };
-    expect(sheetQueueGuard(released, [], { auto: true })).toMatchObject({ ok: false, status: 'released', http: 409 });
+describe("sheetQueueGuard — Adrian's door (the desk)", () => {
+  it('lets a tagged marked paper through, released or not', () => {
+    expect(sheetQueueGuard(run, [])).toEqual({ ok: true });
     expect(sheetQueueGuard(released, [])).toEqual({ ok: true });
   });
+  it('re-queues after a done, failed or cancelled job', () => {
+    for (const status of ['done', 'failed', 'cancelled']) {
+      expect(sheetQueueGuard(released, [{ id: 'j', status }])).toEqual({ ok: true });
+    }
+  });
+});
 
-  it('untagged / unmarked outrank the in-flight check', () => {
-    expect(sheetQueueGuard({ ...run, student_id: null }, [{ id: 'j1', status: 'queued' }])).toMatchObject({ status: 'untagged' });
+describe('sheetQueueGuard — the student door (the app)', () => {
+  it('needs the paper to be out first', () => {
+    expect(sheetQueueGuard(run, [], { requestedBy: 'student' })).toMatchObject({ ok: false, status: 'not-released', http: 409 });
+  });
+  it('lets a released paper with no sheet through', () => {
+    expect(sheetQueueGuard(released, [], { requestedBy: 'student' })).toEqual({ ok: true });
+  });
+  it('does not write a second sheet when one exists', () => {
+    expect(sheetQueueGuard(released, [{ id: 'j1', status: 'done' }], { requestedBy: 'student' })).toMatchObject({ ok: false, status: 'exists', http: 409, jobId: 'j1' });
+  });
+  it('lets the student try again after a failed or cancelled job', () => {
+    expect(sheetQueueGuard(released, [{ id: 'j1', status: 'failed' }], { requestedBy: 'student' })).toEqual({ ok: true });
+    expect(sheetQueueGuard(released, [{ id: 'j1', status: 'cancelled' }], { requestedBy: 'student' })).toEqual({ ok: true });
   });
 });
 
 describe('sheetJobInsert', () => {
-  it('builds the row the worker claims, focus capped at 300 chars', () => {
-    expect(sheetJobInsert(run, null)).toEqual({
-      run_id: run.id, airtable_student_id: 'recStudent', student_name: 'Sophie Tan', paper_name: 'am tys 2021 p1', focus: null,
+  it('stamps who asked — Adrian by default', () => {
+    expect(sheetJobInsert(run)).toEqual({
+      run_id: 'run-1', airtable_student_id: 'recStudent', student_name: 'Sophie Tan', paper_name: 'am tys 2021 p1', focus: null, requested_by: 'adrian',
     });
+    expect(sheetJobInsert(run, undefined, 'student').requested_by).toBe('student');
+  });
+  it('keeps the focus note to 300 characters', () => {
     expect(sheetJobInsert(run, 'x'.repeat(400)).focus).toHaveLength(300);
-    expect(sheetJobInsert({ ...run, student_name: null, paper_name: null }, 'logs')).toMatchObject({ student_name: '', paper_name: '', focus: 'logs' });
   });
 });
 
-describe('supersededByNewSheet — a new sheet replaces the old one', () => {
-  const jobs = [
-    { id: 'old-done', status: 'done' },
-    { id: 'old-failed', status: 'failed' },
-    { id: 'writing', status: 'claimed' },
-    { id: 'waiting', status: 'queued' },
-  ];
-  it('on a re-mark, cancels the sheets still being written and clears every earlier job\'s held items', () => {
-    const out = supersededByNewSheet(jobs, { remark: true });
-    expect(out.cancel).toEqual(['writing', 'waiting']);
-    expect(out.clearHeld).toEqual(['old-done', 'old-failed', 'writing', 'waiting']);
+describe('supersededByNewSheet', () => {
+  const jobs = [{ id: 'a', status: 'done' }, { id: 'b', status: 'claimed' }, { id: 'c', status: 'failed' }];
+  it('a plain new sheet cancels nothing but clears every earlier held item', () => {
+    expect(supersededByNewSheet(jobs)).toEqual({ cancel: [], clearHeld: ['a', 'b', 'c'] });
   });
-  it('on a plain re-queue, cancels nothing (the guard refuses while one is in flight) but still clears held items', () => {
-    const out = supersededByNewSheet([jobs[0], jobs[1]]);
-    expect(out.cancel).toEqual([]);
-    expect(out.clearHeld).toEqual(['old-done', 'old-failed']);
+  it('a re-mark also cancels what is still in flight', () => {
+    expect(supersededByNewSheet(jobs, { remark: true })).toEqual({ cancel: ['b'], clearHeld: ['a', 'b', 'c'] });
   });
-  it('a first sheet has nothing to supersede', () => {
-    expect(supersededByNewSheet([])).toEqual({ cancel: [], clearHeld: [] });
+});
+
+describe('remarkRequester — who a replacement sheet is for', () => {
+  it('is nobody when the paper never had a sheet', () => {
+    expect(remarkRequester([])).toBeNull();
+    expect(remarkRequester([{ id: 'x', status: 'cancelled', requested_by: 'student' }])).toBeNull();
+  });
+  it('follows the newest non-cancelled job', () => {
+    expect(remarkRequester([
+      { id: 'a', status: 'done', requested_by: 'adrian', created_at: '2026-09-01T00:00:00Z' },
+      { id: 'b', status: 'done', requested_by: 'student', created_at: '2026-09-05T00:00:00Z' },
+    ])).toBe('student');
+  });
+  it('treats legacy auto-queued sheets as Adrian’s (back to the desk, on the clock)', () => {
+    expect(remarkRequester([{ id: 'a', status: 'done', requested_by: 'auto' }])).toBe('adrian');
+    expect(remarkRequester([{ id: 'a', status: 'done', requested_by: null }])).toBe('adrian');
   });
 });
