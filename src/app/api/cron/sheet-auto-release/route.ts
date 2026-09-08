@@ -47,10 +47,21 @@ export async function GET(req: NextRequest) {
       // waited. Checked HERE, at fire time — a re-mark can add flags after the
       // sheet was filed, and Adrian may clear them in the meantime.
       const { data: run } = await sb.from('paper_marking_runs').select('released_at, result_json').eq('id', j.run_id).maybeSingle<{ released_at: string | null; result_json: unknown }>();
-      if (run?.released_at) {
-        await sb.from('sheet_jobs').update({ auto_released_at: new Date().toISOString(), stage: 'released from the desk before the clock' }).eq('id', j.id);
-        out.push({ id: j.id, ok: true, note: 'already released' });
-        continue;
+      // The paper is already out — since 8 Sep 2026 every marked hand-in goes at
+      // once, so this is the NORMAL case for a sheet Adrian queued afterwards
+      // (Practice Again on request). Only a sheet the desk already sent (its
+      // assignment exists) is finished here; otherwise the clock sends the sheet
+      // by itself through the same route, which attaches it to the released
+      // paper and does not release the paper a second time.
+      const paperAlreadyOut = !!run?.released_at;
+      if (paperAlreadyOut) {
+        const { data: sent } = await sb.from('portal_assignments').select('id')
+          .eq('source_run_id', j.run_id).eq('source', 'practice-again').eq('kind', 'worksheet').neq('status', 'revoked').limit(1);
+        if ((sent ?? []).length) {
+          await sb.from('sheet_jobs').update({ auto_released_at: new Date().toISOString(), stage: 'sent from the desk before the clock' }).eq('id', j.id);
+          out.push({ id: j.id, ok: true, note: 'already sent' });
+          continue;
+        }
       }
       // The paper's accuracy signals are watch-outs on the released line (Adrian,
       // 8 Sep 2026: "just release them, but ping me for anything important").
@@ -69,8 +80,9 @@ export async function GET(req: NextRequest) {
       });
       const d = await r.json().catch(() => ({} as { error?: string }));
       if (r.ok) {
-        await sb.from('sheet_jobs').update({ auto_released_at: new Date().toISOString(), stage: 'auto-released' }).eq('id', j.id);
-        await sendTelegram(releasedWithWatchLine(who, j.paper_name, watch)).catch(() => {});
+        await sb.from('sheet_jobs').update({ auto_released_at: new Date().toISOString(), stage: paperAlreadyOut ? 'auto-released — the sheet followed the paper on the clock' : 'auto-released' }).eq('id', j.id);
+        const followed = paperAlreadyOut ? '\nThe marked paper was already with them; the Practice Again sheet followed on the clock — compulsory, the app reminds them until it is handed in.' : '';
+        await sendTelegram(releasedWithWatchLine(who, j.paper_name, watch) + followed).catch(() => {});
         out.push({ id: j.id, ok: true, note: 'released' });
       } else {
         // Not something a cron should decide: hand it back to the desk, once.

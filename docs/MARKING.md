@@ -1061,6 +1061,14 @@ compulsory, so we should build a mechanism that reminds them it is not done."
   Not compulsory (no `required_at`). The Papers list and the paper page show
   the state: being written · Adrian is checking it · nothing worth practising
   (`readNoSheet`) · the request door.
+- **The clock and a paper that is already out:** since every marked hand-in
+  goes at once, a sheet Adrian queues afterwards ALWAYS meets a released paper
+  when its 12 hours pass. `sheet-auto-release` used to stamp such a job
+  "released from the desk before the clock" and send nothing — a silent hole
+  once papers went first. Now it sends the sheet through `release-with-sheet`
+  (which attaches to the released paper, no second paper release) and skips
+  only when the desk already sent it (a `portal_assignments` row with that
+  `source_run_id` exists → stage "sent from the desk before the clock").
 - **Desk copy:** the lane is "Marked, no sheet yet"; chips say "asked by the
   student"; the tag toast no longer promises a sheet.
 - **Open choices Adrian has not confirmed:** student-requested sheets go out
