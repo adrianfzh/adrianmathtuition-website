@@ -50,6 +50,7 @@ import { buildReviseBlock } from '@/lib/revise-map';
 import { canTransition, validateAssignment, type AssignmentStatus } from '@/lib/assignments';
 import { sendPushToStudent } from '@/lib/portal-push';
 import { paperFolder } from '@/lib/paper-folder';
+import { isOurFileUrl } from '@/lib/student-files-url';
 import { attachAmendedFromDropbox } from '@/lib/attach-amended';
 import { PAPER_SUBJECTS } from '@/lib/portal-subjects';
 
@@ -520,8 +521,10 @@ export async function POST(req: NextRequest) {
     const { runId } = body;
     const url = String((body as { url?: unknown }).url ?? '').trim();
     if (!runId || !url) return NextResponse.json({ error: 'runId and url are required' }, { status: 400 });
-    if (!/^https:\/\/[\w.-]+\.public\.blob\.vercel-storage\.com\//.test(url)) {
-      return NextResponse.json({ error: 'url must be a Vercel Blob URL' }, { status: 400 });
+    // The desk uploads into the private student-files bucket (5 Sep 2026 rule);
+    // isOurFileUrl also accepts the legacy Blob URLs older callers stored.
+    if (!isOurFileUrl(url)) {
+      return NextResponse.json({ error: 'url must be a student-files URL' }, { status: 400 });
     }
     const { data: run, error: readErr } = await supa
       .from('paper_marking_runs').select('id, result_json, released_at').eq('id', runId).single();

@@ -18,13 +18,13 @@ describe('triageReminderMessage', () => {
     expect(triageReminderMessage([], NOW)).toBeNull();
   });
 
-  it('one ready script: singular header, ready line, triage link', () => {
+  it('one ready script: singular header, ready line, desk link', () => {
     const msg = triageReminderMessage([run()], NOW)!;
-    expect(msg).toContain('1 marked paper waiting in triage');
+    expect(msg).toContain('1 marked paper waiting on the desk');
     expect(msg).not.toContain('papers waiting');
     expect(msg).toContain('1 ready to release');
     expect(msg).toContain('• Xinmin 2021 Prelim P2 — Jia Ying · ready · today');
-    expect(msg).toContain('/admin/mark/triage');
+    expect(msg).toContain('/admin/desk');
   });
 
   it('counts flagged questions across runs and lists oldest first', () => {
@@ -35,7 +35,7 @@ describe('triageReminderMessage', () => {
       ],
       NOW
     )!;
-    expect(msg).toContain('2 marked papers waiting in triage</b> — 3 questions to check');
+    expect(msg).toContain('2 marked papers waiting on the desk</b> — 3 questions to check');
     expect(msg.indexOf('Older')).toBeLessThan(msg.indexOf('Newer'));
     expect(msg).toContain('Older — Jia Ying · 1 to check · 4d');
   });

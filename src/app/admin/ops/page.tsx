@@ -122,7 +122,7 @@ export default function OpsPage() {
                   : `${data.queue.pending} paper${data.queue.pending > 1 ? 's' : ''} waiting · oldest ${data.queue.oldestMinutes}m`
                 : '…'}
             </span>
-            <a href="/admin/mark/triage" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">triage →</a>
+            <a href="/admin/desk" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">desk →</a>
           </div>
         </section>
 

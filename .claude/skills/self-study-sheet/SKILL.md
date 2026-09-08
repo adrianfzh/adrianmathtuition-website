@@ -252,7 +252,7 @@ prompt, part scores and annotated page from the run's own `result_json`, and
 answers 409 if that question is already shelved. **Headless runs (the
 sheet-worker) skip this step** and only report `shelved` in the completion
 payload — no auto-shelving without Adrian's approval; he shelves in one tap
-from `/admin/mark/triage` or `/admin/papers`.
+from `/admin/desk` (triage retired 8 Sep 2026) or `/admin/papers`.
 
 **The completion payload also carries the diagnosis** (headless and in-session
 alike — Adrian, 2 Sep 2026: *"the sheet's diagnosis should drive the cover, not

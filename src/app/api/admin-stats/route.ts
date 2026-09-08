@@ -74,7 +74,7 @@ async function fetchPendingPapers(): Promise<{ count: number; possiblyMarking: n
 }
 
 /**
- * Marked scripts waiting on Adrian at /admin/mark/triage: flagged questions he
+ * Marked scripts waiting on Adrian at /admin/desk (triage retired 8 Sep 2026): flagged questions he
  * hasn't resolved, plus whole scripts that are clean and just need releasing.
  * Reads Supabase directly (the runs table), not the bot.
  */

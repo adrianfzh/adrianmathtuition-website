@@ -10,7 +10,7 @@
 // Pure on purpose: the route fetches rows with the SAME filter as the triage
 // GET (`released_at IS NULL`, `archived_at IS NULL`, ≤14 days,
 // `result_json.results` present) so the number here always equals the scripts
-// count on /admin/mark/triage — a reminder that says 3 when the page shows 2
+// count on /admin/desk — a reminder that says 3 when the page shows 2
 // teaches Adrian to distrust both.
 
 export interface WaitingRun {
@@ -24,7 +24,9 @@ export interface WaitingRun {
   fromStudent?: boolean;
 }
 
-const TRIAGE_URL = 'https://www.adrianmathtuition.com/admin/mark/triage';
+// The desk absorbed /admin/mark/triage on 8 Sep 2026; the reminder's numbers still
+// match the desk's unreleased-and-unarchived query.
+const TRIAGE_URL = 'https://www.adrianmathtuition.com/admin/desk';
 const MAX_LINES = 8;
 
 function escapeHtml(s: string): string {
@@ -53,7 +55,7 @@ export function triageReminderMessage(runs: WaitingRun[], now: Date): string | n
   const flagged = sorted.reduce((n, r) => n + r.flaggedCount, 0);
 
   const head =
-    `🗂 <b>${sorted.length} marked paper${sorted.length === 1 ? '' : 's'} waiting in triage</b>` +
+    `🗂 <b>${sorted.length} marked paper${sorted.length === 1 ? '' : 's'} waiting on the desk</b>` +
     (flagged > 0 ? ` — ${flagged} question${flagged === 1 ? '' : 's'} to check` : '') +
     (ready > 0 ? `, ${ready} ready to release` : '');
 

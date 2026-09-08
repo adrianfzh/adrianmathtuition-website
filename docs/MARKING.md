@@ -1018,6 +1018,18 @@ it matters — hence the zoom / the original, not a bigger copy of every page.
 
 ## /admin/mark/triage — flagged-only review + the release gate (2026-08-11)
 
+> **RETIRED 8 Sep 2026 — the page redirects to `/admin/desk`.** Adrian: "fold triage
+> into the desk and retire it". The desk already vetted every question; the four
+> controls only triage had moved over that day: **👁 Seen** (detail view) + **👁 All seen**
+> (lane bar; held student hand-ins are still kept), **🧺 Shelve** and **📬 Send follow-up**
+> beside every lost-marks question (+ **📬 Follow up on all N** in the files row), and
+> **✍️ Upload amended** (My copy row — into the private student-files bucket, not Blob;
+> `attach-amended` now accepts any `isOurFileUrl`). The morning reminder, the ops page
+> and the bot's "release it from…" messages point at the desk (`?run=<id>`). The API
+> route `/api/admin/mark-triage` is NOT retired — the desk and the bot's auto-release
+> post to it — and the health-check probe on it stays. Everything below is history
+> that still explains the route's actions.
+
 The screen that makes AI marking safe to hand back at scale. **Nothing Adrian uploads
 himself reaches a student until he taps Release** — that tap is the trust gate (locked
 decision 2 in [`../HANDOFF-MARKING-LOOP.md`](../HANDOFF-MARKING-LOOP.md); do NOT un-gate

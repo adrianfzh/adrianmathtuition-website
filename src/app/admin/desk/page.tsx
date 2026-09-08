@@ -19,6 +19,7 @@
 // side) and the phone between lessons. Same palette and buttons as triage so
 // it reads as the same product.
 
+import { uploadStudentFile } from '@/lib/student-files-client';
 import 'katex/dist/katex.min.css';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
@@ -278,6 +279,8 @@ export default function DeskPage() {
   const [editKind, setEditKind] = useState('');
   // Per-part marks while editing one question: label → typed value (8 Sep 2026).
   const [editParts, setEditParts] = useState<Record<string, string>>({});
+  // 🧺 questions parked on the student's shelf from this sitting (index → shown as Shelved ✓)
+  const [shelved, setShelved] = useState<Set<string>>(new Set());
   const [focus, setFocus] = useState('');
   const [tagging, setTagging] = useState(false);
 
@@ -493,6 +496,73 @@ export default function DeskPage() {
     if (!ok) { setToast(d.error || 'Could not attach'); return; }
     setToast(d.unchanged ? `${d.name} is already the attached copy.` : `Attached ${d.name} — that is now the copy the student gets.`);
     refresh(id);
+  }
+
+  // ── moved here from /admin/mark/triage when it was retired (8 Sep 2026) ──
+  // 👁 Seen — a paper Adrian marked by hand and handed back in class is never
+  // released; archived_at is the third state: it leaves the desk, the hub card
+  // and the morning reminder, the student's app never shows it, and
+  // /admin/papers still lists it.
+  async function markSeen() {
+    if (!detail) return;
+    const id = detail.run.id;
+    if (!window.confirm(`Mark "${detail.run.paperName || 'this paper'}" as seen? It leaves the desk WITHOUT being released — the student never gets it in the app.`)) return;
+    setBusy('seen');
+    const { ok, d } = await postJson('/api/admin/mark-triage', { action: 'archive', runId: id });
+    setBusy('');
+    if (!ok) { setToast(d.error || 'Could not mark it seen'); return; }
+    setToast('Marked as seen — off the desk, nothing sent to the student.');
+    go({ run: null });
+    loadQueue(false);
+  }
+  async function markAllSeen() {
+    if (!window.confirm('Mark EVERY unreleased paper as seen (not released)? Held student hand-ins are kept. Nothing is sent to anyone.')) return;
+    setBusy('seen-all');
+    const { ok, d } = await postJson('/api/admin/mark-triage', { action: 'archive-all' });
+    setBusy('');
+    if (!ok) { setToast(d.error || 'Could not mark them seen'); return; }
+    setToast(`${d.archived ?? 0} marked as seen` + (d.skippedStudent ? ` — ${d.skippedStudent} student hand-in${d.skippedStudent === 1 ? '' : 's'} kept` : ''));
+    loadQueue(false);
+  }
+  // ✍️ Upload amended — the marked PDF after Adrian wrote on it (Notability etc.)
+  // becomes the copy the student opens. Straight into the private student-files
+  // bucket (never Blob — 5 Sep 2026 rule); attach-amended stores the canonical URL.
+  async function uploadAmended(file: File) {
+    if (!detail) return;
+    const id = detail.run.id;
+    setBusy('amend');
+    try {
+      const up = await uploadStudentFile(
+        `/api/admin/mark-paper-annotated-token?runId=${encodeURIComponent(id)}&filename=${encodeURIComponent(file.name)}`,
+        file, { contentType: 'application/pdf' },
+      );
+      const { ok, d } = await postJson('/api/admin/mark-triage', { action: 'attach-amended', runId: id, url: up.url });
+      if (!ok) throw new Error(d.error || 'could not attach it');
+      setToast('Your amended copy is now the one the student gets.');
+      refresh(id);
+    } catch (e) { setToast(`Upload failed — ${(e as Error).message}`); }
+    finally { setBusy(''); }
+  }
+  // 🧺 Shelve — park this weakness for a later teaching round WITH its evidence
+  // (IDEAS.md "wave 2 waiting"): the shelf API grabs the question's page, the
+  // marker's note and the topic from the run. Needs a tagged run (the shelf is
+  // per-student). Deliberately does NOT review the question — parking a topic
+  // for later is not the same as agreeing with the mark.
+  async function shelve(q: Question) {
+    if (!detail) return;
+    const id = detail.run.id;
+    setBusy(`shelve:${q.index}`);
+    try {
+      const r = await fetch('/api/admin/shelf', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fromRun: { runId: id, questionNumber: q.questionNumber }, ...(q.topic ? { topic: q.topic } : {}) }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (r.status === 409) { setShelved(prev => new Set(prev).add(`${id}:${q.index}`)); setToast(`Q${q.questionNumber} is already on the shelf.`); }
+      else if (!r.ok) setToast(d.error || 'Could not shelve it');
+      else { setShelved(prev => new Set(prev).add(`${id}:${q.index}`)); setToast(`🧺 On the shelf — Q${q.questionNumber}${q.topic ? ` · ${q.topic}` : ''}`); }
+    } catch { setToast('Connection error'); }
+    finally { setBusy(''); }
   }
 
   async function rebuild() {
@@ -745,7 +815,15 @@ export default function DeskPage() {
               </button>
             ))}
           </div>
-          <p style={{ fontSize: 12.5, color: C.muted, margin: '0 0 12px' }}>{LANE_HINT[activeLane]}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 12px', flexWrap: 'wrap' }}>
+            <p style={{ fontSize: 12.5, color: C.muted, margin: 0, flex: '1 1 260px' }}>{LANE_HINT[activeLane]}</p>
+            {activeLane !== 'released' && (
+              <button onClick={markAllSeen} disabled={busy === 'seen-all'} className="desk-tab"
+                title="Papers you marked by hand and handed back in class: mark every unreleased one as seen so it stops waiting here. Held student hand-ins are kept. Nothing is sent to anyone.">
+                {busy === 'seen-all' ? '…' : '👁 All seen'}
+              </button>
+            )}
+          </div>
 
           {queueError && <p style={{ color: C.danger }}>{queueError}</p>}
           {queueLoading && rows.length === 0 && <p style={{ color: C.muted }}>Loading…</p>}
@@ -792,7 +870,6 @@ export default function DeskPage() {
           <div style={{ marginTop: 22, fontSize: 12.5, color: C.muted, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
             <span>Other views:</span>
             <a href="/admin/mark-paper" style={{ color: C.link, textDecoration: 'none' }}>✍️ Mark a paper</a>
-            <a href="/admin/mark/triage" style={{ color: C.link, textDecoration: 'none' }}>🔍 Triage</a>
             <a href="/admin/papers" style={{ color: C.link, textDecoration: 'none' }}>📑 Papers library</a>
             <a href="/admin" style={{ color: C.link, textDecoration: 'none' }}>← Admin</a>
           </div>
@@ -810,6 +887,7 @@ export default function DeskPage() {
           editKind={editKind} setEditKind={setEditKind} editParts={editParts} setEditParts={setEditParts}
           onAgree={agree} onOverride={override} onTag={tag} onSubject={setPaperSubject} onAttach={attachMyCopy} onRebuild={rebuild}
           onQueueSheet={queueSheet} onCancelSheet={cancelSheet} onAutoRelease={autoRelease} onApprove={approve} onReleaseOnly={releaseWithoutSheet} onToast={setToast} onRefresh={() => refresh(detail.run.id)}
+          onSeen={markSeen} onUploadAmended={uploadAmended} onShelve={shelve} shelved={shelved}
           onRevise={reviseSheet} onRemarkPage={remarkPage} onApproveScheme={() => approveScheme(false)} onAuditAllocation={auditAllocation}
         />
       )}
@@ -835,6 +913,7 @@ function DetailView(p: {
   onAttach: () => void; onRebuild: () => void; onQueueSheet: () => void; onCancelSheet: () => void; onToast: (message: string) => void; onRefresh: () => void;
   onAutoRelease: (action: 'hold' | 'unhold') => void;
   onApprove: () => void; onReleaseOnly: () => void;
+  onSeen: () => void; onUploadAmended: (file: File) => void; onShelve: (q: Question) => void; shelved: Set<string>;
   onRevise: (instructions: string) => void; onRemarkPage: (photoIndex: number) => void;
   onApproveScheme: () => void; onAuditAllocation: () => void;
 }) {
@@ -873,6 +952,9 @@ function DetailView(p: {
     return { text: `${a.name} — ${run.annotatedPdfUrl ? 'NEWER than the attached copy' : 'found, will attach on release'}`, color: C.flag };
   })();
 
+  // Every topic this script dropped marks on — the per-question 📬 sends one; a
+  // paper rarely fails on one thing, and three follow-ups used to mean three trips.
+  const weakTopics = [...new Set(d.questions.filter(q => q.awarded < q.max && q.topic).map(q => q.topic as string))];
   return (
     <>
       {/* ── header bar ── */}
@@ -983,6 +1065,17 @@ function DetailView(p: {
           <button type="button" title="Copy this folder's path on your Mac — then ⌘⇧G in Finder and paste"
             onClick={() => { const local = `~/Library/CloudStorage/Dropbox/Apps/AdrianMathNotes${d.folder.path}`; navigator.clipboard?.writeText(local).then(() => p.onToast('Copied the folder path — in Finder press ⌘⇧G and paste.')).catch(() => p.onToast(local)); }}
             style={{ ...btn('#fff', C.link, C.border), padding: '3px 8px', fontSize: 12.5 }}>📋 Copy local path</button>
+          {!released && (
+            <button type="button" onClick={p.onSeen} disabled={busy === 'seen'}
+              title="Marked by hand and handed back in class? Mark it seen: it leaves the desk, the hub card and the morning reminder WITHOUT being released — the student never gets it in the app. The papers library still lists it."
+              style={{ ...btn('#fff', '#374151', C.border), padding: '3px 8px', fontSize: 12.5 }}>{busy === 'seen' ? '…' : '👁 Seen'}</button>
+          )}
+          {!released && weakTopics.length >= 2 && run.studentId && (
+            <a href={`/admin/students/${run.studentId}?send=${encodeURIComponent(weakTopics.join('|'))}`}
+              style={{ color: C.link, textDecoration: 'none', fontWeight: 600 }} title={`Send follow-ups on all ${weakTopics.length} weak topics at once`}>
+              📬 Follow up on all {weakTopics.length}
+            </a>
+          )}
           {run.annotatedPdfUrl && <a href={fileHref(run.annotatedPdfUrl)} target="_blank" rel="noreferrer" style={{ color: C.pen, textDecoration: 'none' }}>✍️ Annotated ↗</a>}
           {run.photosPdfUrl && <a href={fileHref(run.photosPdfUrl)} target="_blank" rel="noreferrer" style={{ color: C.link, textDecoration: 'none' }}>🖼 Images ↗</a>}
           {run.pdfUrl && <a href={fileHref(run.pdfUrl)} target="_blank" rel="noreferrer" style={{ color: C.link, textDecoration: 'none' }}>📄 Full ↗</a>}
@@ -1003,6 +1096,14 @@ function DetailView(p: {
               title="Redraw both marked PDFs from the run — after an override changed the total, or so the cover follows the sheet's diagnosis">
               {busy === 'rebuild' ? 'Rebuilding…' : '🔁 Rebuild PDFs'}
             </button>
+          )}
+          {!released && (
+            <label style={{ ...btn('#fff', C.link, C.border), padding: '5px 10px', fontSize: 13, cursor: busy === 'amend' ? 'default' : 'pointer' }}
+              title="Upload the marked PDF after you have written on it — that copy becomes the one the student opens">
+              {busy === 'amend' ? 'Uploading…' : '✍️ Upload amended'}
+              <input type="file" accept="application/pdf" hidden disabled={busy === 'amend'}
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) p.onUploadAmended(f); e.target.value = ''; }} />
+            </label>
           )}
           {run.pdfStale && <span style={{ color: C.flag, fontWeight: 600 }} title="A mark was changed after this PDF was drawn — it still prints the old total.">⚠ PDF shows the old total</span>}
         </div>
@@ -1060,7 +1161,7 @@ function DetailView(p: {
                     </div>
                   )}
                   <QuestionCard q={q} released={released} busy={busy} editing={p.editing} editAwarded={p.editAwarded} editNote={p.editNote}
-                    setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} editParts={p.editParts} setEditParts={p.setEditParts} onAgree={p.onAgree} onOverride={p.onOverride} />
+                    setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} editParts={p.editParts} setEditParts={p.setEditParts} onAgree={p.onAgree} onOverride={p.onOverride} studentId={run.studentId} onShelve={p.onShelve} shelved={p.shelved} />
                 </div>
               ))}
             </section>
@@ -1126,7 +1227,7 @@ function DetailView(p: {
                 {(byPage.get(pg.photoIndex) ?? []).map(q => (isOpenFlag(q)
                   ? <div key={q.index} style={{ padding: '7px 12px', fontSize: 12.5, color: C.flag, borderTop: `1px solid ${C.border}` }}>⚠ Q{q.questionNumber} {q.awarded}/{q.max} — waiting for your decision in “To check” at the top ↑</div>
                   : <QuestionCard key={q.index} q={q} released={released} busy={busy} editing={p.editing} editAwarded={p.editAwarded} editNote={p.editNote}
-                      setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} editParts={p.editParts} setEditParts={p.setEditParts} onAgree={p.onAgree} onOverride={p.onOverride} />
+                      setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} editParts={p.editParts} setEditParts={p.setEditParts} onAgree={p.onAgree} onOverride={p.onOverride} studentId={run.studentId} onShelve={p.onShelve} shelved={p.shelved} />
                 ))}
                 {(byPage.get(pg.photoIndex) ?? []).length === 0 && (
                   <div style={{ padding: '8px 12px', fontSize: 12.5, color: C.faint }}>No questions marked on this page.</div>
@@ -1140,7 +1241,7 @@ function DetailView(p: {
               {unplaced.map(q => (isOpenFlag(q)
                 ? <div key={q.index} style={{ padding: '7px 12px', fontSize: 12.5, color: C.flag }}>⚠ Q{q.questionNumber} {q.awarded}/{q.max} — waiting for your decision in “To check” at the top ↑</div>
                 : <QuestionCard key={q.index} q={q} released={released} busy={busy} editing={p.editing} editAwarded={p.editAwarded} editNote={p.editNote}
-                    setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} editParts={p.editParts} setEditParts={p.setEditParts} onAgree={p.onAgree} onOverride={p.onOverride} />
+                    setEditing={p.setEditing} setEditAwarded={p.setEditAwarded} setEditNote={p.setEditNote} editKind={p.editKind} setEditKind={p.setEditKind} editParts={p.editParts} setEditParts={p.setEditParts} onAgree={p.onAgree} onOverride={p.onOverride} studentId={run.studentId} onShelve={p.onShelve} shelved={p.shelved} />
               ))}
             </section>
           )}
@@ -1260,6 +1361,8 @@ function QuestionCard(p: {
   q: Question; released: boolean; busy: string; editing: number | null; editAwarded: string; editNote: string; editKind: string; editParts: Record<string, string>; setEditParts: (v: Record<string, string>) => void;
   setEditing: (v: number | null) => void; setEditAwarded: (v: string) => void; setEditNote: (v: string) => void; setEditKind: (v: string) => void;
   onAgree: (q: Question) => void; onOverride: (q: Question) => void;
+  /** the run's student — the 📬 follow-up link and 🧺 Shelve need one */
+  studentId: string | null; onShelve: (q: Question) => void; shelved: Set<string>;
 }) {
   const { q, released, busy } = p;
   const isEditing = p.editing === q.index;
@@ -1279,6 +1382,23 @@ function QuestionCard(p: {
           </span>
         )}
         {q.topic && <span style={{ fontSize: 12, color: C.muted, marginLeft: 'auto', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220 }}>{q.topic}</span>}
+        {/* 📬 From Adrian (SPEC-ASSIGN.md): a weak topic → an assigned question, pre-filled
+            on the student profile. 🧺 parks the weakness for wave 2 with its evidence.
+            Both came here from /admin/mark/triage when it was retired (8 Sep 2026). */}
+        {!released && lost && q.topic && p.studentId && (
+          <a href={`/admin/students/${p.studentId}?send=${encodeURIComponent(q.topic)}`}
+            style={{ fontSize: 12, fontWeight: 600, color: C.link, textDecoration: 'none', whiteSpace: 'nowrap' }}
+            title="Send a follow-up question on this topic">📬 Send follow-up</a>
+        )}
+        {!released && lost && p.studentId && (
+          p.shelved.has(`${q.index}`) || p.shelved.has(`${p.studentId}:${q.index}`) || [...p.shelved].some(k => k.endsWith(`:${q.index}`))
+            ? <span style={{ fontSize: 12, fontWeight: 600, color: '#6d28d9', whiteSpace: 'nowrap' }}>🧺 Shelved ✓</span>
+            : <button onClick={() => p.onShelve(q)} disabled={busy === `shelve:${q.index}`}
+                style={{ ...btn('#f5f3ff', '#6d28d9', '#ddd6fe'), padding: '2px 8px', fontSize: 12 }}
+                title="Park this weakness on the student's shelf for a later teaching round — the page, the marker's note and the topic go with it">
+                {busy === `shelve:${q.index}` ? '…' : '🧺 Shelve'}
+              </button>
+        )}
       </div>
 
       {/* The second reader's verdict, from result_json.second_look — structured, so it

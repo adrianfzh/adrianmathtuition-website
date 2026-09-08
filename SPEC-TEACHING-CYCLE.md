@@ -78,7 +78,7 @@ proposes the wave for approval, returns the DOCX for amendment.
   Telegram.
 - 🧺 **Student shelf — BUILT 2026-09-02** (`student_shelf` + `/api/admin/shelf`;
   design agreed 2026-08-30). Doors in: 🧺 Shelve beside lost-marks questions in
-  `/admin/mark/triage` + `/admin/papers` (evidence auto-grabbed from the run's
+  `/admin/desk` (triage retired 8 Sep 2026) + `/admin/papers` (evidence auto-grabbed from the run's
   result_json), 🧺 Shelve-or-✕ when pruning a game-plan draft on
   `/admin/remediation`, and the API. Views out: "🧺 On the shelf" on
   `/admin/students/[id]` (evidence expand, done/reopen, "🎯 Draft game plan from

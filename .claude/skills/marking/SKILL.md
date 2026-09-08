@@ -1,6 +1,6 @@
 ---
 name: marking
-description: MANDATORY before touching any marking surface — /admin/mark-paper, /admin/mark (batch), /admin/papers, /admin/mark/triage, /app/marking or /app/submit (student-facing), mark-paper-* or mark-batch/* API routes, render-marking, marked-PDF assembly, the ✏️ Annotate overlay, or the 🌙 marking queue. Routes you to the area runbook and its shipped-bug archaeology before any code is written.
+description: MANDATORY before touching any marking surface — /admin/mark-paper, /admin/mark (batch), /admin/papers, /admin/desk, /app/marking or /app/submit (student-facing), mark-paper-* or mark-batch/* API routes, render-marking, marked-PDF assembly, the ✏️ Annotate overlay, or the 🌙 marking queue. Routes you to the area runbook and its shipped-bug archaeology before any code is written.
 ---
 
 # Marking — read the runbook first
