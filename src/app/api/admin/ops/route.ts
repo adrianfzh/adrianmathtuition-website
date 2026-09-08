@@ -8,6 +8,7 @@ import { latestJobRuns } from '@/lib/job-log';
 import { JOB_RHYTHMS, staleJobs, neverStamped } from '@/lib/job-health';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { markingShare, type MarkingShare, type MarkingRunRow } from '@/lib/marking-path';
+import { markingQueueState, type MarkingQueueState, type QueueRunRow } from '@/lib/marking-queue-state';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -27,26 +28,25 @@ export async function GET(req: NextRequest) {
       staleReason: stale.get(r.job) ?? null,
     })).sort((a, b) => (a.staleReason ? 0 : 1) - (b.staleReason ? 0 : 1) || a.job.localeCompare(b.job));
 
-    // Marking queue: pending papers + how long the oldest has waited.
-    let queue: { pending: number; oldestMinutes: number | null } = { pending: 0, oldestMinutes: null };
+    // Marking queue: which papers are waiting, not just how many — and any row
+    // still flagged `queued` after its paper finished.
+    //
+    // This reads the `queue_status` COLUMN, the same field the bot's picker
+    // (lib/queue-pick.js) reads. It used to derive the count from
+    // `result_json.queue.queued_at` filtered to `total_max IS NULL`, which is
+    // defensible but is a SECOND signal — and on 9 Sep 2026 the two disagreed:
+    // three rows said `queued` long after release/archive while the board said
+    // "empty", because nothing in the app rendered that column. One signal now,
+    // and the disagreement itself is reported as `stale`.
+    let queue: MarkingQueueState = { pending: 0, oldestMinutes: null, rows: [], stale: [] };
     try {
       const { data } = await getSupabaseAdmin()
         .from('paper_marking_runs')
-        .select('created_at, queue:result_json->queue')
-        .is('total_max', null)
+        .select('id, created_at, paper_name, student_name, queue_status, total_max, released_at, archived_at, claimed_by, queue_attempts, queue_failed_reason')
+        .eq('queue_status', 'queued')
         .order('created_at', { ascending: true })
         .limit(50);
-      type Q = { queued_at?: string; failed_at?: string };
-      const pendingRows = (data || []).filter(r => {
-        const q = (r as { queue?: Q }).queue;
-        return q && q.queued_at && !q.failed_at;
-      });
-      queue = {
-        pending: pendingRows.length,
-        oldestMinutes: pendingRows.length
-          ? Math.round((Date.now() - new Date((pendingRows[0] as { queue?: Q }).queue!.queued_at!).getTime()) / 60000)
-          : null,
-      };
+      queue = markingQueueState((data || []) as QueueRunRow[]);
     } catch { /* queue read is best-effort — the jobs table is the core */ }
 
     // Marking bill (2 Sep 2026): which papers the Mac marked on plan usage and

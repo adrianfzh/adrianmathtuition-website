@@ -14,7 +14,12 @@ type JobRow = { job: string; ranAt: string; ok: boolean; summary: string | null;
 type OpsData = {
   jobs: JobRow[];
   neverStamped: { job: string; rhythm: string }[];
-  queue: { pending: number; oldestMinutes: number | null };
+  queue: {
+    pending: number;
+    oldestMinutes: number | null;
+    rows: { id: string; paper: string; student: string | null; waitingMinutes: number; claimedBy: string | null; attempts: number; failedReason: string | null }[];
+    stale: { id: string; paper: string; because: 'released' | 'archived' | 'marked' }[];
+  };
   marking: { d7: MarkingShare; d30: MarkingShare } | null;
   generatedAt: string;
 };
@@ -124,6 +129,33 @@ export default function OpsPage() {
             </span>
             <a href="/admin/desk" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">desk →</a>
           </div>
+
+          {/* Which papers, not just how many — a count cannot tell you WHICH one
+              is stuck (Adrian, 9 Sep 2026: "i don't see any papers queued"). */}
+          {!!data?.queue.rows.length && (
+            <ul className="border-t border-neutral-100 divide-y divide-neutral-100">
+              {data.queue.rows.map((r) => (
+                <li key={r.id} className="px-4 py-2 flex items-baseline gap-3 text-sm">
+                  <span className="text-neutral-800">{r.paper}</span>
+                  {r.student && <span className="text-neutral-500">{r.student}</span>}
+                  <span className="ml-auto tabular-nums text-neutral-500">{r.waitingMinutes}m</span>
+                  {r.claimedBy && <span className="text-xs text-neutral-400">💻 {r.claimedBy}</span>}
+                  {r.attempts > 0 && <span className="text-xs text-amber-700">attempt {r.attempts}</span>}
+                  {r.failedReason && <span className="text-xs text-red-700 truncate max-w-[16rem]" title={r.failedReason}>{r.failedReason}</span>}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* A `queued` flag left on a finished paper. Never work — but nothing
+              rendered this column before, so such a row could sit for weeks
+              claiming to be queued with no screen ever saying so. */}
+          {!!data?.queue.stale.length && (
+            <div className="border-t border-neutral-100 px-4 py-2 text-xs text-amber-800 bg-amber-50">
+              {data.queue.stale.length} finished paper{data.queue.stale.length > 1 ? 's' : ''} still flagged queued —{' '}
+              {data.queue.stale.map((s) => `${s.paper} (${s.because})`).join(', ')}. Not waiting on anything; the flag was never cleared.
+            </div>
+          )}
         </section>
 
         {/* Marking bill (2 Sep 2026): whose bill Adrian's own papers landed on — the
