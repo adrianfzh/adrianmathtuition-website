@@ -2734,6 +2734,14 @@ Page image **uploads** are parallelised (independent). Only the Gemini detection
 > `lib/annotate/compose-forward.ts` (tested) — add new fields THERE or they silently vanish.**
 > Verify overlay changes by pressing Done on a real run and restoring it, never by calling
 > `/api/compose-page` directly.
+> **Later the same day:** "📄 see page N" in the To-check block shows that page in the RIGHT
+> pane, in place of the sheet (📘 / 📄 chips switch back, ‹ › step pages; phones keep the
+> scroll) — the old anchor scrolled the script to the bottom. And the pen **locks page zoom
+> while open**: on the iPad a page pinch-zoomed before tapping Annotate left the fixed
+> toolbar off screen with only the canvas showing at 2× (no tool switch, no zoom out); the
+> overlay re-declares the viewport with `maximum-scale=1` on open (iOS snaps to 1×) and
+> restores it on close. Bot side the same day: the printed "Correct solution" keeps only the
+> parts that lost marks (`ai/solution-parts.js`) — Denise's Q7 printed (b) under a 2/2.
 
 Full spec + as-built deviations: **`SPEC-ANNOTATE.md`** (repo root, §11–13). Status: built.
 > ⚠ **Annotate in the AdrianMarker shell app, not Safari** (resolved 2026-08-04):

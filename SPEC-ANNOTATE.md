@@ -182,6 +182,13 @@ or similar) — not unit-tested; the manual checklist below covers it.
 
 ## 9. Traps, known from this codebase
 
+- **Browser page zoom vs the fixed overlay (8 Sep 2026).** If the page is pinch-zoomed before
+  the pen opens, the fixed toolbar sits outside the visual viewport and the overlay's own pinch
+  cannot go below the browser's zoom — the user sees only the canvas at 2×. The overlay
+  re-declares `<meta name=viewport>` with `maximum-scale=1` on mount (iOS snaps back to 1×)
+  and restores the previous rule on unmount. Neither /admin/desk nor /admin/mark-paper locks
+  zoom on its own, on purpose — Adrian reads pages by pinching.
+
 - **Do not add a second `annotated` kind.** One column (`annotated_pdf_url`), one link
   phase; Done overwrites. The Notability upload path shares it — last write wins, which
   is correct (both are "Adrian's reviewed copy").
