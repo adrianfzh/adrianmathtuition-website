@@ -26,6 +26,8 @@ export interface GateInput {
   exampleCheck: { checked: number; disagreements: unknown[]; skipped?: string } | null | undefined;
   /** The run is grounded on the real paper — `paper_match.source` when the run has it; null = unknown (older runs). */
   grounded: boolean | null;
+  /** Questions the marker flagged that Adrian has not yet agreed or overridden (lib/mark-triage pendingCount). null = not checked (older callers). */
+  pendingReviews?: number | null;
 }
 
 export interface GateResult { ok: boolean; reasons: string[] }
@@ -53,6 +55,11 @@ export function autoReleaseGate(g: GateInput): GateResult {
   else if (g.exampleCheck.checked === 0) reasons.push('no worked example was found to check');
   else if (g.exampleCheck.disagreements.length) reasons.push(`a second reader disagrees with ${g.exampleCheck.disagreements.length} worked example(s)`);
   if (g.grounded === false) reasons.push('the marking was not grounded on the real paper');
+  // The desk's Approve & release is blocked while any question is still flagged;
+  // the clock must not walk round that (Adrian, 8 Sep 2026: "does this apply to
+  // the 12 hour clock too?" — Denise had four open flags and a 7:04pm release).
+  const pending = Number(g.pendingReviews);
+  if (Number.isFinite(pending) && pending > 0) reasons.push(pendingLine(pending));
   return { ok: reasons.length === 0, reasons };
 }
 
@@ -64,6 +71,15 @@ export function sgtShort(at: string | number | Date): string {
   const c = sgtClock(ms);
   const h12 = c.hour % 12 === 0 ? 12 : c.hour % 12;
   return `${DAYS[c.weekday]} ${h12}:${String(c.minute).padStart(2, '0')}${c.hour < 12 ? 'am' : 'pm'}`;
+}
+
+export function pendingLine(n: number): string {
+  return `${n} question${n === 1 ? '' : 's'} still flagged for your review — Agree or Override each on the desk`;
+}
+
+/** The cron's line when the clock ran out but flags are still open: nothing goes out. */
+export function heldByReviewLine(who: string, paper: string | null | undefined, n: number, deskUrl: string): string {
+  return `🖐 <b>${who}</b>${paper ? ` — ${paper}` : ''}: the 12-hour window passed but NOT released — ${pendingLine(n)}. When they are all reviewed, Approve &amp; release from the desk: ${deskUrl}`;
 }
 
 /** The two lines Telegram gets after a sheet passes or fails the gate — both name the student and the paper (Adrian, 8 Sep 2026: "doesn't say which marked pdf"). */

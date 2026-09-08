@@ -12,7 +12,8 @@ import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
-import { releasedLine } from '@/lib/sheet-auto-release';
+import { releasedLine, heldByReviewLine } from '@/lib/sheet-auto-release';
+import { pendingCount } from '@/lib/mark-triage';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -41,6 +42,23 @@ export async function GET(req: NextRequest) {
   for (const j of due ?? []) {
     const who = j.student_name || 'A student';
     try {
+      // The clock is not a way round the desk (Adrian, 8 Sep 2026): a paper with
+      // questions still flagged for review does not go out, however long it has
+      // waited. Checked HERE, at fire time — a re-mark can add flags after the
+      // sheet was filed, and Adrian may clear them in the meantime.
+      const { data: run } = await sb.from('paper_marking_runs').select('released_at, result_json').eq('id', j.run_id).maybeSingle<{ released_at: string | null; result_json: unknown }>();
+      if (run?.released_at) {
+        await sb.from('sheet_jobs').update({ auto_released_at: new Date().toISOString(), stage: 'released from the desk before the clock' }).eq('id', j.id);
+        out.push({ id: j.id, ok: true, note: 'already released' });
+        continue;
+      }
+      const open = run ? pendingCount(run.result_json) : 0;
+      if (open > 0) {
+        await sb.from('sheet_jobs').update({ auto_release_at: null, stage: `held — ${open} question${open === 1 ? '' : 's'} still flagged for review` }).eq('id', j.id);
+        await sendTelegram(heldByReviewLine(who, j.paper_name, open, `${base}/admin/desk?run=${j.run_id}`)).catch(() => {});
+        out.push({ id: j.id, ok: false, note: `held: ${open} flagged` });
+        continue;
+      }
       const r = await fetch(`${base}/api/admin/release-with-sheet`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.ADMIN_PASSWORD}` },
         body: JSON.stringify({ runId: j.run_id }),

@@ -30,6 +30,7 @@
 // plan-marking worker). Claim/lease logic is pure in lib/sheet-jobs.ts.
 import { NextRequest, NextResponse } from 'next/server';
 import { plainMath, clip } from '@/lib/remark-diff';
+import { pendingCount } from '@/lib/mark-triage';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
@@ -347,11 +348,13 @@ export async function POST(req: NextRequest) {
           // countdown and a Hold button; /api/cron/sheet-auto-release does the
           // release. SHEET_AUTO_RELEASE_HOURS=0 turns the automation off.
           const hours = holdHours();
-          const { data: runRow } = await sb.from('paper_marking_runs').select('released_at, result_json->paper_match->>source').eq('id', job.run_id).maybeSingle();
-          const groundedSrc = (runRow as { source?: string | null } | null)?.source ?? null;
+          const { data: runRow } = await sb.from('paper_marking_runs').select('released_at, result_json').eq('id', job.run_id).maybeSingle();
+          const runJson = (runRow as { result_json?: unknown } | null)?.result_json ?? null;
+          const groundedSrc = ((runJson as { paper_match?: { source?: string | null } } | null)?.paper_match?.source) ?? null;
           const gate = autoReleaseGate({
             noSheet: false, verified: result.verified, wave: result.wave, exampleCheck: check,
             grounded: groundedSrc == null ? null : groundedSrc !== 'none',
+            pendingReviews: pendingCount(runJson),
           });
           // The desk shows this beside the (missing) timer, so "I don't see the
           // timer" (Adrian, 8 Sep 2026) has an answer on the page itself.

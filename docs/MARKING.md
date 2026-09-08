@@ -915,6 +915,20 @@ paper. What it does not: judgement drift on the student's own working (was M1
 earned?) — that is the marker reading the page, and the calibration harness
 measures it.
 
+### The 12-hour clock respects the desk's flags (8 Sep 2026)
+
+Adrian: "does this apply to the 12 hour clock too?" It did not. The
+release-by-silence cron called `release-with-sheet` directly, so a paper with
+questions still flagged for review — which the desk's Approve & release refuses
+— would have gone out when the clock ran down (Denise, four open flags, 7:04pm).
+Now `autoReleaseGate` takes `pendingReviews` (`lib/mark-triage pendingCount`)
+and refuses while any flag is open, and `/api/cron/sheet-auto-release` re-checks
+at fire time: open flags → `auto_release_at` cleared, stage "held — N questions
+still flagged for review", Telegram `heldByReviewLine`; already released from
+the desk → stamped, nothing sent. The immediate hand-in auto-release is a
+separate switch (`AUTO_RELEASE_PAUSED` in `mark-triage`, off since 29 Aug 2026)
+with its own accuracy gates (`computeAutoHold`).
+
 ### Blank printed parts, footer columns, pen-safe superscripts (8 Sep 2026)
 
 Joey's AM TYS 2021 P2, three things Adrian saw on the marked pages:
