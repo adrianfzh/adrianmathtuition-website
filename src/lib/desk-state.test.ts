@@ -240,3 +240,11 @@ describe('laneFor — released by the system (8 Sep 2026)', () => {
     expect(laneFor({ ...tagged, released_at: '2026-09-08T10:00:00Z', released_via: 'portal', checked_at: null }, null)).toBe('released');
   });
 });
+
+describe('the system lane empties itself (8 Sep 2026)', () => {
+  it('an auto-released paper nobody looked at files itself under Completed after 7 days', () => {
+    const run = { student_id: 'recX', released_at: '2026-09-01T10:00:00Z', released_via: 'auto:portal', checked_at: null };
+    expect(laneFor(run, null, Date.parse('2026-09-05T10:00:00Z'))).toBe('auto');
+    expect(laneFor(run, null, Date.parse('2026-09-09T10:00:00Z'))).toBe('released');
+  });
+});

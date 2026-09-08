@@ -82,11 +82,18 @@ export function latestLiveJob<T extends { status: string; created_at: string }>(
 }
 
 /** Which lane a run sits in. Released outranks everything; untagged next; then the sheet decides. */
-export function laneFor(run: DeskRun, latestSheetJob: DeskSheetJob): DeskLane {
+/** How long an auto-released paper waits in its own lane for a look (Adrian, 8 Sep 2026: "if i didn't do anything, the papers will just stack up.. not good"). After this it files itself under Completed; the Monday report still counts it. */
+export const AUTO_LANE_DAYS = 7;
+function olderThan(iso: string, days: number, now: number): boolean {
+  const t = Date.parse(iso);
+  return Number.isFinite(t) && now - t > days * 86400_000;
+}
+
+export function laneFor(run: DeskRun, latestSheetJob: DeskSheetJob, now: number = Date.now()): DeskLane {
   // 🤖 Released by the system (8 Sep 2026): a hand-in that cleared the accuracy
   // gates and went out without Adrian. It stays in its own lane until he has
   // looked at it (checked_at) — his checkpoint moved after release, not away.
-  if (run.released_at && String(run.released_via || '').startsWith('auto:') && !run.checked_at) return 'auto';
+  if (run.released_at && String(run.released_via || '').startsWith('auto:') && !run.checked_at && !olderThan(run.released_at, AUTO_LANE_DAYS, now)) return 'auto';
   if (run.released_at) return 'released';
   if (!run.student_id) return 'untagged';
   if (latestSheetJob && latestSheetJob.status === 'done') return 'ready';

@@ -267,7 +267,7 @@ const LANE_HINT: Record<DeskLane, string> = {
   untagged: 'A paper with no student reaches nobody — tag it and the sheet queues itself.',
   'awaiting-sheet': 'The self-study sheet is being written on the Mac. Vet the marking meanwhile; the paper moves to Ready to vet when the sheet lands.',
   ready: 'Script and sheet are both here. Open one, agree or override every question, read the sheet, then Approve & release.',
-  auto: 'Went to the student on its own after clearing the accuracy gates. Look it over: Agree or Override still work here (an override re-issues their copy), then ✓ Looked at moves it to Completed.',
+  auto: 'Went to the student on its own after clearing the accuracy gates. Look it over if you want: Agree or Override still work here (an override re-issues their copy), ✓ Looked at moves it to Completed. Anything you leave files itself under Completed after 7 days.',
   released: 'With the student. Read-only — the folder link is the record.',
 };
 
