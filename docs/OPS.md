@@ -181,3 +181,34 @@ Rules:
 <!-- preview-build tick 2026-08-29a — dev-only nudge so Vercel builds a preview when dev == main (same-commit builds get skipped) -->
 
 - `auto-release-report` — Mondays 8am SGT (`0 0 * * 1` UTC): the auto-release number — hand-ins released without Adrian in the last 7 days, how many he changed afterwards, and the auto-pause rule (≥5 released and >10 % changed → `auto_release_paused` set, Telegram). Route `/api/cron/auto-release-report`, pure `lib/auto-release-report.ts`.
+
+## Plan-marking attribution — which Mac, and which Claude account (9 Sep 2026)
+
+The 🌙 queue row on `/admin/ops` names the **machine** holding each paper, from
+`result_json.queue.external_claim.by`, which the worker builds as
+`mac-plan-$(hostname -s)-$$` (WORKER_PROMPT.md line 41).
+
+**It does not record a Claude account** — but the machine implies one. Every slot
+authenticates `auth=keychain`, i.e. as the CLI's single logged-in account on that
+Mac, so there is one account per machine and the hostname identifies it:
+
+| machine | Claude account | plan |
+|---|---|---|
+| `Adrians-MacBook-Pro` (Mac B) | `adrianmathtuition@gmail.com` | Max |
+
+Check the current mapping with `claude auth status` on the machine in question
+(it prints `email` and `subscriptionType`). Update this table if a slot is ever
+pointed at an `oauth_token` file instead of the keychain — that is the one way a
+slot could run as a different account from the machine's CLI login, and the
+hostname would then no longer imply the account.
+
+**Recording the account explicitly would need a bot deploy.** `BY` is constructed
+inside `WORKER_PROMPT.md`, which the deployed bot serves to the worker via
+`phase:'external-runbook'` — editing the repo copy alone changes nothing until the
+bot ships.
+
+**An interactive Claude Code session is not necessarily the same account as the
+workers.** A desktop-app session runs as whoever is signed into the app, which may
+differ from the CLI's keychain login; when they differ the two draw on separate
+plan quotas, and a heavy interactive session does not eat the markers' 5-hour
+window. Do not assume they share a plan without checking both.
