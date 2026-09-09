@@ -33,6 +33,7 @@ async function anthropicBill(sinceDay: string): Promise<{ available: boolean; da
       if (page) url.searchParams.set('page', page);
       const r = await fetch(url, { headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' }, signal: AbortSignal.timeout(20_000) });
       const j = await r.json().catch(() => ({}));
+      if (r.status === 403) return { available: false, billUrl: 'https://platform.claude.com/cost', note: 'The key authenticated, but the account has no Admin permission — Anthropic closes the cost report to an individual Console account (9 Sep 2026: an Organization-scoped key gets 403 “Missing permissions”). The bill itself is on the Console\'s Cost page; the bot pricing on this page counts the same tokens.' };
       if (!r.ok) return { available: false, note: `Anthropic cost report: HTTP ${r.status}${j?.error?.message ? ` — ${j.error.message}` : ''}` };
       data.push(...(Array.isArray(j.data) ? j.data : []));
       if (!j.has_more || !j.next_page) break;
