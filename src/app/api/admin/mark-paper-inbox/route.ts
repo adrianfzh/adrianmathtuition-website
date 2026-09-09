@@ -13,7 +13,7 @@ import { putStudentFile, listStudentFiles, removeStudentFiles, inboxKey, fileUrl
 // Auth: the Shortcut carries MARK_INBOX_TOKEN — a dedicated token minted 2026-07-31,
 // scoped to THIS inbox only, so the share-sheet automation never holds the admin
 // password. The page's own calls ride the normal admin session. Body size needs the
-// vercel.json memory bump (Notability-grade scans run past the 4.5MB default cap).
+// vercel.json sets 1024MB here (was 3008 until 9 Sep 2026 — this route only buffers a scan; memory never lifted the 4.5MB platform body cap).
 //
 // Storage (5 Sep 2026): files land in the private student-files bucket under
 // inbox/<kind?>/<ts>-<name> (lib/student-files.ts); anything still sitting in the

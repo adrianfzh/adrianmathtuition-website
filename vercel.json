@@ -1,5 +1,6 @@
 {
   "framework": "nextjs",
+  "ignoreCommand": "bash scripts/vercel-ignore-build.sh",
   "regions": [
     "sin1"
   ],
@@ -22,7 +23,7 @@
     },
     "src/app/api/admin/mark-paper-inbox/route.ts": {
       "maxDuration": 60,
-      "memory": 3008
+      "memory": 1024
     },
     "src/app/api/mark-batch/execute/route.ts": {
       "maxDuration": 300,
@@ -34,11 +35,11 @@
     },
     "src/app/api/mark-batch/upload-chunk/route.ts": {
       "maxDuration": 60,
-      "memory": 3008
+      "memory": 1024
     },
     "src/app/api/mark-batch/upload-complete/route.ts": {
       "maxDuration": 60,
-      "memory": 3008
+      "memory": 1024
     },
     "src/app/api/bot/worksheet/route.ts": {
       "maxDuration": 60,

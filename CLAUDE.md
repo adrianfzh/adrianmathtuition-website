@@ -95,6 +95,7 @@ vercel alias set <new-deployment-url> adrianmath-dev.vercel.app
 > (the Vercel account email) — Adrian's call, since it changes commit attribution.
 
 - Only when code/files actually changed. Pure-discussion or read-only turns → no commit, no push.
+- **Docs-only pushes do NOT build (9 Sep 2026).** `vercel.json` `ignoreCommand` → `scripts/vercel-ignore-build.sh`: when every file changed since the branch's last BUILT commit is under `docs/`, `.claude/`, `.githooks/`, `.github/`, `scripts/`, `migrations/`, `reference/`, `_backups/`, `_old/`, `ios-shell/` or is a root `*.md`, Vercel skips the build (it shows as CANCELED in `vercel ls`, and the alias stays on the previous build — correct, nothing shipped changed). `data/` ships. Don't wait for a deployment after such a push. Why: 928 builds in 19 days (230 for non-shipping commits) at ~2 min each were the whole of the $20 Vercel credit — Build CPU Minutes, not functions or transfer.
 - Always run the build/typecheck first; never push a broken build. The pre-push hook (`.githooks/pre-push`) runs the test suite and blocks the push on failure.
 - The advisory pre-push review hook (`.claude/settings.json`) still runs on every push.
 - The user can say **"don't push"** (or "hold off") to skip auto-push for that turn.
