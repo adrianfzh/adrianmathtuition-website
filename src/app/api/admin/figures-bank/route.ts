@@ -61,7 +61,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { imgSrc, isPlausibleImagePath } from '@/lib/kiosk-worksheet-images';
 import { inspectFigure } from '@/lib/figure-checks';
-import { eraseBlemishes, parseEraseVerdict, judgePrompt, judgeView, boxesAsFractions, BY_EYE, type Blemish } from '@/lib/figure-blemish';
+import { eraseBlemishes, parseEraseVerdict, judgePrompt, judgeView, boxesAsFractions, mergeBoxes, BY_EYE, type Blemish } from '@/lib/figure-blemish';
 import Anthropic from '@anthropic-ai/sdk';
 import {
   replaceSolutionImageRefsMany, repairPairsFor, verifyRefPairs,
@@ -527,7 +527,7 @@ async function cleanAsCandidate(
   const checks = await inspectFigure(r.png);
   if (checks.blank) return step('erase', 'the result is blank — refused');
 
-  const erased = boxesAsFractions(r.erased, r.width, r.height);
+  const erased = boxesAsFractions(mergeBoxes(r.erased), r.width, r.height);
   const share = r.totalInk ? r.removedInk / r.totalInk : 0;
   const what = hints.map((h) => h.what).filter(Boolean).join('; ') || `${hints.length} mark(s)`;
   const note = `🧹 erased: ${what} — ${r.removedInk} of ${r.totalInk} ink pixels (${(share * 100).toFixed(1)}%)`

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   parseEraseVerdict, inkComponents, snapToComponents, hintToPixels, boxesAsFractions, padBox,
-  MAX_COMPONENT_SHARE, BY_EYE, judgePrompt, type Component,
+  MAX_COMPONENT_SHARE, BY_EYE, mergeBoxes, judgePrompt, type Component,
 } from './figure-blemish';
 
 /** A w×h white canvas with the given pixels inked. */
@@ -97,6 +97,26 @@ describe('BY_EYE — boxes a person drew after looking', () => {
     // coverage: 12 glyph boxes of 41x36 over a 1000x51 strip ≈ 35% → passes; the AUTO size guard passes too;
     // what AUTO cannot do is the removal cap, which eraseBlemishes applies on real ink — so here they agree.
     expect(s.erase).toHaveLength(12);
+  });
+});
+
+describe('a judge box that missed the mark by a little', () => {
+  it('finds the glyph in a wider ring around an empty box, still under the guards', () => {
+    const glyph: Component = { x0: 2, y0: 780, x1: 9, y1: 800, pixels: 60 };
+    const curve: Component = { x0: 100, y0: 50, x1: 900, y1: 950, pixels: 40000 };
+    // the box sits 30 units below the glyph (judge coordinates are approximate)
+    const s = snapToComponents([glyph, curve], [{ what: 'stray d', box: { x0: 0, y0: 830, x1: 20, y1: 870 }, sure: true }], 1000, 1000);
+    expect(s.erase).toEqual([glyph]);
+  });
+});
+
+describe('mergeBoxes', () => {
+  it('joins touching and overlapping boxes, leaves distant ones apart', () => {
+    expect(mergeBoxes([{ x0: 0, y0: 0, x1: 5, y1: 5 }, { x0: 6, y0: 2, x1: 9, y1: 8 }, { x0: 50, y0: 50, x1: 52, y1: 52 }]))
+      .toEqual([{ x0: 0, y0: 0, x1: 9, y1: 8 }, { x0: 50, y0: 50, x1: 52, y1: 52 }]);
+  });
+  it('chains: a merges b, the merged box then merges c', () => {
+    expect(mergeBoxes([{ x0: 0, y0: 0, x1: 2, y1: 2 }, { x0: 8, y0: 0, x1: 10, y1: 2 }, { x0: 4, y0: 0, x1: 6, y1: 2 }])).toEqual([{ x0: 0, y0: 0, x1: 10, y1: 2 }]);
   });
 });
 

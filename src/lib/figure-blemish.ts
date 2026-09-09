@@ -34,6 +34,8 @@ export const MIN_INSIDE = 0.7;
 export const HINT_PAD = 0.015;
 /** Erasing more than this share of the figure's ink is not a blemish job. */
 export const MAX_REMOVED_SHARE = 0.08;
+/** Second look around a judge box that held no ink at all. */
+export const LOOSE_PAD = 0.05;
 /** White margin painted around each erased component, in pixels. */
 export const ERASE_PAD = 2;
 /** The ink taken from a box must fill at least this share of the box (sum of
@@ -162,7 +164,14 @@ export function snapToComponents(comps: Component[], hints: Blemish[], w: number
   const taken = new Set<Component>();
   for (const hnt of hints) {
     const hint = hintToPixels(hnt.box, w, h);
-    const inside = comps.filter((c) => overlapShare(c, hint) >= o.minInside);
+    let inside = comps.filter((c) => overlapShare(c, hint) >= o.minInside);
+    // The judge's coordinates are approximate: when its box holds no ink at
+    // all, look once more in a wider ring around it. The size and coverage
+    // guards below still apply, so a nearby label is not taken by this.
+    if (!inside.length) {
+      const wide = hintToPixels(hnt.box, w, h, LOOSE_PAD);
+      inside = comps.filter((c) => overlapShare(c, wide) >= o.minInside);
+    }
     if (!inside.length) { skipped.push(`"${hnt.what || 'blemish'}": no ink inside the box`); continue; }
     const small = inside.filter((c) => ((c.x1 - c.x0 + 1) * (c.y1 - c.y0 + 1)) / (w * h) <= o.maxComponentShare);
     if (!small.length) { skipped.push(`"${hnt.what || 'blemish'}": the ink there is too large to be a blemish — left alone`); continue; }
@@ -184,6 +193,24 @@ export function snapToComponents(comps: Component[], hints: Blemish[], w: number
 /** Grow a pixel box by `pad` and clamp to the canvas. */
 export function padBox(b: Box, w: number, h: number, pad = ERASE_PAD): Box {
   return { x0: Math.max(0, b.x0 - pad), y0: Math.max(0, b.y0 - pad), x1: Math.min(w - 1, b.x1 + pad), y1: Math.min(h - 1, b.y1 + pad) };
+}
+
+/** Boxes that touch or overlap (within `gap` px) become one, so a speckled band
+ *  erased as 300 components is shown as a few red outlines, not 300. */
+export function mergeBoxes(boxes: Box[], gap = 3): Box[] {
+  let out = boxes.map((b) => ({ ...b }));
+  let merged = true;
+  while (merged) {
+    merged = false;
+    const next: Box[] = [];
+    for (const b of out) {
+      const i = next.findIndex((n) => b.x0 <= n.x1 + gap && b.x1 >= n.x0 - gap && b.y0 <= n.y1 + gap && b.y1 >= n.y0 - gap);
+      if (i < 0) next.push(b);
+      else { const n = next[i]; next[i] = { x0: Math.min(n.x0, b.x0), y0: Math.min(n.y0, b.y0), x1: Math.max(n.x1, b.x1), y1: Math.max(n.y1, b.y1) }; merged = true; }
+    }
+    out = next;
+  }
+  return out;
 }
 
 /** Boxes as fractions of the canvas — what the page draws in red over the original. */
