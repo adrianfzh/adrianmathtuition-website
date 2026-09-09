@@ -102,3 +102,15 @@ describe('caption and button follow the same class', () => {
     expect(candidateButtonColour(cand({ verdict: 'hold' }))).toBe('#b45309');
   });
 });
+
+describe('🧹 blemish-erase candidates (9 Sep 2026)', () => {
+  it('reads as an erase, not a pixel edit, and names the check to make', () => {
+    const c = { verdict: 'apply', route: 'blemish-erase', note: '🧹 erased: stray "d" in the left margin — 53 of 8653 ink pixels (0.6%)', holdKind: null, holdReason: null, methodNote: 'judge claude-opus-5; components snapped' };
+    expect(candidateClass(c.route)).toBe('erase');
+    expect(candidateChip(c).text).toMatch(/BLEMISH ERASED/);
+    expect(candidateChip(c).hint).toMatch(/stray "d"/);
+    expect(candidateCaption(c)).toMatch(/red boxes/);
+    expect(candidateButtonLabel(c)).toBe('✓ Use the cleaned figure');
+  });
+});
+

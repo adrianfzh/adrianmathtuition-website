@@ -40,6 +40,8 @@ type Item = {
 type Candidate = {
   url: string; verdict: string; route: string | null; note: string | null;
   holdKind: string | null; holdReason: string | null; methodNote: string | null;
+  /** 🧹 Clean: what was erased, as canvas fractions [x0,y0,x1,y1] — drawn in red over the original. */
+  erased?: number[][] | null;
 };
 type SolItem = {
   path: string; qid: string; level: string | null; school: string | null;
@@ -63,6 +65,7 @@ type FitItem = {
   stem: string; figureUrl: string;
   severity: 'blocks-answering' | 'cosmetic' | null; verdict: string | null;
   note: string | null; claimedBy: string | null;
+  candidate: Candidate | null;
 };
 const FIT_PAGE = 20;
 
@@ -72,6 +75,28 @@ const FIT_PAGE = 20;
  *  keyword guess once called an uninspected image inspected, and a null
  *  method_note once made five REDRAWN figures read "exact removal". */
 const verdictChip = candidateChip;
+
+/** The stored image, with the boxes a 🧹 Clean erased outlined in red. The
+ *  image is laid out at its natural aspect (no letterboxing) so the fractional
+ *  boxes land exactly on the marks they describe. */
+function Outlined({ src, boxes, maxHeight }: { src: string; boxes?: number[][] | null; maxHeight: number }) {
+  const has = !!boxes?.length;
+  return (
+    <a href={src} target="_blank" rel="noreferrer" title="open full size"
+      style={{ position: 'relative', display: 'block', width: '100%', background: '#fff', border: '1px solid #94a3b8', borderRadius: 6, overflow: 'hidden' }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt="" loading="lazy"
+        style={has ? { width: '100%', height: 'auto', display: 'block' } : { width: '100%', maxHeight, objectFit: 'contain', display: 'block' }} />
+      {has && boxes!.map((b, i) => (
+        <div key={i} style={{
+          position: 'absolute', left: `${b[0] * 100}%`, top: `${b[1] * 100}%`,
+          width: `${(b[2] - b[0]) * 100}%`, height: `${(b[3] - b[1]) * 100}%`,
+          border: '2px solid #dc2626', boxShadow: '0 0 0 2px rgba(220,38,38,.25)', borderRadius: 2, pointerEvents: 'none',
+        }} />
+      ))}
+    </a>
+  );
+}
 
 /** The severity chip on a fitness card. Red only for a verdict that blocks
  *  answering the question; everything else (cosmetic, or no verdict parsed
@@ -315,6 +340,13 @@ export default function FiguresPage() {
         setSolErr((e) => ({ ...e, [it.path]: d.step ? `${d.step}: ${d.error}` : (d.error ?? `failed (${r.status})`) }));
         return;
       }
+      if (action === 'clean' || action === 'reject-candidate') {
+        // The card stays; it now has (or no longer has) something to approve.
+        const candidate: Candidate | null = action === 'clean' ? (d.candidate ?? null) : null;
+        setSols((cur) => cur.map((x) => (x.path === it.path ? { ...x, candidate, candidateUrl: candidate?.url ?? null } : x)));
+        setSolTotals((t) => ({ ...t, withCandidate: Math.max(0, t.withCandidate + (candidate ? (it.candidate ? 0 : 1) : (it.candidate ? -1 : 0))) }));
+        return;
+      }
       setSols((cur) => cur.filter((x) => x.path !== it.path));
       if (d.status === 'fixed') {
         setSolTotals((t) => ({
@@ -366,7 +398,7 @@ export default function FiguresPage() {
   /** One fitness-lane decision — hide / accept / repair. The card leaves the
    *  list on success (repair too: it's Adrian's decision recorded, the row
    *  moves on to the actual repair queue); errors stay inline on the card. */
-  const fitAct = async (it: FitItem, action: 'hide' | 'accept' | 'repair' | 'table') => {
+  const fitAct = async (it: FitItem, action: 'hide' | 'accept' | 'repair' | 'table' | 'clean' | 'approve-candidate' | 'reject-candidate') => {
     if (fitBusy) return;
     setFitBusy(it.path);
     setFitErr((e) => ({ ...e, [it.path]: '' }));
@@ -378,6 +410,11 @@ export default function FiguresPage() {
       const d = await r.json().catch(() => ({}));
       if (!r.ok) {
         setFitErr((e) => ({ ...e, [it.path]: d.step ? `${d.step}: ${d.error}` : (d.error ?? `failed (${r.status})`) }));
+        return;
+      }
+      if (action === 'clean' || action === 'reject-candidate') {
+        const candidate: Candidate | null = action === 'clean' ? (d.candidate ?? null) : null;
+        setFits((cur) => cur.map((x) => (x.path === it.path ? { ...x, candidate } : x)));
         return;
       }
       setFits((cur) => cur.filter((x) => x.path !== it.path));
@@ -701,9 +738,7 @@ export default function FiguresPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 8 }}>
                   <figure style={{ margin: 0 }}>
                     <figcaption style={{ fontSize: 11.5, color: C.muted, marginBottom: 3 }}>In the bank now · tap to open full size</figcaption>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <a href={it.liveUrl} target="_blank" rel="noreferrer"><img src={it.liveUrl} alt="" loading="lazy"
-                      style={{ width: '100%', maxHeight: 380, objectFit: 'contain', background: '#fff', border: '1px solid #94a3b8', borderRadius: 6 }} /></a>
+                    <Outlined src={it.liveUrl} boxes={cand?.erased} maxHeight={380} />
                   </figure>
                   <figure style={{ margin: 0 }}>
                     <figcaption style={{ fontSize: 11.5, color: C.muted, marginBottom: 3 }}>{candidateCaption(cand)}</figcaption>
@@ -750,6 +785,11 @@ export default function FiguresPage() {
                     <input type="file" accept="image/png,image/jpeg" disabled={busy} style={{ display: 'none' }}
                       onChange={(e) => { const f = e.target.files?.[0]; e.currentTarget.value = ''; if (f) amend(it, f); }} />
                   </label>
+                  <button disabled={busy} onClick={() => solAct(it, 'clean')} style={btn}
+                    title="A judge looks at the image for foreign marks — a stray letter, a neighbour's line, a speck — and only those are erased. The result appears here as a candidate; nothing changes until you approve it.">🧹 Clean</button>
+                  {cand && (
+                    <button disabled={busy} onClick={() => solAct(it, 'reject-candidate')} style={btn} title="Drop this candidate; the original stays as it is.">✗ Reject candidate</button>
+                  )}
                   <button disabled={busy} onClick={() => solAct(it, 'keep-hidden')} style={btn}>🙈 Keep hidden</button>
                   <button disabled={busy} onClick={() => solAct(it, 'redraw')} style={btn}>✏️ Redraw</button>
                 </div>
@@ -824,11 +864,26 @@ export default function FiguresPage() {
                   <a href={`/admin/questions?id=${it.qid}`} target="_blank" rel="noreferrer"
                     style={{ marginLeft: 'auto', fontSize: 12.5, border: `1px solid ${C.border}`, borderRadius: 8, padding: '3px 10px', textDecoration: 'none', color: '#111' }}>Open question ↗</a>
                 </div>
-                <figure style={{ margin: '0 0 8px' }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <a href={it.figureUrl} target="_blank" rel="noreferrer" title="open full size"><img src={it.figureUrl} alt="" loading="lazy"
-                    style={{ width: '100%', maxHeight: 340, objectFit: 'contain', background: '#fff', border: '1px solid #94a3b8', borderRadius: 6 }} /></a>
-                </figure>
+                {it.candidate ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 8 }}>
+                    <figure style={{ margin: 0 }}>
+                      <figcaption style={{ fontSize: 11.5, color: C.muted, marginBottom: 3 }}>In the bank now · the red boxes are what the clean erased</figcaption>
+                      <Outlined src={it.figureUrl} boxes={it.candidate.erased} maxHeight={340} />
+                    </figure>
+                    <figure style={{ margin: 0 }}>
+                      <figcaption style={{ fontSize: 11.5, color: C.muted, marginBottom: 3 }}>{candidateCaption(it.candidate)}</figcaption>
+                      <Outlined src={it.candidate.url} boxes={null} maxHeight={340} />
+                      <div style={{ marginTop: 5 }}>
+                        <span style={{ fontSize: 11.5, color: verdictChip(it.candidate).colour, border: `1px solid ${verdictChip(it.candidate).colour}`, borderRadius: 999, padding: '1px 9px' }}>{verdictChip(it.candidate).text}</span>
+                        {it.candidate.note && <div style={{ fontSize: 11.5, color: C.muted, marginTop: 3, maxHeight: 54, overflow: 'auto' }}>{it.candidate.note.slice(0, 300)}</div>}
+                      </div>
+                    </figure>
+                  </div>
+                ) : (
+                  <figure style={{ margin: '0 0 8px' }}>
+                    <Outlined src={it.figureUrl} boxes={null} maxHeight={340} />
+                  </figure>
+                )}
                 {it.stem && (
                   <div style={{ fontSize: 12.5, color: '#374151', background: '#f8fafc', border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 9px', marginBottom: 8, maxHeight: 92, overflow: 'auto' }}>
                     {it.stem}
@@ -849,6 +904,15 @@ export default function FiguresPage() {
                     style={{ ...btn, color: '#fff', background: C.flag, border: 'none' }}>🙈 Hide from students</button>
                   <button disabled={busy} onClick={() => fitAct(it, 'accept')}
                     style={{ ...btn, color: '#fff', background: '#15803d', border: 'none' }}>✓ Figure is fine</button>
+                  {it.candidate && (
+                    <button disabled={busy} onClick={() => fitAct(it, 'approve-candidate')}
+                      style={{ ...btn, color: '#fff', background: candidateButtonColour(it.candidate), border: 'none' }}>{candidateButtonLabel(it.candidate)}</button>
+                  )}
+                  {it.candidate && (
+                    <button disabled={busy} onClick={() => fitAct(it, 'reject-candidate')} style={btn} title="Drop this candidate; the figure stays as it is.">✗ Reject candidate</button>
+                  )}
+                  <button disabled={busy} onClick={() => fitAct(it, 'clean')} style={btn}
+                    title="A judge looks at the image for foreign marks — a stray letter, a neighbour's line, a speck — and only those are erased. The result appears here as a candidate; nothing changes until you approve it.">🧹 Clean</button>
                   <button disabled={busy} onClick={() => fitAct(it, 'repair')} style={btn}>🛠 Send to repair</button>
                   {/* Some of these are not figures at all — a printed TABLE stored as a
                       PNG belongs in the question text, where it reflows on a phone and

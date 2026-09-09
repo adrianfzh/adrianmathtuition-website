@@ -34,13 +34,16 @@ export type CandidateLike = {
 };
 
 /** How the candidate came to exist. Decided from `route` alone. */
-export type CandidateClass = 'redraw' | 'clean-copy' | 'exact' | 'pixel-edit';
+export type CandidateClass = 'redraw' | 'clean-copy' | 'exact' | 'erase' | 'pixel-edit';
 
 export function candidateClass(route: string | null | undefined): CandidateClass {
   const r = (route ?? '').trim().toLowerCase();
   if (r.startsWith('registry-redraw')) return 'redraw';
   if (r === 'clean-source-copy') return 'clean-copy';
   if (r === 'xobject-blank') return 'exact';
+  // 🧹 Clean (9 Sep 2026): a judge named the foreign marks, the ink components
+  // inside its boxes went white, the canvas is otherwise untouched.
+  if (r === 'blemish-erase') return 'erase';
   return 'pixel-edit';
 }
 
@@ -70,6 +73,13 @@ export function candidateChip(c: CandidateLike): Chip {
         text: `🖊 REDRAWN${fam ? ` · ${fam}` : ''} — a NEW figure, not the school's scan`,
         colour: VIOLET,
         hint: 'Check it says the same maths as the image on the left — labels, values, shading, orientation.',
+      };
+    }
+    if (cls === 'erase') {
+      return {
+        text: '🧹 BLEMISH ERASED — only the boxed marks went white, everything else is the original',
+        colour: GREEN,
+        hint: c.note ? c.note.slice(0, 240) : 'Check the red boxes on the left sit on foreign marks, not on a label.',
       };
     }
     if (cls === 'clean-copy') {
@@ -113,6 +123,8 @@ export function candidateCaption(c: CandidateLike | null | undefined): string {
       return 'Redrawn figure · tap to open full size — check it says the SAME maths as the image on the left';
     case 'clean-copy':
       return 'Clean copy from another scan · tap to open full size — check nothing on the left is missing here';
+    case 'erase':
+      return 'Cleaned candidate · tap to open full size — the red boxes on the left are what was erased';
     default:
       return 'Cleaned candidate · tap to open full size — check pale lines and curves at 1:1';
   }
@@ -124,6 +136,7 @@ export function candidateButtonLabel(c: CandidateLike): string {
   switch (candidateClass(c.route)) {
     case 'redraw': return '✓ Use the redrawn figure';
     case 'clean-copy': return '✓ Use the clean copy';
+    case 'erase': return '✓ Use the cleaned figure';
     default: return '✓ Use cleaned candidate';
   }
 }

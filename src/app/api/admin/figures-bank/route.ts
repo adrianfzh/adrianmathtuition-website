@@ -61,6 +61,8 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { imgSrc, isPlausibleImagePath } from '@/lib/kiosk-worksheet-images';
 import { inspectFigure } from '@/lib/figure-checks';
+import { eraseBlemishes, parseEraseVerdict, judgePrompt, judgeView, boxesAsFractions, BY_EYE, type Blemish } from '@/lib/figure-blemish';
+import Anthropic from '@anthropic-ai/sdk';
 import {
   replaceSolutionImageRefsMany, repairPairsFor, verifyRefPairs,
   containsImageRef, partLabelFor, cleanedObjectKey, imageKey, type RefPair,
@@ -68,6 +70,8 @@ import {
 import { partImagePaths, inlineImagePaths } from '@/lib/bank-question-markdown';
 
 export const runtime = 'nodejs';
+// 🧹 Clean asks a vision judge to look at the figure before erasing — 20–40 s.
+export const maxDuration = 120;
 
 type Row = Record<string, unknown>;
 
@@ -125,6 +129,8 @@ type Candidate = {
   holdReason: string | null;
   /** Set when the clean is an ESTIMATE (pixels under the stamp reconstructed) rather than an exact removal. */
   methodNote: string | null;
+  /** 🧹 Clean: the erased boxes as canvas fractions [x0,y0,x1,y1] — the page draws them in red. */
+  erased?: number[][] | null;
 };
 
 const step = (name: string, message: string) =>
@@ -222,13 +228,14 @@ async function solutionLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
     if (names.has(path)) {
       const side = names.has(`${path}.json`) ? await readSidecar(supa, path) : {};
       candidate = {
-        url: imgSrc(`${BUCKET}/candidates/${path}`),
+        url: candidateUrl(path, side),
         verdict: str(side.verdict) ?? 'unknown',
         route: str(side.route),
         note: str(side.note),
         holdKind: str(side.hold_kind),
         holdReason: str(side.hold_reason),
         methodNote: str(side.method_note),
+        erased: Array.isArray(side.erased) ? (side.erased as number[][]) : null,
       };
     }
     return {
@@ -450,6 +457,164 @@ async function priorNote(supa: SupabaseClient, path: string): Promise<string> {
   return ((data?.note as string | null) ?? '').trim();
 }
 
+/** A candidate's public URL. A 🧹 Clean re-uploads under the same object name,
+ *  so the judged_at stamp rides along as a cache-buster. */
+function candidateUrl(path: string, side: Record<string, unknown>): string {
+  const v = typeof side.judged_at === 'string' ? `?v=${encodeURIComponent(side.judged_at)}` : '';
+  return `${imgSrc(`${BUCKET}/candidates/${path}`)}${v}`;
+}
+
+const JUDGE_MODEL = process.env.FIGURE_JUDGE_MODEL || 'claude-opus-5';
+
+/**
+ * 🧹 Clean — judge by looking, erase exactly, store a CANDIDATE (9 Sep 2026).
+ *
+ * Adrian, on a whole and legible sketch with one stray letter in its margin:
+ * "instead of trim > how about clean as a candidate? … just faint blemishes in
+ * the diagram, would just need a simple cleaning job instead of a full redraw",
+ * and "should not be a mechanical thing". So: a vision judge names the foreign
+ * marks and roughly where; lib/figure-blemish snaps each box to the ink
+ * components inside it, refuses anything figure-sized, and whitens only those;
+ * the result lands under candidates/ with the erased boxes in its sidecar, and
+ * goes live only through the lane's approve button. `boxes` lets a session
+ * with its own eyes hand the judge's part in directly.
+ */
+async function cleanAsCandidate(
+  supa: SupabaseClient,
+  o: { path: string; note: string | null; kind: 'question' | 'solution'; boxes?: Blemish[] | null; byEye?: boolean },
+) {
+  const dl = await supa.storage.from(BUCKET).download(o.path);
+  if (dl.error || !dl.data) return step('download', dl.error?.message ?? 'the stored image could not be read');
+  const bytes = Buffer.from(await dl.data.arrayBuffer());
+  if (!bytes.length) return step('download', 'the stored image is empty');
+
+  let hints: Blemish[];
+  let unsure: string[] = [];
+  let judge: string;
+  if (o.boxes?.length) {
+    hints = o.boxes; judge = 'hand-specified boxes';
+  } else {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) return step('judge', 'ANTHROPIC_API_KEY is not set');
+    // The judge sees the figure with a labelled grid drawn on it (PNG); the
+    // erase below works on the original bytes.
+    const view = await judgeView(bytes);
+    let text = '';
+    try {
+      const res = await new Anthropic({ apiKey }).messages.create({
+        model: JUDGE_MODEL, max_tokens: 4000,   // the judge thinks before it answers; a small budget returns no text at all
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: 'image/png', data: view.toString('base64') } },
+          { type: 'text', text: judgePrompt(o.note) },
+        ] }],
+      });
+      text = res.content.map((c) => (c.type === 'text' ? c.text : '')).join('');
+    } catch (e) { return step('judge', `the judge could not be reached: ${(e as Error).message.slice(0, 160)}`); }
+    const v = parseEraseVerdict(text);
+    if (v.refuse) return step('judge', v.refuse);
+    hints = v.blemishes; unsure = v.unsure; judge = JUDGE_MODEL;
+    if (!hints.length) {
+      return NextResponse.json({
+        error: unsure.length ? `the judge found nothing it is sure is foreign — unsure about: ${unsure.join('; ')}` : 'the judge found no foreign mark on this figure',
+        step: 'judge', unsure,
+      }, { status: 422 });
+    }
+  }
+
+  // Relaxed guards only for boxes a session drew after looking — never for the judge's.
+  const r = await eraseBlemishes(bytes, hints, o.boxes?.length && o.byEye ? BY_EYE : {});
+  if (!r.ok) return NextResponse.json({ error: r.reason, step: 'erase', skipped: r.skipped }, { status: 422 });
+  const checks = await inspectFigure(r.png);
+  if (checks.blank) return step('erase', 'the result is blank — refused');
+
+  const erased = boxesAsFractions(r.erased, r.width, r.height);
+  const share = r.totalInk ? r.removedInk / r.totalInk : 0;
+  const what = hints.map((h) => h.what).filter(Boolean).join('; ') || `${hints.length} mark(s)`;
+  const note = `🧹 erased: ${what} — ${r.removedInk} of ${r.totalInk} ink pixels (${(share * 100).toFixed(1)}%)`
+    + (r.skipped.length ? `; left alone: ${r.skipped.join('; ')}` : '')
+    + (unsure.length ? `; judge unsure about: ${unsure.join('; ')}` : '');
+  const judgedAt = new Date().toISOString();
+  const side = {
+    verdict: 'apply', route: 'blemish-erase', note,
+    method_note: `judge: ${judge}${o.boxes?.length && o.byEye ? ' (guards relaxed for hand-drawn boxes)' : ''}; each box snapped to the ink components inside it; canvas size unchanged; nothing else touched`,
+    hold_kind: null, hold_reason: null, erased, judged_at: judgedAt, kind: o.kind,
+  };
+  const up1 = await supa.storage.from(BUCKET).upload(`candidates/${o.path}`, r.png, { contentType: 'image/png', upsert: true, cacheControl: '60' });
+  if (up1.error) return step('upload', up1.error.message);
+  const up2 = await supa.storage.from(BUCKET).upload(`candidates/${o.path}.json`, Buffer.from(JSON.stringify(side)), { contentType: 'application/json', upsert: true, cacheControl: '60' });
+  if (up2.error) return step('upload', up2.error.message);
+  return NextResponse.json({
+    ok: true,
+    candidate: {
+      url: candidateUrl(o.path, side), verdict: side.verdict, route: side.route, note, holdKind: null, holdReason: null,
+      methodNote: side.method_note, erased,
+    },
+  });
+}
+
+/** Fitness lane: a cleaned QUESTION figure goes live. The question's own
+ *  reference (image_url / figure_url / a parts slot) is swapped, the ledger
+ *  row is written so it can be reverted, the flag closes as fixed, and the
+ *  candidate objects are removed so the lane never offers them twice. */
+async function approveQuestionCandidate(supa: SupabaseClient, path: string, questionId: string) {
+  const dl = await supa.storage.from(BUCKET).download(`candidates/${path}`);
+  if (dl.error || !dl.data) return step('candidate', dl.error?.message ?? 'no cleaned candidate stored');
+  const bytes = Buffer.from(await dl.data.arrayBuffer());
+  if (!bytes.length) return step('candidate', 'the stored candidate is empty');
+  const { data: q, error } = await supa.from('questions').select('id, image_url, figure_url, parts').eq('id', questionId).maybeSingle();
+  if (error || !q) return step('read', error?.message ?? 'question row not found');
+
+  const bare = path.replace(/^question_images\//, '');
+  const sha8 = createHash('sha256').update(bytes).digest('hex').slice(0, 8);
+  const name = `${questionId}-clean-${sha8}.png`;
+  const up = await supa.storage.from(BUCKET).upload(name, bytes, { contentType: 'image/png', upsert: false, cacheControl: '3600' });
+  if (up.error && !/exist|duplicate/i.test(up.error.message)) return step('upload', up.error.message);
+
+  // Swap the reference in whatever spelling the row uses (bare, prefixed, full URL).
+  const patch: Record<string, unknown> = {};
+  let field: string | null = null;
+  for (const col of ['image_url', 'figure_url'] as const) {
+    const v = q[col];
+    if (typeof v === 'string' && v.includes(bare)) { patch[col] = v.split(bare).join(name); field = col; }
+  }
+  if (!field && q.parts != null) {
+    const s = JSON.stringify(q.parts);
+    if (s.includes(bare)) { patch.parts = JSON.parse(s.split(bare).join(name)); field = 'part'; }
+  }
+  if (!field) return step('locate', 'this question does not reference the flagged image (image_url / figure_url / parts) — nothing to replace');
+
+  const upd = await supa.from('questions').update(patch).eq('id', questionId).select('id');
+  if (upd.error) return step('write', upd.error.message);
+  if (!upd.data?.length) return step('write', 'no question row was updated');
+  const log = await supa.from('figure_clean_log').insert({
+    question_id: questionId, field, old_path: bare, new_path: `${BUCKET}/${name}`, batch: 'admin-fitness-lane',
+  });
+  if (log.error) return step('log', `the figure was swapped but the ledger write failed (${log.error.message}) — record ${bare} → ${name} by hand`);
+
+  const { data: fl } = await supa.from('figure_flags').select('note').eq('path', path).eq('kind', 'question').maybeSingle();
+  const prev = ((fl?.note as string | null) ?? '').trim();
+  await supa.from('figure_flags').update({ status: 'fixed', note: prev ? `Adrian approved cleaned candidate · ${prev}` : 'Adrian approved cleaned candidate' })
+    .eq('path', path).eq('kind', 'question');
+  await supa.storage.from(BUCKET).remove([`candidates/${path}`, `candidates/${path}.json`]);
+  return NextResponse.json({ ok: true, status: 'fixed', field, newPath: `${BUCKET}/${name}` });
+}
+
+/** The candidate was wrong: drop it, say so on the row, keep the row where it was. */
+async function rejectCandidate(supa: SupabaseClient, path: string, kind: 'question' | 'solution') {
+  await supa.storage.from(BUCKET).remove([`candidates/${path}`, `candidates/${path}.json`]);
+  const { data: fl } = await supa.from('figure_flags').select('note').eq('path', path).eq('kind', kind).maybeSingle();
+  const prev = ((fl?.note as string | null) ?? '').trim();
+  const stamp = `candidate rejected ${new Date().toISOString().slice(0, 10)}`;
+  await supa.from('figure_flags').update({ note: prev ? `${prev} · ${stamp}` : stamp }).eq('path', path).eq('kind', kind);
+  return NextResponse.json({ ok: true, candidate: null });
+}
+
+function boxesFrom(body: Record<string, unknown>): Blemish[] | null {
+  if (!Array.isArray(body.boxes)) return null;
+  const v = parseEraseVerdict(JSON.stringify({ blemishes: body.boxes }));
+  return v.blemishes.length ? v.blemishes : null;
+}
+
 /** The spelling figure_flags actually holds for this path (bare or prefixed),
  *  falling back to the bare form when no row exists so the old error paths
  *  still read as before. */
@@ -500,6 +665,9 @@ async function solutionLanePost(
   }
   if (action === 'keep-hidden') return decide(supa, path, 'hidden', extra);
   if (action === 'redraw') return decide(supa, path, 'redraw', extra);
+
+  if (action === 'clean') return cleanAsCandidate(supa, { path, note: await priorNote(supa, path), kind: 'solution', boxes: boxesFrom(body), byEye: body.byEye === true });
+  if (action === 'reject-candidate') return rejectCandidate(supa, path, 'solution');
 
   if (action === 'approve-candidate') {
     const dl = await supa.storage.from(BUCKET).download(`candidates/${path}`);
@@ -589,11 +757,22 @@ async function fitnessLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
     for (const q of qs ?? []) meta[q.id as string] = q as Row;
   }
 
-  const items = slice.map((f) => {
+  // 🧹 Clean leaves a candidate under candidates/<path>; one listing per request.
+  const candNames = await listCandidateNames(supa, slice.map((f) => f.path as string));
+  const items = await Promise.all(slice.map(async (f) => {
     const path = f.path as string;
     const q = meta[f.question_id as string];
     const note = (f.note as string | null) ?? null;
     const { severity, verdict } = parseFitnessNote(note);
+    let candidate: Candidate | null = null;
+    if (candNames.has(path)) {
+      const side = candNames.has(`${path}.json`) ? await readSidecar(supa, path) : {};
+      candidate = {
+        url: candidateUrl(path, side), verdict: str(side.verdict) ?? 'unknown', route: str(side.route), note: str(side.note),
+        holdKind: str(side.hold_kind), holdReason: str(side.hold_reason), methodNote: str(side.method_note),
+        erased: Array.isArray(side.erased) ? (side.erased as number[][]) : null,
+      };
+    }
     const stem = ((q?.question_text as string) ?? '').replace(/\s+/g, ' ').trim().slice(0, 220);
     return {
       path, qid: f.question_id,
@@ -603,8 +782,9 @@ async function fitnessLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
       figureUrl: imgSrc(`${BUCKET}/${path}`),
       severity, verdict, note,
       claimedBy: (f.claimed_by as string | null) ?? null,
+      candidate,
     };
-  });
+  }));
 
   return NextResponse.json({
     items, page, pageSize,
@@ -652,6 +832,13 @@ async function fitnessLanePost(
   supa: SupabaseClient, body: Record<string, unknown>, path: string, questionId: string,
 ) {
   const action = typeof body.action === 'string' ? body.action : '';
+  // 🧹 Clean and its two outcomes never change the row's decision by themselves.
+  if (action === 'clean') {
+    const { data: fl } = await supa.from('figure_flags').select('note').eq('path', path).eq('kind', 'question').maybeSingle();
+    return cleanAsCandidate(supa, { path, note: (fl?.note as string | null) ?? null, kind: 'question', boxes: boxesFrom(body), byEye: body.byEye === true });
+  }
+  if (action === 'approve-candidate') return approveQuestionCandidate(supa, path, questionId);
+  if (action === 'reject-candidate') return rejectCandidate(supa, path, 'question');
   const prefix = FITNESS_PREFIXES[action];
   if (!prefix) return NextResponse.json({ error: `unknown fitness action: ${action || '(none)'}` }, { status: 400 });
 
