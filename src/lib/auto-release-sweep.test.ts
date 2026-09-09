@@ -5,7 +5,7 @@ const NOW = new Date('2026-09-09T05:00:00Z');
 const ago = (min: number) => new Date(NOW.getTime() - min * 60_000).toISOString();
 const row = (over: Partial<SweepRow> & { rj?: Record<string, unknown> } = {}): SweepRow => ({
   id: 'r1', created_at: ago(120), released_at: null, annotated_pdf_url: 'https://www.adrianmathtuition.com/api/files/runs/r1/marked.pdf',
-  queue_status: 'done',
+  queue_status: 'done', student_id: 'recStudent',
   result_json: over.rj ?? { portal_submission: true, results: [{ question_number: '1' }] },
   ...over,
 });
@@ -23,11 +23,13 @@ describe('auto-release sweep — retry until it succeeds (9 Sep 2026)', () => {
     expect(sweepVerdict(row(), NOW)).toEqual({ retry: true, why: 'marked, never auto-released' });
     expect(sweepVerdict(row({ created_at: ago(5) }), NOW).retry).toBe(false);
   });
-  it('never touches a rule refusal, a hold, a released run, or a paper Adrian uploaded', () => {
+  it('never touches a rule refusal, a hold, a released run, or an untagged paper', () => {
     expect(sweepVerdict(row({ rj: { portal_submission: true, results: [{}], auto_release: { outcome: 'refused', at: ago(60) } } }), NOW).retry).toBe(false);
     expect(sweepVerdict(row({ rj: { portal_submission: true, results: [{}], auto_release: { outcome: 'held', at: ago(60) } } }), NOW).retry).toBe(false);
     expect(sweepVerdict(row({ released_at: ago(30) }), NOW).why).toBe('released');
-    expect(sweepVerdict(row({ rj: { results: [{}] } }), NOW).why).toBe('not a student hand-in');
+    expect(sweepVerdict(row({ student_id: null, rj: { results: [{}] } }), NOW).why).toBe('no student tagged');
+    // Adrian's own upload, tagged: released by the sweep like a hand-in (9 Sep 2026 evening).
+    expect(sweepVerdict(row({ rj: { results: [{}] } }), NOW)).toEqual({ retry: true, why: 'marked, never auto-released' });
   });
   it('skips what is not finished: unmarked, no PDF, still queued, or outside the window', () => {
     expect(sweepVerdict(row({ rj: { portal_submission: true, results: [] } }), NOW).why).toBe('not marked yet');

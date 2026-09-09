@@ -32,9 +32,9 @@ export async function GET(req: NextRequest) {
   const now = new Date();
   const since = new Date(now.getTime() - SWEEP_WINDOW_DAYS * 24 * 3600_000).toISOString();
   const { data, error } = await sb.from('paper_marking_runs')
-    .select('id, created_at, released_at, annotated_pdf_url, queue_status, student_name, paper_name, result_json')
-    .is('released_at', null).gte('created_at', since)
-    .or('result_json->>portal_submission.eq.true,result_json->telegram_handin.not.is.null')
+    .select('id, created_at, released_at, annotated_pdf_url, queue_status, student_id, student_name, paper_name, result_json')
+    .is('released_at', null).is('archived_at', null).gte('created_at', since)
+    .not('student_id', 'is', null)
     .order('created_at', { ascending: true }).limit(50);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   const rows = (data ?? []) as (SweepRow & { student_name: string | null; paper_name: string | null })[];

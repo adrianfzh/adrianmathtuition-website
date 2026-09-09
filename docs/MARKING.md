@@ -963,6 +963,14 @@ flagged, and his vetting changed 5 of the 98 flags he looked at.
   may release the sheet early from the desk; otherwise it goes at 12 h.
   **Later on 8 Sep 2026 a sheet exists only on request — § Practice Again on
   request below.**
+- **Every tagged paper releases itself (9 Sep 2026 evening — Adrian: "I also
+  want automatic release for the papers I upload").** The automatic door
+  (`mark-triage {release, auto:true}`, the bot's `autoReleaseHandIn` after
+  every queued marking, the sweep) no longer asks whether the paper was a
+  hand-in: a marked paper with a student goes out, open review flags ride as
+  watch-outs. Only an UNTAGGED paper waits (for a student), and the desk's
+  Approve & release keeps its own flag check for the papers Adrian chooses to
+  vet first. The old manual gate on uploads is gone.
 - **Try until it succeeds (9 Sep 2026).** Every automatic-release answer is
   classified (bot `lib/auto-release-outcome.js`: released / refused / held /
   failed) and stamped on the run as `result_json.auto_release`; the bot retries

@@ -13,6 +13,7 @@
 export type SweepRow = {
   id: string;
   created_at: string;
+  student_id?: string | null;
   released_at: string | null;
   annotated_pdf_url: string | null;
   queue_status?: string | null;
@@ -41,11 +42,16 @@ export function isStudentHandin(row: SweepRow): boolean {
   return rj.portal_submission === true || !!(rj.telegram_handin && typeof rj.telegram_handin === 'object');
 }
 
+/** Since 9 Sep 2026 evening every TAGGED paper releases itself — Adrian's uploads too. */
+export function hasStudent(row: SweepRow): boolean {
+  return typeof row.student_id === 'string' && row.student_id.length > 0;
+}
+
 /** Why a row is (or is not) a sweep candidate — one reason, for the log. */
 export function sweepVerdict(row: SweepRow, now: Date): { retry: boolean; why: string } {
   const rj = rjOf(row);
   if (row.released_at) return { retry: false, why: 'released' };
-  if (!isStudentHandin(row)) return { retry: false, why: 'not a student hand-in' };
+  if (!hasStudent(row)) return { retry: false, why: 'no student tagged' };
   if (!Array.isArray(rj.results) || rj.results.length === 0) return { retry: false, why: 'not marked yet' };
   if (!row.annotated_pdf_url) return { retry: false, why: 'no marked PDF yet' };
   if (row.queue_status === 'queued' || row.queue_status === 'claimed') return { retry: false, why: 'still in the queue' };

@@ -733,11 +733,12 @@ export async function POST(req: NextRequest) {
         }
         watch = hold.reasons;
       }
-      if (auto && !isPortalSubmission(run.result_json) && !telegramHandinOf(run.result_json)) {
-        // Auto-release is for papers students handed in themselves (portal or
-        // Telegram /handin — Adrian 2026-08-22: "release to student once marking
-        // is done"). Anything Adrian uploaded keeps the manual gate.
-        results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: 'not a student hand-in — release from triage' });
+      // Since 9 Sep 2026 evening (Adrian: "I also want automatic release for the
+      // papers I upload") the automatic door is open to EVERY tagged paper —
+      // hand-ins and his own uploads alike; open review flags ride as watch-outs.
+      // The one thing it still needs is a student to release to.
+      if (auto && !run.student_id) {
+        results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: 'tag the run to a student first' });
         continue;
       }
       if (!auto && !isReleasable(run.result_json)) {
