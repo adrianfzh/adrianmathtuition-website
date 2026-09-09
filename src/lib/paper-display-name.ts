@@ -99,3 +99,16 @@ export function practiceAgainHandinName(sent: string | null | undefined, sourceP
   const shown = tail ? displayPaperName(tail, studentName) : '';
   return shown ? `Practice Again — ${shown}` : 'Practice Again';
 }
+
+/**
+ * The subject a paper's name declares — 'A Math' | 'E Math' | 'H2 Math' — or null
+ * when the name says nothing (9 Sep 2026: the student profile's marks trend keys
+ * on this, because the runs' `subject` column is 'math' for both A and E Math).
+ */
+export function paperSubjectLabel(raw: string | null | undefined): string | null {
+  const t = String(raw || '');
+  for (const [re, label] of LEVELS as ReadonlyArray<readonly [RegExp, string]>) {
+    if (re.test(t)) return label;
+  }
+  return null;
+}

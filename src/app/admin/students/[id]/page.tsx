@@ -12,6 +12,8 @@ import { getExamTopicsForSubject } from '@/lib/canonical-topics';
 import { EXAM_TYPES, examPercent, gradeFromScore, resultTone, RESULT_TONE_COLORS, examTypeLabel } from '@/lib/exam-grade';
 import { slotOpenOnDate } from '@/lib/slot-windows';
 import { sgtTodayISO } from '@/lib/sgt';
+import { marksTrend, trendLine, type TrendRun } from '@/lib/marks-trend';
+import { paperSubjectLabel } from '@/lib/paper-display-name';
 import { relativeDay } from '@/lib/portal-activity';
 
 import { fileHref } from '@/lib/student-files-url';
@@ -280,7 +282,7 @@ export default function StudentProfilePage() {
   const [glance, setGlance] = useState<Glance | null>(null);
   // Marked papers — every AI-marked run tagged with this student on /admin/mark-paper.
   // Lives in the bot's run store (Supabase), fetched through the mark-paper proxy.
-  const [markedPapers, setMarkedPapers] = useState<{ id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null }[] | null>(null);
+  const [markedPapers, setMarkedPapers] = useState<{ id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; subject?: string | null; superseded?: boolean; released?: boolean; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null }[] | null>(null);
 
   function showToast(kind: 'ok' | 'err', msg: string) {
     setToast({ kind, msg });
@@ -315,15 +317,27 @@ export default function StudentProfilePage() {
     } catch { /* non-fatal */ }
   }, [studentId]);
 
+  // The site's own library read (newest first, with subject + superseded), not
+  // the bot proxy — the trend below needs both (9 Sep 2026).
   const fetchMarkedPapers = useCallback(async () => {
     try {
-      const res = await fetch('/api/admin/mark-paper', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phase: 'by-student', studentId }),
-      });
-      if (res.ok) setMarkedPapers(((await res.json()).runs || []));
+      const res = await fetch(`/api/admin/papers?student=${encodeURIComponent(studentId)}&days=3650&limit=200`);
+      if (!res.ok) return;
+      type Row = { id: string; createdAt: string; paperName: string; subject?: string | null; awarded: number; max: number; superseded?: boolean; released?: boolean; pdfUrl?: string | null; photosPdfUrl?: string | null; annotatedPdfUrl?: string | null };
+      const rows = (((await res.json()).runs || []) as Row[]).map(r => ({
+        id: r.id, created_at: r.createdAt, paper_name: r.paperName, total_awarded: r.awarded, total_max: r.max,
+        pdf_url: r.pdfUrl ?? null, photos_pdf_url: r.photosPdfUrl ?? null, annotated_pdf_url: r.annotatedPdfUrl ?? null,
+        subject: r.subject ?? null, superseded: !!r.superseded, released: !!r.released,
+      }));
+      setMarkedPapers(rows);
     } catch { /* non-fatal — section shows nothing rather than an error */ }
   }, [studentId]);
+  // Is the student improving? One series per subject, oldest → newest, re-marks
+  // counted once; the verdict is the slope, not the last two papers.
+  const marksTrends = useMemo(() => marksTrend(
+    (markedPapers || []).map(r => ({ ...r, superseded_by: r.superseded ? 'yes' : null }) as TrendRun),
+    r => paperSubjectLabel(r.paper_name) || ((r.subject || 'math') === 'math' ? 'Math' : String(r.subject)),
+  ), [markedPapers]);
 
   // Save one exam field (debounced 500ms, optimistic). Upserts by (student, type).
   function saveExamField(examType: string, patch: Partial<Exam>, fieldKey: string) {
@@ -755,11 +769,36 @@ export default function StudentProfilePage() {
                   None yet — papers appear here once tagged with this student on the mark page (pick them in the send row).
                 </div>
               )}
+              {marksTrends.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '4px 0 10px', borderBottom: '1px solid #e5e7eb', marginBottom: 4 }}>
+                  {marksTrends.map(t => {
+                    const tone = t.verdict === 'improving' ? '#15803d' : t.verdict === 'slipping' ? '#b91c1c' : '#6b7280';
+                    const ys = t.points.map(p => p.pct);
+                    const W = 120, H = 28, n = ys.length;
+                    const pts = ys.map((y, i) => `${n > 1 ? (i / (n - 1)) * W : W / 2},${H - 2 - ((y / 100) * (H - 4))}`).join(' ');
+                    return (
+                      <div key={t.subject} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', fontSize: 13 }}>
+                        <span style={{ width: 92, color: '#111', fontWeight: 600 }}>{t.subject}</span>
+                        <svg width={W} height={H} style={{ flexShrink: 0 }} aria-hidden>
+                          {n > 1 && <polyline points={pts} fill="none" stroke={tone} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />}
+                          {ys.map((y, i) => <circle key={i} cx={n > 1 ? (i / (n - 1)) * W : W / 2} cy={H - 2 - ((y / 100) * (H - 4))} r={2.4} fill={tone} />)}
+                        </svg>
+                        <span style={{ color: '#374151', fontVariantNumeric: 'tabular-nums' }}>{trendLine(t)}</span>
+                        <span style={{ color: tone, fontWeight: 700 }}>
+                          {t.verdict === 'too few' ? `${t.points.length} paper${t.points.length === 1 ? '' : 's'} — too few to say` : t.verdict === 'improving' ? '↑ improving' : t.verdict === 'slipping' ? '↓ slipping' : '→ steady'}
+                          {t.slope != null && <span style={{ fontWeight: 400, color: '#9ca3af' }}> · {t.slope > 0 ? '+' : ''}{t.slope} pts a paper</span>}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
               {(markedPapers || []).map(r => (
-                <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14 }}>
+                <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14, opacity: r.superseded ? 0.55 : 1 }}>
                   <span style={{ width: 92, color: '#111', fontWeight: 600 }}>{fmtDate(r.created_at.slice(0, 10))}</span>
                   <span style={{ flex: 1, minWidth: 120, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.paper_name || 'Paper'}</span>
-                  <span style={{ color: '#111', fontWeight: 600 }}>{r.total_awarded ?? 0}/{r.total_max ?? 0}</span>
+                  <span style={{ color: '#111', fontWeight: 600 }}>{r.total_awarded ?? 0}/{r.total_max ?? 0}{r.total_max ? <span style={{ color: '#9ca3af', fontWeight: 400 }}> · {Math.round(100 * (r.total_awarded ?? 0) / r.total_max)}%</span> : null}</span>
+                  {r.superseded && <span style={{ fontSize: 11, color: '#9ca3af' }}>re-marked later</span>}
                   {r.annotated_pdf_url && <a href={fileHref(r.annotated_pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600, fontSize: 13 }}>✍️ Annotated ↗</a>}
                   {r.photos_pdf_url && <a href={fileHref(r.photos_pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontSize: 13 }}>🖼 Images ↗</a>}
                   {r.pdf_url && <a href={fileHref(r.pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontSize: 13 }}>📄 Full ↗</a>}
