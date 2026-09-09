@@ -104,6 +104,7 @@ export default function OpsPage() {
         <header className="flex items-center gap-3">
           <a href="/admin" className="text-neutral-400 hover:text-neutral-600 text-sm">← Hub</a>
           <h1 className="text-lg font-semibold text-neutral-800">🩺 Ops — the centre&apos;s machine</h1>
+          <a href="/admin/costs" className="ml-auto text-xs text-neutral-500 hover:text-neutral-800">💵 costs →</a>
           <button onClick={load} className="ml-auto text-sm text-neutral-500 hover:text-neutral-800" disabled={loading}>
             {loading ? 'Refreshing…' : '↻ Refresh'}
           </button>
