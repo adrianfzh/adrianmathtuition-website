@@ -7,7 +7,7 @@ import type { CostEntry, DayTotal, PathTotal, BillDay, BillLine } from '@/lib/co
 type Data = {
   days: number; month: string; monthToDate: PathTotal;
   byDay: DayTotal[]; byPath: Record<string, PathTotal>; runs: CostEntry[];
-  bill: { available: boolean; days?: BillDay[]; lines?: BillLine[]; note?: string };
+  bill: { available: boolean; days?: BillDay[]; lines?: BillLine[]; note?: string; billUrl?: string };
   notes: string[];
 };
 
@@ -63,7 +63,7 @@ export default function CostsPage() {
                     {(data.bill.lines ?? []).map((l, i) => <tr key={i} className="border-t border-neutral-100"><td className="py-1 max-w-[260px] truncate" title={l.description}>{l.description}</td><td className="text-xs text-neutral-500">{l.tier ?? ''}</td><td className="py-1 text-right tabular-nums">{money(l.amount)}</td></tr>)}
                   </tbody></table>
                 </div>
-              ) : <div className="text-sm text-neutral-500">{data.bill.note}</div>}
+              ) : <div className="text-sm text-neutral-500">{data.bill.note}{data.bill.billUrl ? <> <a href={data.bill.billUrl} target="_blank" rel="noreferrer" className="underline hover:text-neutral-800">Open the Cost page →</a></> : null}</div>}
             </section>
 
             <section className="bg-white rounded-xl border border-neutral-200 p-4 mb-4 overflow-x-auto">

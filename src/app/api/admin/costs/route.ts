@@ -16,9 +16,9 @@ export const dynamic = 'force-dynamic';
 const COLS = 'id, created_at, student_name, paper_name, num_photos, cost_usd, input_tokens, output_tokens, model, total_max, ' +
   'result_json->queue, result_json->portal_submission, result_json->telegram_handin, result_json->usage, result_json->vision_usage';
 
-async function anthropicBill(sinceDay: string): Promise<{ available: boolean; days?: ReturnType<typeof foldCostReport>; lines?: ReturnType<typeof foldCostLines>; note?: string }> {
+async function anthropicBill(sinceDay: string): Promise<{ available: boolean; days?: ReturnType<typeof foldCostReport>; lines?: ReturnType<typeof foldCostLines>; note?: string; billUrl?: string }> {
   const key = process.env.ANTHROPIC_ADMIN_KEY;
-  if (!key) return { available: false, note: 'Set ANTHROPIC_ADMIN_KEY (an Admin API key from console.anthropic.com → Settings → Admin keys, sk-ant-admin…) and the invoice appears here, per day and per line item.' };
+  if (!key) return { available: false, note: 'The invoice needs an Admin API key, and the Console only issues those to an organization (Settings → Organization; an individual account has no Admin keys page). Until then the bill itself is at platform.claude.com/cost — the bot pricing on this page counts the same tokens. Once you have a key: ANTHROPIC_ADMIN_KEY in Vercel.', billUrl: 'https://platform.claude.com/cost' };
   try {
     // Grouped by description so the lines carry model × service tier × token type; up to four pages of 31 days.
     const data: NonNullable<Parameters<typeof foldCostReport>[0]>['data'] = [];
