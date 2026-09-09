@@ -203,6 +203,20 @@ say "START ($WAITING queued, auth=$AUTH_VIA, model=${WORKER_MODEL:-opus}, max ${
 START_EPOCH=$(date +%s)
 cd "$SHEETS_REPO" || die "cannot cd to $SHEETS_REPO"
 
+# Fetch the latest code before authoring (10 Sep 2026): the session runs the
+# self-study-sheet skill, worksheet_lib.py and WORKER_PROMPT.md from THIS
+# checkout, so a rule that landed on GitHub reached the sheets only when someone
+# remembered to pull here (the Practice Again focus rule sat unpulled for a
+# night). A pull that cannot fast-forward — offline, diverged, a dirty file in
+# the way — is a warning, not a failure: the sheet is authored on the checkout
+# as it stands. Note install.sh COPIES this file, so a change here needs one
+# more install.sh run on the worker Mac.
+if PULL_OUT=$(GIT_TERMINAL_PROMPT=0 git pull --ff-only --quiet 2>&1); then
+  say "git pull ok: $(git rev-parse --abbrev-ref HEAD) @ $(git rev-parse --short HEAD)"
+else
+  say "WARN: git pull failed — authoring on the checkout as it is: $(echo "$PULL_OUT" | tr '\n' ' ' | cut -c1-200)"
+fi
+
 # Effort is pinned HIGH, not left to the default: authoring a sheet is
 # diagnosis + writing + symbolic verification + figure construction in one
 # pass, and a cheap pass here produces a sheet Adrian has to rewrite — which
