@@ -56,6 +56,8 @@ describe('sheetStageLabel', () => {
     expect(sheetStageLabel({ status: 'done' })).toBe('sheet ready');
     expect(sheetStageLabel({ status: 'failed', error: 'plan cap hit' })).toBe('failed: plan cap hit');
     expect(sheetStageLabel({ status: 'cancelled' })).toBe('cancelled');
+    // 📁 No sheet (9 Sep 2026): Adrian's decision reads like the worker's "nothing to teach".
+    expect(sheetStageLabel({ status: 'done', result: { noSheet: true, reason: 'archived by Adrian' } })).toBe('no sheet needed — archived by Adrian');
   });
 });
 

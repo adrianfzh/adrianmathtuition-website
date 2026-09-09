@@ -51,7 +51,11 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
       .eq('run_id', id).order('created_at', { ascending: false }).limit(1);
     const job = (jobRows ?? [])[0] as { status: string; result: unknown } | undefined;
     if (job?.status === 'queued' || job?.status === 'claimed') requestState = 'queued';
-    else if (job?.status === 'done') requestState = readNoSheet(job.result).noSheet ? 'nothing' : 'checking';
+    else if (job?.status === 'done') {
+      const ns = readNoSheet(job.result);
+      const byAdrian = !!ns.noSheet && (job.result as { closedBy?: unknown } | null)?.closedBy === 'adrian';
+      requestState = ns.noSheet ? (byAdrian ? 'archived' : 'nothing') : 'checking';
+    }
     // failed / cancelled: they may ask again
   }
   const hasCover = paper.dropped.length > 0;

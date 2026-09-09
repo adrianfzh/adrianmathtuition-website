@@ -9,7 +9,8 @@ export type PracticeAgainState =
   | 'none'      // no sheet, nothing in flight — offer the button
   | 'queued'    // being written on the Mac
   | 'checking'  // written, not yet with the student (held for Adrian, or on his clock)
-  | 'nothing';  // the worker found nothing worth practising
+  | 'nothing'   // the worker found nothing worth practising
+  | 'archived'; // Adrian decided this paper needs no sheet (📁 on the desk, 9 Sep 2026)
 
 const CARD = 'rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4';
 
@@ -47,6 +48,14 @@ export default function PracticeAgainRequest({ runId, state: initial }: { runId:
       <section id="practice-again" className={CARD}>
         <p className="text-sm font-semibold text-emerald-900">📘 Your Practice Again sheet is written</p>
         <p className="text-[12px] text-emerald-800/80 mt-0.5">Adrian is checking it before it comes to you. You’ll get a message when it does.</p>
+      </section>
+    );
+  }
+  if (state === 'archived') {
+    return (
+      <section id="practice-again" className={CARD}>
+        <p className="text-sm font-semibold text-emerald-900">📘 No practice sheet for this paper</p>
+        <p className="text-[12px] text-emerald-800/80 mt-0.5">Adrian has gone over it and decided it doesn’t need one. Anything worth revisiting comes up in class.</p>
       </section>
     );
   }

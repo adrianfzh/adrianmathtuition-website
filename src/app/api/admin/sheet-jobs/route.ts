@@ -49,7 +49,7 @@ import { docxXmlToText, extractExamples, runExampleCheck } from '@/lib/sheet-exa
 import { autoReleaseGate, holdHours, scheduledLine, heldLine, requestedSentLine, requestedHeldLine, requestedStoppedLine, type GateInput } from '@/lib/sheet-auto-release';
 import { normaliseDiagnosis, type Diagnosis } from '@/lib/sheet-diagnosis';
 import { rebuildRunPdfs, type RebuildOutcome } from '@/lib/rebuild-run-pdfs';
-import { queueSheetJob, requeueSheetAfterRemark } from '@/lib/sheet-queue';
+import { queueSheetJob, requeueSheetAfterRemark, sheetJobInsert, type SheetQueueRun } from '@/lib/sheet-queue';
 import { sanitizeSheetQuestions } from '@/lib/practice-again';
 import { createHeldPracticeItems, deleteHeldPracticeItems } from '@/lib/practice-again-store';
 import { archiveSheetToStore } from '@/lib/sheet-archive';
@@ -202,6 +202,48 @@ export async function POST(req: NextRequest) {
     // message sent cut halfway" — 200 characters of raw LaTeX).
     notify_marking(`✏️ ${job.student_name || job.airtable_student_id} — sheet sent back to the worker for a revision (${source === 'adrian' ? 'your note' : 'after a page re-mark'}):\n${clip(plainMath(instructions), 600)}`).catch(() => {});
     return NextResponse.json({ ok: true, jobId: job.id, round, heldItemsDeleted: held.deleted });
+  }
+
+  // 📁 NO SHEET (Adrian, 9 Sep 2026: "can we have an archive option — meaning
+  // that these papers do not need a practice again sheet"). His decision is
+  // recorded the way the worker records "nothing to teach": a finished sheet
+  // job whose result is {noSheet:true} — so the desk row reads "no sheet
+  // needed", the student's page stops offering the Request button, and every
+  // list of "papers missing a sheet" leaves the paper alone. Anything still
+  // being written for the paper is stopped first. A released paper is also
+  // marked looked-at, so one tap clears it from the automatic lane.
+  if (body.action === 'no-sheet') {
+    const runId = String(body.runId || '');
+    if (!/^[0-9a-f-]{36}$/i.test(runId)) return NextResponse.json({ error: 'runId required' }, { status: 400 });
+    const { data: run, error: rErr } = await sb.from('paper_marking_runs')
+      .select('id, student_id, student_name, paper_name, released_at, released_via, checked_at')
+      .eq('id', runId).maybeSingle();
+    if (rErr) return NextResponse.json({ error: rErr.message }, { status: 500 });
+    if (!run) return NextResponse.json({ error: 'run not found' }, { status: 404 });
+    const { data: open } = await sb.from('sheet_jobs').select('*')
+      .eq('run_id', runId).in('status', ['queued', 'claimed']);
+    let stopped = 0;
+    for (const j of (open ?? []) as SheetJob[]) {
+      const { data: done } = await sb.from('sheet_jobs')
+        .update({ status: 'cancelled', claimed_by: null, heartbeat_at: null, completed_at: new Date().toISOString(), error: 'archived by Adrian — no sheet needed' })
+        .eq('id', j.id).eq('status', j.status).select('id').maybeSingle();
+      if (done) { stopped += 1; await deleteHeldPracticeItems(sb, j.id).catch(() => ({ deleted: 0 })); }
+    }
+    const now = new Date().toISOString();
+    const { data: job, error: iErr } = await sb.from('sheet_jobs')
+      .insert({
+        ...sheetJobInsert({ id: run.id, student_id: run.student_id, student_name: run.student_name, paper_name: run.paper_name } as unknown as SheetQueueRun, null, 'adrian'),
+        status: 'done', stage: 'no sheet needed', completed_at: now,
+        result: { noSheet: true, reason: 'archived by Adrian', closedBy: 'adrian' },
+      })
+      .select('id').single();
+    if (iErr || !job) return NextResponse.json({ error: iErr?.message || 'could not record it' }, { status: 500 });
+    let checked = false;
+    if (run.released_at && !run.checked_at) {
+      const { error: cErr } = await sb.from('paper_marking_runs').update({ checked_at: now }).eq('id', runId);
+      checked = !cErr;
+    }
+    return NextResponse.json({ ok: true, jobId: job.id, stopped, checked });
   }
 
   if (body.action === 'cancel') {
