@@ -450,13 +450,25 @@ async function priorNote(supa: SupabaseClient, path: string): Promise<string> {
   return ((data?.note as string | null) ?? '').trim();
 }
 
+/** The spelling figure_flags actually holds for this path (bare or prefixed),
+ *  falling back to the bare form when no row exists so the old error paths
+ *  still read as before. */
+async function storedFlagPath(supa: SupabaseClient, raw: string, kind: 'question' | 'solution'): Promise<string> {
+  const bare = raw.replace(/^question_images\//, '');
+  const spellings = [...new Set([raw, bare, `question_images/${bare}`])];
+  const { data } = await supa.from('figure_flags').select('path').in('path', spellings).eq('kind', kind)
+    .order('status', { ascending: false }).limit(2);   // 'held' / 'open' before 'fixed' when both spellings exist
+  return (data?.[0]?.path as string | undefined) ?? bare;
+}
+
 async function noteOnly(supa: SupabaseClient, path: string, note: string, status?: 'fixed') {
   const prev = await priorNote(supa, path);
   const patch: Record<string, unknown> = { note: prev ? `${note} · ${prev}` : note };
   if (status) patch.status = status;
-  const { error } = await supa.from('figure_flags').update(patch)
-    .eq('path', path).eq('kind', 'solution');
+  const { data: touched, error } = await supa.from('figure_flags').update(patch)
+    .eq('path', path).eq('kind', 'solution').select('path');
   if (error) return step('flag', error.message);
+  if (!touched?.length) return step('flag', 'no solution flag at that path — nothing was written');
   return NextResponse.json({ ok: true, status: status ?? 'held', note: patch.note });
 }
 
@@ -467,9 +479,10 @@ async function decide(supa: SupabaseClient, path: string, kind: 'redraw' | 'hidd
   const prev = await priorNote(supa, path);
   if (decidedSolutionKind(prev) === kind) return NextResponse.json({ ok: true, status: 'held', note: prev, alreadySent: true, decided: kind });
   const note = decideSolutionNote(prev, kind, extra);
-  const { error } = await supa.from('figure_flags').update({ note })
-    .eq('path', path).eq('kind', 'solution');
+  const { data: touched, error } = await supa.from('figure_flags').update({ note })
+    .eq('path', path).eq('kind', 'solution').select('path');
   if (error) return step('flag', error.message);
+  if (!touched?.length) return step('flag', 'no solution flag at that path — nothing was written');
   return NextResponse.json({ ok: true, status: 'held', note, decided: kind });
 }
 
@@ -775,9 +788,17 @@ export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
   try { body = (await req.json()) as Record<string, unknown>; }
   catch { return NextResponse.json({ error: 'invalid JSON' }, { status: 400 }); }
-  const path = typeof body.path === 'string' ? body.path.replace(/^question_images\//, '') : '';
+  const rawPath = typeof body.path === 'string' ? body.path.trim() : '';
   const questionId = typeof body.questionId === 'string' ? body.questionId : '';
-  if (!path || !questionId) return NextResponse.json({ error: 'path and questionId required' }, { status: 400 });
+  if (!rawPath || !questionId) return NextResponse.json({ error: 'path and questionId required' }, { status: 400 });
+  // Two spellings live in figure_flags.path: question-figure rows are bare
+  // filenames, but the fleet's recent solution images and every ingest-fitness
+  // row carry the `question_images/` prefix. Stripping it blindly (the rule until
+  // 9 Sep 2026) made every action on a prefixed row miss — the Fitness lane
+  // answered "no held question flag at that path" on a card it had just listed,
+  // and a Solutions-lane tap updated zero rows while reporting ok. Resolve the
+  // STORED spelling once here; every lane below then hits the row it was shown.
+  const path = await storedFlagPath(supa, rawPath, body.kind === 'solution' ? 'solution' : 'question');
   // The solution vet lane and the fitness lane are separate verb sets on the
   // same table; every question-figure behaviour below is untouched.
   if (body.kind === 'solution') return solutionLanePost(supa, body, path, questionId);
