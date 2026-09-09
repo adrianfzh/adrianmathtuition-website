@@ -89,3 +89,13 @@ describe('remarkRequester — who a replacement sheet is for', () => {
     expect(remarkRequester([{ id: 'a', status: 'done', requested_by: null }])).toBe('adrian');
   });
 });
+
+describe('a returned Practice Again sheet gets no sheet of its own (9 Sep 2026)', () => {
+  it('refuses whoever asks', () => {
+    const run = { id: 'r', paper_name: 'Practice Again — A Math 2021 Paper 1', student_id: 's', student_name: 'Sophie', released_at: '2026-09-08T04:00:00Z', result_json: { results: [{}] } } as never;
+    const a = sheetQueueGuard(run, [], { requestedBy: 'adrian' });
+    const b = sheetQueueGuard(run, [], { requestedBy: 'student' });
+    expect(a.ok).toBe(false); expect((a as { status: string }).status).toBe('practice-again');
+    expect(b.ok).toBe(false); expect((b as { status: string }).status).toBe('practice-again');
+  });
+});

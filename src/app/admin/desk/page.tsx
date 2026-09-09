@@ -51,7 +51,7 @@ type Row = {
   awarded: number; max: number; pct: number | null; questions: number; pending: number;
   lane: DeskLane; releasedAt: string | null; releasedVia: string | null; pdfStale: boolean;
   sheet: { jobId: string; status: string; stage: string | null; error: string | null; label: string; completedAt: string | null; requestedBy?: string | null } | null;
-  flags: string[]; amended: string | null; assignments: number; assignmentsHeld?: number;
+  flags: string[]; amended: string | null; assignments: number; assignmentsHeld?: number; practiceAgain?: boolean;
   folder: string; folderUrl: string;
   annotatedPdfUrl: string | null; photosPdfUrl: string | null; pdfUrl: string | null;
 };
@@ -68,7 +68,7 @@ type Detail = {
     awarded: number; max: number; totalQuestions: number;
     releasedAt: string | null; releasedVia: string | null; archivedAt: string | null; checkedAt: string | null;
     pdfUrl: string | null; annotatedPdfUrl: string | null; photosPdfUrl: string | null;
-    pdfStale: boolean; grounding: string | null; unattempted: string[]; portalSubmission: boolean;
+    pdfStale: boolean; grounding: string | null; unattempted: string[]; portalSubmission: boolean; practiceAgain?: boolean;
     paperMatch: PaperMatch | null;
     remarking: boolean; remarkPages: number[];
     remark: RemarkPanel | null;
@@ -919,7 +919,8 @@ export default function DeskPage() {
                   </div>
                   <div style={{ fontSize: 12.5, color: C.muted, marginTop: 3, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                     <span>marked {fmtDate(row.createdAt)}</span>
-                    {row.lane !== 'released' && (
+                    {row.practiceAgain && <Chip label="📘 Practice Again hand-in" bg="#ecfdf5" color="#047857" />}
+                    {row.lane !== 'released' && !row.practiceAgain && (
                       <span style={{ color: row.sheet?.status === 'done' ? C.ok : row.sheet?.status === 'failed' ? C.danger : C.link }}>
                         📘 {row.sheet?.label ?? 'no sheet yet'}{row.sheet?.requestedBy === 'student' ? ' · asked by the student' : ''}
                       </span>
@@ -1084,6 +1085,7 @@ function DetailView(p: {
             </div>
             <div style={{ fontSize: 13.5, color: C.muted, marginTop: 4, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
               <span style={{ color: C.ink, fontWeight: 500 }}>{run.paperName}</span>
+              {run.practiceAgain && <Chip label="📘 Practice Again hand-in" bg="#ecfdf5" color="#047857" />}
               <PaperSubjectChip subject={run.paperSubject} />
               {/* Which maths this is — writes paper_subject only, so it stays live after release. */}
               <label style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12.5 }} title="Which maths this paper is — the student's Papers page pill and per-subject tiles key on it. Changes no mark.">
@@ -1722,6 +1724,14 @@ function SheetPane(p: {
   const sheetWithStudent = !!(d as { sheetSent?: boolean }).sheetSent;
   const done = job?.status === 'done' && !noSheet;
   const openHref = (kind: 'pdf' | 'docx') => `/api/admin/sheet-open?runId=${encodeURIComponent(d.run.id)}&kind=${kind}`;
+  if (d.run.practiceAgain) {
+    // A returned Practice Again sheet gets no sheet of its own (9 Sep 2026).
+    return (
+      <div style={{ padding: '12px 14px', fontSize: 13.5, color: C.muted, lineHeight: 1.5 }}>
+        📘 This is a returned <b>Practice Again</b> sheet, marked as a paper. It gets no sheet of its own — the marks above are the whole story.
+      </div>
+    );
+  }
   return (
     <>
       <section style={{ border: `1px solid ${C.border}`, borderRadius: 12, background: '#fff', marginBottom: 14, overflow: 'hidden' }}>

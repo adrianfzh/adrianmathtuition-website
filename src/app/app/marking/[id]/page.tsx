@@ -142,7 +142,7 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
         </section>
       )}
 
-      {!sheet && !supersededBy && <PracticeAgainRequest runId={paper.id} state={requestState} />}
+      {!sheet && !supersededBy && !/^\s*practice again\b/i.test(paper.rawName ?? '') && <PracticeAgainRequest runId={paper.id} state={requestState} />}
 
       {paper.pdfUrl && (
         <p className="text-center">

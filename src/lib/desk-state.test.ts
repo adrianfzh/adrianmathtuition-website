@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  laneFor, sheetStageLabel, approveBlockers, releaseBlockers, deskFlags, defaultLane,
+  laneFor, sheetStageLabel, isPracticeAgainHandin, approveBlockers, releaseBlockers, deskFlags, defaultLane,
   amendedStatusFor, latestLiveJob, noSheetOf, pdfStaleOf, DESK_LANES, LANE_LABEL, orderLane,
 } from './desk-state';
 
@@ -259,5 +259,21 @@ describe('the system lane empties itself (8 Sep 2026)', () => {
     const run = { student_id: 'recX', released_at: '2026-09-01T10:00:00Z', released_via: 'auto:portal', checked_at: null };
     expect(laneFor(run, null, Date.parse('2026-09-05T10:00:00Z'))).toBe('auto');
     expect(laneFor(run, null, Date.parse('2026-09-09T10:00:00Z'))).toBe('released');
+  });
+});
+
+describe('returned Practice Again sheets (9 Sep 2026)', () => {
+  it('are told apart by the attached kind or the name', () => {
+    expect(isPracticeAgainHandin({ paper_name: 'Practice Again — A Math 2021 Paper 1', result_json: {} })).toBe(true);
+    expect(isPracticeAgainHandin({ paper_name: 'x', result_json: { source: { paper_kind: 'practice-again' } } })).toBe(true);
+    expect(isPracticeAgainHandin({ paper_name: 'sophie am tys 2021 p1', result_json: { source: {} } })).toBe(false);
+    expect(isPracticeAgainHandin(null)).toBe(false);
+  });
+  it('a quiet one clears itself from the automatic lane; a flagged one stays', () => {
+    const run = { student_id: 's', released_at: '2026-09-09T06:00:00Z', released_via: 'auto:telegram', checked_at: null, result_json: { results: [] } };
+    const now = Date.parse('2026-09-09T12:00:00Z');
+    expect(laneFor(run, null, now, { quiet: true })).toBe('released');
+    expect(laneFor(run, null, now, { quiet: false })).toBe('auto');
+    expect(laneFor(run, null, now)).toBe('auto');
   });
 });

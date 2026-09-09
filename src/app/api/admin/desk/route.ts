@@ -18,6 +18,7 @@
 // decides anything) and capped — a list must never wait on Dropbox. The
 // detail route checks it properly for the paper on screen.
 import { NextRequest, NextResponse } from 'next/server';
+import { computeAutoHold } from '@/lib/mark-triage';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { dropboxConfigured, listFolder } from '@/lib/dropbox';
@@ -25,7 +26,7 @@ import { pendingCount, recomputeTotals } from '@/lib/mark-triage';
 import { dropboxWebUrl, paperFolder } from '@/lib/paper-folder';
 import {
   DESK_LANES, amendedStatusFor, defaultLane, deskFlags, laneFor, latestLiveJob,
-  noSheetOf, pdfStaleOf, sheetStageLabel, type AmendedStatus, type DeskLane,
+  noSheetOf, pdfStaleOf, sheetStageLabel, type AmendedStatus, type DeskLane, isPracticeAgainHandin,
 } from '@/lib/desk-state';
 
 export const runtime = 'nodejs';
@@ -122,9 +123,13 @@ export async function GET(req: NextRequest) {
   const counts: Record<DeskLane, number> = { untagged: 0, 'awaiting-sheet': 0, ready: 0, auto: 0, released: 0 };
   const prelim = runs.map(r => {
     const job = latestLiveJob(jobsByRun.get(r.id) ?? []);
-    const runLane = laneFor(r, job);
+    // A returned Practice Again sheet with nothing flagged (no desk flag, no
+    // accuracy watch-out) clears itself — Adrian need not look at it again.
+    const practiceAgain = isPracticeAgainHandin(r);
+    const quiet = practiceAgain && deskFlags(r, job, null).length === 0 && computeAutoHold(r.result_json).reasons.length === 0;
+    const runLane = laneFor(r, job, Date.now(), { quiet });
     counts[runLane] += 1;
-    return { r, job, lane: runLane, folder: paperFolder(r), amended: null as AmendedStatus | null };
+    return { r, job, lane: runLane, folder: paperFolder(r), amended: null as AmendedStatus | null, practiceAgain };
   });
 
   // The newer-copy flag for the ready lane — capped, parallel, fail-soft.
@@ -137,7 +142,7 @@ export async function GET(req: NextRequest) {
     for (const s of settled) if (s.status === 'rejected') console.warn('[desk] amended check failed:', String(s.reason));
   }
 
-  const visible = (lane ? prelim.filter(x => x.lane === lane) : prelim).map(({ r, job, lane: runLane, folder, amended }) => {
+  const visible = (lane ? prelim.filter(x => x.lane === lane) : prelim).map(({ r, job, lane: runLane, folder, amended, practiceAgain }) => {
     // Stored totals first (triage overrides write both); recompute for the
     // older rows that carry neither.
     const totals = r.total_max == null || r.total_awarded == null
@@ -167,6 +172,7 @@ export async function GET(req: NextRequest) {
         requestedBy: job.requested_by ?? null,
       } : null,
       flags: deskFlags(r, job, amended),
+      practiceAgain,
       amended,
       assignments: assignmentsByRun.get(r.id) ?? 0,
       folder,

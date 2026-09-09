@@ -13,6 +13,7 @@
 // path left is `requeueSheetAfterRemark`: a paper marked AGAIN that already
 // had a sheet gets a fresh one on the same terms (same requester) — a sheet
 // built on marking that no longer stands is worse than none.
+import { isPracticeAgainHandin } from './desk-state';
 import { getSupabaseAdmin } from './supabase';
 import { deleteHeldPracticeItems } from './practice-again-store';
 
@@ -31,7 +32,7 @@ export type SheetQueueJobRow = { id: string; status: string; requested_by?: stri
 
 export type SheetQueueRefusal = {
   ok: false;
-  status: 'not-found' | 'untagged' | 'no-marking' | 'not-released' | 'duplicate' | 'exists';
+  status: 'not-found' | 'untagged' | 'no-marking' | 'not-released' | 'duplicate' | 'exists' | 'practice-again';
   http: 400 | 404 | 409;
   message: string;
   jobId?: string;
@@ -54,6 +55,11 @@ export function sheetQueueGuard(
   if (!run) return { ok: false, status: 'not-found', http: 404, message: 'run not found' };
   if (!run.student_id) return { ok: false, status: 'untagged', http: 400, message: 'Tag this paper to a student first — a sheet needs someone to be for.' };
   if (!run.result_json) return { ok: false, status: 'no-marking', http: 400, message: 'That run has no marking to diagnose yet.' };
+  // A returned Practice Again sheet never gets a sheet of its own (Adrian,
+  // 9 Sep 2026: "there should be no trigger to generate new sheets for
+  // practice again sheets") — not from the desk, not from the student, not
+  // from a re-mark.
+  if (isPracticeAgainHandin(run)) return { ok: false, status: 'practice-again', http: 409, message: 'This is a returned Practice Again sheet — it gets no sheet of its own.' };
   const inFlight = jobs.find(j => IN_FLIGHT.has(j.status));
   if (inFlight) return { ok: false, status: 'duplicate', http: 409, message: 'A sheet for this paper is already queued.', jobId: inFlight.id };
   if (opts.requestedBy === 'student') {

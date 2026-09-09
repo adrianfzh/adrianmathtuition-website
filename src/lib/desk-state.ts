@@ -41,6 +41,7 @@ export const LANE_LABEL: Record<DeskLane, string> = {
 
 /** The run columns the lane rules read. */
 export type DeskRun = {
+  paper_name?: string | null;
   student_id?: string | null;
   released_at?: string | null;
   annotated_pdf_url?: string | null;
@@ -97,7 +98,26 @@ function olderThan(iso: string, days: number, now: number): boolean {
   return Number.isFinite(t) && now - t > days * 86400_000;
 }
 
-export function laneFor(run: DeskRun, latestSheetJob: DeskSheetJob, now: number = Date.now()): DeskLane {
+/**
+ * A returned Practice Again sheet, marked as a paper (Adrian, 9 Sep 2026:
+ * "for practice again sheets -> should distinguish them from papers - so i can
+ * tell immediately"). The bot stamps `source.paper_kind` when it attaches the
+ * sheet; the name is the fallback for a run whose attachment was cleared by a
+ * re-mark and not yet re-attached.
+ */
+export function isPracticeAgainHandin(run: DeskRun | null | undefined): boolean {
+  if (!run) return false;
+  const rj = run.result_json as { source?: { paper_kind?: unknown } } | null;
+  if (rj && typeof rj === 'object' && rj.source && rj.source.paper_kind === 'practice-again') return true;
+  return /^\s*practice again\b/i.test(String(run.paper_name || ''));
+}
+
+export function laneFor(run: DeskRun, latestSheetJob: DeskSheetJob, now: number = Date.now(), opts: { quiet?: boolean } = {}): DeskLane {
+  // A returned Practice Again sheet with nothing flagged clears itself
+  // (Adrian, 9 Sep 2026: "if sheet is already handed up and marked, should
+  // just clear automatically, unless something important is flagged"). The
+  // caller decides `quiet` from the flags; the rule here is only the lane.
+  if (run.released_at && opts.quiet) return 'released';
   // 🤖 Released by the system (8 Sep 2026): a hand-in that cleared the accuracy
   // gates and went out without Adrian. It stays in its own lane until he has
   // looked at it (checked_at) — his checkpoint moved after release, not away.

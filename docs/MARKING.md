@@ -1170,6 +1170,21 @@ old panel only offered Approve & release, which a released paper hides.
 and re-files); it never sends it — the button is disabled until a note is
 typed, and says so.
 
+**Returned Practice Again sheets on the desk (9 Sep 2026 evening — Adrian:
+"should distinguish them from papers", "there should be no trigger to generate
+new sheets for practice again sheets", "if sheet is already handed up and
+marked, should just clear automatically, unless something important is
+flagged").** `lib/desk-state.ts isPracticeAgainHandin` (attached
+`source.paper_kind` or the name) → a green **📘 Practice Again hand-in** pill on
+the row and the detail header instead of any sheet label; the sheet panel is
+one line ("gets no sheet of its own"); `sheetQueueGuard` refuses
+(`status 'practice-again'`, 409) whoever asks — desk, student, or a re-mark's
+re-queue — and the student's page hides the Request button; `laneFor(…,
+{quiet})` sends a released one with no desk flag and no accuracy watch-out
+straight to Completed, so it never waits in the automatic lane. The three
+"no sheet needed" verdicts the worker wrote for such hand-ins on 8 Sep were
+the old path; none are written now.
+
 ### Blank printed parts, footer columns, pen-safe superscripts (8 Sep 2026)
 
 Joey's AM TYS 2021 P2, three things Adrian saw on the marked pages:
