@@ -1143,13 +1143,15 @@ compulsory, so we should build a mechanism that reminds them it is not done."
 
 **📁 Archive (9 Sep 2026 — Adrian: "can we have an archive option — meaning
 that these papers do not need a practice again sheet" … "i really mean archive
-it, so it does not appear on the list").** A button on the desk's list rows and
-detail view (automatic and "Marked, no sheet yet" lanes, only while no sheet
-job exists) → `POST /api/admin/sheet-jobs {action:'no-sheet', runId}`: stops
-anything still being written for the paper, inserts a finished `sheet_jobs`
-row with `result {noSheet:true, reason:'archived by Adrian', closedBy:'adrian'}`
-— the worker's own "nothing to teach" shape — stamps
-`result_json.archived_at`/`archived_by`, and marks a released paper looked-at.
+it, so it does not appear on the list").** A button on EVERY desk row and in the
+detail view (all lanes but Completed and untagged; a confirm when the paper
+has not gone to the student) → `POST /api/admin/sheet-jobs {action:'no-sheet',
+runId}` = "nothing more to do here": stops a sheet still being written, leaves
+a written-but-unsent sheet in the folder (its `done` job keeps the PDF; nothing
+schedules it), inserts a finished `sheet_jobs` row with `result {noSheet:true,
+reason:'archived by Adrian', closedBy:'adrian'}` only when the paper has no
+sheet record at all, stamps `result_json.archived_at`/`archived_by`, and marks
+a released paper looked-at.
 An archived run is OFF THE DESK: `lib/desk-state.ts isArchivedRun` drops it
 from every lane and count in `/api/admin/desk`. The library (`/admin/papers`)
 and the student's page keep it; the student's paper page shows a neutral "No

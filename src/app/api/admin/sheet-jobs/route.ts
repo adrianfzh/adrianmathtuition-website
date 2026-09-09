@@ -221,24 +221,37 @@ export async function POST(req: NextRequest) {
       .eq('id', runId).maybeSingle();
     if (rErr) return NextResponse.json({ error: rErr.message }, { status: 500 });
     if (!run) return NextResponse.json({ error: 'run not found' }, { status: 404 });
-    const { data: open } = await sb.from('sheet_jobs').select('*')
-      .eq('run_id', runId).in('status', ['queued', 'claimed']);
+    // Any row can be archived (Adrian, 9 Sep 2026 evening: "i just want to
+    // remove those rows from the list of to dos, that means no action needs to
+    // be taken"). What happens to the sheet depends on where it was:
+    //   - being written → stopped;
+    //   - written, not sent → left in the folder, unsent (its job stays `done`
+    //     with the PDF; nothing schedules it);
+    //   - none at all → a "no sheet needed" record, so the student's Request
+    //     button goes away and every list treats the paper as settled.
+    const { data: existing } = await sb.from('sheet_jobs').select('*').eq('run_id', runId);
+    const jobs = (existing ?? []) as SheetJob[];
     let stopped = 0;
-    for (const j of (open ?? []) as SheetJob[]) {
+    for (const j of jobs.filter(x => x.status === 'queued' || x.status === 'claimed')) {
       const { data: done } = await sb.from('sheet_jobs')
         .update({ status: 'cancelled', claimed_by: null, heartbeat_at: null, completed_at: new Date().toISOString(), error: 'archived by Adrian — no sheet needed' })
         .eq('id', j.id).eq('status', j.status).select('id').maybeSingle();
       if (done) { stopped += 1; await deleteHeldPracticeItems(sb, j.id).catch(() => ({ deleted: 0 })); }
     }
     const now = new Date().toISOString();
-    const { data: job, error: iErr } = await sb.from('sheet_jobs')
-      .insert({
-        ...sheetJobInsert({ id: run.id, student_id: run.student_id, student_name: run.student_name, paper_name: run.paper_name } as unknown as SheetQueueRun, null, 'adrian'),
-        status: 'done', stage: 'no sheet needed', completed_at: now,
-        result: { noSheet: true, reason: 'archived by Adrian', closedBy: 'adrian' },
-      })
-      .select('id').single();
-    if (iErr || !job) return NextResponse.json({ error: iErr?.message || 'could not record it' }, { status: 500 });
+    let jobId: string | null = null;
+    const hasRecord = jobs.some(x => x.status === 'done' && !!x.result);
+    if (!hasRecord) {
+      const { data: job, error: iErr } = await sb.from('sheet_jobs')
+        .insert({
+          ...sheetJobInsert({ id: run.id, student_id: run.student_id, student_name: run.student_name, paper_name: run.paper_name } as unknown as SheetQueueRun, null, 'adrian'),
+          status: 'done', stage: 'no sheet needed', completed_at: now,
+          result: { noSheet: true, reason: 'archived by Adrian', closedBy: 'adrian' },
+        })
+        .select('id').single();
+      if (iErr || !job) return NextResponse.json({ error: iErr?.message || 'could not record it' }, { status: 500 });
+      jobId = job.id;
+    }
     // 📁 ARCHIVE means archive (Adrian, 9 Sep 2026: "i really mean archive it,
     // so it does not appear on the list"): the paper leaves the desk — every
     // lane, every count (lib/desk-state.ts isArchivedRun) — and a released one
@@ -249,7 +262,7 @@ export async function POST(req: NextRequest) {
     if (run.released_at && !run.checked_at) patch.checked_at = now;
     const { error: aErr } = await sb.from('paper_marking_runs').update(patch).eq('id', runId);
     if (aErr) return NextResponse.json({ error: `recorded no-sheet, but could not archive: ${aErr.message}` }, { status: 500 });
-    return NextResponse.json({ ok: true, jobId: job.id, stopped, archived: true });
+    return NextResponse.json({ ok: true, jobId, stopped, archived: true });
   }
 
   if (body.action === 'cancel') {

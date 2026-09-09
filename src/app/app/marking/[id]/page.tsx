@@ -46,7 +46,11 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
   // was there nothing worth practising? Else offer the request button
   // (Practice Again on request, 8 Sep 2026 — /api/portal/practice-again/request).
   let requestState: PracticeAgainState = 'none';
-  if (!sheet) {
+  // 📁 Archived on the desk (9 Sep 2026): no sheet is coming, whatever its job says.
+  const { data: arch } = await sb.from('paper_marking_runs').select('archived_at:result_json->>archived_at').eq('id', id).maybeSingle();
+  const archived = !!(arch as { archived_at?: string | null } | null)?.archived_at;
+  if (!sheet && archived) requestState = 'archived';
+  else if (!sheet) {
     const { data: jobRows } = await sb.from('sheet_jobs').select('status, result')
       .eq('run_id', id).order('created_at', { ascending: false }).limit(1);
     const job = (jobRows ?? [])[0] as { status: string; result: unknown } | undefined;
