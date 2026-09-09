@@ -170,7 +170,11 @@ export function snapToComponents(comps: Component[], hints: Blemish[], w: number
     // guards below still apply, so a nearby label is not taken by this.
     if (!inside.length) {
       const wide = hintToPixels(hnt.box, w, h, LOOSE_PAD);
-      inside = comps.filter((c) => overlapShare(c, wide) >= o.minInside);
+      const tight = hintToPixels(hnt.box, w, h, 0);
+      const boxArea = (tight.x1 - tight.x0 + 1) * (tight.y1 - tight.y0 + 1);
+      // …but only for ink no bigger than the box the judge drew: it pointed at
+      // something about that size, and a label next door is not it.
+      inside = comps.filter((c) => overlapShare(c, wide) >= o.minInside && (c.x1 - c.x0 + 1) * (c.y1 - c.y0 + 1) <= boxArea * 1.5);
     }
     if (!inside.length) { skipped.push(`"${hnt.what || 'blemish'}": no ink inside the box`); continue; }
     const small = inside.filter((c) => ((c.x1 - c.x0 + 1) * (c.y1 - c.y0 + 1)) / (w * h) <= o.maxComponentShare);

@@ -154,6 +154,33 @@ Five actions, and only three of them write to the question row:
 | 🙈 **Keep hidden** | prefixes the note `Adrian: kept hidden · …`, status unchanged. **Decided**: the row leaves the working lane onto the 🙈 door. |
 | ✏️ **Redraw** | prefixes the note `Adrian: redraw · …`, status unchanged. **Decided**: the row leaves the working lane onto the ✏️ door. |
 
+**🧹 Clean — a blemish erased as a candidate (9 Sep 2026).** Adrian, on a whole,
+legible sketch with one stray letter in its margin: *"instead of trim > how about
+clean as a candidate? … just faint blemishes in the diagram, would just need a
+simple cleaning job instead of a full redraw"* — and *"should not be a mechanical
+thing"*. The button on Solutions and Fitness cards does the job the way the rules
+at the top of this file say, judge by looking, then act exactly:
+
+1. a vision judge (Opus, shown the figure with a labelled 0–1000 grid) names each
+   foreign mark and roughly where; the review note rides along;
+2. `lib/figure-blemish.ts` (tested) snaps each box to the ink components inside
+   it and refuses anything figure-sized, anything mostly outside the box, and any
+   box whose dark ink fills under 8% of it — the first batch had a box around a
+   PALE show-through line take the "+" and "4" of the equation beside it, and a
+   box around a hand-written label take three pieces of the tangent line;
+3. only the chosen components go white; the canvas is never cropped; the result
+   lands under `candidates/<path>` with the erased boxes in its sidecar (`route:
+   'blemish-erase'`), drawn in red over the original on the card;
+4. nothing changes until Adrian presses ✓ Use the cleaned figure (Fitness:
+   `approve-candidate` swaps `image_url` / `figure_url` / the parts slot, writes
+   `figure_clean_log` batch `admin-fitness-lane`, closes the flag) — or ✗ Reject.
+
+A session with eyes may pass its own `boxes` with `byEye: true` (guards relaxed:
+`BY_EYE`), which is how the first 42 candidates on the repair list were made —
+24 by the judge and 18 by hand after the judge's refusals were looked at. What
+the erase cannot do, and refuses honestly: pale show-through and colour marks
+(below the ink threshold), and a mark fused to the figure's own ink.
+
 **Decided rows leave the lane (9 Sep 2026).** `Keep hidden` and `Redraw` do not change
 `status` — the image stays withheld, the question keeps serving — and the lane used to
 list every `held` row, so each card Adrian had decided came straight back on refresh
