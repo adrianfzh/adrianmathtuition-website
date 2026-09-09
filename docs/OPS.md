@@ -136,6 +136,39 @@ papers in a week and under half went to the plan. The page refreshes
 itself every minute while open, and rows deep-link to the relevant screen
 (invoices, digests, triage, papers, bank health).
 
+## The costs page — `/admin/costs` (9 Sep 2026)
+
+Adrian: "I need real cost breakdown on usage via API — /admin/ops only shows the
+lane share. Which part costs what? I can only see by models." Read-only, cookie
+auth, linked from the ops header. `/api/admin/costs?days=` (default 30, max 120)
+returns three views of the same money, from three sources:
+
+- **Per paper and per day** — `paper_marking_runs.cost_usd`, the bot's own pricing
+  of the exact Claude tokens each run used (`ai/paper-marker.js finalizeUsage`:
+  list price sync, 50 % batch, 10 % cache reads, 2× 1h cache writes). The lane
+  (`lib/marking-path.ts`) says Mac plan / batch / mark now / sync; cents per API
+  page excludes the pages the Mac read. Since 9 Sep evening a run also stores
+  `result_json.usage.buckets` (what was priced), `usage.apiKey` (which Console
+  key spent it) and `result_json.vision_usage` (Gemini tokens — Google bills
+  those, never in `cost_usd`).
+- **By part** — the bot's per-feature ledger (Airtable `CostLog`, every Claude
+  call tagged by what it was for, flushed hourly), folded into the seven parts the
+  bot's Telegram `/costs` report names (`lib/costs.ts partOf` mirrors the bot's
+  `lib/cost-buckets.js`). Marking joined that ledger on 9 Sep evening; earlier
+  marking is on the run rows only, so the two views overlap from then on.
+- **The invoice** — Anthropic's Admin API `cost_report`, per day and per line
+  item (model × tier × token type; amounts arrive in cents), when
+  `ANTHROPIC_ADMIN_KEY` is set. The Admin API is unavailable to an individual
+  Console account (Adrian's, 9 Sep 2026) — the panel says so and links the
+  Console's Cost page. The Console itself only cuts the bill by model, API key
+  or workspace, which is why the bot's ledger is the source for "by part"; the
+  bot's marking rides its own key (`ANTHROPIC_MARKING_API_KEY`, Console name
+  `bot-marking`) when that Fly secret is set, so the Console's API-key filter
+  separates marking from the solver too.
+
+Pure pieces + tests: `lib/costs.ts` (`costEntries`, `costByDay`, `costByPath`,
+`monthTotal`, `costByPart`, `foldCostReport`, `foldCostLines`).
+
 ## Adding a job
 
 1. Pick a kebab slug. 2. Stamp your success path (`logJobRun` / SKILL.md insert /
