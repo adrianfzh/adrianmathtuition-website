@@ -197,3 +197,55 @@ Bot commits 1eb6296 · 14801e5 · 9a976a1 · 2a59302 · 445aabc · 1fa7e89; site
   redraws a stored run's page with FRESH placement and uploads stubbed to a local folder
   (Adrian rejected a live redraw on 9 Sep). Placement varies run to run — twin lines such as
   a final line and its Answer-line echo can swap rows — so judge a fix on two renders.
+
+## 9. Placement — where a mark lands, and why it lands there twice (9 Sep 2026)
+
+Adrian: "why does gemini line placement varies between renders? … what do you
+suggest to fix the problem, and also be more efficient if a remark is necessary?"
+→ the four-step plan, built the same day. The failure it answers: on Alexis's
+2023 P1 Q12(b) two lines carried the same text (the final line and its copy on
+the printed Answer rule); asked "where is the line that says X?" the model had no
+way to tell them apart and the whole question's marks slid a row between renders.
+
+1. **Stored placement** (`lib/annotation-store.js`). The line pass returns its
+   boxes (normalised, per `line_index`); the pack keeps them, every annotation's
+   pixel `bbox` + pen fields, the part regions and the image `space` (~3 KB a
+   page). `reusableGrounding(pack)` → `annotateAndUpload(…, { reuse })` re-derives
+   the glyphs from the CURRENT lines (rung 0 of `annotateToBuffer`,
+   `glyphsFromStoredBoxes`): an override or a pen change applies; unchanged, the
+   page is pixel-identical (0 of 10.3 M pixels moved on the harness). Readers:
+   the desk redraw (`ai/reannotate-page.js`), a page re-mark (`enqueuePaper`
+   keeps `previous_annotation_debug`; `remarkRun` passes `reusePlacement` for
+   every page not re-read). Before this, `trimAnn` kept only `*_percent` fields
+   and every redraw re-asked Gemini.
+2. **Rows first** (`ai/row-place.js`, rung 0b). One call per photo lists every
+   ROW of writing — box, transcription, hand/print/mixed. OUR matcher aligns the
+   marker's lines to those rows: order-preserving, similarity-scored (normalised
+   text, Levenshtein + containment), skips free, matches below 0.5 forbidden —
+   the way diff aligns two lists, so identical texts on adjacent rows resolve by
+   ORDER. Part regions still come from the coarse part call (run in parallel);
+   rings from one crop call for the lines that carry a slip. Portrait pages
+   without sketch features; `PLACEMENT_ROWS=0` turns it off; anything short of
+   60 % of the markable lines falls through to the old ladder unchanged.
+3. **The pixel gate** (`row-place.js pixelGate`, then `filterLineBoxes`): a box
+   goes on the page only if it holds ink (≥ 0.4 % dark, ≥ 15 px), an Answer line
+   only if it sits on a printed rule (`whitespace.js ruleMask`, dotted rules
+   included), one mark per row, reading order kept. Evidence WE compute — a model
+   switch changes how often we fall back, never where a mark lands.
+4. **Temperature 0 + a fixed seed** on the row call and the crop call (`visionGenerate`
+   `seed`). Hygiene: repeatable on the same image, prompt and model version.
+
+**Measured** (`scripts/pen-dryrun.cjs`, `PEN_DRYRUN_PLACER=rows|line`,
+`PEN_DRYRUN_REPEAT=2` — two draws per path per page, pixels that moved between
+the draws): see the table in the commit `placement (2–4/4)`; the swap page
+(Alexis P1 p7) placed 14/14 markable lines on the right rows in both draws.
+Residual movement is box jitter of a few pixels, not a row swap.
+
+**What a re-mark costs now.** One page: the Mac reads that page, every other
+page draws from its stored boxes, no model placement. Override / re-issue / pen
+change: no model call. A never-marked page: one row call + one part-region call
+(+ one crop call when a line carries a slip), the printed-text crop check gone.
+
+Not done: sketch features on drawn graphs (keep the feature-box ask), spreads
+(the old per-half pass), snapping a box's vertical extent to the ink rows inside
+it (would remove the residual jitter — `annotate.js _inkRowBands` has the pieces).

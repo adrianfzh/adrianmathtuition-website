@@ -52,7 +52,47 @@ print(json.dumps(sys.argv[1][:300]))' "$1")}" > /dev/null 2>&1 || true
 }
 die() { say "FATAL: $1"; stamp_fail "$1"; cleanup_pid; exit 1; }
 
+
+# --- plan limit backoff (9 Sep 2026) ----------------------------------------
+# Every slot on this Mac spends the SAME Claude account. Once the CLI says
+# "You've hit your weekly limit · resets 9am", every tick of every slot claims a
+# paper, dies in ten seconds and hands it back — four slots did that to Sijia's
+# paper every forty seconds, and each hand-back cost a Telegram line and an API
+# takeover. So the limit is remembered in ONE file per account and no slot
+# claims until it lifts. The reset wording is parsed for the hour; a wording we
+# cannot read backs off an hour at a time.
+PLAN_LIMIT_FILE="$HOME/.adrianmath-plan-limit-until"
+plan_limit_active() {
+  [ -r "$PLAN_LIMIT_FILE" ] || return 1
+  local until now
+  until=$(cat "$PLAN_LIMIT_FILE" 2>/dev/null | tr -d '[:space:]')
+  now=$(date +%s)
+  [ -n "$until" ] && [ "$until" -gt "$now" ] 2>/dev/null
+}
+plan_limit_note() {
+  # $1 = the CLI's limit line. Writes the epoch the limit lifts.
+  python3 - "$1" > "$PLAN_LIMIT_FILE" 2>/dev/null <<'PYLIM' || date -v+60M +%s > "$PLAN_LIMIT_FILE"
+import re, sys, datetime, zoneinfo
+line = sys.argv[1] if len(sys.argv) > 1 else ""
+tz = zoneinfo.ZoneInfo("Asia/Singapore")
+now = datetime.datetime.now(tz)
+m = re.search(r"resets?\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?", line, re.I)
+if not m:
+    print(int((now + datetime.timedelta(minutes=60)).timestamp())); sys.exit(0)
+h = int(m.group(1)); mi = int(m.group(2) or 0); ap = (m.group(3) or "").lower()
+if ap == "pm" and h < 12: h += 12
+if ap == "am" and h == 12: h = 0
+t = now.replace(hour=h, minute=mi, second=0, microsecond=0)
+if t <= now: t += datetime.timedelta(days=1)
+print(int(t.timestamp()))
+PYLIM
+}
+
 # --- single instance --------------------------------------------------------
+if plan_limit_active; then
+  say "plan limit on this account until $(date -r "$(cat "$PLAN_LIMIT_FILE")" '+%a %H:%M') — not claiming"
+  exit 0
+fi
 if [ -f "$STATE/worker.pid" ]; then
   OLDPID=$(cat "$STATE/worker.pid" 2>/dev/null || echo "")
   if [ -n "$OLDPID" ] && kill -0 "$OLDPID" 2>/dev/null; then
@@ -195,7 +235,8 @@ elif tail -40 "$LOG" | grep -qiE 'usage limit|rate.?limit|quota|weekly limit|hit
   SHEETS_ACCOUNT="$(claude auth status 2>/dev/null | python3 -c 'import json,sys
 try: print((json.load(sys.stdin).get("email") or "").strip())
 except Exception: print("")' 2>/dev/null || true)"
-  say "END rc=$RC (${ELAPSED}s) — looks like a PLAN USAGE LIMIT, not a bug"
+  plan_limit_note "$LIMIT_LINE"
+  say "END rc=$RC (${ELAPSED}s) — looks like a PLAN USAGE LIMIT, not a bug; no slot claims until $(date -r "$(cat "$PLAN_LIMIT_FILE")" '+%a %H:%M')"
   stamp_fail "plan limit on ${SHEETS_ACCOUNT:-unknown account}: ${LIMIT_LINE:-usage limit}"
 else
   say "END rc=$RC (${ELAPSED}s)"

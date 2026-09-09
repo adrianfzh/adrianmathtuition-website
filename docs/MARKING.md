@@ -1811,6 +1811,10 @@ Vercel Blob addresses and the personal Dropbox. One module owns it: **`lib/stude
 
 ### The red pen — annotation standard (5 Sep 2026)
 
+> **Placement (9 Sep 2026):** where a mark lands, why it lands there twice, and what
+> a re-mark costs → `SPEC-RED-PEN.md` §9 (stored boxes, rows-first matching, the
+> pixel gate, the seed). Verify drawing changes with the bot's `scripts/pen-dryrun.cjs`.
+
 **[`SPEC-RED-PEN.md`](../SPEC-RED-PEN.md)** is the standard for what the marked page
 says and where: notes beside the line first (the side column is the fallback), circle +
 fix beside the mistake, one verdict line per lost part in Adrian's voice, "From your
