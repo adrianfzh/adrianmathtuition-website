@@ -31,7 +31,7 @@ import SubjectChip from '@/components/SubjectChip';
 import GroundingChip from '@/components/GroundingChip';
 import RulesTag from '@/components/RulesTag';
 import { mathHtml } from '@/lib/math-inline';
-import { DESK_LANES, LANE_LABEL, orderLane, type DeskLane } from '@/lib/desk-state';
+import { DESK_LANES, LANES_HIDDEN_AT_ZERO, LANE_LABEL, orderLane, type DeskLane } from '@/lib/desk-state';
 import { ERROR_KINDS, ERROR_KIND_HINT, isErrorKind } from '@/lib/error-kinds';
 import { PAPER_SUBJECTS, subjectPill } from '@/lib/portal-subjects';
 // The pen, in place (desk round 3, 8 Sep 2026): the same overlay mark-paper uses.
@@ -653,6 +653,18 @@ export default function DeskPage() {
   // ✏️ Revise the sheet (Adrian, 8 Sep 2026: "changes to be made just to a
   // certain section, a certain example, a certain phrasing"): a note to the
   // worker. Only what the note names changes; the previous version is kept.
+  // 📘 Send a written sheet to a student whose paper is already out (9 Sep 2026).
+  async function sendSheetNow() {
+    if (!detail?.sheetJob) return;
+    const id = detail.run.id;
+    setBusy('sheet');
+    const { ok, d } = await postJson('/api/admin/sheet-jobs', { action: 'send', id: detail.sheetJob.id });
+    setBusy('');
+    if (!ok) { setToast(d.error || 'Could not send the sheet'); return; }
+    setToast('Sheet sent — it is in the app under From Adrian, and the student was told.');
+    refresh(id);
+  }
+
   async function reviseSheet(instructions: string) {
     if (!detail?.sheetJob) return;
     const id = detail.run.id;
@@ -867,7 +879,7 @@ export default function DeskPage() {
         <>
           <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 6, marginBottom: 6, alignItems: 'center' }}>
             <AutoReleaseSwitch />
-            {DESK_LANES.map(l => (
+            {DESK_LANES.filter(l => !(LANES_HIDDEN_AT_ZERO.includes(l) && counts && !(counts[l] ?? 0) && activeLane !== l)).map(l => (
               <button key={l} className={`desk-tab${activeLane === l ? ' on' : ''}`} onClick={() => go({ lane: l })}>
                 {LANE_LABEL[l]}<span className="n">{counts ? counts[l] : '·'}</span>
               </button>
@@ -954,6 +966,7 @@ export default function DeskPage() {
           onQueueSheet={queueSheet} onCancelSheet={cancelSheet} onAutoRelease={autoRelease} onApprove={approve} onReleaseOnly={releaseWithoutSheet} onToast={setToast} onRefresh={() => refresh(detail.run.id)}
           onSeen={markSeen} onUploadAmended={uploadAmended} onShelve={shelve} shelved={shelved}
           onRevise={reviseSheet} onRemarkPage={remarkPage} onApproveScheme={() => approveScheme(false)} onAuditAllocation={auditAllocation} onChecked={markChecked}
+          onSendSheet={sendSheetNow}
         />
       )}
 
@@ -981,6 +994,7 @@ function DetailView(p: {
   onSeen: () => void; onUploadAmended: (file: File) => void; onShelve: (q: Question) => void; shelved: Set<string>;
   onRevise: (instructions: string) => void; onRemarkPage: (photoIndex: number) => void;
   onApproveScheme: () => void; onAuditAllocation: () => void; onChecked: () => void;
+  onSendSheet: () => void;
 }) {
   // The pen opens on the page you tapped, right here on the desk (round 3).
   const [annotatePage, setAnnotatePage] = useState<number | null>(null);
@@ -1015,6 +1029,9 @@ function DetailView(p: {
   // The sheet worker's honest "nothing here is worth practising" — the paper
   // still goes out, on its own, and the button says which it is doing.
   const noSheet = !!d.sheetJob?.result?.noSheet;
+  // The sheet is with the student once its From Adrian row exists (the desk
+  // counts that run's rows in `assignments`).
+  const sheetWithStudent = (d.assignments ?? 0) > 0;
   const pages = d.annotatedPhotos;
   // Ink hints (a mark Adrian swapped in the pen) ride on their question.
   const questions: Question[] = d.questions.map(q => ({ ...q, inkHints: (d.inkHints || []).filter(h => h.part && String(h.q) === String(q.questionNumber)) }));
@@ -1417,7 +1434,7 @@ function DetailView(p: {
             );
           })() : (
             <SheetPane d={d} sheetPages={p.sheetPages} sheetNote={p.sheetNote} busy={busy} focus={p.focus} setFocus={p.setFocus}
-              onQueueSheet={p.onQueueSheet} onCancelSheet={p.onCancelSheet} onAutoRelease={p.onAutoRelease} onRevise={p.onRevise} />
+              onQueueSheet={p.onQueueSheet} onCancelSheet={p.onCancelSheet} onAutoRelease={p.onAutoRelease} onRevise={p.onRevise} onSendSheet={p.onSendSheet} />
           )}
         </div>
       </div>
@@ -1695,7 +1712,7 @@ function QuestionCard(p: {
 function SheetPane(p: {
   d: Detail; sheetPages: string[] | null; sheetNote: string; busy: string; focus: string; setFocus: (v: string) => void;
   onQueueSheet: () => void; onCancelSheet: () => void; onAutoRelease: (action: 'hold' | 'unhold') => void;
-  onRevise: (instructions: string) => void;
+  onRevise: (instructions: string) => void; onSendSheet: () => void;
 }) {
   const { d, busy } = p;
   const job = d.sheetJob;
@@ -1705,6 +1722,7 @@ function SheetPane(p: {
   // A "no sheet needed" job is finished but has no files — it gets its own
   // panel rather than the PDF viewer and an error where the sheet would be.
   const noSheet = job?.status === 'done' && !!job.result?.noSheet;
+  const sheetWithStudent = ((d as { assignments?: number }).assignments ?? 0) > 0;
   const done = job?.status === 'done' && !noSheet;
   const openHref = (kind: 'pdf' | 'docx') => `/api/admin/sheet-open?runId=${encodeURIComponent(d.run.id)}&kind=${kind}`;
   return (
@@ -1756,6 +1774,25 @@ function SheetPane(p: {
           </div>
         )}
 
+        {done && released && job && !noSheet && !sheetWithStudent && (() => {
+          // The paper is out, the sheet is written, the student does not have it
+          // (9 Sep 2026: eleven such sheets sat with no button to send them).
+          const gate = (job.result as { auto_release_gate?: { ok?: boolean; reasons?: string[] } } | null | undefined)?.auto_release_gate;
+          const when = job.autoReleaseAt ? new Date(job.autoReleaseAt).toLocaleString('en-SG', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Singapore' }) : null;
+          return (
+            <div style={{ padding: '10px 14px', fontSize: 13, borderTop: `1px solid ${C.border}`, lineHeight: 1.5, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+              <span style={{ flex: 1, minWidth: 220 }}>
+                📘 <b>Written, not yet with the student.</b>{' '}
+                {job.heldAt ? <>Held: {(job.stage || '').replace(/^held\s*[—–-]\s*/i, '')}.</>
+                  : when ? <>Goes out by itself at <b>{when}</b>.</>
+                  : gate?.reasons?.length ? <>It did not go by itself: {gate.reasons.join('; ')}.</>
+                  : <>Nothing is scheduled to send it.</>}
+              </span>
+              <button onClick={p.onSendSheet} disabled={busy === 'sheet'} style={btn(C.ink, '#fff')}>{busy === 'sheet' ? '…' : '📘 Send the sheet now'}</button>
+              {when && !job.heldAt && <button onClick={() => p.onAutoRelease('hold')} disabled={busy === 'sheet'} style={btn('#fff', C.danger, C.border)}>🖐 Hold</button>}
+            </div>
+          );
+        })()}
         {done && !released && job && !job.autoReleaseAt && !job.heldAt && !noSheet && (() => {
           const gate = (job.result as { auto_release_gate?: { ok?: boolean; reasons?: string[] } } | null | undefined)?.auto_release_gate;
           return (
@@ -1826,6 +1863,7 @@ function SheetPane(p: {
               placeholder="e.g. Example 3: say “remove the denominator”, not “clears it”. Add a practice question where the power is −1 so the integral becomes ln."
               style={{ width: '100%', boxSizing: 'border-box', padding: '8px 10px', fontSize: 14, border: `1px solid ${C.border}`, borderRadius: 8, fontFamily: 'inherit', lineHeight: 1.45 }} />
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 6 }}>
+              {!revise.trim() && <span style={{ fontSize: 12, color: C.muted, alignSelf: 'center', marginRight: 10 }}>Type what to change first. This revises the sheet; it does not send it.</span>}
               <button onClick={() => { const t = revise.trim(); if (!t) return; p.onRevise(t); setRevise(''); }} disabled={busy === 'sheet' || !revise.trim()} style={btn(C.ink, '#fff')}>
                 {busy === 'sheet' ? '…' : '✏️ Send the revision'}
               </button>

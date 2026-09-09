@@ -1152,6 +1152,24 @@ dropped the paper from the desk's own record. Removed (three commits reverted);
 do not rebuild it as a second lane-clearing action. If a specific student
 should stop asking for a sheet, make that a small switch on the paper's page.
 
+**Desk tabs and the sheet's own Send button (9 Sep 2026 evening).** The
+automatic lane ("Released by the system — not yet looked at") is the FIRST tab
+and the default (`DESK_LANES`, `defaultLane`); the three work lanes (Needs a
+student · Marked, no sheet yet · Ready to vet) only ever hold a paper the
+automatic door refused, so the desk hides them at zero
+(`LANES_HIDDEN_AT_ZERO`) and opens on one only when it holds something.
+✓ Looked at sits on every automatic-lane row as well as inside the paper.
+**📘 Send the sheet now** — a written sheet whose paper is already out and
+which the student does not have (no From Adrian row) shows a Send button in
+the sheet panel, with why it did not go by itself (the stored
+`auto_release_gate`, the hold, or the clock time) → `sheet-jobs {action:'send',
+id}` = the same `release-with-sheet` call the clock's cron makes, then
+`auto_released_at` is stamped. Eleven written sheets had sat unsent because the
+old panel only offered Approve & release, which a released paper hides.
+✏️ Send the revision REVISES the sheet (the worker changes what the note names
+and re-files); it never sends it — the button is disabled until a note is
+typed, and says so.
+
 ### Blank printed parts, footer columns, pen-safe superscripts (8 Sep 2026)
 
 Joey's AM TYS 2021 P2, three things Adrian saw on the marked pages:

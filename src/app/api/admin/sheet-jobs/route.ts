@@ -38,7 +38,7 @@ import { sendTelegram } from '@/lib/telegram';
 const notify_marking = (text: string) => sendTelegram(text, 'marking');
 import { logJobRun } from '@/lib/job-log';
 import {
-  pickNextJob, sanitizeResult, completionMessage, cancelState, isNoSheet, MAX_ATTEMPTS,
+  pickNextJob, sanitizeResult, completionMessage, cancelState, isNoSheet, MAX_ATTEMPTS, type SheetJobResult,
   type SheetJob, type SheetFiledResult,
 } from '@/lib/sheet-jobs';
 import { sendTelegramDocument } from '@/lib/telegram';
@@ -122,7 +122,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  let body: { runId?: string; focus?: string; remark?: boolean; action?: string; by?: string; id?: string; result?: unknown; error?: string ; stage?: string; instructions?: string; source?: string };
+  let body: { runId?: string; focus?: string; remark?: boolean; action?: string; by?: string; id?: string; result?: unknown; error?: string ; stage?: string; instructions?: string; pdfPath?: string; source?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const sb = getSupabaseAdmin();
 
@@ -486,6 +486,27 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Adrian: hold / resume an auto-release (6 Sep 2026) ────────────────────
+  // 📘 SEND NOW (Adrian, 9 Sep 2026 — eleven written sheets sat unsent because
+  // the desk had no button for a sheet whose paper had already gone out; the
+  // clock's cron was the only sender). The same call the clock makes, from a
+  // tap: release-with-sheet attaches the sheet to the released paper (From
+  // Adrian row + the student's Telegram) without releasing the paper again.
+  if (body.action === 'send') {
+    if (!body.id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+    const { data: j } = await sb.from('sheet_jobs').select('id, status, run_id, result, auto_released_at').eq('id', body.id).maybeSingle<SheetJob>();
+    if (!j) return NextResponse.json({ error: 'no such sheet job' }, { status: 404 });
+    if (j.status !== 'done') return NextResponse.json({ error: `that sheet is ${j.status} — send it once it is filed` }, { status: 409 });
+    if (isNoSheet(j.result as SheetJobResult)) return NextResponse.json({ error: 'this job has no sheet to send' }, { status: 409 });
+    const fwd: Record<string, string> = { 'Content-Type': 'application/json' };
+    const auth = req.headers.get('authorization'); const cookie = req.headers.get('cookie');
+    if (auth) fwd.Authorization = auth; if (cookie) fwd.cookie = cookie;
+    const r = await fetch(`${req.nextUrl.origin}/api/admin/release-with-sheet`, { method: 'POST', headers: fwd, body: JSON.stringify({ runId: j.run_id, pdfPath: body.pdfPath || undefined }) });
+    const d = await r.json().catch(() => ({} as { error?: string; assignmentId?: string | null; candidates?: unknown }));
+    if (!r.ok) return NextResponse.json({ error: d.error || `HTTP ${r.status}`, candidates: d.candidates }, { status: r.status });
+    await sb.from('sheet_jobs').update({ auto_released_at: new Date().toISOString(), held_at: null, auto_release_at: null, stage: 'sent from the desk' }).eq('id', j.id);
+    return NextResponse.json({ ok: true, sent: true, assignmentId: d.assignmentId ?? null });
+  }
+
   if (body.action === 'hold' || body.action === 'unhold') {
     if (!body.id) return NextResponse.json({ error: 'id required' }, { status: 400 });
     const { data: j } = await sb.from('sheet_jobs').select('id, status, run_id, auto_release_at, held_at').eq('id', body.id).maybeSingle();

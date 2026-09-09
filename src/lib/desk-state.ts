@@ -19,7 +19,13 @@ import { readNoSheet } from './sheet-jobs';
 
 export type DeskLane = 'untagged' | 'awaiting-sheet' | 'ready' | 'auto' | 'released';
 
-export const DESK_LANES: readonly DeskLane[] = ['untagged', 'awaiting-sheet', 'ready', 'auto', 'released'];
+// The automatic lane FIRST (Adrian, 9 Sep 2026: "released by the system - not
+// looked at yet should be the default tab (first tab)"): since every tagged
+// paper releases itself, it is the to-do list; the three work lanes only ever
+// hold a paper the automatic door refused, and the desk hides them at zero.
+export const DESK_LANES: readonly DeskLane[] = ['auto', 'untagged', 'awaiting-sheet', 'ready', 'released'];
+/** Lanes shown only while they hold something. */
+export const LANES_HIDDEN_AT_ZERO: readonly DeskLane[] = ['untagged', 'awaiting-sheet', 'ready'];
 
 /** What the tab says. */
 export const LANE_LABEL: Record<DeskLane, string> = {
@@ -198,7 +204,13 @@ export function deskFlags(run: DeskRun, sheetJob: DeskSheetJob, amended: Amended
 
 /** The tab to open first: Ready to vet when there is anything in it, else the waiting lane. */
 export function defaultLane(counts: Partial<Record<DeskLane, number>>): DeskLane {
-  return (counts.ready ?? 0) > 0 ? 'ready' : 'awaiting-sheet';
+  // A paper the automatic door refused is the rarer, more urgent case: an
+  // untagged paper reaches nobody, and a marked-but-unreleased one is waiting
+  // on Adrian. Otherwise the automatic lane (9 Sep 2026).
+  if ((counts.untagged ?? 0) > 0) return 'untagged';
+  if ((counts.ready ?? 0) > 0) return 'ready';
+  if ((counts['awaiting-sheet'] ?? 0) > 0) return 'awaiting-sheet';
+  return 'auto';
 }
 
 /**

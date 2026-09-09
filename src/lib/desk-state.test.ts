@@ -25,7 +25,7 @@ describe('laneFor — every run lands in exactly one lane', () => {
     expect(laneFor(tagged, { status: 'failed', error: 'plan cap' })).toBe('awaiting-sheet');
   });
   it('the five lanes are the five tabs, each labelled', () => {
-    expect(DESK_LANES).toEqual(['untagged', 'awaiting-sheet', 'ready', 'auto', 'released']);
+    expect(DESK_LANES).toEqual(['auto', 'untagged', 'awaiting-sheet', 'ready', 'released']);   // the automatic lane first (9 Sep 2026)
     for (const l of DESK_LANES) expect(LANE_LABEL[l]).toBeTruthy();
   });
 });
@@ -175,10 +175,16 @@ describe('deskFlags', () => {
 });
 
 describe('defaultLane', () => {
-  it('opens Ready to vet when it has rows, else the waiting lane', () => {
-    expect(defaultLane({ ready: 2, 'awaiting-sheet': 5 })).toBe('ready');
-    expect(defaultLane({ ready: 0, 'awaiting-sheet': 5 })).toBe('awaiting-sheet');
-    expect(defaultLane({})).toBe('awaiting-sheet');
+  it('opens on the automatic lane unless the door refused something (9 Sep 2026)', () => {
+    expect(defaultLane({ auto: 12, released: 30 })).toBe('auto');
+    expect(defaultLane({})).toBe('auto');
+    expect(defaultLane({ ready: 2, auto: 12 })).toBe('ready');
+    expect(defaultLane({ 'awaiting-sheet': 1, auto: 12 })).toBe('awaiting-sheet');
+    expect(defaultLane({ untagged: 1, ready: 2 })).toBe('untagged');
+  });
+  it('the automatic lane comes first in the tab order', () => {
+    expect(DESK_LANES[0]).toBe('auto');
+    expect(DESK_LANES[DESK_LANES.length - 1]).toBe('released');
   });
 });
 
