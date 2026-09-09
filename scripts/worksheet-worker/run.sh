@@ -135,6 +135,41 @@ say "START ($WAITING waiting, auth=$AUTH_VIA, model=${WORKER_MODEL:-opus}, max $
 START_EPOCH=$(date +%s)
 cd "$WORKSHEETS_REPO" || die "cannot cd to $WORKSHEETS_REPO"
 
+# Fetch the latest code before building (10 Sep 2026): the session runs the
+# worksheet skills, their python libs and WORKER_PROMPT.md from THIS checkout,
+# so a rule that landed on GitHub reached the sheets only when someone
+# remembered to pull here. A pull that cannot fast-forward — offline, diverged,
+# a dirty file in the way — is a warning, not a failure: the job is built on
+# the checkout as it stands.
+if PULL_OUT=$(GIT_TERMINAL_PROMPT=0 git pull --ff-only --quiet 2>&1); then
+  say "git pull ok: $(git rev-parse --abbrev-ref HEAD) @ $(git rev-parse --short HEAD)"
+else
+  say "WARN: git pull failed — building on the checkout as it is: $(echo "$PULL_OUT" | tr '\n' ' ' | cut -c1-200)"
+fi
+
+# Refresh the INSTALLED copies from the repo just pulled (10 Sep 2026). launchd
+# runs ~/.adrianmath_worksheets/run.sh, a COPY install.sh made, so until now a change to
+# this file reached a worker Mac only when someone re-ran install.sh there. Now
+# the copy replaces itself with the repo's version whenever the two differ —
+# written beside and moved into place, so the bash reading THIS copy keeps its
+# old inode and finishes the tick unchanged; the new version runs from the next
+# tick. A WORKER_PROMPT.md copy is refreshed the same way (a symlinked one
+# already follows the repo), and that one applies THIS tick — it is read below.
+# The one copy this cannot reach is one older than this block: it has no pull
+# and no refresh, and needs install.sh once more by hand.
+REPO_RUN="$WORKSHEETS_REPO/scripts/worksheet-worker/run.sh"
+REPO_PROMPT="$WORKSHEETS_REPO/scripts/worksheet-worker/WORKER_PROMPT.md"
+if [ -r "$REPO_RUN" ] && [ -f "$STATE/run.sh" ] && ! cmp -s "$REPO_RUN" "$STATE/run.sh"; then
+  if cp "$REPO_RUN" "$STATE/run.sh.new" && chmod 755 "$STATE/run.sh.new" && mv -f "$STATE/run.sh.new" "$STATE/run.sh"; then
+    say "run.sh refreshed from the repo @ $(git rev-parse --short HEAD) — the new version runs from the next tick"
+  else
+    say "WARN: could not refresh $STATE/run.sh from $REPO_RUN"
+  fi
+fi
+if [ -r "$REPO_PROMPT" ] && [ -f "$PROMPT" ] && [ ! -L "$PROMPT" ] && ! cmp -s "$REPO_PROMPT" "$PROMPT"; then
+  cp "$REPO_PROMPT" "$PROMPT" && say "WORKER_PROMPT.md refreshed from the repo" || say "WARN: could not refresh $PROMPT"
+fi
+
 # Effort HIGH: a sheet Adrian has to rewrite costs more of his time than the tokens save.
 claude -p "$(cat "$PROMPT")" \
   --model "${WORKER_MODEL:-opus}" \

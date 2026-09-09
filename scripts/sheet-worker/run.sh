@@ -209,12 +209,35 @@ cd "$SHEETS_REPO" || die "cannot cd to $SHEETS_REPO"
 # remembered to pull here (the Practice Again focus rule sat unpulled for a
 # night). A pull that cannot fast-forward — offline, diverged, a dirty file in
 # the way — is a warning, not a failure: the sheet is authored on the checkout
-# as it stands. Note install.sh COPIES this file, so a change here needs one
-# more install.sh run on the worker Mac.
+# as it stands. install.sh COPIES this file; the block after the pull keeps
+# that copy current, so a change here reaches every worker Mac by itself.
 if PULL_OUT=$(GIT_TERMINAL_PROMPT=0 git pull --ff-only --quiet 2>&1); then
   say "git pull ok: $(git rev-parse --abbrev-ref HEAD) @ $(git rev-parse --short HEAD)"
 else
   say "WARN: git pull failed — authoring on the checkout as it is: $(echo "$PULL_OUT" | tr '\n' ' ' | cut -c1-200)"
+fi
+
+# Refresh the INSTALLED copies from the repo just pulled (10 Sep 2026). launchd
+# runs ~/.adrianmath_sheets/run.sh, a COPY install.sh made, so until now a change to
+# this file reached a worker Mac only when someone re-ran install.sh there. Now
+# the copy replaces itself with the repo's version whenever the two differ —
+# written beside and moved into place, so the bash reading THIS copy keeps its
+# old inode and finishes the tick unchanged; the new version runs from the next
+# tick. A WORKER_PROMPT.md copy is refreshed the same way (a symlinked one
+# already follows the repo), and that one applies THIS tick — it is read below.
+# The one copy this cannot reach is one older than this block: it has no pull
+# and no refresh, and needs install.sh once more by hand.
+REPO_RUN="$SHEETS_REPO/scripts/sheet-worker/run.sh"
+REPO_PROMPT="$SHEETS_REPO/scripts/sheet-worker/WORKER_PROMPT.md"
+if [ -r "$REPO_RUN" ] && [ -f "$STATE/run.sh" ] && ! cmp -s "$REPO_RUN" "$STATE/run.sh"; then
+  if cp "$REPO_RUN" "$STATE/run.sh.new" && chmod 755 "$STATE/run.sh.new" && mv -f "$STATE/run.sh.new" "$STATE/run.sh"; then
+    say "run.sh refreshed from the repo @ $(git rev-parse --short HEAD) — the new version runs from the next tick"
+  else
+    say "WARN: could not refresh $STATE/run.sh from $REPO_RUN"
+  fi
+fi
+if [ -r "$REPO_PROMPT" ] && [ -f "$PROMPT" ] && [ ! -L "$PROMPT" ] && ! cmp -s "$REPO_PROMPT" "$PROMPT"; then
+  cp "$REPO_PROMPT" "$PROMPT" && say "WORKER_PROMPT.md refreshed from the repo" || say "WARN: could not refresh $PROMPT"
 fi
 
 # Effort is pinned HIGH, not left to the default: authoring a sheet is
