@@ -557,3 +557,33 @@ describe('computeAutoHold — the narrowed rule (8 Sep 2026)', () => {
     ]);
   });
 });
+
+describe('computeAutoHold — green ink (9 Sep 2026)', () => {
+  const base = () => ({
+    results: [
+      { question_number: '18', photo_index: 10, question_found: true, marking_output: { marks: { awarded: 3, max: 3 }, lines: [{ verdict: 'correct' }, { verdict: 'correct' }] } },
+      { question_number: '1', photo_index: 0, question_found: true, marking_output: { marks: { awarded: 2, max: 2 }, lines: [{ verdict: 'correct' }] } },
+    ],
+    totals: { awarded: 5, max: 5, counted_max: 5 },
+    annotation_debug: [
+      { photo_index: 0, method: 'line' },
+      { photo_index: 10, method: 'line', ink_scan: { greenFrac: 0.063, spans: [{ y1Frac: 0.59, y2Frac: 0.87 }], mainPenGreen: false } },
+    ],
+  });
+  it('flags a green page whose lines were all marked as the attempt', () => {
+    const h = computeAutoHold(base());
+    expect(h.reasons.some(r => /green ink on page 11/.test(r))).toBe(true);
+  });
+  it('is quiet when a line on that page was treated as second-pen', () => {
+    const rj = base();
+    (rj.results[0].marking_output.lines as { verdict: string; is_second_pen?: boolean }[]).push({ verdict: 'neutral', is_second_pen: true });
+    expect(computeAutoHold(rj).reasons.some(r => /green ink/.test(r))).toBe(false);
+  });
+  it('ignores a trace of green and a page written in green', () => {
+    const rj = base();
+    rj.annotation_debug[1].ink_scan = { greenFrac: 0.01, spans: [], mainPenGreen: false };
+    expect(computeAutoHold(rj).reasons.some(r => /green ink/.test(r))).toBe(false);
+    rj.annotation_debug[1].ink_scan = { greenFrac: 0.9, spans: [], mainPenGreen: true };
+    expect(computeAutoHold(rj).reasons.some(r => /green ink/.test(r))).toBe(false);
+  });
+});

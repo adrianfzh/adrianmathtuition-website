@@ -481,6 +481,26 @@ export function computeAutoHold(resultJson: unknown): AutoHold {
     else if (flagged && !lenient) reasons.push('reconciliation flagged reads');
   }
 
+  // GREEN INK NOT TREATED AS A CORRECTION (9 Sep 2026, Alexis's Q18(b)): the bot's
+  // pixel scan found green ink on a page, yet no line on that page was marked
+  // second-pen — the marks may include the student's own later corrections.
+  const dbg = Array.isArray(root.annotation_debug) ? root.annotation_debug : [];
+  const greenPages: number[] = [];
+  for (const d of dbg) {
+    const rec = asRecord(d);
+    const scan = asRecord(rec?.ink_scan);
+    const frac = Number(scan?.greenFrac);
+    if (!rec || !scan || !(frac >= 0.03) || scan.mainPenGreen === true) continue;
+    const photo = Number(rec.photo_index);
+    const honoured = results.some(r => Number(asRecord(r)?.photo_index) === photo &&
+      (Array.isArray(asRecord(asRecord(r)?.marking_output)?.lines) ? (asRecord(asRecord(r)?.marking_output)?.lines as unknown[]) : [])
+        .some(l => asRecord(l)?.is_second_pen === true));
+    if (!honoured) greenPages.push(photo + 1);
+  }
+  if (greenPages.length) {
+    reasons.push(`green ink on page${greenPages.length === 1 ? '' : 's'} ${greenPages.join(', ')} was not treated as a correction — check the marks there`);
+  }
+
   const totals = asRecord(root.totals);
   const counted = Number(totals?.counted_max), max = Number(totals?.max);
   if (Number.isFinite(counted) && Number.isFinite(max) && counted > 0 && max > 0 && counted !== max) {
