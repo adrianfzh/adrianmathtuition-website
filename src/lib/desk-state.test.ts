@@ -226,13 +226,13 @@ describe('orderLane — the oldest waiting paper is at the top', () => {
   it('work lanes run oldest first', () => {
     expect(orderLane(rows, 'ready').map(r => r.id)).toEqual(['a', 'b', 'c']);
     expect(orderLane(rows, 'awaiting-sheet').map(r => r.id)).toEqual(['a', 'b', 'c']);
-    // the automatic lane: released longest ago first (9 Sep 2026)
+    // the automatic lane too — by the date MARKED, not released (9 Sep 2026)
     const auto = [
       { id: 'x', createdAt: '2026-09-01T00:00:00Z', releasedAt: '2026-09-09T06:00:00Z' },
       { id: 'y', createdAt: '2026-09-03T00:00:00Z', releasedAt: '2026-09-08T06:00:00Z' },
       { id: 'z', createdAt: '2026-09-02T00:00:00Z', releasedAt: null },
     ];
-    expect(orderLane(auto, 'auto').map(r => r.id)).toEqual(['z', 'y', 'x']);
+    expect(orderLane(auto, 'auto').map(r => r.id)).toEqual(['x', 'z', 'y']);
     expect(orderLane(rows, 'untagged').map(r => r.id)).toEqual(['a', 'b', 'c']);
   });
   it('Released is a history and stays newest first', () => {
