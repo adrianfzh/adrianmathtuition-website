@@ -61,7 +61,13 @@ die() { say "FATAL: $1"; stamp_fail "$1"; cleanup_pid; exit 1; }
 # takeover. So the limit is remembered in ONE file per account and no slot
 # claims until it lifts. The reset wording is parsed for the hour; a wording we
 # cannot read backs off an hour at a time.
-PLAN_LIMIT_FILE="$HOME/.adrianmath-plan-limit-until"
+# One file PER ACCOUNT (9 Sep 2026): slots on a second account keep marking
+# while the first is capped — the pipeline takes whoever is available.
+PLAN_ACCOUNT_KEY="$(claude auth status 2>/dev/null | python3 -c 'import json,sys,re
+try: e=(json.load(sys.stdin).get("email") or "").strip().lower()
+except Exception: e=""
+print(re.sub(r"[^a-z0-9]+","-",e) or "default")' 2>/dev/null || echo default)"
+PLAN_LIMIT_FILE="$HOME/.adrianmath-plan-limit-until.${PLAN_ACCOUNT_KEY}"
 plan_limit_active() {
   [ -r "$PLAN_LIMIT_FILE" ] || return 1
   local until now
