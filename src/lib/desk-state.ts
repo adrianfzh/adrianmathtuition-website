@@ -112,6 +112,24 @@ export function isPracticeAgainHandin(run: DeskRun | null | undefined): boolean 
   return /^\s*practice again\b/i.test(String(run.paper_name || ''));
 }
 
+/**
+ * released_via in Adrian's words (9 Sep 2026: "auto:none — can this be more
+ * descriptive? it is very cryptic"). The stored value stays as it is — the
+ * report, the lanes and the bot key on it — only the desk's chip reads it out.
+ */
+export function releasedViaLabel(via: string | null | undefined): string {
+  const v = String(via || '').trim();
+  if (!v) return '';
+  const auto = v.startsWith('auto:');
+  const who = auto ? 'by the system' : 'by you';
+  const how = auto ? v.slice(5) : v;
+  const told = how === 'telegram' ? 'Telegram sent'
+    : how === 'portal' ? 'told on Telegram, copy in the app'
+    : how === 'none' ? 'not told — no Telegram linked'
+    : how;
+  return `${who} · ${told}`;
+}
+
 export function laneFor(run: DeskRun, latestSheetJob: DeskSheetJob, now: number = Date.now(), opts: { quiet?: boolean } = {}): DeskLane {
   // A returned Practice Again sheet with nothing flagged clears itself
   // (Adrian, 9 Sep 2026: "if sheet is already handed up and marked, should

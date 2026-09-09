@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  laneFor, sheetStageLabel, isPracticeAgainHandin, approveBlockers, releaseBlockers, deskFlags, defaultLane,
+  laneFor, sheetStageLabel, isPracticeAgainHandin, releasedViaLabel, approveBlockers, releaseBlockers, deskFlags, defaultLane,
   amendedStatusFor, latestLiveJob, noSheetOf, pdfStaleOf, DESK_LANES, LANE_LABEL, orderLane,
 } from './desk-state';
 
@@ -275,5 +275,16 @@ describe('returned Practice Again sheets (9 Sep 2026)', () => {
     expect(laneFor(run, null, now, { quiet: true })).toBe('released');
     expect(laneFor(run, null, now, { quiet: false })).toBe('auto');
     expect(laneFor(run, null, now)).toBe('auto');
+  });
+});
+
+describe('releasedViaLabel — the chip in Adrian\'s words (9 Sep 2026)', () => {
+  it('says who released and whether the student was told', () => {
+    expect(releasedViaLabel('auto:none')).toBe('by the system · not told — no Telegram linked');
+    expect(releasedViaLabel('auto:telegram')).toBe('by the system · Telegram sent');
+    expect(releasedViaLabel('auto:portal')).toBe('by the system · told on Telegram, copy in the app');
+    expect(releasedViaLabel('telegram')).toBe('by you · Telegram sent');
+    expect(releasedViaLabel('none')).toBe('by you · not told — no Telegram linked');
+    expect(releasedViaLabel(null)).toBe('');
   });
 });
