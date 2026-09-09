@@ -33,6 +33,8 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'find-review':       { kind: 'interval', hours: 36, label: 'nightly 5:30am' },
   // Release-by-silence sweep for Practice Again sheets (Vercel cron every 30 min, 6 Sep 2026).
   'sheet-auto-release': { kind: 'interval', hours: 2, label: 'every 30 min' },
+  // Release what the automatic path missed — failed/never-attempted hand-ins, every 10 min (9 Sep 2026).
+  'auto-release-sweep': { kind: 'interval', hours: 1, label: 'every 10 min' },
   // The weekly auto-release number (8 Sep 2026): released on their own, changed after, auto-pause rule.
   'auto-release-report': { kind: 'interval', hours: 204, label: 'Mondays 8am' },
   'scan-inbox':         { kind: 'interval', hours: 1, label: 'every 5 min' },

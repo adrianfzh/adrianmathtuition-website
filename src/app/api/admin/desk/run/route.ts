@@ -257,6 +257,8 @@ export async function GET(req: NextRequest) {
     overrides: overrideTally(rj),
     totalWarning: paperTotalsMismatch(rj, run.total_awarded) ?? paperTotalWarning(run.total_max),
     autoHold: computeAutoHold(rj),
+    // The bot's last automatic-release outcome (result_json.auto_release, 9 Sep 2026): released / refused / held / failed + note.
+    autoRelease: (rj as { auto_release?: unknown }).auto_release ?? null,
     questions,
     annotatedPhotos: annotatedPhotos(rj),
     // Clean originals + the rotation the marker applied, per page — what the pen

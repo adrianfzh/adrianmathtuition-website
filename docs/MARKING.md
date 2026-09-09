@@ -963,6 +963,14 @@ flagged, and his vetting changed 5 of the 98 flags he looked at.
   may release the sheet early from the desk; otherwise it goes at 12 h.
   **Later on 8 Sep 2026 a sheet exists only on request — § Practice Again on
   request below.**
+- **Try until it succeeds (9 Sep 2026).** Every automatic-release answer is
+  classified (bot `lib/auto-release-outcome.js`: released / refused / held /
+  failed) and stamped on the run as `result_json.auto_release`; the bot retries
+  an operational failure twice (20 s, 60 s), then `/api/cron/auto-release-sweep`
+  (every 10 min, `lib/auto-release-sweep.ts`, tested) keeps calling the same door
+  with `sweep:true` — the site then sends a Telegram hand-in's copy itself — until
+  it releases. The desk shows the stamp ("Automatic release failed: … retries
+  every 10 min"). A rule refusal or a margin-tick hold is never retried.
 - **The checkpoint after release**: desk lane **"Released by the system — not
   yet looked at"** (`laneFor`: `released_via` starts with `auto:` and no
   `checked_at`). There, Agree/Override still work; an override calls

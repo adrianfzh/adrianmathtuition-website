@@ -80,6 +80,7 @@ type Detail = {
   overrides: { against: number; forStudent: number; reviewed: number };
   totalWarning: string | null;
   autoHold: { hold: boolean; reasons: string[] };
+  autoRelease?: { at?: string; outcome?: string; note?: string; attempts?: number; sweep?: boolean } | null;
   questions: Question[];
   annotatedPhotos: { photoIndex: number; url: string; urlWithSolutions: string | null; overflowUrl: string | null; method: string | null; layerUrl?: string | null; layer?: LayerMeta | null; inkUrl?: string | null; editedAt?: string | null }[];
   pageSources?: Record<number, { originalUrl: string | null; rot: number }>;
@@ -1124,6 +1125,15 @@ function DetailView(p: {
         {d.autoHold.hold && (
           <div style={{ marginTop: 8, padding: '8px 10px', background: C.flagBg, border: `1px solid ${C.flagBorder}`, borderRadius: 8, color: C.flag, fontSize: 13 }}>
             ⚠ Watch out for: {d.autoHold.reasons.join(' · ')}
+          </div>
+        )}
+        {!run.releasedAt && d.autoRelease && (d.autoRelease.outcome === 'failed' || d.autoRelease.outcome === 'held' || d.autoRelease.outcome === 'refused') && (
+          <div style={{ marginTop: 8, padding: '8px 10px', background: C.flagBg, border: `1px solid ${C.flagBorder}`, borderRadius: 8, color: C.flag, fontSize: 13 }}>
+            {d.autoRelease.outcome === 'failed'
+              ? <>⏳ Automatic release failed{d.autoRelease.note ? `: ${d.autoRelease.note}` : ''}{d.autoRelease.attempts ? ` (${d.autoRelease.attempts} ${d.autoRelease.attempts === 1 ? 'try' : 'tries'})` : ''} — the site retries every 10 min, or release it now.</>
+              : d.autoRelease.outcome === 'held'
+                ? <>⏸ Not auto-released{d.autoRelease.note ? `: ${d.autoRelease.note}` : ''} — re-mark, then release.</>
+                : <>⏸ Automatic release refused{d.autoRelease.note ? `: ${d.autoRelease.note}` : ''} — release from here when it is right.</>}
           </div>
         )}
         {run.unattempted.length > 0 && (

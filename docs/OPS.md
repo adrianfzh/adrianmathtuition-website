@@ -26,6 +26,11 @@ Writers:
   `triage-reminder` (daily 8am SGT — Telegrams Adrian when marked scripts are
   waiting unreleased **and unarchived** on /admin/desk (triage retired 8 Sep 2026); stamps even on
   quiet 0-waiting days, skips the stamp only in `?dry=1` mode),
+  `auto-release-sweep` (every 10 min — releases a marked student hand-in whose
+  automatic release FAILED for an operational reason or was never attempted,
+  through the same `mark-triage {release, auto:true, sweep:true}` door, until it
+  succeeds; rule refusals and holds are left to the desk; the bot stamps every
+  outcome on `result_json.auto_release` — 9 Sep 2026, Sophie's 1 Sep hand-in),
   `practice-again-reminders` (daily 9am SGT — nudges students whose COMPULSORY
   Practice Again sheet is still not handed in: `portal_assignments.required_at`
   is set when Adrian releases a sheet he queued himself; day 3, then weekly,

@@ -434,6 +434,8 @@ export async function POST(req: NextRequest) {
     /** Override only: the kind of error Adrian saw — one of lib/error-kinds.ts' eight codes, or empty. */
     errorKind?: unknown; parts?: unknown;
     auto?: boolean;
+    /** The auto-release SWEEP (/api/cron/auto-release-sweep, 9 Sep 2026): still `auto`, but the bot is not sending the Telegram copy in this tick, so the site delivers it. */
+    sweep?: boolean;
     /** 📘 Optional sheet to release alongside the marked copy (step 7). */
     sheet?: { pdfUrl?: string; title?: string; note?: string; topic?: string };
     /** action 'subject' only: 'A Math' | 'E Math' | 'H2 Math' | 'Other'. */
@@ -781,7 +783,9 @@ export async function POST(req: NextRequest) {
         sheetForNudge = { title };
       }
 
-      const outcome = await deliver(run, auto, sheetForNudge);
+      // A sweep release is automatic for the record but the bot is not sending
+      // the Telegram copy alongside it — deliver as a manual release would.
+      const outcome = await deliver(run, auto && body.sweep !== true, sheetForNudge);
       const via = auto ? `auto:${outcome.via}` : outcome.via;
 
       // Stamp regardless of whether a nudge landed: the release IS Adrian's
