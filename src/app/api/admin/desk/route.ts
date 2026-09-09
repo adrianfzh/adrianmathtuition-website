@@ -115,8 +115,13 @@ export async function GET(req: NextRequest) {
       }
     } catch (e) { console.warn('[desk] sheet_jobs read failed:', (e as Error).message); }
     try {
-      const rows = await selectIn<{ source_run_id: string }>('portal_assignments', 'source_run_id', 'source_run_id', ids);
-      for (const a of rows) assignmentsByRun.set(a.source_run_id, (assignmentsByRun.get(a.source_run_id) ?? 0) + 1);
+      // Revoked rows are gone from the app — never count them (Joey's paper read
+      // "10 practice questions in the app" for ten withdrawn ones, 9 Sep 2026).
+      const rows = await selectIn<{ source_run_id: string; status: string | null; revoked_at: string | null }>('portal_assignments', 'source_run_id, status, revoked_at', 'source_run_id', ids);
+      for (const a of rows) {
+        if (a.revoked_at || a.status === 'revoked') continue;
+        assignmentsByRun.set(a.source_run_id, (assignmentsByRun.get(a.source_run_id) ?? 0) + 1);
+      }
     } catch (e) { console.warn('[desk] portal_assignments read failed:', (e as Error).message); }
   }
 

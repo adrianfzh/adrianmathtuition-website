@@ -149,8 +149,10 @@ export async function GET(req: NextRequest) {
   let sheetSent = false;
   try {
     const { data: rows } = await sb.from('portal_assignments').select('status, kind, revoked_at').eq('source_run_id', runId);
-    assignments = (rows ?? []).length;
-    assignmentsHeld = (rows ?? []).filter(a => a.status === 'held').length;
+    // Revoked rows are gone from the app — never count them (9 Sep 2026).
+    const live = (rows ?? []).filter(a => !a.revoked_at && a.status !== 'revoked');
+    assignments = live.length;
+    assignmentsHeld = live.filter(a => a.status === 'held').length;
     // The SHEET is with the student once its worksheet row exists — the practice
     // questions above are not that (9 Sep 2026: the Send button hid behind them).
     sheetSent = (rows ?? []).some(a => a.kind === 'worksheet' && !a.revoked_at && a.status !== 'revoked');
