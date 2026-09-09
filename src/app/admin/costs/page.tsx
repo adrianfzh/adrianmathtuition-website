@@ -70,15 +70,15 @@ export default function CostsPage() {
             <section className="bg-white rounded-xl border border-neutral-200 p-4 mb-4 overflow-x-auto">
               <div className="font-medium mb-1">By part — what each Claude call was for <span className="text-neutral-400 font-normal">· the bot&apos;s ledger, {money(data.ledger.total)} over {data.days} days</span></div>
               {data.ledger.note && <div className="text-xs text-red-700 mb-2">{data.ledger.note}</div>}
-              <table className="text-sm w-full min-w-[560px]">
-                <thead><tr className="text-neutral-500 text-xs text-left"><th className="py-1">part</th><th className="text-right">cost</th><th className="text-right">calls</th><th>models</th><th>biggest lines</th></tr></thead>
+              <table className="text-sm w-full min-w-[760px]">
+                <thead><tr className="text-neutral-500 text-xs text-left"><th className="py-1 pr-3">part</th><th className="text-right px-3">cost</th><th className="text-right px-3">calls</th><th className="px-3">models</th><th className="pl-3">biggest lines</th></tr></thead>
                 <tbody>{data.ledger.byPart.map(p => (
                   <tr key={p.part} className="border-t border-neutral-100 align-top">
-                    <td className="py-1 whitespace-nowrap">{p.label}</td>
-                    <td className="py-1 text-right tabular-nums">{money(p.cost)}</td>
-                    <td className="py-1 text-right tabular-nums text-neutral-500">{p.calls.toLocaleString()}</td>
-                    <td className="py-1 text-xs text-neutral-500">{Object.entries(p.models).sort((a, b) => b[1] - a[1]).map(([m, c]) => `${m.replace('claude-', '').replace('-20251001', '')} ${money(c)}`).join(' · ')}</td>
-                    <td className="py-1 text-xs text-neutral-500">{p.features.slice(0, 4).map(f => `${f.feature} ${money(f.cost)}`).join(' · ')}</td>
+                    <td className="py-1.5 pr-3 whitespace-nowrap">{p.label}</td>
+                    <td className="py-1.5 px-3 text-right tabular-nums whitespace-nowrap">{money(p.cost)}</td>
+                    <td className="py-1.5 px-3 text-right tabular-nums text-neutral-500">{p.calls.toLocaleString()}</td>
+                    <td className="py-1.5 px-3 text-xs text-neutral-500 min-w-[200px]">{Object.entries(p.models).sort((a, b) => b[1] - a[1]).map(([m, c]) => `${m.replace('claude-', '').replace('-20251001', '')} ${money(c)}`).join(' · ')}</td>
+                    <td className="py-1.5 pl-3 text-xs text-neutral-500">{p.features.slice(0, 4).map(f => `${f.feature} ${money(f.cost)}`).join(' · ')}</td>
                   </tr>
                 ))}</tbody>
               </table>
