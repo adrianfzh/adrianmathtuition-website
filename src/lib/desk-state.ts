@@ -38,8 +38,13 @@ export const LANE_LABEL: Record<DeskLane, string> = {
   // "no sheet yet" since 8 Sep 2026 — a sheet is written only when someone asks
   // (Adrian from this desk, or the student from the app after release).
   'awaiting-sheet': 'Marked, no sheet yet',
+  // "In process" — Adrian, 10 Sep 2026: "why 'ready to vet' - some marked copies
+  // (those handed up by students themselves) will automatically be released,
+  // should be 'In Process' or something". A paper here is marked and its sheet
+  // is written; the 12-hour clock sends both by itself unless something holds
+  // it, and the reasons sit under the button — the tab need not shout.
+  ready: 'In process',
   // "Completed" not "Released" — Adrian, 7 Sep 2026: "completed is easier to understand".
-  ready: 'Ready to vet',
   released: 'Completed',
 };
 
@@ -85,7 +90,7 @@ export type AmendedCopy = {
 /**
  * The newest sheet job that still MEANS something. A cancelled job is "I changed
  * my mind" — it never happened, so it must not hide the finished sheet behind it
- * (re-queue by mis-tap, cancel: the paper is still ready to vet).
+ * (re-queue by mis-tap, cancel: the paper is still in process).
  */
 export function latestLiveJob<T extends { status: string; created_at: string }>(jobs: T[]): T | null {
   const live = (jobs || []).filter(j => j && j.status !== 'cancelled');
@@ -297,7 +302,7 @@ export function deskFlags(run: DeskRun, sheetJob: DeskSheetJob, amended: Amended
   return out;
 }
 
-/** The tab to open first: Ready to vet when there is anything in it, else the waiting lane. */
+/** The tab to open first: In process when there is anything in it, else the waiting lane. */
 export function defaultLane(counts: Partial<Record<DeskLane, number>>): DeskLane {
   // A paper the automatic door refused is the rarer, more urgent case: an
   // untagged paper reaches nobody, and a marked-but-unreleased one is waiting

@@ -278,7 +278,7 @@ function PaperSubjectChip({ subject }: { subject: string | null | undefined }) {
 const LANE_HINT: Record<DeskLane, string> = {
   untagged: 'A paper with no student reaches nobody — tag it so it reaches them.',
   'awaiting-sheet': 'Marked, and nobody has asked for a sheet. Vet the marking; Approve & release sends the paper on its own. A sheet you queue here and release is compulsory — the app reminds the student until it is handed in. Students can ask for their own from the app once the paper is out; those go out by themselves once they clear the gate.',
-  ready: 'Script and sheet are both here. Open one, agree or override every question, read the sheet, then Approve & release.',
+  ready: 'Marked, sheet written, not yet with the student. It goes out by itself on the 12-hour clock unless something holds it — the reasons sit under the button. Open one to agree or override, read the sheet, or Approve & release without waiting.',
   auto: 'Released by the system and not yet looked at — or a sheet being revised. Look it over if you want: Agree or Override still work here (an override re-issues their copy), ✓ Looked at moves it to Completed; anything you leave files itself under Completed after 7 days. A paper whose sheet is being revised sits at the top until the revised sheet is filed, then goes back to where it was.',
   released: 'With the student. Read-only — the folder link is the record.',
 };
@@ -908,7 +908,7 @@ export default function DeskPage() {
           {queueLoading && rows.length === 0 && <p style={{ color: C.muted }}>Loading…</p>}
           {!queueLoading && !queueError && laneRows.length === 0 && (
             <p style={{ color: C.muted, padding: '32px 0', textAlign: 'center' }}>
-              {activeLane === 'ready' ? 'Nothing ready to vet — the sheets are on their way. 🎉' : 'Nothing here.'}
+              {activeLane === 'ready' ? 'Nothing in process — the sheets are on their way. 🎉' : 'Nothing here.'}
             </p>
           )}
 

@@ -15,7 +15,7 @@ describe('laneFor — every run lands in exactly one lane', () => {
   it('an untagged run needs a student before anything else', () => {
     expect(laneFor({ student_id: null, released_at: null }, done)).toBe('untagged');
   });
-  it('a finished sheet makes it ready to vet', () => {
+  it('a finished sheet puts it in process (the lane the desk opens on)', () => {
     expect(laneFor(tagged, done)).toBe('ready');
   });
   it('no job, a queued, a claimed or a failed job all mean "no sheet yet"', () => {
@@ -106,13 +106,13 @@ describe('approveBlockers — the reasons the big button is grey', () => {
 // ── "no sheet needed" (Adrian, 3 Sep 2026) ───────────────────────────────────
 // Kassandra Lim's 89/90 and 87/90: the worker read both papers correctly and
 // concluded there was nothing to teach. That closes the job as `done` with
-// `result.noSheet`, so the paper is Ready to vet and Approve & release sends it
+// `result.noSheet`, so the paper is In process and Approve & release sends it
 // on its own — the old route was `fail`, which requeued twice and then alarmed.
 describe('a done job that says "nothing to teach"', () => {
   const nothing = { status: 'done', stage: 'no sheet needed', error: null,
     result: { noSheet: true, reason: '89/90 — the one lost mark was a misread' } };
 
-  it('is a finished job, so the paper is Ready to vet', () => {
+  it('is a finished job, so the paper is In process', () => {
     expect(laneFor(tagged, nothing)).toBe('ready');
   });
   it('says so in the row, with the reason', () => {
