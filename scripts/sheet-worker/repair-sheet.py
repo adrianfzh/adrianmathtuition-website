@@ -11,6 +11,12 @@ Both are authoring faults the writer should not make again — the rules are in
 .claude/skills/self-study-sheet/SKILL.md — but sheets already filed in Dropbox
 need fixing without re-authoring them, so this operates on the OOXML directly.
 
+A third rule since 10 Sep 2026 (Adrian, on Alessi's Example 4a where (a)(b)(c)
+touched): "leave a line space between each subpart (or at least a small space -
+need not be a full line space)". The library had written that gap as an empty
+paragraph at the bottom of each part's cell — the very thing step 2a strips —
+so no filed sheet ever had it. It is 8 pt of paragraph spacing now (step 2c).
+
   1. Every fraction stacked.  Word draws <m:f> with <m:type m:val="lin"/> (or
      "skw") as 4/3 side by side. Removing the element restores the default
      stacked bar. Only the "simple" fractions ever get it, which is exactly the
@@ -142,6 +148,11 @@ def check_prefixes_survived(before: bytes, after: bytes) -> list[str]:
 SOURCE_LINE = re.compile(r'^\[(\d{4}) / ([A-Za-z0-9]+) / ([^/\]]+?)( / [^/\]]+?)? / (Q[^\]]*)\]$')
 
 
+#: worksheet_lib.PART_GAP_PT (8 pt) in twentieths of a point — the gap above the
+#: first line of each later part of a labelled solution box.
+PART_GAP_TWIPS = '160'
+
+
 def is_source_line(text: str) -> bool:
     return bool(SOURCE_LINE.match((text or '').strip()))
 
@@ -177,8 +188,8 @@ def set_spacing(p, **attrs):
 def repair(xml_bytes, unglue=False):
     root = ET.fromstring(xml_bytes)
     body = root.find(w('body'))
-    counts = {'linear_fractions': 0, 'trailing_empty': 0, 'gap_above_box': 0, 'source_lines': 0,
-              'unglued': 0}
+    counts = {'linear_fractions': 0, 'trailing_empty': 0, 'gap_above_box': 0, 'part_gaps': 0,
+              'source_lines': 0, 'unglued': 0}
 
     # ── 4. nothing glued to the next page (opt-in) ───────────────────────────
     if unglue:
@@ -248,6 +259,27 @@ def repair(xml_bytes, unglue=False):
             touched |= set_spacing(first, before='40')
         if touched:
             counts['gap_above_box'] += 1
+
+    # ── 2c. a small gap between the parts of a solution box ──────────────────
+    # Adrian, 10 Sep 2026: "leave a line space between each subpart (or at least
+    # a small space - need not be a full line space - you can adjust to fit the
+    # space as required)". Space BEFORE the first paragraph of every row after
+    # the first, in both cells so the label stays level with the working —
+    # the same thing worksheet_lib.solution_box writes. Spacing, not an empty
+    # paragraph, so step 2a can never take it away again. A labelled box is a
+    # table of two-cell rows; a single-cell box has one row and no parts.
+    for tbl in root.iter(w('tbl')):
+        trs = tbl.findall(w('tr'))
+        if len(trs) < 2 or any(len(tr.findall(w('tc'))) != 2 for tr in trs):
+            continue
+        for tr in trs[1:]:
+            touched = False
+            for tc in tr.findall(w('tc')):
+                first = tc.find(w('p'))
+                if first is not None:
+                    touched |= set_spacing(first, before=PART_GAP_TWIPS)
+            if touched:
+                counts['part_gaps'] += 1
 
     return root, counts
 

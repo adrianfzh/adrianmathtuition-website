@@ -152,6 +152,11 @@ def _outer_border_only(table):
         tblPr.append(borders)
 
 
+#: Space (points) above the first line of each later part of a solution box —
+#: the gap between (a) and (b). Paragraph spacing, never an empty paragraph;
+#: repair-sheet.py step 2c writes the same value into filed sheets.
+PART_GAP_PT = 8
+
 def _cant_split(row):
     """Forbid Word from splitting this table row across a page."""
     trPr = row._tr.get_or_add_trPr()
@@ -419,7 +424,8 @@ class Worksheet:
     LINE_PT = 9.5 * 1.5
 
     def __init__(self, working_space=0.0, keep_questions_together=False,
-                 keep_figures_with_text=True, one_mark_bonus=1.0):
+                 keep_figures_with_text=True, one_mark_bonus=1.0,
+                 keep_lines_with_text=2):
         """working_space: blank writing lines to leave per mark, after every
         paragraph that carries a mark allocation. 0 disables it (the right
         choice for a solutions sheet); pass 2.5 for a worksheet students write
@@ -430,10 +436,14 @@ class Worksheet:
         generous — a question is then taller than a page, so Word either splits
         it anyway or bumps it whole and wastes most of the previous page (which
         is what left a title-only first page). What stops the ugly breaks is
-        unit-level gluing, always on: a question's text keeps with its writing
-        space, the answer line keeps with the line above it, and a figure keeps
-        with its stem. Pages then break between blank writing lines, where a
-        break costs nothing.
+        unit-level gluing, always on: a question's text keeps with the first
+        lines of its writing space, the answer line keeps with the line above
+        it, and a figure keeps with its stem. Pages then break between blank
+        writing lines, where a break costs nothing.
+
+        keep_lines_with_text: how many of a part's blank lines travel with its
+        text (2). The remaining lines may cross a page — see workspace() for
+        why the whole run is no longer atomic (10 Sep 2026).
 
         keep_figures_with_text: anchor each figure to the paragraphs either
         side of it, so a diagram is never split from the stem that introduces
@@ -449,6 +459,7 @@ class Worksheet:
         self.keep_questions_together = bool(keep_questions_together)
         self.keep_figures_with_text = bool(keep_figures_with_text)
         self.one_mark_bonus = float(one_mark_bonus)
+        self.keep_lines_with_text = max(0, int(keep_lines_with_text))
         self._auto_subq_id = 9   # increments to 10, 11, ... per Q with sub-parts
         self._current_subq_id = None
         self._auto_parts_id = 89 # increments to 90, 91, ... per parts() (example sub-parts, flush left)
@@ -740,15 +751,16 @@ class Worksheet:
         self._block_paras.append(p)
         return p
 
-    def solution_box(self, rows, keep_together=True):
+    def solution_box(self, rows, keep_together=True, part_gap=None):
         """Boxed worked solution in Adrian's house format.
 
         His Revision "(With Worked Examples)" sheets put every solution in a
         TableGrid table showing ONLY the outer border (no inner gridlines),
         under a bold "Solution:" line with one blank line of breathing space
         after the question. Two columns: the part label alone in a narrow
-        first column, the working beside it, one table row per part. A blank
-        line is inserted automatically between parts (never after the last).
+        first column, the working beside it, one table row per part. A small
+        gap (`part_gap` points, default PART_GAP_PT = 8) separates the parts:
+        space above each later part's first line, never an empty paragraph.
 
         rows: list of (label, steps). label is '(a)' / '(i)' ('' for an
         unlabelled single-cell solution). Each step is one of:
@@ -806,6 +818,7 @@ class Worksheet:
         # (found 9 Sep 2026 on the GCE solutions export). Set both.
         for col, w in zip(table.columns, ([1.0, 15.0] if labelled else [16.0])):
             col.width = Cm(w)
+        gap_pt = PART_GAP_PT if part_gap is None else float(part_gap)
         for idx, ((label, steps), row) in enumerate(zip(rows, table.rows)):
             if labelled:
                 lab_cell, work_cell = row.cells
@@ -832,18 +845,24 @@ class Worksheet:
                         p._element.append(elem)
                 else:
                     self._fill(p, step)
-            if idx == 0:
-                # A hair of air above the FIRST line only (Adrian, 7 Sep 2026:
-                # "2px spacing from the top of the box for the first line only
-                # — the '(a)' on the left and the top of the line"). 2 pt is
-                # Word's nearest unit. Both cells, so the label and the working
-                # stay level; later rows keep the blank-line gap and nothing else.
-                tops = [work_cell.paragraphs[0]] + ([lab_cell.paragraphs[0]] if labelled else [])
-                for tp in tops:
-                    tp.paragraph_format.space_before = Pt(2)
-            if idx < len(rows) - 1:  # one blank line between parts, none after the last
-                gap = work_cell.add_paragraph()
-                gap.paragraph_format.line_spacing = 1.5
+            # Air above the first line of every part, as paragraph spacing on
+            # BOTH cells so the label and the working stay level:
+            #   row 0 — 2 pt (Adrian, 7 Sep 2026: "2px spacing from the top of
+            #   the box for the first line only — the '(a)' on the left and the
+            #   top of the line"; 2 pt is Word's nearest unit);
+            #   later rows — part_gap, the gap between parts.
+            # Spacing, NOT an empty paragraph (Adrian, 10 Sep 2026, on Alessi's
+            # Example 4a where (a)(b)(c) touched: "leave a line space between
+            # each subpart (or at least a small space - need not be a full line
+            # space - you can adjust to fit the space as required)"). The blank
+            # paragraph this used to add was a trailing EMPTY paragraph in the
+            # cell — exactly what the filing checks strip (SKILL.md: "the last
+            # paragraph of every table cell must have text"; repair-sheet.py
+            # step 2a) — so the gap never reached a filed sheet. Nothing strips
+            # spacing, and 8 pt costs under half a line instead of a whole one.
+            tops = [work_cell.paragraphs[0]] + ([lab_cell.paragraphs[0]] if labelled else [])
+            for tp in tops:
+                tp.paragraph_format.space_before = Pt(2) if idx == 0 else Pt(gap_pt)
         if keep_together:
             for para in self._block_paras:
                 para.paragraph_format.keep_with_next = True
@@ -871,11 +890,17 @@ class Worksheet:
         proportionality is meanest exactly where it hurts, since a one-mark
         answer still needs a line of working and a line for the answer.
 
-        The marked paragraph and ALL of its blank lines are glued into one unit,
-        so a part's writing space never straddles a page break — a page breaks
-        between parts, never inside one. Keep the unit small: it is one line of
-        text plus `marks x working_space` lines, so at 4.0 a [3] part is 13
-        lines (~6.5 cm) and packs easily.
+        The marked paragraph is glued to its first `keep_lines_with_text` blank
+        lines (2 by default); the rest of the run may cross a page. Until 10 Sep
+        2026 the WHOLE run was atomic — stem + figure + part text + every line
+        had to fit together — and on Alessi's Practice Again that unit was
+        taller than what was left of the page, so Word bumped Q2 overleaf and
+        left the bottom of the page blank. Adrian: "do what you see fit
+        according to space management". A break between two blank lines costs
+        nothing, and the two glued lines stop a part's text from ending a page
+        on its own. The revision worksheets (revision_lib) keep their whole-run
+        rule of 6 Aug 2026 ("do not want writing space to span across two
+        pages") — do not harmonise the two.
         """
         if lines is None:
             if marks is None:
@@ -893,7 +918,7 @@ class Worksheet:
             p = self.doc.add_paragraph()
             p.paragraph_format.space_before = Pt(0)
             p.paragraph_format.space_after = Pt(0)
-            if i < n - 1:      # the whole run is atomic; only its end may break
+            if i < min(n, self.keep_lines_with_text) - 1:   # text + first lines travel together; the rest may break
                 p.paragraph_format.keep_with_next = True
             self._block_paras.append(p)
             made.append(p)

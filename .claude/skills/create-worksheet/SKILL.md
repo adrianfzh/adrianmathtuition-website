@@ -201,9 +201,14 @@ ws.solution_box([('', [ [('text', 'By symmetry the area is ')], r'A = 12' ])])
   annotation format (50 % grey, 8 pt) — e.g.
   `r'... + C \quad\text{← every integration needs a constant}'`. Only `←` triggers
   this; `⇒`/`→` remain normal math.
-- **One blank line between parts** is inserted automatically inside the box —
-  after the bottom of each part, never after the last one. Don't add empty
-  steps for spacing.
+- **A small gap between parts** is inserted automatically inside the box — 8 pt
+  of space above each later part's first line, in both cells (`part_gap`,
+  `PART_GAP_PT`), never an empty paragraph. Adrian, 10 Sep 2026, on a box where
+  (a)(b)(c) touched: "leave a line space between each subpart (or at least a
+  small space - need not be a full line space - you can adjust to fit the space
+  as required)". The blank paragraph used before then was a trailing empty
+  paragraph in the cell, which the filing checks strip — so it never reached a
+  sheet. Don't add empty steps for spacing.
 - The box writes a spacer line, then its own bold `Solution:` header, then the
   table, then a blank paragraph — don't add any of those yourself.
 - **Keep-together** (default on): the whole block — question paragraphs since
@@ -343,9 +348,19 @@ reasoning is worth keeping:
    most of a page blank. That is how a first page ended up holding only a title.
 2. Letting everything flow fails too — a part's writing space then straddles a
    break, and its tail plus the `[Ans: …]` line strand on a near-empty page.
-3. What works: glue **a part's text to every one of its blank lines**, so the
-   unit is atomic and a page can only break *between* parts. A `[3]` part at
-   `working_space=4.0` is 13 lines, about 6.5 cm — small enough to pack well.
+3. What worked until 10 Sep 2026: glue **a part's text to every one of its blank
+   lines**, so a page could only break *between* parts. A `[3]` part at
+   `working_space=4.0` is 13 lines, about 6.5 cm — but the real unit is stem +
+   figure + part text + lines, and on Alessi's Practice Again that was taller
+   than what was left of the page, so Word bumped Q2 whole and left the page
+   half blank. Adrian: "do what you see fit according to space management".
+4. What works now: glue **a part's text to its first two blank lines only**
+   (`keep_lines_with_text=2`). A part's text can never end a page on its own, a
+   break between two blank lines costs nothing, and a question packs into
+   whatever room is left. The trade-off is that a part's writing space may cross
+   a page. The revision worksheets (`revision_lib`) keep the whole-run rule —
+   Adrian, 6 Aug 2026: "do not want writing space to span across two pages" —
+   so do not "harmonise" the two.
 
 `Worksheet` does this automatically. On top of it, the answer line keeps with the
 line above (no orphaned `[Ans: …]`), and a figure keeps with the stem above and
