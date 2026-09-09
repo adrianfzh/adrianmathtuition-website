@@ -28,6 +28,7 @@ import { keyFromUrl } from '@/lib/student-files-url';
 import { DAILY_SUBMIT_CAP, countHandinsToday } from '@/lib/portal-submit-limit';
 import type { HandinCountingClient } from '@/lib/portal-submit-limit';
 import { sendTelegram } from '@/lib/telegram';
+import { escapeTelegramHtml } from '@/lib/telegram-html';
 // Every notification from this file belongs in the marking topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_marking = (text: string) => sendTelegram(text, 'marking');
 import { canTransition, type AssignmentRow } from '@/lib/assignments';
@@ -357,8 +358,10 @@ export async function POST(req: Request) {
   // Auto-queue the hand-in for marking (after the stamp above, so the queue
   // worker can never claim the run while the stamp's read-merge-write is in
   // flight). phase:'enqueue' defaults to opus/teacher — the same marking Adrian's
-  // own 🌙 button queues. On success we send NOTHING: the queue worker's finished-
-  // marking Telegram (student name + 🖼 PDF + Release nudge) is the doorbell now.
+  // own 🌙 button queues. On success ONE line — 📥 handed in, queued (Adrian,
+  // 10 Sep 2026: "do it") — so he knows a paper is in the queue before the
+  // marking lands; the queue worker's finished-marking Telegram (student name +
+  // 🖼 PDF) stays the doorbell, and nothing here asks him to tap anything.
   const who = account.display_name || 'A student';
   let queued = false;
   try {
@@ -367,6 +370,12 @@ export async function POST(req: Request) {
     if (!queued) console.warn('[portal-submit] enqueue failed:', q?.error);
   } catch (e) {
     console.warn('[portal-submit] enqueue failed:', (e as Error).message);
+  }
+  if (queued) {
+    notify_marking(
+      `📥 <b>${escapeTelegramHtml(who)}</b> handed in “${escapeTelegramHtml(paperName)}” — ` +
+      `${photoUrls.length} page${photoUrls.length === 1 ? '' : 's'}, queued for marking.`
+    ).catch(() => {});
   }
   if (!queued) {
     // The run is saved either way — but with no queue entry nobody would ever
