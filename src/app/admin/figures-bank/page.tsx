@@ -106,10 +106,13 @@ export default function FiguresPage() {
   const [level, setLevel] = useState('');
   const [tab, setTab] = useState<Tab>('all');
   const [sols, setSols] = useState<SolItem[]>([]);
-  const [solTotals, setSolTotals] = useState({ held: 0, withCandidate: 0, sec: 0, jc: 0, allHeld: 0 });
+  const [solTotals, setSolTotals] = useState({ held: 0, withCandidate: 0, sec: 0, jc: 0, allHeld: 0 , sentToRedraw: 0, keptHidden: 0 });
   // Sec first: Adrian paused JC cleaning until Sec completes, and one undivided
   // list put the 112 Sec decisions on page 11 behind 202 paused JC rows.
   const [solScope, setSolScope] = useState<'sec' | 'jc' | 'all'>('sec');
+  // Decided rows (✏️ Redraw / 🙈 Keep hidden) leave the working lane; the doors
+  // show them — a count is a door, never a disappearance (9 Sep 2026).
+  const [solView, setSolView] = useState<'' | 'redraw' | 'hidden'>('');
   const [solBusy, setSolBusy] = useState('');
   const [solErr, setSolErr] = useState<Record<string, string>>({});
   const [fits, setFits] = useState<FitItem[]>([]);
@@ -175,7 +178,7 @@ export default function FiguresPage() {
     setLoading(true);
     try {
       const qs = tab === 'solutions'
-        ? `kind=solution&scope=${solScope}&page=${page}&pageSize=${SOL_PAGE}`
+        ? `kind=solution&scope=${solScope}&page=${page}&pageSize=${SOL_PAGE}${solView ? `&view=${solView}` : ''}`
         : tab === 'fitness'
           ? `kind=fitness&page=${page}&pageSize=${FIT_PAGE}${fitView ? `&view=${fitView}` : ''}`
           : tab === 'flagged'
@@ -207,7 +210,7 @@ export default function FiguresPage() {
         localStorage.setItem(lsKey(level), String(page));
       }
     } finally { setLoading(false); }
-  }, [tab, page, pageSize, level, solScope, fitView]);
+  }, [tab, page, pageSize, level, solScope, solView, fitView]);
   useEffect(() => { if (authed) load(); }, [authed, load]);
 
   /** "Looks fine" — mark the flag fixed, which releases the question back into
@@ -323,6 +326,18 @@ export default function FiguresPage() {
           sec: Math.max(0, t.sec - (isJc(it.level) ? 0 : 1)),
           jc: Math.max(0, t.jc - (isJc(it.level) ? 1 : 0)),
           allHeld: Math.max(0, t.allHeld - 1),
+        }));
+      } else if (d.decided && !solView) {
+        // A decision in the working view: the card moves onto its door.
+        const key = d.decided === 'redraw' ? 'sentToRedraw' : 'keptHidden';
+        setSolTotals((t) => ({
+          ...t,
+          held: Math.max(0, t.held - 1),
+          withCandidate: Math.max(0, t.withCandidate - (it.candidate ? 1 : 0)),
+          sec: Math.max(0, t.sec - (isJc(it.level) ? 0 : 1)),
+          jc: Math.max(0, t.jc - (isJc(it.level) ? 1 : 0)),
+          allHeld: Math.max(0, t.allHeld - 1),
+          [key]: (t[key] ?? 0) + 1,
         }));
       }
     } catch {
@@ -603,10 +618,31 @@ export default function FiguresPage() {
       {tab === 'solutions' && (
         <>
           <div style={{ background: '#faf5ff', border: '1px solid #ddd6fe', borderRadius: 10, padding: '8px 12px', marginBottom: 10, fontSize: 13.5 }}>
-            <strong>{solTotals.held} solution images are switched off</strong>
-            {solScope !== 'all' && solTotals.allHeld > solTotals.held ? ` of ${solTotals.allHeld}` : ''} — they
-            carry another school&apos;s or centre&apos;s watermark, so the render gate withholds them
-            wherever a solution is revealed. {solTotals.withCandidate} have a cleaned candidate.
+            {solView === 'redraw' ? (
+              <><strong>{solTotals.sentToRedraw} solution images sent to redraw</strong> — still switched off, waiting on a redraw session.</>
+            ) : solView === 'hidden' ? (
+              <><strong>{solTotals.keptHidden} solution images kept hidden</strong> — still switched off, by your decision.</>
+            ) : (
+              <><strong>{solTotals.held} solution images are switched off</strong>
+              {solScope !== 'all' && solTotals.allHeld > solTotals.held ? ` of ${solTotals.allHeld}` : ''} — they
+              carry another school&apos;s or centre&apos;s watermark, so the render gate withholds them
+              wherever a solution is revealed. {solTotals.withCandidate} have a cleaned candidate.</>
+            )}
+            {solView !== '' && (
+              <button onClick={() => { setSolView(''); setPage(0); }} style={{ marginLeft: 8, fontSize: 12.5, fontWeight: 700, color: '#7c3aed', background: '#fff', border: '1px solid #ddd6fe', borderRadius: 999, padding: '2px 10px', cursor: 'pointer' }}>
+                &larr; back to the queue
+              </button>
+            )}
+            {solView !== 'redraw' && solTotals.sentToRedraw > 0 && (
+              <button onClick={() => { setSolView('redraw'); setPage(0); }} style={{ marginLeft: 8, fontSize: 12.5, fontWeight: 700, color: '#7c3aed', background: '#fff', border: '1px solid #ddd6fe', borderRadius: 999, padding: '2px 10px', cursor: 'pointer' }}>
+                {`✏️ ${solTotals.sentToRedraw} sent to redraw`}
+              </button>
+            )}
+            {solView !== 'hidden' && solTotals.keptHidden > 0 && (
+              <button onClick={() => { setSolView('hidden'); setPage(0); }} style={{ marginLeft: 8, fontSize: 12.5, fontWeight: 700, color: '#7c3aed', background: '#fff', border: '1px solid #ddd6fe', borderRadius: 999, padding: '2px 10px', cursor: 'pointer' }}>
+                {`🙈 ${solTotals.keptHidden} kept hidden`}
+              </button>
+            )}
             <div style={{ marginTop: 4, color: C.muted }}>
               <em>Approve as-is</em> puts the image back untouched. <em>Use cleaned candidate</em> writes
               the cleaned copy as a new object and repoints every reference to it — the original is
@@ -637,7 +673,7 @@ export default function FiguresPage() {
             </span>
           </div>
           {!loading && sols.length === 0 && (
-            <div style={{ color: C.muted, fontSize: 14, padding: 20, textAlign: 'center' }}>Nothing held — every solution image has been judged.</div>
+            <div style={{ color: C.muted, fontSize: 14, padding: 20, textAlign: 'center' }}>{solView === 'redraw' ? 'Nothing sent to redraw yet.' : solView === 'hidden' ? 'Nothing kept hidden yet.' : 'Nothing held — every solution image has been judged.'}</div>
           )}
           {sols.map((it) => {
             const busy = solBusy === it.path;

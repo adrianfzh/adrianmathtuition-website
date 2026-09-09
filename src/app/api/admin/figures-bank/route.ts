@@ -55,7 +55,7 @@
 // so the original verdict/reason survives alongside his decision.
 import { createHash } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
-import { isCorrectnessHold, parseFitnessNote, releaseNote } from '@/lib/figure-flag-release';
+import { decideSolutionNote, decidedSolutionKind, isCorrectnessHold, parseFitnessNote, releaseNote } from '@/lib/figure-flag-release';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -188,13 +188,23 @@ async function solutionLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
   const scope = sp.get('scope') === 'jc' ? 'jc' : sp.get('scope') === 'all' ? 'all' : 'sec';
   const all = scope === 'jc' ? jc : scope === 'all' ? everything : sec;
 
+  // DECIDED rows leave the working lane (9 Sep 2026). "Redraw" and "Keep hidden"
+  // do not change status — the image stays withheld — so without this split
+  // every card Adrian had tapped came back on the next refresh (53 of them).
+  // `?view=redraw|hidden` lists them; the counts below are the doors.
+  const decided = (f: { note?: unknown }) => decidedSolutionKind((f.note as string | null) ?? null);
+  const view = sp.get('view') === 'redraw' ? 'redraw' : sp.get('view') === 'hidden' ? 'hidden' : '';
+  const working = all.filter((f) => decided(f) === null);
+  const listed = view ? all.filter((f) => decided(f) === view) : working;
+  const undecided = (rows: typeof everything) => rows.filter((f) => decided(f) === null).length;
+
   // One prefix listing per request — not one existence probe per card.
-  const names = await listCandidateNames(supa, all.map((f) => f.path as string));
-  const withCandidate = all.filter((f) => names.has(f.path as string)).length;
+  const names = await listCandidateNames(supa, listed.map((f) => f.path as string));
+  const withCandidate = working.filter((f) => names.has(f.path as string)).length;
 
   const page = Math.max(0, Number(sp.get('page') ?? 0) || 0);
   const pageSize = Math.min(60, Math.max(1, Number(sp.get('pageSize') ?? 20) || 20));
-  const slice = all.slice(page * pageSize, page * pageSize + pageSize);
+  const slice = listed.slice(page * pageSize, page * pageSize + pageSize);
 
   const qids = [...new Set(slice.map((f) => f.question_id as string))];
   const meta: Record<string, Row> = {};
@@ -235,12 +245,17 @@ async function solutionLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
   }));
 
   return NextResponse.json({
-    items, page, pageSize, scope,
-    // `held` is the IN-SCOPE count (the client pages off it); sec/jc/allHeld
-    // keep every number on screen, so a scope never hides work silently.
+    items, page, pageSize, scope, view,
+    // `held` is the IN-SCOPE count of rows STILL TO JUDGE (the client pages off
+    // it in the working view); sec/jc/allHeld are the same count per scope, so
+    // a scope never hides work silently. sentToRedraw / keptHidden are the
+    // in-scope decided rows — the doors, and the page size when a view is open.
     totals: {
-      held: all.length, withCandidate,
-      sec: sec.length, jc: jc.length, allHeld: everything.length,
+      held: working.length, withCandidate,
+      sec: undecided(sec), jc: undecided(jc), allHeld: undecided(everything),
+      sentToRedraw: all.filter((f) => decided(f) === 'redraw').length,
+      keptHidden: all.filter((f) => decided(f) === 'hidden').length,
+      listed: listed.length,
     },
   });
 }
@@ -427,13 +442,35 @@ async function applyCleanedSolutionImage(
   });
 }
 
+/** Read the row's current note first: every write here PREFIXES it, so the
+ *  cleaning session's verdict survives whatever Adrian decides on top of it. */
+async function priorNote(supa: SupabaseClient, path: string): Promise<string> {
+  const { data } = await supa.from('figure_flags').select('note')
+    .eq('path', path).eq('kind', 'solution').maybeSingle();
+  return ((data?.note as string | null) ?? '').trim();
+}
+
 async function noteOnly(supa: SupabaseClient, path: string, note: string, status?: 'fixed') {
-  const patch: Record<string, unknown> = { note: note.slice(0, 500) };
+  const prev = await priorNote(supa, path);
+  const patch: Record<string, unknown> = { note: prev ? `${note} · ${prev}` : note };
   if (status) patch.status = status;
   const { error } = await supa.from('figure_flags').update(patch)
     .eq('path', path).eq('kind', 'solution');
   if (error) return step('flag', error.message);
-  return NextResponse.json({ ok: true, status: status ?? 'held', note });
+  return NextResponse.json({ ok: true, status: status ?? 'held', note: patch.note });
+}
+
+/** Redraw / keep hidden: a decision that leaves status='held' (the image stays
+ *  withheld, the question keeps serving) and moves the row out of the working
+ *  lane onto its own list. Idempotent — a second tap changes nothing. */
+async function decide(supa: SupabaseClient, path: string, kind: 'redraw' | 'hidden', extra: string) {
+  const prev = await priorNote(supa, path);
+  if (decidedSolutionKind(prev) === kind) return NextResponse.json({ ok: true, status: 'held', note: prev, alreadySent: true, decided: kind });
+  const note = decideSolutionNote(prev, kind, extra);
+  const { error } = await supa.from('figure_flags').update({ note })
+    .eq('path', path).eq('kind', 'solution');
+  if (error) return step('flag', error.message);
+  return NextResponse.json({ ok: true, status: 'held', note, decided: kind });
 }
 
 async function solutionLanePost(
@@ -448,8 +485,8 @@ async function solutionLanePost(
     // 'fixed' paths render at all. Nothing else to do: the image is fine as it is.
     return noteOnly(supa, path, `Adrian approved as-is${suffix}`, 'fixed');
   }
-  if (action === 'keep-hidden') return noteOnly(supa, path, `kept hidden${suffix}`);
-  if (action === 'redraw') return noteOnly(supa, path, 'redraw requested');
+  if (action === 'keep-hidden') return decide(supa, path, 'hidden', extra);
+  if (action === 'redraw') return decide(supa, path, 'redraw', extra);
 
   if (action === 'approve-candidate') {
     const dl = await supa.storage.from(BUCKET).download(`candidates/${path}`);

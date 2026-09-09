@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isCorrectnessHold, parseFitnessNote, releaseNote, NOTE_MAX } from './figure-flag-release';
+import { decideSolutionNote, decidedSolutionKind, isCorrectnessHold, parseFitnessNote, releaseNote, NOTE_MAX } from './figure-flag-release';
 
 describe('isCorrectnessHold', () => {
   it('holds the verdicts pixels cannot see', () => {
@@ -54,5 +54,37 @@ describe('parseFitnessNote', () => {
     expect(parseFitnessNote('ok · cosmetic · zero margin')).toEqual({ severity: 'cosmetic', verdict: null });
     expect(parseFitnessNote('figfit 3 Sep 2026 · cosmetic · the crop is incomplete on the right')).toEqual({ severity: 'cosmetic', verdict: null });
     expect(parseFitnessNote('figfit 3 Sep 2026 · cosmetic · foreign · ok apart from the stamp').verdict).toBe('foreign');
+  });
+});
+
+describe('decidedSolutionKind / decideSolutionNote — the Solutions lane leaves decided rows out', () => {
+  it('reads the prefixed form and the bare legacy notes the old actions wrote', () => {
+    expect(decidedSolutionKind('Adrian: redraw · solimg 3 Sep · watermark · KIASU tile')).toBe('redraw');
+    expect(decidedSolutionKind('Adrian: kept hidden · solimg 3 Sep · watermark')).toBe('hidden');
+    expect(decidedSolutionKind('redraw requested')).toBe('redraw');          // 53 rows carried exactly this
+    expect(decidedSolutionKind('kept hidden · looks like a scan of the key')).toBe('hidden');
+    expect(decidedSolutionKind('solimg 3 Sep · watermark · KIASU tile')).toBeNull();
+    expect(decidedSolutionKind('Adrian approved as-is · solimg 3 Sep')).toBeNull();
+    expect(decidedSolutionKind(null)).toBeNull();
+    expect(decidedSolutionKind('  ')).toBeNull();
+  });
+  it('prefixes the prior note instead of replacing it, and never caps it', () => {
+    const prior = 'solimg 3 Sep · watermark · ' + 'x'.repeat(700);
+    const n = decideSolutionNote(prior, 'redraw');
+    expect(n.startsWith('Adrian: redraw · solimg 3 Sep · watermark · ')).toBe(true);
+    expect(n.length).toBe('Adrian: redraw · '.length + prior.length);
+    expect(decideSolutionNote(prior, 'hidden', 'answer key, not a figure')).toBe(`Adrian: kept hidden · answer key, not a figure · ${prior}`);
+  });
+  it('is idempotent — deciding the same way twice returns the note untouched', () => {
+    const once = decideSolutionNote('solimg 3 Sep · watermark', 'redraw');
+    expect(decideSolutionNote(once, 'redraw')).toBe(once);
+    expect(decideSolutionNote('redraw requested', 'redraw')).toBe('redraw requested');
+  });
+  it('writes a clean prefix when there was no prior note', () => {
+    expect(decideSolutionNote(null, 'redraw')).toBe('Adrian: redraw');
+    expect(decideSolutionNote('', 'hidden', 'keep')).toBe('Adrian: kept hidden · keep');
+    // …and a bare decision still reads as decided, so the row leaves the lane.
+    expect(decidedSolutionKind('Adrian: redraw')).toBe('redraw');
+    expect(decidedSolutionKind(decideSolutionNote('', 'hidden', 'keep'))).toBe('hidden');
   });
 });

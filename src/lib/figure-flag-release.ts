@@ -76,3 +76,46 @@ export function parseFitnessNote(note: string | null | undefined): {
   }
   return { severity, verdict };
 }
+
+// ── Solutions lane: the two verdicts that DECIDE a row without changing its
+// status (9 Sep 2026). Same bug the Fitness lane had on 5 Sep: "✏️ Redraw" and
+// "🙈 Keep hidden" wrote a note and left status='held', and the lane listed every
+// held row — so every card Adrian had decided came straight back on refresh
+// ("i clicked through alot of redraws for solutions but when i refreshed the
+// page, they are still there"; 53 rows carried the bare note "redraw requested").
+// Worse, the old write REPLACED the note, so the cleaning session's verdict on
+// those 53 is gone. Now: the verdict is a PREFIX (the prior note survives), the
+// lane hides decided rows and shows them behind their own door, and a second
+// tap is a no-op.
+export const SOLUTION_DECIDED = {
+  redraw: 'Adrian: redraw · ',
+  hidden: 'Adrian: kept hidden · ',
+} as const;
+export type SolutionDecision = keyof typeof SOLUTION_DECIDED;
+
+/** Which decision, if any, a solution-lane note records. Recognises the
+ *  prefixed form AND the bare legacy notes the pre-9-Sep actions wrote, so the
+ *  rows Adrian already tapped leave the working lane without a data migration. */
+export function decidedSolutionKind(note: string | null | undefined): SolutionDecision | null {
+  const n = (note ?? '').trim();
+  if (!n) return null;
+  // The prefix without its trailing " · " too: a decision on a row with no prior
+  // note is written bare ("Adrian: redraw"), and must still count as decided.
+  const bare = (p: string) => p.replace(/\s*·\s*$/, '');
+  if (n.startsWith(bare(SOLUTION_DECIDED.redraw)) || /^redraw requested\b/i.test(n)) return 'redraw';
+  if (n.startsWith(bare(SOLUTION_DECIDED.hidden)) || /^kept hidden\b/i.test(n)) return 'hidden';
+  return null;
+}
+
+/** The note a decision writes: the prefix in front of whatever was there, with
+ *  Adrian's optional words inside it. Never trimmed to a cap — the prefix goes on
+ *  the FRONT, so a cap would eat the evidence off the END (the fitness lane's
+ *  5 Sep lesson). Idempotent: deciding the same way twice returns the note as is. */
+export function decideSolutionNote(prior: string | null | undefined, kind: SolutionDecision, extra?: string | null): string {
+  const prev = (prior ?? '').trim();
+  if (decidedSolutionKind(prev) === kind) return prev;
+  const words = (extra ?? '').trim();
+  const head = words ? `${SOLUTION_DECIDED[kind].trimEnd()} ${words} · ` : SOLUTION_DECIDED[kind];
+  return prev ? `${head}${prev}` : head.replace(/\s*·\s*$/, '');
+}
+

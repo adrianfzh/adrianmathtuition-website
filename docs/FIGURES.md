@@ -151,8 +151,19 @@ Five actions, and only three of them write to the question row:
 | ✓ **Approve as-is** | flag → `fixed`, note "Adrian approved as-is · …". Nothing else — the image was always fine. |
 | ✓ **Use cleaned candidate** / *Use it anyway* | the full write contract below, note "Adrian approved cleaned candidate". |
 | ✍️ **Amend…** | same contract with Adrian's own upload (≤ 3.5MB decoded — Vercel's 4.5MB body cap), note "Adrian amended". |
-| 🙈 **Keep hidden** | note only, status unchanged. |
-| ✏️ **Redraw** | note "redraw requested", status unchanged. |
+| 🙈 **Keep hidden** | prefixes the note `Adrian: kept hidden · …`, status unchanged. **Decided**: the row leaves the working lane onto the 🙈 door. |
+| ✏️ **Redraw** | prefixes the note `Adrian: redraw · …`, status unchanged. **Decided**: the row leaves the working lane onto the ✏️ door. |
+
+**Decided rows leave the lane (9 Sep 2026).** `Keep hidden` and `Redraw` do not change
+`status` — the image stays withheld, the question keeps serving — and the lane used to
+list every `held` row, so each card Adrian had decided came straight back on refresh
+(53 rows carried the bare note `redraw requested`; the old write also REPLACED the
+cleaning session's verdict, which is gone on those 53). Now `decidedSolutionKind()`
+(`lib/figure-flag-release.ts`, tested) reads the prefix — or the bare legacy note, so
+nothing needed migrating — the working lane hides decided rows, `?view=redraw` /
+`?view=hidden` list them, `totals.sentToRedraw` / `keptHidden` are the doors, and a
+second tap returns `alreadySent` without writing. The same rule as the Fitness lane's
+`Adrian: repair · ` prefix, for the same reason.
 
 The two applying actions mirror `apply.py` exactly (`lib/solution-image-apply.ts`,
 pure + tested): upload as a NEW object `question_images/solutions/cleaned/<qid>-<part>-<sha8>.png`
