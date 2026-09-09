@@ -1183,8 +1183,21 @@ do not rebuild it as a second lane-clearing action. If a specific student
 should stop asking for a sheet, make that a small switch on the paper's page.
 
 **Desk tabs and the sheet's own Send button (9 Sep 2026 evening).** The
-automatic lane ("Released by the system — not yet looked at") is the FIRST tab
-and the default (`DESK_LANES`, `defaultLane`); the three work lanes (Needs a
+automatic lane — labelled **"Still to deal with"** since 10 Sep 2026 (Adrian's
+words; it was "Released by the system — not yet looked at") — is the FIRST tab
+and the default (`DESK_LANES`, `defaultLane`). **A sheet being revised puts
+its paper back on this tab (10 Sep 2026** — Adrian: "when a sheet is being
+revised, perhaps can put it back at still to deal with? so i have an idea of
+what's going on at a glance, then put the paper back into its order once the
+revise sheet is done"): `laneFor`'s first rule sends a RELEASED run whose
+latest live sheet job carries a `result.revise` stamp and is queued / claimed /
+failed to `auto`; `revisingOf(job)` is that test (null once the job is done —
+the stamp itself persists, so the STATUS is what matters), `orderLane` pins
+revising rows at the top of every lane, and the row + detail show a pink
+✏️ chip (`revisingLabel`) while ✓ Looked at is hidden. A queued sheet without
+the stamp (a student's Practice Again request) does not move the paper. When
+the revised sheet is filed the rule stops matching and the ordinary rules place
+the paper exactly where it was; the three work lanes (Needs a
 student · Marked, no sheet yet · Ready to vet) only ever hold a paper the
 automatic door refused, so the desk hides them at zero
 (`LANES_HIDDEN_AT_ZERO`) and opens on one only when it holds something.

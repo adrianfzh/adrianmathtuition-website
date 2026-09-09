@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
       const watch = hold.reasons.filter(x => x !== 'no questions were marked');
       if (hold.reasons.includes('no questions were marked')) {
         await sb.from('sheet_jobs').update({ auto_release_at: null, stage: 'held — the paper has nothing marked' }).eq('id', j.id);
-        await sendTelegram(heldByPaperLine(who, j.paper_name, ['the paper has nothing marked'], `${base}/admin/desk?run=${j.run_id}`)).catch(() => {});
+        await sendTelegram(heldByPaperLine(who, j.paper_name, ['the paper has nothing marked'], `${base}/admin/desk?run=${j.run_id}`), 'marking').catch(() => {});
         out.push({ id: j.id, ok: false, note: 'held: nothing marked' });
         continue;
       }
@@ -82,12 +82,12 @@ export async function GET(req: NextRequest) {
       if (r.ok) {
         await sb.from('sheet_jobs').update({ auto_released_at: new Date().toISOString(), stage: paperAlreadyOut ? 'auto-released — the sheet followed the paper on the clock' : 'auto-released' }).eq('id', j.id);
         const followed = paperAlreadyOut ? '\nThe marked paper was already with them; the Practice Again sheet followed on the clock — compulsory, the app reminds them until it is handed in.' : '';
-        await sendTelegram(releasedWithWatchLine(who, j.paper_name, watch) + followed).catch(() => {});
+        await sendTelegram(releasedWithWatchLine(who, j.paper_name, watch) + followed, 'marking').catch(() => {});
         out.push({ id: j.id, ok: true, note: 'released' });
       } else {
         // Not something a cron should decide: hand it back to the desk, once.
         await sb.from('sheet_jobs').update({ auto_release_at: null, stage: `auto-release stopped — ${String(d.error || r.status).slice(0, 120)}` }).eq('id', j.id);
-        await sendTelegram(`⚠️ ${who} — could not auto-release: ${d.error || `HTTP ${r.status}`}. Release from the desk.`).catch(() => {});
+        await sendTelegram(`⚠️ ${who} — could not auto-release: ${d.error || `HTTP ${r.status}`}. Release from the desk.`, 'marking').catch(() => {});
         out.push({ id: j.id, ok: false, note: String(d.error || r.status) });
       }
     } catch (e) {

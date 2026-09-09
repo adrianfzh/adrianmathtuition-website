@@ -29,7 +29,11 @@ export const LANES_HIDDEN_AT_ZERO: readonly DeskLane[] = ['untagged', 'awaiting-
 
 /** What the tab says. */
 export const LANE_LABEL: Record<DeskLane, string> = {
-  auto: 'Released by the system — not yet looked at',
+  // "Still to deal with" — Adrian's own words, 10 Sep 2026 ("when a sheet is being
+  // revised, perhaps can put it back at still to deal with?"): the to-do tab holds
+  // what the system released and he has not looked at, AND any paper whose sheet
+  // is being revised, so a glance shows what is going on.
+  auto: 'Still to deal with',
   untagged: 'Needs a student',
   // "no sheet yet" since 8 Sep 2026 — a sheet is written only when someone asks
   // (Adrian from this desk, or the student from the app after release).
@@ -154,6 +158,12 @@ export function releasedViaLabel(via: string | null | undefined): string {
 }
 
 export function laneFor(run: DeskRun, latestSheetJob: DeskSheetJob, now: number = Date.now(), opts: { quiet?: boolean } = {}): DeskLane {
+  // ✏️ A released paper whose sheet is being revised comes back to the to-do tab
+  // (Adrian, 10 Sep 2026: "put it back at still to deal with … then put the paper
+  // back into its order once the revise sheet is done"). Only a REVISION pulls it
+  // back — a fresh sheet the student asks for goes out by itself and needs no
+  // glance. Once the revised sheet is filed the rules below place it as before.
+  if (run.released_at && revisingOf(latestSheetJob)) return 'auto';
   // A returned Practice Again sheet with nothing flagged clears itself
   // (Adrian, 9 Sep 2026: "if sheet is already handed up and marked, should
   // just clear automatically, unless something important is flagged"). The
@@ -185,11 +195,35 @@ function shortReason(reason: string, max = 64): string {
   return r.length > max ? `${r.slice(0, max - 1).trimEnd()}…` : r;
 }
 
+/**
+ * A sheet that went back to the worker for a revision and is not filed again yet
+ * (sheet-jobs {action:'revise'} stamps `result.revise` and re-queues the row; the
+ * stamp outlives the revision, so only a queued, running or failed job counts).
+ */
+export type Revising = { state: 'queued' | 'running' | 'failed'; round: number };
+export function revisingOf(job: DeskSheetJob): Revising | null {
+  if (!job) return null;
+  const rv = (job.result as { revise?: { round?: unknown } } | null | undefined)?.revise;
+  if (!rv || typeof rv !== 'object') return null;
+  const round = Math.max(1, Number(rv.round) || 1);
+  if (job.status === 'queued') return { state: 'queued', round };
+  if (job.status === 'claimed') return { state: 'running', round };
+  if (job.status === 'failed') return { state: 'failed', round };
+  return null;
+}
+
+/** The chip beside a paper whose sheet is being revised. */
+export function revisingLabel(r: Revising): string {
+  if (r.state === 'failed') return `✏️ revision ${r.round} failed`;
+  return `✏️ sheet being revised (round ${r.round})${r.state === 'queued' ? ' · waiting for the Mac' : ''}`;
+}
+
 /** The row's sheet column, as a phrase. */
 export function sheetStageLabel(job: DeskSheetJob): string {
   if (!job) return 'no sheet yet';
+  const rv = revisingOf(job);
   switch (job.status) {
-    case 'queued': return 'queued';
+    case 'queued': return rv ? `revision ${rv.round} queued` : 'queued';
     case 'claimed': return `${(job.stage || 'drafting').trim()}…`;
     case 'done': {
       const { noSheet, reason } = noSheetOf(job);
@@ -280,15 +314,18 @@ export function defaultLane(counts: Partial<Record<DeskLane, number>>): DeskLane
  * OLDEST first, so the paper that has waited longest is the first thing seen;
  * Released is a history and stays newest first. Ties keep their given order.
  */
-export function orderLane<T extends { createdAt: string; releasedAt?: string | null }>(rows: T[], lane: DeskLane): T[] {
+export function orderLane<T extends { createdAt: string; releasedAt?: string | null; revising?: Revising | null }>(rows: T[], lane: DeskLane): T[] {
+  // A paper whose sheet is being revised sits at the TOP of its lane while the
+  // revision runs (Adrian, 10 Sep 2026: "so i have an idea of what's going on at
+  // a glance") and drops back into date order the moment the sheet is filed.
   // Every lane orders by the date and time the paper was MARKED (Adrian,
   // 9 Sep 2026: "we should order by the date and time the paper was marked").
   // Work lanes and the automatic lane run oldest first — the paper that has
   // waited longest is the first thing seen; Completed is a history, newest first.
   const dir = lane === 'released' ? -1 : 1;
   return rows
-    .map((r, i) => ({ r, i, t: Date.parse(r.createdAt) || 0 }))
-    .sort((a, b) => (a.t - b.t) * dir || a.i - b.i)
+    .map((r, i) => ({ r, i, t: Date.parse(r.createdAt) || 0, pin: r.revising ? 0 : 1 }))
+    .sort((a, b) => a.pin - b.pin || (a.t - b.t) * dir || a.i - b.i)
     .map(x => x.r);
 }
 

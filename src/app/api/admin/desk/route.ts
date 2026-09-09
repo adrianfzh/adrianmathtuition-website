@@ -26,7 +26,7 @@ import { pendingCount, recomputeTotals } from '@/lib/mark-triage';
 import { dropboxWebUrl, paperFolder } from '@/lib/paper-folder';
 import {
   DESK_LANES, amendedStatusFor, defaultLane, deskFlags, laneFor, latestLiveJob,
-  noSheetOf, pdfStaleOf, sheetStageLabel, type AmendedStatus, type DeskLane, isPracticeAgainHandin, handinOriginOf,
+  noSheetOf, pdfStaleOf, sheetStageLabel, revisingOf, type AmendedStatus, type DeskLane, isPracticeAgainHandin, handinOriginOf,
 } from '@/lib/desk-state';
 
 export const runtime = 'nodejs';
@@ -170,6 +170,9 @@ export async function GET(req: NextRequest) {
       releasedAt: r.released_at,
       releasedVia: r.released_via,
       pdfStale: pdfStaleOf(r),
+      // ✏️ A revision in flight pins the row to the top of its lane (orderLane) and
+      // pulls a released paper back to the to-do tab (laneFor) — 10 Sep 2026.
+      revising: revisingOf(job),
       sheet: job ? {
         jobId: job.id, status: job.status, stage: job.stage, error: job.error,
         label: sheetStageLabel(job), completedAt: job.completed_at,

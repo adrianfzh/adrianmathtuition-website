@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   laneFor, sheetStageLabel, isPracticeAgainHandin, releasedViaLabel, handinOriginOf, approveBlockers, releaseBlockers, deskFlags, defaultLane,
-  amendedStatusFor, latestLiveJob, noSheetOf, pdfStaleOf, DESK_LANES, LANE_LABEL, orderLane,
+  amendedStatusFor, latestLiveJob, noSheetOf, pdfStaleOf, DESK_LANES, LANE_LABEL, orderLane, revisingOf, revisingLabel,
 } from './desk-state';
 
 const tagged = { student_id: 'recStudent', released_at: null, annotated_pdf_url: null, result_json: { results: [] } };
@@ -297,5 +297,56 @@ describe('releasedViaLabel — the chip in Adrian\'s words (9 Sep 2026)', () => 
     expect(releasedViaLabel('telegram')).toBe('by you · Telegram sent');
     expect(releasedViaLabel('none')).toBe('by you · not told — no Telegram linked');
     expect(releasedViaLabel(null)).toBe('');
+  });
+});
+
+describe('a sheet being revised comes back to "Still to deal with" (Adrian, 10 Sep 2026)', () => {
+  const released = { student_id: 'recX', released_at: '2026-09-08T10:00:00Z', released_via: 'auto:portal', checked_at: '2026-09-08T12:00:00Z' };
+  const revise = (status: string, round = 2) => ({ status, stage: `revise ${round} (Adrian): fix 3(b)`, result: { revise: { round, instructions: 'fix 3(b)' } } });
+  it('the first tab is named in his words', () => {
+    expect(LANE_LABEL.auto).toBe('Still to deal with');
+  });
+  it('a released, looked-at paper whose sheet is queued, running or failed for a revision is pulled back', () => {
+    expect(laneFor(released, revise('queued'))).toBe('auto');
+    expect(laneFor(released, revise('claimed'))).toBe('auto');
+    expect(laneFor(released, revise('failed'))).toBe('auto');
+  });
+  it('once the revised sheet is filed the paper goes back to where it was', () => {
+    expect(laneFor(released, revise('done'))).toBe('released');
+    expect(laneFor({ ...released, checked_at: null }, revise('done'))).toBe('auto');   // the ordinary not-yet-looked-at rule still decides
+  });
+  it('a fresh sheet the student asked for is not a revision — a released paper stays put', () => {
+    expect(laneFor(released, { status: 'queued', stage: null, result: null })).toBe('released');
+    expect(laneFor(released, { status: 'claimed', stage: 'drafting', result: { requested_by: 'student' } })).toBe('released');
+  });
+  it('an unreleased paper being revised keeps its ordinary lane', () => {
+    expect(laneFor(tagged, revise('queued'))).toBe('awaiting-sheet');
+    expect(laneFor(tagged, revise('done'))).toBe('ready');
+  });
+  it('revisingOf reads the round and the state, and is null once filed', () => {
+    expect(revisingOf(revise('queued', 3))).toEqual({ state: 'queued', round: 3 });
+    expect(revisingOf(revise('claimed'))).toEqual({ state: 'running', round: 2 });
+    expect(revisingOf(revise('failed'))).toEqual({ state: 'failed', round: 2 });
+    expect(revisingOf(revise('done'))).toBeNull();
+    expect(revisingOf({ status: 'queued', result: null })).toBeNull();
+    expect(revisingOf(null)).toBeNull();
+    expect(revisingOf({ status: 'queued', result: { revise: { round: 'x' } } })).toEqual({ state: 'queued', round: 1 });
+  });
+  it('the chip says what is happening', () => {
+    expect(revisingLabel({ state: 'queued', round: 2 })).toBe('✏️ sheet being revised (round 2) · waiting for the Mac');
+    expect(revisingLabel({ state: 'running', round: 2 })).toBe('✏️ sheet being revised (round 2)');
+    expect(revisingLabel({ state: 'failed', round: 2 })).toBe('✏️ revision 2 failed');
+    expect(sheetStageLabel(revise('queued', 2))).toBe('revision 2 queued');
+    expect(sheetStageLabel({ status: 'queued', result: null })).toBe('queued');
+  });
+  it('orderLane pins a paper being revised at the top of its lane, the rest in their usual order', () => {
+    const rows = [
+      { id: 'c', createdAt: '2026-09-07T01:36:00Z', revising: null },
+      { id: 'a', createdAt: '2026-09-03T01:35:00Z' },
+      { id: 'r', createdAt: '2026-09-05T00:00:00Z', revising: { state: 'queued' as const, round: 2 } },
+      { id: 'b', createdAt: '2026-09-06T00:42:00Z' },
+    ];
+    expect(orderLane(rows, 'auto').map(r => r.id)).toEqual(['r', 'a', 'b', 'c']);
+    expect(orderLane(rows, 'released').map(r => r.id)).toEqual(['r', 'c', 'b', 'a']);
   });
 });

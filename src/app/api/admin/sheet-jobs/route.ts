@@ -626,7 +626,7 @@ async function sendSheetFiles(job: Pick<SheetJob, 'student_name' | 'paper_name'>
   const tag = job.paper_name ? ` (${job.paper_name})` : '';
   if (result.pdf_path) {
     try {
-      await sendTelegramDocument({ url: await getTemporaryLink(result.pdf_path) }, `📘 ${who} — the sheet, PDF${tag}`);
+      await sendTelegramDocument({ url: await getTemporaryLink(result.pdf_path) }, `📘 ${who} — the sheet, PDF${tag}`, 'marking');
     } catch (e) { console.warn('[sheet-jobs] pdf to telegram failed:', (e as Error).message); }
   }
   try {
@@ -635,6 +635,7 @@ async function sendSheetFiles(job: Pick<SheetJob, 'student_name' | 'paper_name'>
     await sendTelegramDocument(
       { bytes, filename, contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
       `📝 ${who} — the editable DOCX${tag}`,
+      'marking',
     );
   } catch (e) { console.warn('[sheet-jobs] docx to telegram failed:', (e as Error).message); }
 }

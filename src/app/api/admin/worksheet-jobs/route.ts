@@ -171,7 +171,7 @@ export async function POST(req: NextRequest) {
 async function sendFiles(job: WorksheetJob, result: WorksheetResult): Promise<void> {
   if (result.pdf_path) {
     try {
-      await sendTelegramDocument({ url: await getTemporaryLink(result.pdf_path) }, `🛠 ${job.label} — PDF`);
+      await sendTelegramDocument({ url: await getTemporaryLink(result.pdf_path) }, `🛠 ${job.label} — PDF`, 'marking');
     } catch (e) { console.warn('[worksheet-jobs] pdf to telegram failed:', (e as Error).message); }
   }
   try {
@@ -180,6 +180,7 @@ async function sendFiles(job: WorksheetJob, result: WorksheetResult): Promise<vo
     await sendTelegramDocument(
       { bytes, filename: name, contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
       `🛠 ${job.label} — DOCX (edit this one)`,
+      'marking',
     );
   } catch (e) { console.warn('[worksheet-jobs] docx to telegram failed:', (e as Error).message); }
 }

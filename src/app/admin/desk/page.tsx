@@ -31,7 +31,7 @@ import SubjectChip from '@/components/SubjectChip';
 import GroundingChip from '@/components/GroundingChip';
 import RulesTag from '@/components/RulesTag';
 import { mathHtml } from '@/lib/math-inline';
-import { DESK_LANES, LANES_HIDDEN_AT_ZERO, releasedViaLabel, LANE_LABEL, orderLane, HANDIN_ORIGIN_LABEL, type DeskLane, type HandinOrigin } from '@/lib/desk-state';
+import { DESK_LANES, LANES_HIDDEN_AT_ZERO, releasedViaLabel, LANE_LABEL, orderLane, HANDIN_ORIGIN_LABEL, type DeskLane, type HandinOrigin, revisingLabel, type Revising } from '@/lib/desk-state';
 import { ERROR_KINDS, ERROR_KIND_HINT, isErrorKind } from '@/lib/error-kinds';
 import { PAPER_SUBJECTS, subjectPill } from '@/lib/portal-subjects';
 // The pen, in place (desk round 3, 8 Sep 2026): the same overlay mark-paper uses.
@@ -50,6 +50,8 @@ type Row = {
   studentId: string | null; studentName: string | null;
   awarded: number; max: number; pct: number | null; questions: number; pending: number;
   lane: DeskLane; releasedAt: string | null; releasedVia: string | null; pdfStale: boolean;
+  /** The sheet is back with the worker for a revision — pinned at the top of its lane, and back on the to-do tab if released. */
+  revising?: Revising | null;
   sheet: { jobId: string; status: string; stage: string | null; error: string | null; label: string; completedAt: string | null; requestedBy?: string | null } | null;
   flags: string[]; amended: string | null; assignments: number; assignmentsHeld?: number; practiceAgain?: boolean; origin?: HandinOrigin;
   folder: string; folderUrl: string;
@@ -76,6 +78,7 @@ type Detail = {
     allocationAudit: { at: string | null; added: { q: string; part: string; marks: number }[]; maxDiffs: { q: string; part: string; marked: number; recorded: number }[]; countedBefore: number | null; countedAfter: number | null } | null;
   };
   lane: DeskLane;
+  revising?: Revising | null;
   pending: number;
   overrides: { against: number; forStudent: number; reviewed: number };
   totalWarning: string | null;
@@ -276,7 +279,7 @@ const LANE_HINT: Record<DeskLane, string> = {
   untagged: 'A paper with no student reaches nobody — tag it so it reaches them.',
   'awaiting-sheet': 'Marked, and nobody has asked for a sheet. Vet the marking; Approve & release sends the paper on its own. A sheet you queue here and release is compulsory — the app reminds the student until it is handed in. Students can ask for their own from the app once the paper is out; those go out by themselves once they clear the gate.',
   ready: 'Script and sheet are both here. Open one, agree or override every question, read the sheet, then Approve & release.',
-  auto: 'Went to the student on its own after clearing the accuracy gates. Look it over if you want: Agree or Override still work here (an override re-issues their copy), ✓ Looked at moves it to Completed. Anything you leave files itself under Completed after 7 days.',
+  auto: 'Released by the system and not yet looked at — or a sheet being revised. Look it over if you want: Agree or Override still work here (an override re-issues their copy), ✓ Looked at moves it to Completed; anything you leave files itself under Completed after 7 days. A paper whose sheet is being revised sits at the top until the revised sheet is filed, then goes back to where it was.',
   released: 'With the student. Read-only — the folder link is the record.',
 };
 
@@ -935,7 +938,8 @@ export default function DeskPage() {
                     {row.lane === 'released' && row.releasedAt && <span>released {fmtDate(row.releasedAt)}{row.assignments ? ' + sheet' : ''}</span>}
                     {row.pending > 0 && <span style={{ color: C.flag, fontWeight: 600 }}>⏳ {row.pending} to check</span>}
                     {row.flags.map(f => <span key={f} style={{ color: C.flag, fontWeight: 600 }}>⚠ {f}</span>)}
-                    {row.lane === 'auto' && (
+                    {row.revising && <Chip label={revisingLabel(row.revising)} bg="#fdf2f8" color="#9d174d" title="The sheet went back to the worker. This paper sits here, at the top, until the revised sheet is filed — then it goes back to where it was." />}
+                    {row.lane === 'auto' && !row.revising && (
                       <button onClick={e => { e.stopPropagation(); markCheckedRow(row.id); }} disabled={busy === 'checked'}
                         title="Marks this paper as looked at — it moves to Completed. Nothing about the sheet changes."
                         style={{ border: '1px solid #67e8f9', background: '#ecfeff', color: '#0e7490', borderRadius: 8, padding: '1px 8px', fontSize: 12, cursor: 'pointer' }}>
@@ -1110,6 +1114,7 @@ function DetailView(p: {
             </div>
             <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
               <Chip label={LANE_LABEL[d.lane]} bg={tone.bg} color={tone.fg} />
+              {d.revising && <Chip label={revisingLabel(d.revising)} bg="#fdf2f8" color="#9d174d" title="The sheet went back to the worker. The paper stays on the to-do tab until the revised sheet is filed, then goes back to where it was." />}
               {d.pending > 0
                 ? <Chip label={`⏳ ${d.pending} to check`} bg={C.flagBg} color={C.flag} />
                 : <Chip label="✓ nothing left to check" bg={C.okBg} color={C.ok} title="No question is waiting on you — the marker flagged none, or you have answered every flag. Any question can still be overridden below." />}
@@ -1130,7 +1135,7 @@ function DetailView(p: {
                 return <Chip label={label} bg={held > 0 && live === 0 ? C.flagBg : C.okBg} color={held > 0 && live === 0 ? C.flag : C.ok} />;
               })()}
               {released && <Chip label={`released ${fmtWhen(run.releasedAt!)}${run.releasedVia ? ` · ${releasedViaLabel(run.releasedVia)}` : ''}`} />}
-              {d.lane === 'auto' && (
+              {d.lane === 'auto' && !d.revising && (
                 <button onClick={p.onChecked} disabled={busy === 'checked'}
                   title="Released by the system without your vetting. Marks it as looked at — it leaves this lane; Agree/Override still work here and re-issue the student's copy."
                   style={{ border: '1px solid #67e8f9', background: '#ecfeff', color: '#0e7490', borderRadius: 8, padding: '3px 10px', fontSize: 12.5, cursor: 'pointer' }}>

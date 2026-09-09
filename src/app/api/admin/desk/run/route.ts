@@ -23,7 +23,7 @@ import {
 import { readDiagnosis } from '@/lib/sheet-diagnosis';
 import { MARKED_AI_NAME, dropboxWebUrl, isSheetPdf, paperFolder } from '@/lib/paper-folder';
 import {
-  amendedStatusFor, approveBlockers, deskFlags, laneFor, latestLiveJob, noSheetOf, pdfStaleOf,
+  amendedStatusFor, approveBlockers, deskFlags, laneFor, latestLiveJob, noSheetOf, pdfStaleOf, revisingOf,
   releaseBlockers, sheetStageLabel, isPracticeAgainHandin, handinOriginOf,
 } from '@/lib/desk-state';
 
@@ -261,6 +261,7 @@ export async function GET(req: NextRequest) {
       })(),
     },
     lane,
+    revising: revisingOf(job),
     pending,
     overrides: overrideTally(rj),
     totalWarning: paperTotalsMismatch(rj, run.total_awarded) ?? paperTotalWarning(run.total_max),
