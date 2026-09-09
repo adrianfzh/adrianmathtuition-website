@@ -123,9 +123,12 @@ python3 -c "import zipfile,re,sys; t=re.sub(r'<[^>]+>',' ',zipfile.ZipFile(sys.a
       them survive" went out on a sheet three days after Adrian banned *survives*):
       no *survive*, *hands you*, *buys you*, *for free*, *heavy lifting*, *nail
       down*, *unlock*, *the trick is*, *kills*, *gets rid of*, *knocks out*, *left
-      standing*, *clears it*. Say what the value is and what it gives, and after a
-      substitution name the unknown: "Both values of u are positive, so each gives
-      a value of x" — not "both roots survive".
+      standing*, *clears it*. Say what the value is and what it gives. After a
+      substitution say nothing about the roots at all — state the substitution
+      ("Let u = 2ˣ, so 4ˣ = u²") and let the working show what each value of u
+      gives; remark only on a value that is rejected, and why (Adrian, 10 Sep
+      2026: "just don't mention it. say the substitution, students can
+      understand by working").
     - **No maths typed as text** (9 Sep 2026 — Alessi's `[No term in 1/x]` tag
       was a plain-text run): zero hits from
 
@@ -275,7 +278,18 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
    to it on THIS paper, `questions` = where it showed (`"Q11(a)"`, `"Q20"`),
    `why` = one sentence a student can check against their script (TeX allowed),
    `tier` = `teach` (① Example → Practice), `show` (② the one-line slips — no
-   practice), or `optional` (③ the Optional section). The site stores it on the
+   practice), or `optional` (③ the Optional section). **A slip inside a right
+   method is `show`, never `teach`, whatever it cost** (Adrian, 10 Sep 2026,
+   Isabelle's AM 2024 P1: her Q8(b) lost 3 marks to a V copied wrongly from the
+   printed question and the sheet opened by teaching the stationary-point
+   method she already had). The marker's part-level `error_kind` decides: a
+   part filed `arithmetic` / `transfer` / `sign` / `rounding` / `units` /
+   `careless` — or a `misread` whose summary says *copied wrongly* — with no
+   marker `gap` earns no ① section. The site checks this against the run: a
+   `teach` entry whose every lost part is such a slip is demoted to `show` on
+   the cover (`slipOnly:true`) and Adrian is pinged. Order ① by marks lost,
+   then severity (gap / `concept` > `misread` > `incomplete`); the cover keeps
+   the marks-lost magnitude on its own row. The site stores it on the
    run and rebuilds both marked PDFs so the cover is drawn from it; without it
    the cover falls back to a keyword pass over the marker's notes and can rank
    things differently from your sheet. A malformed `diagnosis` is skipped, never

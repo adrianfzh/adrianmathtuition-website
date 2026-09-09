@@ -58,6 +58,7 @@ select r->>'question_number' as q,
        (select jsonb_agg(jsonb_build_object(
           'label', p->>'label', 'aw', p->'awarded', 'mx', p->'max',
           'na', p->'not_attempted', 'err', p->>'error_summary',
+          'err_kind', p->>'error_kind', 'gap', p->>'gap',
           'note', p->>'study_note', 'sl', p->'second_look'))
         from jsonb_array_elements(r->'marking'->'parts') p) as parts
 from paper_marking_runs, jsonb_array_elements(result_json->'results') r
@@ -192,6 +193,28 @@ and one line went wrong. Point at the line, say what happened in a sentence, and
 move on. **No practice question.** A slip is not a skill.
 *Dividing (−56 + 14√2) by −14 and flipping only the first sign. Dividing by an
 extra 60 when the rate was already per second. −48 ÷ 8 written as +6.*
+
+**② is decided by the marker's `error_kind`, and it is never ① — however much it
+cost** (Adrian, 10 Sep 2026, Isabelle's AM 2024 P1: the sheet opened with *"Using
+dy/dx = 0, then d²y/dx² to test a stationary point"* — but her Q8(b) was wrong
+because she **copied the printed V wrongly**; the method, working and idea were
+all fine. *"there is no need to practice again for arithmetic errors, transfer
+errors, rounding off errors, copy wrongly (or errors like that) if
+method/approach of doing question is correct … practice again sheet focuses on
+wrong approach/method/concepts"*). So:
+
+- A lost part whose `err_kind` is in the careless bucket — `arithmetic`,
+  `transfer`, `sign`, `rounding`, `units`, `careless` — is ② **even when it is
+  the biggest loss on the paper**. A `misread` whose `err` says the question
+  was *copied wrongly* is a copy slip (= `transfer`), not a misreading.
+- A skill whose every lost part is careless-bucket **with no marker `gap`** does
+  not get a ① section. Write the one-line ② instead. If you file it as `teach`
+  anyway, the site demotes it to `show` on the cover and pings Adrian.
+- The **analysis page (cover) keeps the magnitude**: MARKS LOST still shows the
+  six marks that went to slips. Only the practice is withheld.
+- ① is ordered by **marks lost, then severity** — a named gap or a `concept`
+  outranks a `misread`, which outranks `incomplete`. That order is yours to set
+  in the sheet; the cover follows the sheet's order.
 
 **③ Optional practice — borderline, worth awareness.** Real but slight; the
 student should know it exists and may drill it if they have time. Put these in a
@@ -489,12 +512,17 @@ anything older in this file:
   solution note read "Here both roots are positive, so both of them survive."
   Adrian: "sounds weird (what does it mean both roots? and survive?)". Two
   faults in one line: after a substitution, "root" is ambiguous (the quadratic
-  in u has roots; the equation in x has solutions) — **name the unknown**; and
-  *survive* is the personification the line above bans. Write: "Both values of
-  u are positive, so each gives a value of x: 2ˣ = u₁ or 2ˣ = u₂." The worker's
-  pre-file sweep (`WORKER_PROMPT.md` §3b) now refuses to file with *survive*
-  or any of the banned figures of speech in the text — the rule was in this
-  file alone and the worker did not see it.
+  in u has roots; the equation in x has solutions), and *survive* is the
+  personification the line above bans. **Say nothing about the roots at all.**
+  Adrian, later the same day, on the offered rewrite ("Both values of u are
+  positive, so each gives a value of x"): "just don't mention it. say the
+  substitution, students can understand by working". So the note states the
+  substitution — "Let u = 2ˣ, so 4ˣ = u²" — and the working shows what each
+  value of u gives; a remark is only for a value that is REJECTED, and why
+  (2ˣ = −1 has no solution since 2ˣ > 0). The worker's pre-file sweep
+  (`WORKER_PROMPT.md` §3b) refuses to file with *survive* or any of the banned
+  figures of speech in the text — the rule was in this file alone and the
+  worker did not see it.
 - **A Common Error is a concrete wrong MOVE, or nothing.** Adrian, 7 Sep 2026,
   on "Common Error: b² − 4ac counts the roots of the quadratic in eˣ. It says
   nothing about how many of them survive as values of x": "Is that necessary?
@@ -843,8 +871,19 @@ the gap is the interesting half: it says what the bank is missing.
     paragraph must be the last line of teaching. Two of Klaire's six boxes ended
     on an empty paragraph, and five of Kiara's ten.
 
-  Check both before filing: the last paragraph of every table cell must have
-  text, and no table may be preceded by an empty paragraph.
+  - **Between the parts** — an 8 pt gap, as space ABOVE each later part's first
+    line in both cells (`solution_box(part_gap=…)`, `worksheet_lib.PART_GAP_PT`),
+    never an empty paragraph. Adrian, 10 Sep 2026, on Alessi's Example 4a where
+    (a)(b)(c) touched: "leave a line space between each subpart (or at least a
+    small space - need not be a full line space - you can adjust to fit the
+    space as required)". The library used to write a blank paragraph there —
+    exactly the trailing empty paragraph the bullet above strips — so no filed
+    sheet ever had the gap. Spacing survives every sweep; `repair-sheet.py`
+    step 2c writes it into sheets already filed.
+
+  Check all three before filing: the last paragraph of every table cell must
+  have text, no table may be preceded by an empty paragraph, and every row of a
+  labelled box after the first carries the gap.
 - **A geometry or area question gets a diagram — EXAMPLES AND PRACTICE ALIKE.**
   If the skill is about a shape, a region, or coordinates, the student must be
   able to SEE it: draw it per DIAGRAMS.md and view the PNG before embedding.

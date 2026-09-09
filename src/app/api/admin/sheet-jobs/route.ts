@@ -73,11 +73,13 @@ export const maxDuration = 300;
  * write of the JSON, the same way `queue` and `practice` are stored on it.
  * Returns false (never throws) when the row could not be updated.
  */
-async function storeDiagnosis(runId: string, diagnosis: Diagnosis): Promise<boolean> {
+async function storeDiagnosis(runId: string, diagnosis: Diagnosis, known?: unknown): Promise<boolean> {
   try {
     const sb = getSupabaseAdmin();
-    const { data: run } = await sb.from('paper_marking_runs')
-      .select('result_json').eq('id', runId).maybeSingle<{ result_json: unknown }>();
+    // `known` = the run's result_json the caller already fetched (the focus gate
+    // reads it first); otherwise read it here.
+    const run = known !== undefined ? { result_json: known }
+      : (await sb.from('paper_marking_runs').select('result_json').eq('id', runId).maybeSingle<{ result_json: unknown }>()).data;
     if (!run) return false;
     const rj = (run.result_json && typeof run.result_json === 'object') ? run.result_json as Record<string, unknown> : {};
     const { error } = await sb.from('paper_marking_runs')
@@ -490,12 +492,26 @@ export async function POST(req: NextRequest) {
     let rebuild: RebuildOutcome = { rebuilt: false, skipped: 'no diagnosis in the payload' };
     const rawDiagnosis = (body.result as { diagnosis?: unknown } | null | undefined)?.diagnosis;
     if (rawDiagnosis !== undefined) {
-      const diagnosis = normaliseDiagnosis(rawDiagnosis, { sheetJobId: job.id });
+      // The marker's part-level kinds gate what the cover leads with (Adrian,
+      // 10 Sep 2026, Isabelle's AM 2024 P1: the sheet opened on a stationary-
+      // point method she already had — the marks went to a V copied wrongly).
+      // applyPracticeFocus reads them off the run, so fetch it once here and
+      // hand the same blob to the store.
+      const { data: runRow } = await sb.from('paper_marking_runs')
+        .select('result_json').eq('id', job.run_id).maybeSingle<{ result_json: unknown }>();
+      const diagnosis = normaliseDiagnosis(rawDiagnosis, { sheetJobId: job.id, resultJson: runRow?.result_json });
       if (!diagnosis) {
         console.warn('[sheet-jobs] diagnosis ignored — malformed', job.id, JSON.stringify(rawDiagnosis).slice(0, 300));
         rebuild = { rebuilt: false, skipped: 'diagnosis malformed — ignored' };
       } else {
-        diagnosisStored = await storeDiagnosis(job.run_id, diagnosis);
+        diagnosisStored = await storeDiagnosis(job.run_id, diagnosis, runRow?.result_json);
+        // A ① section the gate demoted: the sheet still teaches it, the cover
+        // does not lead with it — tell Adrian, so he can ✏️ Revise if he agrees.
+        const demoted = diagnosis.skills.filter(s => s.slipOnly);
+        if (demoted.length) {
+          const what = demoted.map(s => `${s.title}${s.questions.length ? ` (${s.questions.join(', ')})` : ''}`).join('; ');
+          notify_marking(`⚠️ ${who} — the sheet teaches a slip: ${what}. The marker's kinds say the method was right there (arithmetic / copied wrongly / sign / rounding), so the cover leads with the next skill. The sheet still has the section — ✏️ Revise it if you agree.`).catch(() => {});
+        }
         if (!diagnosisStored) {
           rebuild = { rebuilt: false, skipped: 'diagnosis not stored' };
         } else {

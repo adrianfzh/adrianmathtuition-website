@@ -728,11 +728,11 @@ they are, reachable from its "Other views" row. Nothing is deleted.
 - **Four lanes, DERIVED, never stored** — `lib/desk-state.ts` (pure, tested).
   `laneFor(run, latestLiveJob)`: `released_at` → **Released** (outranks all);
   no `student_id` → **Needs a student**; newest live `sheet_jobs` row `done` →
-  **Ready to vet**; anything else (no job / queued / claimed / failed) → **Marked,
+  **In process** ("Ready to vet" until 10 Sep 2026 — Adrian: "some marked copies (those handed up by students themselves) will automatically be released, should be 'In Process' or something"); anything else (no job / queued / claimed / failed) → **Marked,
   sheet on the way**. "Live" = not `cancelled` (`latestLiveJob`): a cancelled
   re-queue must not hide the finished sheet behind it. Rows with no
   `result_json.results` or with `archived_at` are not on the desk (same rule as
-  triage). Default tab = Ready to vet when non-empty, else the waiting lane.
+  triage). Default tab = In process when non-empty, else the waiting lane.
 - **Approve & release is grey until** (`approveBlockers`, one reason per line
   under the button): untagged · N questions still need review (Agree/Override
   EVERY question here, not only flagged ones) · no `done` sheet (the reason names
@@ -748,7 +748,7 @@ they are, reachable from its "Other views" row. Nothing is deleted.
   result:{noSheet:true, reason}}`: status `done`, `stage:'no sheet needed'`, no
   files, **no diagnosis and no PDF rebuild**, and a calm Telegram (*"📘 No sheet
   for X (paper) — reason. Release the paper on its own from the desk."*). The run
-  is **Ready to vet**, `sheetStageLabel` reads "no sheet needed — <reason>",
+  is **In process**, `sheetStageLabel` reads "no sheet needed — <reason>",
   `approveBlockers` holds nothing, and the desk's button becomes **✅ Approve &
   release (paper only — no sheet needed)** → plain mark-triage `release`
   (`release-with-sheet` takes the same branch, answering `kind:'no-sheet'` instead
@@ -1104,6 +1104,27 @@ with its own accuracy gates (`computeAutoHold`).
 > reuse the vetted Example, named in `result.reused`. Until then no example had ever
 > been reused across students.
 
+> **Slips earn no practice — 10 Sep 2026, Isabelle's AM 2024 P1 (run `9e66d0b4`, held
+> sheet `9c7d3fb2`).** The sheet opened with "Using dy/dx = 0, then d²y/dx² to test a
+> stationary point"; her Q8(b) was wrong because she copied the printed V wrongly — the
+> method was fine. Adrian: *"there is no need to practice again for arithmetic errors,
+> transfer errors, rounding off errors, copy wrongly (or errors like that) if
+> method/approach of doing question is correct … the analysis page should as usual
+> reflect loss of marks by magnitude, but practice again sheet need not include practice
+> for that. practice again sheet focuses on wrong approach/method/concepts."* Three
+> homes: (1) the worker's triage — careless-bucket kinds are ② show, never ①, however
+> large; ① ordered by marks lost then severity (`SKILL.md` §What earns practice,
+> `WORKER_PROMPT.md` §diagnosis; the evidence SQL now selects `error_kind` + `gap`);
+> (2) the deterministic gate `lib/sheet-diagnosis.ts` `applyPracticeFocus` — on `done`
+> (and on every `readDiagnosis`, so old runs read honestly) a `teach` skill whose every
+> lost part carries a careless-bucket kind and no marker `gap` becomes `show` with
+> `slipOnly:true`; the route Telegrams ⚠️ "the sheet teaches a slip" so Adrian can ✏️
+> Revise; `lib/error-kinds.ts` `reconcileKind` reads a `misread` whose sentence says
+> *copied wrongly* as `transfer` (the bot's marker applies the same regex at write
+> time); (3) the cover — MARKS LOST keeps the magnitude, `chooseThemes` already keeps
+> `show` off the top three, and when only slips are left the lead says the method was
+> right and sends the student to the marked lines instead of naming "the one thing".
+
 Adrian, the same afternoon: "when student hands up a paper … should just auto
 mark their paper and released … allow them to request for Practice Again
 worksheets, so only generate when they request. Optionally, i can generate for
@@ -1223,7 +1244,7 @@ revising rows at the top of every lane, and the row + detail show a pink
 the stamp (a student's Practice Again request) does not move the paper. When
 the revised sheet is filed the rule stops matching and the ordinary rules place
 the paper exactly where it was; the three work lanes (Needs a
-student · Marked, no sheet yet · Ready to vet) only ever hold a paper the
+student · Marked, no sheet yet · In process) only ever hold a paper the
 automatic door refused, so the desk hides them at zero
 (`LANES_HIDDEN_AT_ZERO`) and opens on one only when it holds something.
 ✓ Looked at sits on every automatic-lane row as well as inside the paper.

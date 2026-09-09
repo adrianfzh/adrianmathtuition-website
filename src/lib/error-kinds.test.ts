@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   ERROR_KINDS, ERROR_KIND_LABEL, ERROR_KIND_HINT, CARELESS_KINDS, CONCEPT_KINDS,
-  isErrorKind, errorKindTotals, emptyErrorKindTotals, hasLabelledLoss,
+  isErrorKind, errorKindTotals, emptyErrorKindTotals, hasLabelledLoss, reconcileKind,
 } from './error-kinds';
 
 // Shaped like the bot's results[] entries: the marker writes `marking_output`
@@ -111,5 +111,33 @@ describe('errorKindTotals', () => {
 
   it('hasLabelledLoss is true the moment one lost mark carries a kind', () => {
     expect(hasLabelledLoss(errorKindTotals([question([part(3, 1), part(1, 0, 'sign')])]))).toBe(true);
+  });
+});
+
+// Adrian, 10 Sep 2026 — Isabelle's Q8(b): "copied V wrongly" filed as misread.
+describe('reconcileKind — a misread that says "copied wrongly" is a copy slip', () => {
+  it('turns such a misread into transfer and leaves every other reading alone', () => {
+    expect(reconcileKind('misread', 'copied V wrongly from the printed question')).toBe('transfer');
+    expect(reconcileKind('misread', 'Miscopied the coefficient of x³.')).toBe('transfer');
+    expect(reconcileKind('misread', 'a copying error in the first line')).toBe('transfer');
+    expect(reconcileKind('misread', 'transcribed the equation incorrectly')).toBe('transfer');
+    expect(reconcileKind('misread', 'read 150x as 15x and worked the wrong question')).toBe('misread');
+    expect(reconcileKind('misread', 'answered (a) with the values (b) asked for')).toBe('misread');
+    expect(reconcileKind('concept', 'copied wrongly')).toBe('concept');
+    expect(reconcileKind('arithmetic', null)).toBe('arithmetic');
+    expect(reconcileKind('bogus', 'copied wrongly')).toBeNull();
+    expect(reconcileKind(undefined, 'copied wrongly')).toBeNull();
+  });
+
+  it('the cover row files it under careless, so the magnitude is right and the label reads "copied wrongly"', () => {
+    const t = errorKindTotals([question([part(4, 1, 'misread')])]);
+    expect(t.byKind.misread).toBe(3);
+    const copied = { label: '(b)', max: 4, awarded: 1, error_kind: 'misread', error_summary: 'copied V wrongly' };
+    const u = errorKindTotals([question([copied])]);
+    expect(u.byKind.transfer).toBe(3);
+    expect(u.byKind.misread).toBe(0);
+    expect(u.careless).toBe(3);
+    expect(u.concept).toBe(0);
+    expect(u.lostTotal).toBe(3);
   });
 });

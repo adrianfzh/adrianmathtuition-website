@@ -266,6 +266,12 @@ export function frontPageHtml(input: FrontPageInput): string {
   // the pages they hold are right; only the total is not final.
   const lead = overCount(input)
     ? 'The marks add up to more than this paper holds, so this score is being checked — the marked pages are right; the total is not final.'
+    // Only slips reached the cover (every teach skill was demoted, or the sheet
+    // had none): the student's method was right wherever marks went, so there
+    // is no "one thing to learn" — say that, and send them to the marked lines.
+    // The MARKS LOST row still shows the size of it (Adrian, 10 Sep 2026).
+    : top && top.tier === 'show'
+    ? 'Your method was right on every question where you lost marks on this paper — the marks went to slips, not to anything you have to learn. Read the marked lines.'
     : top
     ? `The one thing worth your time is <strong>${esc(top.title.split('—')[0].trim().toLowerCase())}</strong>.
        It cost you ${top.marks} mark${top.marks === 1 ? '' : 's'} on this paper.`

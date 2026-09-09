@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   normaliseDiagnosis, readDiagnosis, themesFromDiagnosis, questionLabel, MAX_SKILLS,
+  lostPartsForFocus, applyPracticeFocus, questionCovers,
   type Diagnosis,
 } from './sheet-diagnosis';
 import { analyse, type LostPart } from './paper-analysis';
@@ -195,5 +196,94 @@ describe('a named gap is never optional', () => {
     expect(d.skills[1].tier).toBe('optional');
     expect(d.skills[1].gap).toBeUndefined();
     expect(themesFromDiagnosis(d)[0].gap).toMatch(/divide by/);
+  });
+});
+
+// Adrian, 10 Sep 2026, Isabelle's AM 2024 P1: the sheet opened by teaching the
+// stationary-point method — but her Q8(b) was wrong because she copied the
+// printed V wrongly; the method was fine. "there is no need to practice again
+// for arithmetic errors, transfer errors, rounding off errors, copy wrongly (or
+// errors like that) if method/approach of doing question is correct … practice
+// again sheet focuses on wrong approach/method/concepts".
+describe('practice focus — a slip inside a right method earns no practice', () => {
+  const part = (label: string, max: number, awarded: number, extra: Record<string, unknown> = {}) =>
+    ({ label, max, awarded, error_summary: awarded < max ? 'lost' : null, ...extra });
+  const q = (question_number: string, parts: unknown[]) => ({ question_number, marking_output: { parts } });
+  // Isabelle's run, in shape: Q8 as two rows (the show-that, then (b)), Q11(c) a concept loss.
+  const ISABELLE = { results: [
+    q('8', [part('(a)', 3, 3)]),
+    q('8', [part('(b)', 4, 1, { error_kind: 'misread', error_summary: 'copied V wrongly from the question as 150x − x³ instead of 150x − x³/2' })]),
+    q('11', [part('(a)', 2, 2), part('(b)', 4, 4), part('(c)', 3, 1, { error_kind: 'concept', error_summary: 'used the wrong angle' })]),
+  ] };
+  const STATIONARY = { title: 'Using dy/dx = 0, Then d²y/dx² To Test A Stationary Point', marks: 3, questions: ['Q8(b)'], why: 'x', tier: 'teach' };
+  const ANGLE = { title: 'Reading The Angle A Bearing Needs', marks: 2, questions: ['Q11(c)'], why: 'x', tier: 'teach' };
+
+  it('lists every lost part with the kind read against its sentence', () => {
+    const parts = lostPartsForFocus(ISABELLE);
+    expect(parts.map(p => [p.question, p.kind, p.lost, p.gap])).toEqual([
+      ['Q8(b)', 'transfer', 3, null],
+      ['Q11(c)', 'concept', 2, null],
+    ]);
+  });
+
+  it('a skill names a whole question or a part', () => {
+    expect(questionCovers('Q8', 'Q8(b)')).toBe(true);
+    expect(questionCovers('Q8(b)', 'Q8(b)(i)')).toBe(true);
+    expect(questionCovers('8b', 'Q8(b)')).toBe(true);
+    expect(questionCovers('Q8', 'Q18(a)')).toBe(false);
+    expect(questionCovers('Q8(a)', 'Q8(b)')).toBe(false);
+  });
+
+  it("demotes Isabelle's stationary-point section to show and flags it; the concept skill leads", () => {
+    const d = normaliseDiagnosis([STATIONARY, ANGLE], { ...CTX, resultJson: ISABELLE })!;
+    expect(d.skills[0].tier).toBe('show');
+    expect(d.skills[0].slipOnly).toBe(true);
+    expect(d.skills[1].tier).toBe('teach');
+    expect(d.skills[1].slipOnly).toBeUndefined();
+    expect(chooseThemes(themesFromDiagnosis(d)).map(t => t.title)).toEqual([ANGLE.title]);
+  });
+
+  it('a skill that names no lost part, or a part the marker left unlabelled, keeps its tier', () => {
+    const d = normaliseDiagnosis([
+      { ...STATIONARY, questions: ['Q3'] },
+      { ...ANGLE, questions: ['Q11(c)'] },
+    ], { ...CTX, resultJson: { results: [q('11', [part('(c)', 3, 1)])] } })!;
+    expect(d.skills.map(s => s.tier)).toEqual(['teach', 'teach']);
+  });
+
+  it('one concept part among the slips keeps the skill; a marker gap on a slip keeps it too', () => {
+    const mixed = { results: [q('8', [
+      part('(a)', 3, 1, { error_kind: 'arithmetic' }),
+      part('(b)', 4, 1, { error_kind: 'concept' }),
+    ])] };
+    expect(normaliseDiagnosis([{ ...STATIONARY, questions: ['Q8'] }], { ...CTX, resultJson: mixed })!.skills[0].tier).toBe('teach');
+    const gapped = { results: [q('8', [part('(b)', 4, 1, { error_kind: 'arithmetic', gap: 'differentiating x³/2' })])] };
+    expect(normaliseDiagnosis([STATIONARY], { ...CTX, resultJson: gapped })!.skills[0].tier).toBe('teach');
+  });
+
+  it("the worker's own skill-level gap does not hold a slip up — the marker's kinds are the evidence", () => {
+    const d = normaliseDiagnosis([{ ...STATIONARY, gap: 'testing the nature of a stationary point' }], { ...CTX, resultJson: ISABELLE })!;
+    expect(d.skills[0].tier).toBe('show');
+    expect(d.skills[0].slipOnly).toBe(true);
+  });
+
+  it('only ever moves a skill down: show and optional are untouched, and no run means no change', () => {
+    const d = normaliseDiagnosis([
+      { ...STATIONARY, tier: 'optional' },
+      { ...ANGLE, tier: 'show' },
+    ], { ...CTX, resultJson: ISABELLE })!;
+    expect(d.skills.map(s => s.tier)).toEqual(['show', 'optional']);
+    expect(normaliseDiagnosis([STATIONARY], CTX)!.skills[0].tier).toBe('teach');
+    expect(applyPracticeFocus([], [])).toEqual([]);
+  });
+
+  it('a diagnosis stored before the gate reads through it, and a stored demotion survives a re-read', () => {
+    const stored = normaliseDiagnosis([STATIONARY, ANGLE], CTX)!;   // written with no run — teach, teach
+    const read = readDiagnosis({ ...ISABELLE, diagnosis: stored })!;
+    expect(read.skills[0].tier).toBe('show');
+    expect(read.skills[0].slipOnly).toBe(true);
+    const again = readDiagnosis({ results: [], diagnosis: read })!;  // no evidence this time — the flag rides
+    expect(again.skills[0].tier).toBe('show');
+    expect(again.skills[0].slipOnly).toBe(true);
   });
 });

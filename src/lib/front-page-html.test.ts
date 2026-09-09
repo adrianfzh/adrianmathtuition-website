@@ -377,3 +377,24 @@ describe('frontPageHtml — a score above the paper total', () => {
     expect(h.match(/\.check-tag\{/g)).toHaveLength(1);
   });
 });
+
+// Adrian, 10 Sep 2026: when every lost mark went to a slip inside a right
+// method there is no "one thing worth your time" — the cover says so and keeps
+// the marks-lost magnitude on its own row.
+describe('a cover with only slips on it', () => {
+  it('leads with "your method was right" instead of naming a theme, and still lists the theme', () => {
+    const slip = theme({ marks: 6, title: 'Differentiating A Cubic', tier: 'show' });
+    const h = frontPageHtml({ ...base, themes: [slip], themesSource: 'sheet' });
+    expect(h).toMatch(/method was right on every question/);
+    expect(h).not.toMatch(/one thing worth your time/);
+    expect(h).toMatch(/Differentiating A Cubic/);
+  });
+
+  it('a teach theme beside the slip still takes the lead', () => {
+    const h = frontPageHtml({ ...base, themes: [
+      theme({ marks: 6, title: 'Differentiating A Cubic', tier: 'show' }),
+      theme({ marks: 2, title: 'Reading The Angle', tier: 'teach', key: 't2' }),
+    ], themesSource: 'sheet' });
+    expect(h).toMatch(/one thing worth your time is <strong>reading the angle/);
+  });
+});

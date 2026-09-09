@@ -120,7 +120,8 @@ export function errorKindTotals(results: unknown): ErrorKindTotals {
       const lost = mx - aw;
       if (lost <= 0) continue;
       t.lostTotal += lost;
-      if (isErrorKind(part.error_kind)) t.byKind[part.error_kind] += lost;
+      const kind = reconcileKind(part.error_kind, part.error_summary);
+      if (kind) t.byKind[kind] += lost;
       else t.unlabelled += lost;
     }
   }
@@ -133,4 +134,23 @@ export function errorKindTotals(results: unknown): ErrorKindTotals {
 /** True when at least one lost mark carries a kind — the cover row's show/hide switch. */
 export function hasLabelledLoss(t: ErrorKindTotals | null | undefined): boolean {
   return !!t && t.lostTotal - t.unlabelled > 0;
+}
+
+/**
+ * A `misread` whose sentence says the printed question was COPIED wrongly is a
+ * copy slip, not a reading of the wrong question (Adrian, 10 Sep 2026 —
+ * Isabelle's AM 2024 P1 Q8(b): the marker wrote "copied V wrongly" and filed it
+ * as `misread`, so the sheet opened by teaching a stationary-point method she
+ * already had). Read the kind against its own summary: such a `misread` comes
+ * back as `transfer` (the careless bucket, "copied wrongly" on the cover); every
+ * other valid kind comes back as it came; anything else is null. The bot's
+ * marker applies the same regex when it writes the part (lib/error-kinds.js);
+ * this is the read-side twin for runs marked before it.
+ */
+export const COPIED_WRONGLY_RE = /\b(copied|copying|copy|miscopied|miscopy|transcribed)\b[^.]{0,60}\b(wrong|wrongly|incorrect|incorrectly)\b|\bmiscop|\bcopy(ing)? (error|slip)\b/i;
+
+export function reconcileKind(kind: unknown, summary: unknown): ErrorKind | null {
+  if (!isErrorKind(kind)) return null;
+  if (kind === 'misread' && typeof summary === 'string' && COPIED_WRONGLY_RE.test(summary)) return 'transfer';
+  return kind;
 }
