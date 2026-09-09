@@ -244,3 +244,111 @@ margins.
   student pages never become test assets).
 - Doctrine checkpoint: Adrian eyeballs the first real marked paper carrying a
   margin diagram before the feature releases anything to a student.
+
+---
+
+## Addendum — `trig_graph`: the graphical-solution figure (10 Sep 2026)
+
+> **Adrian, 10 Sep 2026**, on Isabelle's GCE 2024 A Math P1 Q10: *"because student
+> drew the wrong line on the trigo graph, would be good if can draw the diagram of
+> the trigo graph with the correct line drawn, and also the table that is used to
+> obtain the 2 points to draw the line."*
+
+**BUILT** in the bot's `ai/margin-diagram.js` as a fourteenth kind, `trig_graph`
+(`validateTrigGraph` + `buildTrigGraphSvg`), with `test/margin-diagram-trig-graph.test.js`.
+
+### The question shape
+
+Q10 is the whole family: *sketch y = 4 cos 2x for 0 ≤ x ≤ 2π; hence solve
+4 cos 2x = −(4/π)x graphically.* The method is to draw the line y = −(4/π)x from
+two points off a **two-row table** — (0, 0) and (2π, −8) — and count where it cuts
+the curve (two solutions). One wrong table row is one wrong line is the wrong
+answer, which is exactly what happened. So the figure has to carry the **table**
+as well as the graph: the table is where the marks were actually lost, and a line
+with no working behind it teaches nothing.
+
+### Spec
+
+```json
+{
+  "kind": "trig_graph",
+  "curve": { "fn": "cos", "a": 4, "b": 2, "c": 0, "domain": [0, "2π"] },
+  "line":  { "through": [[0, 0], ["2π", -8]] },
+  "table": true,
+  "expect_solutions": 2,
+  "caption": "$y = -\\frac{4}{\\pi}x$ through $(0,0)$ and $(2\\pi,-8)$ cuts the curve twice"
+}
+```
+
+- **`curve`** is `y = a·fn(bx) + c`. `fn` is `"sin"` or `"cos"`; `a ≠ 0`; `b > 0`;
+  `c` (vertical shift) defaults to 0. `domain` is the interval the question prints.
+- **π-multiples, both ways round.** Every x — the two domain ends and the table's
+  x-values — takes either a plain number or a π string: `"2π"`, `"π/2"`,
+  `"-3π/4"`, `"pi"`, `"\pi"`. A decimal that *is* a π multiple (6.283185…) is
+  snapped back and typeset as `2π`, so the two input forms produce a
+  byte-identical SVG. y-values are plain numbers.
+- **`line`** is the line the student was asked to draw, given as the two rows a
+  table would hold: `through: [[x1,y1],[x2,y2]]` (preferred), or `m`/`c`, in which
+  case the renderer derives the table at the two ends of the domain. At most one
+  line — a `lines` array is refused. `table: false` suppresses the table (on by
+  default whenever there is a line).
+- **`expect_solutions`** is the number of intersections, from the marker's own
+  answer. Optional but strongly preferred.
+
+### What it draws
+
+Axes with an arrowhead and `$x$`/`$y$`/`$O$`; x-ticks in **π multiples**
+(`π/2, π, 3π/2, 2π` for a 2π span — the coarsest step giving ≤ 6 labels, plus both
+domain ends), typeset through `pen-math` so no π glyph depends on a font; y-ticks
+at the curve's own max and min and at each table point's y. The curve is sampled
+at 480 points and clipped to the window; the line is drawn **across the whole
+domain**; the two table points get small filled dots with `(x, y)` labels; every
+intersection gets an **open ring**. Beneath the sketch sits a tight ruled two-column
+`x | y` table with the two rows. Both equation labels — `$y = 4\cos 2x$` and
+`$y = -\frac{4}{\pi}x$` — are **derived from the numbers**, never from a
+model-supplied string, and the gradient prints as a π fraction when it is one
+(rational → m·π → m/π → 3 s.f.). Padding is `fontSize × 0.35` throughout; the
+table sits `0.35 × fontSize` under the sketch, per Adrian's dislike of padding
+around figures.
+
+### Fail-closed checks
+
+The kind refuses (returns `{ok:false, reason}`, and the caller drops the figure)
+when:
+
+| Check | Refusal |
+|---|---|
+| `fn` is `tan` | asymptotes are not drawn yet — a continuous curve through infinity teaches a worse error than the one being marked |
+| `fn` unknown, `a = 0`, `b ≤ 0`, `domain` not `[from, to]`, `from ≥ to` | the curve is not drawable |
+| domain holds > 8 cycles, or < 0.1 of a cycle | a blur, or nothing that reads as a trig curve, at margin size |
+| a `lines` array, or `through` without exactly 2 points | at most one line; the table has exactly two rows |
+| the two table points share an x | they cannot fix a line |
+| a table point lies outside the sketched domain | it cannot be plotted here |
+| `through` **and** `m`/`c` given, and a point is off that line | two claims about the same line disagree and there is no way to tell which is wrong, so **neither** is drawn — this is the Q10 error itself, made by the marker |
+| the line climbs more than 6× the curve's height across the domain | unreadable |
+| `expect_solutions` ≠ the crossings the renderer counts | the model cannot assert the answer |
+| `expect_solutions` given with no line, or not a whole number 0–12 | — |
+| the line **touches** the curve without crossing (a tangency), or comes within a hair of it at a turning point | a sketch cannot settle whether that is one solution or none, and a wrong count is worse than none — `y = 4` against `y = 4 cos 2x` is the whole family of this error |
+
+The crossings themselves are counted here, not claimed: a 4000-sample sign-change
+scan over `g(x) = curve − line`, each root bisected 60 times and de-duplicated.
+Floats with tolerances, like `integral_region` and `right_triangle` — a sine curve
+has no rational life, so the exact-rational route the `graph` family takes (its
+`parseRational` rejects `2π` outright) was never open.
+
+### Trigger
+
+Item **14** of the marker's `DIAGRAM RULES` in `ai/paper-marker.js`
+(`MARK_JSON_SPEC`), with Q10 as the worked example: emit it on a
+graphical-solution question where the student **drew the wrong line**, drew the
+wrong curve, or read off the wrong number of solutions — with the CORRECT line,
+the two table points from the marker's *own* rearrangement of the equation (never
+the student's table), and `expect_solutions` from its own answer. The opening
+count in that block moved from "thirteen kinds" to "fourteen kinds".
+
+### Known gap
+
+`ai/qa-diagram.js`'s `QA_KINDS` allow-list does not include `trig_graph` (it is
+also still missing `venn` from 9 Sep). The kind renders and is verified by its own
+validator either way; it just will not be picked up by that QA sweep until the set
+is extended.
