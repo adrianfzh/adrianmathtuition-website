@@ -236,10 +236,30 @@ way to tell them apart and the whole question's marks slid a row between renders
    `seed`). Hygiene: repeatable on the same image, prompt and model version.
 
 **Measured** (`scripts/pen-dryrun.cjs`, `PEN_DRYRUN_PLACER=rows|line`,
-`PEN_DRYRUN_REPEAT=2` — two draws per path per page, pixels that moved between
-the draws): see the table in the commit `placement (2–4/4)`; the swap page
-(Alexis P1 p7) placed 14/14 markable lines on the right rows in both draws.
-Residual movement is box jitter of a few pixels, not a row swap.
+`PEN_DRYRUN_REPEAT=2` — two draws per path per page; "moved" = pixels that
+differ between the two draws):
+
+| page | rows path: placed / markable | moved (rows) | moved (old ask) |
+|---|---|---|---|
+| Alexis 2023 P1 p7 — the swap page | 14/14 | 0.000 % | 0.629 % |
+| Alexis 2023 P2 p13 — dense two-column | 21/21 | 0.233 % (two different scans) | 0.316 % |
+| Alexis 2023 P1 p8 | 11/11 | 0.008 % | 0.042 % |
+| Denise 2021 P1 p12 | 9/9 | 0.052 % | 0.283 % |
+
+Every mark on p13 was checked on the render: the Answer-line values on the
+printed rule, not the identical line in the working; a line level with another
+in the next column kept; the two identical last lines each with their own ✓.
+What the dense page taught (worker on Opus, 9 Sep 2026): most of the loss was
+the SCAN, not the matching — the model wrote an orphan quote before a key on
+nearly every row, and partway down stopped transcribing and sent boxes alone.
+`parseRows` now reads the reply four ways and keeps the most rows; a scan with
+under 70 % of rows transcribed is re-asked once with the failure named (a new
+seed alone returned the same degraded reply — temperature 0 is deterministic).
+The remaining variance is the scan's row granularity (27 vs 40 rows on one
+page: fractions split or not), which the merge pass absorbs.
+ON by default on the bot since the evening of 9 Sep 2026; `PLACEMENT_ROWS=0`
+turns it off. The old line pass still runs for spreads, sketch pages, and any
+page the rows path cannot place at 60 %+.
 
 **What a re-mark costs now.** One page: the Mac reads that page, every other
 page draws from its stored boxes, no model placement. Override / re-issue / pen
