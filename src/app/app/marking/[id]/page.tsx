@@ -36,7 +36,11 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
   const { data: sheetRows } = await sb.from('portal_assignments')
     .select('id, run_id, status, pdf_url, score, out_of, required_at')
     .eq('airtable_student_id', sid).eq('source', 'practice-again').eq('kind', 'worksheet').eq('source_run_id', id)
-    .neq('status', 'held').neq('status', 'revoked').limit(1);
+    .neq('status', 'held').neq('status', 'revoked')
+    // Newest first (9 Sep 2026): a sheet Adrian queued again replaces the earlier
+    // one — release-with-sheet withdraws the old row, and this picks the new one
+    // even where an old row survived (already handed in or marked).
+    .order('created_at', { ascending: false }).limit(1);
   const sheet = (sheetRows ?? [])[0] as { id: string; run_id: string | null; status: string; pdf_url: string | null; score: number | null; out_of: number | null; required_at: string | null } | undefined;
   // No sheet with the student yet: is one being written, waiting on Adrian, or
   // was there nothing worth practising? Else offer the request button

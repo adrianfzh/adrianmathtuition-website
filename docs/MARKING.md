@@ -1061,6 +1061,18 @@ compulsory, so we should build a mechanism that reminds them it is not done."
   NULL / `'auto'` count as Adrian's). Migration `practice_again_on_request`
   (applied 8 Sep 2026) also added `portal_assignments.required_at`,
   `reminded_at`, `reminder_count`.
+- **A second sheet replaces the first (9 Sep 2026).** Adrian may queue a sheet
+  for a paper any number of times. Its release withdraws the earlier Practice
+  Again rows for that paper the student has NOT handed in (`status: 'revoked'` —
+  hidden from the app and the reminders; `lib/release-with-sheet.ts
+  earlierSheetsToWithdraw`, tested), a submitted or marked sheet keeps its row,
+  and the paper page takes the newest row. **The returned sheet is marked
+  against the copy the student was given**: the bot's `lib/practice-again-attach.js
+  sheetPdfFor` prefers the assignment's own `pdf_url` over the run's
+  `practice_again_archive` (keyed per paper, overwritten by every new sheet), so
+  a hand-in of the old sheet after a new one was filed is read against the old
+  sheet's questions. The archive stays the fallback for Telegram hand-ins that
+  carry no assignment id.
 - **Adrian's door — desk 📘 Queue** (`POST /api/admin/sheet-jobs`). On `done`
   the route keeps the 12-hour clock / held / example-check behaviour; on
   release (`release-with-sheet`, desk tap or the clock) the assignment is

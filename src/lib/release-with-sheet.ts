@@ -126,3 +126,20 @@ export function ambiguityMessage(choice: PdfChoice): string | null {
   }
   return null;
 }
+
+// ── A second sheet for the same paper replaces the first (9 Sep 2026) ────────
+// Adrian can queue a sheet from the desk any number of times. Until now each
+// release ADDED a row: the student's paper page kept whichever row Postgres
+// returned first, the Practice tab listed both, and the reminders nagged for
+// both. Now the release withdraws the earlier Practice Again rows for the same
+// paper that the student has NOT handed in. A sheet already handed in or marked
+// is history — its hand-in and marking hang off it — so it keeps its row and
+// the paper page simply shows the newest.
+export type SheetAssignmentRow = { id: string; status: string };
+
+/** Ids of the earlier Practice Again rows a fresh release supersedes. Pure. */
+export function earlierSheetsToWithdraw(rows: SheetAssignmentRow[], newId: string): string[] {
+  return (rows || [])
+    .filter(r => r && r.id !== newId && (r.status === 'assigned' || r.status === 'held'))
+    .map(r => r.id);
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { choosePdf, stem, sheetFolder, ambiguityMessage, noSheetNote } from './release-with-sheet';
+import { choosePdf, stem, sheetFolder, ambiguityMessage, noSheetNote, earlierSheetsToWithdraw } from './release-with-sheet';
 import { readNoSheet } from './sheet-jobs';
 
 // The paper's folder (lib/paper-folder.ts) — the sheet shares it with the marked copies.
@@ -182,5 +182,22 @@ describe('choosePdf — _versions/ is never the sheet (7 Sep 2026)', () => {
   });
   it('a versioned file is not a candidate even when nothing else is there', () => {
     expect(choosePdf(null, null, [folder[1], folder[2]])).toEqual({ kind: 'none' });
+  });
+});
+
+describe('earlierSheetsToWithdraw — a second sheet replaces the first (9 Sep 2026)', () => {
+  it('withdraws the earlier sheet the student has not handed in', () => {
+    expect(earlierSheetsToWithdraw([{ id: 'old', status: 'assigned' }, { id: 'new', status: 'assigned' }], 'new')).toEqual(['old']);
+  });
+  it('never withdraws the new row itself', () => {
+    expect(earlierSheetsToWithdraw([{ id: 'new', status: 'assigned' }], 'new')).toEqual([]);
+  });
+  it('keeps a sheet already handed in or marked — its hand-in hangs off it', () => {
+    expect(earlierSheetsToWithdraw([
+      { id: 'a', status: 'submitted' }, { id: 'b', status: 'marked' }, { id: 'c', status: 'held' }, { id: 'd', status: 'revoked' },
+    ], 'new')).toEqual(['c']);
+  });
+  it('is empty when the paper had no sheet before', () => {
+    expect(earlierSheetsToWithdraw([], 'new')).toEqual([]);
   });
 });

@@ -28,7 +28,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { listFolder, dropboxConfigured, downloadFile } from '@/lib/dropbox';
 import { putStudentFile, runKey } from '@/lib/student-files';
 import { displayPaperName } from '@/lib/paper-display-name';
-import { choosePdf, sheetFolder, ambiguityMessage, noSheetNote, type SheetFile } from '@/lib/release-with-sheet';
+import { choosePdf, sheetFolder, ambiguityMessage, noSheetNote, earlierSheetsToWithdraw, type SheetFile } from '@/lib/release-with-sheet';
 import { readNoSheet } from '@/lib/sheet-jobs';
 import { attachAmendedFromDropbox } from '@/lib/attach-amended';
 import { releaseHeldPracticeItems } from '@/lib/practice-again-store';
@@ -228,6 +228,26 @@ export async function POST(req: NextRequest) {
   const aData = await aRes.json().catch(() => ({}));
   if (!aRes.ok) return NextResponse.json({ error: `Sheet not sent: ${aData.error || aRes.status}` }, { status: 502 });
 
+  // ── The new sheet replaces the earlier one (9 Sep 2026) ───────────────────
+  // Earlier Practice Again rows for this paper that the student has not handed
+  // in are withdrawn (status 'revoked' hides them from the app and the
+  // reminders); a submitted or marked sheet keeps its row. Fail-soft: a miss
+  // here leaves two cards, never an unsent sheet.
+  let withdrawn = 0;
+  try {
+    const newId = String(aData.assignment?.id ?? '');
+    const supa0 = getSupabaseAdmin();
+    const { data: earlier } = await supa0.from('portal_assignments').select('id, status')
+      .eq('airtable_student_id', r.run.student_id).eq('source', 'practice-again').eq('kind', 'worksheet').eq('source_run_id', runId);
+    const ids = earlierSheetsToWithdraw((earlier ?? []) as { id: string; status: string }[], newId);
+    if (ids.length) {
+      const { error: wErr } = await supa0.from('portal_assignments')
+        .update({ status: 'revoked', revoked_at: new Date().toISOString() }).in('id', ids);
+      if (wErr) console.warn('[release-with-sheet] earlier sheets not withdrawn:', wErr.message);
+      else withdrawn = ids.length;
+    }
+  } catch (e) { console.warn('[release-with-sheet] earlier-sheet withdrawal skipped:', (e as Error).message); }
+
   // ── Archive the sheet into the private store (6 Sep 2026) ────────────────
   // The Dropbox folder is a one-month tray (/api/cron/dropbox-tray deletes it):
   // the PDF that went out and the DOCX Adrian edited are copied into the run's
@@ -275,6 +295,7 @@ export async function POST(req: NextRequest) {
     assignmentId: aData.assignment?.id ?? null,
     practiceItems: heldItems.released,
     alreadyWasReleased: !!r.run.released_at,
+    withdrawn,
     amended,
     required: r.requestedBy !== 'student',
     requestedBy: r.requestedBy,
