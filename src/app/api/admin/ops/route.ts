@@ -19,6 +19,18 @@ export async function GET(req: NextRequest) {
     const latest = await latestJobRuns();
     const stale = new Map(staleJobs(latest, new Date()).map(s => [s.job, s.reason]));
 
+    // The plan lane (9 Sep 2026): when the newest plan-marking / sheet-worker
+    // stamp says a PLAN LIMIT was hit, the board says so — "three papers
+    // waiting" with every slot dying on "You've hit your weekly limit" is not a
+    // queue problem. A later ok=true stamp means the lane is back.
+    const LIMIT = /plan limit|usage limit|weekly limit|rate.?limit/i;
+    const planLane = (['plan-marking', 'sheet-worker'] as const).map(job => {
+      const r = latest.find(x => x.job === job);
+      if (!r || r.ok || !LIMIT.test(String(r.summary || ''))) return null;
+      if (Date.now() - Date.parse(r.ran_at) > 20 * 3600_000) return null;
+      return { job, at: r.ran_at, summary: String(r.summary || '').slice(0, 200) };
+    }).filter((x): x is { job: 'plan-marking' | 'sheet-worker'; at: string; summary: string } => !!x);
+
     const jobs = latest.map(r => ({
       job: r.job,
       ranAt: r.ran_at,
@@ -86,6 +98,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       jobs,
       neverStamped: neverStamped(latest).map(j => ({ job: j, rhythm: JOB_RHYTHMS[j].label })),
+      planLane,
       queue,
       marking,
       generatedAt: new Date().toISOString(),

@@ -193,7 +193,17 @@ The 🌙 queue row on `/admin/ops` names the **machine** holding each paper, fro
 `result_json.queue.external_claim.by`, which the worker builds as
 `mac-plan-$(hostname -s)-$$` (WORKER_PROMPT.md line 41).
 
-**It does not record a Claude account** — but the machine implies one. Every slot
+**Since 9 Sep 2026 the claim records the account too**: run.sh reads it from
+`claude auth status` (for whatever credentials the slot exports) into
+`$MARKER_ACCOUNT`, the runbook's `BY` becomes `mac-plan-<host>-<pid>@<account>`,
+`lib/marking-queue-state.ts claimAccount` reads it back and the queue card shows
+`💻 <machine> · <account>`. A slot that dies on a plan limit stamps
+`plan limit on <account>: <the CLI's own line>` (job `plan-marking` /
+`sheet-worker`, ok=false) and the board shows "⏸ Plan marking lane closed — …"
+above the queue rows (`planLane` in the ops route) until a later ok=true stamp.
+Claims older than that carry no account, and then the paragraph below applies.
+
+**Before 9 Sep 2026 it did not record a Claude account** — but the machine implies one. Every slot
 authenticates `auth=keychain`, i.e. as the CLI's single logged-in account on that
 Mac, so there is one account per machine and the hostname identifies it:
 

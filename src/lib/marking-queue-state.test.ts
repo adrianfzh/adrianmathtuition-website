@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { markingQueueState, finishedBecause, isInFlight, claimMachine, type QueueRunRow } from './marking-queue-state';
+import { markingQueueState, finishedBecause, isInFlight, claimMachine, claimAccount, type QueueRunRow } from './marking-queue-state';
 
 const NOW = Date.parse('2026-09-09T01:10:00+08:00');
 const minsAgo = (m: number) => new Date(NOW - m * 60_000).toISOString();
@@ -117,5 +117,18 @@ describe('finishedBecause', () => {
   });
   it('is null for a paper still in flight', () => {
     expect(finishedBecause(row())).toBeNull();
+  });
+});
+
+
+describe('claimAccount — the Claude account rides the claim id (9 Sep 2026)', () => {
+  it('reads the account after the @ and keeps the machine clean', () => {
+    const by = 'mac-plan-Adrians-MacBook-Pro-72391@adrianmathtuition@gmail.com';
+    expect(claimAccount(by)).toBe('adrianmathtuition@gmail.com');
+    expect(claimMachine(by)).toBe('Adrians-MacBook-Pro');
+  });
+  it('is null on a claim that predates it', () => {
+    expect(claimAccount('mac-plan-Adrians-MacBook-Pro-89778')).toBeNull();
+    expect(claimAccount(null)).toBeNull();
   });
 });

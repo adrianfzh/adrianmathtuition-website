@@ -189,8 +189,14 @@ ELAPSED=$(( $(date +%s) - START_EPOCH ))
 # deliberate — a half-authored sheet should not be retried instantly.
 if [ "$RC" -eq 0 ]; then
   say "END ok (${ELAPSED}s)"
-elif tail -40 "$LOG" | grep -qiE 'usage limit|rate.?limit|quota'; then
+elif tail -40 "$LOG" | grep -qiE 'usage limit|rate.?limit|quota|weekly limit|hit your .*limit'; then
+  # Name the limit and the account so /admin/ops can say "sheet worker closed" (9 Sep 2026).
+  LIMIT_LINE="$(tail -40 "$LOG" | grep -iE 'usage limit|rate.?limit|quota|weekly limit|hit your .*limit' | tail -1 | tr -d '\r' | cut -c1-120)"
+  SHEETS_ACCOUNT="$(claude auth status 2>/dev/null | python3 -c 'import json,sys
+try: print((json.load(sys.stdin).get("email") or "").strip())
+except Exception: print("")' 2>/dev/null || true)"
   say "END rc=$RC (${ELAPSED}s) — looks like a PLAN USAGE LIMIT, not a bug"
+  stamp_fail "plan limit on ${SHEETS_ACCOUNT:-unknown account}: ${LIMIT_LINE:-usage limit}"
 else
   say "END rc=$RC (${ELAPSED}s)"
 fi

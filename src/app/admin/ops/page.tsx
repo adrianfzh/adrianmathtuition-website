@@ -17,10 +17,12 @@ type OpsData = {
   queue: {
     pending: number;
     oldestMinutes: number | null;
-    rows: { id: string; paper: string; student: string | null; waitingMinutes: number; machine: string | null; claimedMinutes: number | null; attempts: number }[];
+    rows: { id: string; paper: string; student: string | null; waitingMinutes: number; machine: string | null; account?: string | null; claimedMinutes: number | null; attempts: number }[];
     stale: { id: string; paper: string; because: 'released' | 'archived' | 'marked' }[];
   };
   marking: { d7: MarkingShare; d30: MarkingShare } | null;
+  /** A plan-billed lane that last reported a PLAN LIMIT (9 Sep 2026) — empty when both lanes are fine. */
+  planLane?: { job: 'plan-marking' | 'sheet-worker'; at: string; summary: string }[];
   generatedAt: string;
 };
 
@@ -130,6 +132,16 @@ export default function OpsPage() {
             <a href="/admin/desk" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">desk →</a>
           </div>
 
+          {/* The plan lane is closed: every slot on that account is exiting on a
+              usage limit, so the papers above will go to the paid API path after
+              the 20-minute stall rule — a limit, not a stuck queue (9 Sep 2026). */}
+          {!!data?.planLane?.length && (
+            <div className="px-4 py-2 border-t border-amber-100 bg-amber-50 text-xs text-amber-800">
+              {data.planLane.map(l => (
+                <div key={l.job}>⏸ {l.job === 'plan-marking' ? 'Plan marking lane' : 'Sheet worker'} closed — {l.summary} <span className="text-amber-600">({new Date(l.at).toLocaleTimeString('en-SG', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Singapore' })})</span></div>
+              ))}
+            </div>
+          )}
           {/* Which papers, not just how many — a count cannot tell you WHICH one
               is stuck (Adrian, 9 Sep 2026: "i don't see any papers queued"). */}
           {!!data?.queue.rows.length && (
@@ -140,7 +152,7 @@ export default function OpsPage() {
                   {r.student && <span className="text-neutral-500">{r.student}</span>}
                   <span className="ml-auto tabular-nums text-neutral-500">{r.waitingMinutes}m</span>
                   {r.machine
-                    ? <span className="text-xs text-neutral-400" title={`claimed ${r.claimedMinutes}m ago`}>💻 {r.machine}</span>
+                    ? <span className="text-xs text-neutral-400" title={`claimed ${r.claimedMinutes}m ago`}>💻 {r.machine}{r.account ? <span className="text-neutral-300"> · {r.account}</span> : null}</span>
                     : <span className="text-xs text-neutral-400">unclaimed</span>}
                   {r.attempts > 1 && <span className="text-xs text-amber-700">attempt {r.attempts}</span>}
                 </li>

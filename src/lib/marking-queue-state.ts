@@ -21,9 +21,11 @@
 // stuck, so `rows` lists them oldest first — the picker's own order — carrying the
 // claim, so a wedged slot is legible.
 //
-// **Who marked it.** `external_claim.by` is `mac-plan-<hostname>-<pid>`; `machine`
-// below is that hostname. It identifies the Mac, NOT the Claude account — the
-// worker does not record one. See docs/OPS.md § plan-marking attribution.
+// **Who marked it.** `external_claim.by` is `mac-plan-<hostname>-<pid>` and, since
+// 9 Sep 2026, `mac-plan-<hostname>-<pid>@<claude account>` — the worker's run.sh
+// reads the account from `claude auth status` and the runbook puts it on the
+// claim. `machine` is the hostname, `account` the email (null on older claims).
+// See docs/OPS.md § plan-marking attribution.
 //
 // Nothing here writes.
 
@@ -51,8 +53,10 @@ export type QueueEntry = {
   paper: string;
   student: string | null;
   waitingMinutes: number;
-  /** The Mac that claimed it, from `mac-plan-<hostname>-<pid>`. Null = unclaimed. */
+  /** The Mac that claimed it, from `mac-plan-<hostname>-<pid>[@account]`. Null = unclaimed. */
   machine: string | null;
+  /** The Claude account the claiming slot spends, when the claim carries it (9 Sep 2026). */
+  account: string | null;
   /** Minutes since the claim was taken, or null when unclaimed. */
   claimedMinutes: number | null;
   attempts: number;
@@ -79,11 +83,20 @@ function name(r: QueueRunRow): string {
 
 /** `mac-plan-Adrians-MacBook-Pro-89778` → `Adrians-MacBook-Pro`. */
 export function claimMachine(by: string | null | undefined): string | null {
-  const s = String(by || '').trim();
+  const s = String(by || '').trim().replace(/@.*$/, '');
   if (!s) return null;
   const m = /^mac-plan-(.+?)-\d+$/.exec(s);
   if (m) return m[1];
   return s.replace(/^mac-plan-/, '') || null;
+}
+
+/** The Claude account after the `@` of a claim id, or null when the claim predates it. */
+export function claimAccount(by: string | null | undefined): string | null {
+  const s = String(by || '').trim();
+  const at = s.indexOf('@');
+  if (at < 0) return null;
+  const acct = s.slice(at + 1).trim();
+  return /^[^@\s]+@[^@\s]+$/.test(acct) ? acct : null;
 }
 
 /** In flight: queued, not failed, and no total yet. */
@@ -120,6 +133,7 @@ export function markingQueueState(rows: QueueRunRow[], now: number = Date.now())
       student: (r.student_name || '').trim() || null,
       waitingMinutes: minsSince(q.queued_at, now) ?? 0,
       machine: claimMachine(claim?.by),
+      account: claimAccount(claim?.by),
       claimedMinutes: minsSince(claim?.since || claim?.at, now),
       attempts: Number(claim?.attempts ?? q.attempts ?? 0),
     };
