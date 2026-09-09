@@ -372,6 +372,14 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   cancels). All of them persist via `phase:'rename'` (bot updates
   `paper_marking_runs.paper_name`, 120-char cap) so the queue's Telegram/Dropbox
   delivery uses the same name Adrian typed.
+- **History list paging vs the 15-s refresh (10 Sep 2026):** the list is paged
+  (`Load 25 more`, `phase:'stats'` with `offset`) and also refreshed every 15 s
+  while a row is in flight. The refresh used to fetch page one and REPLACE the
+  list, so rows Load-more had just added vanished a few seconds later (Adrian:
+  "the loaded items disappear"). Now a refresh passes `limit` = everything on
+  screen (the bot caps it at 100) and `lib/runs-list.ts` `mergeRunsPage` keeps
+  any older row the refresh didn't cover; Load-more appends by id so a run that
+  landed between two loads never repeats. Tested.
 - **⬇ Practice DOCX (2026-08-04):** the practice panel's DOCX button posts
   `phase:'practice-docx'`; the bot renders the list to a house-style Word file
   (pandoc in the Docker image + `assets/worksheet-reference.docx` carrying the

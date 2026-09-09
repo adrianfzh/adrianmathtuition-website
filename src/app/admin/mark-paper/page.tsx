@@ -19,6 +19,7 @@ import StudentPicker from '@/components/StudentPicker';
 // only opens on demand — load it when first rendered, never in the initial bundle.
 import type { LayerMeta } from '@/lib/annotate/layer';
 import { fileHref } from '@/lib/student-files';
+import { RUNS_PAGE, refreshLimit, mergeRunsPage } from '@/lib/runs-list';
 const AnnotateOverlay = dynamic(() => import('@/components/AnnotateOverlay'), { ssr: false });
 
 // ── file helpers ────────────────────────────────────────────────────────────
@@ -377,17 +378,24 @@ export default function MarkPaperPage() {
   // JSON.stringify omits the key (bounds mirror the bot's sanitizeOverride).
   const outOfValue = () => { const n = parseInt(outOf, 10); return Number.isFinite(n) && n >= 1 && n <= 200 ? n : undefined; };
 
+  // How many rows the history list holds right now — a ref, because the 15-s
+  // pollers below call loadStats from a closure taken when their effect ran.
+  const runsLoadedRef = useRef(0);
+  runsLoadedRef.current = recentRuns.length;
   // Lifetime cost metrics + recent runs (for the history list). Re-callable after mark/generate.
   async function loadStats(offset = 0) {
     try {
       if (offset) setRunsLoading(true);
-      const r = await fetch('/api/admin/mark-paper', { method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'stats', offset }) });
+      // A refresh (offset 0) re-fetches EVERYTHING already on screen, not page
+      // one: the pollers used to hand back 25 rows and replace the list with
+      // them, so the rows "Load 25 more" had just added showed for a few seconds
+      // and then vanished (Adrian, 10 Sep 2026). lib/runs-list.ts, tested.
+      const limit = offset ? RUNS_PAGE : refreshLimit(runsLoadedRef.current);
+      const r = await fetch('/api/admin/mark-paper', { method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'stats', offset, limit }) });
       if (!r.ok) return;
       const d = await r.json();
       setStats(d);
-      // offset 0 is a refresh (after marking) and must REPLACE — appending there
-      // would duplicate the newest run every time a paper finishes.
-      setRecentRuns((prev) => (offset ? [...prev, ...(d.runs || [])] : (d.runs || [])));
+      setRecentRuns((prev) => mergeRunsPage(prev, (d.runs || []) as Run[], offset));
       setRunsTotal(Number(d.total) || 0);
       setRunsMore(Boolean(d.hasMore));
     } catch { /* ignore */ } finally { setRunsLoading(false); }
@@ -1969,7 +1977,7 @@ export default function MarkPaperPage() {
                   disabled={runsLoading}
                   style={{ padding: '6px 14px', fontSize: 13, borderRadius: 8, border: '1px solid #d1d5db', background: '#fff', cursor: runsLoading ? 'default' : 'pointer' }}
                 >
-                  {runsLoading ? 'Loading…' : `Load 25 more (${runsTotal - recentRuns.length} left)`}
+                  {runsLoading ? 'Loading…' : `Load ${RUNS_PAGE} more (${Math.max(0, runsTotal - recentRuns.length)} left)`}
                 </button>
               </div>
             )}
