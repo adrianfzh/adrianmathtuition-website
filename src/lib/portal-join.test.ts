@@ -177,3 +177,22 @@ describe('inviteLinkFor', () => {
     expect(validateInviteRef(url.searchParams.get('ref'))).toBe(REF);
   });
 });
+
+describe('an enrolled student at the public door (9 Sep 2026)', async () => {
+  const { pickEnrolledByEmail, matchedStudentMessage, matchedSignupTelegramText } = await import('./portal-join');
+  it('matches exactly one record by email, case- and space-insensitively', () => {
+    const recs = [{ id: 'recA', email: 'Alessi@Example.com ' }, { id: 'recB', email: 'other@example.com' }, { id: 'recC', email: null }];
+    expect(pickEnrolledByEmail(recs, 'alessi@example.com')).toBe('recA');
+    expect(pickEnrolledByEmail(recs, 'nobody@example.com')).toBeNull();
+    expect(pickEnrolledByEmail(recs, '')).toBeNull();
+  });
+  it('refuses to guess between two records on the same email', () => {
+    expect(pickEnrolledByEmail([{ id: 'a', email: 'x@y.z' }, { id: 'b', email: 'X@Y.Z' }], 'x@y.z')).toBeNull();
+  });
+  it('the messages name the student and say what happened', () => {
+    expect(matchedStudentMessage('Alessi Tay')).toMatch(/^Alessi, you're already one of Adrian's students/);
+    expect(matchedStudentMessage(null)).toMatch(/^You're already/);
+    expect(matchedSignupTelegramText('Alessi Tay', 'a@b.c', true)).toContain('invite emailed to a@b.c');
+    expect(matchedSignupTelegramText('Alessi Tay', 'a@b.c', false)).toContain('could not be sent');
+  });
+});

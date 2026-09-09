@@ -23,6 +23,7 @@
 // instance) plus a global stranger-signups-per-hour cap that DOES survive cold
 // starts because it counts rows already in portal_accounts.
 import { NextRequest, NextResponse } from 'next/server';
+import { airtableRequestAll } from '@/lib/airtable';
 import { createServiceClient } from '@/lib/supabase-server';
 import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the students topic (6 Sept 2026; falls back to the DM when unbound).
@@ -30,6 +31,9 @@ const notify_students = (text: string) => sendTelegram(text, 'students');
 import { grantPass, TRIAL_PASS_DAYS, qualifiesToGrantTrials } from '@/lib/portal-passes';
 import {
   buildSelfServeConsentRecord,
+  matchedSignupTelegramText,
+  matchedStudentMessage,
+  pickEnrolledByEmail,
   rateLimitStep,
   selfServeSignupTelegramText,
   trialReference,
@@ -65,6 +69,42 @@ export async function POST(req: NextRequest) {
   if (!v.ok) return NextResponse.json({ error: v.error }, { status: 400 });
 
   const supabase = createServiceClient();
+
+  // ── An enrolled student at the public door (9 Sep 2026) ───────────────────
+  // The email matches exactly one Students record → no stranger account. Their
+  // invite is emailed to that address instead (the activation link is what
+  // binds an account to the record, and only the inbox's owner can use it), or
+  // they are sent to log in when the record already has an account. Fail-open:
+  // an Airtable blip means the ordinary stranger signup, never a blocked one.
+  try {
+    const safeEmail = v.email.replace(/'/g, "\\'");
+    const { records } = await airtableRequestAll('Students', `?filterByFormula=${encodeURIComponent(`LOWER({Student Email})='${safeEmail.toLowerCase()}'`)}&fields[]=Student Name&fields[]=Student Email`);
+    const matchId = pickEnrolledByEmail((records || []).map((r: { id: string; fields?: Record<string, unknown> }) => ({ id: r.id, email: (r.fields?.['Student Email'] as string) || null })), v.email);
+    if (matchId) {
+      const studentName = String(((records || []).find((r: { id: string }) => r.id === matchId) || {}).fields?.['Student Name'] || v.name || 'there');
+      const { data: linked } = await supabase.from('portal_accounts').select('id').eq('airtable_student_id', matchId).maybeSingle();
+      if (linked) {
+        return NextResponse.json({ error: 'You already have an account with Adrian — log in instead. Forgot the password? Use the reset link on the login page.' }, { status: 409 });
+      }
+      const admin = process.env.ADMIN_PASSWORD || '';
+      let sent = false;
+      try {
+        const inv = await fetch(`${req.nextUrl.origin}/api/portal/invite`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${admin}` },
+          body: JSON.stringify({ airtableStudentId: matchId, delivery: 'email' }), signal: AbortSignal.timeout(20_000),
+        });
+        sent = inv.ok;
+        if (!inv.ok) console.warn('[portal-join] matched student, invite email failed:', (await inv.json().catch(() => ({}))).error || inv.status);
+      } catch (e) { console.warn('[portal-join] matched student, invite call failed:', (e as Error).message); }
+      notify_students(matchedSignupTelegramText(studentName, v.email, sent)).catch(() => {});
+      if (!sent) {
+        return NextResponse.json({ error: `We recognised you as one of Adrian's students, but the activation email could not be sent just now — ask Adrian for your invite link.` }, { status: 502 });
+      }
+      return NextResponse.json({ ok: true, matched: true, message: matchedStudentMessage(studentName) });
+    }
+  } catch (e) {
+    console.warn('[portal-join] enrolled-student check skipped:', (e as Error).message);
+  }
 
   // Global hourly cap — counts stranger rows (airtable_student_id = '') so it
   // holds through cold starts. Fail-open on a count error: a Supabase blip

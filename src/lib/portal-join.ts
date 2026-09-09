@@ -167,3 +167,32 @@ export function rateLimitStep(
   fresh.push(now);
   return { allowed: true, hits: fresh };
 }
+
+// ── An enrolled student at the public door (9 Sep 2026) ──────────────────────
+// Adrian: "if a student uses the public page with the same email you have for
+// them in Airtable, recognise them and link the account automatically." The
+// safe form of that is NOT to link on the spot — /join creates the auth user
+// with the email pre-confirmed, so a typed email proves nothing — but to send
+// the student their own invite to that email: the activation link is what
+// binds an account to the record, and only the inbox's owner can use it.
+
+/** The one Students record whose Student Email is this email — or null when none or several. Pure. */
+export function pickEnrolledByEmail(records: Array<{ id: string; email?: string | null }>, email: string): string | null {
+  const want = String(email || '').trim().toLowerCase();
+  if (!want) return null;
+  const hits = (records || []).filter(r => r && String(r.email || '').trim().toLowerCase() === want);
+  return hits.length === 1 ? hits[0].id : null;
+}
+
+/** What the signup page shows a recognised student instead of "account created". */
+export function matchedStudentMessage(firstName: string | null | undefined): string {
+  const who = String(firstName || '').trim().split(/\s+/)[0];
+  return `${who ? `${who}, you` : 'You'}'re already one of Adrian's students — we've emailed your activation link to this address. Open it to set up your account; your marked papers are waiting inside.`;
+}
+
+/** Adrian's Telegram line for that case. */
+export function matchedSignupTelegramText(studentName: string, email: string, sent: boolean): string {
+  return sent
+    ? `🎓 ${studentName} tried the public signup with their Airtable email — invite emailed to ${email}, no stranger account made.`
+    : `⚠️ ${studentName} tried the public signup with their Airtable email but the invite email could not be sent — send them an invite from their profile.`;
+}

@@ -24,6 +24,9 @@ export default function JoinForm({ refId, trial }: { refId: string | null; trial
   const [confirm, setConfirm] = useState('');
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // A recognised enrolled student (the API matched the email to Airtable and
+  // emailed their invite) — the form is replaced by that message.
+  const [matched, setMatched] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -49,6 +52,11 @@ export default function JoinForm({ refId, trial }: { refId: string | null; trial
       setBusy(false);
       return;
     }
+    if (data.matched) {
+      setMatched(String(data.message || 'We know you — check your email for your activation link.'));
+      setBusy(false);
+      return;
+    }
     // Account created — sign in and enter the app. A referred signup starts a
     // 3-day trial pass and lands straight inside the portal; without one, the
     // /app layout gate sends the new account on to /app/pass for the 30-day
@@ -58,6 +66,16 @@ export default function JoinForm({ refId, trial }: { refId: string | null; trial
   }
 
   const input = 'w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy/30';
+
+  if (matched) {
+    return (
+      <div className="bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-6">
+        <h2 className="text-base font-bold text-navy mb-3">We know you 👋</h2>
+        <p className="text-sm text-gray-700 leading-relaxed">{matched}</p>
+        <p className="text-[12px] text-gray-500 mt-3">The link lasts 7 days. Can&apos;t find the email? Check spam, or ask Adrian for the link.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-6">
