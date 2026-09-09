@@ -634,14 +634,15 @@ So, BEFORE drafting a section, look for an earlier sheet on the SAME paper:
 
 ```bash
 # 1. earlier filed sheets on this paper (case-insensitive match on paper_name);
-#    each job carries the run's stored diagnosis — title / questions / gap per section
+#    each job carries the run's stored diagnosis as {at, skills[], sheetJobId} —
+#    one `skills` entry per section: title / questions / gap / tier / marks / why
 curl -s "$SHEETS_API_BASE/api/admin/sheet-jobs?paper=2021%20OLevel%20Amath%20Paper%202&status=done" \
   -H "Authorization: Bearer $SHEETS_API_TOKEN" | python3 -c "
 import sys, json
 for j in json.load(sys.stdin)['jobs']:
     r = j.get('result') or {}
     print(j['id'][:8], j.get('student_name'), (j.get('completed_at') or '')[:10], r.get('docx_path'))
-    for d in j.get('diagnosis') or []:
+    for d in (j.get('diagnosis') or {}).get('skills') or []:
         print('    ', d.get('questions'), '|', d.get('title'), '| gap:', d.get('gap'))"
 
 # 2. the sheet as Adrian last left it — his Word edits live in the .docx;
