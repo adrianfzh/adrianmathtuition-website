@@ -1141,23 +1141,16 @@ compulsory, so we should build a mechanism that reminds them it is not done."
   uploads/scans lose the auto-sheet too (one rule); a paper with no sheet stays
   without one after a re-mark.
 
-**📁 Archive (9 Sep 2026 — Adrian: "can we have an archive option — meaning
-that these papers do not need a practice again sheet" … "i really mean archive
-it, so it does not appear on the list").** A button on EVERY desk row and in the
-detail view (all lanes but Completed and untagged; a confirm when the paper
-has not gone to the student) → `POST /api/admin/sheet-jobs {action:'no-sheet',
-runId}` = "nothing more to do here": stops a sheet still being written, leaves
-a written-but-unsent sheet in the folder (its `done` job keeps the PDF; nothing
-schedules it), inserts a finished `sheet_jobs` row with `result {noSheet:true,
-reason:'archived by Adrian', closedBy:'adrian'}` only when the paper has no
-sheet record at all, stamps `result_json.archived_at`/`archived_by`, and marks
-a released paper looked-at.
-An archived run is OFF THE DESK: `lib/desk-state.ts isArchivedRun` drops it
-from every lane and count in `/api/admin/desk`. The library (`/admin/papers`)
-and the student's page keep it; the student's paper page shows a neutral "No
-practice sheet for this paper" card instead of the Request button
-(`PracticeAgainState 'archived'`). Every "papers missing a sheet" list treats
-it as settled.
+**📁 Archive — built and REMOVED the same evening (9 Sep 2026).** Adrian asked
+for "an archive option — meaning that these papers do not need a practice again
+sheet", then "i really mean archive it, so it does not appear on the list",
+then "is it redundant to have completed and archive? afterall, i can move the
+rows to completed" — and it was: for a released paper, ✓ Looked at / All seen
+already takes the row off his to-do list, and the Completed lane shows no sheet
+nag. Archive only added a "no sheet is coming" message for the student and
+dropped the paper from the desk's own record. Removed (three commits reverted);
+do not rebuild it as a second lane-clearing action. If a specific student
+should stop asking for a sheet, make that a small switch on the paper's page.
 
 ### Blank printed parts, footer columns, pen-safe superscripts (8 Sep 2026)
 

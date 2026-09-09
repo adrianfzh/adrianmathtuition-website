@@ -25,7 +25,7 @@ import { pendingCount, recomputeTotals } from '@/lib/mark-triage';
 import { dropboxWebUrl, paperFolder } from '@/lib/paper-folder';
 import {
   DESK_LANES, amendedStatusFor, defaultLane, deskFlags, laneFor, latestLiveJob,
-  noSheetOf, pdfStaleOf, sheetStageLabel, isArchivedRun, type AmendedStatus, type DeskLane,
+  noSheetOf, pdfStaleOf, sheetStageLabel, type AmendedStatus, type DeskLane,
 } from '@/lib/desk-state';
 
 export const runtime = 'nodejs';
@@ -98,10 +98,7 @@ export async function GET(req: NextRequest) {
 
   // A run with no stored marking is a failed or still-queued attempt — same
   // rule as triage and the papers library; it has nothing to vet yet.
-  // 📁 Archived papers are off the desk entirely (every lane, every count).
-  const runs = ((data ?? []) as unknown as RunRow[])
-    .filter(r => Array.isArray((r.result_json as { results?: unknown } | null)?.results))
-    .filter(r => !isArchivedRun(r.result_json));
+  const runs = ((data ?? []) as unknown as RunRow[]).filter(r => Array.isArray((r.result_json as { results?: unknown } | null)?.results));
   const ids = runs.map(r => r.id);
 
   // Newest live sheet job per run + "From Adrian" assignment count per run.

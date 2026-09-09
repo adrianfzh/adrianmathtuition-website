@@ -46,20 +46,12 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
   // was there nothing worth practising? Else offer the request button
   // (Practice Again on request, 8 Sep 2026 — /api/portal/practice-again/request).
   let requestState: PracticeAgainState = 'none';
-  // 📁 Archived on the desk (9 Sep 2026): no sheet is coming, whatever its job says.
-  const { data: arch } = await sb.from('paper_marking_runs').select('archived_at:result_json->>archived_at').eq('id', id).maybeSingle();
-  const archived = !!(arch as { archived_at?: string | null } | null)?.archived_at;
-  if (!sheet && archived) requestState = 'archived';
-  else if (!sheet) {
+  if (!sheet) {
     const { data: jobRows } = await sb.from('sheet_jobs').select('status, result')
       .eq('run_id', id).order('created_at', { ascending: false }).limit(1);
     const job = (jobRows ?? [])[0] as { status: string; result: unknown } | undefined;
     if (job?.status === 'queued' || job?.status === 'claimed') requestState = 'queued';
-    else if (job?.status === 'done') {
-      const ns = readNoSheet(job.result);
-      const byAdrian = !!ns.noSheet && (job.result as { closedBy?: unknown } | null)?.closedBy === 'adrian';
-      requestState = ns.noSheet ? (byAdrian ? 'archived' : 'nothing') : 'checking';
-    }
+    else if (job?.status === 'done') requestState = readNoSheet(job.result).noSheet ? 'nothing' : 'checking';
     // failed / cancelled: they may ask again
   }
   const hasCover = paper.dropped.length > 0;

@@ -268,9 +268,9 @@ function PaperSubjectChip({ subject }: { subject: string | null | undefined }) {
 
 const LANE_HINT: Record<DeskLane, string> = {
   untagged: 'A paper with no student reaches nobody — tag it so it reaches them.',
-  'awaiting-sheet': 'Marked, and nobody has asked for a sheet. Vet the marking; Approve & release sends the paper on its own. A sheet you queue here and release is compulsory — the app reminds the student until it is handed in. Students can ask for their own from the app once the paper is out; those go out by themselves once they clear the gate. 📁 Archive means nothing more to do here — off the desk.',
+  'awaiting-sheet': 'Marked, and nobody has asked for a sheet. Vet the marking; Approve & release sends the paper on its own. A sheet you queue here and release is compulsory — the app reminds the student until it is handed in. Students can ask for their own from the app once the paper is out; those go out by themselves once they clear the gate.',
   ready: 'Script and sheet are both here. Open one, agree or override every question, read the sheet, then Approve & release.',
-  auto: 'Went to the student on its own after clearing the accuracy gates. Look it over if you want: Agree or Override still work here (an override re-issues their copy), ✓ Looked at moves it to Completed, 📁 Archive means nothing more to do here: the row leaves the desk for good (a written sheet stays in the folder unsent; the library keeps the paper). Anything you leave files itself under Completed after 7 days.',
+  auto: 'Went to the student on its own after clearing the accuracy gates. Look it over if you want: Agree or Override still work here (an override re-issues their copy), ✓ Looked at moves it to Completed. Anything you leave files itself under Completed after 7 days.',
   released: 'With the student. Read-only — the folder link is the record.',
 };
 
@@ -711,18 +711,6 @@ export default function DeskPage() {
     refresh(id);
   }
 
-  // 📁 No sheet (9 Sep 2026): this paper does not need a Practice Again sheet.
-  // Works from a list row (no detail open) or the detail view.
-  async function archiveNoSheet(id: string) {
-    setBusy('no-sheet');
-    const { ok, d } = await postJson('/api/admin/sheet-jobs', { action: 'no-sheet', runId: id });
-    setBusy('');
-    if (!ok) { setToast(d.error || 'Could not archive it'); return; }
-    setToast(`Archived — off the desk.${d.stopped ? ` Stopped ${d.stopped} sheet in progress.` : ''}`);
-    if (detail && detail.run.id === id) go({ run: undefined });
-    loadQueue(false);
-  }
-
   // 📐 Approve this paper's scheme (8 Sep 2026): the recorded per-part marks and
   // split become the paper's fixed allocation. `quiet` = on release, fail-soft.
   async function approveScheme(quiet = false) {
@@ -913,13 +901,6 @@ export default function DeskPage() {
                         📘 {row.sheet?.label ?? 'no sheet yet'}{row.sheet?.requestedBy === 'student' ? ' · asked by the student' : ''}
                       </span>
                     )}
-                    {row.lane !== 'released' && row.lane !== 'untagged' && (
-                      <button onClick={e => { e.stopPropagation(); if (!row.releasedAt && !window.confirm('This paper has not gone to the student yet. Archive it anyway?')) return; archiveNoSheet(row.id); }} disabled={busy === 'no-sheet'}
-                        title="Archive: nothing more to do here — the row leaves the desk. A written sheet stays in the folder, unsent; one being written is stopped; the paper stays in the library and on the student's page."
-                        style={{ border: `1px solid ${C.border}`, background: '#fff', color: C.muted, borderRadius: 8, padding: '1px 8px', fontSize: 12, cursor: 'pointer' }}>
-                        📁 Archive
-                      </button>
-                    )}
                     {row.lane === 'released' && row.releasedAt && <span>released {fmtDate(row.releasedAt)}{row.assignments ? ' + sheet' : ''}</span>}
                     {row.pending > 0 && <span style={{ color: C.flag, fontWeight: 600 }}>⏳ {row.pending} to check</span>}
                     {row.flags.map(f => <span key={f} style={{ color: C.flag, fontWeight: 600 }}>⚠ {f}</span>)}
@@ -955,7 +936,6 @@ export default function DeskPage() {
           onQueueSheet={queueSheet} onCancelSheet={cancelSheet} onAutoRelease={autoRelease} onApprove={approve} onReleaseOnly={releaseWithoutSheet} onToast={setToast} onRefresh={() => refresh(detail.run.id)}
           onSeen={markSeen} onUploadAmended={uploadAmended} onShelve={shelve} shelved={shelved}
           onRevise={reviseSheet} onRemarkPage={remarkPage} onApproveScheme={() => approveScheme(false)} onAuditAllocation={auditAllocation} onChecked={markChecked}
-          onNoSheet={() => archiveNoSheet(detail.run.id)}
         />
       )}
 
@@ -983,7 +963,6 @@ function DetailView(p: {
   onSeen: () => void; onUploadAmended: (file: File) => void; onShelve: (q: Question) => void; shelved: Set<string>;
   onRevise: (instructions: string) => void; onRemarkPage: (photoIndex: number) => void;
   onApproveScheme: () => void; onAuditAllocation: () => void; onChecked: () => void;
-  onNoSheet: () => void;
 }) {
   // The pen opens on the page you tapped, right here on the desk (round 3).
   const [annotatePage, setAnnotatePage] = useState<number | null>(null);
@@ -1114,13 +1093,6 @@ function DetailView(p: {
                   title="Released by the system without your vetting. Marks it as looked at — it leaves this lane; Agree/Override still work here and re-issue the student's copy."
                   style={{ border: '1px solid #67e8f9', background: '#ecfeff', color: '#0e7490', borderRadius: 8, padding: '3px 10px', fontSize: 12.5, cursor: 'pointer' }}>
                   {busy === 'checked' ? '…' : '✓ Looked at'}
-                </button>
-              )}
-              {d.lane !== 'released' && d.lane !== 'untagged' && (
-                <button onClick={() => { if (!released && !window.confirm('This paper has not gone to the student yet. Archive it anyway?')) return; p.onNoSheet(); }} disabled={busy === 'no-sheet'}
-                  title="Archive: nothing more to do here — the row leaves the desk. A written sheet stays in the folder, unsent; one being written is stopped; the paper stays in the library and on the student's page."
-                  style={{ border: `1px solid ${C.border}`, background: '#fff', color: C.muted, borderRadius: 8, padding: '3px 10px', fontSize: 12.5, cursor: 'pointer' }}>
-                  {busy === 'no-sheet' ? '…' : '📁 Archive'}
                 </button>
               )}
             </div>
