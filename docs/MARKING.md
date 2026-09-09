@@ -607,7 +607,12 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   `STUDENT_FILES_TO_DROPBOX=0` returns to the 5 Sep store-only behaviour.
 - **⏱ Release by silence (6 Sep 2026, Adrian: "12 hours"):** a finished sheet that passes the gates
   (`lib/sheet-auto-release.ts` `autoReleaseGate`, tested — every practice answer verified, a non-empty
-  wave, the second reader agreed with every worked example, the run not known-ungrounded) gets
+  wave, the second reader agreed with every worked example, the run not known-ungrounded — "grounded"
+  is `isGroundedRun` in `lib/mark-triage.ts`, the SAME test the marking's own release uses: a trusted
+  paper match OR an attached/bank/stored/mock grounding. Until 10 Sep 2026 the gate read
+  `paper_match.source` alone, which is only the fingerprint rung: Isabelle's working-only GCE 2024
+  AM P1 hand-in had the real paper attached from the library and every question read from it, yet
+  her requested sheet was held as "not grounded") gets
   `sheet_jobs.auto_release_at = now + SHEET_AUTO_RELEASE_HOURS` (default 12; `0` = off). Telegram
   says when and links the desk; the desk's sheet pane shows the time with **Hold** / **Resume**
   (`sheet-jobs {action:'hold'|'unhold'}` → `held_at`). `/api/cron/sheet-auto-release` (every 30 min,

@@ -10,7 +10,7 @@ import {
   computeAutoHold,
   TriageIndexError,
   overrideTally, paperTotalWarning, paperTotalsMismatch,
-  secondLookDisagreements, secondLookSuggestedMark } from './mark-triage';
+  secondLookDisagreements, secondLookSuggestedMark, isGroundedRun } from './mark-triage';
 
 // Shaped from a real `paper_marking_runs.result_json` row (2026-08-11) — the
 // nesting is load-bearing: marks live at results[].marking.total_awarded, and
@@ -585,5 +585,27 @@ describe('computeAutoHold — green ink (9 Sep 2026)', () => {
     expect(computeAutoHold(rj).reasons.some(r => /green ink/.test(r))).toBe(false);
     rj.annotation_debug[1].ink_scan = { greenFrac: 0.9, spans: [], mainPenGreen: true };
     expect(computeAutoHold(rj).reasons.some(r => /green ink/.test(r))).toBe(false);
+  });
+});
+
+describe('isGroundedRun — the one definition of "grounded on the real paper"', () => {
+  // Isabelle, 9 Sep 2026: A Math GCE 2024 P1, eight pages of working with no
+  // printed questions. The fingerprint rung could not vouch (paper_match.source
+  // 'none', reason no-printed-questions) but the library attached the real
+  // paper + solutions and the marker read every question from it. That IS
+  // grounded — the sheet gate held her Practice Again by reading paper_match alone.
+  it('an attached library grounding counts even when the fingerprint rung said none', () => {
+    expect(isGroundedRun({
+      paper_match: { key: 'gce 2024 am p1', source: 'none', trusted: false, reasons: ['no-printed-questions'] },
+      grounding: { source: 'attached', scheme: { key: 'gce 2024 am p1', status: 'extracted' } },
+    })).toBe(true);
+  });
+  it('a trusted bank match counts on its own', () => {
+    expect(isGroundedRun({ paper_match: { source: 'bank', trusted: true } })).toBe(true);
+  });
+  it('rules-alone marking is not grounded', () => {
+    expect(isGroundedRun({ paper_match: { source: 'none', trusted: false }, grounding: { source: 'rules' } })).toBe(false);
+    expect(isGroundedRun({ paper_match: { source: 'none', trusted: false } })).toBe(false);
+    expect(isGroundedRun(null)).toBe(false);
   });
 });

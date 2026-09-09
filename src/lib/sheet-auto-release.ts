@@ -24,7 +24,7 @@ export interface GateInput {
   wave: string[] | null | undefined;
   /** The second reader's verdict on the worked examples (lib/sheet-example-check). */
   exampleCheck: { checked: number; disagreements: unknown[]; skipped?: string } | null | undefined;
-  /** The run is grounded on the real paper — `paper_match.source` when the run has it; null = unknown (older runs). */
+  /** The run is grounded on the real paper — `isGroundedRun` (lib/mark-triage) when the run carries a paper_match or grounding stamp; null = unknown (older runs). */
   grounded: boolean | null;
   /** The paper's own accuracy hold (lib/mark-triage computeAutoHold reasons) — the sheet must not carry a held paper out. null = not checked. */
   paperHold?: string[] | null;

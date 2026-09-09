@@ -34,7 +34,7 @@
 // plan-marking worker). Claim/lease logic is pure in lib/sheet-jobs.ts.
 import { NextRequest, NextResponse } from 'next/server';
 import { plainMath, clip } from '@/lib/remark-diff';
-import { computeAutoHold } from '@/lib/mark-triage';
+import { computeAutoHold, isGroundedRun } from '@/lib/mark-triage';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
@@ -369,10 +369,19 @@ export async function POST(req: NextRequest) {
       const hours = holdHours();
       const { data: runRow } = await sb.from('paper_marking_runs').select('released_at, result_json').eq('id', job.run_id).maybeSingle();
       const runJson = (runRow as { result_json?: unknown } | null)?.result_json ?? null;
-      const groundedSrc = ((runJson as { paper_match?: { source?: string | null } } | null)?.paper_match?.source) ?? null;
+      // "Grounded" is the SAME test the marking's own auto-release uses
+      // (isGroundedRun): a trusted paper match OR an attached/bank/stored/mock
+      // grounding. Reading paper_match.source alone held Isabelle's sheet on
+      // 9 Sep 2026 — her 8 pages were working only, so the fingerprint rung
+      // said 'none', while the library had attached the real GCE 2024 AM P1
+      // and the marker read every question from it (grounding.source
+      // 'attached'). A run from before either stamp existed is unknown (null),
+      // which the gate lets through.
+      const stamped = !!((runJson as { paper_match?: unknown; grounding?: unknown } | null)?.paper_match
+        || (runJson as { paper_match?: unknown; grounding?: unknown } | null)?.grounding);
       const gate = autoReleaseGate({
         noSheet: false, verified: result.verified, wave: result.wave, exampleCheck: check,
-        grounded: groundedSrc == null ? null : groundedSrc !== 'none',
+        grounded: stamped ? isGroundedRun(runJson) : null,
         paperHold: computeAutoHold(runJson).reasons,
       });
       // The desk shows this beside the (missing) timer, so "I don't see the
