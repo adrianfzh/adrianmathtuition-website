@@ -565,6 +565,27 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   "(b)(ii) left blank" against a 2/2 answer (Joey, AM TYS 2021 P2, run `df8e2624`). Now a
   roman-only label adopts the ONE letter that carries that roman sub-label elsewhere on the same
   question, before the merge; two candidates or none leave it alone (flagged). Joey-shaped tests.
+- **📄 Continuation sheets — the "No question found" that wasn't (10 Sep 2026, bot
+  `ai/marker-reconcile.js` pass A4 `passAdoptPrintedQuestions`):** Rainie crossed out the printed
+  answer space for Q8 and wrote the whole attempt on her own foolscap, headed "q.8)"; the read of
+  that page said "No question found — marked from the working alone" although the printed Q8 was
+  the very next photo (run `c74f3251`). Why: every photo is its own read, the **Mac plan-marker's
+  external reads never receive the server's QUESTION PAPER CONTEXT block** (`ai/external-reads.js`
+  ignores the content array), and the sighted 0/4 read of the printed page was then superseded by
+  the merge — nothing carried the found flag or the prompt across. The marks were right; the flag
+  and the note were wrong. Now, after the reads: a `question_found:false` entry whose number was
+  seen on ANOTHER photo (a live entry, or the page classification's printed index — the marker
+  passes `reconcileResults(results, { printed })`) adopts it — `question_found` true,
+  `match_confidence` ≥ medium, the printed prompt copied into `marking_output.question`
+  (+ `printed_on_photo`), the "No question found" review reason dropped, a receipt written, and
+  the entry listed under `reconciliation.adopted`. **Marks never move**; a per-part max that
+  disagrees with the printed `[n]` is flagged, not corrected. The adopted photo is REDRAWN with
+  no chip edits so its baked "No question found" note comes off (`ai/reannotate.js`
+  `noticesAfterAdoption`; later manual redraws rebuild notices from the flipped flag). Upstream
+  too: the direct/standalone prompts and the runbook (§6) now say a student's own lined/foolscap
+  page headed with a question number IS that question, to be marked against its printed page
+  (the Mac claim carries `printed_pages` from an earlier marking on a re-mark; a first marking
+  looks at the neighbouring photos). Rainie-shaped tests (8 reconcile + 3 redraw).
 - **👀 Second look on lost/blank parts (6 Sep 2026, bot `ai/second-look.js`):** after
   reconciliation, every page carrying a part that lost marks or was read as blank goes back once
   (Sonnet, cents a paper; `MARKING_SECOND_LOOK=0` off, `MARKING_SECOND_LOOK_MODEL=opus` upgrades)
