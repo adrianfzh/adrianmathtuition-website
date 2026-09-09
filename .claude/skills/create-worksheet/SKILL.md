@@ -263,6 +263,17 @@ Supported genres (`figure_lib.GENRES`) and their key spec fields:
 - Verify visually: after building, extract and LOOK at each figure
   (`unzip -o out.docx 'word/media/*' -d check/`) the same way equations get an
   OMML count — a wrong diagram is worse than a missing one.
+- **Every PNG is trimmed to its ink when it is embedded** (Adrian, 9 Sep 2026,
+  Alessi's E Math sheet: "the diagrams generated need not have so much white
+  space as its borders" — the half-cylinder faces figure was 44% blank frame,
+  116 px of white above the drawing). `worksheet_lib.trim_to_ink(path)` runs
+  inside `_picture` for `ws.figure()` and every `('figure', …)` step, and
+  `figure_lib._finish` calls it at save time too: the border is cut to 1.5 mm
+  on every side, in place, idempotently, and the embed width is scaled by the
+  same ratio so the DRAWING keeps the size it was going to print at — only the
+  white goes. A bespoke matplotlib figure (one drawn outside `figure_lib`) is
+  covered by the embed-time trim, so padded `xlim`/`ylim` no longer reach the
+  page; still save with `bbox_inches='tight'` and view the PNG.
 
 ## House Style
 

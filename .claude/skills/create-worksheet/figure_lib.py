@@ -134,8 +134,16 @@ def _fig(width_in=None, height_in=None):
 
 
 def _finish(fig, out_path: str) -> str:
-    fig.savefig(out_path, dpi=DPI, bbox_inches="tight", facecolor="white")
+    fig.savefig(out_path, dpi=DPI, bbox_inches="tight", pad_inches=0.06, facecolor="white")
     plt.close(fig)
+    # Cut the border to the ink (Adrian, 9 Sep 2026: "need not have so much
+    # white space as its borders"). worksheet_lib trims again at embed time, so
+    # a figure_lib PNG used anywhere else is tight too.
+    try:
+        from worksheet_lib import trim_to_ink
+        trim_to_ink(out_path)
+    except Exception:
+        pass
     return out_path
 
 

@@ -252,6 +252,60 @@ def _style_annotations(elem):
                 wrpr.append(e)
 
 
+def trim_to_ink(path, pad_in=0.06, threshold=10):
+    """Crop a figure PNG to its ink plus a hair of white, in place.
+
+    Adrian, 9 Sep 2026: "the diagrams generated need not have so much white
+    space as its borders." Whatever drew the picture — figure_lib, a bespoke
+    matplotlib script with padded limits, diagram_helpers — the border is cut
+    here, once, at the point of use. Ink = any pixel that differs from white by
+    more than `threshold` in any channel (grey shading, red/blue construction
+    lines and antialiased edges all count). `pad_in` of white is kept on every
+    side (1.5 mm at the PNG's own dpi, 200 when it carries none). Idempotent:
+    an already-trimmed PNG comes back byte-for-byte the same shape.
+
+    Returns (width_before, width_after) in pixels so a caller can keep the
+    drawing at the size it was going to print at; (0, 0) when the file could
+    not be read as an image — a caller then embeds it untouched."""
+    try:
+        from PIL import Image, ImageChops
+    except ImportError:
+        return (0, 0)
+    try:
+        with Image.open(path) as im:
+            im.load()
+            info = dict(im.info)
+            w, h = im.size
+            if im.mode in ('RGBA', 'LA', 'P'):
+                # a transparent PNG is white paper, not black
+                bg = Image.new('RGBA', im.size, (255, 255, 255, 255))
+                flat = Image.alpha_composite(bg, im.convert('RGBA')).convert('RGB')
+            else:
+                flat = im.convert('RGB')
+            diff = ImageChops.difference(flat, Image.new('RGB', im.size, (255, 255, 255)))
+            r, g, b = diff.split()
+            ink = ImageChops.lighter(ImageChops.lighter(r, g), b).point(lambda v: 255 if v > threshold else 0)
+            bbox = ink.getbbox()
+            if not bbox:
+                return (w, w)          # blank image — leave it alone
+            dpi = info.get('dpi', (200, 200))
+            dpi = float(dpi[0] if isinstance(dpi, (tuple, list)) else dpi) or 200.0
+            pad = max(4, int(round(pad_in * dpi)))
+            x0, y0, x1, y1 = bbox
+            x0, y0 = max(0, x0 - pad), max(0, y0 - pad)
+            x1, y1 = min(w, x1 + pad), min(h, y1 + pad)
+            if (x0, y0, x1, y1) == (0, 0, w, h):
+                return (w, w)
+            out = im.crop((x0, y0, x1, y1))
+            save_kw = {}
+            if 'dpi' in info:
+                save_kw['dpi'] = info['dpi']
+            out.save(path, **save_kw)
+            return (w, x1 - x0)
+    except Exception:
+        return (0, 0)
+
+
 class Worksheet:
     """Builder for a single worksheet docx with Adrian's house style."""
 
@@ -542,8 +596,17 @@ class Worksheet:
     def _picture(self, p, path, width_cm):
         """Centre a PNG in paragraph p, capped at width_cm and never upscaled
         past the image's natural 96-dpi size — a small render should stay
-        small, not blur."""
+        small, not blur.
+
+        The PNG is first trimmed to its ink (trim_to_ink): a figure whose
+        author padded xlim/ylim, or saved with matplotlib's default 0.1 in
+        border, used to print with a blank frame around it (Alessi's E Math
+        sheet, 9 Sep 2026 — the half-cylinder faces sat in 44% white). The
+        drawing keeps the size it was going to print at; only the border goes."""
         from PIL import Image  # python-docx already depends on Pillow
+        before, after = trim_to_ink(path)
+        if before and after < before:
+            width_cm = width_cm * after / before
         with Image.open(path) as im:
             natural_cm = im.width / 96 * 2.54
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER

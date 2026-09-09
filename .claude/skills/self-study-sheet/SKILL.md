@@ -501,6 +501,13 @@ anything older in this file:
   places point labels at the first of eight offsets no curve, line, circle or
   axis passes through (since 7 Sep 2026). Still LOOK at the PNG before
   embedding — a label crossed by ink is a rejected sheet.
+- **No white frame around a figure.** Adrian, 9 Sep 2026, on Alessi's E Math
+  sheet (the half-cylinder faces drawing sat in 44% blank canvas): "the
+  diagrams generated need not have so much white space as its borders."
+  `worksheet_lib` now trims every PNG to its ink + 1.5 mm at embed time and
+  shrinks the embed width by the same ratio, so the drawing prints at the size
+  you chose with the border gone. Do not pad `xlim`/`ylim` to make room, and do
+  not widen `width_cm` to compensate for a border — there is none any more.
 
 Invoke `create-teaching-notes` and give it this brief:
 
