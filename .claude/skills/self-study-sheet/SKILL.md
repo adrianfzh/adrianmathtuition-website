@@ -886,7 +886,8 @@ the gap is the interesting half: it says what the bank is missing.
   labelled box after the first carries the gap.
 - **A geometry or area question gets a diagram — EXAMPLES AND PRACTICE ALIKE.**
   If the skill is about a shape, a region, or coordinates, the student must be
-  able to SEE it: draw it per DIAGRAMS.md and view the PNG before embedding.
+  able to SEE it: draw it with `figure_lib` (genres and fields in
+  `create-worksheet/SKILL.md` § Figures) and view the PNG before embedding.
 
   This is not decoration on an area question, it is the method. "The region
   bounded by the curve, the normal and the coordinate axes" is a sentence a
@@ -900,6 +901,20 @@ the gap is the interesting half: it says what the bank is missing.
   The figure shows the bounding curves and lines, labelled, with the region
   shaded. If the practice item asks the student to FIND the region, draw the
   curves and leave the shading to them — but draw the axes and curves.
+
+  **And the SOLUTION of an area question shows how the area is made** (Adrian,
+  10 Sep 2026, on Isabelle's sheet — Example 2, the region bounded by
+  y = (x−2)³, its tangent at P(3, 1) and the x-axis: "would be good if a
+  diagram can be drawn to show the areas required"). Whenever the working
+  combines pieces — an integral minus a triangle, two integrals added, a
+  rectangle minus an integral — the solution box carries a
+  `figure_lib.render({'kind': 'area_decomposition', …})` figure as the
+  `('figure', path, 15)` step straight after the plan line: the region asked
+  for, "=", then each piece shaded on the same axes with its expression under
+  it and "−"/"+" between. The pieces' `from`/`to`/`expr` are the SAME numbers
+  the integrals below are written from — never re-typed. The question figure
+  says what is asked; this one says why the working is the working. A single
+  integral with nothing to add or subtract needs only the question figure.
 
 **Solution boxes flow — pass `keep_together=False`** (Adrian, 2 Sep 2026: "how
 can I remove the large space between the example and section 3?"). The default

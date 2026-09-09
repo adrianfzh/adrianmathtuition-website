@@ -6,7 +6,8 @@ are computed from — and this module draws it. A figure can then never disagree
 with its mark scheme, and a better future model inherits the same renderers.
 
 Genres (v1): graph, normal, histogram, boxplot, cumulative, points (labelled
-plane geometry). A question that needs anything else is written WITHOUT a
+plane geometry); area_decomposition (10 Sep 2026: the region asked for = its
+pieces, side by side, for an area solution). A question that needs anything else is written WITHOUT a
 figure or not at all — never with a described-but-missing diagram.
 
 All output is exam-style black-and-white line art on white, serif labels,
@@ -37,6 +38,9 @@ _SAFE = {
     "acos": np.arccos, "atan": np.arctan, "exp": np.exp, "ln": np.log,
     "log": np.log, "log10": np.log10, "sqrt": np.sqrt, "abs": np.abs,
     "pi": np.pi, "e": np.e,
+    # max/min (10 Sep 2026): the lower edge of a region asked for is often "the
+    # line where it is above the axis, else the axis" — max(3*x-8, 0).
+    "max": np.maximum, "min": np.minimum,
 }
 
 
@@ -117,15 +121,20 @@ def _axes_through_origin(ax, xlim, ylim, names=("x", "y")):
     ax.set_ylim(*ylim)
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
-    if xlim[0] <= 0 <= xlim[1]:
+    # Each axis stands at 0 when the window holds it, else at the window's edge —
+    # and its arrowhead + name go where the spine IS (10 Sep 2026: a graph whose
+    # x-window started at 1.3 drew the y-arrow at data-x = 0, off the picture).
+    x_axis_at = 0 if xlim[0] <= 0 <= xlim[1] else xlim[0]
+    y_axis_at = 0 if ylim[0] <= 0 <= ylim[1] else ylim[0]
+    if x_axis_at == 0:
         ax.spines["left"].set_position("zero")
-    if ylim[0] <= 0 <= ylim[1]:
+    if y_axis_at == 0:
         ax.spines["bottom"].set_position("zero")
-    ax.plot(1, 0, ">k", transform=ax.get_yaxis_transform(), clip_on=False, markersize=5)
-    ax.plot(0, 1, "^k", transform=ax.get_xaxis_transform(), clip_on=False, markersize=5)
-    ax.annotate(names[0], xy=(1, 0), xycoords=ax.get_yaxis_transform(),
+    ax.plot(1, y_axis_at, ">k", transform=ax.get_yaxis_transform(), clip_on=False, markersize=5)
+    ax.plot(x_axis_at, 1, "^k", transform=ax.get_xaxis_transform(), clip_on=False, markersize=5)
+    ax.annotate(names[0], xy=(1, y_axis_at), xycoords=ax.get_yaxis_transform(),
                 xytext=(8, -4), textcoords="offset points", style="italic")
-    ax.annotate(names[1], xy=(0, 1), xycoords=ax.get_xaxis_transform(),
+    ax.annotate(names[1], xy=(x_axis_at, 1), xycoords=ax.get_xaxis_transform(),
                 xytext=(6, 4), textcoords="offset points", style="italic")
 
 
@@ -150,8 +159,22 @@ def _finish(fig, out_path: str) -> str:
 
 # ---------------------------------------------------------------- graph ----
 
-def _render_graph(spec, out_path):
-    fig, ax = _fig()
+def _shade(ax, shade, color="0.82"):
+    """Fill one region {from, to, expr, to_expr?} — or a list of them."""
+    if not shade:
+        return
+    for sh in (shade if isinstance(shade, list) else [shade]):
+        x = np.linspace(sh["from"], sh["to"], 300)
+        with np.errstate(all="ignore"):
+            y = np.asarray(_f(sh["expr"])(x), dtype=float)
+            base = np.asarray(_f(sh["to_expr"])(x), dtype=float) if sh.get("to_expr") else 0
+        ax.fill_between(x, y, base, color=sh.get("color", color), zorder=0)
+
+
+def _draw_graph(ax, fig, spec, shade=None, fontsize=10):
+    """Draw a `graph` spec onto `ax` (curves, one shaded region, points, dashed
+    lines, school axes, ticks, collision-free point labels). Returns the
+    (xlim, ylim) it settled on, so sibling panels can share them."""
     xs_all, ys_all = [], []
     for c in spec.get("curves", []):
         lo, hi = c.get("domain", spec.get("domain", [-4, 4]))
@@ -167,16 +190,13 @@ def _render_graph(spec, out_path):
             ii = np.where(np.isfinite(y))[0]
             if len(ii):
                 at = ii[min(len(ii) - 1, int(len(ii) * float(c.get("label_at", 0.93))))]
-                ax.annotate(c["label"], (x[at], y[at]),
-                            xytext=(6, 5), textcoords="offset points", fontsize=10)
+                left = c.get("label_side") == "left"      # above-left of the curve instead
+                ax.annotate(c["label"], (x[at], y[at]), xytext=(-6 if left else 6, 5),
+                            textcoords="offset points", ha="right" if left else "left",
+                            fontsize=fontsize)
         xs_all.append(x)
         ys_all.append(y)
-    shade = spec.get("shade")
-    if shade:
-        x = np.linspace(shade["from"], shade["to"], 300)
-        y = np.asarray(_f(shade["expr"])(x), dtype=float)
-        base = np.asarray(_f(shade["to_expr"])(x), dtype=float) if shade.get("to_expr") else 0
-        ax.fill_between(x, y, base, color="0.82", zorder=0)
+    _shade(ax, shade)
     pending = []
     for p in spec.get("points", []):
         ax.plot(p["x"], p["y"], "ko", markersize=4)
@@ -189,7 +209,7 @@ def _render_graph(spec, out_path):
         ax.axhline(yv, color="k", lw=0.9, linestyle="--")
         if isinstance(h, dict) and h.get("label"):  # e.g. an asymptote's "v = 30"
             ax.annotate(h["label"], xy=(1, yv), xycoords=ax.get_yaxis_transform(),
-                        xytext=(-4, 5), textcoords="offset points", ha="right", fontsize=10)
+                        xytext=(-4, 5), textcoords="offset points", ha="right", fontsize=fontsize)
 
     if spec.get("xlim"):
         xlim = spec["xlim"]
@@ -215,8 +235,80 @@ def _render_graph(spec, out_path):
             ax.set_xticklabels(spec["xtick_labels"])
         if spec.get("ytick_labels"):
             ax.set_yticklabels(spec["ytick_labels"])
+    ax.tick_params(labelsize=fontsize)
     for text, xy in pending:            # limits are final now — labels go off the strokes
-        _place_label(ax, fig, text, xy, fontsize=10, style="italic")
+        _place_label(ax, fig, text, xy, fontsize=fontsize, style="italic")
+    return xlim, ylim
+
+
+def _render_graph(spec, out_path):
+    fig, ax = _fig()
+    _draw_graph(ax, fig, spec, shade=spec.get("shade"))
+    return _finish(fig, out_path)
+
+
+# --------------------------------------------- area decomposition ----
+# Adrian, 10 Sep 2026, on Isabelle's Practice Again sheet (area between a cubic,
+# its tangent and the x-axis): "would be good if a diagram can be drawn to show
+# the areas required." The question figure shows WHAT is asked; this one shows
+# HOW it is made — the region asked for, "=", then each piece the working
+# integrates or measures, "−"/"+" between them, its expression under each.
+# Same curves, points and limits in every panel; only the shading changes.
+
+_OPS = {"+": "+", "-": "\u2212", "\u2212": "\u2212"}
+
+
+def _render_area_decomposition(spec, out_path):
+    pieces = spec.get("pieces") or []
+    if not pieces:
+        raise ValueError("area_decomposition needs at least one piece")
+    target = spec.get("target") or {}
+    if not target.get("shade"):
+        raise ValueError("area_decomposition needs target.shade — the region asked for")
+    for pc in pieces:
+        if not pc.get("shade"):
+            raise ValueError("every piece needs a shade")
+    panels = [target] + list(pieces)
+    n = len(panels)
+    fs = float(spec.get("fontsize", 9.5))
+    width_in = float(spec.get("width_in", 6.4))
+    panel_w = width_in / n
+    height_in = float(spec.get("height_in", panel_w * 0.95 + 0.45))
+    fig, axes = plt.subplots(1, n, figsize=(width_in, height_in))
+    axes = np.atleast_1d(axes)
+    fig.subplots_adjust(left=0.03, right=0.97, top=0.96, bottom=0.26,
+                        wspace=float(spec.get("wspace", 0.42)))
+
+    base = {k: v for k, v in spec.items()
+            if k not in ("kind", "target", "pieces", "result", "shade", "curve_labels")}
+    xlim = ylim = None
+    captions = []
+    for i, (ax, panel) in enumerate(zip(axes, panels)):
+        sub = dict(base)
+        if xlim is not None:                 # every panel is the same picture
+            sub["xlim"], sub["ylim"] = xlim, ylim
+        if i and spec.get("curve_labels", "first") != "all":   # name the curves once
+            sub["curves"] = [{k: v for k, v in c.items() if k != "label"} for c in sub.get("curves", [])]
+        xlim, ylim = _draw_graph(ax, fig, sub, shade=panel["shade"], fontsize=fs)
+        cap = panel.get("caption")
+        if cap:
+            captions.append(ax.text(0.5, -0.1, cap, transform=ax.transAxes, ha="center",
+                                    va="top", fontsize=fs + 1))
+
+    # "=" after the target, then each piece's own sign (default "+")
+    fig.canvas.draw()
+    for i in range(n - 1):
+        a, b = axes[i].get_position(), axes[i + 1].get_position()
+        op = "=" if i == 0 else _OPS.get(str(panels[i + 1].get("op", "+")), "+")
+        fig.text((a.x1 + b.x0) / 2, a.y0 + a.height / 2, op, ha="center", va="center",
+                 fontsize=fs + 5)
+    result = spec.get("result")
+    if result:                              # one line under the whole row, clear of every caption
+        renderer = fig.canvas.get_renderer()
+        inv = fig.transFigure.inverted()
+        lows = [inv.transform((0, t.get_window_extent(renderer=renderer).y0))[1] for t in captions]
+        lows.append(min(ax.get_position().y0 for ax in axes))
+        fig.text(0.5, min(lows) - 0.06, result, ha="center", va="top", fontsize=fs + 1.5)
     return _finish(fig, out_path)
 
 
@@ -491,6 +583,7 @@ def _render_binomial_pairing(spec, out_path):
 
 _RENDERERS = {
     "graph": _render_graph,
+    "area_decomposition": _render_area_decomposition,
     "binomial_pairing": _render_binomial_pairing,
     "normal": _render_normal,
     "histogram": _render_histogram,
@@ -534,6 +627,24 @@ if __name__ == "__main__":
                    "segments": [["A", "B"], ["B", "C"], ["C", "D"], ["D", "A"], ["A", "C", "dashed"]],
                    "right_angles": [["A", "B", "C"]],
                    "angle_arcs": [{"at": "A", "from": "B", "to": "D", "label": "θ"}]},
+    }
+    # Isabelle's AM sheet, Example 2 (10 Sep 2026): y = (x−2)³, tangent at
+    # P(3, 1) is y = 3x − 8 meeting the x-axis at R(8/3, 0); area bounded by
+    # the curve, the tangent and the x-axis = ∫₂³(x−2)³dx − triangle.
+    samples["area_decomposition"] = {
+        "kind": "area_decomposition",
+        "curves": [{"expr": "(x-2)**3", "domain": [1.3, 3.3], "label": "$y=(x-2)^3$",
+                    "label_at": 0.995, "label_side": "left"},
+                   {"expr": "3*x-8", "domain": [2.55, 3.25]}],
+        "points": [{"x": 3, "y": 1, "label": "P"}, {"x": 8 / 3, "y": 0, "label": "R"}],
+        "xticks": [2], "ylim": [-0.6, 2.4],
+        "target": {"shade": {"from": 2, "to": 3, "expr": "(x-2)**3", "to_expr": "max(3*x-8, 0)"},
+                   "caption": "required area"},
+        "pieces": [{"shade": {"from": 2, "to": 3, "expr": "(x-2)**3"},
+                    "caption": r"$\int_2^3 (x-2)^3\,dx$"},
+                   {"op": "-", "shade": {"from": 8 / 3, "to": 3, "expr": "3*x-8"},
+                    "caption": r"$\frac{1}{2}\times\frac{1}{3}\times 1$"}],
+        "result": r"$= \frac{1}{4} - \frac{1}{6} = \frac{1}{12}$",
     }
     samples["binomial_pairing"] = {
         "kind": "binomial_pairing", "target": "the terms that give x⁻¹",
