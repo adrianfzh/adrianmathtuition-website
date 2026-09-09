@@ -485,7 +485,16 @@ anything older in this file:
 - **State the conclusion plainly.** Adrian, 7 Sep 2026: "don't say 'one root
   survives', just say 'there is only 1 solution'." A show-that ends "So there
   is only one solution. (shown)" — not *survives*, *is left standing*, *the
-  only one to make it*.
+  only one to make it*. **Still being written on 10 Sep 2026** — a sheet's
+  solution note read "Here both roots are positive, so both of them survive."
+  Adrian: "sounds weird (what does it mean both roots? and survive?)". Two
+  faults in one line: after a substitution, "root" is ambiguous (the quadratic
+  in u has roots; the equation in x has solutions) — **name the unknown**; and
+  *survive* is the personification the line above bans. Write: "Both values of
+  u are positive, so each gives a value of x: 2ˣ = u₁ or 2ˣ = u₂." The worker's
+  pre-file sweep (`WORKER_PROMPT.md` §3b) now refuses to file with *survive*
+  or any of the banned figures of speech in the text — the rule was in this
+  file alone and the worker did not see it.
 - **A Common Error is a concrete wrong MOVE, or nothing.** Adrian, 7 Sep 2026,
   on "Common Error: b² − 4ac counts the roots of the quadratic in eˣ. It says
   nothing about how many of them survive as values of x": "Is that necessary?

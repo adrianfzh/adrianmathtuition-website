@@ -115,10 +115,17 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
     from the repo root; fix and re-render on any hit, do not file with one in:
 
 ```bash
-python3 -c "import zipfile,re,sys; t=re.sub(r'<[^>]+>',' ',zipfile.ZipFile(sys.argv[1]).read('word/document.xml').decode('utf8','ignore')); n=len(re.findall(r'\\bnever\\b',t,re.I)); c=t.count('Common Error'); print('never:',n,'| Common Error:',c); sys.exit(1 if n else 0)" "<the .docx>"
+python3 -c "import zipfile,re,sys; t=re.sub(r'<[^>]+>',' ',zipfile.ZipFile(sys.argv[1]).read('word/document.xml').decode('utf8','ignore')); n=len(re.findall(r'\\bnever\\b',t,re.I)); idi=re.findall(r'\\b(surviv\\w*|hands? you|buys? you|for free|heavy lifting|nail(?:s|ed)? down|unlocks?|the trick is|kills?|gets? rid of|knocks? out|left standing|clears? it)\\b',t,re.I); c=t.count('Common Error'); print('never:',n,'| idioms:',idi,'| Common Error:',c); sys.exit(1 if (n or idi) else 0)" "<the .docx>"
 ```
 
     - `never` must be 0 (say *not* / *does not* / *only when*).
+    - `idioms` must be empty (10 Sep 2026 — "both roots are positive, so both of
+      them survive" went out on a sheet three days after Adrian banned *survives*):
+      no *survive*, *hands you*, *buys you*, *for free*, *heavy lifting*, *nail
+      down*, *unlock*, *the trick is*, *kills*, *gets rid of*, *knocks out*, *left
+      standing*, *clears it*. Say what the value is and what it gives, and after a
+      substitution name the unknown: "Both values of u are positive, so each gives
+      a value of x" — not "both roots survive".
     - **No maths typed as text** (9 Sep 2026 — Alessi's `[No term in 1/x]` tag
       was a plain-text run): zero hits from
 
