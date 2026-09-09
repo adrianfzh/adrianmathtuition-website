@@ -1141,18 +1141,21 @@ compulsory, so we should build a mechanism that reminds them it is not done."
   uploads/scans lose the auto-sheet too (one rule); a paper with no sheet stays
   without one after a re-mark.
 
-**📁 No sheet (9 Sep 2026 — Adrian: "can we have an archive option — meaning
-that these papers do not need a practice again sheet").** A button on the
-desk's list rows and detail view (automatic and "Marked, no sheet yet" lanes,
-only while no sheet job exists) → `POST /api/admin/sheet-jobs
-{action:'no-sheet', runId}`: stops anything still being written for the paper,
-inserts a finished `sheet_jobs` row with `result {noSheet:true, reason:'archived
-by Adrian', closedBy:'adrian'}` — the same shape as the worker's "nothing to
-teach" — and marks a released paper looked-at so it leaves the automatic lane.
-The desk row reads "no sheet needed — archived by Adrian"; the student's paper
-page shows a neutral "No practice sheet for this paper" card instead of the
-Request button (`PracticeAgainState 'archived'`). Every "papers missing a
-sheet" list treats it as settled.
+**📁 Archive (9 Sep 2026 — Adrian: "can we have an archive option — meaning
+that these papers do not need a practice again sheet" … "i really mean archive
+it, so it does not appear on the list").** A button on the desk's list rows and
+detail view (automatic and "Marked, no sheet yet" lanes, only while no sheet
+job exists) → `POST /api/admin/sheet-jobs {action:'no-sheet', runId}`: stops
+anything still being written for the paper, inserts a finished `sheet_jobs`
+row with `result {noSheet:true, reason:'archived by Adrian', closedBy:'adrian'}`
+— the worker's own "nothing to teach" shape — stamps
+`result_json.archived_at`/`archived_by`, and marks a released paper looked-at.
+An archived run is OFF THE DESK: `lib/desk-state.ts isArchivedRun` drops it
+from every lane and count in `/api/admin/desk`. The library (`/admin/papers`)
+and the student's page keep it; the student's paper page shows a neutral "No
+practice sheet for this paper" card instead of the Request button
+(`PracticeAgainState 'archived'`). Every "papers missing a sheet" list treats
+it as settled.
 
 ### Blank printed parts, footer columns, pen-safe superscripts (8 Sep 2026)
 

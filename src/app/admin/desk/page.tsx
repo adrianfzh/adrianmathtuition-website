@@ -268,9 +268,9 @@ function PaperSubjectChip({ subject }: { subject: string | null | undefined }) {
 
 const LANE_HINT: Record<DeskLane, string> = {
   untagged: 'A paper with no student reaches nobody — tag it so it reaches them.',
-  'awaiting-sheet': 'Marked, and nobody has asked for a sheet. Vet the marking; Approve & release sends the paper on its own. A sheet you queue here and release is compulsory — the app reminds the student until it is handed in. Students can ask for their own from the app once the paper is out; those go out by themselves once they clear the gate. 📁 No sheet records that the paper needs none.',
+  'awaiting-sheet': 'Marked, and nobody has asked for a sheet. Vet the marking; Approve & release sends the paper on its own. A sheet you queue here and release is compulsory — the app reminds the student until it is handed in. Students can ask for their own from the app once the paper is out; those go out by themselves once they clear the gate. 📁 Archive puts a paper away: no sheet, and off the desk.',
   ready: 'Script and sheet are both here. Open one, agree or override every question, read the sheet, then Approve & release.',
-  auto: 'Went to the student on its own after clearing the accuracy gates. Look it over if you want: Agree or Override still work here (an override re-issues their copy), ✓ Looked at moves it to Completed, 📁 No sheet records that the paper needs no Practice Again sheet and clears it too. Anything you leave files itself under Completed after 7 days.',
+  auto: 'Went to the student on its own after clearing the accuracy gates. Look it over if you want: Agree or Override still work here (an override re-issues their copy), ✓ Looked at moves it to Completed, 📁 Archive puts a paper away: no Practice Again sheet, and off the desk for good (the library keeps it). Anything you leave files itself under Completed after 7 days.',
   released: 'With the student. Read-only — the folder link is the record.',
 };
 
@@ -718,8 +718,9 @@ export default function DeskPage() {
     const { ok, d } = await postJson('/api/admin/sheet-jobs', { action: 'no-sheet', runId: id });
     setBusy('');
     if (!ok) { setToast(d.error || 'Could not archive it'); return; }
-    setToast(`No sheet needed — archived.${d.stopped ? ` Stopped ${d.stopped} sheet in progress.` : ''}`);
-    if (detail && detail.run.id === id) refresh(id); else loadQueue(false);
+    setToast(`Archived — off the desk, no sheet needed.${d.stopped ? ` Stopped ${d.stopped} sheet in progress.` : ''}`);
+    if (detail && detail.run.id === id) go({ run: undefined });
+    loadQueue(false);
   }
 
   // 📐 Approve this paper's scheme (8 Sep 2026): the recorded per-part marks and
@@ -914,9 +915,9 @@ export default function DeskPage() {
                     )}
                     {(row.lane === 'auto' || row.lane === 'awaiting-sheet') && !row.sheet && (
                       <button onClick={e => { e.stopPropagation(); archiveNoSheet(row.id); }} disabled={busy === 'no-sheet'}
-                        title="This paper does not need a Practice Again sheet. Records it as 'no sheet needed' and clears the row."
+                        title="Archive: this paper needs no Practice Again sheet and leaves the desk. It stays in the library and on the student's page."
                         style={{ border: `1px solid ${C.border}`, background: '#fff', color: C.muted, borderRadius: 8, padding: '1px 8px', fontSize: 12, cursor: 'pointer' }}>
-                        📁 No sheet
+                        📁 Archive
                       </button>
                     )}
                     {row.lane === 'released' && row.releasedAt && <span>released {fmtDate(row.releasedAt)}{row.assignments ? ' + sheet' : ''}</span>}
@@ -1117,9 +1118,9 @@ function DetailView(p: {
               )}
               {(d.lane === 'auto' || d.lane === 'awaiting-sheet') && !d.sheetJob && (
                 <button onClick={p.onNoSheet} disabled={busy === 'no-sheet'}
-                  title="This paper does not need a Practice Again sheet. Records it as 'no sheet needed' and clears the row."
+                  title="Archive: this paper needs no Practice Again sheet and leaves the desk. It stays in the library and on the student's page."
                   style={{ border: `1px solid ${C.border}`, background: '#fff', color: C.muted, borderRadius: 8, padding: '3px 10px', fontSize: 12.5, cursor: 'pointer' }}>
-                  {busy === 'no-sheet' ? '…' : '📁 No sheet'}
+                  {busy === 'no-sheet' ? '…' : '📁 Archive'}
                 </button>
               )}
             </div>

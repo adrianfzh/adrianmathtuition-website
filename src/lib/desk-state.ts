@@ -91,6 +91,17 @@ function olderThan(iso: string, days: number, now: number): boolean {
   return Number.isFinite(t) && now - t > days * 86400_000;
 }
 
+/**
+ * 📁 Archived (Adrian, 9 Sep 2026: "for archive, i really mean archive it, so
+ * it does not appear on the list"): a paper he has put away — it needs no
+ * Practice Again sheet and it leaves the desk altogether (every lane, every
+ * count). The library (/admin/papers) and the student's own page still show it.
+ */
+export function isArchivedRun(resultJson: unknown): boolean {
+  const rj = resultJson as { archived_at?: unknown } | null;
+  return !!(rj && typeof rj === 'object' && typeof rj.archived_at === 'string' && rj.archived_at);
+}
+
 export function laneFor(run: DeskRun, latestSheetJob: DeskSheetJob, now: number = Date.now()): DeskLane {
   // 🤖 Released by the system (8 Sep 2026): a hand-in that cleared the accuracy
   // gates and went out without Adrian. It stays in its own lane until he has

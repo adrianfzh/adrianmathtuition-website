@@ -204,8 +204,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, jobId: job.id, round, heldItemsDeleted: held.deleted });
   }
 
-  // 📁 NO SHEET (Adrian, 9 Sep 2026: "can we have an archive option — meaning
-  // that these papers do not need a practice again sheet"). His decision is
+  // 📁 ARCHIVE (Adrian, 9 Sep 2026: "can we have an archive option — meaning
+  // that these papers do not need a practice again sheet" … "i really mean
+  // archive it, so it does not appear on the list"). His decision is
   // recorded the way the worker records "nothing to teach": a finished sheet
   // job whose result is {noSheet:true} — so the desk row reads "no sheet
   // needed", the student's page stops offering the Request button, and every
@@ -216,7 +217,7 @@ export async function POST(req: NextRequest) {
     const runId = String(body.runId || '');
     if (!/^[0-9a-f-]{36}$/i.test(runId)) return NextResponse.json({ error: 'runId required' }, { status: 400 });
     const { data: run, error: rErr } = await sb.from('paper_marking_runs')
-      .select('id, student_id, student_name, paper_name, released_at, released_via, checked_at')
+      .select('id, student_id, student_name, paper_name, released_at, released_via, checked_at, result_json')
       .eq('id', runId).maybeSingle();
     if (rErr) return NextResponse.json({ error: rErr.message }, { status: 500 });
     if (!run) return NextResponse.json({ error: 'run not found' }, { status: 404 });
@@ -238,12 +239,17 @@ export async function POST(req: NextRequest) {
       })
       .select('id').single();
     if (iErr || !job) return NextResponse.json({ error: iErr?.message || 'could not record it' }, { status: 500 });
-    let checked = false;
-    if (run.released_at && !run.checked_at) {
-      const { error: cErr } = await sb.from('paper_marking_runs').update({ checked_at: now }).eq('id', runId);
-      checked = !cErr;
-    }
-    return NextResponse.json({ ok: true, jobId: job.id, stopped, checked });
+    // 📁 ARCHIVE means archive (Adrian, 9 Sep 2026: "i really mean archive it,
+    // so it does not appear on the list"): the paper leaves the desk — every
+    // lane, every count (lib/desk-state.ts isArchivedRun) — and a released one
+    // is marked looked-at as well. The library and the student's page keep it.
+    const rj = (run.result_json && typeof run.result_json === 'object') ? { ...(run.result_json as Record<string, unknown>) } : {};
+    rj.archived_at = now; rj.archived_by = 'adrian';
+    const patch: Record<string, unknown> = { result_json: rj };
+    if (run.released_at && !run.checked_at) patch.checked_at = now;
+    const { error: aErr } = await sb.from('paper_marking_runs').update(patch).eq('id', runId);
+    if (aErr) return NextResponse.json({ error: `recorded no-sheet, but could not archive: ${aErr.message}` }, { status: 500 });
+    return NextResponse.json({ ok: true, jobId: job.id, stopped, archived: true });
   }
 
   if (body.action === 'cancel') {

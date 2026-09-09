@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  laneFor, sheetStageLabel, approveBlockers, releaseBlockers, deskFlags, defaultLane,
+  laneFor, sheetStageLabel, isArchivedRun, approveBlockers, releaseBlockers, deskFlags, defaultLane,
   amendedStatusFor, latestLiveJob, noSheetOf, pdfStaleOf, DESK_LANES, LANE_LABEL, orderLane,
 } from './desk-state';
 
@@ -248,5 +248,14 @@ describe('the system lane empties itself (8 Sep 2026)', () => {
     const run = { student_id: 'recX', released_at: '2026-09-01T10:00:00Z', released_via: 'auto:portal', checked_at: null };
     expect(laneFor(run, null, Date.parse('2026-09-05T10:00:00Z'))).toBe('auto');
     expect(laneFor(run, null, Date.parse('2026-09-09T10:00:00Z'))).toBe('released');
+  });
+});
+
+describe('isArchivedRun — 📁 Archive takes a paper off the desk (9 Sep 2026)', () => {
+  it('only a stamped archived_at counts', () => {
+    expect(isArchivedRun({ archived_at: '2026-09-09T00:00:00Z' })).toBe(true);
+    expect(isArchivedRun({ archived_at: '' })).toBe(false);
+    expect(isArchivedRun({ results: [] })).toBe(false);
+    expect(isArchivedRun(null)).toBe(false);
   });
 });
