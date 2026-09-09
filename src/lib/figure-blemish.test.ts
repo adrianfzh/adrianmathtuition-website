@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   parseEraseVerdict, inkComponents, snapToComponents, hintToPixels, boxesAsFractions, padBox,
-  MAX_COMPONENT_SHARE, BY_EYE, mergeBoxes, judgePrompt, type Component,
+  MAX_COMPONENT_SHARE, BY_EYE, mergeBoxes, judgePrompt, verifyPrompt, parseVerifyVerdict, type Component,
 } from './figure-blemish';
 
 /** A w×h white canvas with the given pixels inked. */
@@ -136,5 +136,23 @@ describe('judgePrompt', () => {
     expect(p).toContain('stray "d" in the left margin');
     expect(p).toMatch(/JSON only/);
     expect(judgePrompt(null)).not.toContain('review note');
+  });
+});
+
+describe('the second look — nothing washed is offered without it', () => {
+  it('passes only a clean that lost nothing of the figure', () => {
+    expect(parseVerifyVerdict('{"ok":true,"lost":[]}')).toMatchObject({ ok: true, lost: [] });
+    const bad = parseVerifyVerdict('{"ok":false,"lost":["the minus sign in (-2a,1) is gone","the green curve is gone"]}');
+    expect(bad.ok).toBe(false);
+    expect(bad.note).toMatch(/minus sign/);
+  });
+  it('treats "ok" with a loss list, and anything unparseable, as a refusal', () => {
+    expect(parseVerifyVerdict('{"ok":true,"lost":["the grey curve is fainter"]}').ok).toBe(false);
+    expect(parseVerifyVerdict('looks fine to me').ok).toBe(false);
+    expect(parseVerifyVerdict('').ok).toBe(false);
+  });
+  it('asks about the things a tone wash actually destroys', () => {
+    const p = verifyPrompt();
+    for (const s of ['MINUS SIGNS', 'dashed', 'gridlines', 'JSON only']) expect(p).toContain(s);
   });
 });

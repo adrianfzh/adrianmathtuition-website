@@ -61,7 +61,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { imgSrc, isPlausibleImagePath } from '@/lib/kiosk-worksheet-images';
 import { inspectFigure } from '@/lib/figure-checks';
-import { eraseBlemishes, parseEraseVerdict, judgePrompt, judgeView, boxesAsFractions, mergeBoxes, BY_EYE, type Blemish } from '@/lib/figure-blemish';
+import { eraseBlemishes, parseEraseVerdict, judgePrompt, judgeView, boxesAsFractions, mergeBoxes, verifyPrompt, parseVerifyVerdict, BY_EYE, type Blemish } from '@/lib/figure-blemish';
 import Anthropic from '@anthropic-ai/sdk';
 import {
   replaceSolutionImageRefsMany, repairPairsFor, verifyRefPairs,
@@ -527,16 +527,48 @@ async function cleanAsCandidate(
   const checks = await inspectFigure(r.png);
   if (checks.blank) return step('erase', 'the result is blank — refused');
 
+  // The second look. A pale wash cannot tell a grey curve from a grey stamp, so
+  // the judge is shown before and after and asked what of the FIGURE went with
+  // it. Measured 9 Sep 2026: on 26 stamped JC figures the wash was right 8 times
+  // and took part of the maths 18 times, so nothing washed is offered without
+  // this. Skipped only when nothing pale was touched AND a person drew the boxes.
+  let verified = '';
+  if (r.washedPale > 0 || !o.byEye) {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) return step('verify', 'ANTHROPIC_API_KEY is not set — a washed candidate is never offered unverified');
+    let vtext = '';
+    try {
+      const res = await new Anthropic({ apiKey }).messages.create({
+        model: JUDGE_MODEL, max_tokens: 4000,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: 'image/png', data: (await judgeView(bytes)).toString('base64') } },
+          { type: 'image', source: { type: 'base64', media_type: 'image/png', data: r.png.toString('base64') } },
+          { type: 'text', text: verifyPrompt() },
+        ] }],
+      });
+      vtext = res.content.map((c) => (c.type === 'text' ? c.text : '')).join('');
+    } catch (e) { return step('verify', `the second look could not be reached: ${(e as Error).message.slice(0, 160)}`); }
+    const v = parseVerifyVerdict(vtext);
+    if (!v.ok) {
+      return NextResponse.json({
+        error: `the clean took part of the figure with it — ${v.lost.join('; ') || 'the second look refused it'}`,
+        step: 'verify', lost: v.lost, skipped: r.skipped,
+      }, { status: 422 });
+    }
+    verified = v.note;
+  }
+
   const erased = boxesAsFractions(mergeBoxes(r.erased), r.width, r.height);
   const share = r.totalInk ? r.removedInk / r.totalInk : 0;
   const what = hints.map((h) => h.what).filter(Boolean).join('; ') || `${hints.length} mark(s)`;
-  const note = `🧹 erased: ${what} — ${r.removedInk} of ${r.totalInk} ink pixels (${(share * 100).toFixed(1)}%)`
+  const note = `🧹 cleaned: ${what} — ${r.removedInk} dark ink pixels (${(share * 100).toFixed(1)}% of the figure's ink)${r.washedPale ? ` and ${r.washedPale} pale pixels whitened` : ''}`
     + (r.skipped.length ? `; left alone: ${r.skipped.join('; ')}` : '')
-    + (unsure.length ? `; judge unsure about: ${unsure.join('; ')}` : '');
+    + (unsure.length ? `; judge unsure about: ${unsure.join('; ')}` : '')
+    + (verified ? `; ${verified}` : '');
   const judgedAt = new Date().toISOString();
   const side = {
     verdict: 'apply', route: 'blemish-erase', note,
-    method_note: `judge: ${judge}${o.boxes?.length && o.byEye ? ' (guards relaxed for hand-drawn boxes)' : ''}; each box snapped to the ink components inside it; canvas size unchanged; nothing else touched`,
+    method_note: `judge: ${judge}${o.boxes?.length && o.byEye ? ' (guards relaxed for hand-drawn boxes)' : ''}; dark marks by shape, pale marks by tone with the figure's ink protected; canvas size unchanged${verified ? '; ' + verified : ''}`,
     hold_kind: null, hold_reason: null, erased, judged_at: judgedAt, kind: o.kind,
   };
   const up1 = await supa.storage.from(BUCKET).upload(`candidates/${o.path}`, r.png, { contentType: 'image/png', upsert: true, cacheControl: '60' });

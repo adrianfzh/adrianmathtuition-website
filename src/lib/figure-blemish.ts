@@ -36,6 +36,30 @@ export const HINT_PAD = 0.015;
 export const MAX_REMOVED_SHARE = 0.08;
 /** Second look around a judge box that held no ink at all. */
 export const LOOSE_PAD = 0.05;
+
+// ── the pale half of the same button (9 Sep 2026) ────────────────────────────
+// Adrian, on CJC 2022 P1 Q4(a) — a whole, legible curve with a KIASU vendor
+// stamp sitting in the empty lower-left: "so clean does not work on such
+// images?" It did not, and the measurement says why: in that corner exactly 2
+// pixels are dark enough to count as ink, while 20,090 sit in a pale band the
+// component eraser cannot see. The figure's own ink is 0–140 and the stamp is
+// 160–235, so the two are separable by TONE even though they are not separable
+// by shape. So the same box now also whitens pale pixels — with everything as
+// dark as the figure, plus a halo around it, protected, so a curve running
+// through the box keeps its soft edges. He asked for one button, not two:
+// "can we group this functionality together with clean?"
+/** The figure's own ink. Anything this dark is never washed. */
+export const DARK = 120;
+/** Above this is the page itself; washing it would change nothing. */
+export const WASH_HI = 250;
+/** Pixels this close to the figure's ink are protected — the anti-aliased edge
+ *  of a stroke is mid-tone, and washing it would fray every line it touches. */
+export const PROTECT_PX = 2;
+/** A scan with no clearly dark ink gives no safe floor for the wash: on such an
+ *  image the FIGURE may itself be pale, so the wash refuses rather than guess. */
+export const MIN_DARK_SHARE = 0.0015;
+/** Washing more of the canvas than this is not a blemish job. */
+export const MAX_WASH_SHARE = 0.35;
 /** White margin painted around each erased component, in pixels. */
 export const ERASE_PAD = 2;
 /** The ink taken from a box must fill at least this share of the box (sum of
@@ -137,12 +161,16 @@ export type EraseOptions = {
   minInside?: number;
   minCoverage?: number;
   maxRemovedShare?: number;
+  /** Also whiten PALE pixels inside each box (a vendor watermark, a scan
+   *  shadow) — the figure's own ink and a halo round it are protected. */
+  wash?: boolean;
+  maxWashShare?: number;
 };
-export const AUTO: Required<EraseOptions> = { maxComponentShare: MAX_COMPONENT_SHARE, minInside: MIN_INSIDE, minCoverage: MIN_COVERAGE, maxRemovedShare: MAX_REMOVED_SHARE };
+export const AUTO: Required<EraseOptions> = { maxComponentShare: MAX_COMPONENT_SHARE, minInside: MIN_INSIDE, minCoverage: MIN_COVERAGE, maxRemovedShare: MAX_REMOVED_SHARE, wash: true, maxWashShare: MAX_WASH_SHARE };
 /** Hand-drawn boxes: bigger glyphs allowed, no coverage test, up to 70% of the
  *  ink — but a component must sit almost WHOLLY inside the box, so an axis or
  *  a curve that runs through a text band is never taken with it. */
-export const BY_EYE: Required<EraseOptions> = { maxComponentShare: 0.05, minInside: 0.95, minCoverage: 0, maxRemovedShare: 0.7 };
+export const BY_EYE: Required<EraseOptions> = { maxComponentShare: 0.05, minInside: 0.95, minCoverage: 0, maxRemovedShare: 0.7, wash: true, maxWashShare: 0.5 };
 
 export type Snap = {
   /** Components to erase, one list per accepted hint. */
@@ -194,6 +222,75 @@ export function snapToComponents(comps: Component[], hints: Blemish[], w: number
   return { erase, skipped };
 }
 
+/** Pixels as dark as the figure's own ink, grown by `pad` — never washed. */
+export function protectedMask(grey: Uint8Array | Buffer, w: number, h: number, dark = DARK, pad = PROTECT_PX): Uint8Array {
+  const m = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) if (grey[i] < dark) m[i] = 1;
+  if (pad <= 0) return m;
+  // Two 1-D passes: a square dilation, which is what a halo needs to be.
+  const rowGrow = (src: Uint8Array) => {
+    const out = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) {
+      const off = y * w;
+      for (let x = 0; x < w; x++) {
+        if (!src[off + x]) continue;
+        for (let d = -pad; d <= pad; d++) { const nx = x + d; if (nx >= 0 && nx < w) out[off + nx] = 1; }
+      }
+    }
+    return out;
+  };
+  const colGrow = (src: Uint8Array) => {
+    const out = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      if (!src[y * w + x]) continue;
+      for (let d = -pad; d <= pad; d++) { const ny = y + d; if (ny >= 0 && ny < h) out[ny * w + x] = 1; }
+    }
+    return out;
+  };
+  return colGrow(rowGrow(m));
+}
+
+export type WashResult = { mask: Uint8Array; count: number; boxes: Box[]; skipped: string[] };
+
+/**
+ * The pale half: inside each box, whiten every pixel that is paler than the
+ * figure's ink but darker than the page, unless it is protected. Returns the
+ * mask, how many pixels it covers, and one bounding box per hint that washed
+ * something (what the card outlines in red).
+ */
+export function washPale(
+  grey: Uint8Array | Buffer, w: number, h: number, hints: Blemish[], opt: EraseOptions = {},
+): WashResult {
+  const o = { ...AUTO, ...opt };
+  const mask = new Uint8Array(w * h);
+  const boxes: Box[] = [];
+  const skipped: string[] = [];
+  let count = 0;
+  let dark = 0;
+  for (let i = 0; i < w * h; i++) if (grey[i] < DARK) dark++;
+  if (dark / (w * h) < MIN_DARK_SHARE) {
+    return { mask, count: 0, boxes, skipped: ['the scan has no clearly dark ink, so a pale wash could take the figure itself — not attempted'] };
+  }
+  const prot = protectedMask(grey, w, h);
+  for (const hnt of hints) {
+    const b = hintToPixels(hnt.box, w, h, 0);
+    let x0 = w, y0 = h, x1 = -1, y1 = -1, n = 0;
+    for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) {
+      const i = y * w + x;
+      if (prot[i] || mask[i]) continue;
+      const v = grey[i];
+      if (v < DARK || v >= WASH_HI) continue;
+      mask[i] = 1; n++;
+      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+    }
+    if (n) { boxes.push({ x0, y0, x1, y1 }); count += n; }
+  }
+  if (count / (w * h) > o.maxWashShare) {
+    return { mask: new Uint8Array(w * h), count: 0, boxes: [], skipped: [`a pale wash would whiten ${Math.round((count / (w * h)) * 100)}% of the canvas — refused`] };
+  }
+  return { mask, count, boxes, skipped };
+}
+
 /** Grow a pixel box by `pad` and clamp to the canvas. */
 export function padBox(b: Box, w: number, h: number, pad = ERASE_PAD): Box {
   return { x0: Math.max(0, b.x0 - pad), y0: Math.max(0, b.y0 - pad), x1: Math.min(w - 1, b.x1 + pad), y1: Math.min(h - 1, b.y1 + pad) };
@@ -224,7 +321,7 @@ export function boxesAsFractions(boxes: Box[], w: number, h: number): Array<[num
 }
 
 export type EraseResult =
-  | { ok: true; png: Buffer; erased: Box[]; removedInk: number; totalInk: number; skipped: string[]; width: number; height: number }
+  | { ok: true; png: Buffer; erased: Box[]; removedInk: number; washedPale: number; totalInk: number; skipped: string[]; width: number; height: number }
   | { ok: false; reason: string; skipped: string[] };
 
 /**
@@ -234,24 +331,39 @@ export type EraseResult =
  */
 export async function eraseBlemishes(src: Buffer, hints: Blemish[], opt: EraseOptions = {}): Promise<EraseResult> {
   const o = { ...AUTO, ...opt };
-  const { data, info } = await sharp(src).flatten({ background: '#fff' }).greyscale().raw().toBuffer({ resolveWithObject: true });
+  const flat = sharp(src).flatten({ background: '#fff' });
+  const { data, info } = await flat.clone().greyscale().raw().toBuffer({ resolveWithObject: true });
   const w = info.width, h = info.height;
   if (w * h > 6_000_000) return { ok: false, reason: 'image too large to component-label', skipped: [] };
+
+  // Dark marks, by shape.
   const comps = inkComponents(data, w, h);
   const totalInk = comps.reduce((a, c) => a + c.pixels, 0);
   const snap = snapToComponents(comps, hints, w, h, o);
-  if (!snap.erase.length) return { ok: false, reason: 'nothing safe to erase', skipped: snap.skipped };
   const removedInk = snap.erase.reduce((a, c) => a + c.pixels, 0);
-  if (totalInk && removedInk / totalInk > o.maxRemovedShare) {
-    return { ok: false, reason: `would remove ${Math.round((removedInk / totalInk) * 100)}% of the ink — not a blemish job`, skipped: snap.skipped };
+  const tooMuchInk = !!totalInk && removedInk / totalInk > o.maxRemovedShare;
+
+  // Pale marks, by tone — the same boxes, the figure's ink protected.
+  const wash = o.wash ? washPale(data, w, h, hints, o) : { mask: new Uint8Array(0), count: 0, boxes: [] as Box[], skipped: [] as string[] };
+  const skipped = [...(tooMuchInk ? [`the dark ink selected is ${Math.round((removedInk / totalInk) * 100)}% of the figure — left alone`] : []), ...snap.skipped, ...wash.skipped];
+
+  const comp = tooMuchInk ? [] : snap.erase;
+  if (!comp.length && !wash.count) {
+    return { ok: false, reason: tooMuchInk ? `would remove ${Math.round((removedInk / totalInk) * 100)}% of the ink — not a blemish job` : 'nothing safe to erase', skipped };
   }
-  const erased = snap.erase.map((c) => padBox(c, w, h));
-  const overlays = erased.map((b) => ({
-    input: { create: { width: b.x1 - b.x0 + 1, height: b.y1 - b.y0 + 1, channels: 3 as const, background: '#fff' } },
-    left: b.x0, top: b.y0,
-  }));
-  const png = await sharp(src).flatten({ background: '#fff' }).composite(overlays).png().toBuffer();
-  return { ok: true, png, erased, removedInk, totalInk, skipped: snap.skipped, width: w, height: h };
+
+  const erased = [...comp.map((c) => padBox(c, w, h)), ...wash.boxes];
+  // One raw pass writes both: component rectangles and the washed pixels.
+  const rgb = await flat.clone().removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const px = rgb.data, ch = rgb.info.channels;
+  for (const b of comp.map((c) => padBox(c, w, h))) {
+    for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) {
+      const i = (y * w + x) * ch; for (let k = 0; k < ch; k++) px[i + k] = 255;
+    }
+  }
+  if (wash.count) for (let i = 0; i < w * h; i++) if (wash.mask[i]) { const j = i * ch; for (let k = 0; k < ch; k++) px[j + k] = 255; }
+  const png = await sharp(px, { raw: { width: w, height: h, channels: ch as 1 | 2 | 3 | 4 } }).png().toBuffer();
+  return { ok: true, png, erased, removedInk: tooMuchInk ? 0 : removedInk, washedPale: wash.count, totalInk, skipped, width: w, height: h };
 }
 
 /**
@@ -276,6 +388,42 @@ export async function judgeView(src: Buffer): Promise<Buffer> {
   }
   const svg = Buffer.from(`<svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">${lines.join('')}</svg>`);
   return sharp(src).flatten({ background: '#fff' }).composite([{ input: svg, left: 0, top: 0 }]).png().toBuffer();
+}
+
+// ── the second look (9 Sep 2026) ─────────────────────────────────────────────
+// Measured on 26 stamped JC solution images: a pale wash removed the vendor
+// stamp cleanly on 8 of them and took part of the MATHS on the other 18 — a
+// grey curve, a green curve, a red curve, the gridlines of a scatter plot, and
+// again and again the minus sign in front of a coordinate. Those figures are
+// drawn in grey or coloured strokes that live in the same tone band as the
+// stamp, so no tone rule can separate them. What CAN separate them is another
+// look: the judge is shown the before and the after and asked what disappeared
+// that belongs to the figure. A candidate that fails this is never offered.
+export type VerifyVerdict = { ok: boolean; lost: string[]; note: string };
+
+export function verifyPrompt(): string {
+  return [
+    'Two versions of the same exam figure: FIRST the original, SECOND after an automatic clean that was meant to',
+    'remove only foreign marks (a vendor watermark, a stray letter, page furniture).',
+    'Compare them carefully and answer this one question: did the clean remove or damage anything that BELONGS to',
+    'the figure? Look especially at thin strokes, dashed lines, grey or coloured curves, gridlines, axis numbers,',
+    'and MINUS SIGNS in front of coordinates — these are the things such a clean destroys most often.',
+    'Answer with JSON only, no prose:',
+    '{"ok":true,"lost":[]}  — the second image keeps every part of the figure, and the foreign marks are gone',
+    '{"ok":false,"lost":["<what went missing or broke, and where>"]}  — anything of the figure is missing or broken',
+    'Judge the FIGURE only. Foreign marks disappearing is the point and is never a loss.',
+    'If any part of the maths is fainter, broken into dashes, or gone, answer false.',
+  ].join('\n');
+}
+
+export function parseVerifyVerdict(text: string): VerifyVerdict {
+  const m = String(text ?? '').match(/\{[\s\S]*\}/);
+  if (!m) return { ok: false, lost: ['the second look returned no JSON'], note: 'unverified' };
+  let o: Record<string, unknown>;
+  try { o = JSON.parse(m[0]) as Record<string, unknown>; } catch { return { ok: false, lost: ['the second look\'s JSON did not parse'], note: 'unverified' }; }
+  const lost = (Array.isArray(o.lost) ? o.lost : []).filter((s): s is string => typeof s === 'string' && s.trim() !== '');
+  const ok = o.ok === true && lost.length === 0;
+  return { ok, lost, note: ok ? 'a second look confirms every part of the figure survived' : `a second look found: ${lost.join('; ') || 'the figure changed'}` };
 }
 
 /** What the judge is asked. The fitness note names the blemish already; the

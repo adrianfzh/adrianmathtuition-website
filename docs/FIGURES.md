@@ -154,6 +154,33 @@ Five actions, and only three of them write to the question row:
 | 🙈 **Keep hidden** | prefixes the note `Adrian: kept hidden · …`, status unchanged. **Decided**: the row leaves the working lane onto the 🙈 door. |
 | ✏️ **Redraw** | prefixes the note `Adrian: redraw · …`, status unchanged. **Decided**: the row leaves the working lane onto the ✏️ door. |
 
+**🧹 Clean also handles PALE marks, and never without a second look (9 Sep 2026).**
+Adrian, on CJC 2022 P1 Q4(a) — a whole, legible curve with a KIASU vendor stamp in
+the empty lower-left: *"so clean does not work on such images?"* It did not, and the
+measurement said why: in that corner exactly **2** pixels were dark enough to count
+as ink while **20,090** sat in a pale band the component eraser cannot see. The
+figure's own ink was 0–140 and the stamp 160–235, so the two are separable by TONE
+though not by shape. He asked for one button, not two (*"can we group this
+functionality together with clean?"*), so the same boxes now also whiten pale pixels,
+with everything as dark as the figure plus a 2px halo protected.
+
+**That is not enough on its own, and the numbers say so.** Run over 26 stamped JC
+solution images, a pale wash removed the stamp cleanly on **4** and took part of the
+MATHS on the other **22** — a grey curve, a green curve, a red curve, the gridlines
+of a scatter plot, and over and over the **minus sign** in front of a coordinate.
+Those figures are drawn in grey or coloured strokes living in the same tone band as
+the stamp; no tone rule can separate them. So every clean that touched a pale pixel
+now faces a **second look**: the judge is shown before and after and asked what of
+the figure disappeared, and a candidate that fails is never offered (`verifyPrompt` /
+`parseVerifyVerdict`, tested). Measured against a human eye on those 26, the second
+look was stricter — it caught losses the eye missed (a clipped ellipse arc, a faded
+asymptote label) and passed nothing the eye had rejected.
+
+So pointing Clean at a watermarked solution image is safe: it succeeds where the
+figure is solid dark ink and the stamp sits clear of it, and it declines the rest
+with the reason on the card. Residue is possible where the stamp spills outside the
+boxes the judge drew — the card shows it, and it is still Adrian's call.
+
 **🧹 Clean — a blemish erased as a candidate (9 Sep 2026).** Adrian, on a whole,
 legible sketch with one stray letter in its margin: *"instead of trim > how about
 clean as a candidate? … just faint blemishes in the diagram, would just need a
