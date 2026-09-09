@@ -53,7 +53,7 @@ export default function JoinForm({ refId, trial }: { refId: string | null; trial
       return;
     }
     if (data.matched) {
-      setMatched(String(data.message || 'We know you — check your email for your activation link.'));
+      setMatched(String(data.message || "Good news — you're already on Adrian's class list. We've sent an activation link to your email."));
       setBusy(false);
       return;
     }
@@ -70,9 +70,9 @@ export default function JoinForm({ refId, trial }: { refId: string | null; trial
   if (matched) {
     return (
       <div className="bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-6">
-        <h2 className="text-base font-bold text-navy mb-3">We know you 👋</h2>
+        <h2 className="text-base font-bold text-navy mb-3">Welcome back 👋</h2>
         <p className="text-sm text-gray-700 leading-relaxed">{matched}</p>
-        <p className="text-[12px] text-gray-500 mt-3">The link lasts 7 days. Can&apos;t find the email? Check spam, or ask Adrian for the link.</p>
+        <p className="text-[12px] text-gray-500 mt-3">The link works for 7 days. Not in your inbox? Have a look in spam, or just ask Adrian and he&apos;ll send it again.</p>
       </div>
     );
   }

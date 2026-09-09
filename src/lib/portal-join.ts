@@ -187,7 +187,7 @@ export function pickEnrolledByEmail(records: Array<{ id: string; email?: string 
 /** What the signup page shows a recognised student instead of "account created". */
 export function matchedStudentMessage(firstName: string | null | undefined): string {
   const who = String(firstName || '').trim().split(/\s+/)[0];
-  return `${who ? `${who}, you` : 'You'}'re already one of Adrian's students — we've emailed your activation link to this address. Open it to set up your account; your marked papers are waiting inside.`;
+  return `Good news${who ? `, ${who}` : ''} — you're already on Adrian's class list, so there's nothing to sign up for here. We've sent an activation link to your email. Tap it to set up your account, and your marked papers will be there when you log in.`;
 }
 
 /** Adrian's Telegram line for that case. */

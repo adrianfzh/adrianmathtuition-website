@@ -190,8 +190,8 @@ describe('an enrolled student at the public door (9 Sep 2026)', async () => {
     expect(pickEnrolledByEmail([{ id: 'a', email: 'x@y.z' }, { id: 'b', email: 'X@Y.Z' }], 'x@y.z')).toBeNull();
   });
   it('the messages name the student and say what happened', () => {
-    expect(matchedStudentMessage('Alessi Tay')).toMatch(/^Alessi, you're already one of Adrian's students/);
-    expect(matchedStudentMessage(null)).toMatch(/^You're already/);
+    expect(matchedStudentMessage('Alessi Tay')).toMatch(/^Good news, Alessi — you're already on Adrian's class list/);
+    expect(matchedStudentMessage(null)).toMatch(/^Good news — you're already/);
     expect(matchedSignupTelegramText('Alessi Tay', 'a@b.c', true)).toContain('invite emailed to a@b.c');
     expect(matchedSignupTelegramText('Alessi Tay', 'a@b.c', false)).toContain('could not be sent');
   });
