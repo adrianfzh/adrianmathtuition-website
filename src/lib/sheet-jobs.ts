@@ -99,6 +99,8 @@ export function pickNextJob(jobs: SheetJob[], now = Date.now()): SheetJob | null
 /** A sheet that was actually written and filed. */
 export type SheetFiledResult = {
   docx_path: string; pdf_path: string | null; wave: string[]; shelved: string[]; verified: string;
+  /** What came from an earlier sheet on the same paper (Adrian, 9 Sep 2026: "perhaps some examples can be reused") — [] when the sheet was written from scratch. */
+  reused: string[];
 };
 
 /**
@@ -149,6 +151,7 @@ export function sanitizeResult(input: unknown): SheetJobResult | null {
     wave: list(r.wave),
     shelved: list(r.shelved),
     verified: String(r.verified ?? '').trim().slice(0, 120),
+    reused: list(r.reused),
   };
 }
 
@@ -195,6 +198,7 @@ export function completionMessage(
   const lines = [`📘 <b>Self-study sheet ready — ${esc(who)}</b>${job.paper_name ? `\n${esc(job.paper_name)}` : ''}`];
   if (result?.wave.length) lines.push('', `<b>What it teaches</b> (${result.wave.length} section${result.wave.length === 1 ? '' : 's'})`, bullet(result.wave));
   if (result?.shelved.length) lines.push('', '<b>Shelved for later</b>', bullet(result.shelved));
+  if (result?.reused?.length) lines.push('', '<b>♻️ Reused from an earlier sheet</b>', bullet(result.reused));
   const stamp = String(result?.verified || '');
   const v = stamp.match(/^(\d+)\s*\/\s*(\d+)/);
   if (stamp) lines.push('', v ? `✓ Answers verified: ${v[1]} of ${v[2]} checked${v[1] === v[2] ? '' : ' ⚠️'}` : `⚠️ Verification stamp not in the "N/N" form — ${esc(clipText(stamp, 120))}`);

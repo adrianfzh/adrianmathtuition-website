@@ -19,6 +19,7 @@ import math
 
 import matplotlib
 matplotlib.use("Agg")
+import matplotlib.patches
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -384,8 +385,113 @@ def _render_points(spec, out_path):
 
 # ---------------------------------------------------------------- public ----
 
+# ---------------------------------------------------- binomial pairing ----
+# Adrian, 9 Sep 2026 (Alessi's AM 2021 P2, Q6 "no term in 1/x"): "explanation is
+# okay, but can also use arrows to show the expansion → more visual. Both
+# explanations will be good because students tend to have a hard time knowing
+# how to obtain the coefficients." Two brackets side by side; a coloured arrow
+# from each term of the first bracket to the partner it pairs with in the
+# second; the product written under the partner in the same colour.
+
+PAIR_COLOURS = ["#0432FF", "#EE0000", "#00B050", "#7030A0"]
+
+
+def _render_binomial_pairing(spec, out_path):
+    left = list(spec["left"])            # mathtext terms of the first bracket, e.g. ["2x^{2}", "1"]
+    right = list(spec["right"])          # terms of the expansion, e.g. ["64", "-576x^{-1}", ...]
+    pairs = list(spec["pairs"])          # [{"l": 0, "r": 3, "product": "2x^{2}\\times(-4320x^{-3}) = -8640x^{-1}"}, ...]
+    result = spec.get("result")          # optional last line, e.g. "\\text{coefficient of } x^{-1} = -8640 + (-576) = -9216"
+    target = spec.get("target")          # optional caption, e.g. "the terms that give x⁻¹"
+    if not left or not right or not pairs:
+        raise ValueError("binomial_pairing needs left[], right[] and pairs[]")
+    for pr in pairs:
+        if not (0 <= pr["l"] < len(left) and 0 <= pr["r"] < len(right)):
+            raise ValueError("binomial_pairing: pair index out of range: %r" % (pr,))
+
+    fs = 13
+    width_in = float(spec.get("width_in") or 6.2)
+    # vertical budget, in inches from the top
+    y_caption = 0.22 if target else 0.0
+    y_arrows = y_caption + 0.55                     # arc apex sits above the bracket line
+    y_line = y_arrows + 0.42                        # baseline of the brackets
+    y_first_product = y_line + 0.62
+    row = 0.36
+    y_result = y_first_product + row * len(pairs) + (0.12 if result else 0)
+    height_in = y_result + (0.32 if result else 0.08)
+    fig = plt.figure(figsize=(width_in, height_in))
+    fig.patch.set_facecolor("white")
+    renderer = fig.canvas.get_renderer()
+    W = width_in * fig.dpi
+
+    def fy(inches_from_top):
+        return 1.0 - inches_from_top / height_in
+
+    def put(x, y_in, s, **kw):
+        t = fig.text(x, fy(y_in), s, fontsize=kw.pop("fontsize", fs), ha="left", va="baseline", **kw)
+        bb = t.get_window_extent(renderer)
+        return t, bb.width / W
+
+    def split_sign(term, first):
+        term = term.strip()
+        neg = term.startswith("-") or term.startswith("\u2212")
+        body = term[1:].strip() if neg else term
+        return ("-" if neg else ("" if first else "+")), body
+
+    x = 0.03
+    gap = 0.012
+    left_pos, right_pos = [], []
+
+    def bracket(terms, positions):
+        nonlocal x
+        _, w = put(x, y_line, "("); x += w + gap * 0.5
+        for i, term in enumerate(terms):
+            sep, body = split_sign(term, i == 0)
+            if sep:
+                _, w = put(x, y_line, r"$%s$" % sep); x += w + gap
+            _, w = put(x, y_line, r"$%s$" % body)
+            positions.append((x, x + w))
+            x += w + gap
+        _, w = put(x, y_line, ")"); x += w + gap * 1.5
+
+    bracket(left, left_pos)
+    bracket(right, right_pos)
+    if x > 0.99:
+        raise ValueError("binomial_pairing: the brackets do not fit — shorten the terms or pass width_in")
+
+    box_h = 0.30 / height_in                        # dotted box around each paired term
+    box_bottom = fy(y_line + 0.08)
+    arrow_y = fy(y_line - 0.24)
+    for k, pr in enumerate(pairs):
+        c = pr.get("color") or PAIR_COLOURS[k % len(PAIR_COLOURS)]
+        (l0, l1), (r0, r1) = left_pos[pr["l"]], right_pos[pr["r"]]
+        lx, rx = (l0 + l1) / 2, (r0 + r1) / 2
+        fig.patches.append(matplotlib.patches.FancyArrowPatch(
+            (lx, arrow_y), (rx, arrow_y), transform=fig.transFigure,
+            connectionstyle="arc3,rad=%.2f" % (-0.22 - 0.05 * k), arrowstyle="-|>",
+            mutation_scale=12, color=c, lw=1.4, shrinkA=0, shrinkB=0))
+        for (a, b) in ((l0, l1), (r0, r1)):
+            fig.patches.append(matplotlib.patches.Rectangle(
+                (a - 0.005, box_bottom), (b - a) + 0.010, box_h, transform=fig.transFigure,
+                fill=False, lw=1.0, ls=(0, (2, 2)), color=c))
+        if pr.get("product"):
+            put(0.03, y_first_product + row * k, r"$%s$" % pr["product"], color=c, fontsize=fs - 1)
+    if target:
+        put(0.03, y_caption, target, fontsize=fs - 2, style="italic", color="#555555")
+    if result:
+        put(0.03, y_result + 0.1, r"$%s$" % result, fontsize=fs - 1)
+    fig.savefig(out_path, dpi=DPI, facecolor="white")
+    plt.close(fig)
+    try:
+        from worksheet_lib import trim_to_ink
+        trim_to_ink(out_path)
+    except Exception:
+        pass
+    return out_path
+
+
 _RENDERERS = {
     "graph": _render_graph,
+    "binomial_pairing": _render_binomial_pairing,
     "normal": _render_normal,
     "histogram": _render_histogram,
     "boxplot": _render_boxplot,
@@ -428,6 +534,14 @@ if __name__ == "__main__":
                    "segments": [["A", "B"], ["B", "C"], ["C", "D"], ["D", "A"], ["A", "C", "dashed"]],
                    "right_angles": [["A", "B", "C"]],
                    "angle_arcs": [{"at": "A", "from": "B", "to": "D", "label": "θ"}]},
+    }
+    samples["binomial_pairing"] = {
+        "kind": "binomial_pairing", "target": "the terms that give x⁻¹",
+        "left": ["2x^{2}", "1"],
+        "right": ["64", "-576x^{-1}", "2160x^{-2}", "-4320x^{-3}", "\\cdots"],
+        "pairs": [{"l": 0, "r": 3, "product": "2x^{2}\\times(-4320x^{-3}) = -8640x^{-1}"},
+                  {"l": 1, "r": 1, "product": "1\\times(-576x^{-1}) = -576x^{-1}"}],
+        "result": "\\text{coefficient of } x^{-1} = -8640 - 576 = -9216",
     }
     for name, spec in samples.items():
         path = "%s/sample_%s.png" % (out, name)

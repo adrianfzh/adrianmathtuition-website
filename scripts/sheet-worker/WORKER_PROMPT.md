@@ -75,6 +75,18 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
      picked and what you left out. His real checkpoint is the DOCX he edits.
    - `job.focus`, when present, is Adrian's instruction about which cluster to
      take. Honour it over your own judgement.
+   - The marker's part-level `gap` is a LEAD, not the diagnosis (Adrian, 9 Sep
+     2026, Alessi's AM 2021 P2): find the line where the student stopped or went
+     wrong and teach THAT step. She had the maximum of R sin(θ + α) and lacked
+     the angle; the sheet taught the maximum. A show-that worked in decimals
+     needs "carry exact form through a show-that", not the area formula. The
+     skill's "Teach the missed STEP" bullet has both cases.
+   - **Reuse before you write** (skill §"Reuse before you write"): `GET
+     /api/admin/sheet-jobs?paper=<this paper>&status=done` lists earlier sheets
+     on the same paper with their diagnosis; same question + same gap → reuse
+     that Example (Adrian's edited docx first — `scripts/dropbox-get.mjs
+     … --meta` shows whether he edited it), re-verify its numbers, and name it
+     in `result.reused`. A different gap on the same question is not a reuse.
 
 3. **Heartbeat every ~10 minutes** while you work, or the lease expires and
    another tick reclaims the job. **Send a `stage` with every beat**, and change
@@ -107,6 +119,15 @@ python3 -c "import zipfile,re,sys; t=re.sub(r'<[^>]+>',' ',zipfile.ZipFile(sys.a
 ```
 
     - `never` must be 0 (say *not* / *does not* / *only when*).
+    - **No maths typed as text** (9 Sep 2026 — Alessi's `[No term in 1/x]` tag
+      was a plain-text run): zero hits from
+
+```bash
+python3 -c "import sys; sys.path.insert(0, '.claude/skills/create-worksheet'); from worksheet_lib import find_plain_maths; h = find_plain_maths(sys.argv[1]); [print('  ', r, '—', why) for r, why in h]; print('plain-text maths:', len(h)); sys.exit(1 if h else 0)" "<the .docx>"
+```
+
+      Green rule tags are built with `worksheet_lib.tag(...)`; a binomial
+      pairing section carries a `binomial_pairing` figure beside its prose.
     - `Common Error` above 2 means you are writing one under every example —
       keep only the ones that name the wrong tool or a trap that costs marks.
     - Answers: one `[Ans: …]` per practice question, after the whole question.
@@ -144,6 +165,7 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
         "docx_path":"/Students/<Student>/<YYYY-MM-DD> <paper>/3 Practice Again.docx","pdf_path":"/Students/<Student>/<YYYY-MM-DD> <paper>/3 Practice Again.pdf",
         "wave":["chain rule","∫1/(ax+b)"],"shelved":["Polynomials","Plane Geometry"],
         "verified":"42/42 answers checked",   ← MUST begin "<checked>/<total>"; anything after is a note. A stamp that does not start with N/N holds the sheet for Adrian (8 Sep 2026: "77 sympy checks on this re-render…" was read as unverified)
+        "reused":["Q6 example from Alessi Tay's 8 Sep sheet (Adrian's edited copy)"],   ← optional, 9 Sep 2026: what came from an earlier sheet on this paper; [] or omit when nothing did
         "questions":[
           {"section":"Practice 1","index":1,"skill_title":"Master Finding Area Using Integration",
            "question_id":"6f1d2c3b-4a5e-4f60-8a9b-0c1d2e3f4a5b","text_latex":null,
@@ -170,6 +192,9 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
 
    **`gap` — the rule or habit the student does not have** (7 Sep 2026): copy the
    marker's part-level `gap` (or your own reading of it) onto the diagnosis entry.
+   Since 9 Sep 2026 it names the STEP the student could not do, checked against
+   the script — "cannot find the θ that gives the maximum", not "R-formula" —
+   because the marker's gap can point at a step they already had (Alessi, Q4(c)).
    An entry with a gap is teaching material and is never `optional`, whatever it
    cost — the route promotes it, and page 1 prints "Gap: …" under the theme.
 

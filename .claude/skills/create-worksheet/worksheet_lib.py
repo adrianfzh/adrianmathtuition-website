@@ -28,7 +28,7 @@ from docx.enum.style import WD_STYLE_TYPE
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 from lxml import etree
-import subprocess, tempfile, os, zipfile, io
+import subprocess, tempfile, os, zipfile, io, re
 
 W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
 M_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/math'
@@ -194,6 +194,112 @@ def _colour_math(elem, hex_rgb):
         col = OxmlElement('w:color')
         col.set(qn('w:val'), hex_rgb)
         wrpr.append(col)
+
+
+def _embolden_math(elem):
+    """Bold every math run inside a converted OMML element."""
+    if elem is None:
+        return
+    for r in elem.iter(f'{{{M_NS}}}r'):
+        wrpr = r.find(qn('w:rPr'))
+        if wrpr is None:
+            wrpr = OxmlElement('w:rPr')
+            mrpr = r.find(f'{{{M_NS}}}rPr')
+            if mrpr is not None:
+                mrpr.addnext(wrpr)
+            else:
+                r.insert(0, wrpr)
+        if wrpr.find(qn('w:b')) is None:
+            wrpr.insert(0, OxmlElement('w:b'))
+
+
+def _hex(color):
+    """'00B050' or RGBColor → 'RRGGBB'."""
+    if isinstance(color, RGBColor):
+        return str(color)
+    return str(color).lstrip('#').upper()
+
+
+RULE_GREEN = '00B050'     # Adrian's green: the rule, and the result it produces
+MATCH_BLUE = '0432FF'     # the expression being matched
+CHANGE_RED = 'EE0000'     # the piece added or changed
+
+
+def tag(*items, color=RULE_GREEN, bold=True, brackets=True):
+    """Adrian's green bold square-bracket rule tag, as a parts list.
+
+    The general rule sits inside a step in green bold square brackets — and
+    the maths inside the tag is an equation object like everywhere else, never
+    typed characters (Alessi's AM 2021 P2 sheet, 9 Sep 2026: "[No term in 1/x]"
+    shipped with a plain-text 1/x). So build the tag from pieces:
+
+        tag('No term in ', ('math', r'\frac{1}{x}'))
+        → [('text', '[No term in ', {...green bold}),
+           ('math', '\\frac{1}{x}', {'color': '00B050', 'bold': True}),
+           ('text', ']', {...green bold})]
+
+    Strings are words; ('math', latex) tuples are inline OMML in the same ink.
+    Splice the result into any parts list: `[('text', 'so '), *tag(...), ('text', '.')]`.
+    `brackets=False` gives the same coloured run without the square brackets —
+    a coloured principle line, or the blue/red pieces of a step.
+    """
+    hex_rgb = _hex(color)
+    text_attrs = {'bold': bold, 'color': RGBColor.from_string(hex_rgb)}
+    math_attrs = {'bold': bold, 'color': hex_rgb}
+    out = []
+    if brackets:
+        out.append(('text', '[', dict(text_attrs)))
+    for it in items:
+        if isinstance(it, str):
+            out.append(('text', it, dict(text_attrs)))
+        elif isinstance(it, (tuple, list)) and it and it[0] in ('math', 'math_display'):
+            out.append((it[0], it[1], dict(math_attrs)))
+        elif isinstance(it, (tuple, list)) and it and it[0] == 'text':
+            attrs = dict(text_attrs); attrs.update(it[2] if len(it) > 2 else {})
+            out.append(('text', it[1], attrs))
+        else:
+            raise ValueError(f'tag(): items are strings or (\'math\', latex) tuples, got {it!r}')
+    if brackets:
+        out.append(('text', ']', dict(text_attrs)))
+    return out
+
+
+# ── plain-text maths lint (9 Sep 2026) ───────────────────────────────────────
+# "If it is maths, it is an equation object, wherever it appears" — and the
+# only sweep the sheets had looked INSIDE <m:t>, so a 1/x typed into a Word run
+# was invisible to it. This looks at every <w:t> run instead.
+_PLAIN_MATHS = [
+    (re.compile(r'[0-9A-Za-z)\]]\s?/\s?[0-9A-Za-z(]'), 'fraction typed with a slash'),
+    (re.compile(r'\^'), 'power typed with ^'),
+    (re.compile(r'[²³⁴⁵⁶⁷⁸⁹⁰¹⁻]'), 'superscript characters'),
+    (re.compile(r'[√∫∑∞≤≥≠±×÷]'), 'maths symbol typed as text'),
+    (re.compile(r'[αβγθπλμω]'), 'Greek letter typed as text'),
+    (re.compile(r'(sin|cos|tan|sec|cosec|cot|ln|lg|log)\s?[(0-9a-zθxA]'), 'trig/log typed as text'),
+    (re.compile(r'(?<![A-Za-z])[a-zA-Z]\s?=\s?[-−0-9a-zA-Z(]'), 'equation typed as text'),
+    (re.compile(r'[0-9)]\s?[=<>]\s?[-−0-9a-zA-Z(]'), 'equation typed as text'),
+    (re.compile(r'\d\s?°'), 'angle typed as text'),
+]
+_PLAIN_MATHS_OK = re.compile(
+    r'(?i)(and/or|cm|mm|m|km|g|kg|ml|l|units?)\s?/\s?(s|h|hr|min|cm|m|kg|g|unit|or)'
+    r'|Q\d+\s?\([a-z]+\)\s?/\s?\([a-z]+\)'   # Q4(a)/(b)
+    r'|\d{1,2}/\d{1,2}/\d{2,4}'             # a date
+)
+
+
+def find_plain_maths(docx_path):
+    """Every <w:t> run in a saved .docx that looks like maths typed as text.
+    Returns a list of (run text, reason). Empty list = clean."""
+    import zipfile as _zf
+    xml = _zf.ZipFile(docx_path).read('word/document.xml').decode('utf8', 'ignore')
+    hits = []
+    for t in re.findall(r'<w:t(?:\s[^>]*)?>([^<]*)</w:t>', xml):
+        text = t.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
+        probe = _PLAIN_MATHS_OK.sub(' ', text)
+        for rx, why in _PLAIN_MATHS:
+            if rx.search(probe):
+                hits.append((text, why))
+                break
+    return hits
 
 
 def _recolour_paragraph(p, hex_rgb):
@@ -470,16 +576,21 @@ class Worksheet:
                     run.underline = True
                 if attrs.get('color'):
                     run.font.color.rgb = attrs['color']
-            elif kind == 'math':
-                elem = _latex_to_omml(part[1], display=False)
+            elif kind in ('math', 'math_display'):
+                elem = _latex_to_omml(part[1], display=(kind == 'math_display'))
                 if elem is not None:
                     _style_annotations(elem)
+                    # ('math', latex, {'color': '00B050', 'bold': True}) — the
+                    # maths inside a coloured tag or a coloured principle line
+                    # takes the same ink as the words around it (9 Sep 2026).
+                    attrs = part[2] if len(part) > 2 else {}
+                    if attrs.get('color'):
+                        _colour_math(elem, _hex(attrs['color']))
+                    if attrs.get('bold'):
+                        _embolden_math(elem)
                     p._element.append(elem)
-            elif kind == 'math_display':
-                elem = _latex_to_omml(part[1], display=True)
-                if elem is not None:
-                    _style_annotations(elem)
-                    p._element.append(elem)
+            else:
+                raise ValueError(f"unknown part kind {kind!r} — use 'text', 'math' or 'math_display'")
 
     # ---------- public API ----------
     def title(self, text):
@@ -875,7 +986,7 @@ class Worksheet:
                                 for par in c2.paragraphs:
                                     fix(par)
 
-    def save(self, path):
+    def save(self, path, strict_maths=False):
         """Save the worksheet, injecting clean numbering.xml."""
         self._enforce_line_spacing(1.5)
         self._finish_block()    # the last question has no Q() after it
@@ -902,3 +1013,14 @@ class Worksheet:
                 zout.writestr(name, data)
 
         print(f'Saved {path}')
+        # Maths typed as text is the rule most often half-obeyed; say so at
+        # once, per run, so the author fixes the parts list rather than the
+        # file. `strict_maths=True` makes it a failure (the sheet worker's
+        # pre-file lint runs the same check and exits 1 on any hit).
+        hits = find_plain_maths(path)
+        if hits:
+            print(f'WARNING: {len(hits)} run(s) look like maths typed as text — use (\'math\', …) parts:')
+            for text, why in hits[:40]:
+                print(f'   {why}: {text!r}')
+            if strict_maths:
+                raise ValueError(f'{len(hits)} plain-text maths run(s) in {path}')

@@ -106,6 +106,19 @@ export async function listFolder(path: string): Promise<DbxEntry[]> {
   return out;
 }
 
+/**
+ * One file's metadata (files/get_metadata). `client_modified` is the mtime the
+ * writing client reported — Word on Adrian's Mac stamps it when he saves, so a
+ * client_modified later than the sheet job's completed_at means he edited the
+ * sheet (the "reuse before you write" check, 9 Sep 2026). Throws when the path
+ * does not exist.
+ */
+export async function getMetadata(path: string): Promise<{ name: string; path: string; size: number; client_modified: string; server_modified: string; rev: string }> {
+  const e = await rpc<{ '.tag': string; name: string; path_lower: string; size: number; client_modified: string; server_modified: string; rev: string }>('/files/get_metadata', { path });
+  if (e['.tag'] !== 'file') throw new Error(`Dropbox get_metadata: ${path} is a ${e['.tag']}, not a file`);
+  return { name: e.name, path: e.path_lower, size: e.size, client_modified: e.client_modified, server_modified: e.server_modified, rev: e.rev };
+}
+
 /** Short-lived (~4h) direct download link for a file, for opening/printing in the browser. */
 export async function getTemporaryLink(path: string): Promise<string> {
   const data = await rpc<{ link: string }>('/files/get_temporary_link', { path });

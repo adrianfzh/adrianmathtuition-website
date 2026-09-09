@@ -1,6 +1,10 @@
 // /api/admin/sheet-jobs — the self-study sheet queue (SPEC-TEACHING-CYCLE).
 //
 //   GET                          → { jobs } (newest 30)
+//   GET ?paper=<ilike>&status=done&limit=  → { jobs } filtered; with ?paper= each job also carries
+//                                  `diagnosis` (the run's stored sheet diagnosis) — the "reuse
+//                                  before you write" lookup (Adrian, 9 Sep 2026): earlier sheets
+//                                  on the same paper, section by section, with their gaps
 //   POST { runId, focus?, remark? } → { job }   Adrian queues a sheet (compulsory once released); remark:true replaces an existing sheet
 //   POST { action:'next', by }   → { job|null }   worker claims the next job (lease)
 //   POST { action:'beat', id }   → { ok }         heartbeat while authoring
@@ -114,10 +118,30 @@ async function deliverRequestedSheet(req: NextRequest, runId: string): Promise<{
 
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  const { data, error } = await getSupabaseAdmin()
-    .from('sheet_jobs').select('*').order('created_at', { ascending: false }).limit(30);
+  const sp = req.nextUrl.searchParams;
+  const paper = (sp.get('paper') || '').trim().slice(0, 120);
+  const status = (sp.get('status') || '').trim().slice(0, 20);
+  const limit = Math.min(200, Math.max(1, Number(sp.get('limit')) || 30));
+  const sb = getSupabaseAdmin();
+  let q = sb.from('sheet_jobs').select('*').order('created_at', { ascending: false }).limit(limit);
+  // PostgREST's ilike pattern: escape the wildcards a paper name could carry, then wrap.
+  if (paper) q = q.ilike('paper_name', `%${paper.replace(/[%_\\]/g, m => `\\${m}`)}%`);
+  if (status) q = q.eq('status', status);
+  const { data, error } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ jobs: data ?? [] });
+  let jobs = (data ?? []) as Array<Record<string, unknown> & { run_id?: string | null }>;
+  // The sheet's diagnosis lives on the RUN (storeDiagnosis → result_json.diagnosis),
+  // not on the job — attach it so a reuse lookup sees title / questions / gap per section.
+  if (paper && jobs.length) {
+    const runIds = Array.from(new Set(jobs.map(j => j.run_id).filter((x): x is string => !!x)));
+    const { data: runs } = await sb.from('paper_marking_runs').select('id, result_json').in('id', runIds);
+    const byRun = new Map<string, unknown>();
+    for (const r of (runs ?? []) as Array<{ id: string; result_json: { diagnosis?: unknown } | null }>) {
+      byRun.set(r.id, r.result_json?.diagnosis ?? null);
+    }
+    jobs = jobs.map(j => ({ ...j, diagnosis: j.run_id ? byRun.get(j.run_id) ?? null : null }));
+  }
+  return NextResponse.json({ jobs });
 }
 
 export async function POST(req: NextRequest) {

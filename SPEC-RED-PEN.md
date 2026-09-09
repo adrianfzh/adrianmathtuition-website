@@ -51,6 +51,15 @@ verdicts, `parts[]` with marks, `correct.full_solution_latex`. Plus, from 5 Sep 
    goes **right beside the mistake**; its `why_short` on the same row if it fits, else the
    row below, with the short leader. The side column is the **fallback**, never the first
    choice (Adrian, 5 Sep: beside beats neater).
+   **Which line (9 Sep 2026).** The ✗ sits on the line where the error is MADE — the
+   first line that is wrong on its own terms — never on a later line that merely inherits
+   the value. Alessi's AM 2021 P2 Q10: "Gradient = (0 − 0)/(2π/3 − 0) = 3/(2π)" is the
+   wrong line (a zero numerator cannot give 3/(2π)); the next line "y = 3/(2π) x" only
+   carries it and is correct under ECF. The ✗, the kind label, the ring and the fix all
+   land on the gradient line; the equation line gets no ✗ unless it errs anew. Adrian:
+   "the gradient calculation is wrong, but no cross there." The originating-line rule in
+   the marker's prompt (`ai/paper-marker.js` "THE ✗ GOES WHERE THE ERROR IS MADE") is
+   what places it; `dedupeKindLabels` then writes the kind once, at that topmost ✗.
 2. **The circle.** Ask placement for a box round `slip_token` only. Draw the circle only if
    the box lies inside the line's box, is under 60% of its width and under 1.3× its
    height. Otherwise **underline the whole line** and write the fix beside it. A circle in
@@ -124,6 +133,8 @@ verdicts, `parts[]` with marks, `correct.full_solution_latex`. Plus, from 5 Sep 
 
 - Never change a mark from this layer. Everything here is display.
 - Never draw a glyph on a neutral, crossed-out or second-pen line.
+- Never leave the line where the error is made unmarked while a downstream line carries
+  its ✗ (9 Sep 2026, Alessi Q10's gradient line).
 - Never print a solution for a full-marks part, or for a part this page does not hold.
 - Never a circle without a passing box. Never a continuation that does not reach the
   answer. Never a verdict line off the approved phrase bank without Adrian's sign-off.

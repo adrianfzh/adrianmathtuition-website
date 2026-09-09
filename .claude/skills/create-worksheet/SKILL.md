@@ -122,7 +122,27 @@ A `parts` argument is a list of tuples. Each tuple is one of:
 ('text', "string", {'color': RGBColor(0xff,0,0)})     # coloured text
 ('math', "latex_expr")                                # inline equation
 ('math_display', "latex_expr")                        # display equation inline
+('math', "latex_expr", {'color': '00B050', 'bold': True})   # coloured / bold equation (9 Sep 2026)
 ```
+
+**Green rule tags** — Adrian's `[rule in green bold square brackets]` inside a
+step — are built with `tag(...)`, which returns a parts list to splice in, and
+keeps any maths inside the brackets as an equation object:
+
+```python
+from worksheet_lib import tag
+ws.solution_box([('', [ [('text', 'so the coefficient is 0 '), *tag('No term in ', ('math', r'\frac{1}{x}'))], r'\ldots' ])])
+# tag(*items, color=RULE_GREEN, bold=True, brackets=True): strings → green bold text,
+# ('math', latex) → green bold OMML; brackets=False for a coloured run without [ ].
+```
+
+Never type the tag as `('text', '[No term in 1/x]')` — that is how Alessi's sheet
+shipped a slash fraction as characters (Adrian, 9 Sep 2026: "1/x is not written
+as OMML"). `ws.save(path)` prints a WARNING listing every run of maths typed as
+text; `ws.save(path, strict_maths=True)` refuses to save on one. The same check
+is callable on any finished file: `worksheet_lib.find_plain_maths('out.docx')`
+→ `[(run text, reason), …]` (units like `cm/s`, part refs like `Q4(a)/(b)` and
+dates are allowed).
 
 Mix freely:
 
@@ -248,6 +268,7 @@ Supported genres (`figure_lib.GENRES`) and their key spec fields:
 | `histogram` | `bins: [[lo, hi, freq], …]`, `density: true` for unequal widths, `xlabel` |
 | `boxplot` | `min, q1, median, q3, max`, `xticks`, `xlabel` |
 | `cumulative` | `points: [[x, cf], …]`, `xlabel` (ogive with grid) |
+| `binomial_pairing` | `left: [mathtext terms of the first bracket]`, `right: [terms of the expansion]`, `pairs: [{l, r, product, color?}]` (indices into `left`/`right`; `product` is the mathtext line written under the picture in the pair's colour), `target?` (italic caption, e.g. `'the terms that give x⁻¹'`), `result?` (the coefficient line), `width_in?` (default 6.2). One coloured arrow per pair, dotted boxes round both terms, products stacked left-aligned. Adrian, 9 Sep 2026: "use arrows to show the expansion → more visual … both explanations will be good" — so the prose stays and the picture joins it, embedded with `ws.figure(png, width_cm=13)` after the expansion step |
 | `points` | `points: {A: [x,y], …}`, `segments: [[A,B] or [A,B,'dashed']]`, `circles`, `right_angles: [[A,B,C]]` (mark at B), `angle_arcs: [{at, from, to, label}]`, `labels: [{text, at, halo?, size?}]` (`halo: true` paints a white box behind the text — use it for any dimension label that has to sit on or near a line, otherwise the line strikes through it), `hide_points: [names]`, `axes: true` for coordinate questions |
 
 - `expr` strings use a whitelisted namespace: `x`, `sin cos tan exp ln log sqrt abs pi e`.

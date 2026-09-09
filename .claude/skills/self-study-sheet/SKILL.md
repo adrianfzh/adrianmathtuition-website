@@ -112,7 +112,29 @@ Within the one paper, the ranking rules still hold:
   power of a linear bracket"*. A missed instruction is a gap too (Q2: "show
   that x = −1 is a solution" was never done — the habit is *read the
   instruction and answer it first*). Copy the marker's `gap` text into the
-  diagnosis entry's `gap` field, so page 1 names it.
+  diagnosis entry's `gap` field — after checking it against the script (next
+  bullet) — so page 1 names it.
+- **Teach the missed STEP, not the whole method** (Adrian, 9 Sep 2026, Alessi's
+  AM 2021 P2 — binding). The marker's `gap` is a LEAD, not the diagnosis: read the
+  script, find the exact line where the student stopped or went wrong, and THAT
+  line is what the section teaches. Two cases from one paper:
+  - Q4(c), R-formula: she found R and the maximum value correctly and could not
+    find the θ that gives it. The marker's gap said "does not use max of sine = 1
+    to find a greatest value" — the wrong lead, and the sheet spent its example
+    on the maximum she already had. The section is "Finding the θ at which
+    R sin(θ + α) is greatest: θ + α = 90°"; its example starts from the maximum
+    and spends its steps on the angle; every practice item asks for the angle.
+  - Q10, area between a line and a curve: the gradient was computed wrongly AND
+    every value from there on was a decimal, in a "show that" whose target is
+    exact (π and √3). The gap is not "area = ∫ y dx − triangle"; it is *carrying
+    exact form through a show-that* — exact trig values at π/3, the gradient as
+    a fraction with π in it, integrating every term, keeping √3 and π until the
+    last line matches the target.
+  The diagnosis entry's `gap` names the STEP ("cannot find the θ that gives the
+  maximum", "works a show-that in decimals"), so page 1 tells the student what
+  to practise rather than which topic they are weak in. The worked example
+  STARTS from what the student already had right and spends its steps on the
+  missing move.
 - **Rank by damage.** Marks lost to the skill, across every question it touched.
 - **Recurrence outranks size — within the paper.** The same slip in Q9 and Q16
   is a hole they carry into the exam; a single 6-mark loss may be one hard
@@ -349,7 +371,11 @@ the shape, in one breath:
   **auto-numbered steps** that each say what you are doing.
 - **The general rule sits inside the step in green bold square brackets**:
   `y = [the expression on the other side of the equal sign] is the graph you
-  need to draw`.
+  need to draw`. Build the tag with `worksheet_lib.tag(...)` —
+  `tag('No term in ', ('math', r'\frac{1}{x}'))` splices into any parts list —
+  so any maths inside the brackets is an equation object, not characters
+  (Adrian, 9 Sep 2026: "1/x is not written as OMML" — Alessi's tag had been typed
+  as a `('text', …)` part, the one slash fraction on an otherwise clean sheet).
 - **Every algebraic move carries a grey `←` that names its TARGET**: `← divide by
   −2 to obtain x³ − 3x²`, `← add 2 to obtain x³ − 3x² + 2 (which is the graph
   drawn)`.
@@ -533,6 +559,22 @@ Invoke `create-teaching-notes` and give it this brief:
   answer is a log").
 - **Worked examples reproduce the SHAPE of the question they got wrong**, with
   changed numbers — never a generic textbook example of the same topic.
+- **Exact form is carried through a "show that"** (Adrian, 9 Sep 2026, Alessi's
+  Q10). When the target is exact — π, a surd, a fraction — the example works every
+  line exactly: exact trig values, fractions not decimals, π kept as π, and a
+  green tag at the line where the decimal habit would have lost the mark ("[a
+  show-that ends at the target's exact form — no decimals on the way]"). A
+  show-that worked in decimals can never "show" the target, so every practice
+  item in that section has an exact target too.
+- **Binomial products get prose AND arrows** (Adrian, 9 Sep 2026, Alessi's Q6:
+  "students tend to have a hard time knowing how to obtain the coefficients").
+  The pairing of powers is explained in words in the steps AND drawn:
+  `figure_lib.render({'kind': 'binomial_pairing', …})` — the two brackets side by
+  side, one coloured arrow from each term of the first bracket to the term it
+  multiplies in the second, the product under the picture in the same colour,
+  then the coefficient line. `ws.figure(png, width_cm=13)` right after the
+  expansion step, before the coefficient step. Both, always: the picture shows
+  WHICH terms pair, the prose says WHY those and no others.
 - **Practice layout is fixed (Adrian, 31 Aug 2026):**
   - **Number the items 1, 2, 3 …** — never (a), (b), (c). Letters are for the
     PARTS of one question; using them for separate questions makes a
@@ -578,6 +620,48 @@ Invoke `create-teaching-notes` and give it this brief:
   never pairs anything. The student drills something adjacent and the skill goes
   untouched. Test each practice item by asking: **can this be answered without
   doing the thing the Example taught?** If yes, it is the wrong question.
+
+### Reuse before you write (Adrian, 9 Sep 2026)
+
+"For frequently marked papers, perhaps some examples can be reused if
+appropriate." Until 9 Sep nothing was: every sheet on the same TYS paper was
+authored from scratch, so the Example for "no term in 1/x" on the 2021 P2 was
+written afresh for every student who lost it. A vetted example is worth more
+than a fresh one — Adrian may have edited it in Word, and it has survived his
+eye — and one voice across students is a feature.
+
+So, BEFORE drafting a section, look for an earlier sheet on the SAME paper:
+
+```bash
+# 1. earlier filed sheets on this paper (case-insensitive match on paper_name);
+#    each job carries the run's stored diagnosis — title / questions / gap per section
+curl -s "$SHEETS_API_BASE/api/admin/sheet-jobs?paper=2021%20OLevel%20Amath%20Paper%202&status=done" \
+  -H "Authorization: Bearer $SHEETS_API_TOKEN" | python3 -c "
+import sys, json
+for j in json.load(sys.stdin)['jobs']:
+    r = j.get('result') or {}
+    print(j['id'][:8], j.get('student_name'), (j.get('completed_at') or '')[:10], r.get('docx_path'))
+    for d in j.get('diagnosis') or []:
+        print('    ', d.get('questions'), '|', d.get('title'), '| gap:', d.get('gap'))"
+
+# 2. the sheet as Adrian last left it — his Word edits live in the .docx;
+#    --meta shows client_modified, so a time later than the job's completed_at means he edited it
+node scripts/dropbox-get.mjs "/Students/<Student>/<date> <paper>/3 Practice Again.docx" --meta
+node scripts/dropbox-get.mjs "/Students/<Student>/<date> <paper>/3 Practice Again.docx" /tmp/prev.docx
+pandoc /tmp/prev.docx -t markdown -o /tmp/prev.md     # OMML comes back as $…$ LaTeX you can paste into ('math', …) parts
+```
+
+**The reuse rule.** Same paper + same question + same `gap` → reuse that section's
+Example (concept line, worked example, its practice items), taking Adrian's edited
+docx over the worker's original whenever its `client_modified` is later than the
+job's `completed_at` — his edits ARE the standard. Re-run every sympy check on the
+reused numbers and re-verify the practice answers; keep the new sheet's diagnosis
+in the new student's order. Same question but a DIFFERENT gap → no reuse: Alessi
+had the maximum and lacked the angle, the next student may lack R itself, and the
+missed step decides the section, not the question number. Never copy a section
+whose gap you cannot see in this script. Say what you reused in the completion
+payload — `"reused": ["Q6 example from Alessi Tay's sheet (8 Sep, Adrian's edit)"]`
+— so the Telegram and the desk show it.
 
 ### Search the bank BEFORE you write a question (Adrian, 1 Sep 2026 — binding)
 
@@ -720,10 +804,19 @@ the gap is the interesting half: it says what the bank is missing.
   python3 -c "import zipfile,re,sys; x=zipfile.ZipFile(sys.argv[1]).read('word/document.xml').decode(); \
   print('linear fractions:', len(re.findall(r'<m:type m:val=\"(?:lin|skw)\"/>', x))); \
   print('slashes in maths:', re.findall(r'<m:t[^>]*>([^<]*/[^<]*)</m:t>', x))" sheet.docx
+  python3 -c "import sys; sys.path.insert(0, '.claude/skills/create-worksheet'); from worksheet_lib import find_plain_maths; \
+  h = find_plain_maths(sys.argv[1]); [print('  ', r, '—', why) for r, why in h]; print('plain-text maths:', len(h)); sys.exit(1 if h else 0)" sheet.docx
   ```
 
   Zero linear fractions. The only slashes allowed in an `m:t` are units —
-  `cm/s`, `m/s²`.
+  `cm/s`, `m/s²`. **And zero plain-text maths** (9 Sep 2026): the second check
+  walks every `<w:t>` run — the text OUTSIDE equation objects, which the first
+  check never looks at — and flags a slash fraction, a `^`, a superscript digit,
+  √ ∫ ∑, a Greek letter, an `x = …` equation or a degree sign typed as
+  characters. Alessi's sheet passed the first check and still carried
+  `[No term in 1/x]` as text, because the green tag was a `('text', …)` part.
+  `ws.save(path, strict_maths=True)` runs the same check and refuses to save on
+  a hit; a plain `save()` prints the hits as a WARNING you must not file over.
 
 - **The solution box hugs its content, top and bottom** (Adrian, 31 Aug 2026 —
   *"i can't backspace to bring the box up to below the solution"*). Two separate

@@ -121,6 +121,15 @@ describe('sanitizeResult', () => {
     const r = filed({ docx_path: '/a.docx', wave: 'nope', shelved: null });
     expect(r.wave).toEqual([]);
     expect(r.shelved).toEqual([]);
+    expect(r.reused).toEqual([]);
+  });
+  it('reused examples ride on the result and reach the Telegram (9 Sep 2026)', () => {
+    const r = filed({ docx_path: '/a.docx', reused: ["Q6 example from Alessi Tay's 8 Sep sheet"] });
+    expect(r.reused).toEqual(["Q6 example from Alessi Tay's 8 Sep sheet"]);
+    const msg = completionMessage({ student_name: 'B', paper_name: 'AM 2021 P2' }, r);
+    expect(msg).toContain('Reused from an earlier sheet');
+    expect(msg).toContain('Q6 example from Alessi Tay');
+    expect(completionMessage({ student_name: 'B', paper_name: 'AM 2021 P2' }, filed({ docx_path: '/a.docx' }))).not.toContain('Reused');
   });
 });
 

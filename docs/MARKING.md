@@ -1049,6 +1049,20 @@ with its own accuracy gates (`computeAutoHold`).
 
 ### Practice Again on request (8 Sep 2026)
 
+> **What the sheet teaches — 9 Sep 2026, Alessi's AM 2021 P2 (run `d66149d6`, sheet job
+> `fe3abdc1`).** Four rules absorbed into `.claude/skills/self-study-sheet/SKILL.md` and
+> `scripts/sheet-worker/WORKER_PROMPT.md`: (1) **teach the missed STEP** — the marker's
+> `gap` is a lead, the script decides (she had the maximum of R sin(θ + α), lacked the
+> angle; the sheet taught the maximum); (2) **exact form carried through a show-that**
+> (Q10 worked in decimals against a π/√3 target); (3) **binomial products get prose AND
+> arrows** — `figure_lib` `binomial_pairing`; (4) **maths inside a green rule tag is
+> OMML** — `worksheet_lib.tag(...)`, and `find_plain_maths` lints every `<w:t>` run at
+> save. Plus **reuse before you write**: `GET /api/admin/sheet-jobs?paper=&status=done`
+> (jobs on the same paper with their stored diagnosis) + `scripts/dropbox-get.mjs`
+> (Adrian's edited docx, `--meta` for `client_modified`); same question + same gap →
+> reuse the vetted Example, named in `result.reused`. Until then no example had ever
+> been reused across students.
+
 Adrian, the same afternoon: "when student hands up a paper … should just auto
 mark their paper and released … allow them to request for Practice Again
 worksheets, so only generate when they request. Optionally, i can generate for
@@ -1886,6 +1900,17 @@ figure). Phase 1 shipped in the bot on 5 Sep (verdict-owned glyphs, per-part coa
 marks, per-photo solution cut, `notation_slip`, `is_second_pen`, the `careless` kind —
 mirrored in `lib/error-kinds.ts`); phase 2 is behind the bot's `MARKING_PEN_V2` flag
 and a one-paper trial on the desk.
+
+**9 Sep 2026 — the ✗ goes where the error is made.** Alessi's AM 2021 P2 Q10 (run
+`d66149d6`): the gradient line "(0 − 0)/(2π/3 − 0) = 3/(2π)" was the wrong line and
+carried nothing; the ✗ landed one line down on "y = 3/(2π) x", which only inherits the
+value. Adrian: "the gradient calculation is wrong, but no cross there." The rule was
+implicit — ECF wording pushed the cross downstream and `dedupeKindLabels` treats the
+topmost ✗ as the originating line, so a ✗ placed late put the kind label late too. Now
+explicit in three places: the marker's prompt (`ai/paper-marker.js`, "THE ✗ GOES WHERE THE
+ERROR IS MADE", in both system copies and the JSON spec), `SPEC-RED-PEN.md` §2 "Which
+line" + §4, and here. A line that inherits a wrong value is correct under ECF and gets no
+✗ unless it errs anew.
 
 **9 Sep 2026 — the second-pen rule is categorical.** Alexis's "alexis am tys 2023 p2"
 (run `886b795c`, Mac plan-marker lane, rules `r91a88eae`): Q4(a) had four cancelled blue
