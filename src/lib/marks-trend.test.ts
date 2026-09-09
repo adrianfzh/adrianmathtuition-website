@@ -46,3 +46,13 @@ describe('marksTrend with a caller-named series', () => {
     expect(t.map(x => [x.subject, x.points.length])).toEqual([['A Math', 3], ['E Math', 1]]);
   });
 });
+
+describe('marksTrend leaves Practice Again sheets out', () => {
+  it('a 97% on a remedial sheet does not turn two exam papers into an improving run', () => {
+    const t = marksTrend([
+      run('2026-08-29', 50, 90), { ...run('2026-09-04', 56, 58), paper_name: 'Practice Again — from your A Math 2021 Paper 1' }, run('2026-09-08', 65, 90),
+    ]);
+    expect(t[0].points.map(p => p.pct)).toEqual([56, 72]);
+    expect(t[0].verdict).toBe('too few');
+  });
+});

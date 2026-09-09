@@ -34,6 +34,11 @@ export type SubjectTrend = {
 
 export const SLOPE_STEP = 1.5;   // points per paper — under this, "steady"
 
+/** A Practice Again sheet is remedial work on the parts a paper lost — not an exam paper, so it never joins the exam trend. */
+export function isPracticeSheet(r: TrendRun): boolean {
+  return /^\s*practice again\b/i.test(String(r.paper_name || ''));
+}
+
 function pctOf(r: TrendRun): number | null {
   const max = Number(r.total_max), got = Number(r.total_awarded);
   if (!Number.isFinite(max) || max <= 0 || !Number.isFinite(got)) return null;
@@ -60,7 +65,7 @@ export function verdictOf(slope: number | null): TrendVerdict {
 export function marksTrend(runs: TrendRun[], keyOf?: (r: TrendRun) => string | null | undefined): SubjectTrend[] {
   const bySubject = new Map<string, TrendPoint[]>();
   const usable = (runs || [])
-    .filter(r => r && r.created_at && !r.superseded_by && pctOf(r) != null)
+    .filter(r => r && r.created_at && !r.superseded_by && !isPracticeSheet(r) && pctOf(r) != null)
     .sort((a, b) => a.created_at.localeCompare(b.created_at));
   for (const r of usable) {
     // The caller may name the series (the profile keys A Math / E Math off the
