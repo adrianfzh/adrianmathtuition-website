@@ -36,10 +36,11 @@ verdicts, `parts[]` with marks, `correct.full_solution_latex`. Plus, from 5 Sep 
 | field | on | meaning |
 |---|---|---|
 | `lines[].notation_slip` | a **correct** line | ≤ 60 chars: the slip and the right form ("missing brackets: write lg(5×3^(x+1))"). Shipped. |
-| `lines[].is_second_pen` | any line | second ink colour = later self-correction → neutral, no credit. Shipped. Categorical since 9 Sep 2026: green/red/purple are the correction pen by hue, even when they cover the whole page; a part whose only standing work is green scores 0 and is flagged (`correction_pass` + `uncertainty.notes`). |
+| `lines[].is_second_pen` | any line | second ink colour = later self-correction → neutral, no credit. Shipped. Since 9 Sep 2026 the PIXELS are scanned first (`lib/ink-colour.js`: green fraction + the bands it sits in) and the reader is told "green ink in bands …" before it reads; `annotation_debug[].ink_scan` records it, the desk shows a watch-out when a green page was credited (`computeAutoHold`, "green ink on page N was not treated as a correction"). Categorical since 9 Sep 2026: green/red/purple are the correction pen by hue, even when they cover the whole page; a part whose only standing work is green scores 0 and is flagged (`correction_pass` + `uncertainty.notes`). |
 | `lines[].error_type` | a wrong line | one of the **nine** kinds (concept, arithmetic, transfer, sign, rounding, units, misread, incomplete, **careless**). Shipped. |
-| `lines[].slip_token` | a wrong line | phase 2 — the exact wrong token as written, ≤ 12 chars ("+48", "lg 5") |
-| `lines[].fix_short` | a wrong line | phase 2 — ≤ 20 chars, what belongs there ("−48", "( )", "which quadrant?") |
+| `lines[].slip_token` | a wrong line | the exact wrong token as written, ≤ 24 chars ("+48", "lg 5", "4(3/2)"). Shipped 8 Sep 2026 — a base field on every path since 9 Sep (`applyPenLineFields`). |
+| `lines[].fix_short` + `fix_kind` | a wrong line | ≤ 20 chars, what belongs EXACTLY where `slip_token` is ("3(3/2)", "−8x", "x + 2"); `fix_kind` `replace` \| `insert`. Shipped 9 Sep 2026 (Adrian: "write the correct number beside the circle") — base fields. |
+| `lines[].notation_slip.insert` | a correct line with a missing symbol | ≤ 4 chars, the symbol itself ("dx", "°", "+C"); `span_token` is then the text the symbol should FOLLOW, so the pen writes it in at the gap and points there. Shipped 9 Sep 2026 (Denise Q4: "arrow should be pointed at the space that dx should be"). Existing runs show it only after a re-mark. |
 | `lines[].why_short` | a wrong line | phase 2 — ≤ 12 words, why, in the student's numbers ("52.56 is already cm — no ×100") |
 | `parts[].verdict_line` | a part that lost marks | phase 2 — ≤ 8 words in Adrian's voice, from the phrase bank (§5) |
 | `parts[].continuation` | an attempted part that lost marks | phase 2 — `{ from_line_index, steps_latex[≤6], final_latex }`: the corrected line and the next steps **in the student's notation**, ending at the answer |
@@ -53,9 +54,15 @@ verdicts, `parts[]` with marks, `correct.full_solution_latex`. Plus, from 5 Sep 
 2. **The circle.** Ask placement for a box round `slip_token` only. Draw the circle only if
    the box lies inside the line's box, is under 60% of its width and under 1.3× its
    height. Otherwise **underline the whole line** and write the fix beside it. A circle in
-   the wrong place is worse than none — it is never a guess.
+   the wrong place is worse than none — it is never a guess. **Every arrow lands on the
+   ring's edge** (9 Sep 2026 — `ringEdgeToward`, `aimLeader(…, ring)`): the kind label's
+   leader, the note's leader and the fix's leader all stop at the ellipse, never inside the
+   digits and never on the ✗. With no ring, the head stops at the line's top or bottom edge
+   above/below the token. The fix is written beside the ring as "3(3/2) · careless".
 3. **Missing brackets.** `notation_slip` prints beside the ✓ in teaching ink, and when the
    overlay can box the span (`span_token`) a red `(` `)` pair is drawn round it. Shipped.
+   **Missing symbol** (9 Sep 2026): with `insert` set, the symbol is written in red at the
+   span's end with a caret and the note's arrow points at that gap, not at the tick.
 4. **The verdict line.** One per lost part, red, with a bracket along the wrong lines'
    right edge, in Adrian's voice. Never more than one per part; never on a full-marks part.
 5. **Continue from here.** For an attempted part that lost marks, print the
@@ -164,3 +171,29 @@ before it reaches a student.
 - Per-part glyphs on the coarse rung + per-question line retry (no more unmarked parts).
 - Per-photo solution cut after reconcile (each part printed once, where it lives).
 - `notation_slip` beside the tick; `is_second_pen`; the `careless` kind (bot + site).
+
+## 8. Shipped 9 Sep 2026 (Alexis's EM + Denise's AM screenshots)
+
+Bot commits 1eb6296 · 14801e5 · 9a976a1 · 2a59302 · 445aabc · 1fa7e89; site 1bc31b8a.
+
+- **Arrows land on the mistake.** Ring-edge aim for every leader (kind label, note, fix);
+  the no-ring fallback stops at the line's edge; a wrong Answer line's ✗ sits beside the
+  student's value (`answerLine` — the ink walk ends at a 1¼-line gap, so the printed
+  "[2]" is never "the end of the writing").
+- **The fix beside the ring** — `fix_short`/`fix_kind` are base fields; "3(3/2) · careless".
+- **The missing symbol drawn in** — `notation_slip.insert` + `span_token` for dx / ° / +C.
+- **Typeset labels** — a kind label whose correction has `text_latex` is set in KaTeX
+  ("calculation error — $19\pi y^3 = …$") when it fits, else plain; `$…$` no longer leaks
+  into plain labels (`splitMathRuns` strips delimiters on short delimiter-like runs).
+- **Crowded rows keep their label** — a second, 4½-line search before a kind label is dropped.
+- **Solutions in the lost part's space** — the blank-space solution tries the band under the
+  part that lost marks first (Denise Q9(b) — was written under (c)).
+- **Row ticks** — a whole-question tick on a multi-line correct answer is split into one tick
+  per written line (`rowTicks`; Alexis Q13/Q14 "little marking done").
+- **Venn shading figure** — `diagram.kind: "venn"` (`lib/figures/venn` verify → `buildVennSvg`)
+  draws the correct shading beside a shading question (Alexis Q17(a)).
+- **Green ink by the pixels** — `lib/ink-colour.js` scan + hint before the read; desk watch-out.
+- **Verified by dry-run renders**, not on live runs: `scripts/pen-dryrun.cjs` in the bot repo
+  redraws a stored run's page with FRESH placement and uploads stubbed to a local folder
+  (Adrian rejected a live redraw on 9 Sep). Placement varies run to run — twin lines such as
+  a final line and its Answer-line echo can swap rows — so judge a fix on two renders.

@@ -995,6 +995,12 @@ flagged, and his vetting changed 5 of the 98 flags he looked at.
   `watch` and the bot's Telegram line as "⚠️ Watch out for: …" with the desk
   link. The sheet clock likewise (`autoReleaseGate` returns `watch`; the cron
   releases and says them). The desk's amber banner reads "Watch out for".
+  Since 9 Sep 2026 one watch-out comes from the PIXELS, not the reader: the bot
+  scans every page for green ink before reading it (`lib/ink-colour.js`, stamped
+  `annotation_debug[].ink_scan`), and a page with ≥ 3 % green whose lines were all
+  credited reads "green ink on page N was not treated as a correction — check the
+  marks there" (`computeAutoHold`, tested) — Alexis's 2023 P2 Q4(a), where thirteen
+  green lines were credited 5/5.
   Self-resolution: a page that could not be read is re-read ONCE as a page
   re-mark queued behind the delivery (`queue.auto_reread`), and a re-mark of a
   paper the student already has is re-issued (`mark-triage reissue`) — copy
