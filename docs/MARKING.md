@@ -582,7 +582,10 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   upserts the row (sha256-skipped when unchanged). The bot's `lib/paper-library.js` attaches the
   questions (`source.paper_pdf_url`) and the solutions (`source.scheme_source.pdf_url`) as 24-hour
   signed URLs at enqueue and again before marking; hand-attached files always win;
-  `result_json.paper_match.library` records what was used. Health-check `paper-library` fails on an
+  `result_json.paper_match.library` records what was used. When the student's photos carry no
+  printed questions, the attached paper's own print is what the bank guard fingerprints (10 Sep
+  2026, SPEC-PAPER-MATCH worked example 1 — `paper_match.source:'library'`, reason
+  `fingerprint-from-attached-paper`; see the 🔍 chip note under Desk additions). Health-check `paper-library` fails on an
   empty table. Second pass `scripts/paper-library/match-by-meaning.mjs` matches Dropbox PDFs by MEANING —
   folder + filename through `lib/paper-key` → (school, year, level, paper) — so the school's own
   file names count (398 more papers on 7 Sep). Weekly refresh: `scripts/paper-library/run.sh` runs
@@ -1332,6 +1335,18 @@ it matters — hence the zoom / the original, not a bigger copy of every page.
   stored-scheme match passed the fingerprint guard, "🔍 <key> · not matched" with the reason when
   it did not (marked on rules alone). Silent on runs from before the stamp. `desk/run/route.ts`
   shapes it as `paperMatch {key, source, trusted, shared, share, matched, reasons}`.
+  **Since 10 Sep 2026 `source` can also be `library` or `attached`** (the chip's title says
+  "Source: library"): a working-only hand-in — no printed question on any photo — whose paper the
+  library (or Adrian) attached has the guard re-run against the printed questions the bot reads
+  off the attached PDF, and a trusted match carries the reason `fingerprint-from-attached-paper`
+  (`grounding.source` stays `bank`: the bank's block is what marked it). Before this the chip said
+  "not matched · no-printed-questions" beside a grounding chip saying "attached" (Isabelle's AM
+  2024 P1, run `9e66d0b4`). The untrusted reasons it can now show: `attached-paper-mismatch` (the
+  attached PDF and the bank disagree on the paper — a library file filed under the wrong key,
+  look at it), `attached-paper-unread` (the read failed), `attached-paper-no-questions`;
+  `no-printed-questions` alone means nothing was attached. Grounded-or-not is
+  `lib/mark-triage.ts isGroundedRun` (a trusted match OR `grounding.source`), never
+  `paper_match.source` read alone.
 
 ## /admin/mark/triage — flagged-only review + the release gate (2026-08-11)
 
