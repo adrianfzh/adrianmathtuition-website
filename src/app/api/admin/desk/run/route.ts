@@ -24,7 +24,7 @@ import { readDiagnosis } from '@/lib/sheet-diagnosis';
 import { MARKED_AI_NAME, dropboxWebUrl, isSheetPdf, paperFolder } from '@/lib/paper-folder';
 import {
   amendedStatusFor, approveBlockers, deskFlags, laneFor, latestLiveJob, noSheetOf, pdfStaleOf,
-  releaseBlockers, sheetStageLabel, isPracticeAgainHandin,
+  releaseBlockers, sheetStageLabel, isPracticeAgainHandin, handinOriginOf,
 } from '@/lib/desk-state';
 
 export const runtime = 'nodejs';
@@ -234,6 +234,7 @@ export async function GET(req: NextRequest) {
         ? ((rj as { unattempted_questions: unknown[] }).unattempted_questions).map(String) : [],
       portalSubmission: (rj as { portal_submission?: unknown } | null)?.portal_submission === true,
       practiceAgain: isPracticeAgainHandin(run),
+      origin: handinOriginOf(run),
       // 🔁 A re-mark in flight (8 Sep 2026): the old marking stepped aside and the
       // queue holds the row; `remarkPages` names the pages when only some are read again.
       remarking: !!(rj as { queue?: { remark?: unknown } } | null)?.queue?.remark && !(rj as { results?: unknown[] } | null)?.results?.length,

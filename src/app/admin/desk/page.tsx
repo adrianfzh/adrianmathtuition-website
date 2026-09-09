@@ -31,7 +31,7 @@ import SubjectChip from '@/components/SubjectChip';
 import GroundingChip from '@/components/GroundingChip';
 import RulesTag from '@/components/RulesTag';
 import { mathHtml } from '@/lib/math-inline';
-import { DESK_LANES, LANES_HIDDEN_AT_ZERO, releasedViaLabel, LANE_LABEL, orderLane, type DeskLane } from '@/lib/desk-state';
+import { DESK_LANES, LANES_HIDDEN_AT_ZERO, releasedViaLabel, LANE_LABEL, orderLane, HANDIN_ORIGIN_LABEL, type DeskLane, type HandinOrigin } from '@/lib/desk-state';
 import { ERROR_KINDS, ERROR_KIND_HINT, isErrorKind } from '@/lib/error-kinds';
 import { PAPER_SUBJECTS, subjectPill } from '@/lib/portal-subjects';
 // The pen, in place (desk round 3, 8 Sep 2026): the same overlay mark-paper uses.
@@ -51,7 +51,7 @@ type Row = {
   awarded: number; max: number; pct: number | null; questions: number; pending: number;
   lane: DeskLane; releasedAt: string | null; releasedVia: string | null; pdfStale: boolean;
   sheet: { jobId: string; status: string; stage: string | null; error: string | null; label: string; completedAt: string | null; requestedBy?: string | null } | null;
-  flags: string[]; amended: string | null; assignments: number; assignmentsHeld?: number; practiceAgain?: boolean;
+  flags: string[]; amended: string | null; assignments: number; assignmentsHeld?: number; practiceAgain?: boolean; origin?: HandinOrigin;
   folder: string; folderUrl: string;
   annotatedPdfUrl: string | null; photosPdfUrl: string | null; pdfUrl: string | null;
 };
@@ -68,7 +68,7 @@ type Detail = {
     awarded: number; max: number; totalQuestions: number;
     releasedAt: string | null; releasedVia: string | null; archivedAt: string | null; checkedAt: string | null;
     pdfUrl: string | null; annotatedPdfUrl: string | null; photosPdfUrl: string | null;
-    pdfStale: boolean; grounding: string | null; unattempted: string[]; portalSubmission: boolean; practiceAgain?: boolean;
+    pdfStale: boolean; grounding: string | null; unattempted: string[]; portalSubmission: boolean; practiceAgain?: boolean; origin?: HandinOrigin;
     paperMatch: PaperMatch | null;
     remarking: boolean; remarkPages: number[];
     remark: RemarkPanel | null;
@@ -259,6 +259,12 @@ const PAPER_SUBJECT_TONE: Record<string, { bg: string; fg: string }> = {
   other: { bg: '#f3f4f6', fg: '#6b7280' },
 };
 const PAPER_SUBJECT_OPTIONS: readonly string[] = [...PAPER_SUBJECTS, 'Other'];
+/** Who handed the paper in — the student from the app or Telegram, or Adrian via the scanner / mark-paper. */
+function OriginChip({ origin }: { origin: HandinOrigin }) {
+  const student = origin === 'app' || origin === 'telegram';
+  return <Chip label={HANDIN_ORIGIN_LABEL[origin]} bg={student ? '#eff6ff' : '#f5f3ff'} color={student ? '#1d4ed8' : '#6d28d9'}
+    title={student ? 'The student handed this in themselves.' : 'You put this paper in.'} />;
+}
 function PaperSubjectChip({ subject }: { subject: string | null | undefined }) {
   const pill = subjectPill(subject);
   if (!pill) return null;
@@ -919,6 +925,7 @@ export default function DeskPage() {
                   </div>
                   <div style={{ fontSize: 12.5, color: C.muted, marginTop: 3, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                     <span>marked {fmtDate(row.createdAt)}</span>
+                    {row.origin && <OriginChip origin={row.origin} />}
                     {row.practiceAgain && <Chip label="📘 Practice Again hand-in" bg="#ecfdf5" color="#047857" />}
                     {row.lane !== 'released' && !row.practiceAgain && (
                       <span style={{ color: row.sheet?.status === 'done' ? C.ok : row.sheet?.status === 'failed' ? C.danger : C.link }}>
@@ -1085,6 +1092,7 @@ function DetailView(p: {
             </div>
             <div style={{ fontSize: 13.5, color: C.muted, marginTop: 4, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
               <span style={{ color: C.ink, fontWeight: 500 }}>{run.paperName}</span>
+              {run.origin && <OriginChip origin={run.origin} />}
               {run.practiceAgain && <Chip label="📘 Practice Again hand-in" bg="#ecfdf5" color="#047857" />}
               <PaperSubjectChip subject={run.paperSubject} />
               {/* Which maths this is — writes paper_subject only, so it stays live after release. */}

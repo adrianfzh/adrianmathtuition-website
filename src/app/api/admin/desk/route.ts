@@ -26,7 +26,7 @@ import { pendingCount, recomputeTotals } from '@/lib/mark-triage';
 import { dropboxWebUrl, paperFolder } from '@/lib/paper-folder';
 import {
   DESK_LANES, amendedStatusFor, defaultLane, deskFlags, laneFor, latestLiveJob,
-  noSheetOf, pdfStaleOf, sheetStageLabel, type AmendedStatus, type DeskLane, isPracticeAgainHandin,
+  noSheetOf, pdfStaleOf, sheetStageLabel, type AmendedStatus, type DeskLane, isPracticeAgainHandin, handinOriginOf,
 } from '@/lib/desk-state';
 
 export const runtime = 'nodejs';
@@ -178,6 +178,7 @@ export async function GET(req: NextRequest) {
       } : null,
       flags: deskFlags(r, job, amended),
       practiceAgain,
+      origin: handinOriginOf(r),
       amended,
       assignments: assignmentsByRun.get(r.id) ?? 0,
       folder,

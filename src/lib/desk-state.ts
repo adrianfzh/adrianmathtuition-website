@@ -113,6 +113,29 @@ export function isPracticeAgainHandin(run: DeskRun | null | undefined): boolean 
 }
 
 /**
+ * Who handed the paper in (Adrian, 9 Sep 2026: "can it show if the pdf is
+ * submitted by the student or by me?"). Reads the stamps each door already
+ * leaves on result_json: /app/submit → `portal_submission`, the bot's /handin
+ * → `telegram_handin`, the ScanSnap watcher → `scan`; anything else came in
+ * through Adrian's own mark-paper page.
+ */
+export type HandinOrigin = 'app' | 'telegram' | 'scan' | 'adrian';
+export function handinOriginOf(run: DeskRun | null | undefined): HandinOrigin {
+  const rj = run?.result_json as { portal_submission?: unknown; telegram_handin?: unknown; scan?: unknown } | null | undefined;
+  if (!rj || typeof rj !== 'object') return 'adrian';
+  if (rj.portal_submission === true) return 'app';
+  if (rj.telegram_handin && typeof rj.telegram_handin === 'object') return 'telegram';
+  if (rj.scan && typeof rj.scan === 'object') return 'scan';
+  return 'adrian';
+}
+export const HANDIN_ORIGIN_LABEL: Record<HandinOrigin, string> = {
+  app: '📱 student · app',
+  telegram: '💬 student · Telegram',
+  scan: '📠 you · scanner',
+  adrian: '🖥 you · uploaded',
+};
+
+/**
  * released_via in Adrian's words (9 Sep 2026: "auto:none — can this be more
  * descriptive? it is very cryptic"). The stored value stays as it is — the
  * report, the lanes and the bot key on it — only the desk's chip reads it out.

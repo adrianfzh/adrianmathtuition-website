@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  laneFor, sheetStageLabel, isPracticeAgainHandin, releasedViaLabel, approveBlockers, releaseBlockers, deskFlags, defaultLane,
+  laneFor, sheetStageLabel, isPracticeAgainHandin, releasedViaLabel, handinOriginOf, approveBlockers, releaseBlockers, deskFlags, defaultLane,
   amendedStatusFor, latestLiveJob, noSheetOf, pdfStaleOf, DESK_LANES, LANE_LABEL, orderLane,
 } from './desk-state';
 
@@ -259,6 +259,17 @@ describe('the system lane empties itself (8 Sep 2026)', () => {
     const run = { student_id: 'recX', released_at: '2026-09-01T10:00:00Z', released_via: 'auto:portal', checked_at: null };
     expect(laneFor(run, null, Date.parse('2026-09-05T10:00:00Z'))).toBe('auto');
     expect(laneFor(run, null, Date.parse('2026-09-09T10:00:00Z'))).toBe('released');
+  });
+});
+
+describe('who handed the paper in (9 Sep 2026)', () => {
+  it('reads the stamp each door leaves; no stamp means Adrian uploaded it', () => {
+    expect(handinOriginOf({ result_json: { portal_submission: true } })).toBe('app');
+    expect(handinOriginOf({ result_json: { telegram_handin: { chat_id: '1' } } })).toBe('telegram');
+    expect(handinOriginOf({ result_json: { scan: { file: 'x.pdf' } } })).toBe('scan');
+    expect(handinOriginOf({ result_json: { results: [] } })).toBe('adrian');
+    expect(handinOriginOf({ result_json: null })).toBe('adrian');
+    expect(handinOriginOf(null)).toBe('adrian');
   });
 });
 

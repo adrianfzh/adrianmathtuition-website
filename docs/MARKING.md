@@ -1185,6 +1185,15 @@ straight to Completed, so it never waits in the automatic lane. The three
 "no sheet needed" verdicts the worker wrote for such hand-ins on 8 Sep were
 the old path; none are written now.
 
+**Who handed it in (9 Sep 2026, Adrian: "can it show if the pdf is submitted
+by the student or by me?").** `lib/desk-state.ts handinOriginOf` reads the
+stamp each door already leaves on `result_json` — `portal_submission` (the
+app) → **📱 student · app**, `telegram_handin` (the bot's /handin) → **💬
+student · Telegram**, `scan` (the ScanSnap watcher) → **📠 you · scanner**,
+none → **🖥 you · uploaded** (mark-paper). Both desk routes return it as
+`origin`; the row and the detail header wear it as a blue (student) or purple
+(Adrian) chip. Display only — nothing keys on it.
+
 ### Blank printed parts, footer columns, pen-safe superscripts (8 Sep 2026)
 
 Joey's AM TYS 2021 P2, three things Adrian saw on the marked pages:
