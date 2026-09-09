@@ -711,6 +711,17 @@ export default function DeskPage() {
     refresh(id);
   }
 
+  // The same tap from a LIST row (9 Sep 2026 — Adrian: "i don't see a looked
+  // at"): the button had lived only inside the paper's page.
+  async function markCheckedRow(id: string) {
+    setBusy('checked');
+    const { ok, d } = await postJson('/api/admin/mark-triage', { action: 'checked', runId: id });
+    setBusy('');
+    if (!ok) { setToast(d.error || 'Could not mark it'); return; }
+    setToast('Marked as looked at — moved to Completed.');
+    loadQueue(false);
+  }
+
   // 📐 Approve this paper's scheme (8 Sep 2026): the recorded per-part marks and
   // split become the paper's fixed allocation. `quiet` = on release, fail-soft.
   async function approveScheme(quiet = false) {
@@ -904,6 +915,13 @@ export default function DeskPage() {
                     {row.lane === 'released' && row.releasedAt && <span>released {fmtDate(row.releasedAt)}{row.assignments ? ' + sheet' : ''}</span>}
                     {row.pending > 0 && <span style={{ color: C.flag, fontWeight: 600 }}>⏳ {row.pending} to check</span>}
                     {row.flags.map(f => <span key={f} style={{ color: C.flag, fontWeight: 600 }}>⚠ {f}</span>)}
+                    {row.lane === 'auto' && (
+                      <button onClick={e => { e.stopPropagation(); markCheckedRow(row.id); }} disabled={busy === 'checked'}
+                        title="Marks this paper as looked at — it moves to Completed. Nothing about the sheet changes."
+                        style={{ border: '1px solid #67e8f9', background: '#ecfeff', color: '#0e7490', borderRadius: 8, padding: '1px 8px', fontSize: 12, cursor: 'pointer' }}>
+                        ✓ Looked at
+                      </button>
+                    )}
                   </div>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
