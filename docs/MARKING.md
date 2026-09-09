@@ -582,7 +582,11 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   upserts the row (sha256-skipped when unchanged). The bot's `lib/paper-library.js` attaches the
   questions (`source.paper_pdf_url`) and the solutions (`source.scheme_source.pdf_url`) as 24-hour
   signed URLs at enqueue and again before marking; hand-attached files always win;
-  `result_json.paper_match.library` records what was used. When the student's photos carry no
+  `result_json.paper_match.library` records what was used (`used`, `files`, and since 10 Sep 2026
+  `refreshed` — the library re-signs its OWN links on every enqueue/claim, a questions-only file
+  beats the combined TYS Solutions book for the paper slot whatever order the rows arrive in, and
+  the marker's landing keeps the stamp; before that the book was attached as the paper for 10 of
+  the 12 keys holding both, the links died after 24 h, and the stamp vanished when marking landed). When the student's photos carry no
   printed questions, the attached paper's own print is what the bank guard fingerprints (10 Sep
   2026, SPEC-PAPER-MATCH worked example 1 — `paper_match.source:'library'`, reason
   `fingerprint-from-attached-paper`; see the 🔍 chip note under Desk additions). Health-check `paper-library` fails on an
