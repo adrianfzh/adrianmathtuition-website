@@ -5,8 +5,7 @@
 // (KaTeX pipeline, chat-DOM builders, typewriter streaming engine, feedback
 // rows, history restore) is the SHARED core in lib/chat-solver.ts; this file
 // is portal-specific: navy/cream styling, document-flow messages with a fixed
-// composer above the mobile tab bar, the student's level hint to the bot,
-// fire-and-forget question logging to /api/portal/ask-log, and the signed
+// composer above the mobile tab bar, the student's level hint to the bot, and the signed
 // identity token (/api/portal/ask-token → body.portalToken) that upgrades the
 // student from the bot's anonymous 20/day quota to the student 60/day one.
 
@@ -272,17 +271,6 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
       sessionIdRef.current = 'portal-' + randomChatToken();
     }
     try { localStorage.setItem(CHAT_ID_KEY, sessionIdRef.current); } catch { /* noop */ }
-
-    // Question logging — the reason this tab exists. Fire-and-forget so a
-    // logging hiccup can never delay or break the answer; keepalive survives
-    // a quick tab-away. The route links the question to the student's
-    // Airtable record server-side (session-authed).
-    fetch('/api/portal/ask-log', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      keepalive: true,
-      body: JSON.stringify({ text: text || null, hasImage: !!capturedFile, chatId: sessionIdRef.current }),
-    }).catch(() => { /* logging is best-effort */ });
 
     setIsLoading(true);
     appendTypingIndicator(inner);

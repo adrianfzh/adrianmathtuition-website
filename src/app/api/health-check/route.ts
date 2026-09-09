@@ -392,7 +392,7 @@ export async function GET(req: NextRequest) {
     // 🎬 Animated lessons (/app/lesson/[slug]). The telemetry route must hold
     // its auth gate (401 anonymously — a 404 means the lesson engine's routes
     // fell out of the build), and portal_event_log (the funnel ledger it and
-    // ask-log write) must still resolve.
+    // timed-set write) must still resolve.
     timed('lesson-engine', async () => {
       const r = await fetch(`${base}/api/portal/lesson-event`, { method: 'POST', redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
@@ -648,15 +648,6 @@ export async function GET(req: NextRequest) {
         throw new Error(`expected redirect-to-login or 200, got HTTP ${r.status}`);
       }
       return redirected ? `auth redirect (${r.status})` : 'rendered';
-    }),
-    // "Ask" tab question logging (/app/ask → Airtable Questions with the
-    // Student link). 401 anonymously proves the route is deployed with its
-    // session gate up — a 404 means portal questions silently stop being
-    // logged against students while the answers keep flowing from the bot.
-    timed('portal-ask-log', async () => {
-      const r = await fetch(`${base}/api/portal/ask-log`, { method: 'POST', redirect: 'manual', signal: T(10000) });
-      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
-      return 'auth gate up';
     }),
     // "Ask" tab identity mint (/app/ask → signed portalToken → bot 60/day
     // student quota + Student-linked Questions row). 401 anonymously proves
