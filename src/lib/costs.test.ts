@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { costEntries, costByDay, costByPath, monthTotal, foldCostReport, foldCostLines, type CostRunRow } from './costs';
+import { costEntries, costByDay, costByPath, monthTotal, foldCostReport, foldCostLines, partOf, costByPart, type CostRunRow } from './costs';
 
 const row = (id: string, at: string, over: Partial<CostRunRow> = {}): CostRunRow => ({
   id, created_at: at, student_name: 'Alessi', paper_name: 'am tys 2021 p1', num_photos: 20, cost_usd: 1.5, input_tokens: 100, output_tokens: 10, model: 'claude-opus-5', total_max: 90,
@@ -49,5 +49,19 @@ describe('costs — per run, per day, per path (9 Sep 2026)', () => {
     ]);
     expect(foldCostLines(report).map(l => [l.tokenType, l.amount])).toEqual([['uncached_input_tokens', 4.26], ['output_tokens', 0.75]]);
     expect(foldCostReport(null)).toEqual([]);
+  });
+  it('folds the bot ledger into the same parts the Telegram /costs report names', () => {
+    expect(['marking_read', 'marking_batch_read', 'marking_second_look'].map(partOf)).toEqual(['marking', 'marking', 'marking']);
+    expect(partOf('web_answer_image')).toBe('web'); expect(partOf('edge_route_opus')).toBe('telegram'); expect(partOf('callback_explain_more')).toBe('telegram');
+    expect(partOf('practice-gates')).toBe('practice'); expect(partOf('portal_generate')).toBe('practice'); expect(partOf('science_physics_image')).toBe('science');
+    expect(partOf('verification_opus_verify')).toBe('checks'); expect(partOf('intent_classify')).toBe('checks'); expect(partOf('payment_parse')).toBe('other');
+    const parts = costByPart([
+      { date: '2026-09-09', feature: 'marking_batch_read', model: 'claude-opus-5', cost: 4, calls: 20 },
+      { date: '2026-09-09', feature: 'marking_second_look', model: 'claude-sonnet-5', cost: 0.5, calls: 2 },
+      { date: '2026-09-09', feature: 'web_answer_image', model: 'claude-opus-4-8', cost: 1.25, calls: 5 },
+    ]);
+    expect(parts.map(p => [p.part, p.cost, p.calls])).toEqual([['marking', 4.5, 22], ['web', 1.25, 5]]);
+    expect(parts[0].models).toEqual({ 'claude-opus-5': 4, 'claude-sonnet-5': 0.5 });
+    expect(parts[0].features[0]).toEqual({ feature: 'marking_batch_read', cost: 4 });
   });
 });

@@ -144,3 +144,45 @@ export function foldCostLines(report: CostReport): BillLine[] {
   }
   return [...out.values()].map(l => ({ ...l, amount: Math.round(l.amount * 100) / 100 })).sort((a, b) => b.amount - a.amount);
 }
+
+// ── The bot's per-feature ledger (Airtable CostLog), folded into parts ─────────
+// Mirrors the bot's lib/cost-buckets.js BUCKETS so the Telegram /costs report and
+// this page name the same parts. Marking joined the ledger on 9 Sep 2026 evening;
+// before that its cost lives only on the run rows above.
+export type LedgerRow = { date: string; feature: string; model: string; cost: number; calls: number };
+export type Part = 'marking' | 'science' | 'web' | 'practice' | 'checks' | 'telegram' | 'other';
+const PARTS: Array<{ key: Part; test: RegExp }> = [
+  { key: 'marking',  test: /^marking|^annotate|^paper|^overlay|^reannotate/ },
+  { key: 'science',  test: /^science_/ },
+  { key: 'web',      test: /^web_/ },
+  { key: 'practice', test: /^practice|^generation|^similar|^revise|^question_gen|^genPractice|^topup|^gate|^portal_generate/ },
+  { key: 'checks',   test: /^verification|^prompt_improvement|^strip_self_correction|^image_nonmath|^correction|^subject|^classif|^evaluator|^explain|^jstat|^router|^intent|^prompt_lint/ },
+  { key: 'telegram', test: /^student_answer|^edge_route|^opus_|^answer|^followup|^image_followup|^text_answer|^callback_|^teach/ },
+];
+export const PART_LABEL: Record<Part, string> = {
+  marking: '✏️ Marking (paper reads, second look, checks)', science: '🧪 Science solver', web: '🌐 Web solver (app Ask + /chat)',
+  practice: '🎯 Practice (gates, generation)', checks: '🩺 Checks (verifiers, classifiers)', telegram: '📱 Telegram solver', other: '🗂 Other',
+};
+export function partOf(feature: string): Part {
+  const f = String(feature || '');
+  return (PARTS.find(p => p.test.test(f)) || { key: 'other' as Part }).key;
+}
+export type PartTotal = { part: Part; label: string; cost: number; calls: number; models: Record<string, number>; features: Array<{ feature: string; cost: number }> };
+export function costByPart(rows: LedgerRow[]): PartTotal[] {
+  const m = new Map<Part, PartTotal>();
+  const feat = new Map<string, number>();
+  for (const r of rows || []) {
+    const key = partOf(r.feature);
+    const t = m.get(key) ?? { part: key, label: PART_LABEL[key], cost: 0, calls: 0, models: {}, features: [] };
+    t.cost += num(r.cost); t.calls += num(r.calls);
+    t.models[r.model || 'unknown'] = (t.models[r.model || 'unknown'] || 0) + num(r.cost);
+    feat.set(`${key}|${r.feature}`, (feat.get(`${key}|${r.feature}`) || 0) + num(r.cost));
+    m.set(key, t);
+  }
+  for (const [k, v] of feat) { const [part, feature] = k.split('|'); m.get(part as Part)!.features.push({ feature, cost: Math.round(v * 100) / 100 }); }
+  return [...m.values()].map(t => ({
+    ...t, cost: Math.round(t.cost * 100) / 100,
+    models: Object.fromEntries(Object.entries(t.models).map(([k, v]) => [k, Math.round(v * 100) / 100])),
+    features: t.features.sort((a, b) => b.cost - a.cost),
+  })).sort((a, b) => b.cost - a.cost);
+}

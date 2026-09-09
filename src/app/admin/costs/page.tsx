@@ -2,12 +2,13 @@
 // /admin/costs — what the marking pipeline spends, and where (9 Sep 2026).
 import { useEffect, useState } from 'react';
 import { ensureAdminSession } from '@/lib/admin-client';
-import type { CostEntry, DayTotal, PathTotal, BillDay, BillLine } from '@/lib/costs';
+import type { CostEntry, DayTotal, PathTotal, BillDay, BillLine, PartTotal } from '@/lib/costs';
 
 type Data = {
   days: number; month: string; monthToDate: PathTotal;
   byDay: DayTotal[]; byPath: Record<string, PathTotal>; runs: CostEntry[];
   bill: { available: boolean; days?: BillDay[]; lines?: BillLine[]; note?: string; billUrl?: string };
+  ledger: { byPart: PartTotal[]; total: number; rows: number; note: string | null };
   notes: string[];
 };
 
@@ -64,6 +65,23 @@ export default function CostsPage() {
                   </tbody></table>
                 </div>
               ) : <div className="text-sm text-neutral-500">{data.bill.note}{data.bill.billUrl ? <> <a href={data.bill.billUrl} target="_blank" rel="noreferrer" className="underline hover:text-neutral-800">Open the Cost page →</a></> : null}</div>}
+            </section>
+
+            <section className="bg-white rounded-xl border border-neutral-200 p-4 mb-4 overflow-x-auto">
+              <div className="font-medium mb-1">By part — what each Claude call was for <span className="text-neutral-400 font-normal">· the bot&apos;s ledger, {money(data.ledger.total)} over {data.days} days</span></div>
+              {data.ledger.note && <div className="text-xs text-red-700 mb-2">{data.ledger.note}</div>}
+              <table className="text-sm w-full min-w-[560px]">
+                <thead><tr className="text-neutral-500 text-xs text-left"><th className="py-1">part</th><th className="text-right">cost</th><th className="text-right">calls</th><th>models</th><th>biggest lines</th></tr></thead>
+                <tbody>{data.ledger.byPart.map(p => (
+                  <tr key={p.part} className="border-t border-neutral-100 align-top">
+                    <td className="py-1 whitespace-nowrap">{p.label}</td>
+                    <td className="py-1 text-right tabular-nums">{money(p.cost)}</td>
+                    <td className="py-1 text-right tabular-nums text-neutral-500">{p.calls.toLocaleString()}</td>
+                    <td className="py-1 text-xs text-neutral-500">{Object.entries(p.models).sort((a, b) => b[1] - a[1]).map(([m, c]) => `${m.replace('claude-', '').replace('-20251001', '')} ${money(c)}`).join(' · ')}</td>
+                    <td className="py-1 text-xs text-neutral-500">{p.features.slice(0, 4).map(f => `${f.feature} ${money(f.cost)}`).join(' · ')}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
             </section>
 
             <section className="bg-white rounded-xl border border-neutral-200 p-4 mb-4 overflow-x-auto">

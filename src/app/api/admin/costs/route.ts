@@ -9,7 +9,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sgtTodayISO } from '@/lib/sgt';
-import { costEntries, costByDay, costByPath, monthTotal, foldCostReport, foldCostLines, type CostRunRow } from '@/lib/costs';
+import { costEntries, costByDay, costByPath, monthTotal, foldCostReport, foldCostLines, costByPart, type CostRunRow, type LedgerRow } from '@/lib/costs';
+import { airtableRequestAll } from '@/lib/airtable';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,6 +44,21 @@ async function anthropicBill(sinceDay: string): Promise<{ available: boolean; da
   }
 }
 
+/** The bot's per-feature ledger (Airtable CostLog, flushed hourly by the bot) for the window. Fail-soft. */
+async function botLedger(sinceDay: string): Promise<{ rows: LedgerRow[]; note?: string }> {
+  try {
+    const qs = `?filterByFormula=${encodeURIComponent(`{Date}>='${sinceDay}'`)}&fields[]=Date&fields[]=Feature&fields[]=Model&fields[]=Total Cost USD&fields[]=Calls`;
+    const data = await airtableRequestAll('CostLog', qs);
+    const rows: LedgerRow[] = (data.records || []).map((r: { fields: Record<string, unknown> }) => ({
+      date: String(r.fields['Date'] || ''), feature: String(r.fields['Feature'] || 'unknown'), model: String(r.fields['Model'] || 'unknown'),
+      cost: Number(r.fields['Total Cost USD']) || 0, calls: Number(r.fields['Calls']) || 0,
+    }));
+    return { rows };
+  } catch (e) {
+    return { rows: [], note: `CostLog: ${(e as Error).message}` };
+  }
+}
+
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const days = Math.min(Math.max(Number(req.nextUrl.searchParams.get('days')) || 30, 1), 120);
@@ -59,7 +75,8 @@ export async function GET(req: NextRequest) {
   const entries = costEntries(rows);
   const today = sgtTodayISO();
   const month = today.slice(0, 7);
-  const bill = await anthropicBill(since.toISOString().slice(0, 10));
+  const sinceDay = since.toISOString().slice(0, 10);
+  const [bill, ledger] = await Promise.all([anthropicBill(sinceDay), botLedger(sinceDay)]);
   return NextResponse.json({
     days, generatedAt: new Date().toISOString(), month,
     monthToDate: monthTotal(entries, month),
@@ -67,10 +84,12 @@ export async function GET(req: NextRequest) {
     byPath: costByPath(entries),
     runs: entries,
     bill,
+    ledger: { byPart: costByPart(ledger.rows), total: Math.round(ledger.rows.reduce((a, r) => a + r.cost, 0) * 100) / 100, rows: ledger.rows.length, note: ledger.note ?? null },
     notes: [
       'Run costs are the bot\'s pricing of the Claude tokens it used (list price sync, 50 % batch, 10 % cache reads) — the same counts Anthropic bills.',
       'Pages the Mac read on the plan cost $0 here; a plan run\'s cost is the bot-side extras only.',
       'Gemini (placement, ink checks) is billed by Google and shown as tokens only; runs before 9 Sep 2026 evening carry no Gemini count.',
+      'By part reads the bot\'s own ledger (every Claude call, tagged by what it was for; Airtable CostLog, flushed hourly). Marking joined that ledger on 9 Sep 2026 evening — earlier marking is on the run rows only.',
     ],
   });
 }
