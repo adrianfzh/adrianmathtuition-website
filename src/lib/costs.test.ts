@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { costEntries, costByDay, costByPath, monthTotal, foldCostReport, type CostRunRow } from './costs';
+import { costEntries, costByDay, costByPath, monthTotal, foldCostReport, foldCostLines, type CostRunRow } from './costs';
 
 const row = (id: string, at: string, over: Partial<CostRunRow> = {}): CostRunRow => ({
   id, created_at: at, student_name: 'Alessi', paper_name: 'am tys 2021 p1', num_photos: 20, cost_usd: 1.5, input_tokens: 100, output_tokens: 10, model: 'claude-opus-5', total_max: 90,
@@ -33,12 +33,21 @@ describe('costs — per run, per day, per path (9 Sep 2026)', () => {
     expect(e[0].gemini).toEqual({ inputTokens: 1000, outputTokens: 50, pages: 20 });
     expect(costByDay(e)[0].geminiTokens).toBe(1050);
   });
-  it('folds the Admin API cost report to one line per day', () => {
-    const days = foldCostReport({ data: [
-      { starting_at: '2026-09-08T00:00:00Z', results: [{ amount: '1.25', currency: 'USD' }, { amount: '0.75', currency: 'USD' }] },
-      { starting_at: '2026-09-09T00:00:00Z', results: [{ amount: '3', currency: 'USD' }] },
-    ] });
-    expect(days).toEqual([{ day: '2026-09-09', amount: 3, currency: 'USD', lines: 1 }, { day: '2026-09-08', amount: 2, currency: 'USD', lines: 2 }]);
+  it('folds the Admin API cost report to one line per day — amounts arrive in cents', () => {
+    const report = { data: [
+      { starting_at: '2026-09-08T00:00:00Z', results: [
+        { amount: '125', currency: 'USD', description: 'Claude Opus 5 Usage - Input Tokens', model: 'claude-opus-5', service_tier: 'batch', token_type: 'uncached_input_tokens' },
+        { amount: '75', currency: 'USD', description: 'Claude Opus 5 Usage - Output Tokens', model: 'claude-opus-5', service_tier: 'batch', token_type: 'output_tokens' },
+      ] },
+      { starting_at: '2026-09-09T00:00:00Z', results: [{ amount: '300.5', currency: 'USD', description: 'Claude Opus 5 Usage - Input Tokens', model: 'claude-opus-5', service_tier: 'batch', token_type: 'uncached_input_tokens' }] },
+      { starting_at: '2026-09-10T00:00:00Z', results: [] },
+    ] };
+    expect(foldCostReport(report)).toEqual([
+      { day: '2026-09-10', amount: 0, currency: 'USD', lines: 0 },
+      { day: '2026-09-09', amount: 3.01, currency: 'USD', lines: 1 },
+      { day: '2026-09-08', amount: 2, currency: 'USD', lines: 2 },
+    ]);
+    expect(foldCostLines(report).map(l => [l.tokenType, l.amount])).toEqual([['uncached_input_tokens', 4.26], ['output_tokens', 0.75]]);
     expect(foldCostReport(null)).toEqual([]);
   });
 });

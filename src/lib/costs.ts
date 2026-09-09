@@ -113,16 +113,34 @@ export function monthTotal(entries: CostEntry[], month: string): PathTotal {
   return { ...t, cost: Math.round(t.cost * 100) / 100 };
 }
 
-/** The Anthropic Admin API's cost report, folded to one line per day. Amounts are passed through as reported. */
+/** The Anthropic Admin API's cost report, folded to one line per day. `amount` arrives in CENTS as a
+ *  decimal string ("123.45" = $1.23) — divided here, so every number on the page is dollars. */
 export type BillDay = { day: string; amount: number; currency: string; lines: number };
-export function foldCostReport(report: { data?: Array<{ starting_at?: string; results?: Array<{ amount?: string | number; currency?: string }> }> } | null | undefined): BillDay[] {
-  const out: BillDay[] = [];
+export type BillLine = { description: string; model: string | null; tier: string | null; tokenType: string | null; amount: number };
+type CostReport = { data?: Array<{ starting_at?: string; results?: Array<{ amount?: string | number; currency?: string; description?: string | null; model?: string | null; service_tier?: string | null; token_type?: string | null }> }> } | null | undefined;
+
+export function foldCostReport(report: CostReport): BillDay[] {
+  const out = new Map<string, BillDay>();
   for (const bucket of (report && Array.isArray(report.data) ? report.data : [])) {
     const day = String(bucket.starting_at || '').slice(0, 10);
     if (!day) continue;
-    let amount = 0, lines = 0, currency = 'USD';
-    for (const r of (bucket.results || [])) { amount += num(r.amount); lines += 1; if (r.currency) currency = String(r.currency); }
-    out.push({ day, amount: Math.round(amount * 100) / 100, currency, lines });
+    const d = out.get(day) ?? { day, amount: 0, currency: 'USD', lines: 0 };
+    for (const r of (bucket.results || [])) { d.amount += num(r.amount) / 100; d.lines += 1; if (r.currency) d.currency = String(r.currency); }
+    out.set(day, d);
   }
-  return out.sort((a, b) => b.day.localeCompare(a.day));
+  return [...out.values()].map(d => ({ ...d, amount: Math.round(d.amount * 100) / 100 })).sort((a, b) => b.day.localeCompare(a.day));
+}
+
+/** The same report folded by line item (model × tier × token type) across the whole window, largest first. */
+export function foldCostLines(report: CostReport): BillLine[] {
+  const out = new Map<string, BillLine>();
+  for (const bucket of (report && Array.isArray(report.data) ? report.data : [])) {
+    for (const r of (bucket.results || [])) {
+      const key = `${r.model ?? ''}|${r.service_tier ?? ''}|${r.token_type ?? ''}|${r.description ?? ''}`;
+      const l = out.get(key) ?? { description: String(r.description ?? 'Usage'), model: r.model ?? null, tier: r.service_tier ?? null, tokenType: r.token_type ?? null, amount: 0 };
+      l.amount += num(r.amount) / 100;
+      out.set(key, l);
+    }
+  }
+  return [...out.values()].map(l => ({ ...l, amount: Math.round(l.amount * 100) / 100 })).sort((a, b) => b.amount - a.amount);
 }

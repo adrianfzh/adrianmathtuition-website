@@ -9,22 +9,35 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sgtTodayISO } from '@/lib/sgt';
-import { costEntries, costByDay, costByPath, monthTotal, foldCostReport, type CostRunRow } from '@/lib/costs';
+import { costEntries, costByDay, costByPath, monthTotal, foldCostReport, foldCostLines, type CostRunRow } from '@/lib/costs';
 
 export const dynamic = 'force-dynamic';
 
 const COLS = 'id, created_at, student_name, paper_name, num_photos, cost_usd, input_tokens, output_tokens, model, total_max, ' +
   'result_json->queue, result_json->portal_submission, result_json->telegram_handin, result_json->usage, result_json->vision_usage';
 
-async function anthropicBill(sinceDay: string): Promise<{ available: boolean; days?: ReturnType<typeof foldCostReport>; note?: string }> {
+async function anthropicBill(sinceDay: string): Promise<{ available: boolean; days?: ReturnType<typeof foldCostReport>; lines?: ReturnType<typeof foldCostLines>; note?: string }> {
   const key = process.env.ANTHROPIC_ADMIN_KEY;
-  if (!key) return { available: false, note: 'Set ANTHROPIC_ADMIN_KEY (an Admin API key from console.anthropic.com → Settings → Admin keys) and the invoice appears here, per day.' };
+  if (!key) return { available: false, note: 'Set ANTHROPIC_ADMIN_KEY (an Admin API key from console.anthropic.com → Settings → Admin keys, sk-ant-admin…) and the invoice appears here, per day and per line item.' };
   try {
-    const url = `https://api.anthropic.com/v1/organizations/cost_report?starting_at=${encodeURIComponent(`${sinceDay}T00:00:00Z`)}&bucket_width=1d&limit=31`;
-    const r = await fetch(url, { headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' }, signal: AbortSignal.timeout(20_000) });
-    const j = await r.json().catch(() => ({}));
-    if (!r.ok) return { available: false, note: `Anthropic cost report: HTTP ${r.status}${j?.error?.message ? ` — ${j.error.message}` : ''}` };
-    return { available: true, days: foldCostReport(j) };
+    // Grouped by description so the lines carry model × service tier × token type; up to four pages of 31 days.
+    const data: NonNullable<Parameters<typeof foldCostReport>[0]>['data'] = [];
+    let page: string | null = null;
+    for (let i = 0; i < 4; i++) {
+      const url = new URL('https://api.anthropic.com/v1/organizations/cost_report');
+      url.searchParams.set('starting_at', `${sinceDay}T00:00:00Z`);
+      url.searchParams.set('bucket_width', '1d');
+      url.searchParams.set('limit', '31');
+      url.searchParams.append('group_by[]', 'description');
+      if (page) url.searchParams.set('page', page);
+      const r = await fetch(url, { headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' }, signal: AbortSignal.timeout(20_000) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) return { available: false, note: `Anthropic cost report: HTTP ${r.status}${j?.error?.message ? ` — ${j.error.message}` : ''}` };
+      data.push(...(Array.isArray(j.data) ? j.data : []));
+      if (!j.has_more || !j.next_page) break;
+      page = j.next_page;
+    }
+    return { available: true, days: foldCostReport({ data }), lines: foldCostLines({ data }) };
   } catch (e) {
     return { available: false, note: `Anthropic cost report: ${(e as Error).message}` };
   }

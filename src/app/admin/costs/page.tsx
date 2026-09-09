@@ -2,12 +2,12 @@
 // /admin/costs — what the marking pipeline spends, and where (9 Sep 2026).
 import { useEffect, useState } from 'react';
 import { ensureAdminSession } from '@/lib/admin-client';
-import type { CostEntry, DayTotal, PathTotal, BillDay } from '@/lib/costs';
+import type { CostEntry, DayTotal, PathTotal, BillDay, BillLine } from '@/lib/costs';
 
 type Data = {
   days: number; month: string; monthToDate: PathTotal;
   byDay: DayTotal[]; byPath: Record<string, PathTotal>; runs: CostEntry[];
-  bill: { available: boolean; days?: BillDay[]; note?: string };
+  bill: { available: boolean; days?: BillDay[]; lines?: BillLine[]; note?: string };
   notes: string[];
 };
 
@@ -54,9 +54,15 @@ export default function CostsPage() {
             <section className="bg-white rounded-xl border border-neutral-200 p-4 mb-4">
               <div className="font-medium mb-1">The invoice (Anthropic)</div>
               {data.bill.available && data.bill.days ? (
-                <table className="text-sm w-full"><tbody>
-                  {data.bill.days.map(d => <tr key={d.day} className="border-t border-neutral-100"><td className="py-1">{d.day}</td><td className="py-1 text-right tabular-nums">{d.amount.toFixed(2)} {d.currency}</td><td className="py-1 text-right text-neutral-400 text-xs">{d.lines} line{d.lines === 1 ? '' : 's'}</td></tr>)}
-                </tbody></table>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <table className="text-sm w-full self-start"><thead><tr className="text-neutral-500 text-xs text-left"><th className="py-1">day</th><th className="text-right">billed</th></tr></thead><tbody>
+                    {data.bill.days.map(d => <tr key={d.day} className="border-t border-neutral-100"><td className="py-1">{d.day}</td><td className="py-1 text-right tabular-nums">{money(d.amount)}</td></tr>)}
+                    <tr className="border-t border-neutral-300 font-medium"><td className="py-1">total</td><td className="py-1 text-right tabular-nums">{money(data.bill.days.reduce((a, d) => a + d.amount, 0))}</td></tr>
+                  </tbody></table>
+                  <table className="text-sm w-full self-start"><thead><tr className="text-neutral-500 text-xs text-left"><th className="py-1">line item</th><th>tier</th><th className="text-right">billed</th></tr></thead><tbody>
+                    {(data.bill.lines ?? []).map((l, i) => <tr key={i} className="border-t border-neutral-100"><td className="py-1 max-w-[260px] truncate" title={l.description}>{l.description}</td><td className="text-xs text-neutral-500">{l.tier ?? ''}</td><td className="py-1 text-right tabular-nums">{money(l.amount)}</td></tr>)}
+                  </tbody></table>
+                </div>
               ) : <div className="text-sm text-neutral-500">{data.bill.note}</div>}
             </section>
 
