@@ -768,7 +768,7 @@ they are, reachable from its "Other views" row. Nothing is deleted.
   question numbers). `paper_match.practice_again` stamps what was used.
 - **📠 The ScanSnap watcher** (7 Sep 2026 — Adrian: "once scanned, put into the marking
   queue… give a suitable name by reading the cover page… tag the student; non-exam
-  papers leave alone"). `/api/cron/scan-inbox` every 5 min (`job_runs` `scan-inbox`,
+  papers leave alone"). `/api/cron/scan-inbox` every 15 min (was every 5 until 9 Sep 2026 — 689 ticks for one scan; `job_runs` `scan-inbox`,
   `?dry=1`) watches **`/Scans` in the app folder** — ScanSnap Home's destination must be
   `Dropbox/Apps/AdrianMathNotes/Scans`; the token cannot see the top-level `/ScanSnap`.
   Ledger `scan_inbox` (unique on path+size+modified; the first run BASELINES what is already

@@ -37,7 +37,7 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'auto-release-sweep': { kind: 'interval', hours: 1, label: 'every 10 min' },
   // The weekly auto-release number (8 Sep 2026): released on their own, changed after, auto-pause rule.
   'auto-release-report': { kind: 'interval', hours: 204, label: 'Mondays 8am' },
-  'scan-inbox':         { kind: 'interval', hours: 1, label: 'every 5 min' },
+  'scan-inbox':         { kind: 'interval', hours: 1, label: 'every 15 min' },
   // The extraction inbox watcher: Dropbox /Extraction Inbox → paper-library bucket + queue (Vercel cron every 10 min, 8 Sep 2026).
   'extraction-inbox':   { kind: 'interval', hours: 1, label: 'every 10 min' },
   // The Dropbox tray's one-month life: a paper's folder goes 30 days after release (daily 03:30 SGT, 6 Sep 2026).

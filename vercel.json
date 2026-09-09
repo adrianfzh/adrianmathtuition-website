@@ -96,7 +96,7 @@
     },
     {
       "path": "/api/cron/scan-inbox",
-      "schedule": "*/5 * * * *"
+      "schedule": "*/15 * * * *"
     },
     {
       "path": "/api/cron/extraction-inbox",
