@@ -199,7 +199,8 @@ async function solutionLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
   // every card Adrian had tapped came back on the next refresh (53 of them).
   // `?view=redraw|hidden` lists them; the counts below are the doors.
   const decided = (f: { note?: unknown }) => decidedSolutionKind((f.note as string | null) ?? null);
-  const view = sp.get('view') === 'redraw' ? 'redraw' : sp.get('view') === 'hidden' ? 'hidden' : '';
+  const v = sp.get('view');
+  const view = v === 'redraw' || v === 'hidden' || v === 'superseded' ? v : '';
   const working = all.filter((f) => decided(f) === null);
   const listed = view ? all.filter((f) => decided(f) === view) : working;
   const undecided = (rows: typeof everything) => rows.filter((f) => decided(f) === null).length;
@@ -262,6 +263,7 @@ async function solutionLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
       sec: undecided(sec), jc: undecided(jc), allHeld: undecided(everything),
       sentToRedraw: all.filter((f) => decided(f) === 'redraw').length,
       keptHidden: all.filter((f) => decided(f) === 'hidden').length,
+      superseded: all.filter((f) => decided(f) === 'superseded').length,
       listed: listed.length,
     },
   });

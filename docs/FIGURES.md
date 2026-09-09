@@ -154,6 +154,26 @@ Five actions, and only three of them write to the question row:
 | 🙈 **Keep hidden** | prefixes the note `Adrian: kept hidden · …`, status unchanged. **Decided**: the row leaves the working lane onto the 🙈 door. |
 | ✏️ **Redraw** | prefixes the note `Adrian: redraw · …`, status unchanged. **Decided**: the row leaves the working lane onto the ✏️ door. |
 
+**Superseded cards — a held image nobody renders (9 Sep 2026).** Adrian, opening
+the question behind a held card: *"the solution diagram looks different? the
+solution diagram is actually good"*. It was. That question carries TWO solution
+images — the watermarked scan the card holds (`sol_<uuid>.png`, in a `parts[]`
+slot) and a clean redraw (`solutions/<qid>-N.png`, in `solution_images`) that the
+render gate already serves. The card was asking him to judge a picture no student
+sees. An audit of all 317 held solution flags found 58 questions with an unheld
+sibling; 32 of those siblings are redraws, and all 32 were looked at side by side.
+**31 paths were stamped** with the `Superseded:` prefix (`SOLUTION_DECIDED`), which
+moves them onto their own 📄 door and out of the working lane.
+
+**The trap this sweep walked into, so nobody repeats it.** The signal is NOT "the
+question has another solution image". A multi-panel solution stores its panels as
+`solutions/<qid>-1.png`, `-2`, `-3`, and those panels show DIFFERENT diagrams — a
+sibling panel is not a replacement. The real signal is the pair of spellings: a
+held `sol_*` scan WITH a `solutions/<qid>-N` redraw. Three rows were swept on the
+weaker rule (a held path that was itself a panel) and were restored the same hour;
+two more, TMJC 2021 P1 Q4 and Q6, were held back by eye for the same reason before
+the sweep ran. Read `held-audit.json`'s shape before trusting a count like this.
+
 **🧹 Clean also handles PALE marks, and never without a second look (9 Sep 2026).**
 Adrian, on CJC 2022 P1 Q4(a) — a whole, legible curve with a KIASU vendor stamp in
 the empty lower-left: *"so clean does not work on such images?"* It did not, and the

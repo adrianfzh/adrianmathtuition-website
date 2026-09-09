@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   parseEraseVerdict, inkComponents, snapToComponents, hintToPixels, boxesAsFractions, padBox,
-  MAX_COMPONENT_SHARE, BY_EYE, mergeBoxes, judgePrompt, verifyPrompt, parseVerifyVerdict, type Component,
+  MAX_COMPONENT_SHARE, BY_EYE, mergeBoxes, judgePrompt, verifyPrompt, parseVerifyVerdict,
+  parseStampVerdict, distToTintLine, classifyStamp, sampleColour, sampleInkNear, type Component, type RGB,
 } from './figure-blemish';
 
 /** A w×h white canvas with the given pixels inked. */
@@ -154,5 +155,53 @@ describe('the second look — nothing washed is offered without it', () => {
   it('asks about the things a tone wash actually destroys', () => {
     const p = verifyPrompt();
     for (const s of ['MINUS SIGNS', 'dashed', 'gridlines', 'JSON only']) expect(p).toContain(s);
+  });
+});
+
+describe('🚱 Remove watermark — the model points, the colours decide', () => {
+  it('reads the points and refuses anything it cannot use', () => {
+    const v = parseStampVerdict('{"stamp":[{"x":120,"y":800,"what":"grey leg"},{"x":140,"y":820}],"figure":[{"x":400,"y":300,"what":"blue curve"}],"overlaps":true,"refuse":null}');
+    expect(v.refuse).toBeNull();
+    expect(v.stamp).toHaveLength(2);
+    expect(v.figure[0]).toMatchObject({ x: 400, y: 300 });
+    expect(v.overlaps).toBe(true);
+    expect(parseStampVerdict('{"stamp":[],"figure":[]}').refuse).toMatch(/pointed at no watermark/);
+    expect(parseStampVerdict('{"refuse":"the watermark is the same colour as the curve"}').refuse).toMatch(/same colour/);
+    expect(parseStampVerdict('no json here').refuse).toMatch(/no JSON/);
+    // out-of-range points are dropped, not clamped
+    expect(parseStampVerdict('{"stamp":[{"x":1200,"y":10},{"x":5,"y":5}]}').stamp).toEqual([{ x: 5, y: 5, what: undefined }]);
+  });
+  it('measures a pale tint as near its own colour and far from a different hue', () => {
+    const blue: RGB = [60, 90, 200], grey: RGB = [150, 150, 150];
+    const paleBlue: RGB = [190, 200, 235];      // the same blue printed faint
+    expect(distToTintLine(paleBlue, blue)).toBeLessThan(20);
+    expect(distToTintLine(paleBlue, grey)).toBeGreaterThan(20);
+    expect(distToTintLine([255, 255, 255], blue)).toBeCloseTo(0, 5);
+  });
+  it('takes the stamp colour and leaves the figure colour, even when both are pale', () => {
+    // 4x1 strip: pale blue stamp, pale grey curve, white, dark ink
+    const w = 4, h = 1, ch = 3;
+    const px = new Uint8Array([190, 200, 235,  200, 200, 200,  255, 255, 255,  20, 20, 20]);
+    const prot = new Uint8Array([0, 0, 0, 1]);
+    const { mask, count } = classifyStamp(px, w, h, ch, [[60, 90, 200]], [[150, 150, 150]], prot);
+    expect(count).toBe(1);
+    expect([...mask]).toEqual([1, 0, 0, 0]);
+  });
+  it('samples the median of a patch, so one stray pixel cannot define a colour', () => {
+    const w = 3, h = 3, ch = 3;
+    const px = new Uint8Array(w * h * ch).fill(200);
+    px[(1 * w + 1) * ch] = 0; px[(1 * w + 1) * ch + 1] = 0; px[(1 * w + 1) * ch + 2] = 0;  // one black pixel in the middle
+    expect(sampleColour(px, w, h, ch, 1, 1, 1)).toEqual([200, 200, 200]);
+  });
+});
+
+describe('sampleInkNear — a model points beside a stroke, not on it', () => {
+  it('finds the ink near a point that itself is blank page', () => {
+    const w = 9, h = 1, ch = 3;
+    const px = new Uint8Array(w * h * ch).fill(255);
+    const grey = new Uint8Array(w * h).fill(255);
+    for (const x of [7, 8]) { grey[x] = 90; px[x * ch] = 60; px[x * ch + 1] = 90; px[x * ch + 2] = 200; }
+    expect(sampleInkNear(px, grey, w, h, ch, 5, 0, 3)).toEqual([60, 90, 200]);   // pointed at x=5, ink at x=7
+    expect(sampleInkNear(px, grey, w, h, ch, 1, 0, 2)).toBeNull();               // nothing within reach
   });
 });

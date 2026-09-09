@@ -90,6 +90,15 @@ export function parseFitnessNote(note: string | null | undefined): {
 export const SOLUTION_DECIDED = {
   redraw: 'Adrian: redraw · ',
   hidden: 'Adrian: kept hidden · ',
+  // 9 Sep 2026. Adrian, opening the question behind a held card: "the solution
+  // diagram looks different? the solution diagram is actually good". It was:
+  // that question carries TWO solution images — the watermarked scan the card
+  // holds, and a clean redraw filed as solutions/<qid>-N.png that the render
+  // gate already serves. The card was asking him to judge a picture no student
+  // sees. An audit of all 317 held solution flags found 32 like it; 30 where
+  // the redraw fully covers the scan are stamped with this, and the two whose
+  // redraw DROPPED content were left in the queue for him.
+  superseded: 'Superseded: a clean redraw already serves this question · ',
 } as const;
 export type SolutionDecision = keyof typeof SOLUTION_DECIDED;
 
@@ -104,6 +113,7 @@ export function decidedSolutionKind(note: string | null | undefined): SolutionDe
   const bare = (p: string) => p.replace(/\s*·\s*$/, '');
   if (n.startsWith(bare(SOLUTION_DECIDED.redraw)) || /^redraw requested\b/i.test(n)) return 'redraw';
   if (n.startsWith(bare(SOLUTION_DECIDED.hidden)) || /^kept hidden\b/i.test(n)) return 'hidden';
+  if (n.startsWith(bare(SOLUTION_DECIDED.superseded))) return 'superseded';
   return null;
 }
 

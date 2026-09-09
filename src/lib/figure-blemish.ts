@@ -445,3 +445,201 @@ export function judgePrompt(note: string | null | undefined): string {
     'foreign mark, return an empty "blemishes" list. If the image cannot be judged, set "refuse" to why.',
   ].filter(Boolean).join('\n');
 }
+
+// ── 🚱 Remove watermark (9 Sep 2026) ─────────────────────────────────────────
+// Adrian, after cleaning left most of a KIASU stamp behind: "cleaning isn't
+// working that well - but there is potential to work well … or is there a
+// remove watermark option? but these option should not be mechanical? should be
+// read by a model".
+//
+// Clean asks the judge WHERE a foreign mark is and erases inside that box, so a
+// stamp spread across the whole frame comes off in fragments. A watermark is a
+// different question with a better answer: it is one THING, printed in its own
+// COLOUR. So here the model is not asked to draw boxes. It is asked to point at
+// a few places that are watermark and a few that are the figure, and the code
+// samples the real pixels there. Every pixel is then classified by which of
+// those colours it is nearer — counting the whole blend from that colour to
+// white, because a watermark is anti-aliased and printed pale.
+//
+// This separates what tone alone could not: where a pale wash destroyed a grey
+// curve, the curve is grey and the stamp is blue — far apart in colour, alike
+// in tone. The figure survives.
+//
+// ⚠ MEASURED, AND NOT GOOD ENOUGH TO EXPOSE (9 Sep 2026). Run over ten stamped
+// JC solution images, this protects the maths but does NOT remove the stamp
+// well: it takes the flat interior of a logo and leaves its anti-aliased edge,
+// so a solid running-figure becomes an OUTLINE — on VJC 2021 P1 Q8 and HCI 2020
+// P1 Q6 the result looks worse than the original, and the second look passed
+// both because it is only asked about losing figure content, not about the
+// stamp being half-removed. Four more removed almost nothing. So there is no
+// 'remove watermark' button on the lane: the machinery and its tests are kept
+// here because the approach is right (a model points, the pixels decide) and the
+// gap is measurable, but what it needs is the plate-subtraction route — estimate
+// the watermark from a SISTER PAGE of the same paper that carries the same stamp,
+// then subtract it with local gain — not another colour rule. Until then a stamp
+// printed over the working is a redraw job.
+
+/** A point the model puts on the picture, on the same 0–1000 grid it reads. */
+export type Pt = { x: number; y: number; what?: string };
+export type StampVerdict = { stamp: Pt[]; figure: Pt[]; refuse: string | null; overlaps: boolean };
+
+/** How far a pixel may sit from a sampled colour's blend-to-white line. */
+export const COLOUR_TOL = 46;
+/** A watermark pixel must be at least this much nearer the stamp than the figure. */
+export const COLOUR_MARGIN = 6;
+
+export function stampPrompt(note: string | null | undefined): string {
+  return [
+    'This is a figure from an exam paper, overprinted with a VENDOR WATERMARK (a logo, a wordmark, a phone number,',
+    'a web address, a diagonal band). Faint blue grid lines labelled x100…x900 and y100…y900 are drawn on the image',
+    'at every 100 to help you read positions — they are NOT part of the figure and NOT the watermark.',
+    note ? `The review note says: "${note}"` : '',
+    'Do not describe boxes. Instead POINT at pixels, on the 0-1000 grid (x from the left, y from the top):',
+    '  • "stamp": 4 to 10 points that sit squarely ON the watermark\'s own ink — on a thick stroke of the logo, inside',
+    '    a letter of the wordmark, on the coloured band. Spread them over every distinct colour the watermark uses.',
+    '    Never put one where the watermark crosses the figure.',
+    '  • "figure": 4 to 10 points that sit squarely ON the maths — the curve, an axis, a label, a gridline the figure',
+    '    itself draws, any shading that belongs to the answer. Include every colour the FIGURE uses.',
+    'Answer with JSON only, no prose:',
+    '{"stamp":[{"x":120,"y":800,"what":"grey logo leg"}],"figure":[{"x":400,"y":300,"what":"blue curve"}],"overlaps":true,"refuse":null}',
+    '"overlaps" is true when the watermark crosses the maths anywhere. Set "refuse" to a reason if there is no',
+    'watermark, or if the watermark is printed in the same colour as the figure so removing it must damage the maths.',
+  ].filter(Boolean).join('\n');
+}
+
+export function parseStampVerdict(text: string): StampVerdict {
+  const no = (why: string): StampVerdict => ({ stamp: [], figure: [], refuse: why, overlaps: false });
+  const m = String(text ?? '').match(/\{[\s\S]*\}/);
+  if (!m) return no('the watermark reader returned no JSON');
+  let o: Record<string, unknown>;
+  try { o = JSON.parse(m[0]) as Record<string, unknown>; } catch { return no('the watermark reader\'s JSON did not parse'); }
+  if (typeof o.refuse === 'string' && o.refuse.trim()) return no(o.refuse.trim());
+  const pts = (v: unknown): Pt[] => (Array.isArray(v) ? v : []).flatMap((p) => {
+    if (!p || typeof p !== 'object') return [];
+    const r = p as Record<string, unknown>;
+    const x = Number(r.x), y = Number(r.y);
+    if (!Number.isFinite(x) || !Number.isFinite(y) || x < 0 || y < 0 || x > 1000 || y > 1000) return [];
+    return [{ x, y, what: typeof r.what === 'string' ? r.what : undefined }];
+  });
+  const stamp = pts(o.stamp), figure = pts(o.figure);
+  if (!stamp.length) return no('the watermark reader pointed at no watermark pixel');
+  return { stamp, figure, refuse: null, overlaps: o.overlaps === true };
+}
+
+export type RGB = [number, number, number];
+
+/**
+ * The colour of the INK NEAREST a point the model gave.
+ *
+ * Measured 9 Sep 2026 on CJC 2022 P1 Q8: of nine points the model put on the
+ * watermark, eight sampled pure white — it points beside a thin stroke, not on
+ * it, and a white "stamp colour" makes the classifier useless. So the point is
+ * a hint, not a measurement: search outward for real ink and take the median of
+ * the darkest of it. The model does the seeing; the pixels do the measuring.
+ */
+export function sampleInkNear(
+  px: Uint8Array | Buffer, grey: Uint8Array | Buffer, w: number, h: number, ch: number,
+  cx: number, cy: number, radius: number,
+): RGB | null {
+  const found: Array<{ v: number; c: RGB }> = [];
+  for (let y = Math.max(0, cy - radius); y <= Math.min(h - 1, cy + radius); y++)
+    for (let x = Math.max(0, cx - radius); x <= Math.min(w - 1, cx + radius); x++) {
+      const i = y * w + x;
+      if (grey[i] >= 250) continue;
+      const j = i * ch;
+      found.push({ v: grey[i], c: [px[j], px[j + Math.min(1, ch - 1)], px[j + Math.min(2, ch - 1)]] });
+    }
+  if (!found.length) return null;
+  found.sort((a, b) => a.v - b.v);
+  const core = found.slice(0, Math.max(1, Math.round(found.length * 0.3)));
+  const med = (k: number) => { const v = core.map((f) => f.c[k]).sort((a, b) => a - b); return v[v.length >> 1]; };
+  return [med(0), med(1), med(2)];
+}
+
+/** The median colour of a small patch, so one stray pixel cannot define a class. */
+export function sampleColour(px: Uint8Array | Buffer, w: number, h: number, ch: number, cx: number, cy: number, r = 2): RGB {
+  const out: RGB = [0, 0, 0];
+  for (let k = 0; k < 3; k++) {
+    const vals: number[] = [];
+    for (let y = Math.max(0, cy - r); y <= Math.min(h - 1, cy + r); y++)
+      for (let x = Math.max(0, cx - r); x <= Math.min(w - 1, cx + r); x++) vals.push(px[(y * w + x) * ch + Math.min(k, ch - 1)]);
+    vals.sort((a, b) => a - b);
+    out[k] = vals[vals.length >> 1] ?? 255;
+  }
+  return out;
+}
+
+/** Distance from a colour to the blend line running from white to `c`. A pale,
+ *  anti-aliased print of `c` lies along that line, so this catches every tint of
+ *  it without catching a different hue that happens to be equally pale. */
+export function distToTintLine(p: RGB, c: RGB): number {
+  const w: RGB = [255, 255, 255];
+  const d: RGB = [c[0] - w[0], c[1] - w[1], c[2] - w[2]];
+  const len2 = d[0] * d[0] + d[1] * d[1] + d[2] * d[2];
+  if (len2 === 0) return Math.hypot(p[0] - 255, p[1] - 255, p[2] - 255);
+  let t = ((p[0] - w[0]) * d[0] + (p[1] - w[1]) * d[1] + (p[2] - w[2]) * d[2]) / len2;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(p[0] - (w[0] + t * d[0]), p[1] - (w[1] + t * d[1]), p[2] - (w[2] + t * d[2]));
+}
+
+const nearest = (p: RGB, cs: RGB[]) => cs.reduce((a, c) => Math.min(a, distToTintLine(p, c)), Infinity);
+
+/** Which pixels belong to the watermark: nearer a stamp colour than any figure
+ *  colour by a clear margin, within tolerance, and not part of the figure's dark ink. */
+export function classifyStamp(
+  px: Uint8Array | Buffer, w: number, h: number, ch: number, stampCols: RGB[], figCols: RGB[],
+  protectedPx: Uint8Array, tol = COLOUR_TOL, margin = COLOUR_MARGIN,
+): { mask: Uint8Array; count: number } {
+  const mask = new Uint8Array(w * h);
+  let count = 0;
+  for (let i = 0; i < w * h; i++) {
+    if (protectedPx[i]) continue;
+    const j = i * ch;
+    const p: RGB = [px[j], px[j + Math.min(1, ch - 1)], px[j + Math.min(2, ch - 1)]];
+    if (p[0] > 250 && p[1] > 250 && p[2] > 250) continue;   // already page
+    const ds = nearest(p, stampCols);
+    if (ds > tol) continue;
+    if (figCols.length && nearest(p, figCols) <= ds + margin) continue;
+    mask[i] = 1; count++;
+  }
+  return { mask, count };
+}
+
+export type UnstampResult =
+  | { ok: true; png: Buffer; removed: number; boxes: Box[]; width: number; height: number; stampCols: RGB[]; figCols: RGB[] }
+  | { ok: false; reason: string };
+
+/** The whole watermark removal: sample the colours the model pointed at,
+ *  classify every pixel, whiten the watermark's own. The canvas is never
+ *  cropped and the figure's dark ink is protected throughout. */
+export async function removeWatermark(src: Buffer, v: StampVerdict, opt: { maxShare?: number } = {}): Promise<UnstampResult> {
+  const flat = sharp(src).flatten({ background: '#fff' });
+  const { data: grey, info } = await flat.clone().greyscale().raw().toBuffer({ resolveWithObject: true });
+  const w = info.width, h = info.height;
+  if (w * h > 6_000_000) return { ok: false, reason: 'image too large' };
+  const rgb = await flat.clone().removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const px = rgb.data, ch = rgb.info.channels;
+  // A point is a hint; look outward for the ink it meant, and drop a point that
+  // found none rather than letting white stand in for a colour.
+  const r = Math.max(6, Math.round(Math.min(w, h) * 0.02));
+  const at = (p: Pt) => sampleInkNear(px, grey, w, h, ch, Math.round((p.x / 1000) * (w - 1)), Math.round((p.y / 1000) * (h - 1)), r);
+  const stampCols = v.stamp.map(at).filter((c): c is RGB => !!c);
+  const figCols = v.figure.map(at).filter((c): c is RGB => !!c);
+  if (!stampCols.length) return { ok: false, reason: 'none of the points the model gave sit near any watermark ink' };
+  // The figure's own dark ink is protected outright, plus a halo, so a stroke
+  // the watermark crosses keeps its soft edges.
+  const prot = protectedMask(grey, w, h);
+  const { mask, count } = classifyStamp(px, w, h, ch, stampCols, figCols, prot);
+  if (!count) return { ok: false, reason: 'no pixel matched the watermark colours the model pointed at' };
+  const share = count / (w * h);
+  const maxShare = opt.maxShare ?? 0.6;
+  if (share > maxShare) return { ok: false, reason: `that would whiten ${Math.round(share * 100)}% of the canvas — refused` };
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let i = 0; i < w * h; i++) if (mask[i]) {
+    const x = i % w, y = (i / w) | 0;
+    if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+    const j = i * ch; for (let k = 0; k < ch; k++) px[j + k] = 255;
+  }
+  const png = await sharp(px, { raw: { width: w, height: h, channels: ch as 1 | 2 | 3 | 4 } }).png().toBuffer();
+  return { ok: true, png, removed: count, boxes: [{ x0, y0, x1, y1 }], width: w, height: h, stampCols, figCols };
+}

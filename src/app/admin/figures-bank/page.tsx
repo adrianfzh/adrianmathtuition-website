@@ -131,13 +131,13 @@ export default function FiguresPage() {
   const [level, setLevel] = useState('');
   const [tab, setTab] = useState<Tab>('all');
   const [sols, setSols] = useState<SolItem[]>([]);
-  const [solTotals, setSolTotals] = useState({ held: 0, withCandidate: 0, sec: 0, jc: 0, allHeld: 0 , sentToRedraw: 0, keptHidden: 0 });
+  const [solTotals, setSolTotals] = useState({ held: 0, withCandidate: 0, sec: 0, jc: 0, allHeld: 0 , sentToRedraw: 0, keptHidden: 0, superseded: 0 });
   // Sec first: Adrian paused JC cleaning until Sec completes, and one undivided
   // list put the 112 Sec decisions on page 11 behind 202 paused JC rows.
   const [solScope, setSolScope] = useState<'sec' | 'jc' | 'all'>('sec');
   // Decided rows (✏️ Redraw / 🙈 Keep hidden) leave the working lane; the doors
   // show them — a count is a door, never a disappearance (9 Sep 2026).
-  const [solView, setSolView] = useState<'' | 'redraw' | 'hidden'>('');
+  const [solView, setSolView] = useState<'' | 'redraw' | 'hidden' | 'superseded'>('');
   const [solBusy, setSolBusy] = useState('');
   const [solErr, setSolErr] = useState<Record<string, string>>({});
   const [fits, setFits] = useState<FitItem[]>([]);
@@ -657,6 +657,8 @@ export default function FiguresPage() {
           <div style={{ background: '#faf5ff', border: '1px solid #ddd6fe', borderRadius: 10, padding: '8px 12px', marginBottom: 10, fontSize: 13.5 }}>
             {solView === 'redraw' ? (
               <><strong>{solTotals.sentToRedraw} solution images sent to redraw</strong> — still switched off, waiting on a redraw session.</>
+            ) : solView === 'superseded' ? (
+              <><strong>{solTotals.superseded} superseded by a clean redraw</strong> — the question already serves a good diagram, so nobody sees these. Nothing to do unless the redraw turns out to be the weaker one.</>
             ) : solView === 'hidden' ? (
               <><strong>{solTotals.keptHidden} solution images kept hidden</strong> — still switched off, by your decision.</>
             ) : (
@@ -673,6 +675,11 @@ export default function FiguresPage() {
             {solView !== 'redraw' && solTotals.sentToRedraw > 0 && (
               <button onClick={() => { setSolView('redraw'); setPage(0); }} style={{ marginLeft: 8, fontSize: 12.5, fontWeight: 700, color: '#7c3aed', background: '#fff', border: '1px solid #ddd6fe', borderRadius: 999, padding: '2px 10px', cursor: 'pointer' }}>
                 {`✏️ ${solTotals.sentToRedraw} sent to redraw`}
+              </button>
+            )}
+            {solView !== 'superseded' && solTotals.superseded > 0 && (
+              <button onClick={() => { setSolView('superseded'); setPage(0); }} style={{ marginLeft: 8, fontSize: 12.5, fontWeight: 700, color: '#7c3aed', background: '#fff', border: '1px solid #ddd6fe', borderRadius: 999, padding: '2px 10px', cursor: 'pointer' }}>
+                {`📄 ${solTotals.superseded} superseded by a redraw`}
               </button>
             )}
             {solView !== 'hidden' && solTotals.keptHidden > 0 && (
@@ -710,7 +717,7 @@ export default function FiguresPage() {
             </span>
           </div>
           {!loading && sols.length === 0 && (
-            <div style={{ color: C.muted, fontSize: 14, padding: 20, textAlign: 'center' }}>{solView === 'redraw' ? 'Nothing sent to redraw yet.' : solView === 'hidden' ? 'Nothing kept hidden yet.' : 'Nothing held — every solution image has been judged.'}</div>
+            <div style={{ color: C.muted, fontSize: 14, padding: 20, textAlign: 'center' }}>{solView === 'redraw' ? 'Nothing sent to redraw yet.' : solView === 'hidden' ? 'Nothing kept hidden yet.' : solView === 'superseded' ? 'Nothing superseded yet.' : 'Nothing held — every solution image has been judged.'}</div>
           )}
           {sols.map((it) => {
             const busy = solBusy === it.path;
