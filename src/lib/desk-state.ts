@@ -219,10 +219,14 @@ export function defaultLane(counts: Partial<Record<DeskLane, number>>): DeskLane
  * OLDEST first, so the paper that has waited longest is the first thing seen;
  * Released is a history and stays newest first. Ties keep their given order.
  */
-export function orderLane<T extends { createdAt: string }>(rows: T[], lane: DeskLane): T[] {
-  const dir = lane === 'released' || lane === 'auto' ? -1 : 1;
+export function orderLane<T extends { createdAt: string; releasedAt?: string | null }>(rows: T[], lane: DeskLane): T[] {
+  // The automatic lane is a to-do list too (Adrian, 9 Sep 2026: "the earliest
+  // ones come at the top of the list - cause they waited the longest"): the
+  // paper released longest ago is first. Only Completed is newest first.
+  const dir = lane === 'released' ? -1 : 1;
+  const stamp = (r: T) => (lane === 'auto' && r.releasedAt ? Date.parse(r.releasedAt) : Date.parse(r.createdAt)) || 0;
   return rows
-    .map((r, i) => ({ r, i, t: Date.parse(r.createdAt) || 0 }))
+    .map((r, i) => ({ r, i, t: stamp(r) }))
     .sort((a, b) => (a.t - b.t) * dir || a.i - b.i)
     .map(x => x.r);
 }

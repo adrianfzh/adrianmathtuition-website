@@ -146,10 +146,14 @@ export async function GET(req: NextRequest) {
   // 2026: "what does it mean by sheet assigned x 4?") — so the count is split.
   let assignments = 0;
   let assignmentsHeld = 0;
+  let sheetSent = false;
   try {
-    const { data: rows } = await sb.from('portal_assignments').select('status').eq('source_run_id', runId);
+    const { data: rows } = await sb.from('portal_assignments').select('status, kind, revoked_at').eq('source_run_id', runId);
     assignments = (rows ?? []).length;
     assignmentsHeld = (rows ?? []).filter(a => a.status === 'held').length;
+    // The SHEET is with the student once its worksheet row exists — the practice
+    // questions above are not that (9 Sep 2026: the Send button hid behind them).
+    sheetSent = (rows ?? []).some(a => a.kind === 'worksheet' && !a.revoked_at && a.status !== 'revoked');
   } catch { /* the count is a nicety */ }
 
   // The paper's Dropbox folder: what is in it decides "My copy" and whether
@@ -286,6 +290,7 @@ export async function GET(req: NextRequest) {
     sheetJobs: jobs.map(j => ({ id: j.id, status: j.status, stage: j.stage, error: j.error, createdAt: j.created_at, completedAt: j.completed_at })),
     assignments,
     assignmentsHeld,
+    sheetSent,
     folder: {
       path: folder,
       url: dropboxWebUrl(folder),

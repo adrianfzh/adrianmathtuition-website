@@ -98,7 +98,7 @@ type Detail = {
       noSheet: boolean; reason: string;
     } | null;
   } | null;
-  assignments: number; assignmentsHeld?: number;
+  assignments: number; assignmentsHeld?: number; sheetSent?: boolean;
   folder: { path: string; url: string; listed: boolean; exists: boolean; error: string | null; sheetPdf: boolean; sheetPdfName: string | null; markedAi: boolean };
   amended: { status: 'none' | 'found' | 'newer-than-attached' | 'unknown'; name?: string; modified?: string | null };
   flags: string[];
@@ -1029,9 +1029,6 @@ function DetailView(p: {
   // The sheet worker's honest "nothing here is worth practising" — the paper
   // still goes out, on its own, and the button says which it is doing.
   const noSheet = !!d.sheetJob?.result?.noSheet;
-  // The sheet is with the student once its From Adrian row exists (the desk
-  // counts that run's rows in `assignments`).
-  const sheetWithStudent = (d.assignments ?? 0) > 0;
   const pages = d.annotatedPhotos;
   // Ink hints (a mark Adrian swapped in the pen) ride on their question.
   const questions: Question[] = d.questions.map(q => ({ ...q, inkHints: (d.inkHints || []).filter(h => h.part && String(h.q) === String(q.questionNumber)) }));
@@ -1722,7 +1719,7 @@ function SheetPane(p: {
   // A "no sheet needed" job is finished but has no files — it gets its own
   // panel rather than the PDF viewer and an error where the sheet would be.
   const noSheet = job?.status === 'done' && !!job.result?.noSheet;
-  const sheetWithStudent = ((d as { assignments?: number }).assignments ?? 0) > 0;
+  const sheetWithStudent = !!(d as { sheetSent?: boolean }).sheetSent;
   const done = job?.status === 'done' && !noSheet;
   const openHref = (kind: 'pdf' | 'docx') => `/api/admin/sheet-open?runId=${encodeURIComponent(d.run.id)}&kind=${kind}`;
   return (
