@@ -248,3 +248,33 @@ And every A-item is a test case for the two guards shipped on 31 Aug. Before
 building anything new, re-mark these scripts and see whether the guards flag
 them. If they do, the answer is "keep vetting and watch the number". If they
 do not, the guards are not the fix.
+
+---
+
+# 10–11 Sep 2026 round — Adrian's list over twelve papers
+
+Twenty complaints, twelve papers, five root causes. Bins per `docs/FANOUT.md`.
+**Fix-forward throughout** (Adrian: "all these are for future markings … no
+need to re-release already released papers"); the three papers re-marked were
+the ones he named.
+
+| # | paper · complaint | bin | root cause | fix | status |
+|---|---|---|---|---|---|
+| E1 | Isabelle AM 2025 P2 "68/90", Joey "am tys 2025 p1" really EM | grounding | the 2025 GCE papers were in no bank, library or scheme; every allocation guessed (68 of 73) | papers extracted + `paper_library` questions rows; inbox now files marker rows, cuts a combined book at its covers, hand-in hint "No questions detected" | ✅ re-marked 74/90, 78/90, 65/90 |
+| E2 | purple "needed help" ink ignored | pen | ink scan only knew green | `lib/ink-colour.js` purple hue (bot bd6d37d) | ✅ |
+| E3 | Alexis AM 2023 P1 Q9 half-marked; Sijia EM 2022 P2 Q2 page unmarked | rule | a non-work read dropped the page | `nonWorkVerdict`, pre-2023 EM 80/100 totals (7cfaa56…) | ✅ |
+| E4 | Alexis AM 2023 P2 `\textcircled` raw, dt beside circled dx, part (b) no chip; EM 2023 P2 map scale "mark like I do" | pen + rule | missing TeX macros; ring + insert could not coexist; no map-scale rule | five rules + `figure-tex` macros, `scored_elsewhere` chip (4193cc4…56c82d4) | ✅ |
+| E5 | Joey vectors written as rows; paper named AM | rule | no column-vector rule; level not read off the paper | vector column rule, `capMathText`, `paperSubjectCheck` (b49493a, 3c7d634) | ✅ + run renamed |
+| E6 | Joey set 3 P1 Q2 HCF/LCM table, Q14 unmarked page, Q18 turning-point arrow, Q25(c) no chips; P2 Q4 skipped, ticks on printed text | rule + pen | table method unknown; `pageClaimsStudentDrawing`; blank-part rule; line codes on printed text | HCF/LCM rule, `missing_labels`, blank-part exception, `ai/line-codes.js` (0fc090c) | ✅ |
+| E7 | Shayenne EM 2022 P1 Q9(b), Chloe Q4b teaching diagrams | pen | no bearing-perpendicular / arc-region kinds | `perpendicular`, `arc_region` (02f7fef) | ✅ |
+| E8 | Rainie EM 2022 P2 Q1(d) overlaps, `\euro`, Q9(b)(iii) tick vs cross, necklace pages unmarked | pen | glyphs over each other; answer-line ticks on wrong answers; photo-holds-working unknown | ink ledger, answer-line guard, `photoHoldsWorking` (2f8ab2e…d436b37) | ✅ |
+| E9 | Rainie Q10(c) 4/8 — answer split over two pages | rule | fragments of one part scored separately, capped by each page's bracket | `passMergeFragments` (f2ffc89) | ✅ 7/8 forward |
+| E10 | Kiara EM 2022 P2 missing in Dropbox | infra | filing failed silently | retry ×3 + never-silent line + `file-catchup` sweep with Telegram (fd3fd9d, cf24b5f4) | ✅ filed |
+| E11 | pen realign misfire on Rainie's page (`realignRenumbered` fired on a genuine numbering) | pen | under investigation | agent P | 🔧 open |
+| E12 | Isabelle AM 2024 P2 75/85 — attached-PDF grounding never consults the bank's per-part brackets (78/88 with them) | rule | allocation resolved from the scheme row only | agent K | 🔧 open |
+| E13 | hand-in 504 (Jamie), machine at load 6 | infra | batch lane off + three re-marks + a hand-in on 1 CPU / 2 GB | resize, `mapLimit` 2, heap 2048, two Fly processes (a2e625f), marker alarm (702e881), `batch_lane` on ops | ✅ |
+
+What the round cost and why (the retrospective's numbers): 19 agents launched
+including relaunches, 6 lost to a transient API error or the session limit, 18
+bot deploys, 3 hand merges, the queue in-flight on one paper for 20 minutes
+twice. The playbook that came out of it is `docs/FANOUT.md`.
