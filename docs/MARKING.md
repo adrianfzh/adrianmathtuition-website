@@ -862,6 +862,23 @@ they are, reachable from its "Other views" row. Nothing is deleted.
   sheet on the way" for a week). `?dry=1` on the cron lists both plans; `job_runs`
   `scan-inbox` detail carries `tags: N tagged, N cover read, N waiting, N left, N sheet(s)
   caught up`.
+- **📁 Filing catch-up, same tick (10 Sep 2026)** — `lib/file-catchup.ts`
+  `sweepUnfiledPapers`: a run that is **released · not archived · has an images PDF
+  of ours · `dropbox_path IS NULL` · released within 14 days** is filed now, oldest
+  release first, 3 a tick, at the same path the route would use (`filingPathFor` —
+  a returned Practice Again still lands in its parent paper's folder as `4 Practice
+  Again — returned.pdf`). Why: the marking-time filing is ONE fail-soft POST from
+  the bot's `deliverQueuedRun` with no retry, no Telegram line and nothing
+  downstream that ever looks again, so a single 429/5xx/timeout loses the tray copy
+  in silence and the only trace is `dropbox_path IS NULL` — Adrian found out by
+  opening Dropbox for a paper that was not there (Kiara Tan Jia Min's EM TYS 2022
+  P2, released 9 Sep 06:57; 4 real runs since launch). `uploadFile` now also
+  RETRIES a 429 (honouring Dropbox's `Retry-After`), a 5xx and a dropped
+  connection, twice; a 4xx that is a real answer still throws at once. Idempotent
+  by construction — a run leaves the set the moment its `dropbox_path` is recorded.
+  `job_runs` `scan-inbox` detail gains `filing: N filed, N failed, N missing`;
+  `?dry=1` lists what it would file. `STUDENT_FILES_TO_DROPBOX=0` turns it off with
+  the rest of the tray.
 - **Auto-queue** — `lib/sheet-queue.ts` (`sheetQueueGuard` pure/tested,
   `queueSheetJob`, `autoQueueSheet`) is the ONE guard, now also what the
   sheet-jobs POST calls. The automatic door is stricter than the button: tagged ·

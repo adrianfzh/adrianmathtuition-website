@@ -23,8 +23,10 @@
 // The same tick then runs the auto-tag sweep (lib/auto-tag-sweep.ts): recent
 // marked papers with no student are tagged from the typed name, or from the
 // first page when the name fits two students — and tagged papers with no sheet
-// job get one queued. Stamps job_runs 'scan-inbox' every tick (JOB_RHYTHMS
-// alarms by absence).
+// job get one queued. Then the filing catch-up (lib/file-catchup.ts): a released
+// paper whose Dropbox copy never landed is filed now, because the marking-time
+// filing is a single fail-soft POST that nothing retries (Kiara, 9 Sep 2026).
+// Stamps job_runs 'scan-inbox' every tick (JOB_RHYTHMS alarms by absence).
 import { NextRequest, NextResponse } from 'next/server';
 import sharp from 'sharp';
 import { safeEqual } from '@/lib/safe-equal';
@@ -36,6 +38,7 @@ import { pdfPageToImage } from '@/lib/batch-marking';
 import { readScanCover } from '@/lib/scan-reader';
 import { loadRoster } from '@/lib/roster';
 import { sweepAutoTag, type AutoTagResult } from '@/lib/auto-tag-sweep';
+import { sweepUnfiledPapers, fileCatchupLine, type FileCatchupResult } from '@/lib/file-catchup';
 import { sendTelegram } from '@/lib/telegram';
 import {
   buildScanPaperName, isPdf, isSettled, matchStudent, parseScanFilename, scanLine,
@@ -211,7 +214,19 @@ export async function GET(req: NextRequest) {
     ? `tags: ${autoTag.tagged} tagged, ${autoTag.coverReads} cover read, ${autoTag.pendingCover} waiting, ${autoTag.left} left`
     : `tags: error ${autoTag && 'error' in autoTag ? autoTag.error : ''}`.trim();
 
+  // Filing catch-up — a released paper whose Dropbox copy never landed. The
+  // marking-time filing is one fail-soft POST with no retry, so a single 429 or
+  // timeout loses the paper from the tray silently (Kiara's EM TYS 2022 P2,
+  // 9 Sep 2026). Fail-soft here too: a bad tick costs nothing, the run stays in
+  // the set and the next tick tries again. lib/file-catchup.ts.
+  let filing: FileCatchupResult | { error: string } | null = null;
+  try { filing = await sweepUnfiledPapers({ dry, now }); }
+  catch (e) { filing = { error: (e as Error).message.slice(0, 200) }; }
+  const fileLine = filing && !('error' in filing)
+    ? fileCatchupLine(filing)
+    : `filing: error ${filing && 'error' in filing ? filing.error : ''}`.trim();
+
   const processed = out.filter(o => typeof o.action === 'string' && String(o.action).startsWith('📠')).length;
-  if (!dry) await logJobRun('scan-inbox', true, `${processed} queued, ${out.length - processed} other, ${waiting} waiting · ${tagLine}`).catch(() => {});
-  return NextResponse.json({ ok: true, dry, folder: SCAN_FOLDER, results: out, waiting, autoTag });
+  if (!dry) await logJobRun('scan-inbox', true, `${processed} queued, ${out.length - processed} other, ${waiting} waiting · ${tagLine} · ${fileLine}`).catch(() => {});
+  return NextResponse.json({ ok: true, dry, folder: SCAN_FOLDER, results: out, waiting, autoTag, filing });
 }

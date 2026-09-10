@@ -14,6 +14,25 @@ export function dropboxConfigured(): boolean {
   return !!(process.env.DROPBOX_APP_KEY && process.env.DROPBOX_APP_SECRET && process.env.DROPBOX_REFRESH_TOKEN);
 }
 
+// ---- upload retry (10 Sep 2026) ---------------------------------------------
+/** How many EXTRA attempts an upload gets after the first. Three tries: on the
+ *  default backoff that is ~6s of waiting, inside the 60s the calling routes get.
+ *  A Dropbox Retry-After is obeyed instead and can be longer (capped at 30s each)
+ *  — if that runs a route out of time, the 15-minute catch-up files the paper
+ *  later (lib/file-catchup.ts), which is the point of having both layers. */
+export const UPLOAD_RETRIES = 2;
+/** Statuses worth trying again: the write rate limit and anything server-side. */
+export function isRetryableStatus(status: number): boolean {
+  return status === 429 || (status >= 500 && status < 600);
+}
+/** Dropbox's own Retry-After when it sends one (seconds), else 2s, 4s. Capped. */
+export function retryDelayMs(retryAfter: string | null | undefined, attempt: number): number {
+  const secs = Number(retryAfter);
+  if (Number.isFinite(secs) && secs > 0) return Math.min(secs, 30) * 1000;
+  return Math.min(2000 * Math.pow(2, attempt), 8000);
+}
+const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
+
 async function getAccessToken(): Promise<string> {
   if (cached && Date.now() < cached.expiresAt) return cached.token;
   // If a refresh is already running (e.g. 5 listFolder calls fired at once),
@@ -160,20 +179,40 @@ export async function uploadFile(path: string, body: Buffer | Uint8Array, conten
   // overwrite = replace THAT file (no autorename): the caller is re-filing the same
   // run's copy — e.g. the ✍️ annotated version superseding the auto-filed one.
   const arg = { path, mode, autorename: mode === 'add', mute: false, strict_conflict: false };
-  const res = await fetch('https://content.dropboxapi.com/2/files/upload', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      // Dropbox-API-Arg is an HTTP header, so it must be pure ASCII — a student
-      // name with an accent or a curly apostrophe in the filename would otherwise
-      // throw "Invalid character in header content" before the request even leaves.
-      'Dropbox-API-Arg': asciiHeader(JSON.stringify(arg)),
-      'Content-Type': 'application/octet-stream',
-      'X-Upload-Content-Type': contentType,
-    },
-    body: body as unknown as BodyInit,
-  });
-  if (!res.ok) throw new Error(`Dropbox upload failed: ${res.status} ${await res.text()}`);
+  // Dropbox rate-limits WRITES per account, and answers a burst of them with 429
+  // + Retry-After — its own docs say the call must be retried, not treated as a
+  // failure. Nothing here did, and the callers are all fail-soft, so one 429 in a
+  // delivery burst lost a student's marked paper from the tray in silence (Kiara,
+  // 9 Sep 2026 — released at 06:57, never filed, discovered by Adrian opening the
+  // folder). 5xx and a dropped connection get the same treatment; a 4xx that is
+  // not a rate limit (bad path, missing scope) is a real answer and throws at once.
+  let res: Response | null = null;
+  for (let attempt = 0; ; attempt++) {
+    try {
+      res = await fetch('https://content.dropboxapi.com/2/files/upload', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          // Dropbox-API-Arg is an HTTP header, so it must be pure ASCII — a student
+          // name with an accent or a curly apostrophe in the filename would otherwise
+          // throw "Invalid character in header content" before the request even leaves.
+          'Dropbox-API-Arg': asciiHeader(JSON.stringify(arg)),
+          'Content-Type': 'application/octet-stream',
+          'X-Upload-Content-Type': contentType,
+        },
+        body: body as unknown as BodyInit,
+      });
+    } catch (e) {
+      if (attempt >= UPLOAD_RETRIES) throw e;
+      await sleep(retryDelayMs(null, attempt));
+      continue;
+    }
+    if (res.ok || attempt >= UPLOAD_RETRIES || !isRetryableStatus(res.status)) break;
+    const wait = retryDelayMs(res.headers.get('retry-after'), attempt);
+    console.warn(`[dropbox] upload ${res.status} on ${path} — retrying in ${Math.round(wait / 1000)}s`);
+    await sleep(wait);
+  }
+  if (!res || !res.ok) throw new Error(`Dropbox upload failed: ${res ? `${res.status} ${await res.text()}` : 'no response'}`);
   const data = await res.json() as { path_lower: string; path_display?: string; name: string };
   // `path` is path_lower (what later API calls want); `display` keeps the case
   // the folder was created with — for messages a human reads.
