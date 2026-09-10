@@ -1393,10 +1393,15 @@ slot to claim it. The wait is the problem, not the writer.
 2. **Slots look every two minutes** (`StartInterval 120`, 20 s stagger; an
    empty tick is one HTTP request). ✅ Also fixed: slots 2–6 now symlink the
    repo's `WORKER_PROMPT.md` instead of running a stale copy.
-3. **Sheet slots on a second Claude account**, so a marking surge cannot stall
-   sheets: Adrian mints a setup token on the second account and puts it in
-   `~/.adrianmath_sheets/oauth_token` (slots 2–6 symlink to it); `run.sh` prefers
-   that file over the keychain login. ⏳ needs the token.
+3. **Two Claude accounts, mirrored across both workers** ✅ (11 Sep 2026, with
+   the "Science paper marking capability" session): marking slots 1–3 and sheet
+   slots 1–3 follow the CLI login (account A, adrianmathtuition@gmail.com);
+   marking slots 4–6 and sheet slots 4–6 carry a setup-token minted on account B
+   (ablnon@gmail.com) at `~/.adrianmath_marker4/oauth_token` — the sheet slots
+   symlink to that one file — plus an `account` sidecar naming the email, so
+   each account has its own plan-limit file and one running out never stops the
+   other. A slot's own token wins over the login in BOTH run.sh files.
+   `bash ~/.adrianmath_sheetsN/run.sh --auth-check` prints a slot's account.
 4. **A renderer from a spec** (`scripts/sheet-worker/render_sheet.py`, spec in
    `SHEET-SPEC.md`): the writer emits the sheet as JSON, a script builds the docx
    through the same `worksheet_lib` helpers and exports the PDF the same Word
