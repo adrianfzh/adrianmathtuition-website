@@ -14,8 +14,11 @@ import ClipToNotes from '../ClipToNotes';
 import PracticeAgainRequest, { type PracticeAgainState } from '../PracticeAgainRequest';
 import { readNoSheet } from '@/lib/sheet-jobs';
 import { displayPaperName } from '@/lib/paper-display-name';
+import { subjectLabel } from '@/lib/mark-subjects';
+import { TEACHER_TOTAL_LABEL } from '@/lib/science-truth';
+import ScienceTeacherMark from '../ScienceTeacherMark';
 
-const COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, paper_subject, superseded_by';
+const COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, paper_subject, superseded_by, subject';
 
 function niceDate(iso: string): string {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
@@ -34,7 +37,26 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
   const paper = papers[0];
   if (!paper) notFound();
 
-  const { data: sheetRows } = await sb.from('portal_assignments')
+  // 🧪 A science paper (SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026): the
+  // disclaimer on the page, whether the school's scheme grounded the marking,
+  // the teacher's-mark card — and no Practice Again (that sheet is maths).
+  const lane = String((row as { subject?: string | null }).subject ?? 'math');
+  const isScience = lane !== 'math';
+  const rjRaw = (row as { result_json?: Record<string, unknown> | null }).result_json ?? {};
+  const groundingSource = (() => {
+    const g = rjRaw.grounding;
+    return g && typeof g === 'object' ? String((g as { source?: unknown }).source ?? '') : '';
+  })();
+  const schemeGrounded = /scheme|attached|stored|fingerprint/i.test(groundingSource);
+  const bankGrounded = !schemeGrounded && /bank|matched/i.test(groundingSource);
+  let teacherTotal: { awarded: number; max: number } | null = null;
+  if (isScience) {
+    const { data: t } = await sb.from('calibration_results').select('truth_awarded, truth_max')
+      .eq('run_id', id).eq('truth_source', 'teacher').eq('truth_label', TEACHER_TOTAL_LABEL).limit(1).maybeSingle();
+    if (t) teacherTotal = { awarded: Number(t.truth_awarded), max: Number(t.truth_max) };
+  }
+
+  const { data: sheetRows } = isScience ? { data: [] } : await sb.from('portal_assignments')
     .select('id, run_id, status, pdf_url, score, out_of, required_at, source_run_id, source_run_ids')
     .eq('airtable_student_id', sid).eq('source', 'practice-again').eq('kind', 'worksheet')
     // A batch sheet (10 Sep 2026) is this paper's sheet when it covers this paper.
@@ -57,7 +79,7 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
   // was there nothing worth practising? Else offer the request button
   // (Practice Again on request, 8 Sep 2026 — /api/portal/practice-again/request).
   let requestState: PracticeAgainState = 'none';
-  if (!sheet) {
+  if (!sheet && !isScience) {
     const { data: jobRows } = await sb.from('sheet_jobs').select('status, result')
       .or(`run_id.eq.${id},run_ids.cs.{${id}}`).order('created_at', { ascending: false }).limit(1);
     const job = (jobRows ?? [])[0] as { status: string; result: unknown } | undefined;
@@ -83,7 +105,7 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="space-y-4 pb-8">
-      <Link href="/app/marking" className="inline-block text-sm font-semibold text-navy hover:underline">← Papers</Link>
+      <Link href={isScience ? '/app/science' : '/app/marking'} className="inline-block text-sm font-semibold text-navy hover:underline">{isScience ? '← Science' : '← Papers'}</Link>
 
       <header className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
         <div className="flex items-start justify-between gap-3">
@@ -105,6 +127,21 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
           <span className="font-semibold">Earlier marking, archived.</span> {supersededNote}{' '}
           <Link href={`/app/marking/${supersededBy}`} className="font-semibold underline underline-offset-2">Open the current marking</Link>
         </p>
+      )}
+
+      {isScience && (
+        <section className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-900 space-y-1">
+          <p className="font-bold">🧪 {subjectLabel(lane)} marking — an estimate while it is new</p>
+          <p>
+            Calculations are checked properly.{' '}
+            {schemeGrounded
+              ? <>Explain answers were marked against <b>your school&apos;s mark scheme</b>.</>
+              : bankGrounded
+              ? <>Explain answers were marked against the <b>marking points for this paper</b> in our bank.</>
+              : <>Explain answers were marked against <b>standard syllabus points</b> — no mark scheme was attached, so a point your school words differently may be scored differently.</>}
+          </p>
+          <p>Compare with your teacher&apos;s marking when you get the paper back, and enter their total below.</p>
+        </section>
       )}
 
       {hasCover && (
@@ -164,7 +201,11 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
         </section>
       )}
 
-      {!sheet && !supersededBy && !/^\s*practice again\b/i.test(paper.rawName ?? '') && <PracticeAgainRequest runId={paper.id} state={requestState} />}
+      {isScience && paper.max > 0 && (
+        <ScienceTeacherMark runId={paper.id} ours={{ awarded: paper.awarded, max: paper.max }} existing={teacherTotal} />
+      )}
+
+      {!isScience && !sheet && !supersededBy && !/^\s*practice again\b/i.test(paper.rawName ?? '') && <PracticeAgainRequest runId={paper.id} state={requestState} />}
 
       {paper.pdfUrl && (
         <p className="text-center">

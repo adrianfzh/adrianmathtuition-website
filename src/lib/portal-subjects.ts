@@ -8,6 +8,32 @@
 export const PAPER_SUBJECTS = ['A Math', 'E Math', 'H2 Math'] as const;
 export type PaperSubject = (typeof PAPER_SUBJECTS)[number];
 
+// The SCIENCE family (SPEC-SCIENCE-MARKING.md, 10 Sep 2026): a science paper is
+// stamped 'Physics' | 'Chemistry' | 'Biology' and lives under the Science tab —
+// it is never a maths subject, so subjectAllowed() (the maths gate) does not
+// admit it and the maths Papers list / Home counts never show it. The science
+// pages select their own rows (subject <> 'math').
+export const SCIENCE_PAPER_SUBJECTS = ['Physics', 'Chemistry', 'Biology'] as const;
+export type SciencePaperSubject = (typeof SCIENCE_PAPER_SUBJECTS)[number];
+
+export type SubjectFamily = 'math' | 'science';
+
+export function isScienceSubject(subject: string | null | undefined): subject is SciencePaperSubject {
+  return (SCIENCE_PAPER_SUBJECTS as readonly string[]).includes(String(subject ?? ''));
+}
+
+/** The marking lane ('physics' | 'chemistry' | 'biology', lib/mark-subjects) → the
+ *  paper_subject a science run carries. 'math' and the unknown → null (the maths
+ *  rule — name, then level text — decides those). */
+export function paperSubjectForMarkSubject(markSubject: string | null | undefined): SciencePaperSubject | null {
+  switch (String(markSubject ?? '').toLowerCase()) {
+    case 'physics': return 'Physics';
+    case 'chemistry': return 'Chemistry';
+    case 'biology': return 'Biology';
+    default: return null;
+  }
+}
+
 export type SubjectAccount = { subjects?: readonly string[] | null; level?: string | null; airtable_student_id?: string | null };
 
 const isJc = (level: unknown) => /(jc|j[12]|h2)/i.test(String(level ?? ''));
@@ -45,12 +71,18 @@ export function subjectAllowed(account: SubjectAccount | null | undefined, subje
   return (allowedSubjects(account) as string[]).includes(subject);
 }
 
-/** Short pill text + colour class per subject (Adrian: "a colour coded EM and AM pill"). */
-export function subjectPill(subject: string | null | undefined): { text: string; tone: 'am' | 'em' | 'h2' | 'other' } | null {
+export type SubjectTone = 'am' | 'em' | 'h2' | 'phy' | 'chem' | 'bio' | 'other';
+
+/** Short pill text + colour class per subject (Adrian: "a colour coded EM and AM pill").
+ *  The three sciences wear their own tones (10 Sep 2026). */
+export function subjectPill(subject: string | null | undefined): { text: string; tone: SubjectTone } | null {
   switch (subject) {
     case 'A Math': return { text: 'AM', tone: 'am' };
     case 'E Math': return { text: 'EM', tone: 'em' };
     case 'H2 Math': return { text: 'H2', tone: 'h2' };
+    case 'Physics': return { text: 'PHY', tone: 'phy' };
+    case 'Chemistry': return { text: 'CHEM', tone: 'chem' };
+    case 'Biology': return { text: 'BIO', tone: 'bio' };
     case 'Other': return { text: 'Other', tone: 'other' };
     default: return null;
   }

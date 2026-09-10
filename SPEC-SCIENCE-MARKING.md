@@ -3,8 +3,10 @@
 > Drafted 2026-08-26 at Adrian's ask ("is it possible to extend this marking pipeline
 > to mark science papers? … spec it"). Companion to [`SPEC-SUBJECTS.md`](SPEC-SUBJECTS.md)
 > (the subjects-expansion source of truth — rubric-as-spine, calibration gate) and
-> [`docs/MARKING.md`](docs/MARKING.md) (the pipeline this extends). Status: SPEC ONLY —
-> nothing here is built.
+> [`docs/MARKING.md`](docs/MARKING.md) (the pipeline this extends). Status: the brains,
+> the subject switch, scheme grounding and the calibration layer were BUILT 2–3 Sep 2026
+> (see §"What was built"); the Science tab + free student marking are the 10 Sep 2026
+> decision below. Nothing has passed the calibration gate yet.
 
 ## Principle
 
@@ -96,3 +98,97 @@ a `subject` field on the marking request (default `math` — nothing changes for
 Adrian hands over one hand-marked Sec Physics paper (photos + his marked copy).
 That single calibration run — physics prompt drafted, eval harness, diff against his
 marks — is about a day, and tells us more than any further planning.
+
+## What was built (2–3 Sep 2026) — the chassis has three science brains
+
+Bot: `ai/subjects/{physics,chemistry,biology}.js` rules blocks appended to the shared
+marking prompt by `ai/subjects/index.js` (math is the no-op — its prompts are byte-identical
+to before); `paper_marking_runs.subject` (CHECK math|physics|chemistry|biology) is the switch,
+set by `save-paper`. Grounding cascade per subject: attached scheme → stored scheme by
+name/fingerprint (`paper_schemes`) → the science bank (adrianscience, `lib/science-grounding.js`)
+→ rules alone. Biology without a scheme caps explain parts at medium confidence and notes
+"marked without the school's scheme". `rules_version` stamps every run. Calibration:
+`calibration_results` + `scripts/eval-mark-model.js --truth … --save` + `/admin/calibration`
+(gate = 10 papers, 90% within ±2). Site: Subject picker on mark-paper, `/admin/schemes`,
+the student gate `lib/mark-subject-for-student.ts`.
+
+State on 10 Sep 2026: 178 runs, every one math; 2 calibration rows, both math; 25 stored
+schemes, all math. No science paper had ever been through the marker.
+
+## Decision, 10 Sep 2026 (Adrian) — free science marking for students, a Science tab
+
+> "i can let students submit science papers to mark for free, but give a disclaimer, and
+> also to ask them to submit mark scheme if they have (we can also extract from the papers
+> to the qb) … two tabs (math, then science) at the top, each with their own full bottom
+> menu … for the science tab, just put marking functionality first — no practice again
+> for science … yes we do need marked papers for calibration."
+
+**Why the biology rule stands.** A biology mark is a scheme point: "any four of five", with
+the school's accepted wording. A correct paragraph that names other true facts scores 2/4.
+The AI can judge whether the biology is right; it cannot know which points this school pays
+for. Physics/chemistry numericals are derivable (the AI is the judge, B1/C1/A1 map onto M/A);
+explain parts in every science are scheme-bound. So the brain does the best possible without
+a scheme and says so — and the disclaimer says so to the student.
+
+**The shape (built 10 Sep 2026, this section is its contract):**
+
+1. **Two families, one app.** A top switcher **Math | Science** in the app shell; the
+   bottom menu is per family (`components/PortalTabs.tsx` picks by pathname). Science's
+   menu is marking first: **Home · Hand in · Papers** (`/app/science`, `/app/science/submit`,
+   `/app/science/papers`). Nothing else for science yet — no Practice, no Practice Again, no
+   Notebook. Everything under `/app/science/*` is science; everything else stays math.
+2. **`paper_subject` widens** to `A Math | E Math | H2 Math | Physics | Chemistry | Biology |
+   Other`. The math Papers list, Home counts and every math gate already filter with
+   `subjectAllowed(account, paper_subject)`, which does not admit a science value, so science
+   runs never appear on the math side; the science pages select by `subject <> 'math'`.
+3. **Free for every student, with the disclaimer.** `SCIENCE_MARKING_OPEN_TO_STUDENTS = true`
+   in `lib/portal-beta.ts`; the hand-in form's subject picker (physics / chemistry /
+   biology) is honoured for any signed-in student — enrolment is not consulted
+   (`resolveScienceSubject`). The math gate (`MARK_SUBJECT_OPEN_TO_STUDENTS`, enrolment-based)
+   is untouched and still off. The disclaimer sits on the form AND on every science paper
+   page: new, free, an estimate; explain answers are marked against standard syllabus points
+   unless the school's scheme was attached; check it against your teacher's marking.
+4. **Own daily slot.** One science paper per student per SGT day, counted separately from
+   the math slot (`countHandinsToday(…, 'science')` = runs with `subject <> 'math'`); the
+   bot's `/handin` count is math-only from the same day, so a science hand-in never spends
+   the Telegram math slot.
+5. **The scheme, if they have it.** "Mark scheme (optional)" on the science form — PDF or
+   photos, uploaded under the student's own prefix (`submit-token?kind=scheme` allows pdf)
+   and passed to `save-paper` as `source.scheme_source` (`{pdf_url}` or `{pages:[{url}]}`),
+   the shape the admin attach already uses. The bot extracts it, grounds on it, and STORES
+   it in `paper_schemes` keyed by paper — every later hand-in of that paper, by anyone,
+   is grounded on it. *Phase 2 (not built): queue the stored scheme + paper into the science
+   bank's extraction inbox so the questions land in the QB.*
+6. **Release.** Auto-release as for math (free + disclaimer, no pre-release hold). The
+   completion Telegram names the subject (🧪 physics). No Practice Again for science:
+   `sheetQueueGuard` refuses a run whose `subject` is not math (status `science`) from both
+   doors; the science paper page shows no sheet block. Post-release enrichment (revise map,
+   notebook mistakes) is skipped for non-math runs — both are math-topic shaped.
+7. **Calibration comes back later, one number at a time.** Students hand in FRESH papers,
+   so no teacher-marked copy ever arrives with the hand-in (Adrian, 10 Sep 2026: "students
+   will not hand this in … we won't get the marked copies"). The truth arrives a week later
+   when the teacher returns the paper: every science paper page carries **"Your teacher's
+   mark"** — one number (the total the teacher gave, out of the same max) →
+   `POST /api/portal/science-truth` → one `calibration_results` row (`truth_source
+   'teacher'`, `truth_label 'student-reported teacher total'`, `per_question []`). Whole-paper
+   |Δ| is exactly the gate's unit; the dashboard reads it like any row. Editable once
+   (a second POST updates the same row). The release message tells the student to come
+   back with it.
+8. **Calibration today, without students.** Cambridge "Example Candidate Responses"
+   booklets (real scanned candidate scripts, examiner marks per part, commentary) —
+   Physics 5054 (2014, 112 pp.) and Biology 5090 (2014) were downloaded 10 Sep 2026; each
+   grade-A/C/E set of Paper 2 pages is handed in as one admin upload named
+   `CALIBRATION · Cambridge 5054 Physics 2014 P2 · grade A script`, biology with the
+   booklet's own scheme attached, physics rules-alone; truth files from the examiner
+   comments → `eval-mark-model.js --truth … --save`. Same board and marking codes as
+   6091/6092/6093, 2014 content; per-question truth. Nothing Singapore-teacher-marked is
+   published anywhere (SEAB publishes syllabuses and specimen papers only).
+9. **Cost brake.** A marked paper costs ≈ US$0.37 on the Mac plan lane and a few dollars on
+   the API lane; the daily slot is the brake. Watch `/admin/ops` marking-queue lag once
+   science hand-ins start.
+
+**Not built (deliberately):** the teacher-marked-copy tick (dropped — see 7); scheme →
+science-bank extraction (5, phase 2); a science Ask tab (the web solver already answers
+science for Sec 3–5 students via the existing Ask page); MCQ Paper 1; science error-kind
+taxonomy (the nine math kinds are used as-is; biology's "missing point / imprecise term"
+reads as `incomplete` / `concept`).

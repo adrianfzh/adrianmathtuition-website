@@ -26,6 +26,8 @@ export type SheetQueueRun = {
   student_name: string | null;
   released_at?: string | null;
   result_json: unknown;
+  /** The marking lane — 'math' | 'physics' | 'chemistry' | 'biology'. Absent/null reads as math. */
+  subject?: string | null;
 };
 
 export type SheetQueueJobRow = { id: string; status: string; requested_by?: string | null; created_at?: string | null };
@@ -43,7 +45,7 @@ export type SheetBatchRefusal = {
 
 export type SheetQueueRefusal = {
   ok: false;
-  status: 'not-found' | 'untagged' | 'no-marking' | 'not-released' | 'duplicate' | 'exists' | 'practice-again';
+  status: 'not-found' | 'untagged' | 'no-marking' | 'not-released' | 'duplicate' | 'exists' | 'practice-again' | 'science';
   http: 400 | 404 | 409;
   message: string;
   jobId?: string;
@@ -66,6 +68,12 @@ export function sheetQueueGuard(
   if (!run) return { ok: false, status: 'not-found', http: 404, message: 'run not found' };
   if (!run.student_id) return { ok: false, status: 'untagged', http: 400, message: 'Tag this paper to a student first — a sheet needs someone to be for.' };
   if (!run.result_json) return { ok: false, status: 'no-marking', http: 400, message: 'That run has no marking to diagnose yet.' };
+  // No Practice Again for science (Adrian, 10 Sep 2026: "no practice again for
+  // science") — the sheet worker writes from the MATHS bank in Adrian's maths
+  // house style; a physics paper would get a maths sheet. Refused from both
+  // doors, so neither the desk's 📘 Queue nor the student's Request button can
+  // start one.
+  if (run.subject && run.subject !== 'math') return { ok: false, status: 'science', http: 400, message: 'Practice Again is for maths papers — there is no sheet for a science paper.' };
   // A returned Practice Again sheet never gets a sheet of its own (Adrian,
   // 9 Sep 2026: "there should be no trigger to generate new sheets for
   // practice again sheets") — not from the desk, not from the student, not
@@ -192,7 +200,7 @@ export async function queueSheetJob(
   const sb = getSupabaseAdmin();
   const requestedBy: SheetRequestedBy = opts.requestedBy === 'student' ? 'student' : 'adrian';
   const { data: run } = await sb.from('paper_marking_runs')
-    .select('id, paper_name, student_id, student_name, released_at, result_json')
+    .select('id, paper_name, student_id, student_name, released_at, result_json, subject')
     .eq('id', runId).maybeSingle<SheetQueueRun>();
   const { data: jobRows } = await sb.from('sheet_jobs')
     .select('id, status, requested_by, created_at').eq('run_id', runId);
@@ -235,7 +243,7 @@ export async function queueSheetBatch(
   const requestedBy: SheetRequestedBy = opts.requestedBy === 'student' ? 'student' : 'adrian';
   const ids = Array.from(new Set(runIds.filter(Boolean)));
   const { data: rows } = await sb.from('paper_marking_runs')
-    .select('id, paper_name, student_id, student_name, released_at, result_json, created_at, paper_subject')
+    .select('id, paper_name, student_id, student_name, released_at, result_json, created_at, paper_subject, subject')
     .in('id', ids);
   const byId = new Map(((rows ?? []) as SheetBatchRun[]).map(r => [r.id, r]));
   const guard = sheetBatchGuard(ids.map(id => byId.get(id) ?? null), { requestedBy });

@@ -33,7 +33,7 @@ import RulesTag from '@/components/RulesTag';
 import { mathHtml } from '@/lib/math-inline';
 import { DESK_LANES, LANES_HIDDEN_AT_ZERO, releasedViaLabel, LANE_LABEL, orderLane, HANDIN_ORIGIN_LABEL, type DeskLane, type HandinOrigin, revisingLabel, type Revising, type SheetOutcome } from '@/lib/desk-state';
 import { ERROR_KINDS, ERROR_KIND_HINT, isErrorKind } from '@/lib/error-kinds';
-import { PAPER_SUBJECTS, subjectPill } from '@/lib/portal-subjects';
+import { PAPER_SUBJECTS, SCIENCE_PAPER_SUBJECTS, subjectPill } from '@/lib/portal-subjects';
 // The pen, in place (desk round 3, 8 Sep 2026): the same overlay mark-paper uses.
 const AnnotateOverlay = dynamic(() => import('@/components/AnnotateOverlay'), { ssr: false });
 import type { TriageQuestion } from '@/lib/mark-triage';
@@ -274,9 +274,13 @@ const PAPER_SUBJECT_TONE: Record<string, { bg: string; fg: string }> = {
   am: { bg: '#e0e7ff', fg: '#3730a3' },
   em: { bg: '#e0f2fe', fg: '#075985' },
   h2: { bg: '#fae8ff', fg: '#86198f' },
+  // The sciences (10 Sep 2026) — the same three tones as the app's pill.
+  phy: { bg: '#ffedd5', fg: '#9a3412' },
+  chem: { bg: '#f3e8ff', fg: '#6b21a8' },
+  bio: { bg: '#dcfce7', fg: '#166534' },
   other: { bg: '#f3f4f6', fg: '#6b7280' },
 };
-const PAPER_SUBJECT_OPTIONS: readonly string[] = [...PAPER_SUBJECTS, 'Other'];
+const PAPER_SUBJECT_OPTIONS: readonly string[] = [...PAPER_SUBJECTS, ...SCIENCE_PAPER_SUBJECTS, 'Other'];
 /** Who handed the paper in — the student from the app or Telegram, or Adrian via the scanner / mark-paper. */
 function OriginChip({ origin }: { origin: HandinOrigin }) {
   const student = origin === 'app' || origin === 'telegram';

@@ -23,6 +23,17 @@ describe('sheetQueueGuard — shared rules', () => {
   });
 });
 
+describe('sheetQueueGuard — no Practice Again for science (10 Sep 2026)', () => {
+  it('refuses a science run from both doors', () => {
+    expect(sheetQueueGuard({ ...run, subject: 'physics' }, [])).toMatchObject({ ok: false, status: 'science', http: 400 });
+    expect(sheetQueueGuard({ ...run, subject: 'biology' }, [], { requestedBy: 'student' })).toMatchObject({ ok: false, status: 'science' });
+  });
+  it('a maths run, or one with no lane recorded, is unaffected', () => {
+    expect(sheetQueueGuard({ ...run, subject: 'math' }, [])).toEqual({ ok: true });
+    expect(sheetQueueGuard({ ...run, subject: null }, [])).toEqual({ ok: true });
+  });
+});
+
 describe("sheetQueueGuard — Adrian's door (the desk)", () => {
   it('lets a tagged marked paper through, released or not', () => {
     expect(sheetQueueGuard(run, [])).toEqual({ ok: true });

@@ -12,6 +12,13 @@ import { sgtDayStartISO } from './sgt';
 
 export const DAILY_SUBMIT_CAP = 1;
 
+// 🧪 Science has ITS OWN slot (SPEC-SCIENCE-MARKING.md, 10 Sep 2026): one science
+// paper a day, counted apart from the maths paper, so a physics hand-in never
+// blocks the evening's E Math paper. `family` picks which runs count:
+// 'math' = runs whose marking lane is math, 'science' = every other lane.
+export const DAILY_SCIENCE_SUBMIT_CAP = 1;
+export type HandinFamily = 'math' | 'science';
+
 /** UTC ISO timestamp of the most recent midnight in Singapore (UTC+8). */
 export function sgtStartOfDayIso(now: Date = new Date()): string {
   return sgtDayStartISO(now);
@@ -37,7 +44,7 @@ interface CountQuery extends PromiseLike<CountResult> {
   gte(column: string, value: string): CountQuery;
   eq(column: string, value: string): CountQuery;
   is(column: string, value: null): CountQuery;
-  not(column: string, operator: string, value: null): CountQuery;
+  not(column: string, operator: string, value: string | null): CountQuery;
 }
 
 export interface HandinCountingClient {
@@ -50,13 +57,20 @@ export async function countHandinsToday(
   client: HandinCountingClient,
   studentId: string,
   now: Date = new Date(),
+  family: HandinFamily = 'math',
 ): Promise<number> {
   const since = sgtStartOfDayIso(now);
-  const forStudent = () => client
-    .from('paper_marking_runs')
-    .select('id', { count: 'exact', head: true })
-    .gte('created_at', since)
-    .eq('student_id', studentId);
+  // The marking lane (paper_marking_runs.subject, default 'math') splits the two
+  // families: the maths slot counts only maths runs, the science slot only the
+  // rest. Runs from before the column existed carry the default and count as maths.
+  const forStudent = () => {
+    const q = client
+      .from('paper_marking_runs')
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', since)
+      .eq('student_id', studentId);
+    return family === 'science' ? q.not('subject', 'eq', 'math') : q.eq('subject', 'math');
+  };
 
   // A missing JSON key reads as SQL NULL through `->`, so `.is(…, null)` keeps
   // exactly the free hand-ins: no assignment behind it, no printed paper behind it.

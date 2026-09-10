@@ -70,3 +70,27 @@ export function pickableSubjects(opts: { enrolled: MarkSubject[]; access: MarkSu
   if (opts.access === 'open') return opts.enrolled.length > 1 ? opts.enrolled : [];
   return [];
 }
+
+// ── Science, free for every student (10 Sep 2026) ────────────────────────────
+// Adrian: "i can let students submit science papers to mark for free, but give a
+// disclaimer". The Science tab's hand-in form offers the three sciences to ANY
+// signed-in student — enrolment is not consulted (Airtable Students.Subjects has
+// no science options, and the point is to get science papers through the
+// marker). The maths gate above (enrolment-based, behind
+// MARK_SUBJECT_OPEN_TO_STUDENTS) is untouched: it still decides maths hand-ins.
+export const SCIENCE_MARK_SUBJECTS: readonly MarkSubject[] = ['physics', 'chemistry', 'biology'];
+
+export function isScienceMarkSubject(x: unknown): x is Exclude<MarkSubject, 'math'> {
+  return isMarkSubject(x) && x !== 'math';
+}
+
+/**
+ * The subject a SCIENCE hand-in is marked as. The browser's choice is honoured
+ * only when it is one of the three sciences AND the door is open; anything else
+ * (math, junk, the door shut) is null — the caller then refuses the hand-in
+ * rather than silently marking a physics paper as maths.
+ */
+export function resolveScienceSubject(requested: unknown, open: boolean): Exclude<MarkSubject, 'math'> | null {
+  if (!open) return null;
+  return isScienceMarkSubject(requested) ? requested : null;
+}

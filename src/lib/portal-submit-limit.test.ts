@@ -30,7 +30,7 @@ describe('sgtStartOfDayIso', () => {
 // portal and the Telegram bot's /handin (Adrian, 24 Aug 2026). Papers Adrian
 // uploads himself on /admin/mark-paper carry neither marker and are not counted.
 describe('countHandinsToday', () => {
-  type Row = { student_id: string; portal?: boolean; telegram?: boolean; assignment?: boolean; printed?: boolean; created_at: string };
+  type Row = { student_id: string; portal?: boolean; telegram?: boolean; assignment?: boolean; printed?: boolean; created_at: string; subject?: string };
 
   function client(rows: Row[], asked: string[][] = []): HandinCountingClient {
     return {
@@ -43,7 +43,9 @@ describe('countHandinsToday', () => {
           gte: (c: string, v: string) => { log.push(`${c}>=${v}`); preds.push(r => r.created_at >= v); return b; },
           eq: (c: string, v: string) => {
             log.push(`${c}=${v}`);
-            preds.push(c === 'student_id' ? (r => r.student_id === v) : (r => r.portal === true));
+            preds.push(c === 'student_id' ? (r => r.student_id === v)
+              : c === 'subject' ? (r => (r.subject ?? 'math') === v)
+              : (r => r.portal === true));
             return b;
           },
           is: (c: string) => {
@@ -51,7 +53,11 @@ describe('countHandinsToday', () => {
             preds.push(c === 'result_json->assignment_id' ? (r => !r.assignment) : (r => !r.printed));
             return b;
           },
-          not: (c: string, op: string) => { log.push(`${c} not ${op} null`); preds.push(r => r.telegram === true); return b; },
+          not: (c: string, op: string, v: unknown) => {
+            log.push(`${c} not ${op} ${v}`);
+            preds.push(c === 'subject' ? (r => (r.subject ?? 'math') !== 'math') : (r => r.telegram === true));
+            return b;
+          },
           then: (res: (x: { count: number | null; error: unknown }) => unknown) =>
             res({ count: rows.filter(r => preds.every(p => p(r))).length, error: null }),
         };
@@ -124,5 +130,48 @@ describe('countHandinsToday', () => {
     const portalQuery = asked.find(q => q.includes('result_json->>portal_submission=true'))!;
     expect(portalQuery).toContain('result_json->assignment_id is null');
     expect(portalQuery).toContain('result_json->generated_paper_id is null');
+  });
+});
+
+// 🧪 Science has its own slot (10 Sep 2026): the maths count never sees a
+// science run and the science count never sees a maths one, so a physics
+// hand-in at breakfast leaves the evening's E Math paper its slot.
+describe('countHandinsToday — the science family', () => {
+  const NOW = new Date('2026-09-10T10:00:00Z');
+  const TODAY = '2026-09-10T09:00:00.000Z';
+  type Row = { student_id: string; portal?: boolean; telegram?: boolean; assignment?: boolean; printed?: boolean; created_at: string; subject?: string };
+  function client(rows: Row[]): HandinCountingClient {
+    return {
+      from() {
+        const preds: ((r: Row) => boolean)[] = [];
+        const b = {
+          select: () => b,
+          gte: (_c: string, v: string) => { preds.push(r => r.created_at >= v); return b; },
+          eq: (c: string, v: string) => {
+            preds.push(c === 'student_id' ? (r => r.student_id === v)
+              : c === 'subject' ? (r => (r.subject ?? 'math') === v)
+              : (r => r.portal === true));
+            return b;
+          },
+          is: (c: string) => { preds.push(c === 'result_json->assignment_id' ? (r => !r.assignment) : (r => !r.printed)); return b; },
+          not: (c: string) => { preds.push(c === 'subject' ? (r => (r.subject ?? 'math') !== 'math') : (r => r.telegram === true)); return b; },
+          then: (res: (x: { count: number | null; error: unknown }) => unknown) =>
+            res({ count: rows.filter(r => preds.every(p => p(r))).length, error: null }),
+        };
+        return b as unknown as ReturnType<HandinCountingClient['from']>;
+      },
+    } as HandinCountingClient;
+  }
+  const rows: Row[] = [
+    { student_id: 'recA', portal: true, created_at: TODAY, subject: 'physics' },
+    { student_id: 'recA', portal: true, created_at: TODAY, subject: 'math' },
+    { student_id: 'recA', telegram: true, created_at: TODAY },            // no lane recorded → maths
+  ];
+  it('the maths slot counts maths runs only (a missing lane is maths)', async () => {
+    expect(await countHandinsToday(client(rows), 'recA', NOW)).toBe(2);
+    expect(await countHandinsToday(client(rows), 'recA', NOW, 'math')).toBe(2);
+  });
+  it('the science slot counts every non-maths lane', async () => {
+    expect(await countHandinsToday(client(rows), 'recA', NOW, 'science')).toBe(1);
   });
 });

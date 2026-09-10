@@ -54,10 +54,10 @@ import { sendPushToStudent } from '@/lib/portal-push';
 import { paperFolder } from '@/lib/paper-folder';
 import { isOurFileUrl } from '@/lib/student-files-url';
 import { attachAmendedFromDropbox } from '@/lib/attach-amended';
-import { PAPER_SUBJECTS } from '@/lib/portal-subjects';
+import { PAPER_SUBJECTS, SCIENCE_PAPER_SUBJECTS, isScienceSubject } from '@/lib/portal-subjects';
 
-/** What paper_subject may hold — the three maths plus the desk's "Other" (SPEC-PORTAL-V2 §1). */
-const PAPER_SUBJECT_VALUES: readonly string[] = [...PAPER_SUBJECTS, 'Other'];
+/** What paper_subject may hold — the three maths, the three sciences (10 Sep 2026) and the desk's "Other" (SPEC-PORTAL-V2 §1). */
+const PAPER_SUBJECT_VALUES: readonly string[] = [...PAPER_SUBJECTS, ...SCIENCE_PAPER_SUBJECTS, 'Other'];
 import { releaseHeldPracticeItems } from '@/lib/practice-again-store';
 import { applyRunRelease } from '@/lib/notebook-mistakes-store';
 
@@ -338,9 +338,12 @@ function queuePostReleaseEnrichment(runIds: string[], practiceIds?: string[]) {
         // Fresh read — the row may have moved since the release loop held it.
         const { data: row } = await supa
           .from('paper_marking_runs')
-          .select('result_json')
+          .select('result_json, subject')
           .eq('id', id)
           .single();
+        // A science paper (10 Sep 2026) gets no revise map: the mapper files
+        // questions into MATHS sub-groups, so its links would be wrong or empty.
+        if (row?.subject && row.subject !== 'math') continue;
         const rj = (row?.result_json && typeof row.result_json === 'object')
           ? row.result_json as Record<string, unknown>
           : null;
@@ -827,7 +830,9 @@ export async function POST(req: NextRequest) {
       // release-with-sheet button all stamp here — so the hook lives here
       // once. Idempotent per run (the run id is the evidence ref), and
       // fail-soft: a notebook hiccup never undoes or delays a release.
-      if (run.student_id) {
+      // Not for a science paper (10 Sep 2026): the mistakes list files
+      // "<kind> in <topic>" under maths canonical topics.
+      if (run.student_id && !isScienceSubject(run.paper_subject)) {
         try {
           await applyRunRelease(supa, run.student_id, {
             id: run.id, paper_name: run.paper_name, paper_subject: run.paper_subject, result_json: run.result_json,
@@ -887,7 +892,9 @@ export async function POST(req: NextRequest) {
 
       // Full marks → nothing to practise; don't even queue the call.
       const totals = recomputeTotals(run.result_json);
-      if (totals.max > 0 && totals.awarded < totals.max) {
+      // A science paper (10 Sep 2026) gets neither: the revise map and the
+      // practice list are both drawn from the MATHS bank.
+      if (totals.max > 0 && totals.awarded < totals.max && !isScienceSubject(run.paper_subject)) {
         enrichQueue.push(run.id);
         // Telegram hand-ins generate practice on the student's 📝 tap instead.
         if (!telegramHandinOf(run.result_json)) practiceQueue.push(run.id);

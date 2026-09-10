@@ -10,7 +10,7 @@
 // Pure data (no React) so the server layout, client components and tests can
 // all import it. Icon names resolve in components/PortalIcon.tsx.
 
-export type SurfaceKey = 'home' | 'assignments' | 'plan' | 'practice' | 'submit' | 'marking' | 'notebook' | 'learn' | 'notes' | 'settings' | 'lesson' | 'ask';
+export type SurfaceKey = 'home' | 'assignments' | 'plan' | 'practice' | 'submit' | 'marking' | 'notebook' | 'learn' | 'notes' | 'settings' | 'lesson' | 'ask' | 'science';
 
 export type SurfaceIdentity = {
   key: SurfaceKey;
@@ -78,6 +78,12 @@ export const SURFACES: Record<SurfaceKey, SurfaceIdentity> = {
     key: 'lesson', label: 'Next lesson', icon: 'calendar',
     tile: 'bg-slate-200 text-navy', text: 'text-slate-600', tint: 'bg-slate-100', ring: 'ring-slate-400/60',
   },
+  // 🧪 The Science tab (10 Sep 2026) — its Home wears the flask; its Hand in
+  // and Papers reuse the teal and violet the maths side already taught.
+  science: {
+    key: 'science', label: 'Science', icon: 'flask',
+    tile: 'bg-orange-500 text-white', text: 'text-orange-700', tint: 'bg-orange-50', ring: 'ring-orange-400/60',
+  },
 };
 
 /** Identity for a nav href ('/app/marking' → marking; '/app' → home).
@@ -87,6 +93,13 @@ export const SURFACES: Record<SurfaceKey, SurfaceIdentity> = {
  *  to 'home' and the tab bar wore the house glyph for both Home and My
  *  Notebook (Adrian, phone review round 5, 2026-08-28). */
 export function surfaceForHref(href: string): SurfaceIdentity {
+  // The Science tab's own pages map onto the surfaces their maths twins wear
+  // ('/app/science/submit' → submit, '/app/science/papers' → marking); its
+  // Home is the science surface itself.
+  if (href.startsWith('/app/science/')) {
+    const sub = href.slice('/app/science/'.length).split(/[/?]/)[0];
+    return SURFACES[sub === 'submit' ? 'submit' : sub === 'papers' ? 'marking' : 'science'];
+  }
   const seg = href === '/app' ? 'home' : href.replace(/^\/app\//, '').split(/[/?]/)[0];
   const key = seg === 'my-notes' ? 'notebook' : seg;
   return SURFACES[(key in SURFACES ? key : 'home') as SurfaceKey];

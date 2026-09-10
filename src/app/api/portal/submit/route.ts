@@ -25,8 +25,8 @@ import { createSupabaseServer } from '@/lib/supabase-server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { isOurBlobUrl } from '@/lib/blob-url';
 import { keyFromUrl } from '@/lib/student-files-url';
-import { DAILY_SUBMIT_CAP, countHandinsToday } from '@/lib/portal-submit-limit';
-import type { HandinCountingClient } from '@/lib/portal-submit-limit';
+import { DAILY_SUBMIT_CAP, DAILY_SCIENCE_SUBMIT_CAP, countHandinsToday } from '@/lib/portal-submit-limit';
+import type { HandinCountingClient, HandinFamily } from '@/lib/portal-submit-limit';
 import { sendTelegram } from '@/lib/telegram';
 import { escapeTelegramHtml } from '@/lib/telegram-html';
 // Every notification from this file belongs in the marking topic (6 Sept 2026; falls back to the DM when unbound).
@@ -34,10 +34,10 @@ const notify_marking = (text: string) => sendTelegram(text, 'marking');
 import { canTransition, type AssignmentRow } from '@/lib/assignments';
 import { practiceAgainHandinName } from '@/lib/paper-display-name';
 import { portalIdentity } from '@/lib/portal-auth';
-import { markSubjectAccess } from '@/lib/portal-beta';
+import { markSubjectAccess, scienceMarkingOpen } from '@/lib/portal-beta';
 import { enrolledMarkSubjects } from '@/lib/student-mark-subjects';
-import { resolveHandinSubject } from '@/lib/mark-subject-for-student';
-import { paperSubjectFromName } from '@/lib/portal-subjects';
+import { resolveHandinSubject, resolveScienceSubject } from '@/lib/mark-subject-for-student';
+import { paperSubjectForMarkSubject, paperSubjectFromName } from '@/lib/portal-subjects';
 import {
   dailyHandinCapForTier,
   handinAllowance,
@@ -81,7 +81,7 @@ export async function POST(req: Request) {
   if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
   const meteredPass = access.pass; // null for tuition accounts
 
-  let body: { photoUrls?: unknown; paperName?: unknown; assignmentId?: unknown; paperId?: unknown; confirmed?: boolean; subject?: unknown };
+  let body: { photoUrls?: unknown; paperName?: unknown; assignmentId?: unknown; paperId?: unknown; confirmed?: boolean; subject?: unknown; family?: unknown; schemeUrls?: unknown };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const admin = getSupabaseAdmin();
 
@@ -125,6 +125,20 @@ export async function POST(req: Request) {
     printedPaper = { id: p.id, question_ids: p.question_ids };
   }
 
+  // 🧪 Science (SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026): the Science tab's
+  // form sends family:'science' and a subject. Free for every signed-in student
+  // while the door is open (no enrolment check), refused outright when it is
+  // not — a physics paper is never silently marked as maths. It is always its
+  // own hand-in: never a worksheet, never a printed paper.
+  const science = body.family === 'science';
+  let scienceSubject: 'physics' | 'chemistry' | 'biology' | null = null;
+  if (science) {
+    if (assignment || printedPaper) return NextResponse.json({ error: 'A science paper is handed in on its own — not as a worksheet or a printed paper.' }, { status: 400 });
+    scienceSubject = resolveScienceSubject(body.subject, await scienceMarkingOpen());
+    if (!scienceSubject) return NextResponse.json({ error: 'Pick the subject — physics, chemistry or biology — before sending.' }, { status: 400 });
+  }
+  const family: HandinFamily = science ? 'science' : 'math';
+
   const photoUrls = Array.isArray(body.photoUrls)
     ? [...new Set(body.photoUrls.filter((u): u is string => typeof u === 'string'))]
     : [];
@@ -132,23 +146,41 @@ export async function POST(req: Request) {
   if (photoUrls.length > MAX_PAGES) {
     return NextResponse.json({ error: `That's too many pages for one paper (max ${MAX_PAGES}) — submit the rest as a second paper.` }, { status: 400 });
   }
-  for (const u of photoUrls) {
-    let ok = false;
+  // A URL is this student's own upload when its key sits under their prefix.
+  const ownsUrl = (u: string): boolean => {
     const key = keyFromUrl(u);
     if (key) {
       // Private-store upload (5 Sep 2026): the submit-token route pinned the key
       // under handins/<identity>/, so the prefix IS the ownership proof.
-      ok = key.startsWith(`handins/${studentId}/`);
-    } else if (isOurBlobUrl(u)) {
+      return key.startsWith(`handins/${studentId}/`);
+    }
+    if (isOurBlobUrl(u)) {
       // decodeURIComponent: a stranger's identity segment (`acct:<uuid>`)
       // contains a colon, which a URL serializer MAY percent-encode — decode
       // before comparing so both spellings match the prefix the submit-token
       // route pinned. Airtable rec ids are alphanumeric, so this is a no-op
       // for tuition students.
-      try { ok = decodeURIComponent(new URL(u).pathname).startsWith(`/mark-paper/portal/${studentId}/`); } catch { ok = false; }
+      try { return decodeURIComponent(new URL(u).pathname).startsWith(`/mark-paper/portal/${studentId}/`); } catch { return false; }
     }
-    if (!ok) return NextResponse.json({ error: 'A photo upload went wrong — please re-add your photos and try again.' }, { status: 400 });
+    return false;
+  };
+  for (const u of photoUrls) {
+    if (!ownsUrl(u)) return NextResponse.json({ error: 'A photo upload went wrong — please re-add your photos and try again.' }, { status: 400 });
   }
+  // The school's mark scheme, if the student has it (science only; a PDF or
+  // photos, uploaded under the same prefix via submit-token?kind=scheme). It
+  // rides save-paper as source.scheme_source — the shape the admin attach uses —
+  // so the bot extracts it, grounds on it and STORES it for every later hand-in
+  // of the same paper.
+  const schemeUrls = science && Array.isArray(body.schemeUrls)
+    ? [...new Set(body.schemeUrls.filter((u): u is string => typeof u === 'string'))].slice(0, 12)
+    : [];
+  for (const u of schemeUrls) {
+    if (!ownsUrl(u)) return NextResponse.json({ error: 'The mark scheme upload went wrong — please re-add it and try again.' }, { status: 400 });
+  }
+  const schemePdf = schemeUrls.find(u => /\.pdf($|\?)/i.test(u)) ?? null;
+  const schemePages = schemeUrls.filter(u => u !== schemePdf).map(u => ({ url: u }));
+  const schemeSource = (schemePdf || schemePages.length) ? { scheme_source: { pdf_url: schemePdf, pages: schemePages } } : {};
 
   // Required since 2026-08-21 (Adrian: "let's just have the student fill it up
   // properly") — the client disables Send until it's typed; this is the backstop.
@@ -184,7 +216,7 @@ export async function POST(req: Request) {
   // 20 on Intensive) — checked BEFORE the daily cap so "pass used up" never
   // masquerades as "come back tomorrow". Assignments stay exempt from both
   // (Adrian initiated them; one hand-in per assignment is the brake).
-  if (meteredPass && !assignment && handinsRemaining(meteredPass) <= 0) {
+  if (meteredPass && !assignment && !science && handinsRemaining(meteredPass) <= 0) {
     return NextResponse.json({
       error: `You’ve used all ${handinAllowance(meteredPass)} marked papers in this pass — upgrade to Intensive or wait for your next pass at /app/pass. Everything else stays open.`,
     }, { status: 402 });
@@ -195,11 +227,15 @@ export async function POST(req: Request) {
   // (Standard 1/day, Intensive 3/day — trials meter as Standard).
   // Only an EXAM paper spends the day (7 Sep 2026): a sheet or a printed paper
   // neither checks the cap here nor counts in it (countHandinsToday).
-  const dailyCap = tuition ? DAILY_SUBMIT_CAP : dailyHandinCapForTier(meteredPass?.tier);
-  const count = (assignment || printedPaper) ? 0 : await countHandinsToday(admin as unknown as HandinCountingClient, studentId);
+  // 🧪 Science has its own slot (one a day, everyone), counted apart from the
+  // maths slot — see countHandinsToday's family argument.
+  const dailyCap = science ? DAILY_SCIENCE_SUBMIT_CAP : tuition ? DAILY_SUBMIT_CAP : dailyHandinCapForTier(meteredPass?.tier);
+  const count = (assignment || printedPaper) ? 0 : await countHandinsToday(admin as unknown as HandinCountingClient, studentId, new Date(), family);
   if ((count ?? 0) >= dailyCap) {
     return NextResponse.json({
-      error: dailyCap === 1
+      error: science
+        ? 'Today’s science hand-in is used — one science paper a day; a fresh one opens at midnight. Your maths hand-in is separate.'
+        : dailyCap === 1
         ? 'Today’s exam-paper hand-in is used — a fresh one opens at midnight. Practice Again sheets and printed papers don’t count, so those can still go in.'
         : `You’ve handed in ${dailyCap} exam papers today — a fresh allowance opens at midnight. Practice Again sheets and printed papers don’t count.`,
     }, { status: 429 });
@@ -271,7 +307,9 @@ export async function POST(req: Request) {
   // honours only a subject the student is enrolled in, and Adrian's admin cookie
   // ('preview') may mark anything. Assignments and printed papers are math.
   let subject: string = 'math';
-  if (!assignment && !(typeof body.paperId === 'string' && body.paperId)) {
+  if (scienceSubject) {
+    subject = scienceSubject;
+  } else if (!assignment && !(typeof body.paperId === 'string' && body.paperId)) {
     subject = resolveHandinSubject({
       requested: body.subject,
       enrolled: await enrolledMarkSubjects(studentId),
@@ -283,7 +321,7 @@ export async function POST(req: Request) {
     phase: 'save-paper',
     paperName,
     subject,
-    source: { photos: photoUrls.map(u => ({ original_url: u })) },
+    source: { photos: photoUrls.map(u => ({ original_url: u })), ...schemeSource },
   });
   const runId = saved?.run_id;
   if (!runId) {
@@ -306,8 +344,11 @@ export async function POST(req: Request) {
   // Send-work card set it), then the paper name (kiara am tys 2022 p1 → A Math),
   // else null for Adrian to tag on the desk. Never overwrites a value the bot
   // already stamped at save-paper.
+  // A science hand-in is stamped with its science (Physics / Chemistry /
+  // Biology, 10 Sep 2026) — the Science tab lists by it and the maths gate
+  // never admits it.
   const paperSubject = subject !== 'math'
-    ? 'Other'
+    ? (paperSubjectForMarkSubject(subject) ?? 'Other')
     : paperSubjectFromName(assignment?.level) ?? paperSubjectFromName(paperName);
   try {
     const { data: row } = await admin.from('paper_marking_runs').select('result_json, paper_subject').eq('id', runId).single();
@@ -334,7 +375,7 @@ export async function POST(req: Request) {
   // write the same value and under-count by one (accepted — it only ever gives
   // a hand-in away, and the daily cap bounds the drift); a failure here is
   // logged, never fatal — the paper is already with Adrian.
-  if (meteredPass && !assignment) {
+  if (meteredPass && !assignment && !science) {
     const { error: meterErr } = await admin
       .from('portal_passes')
       .update({ handins_used: (meteredPass.handins_used ?? 0) + 1 })
@@ -372,9 +413,11 @@ export async function POST(req: Request) {
     console.warn('[portal-submit] enqueue failed:', (e as Error).message);
   }
   if (queued) {
+    const lane = scienceSubject ? `🧪 ${scienceSubject} · ` : '';
+    const scheme = schemeUrls.length ? ' · mark scheme attached' : '';
     notify_marking(
       `📥 <b>${escapeTelegramHtml(who)}</b> handed in “${escapeTelegramHtml(paperName)}” — ` +
-      `${photoUrls.length} page${photoUrls.length === 1 ? '' : 's'}, queued for marking.`
+      `${lane}${photoUrls.length} page${photoUrls.length === 1 ? '' : 's'}${scheme}, queued for marking.`
     ).catch(() => {});
   }
   if (!queued) {

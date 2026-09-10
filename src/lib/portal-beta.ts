@@ -142,6 +142,24 @@ export async function markSubjectAccess(): Promise<import('./mark-subject-for-st
   return MARK_SUBJECT_OPEN_TO_STUDENTS ? 'open' : 'closed';
 }
 
+// 🧪 The Science tab (SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026, Adrian: "i can
+// let students submit science papers to mark for free, but give a disclaimer …
+// two tabs (math, then science) at the top"). While this is on, every signed-in
+// student sees the Math | Science switcher, and /app/science/submit marks a
+// physics / chemistry / biology hand-in with that subject's brain — no enrolment
+// check, its own daily slot, the disclaimer on the form and on every science
+// paper. Flip to false to hide the tab and shut the door (the routes bounce to
+// /app); Adrian's admin cookie previews it regardless. Independent of
+// MARK_SUBJECT_OPEN_TO_STUDENTS above, which is the enrolment-gated maths door.
+export const SCIENCE_MARKING_OPEN_TO_STUDENTS = true;
+
+/** True when the caller may use the Science tab (flag on, or Adrian's admin preview — unless viewing as a student). */
+export async function scienceMarkingOpen(): Promise<boolean> {
+  if (SCIENCE_MARKING_OPEN_TO_STUDENTS) return true;
+  if (await viewingAsStudent()) return false;
+  return isNotesAuthed();
+}
+
 // 🔍 Find a question (/app/find, SPEC-PORTAL-V2 §4, 6 Sep 2026): photo or typed
 // question → a genuinely similar bank question or a made-for-you one, straight
 // into Practice. It replaced the students' "Request materials" door on Home, so

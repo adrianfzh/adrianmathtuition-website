@@ -91,7 +91,7 @@ async function uploadPage(file: File, onNote: (s: string) => void): Promise<stri
   throw err;
 }
 
-export default function SubmitClient({ assignment = null, paper = null, slotUsed = false, subjectChoices = [] }: {
+export default function SubmitClient({ assignment = null, paper = null, slotUsed = false, subjectChoices = [], family = 'math' }: {
   assignment?: { id: string; title: string } | null;
   paper?: { id: string; title: string } | null;
   slotUsed?: boolean;
@@ -99,11 +99,22 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   // every student until the flag flips) means no picker and an implicit math
   // hand-in — nothing on screen changes. First entry is the default.
   subjectChoices?: string[];
+  // 🧪 'science' = the Science tab's form (SPEC-SCIENCE-MARKING.md, 10 Sep 2026):
+  // the subject is REQUIRED (physics / chemistry / biology, chosen by the
+  // student), the disclaimer sits above the photos, an optional mark scheme
+  // can ride along, and the POST carries family:'science'. 'math' = unchanged.
+  family?: 'math' | 'science';
 }) {
+  const isScience = family === 'science';
   const inputRef = useRef<HTMLInputElement>(null);
+  const schemeRef = useRef<HTMLInputElement>(null);
   const [pages, setPages] = useState<Page[]>([]);
   const [paperName, setPaperName] = useState(assignment?.title ?? paper?.title ?? '');
-  const [subject, setSubject] = useState(subjectChoices[0] ?? 'math');
+  // Science starts EMPTY so the student chooses; a wrong default brain is worse
+  // than one extra tap.
+  const [subject, setSubject] = useState(isScience ? '' : (subjectChoices[0] ?? 'math'));
+  const [schemeFiles, setSchemeFiles] = useState<File[]>([]);
+  const schemeUploadedRef = useRef<Map<number, string>>(new Map());
   const [splitNote, setSplitNote] = useState('');
   const [capNote, setCapNote] = useState('');       // pages dropped at MAX_PAGES — must be visible, never silent
   const [stage, setStage] = useState('');            // progress line while submitting
@@ -187,6 +198,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   async function submit(confirmed = false) {
     if (!pages.length || busy) return;
     if (!paperName.trim()) { setError('Tell us which paper this is before sending.'); return; }
+    if (isScience && !subject) { setError('Pick the subject — physics, chemistry or biology — before sending.'); return; }
     setError('');
     try {
       const urls: string[] = [];
@@ -208,6 +220,33 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         uploadedRef.current.set(i, url);
         urls.push(url);
       }
+      // The school's mark scheme, if attached (science only) — same retry, same
+      // resume-from-cache as the pages; a PDF goes up as-is, a photo is resized.
+      const schemeUrls: string[] = [];
+      for (let i = 0; i < schemeFiles.length; i++) {
+        const cached = schemeUploadedRef.current.get(i);
+        if (cached) { schemeUrls.push(cached); continue; }
+        setStage(`Uploading mark scheme ${i + 1} of ${schemeFiles.length}…`);
+        const f = schemeFiles[i];
+        const isPdf = f.type === 'application/pdf' || /\.pdf$/i.test(f.name);
+        const upload = isPdf ? f : await resizeToJpeg(f);
+        let url: string | null = null;
+        for (let attempt = 1; attempt <= 3 && !url; attempt++) {
+          try {
+            const up = await uploadStudentFile(
+              `/api/portal/submit-token?kind=scheme&filename=${encodeURIComponent(upload.name || (isPdf ? 'scheme.pdf' : 'scheme.jpg'))}`,
+              upload,
+              { contentType: upload.type || (isPdf ? 'application/pdf' : 'application/octet-stream') },
+            );
+            url = up.url;
+          } catch {
+            if (attempt < 3) await new Promise(r => setTimeout(r, attempt * 1000));
+          }
+        }
+        if (!url) throw new Error(`The mark scheme (file ${i + 1}) would not upload after three tries — your pages are kept. Remove it or tap Send again.`);
+        schemeUploadedRef.current.set(i, url);
+        schemeUrls.push(url);
+      }
       // The last step, and the one that used to lose everything. All the pages
       // are in storage by now; this small POST is what turns them into a paper.
       // Sophie, 1 Sep 2026: it died on a network handover after eighteen
@@ -221,7 +260,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
       const body = JSON.stringify({
         photoUrls: urls,
         paperName: paperName.trim(),
-        ...(subjectChoices.length > 1 ? { subject } : {}),
+        ...(isScience ? { family: 'science', subject, schemeUrls } : subjectChoices.length > 1 ? { subject } : {}),
         ...(confirmed ? { confirmed: true } : {}),
         ...(assignment ? { assignmentId: assignment.id } : {}),
         ...(paper ? { paperId: paper.id } : {}),
@@ -262,6 +301,28 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
     }
   }
 
+  if (doneRunId && isScience) {
+    return (
+      <div className="space-y-4 pb-24 sm:pb-4">
+        <h1 className="text-xl font-bold text-navy pt-1">Science paper sent</h1>
+        <div className={`${CARD} p-5 text-center`}>
+          <p className="text-4xl">🧪</p>
+          <p className="font-bold text-navy mt-2">Sent for marking</p>
+          <p className="text-sm text-gray-600 mt-1.5">
+            It comes back under <b>Science › Papers</b>, usually within the hour. The marks are an
+            estimate — when your teacher marks the same paper, come back and enter their total so we can compare.
+          </p>
+          <div className="mt-4 flex justify-center">
+            <Link href="/app/science" className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
+              Back to Science
+            </Link>
+          </div>
+          <p className="text-[13px] text-gray-500 mt-3">🎟️ That was today&apos;s science hand-in — a fresh one opens at midnight. Your maths hand-in is separate.</p>
+        </div>
+      </div>
+    );
+  }
+
   if (doneRunId) {
     return (
       <div className="space-y-4 pb-24 sm:pb-4">
@@ -292,6 +353,27 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   // printed paper — only an exam paper spends the day, 7 Sep 2026): say so up
   // front, before any photographing happens. The POST-time 429 stays as the
   // backstop for a slot spent from the Telegram side mid-visit.
+  if (slotUsed && isScience) {
+    return (
+      <div className="space-y-4 pb-24 sm:pb-4">
+        <h1 className="text-xl font-bold text-navy pt-1">Hand in a science paper</h1>
+        <div className={`${CARD} p-5 text-center`}>
+          <p className="text-4xl">🎟️</p>
+          <p className="font-bold text-navy mt-2">Today&apos;s science hand-in is used</p>
+          <p className="text-sm text-gray-600 mt-1.5">
+            One science paper a day. A fresh slot opens at midnight — line the next one up for tomorrow.
+            Your maths hand-in is separate and may still be open.
+          </p>
+          <div className="mt-4 flex justify-center">
+            <Link href="/app/science" className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
+              Back to Science
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (slotUsed && !assignment && !paper) {
     return (
       <div className="space-y-4 pb-24 sm:pb-4">
@@ -327,10 +409,31 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
           <h1 className="text-xl font-bold text-navy mt-1">📬 Hand in: {paper.title}</h1>
           <p className="text-[13px] text-gray-500 mt-0.5">Marking already knows every question on this sheet.</p>
         </div>
+      ) : isScience ? (
+        <div className="pt-1">
+          <Link href="/app/science" className="text-sm text-gray-500 hover:text-navy">← Science</Link>
+          <h1 className="text-xl font-bold text-navy mt-1">🧪 Hand in a science paper</h1>
+          <p className="text-[13px] text-gray-500 mt-0.5">🎟️ One science paper a day, free — separate from your maths hand-in.</p>
+        </div>
       ) : (
         <div className="pt-1">
           <h1 className="text-xl font-bold text-navy">Submit a paper</h1>
           <p className="text-[13px] text-gray-500 mt-0.5">🎟️ Today&apos;s exam-paper hand-in is open — one a day; practice sheets and printed papers don&apos;t count.</p>
+        </div>
+      )}
+
+      {/* The disclaimer (Adrian, 10 Sep 2026: "give a disclaimer") — said BEFORE
+          the photos, in plain words: new, free, an estimate; explain answers
+          are marked against standard points unless the school's scheme comes
+          too; check it against the teacher's marking. */}
+      {isScience && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-900 space-y-1">
+          <p className="font-bold">Science marking is new, and free while it is.</p>
+          <p>
+            The marks are an <b>estimate</b>. Calculations are checked properly; <b>explain</b> answers are marked
+            against standard syllabus points unless you attach your school&apos;s mark scheme below.
+          </p>
+          <p>When your teacher returns the paper, compare — and enter their total on the marked paper&apos;s page so we can check ourselves.</p>
         </div>
       )}
 
@@ -421,17 +524,53 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
           <p className="text-[11px] text-gray-400 mt-1">School, year and paper — so Adrian knows what he&apos;s marking, and your score comes back out of the official total (e.g. /90).</p>
         {subjectChoices.length > 1 && (
           <div className="mt-3">
-            <label className="block text-sm font-semibold text-navy mb-1">Subject</label>
+            <label htmlFor="paper-subject" className="block text-sm font-semibold text-navy mb-1">Subject</label>
             <select
+              id="paper-subject"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               className="w-full text-sm border border-gray-300 rounded-xl px-3 py-2 bg-white"
             >
+              {isScience && <option value="">Choose the subject…</option>}
               {subjectChoices.map((sub) => (
                 <option key={sub} value={sub}>{subjectLabel(sub)}</option>
               ))}
             </select>
-            <p className="text-[11px] text-gray-400 mt-1">Pick the subject of this paper so it is marked the right way.</p>
+            <p className="text-[11px] text-gray-400 mt-1">
+              {isScience ? 'Physics, chemistry or biology — each is marked by its own rules.' : 'Pick the subject of this paper so it is marked the right way.'}
+            </p>
+          </div>
+        )}
+        {/* The school's mark scheme, optional (science only): a PDF or photos. The
+            marker grounds on it and keeps it for every later hand-in of the same
+            paper — the difference between "the standard points" and "your
+            school's points" on every explain answer. */}
+        {isScience && (
+          <div className="mt-3">
+            <p className="block text-sm font-semibold text-navy mb-1">Mark scheme <span className="font-normal text-gray-400">(optional)</span></p>
+            <button
+              type="button" onClick={() => schemeRef.current?.click()} disabled={busy}
+              className="w-full rounded-xl border border-dashed border-gray-300 bg-white py-3 text-[13px] text-gray-600 active:bg-amber-50"
+            >
+              {schemeFiles.length
+                ? `📎 ${schemeFiles.length} file${schemeFiles.length === 1 ? '' : 's'} attached — tap to add more`
+                : '📎 Attach your school’s mark scheme — a PDF or photos'}
+            </button>
+            <input
+              ref={schemeRef} type="file" accept="image/*,application/pdf" multiple className="hidden"
+              onChange={(e) => {
+                const list = Array.from(e.target.files ?? []).filter(f => f.type === 'application/pdf' || f.type.startsWith('image/') || /\.(pdf|jpe?g|png|webp|heic|heif)$/i.test(f.name));
+                schemeUploadedRef.current.clear();
+                setSchemeFiles(prev => [...prev, ...list].slice(0, 12));
+                if (schemeRef.current) schemeRef.current.value = '';
+              }}
+            />
+            {schemeFiles.length > 0 && !busy && (
+              <button type="button" onClick={() => { setSchemeFiles([]); schemeUploadedRef.current.clear(); }} className="mt-1 text-[11px] text-gray-500 underline underline-offset-2">
+                Remove the mark scheme
+              </button>
+            )}
+            <p className="text-[11px] text-gray-400 mt-1">With the scheme, explain answers are marked against your school&apos;s points, not the standard ones.</p>
           </div>
         )}
         </div>
@@ -457,7 +596,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
 
         <button
           onClick={() => submit(findings.length > 0)}
-          disabled={!pages.length || !paperName.trim() || busy}
+          disabled={!pages.length || !paperName.trim() || busy || (isScience && !subject)}
           className="w-full text-sm font-bold bg-navy text-[hsl(45,100%,96%)] rounded-xl py-3 disabled:opacity-40"
         >
           {busy ? stage

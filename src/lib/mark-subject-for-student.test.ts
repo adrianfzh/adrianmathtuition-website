@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { markSubjectOfLabel, markSubjectsFromEnrolment, resolveHandinSubject, pickableSubjects } from './mark-subject-for-student';
+import { markSubjectOfLabel, markSubjectsFromEnrolment, resolveHandinSubject, pickableSubjects, resolveScienceSubject, SCIENCE_MARK_SUBJECTS } from './mark-subject-for-student';
 
 describe('markSubjectOfLabel', () => {
   it('folds every maths variant to math', () => {
@@ -56,5 +56,22 @@ describe('pickableSubjects', () => {
     expect(pickableSubjects({ enrolled: ['math', 'physics'], access: 'open' })).toEqual(['math', 'physics']);
     expect(pickableSubjects({ enrolled: ['math'], access: 'open' })).toEqual([]);   // no real choice → no picker
     expect(pickableSubjects({ enrolled: ['math', 'physics'], access: 'closed' })).toEqual([]);
+  });
+});
+
+// Free science marking (10 Sep 2026): the three sciences for any student, no
+// enrolment check — but never maths through this door, and nothing when shut.
+describe('resolveScienceSubject', () => {
+  it('honours a science choice while the door is open, whatever the enrolment', () => {
+    for (const s of SCIENCE_MARK_SUBJECTS) expect(resolveScienceSubject(s, true)).toBe(s);
+  });
+  it('refuses maths, junk and the empty — the caller must not fall back to maths silently', () => {
+    expect(resolveScienceSubject('math', true)).toBeNull();
+    expect(resolveScienceSubject('geography', true)).toBeNull();
+    expect(resolveScienceSubject('', true)).toBeNull();
+    expect(resolveScienceSubject(undefined, true)).toBeNull();
+  });
+  it('is null for everything when the door is shut', () => {
+    expect(resolveScienceSubject('physics', false)).toBeNull();
   });
 });

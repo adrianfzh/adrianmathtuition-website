@@ -1949,6 +1949,48 @@ Other | null` (backfilled 6 Sep; the bot stamps new runs by name-then-level majo
 - **Health check:** `papers-subject` asserts no run released in the last 30 days has a null
   `paper_subject`; the failure text carries the count.
 
+### The Science tab — free science marking for students (10 Sep 2026)
+
+SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026 is the contract; this is the map.
+
+- **Two families, one shell.** `components/PortalTabs.tsx` `FamilySwitch` (Math | Science, under
+  the top bar) + `familyOfPath`: everything under `/app/science` is science and the bottom menu
+  becomes **Home · Hand in · Papers** (`/app/science`, `/app/science/submit`,
+  `/app/science/papers`; `scienceTabs` in `app/layout.tsx`). Flag: `SCIENCE_MARKING_OPEN_TO_STUDENTS`
+  in `lib/portal-beta.ts` (`scienceMarkingOpen()`); off = no switcher, the routes bounce to `/app`.
+- **Hand-in.** `/app/science/submit` renders the SAME `submit-client.tsx` with `family="science"`:
+  the subject picker is required (physics / chemistry / biology — `SCIENCE_MARK_SUBJECTS`), the
+  disclaimer sits above the photos, an optional **mark scheme** (PDF or photos) uploads through
+  `submit-token?kind=scheme` and rides `save-paper` as `source.scheme_source` (the admin attach's
+  shape — the bot extracts, grounds and STORES it in `paper_schemes`). `/api/portal/submit` takes
+  `family:'science'` + `subject` + `schemeUrls`; the subject is `resolveScienceSubject` (any student,
+  no enrolment check — the maths gate `resolveHandinSubject` is untouched); the run is stamped
+  `paper_subject` = Physics | Chemistry | Biology (`paperSubjectForMarkSubject`; CHECK widened by
+  `migrations/paper_subject_science.sql`). Own daily slot: `countHandinsToday(…, 'science')` =
+  runs with `subject <> 'math'` (`DAILY_SCIENCE_SUBMIT_CAP`); the bot's `/handin` count is
+  maths-only. A science hand-in never spends a stranger's pass meter.
+- **Lists.** `app/science/science-papers.tsx` selects the student's own runs with
+  `subject <> 'math'`; the maths Papers list / Home counts filter through `subjectAllowed`, which
+  admits no science value, so the two families never mix. Pills: PHY / CHEM / BIO tones in
+  `PaperSubjectPill.tsx` (+ the desk's chip + Subject select).
+- **The paper page** (`/app/marking/[id]`) in science mode: `← Science`, the disclaimer card
+  (says whether the school's scheme, the bank's points, or standard points grounded the explain
+  answers — from `result_json.grounding.source`), the marked pages + cover, **"Your teacher's
+  mark"** (`ScienceTeacherMark.tsx`), no Practice Again anything.
+- **No Practice Again for science.** `sheetQueueGuard` refuses `subject <> 'math'` (status
+  `science`) — both doors, batches included. Post-release enrichment (revise map, practice list,
+  notebook mistakes) is skipped for science runs in `mark-triage`. Auto-release is unchanged.
+- **Calibration, one number at a time.** Students hand in FRESH papers, so the truth comes back
+  later: `POST /api/portal/science-truth {runId, awarded, max?}` (own released science run) →
+  one `calibration_results` row (`truth_source 'teacher'`, `truth_label 'student-reported teacher
+  total'`, whole-paper only, updated in place on a second entry; `lib/science-truth.ts` pure +
+  tested) + one 📏 line to the marking topic. The website WRITES this one row kind; everything
+  else on `calibration_results` still comes from the bot harness.
+- **Health check:** `science-tab` (GET /app/science never 404/5xx) and `science-truth` (401 anon).
+- **Bot side** (`lib/paper-subject.js`): `fromHandin`/`fromPaperName`/`fromLevels` know the sciences;
+  `logMarkingRun` passes the run's lane as `handinSubject` so the marking write never nulls the
+  stamp; the queue's completion Telegram says `🧪 physics`.
+
 ## /app/submit — student paper hand-ins (2026-08-12)
 
 The door IN from the student side: photograph the worked paper on a phone →

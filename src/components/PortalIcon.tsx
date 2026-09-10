@@ -23,6 +23,8 @@ const PATHS: Record<string, string> = {
   target: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
   clock: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2',
   check: 'M20 6 9 17l-5-5',
+  // Lucide flask-conical — the Science tab (10 Sep 2026).
+  flask: 'M10 2v7.5L4.6 18.6A2 2 0 0 0 6.3 22h11.4a2 2 0 0 0 1.7-3.4L14 9.5V2M8.5 2h7M7 16h10',
 };
 
 export default function PortalIcon({ name, className = 'w-5 h-5', ...rest }: { name: string } & SVGProps<SVGSVGElement>) {

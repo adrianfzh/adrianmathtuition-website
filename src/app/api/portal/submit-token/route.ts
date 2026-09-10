@@ -22,8 +22,13 @@ export async function GET(req: Request) {
     .from('portal_accounts').select('id, airtable_student_id').eq('id', user.id).single();
   if (!account) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const filename = new URL(req.url).searchParams.get('filename') || '';
-  const ext = safeExt(filename, ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'], 'jpg');
+  const url = new URL(req.url);
+  const filename = url.searchParams.get('filename') || '';
+  // ?kind=scheme (10 Sep 2026): the Science tab's optional mark scheme may be a
+  // PDF as well as photos. Same student prefix, same ownership proof — the
+  // submit route accepts a scheme URL exactly as it accepts a page URL.
+  const scheme = url.searchParams.get('kind') === 'scheme';
+  const ext = safeExt(filename, scheme ? ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'pdf'] : ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'], 'jpg');
   // portalIdentity, not the raw airtable id: a stranger's prefix is
   // `acct:<uuid>` — the submit route checks the SAME identity.
   try {

@@ -41,6 +41,9 @@ export interface MarkingRunRow {
    * notebook) select without it and read `undefined`.
    */
   paper_subject?: string | null;
+  /** The marking lane — 'math' | 'physics' | 'chemistry' | 'biology' (lib/mark-subjects).
+   *  Optional for the same reason as paper_subject; the science pages select it. */
+  subject?: string | null;
 }
 
 export interface StudentQuestion {

@@ -24,7 +24,35 @@ function tourKey(href: string): string {
 
 function isActive(pathname: string, href: string): boolean {
   if (href === '/app') return pathname === '/app' || pathname.startsWith('/app/assignments');
+  // The Science tab's Home is only its own page — its Hand in and Papers have their own tabs.
+  if (href === '/app/science') return pathname === '/app/science';
   return pathname === href || pathname.startsWith(href + '/');
+}
+
+// 🧪 Two families, one shell (SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026,
+// Adrian: "two tabs (math, then science) at the top, each with their own full
+// bottom menu"). Which family is on screen is read off the path — everything
+// under /app/science is science, the rest is maths — so the bar switches with
+// no cookie and no server round trip.
+export type SubjectFamily = 'math' | 'science';
+export function familyOfPath(pathname: string): SubjectFamily {
+  return pathname === '/app/science' || pathname.startsWith('/app/science/') ? 'science' : 'math';
+}
+
+/** The Math | Science switcher under the top bar. */
+export function FamilySwitch() {
+  const pathname = usePathname();
+  const family = familyOfPath(pathname);
+  const btn = (on: boolean) => `flex-1 text-center text-sm font-semibold rounded-full px-4 py-1.5 transition select-none active:scale-95 ${
+    on ? 'bg-navy text-[hsl(45,100%,96%)] shadow-sm' : 'text-gray-600 hover:text-navy'}`;
+  return (
+    <div role="tablist" aria-label="Subject" className="flex items-center gap-1 rounded-full bg-navy/5 p-1 max-w-xs mx-auto">
+      <Link href="/app" role="tab" aria-selected={family === 'math'} className={btn(family === 'math')}>Math</Link>
+      <Link href="/app/science" role="tab" aria-selected={family === 'science'} className={btn(family === 'science')}>
+        <span className="inline-flex items-center gap-1.5"><PortalIcon name="flask" className="w-4 h-4" />Science</span>
+      </Link>
+    </div>
+  );
 }
 
 export function Badge({ n, className = '' }: { n: number; className?: string }) {
@@ -37,11 +65,12 @@ export function Badge({ n, className = '' }: { n: number; className?: string }) 
   );
 }
 
-export function DesktopLinks({ items, pendingWork }: { items: NavItem[]; pendingWork: number }) {
+export function DesktopLinks({ items, scienceItems, pendingWork }: { items: NavItem[]; scienceItems?: NavItem[]; pendingWork: number }) {
   const pathname = usePathname();
+  const list = familyOfPath(pathname) === 'science' && scienceItems?.length ? scienceItems : items;
   return (
     <div className="hidden sm:flex items-center gap-1">
-      {items.map(l => {
+      {list.map(l => {
         const s = surfaceForHref(l.href);
         const active = isActive(pathname, l.href);
         return (
@@ -58,14 +87,15 @@ export function DesktopLinks({ items, pendingWork }: { items: NavItem[]; pending
   );
 }
 
-export function MobileTabs({ items, pendingWork }: { items: NavItem[]; pendingWork: number }) {
+export function MobileTabs({ items, scienceItems, pendingWork }: { items: NavItem[]; scienceItems?: NavItem[]; pendingWork: number }) {
   const pathname = usePathname();
-  const cols = items.length === 4 ? 'grid-cols-4' : items.length === 5 ? 'grid-cols-5'
-    : items.length === 6 ? 'grid-cols-6' : items.length === 7 ? 'grid-cols-7' : 'grid-cols-3';
+  const list = familyOfPath(pathname) === 'science' && scienceItems?.length ? scienceItems : items;
+  const cols = list.length === 4 ? 'grid-cols-4' : list.length === 5 ? 'grid-cols-5'
+    : list.length === 6 ? 'grid-cols-6' : list.length === 7 ? 'grid-cols-7' : 'grid-cols-3';
   return (
     <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-black/5 pb-[env(safe-area-inset-bottom)]">
       <div className={`grid ${cols} h-[60px] text-center text-[11px]`}>
-        {items.map(t => {
+        {list.map(t => {
           const s = surfaceForHref(t.href);
           const active = isActive(pathname, t.href);
           // Instagram-style raised centre button (Adrian, 2026-08-28) — one

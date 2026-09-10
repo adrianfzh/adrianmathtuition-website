@@ -11,7 +11,7 @@ import { currentAccount } from '@/lib/portal-auth';
 import { portalAccessAllowed } from '@/lib/portal-passes';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
-import { MARKING_ONLY_BETA, NOTES_OPEN_TO_STUDENTS, VIEW_AS_STUDENT_COOKIE } from '@/lib/portal-beta';
+import { MARKING_ONLY_BETA, NOTES_OPEN_TO_STUDENTS, VIEW_AS_STUDENT_COOKIE, scienceMarkingOpen } from '@/lib/portal-beta';
 import SignOutButton from './signout-button';
 import InviteFriend from './invite-friend';
 import { inviteLinkFor } from '@/lib/portal-join';
@@ -19,7 +19,7 @@ import { pendingAssignmentCountForSession } from '@/lib/portal-assignments';
 import ViewAsToggle from './view-as-toggle';
 import PortalTour from '@/components/PortalTour';
 import { portalSurfaces } from '@/lib/portal-surfaces';
-import { DesktopLinks, MobileTabs } from '@/components/PortalTabs';
+import { DesktopLinks, FamilySwitch, MobileTabs } from '@/components/PortalTabs';
 
 // PWA identity for the student portal: the manifest + apple-touch-icon are what
 // let an iPhone install /app to the Home Screen — which is the ONLY way web
@@ -118,10 +118,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // below are what its highlight ring measures — keep them on both the desktop
   // links and the mobile tabs, since only one set is on screen at a time.
   // Independent lookups — run them in parallel, not one after the other.
-  const [pendingWork, surfaces] = await Promise.all([
+  const [pendingWork, surfaces, scienceOpen] = await Promise.all([
     pendingAssignmentCountForSession(),
     portalSurfaces(),
+    scienceMarkingOpen(),
   ]);
+  // 🧪 The Science family's own bottom menu (SPEC-SCIENCE-MARKING.md, 10 Sep
+  // 2026) — marking first, nothing else yet: Home · Hand in · Papers. The tab
+  // components pick this list whenever the path is under /app/science.
+  const scienceTabs = scienceOpen
+    ? [
+        { href: '/app/science', label: 'Home' },
+        { href: '/app/science/submit', label: 'Hand in', fab: true },
+        { href: '/app/science/papers', label: 'Papers' },
+      ]
+    : [];
 
   return (
     // -webkit-tap-highlight-color:transparent — iOS Safari's grey tap flash
@@ -132,7 +143,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-5">
             <Link href="/app" className="font-display font-bold text-navy tracking-tight">AdrianMath</Link>
-            <DesktopLinks items={desktopLinks} pendingWork={pendingWork} />
+            <DesktopLinks items={desktopLinks} scienceItems={scienceTabs} pendingWork={pendingWork} />
           </div>
           <div className="flex items-center gap-4">
             {inviteRef && <InviteFriend link={inviteLinkFor(inviteRef)} tuition={inviteTuition} />}
@@ -146,12 +157,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <ViewAsToggle cookieName={VIEW_AS_STUDENT_COOKIE} viewingAsStudent={viewingAsStudent} />
       )}
 
+      {/* Math | Science (10 Sep 2026) — one switcher for both families, under the bar. */}
+      {scienceOpen && (
+        <div className="max-w-4xl mx-auto px-4 pt-3">
+          <FamilySwitch />
+        </div>
+      )}
+
       <main className="max-w-4xl mx-auto px-4 py-5">
         {children}
       </main>
 
       {/* Mobile bottom tabs (components/PortalTabs.tsx — per-surface colours) */}
-      <MobileTabs items={mobileTabs} pendingWork={pendingWork} />
+      <MobileTabs items={mobileTabs} scienceItems={scienceTabs} pendingWork={pendingWork} />
 
       {/* First-login tour — shows itself once per device, on the dashboard only. */}
       <PortalTour surfaces={surfaces} />
