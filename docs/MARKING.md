@@ -2148,6 +2148,41 @@ marker** — and on her seven single sheets 0 of 73 carried a bank `question_id`
 proposals filed), because the skill's `qb-search` phase answers empty; the skill and the
 worker prompt now carry the PostgREST-by-topic recipe and require `question_id` on bank
 items. Bot commit `e42bdf1`; website `a84081b4`.
+**Evening, Isabelle's AM 2025 P1 (run `466ef7e7`, 8 Sep pen) — the re-mark diff and five rules.**
+Adrian: "any changes from the previous marked pdf should be highlighted … put the things that
+changed in purple, then put on the cover page telling students that changed parts are in
+purple … REMARKED in a rectangular rounded box … indicate which pages are remarked too."
+- **Purple re-mark ink** (bot `e3473ad`): the queue runner hands the marker `previousResults`
+  (the run's `previous_results`, set at enqueue for a re-mark); per page the marker diffs them
+  against that page's parts (`lib/page-remark partDiff`) and passes `changedParts` ("Q8(a)",
+  "Q2") down to `createAnnotatedImage`, which inks everything of a changed part — ✓/✗ and codes,
+  ring, kind labels, score chip, in-page and side-strip notes — in `REMARK_INK` (#7c3aed,
+  `MARK_REMARK_INK` overrides). A mark belongs to the part region its line sits in. Changed =
+  the part's awarded mark differs (a moved ✗ inside an unchanged score is not purple — first cut).
+- **The cover's REMARKED badge** (website `00e24663`): `front-page-build.ts` reads
+  `previous_results` + `queue.remark_pages` + `previous_marked_at`; `frontPageHtml` prints the
+  rounded badge beside the title and "Re-marked on 10 Sep 2026: page 3. What changed since the
+  last marking is in purple." (`remarkBadge`/`remarkLine`, tested).
+- **What that page showed and the rules it bought** (`ai/paper-marker.js`): Q1 — no bracket
+  note for a lone power (lg 0.95ⁿ); Q4(a) — a missing bracket in the FINAL answer that changes
+  its meaning costs the A mark (n+1·xⁿ ln x); Q7(b) — an inherited wrong answer names its source
+  ("from the dropped a² in (a)"); Q8(a) — a quadratic inequality is solved the way Adrian marks
+  it: the formula written with an inequality sign is an incorrect statement (✗), then divide and
+  flip, factorise with surds, sketch, exact range in the question's variable; Q13(a)(ii) — a
+  ring always carries its fix ("should be π/2k × a"). Q2's ✗ and labels had landed on Q3's lines
+  (the 8 Sep text-to-ink placement; the rows-first path and the 10 Sep cross-question guard
+  address it) — "why is a factor of 61 wrong?": it is not, that was Q2's cross. Q11(b) — a
+  careless-bucket slip never earns practice, gap or no gap (`applyPracticeFocus`, website
+  `18cf969c`); the Optional dA/dt section was cut from her merged A Math sheet.
+- **"No question found" on her digital-notebook pages** is not fixed by code: the GCE 2025 AM
+  P1 is in neither the paper library nor Dropbox (only 2025 school prelims), so the marker
+  allocates its own marks. Dropping the 2025 TYS papers (AM/EM P1/P2) into the app folder's
+  `/Extraction Inbox` grounds every future hand-in on them.
+- **Proposals:** `/admin/question-proposals`; Approve & publish inserts the row with question,
+  answer, solution, marks, topics, level, `school 'AI Generated' / paper 'Self-Study Practice'`,
+  `ai_generated`, `gen_meta` (skill + verification); no images; sub-group filing comes from the
+  nightly `file-subgroups`; embedding from the nightly embed. 23 filed to date, 11 published,
+  12 pending (11 Isabelle's).
 
 ### Leak test — run it after touching the door or any ownership filter
 
