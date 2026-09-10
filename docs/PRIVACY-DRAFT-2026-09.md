@@ -1,11 +1,11 @@
 # Privacy page — parent-facing draft (item 15, 7 Sep 2026)
 
-> The SHORT version below is the one Adrian wants on `/privacy`: enough to meet the PDPA
-> (purposes, consent, access/correction, retention, protection, overseas transfer, DPO
-> contact, breach notice) without naming any service or revealing the stack. Not yet on
-> the page. When it goes live: bump `POLICY_VERSION` in `src/lib/portal-consent.ts` and the
-> version label on the page. The named-processor list is kept at the bottom for internal
-> reference only — it is NOT to be published.
+> The SHORT version below is the one on `/privacy` since 11 Sep 2026 (Adrian: "can you
+> don't reveal the stack?" / "use the tuition address"): enough to meet the PDPA (purposes,
+> consent, access/correction, retention, protection, overseas transfer, DPO contact, breach
+> notice) without naming any service. `POLICY_VERSION` is `v2-2026-09`; the contact address
+> is adrianmathtuition@gmail.com; the protection paragraph was cut to two sentences. The
+> named-processor list at the bottom is internal reference only — it is NOT published.
 
 ---
 
@@ -65,7 +65,7 @@ Personal Data Protection Commission where the law requires it.
 **Contact**
 
 Adrian Fong is the tutor and the data protection officer. Message him directly or email
-ablnon@hotmail.com for questions, corrections or complaints.
+adrianmathtuition@gmail.com for questions, corrections or complaints.
 
 ---
 
