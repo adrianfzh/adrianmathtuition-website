@@ -1380,6 +1380,37 @@ threshold"), on single and batch sheets alike; a one-gap, three-mark shelf
 stays hidden (`{runIds, wave:2}` → the same job with
 `focus:{wave:2, shelved}`), so every gap is either taught now or queued next.
 
+### Faster sheets without touching the writer (11 Sep 2026)
+
+Adrian: *"any ways to make sheet generation faster?"* … *"quality must not be
+compromised. right now the generated sheets are good"* … *"do #1 to #4"*. The
+numbers behind it (14 days of `sheet_jobs`): a single sheet takes ~22 min to
+write (2–50), a merged one less, but a job waited **265 min on average** for a
+slot to claim it. The wait is the problem, not the writer.
+
+1. **Six sheet slots** (`~/.adrianmath_sheets` … `6`, `install-slot.sh`), all on
+   the one Claude account with the six marking slots. ✅
+2. **Slots look every two minutes** (`StartInterval 120`, 20 s stagger; an
+   empty tick is one HTTP request). ✅ Also fixed: slots 2–6 now symlink the
+   repo's `WORKER_PROMPT.md` instead of running a stale copy.
+3. **Sheet slots on a second Claude account**, so a marking surge cannot stall
+   sheets: Adrian mints a setup token on the second account and puts it in
+   `~/.adrianmath_sheets/oauth_token` (slots 2–6 symlink to it); `run.sh` prefers
+   that file over the keychain login. ⏳ needs the token.
+4. **A renderer from a spec** (`scripts/sheet-worker/render_sheet.py`, spec in
+   `SHEET-SPEC.md`): the writer emits the sheet as JSON, a script builds the docx
+   through the same `worksheet_lib` helpers and exports the PDF the same Word
+   way — identical formatting by construction, proved by rendering three vetted
+   sheets and diffing them page by page before the switch (`SHEET_RENDER=spec`)
+   is ever set. 🔨 in progress.
+5. **The vetted-section library** (later, strict): a section Adrian vetted is
+   reused only for the SAME gap (sub-skill + missed step) — the worked example
+   copied verbatim, annotations included; practice dealt from a per-gap pool of
+   vetted questions so no two students in a group share a set and no student
+   sees a question twice; a gap with no vetted section is written from scratch.
+   The writer keeps its page read and its judgement; the stored diagnosis is
+   only its starting point. First reuses are flagged on the desk.
+
 ### Practice Again batches — one sheet for several papers (10 Sep 2026)
 
 Adrian, on Isabelle's five finished-but-unsent sheets (AM 2025 P1, AM 2025 P2,
