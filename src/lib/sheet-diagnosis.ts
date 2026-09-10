@@ -234,12 +234,13 @@ export function lostPartsForFocus(resultJson: unknown): FocusPart[] {
 /**
  * Demote a ① teach skill to ② show when every lost part it names was a slip
  * inside a right method: each matched part carries a careless-bucket kind (after
- * reconcileKind) and none names a gap. A skill that names no lost part, or one
- * part the marker called concept / misread / incomplete, left unlabelled, or
- * gave a gap, keeps its tier — the gate only ever moves a skill DOWN, and only
- * on the marker's evidence. The worker's own skill-level `gap` does not hold a
- * skill up: the marker's kinds are the ground truth of what went wrong on the
- * page (Isabelle's Q8(b) came back with a worker gap on a copied-wrongly V).
+ * reconcileKind). A skill that names no lost part, or one part the marker called
+ * concept / misread / incomplete or left unlabelled, keeps its tier — the gate
+ * only ever moves a skill DOWN, and only on the marker's evidence. Neither the
+ * worker's skill-level `gap` nor the marker's part-level `gap` holds a careless
+ * skill up (Adrian, 10 Sep 2026, Isabelle's AM 2025 P1 Q11(b), a transfer slip
+ * the marker had given a gap: "there is no need for practice again for transfer
+ * errors" — the kinds are the ground truth of what went wrong on the page).
  */
 export function applyPracticeFocus(skills: DiagnosisSkill[], parts: FocusPart[]): DiagnosisSkill[] {
   if (!parts.length) return skills;
@@ -247,7 +248,7 @@ export function applyPracticeFocus(skills: DiagnosisSkill[], parts: FocusPart[])
     if (s.tier !== 'teach') return s;
     const matched = parts.filter(p => s.questions.some(q => questionCovers(q, p.question)));
     if (!matched.length) return s;
-    const slipOnly = matched.every(p => p.kind !== null && CARELESS_KINDS.includes(p.kind) && !p.gap);
+    const slipOnly = matched.every(p => p.kind !== null && CARELESS_KINDS.includes(p.kind));
     return slipOnly ? { ...s, tier: 'show', slipOnly: true } : s;
   });
 }

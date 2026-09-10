@@ -207,8 +207,9 @@ wrong approach/method/concepts"*). So:
   `transfer`, `sign`, `rounding`, `units`, `careless` — is ② **even when it is
   the biggest loss on the paper**. A `misread` whose `err` says the question
   was *copied wrongly* is a copy slip (= `transfer`), not a misreading.
-- A skill whose every lost part is careless-bucket **with no marker `gap`** does
-  not get a ① section. Write the one-line ② instead. If you file it as `teach`
+- A skill whose every lost part is careless-bucket does not get a ① section —
+  **gap or no gap** (Adrian, 10 Sep 2026, Isabelle's Q11(b) transfer slip: "there is
+  no need for practice again for transfer errors"). Write the one-line ② instead. If you file it as `teach`
   anyway, the site demotes it to `show` on the cover and pings Adrian.
 - The **analysis page (cover) keeps the magnitude**: MARKS LOST still shows the
   six marks that went to slips. Only the practice is withheld.

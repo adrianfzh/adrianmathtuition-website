@@ -251,14 +251,14 @@ describe('practice focus — a slip inside a right method earns no practice', ()
     expect(d.skills.map(s => s.tier)).toEqual(['teach', 'teach']);
   });
 
-  it('one concept part among the slips keeps the skill; a marker gap on a slip keeps it too', () => {
+  it('one concept part among the slips keeps the skill; a marker gap on a slip does NOT (10 Sep 2026: no practice for transfer errors)', () => {
     const mixed = { results: [q('8', [
       part('(a)', 3, 1, { error_kind: 'arithmetic' }),
       part('(b)', 4, 1, { error_kind: 'concept' }),
     ])] };
     expect(normaliseDiagnosis([{ ...STATIONARY, questions: ['Q8'] }], { ...CTX, resultJson: mixed })!.skills[0].tier).toBe('teach');
     const gapped = { results: [q('8', [part('(b)', 4, 1, { error_kind: 'arithmetic', gap: 'differentiating x³/2' })])] };
-    expect(normaliseDiagnosis([STATIONARY], { ...CTX, resultJson: gapped })!.skills[0].tier).toBe('teach');
+    expect(normaliseDiagnosis([STATIONARY], { ...CTX, resultJson: gapped })!.skills[0].tier).toBe('show');
   });
 
   it("the worker's own skill-level gap does not hold a slip up — the marker's kinds are the evidence", () => {
