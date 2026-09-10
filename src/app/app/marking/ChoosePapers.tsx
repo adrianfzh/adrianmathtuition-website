@@ -123,9 +123,9 @@ export default function ChoosePapers({ papers, children }: { papers: PickPaper[]
                 />
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-semibold text-navy break-words">{p.name}</span>
-                  <span className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-gray-500">
+                  <span className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[11.5px] text-gray-500">
                     <PaperSubjectPill subject={p.subject} />
-                    <span>{niceDate(p.date)}</span>
+                    <span className="whitespace-nowrap">{niceDate(p.date)}</span>
                     {s.note && <span className="text-gray-400">· {s.note}</span>}
                   </span>
                 </span>
@@ -150,14 +150,16 @@ export default function ChoosePapers({ papers, children }: { papers: PickPaper[]
 
       {ticked.length > 0 && (
         <div className="sticky bottom-20 sm:bottom-3 flex flex-wrap items-center gap-2 rounded-2xl bg-emerald-800 text-white px-3 py-2.5 shadow-[0_8px_24px_-10px_rgba(6,78,59,0.8)]">
-          <span className="flex-1 min-w-[180px] text-[12.5px] leading-snug">{bar.line}</span>
-          <button type="button" onClick={request} disabled={!bar.canRequest || busy}
-            className="shrink-0 text-xs font-semibold bg-white text-emerald-900 rounded-xl px-3 py-1.5 disabled:opacity-50">
-            {busy ? 'Sending…' : 'Request'}
-          </button>
-          <button type="button" onClick={() => setTicked([])} className="shrink-0 text-xs font-semibold border border-white/40 rounded-xl px-3 py-1.5">
-            Clear
-          </button>
+          <span className="flex-1 min-w-[150px] text-[12.5px] leading-snug">{bar.line}</span>
+          <span className="ml-auto shrink-0 flex items-center gap-2">
+            <button type="button" onClick={() => setTicked([])} className="text-xs font-semibold border border-white/40 rounded-xl px-3 py-1.5">
+              Clear
+            </button>
+            <button type="button" onClick={request} disabled={!bar.canRequest || busy}
+              className="text-xs font-semibold bg-white text-emerald-900 rounded-xl px-3 py-1.5 disabled:opacity-50">
+              {busy ? 'Sending…' : 'Request'}
+            </button>
+          </span>
         </div>
       )}
     </div>
