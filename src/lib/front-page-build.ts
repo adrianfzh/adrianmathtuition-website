@@ -7,6 +7,7 @@ import { analyse, worstQuestions, type LostPart } from '@/lib/paper-analysis';
 import { readDiagnosis, themesFromDiagnosis } from '@/lib/sheet-diagnosis';
 import { errorKindTotals } from '@/lib/error-kinds';
 import { renderFrontPagePng } from '@/lib/render-front-page';
+import { isUngroundedTotal } from '@/lib/paper-total-text';
 
 /**
  * The front page's data: the lost parts of THIS run and nothing else. The first
@@ -85,8 +86,17 @@ export async function buildFrontPage(
       }
     : null;
 
+  // 🕳 MARKED WITHOUT THE QUESTION PAPER (Adrian, 10 Sep 2026: "what does the
+  // system do if there are no questions or mark scheme available?"). Isabelle's
+  // AM TYS 2025 P2 had nothing to ground on, so the marker guessed every
+  // allocation to 73 marks and this cover printed 68/90 — the registry's number,
+  // not the paper's. `ungroundedFrontPage` reads the run's own record of that
+  // (grounding.source + totals) and the page then shows what was actually seen.
+  const ungrounded = ungroundedFrontPage(run.result_json);
+
   return renderFrontPagePng({
     remarked,
+    ungrounded,
     errorKinds,
     studentName: meta.studentName || run.student_name,
     paperName: meta.paperName || run.paper_name,
@@ -97,6 +107,34 @@ export async function buildFrontPage(
     themesSource: diagnosis ? 'sheet' : 'marker',
     worstQuestions: worstQuestions(parts, runId),
   });
+}
+
+/**
+ * The cover's `ungrounded` input, read off a run's `result_json`, or null.
+ *
+ * Two facts decide it and both live on the run: `grounding.source` (null when no
+ * rung of the ladder answered — no attached paper, no stored scheme, no bank
+ * rows) and `totals` (`max_source` says where the denominator came from,
+ * `counted_max` how many marks the marker could actually locate). The rule
+ * itself is `isUngroundedTotal` in lib/paper-total-text.ts, shared with the
+ * PAPER TOTAL strip so the cover and page 1 can never say different things.
+ *
+ * Pure; a run whose shape it cannot read answers null, which is the old cover.
+ */
+export function ungroundedFrontPage(resultJson: unknown): { countedMax: number } | null {
+  const rj = (resultJson && typeof resultJson === 'object' ? resultJson : {}) as {
+    grounding?: { source?: unknown } | null;
+    totals?: { max?: unknown; counted_max?: unknown; max_source?: unknown } | null;
+  };
+  const t = rj.totals || {};
+  const countedMax = Number(t.counted_max);
+  const ok = isUngroundedTotal({
+    groundingSource: typeof rj.grounding?.source === 'string' ? rj.grounding.source : null,
+    maxSource: typeof t.max_source === 'string' ? t.max_source : null,
+    countedMax,
+    max: Number(t.max),
+  });
+  return ok ? { countedMax } : null;
 }
 
 /**

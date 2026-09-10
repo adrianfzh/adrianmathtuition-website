@@ -618,6 +618,61 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   Sundays 04:10 SGT — Adrian runs `install.sh` once). The real gap is the bank's DOCX sources
   (~1,500 papers were extracted from Word files): they need a Word-export job before the marker can
   attach them — the next piece of phase 2.
+- **🕳 WHEN THE PAPER IS MISSING — say it, then fix it by itself (10 Sep 2026).** Adrian: *"moving
+  forward, what does the system do if there are no questions or mark scheme available? — we should
+  have a robust solution."* Isabelle's `isabelle TYS AM 2025 P2` and Joey's `joey em tys 2025 p1`
+  parsed to real national papers (`gce 2025 am p2`, `gce 2025 em p1`) that nothing held: no attached
+  PDF, no library row, no stored scheme, no bank rows — the 2025 papers had not been filed. The
+  marker marked from the working alone (16 of 16 reads `question_found:false`, *"Max taken as 4"* on
+  a six-mark Q1), `groundPaperTotals` printed the guessed 73 against the registry's 90 as **68/90**,
+  the review line said "17 marks of allocation too few", and the 8 Sep release-everything rule sent
+  it out. **Nobody was told the paper was missing.** Four things now happen, and none of them holds
+  a marking — a student's paper is still marked and still goes out:
+  1. **At hand-in.** `enqueuePaper` asks `lib/ungrounded-paper.js checkPaperAvailable` (bot) whether
+     any rung of the ladder can answer for this key. A NAMED past paper (GCE/TYS with year+level+paper,
+     or a school exam with a school) that nothing holds is stamped `result_json.paper_match.ungrounded`
+     = `{key, at, reason, filter, expected_file}` and Adrian gets ONE Telegram line naming the file that
+     fixes it — *"⚠️ Isabelle Toh Si Xian handed in isabelle TYS AM 2025 P2 — the question paper is not
+     in the library or the bank … Drop `AM GCE 2025 Paper 2.pdf` … into Dropbox › Extraction Inbox"*.
+     Once per run per key; Adrian's own compiled sets, topical practice and returned Practice Again
+     sheets are never named papers and never raise it. A lookup that errors answers "available" —
+     a Supabase hiccup must not become a false alarm.
+  2. **On the finished run.** The marker re-stamps `paper_match.ungrounded` (it, not the enqueue, is
+     the durable stamp — `logMarkingRun` rewrites `paper_match` from the result) and appends the
+     review note: *"⚠️ Marked WITHOUT the question paper — GCE 2025 A Math Paper 2 is not in the
+     library or the bank, and 16 of 16 questions were reconstructed from the working alone. The
+     allocation is a guess and the total is not official."* (A paper whose pages DID carry the
+     printed questions gets the softer half of that sentence.) The desk shows it; the queue's
+     Telegram repeats it.
+  3. **On the cover and the strip.** `lib/paper-total-text.ts isUngroundedTotal` — `grounding.source`
+     null AND `max_source` not `counted`/`brackets` AND `counted_max < max` — turns the cover badge
+     into **68/73 · not official** with no percentage and no grade band, adds *"Marked without the
+     question paper: 68 of the 73 marks the marker could see. The official total will be confirmed
+     once the paper is in."*, and re-words the page-1 strip to `MARKS SEEN · NOT THE OFFICIAL TOTAL`
+     over `68 / 73`. Shared by `front-page-build.ts ungroundedFrontPage`, `mark-paper-pdf` and the
+     ✏️ Annotate flatten, so the cover and page 1 can never disagree. Every ordinary cover is
+     byte-identical to yesterday's.
+  4. **When the paper arrives.** `/api/cron/extraction-inbox` files it for the marker and re-marks
+     the papers — see below.
+- **📥 The inbox closes the loop (10 Sep 2026).** A PDF dropped into Dropbox › Extraction Inbox used
+  to become the extraction fleet's `kind='source'` row and nothing else, so the four 2025 GCE papers
+  sat in the very folder that had received them while two students' papers were marked blind against
+  them; filing them for the marker had to be done by hand. Now the same tick ALSO upserts the
+  marker's row — `paper_library` kind `questions` (or `solutions`, by the same name test the
+  exam-library indexer uses: solution / answer / marking scheme / MS / ANS) with `status='library'`,
+  over the very same storage object, keyed `<level> <year> p<n> <school>`. Two conventions meet here
+  and are easy to confuse: the marker's own key is `gce 2025 am p2` (exam first) and the library's is
+  `am 2025 p2 gce` (level first), so **the re-mark sweep matches on the four FIELDS, never the key
+  string** (`runsToReground` + `runPaperFields`, and the bot's stamp carries `filter` for exactly
+  this reason). Then every run of the last 30 days that was marked without that paper — stamped
+  `paper_match.ungrounded`, or ungrounded with questions never found — is re-queued through the bot
+  (`phase:'enqueue' … remark:true`), at most 10 per file, with one Telegram line each: *"📥 GCE 2025
+  AM P2 is in — re-marking Isabelle's paper against it; the changed parts will be purple."*
+  Idempotent through `paper_match.regrounded_key`, which is written BEFORE the enqueue and rolled
+  back if it fails: the safe failure is "not re-marked", never "re-marked twice". A combined
+  Ten-Year-Series book names no single paper, so it stays queued for the fleet (the bytes are
+  wanted) with a note saying to split it into one file per paper named `AM GCE 2025 Paper 1.pdf`.
+  Details + the worker contract: [`docs/EXTRACTION-QUEUE.md`](EXTRACTION-QUEUE.md).
 - **📂 The Dropbox tray — one folder per paper, four fixed names, one-month life (6 Sep 2026):**
   Adrian vets in Notability from the Files app, so student files go to Dropbox again, as a TRAY:
   `/Students/<Student>/<YYYY-MM-DD paper>/` holds `1 Marked by AI.pdf`, `2 Marked by Adrian.pdf`

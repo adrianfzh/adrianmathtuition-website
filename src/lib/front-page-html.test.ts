@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { frontPageHtml, chooseThemes, type FrontPageInput, oLevelGrade } from './front-page-html';
-import { changedPartCount } from './front-page-build';
+import { frontPageHtml, chooseThemes, kindsScore, type FrontPageInput, oLevelGrade, ungroundedLine } from './front-page-html';
+import { changedPartCount, ungroundedFrontPage } from './front-page-build';
 import type { Theme } from './paper-analysis';
 
 const theme = (over: Partial<Theme> = {}): Theme => ({
@@ -469,5 +469,83 @@ describe('changedPartCount', () => {
     expect(changedPartCount(prev, moved)).toBe(2);
     expect(changedPartCount(null, same)).toBeNull();
     expect(changedPartCount(prev, 'junk')).toBeNull();
+  });
+});
+
+// ── marked without the question paper (Adrian, 10 Sep 2026) ─────────────────
+// Isabelle's AM TYS 2025 P2: the 2025 papers were not in the library or the
+// bank, every allocation was the marker's guess (summing to 73), and this cover
+// printed "68/90 · 76%" with a grade band under it. None of those three numbers
+// was the paper's.
+describe('frontPageHtml — marked without the question paper', () => {
+  const ungrounded = { ...base, awarded: 68, max: 90, ungrounded: { countedMax: 73 } };
+
+  it('shows the marks the marker could see, not the registry total', () => {
+    const h = frontPageHtml(ungrounded);
+    expect(h).toContain('>68<span class="of">/73</span>');
+    expect(h).not.toContain('/90</span>');
+  });
+
+  it('drops the percentage and says "not official"', () => {
+    const h = frontPageHtml(ungrounded);
+    expect(h).toContain('not official');
+    expect(h).not.toContain('76%');
+    expect(h).not.toContain('class="pct"');
+  });
+
+  it('says in one line why, in the student\'s own words', () => {
+    const h = frontPageHtml(ungrounded);
+    expect(h).toContain('Marked without the question paper: <b>68 of the 73 marks the marker could see</b>.');
+    expect(h).toContain('The official total will be confirmed once the paper is in.');
+  });
+
+  it('keeps the grade band OFF — a band read off an unverified total is a promise it cannot keep', () => {
+    const t = emptyErrorKindTotals();
+    t.byKind.arithmetic = 4; t.byKind.sign = 1; t.careless = 5; t.byKind.concept = 3; t.concept = 3; t.lostTotal = 8;
+    const h = frontPageHtml({ ...ungrounded, paperName: 'isabelle TYS AM 2025 P2', awarded: 61, errorKinds: t });
+    expect(h).toContain('Without them: <b>66/73</b>');   // the honest denominator
+    expect(h).not.toMatch(/from [A-F]\d to/);
+    expect(h).not.toContain('still A1');
+  });
+
+  it('a score above the paper total still outranks it', () => {
+    const h = frontPageHtml({ ...ungrounded, awarded: 92 });
+    expect(h).toContain('needs a check');
+    expect(h).not.toContain('not official');
+  });
+
+  it('every ordinary cover is untouched', () => {
+    expect(frontPageHtml(base)).toBe(frontPageHtml({ ...base, ungrounded: null }));
+    expect(ungroundedLine({ awarded: 68, ungrounded: null })).toBe('');
+    expect(ungroundedLine({ awarded: 68, ungrounded: { countedMax: 0 } })).toBe('');
+  });
+
+  it('kindsScore hands the MARKS LOST row the honest denominator', () => {
+    expect(kindsScore(base)).toEqual({ awarded: 60, max: 90 });
+    expect(kindsScore(ungrounded)).toEqual({ awarded: 68, max: 73, official: false });
+  });
+});
+
+describe('ungroundedFrontPage — read off the run itself', () => {
+  const run = (over: Record<string, unknown> = {}) => ({
+    grounding: { source: null },
+    totals: { awarded: 68, max: 90, counted_max: 73, max_source: 'registry' },
+    ...over,
+  });
+
+  it('fires on the shape Isabelle\'s run has', () => {
+    expect(ungroundedFrontPage(run())).toEqual({ countedMax: 73 });
+  });
+
+  it('stays silent on a grounded run, a counted run, and a full-coverage run', () => {
+    expect(ungroundedFrontPage(run({ grounding: { source: 'bank' } }))).toBeNull();
+    expect(ungroundedFrontPage(run({ totals: { max: 73, counted_max: 73, max_source: 'counted' } }))).toBeNull();
+    expect(ungroundedFrontPage(run({ totals: { max: 90, counted_max: 90, max_source: 'registry' } }))).toBeNull();
+  });
+
+  it('a run it cannot read keeps the old cover', () => {
+    expect(ungroundedFrontPage(null)).toBeNull();
+    expect(ungroundedFrontPage('junk')).toBeNull();
+    expect(ungroundedFrontPage({})).toBeNull();
   });
 });

@@ -10,6 +10,7 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 // Page width + paper-total strip are SHARED with the ✏️ Annotate assemble route —
 // see lib/marked-pdf-layout.ts. Change layout there, never inline here.
 import { PAGE_W, drawPaperTotal, stripHeight, shouldStampPaperTotal } from '@/lib/marked-pdf-layout';
+import { isUngroundedTotal } from '@/lib/paper-total-text';
 import { buildFrontPage } from '@/lib/front-page-build';
 import { bookletItems } from '@/lib/solutions-booklet-html';
 import { renderSolutionsBookletPng } from '@/lib/render-solutions-booklet';
@@ -173,14 +174,24 @@ export async function POST(req: NextRequest) {
   // without a cover sheet is unchanged. The paper-total strip lands on the first
   // page drawn, so on such a paper it sits on the cover — where a total belongs.
   let coverSet = new Set<number>();
-  if (runId && annotated.length) {
+  // 🕳 Was this marked with NO question paper and NO mark scheme? The strip must
+  // then say so instead of printing the registry's 90 as if it were a result
+  // (lib/paper-total-text.ts isUngroundedTotal; Adrian, 10 Sep 2026).
+  let ungroundedTotal = false;
+  if (runId) {
     try {
       const { data } = await getSupabaseAdmin().from('paper_marking_runs')
-        .select('page_classification:result_json->page_classification, results:result_json->results, annotated_photos:result_json->annotated_photos').eq('id', runId).maybeSingle();
+        .select('page_classification:result_json->page_classification, results:result_json->results, annotated_photos:result_json->annotated_photos, grounding:result_json->grounding').eq('id', runId).maybeSingle();
       // With a classification the 'cover' pages lead; without one (Mac
       // hand-backs) the leading pages no marked question sits on do — lib/marked-pdf-order.
-      const row = data as { page_classification?: unknown; results?: unknown; annotated_photos?: unknown } | null;
+      const row = data as { page_classification?: unknown; results?: unknown; annotated_photos?: unknown; grounding?: { source?: unknown } | null } | null;
       coverSet = new Set(coverPhotoIndexes(row?.page_classification, frontMatterPages(row)));
+      ungroundedTotal = isUngroundedTotal({
+        groundingSource: typeof row?.grounding?.source === 'string' ? row.grounding.source : null,
+        maxSource: body.totals?.max_source ?? null,
+        countedMax: body.totals?.counted_max ?? null,
+        max: body.totals?.max ?? null,
+      });
     } catch (e) { console.warn('[mark-paper-pdf] page classification unavailable, no cover-first:', (e as Error).message); }
   }
   const coverPhotos = annotated.filter(a => coverSet.has(a.photo_index));
@@ -207,6 +218,7 @@ export async function POST(req: NextRequest) {
         await drawPaperTotal(pdfDoc, page, {
           width: PAGE_W, imgHeight: drawH,
           studentName: student.name, studentLevel: student.level, totalAwarded, totalMax,
+          countedMax: body.totals?.counted_max ?? null, ungrounded: ungroundedTotal,
         });
       }
     } catch (e) { console.error('[mark-paper-pdf] embed failed', pg.kind, (e as Error).message); }

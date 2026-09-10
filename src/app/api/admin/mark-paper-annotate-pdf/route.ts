@@ -17,6 +17,7 @@ import { putStudentFile, fetchOurFile, isOurFileUrl, runKey } from '@/lib/studen
 import { PDFDocument } from 'pdf-lib';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { PAGE_W, drawPaperTotal, stripHeight, shouldStampPaperTotal } from '@/lib/marked-pdf-layout';
+import { isUngroundedTotal } from '@/lib/paper-total-text';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -60,6 +61,22 @@ export async function POST(req: NextRequest) {
   const totalMax = body.totals?.max ?? 0;
   const student = { name: body.student?.name || '', level: body.student?.level || '' };
 
+  // 🕳 Same honesty rule as the 🖼/📄 builds: a paper marked with no question
+  // paper and no mark scheme gets MARKS SEEN, not the registry's total dressed
+  // up as a result (lib/paper-total-text.ts isUngroundedTotal, 10 Sep 2026).
+  let ungroundedTotal = false;
+  try {
+    const { data } = await getSupabaseAdmin().from('paper_marking_runs')
+      .select('grounding:result_json->grounding').eq('id', runId).maybeSingle();
+    const g = (data as { grounding?: { source?: unknown } | null } | null)?.grounding;
+    ungroundedTotal = isUngroundedTotal({
+      groundingSource: typeof g?.source === 'string' ? g.source : null,
+      maxSource: body.totals?.max_source ?? null,
+      countedMax: body.totals?.counted_max ?? null,
+      max: body.totals?.max ?? null,
+    });
+  } catch (e) { console.warn('[mark-paper-annotate-pdf] grounding lookup skipped:', (e as Error).message); }
+
   const pdfDoc = await PDFDocument.create();
   // Same practice-vs-exam gate as the 🖼/📄 builds — see shouldStampPaperTotal.
   let totalDrawn = !shouldStampPaperTotal(body.totals?.max_source);
@@ -76,6 +93,7 @@ export async function POST(req: NextRequest) {
       await drawPaperTotal(pdfDoc, page, {
         width: PAGE_W, imgHeight: drawH,
         studentName: student.name, studentLevel: student.level, totalAwarded, totalMax,
+        countedMax: body.totals?.counted_max ?? null, ungrounded: ungroundedTotal,
       });
     }
   }

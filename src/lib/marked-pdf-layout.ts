@@ -38,7 +38,14 @@ export function shouldStampPaperTotal(maxSource: string | null | undefined): boo
 export async function drawPaperTotal(
   pdfDoc: PDFDocument,
   page: PDFPage,
-  p: { width: number; imgHeight: number; studentName: string; studentLevel: string; totalAwarded: number; totalMax: number },
+  p: {
+    width: number; imgHeight: number; studentName: string; studentLevel: string;
+    totalAwarded: number; totalMax: number;
+    /** `totals.counted_max` + "nothing grounded this marking" — together they turn
+     *  the strip from `68 / 90` into `68 / 73` under MARKS SEEN · NOT THE OFFICIAL
+     *  TOTAL (lib/paper-total-text.ts isUngroundedTotal, 10 Sep 2026). */
+    countedMax?: number | null; ungrounded?: boolean;
+  },
 ): Promise<void> {
   const reg = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -55,7 +62,9 @@ export async function drawPaperTotal(
   // holds, "PAPER TOTAL · NEEDS A CHECK" over "92 of 90" (lib/paper-total-text.ts;
   // Adrian, 3 Sep 2026: "92 out of 90 is not possible"). The box below is measured
   // from whichever line is wider, so the longer label widens it and nothing else moves.
-  const { label, score } = paperTotalText({ awarded: p.totalAwarded, max: p.totalMax });
+  const { label, score } = paperTotalText({
+    awarded: p.totalAwarded, max: p.totalMax, countedMax: p.countedMax, ungrounded: p.ungrounded,
+  });
   const labelSize = Math.round(strip * 0.24), scoreSize = Math.round(strip * 0.46);
   const boxW = pad * 2 + Math.max(bold.widthOfTextAtSize(score, scoreSize), reg.widthOfTextAtSize(label, labelSize));
   const boxH = strip * 0.82;

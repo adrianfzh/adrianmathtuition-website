@@ -36,6 +36,59 @@ an overwrite. Every step is idempotent: a crash between upload, insert and move
 is repaired by the next tick, never repeated. The tick stamps `job_runs`
 `extraction-inbox`; `JOB_RHYTHMS` alarms by absence.
 
+## 1b. The same door fills the MARKER's library (10 Sep 2026)
+
+Adrian, on Isabelle's `TYS AM 2025 P2` and Joey's `em tys 2025 p1`: *"moving
+forward, what does the system do if there are no questions or mark scheme
+available? — we should have a robust solution."* Both papers were marked blind —
+every allocation a guess, `68/90` on the cover — while the PDFs that would have
+grounded them sat in **this folder**, filed as `kind='source'` and nothing else.
+The extraction row is for the fleet; the marker reads a different row, and only
+`scripts/paper-library/index.mjs` (a Mac script, run by hand) ever wrote one.
+
+So the same tick now does both jobs over one storage object:
+
+| the file names | the marker row | what follows |
+|---|---|---|
+| ONE paper (`AM GCE 2025 Paper 2.pdf`, `EM PRELIM 2025 Catholic High P1.pdf`) | upsert `paper_library` `kind='questions'`, `status='library'`, key `am 2025 p2 gce` | every recent run marked without it is re-marked (below) |
+| ONE paper's scheme (`… (Solutions).pdf`, `… ANS.pdf`, `… MS.pdf`) | the same, `kind='solutions'` | the same |
+| a whole book (`O Level AM TYS 2025 (Questions).pdf`, paper `all`) | none — the marker looks a paper up by (school, year, level, paper) | stays **queued** for the fleet (the bytes are wanted), with a note: split it into one file per paper, named `AM GCE 2025 Paper 1.pdf` |
+
+Two spellings of the same paper meet here and must not be confused: the marker's
+own key is `gce 2025 am p2` (exam first, bot `lib/paper-key.js`) and the library's
+is `am 2025 p2 gce` (level first, `bankFilterFor` + the indexer's `keyOf`). The
+sweep therefore matches on the four FIELDS — school, year, level, paper — and the
+bot's ungrounded stamp carries `filter` for exactly that (`runPaperFields` in
+`lib/extraction-inbox.ts`). Two more spelling rules live in `markerSchool`: a
+national paper is filed under school **GCE** however the file spells it (GCE /
+TYS / O Level / Specimen), and a real school's brackets are kept — "Chung Cheng
+High (Yishun)" is how the bank spells it — while a bracket holding only
+"(Solutions)" comes off, or the scheme would be filed under a key nothing looks up.
+
+**Then the loop closes.** Every `paper_marking_runs` row of the last 30 days that
+names this paper and was marked with nothing to check it against — the bot's
+`paper_match.ungrounded` stamp, or an ungrounded run whose questions were never
+found — is re-queued through the bot (`POST $BOT_BASE_URL/api/mark-paper`,
+`{phase:'enqueue', remark:true, model:'opus', style:'teacher'}`), at most **10 per
+arriving file**, with one Telegram line each to the marking topic:
+
+> 📥 GCE 2025 AM P2 is in — re-marking Isabelle's paper against it; the changed parts will be purple.
+
+Idempotency is `paper_match.regrounded_key`, written **before** the enqueue and
+rolled back if it fails: a duplicate marking costs real money, so the safe failure
+is "not re-marked", never "re-marked twice". Runs with no stored photos, and runs
+still sitting unmarked in the queue (they attach from the library on their way
+through anyway), are left alone. The counts ride the tick's `job_runs`
+`extraction-inbox` summary ("2 queued, 2 filed for the marker, 3 re-marked against
+it"); anything over the cap gets its own Telegram line so it can be re-marked from
+the desk. The pure halves — `libraryKindOf`, `libraryKeyOf`, `libraryRowFor`,
+`libraryLabel`, `runPaperFields`, `runsToReground`, `regroundNotice` — are in
+`src/lib/extraction-inbox.ts` and tested in its sibling `.test.ts`.
+
+The full story of what the marker does while the paper is missing (the hand-in
+Telegram, the review note, the honest cover) is `docs/MARKING.md` § *When the
+paper is missing*.
+
 ## 2. The queue — `paper_library`, `kind='source'`
 
 The table the marker's exam library already lived in, extended (migration

@@ -97,6 +97,17 @@ export type FrontPageInput = {
    *  paper) and when. The cover wears a REMARKED badge and says the changed parts
    *  are in purple — the pen inks them so (bot annotate.js REMARK_INK). */
   remarked?: { pages: number[] | null; at: string | null; changed?: number | null } | null;
+  /**
+   * 🕳 MARKED WITHOUT THE QUESTION PAPER (Adrian, 10 Sep 2026). Nothing grounded
+   * this marking — no attached paper, no mark scheme, no bank rows — so the
+   * denominator on the run came from the name registry ("an O-Level A Math paper
+   * is out of 90") while the marker could only locate `countedMax` marks. The
+   * badge then shows what was actually seen, the percentage and the grade band
+   * come off (both would be computed from a number this paper cannot stand
+   * behind), and one line says why. Absent → the cover is byte-identical to the
+   * one it printed yesterday. lib/paper-total-text.ts `isUngroundedTotal`.
+   */
+  ungrounded?: { countedMax: number } | null;
 };
 
 // ONE A4 SHEET. Adrian asked for "a pdf page attached right in front" —
@@ -238,7 +249,10 @@ function looksLikeJc(paperName: string | null | undefined): boolean {
  */
 export function carelessCallout(
   t: ErrorKindTotals,
-  score: { awarded: number; max: number } | null,
+  /** `official: false` = the denominator is not the paper's own (marked without
+   *  the question paper, 10 Sep 2026): the "without them" score still helps, but
+   *  a GRADE BAND read off an unverified total does not — it comes off. */
+  score: { awarded: number; max: number; official?: boolean } | null,
   paperName?: string | null,
 ): { big: boolean; html: string } {
   const c = t.careless;
@@ -254,7 +268,7 @@ export function carelessCallout(
     const pctNow = Math.round((score.awarded / score.max) * 100);
     const pctWould = Math.round((would / score.max) * 100);
     tail = ` Without them: <b>${would}/${score.max}</b> (${pctWould}%)`;
-    if (big && !looksLikeJc(paperName)) {
+    if (big && score.official !== false && !looksLikeJc(paperName)) {
       const g0 = oLevelGrade(pctNow), g1 = oLevelGrade(pctWould);
       tail += g1 !== g0 ? ` &mdash; from ${g0} to <b>${g1}</b>.` : ` &mdash; still ${g0}, but every one of those marks is yours to keep.`;
     } else tail += '.';
@@ -267,7 +281,7 @@ export function carelessCallout(
   };
 }
 
-function kindsRow(t: ErrorKindTotals | null | undefined, score: { awarded: number; max: number } | null = null, paperName?: string | null): string {
+function kindsRow(t: ErrorKindTotals | null | undefined, score: { awarded: number; max: number; official?: boolean } | null = null, paperName?: string | null): string {
   if (!hasLabelledLoss(t)) return '';
   const n = (k: ErrorKind) => t!.byKind[k];
   const detail = (kinds: readonly ErrorKind[]) =>
@@ -320,9 +334,48 @@ function badge(input: FrontPageInput): string {
 </style><div class="badge"><div class="score">${input.awarded}<span class="of"> of ${input.max}</span></div>
        <div class="check-tag">needs a check</div></div>`;
   }
+  // Marked without the question paper: the honest denominator is what the marker
+  // could SEE, and no percentage — a percentage of a number nobody has verified
+  // is exactly the thing a student takes home as final.
+  if (input.ungrounded && input.ungrounded.countedMax > 0) {
+    return `<style>
+.check-tag{font-family:"IBM Plex Mono",monospace;font-size:.6rem;font-weight:600;letter-spacing:.16em;
+           text-transform:uppercase;color:var(--verdict);margin-top:.32rem}
+</style><div class="badge"><div class="score">${input.awarded}<span class="of">/${input.ungrounded.countedMax}</span></div>
+       <div class="check-tag">not official</div></div>`;
+  }
   const pct = input.max > 0 ? Math.round((input.awarded / input.max) * 100) : 0;
   return `<div class="badge"><div class="score">${input.awarded}<span class="of">/${input.max}</span></div>
        <div class="pct">${pct}%</div></div>`;
+}
+
+/**
+ * The one line that explains the badge when the paper itself was missing.
+ *
+ * Written to the STUDENT, like everything else on this page: what the number in
+ * front of them means, and that the real one is coming. No blame, no jargon, no
+ * mention of libraries or grounding ladders. Pure.
+ */
+export function ungroundedLine(input: Pick<FrontPageInput, 'awarded' | 'ungrounded'>): string {
+  const u = input.ungrounded;
+  if (!u || !(u.countedMax > 0)) return '';
+  return `<style>.unground-line{margin:-.25rem 0 .7rem;font-size:.85rem;color:var(--verdict)}
+.unground-line b{font-weight:700}</style>`
+    + `<p class="unground-line">Marked without the question paper: <b>${input.awarded} of the ${u.countedMax} marks the marker could see</b>. `
+    + `The official total will be confirmed once the paper is in.</p>`;
+}
+
+/**
+ * The score the MARKS LOST row reasons about. Normally the paper's own total.
+ * On a paper marked without the question paper it is what the marker could see,
+ * flagged `official: false` so no O-Level grade band is read off it — a band is
+ * a promise, and this page cannot keep one until the paper is in. Pure.
+ */
+export function kindsScore(input: FrontPageInput): { awarded: number; max: number; official?: boolean } {
+  if (input.ungrounded && input.ungrounded.countedMax > 0) {
+    return { awarded: input.awarded, max: input.ungrounded.countedMax, official: false };
+  }
+  return { awarded: input.awarded, max: input.max };
 }
 
 /** The closing line: two questions to start on, tied to the ranking above. */
@@ -474,11 +527,11 @@ h2::before{content:none}
   ${badge(input)}
   <div>
     <p class="student">${esc(input.studentName || '')}</p>
-    <h1>Where your marks went${remarkBadge(input.remarked)}</h1>${remarkLine(input.remarked)}
+    <h1>Where your marks went${remarkBadge(input.remarked)}</h1>${remarkLine(input.remarked)}${ungroundedLine(input)}
     <p class="verdict">${lead}</p>
   </div>
 </div>
-${kindsRow(input.errorKinds, { awarded: input.awarded, max: input.max }, input.paperName)}<div class="sec-work">
+${kindsRow(input.errorKinds, kindsScore(input), input.paperName)}<div class="sec-work">
 <h2>What to work on</h2>
 <p class="sub">${sub}</p>
 <div class="themes">${themes.map(themeRow).join('')}</div>

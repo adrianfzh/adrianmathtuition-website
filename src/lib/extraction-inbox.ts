@@ -180,9 +180,223 @@ export function decideInboxFile(
   return { kind: 'enqueue', parsed, key, storagePath, to: 'queued' };
 }
 
+// ── The inbox also fills the MARKER's library (10 Sep 2026) ──────────────────
+//
+// Adrian, on Isabelle's AM TYS 2025 P2 and Joey's EM TYS 2025 P1: "what does the
+// system do if there are no questions or mark scheme available? — we should have
+// a robust solution."
+//
+// Both papers were marked blind because the 2025 GCE papers were not in
+// `paper_library` — the marker's exam library, which lib/paper-library.js on the
+// bot side attaches from at enqueue time. The inbox already had the bytes: the
+// PDFs had been dropped in for the extraction fleet and filed as kind='source'.
+// Nothing ever promoted them to the row the MARKER reads, so filing the four
+// 2025 papers had to be done by hand.
+//
+// From here a dropped PDF does BOTH jobs in one tick: the extraction queue's
+// `source` row as before, and — when the name says which single paper it is —
+// the marker's `questions` (or `solutions`) row over the very same object. The
+// route then re-marks every recent run that was marked without this paper.
+
+/**
+ * questions | solutions, from the filename alone.
+ *
+ * THE SAME RULE the exam-library indexer uses (scripts/paper-library/index.mjs
+ * `kindOf`) — a name saying solution / answer / marking scheme / MS / ANS is the
+ * scheme, everything else is the paper. Kept in two places because that script
+ * is a standalone .mjs with top-level I/O; the shared examples are pinned in
+ * extraction-inbox.test.ts. Pure.
+ */
+export function libraryKindOf(name: string): 'questions' | 'solutions' {
+  const n = String(name).toLowerCase();
+  return /solution|answer|marking scheme|mark scheme|\bms\b|\bans\b/.test(n) ? 'solutions' : 'questions';
+}
+
+/**
+ * `paper_library.key` for a MARKER row: `<level> <year> p<n> <school>`, exactly
+ * the way lib/paper-key `bankFilterFor` names a paper on the bot side (and the
+ * indexer's `keyOf`). Lower case, single-spaced. Pure.
+ */
+export function libraryKeyOf(p: { level: string; year: number; paper: string; school: string }): string {
+  return `${p.level} ${p.year} ${p.paper} ${p.school}`.toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+export type LibraryRow = {
+  key: string; kind: 'questions' | 'solutions';
+  level: string; year: number; paper: string; school: string;
+  examType: string | null;
+};
+
+/**
+ * The marker library row a dropped file should ALSO become, or the reason it
+ * cannot be one.
+ *
+ * The marker looks a paper up by (school, year, level, paper), so a file that
+ * does not name ONE paper cannot be filed for it: a combined Ten-Year-Series
+ * book ("O Level AM TYS 2025 (Questions).pdf", paper 'all') is a perfectly good
+ * extraction source and a useless mark-scheme lookup. It stays queued for the
+ * fleet — never rejected, the bytes are wanted — and the reason says what to do
+ * about it. Pure.
+ */
+export function libraryRowFor(parsed: ParsedSourceName, name: string): { row: LibraryRow } | { skip: string } {
+  if (!parsed.ok) return { skip: 'the name could not be filed at all' };
+  if (parsed.paper === 'all') {
+    return { skip: 'the name says no paper number, so the marker cannot look it up — split the book into one file per paper, named like `AM GCE 2025 Paper 1.pdf`' };
+  }
+  const school = markerSchool(parsed, name);
+  if (!school) return { skip: 'no school left in the name once the level, exam, year, paper and "(Solutions)" are removed' };
+  const row: LibraryRow = {
+    key: libraryKeyOf({ level: parsed.level, year: parsed.year, paper: parsed.paper, school }),
+    kind: libraryKindOf(name),
+    level: parsed.level, year: parsed.year, paper: parsed.paper, school,
+    examType: parsed.examType,
+  };
+  return { row };
+}
+
+// A national paper is filed under school 'GCE' in the bank, whatever the file
+// calls it — "TYS", "O Level", "A Level" and the SEAB specimen papers all name
+// the same thing (bot lib/paper-key.js: "TYS 2021 IS the 2021 national paper").
+const NATIONAL = /\b(gce|tys|ten[\s-]?year|[oa][\s-]?levels?)\b/i;
+// …and the KIND words are never part of a school: the fleet's parser leaves
+// "(Solutions)" behind as the school on "AM GCE 2025 Paper 2 (Solutions).pdf",
+// which would file the scheme under the key "am 2025 p2 (solutions)" — a key
+// nothing looks up. Its own convention is fine for the extraction queue (the
+// fleet reads whole names); only the marker's key needs them gone.
+//
+// PARENTHESES ARE NOT NOISE. Real schools carry them — "Chung Cheng High
+// (Yishun)", "Anglo Chinese School (Barker Road)" — and the bank spells them
+// that way, so only a bracket whose whole content is a kind word comes off.
+const KIND_PARENS = /\(\s*(?:solutions?|answers?|ans|marking\s*schemes?|mark\s*schemes?|ms|questions?|qns?|qp)\s*\)/gi;
+const KIND_WORDS = /\b(?:solutions?|answers?|ans|marking\s*schemes?|mark\s*schemes?|questions?|qns?|qp)\b/gi;
+
+/** The `questions.school` value this file belongs under, or ''. Pure. */
+function markerSchool(parsed: ParsedSourceName & { ok: true }, name: string): string {
+  if (parsed.examType === 'GCE' || parsed.examType === 'Specimen' || NATIONAL.test(name)) return 'GCE';
+  return String(parsed.school || '')
+    .replace(KIND_PARENS, ' ').replace(KIND_WORDS, ' ')
+    .replace(/\s+/g, ' ').replace(/^[\s\-–_,.]+|[\s\-–_,.]+$/g, '').trim();
+}
+
+/** "GCE 2025 AM P2" / "Bedok South 2025 EM P1" — how a filed paper is named in a
+ *  Telegram line. Pure. */
+export function libraryLabel(row: Pick<LibraryRow, 'school' | 'year' | 'level' | 'paper'>): string {
+  const head = row.school.toUpperCase() === 'GCE' ? `GCE ${row.year}` : `${row.school} ${row.year}`;
+  return `${head} ${row.level} ${row.paper.toUpperCase()}`;
+}
+
+// ── Closing the loop: re-mark what was marked without this paper ─────────────
+
+export type RegroundRun = {
+  id: string;
+  paper_name: string | null;
+  student_name: string | null;
+  created_at: string;
+  result_json: unknown;
+};
+
+type PaperFields = { school: string; year: number; level: string; paper: string };
+
+type RegroundJson = {
+  paper_match?: {
+    key?: unknown;
+    parsed?: { exam?: unknown; level?: unknown; year?: unknown; paper?: unknown; school?: unknown } | null;
+    ungrounded?: { key?: unknown; filter?: unknown } | null;
+    regrounded_at?: unknown; regrounded_key?: unknown;
+  } | null;
+  grounding?: { source?: unknown } | null;
+  results?: unknown;
+  source?: { photos?: unknown } | null;
+  queue?: unknown;
+};
+
+// The bot's syllabus levels → the bank's `questions.level` (bot lib/paper-key.js
+// BANK_LEVEL). A run stamped H2 is the library's JC2.
+const BANK_LEVEL: Record<string, string> = { AM: 'AM', EM: 'EM', H2: 'JC2', H1: 'JC2_H1' };
+
+/** school|year|level|paper, comparable across the two naming conventions. Pure. */
+function fieldsId(f: PaperFields | null): string | null {
+  if (!f || !f.school || !f.year || !f.level || !f.paper) return null;
+  const paper = String(f.paper).replace(/^p/i, '');
+  return `${String(f.school).toLowerCase()}|${f.year}|${String(f.level).toLowerCase()}|p${paper}`;
+}
+
+/**
+ * Which paper a run was marked as, in the LIBRARY's terms — or null.
+ *
+ * The two sides spell the same paper differently: the marker's key is
+ * "gce 2025 am p2" (exam first) and the library's is "am 2025 p2 gce" (level
+ * first), so the strings can never be compared. The four fields can. The bot's
+ * stamp carries them outright (`paper_match.ungrounded.filter`, from
+ * bankFilterFor); an older run is read off `paper_match.parsed`, where a GCE
+ * paper has school null and the school IS 'GCE'. Pure.
+ */
+export function runPaperFields(pm: RegroundJson['paper_match']): PaperFields | null {
+  const f = pm?.ungrounded?.filter as Partial<PaperFields> | undefined;
+  if (f && f.school && f.year && f.level && f.paper) {
+    return { school: String(f.school), year: Number(f.year), level: String(f.level), paper: String(f.paper) };
+  }
+  const p = pm?.parsed;
+  if (!p || !p.year || !p.level || !p.paper) return null;
+  const school = p.exam === 'GCE' ? 'GCE' : (p.school ? String(p.school) : '');
+  if (!school) return null;
+  return { school, year: Number(p.year), level: BANK_LEVEL[String(p.level)] || String(p.level), paper: String(p.paper) };
+}
+
+/**
+ * Which recent runs were marked WITHOUT the paper that has just arrived.
+ *
+ * A run qualifies when it names THIS paper (matched on the four fields — see
+ * `runPaperFields`) and was marked with nothing to check it against. It says the
+ * second part in one of two ways, because the stamp is new and yesterday's runs
+ * do not carry it:
+ *   1. `paper_match.ungrounded` — the bot's own stamp (lib/ungrounded-paper.js),
+ *      written at enqueue and again by the marker;
+ *   2. `grounding.source` null AND at least one question the marker never found
+ *      printed anywhere — the shape Isabelle's run has (16 of 16 reads with
+ *      `question_found:false`, 8 Sep 2026).
+ *
+ * And three refusals, all of them about not wasting a marking:
+ *   - already re-marked against this very paper (`paper_match.regrounded_key`);
+ *   - no stored photos, so there is nothing to re-mark from;
+ *   - still sitting in the queue unmarked — it will pick the paper up on its way
+ *     through (the queue attaches from the library again just before marking).
+ *
+ * Pure; the caller supplies the window and the cap.
+ */
+export function runsToReground(runs: RegroundRun[], target: PaperFields & { key: string }): RegroundRun[] {
+  const wanted = fieldsId(target);
+  if (!wanted) return [];
+  const key = String(target.key || '').toLowerCase();
+  return (runs || []).filter(r => {
+    const rj = (r && r.result_json && typeof r.result_json === 'object' ? r.result_json : {}) as RegroundJson;
+    const pm = rj.paper_match || {};
+    if (fieldsId(runPaperFields(pm)) !== wanted) return false;
+    const stamped = !!pm.ungrounded;
+    const blind = Array.isArray(rj.results)
+      && (rj.results as Array<{ question_found?: unknown }>).some(x => x && x.question_found === false);
+    if (!stamped && !(blind && !rj.grounding?.source)) return false;
+    if (typeof pm.regrounded_key === 'string' && pm.regrounded_key.toLowerCase() === key) return false;
+    const photos = rj.source?.photos;
+    if (!Array.isArray(photos) || !photos.length) return false;
+    const marked = Array.isArray(rj.results) && rj.results.length > 0;
+    if (rj.queue && !marked) return false;
+    return true;
+  });
+}
+
+/** The one line Adrian gets per re-marked paper. Pure. */
+export function regroundNotice(label: string, run: Pick<RegroundRun, 'student_name' | 'paper_name'>): string {
+  const who = (run.student_name || '').trim();
+  const whose = who ? `${who.split(' ')[0]}’s paper` : `“${run.paper_name || 'a paper'}”`;
+  return `📥 ${label} is in — re-marking ${whose} against it; the changed parts will be purple.`;
+}
+
 /** The one-line summary the job log and the tick response carry. */
-export function inboxSummary(counts: { queued: number; flagged: number; duplicate: number; moved: number; waiting: number; failed: number }): string {
+export function inboxSummary(counts: { queued: number; flagged: number; duplicate: number; moved: number; waiting: number; failed: number; filed?: number; remarked?: number }): string {
   const parts = [`${counts.queued} queued`];
+  if (counts.filed) parts.push(`${counts.filed} filed for the marker`);
+  if (counts.remarked) parts.push(`${counts.remarked} re-marked against it`);
   if (counts.flagged) parts.push(`${counts.flagged} flagged (bad name)`);
   if (counts.duplicate) parts.push(`${counts.duplicate} duplicate`);
   if (counts.moved) parts.push(`${counts.moved} re-moved`);
