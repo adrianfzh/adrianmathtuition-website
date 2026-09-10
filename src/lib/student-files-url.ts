@@ -12,7 +12,9 @@ export const FILES_ROUTE = '/api/files/';
  *  and one database, so the reference must not depend on which deploy wrote it. */
 export const CANONICAL_ORIGIN = 'https://www.adrianmathtuition.com';
 
-const ROOTS = ['runs', 'uploads', 'handins', 'clippings', 'assignments', 'inbox'] as const;
+// 'pages' (11 Sep 2026): a page Adrian pushed to many students at once — ONE
+// copy, readable by ANY logged-in student (his material, not a student's data).
+const ROOTS = ['runs', 'uploads', 'handins', 'clippings', 'assignments', 'inbox', 'pages'] as const;
 type Root = typeof ROOTS[number];
 const SEGMENT = /^[A-Za-z0-9][A-Za-z0-9._:()\- ]{0,120}$/;
 
@@ -74,6 +76,8 @@ export function isOurFileUrl(u: string | null | undefined): boolean {
 export type FileOwner =
   | { kind: 'run'; runId: string }
   | { kind: 'student'; identity: string }
+  /** A pushed page: every logged-in student may read it. */
+  | { kind: 'page' }
   | { kind: 'admin' };
 
 /** Who may read a key besides Adrian. Pure. */
@@ -84,6 +88,7 @@ export function ownerOf(key: string): FileOwner {
     case 'handins':
     case 'clippings':
     case 'assignments': return { kind: 'student', identity: second };
+    case 'pages': return { kind: 'page' };
     default: return { kind: 'admin' };
   }
 }
@@ -117,6 +122,8 @@ export const uploadKey = (file: string) => assertKey(`uploads/${uuid()}/${file}`
 export const handinKey = (identity: string, ext: string) => assertKey(`handins/${identity}/${uuid()}.${ext}`);
 export const clippingKey = (identity: string, file: string) => assertKey(`clippings/${identity}/${file}`);
 export const assignmentKey = (identity: string) => assertKey(`assignments/${identity}/${uuid()}.pdf`);
+/** One page for many students (send-page): a PDF or a picture under pages/. */
+export const pageKey = (filename?: string | null) => assertKey(`pages/${uuid()}.${safeExt(filename, ['pdf', 'jpg', 'jpeg', 'png', 'webp'], 'pdf')}`);
 export const inboxKey = (file: string) => assertKey(`inbox/${file}`);
 
 /** Every /api/files/ key URL found anywhere in a JSON-ish value (for deletes). */

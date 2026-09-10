@@ -36,6 +36,27 @@ calibration row (the ±2 gate is per teacher — their marking is the truth for 
 students), their own desk, their own daily cap and billing. The marking standard stays
 Adrian's until a tutor's overrides say otherwise; that is a feature, not a gap.
 
+**Calibrate their own marking — the harness (Adrian, 11 Sep 2026: "able to let
+tutors calibrate their own marking? build them the harness").** Adrian's standard is
+the default; a tutor's own marking becomes THEIR truth the same way his does today:
+
+- *What exists:* `calibration_results` (one row per script — AI marks vs a trusted
+  human marking, per question), the ±2 gate + 10-paper minimum on `/admin/calibration`,
+  the eval harness (`scripts/eval-mark-model.js --truth --save`), the desk's Override
+  as the truth channel after release, the science "Your teacher's mark" box.
+- *The harness for a tutor:* a **Calibration tab on their desk**. Step 1 — they hand in
+  five to ten scripts they have ALREADY marked, with their marks per question typed in
+  a short form (or their mark scheme + totals). Step 2 — the marker marks the same
+  scripts blind. Step 3 — the tab shows the agreement per question and per script, the
+  gate (within ±2 on 90 % of papers), and where the marker is stricter or kinder than
+  they are. Step 4 — every override they make after release adds to their row. All of
+  it per tutor: their rows, their gate, their trend.
+- *What is missing to make it change behaviour:* today overrides are a record, not a
+  dial. A tutor **marking profile** — leniency per error kind, scheme strictness,
+  method-mark rules — derived from their calibration rows and read by the marker's
+  prompt, is the piece that turns "measured" into "marks like me". Phase 0 ships the
+  measurement (the tab); the profile follows once one tutor's rows exist.
+
 ### 2.2 The admin tail — **Product 2, exists for one tutor**
 
 The pain: scheduling and rescheduling, make-up lessons, attendance, invoices and
@@ -84,6 +105,22 @@ Adrian's own.
 - Everything the tutor's students see carries the tutor's name; AdrianMath is the
   engine, not the brand on the student's phone.
 
+**Payment collection — later, specced now (Adrian, 11 Sep 2026).** Two shapes, in order:
+
+1. **Direct to the tutor** (first): each invoice carries the tutor's own PayNow QR
+   and a Stripe payment link on the tutor's own Stripe account; parents pay the tutor,
+   never us. We reconcile — HitPay/Stripe webhooks mark the invoice paid, a bank-statement
+   upload matches PayNow references — and send the reminders and receipts. No money
+   passes through AdrianMath, so no payment-services licensing question, no payouts,
+   no float. Priced inside the admin plan.
+2. **Collect on their behalf** (only if tutors ask): Stripe Connect, we collect and pay
+   out weekly, a percentage fee. This is where MAS payment-services rules and chargeback
+   liability begin; not before a tutor has asked for it twice.
+
+What exists for both: the invoice engine, PayNow + Stripe rails, the payment reminder
+and receipt crons, the arrears cycle. What is missing: a rail configuration per tutor
+and the reconciliation UI a tutor can trust without Adrian in the loop.
+
 ## 4. What must change in the code — the multi-tenant delta
 
 This is the honest cost. Every table, route and job assumes one teacher.
@@ -119,25 +156,25 @@ the credits. It proves whether a tutor pays before the multi-tenant work is done
 4. Materials: the bank under licence, Practice Again in their name.
 5. Then §6.
 
-## 6. Tuition centres — the pain points that only exist at scale
+## 6. Tuition centres — sell the standard, not the operations
 
-A centre has every pain a solo tutor has, multiplied, plus three of its own:
+Adrian, 11 Sep 2026: "those admin operations seem more work than what's worth (the
+revenue that you can collect)". Agreed — a centre's rooms, class timetables, teacher
+payroll and fee collection at scale are a different product with thin margins and
+long sales cycles, and the incumbents already sell it. Not ours.
 
-- **Consistency across teachers.** Ten tutors mark ten ways and teach ten ways; the
-  centre's promise to parents is one standard. This is exactly what a shared marking
-  standard with per-teacher calibration and a central bank solves — the bridge from the
-  solo product to the centre product is the calibration gate turned into a management
-  view: who marks generously, who deviates from the scheme, which teacher's students
-  improve.
-- **Operations at scale.** Rooms, class timetables and teacher timetables that must
-  agree, make-ups across classes, attendance for hundreds, fees with GST and receipts,
-  arrears, teacher payroll from hours taught, parent messages that must go out the same
-  way every time. The admin tail times two hundred students is a different product in
-  scope, not in kind.
-- **Retention.** Parents leave after an exam if they cannot see progress. Per-student
-  progress reports that a centre manager can send in bulk, and an early-warning list
-  (attendance dropping, marks dropping, no hand-ins) are what a centre will pay for.
+What a centre WILL pay for, and what we already have most of:
 
-Two more, smaller: staff churn (onboarding a new tutor onto the centre's materials and
-standard in a day, not a month) and compliance (MOE registration paperwork, PDPA over
-student data — a reason the private-notes rule in SPEC-NOTEBOOK-V2 §8 matters).
+- **Consistency across teachers.** Ten tutors mark and teach ten ways; the centre's
+  promise to parents is one standard. The marking line plus per-teacher calibration
+  (§2.1) is that standard as a product: every teacher's marking measured against the
+  centre's, a management view of who marks generously and who deviates from the scheme,
+  and one bank of materials. The bridge from the solo product to the centre product is
+  the calibration tab turned into a table of teachers.
+- **Retention.** Parents leave after an exam when they cannot see progress. Per-student
+  progress reports a manager sends in bulk, and an early-warning list (attendance
+  dropping, marks dropping, no hand-ins) — the digest and the activity signals exist
+  for one teacher already.
+
+The rest — operations at scale, staff onboarding, compliance paperwork — stays out of
+scope unless a centre pays for the two above first.

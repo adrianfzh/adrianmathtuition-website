@@ -510,6 +510,13 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // Send a page (11 Sep 2026, SPEC-NOTEBOOK-V2 §12): the admin door that pushes a
+    // page into every student's From Adrian + Notebook — its 401 gate.
+    timed('send-page', async () => {
+      const r = await fetch(`${base}/api/admin/send-page`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // Student files (5 Sep 2026, lib/student-files.ts): the ONE door to the private
     // bucket must refuse an anonymous reader — a 200 here would mean every marked
     // paper is public-by-URL again.

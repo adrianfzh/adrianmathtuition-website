@@ -404,6 +404,7 @@ const LAUNCHERS: Launcher[] = [
   // where a paper enters, not where it is looked at.
   { emoji: '🖊', title: 'Marking desk', sub: 'Marked papers → vet script + sheet → Approve & release', href: '/admin/desk' },
   { emoji: '🖨️', title: 'Notes',     sub: 'Print revision notes · AirPrint',      href: '/admin/notes'     },
+  { emoji: '📖', title: 'Send a page',     sub: 'A PDF or picture to every student at once · lands in From Adrian + their Notebook', href: '/admin/send-page' },
   { emoji: '✍️', title: 'Mark a paper',   sub: 'Question PDF + working photos → marks', href: '/admin/mark-paper'  },
   { emoji: '🎯', title: 'Game Plans',      sub: 'Per-student plans from marked papers · review & activate', href: '/admin/remediation' },
   { emoji: '🔎', title: 'Practice checks', sub: 'Spot-check portal practice grades',     href: '/admin/practice-checks' },

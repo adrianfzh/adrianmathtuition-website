@@ -4,6 +4,7 @@ import {
   assignmentHref, statusLabel, canTransition, homeCardSummary,
   opensInGrader, STUDENT_HIDDEN_STATUSES,
 } from './assignments';
+import { isPage } from './assignments';
 
 const SID = 'recAbCdEfGhIjKlMn';
 const QID = '6f1d2c3b-4a5e-4f60-8a9b-0c1d2e3f4a5b';
@@ -181,5 +182,32 @@ describe('validateAssignment — sourceRunIds', () => {
     expect(v.row).toMatchObject({ source_run_id: A, source_run_ids: [A, B] });
     const single = validateAssignment({ studentId: SID, kind: 'worksheet', title: 'Practice Again', pdfUrl: 'https://x/y.pdf', sourceRunId: A });
     expect(single.ok && single.row.source_run_ids).toBeNull();
+  });
+});
+
+describe("pages — a read-only page pushed to many students (11 Sep 2026)", () => {
+  const base = { studentId: 'recABCDEFGHIJKLMN', kind: 'page' as const, pdfUrl: 'https://www.adrianmathtuition.com/api/files/pages/x.pdf' };
+  it('validates like a worksheet but never carries a due date or a tier', () => {
+    const v = validateAssignment({ ...base, title: 'Trig formula sheet', dueOn: '2026-09-20', tier: 'Advanced' });
+    expect(v.ok).toBe(true);
+    if (v.ok) expect(v.row).toMatchObject({ kind: 'page', title: 'Trig formula sheet', due_on: null, tier: null, pdf_url: base.pdfUrl });
+    expect(validateAssignment({ ...base, title: '' }).ok).toBe(false);
+    expect(validateAssignment({ ...base, title: 'x', pdfUrl: 'http://insecure' }).ok).toBe(false);
+  });
+  it('is never "to do": pending counts and the Home card skip it', () => {
+    const rows = [
+      { status: 'assigned' as const, kind: 'page' },
+      { status: 'assigned' as const, kind: 'worksheet' },
+      { status: 'submitted' as const, kind: 'worksheet' },
+    ];
+    expect(pendingCount(rows)).toBe(2);
+    expect(homeCardSummary(rows)).toBe('1 to do · 1 being marked');
+    expect(homeCardSummary([{ status: 'assigned', kind: 'page' }])).toBeNull();
+  });
+  it('opens on its own page with a "Page" chip', () => {
+    expect(assignmentHref({ id: 'p1', kind: 'page', status: 'assigned' })).toBe('/app/assignments/p1');
+    expect(statusLabel({ status: 'assigned', kind: 'page', score: null, out_of: null })).toBe('Page');
+    expect(isPage({ kind: 'page' })).toBe(true);
+    expect(isPage({ kind: 'worksheet' })).toBe(false);
   });
 });

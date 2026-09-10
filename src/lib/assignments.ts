@@ -8,7 +8,10 @@ import { sgtDateISO } from './sgt';
 // the sheet worker wrote it because the bank had nothing that fit the mistake.
 // Its text, answer and marks live on the assignment itself (question_text /
 // answer_latex / marks) and the practice grader marks against those.
-export type AssignmentKind = 'question' | 'worksheet' | 'generated';
+/** 'page' (11 Sep 2026, SPEC-NOTEBOOK-V2 §12): a read-only page Adrian pushed to
+ *  many students at once — a formula sheet, notes, a worked example. Nothing to
+ *  hand in, never "to do"; it lives under From Adrian and in the Notebook. */
+export type AssignmentKind = 'question' | 'worksheet' | 'generated' | 'page';
 // 'held' (same build): created but not yet released — invisible to the student
 // until Adrian's Approve & release flips it to 'assigned' together with the
 // paper and the sheet it came from (SPEC-TEACHING-CYCLE step 7).
@@ -72,6 +75,10 @@ export type AssignmentRow = {
 /** Opens in the in-browser practice grader (a bank question or a written one), as opposed to a worksheet's own page. */
 export function opensInGrader(kind: AssignmentKind | string): boolean {
   return kind === 'question' || kind === 'generated';
+}
+/** A pushed page: read, not done — excluded from every "to do" count. */
+export function isPage(row: Pick<AssignmentRow, 'kind'> | { kind?: string | null }): boolean {
+  return row.kind === 'page';
 }
 
 /** Statuses a STUDENT must never see a row in — every student read excludes both. */
@@ -161,7 +168,7 @@ export function validateAssignment(input: CreateAssignmentInput):
   { ok: true; row: ValidatedAssignment } | { ok: false; error: string } {
   const studentId = typeof input.studentId === 'string' ? input.studentId.trim() : '';
   if (!/^rec[A-Za-z0-9]{14}$/.test(studentId)) return { ok: false, error: 'studentId must be an Airtable record id' };
-  if (input.kind !== 'question' && input.kind !== 'worksheet') return { ok: false, error: 'kind must be question or worksheet' };
+  if (input.kind !== 'question' && input.kind !== 'worksheet' && input.kind !== 'page') return { ok: false, error: 'kind must be question, worksheet or page' };
 
   const topic = clean(input.topic, 80);
   const level = clean(input.level, 20);
@@ -199,13 +206,15 @@ export function validateAssignment(input: CreateAssignmentInput):
   }
 
   const pdfUrl = typeof input.pdfUrl === 'string' ? input.pdfUrl.trim() : '';
-  if (!/^https:\/\//.test(pdfUrl)) return { ok: false, error: 'pdfUrl (https) is required for a worksheet' };
+  if (!/^https:\/\//.test(pdfUrl)) return { ok: false, error: `pdfUrl (https) is required for a ${input.kind}` };
   const title = clean(input.title, MAX_TITLE);
-  if (!title) return { ok: false, error: 'title is required for a worksheet' };
+  if (!title) return { ok: false, error: `title is required for a ${input.kind}` };
   const pdfSource = clean(input.pdfSource, 400);
+  // A page has nothing to hand in, so it never carries a due date or a tier.
+  const page = input.kind === 'page';
   return {
     ok: true,
-    row: { airtable_student_id: studentId, kind: 'worksheet', question_id: null, title, topic, level, tier, note, reminder, source_run_id: sourceRunId, source_run_ids, pdf_url: pdfUrl, pdf_source: pdfSource, due_on },
+    row: { airtable_student_id: studentId, kind: input.kind, question_id: null, title, topic, level, tier: page ? null : tier, note, reminder, source_run_id: sourceRunId, source_run_ids, pdf_url: pdfUrl, pdf_source: pdfSource, due_on: page ? null : due_on },
   };
 }
 
@@ -233,8 +242,8 @@ export function isPending(status: AssignmentStatus): boolean {
   return status === 'assigned' || status === 'submitted';
 }
 
-export function pendingCount(rows: Pick<AssignmentRow, 'status'>[]): number {
-  return rows.reduce((n, r) => n + (isPending(r.status) ? 1 : 0), 0);
+export function pendingCount(rows: (Pick<AssignmentRow, 'status'> & { kind?: string | null })[]): number {
+  return rows.reduce((n, r) => n + (isPending(r.status) && !isPage(r) ? 1 : 0), 0);
 }
 
 /** Local-date helper (SGT): 'YYYY-MM-DD' for "now" in Singapore. */
@@ -278,7 +287,7 @@ export function assignmentHref(row: Pick<AssignmentRow, 'id' | 'kind' | 'status'
 export function statusLabel(row: Pick<AssignmentRow, 'status' | 'kind' | 'score' | 'out_of'>): string {
   switch (row.status) {
     case 'held': return 'Not released yet';   // admin surfaces only — students never see a held row
-    case 'assigned': return opensInGrader(row.kind) ? 'To do' : 'To do · print or view';
+    case 'assigned': return isPage(row) ? 'Page' : opensInGrader(row.kind) ? 'To do' : 'To do · print or view';
     case 'submitted': return 'Being marked';
     case 'marked':
       return row.score != null && row.out_of != null ? `Marked · ${row.score}/${row.out_of}` : 'Marked';
@@ -300,8 +309,8 @@ export function canTransition(from: AssignmentStatus, to: AssignmentStatus): boo
 }
 
 /** Home card headline: "2 to do" / "1 being marked" / "1 to do · 1 being marked". */
-export function homeCardSummary(rows: Pick<AssignmentRow, 'status'>[]): string | null {
-  const todo = rows.filter(r => r.status === 'assigned').length;
+export function homeCardSummary(rows: (Pick<AssignmentRow, 'status'> & { kind?: string | null })[]): string | null {
+  const todo = rows.filter(r => r.status === 'assigned' && !isPage(r)).length;
   const marking = rows.filter(r => r.status === 'submitted').length;
   if (!todo && !marking) return null;
   const parts: string[] = [];

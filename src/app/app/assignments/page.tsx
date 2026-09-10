@@ -6,7 +6,7 @@
 import Link from 'next/link';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { listStudentAssignments } from '@/lib/portal-assignments';
-import { assignmentHref, dueLabel, findTierLabel, fromAdrian, isFound, isOverdue, isPending, statusLabel } from '@/lib/assignments';
+import { assignmentHref, dueLabel, findTierLabel, fromAdrian, isFound, isOverdue, isPage, isPending, statusLabel } from '@/lib/assignments';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,8 +24,11 @@ export default async function AssignmentsPage() {
   // they are "Found by you" (SPEC-PORTAL-V2 §3), not "From Adrian".
   const rows = fromAdrian(all);
   const found = all.filter(isFound);
-  const pending = rows.filter(r => isPending(r.status));
-  const done = rows.filter(r => !isPending(r.status));
+  // Pages (SPEC-NOTEBOOK-V2 §12) are material, not work: their own section, never "To do".
+  const pages = rows.filter(isPage);
+  const work = rows.filter(r => !isPage(r));
+  const pending = work.filter(r => isPending(r.status));
+  const done = work.filter(r => !isPending(r.status));
 
   const Row = ({ r }: { r: (typeof rows)[number] }) => {
     const due = dueLabel(r.due_on);
@@ -36,7 +39,7 @@ export default async function AssignmentsPage() {
     return (
       <Link href={assignmentHref(r)} className={`${CARD} block p-4 hover:bg-[hsl(45,100%,99%)] active:scale-[0.99] transition`}>
         <div className="flex items-start gap-3">
-          <span className="text-xl leading-none mt-0.5" aria-hidden>{r.kind === 'worksheet' ? '📄' : '✏️'}</span>
+          <span className="text-xl leading-none mt-0.5" aria-hidden>{isPage(r) ? '📖' : r.kind === 'worksheet' ? '📄' : '✏️'}</span>
           <div className="flex-1 min-w-0">
             <div className="font-semibold text-navy truncate">{r.title}</div>
             <div className="text-xs text-gray-500 mt-0.5 flex flex-wrap gap-x-2">
@@ -65,6 +68,13 @@ export default async function AssignmentsPage() {
         <div className={`${CARD} p-5 text-sm text-gray-600`}>
           Nothing here yet. When Adrian sends you a question or a worksheet, it shows up here and on your Home page.
         </div>
+      )}
+
+      {pages.length > 0 && (
+        <section className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Pages from Adrian</p>
+          {pages.map(r => <Row key={r.id} r={r} />)}
+        </section>
       )}
 
       {pending.length > 0 && (

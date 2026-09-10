@@ -158,12 +158,13 @@ viewer, Edge) — Preview is only the one that is already installed on an iPad. 
 AdrianMarker Pencil shell stays Adrian's tool: it needs weekly re-signing, so it is not
 handed to students.
 
-## 12. Push a page to every student (Class Notebook's move)
+## 12. Push a page to every student (Class Notebook's move) — BUILT 11 Sep 2026
 
-Adrian picks a page (a PDF, a notes card, a formula sheet) and a group (a level, a
-class, everyone); one row per student lands in each Notebook under "From Adrian" with
-a push notification. This extends the existing "From Adrian" assigned work
-(`portal_assignments`) with a read-only `page` kind and a multi-select by level.
+Adrian picks a page (a PDF or a picture) and an audience (everyone, a level, picked
+names) on `/admin/send-page`; one row per student lands under "From Adrian" and in
+the Notebook's 📖 band, with a Telegram line where linked and a web push. It is the
+existing assigned-work table with a read-only `page` kind: never "to do", nothing to
+hand in, one stored file for everyone (`pages/…`, readable by any logged-in student).
 
 ## 13. Build order
 

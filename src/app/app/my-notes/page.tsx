@@ -43,6 +43,8 @@ import { loadMistakes, type MistakeRow } from '@/lib/notebook-mistakes-store';
 import { bandOf, displayOrder, latestSighting, shortDate, sightingLine, stateLabel } from '@/lib/notebook-mistakes';
 import { askLineContext, askLineTitle, askSignalLine, askSignalOn, askStateLabel, type AskSignalLine } from '@/lib/ask-signal';
 import { loadAskSignal } from '@/lib/ask-signal-store';
+import { listStudentAssignments } from '@/lib/portal-assignments';
+import { isPage } from '@/lib/assignments';
 import { CorrectedButton } from './mistake-actions';
 import { MAX_NOTES_PER_STUDENT, type MyNoteRow, type TopicOptionGroup } from '@/lib/portal-notes';
 import { getTopicsForPaperLevel } from '@/lib/canonical-topics';
@@ -84,7 +86,7 @@ export default async function MyNotebookPage() {
   // independent — one parallel batch. All fail soft: a load error hides its
   // band, never the page.
   const svc = createServiceClient();
-  const [clippings, mistakes, askLines] = await Promise.all([
+  const [clippings, mistakes, askLines, pages] = await Promise.all([
     getSupabaseAdmin()
       .from('portal_notes')
       .select('id, run_id, source_label, topic, image_url, note, created_at')
@@ -98,6 +100,8 @@ export default async function MyNotebookPage() {
     // the student's own asks from Supabase ask_skills, folded on the fly,
     // never stored on this side. Off → no read, no band.
     askSignalOn(account?.prefs) ? loadAskSignal(svc, sid) : Promise.resolve([] as AskSignalLine[]),
+    // Pages Adrian pushed (SPEC-NOTEBOOK-V2 §12) — the "From Adrian" band, newest first.
+    listStudentAssignments(sid, account).then(rows => rows.filter(isPage), () => []),
   ]);
 
   // Band 1 — the mistakes list in display order (entries with no evidence yet,
@@ -184,6 +188,31 @@ export default async function MyNotebookPage() {
               </ul>
             </div>
           )}
+        </section>
+      )}
+
+      {/* From Adrian — pages he pushed to the class (11 Sep 2026, SPEC-NOTEBOOK-V2
+          §12: a formula sheet, notes, a worked example). Read-only, nothing to
+          hand in; the full page lives on /app/assignments/[id]. Hidden at zero. */}
+      {pages.length > 0 && (
+        <section data-pages-band>
+          <p className={`${BAND} mb-2`}>📖 From Adrian <span className="normal-case font-medium">· {pages.length}</span></p>
+          <div className="space-y-2">
+            {pages.map(p => (
+              <Link key={p.id} href={`/app/assignments/${p.id}`} className={`${CARD} block p-4 hover:bg-[hsl(45,100%,99%)] active:scale-[0.99] transition`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-navy truncate">{p.title}</p>
+                    <p className="text-[12px] text-gray-500 mt-0.5">
+                      {p.topic ? `${p.topic} · ` : ''}sent {new Date(p.created_at).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', timeZone: 'Asia/Singapore' })}
+                    </p>
+                    {p.note && <p className="text-[13px] text-gray-700 mt-1 italic">&ldquo;{p.note}&rdquo;</p>}
+                  </div>
+                  <span className="text-gray-400 shrink-0">›</span>
+                </div>
+              </Link>
+            ))}
+          </div>
         </section>
       )}
 

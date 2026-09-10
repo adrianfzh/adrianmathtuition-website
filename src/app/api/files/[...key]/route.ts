@@ -37,6 +37,8 @@ async function studentMayRead(key: string): Promise<boolean> {
   const identity = portalIdentity(account);
   const owner = ownerOf(key);
   if (owner.kind === 'student') return owner.identity === identity;
+  // A page Adrian pushed to the class (pages/…): any logged-in student may read it.
+  if (owner.kind === 'page') return true;
   const sb = getSupabaseAdmin();
   if (owner.kind === 'run') {
     const { data } = await sb

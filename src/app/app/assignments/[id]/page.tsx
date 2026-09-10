@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { getStudentAssignment } from '@/lib/portal-assignments';
-import { assignmentHref, dueLabel, isOverdue, opensInGrader } from '@/lib/assignments';
+import { assignmentHref, dueLabel, isOverdue, isPage, opensInGrader } from '@/lib/assignments';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
 import { fileHref } from '@/lib/student-files-url';
@@ -23,6 +23,7 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
 
   const due = dueLabel(a.due_on);
   const overdue = isOverdue(a);
+  const page = isPage(a);
 
   // If it's been marked, find whether the run is released so we can link it.
   let released = false;
@@ -40,7 +41,7 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
 
       <div className={`${CARD} p-5 space-y-3`}>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">📬 Worksheet from Adrian</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{page ? '📖 A page from Adrian' : '📬 Worksheet from Adrian'}</p>
           <h1 className="text-lg font-bold text-navy">{a.title}</h1>
           <p className="text-xs text-gray-500 mt-1 flex flex-wrap gap-x-2">
             {a.topic && <span>{a.topic}</span>}
@@ -49,7 +50,7 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
         </div>
         {a.note && <p className="text-sm text-gray-700 italic border-l-2 border-[hsl(43,90%,60%)] pl-3">“{a.note}”</p>}
 
-        {a.status === 'assigned' && (
+        {a.status === 'assigned' && !page && (
           <Link
             href={`/app/submit?assignment=${a.id}`}
             className="block text-center text-sm font-bold bg-navy text-[hsl(45,100%,96%)] rounded-xl py-3"
@@ -96,9 +97,15 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
         </div>
       )}
 
-      <p className="text-[11px] text-gray-400">
-        Do it on paper, then photograph every page and submit. It&apos;s marked by Adrian&apos;s marking pipeline and released to you automatically.
-      </p>
+      {page ? (
+        <p className="text-[11px] text-gray-400">
+          A page Adrian sent to keep — nothing to hand in. It stays here and in <Link href="/app/my-notes" className="underline">My Notebook</Link>.
+        </p>
+      ) : (
+        <p className="text-[11px] text-gray-400">
+          Do it on paper, then photograph every page and submit. It&apos;s marked by Adrian&apos;s marking pipeline and released to you automatically.
+        </p>
+      )}
     </div>
   );
 }
