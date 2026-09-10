@@ -927,11 +927,28 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   );
 
   const calibCountRef = useRef(0);
+  // Post a diagnostic to the server on its own (10 Sep 2026 — Adrian: "when
+  // annotating, it's laggy, will triple-tap register?"). Fire-and-forget,
+  // keepalive so a close right after still delivers; never throws into the pen.
+  const postInkLog = useCallback((kind: 'calib' | 'log', payload: Record<string, unknown>) => {
+    try {
+      void fetch('/api/admin/annotate-log', {
+        method: 'POST', credentials: 'include', keepalive: true,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ runId, kind, ua: navigator.userAgent, payload }),
+      }).catch(() => { /* diagnostics only */ });
+    } catch { /* diagnostics only */ }
+  }, [runId]);
   const logInk = useCallback((k: string, d?: Record<string, unknown>) => {
     const a = inkLogRef.current;
     a.push({ t: Date.now() - inkT0Ref.current, k, ...(d || {}) });
     if (a.length > 500) a.splice(0, a.length - 500);
   }, []);
+
+  const sendInkLog = useCallback(() => {
+    postInkLog('log', { at: new Date().toISOString(), log: inkLogRef.current.slice(-500) });
+    setError('📋 Ink log sent — it can be read from the server now.');
+  }, [postInkLog]);
 
   const copyInkLog = useCallback(() => {
     const now = Date.now();
@@ -1043,7 +1060,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         const r = el.getBoundingClientRect();
         const vv = window.visualViewport;
         const bar = el.previousElementSibling as HTMLElement | null;
-        logInk('calib', {
+        const rec = {
           src, cx: Math.round(clientX), cy: Math.round(clientY),
           rect: { l: Math.round(r.left), t: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) },
           size: { ...sizeRef.current }, view: { z: +viewRef.current.zoom.toFixed(3), ox: Math.round(viewRef.current.ox), oy: Math.round(viewRef.current.oy) },
@@ -1054,7 +1071,9 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           meta: document.querySelector('meta[name="viewport"]')?.getAttribute('content') ?? null,
           standalone: !!(navigator as unknown as { standalone?: boolean }).standalone,
           shell: !!(window as unknown as { webkit?: { messageHandlers?: { pencilBridge?: unknown } } }).webkit?.messageHandlers?.pencilBridge,
-        });
+        };
+        logInk('calib', rec);
+        postInkLog('calib', rec);
       } catch { /* diagnostics only */ }
     };
 
@@ -2303,6 +2322,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           <button style={btn} onClick={() => jumpToPage(currentPageIdx - 1)} disabled={pageNo <= 1} aria-label="Previous page">‹</button>
           <span style={{ fontSize: 14, fontWeight: 600, minWidth: 52, textAlign: 'center' }} onClick={copyInkLog} title="Triple-tap to copy the ink debug log">{pageNo} / {n}</span>
           <button style={btn} onClick={() => jumpToPage(currentPageIdx + 1)} disabled={pageNo >= n} aria-label="Next page">›</button>
+          <button style={{ ...btn, fontSize: 13 }} onClick={sendInkLog} aria-label="Send the ink log" title="One tap sends the ink debug log (strokes, stalls, calibration) to the server">📋</button>
         </div>
 
         <div style={{ width: 1, alignSelf: 'stretch', background: '#e5e7eb' }} />
