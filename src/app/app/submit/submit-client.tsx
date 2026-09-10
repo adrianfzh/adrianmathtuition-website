@@ -670,6 +670,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         </button>
         <p className="text-[11px] text-gray-400">
           Wide photos of an open booklet are split into single pages automatically. PDFs are converted to pages on your phone before uploading.
+          Wrote on a PDF with your Pencil in Preview on an iPad? Share → Save to Files, then choose it here — your ink comes with it.
         </p>
       </div>
     </div>

@@ -90,6 +90,13 @@ export async function POST(req: NextRequest) {
     for (const table of [
       'portal_notes',
       'notebook_entries',
+      // My Notebook v2 (11 Sep 2026): private notes (§8 — deleted with the
+      // account, by promise), saved answers, the mistakes list, the asks the
+      // bot filed by skill.
+      'notebook_private_notes',
+      'notebook_saves',
+      'notebook_mistakes',
+      'ask_skills',
       'portal_requests',
       'portal_generated_papers',
       'portal_generation_log',

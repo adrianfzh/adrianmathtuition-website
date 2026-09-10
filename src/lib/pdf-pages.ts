@@ -58,7 +58,18 @@ export async function pdfToPageImages(
       // intent paces the paint loop with requestAnimationFrame, which a hidden or
       // backgrounded tab never fires — the render promise then never settles and the
       // conversion hangs with no error. 'print' paces with timers instead.
-      await page.render({ canvasContext: ctx, viewport, intent: 'print' }).promise;
+      //
+      // Pencil ink (SPEC-NOTEBOOK-V2 §11, 11 Sep 2026): a PDF that came back from
+      // Preview on an iPad carries the student's writing as annotations (/Ink with
+      // appearance streams), and the marker must see it — so annotations render
+      // (AnnotationMode.ENABLE, pdf.js's default, stated here on purpose). 'print'
+      // skips any annotation without the Print flag; when a page has one, that page
+      // renders with intent 'any' instead (every annotation, rAF pacing — the
+      // student is on the page, having just picked the file) so nothing they wrote
+      // is dropped. Hidden annotations and links never count.
+      const annots: { subtype?: string; annotationFlags?: number }[] = await page.getAnnotations({ intent: 'any' }).catch(() => []);
+      const unprintable = annots.some(a => a.subtype !== 'Link' && !((a.annotationFlags ?? 0) & 2) && !((a.annotationFlags ?? 0) & 4));
+      await page.render({ canvasContext: ctx, viewport, intent: unprintable ? 'any' : 'print', annotationMode: pdfjs.AnnotationMode.ENABLE }).promise;
       const blob: Blob | null = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.85));
       if (blob) pages.push(new File([blob], `${base}-p${n}.jpg`, { type: 'image/jpeg' }));
       page.cleanup?.();

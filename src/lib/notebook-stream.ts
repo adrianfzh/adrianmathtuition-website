@@ -1,9 +1,10 @@
 // The Notebook as ONE stream (SPEC-NOTEBOOK-V2 §9, Adrian 11 Sep 2026: "build
 // this"). Every kind of thing in the book — a mistake pattern, a saved answer, a
-// photo, a clipping, a page from Adrian, a skill that keeps coming up — becomes
-// one StreamItem with an icon, a title, a line under it, a date to sort by and a
-// haystack to search in. Newest first, nothing to file, chips to narrow, one
-// search box. Pure: the page builds the items, the client filters them.
+// photo, a clipping, a page from Adrian, a skill that keeps coming up, a note
+// the student wrote — becomes one StreamItem with an icon, a title, a line
+// under it, a date to sort by, a topic to file by and a haystack to search in.
+// Newest first, nothing to file, chips to narrow, one search box. Pure: the
+// page builds the items, the client filters them.
 import type { MistakeRow } from './notebook-mistakes-store';
 import { bandOf, latestSighting, sightingLine, stateLabel } from './notebook-mistakes';
 import type { SaveRow } from './notebook-saves';
@@ -12,8 +13,9 @@ import { noteKind } from './portal-notes';
 import type { AssignmentRow } from './assignments';
 import type { AskSignalLine } from './ask-signal';
 import { askLineContext, askLineTitle, askSignalLine, askStateLabel } from './ask-signal';
+import { privateNoteTitle, type PrivateNoteRow } from './notebook-private-notes';
 
-export type StreamKind = 'mistake' | 'saved' | 'photo' | 'clip' | 'adrian' | 'skill';
+export type StreamKind = 'mistake' | 'saved' | 'photo' | 'clip' | 'adrian' | 'skill' | 'private';
 
 export interface StreamTag { text: string; tone: 'rose' | 'amber' | 'emerald' | 'sky' | 'slate' | 'indigo' }
 
@@ -24,6 +26,10 @@ export interface StreamItem {
   subtitle: string;
   /** ISO — the sort key (newest first). */
   at: string;
+  /** The topic the item is filed under, when known — Before the paper and the formula sheet file by it. */
+  topic?: string | null;
+  /** 'A Math' | 'E Math' | 'H2 Math' when the source knew (a mistake's paper). */
+  subject?: string | null;
   tag?: StreamTag;
   /** A page from Adrian opens its own route. */
   href?: string;
@@ -34,6 +40,8 @@ export interface StreamItem {
   note?: MyNoteRow;
   mistake?: { id: string; state: MistakeRow['state']; live: boolean; seen: number; cameBack: boolean; where: string; practice: { id: string; title: string }[] };
   skill?: AskSignalLine;
+  /** A private note (SPEC-NOTEBOOK-V2 §8) — the student's own words, never read by anything else. */
+  priv?: PrivateNoteRow;
 }
 
 export const CHIPS: { key: 'all' | StreamKind; label: string }[] = [
@@ -41,10 +49,22 @@ export const CHIPS: { key: 'all' | StreamKind; label: string }[] = [
   { key: 'mistake', label: 'Mistakes' },
   { key: 'saved', label: 'Saved' },
   { key: 'photo', label: 'Photos' },
+  { key: 'private', label: 'My notes' },
   { key: 'adrian', label: 'From Adrian' },
 ];
 
 const fold = (s: unknown) => String(s ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
+
+/** One private note → one stream item (the client uses this too when a note is written or edited). */
+export function privateNoteItem(n: PrivateNoteRow): StreamItem {
+  return {
+    id: `private:${n.id}`, kind: 'private', title: privateNoteTitle(n.body),
+    subtitle: 'My note',
+    at: n.updated_at || n.created_at,
+    haystack: fold(n.body),
+    priv: n,
+  };
+}
 
 export function buildStreamItems(input: {
   mistakes: MistakeRow[];
@@ -53,6 +73,7 @@ export function buildStreamItems(input: {
   notes: MyNoteRow[];
   pages: Pick<AssignmentRow, 'id' | 'title' | 'topic' | 'note' | 'created_at'>[];
   skills: AskSignalLine[];
+  privateNotes?: PrivateNoteRow[];
 }): StreamItem[] {
   const items: StreamItem[] = [];
 
@@ -65,7 +86,7 @@ export function buildStreamItems(input: {
     items.push({
       id: `mistake:${m.id}`, kind: 'mistake', title: m.title,
       subtitle: [where, m.seen_count > 1 ? `seen ${m.seen_count} times` : ''].filter(Boolean).join(' · '),
-      at,
+      at, topic: m.topic, subject: m.subject,
       tag: { text: stateLabel(m.state), tone: band === 'still-happening' ? 'rose' : band === 'getting-better' ? 'amber' : 'emerald' },
       haystack: fold([m.title, m.topic, m.error_kind, where].join(' ')),
       mistake: { id: m.id, state: m.state, live, seen: m.seen_count, cameBack: m.came_back, where, practice: input.practiceFor(m) },
@@ -76,7 +97,7 @@ export function buildStreamItems(input: {
     items.push({
       id: `saved:${s.id}`, kind: 'saved', title: s.title,
       subtitle: ['Saved answer', s.topic].filter(Boolean).join(' · '),
-      at: s.created_at,
+      at: s.created_at, topic: s.topic,
       tag: s.skill ? { text: s.skill, tone: 'sky' } : undefined,
       haystack: fold([s.title, s.topic, s.skill, s.question_text, s.answer_text].join(' ')),
       save: s,
@@ -90,7 +111,7 @@ export function buildStreamItems(input: {
       id: `note:${n.id}`, kind: photo ? 'photo' : 'clip',
       title: n.note?.trim() || (photo ? 'Photo' : `Clipping · ${n.source_label}`),
       subtitle: [photo ? 'Photo' : n.source_label, guessed].filter(Boolean).join(' · '),
-      at: n.created_at,
+      at: n.created_at, topic: guessed,
       tag: n.auto_skill ? { text: n.auto_skill, tone: 'sky' } : undefined,
       haystack: fold([n.note, guessed, n.auto_skill, n.source_label, n.ocr_text].join(' ')),
       note: n,
@@ -101,7 +122,7 @@ export function buildStreamItems(input: {
     items.push({
       id: `adrian:${p.id}`, kind: 'adrian', title: p.title,
       subtitle: ['From Adrian', p.topic, p.note ? `“${p.note}”` : ''].filter(Boolean).join(' · '),
-      at: p.created_at, href: `/app/assignments/${p.id}`,
+      at: p.created_at, topic: p.topic, href: `/app/assignments/${p.id}`,
       tag: { text: 'Page', tone: 'indigo' },
       haystack: fold([p.title, p.topic, p.note].join(' ')),
     });
@@ -111,12 +132,14 @@ export function buildStreamItems(input: {
     items.push({
       id: `skill:${l.key}`, kind: 'skill', title: askLineTitle(l),
       subtitle: [askLineContext(l), askSignalLine(l)].filter(Boolean).join(' · '),
-      at: l.lastAt,
+      at: l.lastAt, topic: l.topic,
       tag: { text: askStateLabel(l.state), tone: l.state === 'up' ? 'sky' : 'slate' },
       haystack: fold([l.skill, l.topic, 'keeps coming up'].join(' ')),
       skill: l,
     });
   }
+
+  for (const n of input.privateNotes ?? []) items.push(privateNoteItem(n));
 
   return items.sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : a.id.localeCompare(b.id)));
 }

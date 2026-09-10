@@ -12,7 +12,8 @@ import Script from 'next/script';
 import { portalFetch } from '@/lib/portal-fetch';
 import { fileHref } from '@/lib/student-files-url';
 import { renderToElement, whenKatexReady } from '@/lib/chat-solver';
-import { CHIPS, filterStream, type StreamItem, type StreamKind, type StreamTag } from '@/lib/notebook-stream';
+import { CHIPS, filterStream, privateNoteItem, type StreamItem, type StreamKind, type StreamTag } from '@/lib/notebook-stream';
+import { MAX_PRIVATE_NOTE, type PrivateNoteRow } from '@/lib/notebook-private-notes';
 import type { MyNoteRow, TopicOptionGroup } from '@/lib/portal-notes';
 import type { SaveRow } from '@/lib/notebook-saves';
 import AddPhoto from './add-photo';
@@ -20,7 +21,7 @@ import { NoteLightbox } from './my-notes-gallery';
 import { CorrectedButton } from './mistake-actions';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
-const ICON: Record<StreamKind, string> = { mistake: '⚠️', saved: '💾', photo: '📷', clip: '✂️', adrian: '📖', skill: '💬' };
+const ICON: Record<StreamKind, string> = { mistake: '⚠️', saved: '💾', photo: '📷', clip: '✂️', adrian: '📖', skill: '💬', private: '✍️' };
 const TONE: Record<StreamTag['tone'], string> = {
   rose: 'bg-rose-50 text-rose-800', amber: 'bg-amber-50 text-amber-800', emerald: 'bg-emerald-50 text-emerald-800',
   sky: 'bg-sky-50 text-sky-800', slate: 'bg-gray-100 text-gray-600', indigo: 'bg-indigo-50 text-indigo-800',
@@ -50,6 +51,10 @@ export default function NotebookStream({ items: initial, topicGroups, openId: op
   const [lightbox, setLightbox] = useState<MyNoteRow | null>(null);
   const [busy, setBusy] = useState('');
   const [flash, setFlash] = useState('');
+  // ✍️ Private notes (SPEC-NOTEBOOK-V2 §8): the composer under the search box, and one note being edited inline.
+  const [writing, setWriting] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [editing, setEditing] = useState<{ id: string; body: string } | null>(null);
   const shown = useMemo(() => filterStream(items, kind, query), [items, kind, query]);
 
   useEffect(() => {
@@ -89,6 +94,34 @@ export default function NotebookStream({ items: initial, topicGroups, openId: op
       setItems(prev => prev.filter(it => it.save?.id !== s.id));
     } catch { setFlash('Could not delete it — try again.'); } finally { setBusy(''); }
   }
+  async function writeNote() {
+    if (!draft.trim() || busy) return;
+    setBusy('write');
+    try {
+      const r = await portalFetch<{ note: PrivateNoteRow }>('/api/portal/notebook/private-notes', { method: 'POST', json: { body: draft } });
+      setItems(prev => [privateNoteItem(r.note), ...prev]);
+      setDraft('');
+      setWriting(false);
+      setKind(k => (k === 'all' || k === 'private' ? k : 'all'));
+    } catch { setFlash('Could not save your note — try again.'); } finally { setBusy(''); }
+  }
+  async function saveEdit() {
+    if (!editing || !editing.body.trim()) return;
+    setBusy('edit:' + editing.id);
+    try {
+      const r = await portalFetch<{ note: PrivateNoteRow }>('/api/portal/notebook/private-notes', { method: 'PATCH', json: { id: editing.id, body: editing.body } });
+      setItems(prev => prev.map(it => (it.priv?.id === r.note.id ? privateNoteItem(r.note) : it)));
+      setEditing(null);
+    } catch { setFlash('Could not save your note — try again.'); } finally { setBusy(''); }
+  }
+  async function deleteNote(p: PrivateNoteRow) {
+    if (!window.confirm('Delete this note?')) return;
+    setBusy('delete:' + p.id);
+    try {
+      await portalFetch('/api/portal/notebook/private-notes', { method: 'DELETE', json: { id: p.id } });
+      setItems(prev => prev.filter(it => it.priv?.id !== p.id));
+    } catch { setFlash('Could not delete it — try again.'); } finally { setBusy(''); }
+  }
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { all: items.length };
@@ -110,8 +143,28 @@ export default function NotebookStream({ items: initial, topicGroups, openId: op
           />
           {query && <button type="button" onClick={() => setQuery('')} className="text-gray-400 text-sm" aria-label="Clear search">✕</button>}
         </div>
+        <button type="button" onClick={() => setWriting(w => !w)} data-write-note aria-expanded={writing}
+          className={`shrink-0 text-[12px] font-semibold rounded-full px-3 py-2 border transition ${writing ? 'bg-navy text-[hsl(45,100%,96%)] border-navy' : 'bg-white text-navy border-black/10 hover:bg-navy/5'}`}>
+          ✍️ Write
+        </button>
         <AddPhoto topicGroups={topicGroups} variant="button" onSaved={addPhoto} />
       </div>
+
+      {writing && (
+        <div className={`${CARD} p-3 space-y-2`} data-note-composer>
+          <textarea value={draft} onChange={e => setDraft(e.target.value)} rows={4} maxLength={MAX_PRIVATE_NOTE} autoFocus
+            placeholder="A note to yourself." aria-label="Write a note"
+            className="w-full text-sm bg-transparent outline-none resize-y placeholder:text-gray-400" />
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[11px] text-gray-400">Private — only you can read these. Not Adrian, not the marker, not the app&apos;s AI.</p>
+            <div className="flex gap-2 shrink-0">
+              <button type="button" onClick={() => { setWriting(false); setDraft(''); }} className="text-[12px] font-semibold text-gray-500 rounded-full px-3 py-1 border border-black/10">Cancel</button>
+              <button type="button" onClick={writeNote} disabled={!draft.trim() || busy === 'write'} data-note-save
+                className="text-[12px] font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-full px-3 py-1 disabled:opacity-40">Save note</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-1.5 flex-wrap" role="group" aria-label="Show">
         {CHIPS.map(c => (
@@ -197,6 +250,29 @@ export default function NotebookStream({ items: initial, topicGroups, openId: op
                 <p className="mt-3 pt-3 border-t border-gray-100 text-[13px] text-gray-700">
                   You keep asking the app about this. It isn&apos;t a mistake — it&apos;s a hint about what to look at next. Turn this off in Settings if you&apos;d rather not see it.
                 </p>
+              )}
+              {open && it.priv && (
+                <div className="mt-3 pt-3 border-t border-gray-100 space-y-2" data-private-open>
+                  {editing?.id === it.priv.id ? (
+                    <>
+                      <textarea value={editing.body} onChange={e => setEditing({ id: it.priv!.id, body: e.target.value })} rows={5} maxLength={MAX_PRIVATE_NOTE} autoFocus aria-label="Edit note"
+                        className="w-full text-sm bg-[hsl(45,100%,98%)] rounded-xl border border-black/5 p-2 outline-none resize-y" />
+                      <div className="flex gap-2">
+                        <button type="button" onClick={saveEdit} disabled={busy === 'edit:' + it.priv.id || !editing.body.trim()} data-note-edit-save
+                          className="text-[12px] font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-full px-3 py-1 disabled:opacity-40">Save</button>
+                        <button type="button" onClick={() => setEditing(null)} className="text-[12px] font-semibold text-gray-500 rounded-full px-3 py-1 border border-black/10">Cancel</button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed" data-private-body>{it.priv.body}</p>
+                      <div className="flex gap-2 pt-1">
+                        <button type="button" onClick={() => setEditing({ id: it.priv!.id, body: it.priv!.body })} className="text-[12px] font-semibold text-navy border border-black/10 rounded-full px-3 py-1 hover:bg-navy/5">✏️ Edit</button>
+                        <button type="button" onClick={() => deleteNote(it.priv!)} disabled={busy === 'delete:' + it.priv.id} className="text-[12px] font-semibold text-rose-700 border border-rose-200 rounded-full px-3 py-1 hover:bg-rose-50">🗑 Delete</button>
+                      </div>
+                    </>
+                  )}
+                </div>
               )}
             </div>
           );

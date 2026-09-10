@@ -85,9 +85,14 @@ export async function GET() {
   // The 2026-08-28 widening (see header): notebook, clippings, requests,
   // printed papers, the finder ledger, passes, push subscriptions. All keyed
   // on the derived identity / auth uid — never on client input.
-  const [notebook, clippings, requests, generatedPapers, finderLog, passes, pushSubs] = await Promise.all([
+  const [notebook, clippings, privateNotes, savedAnswers, mistakes, requests, generatedPapers, finderLog, passes, pushSubs] = await Promise.all([
     byIdentity('notebook_entries'),
     byIdentity('portal_notes'),
+    // My Notebook v2 (11 Sep 2026): the student's private notes (§8 — theirs to
+    // take away, nobody else's to read), saved answers, the mistakes list.
+    byIdentity('notebook_private_notes'),
+    byIdentity('notebook_saves'),
+    byIdentity('notebook_mistakes'),
     byIdentity('portal_requests'),
     byIdentity('portal_generated_papers'),
     byIdentity('portal_generation_log'),
@@ -115,6 +120,9 @@ export async function GET() {
     recall_messages: recalls.data || [],
     notebook_entries: notebook.data || [],
     clippings: clippings.data || [],
+    private_notes: privateNotes.data || [],
+    saved_answers: savedAnswers.data || [],
+    mistakes: mistakes.data || [],
     requests: requests.data || [],
     generated_papers: generatedPapers.data || [],
     finder_log: finderLog.data || [],

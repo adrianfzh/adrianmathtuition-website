@@ -15,14 +15,23 @@
 //   • 📷 Photos and ✂️ clippings (portal_notes; lightbox in my-notes-gallery.tsx,
 //     ➕ Add a photo beside the search box; photos are read for topic + skill +
 //     searchable text, lib/photo-tag.ts).
+//   • ✍️ My notes (SPEC-NOTEBOOK-V2 §8) — typed by the student, "✍️ Write"
+//     beside the search box; the student's own words, read by nothing else.
 //   • 📖 Pages from Adrian (SPEC-NOTEBOOK-V2 §12) — open their own route.
 //   • 💬 Keeps coming up (opt-in — Settings → "Show skills I keep asking about"):
 //     the bank sub-skills the student keeps asking the app about (lib/ask-signal).
 //   (Questions to retry — DROPPED 10 Sep 2026: nobody ever attempted one.
 //   notebook_entries rows still accrue at release for export/retention.)
 //
-// The items are built here (lib/notebook-stream.ts, pure/tested) and filtered
-// on the client (stream.tsx). ?open=<item id> lands with that item open — the
+// Above the stream, when it applies:
+//   • 📝 Before the paper (§4) — one card per exam within BEFORE_PAPER_DAYS,
+//     opening /app/my-notes/before/[examId]: the book, narrowed to the tested
+//     topics, plus the formulas met there.
+//   • 📐 My formulas (§5) — the formula sheet that grows, /app/my-notes/formulas.
+//
+// The items are built by lib/notebook-load.ts (one loader for the three
+// Notebook pages; lib/notebook-stream.ts is the pure builder) and filtered on
+// the client (stream.tsx). ?open=<item id> lands with that item open — the
 // Home resurface card's door (lib/resurface.ts).
 //
 // /app/plan redirects here. Server component: reads with the service key
@@ -35,20 +44,9 @@
 // an allowed page simply never calls the gate (lib/portal-beta.ts).
 import Link from 'next/link';
 import { portalIdentity, sessionAccount } from '@/lib/portal-auth';
-import { getSupabaseAdmin } from '@/lib/supabase';
-import { createServiceClient } from '@/lib/supabase-server';
-import { loadMistakes, type MistakeRow } from '@/lib/notebook-mistakes-store';
-import { displayOrder } from '@/lib/notebook-mistakes';
-import { askSignalOn, type AskSignalLine } from '@/lib/ask-signal';
-import { loadAskSignal } from '@/lib/ask-signal-store';
-import { listStudentAssignments } from '@/lib/portal-assignments';
-import { isPage } from '@/lib/assignments';
-import { loadSaves } from '@/lib/notebook-saves-store';
-import type { SaveRow } from '@/lib/notebook-saves';
-import { buildStreamItems } from '@/lib/notebook-stream';
-import { MAX_NOTES_PER_STUDENT, type MyNoteRow, type TopicOptionGroup } from '@/lib/portal-notes';
-import { getTopicsForPaperLevel } from '@/lib/canonical-topics';
-import { qbLevelsFor } from '@/lib/qb-levels';
+import { loadNotebook } from '@/lib/notebook-load';
+import { beforePaperLine, examsInWindow } from '@/lib/before-paper';
+import { topicsMet } from '@/lib/formula-sheet';
 import NotebookStream from './stream';
 
 export const dynamic = 'force-dynamic';
@@ -63,7 +61,7 @@ export default async function MyNotebookPage({ searchParams }: { searchParams: P
   const account = await sessionAccount();
   const sid: string | null = account ? portalIdentity(account) : null;
 
-  if (!sid) {
+  if (!account || !sid) {
     return (
       <div className="space-y-4 pb-24 sm:pb-4">
         <h1 className="text-xl font-bold text-navy pt-1">My Notebook</h1>
@@ -77,60 +75,9 @@ export default async function MyNotebookPage({ searchParams }: { searchParams: P
     );
   }
 
-  // Every source is independent — one parallel batch. All fail soft: a load
-  // error drops its items, never the page.
-  const svc = createServiceClient();
-  const [notes, mistakes, askLines, pages, saves] = await Promise.all([
-    getSupabaseAdmin()
-      .from('portal_notes')
-      .select('id, run_id, source_label, topic, image_url, note, created_at, auto_topic, auto_skill, ocr_text')
-      .eq('airtable_student_id', sid)
-      .order('created_at', { ascending: false })
-      .limit(MAX_NOTES_PER_STUDENT)
-      .then(r => (r.data ?? []) as MyNoteRow[], () => [] as MyNoteRow[]),
-    // The read applies the 14-day "Corrected" → Fixed sweep on the way out.
-    loadMistakes(svc, sid).catch((): MistakeRow[] => []),
-    askSignalOn(account?.prefs) ? loadAskSignal(svc, sid) : Promise.resolve([] as AskSignalLine[]),
-    listStudentAssignments(sid, account).then(rows => rows.filter(isPage), () => []),
-    loadSaves(svc, sid).catch((): SaveRow[] => []),
-  ]);
-
-  // Mistakes in display order (placeholders with no evidence yet are left out
-  // by displayOrder), and the Practice items that fix them — one scoped query.
-  const bands = displayOrder(mistakes);
-  const ordered = [...bands.stillHappening, ...bands.gettingBetter, ...bands.fixed];
-  const practiceById = new Map<string, { id: string; title: string }>();
-  const linkedIds = [...new Set(ordered.flatMap(m => m.practice_ids))];
-  if (linkedIds.length) {
-    try {
-      const { data } = await svc.from('portal_assignments').select('id, title, status')
-        .eq('airtable_student_id', sid).in('id', linkedIds.slice(0, 200));
-      for (const a of data ?? []) {
-        if (a.status === 'assigned' || a.status === 'submitted' || a.status === 'marked') {
-          practiceById.set(String(a.id), { id: String(a.id), title: String(a.title || 'Practice') });
-        }
-      }
-    } catch { /* the stream still renders without its practice links */ }
-  }
-  const practiceFor = (m: MistakeRow) =>
-    m.practice_ids.map(id => practiceById.get(id)).filter((p): p is { id: string; title: string } => !!p);
-
-  const items = buildStreamItems({ mistakes: ordered, practiceFor, saves, notes, pages, skills: askLines });
-
-  // Topic options for the ➕ Add-a-photo tagger: the canonical list for the
-  // student's level(s), merged by category label and deduped. Optional in the UI.
-  const seenTopics = new Set<string>();
-  const topicGroups: TopicOptionGroup[] = [];
-  for (const { key } of qbLevelsFor(account?.level ?? null, account?.subjects ?? null)) {
-    for (const cat of getTopicsForPaperLevel(key)) {
-      const fresh = cat.topics.filter(t => !seenTopics.has(t));
-      if (fresh.length === 0) continue;
-      fresh.forEach(t => seenTopics.add(t));
-      const existing = topicGroups.find(g => g.label === cat.label);
-      if (existing) existing.topics.push(...fresh);
-      else topicGroups.push({ label: cat.label, topics: fresh });
-    }
-  }
+  const { items, exams, topicGroups } = await loadNotebook(account, sid);
+  const soon = examsInWindow(exams).slice(0, 3);
+  const metTopics = topicsMet(items).length;
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
@@ -140,6 +87,25 @@ export default async function MyNotebookPage({ searchParams }: { searchParams: P
           Everything lands here by itself — your mistakes as they fade, answers you saved, your photos, pages from Adrian. Scroll, or search.
         </p>
       </div>
+
+      {soon.map(exam => (
+        <Link key={exam.id} href={`/app/my-notes/before/${encodeURIComponent(exam.id)}`} data-before-paper={exam.id}
+          className={`${CARD} block p-4 border-l-4 border-l-amber-400 hover:bg-[hsl(45,100%,99%)] active:scale-[0.99] transition`}>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700">📝 Before the paper</p>
+          <p className="text-sm font-bold text-navy mt-0.5">{beforePaperLine(exam)}</p>
+          <p className="text-[12px] text-gray-600 mt-1">
+            Your mistakes, saved answers, photos and the formulas for the tested topics — on one page.
+          </p>
+        </Link>
+      ))}
+
+      {metTopics > 0 && (
+        <Link href="/app/my-notes/formulas" data-formulas-link
+          className="inline-flex items-center gap-1.5 text-[12px] font-semibold bg-white text-navy border border-black/10 rounded-full px-3 py-1.5 hover:bg-navy/5">
+          📐 My formulas <span className="opacity-60">· {metTopics} {metTopics === 1 ? 'topic' : 'topics'}</span>
+        </Link>
+      )}
+
       <NotebookStream items={items} topicGroups={topicGroups} openId={typeof open === 'string' && open ? open : null} />
     </div>
   );

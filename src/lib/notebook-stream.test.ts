@@ -44,3 +44,29 @@ describe('filterStream', () => {
     expect(filterStream(items, 'all', 'nothing here')).toEqual([]);
   });
 });
+
+describe('private notes in the stream (SPEC-NOTEBOOK-V2 §8)', () => {
+  const priv = { id: 'pn1', body: 'Sine rule: two angles → third angle first\nthen opposite sides', created_at: '2026-09-11T01:00:00Z', updated_at: '2026-09-11T02:00:00Z' };
+  const items = buildStreamItems({ mistakes: [mistake({})], practiceFor: () => [], saves: [save], notes: [photo], pages: [page], skills: [], privateNotes: [priv] });
+  it('files a note as its own kind, first line as the title, sorted by its last edit', () => {
+    const it = items.find(i => i.kind === 'private')!;
+    expect(it.id).toBe('private:pn1');
+    expect(it.title).toBe('Sine rule: two angles → third angle first');
+    expect(it.at).toBe('2026-09-11T02:00:00Z');
+    expect(it.priv).toBe(priv);
+    expect(items[0].kind).toBe('private');
+  });
+  it('has its own chip and is searchable by its body', () => {
+    expect(filterStream(items, 'private', '').map(i => i.id)).toEqual(['private:pn1']);
+    expect(filterStream(items, 'all', 'opposite sides').map(i => i.id)).toEqual(['private:pn1']);
+  });
+  it('stamps every item with the topic it is filed under', () => {
+    const topicOf = (kind: string) => items.find(i => i.kind === kind)?.topic;
+    expect(topicOf('mistake')).toBe('Vectors');
+    expect(topicOf('saved')).toBe('Trigonometry');
+    expect(topicOf('photo')).toBe('Differentiation');
+    expect(topicOf('adrian')).toBe('Trigonometry');
+    expect(topicOf('private')).toBeUndefined();
+    expect(items.find(i => i.kind === 'mistake')?.subject).toBe('AM');
+  });
+});
