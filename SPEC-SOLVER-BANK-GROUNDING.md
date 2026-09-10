@@ -1,7 +1,14 @@
 # Ground the chat solver on the question bank
 
-**Status:** specified 9 Sep 2026, not built. Lives in the **bot** repo
-(`~/dev/adrianmath-telegram-math-bot`).
+**Status:** specified 9 Sep 2026 — **BUILT 10 Sep 2026** in the **bot** repo
+(`~/dev/adrianmath-telegram-math-bot`, `lib/solver-grounding.js` + `ai/embeddings.js readPhotoText`
++ the two prompt rules; bot CLAUDE.md §Solver bank grounding is the runbook). Items 1–3 below are
+live on the Telegram photo path; item 4 (what a low-confidence answer may do) is unchanged — still
+Adrian's policy call, though a solver that DISAGREES with the paper's key now reaches him as a card
+with verdict buttons and files the row Low. Verified by replaying the incident photo through
+`scripts/replay-photo.js`: median **46**, y = 60, no "matches your reading", BANK:AGREE; the
+rules-only control (`--no-bank`) named the right axis but still read 50 off the angled photo.
+Not wired: the web chat's image path.
 
 ## The incident that produced this spec
 
