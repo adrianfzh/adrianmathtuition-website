@@ -59,3 +59,17 @@ describe('formatMessage', () => {
     expect(formatMessage('**hi**')).toBe('<strong>hi</strong>');
   });
 });
+
+describe('the BANK tail line (the solver\'s verdict against the paper\'s answer key, 10 Sep 2026)', () => {
+  it('is held back while streaming, alone or stacked after CONFIDENCE', () => {
+    expect(trimUnclosedMath('The median is 46.\nCONFIDENCE:HIGH\nBANK:AGREE')).toBe('The median is 46.');
+    expect(trimUnclosedMath('The median is 46.\nBANK:DISAGREE')).toBe('The median is 46.');
+    expect(trimUnclosedMath('The median is 46.\nBAN')).toBe('The median is 46.'); // a partially streamed keyword
+  });
+  it('is stripped from the final render', () => {
+    expect(formatMessage('The median is 46.\nCONFIDENCE:HIGH\nBANK:AGREE')).not.toMatch(/BANK|CONFIDENCE/);
+    expect(formatMessage('Answer: 46\nbank: unsure')).not.toMatch(/bank/i);
+    // prose that merely mentions a bank is not a marker
+    expect(formatMessage('The bank: agree with me')).toContain('The bank: agree with me');
+  });
+});

@@ -84,9 +84,10 @@ export function trimUnclosedMath(t: string): string {
   const ticks = t.match(/`/g) || [];
   if (ticks.length % 2 === 1) t = t.slice(0, t.lastIndexOf('`'));
   // Hold back trailing marker lines while streaming (stripped fully on final
-  // render): CONFIDENCE:…, DIAGRAM:REQUEST …, DATA:MISSING … — the bot's
-  // machine-readable tail markers, which may stack after the answer.
-  t = t.replace(/(\n\s*(?:CONFIDENCE|DIAGRAM|DATA)\s*:[^\n]*)+\s*$/i, '');
+  // render): CONFIDENCE:…, DIAGRAM:REQUEST …, DATA:MISSING …, BANK:… — the bot's
+  // machine-readable tail markers, which may stack after the answer (BANK is the
+  // solver's verdict against the paper's answer key, 10 Sep 2026).
+  t = t.replace(/(\n\s*(?:CONFIDENCE|DIAGRAM|DATA|BANK)\s*:[^\n]*)+\s*$/i, '');
   // …and a partially-streamed marker keyword ("CONFID", "DIAGR", "DATA:")
   t = t.replace(/\n\s*[A-Z]{2,10}\s*:?\s*$/, '');
   return t;
@@ -95,7 +96,7 @@ export function trimUnclosedMath(t: string): string {
 /* ── renderToElement (KaTeX inline render) ── */
 export function renderToElement(el: HTMLDivElement, text: string, streaming = false) {
   if (streaming) text = trimUnclosedMath(text);
-  text = text.replace(/\n\s*(?:CONFIDENCE\s*:\s*(?:HIGH|LOW)|DIAGRAM\s*:\s*REQUEST[^\n]*|DATA\s*:\s*MISSING[^\n]*)(?=\n|$)/gi, '').trimEnd();
+  text = text.replace(/\n\s*(?:CONFIDENCE\s*:\s*(?:HIGH|LOW)|DIAGRAM\s*:\s*REQUEST[^\n]*|DATA\s*:\s*MISSING[^\n]*|BANK\s*:\s*(?:AGREE|DISAGREE|UNSURE))(?=\n|$)/gi, '').trimEnd();
   text = text.replace(/`([^`\n]+)`/g, '$$$1$');
 
   // Fix 1: bare \begin{matrix} has no brackets in KaTeX — upgrade to \begin{pmatrix}
@@ -163,7 +164,7 @@ export function renderToElement(el: HTMLDivElement, text: string, streaming = fa
 
 /* ── formatMessage (for final display of user messages) ── */
 export function formatMessage(text: string): string {
-  text = text.replace(/\n\s*(?:CONFIDENCE\s*:\s*(?:HIGH|LOW)|DIAGRAM\s*:\s*REQUEST[^\n]*|DATA\s*:\s*MISSING[^\n]*)(?=\n|$)/gi, '').trimEnd();
+  text = text.replace(/\n\s*(?:CONFIDENCE\s*:\s*(?:HIGH|LOW)|DIAGRAM\s*:\s*REQUEST[^\n]*|DATA\s*:\s*MISSING[^\n]*|BANK\s*:\s*(?:AGREE|DISAGREE|UNSURE))(?=\n|$)/gi, '').trimEnd();
   text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
   text = text.replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>');
   text = text.replace(/<strong>(Part\s*[\(\w\d]+[\):]?[^<\n]*)<\/strong>/g,

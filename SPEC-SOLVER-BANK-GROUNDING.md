@@ -8,7 +8,8 @@ Adrian's policy call, though a solver that DISAGREES with the paper's key now re
 with verdict buttons and files the row Low. Verified by replaying the incident photo through
 `scripts/replay-photo.js`: median **46**, y = 60, no "matches your reading", BANK:AGREE; the
 rules-only control (`--no-bank`) named the right axis but still read 50 off the angled photo.
-Not wired: the web chat's image path.
+The web chat's photo path (the app's Ask tab and the public chat page) was wired the same
+afternoon (`handlers/webchat.js`; `scripts/replay-photo.js --web` replays it).
 
 ## The incident that produced this spec
 
