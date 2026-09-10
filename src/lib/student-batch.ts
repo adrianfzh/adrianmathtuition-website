@@ -229,14 +229,20 @@ export function studentBatchGuard(
 // ── Wave two ─────────────────────────────────────────────────────────────────
 
 /**
- * The gaps a finished sheet kept back (`result.shelved`), as stored on the job.
- * Empty when the job wrote no sheet, or shelved nothing.
+ * The gaps a finished sheet kept back, as stored on the job. Two shapes, both
+ * live: `result.gaps.shelved` — the richer report the worker writes since 11 Sep
+ * 2026, one entry per gap with its paper, questions, marks and the reason it was
+ * held — and the older flat `result.shelved` list of names. Empty when the job
+ * wrote no sheet, or shelved nothing.
  */
 export function shelvedGaps(result: unknown): string[] {
   const r = result && typeof result === 'object' ? (result as Record<string, unknown>) : null;
   if (!r || r.noSheet) return [];
-  return (Array.isArray(r.shelved) ? r.shelved : [])
-    .map(x => String(x ?? '').trim())
+  const gaps = r.gaps && typeof r.gaps === 'object' ? (r.gaps as Record<string, unknown>) : null;
+  const rich = Array.isArray(gaps?.shelved) ? gaps.shelved : null;
+  const raw = rich ?? (Array.isArray(r.shelved) ? r.shelved : []);
+  return raw
+    .map(x => (x && typeof x === 'object' ? String((x as { skill?: unknown }).skill ?? '') : String(x ?? '')).trim())
     .filter(Boolean)
     .slice(0, 20);
 }

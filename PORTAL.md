@@ -362,12 +362,16 @@ instead"*).
 
 **Wave two.** A sheet teaches one wave and shelves the rest with evidence; until
 now that shelf was visible only on Adrian's Telegram. A finished sheet whose job
-carries `result.shelved` now shows *"N more gaps were kept for your next sheet"*
-with **Ask for the next wave** on the Papers list and on the paper's own page.
-It posts only which papers it continues — the server copies `shelved` off the
-job itself — and skips the 5-day window and the strong rule, because a
-continuation is not a fresh start. `sheetQueueGuard`'s "a sheet already exists"
-refusal is bypassed for a wave two and for nothing else.
+carries a shelf — `result.gaps.shelved` (the entry-per-gap report, 11 Sep 2026)
+or the older flat `result.shelved` — now shows *"N more gaps were kept for your
+next sheet"* with **Ask for the next wave** on the Papers list and on the
+paper's own page. It posts only which papers it continues — the server copies
+the shelf off the job itself — and skips the 5-day window and the strong rule,
+because a continuation is not a fresh start. `sheetQueueGuard`'s "a sheet
+already exists" refusal is bypassed for a wave two and for nothing else. The
+job is born with `focus` = `{"wave":2,"instruction":…,"shelved":[…]}` (JSON in
+the text column, so the worker's `focus.wave === 2` / `focus.shelved` read
+literally — `lib/sheet-queue` `waveTwoFocus` / `focusText`).
 
 Everything above is one door: `POST /api/portal/practice-again/request`, which
 now takes `{runIds}` beside `{runId}` and `wave: 2` on either (401 anonymously —

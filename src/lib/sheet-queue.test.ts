@@ -85,14 +85,17 @@ describe('focusText — the instruction the worker honours', () => {
     expect(focusText(undefined)).toBeNull();
     expect(focusText('')).toBeNull();
   });
-  it('renders the wave-two shape as a sentence, never "[object Object]"', () => {
+  it('renders the wave-two shape as JSON the worker can read, never "[object Object]"', () => {
     const text = focusText({ wave: 2, shelved: ['Polynomials', 'Plane geometry'] }) ?? '';
-    expect(text).toContain('Wave 2');
-    expect(text).toContain('Polynomials; Plane geometry');
     expect(text).not.toContain('object Object');
+    const f = JSON.parse(text);
+    expect(f.wave).toBe(2);
+    expect(f.shelved).toEqual(['Polynomials', 'Plane geometry']);
   });
-  it('says wave 2 even when the first sheet named no shelf', () => {
-    expect(focusText({ wave: 2, shelved: [] })).toBe('Wave 2 — the student asked for the next sheet. Teach only what the last sheet shelved.');
+  it('still says wave 2 when the first sheet named no shelf', () => {
+    const f = JSON.parse(focusText({ wave: 2, shelved: [] }) ?? '');
+    expect(f).toMatchObject({ wave: 2, shelved: [] });
+    expect(f.instruction).toContain('next wave');
   });
 });
 

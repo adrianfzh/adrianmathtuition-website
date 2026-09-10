@@ -185,24 +185,37 @@ describe('marks lost', () => {
   });
 });
 
-describe('wave two — the shelf and the focus line', () => {
-  it('reads result.shelved off a finished job', () => {
+describe('wave two — the shelf and the focus the worker reads', () => {
+  it('reads the flat result.shelved of an older job', () => {
     expect(shelvedGaps({ docx_path: 'x', shelved: ['Polynomials', ' Plane geometry '] })).toEqual(['Polynomials', 'Plane geometry']);
+  });
+  it("reads the richer result.gaps.shelved the worker writes since 11 Sep 2026, and prefers it", () => {
+    expect(shelvedGaps({
+      docx_path: 'x',
+      shelved: ['the old flat name'],
+      gaps: { found: 5, covered: 3, shelved: [
+        { skill: 'Polynomials — remainder theorem', runs: [{ run_id: 'a', questions: ['Q9(c)'], marks: 3 }], why: 'one-off, oldest paper' },
+        { skill: 'Plane geometry', runs: [], why: 'no room' },
+      ] },
+    })).toEqual(['Polynomials — remainder theorem', 'Plane geometry']);
   });
   it('is empty for a job that wrote no sheet, or shelved nothing', () => {
     expect(shelvedGaps({ noSheet: true, reason: 'nothing to teach', shelved: ['x'] })).toEqual([]);
     expect(shelvedGaps({ docx_path: 'x' })).toEqual([]);
+    expect(shelvedGaps({ docx_path: 'x', gaps: { found: 3, covered: 3, shelved: [] } })).toEqual([]);
     expect(shelvedGaps(null)).toEqual([]);
   });
-  it('names the shelved gaps in the focus line the worker honours', () => {
-    const line = waveTwoFocus(['chain rule', 'exact form in a show-that']);
-    expect(line).toContain('Wave 2');
-    expect(line).toContain('chain rule; exact form in a show-that');
+  it('hands the worker a focus it can read as `focus.wave` and `focus.shelved`', () => {
+    const focus = JSON.parse(waveTwoFocus(['chain rule', 'exact form in a show-that']));
+    expect(focus.wave).toBe(2);
+    expect(focus.shelved).toEqual(['chain rule', 'exact form in a show-that']);
+    expect(focus.instruction).toContain('EXACTLY');
   });
-  it('fits the 300-character focus column, cut on a boundary', () => {
-    const line = waveTwoFocus(Array.from({ length: 20 }, (_, i) => `a very long shelved gap number ${i}`));
-    expect(line.length).toBeLessThanOrEqual(300);
-    expect(line.endsWith('…')).toBe(true);
+  it('drops the tail of a very long shelf rather than cutting the JSON', () => {
+    const focus = waveTwoFocus(Array.from({ length: 20 }, (_, i) => `a very long shelved gap number ${i} `.repeat(4)));
+    expect(focus.length).toBeLessThanOrEqual(2000);
+    expect(() => JSON.parse(focus)).not.toThrow();
+    expect(JSON.parse(focus).shelved.length).toBeGreaterThan(0);
   });
 });
 

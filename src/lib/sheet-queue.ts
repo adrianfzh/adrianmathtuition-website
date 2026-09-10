@@ -158,18 +158,29 @@ export function sheetBatchInsert(primary: SheetBatchRun, runs: SheetBatchRun[], 
   };
 }
 
+/** A wave-two focus is never longer than this — the column is text, but a job row is read by eye too. */
+const FOCUS_JSON_MAX = 2000;
+
 /**
- * The `focus` line a wave-two job is born with — Adrian's own instruction slot,
- * written for the worker, which honours `job.focus` over its own judgement
- * (scripts/sheet-worker/WORKER_PROMPT.md §2). Naming the shelved gaps is the
- * whole point: the student asked for the REST of what the first sheet found.
- * Pure.
+ * What a wave-two job carries in `focus` — Adrian's own instruction slot, which
+ * the worker honours over its own judgement (scripts/sheet-worker/WORKER_PROMPT.md
+ * §1e: "a job with `focus.wave === 2` teaches EXACTLY `focus.shelved`, nothing
+ * else"). JSON, so those two field reads hold literally, with the instruction
+ * spelled out inside it because a person reads this column too. Pure.
+ *
+ * Long shelves lose their tail rather than the string being cut — a truncated
+ * JSON blob would parse as nothing at all.
  */
 export function waveTwoFocus(shelved: readonly string[], wave = 2): string {
-  const gaps = shelved.map(x => String(x ?? '').trim()).filter(Boolean);
-  const head = `Wave ${wave} — the student asked for the next sheet. Teach only what the last sheet shelved`;
-  const line = gaps.length ? `${head}: ${gaps.join('; ')}.` : `${head}.`;
-  return line.length <= 300 ? line : `${line.slice(0, 299).replace(/[;,\s]+\S*$/, '')}…`;
+  const gaps = shelved.map(x => String(x ?? '').trim()).filter(Boolean).slice(0, 20);
+  const build = (list: string[]) => JSON.stringify({
+    wave,
+    instruction: `The student asked for the next wave. Teach EXACTLY the gaps the last sheet shelved, nothing else; reuse its title block and file it in the same folder name with " (wave ${wave})".`,
+    shelved: list,
+  });
+  let out = build(gaps);
+  while (out.length > FOCUS_JSON_MAX && gaps.length) { gaps.pop(); out = build(gaps); }
+  return out;
 }
 
 /**
