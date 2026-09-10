@@ -184,7 +184,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
     if (!account) redirect('/login');
     const { data: q } = await getSupabaseAdmin()
       .from('questions')
-      .select('id, question_text, parts, total_marks, has_image, image_url, images, figure_url, solution, answer, topics, deleted_at, flagged_count, ai_generated, verified')
+      .select('id, question_text, parts, total_marks, has_image, image_url, images, figure_url, solution, answer, topics, deleted_at, flagged_count, ai_generated, verified, school, national')
       .eq('id', qid)
       .maybeSingle();
     if (q && practiceEligibility(q).ok && !(await qidAudienceOk(q.id, account))) {

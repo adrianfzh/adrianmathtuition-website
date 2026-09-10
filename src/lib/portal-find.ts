@@ -105,6 +105,9 @@ export async function countFinderCallsToday(
 // (per the QB reality that ~71% of "missing" answers live in parts[].answer):
 // the answer check also accepts per-part answers/solutions, not just top-level.
 export type EligibilityRow = {
+  /** school = 'GCE' marks a national paper (GCE / TYS / SEAB specimen) — grounding-only, never served. */
+  school?: string | null;
+  national?: boolean | null;
   deleted_at?: string | null;
   flagged_count?: number | null;
   ai_generated?: boolean | null;
@@ -132,6 +135,12 @@ function partsHaveAnswer(parts: unknown): boolean {
 
 export function practiceEligibility(q: EligibilityRow): { ok: true } | { ok: false; reason: string } {
   if (q.deleted_at) return { ok: false, reason: 'removed from the bank' };
+  // National papers are GROUNDING-ONLY (Adrian, 11 Sep 2026: "yes keep gce
+  // questions out of serving"): SEAB sells them and licenses the TYS
+  // publishers, so a student never gets one handed out as new material. The
+  // marker and the solver still read them. Same rule as `questions.national`
+  // and the practice_next / practice_pool / kiosk_pool / practice_candidates RPCs.
+  if (q.national === true || q.school === 'GCE') return { ok: false, reason: 'national paper — grounding only, never served' };
   if ((q.flagged_count ?? 0) >= 3) return { ok: false, reason: 'flagged by students' };
   if (q.ai_generated === true && q.verified !== true) return { ok: false, reason: 'AI question not yet verified' };
   const hasContent =

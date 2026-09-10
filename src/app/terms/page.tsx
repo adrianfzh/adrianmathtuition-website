@@ -152,6 +152,24 @@ const policies = [
     ),
   },
   {
+    icon: '📄',
+    title: 'Past-Paper Questions',
+    body: (
+      <>
+        <p>
+          Practice material we hand to our students may include questions from past school and national examination
+          papers, credited to their source. They are used for our students&apos; own practice and marking, and are
+          never sold or published as whole papers.
+        </p>
+        <p>
+          If you hold the rights to a paper and would like something removed, WhatsApp Adrian or email{' '}
+          <a href="mailto:adrianmathtuition@gmail.com" className="underline">adrianmathtuition@gmail.com</a> and it
+          will be taken down within a day.
+        </p>
+      </>
+    ),
+  },
+  {
     icon: '🎁',
     title: 'Referral Programme',
     body: (

@@ -11,7 +11,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin/', '/admin', '/api/', '/app/', '/app', '/kiosk', '/login', '/signup'],
+        disallow: ['/admin/', '/admin', '/api/', '/app/', '/app', '/kiosk', '/login', '/signup', '/explain/'],
       },
     ],
     sitemap: 'https://adrianmathtuition.com/sitemap.xml',

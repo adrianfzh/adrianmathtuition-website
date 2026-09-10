@@ -31,7 +31,7 @@ type QuestionRow = {
 };
 
 const QUESTION_COLUMNS =
-  'id, question_text, parts, level, topics, total_marks, deleted_at, flagged_count, ai_generated, verified, has_image, image_url, answer, solution';
+  'id, question_text, parts, level, topics, total_marks, deleted_at, flagged_count, ai_generated, verified, has_image, image_url, answer, solution, school, national';
 
 type SubgroupJoin = SubgroupAudienceRow & { id: number; topic: string; name: string };
 type FilingRow = { question_id: string; subgroup_id: number; is_primary: boolean | null; subgroups: SubgroupJoin | SubgroupJoin[] | null };

@@ -130,6 +130,8 @@ async function fetchSlotCandidates(opts: { tagLevels: string[]; topicsKey: strin
     .from('questions')
     .select('id, total_marks, school, year, difficulty, parts, answer, has_image, image_url, figure_url, image_watermark_status')
     .is('deleted_at', null)
+    // national papers are grounding-only (lib/portal-find practiceEligibility)
+    .eq('national', false)
     .in('level', opts.tagLevels)
     .contains('topics', [opts.topic])
     .gte('total_marks', opts.lo)

@@ -7,6 +7,9 @@ import { getSupabase } from '@/lib/supabase';
 import { topicSlug } from '@/lib/topic-slug';
 
 export const dynamic = 'force-dynamic';
+// A student's own question, explained — never a search result (content policy:
+// no past-paper question on an indexable page; docs/CONTENT-POLICY.md).
+export const metadata = { robots: { index: false, follow: false } };
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

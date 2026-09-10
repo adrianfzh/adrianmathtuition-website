@@ -34,6 +34,11 @@ const UUID2 = '223e4567-e89b-42d3-a456-426614174000';
 
 // ── Eligibility: mirror of practice_next's gates + the parts-answer widening ──
 describe('practiceEligibility', () => {
+  it('a national paper (school GCE, or national=true) is grounding-only and never served (Adrian, 11 Sep 2026)', () => {
+    expect(practiceEligibility({ ...base, school: 'GCE' })).toEqual({ ok: false, reason: 'national paper — grounding only, never served' });
+    expect(practiceEligibility({ ...base, national: true })).toEqual({ ok: false, reason: 'national paper — grounding only, never served' });
+    expect(practiceEligibility({ ...base, school: 'Bedok South', national: false })).toEqual({ ok: true });
+  });
   const base = { question_text: 'Solve $x^2 = 4$.', answer: 'x = ±2' };
 
   it('accepts a plain bank question with a top-level answer', () => {

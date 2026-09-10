@@ -755,8 +755,15 @@ So, for EVERY practice item, in this order:
      --data-urlencode "level=eq.AM" \
      --data-urlencode 'topics=cs.{"Plane Geometry"}' \
      --data-urlencode "school=neq.AI Generated" \
+     --data-urlencode "national=is.false" \
      --data-urlencode "deleted_at=is.null" --data-urlencode "limit=60"
    ```
+
+   **National papers are grounding-only** (Adrian, 11 Sep 2026: "keep gce
+   questions out of serving"): `national=is.false` above is not optional. A GCE /
+   TYS / specimen question (`school = 'GCE'`) never appears on a sheet, not even
+   as "the same question again" — write the item yourself in the same shape.
+   The full rule: `docs/CONTENT-POLICY.md`.
 
    The student's OWN paper is usually in the bank (query by school/year/paper) —
    pull it first for the exact stems, and exclude it from the practice by CONTENT
