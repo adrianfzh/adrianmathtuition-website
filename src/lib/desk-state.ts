@@ -67,7 +67,46 @@ export type DeskSheetJob = {
   error?: string | null;
   /** The completion payload as stored — `{ noSheet, reason }` when there was nothing to teach. */
   result?: unknown;
+  /** Stamped when the sheet went out to the student (desk tap, the clock, or the student's own request). */
+  auto_released_at?: string | null;
 } | null | undefined;
+
+/** A `portal_assignments` row filed for this paper's sheet — only the fields the desk reads. */
+export type SheetAssignmentLite = {
+  kind?: string | null;
+  status?: string | null;
+  created_at?: string | null;
+  submitted_at?: string | null;
+  marked_at?: string | null;
+  revoked_at?: string | null;
+  required_at?: string | null;
+};
+
+/**
+ * What happened to the sheet AFTER it was written (10 Sep 2026 — Adrian, on
+ * Isabelle's row still reading "sheet ready" hours after the sheet went out: "can
+ * the row reflect that information? and … indicate if sheet has been handed up?").
+ * `released` — the student has it and has not handed it in; `handed-in` — a
+ * hand-in is in (being marked); `marked` — the returned sheet is marked.
+ * `required` — Adrian set it (compulsory, the app reminds them).
+ */
+export type SheetOutcome = { state: 'released' | 'handed-in' | 'marked'; at: string | null; required: boolean } | null;
+
+/**
+ * The sheet's outcome from its assignment rows. Pure. The sheet IS the newest
+ * live `worksheet` row (a replaced sheet's row is revoked; the old in-app
+ * question rows are not the sheet — SPEC-PORTAL-V2 §7); nothing live → null.
+ */
+export function sheetOutcomeOf(rows: readonly SheetAssignmentLite[] | null | undefined): SheetOutcome {
+  const live = (rows ?? []).filter(a => a && a.kind === 'worksheet' && !a.revoked_at && a.status !== 'revoked');
+  if (!live.length) return null;
+  live.sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')));
+  const a = live[0];
+  const required = !!a.required_at;
+  if (a.status === 'marked' || a.marked_at) return { state: 'marked', at: a.marked_at ?? null, required };
+  if (a.status === 'submitted' || a.submitted_at) return { state: 'handed-in', at: a.submitted_at ?? null, required };
+  return { state: 'released', at: a.created_at ?? null, required };
+}
 
 /** Adrian's own "Marked (Adrian).pdf" in the paper's Dropbox folder, vs what the run carries. */
 export type AmendedStatus =
@@ -223,8 +262,13 @@ export function revisingLabel(r: Revising): string {
   return `✏️ sheet being revised (round ${r.round})${r.state === 'queued' ? ' · waiting for the Mac' : ''}`;
 }
 
-/** The row's sheet column, as a phrase. */
-export function sheetStageLabel(job: DeskSheetJob): string {
+/**
+ * The row's sheet column, as a phrase. A finished sheet reads what happened to
+ * it next — released · handed in · marked — when its assignment rows say so
+ * (`outcome`), or "sheet sent" when only the job's own release stamp does;
+ * "sheet ready" is a sheet that has not gone out yet.
+ */
+export function sheetStageLabel(job: DeskSheetJob, outcome?: SheetOutcome): string {
   if (!job) return 'no sheet yet';
   const rv = revisingOf(job);
   switch (job.status) {
@@ -232,7 +276,14 @@ export function sheetStageLabel(job: DeskSheetJob): string {
     case 'claimed': return `${(job.stage || 'drafting').trim()}…`;
     case 'done': {
       const { noSheet, reason } = noSheetOf(job);
-      return noSheet ? `no sheet needed — ${shortReason(reason)}` : 'sheet ready';
+      if (noSheet) return `no sheet needed — ${shortReason(reason)}`;
+      if (outcome) {
+        const tail = outcome.required ? ' · compulsory' : '';
+        if (outcome.state === 'marked') return `sheet handed in · marked${tail}`;
+        if (outcome.state === 'handed-in') return `sheet handed in · being marked${tail}`;
+        return `sheet released · not handed in yet${tail}`;
+      }
+      return job.auto_released_at ? 'sheet sent' : 'sheet ready';
     }
     case 'failed': return `failed: ${(job.error || 'unknown').trim()}`;
     case 'cancelled': return 'cancelled';

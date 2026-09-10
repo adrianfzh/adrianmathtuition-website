@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   laneFor, sheetStageLabel, isPracticeAgainHandin, releasedViaLabel, handinOriginOf, approveBlockers, releaseBlockers, deskFlags, defaultLane,
-  amendedStatusFor, latestLiveJob, noSheetOf, pdfStaleOf, DESK_LANES, LANE_LABEL, orderLane, revisingOf, revisingLabel,
+  amendedStatusFor, latestLiveJob, noSheetOf, pdfStaleOf, DESK_LANES, LANE_LABEL, orderLane, revisingOf, revisingLabel, sheetOutcomeOf,
 } from './desk-state';
 
 const tagged = { student_id: 'recStudent', released_at: null, annotated_pdf_url: null, result_json: { results: [] } };
@@ -348,5 +348,46 @@ describe('a sheet being revised comes back to "Still to deal with" (Adrian, 10 S
     ];
     expect(orderLane(rows, 'auto').map(r => r.id)).toEqual(['r', 'a', 'b', 'c']);
     expect(orderLane(rows, 'released').map(r => r.id)).toEqual(['r', 'c', 'b', 'a']);
+  });
+});
+
+describe('sheetOutcomeOf + the label after the sheet went out (10 Sep 2026)', () => {
+  const sheet = (over: Record<string, unknown>) => ({ kind: 'worksheet', status: 'assigned', created_at: '2026-09-09T19:09:31Z', ...over });
+  it('nothing live → null; a revoked sheet is not the sheet; question rows are not the sheet', () => {
+    expect(sheetOutcomeOf([])).toBeNull();
+    expect(sheetOutcomeOf(null)).toBeNull();
+    expect(sheetOutcomeOf([sheet({ status: 'revoked', revoked_at: '2026-09-09T19:09:31Z' })])).toBeNull();
+    expect(sheetOutcomeOf([{ kind: 'question', status: 'assigned', created_at: '2026-09-09T10:00:00Z' }])).toBeNull();
+  });
+  it('released → handed in → marked, with the moment each happened', () => {
+    expect(sheetOutcomeOf([sheet({})])).toEqual({ state: 'released', at: '2026-09-09T19:09:31Z', required: false });
+    expect(sheetOutcomeOf([sheet({ status: 'submitted', submitted_at: '2026-09-10T02:00:00Z' })])).toEqual({ state: 'handed-in', at: '2026-09-10T02:00:00Z', required: false });
+    expect(sheetOutcomeOf([sheet({ status: 'marked', submitted_at: '2026-09-10T02:00:00Z', marked_at: '2026-09-10T02:30:00Z' })])).toEqual({ state: 'marked', at: '2026-09-10T02:30:00Z', required: false });
+  });
+  it('the NEWEST live sheet is the sheet (Isabelle: a revoked first copy, then the sent one)', () => {
+    const rows = [
+      sheet({ status: 'revoked', created_at: '2026-09-09T18:15:25Z', revoked_at: '2026-09-09T19:09:31Z' }),
+      sheet({ created_at: '2026-09-09T19:09:31Z' }),
+    ];
+    expect(sheetOutcomeOf(rows)?.state).toBe('released');
+    // a handed-in older sheet keeps its row, but a newer sent sheet is what the row now shows
+    const two = [sheet({ status: 'submitted', submitted_at: '2026-09-08T00:00:00Z', created_at: '2026-09-07T00:00:00Z' }), sheet({ created_at: '2026-09-09T00:00:00Z' })];
+    expect(sheetOutcomeOf(two)?.state).toBe('released');
+  });
+  it('compulsory when Adrian set it', () => {
+    expect(sheetOutcomeOf([sheet({ required_at: '2026-09-09T19:09:31Z' })])).toEqual({ state: 'released', at: '2026-09-09T19:09:31Z', required: true });
+  });
+  it('the label reads the outcome, and falls back to the job\'s own release stamp', () => {
+    expect(sheetStageLabel(done, { state: 'released', at: null, required: false })).toBe('sheet released · not handed in yet');
+    expect(sheetStageLabel(done, { state: 'handed-in', at: null, required: false })).toBe('sheet handed in · being marked');
+    expect(sheetStageLabel(done, { state: 'marked', at: null, required: false })).toBe('sheet handed in · marked');
+    expect(sheetStageLabel(done, { state: 'released', at: null, required: true })).toBe('sheet released · not handed in yet · compulsory');
+    expect(sheetStageLabel({ ...done, auto_released_at: '2026-09-09T19:09:34Z' })).toBe('sheet sent');
+    expect(sheetStageLabel({ ...done, auto_released_at: '2026-09-09T19:09:34Z' }, null)).toBe('sheet sent');
+    expect(sheetStageLabel(done, null)).toBe('sheet ready');
+    // a "nothing to teach" job never reads as released, whatever the rows say
+    expect(sheetStageLabel({ status: 'done', result: { noSheet: true, reason: 'slips only' } }, { state: 'released', at: null, required: false })).toBe('no sheet needed — slips only');
+    // an unfinished job ignores the outcome
+    expect(sheetStageLabel({ status: 'claimed', stage: 'verifying' }, { state: 'released', at: null, required: false })).toBe('verifying…');
   });
 });
