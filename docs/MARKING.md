@@ -902,6 +902,18 @@ they are, reachable from its "Other views" row. Nothing is deleted.
   card also lands on the desk. PWA: `admin/desk/layout.tsx` + `manifest-desk.json`
   (hub icons reused).
 
+### Papers being marked ride the to-do tab (10 Sep 2026)
+
+Adrian, 10 Sep 2026 ("would like marking practice again to appear on still to deal with as
+well"): a run that is queued but not yet marked appears on **Still to deal with** as a status
+row — no score, no detail view, pinned above everything (`orderLane`). The state is read off
+`result_json.queue` by `lib/desk-state.ts markingProgressOf` (pure, tested): `reading` (a Mac
+slot holds the claim, with its page progress), `assembling` (the Mac handed back or the Fly
+worker holds it), `stuck` (last attempt failed, the error shows, the queue retries), `queued`.
+`GET /api/admin/desk` returns these as `marking` + `pages` on the row (`rows` on the auto lane
+and the unfiltered list; `counts.auto` includes them). The row becomes a normal desk row the
+moment its marking is stored.
+
 ### Compartmentalised marking and sheet edits (8 Sep 2026)
 
 Adrian: "sometimes there is no need to remark an entire pdf because of a small

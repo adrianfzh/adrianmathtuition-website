@@ -28,7 +28,7 @@ import { dropboxWebUrl, paperFolder } from '@/lib/paper-folder';
 import {
   DESK_LANES, amendedStatusFor, defaultLane, deskFlags, laneFor, latestLiveJob,
   noSheetOf, pdfStaleOf, sheetStageLabel, revisingOf, type AmendedStatus, type DeskLane, isPracticeAgainHandin, handinOriginOf,
-  sheetOutcomeOf, type SheetAssignmentLite, type SheetOutcome,
+  sheetOutcomeOf, type SheetAssignmentLite, type SheetOutcome, markingProgressOf, type MarkingProgress,
 } from '@/lib/desk-state';
 
 export const runtime = 'nodejs';
@@ -41,7 +41,7 @@ const MAX_ROWS = 400;
 const AMENDED_CHECKS = 12;
 
 const RUN_COLUMNS =
-  'id, created_at, paper_name, subject, paper_subject, student_id, student_name, total_awarded, total_max, num_questions, ' +
+  'id, created_at, paper_name, subject, paper_subject, student_id, student_name, total_awarded, total_max, num_questions, num_photos, ' +
   'released_at, released_via, annotated_pdf_url, pdf_url, photos_pdf_url, checked_at, result_json';
 
 type RunRow = {
@@ -49,7 +49,7 @@ type RunRow = {
   /** 'A Math' | 'E Math' | 'H2 Math' | 'Other' | null — the AM/EM/H2 pill (SPEC-PORTAL-V2 §1). */
   paper_subject: string | null;
   student_id: string | null; student_name: string | null;
-  total_awarded: number | null; total_max: number | null; num_questions: number | null;
+  total_awarded: number | null; total_max: number | null; num_questions: number | null; num_photos?: number | null;
   released_at: string | null; released_via: string | null;
   annotated_pdf_url: string | null; pdf_url: string | null; photos_pdf_url: string | null;
   checked_at: string | null; result_json: unknown;
@@ -101,8 +101,16 @@ export async function GET(req: NextRequest) {
 
   // A run with no stored marking is a failed or still-queued attempt — same
   // rule as triage and the papers library; it has nothing to vet yet.
-  const runs = ((data ?? []) as unknown as RunRow[]).filter(r => Array.isArray((r.result_json as { results?: unknown } | null)?.results));
+  const all = (data ?? []) as unknown as RunRow[];
+  const runs = all.filter(r => Array.isArray((r.result_json as { results?: unknown } | null)?.results));
   const ids = runs.map(r => r.id);
+  // 🌙 Papers BEING MARKED (10 Sep 2026, Adrian: "would like marking practice again
+  // to appear on still to deal with as well"): a queued run with no marking yet
+  // rides the to-do tab as a status row — where it is (a Mac reading, the bot
+  // assembling, queued, stuck), never a score, never a detail view.
+  const inMarking = all
+    .map(r => ({ r, marking: markingProgressOf(r) }))
+    .filter((x): x is { r: RunRow; marking: MarkingProgress } => !!x.marking);
 
   // Newest live sheet job per run + "From Adrian" assignment count per run.
   const jobsByRun = new Map<string, SheetJobLite[]>();
@@ -151,7 +159,7 @@ export async function GET(req: NextRequest) {
     } catch (e) { console.warn('[desk] sheet rows read failed:', (e as Error).message); }
   }
 
-  const counts: Record<DeskLane, number> = { untagged: 0, 'awaiting-sheet': 0, ready: 0, auto: 0, released: 0 };
+  const counts: Record<DeskLane, number> = { untagged: 0, 'awaiting-sheet': 0, ready: 0, auto: inMarking.length, released: 0 };
   const prelim = runs.map(r => {
     const job = latestLiveJob(jobsByRun.get(r.id) ?? []);
     const sheetOutcome: SheetOutcome = sheetOutcomeOf(sheetRowsByRun.get(r.id));
@@ -223,11 +231,26 @@ export async function GET(req: NextRequest) {
     };
   });
 
+  // The status rows, on the to-do tab only (and in the unfiltered list).
+  const markingRows = (!lane || lane === 'auto') ? inMarking.map(({ r, marking }) => {
+    const folder = paperFolder(r);
+    return {
+      id: r.id, createdAt: r.created_at, paperName: r.paper_name || 'Untitled paper', subject: r.subject || 'math', paperSubject: r.paper_subject,
+      studentId: r.student_id, studentName: r.student_name,
+      awarded: 0, max: 0, pct: null, questions: 0, pending: 0,
+      lane: 'auto' as DeskLane, releasedAt: null, releasedVia: null, checkedAt: null, pdfStale: false,
+      revising: null, sheet: null, sheetOutcome: null, flags: [] as string[],
+      practiceAgain: isPracticeAgainHandin(r), origin: handinOriginOf(r), amended: null, assignments: 0,
+      folder, folderUrl: dropboxWebUrl(folder), annotatedPdfUrl: null, photosPdfUrl: null, pdfUrl: null,
+      marking, pages: r.num_photos ?? null,
+    };
+  }) : [];
+
   return NextResponse.json({
     days,
     lane,
     defaultLane: defaultLane(counts),
     counts,
-    rows: visible,
+    rows: [...markingRows, ...visible],
   });
 }

@@ -31,7 +31,7 @@ import SubjectChip from '@/components/SubjectChip';
 import GroundingChip from '@/components/GroundingChip';
 import RulesTag from '@/components/RulesTag';
 import { mathHtml } from '@/lib/math-inline';
-import { DESK_LANES, LANES_HIDDEN_AT_ZERO, releasedViaLabel, LANE_LABEL, orderLane, HANDIN_ORIGIN_LABEL, type DeskLane, type HandinOrigin, revisingLabel, type Revising, type SheetOutcome } from '@/lib/desk-state';
+import { DESK_LANES, LANES_HIDDEN_AT_ZERO, releasedViaLabel, LANE_LABEL, orderLane, HANDIN_ORIGIN_LABEL, type DeskLane, type HandinOrigin, revisingLabel, type Revising, type SheetOutcome, type MarkingProgress } from '@/lib/desk-state';
 import { ERROR_KINDS, ERROR_KIND_HINT, isErrorKind } from '@/lib/error-kinds';
 import { PAPER_SUBJECTS, SCIENCE_PAPER_SUBJECTS, subjectPill } from '@/lib/portal-subjects';
 // The pen, in place (desk round 3, 8 Sep 2026): the same overlay mark-paper uses.
@@ -54,6 +54,9 @@ type Row = {
   checkedAt?: string | null;
   /** The sheet is back with the worker for a revision — pinned at the top of its lane, and back on the to-do tab if released. */
   revising?: Revising | null;
+  /** 🌙 The paper is still being marked (10 Sep 2026) — a status row on the to-do tab: no score, no detail view. */
+  marking?: MarkingProgress | null;
+  pages?: number | null;
   sheet: { jobId: string; status: string; stage: string | null; error: string | null; label: string; completedAt: string | null; requestedBy?: string | null } | null;
   /** What the sheet did after it was written — released · handed in · marked, when, compulsory (10 Sep 2026). */
   sheetOutcome?: SheetOutcome | null;
@@ -899,7 +902,7 @@ export default function DeskPage() {
   // what I tick on the desk"). A row can be ticked when its student has another
   // paper of the same maths in this lane; the bar below the list queues ONE
   // batch job for the ticked papers (POST /api/admin/sheet-jobs { runIds }).
-  const tickable = (row: Row) => !row.practiceAgain && !!row.studentId && laneRows.some(o => o.id !== row.id && !o.practiceAgain && o.studentId === row.studentId && (o.paperSubject ?? '') === (row.paperSubject ?? ''));
+  const tickable = (row: Row) => !row.marking && !row.practiceAgain && !!row.studentId && laneRows.some(o => o.id !== row.id && !o.practiceAgain && o.studentId === row.studentId && (o.paperSubject ?? '') === (row.paperSubject ?? ''));
   const tickedRows = laneRows.filter(r => ticked.has(r.id));
   const tickedStudent = tickedRows[0]?.studentName ?? null;
   const tickedMixed = new Set(tickedRows.map(r => r.studentId)).size > 1 || new Set(tickedRows.map(r => r.paperSubject ?? '')).size > 1;
@@ -976,7 +979,32 @@ export default function DeskPage() {
           )}
 
           <div style={{ border: laneRows.length ? `1px solid ${C.border}` : 'none', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
-            {laneRows.map(row => (
+            {laneRows.map(row => row.marking ? (
+              // 🌙 Being marked (10 Sep 2026): a status row — nothing to open yet.
+              <div key={row.id} className="desk-row" aria-label="Being marked"
+                style={{ display: 'flex', gap: 10, padding: '11px 12px', borderTop: `1px solid ${C.border}`, alignItems: 'flex-start', background: '#fffbeb' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: 15, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                    {row.studentName || <span style={{ color: C.flag }}>⚠ Needs a student</span>}
+                    <span style={{ color: C.muted, fontWeight: 400 }}>·</span>
+                    <span style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{row.paperName}</span>
+                    <PaperSubjectChip subject={row.paperSubject} />
+                    <SubjectChip subject={row.subject} />
+                    <Chip label="🌙 being marked" bg="#fef3c7" color="#92400e" title="The paper is in the marking queue. It becomes a normal row here the moment its marking is stored." />
+                  </div>
+                  <div style={{ fontSize: 12.5, color: C.muted, marginTop: 3, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <span>handed in {fmtDate(row.createdAt)}</span>
+                    {row.origin && <OriginChip origin={row.origin} />}
+                    {row.practiceAgain && <Chip label="📘 Practice Again hand-in" bg="#ecfdf5" color="#047857" />}
+                    <span style={{ color: row.marking.state === 'stuck' ? C.danger : C.link, fontWeight: 600 }}>{row.marking.label}</span>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 16, color: C.faint }}>—</div>
+                  {row.pages != null && <div style={{ fontSize: 11.5, color: C.faint }}>{row.pages} page{row.pages === 1 ? '' : 's'}</div>}
+                </div>
+              </div>
+            ) : (
               <div key={row.id} className="desk-row" role="button" tabIndex={0}
                 onClick={() => go({ run: row.id })}
                 onKeyDown={e => { if (e.key === 'Enter') go({ run: row.id }); }}

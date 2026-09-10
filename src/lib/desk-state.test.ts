@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   laneFor, sheetStageLabel, isPracticeAgainHandin, releasedViaLabel, handinOriginOf, approveBlockers, releaseBlockers, deskFlags, defaultLane,
   amendedStatusFor, latestLiveJob, noSheetOf, pdfStaleOf, DESK_LANES, LANE_LABEL, orderLane, revisingOf, revisingLabel, sheetOutcomeOf, sheetInProgressOf,
+  markingProgressOf,
 } from './desk-state';
 
 const tagged = { student_id: 'recStudent', released_at: null, annotated_pdf_url: null, result_json: { results: [] } };
@@ -403,5 +404,52 @@ describe('sheetOutcomeOf + the label after the sheet went out (10 Sep 2026)', ()
     expect(sheetStageLabel({ status: 'done', result: { noSheet: true, reason: 'slips only' } }, { state: 'released', at: null, required: false })).toBe('no sheet needed — slips only');
     // an unfinished job ignores the outcome
     expect(sheetStageLabel({ status: 'claimed', stage: 'verifying' }, { state: 'released', at: null, required: false })).toBe('verifying…');
+  });
+});
+
+// ── 10 Sep 2026: a paper being marked shows on the to-do tab as a status row ──
+describe('markingProgressOf — where a queued paper is', () => {
+  const queued = { queued_at: '2026-09-10T09:05:00Z', attempts: 0 };
+  it('is null for a marked run and for a run that was never queued', () => {
+    expect(markingProgressOf({ result_json: { results: [{}], queue: queued } })).toBeNull();
+    expect(markingProgressOf({ result_json: { source: {} } })).toBeNull();
+    expect(markingProgressOf(null)).toBeNull();
+  });
+  it('queued, with the next attempt named after a failure-free retry', () => {
+    expect(markingProgressOf({ result_json: { queue: queued } })).toMatchObject({ state: 'queued', attempts: 0, queuedAt: '2026-09-10T09:05:00Z' });
+    expect(markingProgressOf({ result_json: { queue: { ...queued, attempts: 1 } } })?.label).toMatch(/attempt 2 next/);
+  });
+  it('a Mac slot reading — with its page progress', () => {
+    const p = markingProgressOf({ result_json: { queue: { ...queued, external_claim: { by: 'mac-plan-x', progress: { done: 8, total: 17 } } } } });
+    expect(p).toMatchObject({ state: 'reading', done: 8, total: 17 });
+    expect(p?.label).toMatch(/page 8\/17/);
+  });
+  it('read on the Mac, claim released, waiting for the bot to assemble', () => {
+    const p = markingProgressOf({ result_json: { queue: { ...queued, external_claim: { by: 'mac-plan-x', released_at: '2026-09-10T10:00:00Z', progress: { done: 10, total: 10 } } } } });
+    expect(p).toMatchObject({ state: 'assembling', done: 10, total: 10 });
+    expect(p?.label).toMatch(/waiting for the bot/);
+  });
+  it('the bot itself holds the paper', () => {
+    expect(markingProgressOf({ result_json: { queue: { ...queued, claimed_by: 'fly-worker' } } })).toMatchObject({ state: 'assembling' });
+  });
+  it('a failed attempt says so, with the error, and that the queue retries', () => {
+    const p = markingProgressOf({ result_json: { queue: { ...queued, attempts: 2, last_error: 'vision unavailable' } } });
+    expect(p).toMatchObject({ state: 'stuck', attempts: 2 });
+    expect(p?.label).toMatch(/attempt 2 failed — vision unavailable/);
+  });
+  it('the page count falls back to the run\'s photos when the claim has no progress', () => {
+    expect(markingProgressOf({ num_photos: 12, result_json: { queue: { ...queued, external_claim: { by: 'mac' } } } })).toMatchObject({ state: 'reading', done: null, total: 12 });
+  });
+});
+
+describe('orderLane — a paper being marked pins above everything', () => {
+  it('marking first, then a revision, then date order', () => {
+    const rows = [
+      { id: 'old', createdAt: '2026-09-01T00:00:00Z' },
+      { id: 'rev', createdAt: '2026-09-05T00:00:00Z', revising: { state: 'running' as const, round: 1 } },
+      { id: 'mk', createdAt: '2026-09-09T00:00:00Z', marking: { state: 'queued' as const, label: 'x', done: null, total: null, attempts: 0, queuedAt: null } },
+      { id: 'new', createdAt: '2026-09-08T00:00:00Z' },
+    ];
+    expect(orderLane(rows, 'auto').map(r => r.id)).toEqual(['mk', 'rev', 'old', 'new']);
   });
 });

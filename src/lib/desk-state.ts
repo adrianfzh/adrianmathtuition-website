@@ -201,6 +201,55 @@ export function releasedViaLabel(via: string | null | undefined): string {
   return `${who} · ${told}`;
 }
 
+/**
+ * A paper that is BEING MARKED (10 Sep 2026, Adrian: "would like marking practice
+ * again to appear on still to deal with as well"): the to-do tab shows every
+ * paper in motion, not only sheets. Read off `result_json.queue` — the 🌙 queue
+ * record every queued paper carries until its marking is stored:
+ *   reading    — a Mac slot holds the claim and is reading pages (progress N/M)
+ *   assembling — the pages are read (the Mac handed back, or the Fly worker took
+ *                the paper) and the bot is assembling the marking
+ *   stuck      — the last attempt failed and the queue will retry (the error shows)
+ *   queued     — waiting for a slot
+ * Null for a run that is marked, or that was never queued. Pure.
+ */
+export type MarkingProgress = {
+  state: 'queued' | 'reading' | 'assembling' | 'stuck';
+  label: string;
+  done: number | null;
+  total: number | null;
+  attempts: number;
+  queuedAt: string | null;
+};
+export function markingProgressOf(run: { result_json?: unknown; num_photos?: number | null } | null | undefined): MarkingProgress | null {
+  const rj = run?.result_json as Record<string, unknown> | null | undefined;
+  if (!rj || typeof rj !== 'object') return null;
+  if (Array.isArray(rj.results) && rj.results.length) return null;
+  const q = rj.queue as Record<string, unknown> | null | undefined;
+  if (!q || typeof q !== 'object') return null;
+  const attempts = Number(q.attempts) || 0;
+  const queuedAt = typeof q.queued_at === 'string' ? q.queued_at : null;
+  const claim = q.external_claim as Record<string, unknown> | null | undefined;
+  const prog = claim && typeof claim === 'object' ? (claim.progress as Record<string, unknown> | null | undefined) : null;
+  const done = prog && Number.isFinite(Number(prog.done)) ? Number(prog.done) : null;
+  const total = prog && Number.isFinite(Number(prog.total)) ? Number(prog.total) : (Number.isFinite(Number(run?.num_photos)) ? Number(run?.num_photos) : null);
+  const pages = done != null && total != null ? ` · page ${done}/${total}` : '';
+  const err = typeof q.last_error === 'string' ? q.last_error.trim() : '';
+  if (claim && typeof claim === 'object' && !claim.released_at) {
+    return { state: 'reading', label: `💻 a Mac slot is reading it${pages}`, done, total, attempts, queuedAt };
+  }
+  if (q.claimed_by) {
+    return { state: 'assembling', label: `🌙 the bot is marking it${done != null && total != null && done > 0 ? ` from the Mac's ${done}/${total} page reads` : ''}`, done, total, attempts, queuedAt };
+  }
+  if (claim && typeof claim === 'object' && claim.released_at && done != null && done > 0) {
+    return { state: 'assembling', label: `💻 read ${done}/${total ?? '?'} on the Mac · waiting for the bot to assemble it`, done, total, attempts, queuedAt };
+  }
+  if (err && attempts > 0) {
+    return { state: 'stuck', label: `⚠ attempt ${attempts} failed — ${err.length > 90 ? `${err.slice(0, 89)}…` : err} · the queue retries`, done, total, attempts, queuedAt };
+  }
+  return { state: 'queued', label: `⏳ queued for marking${attempts > 0 ? ` · attempt ${attempts + 1} next` : ''}`, done, total, attempts, queuedAt };
+}
+
 export function laneFor(run: DeskRun, latestSheetJob: DeskSheetJob, now: number = Date.now(), opts: { quiet?: boolean } = {}): DeskLane {
   // ✏️ A released paper whose sheet is being revised comes back to the to-do tab
   // (Adrian, 10 Sep 2026: "put it back at still to deal with … then put the paper
@@ -384,7 +433,7 @@ export function defaultLane(counts: Partial<Record<DeskLane, number>>): DeskLane
  * OLDEST first, so the paper that has waited longest is the first thing seen;
  * Released is a history and stays newest first. Ties keep their given order.
  */
-export function orderLane<T extends { createdAt: string; releasedAt?: string | null; revising?: Revising | null }>(rows: T[], lane: DeskLane): T[] {
+export function orderLane<T extends { createdAt: string; releasedAt?: string | null; revising?: Revising | null; marking?: MarkingProgress | null }>(rows: T[], lane: DeskLane): T[] {
   // A paper whose sheet is being revised sits at the TOP of its lane while the
   // revision runs (Adrian, 10 Sep 2026: "so i have an idea of what's going on at
   // a glance") and drops back into date order the moment the sheet is filed.
@@ -394,7 +443,9 @@ export function orderLane<T extends { createdAt: string; releasedAt?: string | n
   // waited longest is the first thing seen; Completed is a history, newest first.
   const dir = lane === 'released' ? -1 : 1;
   return rows
-    .map((r, i) => ({ r, i, t: Date.parse(r.createdAt) || 0, pin: r.revising ? 0 : 1 }))
+    // A paper being marked pins above everything (10 Sep 2026) — it is what is
+    // going on right now; a revision next; then date order.
+    .map((r, i) => ({ r, i, t: Date.parse(r.createdAt) || 0, pin: r.marking ? 0 : r.revising ? 1 : 2 }))
     .sort((a, b) => a.pin - b.pin || (a.t - b.t) * dir || a.i - b.i)
     .map(x => x.r);
 }
