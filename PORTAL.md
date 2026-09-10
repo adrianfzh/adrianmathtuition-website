@@ -285,3 +285,46 @@ attention card (`/admin/page.tsx`, active-this-week count + never-signed-in),
 and one compact line on `/admin/students/[id]` (last seen / hand-in / practice
 / marked-paper-opened, above "Marked papers"). Data route:
 `GET /api/admin/portal-activity`.
+
+## Hand-in — "we don't have this paper" (10 Sep 2026)
+
+Adrian: *"students should drop their question paper if required, app should hint
+if we do not have the question paper in the database."*
+
+`/app/submit` now asks, while the student is still typing the paper's name,
+whether anything we hold can ground the marking on it — 600 ms after the last
+keystroke and again on blur, and only when the name carries a 4-digit year
+(`looksLikeNamedPaper`, so no round trip per keystroke). `POST
+/api/portal/paper-check {paperName}` → the bot's read-only `phase:'paper-available'`
+(`lib/ungrounded-paper.js paperAvailability`) → `{named, available, via, label,
+key, expectedFile}`, `via` being the rung that answered: `attached` | `library` |
+`stored-scheme` | `bank`.
+
+When the answer is `named && !available`, an amber notice appears **directly
+above the add-photos button**, so the button that takes the two extra photographs
+is the next thing under it: *"We don't have the questions for GCE 2025 A Math
+Paper 2 yet. If your pages don't show the printed questions, please also
+photograph each question page (the printed pages) and add them here — otherwise
+the marking has to guess the marks for each question."* — with a small **Why?**
+toggle saying the total on the marked cover is only official once the printed
+marks are known. Copy and response shaping live in `src/lib/paper-check.ts`
+(pure, tested).
+
+Three rules this must keep:
+
+- **Advice, never a gate.** Nothing here blocks or delays Send, and the submit
+  POST does not wait on it. It is the same posture as the pre-flight findings.
+- **Fails open, everywhere.** A timeout (3 s), a 5xx, a bot that has not deployed
+  the phase yet, a shape we do not recognise: all answer "available" and show
+  nothing. Asking a student to photograph pages we already hold is worse than not
+  asking.
+- **No extra step for a student who already photographed the question pages.**
+  The notice is a request, not a checkbox; the marker reads printed brackets off
+  those pages exactly as it would off a filed PDF.
+
+A worksheet (`assignment`), a printed paper (`paper`) and the science form never
+ask — those already carry their questions or bring their own mark scheme.
+Health-check probe: `paper-check` (401 anonymously). What happens after the
+hand-in when the paper really is missing — the stamp, the review note, the honest
+cover, and the re-mark when the PDF lands — is `docs/MARKING.md` § *When the paper
+is missing*.

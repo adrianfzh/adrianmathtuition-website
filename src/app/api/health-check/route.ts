@@ -422,6 +422,15 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 🕳 The hand-in hint (10 Sep 2026): /app/submit asks this whether we hold
+    // the questions for the paper being handed in. It fails open by design, so
+    // a broken route is INVISIBLE to students — the auth gate is the only
+    // signal there is that it still exists.
+    timed('paper-check', async () => {
+      const r = await fetch(`${base}/api/portal/paper-check`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // 🧪 The Science tab (10 Sep 2026): /app/science must exist and gate — an
     // anonymous GET is bounced to /login (3xx). 404 means the tab vanished from
     // the build; 5xx means it renders broken for every student.

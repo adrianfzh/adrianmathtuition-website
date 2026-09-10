@@ -626,9 +626,28 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   marker marked from the working alone (16 of 16 reads `question_found:false`, *"Max taken as 4"* on
   a six-mark Q1), `groundPaperTotals` printed the guessed 73 against the registry's 90 as **68/90**,
   the review line said "17 marks of allocation too few", and the 8 Sep release-everything rule sent
-  it out. **Nobody was told the paper was missing.** Four things now happen, and none of them holds
+  it out. **Nobody was told the paper was missing.** Five things now happen, and none of them holds
   a marking — a student's paper is still marked and still goes out:
-  1. **At hand-in.** `enqueuePaper` asks `lib/ungrounded-paper.js checkPaperAvailable` (bot) whether
+  1. **In the app, before a single photo is uploaded (10 Sep 2026, later the same evening).** Adrian:
+     *"students should drop their question paper if required, app should hint if we do not have the
+     question paper in the database."* Isabelle was holding the printed pages and was never asked for
+     them. Now `/app/submit` asks the same ladder from the typed NAME alone, 600 ms after she stops
+     typing (and on blur): `POST /api/portal/paper-check {paperName}` → the bot's read-only
+     `phase:'paper-available'` → `lib/ungrounded-paper.js paperAvailability` →
+     `{named, available, via, label, key, expectedFile}`. `via` names the rung that answered —
+     `attached` | `library` | `stored-scheme` | `bank` — and the LIBRARY rung is asked directly here,
+     because at form time nothing has attached anything yet (`chooseRows`, so a raw `source` row
+     waiting for the extraction fleet does not count as holding the paper). When the answer is
+     `named && !available` an amber notice appears directly above the add-photos button: *"We don't
+     have the questions for GCE 2025 A Math Paper 2 yet. If your pages don't show the printed
+     questions, please also photograph each question page … otherwise the marking has to guess the
+     marks for each question."* with a **Why?** toggle (the cover's total is only official once the
+     printed marks are known). Copy + shaping live in `lib/paper-check.ts` (pure, tested); the route
+     **fails open** on every timeout, 5xx, bot-down or unknown shape, and never blocks or delays
+     Send. A worksheet, a printed paper and a science hand-in never ask — those already carry their
+     questions or bring their own mark scheme. Health-check probe: `paper-check` (401 anonymously —
+     a fail-open route is invisible to students when it breaks, so the auth gate is the only signal).
+  2. **At hand-in.** `enqueuePaper` asks `lib/ungrounded-paper.js checkPaperAvailable` (bot) whether
      any rung of the ladder can answer for this key. A NAMED past paper (GCE/TYS with year+level+paper,
      or a school exam with a school) that nothing holds is stamped `result_json.paper_match.ungrounded`
      = `{key, at, reason, filter, expected_file}` and Adrian gets ONE Telegram line naming the file that
@@ -637,14 +656,14 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
      Once per run per key; Adrian's own compiled sets, topical practice and returned Practice Again
      sheets are never named papers and never raise it. A lookup that errors answers "available" —
      a Supabase hiccup must not become a false alarm.
-  2. **On the finished run.** The marker re-stamps `paper_match.ungrounded` (it, not the enqueue, is
+  3. **On the finished run.** The marker re-stamps `paper_match.ungrounded` (it, not the enqueue, is
      the durable stamp — `logMarkingRun` rewrites `paper_match` from the result) and appends the
      review note: *"⚠️ Marked WITHOUT the question paper — GCE 2025 A Math Paper 2 is not in the
      library or the bank, and 16 of 16 questions were reconstructed from the working alone. The
      allocation is a guess and the total is not official."* (A paper whose pages DID carry the
      printed questions gets the softer half of that sentence.) The desk shows it; the queue's
      Telegram repeats it.
-  3. **On the cover and the strip.** `lib/paper-total-text.ts isUngroundedTotal` — `grounding.source`
+  4. **On the cover and the strip.** `lib/paper-total-text.ts isUngroundedTotal` — `grounding.source`
      null AND `max_source` not `counted`/`brackets` AND `counted_max < max` — turns the cover badge
      into **68/73 · not official** with no percentage and no grade band, adds *"Marked without the
      question paper: 68 of the 73 marks the marker could see. The official total will be confirmed
@@ -652,7 +671,7 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
      over `68 / 73`. Shared by `front-page-build.ts ungroundedFrontPage`, `mark-paper-pdf` and the
      ✏️ Annotate flatten, so the cover and page 1 can never disagree. Every ordinary cover is
      byte-identical to yesterday's.
-  4. **When the paper arrives.** `/api/cron/extraction-inbox` files it for the marker and re-marks
+  5. **When the paper arrives.** `/api/cron/extraction-inbox` files it for the marker and re-marks
      the papers — see below.
 - **📥 The inbox closes the loop (10 Sep 2026).** A PDF dropped into Dropbox › Extraction Inbox used
   to become the extraction fleet's `kind='source'` row and nothing else, so the four 2025 GCE papers

@@ -5,9 +5,13 @@
 // one POST that files the run under this student. Mirrors the admin intake's
 // photo hygiene (same spread heuristic, same ~2600px cap) so a student hand-in
 // marks exactly as well as one Adrian photographs himself.
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { subjectLabel } from '@/lib/mark-subjects';
 import Link from 'next/link';
+import {
+  PAPER_MISSING_TITLE, PAPER_MISSING_WHY, looksLikeNamedPaper, paperMissingNotice, shapePaperCheck,
+  type PaperCheck,
+} from '@/lib/paper-check';
 import { uploadStudentFile } from '@/lib/student-files-client';
 import { pdfToPageImages } from '@/lib/pdf-pages';
 import { friendlyPortalMessage } from '@/lib/portal-fetch';
@@ -128,6 +132,45 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   // again RESUMES instead of starting from page 1 (1 Sep 2026 — see uploadPage).
   const uploadedRef = useRef<Map<number, string>>(new Map());
   const busy = stage !== '' || converting !== '';
+
+  // 🕳 DO WE EVEN HAVE THIS PAPER? (Adrian, 10 Sep 2026: "students should drop
+  // their question paper if required, app should hint if we do not have the
+  // question paper in the database".) Isabelle's AM TYS 2025 P2 was marked with
+  // nothing to check it against because the 2025 papers had not been filed, and
+  // she was never asked for the printed pages she was holding. Now the app asks
+  // — while she is still typing the name and the paper is still on her desk.
+  //
+  // Advice only: it never blocks Send, never adds a step for a student whose
+  // photos already include the printed pages, and every failure (timeout, bot
+  // down, an older bot that 400s the phase) answers "available" and shows
+  // nothing. A locked name (a worksheet or a printed paper) already carries its
+  // questions, and a science paper takes its own mark scheme, so neither asks.
+  const nameLocked = !!assignment || !!paper;
+  const [paperCheck, setPaperCheck] = useState<PaperCheck | null>(null);
+  const [whyOpen, setWhyOpen] = useState(false);
+  const checkSeq = useRef(0);
+  const runPaperCheck = useCallback(async (name: string) => {
+    if (!looksLikeNamedPaper(name)) { setPaperCheck(null); return; }
+    const seq = ++checkSeq.current;   // only the newest answer may paint
+    try {
+      const r = await fetch('/api/portal/paper-check', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paperName: name }),
+      });
+      const d = await r.json().catch(() => null);
+      if (seq === checkSeq.current) setPaperCheck(shapePaperCheck(d));
+    } catch {
+      if (seq === checkSeq.current) setPaperCheck(null);   // silence, never a false ask
+    }
+  }, []);
+  useEffect(() => {
+    if (nameLocked || isScience) return;
+    const name = paperName.trim();
+    if (!looksLikeNamedPaper(name)) { setPaperCheck(null); return; }
+    const t = setTimeout(() => { void runPaperCheck(name); }, 600);
+    return () => clearTimeout(t);
+  }, [paperName, nameLocked, isScience, runPaperCheck]);
+  const paperMissing = !nameLocked && !isScience && !!paperCheck && paperCheck.named && !paperCheck.available;
 
   async function onPick(list: FileList | null) {
     if (!list?.length) return;
@@ -456,6 +499,25 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
           </p>
         )}
 
+        {/* We don't hold this paper. Sits directly above the add-photos button —
+            the notice asks for two more photographs and the button that takes
+            them is the next thing under it. Amber, like the pre-flight findings:
+            nothing is wrong, the hand-in goes through either way. */}
+        {paperMissing && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-[13px] text-amber-900 space-y-1.5">
+            <p className="font-bold">📄 {PAPER_MISSING_TITLE}</p>
+            <p className="leading-snug">{paperMissingNotice(paperCheck?.label ?? null)}</p>
+            <button
+              type="button" onClick={() => setWhyOpen(v => !v)}
+              aria-expanded={whyOpen}
+              className="text-[12px] font-semibold text-amber-800 underline underline-offset-2"
+            >
+              {whyOpen ? 'Hide' : 'Why?'}
+            </button>
+            {whyOpen && <p className="text-[12px] leading-snug text-amber-800">{PAPER_MISSING_WHY}</p>}
+          </div>
+        )}
+
         <button
           onClick={() => inputRef.current?.click()}
           disabled={busy}
@@ -515,6 +577,9 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
           <input
             id="paper-name" type="text" value={paperName} maxLength={80} required
             onChange={(e) => setPaperName(e.target.value)}
+            // Leaving the field is the moment the name is finished — ask then
+            // rather than waiting out the debounce (lib/paper-check).
+            onBlur={(e) => { void runPaperCheck(e.target.value.trim()); }}
             placeholder="e.g. Xinmin 2021 Prelim P2"
             className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy/20"
           />
