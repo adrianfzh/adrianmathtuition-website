@@ -17,6 +17,12 @@ import { answerLines, promptLines, buildStudentMarking, type MarkingRunRow, type
 import { allowedSubjects, subjectAllowed } from '@/lib/portal-subjects';
 import { statsBySubject } from '@/lib/portal-papers-stats';
 import { coveredRunIds } from '@/lib/sheet-queue';
+import { isPracticeAgainHandin } from '@/lib/desk-state';
+import {
+  shelvedGaps, outsideWindow, NOTE_STALE, NOTE_IN_FLIGHT, NOTE_PRACTICE_AGAIN, type PickPaper,
+} from '@/lib/student-batch';
+import ChoosePapers from './ChoosePapers';
+import NextWave from './NextWave';
 import { groupPracticeAgain, sheetParents } from '@/lib/portal-marking-group';
 import PaperSubjectPill from '@/components/PaperSubjectPill';
 import AnnotatedSolution from './AnnotatedSolution';
@@ -128,6 +134,9 @@ export default async function MarkingPage() {
   // count in no tile — lib/portal-papers-stats).
   const rows = ((data ?? []) as MarkingRunRow[]).filter(r => subjectAllowed(account, r.paper_subject));
   const { papers, focus, streakNote } = buildStudentMarking(rows, { studentName: account?.display_name ?? null });
+  // The raw row behind each card — when it was marked, and whether it is itself
+  // a returned Practice Again sheet. Both decide whether it may join a tick.
+  const rowById = new Map(rows.map(r => [r.id, r]));
   // The Practice Again sheet belongs with its paper (Adrian, 7 Sep 2026), not on a
   // separate to-do page: one released worksheet assignment per source run.
   // `run_id` = the sheet's OWN marking run once its hand-in is marked — what
@@ -148,17 +157,40 @@ export default async function MarkingPage() {
   // top-level PDF (Adrian, 8 Sep 2026): its marking run leaves the list and is
   // opened from the paper's Practice Again row. `top` is what the student sees.
   const { top, markedSheetByParent } = groupPracticeAgain(papers, sheetRowsAll);
-  // Papers with no sheet yet: is one being written, waiting on Adrian, or was
-  // there nothing worth practising? (Practice Again on request, 8 Sep 2026 —
-  // the request button itself lives on the paper's own page.)
+  // The sheet jobs behind every listed paper — for papers with NO sheet, where
+  // the sheet is (being written · with Adrian · nothing worth practising); for
+  // papers WITH one, whether it kept gaps back for a next wave (11 Sep 2026)
+  // and whether a sheet is in flight (which closes the paper to the tick).
+  // One query for both (it used to fetch only the sheet-less papers).
   type JobLite = { run_id: string; run_ids: string[] | null; status: string; result: unknown };
   const jobByRun = new Map<string, { status: string; noSheet: boolean }>();
-  const noSheetIds = papers.filter(p => !sheetsByRun.has(p.id)).map(p => p.id);
-  if (noSheetIds.length) {
+  /** The finished sheet's shelf, per paper it covers: what a next wave would teach. */
+  const waveByRun = new Map<string, { count: number; runIds: string[] }>();
+  const allIds = papers.map(p => p.id);
+  if (allIds.length) {
     const { data: jobRows } = await sb.from('sheet_jobs').select('run_id, run_ids, status, result')
-      .or(`run_id.in.(${noSheetIds.join(',')}),run_ids.ov.{${noSheetIds.join(',')}}`).order('created_at', { ascending: false });
-    for (const j of (jobRows ?? []) as JobLite[]) for (const rid of coveredRunIds(j)) if (!jobByRun.has(rid)) jobByRun.set(rid, { status: j.status, noSheet: readNoSheet(j.result).noSheet });
+      .or(`run_id.in.(${allIds.join(',')}),run_ids.ov.{${allIds.join(',')}}`).order('created_at', { ascending: false });
+    for (const j of (jobRows ?? []) as JobLite[]) {
+      const covered = coveredRunIds(j);
+      for (const rid of covered) if (!jobByRun.has(rid)) jobByRun.set(rid, { status: j.status, noSheet: readNoSheet(j.result).noSheet });
+      if (j.status === 'done') {
+        const shelf = shelvedGaps(j.result);
+        if (shelf.length) for (const rid of covered) if (!waveByRun.has(rid)) waveByRun.set(rid, { count: shelf.length, runIds: covered });
+      }
+    }
   }
+  // 📘 The tick (11 Sep 2026): which papers may join one merged Practice Again
+  // sheet. Everything absolute is decided here, in the same words the rows wear
+  // — the relative rules (one maths, three at most) are the client's.
+  const pickPapers: PickPaper[] = top.map(p => {
+    const job = jobByRun.get(p.id);
+    const blocked =
+      outsideWindow(rowById.get(p.id)?.created_at, Date.now()) ? NOTE_STALE
+      : job && (job.status === 'queued' || job.status === 'claimed') ? NOTE_IN_FLIGHT
+      : isPracticeAgainHandin(rowById.get(p.id)) ? NOTE_PRACTICE_AGAIN
+      : null;
+    return { id: p.id, name: p.name, subject: p.subject ?? '', date: p.date, awarded: p.awarded, max: p.max, blocked };
+  });
   // Per-subject tiles, in the account's display order; tabs only when the
   // student has papers in more than one subject.
   // Tiles describe the papers on screen — a nested sheet is not a paper.
@@ -257,7 +289,14 @@ export default async function MarkingPage() {
             </div>
           )}
 
-          {top.map(p => <Paper key={p.id} paper={p} sheet={sheetsByRun.get(p.id) ?? null} sheetJob={jobByRun.get(p.id) ?? null} markedSheet={markedSheetByParent.get(p.id) ?? null} />)}
+          {/* 📘 "Choose papers" wraps the list: off, it is one line above the
+              cards; on, the cards give way to a tick list (ChoosePapers). */}
+          <ChoosePapers papers={pickPapers}>
+            {top.map(p => (
+              <Paper key={p.id} paper={p} sheet={sheetsByRun.get(p.id) ?? null} sheetJob={jobByRun.get(p.id) ?? null}
+                markedSheet={markedSheetByParent.get(p.id) ?? null} nextWave={waveByRun.get(p.id) ?? null} />
+            ))}
+          </ChoosePapers>
 
           {earlier.length > 0 && (
             <details className={`${CARD} p-4`}>
@@ -286,13 +325,15 @@ export default async function MarkingPage() {
 // The latest / average / trend tiles moved into ./SubjectTiles (per subject,
 // SPEC-PORTAL-V2 §1); their arithmetic lives in lib/portal-papers-stats.
 
-function Paper({ paper, sheet, sheetJob, markedSheet }: {
+function Paper({ paper, sheet, sheetJob, markedSheet, nextWave }: {
   paper: StudentPaper;
   sheet: { id: string; run_id: string | null; status: string; pdf_url: string | null; score: number | null; out_of: number | null; required_at: string | null; source_run_ids?: string[] | null } | null;
   /** The latest sheet job when no sheet is with the student yet — says where it is. */
   sheetJob: { status: string; noSheet: boolean } | null;
   /** The sheet's own marked run, grouped under this paper (null until marked, or when it is not in the list). */
   markedSheet: StudentPaper | null;
+  /** What the finished sheet kept back, and which papers a next wave would continue (11 Sep 2026). */
+  nextWave: { count: number; runIds: string[] } | null;
 }) {
   return (
     <div className={`${CARD} p-4`}>
@@ -367,6 +408,9 @@ function Paper({ paper, sheet, sheetJob, markedSheet }: {
               <span className="shrink-0 text-emerald-800 text-sm">›</span>
             </Link>
           )}
+          {/* One sheet teaches one wave; the rest was shelved with evidence.
+              Until now only Adrian's Telegram saw the shelf (11 Sep 2026). */}
+          {nextWave && <NextWave runIds={nextWave.runIds} count={nextWave.count} />}
         </div>
       )}
       {!sheet && sheetJob && (sheetJob.status === 'queued' || sheetJob.status === 'claimed') && (
