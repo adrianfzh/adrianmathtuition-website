@@ -812,6 +812,18 @@ export async function GET(req: NextRequest) {
       const r = await fetch('https://adrianmath-telegram-math-bot.fly.dev/', { signal: T(15000) });
       if (r.status >= 500) throw new Error(`HTTP ${r.status} — machine down?`);
     }),
+    // The MARKER machine (11 Sep 2026). Since the two-process split the marking
+    // queue runs on a machine with no public address; the app's /queue-quiet
+    // asks it over Fly's private network and reports `marker_reachable`. A
+    // single-process bot has no such field and passes. The bot's own load
+    // monitor Telegrams within minutes; this is the 6-hourly backstop.
+    timed('marker', async () => {
+      const r = await fetch('https://adrianmath-telegram-math-bot.fly.dev/queue-quiet', { signal: T(15000) });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const j = await r.json() as { marker_reachable?: boolean; marker?: { in_flight?: number } };
+      if (j.marker_reachable === false) throw new Error('marker process unreachable — queued papers are not being marked');
+      return j.marker_reachable === true ? `reachable, in-flight ${j.marker?.in_flight ?? 0}` : 'single process';
+    }),
   ]);
   results.push(...parallelChecks);
 
