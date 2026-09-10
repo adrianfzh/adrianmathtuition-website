@@ -2,6 +2,7 @@
 // interactive client component.
 import { currentAccount } from '@/lib/portal-auth';
 import { ensureTelegramLinked } from '@/lib/telegram-link-state';
+import { askSignalOn } from '@/lib/ask-signal';
 import SettingsClient from './SettingsClient';
 
 export const dynamic = 'force-dynamic';
@@ -16,6 +17,7 @@ export default async function SettingsPage() {
       level={account.level || ''}
       telegramChatId={account.telegram_chat_id ? String(account.telegram_chat_id) : ''}
       telegramLinked={tg === 'linked'}
+      askSignal={askSignalOn(account.prefs)}
     />
   );
 }

@@ -41,6 +41,8 @@ import { loadPapersAndNotebook, type NotebookEntryRow, type PapersAndNotebook } 
 import { retryOrder, sgtToday } from '@/lib/notebook';
 import { loadMistakes, type MistakeRow } from '@/lib/notebook-mistakes-store';
 import { bandOf, displayOrder, latestSighting, shortDate, sightingLine, stateLabel } from '@/lib/notebook-mistakes';
+import { askSignalLine, askSignalOn, askStateLabel, type AskSignalLine } from '@/lib/ask-signal';
+import { loadAskSignal } from '@/lib/ask-signal-store';
 import { CorrectedButton } from './mistake-actions';
 import { MAX_NOTES_PER_STUDENT, type MyNoteRow, type TopicOptionGroup } from '@/lib/portal-notes';
 import { getTopicsForPaperLevel } from '@/lib/canonical-topics';
@@ -91,7 +93,7 @@ export default async function MyNotebookPage() {
   // independent — one parallel batch. All fail soft: a load error hides its
   // band, never the page.
   const svc = createServiceClient();
-  const [assembly, clippings, mistakes] = await Promise.all([
+  const [assembly, clippings, mistakes, askLines] = await Promise.all([
     loadPapersAndNotebook(svc, sid, sgtToday()).catch(
       (): PapersAndNotebook => ({ ok: false, error: 'papers' }),
     ),
@@ -104,6 +106,12 @@ export default async function MyNotebookPage() {
       .then(r => (r.data ?? []) as MyNoteRow[], () => [] as MyNoteRow[]),
     // The read applies the 14-day "Corrected" → Fixed sweep on the way out.
     loadMistakes(svc, sid).catch((): MistakeRow[] => []),
+    // Keeps coming up (opt-in — Settings → "Count what I ask about"): the
+    // student's own asks from the bot's Questions log, derived on the fly,
+    // never stored. Off, or a stranger with no Airtable record → no band.
+    askSignalOn(account?.prefs) && account?.airtable_student_id
+      ? loadAskSignal(account.airtable_student_id)
+      : Promise.resolve([] as AskSignalLine[]),
   ]);
 
   // Band 1 — the mistakes list in display order (entries with no evidence yet,
@@ -208,6 +216,42 @@ export default async function MyNotebookPage() {
               </ul>
             </div>
           )}
+        </section>
+      )}
+
+      {/* Band 1b — Keeps coming up (10 Sep 2026, OPT-IN via Settings →
+          "Count what I ask about"): topics the student asked the bot about
+          ASK_SIGNAL_MIN+ times in the last fortnight, read from the Airtable
+          Questions log at render time. Nothing is stored, so the line fades by
+          itself — Coming up less for the following fortnight, then gone.
+          Asking is not a mistake: softer ink, no Corrected button, no
+          evidence, no practice links. Hidden at zero like every band. */}
+      {askLines.length > 0 && (
+        <section data-ask-signal-band>
+          <p className={`${BAND} mb-2`}>
+            Keeps coming up in your questions <span className="normal-case font-medium">· {askLines.length}</span>
+          </p>
+          <div className="space-y-2">
+            {askLines.map(l => (
+              <div key={l.key} className={`${CARD} p-4 ${l.state === 'up' ? '' : 'opacity-75'}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className={`text-sm font-bold ${l.state === 'up' ? 'text-navy' : 'text-gray-600'}`}>
+                      {l.subject ? `${l.subject}: ` : ''}{l.topic}
+                    </p>
+                    <p className="text-[12px] text-gray-500 mt-0.5">{askSignalLine(l)}</p>
+                  </div>
+                  <span className={`shrink-0 text-[11px] rounded-full px-2.5 py-0.5 font-semibold whitespace-nowrap ${l.state === 'up' ? 'bg-sky-50 text-sky-800' : 'bg-gray-100 text-gray-600'}`}>
+                    {askStateLabel(l.state)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] text-gray-400 mt-1.5">
+            From what you ask in the app. Asking isn&apos;t a mistake — this is only what keeps coming up.{' '}
+            <Link href="/app/settings" className="underline">Turn it off in Settings</Link>.
+          </p>
         </section>
       )}
 

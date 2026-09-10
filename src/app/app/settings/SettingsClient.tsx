@@ -6,6 +6,7 @@ import { getSupabaseBrowser } from '@/lib/supabase-client';
 import { PORTAL_TOUR_KEY } from '@/lib/portal-tour';
 import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 import PushToggle from './PushToggle';
+import AskSignalToggle from './AskSignalToggle';
 import InstallCard from '@/components/InstallCard';
 import TelegramLinkCard from '@/components/TelegramLinkCard';
 
@@ -14,9 +15,9 @@ const input = 'w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm fo
 const btn = 'bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50';
 
 export default function SettingsClient({
-  email, displayName, level, telegramChatId, telegramLinked,
+  email, displayName, level, telegramChatId, telegramLinked, askSignal,
 }: {
-  email: string; displayName: string; level: string; telegramChatId: string; telegramLinked: boolean;
+  email: string; displayName: string; level: string; telegramChatId: string; telegramLinked: boolean; askSignal: boolean;
 }) {
   const router = useRouter();
   const [pw, setPw] = useState({ next: '', confirm: '', msg: '', busy: false });
@@ -119,6 +120,10 @@ export default function SettingsClient({
       <TelegramLinkCard variant="settings" linked={telegramLinked} chatId={telegramChatId} />
 
       <PushToggle />
+
+      {/* 💬 Count what I ask about (10 Sep 2026) — the Notebook's opt-in
+          Keeps-coming-up band; prefs.ask_signal via /api/portal/settings. */}
+      <AskSignalToggle initial={askSignal} />
 
       <div className={card}>
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Show me around</p>

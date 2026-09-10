@@ -168,6 +168,13 @@ angle"), `error_kind`, `subject`, `evidence[]` (run/attempt links with dates),
   a clean attempt.
 - "This week's focus" (Home card, Notebook band, `lib/plan.ts`) is removed when the
   list ships.
+- **Asks are not verdicts (Adrian, 10 Sep 2026).** A question asked through the Ask tab
+  never feeds the list — the student asked, they did not get it wrong. The opt-in
+  beside it (Settings → "Count what I ask about", `portal_accounts.prefs.ask_signal`)
+  derives a softer "Keeps coming up" band from the bot's Airtable `Questions` log:
+  ≥ 3 asks on one topic inside a fortnight, "Coming up less" the fortnight after, then
+  gone. Nothing stored, no Corrected button, no evidence, no practice links —
+  `lib/ask-signal.ts` (pure, tested) + `lib/ask-signal-store.ts`.
 
 ## 7. Practice Again hands back its questions
 
