@@ -2011,7 +2011,13 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     const prevViewport = viewportMeta?.getAttribute('content') ?? null;
     const lockMeta = viewportMeta ?? Object.assign(document.createElement('meta'), { name: 'viewport' });
     if (!viewportMeta) document.head.appendChild(lockMeta);
-    lockMeta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
+    // Only the zoom clamp is added. `viewport-fit=cover` used to ride along and, in
+    // a Home-screen (standalone) web app on iPadOS, it re-laid the page out under
+    // the status bar: scrollY −32, document top +32, and every stroke's ink 32 px
+    // above the Pencil tip (Adrian, 10 Sep 2026 — the calibration records in
+    // annotate_ink_log). Whatever viewport-fit the page declared stays as it was.
+    const fit = (prevViewport ?? '').match(/viewport-fit\s*=\s*[a-z]+/i)?.[0];
+    lockMeta.setAttribute('content', `width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no${fit ? `, ${fit}` : ''}`);
     let lock: { release?: () => Promise<void> } | null = null;
     const requestLock = () => {
       (navigator as Navigator & { wakeLock?: { request: (t: 'screen') => Promise<{ release?: () => Promise<void> }> } })
