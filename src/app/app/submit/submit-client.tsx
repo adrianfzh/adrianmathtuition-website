@@ -430,7 +430,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-900 space-y-1">
           <p className="font-bold">Science marking is new, and free while it is.</p>
           <p>
-            The marks are an <b>estimate</b>. Calculations are checked properly; <b>explain</b> answers are marked
+            The marks are an <b>estimate</b>. Calculations are checked properly; <b>explain</b>{' '}answers are marked
             against standard syllabus points unless you attach your school&apos;s mark scheme below.
           </p>
           <p>When your teacher returns the paper, compare — and enter their total on the marked paper&apos;s page so we can check ourselves.</p>
