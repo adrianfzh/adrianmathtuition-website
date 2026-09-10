@@ -1855,6 +1855,15 @@ it), and **tag the backlog**.
 
 ## /admin/calibration — is the marker trusted yet? (2026-09-02)
 
+> **Calibration uploads sit in "Still to deal with" until ticked (11 Sep 2026).** A
+> calibration script is uploaded as an admin run with no student (`CALIBRATION · …`),
+> so once marked it matches the outstanding rule (`lib/mark-paper-outstanding.ts`:
+> not released, not archived, not `checked_at`) exactly like a real paper waiting for a
+> tag — Adrian: "why are the calibration paper still around?". Once its
+> `calibration_results` row is written, tick it ✓ (`checked_at`) on mark-paper or
+> `/admin/papers`; the six Cambridge booklet scripts of 10 Sep were ticked by SQL on
+> 11 Sep. Keep the runs (don't 🗑) — the physics rule re-run needs them.
+
 **Rules version stamp (2 Sep 2026, evening).** Every run now carries `paper_marking_runs.rules_version`
 (also `result_json.marker`): a content hash of the marking prompts in force for that subject —
 the two marking system prompts (severity rules + JSON spec + the subject's block) and the page
