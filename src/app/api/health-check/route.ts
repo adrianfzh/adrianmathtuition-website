@@ -512,6 +512,12 @@ export async function GET(req: NextRequest) {
     }),
     // Send a page (11 Sep 2026, SPEC-NOTEBOOK-V2 §12): the admin door that pushes a
     // page into every student's From Adrian + Notebook — its 401 gate.
+    // 💾 Saved answers (11 Sep 2026, SPEC-NOTEBOOK-V2 §1): the student door's 401.
+    timed('notebook-saves', async () => {
+      const r = await fetch(`${base}/api/portal/notebook/saves`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (session gate), got HTTP ${r.status}`);
+      return 'session gate up';
+    }),
     timed('marking-settings', async () => {
       const r = await fetch(`${base}/api/admin/marking-settings`, { redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);

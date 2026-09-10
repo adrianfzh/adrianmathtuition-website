@@ -45,6 +45,8 @@ import { askLineContext, askLineTitle, askSignalLine, askSignalOn, askStateLabel
 import { loadAskSignal } from '@/lib/ask-signal-store';
 import { listStudentAssignments } from '@/lib/portal-assignments';
 import { isPage } from '@/lib/assignments';
+import SavedAnswers from './saved-answers';
+import type { SaveRow } from '@/lib/notebook-saves';
 import { CorrectedButton } from './mistake-actions';
 import { MAX_NOTES_PER_STUDENT, type MyNoteRow, type TopicOptionGroup } from '@/lib/portal-notes';
 import { getTopicsForPaperLevel } from '@/lib/canonical-topics';
@@ -86,7 +88,7 @@ export default async function MyNotebookPage() {
   // independent — one parallel batch. All fail soft: a load error hides its
   // band, never the page.
   const svc = createServiceClient();
-  const [clippings, mistakes, askLines, pages] = await Promise.all([
+  const [clippings, mistakes, askLines, pages, saves] = await Promise.all([
     getSupabaseAdmin()
       .from('portal_notes')
       .select('id, run_id, source_label, topic, image_url, note, created_at, auto_topic, auto_skill')
@@ -102,6 +104,10 @@ export default async function MyNotebookPage() {
     askSignalOn(account?.prefs) ? loadAskSignal(svc, sid) : Promise.resolve([] as AskSignalLine[]),
     // Pages Adrian pushed (SPEC-NOTEBOOK-V2 §12) — the "From Adrian" band, newest first.
     listStudentAssignments(sid, account).then(rows => rows.filter(isPage), () => []),
+    // 💾 Saved answers (SPEC-NOTEBOOK-V2 §1) — private rows, newest first.
+    svc.from('notebook_saves').select('id, kind, source, question_text, answer_text, image_url, title, topic, skill, created_at')
+      .eq('airtable_student_id', sid).order('created_at', { ascending: false }).limit(200)
+      .then(r => (r.data ?? []) as SaveRow[], () => [] as SaveRow[]),
   ]);
 
   // Band 1 — the mistakes list in display order (entries with no evidence yet,
@@ -215,6 +221,10 @@ export default async function MyNotebookPage() {
           </div>
         </section>
       )}
+
+      {/* 💾 Saved answers (11 Sep 2026, SPEC-NOTEBOOK-V2 §1) — grouped by topic,
+          tagged by skill, titled by the student; hidden at zero. */}
+      <SavedAnswers initial={saves} />
 
       {/* Band 1b — Keeps coming up (10 Sep 2026, OPT-IN via Settings →
           "Show skills I keep asking about"): the bank sub-skills the student

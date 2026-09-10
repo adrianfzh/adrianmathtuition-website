@@ -26,7 +26,7 @@ Two rules from the night it was agreed:
 What was DROPPED the same night: Questions to retry (live a fortnight, 197 entries, no
 student ever attempted one — the pull model does not work; see §7 for the push model).
 
-## 1. Save an answer (opt-in)
+## 1. Save an answer (opt-in) — BUILT 11 Sep 2026 for fresh Ask answers (Telegram button + restored turns still to do)
 
 - **Where the button is.** Under every answer in the Ask tab; under the bot's Telegram
   answers as a reply button once the account is linked; on a practice question's

@@ -329,6 +329,49 @@ export function attachFeedbackRow(group: HTMLElement, messageId: number, existin
   group.appendChild(row);
 }
 
+/* ── 💾 Save to my notebook (SPEC-NOTEBOOK-V2 §1, 11 Sep 2026) ──
+   Rendered under a fresh answer when the student has the switch on; the page
+   supplies `save` (its own POST to /api/portal/notebook/saves). One tap → the
+   button becomes the receipt ("✓ Saved · R-formula"); a second tap does nothing. */
+export interface SaveOpts {
+  getChatId: () => string;
+  save: (messageId: number, chatId: string) => Promise<{ title: string; skill?: string | null; topic?: string | null; already?: boolean } | null>;
+}
+export function attachSaveButton(group: HTMLElement, messageId: number, opts: SaveOpts) {
+  if (!messageId || group.querySelector('.save-btn')) return;
+  let row = group.querySelector('.fb-row') as HTMLElement | null;
+  if (!row) {
+    row = document.createElement('div');
+    row.className = 'fb-row';
+    row.style.cssText = 'display:flex;gap:6px;margin-top:4px;';
+    group.appendChild(row);
+  }
+  const b = document.createElement('button');
+  b.className = 'save-btn';
+  b.textContent = '💾 Save to my notebook';
+  b.setAttribute('aria-label', 'Save this answer to my notebook');
+  b.style.cssText = 'background:none;border:1px solid hsl(220,15%,88%);border-radius:8px;padding:2px 9px;cursor:pointer;font-size:13px;opacity:0.75;margin-left:auto;';
+  b.onclick = async () => {
+    if (b.dataset.saved) return;
+    b.disabled = true;
+    b.textContent = 'Saving…';
+    try {
+      const r = await opts.save(messageId, opts.getChatId());
+      if (!r) throw new Error('no');
+      b.dataset.saved = '1';
+      const tag = r.skill || r.topic;
+      b.textContent = `✓ Saved${tag ? ` · ${tag}` : ''}`;
+      b.style.opacity = '1';
+      b.style.background = 'hsl(150,60%,96%)';
+      b.style.borderColor = 'hsl(150,40%,70%)';
+    } catch {
+      b.disabled = false;
+      b.textContent = '💾 Save to my notebook — try again';
+    }
+  };
+  row.appendChild(b);
+}
+
 /* ── Conversation restore ─────────────────────────────────────────────────── */
 
 // KaTeX loads from CDN — wait for it (max ~6s) so restored math renders.

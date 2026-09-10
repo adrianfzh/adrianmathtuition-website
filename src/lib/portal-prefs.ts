@@ -11,12 +11,21 @@ export const EXAM_COUNTDOWN_PREF = 'exam_countdown';
 /** The one-time Home notice about that switch has been shown (either button dismisses it). */
 export const EXAM_COUNTDOWN_NOTICE_PREF = 'exam_countdown_notice_seen';
 
+/** Settings → "Save answers to my notebook" → the 💾 button under Ask answers (SPEC-NOTEBOOK-V2 §1). */
+export const SAVE_ANSWERS_PREF = 'save_answers';
+
 export const PORTAL_PREF_KEYS: readonly string[] = [
   /** Settings → "Show skills I keep asking about" → the Notebook's Keeps-coming-up band (lib/ask-signal.ts). */
   ASK_SIGNAL_PREF,
   EXAM_COUNTDOWN_PREF,
   EXAM_COUNTDOWN_NOTICE_PREF,
+  SAVE_ANSWERS_PREF,
 ];
+
+/** True only for an explicit `true`. */
+export function saveAnswersOn(prefs: unknown): boolean {
+  return prefsObject(prefs)?.[SAVE_ANSWERS_PREF] === true;
+}
 
 function prefsObject(prefs: unknown): Record<string, unknown> | null {
   return prefs && typeof prefs === 'object' && !Array.isArray(prefs) ? (prefs as Record<string, unknown>) : null;

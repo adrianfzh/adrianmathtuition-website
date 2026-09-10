@@ -8,7 +8,7 @@ import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 import PushToggle from './PushToggle';
 import PrefToggle from './PrefToggle';
 import { ASK_SIGNAL_MIN, ASK_SIGNAL_PREF } from '@/lib/ask-signal';
-import { EXAM_COUNTDOWN_NOTICE_PREF, EXAM_COUNTDOWN_PREF } from '@/lib/portal-prefs';
+import { EXAM_COUNTDOWN_NOTICE_PREF, EXAM_COUNTDOWN_PREF, SAVE_ANSWERS_PREF } from '@/lib/portal-prefs';
 import InstallCard from '@/components/InstallCard';
 import TelegramLinkCard from '@/components/TelegramLinkCard';
 
@@ -17,9 +17,9 @@ const input = 'w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm fo
 const btn = 'bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50';
 
 export default function SettingsClient({
-  email, displayName, level, telegramChatId, telegramLinked, askSignal, examCountdown,
+  email, displayName, level, telegramChatId, telegramLinked, askSignal, examCountdown, saveAnswers,
 }: {
-  email: string; displayName: string; level: string; telegramChatId: string; telegramLinked: boolean; askSignal: boolean; examCountdown: boolean;
+  email: string; displayName: string; level: string; telegramChatId: string; telegramLinked: boolean; askSignal: boolean; examCountdown: boolean; saveAnswers: boolean;
 }) {
   const router = useRouter();
   const [pw, setPw] = useState({ next: '', confirm: '', msg: '', busy: false });
@@ -134,6 +134,15 @@ export default function SettingsClient({
         onMessage="✓ On — your next exam now sits at the top of Home."
         offMessage="Off — Home shows no countdown."
         initial={examCountdown}
+      />
+      <PrefToggle
+        pref={SAVE_ANSWERS_PREF}
+        heading="My Notebook"
+        label="💾 Save answers to my notebook"
+        description={<>Adds a &ldquo;Save to my notebook&rdquo; button under every answer in Ask. A saved answer keeps the question and the full working in My Notebook, filed under its topic and tagged with the skill, and you can name the card yourself.</>}
+        onMessage="✓ On — look for 💾 under your next answer in Ask."
+        offMessage="Off — answers stay in the chat only."
+        initial={saveAnswers}
       />
       <PrefToggle
         pref={ASK_SIGNAL_PREF}

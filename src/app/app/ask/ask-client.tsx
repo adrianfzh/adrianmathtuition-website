@@ -19,6 +19,7 @@ import {
   appendStreamingMessage,
   appendTypingIndicator,
   attachFeedbackRow,
+  attachSaveButton,
   autoResize,
   insertRestoredMessages,
   postSolverChat,
@@ -40,7 +41,7 @@ const SendIcon = () => (
   </svg>
 );
 
-export default function AskClient({ firstName, botLevel }: { firstName: string | null; botLevel: string | null }) {
+export default function AskClient({ firstName, botLevel, saveEnabled = false }: { firstName: string | null; botLevel: string | null; saveEnabled?: boolean }) {
   const [started, setStarted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -342,6 +343,18 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
       if (outcome.doneMessageId) {
         const group = streamDiv.parentElement?.parentElement as HTMLElement | null;
         if (group) attachFeedbackRow(group, outcome.doneMessageId, null, feedbackOpts());
+        // 💾 Save to my notebook (SPEC-NOTEBOOK-V2 §1) — only when the switch is on.
+        if (group && saveEnabled) {
+          attachSaveButton(group, outcome.doneMessageId, {
+            getChatId: () => sessionIdRef.current,
+            save: async (messageId, chatId) => {
+              const r = await fetch('/api/portal/notebook/saves', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messageId, chatId }) });
+              if (!r.ok) return null;
+              const j = await r.json();
+              return j?.save ? { title: j.save.title, skill: j.save.skill, topic: j.save.topic, already: !!j.already } : null;
+            },
+          });
+        }
       }
       scrollToBottom();
     } catch {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { examCountdownNoticeDue, examCountdownOn, mergePrefs, readPrefsPatch } from './portal-prefs';
+import { examCountdownNoticeDue, examCountdownOn, mergePrefs, readPrefsPatch, saveAnswersOn } from './portal-prefs';
 
 describe('readPrefsPatch', () => {
   it('accepts a whitelisted boolean', () => {
@@ -46,5 +46,14 @@ describe('exam countdown prefs', () => {
     expect(examCountdownNoticeDue({ exam_countdown: true })).toBe(false);
     // an explicit off is a decision — no nagging
     expect(examCountdownNoticeDue({ exam_countdown: false })).toBe(false);
+  });
+});
+
+describe('save answers pref', () => {
+  it('is whitelisted and on only for an explicit true', () => {
+    expect(readPrefsPatch({ save_answers: true })).toEqual({ patch: { save_answers: true } });
+    expect(saveAnswersOn({ save_answers: true })).toBe(true);
+    expect(saveAnswersOn({ save_answers: 'yes' })).toBe(false);
+    expect(saveAnswersOn({})).toBe(false);
   });
 });
