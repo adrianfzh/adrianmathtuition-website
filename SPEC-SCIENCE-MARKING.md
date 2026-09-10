@@ -176,7 +176,11 @@ a scheme and says so — and the disclaimer says so to the student.
    back with it.
 8. **Calibration today, without students.** Cambridge "Example Candidate Responses"
    booklets (real scanned candidate scripts, examiner marks per part, commentary) —
-   Physics 5054 (2014, 112 pp.) and Biology 5090 (2014) were downloaded 10 Sep 2026; each
+   Physics 5054 (2014, 112 pp.) and Biology 5090 (2014) were downloaded 10 Sep 2026
+   (physics: megalecture.com/wp-content/uploads/2021/05/5054_Physics_Example_Candidate_Responses_Booklet_2014_3.pdf;
+   biology: megalecture.com/wp-content/uploads/2022/05/5090_Biology_Example_Candidate_Responses_Booklet_2014-1.pdf;
+   Chemistry 5070 2015 exists on Scribd / the Cambridge support hub — the gcsetime host served
+   HTML, not the PDF; a 2023 physics booklet on Scribd is examiner-WRITTEN, not real scripts); each
    grade-A/C/E set of Paper 2 pages is handed in as one admin upload named
    `CALIBRATION · Cambridge 5054 Physics 2014 P2 · grade A script`, biology with the
    booklet's own scheme attached, physics rules-alone; truth files from the examiner
