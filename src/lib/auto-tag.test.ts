@@ -30,6 +30,15 @@ describe('typedName — the name phrase in front of the subject code', () => {
     expect(typedName('megan jc2 practice set 1 p1')).toBe('megan');
     expect(typedName('Tze Hin EM TYS 2022 P2')).toBe('tze hin');
   });
+  it('falls back to the words before the exam word or year when there is no subject code (Nicole, 11 Sep 2026)', () => {
+    expect(typedName('nicole GCE 2024 Paper 1')).toBe('nicole');
+    expect(typedName('Nicole Lim GCE 2024 Paper 1')).toBe('nicole lim');
+    expect(typedName('chloe zhang 2024 p2')).toBe('chloe zhang');
+    expect(typedName('GCE 2024 Paper 1')).toBeNull();
+    expect(typedName('prelim 2025 p1')).toBeNull();
+    expect(typedName('CALIBRATION · Cambridge 5054 Physics 2014 P2 · grade A script')).toBeNull();
+    expect(typedName('worksheet (0 photos)')).toBeNull();
+  });
   it('nothing to go on', () => {
     expect(typedName('Practice Again — AM TYS 2022 P1')).toBeNull();
     expect(typedName('worksheet (3 photos)')).toBeNull();

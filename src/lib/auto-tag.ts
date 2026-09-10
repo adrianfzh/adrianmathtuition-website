@@ -77,7 +77,23 @@ export function eligibleForAutoTag(run: AutoTagRun, now: Date, windowDays = AUTO
 /** The name phrase Adrian typed in front of the subject code ("gavin woon am tys 2024 p1" → "gavin woon"), or null. */
 export function typedName(paperName: string | null | undefined): string | null {
   const parsed = parseScanFilename(`${String(paperName || '').trim()}.pdf`);
-  return parsed?.name ?? null;
+  return parsed?.name ?? looseTypedName(paperName);
+}
+
+// A title with NO subject code — "nicole GCE 2024 Paper 1" (11 Sep 2026: Nicole
+// sat untagged through her whole marking, Adrian: "the name should be pretty
+// easy to tag"). The strict convention parser needs am/em/h2 after the name;
+// this fallback takes the words in front of the first exam word, paper word or
+// year instead — one to three plain name tokens, or nothing. "CALIBRATION ·
+// Cambridge 5054 …" and "GCE 2024 Paper 1" give nothing, as they should.
+const LOOSE_CUT = /^(gce|tys|prelim|prelims|wa[1-4]?|eoy|mye|ca[12]?|sa[12]?|promo|promos|mock|mocks|practice|set|sets|paper|p[12]|jc[12]|j[12]|sec[1-5]|s[1-5]|\d{4})$/i;
+export function looseTypedName(paperName: string | null | undefined): string | null {
+  const tokens = String(paperName || '').trim().split(/\s+/).filter(Boolean);
+  const cut = tokens.findIndex(t => LOOSE_CUT.test(t.replace(/[^A-Za-z0-9]/g, '')));
+  if (cut <= 0 || cut > 3) return null;
+  const name = tokens.slice(0, cut);
+  if (!name.every(t => /^[A-Za-z][A-Za-z'\-]*$/.test(t))) return null;
+  return norm(name.join(' '));
 }
 
 /** Roster rows a typed name could mean: every token of it inside the roster name, else its first token alone. */
