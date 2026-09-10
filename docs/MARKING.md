@@ -1317,9 +1317,16 @@ latest live sheet job carries a `result.revise` stamp and is queued / claimed /
 failed to `auto`; `revisingOf(job)` is that test (null once the job is done —
 the stamp itself persists, so the STATUS is what matters), `orderLane` pins
 revising rows at the top of every lane, and the row + detail show a pink
-✏️ chip (`revisingLabel`) while ✓ Looked at is hidden. A queued sheet without
-the stamp (a student's Practice Again request) does not move the paper. When
-the revised sheet is filed the rule stops matching and the ordinary rules place
+✏️ chip (`revisingLabel`) while ✓ Looked at is hidden. **Since later on 10 Sep 2026 a sheet being WRITTEN pulls the paper back the same way**
+(`sheetInProgressOf` — queued / claimed / failed; Adrian: "can queued practice sheets
+generation show up in 'still to deal with' section? so I don't have to scroll down to see
+who has a practice again sheet being generated → after generation the row can go back to
+its original position … show all that is currently processing — both marking and sheet
+generation"); ✓ Looked at is hidden while it is in motion. **`/admin/mark-paper`'s Recent
+marked papers list follows the same rule** — `lib/mark-paper-outstanding.ts`
+(pure/tested): 🆕 Still to deal with = not finished with OR the sheet in motion; the 15 s
+poll moves the row back to ✓ Done when the sheet is filed. When
+the revised (or new) sheet is filed the rule stops matching and the ordinary rules place
 the paper exactly where it was; the three work lanes (Needs a
 student · Marked, no sheet yet · In process) only ever hold a paper the
 automatic door refused, so the desk hides them at zero

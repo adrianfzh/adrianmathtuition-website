@@ -204,10 +204,12 @@ export function releasedViaLabel(via: string | null | undefined): string {
 export function laneFor(run: DeskRun, latestSheetJob: DeskSheetJob, now: number = Date.now(), opts: { quiet?: boolean } = {}): DeskLane {
   // ✏️ A released paper whose sheet is being revised comes back to the to-do tab
   // (Adrian, 10 Sep 2026: "put it back at still to deal with … then put the paper
-  // back into its order once the revise sheet is done"). Only a REVISION pulls it
-  // back — a fresh sheet the student asks for goes out by itself and needs no
-  // glance. Once the revised sheet is filed the rules below place it as before.
-  if (run.released_at && revisingOf(latestSheetJob)) return 'auto';
+  // back into its order once the revise sheet is done") — and, from later that
+  // day, so does one whose sheet is being WRITTEN or has failed (Adrian: "so I
+  // don't have to scroll down to see who has a practice again sheet being
+  // generated → after generation the row can go back to its original position").
+  // Once the sheet is filed the rules below place the paper exactly as before.
+  if (run.released_at && (revisingOf(latestSheetJob) || sheetInProgressOf(latestSheetJob))) return 'auto';
   // A returned Practice Again sheet with nothing flagged clears itself
   // (Adrian, 9 Sep 2026: "if sheet is already handed up and marked, should
   // just clear automatically, unless something important is flagged"). The
@@ -254,6 +256,18 @@ export function revisingOf(job: DeskSheetJob): Revising | null {
   if (job.status === 'claimed') return { state: 'running', round };
   if (job.status === 'failed') return { state: 'failed', round };
   return null;
+}
+
+/**
+ * A sheet still in motion — queued for the Mac, being written, or failed and
+ * waiting on Adrian (10 Sep 2026, Adrian: "can queued practice sheets generation
+ * show up in 'still to deal with' … so it will show all that is currently
+ * processing — both marking and sheet generation"). A finished or cancelled job
+ * is not; nor is a job that concluded "nothing to teach". Pure.
+ */
+export function sheetInProgressOf(job: DeskSheetJob): boolean {
+  if (!job) return false;
+  return job.status === 'queued' || job.status === 'claimed' || job.status === 'failed';
 }
 
 /** The chip beside a paper whose sheet is being revised. */

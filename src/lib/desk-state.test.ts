@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   laneFor, sheetStageLabel, isPracticeAgainHandin, releasedViaLabel, handinOriginOf, approveBlockers, releaseBlockers, deskFlags, defaultLane,
-  amendedStatusFor, latestLiveJob, noSheetOf, pdfStaleOf, DESK_LANES, LANE_LABEL, orderLane, revisingOf, revisingLabel, sheetOutcomeOf,
+  amendedStatusFor, latestLiveJob, noSheetOf, pdfStaleOf, DESK_LANES, LANE_LABEL, orderLane, revisingOf, revisingLabel, sheetOutcomeOf, sheetInProgressOf,
 } from './desk-state';
 
 const tagged = { student_id: 'recStudent', released_at: null, annotated_pdf_url: null, result_json: { results: [] } };
@@ -315,9 +315,23 @@ describe('a sheet being revised comes back to "Still to deal with" (Adrian, 10 S
     expect(laneFor(released, revise('done'))).toBe('released');
     expect(laneFor({ ...released, checked_at: null }, revise('done'))).toBe('auto');   // the ordinary not-yet-looked-at rule still decides
   });
-  it('a fresh sheet the student asked for is not a revision — a released paper stays put', () => {
-    expect(laneFor(released, { status: 'queued', stage: null, result: null })).toBe('released');
-    expect(laneFor(released, { status: 'claimed', stage: 'drafting', result: { requested_by: 'student' } })).toBe('released');
+  it('a fresh sheet being written pulls the paper back too (Adrian, later on 10 Sep 2026: "show all that is currently processing")', () => {
+    expect(laneFor(released, { status: 'queued', stage: null, result: null })).toBe('auto');
+    expect(laneFor(released, { status: 'claimed', stage: 'drafting', result: { requested_by: 'student' } })).toBe('auto');
+    expect(laneFor(released, { status: 'failed', error: 'plan cap hit' })).toBe('auto');
+    // …and goes back to where it was the moment the sheet is filed, cancelled, or found unneeded
+    expect(laneFor(released, done)).toBe('released');
+    expect(laneFor(released, { status: 'cancelled' })).toBe('released');
+    expect(laneFor(released, { status: 'done', result: { noSheet: true, reason: 'slips only' } })).toBe('released');
+    expect(laneFor(released, null)).toBe('released');
+  });
+  it('sheetInProgressOf is the one test for "in motion"', () => {
+    expect(sheetInProgressOf({ status: 'queued' })).toBe(true);
+    expect(sheetInProgressOf({ status: 'claimed', stage: 'verifying' })).toBe(true);
+    expect(sheetInProgressOf({ status: 'failed', error: 'x' })).toBe(true);
+    expect(sheetInProgressOf(done)).toBe(false);
+    expect(sheetInProgressOf({ status: 'cancelled' })).toBe(false);
+    expect(sheetInProgressOf(null)).toBe(false);
   });
   it('an unreleased paper being revised keeps its ordinary lane', () => {
     expect(laneFor(tagged, revise('queued'))).toBe('awaiting-sheet');

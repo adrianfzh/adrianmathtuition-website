@@ -982,7 +982,7 @@ export default function DeskPage() {
                     {row.pending > 0 && <span style={{ color: C.flag, fontWeight: 600 }}>⏳ {row.pending} to check</span>}
                     {row.flags.map(f => <span key={f} style={{ color: C.flag, fontWeight: 600 }}>⚠ {f}</span>)}
                     {row.revising && <Chip label={revisingLabel(row.revising)} bg="#fdf2f8" color="#9d174d" title="The sheet went back to the worker. This paper sits here, at the top, until the revised sheet is filed — then it goes back to where it was." />}
-                    {row.lane === 'auto' && !row.revising && (
+                    {row.lane === 'auto' && !row.revising && !['queued', 'claimed', 'failed'].includes(row.sheet?.status ?? '') && (
                       <button onClick={e => { e.stopPropagation(); markCheckedRow(row.id); }} disabled={busy === 'checked'}
                         title="Marks this paper as looked at — it moves to Completed. Nothing about the sheet changes."
                         style={{ border: '1px solid #67e8f9', background: '#ecfeff', color: '#0e7490', borderRadius: 8, padding: '1px 8px', fontSize: 12, cursor: 'pointer' }}>

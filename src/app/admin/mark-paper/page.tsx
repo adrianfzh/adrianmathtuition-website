@@ -4,6 +4,7 @@ import RulesTag from '@/components/RulesTag';
 import { useState, useRef, useEffect, memo, type CSSProperties } from 'react';
 import dynamic from 'next/dynamic';
 import { uploadStudentFile } from '@/lib/student-files-client';
+import { isOutstandingRun } from '@/lib/mark-paper-outstanding';
 import 'katex/dist/katex.min.css';
 import { ensureAdminSession } from '@/lib/admin-client';
 import { pickAnnotatedPhotoUrl } from '@/lib/annotated-photo-source';
@@ -1586,8 +1587,14 @@ export default function MarkPaperPage() {
   // see is the papers he has not FINISHED WITH: still marking, or marked but
   // neither released to the student nor marked 👁 Seen (handed back in class).
   // A paper released or archived is done; so is one he has explicitly ✓'d.
-  const isOutstanding = (r: Run) =>
-    !r.released_at && !r.archived_at && !r.checked_at;
+  // …AND (10 Sep 2026, Adrian: "can queued practice sheets generation show up in
+  // 'still to deal with'? … so 'still to deal with' will show all that is
+  // currently processing — both marking and sheet generation") a paper whose
+  // Practice Again sheet is queued, being written, or failed, wherever it sits
+  // otherwise. The moment the sheet is filed the rule stops matching and the
+  // row goes back to where it was — the 15 s poll above does the moving.
+  // The rule itself is pure and tested: lib/mark-paper-outstanding.ts.
+  const isOutstanding = (r: Run) => isOutstandingRun(r);
   const unseenRuns = recentRuns.filter(isOutstanding);
   const seenRuns = recentRuns.filter((r) => !isOutstanding(r));
   // Same endpoint as the library's ✓, so /admin/papers and this list always agree.
@@ -1654,7 +1661,7 @@ export default function MarkPaperPage() {
           <div style={{ marginTop: 8 }}>
             {[
               { key: 'unseen', title: '🆕 Still to deal with', color: '#b45309', rows: unseenRuns,
-                hint: 'Marked but not yet released to the student, not marked 👁 Seen, and not ticked ✓ — the papers still waiting on you.' },
+                hint: 'Everything still in motion: being marked, marked but not yet released / 👁 Seen / ticked ✓, and any paper whose Practice Again sheet is queued, being written or failed. A paper drops back to Done by itself once its sheet is filed.' },
               { key: 'seen', title: '✓ Done', color: '#047857', rows: seenRuns,
                 hint: 'Released to the student, marked 👁 Seen (handed back in class), or ticked ✓.' },
             ].filter((s) => s.rows.length > 0).map((section) => {
