@@ -789,6 +789,30 @@ export default function DeskPage() {
     loadQueue(false);
   }
 
+  // 📘 ONE paper's sheet and 🔁 a FULL re-mark, from the LIST row (11 Sep 2026,
+  // Adrian: "can we allow sheet generation here? as well as full remark?").
+  // The sheet is the same door as the detail view's 📘 Queue (single run); the
+  // re-mark is the queue's own re-mark of the whole paper (`enqueue` + remark,
+  // no pages) — so under 🖥 Mac plan only it goes to a Mac slot, never the API.
+  async function queueSheetRow(id: string, label?: string) {
+    if (!window.confirm(`Queue a Practice Again sheet for ${label || 'this paper'}?`)) return;
+    setBusy('sheet:' + id);
+    const { ok, d } = await postJson('/api/admin/sheet-jobs', { runId: id });
+    setBusy('');
+    if (!ok) { setToast(d.error || 'Could not queue the sheet'); return; }
+    setToast(`📘 Sheet queued for ${label || 'this paper'}.`);
+    loadQueue(false);
+  }
+  async function remarkRow(id: string, label?: string, released?: boolean) {
+    if (!window.confirm(`Re-mark the WHOLE paper — ${label || 'this paper'}? Every page is read again on a Mac slot when one is free, the paper is redrawn and its sheet revised for what changed.${released ? ' The student\u2019s released copy is replaced.' : ''}`)) return;
+    setBusy('remark:' + id);
+    const { ok, d } = await postJson('/api/admin/mark-paper', { phase: 'enqueue', id, model: 'opus', style: 'teacher', remark: true });
+    setBusy('');
+    if (!ok) { setToast(d.error || 'Could not queue the re-mark'); return; }
+    setToast(`🔁 Re-mark queued for ${label || 'this paper'} — it shows as being marked until the Mac hands it back.`);
+    loadQueue(false);
+  }
+
   // 📐 Approve this paper's scheme (8 Sep 2026): the recorded per-part marks and
   // split become the paper's fixed allocation. `quiet` = on release, fail-soft.
   async function approveScheme(quiet = false) {
@@ -1043,6 +1067,23 @@ export default function DeskPage() {
                     )}
                     {row.pending > 0 && <span style={{ color: C.flag, fontWeight: 600 }}>⏳ {row.pending} to check</span>}
                     {row.flags.map(f => <span key={f} style={{ color: C.flag, fontWeight: 600 }}>⚠ {f}</span>)}
+                    {/* 📘 one sheet / 🔁 full re-mark from the row (11 Sep 2026) — marked papers only, not while a marking or sheet job is in motion */}
+                    {!row.marking && !row.practiceAgain && row.max > 0 && !['queued', 'claimed'].includes(row.sheet?.status ?? '') && !row.revising && (
+                      <>
+                        {row.lane !== 'released' && row.sheet?.status !== 'done' && !!row.studentId && (
+                          <button onClick={e => { e.stopPropagation(); queueSheetRow(row.id, `${row.studentName || 'untagged'} · ${row.paperName}`); }} disabled={busy === 'sheet:' + row.id}
+                            title="Queue a Practice Again sheet for this paper alone (tick two or more for one merged sheet)"
+                            style={{ border: '1px solid #c7d2fe', background: '#eef2ff', color: '#3730a3', borderRadius: 8, padding: '1px 8px', fontSize: 12, cursor: 'pointer' }}>
+                            {busy === 'sheet:' + row.id ? '…' : '📘 Sheet'}
+                          </button>
+                        )}
+                        <button onClick={e => { e.stopPropagation(); remarkRow(row.id, `${row.studentName || 'untagged'} · ${row.paperName}`, row.lane === 'released'); }} disabled={busy === 'remark:' + row.id}
+                          title="Re-mark the whole paper through the queue — on a Mac slot while Mac plan only is on"
+                          style={{ border: '1px solid #ddd6fe', background: '#f5f3ff', color: '#5b21b6', borderRadius: 8, padding: '1px 8px', fontSize: 12, cursor: 'pointer' }}>
+                          {busy === 'remark:' + row.id ? '…' : '🔁 Re-mark'}
+                        </button>
+                      </>
+                    )}
                     {row.revising && <Chip label={revisingLabel(row.revising)} bg="#fdf2f8" color="#9d174d" title="The sheet went back to the worker. This paper sits here, at the top, until the revised sheet is filed — then it goes back to where it was." />}
                     {row.lane === 'auto' && !row.revising && !['queued', 'claimed', 'failed'].includes(row.sheet?.status ?? '') && (
                       <button onClick={e => { e.stopPropagation(); markCheckedRow(row.id, `${row.studentName || 'untagged'} · ${row.paperName}`); }} disabled={busy === 'checked'}
