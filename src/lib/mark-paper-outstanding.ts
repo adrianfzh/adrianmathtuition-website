@@ -21,7 +21,23 @@ export type OutstandingRun = {
   checked_at?: string | null;
   /** The newest sheet job's status for this run, as the stats feed reports it. */
   sheet_status?: string | null;
+  /** The 🌙 queue record — set while a paper (or a RE-MARK of a released paper) is queued or being marked. */
+  queued_at?: string | null;
+  /** Null while a marking is in progress: enqueue clears it, the marking write fills it. */
+  total_max?: number | null;
+  queue_failed?: string | null;
 };
+
+/**
+ * A marking still in motion — queued, on a Mac slot, or being assembled — for a
+ * paper with no stored total. A RE-MARK of a released paper looks like this too
+ * (enqueue nulls total_max and clears the results), and it belongs on the to-do
+ * list while it runs (Adrian, 10 Sep 2026: "so remarks does not show? it should
+ * also show"). A queue that failed for good is not in motion.
+ */
+export function markingInProgress(run: OutstandingRun | null | undefined): boolean {
+  return !!run && !!run.queued_at && run.total_max == null && !run.queue_failed;
+}
 
 /** A sheet still in motion: queued for the Mac, being written, or failed and waiting on Adrian. */
 export function sheetInProgress(run: OutstandingRun | null | undefined): boolean {
@@ -31,5 +47,5 @@ export function sheetInProgress(run: OutstandingRun | null | undefined): boolean
 
 /** 🆕 Still to deal with. */
 export function isOutstandingRun(run: OutstandingRun): boolean {
-  return (!run.released_at && !run.archived_at && !run.checked_at) || sheetInProgress(run);
+  return (!run.released_at && !run.archived_at && !run.checked_at) || sheetInProgress(run) || markingInProgress(run);
 }
