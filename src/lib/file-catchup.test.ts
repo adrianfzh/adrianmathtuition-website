@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { needsFiling, pickForFiling, filingPathFor, fileCatchupLine, FILE_CATCHUP_WINDOW_DAYS, type FilingRun } from './file-catchup';
+import { needsFiling, pickForFiling, filingPathFor, fileCatchupLine, FILE_CATCHUP_WINDOW_DAYS, filedAlertLine, unfiledAlertLine, shouldAlertUnfiled, type FilingRun } from './file-catchup';
 
 // Kiara Tan Jia Min, EM TYS 2022 P2 (Adrian, 10 Sep 2026: "kiara should have an
 // em tys 2022 p2 → but i don't see it in dropbox?"). Marked, images PDF built and
@@ -96,5 +96,34 @@ describe('filingPathFor', () => {
 describe('fileCatchupLine', () => {
   it('says what the tick did, for the job_runs stamp', () => {
     expect(fileCatchupLine({ considered: 2, filed: 2, failed: 0, items: [] })).toBe('filing: 2 filed, 0 failed, 2 missing');
+  });
+});
+
+// ── never silent (Adrian, 10 Sep 2026: "can we make sure it doesn't fail silently?") ──
+describe('filing alerts', () => {
+  const now = new Date('2026-09-10T12:00:00Z');
+  it('names the papers the sweep rescued', () => {
+    const line = filedAlertLine([
+      { runId: 'a', student: 'Kiara Tan Jia Min', paper: 'kiara em tys 2022 p2', path: '/students/kiara tan jia min/2026-09-09 kiara em tys 2022 p2/1 marked by ai.pdf' },
+      { runId: 'b', student: 'Tze Hin', paper: 'p1', error: 'HTTP 502' },
+    ]);
+    expect(line).toContain('Filed 1 marked paper whose Dropbox copy had failed at release');
+    expect(line).toContain('Kiara Tan Jia Min · kiara em tys 2022 p2');
+    expect(line).not.toContain('Tze Hin');
+    expect(filedAlertLine([{ runId: 'b', student: null, paper: null, error: 'x' }])).toBe('');
+  });
+  it('names the papers still failing, with the reason', () => {
+    const line = unfiledAlertLine([{ runId: 'b', student: 'Tze Hin', paper: 'p1', error: 'HTTP 502' }]);
+    expect(line).toContain('still not filed for 1 marked paper');
+    expect(line).toContain('Tze Hin · p1 (HTTP 502)');
+    expect(line).toContain('keeps trying every 15 min');
+    expect(unfiledAlertLine([])).toBe('');
+  });
+  it('alerts an hour after release, then at most once a day', () => {
+    expect(shouldAlertUnfiled({ released_at: '2026-09-10T11:30:00Z' }, now)).toBe(false);   // 30 min: the sweep has more ticks first
+    expect(shouldAlertUnfiled({ released_at: '2026-09-10T10:30:00Z' }, now)).toBe(true);    // 90 min, never told
+    expect(shouldAlertUnfiled({ released_at: '2026-09-10T10:30:00Z', filing_alert_at: '2026-09-10T11:50:00Z' }, now)).toBe(false); // told 10 min ago
+    expect(shouldAlertUnfiled({ released_at: '2026-09-09T10:30:00Z', filing_alert_at: '2026-09-09T11:00:00Z' }, now)).toBe(true);  // told 25 h ago
+    expect(shouldAlertUnfiled({ released_at: null }, now)).toBe(false);
   });
 });

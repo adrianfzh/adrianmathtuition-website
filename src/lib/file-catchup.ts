@@ -24,6 +24,7 @@
 // same fetch + uploadFile + record the route does, against the same
 // lib/paper-folder.ts path rule, so the two cannot drift.
 import { getSupabaseAdmin } from './supabase';
+import { sendTelegram } from './telegram';
 import { fetchOurFile, isOurFileUrl } from './student-files';
 import { uploadFile } from './dropbox';
 import { markedAiPath, paperFolder, RETURNED_NAME, type PaperRun } from './paper-folder';
@@ -43,6 +44,8 @@ export type FilingRun = PaperRun & {
   photos_pdf_url?: string | null;
   /** result_json.assignment_id — set when the hand-in ANSWERS a sheet. */
   assignment_id?: string | null;
+  /** result_json.filing_alert_at — when Adrian was last told this copy is still missing. */
+  filing_alert_at?: string | null;
 };
 
 function ageDays(iso: string | null | undefined, now: Date): number {
@@ -94,6 +97,39 @@ export type FileCatchupResult = {
   failed: number;
   items: Array<{ runId: string; student: string | null; paper: string | null; path?: string; error?: string }>;
 };
+export type FileCatchupItem = FileCatchupResult['items'][number];
+
+/** Adrian hears about it (10 Sep 2026: "can we make sure it doesn't fail silently?"). */
+export const FILING_ALERT_AFTER_MS = 60 * 60_000;      // a copy still missing an hour after release
+export const FILING_ALERT_EVERY_MS = 24 * 60 * 60_000;  // then at most once a day per paper
+
+/** The Telegram line for the papers the sweep just filed — the release-time copy had failed. */
+export function filedAlertLine(items: FileCatchupItem[]): string {
+  const ok = items.filter(i => i.path && !i.error);
+  if (!ok.length) return '';
+  const who = ok.map(i => `${i.student || 'a student'} · ${i.paper || 'paper'}`).join('; ');
+  return `📁 Filed ${ok.length} marked paper${ok.length === 1 ? '' : 's'} whose Dropbox copy had failed at release: ${who}`;
+}
+
+/**
+ * Whether a still-missing copy is worth a line now: an hour after release, and not
+ * more than once a day for the same paper (the sweep runs every 15 minutes — a
+ * paper that keeps failing is one problem, not ninety-six).
+ */
+export function shouldAlertUnfiled(run: { released_at?: string | null; filing_alert_at?: string | null }, now: Date): boolean {
+  const rel = Date.parse(String(run.released_at || ''));
+  if (!Number.isFinite(rel) || now.getTime() - rel < FILING_ALERT_AFTER_MS) return false;
+  const last = Date.parse(String(run.filing_alert_at || ''));
+  return !Number.isFinite(last) || now.getTime() - last >= FILING_ALERT_EVERY_MS;
+}
+
+/** The Telegram line for copies that are STILL failing. */
+export function unfiledAlertLine(items: FileCatchupItem[]): string {
+  const bad = items.filter(i => i.error);
+  if (!bad.length) return '';
+  const who = bad.map(i => `${i.student || 'a student'} · ${i.paper || 'paper'} (${i.error})`).join('; ');
+  return `⚠️ Dropbox copy still not filed for ${bad.length} marked paper${bad.length === 1 ? '' : 's'} — the sweep keeps trying every 15 min: ${who}`;
+}
 
 /** One line for the cron's job_runs stamp. */
 export function fileCatchupLine(r: FileCatchupResult): string {
@@ -130,7 +166,7 @@ export async function sweepUnfiledPapers({ dry = false, now = new Date() }: { dr
   const since = new Date(now.getTime() - FILE_CATCHUP_WINDOW_DAYS * 86_400_000).toISOString();
   const { data } = await sb
     .from('paper_marking_runs')
-    .select('id, student_id, student_name, paper_name, created_at, released_at, archived_at, dropbox_path, photos_pdf_url, assignment_id:result_json->>assignment_id')
+    .select('id, student_id, student_name, paper_name, created_at, released_at, archived_at, dropbox_path, photos_pdf_url, assignment_id:result_json->>assignment_id, filing_alert_at:result_json->>filing_alert_at')
     .is('dropbox_path', null)
     .not('released_at', 'is', null)
     .gte('released_at', since)
@@ -162,5 +198,23 @@ export async function sweepUnfiledPapers({ dry = false, now = new Date() }: { dr
       console.warn('[file-catchup]', run.id, (e as Error).message);
     }
   }
+  // Never silent: the papers just rescued get one line; the ones still failing get
+  // one line an hour after release and then once a day (the flag rides the run).
+  try {
+    const filedLine = filedAlertLine(out.items);
+    if (filedLine) await sendTelegram(filedLine, 'marking');
+    const byId = new Map(picks.map(r => [r.id, r]));
+    const due = out.items.filter(i => i.error && shouldAlertUnfiled(byId.get(i.runId) || { released_at: null }, now));
+    if (due.length) {
+      const sent = await sendTelegram(unfiledAlertLine(due), 'marking');
+      if (sent) {
+        for (const i of due) {
+          const { data: row } = await sb.from('paper_marking_runs').select('result_json').eq('id', i.runId).maybeSingle();
+          const rj = (row as { result_json?: Record<string, unknown> } | null)?.result_json || {};
+          await sb.from('paper_marking_runs').update({ result_json: { ...rj, filing_alert_at: now.toISOString() } }).eq('id', i.runId);
+        }
+      }
+    }
+  } catch (e) { console.warn('[file-catchup] alert skipped:', (e as Error).message); }
   return out;
 }
