@@ -58,12 +58,18 @@ carries `.eq('national', false)`, and the skills' queries carry
 2. **Never print or sell a whole paper.** Print a paper mixes questions across
    schools by topic; Set papers are ours; the kiosk's prelim sets are admin-only.
 3. **Keep the source on every row, never strip a rights notice.** `school`,
-   `year`, `paper`, `question_number` stay on every bank row. Figure cleaning
-   removes scan bleed and the KIASU reseller stamp only; a watermark that names
-   the school or the publisher is not removed — the figure is REDRAWN from its
-   spec instead (`lib/figures/`, 33 families). A redrawn figure is our own
-   drawing of the same mathematics, which is the right answer to a watermarked
-   one.
+   `year`, `paper`, `question_number` stay on every bank row. At ingestion the
+   fleet law's fitness check (e) WITHHOLDS any figure carrying a school crest,
+   a tuition-centre wordmark or a vendor stamp (`image_watermark_status` stays
+   null, the row is not served, a `held` flag lands on Adrian's figures board)
+   — it never scrubs one, and it never redraws one either ("never guess and
+   never generate": a redraw at extraction could fabricate exam content). The
+   only cleaning ever done was a one-off sweep of scan bleed and the KIASU
+   reseller stamp. A withheld figure may be REDRAWN afterwards, and only
+   through the figure registry (`lib/figures/`, 33 families, `verify(spec)`
+   fails closed) from a spec whose every number comes from the question text,
+   vetted on `/admin/figures-bank`. A redrawn figure is our own drawing of the
+   same mathematics.
 4. **Takedown within a day, on request.** Set `deleted_at` on the rows, remove
    the figure, purge any cached PDF. No public notice about past papers.
 5. **Lawful access.** Papers come from students' hand-ins, from what schools
