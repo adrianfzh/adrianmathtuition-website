@@ -284,8 +284,11 @@ _PLAIN_MATHS = [
     (re.compile(r'[0-9)]\s?[=<>]\s?[-−0-9a-zA-Z(]'), 'equation typed as text'),
     (re.compile(r'\d\s?°'), 'angle typed as text'),
 ]
+# `and/or` is its own alternative: inside the unit group it needed a SECOND
+# slash after it and so never matched (found 10 Sep 2026, with the \b repair).
 _PLAIN_MATHS_OK = re.compile(
-    r'(?i)\b(and/or|cm|mm|m|km|g|kg|ml|l|units?)\s?/\s?(s|h|hr|min|cm|m|kg|g|unit|or)\b'
+    r'(?i)\band/or\b'
+    r'|\b(cm|mm|m|km|g|kg|ml|l|units?)\s?/\s?(s|h|hr|min|cm|m|kg|g|unit)\b'
     r'|\bQ\d+\s?\([a-z]+\)\s?/\s?\([a-z]+\)'   # Q4(a)/(b)
     r'|\b\d{1,2}/\d{1,2}/\d{2,4}\b'             # a date
 )
