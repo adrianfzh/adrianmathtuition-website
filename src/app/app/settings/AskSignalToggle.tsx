@@ -55,7 +55,7 @@ export default function AskSignalToggle({ initial }: { initial: boolean }) {
         </button>
       </div>
       <p className="text-[12px] text-gray-500 mt-1.5">
-        When this is on, a topic you ask about {ASK_SIGNAL_MIN} or more times in two weeks shows in My Notebook as
+        When this is on, a topic you ask about {ASK_SIGNAL_MIN}{' '}or more times in two weeks shows in My Notebook as
         &ldquo;keeps coming up&rdquo;. Asking isn&apos;t a mistake — it&apos;s only a nudge, and it fades by itself when you stop asking.
       </p>
       {msg && (
