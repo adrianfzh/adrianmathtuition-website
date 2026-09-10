@@ -151,7 +151,14 @@ export async function markSubjectAccess(): Promise<import('./mark-subject-for-st
 // paper. Flip to false to hide the tab and shut the door (the routes bounce to
 // /app); Adrian's admin cookie previews it regardless. Independent of
 // MARK_SUBJECT_OPEN_TO_STUDENTS above, which is the enrolment-gated maths door.
-export const SCIENCE_MARKING_OPEN_TO_STUDENTS = true;
+//
+// OFF since 10 Sep 2026 evening (Adrian: "gate keep the science tab from
+// students first — students should only just be able to see just math as
+// usual"): the first calibration pass showed physics lenient on weak scripts
+// and biology a few marks generous with the scheme. Students see the maths app
+// exactly as before; Adrian's admin cookie still sees the Science tab. Flip to
+// true to open it.
+export const SCIENCE_MARKING_OPEN_TO_STUDENTS = false;
 
 /** True when the caller may use the Science tab (flag on, or Adrian's admin preview — unless viewing as a student). */
 export async function scienceMarkingOpen(): Promise<boolean> {
