@@ -429,6 +429,11 @@ describe('markingProgressOf — where a queued paper is', () => {
     expect(p).toMatchObject({ state: 'assembling', done: 10, total: 10 });
     expect(p?.label).toMatch(/waiting for the bot/);
   });
+  it('a handed-back claim (reads saved, bot to assemble) reads as assembling', () => {
+    const p = markingProgressOf({ result_json: { queue: { ...queued, external_claim: { by: 'mac-plan-x', released_at: '2026-09-10T10:00:00Z', handed_back_at: '2026-09-10T10:00:00Z', progress: { done: 17, total: 17 } } } } });
+    expect(p).toMatchObject({ state: 'assembling', done: 17, total: 17 });
+    expect(p?.label).toMatch(/handed back/);
+  });
   it('the bot itself holds the paper', () => {
     expect(markingProgressOf({ result_json: { queue: { ...queued, claimed_by: 'fly-worker' } } })).toMatchObject({ state: 'assembling' });
   });

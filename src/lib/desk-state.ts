@@ -235,6 +235,11 @@ export function markingProgressOf(run: { result_json?: unknown; num_photos?: num
   const total = prog && Number.isFinite(Number(prog.total)) ? Number(prog.total) : (Number.isFinite(Number(run?.num_photos)) ? Number(run?.num_photos) : null);
   const pages = done != null && total != null ? ` · page ${done}/${total}` : '';
   const err = typeof q.last_error === 'string' ? q.last_error.trim() : '';
+  // Handed back (10 Sep 2026, bot lib/handback.js): every page saved, the
+  // claim released with `handed_back_at`, the bot assembles it on its next tick.
+  if (claim && typeof claim === 'object' && claim.handed_back_at) {
+    return { state: 'assembling', label: `💻 handed back${done != null && total != null ? ` (${done}/${total} pages)` : ''} · the bot assembles it next`, done, total, attempts, queuedAt };
+  }
   if (claim && typeof claim === 'object' && !claim.released_at) {
     return { state: 'reading', label: `💻 a Mac slot is reading it${pages}`, done, total, attempts, queuedAt };
   }
