@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sheetQueueGuard, sheetJobInsert, supersededByNewSheet, remarkRequester, type SheetQueueRun } from './sheet-queue';
+import { sheetQueueGuard, sheetJobInsert, supersededByNewSheet, remarkRequester, focusText, type SheetQueueRun } from './sheet-queue';
 
 const run: SheetQueueRun = {
   id: 'run-1', paper_name: 'am tys 2021 p1', student_id: 'recStudent', student_name: 'Sophie Tan',
@@ -59,6 +59,40 @@ describe('sheetQueueGuard — the student door (the app)', () => {
   it('lets the student try again after a failed or cancelled job', () => {
     expect(sheetQueueGuard(released, [{ id: 'j1', status: 'failed' }], { requestedBy: 'student' })).toEqual({ ok: true });
     expect(sheetQueueGuard(released, [{ id: 'j1', status: 'cancelled' }], { requestedBy: 'student' })).toEqual({ ok: true });
+  });
+});
+
+describe('sheetQueueGuard — wave two (11 Sep 2026)', () => {
+  it('lets the student past the "a sheet already exists" refusal, and nothing else', () => {
+    const done = [{ id: 'j1', status: 'done' }];
+    expect(sheetQueueGuard(released, done, { requestedBy: 'student' })).toMatchObject({ status: 'exists' });
+    expect(sheetQueueGuard(released, done, { requestedBy: 'student', wave: 2 })).toEqual({ ok: true });
+  });
+  it('still refuses while a job is in flight, and a paper that is not out', () => {
+    expect(sheetQueueGuard(released, [{ id: 'j1', status: 'done' }, { id: 'j2', status: 'queued' }], { requestedBy: 'student', wave: 2 }))
+      .toMatchObject({ ok: false, status: 'duplicate', jobId: 'j2' });
+    expect(sheetQueueGuard(run, [{ id: 'j1', status: 'done' }], { requestedBy: 'student', wave: 2 }))
+      .toMatchObject({ ok: false, status: 'not-released' });
+  });
+  it('wave 1 (or none) is unchanged', () => {
+    expect(sheetQueueGuard(released, [{ id: 'j1', status: 'done' }], { requestedBy: 'student', wave: 1 })).toMatchObject({ status: 'exists' });
+  });
+});
+
+describe('focusText — the instruction the worker honours', () => {
+  it('passes a written note through, trimmed', () => {
+    expect(focusText('  teach the chain rule  ')).toBe('teach the chain rule');
+    expect(focusText(undefined)).toBeNull();
+    expect(focusText('')).toBeNull();
+  });
+  it('renders the wave-two shape as a sentence, never "[object Object]"', () => {
+    const text = focusText({ wave: 2, shelved: ['Polynomials', 'Plane geometry'] }) ?? '';
+    expect(text).toContain('Wave 2');
+    expect(text).toContain('Polynomials; Plane geometry');
+    expect(text).not.toContain('object Object');
+  });
+  it('says wave 2 even when the first sheet named no shelf', () => {
+    expect(focusText({ wave: 2, shelved: [] })).toBe('Wave 2 — the student asked for the next sheet. Teach only what the last sheet shelved.');
   });
 });
 
