@@ -79,9 +79,29 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
       beats a 4-mark one-off). The same HABIT across different topics (checking a
       root against the question; copying the printed figure) is one section with
       faces (a)/(b)/(c) and ONE practice set. One-off gaps follow, ranked by marks.
-    - **The cap holds.** Six teach sections at most (four to six is the target),
-      an Optional tail, the rest shelved with evidence. A merged sheet is not the
-      single sheets stapled together; ② slips are reported, not listed.
+    - **The cap SCALES with the gaps, not with the paper count (11 Sep 2026).**
+      Six teach sections for one paper; a batch may run to eight for two papers
+      and **ten for three** when the clustered gaps need them — the ceiling is
+      the student's sitting time, never the writer's convenience. A merged sheet
+      is not the single sheets stapled together; ② slips are reported, not listed.
+    - **Recency (11 Sep 2026).** A gap counts as RECURRING only if it appears on
+      the NEWEST paper or on two of the three; a gap seen only on the oldest
+      paper is a one-off, ranked by marks. A gap the student's notebook already
+      shows as Fixed or Getting better (`notebook_mistakes`, later marking or
+      practice) is skipped, with one line under the section list saying so.
+    - **Every gap has a home (11 Sep 2026).** The `done` result carries
+      `"gaps": {"found": N, "covered": N, "shelved": [ {"skill": "…", "runs": [{"run_id": "…", "questions": ["Q9(c)"], "marks": 3}], "why": "…"} ]}`
+      — every found gap is either a section or a shelved entry with its paper,
+      questions, marks and the reason. A sheet with an unexplained shelf is not
+      verified. The site offers the student "Ask for the next wave" from that
+      list: a job with `focus.wave === 2` teaches EXACTLY `focus.shelved`, nothing
+      else, reusing the first sheet's title block and the same folder name with
+      " (wave 2)"; it skips the strong-batch and recency rules (it is a
+      continuation).
+    - **Strong batch (11 Sep 2026).** Fewer than 10 marks lost across the batch:
+      the site refuses the request before you see it. If one reaches you anyway,
+      write no sheet — `done` with `noSheet:true` and the reason "strong — under
+      10 marks lost", the way a single strong paper is handled.
     - **Reuse first.** Each covered run may already have a finished single sheet
       (`GET /api/admin/sheet-jobs?paper=<name>&status=done`, or the paper folder
       `/Students/<Student>/<date> <paper>/3 Practice Again.docx`). Same question +

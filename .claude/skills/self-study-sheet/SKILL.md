@@ -1076,6 +1076,10 @@ Dates belong in Dropbox's own modified column, not in the name.
 - **Never send anything to a student.** No assignment creation, no release, no
   Telegram to anyone but Adrian.
 - **One wave.** Overwhelming a student is a worse failure than under-covering.
+  (A BATCH of two or three papers may run to eight or ten sections when the
+  clustered gaps need them — `WORKER_PROMPT.md` §1e, 11 Sep 2026 — and every gap
+  not taught is shelved WITH its paper and reason so the student can ask for the
+  next wave. A shelf is a queue, not a bin.)
 - **Nothing bare.** Every practice item on the sheet has its teaching above it.
 - **Evidence or it doesn't ship.** Every skill on the sheet traces to a
   question they actually lost marks on; say which in your summary to Adrian.

@@ -1343,6 +1343,40 @@ compulsory, so we should build a mechanism that reminds them it is not done."
   uploads/scans lose the auto-sheet too (one rule); a paper with no sheet stays
   without one after a re-mark.
 
+### Practice Again batches — the student's door and the sizing rules (11 Sep 2026)
+
+Adrian, designing it in the open: *"since it is the exam season now, let's put it
+as three papers within 5 days"*, *"under ten marks lost across the batch → the
+student is really strong → do not have to provide it → recommend new exam papers
+instead"*, and *"finished sheet should try to address all gaps if possible"*.
+
+**The student's door** (`/app/marking` › Choose papers; `POST
+/api/portal/practice-again/request {runIds}`; the pure guard `studentBatchGuard`):
+
+- Two or **three** of the student's own released maths papers, **one maths**, every
+  one marked within the **last 5 days**, none with a sheet still being written.
+  A paper that already has a finished single sheet may be included (the worker
+  reuses its sections). Papers outside the rule grey out in the list and say why.
+- **Strong batch → no sheet.** Fewer than **10 marks lost** across the batch means
+  there is little to teach: the request is answered with "These papers are strong
+  … try a new paper instead" and a door to `/app/print`, and nothing is queued.
+- One Telegram line to Adrian; the desk shows the merged request as it does his
+  own ticks; it goes out on the 12-hour clock unless held.
+
+**Sizing — by gaps, not by paper count** (`scripts/sheet-worker/WORKER_PROMPT.md`
+§1e): the six-section cap was set for one paper. A batch may run to **ten**
+sections when the clustered gaps need them (six for one paper, up to ten for
+three); the ceiling is the student's sitting time. A gap counts as recurring
+only if it shows on the NEWEST paper or on two of the three; a gap the
+notebook already shows as Fixed or Getting better is skipped with one line.
+
+**Every gap has a home.** The worker's `done` result reports `gaps:{found,
+covered, shelved}` with each entry tied to its paper and question; a sheet is
+not verified with an unexplained shelf. A non-empty shelf is not a dead end: the
+student's sheet card says "N more gaps were kept for your next sheet" with
+**Ask for the next wave** (`{runIds, wave:2}` → the same job with
+`focus:{wave:2, shelved}`), so every gap is either taught now or queued next.
+
 ### Practice Again batches — one sheet for several papers (10 Sep 2026)
 
 Adrian, on Isabelle's five finished-but-unsent sheets (AM 2025 P1, AM 2025 P2,
