@@ -279,15 +279,15 @@ _PLAIN_MATHS = [
     (re.compile(r'[²³⁴⁵⁶⁷⁸⁹⁰¹⁻]'), 'superscript characters'),
     (re.compile(r'[√∫∑∞≤≥≠±×÷]'), 'maths symbol typed as text'),
     (re.compile(r'[αβγθπλμω]'), 'Greek letter typed as text'),
-    (re.compile(r'(sin|cos|tan|sec|cosec|cot|ln|lg|log)\s?[(0-9a-zθxA]'), 'trig/log typed as text'),
+    (re.compile(r'(?<![A-Za-z])(sin|cos|tan|sec|cosec|cot|ln|lg|log)\s?\(?\s?[0-9θx]'), 'trig/log typed as text'),
     (re.compile(r'(?<![A-Za-z])[a-zA-Z]\s?=\s?[-−0-9a-zA-Z(]'), 'equation typed as text'),
     (re.compile(r'[0-9)]\s?[=<>]\s?[-−0-9a-zA-Z(]'), 'equation typed as text'),
     (re.compile(r'\d\s?°'), 'angle typed as text'),
 ]
 _PLAIN_MATHS_OK = re.compile(
-    r'(?i)(and/or|cm|mm|m|km|g|kg|ml|l|units?)\s?/\s?(s|h|hr|min|cm|m|kg|g|unit|or)'
-    r'|Q\d+\s?\([a-z]+\)\s?/\s?\([a-z]+\)'   # Q4(a)/(b)
-    r'|\d{1,2}/\d{1,2}/\d{2,4}'             # a date
+    r'(?i)\b(and/or|cm|mm|m|km|g|kg|ml|l|units?)\s?/\s?(s|h|hr|min|cm|m|kg|g|unit|or)\b'
+    r'|\bQ\d+\s?\([a-z]+\)\s?/\s?\([a-z]+\)'   # Q4(a)/(b)
+    r'|\b\d{1,2}/\d{1,2}/\d{2,4}\b'             # a date
 )
 
 
