@@ -145,7 +145,7 @@ the topic alone as "Marks lost in <topic>"; it never merges with a classified en
 
 **Sources that already exist:** every lost part's `error_kind` + `study_note` +
 `verdict_line`; the sheet diagnosis `skills[]` (titled, with marks and questions);
-practice `weakness_tags`; `notebook_entries` (questions to retry); `student_attempts`.
+practice `weakness_tags`; `notebook_entries` (the dropped Questions-to-retry band's rows, still written); `student_attempts`.
 
 **Entry model** (`notebook_mistakes`, one row per student × skill):
 `title` (the diagnosis skill title, e.g. "Solving a trigonometric equation in a double
@@ -170,11 +170,16 @@ angle"), `error_kind`, `subject`, `evidence[]` (run/attempt links with dates),
   list ships.
 - **Asks are not verdicts (Adrian, 10 Sep 2026).** A question asked through the Ask tab
   never feeds the list — the student asked, they did not get it wrong. The opt-in
-  beside it (Settings → "Count what I ask about", `portal_accounts.prefs.ask_signal`)
-  derives a softer "Keeps coming up" band from the bot's Airtable `Questions` log:
-  ≥ 3 asks on one topic inside a fortnight, "Coming up less" the fortnight after, then
-  gone. Nothing stored, no Corrected button, no evidence, no practice links —
-  `lib/ask-signal.ts` (pure, tested) + `lib/ask-signal-store.ts`.
+  beside it (Settings → "Show skills I keep asking about",
+  `portal_accounts.prefs.ask_signal`) derives a softer "Keeps coming up" band **by
+  skill** (Adrian: "should be by skill"): the bot files every linked ask under the
+  bank's sub-group (`subgroups.name`, the filing Find and Practice share) into
+  Supabase `ask_skills` (bot `lib/ask-skill.js`); ≥ 3 asks on one skill inside a
+  fortnight is a line, "Coming up less" the fortnight after, then gone; an ask the bot
+  could not file falls back to its topic. No Corrected button, no evidence, no
+  practice links — `lib/ask-signal.ts` (pure, tested) + `lib/ask-signal-store.ts`.
+- **Questions to retry — dropped 10 Sep 2026.** Live for a fortnight, 197 entries, no
+  student ever attempted one; the band is gone, `notebook_entries` still accrue.
 
 ## 7. Practice Again hands back its questions
 

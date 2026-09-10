@@ -1,6 +1,6 @@
 'use client';
 
-// "💬 Count what I ask about" — the opt-in switch for the Notebook's
+// "💬 Show skills I keep asking about" — the opt-in switch for the Notebook's
 // Keeps-coming-up band (Adrian, 10 Sep 2026: a Settings toggle for student
 // preferences, like Claude's). Saves `prefs.ask_signal` through the
 // whitelisted /api/portal/settings route; the Notebook reads the flag on its
@@ -27,7 +27,7 @@ export default function AskSignalToggle({ initial }: { initial: boolean }) {
       await portalFetch('/api/portal/settings', { json: { prefs: { [ASK_SIGNAL_PREF]: next } } });
       setOn(next);
       setMsg(next
-        ? '✓ On — topics you keep asking about will show in My Notebook.'
+        ? '✓ On — skills you keep asking about will show in My Notebook.'
         : 'Off — My Notebook only counts your marked papers and practice.');
       router.refresh();
     } catch {
@@ -41,12 +41,12 @@ export default function AskSignalToggle({ initial }: { initial: boolean }) {
     <div className={card} data-ask-signal={on ? 'on' : 'off'}>
       <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">My Notebook</p>
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-gray-700">💬 Count what I ask about</p>
+        <p className="text-sm text-gray-700">💬 Show skills I keep asking about</p>
         <button
           type="button"
           role="switch"
           aria-checked={on}
-          aria-label="Count what I ask about"
+          aria-label="Show skills I keep asking about"
           disabled={busy}
           onClick={flip}
           className={`relative shrink-0 w-12 h-7 rounded-full transition-colors disabled:opacity-50 ${on ? 'bg-navy' : 'bg-gray-300'}`}
@@ -55,8 +55,9 @@ export default function AskSignalToggle({ initial }: { initial: boolean }) {
         </button>
       </div>
       <p className="text-[12px] text-gray-500 mt-1.5">
-        When this is on, a topic you ask about {ASK_SIGNAL_MIN}{' '}or more times in two weeks shows in My Notebook as
-        &ldquo;keeps coming up&rdquo;. Asking isn&apos;t a mistake — it&apos;s only a nudge, and it fades by itself when you stop asking.
+        When this is on, My Notebook adds a &ldquo;Keeps coming up&rdquo; line for any skill you ask the app about{' '}
+        {ASK_SIGNAL_MIN}{' '}or more times in two weeks — for example &ldquo;Proofs using the Pythagorean identity&rdquo;, not just
+        &ldquo;Trigonometry&rdquo;. It&apos;s a nudge, not a mark: asking isn&apos;t a mistake. The line fades by itself when you stop asking.
       </p>
       {msg && (
         <p className={`text-sm mt-1.5 ${msg.startsWith('✓') ? 'text-green-700' : 'text-gray-600'}`}>{msg}</p>

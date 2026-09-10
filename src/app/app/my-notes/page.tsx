@@ -12,12 +12,14 @@
 //      the Practice items that fix it when the hand-back has named any.
 //      Fail-soft: hidden at zero. ("This week's focus", buildPlan over the
 //      papers, sat here 2026-08-28 → 6 Sep 2026 and was removed with §0/§6.)
-//   2. Questions to retry — the notebook's dropped-marks entries (live only,
-//      retryOrder in lib/notebook.ts), each expandable to the full picture
-//      from the run: the question as marked, the marker's comment, per-part
-//      slips, and the worked solution when the run is still inside the
-//      papers window. A bank twin (variant_qb_id) also gets a "Try a similar
-//      one" deep link into /app/practice?qid=….
+//   1b. Keeps coming up (10 Sep 2026, OPT-IN — Settings → "Show skills I
+//      keep asking about"): the bank sub-skills the student keeps asking the
+//      app about, from Supabase ask_skills (lib/ask-signal.ts, pure/tested).
+//      An ask is not a verdict, so this is a softer band beside the mistakes,
+//      not a row in them.
+//   2. (Questions to retry — DROPPED 10 Sep 2026, Adrian: nobody ever
+//      attempted one in a fortnight of being live. notebook_entries rows still
+//      accrue at release for export/retention; the band and RetryCard are gone.)
 //   3. ✂️ My clippings & photos — the gallery (edit note / delete, in
 //      my-notes-gallery.tsx, talking to /api/portal/my-notes): clippings cut
 //      from marked papers + 📷 photos of work done outside the app (school
@@ -37,32 +39,21 @@ import Link from 'next/link';
 import { portalIdentity, sessionAccount } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { createServiceClient } from '@/lib/supabase-server';
-import { loadPapersAndNotebook, type NotebookEntryRow, type PapersAndNotebook } from '@/lib/notebook-data';
-import { retryOrder, sgtToday } from '@/lib/notebook';
 import { loadMistakes, type MistakeRow } from '@/lib/notebook-mistakes-store';
 import { bandOf, displayOrder, latestSighting, shortDate, sightingLine, stateLabel } from '@/lib/notebook-mistakes';
-import { askSignalLine, askSignalOn, askStateLabel, type AskSignalLine } from '@/lib/ask-signal';
+import { askLineContext, askLineTitle, askSignalLine, askSignalOn, askStateLabel, type AskSignalLine } from '@/lib/ask-signal';
 import { loadAskSignal } from '@/lib/ask-signal-store';
 import { CorrectedButton } from './mistake-actions';
 import { MAX_NOTES_PER_STUDENT, type MyNoteRow, type TopicOptionGroup } from '@/lib/portal-notes';
 import { getTopicsForPaperLevel } from '@/lib/canonical-topics';
 import { qbLevelsFor } from '@/lib/qb-levels';
-import type { StudentQuestion } from '@/lib/portal-marking';
-import AnnotatedSolution from '../marking/AnnotatedSolution';
-import { mathHtml } from '@/lib/math-inline';
 import MyNotesGallery from './my-notes-gallery';
-// Retry-card detail carries inline $…$ TeX (question prompt, comment, slips)
-// — mathHtml KaTeXes only the math spans, and this stylesheet is what makes
-// the output render as maths (same treatment /app/marking gives these fields).
-import 'katex/dist/katex.min.css';
 
 export const dynamic = 'force-dynamic';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 const BAND = 'text-xs font-semibold uppercase tracking-wide text-gray-400';
 
-/** Entries shown before the "Show all" expander. */
-const RETRY_CAP = 12;
 
 export default async function MyNotebookPage() {
   // The plan-page pattern: Adrian's admin cookie may browse /app/* without a
@@ -93,10 +84,7 @@ export default async function MyNotebookPage() {
   // independent — one parallel batch. All fail soft: a load error hides its
   // band, never the page.
   const svc = createServiceClient();
-  const [assembly, clippings, mistakes, askLines] = await Promise.all([
-    loadPapersAndNotebook(svc, sid, sgtToday()).catch(
-      (): PapersAndNotebook => ({ ok: false, error: 'papers' }),
-    ),
+  const [clippings, mistakes, askLines] = await Promise.all([
     getSupabaseAdmin()
       .from('portal_notes')
       .select('id, run_id, source_label, topic, image_url, note, created_at')
@@ -106,12 +94,10 @@ export default async function MyNotebookPage() {
       .then(r => (r.data ?? []) as MyNoteRow[], () => [] as MyNoteRow[]),
     // The read applies the 14-day "Corrected" → Fixed sweep on the way out.
     loadMistakes(svc, sid).catch((): MistakeRow[] => []),
-    // Keeps coming up (opt-in — Settings → "Count what I ask about"): the
-    // student's own asks from the bot's Questions log, derived on the fly,
-    // never stored. Off, or a stranger with no Airtable record → no band.
-    askSignalOn(account?.prefs) && account?.airtable_student_id
-      ? loadAskSignal(account.airtable_student_id)
-      : Promise.resolve([] as AskSignalLine[]),
+    // Keeps coming up (opt-in — Settings → "Show skills I keep asking about"):
+    // the student's own asks from Supabase ask_skills, folded on the fly,
+    // never stored on this side. Off → no read, no band.
+    askSignalOn(account?.prefs) ? loadAskSignal(svc, sid) : Promise.resolve([] as AskSignalLine[]),
   ]);
 
   // Band 1 — the mistakes list in display order (entries with no evidence yet,
@@ -140,24 +126,6 @@ export default async function MyNotebookPage() {
   const practiceFor = (m: MistakeRow) =>
     m.practice_ids.map(id => practiceById.get(id)).filter((p): p is { id: string; title: string } => !!p);
 
-  let retry: NotebookEntryRow[] = [];
-  // The solution reveal lives on the run, never on the notebook row (a
-  // dropped-marks entry only mirrors the score) — index every marked
-  // question by run+number once so each card can look its own up in O(1).
-  const questionByKey = new Map<string, StudentQuestion>();
-  if (assembly.ok) {
-    retry = retryOrder(assembly.entries);
-    for (const paper of assembly.papers) {
-      for (const q of paper.questions) questionByKey.set(`${paper.id}|${q.questionNumber}`, q);
-    }
-  }
-  // Null when the run fell outside the papers window (MAX_RUNS) or the entry
-  // is otherwise orphaned — RetryCard treats that as fail-soft, not an error.
-  const questionFor = (e: NotebookEntryRow): StudentQuestion | null =>
-    questionByKey.get(`${e.run_id}|${e.question_number}`) ?? null;
-  const shown = retry.slice(0, RETRY_CAP);
-  const extra = retry.slice(RETRY_CAP);
-
   // Topic options for the ➕ Add-a-photo tagger: the canonical list for the
   // student's level(s) — the same qbLevelsFor derivation the practice picker
   // starts from — merged by category label and deduped (a Sec 3 student's
@@ -180,7 +148,7 @@ export default async function MyNotebookPage() {
       <div className="pt-1">
         <h1 className="text-xl font-bold text-navy">My Notebook</h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          Built from your marked papers and your own photos — your mistakes as they fade, questions to retry, and everything you&apos;ve saved.
+          Built from your marked papers and your own photos — your mistakes as they fade, and everything you&apos;ve saved.
         </p>
       </div>
 
@@ -220,9 +188,10 @@ export default async function MyNotebookPage() {
       )}
 
       {/* Band 1b — Keeps coming up (10 Sep 2026, OPT-IN via Settings →
-          "Count what I ask about"): topics the student asked the bot about
-          ASK_SIGNAL_MIN+ times in the last fortnight, read from the Airtable
-          Questions log at render time. Nothing is stored, so the line fades by
+          "Show skills I keep asking about"): the bank sub-skills the student
+          asked the app about ASK_SIGNAL_MIN+ times in the last fortnight, from
+          Supabase ask_skills (the bot files every linked ask under a
+          subgroups.name). Folded at render time, so the line fades by
           itself — Coming up less for the following fortnight, then gone.
           Asking is not a mistake: softer ink, no Corrected button, no
           evidence, no practice links. Hidden at zero like every band. */}
@@ -236,9 +205,10 @@ export default async function MyNotebookPage() {
               <div key={l.key} className={`${CARD} p-4 ${l.state === 'up' ? '' : 'opacity-75'}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className={`text-sm font-bold ${l.state === 'up' ? 'text-navy' : 'text-gray-600'}`}>
-                      {l.subject ? `${l.subject}: ` : ''}{l.topic}
-                    </p>
+                    <p className={`text-sm font-bold ${l.state === 'up' ? 'text-navy' : 'text-gray-600'}`}>{askLineTitle(l)}</p>
+                    {askLineContext(l) && (
+                      <p className="text-[12px] text-gray-500 mt-0.5">{askLineContext(l)}</p>
+                    )}
                     <p className="text-[12px] text-gray-500 mt-0.5">{askSignalLine(l)}</p>
                   </div>
                   <span className={`shrink-0 text-[11px] rounded-full px-2.5 py-0.5 font-semibold whitespace-nowrap ${l.state === 'up' ? 'bg-sky-50 text-sky-800' : 'bg-gray-100 text-gray-600'}`}>
@@ -252,34 +222,6 @@ export default async function MyNotebookPage() {
             From what you ask in the app. Asking isn&apos;t a mistake — this is only what keeps coming up.{' '}
             <Link href="/app/settings" className="underline">Turn it off in Settings</Link>.
           </p>
-        </section>
-      )}
-
-      {/* Band 2 — Questions to retry (live dropped-marks notebook entries,
-          grouped by topic; hidden at zero like the hub cards) */}
-      {retry.length > 0 && (
-        <section>
-          <p className={`${BAND} mb-2`}>
-            Questions to retry <span className="normal-case font-medium">· {retry.length}</span>
-          </p>
-          <div className="space-y-2">
-            {shown.map(e => (
-              <RetryCard key={e.id} e={e} question={questionFor(e)} />
-            ))}
-          </div>
-          {extra.length > 0 && (
-            <details className="group mt-2">
-              <summary className={`${CARD} block cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden px-4 py-2.5 text-center text-sm font-semibold text-navy hover:bg-navy/5 transition-colors`}>
-                <span className="group-open:hidden">Show all {retry.length} ▾</span>
-                <span className="hidden group-open:inline">Show fewer ▴</span>
-              </summary>
-              <div className="space-y-2 mt-2">
-                {extra.map(e => (
-                  <RetryCard key={e.id} e={e} question={questionFor(e)} />
-                ))}
-              </div>
-            </details>
-          )}
         </section>
       )}
 
@@ -348,99 +290,3 @@ function MistakeCard({ m, practice }: { m: MistakeRow; practice: { id: string; t
   );
 }
 
-/**
- * One dropped-marks entry: topic, where it came from, and the bank-twin
- * door — expanded (native <details>, no client JS) to the full picture from
- * the run: the question as marked, the marker's comment, per-part slips, and
- * the worked solution when one is available. `question` is the matching
- * StudentQuestion from questionFor() above; null is fail-soft (run outside
- * the papers window, or an older row with nothing more to show) and simply
- * narrows what the open body renders — never a placeholder.
- */
-function RetryCard({ e, question }: { e: NotebookEntryRow; question: StudentQuestion | null }) {
-  const lost = Math.max(0, e.max_marks - e.awarded);
-  // slips is jsonb of unknown shape — only ever render entries that are
-  // actually strings, silently dropping anything else rather than crashing.
-  const slips = Array.isArray(e.slips) ? e.slips.filter((s): s is string => typeof s === 'string') : [];
-
-  const practiceLink = e.variant_qb_id ? (
-    <Link
-      href={`/app/practice?qid=${encodeURIComponent(e.variant_qb_id)}&from=notebook`}
-      className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-800 rounded-xl px-3 py-1.5 text-[13px] font-semibold hover:bg-amber-100 transition-colors"
-    >
-      ✏️ Try a similar one →
-    </Link>
-  ) : e.topic ? (
-    // No bank twin picked for this one (yet) — the card must still DO
-    // something on tap (Adrian, 2026-08-29): practise the topic instead.
-    <Link
-      href={`/app/practice?topic=${encodeURIComponent(e.topic)}`}
-      className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-800 rounded-xl px-3 py-1.5 text-[13px] font-semibold hover:bg-amber-100 transition-colors"
-    >
-      ✏️ Practise this topic →
-    </Link>
-  ) : null;
-
-  return (
-    <details className={`${CARD} group`}>
-      {/* <summary>'s content model is phrasing-only — span (not div/p), forced
-          to block/flex via classes, keeps the markup conformant while looking
-          identical to the plain-div face this replaces. */}
-      <summary className="p-4 block cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
-        <span className="flex items-start justify-between gap-3">
-          <span className="min-w-0 block">
-            <span className="block text-sm font-bold text-navy truncate">{e.topic ?? 'General'}</span>
-            <span className="block text-[12px] text-gray-500 mt-0.5 truncate">
-              Q{e.question_number}
-              {e.paper_name ? ` · ${e.paper_name}` : ''}
-            </span>
-          </span>
-          <span className="shrink-0 flex items-center gap-1.5">
-            <span
-              className="text-[12px] rounded-full bg-rose-50 text-rose-800 px-2.5 py-0.5 font-semibold"
-              title={`Dropped ${lost} mark${lost === 1 ? '' : 's'} here`}
-            >
-              {e.awarded}/{e.max_marks}
-            </span>
-            <span className="text-gray-400 group-open:rotate-90 transition-transform inline-block">›</span>
-          </span>
-        </span>
-        <span className="block text-[11px] text-gray-400 mt-1.5 group-open:hidden">see detail</span>
-      </summary>
-
-      <div className="px-4 pb-4 pt-3 space-y-2.5 border-t border-gray-100">
-        {e.question_prompt && (
-          <MathText text={e.question_prompt} className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed" />
-        )}
-        {e.comment && (
-          <MathText text={e.comment} className="text-[13px] text-gray-700 leading-snug" />
-        )}
-        {slips.length > 0 && (
-          <ul className="space-y-1">
-            {slips.map((s, i) => (
-              <li key={i} className="text-[12px] text-amber-900 bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-1.5">
-                <MathText text={s} />
-              </li>
-            ))}
-          </ul>
-        )}
-        {question?.solution && (
-          <details className="group/sol">
-            <summary className="cursor-pointer text-[13px] font-semibold text-navy list-none flex items-center gap-1.5">
-              <span className="text-gray-400 group-open/sol:rotate-90 transition-transform inline-block">›</span>
-              📖 The worked solution, annotated
-            </summary>
-            <AnnotatedSolution solution={question.solution} schemes={question.schemes} />
-          </details>
-        )}
-        {practiceLink}
-      </div>
-    </details>
-  );
-}
-
-// Server-side KaTeX over inline $…$ spans (same treatment /app/marking gives
-// these fields — lib/math-inline decides what is maths and what is a dollar sign).
-function MathText({ text, className }: { text: string; className?: string }) {
-  return <div className={className} dangerouslySetInnerHTML={{ __html: mathHtml(text) }} />;
-}
