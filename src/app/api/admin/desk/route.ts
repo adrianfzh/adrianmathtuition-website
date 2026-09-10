@@ -18,6 +18,7 @@
 // decides anything) and capped — a list must never wait on Dropbox. The
 // detail route checks it properly for the paper on screen.
 import { NextRequest, NextResponse } from 'next/server';
+import { coveredRunIds } from '@/lib/sheet-queue';
 import { computeAutoHold } from '@/lib/mark-triage';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -107,20 +108,26 @@ export async function GET(req: NextRequest) {
   const assignmentsByRun = new Map<string, number>();
   if (ids.length) {
     try {
-      const jobs = await selectIn<SheetJobLite>('sheet_jobs', 'id, run_id, status, stage, error, attempts, created_at, completed_at, result, requested_by', 'run_id', ids);
+      const jobs = await selectIn<SheetJobLite & { run_ids?: string[] | null }>('sheet_jobs', 'id, run_id, run_ids, status, stage, error, attempts, created_at, completed_at, result, requested_by', 'run_id', ids);
       for (const j of jobs) {
-        const list = jobsByRun.get(j.run_id) ?? [];
-        list.push(j);
-        jobsByRun.set(j.run_id, list);
+        // A batch job (10 Sep 2026) is the sheet of EVERY paper it covers.
+        for (const rid of coveredRunIds(j)) {
+          if (!ids.includes(rid)) continue;
+          const list = jobsByRun.get(rid) ?? [];
+          list.push(j);
+          jobsByRun.set(rid, list);
+        }
       }
     } catch (e) { console.warn('[desk] sheet_jobs read failed:', (e as Error).message); }
     try {
       // Revoked rows are gone from the app — never count them (Joey's paper read
       // "10 practice questions in the app" for ten withdrawn ones, 9 Sep 2026).
-      const rows = await selectIn<{ source_run_id: string; status: string | null; revoked_at: string | null }>('portal_assignments', 'source_run_id, status, revoked_at', 'source_run_id', ids);
+      const rows = await selectIn<{ source_run_id: string; source_run_ids: string[] | null; status: string | null; revoked_at: string | null }>('portal_assignments', 'source_run_id, source_run_ids, status, revoked_at', 'source_run_id', ids);
       for (const a of rows) {
         if (a.revoked_at || a.status === 'revoked') continue;
-        assignmentsByRun.set(a.source_run_id, (assignmentsByRun.get(a.source_run_id) ?? 0) + 1);
+        for (const rid of new Set([a.source_run_id, ...(a.source_run_ids ?? [])])) {
+          if (rid && ids.includes(rid)) assignmentsByRun.set(rid, (assignmentsByRun.get(rid) ?? 0) + 1);
+        }
       }
     } catch (e) { console.warn('[desk] portal_assignments read failed:', (e as Error).message); }
   }

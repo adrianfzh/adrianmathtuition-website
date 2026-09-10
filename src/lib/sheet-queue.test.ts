@@ -99,3 +99,43 @@ describe('a returned Practice Again sheet gets no sheet of its own (9 Sep 2026)'
     expect(b.ok).toBe(false); expect((b as { status: string }).status).toBe('practice-again');
   });
 });
+
+// ── Batches: one sheet for several papers of one subject (10 Sep 2026) ──────
+import { sheetBatchGuard, batchPaperName, coveredRunIds, sheetBatchInsert, type SheetBatchRun } from './sheet-queue';
+
+const bRun = (id: string, extra: Partial<SheetBatchRun> = {}): SheetBatchRun => ({
+  id, paper_name: `isabelle TYS AM 2025 ${id}`, student_id: 'recIsa', student_name: 'Isabelle Toh Si Xian',
+  released_at: '2026-09-09T06:56:41Z', result_json: { results: [] }, created_at: '2026-09-08T04:59:00Z', paper_subject: 'A Math', ...extra,
+});
+
+describe('sheetBatchGuard — the desk tick', () => {
+  it('needs at least two distinct papers', () => {
+    expect(sheetBatchGuard([bRun('p1')])).toMatchObject({ ok: false, status: 'too-few', http: 400 });
+    expect(sheetBatchGuard([bRun('p1'), bRun('p1')])).toMatchObject({ ok: false, status: 'too-few' });
+  });
+  it('refuses when a ticked paper is missing, untagged, unmarked, or a returned sheet', () => {
+    expect(sheetBatchGuard([bRun('p1'), null])).toMatchObject({ ok: false, status: 'not-found', http: 404 });
+    expect(sheetBatchGuard([bRun('p1'), bRun('p2', { student_id: null })])).toMatchObject({ ok: false, status: 'untagged', runId: 'p2' });
+    expect(sheetBatchGuard([bRun('p1'), bRun('p2', { result_json: null })])).toMatchObject({ ok: false, status: 'no-marking', runId: 'p2' });
+  });
+  it('one student, one subject', () => {
+    expect(sheetBatchGuard([bRun('p1'), bRun('p2', { student_id: 'recOther' })])).toMatchObject({ ok: false, status: 'mixed-students' });
+    expect(sheetBatchGuard([bRun('p1'), bRun('p2', { paper_subject: 'E Math' })])).toMatchObject({ ok: false, status: 'mixed-subjects' });
+  });
+  it('the newest paper is the primary; the batch keeps every run', () => {
+    const g = sheetBatchGuard([bRun('old', { created_at: '2026-09-08T04:59:00Z' }), bRun('new', { created_at: '2026-09-09T08:40:00Z' }), bRun('mid', { created_at: '2026-09-08T05:27:00Z' })]);
+    expect(g.ok).toBe(true);
+    if (!g.ok) return;
+    expect(g.primary.id).toBe('new');
+    expect(g.runs.map(r => r.id)).toEqual(['new', 'mid', 'old']);
+    const row = sheetBatchInsert(g.primary, g.runs, null, 'adrian');
+    expect(row).toMatchObject({ run_id: 'new', run_ids: ['new', 'mid', 'old'], requested_by: 'adrian', airtable_student_id: 'recIsa' });
+    expect(row.paper_name).toBe('3 papers: isabelle TYS AM 2025 new · isabelle TYS AM 2025 mid · isabelle TYS AM 2025 old');
+  });
+  it('batchPaperName and coveredRunIds', () => {
+    expect(batchPaperName([{ paper_name: 'a' }, { paper_name: null }])).toBe('2 papers: a · untitled');
+    expect(coveredRunIds({ run_id: 'p1', run_ids: ['p1', 'p2', 'p3'] })).toEqual(['p1', 'p2', 'p3']);
+    expect(coveredRunIds({ run_id: 'p1', run_ids: null })).toEqual(['p1']);
+    expect(coveredRunIds({ run_id: 'p1', run_ids: ['p2'] })).toEqual(['p1', 'p2']);
+  });
+});

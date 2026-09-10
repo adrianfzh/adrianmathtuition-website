@@ -54,6 +54,52 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
       `"revised": {"round": <n>, "instructions": "<the note>"}`; keep
       `diagnosis` unless the change altered a section's title, marks or gap.
 
+1e. **A BATCH job — one sheet for several papers** (10 Sep 2026; Adrian, on
+    Isabelle's five finished-but-unsent sheets: "the same mistakes or the same
+    topics may appear across all 5 worksheets, so can batch and combine into one
+    — more efficient and can save students' time. but still must be effective and
+    target the required gaps"). `job.run_ids` (two or more marking runs, the
+    primary `job.run_id` first) makes the job a batch; `job.paper_name` reads
+    "N papers: …". Everything in the skill still applies; these rules are on top:
+
+    - **Diagnose from EVERY covered run** — the single-paper rule is suspended for
+      a batch because Adrian asked for the merge. Pull each run's lost parts
+      (skill Step 2) and its marked pages.
+    - **Cluster by GAP, not by title or topic.** The same gap on two papers is ONE
+      section and goes FIRST — recurrence outranks size (a 1-mark slip seen twice
+      beats a 4-mark one-off). The same HABIT across different topics (checking a
+      root against the question; copying the printed figure) is one section with
+      faces (a)/(b)/(c) and ONE practice set. One-off gaps follow, ranked by marks.
+    - **The cap holds.** Six teach sections at most (four to six is the target),
+      an Optional tail, the rest shelved with evidence. A merged sheet is not the
+      single sheets stapled together; ② slips are reported, not listed.
+    - **Reuse first.** Each covered run may already have a finished single sheet
+      (`GET /api/admin/sheet-jobs?paper=<name>&status=done`, or the paper folder
+      `/Students/<Student>/<date> <paper>/3 Practice Again.docx`). Same question +
+      same gap → lift that section's Example and Practice (Adrian's edited copy if
+      newer), re-verify, and list it in `reused`.
+    - **Title block:** `PRACTICE AGAIN — Learn from your <A Math | E Math> papers`,
+      a small grey line naming the papers (`2025 Paper 1 · 2025 Paper 2 · 2023
+      Paper 2`), then `For <Full Name>`. Under each section heading one grey line
+      `Where it showed: 2025 Paper 1 Q2 and Q8(a); 2023 Paper 2 Q9(c)` — naming
+      the student's OWN papers is allowed on a batch sheet (the "never name
+      another paper" rule is about dragging other papers into a single sheet).
+    - **Filing:** a NEW dated folder for the batch, not a paper's folder —
+      `/Students/<Student>/<YYYY-MM-DD> Practice Again (N papers - <short names>)/3 Practice Again.docx|pdf`
+      with today's date and short names like `AM 2025 P1, AM 2025 P2, AM 2023 P2`
+      (level + year + paper from each `paper_name`; the raw name when that cannot
+      be read).
+    - **`diagnosis[]` entries name the papers they showed on:** each carries
+      `"runs": [{"run_id": "<uuid>", "questions": ["Q2", "Q8(a)"], "marks": 2}, …]`
+      — one item per covered run the skill appeared on, with THAT paper's own
+      questions and marks. The site splits the diagnosis per paper from this; an
+      entry with no `runs` goes to the primary paper only. `questions` on the
+      entry itself lists every question across the papers, as before.
+    - **Nothing else changes:** `done` on the SAME job id, one `docx_path` /
+      `pdf_path`, the sweeps, the verification stamp. The batch supersedes the
+      single sheets (the site cancelled any still being written when the batch
+      was queued); do not file anything into the papers' own folders.
+
 1d. **ALWAYS post `diagnosis`** — on a fresh sheet, a revision, and when you
     decide an existing sheet stands unchanged after a re-mark ("identical
     diagnosis, not rebuilt"). The paper's cover page ("Where your marks went")

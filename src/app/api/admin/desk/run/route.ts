@@ -13,6 +13,7 @@
 // folder that cannot be listed comes back as `amended.status: 'unknown'` and
 // the page says so instead of guessing.
 import { NextRequest, NextResponse } from 'next/server';
+import { coveredRunIds } from '@/lib/sheet-queue';
 import { remarkDiff, plainMath } from '@/lib/remark-diff';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -134,8 +135,9 @@ export async function GET(req: NextRequest) {
   } : null;
 
   const { data: jobRows } = await sb.from('sheet_jobs')
-    .select('id, status, stage, error, attempts, focus, claimed_by, created_at, completed_at, result, auto_release_at, held_at, auto_released_at, requested_by')
-    .eq('run_id', runId).order('created_at', { ascending: false });
+    .select('id, run_id, run_ids, status, stage, error, attempts, focus, claimed_by, created_at, completed_at, result, auto_release_at, held_at, auto_released_at, requested_by')
+    // A batch job (10 Sep 2026) is the sheet of every paper it covers.
+    .or(`run_id.eq.${runId},run_ids.cs.{${runId}}`).order('created_at', { ascending: false });
   const jobs = (jobRows ?? []) as SheetJobRow[];
   const job = latestLiveJob(jobs);
   const jobResult = (job?.result && typeof job.result === 'object') ? job.result as Record<string, unknown> : null;
@@ -148,7 +150,8 @@ export async function GET(req: NextRequest) {
   let assignmentsHeld = 0;
   let sheetSent = false;
   try {
-    const { data: rows } = await sb.from('portal_assignments').select('status, kind, revoked_at').eq('source_run_id', runId);
+    const { data: rows } = await sb.from('portal_assignments').select('status, kind, revoked_at')
+      .or(`source_run_id.eq.${runId},source_run_ids.cs.{${runId}}`);   // a batch sheet counts on every paper it covers
     // Revoked rows are gone from the app — never count them (9 Sep 2026).
     const live = (rows ?? []).filter(a => !a.revoked_at && a.status !== 'revoked');
     assignments = live.length;
@@ -280,6 +283,8 @@ export async function GET(req: NextRequest) {
       focus: job.focus, claimedBy: job.claimed_by, createdAt: job.created_at, completedAt: job.completed_at,
       autoReleaseAt: job.auto_release_at ?? null, heldAt: job.held_at ?? null, autoReleasedAt: job.auto_released_at ?? null,
       requestedBy: job.requested_by ?? null,
+    // A batch job (10 Sep 2026): every paper the sheet covers, the primary first.
+    runIds: coveredRunIds(job as unknown as { run_id: string; run_ids?: string[] | null }),
       label: sheetStageLabel(job),
       result: jobResult ? {
         docxPath: typeof jobResult.docx_path === 'string' ? jobResult.docx_path : null,

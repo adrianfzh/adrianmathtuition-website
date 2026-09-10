@@ -32,6 +32,7 @@ import { choosePdf, sheetFolder, ambiguityMessage, noSheetNote, earlierSheetsToW
 import { readNoSheet } from '@/lib/sheet-jobs';
 import { attachAmendedFromDropbox } from '@/lib/attach-amended';
 import { releaseHeldPracticeItems } from '@/lib/practice-again-store';
+import { coveredRunIds } from '@/lib/sheet-queue';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -43,13 +44,13 @@ async function resolve(runId: string) {
   const sb = getSupabaseAdmin();
   const { data: run } = await sb
     .from('paper_marking_runs')
-    .select('id, student_id, student_name, paper_name, released_at, total_awarded, total_max')
+    .select('id, student_id, student_name, paper_name, paper_subject, released_at, total_awarded, total_max')
     .eq('id', runId).maybeSingle();
   if (!run) return { error: 'run not found', status: 404 as const };
   if (!run.student_id) return { error: 'Tag this paper to a student first.', status: 400 as const };
 
   const { data: job } = await sb
-    .from('sheet_jobs').select('result, requested_by')
+    .from('sheet_jobs').select('result, requested_by, run_id, run_ids')
     .eq('run_id', runId).eq('status', 'done')
     .order('created_at', { ascending: false }).limit(1).maybeSingle();
   if (!job) return { error: 'No finished sheet for this paper yet.', status: 404 as const };
@@ -62,8 +63,11 @@ async function resolve(runId: string) {
   // one Adrian queued and released is COMPULSORY (required_at, reminders);
   // one the student asked for from the app is theirs to do — no nag.
   const requestedBy = (job as { requested_by?: string | null }).requested_by === 'student' ? 'student' as const : 'adrian' as const;
+  // A batch sheet (10 Sep 2026) covers several papers: the row it makes and the
+  // archive it leaves go to every one of them.
+  const covered = coveredRunIds({ run_id: runId, run_ids: (job as { run_ids?: string[] | null }).run_ids ?? null });
   const noSheet = readNoSheet(job.result);
-  if (noSheet.noSheet) return { run, noSheet: true as const, reason: noSheet.reason, requestedBy };
+  if (noSheet.noSheet) return { run, noSheet: true as const, reason: noSheet.reason, requestedBy, covered };
 
   const result = (job.result || {}) as SheetResult;
   const folderPath = sheetFolder(result.pdf_path, result.docx_path);
@@ -90,7 +94,7 @@ async function resolve(runId: string) {
   }
 
   // `noSheet` is the discriminant the two callers branch on.
-  return { run, noSheet: false as const, result, folderPath, choice: choosePdf(result.pdf_path, result.docx_path, files), requestedBy };
+  return { run, noSheet: false as const, result, folderPath, choice: choosePdf(result.pdf_path, result.docx_path, files), requestedBy, covered };
 }
 
 export async function GET(req: NextRequest) {
@@ -205,7 +209,11 @@ export async function POST(req: NextRequest) {
   // marked paper and no work, which is the state this button exists to prevent.
   // The paper's name the way the student knows it ("A Math · GCE 2021 · Paper 1"),
   // not the internal one ("wanqing am tys 2021 p1") — same rule as the Papers list.
-  const title = `Practice Again — ${r.run.paper_name ? displayPaperName(r.run.paper_name, r.run.student_name) : 'your marked paper'}`;
+  const batch = r.covered.length > 1;
+  const subjectWord = String((r.run as { paper_subject?: string | null }).paper_subject || '').trim();
+  const title = batch
+    ? `Practice Again — your ${r.covered.length}${subjectWord ? ` ${subjectWord}` : ''} papers`
+    : `Practice Again — ${r.run.paper_name ? displayPaperName(r.run.paper_name, r.run.student_name) : 'your marked paper'}`;
   const aRes = await fetch(`${origin}/api/admin/assignments`, {
     method: 'POST', headers: fwd,
     body: JSON.stringify({
@@ -223,6 +231,8 @@ export async function POST(req: NextRequest) {
       // source 'practice-again' + the source run — without them the sheet sat
       // under "From Adrian" and the paper showed no sheet at all.
       source: 'practice-again', sourceRunId: runId,
+      // A batch sheet names every paper it covers (10 Sep 2026).
+      ...(batch ? { sourceRunIds: r.covered } : {}),
     }),
   });
   const aData = await aRes.json().catch(() => ({}));
@@ -238,7 +248,9 @@ export async function POST(req: NextRequest) {
     const newId = String(aData.assignment?.id ?? '');
     const supa0 = getSupabaseAdmin();
     const { data: earlier } = await supa0.from('portal_assignments').select('id, status')
-      .eq('airtable_student_id', r.run.student_id).eq('source', 'practice-again').eq('kind', 'worksheet').eq('source_run_id', runId);
+      .eq('airtable_student_id', r.run.student_id).eq('source', 'practice-again').eq('kind', 'worksheet')
+      // Earlier single-paper sheets for ANY covered paper are superseded by a batch (10 Sep 2026).
+      .or(`source_run_id.in.(${r.covered.join(',')}),source_run_ids.ov.{${r.covered.join(',')}}`);
     const ids = earlierSheetsToWithdraw((earlier ?? []) as { id: string; status: string }[], newId);
     if (ids.length) {
       const { error: wErr } = await supa0.from('portal_assignments')
@@ -264,9 +276,11 @@ export async function POST(req: NextRequest) {
       archive.docx_url = (await putStudentFile({ key: runKey(runId, 'practice-again.docx'), body: docxBuf, contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' })).url;
     }
     const supa = getSupabaseAdmin();
-    const { data: row } = await supa.from('paper_marking_runs').select('result_json').eq('id', runId).maybeSingle();
-    const rj = (row?.result_json && typeof row.result_json === 'object') ? row.result_json as Record<string, unknown> : {};
-    await supa.from('paper_marking_runs').update({ result_json: { ...rj, practice_again_archive: archive } }).eq('id', runId);
+    for (const rid of r.covered) {
+      const { data: row } = await supa.from('paper_marking_runs').select('result_json').eq('id', rid).maybeSingle();
+      const rj = (row?.result_json && typeof row.result_json === 'object') ? row.result_json as Record<string, unknown> : {};
+      await supa.from('paper_marking_runs').update({ result_json: { ...rj, practice_again_archive: archive } }).eq('id', rid);
+    }
   } catch (e) { console.warn('[release-with-sheet] sheet archive skipped:', (e as Error).message); }
 
   let released = !!r.run.released_at;
@@ -299,5 +313,6 @@ export async function POST(req: NextRequest) {
     amended,
     required: r.requestedBy !== 'student',
     requestedBy: r.requestedBy,
+    covered: r.covered,
   });
 }

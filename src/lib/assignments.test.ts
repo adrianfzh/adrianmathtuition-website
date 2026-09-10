@@ -170,3 +170,16 @@ describe('withRequired — a sheet Adrian released is compulsory; one the studen
     expect(row).toEqual({ title: 'x', source: 'practice-again', required_at: '2026-09-08T04:00:00.000Z' });
   });
 });
+
+// ── Batch sheets (10 Sep 2026): a worksheet row carries every paper it covers ─
+describe('validateAssignment — sourceRunIds', () => {
+  const A = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', B = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+  it('stores the batch with the primary first, dedupes, drops junk, and stays null for a single paper', () => {
+    const v = validateAssignment({ studentId: SID, kind: 'worksheet', title: 'Practice Again', pdfUrl: 'https://x/y.pdf', sourceRunId: A, sourceRunIds: [B, A, 'junk', B] });
+    expect(v.ok).toBe(true);
+    if (!v.ok) return;
+    expect(v.row).toMatchObject({ source_run_id: A, source_run_ids: [A, B] });
+    const single = validateAssignment({ studentId: SID, kind: 'worksheet', title: 'Practice Again', pdfUrl: 'https://x/y.pdf', sourceRunId: A });
+    expect(single.ok && single.row.source_run_ids).toBeNull();
+  });
+});

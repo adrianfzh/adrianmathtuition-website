@@ -51,9 +51,9 @@ import JSZip from 'jszip';
 import Anthropic from '@anthropic-ai/sdk';
 import { docxXmlToText, extractExamples, runExampleCheck } from '@/lib/sheet-example-check';
 import { autoReleaseGate, holdHours, scheduledLine, heldLine, requestedSentLine, requestedHeldLine, requestedStoppedLine, type GateInput } from '@/lib/sheet-auto-release';
-import { normaliseDiagnosis, type Diagnosis } from '@/lib/sheet-diagnosis';
+import { normaliseDiagnosis, splitDiagnosisByRun, type Diagnosis } from '@/lib/sheet-diagnosis';
 import { rebuildRunPdfs, type RebuildOutcome } from '@/lib/rebuild-run-pdfs';
-import { queueSheetJob, requeueSheetAfterRemark } from '@/lib/sheet-queue';
+import { queueSheetJob, requeueSheetAfterRemark, queueSheetBatch, coveredRunIds } from '@/lib/sheet-queue';
 import { sanitizeSheetQuestions } from '@/lib/practice-again';
 import { createHeldPracticeItems, deleteHeldPracticeItems } from '@/lib/practice-again-store';
 import { archiveSheetToStore } from '@/lib/sheet-archive';
@@ -148,7 +148,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  let body: { runId?: string; focus?: string; remark?: boolean; action?: string; by?: string; id?: string; result?: unknown; error?: string ; stage?: string; instructions?: string; pdfPath?: string; source?: string };
+  let body: { runId?: string; runIds?: unknown; focus?: string; remark?: boolean; action?: string; by?: string; id?: string; result?: unknown; error?: string ; stage?: string; instructions?: string; pdfPath?: string; source?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const sb = getSupabaseAdmin();
 
@@ -342,8 +342,13 @@ export async function POST(req: NextRequest) {
     // paper when the student hands the sheet back, so the marker reads the
     // sheet's own questions instead of "marking from the working alone".
     // Fail-soft: Dropbox or storage trouble is logged; the sheet is already filed.
-    const archived = await archiveSheetToStore(job.run_id, { pdfPath: result.pdf_path, docxPath: result.docx_path }, 'done');
-    if (!archived.ok) console.warn('[sheet-jobs] sheet archive skipped', job.id, archived.error);
+    // A batch sheet (10 Sep 2026) is archived onto EVERY paper it covers, so a
+    // Telegram hand-in of it is read against the sheet whichever paper the bot
+    // picks as the source.
+    for (const rid of coveredRunIds(job)) {
+      const archived = await archiveSheetToStore(rid, { pdfPath: result.pdf_path, docxPath: result.docx_path }, 'done');
+      if (!archived.ok) console.warn('[sheet-jobs] sheet archive skipped', job.id, rid, archived.error);
+    }
     notify_marking(completionMessage(job, result, { heldItemsLine: held.line }))
       .then(() => sendSheetFiles(job, result))
       .catch(() => {});
@@ -499,7 +504,24 @@ export async function POST(req: NextRequest) {
       // hand the same blob to the store.
       const { data: runRow } = await sb.from('paper_marking_runs')
         .select('result_json').eq('id', job.run_id).maybeSingle<{ result_json: unknown }>();
-      const diagnosis = normaliseDiagnosis(rawDiagnosis, { sheetJobId: job.id, resultJson: runRow?.result_json });
+      // A batch sheet (10 Sep 2026): each covered paper's cover reads only the
+      // skills that name it (`runs` on the entry); the primary keeps everything
+      // unnamed. A single-paper sheet reads exactly as before.
+      const covered = coveredRunIds(job);
+      const whole = covered.length > 1 ? normaliseDiagnosis(rawDiagnosis, { sheetJobId: job.id }) : null;
+      const perRun = whole ? splitDiagnosisByRun(whole.skills, covered) : null;
+      const diagnosis = perRun
+        ? ((perRun.get(job.run_id) ?? []).length ? normaliseDiagnosis(perRun.get(job.run_id), { sheetJobId: job.id, resultJson: runRow?.result_json }) : null)
+        : normaliseDiagnosis(rawDiagnosis, { sheetJobId: job.id, resultJson: runRow?.result_json });
+      if (perRun) {
+        for (const rid of covered.slice(1)) {
+          const skills = perRun.get(rid) ?? [];
+          if (!skills.length) continue;
+          const { data: other } = await sb.from('paper_marking_runs').select('result_json').eq('id', rid).maybeSingle<{ result_json: unknown }>();
+          const d = normaliseDiagnosis(skills, { sheetJobId: job.id, resultJson: other?.result_json });
+          if (d) await storeDiagnosis(rid, d, other?.result_json);
+        }
+      }
       if (!diagnosis) {
         console.warn('[sheet-jobs] diagnosis ignored — malformed', job.id, JSON.stringify(rawDiagnosis).slice(0, 300));
         rebuild = { rebuilt: false, skipped: 'diagnosis malformed — ignored' };
@@ -605,6 +627,17 @@ export async function POST(req: NextRequest) {
   // The guard (tagged · marked · nothing in flight) lives in lib/sheet-queue.ts
   // and is shared with the desk's auto-queue, so the two doors can never
   // disagree about which papers may have a sheet.
+  // ── Adrian: ONE sheet for several ticked papers (10 Sep 2026) ────────────
+  // The desk's tick: `runIds` → one batch job (lib/sheet-queue queueSheetBatch —
+  // one student, one subject, ≥ 2 papers; in-flight singles are superseded).
+  if (Array.isArray(body.runIds)) {
+    const ids = (body.runIds as unknown[]).map(x => String(x ?? '').trim()).filter(x => /^[0-9a-f-]{36}$/i.test(x));
+    if (ids.length < 2) return NextResponse.json({ error: 'Tick at least two papers for one sheet.' }, { status: 400 });
+    const out = await queueSheetBatch(ids, { focus: body.focus, requestedBy: 'adrian' });
+    if (!out.ok) return NextResponse.json({ error: out.message, runId: out.runId ?? null }, { status: out.http });
+    return NextResponse.json({ job: out.job, cancelled: out.cancelled, runIds: out.runIds });
+  }
+
   const runId = String(body.runId || '').trim();
   if (!/^[0-9a-f-]{36}$/i.test(runId)) return NextResponse.json({ error: 'runId required' }, { status: 400 });
 

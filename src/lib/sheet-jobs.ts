@@ -36,6 +36,8 @@ export type SheetJob = {
   auto_released_at?: string | null;
   /** Who asked for the sheet (8 Sep 2026): 'student' from the app, 'adrian' from the desk; 'auto'/null = the retired auto-queue. */
   requested_by?: 'student' | 'adrian' | 'auto' | null;
+  /** A batch sheet (10 Sep 2026): every run it covers; run_id is the primary/newest. */
+  run_ids?: string[] | null;
 };
 
 /** How long a claim survives without a heartbeat before anyone may retake it. */

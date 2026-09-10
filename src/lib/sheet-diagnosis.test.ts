@@ -287,3 +287,26 @@ describe('practice focus — a slip inside a right method earns no practice', ()
     expect(again.skills[0].slipOnly).toBe(true);
   });
 });
+
+// ── Batch diagnosis: split per covered run (10 Sep 2026) ─────────────────────
+import { splitDiagnosisByRun } from './sheet-diagnosis';
+
+const R1 = '11111111-1111-4111-8111-111111111111', R2 = '22222222-2222-4222-8222-222222222222', R3 = '33333333-3333-4333-8333-333333333333';
+
+describe("splitDiagnosisByRun — each paper's cover reads only what showed on it", () => {
+  it('a skill naming two runs goes to both with each paper\'s own questions and marks; an unnamed skill goes to the primary', () => {
+    const d = normaliseDiagnosis([
+      { title: 'Cosine second solution', marks: 3, questions: ['Q11(c)(ii)', 'Q11(c)'], why: 'twice', tier: 'teach',
+        runs: [{ runId: R1, questions: ['Q11(c)(ii)'], marks: 1 }, { run_id: R2, questions: ['11(c)'], marks: '2' }] },
+      { title: 'Change of base', marks: 3, questions: ['Q6(c)'], why: 'once', tier: 'teach' },
+      { title: 'Nobody', marks: 1, questions: ['Q1'], why: 'x', tier: 'show', runs: [{ runId: 'not-a-uuid', questions: ['Q1'] }] },
+    ], { sheetJobId: 'job' });
+    expect(d).not.toBeNull();
+    const split = splitDiagnosisByRun(d!.skills, [R1, R2, R3]);
+    expect(split.get(R1)).toMatchObject([{ title: 'Cosine second solution', marks: 1, questions: ['Q11(c)(ii)'] }, { title: 'Change of base', marks: 3 }, { title: 'Nobody', marks: 1 }]);
+    expect(split.get(R2)).toMatchObject([{ title: 'Cosine second solution', marks: 2, questions: ['Q11(c)'] }]);
+    expect(split.get(R3)).toEqual([]);
+    // the per-run copies carry no `runs` of their own
+    expect(split.get(R1)![0]).not.toHaveProperty('runs');
+  });
+});

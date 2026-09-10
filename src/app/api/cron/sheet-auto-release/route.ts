@@ -8,6 +8,7 @@
 // clears the schedule and tells Adrian — nothing is guessed. Stamps job_runs.
 // Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer.
 import { NextRequest, NextResponse } from 'next/server';
+import { coveredRunIds } from '@/lib/sheet-queue';
 import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
   const sb = getSupabaseAdmin();
   const now = new Date().toISOString();
   const { data: due, error } = await sb.from('sheet_jobs')
-    .select('id, run_id, student_name, paper_name, auto_release_at')
+    .select('id, run_id, run_ids, student_name, paper_name, auto_release_at')
     .eq('status', 'done').is('held_at', null).is('auto_released_at', null)
     .not('auto_release_at', 'is', null).lte('auto_release_at', now)
     .order('auto_release_at', { ascending: true }).limit(10);
@@ -55,8 +56,10 @@ export async function GET(req: NextRequest) {
       // paper and does not release the paper a second time.
       const paperAlreadyOut = !!run?.released_at;
       if (paperAlreadyOut) {
+        const coveredIds = coveredRunIds(j as { run_id: string; run_ids?: string[] | null });
         const { data: sent } = await sb.from('portal_assignments').select('id')
-          .eq('source_run_id', j.run_id).eq('source', 'practice-again').eq('kind', 'worksheet').neq('status', 'revoked').limit(1);
+          .or(`source_run_id.in.(${coveredIds.join(',')}),source_run_ids.ov.{${coveredIds.join(',')}}`)
+          .eq('source', 'practice-again').eq('kind', 'worksheet').neq('status', 'revoked').limit(1);
         if ((sent ?? []).length) {
           await sb.from('sheet_jobs').update({ auto_released_at: new Date().toISOString(), stage: 'sent from the desk before the clock' }).eq('id', j.id);
           out.push({ id: j.id, ok: true, note: 'already sent' });

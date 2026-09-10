@@ -95,6 +95,8 @@ type Detail = {
     autoReleaseAt?: string | null; heldAt?: string | null; autoReleasedAt?: string | null;
     /** 'student' = asked for from the app (goes out on its own once it clears the gate); 'adrian' = queued here (compulsory once released). */
     requestedBy?: string | null;
+    /** A batch sheet (10 Sep 2026): every paper it covers, the primary first. */
+    runIds?: string[];
     result: {
       docxPath: string | null; pdfPath: string | null; wave: string[]; shelved: string[]; verified: string;
       /** The worker read the paper and there was nothing worth practising (3 Sep 2026). */
@@ -299,6 +301,7 @@ export default function DeskPage() {
 
   // ── detail ─────────────────────────────────────────────────────────────────
   const [runId, setRunId] = useState<string | null>(null);
+  const [ticked, setTicked] = useState<Set<string>>(new Set());
   const [detail, setDetail] = useState<Detail | null>(null);
   const [runLoading, setRunLoading] = useState(false);
   const [runError, setRunError] = useState('');
@@ -852,6 +855,26 @@ export default function DeskPage() {
   // Work lanes oldest first — the paper that has waited longest is at the top;
   // Released stays newest first (lib/desk-state orderLane, Adrian 7 Sep 2026).
   const laneRows = orderLane(rows.filter(r => r.lane === activeLane), activeLane);
+  // ── One sheet for several papers (Adrian, 10 Sep 2026: "right now build only
+  // what I tick on the desk"). A row can be ticked when its student has another
+  // paper of the same maths in this lane; the bar below the list queues ONE
+  // batch job for the ticked papers (POST /api/admin/sheet-jobs { runIds }).
+  const tickable = (row: Row) => !row.practiceAgain && !!row.studentId && laneRows.some(o => o.id !== row.id && !o.practiceAgain && o.studentId === row.studentId && (o.paperSubject ?? '') === (row.paperSubject ?? ''));
+  const tickedRows = laneRows.filter(r => ticked.has(r.id));
+  const tickedStudent = tickedRows[0]?.studentName ?? null;
+  const tickedMixed = new Set(tickedRows.map(r => r.studentId)).size > 1 || new Set(tickedRows.map(r => r.paperSubject ?? '')).size > 1;
+  async function queueBatch() {
+    const ids = tickedRows.map(r => r.id);
+    if (ids.length < 2 || tickedMixed) return;
+    if (!window.confirm(`One Practice Again sheet for ${tickedStudent}'s ${ids.length} ticked papers? The Mac writes a single merged sheet (the same gap in two papers becomes one section) and files it in a new dated folder; you vet it on the desk before it goes out. Any single sheet still being written for these papers is stopped.`)) return;
+    setBusy('batch');
+    const { ok, d } = await postJson('/api/admin/sheet-jobs', { runIds: ids });
+    setBusy('');
+    if (!ok) { setToast(`Not queued: ${d.error || 'error'}`); return; }
+    setTicked(new Set());
+    setToast(`📘 One sheet queued for ${ids.length} papers${d.cancelled ? ` (${d.cancelled} single sheet${d.cancelled === 1 ? '' : 's'} stopped)` : ''}. It shows on the newest paper's row.`);
+    loadQueue();
+  }
 
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', maxWidth: runId ? 1400 : 820, margin: '0 auto', padding: '14px 12px 96px', color: C.ink }}>
@@ -917,7 +940,14 @@ export default function DeskPage() {
               <div key={row.id} className="desk-row" role="button" tabIndex={0}
                 onClick={() => go({ run: row.id })}
                 onKeyDown={e => { if (e.key === 'Enter') go({ run: row.id }); }}
-                style={{ display: 'flex', gap: 10, padding: '11px 12px', borderTop: `1px solid ${C.border}`, cursor: 'pointer', alignItems: 'flex-start' }}>
+                style={{ display: 'flex', gap: 10, padding: '11px 12px', borderTop: `1px solid ${C.border}`, cursor: 'pointer', alignItems: 'flex-start', background: ticked.has(row.id) ? '#eff6ff' : undefined }}>
+                {tickable(row) && (
+                  <input type="checkbox" checked={ticked.has(row.id)} aria-label="Tick for one merged Practice Again sheet"
+                    title="Tick two or more of this student's papers (same maths) for ONE merged Practice Again sheet"
+                    onClick={e => e.stopPropagation()}
+                    onChange={() => setTicked(prev => { const next = new Set(prev); if (next.has(row.id)) next.delete(row.id); else next.add(row.id); return next; })}
+                    style={{ marginTop: 4, width: 16, height: 16, cursor: 'pointer', flexShrink: 0 }} />
+                )}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 600, fontSize: 15, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
                     {row.studentName || <span style={{ color: C.flag }}>⚠ Needs a student</span>}
@@ -955,6 +985,21 @@ export default function DeskPage() {
               </div>
             ))}
           </div>
+
+          {tickedRows.length > 0 && (
+            <div style={{ position: 'sticky', bottom: 12, marginTop: 12, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', padding: '10px 12px', borderRadius: 12, background: '#1e3a8a', color: '#fff', boxShadow: '0 8px 24px -10px rgba(0,0,0,.5)' }}>
+              <span style={{ flex: '1 1 220px', fontSize: 13.5 }}>
+                {tickedMixed
+                  ? 'One sheet is for one student and one maths — untick the odd one out.'
+                  : tickedRows.length < 2
+                    ? `1 paper ticked — tick another of ${tickedStudent}'s to make one sheet.`
+                    : `📘 One Practice Again sheet for ${tickedStudent}'s ${tickedRows.length} papers (${tickedRows[0]?.paperSubject || 'maths'})`}
+              </span>
+              <button onClick={queueBatch} disabled={busy === 'batch' || tickedMixed || tickedRows.length < 2}
+                style={{ ...btn('#fff', '#1e3a8a'), opacity: tickedMixed || tickedRows.length < 2 ? 0.5 : 1 }}>{busy === 'batch' ? '…' : 'Queue one sheet'}</button>
+              <button onClick={() => setTicked(new Set())} style={{ ...btn('transparent', '#fff', 'rgba(255,255,255,.4)') }}>Clear</button>
+            </div>
+          )}
 
           <div style={{ marginTop: 22, fontSize: 12.5, color: C.muted, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
             <span>Other views:</span>
@@ -1779,6 +1824,11 @@ function SheetPane(p: {
                 {job.result.wave.length > 0 && <div>Wave: {job.result.wave.join(' · ')}</div>}
                 {job.result.shelved.length > 0 && <div>🧺 Shelved for later: {job.result.shelved.join(' · ')}</div>}
                 {job.result.verified && <div>✓ {job.result.verified}</div>}
+              </div>
+            )}
+            {job && (job.runIds?.length ?? 0) > 1 && (
+              <div style={{ padding: '4px 4px 6px', fontSize: 12.5, color: '#1e3a8a' }}>
+                📘 One sheet for {job.runIds!.length} papers — sending it here attaches it to every one of them (one row in the app, one hand-in, one reminder).
               </div>
             )}
           </div>

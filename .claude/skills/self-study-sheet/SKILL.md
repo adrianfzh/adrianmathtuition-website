@@ -281,6 +281,21 @@ PDF, find every printed question or part with nothing written under it, and
 treat each as a teach-tier skill: a student who wrote nothing did not know
 where to begin, which is the sheet's whole purpose.
 
+### A merged sheet for several papers (10 Sep 2026)
+
+Adrian may tick two or more of a student's marked papers of one maths on the
+desk for ONE Practice Again sheet (`sheet_jobs.run_ids`; his words: "the same
+mistakes or the same topics may appear across all 5 worksheets, so can batch and
+combine into one — more efficient and can save students' time. but still must be
+effective and target the required gaps"). For such a job the single-paper rule
+above is suspended and the batch rules in `scripts/sheet-worker/WORKER_PROMPT.md`
+§1e apply: diagnose from every covered run, cluster by GAP (a gap seen on two
+papers is one section and goes first), keep the cap, reuse the papers' own
+finished sheets, name the student's own papers in a grey "Where it showed" line,
+file into a new dated batch folder, and tag every `diagnosis[]` entry with the
+runs it showed on. Isabelle Toh Si Xian's A Math (3 papers) and E Math (2 papers)
+sheets of 10 Sep 2026 are the worked examples.
+
 ## Step 3 — propose ONE wave, and STOP
 
 Cluster into 6–8 teachable skills for a single sheet. Everything else is

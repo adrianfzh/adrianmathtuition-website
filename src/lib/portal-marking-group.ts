@@ -12,8 +12,19 @@
 
 export interface SheetLink {
   source_run_id: string | null;
+  /** A batch sheet (10 Sep 2026): every paper it covers; source_run_id is the primary. */
+  source_run_ids?: string[] | null;
   run_id: string | null;
   status: string;
+}
+
+/** The papers a sheet row hangs off — the primary first, then the rest of its batch. */
+export function sheetParents(s: Pick<SheetLink, 'source_run_id' | 'source_run_ids'>): string[] {
+  const out: string[] = [];
+  for (const id of [s.source_run_id, ...(Array.isArray(s.source_run_ids) ? s.source_run_ids : [])]) {
+    if (id && !out.includes(id)) out.push(id);
+  }
+  return out;
 }
 
 export function groupPracticeAgain<P extends { id: string }, S extends SheetLink>(
@@ -24,12 +35,16 @@ export function groupPracticeAgain<P extends { id: string }, S extends SheetLink
   const markedSheetByParent = new Map<string, P>();
   const nested = new Set<string>();
   for (const s of sheets) {
-    if (s.status !== 'marked' || !s.run_id || !s.source_run_id || s.run_id === s.source_run_id) continue;
-    if (!byId.has(s.source_run_id)) continue;           // parent not listed → child stays top-level
+    if (s.status !== 'marked' || !s.run_id) continue;
+    // A batch sheet (10 Sep 2026) is reachable from EVERY paper it covers; it
+    // leaves the top list once, when any of them is listed.
+    const parents = sheetParents(s).filter(p => p !== s.run_id && byId.has(p));
+    if (!parents.length) continue;                      // no parent listed → child stays top-level
     const child = byId.get(s.run_id);
     if (!child || nested.has(s.run_id)) continue;
-    if (markedSheetByParent.has(s.source_run_id)) continue; // one sheet per paper; first wins
-    markedSheetByParent.set(s.source_run_id, child);
+    const free = parents.filter(p => !markedSheetByParent.has(p)); // one sheet per paper; first wins
+    if (!free.length) continue;
+    for (const p of free) markedSheetByParent.set(p, child);
     nested.add(s.run_id);
   }
   return { top: papers.filter(p => !nested.has(p.id)), markedSheetByParent };

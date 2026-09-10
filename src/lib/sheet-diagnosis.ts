@@ -52,6 +52,10 @@ export type DiagnosisSkill = {
    *  so the cover treats it as ② show. The section is still on the sheet; it is
    *  just not the lead, and Adrian is told so he can revise it. */
   slipOnly?: boolean;
+  /** A BATCH sheet (10 Sep 2026): where this skill showed on EACH covered paper —
+   *  the worker names the run and that paper's questions (and marks). A skill
+   *  with no `runs` belongs to the primary paper only. */
+  runs?: { runId: string; questions: string[]; marks?: number }[];
 };
 
 export type Diagnosis = {
@@ -103,11 +107,49 @@ function normaliseSkill(input: unknown): DiagnosisSkill | null {
   const gap = typeof r.gap === 'string' && r.gap.trim() ? r.gap.replace(/\s+/g, ' ').trim().slice(0, 160) : null;
   // A named gap is teaching material, never an optional tail (7 Sep 2026).
   const finalTier: DiagnosisTier = gap && tier === 'optional' ? 'teach' : tier;
+  const runs = (Array.isArray(r.runs) ? r.runs : [])
+    .map(x => {
+      const o = x && typeof x === 'object' ? x as Record<string, unknown> : null;
+      const runId = String(o?.runId ?? o?.run_id ?? '').trim();
+      if (!UUID_RE.test(runId)) return null;
+      const qs = (Array.isArray(o?.questions) ? o!.questions as unknown[] : []).map(questionLabel).filter(Boolean).slice(0, MAX_QUESTIONS_PER_SKILL);
+      const m = typeof o?.marks === 'number' ? o.marks : typeof o?.marks === 'string' && o.marks.trim() ? Number(o.marks) : NaN;
+      return { runId, questions: qs, ...(Number.isFinite(m) && m >= 0 ? { marks: Math.min(m, 200) } : {}) };
+    })
+    .filter((x): x is { runId: string; questions: string[]; marks?: number } => x !== null)
+    .slice(0, 12);
   return {
     title, marks: Math.min(marks, 200), questions, why, tier: finalTier,
     ...(gap ? { gap } : {}),
     ...(r.slipOnly === true ? { slipOnly: true } : {}),
+    ...(runs.length ? { runs } : {}),
   };
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * A batch sheet's diagnosis, split per covered run so each paper's cover reads
+ * only what showed on THAT paper (10 Sep 2026). A skill that names the run in
+ * `runs` goes to it with that paper's own questions (and marks, when given);
+ * a skill with no `runs` at all goes to the PRIMARY (the first id) with its
+ * whole tally. The sheet's order is kept; a run nothing names gets an empty
+ * list, which the caller stores nothing for. Pure.
+ */
+export function splitDiagnosisByRun(skills: DiagnosisSkill[], runIds: string[]): Map<string, DiagnosisSkill[]> {
+  const out = new Map<string, DiagnosisSkill[]>();
+  for (const id of runIds) out.set(id, []);
+  const primary = runIds[0];
+  for (const s of skills) {
+    const { runs, ...rest } = s;
+    if (!runs || !runs.length) { if (primary) out.get(primary)!.push(rest); continue; }
+    for (const r of runs) {
+      const list = out.get(r.runId);
+      if (!list) continue;
+      list.push({ ...rest, questions: r.questions.length ? r.questions : rest.questions, marks: typeof r.marks === 'number' ? r.marks : rest.marks });
+    }
+  }
+  return out;
 }
 
 // ── Practice Again focus — slips inside a right method earn no practice ─────

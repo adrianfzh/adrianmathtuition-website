@@ -13,6 +13,7 @@ import PaperSubjectPill from '@/components/PaperSubjectPill';
 import ClipToNotes from '../ClipToNotes';
 import PracticeAgainRequest, { type PracticeAgainState } from '../PracticeAgainRequest';
 import { readNoSheet } from '@/lib/sheet-jobs';
+import { displayPaperName } from '@/lib/paper-display-name';
 
 const COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, paper_subject, superseded_by';
 
@@ -34,21 +35,31 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
   if (!paper) notFound();
 
   const { data: sheetRows } = await sb.from('portal_assignments')
-    .select('id, run_id, status, pdf_url, score, out_of, required_at')
-    .eq('airtable_student_id', sid).eq('source', 'practice-again').eq('kind', 'worksheet').eq('source_run_id', id)
+    .select('id, run_id, status, pdf_url, score, out_of, required_at, source_run_id, source_run_ids')
+    .eq('airtable_student_id', sid).eq('source', 'practice-again').eq('kind', 'worksheet')
+    // A batch sheet (10 Sep 2026) is this paper's sheet when it covers this paper.
+    .or(`source_run_id.eq.${id},source_run_ids.cs.{${id}}`)
     .neq('status', 'held').neq('status', 'revoked')
     // Newest first (9 Sep 2026): a sheet Adrian queued again replaces the earlier
     // one — release-with-sheet withdraws the old row, and this picks the new one
     // even where an old row survived (already handed in or marked).
     .order('created_at', { ascending: false }).limit(1);
-  const sheet = (sheetRows ?? [])[0] as { id: string; run_id: string | null; status: string; pdf_url: string | null; score: number | null; out_of: number | null; required_at: string | null } | undefined;
+  const sheet = (sheetRows ?? [])[0] as { id: string; run_id: string | null; status: string; pdf_url: string | null; score: number | null; out_of: number | null; required_at: string | null; source_run_id: string | null; source_run_ids: string[] | null } | undefined;
+  // A batch sheet (10 Sep 2026): the other papers it covers, by their app names,
+  // so the student sees that one sheet answers several papers.
+  const siblingIds = (sheet?.source_run_ids ?? []).filter(x => x && x !== id);
+  let siblings: { id: string; name: string }[] = [];
+  if (siblingIds.length) {
+    const { data: sibRows } = await sb.from('paper_marking_runs').select('id, paper_name').in('id', siblingIds).eq('student_id', sid);
+    siblings = ((sibRows ?? []) as { id: string; paper_name: string | null }[]).map(r => ({ id: r.id, name: displayPaperName(r.paper_name, account?.display_name ?? null) }));
+  }
   // No sheet with the student yet: is one being written, waiting on Adrian, or
   // was there nothing worth practising? Else offer the request button
   // (Practice Again on request, 8 Sep 2026 — /api/portal/practice-again/request).
   let requestState: PracticeAgainState = 'none';
   if (!sheet) {
     const { data: jobRows } = await sb.from('sheet_jobs').select('status, result')
-      .eq('run_id', id).order('created_at', { ascending: false }).limit(1);
+      .or(`run_id.eq.${id},run_ids.cs.{${id}}`).order('created_at', { ascending: false }).limit(1);
     const job = (jobRows ?? [])[0] as { status: string; result: unknown } | undefined;
     if (job?.status === 'queued' || job?.status === 'claimed') requestState = 'queued';
     else if (job?.status === 'done') requestState = readNoSheet(job.result).noSheet ? 'nothing' : 'checking';
@@ -119,7 +130,18 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
       {sheet && (
         <section className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-emerald-900">📘 Practice Again — from this paper</p>
+            <p className="text-sm font-semibold text-emerald-900">
+              {(sheet.source_run_ids?.length ?? 0) > 1 ? `📘 Practice Again — one sheet for your ${sheet.source_run_ids!.length} papers` : '📘 Practice Again — from this paper'}
+            </p>
+            {siblings.length > 0 && (
+              <p className="text-[12px] text-emerald-800/80 mt-0.5">
+                Also covers{' '}
+                {siblings.map((sb2, i) => (
+                  <span key={sb2.id}>{i > 0 ? ' · ' : ''}<Link href={`/app/marking/${sb2.id}`} className="font-semibold underline underline-offset-2">{sb2.name}</Link></span>
+                ))}
+                {' '}— do it once, hand it in once.
+              </p>
+            )}
             <p className="text-[12px] text-emerald-800/80 mt-0.5">
               {sheet.status === 'marked' ? `Marked${sheet.score != null && sheet.out_of ? ` · ${sheet.score}/${sheet.out_of}` : ''}`
                 : sheet.status === 'submitted' ? 'Handed in — being marked'

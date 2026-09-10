@@ -794,6 +794,20 @@ they are, reachable from its "Other views" row. Nothing is deleted.
   longer blocks the automatic door. Note the bot re-marks a COMPLETED run into a
   NEW row (bot `remarkRun`), which has no jobs and queues normally; the in-place
   case is a never-marked row being filled.
+- **The sheet chip says what happened AFTER the sheet was written** (10 Sep 2026 —
+  Adrian, on Isabelle's row still reading "sheet ready" hours after the sheet went out:
+  "can the row reflect that information? and … indicate if sheet has been handed up?").
+  `sheetOutcomeOf(rows)` (`lib/desk-state.ts`, pure/tested) reads the sheet's own
+  `portal_assignments` rows — the newest live `kind='worksheet'` row (a replaced sheet's
+  row is revoked; the old in-app question rows are not the sheet) — into released ·
+  handed-in · marked, with the moment and `required_at` (compulsory).
+  `sheetStageLabel(job, outcome)` then reads **"sheet released · not handed in yet"** /
+  **"sheet handed in · being marked"** / **"sheet handed in · marked"** (+ " · compulsory"),
+  falls back to "sheet sent" on the job's own `auto_released_at`, and "sheet ready" only
+  for a finished sheet that has not gone out. Both desk routes read the worksheet rows
+  apart from the assignment COUNT (`sheetRowsByRun` / the run route's own query) and
+  answer `sheetOutcome`; the Completed lane's "released <date>" line carries the same
+  phrase with its date.
 - **A returned Practice Again sheet is marked against the sheet** (7 Sep 2026 —
   Rainie's hand-in came back "no question found — marked from the working alone"
   with the questions sitting in the sheet she answered). `lib/sheet-archive.ts`
@@ -1216,6 +1230,69 @@ compulsory, so we should build a mechanism that reminds them it is not done."
   unvetted when clean; the reminder cadence (3 d, weekly, ×4); Adrian's own
   uploads/scans lose the auto-sheet too (one rule); a paper with no sheet stays
   without one after a re-mark.
+
+### Practice Again batches — one sheet for several papers (10 Sep 2026)
+
+Adrian, on Isabelle's five finished-but-unsent sheets (AM 2025 P1, AM 2025 P2,
+AM 2023 P2, EM 2025 P1, EM 2025 P2 — 51 practice questions between them):
+*"instead of releasing all 5 sheets … have just one practice again worksheet …
+the same mistakes or the same topics may appear across all 5 worksheets, so can
+batch and combine into one — more efficient and can save students' time. but
+still must be effective and target the required gaps."* The seven diagnoses read
+side by side showed why it is more than a time-saver: the same gap recurred under
+a different title on each sheet (cosine's second solution −α on 2025 P2 and 2024
+P1; "completely below the axis" needs a < 0 on 2025 P1 and 2023 P1; a root not
+checked against the question on three papers; an exact answer rounded on both EM
+papers), and `notebook_mistakes` — keyed on the sheet's exact title — counted each
+as "seen once". Decisions: **one sheet per student per SUBJECT** (never AM + EM
+in one); **for now only what Adrian ticks on the desk** (the by-subject
+automation is later); the file lives in **its own dated folder** named for the
+batch; his own "One wave" rule holds (six teach sections at most, the rest shelved).
+
+- **Data:** `sheet_jobs.run_ids uuid[]` and `portal_assignments.source_run_ids
+  uuid[]` (migration `practice_again_batches`). A batch job / row KEEPS its
+  primary (`run_id` / `source_run_id` = the newest paper) so every one-to-one
+  reader keeps working, and carries the full list. `lib/sheet-queue.ts`
+  `coveredRunIds(job)` is the one helper; `sheetBatchGuard` (pure, tested) is the
+  rule — ≥ 2 distinct papers, one student, one `paper_subject`, each passing the
+  single-run guard; in-flight single jobs on those papers are superseded
+  (cancelled) by `queueSheetBatch`, the way a second single sheet replaces the
+  first. `paper_name` reads "3 papers: … · … · …".
+- **The desk tick** (`/admin/desk`, any lane): a checkbox appears on a row when
+  the student has another paper of the same maths in that lane; the bar below
+  the list says whose and how many and queues ONE job (`POST /api/admin/sheet-jobs
+  {runIds}`); mixed students or mixed maths keep the button disabled. The job sits
+  on the newest paper's row and shows on every covered paper's row and detail
+  ("One sheet for N papers"); Send / the 12-hour clock / hold / revise all work as
+  for a single sheet because they key on the primary.
+- **The worker** gets `job.run_ids` and follows `WORKER_PROMPT.md` §1e: diagnose
+  from every covered run, cluster by gap (recurrence first), cap, reuse the
+  papers' own finished sheets, a grey "Where it showed: 2025 Paper 1 Q2 …" line
+  under each heading (naming the student's own papers is fine on a batch sheet),
+  file into `/Students/<Student>/<YYYY-MM-DD> Practice Again (N papers - <short
+  names>)/3 Practice Again.docx|pdf`, and tag every `diagnosis[]` entry with
+  `runs: [{run_id, questions, marks}]`. On `done` the route archives the sheet onto
+  EVERY covered run (`practice_again_archive`, so a Telegram hand-in is read
+  against it whichever paper the bot picks) and stores the diagnosis per paper
+  (`lib/sheet-diagnosis.ts splitDiagnosisByRun`, pure, tested — an entry with no
+  `runs` goes to the primary).
+- **Release** (`release-with-sheet`, desk Send or the clock): ONE assignment row
+  titled "Practice Again — your 3 A Math papers" with `source_run_ids`, earlier
+  single-sheet rows for ANY covered paper withdrawn, the archive stamped on every
+  covered run. One row = one hand-in = one reminder chain.
+- **The app:** the Papers list and every covered paper's page show the same block,
+  headed "📘 Practice Again — one sheet for your 3 papers", with "Also covers
+  <the other papers> — do it once, hand it in once"; the Request button is hidden
+  on all of them while the batch exists; the marked sheet nests under every
+  covered paper (`lib/portal-marking-group.ts sheetParents`, tested).
+- **Not built yet:** the student's Request door for a batch (a request still
+  covers one paper), the by-subject automation, and a gap-keyed
+  `notebook_mistakes` so "Still happening" can see a recurrence across titles.
+- **First two:** Isabelle's A Math (2025 P1 · 2025 P2 · 2023 P2 → `2026-09-10
+  Practice Again (3 papers - AM 2025 P1, AM 2025 P2, AM 2023 P2)`) and E Math
+  (2025 P1 · 2025 P2), authored in-session on 10 Sep 2026 from the five finished
+  sheets before the tick existed; their jobs were inserted as `done` + held so the
+  desk's Send button is the door once he has vetted the DOCX.
 
 **📁 Archive — built and REMOVED the same evening (9 Sep 2026).** Adrian asked
 for "an archive option — meaning that these papers do not need a practice again
@@ -1715,6 +1792,15 @@ Anything outside the eight (older runs' free-text `error_type` like `ratio_inver
   from the marker's own label). The route validates it (`isErrorKind`, 400 otherwise) and stores
   `triage_override.error_kind` beside `awarded/previous/note/at` — the latest edit is the whole record, like
   `note`. That field, against the marker's `parts[].error_kind`, is what the labels get calibrated on.
+- **A right last step never taken is `incomplete`, not `misread` (10 Sep 2026).** Isabelle's EM 2025 P1
+  Q2(a) (run `749b45a8`): 150 ÷ 60 = 2.5 ≈ 2 scones — the division was the right first step and the
+  recipe's × 8 was simply never done; the marker wrote "misread question". Adrian: "she just forgot that
+  2.5 is a set of 8 scones." The bot's ERROR KINDS now say that a RIGHT intermediate value presented as
+  the answer (a scale factor not applied, a quantity not converted back, a "hence" not taken) is
+  `incomplete` even when the student rounded it onto the answer line, and that `misread` is only ever a
+  DIFFERENT question answered; the 6 Sep "if the last written value is wrong, never incomplete" rule is
+  scoped to a wrong OPERATION, not a missing one. The stored label on her page changes only through the
+  desk Override (kind = incomplete) → re-ink.
 
 ## /app/marking — where the student reads their own marks (2026-08-12)
 
@@ -2013,6 +2099,26 @@ by HUE regardless of amount; a part whose only standing work is green scores 0, 
 auto-release watch-outs carry it). A sweep of every run since 5 Sep found the rule held
 wherever green sat against blue (Alexis P1 Q6/Q7/Q10, P2 Q6(c)/Q7(b)(i), Isabelle's
 purple 10(b)(ii)); only the two "green is the main pen / original working" parts slipped.
+
+**10 Sep 2026 — Isabelle's EM 2025 P1 (run `749b45a8`), three pen fixes and one re-ink.**
+Adrian: "Q4 the explanation wasn't marked", "Q19 should show the left arc of the graph as well …
+looks like an exponential graph instead", "Q26 arrow pointed at the wrong inequality". (1) **Two
+marker lines on one scanned row share its mark** — the rows-first matcher (`ai/row-place.js
+matchLinesToRows`) read "Calculation B" and "because by rounding both numbers up …" as two lines on
+one printed row and handed the row to whichever won best-first; the other went unmatched, and WHICH
+one varied with the scan (7/8 placed either way), so the B1 tick sat beside the B on one draw and
+beside the explanation on the next. Now a row that reads like the two texts JOINED (extended over
+the free rows below when the join runs on) goes to the line that decides it — a wrong line over a
+right one, then the line carrying the code, then the later line — and the other is `absorbed`
+(`placement.absorbed`, not counted as unplaced; the dry-run gives 7/7 + 1 absorbed). (2) **A parabola
+shows both arms** — `buildGraphSvg` mirrors the features' reach about the axis of symmetry, a marked
+point on the vertex is no longer labelled a second time over the vertex's own label, and coordinate
+labels take the first candidate clear of the axes and the strokes. (3) **Q26 was the OLD pen**: the
+page was inked on 8 Sep, before `1eb6296` (9 Sep) made every leader land on the ring; a fresh
+`pen-dryrun` aims at the ring. So a page drawn before a pen fix is fixed by a **re-ink from the desk**
+(`/api/admin/desk/redraw` with `allowReleased`, which re-issues the copy and Telegrams the student
+"Adrian checked … and updated it"), not by code. Bot commit `4db85eb`; tests in `row-place.test.js`
+and `margin-diagram.test.js`.
 
 ### Leak test — run it after touching the door or any ownership filter
 

@@ -33,6 +33,7 @@ export type AssignmentRow = {
   note: string | null;
   reminder: string | null;
   source_run_id: string | null;
+  source_run_ids?: string[] | null;
   pdf_url: string | null;
   pdf_source: string | null;
   due_on: string | null;           // 'YYYY-MM-DD'
@@ -88,6 +89,8 @@ export type CreateAssignmentInput = {
   reminder?: string | null;
   /** The marked paper this work was written FROM (never the run that marks the reply). */
   sourceRunId?: string | null;
+  /** A batch sheet: every marked paper it covers (the primary goes in sourceRunId too). */
+  sourceRunIds?: string[] | null;
   pdfUrl?: string | null;
   pdfSource?: string | null;
   dueOn?: string | null;
@@ -106,6 +109,8 @@ export type ValidatedAssignment = {
   note: string | null;
   reminder: string | null;
   source_run_id: string | null;
+  /** A batch Practice Again sheet (10 Sep 2026): every paper it was written from; source_run_id is the primary. */
+  source_run_ids: string[] | null;
   pdf_url: string | null;
   pdf_source: string | null;
   due_on: string | null;
@@ -168,6 +173,12 @@ export function validateAssignment(input: CreateAssignmentInput):
   const reminder = clean(input.reminder, MAX_NOTE);
   const sourceRunId = typeof input.sourceRunId === 'string' && UUID_RE.test(input.sourceRunId.trim())
     ? input.sourceRunId.trim() : null;
+  const sourceRunIdsRaw = Array.isArray(input.sourceRunIds) ? input.sourceRunIds : [];
+  const sourceRunIds = Array.from(new Set([
+    ...(sourceRunId ? [sourceRunId] : []),
+    ...sourceRunIdsRaw.map(x => (typeof x === 'string' ? x.trim() : '')).filter(x => UUID_RE.test(x)),
+  ]));
+  const source_run_ids = sourceRunIds.length > 1 ? sourceRunIds : null;
 
   let due_on: string | null = null;
   if (input.dueOn != null && input.dueOn !== '') {
@@ -183,7 +194,7 @@ export function validateAssignment(input: CreateAssignmentInput):
     const title = clean(input.title, MAX_TITLE) || (topic ? `${topic} question` : 'A question from Adrian');
     return {
       ok: true,
-      row: { airtable_student_id: studentId, kind: 'question', question_id: qid, title, topic, level, tier, note, reminder, source_run_id: sourceRunId, pdf_url: null, pdf_source: null, due_on },
+      row: { airtable_student_id: studentId, kind: 'question', question_id: qid, title, topic, level, tier, note, reminder, source_run_id: sourceRunId, source_run_ids, pdf_url: null, pdf_source: null, due_on },
     };
   }
 
@@ -194,7 +205,7 @@ export function validateAssignment(input: CreateAssignmentInput):
   const pdfSource = clean(input.pdfSource, 400);
   return {
     ok: true,
-    row: { airtable_student_id: studentId, kind: 'worksheet', question_id: null, title, topic, level, tier, note, reminder, source_run_id: sourceRunId, pdf_url: pdfUrl, pdf_source: pdfSource, due_on },
+    row: { airtable_student_id: studentId, kind: 'worksheet', question_id: null, title, topic, level, tier, note, reminder, source_run_id: sourceRunId, source_run_ids, pdf_url: pdfUrl, pdf_source: pdfSource, due_on },
   };
 }
 

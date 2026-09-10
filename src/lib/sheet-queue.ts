@@ -30,6 +30,17 @@ export type SheetQueueRun = {
 
 export type SheetQueueJobRow = { id: string; status: string; requested_by?: string | null; created_at?: string | null };
 
+/** A run as the batch guard sees it — the single-run fields plus when it was marked and which maths it is. */
+export type SheetBatchRun = SheetQueueRun & { created_at?: string | null; paper_subject?: string | null };
+
+export type SheetBatchRefusal = {
+  ok: false;
+  status: SheetQueueRefusal['status'] | 'too-few' | 'mixed-students' | 'mixed-subjects';
+  http: 400 | 404 | 409;
+  message: string;
+  runId?: string;
+};
+
 export type SheetQueueRefusal = {
   ok: false;
   status: 'not-found' | 'untagged' | 'no-marking' | 'not-released' | 'duplicate' | 'exists' | 'practice-again';
@@ -68,6 +79,70 @@ export function sheetQueueGuard(
     if (done) return { ok: false, status: 'exists', http: 409, message: 'A Practice Again sheet for this paper already exists.', jobId: done.id };
   }
   return { ok: true };
+}
+
+// ── Batches — ONE sheet for several papers of one subject (10 Sep 2026) ──────
+// Adrian, on Isabelle's five finished-but-unsent sheets: "instead of releasing
+// all 5 sheets … have just one practice again worksheet … the same mistakes or
+// the same topics may appear across all 5 worksheets, so can batch and combine
+// into one — more efficient and can save students' time. but still must be
+// effective and target the required gaps." For now the only door is the desk:
+// he ticks the papers, one job is queued for all of them. The job keeps a
+// PRIMARY run (`run_id` = the newest paper, so every one-to-one reader keeps
+// working) and carries the full list in `run_ids`.
+
+/**
+ * May ONE sheet be written for these runs? Pure. At least two distinct papers,
+ * one student, one subject (A Math papers with A Math papers — a mixed sheet
+ * would muddle the app's per-subject view and the marker's subject brain), each
+ * passing the single-run guard. A job already in flight on one of them is NOT a
+ * refusal: the batch supersedes it (queueSheetBatch cancels it), the way a
+ * second single sheet replaces the first. The primary is the newest paper.
+ */
+export function sheetBatchGuard(
+  runs: (SheetBatchRun | null | undefined)[],
+  opts: { requestedBy?: SheetRequestedBy } = {},
+): SheetBatchRefusal | { ok: true; primary: SheetBatchRun; runs: SheetBatchRun[] } {
+  const live = runs.filter((r): r is SheetBatchRun => !!r && !!r.id);
+  if (live.length < runs.length) return { ok: false, status: 'not-found', http: 404, message: 'One of those papers was not found.' };
+  const distinct = Array.from(new Map(live.map(r => [r.id, r])).values());
+  if (distinct.length < 2) return { ok: false, status: 'too-few', http: 400, message: 'Tick at least two papers for one sheet — a single paper gets its own.' };
+  for (const r of distinct) {
+    const g = sheetQueueGuard(r, [], opts);
+    if (!g.ok) return { ...g, runId: r.id };
+  }
+  if (new Set(distinct.map(r => r.student_id)).size > 1) {
+    return { ok: false, status: 'mixed-students', http: 400, message: 'One sheet is for one student — the ticked papers belong to different students.' };
+  }
+  if (new Set(distinct.map(r => String(r.paper_subject ?? '').trim().toLowerCase())).size > 1) {
+    return { ok: false, status: 'mixed-subjects', http: 400, message: 'One sheet is for one subject — tick A Math papers or E Math papers, not both.' };
+  }
+  const sorted = [...distinct].sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')));
+  return { ok: true, primary: sorted[0], runs: sorted };
+}
+
+/** "3 papers: isabelle TYS AM 2025 P1 · isabelle TYS AM 2025 P2 · …" — the job's paper_name for a batch. Pure. */
+export function batchPaperName(runs: Pick<SheetQueueRun, 'paper_name'>[]): string {
+  const names = runs.map(r => String(r.paper_name || 'untitled').trim());
+  return `${runs.length} papers: ${names.join(' · ')}`.slice(0, 300);
+}
+
+/** Every run a job covers — the primary first, then the rest of the batch (a single-paper job → just its run). Pure. */
+export function coveredRunIds(job: { run_id: string; run_ids?: string[] | null }): string[] {
+  const out: string[] = [];
+  for (const id of [job.run_id, ...(Array.isArray(job.run_ids) ? job.run_ids : [])]) {
+    if (id && !out.includes(id)) out.push(id);
+  }
+  return out;
+}
+
+/** The row a batch sheet job is born with: the primary's identity, every run in `run_ids`. */
+export function sheetBatchInsert(primary: SheetBatchRun, runs: SheetBatchRun[], focus?: unknown, requestedBy: SheetRequestedBy = 'adrian') {
+  return {
+    ...sheetJobInsert(primary, focus, requestedBy),
+    paper_name: batchPaperName(runs),
+    run_ids: runs.map(r => r.id),
+  };
 }
 
 /** The row a new sheet job is born with. */
@@ -144,6 +219,43 @@ export async function queueSheetJob(
     await deleteHeldPracticeItems(sb, id).catch(() => ({ deleted: 0 }));
   }
   return { ok: true, job: job as Record<string, unknown>, cancelled: plan.cancel.length };
+}
+
+/**
+ * Queue ONE sheet for several papers (the desk's tick, 10 Sep 2026). Reads the
+ * runs, applies sheetBatchGuard, cancels every job still in flight on any of
+ * them (a batch supersedes the singles), drops their held practice items, and
+ * inserts one job with the newest paper as its primary.
+ */
+export async function queueSheetBatch(
+  runIds: string[],
+  opts: { focus?: unknown; requestedBy?: SheetRequestedBy } = {},
+): Promise<SheetBatchRefusal | { ok: true; job: Record<string, unknown>; cancelled: number; runIds: string[] }> {
+  const sb = getSupabaseAdmin();
+  const requestedBy: SheetRequestedBy = opts.requestedBy === 'student' ? 'student' : 'adrian';
+  const ids = Array.from(new Set(runIds.filter(Boolean)));
+  const { data: rows } = await sb.from('paper_marking_runs')
+    .select('id, paper_name, student_id, student_name, released_at, result_json, created_at, paper_subject')
+    .in('id', ids);
+  const byId = new Map(((rows ?? []) as SheetBatchRun[]).map(r => [r.id, r]));
+  const guard = sheetBatchGuard(ids.map(id => byId.get(id) ?? null), { requestedBy });
+  if (!guard.ok) return guard;
+  const covered = guard.runs.map(r => r.id);
+  const { data: jobRows } = await sb.from('sheet_jobs')
+    .select('id, status, run_id, run_ids').or(`run_id.in.(${covered.join(',')}),run_ids.ov.{${covered.join(',')}}`);
+  const old = (jobRows ?? []) as { id: string; status: string }[];
+  const inFlight = old.filter(j => IN_FLIGHT.has(j.status)).map(j => j.id);
+  if (inFlight.length) {
+    await sb.from('sheet_jobs').update({
+      status: 'cancelled', claimed_by: null, heartbeat_at: null,
+      completed_at: new Date().toISOString(), error: 'superseded by a batch sheet',
+    }).in('id', inFlight);
+  }
+  const { data: job, error } = await sb.from('sheet_jobs')
+    .insert(sheetBatchInsert(guard.primary, guard.runs, opts.focus, requestedBy)).select('*').single();
+  if (error || !job) return { ok: false, status: 'no-marking', http: 400, message: error?.message || 'could not queue the batch sheet' };
+  for (const j of old) await deleteHeldPracticeItems(sb, j.id).catch(() => ({ deleted: 0 }));
+  return { ok: true, job: job as Record<string, unknown>, cancelled: inFlight.length, runIds: covered };
 }
 
 /**
