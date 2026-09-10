@@ -1372,8 +1372,13 @@ batch; his own "One wave" rule holds (six teach sections at most, the rest shelv
   first. `paper_name` reads "3 papers: … · … · …".
 - **The desk tick** (`/admin/desk`, any lane): a checkbox appears on a row when
   the student has another paper of the same maths in that lane; the bar below
-  the list says whose and how many and queues ONE job (`POST /api/admin/sheet-jobs
-  {runIds}`); mixed students or mixed maths keep the button disabled. The job sits
+  the list says whose and how many and queues ONE job per maths (`POST
+  /api/admin/sheet-jobs {runIds}`, once per group). **Since 11 Sep 2026 AM and
+  EM ticked together queue TWO sheets, one each** (Adrian: "does it produce two
+  separate worksheets now?" — `lib/desk-state.ts tickPlan`, pure/tested; the
+  button reads "Queue 2 sheets"); a maths with a single ticked paper is named
+  in the bar so it can be unticked or joined by a second; two students still
+  never share a sheet. The job sits
   on the newest paper's row and shows on every covered paper's row and detail
   ("One sheet for N papers"); Send / the 12-hour clock / hold / revise all work as
   for a single sheet because they key on the primary.

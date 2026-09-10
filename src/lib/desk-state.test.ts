@@ -3,6 +3,7 @@ import {
   laneFor, sheetStageLabel, isPracticeAgainHandin, releasedViaLabel, handinOriginOf, approveBlockers, releaseBlockers, deskFlags, defaultLane,
   amendedStatusFor, latestLiveJob, noSheetOf, pdfStaleOf, DESK_LANES, LANE_LABEL, orderLane, revisingOf, revisingLabel, sheetOutcomeOf, sheetInProgressOf,
   markingProgressOf,
+  tickPlan, tickPlanLine,
 } from './desk-state';
 
 const tagged = { student_id: 'recStudent', released_at: null, annotated_pdf_url: null, result_json: { results: [] } };
@@ -457,4 +458,31 @@ describe('orderLane — a paper being marked pins above everything', () => {
     ];
     expect(orderLane(rows, 'auto').map(r => r.id)).toEqual(['mk', 'rev', 'old', 'new']);
   });
+});
+
+describe('tickPlan — one sheet per student per maths (11 Sep 2026)', () => {
+  const row = (id: string, paperSubject: string | null, studentId = 's1', studentName = 'Isabelle'): { id: string; studentId: string; studentName: string; paperSubject: string | null } =>
+    ({ id, studentId, studentName, paperSubject });
+  it('three AM + two EM papers of one student → two sheets, one per maths', () => {
+    const plan = tickPlan([row('a', 'A Math'), row('b', 'A Math'), row('c', 'A Math'), row('d', 'E Math'), row('e', 'E Math')]);
+    expect(plan).toEqual({ kind: 'ok', student: 'Isabelle', groups: [{ subject: 'A Math', runIds: ['a', 'b', 'c'] }, { subject: 'E Math', runIds: ['d', 'e'] }] });
+    expect(tickPlanLine(plan)).toBe('📘 2 Practice Again sheets for Isabelle: A Math (3 papers) + E Math (2 papers)');
+  });
+  it('one maths only → one sheet, the old wording', () => {
+    const plan = tickPlan([row('a', 'A Math'), row('b', 'A Math')]);
+    expect(plan.kind).toBe('ok');
+    expect(tickPlanLine(plan)).toBe('📘 One Practice Again sheet for Isabelle’s 2 papers (A Math)');
+  });
+  it('a maths with a single ticked paper is named, never silently dropped', () => {
+    const plan = tickPlan([row('a', 'A Math'), row('b', 'A Math'), row('d', 'E Math')]);
+    expect(plan).toMatchObject({ kind: 'lone', groups: [{ subject: 'A Math', runIds: ['a', 'b'] }], lone: [{ subject: 'E Math', runIds: ['d'] }] });
+    expect(tickPlanLine(plan)).toContain('E Math: 1 paper');
+  });
+  it('a single ticked paper asks for another of the same maths', () => {
+    expect(tickPlanLine(tickPlan([row('a', 'A Math')]))).toContain('tick another of Isabelle’s');
+  });
+  it('two students never share a sheet', () => {
+    expect(tickPlan([row('a', 'A Math'), row('b', 'A Math', 's2', 'Alexis')])).toEqual({ kind: 'mixed-students' });
+  });
+  it('nothing ticked → none', () => { expect(tickPlan([])).toEqual({ kind: 'none' }); });
 });

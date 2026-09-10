@@ -471,3 +471,59 @@ export function amendedStatusFor(
   if (isAlreadyAttached(run, cand)) return { status: 'found', ...base };
   return { status: amendedCopyIsNewer(run, cand) ? 'newer-than-attached' : 'found', ...base };
 }
+
+// ── The desk tick: one sheet per student PER MATHS (11 Sep 2026) ─────────────
+// Adrian ticked Isabelle's three AM and two EM papers and asked: "if i ticked
+// pdfs that includes both em and am, does it produce two separate worksheets
+// now?" It refused ("untick the odd one out"). Now the ticks are grouped by
+// maths and each group of two or more becomes its own sheet — one student, one
+// maths per sheet still holds (docs/MARKING.md § Practice Again batches); a
+// maths with only ONE ticked paper is named so Adrian unticks it or adds a
+// second. Pure; the page renders the plan and posts one job per group.
+
+export type TickRow = { id: string; studentId: string | null; studentName: string | null; paperSubject: string | null };
+export type TickGroup = { subject: string; runIds: string[] };
+export type TickPlan =
+  | { kind: 'none' }
+  | { kind: 'mixed-students' }
+  /** every group has ≥ 2 papers → one job per group */
+  | { kind: 'ok'; student: string; groups: TickGroup[] }
+  /** at least one maths has a single ticked paper — cannot be a sheet on its own */
+  | { kind: 'lone'; student: string; groups: TickGroup[]; lone: TickGroup[] };
+
+export function tickPlan(rows: readonly TickRow[]): TickPlan {
+  if (!rows.length) return { kind: 'none' };
+  if (new Set(rows.map(r => r.studentId ?? '')).size > 1) return { kind: 'mixed-students' };
+  const student = rows[0].studentName ?? 'this student';
+  const bySubject = new Map<string, string[]>();
+  for (const r of rows) {
+    const s = r.paperSubject || 'maths';
+    bySubject.set(s, [...(bySubject.get(s) ?? []), r.id]);
+  }
+  const all = [...bySubject.entries()].map(([subject, runIds]) => ({ subject, runIds }));
+  const groups = all.filter(g => g.runIds.length >= 2);
+  const lone = all.filter(g => g.runIds.length < 2);
+  if (lone.length) return { kind: 'lone', student, groups, lone };
+  return { kind: 'ok', student, groups };
+}
+
+/** The bar's one line for a plan. Pure. */
+export function tickPlanLine(plan: TickPlan): string {
+  switch (plan.kind) {
+    case 'none': return '';
+    case 'mixed-students': return 'One sheet is for one student — untick the other student’s papers.';
+    case 'lone': {
+      const who = plan.lone.map(g => `${g.subject}: 1 paper`).join(', ');
+      return plan.groups.length
+        ? `${who} — a sheet needs two or more of the same maths; untick it or add another.`
+        : `1 paper ticked — tick another of ${plan.student}’s (same maths) to make one sheet.`;
+    }
+    case 'ok': {
+      if (plan.groups.length === 1) {
+        const g = plan.groups[0];
+        return `📘 One Practice Again sheet for ${plan.student}’s ${g.runIds.length} papers (${g.subject})`;
+      }
+      return `📘 ${plan.groups.length} Practice Again sheets for ${plan.student}: ${plan.groups.map(g => `${g.subject} (${g.runIds.length} papers)`).join(' + ')}`;
+    }
+  }
+}
