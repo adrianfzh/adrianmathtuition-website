@@ -191,6 +191,26 @@ a scheme and says so — and the disclaimer says so to the student.
    the API lane; the daily slot is the brake. Watch `/admin/ops` marking-queue lag once
    science hand-ins start.
 
+**First numbers (10 Sep 2026 evening, provisional — scored from the Mac's checkpointed page
+reads, before the bot's assembly; the official `calibration_results` rows follow from
+`eval-mark-model.js --save` once assembled):**
+
+| script | examiner | marker | Δ | reading |
+|---|---|---|---|---|
+| Physics grade A (rules alone) | 64/90 | 65/90 | 1 ✅ | 26 of 33 parts agree |
+| Physics grade C | 37/90 | 36/90 | 1 ✅ | 26 of 33 |
+| Physics grade E | 20/90 | 29/90 | 9 ❌ | 11 parts over by one: a B mark for a half-right statement the examiner gave 0 |
+| Biology grade A (scheme attached) | 61 on the parts handed in | 64 | +3 | five parts never reached the marker — the hand-in took one booklet page per question and Q1(c), Q2(c)(d), Q5(b) sit on the second page |
+| Biology grade C | 36 | 41 | +5 | same gap; over-awards on explain parts |
+| Biology grade E | 16 | 19 | +3 | same gap |
+
+What it says: rules-alone physics is at the gate for scripts with real working, and lenient
+on weak scripts — the shared severity rules give "getting close" a mark where a B mark is
+all-or-nothing. Biology with the scheme still accepts wording the scheme rejects, about one
+mark per explain question. Both are RULE findings for the physics/biology brains (candidate
+edits, not yet made — three scripts each is evidence, not a gate). The biology re-run needs
+the continuation pages included.
+
 **Not built (deliberately):** the teacher-marked-copy tick (dropped — see 7); scheme →
 science-bank extraction (5, phase 2); a science Ask tab (the web solver already answers
 science for Sec 3–5 students via the existing Ask page); MCQ Paper 1; science error-kind
