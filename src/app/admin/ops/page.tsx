@@ -207,16 +207,16 @@ export default function OpsPage() {
 
         {/* Practice Again sheets in motion (11 Sep 2026): the sheet worker's own
             stage word per job and minutes since claim; queued ones behind. Three
-            sheet slots on this Mac (~/.adrianmath_sheets, 2, 3), same plan as marking. */}
+            sheet slots on this Mac (~/.adrianmath_sheets, 2–6), same plan as marking. */}
         <section className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
           <div className="px-4 py-3 flex items-center gap-3 text-sm">
-            <span className={`inline-block w-2.5 h-2.5 rounded-full ${data && data.sheets && data.sheets.queued.length > 0 && data.sheets.active.length >= 3 ? 'bg-amber-500' : 'bg-green-600'}`} />
+            <span className={`inline-block w-2.5 h-2.5 rounded-full ${data && data.sheets && data.sheets.queued.length > 0 && data.sheets.active.length >= (data.slots?.sheets ?? 6) ? 'bg-amber-500' : 'bg-green-600'}`} />
             <span className="font-medium text-neutral-800">Practice Again sheets</span>
             <span className="text-neutral-500">
               {data && data.sheets
                 ? (data.sheets.active.length + data.sheets.queued.length === 0
                   ? 'none in motion'
-                  : `${data.sheets.active.length} of ${data.slots?.sheets ?? 3} sheet slots writing · ${data.sheets.queued.length} queued`)
+                  : `${data.sheets.active.length} of ${data.slots?.sheets ?? 6} sheet slots writing · ${data.sheets.queued.length} queued`)
                 : '…'}
             </span>
             <a href="/admin/desk" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">desk →</a>

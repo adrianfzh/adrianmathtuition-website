@@ -140,8 +140,9 @@ export async function GET(req: NextRequest) {
       sheets,
       // The Mac's slots (11 Sep 2026 — Adrian: "can you put all these slots
       // info on ops or something?"): launchd agents on Adrians-MacBook-Pro —
-      // six planmarking, three sheetworker — all on one Claude account.
-      slots: { marking: 6, sheets: 3 },
+      // six planmarking, six sheetworker (three more installed 11 Sep 2026,
+      // Adrian: "open up 3 more slots for sheets") — all on one Claude account.
+      slots: { marking: 6, sheets: 6 },
       queue,
       marking,
       botQueue,
