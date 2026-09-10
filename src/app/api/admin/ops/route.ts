@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
       // leaves queue_status null, so the flag alone would report "empty" while
       // the Mac was marking — that shipped briefly on 9 Sep and is why both are
       // fetched. JSON-path alias keeps the fat result_json off the wire.
-      const cols = 'id, created_at, paper_name, student_name, queue_status, total_max, released_at, archived_at, queue:result_json->queue';
+      const cols = 'id, created_at, paper_name, student_name, queue_status, total_max, released_at, archived_at, num_photos, queue:result_json->queue';
       const sb = getSupabaseAdmin();
       const [inFlight, flagged] = await Promise.all([
         sb.from('paper_marking_runs').select(cols).is('total_max', null).order('created_at', { ascending: true }).limit(50),
@@ -138,6 +138,10 @@ export async function GET(req: NextRequest) {
       neverStamped: neverStamped(latest).map(j => ({ job: j, rhythm: JOB_RHYTHMS[j].label })),
       planLane,
       sheets,
+      // The Mac's slots (11 Sep 2026 — Adrian: "can you put all these slots
+      // info on ops or something?"): launchd agents on Adrians-MacBook-Pro —
+      // six planmarking, three sheetworker — all on one Claude account.
+      slots: { marking: 6, sheets: 3 },
       queue,
       marking,
       botQueue,

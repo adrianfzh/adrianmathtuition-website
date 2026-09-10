@@ -440,6 +440,15 @@ export default function DeskPage() {
 
   useEffect(() => { ensureAdminSession().then(ok => { if (ok) setAuthed(true); }); }, []);
   useEffect(() => { if (authed) loadQueue(); }, [authed, loadQueue]);
+  // Live rows (11 Sep 2026 — Adrian: "this doesn't show me the progress live?"):
+  // while any paper is being marked or any sheet is queued/being written, the
+  // list reloads itself every 30 s so the stage words move without a click.
+  const anyInMotion = rows.some(r => !!r.marking || (r.sheet != null && (r.sheet.status === 'queued' || r.sheet.status === 'claimed')));
+  useEffect(() => {
+    if (!authed || !anyInMotion) return;
+    const t = setInterval(() => loadQueue(), 30000);
+    return () => clearInterval(t);
+  }, [authed, anyInMotion, loadQueue]);
   useEffect(() => {
     if (!authed || !runId) return;
     setDetail(null); setCover(null); setEditing(null);

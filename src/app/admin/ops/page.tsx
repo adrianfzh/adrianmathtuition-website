@@ -17,12 +17,13 @@ type OpsData = {
   queue: {
     pending: number;
     oldestMinutes: number | null;
-    rows: { id: string; paper: string; student: string | null; waitingMinutes: number; machine: string | null; account?: string | null; claimedMinutes: number | null; attempts: number }[];
+    rows: { id: string; paper: string; student: string | null; waitingMinutes: number; machine: string | null; account?: string | null; claimedMinutes: number | null; attempts: number; pagesDone?: number | null; pagesTotal?: number | null; phase?: 'unclaimed' | 'reading' | 'handed back' | 'bot' }[];
     stale: { id: string; paper: string; because: 'released' | 'archived' | 'marked' }[];
   };
   marking: { d7: MarkingShare; d30: MarkingShare } | null;
   /** A plan-billed lane that last reported a PLAN LIMIT (9 Sep 2026) — empty when both lanes are fine. */
   planLane?: { job: 'plan-marking' | 'sheet-worker'; at: string; summary: string }[];
+  slots?: { marking: number; sheets: number };
   sheets?: { active: { id: string; paper: string; papers: number; stage: string; minutes: number; requestedBy: string }[]; queued: { id: string; paper: string; papers: number; minutes: number; requestedBy: string }[] };
   /** The bot's `/queue-quiet` batch-lane + reachability facts (11 Sep 2026) — null when the fetch itself failed (bot down, field not shipped yet). */
   botQueue?: { batchLaneNote: { text: string; tone: 'amber' | 'grey' } | null; markerUnreachable: string | null } | null;
@@ -77,11 +78,15 @@ export default function OpsPage() {
   useEffect(() => { ensureAdminSession().then(ok => { if (ok) setAuthed(true); }); }, []);
   useEffect(() => { if (authed) load(); }, [authed, load]);
   // The board is a glance-surface: refresh itself every minute while open.
+  // Live while anything is in motion (11 Sep 2026 — Adrian: "this doesn't show
+  // me the progress live?"): 20 s when a slot is reading or a sheet is being
+  // written, 60 s when the machine is idle.
+  const inMotion = !!data && ((data.queue?.rows?.length ?? 0) > 0 || (data.sheets?.active?.length ?? 0) > 0 || (data.sheets?.queued?.length ?? 0) > 0);
   useEffect(() => {
     if (!authed) return;
-    const t = setInterval(load, 60000);
+    const t = setInterval(load, inMotion ? 20000 : 60000);
     return () => clearInterval(t);
-  }, [authed, load]);
+  }, [authed, load, inMotion]);
 
   if (!authed) {
     return (
@@ -133,6 +138,12 @@ export default function OpsPage() {
                   : `${data.queue.pending} paper${data.queue.pending > 1 ? 's' : ''} waiting · oldest ${data.queue.oldestMinutes}m`
                 : '…'}
             </span>
+            {/* The Mac's slots at a glance (11 Sep 2026): reading = a slot holds a claim and has not handed back. */}
+            {!!data?.slots && (
+              <span className="text-xs text-neutral-400">
+                · {data.queue.rows.filter(r => r.phase === 'reading').length} of {data.slots.marking} marking slots reading
+              </span>
+            )}
             <a href="/admin/desk" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">desk →</a>
           </div>
 
@@ -175,8 +186,8 @@ export default function OpsPage() {
                   {r.student && <span className="text-neutral-500">{r.student}</span>}
                   <span className="ml-auto tabular-nums text-neutral-500">{r.waitingMinutes}m</span>
                   {r.machine
-                    ? <span className="text-xs text-neutral-400" title={`claimed ${r.claimedMinutes}m ago`}>💻 {r.machine}{r.account ? <span className="text-neutral-300"> · {r.account}</span> : null}</span>
-                    : <span className="text-xs text-neutral-400">unclaimed</span>}
+                    ? <span className="text-xs text-neutral-400" title={`claimed ${r.claimedMinutes}m ago`}>💻 {r.phase === 'handed back' ? 'handed back · the bot assembles it next' : r.phase === 'bot' ? 'the bot has it' : `reading${r.pagesDone != null && r.pagesTotal != null ? ` · page ${r.pagesDone}/${r.pagesTotal}` : ''}`}{r.claimedMinutes != null ? ` · ${r.claimedMinutes}m` : ''}{r.account ? <span className="text-neutral-300"> · {r.account}</span> : null}</span>
+                    : <span className="text-xs text-neutral-400">unclaimed — waiting for a slot</span>}
                   {r.attempts > 1 && <span className="text-xs text-amber-700">attempt {r.attempts}</span>}
                 </li>
               ))}
@@ -205,7 +216,7 @@ export default function OpsPage() {
               {data && data.sheets
                 ? (data.sheets.active.length + data.sheets.queued.length === 0
                   ? 'none in motion'
-                  : `${data.sheets.active.length} being written · ${data.sheets.queued.length} queued · 3 slots`)
+                  : `${data.sheets.active.length} of ${data.slots?.sheets ?? 3} sheet slots writing · ${data.sheets.queued.length} queued`)
                 : '…'}
             </span>
             <a href="/admin/desk" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">desk →</a>
