@@ -40,6 +40,10 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'scan-inbox':         { kind: 'interval', hours: 1, label: 'every 15 min' },
   // The extraction inbox watcher: Dropbox /Extraction Inbox → paper-library bucket + queue (Vercel cron every 10 min, 8 Sep 2026).
   'extraction-inbox':   { kind: 'interval', hours: 1, label: 'every 10 min' },
+  // The weekly "papers we don't hold" line: runs marked without their paper in
+  // the last 7 days, grouped, checked against paper_library + the bank, one
+  // Telegram line (Vercel cron Mondays 8am SGT, 11 Sep 2026).
+  'missing-papers':     { kind: 'interval', hours: 204, label: 'Mondays 8am' },
   // The Dropbox tray's one-month life: a paper's folder goes 30 days after release (daily 03:30 SGT, 6 Sep 2026).
   'dropbox-tray':      { kind: 'interval', hours: 30, label: 'daily 3:30am' },
   // Weekly exam-library refresh on the Mac (scripts/paper-library/run.sh, launchd com.adrianmath.paperlibrary, Sun 04:10 SGT, 7 Sep 2026).

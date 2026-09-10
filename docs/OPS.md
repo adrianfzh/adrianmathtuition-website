@@ -35,8 +35,12 @@ Writers:
   Practice Again sheet is still not handed in: `portal_assignments.required_at`
   is set when Adrian releases a sheet he queued himself; day 3, then weekly,
   four nudges at most, Telegram + web push, one summary line to Adrian; stamps
-  even on quiet days, skips the stamp only in `?dry=1` mode), and
-  `health-check` itself.
+  even on quiet days, skips the stamp only in `?dry=1` mode),
+  `missing-papers` (Mondays 8am SGT — the last 7 days of runs marked without
+  their paper, grouped and checked against `paper_library` + the bank,
+  `lib/missing-papers.ts`, one Telegram line; stamps even on a quiet week with
+  nothing to report → [`MARKING.md`](MARKING.md) §🕳 When the paper is
+  missing), and `health-check` itself.
 - **Mac plan-billed workers** stamp as the last step of their SKILL.md
   (`qb-topup`, `file-subgroups`, `bot-review`, `question-mine`,
   `figure-fitness` — the nightly question-figure fitness catch-up, which stamps
