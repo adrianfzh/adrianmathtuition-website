@@ -196,6 +196,8 @@ export async function GET(req: NextRequest) {
       lane: runLane,
       releasedAt: r.released_at,
       releasedVia: r.released_via,
+      // When ✓ Looked at was pressed — the Completed lane's ↩ undo needs it (10 Sep 2026).
+      checkedAt: r.checked_at,
       pdfStale: pdfStaleOf(r),
       // ✏️ A revision in flight pins the row to the top of its lane (orderLane) and
       // pulls a released paper back to the to-do tab (laneFor) — 10 Sep 2026.

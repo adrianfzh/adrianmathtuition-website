@@ -50,6 +50,8 @@ type Row = {
   studentId: string | null; studentName: string | null;
   awarded: number; max: number; pct: number | null; questions: number; pending: number;
   lane: DeskLane; releasedAt: string | null; releasedVia: string | null; pdfStale: boolean;
+  /** When ✓ Looked at was pressed (null = not yet) — the ↩ undo on Completed rows. */
+  checkedAt?: string | null;
   /** The sheet is back with the worker for a revision — pinned at the top of its lane, and back on the to-do tab if released. */
   revising?: Revising | null;
   sheet: { jobId: string; status: string; stage: string | null; error: string | null; label: string; completedAt: string | null; requestedBy?: string | null } | null;
@@ -329,6 +331,11 @@ export default function DeskPage() {
 
   const [busy, setBusy] = useState('');
   const [toast, setToast] = useState('');
+  // An Undo offered inside the toast for a few seconds after ✓ Looked at (10 Sep
+  // 2026 — Adrian: "i just accidentally clicked looked at for isabelle (i forgot
+  // which paper), is there an undo button?"). The Completed lane's ↩ is the
+  // permanent way back; this is the reflex one.
+  const [undoChecked, setUndoChecked] = useState<{ runId: string; label: string } | null>(null);
   const [editing, setEditing] = useState<number | null>(null);
   const [editAwarded, setEditAwarded] = useState('');
   const [editNote, setEditNote] = useState('');
@@ -438,9 +445,9 @@ export default function DeskPage() {
   }, [authed, runId, loadRun]);
   useEffect(() => {
     if (!toast) return;
-    const t = setTimeout(() => setToast(''), 4200);
+    const t = setTimeout(() => { setToast(''); setUndoChecked(null); }, undoChecked ? 9000 : 4200);
     return () => clearTimeout(t);
-  }, [toast]);
+  }, [toast, undoChecked]);
   // Object URLs for the rendered sheet pages are released when they change.
   useEffect(() => () => { (sheetPages || []).forEach(u => URL.revokeObjectURL(u)); }, [sheetPages]);
 
@@ -744,22 +751,38 @@ export default function DeskPage() {
   async function markChecked() {
     if (!detail) return;
     const id = detail.run.id;
+    const label = `${detail.run.studentName || 'this paper'} · ${detail.run.paperName || ''}`.trim();
     setBusy('checked');
     const { ok, d } = await postJson('/api/admin/mark-triage', { action: 'checked', runId: id });
     setBusy('');
     if (!ok) { setToast(d.error || 'Could not mark it'); return; }
-    setToast('Marked as looked at.');
+    setUndoChecked({ runId: id, label });
+    setToast(`Marked as looked at — ${label}.`);
     refresh(id);
+  }
+  // ↩ The way back from ✓ Looked at: clears checked_at through the library's own
+  // toggle, and the ordinary lane rules put the paper back where it was (a released
+  // paper within the automatic window returns to Still to deal with).
+  async function unmarkChecked(id: string, label?: string) {
+    setBusy('checked');
+    const { ok, d } = await postJson('/api/admin/papers', { runId: id, checked: false });
+    setBusy('');
+    setUndoChecked(null);
+    if (!ok) { setToast(d.error || 'Could not undo'); return; }
+    setToast(`↩ Back in Still to deal with${label ? ` — ${label}` : ''}.`);
+    loadQueue(false);
+    if (detail?.run.id === id) refresh(id);
   }
 
   // The same tap from a LIST row (9 Sep 2026 — Adrian: "i don't see a looked
   // at"): the button had lived only inside the paper's page.
-  async function markCheckedRow(id: string) {
+  async function markCheckedRow(id: string, label?: string) {
     setBusy('checked');
     const { ok, d } = await postJson('/api/admin/mark-triage', { action: 'checked', runId: id });
     setBusy('');
     if (!ok) { setToast(d.error || 'Could not mark it'); return; }
-    setToast('Marked as looked at — moved to Completed.');
+    setUndoChecked({ runId: id, label: label || 'this paper' });
+    setToast(`Marked as looked at — ${label || 'this paper'} moved to Completed.`);
     loadQueue(false);
   }
 
@@ -983,11 +1006,18 @@ export default function DeskPage() {
                       </span>
                     )}
                     {row.lane === 'released' && row.releasedAt && <span>released {fmtDate(row.releasedAt)}{sheetOutcomeShort(row)}</span>}
+                    {row.lane === 'released' && row.checkedAt && (
+                      <button onClick={e => { e.stopPropagation(); unmarkChecked(row.id, `${row.studentName || 'untagged'} · ${row.paperName}`); }} disabled={busy === 'checked'}
+                        title="Undo ✓ Looked at — the paper goes back to Still to deal with"
+                        style={{ border: '1px solid #d1d5db', background: '#fff', color: '#6b7280', borderRadius: 8, padding: '1px 8px', fontSize: 12, cursor: 'pointer' }}>
+                        ↩ Not looked at
+                      </button>
+                    )}
                     {row.pending > 0 && <span style={{ color: C.flag, fontWeight: 600 }}>⏳ {row.pending} to check</span>}
                     {row.flags.map(f => <span key={f} style={{ color: C.flag, fontWeight: 600 }}>⚠ {f}</span>)}
                     {row.revising && <Chip label={revisingLabel(row.revising)} bg="#fdf2f8" color="#9d174d" title="The sheet went back to the worker. This paper sits here, at the top, until the revised sheet is filed — then it goes back to where it was." />}
                     {row.lane === 'auto' && !row.revising && !['queued', 'claimed', 'failed'].includes(row.sheet?.status ?? '') && (
-                      <button onClick={e => { e.stopPropagation(); markCheckedRow(row.id); }} disabled={busy === 'checked'}
+                      <button onClick={e => { e.stopPropagation(); markCheckedRow(row.id, `${row.studentName || 'untagged'} · ${row.paperName}`); }} disabled={busy === 'checked'}
                         title="Marks this paper as looked at — it moves to Completed. Nothing about the sheet changes."
                         style={{ border: '1px solid #67e8f9', background: '#ecfeff', color: '#0e7490', borderRadius: 8, padding: '1px 8px', fontSize: 12, cursor: 'pointer' }}>
                         ✓ Looked at
@@ -1040,14 +1070,21 @@ export default function DeskPage() {
           onQueueSheet={queueSheet} onCancelSheet={cancelSheet} onAutoRelease={autoRelease} onApprove={approve} onReleaseOnly={releaseWithoutSheet} onToast={setToast} onRefresh={() => refresh(detail.run.id)}
           onSeen={markSeen} onUploadAmended={uploadAmended} onShelve={shelve} shelved={shelved}
           onRevise={reviseSheet} onRemarkPage={remarkPage} onApproveScheme={() => approveScheme(false)} onAuditAllocation={auditAllocation} onChecked={markChecked}
+          onUnchecked={() => detail && unmarkChecked(detail.run.id, `${detail.run.studentName || 'this paper'} · ${detail.run.paperName || ''}`.trim())}
           onSendSheet={sendSheetNow}
         />
       )}
 
       {toast && (
-        <div onClick={() => setToast('')}
+        <div onClick={() => { setToast(''); setUndoChecked(null); }}
           style={{ position: 'fixed', left: 12, right: 12, bottom: 12, background: C.ink, color: '#fff', padding: '10px 14px', borderRadius: 10, fontSize: 14, maxWidth: 736, margin: '0 auto', zIndex: 20 }}>
           {toast}
+          {undoChecked && (
+            <button onClick={e => { e.stopPropagation(); unmarkChecked(undoChecked.runId, undoChecked.label); }} disabled={busy === 'checked'}
+              style={{ marginLeft: 12, border: '1px solid rgba(255,255,255,0.5)', background: 'transparent', color: '#fff', borderRadius: 8, padding: '3px 10px', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+              ↩ Undo
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -1068,6 +1105,8 @@ function DetailView(p: {
   onSeen: () => void; onUploadAmended: (file: File) => void; onShelve: (q: Question) => void; shelved: Set<string>;
   onRevise: (instructions: string) => void; onRemarkPage: (photoIndex: number) => void;
   onApproveScheme: () => void; onAuditAllocation: () => void; onChecked: () => void;
+  /** ↩ undo of ✓ Looked at (10 Sep 2026). */
+  onUnchecked: () => void;
   onSendSheet: () => void;
 }) {
   // The pen opens on the page you tapped, right here on the desk (round 3).
@@ -1212,6 +1251,13 @@ function DetailView(p: {
                 return <Chip label={label} bg={held > 0 && live === 0 ? C.flagBg : C.okBg} color={held > 0 && live === 0 ? C.flag : C.ok} />;
               })()}
               {released && <Chip label={`released ${fmtWhen(run.releasedAt!)}${run.releasedVia ? ` · ${releasedViaLabel(run.releasedVia)}` : ''}`} />}
+              {released && run.checkedAt && d.lane !== 'auto' && (
+                <button onClick={p.onUnchecked} disabled={busy === 'checked'}
+                  title="Undo ✓ Looked at — the paper goes back to Still to deal with"
+                  style={{ border: '1px solid #d1d5db', background: '#fff', color: '#6b7280', borderRadius: 8, padding: '3px 10px', fontSize: 12.5, cursor: 'pointer' }}>
+                  {busy === 'checked' ? '…' : '↩ Not looked at'}
+                </button>
+              )}
               {d.lane === 'auto' && !d.revising && (
                 <button onClick={p.onChecked} disabled={busy === 'checked'}
                   title="Released by the system without your vetting. Marks it as looked at — it leaves this lane; Agree/Override still work here and re-issue the student's copy."

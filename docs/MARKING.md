@@ -1349,6 +1349,13 @@ student · Marked, no sheet yet · In process) only ever hold a paper the
 automatic door refused, so the desk hides them at zero
 (`LANES_HIDDEN_AT_ZERO`) and opens on one only when it holds something.
 ✓ Looked at sits on every automatic-lane row as well as inside the paper.
+**✓ Looked at can be undone (10 Sep 2026** — Adrian: "i just accidentally clicked looked at
+for isabelle (i forgot which paper), is there an undo button?"): the toast after a ✓ carries
+**↩ Undo** for ~9 s and names the paper; every Completed-lane row that was ticked shows
+**↩ Not looked at**, and so does the paper header. Both clear `checked_at` through
+`/api/admin/papers {runId, checked:false}` (the library's own toggle) and the ordinary lane
+rules put the paper back — a released paper inside the automatic window returns to Still to
+deal with.
 **📘 Send the sheet now** — a written sheet whose paper is already out and
 which the student does not have (no From Adrian row) shows a Send button in
 the sheet panel, with why it did not go by itself (the stored
