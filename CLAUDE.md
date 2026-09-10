@@ -227,6 +227,7 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 - `admin/exam-season/route.ts` — GET/POST exam season override
 - `admin/admin-stats/route.ts` — status card data for hub page
 - `admin/ops/route.ts` — logbook board data; `job-log/route.ts` — POST stamp for Mac/shell jobs → [`docs/OPS.md`](docs/OPS.md)
+- `admin/marking-settings/route.ts` — 🖥 **Mac plan only** (11 Sep 2026): GET the switch · POST `{macOnly}` flips it (Telegram line to the marking topic); `lib/marking-settings.ts` stores it as the Airtable `Settings` row `marking_mac_only` (the auto-release switch's shape) and the BOT reads that row every queue tick (bot `lib/marking-settings.js`) — ON = the worker marks nothing itself (no full-price API, no batch, no takeover), every paper waits for a Mac slot, ⚡ Mark now / ☁️ Batch now rows go to the Mac too; the card lives on `/admin/mark-paper` above Recent marked papers; health-check probes the 401
 - `admin/calibration/route.ts` — read-only `calibration_results` (latest 200 + `lib/calibration-stats.ts` stats; `?subject=`) → `docs/MARKING.md`
 - `admin/my-todos/route.ts` — personal to-do CRUD (Supabase `admin_todos`)
 - `admin/todo/route.ts` — loop-queue CRUD (Airtable `Todos`)

@@ -373,6 +373,38 @@ export default function MarkPaperPage() {
   // 10 Sep 2026): a re-mark keeps its paper's created_at and sat pages down
   // the dated list while it ran. Merged ahead of the window — lib/runs-list.
   const [inMotionRuns, setInMotionRuns] = useState<Run[]>([]);
+  // 🖥 Mac plan only (11 Sep 2026, lib/marking-settings.ts): the queue's spend
+  // switch. ON = nothing goes to the API — the worker marks nothing itself, every
+  // paper waits for a Mac slot (⚡ Mark now / ☁️ Batch now rows included). The
+  // bot reads the same Airtable row each tick, so a flip is live in ~30 s.
+  const [macOnly, setMacOnly] = useState<{ on: boolean; at: string | null } | null>(null);
+  const [macOnlyBusy, setMacOnlyBusy] = useState(false);
+  useEffect(() => {
+    fetch('/api/admin/marking-settings', { headers: authHeaders }).then(async r => {
+      if (!r.ok) return;
+      const d = await r.json();
+      if (d?.macOnly) setMacOnly({ on: !!d.macOnly.on, at: d.macOnly.at ?? null });
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  async function flipMacOnly() {
+    if (!macOnly || macOnlyBusy) return;
+    const next = !macOnly.on;
+    if (!window.confirm(next
+      ? 'Mac plan only: nothing goes to the API until you switch it back — no ⚡ full-price runs, no ☁️ batch, no takeovers. Papers wait for a Mac slot. Turn it on?'
+      : 'Back to the normal split: the Mac gets a head start, the worker takes the rest. Turn Mac-only off?')) return;
+    setMacOnlyBusy(true);
+    try {
+      const r = await fetch('/api/admin/marking-settings', { method: 'POST', headers: { ...authHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify({ macOnly: next }) });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
+      setMacOnly({ on: !!d.macOnly.on, at: d.macOnly.at ?? null });
+    } catch (e) {
+      alert(`Could not change the switch: ${(e as Error).message}`);
+    } finally {
+      setMacOnlyBusy(false);
+    }
+  }
   // Server-side paging for the history list. `runsTotal` is an exact count
   // from Supabase, so the summary can say "25 of 118" instead of a constant.
   const [runsTotal, setRunsTotal] = useState(0);
@@ -1682,6 +1714,27 @@ export default function MarkPaperPage() {
           <button type="button" onClick={() => setDeletedNote(null)}
             style={{ background: 'none', border: 'none', color: '#92400e', fontSize: 13, cursor: 'pointer' }}>
             Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* 🖥 Mac plan only — the queue's spend switch (11 Sep 2026). */}
+      {macOnly && (
+        <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 12, background: macOnly.on ? '#ecfeff' : undefined, borderColor: macOnly.on ? '#a5f3fc' : undefined }} data-mac-only={macOnly.on ? 'on' : 'off'}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700 }}>🖥 Mac plan only{macOnly.on ? ' — ON' : ''}</div>
+            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
+              {macOnly.on
+                ? 'Nothing goes to the API: no ⚡ full-price runs, no ☁️ batch, no takeovers of a quiet Mac. Every paper waits for a Mac slot — ⚡ Mark now and ☁️ Batch now rows too.'
+                : 'Off: the normal split — the Mac gets a head start on each paper, the worker takes what it does not pick up.'}
+              {macOnly.at ? ` · since ${new Date(macOnly.at).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}
+            </div>
+          </div>
+          <button
+            type="button" role="switch" aria-checked={macOnly.on} aria-label="Mac plan only" disabled={macOnlyBusy} onClick={flipMacOnly}
+            style={{ position: 'relative', width: 48, height: 28, borderRadius: 999, border: 'none', cursor: 'pointer', background: macOnly.on ? '#0e7490' : '#d1d5db', opacity: macOnlyBusy ? 0.5 : 1, flexShrink: 0 }}
+          >
+            <span style={{ position: 'absolute', top: 4, left: macOnly.on ? 24 : 4, width: 20, height: 20, borderRadius: 999, background: '#fff', transition: 'left .15s' }} />
           </button>
         </div>
       )}
