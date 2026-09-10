@@ -206,6 +206,18 @@ or similar) — not unit-tested; the manual checklist below covers it.
   via `vercel deploy --yes` + re-alias `adrianmath-dev.vercel.app`; promote only when
   Adrian says so. (Full policy in CLAUDE.md.)
 
+- **Identity-only prop churn (10 Sep 2026).** `/admin/mark-paper` re-renders every 15 s
+  while any sheet is being written (its history poll), and the desk pane re-renders on
+  every toast/busy flip. Each render used to hand the overlay a fresh `.map()` `pages`
+  array and fresh `onClose`/`onDone` functions; the overlay's effects keyed on `pages`
+  re-ran per tick — every page's editable layer rebuilt as a new blob image — and on
+  the iPad that churn ended in Safari killing the tab and the URL-restore reopening it
+  (Adrian: "the annotation page closes by itself after scrolling down … and reloads
+  again?"). Now `AnnotateOverlay` keys its pages on `lib/annotate/pages-key.ts
+  pagesSignature` (content, not identity; tested) and reads the callbacks through
+  refs, and both parents memoise the props anyway. Rule: never key an overlay effect
+  on a prop object's identity; if a new prop must re-run work, add it to the signature.
+
 ## 10. Definition of done
 
 Pure libs tested (all green in the pre-push gate) · iPad checklist fully ticked ·

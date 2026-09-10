@@ -21,7 +21,7 @@
 
 import { uploadStudentFile } from '@/lib/student-files-client';
 import 'katex/dist/katex.min.css';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import type { LayerMeta } from '@/lib/annotate/layer';
@@ -1071,6 +1071,21 @@ function DetailView(p: {
   const { detail: d, cover, busy } = p;
   const run = d.run;
   const released = !!run.releasedAt;
+  // Stable overlay props (10 Sep 2026): a fresh `.map()` array per render made the
+  // overlay rebuild every page's layer whenever this pane re-rendered (see
+  // components/AnnotateOverlay.tsx pagesKey). Memoised on the detail data itself.
+  const annotatePages = useMemo(() => d.annotatedPhotos.map(ph => ({
+    photoIndex: ph.photoIndex,
+    url: fileHref(ph.urlWithSolutions || ph.url),
+    layerUrl: ph.layerUrl ? fileHref(ph.layerUrl) : null,
+    layer: ph.layer ?? null,
+    inkUrl: ph.inkUrl ? fileHref(ph.inkUrl) : null,
+    originalUrl: d.pageSources?.[ph.photoIndex]?.originalUrl ? fileHref(d.pageSources[ph.photoIndex].originalUrl as string) : null,
+    rot: d.pageSources?.[ph.photoIndex]?.rot ?? 0,
+  })), [d.annotatedPhotos, d.pageSources]);
+  const annotateStudent = useMemo(() => ({ name: run.studentName || '', level: '' }), [run.studentName]);
+  const annotateTotals = useMemo(() => ({ awarded: run.awarded, max: run.max }), [run.awarded, run.max]);
+  const closeAnnotate = useCallback(() => setAnnotatePage(null), []);
   // 🖼 The desk shows the copy the STUDENT gets (Adrian, 8 Sep 2026: "both desk
   // and images pdf should show the same thing? but i am seeing it differently").
   // Since 2 Sep the Images PDF and the app carry the clean marked page and put
@@ -1511,19 +1526,11 @@ function DetailView(p: {
       {annotatePage != null && !released && (
         <AnnotateOverlay
           runId={run.id}
-          pages={d.annotatedPhotos.map(ph => ({
-            photoIndex: ph.photoIndex,
-            url: fileHref(ph.urlWithSolutions || ph.url),
-            layerUrl: ph.layerUrl ? fileHref(ph.layerUrl) : null,
-            layer: ph.layer ?? null,
-            inkUrl: ph.inkUrl ? fileHref(ph.inkUrl) : null,
-            originalUrl: d.pageSources?.[ph.photoIndex]?.originalUrl ? fileHref(d.pageSources[ph.photoIndex].originalUrl as string) : null,
-            rot: d.pageSources?.[ph.photoIndex]?.rot ?? 0,
-          }))}
-          student={{ name: run.studentName || '', level: '' }}
-          totals={{ awarded: run.awarded, max: run.max }}
+          pages={annotatePages}
+          student={annotateStudent}
+          totals={annotateTotals}
           initialPage={annotatePage}
-          onClose={() => setAnnotatePage(null)}
+          onClose={closeAnnotate}
           onDone={({ linked }) => {
             setAnnotatePage(null);
             p.onToast(linked ? 'Saved — your copy is attached and the page images are updated.' : 'Saved — the copy could not be linked; attach it from the folder.');

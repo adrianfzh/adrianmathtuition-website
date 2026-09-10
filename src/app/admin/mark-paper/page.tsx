@@ -1,7 +1,7 @@
 'use client';
 import RulesTag from '@/components/RulesTag';
 
-import { useState, useRef, useEffect, memo, type CSSProperties } from 'react';
+import { useState, useRef, useEffect, memo, type CSSProperties, useMemo, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { uploadStudentFile } from '@/lib/student-files-client';
 import { isOutstandingRun } from '@/lib/mark-paper-outstanding';
@@ -327,6 +327,32 @@ export default function MarkPaperPage() {
   const pageSrcRef = useRef<{ photos: Record<number, string>; rot: Record<number, number> }>({ photos: {}, rot: {} });
   const [annotateInitialPage, setAnnotateInitialPage] = useState<number | null>(null);
   const [runId, setRunId] = useState<string | null>(null);
+  // Stable props for the overlay (10 Sep 2026): the history poll re-renders this
+  // page every 15 s while a sheet is being written, and a fresh `.map()` array
+  // per render made the overlay rebuild every page's layer each tick — on the
+  // iPad that churn ended in Safari killing the tab. The overlay also keys on
+  // content now (pagesSignature), so this is belt and braces.
+  const annotatePages = useMemo(() => annotatedPhotos.map((p) => {
+    const original = pageSrcRef.current.photos[p.photo_index];
+    return {
+      photoIndex: p.photo_index,
+      // Annotate the WITH-SOLUTIONS copy: the output replaces the 🖼 images PDF,
+      // whose footer is the only surface carrying the worked solution (see
+      // lib/annotated-photo-source.ts). Same-origin path: the canonical www URL
+      // fails CORS on the preview deploy.
+      url: fileHref(pickAnnotatedPhotoUrl(p, 'photos')),
+      // The editable layer (SPEC-ANNOTATE §14) — same-origin paths so the admin
+      // cookie rides along on the preview deploy too.
+      layerUrl: p.layer_url ? fileHref(p.layer_url) : null,
+      layer: p.layer ?? null,
+      inkUrl: p.ink_url ? fileHref(p.ink_url) : null,
+      originalUrl: original ? fileHref(original) : null,
+      rot: pageSrcRef.current.rot[p.photo_index] ?? 0,
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [annotatedPhotos]);
+  const annotateStudent = useMemo(() => ({ name: sendStudentName, level: '' }), [sendStudentName]);
+  const closeAnnotate = useCallback(() => setAnnotateOpen(false), []);
   // Keep the open overlay in the URL (?run=<id>&annotate=1) so a Safari reload —
   // iPad Safari drops heavy tabs under memory pressure, and the overlay's canvases
   // are heavy — lands back INSIDE the annotation with the draft restored, not on a
@@ -2474,25 +2500,11 @@ export default function MarkPaperPage() {
           // Annotate the WITH-SOLUTIONS copy: the output replaces the 🖼 images PDF,
           // whose footer is the only surface carrying the worked solution (see
           // lib/annotated-photo-source.ts).
-          pages={annotatedPhotos.map((p) => {
-            const original = pageSrcRef.current.photos[p.photo_index];
-            return {
-              photoIndex: p.photo_index,
-              // Same-origin path: the canonical www URL fails CORS on the preview deploy.
-              url: fileHref(pickAnnotatedPhotoUrl(p, 'photos')),
-              // The editable layer (SPEC-ANNOTATE §14) — same-origin paths so the
-              // admin cookie rides along on the preview deploy too.
-              layerUrl: p.layer_url ? fileHref(p.layer_url) : null,
-              layer: p.layer ?? null,
-              inkUrl: p.ink_url ? fileHref(p.ink_url) : null,
-              originalUrl: original ? fileHref(original) : null,
-              rot: pageSrcRef.current.rot[p.photo_index] ?? 0,
-            };
-          })}
-          student={{ name: sendStudentName, level: '' }}
+          pages={annotatePages}
+          student={annotateStudent}
           totals={totals}
           initialPage={annotateInitialPage}
-          onClose={() => setAnnotateOpen(false)}
+          onClose={closeAnnotate}
           onDone={({ url, linked }) => {
             setAnnotateOpen(false);
             // Same list update as uploadAnnotated: the ✍️ copy takes the front slot,

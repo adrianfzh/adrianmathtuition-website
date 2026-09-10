@@ -40,6 +40,7 @@ import { setNativePencilMirror } from '@/lib/native-pencil-bridge';
 import {
   draftIsEmpty, draftKey, makeDraft, parseDraft, serializeDraft,
 } from '@/lib/annotate/draft-store';
+import { pagesSignature } from '@/lib/annotate/pages-key';
 
 export type AnnotatePageInput = {
   photoIndex: number;
@@ -210,8 +211,20 @@ const IconSelect = () => (
 
 export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals, onDone, onClose, initialPage = null }: Props) {
   // Pages sorted by photo_index — array index is the working page index throughout.
-  const pages = useMemo(() => [...pagesIn].sort((a, b) => a.photoIndex - b.photoIndex), [pagesIn]);
+  // Keyed on the pages' CONTENT, not the array's identity (10 Sep 2026): the
+  // parent pages re-render on a 15 s poll and hand over a fresh `.map()` array
+  // each time; keyed on identity, every effect below that lists `pages` re-ran
+  // per tick — the editable layer of every page rebuilt as a new blob image on a
+  // tab iPad Safari already kills under memory pressure ("the annotation page
+  // closes by itself after scrolling down … and reloads again?").
+  const pagesKey = pagesSignature(pagesIn);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const pages = useMemo(() => [...pagesIn].sort((a, b) => a.photoIndex - b.photoIndex), [pagesKey]);
   const n = pages.length;
+  // The parents' callbacks are fresh functions per render too; read them through
+  // refs so nothing below re-subscribes or re-runs because a parent re-rendered.
+  const onCloseRef = useRef(onClose); onCloseRef.current = onClose;
+  const onDoneRef = useRef(onDone); onDoneRef.current = onDone;
 
   // ── mutable cores (refs — canvas work never goes through React state) ──────
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -2188,27 +2201,27 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       doneAtRef.current = Date.now();
       saveDraft();   // keep the strokes — reopening offers "edit your previous ink"
       setBusy('');
-      onDone({ url: dResp.url, linked });
+      onDoneRef.current({ url: dResp.url, linked });
     } catch (e) {
       setBusy('');
       setError((e as Error).message);
     }
-  }, [clearSelection, drawStrokes, onDone, pages, runId, saveDraft, student, totals]);
+  }, [clearSelection, drawStrokes, pages, runId, saveDraft, student, totals]);
 
   const discardAndClose = useCallback(() => {
     try { localStorage.removeItem(draftKey(runId)); } catch { /* ignore */ }
-    onClose();
-  }, [onClose, runId]);
+    onCloseRef.current();
+  }, [runId]);
 
   const requestClose = useCallback(() => {
     if (busyRef.current) return;
     // Untouched this session → close WITHOUT touching the stored draft (closing the
     // restore banner unrestored must never delete the draft it offered).
-    if (!dirtyRef.current) { onClose(); return; }
+    if (!dirtyRef.current) { onCloseRef.current(); return; }
     // Dirty but empty (erased everything) → persist the emptiness and close.
-    if (!hasInk()) { saveDraft(); onClose(); return; }
+    if (!hasInk()) { saveDraft(); onCloseRef.current(); return; }
     setConfirmOpen(true);
-  }, [onClose, saveDraft]);
+  }, [saveDraft]);
 
   // Keyboard (desktop dev) + the native-shell hook for Pencil double-tap: a thin
   // WKWebView wrapper can dispatch this event to toggle pen⇄eraser (no web API).
@@ -2400,7 +2413,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           <div style={{ background: '#fff', borderRadius: 14, padding: 20, maxWidth: 380, width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ fontWeight: 700, fontSize: 16 }}>Leave annotating?</div>
             <div style={{ fontSize: 13, color: '#4b5563' }}>Your ink hasn&rsquo;t been baked into a PDF yet.</div>
-            <button style={{ ...btn, height: 46, fontWeight: 700 }} onClick={() => { setConfirmOpen(false); saveDraft(); onClose(); }}>💾 Keep as draft &amp; close</button>
+            <button style={{ ...btn, height: 46, fontWeight: 700 }} onClick={() => { setConfirmOpen(false); saveDraft(); onCloseRef.current(); }}>💾 Keep as draft &amp; close</button>
             <button style={{ ...btn, height: 46, color: '#b91c1c', border: '1px solid #fca5a5' }} onClick={() => { setConfirmOpen(false); discardAndClose(); }}>🗑 Discard ink &amp; close</button>
             <button style={{ ...btn, height: 46 }} onClick={() => setConfirmOpen(false)}>Keep annotating</button>
           </div>
