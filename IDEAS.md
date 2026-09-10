@@ -7,6 +7,31 @@
 >
 > **Standing working agreement (Adrian):** fan out with agents where it makes work faster — no need to ask. Auto commit+push to dev each turn; promote to prod freely once verified (his 2026-08-29 cadence); alias adrianmath-dev after preview builds; ALWAYS check the marking queue (paper_marking_runs result_json null count = 0) before any bot push.
 
+## 🧪 Science marking + the marking queue — the 10 Sep 2026 evening queue (Adrian: "remind me of what we wanted to fix")
+
+Done that evening: the Science tab (hidden from students, `SCIENCE_MARKING_OPEN_TO_STUDENTS=false`), the teacher's-mark calibration box, the second-look re-mark fix (bot 9543b41), the desk's "being marked" rows, `MARK_QUEUE_BATCH=0` on Fly, six Cambridge-booklet calibration rows (SPEC-SCIENCE-MARKING §First numbers). Adrian is sourcing real marked science papers.
+
+**Science — opening it to students (the narrow way):**
+- 📐 **Physics brain: a point mark is all or nothing** — grade E over-awarded 11 half-right statements; one rule, then re-run the three physics scripts (truth files + harness, ~1 h, $0) and open **physics only** (make `SCIENCE_MARKING_OPEN_TO_STUDENTS` per subject).
+- 📐 **Chemistry pass** — get the Cambridge 5070 ECR booklet (2014/2015; mirrors blocked 10 Sep — Scribd download or Cambridge hub), build A/C/E scripts, score; open if it behaves like physics.
+- 📐 **Biology: stricter scheme wording**; with no scheme attached, feedback only — score off the page (or refuse the hand-in).
+- 📐 **Science paper page: feedback above the total**, total framed as "our estimate".
+- 📐 **Rebuild the biology calibration scripts with the continuation pages** (Q1c, Q2c-d, Q5b were never handed in) and re-score; add Adrian's incoming marked papers as truth files.
+- 💡 Phase 2: an uploaded scheme filed into the science bank's extraction inbox; a Science-tab Ask.
+
+**Marking queue robustness (bot) — one piece of work, in this order:**
+- 📐 **A hand-back is accepted the moment its reads are checkpointed** (ack, not "worker busy"); the Mac slot clears its spool and claims the next paper; persist the Mac's second look + key check with the reads (both were redone on the API after every takeover on 10 Sep).
+- 📐 **A batch never holds the queue**; a batch showing nothing after 20 min flips the bot to direct calls for the day by itself. Keep `MARK_QUEUE_BATCH=0` until this lands, then `flyctl secrets unset MARK_QUEUE_BATCH`.
+- 📐 **Never re-read a paper whose reads are saved** — retry the table read on a fetch failure; never API-read a run whose Mac claim says N/N pages done (the 20:17 blip cost 32 API reads).
+- 📐 **Assemble one paper at a time** (four at once starved the 1-vCPU/2 GB Fly machine: health flapping, proxy refusing the Macs). Bigger machine as the stopgap — Adrian runs `flyctl scale vm shared-cpu-2x --memory 4096 -a adrianmath-telegram-math-bot`.
+- 📐 **Deploys never interrupt marking**: a bot `dev` branch + promote; the deploy stops new assembly, finishes the one in hand, restarts (needs the ack change first).
+- 📐 **Alerts**: a hand-back refused > 15 min; a batch with nothing done > 30 min.
+- 💡 **The marker as its own Fly process/app** — chat and marking isolated, two markers = two assemblies at once.
+
+**Speed:** 📐 slots poll every 20–30 s (not 2 min) · 📐 red-pen placement per page in parallel · 💡 one paper split across slots (with two machines).
+
+**Hardware:** 💡 a second Mac — refurb M4 16 GB (S$979), wired, never sleeping, on its **own** Claude account (the plan caps the account, not the machine; 6 slots on one account hit the limit at 18:50 on 10 Sep).
+
 ## Product — student portal
 - ✅ **Practice Again on request — BUILT 8 Sep 2026** (Adrian: "only generate when they request … i can generate for them by clicking on desk, and vetting it and asking them to do → that is compulsory, so we should build a mechanism that reminds them it is not done"): no auto-queued sheets anywhere; two doors — the desk's 📘 Queue (compulsory once released: `required_at` + `practice-again-reminders` day 3 / weekly / ×4, hub card) and the app's Request Practice Again button (sent on its own once written and gated; held on the desk otherwise). Unconfirmed: the cadence, unvetted student sheets, Adrian's own scans losing the auto-sheet → `docs/MARKING.md` §Practice Again on request.
 - ✅ **Targeted remediation loop ("fix-it plan") — v1 built 2026-08-30** ([`SPEC-REMEDIATION.md`](SPEC-REMEDIATION.md)): classify lost marks (blank/procedure/discipline/concept), one-opus-call plan draft with bank ammo, Adrian activates on /admin/remediation, student clears steps on /app/fixit (drills ride portal_assignments; another-similar = next pre-picked bank qid). v2 leftovers: draft button on the student profile, learn-material auto-attach (revise-map subgroups), stuck-item line on the daily reminder, post-release auto-draft trigger. First diagnostic (Alessi, 2 papers): ~29 marks lost to unwritten first moves vs ~12 to wrong execution.
