@@ -2119,6 +2119,15 @@ page was inked on 8 Sep, before `1eb6296` (9 Sep) made every leader land on the 
 (`/api/admin/desk/redraw` with `allowReleased`, which re-issues the copy and Telegrams the student
 "Adrian checked … and updated it"), not by code. Bot commit `4db85eb`; tests in `row-place.test.js`
 and `margin-diagram.test.js`.
+**Same afternoon, Isabelle's EM 2025 P2 (run `27df7909`, also inked 8 Sep):** of Adrian's five
+points, three were the old pen (the note arrows on Q3(b) and Q9(c) now land on the ring / the
+answer; the square "continued" overflow page prints full-height since the 9 Sep sizing) and two
+were live: (1) a **ringed notation note** ("(rej −2.07)" — "a cube root has one value") aimed
+its arrow at the ✓, not the ring — the ring now anchors the label (`ai/annotate.js`, the
+bracketRing branch; a bracketed span anchors to the span's edge); (2) **signed arithmetic in a
+note** — `$-2 - (-5)$`, `$-4 - 1$` — fell to prose because `looksLikeMath`'s spaced-minus gate
+needed a word character first; both the bot (`ai/pen-math.js`) and the site (`lib/math-inline.ts`)
+now typeset a leading minus / a bracketed negative term. Bot commit `c8ae4b6`.
 
 ### Leak test — run it after touching the door or any ownership filter
 
