@@ -215,6 +215,14 @@ type RemarkPanel = {
 type PaperMatch = {
   key: string | null; source: string; trusted: boolean;
   shared: number | null; share: number | null; matched: number | null; reasons: string[];
+  // 📐 A split stored from an earlier marking that the question bank's own copy
+  // of the paper outranked (bot lib/bank-allocation, 11 Sep 2026). Null on every
+  // other run, and on every run marked before then.
+  schemeOverridden?: {
+    status: string | null; originRunId: string | null;
+    questions: number | null; marks: number | null; disagrees: boolean;
+    bankQuestions: number | null; bankMarks: number | null;
+  } | null;
 };
 
 // 🔍 What the paper was identified as (SPEC-PAPER-MATCH Phase 1, 3 Sep 2026)
@@ -1364,6 +1372,18 @@ function DetailView(p: {
                 {busy === 'audit' ? '…' : '🧮 Fill from the paper\u2019s scheme'}
               </button>
             )}
+          </div>
+        )}
+        {run.paperMatch?.schemeOverridden && (
+          <div style={{ marginTop: 8, padding: '8px 10px', background: run.paperMatch.schemeOverridden.disagrees ? C.flagBg : '#f8fafc', border: `1px solid ${run.paperMatch.schemeOverridden.disagrees ? C.flagBorder : C.border}`, borderRadius: 8, color: run.paperMatch.schemeOverridden.disagrees ? C.flag : C.muted, fontSize: 13, lineHeight: 1.5 }}>
+            📐 <b>Marked to the question bank&rsquo;s own copy of this paper</b>
+            {run.paperMatch.schemeOverridden.bankQuestions != null ? ` (${run.paperMatch.schemeOverridden.bankQuestions} question${run.paperMatch.schemeOverridden.bankQuestions === 1 ? '' : 's'}, ${run.paperMatch.schemeOverridden.bankMarks} marks)` : ''}
+            {' — not the split '}
+            {run.paperMatch.schemeOverridden.status === 'extracted' ? 'extracted from the attached scheme' : 'recorded from an earlier marking'}
+            {run.paperMatch.schemeOverridden.questions != null ? ` (${run.paperMatch.schemeOverridden.questions} question${run.paperMatch.schemeOverridden.questions === 1 ? '' : 's'}, ${run.paperMatch.schemeOverridden.marks} marks)` : ''}.
+            {run.paperMatch.schemeOverridden.disagrees
+              ? <div>The two <b>disagree</b> — one of them is wrong about this paper. Worth a look before you approve.</div>
+              : <div>They agree, so nothing moved.</div>}
           </div>
         )}
         {run.allocationAudit && (run.allocationAudit.added.length > 0 || run.allocationAudit.maxDiffs.length > 0) && (

@@ -238,6 +238,25 @@ export async function GET(req: NextRequest) {
           share: ov && Number.isFinite(Number(ov.share)) ? Number(ov.share) : null,
           matched: Number.isFinite(Number(pm.questions_matched)) ? Number(pm.questions_matched) : null,
           reasons: Array.isArray(pm.reasons) ? (pm.reasons as unknown[]).map(String).slice(0, 4) : [],
+          // 📐 The bank's own copy of the paper beat a split stored from an
+          // earlier marking (bot lib/bank-allocation, 11 Sep 2026). Present only
+          // when that happened; `disagrees` is the one worth looking at — the
+          // two splits differ on question count or total, which is what an
+          // E Math scheme stored under an A Math key looks like.
+          schemeOverridden: (() => {
+            const so = pm.scheme_overridden;
+            if (!so || typeof so !== 'object') return null;
+            const s = so as Record<string, unknown>;
+            const bank = (s.bank && typeof s.bank === 'object') ? s.bank as Record<string, unknown> : null;
+            const num = (v: unknown) => Number.isFinite(Number(v)) ? Number(v) : null;
+            return {
+              status: typeof s.status === 'string' ? s.status : null,
+              originRunId: typeof s.origin_run_id === 'string' ? s.origin_run_id : null,
+              questions: num(s.questions), marks: num(s.marks),
+              disagrees: s.disagrees === true,
+              bankQuestions: bank ? num(bank.questions) : null, bankMarks: bank ? num(bank.marks) : null,
+            };
+          })(),
         };
       })(),
       unattempted: Array.isArray((rj as { unattempted_questions?: unknown } | null)?.unattempted_questions)
