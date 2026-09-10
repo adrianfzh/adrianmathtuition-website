@@ -25,7 +25,7 @@ import { readDiagnosis } from '@/lib/sheet-diagnosis';
 import { MARKED_AI_NAME, dropboxWebUrl, isSheetPdf, paperFolder } from '@/lib/paper-folder';
 import {
   amendedStatusFor, approveBlockers, deskFlags, laneFor, latestLiveJob, noSheetOf, pdfStaleOf, revisingOf,
-  releaseBlockers, sheetStageLabel, isPracticeAgainHandin, handinOriginOf,
+  releaseBlockers, sheetStageLabel, isPracticeAgainHandin, handinOriginOf, sheetOutcomeOf, type SheetOutcome,
 } from '@/lib/desk-state';
 
 export const runtime = 'nodejs';
@@ -160,6 +160,13 @@ export async function GET(req: NextRequest) {
     // questions above are not that (9 Sep 2026: the Send button hid behind them).
     sheetSent = (rows ?? []).some(a => a.kind === 'worksheet' && !a.revoked_at && a.status !== 'revoked');
   } catch { /* the count is a nicety */ }
+  // What the sheet did after it was written — released · handed in · marked (10 Sep 2026).
+  let sheetOutcome: SheetOutcome = null;
+  try {
+    const { data: srows } = await sb.from('portal_assignments').select('kind, status, revoked_at, created_at, submitted_at, marked_at, required_at')
+      .eq('kind', 'worksheet').or(`source_run_id.eq.${runId},source_run_ids.cs.{${runId}}`);
+    sheetOutcome = sheetOutcomeOf(srows ?? []);
+  } catch { /* a nicety — the label falls back to the job's own stamp */ }
 
   // The paper's Dropbox folder: what is in it decides "My copy" and whether
   // the sheet PDF exists yet. Fail-soft: unknown beats a guess.
@@ -285,7 +292,7 @@ export async function GET(req: NextRequest) {
       requestedBy: job.requested_by ?? null,
     // A batch job (10 Sep 2026): every paper the sheet covers, the primary first.
     runIds: coveredRunIds(job as unknown as { run_id: string; run_ids?: string[] | null }),
-      label: sheetStageLabel(job),
+      label: sheetStageLabel(job, sheetOutcome),
       result: jobResult ? {
         docxPath: typeof jobResult.docx_path === 'string' ? jobResult.docx_path : null,
         pdfPath: typeof jobResult.pdf_path === 'string' ? jobResult.pdf_path : null,
@@ -301,6 +308,7 @@ export async function GET(req: NextRequest) {
     assignments,
     assignmentsHeld,
     sheetSent,
+    sheetOutcome,
     folder: {
       path: folder,
       url: dropboxWebUrl(folder),

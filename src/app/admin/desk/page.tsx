@@ -31,7 +31,7 @@ import SubjectChip from '@/components/SubjectChip';
 import GroundingChip from '@/components/GroundingChip';
 import RulesTag from '@/components/RulesTag';
 import { mathHtml } from '@/lib/math-inline';
-import { DESK_LANES, LANES_HIDDEN_AT_ZERO, releasedViaLabel, LANE_LABEL, orderLane, HANDIN_ORIGIN_LABEL, type DeskLane, type HandinOrigin, revisingLabel, type Revising } from '@/lib/desk-state';
+import { DESK_LANES, LANES_HIDDEN_AT_ZERO, releasedViaLabel, LANE_LABEL, orderLane, HANDIN_ORIGIN_LABEL, type DeskLane, type HandinOrigin, revisingLabel, type Revising, type SheetOutcome } from '@/lib/desk-state';
 import { ERROR_KINDS, ERROR_KIND_HINT, isErrorKind } from '@/lib/error-kinds';
 import { PAPER_SUBJECTS, subjectPill } from '@/lib/portal-subjects';
 // The pen, in place (desk round 3, 8 Sep 2026): the same overlay mark-paper uses.
@@ -53,6 +53,8 @@ type Row = {
   /** The sheet is back with the worker for a revision — pinned at the top of its lane, and back on the to-do tab if released. */
   revising?: Revising | null;
   sheet: { jobId: string; status: string; stage: string | null; error: string | null; label: string; completedAt: string | null; requestedBy?: string | null } | null;
+  /** What the sheet did after it was written — released · handed in · marked, when, compulsory (10 Sep 2026). */
+  sheetOutcome?: SheetOutcome | null;
   flags: string[]; amended: string | null; assignments: number; assignmentsHeld?: number; practiceAgain?: boolean; origin?: HandinOrigin;
   folder: string; folderUrl: string;
   annotatedPdfUrl: string | null; photosPdfUrl: string | null; pdfUrl: string | null;
@@ -225,6 +227,17 @@ function PaperMatchChip({ pm }: { pm: PaperMatch | null }) {
   const why = pm.reasons.length ? pm.reasons.join(', ') : (pm.key ? 'no trusted match' : 'name carries no level or year');
   return <Chip label={`🔍 ${key} · not matched`} bg="#f3f4f6" color="#6b7280"
     title={`Marked on the rules alone. ${why}${pm.shared != null ? ` (${pm.shared} shared openings)` : ''}. A wrong match would mean a wrong scheme, so below the threshold nothing is used.`} />;
+}
+
+/** The released lane's sheet suffix: " · sheet released, not handed in" / " · sheet handed in" / " · sheet marked". */
+function sheetOutcomeShort(row: { assignments: number; sheetOutcome?: SheetOutcome | null }): string {
+  const o = row.sheetOutcome;
+  if (!o) return row.assignments ? ' + sheet' : '';
+  const when = o.at ? ` ${fmtDate(o.at)}` : '';
+  const req = o.required ? ' (compulsory)' : '';
+  if (o.state === 'marked') return ` · sheet handed in, marked${when}${req}`;
+  if (o.state === 'handed-in') return ` · sheet handed in${when}${req}`;
+  return ` · sheet released${when}, not handed in yet${req}`;
 }
 
 function fmtDate(iso: string) {
@@ -965,7 +978,7 @@ export default function DeskPage() {
                         📘 {row.sheet?.label ?? 'no sheet yet'}{row.sheet?.requestedBy === 'student' ? ' · asked by the student' : ''}
                       </span>
                     )}
-                    {row.lane === 'released' && row.releasedAt && <span>released {fmtDate(row.releasedAt)}{row.assignments ? ' + sheet' : ''}</span>}
+                    {row.lane === 'released' && row.releasedAt && <span>released {fmtDate(row.releasedAt)}{sheetOutcomeShort(row)}</span>}
                     {row.pending > 0 && <span style={{ color: C.flag, fontWeight: 600 }}>⏳ {row.pending} to check</span>}
                     {row.flags.map(f => <span key={f} style={{ color: C.flag, fontWeight: 600 }}>⚠ {f}</span>)}
                     {row.revising && <Chip label={revisingLabel(row.revising)} bg="#fdf2f8" color="#9d174d" title="The sheet went back to the worker. This paper sits here, at the top, until the revised sheet is filed — then it goes back to where it was." />}
