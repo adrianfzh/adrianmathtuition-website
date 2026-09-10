@@ -87,6 +87,17 @@ Two sessions never share a checkout. The second session works in
 `git status` shows edits you did not make, you are in the wrong folder: commit
 by pathspec, never stash or reset another session's work, and say so.
 
+**Another Mac, another account.** A session on Mac A (or a cloud session) never
+shares a folder with this one, so the clone rule is moot there; it reads THIS
+file and `CLAUDE.md` after `git pull`, not this Mac's machine notes or any
+session memory. What it does share: the GitHub branches (`git pull --rebase`
+before every push; a rejected push means the other machine moved first),
+Supabase (re-fetch before reporting or writing; a row can change under you),
+the Fly and Vercel deploy pipelines (the two-or-three-deploys rule is per
+evening across ALL machines — check `gh run list` before pushing `main`), and
+the iCloud/Dropbox folders (one machine per append-only file; never rewrite
+`papers/processing_log.txt` in place).
+
 ## 8. Report shape
 
 One status line per hour while a round runs. At the end: what landed (commits,
