@@ -71,7 +71,21 @@ export async function buildFrontPage(
     errorKinds = errorKindTotals((run.result_json as { results?: unknown } | null)?.results);
   } catch (e) { console.warn('[front-page] error kinds skipped:', (e as Error).message); }
 
+  // A re-marked paper (10 Sep 2026): the run keeps previous_results from the
+  // enqueue, queue.remark_pages names the pages (0-based), previous_marked_at
+  // the moment. The cover wears the badge and points at the purple ink.
+  const rjAny = (run.result_json && typeof run.result_json === 'object') ? run.result_json as { previous_results?: unknown; previous_marked_at?: unknown; queue?: { remark_pages?: unknown } | null } : null;
+  const remarked = rjAny && Array.isArray(rjAny.previous_results) && rjAny.previous_results.length
+    ? {
+        pages: Array.isArray(rjAny.queue?.remark_pages)
+          ? (rjAny.queue!.remark_pages as unknown[]).map(n => Number(n) + 1).filter(n => Number.isFinite(n) && n > 0)
+          : null,
+        at: typeof rjAny.previous_marked_at === 'string' ? rjAny.previous_marked_at : null,
+      }
+    : null;
+
   return renderFrontPagePng({
+    remarked,
     errorKinds,
     studentName: meta.studentName || run.student_name,
     paperName: meta.paperName || run.paper_name,

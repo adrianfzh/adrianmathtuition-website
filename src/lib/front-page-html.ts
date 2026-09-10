@@ -93,6 +93,10 @@ export type FrontPageInput = {
    * runs never had the labels and must not gain a line saying so.
    */
   errorKinds?: ErrorKindTotals | null;
+  /** The paper was re-marked (10 Sep 2026): which pages (1-based; null = the whole
+   *  paper) and when. The cover wears a REMARKED badge and says the changed parts
+   *  are in purple — the pen inks them so (bot annotate.js REMARK_INK). */
+  remarked?: { pages: number[] | null; at: string | null } | null;
 };
 
 // ONE A4 SHEET. Adrian asked for "a pdf page attached right in front" —
@@ -170,6 +174,35 @@ function questionRow(q: { question: string; lost: number; max: number; topic?: s
  * inside it, so a run from before the labels renders exactly as it did.
  * One line plus at most one short sub-line: the page is one A4 sheet.
  */
+/** "10 Sep 2026" from an ISO stamp, Singapore's day; '' when unreadable. */
+function remarkDate(at: string | null | undefined): string {
+  if (!at) return '';
+  const t = Date.parse(at);
+  if (!Number.isFinite(t)) return '';
+  // Month names by hand: ICU's en-GB says "Sept", and the page should read the same on every machine.
+  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Singapore', day: 'numeric', month: 'numeric', year: 'numeric' }).formatToParts(new Date(t));
+  const get = (type: string) => Number(parts.find(x => x.type === type)?.value);
+  const M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const d = get('day'), m = get('month'), y = get('year');
+  return Number.isFinite(d) && Number.isFinite(m) && Number.isFinite(y) ? `${d} ${M[m - 1]} ${y}` : '';
+}
+
+/** The rounded REMARKED badge beside the title (Adrian, 10 Sep 2026: "REMARKED in a rectangular rounded box or something so it is clear to the student"). */
+export function remarkBadge(r: FrontPageInput['remarked']): string {
+  if (!r) return '';
+  return `<style>.remark-badge{display:inline-block;margin-left:.6rem;vertical-align:middle;font-family:"IBM Plex Mono",monospace;font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:#fff;background:#7c3aed;border-radius:999px;padding:.22rem .65rem .2rem}</style><span class="remark-badge">Remarked</span>`;
+}
+
+/** One line under the title: which pages, when, and that the changes are in purple. */
+export function remarkLine(r: FrontPageInput['remarked']): string {
+  if (!r) return '';
+  const pages = Array.isArray(r.pages) ? r.pages.filter(n => Number.isFinite(n) && n > 0).sort((a, b) => a - b) : [];
+  const where = pages.length ? `page${pages.length === 1 ? '' : 's'} ${pages.join(', ')}` : 'the whole paper';
+  const when = remarkDate(r.at);
+  return `<style>.remark-line{margin:-.25rem 0 .7rem;font-size:.85rem;color:#5b21b6}.remark-line b{font-weight:700}</style>`
+    + `<p class="remark-line">Re-marked${when ? ` on ${when}` : ''}: ${where}. What changed since the last marking is in <b>purple</b>.</p>`;
+}
+
 /** O-Level grade band for a percentage — the bands every Sec 4 student knows. */
 export function oLevelGrade(pct: number): string {
   if (pct >= 75) return 'A1';
@@ -435,7 +468,7 @@ h2::before{content:none}
   ${badge(input)}
   <div>
     <p class="student">${esc(input.studentName || '')}</p>
-    <h1>Where your marks went</h1>
+    <h1>Where your marks went${remarkBadge(input.remarked)}</h1>${remarkLine(input.remarked)}
     <p class="verdict">${lead}</p>
   </div>
 </div>

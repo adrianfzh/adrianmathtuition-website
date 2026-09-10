@@ -433,3 +433,17 @@ describe('frontPageHtml — careless slips and the grade they cost', () => {
     expect([80, 72, 66, 60, 57, 52, 47, 41, 30].map(oLevelGrade)).toEqual(['A1', 'A2', 'B3', 'B4', 'C5', 'C6', 'D7', 'E8', 'F9']);
   });
 });
+
+// ── a re-marked paper wears the badge and says the changes are in purple (10 Sep 2026) ──
+describe('frontPageHtml — REMARKED', () => {
+  it('badge + line with the pages and the date; the whole paper when no pages; nothing when not re-marked', () => {
+    const one = frontPageHtml({ ...base, remarked: { pages: [3], at: '2026-09-10T05:00:00Z' } });
+    expect(one).toContain('class="remark-badge">Remarked</span>');
+    expect(one).toContain('Re-marked on 10 Sep 2026: page 3. What changed since the last marking is in <b>purple</b>.');
+    const whole = frontPageHtml({ ...base, remarked: { pages: null, at: null } });
+    expect(whole).toContain('Re-marked: the whole paper.');
+    const many = frontPageHtml({ ...base, remarked: { pages: [7, 3], at: 'junk' } });
+    expect(many).toContain('Re-marked: pages 3, 7.');
+    expect(frontPageHtml({ ...base })).not.toContain('remark-badge');
+  });
+});
