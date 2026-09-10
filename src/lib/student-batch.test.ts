@@ -5,6 +5,7 @@ import {
   BATCH_WINDOW_DAYS, MAX_BATCH_PAPERS, STRONG_BATCH_MARKS, shortPaperName, practiceAgainRequestLine,
   NOTE_STALE, NOTE_IN_FLIGHT,
   type StudentBatchRun, type PickPaper,
+  shelfWorthAWave, WAVE_MIN_GAPS, WAVE_MIN_MARKS,
 } from './student-batch';
 
 const NOW = Date.parse('2026-09-11T02:00:00Z');
@@ -311,5 +312,29 @@ describe('outsideWindow', () => {
   it('treats an unreadable date as inside — a paper is never hidden by a bad stamp', () => {
     expect(outsideWindow(null, NOW)).toBe(false);
     expect(outsideWindow('not a date', NOW)).toBe(false);
+  });
+});
+
+describe(`shelfWorthAWave — the threshold (${WAVE_MIN_GAPS} gaps, or ${WAVE_MIN_MARKS} marks' worth)`, () => {
+  const rich = (entries: Array<{ skill: string; marks?: number; runs?: Array<{ marks: number }> }>) => ({ gaps: { found: 9, covered: 9 - entries.length, shelved: entries } });
+  it('one small gap is not worth a sheet', () => {
+    expect(shelfWorthAWave(rich([{ skill: 'a', runs: [{ marks: 3 }] }]))).toEqual({ worth: false, count: 1, marks: 3 });
+  });
+  it('two gaps are, whatever their marks', () => {
+    expect(shelfWorthAWave(rich([{ skill: 'a', runs: [{ marks: 1 }] }, { skill: 'b', runs: [{ marks: 1 }] }]))).toMatchObject({ worth: true, count: 2, marks: 2 });
+  });
+  it('one gap worth five marks is', () => {
+    expect(shelfWorthAWave(rich([{ skill: 'a', runs: [{ marks: 2 }, { marks: 3 }] }]))).toMatchObject({ worth: true, count: 1, marks: 5 });
+    expect(shelfWorthAWave(rich([{ skill: 'a', marks: 5 }]))).toMatchObject({ worth: true, marks: 5 });
+  });
+  it('the old flat list carries no marks, so it counts gaps only', () => {
+    expect(shelfWorthAWave({ shelved: ['a'] })).toEqual({ worth: false, count: 1, marks: 0 });
+    expect(shelfWorthAWave({ shelved: ['a', 'b'] })).toMatchObject({ worth: true, count: 2 });
+  });
+  it('no sheet, no shelf, junk → never', () => {
+    expect(shelfWorthAWave({ noSheet: true, shelved: ['a', 'b'] }).worth).toBe(false);
+    expect(shelfWorthAWave({}).worth).toBe(false);
+    expect(shelfWorthAWave(null).worth).toBe(false);
+    expect(shelfWorthAWave(rich([{ skill: '' }, { skill: '  ' }])).count).toBe(0);
   });
 });

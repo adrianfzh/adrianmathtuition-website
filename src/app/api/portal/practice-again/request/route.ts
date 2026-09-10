@@ -20,7 +20,7 @@ import { sessionAccount, portalIdentity } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { queueSheetJob, queueSheetBatch, coveredRunIds } from '@/lib/sheet-queue';
 import {
-  studentBatchGuard, shelvedGaps, practiceAgainRequestLine, shortPaperName,
+  studentBatchGuard, shelvedGaps, shelfWorthAWave, practiceAgainRequestLine, shortPaperName,
   MAX_BATCH_PAPERS, type StudentBatchRun, type StudentBatchJob,
 } from '@/lib/student-batch';
 import { displayPaperName } from '@/lib/paper-display-name';
@@ -88,7 +88,8 @@ export async function POST(req: NextRequest) {
   // What the last finished sheet kept back, for a wave-two request. Read from
   // the job itself, never from the client — the student asks for "the next
   // wave", the server decides what that means.
-  const finished = wave >= 2 ? jobs.find(j => j.status === 'done' && shelvedGaps(j.result).length > 0) : undefined;
+  // …and only a shelf worth a sheet (two gaps, or five marks — the threshold, 11 Sep 2026).
+  const finished = wave >= 2 ? jobs.find(j => j.status === 'done' && shelfWorthAWave(j.result).worth) : undefined;
   if (wave >= 2 && !finished) {
     return NextResponse.json({ error: 'There is no sheet with more gaps kept back for these papers.' }, { status: 409 });
   }

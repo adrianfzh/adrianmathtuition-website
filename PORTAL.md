@@ -364,7 +364,8 @@ instead"*).
 now that shelf was visible only on Adrian's Telegram. A finished sheet whose job
 carries a shelf — `result.gaps.shelved` (the entry-per-gap report, 11 Sep 2026)
 or the older flat `result.shelved` — now shows *"N more gaps were kept for your
-next sheet"* with **Ask for the next wave** on the Papers list and on the
+next sheet"* with **Ask for the next wave** — shown only when the shelf holds two
+gaps or five marks' worth (`shelfWorthAWave`, the 11 Sep threshold) — on the Papers list and on the
 paper's own page. It posts only which papers it continues — the server copies
 the shelf off the job itself — and skips the 5-day window and the strong rule,
 because a continuation is not a fresh start. `sheetQueueGuard`'s "a sheet

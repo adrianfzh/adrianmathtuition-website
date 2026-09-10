@@ -1374,7 +1374,10 @@ notebook already shows as Fixed or Getting better is skipped with one line.
 covered, shelved}` with each entry tied to its paper and question; a sheet is
 not verified with an unexplained shelf. A non-empty shelf is not a dead end: the
 student's sheet card says "N more gaps were kept for your next sheet" with
-**Ask for the next wave** (`{runIds, wave:2}` → the same job with
+**Ask for the next wave** — offered only when the shelf is worth a sheet: **two
+gaps or five marks' worth** (`shelfWorthAWave`; Adrian, 11 Sep 2026: "do the
+threshold"), on single and batch sheets alike; a one-gap, three-mark shelf
+stays hidden (`{runIds, wave:2}` → the same job with
 `focus:{wave:2, shelved}`), so every gap is either taught now or queued next.
 
 ### Practice Again batches — one sheet for several papers (10 Sep 2026)
