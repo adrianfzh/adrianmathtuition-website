@@ -42,6 +42,13 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 mkdir -p "$STATE"
 ln -sfn "$BASE/env" "$STATE/env"
 [ -r "$BASE/oauth_token" ] && ln -sfn "$BASE/oauth_token" "$STATE/oauth_token"
+# Account B for slots 4-6 (11 Sep 2026): the same setup-token the MARKING slots
+# 4-6 use (~/.adrianmath_marker4/oauth_token, minted by Adrian on ablnon@gmail.com)
+# and its sidecar `account`, so a limit on account A never stops these slots.
+if [ "$SLOT" -ge 4 ] && [ -r "$HOME/.adrianmath_marker4/oauth_token" ]; then
+  ln -sfn "$HOME/.adrianmath_marker4/oauth_token" "$STATE/oauth_token"
+  [ -r "$HOME/.adrianmath_marker4/account" ] && cp "$HOME/.adrianmath_marker4/account" "$STATE/account"
+fi
 cp "$HERE/run.sh" "$STATE/run.sh"; chmod +x "$STATE/run.sh"
 # A SYMLINK, like install.sh (11 Sep 2026): a COPY went stale the day the repo's
 # prompt changed — slot 2 ran the 31 Aug text for a week ("slot 2 says

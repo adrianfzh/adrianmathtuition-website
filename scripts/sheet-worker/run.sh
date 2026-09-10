@@ -63,10 +63,14 @@ die() { say "FATAL: $1"; stamp_fail "$1"; cleanup_pid; exit 1; }
 # cannot read backs off an hour at a time.
 # One file PER ACCOUNT (9 Sep 2026): slots on a second account keep marking
 # while the first is capped — the pipeline takes whoever is available.
-PLAN_ACCOUNT_KEY="$(claude auth status 2>/dev/null | python3 -c 'import json,sys,re
-try: e=(json.load(sys.stdin).get("email") or "").strip().lower()
-except Exception: e=""
-print(re.sub(r"[^a-z0-9]+","-",e) or "default")' 2>/dev/null || echo default)"
+# A slot on a setup-token names its account from the sidecar $STATE/account
+# (the email, one line — the marker's convention, 11 Sep 2026); a bare token
+# tells `claude auth status` NO email, so without the sidecar a second
+# account's slots would share the first account's limit file.
+SLOT_ACCOUNT="$( { [ -r "$STATE/account" ] && tr -d '[:space:]' < "$STATE/account"; } 2>/dev/null || true)"
+PLAN_ACCOUNT_KEY="$( { [ -n "$SLOT_ACCOUNT" ] && printf '%s' "$SLOT_ACCOUNT" || claude auth status 2>/dev/null | python3 -c 'import json,sys
+try: print((json.load(sys.stdin).get("email") or "").strip())
+except Exception: print("")'; } 2>/dev/null | python3 -c 'import sys,re; e=sys.stdin.read().strip().lower(); print(re.sub(r"[^a-z0-9]+","-",e) or "default")' 2>/dev/null || echo default)"
 PLAN_LIMIT_FILE="$HOME/.adrianmath-plan-limit-until.${PLAN_ACCOUNT_KEY}"
 plan_limit_active() {
   [ -r "$PLAN_LIMIT_FILE" ] || return 1
@@ -93,6 +97,47 @@ if t <= now: t += datetime.timedelta(days=1)
 print(int(t.timestamp()))
 PYLIM
 }
+
+# --- credentials for the headless session (plan auth, never the API) --------
+unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN ANTHROPIC_BASE_URL
+AUTH_VIA=""
+# A slot's OWN token file wins over the keychain login (11 Sep 2026, the second
+# account — the marker's order): sheet slots 1-3 follow the CLI login (account
+# A); slots 4-6 carry a symlink to ~/.adrianmath_marker4/oauth_token (account B,
+# the same token the marking slots 4-6 use) plus the $STATE/account sidecar, so
+# A running out never stops B and vice versa. Until this moved up, the keychain
+# won and any token file was ignored.
+if [ -r "$STATE/oauth_token" ] && [ -n "$(tr -d '[:space:]' < "$STATE/oauth_token")" ]; then
+  CLAUDE_CODE_OAUTH_TOKEN="$(tr -d '[:space:]' < "$STATE/oauth_token")"
+  export CLAUDE_CODE_OAUTH_TOKEN
+  AUTH_VIA="oauth_token file"
+elif claude auth status 2>/dev/null | grep -q '"loggedIn": *true'; then
+  AUTH_VIA="keychain"
+elif [ -r "$HOME/.adrianmath_marker/oauth_token" ]; then
+  CLAUDE_CODE_OAUTH_TOKEN="$(tr -d '[:space:]' < "$HOME/.adrianmath_marker/oauth_token")"
+  export CLAUDE_CODE_OAUTH_TOKEN
+  AUTH_VIA="marker oauth_token"
+# The token every plan-billed worker on this Mac actually shares (31 Aug 2026).
+# This chain was copied from the marker's wrapper but its last rung was pointed
+# at ~/.adrianmath_marker/oauth_token — a file that has never existed, because
+# the MARKER itself falls through to the pipeline token. So the sheet worker
+# died on "no Claude credentials" on every one of its 15-minute ticks, from
+# install onward, and Adrian's first queued sheet sat untouched for two hours
+# while the button that queued it looked broken.
+elif [ -r "$HOME/.adrianmath_pipeline/oauth_token" ]; then
+  CLAUDE_CODE_OAUTH_TOKEN="$(tr -d '[:space:]' < "$HOME/.adrianmath_pipeline/oauth_token")"
+  export CLAUDE_CODE_OAUTH_TOKEN
+  AUTH_VIA="pipeline oauth_token"
+else
+  die "no Claude credentials — 'claude auth login' once, or put a setup-token in $STATE/oauth_token"
+fi
+
+# `run.sh --auth-check` prints which credential and account this slot would
+# use and exits — the way to verify a slot's account without queueing a sheet.
+if [ "${1:-}" = "--auth-check" ]; then
+  echo "slot=$STATE auth=$AUTH_VIA account=${SLOT_ACCOUNT:-$(claude auth status 2>/dev/null | python3 -c 'import json,sys; print((json.load(sys.stdin).get("email") or "?"))' 2>/dev/null)} limit_file=$PLAN_LIMIT_FILE"
+  exit 0
+fi
 
 # --- single instance --------------------------------------------------------
 if plan_limit_active; then
@@ -164,34 +209,6 @@ if [ "$WAITING" = "-1" ]; then
 fi
 if [ "$WAITING" = "0" ]; then
   cleanup_pid; exit 0   # quiet tick — nothing to author
-fi
-
-# --- credentials for the headless session (plan auth, never the API) --------
-unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN ANTHROPIC_BASE_URL
-AUTH_VIA=""
-if claude auth status 2>/dev/null | grep -q '"loggedIn": *true'; then
-  AUTH_VIA="keychain"
-elif [ -r "$STATE/oauth_token" ]; then
-  CLAUDE_CODE_OAUTH_TOKEN="$(tr -d '[:space:]' < "$STATE/oauth_token")"
-  export CLAUDE_CODE_OAUTH_TOKEN
-  AUTH_VIA="oauth_token file"
-elif [ -r "$HOME/.adrianmath_marker/oauth_token" ]; then
-  CLAUDE_CODE_OAUTH_TOKEN="$(tr -d '[:space:]' < "$HOME/.adrianmath_marker/oauth_token")"
-  export CLAUDE_CODE_OAUTH_TOKEN
-  AUTH_VIA="marker oauth_token"
-# The token every plan-billed worker on this Mac actually shares (31 Aug 2026).
-# This chain was copied from the marker's wrapper but its last rung was pointed
-# at ~/.adrianmath_marker/oauth_token — a file that has never existed, because
-# the MARKER itself falls through to the pipeline token. So the sheet worker
-# died on "no Claude credentials" on every one of its 15-minute ticks, from
-# install onward, and Adrian's first queued sheet sat untouched for two hours
-# while the button that queued it looked broken.
-elif [ -r "$HOME/.adrianmath_pipeline/oauth_token" ]; then
-  CLAUDE_CODE_OAUTH_TOKEN="$(tr -d '[:space:]' < "$HOME/.adrianmath_pipeline/oauth_token")"
-  export CLAUDE_CODE_OAUTH_TOKEN
-  AUTH_VIA="pipeline oauth_token"
-else
-  die "no Claude credentials — 'claude auth login' once, or put a setup-token in $STATE/oauth_token"
 fi
 
 if [ ! -r "$PROMPT" ]; then
