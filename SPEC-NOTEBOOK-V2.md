@@ -52,8 +52,19 @@ sheet done). Front: skill name + "Fixed 4 Sep, after Prelim P1 Q7". Open: **the
 worked solution they already have** (the bot's answer / the sheet's worked example /
 the marked paper's solution — Adrian, 11 Sep: not the method templates first), **their
 own correct working** clipped from the marked page or sheet, and **the slip they used
-to make** (the red-pen comment from the paper that lost the marks). No "Try one like
-this" — it is the retry door under another name, and retry got no use.
+to make** (the red-pen comment from the paper that lost the marks).
+
+**"Try one like this" — back in, on the Find rule (Adrian, 11 Sep 2026).** The old
+door opened a bank twin picked by text similarity alone, which is why it could miss.
+The card may carry the button only when a question passes the rule Find already uses
+(`lib/portal-find.ts classifyFindCandidates`): same canonical topic AND the same
+sub-group filing corroborated by two or more matches AND marks within one. **Where the
+question comes from:** the question bank — school papers and TYS filed by topic and
+sub-group, plus the generated Set papers — through the bot's embedding matches, and only
+questions the serving gates allow (no originating-school leak, national papers are
+grounding-only and never served — docs/CONTENT-POLICY.md). When nothing in the bank
+passes the rule, Find's second path writes a "Made for you" question against the same
+sub-group (the daily generate cap applies); when that fails too, no button.
 
 Done = a student who fixed a mistake finds the card without doing anything.
 
@@ -74,7 +85,7 @@ Done = a student who fixed a mistake finds the card without doing anything.
 
 ## 4. Before the paper (the exam-week page)
 
-When an exam is within 14 days, the Notebook pins one card at the top that opens a
+When an exam is within **5 days** (Adrian, 11 Sep 2026 — not a fortnight), the Notebook pins one card at the top that opens a
 page composed from the tested topics: live mistakes in those topics, skills that keep
 coming up, saved answers there, the formulas they have met in those topics (§5), and
 Adrian's latest line (§6). This IS the study guide (see §10, NotebookLM). No exam
@@ -108,6 +119,15 @@ leaves the room.
 - **Resurfacing.** One small card on Home a day, from the Notebook: a fixed-or-live
   mistake or a saved answer, with a 30-second question and a one-tap answer. Never a
   list to work through — that was retry.
+- **No switch for these two.** Adrian, 11 Sep 2026: "OCR or resurfacing do not need a
+  toggle, it's default for everyone." Only features that add a control (Save, the
+  countdown, keeps-coming-up) are opt-in; reading a photo and one card a day are not.
+- **OCR + auto-tag — BUILT 11 Sep 2026.** After a photo is saved, the website reads it
+  once (`lib/photo-tag.ts`, Claude Haiku vision): the words on the page →
+  `portal_notes.ocr_text` (search's raw material), the canonical topic it looks like →
+  `auto_topic` (shown on the card, and copied into `topic` when the student left it
+  blank), the bank sub-skill → `auto_skill`. Fail-soft and after the response — the
+  photo never waits on the model.
 
 ## 8. Personal notes — highest privacy
 

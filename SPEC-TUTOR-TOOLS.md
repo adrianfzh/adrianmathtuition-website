@@ -51,6 +51,26 @@ the default; a tutor's own marking becomes THEIR truth the same way his does tod
   gate (within ±2 on 90 % of papers), and where the marker is stricter or kinder than
   they are. Step 4 — every override they make after release adds to their row. All of
   it per tutor: their rows, their gate, their trend.
+- *How the model extracts a tutor's marks — three doors, best first (Adrian, 11 Sep
+  2026: "allowing tutors to annotate over the marked copy of the marker, then uploading
+  it again, then model extracts the marking style — isn't that better?" Yes):*
+  1. **Annotate the marked copy.** The tutor opens the marker's marked PDF (Preview on an
+     iPad, any PDF annotator, or the ✏️ Annotate overlay), writes over it the way they
+     mark by hand — crosses out a tick, changes a mark, writes "no units, −1" — and
+     hands it back. The pages are rasterised with the ink and a vision pass reads them
+     WITH the original marking as context (it already knows every part, its box, the
+     mark awarded, the comment), so it reads only what changed: `{part, original,
+     tutor's mark, what they wrote}`. A one-screen summary ("you changed 7 of 33 parts")
+     is confirmed by the tutor before anything becomes truth — the checkpoint. This is
+     the natural workflow (they mark by hand anyway) and it captures the WHY, not just
+     the number. Convention printed on the cover: write the new mark beside the box,
+     cross out what you disagree with, one line why.
+  2. **Agree / Override on the desk** — in-app, no paper, already built for Adrian.
+  3. **The typed form** — marks per question for scripts marked before the tool
+     existed; fallback only.
+  The style comes from the notes, not the numbers: recurring reasons ("no marks for a
+  bare answer", "units every time") are extracted as candidate rules into the tutor's
+  marking profile, shown as a list they approve — never applied silently.
 - *What is missing to make it change behaviour:* today overrides are a record, not a
   dial. A tutor **marking profile** — leniency per error kind, scheme strictness,
   method-mark rules — derived from their calibration rows and read by the marker's

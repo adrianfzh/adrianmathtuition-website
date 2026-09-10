@@ -89,7 +89,7 @@ export default async function MyNotebookPage() {
   const [clippings, mistakes, askLines, pages] = await Promise.all([
     getSupabaseAdmin()
       .from('portal_notes')
-      .select('id, run_id, source_label, topic, image_url, note, created_at')
+      .select('id, run_id, source_label, topic, image_url, note, created_at, auto_topic, auto_skill')
       .eq('airtable_student_id', sid)
       .order('created_at', { ascending: false })
       .limit(MAX_NOTES_PER_STUDENT)

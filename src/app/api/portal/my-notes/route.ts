@@ -25,9 +25,12 @@
 // clippings come from marked papers, which are in the beta allowlist.
 //
 // Probed by /api/health-check (`portal-my-notes`) — anonymous GET must 401.
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { del } from '@vercel/blob';
 import { putStudentFile, removeStudentFiles, clippingKey, keyFromUrl } from '@/lib/student-files';
+import { sessionAccount } from '@/lib/portal-auth';
+import { qbLevelsFor } from '@/lib/qb-levels';
+import { readPhotoForNotebook } from '@/lib/photo-tag';
 import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server';
 import { portalIdentity } from '@/lib/portal-auth';
 import {
@@ -43,7 +46,7 @@ import {
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const COLUMNS = 'id, run_id, source_label, topic, image_url, note, created_at';
+const COLUMNS = 'id, run_id, source_label, topic, image_url, note, created_at, auto_topic, auto_skill';
 
 // The session's portal identity (rec… for tuition, acct:<uuid> for strangers)
 // — portal_notes rows and the run-ownership check both key on it, so paying
@@ -149,6 +152,20 @@ export async function POST(req: NextRequest) {
     // Don't strand the freshly-uploaded file if the row never landed.
     try { await removeStudentFiles([blob.key]); } catch { /* best-effort */ }
     return NextResponse.json({ error: 'Could not save the clipping' }, { status: 500 });
+  }
+
+  // 📷 OCR + auto-tag (SPEC-NOTEBOOK-V2 §7, 11 Sep 2026) — AFTER the response, so
+  // the upload never waits on the model; the row is stamped when the read lands
+  // (ocr_text / auto_topic / auto_skill, and `topic` when it was left blank).
+  // Default for everyone, no switch (Adrian). Photos only — a clipping already
+  // carries its paper's topic and the marker's text.
+  if (kind === 'photo') {
+    const account = await sessionAccount().catch(() => null);
+    const levelKeys = qbLevelsFor(account?.level ?? null, account?.subjects ?? null).map(l => l.key);
+    after(() => readPhotoForNotebook({
+      svc, noteId: row.id, levelKeys, topicWasBlank: !topic,
+      image: { data: imageBase64, mediaType: imageType === 'png' ? 'image/png' : 'image/jpeg' },
+    }));
   }
 
   return NextResponse.json({ ok: true, note: row });

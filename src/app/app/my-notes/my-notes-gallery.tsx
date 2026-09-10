@@ -130,8 +130,11 @@ export default function MyNotesGallery({ initialNotes, topicGroups }: {
                     <div className="p-2.5">
                       {n.note && <p className="text-[13px] text-gray-700 leading-snug line-clamp-2">{n.note}</p>}
                       <p className="text-[11px] text-gray-400 mt-1">
-                        {n.topic ? `${n.topic} · ` : ''}{niceDate(n.created_at)}
+                        {(n.topic || n.auto_topic) ? `${n.topic || n.auto_topic} · ` : ''}{niceDate(n.created_at)}
                       </p>
+                      {n.auto_skill && (
+                        <p className="text-[11px] text-sky-800 mt-0.5 truncate" title="What the page looks like it is about">{n.auto_skill}</p>
+                      )}
                     </div>
                   </button>
                 ))}
