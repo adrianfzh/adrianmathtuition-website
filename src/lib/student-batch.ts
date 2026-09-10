@@ -246,6 +246,44 @@ export function shelvedGaps(result: unknown): string[] {
 // belongs to one file as far as its readers are concerned.
 export { waveTwoFocus } from './sheet-queue';
 
+// ── What Adrian's Telegram says ──────────────────────────────────────────────
+
+/**
+ * The paper as it reads in a list where the maths is already named — the
+ * display name with its leading level dropped ("A Math · GCE 2025 · Paper 1" →
+ * "GCE 2025 · Paper 1"). Pure.
+ */
+export function shortPaperName(displayName: string): string {
+  return String(displayName || '').replace(/^\s*(?:A|E|H1|H2)\s*Math\s*·\s*/i, '').trim() || String(displayName || '').trim();
+}
+
+/**
+ * The ONE line to the marking topic when a student asks for a sheet. Takes
+ * Telegram-escaped text and returns HTML (lib/telegram-html escapes at the call
+ * site). Pure, so the wording is pinned by a test rather than by reading a
+ * Telegram message afterwards.
+ */
+export function practiceAgainRequestLine(o: {
+  who: string;
+  /** Short paper names, newest first. One = the single-paper door. */
+  papers: readonly string[];
+  /** 'A Math' | 'E Math' | … — named only on a batch. */
+  subject?: string;
+  wave?: number;
+}): string {
+  const wave = Number(o.wave || 1);
+  const tail = wave >= 2
+    ? 'It teaches what the last sheet shelved and goes out on its own once written and checked.'
+    : 'It goes out on its own once written and checked; a gate failure holds it on the desk for you.';
+  const asked = wave >= 2 ? 'asked for the next wave of their Practice Again sheet' : 'asked for Practice Again';
+  if (o.papers.length <= 1) {
+    return `📘 <b>${o.who}</b> ${asked} on ${o.papers[0] || 'a marked paper'} from the app — queued for the Mac. ${tail}`;
+  }
+  const what = wave >= 2 ? 'the next wave of their Practice Again sheet' : 'ONE Practice Again sheet';
+  const inside = [o.subject, o.papers.join(', ')].filter(Boolean).join(' · ');
+  return `📘 <b>${o.who}</b> asked for ${what} for ${o.papers.length} papers (${inside}) from the app — queued for the Mac. ${tail}`;
+}
+
 // ── Tick mode on the Papers list ─────────────────────────────────────────────
 
 /** One paper as the tick list sees it. Everything absolute is decided server-side. */

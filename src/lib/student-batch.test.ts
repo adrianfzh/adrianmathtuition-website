@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   studentBatchGuard, marksLostAcross, paperMarks, shelvedGaps, waveTwoFocus,
   pickStates, tickBar, outsideWindow,
-  BATCH_WINDOW_DAYS, MAX_BATCH_PAPERS, STRONG_BATCH_MARKS,
+  BATCH_WINDOW_DAYS, MAX_BATCH_PAPERS, STRONG_BATCH_MARKS, shortPaperName, practiceAgainRequestLine,
   NOTE_STALE, NOTE_IN_FLIGHT,
   type StudentBatchRun, type PickPaper,
 } from './student-batch';
@@ -203,6 +203,32 @@ describe('wave two — the shelf and the focus line', () => {
     const line = waveTwoFocus(Array.from({ length: 20 }, (_, i) => `a very long shelved gap number ${i}`));
     expect(line.length).toBeLessThanOrEqual(300);
     expect(line.endsWith('…')).toBe(true);
+  });
+});
+
+describe("what Adrian's Telegram says", () => {
+  it('drops the level from a paper name the maths already states', () => {
+    expect(shortPaperName('A Math · GCE 2025 · Paper 1')).toBe('GCE 2025 · Paper 1');
+    expect(shortPaperName('H2 Math · Prelim · Paper 2')).toBe('Prelim · Paper 2');
+    expect(shortPaperName('Marked paper')).toBe('Marked paper');
+  });
+  it('names the papers and says the sheet goes out on its own', () => {
+    const line = practiceAgainRequestLine({ who: 'Isabelle', subject: 'A Math', papers: ['GCE 2025 · Paper 1', 'GCE 2025 · Paper 2', 'GCE 2023 · Paper 2'] });
+    expect(line).toContain('asked for ONE Practice Again sheet for 3 papers');
+    expect(line).toContain('(A Math · GCE 2025 · Paper 1, GCE 2025 · Paper 2, GCE 2023 · Paper 2)');
+    expect(line).toContain('queued for the Mac');
+    expect(line).toContain('goes out on its own once written and checked');
+  });
+  it('keeps the single-paper wording for a single paper', () => {
+    const line = practiceAgainRequestLine({ who: 'Isabelle', papers: ['GCE 2025 · Paper 1'] });
+    expect(line).toContain('asked for Practice Again on GCE 2025 · Paper 1');
+    expect(line).not.toContain('papers (');
+  });
+  it('says so when it is the next wave', () => {
+    expect(practiceAgainRequestLine({ who: 'Isabelle', subject: 'E Math', papers: ['a', 'b'], wave: 2 }))
+      .toContain('asked for the next wave of their Practice Again sheet for 2 papers');
+    expect(practiceAgainRequestLine({ who: 'Isabelle', papers: ['a'], wave: 2 }))
+      .toContain('teaches what the last sheet shelved');
   });
 });
 
