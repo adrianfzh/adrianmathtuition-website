@@ -53,6 +53,12 @@ export function looksLikeMath(c: string): boolean {
   // content after every minus, so the "5 - " between "$5 - $10" stays literal.
   if (c.length <= 24 && !/[a-zA-Z]{2,}/.test(c) &&
       /^[\w().^]+(\s*[−–-]\s*[\w().^]+)+$/.test(c.trim())) return true;
+  // Signed arithmetic — "$-2 - (-5)$", "$-4 - 1$", "$-2 + 5$": a leading minus or a
+  // bracketed negative term (10 Sep 2026, Isabelle's EM 2025 P2 Q8(b)(ii) note;
+  // twin of the bot's ai/pen-math.js rule). No 2+-letter word, content after
+  // every operator.
+  if (c.length <= 24 && !/[a-zA-Z]{2,}/.test(c) &&
+      /^[−–-]?[\w√.^]+(\s*[−–+±-]\s*(?:\([−–-]?[\w√.^]+\)|[−–-]?[\w√.^]+))+$/.test(c.trim())) return true;
   return false;
 }
 

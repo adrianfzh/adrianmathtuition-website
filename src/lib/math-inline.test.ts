@@ -205,3 +205,11 @@ describe('looksLikeMath — symbolic coordinates', () => {
     expect(looksLikeMath('(see, above)')).toBe(false);
   });
 });
+
+// ── signed arithmetic in a note is maths (10 Sep 2026, twin of the bot's rule) ──
+describe('looksLikeMath — signed arithmetic', () => {
+  it('a leading minus or a bracketed negative still reads as maths; prose between prices does not', () => {
+    for (const c of ['-2 - (-5)', '-4 - 1', '-2 + 5', '3 - (-2)']) expect(looksLikeMath(c)).toBe(true);
+    for (const c of ['5 - ', 'see - above', 'a - b - c is']) expect(looksLikeMath(c)).toBe(false);
+  });
+});
