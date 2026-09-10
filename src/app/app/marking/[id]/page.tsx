@@ -15,7 +15,7 @@ import PracticeAgainRequest, { type PracticeAgainState } from '../PracticeAgainR
 import NextWave from '../NextWave';
 import { readNoSheet } from '@/lib/sheet-jobs';
 import { coveredRunIds } from '@/lib/sheet-queue';
-import { shelvedGaps } from '@/lib/student-batch';
+import { shelvedGaps, shelfWorthAWave } from '@/lib/student-batch';
 import { displayPaperName } from '@/lib/paper-display-name';
 import { subjectLabel } from '@/lib/mark-subjects';
 import { TEACHER_TOTAL_LABEL } from '@/lib/science-truth';
@@ -97,7 +97,8 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
     }
     if (sheet && job?.status === 'done') {
       const shelf = shelvedGaps(job.result);
-      if (shelf.length) nextWave = { count: shelf.length, runIds: coveredRunIds(job) };
+      // The threshold (11 Sep 2026): two gaps, or five marks' worth — else no button.
+      if (shelf.length && shelfWorthAWave(job.result).worth) nextWave = { count: shelf.length, runIds: coveredRunIds(job) };
     }
   }
   const hasCover = paper.dropped.length > 0;

@@ -19,7 +19,7 @@ import { statsBySubject } from '@/lib/portal-papers-stats';
 import { coveredRunIds } from '@/lib/sheet-queue';
 import { isPracticeAgainHandin } from '@/lib/desk-state';
 import {
-  shelvedGaps, outsideWindow, NOTE_STALE, NOTE_IN_FLIGHT, NOTE_PRACTICE_AGAIN, type PickPaper,
+  shelvedGaps, shelfWorthAWave, outsideWindow, NOTE_STALE, NOTE_IN_FLIGHT, NOTE_PRACTICE_AGAIN, type PickPaper,
 } from '@/lib/student-batch';
 import ChoosePapers from './ChoosePapers';
 import NextWave from './NextWave';
@@ -175,7 +175,8 @@ export default async function MarkingPage() {
       for (const rid of covered) if (!jobByRun.has(rid)) jobByRun.set(rid, { status: j.status, noSheet: readNoSheet(j.result).noSheet });
       if (j.status === 'done') {
         const shelf = shelvedGaps(j.result);
-        if (shelf.length) for (const rid of covered) if (!waveByRun.has(rid)) waveByRun.set(rid, { count: shelf.length, runIds: covered });
+        // The threshold (11 Sep 2026): two gaps, or five marks' worth — else no button.
+        if (shelf.length && shelfWorthAWave(j.result).worth) for (const rid of covered) if (!waveByRun.has(rid)) waveByRun.set(rid, { count: shelf.length, runIds: covered });
       }
     }
   }

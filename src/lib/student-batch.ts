@@ -247,6 +247,38 @@ export function shelvedGaps(result: unknown): string[] {
     .slice(0, 20);
 }
 
+/** A next wave is offered only when the shelf is worth a sheet: at least this many gaps… */
+export const WAVE_MIN_GAPS = 2;
+/** …or at least this many marks' worth of them (Adrian, 11 Sep 2026: "do the threshold"). */
+export const WAVE_MIN_MARKS = 5;
+
+/**
+ * Is the shelf worth a next wave? `count` is the gaps kept back; `marks` is
+ * what they cost across the papers (the rich report's `runs[].marks` or a
+ * top-level `marks`; the old flat list carries no marks, so it counts gaps
+ * only). A one-gap, three-mark shelf stays hidden — a wave-two sheet costs the
+ * same Mac slot as a full one, and a sheet exists to teach something worth
+ * teaching. Pure.
+ */
+export function shelfWorthAWave(result: unknown): { worth: boolean; count: number; marks: number } {
+  const r = result && typeof result === 'object' ? (result as Record<string, unknown>) : null;
+  if (!r || r.noSheet) return { worth: false, count: 0, marks: 0 };
+  const gaps = r.gaps && typeof r.gaps === 'object' ? (r.gaps as Record<string, unknown>) : null;
+  const rich = Array.isArray(gaps?.shelved) ? gaps.shelved : null;
+  const raw = rich ?? (Array.isArray(r.shelved) ? r.shelved : []);
+  let count = 0, marks = 0;
+  for (const x of raw) {
+    if (x && typeof x === 'object') {
+      const e = x as { skill?: unknown; marks?: unknown; runs?: unknown };
+      if (!String(e.skill ?? '').trim()) continue;
+      count++;
+      if (Array.isArray(e.runs)) for (const run of e.runs) marks += Number((run as { marks?: unknown })?.marks) || 0;
+      else marks += Number(e.marks) || 0;
+    } else if (String(x ?? '').trim()) count++;
+  }
+  return { worth: count >= WAVE_MIN_GAPS || marks >= WAVE_MIN_MARKS, count, marks };
+}
+
 // The wave-two `focus` line itself lives beside the job insert it feeds
 // (lib/sheet-queue `waveTwoFocus` / `focusText`); re-exported here so the wave
 // belongs to one file as far as its readers are concerned.
