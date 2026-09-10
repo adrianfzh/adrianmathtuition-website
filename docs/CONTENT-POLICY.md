@@ -54,7 +54,9 @@ carries `.eq('national', false)`, and the skills' queries carry
    pages, `/notes`, `/revise`, `/explain`) carry our own material only. The
    explain page is `noindex` and disallowed in `robots.ts`; the one notes card
    that quoted a school paper by name had the name removed on 11 Sep 2026.
-   Sample questions for marketing come from our own generated rows.
+   Sample questions for marketing come from our own generated rows. Nothing
+   on the public site mentions past papers at all (Adrian, 11 Sep 2026: the
+   terms-page section was removed the same night it went up).
 2. **Never print or sell a whole paper.** Print a paper mixes questions across
    schools by topic; Set papers are ours; the kiosk's prelim sets are admin-only.
 3. **Keep the source on every row, never strip a rights notice.** `school`,
@@ -64,10 +66,10 @@ carries `.eq('national', false)`, and the skills' queries carry
    spec instead (`lib/figures/`, 33 families). A redrawn figure is our own
    drawing of the same mathematics, which is the right answer to a watermarked
    one.
-4. **Takedown within a day.** The terms page (`/terms` › Past-Paper Questions)
-   says how to ask; a request from a school or SEAB is honoured within a day
-   and answered politely. Remove the row (`deleted_at`), the figure, and any
-   cached PDF that carries it.
+4. **Takedown within a day.** A request from a school or SEAB, by WhatsApp or
+   email, is honoured within a day and answered politely: set `deleted_at` on
+   the rows, remove the figure, and purge any cached PDF that carries them.
+   There is no public takedown line (Adrian's call, 11 Sep 2026).
 5. **Lawful access.** Papers come from students' hand-ins, from what schools
    publish or circulate, and from books we bought. Nothing lifted from a paid
    site we did not pay for.
@@ -89,4 +91,4 @@ a twin that reads as a new question is ours. The machinery exists (the
 gate in `practice_next`); what is missing is the batch: generate twins for the
 topics students actually draw from, verify, mark `verified`, and flip each
 topic to twins-only once its coverage matches the school rows it replaces.
-Phasing and cost live in `IDEAS.md` § Content policy.
+The spec is [`SPEC-TWINS.md`](../SPEC-TWINS.md); phasing and cost are there.
