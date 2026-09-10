@@ -54,6 +54,15 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
       `"revised": {"round": <n>, "instructions": "<the note>"}`; keep
       `diagnosis` unless the change altered a section's title, marks or gap.
 
+1d2. **Practice comes from the BANK first, and says so.** The skill's `qb-search`
+    phase answers empty for almost everything (thin embeddings); the search that
+    works is PostgREST by topic — the exact curl is in the skill under "Search the
+    bank BEFORE you write a question". Isabelle's seven sheets of 8–9 Sep 2026 had
+    0 of 73 practice items from the bank because the worker stopped at the empty
+    phase. Query `rest/v1/questions` by `level` + `topics`, read the stems, and put
+    the bank `question_id` on every such item in `questions[]`; author only when
+    nothing fits, and file the proposal.
+
 1e. **A BATCH job — one sheet for several papers** (10 Sep 2026; Adrian, on
     Isabelle's five finished-but-unsent sheets: "the same mistakes or the same
     topics may appear across all 5 worksheets, so can batch and combine into one

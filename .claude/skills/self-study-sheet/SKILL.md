@@ -738,6 +738,33 @@ So, for EVERY practice item, in this order:
      -d '{"phase":"qb-search","q":"<the method in one sentence>","level":"AM","count":12}'
    ```
 
+   **That phase answers `{"ids":[]}` for nearly every phrasing** — its embedding
+   index is thin (whole levels have none). On Isabelle Toh Si Xian's seven single
+   sheets of 8–9 Sep 2026, **0 of 73 practice items carried a bank `question_id`**
+   and only 11 were filed as proposals: the worker searched, found nothing, and
+   wrote every item itself. **So the search that counts is PostgREST by topic** —
+   `SUPABASE_URL` + `SUPABASE_SECRET_KEY` from `.env.local`, ~60 rows per topic,
+   AI-generated rows excluded, then read the stems yourself (the 1 Sep Jamie Lim
+   job found real questions for 9/9 items this way; Chloe's EM job 11/12):
+
+   ```bash
+   curl -s -G "$SUPABASE_URL/rest/v1/questions" \
+     -H "apikey: $SUPABASE_SECRET_KEY" -H "Authorization: Bearer $SUPABASE_SECRET_KEY" \
+     --data-urlencode "select=id,school,year,paper,exam_type,question_number,total_marks,question_text,parts,answer,has_image,image_url" \
+     --data-urlencode "level=eq.AM" \
+     --data-urlencode 'topics=cs.{"Plane Geometry"}' \
+     --data-urlencode "school=neq.AI Generated" \
+     --data-urlencode "deleted_at=is.null" --data-urlencode "limit=60"
+   ```
+
+   The student's OWN paper is usually in the bank (query by school/year/paper) —
+   pull it first for the exact stems, and exclude it from the practice by CONTENT
+   (schools reuse questions verbatim under other names). A hit with `has_image`
+   must be looked at before use (`…/storage/v1/object/public/question_images/<file>`).
+   **Record `question_id` on every bank item in the `done` payload's
+   `questions[]`** — that field is how the desk and the Practice tab know a
+   question is real; an item without it is counted as authored.
+
 2. **Judge each hit by the same test the Practice must pass** — can it be answered
    without doing the thing the Example taught? A hit on the right topic that skips
    the method is not a hit. Take the best one that passes, verify its answer like

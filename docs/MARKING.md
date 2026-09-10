@@ -2128,6 +2128,26 @@ bracketRing branch; a bracketed span anchors to the span's edge); (2) **signed a
 note** — `$-2 - (-5)$`, `$-4 - 1$` — fell to prose because `looksLikeMath`'s spaced-minus gate
 needed a word character first; both the bot (`ai/pen-math.js`) and the site (`lib/math-inline.ts`)
 now typeset a leading minus / a bracketed negative term. Bot commit `c8ae4b6`.
+**Later the same day, Isabelle's AM 2023 P2 (run `845622c9`):** (1) **rings hug the ink** —
+every token / span box is tightened to the dark pixels inside it before a ring is drawn
+(`ai/annotate.js tightenBoxToInk`, tested; "circle can be better positioned"); (2) **the
+marker deducted for a correct unit conversion** — Q3(c)(i) says "t minutes" and "after one
+hour", she used t = 60, the marker wrote "the 82° reading is at t = 1 min, not t = 60" and
+took a mark (her 67/90 should be 68/90; her diagnosis and the 2023 P2 sheet's section 4 were
+built on it). New marker rule: the model's time unit is the question's own words, a
+student's conversion is a correct step; (3) **green ink is announced up front** — the
+app's `/app/submit` form and the Telegram `/handin` message both say green, red or purple
+ink is read as a later correction and earns no marks (she had written "needed help" in
+purple with green working); (4) **the cover names the price of careless slips** —
+`lib/front-page-html.ts carelessCallout`: the kinds sub-line always carries the score
+without the slips ("Without them: 71/90 (79%)"), and when slips are a third or more of the
+marks lost (≥ 3) it becomes a highlighted box naming the O-Level band it moves to ("from B3
+to A2"; off on JC papers) — Adrian: "just avoiding those errors will lead to improvement
+in grades"; (5) **the practice questions on a sheet come from the sheet WORKER, not the
+marker** — and on her seven single sheets 0 of 73 carried a bank `question_id` (11
+proposals filed), because the skill's `qb-search` phase answers empty; the skill and the
+worker prompt now carry the PostgREST-by-topic recipe and require `question_id` on bank
+items. Bot commit `e42bdf1`; website `a84081b4`.
 
 ### Leak test — run it after touching the door or any ownership filter
 
