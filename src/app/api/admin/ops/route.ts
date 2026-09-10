@@ -9,6 +9,9 @@ import { JOB_RHYTHMS, staleJobs, neverStamped } from '@/lib/job-health';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { markingShare, type MarkingShare, type MarkingRunRow } from '@/lib/marking-path';
 import { markingQueueState, type MarkingQueueState, type QueueRunRow } from '@/lib/marking-queue-state';
+import { batchLaneNote, markerUnreachableNote, type BatchLaneNote } from '@/lib/bot-queue-status';
+
+const BOT_QUEUE_QUIET_URL = 'https://adrianmath-telegram-math-bot.fly.dev/queue-quiet';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -95,12 +98,27 @@ export async function GET(req: NextRequest) {
       marking = { d7: markingShare(rows, now, 7), d30: markingShare(rows, now, 30) };
     } catch { /* best-effort, same as the queue read */ }
 
+    // The batch lane (11 Sep 2026): Adrian flips `MARK_QUEUE_BATCH` off by hand
+    // some nights, and nothing showed that state the night the marker machine
+    // melted. `/queue-quiet` is public, no auth, and fail-soft — a 404/timeout
+    // (the field not shipped yet, the bot down) just means the board says
+    // nothing new, never a broken page.
+    let botQueue: { batchLaneNote: BatchLaneNote | null; markerUnreachable: string | null } | null = null;
+    try {
+      const r = await fetch(BOT_QUEUE_QUIET_URL, { signal: AbortSignal.timeout(3000) });
+      if (r.ok) {
+        const d = await r.json().catch(() => ({} as Record<string, unknown>));
+        botQueue = { batchLaneNote: batchLaneNote(d.batch_lane), markerUnreachable: markerUnreachableNote(d.marker_reachable) };
+      }
+    } catch { /* fail-soft — see comment above */ }
+
     return NextResponse.json({
       jobs,
       neverStamped: neverStamped(latest).map(j => ({ job: j, rhythm: JOB_RHYTHMS[j].label })),
       planLane,
       queue,
       marking,
+      botQueue,
       generatedAt: new Date().toISOString(),
     });
   } catch (e) {
