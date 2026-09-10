@@ -43,11 +43,18 @@ mkdir -p "$STATE"
 ln -sfn "$BASE/env" "$STATE/env"
 [ -r "$BASE/oauth_token" ] && ln -sfn "$BASE/oauth_token" "$STATE/oauth_token"
 cp "$HERE/run.sh" "$STATE/run.sh"; chmod +x "$STATE/run.sh"
-cp "$HERE/WORKER_PROMPT.md" "$STATE/WORKER_PROMPT.md"
+# A SYMLINK, like install.sh (11 Sep 2026): a COPY went stale the day the repo's
+# prompt changed — slot 2 ran the 31 Aug text for a week ("slot 2 says
+# /Self-Study/"). Every slot now reads the repo's own file.
+ln -sfn "$HERE/WORKER_PROMPT.md" "$STATE/WORKER_PROMPT.md"
 
-# Slot N starts (N-1)×420s into the 15-minute tick, so slots reach for jobs at
-# different moments instead of racing on every fire.
-DELAY=$(( (SLOT - 1) * 420 ))
+# Slot N starts (N-1)×20s into the two-minute tick, so slots reach for jobs at
+# different moments instead of racing on every fire. (Was (N-1)×420 s into a
+# five-minute tick: slot 6 slept 35 minutes before its first look, and a queued
+# sheet waited up to that long for a free slot to notice it. Adrian, 11 Sep
+# 2026: "slots check the queue every two minutes".) An empty tick is one HTTP
+# request — the claim happens before any model session starts.
+DELAY=$(( (SLOT - 1) * 20 ))
 
 cat > "$PLIST" <<PLIST_EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -75,7 +82,7 @@ cat > "$PLIST" <<PLIST_EOF
 		<string>$DELAY</string>
 	</dict>
 	<key>StartInterval</key>
-	<integer>300</integer>
+	<integer>120</integer>
 	<key>RunAtLoad</key>
 	<false/>
 	<key>StandardOutPath</key>
