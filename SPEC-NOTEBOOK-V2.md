@@ -116,9 +116,7 @@ leaves the room.
   library, optional caption + topic). Adding: **OCR** (the words in the picture become
   searchable) and **auto-tag** (the topic and, where possible, the skill are guessed —
   the same classifier that files asks — so nothing must be typed).
-- **Resurfacing.** One small card on Home a day, from the Notebook: a fixed-or-live
-  mistake or a saved answer, with a 30-second question and a one-tap answer. Never a
-  list to work through — that was retry.
+- **Resurfacing — BUILT 11 Sep 2026, OPT-IN** (Adrian: "have a toggle for students to turn this on, default off"): one small card on Home a day, from the Notebook — a live mistake two days in three, else a saved answer or a read photo — with a line on why, opening the item in the stream. Deterministic per student per day, rotating. The 30-second question with a one-tap answer is the next layer; today the card opens the item.
 - **No switch for these two.** Adrian, 11 Sep 2026: "OCR or resurfacing do not need a
   toggle, it's default for everyone." Only features that add a control (Save, the
   countdown, keeps-coming-up) are opt-in; reading a photo and one card a day are not.
@@ -140,7 +138,7 @@ account; stored in their own table with RLS on and no policies (service key only
 identity-filtered, the `portal_notes` pattern). Done = Adrian cannot find a student's
 personal note anywhere in the admin.
 
-## 9. The UI — one stream, not many bands
+## 9. The UI — one stream, not many bands — BUILT 11 Sep 2026 (search v1 = client-side over loaded items; iPad two-pane still to do)
 
 The lesson from GoodNotes, Notability, OneNote and Apple Notes: shallow, a Recent view
 as the real entry point, one search, nothing to file by hand.

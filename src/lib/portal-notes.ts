@@ -33,6 +33,8 @@ export interface MyNoteRow {
   /** Filled after the photo is read (lib/photo-tag.ts): the topic it looks like, and the bank sub-skill. */
   auto_topic?: string | null;
   auto_skill?: string | null;
+  /** The words the photo read gave (lib/photo-tag.ts) — search's raw material; never shown as-is. */
+  ocr_text?: string | null;
 }
 
 // Caps. The image cap exists because Vercel hard-limits request bodies at

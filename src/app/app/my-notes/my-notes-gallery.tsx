@@ -159,7 +159,7 @@ export default function MyNotesGallery({ initialNotes, topicGroups }: {
   );
 }
 
-function NoteLightbox({ note, onClose, onSaved, onDeleted }: {
+export function NoteLightbox({ note, onClose, onSaved, onDeleted }: {
   note: MyNoteRow;
   onClose: () => void;
   onSaved: (n: MyNoteRow) => void;

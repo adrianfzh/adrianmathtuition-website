@@ -3,7 +3,7 @@
 import { currentAccount } from '@/lib/portal-auth';
 import { ensureTelegramLinked } from '@/lib/telegram-link-state';
 import { askSignalOn } from '@/lib/ask-signal';
-import { examCountdownOn, saveAnswersOn } from '@/lib/portal-prefs';
+import { examCountdownOn, resurfaceOn, saveAnswersOn } from '@/lib/portal-prefs';
 import SettingsClient from './SettingsClient';
 
 export const dynamic = 'force-dynamic';
@@ -21,6 +21,7 @@ export default async function SettingsPage() {
       askSignal={askSignalOn(account.prefs)}
       examCountdown={examCountdownOn(account.prefs)}
       saveAnswers={saveAnswersOn(account.prefs)}
+      resurface={resurfaceOn(account.prefs)}
     />
   );
 }

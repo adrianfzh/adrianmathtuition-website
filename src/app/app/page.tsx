@@ -25,7 +25,8 @@ import { SURFACES } from '@/lib/portal-theme';
 import PortalIcon from '@/components/PortalIcon';
 import ExamCountdown from './exam-countdown';
 import ExamCountdownNotice from './exam-countdown-notice';
-import { examCountdownNoticeDue, examCountdownOn } from '@/lib/portal-prefs';
+import { examCountdownNoticeDue, examCountdownOn, resurfaceOn } from '@/lib/portal-prefs';
+import ResurfaceCard from './resurface-card';
 import { examTitle } from '@/lib/portal-exams';
 
 export const dynamic = 'force-dynamic';
@@ -126,6 +127,14 @@ export default async function DashboardPage() {
       {examCountdownOn(account.prefs) && (
         <Suspense fallback={null}>
           <ExamCountdownTop account={account} fullPortal={fullPortal} card={card} caption={caption} />
+        </Suspense>
+      )}
+
+      {/* 🔁 One thing a day from the notebook (SPEC-NOTEBOOK-V2 §7, opt-in,
+          prefs.resurface): one small card, never a list — lib/resurface.ts. */}
+      {resurfaceOn(account.prefs) && (
+        <Suspense fallback={null}>
+          <ResurfaceCard identity={portalIdentity(account)} card={card} caption={caption} />
         </Suspense>
       )}
 

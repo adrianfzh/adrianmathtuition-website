@@ -13,6 +13,8 @@ export const EXAM_COUNTDOWN_NOTICE_PREF = 'exam_countdown_notice_seen';
 
 /** Settings → "Save answers to my notebook" → the 💾 button under Ask answers (SPEC-NOTEBOOK-V2 §1). */
 export const SAVE_ANSWERS_PREF = 'save_answers';
+/** Settings → "One thing a day from my notebook" → the Home resurface card (lib/resurface.ts). */
+export const RESURFACE_PREF = 'resurface';
 
 export const PORTAL_PREF_KEYS: readonly string[] = [
   /** Settings → "Show skills I keep asking about" → the Notebook's Keeps-coming-up band (lib/ask-signal.ts). */
@@ -20,7 +22,13 @@ export const PORTAL_PREF_KEYS: readonly string[] = [
   EXAM_COUNTDOWN_PREF,
   EXAM_COUNTDOWN_NOTICE_PREF,
   SAVE_ANSWERS_PREF,
+  RESURFACE_PREF,
 ];
+
+/** True only for an explicit `true`. */
+export function resurfaceOn(prefs: unknown): boolean {
+  return prefsObject(prefs)?.[RESURFACE_PREF] === true;
+}
 
 /** True only for an explicit `true`. */
 export function saveAnswersOn(prefs: unknown): boolean {

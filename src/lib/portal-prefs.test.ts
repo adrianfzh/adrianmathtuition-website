@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { examCountdownNoticeDue, examCountdownOn, mergePrefs, readPrefsPatch, saveAnswersOn } from './portal-prefs';
+import { examCountdownNoticeDue, examCountdownOn, mergePrefs, readPrefsPatch, resurfaceOn, saveAnswersOn } from './portal-prefs';
 
 describe('readPrefsPatch', () => {
   it('accepts a whitelisted boolean', () => {
@@ -55,5 +55,13 @@ describe('save answers pref', () => {
     expect(saveAnswersOn({ save_answers: true })).toBe(true);
     expect(saveAnswersOn({ save_answers: 'yes' })).toBe(false);
     expect(saveAnswersOn({})).toBe(false);
+  });
+});
+
+describe('resurface pref', () => {
+  it('is whitelisted and on only for an explicit true', () => {
+    expect(readPrefsPatch({ resurface: true })).toEqual({ patch: { resurface: true } });
+    expect(resurfaceOn({ resurface: true })).toBe(true);
+    expect(resurfaceOn({})).toBe(false);
   });
 });
