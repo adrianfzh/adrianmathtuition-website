@@ -346,9 +346,109 @@ the two table points from the marker's *own* rearrangement of the equation (neve
 the student's table), and `expect_solutions` from its own answer. The opening
 count in that block moved from "thirteen kinds" to "fourteen kinds".
 
-### Known gap
+### Known gap — CLOSED 10 Sep 2026
 
-`ai/qa-diagram.js`'s `QA_KINDS` allow-list does not include `trig_graph` (it is
-also still missing `venn` from 9 Sep). The kind renders and is verified by its own
-validator either way; it just will not be picked up by that QA sweep until the set
-is extended.
+`ai/qa-diagram.js`'s `QA_KINDS` allow-list now carries every kind the renderer
+dispatches, and `test/margin-diagram-arc-region.test.js` fails if a new kind is
+added to the builder without reaching both that list and the marker prompt.
+
+---
+
+## Addendum — `poly_line`: the graph-paper curve with a line ruled across it (10 Sep 2026)
+
+> **Adrian, 10 Sep 2026**, on Chloe's GCE 2022 EM P2 Q4: *"for chloe, build the
+> teaching diagram if you need to and its not available."*
+
+**BUILT** in the bot's `ai/margin-diagram.js` as a sixteenth kind, `poly_line`
+(`validatePolyLine` + `buildPolyLineSvg`), with `test/margin-diagram-poly-line.test.js`.
+
+### The question shape
+
+GCE 2022 EM P2 Q4 is the whole family: (a) complete the table for
+*y = x³/5 − 2x + 1*, (b) draw it for −4 ≤ x ≤ 4, (c) *"x³/5 − 2x + 1 = k has two
+solutions — find the two values of k"* [2], (d) *"by drawing a suitable straight
+line, solve 2x³ − 25x + 20 = 0"* [4]. Chloe completed the table and drew a
+faultless cubic, then wrote **nothing at all** for (c) and (d) — the two parts
+that ask for a LINE on the graph she had just drawn. Both came back as a sentence
+telling her to rearrange, which is exactly what does not reach a student who
+wrote nothing: the method here IS a picture.
+
+### Spec
+
+```json
+{
+  "kind": "poly_line",
+  "curve": { "coeffs": ["1/5", 0, -2, 1] },
+  "domain": [-4, 4],
+  "line": { "solves": [2, 0, -25, 20], "readings": [-3.88, 0.85, 3.03] },
+  "turning_lines": true,
+  "k_values": [3.4, -1.4],
+  "caption": "Rearrange until the left side IS the curve you drew — what is left over is the line."
+}
+```
+
+- **`curve.coeffs`** is the printed equation, highest power first, 3 entries (a
+  quadratic) or 4 (a cubic), each an exact integer / decimal / fraction string.
+  The equation label is typeset from those same coefficients, so the figure
+  cannot draw one curve and name another.
+- **`domain`** is the x-range the grid prints. `y_range` (optional) is the printed
+  y-range and is *checked* to hold the curve and the line; otherwise the window is
+  derived.
+- **`line.solves` is the equation, not the line.** This is the gate that makes the
+  family safe: the marker never states the line. The renderer divides the stated
+  equation by whatever makes its leading term match the curve's (÷10 here),
+  subtracts, and what is left over IS the line — `y = ½x − 1`. So the line drawn
+  always solves the stated equation. `m`/`c` or `through` may be given as a
+  cross-check of the marker's own rearrangement; a line that is not the derived
+  one kills the whole figure.
+- **`line.readings`** are the x-values read off the graph, from the marker's own
+  answer, checked against the crossings the renderer finds (±`precision`,
+  default 0.05 — half a small square).
+- **`turning_lines`** is the "= k" part: the renderer derives the turning points
+  from f′ itself. `k_values` (optional) is the marker's answer, checked against
+  them; `k_symbol` defaults to `"k"`.
+
+### What it draws
+
+Axes with arrowheads and `$x$`/`$y$`; the curve sampled at 400 points and clipped
+to the window; the solving line in **green**, with an open ring at every crossing,
+a dashed drop from each ring to the x-axis and the reading written at its foot;
+each `turning_lines` horizontal in **orange**, ruled the full width, with a filled
+dot where it *touches* the turning point and an open ring where it cuts the curve
+again — two meetings, which is the answer to (c). Beneath the sketch, the
+**rearrangement, derived**: the equation as printed → the same equation scaled
+onto the curve → `curve = line` in the line's own green, then the readings as one
+sentence. The colour is the mapping between the algebra and the line above it,
+the same device `arc_region` uses for its r·θ lines.
+
+### Fail-closed checks
+
+| Check | Refusal |
+|---|---|
+| `coeffs` not 3 or 4 entries, leading coefficient 0, a coefficient that is not an exact number | not a drawable quadratic or cubic |
+| `domain` not `[from, to]`, `from ≥ to`, span > 60 | not a school grid |
+| `solves` of higher degree than the curve, or with no term at the curve's degree | no straight line on this curve can solve it |
+| after scaling, the x² or x³ terms do not cancel | that equation cannot be solved by a straight line on this curve — **draws nothing** |
+| `m`/`c` or `through` given and not the derived line | two claims about the same line disagree; neither is drawn |
+| the line climbs more than 4× the curve's own range across the grid | unreadable |
+| a reading more than `precision` from a crossing, or a different number of readings than crossings | the model cannot assert the answer |
+| `precision` outside (0, 0.2] | a graph is not read more accurately than that |
+| the line **touches** the curve without crossing, or comes within a hair of it | a sketch cannot settle whether that is a solution |
+| `turning_lines` with no real turning point, or one outside the printed grid | the figure cannot show what the question is about |
+| a `k_value` more than `precision` from a turning value, or the wrong count of them | — |
+| `y_range` that does not hold the curve and the line | the printed grid contradicting itself |
+
+Roots and turning points are floats (a cubic's turning points are irrational —
+±√(10/3) here), found by a 4000-sample sign-change scan with 60 bisections; the
+algebra that derives the line is **exact rationals**, so the rearrangement printed
+under the sketch is arithmetic, not estimation.
+
+### Trigger
+
+Item **16** of the marker's `DIAGRAM RULES` in `ai/paper-marker.js`
+(`MARK_JSON_SPEC`), with Q4 as the worked example; the opening count moved from
+"fifteen kinds" to "sixteen kinds". Emit it on a graph-paper question where the
+student drew the curve and then left the "draw a suitable straight line" part or
+the "= k has two solutions" part blank, or answered it with the wrong line. Both
+sub-figures at once is right when both parts went blank (Chloe's Q4); only one
+when only one part went wrong — the figure is read at the width of a margin.
