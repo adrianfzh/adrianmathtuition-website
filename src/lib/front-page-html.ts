@@ -170,7 +170,65 @@ function questionRow(q: { question: string; lost: number; max: number; topic?: s
  * inside it, so a run from before the labels renders exactly as it did.
  * One line plus at most one short sub-line: the page is one A4 sheet.
  */
-function kindsRow(t: ErrorKindTotals | null | undefined): string {
+/** O-Level grade band for a percentage — the bands every Sec 4 student knows. */
+export function oLevelGrade(pct: number): string {
+  if (pct >= 75) return 'A1';
+  if (pct >= 70) return 'A2';
+  if (pct >= 65) return 'B3';
+  if (pct >= 60) return 'B4';
+  if (pct >= 55) return 'C5';
+  if (pct >= 50) return 'C6';
+  if (pct >= 45) return 'D7';
+  if (pct >= 40) return 'E8';
+  return 'F9';
+}
+
+/** A JC / H2 paper is not graded on the O-Level bands; the band line is left off it. */
+function looksLikeJc(paperName: string | null | undefined): boolean {
+  return /\b(H[12]|JC[12]?|A[- ]?Level)\b/i.test(String(paperName || ''));
+}
+
+/**
+ * The careless slips, said with the score they cost (Adrian, 10 Sep 2026: "put on
+ * the analysis page if there are a lot of marks lost through arithmetic slips,
+ * careless mistakes, transfer errors … especially if that takes up a large chunk of
+ * marks lost — just avoiding those errors will lead to improvement in grades").
+ * Always: the score without them. When they are a third or more of the marks lost
+ * (and at least 3), the line becomes a highlighted box that also names the grade
+ * band the paper would move to. Pure.
+ */
+export function carelessCallout(
+  t: ErrorKindTotals,
+  score: { awarded: number; max: number } | null,
+  paperName?: string | null,
+): { big: boolean; html: string } {
+  const c = t.careless;
+  if (c <= 0) return { big: false, html: '' };
+  const lost = Math.max(t.lostTotal || 0, t.concept + t.careless + t.incomplete + t.unlabelled);
+  const big = c >= 3 && c * 3 >= lost;
+  const n = (k: ErrorKind) => t.byKind[k];
+  const detail = CARELESS_KINDS.filter(k => n(k) > 0).map(k => `${ERROR_KIND_LABEL[k]} ${n(k)}`).join(', ');
+  const first = `${c} mark${c === 1 ? ' was a' : 's were'} careless slip${c === 1 ? '' : 's'} &mdash; the method was right.`;
+  let tail = '';
+  if (score && score.max > 0 && score.awarded >= 0) {
+    const would = Math.min(score.max, score.awarded + c);
+    const pctNow = Math.round((score.awarded / score.max) * 100);
+    const pctWould = Math.round((would / score.max) * 100);
+    tail = ` Without them: <b>${would}/${score.max}</b> (${pctWould}%)`;
+    if (big && !looksLikeJc(paperName)) {
+      const g0 = oLevelGrade(pctNow), g1 = oLevelGrade(pctWould);
+      tail += g1 !== g0 ? ` &mdash; from ${g0} to <b>${g1}</b>.` : ` &mdash; still ${g0}, but every one of those marks is yours to keep.`;
+    } else tail += '.';
+  }
+  if (!big) return { big: false, html: `<p class="kinds-sub">${first}${tail}</p>` };
+  const share = lost > 0 ? Math.round((c / lost) * 100) : 0;
+  return {
+    big: true,
+    html: `<p class="kinds-big kinds-sub"><span class="kinds-big-tag">Careless slips</span>${first} That is ${c} of the ${lost} marks you lost (${share}%)${detail ? ` &mdash; ${detail}` : ''}.${tail} Avoiding those alone lifts the grade.</p>`,
+  };
+}
+
+function kindsRow(t: ErrorKindTotals | null | undefined, score: { awarded: number; max: number } | null = null, paperName?: string | null): string {
   if (!hasLabelledLoss(t)) return '';
   const n = (k: ErrorKind) => t!.byKind[k];
   const detail = (kinds: readonly ErrorKind[]) =>
@@ -185,10 +243,8 @@ function kindsRow(t: ErrorKindTotals | null | undefined): string {
   // A part the marker left untagged still cost marks; "other" keeps the row honest
   // about the total without pretending to know why.
   if (t!.unlabelled > 0) cells.push(`<b>other</b> ${t!.unlabelled}`);
-  const c = t!.careless;
-  const sub = c > 0
-    ? `<p class="kinds-sub">${c} mark${c === 1 ? ' was a' : 's were'} careless slip${c === 1 ? '' : 's'} &mdash; the method was right.</p>`
-    : '';
+  const callout = carelessCallout(t!, score, paperName);
+  const sub = callout.html;
   return `<style>
 .kinds{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem .5rem;margin:-.3rem 0 ${sub ? '.3rem' : '1.1rem'};
        padding:.45rem .85rem;background:var(--shade);border:1px solid var(--rule);font-size:.8rem;color:var(--ink-soft)}
@@ -198,6 +254,9 @@ function kindsRow(t: ErrorKindTotals | null | undefined): string {
 .kinds i{font-style:normal;color:var(--ink-faint)}
 .kinds .dot{color:var(--ink-faint)}
 .kinds-sub{margin:0 0 1.1rem .85rem;font-size:.8rem;font-style:italic;color:var(--teach)}
+.kinds-big{margin:.1rem 0 1.1rem;padding:.55rem .85rem;font-style:normal;color:var(--ink);background:#fff7ed;border:1px solid #fdba74;border-left:4px solid #ea580c;line-height:1.45}
+.kinds-big b{font-weight:700}
+.kinds-big-tag{display:block;font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:#c2410c;margin-bottom:.15rem}
 </style>
 <div class="kinds"><span class="kinds-tag">Marks lost</span> ${cells.join(' <span class="dot">&middot;</span> ')}</div>
 ${sub}`;
@@ -380,7 +439,7 @@ h2::before{content:none}
     <p class="verdict">${lead}</p>
   </div>
 </div>
-${kindsRow(input.errorKinds)}<div class="sec-work">
+${kindsRow(input.errorKinds, { awarded: input.awarded, max: input.max }, input.paperName)}<div class="sec-work">
 <h2>What to work on</h2>
 <p class="sub">${sub}</p>
 <div class="themes">${themes.map(themeRow).join('')}</div>

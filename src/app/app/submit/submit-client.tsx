@@ -369,6 +369,13 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
           ref={inputRef} type="file" accept="image/*,application/pdf" multiple className="hidden"
           onChange={(e) => onPick(e.target.files)}
         />
+        {/* Green ink is the correction pen (Adrian, 10 Sep 2026: "tell them when they
+            are submitting papers in the app that working in green pen will not count
+            towards the marks — they will be treated as corrections"). Said BEFORE the
+            photos go up, in one line, so a corrected paper is never a surprise. */}
+        <p className="text-[12px] text-gray-500">
+          Write your attempt in blue or black. Green, red or purple ink is read as a later correction and earns no marks.
+        </p>
 
         {capNote && <p className="text-[13px] font-semibold text-amber-700">{capNote}</p>}
         {splitNote && pages.length > 0 && <p className="text-[13px] text-emerald-700">{splitNote}</p>}

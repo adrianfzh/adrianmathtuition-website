@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { frontPageHtml, chooseThemes, type FrontPageInput } from './front-page-html';
+import { frontPageHtml, chooseThemes, type FrontPageInput, oLevelGrade } from './front-page-html';
 import type { Theme } from './paper-analysis';
 
 const theme = (over: Partial<Theme> = {}): Theme => ({
@@ -396,5 +396,40 @@ describe('a cover with only slips on it', () => {
       theme({ marks: 2, title: 'Reading The Angle', tier: 'teach', key: 't2' }),
     ], themesSource: 'sheet' });
     expect(h).toMatch(/one thing worth your time is <strong>reading the angle/);
+  });
+});
+
+// ── the careless slips carry the score they cost (Adrian, 10 Sep 2026) ────────
+describe('frontPageHtml — careless slips and the grade they cost', () => {
+  it('a small share keeps the one-line form, with the score without them', () => {
+    const t = emptyErrorKindTotals();
+    t.byKind.concept = 7; t.byKind.misread = 4; t.byKind.arithmetic = 2; t.byKind.transfer = 1; t.byKind.sign = 1;
+    t.concept = 11; t.careless = 4; t.lostTotal = 23;
+    const h = frontPageHtml({ ...base, awarded: 67, max: 90, errorKinds: t });
+    expect(h).toContain('4 marks were careless slips &mdash; the method was right. Without them: <b>71/90</b> (79%).');
+    expect(h).not.toContain('class="kinds-big');
+  });
+  it('a third or more of the marks lost becomes the highlighted box with the grade move', () => {
+    const t = emptyErrorKindTotals();
+    t.byKind.concept = 2; t.byKind.arithmetic = 3; t.byKind.transfer = 2; t.byKind.sign = 1;
+    t.concept = 2; t.careless = 6; t.lostTotal = 8;
+    const h = frontPageHtml({ ...base, paperName: 'isabelle TYS AM 2025 P1', awarded: 73, max: 90, errorKinds: t });
+    expect(h).toContain('class="kinds-big kinds-sub"');
+    expect(h).toContain('Careless slips');
+    expect(h).toContain('6 marks were careless slips &mdash; the method was right. That is 6 of the 8 marks you lost (75%) &mdash; arithmetic 3, copied wrongly 2, sign 1. Without them: <b>79/90</b> (88%) &mdash; from A1 to <b>A1</b>'.replace(' &mdash; from A1 to <b>A1</b>', ' &mdash; still A1, but every one of those marks is yours to keep.'));
+    expect(h).toContain('Avoiding those alone lifts the grade.');
+    expect(h.match(/kinds-sub"/g)).toHaveLength(1);
+  });
+  it('names the band it moves to, and leaves the band off a JC paper', () => {
+    const t = emptyErrorKindTotals();
+    t.byKind.arithmetic = 4; t.byKind.sign = 1; t.careless = 5; t.byKind.concept = 3; t.concept = 3; t.lostTotal = 8;
+    const o = frontPageHtml({ ...base, paperName: 'em tys 2025 p1', awarded: 61, max: 90, errorKinds: t });
+    expect(o).toContain('Without them: <b>66/90</b> (73%) &mdash; from B3 to <b>A2</b>.');
+    const jc = frontPageHtml({ ...base, paperName: 'JC2 H2 Math Prelim P1', awarded: 61, max: 90, errorKinds: t });
+    expect(jc).toContain('Without them: <b>66/90</b> (73%).');
+    expect(jc).not.toContain('from B3');
+  });
+  it('oLevelGrade bands', () => {
+    expect([80, 72, 66, 60, 57, 52, 47, 41, 30].map(oLevelGrade)).toEqual(['A1', 'A2', 'B3', 'B4', 'C5', 'C6', 'D7', 'E8', 'F9']);
   });
 });
