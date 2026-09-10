@@ -328,3 +328,50 @@ Health-check probe: `paper-check` (401 anonymously). What happens after the
 hand-in when the paper really is missing — the stamp, the review note, the honest
 cover, and the re-mark when the PDF lands — is `docs/MARKING.md` § *When the paper
 is missing*.
+
+## "Choose papers" — the student's Practice Again tick (11 Sep 2026)
+
+Adrian: *"build the student door with three-paper, 5-day limit."* Since 10 Sep
+2026 his desk can tick several of a student's papers and queue ONE merged sheet
+(`docs/MARKING.md` § *Practice Again batches*). This is the student's version of
+that tick, on `/app/marking`, and it is deliberately narrower than his.
+
+A line above the Papers list — *"Practice on two or three papers at once"* —
+switches the list into **tick mode**: the cards give way to a row per paper with
+a checkbox, and **Done choosing** puts them back. The line hides itself when no
+two of the student's papers could ever pair. What may be ticked:
+
+- **two or three papers**, one maths. The first tick decides the maths; the rest
+  grey out with *different maths*, and the fourth tick is refused on screen.
+- **marked in the last 5 days** — an older paper greys out with *marked more
+  than 5 days ago* and keeps its own single-paper Request button.
+- **nothing in flight** — a paper whose sheet is being written greys out with *a
+  sheet is being written*. A paper that already HAS a finished sheet may be
+  ticked; the worker reuses its examples.
+
+The sticky bar reads the plan back: one tick → *"Tick another A Math paper to
+make one sheet"* with Request held; two or three → *"One Practice Again sheet
+for N papers · A Math · the same gap in two papers becomes one section"*.
+
+**The strong batch.** Under **10 marks lost across all the ticked papers** there
+is nothing worth a sheet — losses that small are slips, and slips earn no
+practice (`docs/MARKING.md`, 10 Sep 2026). The request comes back **200 with
+`{ok:false, reason:'strong'}`** — an answer, not an error — saying the papers
+are strong and pointing at `/app/print` (Adrian: *"recommend new exam papers
+instead"*).
+
+**Wave two.** A sheet teaches one wave and shelves the rest with evidence; until
+now that shelf was visible only on Adrian's Telegram. A finished sheet whose job
+carries `result.shelved` now shows *"N more gaps were kept for your next sheet"*
+with **Ask for the next wave** on the Papers list and on the paper's own page.
+It posts only which papers it continues — the server copies `shelved` off the
+job itself — and skips the 5-day window and the strong rule, because a
+continuation is not a fresh start. `sheetQueueGuard`'s "a sheet already exists"
+refusal is bypassed for a wave two and for nothing else.
+
+Everything above is one door: `POST /api/portal/practice-again/request`, which
+now takes `{runIds}` beside `{runId}` and `wave: 2` on either (401 anonymously —
+the existing health-check probe still covers it, no new probe). The rules are
+`src/lib/student-batch.ts` (pure, tested — `studentBatchGuard`, `pickStates`,
+`tickBar`, `marksLostAcross`), shared by the screen and the route so a tick the
+screen allows is never bounced.
