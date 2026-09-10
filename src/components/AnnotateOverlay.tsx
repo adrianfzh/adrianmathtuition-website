@@ -926,6 +926,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     [mouseAllowed],
   );
 
+  const calibCountRef = useRef(0);
   const logInk = useCallback((k: string, d?: Record<string, unknown>) => {
     const a = inkLogRef.current;
     a.push({ t: Date.now() - inkT0Ref.current, k, ...(d || {}) });
@@ -1031,6 +1032,31 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       const r = el.getBoundingClientRect();
       return { x: e.clientX - r.left, y: e.clientY - r.top };
     };
+    // Calibration record (10 Sep 2026 — Adrian, from the desk on the iPad: "the ink
+    // isn't at the pen's tip … above the pen tip, for every stroke"): every number
+    // between the contact point and the ink, for the first few strokes of a session,
+    // so the copied ink log (triple-tap the ink counter) says which mapping is off.
+    const calib = (src: string, clientX: number, clientY: number) => {
+      if (calibCountRef.current >= 3) return;
+      calibCountRef.current += 1;
+      try {
+        const r = el.getBoundingClientRect();
+        const vv = window.visualViewport;
+        const bar = el.previousElementSibling as HTMLElement | null;
+        logInk('calib', {
+          src, cx: Math.round(clientX), cy: Math.round(clientY),
+          rect: { l: Math.round(r.left), t: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) },
+          size: { ...sizeRef.current }, view: { z: +viewRef.current.zoom.toFixed(3), ox: Math.round(viewRef.current.ox), oy: Math.round(viewRef.current.oy) },
+          vv: vv ? { ol: Math.round(vv.offsetLeft), ot: Math.round(vv.offsetTop), pl: Math.round(vv.pageLeft), pt: Math.round(vv.pageTop), s: +vv.scale.toFixed(3), w: Math.round(vv.width), h: Math.round(vv.height) } : null,
+          win: { iw: window.innerWidth, ih: window.innerHeight, ow: window.outerWidth, oh: window.outerHeight, sx: Math.round(window.scrollX), sy: Math.round(window.scrollY), dpr: window.devicePixelRatio },
+          bar: bar ? Math.round(bar.getBoundingClientRect().height) : null,
+          doc: Math.round(document.documentElement.getBoundingClientRect().top),
+          meta: document.querySelector('meta[name="viewport"]')?.getAttribute('content') ?? null,
+          standalone: !!(navigator as unknown as { standalone?: boolean }).standalone,
+          shell: !!(window as unknown as { webkit?: { messageHandlers?: { pencilBridge?: unknown } } }).webkit?.messageHandlers?.pencilBridge,
+        });
+      } catch { /* diagnostics only */ }
+    };
 
     // Start a pen/highlighter stroke at css coords — shared by the pointer path
     // and the stylus-touch fallback. Returns false if the page isn't ready.
@@ -1109,6 +1135,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       if (isPenLike(e)) {
         winPdRef.current = 0;               // pointer event reached us — not swallowed
         logInk('pen-down', { p: Math.round(e.pressure * 100) / 100, w: Math.round(e.width), h: Math.round(e.height), tool });
+        calib('pointer', e.clientX, e.clientY);
         e.preventDefault();
         stopMomentum();
         gestureRef.current = null;          // pen wins over any finger gesture
@@ -1735,6 +1762,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       const [first, ...rest] = pend.pts;
       const p0 = cssPos({ clientX: first.x, clientY: first.y });
       logInk('native-pen-down', { buffered: pend.pts.length });
+      calib('native', first.x, first.y);
       stopMomentum();
       gestureRef.current = null;
       strokeSrcRef.current = 'native';
@@ -2284,7 +2312,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         <button style={tool === 'eraser' ? activeBtn : btn} onClick={() => setToolRemember('eraser')} aria-label="Eraser" title="Eraser"><IconEraser /></button>
         {hasLayers && (
           <button style={tool === 'select' ? activeBtn : btn} onClick={() => setToolRemember('select')} aria-label="Select the marker's ink"
-            title="Select: tap a tick, cross, box or note the marker drew — drag to move it; the chip deletes it or edits its text"><IconSelect /></button>
+            title="Select: tap a tick, cross, box or note the marker drew — drag to move it; the chip deletes it or edits its text"><IconSelect /><span style={{ marginLeft: 5, fontSize: 12, fontWeight: 700 }}>Marks</span></button>
         )}
         {hasLayers && (
           <button style={tool === 'text' ? activeBtn : btn} onClick={() => setToolRemember('text')} aria-label="Type text"
