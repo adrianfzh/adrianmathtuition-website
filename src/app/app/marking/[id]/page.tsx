@@ -12,7 +12,10 @@ import { fileHref } from '@/lib/student-files-url';
 import PaperSubjectPill from '@/components/PaperSubjectPill';
 import ClipToNotes from '../ClipToNotes';
 import PracticeAgainRequest, { type PracticeAgainState } from '../PracticeAgainRequest';
+import NextWave from '../NextWave';
 import { readNoSheet } from '@/lib/sheet-jobs';
+import { coveredRunIds } from '@/lib/sheet-queue';
+import { shelvedGaps } from '@/lib/student-batch';
 import { displayPaperName } from '@/lib/paper-display-name';
 import { subjectLabel } from '@/lib/mark-subjects';
 import { TEACHER_TOTAL_LABEL } from '@/lib/science-truth';
@@ -78,14 +81,24 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
   // No sheet with the student yet: is one being written, waiting on Adrian, or
   // was there nothing worth practising? Else offer the request button
   // (Practice Again on request, 8 Sep 2026 — /api/portal/practice-again/request).
+  // A sheet WITH the student can still have kept gaps back: `result.shelved` on
+  // the finished job is what a next wave would teach (11 Sep 2026), so the job
+  // is read either way now — the state below, or the shelf.
   let requestState: PracticeAgainState = 'none';
-  if (!sheet && !isScience) {
-    const { data: jobRows } = await sb.from('sheet_jobs').select('status, result')
+  let nextWave: { count: number; runIds: string[] } | null = null;
+  if (!isScience) {
+    const { data: jobRows } = await sb.from('sheet_jobs').select('run_id, run_ids, status, result')
       .or(`run_id.eq.${id},run_ids.cs.{${id}}`).order('created_at', { ascending: false }).limit(1);
-    const job = (jobRows ?? [])[0] as { status: string; result: unknown } | undefined;
-    if (job?.status === 'queued' || job?.status === 'claimed') requestState = 'queued';
-    else if (job?.status === 'done') requestState = readNoSheet(job.result).noSheet ? 'nothing' : 'checking';
-    // failed / cancelled: they may ask again
+    const job = (jobRows ?? [])[0] as { run_id: string; run_ids: string[] | null; status: string; result: unknown } | undefined;
+    if (!sheet) {
+      if (job?.status === 'queued' || job?.status === 'claimed') requestState = 'queued';
+      else if (job?.status === 'done') requestState = readNoSheet(job.result).noSheet ? 'nothing' : 'checking';
+      // failed / cancelled: they may ask again
+    }
+    if (sheet && job?.status === 'done') {
+      const shelf = shelvedGaps(job.result);
+      if (shelf.length) nextWave = { count: shelf.length, runIds: coveredRunIds(job) };
+    }
   }
   const hasCover = paper.dropped.length > 0;
   const supersededBy = (row as { superseded_by?: string | null }).superseded_by ?? null;
@@ -198,6 +211,9 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
               <span className="shrink-0 text-emerald-800 text-sm">›</span>
             </Link>
           )}
+          {/* What this sheet kept back — one sheet teaches one wave, the rest
+              was shelved with evidence (11 Sep 2026). Same button as the list. */}
+          {nextWave && <NextWave runIds={nextWave.runIds} count={nextWave.count} />}
         </section>
       )}
 

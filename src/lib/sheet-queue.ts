@@ -63,7 +63,7 @@ const IN_FLIGHT = new Set(['queued', 'claimed']);
 export function sheetQueueGuard(
   run: SheetQueueRun | null | undefined,
   jobs: SheetQueueJobRow[],
-  opts: { requestedBy?: SheetRequestedBy } = {},
+  opts: { requestedBy?: SheetRequestedBy; wave?: number } = {},
 ): SheetQueueRefusal | { ok: true } {
   if (!run) return { ok: false, status: 'not-found', http: 404, message: 'run not found' };
   if (!run.student_id) return { ok: false, status: 'untagged', http: 400, message: 'Tag this paper to a student first — a sheet needs someone to be for.' };
@@ -83,7 +83,12 @@ export function sheetQueueGuard(
   if (inFlight) return { ok: false, status: 'duplicate', http: 409, message: 'A sheet for this paper is already queued.', jobId: inFlight.id };
   if (opts.requestedBy === 'student') {
     if (!run.released_at) return { ok: false, status: 'not-released', http: 409, message: 'This paper is not out yet — ask for the sheet once it is.' };
-    const done = jobs.find(j => j.status === 'done');
+    // Wave two (11 Sep 2026) is the ONE case where a student may ask again for
+    // a paper that already has a sheet: the first sheet shelved gaps and they
+    // asked for the rest of them. It bypasses this refusal and nothing else —
+    // a job still in flight above still stops it, so the two sheets are written
+    // one after the other, never at once.
+    const done = Number(opts.wave || 1) < 2 && jobs.find(j => j.status === 'done');
     if (done) return { ok: false, status: 'exists', http: 409, message: 'A Practice Again sheet for this paper already exists.', jobId: done.id };
   }
   return { ok: true };
@@ -153,6 +158,48 @@ export function sheetBatchInsert(primary: SheetBatchRun, runs: SheetBatchRun[], 
   };
 }
 
+/** A wave-two focus is never longer than this — the column is text, but a job row is read by eye too. */
+const FOCUS_JSON_MAX = 2000;
+
+/**
+ * What a wave-two job carries in `focus` — Adrian's own instruction slot, which
+ * the worker honours over its own judgement (scripts/sheet-worker/WORKER_PROMPT.md
+ * §1e: "a job with `focus.wave === 2` teaches EXACTLY `focus.shelved`, nothing
+ * else"). JSON, so those two field reads hold literally, with the instruction
+ * spelled out inside it because a person reads this column too. Pure.
+ *
+ * Long shelves lose their tail rather than the string being cut — a truncated
+ * JSON blob would parse as nothing at all.
+ */
+export function waveTwoFocus(shelved: readonly string[], wave = 2): string {
+  const gaps = shelved.map(x => String(x ?? '').trim()).filter(Boolean).slice(0, 20);
+  const build = (list: string[]) => JSON.stringify({
+    wave,
+    instruction: `The student asked for the next wave. Teach EXACTLY the gaps the last sheet shelved, nothing else; reuse its title block and file it in the same folder name with " (wave ${wave})".`,
+    shelved: list,
+  });
+  let out = build(gaps);
+  while (out.length > FOCUS_JSON_MAX && gaps.length) { gaps.pop(); out = build(gaps); }
+  return out;
+}
+
+/**
+ * `sheet_jobs.focus` is TEXT — the instruction the worker honours over its own
+ * judgement. A caller may hand in the sentence itself, or the wave-two shape
+ * `{ wave, shelved }` (the student's "ask for the next wave", 11 Sep 2026),
+ * which is rendered into that sentence here rather than stored as
+ * "[object Object]". Pure.
+ */
+export function focusText(focus: unknown): string | null {
+  if (!focus) return null;
+  if (typeof focus === 'string') return focus.trim().slice(0, 300) || null;
+  if (typeof focus === 'object') {
+    const f = focus as { wave?: unknown; shelved?: unknown };
+    if (Number(f.wave) >= 2) return waveTwoFocus(Array.isArray(f.shelved) ? f.shelved.map(String) : [], Number(f.wave));
+  }
+  return String(focus).slice(0, 300);
+}
+
 /** The row a new sheet job is born with. */
 export function sheetJobInsert(run: SheetQueueRun, focus?: unknown, requestedBy: SheetRequestedBy = 'adrian') {
   return {
@@ -160,7 +207,7 @@ export function sheetJobInsert(run: SheetQueueRun, focus?: unknown, requestedBy:
     airtable_student_id: run.student_id,
     student_name: run.student_name || '',
     paper_name: run.paper_name || '',
-    focus: focus ? String(focus).slice(0, 300) : null,
+    focus: focusText(focus),
     requested_by: requestedBy,
   };
 }
@@ -195,7 +242,7 @@ export function remarkRequester(jobs: SheetQueueJobRow[]): SheetRequestedBy | nu
  */
 export async function queueSheetJob(
   runId: string,
-  opts: { focus?: unknown; remark?: boolean; requestedBy?: SheetRequestedBy } = {},
+  opts: { focus?: unknown; remark?: boolean; requestedBy?: SheetRequestedBy; wave?: number } = {},
 ): Promise<SheetQueueOutcome> {
   const sb = getSupabaseAdmin();
   const requestedBy: SheetRequestedBy = opts.requestedBy === 'student' ? 'student' : 'adrian';
@@ -215,7 +262,7 @@ export async function queueSheetJob(
     jobs = jobs.map(j => (plan.cancel.includes(j.id) ? { ...j, status: 'cancelled' } : j));
   }
 
-  const guard = sheetQueueGuard(run, jobs, { requestedBy });
+  const guard = sheetQueueGuard(run, jobs, { requestedBy, wave: opts.wave });
   if (!guard.ok) return guard;
 
   const { data: job, error } = await sb.from('sheet_jobs')
