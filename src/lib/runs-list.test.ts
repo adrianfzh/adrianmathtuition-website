@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { RUNS_PAGE, RUNS_REFRESH_MAX, refreshLimit, mergeRunsPage } from './runs-list';
+import { withInMotion } from './runs-list';
 
 const row = (id: string) => ({ id, created_at: id });
 const ids = (rows: { id: string }[]) => rows.map((r) => r.id);
@@ -59,5 +60,16 @@ describe('mergeRunsPage — the regression: loaded rows must not vanish on refre
 
   it('an empty refresh keeps what was there', () => {
     expect(ids(mergeRunsPage(page1, [], 0))).toEqual(['a', 'b', 'c']);
+  });
+});
+
+describe('withInMotion — re-marks of older papers ride ahead of the dated window', () => {
+  it('puts in-motion rows first and never duplicates one the window already has', () => {
+    const recent = [{ id: 'new' }, { id: 'eva' }];
+    const inMotion = [{ id: 'eva' }, { id: 'joey-9sep' }];
+    expect(withInMotion(recent, inMotion).map(r => r.id)).toEqual(['joey-9sep', 'new', 'eva']);
+  });
+  it('is the dated list when nothing is in motion', () => {
+    expect(withInMotion([{ id: 'a' }], []).map(r => r.id)).toEqual(['a']);
   });
 });

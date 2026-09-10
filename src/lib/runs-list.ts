@@ -34,3 +34,14 @@ export function mergeRunsPage<T extends { id: string }>(prev: T[], fresh: T[], o
   const seen = new Set(fresh.map((r) => r.id));
   return [...fresh, ...prev.filter((r) => !seen.has(r.id))];
 }
+
+/**
+ * Papers in motion (queued or being marked, any date) ahead of the dated list,
+ * without duplicating a row the dated window already shows (10 Sep 2026: a
+ * re-mark keeps its paper's created_at, so Joey's 9 Sep paper was three pages
+ * down while it was being re-marked and "Still to deal with" never showed it).
+ */
+export function withInMotion<T extends { id: string }>(recent: T[], inMotion: T[]): T[] {
+  const seen = new Set(recent.map((r) => r.id));
+  return [...inMotion.filter((r) => !seen.has(r.id)), ...recent];
+}

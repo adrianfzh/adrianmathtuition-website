@@ -20,7 +20,7 @@ import StudentPicker from '@/components/StudentPicker';
 // only opens on demand — load it when first rendered, never in the initial bundle.
 import type { LayerMeta } from '@/lib/annotate/layer';
 import { fileHref } from '@/lib/student-files';
-import { RUNS_PAGE, refreshLimit, mergeRunsPage } from '@/lib/runs-list';
+import { RUNS_PAGE, refreshLimit, mergeRunsPage, withInMotion } from '@/lib/runs-list';
 const AnnotateOverlay = dynamic(() => import('@/components/AnnotateOverlay'), { ssr: false });
 
 // ── file helpers ────────────────────────────────────────────────────────────
@@ -369,6 +369,10 @@ export default function MarkPaperPage() {
     } catch { /* URL housekeeping only */ }
   }, [annotateOpen, runId]);
   const [recentRuns, setRecentRuns] = useState<Run[]>([]);
+  // 🌙 Every paper in motion, whatever its date (the bot's stats `inMotion`,
+  // 10 Sep 2026): a re-mark keeps its paper's created_at and sat pages down
+  // the dated list while it ran. Merged ahead of the window — lib/runs-list.
+  const [inMotionRuns, setInMotionRuns] = useState<Run[]>([]);
   // Server-side paging for the history list. `runsTotal` is an exact count
   // from Supabase, so the summary can say "25 of 118" instead of a constant.
   const [runsTotal, setRunsTotal] = useState(0);
@@ -423,6 +427,7 @@ export default function MarkPaperPage() {
       const d = await r.json();
       setStats(d);
       setRecentRuns((prev) => mergeRunsPage(prev, (d.runs || []) as Run[], offset));
+      setInMotionRuns(Array.isArray(d.inMotion) ? (d.inMotion as Run[]) : []);
       setRunsTotal(Number(d.total) || 0);
       setRunsMore(Boolean(d.hasMore));
     } catch { /* ignore */ } finally { setRunsLoading(false); }
@@ -1598,7 +1603,10 @@ export default function MarkPaperPage() {
   // marks without a manual reload. Queued rows are the bot's overnight queue
   // and Telegram announces those; no point polling them all day.
   const liveRows = recentRuns.some((r) => r.total_max == null && !r.queued_at && !r.queue_failed
-    && Date.now() - new Date(r.created_at).getTime() < 15 * 60 * 1000);
+    && Date.now() - new Date(r.created_at).getTime() < 15 * 60 * 1000)
+    // …and while anything is in motion (a queued paper or a re-mark of an old
+    // one), so its row's status line keeps moving without a reload (10 Sep 2026).
+    || inMotionRuns.length > 0;
   useEffect(() => {
     if (!liveRows) return;
     const t = setInterval(() => { if (!document.hidden) loadStats(); }, 15000);
@@ -1621,7 +1629,7 @@ export default function MarkPaperPage() {
   // row goes back to where it was — the 15 s poll above does the moving.
   // The rule itself is pure and tested: lib/mark-paper-outstanding.ts.
   const isOutstanding = (r: Run) => isOutstandingRun(r);
-  const unseenRuns = recentRuns.filter(isOutstanding);
+  const unseenRuns = withInMotion(recentRuns, inMotionRuns).filter(isOutstanding);
   const seenRuns = recentRuns.filter((r) => !isOutstanding(r));
   // Same endpoint as the library's ✓, so /admin/papers and this list always agree.
   function toggleChecked(run: Run) {
