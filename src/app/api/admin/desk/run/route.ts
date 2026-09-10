@@ -257,6 +257,17 @@ export async function GET(req: NextRequest) {
               bankQuestions: bank ? num(bank.questions) : null, bankMarks: bank ? num(bank.marks) : null,
             };
           })(),
+          // 📐 …and the other way round: the bank held the paper but its own
+          // brackets do not add up to what the paper is out of, so the stored
+          // split stood. Four GCE papers are filed in the bank twice.
+          bankRefused: (() => {
+            const rf = pm.bank_allocation_refused;
+            if (!rf || typeof rf !== 'object') return null;
+            const s = rf as Record<string, unknown>;
+            const num = (v: unknown) => Number.isFinite(Number(v)) ? Number(v) : null;
+            const b = (s.bank && typeof s.bank === 'object') ? s.bank as Record<string, unknown> : null;
+            return { known: num(s.known), bankQuestions: b ? num(b.questions) : null, bankMarks: b ? num(b.marks) : null };
+          })(),
         };
       })(),
       unattempted: Array.isArray((rj as { unattempted_questions?: unknown } | null)?.unattempted_questions)

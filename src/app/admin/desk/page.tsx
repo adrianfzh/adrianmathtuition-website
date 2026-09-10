@@ -223,6 +223,9 @@ type PaperMatch = {
     questions: number | null; marks: number | null; disagrees: boolean;
     bankQuestions: number | null; bankMarks: number | null;
   } | null;
+  // …and the other way round: the bank's own copy of the paper did not add up to
+  // what the paper is out of, so the stored split stood.
+  bankRefused?: { known: number | null; bankQuestions: number | null; bankMarks: number | null } | null;
 };
 
 // 🔍 What the paper was identified as (SPEC-PAPER-MATCH Phase 1, 3 Sep 2026)
@@ -1384,6 +1387,14 @@ function DetailView(p: {
             {run.paperMatch.schemeOverridden.disagrees
               ? <div>The two <b>disagree</b> — one of them is wrong about this paper. Worth a look before you approve.</div>
               : <div>They agree, so nothing moved.</div>}
+          </div>
+        )}
+        {run.paperMatch?.bankRefused && (
+          <div style={{ marginTop: 8, padding: '8px 10px', background: C.flagBg, border: `1px solid ${C.flagBorder}`, borderRadius: 8, color: C.flag, fontSize: 13, lineHeight: 1.5 }}>
+            📐 <b>The question bank&rsquo;s copy of this paper does not add up</b> — its brackets come to{' '}
+            {run.paperMatch.bankRefused.bankMarks} marks across {run.paperMatch.bankRefused.bankQuestions} question
+            {run.paperMatch.bankRefused.bankQuestions === 1 ? '' : 's'}, and the paper is out of {run.paperMatch.bankRefused.known}.
+            <div>This paper was marked to the split already stored for it. The bank&rsquo;s rows for it need a look — usually the paper is filed there twice.</div>
           </div>
         )}
         {run.allocationAudit && (run.allocationAudit.added.length > 0 || run.allocationAudit.maxDiffs.length > 0) && (
