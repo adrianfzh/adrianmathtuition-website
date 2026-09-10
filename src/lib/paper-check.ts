@@ -69,10 +69,14 @@ export function looksLikeNamedPaper(name: string): boolean {
 
 // ── the copy, in one place ───────────────────────────────────────────────────
 // Student-facing: "app", never "portal". Calm — this is a request for two more
-// photos, not a warning that anything is wrong.
+// photos, not a warning that anything is wrong. Adrian, 10 Sep 2026: "do not say
+// we do not have the questions for the paper yet. just say no questions
+// detected — better if students upload the question paper/solutions." The
+// notice states what was (not) detected and what helps; it never explains
+// where the gap is.
 
 /** The heading on the notice. */
-export const PAPER_MISSING_TITLE = 'Add the question pages too';
+export const PAPER_MISSING_TITLE = 'No questions detected';
 
 /**
  * The notice itself. `label` is how the paper is spoken back to the student
@@ -81,9 +85,9 @@ export const PAPER_MISSING_TITLE = 'Add the question pages too';
  */
 export function paperMissingNotice(label: string | null): string {
   const what = (label && label.trim()) || 'this paper';
-  return `We don’t have the questions for ${what} yet. If your pages don’t show the printed questions, please also photograph each question page (the printed pages) and add them here — otherwise the marking has to guess the marks for each question.`;
+  return `No questions detected for ${what}. For a more accurate marking, add photos of the question paper too, and the solutions if you have them.`;
 }
 
 /** What the small "Why?" toggle opens. */
 export const PAPER_MISSING_WHY =
-  'Every question is marked out of a printed number — the [2] or [3] beside it. Without the question paper the marking works those numbers out from your working, so the total on your marked cover is only official when the printed marks are known. Photograph the printed pages and the marks come straight off the paper.';
+  'Each question is marked out of the number printed beside it, like [2] or [3]. With the question paper in your photos those marks come straight off the page, so the total on your cover is exact.';

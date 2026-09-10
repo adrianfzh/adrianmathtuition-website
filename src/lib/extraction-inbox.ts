@@ -57,6 +57,10 @@ const LEVEL_RULES: Array<[RegExp, string]> = [
   [/\bS3\b/i, 'S3_EM'],
   [/\bJC1\b/i, 'JC1'],
   [/\bJC2\b/i, 'JC2'],
+  // The A-Level TYS names its subject, not a JC year: "A Level H2 Math TYS 2025"
+  // is the JC2 national paper (bot lib/paper-key BANK_LEVEL: H2 → JC2, H1 → JC2_H1).
+  [/\bH2\b/i, 'JC2'],
+  [/\bH1\b/i, 'JC2_H1'],
   [/\bAM\b/i, 'AM'],
   [/\bEM\b/i, 'EM'],
 ];
@@ -74,6 +78,12 @@ const EXAM_RULES: Array<[RegExp, string]> = [
   [/\bSA2\b/i, 'SA2'],
   [/\bEOY\b/i, 'SA2'],
 ];
+
+// A national paper is filed under school 'GCE' in the bank, whatever the file
+// calls it — "TYS", "O Level", "A Level" and the SEAB specimen papers all name
+// the same thing (bot lib/paper-key.js: "TYS 2021 IS the 2021 national paper").
+// Read by the parser (exam + school) and by the marker's school rule alike.
+const NATIONAL = /\b(gce|tys|ten[\s-]?year|[oa][\s-]?levels?)\b/i;
 
 function detectLevel(stem: string): string | null {
   for (const [re, level] of LEVEL_RULES) if (re.test(stem)) return level;
@@ -104,13 +114,14 @@ export function parseSourceFilename(name: string): ParsedSourceName {
   const yearMatch = stem.match(/\b(19|20)\d{2}\b/);
   if (!yearMatch) return { ok: false, reason: 'no 4-digit year', stem, ext };
   const year = Number(yearMatch[0]);
-  const { examType, token } = detectExam(stem);
+  let { examType } = detectExam(stem);
+  const { token } = detectExam(stem);
   const paperMatch = stem.match(/\bP(?:aper)?\s?([1-4])\b/i);
   const paper = paperMatch ? `p${paperMatch[1]}` : 'all';
 
   let school = stem
     .replace(yearMatch[0], ' ')
-    .replace(/\b(S[1-4]|JC[12]|AM|EM|Sec\s?[1-4])\b/gi, ' ')
+    .replace(/\b(S[1-4]|JC[12]|H[12]|AM|EM|Sec\s?[1-4])\b/gi, ' ')
     .replace(/\((NA|NT)\)|\b(4045|4046|4047|4048|9758)\b/gi, ' ')
     .replace(/\bP(?:aper)?\s?[1-4]\b/gi, ' ')
     .replace(/\bPaper\b/gi, ' ');
@@ -118,6 +129,13 @@ export function parseSourceFilename(name: string): ParsedSourceName {
   school = school.replace(/\s+/g, ' ').replace(/^[\s\-–_,.]+|[\s\-–_,.]+$/g, '').trim();
   // "EM GCE 2004 GCE P2": the exam token IS the school once the exam token is stripped.
   if (!school && examType === 'GCE') school = 'GCE';
+  // "O Level AM TYS 2025 (Questions)", "A Level H2 Math TYS 2025": a Ten-Year-Series
+  // or O/A-Level name IS the national paper — exam GCE, school GCE, the way the
+  // bank files it — unless the name already says Specimen (10 Sep 2026; until
+  // then such a book was queued as school "O Level TYS (Questions)", exam null,
+  // and the fleet would have staged it as a PRELIM).
+  if (examType === null && NATIONAL.test(stem)) examType = 'GCE';
+  if (examType === 'GCE' && NATIONAL.test(school)) school = 'GCE';
   if (!school) return { ok: false, reason: 'no school left in the name once level/exam/year/paper are removed', stem, ext };
 
   return { ok: true, level, year, school, examType, paper, ext, stem };
@@ -241,7 +259,7 @@ export type LibraryRow = {
 export function libraryRowFor(parsed: ParsedSourceName, name: string): { row: LibraryRow } | { skip: string } {
   if (!parsed.ok) return { skip: 'the name could not be filed at all' };
   if (parsed.paper === 'all') {
-    return { skip: 'the name says no paper number, so the marker cannot look it up — split the book into one file per paper, named like `AM GCE 2025 Paper 1.pdf`' };
+    return { skip: 'the name says no paper number and no cover page said either, so the marker cannot look it up — split the book into one file per paper, named like `AM GCE 2025 Paper 1.pdf`' };
   }
   const school = markerSchool(parsed, name);
   if (!school) return { skip: 'no school left in the name once the level, exam, year, paper and "(Solutions)" are removed' };
@@ -254,10 +272,6 @@ export function libraryRowFor(parsed: ParsedSourceName, name: string): { row: Li
   return { row };
 }
 
-// A national paper is filed under school 'GCE' in the bank, whatever the file
-// calls it — "TYS", "O Level", "A Level" and the SEAB specimen papers all name
-// the same thing (bot lib/paper-key.js: "TYS 2021 IS the 2021 national paper").
-const NATIONAL = /\b(gce|tys|ten[\s-]?year|[oa][\s-]?levels?)\b/i;
 // …and the KIND words are never part of a school: the fleet's parser leaves
 // "(Solutions)" behind as the school on "AM GCE 2025 Paper 2 (Solutions).pdf",
 // which would file the scheme under the key "am 2025 p2 (solutions)" — a key
@@ -393,8 +407,9 @@ export function regroundNotice(label: string, run: Pick<RegroundRun, 'student_na
 }
 
 /** The one-line summary the job log and the tick response carry. */
-export function inboxSummary(counts: { queued: number; flagged: number; duplicate: number; moved: number; waiting: number; failed: number; filed?: number; remarked?: number }): string {
+export function inboxSummary(counts: { queued: number; flagged: number; duplicate: number; moved: number; waiting: number; failed: number; filed?: number; remarked?: number; split?: number }): string {
   const parts = [`${counts.queued} queued`];
+  if (counts.split) parts.push(`${counts.split} book${counts.split === 1 ? '' : 's'} cut at the covers`);
   if (counts.filed) parts.push(`${counts.filed} filed for the marker`);
   if (counts.remarked) parts.push(`${counts.remarked} re-marked against it`);
   if (counts.flagged) parts.push(`${counts.flagged} flagged (bad name)`);

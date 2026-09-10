@@ -32,6 +32,14 @@ describe("parseSourceFilename — the fleet law's filename conventions", () => {
     expect(parseSourceFilename('EM GCE 2021 Paper 2.pdf')).toMatchObject({ paper: 'p2', examType: 'GCE', school: 'GCE' });
     expect(parseSourceFilename('AM EOY 2021 Nanyang Girls.pdf')).toMatchObject({ examType: 'SA2', school: 'Nanyang Girls' });
   });
+  it('a Ten-Year-Series / O Level / A Level name IS the national paper: exam GCE, school GCE (10 Sep 2026)', () => {
+    expect(parseSourceFilename('O Level AM TYS 2025 (Questions).pdf')).toMatchObject({ ok: true, level: 'AM', year: 2025, school: 'GCE', examType: 'GCE', paper: 'all' });
+    expect(parseSourceFilename('O Level EM TYS 2025 (Questions).pdf')).toMatchObject({ ok: true, level: 'EM', school: 'GCE', examType: 'GCE', paper: 'all' });
+    expect(parseSourceFilename('A Level H2 Math TYS 2025 (Questions).pdf')).toMatchObject({ ok: true, level: 'JC2', year: 2025, school: 'GCE', examType: 'GCE', paper: 'all' });
+    expect(parseSourceFilename('AM TYS 2019 Paper 2 (Solutions).pdf')).toMatchObject({ ok: true, school: 'GCE', examType: 'GCE', paper: 'p2' });
+    // …but a real school's paper is never rewritten
+    expect(parseSourceFilename('AM PRELIM 2025 Bedok South.pdf')).toMatchObject({ school: 'Bedok South', examType: 'Prelim' });
+  });
   it('files a specimen as Specimen with school GCE, never as the live GCE paper', () => {
     expect(parseSourceFilename('AM GCE 2021 Specimen P1.pdf')).toMatchObject({ examType: 'Specimen', school: 'GCE', paper: 'p1' });
     expect(parseSourceFilename('EM GCE 2004 GCE P2.pdf')).toMatchObject({ examType: 'GCE', school: 'GCE', paper: 'p2' });

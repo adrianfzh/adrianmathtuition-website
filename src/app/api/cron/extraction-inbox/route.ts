@@ -39,9 +39,11 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { dropboxConfigured, ensureFolder, listFolder, downloadFile, movePath } from '@/lib/dropbox';
 import {
   decideInboxFile, inboxSummary, isSourceFile, libraryRowFor, libraryLabel,
-  runsToReground, regroundNotice,
-  type InboxEntry, type KnownSource, type LibraryRow, type RegroundRun,
+  runsToReground, regroundNotice, parseSourceFilename, sourceKey, sourceStoragePath,
+  type InboxEntry, type KnownSource, type LibraryRow, type RegroundRun, type ParsedSourceName,
 } from '@/lib/extraction-inbox';
+import { splitBook, type BookRead } from '@/lib/paper-book-split-io';
+import { describeParts, partFileName } from '@/lib/paper-book-split';
 import { sendTelegram } from '@/lib/telegram';
 
 export const dynamic = 'force-dynamic';
@@ -59,7 +61,7 @@ function authed(req: NextRequest): boolean {
   return !!((cron && safeEqual(auth, `Bearer ${cron}`)) || (admin && safeEqual(auth, `Bearer ${admin}`)));
 }
 
-async function moveTo(entry: InboxEntry, sub: 'queued' | 'rejected'): Promise<string | null> {
+async function moveTo(entry: InboxEntry, sub: 'queued' | 'rejected' | 'split'): Promise<string | null> {
   try {
     await ensureFolder(`${INBOX_FOLDER}/${sub}`);
     return (await movePath(entry.path, `${INBOX_FOLDER}/${sub}/${entry.name}`, { autorename: true })).path;
@@ -146,6 +148,123 @@ async function remarkUngroundedRuns(
   return out;
 }
 
+type Counts = { queued: number; flagged: number; duplicate: number; moved: number; waiting: number; failed: number; filed: number; remarked: number; split: number };
+
+/**
+ * The marker's half for ONE paper: its library row over the object the source
+ * row already holds, then the re-mark loop. Writes what happened into `item`
+ * (`marker`, `remarked`) and returns the reason when the file could not be
+ * filed for the marker, so the caller can put it on the row. Never throws —
+ * the fleet's row is already in, and a failed marker row must not fail the file.
+ */
+async function markerHalf(
+  sb: ReturnType<typeof getSupabaseAdmin>, parsed: ParsedSourceName, name: string,
+  file: { storagePath: string; bytes: number; sha256: string },
+  item: Record<string, unknown>, counts: Counts, now: Date,
+): Promise<{ skipped: string | null }> {
+  const lib = libraryRowFor(parsed, name);
+  if ('skip' in lib) { item.marker = `not filed for the marker: ${lib.skip}`; return { skipped: lib.skip }; }
+  try {
+    await fileForMarker(sb, lib.row, { storagePath: file.storagePath, name, bytes: file.bytes, sha256: file.sha256 }, now);
+    counts.filed++;
+    item.marker = `filed for the marker as ${lib.row.kind} "${lib.row.key}"`;
+    // The loop closes here: every recent paper marked WITHOUT this one goes
+    // back through the queue, against it.
+    const re = await remarkUngroundedRuns(sb, lib.row, now);
+    counts.remarked += re.queued.length;
+    if (re.queued.length || re.over || re.errors.length) {
+      item.remarked = { runs: re.queued, ...(re.over ? { overCap: re.over } : {}), ...(re.errors.length ? { errors: re.errors } : {}) };
+    }
+    if (re.over) {
+      await sendTelegram(`📥 ${libraryLabel(lib.row)} is in. ${REMARK_CAP} papers were re-marked against it; ${re.over} more are waiting — re-mark them from the desk.`, 'marking').catch(() => {});
+    }
+  } catch (err) {
+    item.marker = `marker row failed: ${((err as Error).message || String(err)).slice(0, 120)}`;
+  }
+  return { skipped: null };
+}
+
+// ── A whole book is cut at its covers (10 Sep 2026) ──────────────────────────
+// Adrian: "model should be smart enough to differentiate between paper 1 and
+// paper 2 in the pdf, should not have to split myself." A PDF whose name gives
+// no paper number is read for its covers (lib/paper-book-split*) BEFORE it is
+// filed: two or more covers → the book is cut there and each paper goes
+// through the same door as a file of its own (source row, marker row, the
+// re-mark loop); one cover → the file IS that paper and takes its number;
+// none → filed whole, exactly as before, with the reason on the row.
+
+/** How the tick reports what it read off the covers. */
+function bookSummary(b: BookRead): string {
+  const head = `${b.pageCount} pages, ${b.calls} read${b.calls === 1 ? '' : 's'} by ${b.model}`;
+  if (b.plan.kind === 'split') return `${head} → ${describeParts(b.plan.parts)}`;
+  if (b.plan.kind === 'single') return `${head} → one paper${b.plan.paper ? `, cover says Paper ${b.plan.paper}` : ', cover shows no paper number'}`;
+  return `${head} → not cut: ${b.plan.reason}`;
+}
+
+/**
+ * File a cut book: the book itself is stored for provenance and its row closed
+ * as `skipped` (nothing extracts a book), then every part is uploaded, queued
+ * (unless the queue already knows that paper) and filed for the marker. The
+ * book moves to /Extraction Inbox/split/.
+ */
+async function fileBookParts(
+  sb: ReturnType<typeof getSupabaseAdmin>, e: InboxEntry, bytes: Buffer, sha256: string,
+  d: { key: string; storagePath: string }, parsed: ParsedSourceName & { ok: true }, book: BookRead & { parts: NonNullable<BookRead['parts']> },
+  known: KnownSource[], item: Record<string, unknown>, counts: Counts, now: Date,
+): Promise<void> {
+  const today = now.toISOString().slice(0, 10);
+  const { error: upErr } = await sb.storage.from(BUCKET).upload(d.storagePath, bytes, { contentType: 'application/pdf', upsert: true });
+  if (upErr) throw new Error(`upload: ${upErr.message}`);
+  const names = book.parts.map(p => partFileName(parsed, p));
+  const bookNote = `split by the watcher on ${today} into ${book.parts.length} papers (${describeParts(book.parts)}), read from the covers by ${book.model}: ${names.join(', ')} — each queued as its own row`;
+  const { data: ins, error: insErr } = await sb.from('paper_library').upsert({
+    key: d.key, kind: 'source', storage_path: d.storagePath, source_file: e.name, source_folder: INBOX_FOLDER,
+    level: parsed.level, year: parsed.year, paper: parsed.paper, school: parsed.school, exam_type: parsed.examType,
+    size_bytes: bytes.length, sha256, indexed_at: now.toISOString(), inbox_path: e.path, status: 'skipped', notes: bookNote,
+  }, { onConflict: 'key,kind' }).select('id').single();
+  if (insErr) throw new Error(`row: ${insErr.message}`);
+  const to = await moveTo(e, 'split');
+  if (to) await sb.from('paper_library').update({ inbox_path: to }).eq('id', ins.id);
+  known.push({ id: String(ins.id), key: d.key, sha256, status: 'skipped', inbox_path: to ?? e.path, source_file: e.name });
+
+  const report: string[] = [];
+  for (let i = 0; i < book.parts.length; i++) {
+    const part = book.parts[i];
+    const name = names[i];
+    const pp = parseSourceFilename(name);
+    if (!pp.ok) { report.push(`${name}: the part's own name would not file (${pp.reason}) — not queued`); continue; }
+    const partBytes = Buffer.from(part.bytes);
+    const partSha = createHash('sha256').update(partBytes).digest('hex');
+    const key = sourceKey(name);
+    const storagePath = sourceStoragePath(pp, name);
+    const { error: pErr } = await sb.storage.from(BUCKET).upload(storagePath, partBytes, { contentType: 'application/pdf', upsert: true });
+    if (pErr) { report.push(`${name}: upload failed (${pErr.message.slice(0, 80)})`); continue; }
+    const existing = known.find(k => k.key === key);
+    let queued = '';
+    if (existing) {
+      queued = `already ${existing.status} as "${existing.source_file}" — not queued again`;
+    } else {
+      const { data: pIns, error: pInsErr } = await sb.from('paper_library').upsert({
+        key, kind: 'source', storage_path: storagePath, source_file: name, source_folder: INBOX_FOLDER,
+        level: pp.level, year: pp.year, paper: pp.paper, school: pp.school, exam_type: pp.examType,
+        size_bytes: partBytes.length, sha256: partSha, indexed_at: now.toISOString(), inbox_path: to ?? e.path, status: 'queued',
+        notes: `pp. ${part.from}–${part.to} of "${e.name}", cut by the watcher on ${today}`,
+      }, { onConflict: 'key,kind' }).select('id').single();
+      if (pInsErr) { report.push(`${name}: row failed (${pInsErr.message.slice(0, 80)})`); continue; }
+      known.push({ id: String(pIns.id), key, sha256: partSha, status: 'queued', inbox_path: to ?? e.path, source_file: name });
+      counts.queued++;
+      queued = 'queued';
+    }
+    const sub: Record<string, unknown> = {};
+    await markerHalf(sb, pp, name, { storagePath, bytes: partBytes.length, sha256: partSha }, sub, counts, now);
+    report.push(`${name}: ${queued}; ${String(sub.marker ?? '')}${sub.remarked ? ` (re-marked: ${JSON.stringify(sub.remarked)})` : ''}`);
+  }
+  item.parts = report;
+  item.action = `split into ${book.parts.length} papers → moved to split/`;
+  counts.split++;
+  await sendTelegram(`📚 "${e.name}" was cut at its covers into ${names.map(n => n.replace(/\.pdf$/i, '')).join(' + ')} (${describeParts(book.parts)}); each is queued for extraction and filed for the marker.`, 'marking').catch(() => {});
+}
+
 export async function GET(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const dry = req.nextUrl.searchParams.get('dry') === '1';
@@ -171,7 +290,7 @@ export async function GET(req: NextRequest) {
     status: String(r.status), inbox_path: r.inbox_path ? String(r.inbox_path) : null, source_file: String(r.source_file),
   }));
 
-  const counts = { queued: 0, flagged: 0, duplicate: 0, moved: 0, waiting: 0, failed: 0, filed: 0, remarked: 0 };
+  const counts: Counts = { queued: 0, flagged: 0, duplicate: 0, moved: 0, waiting: 0, failed: 0, filed: 0, remarked: 0, split: 0 };
   const out: Array<Record<string, unknown>> = [];
   let handled = 0;
   for (const e of entries) {
@@ -208,13 +327,26 @@ export async function GET(req: NextRequest) {
         item.action = `duplicate of ${d.of.source_file} (${d.of.status}) — moved to rejected/`; counts.duplicate++;
         continue;
       }
+      // A book? Read the covers before anything is filed (see fileBookParts).
+      let parsed: ParsedSourceName = d.parsed;
+      let book: BookRead | null = null;
+      if (d.kind === 'enqueue' && parsed.ok && parsed.paper === 'all' && parsed.ext === 'pdf') {
+        try { book = await splitBook(bytes); item.book = bookSummary(book); }
+        catch (err) { item.book = `covers not read: ${((err as Error).message || String(err)).slice(0, 120)}`; }
+      }
+      if (book && book.plan.kind === 'split' && book.parts && parsed.ok) {
+        await fileBookParts(sb, e, bytes, sha256, d, parsed, { ...book, parts: book.parts }, known, item, counts, now);
+        continue;
+      }
+      const coverPaper = book && book.plan.kind === 'single' && book.plan.paper ? `p${book.plan.paper}` : null;
+      if (coverPaper && parsed.ok) parsed = { ...parsed, paper: coverPaper };
+
       // enqueue | flag — upload first, then the row, then the move: a crash at any
       // point leaves state the next tick repairs (upsert / move-only).
       const contentType = e.name.toLowerCase().endsWith('.pdf') ? 'application/pdf'
         : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
       const { error: upErr } = await sb.storage.from(BUCKET).upload(d.storagePath, bytes, { contentType, upsert: true });
       if (upErr) throw new Error(`upload: ${upErr.message}`);
-      const parsed = d.parsed;
       const row = {
         key: d.key, kind: 'source', storage_path: d.storagePath, source_file: e.name, source_folder: INBOX_FOLDER,
         level: parsed.ok ? parsed.level : null, year: parsed.ok ? parsed.year : null,
@@ -225,7 +357,10 @@ export async function GET(req: NextRequest) {
         // A name the fleet cannot file says BOTH conventions, because a book is
         // the commonest reason: one file per paper, named the way the marker
         // looks a paper up (10 Sep 2026).
-        notes: d.kind === 'flag' ? `inbox could not file the name: ${parsed.ok ? '' : parsed.reason}. Rename it (fleet convention, e.g. "AM PRELIM 2025 Bedok South.pdf") and requeue. A combined Ten-Year-Series book: split it into one file per paper, named \`AM GCE 2025 Paper 1.pdf\`.` : null,
+        notes: d.kind === 'flag'
+          ? `inbox could not file the name: ${parsed.ok ? '' : parsed.reason}. Rename it (fleet convention, e.g. "AM PRELIM 2025 Bedok South.pdf") and requeue. A combined Ten-Year-Series book: split it into one file per paper, named \`AM GCE 2025 Paper 1.pdf\`.`
+          : coverPaper ? `paper number read from the cover by the watcher: ${coverPaper.toUpperCase()}`
+          : book ? `covers: ${String(item.book)}` : null,
       };
       const { data: ins, error: insErr } = await sb.from('paper_library').upsert(row, { onConflict: 'key,kind' }).select('id').single();
       if (insErr) throw new Error(`row: ${insErr.message}`);
@@ -238,32 +373,12 @@ export async function GET(req: NextRequest) {
         // ── …and the MARKER's copy of the same file (10 Sep 2026) ────────────
         // The extraction row above is for the fleet; this is the row the marker
         // grounds on. Both point at one object. A file that names no single
-        // paper (a combined TYS book) stays queued for the fleet and says why it
-        // cannot be filed here — it is never rejected, the bytes are wanted.
-        const lib = libraryRowFor(parsed, e.name);
-        if ('skip' in lib) {
-          item.marker = `not filed for the marker: ${lib.skip}`;
-          await sb.from('paper_library').update({ notes: `Not filed for the marker: ${lib.skip}` }).eq('id', ins.id);
-        } else {
-          try {
-            await fileForMarker(sb, lib.row, { storagePath: d.storagePath, name: e.name, bytes: bytes.length, sha256 }, now);
-            counts.filed++;
-            item.marker = `filed for the marker as ${lib.row.kind} "${lib.row.key}"`;
-            // The loop closes here: every recent paper marked WITHOUT this one
-            // goes back through the queue, against it.
-            const re = await remarkUngroundedRuns(sb, lib.row, now);
-            counts.remarked += re.queued.length;
-            if (re.queued.length || re.over || re.errors.length) {
-              item.remarked = { runs: re.queued, ...(re.over ? { overCap: re.over } : {}), ...(re.errors.length ? { errors: re.errors } : {}) };
-            }
-            if (re.over) {
-              await sendTelegram(`📥 ${libraryLabel(lib.row)} is in. ${REMARK_CAP} papers were re-marked against it; ${re.over} more are waiting — re-mark them from the desk.`, 'marking').catch(() => {});
-            }
-          } catch (err) {
-            // The fleet's row is already in; a failed marker row must not fail
-            // the file. Say it and move on — the next drop repairs it.
-            item.marker = `marker row failed: ${((err as Error).message || String(err)).slice(0, 120)}`;
-          }
+        // paper (a book whose covers could not be read) stays queued for the
+        // fleet and says why it cannot be filed here — never rejected, the
+        // bytes are wanted.
+        const half = await markerHalf(sb, parsed, e.name, { storagePath: d.storagePath, bytes: bytes.length, sha256 }, item, counts, now);
+        if (half.skipped) {
+          await sb.from('paper_library').update({ notes: `${row.notes ? row.notes + '. ' : ''}Not filed for the marker: ${half.skipped}` }).eq('id', ins.id);
         }
       } else {
         counts.flagged++;

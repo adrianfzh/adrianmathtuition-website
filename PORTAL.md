@@ -302,12 +302,12 @@ key, expectedFile}`, `via` being the rung that answered: `attached` | `library` 
 
 When the answer is `named && !available`, an amber notice appears **directly
 above the add-photos button**, so the button that takes the two extra photographs
-is the next thing under it: *"We don't have the questions for GCE 2025 A Math
-Paper 2 yet. If your pages don't show the printed questions, please also
-photograph each question page (the printed pages) and add them here — otherwise
-the marking has to guess the marks for each question."* — with a small **Why?**
-toggle saying the total on the marked cover is only official once the printed
-marks are known. Copy and response shaping live in `src/lib/paper-check.ts`
+is the next thing under it: **No questions detected** — *"No questions detected
+for GCE 2025 A Math Paper 2. For a more accurate marking, add photos of the
+question paper too, and the solutions if you have them."* — with a small **Why?**
+toggle saying the printed marks come straight off the page. The wording is
+Adrian's (10 Sep 2026): it never says *we* do not have the paper, only what was
+detected and what helps. Copy and response shaping live in `src/lib/paper-check.ts`
 (pure, tested).
 
 Three rules this must keep:

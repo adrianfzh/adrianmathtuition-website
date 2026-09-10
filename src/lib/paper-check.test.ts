@@ -56,13 +56,14 @@ describe('the copy', () => {
   it('names the paper, asks for the printed pages, and says what it costs not to', () => {
     const s = paperMissingNotice('GCE 2025 A Math Paper 2');
     expect(s).toContain('GCE 2025 A Math Paper 2');
-    expect(s).toContain('photograph each question page');
-    expect(s).toContain('guess the marks for each question');
+    expect(s).toContain('add photos of the question paper');
+    expect(s).toContain('more accurate marking');
+    expect(s).not.toMatch(/don.t have|we do not have|yet\b/i);
   });
 
   it('degrades to "this paper" rather than an empty gap', () => {
-    expect(paperMissingNotice(null)).toContain('the questions for this paper yet');
-    expect(paperMissingNotice('   ')).toContain('the questions for this paper yet');
+    expect(paperMissingNotice(null)).toContain('No questions detected for this paper.');
+    expect(paperMissingNotice('   ')).toContain('No questions detected for this paper.');
   });
 
   it('says "app", never "portal" (student-facing copy rule)', () => {
@@ -71,8 +72,8 @@ describe('the copy', () => {
     }
   });
 
-  it('the Why? line is about the total not being official until the printed marks are known', () => {
-    expect(PAPER_MISSING_WHY).toContain('only official when the printed marks are known');
+  it('the Why? line says the printed marks come straight off the page', () => {
+    expect(PAPER_MISSING_WHY).toContain('come straight off the page');
   });
 });
 
