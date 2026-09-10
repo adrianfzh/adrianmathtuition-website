@@ -34,6 +34,27 @@ export async function GET(req: NextRequest) {
       return { job, at: r.ran_at, summary: String(r.summary || '').slice(0, 200) };
     }).filter((x): x is { job: 'plan-marking' | 'sheet-worker'; at: string; summary: string } => !!x);
 
+    // Practice Again sheets in motion (11 Sep 2026 — Adrian: "how do i see
+    // isabelle's practice again sheet generation progress? … i don't see it at
+    // /admin/ops"). The sheet worker stamps job_runs only on a limit, so the
+    // board never showed a sheet being written. Now: every queued or claimed
+    // sheet_jobs row, with the worker's own stage word and minutes since claim.
+    type SheetJobRow = { id: string; status: string; stage: string | null; paper_name: string | null; requested_by: string | null; run_ids: string[] | null; created_at: string; claimed_at: string | null };
+    let sheets: { active: Array<{ id: string; paper: string; papers: number; stage: string; minutes: number; requestedBy: string }>; queued: Array<{ id: string; paper: string; papers: number; minutes: number; requestedBy: string }> } = { active: [], queued: [] };
+    try {
+      const { data: sj } = await getSupabaseAdmin().from('sheet_jobs')
+        .select('id, status, stage, paper_name, requested_by, run_ids, created_at, claimed_at')
+        .in('status', ['queued', 'claimed']).order('created_at', { ascending: true }).limit(20);
+      const mins = (iso: string | null) => (iso ? Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000)) : 0);
+      for (const j of (sj ?? []) as SheetJobRow[]) {
+        const papers = Array.isArray(j.run_ids) && j.run_ids.length ? j.run_ids.length : 1;
+        const paper = String(j.paper_name || 'untitled').slice(0, 120);
+        const requestedBy = j.requested_by === 'student' ? 'student' : 'Adrian';
+        if (j.status === 'claimed') sheets.active.push({ id: j.id, paper, papers, stage: String(j.stage || 'drafting').trim(), minutes: mins(j.claimed_at), requestedBy });
+        else sheets.queued.push({ id: j.id, paper, papers, minutes: mins(j.created_at), requestedBy });
+      }
+    } catch { sheets = { active: [], queued: [] }; }
+
     const jobs = latest.map(r => ({
       job: r.job,
       ranAt: r.ran_at,
@@ -116,6 +137,7 @@ export async function GET(req: NextRequest) {
       jobs,
       neverStamped: neverStamped(latest).map(j => ({ job: j, rhythm: JOB_RHYTHMS[j].label })),
       planLane,
+      sheets,
       queue,
       marking,
       botQueue,

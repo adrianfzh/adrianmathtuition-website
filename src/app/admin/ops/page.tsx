@@ -23,6 +23,7 @@ type OpsData = {
   marking: { d7: MarkingShare; d30: MarkingShare } | null;
   /** A plan-billed lane that last reported a PLAN LIMIT (9 Sep 2026) — empty when both lanes are fine. */
   planLane?: { job: 'plan-marking' | 'sheet-worker'; at: string; summary: string }[];
+  sheets?: { active: { id: string; paper: string; papers: number; stage: string; minutes: number; requestedBy: string }[]; queued: { id: string; paper: string; papers: number; minutes: number; requestedBy: string }[] };
   /** The bot's `/queue-quiet` batch-lane + reachability facts (11 Sep 2026) — null when the fetch itself failed (bot down, field not shipped yet). */
   botQueue?: { batchLaneNote: { text: string; tone: 'amber' | 'grey' } | null; markerUnreachable: string | null } | null;
   generatedAt: string;
@@ -189,6 +190,44 @@ export default function OpsPage() {
             <div className="border-t border-neutral-100 px-4 py-2 text-xs text-amber-800 bg-amber-50">
               {data.queue.stale.length} finished paper{data.queue.stale.length > 1 ? 's' : ''} still flagged queued —{' '}
               {data.queue.stale.map((s) => `${s.paper} (${s.because})`).join(', ')}. Not waiting on anything; the flag was never cleared.
+            </div>
+          )}
+        </section>
+
+        {/* Practice Again sheets in motion (11 Sep 2026): the sheet worker's own
+            stage word per job and minutes since claim; queued ones behind. Three
+            sheet slots on this Mac (~/.adrianmath_sheets, 2, 3), same plan as marking. */}
+        <section className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
+          <div className="px-4 py-3 flex items-center gap-3 text-sm">
+            <span className={`inline-block w-2.5 h-2.5 rounded-full ${data && data.sheets && data.sheets.queued.length > 0 && data.sheets.active.length >= 3 ? 'bg-amber-500' : 'bg-green-600'}`} />
+            <span className="font-medium text-neutral-800">Practice Again sheets</span>
+            <span className="text-neutral-500">
+              {data && data.sheets
+                ? (data.sheets.active.length + data.sheets.queued.length === 0
+                  ? 'none in motion'
+                  : `${data.sheets.active.length} being written · ${data.sheets.queued.length} queued · 3 slots`)
+                : '…'}
+            </span>
+            <a href="/admin/desk" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">desk →</a>
+          </div>
+          {!!data?.sheets && (data.sheets.active.length > 0 || data.sheets.queued.length > 0) && (
+            <div className="border-t border-neutral-100 divide-y divide-neutral-100 text-sm">
+              {data.sheets.active.map(s => (
+                <div key={s.id} className="px-4 py-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span className="text-neutral-800">{s.paper}</span>
+                  {s.papers > 1 && <span className="text-xs text-neutral-500">{s.papers} papers</span>}
+                  <span className="text-xs text-emerald-700">✍️ {s.stage}… {s.minutes}m</span>
+                  <span className="ml-auto text-xs text-neutral-400">{s.requestedBy === 'student' ? 'asked by the student' : 'queued by you'}</span>
+                </div>
+              ))}
+              {data.sheets.queued.map(s => (
+                <div key={s.id} className="px-4 py-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span className="text-neutral-800">{s.paper}</span>
+                  {s.papers > 1 && <span className="text-xs text-neutral-500">{s.papers} papers</span>}
+                  <span className="text-xs text-neutral-500">⏳ queued {s.minutes}m — waiting for a sheet slot</span>
+                  <span className="ml-auto text-xs text-neutral-400">{s.requestedBy === 'student' ? 'asked by the student' : 'queued by you'}</span>
+                </div>
+              ))}
             </div>
           )}
         </section>
