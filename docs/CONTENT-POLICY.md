@@ -64,10 +64,8 @@ carries `.eq('national', false)`, and the skills' queries carry
    spec instead (`lib/figures/`, 33 families). A redrawn figure is our own
    drawing of the same mathematics, which is the right answer to a watermarked
    one.
-4. **Takedown within a day.** The terms page (`/terms` › Past-Paper Questions)
-   says how to ask; a request from a school or SEAB is honoured within a day
-   and answered politely. Remove the row (`deleted_at`), the figure, and any
-   cached PDF that carries it.
+4. **Takedown within a day, on request.** Set `deleted_at` on the rows, remove
+   the figure, purge any cached PDF. No public notice about past papers.
 5. **Lawful access.** Papers come from students' hand-ins, from what schools
    publish or circulate, and from books we bought. Nothing lifted from a paid
    site we did not pay for.
@@ -89,4 +87,4 @@ a twin that reads as a new question is ours. The machinery exists (the
 gate in `practice_next`); what is missing is the batch: generate twins for the
 topics students actually draw from, verify, mark `verified`, and flip each
 topic to twins-only once its coverage matches the school rows it replaces.
-Phasing and cost live in `IDEAS.md` § Content policy.
+The spec is [`SPEC-TWINS.md`](../SPEC-TWINS.md); phasing and cost are there.

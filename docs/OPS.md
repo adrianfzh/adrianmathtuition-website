@@ -35,8 +35,12 @@ Writers:
   Practice Again sheet is still not handed in: `portal_assignments.required_at`
   is set when Adrian releases a sheet he queued himself; day 3, then weekly,
   four nudges at most, Telegram + web push, one summary line to Adrian; stamps
-  even on quiet days, skips the stamp only in `?dry=1` mode), and
-  `health-check` itself.
+  even on quiet days, skips the stamp only in `?dry=1` mode),
+  `missing-papers` (Mondays 8am SGT — the last 7 days of runs marked without
+  their paper, grouped and checked against `paper_library` + the bank,
+  `lib/missing-papers.ts`, one Telegram line; stamps even on a quiet week with
+  nothing to report → [`MARKING.md`](MARKING.md) §🕳 When the paper is
+  missing), and `health-check` itself.
 - **Mac plan-billed workers** stamp as the last step of their SKILL.md
   (`qb-topup`, `file-subgroups`, `bot-review`, `question-mine`,
   `figure-fitness` — the nightly question-figure fitness catch-up, which stamps
@@ -132,9 +136,18 @@ the **Marking bill**: Adrian's own marked papers over the last 7/30 days split
 into 💻 plan (the Mac) vs ☁️ API, hand-ins apart (always API by design). Read
 straight off `paper_marking_runs` (plan ⟺ `result_json.queue.external_claim.
 delivered_at`) by `lib/marking-path.ts` (pure, tested); amber when ≥3 of his
-papers in a week and under half went to the plan. The page refreshes
-itself every minute while open, and rows deep-link to the relevant screen
-(invoices, digests, triage, papers, bank health).
+papers in a week and under half went to the plan. **The batch lane (11 Sep
+2026):** the bot's marking queue has a batch-API lane Adrian switches off by
+hand some nights (Fly secret `MARK_QUEUE_BATCH`) — when it's off, every
+hand-back is drawn on the marker machine instead, and nobody could see that
+state the night the machine melted. The route fail-softly probes the bot's
+public `GET /queue-quiet` (3s timeout, no auth) and the Marking queue section
+shows `batch_lane:'off'` as an amber note, `'on'` as a quiet grey one, and
+`marker_reachable:false` as a red "Marker process unreachable" note; an
+unknown/missing field or an unreachable bot shows nothing (`lib/bot-queue-
+status.ts`, pure/tested). The page refreshes itself every minute while open,
+and rows deep-link to the relevant screen (invoices, digests, triage, papers,
+bank health).
 
 ## The costs page — `/admin/costs` (9 Sep 2026)
 

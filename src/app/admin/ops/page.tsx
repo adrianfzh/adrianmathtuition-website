@@ -23,6 +23,8 @@ type OpsData = {
   marking: { d7: MarkingShare; d30: MarkingShare } | null;
   /** A plan-billed lane that last reported a PLAN LIMIT (9 Sep 2026) — empty when both lanes are fine. */
   planLane?: { job: 'plan-marking' | 'sheet-worker'; at: string; summary: string }[];
+  /** The bot's `/queue-quiet` batch-lane + reachability facts (11 Sep 2026) — null when the fetch itself failed (bot down, field not shipped yet). */
+  botQueue?: { batchLaneNote: { text: string; tone: 'amber' | 'grey' } | null; markerUnreachable: string | null } | null;
   generatedAt: string;
 };
 
@@ -143,6 +145,25 @@ export default function OpsPage() {
               ))}
             </div>
           )}
+          {/* The batch lane (11 Sep 2026): Adrian flips MARK_QUEUE_BATCH off by
+              hand some nights, and a marker machine melted the one night nobody
+              could see that state. Red beats amber when the marker itself is
+              unreachable — that's the more urgent fact. */}
+          {!!data?.botQueue?.markerUnreachable && (
+            <div className="px-4 py-2 border-t border-red-100 bg-red-50 text-xs text-red-800">
+              ⚠ {data.botQueue.markerUnreachable}
+            </div>
+          )}
+          {!!data?.botQueue?.batchLaneNote && (
+            <div className={`px-4 py-2 border-t text-xs ${
+              data.botQueue.batchLaneNote.tone === 'amber'
+                ? 'border-amber-100 bg-amber-50 text-amber-800'
+                : 'border-neutral-100 bg-neutral-50 text-neutral-500'
+            }`}>
+              {data.botQueue.batchLaneNote.tone === 'amber' ? '⚠ ' : ''}{data.botQueue.batchLaneNote.text}
+            </div>
+          )}
+
           {/* Which papers, not just how many — a count cannot tell you WHICH one
               is stuck (Adrian, 9 Sep 2026: "i don't see any papers queued"). */}
           {!!data?.queue.rows.length && (

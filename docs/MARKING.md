@@ -626,7 +626,7 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   marker marked from the working alone (16 of 16 reads `question_found:false`, *"Max taken as 4"* on
   a six-mark Q1), `groundPaperTotals` printed the guessed 73 against the registry's 90 as **68/90**,
   the review line said "17 marks of allocation too few", and the 8 Sep release-everything rule sent
-  it out. **Nobody was told the paper was missing.** Five things now happen, and none of them holds
+  it out. **Nobody was told the paper was missing.** Six things now happen, and none of them holds
   a marking — a student's paper is still marked and still goes out:
   1. **In the app, before a single photo is uploaded (10 Sep 2026, later the same evening).** Adrian:
      *"students should drop their question paper if required, app should hint if we do not have the
@@ -673,6 +673,15 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
      byte-identical to yesterday's.
   5. **When the paper arrives.** `/api/cron/extraction-inbox` files it for the marker and re-marks
      the papers — see below.
+  6. **Weekly, for papers nobody has dropped in yet (11 Sep 2026).** `/api/cron/missing-papers`
+     (Mondays 8am SGT) groups the last 7 days of ungrounded runs by paper (`lib/missing-papers.ts`,
+     pure/tested — reuses `runPaperFields`/`isUngrounded`, folds a school's finer library level like
+     `S3_AM` onto the family a run names), drops any already re-grounded
+     (`paper_match.regrounded_key`) or now held (`paper_library` kind questions/solutions/combined, or
+     bank `questions` rows for the same fields), and Telegrams ONE line: *"📚 Papers named this week
+     that we don't hold: GCE 2025 AM P2 (2 hand-ins), Xinmin 2026 AM Prelim P2 (1). Drop the question
+     paper into the Extraction Inbox and those markings re-ground themselves."* Sends nothing when the
+     list is empty; stamps `job_runs` `missing-papers` every run either way.
 - **📥 The inbox closes the loop (10 Sep 2026).** A PDF dropped into Dropbox › Extraction Inbox used
   to become the extraction fleet's `kind='source'` row and nothing else, so the four 2025 GCE papers
   sat in the very folder that had received them while two students' papers were marked blind against
