@@ -274,6 +274,11 @@ the ones he named.
 | E12 | Isabelle AM 2024 P2 75/85 — attached-PDF grounding never consults the bank's per-part brackets | rule | the bank is consulted only when the ANSWERS are ungrounded; a library solutions PDF (or the Mac lane's `externalReads`) took the other arm, so every bracket was page-read and split answers were capped | `lib/bank-allocation.js`: when nothing else settles the brackets, the paper's own marks come from the bank, at the one seam all three assembly paths share; a stored allocation still wins, the library key must match, Practice Again sheets refused (bot 5062a75, deployed v1987). Replay: 79/90, not 75/85 (three split answers, not two) | ✅ forward |
 | E13 | hand-in 504 (Jamie), machine at load 6 | infra | batch lane off + three re-marks + a hand-in on 1 CPU / 2 GB | resize, `mapLimit` 2, heap 2048, two Fly processes (a2e625f), marker alarm (702e881), `batch_lane` on ops | ✅ |
 
+| E14 | (found by the golden bench on its first run) the allocation re-read corrected only half of a read: `marking.parts` got the printed bracket, `marking_output.parts` kept the old one, so the cover's "marks lost by kind" under-counted by one on Jamie's EM 2024 P1 Q20 | rule | `applyCorrections` rebuilt one of the two part arrays | both arrays corrected (bot 4c20a2f, 3 regression tests) | ✅ forward |
+| E15 | Alexis's two 8 Sep runs stored NO placement boxes (every photo's grounding has `anns` without `bbox`), so their pages cannot be redrawn from stored ink and cannot go on the pen bench; other runs in the same window store boxes | pen / storage | unknown — per-run, not a missing feature | — | 🔧 open: find why those two runs skipped the box store |
+
+**The bench (11 Sep 2026).** `npm test` now replays eight real papers' reads through the post-read assembly (`test/golden/*.json`, 0.3 s, no credentials) and `scripts/golden-pen.cjs` redraws real pages from stored boxes with five ink checks; the capture recipe is `scripts/golden-capture.cjs <runId>`. A rule or pen fix is verified there and by the page re-mark door, never by re-marking a whole released paper (bot CLAUDE.md § Golden bench).
+
 What the round cost and why (the retrospective's numbers): 19 agents launched
 including relaunches, 6 lost to a transient API error or the session limit, 18
 bot deploys, 3 hand merges, the queue in-flight on one paper for 20 minutes
