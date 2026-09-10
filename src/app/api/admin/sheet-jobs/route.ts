@@ -41,10 +41,7 @@ import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the marking topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_marking = (text: string) => sendTelegram(text, 'marking');
 import { logJobRun } from '@/lib/job-log';
-import {
-  pickNextJob, sanitizeResult, completionMessage, cancelState, isNoSheet, MAX_ATTEMPTS, type SheetJobResult,
-  type SheetJob, type SheetFiledResult,
-} from '@/lib/sheet-jobs';
+import { pickNextJob, sanitizeResult, completionMessage, cancelState, isNoSheet, MAX_ATTEMPTS, type SheetJobResult, type SheetJob, type SheetFiledResult, authoredItemsLine } from '@/lib/sheet-jobs';
 import { sendTelegramDocument } from '@/lib/telegram';
 import { downloadFile, getTemporaryLink } from '@/lib/dropbox';
 import JSZip from 'jszip';
@@ -349,7 +346,14 @@ export async function POST(req: NextRequest) {
       const archived = await archiveSheetToStore(rid, { pdfPath: result.pdf_path, docxPath: result.docx_path }, 'done');
       if (!archived.ok) console.warn('[sheet-jobs] sheet archive skipped', job.id, rid, archived.error);
     }
-    notify_marking(completionMessage(job, result, { heldItemsLine: held.line }))
+    // Authored practice vs proposals filed — the bank only grows through a
+    // proposal Adrian approves, so an authored item never proposed is lost to it.
+    let authoredLine: string | null = null;
+    try {
+      const { count } = await sb.from('authored_question_proposals').select('id', { count: 'exact', head: true }).eq('sheet_job_id', job.id);
+      authoredLine = authoredItemsLine(handback.questions as { question_id?: string | null }[], count ?? 0);
+    } catch { /* a nicety */ }
+    notify_marking(completionMessage(job, result, { heldItemsLine: held.line, authoredLine }))
       .then(() => sendSheetFiles(job, result))
       .catch(() => {});
     logJobRun('sheet-worker', true, `${job.student_name || job.airtable_student_id}: sheet filed${held.created || held.already ? ` · ${held.created + held.already} practice items held` : ''}`).catch(() => {});

@@ -167,6 +167,19 @@ function clipText(text: string, max: number): string {
   return `${(at > max * 0.6 ? cut.slice(0, at) : cut).trimEnd()}…`;
 }
 
+/**
+ * "⚠️ 9 practice items written by the worker, 2 filed for vetting — the other 7
+ * live only in the sheet" — or null when every authored item was proposed (or
+ * none was authored). Pure.
+ */
+export function authoredItemsLine(questions: { question_id?: string | null }[] | null | undefined, proposalsFiled: number): string | null {
+  const authored = (questions ?? []).filter(q => !q || !q.question_id).length;
+  const bank = (questions ?? []).length - authored;
+  if (authored <= 0 || proposalsFiled >= authored) return null;
+  const missing = authored - proposalsFiled;
+  return `⚠️ ${authored} practice item${authored === 1 ? '' : 's'} written by the worker${bank ? ` (${bank} from the bank)` : ' — none from the bank'}, ${proposalsFiled} filed for vetting: the other ${missing} live${missing === 1 ? 's' : ''} only in the sheet.`;
+}
+
 export function sheetFolder(docxPath: string | null | undefined): string {
   const parts = String(docxPath || '').split('/').filter(Boolean);
   parts.pop();                                   // the file itself
@@ -184,7 +197,7 @@ export function completionMessage(
   job: Pick<SheetJob, 'student_name' | 'paper_name'>,
   result: SheetJobResult | null,
   /** The Practice Again hand-back (SPEC-PORTAL-V2 §7): one ready-made line, e.g. "🔁 5 practice items held for release". */
-  extra: { heldItemsLine?: string | null } = {},
+  extra: { heldItemsLine?: string | null; authoredLine?: string | null } = {},
 ): string {
   const who = job.student_name || 'A student';
   // "Nothing to teach" is a right answer, so it reads like one: calm, specific,
@@ -205,6 +218,11 @@ export function completionMessage(
   const v = stamp.match(/^(\d+)\s*\/\s*(\d+)/);
   if (stamp) lines.push('', v ? `✓ Answers verified: ${v[1]} of ${v[2]} checked${v[1] === v[2] ? '' : ' ⚠️'}` : `⚠️ Verification stamp not in the "N/N" form — ${esc(clipText(stamp, 120))}`);
   if (extra.heldItemsLine) lines.push(esc(extra.heldItemsLine));
+  // Authored practice that was never filed for vetting is invisible to the bank
+  // (Adrian, 10 Sep 2026: "when the worker writes the questions themselves, do
+  // they save the questions in the question bank?" — only through a proposal he
+  // approves; Isabelle's seven sheets filed 11 of 62). Say it on the line.
+  if (extra.authoredLine) lines.push('', esc(extra.authoredLine));
   const folder = sheetFolder(result?.docx_path);
   lines.push('', folder ? `📂 Dropbox › ${esc(folder)}` : '📂 In Dropbox', `${result?.pdf_path ? 'The sheet\u2019s PDF and DOCX follow. ' : ''}Approve &amp; release on the desk sends the marked paper, this sheet and the practice items together. To change anything first, edit the DOCX and export the PDF beside it.`);
   return lines.join('\n');

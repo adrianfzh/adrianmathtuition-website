@@ -243,3 +243,16 @@ describe('sheetFolder', () => {
     expect(sheetFolder(null)).toBe('');
   });
 });
+
+// ── authored practice vs proposals filed (10 Sep 2026) ──────────────────────
+import { authoredItemsLine } from './sheet-jobs';
+describe('authoredItemsLine — an authored item never proposed is lost to the bank', () => {
+  it('names the gap; silent when every authored item was filed or nothing was authored', () => {
+    const qs = [{ question_id: 'a' }, { question_id: null }, {}, { question_id: '' }];
+    expect(authoredItemsLine(qs, 1)).toBe('⚠️ 3 practice items written by the worker (1 from the bank), 1 filed for vetting: the other 2 live only in the sheet.');
+    expect(authoredItemsLine(qs, 3)).toBeNull();
+    expect(authoredItemsLine([{ question_id: 'a' }], 0)).toBeNull();
+    expect(authoredItemsLine([{}], 0)).toBe('⚠️ 1 practice item written by the worker — none from the bank, 0 filed for vetting: the other 1 lives only in the sheet.');
+    expect(authoredItemsLine(null, 0)).toBeNull();
+  });
+});
