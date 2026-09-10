@@ -74,13 +74,14 @@ export async function buildFrontPage(
   // A re-marked paper (10 Sep 2026): the run keeps previous_results from the
   // enqueue, queue.remark_pages names the pages (0-based), previous_marked_at
   // the moment. The cover wears the badge and points at the purple ink.
-  const rjAny = (run.result_json && typeof run.result_json === 'object') ? run.result_json as { previous_results?: unknown; previous_marked_at?: unknown; queue?: { remark_pages?: unknown } | null } : null;
+  const rjAny = (run.result_json && typeof run.result_json === 'object') ? run.result_json as { previous_results?: unknown; results?: unknown; previous_marked_at?: unknown; queue?: { remark_pages?: unknown } | null } : null;
   const remarked = rjAny && Array.isArray(rjAny.previous_results) && rjAny.previous_results.length
     ? {
         pages: Array.isArray(rjAny.queue?.remark_pages)
           ? (rjAny.queue!.remark_pages as unknown[]).map(n => Number(n) + 1).filter(n => Number.isFinite(n) && n > 0)
           : null,
         at: typeof rjAny.previous_marked_at === 'string' ? rjAny.previous_marked_at : null,
+        changed: changedPartCount(rjAny.previous_results, rjAny.results),
       }
     : null;
 
@@ -96,4 +97,38 @@ export async function buildFrontPage(
     themesSource: diagnosis ? 'sheet' : 'marker',
     worstQuestions: worstQuestions(parts, runId),
   });
+}
+
+/**
+ * How many parts changed their awarded mark between the marking that stood
+ * before a re-mark and the one that stands now — the count behind the cover's
+ * "in purple" line. The bot inks a part purple only when its AWARDED mark moved
+ * (lib/page-remark partDiff), so a redraw that changed no mark must not promise
+ * purple ink. Keyed by question number + part label; a part missing on either
+ * side counts as changed. Pure; null when either side is unreadable.
+ */
+export function changedPartCount(previous: unknown, current: unknown): number | null {
+  const collect = (rows: unknown): Map<string, number> | null => {
+    if (!Array.isArray(rows)) return null;
+    const m = new Map<string, number>();
+    for (const r of rows as Array<Record<string, unknown>>) {
+      if (!r || typeof r !== 'object' || (r as { added_by_audit?: unknown }).added_by_audit) continue;
+      const q = String(r.question_number ?? '');
+      const parts = (r.marking as { parts?: unknown } | undefined)?.parts;
+      if (!Array.isArray(parts)) continue;
+      for (const p of parts as Array<Record<string, unknown>>) {
+        const key = `${q}|${String(p?.label ?? '')}`;
+        const aw = Number(p?.awarded);
+        if (!Number.isFinite(aw)) continue;
+        m.set(key, Math.max(m.get(key) ?? -1, aw));
+      }
+    }
+    return m;
+  };
+  const a = collect(previous), b = collect(current);
+  if (!a || !b) return null;
+  let n = 0;
+  for (const [k, v] of a) if (!b.has(k) || b.get(k) !== v) n++;
+  for (const k of b.keys()) if (!a.has(k)) n++;
+  return n;
 }

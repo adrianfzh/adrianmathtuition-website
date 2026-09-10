@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { frontPageHtml, chooseThemes, type FrontPageInput, oLevelGrade } from './front-page-html';
+import { changedPartCount } from './front-page-build';
 import type { Theme } from './paper-analysis';
 
 const theme = (over: Partial<Theme> = {}): Theme => ({
@@ -445,5 +446,28 @@ describe('frontPageHtml — REMARKED', () => {
     const many = frontPageHtml({ ...base, remarked: { pages: [7, 3], at: 'junk' } });
     expect(many).toContain('Re-marked: pages 3, 7.');
     expect(frontPageHtml({ ...base })).not.toContain('remark-badge');
+  });
+  it('a re-mark that moved no mark says so instead of promising purple ink', () => {
+    const same = frontPageHtml({ ...base, remarked: { pages: [1], at: '2026-09-10T12:00:00Z', changed: 0 } });
+    expect(same).toContain('Re-marked on 10 Sep 2026: page 1. No marks changed — the page was marked again and the notes redrawn.');
+    expect(same).not.toContain('purple');
+    const moved = frontPageHtml({ ...base, remarked: { pages: [1], at: '2026-09-10T12:00:00Z', changed: 2 } });
+    expect(moved).toContain('in <b>purple</b>');
+    const unknown = frontPageHtml({ ...base, remarked: { pages: [1], at: null, changed: null } });
+    expect(unknown).toContain('in <b>purple</b>');
+  });
+});
+
+describe('changedPartCount', () => {
+  const row = (q: string, parts: Array<[string, number]>, extra: Record<string, unknown> = {}) =>
+    ({ question_number: q, marking: { parts: parts.map(([label, awarded]) => ({ label, awarded })) }, ...extra });
+  it('counts parts whose awarded mark moved, appeared or vanished; ignores rows the audit added', () => {
+    const prev = [row('1', [['', 3]]), row('2', [['', 3]]), row('3', [['(a)(i)', 1], ['(a)(ii)', 2]])];
+    const same = [row('1', [['', 3]]), row('2', [['', 3]]), row('3', [['(a)(i)', 1], ['(a)(ii)', 2]]), row('12', [['', 0]], { added_by_audit: true })];
+    expect(changedPartCount(prev, same)).toBe(0);
+    const moved = [row('1', [['', 3]]), row('2', [['', 4]]), row('3', [['(a)(i)', 1]])];
+    expect(changedPartCount(prev, moved)).toBe(2);
+    expect(changedPartCount(null, same)).toBeNull();
+    expect(changedPartCount(prev, 'junk')).toBeNull();
   });
 });

@@ -96,7 +96,7 @@ export type FrontPageInput = {
   /** The paper was re-marked (10 Sep 2026): which pages (1-based; null = the whole
    *  paper) and when. The cover wears a REMARKED badge and says the changed parts
    *  are in purple — the pen inks them so (bot annotate.js REMARK_INK). */
-  remarked?: { pages: number[] | null; at: string | null } | null;
+  remarked?: { pages: number[] | null; at: string | null; changed?: number | null } | null;
 };
 
 // ONE A4 SHEET. Adrian asked for "a pdf page attached right in front" —
@@ -199,8 +199,14 @@ export function remarkLine(r: FrontPageInput['remarked']): string {
   const pages = Array.isArray(r.pages) ? r.pages.filter(n => Number.isFinite(n) && n > 0).sort((a, b) => a - b) : [];
   const where = pages.length ? `page${pages.length === 1 ? '' : 's'} ${pages.join(', ')}` : 'the whole paper';
   const when = remarkDate(r.at);
+  // A re-mark that moved no mark draws no purple (the page is inked purple only
+  // where a part's awarded mark changed) — say so rather than promise ink that
+  // is not there (Isabelle's AM 2025 P1 page 1, 10 Sep 2026: redrawn, same marks).
+  const tail = r.changed === 0
+    ? 'No marks changed — the page was marked again and the notes redrawn.'
+    : 'What changed since the last marking is in <b>purple</b>.';
   return `<style>.remark-line{margin:-.25rem 0 .7rem;font-size:.85rem;color:#5b21b6}.remark-line b{font-weight:700}</style>`
-    + `<p class="remark-line">Re-marked${when ? ` on ${when}` : ''}: ${where}. What changed since the last marking is in <b>purple</b>.</p>`;
+    + `<p class="remark-line">Re-marked${when ? ` on ${when}` : ''}: ${where}. ${tail}</p>`;
 }
 
 /** O-Level grade band for a percentage — the bands every Sec 4 student knows. */
