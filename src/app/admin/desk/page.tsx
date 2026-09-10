@@ -1471,7 +1471,7 @@ function DetailView(p: {
             <section key={pg.photoIndex} id={`page-${pg.photoIndex}`} style={{ border: `1px solid ${C.border}`, borderRadius: 12, background: '#fff', marginBottom: 14, overflow: 'hidden' }}>
               <div style={{ padding: '8px 12px', background: '#fafafa', borderBottom: `1px solid ${C.border}`, fontSize: 12.5, color: C.muted, display: 'flex', justifyContent: 'space-between' }}>
                 <span>Page {pg.photoIndex + 1}
-                  {!released && <button type="button" onClick={() => setAnnotatePage(pg.photoIndex)} style={{ ...btn('#fff', C.pen, '#ddd6fe'), marginLeft: 10, padding: '3px 9px', fontSize: 12.5 }} title="Open the pen on this page, right here — the marker's ink is editable">✏️ Annotate this page</button>}
+                  {<button type="button" onClick={() => setAnnotatePage(pg.photoIndex)} style={{ ...btn('#fff', C.pen, '#ddd6fe'), marginLeft: 10, padding: '3px 9px', fontSize: 12.5 }} title="Open the pen on this page, right here — the marker's ink is editable">✏️ Annotate this page</button>}
                   <a href={fileHref(solutionsOnPage && pg.urlWithSolutions ? pg.urlWithSolutions : pg.url)} target="_blank" rel="noreferrer" style={{ marginLeft: 8, color: C.link, textDecoration: 'none', fontSize: 12 }} title="Open the page image on its own">open ↗</a>
                 </span>
                 <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -1485,10 +1485,12 @@ function DetailView(p: {
                   )}
                 </span>
               </div>
-              {/* Tap the page to annotate it in place (released papers keep the plain image). */}
+              {/* Tap the page to annotate it in place — released papers too (10 Sep 2026: every
+                  paper is released by the time Adrian sees it, and the deep link to
+                  /admin/mark-paper took 3–4 s; the detail here already holds every page). */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={fileHref(solutionsOnPage && pg.urlWithSolutions ? pg.urlWithSolutions : pg.url)} alt={`Marked page ${pg.photoIndex + 1}`} loading="lazy"
-                onClick={() => { if (!released) setAnnotatePage(pg.photoIndex); }}
+                onClick={() => setAnnotatePage(pg.photoIndex)}
                 title={released ? undefined : 'Tap to annotate this page'}
                 style={{ width: '100%', display: 'block', cursor: released ? 'default' : 'pointer' }} />
               {solutionsOnPage && pg.urlWithSolutions && pg.overflowUrl && (
@@ -1547,7 +1549,7 @@ function DetailView(p: {
               <section style={{ border: `1px solid ${C.border}`, borderRadius: 12, background: '#fff', overflow: 'hidden' }}>
                 <div style={{ padding: '8px 12px', background: '#fafafa', borderBottom: `1px solid ${C.border}`, fontSize: 12.5, color: C.muted, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   <span>Page {pg.photoIndex + 1}
-                    {!released && <button type="button" onClick={() => setAnnotatePage(pg.photoIndex)} style={{ ...btn('#fff', C.pen, '#ddd6fe'), marginLeft: 10, padding: '3px 9px', fontSize: 12.5 }} title="Open the pen on this page">✏️ Annotate this page</button>}
+                    {<button type="button" onClick={() => setAnnotatePage(pg.photoIndex)} style={{ ...btn('#fff', C.pen, '#ddd6fe'), marginLeft: 10, padding: '3px 9px', fontSize: 12.5 }} title="Open the pen on this page">✏️ Annotate this page</button>}
                     <a href={src} target="_blank" rel="noreferrer" style={{ marginLeft: 8, color: C.link, textDecoration: 'none', fontSize: 12 }}>open ↗</a>
                   </span>
                   {!run.remarking && (
@@ -1559,7 +1561,7 @@ function DetailView(p: {
                   )}
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={src} alt={`Marked page ${pg.photoIndex + 1}`} onClick={() => { if (!released) setAnnotatePage(pg.photoIndex); }}
+                <img src={src} alt={`Marked page ${pg.photoIndex + 1}`} onClick={() => setAnnotatePage(pg.photoIndex)}
                   title={released ? undefined : 'Tap to annotate this page'} style={{ width: '100%', display: 'block', cursor: released ? 'default' : 'pointer' }} />
                 {solutionsOnPage && pg.urlWithSolutions && pg.overflowUrl && (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -1573,7 +1575,7 @@ function DetailView(p: {
           )}
         </div>
       </div>
-      {annotatePage != null && !released && (
+      {annotatePage != null && (
         <AnnotateOverlay
           runId={run.id}
           pages={annotatePages}

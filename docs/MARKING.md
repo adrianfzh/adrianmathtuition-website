@@ -1349,6 +1349,13 @@ student · Marked, no sheet yet · In process) only ever hold a paper the
 automatic door refused, so the desk hides them at zero
 (`LANES_HIDDEN_AT_ZERO`) and opens on one only when it holds something.
 ✓ Looked at sits on every automatic-lane row as well as inside the paper.
+**The in-place pen opens on released papers too (10 Sep 2026** — Adrian: "in desk, when
+enter into a sheet, annotate button is very slow, it takes 3-4 seconds to load"): the ✏️ on every
+page card and a tap on the page image open `AnnotateOverlay` right here, with the pages the
+detail already holds, released or not — the "✏️ Annotate" deep link to `/admin/mark-paper`
+(a full page load + run fetch) stays as the alternative. Done goes through the same
+`mark-paper-annotate-pdf` route the deep link uses, so a released paper behaves exactly as it
+did from there.
 **✓ Looked at can be undone (10 Sep 2026** — Adrian: "i just accidentally clicked looked at
 for isabelle (i forgot which paper), is there an undo button?"): the toast after a ✓ carries
 **↩ Undo** for ~9 s and names the paper; every Completed-lane row that was ticked shows
