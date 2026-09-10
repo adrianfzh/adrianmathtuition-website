@@ -6,7 +6,9 @@ import { getSupabaseBrowser } from '@/lib/supabase-client';
 import { PORTAL_TOUR_KEY } from '@/lib/portal-tour';
 import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 import PushToggle from './PushToggle';
-import AskSignalToggle from './AskSignalToggle';
+import PrefToggle from './PrefToggle';
+import { ASK_SIGNAL_MIN, ASK_SIGNAL_PREF } from '@/lib/ask-signal';
+import { EXAM_COUNTDOWN_NOTICE_PREF, EXAM_COUNTDOWN_PREF } from '@/lib/portal-prefs';
 import InstallCard from '@/components/InstallCard';
 import TelegramLinkCard from '@/components/TelegramLinkCard';
 
@@ -15,9 +17,9 @@ const input = 'w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm fo
 const btn = 'bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50';
 
 export default function SettingsClient({
-  email, displayName, level, telegramChatId, telegramLinked, askSignal,
+  email, displayName, level, telegramChatId, telegramLinked, askSignal, examCountdown,
 }: {
-  email: string; displayName: string; level: string; telegramChatId: string; telegramLinked: boolean; askSignal: boolean;
+  email: string; displayName: string; level: string; telegramChatId: string; telegramLinked: boolean; askSignal: boolean; examCountdown: boolean;
 }) {
   const router = useRouter();
   const [pw, setPw] = useState({ next: '', confirm: '', msg: '', busy: false });
@@ -121,9 +123,29 @@ export default function SettingsClient({
 
       <PushToggle />
 
-      {/* 💬 Count what I ask about (10 Sep 2026) — the Notebook's opt-in
-          Keeps-coming-up band; prefs.ask_signal via /api/portal/settings. */}
-      <AskSignalToggle initial={askSignal} />
+      {/* Opt-in switches (SPEC-NOTEBOOK-V2 §0: off by default, one each) —
+          prefs.* through /api/portal/settings, whitelist in lib/portal-prefs. */}
+      <PrefToggle
+        pref={EXAM_COUNTDOWN_PREF}
+        also={{ [EXAM_COUNTDOWN_NOTICE_PREF]: true }}
+        heading="Home"
+        label="📅 Show my exam countdown at the top of Home"
+        description={<>Counts the days to your next exam or test (the ones Adrian has on record — WA3, prelims, EOY) and lists the topics it tests. It sits above everything else on Home while it&apos;s on.</>}
+        onMessage="✓ On — your next exam now sits at the top of Home."
+        offMessage="Off — Home shows no countdown."
+        initial={examCountdown}
+      />
+      <PrefToggle
+        pref={ASK_SIGNAL_PREF}
+        heading="My Notebook"
+        label="💬 Show skills I keep asking about"
+        description={<>When this is on, My Notebook adds a &ldquo;Keeps coming up&rdquo; line for any skill you ask the app about{' '}
+          {ASK_SIGNAL_MIN}{' '}or more times in two weeks — for example &ldquo;Proofs using the Pythagorean identity&rdquo;, not just
+          &ldquo;Trigonometry&rdquo;. It&apos;s a nudge, not a mark: asking isn&apos;t a mistake. The line fades by itself when you stop asking.</>}
+        onMessage="✓ On — skills you keep asking about will show in My Notebook."
+        offMessage="Off — My Notebook only counts your marked papers and practice."
+        initial={askSignal}
+      />
 
       <div className={card}>
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Show me around</p>

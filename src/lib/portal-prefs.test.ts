@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mergePrefs, readPrefsPatch } from './portal-prefs';
+import { examCountdownNoticeDue, examCountdownOn, mergePrefs, readPrefsPatch } from './portal-prefs';
 
 describe('readPrefsPatch', () => {
   it('accepts a whitelisted boolean', () => {
@@ -24,5 +24,27 @@ describe('mergePrefs', () => {
     expect(mergePrefs(null, { ask_signal: true })).toEqual({ ask_signal: true });
     expect(mergePrefs('junk', { ask_signal: true })).toEqual({ ask_signal: true });
     expect(mergePrefs([1], { ask_signal: true })).toEqual({ ask_signal: true });
+  });
+});
+
+describe('exam countdown prefs', () => {
+  it('accepts both countdown keys', () => {
+    expect(readPrefsPatch({ exam_countdown: true, exam_countdown_notice_seen: true }))
+      .toEqual({ patch: { exam_countdown: true, exam_countdown_notice_seen: true } });
+  });
+  it('is on only for an explicit true', () => {
+    expect(examCountdownOn({ exam_countdown: true })).toBe(true);
+    expect(examCountdownOn({ exam_countdown: false })).toBe(false);
+    expect(examCountdownOn({})).toBe(false);
+    expect(examCountdownOn(null)).toBe(false);
+  });
+  it('the one-time notice is due until the switch is touched or the notice dismissed', () => {
+    expect(examCountdownNoticeDue({})).toBe(true);
+    expect(examCountdownNoticeDue(null)).toBe(true);
+    expect(examCountdownNoticeDue({ ask_signal: true })).toBe(true);
+    expect(examCountdownNoticeDue({ exam_countdown_notice_seen: true })).toBe(false);
+    expect(examCountdownNoticeDue({ exam_countdown: true })).toBe(false);
+    // an explicit off is a decision — no nagging
+    expect(examCountdownNoticeDue({ exam_countdown: false })).toBe(false);
   });
 });

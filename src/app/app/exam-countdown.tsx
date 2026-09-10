@@ -14,8 +14,12 @@ import {
   type UpcomingExam,
 } from '@/lib/portal-exams';
 
-export default function ExamCountdown({ exams, card, caption }: {
+export default function ExamCountdown({ exams, card, caption, studentMode = false }: {
   exams: UpcomingExam[]; card: string; caption: string;
+  /** A student's own copy (SPEC-NOTEBOOK-V2 §3): no timed-set door and no
+   *  topic links while the picker and the timed set stay admin-only —
+   *  both would bounce a student straight back to Practise. */
+  studentMode?: boolean;
 }) {
   if (!exams.length) return null;
   const next = exams[0];
@@ -65,9 +69,9 @@ export default function ExamCountdown({ exams, card, caption }: {
 
       {shown.length > 0 && (
         <div className="mt-3">
-          <p className="text-[11px] text-slate-400 mb-1.5">Tested topics — tap one to practise it</p>
+          <p className="text-[11px] text-slate-400 mb-1.5">{studentMode ? 'Tested topics' : 'Tested topics — tap one to practise it'}</p>
           <div className="flex flex-wrap gap-1.5">
-            {shown.map(t => next.practiceLevel ? (
+            {shown.map(t => next.practiceLevel && !studentMode ? (
               <Link key={t} href={topicPracticeHref(next, t)} className={`${chip} active:scale-95 transition-transform`}>{t}</Link>
             ) : (
               <span key={t} className={chip}>{t}</span>
@@ -79,11 +83,13 @@ export default function ExamCountdown({ exams, card, caption }: {
         </div>
       )}
 
-      <Link href={timedSetHref(next)} className="mt-3 flex items-center gap-2 text-sm font-semibold text-navy">
-        <span aria-hidden>⏱</span>
-        <span className="flex-1">{topics.length ? 'Timed set on these topics' : 'Timed set at exam pace'}</span>
-        <span aria-hidden className="text-slate-300">›</span>
-      </Link>
+      {!studentMode && (
+        <Link href={timedSetHref(next)} className="mt-3 flex items-center gap-2 text-sm font-semibold text-navy">
+          <span aria-hidden>⏱</span>
+          <span className="flex-1">{topics.length ? 'Timed set on these topics' : 'Timed set at exam pace'}</span>
+          <span aria-hidden className="text-slate-300">›</span>
+        </Link>
+      )}
     </div>
   );
 }

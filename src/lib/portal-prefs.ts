@@ -6,10 +6,37 @@
 // Every pref is a boolean for now; add a type here if that changes.
 import { ASK_SIGNAL_PREF } from './ask-signal';
 
+/** Settings → "Show my exam countdown at the top of Home" (SPEC-NOTEBOOK-V2 §3). */
+export const EXAM_COUNTDOWN_PREF = 'exam_countdown';
+/** The one-time Home notice about that switch has been shown (either button dismisses it). */
+export const EXAM_COUNTDOWN_NOTICE_PREF = 'exam_countdown_notice_seen';
+
 export const PORTAL_PREF_KEYS: readonly string[] = [
-  /** Settings → "Count what I ask about" → the Notebook's Keeps-coming-up band (lib/ask-signal.ts). */
+  /** Settings → "Show skills I keep asking about" → the Notebook's Keeps-coming-up band (lib/ask-signal.ts). */
   ASK_SIGNAL_PREF,
+  EXAM_COUNTDOWN_PREF,
+  EXAM_COUNTDOWN_NOTICE_PREF,
 ];
+
+function prefsObject(prefs: unknown): Record<string, unknown> | null {
+  return prefs && typeof prefs === 'object' && !Array.isArray(prefs) ? (prefs as Record<string, unknown>) : null;
+}
+
+/** True only for an explicit `true`. */
+export function examCountdownOn(prefs: unknown): boolean {
+  return prefsObject(prefs)?.[EXAM_COUNTDOWN_PREF] === true;
+}
+
+/**
+ * The one-time notice is due while the student has never touched the switch
+ * (the key is absent — an explicit false is a decision) and has not dismissed
+ * the notice. Adrian, 11 Sep 2026: "give them a one-time notification (the
+ * next time they login) to tell them they can do it in settings".
+ */
+export function examCountdownNoticeDue(prefs: unknown): boolean {
+  const p = prefsObject(prefs) ?? {};
+  return !(EXAM_COUNTDOWN_PREF in p) && p[EXAM_COUNTDOWN_NOTICE_PREF] !== true;
+}
 
 export type PrefsPatch = Record<string, boolean>;
 
