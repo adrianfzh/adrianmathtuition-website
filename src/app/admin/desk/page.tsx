@@ -31,7 +31,7 @@ import SubjectChip from '@/components/SubjectChip';
 import GroundingChip from '@/components/GroundingChip';
 import RulesTag from '@/components/RulesTag';
 import { mathHtml } from '@/lib/math-inline';
-import { DESK_LANES, LANES_HIDDEN_AT_ZERO, releasedViaLabel, LANE_LABEL, orderLane, HANDIN_ORIGIN_LABEL, type DeskLane, type HandinOrigin, revisingLabel, type Revising, type SheetOutcome, type MarkingProgress } from '@/lib/desk-state';
+import { DESK_LANES, LANES_HIDDEN_AT_ZERO, releasedViaLabel, LANE_LABEL, orderLane, HANDIN_ORIGIN_LABEL, tickPlan, tickPlanLine, type DeskLane, type HandinOrigin, revisingLabel, type Revising, type SheetOutcome, type MarkingProgress } from '@/lib/desk-state';
 import { ERROR_KINDS, ERROR_KIND_HINT, isErrorKind } from '@/lib/error-kinds';
 import { PAPER_SUBJECTS, SCIENCE_PAPER_SUBJECTS, subjectPill } from '@/lib/portal-subjects';
 // The pen, in place (desk round 3, 8 Sep 2026): the same overlay mark-paper uses.
@@ -928,18 +928,27 @@ export default function DeskPage() {
   // batch job for the ticked papers (POST /api/admin/sheet-jobs { runIds }).
   const tickable = (row: Row) => !row.marking && !row.practiceAgain && !!row.studentId && laneRows.some(o => o.id !== row.id && !o.practiceAgain && o.studentId === row.studentId && (o.paperSubject ?? '') === (row.paperSubject ?? ''));
   const tickedRows = laneRows.filter(r => ticked.has(r.id));
-  const tickedStudent = tickedRows[0]?.studentName ?? null;
-  const tickedMixed = new Set(tickedRows.map(r => r.studentId)).size > 1 || new Set(tickedRows.map(r => r.paperSubject ?? '')).size > 1;
+  // Grouped by maths (11 Sep 2026): AM + EM ticked together → one sheet EACH.
+  const plan = tickPlan(tickedRows);
+  const planReady = plan.kind === 'ok';
   async function queueBatch() {
-    const ids = tickedRows.map(r => r.id);
-    if (ids.length < 2 || tickedMixed) return;
-    if (!window.confirm(`One Practice Again sheet for ${tickedStudent}'s ${ids.length} ticked papers? The Mac writes a single merged sheet (the same gap in two papers becomes one section) and files it in a new dated folder; you vet it on the desk before it goes out. Any single sheet still being written for these papers is stopped.`)) return;
+    if (plan.kind !== 'ok') return;
+    const n = plan.groups.length;
+    const what = n === 1
+      ? `One Practice Again sheet for ${plan.student}'s ${plan.groups[0].runIds.length} ticked papers?`
+      : `${n} Practice Again sheets for ${plan.student} — ${plan.groups.map(g => `${g.subject} (${g.runIds.length} papers)`).join(' and ')}?`;
+    if (!window.confirm(`${what} The Mac writes one merged sheet per maths (the same gap in two papers becomes one section) and files each in a new dated folder; you vet them on the desk before they go out. Any single sheet still being written for these papers is stopped.`)) return;
     setBusy('batch');
-    const { ok, d } = await postJson('/api/admin/sheet-jobs', { runIds: ids });
+    const queued: string[] = []; let cancelled = 0; let failed: string | null = null;
+    for (const g of plan.groups) {
+      const { ok, d } = await postJson('/api/admin/sheet-jobs', { runIds: g.runIds });
+      if (!ok) { failed = `${g.subject}: ${d.error || 'error'}`; break; }
+      queued.push(`${g.subject} (${g.runIds.length})`); cancelled += Number(d.cancelled || 0);
+    }
     setBusy('');
-    if (!ok) { setToast(`Not queued: ${d.error || 'error'}`); return; }
+    if (failed) { setToast(`${queued.length ? `Queued ${queued.join(', ')}; ` : ''}not queued — ${failed}`); loadQueue(); return; }
     setTicked(new Set());
-    setToast(`📘 One sheet queued for ${ids.length} papers${d.cancelled ? ` (${d.cancelled} single sheet${d.cancelled === 1 ? '' : 's'} stopped)` : ''}. It shows on the newest paper's row.`);
+    setToast(`📘 ${queued.length === 1 ? 'One sheet' : `${queued.length} sheets`} queued: ${queued.join(', ')}${cancelled ? ` (${cancelled} single sheet${cancelled === 1 ? '' : 's'} stopped)` : ''}. Each shows on its newest paper's row.`);
     loadQueue();
   }
 
@@ -1104,15 +1113,9 @@ export default function DeskPage() {
 
           {tickedRows.length > 0 && (
             <div style={{ position: 'sticky', bottom: 12, marginTop: 12, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', padding: '10px 12px', borderRadius: 12, background: '#1e3a8a', color: '#fff', boxShadow: '0 8px 24px -10px rgba(0,0,0,.5)' }}>
-              <span style={{ flex: '1 1 220px', fontSize: 13.5 }}>
-                {tickedMixed
-                  ? 'One sheet is for one student and one maths — untick the odd one out.'
-                  : tickedRows.length < 2
-                    ? `1 paper ticked — tick another of ${tickedStudent}'s to make one sheet.`
-                    : `📘 One Practice Again sheet for ${tickedStudent}'s ${tickedRows.length} papers (${tickedRows[0]?.paperSubject || 'maths'})`}
-              </span>
-              <button onClick={queueBatch} disabled={busy === 'batch' || tickedMixed || tickedRows.length < 2}
-                style={{ ...btn('#fff', '#1e3a8a'), opacity: tickedMixed || tickedRows.length < 2 ? 0.5 : 1 }}>{busy === 'batch' ? '…' : 'Queue one sheet'}</button>
+              <span style={{ flex: '1 1 220px', fontSize: 13.5 }}>{tickPlanLine(plan)}</span>
+              <button onClick={queueBatch} disabled={busy === 'batch' || !planReady}
+                style={{ ...btn('#fff', '#1e3a8a'), opacity: planReady ? 1 : 0.5 }}>{busy === 'batch' ? '…' : plan.kind === 'ok' && plan.groups.length > 1 ? `Queue ${plan.groups.length} sheets` : 'Queue one sheet'}</button>
               <button onClick={() => setTicked(new Set())} style={{ ...btn('transparent', '#fff', 'rgba(255,255,255,.4)') }}>Clear</button>
             </div>
           )}
