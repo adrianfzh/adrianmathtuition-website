@@ -28,6 +28,14 @@ back exactly as it was: a tightened example that STILL straddles is the worst
 of both. A skill's first example is never a "jumped" candidate — every skill
 after the first opens a page on purpose (page_break_before on its heading).
 
+A box TALLER than a page defeats every keep rule — Word abandons keep-with-next
+and cannot-split for it and lets it flow — and the "Solution:" line above it is
+then stranded at the foot of the page before (Adrian, 11 Sep 2026: "preferably,
+'Solution' is on top of the box, instead of straddling across two pages"). The
+second pass finds a "Solution:" whose box begins on a later page and puts a
+page break before that line, so the label opens the page with its box; the
+question stays where it was.
+
 Nothing else is touched: no text, no equations, no figures. The DOCX is written
 in place only when a block was tightened (`--check` reports and writes nothing).
 Run it after the file is otherwise finished, before filing — every later edit
@@ -211,6 +219,54 @@ def locate_blocks(lines, heights, labels):
     return found
 
 
+def stranded_solutions(lines, labels, heights=None, pin=()):
+    """Labels of the Example blocks whose "Solution:" line sits on an earlier
+    page than the first line of the box under it — plus, for the blocks in
+    `pin` (examples taller than a page, where Word abandons every keep rule),
+    a "Solution:" at the foot of a page or already carried to the top of one,
+    so a page break can hold it where a re-export cannot drift it."""
+    heads = [(i, ln) for i, ln in enumerate(lines) if HEADING.match(ln[3])]
+    out = []
+    cursor = 0
+    for label in labels:
+        hit = next(((i, ln) for i, ln in heads if ln[3] == label and i >= cursor), None)
+        if not hit:
+            continue
+        i, _ = hit
+        cursor = i + 1
+        nxt = next((j for j, l2 in heads if j > i), len(lines))
+        sol = next((k for k in range(i + 1, nxt) if lines[k][3] == 'Solution:'), None)
+        if sol is None or sol + 1 >= nxt:
+            continue
+        if lines[sol + 1][0] > lines[sol][0]:
+            out.append(label)
+            continue
+        # Word's pagination drifts by a line between two exports of the SAME
+        # file (Kiara, 11 Sep 2026: the worker's PDF had the label stranded, a
+        # re-export did not). A "Solution:" within three lines of the page foot
+        # under a box taller than the page is one drift away from stranded, so
+        # it is treated as stranded now rather than in the student's copy.
+        if heights and label in pin:
+            near_foot = lines[sol][2] > heights[lines[sol][0]] - BOTTOM_PT - 3 * 14
+            # Already carried to the top of a page by keep-with-next: pin it
+            # there with a real page break, so the next export cannot drift it
+            # back to the foot of the page before (a break before a paragraph
+            # already at the top of a page changes nothing on the page).
+            at_top = sol > 0 and lines[sol - 1][0] < lines[sol][0]
+            if near_foot or at_top:
+                out.append(label)
+    return out
+
+
+def break_before_solution(doc, block, items):
+    """page_break_before on the block's "Solution:" paragraph (the last text paragraph before its box)."""
+    for k, el in reversed(items[block['start']:block['end']]):
+        if k == 'p' and para_text(el, doc) == 'Solution:':
+            Paragraph(el, doc).paragraph_format.page_break_before = True
+            return True
+    return False
+
+
 def diagnose(block, loc, heights):
     """'ok' | 'split' | 'jumped' | 'too-big' | 'unknown'."""
     if not loc:
@@ -252,9 +308,12 @@ def fit(docx_path: Path, check_only=False, pdf_out: Path | None = None):
     shutil.copyfile(docx_path, cur)
     report = []
     changed = 0
+    too_big = set()
     blocks, locs, heights = survey(cur, work / 'cur.pdf')
     for bi, block in enumerate(blocks):
         verdict, why = diagnose(block, locs.get(block['label']), heights)
+        if verdict == 'too-big':
+            too_big.add(block['label'])
         if verdict in ('ok', 'unknown', 'too-big'):
             report.append((block['label'], verdict, why))
             continue
@@ -285,6 +344,26 @@ def fit(docx_path: Path, check_only=False, pdf_out: Path | None = None):
             changed += 1
             report.append((block['label'], verdict, why + f' — fits after step {fixed + 1} (box spacing {STEPS[fixed][0]})'))
             blocks, locs, heights = survey(cur, work / 'cur.pdf')
+    # ── second pass: a "Solution:" left behind by a box taller than its page ──
+    lines, heights = pdf_lines(work / 'cur.pdf')
+    for label in stranded_solutions(lines, [b['label'] for b in blocks], heights, too_big):
+        if check_only:
+            report.append((label, 'stranded', '"Solution:" sits on the page before its box — would move it down'))
+            continue
+        doc = Document(str(cur))
+        blocks_now, items = example_blocks(doc)
+        blk = next((b for b in blocks_now if b['label'] == label), None)
+        if not blk or not break_before_solution(doc, blk, items):
+            report.append((label, 'stranded', 'could not find its "Solution:" paragraph'))
+            continue
+        doc.save(str(cur))
+        render_sheet.export_pdf(Path(cur), Path(work / 'cur.pdf'))
+        lines, heights = pdf_lines(work / 'cur.pdf')
+        if label in stranded_solutions(lines, [label], heights, ()):
+            report.append((label, 'stranded', 'still stranded after a page break — left for Adrian'))
+        else:
+            changed += 1
+            report.append((label, 'stranded', '"Solution:" pinned to open the page with its box'))
     if changed and not check_only:
         shutil.copyfile(cur, docx_path)
         if pdf_out:
