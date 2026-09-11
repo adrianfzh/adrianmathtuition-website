@@ -2689,6 +2689,7 @@ class RunReport:
     stats: dict = field(default_factory=dict)
     build: dict = field(default_factory=dict)
     out_path: str = ""
+    pdf_path: str = ""
     size: dict = field(default_factory=dict)
     scope_notes: list = field(default_factory=list)
     link_note: str = ""
@@ -2798,6 +2799,8 @@ class RunReport:
                 L.append("            FALLBACK (plain text): %s" % f[:120])
         if self.out_path:
             L.append("Output    : %s" % self.out_path)
+        if self.pdf_path:
+            L.append("PDF       : %s" % self.pdf_path)
         return "\n".join(L)
 
 
@@ -2954,7 +2957,8 @@ def make_worksheet(kind: str, topic, bank: str | None = None, folder: str | None
                    suffix: str = "", space: int = 2, optional: int = 0,
                    drop_parts: str | None = None, link: str | None = None,
                    minutes: int = 0, figures: bool = True,
-                   title: str | None = None, skip_skills: list | None = None) -> RunReport:
+                   title: str | None = None, skip_skills: list | None = None,
+                   pdf: bool = False) -> RunReport:
     env = env or load_env()
     # One topic, or several (a list, or repeated --topic on the command line).
     # Several: the notes fragments are stacked at the front and the practice is
@@ -3208,6 +3212,18 @@ def make_worksheet(kind: str, topic, bank: str | None = None, folder: str | None
                                        figures=store,
                                        extra_bases=[e.path for e in extra_bases])
     report.out_path = str(out_path)
+    if pdf:
+        # Word export through the sheet worker's container-staged path: the DOCX is
+        # copied into Word's own sandbox folder, exported there under a unique name
+        # and copied back. No "Grant File Access" dialog, no `active document` race —
+        # the two things that hung the first kind-2 runs at the PDF step for 70 min
+        # each (12 Sep 2026). Never export from the Dropbox path directly.
+        repo_root = Path(__file__).resolve().parents[3]
+        sys.path.insert(0, str(repo_root / "scripts" / "sheet-worker"))
+        import render_sheet  # noqa: E402
+        pdf_path = out_path.with_suffix(".pdf")
+        render_sheet.export_pdf(out_path, pdf_path)
+        report.pdf_path = str(pdf_path)
     return report
 
 
@@ -3225,6 +3241,8 @@ def main(argv=None):
     ap.add_argument("--title", help="display name for a several-topic sheet (title line + "
                                     "file name), e.g. 'Trigonometry (all)'; default folds "
                                     "same-family topics into one bracket")
+    ap.add_argument("--pdf", action="store_true",
+                    help="also export a PDF beside the DOCX through Word (container-staged, no dialog)")
     ap.add_argument("--skip-skill", action="append", default=[], metavar="NAME",
                     help="leave this skill of the topic out (repeatable; the names are the bank's "
                          "subgroups for the topic — docs/SKILL-PICK.md)")
@@ -3287,7 +3305,7 @@ def main(argv=None):
             page_break=a.page_break, level=a.level, dry_run=a.dry_run,
             suffix=a.suffix, space=a.space, optional=a.optional,
             drop_parts=a.drop_parts, link=a.link, minutes=a.minutes,
-            figures=not a.no_figures, title=a.title, skip_skills=a.skip_skill)
+            figures=not a.no_figures, title=a.title, skip_skills=a.skip_skill, pdf=a.pdf)
     except ValueError as e:
         print("BAD ARGUMENT: %s" % e, file=sys.stderr)
         return 2

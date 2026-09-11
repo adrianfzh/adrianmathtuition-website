@@ -17,7 +17,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { loadSkillFiling } from '@/lib/skill-pick-store';
-import { sendTelegram, sendTelegramDocument } from '@/lib/telegram';
+import { sendTelegram, sendTelegramDocument, sendTelegramTo } from '@/lib/telegram';
 // Every notification from this file belongs in the marking topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_marking = (text: string) => sendTelegram(text, 'marking');
 import { logJobRun } from '@/lib/job-log';
@@ -142,9 +142,14 @@ export async function POST(req: NextRequest) {
       .eq('id', id).neq('status', 'cancelled').select('*').maybeSingle<WorksheetJob>();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     if (!job) return NextResponse.json({ ok: false, cancelled: true, error: 'cancelled — this job was stopped' }, { status: 409 });
-    // Best-effort: a Telegram hiccup must not undo a finished sheet.
-    notify_marking(completionMessage(job, result))
-      .then(() => sendFiles(job, result))
+    // Best-effort: a Telegram hiccup must not undo a finished sheet. The message
+    // and the files go to the CHAT THAT ASKED (/ws in Adrian's own chat with the
+    // bot — "the .docx lands here") — 12 Sep 2026, after the first two sheets
+    // went only to the alerts group's marking topic and Adrian asked "where are
+    // the files?". No requester on the row → the marking topic as before.
+    const to = job.requested_by ?? null;
+    (to ? sendTelegramTo(to, completionMessage(job, result)) : notify_marking(completionMessage(job, result)))
+      .then(() => sendFiles(job, result, to))
       .catch(() => {});
     logJobRun(JOB, true, `${job.label}: filed`, { job_id: job.id, kind: job.kind }).catch(() => {});
     return NextResponse.json({ ok: true });
@@ -160,7 +165,8 @@ export async function POST(req: NextRequest) {
       .update({ status: spent ? 'failed' : 'queued', error: msg, claimed_by: null, claimed_at: null, heartbeat_at: null })
       .eq('id', id);
     if (spent && job) {
-      notify_marking(`⚠️ Worksheet failed ${MAX_ATTEMPTS}× — <b>${job.label}</b>\n${msg}`).catch(() => {});
+      const text = `⚠️ Worksheet failed ${MAX_ATTEMPTS}× — <b>${job.label}</b>\n${msg}`;
+      (job.requested_by ? sendTelegramTo(job.requested_by, text) : notify_marking(text)).catch(() => {});
       logJobRun(JOB, false, `${job.label}: ${msg}`, { job_id: job.id, kind: job.kind }).catch(() => {});
     }
     return NextResponse.json({ ok: true, requeued: !spent });
@@ -178,10 +184,10 @@ export async function POST(req: NextRequest) {
  * The files behind the message. PDF by Dropbox temporary link (Telegram fetches
  * PDFs itself); DOCX as bytes (URL sends only work for PDF/ZIP). Both best-effort.
  */
-async function sendFiles(job: WorksheetJob, result: WorksheetResult): Promise<void> {
+async function sendFiles(job: WorksheetJob, result: WorksheetResult, to: number | null = null): Promise<void> {
   if (result.pdf_path) {
     try {
-      await sendTelegramDocument({ url: await getTemporaryLink(result.pdf_path) }, `🛠 ${job.label} — PDF`, 'marking');
+      await sendTelegramDocument({ url: await getTemporaryLink(result.pdf_path) }, `🛠 ${job.label} — PDF`, 'marking', to);
     } catch (e) { console.warn('[worksheet-jobs] pdf to telegram failed:', (e as Error).message); }
   }
   try {
@@ -190,7 +196,7 @@ async function sendFiles(job: WorksheetJob, result: WorksheetResult): Promise<vo
     await sendTelegramDocument(
       { bytes, filename: name, contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
       `🛠 ${job.label} — DOCX (edit this one)`,
-      'marking',
+      'marking', to,
     );
   } catch (e) { console.warn('[worksheet-jobs] docx to telegram failed:', (e as Error).message); }
 }

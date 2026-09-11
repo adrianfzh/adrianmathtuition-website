@@ -113,10 +113,12 @@ export async function sendTelegramDocument(
   source: { url: string } | { bytes: Uint8Array | Buffer; filename: string; contentType?: string },
   caption?: string,
   category?: NotifyCategory,
+  /** a specific chat instead of the category's topic — e.g. the chat that asked /ws for the sheet */
+  toChatId?: string | number | null,
 ): Promise<boolean> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const routed = await resolveTopic(category);
-  const chatId = routed?.chatId ?? process.env.TELEGRAM_CHAT_ID;
+  const routed = toChatId ? null : await resolveTopic(category);
+  const chatId = toChatId ?? routed?.chatId ?? process.env.TELEGRAM_CHAT_ID;
   if (!token || !chatId) {
     console.warn('[telegram] Missing bot token or chat ID');
     return false;

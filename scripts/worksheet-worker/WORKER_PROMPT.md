@@ -51,7 +51,13 @@ curl -s -X POST "$WORKSHEETS_API_BASE/api/admin/worksheet-jobs" \
    overwrites — a clash becomes "(2nd version)"; that is the rule, keep it.
 
    **Kind 2 — practice worksheet with notes at the front.**
-   `python3 .claude/skills/copy-revision-worksheet-with-different-practice/revision_lib.py --kind notes --bank <bank> --topic "<topic>" -n <count>`
+   `python3 .claude/skills/copy-revision-worksheet-with-different-practice/revision_lib.py --kind notes --bank <bank> --topic "<topic>" -n <count> --pdf`
+   **`--pdf` is how the PDF is made — the tool stages the file inside Word's
+   own folder and exports it there, so no dialog can appear. Do NOT export
+   through AppleScript yourself: both first-attempt runs on 12 Sep 2026 built
+   the DOCX in minutes and then hung at a hand-rolled Word export until the
+   70-minute timeout killed them.** The run report's last lines are the DOCX and
+   PDF paths; turn them into the `/Practice/…` form for `done`.
    where bank is S3_AM | S4_AM | S3_EM | S4_EM from the level (S3_AM→S3_AM,
    AM→S4_AM, S3_EM→S3_EM, EM→S4_EM). S1/S2/JC have no notes bank — `fail` the
    job with that reason; do not improvise a notes box.
@@ -74,7 +80,7 @@ curl -s -X POST "$WORKSHEETS_API_BASE/api/admin/worksheet-jobs" \
    " & " and treat it the same way.)
 
    **Kind 4 — fresh practice on a sheet Adrian has.**
-   `python3 .claude/skills/copy-revision-worksheet-with-different-practice/revision_lib.py --kind worked --folder <folder> --topic "<topic>" -n <count>`
+   `python3 .claude/skills/copy-revision-worksheet-with-different-practice/revision_lib.py --kind worked --folder <folder> --topic "<topic>" -n <count> --pdf`
    with folder from the level (S1, S2, EM, AM, JC). `params.sheet` names the
    base document — pass it if the CLI takes `--base`, else pick that document
    when the skill asks which sheet. The original is never overwritten. Skills
