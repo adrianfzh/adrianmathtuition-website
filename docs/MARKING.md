@@ -1216,6 +1216,12 @@ with its own accuracy gates (`computeAutoHold`).
 
 ### Practice Again on request (8 Sep 2026)
 
+> **The sheet as a spec (11 Sep 2026, built behind `SHEET_RENDER=spec`, not switched
+> on).** The writer emits the sheet as one JSON file and `scripts/sheet-worker/render_sheet.py`
+> builds the DOCX and the PDF — same `worksheet_lib`, same `repair-sheet.py`, same Word
+> export — instead of the worker typesetting it call by call: three vetted sheets came
+> back pixel-identical at 100 dpi. Blocks and fields: [`scripts/sheet-worker/SHEET-SPEC.md`](../scripts/sheet-worker/SHEET-SPEC.md).
+
 > **What the sheet teaches — 9 Sep 2026, Alessi's AM 2021 P2 (run `d66149d6`, sheet job
 > `fe3abdc1`).** Four rules absorbed into `.claude/skills/self-study-sheet/SKILL.md` and
 > `scripts/sheet-worker/WORKER_PROMPT.md`: (1) **teach the missed STEP** — the marker's
