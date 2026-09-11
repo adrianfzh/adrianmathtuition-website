@@ -84,18 +84,27 @@ export async function POST(req: NextRequest) {
       // the website's Supabase, not the bot, so the bot cannot report it.
       try {
         const ids = data.runs.map((x: { id?: string }) => x.id).filter(Boolean);
+        // A batch job (10 Sep 2026) sits on its PRIMARY run and covers the rest
+        // through `run_ids` — match both, or a merged sheet shows on one paper
+        // of five (Adrian, 11 Sep 2026: "i only see two papers 'drafting' …
+        // while there should be 5 for isabelle?").
         const { data: jobs } = await getSupabaseAdmin()
-          .from('sheet_jobs').select('run_id, status, error, stage, created_at, completed_at')
-          .in('run_id', ids).order('created_at', { ascending: true });
+          .from('sheet_jobs').select('run_id, run_ids, status, error, stage, created_at, completed_at')
+          .or(`run_id.in.(${ids.join(',')}),run_ids.ov.{${ids.join(',')}}`).order('created_at', { ascending: true });
         // Last job wins: re-queueing after a failure should show the retry.
-        const byRun = new Map<string, { status: string; error: string | null; stage: string | null; created_at: string; completed_at: string | null }>();
-        for (const j of jobs ?? []) byRun.set(j.run_id as string, j as never);
+        type J = { run_id: string; run_ids: string[] | null; status: string; error: string | null; stage: string | null; created_at: string; completed_at: string | null };
+        const byRun = new Map<string, J>();
+        for (const j of (jobs ?? []) as J[]) {
+          const covered = [j.run_id, ...(Array.isArray(j.run_ids) ? j.run_ids : [])].filter(Boolean);
+          for (const rid of new Set(covered)) byRun.set(rid, j);
+        }
         for (const run of data.runs) {
           const j = byRun.get(run.id);
           run.sheet_status = j?.status ?? null;
           run.sheet_error = j?.error ?? null;
           run.sheet_stage = j?.stage ?? null;
           run.sheet_at = j?.completed_at ?? j?.created_at ?? null;
+          run.sheet_papers = j && Array.isArray(j.run_ids) && j.run_ids.length > 1 ? j.run_ids.length : null;
         }
       } catch { /* a missing badge is better than a broken list */ }
     }

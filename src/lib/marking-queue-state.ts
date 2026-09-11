@@ -44,8 +44,9 @@ export type QueueRunRow = {
     queued_at?: string;
     failed_at?: string;
     attempts?: number;
-    external_claim?: { at?: string; by?: string; since?: string; delivered_at?: string; attempts?: number } | null;
+    external_claim?: { at?: string; by?: string; since?: string; delivered_at?: string; attempts?: number; handed_back_at?: string; released_at?: string; progress?: { done?: number; total?: number } | null } | null;
   } | null;
+  num_photos?: number | null;
 };
 
 export type QueueEntry = {
@@ -60,6 +61,10 @@ export type QueueEntry = {
   /** Minutes since the claim was taken, or null when unclaimed. */
   claimedMinutes: number | null;
   attempts: number;
+  /** Where the slot is (11 Sep 2026 — the ops "Mac slots" view): pages read so far, and the phase. */
+  pagesDone: number | null;
+  pagesTotal: number | null;
+  phase: 'unclaimed' | 'reading' | 'handed back' | 'bot';
 };
 
 export type QueueStaleEntry = {
@@ -127,6 +132,14 @@ export function markingQueueState(rows: QueueRunRow[], now: number = Date.now())
   const entries: QueueEntry[] = live.map((r) => {
     const q = r.queue!;
     const claim = q.external_claim || null;
+    const prog = claim?.progress || null;
+    const pagesDone = prog && Number.isFinite(Number(prog.done)) ? Number(prog.done) : null;
+    const pagesTotal = prog && Number.isFinite(Number(prog.total)) ? Number(prog.total)
+      : (Number.isFinite(Number(r.num_photos)) ? Number(r.num_photos) : null);
+    const phase: QueueEntry['phase'] = !claim ? 'unclaimed'
+      : claim.handed_back_at ? 'handed back'
+      : claim.released_at ? 'bot'
+      : 'reading';
     return {
       id: r.id,
       paper: name(r),
@@ -136,6 +149,7 @@ export function markingQueueState(rows: QueueRunRow[], now: number = Date.now())
       account: claimAccount(claim?.by),
       claimedMinutes: minsSince(claim?.since || claim?.at, now),
       attempts: Number(claim?.attempts ?? q.attempts ?? 0),
+      pagesDone, pagesTotal, phase,
     };
   });
 

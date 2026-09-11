@@ -215,6 +215,17 @@ type RemarkPanel = {
 type PaperMatch = {
   key: string | null; source: string; trusted: boolean;
   shared: number | null; share: number | null; matched: number | null; reasons: string[];
+  // 📐 A split stored from an earlier marking that the question bank's own copy
+  // of the paper outranked (bot lib/bank-allocation, 11 Sep 2026). Null on every
+  // other run, and on every run marked before then.
+  schemeOverridden?: {
+    status: string | null; originRunId: string | null;
+    questions: number | null; marks: number | null; disagrees: boolean;
+    bankQuestions: number | null; bankMarks: number | null;
+  } | null;
+  // …and the other way round: the bank's own copy of the paper did not add up to
+  // what the paper is out of, so the stored split stood.
+  bankRefused?: { known: number | null; bankQuestions: number | null; bankMarks: number | null } | null;
 };
 
 // 🔍 What the paper was identified as (SPEC-PAPER-MATCH Phase 1, 3 Sep 2026)
@@ -440,6 +451,15 @@ export default function DeskPage() {
 
   useEffect(() => { ensureAdminSession().then(ok => { if (ok) setAuthed(true); }); }, []);
   useEffect(() => { if (authed) loadQueue(); }, [authed, loadQueue]);
+  // Live rows (11 Sep 2026 — Adrian: "this doesn't show me the progress live?"):
+  // while any paper is being marked or any sheet is queued/being written, the
+  // list reloads itself every 30 s so the stage words move without a click.
+  const anyInMotion = rows.some(r => !!r.marking || (r.sheet != null && (r.sheet.status === 'queued' || r.sheet.status === 'claimed')));
+  useEffect(() => {
+    if (!authed || !anyInMotion) return;
+    const t = setInterval(() => loadQueue(), 30000);
+    return () => clearInterval(t);
+  }, [authed, anyInMotion, loadQueue]);
   useEffect(() => {
     if (!authed || !runId) return;
     setDetail(null); setCover(null); setEditing(null);
@@ -1355,6 +1375,26 @@ function DetailView(p: {
                 {busy === 'audit' ? '…' : '🧮 Fill from the paper\u2019s scheme'}
               </button>
             )}
+          </div>
+        )}
+        {run.paperMatch?.schemeOverridden && (
+          <div style={{ marginTop: 8, padding: '8px 10px', background: run.paperMatch.schemeOverridden.disagrees ? C.flagBg : '#f8fafc', border: `1px solid ${run.paperMatch.schemeOverridden.disagrees ? C.flagBorder : C.border}`, borderRadius: 8, color: run.paperMatch.schemeOverridden.disagrees ? C.flag : C.muted, fontSize: 13, lineHeight: 1.5 }}>
+            📐 <b>Marked to the question bank&rsquo;s own copy of this paper</b>
+            {run.paperMatch.schemeOverridden.bankQuestions != null ? ` (${run.paperMatch.schemeOverridden.bankQuestions} question${run.paperMatch.schemeOverridden.bankQuestions === 1 ? '' : 's'}, ${run.paperMatch.schemeOverridden.bankMarks} marks)` : ''}
+            {' — not the split '}
+            {run.paperMatch.schemeOverridden.status === 'extracted' ? 'extracted from the attached scheme' : 'recorded from an earlier marking'}
+            {run.paperMatch.schemeOverridden.questions != null ? ` (${run.paperMatch.schemeOverridden.questions} question${run.paperMatch.schemeOverridden.questions === 1 ? '' : 's'}, ${run.paperMatch.schemeOverridden.marks} marks)` : ''}.
+            {run.paperMatch.schemeOverridden.disagrees
+              ? <div>The two <b>disagree</b> — one of them is wrong about this paper. Worth a look before you approve.</div>
+              : <div>They agree, so nothing moved.</div>}
+          </div>
+        )}
+        {run.paperMatch?.bankRefused && (
+          <div style={{ marginTop: 8, padding: '8px 10px', background: C.flagBg, border: `1px solid ${C.flagBorder}`, borderRadius: 8, color: C.flag, fontSize: 13, lineHeight: 1.5 }}>
+            📐 <b>The question bank&rsquo;s copy of this paper does not add up</b> — its brackets come to{' '}
+            {run.paperMatch.bankRefused.bankMarks} marks across {run.paperMatch.bankRefused.bankQuestions} question
+            {run.paperMatch.bankRefused.bankQuestions === 1 ? '' : 's'}, and the paper is out of {run.paperMatch.bankRefused.known}.
+            <div>This paper was marked to the split already stored for it. The bank&rsquo;s rows for it need a look — usually the paper is filed there twice.</div>
           </div>
         )}
         {run.allocationAudit && (run.allocationAudit.added.length > 0 || run.allocationAudit.maxDiffs.length > 0) && (

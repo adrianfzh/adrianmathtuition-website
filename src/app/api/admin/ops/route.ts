@@ -34,6 +34,46 @@ export async function GET(req: NextRequest) {
       return { job, at: r.ran_at, summary: String(r.summary || '').slice(0, 200) };
     }).filter((x): x is { job: 'plan-marking' | 'sheet-worker'; at: string; summary: string } => !!x);
 
+    // Practice Again sheets in motion (11 Sep 2026 — Adrian: "how do i see
+    // isabelle's practice again sheet generation progress? … i don't see it at
+    // /admin/ops"). The sheet worker stamps job_runs only on a limit, so the
+    // board never showed a sheet being written. Now: every queued or claimed
+    // sheet_jobs row, with the worker's own stage word and minutes since claim.
+    type SheetJobRow = { id: string; status: string; stage: string | null; paper_name: string | null; requested_by: string | null; run_ids: string[] | null; created_at: string; claimed_at: string | null };
+    let sheets: { active: Array<{ id: string; paper: string; papers: number; stage: string; minutes: number; requestedBy: string }>; queued: Array<{ id: string; paper: string; papers: number; minutes: number; requestedBy: string }> } = { active: [], queued: [] };
+    try {
+      const { data: sj } = await getSupabaseAdmin().from('sheet_jobs')
+        .select('id, status, stage, paper_name, requested_by, run_ids, created_at, claimed_at')
+        .in('status', ['queued', 'claimed']).order('created_at', { ascending: true }).limit(20);
+      const mins = (iso: string | null) => (iso ? Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000)) : 0);
+      for (const j of (sj ?? []) as SheetJobRow[]) {
+        const papers = Array.isArray(j.run_ids) && j.run_ids.length ? j.run_ids.length : 1;
+        const paper = String(j.paper_name || 'untitled').slice(0, 120);
+        const requestedBy = j.requested_by === 'student' ? 'student' : 'Adrian';
+        if (j.status === 'claimed') sheets.active.push({ id: j.id, paper, papers, stage: String(j.stage || 'drafting').trim(), minutes: mins(j.claimed_at), requestedBy });
+        else sheets.queued.push({ id: j.id, paper, papers, minutes: mins(j.created_at), requestedBy });
+      }
+    } catch { sheets = { active: [], queued: [] }; }
+    // What a sheet costs (11 Sep 2026 — the worker stamps job_runs 'sheet-worker'
+    // ok:true with its session's usage in meta): the last 7 days, averaged.
+    let sheetCost: { sheets: number; avgMinutes: number; avgTokens: number; avgCostUsd: number | null } | null = null;
+    try {
+      const since = new Date(Date.now() - 7 * 86400_000).toISOString();
+      const { data: sw } = await getSupabaseAdmin().from('job_runs').select('meta').eq('job', 'sheet-worker').eq('ok', true).gte('ran_at', since).limit(200);
+      type M = { seconds?: number; tokens_in?: number; tokens_out?: number; cache_read?: number; cache_create?: number; cost_usd?: number | null };
+      const rows = ((sw ?? []) as Array<{ meta: M | null }>).map(r => r.meta).filter((m): m is M => !!m && typeof m.seconds === 'number');
+      if (rows.length) {
+        const tok = (m: M) => (m.tokens_in ?? 0) + (m.tokens_out ?? 0) + (m.cache_read ?? 0) + (m.cache_create ?? 0);
+        const costs = rows.map(m => m.cost_usd).filter((c): c is number => typeof c === 'number');
+        sheetCost = {
+          sheets: rows.length,
+          avgMinutes: Math.round(rows.reduce((a, m) => a + (m.seconds ?? 0), 0) / rows.length / 60),
+          avgTokens: Math.round(rows.reduce((a, m) => a + tok(m), 0) / rows.length),
+          avgCostUsd: costs.length ? Math.round((costs.reduce((a, c) => a + c, 0) / costs.length) * 100) / 100 : null,
+        };
+      }
+    } catch { sheetCost = null; }
+
     const jobs = latest.map(r => ({
       job: r.job,
       ranAt: r.ran_at,
@@ -60,7 +100,7 @@ export async function GET(req: NextRequest) {
       // leaves queue_status null, so the flag alone would report "empty" while
       // the Mac was marking — that shipped briefly on 9 Sep and is why both are
       // fetched. JSON-path alias keeps the fat result_json off the wire.
-      const cols = 'id, created_at, paper_name, student_name, queue_status, total_max, released_at, archived_at, queue:result_json->queue';
+      const cols = 'id, created_at, paper_name, student_name, queue_status, total_max, released_at, archived_at, num_photos, queue:result_json->queue';
       const sb = getSupabaseAdmin();
       const [inFlight, flagged] = await Promise.all([
         sb.from('paper_marking_runs').select(cols).is('total_max', null).order('created_at', { ascending: true }).limit(50),
@@ -116,6 +156,13 @@ export async function GET(req: NextRequest) {
       jobs,
       neverStamped: neverStamped(latest).map(j => ({ job: j, rhythm: JOB_RHYTHMS[j].label })),
       planLane,
+      sheets,
+      sheetCost,
+      // The Mac's slots (11 Sep 2026 — Adrian: "can you put all these slots
+      // info on ops or something?"): launchd agents on Adrians-MacBook-Pro —
+      // six planmarking, six sheetworker (three more installed 11 Sep 2026,
+      // Adrian: "open up 3 more slots for sheets") — all on one Claude account.
+      slots: { marking: 6, sheets: 6 },
       queue,
       marking,
       botQueue,

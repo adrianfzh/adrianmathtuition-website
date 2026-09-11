@@ -1386,6 +1386,51 @@ threshold"), on single and batch sheets alike; a one-gap, three-mark shelf
 stays hidden (`{runIds, wave:2}` → the same job with
 `focus:{wave:2, shelved}`), so every gap is either taught now or queued next.
 
+### Faster sheets without touching the writer (11 Sep 2026)
+
+Adrian: *"any ways to make sheet generation faster?"* … *"quality must not be
+compromised. right now the generated sheets are good"* … *"do #1 to #4"*. The
+numbers behind it (14 days of `sheet_jobs`): a single sheet takes ~22 min to
+write (2–50), a merged one less, but a job waited **265 min on average** for a
+slot to claim it. The wait is the problem, not the writer.
+
+1. **Six sheet slots** (`~/.adrianmath_sheets` … `6`, `install-slot.sh`), all on
+   the one Claude account with the six marking slots. ✅
+2. **Slots look every two minutes** (`StartInterval 120`, 20 s stagger; an
+   empty tick is one HTTP request). ✅ Also fixed: slots 2–6 now symlink the
+   repo's `WORKER_PROMPT.md` instead of running a stale copy.
+3. **Two Claude accounts, mirrored across both workers** ✅ (11 Sep 2026, with
+   the "Science paper marking capability" session): marking slots 1–3 and sheet
+   slots 1–3 follow the CLI login (account A, adrianmathtuition@gmail.com);
+   marking slots 4–6 and sheet slots 4–6 carry a setup-token minted on account B
+   (ablnon@gmail.com) at `~/.adrianmath_marker4/oauth_token` — the sheet slots
+   symlink to that one file — plus an `account` sidecar naming the email, so
+   each account has its own plan-limit file and one running out never stops the
+   other. A slot's own token wins over the login in BOTH run.sh files.
+   `bash ~/.adrianmath_sheetsN/run.sh --auth-check` prints a slot's account.
+4. **A renderer from a spec** ✅ built, ⏸ OFF (`scripts/sheet-worker/render_sheet.py`,
+   spec in `SHEET-SPEC.md` + `sheet-spec.schema.json`, `WORKER_PROMPT.md` §2b):
+   the writer emits the sheet as JSON, the script builds the docx through the
+   same `worksheet_lib` helpers, runs the repair pass and the §3b sweeps
+   unconditionally, and exports the PDF through Word. Proof (11 Sep 2026):
+   three filed sheets — two singles and a two-paper batch, 662 equations —
+   transcribed to specs and re-rendered came out **pixel-identical at 100 dpi,
+   0 differing paragraphs, same page counts**, and the same spec renders to the
+   same bytes. Found on the way: three September sheets were filed without the
+   repair pass (the `gap_above_box` fault Klaire's sheet came back for), and
+   the `[Remember: …]`, key-move and "Where it showed" lines have shipped in
+   two or three stylings each — drift the renderer removes. To try it: set
+   `SHEET_RENDER=spec` in ONE slot's `~/.adrianmath_sheetsN/env`, read the
+   next sheet, then flip the rest. `render_sheet.py --selftest` pins fifteen
+   properties of the house style.
+5. **The vetted-section library** (later, strict): a section Adrian vetted is
+   reused only for the SAME gap (sub-skill + missed step) — the worked example
+   copied verbatim, annotations included; practice dealt from a per-gap pool of
+   vetted questions so no two students in a group share a set and no student
+   sees a question twice; a gap with no vetted section is written from scratch.
+   The writer keeps its page read and its judgement; the stored diagnosis is
+   only its starting point. First reuses are flagged on the desk.
+
 ### Practice Again batches — one sheet for several papers (10 Sep 2026)
 
 Adrian, on Isabelle's five finished-but-unsent sheets (AM 2025 P1, AM 2025 P2,

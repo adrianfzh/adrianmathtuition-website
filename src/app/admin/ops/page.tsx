@@ -17,12 +17,15 @@ type OpsData = {
   queue: {
     pending: number;
     oldestMinutes: number | null;
-    rows: { id: string; paper: string; student: string | null; waitingMinutes: number; machine: string | null; account?: string | null; claimedMinutes: number | null; attempts: number }[];
+    rows: { id: string; paper: string; student: string | null; waitingMinutes: number; machine: string | null; account?: string | null; claimedMinutes: number | null; attempts: number; pagesDone?: number | null; pagesTotal?: number | null; phase?: 'unclaimed' | 'reading' | 'handed back' | 'bot' }[];
     stale: { id: string; paper: string; because: 'released' | 'archived' | 'marked' }[];
   };
   marking: { d7: MarkingShare; d30: MarkingShare } | null;
   /** A plan-billed lane that last reported a PLAN LIMIT (9 Sep 2026) — empty when both lanes are fine. */
   planLane?: { job: 'plan-marking' | 'sheet-worker'; at: string; summary: string }[];
+  slots?: { marking: number; sheets: number };
+  sheetCost?: { sheets: number; avgMinutes: number; avgTokens: number; avgCostUsd: number | null } | null;
+  sheets?: { active: { id: string; paper: string; papers: number; stage: string; minutes: number; requestedBy: string }[]; queued: { id: string; paper: string; papers: number; minutes: number; requestedBy: string }[] };
   /** The bot's `/queue-quiet` batch-lane + reachability facts (11 Sep 2026) — null when the fetch itself failed (bot down, field not shipped yet). */
   botQueue?: { batchLaneNote: { text: string; tone: 'amber' | 'grey' } | null; markerUnreachable: string | null } | null;
   generatedAt: string;
@@ -76,11 +79,15 @@ export default function OpsPage() {
   useEffect(() => { ensureAdminSession().then(ok => { if (ok) setAuthed(true); }); }, []);
   useEffect(() => { if (authed) load(); }, [authed, load]);
   // The board is a glance-surface: refresh itself every minute while open.
+  // Live while anything is in motion (11 Sep 2026 — Adrian: "this doesn't show
+  // me the progress live?"): 20 s when a slot is reading or a sheet is being
+  // written, 60 s when the machine is idle.
+  const inMotion = !!data && ((data.queue?.rows?.length ?? 0) > 0 || (data.sheets?.active?.length ?? 0) > 0 || (data.sheets?.queued?.length ?? 0) > 0);
   useEffect(() => {
     if (!authed) return;
-    const t = setInterval(load, 60000);
+    const t = setInterval(load, inMotion ? 20000 : 60000);
     return () => clearInterval(t);
-  }, [authed, load]);
+  }, [authed, load, inMotion]);
 
   if (!authed) {
     return (
@@ -132,6 +139,12 @@ export default function OpsPage() {
                   : `${data.queue.pending} paper${data.queue.pending > 1 ? 's' : ''} waiting · oldest ${data.queue.oldestMinutes}m`
                 : '…'}
             </span>
+            {/* The Mac's slots at a glance (11 Sep 2026): reading = a slot holds a claim and has not handed back. */}
+            {!!data?.slots && (
+              <span className="text-xs text-neutral-400">
+                · {data.queue.rows.filter(r => r.phase === 'reading').length} of {data.slots.marking} marking slots reading
+              </span>
+            )}
             <a href="/admin/desk" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">desk →</a>
           </div>
 
@@ -174,8 +187,8 @@ export default function OpsPage() {
                   {r.student && <span className="text-neutral-500">{r.student}</span>}
                   <span className="ml-auto tabular-nums text-neutral-500">{r.waitingMinutes}m</span>
                   {r.machine
-                    ? <span className="text-xs text-neutral-400" title={`claimed ${r.claimedMinutes}m ago`}>💻 {r.machine}{r.account ? <span className="text-neutral-300"> · {r.account}</span> : null}</span>
-                    : <span className="text-xs text-neutral-400">unclaimed</span>}
+                    ? <span className="text-xs text-neutral-400" title={`claimed ${r.claimedMinutes}m ago`}>💻 {r.phase === 'handed back' ? 'handed back · the bot assembles it next' : r.phase === 'bot' ? 'the bot has it' : `reading${r.pagesDone != null && r.pagesTotal != null ? ` · page ${r.pagesDone}/${r.pagesTotal}` : ''}`}{r.claimedMinutes != null ? ` · ${r.claimedMinutes}m` : ''}{r.account ? <span className="text-neutral-300"> · {r.account}</span> : null}</span>
+                    : <span className="text-xs text-neutral-400">unclaimed — waiting for a slot</span>}
                   {r.attempts > 1 && <span className="text-xs text-amber-700">attempt {r.attempts}</span>}
                 </li>
               ))}
@@ -189,6 +202,49 @@ export default function OpsPage() {
             <div className="border-t border-neutral-100 px-4 py-2 text-xs text-amber-800 bg-amber-50">
               {data.queue.stale.length} finished paper{data.queue.stale.length > 1 ? 's' : ''} still flagged queued —{' '}
               {data.queue.stale.map((s) => `${s.paper} (${s.because})`).join(', ')}. Not waiting on anything; the flag was never cleared.
+            </div>
+          )}
+        </section>
+
+        {/* Practice Again sheets in motion (11 Sep 2026): the sheet worker's own
+            stage word per job and minutes since claim; queued ones behind. Three
+            sheet slots on this Mac (~/.adrianmath_sheets, 2–6), same plan as marking. */}
+        <section className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
+          <div className="px-4 py-3 flex items-center gap-3 text-sm">
+            <span className={`inline-block w-2.5 h-2.5 rounded-full ${data && data.sheets && data.sheets.queued.length > 0 && data.sheets.active.length >= (data.slots?.sheets ?? 6) ? 'bg-amber-500' : 'bg-green-600'}`} />
+            <span className="font-medium text-neutral-800">Practice Again sheets</span>
+            <span className="text-neutral-500">
+              {data && data.sheets
+                ? (data.sheets.active.length + data.sheets.queued.length === 0
+                  ? 'none in motion'
+                  : `${data.sheets.active.length} of ${data.slots?.sheets ?? 6} sheet slots writing · ${data.sheets.queued.length} queued`)
+                : '…'}
+            </span>
+            {!!data?.sheetCost && (
+              <span className="text-xs text-neutral-400" title="from the worker's usage stamp on each finished sheet">
+                · 7d: {data.sheetCost.sheets} sheet{data.sheetCost.sheets === 1 ? '' : 's'} · avg {data.sheetCost.avgMinutes} min · {data.sheetCost.avgTokens >= 1e6 ? `${(data.sheetCost.avgTokens / 1e6).toFixed(1)}M` : `${Math.round(data.sheetCost.avgTokens / 1e3)}k`} tokens{data.sheetCost.avgCostUsd != null ? ` · $${data.sheetCost.avgCostUsd.toFixed(2)} at API rates` : ''}
+              </span>
+            )}
+            <a href="/admin/desk" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">desk →</a>
+          </div>
+          {!!data?.sheets && (data.sheets.active.length > 0 || data.sheets.queued.length > 0) && (
+            <div className="border-t border-neutral-100 divide-y divide-neutral-100 text-sm">
+              {data.sheets.active.map(s => (
+                <div key={s.id} className="px-4 py-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span className="text-neutral-800">{s.paper}</span>
+                  {s.papers > 1 && <span className="text-xs text-neutral-500">{s.papers} papers</span>}
+                  <span className="text-xs text-emerald-700">✍️ {s.stage}… {s.minutes}m</span>
+                  <span className="ml-auto text-xs text-neutral-400">{s.requestedBy === 'student' ? 'asked by the student' : 'queued by you'}</span>
+                </div>
+              ))}
+              {data.sheets.queued.map(s => (
+                <div key={s.id} className="px-4 py-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span className="text-neutral-800">{s.paper}</span>
+                  {s.papers > 1 && <span className="text-xs text-neutral-500">{s.papers} papers</span>}
+                  <span className="text-xs text-neutral-500">⏳ queued {s.minutes}m — waiting for a sheet slot</span>
+                  <span className="ml-auto text-xs text-neutral-400">{s.requestedBy === 'student' ? 'asked by the student' : 'queued by you'}</span>
+                </div>
+              ))}
             </div>
           )}
         </section>
