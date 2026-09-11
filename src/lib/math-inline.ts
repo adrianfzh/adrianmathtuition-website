@@ -67,9 +67,18 @@ export function looksLikeMath(c: string): boolean {
 // afterwards: as "\$" inside math (KaTeX renders it as $), as plain "$" in prose.
 const ESCAPED_DOLLAR = '\u0000';
 
+/**
+ * Singapore school notation writes parallel as // (Adrian, 6 and 11 Sep 2026:
+ * "make the red pen use // for parallel"). KaTeX would draw \parallel as ∥,
+ * so the macro rewrites it to a tight double slash, and a literal ∥ in prose
+ * or maths becomes // before anything is rendered.
+ */
+export const KATEX_MACROS: Record<string, string> = { '\\parallel': '/\\!/' };
+const PARALLEL_GLYPH = /\u2225/g;
+
 /** Render a comment string to safe HTML: math spans via KaTeX, the rest escaped. */
 export function mathHtml(s: string): string {
-  const parts = s.replace(/\\\$/g, ESCAPED_DOLLAR).split(/(\$[^$\n]+\$)/g);
+  const parts = s.replace(PARALLEL_GLYPH, '//').replace(/\\\$/g, ESCAPED_DOLLAR).split(/(\$[^$\n]+\$)/g);
   return parts
     .map((part, i) => {
       if (part.length > 2 && part.startsWith('$') && part.endsWith('$')) {
@@ -83,7 +92,7 @@ export function mathHtml(s: string): string {
         const priceCollision = /^\d/.test(inner) && /^\d/.test(parts[i + 1] ?? '');
         if (!priceCollision && looksLikeMath(inner)) {
           try {
-            return katex.renderToString(inner, { throwOnError: false, output: 'html' });
+            return katex.renderToString(inner, { throwOnError: false, output: 'html', macros: { ...KATEX_MACROS } });
           } catch { /* fall through — show the literal text */ }
         }
       }

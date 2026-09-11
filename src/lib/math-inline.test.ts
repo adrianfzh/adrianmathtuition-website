@@ -213,3 +213,15 @@ describe('looksLikeMath — signed arithmetic', () => {
     for (const c of ['5 - ', 'see - above', 'a - b - c is']) expect(looksLikeMath(c)).toBe(false);
   });
 });
+
+describe('parallel is written // (Adrian, 11 Sep 2026)', () => {
+  it('\\parallel inside maths renders as a double slash, never the ∥ glyph', () => {
+    const html = mathHtml('so $PQ \\parallel SR$ holds');
+    expect(html).not.toContain('∥');
+    expect(html).toContain('/');
+  });
+  it('a literal ∥ in prose or maths becomes //', () => {
+    expect(mathHtml('PQ ∥ SR')).toBe('PQ // SR');
+    expect(mathHtml('$PQ ∥ SR$')).not.toContain('∥');
+  });
+});

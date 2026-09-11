@@ -95,7 +95,9 @@ export function katexAutoRenderScript(): string {
         ],
         throwOnError: false,
         strict: false,
-        trust: true
+        trust: true,
+        // Singapore school notation: parallel is // (Adrian, 11 Sep 2026)
+        macros: { '\\\\parallel': '/\\\\!/' }
       });
     } finally {
       window.__katexDone = true;
