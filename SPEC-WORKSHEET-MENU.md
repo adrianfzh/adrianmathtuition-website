@@ -43,8 +43,13 @@ student sees it.
               on the confirm card; each typed name is matched to the level's
               canonical list and an unknown one is bounced back. The job
               carries `params.topics` and its `topic` is "Circles & Indices";
-              the sheet stacks the notes and splits the count. Kinds 1, 3 and
-              4 stay one topic (a worked sheet has one base document).
+              the sheet stacks the notes and splits the count. A CHAPTER is a
+              family: 📚 Trigonometry (all) buttons above the list (every
+              prefix shared by ≥ 2 topics — Trigonometry, Differentiation,
+              Integration, …), or the chapter name typed alone; the card and
+              the sheet title read "Trigonometry (all)" (`displayTopics`), the
+              job carries the members. Up to 12 topics. Kinds 1, 3 and 4 stay
+              one topic (a worked sheet has one base document).
      4        topic → the bot lists Adrian's existing sheets for that topic
               (usually 1–3; one match skips the pick) → count → confirm
      5        paper (AM-P1 · AM-P2 · EM-P1 · EM-P2 · JC-P1 · JC-P2, later S1/S2)

@@ -57,7 +57,9 @@ curl -s -X POST "$WORKSHEETS_API_BASE/api/admin/worksheet-jobs" \
    job with that reason; do not improvise a notes box.
    **Several topics** (`params.topics` is an array of two or more canonical
    topics, 11 Sep 2026): pass every one as its own `--topic` flag —
-   `--topic "Circles" --topic "Indices"` — in that order. The tool stacks the
+   `--topic "Circles" --topic "Indices"` — in that order, plus
+   `--title "<job.topic>"` so the sheet is titled the way the card named it
+   ("Trigonometry (all)" rather than six bracketed names). The tool stacks the
    notes fragments at the front, draws the practice per topic with the count
    split between them, and starts Practice on a new page; you do nothing else
    for it. Never join the topics into one string, and never build one sheet

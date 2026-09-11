@@ -99,7 +99,7 @@ describe('jobInsert — what the bot may queue', () => {
     expect(one.ok).toBe(true);
     if (one.ok) expect(one.row.params.topics).toBeUndefined();
     expect(jobInsert({ kind: 1, level: 'AM', topic: 'Circles & Indices', params: { topics: ['Circles', 'Indices'] } }).ok).toBe(false);
-    expect(jobInsert({ kind: 2, level: 'AM', params: { topics: ['a', 'b', 'c', 'd', 'e', 'f', 'g'] } }).ok).toBe(false);
+    expect(jobInsert({ kind: 2, level: 'AM', params: { topics: 'abcdefghijklm'.split('') } }).ok).toBe(false);
     expect(jobInsert({ kind: 2, level: 'AM', params: { topics: 'Circles' } }).ok).toBe(false);
   });
 });

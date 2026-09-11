@@ -66,8 +66,9 @@ export type WorksheetJob = {
 export const LEASE_MS = 40 * 60 * 1000;   // authoring is long: verify + render + figures
 /** After this many attempts a job stops being retried and waits for Adrian. */
 export const MAX_ATTEMPTS = 3;
-/** A multi-topic sheet (kind 2) takes at most this many topics — past that it is a paper. */
-export const MAX_TOPICS = 6;
+/** A multi-topic sheet (kind 2) takes at most this many topics — past that it is a paper.
+ *  12 fits a whole chapter family plus a few more (Trigonometry alone is six). */
+export const MAX_TOPICS = 12;
 
 /** The display name a multi-topic job carries in `topic`. */
 export function joinTopics(topics: string[]): string {

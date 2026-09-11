@@ -80,7 +80,7 @@ Always print the run report (below) back to Adrian.
 | Flag | Meaning |
 |---|---|
 | `--kind notes\|worked` | required |
-| `--topic "<Topic>"` | canonical topic; used for both base resolution and the DB query. **Repeat it for a sheet on several topics** (`--topic Circles --topic Indices`, kind=notes only): the fragments are stacked at the front, each under its own heading, the practice is drawn per topic with the count split evenly (remainder to the first topics) and grouped in that order, and Practice starts on a new page. Two topics that live in one grouped "(All)" fragment stack it once. `--fragment` / `--practice-topic` / `--link` / `--base` stay single-topic. |
+| `--topic "<Topic>"` | canonical topic; used for both base resolution and the DB query. **Repeat it for a sheet on several topics** (`--topic Circles --topic Indices`, kind=notes only): the fragments are stacked at the front, each under its own heading, the practice is drawn per topic with the count split evenly (remainder to the first topics) and grouped in that order, and Practice starts on a new page. Two topics that live in one grouped "(All)" fragment stack it once. `--title "Trigonometry (all)"` names the sheet (title line + file name) when the bracketed names would be long; without it same-family topics fold into one bracket. `--fragment` / `--practice-topic` / `--link` / `--base` stay single-topic. |
 | `--bank S3_AM\|S4_AM\|S3_EM\|S4_EM` | notes bank (kind=notes) |
 | `--folder AM\|EM\|S1\|S2\|JC\|AM G2\|EM G2` | Revision subfolder (kind=worked) |
 | `-n N` | number of practice questions (default 8) |

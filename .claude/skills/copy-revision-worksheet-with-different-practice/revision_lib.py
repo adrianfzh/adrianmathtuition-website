@@ -2823,6 +2823,27 @@ def _merge_stats(parts: list) -> dict:
     return out
 
 
+def _display_name(topics: list) -> str:
+    """The title a multi-topic sheet goes by: same-family topics fold into one
+    bracket — 'Trigonometry (Graphs, Ratios)' — the rest are joined by ' & '.
+    (The bot passes --title with the whole-chapter form 'Trigonometry (all)';
+    this is the fallback for a hand-typed command line.)"""
+    fam = lambda t: (re.match(r"^(.*?)\s*\(", t) or [None, None])[1]
+    sub = lambda t: (re.search(r"\(([^)]*)\)\s*$", t) or [None, t])[1]
+    out, seen = [], set()
+    for t in topics:
+        if t in seen:
+            continue
+        f = fam(t)
+        mine = [x for x in topics if f and fam(x) == f] or [t]
+        seen.update(mine)
+        if len(mine) == 1:
+            out.append(t)
+        else:
+            out.append("%s (%s)" % (f.strip(), ", ".join(sub(x) for x in mine)))
+    return " & ".join(out)
+
+
 def make_worksheet(kind: str, topic, bank: str | None = None, folder: str | None = None,
                    n: int = 8, out: str | Path | None = None, practice_topic: str | None = None,
                    fragment: str | None = None, base: str | Path | None = None,
@@ -2831,7 +2852,8 @@ def make_worksheet(kind: str, topic, bank: str | None = None, folder: str | None
                    env: dict | None = None, dry_run: bool = False,
                    suffix: str = "", space: int = 2, optional: int = 0,
                    drop_parts: str | None = None, link: str | None = None,
-                   minutes: int = 0, figures: bool = True) -> RunReport:
+                   minutes: int = 0, figures: bool = True,
+                   title: str | None = None) -> RunReport:
     env = env or load_env()
     # One topic, or several (a list, or repeated --topic on the command line).
     # Several: the notes fragments are stacked at the front and the practice is
@@ -2843,7 +2865,7 @@ def make_worksheet(kind: str, topic, bank: str | None = None, folder: str | None
     topics = list(dict.fromkeys(topics))          # dedupe, order kept
     multi = len(topics) > 1
     # the display name: the title's second line, the file name, the report
-    topic = " & ".join(topics)
+    topic = (title or "").strip() or (_display_name(topics) if multi else topics[0])
     if multi:
         if kind != "notes":
             raise ValueError("several topics need --kind notes (a worked sheet has one base sheet)")
@@ -3093,6 +3115,9 @@ def main(argv=None):
                     help="canonical topic, e.g. 'Binomial Theorem'; repeat it for a sheet "
                          "on several topics (kind=notes: the fragments are stacked, the "
                          "practice is drawn per topic and the count split between them)")
+    ap.add_argument("--title", help="display name for a several-topic sheet (title line + "
+                                    "file name), e.g. 'Trigonometry (all)'; default folds "
+                                    "same-family topics into one bracket")
     ap.add_argument("--bank", choices=BANKS, help="notes bank (kind=notes)")
     ap.add_argument("--folder", help="Revision folder (kind=worked): " + ", ".join(WORKED_FOLDERS))
     ap.add_argument("-n", "--questions", type=int, default=8)
@@ -3152,7 +3177,7 @@ def main(argv=None):
             page_break=a.page_break, level=a.level, dry_run=a.dry_run,
             suffix=a.suffix, space=a.space, optional=a.optional,
             drop_parts=a.drop_parts, link=a.link, minutes=a.minutes,
-            figures=not a.no_figures)
+            figures=not a.no_figures, title=a.title)
     except ValueError as e:
         print("BAD ARGUMENT: %s" % e, file=sys.stderr)
         return 2
