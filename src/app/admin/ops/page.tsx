@@ -24,6 +24,7 @@ type OpsData = {
   /** A plan-billed lane that last reported a PLAN LIMIT (9 Sep 2026) — empty when both lanes are fine. */
   planLane?: { job: 'plan-marking' | 'sheet-worker'; at: string; summary: string }[];
   slots?: { marking: number; sheets: number };
+  sheetCost?: { sheets: number; avgMinutes: number; avgTokens: number; avgCostUsd: number | null } | null;
   sheets?: { active: { id: string; paper: string; papers: number; stage: string; minutes: number; requestedBy: string }[]; queued: { id: string; paper: string; papers: number; minutes: number; requestedBy: string }[] };
   /** The bot's `/queue-quiet` batch-lane + reachability facts (11 Sep 2026) — null when the fetch itself failed (bot down, field not shipped yet). */
   botQueue?: { batchLaneNote: { text: string; tone: 'amber' | 'grey' } | null; markerUnreachable: string | null } | null;
@@ -219,6 +220,11 @@ export default function OpsPage() {
                   : `${data.sheets.active.length} of ${data.slots?.sheets ?? 6} sheet slots writing · ${data.sheets.queued.length} queued`)
                 : '…'}
             </span>
+            {!!data?.sheetCost && (
+              <span className="text-xs text-neutral-400" title="from the worker's usage stamp on each finished sheet">
+                · 7d: {data.sheetCost.sheets} sheet{data.sheetCost.sheets === 1 ? '' : 's'} · avg {data.sheetCost.avgMinutes} min · {data.sheetCost.avgTokens >= 1e6 ? `${(data.sheetCost.avgTokens / 1e6).toFixed(1)}M` : `${Math.round(data.sheetCost.avgTokens / 1e3)}k`} tokens{data.sheetCost.avgCostUsd != null ? ` · $${data.sheetCost.avgCostUsd.toFixed(2)} at API rates` : ''}
+              </span>
+            )}
             <a href="/admin/desk" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">desk →</a>
           </div>
           {!!data?.sheets && (data.sheets.active.length > 0 || data.sheets.queued.length > 0) && (

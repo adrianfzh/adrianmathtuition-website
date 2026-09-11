@@ -54,6 +54,25 @@ export async function GET(req: NextRequest) {
         else sheets.queued.push({ id: j.id, paper, papers, minutes: mins(j.created_at), requestedBy });
       }
     } catch { sheets = { active: [], queued: [] }; }
+    // What a sheet costs (11 Sep 2026 — the worker stamps job_runs 'sheet-worker'
+    // ok:true with its session's usage in meta): the last 7 days, averaged.
+    let sheetCost: { sheets: number; avgMinutes: number; avgTokens: number; avgCostUsd: number | null } | null = null;
+    try {
+      const since = new Date(Date.now() - 7 * 86400_000).toISOString();
+      const { data: sw } = await getSupabaseAdmin().from('job_runs').select('meta').eq('job', 'sheet-worker').eq('ok', true).gte('ran_at', since).limit(200);
+      type M = { seconds?: number; tokens_in?: number; tokens_out?: number; cache_read?: number; cache_create?: number; cost_usd?: number | null };
+      const rows = ((sw ?? []) as Array<{ meta: M | null }>).map(r => r.meta).filter((m): m is M => !!m && typeof m.seconds === 'number');
+      if (rows.length) {
+        const tok = (m: M) => (m.tokens_in ?? 0) + (m.tokens_out ?? 0) + (m.cache_read ?? 0) + (m.cache_create ?? 0);
+        const costs = rows.map(m => m.cost_usd).filter((c): c is number => typeof c === 'number');
+        sheetCost = {
+          sheets: rows.length,
+          avgMinutes: Math.round(rows.reduce((a, m) => a + (m.seconds ?? 0), 0) / rows.length / 60),
+          avgTokens: Math.round(rows.reduce((a, m) => a + tok(m), 0) / rows.length),
+          avgCostUsd: costs.length ? Math.round((costs.reduce((a, c) => a + c, 0) / costs.length) * 100) / 100 : null,
+        };
+      }
+    } catch { sheetCost = null; }
 
     const jobs = latest.map(r => ({
       job: r.job,
@@ -138,6 +157,7 @@ export async function GET(req: NextRequest) {
       neverStamped: neverStamped(latest).map(j => ({ job: j, rhythm: JOB_RHYTHMS[j].label })),
       planLane,
       sheets,
+      sheetCost,
       // The Mac's slots (11 Sep 2026 — Adrian: "can you put all these slots
       // info on ops or something?"): launchd agents on Adrians-MacBook-Pro —
       // six planmarking, six sheetworker (three more installed 11 Sep 2026,
