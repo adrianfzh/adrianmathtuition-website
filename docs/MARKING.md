@@ -1543,9 +1543,17 @@ batch; his own "One wave" rule holds (six teach sections at most, the rest shelv
   sheetParents`, tested). Dropbox filing is unchanged — the merged sheet keeps
   its own folder beside the paper folders (Adrian, 11 Sep 2026: "use separate
   folders then").
-- **Not built yet:** the student's Request door for a batch (a request still
-  covers one paper), the by-subject automation, and a gap-keyed
-  `notebook_mistakes` so "Still happening" can see a recurrence across titles.
+- **The student's own tick — BUILT 11 Sep 2026** (`lib/student-batch.ts`,
+  pure/tested; `app/marking/ChoosePapers.tsx`; `POST /api/portal/practice-again/request
+  {runIds}`): the "Practice on two or three papers at once" card on the Papers
+  list opens a tick list; two or three papers, one maths, marked in the last 5
+  days, none with a sheet in flight; a batch that lost fewer than 10 marks between
+  its papers is refused with "practise new papers instead". The sheet goes out
+  by itself once written and gated (not compulsory — no reminder chain).
+- **Not built yet:** the by-subject automation (the system queuing a merged
+  sheet on its own when a student has two or three fresh papers in one maths,
+  without Adrian's tick or the student's), and a gap-keyed `notebook_mistakes`
+  so "Still happening" can see a recurrence across titles.
 - **First two:** Isabelle's A Math (2025 P1 · 2025 P2 · 2023 P2 → `2026-09-10
   Practice Again (3 papers - AM 2025 P1, AM 2025 P2, AM 2023 P2)`) and E Math
   (2025 P1 · 2025 P2), authored in-session on 10 Sep 2026 from the five finished
