@@ -634,6 +634,20 @@ Invoke `create-teaching-notes` and give it this brief:
   the numbers and the functions change. Same for other notation the student
   stumbled on — sigma sums, vector column form, set-builder brackets, R-formula
   in the exam's own letters: the sheet drills the notation the paper used.
+  **The HARD STEP is part of the shape too** (Adrian, 11 Sep 2026, Isabelle's
+  AM 2025 P1 Q2 → Example 3b: "the main gap should be quadratic inequalities
+  when factorizing involves square roots. that's the difficulty for the
+  students, so worked examples and practice questions should have that"). The
+  paper's discriminant left `k² > 1/4`; the sheet's example left `m² − 4 < 0`
+  with integer roots, and every practice item factorised over integers — the
+  easy version of the skill, which is not the version that cost the marks.
+  Diagnose WHERE in the method the student stopped or slipped (the surd roots
+  of `k² > 3`, a negative leading coefficient, a fractional root, a repeated
+  root, the −1 power that turns an integral into a log) and make sure the
+  example AND every practice item put that same difficulty in front of the
+  student. Numbers friendlier than the exam's are a different, easier skill.
+  Name the difficulty in the section's blue key-move line so Adrian can see it
+  was targeted.
 - **Exact form is carried through a "show that"** (Adrian, 9 Sep 2026, Alessi's
   Q10). When the target is exact — π, a surd, a fraction — the example works every
   line exactly: exact trig values, fractions not decimals, π kept as π, and a
