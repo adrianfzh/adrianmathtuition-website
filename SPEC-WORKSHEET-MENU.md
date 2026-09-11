@@ -64,13 +64,25 @@ Typed shortcuts everywhere: `/ws 3 s3 am binomial theorem advanced 6` reuses
 `lib/worksheet.js` `parseWorksheetArgs`. Kind 3 typed = the existing
 `/worksheet` one-liner, unchanged.
 
-**Difficulty** is banded on **marks**, not `questions.difficulty` — that column is
-97–99 % "Standard" at every level (checked 5 Sep 2026) and discriminates
-nothing. Bands are per-topic tertiles of `total_marks` over the eligible pool
-(`lib/marks-band.ts`, pure, tested): *standard* = lowest third, *intermediate* =
-middle, *advanced* = top; a "2/2/2" request draws from each. Kiosk tiers are
-untouched — the band rides only the bot endpoint (`band` in the body, in the
-Blob path so same-day sheets don't collide).
+> **Retired from the menu, 12 Sep 2026** (Adrian: the marks-tertile bands are "not a
+> good way to select questions", and offering difficulty beside kinds that ignore it was
+> misleading). The confirm card has NO difficulty buttons and no 2/2/2 split. Kind 3 alone
+> honours a TYPED `advanced` / `standard`, and it means the bank's own judged label
+> (`questions.difficulty`, the Standard/Advanced pass Adrian did himself — thin at EM/S1–S3:
+> AM 273 advanced of 3.9k, EM 67 of 4.2k, S3 AM 9), never a marks cut. Kinds 1, 2 and 4
+> have no difficulty setting; a typed word is dropped with a note. Every card carries a
+> **Picks:** line saying how that kind chooses its questions (`lib/make.js PICKS`). The
+> `/api/bot/worksheet` `band` parameter and `lib/marks-band.ts` stay for API callers.
+>
+> The paragraph below is the 5 Sep 2026 design, kept for the record:
+>
+> **Difficulty** is banded on **marks**, not `questions.difficulty` — that column is
+> 97–99 % "Standard" at every level (checked 5 Sep 2026) and discriminates
+> nothing. Bands are per-topic tertiles of `total_marks` over the eligible pool
+> (`lib/marks-band.ts`, pure, tested): *standard* = lowest third, *intermediate* =
+> middle, *advanced* = top; a "2/2/2" request draws from each. Kiosk tiers are
+> untouched — the band rides only the bot endpoint (`band` in the body, in the
+> Blob path so same-day sheets don't collide).
 
 **Topic exclusion (kind 5)** feeds the *builder*, not a filter at the end: each
 blueprint slot's `topic_pool` loses the excluded topics and re-normalises; a slot

@@ -46,8 +46,8 @@ curl -s -X POST "$WORKSHEETS_API_BASE/api/admin/worksheet-jobs" \
    wait. Choose the arc yourself — one example per aspect, comprehensive but
    not repetitive, exactly as the skill describes — and REPORT it in
    `result.summary` so his Telegram shows what you picked. `params.count` is
-   the practice count; `params.band` ('standard' | 'intermediate' | 'advanced'
-   | 'a/b/c') shapes the practice set by marks band. The render never
+   the practice count. (No `params.band` is sent since 12 Sep 2026 — the
+   queued kinds have no difficulty setting; ignore one on an old job.) The render never
    overwrites — a clash becomes "(2nd version)"; that is the rule, keep it.
 
    **Kind 2 — practice worksheet with notes at the front.**
