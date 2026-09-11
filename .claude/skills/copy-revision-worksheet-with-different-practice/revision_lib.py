@@ -25,6 +25,10 @@ CLI
     python3 revision_lib.py --kind notes  --bank S4_AM --topic "Integration (Applications)"
     python3 revision_lib.py --kind notes  --bank S4_AM --fragment "Calculus Applications (All)" \
                             --practice-topic "Integration (Area)"
+    python3 revision_lib.py --kind notes  --bank S4_AM --topic Circles --topic Indices -n 8
+                            # two or more topics: the fragments are stacked at the
+                            # front, the practice is drawn per topic and split
+
 
 Run with --dry-run to resolve the base + pick questions without writing a file.
 """
@@ -1719,14 +1723,22 @@ def build_practice(questions: list, omml: OmmlCache,
         return out
 
     els = []
-    if page_break:
+    if page_break == "before":
+        # "Start this paragraph on a new page" on the heading itself. A break
+        # PARAGRAPH is a line of its own: when the notes above fill the page to
+        # its last line, that line lands at the top of the next page and breaks
+        # again — a blank page (stacked Circles + Indices notes, 2026-09-11).
+        # pageBreakBefore cannot do that.
+        h = _para(space_after=180, keep_next=True, page_break_before=True)
+    elif page_break:
         els.append(_page_break_para())
+        h = _para(space_after=180, keep_next=True)
     else:
         # A blank line between the fragment's last Reminder and the heading —
         # without it "Practice" sits flush under the bullets (Adrian, 2026-08-06).
         els.append(_para())
+        h = _para(space_after=180, keep_next=True)
 
-    h = _para(space_after=180, keep_next=True)
     _run(h, heading, bold=True, size=SZ_HEAD)
     els.append(h)
 
@@ -2155,6 +2167,15 @@ def _is_item_start(p) -> bool:
     return bool(_Q_START_RE.match(_para_plain_text(p)))
 
 
+def _is_page_break(p) -> bool:
+    """A paragraph that starts a new page: an explicit break run, or pageBreakBefore."""
+    for br in p.iter(w("br")):
+        if br.get(w("type")) == "page":
+            return True
+    pPr = p.find(w("pPr"))
+    return pPr is not None and pPr.find(w("pageBreakBefore")) is not None
+
+
 def _is_section_head(p) -> bool:
     """A short, fully bold line that introduces what follows.
 
@@ -2194,6 +2215,11 @@ def _bind_section_heads(body) -> int:
         while el is not None and len(run) < _SECTION_LIMIT:
             if etree.QName(el).localname != "p":
                 break                              # the solution table
+            if _is_page_break(el):
+                # Word files a page-break paragraph on the page AFTER the break;
+                # keeping anything with it drags the whole chain over too — the
+                # stacked Indices reminders sat alone on page 2 (2026-09-11)
+                break
             if _is_section_head(el) and run:
                 break
             if _is_item_start(el):
@@ -2371,13 +2397,159 @@ def _apply_title(body, level_label: str, topic: str, base_stem: str = "") -> str
     return mode
 
 
+def _ensure_ct_defaults(items: dict, exts: set) -> None:
+    """[Content_Types].xml: a Default per image extension the package now carries."""
+    if not exts:
+        return
+    ct = etree.fromstring(items["[Content_Types].xml"])
+    have = {(d.get("Extension") or "").lower() for d in ct
+            if etree.QName(d).localname == "Default"}
+    mime = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg",
+            "gif": "image/gif", "emf": "image/x-emf", "wmf": "image/x-wmf",
+            "bmp": "image/bmp", "tif": "image/tiff", "tiff": "image/tiff"}
+    added = False
+    for ext in sorted(exts):
+        if ext in have or ext not in mime:
+            continue
+        etree.SubElement(ct, "{%s}Default" % NS_CT, Extension=ext, ContentType=mime[ext])
+        added = True
+    if added:
+        items["[Content_Types].xml"] = etree.tostring(
+            ct, xml_declaration=True, encoding="UTF-8", standalone=True)
+
+
+def _merge_fragment(items: dict, names: list, body, extra_path: Path, k: int) -> dict:
+    """Append another notes fragment's body to `body`, carrying its pictures over.
+
+    Every fragment in a bank was cut from the same source document (styles.xml,
+    numbering.xml, settings.xml and fontTable.xml are hash-identical across the
+    13 S4 AM files, 2026-09-11), so its paragraphs, run properties and list
+    numbering are copied as they are. Only the RELATIONSHIPS are per-file: each
+    r:embed / r:id / r:link on an imported element is re-pointed at a
+    relationship added to the base, and the picture bytes are copied under a
+    name that cannot clash with the base's own media. Section properties are
+    dropped — the base's page setup governs the whole sheet — and drawing ids
+    are renumbered so no two pictures share one. The fragment's own bold heading
+    is kept: on a multi-topic sheet it is what tells the notes apart.
+    """
+    import posixpath
+    with zipfile.ZipFile(extra_path) as z:
+        xitems = {n: z.read(n) for n in z.namelist()}
+    xroot = etree.fromstring(xitems["word/document.xml"])
+    xbody = xroot.find(w("body"))
+    if xbody is None:
+        raise RuntimeError("fragment has no <w:body>: %s" % extra_path)
+
+    rels_name = "word/_rels/document.xml.rels"
+    xrels = {}
+    if rels_name in xitems:
+        for rel in etree.fromstring(xitems[rels_name]):
+            if etree.QName(rel).localname == "Relationship":
+                xrels[rel.get("Id")] = rel
+    if rels_name in items:
+        base_rels = etree.fromstring(items[rels_name])
+    else:
+        base_rels = etree.fromstring(('<Relationships xmlns="%s"/>' % NS_REL).encode())
+
+    remap, exts, notes = {}, set(), []
+    stats = {"paragraphs": 0, "pictures": 0, "external": 0, "unsupported": 0}
+
+    def new_rel(old_id):
+        if old_id in remap:
+            return remap[old_id]
+        rel = xrels.get(old_id)
+        if rel is None:                       # dangling in the source too — leave it
+            return old_id
+        new_id = "rIdFrag%d_%d" % (k, len(remap) + 1)
+        target = rel.get("Target") or ""
+        attrs = {"Id": new_id, "Type": rel.get("Type") or "", "Target": target}
+        if rel.get("TargetMode") == "External":
+            attrs["TargetMode"] = "External"
+            stats["external"] += 1
+        else:
+            src = target.lstrip("/") if target.startswith("/") else posixpath.normpath("word/" + target)
+            if src.startswith("word/media/") and src in xitems:
+                ext = src.rsplit(".", 1)[-1].lower()
+                new_name = "frag%d_%s" % (k, posixpath.basename(src))
+                items["word/media/" + new_name] = xitems[src]
+                if "word/media/" + new_name not in names:
+                    names.append("word/media/" + new_name)
+                attrs["Target"] = "media/" + new_name
+                exts.add(ext)
+                stats["pictures"] += 1
+            else:
+                # a chart / embedded object / anything that is not a picture —
+                # the fragments carry none today; say so rather than break silently
+                stats["unsupported"] += 1
+                notes.append("kept an unsupported part reference as-is: %s" % target)
+                return old_id
+        etree.SubElement(base_rels, "{%s}Relationship" % NS_REL, **attrs)
+        remap[old_id] = new_id
+        return new_id
+
+    docpr = 5000 + 500 * k
+    imported = []
+    for el in list(xbody):
+        if etree.QName(el).localname == "sectPr":
+            continue
+        for node in el.iter():
+            # paragraph-level section breaks would restart the page setup mid-sheet
+            if etree.QName(node).localname == "pPr":
+                for sp in node.findall(w("sectPr")):
+                    node.remove(sp)
+            for name in list(node.attrib):
+                if name.startswith("{%s}" % NS_R_OD):
+                    node.set(name, new_rel(node.get(name)))
+            ln = etree.QName(node).localname
+            if ln == "docPr" and node.tag.startswith("{%s}" % NS_WP):
+                docpr += 1
+                node.set("id", str(docpr))
+            elif ln == "cNvPr" and node.tag.startswith("{%s}" % NS_PIC):
+                node.set("id", str(docpr))
+        imported.append(el)
+    if not imported:
+        return dict(stats, notes=notes)
+
+    # air above the fragment's heading so the stacked notes read as sections
+    first_p = next((el for el in imported if etree.QName(el).localname == "p"), None)
+    if first_p is not None:
+        pPr = first_p.find(w("pPr"))
+        if pPr is None:
+            pPr = etree.Element(w("pPr"))
+            first_p.insert(0, pPr)
+        spacing = pPr.find(w("spacing"))
+        if spacing is None:
+            spacing = etree.SubElement(pPr, w("spacing"))
+        spacing.set(w("before"), "360")
+        _order_ppr(pPr)
+
+    sect = body.find(w("sectPr"))
+    at = list(body).index(sect) if sect is not None else len(body)
+    for offset, el in enumerate(imported):
+        body.insert(at + offset, el)
+        if etree.QName(el).localname == "p":
+            stats["paragraphs"] += 1
+
+    items[rels_name] = etree.tostring(base_rels, xml_declaration=True,
+                                      encoding="UTF-8", standalone=True)
+    if rels_name not in names:
+        names.append(rels_name)
+    _ensure_ct_defaults(items, exts)
+    return dict(stats, notes=notes)
+
+
 def clone_with_practice(base_path: Path, out_path: Path, questions: list,
                         omml: OmmlCache, heading="Practice",
                         show_source=False, page_break=True, space=2,
                         title: tuple | None = None,
                         optional_from: int | None = None,
-                        figures: "FigureStore | None" = None) -> dict:
-    """Byte-clone the base docx and append the practice paragraphs to its body."""
+                        figures: "FigureStore | None" = None,
+                        extra_bases: list | None = None) -> dict:
+    """Byte-clone the base docx and append the practice paragraphs to its body.
+
+    `extra_bases`: further notes fragments stacked after the base's own body
+    (a multi-topic sheet) — see _merge_fragment.
+    """
     global CLEAR_NUMBERING
     with zipfile.ZipFile(base_path) as z:
         names = z.namelist()
@@ -2389,6 +2561,10 @@ def clone_with_practice(base_path: Path, out_path: Path, questions: list,
     body = root.find(w("body"))
     if body is None:
         raise RuntimeError("base docx has no <w:body>: %s" % base_path)
+
+    merged = []
+    for k, extra in enumerate(extra_bases or [], 1):
+        merged.append(_merge_fragment(items, names, body, Path(extra), k))
 
     page = _normalize_page(root)
     # Trim the base's own padding BEFORE the practice block goes in — after, it
@@ -2460,7 +2636,8 @@ def clone_with_practice(base_path: Path, out_path: Path, questions: list,
     return {"paragraphs": len(els), "page": page, "house": house,
             "equations": sum(1 for v in omml.cache.values() if v is not None),
             "fallbacks": list(omml.fallbacks),
-            "figures": len(figures.entries) if figures else 0}
+            "figures": len(figures.entries) if figures else 0,
+            "merged": merged}
 
 
 # --------------------------------------------------------------------------
@@ -2481,6 +2658,9 @@ class RunReport:
     link_note: str = ""
     optional_from: int | None = None
     figure_notes: list = field(default_factory=list)
+    # multi-topic notes sheet: the fragments stacked after the base
+    extra_bases: list = field(default_factory=list)
+    topic_counts: list = field(default_factory=list)   # [(topic, n)] in sheet order
 
     def selection_json(self) -> str:
         """The chosen questions, in full, for deciding sub-part scope (rule 3).
@@ -2506,6 +2686,12 @@ class RunReport:
                  else "Sheet     : %s" % self.base.name)
         if self.base.detail:
             L.append("            ^ %s" % self.base.detail)
+        for x in self.extra_bases:
+            L.append("          + %s  (%s)" % (x.name, x.how))
+            if x.detail:
+                L.append("            ^ %s" % x.detail)
+        if self.topic_counts:
+            L.append("Topics    : %s" % " · ".join("%s %d" % (t, n) for t, n in self.topic_counts))
         lv = ", ".join("%s:%d" % (k, v) for k, v in self.level_used.items())
         L.append("Practice  : %d question(s)  [levels %s]" % (len(self.questions), lv))
         L.append("            pool %s -> usable %s"
@@ -2547,6 +2733,10 @@ class RunReport:
                 # keepNext leaves no trace in the render, so say it out loud here
                 L.append("Keep      : %d solution box(es), %d section heading(s) bound to "
                          "what follows" % (hs.get("tables_bound", 0), hs.get("heads_bound", 0)))
+            for i, m in enumerate(self.build.get("merged") or [], 1):
+                L.append("Stacked   : fragment %d — %d paragraph(s), %d picture(s) carried over%s"
+                         % (i + 1, m.get("paragraphs", 0), m.get("pictures", 0),
+                            "; " + "; ".join(m["notes"]) if m.get("notes") else ""))
             L.append("Equations : %d converted, %d fallback(s)"
                      % (self.build.get("equations", 0), len(self.build.get("fallbacks", []))))
             for f in self.build.get("fallbacks", []):
@@ -2576,7 +2766,64 @@ def default_out_path(bank_label: str, topic: str, kind: str,
     return out_folder(kind, bank, folder) / f"REV {bank_label} {safe} ({tag}).docx"
 
 
-def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str | None = None,
+def _split_count(n: int, k: int) -> list:
+    """n questions over k topics, the remainder to the first topics: 8 over 3 → 3, 3, 2."""
+    base, rem = divmod(max(n, 0), max(k, 1))
+    return [base + (1 if i < rem else 0) for i in range(k)]
+
+
+def _ramp_key(r):
+    """Ascending marks within a topic group; groups in the order the topics were given."""
+    return (r.get("_group") or 0, r.get("total_marks") or 0, str(r.get("year") or ""))
+
+
+def _draw_topic(env: dict, levels: list, ptopic: str, n: int, *, seed, allow_ai, figures,
+                cap, scope_skips: dict, exclude: set) -> tuple:
+    """The practice pool + pick for ONE topic across the bank's levels.
+
+    Walks the levels in order (primary, then the top-up), stopping as soon as
+    the pick is full. `exclude` = ids already on the sheet (a question tagged
+    with two of the sheet's topics must not appear twice).
+    Returns (pool, chosen, stats, level_used).
+    """
+    pool, level_used = [], {}
+    seen = set(exclude)
+    chosen, stats = [], {}
+    for lv in levels:
+        rows = fetch_pool(env, lv, ptopic, figures=figures)
+        if cap is not None:
+            kept = []
+            for r in rows:
+                bad = out_of_scope(r, cap)
+                if bad:
+                    scope_skips[bad] = scope_skips.get(bad, 0) + 1
+                else:
+                    kept.append(r)
+            rows = kept
+        fresh = [r for r in rows if r["id"] not in seen]
+        seen.update(r["id"] for r in fresh)
+        pool += fresh
+        level_used[lv] = len(fresh)
+        chosen, stats = select_questions(pool, n, seed=seed, allow_ai=allow_ai, figures=figures)
+        if len(chosen) >= n:
+            break
+    chosen, stats = select_questions(pool, n, seed=seed, allow_ai=allow_ai, figures=figures)
+    return pool, chosen, stats, level_used
+
+
+def _merge_stats(parts: list) -> dict:
+    out = {"pool": 0, "usable": 0, "rejected": {}, "tiers": {}}
+    for st in parts:
+        out["pool"] += st.get("pool", 0)
+        out["usable"] += st.get("usable", 0)
+        for k, v in (st.get("rejected") or {}).items():
+            out["rejected"][k] = out["rejected"].get(k, 0) + v
+        for k, v in (st.get("tiers") or {}).items():
+            out["tiers"][k] = out["tiers"].get(k, 0) + v
+    return out
+
+
+def make_worksheet(kind: str, topic, bank: str | None = None, folder: str | None = None,
                    n: int = 8, out: str | Path | None = None, practice_topic: str | None = None,
                    fragment: str | None = None, base: str | Path | None = None,
                    seed: int | None = None, allow_ai: bool = True, show_source: bool = False,
@@ -2586,13 +2833,31 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
                    drop_parts: str | None = None, link: str | None = None,
                    minutes: int = 0, figures: bool = True) -> RunReport:
     env = env or load_env()
+    # One topic, or several (a list, or repeated --topic on the command line).
+    # Several: the notes fragments are stacked at the front and the practice is
+    # drawn per topic — kind=notes only, since a worked sheet has one base.
+    topics = [str(t).strip() for t in ([topic] if isinstance(topic, str) else list(topic or []))
+              if t and str(t).strip()]
+    if not topics:
+        raise ValueError("a topic is required")
+    topics = list(dict.fromkeys(topics))          # dedupe, order kept
+    multi = len(topics) > 1
+    # the display name: the title's second line, the file name, the report
+    topic = " & ".join(topics)
+    if multi:
+        if kind != "notes":
+            raise ValueError("several topics need --kind notes (a worked sheet has one base sheet)")
+        if fragment or practice_topic or link or base:
+            raise ValueError("--fragment / --practice-topic / --link / --base take a single --topic")
     # notes: the fragment is short, keep the practice on the same page so the
     # formulas stay in view while the student works. worked: the sheet already
-    # runs pages, so start the practice cleanly on a new one.
+    # runs pages, so start the practice cleanly on a new one. Several stacked
+    # fragments run long too — the practice starts on its own page.
     if page_break is None:
-        page_break = (kind == "worked")
+        page_break = "before" if multi else (kind == "worked")
 
     # ---- base document
+    extra_bases: list = []
     if base:
         bp = Path(base).expanduser()
         if not bp.exists():
@@ -2602,8 +2867,16 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
     elif kind == "notes":
         if not bank:
             raise ValueError("kind=notes needs --bank (%s)" % ", ".join(BANKS))
-        resolved = resolve_fragment(bank, fragment or topic)
+        resolved = resolve_fragment(bank, fragment or topics[0])
         label = bank
+        for t in topics[1:]:
+            x = resolve_fragment(bank, t)
+            # two topics can live in one grouped sheet ('Integration (Area)' and
+            # 'Integration (Applications)' → 'Calculus Applications (All)'):
+            # stack that fragment once, still draw practice for both topics
+            if x.path == resolved.path or any(x.path == e.path for e in extra_bases):
+                continue
+            extra_bases.append(x)
     elif kind == "worked":
         if not folder:
             raise ValueError("kind=worked needs --folder (%s)" % ", ".join(WORKED_FOLDERS))
@@ -2630,43 +2903,65 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
     cap = BANK_TOPIC_CAP.get((bank or "").upper())
     scope_skips: dict[str, int] = {}
 
-    pool, level_used = [], {}
-    seen = set()
-    for lv in levels:
-        rows = fetch_pool(env, lv, ptopic, figures=figures)
-        if cap is not None:
-            kept = []
-            for r in rows:
-                bad = out_of_scope(r, cap)
-                if bad:
-                    scope_skips[bad] = scope_skips.get(bad, 0) + 1
-                else:
-                    kept.append(r)
-            rows = kept
-        fresh = [r for r in rows if r["id"] not in seen]
-        seen.update(r["id"] for r in fresh)
-        pool += fresh
-        level_used[lv] = len(fresh)
-        chosen, stats = select_questions(pool, n, seed=seed, allow_ai=allow_ai, figures=figures)
-        if len(chosen) >= n:
-            break
-    chosen, stats = select_questions(pool, n, seed=seed, allow_ai=allow_ai, figures=figures)
-
-    if not chosen:
+    def _no_questions(for_topic: str):
         hint = ""
         try:
-            topics = list_topics(env, levels[0])
+            names = list_topics(env, levels[0])
             hint = ("\nClosest topics at level %s: %s"
-                    % (levels[0], ", ".join(repr(t) for t in closest(ptopic, topics, 5))))
+                    % (levels[0], ", ".join(repr(t) for t in closest(for_topic, names, 5))))
         except Exception:
             pass
         if scope_skips:
             hint += ("\nSec 3 scope dropped %d question(s) that also need: %s"
                      % (sum(scope_skips.values()),
-                        ", ".join("%s (%d)" % (t, n) for t, n in
+                        ", ".join("%s (%d)" % (t, c) for t, c in
                                   sorted(scope_skips.items(), key=lambda kv: -kv[1]))))
-        raise RuntimeError("No usable practice questions for topic %r at level(s) %s.%s"
-                           % (ptopic, "/".join(levels), hint))
+        return RuntimeError("No usable practice questions for topic %r at level(s) %s.%s"
+                            % (for_topic, "/".join(levels), hint))
+
+    topic_counts: list = []
+    if not multi:
+        pool, chosen, stats, level_used = _draw_topic(
+            env, levels, ptopic, n, seed=seed, allow_ai=allow_ai, figures=figures,
+            cap=cap, scope_skips=scope_skips, exclude=set())
+        if not chosen:
+            raise _no_questions(ptopic)
+    else:
+        # Per topic: its share of the count, then a second pass hands any
+        # shortfall to the topics that still have questions. Questions stay
+        # grouped by topic, in the order the topics were given, each group its
+        # own ascending-marks ramp — the notes above are in the same order.
+        pools, chosen, parts, level_used = {}, [], [], {}
+        used: set = set()
+        for i, (t, share) in enumerate(zip(topics, _split_count(n, len(topics)))):
+            pool_t, picked, st, lu = _draw_topic(
+                env, levels, t, share, seed=seed, allow_ai=allow_ai, figures=figures,
+                cap=cap, scope_skips=scope_skips, exclude=used)
+            if not pool_t or (share and not picked):
+                raise _no_questions(t)
+            for r in picked:
+                r["_group"] = i
+            used.update(r["id"] for r in picked)
+            pools[t] = pool_t
+            chosen += picked
+            parts.append(st)
+            for k, v in lu.items():
+                level_used[k] = level_used.get(k, 0) + v
+        for i, t in enumerate(topics):
+            short = n - len(chosen)
+            if short <= 0:
+                break
+            spare = [r for r in pools[t] if r["id"] not in used]
+            more, _ = select_questions(spare, short, seed=seed, allow_ai=allow_ai, figures=figures)
+            for r in more:
+                r["_group"] = i
+            used.update(r["id"] for r in more)
+            chosen += more
+        chosen.sort(key=_ramp_key)
+        pool = [r for t in topics for r in pools[t]]
+        stats = _merge_stats(parts)
+        topic_counts = [(t, sum(1 for r in chosen if (r.get("_group") or 0) == i))
+                        for i, t in enumerate(topics)]
 
     # ---- figures: download BEFORE anything numbers the sheet (dry-run included,
     # so --drop-parts numbers from a dry run stay valid). A question whose figure
@@ -2693,8 +2988,13 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
                 figure_notes.append("%d question(s) dropped — no fetchable replacement"
                                     % (len(chosen) - len(kept)))
             # Restore the ascending-marks ramp the swaps disturbed (same key as
-            # select_questions).
-            kept.sort(key=lambda r: (r.get("total_marks") or 0, str(r.get("year") or "")))
+            # select_questions; per topic group on a multi-topic sheet).
+            for r in kept:
+                if multi and "_group" not in r:
+                    # a spare drawn from the union — file it under its own topic
+                    r["_group"] = next((i for i, t in enumerate(topics)
+                                        if t in (r.get("topics") or [])), 0)
+            kept.sort(key=_ramp_key)
             chosen = kept
 
     # ---- rule 1: spend the sitting, then stop. Before the link question, which
@@ -2753,7 +3053,8 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
     report = RunReport(base=resolved, kind=kind, level_used=level_used,
                        questions=chosen, stats=stats, size=size_budget(chosen),
                        scope_notes=scope_notes, link_note=link_note,
-                       optional_from=optional_from, figure_notes=figure_notes)
+                       optional_from=optional_from, figure_notes=figure_notes,
+                       extra_bases=extra_bases, topic_counts=topic_counts)
     if dry_run:
         return report
 
@@ -2768,11 +3069,15 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
     lvl = BANK_TITLES.get(bank or "") if kind == "notes" else None
     omml = OmmlCache()
     store = FigureStore() if figures else None
+    # Single topic: the fragment's own heading repeats the title, so it becomes
+    # the "Notes:" label. Several: every fragment keeps its heading — that is
+    # what tells the stacked notes apart — so no stem is passed to match on.
     report.build = clone_with_practice(resolved.path, out_path, chosen, omml,
                                        show_source=show_source, page_break=page_break,
                                        space=space, optional_from=optional_from,
-                                       title=(lvl, topic, resolved.path.stem) if lvl else None,
-                                       figures=store)
+                                       title=(lvl, topic, "" if multi else resolved.path.stem) if lvl else None,
+                                       figures=store,
+                                       extra_bases=[e.path for e in extra_bases])
     report.out_path = str(out_path)
     return report
 
@@ -2784,7 +3089,10 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Build a revision worksheet (notes | worked).")
     ap.add_argument("--kind", choices=["notes", "worked"], required=True)
-    ap.add_argument("--topic", required=True, help="canonical topic, e.g. 'Binomial Theorem'")
+    ap.add_argument("--topic", required=True, action="append",
+                    help="canonical topic, e.g. 'Binomial Theorem'; repeat it for a sheet "
+                         "on several topics (kind=notes: the fragments are stacked, the "
+                         "practice is drawn per topic and the count split between them)")
     ap.add_argument("--bank", choices=BANKS, help="notes bank (kind=notes)")
     ap.add_argument("--folder", help="Revision folder (kind=worked): " + ", ".join(WORKED_FOLDERS))
     ap.add_argument("-n", "--questions", type=int, default=8)

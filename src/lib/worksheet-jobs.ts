@@ -26,6 +26,10 @@ export type WorksheetJobParams = {
   count?: number;
   /** marks band: 'standard' | 'intermediate' | 'advanced' | 'mixed' | '2/2/2'-style split */
   band?: string;
+  /** kind 2: two or more canonical topics on ONE sheet — the notes fragments
+   *  stacked at the front, the count split between them. `topic` then carries
+   *  the display name "Circles & Indices". (11 Sep 2026) */
+  topics?: string[];
   /** kind 4: the base sheet's file name (Adrian's own document) */
   sheet?: string;
   /** kind 5: blueprint paper key, e.g. 'EM-P1' */
@@ -62,6 +66,13 @@ export type WorksheetJob = {
 export const LEASE_MS = 40 * 60 * 1000;   // authoring is long: verify + render + figures
 /** After this many attempts a job stops being retried and waits for Adrian. */
 export const MAX_ATTEMPTS = 3;
+/** A multi-topic sheet (kind 2) takes at most this many topics — past that it is a paper. */
+export const MAX_TOPICS = 6;
+
+/** The display name a multi-topic job carries in `topic`. */
+export function joinTopics(topics: string[]): string {
+  return topics.join(' & ');
+}
 
 export function isQueuedKind(v: unknown): v is WorksheetKind {
   return v === 1 || v === 2 || v === 4 || v === 5;
@@ -131,10 +142,20 @@ export function jobInsert(body: {
   if (!isQueuedKind(kind)) return { ok: false, error: 'kind must be 1, 2, 4 or 5 (3 is instant — use /api/bot/worksheet)' };
   const level = String(body.level ?? '').trim().toUpperCase();
   if (!level) return { ok: false, error: 'level required' };
-  const topic = String(body.topic ?? '').trim() || null;
-  if (!topic && kind !== 5) return { ok: false, error: 'topic required for this kind' };
   const p = (body.params && typeof body.params === 'object') ? body.params as Record<string, unknown> : {};
   const params: WorksheetJobParams = {};
+  // several topics on one sheet: kind 2 only, each a non-empty name, no repeats
+  let topics: string[] = [];
+  if (p.topics !== undefined) {
+    if (!Array.isArray(p.topics)) return { ok: false, error: 'params.topics must be a list of topics' };
+    topics = [...new Set(p.topics.map(x => String(x ?? '').trim().slice(0, 120)).filter(Boolean))];
+    if (topics.length === 1) topics = [];            // one topic is just `topic`
+    if (topics.length > MAX_TOPICS) return { ok: false, error: `at most ${MAX_TOPICS} topics on one sheet` };
+    if (topics.length && kind !== 2) return { ok: false, error: 'several topics on one sheet is a kind 2 (notes at the front) build' };
+    if (topics.length) params.topics = topics;
+  }
+  const topic = String(body.topic ?? '').trim() || (topics.length ? joinTopics(topics) : null);
+  if (!topic && kind !== 5) return { ok: false, error: 'topic required for this kind' };
   if (p.count !== undefined) {
     const n = Math.floor(Number(p.count));
     if (!Number.isFinite(n) || n < 1 || n > 40) return { ok: false, error: 'count must be 1–40' };

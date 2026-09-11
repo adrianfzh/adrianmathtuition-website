@@ -48,6 +48,7 @@ Adrian phrases it in prose. Map it to a CLI call:
 | "revision worksheet, S4 AM Binomial Theorem, notes, 8 questions" | `--kind notes --bank S4_AM --topic "Binomial Theorem" -n 8` |
 | "revision worksheet, S4 AM Binomial Theorem, worked" | `--kind worked --folder AM --topic "Binomial Theorem"` |
 | "revision sheet for S4 EM Matrices, 10 questions" | `--kind notes --bank S4_EM --topic "Matrices" -n 10` |
+| "notes-plus-practice on S4 AM Circles and Indices, 8 questions" | `--kind notes --bank S4_AM --topic "Circles" --topic "Indices" -n 8` |
 | "…using fragment 'Calculus Applications (All)', practice from 'Integration (Applications)'" | `--fragment "Calculus Applications (All)" --practice-topic "Integration (Applications)"` |
 
 **The `crw` shorthand.** `crw, am circles, worked` is the same request in four words. Fields
@@ -79,7 +80,7 @@ Always print the run report (below) back to Adrian.
 | Flag | Meaning |
 |---|---|
 | `--kind notes\|worked` | required |
-| `--topic "<Topic>"` | canonical topic; used for both base resolution and the DB query |
+| `--topic "<Topic>"` | canonical topic; used for both base resolution and the DB query. **Repeat it for a sheet on several topics** (`--topic Circles --topic Indices`, kind=notes only): the fragments are stacked at the front, each under its own heading, the practice is drawn per topic with the count split evenly (remainder to the first topics) and grouped in that order, and Practice starts on a new page. Two topics that live in one grouped "(All)" fragment stack it once. `--fragment` / `--practice-topic` / `--link` / `--base` stay single-topic. |
 | `--bank S3_AM\|S4_AM\|S3_EM\|S4_EM` | notes bank (kind=notes) |
 | `--folder AM\|EM\|S1\|S2\|JC\|AM G2\|EM G2` | Revision subfolder (kind=worked) |
 | `-n N` | number of practice questions (default 8) |

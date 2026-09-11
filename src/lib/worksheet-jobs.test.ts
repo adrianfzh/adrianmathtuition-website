@@ -85,6 +85,23 @@ describe('jobInsert — what the bot may queue', () => {
     expect(jobInsert({ kind: 2, level: 'AM', topic: 'Surds', params: { count: 0 } }).ok).toBe(false);
     expect(jobInsert({ kind: 2, level: 'AM', topic: 'Surds', params: { count: 41 } }).ok).toBe(false);
   });
+  it('kind 2 may carry several topics — the display name is derived when the bot sends none', () => {
+    const r = jobInsert({ kind: 2, level: 'AM', params: { count: 8, topics: [' Circles ', 'Indices', 'Circles', ''] } });
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.row.params.topics).toEqual(['Circles', 'Indices']);
+      expect(r.row.topic).toBe('Circles & Indices');
+      expect(r.row.label).toContain('Circles & Indices');
+    }
+  });
+  it('a one-name topics list is just a topic; other kinds and long lists are refused', () => {
+    const one = jobInsert({ kind: 2, level: 'AM', topic: 'Surds', params: { topics: ['Surds'] } });
+    expect(one.ok).toBe(true);
+    if (one.ok) expect(one.row.params.topics).toBeUndefined();
+    expect(jobInsert({ kind: 1, level: 'AM', topic: 'Circles & Indices', params: { topics: ['Circles', 'Indices'] } }).ok).toBe(false);
+    expect(jobInsert({ kind: 2, level: 'AM', params: { topics: ['a', 'b', 'c', 'd', 'e', 'f', 'g'] } }).ok).toBe(false);
+    expect(jobInsert({ kind: 2, level: 'AM', params: { topics: 'Circles' } }).ok).toBe(false);
+  });
 });
 
 describe('labelFor — the one line Telegram and the ops board show', () => {

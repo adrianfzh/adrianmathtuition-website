@@ -38,6 +38,13 @@ student sees it.
   → ⋯ then, by kind:
      1, 2, 3  topic (typed, fuzzy-matched to the level's canonical list; or the
               paged button list) → difficulty + count (typed or buttons) → confirm
+              Kind 2 takes TWO OR MORE topics (11 Sep 2026): type them with
+              commas ("circles, indices"), or tap one and then "➕ Add a topic"
+              on the confirm card; each typed name is matched to the level's
+              canonical list and an unknown one is bounced back. The job
+              carries `params.topics` and its `topic` is "Circles & Indices";
+              the sheet stacks the notes and splits the count. Kinds 1, 3 and
+              4 stay one topic (a worked sheet has one base document).
      4        topic → the bot lists Adrian's existing sheets for that topic
               (usually 1–3; one match skips the pick) → count → confirm
      5        paper (AM-P1 · AM-P2 · EM-P1 · EM-P2 · JC-P1 · JC-P2, later S1/S2)
@@ -106,7 +113,7 @@ The runbook dispatches on `job.kind`:
 
 - 1 → `revision-worksheet` skill (`rw.py plan/practice/render`) — headless
   adaptation: choose the arc itself and REPORT it in `result.summary`.
-- 2 → `revision_lib.py --kind notes --bank <bank> --topic … -n <count>`
+- 2 → `revision_lib.py --kind notes --bank <bank> --topic … -n <count>` (several topics → one `--topic` flag each from `params.topics`; 11 Sep 2026)
 - 4 → `revision_lib.py --kind worked --folder <folder> --topic … -n <count>`
   with `params.sheet` naming the base document.
 - 5 → `prelim-paper` skill with `params.paper/preset/exclude`.

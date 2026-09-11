@@ -55,6 +55,15 @@ curl -s -X POST "$WORKSHEETS_API_BASE/api/admin/worksheet-jobs" \
    where bank is S3_AM | S4_AM | S3_EM | S4_EM from the level (S3_AM→S3_AM,
    AM→S4_AM, S3_EM→S3_EM, EM→S4_EM). S1/S2/JC have no notes bank — `fail` the
    job with that reason; do not improvise a notes box.
+   **Several topics** (`params.topics` is an array of two or more canonical
+   topics, 11 Sep 2026): pass every one as its own `--topic` flag —
+   `--topic "Circles" --topic "Indices"` — in that order. The tool stacks the
+   notes fragments at the front, draws the practice per topic with the count
+   split between them, and starts Practice on a new page; you do nothing else
+   for it. Never join the topics into one string, and never build one sheet
+   per topic. (A job whose `topic` reads "Circles & Indices" with no
+   `params.topics` was queued before the site learned the field — split it on
+   " & " and treat it the same way.)
 
    **Kind 4 — fresh practice on a sheet Adrian has.**
    `python3 .claude/skills/copy-revision-worksheet-with-different-practice/revision_lib.py --kind worked --folder <folder> --topic "<topic>" -n <count>`
