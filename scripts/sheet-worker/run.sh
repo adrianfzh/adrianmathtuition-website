@@ -50,6 +50,18 @@ stamp_fail() {
 import json, sys
 print(json.dumps(sys.argv[1][:300]))' "$1")}" > /dev/null 2>&1 || true
 }
+# The success stamp (11 Sep 2026, Adrian: "have the worker log each sheet's
+# token usage"): one job_runs row per sheet with the session's usage in `meta`,
+# so a fortnight of sheets says what a fresh sheet costs. sheet-worker has no
+# JOB_RHYTHMS line, so these rows never alarm by absence.
+stamp_ok() {
+  [ -n "${SHEETS_API_BASE:-}" ] && [ -n "${SHEETS_API_TOKEN:-}" ] || return 0
+  curl -s -m 15 -X POST "$SHEETS_API_BASE/api/job-log" \
+    -H "Authorization: Bearer $SHEETS_API_TOKEN" -H 'Content-Type: application/json' \
+    -d "$(python3 -c '
+import json, sys
+print(json.dumps({"job":"sheet-worker","ok":True,"summary":sys.argv[1][:300],"meta":json.loads(sys.argv[2] or "{}")}))' "$1" "$2")" > /dev/null 2>&1 || true
+}
 die() { say "FATAL: $1"; stamp_fail "$1"; cleanup_pid; exit 1; }
 
 
@@ -261,13 +273,20 @@ fi
 # diagnosis + writing + symbolic verification + figure construction in one
 # pass, and a cheap pass here produces a sheet Adrian has to rewrite — which
 # costs more of his time than the tokens ever save.
+# --output-format json (11 Sep 2026): the session's final text and its USAGE
+# (input / output / cache tokens, cost, turns) land in work/last-run.json;
+# stderr still goes to the log. The result text is copied into the log after
+# the run so the plan-limit grep below keeps working.
+RUN_JSON="$STATE/work/last-run.json"
+mkdir -p "$STATE/work"
 claude -p "$(cat "$PROMPT")" \
   --model "${WORKER_MODEL:-opus}" \
   --effort "${WORKER_EFFORT:-high}" \
   --permission-mode dontAsk \
   --allowedTools Bash Read Write Edit Glob Grep TodoWrite Skill \
   --setting-sources user project \
-  < /dev/null >> "$LOG" 2>&1 &
+  --output-format json \
+  < /dev/null > "$RUN_JSON" 2>> "$LOG" &
 CLAUDE_PID=$!
 
 while kill -0 "$CLAUDE_PID" 2>/dev/null; do
@@ -284,11 +303,41 @@ wait "$CLAUDE_PID" 2>/dev/null
 RC=$?
 ELAPSED=$(( $(date +%s) - START_EPOCH ))
 
+# What the session said and what it spent. USAGE_LINE reads like
+# "in 9k · out 41k · cache 1.2M · $3.90 · 63 turns"; USAGE_META is the job_runs meta.
+USAGE_LINE=""; USAGE_META="{}"
+if [ -s "$RUN_JSON" ]; then
+  eval "$(python3 - "$RUN_JSON" "$STATE" "${WORKER_MODEL:-opus}" "$ELAPSED" <<'PYUSAGE'
+import json, sys, shlex
+path, state, model, secs = sys.argv[1:5]
+try:
+    j = json.load(open(path))
+except Exception:
+    print('USAGE_LINE=""; USAGE_META="{}"'); sys.exit(0)
+u = j.get("usage") or {}
+def n(k): 
+    try: return int(u.get(k) or 0)
+    except Exception: return 0
+tin, tout, cr, cc = n("input_tokens"), n("output_tokens"), n("cache_read_input_tokens"), n("cache_creation_input_tokens")
+cost = j.get("total_cost_usd"); turns = j.get("num_turns")
+def k(x): return f"{x/1e6:.1f}M" if x >= 1e6 else (f"{x/1e3:.0f}k" if x >= 1e3 else str(x))
+line = f"in {k(tin)} · out {k(tout)} · cache {k(cr+cc)}" + (f" · ${cost:.2f}" if isinstance(cost,(int,float)) else "") + (f" · {turns} turns" if turns else "")
+meta = {"slot": state.rsplit('/',1)[-1], "model": model, "seconds": int(secs), "tokens_in": tin, "tokens_out": tout, "cache_read": cr, "cache_create": cc, "cost_usd": cost, "turns": turns, "is_error": bool(j.get("is_error"))}
+print("USAGE_LINE=" + shlex.quote(line)); print("USAGE_META=" + shlex.quote(json.dumps(meta)))
+res = j.get("result")
+if isinstance(res, str) and res.strip():
+    with open(f"{state}/sheet-worker.log", "a") as f:
+        f.write(res.strip()[-4000:] + "\n")
+PYUSAGE
+)"
+fi
+
 # A job left 'claimed' by a dead session is NOT released here: the lease
 # (lib/sheet-jobs.ts) expires on its own and the next tick reclaims it. That is
 # deliberate — a half-authored sheet should not be retried instantly.
 if [ "$RC" -eq 0 ]; then
-  say "END ok (${ELAPSED}s)"
+  say "END ok (${ELAPSED}s)${USAGE_LINE:+ · $USAGE_LINE}"
+  stamp_ok "sheet session ${ELAPSED}s${USAGE_LINE:+ · $USAGE_LINE}" "$USAGE_META"
 elif tail -40 "$LOG" | grep -qiE 'usage limit|rate.?limit|quota|weekly limit|hit your .*limit'; then
   # Name the limit and the account so /admin/ops can say "sheet worker closed" (9 Sep 2026).
   LIMIT_LINE="$(tail -40 "$LOG" | grep -iE 'usage limit|rate.?limit|quota|weekly limit|hit your .*limit' | tail -1 | tr -d '\r' | cut -c1-120)"
