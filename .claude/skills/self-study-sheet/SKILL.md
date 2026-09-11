@@ -966,16 +966,21 @@ the gap is the interesting half: it says what the bank is missing.
   says what is asked; this one says why the working is the working. A single
   integral with nothing to add or subtract needs only the question figure.
 
-**Solution boxes flow — pass `keep_together=False`** (Adrian, 2 Sep 2026: "how
-can I remove the large space between the example and section 3?"). The default
-glues heading + example + figure + box and jumps the whole block to the next
-page when it does not fit, leaving half a page empty. On a teaching sheet let
-the box split across the page. In Word the same fix is Paragraph → Line and
-Page Breaks → untick "Keep with next" on the paragraphs above the box, and
-Table Properties → Row → "Allow row to break across pages". For a sheet
-already filed with the glue in it, `repair-sheet.py --unglue <file>` drops
-every keep-with-next / cannot-split flag in one go (Klaire's sheet, 2 Sep
-2026: "when i hit enter, the paragraph just goes right to the next page").
+**An example stays on one page — leave `keep_together=True`** (Adrian, 11 Sep
+2026, on Isabelle's sheets: "examples should try not to straddle across two
+pages like that? looks cut off in the middle → hard to read. likewise for
+questions"). The default glues the Example label, its question, any figure,
+the `Solution:` line and the whole box, so Word moves the block to a fresh
+page rather than cutting a solution in half. The half-empty page that leaves
+behind is the accepted price; it replaces the 2 Sep 2026 "let the box flow"
+rule, which was the cause of the cut-off boxes. Only a box taller than a whole
+page still splits, and Word does that on its own. Practice questions get the
+same treatment: build the sheet with `Worksheet(keep_questions_together=True)`
+so a question's stem, its (a)(b)(c) parts, the `[Ans: …]` line and the
+`[Remember: …]` note stay together (they carry no writing space, so no
+question is taller than a page). `repair-sheet.py --unglue` still exists for a
+sheet Adrian is editing by hand in Word and finds too sticky; never run it as
+part of filing.
 
 **Verify everything before rendering**: every worked and practice answer
 recomputed with sympy; any figure verified from its own coordinates (tangency,

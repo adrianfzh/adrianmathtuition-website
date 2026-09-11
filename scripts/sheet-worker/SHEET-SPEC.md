@@ -157,8 +157,11 @@ grey italic, a `remember` grey — the spec carries the words, not the hex.
 `label` is `(a)` / `(i)`, or `""` for a one-part solution (a single full-width
 cell — the layout stays the same). Rows sit 8 pt apart, as paragraph spacing in
 both cells; the box shows only its outer border. `keep_together` defaults to
-**false**, which is what a teaching sheet wants: the glued default jumps a block
-that does not fit to the next page and leaves half a page empty.
+**true** (Adrian, 11 Sep 2026: an example "looks cut off in the middle → hard
+to read"): the Example label, its question, figure, `Solution:` line and the
+whole box move to a fresh page together rather than being cut. The half-empty
+page that can leave behind is accepted. Practice questions are glued the same
+way (`sheet.keep_questions_together`, default true).
 
 ### Figures
 

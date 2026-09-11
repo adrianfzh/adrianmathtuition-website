@@ -48,6 +48,10 @@
         "working_space": {
           "description": "Blank writing lines per mark. A Practice Again sheet is read, not written on — leave it at 0.",
           "type": "number", "minimum": 0, "maximum": 6
+        },
+        "keep_questions_together": {
+          "description": "Default true — a practice question's stem, parts, [Ans] line and Remember note stay on one page (Adrian, 11 Sep 2026). Leave it out.",
+          "type": "boolean"
         }
       }
     },
@@ -216,7 +220,7 @@
           "then": { "required": ["rows"],
                     "properties": {
                       "glue": { "type": "boolean", "description": "Keep the \"Solution:\" label with the box below it." },
-                      "keep_together": { "type": "boolean", "description": "Default false — on a teaching sheet the box flows, or a block that does not fit jumps whole to the next page and leaves half a page blank." },
+                      "keep_together": { "type": "boolean", "description": "Default true — the Example label, question, figure, Solution: line and the whole box move to a fresh page together rather than being cut in half (Adrian, 11 Sep 2026). Pass false only to reproduce an older sheet that let boxes flow." },
                       "rows": {
                         "type": "array", "minItems": 1,
                         "items": {

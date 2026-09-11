@@ -369,7 +369,9 @@ def build(spec, out_dir: Path, spec_dir: Path, name: str, repair: bool):
     sheet = spec['sheet']
     figures = Figures(out_dir, spec_dir)
 
-    ws = Worksheet(working_space=float(sheet.get('working_space', 0.0)))
+    ws = Worksheet(working_space=float(sheet.get('working_space', 0.0)),
+                   # a practice question never straddles a page (Adrian, 11 Sep 2026)
+                   keep_questions_together=bool(sheet.get('keep_questions_together', True)))
     header = sheet.get('header')
     if header is None:
         subject = sheet.get('subject', 'AM')
@@ -452,7 +454,7 @@ def build(spec, out_dir: Path, spec_dir: Path, name: str, repair: bool):
                           width_cm=float(block.get('width_cm', 10.5)))
         elif kind == 'solution':
             table = ws.solution_box(solution_rows(ws, figures, block['rows']),
-                                    keep_together=block.get('keep_together', False))
+                                    keep_together=block.get('keep_together', True))
             if block.get('glue'):
                 # the "Solution:" label travels with the box below it
                 label = table._tbl.getprevious()
@@ -725,6 +727,9 @@ def selftest():
             ('the check line is green', '2E7D32' in xml and '✓ Check: ' in xml),
             ('the Common Error line is red', 'EE0000' in xml and 'Common Error: ' in xml),
             ('the green rule tag is green', '00B050' in xml),
+            # Adrian, 11 Sep 2026: an example or a question never straddles a page
+            ('every solution box row refuses to split', n(r'<w:cantSplit\s*/>') >= 2),
+            ('the questions are glued to their parts', n(r'<w:keepNext\s*/>') >= 20),
         ]
         for label, ok in checks:
             print(f'  {"ok  " if ok else "FAIL"} {label}')
