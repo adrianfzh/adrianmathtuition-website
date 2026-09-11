@@ -491,6 +491,8 @@ PAIR_COLOURS = ["#0432FF", "#EE0000", "#00B050", "#7030A0"]
 def _render_binomial_pairing(spec, out_path):
     left = list(spec["left"])            # mathtext terms of the first bracket, e.g. ["2x^{2}", "1"]
     right = list(spec["right"])          # terms of the expansion, e.g. ["64", "-576x^{-1}", ...]
+    # right_more / left_more: True when the bracket shows only the FIRST terms
+    # of a longer expansion — "+ ⋯" is drawn after the last one (11 Sep 2026)
     pairs = list(spec["pairs"])          # [{"l": 0, "r": 3, "product": "2x^{2}\\times(-4320x^{-3}) = -8640x^{-1}"}, ...]
     result = spec.get("result")          # optional last line, e.g. "\\text{coefficient of } x^{-1} = -8640 + (-576) = -9216"
     target = spec.get("target")          # optional caption, e.g. "the terms that give x⁻¹"
@@ -533,7 +535,7 @@ def _render_binomial_pairing(spec, out_path):
     gap = 0.012
     left_pos, right_pos = [], []
 
-    def bracket(terms, positions):
+    def bracket(terms, positions, more=False):
         nonlocal x
         _, w = put(x, y_line, "("); x += w + gap * 0.5
         for i, term in enumerate(terms):
@@ -543,10 +545,15 @@ def _render_binomial_pairing(spec, out_path):
             _, w = put(x, y_line, r"$%s$" % body)
             positions.append((x, x + w))
             x += w + gap
+        if more:
+            # The expansion shown is only its first few terms (Adrian, 11 Sep
+            # 2026: "there should be ... after −720/x³ to indicate there are
+            # more terms") — say so inside the bracket, after the last one.
+            _, w = put(x, y_line, r"$+\cdots$"); x += w + gap
         _, w = put(x, y_line, ")"); x += w + gap * 1.5
 
-    bracket(left, left_pos)
-    bracket(right, right_pos)
+    bracket(left, left_pos, bool(spec.get("left_more")))
+    bracket(right, right_pos, bool(spec.get("right_more")))
     if x > 0.99:
         raise ValueError("binomial_pairing: the brackets do not fit — shorten the terms or pass width_in")
 
@@ -647,7 +654,7 @@ if __name__ == "__main__":
         "result": r"$= \frac{1}{4} - \frac{1}{6} = \frac{1}{12}$",
     }
     samples["binomial_pairing"] = {
-        "kind": "binomial_pairing", "target": "the terms that give x⁻¹",
+        "kind": "binomial_pairing", "target": "the terms that give x⁻¹", "right_more": True,
         "left": ["2x^{2}", "1"],
         "right": ["64", "-576x^{-1}", "2160x^{-2}", "-4320x^{-3}", "\\cdots"],
         "pairs": [{"l": 0, "r": 3, "product": "2x^{2}\\times(-4320x^{-3}) = -8640x^{-1}"},

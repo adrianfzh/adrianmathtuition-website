@@ -673,7 +673,12 @@ Invoke `create-teaching-notes` and give it this brief:
   multiplies in the second, the product under the picture in the same colour,
   then the coefficient line. `ws.figure(png, width_cm=13)` right after the
   expansion step, before the coefficient step. Both, always: the picture shows
-  WHICH terms pair, the prose says WHY those and no others.
+  WHICH terms pair, the prose says WHY those and no others. **When the bracket
+  shows only the first few terms of a longer expansion** (the question says "the
+  first four terms … are"), pass `right_more: True` so the picture ends
+  "… − 720/x³ + ⋯ )" (Adrian, 11 Sep 2026, Alessi's returned sheet: "there
+  should be ... after −720/x³ to indicate there are more terms") — a bracket
+  that closes after the fourth term claims the expansion stops there.
 - **Practice layout is fixed (Adrian, 31 Aug 2026):**
   - **Number the items 1, 2, 3 …** — never (a), (b), (c). Letters are for the
     PARTS of one question; using them for separate questions makes a

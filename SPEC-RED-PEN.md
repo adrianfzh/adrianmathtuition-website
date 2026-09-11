@@ -181,6 +181,16 @@ before it reaches a student.
   had parked every note under its chip, a page above the error on a long part. Bot
   `ai/annotate.js` (the `stripCandidates` anchor), commit 7ca9e24; the pen bench's
   `leaders-short` check measures the drop.
+- **A bracket or ring encloses only what is wrong (11 Sep 2026):** a note that
+  asks the student to ADD something never encloses correct text. Missing units →
+  the whole final answer is bracketed and the units sit at its side; a missing
+  conclusion or reason → nothing is bracketed, the note goes beside the tick; a
+  correct phrase ("for all x") is never inside a bracket or ring. Adrian, on
+  Alessi's returned A Math 2021 P1 sheet: "no need to put brackets around 9/4 …
+  brackets around √3π/2 + 9/4 then put units at the side" and "for all x is
+  correct … student may be misled to think that statement is wrong". Bot
+  `ai/paper-marker.js`, commit 1b16bf7 — the marker's `notation_slip.span_token`
+  contract.
 - **Log + alarm:** `job_runs` slug `pen-v2-trial` for each trial render; the desk's
   calibration page gets a "pen matches Adrian" column when the trial starts.
 
