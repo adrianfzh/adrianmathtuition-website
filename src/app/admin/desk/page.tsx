@@ -943,27 +943,28 @@ export default function DeskPage() {
   // Released stays newest first (lib/desk-state orderLane, Adrian 7 Sep 2026).
   const laneRows = orderLane(rows.filter(r => r.lane === activeLane), activeLane);
   // ── One sheet for several papers (Adrian, 10 Sep 2026: "right now build only
-  // what I tick on the desk"). A row can be ticked when its student has another
-  // paper of the same maths in this lane; the bar below the list queues ONE
-  // batch job for the ticked papers (POST /api/admin/sheet-jobs { runIds }).
-  const tickable = (row: Row) => !row.marking && !row.practiceAgain && !!row.studentId && laneRows.some(o => o.id !== row.id && !o.practiceAgain && o.studentId === row.studentId && (o.paperSubject ?? '') === (row.paperSubject ?? ''));
+  // what I tick on the desk"). Any marked, tagged paper can be ticked, whoever
+  // it belongs to (Adrian, 11 Sep 2026 evening: "shouldn't i be able to select
+  // multiple pdfs and the system will be able to tell if 2 separate sheets are
+  // required? … and there are other people that i can select too"); the bar
+  // below the list groups the ticks by student and maths and queues one job
+  // per group — merged (`runIds`) for two or more papers, single (`runId`)
+  // for one.
+  const tickable = (row: Row) => !row.marking && !row.practiceAgain && !!row.studentId;
   const tickedRows = laneRows.filter(r => ticked.has(r.id));
-  // Grouped by maths (11 Sep 2026): AM + EM ticked together → one sheet EACH.
   const plan = tickPlan(tickedRows);
   const planReady = plan.kind === 'ok';
   async function queueBatch() {
     if (plan.kind !== 'ok') return;
     const n = plan.groups.length;
-    const what = n === 1
-      ? `One Practice Again sheet for ${plan.student}'s ${plan.groups[0].runIds.length} ticked papers?`
-      : `${n} Practice Again sheets for ${plan.student} — ${plan.groups.map(g => `${g.subject} (${g.runIds.length} papers)`).join(' and ')}?`;
-    if (!window.confirm(`${what} The Mac writes one merged sheet per maths (the same gap in two papers becomes one section) and files each in a new dated folder; you vet them on the desk before they go out. Any single sheet still being written for these papers is stopped.`)) return;
+    const what = `${n === 1 ? 'One Practice Again sheet' : `${n} Practice Again sheets`}: ${plan.groups.map(g => `${g.student} — ${g.subject} (${g.runIds.length} paper${g.runIds.length === 1 ? '' : 's'})`).join('; ')}?`;
+    if (!window.confirm(`${what} The Mac writes one sheet per student per maths — papers of the same maths are merged (the same gap in two papers becomes one section), a maths with one paper gets its own sheet — and files each in a new dated folder; you vet them on the desk before they go out. Any sheet still being written for these papers is stopped.`)) return;
     setBusy('batch');
     const queued: string[] = []; let cancelled = 0; let failed: string | null = null;
     for (const g of plan.groups) {
-      const { ok, d } = await postJson('/api/admin/sheet-jobs', { runIds: g.runIds });
-      if (!ok) { failed = `${g.subject}: ${d.error || 'error'}`; break; }
-      queued.push(`${g.subject} (${g.runIds.length})`); cancelled += Number(d.cancelled || 0);
+      const { ok, d } = await postJson('/api/admin/sheet-jobs', g.runIds.length > 1 ? { runIds: g.runIds } : { runId: g.runIds[0] });
+      if (!ok) { failed = `${g.student} ${g.subject}: ${d.error || 'error'}`; break; }
+      queued.push(`${g.student} ${g.subject} (${g.runIds.length})`); cancelled += Number(d.cancelled || 0);
     }
     setBusy('');
     if (failed) { setToast(`${queued.length ? `Queued ${queued.join(', ')}; ` : ''}not queued — ${failed}`); loadQueue(); return; }
@@ -1063,8 +1064,8 @@ export default function DeskPage() {
                 onKeyDown={e => { if (e.key === 'Enter') go({ run: row.id }); }}
                 style={{ display: 'flex', gap: 10, padding: '11px 12px', borderTop: `1px solid ${C.border}`, cursor: 'pointer', alignItems: 'flex-start', background: ticked.has(row.id) ? '#eff6ff' : undefined }}>
                 {tickable(row) && (
-                  <input type="checkbox" checked={ticked.has(row.id)} aria-label="Tick for one merged Practice Again sheet"
-                    title="Tick two or more of this student's papers (same maths) for ONE merged Practice Again sheet"
+                  <input type="checkbox" checked={ticked.has(row.id)} aria-label="Tick for a Practice Again sheet"
+                    title="Tick any papers — one sheet per student per maths; papers of the same maths are merged, a lone paper gets its own"
                     onClick={e => e.stopPropagation()}
                     onChange={() => setTicked(prev => { const next = new Set(prev); if (next.has(row.id)) next.delete(row.id); else next.add(row.id); return next; })}
                     style={{ marginTop: 4, width: 16, height: 16, cursor: 'pointer', flexShrink: 0 }} />

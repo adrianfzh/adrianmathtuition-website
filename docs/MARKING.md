@@ -1495,15 +1495,20 @@ batch; his own "One wave" rule holds (six teach sections at most, the rest shelv
   single-run guard; in-flight single jobs on those papers are superseded
   (cancelled) by `queueSheetBatch`, the way a second single sheet replaces the
   first. `paper_name` reads "3 papers: … · … · …".
-- **The desk tick** (`/admin/desk`, any lane): a checkbox appears on a row when
-  the student has another paper of the same maths in that lane; the bar below
-  the list says whose and how many and queues ONE job per maths (`POST
-  /api/admin/sheet-jobs {runIds}`, once per group). **Since 11 Sep 2026 AM and
-  EM ticked together queue TWO sheets, one each** (Adrian: "does it produce two
-  separate worksheets now?" — `lib/desk-state.ts tickPlan`, pure/tested; the
-  button reads "Queue 2 sheets"); a maths with a single ticked paper is named
-  in the bar so it can be unticked or joined by a second; two students still
-  never share a sheet. The job sits
+- **The desk tick** (`/admin/desk`, any lane): every marked, tagged paper has a
+  checkbox, whoever it belongs to; the bar below the list groups the ticks by
+  student and then by maths and queues one job per group — `POST
+  /api/admin/sheet-jobs {runIds}` (merged) for two or more papers, `{runId}`
+  (a single sheet) for one. **Since 11 Sep 2026 AM and EM ticked together queue
+  TWO sheets, one each** (Adrian: "does it produce two separate worksheets
+  now?"), and **since that evening a maths with one ticked paper, or another
+  student's papers, are no longer refused** (Adrian, on Joey's lone A Math
+  paper: "shouldn't i be able to select multiple pdfs and the system will be
+  able to tell if 2 separate sheets are required? … and there are other people
+  that i can select too") — `lib/desk-state.ts tickPlan`, pure/tested; the bar
+  reads "📘 2 Practice Again sheets — Joey: E Math (3 papers merged), A Math (1
+  paper, its own sheet)". One student, one maths per sheet is the grouping, not
+  a refusal. A merged job sits
   on the newest paper's row and shows on every covered paper's row and detail
   ("One sheet for N papers"); Send / the 12-hour clock / hold / revise all work as
   for a single sheet because they key on the primary.

@@ -475,55 +475,45 @@ export function amendedStatusFor(
 // ── The desk tick: one sheet per student PER MATHS (11 Sep 2026) ─────────────
 // Adrian ticked Isabelle's three AM and two EM papers and asked: "if i ticked
 // pdfs that includes both em and am, does it produce two separate worksheets
-// now?" It refused ("untick the odd one out"). Now the ticks are grouped by
-// maths and each group of two or more becomes its own sheet — one student, one
-// maths per sheet still holds (docs/MARKING.md § Practice Again batches); a
-// maths with only ONE ticked paper is named so Adrian unticks it or adds a
-// second. Pure; the page renders the plan and posts one job per group.
+// now?" — so the ticks are grouped by maths and each group becomes its own
+// sheet. Later the same day, on Joey's lone A Math paper with no tick box and
+// other students' rows: "shouldn't i be able to select multiple pdfs and the
+// system will be able to tell if 2 separate sheets are required? … and there
+// are other people that i can select too". So: ANY marked, tagged paper can be
+// ticked, whoever it belongs to; the plan groups by student and then by maths;
+// a group of two or more is one merged sheet, a group of one is that paper's
+// own single sheet. One student, one maths per sheet still holds — it is the
+// grouping, not a refusal. Pure; the page renders the plan and posts one job
+// per group.
 
 export type TickRow = { id: string; studentId: string | null; studentName: string | null; paperSubject: string | null };
-export type TickGroup = { subject: string; runIds: string[] };
+export type TickGroup = { studentId: string; student: string; subject: string; runIds: string[] };
 export type TickPlan =
   | { kind: 'none' }
-  | { kind: 'mixed-students' }
-  /** every group has ≥ 2 papers → one job per group */
-  | { kind: 'ok'; student: string; groups: TickGroup[] }
-  /** at least one maths has a single ticked paper — cannot be a sheet on its own */
-  | { kind: 'lone'; student: string; groups: TickGroup[]; lone: TickGroup[] };
+  /** one job per group: `runIds` (merged) when two or more, `runId` (single) when one */
+  | { kind: 'ok'; groups: TickGroup[] };
 
 export function tickPlan(rows: readonly TickRow[]): TickPlan {
   if (!rows.length) return { kind: 'none' };
-  if (new Set(rows.map(r => r.studentId ?? '')).size > 1) return { kind: 'mixed-students' };
-  const student = rows[0].studentName ?? 'this student';
-  const bySubject = new Map<string, string[]>();
+  const groups = new Map<string, TickGroup>();
   for (const r of rows) {
-    const s = r.paperSubject || 'maths';
-    bySubject.set(s, [...(bySubject.get(s) ?? []), r.id]);
+    const studentId = r.studentId ?? '';
+    const subject = r.paperSubject || 'maths';
+    const k = `${studentId}|${subject}`;
+    const g = groups.get(k) ?? { studentId, student: r.studentName ?? 'this student', subject, runIds: [] };
+    g.runIds.push(r.id);
+    groups.set(k, g);
   }
-  const all = [...bySubject.entries()].map(([subject, runIds]) => ({ subject, runIds }));
-  const groups = all.filter(g => g.runIds.length >= 2);
-  const lone = all.filter(g => g.runIds.length < 2);
-  if (lone.length) return { kind: 'lone', student, groups, lone };
-  return { kind: 'ok', student, groups };
+  return { kind: 'ok', groups: [...groups.values()] };
 }
 
-/** The bar's one line for a plan. Pure. */
+/** The bar's one line for a plan: "📘 2 Practice Again sheets — Joey: E Math (3 papers merged), A Math (1 paper, its own sheet)". Pure. */
 export function tickPlanLine(plan: TickPlan): string {
-  switch (plan.kind) {
-    case 'none': return '';
-    case 'mixed-students': return 'One sheet is for one student — untick the other student’s papers.';
-    case 'lone': {
-      const who = plan.lone.map(g => `${g.subject}: 1 paper`).join(', ');
-      return plan.groups.length
-        ? `${who} — a sheet needs two or more of the same maths; untick it or add another.`
-        : `1 paper ticked — tick another of ${plan.student}’s (same maths) to make one sheet.`;
-    }
-    case 'ok': {
-      if (plan.groups.length === 1) {
-        const g = plan.groups[0];
-        return `📘 One Practice Again sheet for ${plan.student}’s ${g.runIds.length} papers (${g.subject})`;
-      }
-      return `📘 ${plan.groups.length} Practice Again sheets for ${plan.student}: ${plan.groups.map(g => `${g.subject} (${g.runIds.length} papers)`).join(' + ')}`;
-    }
-  }
+  if (plan.kind === 'none') return '';
+  const byStudent = new Map<string, TickGroup[]>();
+  for (const g of plan.groups) byStudent.set(g.student, [...(byStudent.get(g.student) ?? []), g]);
+  const part = (g: TickGroup) => `${g.subject} (${g.runIds.length === 1 ? '1 paper, its own sheet' : `${g.runIds.length} papers merged`})`;
+  const who = [...byStudent.entries()].map(([student, gs]) => `${student}: ${gs.map(part).join(', ')}`).join(' · ');
+  const n = plan.groups.length;
+  return `📘 ${n === 1 ? 'One Practice Again sheet' : `${n} Practice Again sheets`} — ${who}`;
 }
