@@ -264,7 +264,7 @@ INSTRUCTIONS = [
     'The number of marks is given in brackets [ ] at the end of each question or part question.',
 ]
 
-FORMULAE = [
+FORMULAE_AM = [
     ('1.  ALGEBRA', None),
     ('Quadratic Equation', 'For the equation $ax^2 + bx + c = 0$, $x = \\dfrac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$'),
     ('Binomial expansion',
@@ -284,6 +284,27 @@ FORMULAE = [
     ('', '$a^2 = b^2 + c^2 - 2bc \\cos A$'),
     ('', '$\\Delta = \\dfrac{1}{2} bc \\sin A$'),
 ]
+
+# 4052 (E Math): the formula list printed on the real paper.
+FORMULAE_EM = [
+    ('Compound interest', 'Total amount $= P\\left(1 + \\dfrac{r}{100}\\right)^{n}$'),
+    ('Mensuration', 'Curved surface area of a cone $= \\pi r l$'),
+    ('', 'Surface area of a sphere $= 4\\pi r^2$'),
+    ('', 'Volume of a cone $= \\dfrac{1}{3}\\pi r^2 h$'),
+    ('', 'Volume of a sphere $= \\dfrac{4}{3}\\pi r^3$'),
+    ('', 'Area of triangle $ABC = \\dfrac{1}{2} ab \\sin C$'),
+    ('', 'Arc length $= r\\theta$, where $\\theta$ is in radians'),
+    ('', 'Sector area $= \\dfrac{1}{2} r^2 \\theta$, where $\\theta$ is in radians'),
+    ('Trigonometry', '$\\dfrac{a}{\\sin A} = \\dfrac{b}{\\sin B} = \\dfrac{c}{\\sin C}$'),
+    ('', '$a^2 = b^2 + c^2 - 2bc \\cos A$'),
+    ('Statistics', 'Mean $= \\dfrac{\\sum fx}{\\sum f}$'),
+    ('', 'Standard deviation $= \\sqrt{\\dfrac{\\sum fx^2}{\\sum f} - \\left(\\dfrac{\\sum fx}{\\sum f}\\right)^2}$'),
+]
+
+
+def formulae_for(shape):
+    """The formula list the real paper of this syllabus prints (4049 → A Math, 4052 → E Math)."""
+    return FORMULAE_EM if str(shape.get('code', '')) == '4052' else FORMULAE_AM
 
 
 def page_numbers(doc):
@@ -314,7 +335,7 @@ def front_page(ws, paper, total):
     ws.page_break()
     ws.para([('text', 'Mathematical Formulae', {'bold': True})])
     ws.para([('text', '')])
-    for head, body in FORMULAE:
+    for head, body in formulae_for(shape):
         if body is None:
             p = ws.para([('text', head, {'bold': True})])
             p.paragraph_format.space_before = Cm(0.3)

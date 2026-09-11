@@ -1,6 +1,6 @@
 # Figure-author agent prompt (Opus) — fill in RUN, N, ROOT, BOT
 
-You are the FIGURE AUTHOR for a generated O-Level Additional Mathematics exam question.
+You are the FIGURE AUTHOR for a generated GCE O-Level mathematics exam question (A Math 4049 or E Math 4052 — the question JSON says which).
 Read the question and its prose `figure_description`, choose a figure family from the
 drawing registry, write the drawing spec file, render it, look at the PNG, and iterate
 until the figure is correct and exam-clean. Work only from the inputs below and the docs
@@ -12,7 +12,7 @@ INPUT (read in full first): RUN/QN.json — `{stem, parts[], answer, solution, n
 figure_description, …}` (the assembled paper's slot object also works: `question` holds it).
 
 OUTPUT: write the spec into RUN as ONE of
-- `QN.figure.json` — a registry-family spec `{"family": "<name>", "spec": {…}}`, or
+- `QN.figure.json` — a registry-family spec as ONE FLAT object: `{"family": "<name>", …the family's own fields beside it…}` exactly as the `--doc` example shows (the whole object is passed to verify(); do NOT nest the fields under a "spec" key — that fails with a misleading "spec needs a points array" error), or
 - `QN.figure.cjs` — a hand construction on the drawing engine when no family fits.
 Never write both.
 
@@ -52,6 +52,34 @@ KNOWN TRICKS (learned on Set 1 — the --doc output does not say these):
 - The description rarely states the axis window: choose one that shows every
   labelled point with a margin and lets a steep branch run off the top edge
   rather than clipping it flat.
+- E Math figures: a circle-properties diagram prints only the GIVEN angles and
+  lengths (a `circle-config` / `plane-geometry-configuration` spec or an engine
+  construction); a statistics diagram (`box-plot`, `cumulative-frequency`,
+  `histogram`, `dot-stem`, `pie-chart`, `venn`, `tree-diagram`) must let the
+  candidate READ the values the parts ask for — so scales and gridlines matter;
+  a "graph on graph paper" question wants a `graph-paper` grid with the axes
+  and scale the question states and NO curve drawn on it (the candidate draws it)
+  — its verify() refuses an EMPTY figure, so park one invisible anchor point
+  (`{"x": …, "y": …, "marker": "none"}`, no label) away from the axes, and set
+  `paperColour: "grey"` (the default green does not print);
+  a solid (`mensuration-3d`) shows its dimensions with units; a bearings/ground
+  diagram (`trig-3d` or `triangle-config`) shows the north line where a bearing is given.
+
+- Engine constructions: `height` is capped at 260 px unless the box carries
+  `tall: true`; a text label anchored ON a drawn stroke (e.g. the midpoint of a
+  segment) is pushed to the far side by the collision solver — anchor it at a
+  free point just beside the line instead. Label `dx`/`dy` are only the FIRST
+  candidate — a declutter pass relocates any label that overlaps a line, and an
+  angle-arc label outside the 6–24 px band gets a leader arrow (which can park
+  the text on the wrong side of a ray): widen the offsets, or ENLARGE the arc
+  radius (`r: 40+`) so the wedge is wide enough for a direct label. `el.grid`
+  is one primitive, starts at `x0 + dx`, dashes by default (`dash: ''` for
+  solid); the 52-primitive cap is lifted by `figure.maxPrims`.
+- `triangle-config` rejects `arcs: 0` — omit the key for a lone labelled
+  angle; it also has no orientation control (use the engine when the question
+  fixes which side is horizontal). `box-plot` numbers EVERY tick and grids only
+  at ticks, so summary values that are not multiples of the step cannot be read
+  off it — use the engine with a 1-unit grid emphasised every 5 and 10.
 
 Iterate (edit → render → view) up to 6 times. Stop when the figure is correct and clean.
 

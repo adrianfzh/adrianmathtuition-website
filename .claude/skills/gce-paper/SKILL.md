@@ -1,6 +1,6 @@
 ---
 name: gce-paper
-description: Write a genuinely NEW exam paper in the SEAB GCE shape (O-Level A Math 4049 P1/P2 today; the GCE-EM/GCE-JC blueprint keys exist but the generator's SHAPE table is AM-only) with plan-billed Claude Code agents — author → gates → blind solve → moderate → repair per slot, agent-authored figures, DOCX for Adrian to read, then publish.mjs files it in the question bank as a Print-a-paper "Set N" students can print in the app. Trigger on "gce paper", "new set", "set 2", "seab-style paper", "write a new O-level paper", "generate set 3 paper 2". NOT prelim-paper — prelim-paper ASSEMBLES real past-prelim questions from the bank; this skill WRITES new questions and needs no bank questions at all. Args: key (GCE-AM-P1|GCE-AM-P2), seed (integer, default next unused), set (the Set number to publish under, default = seed).
+description: Write a genuinely NEW exam paper in the SEAB GCE shape (O-Level A Math 4049 and E Math 4052, P1/P2; the GCE-JC blueprint keys exist but the generator's SHAPE table has no JC entry yet) with plan-billed Claude Code agents — author → gates → blind solve → moderate → repair per slot, agent-authored figures, DOCX for Adrian to read, then publish.mjs files it in the question bank as a Print-a-paper "Set N" students can print in the app. Trigger on "gce paper", "new set", "set 2", "seab-style paper", "write a new O-level paper", "generate set 3 paper 2". NOT prelim-paper — prelim-paper ASSEMBLES real past-prelim questions from the bank; this skill WRITES new questions and needs no bank questions at all. Args: key (GCE-AM-P1|GCE-AM-P2|GCE-EM-P1|GCE-EM-P2), seed (integer, default next unused), set (the Set number to publish under, default = seed).
 ---
 
 # GCE paper — write a new SEAB-style paper and file it as a Set
@@ -56,6 +56,11 @@ the gates, the figure files, publishing). Student-facing side:
 Run slots in **waves of 2–4 agents in parallel** (independent slots; one message,
 several `Agent` calls). Paper-level coherence comes from `paper-so-far.md`, which
 `check` rewrites after every accepted slot — later waves read the earlier slots.
+**E Math Paper 1 has 27 short slots (1–7 marks):** there one author agent writes THREE
+consecutive slots (Q1–3, Q4–6, …), one Opus agent blind-solves the same three
+`Q<n>.solve.md` files, one moderator judges the three — the files stay per slot, the
+gates run per slot, only the spawns are grouped (first done for E Math Set 1, 11 Sep 2026).
+E Math P2 (9 long slots) and both A Math papers stay one agent per slot.
 
 ## The round
 
@@ -127,8 +132,8 @@ node scripts/gce-paper/figure.mjs --run "$RUN" --slots <n>   # verify + render s
 
 Spawn one Opus agent per figure slot with the prompt in
 [`prompts/figure-author.md`](prompts/figure-author.md) (paths filled in). It reads the
-question JSON, runs `--families`/`--doc`, writes `Q<n>.figure.json` (registry family:
-`{"family": …, "spec": {…}}`) or `Q<n>.figure.cjs` (engine construction; examples in
+question JSON, runs `--families`/`--doc`, writes `Q<n>.figure.json` (registry family: one flat
+object, `{"family": …, …its fields…}`) or `Q<n>.figure.cjs` (engine construction; examples in
 [`examples/`](examples/)), renders, VIEWS the PNG with the Read tool, and iterates up to
 six times. `verifyFigure` fails closed — an inconsistent spec draws nothing, so an agent
 cannot ship a wrong figure, only report that the description is inconsistent (then

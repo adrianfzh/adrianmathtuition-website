@@ -137,6 +137,15 @@ First set: `GCE-AM-P1-seed1` (13 Q, figures on Q7/Q9/Q10/Q13) + `GCE-AM-P2-seed1
 (10 Q, figures on Q6/Q10), written 8 Sep 2026, JSON in `data/gce-generated/` (untracked),
 **published as A Math Set 1 on 9 Sep 2026** (23 rows).
 
+Second set: `GCE-EM-P1-seed1` (27 Q, figures on Q2/Q7/Q9/Q15/Q23/Q25/Q26) +
+`GCE-EM-P2-seed1` (9 Q, figures on Q3/Q4/Q5/Q6/Q8), the first E Math (4052) set, written
+11 Sep 2026 with the grouped P1 spawns (three slots per author/solver/moderator agent);
+14 of 36 slots took a repair round, three took two (P1 Q7 constructions, P1 Q21 named
+a re-skin of 2017 P1 Q19, P2 Q7 named a re-skin of 2024 P2 Q7). JSON in
+`data/gce-generated/` (untracked); **awaiting Adrian's read-through before `publish.mjs`**.
+`check` now appends the `figure_description` to `Q<n>.solve.md` / `.moderate.md` for a
+figure slot — the P1 Q25 box plot was unsolvable blind without it.
+
 The agent step was validated blind on 9 Sep 2026: an Opus agent given only P1 Q13's
 `figure_description` and the `--families`/`--doc` output chose `function-graph`, wrote a
 spec whose region area verify() re-derived to the answer, and matched the hand-written
@@ -144,5 +153,5 @@ figure in two render iterations; the tricks it had to discover (tick suppression
 tangent, unlabelled answer-curve) are now in the prompt, and the author brief asks for
 the axis window and the labelling in every `figure_description`.
 
-Known gaps: AM only (`SHAPE.AM`); the run folder lives wherever `--out` points (scratchpad
+Known gaps: no JC shape yet (`SHAPE` has AM + EM — the EM entry, its 4052 register and the 4052 formula sheet in `export-docx.py` landed with E Math Set 1, 11 Sep 2026); the run folder lives wherever `--out` points (scratchpad
 for trials); `function-graph` has no `ticks:false` (the step trick stands in for it).
