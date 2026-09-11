@@ -652,13 +652,18 @@ export default function MarkPaperPage() {
     if (!arr.length) return;
     setError('');
     const expanded: File[] = [];
-    let splits = 0;
+    let splits = 0, sideways = 0;
     for (const f of arr) {
       const r = await splitFileIfSpread(f);
       if (r.split) splits += 1;
+      if (r.sideways) sideways += 1;
       expanded.push(...r.files);
     }
-    if (splits) setSplitNote(`✂️ Split ${splits} two-page photo${splits > 1 ? 's' : ''} into ${splits * 2} single pages`);
+    const notes = [
+      splits ? `✂️ Split ${splits} two-page photo${splits > 1 ? 's' : ''} into ${splits * 2} single pages` : '',
+      sideways ? `↷ ${sideways} sideways page${sideways > 1 ? 's' : ''} left whole — the marker turns ${sideways > 1 ? 'them' : 'it'} upright` : '',
+    ].filter(Boolean);
+    if (notes.length) setSplitNote(notes.join(' · '));
     const withPreview = await Promise.all(expanded.map(async (f) => ({
       file: f,
       url: (await canDecode(f)) ? URL.createObjectURL(f) : null,

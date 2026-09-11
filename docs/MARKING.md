@@ -1748,6 +1748,18 @@ megapixels anyway, so 1280px loses almost nothing on handwriting and keeps the
 JSON body under Vercel's 4.5MB cap. Fine read-offs on a grid are the one place
 it matters — hence the zoom / the original, not a bigger copy of every page.
 
+### Intake, 11 Sep 2026 — a sideways page is not a spread
+
+- **The spread splitter reads the writing direction first** (`lib/spread-split.ts`
+  `textAxis`, pure/tested on 36 real pages). Gavin Woon's EM Practice Set 3 P1 had
+  page 2 lying landscape in the PDF; the intake cut it in half like an open booklet
+  and the marker read two half-pages (Adrian: "fix the splitter so a rotated page
+  isn't split"). A wide image is now cut only when its text lines run upright
+  across it; a single page lying sideways is left whole (the mark-paper receipt says
+  "↷ 1 sideways page left whole") and the bot's own `detectRotation` turns it
+  upright before reading, as it always did for photos. An unsure image still splits.
+  Both intakes share the rule — `/admin/mark-paper` and `/app/submit`.
+
 ### Desk additions, 11 Sep 2026 — 👤 filter by student
 
 - **Filter by student** (Adrian: "can i filter by student?"): a name box beside the lane
