@@ -31,7 +31,7 @@ import SubjectChip from '@/components/SubjectChip';
 import GroundingChip from '@/components/GroundingChip';
 import RulesTag from '@/components/RulesTag';
 import { mathHtml } from '@/lib/math-inline';
-import { DESK_LANES, LANES_HIDDEN_AT_ZERO, releasedViaLabel, LANE_LABEL, orderLane, HANDIN_ORIGIN_LABEL, tickPlan, tickPlanLine, type DeskLane, type HandinOrigin, revisingLabel, type Revising, type SheetOutcome, type MarkingProgress } from '@/lib/desk-state';
+import { DESK_LANES, LANES_HIDDEN_AT_ZERO, releasedViaLabel, LANE_LABEL, orderLane, HANDIN_ORIGIN_LABEL, tickPlan, tickPlanLine, type DeskLane, type HandinOrigin, revisingLabel, type Revising, type SheetOutcome, type MarkingProgress, matchesStudent } from '@/lib/desk-state';
 import { ERROR_KINDS, ERROR_KIND_HINT, isErrorKind } from '@/lib/error-kinds';
 import { PAPER_SUBJECTS, SCIENCE_PAPER_SUBJECTS, subjectPill } from '@/lib/portal-subjects';
 // The pen, in place (desk round 3, 8 Sep 2026): the same overlay mark-paper uses.
@@ -327,6 +327,9 @@ export default function DeskPage() {
 
   // ── queue ──────────────────────────────────────────────────────────────────
   const [lane, setLane] = useState<DeskLane | null>(null);
+  // 👤 Filter by student (Adrian, 11 Sep 2026: "can i filter by student?") — a
+  // name fragment, kept in the URL (?student=) so a link from a student's page lands filtered.
+  const [studentFilter, setStudentFilter] = useState('');
   const [rows, setRows] = useState<Row[]>([]);
   const [counts, setCounts] = useState<Counts | null>(null);
   const [queueLoading, setQueueLoading] = useState(false);
@@ -369,21 +372,26 @@ export default function DeskPage() {
     setRunId(q.get('run'));
     const l = q.get('lane');
     setLane(l && (DESK_LANES as readonly string[]).includes(l) ? (l as DeskLane) : null);
+    setStudentFilter(q.get('student') || '');
   }, []);
   useEffect(() => {
     readUrl();
     window.addEventListener('popstate', readUrl);
     return () => window.removeEventListener('popstate', readUrl);
   }, [readUrl]);
-  function go(next: { run?: string | null; lane?: DeskLane | null }) {
+  function go(next: { run?: string | null; lane?: DeskLane | null; student?: string }) {
     const q = new URLSearchParams();
     const l = next.lane === undefined ? lane : next.lane;
     const r = next.run === undefined ? runId : next.run;
-    if (r) q.set('run', r); else if (l) q.set('lane', l);
+    const st = (next.student === undefined ? studentFilter : next.student).trim();
+    if (r) q.set('run', r); else { if (l) q.set('lane', l); if (st) q.set('student', st); }
     const url = `/admin/desk${q.toString() ? `?${q}` : ''}`;
-    window.history.pushState({}, '', url);
+    // Typing in the filter box replaces the URL in place; a lane or paper change is a step back can undo.
+    if (next.student !== undefined && next.lane === undefined && next.run === undefined) window.history.replaceState({}, '', url);
+    else window.history.pushState({}, '', url);
     setRunId(r ?? null);
     if (next.lane !== undefined) setLane(next.lane);
+    if (next.student !== undefined) setStudentFilter(next.student);
     if (!r) { setDetail(null); setCover(null); setSheetPages(null); setEditing(null); }
   }
 
@@ -941,7 +949,10 @@ export default function DeskPage() {
   const activeLane: DeskLane = lane ?? 'awaiting-sheet';
   // Work lanes oldest first — the paper that has waited longest is at the top;
   // Released stays newest first (lib/desk-state orderLane, Adrian 7 Sep 2026).
-  const laneRows = orderLane(rows.filter(r => r.lane === activeLane), activeLane);
+  const laneAll = rows.filter(r => r.lane === activeLane);
+  const laneRows = orderLane(laneAll.filter(r => matchesStudent(r.studentName, studentFilter)), activeLane);
+  // Every name on the desk, for the filter box's suggestions.
+  const studentNames = Array.from(new Set(rows.map(r => r.studentName).filter((n): n is string => !!n))).sort();
   // ── One sheet for several papers (Adrian, 10 Sep 2026: "right now build only
   // what I tick on the desk"). Any marked, tagged paper can be ticked, whoever
   // it belongs to (Adrian, 11 Sep 2026 evening: "shouldn't i be able to select
@@ -1016,6 +1027,17 @@ export default function DeskPage() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 12px', flexWrap: 'wrap' }}>
             <p style={{ fontSize: 12.5, color: C.muted, margin: 0, flex: '1 1 260px' }}>{LANE_HINT[activeLane]}</p>
+            {/* 👤 Filter by student — a name fragment; the list below shows only that student's papers. */}
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+              <span aria-hidden>👤</span>
+              <input list="desk-student-names" value={studentFilter} placeholder="Filter by student"
+                onChange={e => go({ student: e.target.value })}
+                style={{ border: `1px solid ${C.border}`, borderRadius: 999, padding: '6px 10px', font: 'inherit', fontSize: 13, width: 180 }} />
+              <datalist id="desk-student-names">{studentNames.map(n => <option key={n} value={n} />)}</datalist>
+              {studentFilter && (
+                <button onClick={() => go({ student: '' })} className="desk-tab" title="Show everyone" style={{ padding: '5px 9px' }}>✕</button>
+              )}
+            </label>
             {activeLane !== 'released' && (
               <button onClick={markAllSeen} disabled={busy === 'seen-all'} className="desk-tab"
                 title="Papers you marked by hand and handed back in class: mark every unreleased one as seen so it stops waiting here. Held student hand-ins are kept. Nothing is sent to anyone.">
@@ -1026,9 +1048,14 @@ export default function DeskPage() {
 
           {queueError && <p style={{ color: C.danger }}>{queueError}</p>}
           {queueLoading && rows.length === 0 && <p style={{ color: C.muted }}>Loading…</p>}
+          {studentFilter.trim() && laneRows.length > 0 && (
+            <p style={{ fontSize: 12.5, color: C.muted, margin: '0 0 8px' }}>Showing {laneRows.length} of {laneAll.length} in this lane for “{studentFilter.trim()}”.</p>
+          )}
           {!queueLoading && !queueError && laneRows.length === 0 && (
             <p style={{ color: C.muted, padding: '32px 0', textAlign: 'center' }}>
-              {activeLane === 'ready' ? 'Nothing in process — the sheets are on their way. 🎉' : 'Nothing here.'}
+              {studentFilter.trim()
+                ? `No paper for “${studentFilter.trim()}” in this lane${laneAll.length ? ` — ${laneAll.length} other${laneAll.length === 1 ? '' : 's'} here` : ''}.`
+                : activeLane === 'ready' ? 'Nothing in process — the sheets are on their way. 🎉' : 'Nothing here.'}
             </p>
           )}
 

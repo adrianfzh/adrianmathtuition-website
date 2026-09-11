@@ -3,7 +3,7 @@ import {
   laneFor, sheetStageLabel, isPracticeAgainHandin, releasedViaLabel, handinOriginOf, approveBlockers, releaseBlockers, deskFlags, defaultLane,
   amendedStatusFor, latestLiveJob, noSheetOf, pdfStaleOf, DESK_LANES, LANE_LABEL, orderLane, revisingOf, revisingLabel, sheetOutcomeOf, sheetInProgressOf,
   markingProgressOf,
-  tickPlan, tickPlanLine,
+  tickPlan, tickPlanLine, matchesStudent,
 } from './desk-state';
 
 const tagged = { student_id: 'recStudent', released_at: null, annotated_pdf_url: null, result_json: { results: [] } };
@@ -494,4 +494,22 @@ describe('tickPlan — one sheet per student per maths; a lone paper gets its ow
     expect(tickPlanLine(plan)).toBe('📘 2 Practice Again sheets — Isabelle: A Math (2 papers merged) · Alexis: A Math (1 paper, its own sheet)');
   });
   it('nothing ticked → none', () => { expect(tickPlan([])).toEqual({ kind: 'none' }); });
+});
+
+describe('matchesStudent — the desk filter (11 Sep 2026)', () => {
+  it('matches word prefixes in any order, case-insensitively', () => {
+    expect(matchesStudent('Isabelle Toh Si Xian', 'isa')).toBe(true);
+    expect(matchesStudent('Isabelle Toh Si Xian', 'toh si')).toBe(true);
+    expect(matchesStudent('Isabelle Toh Si Xian', 'XIAN isabelle')).toBe(true);
+  });
+  it('every typed word must land on a word of the name', () => {
+    expect(matchesStudent('Isabelle Toh Si Xian', 'isabelle w')).toBe(false);
+    expect(matchesStudent('Eva Isabelle Wong', 'isabelle w')).toBe(true);
+    expect(matchesStudent('Isabelle Toh Si Xian', 'belle')).toBe(false);
+  });
+  it('an empty filter shows everything; an untagged row hides once a filter is typed', () => {
+    expect(matchesStudent(null, '')).toBe(true);
+    expect(matchesStudent('Anyone', '   ')).toBe(true);
+    expect(matchesStudent(null, 'a')).toBe(false);
+  });
 });

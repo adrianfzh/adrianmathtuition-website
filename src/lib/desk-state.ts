@@ -517,3 +517,18 @@ export function tickPlanLine(plan: TickPlan): string {
   const n = plan.groups.length;
   return `📘 ${n === 1 ? 'One Practice Again sheet' : `${n} Practice Again sheets`} — ${who}`;
 }
+
+/**
+ * The desk's student filter (Adrian, 11 Sep 2026: "can i filter by student?").
+ * Case-insensitive; every word typed must start some word of the name, so
+ * "isa" and "toh si" both find Isabelle Toh Si Xian and "isabelle w" finds
+ * Eva Isabelle Wong but not Isabelle Toh. An empty filter matches everything;
+ * a row with no name matches nothing once a filter is typed.
+ */
+export function matchesStudent(name: string | null | undefined, filter: string | null | undefined): boolean {
+  const words = String(filter ?? '').toLowerCase().split(/\s+/).filter(Boolean);
+  if (!words.length) return true;
+  const parts = String(name ?? '').toLowerCase().split(/\s+/).filter(Boolean);
+  if (!parts.length) return false;
+  return words.every(w => parts.some(p => p.startsWith(w)));
+}
