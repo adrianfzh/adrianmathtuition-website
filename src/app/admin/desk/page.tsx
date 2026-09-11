@@ -958,7 +958,7 @@ export default function DeskPage() {
     if (plan.kind !== 'ok') return;
     const n = plan.groups.length;
     const what = `${n === 1 ? 'One Practice Again sheet' : `${n} Practice Again sheets`}: ${plan.groups.map(g => `${g.student} — ${g.subject} (${g.runIds.length} paper${g.runIds.length === 1 ? '' : 's'})`).join('; ')}?`;
-    if (!window.confirm(`${what} The Mac writes one sheet per student per maths — papers of the same maths are merged (the same gap in two papers becomes one section), a maths with one paper gets its own sheet — and files each in a new dated folder; you vet them on the desk before they go out. Any sheet still being written for these papers is stopped.`)) return;
+    if (!window.confirm(`${what} The Mac writes one sheet per student per maths. Papers of the same maths are merged (the same gap in two papers becomes one section) and filed in a new dated folder of their own; a maths with one paper gets a single sheet, filed in that paper's own folder beside its marked PDF. You vet them on the desk before they go out. Any sheet still being written for these papers is stopped.`)) return;
     setBusy('batch');
     const queued: string[] = []; let cancelled = 0; let failed: string | null = null;
     for (const g of plan.groups) {
