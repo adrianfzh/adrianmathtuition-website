@@ -1527,11 +1527,22 @@ batch; his own "One wave" rule holds (six teach sections at most, the rest shelv
   titled "Practice Again — your 3 A Math papers" with `source_run_ids`, earlier
   single-sheet rows for ANY covered paper withdrawn, the archive stamped on every
   covered run. One row = one hand-in = one reminder chain.
-- **The app:** the Papers list and every covered paper's page show the same block,
-  headed "📘 Practice Again — one sheet for your 3 papers", with "Also covers
-  <the other papers> — do it once, hand it in once"; the Request button is hidden
-  on all of them while the batch exists; the marked sheet nests under every
-  covered paper (`lib/portal-marking-group.ts sheetParents`, tested).
+- **The app:** **since 11 Sep 2026 the Papers list shows a merged sheet ONCE** —
+  the papers it covers sit inside one green-framed bundle headed "A Math · 3
+  papers · one Practice Again sheet", in SYLLABUS order (earliest exam year
+  first, Paper 1 before Paper 2 — Adrian: "AM 2023 paper 1 (top of card) and
+  paper 2, then AM 2025 paper 1 (bottom)"), and the green card sits once at the
+  foot; the bundle takes the slot of its newest hand-in (`lib/portal-paper-bundles.ts`
+  `bundleList` / `syllabusOrder`, pure/tested; the page's `Bundle` + `SheetCard`).
+  Before that the same green card repeated under every covered paper (Adrian:
+  "one green card below for the two papers? easier to see for them"). A covered
+  paper's OWN page still shows the block headed "📘 Practice Again — one sheet
+  for your 3 papers" with "Also covers <the other papers> — do it once, hand it
+  in once"; the Request button is hidden on all of them while the batch exists;
+  the marked sheet nests under every covered paper (`lib/portal-marking-group.ts
+  sheetParents`, tested). Dropbox filing is unchanged — the merged sheet keeps
+  its own folder beside the paper folders (Adrian, 11 Sep 2026: "use separate
+  folders then").
 - **Not built yet:** the student's Request door for a batch (a request still
   covers one paper), the by-subject automation, and a gap-keyed
   `notebook_mistakes` so "Still happening" can see a recurrence across titles.

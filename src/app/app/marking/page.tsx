@@ -24,6 +24,7 @@ import {
 import ChoosePapers from './ChoosePapers';
 import NextWave from './NextWave';
 import { groupPracticeAgain, sheetParents } from '@/lib/portal-marking-group';
+import { bundleList } from '@/lib/portal-paper-bundles';
 import PaperSubjectPill from '@/components/PaperSubjectPill';
 import AnnotatedSolution from './AnnotatedSolution';
 import ClipToNotes from './ClipToNotes';
@@ -293,9 +294,16 @@ export default async function MarkingPage() {
           {/* 📘 "Choose papers" wraps the list: off, it is one line above the
               cards; on, the cards give way to a tick list (ChoosePapers). */}
           <ChoosePapers papers={pickPapers}>
-            {top.map(p => (
-              <Paper key={p.id} paper={p} sheet={sheetsByRun.get(p.id) ?? null} sheetJob={jobByRun.get(p.id) ?? null}
-                markedSheet={markedSheetByParent.get(p.id) ?? null} nextWave={waveByRun.get(p.id) ?? null} />
+            {/* A merged sheet shows ONCE (Adrian, 11 Sep 2026): the papers it
+                covers sit in one frame, in syllabus order, the sheet's card at
+                the foot — lib/portal-paper-bundles. */}
+            {bundleList(top, id => sheetsByRun.get(id)).map(entry => entry.kind === 'paper' ? (
+              <Paper key={entry.paper.id} paper={entry.paper} sheet={sheetsByRun.get(entry.paper.id) ?? null} sheetJob={jobByRun.get(entry.paper.id) ?? null}
+                markedSheet={markedSheetByParent.get(entry.paper.id) ?? null} nextWave={waveByRun.get(entry.paper.id) ?? null} />
+            ) : (
+              <Bundle key={entry.sheetId} papers={entry.papers} sheet={sheetsByRun.get(entry.papers[0].id)!}
+                markedSheet={entry.papers.map(p => markedSheetByParent.get(p.id) ?? null).find(Boolean) ?? null}
+                nextWave={entry.papers.map(p => waveByRun.get(p.id) ?? null).find(Boolean) ?? null} />
             ))}
           </ChoosePapers>
 
@@ -326,9 +334,87 @@ export default async function MarkingPage() {
 // The latest / average / trend tiles moved into ./SubjectTiles (per subject,
 // SPEC-PORTAL-V2 §1); their arithmetic lives in lib/portal-papers-stats.
 
-function Paper({ paper, sheet, sheetJob, markedSheet, nextWave }: {
+
+/** The green Practice Again card — under a paper, or once at the foot of a Bundle (`top`). */
+function SheetCard({ sheet, markedSheet, nextWave, top = false, papersCount }: {
+  sheet: SheetCardRow;
+  markedSheet: StudentPaper | null;
+  nextWave: { count: number; runIds: string[] } | null;
+  top?: boolean;
+  /** How many papers the bundle holds — the card says so instead of counting source_run_ids. */
+  papersCount?: number;
+}) {
+  const n = papersCount ?? (sheet.source_run_ids?.length ?? 0);
+  return (
+    <div className={`${top ? "" : "mt-3 "}rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3 flex flex-wrap items-center justify-between gap-2`}>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-emerald-900">
+              {n > 1
+                ? `📘 Practice Again — one sheet for your ${n} papers`
+                : '📘 Practice Again — from this paper'}
+            </p>
+            <p className="text-[12px] text-emerald-800/80 mt-0.5">
+              {sheet.status === 'marked'
+                ? `Marked${sheet.score != null && sheet.out_of ? ` · ${sheet.score}/${sheet.out_of}` : ''}`
+                : sheet.status === 'submitted' ? 'Handed in — being marked'
+                : sheet.required_at ? 'To do — Adrian asked you to do this one. Work through the examples, then hand the practice in'
+                : 'To do — work through the examples, then hand the practice in'}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {sheet.pdf_url && (
+              <a href={fileHref(sheet.pdf_url)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold bg-emerald-700 text-white rounded-xl px-3 py-1.5">Open sheet</a>
+            )}
+            {sheet.status !== 'marked' && sheet.status !== 'submitted' && (
+              <Link href={`/app/submit?assignment=${sheet.id}`} className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white">Hand in</Link>
+            )}
+          </div>
+          {/* The marked sheet lives HERE, under its paper — one card per paper,
+              not a second PDF in the list (Adrian, 8 Sep 2026). */}
+          {sheet.status === 'marked' && (markedSheet || sheet.run_id) && (
+            <Link href={`/app/marking/${markedSheet?.id ?? sheet.run_id}`} data-track="marking:open"
+              className="basis-full flex items-center justify-between gap-3 rounded-xl bg-white border border-emerald-200 px-3 py-2 hover:bg-emerald-50 transition-colors">
+              <span className="min-w-0 truncate text-sm font-semibold text-emerald-900">
+                📄 Open your marked sheet{markedSheet ? <span className="font-normal text-emerald-800/70"> · {niceDate(markedSheet.date)}</span> : null}
+              </span>
+              <span className="shrink-0 text-emerald-800 text-sm">›</span>
+            </Link>
+          )}
+          {/* One sheet teaches one wave; the rest was shelved with evidence.
+              Until now only Adrian's Telegram saw the shelf (11 Sep 2026). */}
+          {nextWave && <NextWave runIds={nextWave.runIds} count={nextWave.count} />}
+        </div>
+  );
+}
+
+/** The papers one merged sheet covers, in one frame: syllabus order inside, the sheet's card once at the foot (Adrian, 11 Sep 2026). */
+function Bundle({ papers, sheet, markedSheet, nextWave }: {
+  papers: StudentPaper[];
+  sheet: SheetCardRow;
+  markedSheet: StudentPaper | null;
+  nextWave: { count: number; runIds: string[] } | null;
+}) {
+  const subject = papers[0]?.subject && papers[0].subject !== 'Other' ? papers[0].subject : null;
+  return (
+    <div className="rounded-[28px] border-2 border-emerald-200 bg-emerald-50/40 p-2 space-y-2">
+      <p className="px-2 pt-1 text-xs font-semibold uppercase tracking-wide text-emerald-800/80">
+        {subject ? `${subject} · ` : ''}{papers.length} papers · one Practice Again sheet
+      </p>
+      {papers.map(p => (
+        <Paper key={p.id} paper={p} sheet={sheet} sheetJob={null} markedSheet={null} nextWave={null} inBundle />
+      ))}
+      <SheetCard sheet={sheet} markedSheet={markedSheet} nextWave={nextWave} top papersCount={papers.length} />
+    </div>
+  );
+}
+
+type SheetCardRow = { id: string; run_id: string | null; status: string; pdf_url: string | null; score: number | null; out_of: number | null; required_at: string | null; source_run_ids?: string[] | null };
+
+function Paper({ paper, sheet, sheetJob, markedSheet, nextWave, inBundle = false }: {
   paper: StudentPaper;
-  sheet: { id: string; run_id: string | null; status: string; pdf_url: string | null; score: number | null; out_of: number | null; required_at: string | null; source_run_ids?: string[] | null } | null;
+  sheet: SheetCardRow | null;
+  /** Inside a Bundle the sheet's card is drawn once, at the foot — this card shows none of the sheet lines. */
+  inBundle?: boolean;
   /** The latest sheet job when no sheet is with the student yet — says where it is. */
   sheetJob: { status: string; noSheet: boolean } | null;
   /** The sheet's own marked run, grouped under this paper (null until marked, or when it is not in the list). */
@@ -374,53 +460,14 @@ function Paper({ paper, sheet, sheetJob, markedSheet, nextWave }: {
         </div>
       )}
 
-      {sheet && (
-        <div className="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3 flex flex-wrap items-center justify-between gap-2">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-emerald-900">
-              {(sheet.source_run_ids?.length ?? 0) > 1
-                ? `📘 Practice Again — one sheet for your ${sheet.source_run_ids!.length} papers`
-                : '📘 Practice Again — from this paper'}
-            </p>
-            <p className="text-[12px] text-emerald-800/80 mt-0.5">
-              {sheet.status === 'marked'
-                ? `Marked${sheet.score != null && sheet.out_of ? ` · ${sheet.score}/${sheet.out_of}` : ''}`
-                : sheet.status === 'submitted' ? 'Handed in — being marked'
-                : sheet.required_at ? 'To do — Adrian asked you to do this one. Work through the examples, then hand the practice in'
-                : 'To do — work through the examples, then hand the practice in'}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {sheet.pdf_url && (
-              <a href={fileHref(sheet.pdf_url)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold bg-emerald-700 text-white rounded-xl px-3 py-1.5">Open sheet</a>
-            )}
-            {sheet.status !== 'marked' && sheet.status !== 'submitted' && (
-              <Link href={`/app/submit?assignment=${sheet.id}`} className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white">Hand in</Link>
-            )}
-          </div>
-          {/* The marked sheet lives HERE, under its paper — one card per paper,
-              not a second PDF in the list (Adrian, 8 Sep 2026). */}
-          {sheet.status === 'marked' && (markedSheet || sheet.run_id) && (
-            <Link href={`/app/marking/${markedSheet?.id ?? sheet.run_id}`} data-track="marking:open"
-              className="basis-full flex items-center justify-between gap-3 rounded-xl bg-white border border-emerald-200 px-3 py-2 hover:bg-emerald-50 transition-colors">
-              <span className="min-w-0 truncate text-sm font-semibold text-emerald-900">
-                📄 Open your marked sheet{markedSheet ? <span className="font-normal text-emerald-800/70"> · {niceDate(markedSheet.date)}</span> : null}
-              </span>
-              <span className="shrink-0 text-emerald-800 text-sm">›</span>
-            </Link>
-          )}
-          {/* One sheet teaches one wave; the rest was shelved with evidence.
-              Until now only Adrian's Telegram saw the shelf (11 Sep 2026). */}
-          {nextWave && <NextWave runIds={nextWave.runIds} count={nextWave.count} />}
-        </div>
-      )}
-      {!sheet && sheetJob && (sheetJob.status === 'queued' || sheetJob.status === 'claimed') && (
+      {sheet && !inBundle && <SheetCard sheet={sheet} markedSheet={markedSheet} nextWave={nextWave} />}
+      {!sheet && !inBundle && sheetJob && (sheetJob.status === 'queued' || sheetJob.status === 'claimed') && (
         <p className="mt-3 text-[12px] text-emerald-800/80">📘 Practice Again is being written for this paper — you’ll get a message when it’s ready.</p>
       )}
-      {!sheet && sheetJob?.status === 'done' && !sheetJob.noSheet && (
+      {!sheet && !inBundle && sheetJob?.status === 'done' && !sheetJob.noSheet && (
         <p className="mt-3 text-[12px] text-emerald-800/80">📘 Your Practice Again sheet is written — Adrian is checking it before it comes to you.</p>
       )}
-      {!sheet && (!sheetJob || sheetJob.status === 'failed' || sheetJob.status === 'cancelled') && (
+      {!sheet && !inBundle && (!sheetJob || sheetJob.status === 'failed' || sheetJob.status === 'cancelled') && (
         <p className="mt-3 text-[12px]">
           <Link href={`/app/marking/${paper.id}#practice-again`} className="font-semibold text-emerald-900 underline underline-offset-2">📘 Want practice on what went wrong here? Request Practice Again ›</Link>
         </p>
