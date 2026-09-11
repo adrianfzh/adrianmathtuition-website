@@ -2522,6 +2522,46 @@ purple … REMARKED in a rectangular rounded box … indicate which pages are re
   `previous_results` + `queue.remark_pages` + `previous_marked_at`; `frontPageHtml` prints the
   rounded badge beside the title and "Re-marked on 10 Sep 2026: page 3. What changed since the
   last marking is in purple." (`remarkBadge`/`remarkLine`, tested).
+
+#### A re-mark only says "re-marked" if the student got the first one (11 Sep 2026)
+
+Adrian, on Gavin Woon's "em practice set 3 p1": *"can you remove the purple remarked —
+because it will be the first time gavin sees this, remark is just internal."* That paper was
+marked at 00:49 and auto-released at 01:20 with `released_via 'auto:none'` — Gavin has no app
+account and no Telegram, so no copy of it reached anybody. Adrian re-marked the whole paper
+from the desk, and the new copy came out wearing the REMARKED badge, the cover line about what
+changed since the last marking, and purple ink — all of it about a marking the student had
+never seen.
+
+**The rule.** A re-mark presents itself as a re-mark *only when the student actually received
+the earlier marking*. Otherwise the re-mark is stored as a plain first marking for everything
+the student sees, while the desk keeps its own diff: the re-mark is internal, not invisible.
+
+- **"Received" = released, and either a copy went out or they opened it.** The decision is one
+  pure, tested function, bot `lib/remark-visibility.js` `studentReceivedMarking`: the earlier
+  marking must have a `released_at`, AND either its `released_via` names a real route (not
+  `none` / `auto:none` — a released paper is in the app whatever the route says, which is why
+  an app-only student's release is stamped `none`), or the app logged a `marking:view` /
+  `marking:open` for that student after the release (`portal_event_log`, identity = their
+  Airtable id; those rows carry no `detail`, so the check is by student and time).
+  `earlierMarkingReceived` is the only caller that reads the event log.
+- **Where it is decided: once, at enqueue.** Both re-mark doors — the desk's 🔁 Re-mark (whole
+  paper) and 🔁 Re-mark this page — go through `enqueuePaper(…, remark:true)`, which stamps
+  `result_json.remark_internal: true` beside `previous_results` when the answer is no. A paper
+  re-marked twice asks again (the old stamp is cleared first).
+- **A flag, not a deletion.** `previous_results` stays on the row because three INTERNAL
+  readers need it: the desk's "what the re-mark changed" panel, the Practice Again sheet's
+  revise instructions, and the Telegram line to Adrian naming the parts that moved. Stripping
+  them would cost him all three to hide one badge.
+- **What honours it.** The pen (bot `remarkRun` passes no `previousResults`, so nothing is
+  "changed" and `annotate.js` stays red); the cover (`lib/remark-internal.ts`
+  `remarkedCoverInput`, called by `front-page-build.ts` — no badge, no purple line); the
+  re-issue line to the student (`mark-triage` `action:'reissue'` says "📄 Your marked … is
+  ready" instead of "✏️ Adrian checked your marked … and updated it"). The desk's own panel
+  still shows the diff and adds "👀 For you only — the student never received the first
+  marking".
+- **Forward-only.** Gavin's existing run was left alone (he is re-uploading a corrected PDF).
+
 - **What that page showed and the rules it bought** (`ai/paper-marker.js`): Q1 — no bracket
   note for a lone power (lg 0.95ⁿ); Q4(a) — a missing bracket in the FINAL answer that changes
   its meaning costs the A mark (n+1·xⁿ ln x); Q7(b) — an inherited wrong answer names its source

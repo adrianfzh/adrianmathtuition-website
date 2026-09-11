@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { coveredRunIds } from '@/lib/sheet-queue';
 import { remarkDiff, plainMath } from '@/lib/remark-diff';
+import { isRemarkInternal } from '@/lib/remark-internal';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { dropboxConfigured, listFolder } from '@/lib/dropbox';
@@ -297,6 +298,10 @@ export async function GET(req: NextRequest) {
           previousAwarded: Number.isFinite(Number(pt?.awarded)) ? Number(pt!.awarded) : null,
           parts: d.parts.map(x => ({ q: x.q, part: x.part, before: x.before, after: x.after ? { awarded: x.after.awarded, max: x.after.max, why: plainMath(x.after.why).slice(0, 160) } : null })),
           changed: d.changed.length,
+          // The student never received the marking this replaced, so the copy
+          // they get is a first marking and this diff is Adrian's alone
+          // (lib/remark-internal.ts, 11 Sep 2026).
+          internal: isRemarkInternal(rj),
         };
       })(),
     },

@@ -60,6 +60,7 @@ import { PAPER_SUBJECTS, SCIENCE_PAPER_SUBJECTS, isScienceSubject } from '@/lib/
 const PAPER_SUBJECT_VALUES: readonly string[] = [...PAPER_SUBJECTS, ...SCIENCE_PAPER_SUBJECTS, 'Other'];
 import { releaseHeldPracticeItems } from '@/lib/practice-again-store';
 import { applyRunRelease } from '@/lib/notebook-mistakes-store';
+import { isRemarkInternal } from '@/lib/remark-internal';
 
 export const runtime = 'nodejs';
 // Release itself is fast; the ceiling is for the after() enrichment, which
@@ -619,7 +620,13 @@ export async function POST(req: NextRequest) {
     const { awarded, max } = recomputeTotals(rj);
     // The "From Adrian" row this hand-in answers takes the new score too (8 Sep 2026).
     await flipAssignmentMarked(supa, runId, rj, { awarded, max }, at);
-    const line = `✏️ Adrian checked your marked <b>${escapeHtml(paper)}</b> and updated it${max > 0 ? ` — it is now <b>${awarded}/${max}</b>` : ''}. The copy in the app is the new one.`;
+    // A re-mark of a marking that never reached the student reads as the FIRST
+    // copy (11 Sep 2026, lib/remark-internal.ts): "Adrian checked it and updated
+    // it" would name a paper they were never sent. The release was stamped
+    // 'none' at the time, but they may have linked Telegram since.
+    const line = isRemarkInternal(rj)
+      ? `📄 Your marked <b>${escapeHtml(paper)}</b> is ready${max > 0 ? ` — <b>${awarded}/${max}</b>` : ''}.\n\n${SITE}/app/marking`
+      : `✏️ Adrian checked your marked <b>${escapeHtml(paper)}</b> and updated it${max > 0 ? ` — it is now <b>${awarded}/${max}</b>` : ''}. The copy in the app is the new one.`;
     let via: 'telegram' | 'none' = 'none';
     const tg = telegramHandinOf(rj);
     if (tg?.chat_id) { if (await sendTelegramTo(tg.chat_id, line)) via = 'telegram'; }

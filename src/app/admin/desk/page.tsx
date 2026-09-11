@@ -209,6 +209,9 @@ function SchemeChip({ s, runId, busy, onApprove }: { s: SchemeState | null; runI
 // the row; the next re-mark replaces it.
 type RemarkPanel = {
   pages: number[] | null; at: string | null; previousAwarded: number | null; changed: number;
+  // The student never received the marking this replaced (lib/remark-internal.ts,
+  // 11 Sep 2026), so the diff below is internal — their copy shows none of it.
+  internal?: boolean;
   parts: { q: string; part: string; before: { awarded: number; max: number } | null; after: { awarded: number; max: number; why: string } | null }[];
 };
 
@@ -1583,6 +1586,13 @@ function DetailView(p: {
               {run.remark.changed === 0
                 ? <>no marks changed{run.remark.previousAwarded != null ? ` (still ${run.awarded}/${run.max})` : ''}. What differs is the marker&rsquo;s reasoning — read the notes on the page below.</>
                 : <>{run.remark.changed} part{run.remark.changed === 1 ? '' : 's'} changed{run.remark.previousAwarded != null ? `; total ${run.remark.previousAwarded} → ${run.awarded} / ${run.max}` : ''}.</>}
+              {/* The student never received the first marking (11 Sep 2026) — so
+                  this panel is yours alone: their copy reads as a first marking. */}
+              {run.remark.internal && (
+                <div style={{ marginTop: 4 }}>
+                  👀 For you only — the student never received the first marking, so their copy has no REMARKED badge and no purple ink.
+                </div>
+              )}
               <div style={{ marginTop: 4, display: 'flex', flexWrap: 'wrap', gap: '4px 14px' }}>
                 {run.remark.parts.map((x, i) => {
                   const moved = !!x.before && !!x.after && x.before.awarded !== x.after.awarded;

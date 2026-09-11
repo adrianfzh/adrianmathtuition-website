@@ -8,6 +8,7 @@ import { readDiagnosis, themesFromDiagnosis } from '@/lib/sheet-diagnosis';
 import { errorKindTotals } from '@/lib/error-kinds';
 import { renderFrontPagePng } from '@/lib/render-front-page';
 import { isUngroundedTotal } from '@/lib/paper-total-text';
+import { remarkedCoverInput } from '@/lib/remark-internal';
 
 /**
  * The front page's data: the lost parts of THIS run and nothing else. The first
@@ -75,16 +76,12 @@ export async function buildFrontPage(
   // A re-marked paper (10 Sep 2026): the run keeps previous_results from the
   // enqueue, queue.remark_pages names the pages (0-based), previous_marked_at
   // the moment. The cover wears the badge and points at the purple ink.
-  const rjAny = (run.result_json && typeof run.result_json === 'object') ? run.result_json as { previous_results?: unknown; results?: unknown; previous_marked_at?: unknown; queue?: { remark_pages?: unknown } | null } : null;
-  const remarked = rjAny && Array.isArray(rjAny.previous_results) && rjAny.previous_results.length
-    ? {
-        pages: Array.isArray(rjAny.queue?.remark_pages)
-          ? (rjAny.queue!.remark_pages as unknown[]).map(n => Number(n) + 1).filter(n => Number.isFinite(n) && n > 0)
-          : null,
-        at: typeof rjAny.previous_marked_at === 'string' ? rjAny.previous_marked_at : null,
-        changed: changedPartCount(rjAny.previous_results, rjAny.results),
-      }
-    : null;
+  // …UNLESS the student never received the marking it replaces (11 Sep 2026,
+  // Gavin Woon: "it will be the first time gavin sees this, remark is just
+  // internal"). The bot stamps `remark_internal` on the run — lib/remark-internal.ts
+  // — and this cover then reads as the paper's first: no badge, no purple line.
+  const rjAny = (run.result_json && typeof run.result_json === 'object') ? run.result_json as { previous_results?: unknown; results?: unknown } : null;
+  const remarked = remarkedCoverInput(rjAny, () => changedPartCount(rjAny?.previous_results, rjAny?.results));
 
   // 🕳 MARKED WITHOUT THE QUESTION PAPER (Adrian, 10 Sep 2026: "what does the
   // system do if there are no questions or mark scheme available?"). Isabelle's
