@@ -51,8 +51,10 @@ import { ERROR_KINDS, isErrorKind } from '@/lib/error-kinds';
 import { buildReviseBlock } from '@/lib/revise-map';
 import { canTransition, validateAssignment, type AssignmentStatus } from '@/lib/assignments';
 import { sendPushToStudent } from '@/lib/portal-push';
-import { paperFolder } from '@/lib/paper-folder';
+import { paperFolder, markedAiPath } from '@/lib/paper-folder';
 import { isOurFileUrl } from '@/lib/student-files-url';
+import { fetchOurFile } from '@/lib/student-files';
+import { uploadFile, dropboxConfigured } from '@/lib/dropbox';
 import { attachAmendedFromDropbox } from '@/lib/attach-amended';
 import { PAPER_SUBJECTS, SCIENCE_PAPER_SUBJECTS, isScienceSubject } from '@/lib/portal-subjects';
 
@@ -599,7 +601,7 @@ export async function POST(req: NextRequest) {
     const runId = String(body.runId || '');
     if (!/^[0-9a-f-]{36}$/i.test(runId)) return NextResponse.json({ error: 'runId is required' }, { status: 400 });
     const { data: run, error: rErr } = await supa.from('paper_marking_runs')
-      .select('id, paper_name, student_id, student_name, released_at, result_json, total_awarded, total_max')
+      .select('id, paper_name, student_id, student_name, released_at, result_json, total_awarded, total_max, created_at')
       .eq('id', runId).maybeSingle();
     if (rErr) return NextResponse.json({ error: rErr.message }, { status: 500 });
     if (!run) return NextResponse.json({ error: 'run not found' }, { status: 404 });
@@ -615,6 +617,24 @@ export async function POST(req: NextRequest) {
     rj.reissued_at = at;
     rj.pdf_rebuilt = { at, photos: outcome.photos ?? null, full: outcome.full ?? null, reissue: true };
     await supa.from('paper_marking_runs').update({ result_json: rj }).eq('id', runId);
+    // The Dropbox copy follows the re-issue (Adrian, 11 Sep 2026, Gavin's
+    // de-purpled paper: "does this sync?" — it did not: the rebuild wrote the
+    // app's store only, and the folder kept the old file). Same file the first
+    // delivery filed — the images-mode marked PDF as "1 Marked by AI.pdf" in the
+    // paper's folder — overwritten. Fail-soft: a Dropbox hiccup never fails the
+    // re-issue; the file-catchup cron picks a missed copy up later.
+    let dropbox: string | null = null;
+    try {
+      const { data: fresh } = await supa.from('paper_marking_runs').select('photos_pdf_url').eq('id', runId).maybeSingle();
+      const photosUrl = (fresh as { photos_pdf_url?: string | null } | null)?.photos_pdf_url || null;
+      if (photosUrl && run.student_name && dropboxConfigured()) {
+        const r = await fetchOurFile(photosUrl, { signal: AbortSignal.timeout(45_000) });
+        if (!r.ok) throw new Error(`fetch failed (${r.status})`);
+        const saved = await uploadFile(markedAiPath(run as Parameters<typeof markedAiPath>[0]), Buffer.from(await r.arrayBuffer()), 'application/pdf', 'overwrite');
+        dropbox = saved.path;
+        await supa.from('paper_marking_runs').update({ dropbox_path: saved.path }).eq('id', runId);
+      }
+    } catch (e) { console.warn('[mark-triage] reissue: Dropbox copy not refiled:', (e as Error).message); }
     // Tell the student: the Telegram hand-in chat if there is one, else their linked Telegram.
     const paper = run.paper_name || 'your paper';
     const { awarded, max } = recomputeTotals(rj);
@@ -634,7 +654,7 @@ export async function POST(req: NextRequest) {
       const recipient = await resolveRecipient(run.student_id);
       if (recipient) { if (await sendTelegramTo(recipient.chatId, line)) via = 'telegram'; }
     }
-    return NextResponse.json({ ok: true, via, awarded, max });
+    return NextResponse.json({ ok: true, via, awarded, max, dropbox });
   }
 
   if (body.action === 'release') {
