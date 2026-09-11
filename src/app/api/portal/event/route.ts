@@ -24,6 +24,7 @@ import { PORTAL_CLIENT_EVENT_KINDS, isPortalClientEventKind } from '@/lib/instal
 import { sgtDayStart } from '@/lib/sgt';
 import { SUBMIT_FAILED_KIND, sanitizeSubmitFailure, shouldNotifySubmitFailure, submitFailureLine } from '@/lib/submit-failure';
 import { sendTelegram } from '@/lib/telegram';
+import { SCIENCE_FEEDBACK_DAILY_CAP, SCIENCE_FEEDBACK_KIND, sanitizeScienceFeedback, scienceFeedbackLine } from '@/lib/science-feedback';
 
 // A hand-in that failed on the phone after every retry (lib/submit-failure.ts,
 // 7 Sep 2026): its own family, a small cap, a detail payload, and one Telegram
@@ -56,16 +57,21 @@ export async function POST(req: NextRequest) {
   const family = (MARKING_KINDS as readonly string[]).includes(kind)
     ? 'marking'
     : kind === SUBMIT_FAILED_KIND ? 'submit'
+    : kind === SCIENCE_FEEDBACK_KIND ? 'science'
     : isPortalClientEventKind(kind) ? 'client' : null;
   if (!family) return NextResponse.json({ error: 'Unknown kind' }, { status: 400 });
   const failure = family === 'submit' ? sanitizeSubmitFailure(body.detail) : null;
   if (family === 'submit' && !failure) return NextResponse.json({ error: 'Bad detail' }, { status: 400 });
+  // 🧪 "Was this useful?" on a science paper (lib/science-feedback.ts, 11 Sep
+  // 2026): its own family, a detail payload, one Telegram line per tap.
+  const feedback = family === 'science' ? sanitizeScienceFeedback(body.detail) : null;
+  if (family === 'science' && !feedback) return NextResponse.json({ error: 'Bad detail' }, { status: 400 });
 
   const identity = portalIdentity(account);
   try {
     const svc = createServiceClient();
-    const familyKinds = family === 'marking' ? [...MARKING_KINDS] : family === 'submit' ? [SUBMIT_FAILED_KIND] : [...PORTAL_CLIENT_EVENT_KINDS];
-    const cap = family === 'marking' ? MARKING_DAILY_CAP : family === 'submit' ? SUBMIT_DAILY_CAP : CLIENT_DAILY_CAP;
+    const familyKinds = family === 'marking' ? [...MARKING_KINDS] : family === 'submit' ? [SUBMIT_FAILED_KIND] : family === 'science' ? [SCIENCE_FEEDBACK_KIND] : [...PORTAL_CLIENT_EVENT_KINDS];
+    const cap = family === 'marking' ? MARKING_DAILY_CAP : family === 'submit' ? SUBMIT_DAILY_CAP : family === 'science' ? SCIENCE_FEEDBACK_DAILY_CAP : CLIENT_DAILY_CAP;
     const { count } = await svc
       .from('portal_event_log')
       .select('id', { count: 'exact', head: true })
@@ -83,6 +89,13 @@ export async function POST(req: NextRequest) {
       if (shouldNotifySubmitFailure(prev?.created_at, new Date())) {
         await sendTelegram(submitFailureLine(account.display_name, failure), 'marking').catch(() => {});
       }
+    } else if (feedback) {
+      // The paper's name for the line — only a paper this student owns.
+      const { data: run } = await svc.from('paper_marking_runs').select('paper_name')
+        .eq('id', feedback.runId).eq('student_id', identity).maybeSingle<{ paper_name: string | null }>();
+      if (!run) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      await svc.from('portal_event_log').insert({ identity, kind, detail: feedback });
+      await sendTelegram(scienceFeedbackLine(account.display_name, run.paper_name, feedback), 'marking').catch(() => {});
     } else {
       await svc.from('portal_event_log').insert({ identity, kind });
     }

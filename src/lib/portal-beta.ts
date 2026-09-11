@@ -160,12 +160,34 @@ export async function markSubjectAccess(): Promise<import('./mark-subject-for-st
 // true to open it.
 export const SCIENCE_MARKING_OPEN_TO_STUDENTS = false;
 
-/** True when the caller may use the Science tab (flag on, or Adrian's admin preview — unless viewing as a student). */
+/**
+ * True when the caller may use the Science tab: the code flag, or Adrian's
+ * admin preview (unless viewing as a student), or — since 11 Sep 2026 — the
+ * 🧪 release switch on /admin/mark-paper (Airtable Settings
+ * `science_marking_open`, lib/marking-settings.ts, 30 s cache): Adrian tests
+ * through the student portal first and releases with one tap, no deploy. An
+ * unreadable row means closed.
+ */
 export async function scienceMarkingOpen(): Promise<boolean> {
   if (SCIENCE_MARKING_OPEN_TO_STUDENTS) return true;
-  if (await viewingAsStudent()) return false;
-  return isNotesAuthed();
+  if (!(await viewingAsStudent()) && (await isNotesAuthed())) return true;
+  // The demo student Adrian tests through sees the tab while it is closed to
+  // everyone else (11 Sep 2026: "i will see test through student portal myself first").
+  try {
+    const { sessionAccount, portalIdentity } = await import('./portal-auth');
+    const acct = await sessionAccount().catch(() => null);
+    if (acct && SCIENCE_PREVIEW_IDENTITIES.includes(portalIdentity(acct))) return true;
+  } catch { /* fall through to the switch */ }
+  try {
+    const { getScienceOpenSetting } = await import('./marking-settings');
+    return (await getScienceOpenSetting()).on;
+  } catch {
+    return false;
+  }
 }
+
+/** Portal identities that see the Science tab while the release switch is off — the demo student (portal-teste@example.com). */
+export const SCIENCE_PREVIEW_IDENTITIES: readonly string[] = ['recNjZkA3Z41nhwwK'];
 
 // 🔍 Find a question (/app/find, SPEC-PORTAL-V2 §4, 6 Sep 2026): photo or typed
 // question → a genuinely similar bank question or a made-for-you one, straight

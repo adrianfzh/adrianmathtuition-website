@@ -216,3 +216,32 @@ science-bank extraction (5, phase 2); a science Ask tab (the web solver already 
 science for Sec 3–5 students via the existing Ask page); MCQ Paper 1; science error-kind
 taxonomy (the nine math kinds are used as-is; biology's "missing point / imprecise term"
 reads as `incomplete` / `concept`).
+
+
+## Decision 11 Sep 2026 — ready to release, not released
+
+Adrian: "put in the disclaimer, don't open it yet. i will see test through student
+portal myself first. just keep things ready so that we can release at the moment's
+notice." Built:
+
+- **The release is a switch.** 🧪 "Science tab for students" on `/admin/mark-paper`,
+  beside Mac plan only — an Airtable `Settings` row (`science_marking_open`) that
+  `scienceMarkingOpen()` reads on every request (30 s cache). One tap opens the tab
+  to every signed-in student; one tap closes it. No deploy. The code flag stays as a
+  hard override. Adrian's admin preview sees the tab either way, and so does the demo
+  student (`SCIENCE_PREVIEW_IDENTITIES`), which is how Adrian tests it as a student.
+- **Feedback first.** A science paper page has no score pill in the header. The
+  disclaimer says the total is an estimate and the comments are the part to use; the
+  cover and the marked pages follow; then an "Our estimate" card with the total, then
+  the teacher's-mark card, then "Was this marking useful?". The list card says
+  `est. 31/40`.
+- **"Was this marking useful?"** — 👍 / 👎 and an optional line, one Telegram line to
+  the marking topic per tap and a `portal_event_log` row (`science:feedback`). This is
+  the student's opinion of the feedback; the teacher's mark (rule 7) is still the only
+  truth signal.
+
+Calibration stays where the night of 10–11 Sep left it: physics A/C/E fail the ±2 gate
+on single runs (A +3, C +3, E +8; per-part agreement 28/23/23 of 33), and one re-run per
+script cannot separate a rule's effect from run-to-run noise. Next: measure the noise
+(the same script three times under one rule), the biology dial list, Singapore
+teacher-marked chemistry scripts.

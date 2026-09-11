@@ -87,7 +87,7 @@ export function SciencePaperCard({ paper }: { paper: ReturnType<typeof buildStud
           </div>
         </div>
         <span className={`shrink-0 text-sm font-bold rounded-full px-3 py-1 ${scoreChip(paper.pct)}`}>
-          {paper.max > 0 ? `${paper.awarded}/${paper.max}` : '—'}
+          {paper.max > 0 ? `est. ${paper.awarded}/${paper.max}` : '—'}
           {paper.pct !== null && <span className="font-semibold"> · {paper.pct}%</span>}
         </span>
       </div>

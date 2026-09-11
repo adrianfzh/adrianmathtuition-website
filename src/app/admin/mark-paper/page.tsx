@@ -379,14 +379,37 @@ export default function MarkPaperPage() {
   // bot reads the same Airtable row each tick, so a flip is live in ~30 s.
   const [macOnly, setMacOnly] = useState<{ on: boolean; at: string | null } | null>(null);
   const [macOnlyBusy, setMacOnlyBusy] = useState(false);
+  // 🧪 Science tab for students (11 Sep 2026): the release switch — same row
+  // shape, same route; lib/portal-beta scienceMarkingOpen() reads it per request.
+  const [scienceOpen, setScienceOpen] = useState<{ on: boolean; at: string | null } | null>(null);
+  const [scienceBusy, setScienceBusy] = useState(false);
   useEffect(() => {
     fetch('/api/admin/marking-settings', { headers: authHeaders }).then(async r => {
       if (!r.ok) return;
       const d = await r.json();
       if (d?.macOnly) setMacOnly({ on: !!d.macOnly.on, at: d.macOnly.at ?? null });
+      if (d?.scienceOpen) setScienceOpen({ on: !!d.scienceOpen.on, at: d.scienceOpen.at ?? null });
     }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  async function flipScienceOpen() {
+    if (!scienceOpen || scienceBusy) return;
+    const next = !scienceOpen.on;
+    if (!window.confirm(next
+      ? 'Open the Science tab to every student? They will see Math | Science and can hand in physics, chemistry and biology papers. Marks are labelled an estimate and the feedback comes first.'
+      : 'Close the Science tab to students? They go back to the maths app only; your admin preview keeps it.')) return;
+    setScienceBusy(true);
+    try {
+      const r = await fetch('/api/admin/marking-settings', { method: 'POST', headers: { ...authHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify({ scienceOpen: next }) });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
+      setScienceOpen({ on: !!d.scienceOpen.on, at: d.scienceOpen.at ?? null });
+    } catch (e) {
+      alert(`Could not change the switch: ${(e as Error).message}`);
+    } finally {
+      setScienceBusy(false);
+    }
+  }
   async function flipMacOnly() {
     if (!macOnly || macOnlyBusy) return;
     const next = !macOnly.on;
@@ -1735,6 +1758,27 @@ export default function MarkPaperPage() {
             style={{ position: 'relative', width: 48, height: 28, borderRadius: 999, border: 'none', cursor: 'pointer', background: macOnly.on ? '#0e7490' : '#d1d5db', opacity: macOnlyBusy ? 0.5 : 1, flexShrink: 0 }}
           >
             <span style={{ position: 'absolute', top: 4, left: macOnly.on ? 24 : 4, width: 20, height: 20, borderRadius: 999, background: '#fff', transition: 'left .15s' }} />
+          </button>
+        </div>
+      )}
+
+      {/* 🧪 Science tab for students — the release switch (11 Sep 2026). */}
+      {scienceOpen && (
+        <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 12, background: scienceOpen.on ? '#f0fdfa' : undefined, borderColor: scienceOpen.on ? '#99f6e4' : undefined }} data-science-open={scienceOpen.on ? 'on' : 'off'}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700 }}>🧪 Science tab for students{scienceOpen.on ? ' — OPEN' : ' — closed'}</div>
+            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
+              {scienceOpen.on
+                ? 'Every signed-in student sees Math | Science and can hand in physics, chemistry and biology papers — free, marks labelled an estimate, feedback first, “Was this useful?” on every paper.'
+                : 'Closed: students see the maths app only. Your admin login previews the Science tab regardless. One tap opens it to everyone, no deploy.'}
+              {scienceOpen.at ? ` · since ${new Date(scienceOpen.at).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}
+            </div>
+          </div>
+          <button
+            type="button" role="switch" aria-checked={scienceOpen.on} aria-label="Science tab for students" disabled={scienceBusy} onClick={flipScienceOpen}
+            style={{ position: 'relative', width: 48, height: 28, borderRadius: 999, border: 'none', cursor: 'pointer', background: scienceOpen.on ? '#0d9488' : '#d1d5db', opacity: scienceBusy ? 0.5 : 1, flexShrink: 0 }}
+          >
+            <span style={{ position: 'absolute', top: 4, left: scienceOpen.on ? 24 : 4, width: 20, height: 20, borderRadius: 999, background: '#fff', transition: 'left .15s' }} />
           </button>
         </div>
       )}

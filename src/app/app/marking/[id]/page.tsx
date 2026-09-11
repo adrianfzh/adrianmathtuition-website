@@ -20,6 +20,7 @@ import { displayPaperName } from '@/lib/paper-display-name';
 import { subjectLabel } from '@/lib/mark-subjects';
 import { TEACHER_TOTAL_LABEL } from '@/lib/science-truth';
 import ScienceTeacherMark from '../ScienceTeacherMark';
+import ScienceUseful from '../ScienceUseful';
 
 const COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, paper_subject, superseded_by, subject';
 
@@ -127,9 +128,13 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
             <h1 className="font-bold text-navy text-lg leading-snug break-words">{paper.name}</h1>
             <p className="text-xs text-gray-500 mt-1 flex items-center gap-1.5"><PaperSubjectPill subject={paper.subject} /><span>{niceDate(paper.date)}</span></p>
           </div>
-          <span className="shrink-0 text-sm font-bold rounded-full px-3 py-1 bg-navy/5 text-navy">
-            {paper.max > 0 ? `${paper.awarded}/${paper.max}` : '—'}{paper.pct !== null && <span className="font-semibold"> · {paper.pct}%</span>}
-          </span>
+          {/* A science paper leads with the feedback; its total sits below the
+              pages as an estimate (Adrian, 11 Sep 2026). Maths keeps the pill. */}
+          {!isScience && (
+            <span className="shrink-0 text-sm font-bold rounded-full px-3 py-1 bg-navy/5 text-navy">
+              {paper.max > 0 ? `${paper.awarded}/${paper.max}` : '—'}{paper.pct !== null && <span className="font-semibold"> · {paper.pct}%</span>}
+            </span>
+          )}
         </div>
       </header>
 
@@ -145,8 +150,9 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
 
       {isScience && (
         <section className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-900 space-y-1">
-          <p className="font-bold">🧪 {subjectLabel(lane)} marking — an estimate while it is new</p>
+          <p className="font-bold">🧪 {subjectLabel(lane)} marking — feedback first, the total is an estimate</p>
           <p>
+            Use the comments on each question: what a full answer needed, and where the marks went. The total at the bottom is our estimate, not a grade.{' '}
             Calculations are checked properly.{' '}
             {schemeGrounded
               ? <>Explain answers were marked against <b>your school&apos;s mark scheme</b>.</>
@@ -219,8 +225,20 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
       )}
 
       {isScience && paper.max > 0 && (
+        <section className="rounded-2xl border border-black/5 bg-white p-4 flex items-center justify-between gap-3" data-science-estimate>
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Our estimate</p>
+            <p className="text-[12px] text-gray-500">Not your teacher&apos;s mark. The feedback above is the part to use.</p>
+          </div>
+          <span className="shrink-0 text-lg font-bold text-navy">
+            {paper.awarded}/{paper.max}{paper.pct !== null && <span className="text-sm font-semibold text-gray-500"> · {paper.pct}%</span>}
+          </span>
+        </section>
+      )}
+      {isScience && paper.max > 0 && (
         <ScienceTeacherMark runId={paper.id} ours={{ awarded: paper.awarded, max: paper.max }} existing={teacherTotal} />
       )}
+      {isScience && <ScienceUseful runId={paper.id} />}
 
       {!isScience && !sheet && !supersededBy && !/^\s*practice again\b/i.test(paper.rawName ?? '') && <PracticeAgainRequest runId={paper.id} state={requestState} />}
 

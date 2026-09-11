@@ -17,3 +17,12 @@ describe('parseMacOnlySetting', () => {
     expect(MAC_ONLY_SETTING).toBe('marking_mac_only');
   });
 });
+
+describe('the science release switch (11 Sep 2026)', () => {
+  it('has its own row and parses like the Mac-only one', async () => {
+    const { SCIENCE_OPEN_SETTING, parseMarkingSwitch } = await import('./marking-settings');
+    expect(SCIENCE_OPEN_SETTING).toBe('science_marking_open');
+    expect(parseMarkingSwitch('{"on":true,"by":"adrian","at":"2026-09-11T00:00:00Z","note":null}').on).toBe(true);
+    expect(parseMarkingSwitch(undefined).on).toBe(false);
+  });
+});
