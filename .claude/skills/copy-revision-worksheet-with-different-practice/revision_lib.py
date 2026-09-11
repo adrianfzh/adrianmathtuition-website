@@ -273,6 +273,7 @@ LINE_15 = "360"     # 1.5 line spacing, w:lineRule="auto"
 LINE_TABLE = "276"  # 1.15, for paragraphs inside tables
 IND_Q_LEFT, IND_Q_HANG = 567, 567       # 1 cm
 IND_SQ_LEFT, IND_SQ_HANG = 1134, 567    # 2 cm / 1 cm
+IND_SSQ_LEFT, IND_SSQ_HANG = 1701, 567  # 3 cm / 1 cm — nested (b)(i), (ii) …
 # [n] is RIGHT-ALIGNED on a tab stop at 15.5 cm — Adrian's house position, set
 # explicitly 2026-08-06 ("tab stops should be 15.5"). The text column is 16 cm
 # (A4 less 2.5 cm margins), so every practice paragraph also carries a 0.5 cm
@@ -1853,10 +1854,15 @@ def build_practice(questions: list, omml: OmmlCache,
                 # is not a unit — it rides with part (a).
                 units.append(_unit(unit, closed=False))
 
-        # -- remaining sub-parts, each starting at the (a) column
+        # -- remaining sub-parts, each starting at the (a) column. A part that
+        # carries `subparts` (the bank's shape for "(b) given w = log₉x, find
+        # (i) x, (ii) log₃x …") prints its stem once, then each sub-part one
+        # column further in with its own marks and writing space — until
+        # 12 Sep 2026 the stem printed with nothing under it.
         for part in parts:
             blocks = _text_blocks(part.get("text") or "")
-            pm = part.get("marks")
+            subs = [x for x in (part.get("subparts") or []) if isinstance(x, dict)]
+            pm = None if subs else part.get("marks")
             sp = _para(left=IND_SQ_LEFT, hanging=IND_SQ_HANG, keep_next=True)
             _run(sp, _label(part.get("label")))
             _tab_run(sp)
@@ -1869,6 +1875,28 @@ def build_practice(questions: list, omml: OmmlCache,
                 p = _para(left=IND_SQ_LEFT, keep_next=True)
                 _emit_parts(p, split_math(extra), omml)
                 unit.append(p)
+            if subs:
+                # the stem has no writing space of its own — it rides with (i)
+                units.append(_unit(unit, closed=False))
+                for sub in subs:
+                    sblocks = _text_blocks(sub.get("text") or "")
+                    sm = sub.get("marks")
+                    q = _para(left=IND_SSQ_LEFT, hanging=IND_SSQ_HANG, keep_next=True)
+                    _run(q, _label(sub.get("label")))
+                    _tab_run(q)
+                    if sblocks:
+                        _emit_parts(q, split_math(sblocks[0]), omml)
+                    if sm:
+                        _marks_run(q, sm)
+                    sunit = [q]
+                    for extra in sblocks[1:]:
+                        p = _para(left=IND_SSQ_LEFT, keep_next=True)
+                        _emit_parts(p, split_math(extra), omml)
+                        sunit.append(p)
+                    for _ in range(_working_lines(sm, extra=space)):
+                        sunit.append(_para(left=IND_SSQ_LEFT))
+                    units.append(sunit)
+                continue
             for _ in range(_working_lines(pm, extra=space)):
                 unit.append(_para(left=IND_SQ_LEFT))
             units.append(unit)
@@ -1899,12 +1927,25 @@ def _answer_parts(row) -> list:
         return inline(split_math(top))
     out = []
     for part in _parts(row):
+        lab = _label(part.get("label"))
+        subs = [x for x in (part.get("subparts") or []) if isinstance(x, dict)]
         a = (part.get("answer") or "").strip()
+        if subs and not a:
+            # "(b)(i) 9^w; (ii) 2w; …" — the part's label once, then each sub-part's
+            for k, sub in enumerate(subs):
+                sa = (sub.get("answer") or "").strip()
+                if not sa:
+                    continue
+                if out:
+                    out.append(("text", "; "))
+                slab = _label(sub.get("label"))
+                out.append(("text", ((lab if k == 0 else "") + slab + " ").lstrip()))
+                out += inline(split_math(sa))
+            continue
         if not a:
             continue
         if out:
             out.append(("text", "; "))
-        lab = _label(part.get("label"))
         if lab:
             out.append(("text", lab + " "))
         out += inline(split_math(a))
