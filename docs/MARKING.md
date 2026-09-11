@@ -1748,6 +1748,14 @@ megapixels anyway, so 1280px loses almost nothing on handwriting and keeps the
 JSON body under Vercel's 4.5MB cap. Fine read-offs on a grid are the one place
 it matters — hence the zoom / the original, not a bigger copy of every page.
 
+### Desk additions, 11 Sep 2026 — 👤 filter by student
+
+- **Filter by student** (Adrian: "can i filter by student?"): a name box beside the lane
+  hint; a fragment such as "isa" or "toh si" narrows the lane to that student
+  (`lib/desk-state.ts matchesStudent`, pure/tested — every typed word must start a word of
+  the name). It lives in the URL as `?student=`, so `/admin/desk?student=Isabelle` from
+  anywhere lands filtered; ✕ clears it. The tick bar works on the visible rows.
+
 ### Desk additions, 3 Sep 2026
 
 - **📤 Open in…** on the detail view's file row (`OpenInApp` in `desk/page.tsx`): fetches the
