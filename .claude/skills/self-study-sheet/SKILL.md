@@ -619,6 +619,16 @@ Invoke `create-teaching-notes` and give it this brief:
   α sits in the quadrant the signs give; tan is undefined at 90°. The concept
   line names the exception in one clause ("… and when the power is −1 the
   answer is a log").
+- **A negative or fractional power is rewritten the way it will be solved, and
+  the ← note says so** (Adrian, 11 Sep 2026: "would like worker to put in the
+  annotation to write negative power in the denominator and power 1/2 as
+  square roots so that it is easy to see when solving equations"). Whenever a
+  derivative or an expansion leaves `(…)^{-1/2}`, `(…)^{-2}` or `(…)^{1/2}`,
+  the very next line rewrites it — the negative power as a fraction with the
+  bracket in the denominator, the half power as a square root — and carries
+  the grey arrow `← write negative power in the denominator and power 1/2 as
+  square roots`, e.g. `dT/dx = 1/5 + (x − 15)/(3√(x² − 30x + 289))`. The
+  student then sees the shape they will set equal to zero or substitute into.
 - **Worked examples reproduce the SHAPE of the question they got wrong**, with
   changed numbers — never a generic textbook example of the same topic.
   **The NOTATION is part of the shape** (Adrian, 11 Sep 2026, Isabelle's AM
@@ -919,6 +929,19 @@ the gap is the interesting half: it says what the bank is missing.
   The same applies to slashes typed in PROSE: "so v = dx/dt" inside a sentence
   is still maths, so it is still an equation object.
   Sweep the finished file before filing it:
+  - **Every example sits on one page, and a near miss is tightened, not
+    moved** (Adrian, 11 Sep 2026: "when there is just a little bit of the box
+    going across to another page, try to just reduce the white spaces for the
+    example/question, so that the entire example can stay within the page").
+    After the file is otherwise finished, run
+    `/usr/bin/python3 scripts/sheet-worker/fit-examples.py <sheet.docx>` (needs
+    Word, like the PDF export): it lets Word paginate, finds an example that
+    spills a small tail onto the next page or that jumped whole to a new page
+    leaving the page before mostly blank, and tightens THAT example's spacing
+    one rung at a time (box 1.5 → 1.3 → 1.15 → 1.05, part gaps 8 → 2 pt, the
+    breathing space above and below the box) until it fits — or puts it back
+    exactly as it was. Run it LAST: any later edit moves the page breaks. Its
+    report is part of the `done` payload's `verified` line.
   - **Every Example has at least ONE practice item of its own shape, and no
     item is another with the numbers changed** (8 Sep 2026; the twin rule 11
     Sep 2026) — count "Example N" / "Example Na" headings against the numbered
