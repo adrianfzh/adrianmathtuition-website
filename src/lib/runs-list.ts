@@ -45,3 +45,36 @@ export function withInMotion<T extends { id: string }>(recent: T[], inMotion: T[
   const seen = new Set(recent.map((r) => r.id));
   return [...inMotion.filter((r) => !seen.has(r.id)), ...recent];
 }
+
+/** The shape of a sheet_jobs row the "in motion" merge needs. */
+export interface SheetJobLite {
+  run_id: string;
+  run_ids?: string[] | null;
+  status: string;
+  created_at: string;
+}
+
+/** A failed sheet stays "in motion" (waiting on Adrian) for this long. */
+export const FAILED_SHEET_DAYS = 7;
+
+/**
+ * Papers whose Practice Again sheet is in flight but which are NOT on screen —
+ * the "still to deal with" group must carry them wherever their marking date
+ * sits (Adrian, 11 Sep 2026: Chloe's 9 Sep paper had its sheet being written
+ * and the list, 25 rows deep and all newer, showed nothing). The bot's own
+ * `inMotion` covers MARKING in flight only; sheet_jobs lives on the website's
+ * side, so this is where the sheet half is added. Pure; tested.
+ */
+export function sheetInMotionIds(jobs: readonly SheetJobLite[], loadedIds: Iterable<string>, nowISO: string): string[] {
+  const loaded = new Set(loadedIds);
+  const cutoff = new Date(new Date(nowISO).getTime() - FAILED_SHEET_DAYS * 86400_000).toISOString();
+  const out: string[] = [];
+  for (const j of jobs) {
+    const live = j.status === 'queued' || j.status === 'claimed' || (j.status === 'failed' && j.created_at >= cutoff);
+    if (!live) continue;
+    for (const id of [j.run_id, ...(Array.isArray(j.run_ids) ? j.run_ids : [])]) {
+      if (id && !loaded.has(id) && !out.includes(id)) out.push(id);
+    }
+  }
+  return out;
+}

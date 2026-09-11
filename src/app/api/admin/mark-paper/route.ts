@@ -4,6 +4,7 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { requeueSheetAfterRemark } from '@/lib/sheet-queue';
 import { refileUntaggedFolder } from '@/lib/refile-untagged';
+import { sheetInMotionIds, type SheetJobLite } from '@/lib/runs-list';
 
 // Paper marking can take minutes (solve + mark per question). 300s is the Vercel ceiling.
 export const maxDuration = 300;
@@ -82,8 +83,27 @@ export async function POST(req: NextRequest) {
       // exactly like one nobody had touched — and when the worker was silently
       // dead, that was the whole story Adrian had to go on. sheet_jobs lives in
       // the website's Supabase, not the bot, so the bot cannot report it.
+      // 📘 Papers whose SHEET is in flight but which sit outside the loaded
+      // window ride `inMotion` too (Adrian, 11 Sep 2026: "i am generating sheet
+      // for chloe gng now, but progress is not working up in recently marked
+      // papers" — her 9 Sep paper was 30 rows down a list showing 25). The bot's
+      // inMotion knows only about MARKING; sheet_jobs is ours. lib/runs-list.
+      if (!Array.isArray(data.inMotion)) data.inMotion = [];
       try {
-        const ids = data.runs.map((x: { id?: string }) => x.id).filter(Boolean);
+        const onScreen = [...data.runs, ...data.inMotion].map((x: { id?: string }) => x.id).filter(Boolean) as string[];
+        const { data: live } = await getSupabaseAdmin()
+          .from('sheet_jobs').select('run_id, run_ids, status, created_at')
+          .in('status', ['queued', 'claimed', 'failed'])
+          .gte('created_at', new Date(Date.now() - 14 * 86400_000).toISOString());
+        const missing = sheetInMotionIds((live ?? []) as SheetJobLite[], onScreen, new Date().toISOString());
+        if (missing.length) {
+          const COLS = 'id,created_at,paper_name,num_photos,num_questions,total_awarded,total_max,cost_usd,time_sec,rules_version,pdf_url,photos_pdf_url,annotated_pdf_url,student_id,student_name,released_at,archived_at,checked_at,queued_at:result_json->queue->>queued_at,queue_failed:result_json->queue->>failed_at,marked_by:result_json->queue->external_claim->>by,mark_now:result_json->queue->>mark_now,skip_external:result_json->queue->>skip_external,claim_at:result_json->queue->external_claim->>at,pages_done:result_json->queue->external_claim->progress->>done,pages_total:result_json->queue->external_claim->progress->>total,claim_released:result_json->queue->external_claim->>released_at,claim_delivered_at:result_json->queue->external_claim->>delivered_at';
+          const { data: extra } = await getSupabaseAdmin().from('paper_marking_runs').select(COLS).in('id', missing).is('archived_at', null);
+          for (const row of (extra ?? []) as Record<string, unknown>[]) data.inMotion.push(row);
+        }
+      } catch { /* the badge on loaded rows still works without this */ }
+      try {
+        const ids = [...data.runs, ...data.inMotion].map((x: { id?: string }) => x.id).filter(Boolean);
         // A batch job (10 Sep 2026) sits on its PRIMARY run and covers the rest
         // through `run_ids` — match both, or a merged sheet shows on one paper
         // of five (Adrian, 11 Sep 2026: "i only see two papers 'drafting' …
@@ -98,7 +118,7 @@ export async function POST(req: NextRequest) {
           const covered = [j.run_id, ...(Array.isArray(j.run_ids) ? j.run_ids : [])].filter(Boolean);
           for (const rid of new Set(covered)) byRun.set(rid, j);
         }
-        for (const run of data.runs) {
+        for (const run of [...data.runs, ...data.inMotion]) {
           const j = byRun.get(run.id);
           run.sheet_status = j?.status ?? null;
           run.sheet_error = j?.error ?? null;

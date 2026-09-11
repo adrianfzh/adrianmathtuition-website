@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { RUNS_PAGE, RUNS_REFRESH_MAX, refreshLimit, mergeRunsPage } from './runs-list';
+import { RUNS_PAGE, RUNS_REFRESH_MAX, refreshLimit, mergeRunsPage, sheetInMotionIds } from './runs-list';
 import { withInMotion } from './runs-list';
 
 const row = (id: string) => ({ id, created_at: id });
@@ -71,5 +71,28 @@ describe('withInMotion — re-marks of older papers ride ahead of the dated wind
   });
   it('is the dated list when nothing is in motion', () => {
     expect(withInMotion([{ id: 'a' }], []).map(r => r.id)).toEqual(['a']);
+  });
+});
+
+describe('sheetInMotionIds', () => {
+  const now = '2026-09-11T06:30:00Z';
+  it("a queued or claimed sheet's paper is in motion when it is not on screen (Chloe, 11 Sep 2026)", () => {
+    const jobs = [
+      { run_id: 'chloe', run_ids: null, status: 'claimed', created_at: '2026-09-11T06:27:00Z' },
+      { run_id: 'nicole', run_ids: null, status: 'done', created_at: '2026-09-11T03:45:00Z' },
+    ];
+    expect(sheetInMotionIds(jobs, ['other'], now)).toEqual(['chloe']);
+  });
+  it('a paper already on screen is not added again', () => {
+    expect(sheetInMotionIds([{ run_id: 'a', status: 'queued', created_at: now }], ['a'], now)).toEqual([]);
+  });
+  it('a merged sheet brings every paper it covers', () => {
+    const jobs = [{ run_id: 'p1', run_ids: ['p1', 'p2', 'p3'], status: 'queued', created_at: now }];
+    expect(sheetInMotionIds(jobs, ['p2'], now)).toEqual(['p1', 'p3']);
+  });
+  it('a failed sheet counts for a week, then drops off', () => {
+    const fresh = { run_id: 'f1', status: 'failed', created_at: '2026-09-08T00:00:00Z' };
+    const stale = { run_id: 'f2', status: 'failed', created_at: '2026-09-01T00:00:00Z' };
+    expect(sheetInMotionIds([fresh, stale], [], now)).toEqual(['f1']);
   });
 });
