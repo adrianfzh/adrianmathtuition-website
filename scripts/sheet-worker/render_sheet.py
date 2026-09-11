@@ -534,6 +534,11 @@ def lint(path: Path):
     if lin:
         problems.append(f'{lin} linear fraction(s) — every fraction is stacked')
 
+    # Adrian writes parallel as // (11 Sep 2026: "parallel should be written as //, not ||").
+    n_par = xml.count('\u2225') + len(re.findall(r'\\parallel\b', xml))
+    if n_par:
+        problems.append(f'parallel written as ∥ {n_par}x — Adrian writes //')
+
     n_never = len(re.findall(r'\bnever\b', text, re.I))
     if n_never:
         problems.append(f'the word "never" appears {n_never}x — say not / does not / only when')

@@ -115,6 +115,9 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
       `Where it showed: 2025 Paper 1 Q2 and Q8(a); 2023 Paper 2 Q9(c)` — naming
       the student's OWN papers is allowed on a batch sheet (the "never name
       another paper" rule is about dragging other papers into a single sheet).
+      **A single-paper sheet carries the same line under every section heading
+      too, without the paper name: `Where it showed: Q7(a)(i) and Q11(b)`**
+      (Adrian, 11 Sep 2026). And parallel is written `//`, never `∥`.
     - **Filing:** a NEW dated folder for the batch, not a paper's folder —
       `/Students/<Student>/<YYYY-MM-DD> Practice Again (N papers - <short names>)/3 Practice Again.docx|pdf`
       with today's date and short names like `AM 2025 P1, AM 2025 P2, AM 2023 P2`

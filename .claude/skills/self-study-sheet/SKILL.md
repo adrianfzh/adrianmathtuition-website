@@ -629,6 +629,18 @@ Invoke `create-teaching-notes` and give it this brief:
   the grey arrow `← write negative power in the denominator and power 1/2 as
   square roots`, e.g. `dT/dx = 1/5 + (x − 15)/(3√(x² − 30x + 289))`. The
   student then sees the shape they will set equal to zero or substitute into.
+- **Parallel is written `//`, never `∥`** (Adrian, 11 Sep 2026: "in practice
+  again sheets, parallel should be written as //, not ||"). In prose, in a green
+  tag and inside maths alike: `BX // DC`, `[BX // DC gives OX/OC = OB/OD]`. Do not
+  type `\parallel` — the lint refuses a sheet that carries `∥`.
+- **Every section says where it showed** (Adrian, 11 Sep 2026: "for practice
+  again for multiple marked papers, there is a 'where it showed' — can also have
+  'where it showed' in practice again for individual papers?"). Under each
+  section heading, one grey italic 9 pt line: on a single-paper sheet
+  `Where it showed: Q7(a)(i) and Q11(b)` (the question alone — the whole sheet
+  is that paper); on a batch sheet `Where it showed: 2025 Paper 1 Q2 and Q8(a);
+  2023 Paper 2 Q9(c)`. It is the student's own paper, so naming it is fine; it
+  is what lets them open the marked page beside the section.
 - **Worked examples reproduce the SHAPE of the question they got wrong**, with
   changed numbers — never a generic textbook example of the same topic.
   **The NOTATION is part of the shape** (Adrian, 11 Sep 2026, Isabelle's AM
@@ -934,6 +946,9 @@ the gap is the interesting half: it says what the bank is missing.
   The same applies to slashes typed in PROSE: "so v = dx/dt" inside a sentence
   is still maths, so it is still an equation object.
   Sweep the finished file before filing it:
+  - **No `∥` anywhere, and a "Where it showed" line under every section
+    heading** (11 Sep 2026) — `render_sheet.py`'s lint flags the first; count
+    the second against the section headings.
   - **Every example sits on one page, and a near miss is tightened, not
     moved** (Adrian, 11 Sep 2026: "when there is just a little bit of the box
     going across to another page, try to just reduce the white spaces for the

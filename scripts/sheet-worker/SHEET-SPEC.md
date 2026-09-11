@@ -87,7 +87,7 @@ instruction lines and one blank paragraph.
 | block | what it is |
 |---|---|
 | `skill` | The Title Case section heading — bold navy `1F4E79`, 11 pt, 6 pt of air above, glued to the line below. It names the TOOL, not the task. **Every skill after the first opens a page** (`new_page` overrides). |
-| `where` | Batch only: `Where it showed: 2025 Paper 1 Q2 and Q8(a)` — grey italic, 9 pt. |
+| `where` | Every sheet (11 Sep 2026): `Where it showed: Q7(a)(i) and Q11(b)` on a single-paper sheet, `Where it showed: 2025 Paper 1 Q2 and Q8(a)` on a batch — grey italic, 9 pt, under every `skill` heading. |
 | `keymove` | The ONE blue key-move line under the heading. The situation goes here, not in the heading. |
 | `example` | `Example N` — auto-numbered. `"label": "a"` opens a lettered group (`Example 3a`), `"b"` reuses its number. |
 | `para` | An unnumbered paragraph: an Example's stem, a continuation line. `marks` puts `[n]` at the 15.5 cm right tab; `indent_cm` lines it up with the text of the question above it. |
