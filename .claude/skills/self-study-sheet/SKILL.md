@@ -621,6 +621,19 @@ Invoke `create-teaching-notes` and give it this brief:
   answer is a log").
 - **Worked examples reproduce the SHAPE of the question they got wrong**, with
   changed numbers — never a generic textbook example of the same topic.
+  **The NOTATION is part of the shape** (Adrian, 11 Sep 2026, Isabelle's AM
+  2023 P1 Q6(b): "would be good if the examples and practice questions have
+  questions that mimic the use of g'(x) notation → some students are weak at
+  that"). The exam question defined g through f — `g'(x) = (x − a)² f'(x)`, "g
+  decreases for a < x < 8" — and the sheet taught it as a bare `dy/dx = 3x² −
+  2px − 24`, which drops exactly the reading the student fumbled. When the
+  question wrote its calculus in function notation (f'(x), g'(x), h''(x), a
+  derivative defined in terms of another function, f(g(x))), the example AND
+  its practice keep that notation and that structure: a named function, its
+  derivative written as f'(x), a second function built from the first. Only
+  the numbers and the functions change. Same for other notation the student
+  stumbled on — sigma sums, vector column form, set-builder brackets, R-formula
+  in the exam's own letters: the sheet drills the notation the paper used.
 - **Exact form is carried through a "show that"** (Adrian, 9 Sep 2026, Alessi's
   Q10). When the target is exact — π, a surd, a fraction — the example works every
   line exactly: exact trig values, fractions not decimals, π kept as π, and a
