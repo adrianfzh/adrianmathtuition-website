@@ -1408,12 +1408,21 @@ slot to claim it. The wait is the problem, not the writer.
    each account has its own plan-limit file and one running out never stops the
    other. A slot's own token wins over the login in BOTH run.sh files.
    `bash ~/.adrianmath_sheetsN/run.sh --auth-check` prints a slot's account.
-4. **A renderer from a spec** (`scripts/sheet-worker/render_sheet.py`, spec in
-   `SHEET-SPEC.md`): the writer emits the sheet as JSON, a script builds the docx
-   through the same `worksheet_lib` helpers and exports the PDF the same Word
-   way — identical formatting by construction, proved by rendering three vetted
-   sheets and diffing them page by page before the switch (`SHEET_RENDER=spec`)
-   is ever set. 🔨 in progress.
+4. **A renderer from a spec** ✅ built, ⏸ OFF (`scripts/sheet-worker/render_sheet.py`,
+   spec in `SHEET-SPEC.md` + `sheet-spec.schema.json`, `WORKER_PROMPT.md` §2b):
+   the writer emits the sheet as JSON, the script builds the docx through the
+   same `worksheet_lib` helpers, runs the repair pass and the §3b sweeps
+   unconditionally, and exports the PDF through Word. Proof (11 Sep 2026):
+   three filed sheets — two singles and a two-paper batch, 662 equations —
+   transcribed to specs and re-rendered came out **pixel-identical at 100 dpi,
+   0 differing paragraphs, same page counts**, and the same spec renders to the
+   same bytes. Found on the way: three September sheets were filed without the
+   repair pass (the `gap_above_box` fault Klaire's sheet came back for), and
+   the `[Remember: …]`, key-move and "Where it showed" lines have shipped in
+   two or three stylings each — drift the renderer removes. To try it: set
+   `SHEET_RENDER=spec` in ONE slot's `~/.adrianmath_sheetsN/env`, read the
+   next sheet, then flip the rest. `render_sheet.py --selftest` pins fifteen
+   properties of the house style.
 5. **The vetted-section library** (later, strict): a section Adrian vetted is
    reused only for the SAME gap (sub-skill + missed step) — the worked example
    copied verbatim, annotations included; practice dealt from a per-gap pool of
