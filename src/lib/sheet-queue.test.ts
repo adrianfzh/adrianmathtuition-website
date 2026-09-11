@@ -138,13 +138,21 @@ describe('remarkRequester — who a replacement sheet is for', () => {
   });
 });
 
-describe('a returned Practice Again sheet gets no sheet of its own (9 Sep 2026)', () => {
-  it('refuses whoever asks', () => {
-    const run = { id: 'r', paper_name: 'Practice Again — A Math 2021 Paper 1', student_id: 's', student_name: 'Sophie', released_at: '2026-09-08T04:00:00Z', result_json: { results: [{}] } } as never;
-    const a = sheetQueueGuard(run, [], { requestedBy: 'adrian' });
-    const b = sheetQueueGuard(run, [], { requestedBy: 'student' });
-    expect(a.ok).toBe(false); expect((a as { status: string }).status).toBe('practice-again');
-    expect(b.ok).toBe(false); expect((b as { status: string }).status).toBe('practice-again');
+describe('a returned Practice Again sheet: ONE follow-up, on an explicit ask (11 Sep 2026 — reverses 9 Sep)', () => {
+  const run = { id: 'r', paper_name: 'Practice Again — A Math 2021 Paper 1', student_id: 's', student_name: 'Sophie', released_at: '2026-09-08T04:00:00Z', result_json: { results: [{}] } } as never;
+  it('lets the student, or Adrian, ask for a follow-up on a returned sheet', () => {
+    expect(sheetQueueGuard(run, [], { requestedBy: 'student', followUpDepth: 1 }).ok).toBe(true);
+    expect(sheetQueueGuard(run, [], { requestedBy: 'adrian', followUpDepth: 1 }).ok).toBe(true);
+    expect(sheetQueueGuard(run, [], { requestedBy: 'student' }).ok).toBe(true);   // depth unknown = a returned sheet
+  });
+  it('a returned FOLLOW-UP gets nothing more — the chain stops at one', () => {
+    const r = sheetQueueGuard(run, [], { requestedBy: 'student', followUpDepth: 2 });
+    expect(r.ok).toBe(false); expect((r as { status: string }).status).toBe('follow-up-limit');
+  });
+  it('a re-mark never starts a follow-up by itself, but re-queues one that already exists', () => {
+    const r = sheetQueueGuard(run, [], { requestedBy: 'adrian', remark: true, followUpDepth: 1 });
+    expect(r.ok).toBe(false); expect((r as { status: string }).status).toBe('practice-again');
+    expect(sheetQueueGuard(run, [{ id: 'j', status: 'cancelled', requested_by: 'student', created_at: '2026-09-10T00:00:00Z' }], { requestedBy: 'adrian', remark: true, followUpDepth: 1 }).ok).toBe(true);
   });
 });
 

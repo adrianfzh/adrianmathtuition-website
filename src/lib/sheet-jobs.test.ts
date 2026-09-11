@@ -102,6 +102,21 @@ describe('pickNextJob', () => {
 const filed = (input: unknown) => sanitizeResult(input) as SheetFiledResult;
 
 describe('sanitizeResult', () => {
+  it('keeps the gap report the worker writes since 11 Sep 2026 — the next-wave card reads its marks', () => {
+    const r = filed({ docx_path: '/x.docx', gaps: { found: 5, covered: 3, shelved: [
+      { skill: 'Polynomials — remainder theorem', runs: [{ run_id: 'a', questions: ['Q9(c)'], marks: 3 }], why: 'one-off' },
+      { skill: 'Surds', marks: 1, why: 'one mark' },
+      { skill: '', runs: [] },
+      'not an entry',
+    ] } });
+    expect(r.gaps).toEqual({ found: 5, covered: 3, shelved: [
+      { skill: 'Polynomials — remainder theorem', runs: [{ run_id: 'a', questions: ['Q9(c)'], marks: 3 }], why: 'one-off' },
+      { skill: 'Surds', runs: [{ run_id: '', questions: [], marks: 1 }], why: 'one mark' },
+    ] });
+    expect('gaps' in filed({ docx_path: '/x.docx' })).toBe(false);
+    expect(filed({ docx_path: '/x.docx', carried: [{ skill: 'show-that habit', from: 'Practice Again — A Math 2024 P1' }, {}] }).carried)
+      .toEqual([{ skill: 'show-that habit', from: 'Practice Again — A Math 2024 P1' }]);
+  });
   it('keeps the paths and lists, trims and caps', () => {
     const r = filed({
       docx_path: '  /Self-Study/A/sheet.docx ', pdf_path: '/Self-Study/A/sheet.pdf',

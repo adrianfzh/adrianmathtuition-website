@@ -27,6 +27,7 @@
 // `tickBar` so the screen and the server can never disagree about what may be
 // ticked.
 import { sheetQueueGuard, type SheetBatchRun, type SheetQueueRefusal } from './sheet-queue';
+import { isPracticeAgainHandin } from './desk-state';
 
 /** Two at least — a single paper has its own Request button. */
 export const MIN_BATCH_PAPERS = 2;
@@ -176,6 +177,9 @@ export function studentBatchGuard(
   // jobs here is deliberate: the batch's own in-flight rule is below, and a
   // FINISHED sheet is not a refusal (the worker reuses its examples).
   for (const r of distinct) {
+    // A returned Practice Again sheet may get its OWN follow-up (11 Sep 2026)
+    // but never joins a merged sheet — the tick is for exam papers.
+    if (isPracticeAgainHandin(r)) return { ok: false, status: 'practice-again', http: 409, message: 'A returned Practice Again sheet cannot join a merged sheet — it can ask for its own follow-up.', runId: r.id };
     const g = sheetQueueGuard(r, [], { requestedBy: 'student' });
     if (!g.ok) return { ...g, runId: r.id };
   }
@@ -262,58 +266,59 @@ export function legacyShelfGaps(raw: readonly unknown[]): Array<{ text: string; 
 }
 
 /**
- * The gaps a finished sheet kept back, as stored on the job. Two shapes, both
- * live: `result.gaps.shelved` — the richer report the worker writes since 11 Sep
- * 2026, one entry per gap with its paper, questions, marks and the reason it was
- * held — and the older flat `result.shelved` list, read by the legacy rule
- * above. Empty when the job wrote no sheet, or shelved nothing.
+ * A left-out gap is offered for a next sheet only when it cost at least this
+ * many marks (Adrian, 11 Sep 2026: "let the bar be lost more than or equals to
+ * 3 marks per gap" — "students may not bother with just 1 mark"). Per gap, not
+ * in total: two one-mark gaps are not offered; one three-mark gap is.
  */
-export function shelvedGaps(result: unknown): string[] {
+export const WAVE_MIN_MARKS_PER_GAP = 3;
+
+type ShelfEntry = { text: string; marks: number };
+
+/**
+ * Every gap a finished sheet kept back, with what it cost. Two stored shapes,
+ * both live: `result.gaps.shelved` — the richer report the worker writes since
+ * 11 Sep 2026, one entry per gap with its paper, questions, marks and the
+ * reason it was held — and the older flat `result.shelved` list, read by the
+ * legacy rule above. Empty when the job wrote no sheet, or shelved nothing.
+ */
+function shelfEntries(result: unknown): ShelfEntry[] {
   const r = result && typeof result === 'object' ? (result as Record<string, unknown>) : null;
   if (!r || r.noSheet) return [];
   const gaps = r.gaps && typeof r.gaps === 'object' ? (r.gaps as Record<string, unknown>) : null;
   const rich = Array.isArray(gaps?.shelved) ? gaps.shelved : null;
-  if (rich) {
-    return rich
-      .map(x => (x && typeof x === 'object' ? String((x as { skill?: unknown }).skill ?? '') : String(x ?? '')).trim())
-      .filter(Boolean)
-      .slice(0, 20);
+  if (!rich) return legacyShelfGaps(Array.isArray(r.shelved) ? r.shelved : []);
+  const out: ShelfEntry[] = [];
+  for (const x of rich) {
+    if (x && typeof x === 'object') {
+      const e = x as { skill?: unknown; marks?: unknown; runs?: unknown };
+      const text = String(e.skill ?? '').trim();
+      if (!text) continue;
+      let marks = 0;
+      if (Array.isArray(e.runs)) for (const run of e.runs) marks += Number((run as { marks?: unknown })?.marks) || 0;
+      else marks = Number(e.marks) || 0;
+      out.push({ text, marks });
+    } else if (String(x ?? '').trim()) out.push({ text: String(x).trim(), marks: 0 });
   }
-  return legacyShelfGaps(Array.isArray(r.shelved) ? r.shelved : []).map(g => g.text).slice(0, 20);
+  return out;
 }
 
-/** A next wave is offered only when the shelf is worth a sheet: at least this many gaps… */
-export const WAVE_MIN_GAPS = 2;
-/** …or at least this many marks' worth of them (Adrian, 11 Sep 2026: "do the threshold"). */
-export const WAVE_MIN_MARKS = 5;
+/**
+ * The left-out gaps worth a next sheet — each cost WAVE_MIN_MARKS_PER_GAP or
+ * more. This is what the sheet card counts and what a next-wave job teaches;
+ * the smaller gaps stay on Adrian's Telegram only. Pure.
+ */
+export function shelvedGaps(result: unknown): string[] {
+  return shelfEntries(result).filter(e => e.marks >= WAVE_MIN_MARKS_PER_GAP).map(e => e.text).slice(0, 20);
+}
 
 /**
- * Is the shelf worth a next wave? `count` is the gaps kept back; `marks` is
- * what they cost across the papers (the rich report's `runs[].marks` or a
- * top-level `marks`; a legacy line's own "n marks"). A one-gap, three-mark
- * shelf stays hidden — a wave-two sheet costs the same Mac slot as a full one,
- * and a sheet exists to teach something worth teaching. Pure.
+ * Is the shelf worth a next wave? Yes when at least one left-out gap cost the
+ * bar. `count` is how many did; `marks` what they cost together. Pure.
  */
 export function shelfWorthAWave(result: unknown): { worth: boolean; count: number; marks: number } {
-  const r = result && typeof result === 'object' ? (result as Record<string, unknown>) : null;
-  if (!r || r.noSheet) return { worth: false, count: 0, marks: 0 };
-  const gaps = r.gaps && typeof r.gaps === 'object' ? (r.gaps as Record<string, unknown>) : null;
-  const rich = Array.isArray(gaps?.shelved) ? gaps.shelved : null;
-  let count = 0, marks = 0;
-  if (rich) {
-    for (const x of rich) {
-      if (x && typeof x === 'object') {
-        const e = x as { skill?: unknown; marks?: unknown; runs?: unknown };
-        if (!String(e.skill ?? '').trim()) continue;
-        count++;
-        if (Array.isArray(e.runs)) for (const run of e.runs) marks += Number((run as { marks?: unknown })?.marks) || 0;
-        else marks += Number(e.marks) || 0;
-      } else if (String(x ?? '').trim()) count++;
-    }
-  } else {
-    for (const g of legacyShelfGaps(Array.isArray(r.shelved) ? r.shelved : [])) { count++; marks += g.marks; }
-  }
-  return { worth: count >= WAVE_MIN_GAPS || marks >= WAVE_MIN_MARKS, count, marks };
+  const offered = shelfEntries(result).filter(e => e.marks >= WAVE_MIN_MARKS_PER_GAP);
+  return { worth: offered.length >= 1, count: offered.length, marks: offered.reduce((a, e) => a + e.marks, 0) };
 }
 
 // The wave-two `focus` line itself lives beside the job insert it feeds

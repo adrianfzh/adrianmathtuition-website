@@ -9,6 +9,7 @@
 // The server reads `shelved` off the finished job itself, so this posts only
 // which papers it is continuing.
 import { useState } from 'react';
+import { WAVE_MIN_MARKS_PER_GAP } from '@/lib/student-batch';
 
 export default function NextWave({ runIds, count }: { runIds: string[]; count: number }) {
   const [state, setState] = useState<'offer' | 'queued'>('offer');
@@ -42,9 +43,9 @@ export default function NextWave({ runIds, count }: { runIds: string[]; count: n
     <div className="basis-full flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white border border-emerald-200 px-3 py-2">
       <div className="min-w-0">
         <p className="text-[12.5px] font-semibold text-emerald-900">
-          {count} more gap{count === 1 ? ' was' : 's were'} kept for your next sheet
+          {count} bigger gap{count === 1 ? ' was' : 's were'} kept for your next sheet
         </p>
-        <p className="text-[11.5px] text-emerald-800/70">One sheet teaches a few things well. Ask when you are through this one.</p>
+        <p className="text-[11.5px] text-emerald-800/70">Each cost you {WAVE_MIN_MARKS_PER_GAP} marks or more. One sheet teaches a few things well — ask when you are through this one.</p>
         {err && <p className="text-[11.5px] text-red-700 mt-1">{err}</p>}
       </div>
       <button type="button" onClick={ask} disabled={busy}

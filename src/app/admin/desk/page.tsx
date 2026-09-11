@@ -1967,10 +1967,11 @@ function SheetPane(p: {
   const done = job?.status === 'done' && !noSheet;
   const openHref = (kind: 'pdf' | 'docx') => `/api/admin/sheet-open?runId=${encodeURIComponent(d.run.id)}&kind=${kind}`;
   if (d.run.practiceAgain) {
-    // A returned Practice Again sheet gets no sheet of its own (9 Sep 2026).
+    // A returned Practice Again sheet is never queued from the desk (9 Sep 2026);
+    // since 11 Sep 2026 the STUDENT may ask for ONE follow-up from the app.
     return (
       <div style={{ padding: '12px 14px', fontSize: 13.5, color: C.muted, lineHeight: 1.5 }}>
-        📘 This is a returned <b>Practice Again</b> sheet, marked as a paper. It gets no sheet of its own — the marks above are the whole story.
+        📘 This is a returned <b>Practice Again</b> sheet, marked as a paper. If the student wants another go at what they still got wrong, they ask for a follow-up from the app — one per sheet. Nothing is queued from here.
       </div>
     );
   }

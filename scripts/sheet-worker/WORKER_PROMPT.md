@@ -94,8 +94,10 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
       — every found gap is either a section or a shelved entry with its paper,
       questions, marks and the reason. A sheet with an unexplained shelf is not
       verified. The site offers the student "Ask for the next wave" from that
-      list: a job with `focus.wave === 2` teaches EXACTLY `focus.shelved`, nothing
-      else, reusing the first sheet's title block and the same folder name with
+      list — only the entries that cost **3 marks or more, per gap** (Adrian,
+      11 Sep 2026: "students may not bother with just 1 mark"; smaller ones
+      stay on his Telegram), so put every gap's marks on its entry: a job with
+      `focus.wave === 2` teaches EXACTLY `focus.shelved`, nothing else, reusing the first sheet's title block and the same folder name with
       " (wave 2)"; it skips the strong-batch and recency rules (it is a
       continuation).
     - **Strong batch (11 Sep 2026).** Fewer than 10 marks lost across the batch:
@@ -128,6 +130,46 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
       `pdf_path`, the sweeps, the verification stamp. The batch supersedes the
       single sheets (the site cancelled any still being written when the batch
       was queued); do not file anything into the papers' own folders.
+
+1f. **Still failing after a practice sheet — the LAST teaching section (11 Sep
+    2026).** A student who did a Practice Again sheet and still lost marks on it
+    has a gap the sheet did not close, and nothing else feeds that forward. So
+    every sheet you write for a NEW paper checks for it, AFTER the paper's own
+    gaps (Adrian: "lower order of priority (as last section) — the gaps in the
+    newly marked paper come first"):
+    - Read the student's notebook (PostgREST, service key from `.env.local`):
+      `rest/v1/notebook_mistakes?airtable_student_id=eq.<job.airtable_student_id>&state=eq.dark&select=title,topic,error_kind,seen_count,evidence&order=last_seen_at.desc`
+      (`state=dark` is "Still happening"). Keep a row only when its NEWEST
+      `evidence` entry is a paper whose `paper` name starts "Practice Again" —
+      the mistake showed on a returned sheet and nothing since was clean.
+    - Drop any row this sheet already teaches (the same skill as a section).
+    - Of the rest, at most TWO, ranked by marks lost then `seen_count`, become
+      ONE final teaching section headed **"Still from your practice sheet"** —
+      after every section for this paper's gaps, before the Optional practice.
+      The same shape as any section: a short teach, one worked example, two
+      practice items from the bank.
+    - Report it in the `done` result: `"carried":[{"skill":"…","from":"<the
+      Practice Again paper name the evidence names>"}]`; `[]` or omit when
+      nothing was carried. Nothing else changes: the wave, the shelf and the
+      cap are about THIS paper's gaps.
+
+1g. **A FOLLOW-UP job — the run is a returned Practice Again sheet (11 Sep
+    2026; reverses 9 Sep's "no sheets for practice again sheets").**
+    `job.paper_name` starts "Practice Again" (the run's
+    `result_json.source.paper_kind` is `practice-again`): the student asked,
+    from the app, for another go at what they still got wrong on the sheet.
+    Diagnose from THAT marking only — the lost parts on the returned sheet; the
+    exam paper it came from was taught already, so do not re-read it. Title the
+    sheet **"Practice Again — follow-up"** over the same paper line; file it in
+    the parent paper's folder (the one holding `4 Practice Again — returned.pdf`)
+    as `5 Practice Again — follow-up.docx` / `.pdf`. Fewer sections than a full
+    sheet — usually two to four, one per skill still failing; a skill the
+    returned sheet got right is not repeated, and a skill lost to a slip is a
+    cover line, not a section. A follow-up never shelves for a wave (`gaps.shelved`
+    is `[]`) and never gets a follow-up of its own — the site refuses the ask;
+    anything still failing after it rides into the next paper's sheet by §1f.
+    If every lost mark on the returned sheet is a slip, say so with `noSheet`
+    (rule 6).
 
 1d. **ALWAYS post `diagnosis`** — on a fresh sheet, a revision, and when you
     decide an existing sheet stands unchanged after a re-mark ("identical
@@ -285,6 +327,8 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
         "wave":["chain rule","∫1/(ax+b)"],"shelved":["Polynomials","Plane Geometry"],
         "verified":"42/42 answers checked",   ← MUST begin "<checked>/<total>"; anything after is a note. A stamp that does not start with N/N holds the sheet for Adrian (8 Sep 2026: "77 sympy checks on this re-render…" was read as unverified)
         "reused":["Q6 example from Alessi Tay's 8 Sep sheet (Adrian's edited copy)"],   ← optional, 9 Sep 2026: what came from an earlier sheet on this paper; [] or omit when nothing did
+        "gaps":{"found":7,"covered":6,"shelved":[{"skill":"…","runs":[{"run_id":"…","questions":["Q9(c)"],"marks":3}],"why":"…"}]},   ← §1e, 11 Sep 2026: EVERY gap with its marks — the site offers a next wave only for entries of 3+ marks
+        "carried":[{"skill":"finishing a show-that by factorising","from":"Practice Again — A Math 2024 Paper 1"}],   ← §1f, 11 Sep 2026: skills still failing after a returned practice sheet, taught as the LAST section; [] or omit
         "questions":[
           {"section":"Practice 1","index":1,"skill_title":"Master Finding Area Using Integration",
            "question_id":"6f1d2c3b-4a5e-4f60-8a9b-0c1d2e3f4a5b","text_latex":null,

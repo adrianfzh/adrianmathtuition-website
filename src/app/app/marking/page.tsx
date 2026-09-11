@@ -175,7 +175,7 @@ export default async function MarkingPage() {
       for (const rid of covered) if (!jobByRun.has(rid)) jobByRun.set(rid, { status: j.status, noSheet: readNoSheet(j.result).noSheet });
       if (j.status === 'done') {
         const shelf = shelvedGaps(j.result);
-        // The threshold (11 Sep 2026): two gaps, or five marks' worth — else no button.
+        // The bar (11 Sep 2026): a left-out gap that cost 3 marks or more — else no button.
         if (shelf.length && shelfWorthAWave(j.result).worth) for (const rid of covered) if (!waveByRun.has(rid)) waveByRun.set(rid, { count: shelf.length, runIds: covered });
       }
     }

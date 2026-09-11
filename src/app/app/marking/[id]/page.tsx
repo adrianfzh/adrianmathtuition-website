@@ -16,6 +16,7 @@ import NextWave from '../NextWave';
 import { readNoSheet } from '@/lib/sheet-jobs';
 import { coveredRunIds } from '@/lib/sheet-queue';
 import { shelvedGaps, shelfWorthAWave } from '@/lib/student-batch';
+import { followUpDepthOf } from '@/lib/sheet-queue';
 import { displayPaperName } from '@/lib/paper-display-name';
 import { subjectLabel } from '@/lib/mark-subjects';
 import { TEACHER_TOTAL_LABEL } from '@/lib/science-truth';
@@ -98,10 +99,13 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
     }
     if (sheet && job?.status === 'done') {
       const shelf = shelvedGaps(job.result);
-      // The threshold (11 Sep 2026): two gaps, or five marks' worth — else no button.
+      // The bar (11 Sep 2026): a left-out gap that cost 3 marks or more — else no button.
       if (shelf.length && shelfWorthAWave(job.result).worth) nextWave = { count: shelf.length, runIds: coveredRunIds(job) };
     }
   }
+  // A returned Practice Again sheet may ask for ONE follow-up (11 Sep 2026); a
+  // returned follow-up may not — what is still hard rides into the next paper's sheet.
+  const followUpDepth = isScience ? 0 : await followUpDepthOf(sb, row as never);
   const hasCover = paper.dropped.length > 0;
   const supersededBy = (row as { superseded_by?: string | null }).superseded_by ?? null;
   // Why it was archived (Adrian, 7 Sep 2026: "should say the reason") — a
@@ -240,7 +244,7 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
       )}
       {isScience && <ScienceUseful runId={paper.id} />}
 
-      {!isScience && !sheet && !supersededBy && !/^\s*practice again\b/i.test(paper.rawName ?? '') && <PracticeAgainRequest runId={paper.id} state={requestState} />}
+      {!isScience && !sheet && !supersededBy && followUpDepth <= 1 && <PracticeAgainRequest runId={paper.id} state={requestState} />}
 
       {paper.pdfUrl && (
         <p className="text-center">

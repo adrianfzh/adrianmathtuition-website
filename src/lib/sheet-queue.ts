@@ -45,7 +45,7 @@ export type SheetBatchRefusal = {
 
 export type SheetQueueRefusal = {
   ok: false;
-  status: 'not-found' | 'untagged' | 'no-marking' | 'not-released' | 'duplicate' | 'exists' | 'practice-again' | 'science';
+  status: 'not-found' | 'untagged' | 'no-marking' | 'not-released' | 'duplicate' | 'exists' | 'practice-again' | 'follow-up-limit' | 'science';
   http: 400 | 404 | 409;
   message: string;
   jobId?: string;
@@ -63,7 +63,7 @@ const IN_FLIGHT = new Set(['queued', 'claimed']);
 export function sheetQueueGuard(
   run: SheetQueueRun | null | undefined,
   jobs: SheetQueueJobRow[],
-  opts: { requestedBy?: SheetRequestedBy; wave?: number } = {},
+  opts: { requestedBy?: SheetRequestedBy; wave?: number; remark?: boolean; followUpDepth?: number } = {},
 ): SheetQueueRefusal | { ok: true } {
   if (!run) return { ok: false, status: 'not-found', http: 404, message: 'run not found' };
   if (!run.student_id) return { ok: false, status: 'untagged', http: 400, message: 'Tag this paper to a student first — a sheet needs someone to be for.' };
@@ -74,11 +74,18 @@ export function sheetQueueGuard(
   // doors, so neither the desk's 📘 Queue nor the student's Request button can
   // start one.
   if (run.subject && run.subject !== 'math') return { ok: false, status: 'science', http: 400, message: 'Practice Again is for maths papers — there is no sheet for a science paper.' };
-  // A returned Practice Again sheet never gets a sheet of its own (Adrian,
-  // 9 Sep 2026: "there should be no trigger to generate new sheets for
-  // practice again sheets") — not from the desk, not from the student, not
-  // from a re-mark.
-  if (isPracticeAgainHandin(run)) return { ok: false, status: 'practice-again', http: 409, message: 'This is a returned Practice Again sheet — it gets no sheet of its own.' };
+  // A returned Practice Again sheet may get ONE follow-up sheet, on an explicit
+  // ask (Adrian, 11 Sep 2026: "why not just have a second sheet for that
+  // returned practice sheet? … do A, let students click themselves" — reversing
+  // 9 Sep's "no trigger to generate new sheets for practice again sheets"). The
+  // follow-up teaches what the student still got wrong on the sheet. A returned
+  // FOLLOW-UP gets nothing more: the chain stops at one, and what is still
+  // failing then rides into the next paper's sheet as its last section
+  // (WORKER_PROMPT.md §1f). A re-mark never starts a follow-up by itself.
+  if (isPracticeAgainHandin(run)) {
+    if ((opts.followUpDepth ?? 1) >= 2) return { ok: false, status: 'follow-up-limit', http: 409, message: 'This sheet already follows a practice sheet — what is still hard comes into your next paper’s sheet.' };
+    if (opts.remark && !jobs.length) return { ok: false, status: 'practice-again', http: 409, message: 'A re-mark does not start a follow-up sheet — the student asks for one from the app.' };
+  }
   const inFlight = jobs.find(j => IN_FLIGHT.has(j.status));
   if (inFlight) return { ok: false, status: 'duplicate', http: 409, message: 'A sheet for this paper is already queued.', jobId: inFlight.id };
   if (opts.requestedBy === 'student') {
@@ -121,6 +128,9 @@ export function sheetBatchGuard(
   const distinct = Array.from(new Map(live.map(r => [r.id, r])).values());
   if (distinct.length < 2) return { ok: false, status: 'too-few', http: 400, message: 'Tick at least two papers for one sheet — a single paper gets its own.' };
   for (const r of distinct) {
+    // A returned Practice Again sheet may get its OWN follow-up (11 Sep 2026)
+    // but never joins a merged sheet — the tick is for exam papers.
+    if (isPracticeAgainHandin(r)) return { ok: false, status: 'practice-again', http: 409, message: 'A returned Practice Again sheet cannot join a merged sheet — it can ask for its own follow-up.', runId: r.id };
     const g = sheetQueueGuard(r, [], opts);
     if (!g.ok) return { ...g, runId: r.id };
   }
@@ -236,6 +246,25 @@ export function remarkRequester(jobs: SheetQueueJobRow[]): SheetRequestedBy | nu
 }
 
 /**
+ * How far a run is from an exam paper: 0 = a paper, 1 = a returned Practice
+ * Again sheet, 2 = a returned FOLLOW-UP (the sheet it returned was itself
+ * written for a returned sheet). Read off the hand-in's assignment
+ * (result_json.assignment_id → portal_assignments.source_run_id → that run);
+ * a returned sheet with no assignment on record counts as 1.
+ */
+export async function followUpDepthOf(sb: ReturnType<typeof getSupabaseAdmin>, run: SheetQueueRun | null | undefined): Promise<0 | 1 | 2> {
+  if (!run || !isPracticeAgainHandin(run)) return 0;
+  const rj = run.result_json as { assignment_id?: unknown } | null;
+  const aid = rj && typeof rj === 'object' && typeof rj.assignment_id === 'string' ? rj.assignment_id : null;
+  if (!aid) return 1;
+  const { data: a } = await sb.from('portal_assignments').select('source_run_id').eq('id', aid).maybeSingle<{ source_run_id: string | null }>();
+  if (!a?.source_run_id) return 1;
+  const { data: src } = await sb.from('paper_marking_runs').select('id, paper_name, result_json').eq('id', a.source_run_id)
+    .maybeSingle<{ id: string; paper_name: string | null; result_json: unknown }>();
+  return src && isPracticeAgainHandin(src as SheetQueueRun) ? 2 : 1;
+}
+
+/**
  * Queue a sheet for a run. Reads the run + its jobs, applies the guard, and
  * inserts. `remark: true` (a paper marked again) first cancels any job still
  * in flight so a sheet is never written from marking that no longer stands.
@@ -262,7 +291,8 @@ export async function queueSheetJob(
     jobs = jobs.map(j => (plan.cancel.includes(j.id) ? { ...j, status: 'cancelled' } : j));
   }
 
-  const guard = sheetQueueGuard(run, jobs, { requestedBy, wave: opts.wave });
+  const followUpDepth = await followUpDepthOf(sb, run);
+  const guard = sheetQueueGuard(run, jobs, { requestedBy, wave: opts.wave, remark: opts.remark, followUpDepth });
   if (!guard.ok) return guard;
 
   const { data: job, error } = await sb.from('sheet_jobs')

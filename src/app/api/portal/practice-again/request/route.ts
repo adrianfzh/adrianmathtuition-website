@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
   // What the last finished sheet kept back, for a wave-two request. Read from
   // the job itself, never from the client — the student asks for "the next
   // wave", the server decides what that means.
-  // …and only a shelf worth a sheet (two gaps, or five marks — the threshold, 11 Sep 2026).
+  // …and only a shelf worth a sheet (a left-out gap that cost 3 marks or more — the bar, 11 Sep 2026).
   const finished = wave >= 2 ? jobs.find(j => j.status === 'done' && shelfWorthAWave(j.result).worth) : undefined;
   if (wave >= 2 && !finished) {
     return NextResponse.json({ error: 'There is no sheet with more gaps kept back for these papers.' }, { status: 409 });
@@ -130,7 +130,9 @@ export async function POST(req: NextRequest) {
         ? 'A Practice Again sheet for this paper already exists — Adrian is checking it before it comes to you.'
         : out.status === 'not-released'
           ? 'This paper is not out yet — ask once it is.'
-          : 'This paper can’t have a sheet yet — ask Adrian.';
+          : out.status === 'follow-up-limit' || out.status === 'practice-again'
+            ? out.message
+            : 'This paper can’t have a sheet yet — ask Adrian.';
       return NextResponse.json({ error: copy }, { status: out.http });
     }
     const jobId = (out.job as { id?: string } | null)?.id ?? null;

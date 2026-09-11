@@ -103,6 +103,17 @@ export type SheetFiledResult = {
   docx_path: string; pdf_path: string | null; wave: string[]; shelved: string[]; verified: string;
   /** What came from an earlier sheet on the same paper (Adrian, 9 Sep 2026: "perhaps some examples can be reused") — [] when the sheet was written from scratch. */
   reused: string[];
+  /**
+   * The writer's gap report (WORKER_PROMPT.md §1e, 11 Sep 2026): every found
+   * gap is a section or a shelved entry with its paper, questions and marks.
+   * The student's "Ask for the next wave" card reads the marks off it — a
+   * left-out gap is offered only when it cost 3 marks or more — so it MUST
+   * survive this sanitiser (it did not until 11 Sep 2026 evening: the report
+   * was dropped on the floor and the card fell back to the flat list).
+   */
+  gaps?: { found: number; covered: number; shelved: ShelvedGap[] };
+  /** Skills still failing after a returned practice sheet that this sheet taught as its last section (§1f). */
+  carried?: { skill: string; from: string }[];
 };
 
 /**
@@ -118,6 +129,8 @@ export type SheetFiledResult = {
  * a right answer. `fail` is for genuine failures now; this is for this.
  */
 export type SheetNoResult = { noSheet: true; reason: string };
+
+export type ShelvedGap = { skill: string; runs: { run_id: string; questions: string[]; marks: number }[]; why: string };
 
 export type SheetJobResult = SheetFiledResult | SheetNoResult;
 
@@ -154,7 +167,46 @@ export function sanitizeResult(input: unknown): SheetJobResult | null {
     shelved: list(r.shelved),
     verified: String(r.verified ?? '').trim().slice(0, 120),
     reused: list(r.reused),
+    ...(gapsOf(r.gaps) ? { gaps: gapsOf(r.gaps)! } : {}),
+    ...(carriedOf(r.carried).length ? { carried: carriedOf(r.carried) } : {}),
   };
+}
+
+/** The gap report, bounded: 20 shelved entries, 6 runs each, 12 questions a run; anything malformed is simply absent. */
+function gapsOf(v: unknown): SheetFiledResult['gaps'] | null {
+  if (!v || typeof v !== 'object') return null;
+  const g = v as Record<string, unknown>;
+  const shelved: ShelvedGap[] = (Array.isArray(g.shelved) ? g.shelved : []).slice(0, 20).flatMap(x => {
+    if (!x || typeof x !== 'object') return [];
+    const e = x as Record<string, unknown>;
+    const skill = String(e.skill ?? '').trim().slice(0, 200);
+    if (!skill) return [];
+    const runs = (Array.isArray(e.runs) ? e.runs : []).slice(0, 6).flatMap(r => {
+      if (!r || typeof r !== 'object') return [];
+      const rr = r as Record<string, unknown>;
+      return [{
+        run_id: String(rr.run_id ?? '').trim().slice(0, 60),
+        questions: (Array.isArray(rr.questions) ? rr.questions : []).map(q => String(q ?? '').trim().slice(0, 30)).filter(Boolean).slice(0, 12),
+        marks: Math.max(0, Math.min(100, Number(rr.marks) || 0)),
+      }];
+    });
+    // A flat `marks` on the entry (no runs) is kept as one anonymous run so the card can still count it.
+    if (!runs.length && Number(e.marks) > 0) runs.push({ run_id: '', questions: [], marks: Math.min(100, Number(e.marks)) });
+    return [{ skill, runs, why: String(e.why ?? '').trim().slice(0, 300) }];
+  });
+  const found = Math.max(0, Math.min(200, Number(g.found) || 0));
+  const covered = Math.max(0, Math.min(200, Number(g.covered) || 0));
+  if (!shelved.length && !found && !covered) return null;
+  return { found, covered, shelved };
+}
+
+function carriedOf(v: unknown): { skill: string; from: string }[] {
+  return (Array.isArray(v) ? v : []).slice(0, 6).flatMap(x => {
+    if (!x || typeof x !== 'object') return [];
+    const e = x as Record<string, unknown>;
+    const skill = String(e.skill ?? '').trim().slice(0, 200);
+    return skill ? [{ skill, from: String(e.from ?? '').trim().slice(0, 120) }] : [];
+  });
 }
 
 /** The Dropbox folder a filed sheet sits in, as the Files app shows it ("Students › Tan Sijia › 2026-08-31 …"). '' when unknown. */

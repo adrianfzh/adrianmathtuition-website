@@ -1380,11 +1380,17 @@ notebook already shows as Fixed or Getting better is skipped with one line.
 covered, shelved}` with each entry tied to its paper and question; a sheet is
 not verified with an unexplained shelf. A non-empty shelf is not a dead end: the
 student's sheet card says "N more gaps were kept for your next sheet" with
-**Ask for the next wave** — offered only when the shelf is worth a sheet: **two
-gaps or five marks' worth** (`shelfWorthAWave`; Adrian, 11 Sep 2026: "do the
-threshold"), on single and batch sheets alike; a one-gap, three-mark shelf
-stays hidden (`{runIds, wave:2}` → the same job with
-`focus:{wave:2, shelved}`), so every gap is either taught now or queued next.
+**Ask for the next wave** — offered only for a left-out gap that cost **3 marks
+or more, per gap** (`WAVE_MIN_MARKS_PER_GAP`, `shelfWorthAWave`/`shelvedGaps`;
+Adrian, 11 Sep 2026 evening: "let the bar be lost more than or equals to 3
+marks per gap" — the first bar, two gaps or five marks in total, offered
+Isabelle a sheet for two one-mark gaps: "students may not bother with just 1
+mark"), on single and batch sheets alike; the smaller gaps stay on Adrian's
+Telegram (`{runIds, wave:2}` → the same job with `focus:{wave:2, shelved}`,
+the qualifying gaps only). `lib/sheet-jobs.ts sanitizeResult` KEEPS the
+worker's `gaps` report (until that evening it dropped it, so the per-gap marks
+never reached the card and it fell back to the flat list) and its `carried`
+list.
 **Sheets written before 11 Sep 2026** carry only the old flat `result.shelved`
 list — free text for Adrian's Telegram that mixes gaps with disputes, slips,
 allocation remarks and filing notes — so `legacyShelfGaps` reads it the way he
@@ -1392,7 +1398,30 @@ does: a line is a gap only when it names a question AND its marks and none of
 the note words (disputed, slip, taught by, no practice, allocation, filed, …);
 one closing "(these N marks are slips …)" line disowns the whole list. Every
 legacy shelf was swept against the rule on 11 Sep 2026 (42 jobs, 11 worth a
-wave, none on a note). It errs towards hiding the button.
+wave at the first bar, none on a note). It errs towards hiding the button.
+
+**Taught and still wrong (11 Sep 2026 evening).** A skill a sheet taught that
+the student still lost marks on when the sheet came back was falling through:
+the returned sheet's marking fed the notebook, and the writer read the notebook
+only to SKIP what is Fixed. Adrian: *"do A, let students click themselves … plus
+B as the durable rule (lower order of priority (as last section) — the gaps in
+the newly marked paper come first)"*. Two rules, both in `WORKER_PROMPT.md`:
+- **A — one follow-up sheet per returned sheet, on the student's ask (§1g).**
+  The 9 Sep block is lifted: a returned Practice Again sheet gets the same
+  **Request Practice Again** button in the app; the follow-up is written from
+  the returned sheet's marking only, titled "Practice Again — follow-up", filed
+  as `5 Practice Again — follow-up.*` in the parent paper's folder. The chain
+  stops at one: `lib/sheet-queue.ts followUpDepthOf` (hand-in →
+  `result_json.assignment_id` → `portal_assignments.source_run_id` → is that
+  run itself a returned sheet?) and `sheetQueueGuard` refuses depth 2
+  (`follow-up-limit`), the page hides the button there; a re-mark never starts
+  a follow-up by itself; a returned sheet never joins a merged sheet. The desk
+  queues nothing for it — the student asks.
+- **B — still failing after a practice sheet → the LAST section (§1f).** Every
+  sheet for a NEW paper reads `notebook_mistakes` (state `dark`, newest evidence
+  a "Practice Again" paper), drops what it already teaches, and carries at most
+  two such skills as one final section "Still from your practice sheet", after
+  the paper's own gaps and before Optional; reported as `result.carried`.
 
 ### Faster sheets without touching the writer (11 Sep 2026)
 
@@ -1577,9 +1606,10 @@ marked, should just clear automatically, unless something important is
 flagged").** `lib/desk-state.ts isPracticeAgainHandin` (attached
 `source.paper_kind` or the name) → a green **📘 Practice Again hand-in** pill on
 the row and the detail header instead of any sheet label; the sheet panel is
-one line ("gets no sheet of its own"); `sheetQueueGuard` refuses
-(`status 'practice-again'`, 409) whoever asks — desk, student, or a re-mark's
-re-queue — and the student's page hides the Request button; `laneFor(…,
+one line; **since 11 Sep 2026 evening the student may ask for ONE follow-up
+from the app** (§Taught and still wrong above) — `sheetQueueGuard` still
+refuses a re-mark's re-queue and a returned follow-up, and the desk queues
+nothing for it; `laneFor(…,
 {quiet})` sends a released one with no desk flag and no accuracy watch-out
 straight to Completed, so it never waits in the automatic lane. The three
 "no sheet needed" verdicts the worker wrote for such hand-ins on 8 Sep were
