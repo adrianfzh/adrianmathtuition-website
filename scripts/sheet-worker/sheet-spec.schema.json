@@ -1,0 +1,290 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://www.adrianmathtuition.com/schemas/sheet-spec.json",
+  "title": "Practice Again sheet spec",
+  "description": "The content of one Practice Again sheet. scripts/sheet-worker/render_sheet.py turns it into the DOCX and the PDF through worksheet_lib, so the house style lives in the library and never in the spec. Prose: scripts/sheet-worker/SHEET-SPEC.md.",
+  "type": "object",
+  "required": ["spec_version", "sheet", "body"],
+  "additionalProperties": false,
+  "properties": {
+    "spec_version": { "const": 1 },
+    "_comment": { "type": "string" },
+    "sheet": { "$ref": "#/definitions/sheet" },
+    "body": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/block" }
+    }
+  },
+
+  "definitions": {
+
+    "sheet": {
+      "type": "object",
+      "required": ["title", "student"],
+      "additionalProperties": false,
+      "properties": {
+        "subject": {
+          "description": "Drives the second running-header line.",
+          "enum": ["AM", "EM", "JC"]
+        },
+        "header": {
+          "description": "Override the running header outright. Default: [\"ADRIAN'S MATH TUITION\", the subject].",
+          "type": "array", "items": { "type": "string" }, "minItems": 1, "maxItems": 3
+        },
+        "title": {
+          "description": "PRACTICE AGAIN — Learn from <paper>, or … from your <A Math|E Math> papers on a batch.",
+          "type": "string"
+        },
+        "papers": {
+          "description": "Batch sheets only: the student's own papers, as one grey centred line under the title.",
+          "type": "array", "items": { "type": "string" }, "minItems": 2
+        },
+        "student": { "type": "string", "description": "Full name — rendered as the faded-blue \"For <Full Name>\" subtitle." },
+        "instructions": {
+          "description": "Override the three fixed instruction lines. Leave it out.",
+          "type": "array", "items": { "$ref": "#/definitions/parts" }
+        },
+        "working_space": {
+          "description": "Blank writing lines per mark. A Practice Again sheet is read, not written on — leave it at 0.",
+          "type": "number", "minimum": 0, "maximum": 6
+        }
+      }
+    },
+
+    "parts": {
+      "description": "One paragraph's inline content: text pieces, equation objects, and Adrian's green rule tags. If it is maths, it is an equation object — a fraction typed with a slash is refused at save.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "oneOf": [
+          {
+            "required": ["t"],
+            "additionalProperties": false,
+            "properties": {
+              "t": { "type": "string" },
+              "b": { "type": "boolean" },
+              "i": { "type": "boolean" },
+              "u": { "type": "boolean" },
+              "color": { "$ref": "#/definitions/hex" }
+            }
+          },
+          {
+            "required": ["m"],
+            "additionalProperties": false,
+            "properties": {
+              "m": { "type": "string", "description": "LaTeX. \\frac, never \\tfrac (\\tfrac renders as a linear fraction). End a line with \\quad\\text{← note} for the grey 8 pt arrow annotation." },
+              "display": { "type": "boolean" },
+              "b": { "type": "boolean" },
+              "color": { "$ref": "#/definitions/hex" }
+            }
+          },
+          {
+            "required": ["tag"],
+            "additionalProperties": false,
+            "description": "Adrian's [rule in green bold square brackets]. Pieces are strings or {\"m\": latex} — the maths inside a tag is an equation object like everywhere else.",
+            "properties": {
+              "tag": {
+                "type": "array", "minItems": 1,
+                "items": {
+                  "oneOf": [
+                    { "type": "string" },
+                    { "type": "object", "required": ["m"], "additionalProperties": false,
+                      "properties": { "m": { "type": "string" } } },
+                    { "type": "object", "required": ["t"], "additionalProperties": false,
+                      "properties": { "t": { "type": "string" } } }
+                  ]
+                }
+              },
+              "color": { "$ref": "#/definitions/hex", "description": "00B050 the rule and its result (default), 0432FF the expression being matched, EE0000 the piece added or changed." },
+              "bold": { "type": "boolean" },
+              "brackets": { "type": "boolean" }
+            }
+          }
+        ]
+      }
+    },
+
+    "hex": { "type": "string", "pattern": "^#?[0-9A-Fa-f]{6}$" },
+
+    "style": {
+      "description": "Reproduce an existing sheet's exact ink on a line whose styling has varied. Leave it out on a new sheet — the house default is right.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "color": { "$ref": "#/definitions/hex" },
+        "italic": { "type": "boolean" },
+        "bold": { "type": "boolean" },
+        "size_pt": { "type": "number", "minimum": 6, "maximum": 14 }
+      }
+    },
+
+    "source": {
+      "description": "Where a figure's pixels come from: rendered from a figure_lib spec, or a file beside the spec (a bank question's own diagram, or a bespoke matplotlib render).",
+      "type": "object",
+      "oneOf": [
+        { "required": ["figure_lib"], "additionalProperties": false,
+          "properties": { "figure_lib": { "type": "object" } } },
+        { "required": ["file"], "additionalProperties": false,
+          "properties": { "file": { "type": "string" } } }
+      ]
+    },
+
+    "block": {
+      "type": "object",
+      "required": ["block"],
+      "properties": {
+        "block": {
+          "enum": ["skill", "where", "keymove", "example", "para", "parts_start",
+                   "part", "item", "practice", "remember", "answer", "figure",
+                   "solution", "table", "blank", "page_break"]
+        },
+        "glue": {
+          "type": "boolean",
+          "description": "Keep this paragraph with the one after it. The headings glue themselves; use this only to reproduce a sheet that glued more."
+        }
+      },
+      "allOf": [
+        { "if": { "properties": { "block": { "const": "skill" } } },
+          "then": { "required": ["parts"],
+                    "properties": { "parts": { "$ref": "#/definitions/parts" },
+                                    "new_page": { "type": "boolean", "description": "Open a page. Default: every skill after the first does, so a section is read whole." } },
+                    "description": "The Title Case section heading, bold navy. It names the TOOL, not the task." } },
+
+        { "if": { "properties": { "block": { "const": "where" } } },
+          "then": { "required": ["parts"],
+                    "properties": { "parts": { "$ref": "#/definitions/parts" },
+                                    "style": { "$ref": "#/definitions/style" } },
+                    "description": "Batch sheets only: the grey line \"Where it showed: 2025 Paper 1 Q2 and Q8(a)\"." } },
+
+        { "if": { "properties": { "block": { "const": "keymove" } } },
+          "then": { "required": ["parts"],
+                    "properties": { "parts": { "$ref": "#/definitions/parts" },
+                                    "style": { "$ref": "#/definitions/style" } },
+                    "description": "The ONE blue key-move line under the heading. The situation goes here, not in the heading." } },
+
+        { "if": { "properties": { "block": { "const": "example" } } },
+          "then": { "properties": { "label": { "type": ["string", "null"],
+                                               "description": "null → the next number; \"a\" opens a lettered group, \"b\" reuses its number." } } } },
+
+        { "if": { "properties": { "block": { "const": "para" } } },
+          "then": { "required": ["parts"],
+                    "properties": { "parts": { "$ref": "#/definitions/parts" },
+                                    "marks": { "type": "integer", "minimum": 1 },
+                                    "indent_cm": { "type": "number", "minimum": 0, "maximum": 4, "description": "Line this paragraph up with the text of the numbered question above it (1.0), rather than with the number." } },
+                    "description": "An unnumbered paragraph — an Example's stem, a continuation line under a practice question." } },
+
+        { "if": { "properties": { "block": { "const": "parts_start" } } },
+          "then": { "description": "Opens the (a)(b)(c) list under an Example's unnumbered stem, flush with its left edge. Call it after the stem and its figure." } },
+
+        { "if": { "properties": { "block": { "const": "part" } } },
+          "then": { "required": ["parts"],
+                    "properties": { "parts": { "$ref": "#/definitions/parts" },
+                                    "marks": { "type": "integer", "minimum": 1 } },
+                    "description": "(a) / (b) / (c) — under an Example after parts_start, or under the practice item above it." } },
+
+        { "if": { "properties": { "block": { "const": "item" } } },
+          "then": { "required": ["parts"],
+                    "properties": { "parts": { "$ref": "#/definitions/parts" },
+                                    "marks": { "type": "integer", "minimum": 1 } },
+                    "description": "A numbered practice question, 1. 2. 3. — never (a) (b) (c). A question with parts uses part blocks under it and ONE answer at the end." } },
+
+        { "if": { "properties": { "block": { "const": "practice" } } },
+          "then": { "required": ["label"],
+                    "properties": { "label": { "type": "string", "pattern": "^Practice " } },
+                    "description": "\"Practice N\" — restarts the numbering so every set counts 1, 2, 3 from the top." } },
+
+        { "if": { "properties": { "block": { "const": "remember" } } },
+          "then": { "required": ["parts"],
+                    "properties": { "parts": { "$ref": "#/definitions/parts" },
+                                    "style": { "$ref": "#/definitions/style" },
+                                    "indent_cm": { "type": "number", "minimum": 0, "maximum": 4 } },
+                    "description": "A hint UNDER a practice question, grey: [Remember: …]. The brackets are added." } },
+
+        { "if": { "properties": { "block": { "const": "answer" } } },
+          "then": { "required": ["parts"],
+                    "properties": { "parts": { "$ref": "#/definitions/parts" } },
+                    "description": "ONE orange right-aligned [Ans: …] at the END of the whole question, carrying every part. The brackets and the \"Ans: \" are added. Answers are equation objects too." } },
+
+        { "if": { "properties": { "block": { "const": "figure" } } },
+          "then": { "required": ["source"],
+                    "properties": { "source": { "$ref": "#/definitions/source" },
+                                    "width_cm": { "type": "number", "minimum": 1, "maximum": 16 } },
+                    "description": "A diagram under the question that uses it. A QUESTION carries a diagram only when the bank question itself has one; a diagram you draw goes inside the solution box." } },
+
+        { "if": { "properties": { "block": { "const": "solution" } } },
+          "then": { "required": ["rows"],
+                    "properties": {
+                      "glue": { "type": "boolean", "description": "Keep the \"Solution:\" label with the box below it." },
+                      "keep_together": { "type": "boolean", "description": "Default false — on a teaching sheet the box flows, or a block that does not fit jumps whole to the next page and leaves half a page blank." },
+                      "rows": {
+                        "type": "array", "minItems": 1,
+                        "items": {
+                          "type": "object",
+                          "required": ["steps"],
+                          "additionalProperties": false,
+                          "properties": {
+                            "label": { "type": "string", "description": "(a) / (i) — or \"\" for a one-part solution, which becomes a single full-width cell." },
+                            "steps": { "type": "array", "minItems": 1,
+                                       "items": { "$ref": "#/definitions/step" } }
+                          }
+                        }
+                      }
+                    },
+                    "description": "The boxed worked solution: outer border only, the part label in its own narrow column, one row per part." } },
+
+        { "if": { "properties": { "block": { "const": "table" } } },
+          "then": { "required": ["rows"],
+                    "properties": {
+                      "rows": {
+                        "type": "array", "minItems": 1,
+                        "items": { "type": "array",
+                                   "items": { "oneOf": [ { "type": "string" },
+                                                         { "type": "number" },
+                                                         { "$ref": "#/definitions/parts" } ] } }
+                      },
+                      "header": { "type": "boolean", "description": "Bold first row (default true)." },
+                      "stub_bold": { "type": "boolean", "description": "Bold first column (default true)." },
+                      "align": { "type": "array", "items": { "enum": ["left", "center", "right"] } },
+                      "widths_cm": { "type": "array", "items": { "type": "number" } }
+                    },
+                    "description": "A data table the question comes with — a two-way frequency table, an ingredient list, a table to fill in. Full gridlines, unlike a solution box." } },
+
+        { "if": { "properties": { "block": { "const": "blank" } } },
+          "then": { "description": "One empty body line. The library already spaces the boxes; use this only where a sheet needs air of its own." } },
+
+        { "if": { "properties": { "block": { "const": "page_break" } } },
+          "then": { "description": "A hard page break — before a new skill, when the sheet wants one." } }
+      ]
+    },
+
+    "step": {
+      "description": "One line inside a solution box.",
+      "type": "object",
+      "required": ["step"],
+      "properties": { "step": { "enum": ["note", "prose", "math", "figure", "check", "error"] } },
+      "allOf": [
+        { "if": { "properties": { "step": { "const": "note" } } },
+          "then": { "required": ["parts"], "properties": { "parts": { "$ref": "#/definitions/parts" } },
+                    "description": "A grey italic principle line. A box opens with 2–3 of them: the general rule, then the move, then it applied to this question." } },
+        { "if": { "properties": { "step": { "const": "prose" } } },
+          "then": { "required": ["parts"], "properties": { "parts": { "$ref": "#/definitions/parts" } },
+                    "description": "A step that says what you are doing, in plain Singapore classroom English. The general rule inside it is a green tag." } },
+        { "if": { "properties": { "step": { "const": "math" } } },
+          "then": { "required": ["latex"], "properties": { "latex": { "type": "string" } },
+                    "description": "A display equation. Multi-step working is ONE \\begin{aligned} block with &= per line, so the = signs stack; three = signs on one line is not allowed." } },
+        { "if": { "properties": { "step": { "const": "figure" } } },
+          "then": { "required": ["source"],
+                    "properties": { "source": { "$ref": "#/definitions/source" },
+                                    "width_cm": { "type": "number", "minimum": 1, "maximum": 16 } },
+                    "description": "A diagram inside the box, on the first part that uses it, showing only what that part has established." } },
+        { "if": { "properties": { "step": { "const": "check" } } },
+          "then": { "required": ["parts"], "properties": { "parts": { "$ref": "#/definitions/parts" } },
+                    "description": "A sanity check, rendered \"✓ Check: …\" in green so the student can see it is not part of the working. Only where a real check exists." } },
+        { "if": { "properties": { "step": { "const": "error" } } },
+          "then": { "required": ["parts"], "properties": { "parts": { "$ref": "#/definitions/parts" } },
+                    "description": "The one red Common Error line: a concrete wrong MOVE a student makes here and what belongs instead, in one sentence. Most boxes carry none; two per sheet is plenty. The \"Common Error: \" label is added." } }
+      ]
+    }
+  }
+}

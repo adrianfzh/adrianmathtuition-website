@@ -163,6 +163,40 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
      … --meta` shows whether he edited it), re-verify its numbers, and name it
      in `result.reused`. A different gap on the same question is not a reuse.
 
+2b. **Rendering from a spec (`SHEET_RENDER=spec`)** — OFF unless the env var is
+    set; when it is not, build the DOCX by hand as you always have and ignore
+    this section.
+
+    When `SHEET_RENDER=spec` is set, you do not write an `author.py` and you do
+    not call Word yourself. Write the finished sheet as ONE JSON file and let
+    the renderer make the files:
+
+```bash
+# 1. write the spec — the blocks and their fields are scripts/sheet-worker/SHEET-SPEC.md,
+#    the schema is scripts/sheet-worker/sheet-spec.schema.json
+#    (write it to $SHEETS_STATE/work/<job id>/sheet.spec.json, never /tmp)
+# 2. render it
+/usr/bin/python3 scripts/sheet-worker/render_sheet.py "$WORK/sheet.spec.json" \
+  --out "$WORK/render" --name "3 Practice Again" --strict
+# → $WORK/render/3 Practice Again.docx  and  .pdf   (file both as in step 4)
+```
+
+    The renderer imports the same `worksheet_lib` you would have called, runs
+    `repair-sheet.py` and the §3b sweeps below, and exports the PDF through Word
+    from inside its sandbox container — so the typesetting, the repair pass and
+    the Word recipe are no longer yours to get right. **Everything else is
+    unchanged**: the diagnosis, the wave, the triage, the bank search, the sympy
+    verification, the heartbeats, the Dropbox filing and the `done` payload are
+    exactly as described here. `--strict` fails the render on a lint hit; fix
+    the spec and render again rather than filing over a warning. Use
+    `/usr/bin/python3` — Homebrew's has no `python-docx`.
+
+    Three vetted sheets were transcribed into specs and re-rendered on 11 Sep
+    2026: every page came back pixel-identical to the filed PDF at 100 dpi. If a
+    sheet you are writing needs something the spec cannot say, the spec is
+    incomplete — `fail` the job with that as the reason rather than inventing a
+    block, and say what was missing.
+
 3. **Heartbeat every ~10 minutes** while you work, or the lease expires and
    another tick reclaims the job. **Send a `stage` with every beat**, and change
    it as you move on — it is the only thing that tells Adrian whether a sheet is
