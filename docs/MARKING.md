@@ -1385,6 +1385,14 @@ gaps or five marks' worth** (`shelfWorthAWave`; Adrian, 11 Sep 2026: "do the
 threshold"), on single and batch sheets alike; a one-gap, three-mark shelf
 stays hidden (`{runIds, wave:2}` → the same job with
 `focus:{wave:2, shelved}`), so every gap is either taught now or queued next.
+**Sheets written before 11 Sep 2026** carry only the old flat `result.shelved`
+list — free text for Adrian's Telegram that mixes gaps with disputes, slips,
+allocation remarks and filing notes — so `legacyShelfGaps` reads it the way he
+does: a line is a gap only when it names a question AND its marks and none of
+the note words (disputed, slip, taught by, no practice, allocation, filed, …);
+one closing "(these N marks are slips …)" line disowns the whole list. Every
+legacy shelf was swept against the rule on 11 Sep 2026 (42 jobs, 11 worth a
+wave, none on a note). It errs towards hiding the button.
 
 ### Faster sheets without touching the writer (11 Sep 2026)
 

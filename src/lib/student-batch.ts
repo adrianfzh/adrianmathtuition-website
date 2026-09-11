@@ -229,22 +229,57 @@ export function studentBatchGuard(
 // ── Wave two ─────────────────────────────────────────────────────────────────
 
 /**
+ * The OLD flat `result.shelved` list (sheets written before 11 Sep 2026) was
+ * free text for Adrian's Telegram, never a machine list: beside the gaps it
+ * carries disputes for the desk, slips reported on the cover, allocation
+ * remarks, "taught by the last sheet", filing notes. A line is a gap only when
+ * it names a question AND its marks and is none of those — "2025 P2 Q2(b),
+ * 1 mark — …" counts; "Q7, 3 marks — transfer slip, no practice" and "Filed
+ * OVER the 10 Sep sheet" do not. The set is closed (every sheet since writes
+ * `gaps.shelved`, one entry per gap with its marks), and every legacy shelf
+ * was read against this rule on 11 Sep 2026 — the reading errs towards hiding
+ * the button, never towards offering a wave on a filing note. Pure.
+ */
+const LEGACY_QUESTION = /\bQ\s?\d+/i;
+const LEGACY_MARKS = /\b(\d{1,2})\s*marks?\b|\b(\d{1,2})m\b/i;
+const LEGACY_NOT_A_GAP = /disputed|contested|second look|no practice|\bslips?\b|(?<!not )taught|not repeated|already|allocation|unmapped|\bnote\b|release|\bcover\b|\bfiled\b|bank answer|sections dropped|reported|one[- ]line|not a section|not a skill|not a gap|transfer|careless|misread|\bcop(?:y|ied|ying)\b|shown|read-only|\bhint\b|reminder|photograph|not attempted|graded|locate|floor at/i;
+/** "(these 6 marks are slips, not skills …)" — one closing line that disowns the whole list. */
+const LEGACY_ALL_SLIPS = /^\(?these\b.*\bslips\b/i;
+
+export function legacyShelfGaps(raw: readonly unknown[]): Array<{ text: string; marks: number }> {
+  const lines = raw.map(x => String(x ?? '').trim()).filter(Boolean);
+  if (lines.some(l => LEGACY_ALL_SLIPS.test(l))) return [];
+  const out: Array<{ text: string; marks: number }> = [];
+  for (const text of lines) {
+    if (!LEGACY_QUESTION.test(text)) continue;
+    const m = text.match(LEGACY_MARKS);
+    const marks = m ? Number(m[1] ?? m[2]) : 0;
+    if (!marks) continue;
+    if (LEGACY_NOT_A_GAP.test(text)) continue;
+    out.push({ text, marks });
+  }
+  return out;
+}
+
+/**
  * The gaps a finished sheet kept back, as stored on the job. Two shapes, both
  * live: `result.gaps.shelved` — the richer report the worker writes since 11 Sep
  * 2026, one entry per gap with its paper, questions, marks and the reason it was
- * held — and the older flat `result.shelved` list of names. Empty when the job
- * wrote no sheet, or shelved nothing.
+ * held — and the older flat `result.shelved` list, read by the legacy rule
+ * above. Empty when the job wrote no sheet, or shelved nothing.
  */
 export function shelvedGaps(result: unknown): string[] {
   const r = result && typeof result === 'object' ? (result as Record<string, unknown>) : null;
   if (!r || r.noSheet) return [];
   const gaps = r.gaps && typeof r.gaps === 'object' ? (r.gaps as Record<string, unknown>) : null;
   const rich = Array.isArray(gaps?.shelved) ? gaps.shelved : null;
-  const raw = rich ?? (Array.isArray(r.shelved) ? r.shelved : []);
-  return raw
-    .map(x => (x && typeof x === 'object' ? String((x as { skill?: unknown }).skill ?? '') : String(x ?? '')).trim())
-    .filter(Boolean)
-    .slice(0, 20);
+  if (rich) {
+    return rich
+      .map(x => (x && typeof x === 'object' ? String((x as { skill?: unknown }).skill ?? '') : String(x ?? '')).trim())
+      .filter(Boolean)
+      .slice(0, 20);
+  }
+  return legacyShelfGaps(Array.isArray(r.shelved) ? r.shelved : []).map(g => g.text).slice(0, 20);
 }
 
 /** A next wave is offered only when the shelf is worth a sheet: at least this many gaps… */
@@ -255,26 +290,28 @@ export const WAVE_MIN_MARKS = 5;
 /**
  * Is the shelf worth a next wave? `count` is the gaps kept back; `marks` is
  * what they cost across the papers (the rich report's `runs[].marks` or a
- * top-level `marks`; the old flat list carries no marks, so it counts gaps
- * only). A one-gap, three-mark shelf stays hidden — a wave-two sheet costs the
- * same Mac slot as a full one, and a sheet exists to teach something worth
- * teaching. Pure.
+ * top-level `marks`; a legacy line's own "n marks"). A one-gap, three-mark
+ * shelf stays hidden — a wave-two sheet costs the same Mac slot as a full one,
+ * and a sheet exists to teach something worth teaching. Pure.
  */
 export function shelfWorthAWave(result: unknown): { worth: boolean; count: number; marks: number } {
   const r = result && typeof result === 'object' ? (result as Record<string, unknown>) : null;
   if (!r || r.noSheet) return { worth: false, count: 0, marks: 0 };
   const gaps = r.gaps && typeof r.gaps === 'object' ? (r.gaps as Record<string, unknown>) : null;
   const rich = Array.isArray(gaps?.shelved) ? gaps.shelved : null;
-  const raw = rich ?? (Array.isArray(r.shelved) ? r.shelved : []);
   let count = 0, marks = 0;
-  for (const x of raw) {
-    if (x && typeof x === 'object') {
-      const e = x as { skill?: unknown; marks?: unknown; runs?: unknown };
-      if (!String(e.skill ?? '').trim()) continue;
-      count++;
-      if (Array.isArray(e.runs)) for (const run of e.runs) marks += Number((run as { marks?: unknown })?.marks) || 0;
-      else marks += Number(e.marks) || 0;
-    } else if (String(x ?? '').trim()) count++;
+  if (rich) {
+    for (const x of rich) {
+      if (x && typeof x === 'object') {
+        const e = x as { skill?: unknown; marks?: unknown; runs?: unknown };
+        if (!String(e.skill ?? '').trim()) continue;
+        count++;
+        if (Array.isArray(e.runs)) for (const run of e.runs) marks += Number((run as { marks?: unknown })?.marks) || 0;
+        else marks += Number(e.marks) || 0;
+      } else if (String(x ?? '').trim()) count++;
+    }
+  } else {
+    for (const g of legacyShelfGaps(Array.isArray(r.shelved) ? r.shelved : [])) { count++; marks += g.marks; }
   }
   return { worth: count >= WAVE_MIN_GAPS || marks >= WAVE_MIN_MARKS, count, marks };
 }

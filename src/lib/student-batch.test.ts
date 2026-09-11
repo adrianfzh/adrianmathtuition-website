@@ -188,7 +188,10 @@ describe('marks lost', () => {
 
 describe('wave two — the shelf and the focus the worker reads', () => {
   it('reads the flat result.shelved of an older job', () => {
-    expect(shelvedGaps({ docx_path: 'x', shelved: ['Polynomials', ' Plane geometry '] })).toEqual(['Polynomials', 'Plane geometry']);
+    expect(shelvedGaps({ docx_path: 'x', shelved: ['Q6(b) cubic divided by a quadratic factor — compare coefficients (3 marks), for wave 2', ' Resolving a rod joined at 90 degrees — Q4(a), 1 mark '] }))
+      .toEqual(['Q6(b) cubic divided by a quadratic factor — compare coefficients (3 marks), for wave 2', 'Resolving a rod joined at 90 degrees — Q4(a), 1 mark']);
+    // a bare name is not a gap on the old list — it named sections dropped, disputes and filing notes alike
+    expect(shelvedGaps({ docx_path: 'x', shelved: ['Polynomials', ' Plane geometry '] })).toEqual([]);
   });
   it("reads the richer result.gaps.shelved the worker writes since 11 Sep 2026, and prefers it", () => {
     expect(shelvedGaps({
@@ -327,9 +330,39 @@ describe(`shelfWorthAWave — the threshold (${WAVE_MIN_GAPS} gaps, or ${WAVE_MI
     expect(shelfWorthAWave(rich([{ skill: 'a', runs: [{ marks: 2 }, { marks: 3 }] }]))).toMatchObject({ worth: true, count: 1, marks: 5 });
     expect(shelfWorthAWave(rich([{ skill: 'a', marks: 5 }]))).toMatchObject({ worth: true, marks: 5 });
   });
-  it('the old flat list carries no marks, so it counts gaps only', () => {
-    expect(shelfWorthAWave({ shelved: ['a'] })).toEqual({ worth: false, count: 1, marks: 0 });
-    expect(shelfWorthAWave({ shelved: ['a', 'b'] })).toMatchObject({ worth: true, count: 2 });
+  it('the old flat list is read the way Adrian reads it: a question with its marks is a gap, a note is not', () => {
+    const isabelle = [
+      "2025 P2 Q2(b), 1 mark — scaling keeps the maximum at h = 2 (she solved the first day's model for T = 3): next wave",
+      '2025 P2 Q11(b), 1 mark — midpoint means each object covers 15 cm, not 30: next wave',
+      '2023 P2: 8 marks unmapped by allocation (counted_max 82 of 90) — every question was marked, the [n] were read low',
+      'Sections dropped from the 10 Sep merge: "Checking Every Root" faces 3b (2025 P1 Q6(a), now full marks on the re-mark)',
+      'Bank answers found WRONG while verifying (worth fixing on the bank): Xinmin 2025 P2 Q10(a) stores a = 4, b = 1/8',
+      'Filed OVER the 10 Sep merged sheet in the same batch folder (one folder, one sheet)',
+    ];
+    expect(shelfWorthAWave({ docx_path: 'x', shelved: isabelle })).toEqual({ worth: true, count: 2, marks: 2 });
+    expect(shelvedGaps({ docx_path: 'x', shelved: isabelle })).toEqual([isabelle[0], isabelle[1]]);
+  });
+  it('disputes, slips, "taught by the last sheet" and pages never photographed are notes, not gaps', () => {
+    expect(shelfWorthAWave({ shelved: [
+      'Q16(b) circle theorem, 1 mark — disputed by second look — check on the desk',
+      'Q7, 3 marks — transfer (copy) slip, no practice.',
+      'Q8(a),(b) four points on a circle (3 marks) — taught by the 3 Sep sheet',
+      '2025 P1 Q12 — 9 marks, not on her photographed pages',
+      'Q7 — left blank AND never graded; it is inside the 15 marks the marker could not locate',
+    ] })).toEqual({ worth: false, count: 0, marks: 0 });
+    // one closing line disowns the whole list
+    expect(shelfWorthAWave({ shelved: [
+      'Clearing a fraction on both sides — Q9(a), 1 mark',
+      'Stating the answer as a range of x — Q10(e), 1 mark',
+      "(these 6 marks are slips, not skills — reported as 'show' tier, no practice set)",
+    ] }).count).toBe(0);
+    // NOT taught is the opposite of taught
+    expect(shelfWorthAWave({ shelved: ['NEW ON THE RE-MARK, NOT TAUGHT ON THE MERGED SHEET — 3 × 1 mark, each with a marker gap: Q2(b)'] })).toMatchObject({ count: 1, marks: 1 });
+  });
+  it('one legacy gap worth five marks is enough; bare names never are', () => {
+    expect(shelfWorthAWave({ shelved: ['Q6(b) cubic divided by a quadratic factor — compare coefficients (6 marks), for wave 2'] })).toEqual({ worth: true, count: 1, marks: 6 });
+    expect(shelfWorthAWave({ shelved: ['(Q9, 2 marks) show-that discipline', 'Zhonghua Q26 constructions/loci — 2m'] })).toEqual({ worth: true, count: 2, marks: 4 });
+    expect(shelfWorthAWave({ shelved: ['a', 'b'] })).toEqual({ worth: false, count: 0, marks: 0 });
   });
   it('no sheet, no shelf, junk → never', () => {
     expect(shelfWorthAWave({ noSheet: true, shelved: ['a', 'b'] }).worth).toBe(false);
