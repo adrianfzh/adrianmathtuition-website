@@ -13,6 +13,7 @@ import PaperSubjectPill from '@/components/PaperSubjectPill';
 import ClipToNotes from '../ClipToNotes';
 import PracticeAgainRequest, { type PracticeAgainState } from '../PracticeAgainRequest';
 import NextWave from '../NextWave';
+import OpenInApp from '../OpenInApp';
 import { readNoSheet } from '@/lib/sheet-jobs';
 import { coveredRunIds } from '@/lib/sheet-queue';
 import { shelvedGaps, shelfWorthAWave } from '@/lib/student-batch';
@@ -212,6 +213,7 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {sheet.pdf_url && <a href={fileHref(sheet.pdf_url)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold bg-emerald-700 text-white rounded-xl px-3 py-1.5">Open sheet</a>}
+            {sheet.pdf_url && <OpenInApp url={fileHref(sheet.pdf_url)} name={`Practice Again — ${paper.name}`} className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white disabled:opacity-60" />}
             {sheet.status !== 'marked' && sheet.status !== 'submitted' && <Link href={`/app/submit?assignment=${sheet.id}`} className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white">Hand in</Link>}
           </div>
           {/* The marked sheet opens from its paper (grouped, 8 Sep 2026) — same view as a paper. */}
@@ -247,10 +249,13 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
       {!isScience && !sheet && !supersededBy && followUpDepth <= 1 && <PracticeAgainRequest runId={paper.id} state={requestState} />}
 
       {paper.pdfUrl && (
-        <p className="text-center">
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {/* 📤 straight to Notability / GoodNotes / Files via the share sheet (11 Sep 2026) */}
+          <OpenInApp url={`/api/portal/marking-pdf?run=${paper.id}&kind=marked`} name={paper.name}
+            className="inline-block text-sm font-semibold text-white bg-navy rounded-xl px-4 py-2 hover:opacity-90 disabled:opacity-60" />
           <a href={`/api/portal/marking-pdf?run=${paper.id}&kind=marked`} target="_blank" rel="noopener noreferrer" data-track="marking:open"
             className="inline-block text-sm font-semibold text-navy border border-navy/20 rounded-xl px-4 py-2 bg-white hover:bg-navy/5">⬇ Download as PDF</a>
-        </p>
+        </div>
       )}
     </div>
   );
