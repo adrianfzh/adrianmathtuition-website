@@ -975,7 +975,14 @@ the gap is the interesting half: it says what the bank is missing.
     line between two exports of the same file — the worker's export had that
     label stranded, a re-export did not — so only the PDF judged is the PDF
     that may be filed. Run it LAST: any later edit moves the page breaks. Its
-    report is part of the `done` payload's `verified` line.
+    report is part of the `done` payload's `verified` line. **Since 11 Sep 2026
+    evening the fitter also treats every Practice set as a block** (Adrian: "if
+    question 2 can be on the same page as question 1, just reduce some white
+    space on the page and we can squeeze in question 2") and, for a block up to
+    1.4 pages tall, adds two rungs that shrink its diagrams to 85 % then 72 %
+    (Adrian: "we can also have the solutions and the example on one page, just
+    reduce some white space, or make the diagram (slightly) smaller"). A block no
+    rung fits is restored untouched.
   - **Every Example has at least ONE practice item of its own shape, and no
     item is another with the numbers changed** (8 Sep 2026; the twin rule 11
     Sep 2026) — count "Example N" / "Example Na" headings against the numbered

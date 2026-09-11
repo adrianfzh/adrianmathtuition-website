@@ -65,18 +65,24 @@ from docx.text.paragraph import Paragraph              # noqa: E402
 import render_sheet                                    # noqa: E402
 
 HEADING = re.compile(r'^(Example \d+[a-z]?|Practice \d+)$')
+PRACTICE = re.compile(r'^Practice \d+$')
 EXAMPLE = re.compile(r'^Example \d+[a-z]?$')
 #: the running header's two lines end at ~55 pt; the body's first line starts at ~57
 HEADER_PT = 56
 #: house bottom margin, 1 cm
 BOTTOM_PT = 28.35
-#: a "small" tail: this fraction of the block, at most
-SPLIT_TAIL = 0.34
 #: a jumped block is a candidate when the blank on the page before is at least this much of it
 JUMP_ROOM = 0.8
 
-#: the tightening ladder: (box line spacing, part gap pt, stem line spacing)
-STEPS = [(1.3, 4, 1.3), (1.15, 3, 1.15), (1.05, 2, 1.05)]
+#: the tightening ladder: (box/question line spacing, part gap pt, stem line spacing, figure scale)
+#: The last two rungs shrink the block's diagrams a little (Adrian, 11 Sep 2026:
+#: "we can also have the solutions and the example on one page, just reduce some
+#: white space, or make the diagram (slightly) smaller").
+STEPS = [(1.3, 4, 1.3, 1.0), (1.15, 3, 1.15, 1.0), (1.05, 2, 1.05, 1.0), (1.05, 2, 1.05, 0.85), (1.05, 2, 1.05, 0.72)]
+#: a block up to this many pages tall is still worth a try on the ladder
+OVERSIZE_TRY = 1.4
+WP_NS = 'http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing'
+A_NS = 'http://schemas.openxmlformats.org/drawingml/2006/main'
 
 
 # ── the DOCX side: example blocks ────────────────────────────────────────────
@@ -102,42 +108,91 @@ def has_page_break_before(el):
 
 
 def example_blocks(doc):
-    """Every Example block: heading index, the elements up to and including its
-    box, and whether a page break sits between the previous block and it."""
+    """Every Example block and every Practice block, in document order.
+
+    An Example block runs from its heading to its box (inclusive). A Practice
+    block runs from its heading to the last paragraph before the next heading
+    or the next skill (a paragraph with page_break_before) — the set's items,
+    their Remember lines and [Ans] lines (Adrian, 11 Sep 2026: "if question 2
+    can be on the same page as question 1, just reduce some white space").
+    `opens_page`: a page break sits between the previous block and this one."""
     items = body_items(doc)
     blocks = []
     last_end = -1
     for i, (kind, el) in enumerate(items):
-        if kind != 'p' or not EXAMPLE.match(para_text(el, doc)):
+        if kind != 'p':
             continue
-        j = i + 1
-        box = None
-        while j < len(items):
-            k2, e2 = items[j]
-            if k2 == 'tbl':
-                box = j
-                break
-            if k2 == 'p' and HEADING.match(para_text(e2, doc)):
-                break
-            j += 1
-        if box is None:
-            continue                       # an example without a box — nothing to fit
-        opens_page = any(k == 'p' and has_page_break_before(e) for k, e in items[last_end + 1:i + 1])
-        blocks.append({'label': para_text(el, doc), 'start': i, 'end': box, 'opens_page': opens_page})
-        last_end = box
+        text = para_text(el, doc)
+        if EXAMPLE.match(text):
+            j = i + 1
+            box = None
+            while j < len(items):
+                k2, e2 = items[j]
+                if k2 == 'tbl':
+                    box = j
+                    break
+                if k2 == 'p' and HEADING.match(para_text(e2, doc)):
+                    break
+                j += 1
+            if box is None:
+                continue                   # an example without a box — nothing to fit
+            opens_page = any(k == 'p' and has_page_break_before(e) for k, e in items[last_end + 1:i + 1])
+            blocks.append({'label': text, 'kind': 'example', 'start': i, 'end': box, 'opens_page': opens_page, 'end_prefix': None})
+            last_end = box
+        elif PRACTICE.match(text):
+            j = i + 1
+            end = i
+            while j < len(items):
+                k2, e2 = items[j]
+                if k2 == 'p' and (HEADING.match(para_text(e2, doc)) or has_page_break_before(e2)):
+                    break
+                if k2 == 'tbl' or para_text(e2, doc).strip():
+                    end = j
+                j += 1
+            if end == i:
+                continue
+            opens_page = any(k == 'p' and has_page_break_before(e) for k, e in items[last_end + 1:i + 1])
+            last_txt = para_text(items[end][1], doc) if items[end][0] == 'p' else ''
+            blocks.append({'label': text, 'kind': 'practice', 'start': i, 'end': end, 'opens_page': opens_page,
+                           'end_prefix': re.sub(r'\s+', ' ', last_txt)[:14] or None})
+            last_end = end
     return blocks, items
 
 
+def _scale_drawings(elements, factor):
+    """Shrink every inline picture in the given XML elements by `factor` (of its
+    stored size — the caller always starts from the untouched copy)."""
+    if factor >= 0.999:
+        return
+    for el in elements:
+        for ext in el.iter(f'{{{WP_NS}}}extent'):
+            for k in ('cx', 'cy'):
+                v = ext.get(k)
+                if v: ext.set(k, str(int(int(v) * factor)))
+        for ext in el.iter(f'{{{A_NS}}}ext'):
+            for k in ('cx', 'cy'):
+                v = ext.get(k)
+                if v: ext.set(k, str(int(int(v) * factor)))
+
+
 def tighten(doc, block, items, step):
-    """Apply one rung of the ladder to a block. Returns nothing; the caller re-exports."""
-    box_ls, gap_pt, stem_ls = STEPS[step]
+    """Apply one rung of the ladder to a block. The caller hands in the UNTOUCHED
+    copy every time, so every value here is absolute."""
+    ls, gap_pt, stem_ls, fig = STEPS[step]
     start, end = block['start'], block['end']
-    for k, el in items[start:end]:
-        if k != 'p':
+    last = end if block['kind'] == 'practice' else end - 1
+    for k, el in items[start:last + 1]:
+        if k == 'tbl':
+            # a data table inside a practice question, or the example's box
+            for row in Table(el, doc).rows:
+                for cell in row.cells:
+                    for p in cell.paragraphs:
+                        p.paragraph_format.line_spacing = ls
+                        p.paragraph_format.space_after = Pt(0)
             continue
         p = Paragraph(el, doc)
         pf = p.paragraph_format
-        if not p.text.strip():
+        if not p.text.strip() and el.find(f'.//{{{WP_NS}}}extent') is None:
             # a breathing-space paragraph: shrink it to a sliver, never remove it
             pf.line_spacing = Pt(4)
             pf.space_before = Pt(0)
@@ -148,24 +203,24 @@ def tighten(doc, block, items, step):
         pf.space_before = Pt(0) if pf.space_before is None or pf.space_before > Pt(0) else pf.space_before
         pf.space_after = Pt(0)
         pf.line_spacing = stem_ls
-    table = Table(items[end][1], doc)
-    for ri, row in enumerate(table.rows):
-        for cell in row.cells:
-            for pi, p in enumerate(cell.paragraphs):
-                pf = p.paragraph_format
-                pf.line_spacing = box_ls
-                if pi == 0:
-                    pf.space_before = Pt(2) if ri == 0 else Pt(gap_pt)
-    # the breathing space right after the box
-    if end + 1 < len(items) and items[end + 1][0] == 'p':
-        p = Paragraph(items[end + 1][1], doc)
-        if not p.text.strip():
-            p.paragraph_format.line_spacing = Pt(4)
-            p.paragraph_format.space_before = Pt(0)
-            p.paragraph_format.space_after = Pt(0)
+    if block['kind'] == 'example':
+        table = Table(items[end][1], doc)
+        for ri, row in enumerate(table.rows):
+            for cell in row.cells:
+                for pi, p in enumerate(cell.paragraphs):
+                    pf = p.paragraph_format
+                    pf.line_spacing = ls
+                    if pi == 0:
+                        pf.space_before = Pt(2) if ri == 0 else Pt(gap_pt)
+        # the breathing space right after the box
+        if end + 1 < len(items) and items[end + 1][0] == 'p':
+            p = Paragraph(items[end + 1][1], doc)
+            if not p.text.strip():
+                p.paragraph_format.line_spacing = Pt(4)
+                p.paragraph_format.space_before = Pt(0)
+                p.paragraph_format.space_after = Pt(0)
+    _scale_drawings([el for _k, el in items[start:end + 1]], fig)
 
-
-# ── the PDF side: where each block landed ────────────────────────────────────
 
 def pdf_lines(pdf_path):
     """[(page, y0, y1, text)] for every body text line, document order."""
@@ -189,13 +244,16 @@ def pdf_lines(pdf_path):
     return out, heights
 
 
-def locate_blocks(lines, heights, labels):
-    """For each Example label (in document order) the page/y of its heading and
-    of its last line — the line before the next heading. None when not found."""
+def locate_blocks(lines, heights, blocks):
+    """For each block (document order): page/y of its heading and of its last
+    line. An Example ends at the line before the next heading; a Practice set
+    ends at its own last paragraph (matched by text prefix — the next thing after
+    it may be a skill title the heading regex does not know), else likewise."""
     heads = [(i, ln) for i, ln in enumerate(lines) if HEADING.match(ln[3])]
     found = {}
     cursor = 0
-    for label in labels:
+    for b in blocks:
+        label = b['label']
         hit = next(((i, ln) for i, ln in heads if ln[3] == label and i >= cursor), None)
         if not hit:
             found[label] = None
@@ -204,7 +262,16 @@ def locate_blocks(lines, heights, labels):
         cursor = i + 1
         nxt = next((j for j, l2 in heads if j > i), len(lines))
         last = lines[nxt - 1] if nxt - 1 > i else ln
-        # what sits above the heading on its own page (the skill title chain)
+        prefix = b.get('end_prefix')
+        if prefix:
+            norm = lambda t: re.sub(r'\s+', ' ', t)
+            # the LAST such line before the next heading — every question's [Ans] line shares the prefix
+            # A fraction in the [Ans] line breaks it into fragments in the PDF, so
+            # only the opening "[Ans: (a)" is safe to match on.
+            key = norm(prefix).rstrip()[:9]
+            k = next((k for k in range(nxt - 1, i, -1) if norm(lines[k][3]).startswith(key)), None)
+            if k is not None:
+                last = lines[k]
         page_first = next(l2 for l2 in lines if l2[0] == ln[0])
         prev_page_last = None
         if ln[0] > 0:
@@ -268,9 +335,16 @@ def break_before_solution(doc, block, items):
 
 
 def diagnose(block, loc, heights):
-    """'ok' | 'split' | 'jumped' | 'too-big' | 'unknown'."""
+    """'ok' | 'split' | 'jumped' | 'oversize' | 'too-big' | 'unknown'.
+
+    split    — on two pages, yet short enough to sit on one: tighten.
+    jumped   — opens a page while the page before had room for it: tighten.
+    oversize — taller than a page but by less than OVERSIZE_TRY: try the ladder,
+               the last rungs shrink its diagrams (Adrian, 11 Sep 2026).
+    too-big  — beyond that: left alone."""
     if not loc:
         return 'unknown', ''
+    usable = heights[loc['page']] - BOTTOM_PT - HEADER_PT
     if loc['end_page'] == loc['page']:
         if block['opens_page'] or not loc['first_on_page'] or loc['prev_blank'] is None:
             return 'ok', ''
@@ -283,22 +357,19 @@ def diagnose(block, loc, heights):
     head_part = heights[loc['page']] - BOTTOM_PT - loc['top']
     tail = loc['bottom'] - HEADER_PT
     total = head_part + tail
-    usable = heights[loc['page']] - BOTTOM_PT - HEADER_PT
-    if total > 0.97 * usable:
-        return 'too-big', f'{total:.0f}pt block on a {usable:.0f}pt page — no spacing rung can hold it'
-    if tail <= SPLIT_TAIL * total:
+    if total <= 0.97 * usable:
         return 'split', f'{tail:.0f}pt of {total:.0f}pt runs onto the next page'
-    return 'too-big', f'{tail:.0f}pt of {total:.0f}pt on the next page — more than a tail'
+    if total <= OVERSIZE_TRY * usable:
+        return 'oversize', f'{total:.0f}pt block on a {usable:.0f}pt page — trying the ladder, diagrams included'
+    return 'too-big', f'{total:.0f}pt block on a {usable:.0f}pt page — no spacing rung can hold it'
 
-
-# ── the loop ─────────────────────────────────────────────────────────────────
 
 def survey(docx_path, pdf_path):
     doc = Document(str(docx_path))
     blocks, _items = example_blocks(doc)
     render_sheet.export_pdf(Path(docx_path), Path(pdf_path))
     lines, heights = pdf_lines(pdf_path)
-    locs = locate_blocks(lines, heights, [b['label'] for b in blocks])
+    locs = locate_blocks(lines, heights, blocks)
     return blocks, locs, heights
 
 
@@ -312,7 +383,7 @@ def fit(docx_path: Path, check_only=False, pdf_out: Path | None = None):
     blocks, locs, heights = survey(cur, work / 'cur.pdf')
     for bi, block in enumerate(blocks):
         verdict, why = diagnose(block, locs.get(block['label']), heights)
-        if verdict == 'too-big':
+        if verdict == 'too-big' or (verdict == 'oversize' and block['kind'] == 'example'):
             too_big.add(block['label'])
         if verdict in ('ok', 'unknown', 'too-big'):
             report.append((block['label'], verdict, why))
@@ -323,30 +394,37 @@ def fit(docx_path: Path, check_only=False, pdf_out: Path | None = None):
         before = work / f'before-{bi}.docx'
         shutil.copyfile(cur, before)
         fixed = None
+        label = block['label']
         for step in range(len(STEPS)):
+            shutil.copyfile(before, cur)              # every rung starts from the untouched copy
             doc = Document(str(cur))
             blocks_now, items = example_blocks(doc)
-            tighten(doc, blocks_now[bi], items, step)
+            blk = next((b for b in blocks_now if b['label'] == label), None)
+            if not blk:
+                break
+            tighten(doc, blk, items, step)
             doc.save(str(cur))
             _b, locs2, heights2 = survey(cur, work / 'cur.pdf')
-            loc2 = locs2.get(block['label'])
-            v2, _ = diagnose(blocks_now[bi], loc2, heights2)
+            loc2 = locs2.get(label)
+            v2, _ = diagnose(blk, loc2, heights2)
             on_one_page = loc2 and loc2['end_page'] == loc2['page']
-            moved_up = verdict != 'jumped' or (loc2 and loc2['page'] < locs[block['label']]['page'])
+            moved_up = verdict != 'jumped' or (loc2 and loc2['page'] < locs[label]['page'])
             if on_one_page and moved_up and v2 == 'ok':
                 fixed = step
                 break
         if fixed is None:
             shutil.copyfile(before, cur)          # put it back exactly
-            report.append((block['label'], verdict, why + ' — no rung of the ladder fits it; left as it was'))
+            report.append((label, verdict, why + ' — no rung of the ladder fits it; left as it was'))
             blocks, locs, heights = survey(cur, work / 'cur.pdf')
         else:
             changed += 1
-            report.append((block['label'], verdict, why + f' — fits after step {fixed + 1} (box spacing {STEPS[fixed][0]})'))
+            too_big.discard(label)
+            fig = STEPS[fixed][3]
+            report.append((label, verdict, why + f' — fits after step {fixed + 1} (line spacing {STEPS[fixed][0]}' + (f', diagrams ×{fig}' if fig < 1 else '') + ')'))
             blocks, locs, heights = survey(cur, work / 'cur.pdf')
     # ── second pass: a "Solution:" left behind by a box taller than its page ──
     lines, heights = pdf_lines(work / 'cur.pdf')
-    for label in stranded_solutions(lines, [b['label'] for b in blocks], heights, too_big):
+    for label in stranded_solutions(lines, [b['label'] for b in blocks if b['kind'] == 'example'], heights, too_big):
         if check_only:
             report.append((label, 'stranded', '"Solution:" sits on the page before its box — would move it down'))
             continue
