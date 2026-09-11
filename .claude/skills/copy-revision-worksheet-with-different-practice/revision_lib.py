@@ -1922,8 +1922,21 @@ def _answer_parts(row) -> list:
     def inline(bits):
         return [(("math" if k == "math_display" else k), *rest) for k, *rest in bits]
 
+    # Per-part answers first when every part carries one: they keep the house
+    # shape "(a) …; (b)(i) …; (ii) …" and the accuracy note ("(3 s.f.)"); the
+    # rolled-up top-level `answer` (written by the enrichment pass, spaces for
+    # separators, notes dropped) is the fallback — Chung Cheng 2017 Q11, 12 Sep 2026.
+    def leaf_answers(parts):
+        for part in parts:
+            subs = [x for x in (part.get("subparts") or []) if isinstance(x, dict)]
+            if subs and not (part.get("answer") or "").strip():
+                yield from leaf_answers(subs)
+            else:
+                yield (part.get("answer") or "").strip()
+    parts_all = _parts(row)
+    leaves = list(leaf_answers(parts_all)) if parts_all else []
     top = (row.get("answer") or "").strip()
-    if top:
+    if top and not (leaves and all(leaves)):
         return inline(split_math(top))
     out = []
     for part in _parts(row):
