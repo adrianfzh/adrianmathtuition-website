@@ -597,10 +597,19 @@ Invoke `create-teaching-notes` and give it this brief:
 - **EVERY example has practice of its own — lettered examples included.**
   Adrian, 8 Sep 2026, Denise's sheet: "there is no corresponding practice
   questions for example 5a." An Example (or an Example 5a / 5b pair) with no
-  practice under it teaches nothing the student can try; at least TWO practice
-  items per example, the same shape as the example, in that example's own
-  Practice section. The worker's own pre-filing check counts them (see the
-  sweep below) and refuses to file otherwise.
+  practice under it teaches nothing the student can try: at least ONE practice
+  item per example, the same shape as the example, in that example's own
+  Practice section. **But never a number-swapped twin** (Adrian, 11 Sep 2026,
+  Isabelle's recipe-scaling Practice 2 — four items where Q1/Q2 and Q3/Q4 were
+  the same question with new numbers: "examples need not be repetitive → don't
+  waste students time"). A second item on the same example earns its place
+  only by adding something the first did not — a different move (the
+  exception case, a reversed question, an extra step, the harder tier), never
+  the same shape again with different numbers. Two examples of one skill (2a
+  the plain move, 2b the twist) get one item EACH, so the set is two, not four.
+  The worker's own pre-filing check (see the sweep below) counts one per
+  example and refuses to file a shortfall — and reads any second item to make
+  sure it is not the first one again.
 - **A rule with a known exception shows the exception.** Adrian, 8 Sep 2026:
   "there should be examples and practices where the power is −1, which will
   result in the integral being ln instead." When the rule taught has a case
@@ -883,10 +892,13 @@ the gap is the interesting half: it says what the bank is missing.
   The same applies to slashes typed in PROSE: "so v = dx/dt" inside a sentence
   is still maths, so it is still an equation object.
   Sweep the finished file before filing it:
-  - **Every Example has at least two practice items of its own shape** (8 Sep
-    2026) — count "Example N" / "Example Na" headings against the numbered
+  - **Every Example has at least ONE practice item of its own shape, and no
+    item is another with the numbers changed** (8 Sep 2026; the twin rule 11
+    Sep 2026) — count "Example N" / "Example Na" headings against the numbered
     items in that skill's Practice section; a shortfall is a rewrite, not a
-    file.
+    file. Then read the items of each set side by side: two that differ only
+    in numbers and names (20 biscuits → 15 pancakes) are one item, and the
+    second is deleted before filing — a student's time is the budget.
 
   ```
   python3 -c "import zipfile,re,sys; x=zipfile.ZipFile(sys.argv[1]).read('word/document.xml').decode(); \
