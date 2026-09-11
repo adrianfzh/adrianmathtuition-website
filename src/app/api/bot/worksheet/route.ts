@@ -43,6 +43,8 @@ import { KIOSK_LEVELS } from '@/lib/kiosk-session';
 import { normalizeTier } from '@/lib/practice-tiers';
 import { dailyDraw, drawSeedKey, sgtDate } from '@/lib/kiosk-draw';
 import { applyBand, bandKey, parseBand } from '@/lib/marks-band';
+import { pickBySkill } from '@/lib/skill-pick';
+import { loadSkillFiling, dropSkills } from '@/lib/skill-pick-store';
 import { fetchWorksheetPool, SEED_LEVELS } from '@/lib/kiosk-pool';
 import {
   clampCount, matchTopic, resolveLevelKey, validLevels,
@@ -181,7 +183,34 @@ export async function POST(req: NextRequest) {
   // day get the same questions, and asking for more extends one shared order.
   // A banded request seeds on the band too, so it is its own stable draw.
   const seed = drawSeedKey(levelKey, topic, band ? `${tier ?? 'mixed'}|${bandLabel}` : tier);
-  const { items: picked, bandFallback } = applyBand(pool.items, band, count, (items, n) => dailyDraw(items, seed, n));
+  // Pick BY SKILL (docs/SKILL-PICK.md, 12 Sep 2026): one question per skill of
+  // the topic in syllabus order, the plainest first, second rounds adding the
+  // twist — the same rule kinds 2 and 4 use on the Mac. The daily seed is the
+  // tie-break, so a day's sheet is still stable. The old daily draw (and the
+  // marks bands, kept for API callers) is the fallback for a topic with no
+  // skill filing.
+  let picked = pool.items;
+  let bandFallback = false;
+  let skillsOut: { covered: { name: string; n: number }[]; empty: string[]; skipped: string[]; dropped: string[]; unfiled: number } | null = null;
+  const filing = band ? null : await loadSkillFiling(supa, levelKey, topic, pool.items.map((q) => q.id));
+  lap('skills');
+  const { kept: skills, dropped } = filing ? dropSkills(filing.skills, body.skipSkills) : { kept: [], dropped: [] };
+  const bySkill = filing && skills.length
+    ? pickBySkill(pool.items.map((q) => ({ ...q, skills: filing.linksByQuestion[q.id] ?? [] })), skills, count, { seed })
+    : null;
+  if (bySkill && !bySkill.unfiled && bySkill.items.length) {
+    picked = bySkill.items.map((i) => i.row);
+    const nameOf = new Map(skills.map((s) => [s.id, s.name]));
+    skillsOut = {
+      covered: skills.filter((s) => bySkill.perSkill[s.id]).map((s) => ({ name: s.name, n: bySkill.perSkill[s.id] })),
+      empty: bySkill.empty.map((id) => nameOf.get(id) ?? id),
+      skipped: bySkill.skipped.map((id) => nameOf.get(id) ?? id),
+      dropped,
+      unfiled: bySkill.unfiledCount,
+    };
+  } else {
+    ({ items: picked, bandFallback } = applyBand(pool.items, band, count, (items, n) => dailyDraw(items, seed, n)));
+  }
   const title = worksheetTitle(cfg.label, topic);
 
   const pdf = await renderBotWorksheetPDF({
@@ -224,6 +253,9 @@ export async function POST(req: NextRequest) {
     level: levelKey,
     topic,
     tier: tier ?? 'mixed',
+    // Which skills the sheet covers (null = the plain daily draw was used)
+    skills: skillsOut,
+    pick: skillsOut ? 'skill' : 'draw',
     // The marks band asked for, and whether a thin band had to borrow from the
     // whole pool to fill the sheet — the bot tells Adrian when it did.
     band: bandLabel,

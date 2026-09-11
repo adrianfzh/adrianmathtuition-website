@@ -16,6 +16,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { loadSkillFiling } from '@/lib/skill-pick-store';
 import { sendTelegram, sendTelegramDocument } from '@/lib/telegram';
 // Every notification from this file belongs in the marking topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_marking = (text: string) => sendTelegram(text, 'marking');
@@ -62,6 +63,15 @@ export async function GET(req: NextRequest) {
     const topic = String(sp.get('topic') || '').trim();
     if (!level || !topic) return NextResponse.json({ error: 'level and topic required' }, { status: 400 });
     return NextResponse.json({ sheets: await existingSheets(level, topic) });
+  }
+  // ?skills=1&level=AM&topic=Circles → the topic's skills in syllabus order, for
+  // the /ws confirm card ("drop 3 5" leaves skills out) — docs/SKILL-PICK.md
+  if (sp.get('skills')) {
+    const level = String(sp.get('level') || '').trim();
+    const topic = String(sp.get('topic') || '').trim();
+    if (!level || !topic) return NextResponse.json({ error: 'level and topic required' }, { status: 400 });
+    const { skills } = await loadSkillFiling(getSupabaseAdmin(), level, topic, []);
+    return NextResponse.json({ skills: skills.map(s => ({ name: s.name, order: s.order })) });
   }
   const { data, error } = await getSupabaseAdmin()
     .from('worksheet_jobs').select('*').order('created_at', { ascending: false }).limit(30);

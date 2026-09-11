@@ -1,0 +1,546 @@
+{
+  "note": "Shared cases for src/lib/skill-pick.ts and skill_pick.py (docs/SKILL-PICK.md). Rows: id, marks, skills[], optional tier/pref/parts/school. Expect: ids in sheet order, rounds, skipped/empty skill ids, unfiled.",
+  "skills": [
+    {
+      "id": "s1",
+      "name": "Rational curves",
+      "order": 1
+    },
+    {
+      "id": "s2",
+      "name": "Conic sections",
+      "order": 2
+    },
+    {
+      "id": "s3",
+      "name": "Transformations",
+      "order": 3
+    },
+    {
+      "id": "s4",
+      "name": "Related graphs",
+      "order": 4
+    }
+  ],
+  "cases": [
+    {
+      "name": "one per skill, plainest first, sheet in syllabus order",
+      "skills": [
+        "s1",
+        "s2",
+        "s3"
+      ],
+      "pool": [
+        {
+          "id": "a",
+          "marks": 4,
+          "skills": [
+            "s1"
+          ]
+        },
+        {
+          "id": "b",
+          "marks": 8,
+          "skills": [
+            "s1"
+          ]
+        },
+        {
+          "id": "c",
+          "marks": 6,
+          "skills": [
+            "s2"
+          ]
+        },
+        {
+          "id": "d",
+          "marks": 3,
+          "skills": [
+            "s2"
+          ]
+        },
+        {
+          "id": "e",
+          "marks": 5,
+          "skills": [
+            "s3"
+          ]
+        }
+      ],
+      "count": 3,
+      "seed": "x",
+      "expect": {
+        "ids": [
+          "a",
+          "d",
+          "e"
+        ],
+        "rounds": [
+          1,
+          1,
+          1
+        ],
+        "skipped": [],
+        "empty": [],
+        "unfiled": false
+      }
+    },
+    {
+      "name": "a count below the number of skills leaves the last skills out and says which",
+      "skills": [
+        "s1",
+        "s2",
+        "s3"
+      ],
+      "pool": [
+        {
+          "id": "a",
+          "marks": 4,
+          "skills": [
+            "s1"
+          ]
+        },
+        {
+          "id": "d",
+          "marks": 3,
+          "skills": [
+            "s2"
+          ]
+        },
+        {
+          "id": "e",
+          "marks": 5,
+          "skills": [
+            "s3"
+          ]
+        }
+      ],
+      "count": 2,
+      "seed": "x",
+      "expect": {
+        "ids": [
+          "a",
+          "d"
+        ],
+        "rounds": [
+          1,
+          1
+        ],
+        "skipped": [
+          "s3"
+        ],
+        "empty": [],
+        "unfiled": false
+      }
+    },
+    {
+      "name": "second round: the twist has more marks; weighted skill first, then syllabus order",
+      "skills": [
+        "s1",
+        "s2"
+      ],
+      "pool": [
+        {
+          "id": "a",
+          "marks": 4,
+          "skills": [
+            "s1"
+          ]
+        },
+        {
+          "id": "b",
+          "marks": 8,
+          "skills": [
+            "s1"
+          ]
+        },
+        {
+          "id": "c",
+          "marks": 6,
+          "skills": [
+            "s1"
+          ]
+        },
+        {
+          "id": "d",
+          "marks": 3,
+          "skills": [
+            "s2"
+          ]
+        },
+        {
+          "id": "e",
+          "marks": 9,
+          "skills": [
+            "s2"
+          ]
+        },
+        {
+          "id": "f",
+          "marks": 5,
+          "skills": [
+            "s2"
+          ]
+        }
+      ],
+      "count": 4,
+      "seed": "x",
+      "weights": {
+        "s2": 5
+      },
+      "expect": {
+        "ids": [
+          "a",
+          "b",
+          "d",
+          "e"
+        ],
+        "rounds": [
+          1,
+          2,
+          1,
+          2
+        ],
+        "skipped": [],
+        "empty": [],
+        "unfiled": false
+      }
+    },
+    {
+      "name": "a two-skill question is used once, for the first skill that reaches it",
+      "skills": [
+        "s1",
+        "s2"
+      ],
+      "pool": [
+        {
+          "id": "x",
+          "marks": 3,
+          "skills": [
+            "s1",
+            "s2"
+          ]
+        },
+        {
+          "id": "y",
+          "marks": 5,
+          "skills": [
+            "s2"
+          ]
+        }
+      ],
+      "count": 2,
+      "seed": "x",
+      "expect": {
+        "ids": [
+          "x",
+          "y"
+        ],
+        "rounds": [
+          1,
+          1
+        ],
+        "skillOf": {
+          "x": "s1",
+          "y": "s2"
+        },
+        "skipped": [],
+        "empty": [],
+        "unfiled": false
+      }
+    },
+    {
+      "name": "a verified human row beats an AI row even when the AI row has fewer marks",
+      "skills": [
+        "s1"
+      ],
+      "pool": [
+        {
+          "id": "p",
+          "marks": 2,
+          "tier": 3,
+          "skills": [
+            "s1"
+          ]
+        },
+        {
+          "id": "q",
+          "marks": 6,
+          "tier": 0,
+          "skills": [
+            "s1"
+          ]
+        }
+      ],
+      "count": 1,
+      "seed": "x",
+      "expect": {
+        "ids": [
+          "q"
+        ],
+        "rounds": [
+          1
+        ],
+        "skipped": [],
+        "empty": [],
+        "unfiled": false
+      }
+    },
+    {
+      "name": "an empty skill is reported, not filled from elsewhere; the count is met in round 2",
+      "skills": [
+        "s1",
+        "s2",
+        "s3"
+      ],
+      "pool": [
+        {
+          "id": "a",
+          "marks": 4,
+          "skills": [
+            "s1"
+          ]
+        },
+        {
+          "id": "b",
+          "marks": 7,
+          "skills": [
+            "s1"
+          ]
+        },
+        {
+          "id": "c",
+          "marks": 5,
+          "skills": [
+            "s2"
+          ]
+        }
+      ],
+      "count": 3,
+      "seed": "x",
+      "expect": {
+        "ids": [
+          "a",
+          "b",
+          "c"
+        ],
+        "rounds": [
+          1,
+          2,
+          1
+        ],
+        "skipped": [],
+        "empty": [
+          "s3"
+        ],
+        "unfiled": false
+      }
+    },
+    {
+      "name": "an unfiled pool picks nothing and says so",
+      "skills": [
+        "s1"
+      ],
+      "pool": [
+        {
+          "id": "u",
+          "marks": 4,
+          "skills": []
+        },
+        {
+          "id": "v",
+          "marks": 5,
+          "skills": []
+        }
+      ],
+      "count": 2,
+      "seed": "x",
+      "expect": {
+        "ids": [],
+        "rounds": [],
+        "skipped": [],
+        "empty": [
+          "s1"
+        ],
+        "unfiled": true,
+        "unfiledCount": 2
+      }
+    },
+    {
+      "name": "on equal plainness a school not yet on the sheet wins",
+      "skills": [
+        "s1",
+        "s2"
+      ],
+      "pool": [
+        {
+          "id": "a",
+          "marks": 4,
+          "school": "X",
+          "skills": [
+            "s1"
+          ]
+        },
+        {
+          "id": "b",
+          "marks": 4,
+          "school": "X",
+          "skills": [
+            "s2"
+          ]
+        },
+        {
+          "id": "c",
+          "marks": 4,
+          "school": "Y",
+          "skills": [
+            "s2"
+          ]
+        }
+      ],
+      "count": 2,
+      "seed": "x",
+      "expect": {
+        "ids": [
+          "a",
+          "c"
+        ],
+        "rounds": [
+          1,
+          1
+        ],
+        "skipped": [],
+        "empty": [],
+        "unfiled": false
+      }
+    },
+    {
+      "name": "the requested level's row (pref 0) beats a top-up row with fewer marks",
+      "skills": [
+        "s1"
+      ],
+      "pool": [
+        {
+          "id": "a",
+          "marks": 6,
+          "pref": 0,
+          "skills": [
+            "s1"
+          ]
+        },
+        {
+          "id": "b",
+          "marks": 3,
+          "pref": 1,
+          "skills": [
+            "s1"
+          ]
+        }
+      ],
+      "count": 1,
+      "seed": "x",
+      "expect": {
+        "ids": [
+          "a"
+        ],
+        "rounds": [
+          1
+        ],
+        "skipped": [],
+        "empty": [],
+        "unfiled": false
+      }
+    },
+    {
+      "name": "rounds keep cycling one skill until the count is met; the sheet still reads easy to hard",
+      "skills": [
+        "s1"
+      ],
+      "pool": [
+        {
+          "id": "a",
+          "marks": 2,
+          "skills": [
+            "s1"
+          ]
+        },
+        {
+          "id": "b",
+          "marks": 5,
+          "skills": [
+            "s1"
+          ]
+        },
+        {
+          "id": "c",
+          "marks": 9,
+          "skills": [
+            "s1"
+          ]
+        }
+      ],
+      "count": 3,
+      "seed": "x",
+      "expect": {
+        "ids": [
+          "a",
+          "b",
+          "c"
+        ],
+        "rounds": [
+          1,
+          3,
+          2
+        ],
+        "skipped": [],
+        "empty": [],
+        "unfiled": false
+      }
+    },
+    {
+      "name": "among human solutions, fewer marks beats verified — verification only breaks ties",
+      "skills": [
+        "s1"
+      ],
+      "pool": [
+        {
+          "id": "p",
+          "marks": 3,
+          "tier": 1,
+          "skills": [
+            "s1"
+          ]
+        },
+        {
+          "id": "q",
+          "marks": 9,
+          "tier": 0,
+          "skills": [
+            "s1"
+          ]
+        },
+        {
+          "id": "r",
+          "marks": 3,
+          "tier": 0,
+          "skills": [
+            "s1"
+          ]
+        }
+      ],
+      "count": 1,
+      "seed": "x",
+      "expect": {
+        "ids": [
+          "r"
+        ],
+        "rounds": [
+          1
+        ],
+        "skipped": [],
+        "empty": [],
+        "unfiled": false
+      }
+    }
+  ]
+}

@@ -94,6 +94,14 @@ describe('jobInsert — what the bot may queue', () => {
       expect(r.row.label).toContain('Circles & Indices');
     }
   });
+  it('dropped skills ride along, deduped and capped', () => {
+    const r = jobInsert({ kind: 2, level: 'AM', topic: 'Circles', params: { count: 8, skip_skills: ['Conic sections', ' Conic sections', '', 'Parametric curves'] } });
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.row.params.skip_skills).toEqual(['Conic sections', 'Parametric curves']);
+      expect(r.row.label).toContain('minus 2 skills');
+    }
+  });
   it('a one-name topics list is just a topic; other kinds and long lists are refused', () => {
     const one = jobInsert({ kind: 2, level: 'AM', topic: 'Surds', params: { topics: ['Surds'] } });
     expect(one.ok).toBe(true);

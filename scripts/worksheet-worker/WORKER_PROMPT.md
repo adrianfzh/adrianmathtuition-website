@@ -63,7 +63,13 @@ curl -s -X POST "$WORKSHEETS_API_BASE/api/admin/worksheet-jobs" \
    notes fragments at the front, draws the practice per topic with the count
    split between them, and starts Practice on a new page; you do nothing else
    for it. Never join the topics into one string, and never build one sheet
-   per topic. (A job whose `topic` reads "Circles & Indices" with no
+   per topic.
+   **Skills (12 Sep 2026, docs/SKILL-PICK.md):** the tool picks ONE question per
+   skill of the topic in syllabus order, then second rounds — you do nothing for
+   that. If `params.skip_skills` is set, pass each name as its own
+   `--skip-skill "<name>"`. Quote the tool's "Skills : N of M covered — …" line
+   (and its "no question in the bank for: …" line, if any) in `result.summary`
+   so Adrian's Telegram shows what the sheet covers. (A job whose `topic` reads "Circles & Indices" with no
    `params.topics` was queued before the site learned the field — split it on
    " & " and treat it the same way.)
 
@@ -71,7 +77,8 @@ curl -s -X POST "$WORKSHEETS_API_BASE/api/admin/worksheet-jobs" \
    `python3 .claude/skills/copy-revision-worksheet-with-different-practice/revision_lib.py --kind worked --folder <folder> --topic "<topic>" -n <count>`
    with folder from the level (S1, S2, EM, AM, JC). `params.sheet` names the
    base document — pass it if the CLI takes `--base`, else pick that document
-   when the skill asks which sheet. The original is never overwritten.
+   when the skill asks which sheet. The original is never overwritten. Skills
+   and `params.skip_skills` work exactly as for kind 2.
 
    **Kind 5 — full prelim paper.** Invoke the `prelim-paper` skill with
    `params.paper` (e.g. `EM-P1`), `params.preset`, and `params.exclude`

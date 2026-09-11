@@ -54,6 +54,9 @@ from pathlib import Path
 
 from lxml import etree
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from skill_pick import pick_by_skill   # noqa: E402  — docs/SKILL-PICK.md, the one rule for kinds 2, 3 and 4
+
 # --------------------------------------------------------------------------
 # Paths
 # --------------------------------------------------------------------------
@@ -750,6 +753,39 @@ def fetch_pool(env: dict, level: str, topic, page: int = 1000, cap: int = 4000,
             break
         offset += page
     return rows
+
+
+# questions.level → the level the `subgroups` (skills) table files under
+SKILL_LEVEL = {"AM": "AM", "S3_AM": "AM", "EM": "EM", "S3_EM": "EM", "S1": "S1", "S2": "S2",
+               "JC1": "JC", "JC2": "JC", "JC": "JC"}
+
+
+def fetch_skills(env: dict, level: str, topic: str) -> list:
+    """The topic's skills in syllabus order: [{id, name, order}] from `subgroups`."""
+    base, key = supabase_creds(env)
+    headers = {"apikey": key, "Authorization": "Bearer " + key}
+    sg_level = SKILL_LEVEL.get(level, level)
+    url = (f"{base}/rest/v1/subgroups?select=id,name,order_index"
+           f"&level=eq.{urllib.parse.quote(sg_level, safe='')}&topic=eq.{urllib.parse.quote(topic, safe='')}"
+           f"&order=order_index")
+    rows, _ = _http_json(url, headers)
+    return [{"id": str(r["id"]), "name": r["name"], "order": r.get("order_index") or 99} for r in (rows or [])]
+
+
+def fetch_skill_links(env: dict, ids: list, batch: int = 80) -> dict:
+    """question id → [skill ids] from `question_subgroups`, primary or not."""
+    base, key = supabase_creds(env)
+    headers = {"apikey": key, "Authorization": "Bearer " + key}
+    out: dict = {}
+    ids = [str(i) for i in ids]
+    for i in range(0, len(ids), batch):
+        chunk = ids[i:i + batch]
+        url = (f"{base}/rest/v1/question_subgroups?select=question_id,subgroup_id"
+               f"&question_id=in.({','.join(chunk)})")
+        batch_rows, _ = _http_json(url, headers)
+        for r in batch_rows or []:
+            out.setdefault(str(r["question_id"]), []).append(str(r["subgroup_id"]))
+    return out
 
 
 def list_topics(env: dict, level: str) -> list:
@@ -2661,6 +2697,7 @@ class RunReport:
     # multi-topic notes sheet: the fragments stacked after the base
     extra_bases: list = field(default_factory=list)
     topic_counts: list = field(default_factory=list)   # [(topic, n)] in sheet order
+    skill_infos: list = field(default_factory=list)    # [(topic, {covered, empty, skipped, …})] — docs/SKILL-PICK.md
 
     def selection_json(self) -> str:
         """The chosen questions, in full, for deciding sub-part scope (rule 3).
@@ -2692,6 +2729,22 @@ class RunReport:
                 L.append("            ^ %s" % x.detail)
         if self.topic_counts:
             L.append("Topics    : %s" % " · ".join("%s %d" % (t, n) for t, n in self.topic_counts))
+        for t, info in self.skill_infos:
+            total = len(info["skills"]) + len(info.get("dropped") or [])
+            L.append("Skills    : %s%d of %d covered — %s" % (
+                (t + ": ") if len(self.skill_infos) > 1 else "",
+                len(info["covered"]), total,
+                " · ".join("%s %d" % (name, c) for name, c in info["covered"]) or "none"))
+            if info["empty"]:
+                L.append("            no question in the bank for: %s" % ", ".join(info["empty"]))
+            if info["skipped"]:
+                L.append("            left out (count below the skill count): %s" % ", ".join(info["skipped"]))
+            if info.get("dropped"):
+                L.append("            dropped on request: %s" % ", ".join(info["dropped"]))
+            if info.get("unfiled_count"):
+                L.append("            %d usable question(s) carry no skill tag and were not considered" % info["unfiled_count"])
+        if not self.skill_infos and self.kind == "notes":
+            L.append("Skills    : (no skill filing for this topic — verified-first spread used)")
         lv = ", ".join("%s:%d" % (k, v) for k, v in self.level_used.items())
         L.append("Practice  : %d question(s)  [levels %s]" % (len(self.questions), lv))
         L.append("            pool %s -> usable %s"
@@ -2699,11 +2752,13 @@ class RunReport:
         for why, cnt in sorted(self.stats.get("rejected", {}).items(), key=lambda x: -x[1]):
             L.append("            skipped %2d: %s" % (cnt, why))
         for i, q in enumerate(self.questions, 1):
-            L.append("   %2d.%s %-56s %s marks, %s%s"
+            L.append("   %2d.%s %-56s %s marks, %s%s%s"
                      % (i, " *" if self.optional_from and i >= self.optional_from else "  ",
                         provenance(q) or "(no provenance)", q.get("total_marks"),
                         q.get("difficulty") or "?",
-                        ", verified" if q.get("verified") else ""))
+                        ", verified" if q.get("verified") else "",
+                        ("  [%s%s]" % (q["_skill"], " · twist" if (q.get("_round") or 1) > 1 else ""))
+                        if q.get("_skill") else ""))
         if self.size:
             L.append("Size      : %d question(s), %d marks, ~%d min of working"
                      % (self.size["questions"], self.size["marks"], self.size["minutes"]))
@@ -2773,23 +2828,27 @@ def _split_count(n: int, k: int) -> list:
 
 
 def _ramp_key(r):
-    """Ascending marks within a topic group; groups in the order the topics were given."""
-    return (r.get("_group") or 0, r.get("total_marks") or 0, str(r.get("year") or ""))
+    """Topic group, then skill in syllabus order, then ascending marks."""
+    return (r.get("_group") or 0, r.get("_skill_order") or 0, r.get("total_marks") or 0, str(r.get("year") or ""))
 
 
 def _draw_topic(env: dict, levels: list, ptopic: str, n: int, *, seed, allow_ai, figures,
-                cap, scope_skips: dict, exclude: set) -> tuple:
+                cap, scope_skips: dict, exclude: set, skip_skills: list | None = None) -> tuple:
     """The practice pool + pick for ONE topic across the bank's levels.
 
-    Walks the levels in order (primary, then the top-up), stopping as soon as
-    the pick is full. `exclude` = ids already on the sheet (a question tagged
-    with two of the sheet's topics must not appear twice).
-    Returns (pool, chosen, stats, level_used).
+    The pool is every level's rows (primary first — `_pref` 0 — then the
+    top-up, `_pref` 1). The pick is BY SKILL (docs/SKILL-PICK.md): one per skill
+    of the topic in syllabus order, the plainest first, second rounds adding
+    the twist; the old verified-first spread (`select_questions`) is only the
+    fallback for a pool that carries no skill filing. `exclude` = ids already on
+    the sheet (a question tagged with two of the sheet's topics must not appear
+    twice). `skip_skills` = skill names Adrian dropped on the card.
+    Returns (pool, chosen, stats, level_used, skill_info) — skill_info is None
+    on the fallback.
     """
     pool, level_used = [], {}
     seen = set(exclude)
-    chosen, stats = [], {}
-    for lv in levels:
+    for i, lv in enumerate(levels):
         rows = fetch_pool(env, lv, ptopic, figures=figures)
         if cap is not None:
             kept = []
@@ -2802,13 +2861,55 @@ def _draw_topic(env: dict, levels: list, ptopic: str, n: int, *, seed, allow_ai,
             rows = kept
         fresh = [r for r in rows if r["id"] not in seen]
         seen.update(r["id"] for r in fresh)
+        for r in fresh:
+            r["_pref"] = i
         pool += fresh
         level_used[lv] = len(fresh)
-        chosen, stats = select_questions(pool, n, seed=seed, allow_ai=allow_ai, figures=figures)
-        if len(chosen) >= n:
-            break
+
+    skills = fetch_skills(env, levels[0], ptopic) if pool else []
+    dropped = {norm(x) for x in (skip_skills or [])}
+    if dropped:
+        skills = [sk for sk in skills if norm(sk["name"]) not in dropped]
+    if skills:
+        links = fetch_skill_links(env, [r["id"] for r in pool])
+        # the same gates select_questions applies, so the fallback and the rule agree on "usable"
+        rejected: dict = {}
+        rows = []
+        for r in pool:
+            ok, why = usable(r, figures=figures)
+            if not ok:
+                rejected[why] = rejected.get(why, 0) + 1
+                continue
+            t = _tier(r)
+            if t >= 2 and not allow_ai:
+                continue
+            rows.append({"id": r["id"], "marks": r.get("total_marks"), "skills": links.get(str(r["id"]), []),
+                         "tier": t, "pref": r.get("_pref", 0), "parts": len(_parts(r)),
+                         "school": r.get("school"), "_row": r})
+        res = pick_by_skill(rows, skills, n, seed=str(seed if seed is not None else ""))
+        if not res["unfiled"]:
+            by_id = {sk["id"]: sk for sk in skills}
+            chosen = []
+            for it in res["items"]:
+                r = it["row"]["_row"]
+                sk = by_id[it["skill_id"]]
+                r["_skill"] = sk["name"]
+                r["_skill_order"] = sk["order"]
+                r["_round"] = it["round"]
+                chosen.append(r)
+            stats = {"pool": len(pool), "usable": len(rows), "rejected": rejected,
+                     "tiers": {t: sum(1 for x in rows if x["tier"] == t) for t in (0, 1, 2, 3)}}
+            info = {"skills": skills,
+                    "covered": [(sk["name"], res["per_skill"].get(sk["id"], 0)) for sk in skills
+                                if res["per_skill"].get(sk["id"], 0)],
+                    "empty": [by_id[i]["name"] for i in res["empty"]],
+                    "skipped": [by_id[i]["name"] for i in res["skipped"]],
+                    "dropped": sorted(dropped and [x for x in (skip_skills or [])] or []),
+                    "unfiled_count": res["unfiled_count"]}
+            return pool, chosen, stats, level_used, info
+
     chosen, stats = select_questions(pool, n, seed=seed, allow_ai=allow_ai, figures=figures)
-    return pool, chosen, stats, level_used
+    return pool, chosen, stats, level_used, None
 
 
 def _merge_stats(parts: list) -> dict:
@@ -2853,7 +2954,7 @@ def make_worksheet(kind: str, topic, bank: str | None = None, folder: str | None
                    suffix: str = "", space: int = 2, optional: int = 0,
                    drop_parts: str | None = None, link: str | None = None,
                    minutes: int = 0, figures: bool = True,
-                   title: str | None = None) -> RunReport:
+                   title: str | None = None, skip_skills: list | None = None) -> RunReport:
     env = env or load_env()
     # One topic, or several (a list, or repeated --topic on the command line).
     # Several: the notes fragments are stacked at the front and the practice is
@@ -2942,10 +3043,13 @@ def make_worksheet(kind: str, topic, bank: str | None = None, folder: str | None
                             % (for_topic, "/".join(levels), hint))
 
     topic_counts: list = []
+    skill_infos: list = []
     if not multi:
-        pool, chosen, stats, level_used = _draw_topic(
+        pool, chosen, stats, level_used, sk_info = _draw_topic(
             env, levels, ptopic, n, seed=seed, allow_ai=allow_ai, figures=figures,
-            cap=cap, scope_skips=scope_skips, exclude=set())
+            cap=cap, scope_skips=scope_skips, exclude=set(), skip_skills=skip_skills)
+        if sk_info:
+            skill_infos.append((ptopic, sk_info))
         if not chosen:
             raise _no_questions(ptopic)
     else:
@@ -2956,9 +3060,11 @@ def make_worksheet(kind: str, topic, bank: str | None = None, folder: str | None
         pools, chosen, parts, level_used = {}, [], [], {}
         used: set = set()
         for i, (t, share) in enumerate(zip(topics, _split_count(n, len(topics)))):
-            pool_t, picked, st, lu = _draw_topic(
+            pool_t, picked, st, lu, sk_info = _draw_topic(
                 env, levels, t, share, seed=seed, allow_ai=allow_ai, figures=figures,
-                cap=cap, scope_skips=scope_skips, exclude=used)
+                cap=cap, scope_skips=scope_skips, exclude=used, skip_skills=skip_skills)
+            if sk_info:
+                skill_infos.append((t, sk_info))
             if not pool_t or (share and not picked):
                 raise _no_questions(t)
             for r in picked:
@@ -3076,7 +3182,8 @@ def make_worksheet(kind: str, topic, bank: str | None = None, folder: str | None
                        questions=chosen, stats=stats, size=size_budget(chosen),
                        scope_notes=scope_notes, link_note=link_note,
                        optional_from=optional_from, figure_notes=figure_notes,
-                       extra_bases=extra_bases, topic_counts=topic_counts)
+                       extra_bases=extra_bases, topic_counts=topic_counts,
+                       skill_infos=skill_infos)
     if dry_run:
         return report
 
@@ -3118,6 +3225,9 @@ def main(argv=None):
     ap.add_argument("--title", help="display name for a several-topic sheet (title line + "
                                     "file name), e.g. 'Trigonometry (all)'; default folds "
                                     "same-family topics into one bracket")
+    ap.add_argument("--skip-skill", action="append", default=[], metavar="NAME",
+                    help="leave this skill of the topic out (repeatable; the names are the bank's "
+                         "subgroups for the topic — docs/SKILL-PICK.md)")
     ap.add_argument("--bank", choices=BANKS, help="notes bank (kind=notes)")
     ap.add_argument("--folder", help="Revision folder (kind=worked): " + ", ".join(WORKED_FOLDERS))
     ap.add_argument("-n", "--questions", type=int, default=8)
@@ -3177,7 +3287,7 @@ def main(argv=None):
             page_break=a.page_break, level=a.level, dry_run=a.dry_run,
             suffix=a.suffix, space=a.space, optional=a.optional,
             drop_parts=a.drop_parts, link=a.link, minutes=a.minutes,
-            figures=not a.no_figures, title=a.title)
+            figures=not a.no_figures, title=a.title, skip_skills=a.skip_skill)
     except ValueError as e:
         print("BAD ARGUMENT: %s" % e, file=sys.stderr)
         return 2

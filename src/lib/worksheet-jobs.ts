@@ -30,6 +30,8 @@ export type WorksheetJobParams = {
    *  stacked at the front, the count split between them. `topic` then carries
    *  the display name "Circles & Indices". (11 Sep 2026) */
   topics?: string[];
+  /** kinds 2 and 4: skills of the topic Adrian dropped on the card ("drop 3 5") — docs/SKILL-PICK.md */
+  skip_skills?: string[];
   /** kind 4: the base sheet's file name (Adrian's own document) */
   sheet?: string;
   /** kind 5: blueprint paper key, e.g. 'EM-P1' */
@@ -163,6 +165,10 @@ export function jobInsert(body: {
     params.count = n;
   }
   if (p.band) params.band = String(p.band).trim().toLowerCase().slice(0, 30);
+  if (Array.isArray(p.skip_skills)) {
+    const names = [...new Set(p.skip_skills.map(x => String(x ?? '').trim().slice(0, 120)).filter(Boolean))].slice(0, 20);
+    if (names.length) params.skip_skills = names;
+  }
   if (p.sheet) params.sheet = String(p.sheet).trim().slice(0, 200);
   if (p.paper) params.paper = String(p.paper).trim().toUpperCase().slice(0, 12);
   if (p.preset) params.preset = String(p.preset).trim().toLowerCase().slice(0, 40);
@@ -192,6 +198,7 @@ export function labelFor(j: Pick<WorksheetJob, 'kind' | 'level' | 'topic' | 'par
   const bits = [KIND_LABEL[j.kind], '—', j.level, '·', j.topic ?? ''];
   if (p.count) bits.push(`· ${p.count} q`);
   if (p.band && p.band !== 'mixed') bits.push(`· ${p.band}`);
+  if (p.skip_skills?.length) bits.push(`· minus ${p.skip_skills.length} skill${p.skip_skills.length === 1 ? '' : 's'}`);
   if (j.kind === 4 && p.sheet) bits.push(`· on "${p.sheet}"`);
   return bits.join(' ').replace(/\s+/g, ' ').trim();
 }

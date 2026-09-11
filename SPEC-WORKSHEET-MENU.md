@@ -74,6 +74,15 @@ Typed shortcuts everywhere: `/ws 3 s3 am binomial theorem advanced 6` reuses
 > **Picks:** line saying how that kind chooses its questions (`lib/make.js PICKS`). The
 > `/api/bot/worksheet` `band` parameter and `lib/marks-band.ts` stay for API callers.
 >
+> **Picking by skill (12 Sep 2026, `docs/SKILL-PICK.md`).** Kinds 2, 3 and 4 pick ONE
+> question per skill of the topic in syllabus order (the bank's `subgroups`), the
+> plainest first, then second rounds that add the twist; kind 1 already worked that
+> way. The confirm card lists the skills (`GET /api/admin/worksheet-jobs?skills=1`) and
+> `drop 3 5` leaves skills out (`params.skip_skills` → `--skip-skill`; kind 3
+> `skipSkills`). A delivered kind-3 sheet says "Skills: N of M covered"; the response
+> carries `skills` + `pick: 'skill' | 'draw'` (draw = the old daily draw, the fallback
+> for a topic with no filing). One rule, two implementations, one fixture file.
+>
 > The paragraph below is the 5 Sep 2026 design, kept for the record:
 >
 > **Difficulty** is banded on **marks**, not `questions.difficulty` — that column is
