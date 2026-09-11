@@ -173,6 +173,14 @@ before it reaches a student.
   the 3 Sep run); pages sent to Adrian. Known: crowding on dense columns; the side strip
   overran the edge on the trial's low-resolution pages (production pages draw on the
   high-resolution original).
+- **Side-strip note placement (11 Sep 2026):** a strip note with a known wrong line
+  sits LEVEL with that line, so its arrow is a short hop; only a note with no aim
+  (nothing attempted, a whole-part verdict) still sits under the part's score chip.
+  Adrian, on Isabelle's Q26: "the side annotations can be written closer to the
+  error, so that the arrow need not be drawn so long" — the 29 Aug chip-anchor rule
+  had parked every note under its chip, a page above the error on a long part. Bot
+  `ai/annotate.js` (the `stripCandidates` anchor), commit 7ca9e24; the pen bench's
+  `leaders-short` check measures the drop.
 - **Log + alarm:** `job_runs` slug `pen-v2-trial` for each trial render; the desk's
   calibration page gets a "pen matches Adrian" column when the trial starts.
 
