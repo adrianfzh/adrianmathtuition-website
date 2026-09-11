@@ -284,7 +284,7 @@ def marks_gap(p):
     `'\\t[3]'` — a minimum gap before the bracket when a question's text runs
     close to the 15.5 cm tab stop. The tab stop, font and size still come from
     `worksheet_lib`; only the two spaces are added here."""
-    if not p.runs:
+    if p is None or not p.runs:     # Q([]) adds no paragraph — its (a) rides the number's line
         return p
     last = p.runs[-1]
     if re.match(r'^\t\[\d+\]$', last.text or ''):

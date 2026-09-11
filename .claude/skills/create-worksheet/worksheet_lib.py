@@ -98,6 +98,17 @@ for _i in range(30):
         f'<w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride>'
         f'</w:num>\n'
     )
+# 30 sub-question numIds (120..149) that START at (b): a question with NO stem
+# puts its "(a)" on the number's own line ("1.  (a) Simplify …"), so the auto
+# list under it must begin at (b) (Adrian, 11 Sep 2026: "the question should be
+# horizontally level with the question number").
+for _i in range(30):
+    NUMBERING_XML += (
+        f'  <w:num w:numId="{120+_i}">'
+        f'<w:abstractNumId w:val="101"/>'
+        f'<w:lvlOverride w:ilvl="0"><w:startOverride w:val="2"/></w:lvlOverride>'
+        f'</w:num>\n'
+    )
 NUMBERING_XML += '</w:numbering>'
 
 
@@ -465,6 +476,7 @@ class Worksheet:
         self.keep_lines_with_text = max(0, int(keep_lines_with_text))
         self._auto_subq_id = 9   # increments to 10, 11, ... per Q with sub-parts
         self._current_subq_id = None
+        self._stemless_q = False  # Q([]) seen: the next SQ rides the number's line
         self._auto_parts_id = 89 # increments to 90, 91, ... per parts() (example sub-parts, flush left)
         self._auto_q_id = 49     # increments to 50, 51, ... per restart_numbering()
         self._current_q_id = 1   # numId 1 = one continuous 1. 2. 3. list
@@ -640,12 +652,22 @@ class Worksheet:
                            {'bold': True})])
 
     def Q(self, parts, marks=None):
-        """Main question. Auto-numbered 1. 2. 3. ..."""
+        """Main question. Auto-numbered 1. 2. 3. ...
+
+        A question with NO stem — `Q([])` followed by SQ() parts — puts its
+        first part on the number's own line, "1.  (a) Simplify …", instead of
+        a bare "1." over an indented "(a)" (Adrian, 11 Sep 2026: "the question
+        should be horizontally level with the question number"). The later
+        parts then count on from (b)."""
         # Bump the sub-question id pool for this question; reset on each Q call
         self._finish_block()    # glue the question that just ended
         self._auto_subq_id += 1
         self._current_subq_id = self._auto_subq_id
         self._block_paras = []  # a new question starts a new keep-together block
+        if not parts:
+            self._stemless_q = True
+            return None
+        self._stemless_q = False
         # Apply the numId inline so MS Word picks it up reliably
         return self._add(parts, style='Question', num_id=self._current_q_id, marks=marks)
 
@@ -666,6 +688,16 @@ class Worksheet:
         """Sub-question (a)(b)(c) ... auto-tracks under the current main question."""
         if self._current_subq_id is None:
             raise RuntimeError('SQ() called before any Q(). Add a main question first.')
+        if self._stemless_q:
+            # "(a)" typed on the question's line at the parts' label column, its
+            # text tabbed to the parts' text column; the list below starts at (b).
+            self._stemless_q = False
+            p = self._add([('text', '(a)'), ('text', '\t')] + list(parts), style='Question',
+                          num_id=self._current_q_id, marks=marks)
+            p.paragraph_format.tab_stops.add_tab_stop(Cm(2.0))   # = the SubQuestion text indent (1134 twips)
+            if 10 <= self._current_subq_id <= 39:
+                self._current_subq_id = 120 + (self._current_subq_id - 10)
+            return p
         return self._add(parts, style='SubQuestion',
                          num_id=self._current_subq_id, marks=marks)
 

@@ -629,6 +629,11 @@ Invoke `create-teaching-notes` and give it this brief:
   the grey arrow `← write negative power in the denominator and power 1/2 as
   square roots`, e.g. `dT/dx = 1/5 + (x − 15)/(3√(x² − 30x + 289))`. The
   student then sees the shape they will set equal to zero or substitute into.
+- **A question with no stem starts on the number's line** (Adrian, 11 Sep
+  2026, Practice 3: "the question should be horizontally level with the question
+  number"). Write `ws.Q([])` then the parts with `ws.SQ(...)`: the library puts
+  "(a)" on the "1." line and counts the rest from (b), so a practice item never
+  shows a bare "1." over an indented "(a)". A question WITH a stem is unchanged.
 - **Parallel is written `//`, never `∥`** (Adrian, 11 Sep 2026: "in practice
   again sheets, parallel should be written as //, not ||"). In prose, in a green
   tag and inside maths alike: `BX // DC`, `[BX // DC gives OX/OC = OB/OD]`. Do not
