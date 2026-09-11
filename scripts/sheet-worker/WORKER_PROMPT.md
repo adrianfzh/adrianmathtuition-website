@@ -486,6 +486,7 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
 
 ## Hard rules
 
+- **Sec syllabus methods** — a worked example, hint or practice solution for a Sec student never uses sum and product of roots (α + β, αβ), factorials, the dot product, integration by parts or the other routes in `docs/SEC-SYLLABUS-METHODS.md`; a quadratic with a known root is done by SUBSTITUTING the root, then solving. (Adrian, 11 Sep 2026 — a Practice Again example taught α + β = −b/a.)
 - **Never contact a student.** No assignment, no release, no Telegram to
   anyone but Adrian via the `done`/`fail` actions above.
 - **Never ship an unverified answer.** Every worked and practice answer is

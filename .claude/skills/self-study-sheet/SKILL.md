@@ -824,6 +824,7 @@ So, for EVERY practice item, in this order:
      --data-urlencode 'topics=cs.{"Plane Geometry"}' \
      --data-urlencode "school=neq.AI Generated" \
      --data-urlencode "national=is.false" \
+     --data-urlencode "legacy_syllabus=is.false" \
      --data-urlencode "deleted_at=is.null" --data-urlencode "limit=60"
    ```
 
@@ -1181,6 +1182,7 @@ Dates belong in Dropbox's own modified column, not in the name.
 
 ## Hard rules
 
+- **Sec syllabus methods** — a worked example, hint or practice solution for a Sec student never uses sum and product of roots (α + β, αβ), factorials, the dot product, integration by parts or the other routes in `docs/SEC-SYLLABUS-METHODS.md`; a quadratic with a known root is done by SUBSTITUTING the root, then solving. (Adrian, 11 Sep 2026 — a Practice Again example taught α + β = −b/a.)
 - **Never send anything to a student.** No assignment creation, no release, no
   Telegram to anyone but Adrian.
 - **One wave.** Overwhelming a student is a worse failure than under-covering.

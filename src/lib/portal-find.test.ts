@@ -39,6 +39,11 @@ describe('practiceEligibility', () => {
     expect(practiceEligibility({ ...base, national: true })).toEqual({ ok: false, reason: 'national paper — grounding only, never served' });
     expect(practiceEligibility({ ...base, school: 'Bedok South', national: false })).toEqual({ ok: true });
   });
+  it('a legacy-syllabus row (cut content, or a sum-and-product-of-roots question) is never served (Adrian, 11 Sep 2026)', () => {
+    expect(practiceEligibility({ ...base, legacy_syllabus: true })).toEqual({ ok: false, reason: 'not in the current syllabus' });
+    expect(practiceEligibility({ ...base, legacy_syllabus: false })).toEqual({ ok: true });
+    expect(practiceEligibility({ ...base, legacy_syllabus: null })).toEqual({ ok: true });
+  });
   const base = { question_text: 'Solve $x^2 = 4$.', answer: 'x = ±2' };
 
   it('accepts a plain bank question with a top-level answer', () => {

@@ -304,6 +304,8 @@ Supported genres (`figure_lib.GENRES`) and their key spec fields:
 
 ## House Style
 
+- **Sec syllabus methods** — a worked example, hint or practice solution for a Sec student never uses sum and product of roots (α + β, αβ), factorials, the dot product, integration by parts or the other routes in `docs/SEC-SYLLABUS-METHODS.md`; a quadratic with a known root is done by SUBSTITUTING the root, then solving. (Adrian, 11 Sep 2026 — a Practice Again example taught α + β = −b/a.)
+
 The library hardcodes Adrian's house style. To change it, edit `worksheet_lib.py` directly.
 
 | Property | Value |

@@ -183,6 +183,8 @@ tile — that release is his.
 
 ## Red lines
 
+- **Sec syllabus methods** — a worked example, hint or practice solution for a Sec student never uses sum and product of roots (α + β, αβ), factorials, the dot product, integration by parts or the other routes in `docs/SEC-SYLLABUS-METHODS.md`; a quadratic with a known root is done by SUBSTITUTING the root, then solving. (Adrian, 11 Sep 2026 — a Practice Again example taught α + β = −b/a.)
+
 - Never paraphrase a bank question. Stems and parts are printed verbatim (`sm()`); the
   worked example IS the exam question.
 - No school, year or source on the page. Not on examples, not under practice.

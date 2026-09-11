@@ -16,6 +16,8 @@ the gates, the figure files, publishing). Student-facing side:
 
 ## Red lines
 
+- **Sec syllabus methods** — a worked example, hint or practice solution in an O-Level Set paper never uses sum and product of roots (α + β, αβ), factorials, the dot product, integration by parts or the other routes in `docs/SEC-SYLLABUS-METHODS.md`; a quadratic with a known root is done by SUBSTITUTING the root, then solving. (Adrian, 11 Sep 2026 — a Practice Again example taught α + β = −b/a.)
+
 - **Never call the Anthropic API.** Every model step is an `Agent` tool spawn under the
   plan (Adrian, 8 Sep 2026: "what api? use plan usage"). The scripts are deterministic.
 - **Never re-skin a real GCE question.** The novelty gate (word-trigram Jaccard ≤ 0.4

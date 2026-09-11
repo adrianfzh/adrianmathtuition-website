@@ -738,7 +738,7 @@ def fetch_pool(env: dict, level: str, topic, page: int = 1000, cap: int = 4000,
     rows, offset = [], 0
     while offset < cap:
         url = (f"{base}/rest/v1/questions?select={QCOLS}"
-               f"&deleted_at=is.null&national=is.false{img_filter}"  # national papers are grounding-only (docs/CONTENT-POLICY.md)
+               f"&deleted_at=is.null&national=is.false&legacy_syllabus=is.false{img_filter}"  # national = grounding-only (docs/CONTENT-POLICY.md); legacy = cut content / out-of-syllabus methods (docs/SEC-SYLLABUS-METHODS.md)
                f"&level=eq.{urllib.parse.quote(level, safe='')}"
                f"&topics=cs.{topic_filter}"
                f"&order=id.asc&offset={offset}&limit={page}")

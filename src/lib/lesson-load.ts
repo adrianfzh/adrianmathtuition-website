@@ -41,7 +41,7 @@ export function loadLessonScript(slug: string): LessonScript | null {
 
 /** The columns a check-question fetch must select (eligibility + display + answer). */
 export const CHECK_QUESTION_COLUMNS =
-  'id, question_text, parts, total_marks, has_image, image_url, images, figure_url, solution, answer, deleted_at, flagged_count, ai_generated, verified';
+  'id, question_text, parts, total_marks, has_image, image_url, images, figure_url, solution, answer, deleted_at, flagged_count, ai_generated, verified, legacy_syllabus';
 
 export type CheckQuestionRow = EligibilityRow & BankQuestion & {
   id: string;

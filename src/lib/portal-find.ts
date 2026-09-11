@@ -108,6 +108,8 @@ export type EligibilityRow = {
   /** school = 'GCE' marks a national paper (GCE / TYS / SEAB specimen) — grounding-only, never served. */
   school?: string | null;
   national?: boolean | null;
+  /** cut content / a question whose design is an out-of-syllabus method (docs/SEC-SYLLABUS-METHODS.md) */
+  legacy_syllabus?: boolean | null;
   deleted_at?: string | null;
   flagged_count?: number | null;
   ai_generated?: boolean | null;
@@ -141,6 +143,11 @@ export function practiceEligibility(q: EligibilityRow): { ok: true } | { ok: fal
   // marker and the solver still read them. Same rule as `questions.national`
   // and the practice_next / practice_pool / kiosk_pool / practice_candidates RPCs.
   if (q.national === true || q.school === 'GCE') return { ok: false, reason: 'national paper — grounding only, never served' };
+  // Legacy-syllabus rows (cut content, or a question built on a method Sec
+  // students are not taught — sum and product of roots, 11 Sep 2026) are what
+  // the practice_next / practice_pool / kiosk_pool RPCs already skip; a
+  // deep link or a finder match must not walk round that gate.
+  if (q.legacy_syllabus === true) return { ok: false, reason: 'not in the current syllabus' };
   if ((q.flagged_count ?? 0) >= 3) return { ok: false, reason: 'flagged by students' };
   if (q.ai_generated === true && q.verified !== true) return { ok: false, reason: 'AI question not yet verified' };
   const hasContent =
