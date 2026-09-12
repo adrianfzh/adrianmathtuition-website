@@ -467,6 +467,30 @@ they contradict an older rule here, they win:
   ×2 (`x³+3x²−8` for `−64`) and Kiara's Example 1 chain ran the inequality
   the wrong way. The standard is his; the arithmetic still gets checked.
 
+### A solution is one chain, top to bottom (Adrian, 12 Sep 2026, binding)
+
+A student wrote back on a marked paper's worked solution: "could you explain how
+you get from here to there? and where did the integral in the green circle go".
+The solution had equated the required integral to a bracket minus a second
+integral, evaluated each piece on its own line, and added them at the end.
+Adrian: "students are confused by the working — it finds each integral
+separately then adds them up. It will be better if the line below follows the
+line above."
+
+- When the required quantity comes from manipulating a known result (a "hence"
+  integral, a subject change, a linear-law rearrangement), carry the WHOLE
+  statement down the page, one operation per line, each line an equation whose
+  left side is exactly what the line above produced, until the required
+  quantity stands alone on the left and its value on the right.
+- His own layout for ∫(6x+1)/√(4x−3) dx = [(x+2)√(4x−3)]: the given result with
+  limits → divide by 2 so 6x becomes 3x → write the numerator as (3x+2) − 1.5
+  so the required integral appears → integrate the 1.5 piece IN PLACE inside
+  the same equation → make the required integral the subject → numbers →
+  answer. Six lines, each following from the one above.
+- Never evaluate pieces on separate lines and reassemble at the end.
+- The reason for a step sits at the END of that line as an arrow note
+  ("← divide by 2, to make 6x to be 3x"), not as a sentence above it.
+
 ## Adrian's formatting and voice — the binding rules (6 Sep 2026)
 
 Adrian diffed the worker's sheets against his own notes docx. These win over
