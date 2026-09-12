@@ -260,6 +260,50 @@ def _left_align_math(elem):
     jc.set(f'{{{M_NS}}}val', 'left')
 
 
+def _align_math(elem, where):
+    """Set an oMathPara's justification to 'left' | 'right' | 'center'."""
+    if elem is None or elem.tag != f'{{{M_NS}}}oMathPara':
+        return
+    pr = elem.find(f'{{{M_NS}}}oMathParaPr')
+    if pr is None:
+        pr = etree.SubElement(elem, f'{{{M_NS}}}oMathParaPr')
+        elem.insert(0, pr)
+    jc = pr.find(f'{{{M_NS}}}jc')
+    if jc is None:
+        jc = etree.SubElement(pr, f'{{{M_NS}}}jc')
+    jc.set(f'{{{M_NS}}}val', where)
+
+
+_ALIGNED_RE = re.compile(r'\\begin\{aligned\}(.*)\\end\{aligned\}', re.S)
+_NOTE_RE = re.compile(r'\\quad\\text\{(←[^}]*)\}(.*)$')
+
+
+def _split_aligned(latex):
+    """An aligned block → [(lhs, rhs, note)] per line, or None if not aligned.
+    Each line is `lhs &= rhs \\quad\\text{← note}`; a line starting with `&`
+    has an empty lhs; `\\\\[4pt]` gaps become an empty row."""
+    m = _ALIGNED_RE.search(latex.strip())
+    if not m:
+        return None
+    body = m.group(1)
+    rows = []
+    for raw in re.split(r'\\\\(?:\[[^\]]*\])?', body):
+        line = raw.strip()
+        if not line:
+            rows.append(('', '', ''))
+            continue
+        note = ''
+        k = line.find('\\quad\\text{←')
+        if k >= 0:
+            note = line[k + len('\\quad'):].strip(); line = line[:k].rstrip()
+        if '&' in line:
+            lhs, rhs = line.split('&', 1)
+        else:
+            lhs, rhs = line, ''
+        rows.append((lhs.strip(), rhs.strip(), note))
+    return rows
+
+
 CHECK_GREEN = '2E7D32'
 
 def _colour_math(elem, hex_rgb):
@@ -993,7 +1037,7 @@ class Worksheet:
         self.doc.add_paragraph()  # breathing space between the box and what follows
         return table
 
-    def _solution_step(self, p, step):
+    def _solution_step(self, p, step, width=14.5):
         """Render ONE solution step into paragraph p (shared by the box and its columns)."""
         p.paragraph_format.line_spacing = 1.5   # same as the body (Adrian, 2 Sep 2026: 1.5 "improves readability")
         if isinstance(step, tuple) and step and step[0] == 'figure':
@@ -1003,6 +1047,9 @@ class Worksheet:
             self._fill(p, [('text', '✓ Check: ', {'bold': True})] + list(step[1]))
             _recolour_paragraph(p, CHECK_GREEN)
         elif isinstance(step, str):
+            rows = _split_aligned(step)
+            if rows is not None:
+                return self._solution_lines(p, rows, width)
             p.alignment = WD_ALIGN_PARAGRAPH.LEFT
             p.paragraph_format.left_indent = Cm(0.5)
             elem = _latex_to_omml(step, display=True)
@@ -1012,6 +1059,77 @@ class Worksheet:
                 p._element.append(elem)
         else:
             self._fill(p, step)
+
+    def _solution_lines(self, host, rows, width):
+        """An aligned block as ONE ROW PER LINE of a borderless table: the left-hand
+        side right-aligned in column 1, "= right-hand side" left-aligned in column 2
+        so every line meets at the equals sign, the ← note in column 3. Adrian,
+        12 Sep 2026: "able to make them line by line so I can edit, add lines,
+        delete lines? equation should still be aligned at equal sign" — a row is
+        an ordinary table row in Word, so he can insert or delete lines."""
+        cell = host._parent
+        has_note = any(n for _, _, n in rows)
+        def _chars(tex):   # rough printed length of a latex fragment
+            t = re.sub(r'\\(d?frac|tfrac)\{([^}]*)\}\{([^}]*)\}', lambda m: max(m.group(2), m.group(3), key=len), tex)
+            t = re.sub(r'\\text\{([^}]*)\}', r'\1', t)
+            t = re.sub(r'\\quad|\\,|\\;', ' ', t)
+            t = re.sub(r'\\[a-zA-Z]+', 'x', t)
+            return len(re.sub(r'[{}^_]', '', t))
+        lhs_chars = max((_chars(l) for l, _, _ in rows), default=4)
+        rhs_chars = max((_chars(r) for _, r, _ in rows), default=6)
+        lhs_w = min(max(0.24 * lhs_chars + 0.5, 1.4), 0.45 * width)
+        if has_note:
+            rhs_w = min(max(0.24 * rhs_chars + 0.8, 2.5), width - lhs_w - 2.5)
+            note_w = width - lhs_w - rhs_w
+        else:
+            rhs_w = width - lhs_w; note_w = 0.0
+        widths = [lhs_w, rhs_w] + ([note_w] if has_note else [])
+        t = cell.add_table(rows=len(rows), cols=len(widths))
+        t.autofit = False
+        tblPr = t._tbl.tblPr
+        b = OxmlElement('w:tblBorders')
+        for side in ('top', 'left', 'bottom', 'right', 'insideH', 'insideV'):
+            el = OxmlElement(f'w:{side}'); el.set(qn('w:val'), 'nil'); b.append(el)
+        tblPr.append(b)
+        mar = OxmlElement('w:tblCellMar')
+        for side, v in (('top', 0), ('bottom', 0), ('left', 20), ('right', 20)):
+            el = OxmlElement(f'w:{side}'); el.set(qn('w:w'), str(v)); el.set(qn('w:type'), 'dxa'); mar.append(el)
+        tblPr.append(mar)
+        for col, w in zip(t.columns, widths):
+            col.width = Cm(w)
+        for (lhs, rhs, note), row in zip(rows, t.rows):
+            for c, w in zip(row.cells, widths):
+                c.width = Cm(w)
+            cells = row.cells
+            for j, (tex, where) in enumerate(((lhs, 'right'), (rhs, 'left'))):
+                p = cells[j].paragraphs[0]
+                p.paragraph_format.line_spacing = 1.15
+                p.paragraph_format.space_after = Pt(0)
+                if not tex:
+                    continue
+                elem = _latex_to_omml(tex, display=True)
+                if elem is not None:
+                    _align_math(elem, where)
+                    _style_annotations(elem)
+                    p._element.append(elem)
+            if has_note:
+                p = cells[2].paragraphs[0]
+                p.paragraph_format.line_spacing = 1.15
+                p.paragraph_format.space_after = Pt(0)
+                if note:
+                    elem = _latex_to_omml(note, display=False)
+                    if elem is not None:
+                        _style_annotations(elem)
+                        _colour_math(elem, '606060')
+                        for rpr in elem.iter(qn('w:rPr')):
+                            for old in rpr.findall(qn('w:sz')): rpr.remove(old)
+                            sz = OxmlElement('w:sz'); sz.set(qn('w:val'), '16'); rpr.append(sz)
+                        p._element.append(elem)
+            for c in cells:
+                tcPr = c._tc.get_or_add_tcPr()
+                va = OxmlElement('w:vAlign'); va.set(qn('w:val'), 'center'); tcPr.append(va)
+        host._p.addnext(t._tbl)
+        return t
 
     def _solution_cols(self, work_cell, columns, widths_cm, first):
         """A borderless nested table with one cell per column, each holding steps."""
@@ -1034,7 +1152,7 @@ class Worksheet:
             for step in steps:
                 p = cell.paragraphs[0] if f else cell.add_paragraph()
                 f = False
-                self._solution_step(p, step)
+                self._solution_step(p, step, width=w - 0.3)
         # the nested table sits after `host`; move it right behind that paragraph
         host._p.addnext(inner._tbl)
         return inner
