@@ -167,8 +167,24 @@ for _i in range(30):
 NUMBERING_XML += '</w:numbering>'
 
 
+_FUNC_RE = re.compile(
+    r'(\\(?:sin|cos|tan|sec|cot|csc|operatorname\{cosec\}|operatorname\{sec\}|operatorname\{cot\})'
+    r'(?:\^\{[^}]*\}|\^[0-9])?)'          # the function, with an optional power
+    r'\s*(?=[A-Za-z0-9]|\\(?:theta|alpha|beta|gamma|phi|varphi|omega|lambda|mu|pi)\b)')
+
+
+def _function_spaces(latex: str) -> str:
+    """"cos P", not "cosP": pandoc's OMML runs a function name straight into a
+    plain argument, while Adrian types a space (12 Sep 2026: "cosP should be
+    written like human typed cos P"). A thin space after every trig function
+    that is followed by a letter, digit or Greek letter reproduces his look;
+    brackets, fractions and roots are left alone."""
+    return _FUNC_RE.sub(lambda m: m.group(1) + '\\, ', latex)
+
+
 def _latex_to_omml(latex_expr, display=False):
     """Convert a LaTeX math expression to an OMML element via pandoc."""
+    latex_expr = _function_spaces(latex_expr)
     md = f"$${latex_expr}$$" if display else f"${latex_expr}$"
     with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
         f.write(md)
