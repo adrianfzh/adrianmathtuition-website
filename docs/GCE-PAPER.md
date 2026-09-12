@@ -137,14 +137,27 @@ First set: `GCE-AM-P1-seed1` (13 Q, figures on Q7/Q9/Q10/Q13) + `GCE-AM-P2-seed1
 (10 Q, figures on Q6/Q10), written 8 Sep 2026, JSON in `data/gce-generated/` (untracked),
 **published as A Math Set 1 on 9 Sep 2026** (23 rows).
 
-Second set: `GCE-EM-P1-seed1` (27 Q, figures on Q2/Q7/Q9/Q15/Q23/Q25/Q26) +
-`GCE-EM-P2-seed1` (9 Q, figures on Q3/Q4/Q5/Q6/Q8), the first E Math (4052) set, written
-11 Sep 2026 with the grouped P1 spawns (three slots per author/solver/moderator agent);
-14 of 36 slots took a repair round, three took two (P1 Q7 constructions, P1 Q21 named
-a re-skin of 2017 P1 Q19, P2 Q7 named a re-skin of 2024 P2 Q7). JSON in
-`data/gce-generated/` (untracked); **awaiting Adrian's read-through before `publish.mjs`**.
-`check` now appends the `figure_description` to `Q<n>.solve.md` / `.moderate.md` for a
-figure slot — the P1 Q25 box plot was unsolvable blind without it.
+E Math (4052), seed 1 — **"Set 0", rejected, never published.** `GCE-EM-P1-seed1` (27 Q)
++ `GCE-EM-P2-seed1` (9 Q), written 11 Sep 2026 with the grouped P1 spawns; on 12 Sep
+Adrian read it and said "sep 11 set was too easy, must know that the standard for o levels
+got higher the recent years, like 2024/2025 are harder compared to previous years." Its
+files stay on the MacBook Pro. `check` appends the `figure_description` to
+`Q<n>.solve.md` / `.moderate.md` for a figure slot since that round (the P1 Q25 box plot
+was unsolvable blind without it).
+
+E Math Set 1 = **seed 2**, written 12 Sep 2026 at the 2024/25 standard: `GCE-EM-P1-seed2`
+(27 Q, 90 marks, figures on Q9/Q18/Q20/Q22/Q26, a self-contained construction at Q7) +
+`GCE-EM-P2-seed2` (9 Q, 90 marks, figures on Q3 graph paper/Q5/Q8). What changed in the
+method: `standard.mjs` writes `standard.md` (the written 2024/25 standard, now
+`.claude/skills/gce-paper/reference/em-standard-2024-2025.md`) and
+`standard-questions-P<n>.md` (all 54 P1 / 18 P2 real 2024+2025 questions) into the run,
+the four per-slot prompts became templates under the skill's `prompts/` and every one of
+them carries the standard; the moderator's verdict gained `standard: at|below|above`
+and scores a below- or above-standard slot ≤ 3 so `assemble` rejects it. 24 of 36 slots
+took at least one repair round (P1 Q3 Q4 Q7 Q8 Q10–13 Q15 Q16 Q18 Q20–22 Q25; every P2
+slot, P2 Q6 three rounds); 30 accepted at 5/5, six at 4/5 after a polish. JSON in
+`data/gce-generated/GCE-EM-P{1,2}-seed2-2026-09-12.json` (untracked); **handed to Adrian
+12 Sep 2026, publish as Set 1 waits for his OK.**
 
 The agent step was validated blind on 9 Sep 2026: an Opus agent given only P1 Q13's
 `figure_description` and the `--families`/`--doc` output chose `function-graph`, wrote a
@@ -152,6 +165,14 @@ spec whose region area verify() re-derived to the answer, and matched the hand-w
 figure in two render iterations; the tricks it had to discover (tick suppression, solid
 tangent, unlabelled answer-curve) are now in the prompt, and the author brief asks for
 the axis window and the labelling in every `figure_description`.
+
+Print sizing (12 Sep 2026): `render-paper-pdf` sizes every `<img>` at naturalWidth × 96/200
+CSS px, column-wide at most and 300pt tall at most, so an SVG data-URI figure of nominal
+width 640 prints ≈ 8 cm wide; `figureDataUri` scales a `graph-paper` figure's nominal
+size to the cap (the candidate draws on it) and `export-docx.py` gives it 15 cm. A
+construction figure therefore cannot print at true size — construction slots are
+self-contained. Unverified: whether `max-height` + the explicit width distorts a
+near-square PNG on `/app/print` (the published path) — check a printed Set paper.
 
 Known gaps: no JC shape yet (`SHAPE` has AM + EM — the EM entry, its 4052 register and the 4052 formula sheet in `export-docx.py` landed with E Math Set 1, 11 Sep 2026); the run folder lives wherever `--out` points (scratchpad
 for trials); `function-graph` has no `ticks:false` (the step trick stands in for it).

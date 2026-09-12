@@ -80,6 +80,18 @@ KNOWN TRICKS (learned on Set 1 — the --doc output does not say these):
   fixes which side is horizontal). `box-plot` numbers EVERY tick and grids only
   at ticks, so summary values that are not multiples of the step cannot be read
   off it — use the engine with a 1-unit grid emphasised every 5 and 10.
+- More from E Math Set 1 (12 Sep 2026): `construction` labels default to the point's
+  `id` — set `"label": ""` to suppress one. `graph-paper` numbers its ticks only with
+  `axes: true`; `minorPerMajor` is capped at 10 and 5 is right for 0.5-unit majors
+  (10 prints sub-millimetre). `maxPlotH` clamps the plot height. The engine's
+  `verifyDrawing` gate wants a circle's centre dot as `el.ring('O', {r: 1.5, w: 2})`.
+  `--doc engine` lists the `el.*` names only — signatures are in the bot's
+  `ai/figure-engine.js`. `loci.circle` draws dashed; `circle-config` takes at most two
+  tangents; `plane-geometry-configuration` has no circle primitive. A vertical
+  `el.dim`/`el.darrow` label needs `labelDx: -22`; an `el.dim` tick at an arc's apex
+  prints a flat spot — use `el.darrow`. `polygon-angles` MODE A forces equal-side
+  ticks. A `figure_description` should say where each side-length label goes and
+  which points get dots — guess those and the author will disagree.
 
 Iterate (edit → render → view) up to 6 times. Stop when the figure is correct and clean.
 

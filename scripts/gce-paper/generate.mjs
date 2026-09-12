@@ -424,7 +424,30 @@ function check() {
 function figureDataUri(runDir, pos) {
   const p = resolve(runDir, `Q${pos}.figure.svg`);
   if (!existsSync(p)) return null;
-  return `data:image/svg+xml;base64,${readFileSync(p).toString('base64')}`;
+  let svg = readFileSync(p, 'utf8');
+  // The print renderer (render-paper-pdf) sizes an <img> at naturalWidth x 96/200
+  // CSS px (its sharpness pass for scanned crops) and caps it at 300pt tall. A
+  // graph-paper grid the candidate draws on must print as large as that cap
+  // allows, so its nominal width/height (never the viewBox) are scaled up until
+  // the printed height meets the cap. Every other figure keeps the engine's size.
+  const specPath = resolve(runDir, `Q${pos}.figure.json`);
+  if (existsSync(specPath)) {
+    let family = null;
+    try { family = JSON.parse(readFileSync(specPath, 'utf8')).family; } catch { /* not a registry figure */ }
+    if (family === 'graph-paper') {
+      const m = svg.match(/<svg[^>]*\swidth="([\d.]+)"[^>]*\sheight="([\d.]+)"/);
+      if (m) {
+        const w = Number(m[1]), h = Number(m[2]);
+        const CAP_CSS_HEIGHT = 400;           // the renderer's 300pt max-height, in CSS px
+        const CSS_PER_NATURAL = 96 / 200;     // the renderer's sharpness ratio
+        const factor = Math.max(1, CAP_CSS_HEIGHT / CSS_PER_NATURAL / h);
+        svg = svg
+          .replace(/(<svg[^>]*\swidth=")[\d.]+(")/, `$1${Math.round(w * factor)}$2`)
+          .replace(/(<svg[^>]*\sheight=")[\d.]+(")/, `$1${Math.round(h * factor)}$2`);
+      }
+    }
+  }
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
 }
 
 async function assemble() {

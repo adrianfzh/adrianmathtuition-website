@@ -55,14 +55,20 @@ the gates, the figure files, publishing). Student-facing side:
 | repair | **Fable** | same author with the verdict in hand |
 | figure author | **Opus** | mechanical against a written spec doc; verify() catches errors |
 
-Run slots in **waves of 2–4 agents in parallel** (independent slots; one message,
-several `Agent` calls). Paper-level coherence comes from `paper-so-far.md`, which
+Run slots in **waves of agents in parallel** (independent slots; one message, several
+`Agent` calls; the harness caps a session at 20 live subagents — count what is still
+running before a wave). Paper-level coherence comes from `paper-so-far.md`, which
 `check` rewrites after every accepted slot — later waves read the earlier slots.
 **E Math Paper 1 has 27 short slots (1–7 marks):** there one author agent writes THREE
-consecutive slots (Q1–3, Q4–6, …), one Opus agent blind-solves the same three
-`Q<n>.solve.md` files, one moderator judges the three — the files stay per slot, the
-gates run per slot, only the spawns are grouped (first done for E Math Set 1, 11 Sep 2026).
-E Math P2 (9 long slots) and both A Math papers stay one agent per slot.
+consecutive slots (Q1–3, Q4–6, …), one moderator judges the three — the files stay per
+slot, the gates run per slot, only those spawns are grouped (first done 11 Sep 2026).
+Blind solves and repairs are ONE slot per spawn (the solver must not see a sibling's
+key-shaped context; a repair is one question's conversation). E Math P2 (9 long slots)
+and both A Math papers stay one agent per slot.
+
+**If the session's usage limit kills agents mid-wave** (it did on 12 Sep 2026): when it
+resets, list which `Q<n>.json` / `.blind.json` / `.verdict.json` files are missing or
+older than their input and re-spawn ONLY that work — never the whole wave.
 
 ## The round
 
@@ -85,15 +91,44 @@ return), `Q<n>.brief.md` per slot (topic, marks, real GCE questions on that topi
 STYLE anchors only), `paper-so-far.md`, `corpus.json`, `plan.json`. Read `plan.json`'s
 slot list once; that is the wave plan.
 
+### 1b. The standard (deterministic) — the 2024/2025 papers in front of every agent
+
+```bash
+node scripts/gce-paper/standard.mjs --run "$RUN"          # --years 2024,2025 is the default
+```
+Writes `standard-questions-P<n>.md` (every real GCE 2024 + 2025 question of that paper
+number, from the run's corpus, in Q order) and `standard.md` (the written standard for
+the level — E Math: [`reference/em-standard-2024-2025.md`](reference/em-standard-2024-2025.md);
+A Math gets a placeholder until one is written). **Why this step exists** — Adrian,
+12 Sep 2026, on the 11 Sep E Math paper: "sep 11 set was too easy, must know that the
+standard for o levels got higher the recent years, like 2024/2025 are harder compared to
+previous years." The exemplars in `Q<n>.brief.md` are weighted by syllabus cut and mark
+closeness, not by year, so without this file an author calibrates to the 2019–2022
+register. That paper became "Set 0" (unpublished); Set 1 was rewritten from seed 2.
+The rule every prompt below carries: **every slot AT the 2024/25 standard for its marks —
+not below (the moderator scores it ≤ 3 and `assemble` rejects it), not above (the paper
+must stay finishable)** — and any re-skin of a 2024/25 question is `too_close_to`.
+
 ### 2. Per slot — author → check → blind solve → moderate → repair
 
-**Author** (Fable agent). Prompt: "You are writing slot Q<n> of a new GCE O-Level A Math
-paper. Read `$RUN/author-brief.md`, `$RUN/Q<n>.brief.md` and `$RUN/paper-so-far.md`.
-Write ONE new question to the brief and save it as `$RUN/Q<n>.json` in exactly the JSON
-shape the author brief specifies (stem, parts with `(a)`-style labels, marks, answers,
-a full worked `solution`, `needs_figure` + a precise `figure_description` if a figure is
-needed, `syllabus_check`, `originality_note`). The exemplars are for register only —
-never their numbers, context or structure." Reply expected: the file path + one line.
+The prompts are TEMPLATES in [`prompts/`](prompts/) (`author.md`, `blind.md`,
+`moderate.md`, `repair.md` — E Math 4052 wording; edit the syllabus code and the
+brief's name for A Math). Render one with the placeholders filled and paste the file's
+contents as the agent prompt:
+
+```bash
+zsh .claude/skills/gce-paper/prompts/render.sh author   "$RUN" 1 1,2,3   # → $RUN/prompt-author-Q1-2-3.md
+zsh .claude/skills/gce-paper/prompts/render.sh blind    "$RUN" 1 4       # one slot per blind/repair spawn
+zsh .claude/skills/gce-paper/prompts/render.sh moderate "$RUN" 1 1,2,3
+zsh .claude/skills/gce-paper/prompts/render.sh repair   "$RUN" 1 4
+```
+
+**Author** (Fable agent) — `prompts/author.md`: reads `author-brief.md`, `standard.md`,
+`standard-questions-P<n>.md`, `paper-so-far.md`, then its `Q<n>.brief.md`s; writes
+`Q<n>.json` in the brief's JSON shape. The discipline block (work every part yourself,
+difficulty by what the candidate must DECIDE, prefer no figure, "app" never "portal") is
+in the template. Reply expected: the file path(s) + one line per slot naming the step
+that makes it 2024/25 standard.
 
 **Gates** (deterministic):
 ```bash
@@ -103,21 +138,25 @@ node scripts/gce-paper/generate.mjs check --run "$RUN" --slots <n>
 nearest-neighbour), plus `Q<n>.solve.md` (question only) and `Q<n>.moderate.md`
 (question + key + exemplars). A failed gate → straight to repair.
 
-**Blind solve** (Opus agent). Prompt: "Solve every part of the question in
-`$RUN/Q<n>.solve.md` as a strong O-Level candidate. Do not look for any other file.
-Write `$RUN/Q<n>.blind.json` as `{parts:[{label, answer, working}]}`." It must not
-be told the key exists.
+**Blind solve** (Opus agent) — `prompts/blind.md`: opens ONLY `Q<n>.solve.md` (which
+carries its own instructions and the `{"answers": {...}, "solvable": bool, "issues": [...]}`
+shape) and writes `Q<n>.blind.json`. It is never told a key exists.
 
-**Moderate** (Fable agent). Prompt: "You are the SEAB moderator for `$RUN/Q<n>.moderate.md`
-(question, key, style exemplars). Compare the key against the independent solve in
-`$RUN/Q<n>.blind.json` part by part; check the mark allocation, the register, the
-syllabus scope, and whether any exemplar has been re-skinned. Write
-`$RUN/Q<n>.verdict.json`: `{parts:[{label, agree:boolean, note}], style_score:1-5,
-reskin_of:null|'<exemplar id>', problems:[…], accept:boolean}`."
+**Moderate** (Fable agent) — `prompts/moderate.md`: reads `Q<n>.moderate.md` (its full
+brief: check the key against the blind solve, judge the question), `standard.md`,
+`standard-questions-P<n>.md` and `Q<n>.gates.json`; writes `Q<n>.verdict.json` as
+`{parts:[{label, agree, note}], all_agree, key_verdict, score:1-5, standard:"at"|"below"|"above",
+fixes:[…], too_close_to:null|"<ref>", why}`. `assemble` accepts only
+`gates.pass && all_agree && !too_close_to && score >= 4`. Below or above the 2024/25
+standard → score ≤ 3 with concrete fixes.
 
-**Repair** (Fable agent, only when needed): the author again, with the verdict and the
-gates file, rewriting `Q<n>.json`; then re-run check → blind solve → moderate. Three
-rounds max — after that, replace the question rather than patch it.
+**Repair** (Fable agent, only when needed) — `prompts/repair.md`: the author again with
+the gates, blind and verdict files, fixing EVERY named problem or writing a new question
+for the slot; then re-run check → blind solve → moderate. Three rounds max — after that,
+replace the question rather than patch it (P2 Q6 of E Math Set 1 took all three).
+**Score-4 slots with concrete `fixes`:** apply the cheap polish and re-run `check`; a
+wording-only polish is not re-blinded or re-moderated. Score 5 → leave it alone. Mark
+totals are plan-locked — a moderator's "reweight this part" is a note, not a change.
 
 ### 3. Figures — the FIGURE-AUTHOR agent (Opus), one per `needs_figure` slot
 
@@ -144,6 +183,16 @@ repair the question, never fudge the numbers).
 **Checkpoint 1 (session):** open every `Q<n>.figure.png` yourself once. The one thing
 verify() cannot catch: a value the candidate is asked to find printed on the figure.
 
+Two print facts the figure step must respect (12 Sep 2026):
+- **A construction figure cannot print at true size** (the renderer scales every figure
+  to a 300pt-tall / column-wide box), so a construction slot must be self-contained —
+  the candidate constructs the whole thing from stated lengths; never "on the diagram
+  below, construct …" over a pre-drawn base.
+- **A `graph-paper` grid the candidate draws on** prints as large as the renderer's cap
+  allows by itself (`generate.mjs figureDataUri` scales its nominal size; `export-docx.py`
+  gives it 15 cm) — but keep `minorPerMajor` at 5 for 0.5-unit majors (10 gives
+  sub-millimetre minors that vanish in print).
+
 ### 4. Assemble + read-through
 
 ```bash
@@ -155,6 +204,10 @@ python3 scripts/gce-paper/export-docx.py "$RUN/<key>-seed<n>.json" --figures "$R
 style ≥ 4/5 and no re-skin is named; it renders the paper PDF (answer key on) and the
 solutions booklet through the SAME renderers `/app/print` uses. `export-docx.py` writes
 `<name>.docx` + `<name>-solutions.docx`.
+
+Before handing over, page through every figure and construction page of the paper PDF
+yourself (`pdftotext -layout` per page to build the Q → page map, `pdftoppm -r 110 -f N -l N`
+to view one) — the assemble PDF is what the app prints.
 
 **Checkpoint 2 (Adrian):** hand him the DOCX/PDF (in-app file card; Telegram when the
 session is headless — CLAUDE.md §File deliverables). He reads the paper. Amend slots he

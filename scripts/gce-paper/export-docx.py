@@ -154,7 +154,15 @@ def figure_para(ws, q, pos, figures):
             path = cand
             break
     if path:
-        ws.figure(path, width_cm=9.5)
+        width_cm = 9.5
+        spec = join(figures, f'Q{pos}.figure.json') if figures else None
+        if spec and exists(spec):
+            try:
+                if json.load(open(spec)).get('family') == 'graph-paper':
+                    width_cm = 15.0   # a grid the candidate draws on prints near the full text width
+            except Exception:
+                pass
+        ws.figure(path, width_cm=width_cm)
         return True
     if q.get('needs_figure'):
         p = ws.para([('text', '[Figure to be drawn: ' + (q.get('figure_description') or '') + ']', {'italic': True})])
