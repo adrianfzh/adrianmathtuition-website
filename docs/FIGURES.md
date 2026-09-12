@@ -174,6 +174,23 @@ weaker rule (a held path that was itself a panel) and were restored the same hou
 two more, TMJC 2021 P1 Q4 and Q6, were held back by eye for the same reason before
 the sweep ran. Read `held-audit.json`'s shape before trusting a count like this.
 
+**🧹 Clean empties a box the judge calls empty (12 Sep 2026).** Adrian, on a
+candidate that still showed the ghost of a logo: *"cleaning still have leftover
+marks, not complete, marks/watermarks/blemishes should be completely gone -
+cleaned"*. The ghost came from the wash's own rules — a tone band that stopped at
+250 and a halo around anything as dark as the figure's ink, so a stamp's darkest
+strokes (below the ink line) were kept as if they were the figure. Now the judge
+marks a box `clear: true` when NOTHING of the figure lies inside it, and that box
+is emptied outright: every pixel short of page white goes, the mark's pale tail is
+followed outward past the box (`SPILL_REACH`), and the one thing kept is a DARK
+stroke that enters the box's interior and leaves again (an axis running through),
+with its halo — measured: a border-ring test blocked a box whose edge merely sat on
+the x-axis, and an any-ink component test blocked every box because the stamp's
+own tagline ran out of it. `clearBoxes()`, tested. The wash band now reaches 254.
+On the three cards he showed, residue inside the judge's boxes went 6,480 → 0
+(YIJC 2022 P1 Q7), 6,538 → the kept axis only (CJC 2022 P1 Q8), 784 → the kept
+arrow only (EJC 2020 P1 Q2); the second look passed all three.
+
 **🧹 Clean also handles PALE marks, and never without a second look (9 Sep 2026).**
 Adrian, on CJC 2022 P1 Q4(a) — a whole, legible curve with a KIASU vendor stamp in
 the empty lower-left: *"so clean does not work on such images?"* It did not, and the

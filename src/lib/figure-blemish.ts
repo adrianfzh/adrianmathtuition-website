@@ -51,7 +51,11 @@ export const LOOSE_PAD = 0.05;
 /** The figure's own ink. Anything this dark is never washed. */
 export const DARK = 120;
 /** Above this is the page itself; washing it would change nothing. */
-export const WASH_HI = 250;
+// 12 Sep 2026 (Adrian, on a candidate that still showed the ghost of a logo:
+// "cleaning still have leftover marks, not complete, marks/watermarks/blemishes
+// should be completely gone - cleaned"): the band stopped at 250 and left the
+// stamp's faintest tail on the page. Anything short of page white goes.
+export const WASH_HI = 254;
 /** Pixels this close to the figure's ink are protected — the anti-aliased edge
  *  of a stroke is mid-tone, and washing it would fray every line it touches. */
 export const PROTECT_PX = 2;
@@ -76,7 +80,12 @@ export type Box = { x0: number; y0: number; x1: number; y1: number };
 export type Component = Box & { pixels: number };
 
 /** The judge's answer. Boxes are on a 0–1000 grid in both axes. */
-export type Blemish = { what: string; box: Box; sure: boolean };
+/** `clear`: the judge says NOTHING of the figure lies inside this box — only
+ *  the foreign mark and blank page — so the box is emptied entirely: every
+ *  non-white pixel in it goes, no tone band, no halo. That is what "completely
+ *  gone" needs for a logo whose darkest strokes fall below the ink line and
+ *  would otherwise be kept as if they were the figure's own ink. */
+export type Blemish = { what: string; box: Box; sure: boolean; clear?: boolean };
 export type EraseVerdict = { blemishes: Blemish[]; unsure: string[]; refuse: string | null };
 
 /**
@@ -101,7 +110,7 @@ export function parseEraseVerdict(text: string): EraseVerdict {
     if (!box || box.length !== 4 || box.some((n) => !Number.isFinite(n))) continue;
     const [x0, y0, x1, y1] = box;
     if (x1 <= x0 || y1 <= y0 || x0 < 0 || y0 < 0 || x1 > 1000 || y1 > 1000) continue;
-    out.push({ what: typeof r.what === 'string' ? r.what.trim() : '', box: { x0, y0, x1, y1 }, sure: r.sure !== false });
+    out.push({ what: typeof r.what === 'string' ? r.what.trim() : '', box: { x0, y0, x1, y1 }, sure: r.sure !== false, clear: r.clear === true });
   }
   const unsure = (Array.isArray(o.unsure) ? o.unsure : []).filter((s): s is string => typeof s === 'string' && s.trim() !== '');
   return { blemishes: out, unsure, refuse: null };
@@ -135,6 +144,35 @@ export function inkComponents(grey: Uint8Array | Buffer, w: number, h: number, i
     out.push({ x0, y0, x1, y1, pixels: n });
   }
   return out;
+}
+
+/** Like inkComponents, but also says which component every pixel belongs to
+ *  (label 0 = not ink). Needed to keep ONE stroke and clear around it. */
+export function labelComponents(grey: Uint8Array | Buffer, w: number, h: number, ink = INK): { labels: Int32Array; comps: Component[] } {
+  const labels = new Int32Array(w * h);
+  const comps: Component[] = [];
+  const qx = new Int32Array(w * h), qy = new Int32Array(w * h);
+  for (let sy = 0; sy < h; sy++) for (let sx = 0; sx < w; sx++) {
+    const si = sy * w + sx;
+    if (labels[si] || grey[si] >= ink) continue;
+    const id = comps.length + 1;
+    let head = 0, tail = 0; qx[tail] = sx; qy[tail] = sy; tail++; labels[si] = id;
+    let x0 = sx, y0 = sy, x1 = sx, y1 = sy, n = 0;
+    while (head < tail) {
+      const x = qx[head], y = qy[head]; head++; n++;
+      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        if (!dx && !dy) continue;
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+        const ni = ny * w + nx;
+        if (labels[ni] || grey[ni] >= ink) continue;
+        labels[ni] = id; qx[tail] = nx; qy[tail] = ny; tail++;
+      }
+    }
+    comps.push({ x0, y0, x1, y1, pixels: n });
+  }
+  return { labels, comps };
 }
 
 /** A judge box (0–1000 grid) as pixels, grown by HINT_PAD on every side. */
@@ -252,6 +290,100 @@ export function protectedMask(grey: Uint8Array | Buffer, w: number, h: number, d
 
 export type WashResult = { mask: Uint8Array; count: number; boxes: Box[]; skipped: string[] };
 
+/** Pad for a clear box: a little beyond what the judge drew, so the faint
+ *  outer edge of a mark it boxed "a little generously" still goes. */
+export const CLEAR_PAD = 0.012;
+
+export type ClearResult = { mask: Uint8Array; count: number; boxes: Box[]; skipped: string[]; rest: Blemish[]; kept: string[] };
+/** How far past its box a mark's pale tail is followed, as a share of the shorter side. */
+export const SPILL_REACH = 0.12;
+
+/**
+ * The whole-box half (12 Sep 2026). A box the judge marked `clear` is emptied
+ * completely — every pixel short of page white goes, with no tone band and no
+ * halo, because the judge has said nothing of the figure is inside it. ONE
+ * guard, on the judge's word: if a dark component reaching into the box also
+ * reaches well outside it, the figure crosses this box (a curve, an axis, a
+ * label the judge missed) — so the box is NOT cleared and falls back to the
+ * protected mechanisms; that is reported, never silent.
+ */
+export function clearBoxes(grey: Uint8Array | Buffer, w: number, h: number, _comps: Component[], hints: Blemish[]): ClearResult {
+  const mask = new Uint8Array(w * h);
+  const boxes: Box[] = [];
+  const skipped: string[] = [];
+  const kept: string[] = [];
+  const rest: Blemish[] = [];
+  let count = 0;
+  if (!hints.some((x) => x.clear)) return { mask, count, boxes, skipped, rest: hints.slice(), kept };
+  // The figure's ink is DARK; a stamp's is pale. So the figure is looked for
+  // among DARK components only (measured 12 Sep 2026: testing all ink blocked
+  // every clear box, because a watermark's own tagline ran out of the box;
+  // testing the border ring blocked a box whose edge merely sat on the x-axis).
+  // A dark stroke that reaches INTO the box's interior and continues OUTSIDE it
+  // is the figure running through. It is KEPT, with a halo — and everything
+  // else in the box still goes, dark cores of the stamp included. "Marks,
+  // watermarks, blemishes should be completely gone."
+  const { labels, comps: darkComps } = labelComponents(grey, w, h, DARK);
+  const reach = Math.max(4, Math.round(Math.min(w, h) * 0.01));
+  const spill = Math.max(20, Math.round(Math.min(w, h) * SPILL_REACH));
+  for (const hnt of hints) {
+    if (!hnt.clear) { rest.push(hnt); continue; }
+    const b = hintToPixels(hnt.box, w, h, CLEAR_PAD);
+    const inner = { x0: b.x0 + reach, y0: b.y0 + reach, x1: b.x1 - reach, y1: b.y1 - reach };
+    const crossing = new Set<number>();
+    darkComps.forEach((c, k) => {
+      if (c.pixels >= 30
+        && c.x0 <= inner.x1 && c.x1 >= inner.x0 && c.y0 <= inner.y1 && c.y1 >= inner.y0
+        && (c.x0 < b.x0 - reach || c.x1 > b.x1 + reach || c.y0 < b.y0 - reach || c.y1 > b.y1 + reach)) crossing.add(k + 1);
+    });
+    // Protect the crossing strokes with a halo; clear every other non-white pixel in the box.
+    const keep = new Uint8Array(w * h);
+    if (crossing.size) {
+      for (let y = Math.max(0, b.y0 - PROTECT_PX); y <= Math.min(h - 1, b.y1 + PROTECT_PX); y++)
+        for (let x = Math.max(0, b.x0 - PROTECT_PX); x <= Math.min(w - 1, b.x1 + PROTECT_PX); x++) {
+          if (!crossing.has(labels[y * w + x])) continue;
+          for (let dy = -PROTECT_PX; dy <= PROTECT_PX; dy++) for (let dx = -PROTECT_PX; dx <= PROTECT_PX; dx++) {
+            const nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < w && ny < h) keep[ny * w + nx] = 1;
+          }
+        }
+      kept.push(`"${hnt.what || 'mark'}": a stroke of the figure runs through this box and was kept; the rest of the box was emptied`);
+    }
+    let n = 0;
+    for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) {
+      const i = y * w + x;
+      if (mask[i] || keep[i] || grey[i] >= 255) continue;
+      mask[i] = 1; n++;
+    }
+    // Follow the mark's own pale tail OUTWARD past the box: flood from the
+    // box's border through pale pixels (never a dark one, never a kept one),
+    // up to SPILL_REACH, so a box the judge drew a little short still leaves
+    // nothing behind.
+    let sx0 = b.x0, sy0 = b.y0, sx1 = b.x1, sy1 = b.y1;
+    if (n) {
+      const lim = { x0: Math.max(0, b.x0 - spill), y0: Math.max(0, b.y0 - spill), x1: Math.min(w - 1, b.x1 + spill), y1: Math.min(h - 1, b.y1 + spill) };
+      const qx: number[] = [], qy: number[] = [];
+      const seed = (x: number, y: number) => { const i = y * w + x; if (mask[i]) { qx.push(x); qy.push(y); } };
+      for (let x = b.x0; x <= b.x1; x++) { seed(x, b.y0); seed(x, b.y1); }
+      for (let y = b.y0; y <= b.y1; y++) { seed(b.x0, y); seed(b.x1, y); }
+      let head = 0;
+      while (head < qx.length) {
+        const x = qx[head], y = qy[head]; head++;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+          const nx = x + dx, ny = y + dy;
+          if (nx < lim.x0 || ny < lim.y0 || nx > lim.x1 || ny > lim.y1) continue;
+          if (nx >= b.x0 && nx <= b.x1 && ny >= b.y0 && ny <= b.y1) continue;   // inside the box: already handled
+          const i = ny * w + nx;
+          if (mask[i] || keep[i] || grey[i] >= 255 || grey[i] < DARK) continue;
+          mask[i] = 1; n++; qx.push(nx); qy.push(ny);
+          if (nx < sx0) sx0 = nx; if (nx > sx1) sx1 = nx; if (ny < sy0) sy0 = ny; if (ny > sy1) sy1 = ny;
+        }
+      }
+    }
+    if (n) { boxes.push({ x0: sx0, y0: sy0, x1: sx1, y1: sy1 }); count += n; }
+  }
+  return { mask, count, boxes, skipped, rest, kept };
+}
+
 /**
  * The pale half: inside each box, whiten every pixel that is paler than the
  * figure's ink but darker than the page, unless it is protected. Returns the
@@ -336,23 +468,30 @@ export async function eraseBlemishes(src: Buffer, hints: Blemish[], opt: EraseOp
   const w = info.width, h = info.height;
   if (w * h > 6_000_000) return { ok: false, reason: 'image too large to component-label', skipped: [] };
 
-  // Dark marks, by shape.
   const comps = inkComponents(data, w, h);
   const totalInk = comps.reduce((a, c) => a + c.pixels, 0);
-  const snap = snapToComponents(comps, hints, w, h, o);
+
+  // Boxes the judge called empty of the figure are emptied whole — nothing
+  // short of page white survives in them. The rest go through the two
+  // protected mechanisms below.
+  const cleared = clearBoxes(data, w, h, comps, hints);
+  const hintsLeft = cleared.rest;
+
+  // Dark marks, by shape.
+  const snap = snapToComponents(comps, hintsLeft, w, h, o);
   const removedInk = snap.erase.reduce((a, c) => a + c.pixels, 0);
   const tooMuchInk = !!totalInk && removedInk / totalInk > o.maxRemovedShare;
 
   // Pale marks, by tone — the same boxes, the figure's ink protected.
-  const wash = o.wash ? washPale(data, w, h, hints, o) : { mask: new Uint8Array(0), count: 0, boxes: [] as Box[], skipped: [] as string[] };
-  const skipped = [...(tooMuchInk ? [`the dark ink selected is ${Math.round((removedInk / totalInk) * 100)}% of the figure — left alone`] : []), ...snap.skipped, ...wash.skipped];
+  const wash = o.wash && hintsLeft.length ? washPale(data, w, h, hintsLeft, o) : { mask: new Uint8Array(0), count: 0, boxes: [] as Box[], skipped: [] as string[] };
+  const skipped = [...cleared.skipped, ...cleared.kept, ...(tooMuchInk ? [`the dark ink selected is ${Math.round((removedInk / totalInk) * 100)}% of the figure — left alone`] : []), ...snap.skipped, ...wash.skipped];
 
   const comp = tooMuchInk ? [] : snap.erase;
-  if (!comp.length && !wash.count) {
+  if (!comp.length && !wash.count && !cleared.count) {
     return { ok: false, reason: tooMuchInk ? `would remove ${Math.round((removedInk / totalInk) * 100)}% of the ink — not a blemish job` : 'nothing safe to erase', skipped };
   }
 
-  const erased = [...comp.map((c) => padBox(c, w, h)), ...wash.boxes];
+  const erased = [...cleared.boxes, ...comp.map((c) => padBox(c, w, h)), ...wash.boxes];
   // One raw pass writes both: component rectangles and the washed pixels.
   const rgb = await flat.clone().removeAlpha().raw().toBuffer({ resolveWithObject: true });
   const px = rgb.data, ch = rgb.info.channels;
@@ -362,8 +501,9 @@ export async function eraseBlemishes(src: Buffer, hints: Blemish[], opt: EraseOp
     }
   }
   if (wash.count) for (let i = 0; i < w * h; i++) if (wash.mask[i]) { const j = i * ch; for (let k = 0; k < ch; k++) px[j + k] = 255; }
+  if (cleared.count) for (let i = 0; i < w * h; i++) if (cleared.mask[i]) { const j = i * ch; for (let k = 0; k < ch; k++) px[j + k] = 255; }
   const png = await sharp(px, { raw: { width: w, height: h, channels: ch as 1 | 2 | 3 | 4 } }).png().toBuffer();
-  return { ok: true, png, erased, removedInk: tooMuchInk ? 0 : removedInk, washedPale: wash.count, totalInk, skipped, width: w, height: h };
+  return { ok: true, png, erased, removedInk: tooMuchInk ? 0 : removedInk, washedPale: wash.count + cleared.count, totalInk, skipped, width: w, height: h };
 }
 
 /**
@@ -437,10 +577,15 @@ export function judgePrompt(note: string | null | undefined): string {
     'labels, coordinates, dimension text, letters naming points, arrows, ticks, hatching, shading.',
     note ? `The review note for this figure says: "${note}"` : '',
     'Answer with JSON only, no prose:',
-    '{"blemishes":[{"what":"<short description>","box":[x0,y0,x1,y1],"sure":true}],"unsure":["<a mark you could not classify, and where>"],"refuse":null}',
+    '{"blemishes":[{"what":"<short description>","box":[x0,y0,x1,y1],"sure":true,"clear":true}],"unsure":["<a mark you could not classify, and where>"],"refuse":null}',
     'Boxes are on a 0-1000 grid: x from the left edge, y from the top. Faint blue grid lines labelled x100…x900 and',
     'y100…y900 are drawn on the image at every 100 to help you read positions — they are not part of the figure.',
-    'Make each box a little generous around the mark, but only around that mark.',
+    'A box must contain the WHOLE mark, out to its faintest edge — a vendor logo, wordmark, phone number or web',
+    'address is one mark: box all of it, not a piece. The clean must leave nothing of the mark behind.',
+    'Set "clear": true when NOTHING of the figure lies inside the box — only the foreign mark and blank page; that',
+    'box will be emptied completely. Set "clear": false when any part of the figure (a curve, an axis, a label, a',
+    'gridline, shading) passes through the box; then only the mark is taken and the figure is protected. When a',
+    'mark crosses the figure, give TWO boxes: the part in empty space with clear:true, the crossing part with clear:false.',
     'If you are not certain a mark is foreign, put it in "unsure" instead of "blemishes". If the figure has no',
     'foreign mark, return an empty "blemishes" list. If the image cannot be judged, set "refuse" to why.',
   ].filter(Boolean).join('\n');

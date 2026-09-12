@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   parseEraseVerdict, inkComponents, snapToComponents, hintToPixels, boxesAsFractions, padBox,
   MAX_COMPONENT_SHARE, BY_EYE, mergeBoxes, judgePrompt, verifyPrompt, parseVerifyVerdict,
-  parseStampVerdict, distToTintLine, classifyStamp, sampleColour, sampleInkNear, type Component, type RGB,
+  parseStampVerdict, distToTintLine, classifyStamp, sampleColour, sampleInkNear, clearBoxes, WASH_HI, type Component, type RGB,
 } from './figure-blemish';
 
 /** A w×h white canvas with the given pixels inked. */
@@ -16,7 +16,7 @@ describe('parseEraseVerdict — the judge answers in JSON, and anything else is 
   it('reads a plain answer and a fenced one', () => {
     const v = parseEraseVerdict('{"blemishes":[{"what":"stray d","box":[0,780,12,830],"sure":true}],"unsure":[],"refuse":null}');
     expect(v.refuse).toBeNull();
-    expect(v.blemishes).toEqual([{ what: 'stray d', box: { x0: 0, y0: 780, x1: 12, y1: 830 }, sure: true }]);
+    expect(v.blemishes).toEqual([{ what: 'stray d', box: { x0: 0, y0: 780, x1: 12, y1: 830 }, sure: true, clear: false }]);
     const f = parseEraseVerdict('Here you go:\n```json\n{"blemishes":[],"unsure":["small mark near y = x — could be a tick"],"refuse":null}\n```');
     expect(f.blemishes).toEqual([]);
     expect(f.unsure).toEqual(['small mark near y = x — could be a tick']);
@@ -205,3 +205,52 @@ describe('sampleInkNear — a model points beside a stroke, not on it', () => {
     expect(sampleInkNear(px, grey, w, h, ch, 1, 0, 2)).toBeNull();               // nothing within reach
   });
 });
+
+describe('clear boxes — "marks/watermarks/blemishes should be completely gone" (12 Sep 2026)', () => {
+  it('empties a box the judge called empty of the figure, down to the faintest pixel', () => {
+    const w = 20, h = 10;
+    const g = new Uint8Array(w * h).fill(255);
+    // a pale logo in the lower-left corner: tones 60 (dark core), 200 and 252 (faint tail)
+    for (const [x, y, v] of [[1, 7, 60], [2, 7, 200], [3, 7, 252], [2, 8, 130]] as Array<[number, number, number]>) g[y * w + x] = v;
+    const r = clearBoxes(g, w, h, [], [{ what: 'logo', box: { x0: 0, y0: 600, x1: 250, y1: 1000 }, sure: true, clear: true }]);
+    expect(r.count).toBe(4);            // the 60, the 200, the 252 AND the 130 — no tone band, no halo
+    expect(r.rest).toEqual([]);
+    expect(r.skipped).toEqual([]);
+  });
+  it('keeps a stroke that runs through the box and empties everything else — the stamp\'s dark core included', () => {
+    const w = 40, h = 12;
+    const g = new Uint8Array(w * h).fill(255);
+    for (let x = 0; x < w; x++) g[6 * w + x] = 0;                 // an axis across the whole width, through the box's middle
+    g[9 * w + 2] = 200; g[9 * w + 3] = 60;                         // a pale mark AND a dark core of the stamp in the corner
+    const r = clearBoxes(g, w, h, [], [{ what: 'logo', box: { x0: 0, y0: 250, x1: 250, y1: 1000 }, sure: true, clear: true }]);
+    expect(r.kept[0]).toMatch(/runs through this box and was kept/);
+    expect(r.mask[9 * w + 2]).toBe(1);   // pale mark gone
+    expect(r.mask[9 * w + 3]).toBe(1);   // dark core of the stamp gone too
+    expect(r.mask[6 * w + 5]).toBe(0);   // the axis survives
+    expect(r.rest).toEqual([]);
+  });
+  it('follows a mark\'s pale tail outward past a box the judge drew short', () => {
+    const w = 60, h = 10;
+    const g = new Uint8Array(w * h).fill(255);
+    for (let x = 2; x < 30; x++) g[5 * w + x] = 190;              // a pale tagline from x=2 to x=29
+    const r = clearBoxes(g, w, h, [], [{ what: 'tagline', box: { x0: 0, y0: 300, x1: 250, y1: 800 }, sure: true, clear: true }]);   // box ends at x=15
+    expect(r.count).toBe(28);                                       // the whole tagline, not just the boxed half
+    expect(r.boxes[0].x1).toBeGreaterThanOrEqual(29);
+  });
+  it('does not mistake the mark\'s own pale tail on the border for the figure', () => {
+    const w = 40, h = 10;
+    const g = new Uint8Array(w * h).fill(255);
+    for (let x = 0; x < 30; x++) g[7 * w + x] = 200;            // a pale tagline that spills past the box
+    const r = clearBoxes(g, w, h, [], [{ what: 'logo', box: { x0: 0, y0: 400, x1: 500, y1: 1000 }, sure: true, clear: true }]);
+    expect(r.skipped).toEqual([]);
+    expect(r.count).toBeGreaterThan(0);
+  });
+  it('reads clear from the judge and defaults it to false', () => {
+    const v = parseEraseVerdict('{"blemishes":[{"what":"logo","box":[0,700,200,1000],"clear":true},{"what":"tail","box":[0,0,10,10]}]}');
+    expect(v.blemishes.map((b) => b.clear)).toEqual([true, false]);
+  });
+  it('the protected wash now reaches page white', () => {
+    expect(WASH_HI).toBe(254);
+  });
+});
+
