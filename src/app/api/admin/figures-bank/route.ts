@@ -254,6 +254,10 @@ async function solutionLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
 
   return NextResponse.json({
     items, page, pageSize, scope, view,
+    // Which build answered — so a verifier can tell a deploy of the fix from
+    // the previous build (12 Sep 2026: candidates were refreshed against a
+    // build that did not carry the fix, and looked like the fix had failed).
+    build: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 8) ?? null,
     // `held` is the IN-SCOPE count of rows STILL TO JUDGE (the client pages off
     // it in the working view); sec/jc/allHeld are the same count per scope, so
     // a scope never hides work silently. sentToRedraw / keptHidden are the
