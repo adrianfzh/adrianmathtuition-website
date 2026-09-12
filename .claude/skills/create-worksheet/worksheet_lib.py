@@ -935,25 +935,17 @@ class Worksheet:
                 work_cell = row.cells[0]
             first = True
             for step in steps:
+                if isinstance(step, tuple) and step and step[0] == 'cols':
+                    # ('cols', [steps, steps, …][, widths_cm]) — side-by-side columns
+                    # inside the working cell (Adrian, 12 Sep 2026: "you can create
+                    # columns in tables to enhance readability and neatness"): the
+                    # working on the left, an ASTC reference or a sketch on the right.
+                    self._solution_cols(work_cell, step[1], step[2] if len(step) > 2 else None, first)
+                    first = False
+                    continue
                 p = work_cell.paragraphs[0] if first else work_cell.add_paragraph()
                 first = False
-                p.paragraph_format.line_spacing = 1.5   # same as the body (Adrian, 2 Sep 2026: 1.5 "improves readability")
-                if isinstance(step, tuple) and step and step[0] == 'figure':
-                    self._picture(p, step[1], step[2] if len(step) > 2 else 8.0)
-                elif isinstance(step, tuple) and step and step[0] == 'check':
-                    p.alignment = WD_ALIGN_PARAGRAPH.LEFT
-                    self._fill(p, [('text', '✓ Check: ', {'bold': True})] + list(step[1]))
-                    _recolour_paragraph(p, CHECK_GREEN)
-                elif isinstance(step, str):
-                    p.alignment = WD_ALIGN_PARAGRAPH.LEFT
-                    p.paragraph_format.left_indent = Cm(0.5)
-                    elem = _latex_to_omml(step, display=True)
-                    if elem is not None:
-                        _left_align_math(elem)
-                        _style_annotations(elem)
-                        p._element.append(elem)
-                else:
-                    self._fill(p, step)
+                self._solution_step(p, step)
             # Air above the first line of every part, as paragraph spacing on
             # BOTH cells so the label and the working stay level:
             #   row 0 — 2 pt (Adrian, 7 Sep 2026: "2px spacing from the top of
@@ -972,11 +964,11 @@ class Worksheet:
             tops = [work_cell.paragraphs[0]] + ([lab_cell.paragraphs[0]] if labelled else [])
             for tp in tops:
                 tp.paragraph_format.space_before = Pt(2) if idx == 0 else Pt(gap_pt)
+        for row in table.rows:
+            _cant_split(row)          # a part never breaks mid-way, glued or not
         if keep_together:
             for para in self._block_paras:
                 para.paragraph_format.keep_with_next = True
-            for row in table.rows:
-                _cant_split(row)
             for row in list(table.rows)[:-1]:  # last row must NOT keep with what follows
                 for cell in row.cells:
                     for cp in cell.paragraphs:
@@ -984,6 +976,52 @@ class Worksheet:
         self._block_paras = []
         self.doc.add_paragraph()  # breathing space between the box and what follows
         return table
+
+    def _solution_step(self, p, step):
+        """Render ONE solution step into paragraph p (shared by the box and its columns)."""
+        p.paragraph_format.line_spacing = 1.5   # same as the body (Adrian, 2 Sep 2026: 1.5 "improves readability")
+        if isinstance(step, tuple) and step and step[0] == 'figure':
+            self._picture(p, step[1], step[2] if len(step) > 2 else 8.0)
+        elif isinstance(step, tuple) and step and step[0] == 'check':
+            p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            self._fill(p, [('text', '✓ Check: ', {'bold': True})] + list(step[1]))
+            _recolour_paragraph(p, CHECK_GREEN)
+        elif isinstance(step, str):
+            p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            p.paragraph_format.left_indent = Cm(0.5)
+            elem = _latex_to_omml(step, display=True)
+            if elem is not None:
+                _left_align_math(elem)
+                _style_annotations(elem)
+                p._element.append(elem)
+        else:
+            self._fill(p, step)
+
+    def _solution_cols(self, work_cell, columns, widths_cm, first):
+        """A borderless nested table with one cell per column, each holding steps."""
+        n = len(columns)
+        total = 14.5
+        widths = widths_cm or [total / n] * n
+        host = work_cell.paragraphs[0] if first else work_cell.add_paragraph()
+        inner = work_cell.add_table(rows=1, cols=n)
+        inner.autofit = False
+        tblPr = inner._tbl.tblPr
+        b = OxmlElement('w:tblBorders')
+        for side in ('top', 'left', 'bottom', 'right', 'insideH', 'insideV'):
+            el = OxmlElement(f'w:{side}'); el.set(qn('w:val'), 'nil'); b.append(el)
+        tblPr.append(b)
+        for col, w in zip(inner.columns, widths):
+            col.width = Cm(w)
+        for cell, steps, w in zip(inner.rows[0].cells, columns, widths):
+            cell.width = Cm(w)
+            f = True
+            for step in steps:
+                p = cell.paragraphs[0] if f else cell.add_paragraph()
+                f = False
+                self._solution_step(p, step)
+        # the nested table sits after `host`; move it right behind that paragraph
+        host._p.addnext(inner._tbl)
+        return inner
 
     def workspace(self, marks=None, lines=None):
         """Blank writing space: `marks` x self.working_space real empty lines
