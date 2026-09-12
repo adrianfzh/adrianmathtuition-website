@@ -63,6 +63,7 @@ import { imgSrc, isPlausibleImagePath } from '@/lib/kiosk-worksheet-images';
 import { inspectFigure } from '@/lib/figure-checks';
 import { eraseBlemishes, parseEraseVerdict, judgePrompt, judgeView, boxesAsFractions, mergeBoxes, verifyPrompt, parseVerifyVerdict, BY_EYE, type Blemish } from '@/lib/figure-blemish';
 import Anthropic from '@anthropic-ai/sdk';
+import sharp from 'sharp';
 import {
   replaceSolutionImageRefsMany, repairPairsFor, verifyRefPairs,
   containsImageRef, partLabelFor, cleanedObjectKey, imageKey, type RefPair,
@@ -499,6 +500,11 @@ async function cleanAsCandidate(
   // The judge sees the figure with a labelled grid drawn on it (PNG); every
   // erase below works on the original bytes.
   const view = await judgeView(bytes);
+  // The second look compares the PLAIN original with the result — never the
+  // gridded copy (12 Sep 2026: shown the copy with the blue helper grid as
+  // "before", the verifier reported "the light blue gridlines behind the axes
+  // have been erased" on a figure that has no gridlines, and refused it).
+  const plain = await sharp(bytes).flatten({ background: '#fff' }).png().toBuffer();
   const ask = async (prompt: string, images: Buffer[]): Promise<string> => {
     if (!anthropic) throw new Error('ANTHROPIC_API_KEY is not set');
     const res = await anthropic.messages.create({
@@ -558,7 +564,7 @@ async function cleanAsCandidate(
     if (e.washedPale > 0 || !o.byEye) {
       if (!anthropic) return step('verify', 'ANTHROPIC_API_KEY is not set — a washed candidate is never offered unverified');
       let vtext = '';
-      try { vtext = await ask(verifyPrompt(), [view, e.png]); }
+      try { vtext = await ask(verifyPrompt(), [plain, e.png]); }
       catch (err) { return step('verify', `the second look could not be reached: ${(err as Error).message.slice(0, 160)}`); }
       const v = parseVerifyVerdict(vtext);
       if (!v.ok) {
