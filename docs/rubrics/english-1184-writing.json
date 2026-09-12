@@ -1,0 +1,532 @@
+{
+ "source": {
+  "title": "English Language GCE Ordinary Level Syllabus 1184 (2026), Generic Band Descriptors, pp. 7–9",
+  "url": "https://isomer-user-content.by.gov.sg/334/c542bbf3-e54f-4d08-aeba-e58380a2808b/1184_y26_sy.pdf",
+  "local_copy": "docs/rubrics/1184_y26_sy.pdf",
+  "fetched": "2026-09-12",
+  "transcribed": "verbatim from the PDF text layer; not from memory"
+ },
+ "assessment_objective_paper_1": "Write effectively to suit purpose, audience and context, using accurate and appropriate vocabulary, grammar, punctuation and spelling.",
+ "paper_1": {
+  "total": 70,
+  "sections": {
+   "A_editing": 10,
+   "B_situational_writing": {
+    "marks": 30,
+    "length_words": "250–350",
+    "criteria": {
+     "task_fulfilment": 10,
+     "language": 20
+    }
+   },
+   "C_continuous_writing": {
+    "marks": 30,
+    "length_words": "350–500",
+    "criteria": {
+     "content": 10,
+     "language": 20
+    }
+   }
+  }
+ },
+ "rows": [
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "continuous_writing",
+   "criterion": "content",
+   "criterion_max": 10,
+   "assessment_criteria": [
+    "Addressing the task"
+   ],
+   "band": 5,
+   "marks": "9–10",
+   "mark_min": 9,
+   "mark_max": 10,
+   "descriptors": [
+    "All aspects of the task are fully addressed and developed in detail"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "continuous_writing",
+   "criterion": "content",
+   "criterion_max": 10,
+   "assessment_criteria": [
+    "Addressing the task"
+   ],
+   "band": 4,
+   "marks": "7–8",
+   "mark_min": 7,
+   "mark_max": 8,
+   "descriptors": [
+    "All aspects of the task are addressed with some development"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "continuous_writing",
+   "criterion": "content",
+   "criterion_max": 10,
+   "assessment_criteria": [
+    "Addressing the task"
+   ],
+   "band": 3,
+   "marks": "5–6",
+   "mark_min": 5,
+   "mark_max": 6,
+   "descriptors": [
+    "Some aspects of the task are addressed with some development"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "continuous_writing",
+   "criterion": "content",
+   "criterion_max": 10,
+   "assessment_criteria": [
+    "Addressing the task"
+   ],
+   "band": 2,
+   "marks": "3–4",
+   "mark_min": 3,
+   "mark_max": 4,
+   "descriptors": [
+    "Some aspects of the task are addressed"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "continuous_writing",
+   "criterion": "content",
+   "criterion_max": 10,
+   "assessment_criteria": [
+    "Addressing the task"
+   ],
+   "band": 1,
+   "marks": "1–2",
+   "mark_min": 1,
+   "mark_max": 2,
+   "descriptors": [
+    "Some attempts to address the task"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "continuous_writing",
+   "criterion": "content",
+   "criterion_max": 10,
+   "assessment_criteria": [
+    "Addressing the task"
+   ],
+   "band": 0,
+   "marks": "0",
+   "mark_min": 0,
+   "mark_max": 0,
+   "descriptors": [
+    "No creditable response."
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "continuous_writing",
+   "criterion": "language",
+   "criterion_max": 20,
+   "assessment_criteria": [
+    "Organisation of ideas",
+    "Clarity of expression",
+    "Accuracy of language"
+   ],
+   "band": 5,
+   "marks": "17–20",
+   "mark_min": 17,
+   "mark_max": 20,
+   "descriptors": [
+    "Coherent and cohesive presentation of ideas across the whole of the response",
+    "Effective use of ambitious vocabulary and grammar structures",
+    "Complex vocabulary, grammar, punctuation and spelling used accurately"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "continuous_writing",
+   "criterion": "language",
+   "criterion_max": 20,
+   "assessment_criteria": [
+    "Organisation of ideas",
+    "Clarity of expression",
+    "Accuracy of language"
+   ],
+   "band": 4,
+   "marks": "13–16",
+   "mark_min": 13,
+   "mark_max": 16,
+   "descriptors": [
+    "Coherent presentation of ideas with some cohesion between paragraphs",
+    "Vocabulary and grammar structures sufficiently varied to convey shades of meaning",
+    "Vocabulary, grammar, punctuation and spelling used mostly accurately"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "continuous_writing",
+   "criterion": "language",
+   "criterion_max": 20,
+   "assessment_criteria": [
+    "Organisation of ideas",
+    "Clarity of expression",
+    "Accuracy of language"
+   ],
+   "band": 3,
+   "marks": "9–12",
+   "mark_min": 9,
+   "mark_max": 12,
+   "descriptors": [
+    "Most ideas coherently presented with some cohesion within paragraphs",
+    "Vocabulary and grammar structures sufficiently varied to convey intended meaning",
+    "Vocabulary, grammar, punctuation and spelling often used accurately"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "continuous_writing",
+   "criterion": "language",
+   "criterion_max": 20,
+   "assessment_criteria": [
+    "Organisation of ideas",
+    "Clarity of expression",
+    "Accuracy of language"
+   ],
+   "band": 2,
+   "marks": "5–8",
+   "mark_min": 5,
+   "mark_max": 8,
+   "descriptors": [
+    "Some ideas coherently presented with attempts at achieving cohesion",
+    "Mostly simple vocabulary and grammar structures used; meaning is usually clear",
+    "Vocabulary, grammar, punctuation and spelling used with varying degrees of accuracy"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "continuous_writing",
+   "criterion": "language",
+   "criterion_max": 20,
+   "assessment_criteria": [
+    "Organisation of ideas",
+    "Clarity of expression",
+    "Accuracy of language"
+   ],
+   "band": 1,
+   "marks": "1–4",
+   "mark_min": 1,
+   "mark_max": 4,
+   "descriptors": [
+    "Ideas presented in isolation",
+    "Simple vocabulary and grammar structures used",
+    "A few examples of correct use of vocabulary, grammar, punctuation and spelling"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "continuous_writing",
+   "criterion": "language",
+   "criterion_max": 20,
+   "assessment_criteria": [
+    "Organisation of ideas",
+    "Clarity of expression",
+    "Accuracy of language"
+   ],
+   "band": 0,
+   "marks": "0",
+   "mark_min": 0,
+   "mark_max": 0,
+   "descriptors": [
+    "No creditable response."
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "situational_writing",
+   "criterion": "task_fulfilment",
+   "criterion_max": 10,
+   "assessment_criteria": [
+    "Addressing the required points",
+    "Showing awareness of the purpose, audience and context",
+    "Using the given information"
+   ],
+   "band": 5,
+   "marks": "9–10",
+   "mark_min": 9,
+   "mark_max": 10,
+   "descriptors": [
+    "All points addressed and developed in detail",
+    "Purpose, audience and context fully and clearly addressed",
+    "Ideas consistently supported by given information"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "situational_writing",
+   "criterion": "task_fulfilment",
+   "criterion_max": 10,
+   "assessment_criteria": [
+    "Addressing the required points",
+    "Showing awareness of the purpose, audience and context",
+    "Using the given information"
+   ],
+   "band": 4,
+   "marks": "7–8",
+   "mark_min": 7,
+   "mark_max": 8,
+   "descriptors": [
+    "All points addressed with one or more developed in detail",
+    "Purpose, audience and context clearly addressed",
+    "Ideas generally supported by given information"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "situational_writing",
+   "criterion": "task_fulfilment",
+   "criterion_max": 10,
+   "assessment_criteria": [
+    "Addressing the required points",
+    "Showing awareness of the purpose, audience and context",
+    "Using the given information"
+   ],
+   "band": 3,
+   "marks": "5–6",
+   "mark_min": 5,
+   "mark_max": 6,
+   "descriptors": [
+    "Most points addressed with some development",
+    "Purpose, audience and context addressed",
+    "Some attempts to use given information to support ideas"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "situational_writing",
+   "criterion": "task_fulfilment",
+   "criterion_max": 10,
+   "assessment_criteria": [
+    "Addressing the required points",
+    "Showing awareness of the purpose, audience and context",
+    "Using the given information"
+   ],
+   "band": 2,
+   "marks": "3–4",
+   "mark_min": 3,
+   "mark_max": 4,
+   "descriptors": [
+    "Some points addressed",
+    "Purpose, audience and context partially addressed",
+    "Some reference to given information"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "situational_writing",
+   "criterion": "task_fulfilment",
+   "criterion_max": 10,
+   "assessment_criteria": [
+    "Addressing the required points",
+    "Showing awareness of the purpose, audience and context",
+    "Using the given information"
+   ],
+   "band": 1,
+   "marks": "1–2",
+   "mark_min": 1,
+   "mark_max": 2,
+   "descriptors": [
+    "One point addressed",
+    "Purpose, audience and context occasionally addressed",
+    "Occasional reference to given information"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "situational_writing",
+   "criterion": "task_fulfilment",
+   "criterion_max": 10,
+   "assessment_criteria": [
+    "Addressing the required points",
+    "Showing awareness of the purpose, audience and context",
+    "Using the given information"
+   ],
+   "band": 0,
+   "marks": "0",
+   "mark_min": 0,
+   "mark_max": 0,
+   "descriptors": [
+    "No creditable response."
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "situational_writing",
+   "criterion": "language",
+   "criterion_max": 20,
+   "assessment_criteria": [
+    "Organisation of ideas",
+    "Clarity of expression",
+    "Accuracy of language"
+   ],
+   "band": 5,
+   "marks": "17–20",
+   "mark_min": 17,
+   "mark_max": 20,
+   "descriptors": [
+    "Coherent and cohesive presentation of ideas across the whole of the response",
+    "Effective use of ambitious vocabulary and grammar structures",
+    "Complex vocabulary, grammar, punctuation and spelling used accurately"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "situational_writing",
+   "criterion": "language",
+   "criterion_max": 20,
+   "assessment_criteria": [
+    "Organisation of ideas",
+    "Clarity of expression",
+    "Accuracy of language"
+   ],
+   "band": 4,
+   "marks": "13–16",
+   "mark_min": 13,
+   "mark_max": 16,
+   "descriptors": [
+    "Coherent presentation of ideas with some cohesion between paragraphs",
+    "Vocabulary and grammar structures sufficiently varied to convey shades of meaning",
+    "Vocabulary, grammar, punctuation and spelling used mostly accurately"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "situational_writing",
+   "criterion": "language",
+   "criterion_max": 20,
+   "assessment_criteria": [
+    "Organisation of ideas",
+    "Clarity of expression",
+    "Accuracy of language"
+   ],
+   "band": 3,
+   "marks": "9–12",
+   "mark_min": 9,
+   "mark_max": 12,
+   "descriptors": [
+    "Most ideas coherently presented with some cohesion within paragraphs",
+    "Vocabulary and grammar structures sufficiently varied to convey intended meaning",
+    "Vocabulary, grammar, punctuation and spelling often used accurately"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "situational_writing",
+   "criterion": "language",
+   "criterion_max": 20,
+   "assessment_criteria": [
+    "Organisation of ideas",
+    "Clarity of expression",
+    "Accuracy of language"
+   ],
+   "band": 2,
+   "marks": "5–8",
+   "mark_min": 5,
+   "mark_max": 8,
+   "descriptors": [
+    "Some ideas coherently presented with attempts at achieving cohesion",
+    "Mostly simple vocabulary and grammar structures used; meaning is usually clear",
+    "Vocabulary, grammar, punctuation and spelling used with varying degrees of accuracy"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "situational_writing",
+   "criterion": "language",
+   "criterion_max": 20,
+   "assessment_criteria": [
+    "Organisation of ideas",
+    "Clarity of expression",
+    "Accuracy of language"
+   ],
+   "band": 1,
+   "marks": "1–4",
+   "mark_min": 1,
+   "mark_max": 4,
+   "descriptors": [
+    "Ideas presented in isolation",
+    "Simple vocabulary and grammar structures used",
+    "A few examples of correct use of vocabulary, grammar, punctuation and spelling"
+   ]
+  },
+  {
+   "subject": "english",
+   "syllabus": "1184",
+   "level": "O-Level",
+   "essay_kind": "situational_writing",
+   "criterion": "language",
+   "criterion_max": 20,
+   "assessment_criteria": [
+    "Organisation of ideas",
+    "Clarity of expression",
+    "Accuracy of language"
+   ],
+   "band": 0,
+   "marks": "0",
+   "mark_min": 0,
+   "mark_max": 0,
+   "descriptors": [
+    "No creditable response."
+   ]
+  }
+ ]
+}

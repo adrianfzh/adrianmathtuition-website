@@ -4,7 +4,9 @@
 > so how can we start building marking language essays? let's spec it"). Companion
 > to [`SPEC-SUBJECTS.md`](SPEC-SUBJECTS.md) (the August research: rubric-as-spine,
 > the ELLA teardown, phase L1) and [`SPEC-SCIENCE-MARKING.md`](SPEC-SCIENCE-MARKING.md)
-> (the chassis/brain split this reuses). Status: **spec only, nothing built.**
+> (the chassis/brain split this reuses). Status: **spec agreed 12 Sep 2026 (Adrian's four
+> answers below), the English 1184 rubric seeded as data from the official document,
+> nothing else built.**
 
 ## The three rulings this spec is built on (12 Sep 2026)
 
@@ -109,11 +111,27 @@ marking — `lib/error-kinds`.)
 ## Rubric and anchors as data
 
 - **`rubrics`** — one row per (subject, level, essay kind, criterion, band):
-  descriptor text, mark range, source document + version. Seeded from the SEAB
-  syllabus documents — English 1184 Paper 1 (continuous and situational writing are
-  each marked on two criteria out of 15 — verify the exact criterion names and the
-  band boundaries against the current syllabus document before seeding), 华文 1160
-  / 高级华文 1116 Paper 1 写作 (verify likewise). Nothing here is typed from memory.
+  descriptor text, mark range, source document + version. **English 1184 is seeded
+  — `docs/rubrics/english-1184-writing.json`, transcribed verbatim from the
+  2026 syllabus document (kept at `docs/rubrics/1184_y26_sy.pdf`).** The verified
+  shape, which corrects the August note of "15 + 15":
+  - **Continuous Writing /30 = Content /10 + Language /20.** Content has one
+    criterion, "addressing the task"; bands 5→1 are 9–10 · 7–8 · 5–6 · 3–4 · 1–2.
+  - **Situational Writing /30 = Task Fulfilment /10 + Language /20.** Task
+    Fulfilment = the required points, awareness of purpose/audience/context, use of
+    the given information; the same band marks as Content.
+  - **Language /20** is the same descriptor table for both: organisation of ideas,
+    clarity of expression, accuracy of language; bands 5→1 are 17–20 · 13–16 ·
+    9–12 · 5–8 · 1–4. Band 5 reads "coherent and cohesive … ambitious vocabulary and
+    grammar structures … complex vocabulary, grammar, punctuation and spelling used
+    accurately"; band 3 "most ideas coherently presented … sufficiently varied to
+    convey intended meaning … often used accurately".
+  - So the **band range** the report shows is the two bands' mark ranges added:
+    Content band 4 + Language band 4 = 20–24 out of 30. That is the honest width.
+  华文 1160 / 高级华文 1116 Paper 1 写作 are seeded the same way in E2, from their
+  own documents (the 1184 file's sibling links are on the SEAB syllabus listing page;
+  the PDFs live on isomer-user-content.by.gov.sg, not under seab.gov.sg/files). Nothing
+  here is typed from memory.
 - **`essay_anchors`** — essays with a KNOWN band per criterion: school-issued
   exemplars, SEAB examiner-report samples where published, and later the app's own
   marked essays that Adrian or a teacher confirmed. Each anchor carries its
@@ -236,7 +254,20 @@ queue's normal tick is enough.
 - A public model-essay library (L2) — later, and only with our own essays.
 - Marking against a specific school teacher's style.
 
-## Open questions for Adrian
+## Adrian's answers (12 Sep 2026)
+
+1. **English first.** E1 = English continuous writing.
+2. **Students see the band range**, at the foot of the report, with the disclaimer.
+3. **No reading round** before the preview identity becomes a real student — the
+   machine gate decides; his eye stays on the Telegram one-liners after release.
+4. **Anchors: "not sure"** whether any school issues band exemplars. So E1 starts
+   WITHOUT school anchors: the descriptors' own sentences pin the bands, the
+   consistency test runs from day one, and anchors accrue from students who attach
+   their teacher-marked copy (the ranking test needs eight from one teacher on one
+   prompt — a whole class's returned essays, which one student can bring). Until
+   two class sets have passed, the switch stays off.
+
+## Open questions for Adrian (answered above; kept for the record)
 
 1. **Which first: English or Chinese?** E1 assumes English continuous writing; if
    your students lose more on Chinese, swap.
