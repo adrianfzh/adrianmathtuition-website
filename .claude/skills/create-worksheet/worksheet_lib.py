@@ -1049,7 +1049,7 @@ class Worksheet:
         elif isinstance(step, str):
             rows = _split_aligned(step)
             if rows is not None:
-                return self._solution_lines(p, rows, width)
+                return self._solution_lines(p, rows)
             p.alignment = WD_ALIGN_PARAGRAPH.LEFT
             p.paragraph_format.left_indent = Cm(0.5)
             elem = _latex_to_omml(step, display=True)
@@ -1060,76 +1060,51 @@ class Worksheet:
         else:
             self._fill(p, step)
 
-    def _solution_lines(self, host, rows, width):
-        """An aligned block as ONE ROW PER LINE of a borderless table: the left-hand
-        side right-aligned in column 1, "= right-hand side" left-aligned in column 2
-        so every line meets at the equals sign, the ← note in column 3. Adrian,
-        12 Sep 2026: "able to make them line by line so I can edit, add lines,
-        delete lines? equation should still be aligned at equal sign" — a row is
-        an ordinary table row in Word, so he can insert or delete lines."""
-        cell = host._parent
-        has_note = any(n for _, _, n in rows)
-        def _chars(tex):   # rough printed length of a latex fragment
-            t = re.sub(r'\\(d?frac|tfrac)\{([^}]*)\}\{([^}]*)\}', lambda m: max(m.group(2), m.group(3), key=len), tex)
-            t = re.sub(r'\\text\{([^}]*)\}', r'\1', t)
-            t = re.sub(r'\\quad|\\,|\\;', ' ', t)
-            t = re.sub(r'\\[a-zA-Z]+', 'x', t)
-            return len(re.sub(r'[{}^_]', '', t))
-        lhs_chars = max((_chars(l) for l, _, _ in rows), default=4)
-        rhs_chars = max((_chars(r) for _, r, _ in rows), default=6)
-        lhs_w = min(max(0.24 * lhs_chars + 0.5, 1.4), 0.45 * width)
-        if has_note:
-            rhs_w = min(max(0.24 * rhs_chars + 0.8, 2.5), width - lhs_w - 2.5)
-            note_w = width - lhs_w - rhs_w
-        else:
-            rhs_w = width - lhs_w; note_w = 0.0
-        widths = [lhs_w, rhs_w] + ([note_w] if has_note else [])
-        t = cell.add_table(rows=len(rows), cols=len(widths))
-        t.autofit = False
-        tblPr = t._tbl.tblPr
-        b = OxmlElement('w:tblBorders')
-        for side in ('top', 'left', 'bottom', 'right', 'insideH', 'insideV'):
-            el = OxmlElement(f'w:{side}'); el.set(qn('w:val'), 'nil'); b.append(el)
-        tblPr.append(b)
-        mar = OxmlElement('w:tblCellMar')
-        for side, v in (('top', 0), ('bottom', 0), ('left', 20), ('right', 20)):
-            el = OxmlElement(f'w:{side}'); el.set(qn('w:w'), str(v)); el.set(qn('w:type'), 'dxa'); mar.append(el)
-        tblPr.append(mar)
-        for col, w in zip(t.columns, widths):
-            col.width = Cm(w)
-        for (lhs, rhs, note), row in zip(rows, t.rows):
-            for c, w in zip(row.cells, widths):
-                c.width = Cm(w)
-            cells = row.cells
-            for j, (tex, where) in enumerate(((lhs, 'right'), (rhs, 'left'))):
-                p = cells[j].paragraphs[0]
-                p.paragraph_format.line_spacing = 1.15
-                p.paragraph_format.space_after = Pt(0)
-                if not tex:
-                    continue
-                elem = _latex_to_omml(tex, display=True)
-                if elem is not None:
-                    _align_math(elem, where)
-                    _style_annotations(elem)
-                    p._element.append(elem)
-            if has_note:
-                p = cells[2].paragraphs[0]
-                p.paragraph_format.line_spacing = 1.15
-                p.paragraph_format.space_after = Pt(0)
-                if note:
-                    elem = _latex_to_omml(note, display=False)
-                    if elem is not None:
-                        _style_annotations(elem)
-                        _colour_math(elem, '606060')
-                        for rpr in elem.iter(qn('w:rPr')):
-                            for old in rpr.findall(qn('w:sz')): rpr.remove(old)
-                            sz = OxmlElement('w:sz'); sz.set(qn('w:val'), '16'); rpr.append(sz)
-                        p._element.append(elem)
-            for c in cells:
-                tcPr = c._tc.get_or_add_tcPr()
-                va = OxmlElement('w:vAlign'); va.set(qn('w:val'), 'center'); tcPr.append(va)
-        host._p.addnext(t._tbl)
-        return t
+    def _solution_lines(self, p, rows, width=None):
+        """An aligned block the way Adrian types one: ONE math paragraph holding one
+        equation per line, every "=" carrying Word's alignment marker (m:aln), so
+        the lines meet at the equals sign and Enter inside the paragraph adds a
+        line that aligns too. The ← note stays at the end of its own line, grey.
+        (12 Sep 2026: "line by line so I can edit, add lines, delete lines —
+        equation should still be aligned at equal sign"; and "you have built the
+        equations inside tables, that's not what I want".)"""
+        p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        p.paragraph_format.left_indent = Cm(0.5)
+        para = etree.Element(f'{{{M_NS}}}oMathPara')
+        pr = etree.SubElement(para, f'{{{M_NS}}}oMathParaPr')
+        jc = etree.SubElement(pr, f'{{{M_NS}}}jc'); jc.set(f'{{{M_NS}}}val', 'left')
+        for lhs, rhs, note in rows:
+            if not lhs and not rhs:
+                continue
+            tex = (lhs + ' ' + rhs).strip()
+            if note:
+                tex += ' \\qquad ' + note
+            elem = _latex_to_omml(tex, display=True)
+            if elem is None:
+                continue
+            om = elem.find(f'{{{M_NS}}}oMath')
+            if om is None:
+                continue
+            # alignment marker on the first "=" run of the right-hand side
+            if rhs.lstrip().startswith('=') or '=' in rhs:
+                for r in om.iter(f'{{{M_NS}}}r'):
+                    t = r.find(f'{{{M_NS}}}t')
+                    if t is not None and (t.text or '').strip().startswith('='):
+                        mrpr = r.find(f'{{{M_NS}}}rPr')
+                        if mrpr is None:
+                            mrpr = etree.Element(f'{{{M_NS}}}rPr'); r.insert(0, mrpr)
+                        etree.SubElement(mrpr, f'{{{M_NS}}}aln')
+                        break
+            para.append(om)
+        oms = para.findall(f'{{{M_NS}}}oMath')
+        for om in oms[:-1]:            # a soft line break ends every line but the last (his exact structure)
+            br_run = etree.SubElement(om, f'{{{M_NS}}}r')
+            rpr = etree.SubElement(br_run, f'{{{M_NS}}}rPr'); sty = etree.SubElement(rpr, f'{{{M_NS}}}sty'); sty.set(f'{{{M_NS}}}val', 'p')
+            wrpr = etree.SubElement(br_run, qn('w:rPr')); rf = etree.SubElement(wrpr, qn('w:rFonts')); rf.set(qn('w:ascii'), 'Cambria Math'); rf.set(qn('w:hAnsi'), 'Cambria Math')
+            etree.SubElement(br_run, qn('w:br'))
+        _style_annotations(para)
+        p._element.append(para)
+        return para
 
     def _solution_cols(self, work_cell, columns, widths_cm, first):
         """A borderless nested table with one cell per column, each holding steps."""
