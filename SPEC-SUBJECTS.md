@@ -161,6 +161,7 @@ not a new integration. Student flows stay on Telegram (free, adopted).
   (highest reuse of battle-tested marking pipeline; parent-visible from week one).
 
 ---
+- 2026-09-12 — Adrian: "language will be an AI model's strong point … let's spec it". L1 is now its own spec, [`SPEC-ESSAY-MARKING.md`](SPEC-ESSAY-MARKING.md): feedback first, band range not a mark (teachers disagree by whole bands, so no single mark is a truth), calibration by consistency + per-teacher ranking + anchors.
 
 ## Part 3 — Reverse takeaways for MATH (from the same teardown, 2026-08-21)
 
