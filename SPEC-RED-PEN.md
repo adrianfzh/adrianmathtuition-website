@@ -298,3 +298,9 @@ change: no model call. A never-marked page: one row call + one part-region call
 Not done: sketch features on drawn graphs (keep the feature-box ask), spreads
 (the old per-half pass), snapping a box's vertical extent to the ink rows inside
 it (would remove the residual jitter — `annotate.js _inkRowBands` has the pieces).
+
+## 12 Sep 2026 — two rulings from Rainie's set 3 papers
+
+- **No ticks after the ✗ in a part that scored nothing.** Q2(b)(iii) (P2, 0/2) and Q11(b) (P1, 0/4): working built on the wrong object came back ticked. Marker rule "A PART THAT SCORED NOTHING CARRIES NO TICKS AFTER ITS ✗" + the deterministic `quietZeroParts` (bot `ai/marker-assemble.js`): on a page with a 0/n part, a 'correct' line after a wrong line carrying a zero code — or, since the same evening, a code-less wrong line whose error kind is the zero part's kind — becomes 'neutral' until an earning code, a line opening the next part ("(c) …") or the next question. Lines before the ✗ keep their ticks; marks never move. Golden fixtures `em-set3-p2-zero-part-ticks`, `am-set3-p1-zero-part-no-code`.
+- **A fix with a power, index or surd is typeset.** Q7(a) (P2): "(−2)^r" was drawn as typed. `fix_short` carrying an exponent/index/surd/fraction is ONE `$…$` span (prompt), and `texFromPlainMath` (`ai/pen-math.js`, called from `applyPenLineFields` before the cap) converts a plain-typed one; prose, bare values, signs and existing spans are untouched.
+
