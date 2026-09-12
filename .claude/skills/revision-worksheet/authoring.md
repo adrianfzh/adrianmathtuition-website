@@ -1,5 +1,7 @@
 # Authoring brief — worked examples in Adrian's style
 
+> **Style:** every rendered solution follows [`create-worksheet/ADRIAN-STYLE.md`](../create-worksheet/ADRIAN-STYLE.md) — line-by-line working aligned at "=" in editable Word maths, grey ← notes, two cases side by side with "or", real numbering, columns for diagrams. Add a new rule THERE.
+
 The binding source is `~/Desktop/AdrianMath/teaching_style/FEEDBACK.md` (his own
 amendments, diffed). This file is the distillation for ONE surface — the Revision
 "(With Worked Examples)" sheet rendered by `create-worksheet/worksheet_lib.py` — with

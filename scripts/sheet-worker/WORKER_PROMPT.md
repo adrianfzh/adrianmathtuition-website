@@ -218,6 +218,8 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
 
 ```bash
 # 1. write the spec — the blocks and their fields are scripts/sheet-worker/SHEET-SPEC.md,
+
+> **Style:** every rendered solution follows [`create-worksheet/ADRIAN-STYLE.md`](../../.claude/skills/create-worksheet/ADRIAN-STYLE.md) — line-by-line working aligned at "=" in editable Word maths, grey ← notes, two cases side by side with "or", real numbering, columns for diagrams. Add a new rule THERE.
 #    the schema is scripts/sheet-worker/sheet-spec.schema.json
 #    (write it to $SHEETS_STATE/work/<job id>/sheet.spec.json, never /tmp)
 # 2. render it

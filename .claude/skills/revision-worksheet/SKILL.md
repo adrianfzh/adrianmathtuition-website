@@ -21,6 +21,8 @@ description: >
 
 # Revision worksheet — a worked-examples sheet from the bank
 
+> **Style:** every rendered solution follows [`create-worksheet/ADRIAN-STYLE.md`](../create-worksheet/ADRIAN-STYLE.md) — line-by-line working aligned at "=" in editable Word maths, grey ← notes, two cases side by side with "or", real numbering, columns for diagrams. Add a new rule THERE.
+
 **Starts from** the question bank plus a topic. **Produces** the "(With Worked Examples)"
 sheet — Notes → Examples → Practice — in `Dropbox/Apps/AdrianMathNotes/Revision/<folder>/`,
 named the way Adrian's own sheets are named, so it is the base that

@@ -19,6 +19,8 @@ description: >
 
 # Copy Revision Worksheet (with different practice) Skill
 
+> **Style:** every rendered solution follows [`create-worksheet/ADRIAN-STYLE.md`](../create-worksheet/ADRIAN-STYLE.md) — line-by-line working aligned at "=" in editable Word maths, grey ← notes, two cases side by side with "or", real numbering, columns for diagrams. Add a new rule THERE.
+
 > Renamed from `revision-worksheet` on 5 Sep 2026. The name `revision-worksheet` (shorthand
 > `rw`) now belongs to the skill that BUILDS a worked-examples sheet from the bank; this one
 > copies an existing sheet (`crw`). Same code, same flags, same output folders.

@@ -37,7 +37,7 @@ def sm(text) -> list:
     return R.split_math(str(text or "").replace("$^", "${}^"))
 
 
-ROMANS = {"i": 1, "ii": 2, "iii": 3, "iv": 4, "v": 5, "vi": 6}
+ROMANS = {"i": 1, "ii": 2, "iii": 3, "iv": 4, "v": 5, "vi": 6, "vii": 7, "viii": 8, "ix": 9, "x": 10}
 
 
 def sorted_parts(row) -> list:
@@ -47,6 +47,11 @@ def sorted_parts(row) -> list:
     if parts and all(l in ROMANS for l in labels):
         return sorted(parts, key=lambda p: ROMANS[str(p["label"]).strip().lower()])
     return sorted(parts, key=lambda p: str(p.get("label") or "").strip().lower())
+
+
+def fmt_of(label) -> str:
+    """'roman' for (i)(ii)…, 'letter' for (a)(b)… — the bank's own label decides."""
+    return "roman" if str(label or "").strip().strip("()").lower() in ROMANS else "letter"
 
 
 def pad_label(lab) -> str:

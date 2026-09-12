@@ -5,6 +5,8 @@ description: Write a genuinely NEW exam paper in the SEAB GCE shape (O-Level A M
 
 # GCE paper — write a new SEAB-style paper and file it as a Set
 
+> **Style:** every rendered solution follows [`create-worksheet/ADRIAN-STYLE.md`](../create-worksheet/ADRIAN-STYLE.md) — line-by-line working aligned at "=" in editable Word maths, grey ← notes, two cases side by side with "or", real numbering, columns for diagrams. Add a new rule THERE.
+
 The whole method Adrian asked for on 8 Sep 2026 ("put your method to generate such
 papers so that I can ask other sessions or another claude account to generate them
 like what you did"). Everything here is committed in the repo, so any account or

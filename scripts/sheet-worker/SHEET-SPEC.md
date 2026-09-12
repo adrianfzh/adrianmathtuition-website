@@ -1,5 +1,7 @@
 # The sheet spec — a Practice Again sheet as JSON
 
+> **Style:** every rendered solution follows [`create-worksheet/ADRIAN-STYLE.md`](../../.claude/skills/create-worksheet/ADRIAN-STYLE.md) — line-by-line working aligned at "=" in editable Word maths, grey ← notes, two cases side by side with "or", real numbering, columns for diagrams. Add a new rule THERE.
+
 > Status: **built and proved, not switched on.** `SHEET_RENDER=spec` turns it on
 > for the sheet worker; nothing sets it yet. Adrian decides after reading the
 > fidelity result below.

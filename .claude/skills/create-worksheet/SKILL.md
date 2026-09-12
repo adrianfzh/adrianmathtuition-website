@@ -23,6 +23,8 @@ description: >
 
 # Create Worksheet Skill
 
+> **Style:** every rendered solution follows [`create-worksheet/ADRIAN-STYLE.md`](../create-worksheet/ADRIAN-STYLE.md) — line-by-line working aligned at "=" in editable Word maths, grey ← notes, two cases side by side with "or", real numbering, columns for diagrams. Add a new rule THERE.
+
 Generates math practice worksheets as `.docx` files with one Python script per worksheet. The library `worksheet_lib.py` handles all the styling, numbering definitions, OMML conversion, and inline `numPr` patching internally — you just write the questions.
 
 Requires `pandoc` and `python-docx` (both present in the Cowork sandbox and on Adrian's Mac — Homebrew pandoc + pip python-docx).

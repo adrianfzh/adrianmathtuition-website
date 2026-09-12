@@ -5,6 +5,8 @@ description: Turn a student's MARKED PAPER into a self-study sheet they can lear
 
 # Self-study sheet — from one marked paper to work in their hands
 
+> **Style:** every rendered solution follows [`create-worksheet/ADRIAN-STYLE.md`](../create-worksheet/ADRIAN-STYLE.md) — line-by-line working aligned at "=" in editable Word maths, grey ← notes, two cases side by side with "or", real numbering, columns for diagrams. Add a new rule THERE.
+
 You are running steps 3–6 of the teaching round
 ([`SPEC-TEACHING-CYCLE.md`](../../../SPEC-TEACHING-CYCLE.md) — read it): the
 marking is already vetted, and your job is **diagnose → propose the wave →

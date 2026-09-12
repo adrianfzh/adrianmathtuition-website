@@ -730,15 +730,22 @@ def cmd_render(a):
         if stem:
             C.emit_text(ws, stem, ws.para, marks=None if parts else r.get("total_marks"))
         _figures(ws, r, figdir, max_h=C.FIG_MAX_H_EXAMPLE)
-        for p in parts:
-            C.emit_text(ws, p.get("text"), ws.para, marks=p.get("marks"),
-                        lead=[C.T(C.pad_label(p.get("label")))])
-            for sp in p.get("subparts") or []:
-                C.emit_text(ws, sp.get("text"), ws.para, marks=sp.get("marks"),
-                            lead=[C.T(f"({sp['label']}) ".ljust(5))])
-                if ws._block_paras:
-                    ws._block_paras[-1].paragraph_format.left_indent = C.Cm(1.4)
-        ws.solution_box(sol_rows, keep_together=not a.flow)
+        # Parts and subparts carry REAL Word numbering (Adrian, 12 Sep 2026: "can you
+        # autonumber the questions and subparts?") — a part he adds in Word numbers
+        # itself. The bank's own label decides letters or romans.
+        for j, p in enumerate(parts):
+            subs = p.get("subparts") or []
+            fmt = C.fmt_of(p.get("label"))
+            C.emit_text(ws, p.get("text"),
+                        lambda pr, marks=None, j=j, fmt=fmt: ws.numbered(pr, 0, fmt, restart=(j == 0), marks=marks),
+                        marks=None if subs else p.get("marks"))
+            for k, sp in enumerate(subs):
+                C.emit_text(ws, sp.get("text"),
+                            lambda pr, marks=None, k=k, f=C.fmt_of(sp.get("label")): ws.numbered(pr, 1, f, restart=(k == 0), marks=marks),
+                            marks=sp.get("marks"))
+        # Boxes flow: every part row is unsplittable already, and gluing a whole box
+        # left half a page empty (Adrian, 12 Sep 2026: "there is a large gap").
+        ws.solution_box(sol_rows, keep_together=a.glue)
 
     ws.page_break()
     ws.para([C.B("Practice")])
@@ -750,35 +757,22 @@ def cmd_render(a):
         stem = (r.get("question_text") or "").strip()
         if stem:
             C.emit_text(ws, stem, ws.Q, marks=None if parts else r.get("total_marks"))
-            _figures(ws, r, figdir)
-            for p in parts:
-                subs = p.get("subparts") or []
+        else:
+            ws.Q([])          # parts-only: the number sits on its own line, parts below it
+        _figures(ws, r, figdir)
+        for j, p in enumerate(parts):
+            subs = p.get("subparts") or []
+            fmt = C.fmt_of(p.get("label"))
+            if fmt == "letter":
                 C.emit_text(ws, p.get("text"), ws.SQ, marks=None if subs else p.get("marks"))
-                for sp in subs:
-                    C.emit_text(ws, sp.get("text"), ws.para, marks=sp.get("marks"),
-                                lead=[C.T(f"({sp['label']}) ".ljust(5))])
-                    if ws._block_paras:
-                        ws._block_paras[-1].paragraph_format.left_indent = C.Cm(1.4)
-        elif parts:
-            # parts-only question: first part rides the number line, the rest are literal
-            # labels; a part with subparts carries its marks on the subparts, not itself
-            def _subparts(p):
-                for sp in p.get("subparts") or []:
-                    C.emit_text(ws, sp.get("text"), ws.para, marks=sp.get("marks"),
-                                lead=[C.T(f"({sp['label']}) ".ljust(5))])
-                    if ws._block_paras:
-                        ws._block_paras[-1].paragraph_format.left_indent = C.Cm(2.4)
-            first, rest = parts[0], parts[1:]
-            C.emit_text(ws, first.get("text"),
-                        lambda pr, marks=None: C.hoist_Q(ws, first.get("label"), pr, marks=marks),
-                        marks=None if first.get("subparts") else first.get("marks"))
-            _subparts(first)
-            _figures(ws, r, figdir)
-            for p in rest:
+            else:
                 C.emit_text(ws, p.get("text"),
-                            lambda pr, marks=None, lab=p.get("label"): C.lit_part(ws, lab, pr, marks=marks),
-                            marks=None if p.get("subparts") else p.get("marks"))
-                _subparts(p)
+                            lambda pr, marks=None, j=j: ws.numbered(pr, 1, "roman", restart=(j == 0), marks=marks),
+                            marks=None if subs else p.get("marks"))
+            for k, sp in enumerate(subs):
+                C.emit_text(ws, sp.get("text"),
+                            lambda pr, marks=None, k=k, f=C.fmt_of(sp.get("label")): ws.numbered(pr, 2, f, restart=(k == 0), marks=marks),
+                            marks=sp.get("marks"))
         ws.ans(C.sm(content.ANSWERS[o["id8"]]))
         for para in ws._block_paras[:-1]:
             para.paragraph_format.keep_with_next = True
@@ -884,7 +878,8 @@ def main():
     p.add_argument("--dir", required=True)
     p.add_argument("--out", help="exact output path (default: Dropbox Revision/<folder>/…)")
     p.add_argument("--pdf", action="store_true", help="also export a PDF via Word and page PNGs to look at")
-    p.add_argument("--flow", action="store_true", help="let solution boxes flow across pages")
+    p.add_argument("--glue", action="store_true", help="keep every solution box on one page (default: boxes flow, parts never split)")
+    p.add_argument("--flow", action="store_true", help="(default now; kept for old command lines)")
     p.set_defaults(fn=cmd_render)
     a = ap.parse_args()
     a.fn(a)

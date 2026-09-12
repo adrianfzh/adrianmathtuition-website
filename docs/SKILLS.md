@@ -1,5 +1,7 @@
 # Skills index
 
+> **Style:** every rendered solution follows [`create-worksheet/ADRIAN-STYLE.md`](../.claude/skills/create-worksheet/ADRIAN-STYLE.md) — line-by-line working aligned at "=" in editable Word maths, grey ← notes, two cases side by side with "or", real numbering, columns for diagrams. Add a new rule THERE.
+
 **All skills live in `.claude/skills/` and are committed to this repo.** That is
 the whole distribution mechanism: clone the repo on any machine, or open it under
 any claude.ai account, and all of them come with it. Nothing to upload, nothing
