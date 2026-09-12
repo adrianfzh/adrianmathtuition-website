@@ -58,3 +58,30 @@ export async function airtableRequestAll(
   } while (offset);
   return { records };
 }
+
+/**
+ * Narrow a linked-`{Student}` table to ONE student by display name.
+ *
+ * A formula cannot match a record id on a linked field (`ARRAYJOIN({Student})`
+ * yields the linked DISPLAY NAME — CLAUDE.md Gotchas), but the display name
+ * itself is fair game once the caller holds the student's record: for a
+ * single-link field `ARRAYJOIN({Student})='<name>'` is an exact match. This only
+ * trims what Airtable sends — callers MUST still match `fields.Student[0] ===
+ * id` in JS, so a namesake merely over-fetches and never mis-attributes.
+ * A blank name returns '' (no narrowing) so callers degrade to the full pull.
+ *
+ * Why (12 Sep 2026): /admin/students/[id] pulled six months of EVERY student's
+ * lessons — 2,751 rows, 28 pages, ~11.5 s of a 12.5 s load — to keep 45.
+ */
+export function linkedStudentNameFilter(studentName: string | null | undefined, field = 'Student'): string {
+  const name = String(studentName || '').trim();
+  if (!name) return '';
+  const escaped = name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  return `ARRAYJOIN({${field}})='${escaped}'`;
+}
+
+/** AND a formula with linkedStudentNameFilter(); passes the formula through when the name is blank. */
+export function narrowToStudent(formula: string, studentName: string | null | undefined): string {
+  const by = linkedStudentNameFilter(studentName);
+  return by ? `AND(${formula}, ${by})` : formula;
+}

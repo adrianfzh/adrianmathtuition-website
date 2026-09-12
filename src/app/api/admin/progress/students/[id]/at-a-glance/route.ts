@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { airtableRequestAll } from '@/lib/airtable';
+import { airtableRequest, airtableRequestAll, linkedStudentNameFilter } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { sgtTodayISO } from '@/lib/sgt';
 
@@ -17,8 +17,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const { id } = await params;
 
   try {
-    // ── Exams (linked-record filter is unreliable → fetch all, filter in JS) ──
-    const examsData = await airtableRequestAll('Exams', '');
+    // Both tables are linked by {Student}; a record id can't be matched in a
+    // formula, but the student's display name can (lib/airtable.ts
+    // linkedStudentNameFilter) — the id match in JS below stays the truth.
+    // Submissions carries heavy fields and a full pull has taken over a minute.
+    const stu = await airtableRequest('Students', `/${id}`).catch(() => null);
+    const byName = linkedStudentNameFilter(stu?.fields?.['Student Name']);
+    const narrowed = byName ? `?filterByFormula=${encodeURIComponent(byName)}` : '';
+    const [examsData, subsData] = await Promise.all([
+      airtableRequestAll('Exams', narrowed),
+      // Submissions table may not exist / be empty — degrade gracefully.
+      airtableRequestAll('Submissions', narrowed).catch(() => ({ records: [] as any[] })),
+    ]);
     const exams = examsData.records
       .filter((r: any) => r.fields['Student']?.[0] === id)
       .map((r: any) => ({
@@ -41,8 +51,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     let submissionsMarked = 0;
     let submissionsWrong = 0;
     const wrongByTopic: Record<string, number> = {};
-    try {
-      const subsData = await airtableRequestAll('Submissions', '');
+    {
       const mine = subsData.records.filter((r: any) => r.fields['Student']?.[0] === id);
       for (const r of mine) {
         submissionsMarked++;
@@ -53,8 +62,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           wrongByTopic[topic] = (wrongByTopic[topic] || 0) + 1;
         }
       }
-    } catch {
-      // Submissions table may not exist / be empty — degrade gracefully.
     }
 
     const weakTopics = Object.entries(wrongByTopic)

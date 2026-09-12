@@ -7,7 +7,7 @@
 //   - recent invoices (last ~6)
 // Contact info is NOT returned here (privacy) — lazy-loaded via student-contact.
 import { NextRequest, NextResponse } from 'next/server';
-import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
+import { airtableRequest, airtableRequestAll, linkedStudentNameFilter, narrowToStudent } from '@/lib/airtable';
 import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
 import { computePerMonthPayments } from '@/lib/invoice-payments';
 import { resolveRescheduleChain, ChainLesson } from '@/lib/reschedule-chain';
@@ -22,6 +22,60 @@ function slotLabel(f: any): string {
   return `${day} ${f?.['Time'] || ''}`.trim();
 }
 
+// Portal activity (2026-09-03, lib/portal-activity.ts) — fail-soft, null on
+// any error. Reuses the exact same summariser the hub-wide
+// /api/admin/portal-activity route uses, so "status" and the relative-day
+// fields agree everywhere. Only the LATEST row of each signal is fetched
+// (not the 30-day window that route uses for its whole-roster scan) — a
+// single student's profile wants the true most-recent event even if it
+// happened months ago, not just "within the last 30 days". `id` IS the
+// portal identity for a tuition student (lib/portal-auth.ts
+// portalIdentity() — a non-blank Airtable rec id passes through unchanged).
+type PortalBlock = {
+  hasAccount: boolean; lastSeenAt: string | null; lastHandinAt: string | null;
+  lastAttemptAt: string | null; lastMarkingViewAt: string | null; status: 'active' | 'quiet' | 'never';
+};
+async function readPortalActivity(id: string): Promise<PortalBlock | null> {
+  try {
+    const sb = getSupabaseAdmin();
+    const { data: acctRows } = await sb
+      .from('portal_accounts')
+      .select('id, airtable_student_id, display_name, level, created_at, last_seen_at, deactivated_at')
+      .eq('airtable_student_id', id)
+      .limit(1);
+    const account = (acctRows ?? [])[0] as ActivityAccount | undefined;
+    if (!account) {
+      return { hasAccount: false, lastSeenAt: null, lastHandinAt: null, lastAttemptAt: null, lastMarkingViewAt: null, status: 'never' };
+    }
+    const [eventsRes, attemptsRes, handinsRes] = await Promise.all([
+      sb.from('portal_event_log').select('identity, kind, created_at')
+        .eq('identity', id).in('kind', ['marking:view', 'marking:open'])
+        .order('created_at', { ascending: false }).limit(1),
+      sb.from('student_attempts').select('airtable_student_id, user_id, attempted_at')
+        .eq('airtable_student_id', id)
+        .order('attempted_at', { ascending: false }).limit(1),
+      sb.from('paper_marking_runs').select('student_id, created_at')
+        .eq('student_id', id).not('result_json->portal_submission', 'is', null)
+        .order('created_at', { ascending: false }).limit(1),
+    ]);
+    const summary = summariseActivity({
+      accounts: [account],
+      events: (eventsRes.data ?? []) as ActivityEvent[],
+      attempts: (attemptsRes.data ?? []) as ActivityAttempt[],
+      handins: (handinsRes.data ?? []) as ActivityHandin[],
+      now: new Date(),
+    });
+    const row = summary.rows[0];
+    return {
+      hasAccount: true, lastSeenAt: row.lastSeenAt, lastHandinAt: row.lastHandinAt,
+      lastAttemptAt: row.lastAttemptAt, lastMarkingViewAt: row.lastMarkingViewAt, status: row.status,
+    };
+  } catch (e) {
+    console.error('[student-profile] portal activity read failed:', (e as Error).message);
+    return null;
+  }
+}
+
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const id = req.nextUrl.searchParams.get('id');
@@ -32,13 +86,41 @@ export async function GET(req: NextRequest) {
   if (!stu) return NextResponse.json({ error: 'Student not found' }, { status: 404 });
   const f = stu.fields;
 
-  // Active slots (for labels) — and the student's active enrollments
-  const [slotsData, enrollData, windowsData] = await Promise.all([
+  // Narrow the big linked-record pulls to this one student by display name
+  // (lib/airtable.ts linkedStudentNameFilter — the record-id match in JS below
+  // stays the truth). Before this (12 Sep 2026) the route pulled six months of
+  // EVERY student's lessons — 2,751 rows over 28 pages, ~11.5 s of a 12.5 s
+  // profile load — to keep the 45 that were Rainie's.
+  const studentName = String(f['Student Name'] || '').trim();
+  const byStudentName = linkedStudentNameFilter(studentName);
+  const narrow = (formula: string) => narrowToStudent(formula, studentName);
+
+  // Upcoming lessons (from today) — filter by date in Airtable, match student in JS
+  const today = localToday();
+  // Fetch a window (past 6 months → all future) so attendance history + upcoming
+  // both come from one query, and reschedule destinations are included.
+  const windowStart = (() => { const d = new Date(today + 'T00:00:00'); d.setMonth(d.getMonth() - 6); return d.toISOString().slice(0, 10); })();
+
+  // Everything below depends only on the student record, so it all goes out at
+  // once — six serial phases used to run end to end.
+  const [slotsData, enrollData, windowsData, lessonsData, invData, emailLogs, portalRaw] = await Promise.all([
     airtableRequestAll('Slots', `?fields[]=Day&fields[]=Time&fields[]=Level&fields[]=Is Active`),
     airtableRequestAll('Enrollments',
       `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Slot&fields[]=Rate Per Lesson&fields[]=Rate Type`),
     airtableRequest('Settings',
       `?filterByFormula=${encodeURIComponent(`{Setting Name}='${SLOT_WINDOWS_SETTING}'`)}&maxRecords=1`).catch(() => null),
+    airtableRequestAll('Lessons',
+      `?filterByFormula=${encodeURIComponent(narrow(`{Date}>='${windowStart}'`))}&fields[]=Student&fields[]=Slot&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID&fields[]=Is Revision Makeup&fields[]=Mastery&fields[]=Topics Covered&fields[]=Topics Free Text&fields[]=Homework Returned&fields[]=Progress Logged&fields[]=Mood&sort[0][field]=Date&sort[0][direction]=asc`),
+    // Invoices for this student — match in JS. `Line Items Extra` is needed to
+    // strip the carry-forward lump when computing the true per-month breakdown.
+    airtableRequestAll('Invoices',
+      `?${byStudentName ? `filterByFormula=${encodeURIComponent(byStudentName)}&` : ''}fields[]=Student&fields[]=Month&fields[]=Final Amount&fields[]=Status&fields[]=Amount Paid&fields[]=Is Paid&fields[]=Invoice Type&fields[]=PDF URL&fields[]=Line Items Extra&sort[0][field]=Month&sort[0][direction]=desc`),
+    // Every invoice PDF actually emailed (EmailLog archive) — matched to this
+    // student's invoices below. Optional: a failure here just empties the list.
+    airtableRequestAll('EmailLog',
+      `?filterByFormula=${encodeURIComponent(`NOT({PDF URL}='')`)}&fields[]=Related Invoice&fields[]=Subject&fields[]=Sent At&fields[]=To Email&fields[]=Status&fields[]=PDF URL&sort[0][field]=Sent At&sort[0][direction]=desc`)
+      .catch(() => null),
+    readPortalActivity(id),
   ]);
   // Dated (ad-hoc) slots run on specific dates only. They belong in the one-off
   // reschedule picker — on their own dates — and never in the weekly-enrollment
@@ -61,13 +143,6 @@ export async function GET(req: NextRequest) {
       };
     });
 
-  // Upcoming lessons (from today) — filter by date in Airtable, match student in JS
-  const today = localToday();
-  // Fetch a window (past 6 months → all future) so attendance history + upcoming
-  // both come from one query, and reschedule destinations are included.
-  const windowStart = (() => { const d = new Date(today + 'T00:00:00'); d.setMonth(d.getMonth() - 6); return d.toISOString().slice(0, 10); })();
-  const lessonsData = await airtableRequestAll('Lessons',
-    `?filterByFormula=${encodeURIComponent(`{Date}>='${windowStart}'`)}&fields[]=Student&fields[]=Slot&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID&fields[]=Is Revision Makeup&fields[]=Mastery&fields[]=Topics Covered&fields[]=Topics Free Text&fields[]=Homework Returned&fields[]=Progress Logged&fields[]=Mood&sort[0][field]=Date&sort[0][direction]=asc`);
   const mine = lessonsData.records.filter((r: any) => r.fields['Student']?.[0] === id);
 
   // A makeup lesson = a reschedule destination OR a revision makeup. Computed up
@@ -227,10 +302,6 @@ export async function GET(req: NextRequest) {
     };
   })();
 
-  // Invoices for this student — match in JS. `Line Items Extra` is needed to
-  // strip the carry-forward lump when computing the true per-month breakdown.
-  const invData = await airtableRequestAll('Invoices',
-    `?fields[]=Student&fields[]=Month&fields[]=Final Amount&fields[]=Status&fields[]=Amount Paid&fields[]=Is Paid&fields[]=Invoice Type&fields[]=PDF URL&fields[]=Line Items Extra&sort[0][field]=Month&sort[0][direction]=desc`);
   const studentInvoices = invData.records.filter((r: any) => r.fields['Student']?.[0] === id);
   const studentInvoiceIds = new Set(studentInvoices.map((r: any) => r.id));
   const invoices = studentInvoices
@@ -262,78 +333,18 @@ export async function GET(req: NextRequest) {
     })),
   );
 
-  // Every invoice PDF actually emailed to this student (from EmailLog archive).
-  // Match EmailLog rows whose Related Invoice belongs to this student and which
-  // carry a PDF URL — that's the exact PDF that was sent.
-  let sentInvoices: any[] = [];
-  try {
-    const logs = await airtableRequestAll('EmailLog',
-      `?filterByFormula=${encodeURIComponent(`NOT({PDF URL}='')`)}&fields[]=Related Invoice&fields[]=Subject&fields[]=Sent At&fields[]=To Email&fields[]=Status&fields[]=PDF URL&sort[0][field]=Sent At&sort[0][direction]=desc`);
-    sentInvoices = (logs.records || [])
-      .filter((r: any) => studentInvoiceIds.has(r.fields['Related Invoice']?.[0]))
-      .map((r: any) => ({
-        id: r.id,
-        subject: r.fields['Subject'] || '',
-        sentAt: r.fields['Sent At'] || '',
-        toEmail: r.fields['To Email'] || '',
-        status: r.fields['Status'] || '',
-        pdfUrl: r.fields['PDF URL'] || '',
-      }));
-  } catch { /* EmailLog optional */ }
+  const sentInvoices = (emailLogs?.records || [])
+    .filter((r: any) => studentInvoiceIds.has(r.fields['Related Invoice']?.[0]))
+    .map((r: any) => ({
+      id: r.id,
+      subject: r.fields['Subject'] || '',
+      sentAt: r.fields['Sent At'] || '',
+      toEmail: r.fields['To Email'] || '',
+      status: r.fields['Status'] || '',
+      pdfUrl: r.fields['PDF URL'] || '',
+    }));
 
-  // Portal activity (2026-09-03, lib/portal-activity.ts) — fail-soft, null on
-  // any error. Reuses the exact same summariser the hub-wide
-  // /api/admin/portal-activity route uses, so "status" and the relative-day
-  // fields agree everywhere. Only the LATEST row of each signal is fetched
-  // (not the 30-day window that route uses for its whole-roster scan) — a
-  // single student's profile wants the true most-recent event even if it
-  // happened months ago, not just "within the last 30 days". `id` IS the
-  // portal identity for a tuition student (lib/portal-auth.ts
-  // portalIdentity() — a non-blank Airtable rec id passes through unchanged).
-  type PortalBlock = {
-    hasAccount: boolean; lastSeenAt: string | null; lastHandinAt: string | null;
-    lastAttemptAt: string | null; lastMarkingViewAt: string | null; status: 'active' | 'quiet' | 'never';
-  };
-  let portal: PortalBlock | null = null;
-  try {
-    const sb = getSupabaseAdmin();
-    const { data: acctRows } = await sb
-      .from('portal_accounts')
-      .select('id, airtable_student_id, display_name, level, created_at, last_seen_at, deactivated_at')
-      .eq('airtable_student_id', id)
-      .limit(1);
-    const account = (acctRows ?? [])[0] as ActivityAccount | undefined;
-    if (!account) {
-      portal = { hasAccount: false, lastSeenAt: null, lastHandinAt: null, lastAttemptAt: null, lastMarkingViewAt: null, status: 'never' };
-    } else {
-      const [eventsRes, attemptsRes, handinsRes] = await Promise.all([
-        sb.from('portal_event_log').select('identity, kind, created_at')
-          .eq('identity', id).in('kind', ['marking:view', 'marking:open'])
-          .order('created_at', { ascending: false }).limit(1),
-        sb.from('student_attempts').select('airtable_student_id, user_id, attempted_at')
-          .eq('airtable_student_id', id)
-          .order('attempted_at', { ascending: false }).limit(1),
-        sb.from('paper_marking_runs').select('student_id, created_at')
-          .eq('student_id', id).not('result_json->portal_submission', 'is', null)
-          .order('created_at', { ascending: false }).limit(1),
-      ]);
-      const summary = summariseActivity({
-        accounts: [account],
-        events: (eventsRes.data ?? []) as ActivityEvent[],
-        attempts: (attemptsRes.data ?? []) as ActivityAttempt[],
-        handins: (handinsRes.data ?? []) as ActivityHandin[],
-        now: new Date(),
-      });
-      const row = summary.rows[0];
-      portal = {
-        hasAccount: true, lastSeenAt: row.lastSeenAt, lastHandinAt: row.lastHandinAt,
-        lastAttemptAt: row.lastAttemptAt, lastMarkingViewAt: row.lastMarkingViewAt, status: row.status,
-      };
-    }
-  } catch (e) {
-    console.error('[student-profile] portal activity read failed:', (e as Error).message);
-    portal = null;
-  }
+  const portal = portalRaw;
 
   // Active slot list for the switch/add pickers
   const slots = slotsData.records
