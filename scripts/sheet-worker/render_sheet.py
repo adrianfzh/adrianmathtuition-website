@@ -453,8 +453,11 @@ def build(spec, out_dir: Path, spec_dir: Path, name: str, repair: bool):
             p = ws.figure(figures.path_for(block['source']),
                           width_cm=float(block.get('width_cm', 10.5)))
         elif kind == 'solution':
+            # Adrian, 13 Sep 2026 (replacing 11 Sep's "an example never straddles"):
+            # a part is never cut, a NEW part may start on the next page, a near
+            # miss is tightened by fit-examples.py — so the box flows by default.
             table = ws.solution_box(solution_rows(ws, figures, block['rows']),
-                                    keep_together=block.get('keep_together', True))
+                                    keep_together=block.get('keep_together', False))
             if block.get('glue'):
                 # the "Solution:" label travels with the box below it
                 label = table._tbl.getprevious()
@@ -732,7 +735,7 @@ def selftest():
             ('the check line is green', '2E7D32' in xml and '✓ Check: ' in xml),
             ('the Common Error line is red', 'EE0000' in xml and 'Common Error: ' in xml),
             ('the green rule tag is green', '00B050' in xml),
-            # Adrian, 11 Sep 2026: an example or a question never straddles a page
+            # Adrian, 11/13 Sep 2026: a part is never cut across pages; a question never straddles
             ('every solution box row refuses to split', n(r'<w:cantSplit\s*/>') >= 2),
             ('the questions are glued to their parts', n(r'<w:keepNext\s*/>') >= 20),
         ]

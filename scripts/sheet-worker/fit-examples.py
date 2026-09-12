@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""fit-examples.py — keep an example on one page by tightening its white space.
+"""fit-examples.py — tighten an example that just misses fitting on its page.
+
+13 Sep 2026: boxes FLOW now (a part is never cut, a new part may start on the next
+page — Adrian's own notes break AM 18 Example 3b between (c) and (d) at the foot of a
+full page), so a block whose tail is a whole part on the next page is fine and is
+left alone; this script's job is the NEAR MISS — "if the solutions almost fit into a
+page, just a little left hanging … if space management could be a little tighter to
+fit, then do so" — and the stranded "Solution:" label.
 
     /usr/bin/python3 scripts/sheet-worker/fit-examples.py <sheet.docx> [--check] [--pdf out.pdf]
 

@@ -158,12 +158,17 @@ grey italic, a `remember` grey — the spec carries the words, not the hex.
 
 `label` is `(a)` / `(i)`, or `""` for a one-part solution (a single full-width
 cell — the layout stays the same). Rows sit 8 pt apart, as paragraph spacing in
-both cells; the box shows only its outer border. `keep_together` defaults to
-**true** (Adrian, 11 Sep 2026: an example "looks cut off in the middle → hard
-to read"): the Example label, its question, figure, `Solution:` line and the
-whole box move to a fresh page together rather than being cut. The half-empty
-page that can leave behind is accepted. Practice questions are glued the same
-way (`sheet.keep_questions_together`, default true).
+both cells; the box shows only its outer border. **Page rule (Adrian, 13 Sep
+2026, replacing 11 Sep's "an example never straddles"):** a part is never cut
+across two pages; a NEW part may start on the next page; the Example label, its
+question, figure and `Solution:` line always stay with the first part; if the
+example almost fits and only a little hangs over, the spacing is tightened so it
+fits (`fit-examples.py`, run last); only a part taller than a page is broken,
+and then at a sensible line — write that part as two rows, the second with
+`label: ""`. His own notes do exactly this (AM 18, Example 3b breaks between
+(c) and (d) at the foot of a full page). So `keep_together` defaults to
+**false**; `true` glues the parts to each other as well. Practice questions are
+short and stay glued whole (`sheet.keep_questions_together`, default true).
 
 ### Figures
 

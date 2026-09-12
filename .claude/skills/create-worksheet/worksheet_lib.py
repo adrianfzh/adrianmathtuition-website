@@ -1014,10 +1014,14 @@ class Worksheet:
           check beside the tick and the fonts in green/light grey will signify
           to the student … that check is not part of the working").
 
-        keep_together (default True) keeps the question paragraphs (since
-        the last Q()), the "Solution:" line and the whole box on one page —
-        Word pushes the block to a fresh page rather than straddling. A block
-        taller than a full page still splits gracefully.
+        The question paragraphs (since the last Q()) and the "Solution:" line
+        always keep with the first part; every part row is unsplittable.
+        keep_together=True additionally glues the parts to each other so the
+        whole box sits on one page — Word pushes the block to a fresh page
+        rather than straddling. Adrian's rule (13 Sep 2026) is the flowing
+        box: a new part may start on the next page, a part is never cut, a
+        near miss is tightened — so callers pass keep_together=False; the
+        True default is kept for old author scripts.
 
         THAT PUSH IS THE "LARGE SPACE" (Adrian, 2 Sep 2026: "how can i remove
         the large space between the example and section 3?"). A glued
@@ -1091,9 +1095,27 @@ class Worksheet:
                 tp.paragraph_format.space_before = Pt(2) if idx == 0 else Pt(gap_pt)
         for row in table.rows:
             _cant_split(row)          # a part never breaks mid-way, glued or not
+        # The question's paragraphs stay together (a question never splits), and
+        # the spacer + "Solution:" line stay with the FIRST part of the box, so
+        # "Solution:" is never stranded at a page foot. The question is NOT
+        # chained to the box: Word breaks a paragraph-chain that runs into a
+        # table at an odd place (13 Sep 2026, JC1 Series: parts (a)–(c) of a
+        # question left on one page, (d) + the box on the next).
+        q_paras = self._block_paras[:-2] if len(self._block_paras) >= 2 else []
+        for para in q_paras[:-1]:
+            para.paragraph_format.keep_with_next = True
+        for para in self._block_paras[-2:]:
+            para.paragraph_format.keep_with_next = True
         if keep_together:
             for para in self._block_paras:
                 para.paragraph_format.keep_with_next = True
+            # …and the parts stay with each other too: the whole box on one page.
+            # Adrian's page rule (13 Sep 2026, as in his own notes — AM 18 Example
+            # 3b breaks between (c) and (d) at the foot of a full page): a part is
+            # never cut, a NEW part may start on the next page, a near miss is
+            # tightened to fit (fit-examples.py), and only a part taller than a
+            # page is broken, at a sensible line — author that one as two rows,
+            # the second with label ''. So keep_together=False is the normal case.
             for row in list(table.rows)[:-1]:  # last row must NOT keep with what follows
                 for cell in row.cells:
                     for cp in cell.paragraphs:

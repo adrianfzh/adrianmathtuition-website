@@ -981,10 +981,11 @@ the gap is the interesting half: it says what the bank is missing.
   - **No `∥` anywhere, and a "Where it showed" line under every section
     heading** (11 Sep 2026) — `render_sheet.py`'s lint flags the first; count
     the second against the section headings.
-  - **Every example sits on one page, and a near miss is tightened, not
-    moved** (Adrian, 11 Sep 2026: "when there is just a little bit of the box
-    going across to another page, try to just reduce the white spaces for the
-    example/question, so that the entire example can stay within the page").
+  - **A part is never cut across pages; a new part may start overleaf; a near
+    miss is tightened** (Adrian, 13 Sep 2026: "a new part can go to another page,
+    but not in the middle of a part … if the solutions almost fit into a page,
+    just a little left hanging … tighter to fit, then do so"; 11 Sep 2026: "reduce
+    the white spaces for the example/question").
     After the file is otherwise finished, run
     `/usr/bin/python3 scripts/sheet-worker/fit-examples.py <sheet.docx> --pdf
     "<folder>/3 Practice Again.pdf"` (needs Word, like the PDF export) and FILE
@@ -1096,16 +1097,20 @@ the gap is the interesting half: it says what the bank is missing.
   says what is asked; this one says why the working is the working. A single
   integral with nothing to add or subtract needs only the question figure.
 
-**An example stays on one page — leave `keep_together=True`** (Adrian, 11 Sep
-2026, on Isabelle's sheets: "examples should try not to straddle across two
-pages like that? looks cut off in the middle → hard to read. likewise for
-questions"). The default glues the Example label, its question, any figure,
-the `Solution:` line and the whole box, so Word moves the block to a fresh
-page rather than cutting a solution in half. The half-empty page that leaves
-behind is the accepted price; it replaces the 2 Sep 2026 "let the box flow"
-rule, which was the cause of the cut-off boxes. Only a box taller than a whole
-page still splits, and Word does that on its own. Practice questions get the
-same treatment: build the sheet with `Worksheet(keep_questions_together=True)`
+**The page rule — a part is never cut, a new part may start overleaf**
+(Adrian, 13 Sep 2026, refining 11 Sep's "examples should try not to straddle
+across two pages … looks cut off in the middle": "if a worked example has
+multiple parts solutions, then a new part can go to another page, but not in
+the middle of a part … if the solutions almost fit into a page, just a little
+left hanging … tighter to fit, then do so. otherwise, it is okay to let a part
+be on another page … unless there is absolutely no choice, then break at a
+sensible part"). His own notes do this — AM 18 Example 3b breaks between (c)
+and (d) at the foot of a full page. So the box FLOWS (`keep_together=False`,
+the renderer's default now): every part row is unsplittable, the Example
+label, question, figure and `Solution:` line stay with the first part, and
+`fit-examples.py` tightens a near miss. A part taller than a page is written as
+two rows (the second with label `""`) so the break lands at a sensible line.
+Practice questions are short and stay whole: build the sheet with `Worksheet(keep_questions_together=True)`
 so a question's stem, its (a)(b)(c) parts, the `[Ans: …]` line and the
 `[Remember: …]` note stay together (they carry no writing space, so no
 question is taller than a page). `repair-sheet.py --unglue` still exists for a

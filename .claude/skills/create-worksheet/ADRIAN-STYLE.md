@@ -86,11 +86,17 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   examples ("put the notes at the front of each section instead").
 - Concept line in bold above `Example N`; the example IS the exam question, verbatim,
   marks right-aligned in `[n]`; `Solution:` then the box with a 1 cm label column.
-- **Revision sheets: boxes flow, parts never split** — every part row is unsplittable;
-  a whole box is NOT glued to one page, gluing left half a page empty ("there is a large
-  gap", 12 Sep 2026). Practice questions and their `[Ans:]` line stay together.
-  (Practice Again self-study sheets keep their own 11 Sep 2026 rule — an example box
-  never straddles a page — `scripts/sheet-worker/SHEET-SPEC.md`.)
+- **The page rule, every sheet** (13 Sep 2026): a part is never cut across two pages;
+  a NEW part may start on the next page; the question, its figure and `Solution:` stay
+  with the first part; if the example almost fits and only a little hangs over, tighten
+  the spacing so it fits (`scripts/sheet-worker/fit-examples.py`); only a part taller
+  than a page is broken, at a sensible line — write it as two rows, the second with
+  label `''`. His words: "a new part can go to another page, but not in the middle of a
+  part … if the solutions almost fit into a page, just a little left hanging … tighter to
+  fit, then do so. otherwise, it is okay to let a part be on another page". His notes do
+  it: AM 18 Example 3b breaks between (c) and (d) at the foot of a full page. So
+  `keep_together=False` everywhere (gluing a whole box left half a page empty — "there
+  is a large gap", 12 Sep). Practice questions and their `[Ans:]` line stay together.
 - One `[Ans: (a) …; (b) …]` line per practice question, orange, right-aligned, at the end
   — never after each part.
 - No empty paragraphs for spacing; the box hugs its content; a small gap between parts is
