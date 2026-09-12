@@ -4,9 +4,9 @@
 > so how can we start building marking language essays? let's spec it"). Companion
 > to [`SPEC-SUBJECTS.md`](SPEC-SUBJECTS.md) (the August research: rubric-as-spine,
 > the ELLA teardown, phase L1) and [`SPEC-SCIENCE-MARKING.md`](SPEC-SCIENCE-MARKING.md)
-> (the chassis/brain split this reuses). Status: **spec agreed 12 Sep 2026 (Adrian's four
-> answers below), the English 1184 rubric seeded as data from the official document,
-> nothing else built.**
+> (the chassis/brain split this reuses). Status: **E1 BUILT 12–13 Sep 2026** (Adrian:
+> "start") — see §What was built. Preview identity + Adrian only; the gate has not run
+> on a real class set yet.
 
 ## The three rulings this spec is built on (12 Sep 2026)
 
@@ -286,3 +286,58 @@ Seed `rubrics` for English 1184 continuous writing from the syllabus document
 mark six anchor essays blind, and run the consistency test. If the bands hold, build
 the report page. If they do not, the brain is not ready and nothing else is worth
 building yet.
+
+## What was built — E1 (12–13 Sep 2026)
+
+**Bot** (`adrianmath-telegram-math-bot`, deployed f03a80f):
+- `ai/essay-marker.js` — the essay brain: one structured read against the rubric and
+  code list the WEBSITE sends (the bot holds no copy of either), two reads in
+  parallel, a third when they differ by a band, `claude-opus-5` (`ESSAY_MODEL` env
+  overrides), ~4k tokens in and ~5k out per read.
+- `lib/essay-report.js` — the belt, pure, `test/essay-report.test.js`: a mark must
+  quote text that is really in the essay (whitespace and curly quotes forgiven,
+  offsets mapped back), a fix longer than 3× its quote is a rewrite and is dropped,
+  an unknown code becomes null, habit counts are RECOMPUTED from the marks, a read
+  with no usable band is no read, `agreeReads` (unanimous · majority of three ·
+  needs a third · held), `bandRange` from the rubric rows, `telegramLine` with no
+  point mark.
+- `POST /api/essay-mark` (`handlers/webchat.js`, internal secret) — 202 at once,
+  marks in the background, writes `essay_runs`, one line to the marking topic.
+  A held essay (three reads apart) or a failed one is NOT released.
+
+**Website** (dev 5a243e7e):
+- `essay_runs` table (migration `essay_runs`, RLS with no policies — service key only).
+- `data/rubrics/english-1184-writing.json` + `lib/essay-rubric.ts` (`essayRubricFor`),
+  `lib/essay-codes.ts` (the sixteen English codes), `lib/essay-submit.ts` (the ONE
+  door both the student's POST and the harness use: validate, insert queued, ping
+  the bot; `DAILY_ESSAY_CAP` = 3 while preview-only), `lib/essay-runs.ts` (reads),
+  `lib/essay-report.ts` (render side: `segmentsFor`, `trendFor`, `bandLine`;
+  tested), `lib/essay-calibration.ts` (consistency / Spearman ranking / anchor fit;
+  tested).
+- Routes: `POST|GET /api/portal/essays` (session; health-check probes the 401),
+  `GET|POST /api/admin/essays` (Adrian's list + the harness's calibration hand-in).
+- Pages: `/app/languages` (Home: hand in, being read, the habits trend, latest
+  essays), `/app/languages/submit` (kind · question · essay, live word count),
+  `/app/languages/essays`, `/app/languages/[id]` (the report in the spec's order;
+  refreshes itself while the bot reads; Adrian's cookie opens any essay),
+  `/admin/essays` (every essay, HELD reasons shown).
+- The Languages family: `ESSAY_MARKING_OPEN_TO_STUDENTS` + `essayMarkingOpen()` in
+  `lib/portal-beta.ts` (preview identity = the demo student, Adrian's cookie),
+  the third tab in `components/PortalTabs.tsx`, its own menu Home · Hand in ·
+  Essays in `app/app/layout.tsx`, the `languages` surface in `lib/portal-theme.ts`.
+- `scripts/essay-calibration/run.ts` — `npx tsx scripts/essay-calibration/run.ts
+  <set-dir>`: hands every essay of a set in twice through the admin door, waits,
+  runs the three tests, prints and writes `results.json`. Set format in the file.
+
+**First results.** One Sec 4 narrative (470 words, tense drift seeded), four reads
+across two trials, then one real hand-in on the preview: every read gave Content
+band 4, Language band 3 → 16–20 of 30; 23–24 marks; habits tense ×10–11, comma
+splice ×4, collocation ×2; the belt dropped nothing. One essay costs about
+**US$0.30** (two Opus reads) — not the "few cents" the draft assumed; a third read
+adds fifteen cents. 61 s from hand-in to report.
+
+**Not in E1 (next):** photo hand-in + transcript confirm and 华文作文 (E2); the
+desk's Agree/Override on a HELD essay (Adrian reads both reads and picks, for now
+by hand); a `job_runs` stamp for the bot's essay lane; the switch row
+(`essay_marking_open`) — E1 is code-flag only; the parent-digest line (E4).
+
