@@ -2487,6 +2487,40 @@ def _apply_title(body, level_label: str, topic: str, base_stem: str = "") -> str
     return mode
 
 
+def _autofit_fragment_tables(body) -> int:
+    """Let a notes fragment's formula tables size to their content.
+
+    The fragments were cut out of Adrian's multi-column formula sheets and kept
+    those columns' FIXED widths — Logarithms is one 3.7 cm column, Indices two
+    of 2.8 and 3.1 cm — so on a full-width page every formula longer than that
+    wraps in the middle ("log_a xy =" / "log_a x + log_a y"; Adrian, 12 Sep
+    2026: "output for kind 2 doesn't seem very good"). Switching the table to
+    autofit with auto cell widths lets Word grow each column to its longest
+    entry, up to the text width. Only the base's own tables — the practice
+    block adds none, and worked sheets (solution boxes) are not passed here.
+    """
+    n = 0
+    for tbl in body.findall(w("tbl")):
+        pr = tbl.find(w("tblPr"))
+        if pr is None:
+            pr = etree.Element(w("tblPr"))
+            tbl.insert(0, pr)
+        lay = pr.find(w("tblLayout"))
+        if lay is None:
+            lay = etree.SubElement(pr, w("tblLayout"))
+        lay.set(w("type"), "autofit")
+        tw = pr.find(w("tblW"))
+        if tw is None:
+            tw = etree.SubElement(pr, w("tblW"))
+        tw.set(w("w"), "0")
+        tw.set(w("type"), "auto")
+        for tcw in tbl.iter(w("tcW")):
+            tcw.set(w("w"), "0")
+            tcw.set(w("type"), "auto")
+        n += 1
+    return n
+
+
 def _ensure_ct_defaults(items: dict, exts: set) -> None:
     """[Content_Types].xml: a Default per image extension the package now carries."""
     if not exts:
@@ -2634,7 +2668,8 @@ def clone_with_practice(base_path: Path, out_path: Path, questions: list,
                         title: tuple | None = None,
                         optional_from: int | None = None,
                         figures: "FigureStore | None" = None,
-                        extra_bases: list | None = None) -> dict:
+                        extra_bases: list | None = None,
+                        autofit_tables: bool = False) -> dict:
     """Byte-clone the base docx and append the practice paragraphs to its body.
 
     `extra_bases`: further notes fragments stacked after the base's own body
@@ -2657,6 +2692,7 @@ def clone_with_practice(base_path: Path, out_path: Path, questions: list,
         merged.append(_merge_fragment(items, names, body, Path(extra), k))
 
     page = _normalize_page(root)
+    tables_autofit = _autofit_fragment_tables(body) if autofit_tables else 0
     # Trim the base's own padding BEFORE the practice block goes in — after, it
     # would eat the writing space, which is made of the same empty paragraphs.
     blanks = _compact_blanks(body)
@@ -2727,7 +2763,7 @@ def clone_with_practice(base_path: Path, out_path: Path, questions: list,
             "equations": sum(1 for v in omml.cache.values() if v is not None),
             "fallbacks": list(omml.fallbacks),
             "figures": len(figures.entries) if figures else 0,
-            "merged": merged}
+            "merged": merged, "tables_autofit": tables_autofit}
 
 
 # --------------------------------------------------------------------------
@@ -3271,7 +3307,8 @@ def make_worksheet(kind: str, topic, bank: str | None = None, folder: str | None
                                        space=space, optional_from=optional_from,
                                        title=(lvl, topic, "" if multi else resolved.path.stem) if lvl else None,
                                        figures=store,
-                                       extra_bases=[e.path for e in extra_bases])
+                                       extra_bases=[e.path for e in extra_bases],
+                                       autofit_tables=(kind == "notes"))
     report.out_path = str(out_path)
     if pdf:
         # Word export through the sheet worker's container-staged path: the DOCX is
