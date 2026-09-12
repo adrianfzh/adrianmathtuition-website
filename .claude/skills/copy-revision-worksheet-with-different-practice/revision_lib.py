@@ -3026,8 +3026,6 @@ def make_worksheet(kind: str, topic, bank: str | None = None, folder: str | None
     # the display name: the title's second line, the file name, the report
     topic = (title or "").strip() or (_display_name(topics) if multi else topics[0])
     if multi:
-        if kind != "notes":
-            raise ValueError("several topics need --kind notes (a worked sheet has one base sheet)")
         if fragment or practice_topic or link or base:
             raise ValueError("--fragment / --practice-topic / --link / --base take a single --topic")
     # notes: the fragment is short, keep the practice on the same page so the
@@ -3061,7 +3059,16 @@ def make_worksheet(kind: str, topic, bank: str | None = None, folder: str | None
     elif kind == "worked":
         if not folder:
             raise ValueError("kind=worked needs --folder (%s)" % ", ".join(WORKED_FOLDERS))
-        resolved = resolve_worked(folder, topic)
+        # a chapter ("Trigonometry (all)"): Adrian's sheet for the chapter, by the
+        # display name first ("Trigonometry"), else the first topic's sheet
+        if multi:
+            family = re.sub(r"\s*\((?:all|[^)]*)\)\s*$", "", topic).strip() or topics[0]
+            try:
+                resolved = resolve_worked(folder, family)
+            except ResolutionError:
+                resolved = resolve_worked(folder, topics[0])
+        else:
+            resolved = resolve_worked(folder, topic)
         label = folder
     else:
         raise ValueError("kind must be 'notes' or 'worked'")

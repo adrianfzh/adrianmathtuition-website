@@ -837,38 +837,22 @@ def cmd_render(a):
 
 
 def to_pdf(docx: Path):
-    """Export through Microsoft Word (the only converter on this Mac that renders
-    Cambria Math / OMML correctly). Returns the PDF path or None.
-
-    Verified on Word 16.111.3, 7 Sep 2026, with Word idle and with peer documents
-    open: keep the DOCUMENT OBJECT that `open file name` returns and address the
-    save-as to it, with a POSIX string path, guarded on the file name so a peer
-    session's document is never exported. Two things answer -1708 "doesn't
-    understand the save as message": a by-name `document "…"` reference, and ANY
-    target under /private/tmp (Word's sandbox refuses it — that, not the verb, is
-    what the 5 Sep "Word refuses scripted export" note hit). So `--out` must not
-    point into /tmp; the Dropbox app folder and $HOME are fine."""
+    """Export through Microsoft Word via the sheet worker's container-staged path
+    (scripts/sheet-worker/render_sheet.export_pdf): the DOCX is copied into
+    Word's own sandbox folder, exported there under a unique name and copied
+    back beside the DOCX. No "Grant File Access" dialog (Word never touches a
+    folder it has not been granted), no `active document` race with a peer
+    slot. Adrian, 12 Sep 2026: "mac sessions shouldn't be asking for grant file
+    access" — the previous open-and-save-as script did exactly that for a
+    Dropbox target and hung two kind-2 runs for 70 minutes each. Returns the PDF
+    path or None."""
     pdf = unique_path(docx.with_suffix(".pdf"))
-    if str(pdf.resolve()).startswith(("/private/tmp/", "/tmp/")):
-        print(f"  !! Word will not export into {pdf.parent} (sandbox, -1708) — render with --out under $HOME")
-        return None
-    guard = docx.stem[:40].replace('"', "")
-    script = f'''
-    set d to missing value
-    tell application "Microsoft Word"
-        set d to open file name POSIX file "{docx}"
-        delay 2
-        if d is missing value then set d to document 1
-        if (name of d) does not contain "{guard}" then error "document is not mine: " & (name of d)
-        save as d file name "{pdf}" file format format PDF
-        close d saving no
-    end tell'''
     try:
-        subprocess.run(["osascript", "-e", script], check=True, capture_output=True, text=True, timeout=180)
+        repo_root = Path(__file__).resolve().parents[3]
+        sys.path.insert(0, str(repo_root / "scripts" / "sheet-worker"))
+        import render_sheet  # noqa: E402
+        render_sheet.export_pdf(docx, pdf)
         return pdf if pdf.exists() else None
-    except subprocess.CalledProcessError as e:
-        print(f"  !! Word export failed: {(e.stderr or '').strip()[-200:]}")
-        return None
     except Exception as e:
         print(f"  !! Word export failed: {e}")
         return None

@@ -26,9 +26,9 @@ export type WorksheetJobParams = {
   count?: number;
   /** marks band: 'standard' | 'intermediate' | 'advanced' | 'mixed' | '2/2/2'-style split */
   band?: string;
-  /** kind 2: two or more canonical topics on ONE sheet — the notes fragments
-   *  stacked at the front, the count split between them. `topic` then carries
-   *  the display name "Circles & Indices". (11 Sep 2026) */
+  /** kinds 1, 2, 4: two or more canonical topics on ONE sheet — a chapter such as
+   *  "Trigonometry (all)". Kind 2 stacks the notes fragments; kinds 1 and 4 plan
+   *  the skills across every topic. `topic` carries the display name. (11–12 Sep 2026) */
   topics?: string[];
   /** kinds 2 and 4: skills of the topic Adrian dropped on the card ("drop 3 5") — docs/SKILL-PICK.md */
   skip_skills?: string[];
@@ -154,7 +154,7 @@ export function jobInsert(body: {
     topics = [...new Set(p.topics.map(x => String(x ?? '').trim().slice(0, 120)).filter(Boolean))];
     if (topics.length === 1) topics = [];            // one topic is just `topic`
     if (topics.length > MAX_TOPICS) return { ok: false, error: `at most ${MAX_TOPICS} topics on one sheet` };
-    if (topics.length && kind !== 2) return { ok: false, error: 'several topics on one sheet is a kind 2 (notes at the front) build' };
+    if (topics.length && kind === 5) return { ok: false, error: 'a paper takes exclusions, not a topics list' };
     if (topics.length) params.topics = topics;
   }
   const topic = String(body.topic ?? '').trim() || (topics.length ? joinTopics(topics) : null);

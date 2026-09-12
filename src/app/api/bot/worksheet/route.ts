@@ -132,22 +132,38 @@ export async function POST(req: NextRequest) {
     topicsCache.set(topicsCacheKey, available);
   }
   lap('topics');
-  const topic = matchTopic(body.topic as string, available);
-  if (!topic) {
-    return bad(400, {
-      error: `unknown topic ${JSON.stringify(String(body.topic ?? ''))} for ${cfg.label}`,
-      level: levelKey,
-      validTopics: available,
-    });
+  // One topic, or several on one sheet (a chapter — "Trigonometry (all)" is every
+  // Trigonometry (…) topic; 12 Sep 2026). Each is matched to the level's list;
+  // one unknown name fails the whole request the same way one topic did.
+  const asked: string[] = Array.isArray(body.topics) && body.topics.length
+    ? (body.topics as unknown[]).map((t) => String(t ?? ''))
+    : [String(body.topic ?? '')];
+  const topics: string[] = [];
+  for (const t of asked) {
+    const m = matchTopic(t, available);
+    if (!m) {
+      return bad(400, {
+        error: `unknown topic ${JSON.stringify(t)} for ${cfg.label}`,
+        level: levelKey,
+        validTopics: available,
+      });
+    }
+    if (!topics.includes(m)) topics.push(m);
   }
+  const topic = topics.length > 1 ? (String(body.title ?? '').trim() || topics.join(' & ')) : topics[0];
 
-  const pool = await fetchWorksheetPool(supa, {
+  const pools = await Promise.all(topics.map((t) => fetchWorksheetPool(supa, {
     seedLevels: SEED_LEVELS[levelKey] ?? cfg.questionLevels,
     topicsKey: cfg.topicsKey,
-    topic,
+    topic: t,
     tier,
     audience,
-  });
+  })));
+  const seenIds = new Set<string>();
+  const pool = {
+    error: pools.find((p) => p.error)?.error ?? null,
+    items: pools.flatMap((p) => p.items).filter((q) => (seenIds.has(q.id) ? false : (seenIds.add(q.id), true))),
+  };
   lap('pool');
   if (pool.error) return bad(500, { error: pool.error });
 
@@ -192,7 +208,17 @@ export async function POST(req: NextRequest) {
   let picked = pool.items;
   let bandFallback = false;
   let skillsOut: { covered: { name: string; n: number }[]; empty: string[]; skipped: string[]; dropped: string[]; unfiled: number } | null = null;
-  const filing = band ? null : await loadSkillFiling(supa, levelKey, topic, pool.items.map((q) => q.id));
+  // several topics: their skill lists stacked in topic order, links merged
+  let filing: Awaited<ReturnType<typeof loadSkillFiling>> | null = null;
+  if (!band) {
+    const ids = pool.items.map((q) => q.id);
+    const per = await Promise.all(topics.map((t) => loadSkillFiling(supa, levelKey, t, ids)));
+    filing = { skills: [], linksByQuestion: {} };
+    per.forEach((f, ti) => {
+      for (const s of f.skills) filing!.skills.push({ ...s, order: ti * 1000 + s.order });
+      for (const [qid, sids] of Object.entries(f.linksByQuestion)) (filing!.linksByQuestion[qid] ??= []).push(...sids);
+    });
+  }
   lap('skills');
   const { kept: skills, dropped } = filing ? dropSkills(filing.skills, body.skipSkills) : { kept: [], dropped: [] };
   const bySkill = filing && skills.length

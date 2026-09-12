@@ -47,8 +47,13 @@ curl -s -X POST "$WORKSHEETS_API_BASE/api/admin/worksheet-jobs" \
    not repetitive, exactly as the skill describes — and REPORT it in
    `result.summary` so his Telegram shows what you picked. `params.count` is
    the practice count. (No `params.band` is sent since 12 Sep 2026 — the
-   queued kinds have no difficulty setting; ignore one on an old job.) The render never
+   queued kinds have no difficulty setting; ignore one on an old job.) **A
+   chapter** (`params.topics`, two or more topics — "Trigonometry (all)"): pass
+   every one as its own `--topic` flag to `rw.py plan` plus `--title
+   "<job.topic>"`; the plan maps the skills of all of them. The render never
    overwrites — a clash becomes "(2nd version)"; that is the rule, keep it.
+   Export the PDF with `rw.py render --pdf` only — it stages the file inside
+   Word's own folder (no dialog); never a hand-rolled AppleScript export.
 
    **Kind 2 — practice worksheet with notes at the front.**
    `python3 .claude/skills/copy-revision-worksheet-with-different-practice/revision_lib.py --kind notes --bank <bank> --topic "<topic>" -n <count> --pdf`
@@ -83,8 +88,10 @@ curl -s -X POST "$WORKSHEETS_API_BASE/api/admin/worksheet-jobs" \
    `python3 .claude/skills/copy-revision-worksheet-with-different-practice/revision_lib.py --kind worked --folder <folder> --topic "<topic>" -n <count> --pdf`
    with folder from the level (S1, S2, EM, AM, JC). `params.sheet` names the
    base document — pass it if the CLI takes `--base`, else pick that document
-   when the skill asks which sheet. The original is never overwritten. Skills
-   and `params.skip_skills` work exactly as for kind 2.
+   when the skill asks which sheet. The original is never overwritten. Skills,
+   `params.skip_skills` and a chapter (`params.topics` → one `--topic` each plus
+   `--title "<job.topic>"`; the base is Adrian's sheet for the chapter, e.g.
+   "Trigonometry", else the first topic's) work exactly as for kind 2.
 
    **Kind 5 — full prelim paper.** Invoke the `prelim-paper` skill with
    `params.paper` (e.g. `EM-P1`), `params.preset`, and `params.exclude`
