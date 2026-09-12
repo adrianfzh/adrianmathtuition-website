@@ -283,6 +283,63 @@ _ALIGNED_RE = re.compile(r'\\begin\{aligned\}(.*)\\end\{aligned\}', re.S)
 _NOTE_RE = re.compile(r'\\quad\\text\{(←[^}]*)\}(.*)$')
 
 
+_CM_FONT = None
+_SPACE_EM = 0.22          # a Cambria Math space, in em
+_CM_PATH = '/Applications/Microsoft Word.app/Contents/Resources/DFonts/Cambria.ttc'   # index 1 = Cambria Math
+
+
+def _cm_em(text):
+    """Width of plain text in Cambria Math, in em (Pillow; 0.5 em a glyph without it)."""
+    global _CM_FONT
+    if _CM_FONT is None:
+        try:
+            from PIL import ImageFont
+            _CM_FONT = ImageFont.truetype(_CM_PATH, 1000, index=1)
+        except Exception:
+            _CM_FONT = False
+    if not _CM_FONT:
+        return 0.5 * len(text)
+    return _CM_FONT.getlength(text) / 1000.0
+
+
+def _is_eq_run(el):
+    if etree.QName(el).localname != 'r':
+        return False
+    t = el.find(f'{{{M_NS}}}t')
+    return t is not None and (t.text or '').strip().startswith('=')
+
+
+def _omml_em(el):
+    """Rough width of an OMML element in em: glyphs measured in Cambria Math,
+    Word's operator spacing added, a fraction as wide as its wider half,
+    scripts at 70 %."""
+    tag = etree.QName(el).localname
+    if tag.endswith('Pr') or tag in ('ctrlPr', 'degHide'):
+        return 0.0
+    if tag == 't':
+        txt = el.text or ''
+        w = _cm_em(txt)
+        w += 0.56 * sum(txt.count(c) for c in '=≡≤≥<>')      # relational spacing, both sides
+        w += 0.44 * sum(txt.count(c) for c in '+−-±')          # binary spacing
+        w += 0.17 * txt.count(',')
+        return w
+    if tag == 'f':
+        num = el.find(f'{{{M_NS}}}num'); den = el.find(f'{{{M_NS}}}den')
+        return max(_omml_em(num) if num is not None else 0, _omml_em(den) if den is not None else 0) + 0.15
+    if tag in ('sSup', 'sSub'):
+        e = el.find(f'{{{M_NS}}}e'); sc = el.find(f'{{{M_NS}}}sup') if tag == 'sSup' else el.find(f'{{{M_NS}}}sub')
+        return (_omml_em(e) if e is not None else 0) + 0.7 * (_omml_em(sc) if sc is not None else 0)
+    if tag == 'sSubSup':
+        e = el.find(f'{{{M_NS}}}e'); a = el.find(f'{{{M_NS}}}sub'); b = el.find(f'{{{M_NS}}}sup')
+        return (_omml_em(e) if e is not None else 0) + 0.7 * max(_omml_em(a) if a is not None else 0, _omml_em(b) if b is not None else 0)
+    if tag == 'rad':
+        e = el.find(f'{{{M_NS}}}e')
+        return 0.9 + (_omml_em(e) if e is not None else 0)
+    if tag == 'd':
+        return 0.9 + sum(_omml_em(c) for c in el)
+    return sum(_omml_em(c) for c in el)
+
+
 def _split_aligned(latex):
     """An aligned block → [(lhs, rhs, note)] per line, or None if not aligned.
     Each line is `lhs &= rhs \\quad\\text{← note}`; a line starting with `&`
@@ -1049,8 +1106,11 @@ class Worksheet:
         """Render ONE solution step into paragraph p (shared by the box and its columns)."""
         p.paragraph_format.line_spacing = 1.5   # same as the body (Adrian, 2 Sep 2026: 1.5 "improves readability")
         if isinstance(step, tuple) and step and step[0] == 'cols':
-            # nested columns, e.g. two cases side by side with an "or" between them
+            # nested columns (a sketch or an ASTC reference beside the working)
             return self._solution_cols(p._parent, step[1], step[2] if len(step) > 2 else None, False, host=p)
+        if isinstance(step, tuple) and step and step[0] == 'or':
+            # ('or', left_aligned, right_aligned) — two cases side by side, his way
+            return self._or_lines(p, _split_aligned(step[1]) or [], _split_aligned(step[2]) or [])
         if isinstance(step, tuple) and step and step[0] == 'figure':
             self._picture(p, step[1], step[2] if len(step) > 2 else 8.0)
         elif isinstance(step, tuple) and step and step[0] == 'check':
@@ -1109,6 +1169,140 @@ class Worksheet:
             para.append(om)
         oms = para.findall(f'{{{M_NS}}}oMath')
         for om in oms[:-1]:            # a soft line break ends every line but the last (his exact structure)
+            br_run = etree.SubElement(om, f'{{{M_NS}}}r')
+            rpr = etree.SubElement(br_run, f'{{{M_NS}}}rPr'); sty = etree.SubElement(rpr, f'{{{M_NS}}}sty'); sty.set(f'{{{M_NS}}}val', 'p')
+            wrpr = etree.SubElement(br_run, qn('w:rPr')); rf = etree.SubElement(wrpr, qn('w:rFonts')); rf.set(qn('w:ascii'), 'Cambria Math'); rf.set(qn('w:hAnsi'), 'Cambria Math')
+            etree.SubElement(br_run, qn('w:br'))
+        _style_annotations(para)
+        p._element.append(para)
+        return para
+
+    def _or_lines(self, p, left_rows, right_rows):
+        """Two cases side by side with "or" between them, the way Adrian's notes do it
+        (AM 17 Example 3c): ONE math paragraph, every line holding the left case, a
+        run of spaces, "or" on the first line, more spaces, then the right case; the
+        alignment marker sits on the "=" of the case with more lines, and the other
+        case is lined up by counting spaces (Cambria Math measured, the way he does
+        it by eye). No table — 12 Sep 2026: "you just put them in a box instead"."""
+        p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        p.paragraph_format.left_indent = Cm(0.5)
+        left_rows = [r for r in left_rows if r[0] or r[1]]
+        right_rows = [r for r in right_rows if r[0] or r[1]]
+        aln_left = len(left_rows) >= len(right_rows)
+        n = max(len(left_rows), len(right_rows))
+
+        def conv(row):
+            if row is None:
+                return None, 0.0, 0.0, False
+            lhs, rhs, _ = row
+            elem = _latex_to_omml((lhs + ' ' + rhs).strip(), display=True)
+            om = elem.find(f'{{{M_NS}}}oMath') if elem is not None else None
+            if om is None:
+                return None, 0.0, 0.0, False
+            before, after, seen = 0.0, 0.0, False
+            for ch in list(om):
+                if not seen and _is_eq_run(ch):
+                    seen = True
+                    after += _omml_em(ch)
+                    continue
+                if seen:
+                    after += _omml_em(ch)
+                else:
+                    before += _omml_em(ch)
+            if not seen:                     # no "=" on this line: the marker goes on its first
+                return om, 0.0, before, False  # run, so everything sits AFTER the alignment point
+            return om, before, after, True
+
+        L = [conv(left_rows[i] if i < len(left_rows) else None) for i in range(n)]
+        R = [conv(right_rows[i] if i < len(right_rows) else None) for i in range(n)]
+        notes = []
+        for i in range(n):
+            nl = left_rows[i][2] if i < len(left_rows) else ''
+            nr = right_rows[i][2] if i < len(right_rows) else ''
+            notes.append(nr or nl)
+        max_l_lhs = max([w[1] for w in L if w[0] is not None] or [0.0])
+        max_l_rhs = max([w[2] for w in L if w[0] is not None] or [0.0])
+        max_r_lhs = max([w[1] for w in R if w[0] is not None] or [0.0])
+        GAP = 2.2            # em between the left case's longest right-hand side and the right case
+        or_w = _cm_em('or')
+
+        def spacer(em, sty='p'):
+            r = etree.Element(f'{{{M_NS}}}r')
+            rpr = etree.SubElement(r, f'{{{M_NS}}}rPr'); st = etree.SubElement(rpr, f'{{{M_NS}}}sty'); st.set(f'{{{M_NS}}}val', sty)
+            wrpr = etree.SubElement(r, qn('w:rPr')); rf = etree.SubElement(wrpr, qn('w:rFonts')); rf.set(qn('w:ascii'), 'Cambria Math'); rf.set(qn('w:hAnsi'), 'Cambria Math')
+            t = etree.SubElement(r, f'{{{M_NS}}}t'); t.text = ' ' * max(1, int(round(em / _SPACE_EM)))
+            t.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
+            return r
+
+        def word(txt):
+            r = spacer(0)
+            r.find(f'{{{M_NS}}}t').text = txt
+            return r
+
+        def mark(om, has_eq):
+            """alignment marker on the first "=" run, or on the first run when there is none"""
+            target = None
+            for ch in list(om):
+                if has_eq and _is_eq_run(ch):
+                    target = ch; break
+                if not has_eq and etree.QName(ch).localname == 'r':
+                    target = ch; break
+            if target is None:
+                return
+            mrpr = target.find(f'{{{M_NS}}}rPr')
+            if mrpr is None:
+                mrpr = etree.Element(f'{{{M_NS}}}rPr'); target.insert(0, mrpr)
+            etree.SubElement(mrpr, f'{{{M_NS}}}aln')
+
+        para = etree.Element(f'{{{M_NS}}}oMathPara')
+        pr = etree.SubElement(para, f'{{{M_NS}}}oMathParaPr')
+        jc = etree.SubElement(pr, f'{{{M_NS}}}jc'); jc.set(f'{{{M_NS}}}val', 'left')
+        eq_w = _cm_em('=') + 2 * 0.28
+        for i in range(n):
+            lom, l_lhs, l_rhs, l_eq = L[i]
+            rom, r_lhs, r_rhs, r_eq = R[i]
+            line = etree.SubElement(para, f'{{{M_NS}}}oMath')
+            if aln_left:
+                if lom is not None:
+                    mark(lom, l_eq)
+                    for ch in list(lom):
+                        line.append(ch)
+                    gap = GAP + (max_l_rhs - l_rhs)
+                else:
+                    # no left case on this line: pad from the paragraph edge to the right column
+                    gap = max_l_lhs + eq_w + max_l_rhs + GAP
+                pad = max_r_lhs - r_lhs if rom is not None else 0.0
+                if i == 0 and rom is not None:
+                    half = max(0.4, (gap - or_w) / 2)
+                    line.append(spacer(half)); line.append(word('or')); line.append(spacer(half + pad))
+                elif rom is not None:
+                    line.append(spacer(gap + pad))
+                if rom is not None:
+                    for ch in list(rom):
+                        line.append(ch)
+            else:
+                if lom is not None:
+                    for ch in list(lom):
+                        line.append(ch)
+                    gap = (max_l_rhs - l_rhs) + GAP + (max_r_lhs - r_lhs)
+                    if i == 0:
+                        a_ = (max_l_rhs - l_rhs) + GAP / 2 - or_w / 2
+                        b_ = GAP / 2 - or_w / 2 + (max_r_lhs - r_lhs)
+                        line.append(spacer(max(0.4, a_))); line.append(word('or')); line.append(spacer(max(0.4, b_)))
+                    else:
+                        line.append(spacer(gap))
+                if rom is not None:
+                    mark(rom, r_eq)
+                    for ch in list(rom):
+                        line.append(ch)
+            if notes[i]:
+                nel = _latex_to_omml('\\qquad ' + notes[i], display=True)
+                nom = nel.find(f'{{{M_NS}}}oMath') if nel is not None else None
+                if nom is not None:
+                    for ch in list(nom):
+                        line.append(ch)
+        oms = para.findall(f'{{{M_NS}}}oMath')
+        for om in oms[:-1]:
             br_run = etree.SubElement(om, f'{{{M_NS}}}r')
             rpr = etree.SubElement(br_run, f'{{{M_NS}}}rPr'); sty = etree.SubElement(rpr, f'{{{M_NS}}}sty'); sty.set(f'{{{M_NS}}}val', 'p')
             wrpr = etree.SubElement(br_run, qn('w:rPr')); rf = etree.SubElement(wrpr, qn('w:rFonts')); rf.set(qn('w:ascii'), 'Cambria Math'); rf.set(qn('w:hAnsi'), 'Cambria Math')

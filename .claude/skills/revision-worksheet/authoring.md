@@ -82,6 +82,14 @@ which will result in the integral being ln instead"); dividing an inequality by 
 - **Stacked fractions always** (`\dfrac`, `\tfrac` inside a line) — a flat `4/3`
   reads as a lower standard to him. **Never chain three `=` on one line**: use
   `\begin{aligned} … &= … \\ &= … \end{aligned}`, one `=` per line.
+- **Two cases from a factorised equation go side by side with "or"** — the way his
+  notes do it (AM 17, Example 3c): `('or', left_aligned, right_aligned)` as a step,
+  each side its own `\begin{aligned}` block. It renders as ONE math paragraph, each
+  line holding both cases with "or" between them on the first line; the case with more
+  lines is aligned at its `=` exactly, the other by counted spaces. No table, no
+  ← notes inside it except on a line whose other side is empty (13 Sep 2026: "you just
+  put them in a box instead, and left a large gap"). A rejection goes under the rejected
+  case as short text lines (`\text{(rejected, since} \\ \sin x \le 1)`).
 - **Units and accuracy on the final line**: `= 21.1 m (3 s.f.)`, angles to 1 d.p.
 - **At most ONE Common Error per box**, and only when it names the wrong TOOL in one
   sentence. No numerical disproofs, no picture arguments, none on a routine box.
