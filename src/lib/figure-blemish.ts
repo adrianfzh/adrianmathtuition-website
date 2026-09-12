@@ -299,6 +299,12 @@ export type ClearResult = { mask: Uint8Array; count: number; boxes: Box[]; skipp
  *  blemish box — the judge drew it over the working. Refused unless a person
  *  drew the box. */
 export const MAX_DARK_IN_BOX = 0.15;
+/** The tail is followed only through pixels clearly darker than page haze. A
+ *  scanned JPEG's page sits at 245–254, and a flood that counted that as
+ *  "pale mark" walked across the whole page to the figure's thin grey strokes
+ *  (12 Sep 2026: YIJC 2022 P1 Q7 lost the radius line of a circle 200px from
+ *  the stamp; Q6 lost the "2" of an asymptote label). */
+export const SPILL_MAX = 240;
 /** How far past its box a mark's pale tail is followed, as a share of the shorter side. */
 export const SPILL_REACH = 0.3;
 
@@ -392,7 +398,7 @@ export function clearBoxes(grey: Uint8Array | Buffer, w: number, h: number, _com
           if (nx < lim.x0 || ny < lim.y0 || nx > lim.x1 || ny > lim.y1) continue;
           if (nx >= b.x0 && nx <= b.x1 && ny >= b.y0 && ny <= b.y1) continue;   // inside the box: already handled
           const i = ny * w + nx;
-          if (mask[i] || keep[i] || grey[i] >= 255 || grey[i] < DARK) continue;
+          if (mask[i] || keep[i] || grey[i] >= SPILL_MAX || grey[i] < DARK) continue;
           mask[i] = 1; n++; qx.push(nx); qy.push(ny);
           if (nx < sx0) sx0 = nx; if (nx > sx1) sx1 = nx; if (ny < sy0) sy0 = ny; if (ny > sy1) sy1 = ny;
         }

@@ -245,6 +245,15 @@ describe('clear boxes — "marks/watermarks/blemishes should be completely gone"
     expect(r.skipped).toEqual([]);
     expect(r.count).toBeGreaterThan(0);
   });
+  it('does not walk across page haze to reach the figure', () => {
+    const w = 60, h = 10;
+    const g = new Uint8Array(w * h).fill(250);                     // a hazy scanned page, not pure white
+    for (let x = 2; x < 12; x++) g[5 * w + x] = 190;               // the mark, inside the box
+    for (let x = 40; x < 50; x++) g[5 * w + x] = 150;              // a thin grey stroke of the figure, far to the right
+    const r = clearBoxes(g, w, h, [], [{ what: 'logo', box: { x0: 0, y0: 300, x1: 250, y1: 800 }, sure: true, clear: true }]);
+    for (let x = 40; x < 50; x++) expect(r.mask[5 * w + x]).toBe(0);   // the stroke survives
+    expect(r.count).toBeGreaterThan(0);
+  });
   it('treats a box the judge did NOT call clear the same way — a stamp\'s dark letter inside goes, the crossing stroke stays', () => {
     const w = 40, h = 12;
     const g = new Uint8Array(w * h).fill(255);
