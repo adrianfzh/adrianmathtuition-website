@@ -10,7 +10,7 @@
 // Pure data (no React) so the server layout, client components and tests can
 // all import it. Icon names resolve in components/PortalIcon.tsx.
 
-export type SurfaceKey = 'home' | 'assignments' | 'plan' | 'practice' | 'submit' | 'marking' | 'notebook' | 'learn' | 'notes' | 'settings' | 'lesson' | 'ask' | 'science';
+export type SurfaceKey = 'home' | 'assignments' | 'plan' | 'practice' | 'submit' | 'marking' | 'notebook' | 'learn' | 'notes' | 'settings' | 'lesson' | 'ask' | 'science' | 'languages';
 
 export type SurfaceIdentity = {
   key: SurfaceKey;
@@ -84,6 +84,11 @@ export const SURFACES: Record<SurfaceKey, SurfaceIdentity> = {
     key: 'science', label: 'Science', icon: 'flask',
     tile: 'bg-orange-500 text-white', text: 'text-orange-700', tint: 'bg-orange-50', ring: 'ring-orange-400/60',
   },
+  // ✍️ The Languages family (SPEC-ESSAY-MARKING.md, 12 Sep 2026) — essays, marked for feedback.
+  languages: {
+    key: 'languages', label: 'Languages', icon: 'pencil',
+    tile: 'bg-violet-500 text-white', text: 'text-violet-700', tint: 'bg-violet-50', ring: 'ring-violet-400/60',
+  },
 };
 
 /** Identity for a nav href ('/app/marking' → marking; '/app' → home).
@@ -99,6 +104,11 @@ export function surfaceForHref(href: string): SurfaceIdentity {
   if (href.startsWith('/app/science/')) {
     const sub = href.slice('/app/science/'.length).split(/[/?]/)[0];
     return SURFACES[sub === 'submit' ? 'submit' : sub === 'papers' ? 'marking' : 'science'];
+  }
+  // The Languages family the same way ('/app/languages/submit' → submit, '/app/languages/essays' → marking).
+  if (href.startsWith('/app/languages/')) {
+    const sub = href.slice('/app/languages/'.length).split(/[/?]/)[0];
+    return SURFACES[sub === 'submit' ? 'submit' : sub === 'essays' ? 'marking' : 'languages'];
   }
   const seg = href === '/app' ? 'home' : href.replace(/^\/app\//, '').split(/[/?]/)[0];
   const key = seg === 'my-notes' ? 'notebook' : seg;

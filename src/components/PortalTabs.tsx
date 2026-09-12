@@ -26,6 +26,7 @@ function isActive(pathname: string, href: string): boolean {
   if (href === '/app') return pathname === '/app' || pathname.startsWith('/app/assignments');
   // The Science tab's Home is only its own page — its Hand in and Papers have their own tabs.
   if (href === '/app/science') return pathname === '/app/science';
+  if (href === '/app/languages') return pathname === '/app/languages';
   return pathname === href || pathname.startsWith(href + '/');
 }
 
@@ -34,23 +35,34 @@ function isActive(pathname: string, href: string): boolean {
 // bottom menu"). Which family is on screen is read off the path — everything
 // under /app/science is science, the rest is maths — so the bar switches with
 // no cookie and no server round trip.
-export type SubjectFamily = 'math' | 'science';
+// ✍️ A third family, Languages (SPEC-ESSAY-MARKING.md, 12 Sep 2026): everything
+// under /app/languages — essays marked for feedback, a band range, never a mark.
+export type SubjectFamily = 'math' | 'science' | 'languages';
 export function familyOfPath(pathname: string): SubjectFamily {
-  return pathname === '/app/science' || pathname.startsWith('/app/science/') ? 'science' : 'math';
+  if (pathname === '/app/science' || pathname.startsWith('/app/science/')) return 'science';
+  if (pathname === '/app/languages' || pathname.startsWith('/app/languages/')) return 'languages';
+  return 'math';
 }
 
-/** The Math | Science switcher under the top bar. */
-export function FamilySwitch() {
+/** The Math | Science | Languages switcher under the top bar — each family tab only when its door is open. */
+export function FamilySwitch({ science = true, languages = false }: { science?: boolean; languages?: boolean }) {
   const pathname = usePathname();
   const family = familyOfPath(pathname);
   const btn = (on: boolean) => `flex-1 text-center text-sm font-semibold rounded-full px-4 py-1.5 transition select-none active:scale-95 ${
     on ? 'bg-navy text-[hsl(45,100%,96%)] shadow-sm' : 'text-gray-600 hover:text-navy'}`;
   return (
-    <div role="tablist" aria-label="Subject" className="flex items-center gap-1 rounded-full bg-navy/5 p-1 max-w-xs mx-auto">
+    <div role="tablist" aria-label="Subject" className="flex items-center gap-1 rounded-full bg-navy/5 p-1 max-w-sm mx-auto">
       <Link href="/app" role="tab" aria-selected={family === 'math'} className={btn(family === 'math')}>Math</Link>
-      <Link href="/app/science" role="tab" aria-selected={family === 'science'} className={btn(family === 'science')}>
-        <span className="inline-flex items-center gap-1.5"><PortalIcon name="flask" className="w-4 h-4" />Science</span>
-      </Link>
+      {science && (
+        <Link href="/app/science" role="tab" aria-selected={family === 'science'} className={btn(family === 'science')}>
+          <span className="inline-flex items-center gap-1.5"><PortalIcon name="flask" className="w-4 h-4" />Science</span>
+        </Link>
+      )}
+      {languages && (
+        <Link href="/app/languages" role="tab" aria-selected={family === 'languages'} className={btn(family === 'languages')}>
+          <span className="inline-flex items-center gap-1.5"><PortalIcon name="pencil" className="w-4 h-4" />Languages</span>
+        </Link>
+      )}
     </div>
   );
 }
@@ -65,9 +77,16 @@ export function Badge({ n, className = '' }: { n: number; className?: string }) 
   );
 }
 
-export function DesktopLinks({ items, scienceItems, pendingWork }: { items: NavItem[]; scienceItems?: NavItem[]; pendingWork: number }) {
+function listFor(pathname: string, items: NavItem[], scienceItems?: NavItem[], languageItems?: NavItem[]): NavItem[] {
+  const family = familyOfPath(pathname);
+  if (family === 'science' && scienceItems?.length) return scienceItems;
+  if (family === 'languages' && languageItems?.length) return languageItems;
+  return items;
+}
+
+export function DesktopLinks({ items, scienceItems, languageItems, pendingWork }: { items: NavItem[]; scienceItems?: NavItem[]; languageItems?: NavItem[]; pendingWork: number }) {
   const pathname = usePathname();
-  const list = familyOfPath(pathname) === 'science' && scienceItems?.length ? scienceItems : items;
+  const list = listFor(pathname, items, scienceItems, languageItems);
   return (
     <div className="hidden sm:flex items-center gap-1">
       {list.map(l => {
@@ -87,9 +106,9 @@ export function DesktopLinks({ items, scienceItems, pendingWork }: { items: NavI
   );
 }
 
-export function MobileTabs({ items, scienceItems, pendingWork }: { items: NavItem[]; scienceItems?: NavItem[]; pendingWork: number }) {
+export function MobileTabs({ items, scienceItems, languageItems, pendingWork }: { items: NavItem[]; scienceItems?: NavItem[]; languageItems?: NavItem[]; pendingWork: number }) {
   const pathname = usePathname();
-  const list = familyOfPath(pathname) === 'science' && scienceItems?.length ? scienceItems : items;
+  const list = listFor(pathname, items, scienceItems, languageItems);
   const cols = list.length === 4 ? 'grid-cols-4' : list.length === 5 ? 'grid-cols-5'
     : list.length === 6 ? 'grid-cols-6' : list.length === 7 ? 'grid-cols-7' : 'grid-cols-3';
   return (

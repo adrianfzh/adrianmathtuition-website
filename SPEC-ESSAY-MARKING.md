@@ -112,7 +112,7 @@ marking — `lib/error-kinds`.)
 
 - **`rubrics`** — one row per (subject, level, essay kind, criterion, band):
   descriptor text, mark range, source document + version. **English 1184 is seeded
-  — `docs/rubrics/english-1184-writing.json`, transcribed verbatim from the
+  — `data/rubrics/english-1184-writing.json`, transcribed verbatim from the
   2026 syllabus document (kept at `docs/rubrics/1184_y26_sy.pdf`).** The verified
   shape, which corrects the August note of "15 + 15":
   - **Continuous Writing /30 = Content /10 + Language /20.** Content has one

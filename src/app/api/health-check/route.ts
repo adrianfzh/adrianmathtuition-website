@@ -422,6 +422,13 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // ✍️ Essay hand-in (SPEC-ESSAY-MARKING.md, 12 Sep 2026): the student's door to
+    // the Languages family. Anonymous must be refused before anything is read.
+    timed('portal-essays', async () => {
+      const r = await fetch(`${base}/api/portal/essays`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // 🕳 The hand-in hint (10 Sep 2026): /app/submit asks this whether we hold
     // the questions for the paper being handed in. It fails open by design, so
     // a broken route is INVISIBLE to students — the auth gate is the only

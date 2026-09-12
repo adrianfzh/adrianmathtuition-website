@@ -189,6 +189,27 @@ export async function scienceMarkingOpen(): Promise<boolean> {
 /** Portal identities that see the Science tab while the release switch is off — the demo student (portal-teste@example.com). */
 export const SCIENCE_PREVIEW_IDENTITIES: readonly string[] = ['recNjZkA3Z41nhwwK'];
 
+// ✍️ Essay marking — the Languages family (SPEC-ESSAY-MARKING.md, 12 Sep 2026,
+// Adrian: "start"). E1 = English continuous writing, typed hand-in, the full
+// report, PREVIEW IDENTITY ONLY until the calibration gate passes (consistency,
+// ranking against each teacher's class set, anchors — all in the spec). Flip to
+// true to open the Languages tab to every signed-in student; Adrian's admin
+// cookie previews it regardless.
+export const ESSAY_MARKING_OPEN_TO_STUDENTS = false;
+/** Portal identities that see the Languages tab while it is closed — the same demo student as science. */
+export const ESSAY_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
+
+export async function essayMarkingOpen(): Promise<boolean> {
+  if (ESSAY_MARKING_OPEN_TO_STUDENTS) return true;
+  if (!(await viewingAsStudent()) && (await isNotesAuthed())) return true;
+  try {
+    const { sessionAccount, portalIdentity } = await import('./portal-auth');
+    const acct = await sessionAccount().catch(() => null);
+    if (acct && ESSAY_PREVIEW_IDENTITIES.includes(portalIdentity(acct))) return true;
+  } catch { /* closed */ }
+  return false;
+}
+
 // 🔍 Find a question (/app/find, SPEC-PORTAL-V2 §4, 6 Sep 2026): photo or typed
 // question → a genuinely similar bank question or a made-for-you one, straight
 // into Practice. It replaced the students' "Request materials" door on Home, so

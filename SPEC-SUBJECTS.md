@@ -137,7 +137,7 @@ advantage; don't build for organic app-store pull.
 
 | Phase | Ship | Rides on |
 |---|---|---|
-| **L1** | EL + HCL essay hand-in (photo/typed) → AI rubric report (band, strengths, fixes, vocab/词语 upgrades, error taxonomy) → Adrian review → release | `/app/submit`, marking queue (`paper_marking_runs`), `rubrics`, release UX, Telegram notify. New: essay paper type + grading prompt + rubric rows. 1184 CW = /30 (**verified 12 Sep 2026: Content /10 + Language /20**, situational = Task Fulfilment /10 + Language /20 — `docs/rubrics/english-1184-writing.json`; the earlier '15 + 15' was wrong when building) |
+| **L1** | EL + HCL essay hand-in (photo/typed) → AI rubric report (band, strengths, fixes, vocab/词语 upgrades, error taxonomy) → Adrian review → release | `/app/submit`, marking queue (`paper_marking_runs`), `rubrics`, release UX, Telegram notify. New: essay paper type + grading prompt + rubric rows. 1184 CW = /30 (**verified 12 Sep 2026: Content /10 + Language /20**, situational = Task Fulfilment /10 + Language /20 — `data/rubrics/english-1184-writing.json`; the earlier '15 + 15' was wrong when building) |
 | **L2** | Public annotated model-essay library (framework-tagged, pinyin toggle at lower levels) + frameworks reference | `/explain` pages, `content_snippets`, edit-cards editor |
 | **L3** | Micro-tools (hook spinner, 好句 upgrader) with "why it works" lines; framework-aware writing-coach mode on recall | recall companion, `syllabus_prompts` |
 | **L4** | Oral studio: reading-aloud + picture/video-stimulus conversation; record → STT → rubric bands; attempts on admin dashboard + digests | **the one genuinely new build**: MediaRecorder + STT + audio storage |
