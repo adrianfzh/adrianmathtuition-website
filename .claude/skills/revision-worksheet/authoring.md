@@ -232,6 +232,11 @@ spent 40 s re-reading the source for exactly these facts, 7 Sep 2026).
 - `letter`: `None`/`''`/`'a'` prints the concept line, then `Example N` / `Example Na`;
   `'b'` prints only `Example Nb` under the previous concept.
 - Helpers importable from `rw_content`: `sm`, `GREY`, `LIGHT`, `T`, `B`, `I`, `M`, `P`, `U`.
+- Parts and sub-parts are REAL Word numbering (12 Sep 2026, Adrian: "can you autonumber the
+  questions and subparts?"): `ws.numbered(parts, level, fmt, restart=…)` — level 0 flush with an
+  Example's stem, 1 one tab in, 2 two tabs in; `fmt` 'letter' → (a)(b)(c) or 'roman' → (i)(ii)(iii),
+  chosen from the bank's own label so a question keeps its labels. Practice questions keep
+  `Q`/`SQ`; roman-labelled parts and every sub-part go through `numbered`.
 
 What render does, in order — each **stop** is a `SystemExit` before any file is written:
 

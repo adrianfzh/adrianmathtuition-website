@@ -65,8 +65,63 @@ NUMBERING_XML = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
       <w:pPr><w:ind w:left="567" w:hanging="567"/></w:pPr>
     </w:lvl>
   </w:abstractNum>
+  <w:abstractNum w:abstractNumId="103">
+    <w:multiLevelType w:val="singleLevel"/>
+    <w:lvl w:ilvl="0">
+      <w:start w:val="1"/>
+      <w:numFmt w:val="lowerRoman"/>
+      <w:lvlText w:val="(%1)"/>
+      <w:lvlJc w:val="left"/>
+      <w:pPr><w:ind w:left="567" w:hanging="567"/></w:pPr>
+    </w:lvl>
+  </w:abstractNum>
+  <w:abstractNum w:abstractNumId="104">
+    <w:multiLevelType w:val="singleLevel"/>
+    <w:lvl w:ilvl="0">
+      <w:start w:val="1"/>
+      <w:numFmt w:val="lowerRoman"/>
+      <w:lvlText w:val="(%1)"/>
+      <w:lvlJc w:val="left"/>
+      <w:pPr><w:ind w:left="1134" w:hanging="567"/></w:pPr>
+    </w:lvl>
+  </w:abstractNum>
+  <w:abstractNum w:abstractNumId="105">
+    <w:multiLevelType w:val="singleLevel"/>
+    <w:lvl w:ilvl="0">
+      <w:start w:val="1"/>
+      <w:numFmt w:val="lowerRoman"/>
+      <w:lvlText w:val="(%1)"/>
+      <w:lvlJc w:val="left"/>
+      <w:pPr><w:ind w:left="1701" w:hanging="567"/></w:pPr>
+    </w:lvl>
+  </w:abstractNum>
+  <w:abstractNum w:abstractNumId="106">
+    <w:multiLevelType w:val="singleLevel"/>
+    <w:lvl w:ilvl="0">
+      <w:start w:val="1"/>
+      <w:numFmt w:val="lowerLetter"/>
+      <w:lvlText w:val="(%1)"/>
+      <w:lvlJc w:val="left"/>
+      <w:pPr><w:ind w:left="1701" w:hanging="567"/></w:pPr>
+    </w:lvl>
+  </w:abstractNum>
   <w:num w:numId="1"><w:abstractNumId w:val="100"/></w:num>
 '''
+# Generic restartable lists for `numbered()` — (label format, indent level) pools of
+# 40 numIds each, so an Example's (i)(ii)(iii) parts, a practice question's (i)(ii)
+# sub-questions and any (i)(ii) sub-parts under a part are real Word numbering too
+# (Adrian, 12 Sep 2026: "can you autonumber the questions and subparts?").
+NUMBERED_POOLS = {('letter', 0): (102, 300), ('roman', 0): (103, 340), ('letter', 1): (101, 380),
+                  ('roman', 1): (104, 420), ('letter', 2): (106, 460), ('roman', 2): (105, 500)}
+for (_fmt, _lvl), (_abs, _base) in NUMBERED_POOLS.items():
+    for _i in range(40):
+        NUMBERING_XML += (
+            f'  <w:num w:numId="{_base+_i}">'
+            f'<w:abstractNumId w:val="{_abs}"/>'
+            f'<w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride>'
+            f'</w:num>\n'
+        )
+
 # 30 sub-question numIds, each with startOverride so (a)(b)(c) restarts per question
 for _i in range(30):
     NUMBERING_XML += (
@@ -484,6 +539,8 @@ class Worksheet:
         self._blocks = []        # every finished block, for block_heights()
         self._fig_cm = {}        # id(paragraph) -> rendered figure height in cm
         self._example_n = 0      # auto-counter for example() labels
+        self._numbered_next = {k: v[1] for k, v in NUMBERED_POOLS.items()}   # next free numId per (fmt, level)
+        self._numbered_cur = {}   # (fmt, level) -> numId of the list currently open
         self._setup_page()
         self._setup_styles()
 
@@ -714,6 +771,23 @@ class Worksheet:
             raise RuntimeError('more than 30 example part-lists on one sheet')
         self._current_subq_id = self._auto_parts_id
         return self._current_subq_id
+
+    def numbered(self, parts, level=0, fmt='letter', restart=False, marks=None):
+        """One item of a real Word list at `level` (0 = flush with the stem, 1 = one
+        tab in, 2 = two tabs in) in `fmt` 'letter' → (a)(b)(c) or 'roman' → (i)(ii)(iii).
+        `restart=True` opens a fresh list (the first part of a question); later items
+        continue it. Deleting or inserting an item in Word renumbers the rest."""
+        key = (fmt, level)
+        if key not in NUMBERED_POOLS:
+            raise ValueError(f'no numbering pool for {key}')
+        if restart or key not in self._numbered_cur:
+            nid = self._numbered_next[key]
+            if nid >= NUMBERED_POOLS[key][1] + 40:
+                raise RuntimeError(f'more than 40 restarted {fmt} lists at level {level} on one sheet')
+            self._numbered_next[key] = nid + 1
+            self._numbered_cur[key] = nid
+        style = 'SubQuestion' if level >= 1 else None
+        return self._add(parts, style=style, num_id=self._numbered_cur[key], marks=marks)
 
     def para(self, parts, marks=None):
         """Plain paragraph (no numbering)."""
