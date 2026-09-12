@@ -490,75 +490,88 @@ async function cleanAsCandidate(
   const bytes = Buffer.from(await dl.data.arrayBuffer());
   if (!bytes.length) return step('download', 'the stored image is empty');
 
-  let hints: Blemish[];
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const anthropic = apiKey ? new Anthropic({ apiKey }) : null;
+  // The judge sees the figure with a labelled grid drawn on it (PNG); every
+  // erase below works on the original bytes.
+  const view = await judgeView(bytes);
+  const ask = async (prompt: string, images: Buffer[]): Promise<string> => {
+    if (!anthropic) throw new Error('ANTHROPIC_API_KEY is not set');
+    const res = await anthropic.messages.create({
+      model: JUDGE_MODEL, max_tokens: 4000,
+      messages: [{ role: 'user', content: [
+        ...images.map((b) => ({ type: 'image' as const, source: { type: 'base64' as const, media_type: 'image/png' as const, data: b.toString('base64') } })),
+        { type: 'text', text: prompt },
+      ] }],
+    });
+    return res.content.map((c) => (c.type === 'text' ? c.text : '')).join('');
+  };
+
+  // One attempt = judge (unless the boxes were handed in) → erase → second look.
+  // On a STOP the judge is asked ONCE more with what it wrongly took named as
+  // parts of the figure to keep clear of (12 Sep 2026: the same figure passed
+  // on one run and was refused on the next because the judge's boxes differ
+  // from run to run — a refusal a retry would have avoided is a card Adrian
+  // has to click twice).
+  const MAX_ATTEMPTS = o.boxes?.length ? 1 : 2;
+  let hints: Blemish[] = [];
   let unsure: string[] = [];
-  let judge: string;
-  if (o.boxes?.length) {
-    hints = o.boxes; judge = 'hand-specified boxes';
-  } else {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) return step('judge', 'ANTHROPIC_API_KEY is not set');
-    // The judge sees the figure with a labelled grid drawn on it (PNG); the
-    // erase below works on the original bytes.
-    const view = await judgeView(bytes);
-    let text = '';
-    try {
-      const res = await new Anthropic({ apiKey }).messages.create({
-        model: JUDGE_MODEL, max_tokens: 4000,   // the judge thinks before it answers; a small budget returns no text at all
-        messages: [{ role: 'user', content: [
-          { type: 'image', source: { type: 'base64', media_type: 'image/png', data: view.toString('base64') } },
-          { type: 'text', text: judgePrompt(o.note) },
-        ] }],
-      });
-      text = res.content.map((c) => (c.type === 'text' ? c.text : '')).join('');
-    } catch (e) { return step('judge', `the judge could not be reached: ${(e as Error).message.slice(0, 160)}`); }
-    const v = parseEraseVerdict(text);
-    if (v.refuse) return step('judge', v.refuse);
-    hints = v.blemishes; unsure = v.unsure; judge = JUDGE_MODEL;
-    if (!hints.length) {
-      return NextResponse.json({
-        error: unsure.length ? `the judge found nothing it is sure is foreign — unsure about: ${unsure.join('; ')}` : 'the judge found no foreign mark on this figure',
-        step: 'judge', unsure,
-      }, { status: 422 });
-    }
-  }
-
-  // Relaxed guards only for boxes a session drew after looking — never for the judge's.
-  const r = await eraseBlemishes(bytes, hints, o.boxes?.length && o.byEye ? BY_EYE : {});
-  if (!r.ok) return NextResponse.json({ error: r.reason, step: 'erase', skipped: r.skipped }, { status: 422 });
-  const checks = await inspectFigure(r.png);
-  if (checks.blank) return step('erase', 'the result is blank — refused');
-
-  // The second look. A pale wash cannot tell a grey curve from a grey stamp, so
-  // the judge is shown before and after and asked what of the FIGURE went with
-  // it. Measured 9 Sep 2026: on 26 stamped JC figures the wash was right 8 times
-  // and took part of the maths 18 times, so nothing washed is offered without
-  // this. Skipped only when nothing pale was touched AND a person drew the boxes.
+  let judge = '';
+  let r: Awaited<ReturnType<typeof eraseBlemishes>> | null = null;
   let verified = '';
-  if (r.washedPale > 0 || !o.byEye) {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) return step('verify', 'ANTHROPIC_API_KEY is not set — a washed candidate is never offered unverified');
-    let vtext = '';
-    try {
-      const res = await new Anthropic({ apiKey }).messages.create({
-        model: JUDGE_MODEL, max_tokens: 4000,
-        messages: [{ role: 'user', content: [
-          { type: 'image', source: { type: 'base64', media_type: 'image/png', data: (await judgeView(bytes)).toString('base64') } },
-          { type: 'image', source: { type: 'base64', media_type: 'image/png', data: r.png.toString('base64') } },
-          { type: 'text', text: verifyPrompt() },
-        ] }],
-      });
-      vtext = res.content.map((c) => (c.type === 'text' ? c.text : '')).join('');
-    } catch (e) { return step('verify', `the second look could not be reached: ${(e as Error).message.slice(0, 160)}`); }
-    const v = parseVerifyVerdict(vtext);
-    if (!v.ok) {
-      return NextResponse.json({
-        error: `the clean took part of the figure with it — ${v.lost.join('; ') || 'the second look refused it'}`,
-        step: 'verify', lost: v.lost, skipped: r.skipped,
-      }, { status: 422 });
+  const refusals: string[] = [];
+  let avoid: string[] = [];
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    if (o.boxes?.length) {
+      hints = o.boxes; judge = 'hand-specified boxes';
+    } else {
+      if (!anthropic) return step('judge', 'ANTHROPIC_API_KEY is not set');
+      let text = '';
+      try { text = await ask(judgePrompt(o.note, avoid), [view]); }
+      catch (e) { return step('judge', `the judge could not be reached: ${(e as Error).message.slice(0, 160)}`); }
+      const v = parseEraseVerdict(text);
+      if (v.refuse) return step('judge', v.refuse);
+      hints = v.blemishes; unsure = v.unsure; judge = JUDGE_MODEL;
+      if (!hints.length) {
+        return NextResponse.json({
+          error: unsure.length ? `the judge found nothing it is sure is foreign — unsure about: ${unsure.join('; ')}` : 'the judge found no foreign mark on this figure',
+          step: 'judge', unsure,
+        }, { status: 422 });
+      }
     }
-    verified = v.note;
+
+    // Relaxed guards only for boxes a session drew after looking — never for the judge's.
+    const e = await eraseBlemishes(bytes, hints, o.boxes?.length && o.byEye ? BY_EYE : {});
+    if (!e.ok) return NextResponse.json({ error: e.reason, step: 'erase', skipped: e.skipped }, { status: 422 });
+    const checks = await inspectFigure(e.png);
+    if (checks.blank) return step('erase', 'the result is blank — refused');
+
+    // The second look. A pale wash cannot tell a grey curve from a grey stamp, so
+    // the judge is shown before and after and asked what of the FIGURE went with
+    // it. Measured 9 Sep 2026: on 26 stamped JC figures the wash was right 8 times
+    // and took part of the maths 18 times, so nothing washed is offered without
+    // this. Skipped only when nothing pale was touched AND a person drew the boxes.
+    if (e.washedPale > 0 || !o.byEye) {
+      if (!anthropic) return step('verify', 'ANTHROPIC_API_KEY is not set — a washed candidate is never offered unverified');
+      let vtext = '';
+      try { vtext = await ask(verifyPrompt(), [view, e.png]); }
+      catch (err) { return step('verify', `the second look could not be reached: ${(err as Error).message.slice(0, 160)}`); }
+      const v = parseVerifyVerdict(vtext);
+      if (!v.ok) {
+        refusals.push(v.lost.join('; ') || 'the second look refused it');
+        avoid = v.lost;
+        if (attempt < MAX_ATTEMPTS) continue;
+        return NextResponse.json({
+          error: `the clean took part of the figure with it — ${refusals[refusals.length - 1]}${refusals.length > 1 ? ` (a second attempt, told to keep clear of "${refusals[0].slice(0, 120)}", was refused too)` : ''}`,
+          step: 'verify', lost: v.lost, skipped: e.skipped, attempts: attempt,
+        }, { status: 422 });
+      }
+      verified = v.note + (attempt > 1 ? ` — on the second attempt, after the first was refused for: ${refusals[0].slice(0, 140)}` : '');
+    }
+    r = e;
+    break;
   }
+  if (!r) return step('verify', 'no attempt produced a candidate');
 
   const erased = boxesAsFractions(mergeBoxes(r.erased), r.width, r.height);
   const share = r.totalInk ? r.removedInk / r.totalInk : 0;

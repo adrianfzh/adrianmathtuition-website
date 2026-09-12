@@ -568,7 +568,7 @@ export function parseVerifyVerdict(text: string): VerifyVerdict {
 
 /** What the judge is asked. The fitness note names the blemish already; the
  *  judge's job is to point at it, and to say when a mark might be a label. */
-export function judgePrompt(note: string | null | undefined): string {
+export function judgePrompt(note: string | null | undefined, avoid: string[] = []): string {
   return [
     'You are looking at a figure cropped from a Singapore exam paper, to be shown to students.',
     'Find every mark that is NOT part of the figure: a stray letter or word from the prose beside the crop,',
@@ -576,6 +576,9 @@ export function judgePrompt(note: string | null | undefined): string {
     'a smudge or scanner speck. Do NOT include anything that belongs to the figure itself: axis names, curve',
     'labels, coordinates, dimension text, letters naming points, arrows, ticks, hatching, shading.',
     note ? `The review note for this figure says: "${note}"` : '',
+    avoid.length ? 'A previous attempt at this figure was REJECTED because its clean removed these parts of the figure: '
+      + avoid.map((a) => `"${a}"`).join('; ') + '. Those belong to the figure. Do not box them, keep every box well clear of them,'
+      + ' and set "clear": false on any box that comes near them.' : '',
     'Answer with JSON only, no prose:',
     '{"blemishes":[{"what":"<short description>","box":[x0,y0,x1,y1],"sure":true,"clear":true}],"unsure":["<a mark you could not classify, and where>"],"refuse":null}',
     'Boxes are on a 0-1000 grid: x from the left edge, y from the top. Faint blue grid lines labelled x100…x900 and',
