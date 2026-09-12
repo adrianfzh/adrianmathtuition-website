@@ -245,6 +245,24 @@ describe('clear boxes — "marks/watermarks/blemishes should be completely gone"
     expect(r.skipped).toEqual([]);
     expect(r.count).toBeGreaterThan(0);
   });
+  it('treats a box the judge did NOT call clear the same way — a stamp\'s dark letter inside goes, the crossing stroke stays', () => {
+    const w = 40, h = 12;
+    const g = new Uint8Array(w * h).fill(255);
+    for (let x = 0; x < w; x++) g[6 * w + x] = 0;                 // the axis, through the box
+    g[9 * w + 2] = 40; g[9 * w + 3] = 40;                          // a dark stamp letter wholly inside the box
+    const r = clearBoxes(g, w, h, [], [{ what: 'wordmark over the axis', box: { x0: 0, y0: 250, x1: 250, y1: 1000 }, sure: true, clear: false }]);
+    expect(r.mask[9 * w + 2]).toBe(1);
+    expect(r.mask[6 * w + 5]).toBe(0);
+    expect(r.rest).toEqual([]);
+  });
+  it('refuses a box drawn over the working itself', () => {
+    const w = 40, h = 40;
+    const g = new Uint8Array(w * h).fill(255);
+    for (let i = 0; i < 300; i++) g[(5 + (i % 30)) * w + 5 + Math.floor(i / 30) * 3] = 0;   // a block of dark figure ink, none of it crossing the box
+    const r = clearBoxes(g, w, h, [], [{ what: 'everything', box: { x0: 0, y0: 0, x1: 1000, y1: 1000 }, sure: true, clear: true }]);
+    expect(r.count).toBe(0);
+    expect(r.skipped[0]).toMatch(/of the figure's ink sits inside this box/);
+  });
   it('reads clear from the judge and defaults it to false', () => {
     const v = parseEraseVerdict('{"blemishes":[{"what":"logo","box":[0,700,200,1000],"clear":true},{"what":"tail","box":[0,0,10,10]}]}');
     expect(v.blemishes.map((b) => b.clear)).toEqual([true, false]);

@@ -295,8 +295,12 @@ export type WashResult = { mask: Uint8Array; count: number; boxes: Box[]; skippe
 export const CLEAR_PAD = 0.012;
 
 export type ClearResult = { mask: Uint8Array; count: number; boxes: Box[]; skipped: string[]; rest: Blemish[]; kept: string[] };
+/** A box that holds more than this share of the figure's DARK ink is not a
+ *  blemish box — the judge drew it over the working. Refused unless a person
+ *  drew the box. */
+export const MAX_DARK_IN_BOX = 0.15;
 /** How far past its box a mark's pale tail is followed, as a share of the shorter side. */
-export const SPILL_REACH = 0.12;
+export const SPILL_REACH = 0.3;
 
 /**
  * The whole-box half (12 Sep 2026). A box the judge marked `clear` is emptied
@@ -307,14 +311,20 @@ export const SPILL_REACH = 0.12;
  * label the judge missed) — so the box is NOT cleared and falls back to the
  * protected mechanisms; that is reported, never silent.
  */
-export function clearBoxes(grey: Uint8Array | Buffer, w: number, h: number, _comps: Component[], hints: Blemish[]): ClearResult {
+export function clearBoxes(grey: Uint8Array | Buffer, w: number, h: number, _comps: Component[], hints: Blemish[], byEye = false): ClearResult {
   const mask = new Uint8Array(w * h);
   const boxes: Box[] = [];
   const skipped: string[] = [];
   const kept: string[] = [];
   const rest: Blemish[] = [];
   let count = 0;
-  if (!hints.some((x) => x.clear)) return { mask, count, boxes, skipped, rest: hints.slice(), kept };
+  // 12 Sep 2026, second pass: EVERY box now works this way, not only the
+  // ones the judge called clear. A box the figure passes through used to
+  // fall back to the halo wash, which protects every dark pixel in it — and
+  // a stamp's solid letters are dark, so they stayed. Now the only thing kept
+  // in any box is a dark stroke that enters and leaves it; a dark stamp letter
+  // sitting wholly inside goes. The second look and the judge's retry catch a
+  // label boxed by mistake; a box over the working is refused outright.
   // The figure's ink is DARK; a stamp's is pale. So the figure is looked for
   // among DARK components only (measured 12 Sep 2026: testing all ink blocked
   // every clear box, because a watermark's own tagline ran out of the box;
@@ -326,8 +336,8 @@ export function clearBoxes(grey: Uint8Array | Buffer, w: number, h: number, _com
   const { labels, comps: darkComps } = labelComponents(grey, w, h, DARK);
   const reach = Math.max(4, Math.round(Math.min(w, h) * 0.01));
   const spill = Math.max(20, Math.round(Math.min(w, h) * SPILL_REACH));
+  const totalDark = darkComps.reduce((a, c) => a + c.pixels, 0);
   for (const hnt of hints) {
-    if (!hnt.clear) { rest.push(hnt); continue; }
     const b = hintToPixels(hnt.box, w, h, CLEAR_PAD);
     const inner = { x0: b.x0 + reach, y0: b.y0 + reach, x1: b.x1 - reach, y1: b.y1 - reach };
     const crossing = new Set<number>();
@@ -336,6 +346,15 @@ export function clearBoxes(grey: Uint8Array | Buffer, w: number, h: number, _com
         && c.x0 <= inner.x1 && c.x1 >= inner.x0 && c.y0 <= inner.y1 && c.y1 >= inner.y0
         && (c.x0 < b.x0 - reach || c.x1 > b.x1 + reach || c.y0 < b.y0 - reach || c.y1 > b.y1 + reach)) crossing.add(k + 1);
     });
+    // A box over the working: refuse it, do not "clean" it.
+    if (!byEye && totalDark >= 200) {   // a real figure has thousands of dark pixels; a tiny canvas has none to guard
+      let darkInside = 0;
+      for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) { const id = labels[y * w + x]; if (id && !crossing.has(id)) darkInside++; }
+      if (darkInside / totalDark > MAX_DARK_IN_BOX) {
+        skipped.push(`"${hnt.what || 'mark'}": ${Math.round((darkInside / totalDark) * 100)}% of the figure's ink sits inside this box — that is the working, not a blemish; left alone`);
+        continue;
+      }
+    }
     // Protect the crossing strokes with a halo; clear every other non-white pixel in the box.
     const keep = new Uint8Array(w * h);
     if (crossing.size) {
@@ -474,7 +493,7 @@ export async function eraseBlemishes(src: Buffer, hints: Blemish[], opt: EraseOp
   // Boxes the judge called empty of the figure are emptied whole — nothing
   // short of page white survives in them. The rest go through the two
   // protected mechanisms below.
-  const cleared = clearBoxes(data, w, h, comps, hints);
+  const cleared = clearBoxes(data, w, h, comps, hints, o.minInside === BY_EYE.minInside);
   const hintsLeft = cleared.rest;
 
   // Dark marks, by shape.
