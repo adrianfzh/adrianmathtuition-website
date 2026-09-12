@@ -1048,6 +1048,9 @@ class Worksheet:
     def _solution_step(self, p, step, width=14.5):
         """Render ONE solution step into paragraph p (shared by the box and its columns)."""
         p.paragraph_format.line_spacing = 1.5   # same as the body (Adrian, 2 Sep 2026: 1.5 "improves readability")
+        if isinstance(step, tuple) and step and step[0] == 'cols':
+            # nested columns, e.g. two cases side by side with an "or" between them
+            return self._solution_cols(p._parent, step[1], step[2] if len(step) > 2 else None, False, host=p)
         if isinstance(step, tuple) and step and step[0] == 'figure':
             self._picture(p, step[1], step[2] if len(step) > 2 else 8.0)
         elif isinstance(step, tuple) and step and step[0] == 'check':
@@ -1114,12 +1117,13 @@ class Worksheet:
         p._element.append(para)
         return para
 
-    def _solution_cols(self, work_cell, columns, widths_cm, first):
+    def _solution_cols(self, work_cell, columns, widths_cm, first, host=None):
         """A borderless nested table with one cell per column, each holding steps."""
         n = len(columns)
         total = 14.5
         widths = widths_cm or [total / n] * n
-        host = work_cell.paragraphs[0] if first else work_cell.add_paragraph()
+        if host is None:
+            host = work_cell.paragraphs[0] if first else work_cell.add_paragraph()
         inner = work_cell.add_table(rows=1, cols=n)
         inner.autofit = False
         tblPr = inner._tbl.tblPr
