@@ -150,7 +150,7 @@ Five actions, and only three of them write to the question row:
 |---|---|
 | ✓ **Approve as-is** | flag → `fixed`, note "Adrian approved as-is · …". Nothing else — the image was always fine. |
 | ✓ **Use cleaned candidate** / *Use it anyway* | the full write contract below, note "Adrian approved cleaned candidate". |
-| ✍️ **Amend…** | same contract with Adrian's own upload (≤ 3.5MB decoded — Vercel's 4.5MB body cap), note "Adrian amended". |
+| ~~✍️ Amend…~~ | **Removed 13 Sep 2026** (Adrian: "doesn't seem to do anything right? remove it") — it opened a file picker for a replacement image from his own files, which is never how a figure gets fixed. The route action `amend` remains for a session that has a file to hand in. |
 | 🙈 **Keep hidden** | prefixes the note `Adrian: kept hidden · …`, status unchanged. **Decided**: the row leaves the working lane onto the 🙈 door. |
 | ✏️ **Redraw** | prefixes the note `Adrian: redraw · …`, status unchanged. **Decided**: the row leaves the working lane onto the ✏️ door. |
 

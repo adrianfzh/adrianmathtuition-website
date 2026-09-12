@@ -49,7 +49,6 @@ type SolItem = {
   partLabel: string | null; note: string | null; claimedBy: string | null;
   liveUrl: string; candidateUrl: string | null; candidate: Candidate | null;
 };
-const MAX_AMEND = 3.5 * 1024 * 1024;
 const SOL_PAGE = 20;
 
 /* ── the fitness lane ───────────────────────────────────────────────────────
@@ -375,24 +374,6 @@ export default function FiguresPage() {
     } catch {
       setSolErr((e) => ({ ...e, [it.path]: 'network error — nothing was written' }));
     } finally { setSolBusy(''); }
-  };
-
-  const amend = async (it: SolItem, file: File) => {
-    if (file.size > MAX_AMEND) {
-      setSolErr((e) => ({ ...e, [it.path]: `that image is ${(file.size / 1048576).toFixed(1)}MB — 3.5MB max` }));
-      return;
-    }
-    try {
-      const b64 = await new Promise<string>((res, rej) => {
-        const fr = new FileReader();
-        fr.onload = () => res(String(fr.result).split(',')[1] ?? '');
-        fr.onerror = () => rej(new Error('read failed'));
-        fr.readAsDataURL(file);
-      });
-      await solAct(it, 'amend', { imageBase64: b64, contentType: file.type || 'image/png' });
-    } catch {
-      setSolErr((e) => ({ ...e, [it.path]: 'could not read that file' }));
-    }
   };
 
   /** One fitness-lane decision — hide / accept / repair. The card leaves the
@@ -787,11 +768,6 @@ export default function FiguresPage() {
                       {candidateButtonLabel(cand)}
                     </button>
                   )}
-                  <label style={{ ...btn, display: 'inline-block' }}>
-                    ✍️ Amend…
-                    <input type="file" accept="image/png,image/jpeg" disabled={busy} style={{ display: 'none' }}
-                      onChange={(e) => { const f = e.target.files?.[0]; e.currentTarget.value = ''; if (f) amend(it, f); }} />
-                  </label>
                   <button disabled={busy} onClick={() => solAct(it, 'clean')} style={btn}
                     title="A judge looks at the image for foreign marks — a stray letter, a neighbour's line, a speck — and only those are erased. The result appears here as a candidate; nothing changes until you approve it.">🧹 Clean</button>
                   {cand && (
