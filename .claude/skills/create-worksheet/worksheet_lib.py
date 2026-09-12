@@ -173,12 +173,17 @@ _FUNC_RE = re.compile(
     r'\s*(?=[A-Za-z0-9]|\\(?:theta|alpha|beta|gamma|phi|varphi|omega|lambda|mu|pi)\b)')
 
 
+_FUNC_BEFORE_RE = re.compile(
+    r'(?<=[A-Za-z0-9)\]}])\s*(?=\\(?:sin|cos|tan|sec|cot|csc|operatorname\{cosec\})\b)')
+
+
 def _function_spaces(latex: str) -> str:
     """"cos P", not "cosP": pandoc's OMML runs a function name straight into a
     plain argument, while Adrian types a space (12 Sep 2026: "cosP should be
     written like human typed cos P"). A thin space after every trig function
     that is followed by a letter, digit or Greek letter reproduces his look;
     brackets, fractions and roots are left alone."""
+    latex = _FUNC_BEFORE_RE.sub('\\, ', latex)      # "cos P cos Q", not "cos Pcos Q"
     return _FUNC_RE.sub(lambda m: m.group(1) + '\\, ', latex)
 
 
@@ -462,11 +467,14 @@ def _style_annotations(elem):
         arrow_run = mt.getparent()
         parent = arrow_run.getparent()
         seen = False
+        runs = []
         for sib in list(parent):
             if sib is arrow_run:
                 seen = True
-            if not seen or sib.tag != f'{{{M_NS}}}r':
+            if not seen:
                 continue
+            runs.extend(sib.iter(f'{{{M_NS}}}r'))   # the run itself, or every run inside a fraction / script after the arrow
+        for sib in runs:
             wrpr = sib.find(qn('w:rPr'))
             if wrpr is None:
                 wrpr = OxmlElement('w:rPr')
