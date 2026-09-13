@@ -175,7 +175,14 @@ export default async function StudentAppPage({ params }: { params: Promise<{ id:
           <section className="bg-amber-50/60 rounded-2xl border border-amber-100 p-4">
             <h2 className="text-xs font-semibold uppercase tracking-wide text-amber-800 mb-2">What the student cannot see</h2>
             {v.hiddenBySubject.map(h => <div key={h.id} className="text-sm py-1">🚫 <b>{h.name}</b> — released, but hidden by the subject gate ({h.subject ?? 'no subject'} is not in {v.subjectsAllowed.join(', ') || 'their subjects'}). Fix the paper&apos;s subject on the desk, or their subjects in Airtable.</div>)}
-            {v.hiddenAssignments.map(w => <div key={w.id} className="text-sm py-1">🚫 <b>{w.title ?? w.kind}</b> — {w.status}{w.revoked_at ? ` ${fmt(w.revoked_at)}` : ''} ({w.source ?? 'adrian'} · {w.kind})</div>)}
+            {v.hiddenAssignments.length > 0 && (
+              <details className="text-sm py-1">
+                <summary className="cursor-pointer">🚫 {v.hiddenAssignments.length} held or revoked item{v.hiddenAssignments.length > 1 ? 's' : ''} (revoked question lists, superseded sheets) — never shown to them</summary>
+                <div className="mt-1 pl-4 space-y-0.5 text-[12px] text-gray-700">
+                  {v.hiddenAssignments.map(w => <div key={w.id}><b>{w.title ?? w.kind}</b> — {w.status}{w.revoked_at ? ` ${fmt(w.revoked_at)}` : ''} ({w.source ?? 'adrian'} · {w.kind} · assigned {fmt(w.created_at, false)})</div>)}
+                </div>
+              </details>
+            )}
             {v.earlier.map(e => <div key={e.id} className="text-sm py-1">🗂 <b>{e.name}</b> — an earlier marking ({e.awarded}/{e.max}), folded under “Earlier markings” at the foot of their Papers list.</div>)}
           </section>
         )}
