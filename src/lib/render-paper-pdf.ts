@@ -42,7 +42,7 @@ const ANSWER_ORANGE = '#843C0C';
 // v3 (2026-08-31): "End of Paper" after the last question.
 // v4 (2026-09-05): KaTeX inlined (was jsDelivr CDN 0.16.9, now the installed
 // 0.16.45 package) — cached PDFs must rebuild once to pick up the version bump.
-export const PAPER_PDF_RENDER_VERSION = 4;
+export const PAPER_PDF_RENDER_VERSION = 5;   // 5: marks beside the last line, no parent total over marked sub-parts (13 Sep 2026)
 
 export interface PaperPdfQuestion {
   /** Printed question number (original or resequenced by the caller). */
@@ -111,18 +111,28 @@ function spacer(marks: number | null | undefined): string {
   return `<div class="pp-space" style="height:${workingSpaceMm(marks)}mm"></div>`;
 }
 
+/** Text and its marks as one line-box: the text fills the left, the marks sit
+ *  at the bottom-right beside the LAST line. A floated span used to drop onto
+ *  the following block whenever the last line ran long, so (ii)'s [1] printed
+ *  beside (iii) (JPJC 2025 P2 Q11, 13 Sep 2026). */
+function lineWithMarks(cls: string, inner: string, marks: string): string {
+  return `<div class="${cls}"><span class="pp-txt">${inner}</span>${marks}</div>`;
+}
+
 function partHtml(p: Part, workingSpace: boolean): string {
   const label = p.label ? `<strong>(${esc(String(p.label).replace(/^\(|\)$/g, ''))})</strong> ` : '';
-  const marks = p.marks ? `<span class="pp-mk">[${p.marks}]</span>` : '';
-  const before = p.image_url ? img(p.image_url) : '';
-  const after = p.image_url_after ? img(p.image_url_after) : '';
-  const text = p.text ? `<div class="pp-part-text">${label}${richText(p.text)}${marks}</div>` : (label || marks ? `<div class="pp-part-text">${label}${marks}</div>` : '');
-  const subs = (p.subparts ?? []).map((sp) => partHtml(sp, workingSpace)).join('');
   // Working space belongs to the part that asks for the work: a part with its
   // own marks and no marked subparts gets the skill-rule space after it.
   const subsCarryMarks = (p.subparts ?? []).some(function carry(sp): boolean {
     return !!sp.marks || (sp.subparts ?? []).some(carry);
   });
+  // A parent whose sub-parts carry their own marks prints no total of its own —
+  // the paper says [2] beside (i), never [8] beside (b) as well.
+  const marks = p.marks && !subsCarryMarks ? `<span class="pp-mk">[${p.marks}]</span>` : '';
+  const before = p.image_url ? img(p.image_url) : '';
+  const after = p.image_url_after ? img(p.image_url_after) : '';
+  const text = p.text ? lineWithMarks('pp-part-text', label + richText(p.text), marks) : (label || marks ? lineWithMarks('pp-part-text', label, marks) : '');
+  const subs = (p.subparts ?? []).map((sp) => partHtml(sp, workingSpace)).join('');
   const space = workingSpace && p.marks && !subsCarryMarks ? spacer(p.marks) : '';
   return `<div class="pp-part">${before}${text}${after}${space}${subs}</div>`;
 }
@@ -139,8 +149,8 @@ function questionHtml(q: PaperPdfQuestion, workingSpace: boolean): string {
   const inParts = partsCarryMarks(q.parts);
   const stemMarks = !inParts && q.marks != null ? `<span class="pp-mk">[${q.marks}]</span>` : '';
   const stem = q.stem.trim()
-    ? `<div class="pp-stem">${richText(q.stem.trim())}${stemMarks}</div>`
-    : (stemMarks ? `<div class="pp-stem">${stemMarks}</div>` : '');
+    ? lineWithMarks('pp-stem', richText(q.stem.trim()), stemMarks)
+    : (stemMarks ? lineWithMarks('pp-stem', '', stemMarks) : '');
   const parts = q.parts.map((p) => partHtml(p, workingSpace)).join('');
   const stemSpace = workingSpace && !inParts ? spacer(q.marks) : '';
   // Stem first, then figures: stems say "the diagram below shows…". The
@@ -195,7 +205,8 @@ ${katexInlineHead()}
   .pp-questions{list-style:none;padding-left:24pt;margin:0}
   .pp-q{margin-bottom:8pt;position:relative}
   .pp-qnum{position:absolute;left:-24pt;top:0;font-weight:700}
-  .pp-stem{white-space:pre-wrap;break-inside:avoid}
+  .pp-stem{white-space:pre-wrap;break-inside:avoid;display:flex;justify-content:space-between;align-items:flex-end;gap:8pt}
+  .pp-txt{flex:1 1 auto;min-width:0}
   /* Data tables from stems/parts (richText) — exam-style bordered grid. The
      pre-wrap ancestors would render the table's own newlines; normal it. */
   .pp-table{white-space:normal;border-collapse:collapse;margin:4pt 0;break-inside:avoid}
@@ -203,11 +214,11 @@ ${katexInlineHead()}
   .pp-table th{font-weight:700}
   .pp-part{margin-top:4pt}
   .pp-part .pp-part{margin-left:15pt}
-  .pp-part-text{white-space:pre-wrap;break-inside:avoid}
+  .pp-part-text{white-space:pre-wrap;break-inside:avoid;display:flex;justify-content:space-between;align-items:flex-end;gap:8pt}
   .pp-figure{display:block;max-width:100%;max-height:300pt;margin:6pt 0}
   .pp-missing-figure{border:0.75pt dashed #999;color:#999;font-style:italic;text-align:center;padding:14pt 8pt;margin:5pt 0}
 
-  .pp-mk{float:right;font-weight:400}
+  .pp-mk{flex:none;font-weight:400}
   .pp-space{display:block;clear:both}
   .pp-keep{break-inside:avoid;page-break-inside:avoid}
   .pp-fresh{break-before:page;page-break-before:always}
