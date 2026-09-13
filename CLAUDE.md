@@ -175,6 +175,7 @@ Deep details for schedule/marking/kiosk pages live in `docs/` (see the table at 
 - `admin/progress/page.tsx` — read-only student timeline → `docs/SCHEDULE.md`
 - `admin/invoices/page.tsx` — invoice dashboard → `docs/INVOICES.md`
 - `admin/students/page.tsx` — student directory (search + level filter)
+- `admin/students/[id]/app/page.tsx` — 📱 **"Their app, as they see it"** (13 Sep 2026, Adrian: "a place where i can see all the papers / practice again / hand-ins that students see"): one read-only page per student built from the SAME rules as the student's Papers page (`lib/student-app-view.ts` → subject gate, buildStudentMarking, groupPracticeAgain, bundleList) plus the hidden state — each paper's sheet (requested by student vs assigned by Adrian, job stage, released, nudges, handed in, marked), hand-ins in progress, From Adrian / Find / Pages work, essays, what they CANNOT see (subject gate, held/revoked, superseded), the event trail. Linked from the profile's Marked papers section; admin session cookie
 - `admin/students/[id]/page.tsx` — student profile hub: Weekly slots (🔀 Switch / ＋ Add), upcoming lessons/exams/invoices, **Marked papers** section. Data from `/api/admin/student-profile?id=`; contact lazy-loaded via `student-contact`.
 - `admin/mark-paper/page.tsx` — **the marking page in use** → `docs/MARKING.md`
 - `admin/papers/page.tsx` — **marked-script library**: every run, filter by student / needs-tagging, inline student tagging, ✍️ deep-link into mark-paper → `docs/MARKING.md`

@@ -763,7 +763,7 @@ export default function StudentProfilePage() {
 
             {/* Marked papers — runs tagged with this student on /admin/mark-paper.
                 ✍️ = Adrian's annotated copy (the hand-back), 🖼/📄 the AI outputs. */}
-            <Section title="Marked papers" show={tab === 'overview'} action={<a href="/admin/mark-paper" style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>Mark a paper →</a>}>
+            <Section title="Marked papers" show={tab === 'overview'} action={<span style={{ display: 'inline-flex', gap: 12 }}><a href={`/admin/students/${studentId}/app`} style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>📱 Their app, as they see it →</a><a href="/admin/mark-paper" style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>Mark a paper →</a></span>}>
               {(!markedPapers || markedPapers.length === 0) && (
                 <div style={{ color: '#9ca3af', fontSize: 14 }}>
                   None yet — papers appear here once tagged with this student on the mark page (pick them in the send row).
