@@ -42,12 +42,20 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 mkdir -p "$STATE"
 ln -sfn "$BASE/env" "$STATE/env"
 [ -r "$BASE/oauth_token" ] && ln -sfn "$BASE/oauth_token" "$STATE/oauth_token"
-# Account B for slots 4-6 (11 Sep 2026): the same setup-token the MARKING slots
-# 4-6 use (~/.adrianmath_marker4/oauth_token, minted by Adrian on ablnon@gmail.com)
-# and its sidecar `account`, so a limit on account A never stops these slots.
-if [ "$SLOT" -ge 4 ] && [ -r "$HOME/.adrianmath_marker4/oauth_token" ]; then
-  ln -sfn "$HOME/.adrianmath_marker4/oauth_token" "$STATE/oauth_token"
-  [ -r "$HOME/.adrianmath_marker4/account" ] && cp "$HOME/.adrianmath_marker4/account" "$STATE/account"
+# ACCOUNT GROUPS (11 Sep 2026: slots 4-6 on account B; 13 Sep 2026: 7-9 on
+# account C). A sheet slot spends the same setup-token as the MARKING slot that
+# leads its group (~/.adrianmath_marker4 for 4-6, ~/.adrianmath_marker7 for 7-9)
+# and links its `account` sidecar, so a limit on one account never stops the
+# others. A group whose leader has no token yet is installed but NOT loaded —
+# run.sh would otherwise fall back to the keychain login and spend account A.
+# Finish it with the bot repo's worker/plan-marking/add-account.sh <leader> <email>.
+LEADER=0; [ "$SLOT" -ge 4 ] && LEADER=4; [ "$SLOT" -ge 7 ] && LEADER=7
+GROUP_READY=1
+if [ "$LEADER" -gt 0 ]; then
+  LTOK="$HOME/.adrianmath_marker$LEADER/oauth_token"
+  ln -sfn "$LTOK" "$STATE/oauth_token"
+  ln -sfn "$HOME/.adrianmath_marker$LEADER/account" "$STATE/account"
+  { [ -r "$LTOK" ] && [ -n "$(tr -d '[:space:]' < "$LTOK" 2>/dev/null)" ]; } || GROUP_READY=0
 fi
 cp "$HERE/run.sh" "$STATE/run.sh"; chmod +x "$STATE/run.sh"
 # A SYMLINK, like install.sh (11 Sep 2026): a COPY went stale the day the repo's
@@ -101,7 +109,13 @@ cat > "$PLIST" <<PLIST_EOF
 PLIST_EOF
 
 launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
-launchctl bootstrap "gui/$(id -u)" "$PLIST"
+if [ "$GROUP_READY" = 1 ]; then
+  launchctl bootstrap "gui/$(id -u)" "$PLIST"
+else
+  echo "⏸ sheet slot $SLOT installed but NOT loaded: no setup-token in ~/.adrianmath_marker$LEADER/oauth_token yet."
+  echo "   Mint one (claude setup-token, signed in to that account), paste it there, then:"
+  echo "   bash ~/dev/adrianmath-telegram-math-bot/worker/plan-marking/add-account.sh $LEADER <email>"
+fi
 
 echo "✅ sheet slot $SLOT installed"
 echo "   state:  $STATE   (env symlinked to slot 1)"
