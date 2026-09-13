@@ -304,3 +304,29 @@ it (would remove the residual jitter — `annotate.js _inkRowBands` has the piec
 - **No ticks after the ✗ in a part that scored nothing.** Q2(b)(iii) (P2, 0/2) and Q11(b) (P1, 0/4): working built on the wrong object came back ticked. Marker rule "A PART THAT SCORED NOTHING CARRIES NO TICKS AFTER ITS ✗" + the deterministic `quietZeroParts` (bot `ai/marker-assemble.js`): on a page with a 0/n part, a 'correct' line after a wrong line carrying a zero code — or, since the same evening, a code-less wrong line whose error kind is the zero part's kind — becomes 'neutral' until an earning code, a line opening the next part ("(c) …") or the next question. Lines before the ✗ keep their ticks; marks never move. Golden fixtures `em-set3-p2-zero-part-ticks`, `am-set3-p1-zero-part-no-code`.
 - **A fix with a power, index or surd is typeset.** Q7(a) (P2): "(−2)^r" was drawn as typed. `fix_short` carrying an exponent/index/surd/fraction is ONE `$…$` span (prompt), and `texFromPlainMath` (`ai/pen-math.js`, called from `applyPenLineFields` before the cap) converts a plain-typed one; prose, bare values, signs and existing spans are untouched.
 
+
+## 13 Sep 2026 — a correction never runs into the margin strip (Chloe's Q8)
+
+Adrian: "marking annotations are written over each other." The kind label's
+correction had been set by the marker as ONE `$…$` span — prose inside `\text{…}`,
+maths between — so nothing outside the dollars could wrap, the span's top-level
+commas rightly kept the relation split away ("w = 9, x = 21" is a list, not steps),
+and the line ran off the column across the strip's own note.
+
+- **A sentence set in maths breaks at its joints.** A `\text{…}` group that opens
+  with a comma or a connector word (so, and, giving, hence, then, therefore, which,
+  because, …) starts the next line; the comma stays on the line it ends. Only then
+  does a piece still too wide split at its relations. Bot `ai/pen-math.js`
+  `splitAtConnectors` inside `stackWideMath`.
+- **Every stacked line fits.** A lone span no joint or relation can shorten is
+  broken at its top-level spaces (never inside a `\text` group or a `\left…\right`
+  pair — `forceWrapTex`); prose wraps. The tail closes on the third line only when
+  that line still fits, else the stack takes up to six lines. A label never
+  overflows: more lines beat ink over the strip.
+- **A gutter from the column edge.** The room a label is measured against and the
+  placement search both stop ~1.6 × the label's font size short of the column's
+  right edge, so the last glyph never touches the strip's dashed rule.
+
+Forward-only, as always: Chloe's page is not re-inked. Verified with
+`scripts/pen-dryrun.cjs` on that page; pinned in `test/pen-math.test.js` and
+`test/annotate-label-typeset.test.js`.
