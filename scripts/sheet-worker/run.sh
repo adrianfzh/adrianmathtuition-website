@@ -189,6 +189,19 @@ if [ -z "${SHEETS_API_BASE:-}" ] || [ -z "${SHEETS_API_TOKEN:-}" ]; then
 fi
 export SHEETS_API_BASE SHEETS_API_TOKEN
 export SHEETS_STATE="$STATE"
+
+# ⏻ PER-ACCOUNT SWITCH (13 Sep 2026, Adrian: "3 toggles to on/off each one"): the
+# site holds one switch per Claude account (/admin/mark-paper → Airtable
+# `slot_accounts`); a slot whose account is OFF claims nothing new. Keyed the way
+# the plan-limit file is keyed, so the site and this file mean the same account.
+# Fails OPEN: no answer, or an account the site does not list, means "on".
+SWITCH_STATE="$(curl -s -m 8 "$SHEETS_API_BASE/api/admin/slot-accounts" -H "Authorization: Bearer $SHEETS_API_TOKEN" 2>/dev/null | python3 -c 'import json,sys
+try: print("off" if sys.argv[1] in (json.load(sys.stdin).get("off") or []) else "on")
+except Exception: print("on")' "$PLAN_ACCOUNT_KEY" 2>/dev/null || echo on)"
+if [ "$SWITCH_STATE" = "off" ]; then
+  say "switched off on the site (${SLOT_ACCOUNT:-$PLAN_ACCOUNT_KEY}) — not claiming"
+  cleanup_pid; exit 0
+fi
 # The repo the session works in — sheets are authored with the skills that live
 # there. A COPY is not possible here (python envs, skills, scripts), so the
 # session must tolerate the shared checkout being on any branch.

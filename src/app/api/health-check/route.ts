@@ -424,6 +424,13 @@ export async function GET(req: NextRequest) {
     }),
     // ✍️ Essay hand-in (SPEC-ESSAY-MARKING.md, 12 Sep 2026): the student's door to
     // the Languages family. Anonymous must be refused before anything is read.
+    // ⏻ The slot-account switches (13 Sep 2026): every Mac slot asks this before
+    // it claims. Anonymous must be refused; the workers carry the admin token.
+    timed('slot-accounts', async () => {
+      const r = await fetch(`${base}/api/admin/slot-accounts`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     timed('portal-essays', async () => {
       const r = await fetch(`${base}/api/portal/essays`, { method: 'POST', redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);

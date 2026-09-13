@@ -383,6 +383,13 @@ export default function MarkPaperPage() {
   // shape, same route; lib/portal-beta scienceMarkingOpen() reads it per request.
   const [scienceOpen, setScienceOpen] = useState<{ on: boolean; at: string | null } | null>(null);
   const [scienceBusy, setScienceBusy] = useState(false);
+  // ⏻ Slots by account (13 Sep 2026, lib/slot-accounts.ts): one switch per Claude
+  // account the Mac slots spend. OFF = that account's slots claim nothing new
+  // (a paper or sheet in progress finishes). Every worker asks the site before it
+  // claims, so a flip is live within one tick, no deploy.
+  type SlotAccountRow = { email: string; key: string; label: string; on: boolean; at: string | null };
+  const [slotAccounts, setSlotAccounts] = useState<SlotAccountRow[] | null>(null);
+  const [slotBusy, setSlotBusy] = useState<string | null>(null);
   useEffect(() => {
     fetch('/api/admin/marking-settings', { headers: authHeaders }).then(async r => {
       if (!r.ok) return;
@@ -390,8 +397,27 @@ export default function MarkPaperPage() {
       if (d?.macOnly) setMacOnly({ on: !!d.macOnly.on, at: d.macOnly.at ?? null });
       if (d?.scienceOpen) setScienceOpen({ on: !!d.scienceOpen.on, at: d.scienceOpen.at ?? null });
     }).catch(() => {});
+    fetch('/api/admin/slot-accounts', { headers: authHeaders }).then(async r => {
+      if (!r.ok) return;
+      const d = await r.json();
+      if (Array.isArray(d?.accounts)) setSlotAccounts(d.accounts);
+    }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  async function flipSlotAccount(email: string, on: boolean) {
+    if (slotBusy) return;
+    setSlotBusy(email);
+    try {
+      const r = await fetch('/api/admin/slot-accounts', { method: 'POST', headers: { ...authHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify({ email, on }) });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
+      if (Array.isArray(d?.accounts)) setSlotAccounts(d.accounts);
+    } catch (e) {
+      alert(`Could not change the switch: ${(e as Error).message}`);
+    } finally {
+      setSlotBusy(null);
+    }
+  }
   async function flipScienceOpen() {
     if (!scienceOpen || scienceBusy) return;
     const next = !scienceOpen.on;
@@ -1785,6 +1811,33 @@ export default function MarkPaperPage() {
           >
             <span style={{ position: 'absolute', top: 4, left: scienceOpen.on ? 24 : 4, width: 20, height: 20, borderRadius: 999, background: '#fff', transition: 'left .15s' }} />
           </button>
+        </div>
+      )}
+
+      {/* ⏻ Slots by account — one switch per Claude account the Mac slots spend (13 Sep 2026). */}
+      {slotAccounts && (
+        <div style={card} data-slot-accounts>
+          <div style={{ fontWeight: 700 }}>⏻ Marking &amp; sheet slots, by account</div>
+          <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2, marginBottom: 8 }}>
+            Off = that account&apos;s slots claim nothing new; whatever they are holding finishes. Live within one tick (30 s marking, 2 min sheets).
+          </div>
+          {slotAccounts.map(a => (
+            <div key={a.email} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderTop: '1px solid #f3f4f6' }} data-slot-account={a.key} data-on={a.on ? 'on' : 'off'}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 600, fontSize: 13 }}>{a.email}{a.on ? '' : ' — OFF'}</div>
+                <div style={{ fontSize: 12, color: '#6b7280' }}>
+                  {a.label}
+                  {a.at ? ` · ${a.on ? 'on' : 'off'} since ${new Date(a.at).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}
+                </div>
+              </div>
+              <button
+                type="button" role="switch" aria-checked={a.on} aria-label={`Slots on ${a.email}`} disabled={slotBusy !== null} onClick={() => flipSlotAccount(a.email, !a.on)}
+                style={{ position: 'relative', width: 48, height: 28, borderRadius: 999, border: 'none', cursor: 'pointer', background: a.on ? '#4f46e5' : '#d1d5db', opacity: slotBusy === a.email ? 0.5 : 1, flexShrink: 0 }}
+              >
+                <span style={{ position: 'absolute', top: 4, left: a.on ? 24 : 4, width: 20, height: 20, borderRadius: 999, background: '#fff', transition: 'left .15s' }} />
+              </button>
+            </div>
+          ))}
         </div>
       )}
 
