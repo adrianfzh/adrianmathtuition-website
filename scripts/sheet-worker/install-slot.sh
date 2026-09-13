@@ -41,7 +41,10 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 mkdir -p "$STATE"
 ln -sfn "$BASE/env" "$STATE/env"
+# Slots 2-3 follow sheet slot 1's token — which since 13 Sep 2026 is a link to
+# ~/.adrianmath_marker/oauth_token (adrianmathtuition) — and its account sidecar.
 [ -r "$BASE/oauth_token" ] && ln -sfn "$BASE/oauth_token" "$STATE/oauth_token"
+[ -r "$BASE/account" ] && ln -sfn "$BASE/account" "$STATE/account"
 # ACCOUNT GROUPS (11 Sep 2026: slots 4-6 on account B; 13 Sep 2026: 7-9 on
 # account C). A sheet slot spends the same setup-token as the MARKING slot that
 # leads its group (~/.adrianmath_marker4 for 4-6, ~/.adrianmath_marker7 for 7-9)
