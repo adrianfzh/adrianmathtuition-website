@@ -62,6 +62,10 @@ stamp_ok() {
 import json, sys
 print(json.dumps({"job":"sheet-worker","ok":True,"summary":sys.argv[1][:300],"meta":json.loads(sys.argv[2] or "{}")}))' "$1" "$2")" > /dev/null 2>&1 || true
 }
+# cleanup_pid is defined HERE, above die(): a die() before the old definition point
+# (the credentials check, --auth-check on a fresh Mac, 13 Sep 2026) printed
+# "cleanup_pid: command not found" instead of the real reason.
+cleanup_pid() { rm -f "$STATE/worker.pid"; }
 die() { say "FATAL: $1"; stamp_fail "$1"; cleanup_pid; exit 1; }
 
 
@@ -163,7 +167,6 @@ if [ -f "$STATE/worker.pid" ]; then
   fi
 fi
 echo $$ > "$STATE/worker.pid"
-cleanup_pid() { rm -f "$STATE/worker.pid"; }
 
 # Stagger slots so two workers rarely reach for the same job on the same tick.
 if [ "${START_DELAY_SEC:-0}" -gt 0 ] 2>/dev/null; then sleep "$START_DELAY_SEC"; fi
