@@ -17,7 +17,10 @@
 set -u -o pipefail
 
 export HOME="${HOME:-/Users/adrianfong}"
-export PATH="/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+# Homebrew on Apple silicon AND on Intel (/usr/local/bin), plus the native Claude
+# installer's ~/.local/bin (13 Sep 2026: the Air's claude lives there, and the old
+# pinned PATH made every tick die with "no Claude credentials").
+export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 

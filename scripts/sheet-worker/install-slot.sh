@@ -88,7 +88,7 @@ cat > "$PLIST" <<PLIST_EOF
 	<key>EnvironmentVariables</key>
 	<dict>
 		<key>PATH</key>
-		<string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<string>/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
 		<key>LANG</key>
 		<string>en_US.UTF-8</string>
 		<key>SHEETS_STATE_DIR</key>
