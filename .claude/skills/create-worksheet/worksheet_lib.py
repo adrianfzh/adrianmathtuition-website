@@ -624,6 +624,34 @@ def find_plain_maths(docx_path):
     return hits
 
 
+#: adjectives that judge the maths instead of telling the student what to do
+_FANCY_WORDS = (
+    'awkward', 'nasty', 'ugly', 'messy', 'clunky', 'cumbersome', 'unwieldy',
+    'tedious', 'lonely', 'elegant', 'trivial', 'obvious', 'obviously',
+)
+_FANCY_RE = re.compile(r'\b(' + '|'.join(_FANCY_WORDS) + r')\b', re.I)
+
+
+def find_fancy_words(docx_path):
+    """Every sentence in a saved .docx that judges the maths rather than telling
+    the student what to do. Returns a list of (word, sentence). Empty list = clean.
+
+    Adrian's rule (14 Sep 2026, on the S3 Trigonometry sheet): "don't use fancy
+    words like 'awkward' (not teaching english here), explain simply and
+    directly" — and "saying the lonely 1 is ... is cryptic". A word like awkward
+    or trivial names a feeling about the working; a student who does not share
+    the feeling learns nothing from it. The metaphors ("the lonely 1") cannot be
+    detected here and stay authoring judgment — ADRIAN-STYLE §2."""
+    import zipfile as _zf
+    xml = _zf.ZipFile(docx_path).read('word/document.xml').decode('utf8', 'ignore')
+    hits = []
+    for t in re.findall(r'<w:t(?:\s[^>]*)?>([^<]*)</w:t>', xml):
+        text = t.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
+        for word in sorted({m.group(0).lower() for m in _FANCY_RE.finditer(text)}):
+            hits.append((word, text.strip()))
+    return hits
+
+
 def _recolour_paragraph(p, hex_rgb):
     """Text runs and inline maths of one paragraph in one colour."""
     rgb = RGBColor.from_string(hex_rgb)
@@ -1685,3 +1713,10 @@ class Worksheet:
                   f'being used and why ("using the formula for sin(A − B)", not "sin(A − B)"):')
             for note in terse[:20]:
                 print(f'   ← {note}')
+        # Plain words, not clever ones (ADRIAN-STYLE §2, 14 Sep 2026).
+        fancy = find_fancy_words(path)
+        if fancy:
+            print(f'HINT: {len(fancy)} sentence(s) judge the maths instead of telling the '
+                  f'student what to do — plain words only:')
+            for word, text in fancy[:20]:
+                print(f'   "{word}": {text}')

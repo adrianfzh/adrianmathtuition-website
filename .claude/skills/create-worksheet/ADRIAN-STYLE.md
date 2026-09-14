@@ -63,7 +63,7 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   (`_cosec`, in `_latex_to_omml`) so the sheet always says cosec. Same for the
   reciprocal identities and anything quoted from a question.
 
-## 2 · Notes beside a line
+## 2 · Notes beside a line — and the words everywhere else
 
 - A short reason sits at the **end of its own line**, grey, after a "←":
   `… \quad\text{← divide by } \sin^2 A`. Only "←" triggers the grey style; ⇒ and → stay
@@ -111,6 +111,32 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   The countervailing rule still holds: a note that WRAPS drops its line out of
   alignment. When the explanation will not fit beside the line, put it on its own
   short line under the working rather than shortening it into a label.
+- **Plain words, said straight — this is a maths sheet, not an English lesson**
+  (14 Sep 2026: "don't use fancy words like 'awkward' (not teaching english here),
+  explain simply and directly"; "saying the lonely 1 is … is cryptic"). The rule
+  covers the lede sentence above a solution, the line introducing a part, and the
+  ← notes alike. Two habits to drop, both from the S3 Trigonometry sheet:
+  - **No metaphor, no personification, no nickname for a term.** Call it what the
+    student can see on the page, and say what to do with it.
+
+        ✗  the target has cot A, so divide by sin² A; the lonely 1 is sin² A + cos² A
+        ✓  the target has cot A, so divide by sin² A; replace the 1 with sin² A + cos² A
+
+  - **No adjective that judges the maths** — awkward, nasty, messy, ugly, tedious,
+    elegant, trivial, obvious. They name a feeling instead of a move, and a student
+    who does not share the feeling learns nothing from them.
+
+        ✗  A "hence, solve" part means: replace the awkward side by the identity,
+           then solve the simpler equation.
+        ✓  A "hence" question requires the use of the previous part — observe to see
+           how you can use the previous part
+
+    The ✓ is his own rewrite. It says what the word "hence" obliges the student to
+    do, in the words the question uses, and then tells them where to look.
+
+  The test for any sentence on the sheet: it names what the student must DO, in the
+  vocabulary of the question. `find_fancy_words()` prints a hint at `save()` for the
+  judging adjectives; metaphor is authoring judgment and cannot be checked.
 
 ## 3 · Two cases side by side with "or"
 
@@ -137,6 +163,15 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   `trig_figures/astc.py` (see `trig_figures/README.md`).
 - Quadrant reasoning is three lines: `cos P > 0 → P in 1st or 4th quadrant`,
   `sin P < 0 → P in 3rd or 4th`, `hence P in 4th quadrant`.
+- **A reference diagram sits beside the line it is for** (14 Sep 2026: "put the ASTC
+  near where the equation is, so student know that ASTC is for that equation"). An
+  S A T C square floated at the top of the box reads as decoration for the whole
+  solution; it belongs level with the equation whose quadrants it settles — the
+  `tan A = −3/2` branch, its basic angle, the `A = 180° − 56.3°` line. So do NOT wrap
+  a whole solution in one `('cols', …)` with the diagram in the right column. Write
+  the lines above it as ordinary steps, then open the columns at the line the diagram
+  serves: `('cols', [[those few lines], [('figure', astc_png, 3.9)]], [10.6, 3.9])`.
+  Two cases that each need a quadrant square get one each, beside its own case.
 - Figures from the question bank are embedded as stored; hand-drawn art only when the
   bank has none (and then through the bot's figure registry first — CLAUDE.md §Figure
   library).
