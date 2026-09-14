@@ -2690,10 +2690,38 @@ Three layers, all live:
    `/api/admin/desk/redraw` with **`reissue: false`** — one paper with four missing pages
    must not rebuild its PDFs four times and tell the student four times about one copy
    (`lib/desk-redraw.ts`). A run the student has **not** seen is repaired outright and its
-   PDFs rebuilt; a run they **already hold** is only reported, because re-inking is
-   reversible and telling them their copy changed is not. `result_json.page_gap_check` is
-   the audit trail and the memory that reports an unfixable page once rather than four
-   times a day.
+   PDFs rebuilt; a run they **already hold** is repaired too and then re-issued ONCE on
+   the **app channel**. `result_json.page_gap_check` is the audit trail and the memory
+   that reports an unfixable page once rather than four times a day.
+
+   **Why the released branch changed (14 Sep 2026).** It used to only REPORT, and the
+   reason was never the repair — it was the channel: the only way to tell a student their
+   copy had changed was a Telegram line in Adrian's name, for plumbing he did not do, at
+   whatever hour the sweep fired. So the sweep stopped at the student's door. Adrian:
+   *"put the message in the app (in the cards instead - don't send through telegram), and
+   only have the message last for 3 days"*. With that the outward-facing step is no longer
+   an interruption in his voice, and the self-fix finishes the job he asked for on the
+   same day (*"able to have a monitor and self fix system in place?"*). He is still told
+   every time — the monitor reports to him, the repair no longer waits for him.
+
+**📌 The three-day card notice** (`lib/paper-notice.ts`, pure/tested — 14 Sep 2026). When
+a copy is replaced because pages were missing, the student is told **in the app**, never on
+Telegram: the stamp `result_json.student_notice = {kind, at, until}` is read by
+`activePaperNotice` and rendered as a line on the `/app/marking` card and at the top of
+`/app/marking/[id]` ("Your full paper is here — some pages didn't upload properly the first
+time … your mark hasn't changed"), and it disappears by itself after `NOTICE_DAYS` = 3.
+Expiry is a stored INSTANT, not a "days since", so a notice can be cut short or extended by
+writing the row and a paper repaired twice does not stack two banners.
+
+The door is `mark-triage {action:'reissue', reason:'pages-recovered', channel:'app'}` →
+`{ok:true, via:'app'}`: it rebuilds both PDFs, refiles the Dropbox copy and flips the
+assignment's score exactly as the Telegram re-issue does, then stamps the notice and sends
+nothing. **Only the pages news may go this way** — "Adrian checked your paper and changed a
+mark" is his voice and his accountability, so an app-channel `'checked'` re-issue is
+refused (400) rather than quietly downgraded to a banner nobody is pinged about. The
+refusal is decided before the run is even read: a guard that answers 400 must answer it
+before the side effects, not after them (it first sat beside the send, where a rejected
+request had already rewritten the student's PDFs).
 
 **And the release itself checks** (`mark-triage {action:'release'}`): the check is pure and
 free — it reads the run already in hand — so every release pays it, and a paper going out

@@ -45,9 +45,11 @@ Writers:
   whose annotated image never reached the bucket: the last 7 days of runs are
   checked with the pure `lib/page-gap-repair.ts gapsForRun`, a run the student
   has NOT seen is repaired outright (redraw each missing page through
-  `/api/admin/desk/redraw {reissue:false}`, then rebuild its PDFs), a run they
-  ALREADY HOLD is only reported — re-inking is reversible, telling them their
-  copy changed is not. Every run it looked at carries
+  `/api/admin/desk/redraw {reissue:false}`, then rebuild its PDFs), and since
+  14 Sep 2026 a run they ALREADY HOLD is repaired too and re-issued once on the
+  **app channel** (`mark-triage {channel:'app'}`) — a three-day line on the
+  paper's card, nothing sent. Whatever it still could not fix is named to Adrian
+  in the sweep's own line to the marking topic. Every run it looked at carries
   `result_json.page_gap_check`, which is the audit trail AND the memory that
   says an unfixable page once instead of four times a day. Stamps every run
   → [`MARKING.md`](MARKING.md) §🕳 When the paper is missing),
