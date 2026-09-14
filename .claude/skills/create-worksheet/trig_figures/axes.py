@@ -62,3 +62,21 @@ def arrow_axes(ax, xlabel='x', ylabel='y', color='k', size=7.0, lw=0.9,
                     ha='left', va='bottom', color=color, annotation_clip=False,
                     zorder=8, path_effects=halo)
     return ax
+
+
+# Adrian, 14 Sep 2026: "if there are more than 1 graph, we should colour code to
+# highlight the number of graphs".  One colour per repeat of the curve, so the
+# student counts the graphs in the range by counting the colours instead of
+# being told the number.  ONE palette for every figure, so cycle 2 is the same
+# orange on the step-by-step panels as it is on the variation graphs.
+CYCLE_COLOURS = ['#1a5fb4', '#c64600', '#7a3fb8', '#0b7285']
+CURVE = '#1a1a1a'
+
+
+def cycle_colour(i, default=CURVE):
+    """Colour for repeat number i (0-based).  None = a single graph, so black.
+
+    A range holding only one graph is drawn plain — a colour there would be
+    counting something there is nothing to count.
+    """
+    return default if i is None else CYCLE_COLOURS[i % len(CYCLE_COLOURS)]

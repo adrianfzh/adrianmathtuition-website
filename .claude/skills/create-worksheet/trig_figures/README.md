@@ -24,8 +24,19 @@ Matplotlib helpers, run under `/usr/bin/python3` (Pillow + numpy live there):
   shows its centre line `y = c`, dotted** ("the graph in the solution should show the
   centre line (dotted)", 14 Sep 2026). Black, thin, unlabelled, under the curve; a
   second, fainter curve on the same axes gets its own centre line at `alpha=0.6`.
+- `axes.py CYCLE_COLOURS` / `cycle_colour(i)` — **one colour per repeat when the range
+  holds more than one graph** ("if there are more than 1 graph, we should colour code to
+  highlight the number of graphs", 14 Sep 2026), numbered in the same colour so the count
+  is read off the picture. One graph in the range stays plain black. The same palette
+  serves `tgraphs.py` and `drawsteps.py`, so cycle 2 is the same orange in both.
 - `tgraphs.py` — the three basic shapes (sin, cos, tan) for a three-column notes block,
-  plus six variation graphs showing what a, b and c each do.
+  plus six variation graphs showing what a, b and c each do. `variation(..., pieces=…,
+  numbers=…)` does the colour coding; `cycles(xmax, period)` builds the runs for a curve
+  that simply repeats. **Tangent graphs are drawn to 360°** ("draw until 360 degrees, to
+  illustrate how many tangent graph there are in 360degrees", 14 Sep 2026) — one tangent
+  graph is 180° wide, so `y = a tan bx` gives `b` of them in 180° and `2b` in 360°; the
+  half graph at each end of the range shares one number, because between them they make
+  one.
 - `drawsteps.py` — the step-by-step SERIES for "how to draw a graph": six panels of the
   same axes, each adding one step (max/min → centre line → period and cycles → the five
   points → one cycle drawn → the cycle copied along, one colour per copy).

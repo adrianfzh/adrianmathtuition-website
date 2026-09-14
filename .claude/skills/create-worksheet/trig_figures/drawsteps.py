@@ -5,7 +5,7 @@ Serif / cm mathtext to match astc.py and tgraphs.py."""
 import matplotlib; matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-from axes import arrow_axes
+from axes import arrow_axes, CYCLE_COLOURS
 plt.rcParams.update({'font.family': 'serif', 'mathtext.fontset': 'cm'})
 
 DEG = np.pi / 180.0
@@ -15,7 +15,7 @@ DIM   = '#b04a2a'
 BOX   = dict(facecolor='white', edgecolor='none', pad=0.6)
 
 # one colour per cycle, so a copied cycle is visibly the same shape moved along
-CYC = ['#1a5fb4', '#c64600', '#7a3fb8']
+CYC = CYCLE_COLOURS
 
 A, B, C = 2, 3, 1                 # y = A sin(Bx) + C
 XMAX, PERIOD = 360, 120

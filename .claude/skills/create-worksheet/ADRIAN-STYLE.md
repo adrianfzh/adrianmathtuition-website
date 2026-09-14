@@ -201,6 +201,25 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   along — each copy in its own colour on the same diagram, with a closing line saying
   the colours only show the cycle moved along and in the exam all of them are one pen.
   Pattern: `trig_figures/drawsteps.py`.
+- **More than one graph in the range means colour code and number them** (14 Sep 2026:
+  "if there are more than 1 graph, we should colour code to highlight the number of
+  graphs"). One colour per repeat of the curve, plus the graph's number in that same
+  colour above it, so the student COUNTS the graphs off the picture instead of being
+  told the answer. One graph in the range is drawn plain black — a colour there counts
+  something there is nothing to count. Palette and helper live in `trig_figures/axes.py`
+  (`CYCLE_COLOURS`, `cycle_colour(i)`); every figure uses the same one, so cycle 2 is the
+  same orange on the step-by-step panels as on the variation graphs. For sine and cosine
+  the colour changes at the end of each cycle; for tangent it changes at the asymptotes,
+  where the graph genuinely breaks.
+- **A tangent graph is drawn to 360°, not to one period** (14 Sep 2026: "for tangent
+  graph draw until 360 degrees, to illustrate how many tangent graph there are in
+  360degrees"). The point of the picture is the count, and a picture that stops at one
+  period has nothing to count. One tangent graph is only 180° wide, so `y = a tan bx`
+  has **`b` tangent graphs in 180°, and `2b` in 360°** — do NOT carry over the sine and
+  cosine rule of "`b` graphs in 360°", it gives the wrong number for tangent. The range
+  ends usually cut a graph in half; the two half graphs at the ends carry the SAME
+  number, because between them they make one. Pattern: `trig_figures/tgraphs.py`
+  `variation(..., pieces=…, numbers=…)`.
 - **A shifted sine or cosine shows its centre line, dotted** (14 Sep 2026: "the graph in
   the solution should show the centre line (dotted)"). Any sketch of
   `y = a sin bx + c` / `y = a cos bx + c` with `c ≠ 0` — the SOLUTION graphs as much as
