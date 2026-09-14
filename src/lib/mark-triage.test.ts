@@ -104,6 +104,34 @@ describe('grounded totals survive triage', () => {
     expect(recomputeTotals(groundedRun(question(), question()))).toEqual({ awarded: 8, max: 90 });
   });
 
+  // Alexis Wong's run 94326fea (14 Sep 2026): grounded to /90 off the paper's
+  // own COVER, with nine phantom `added_by_audit` questions on page 1 carrying
+  // 32 marks of max. 'cover' was not on the two-name allowlist, so the re-issue
+  // re-summed to 122 and told her "your mark is unchanged, 77/122".
+  const coverRun = (...results: unknown[]) => ({
+    source: 'paper',
+    results,
+    totals: { awarded: 77, max: 90, counted_max: 122, max_source: 'cover' },
+  });
+
+  it('keeps a COVER-grounded max — the phantom audit rows never reach the student', () => {
+    expect(recomputeTotals(coverRun(question(), question()))).toEqual({ awarded: 8, max: 90 });
+  });
+
+  it('keeps any max the denominator did not come from summing — not a list of two', () => {
+    const odd = { source: 'paper', results: [question(), question()], totals: { max: 90, max_source: 'seab-booklet' } };
+    expect(recomputeTotals(odd)).toEqual({ awarded: 8, max: 90 });
+  });
+
+  it('still sums when the source IS the count, or the stored max is unusable', () => {
+    const counted = { results: [question(), question()], totals: { max: 90, max_source: 'counted' } };
+    expect(recomputeTotals(counted)).toEqual({ awarded: 8, max: 12 });
+    const zero = { results: [question(), question()], totals: { max: 0, max_source: 'cover' } };
+    expect(recomputeTotals(zero)).toEqual({ awarded: 8, max: 12 });
+    const noSource = { results: [question(), question()], totals: { max: 90 } };
+    expect(recomputeTotals(noSource)).toEqual({ awarded: 8, max: 12 });
+  });
+
   it('applyOverride keeps the grounded max and its breadcrumbs', () => {
     const rj = groundedRun(question({ review_recommended: true }), question());
     const next = applyOverride(rj, 0, 6, 'full credit', '2026-08-14T10:00:00Z');

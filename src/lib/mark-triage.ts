@@ -242,12 +242,23 @@ export function overrideTally(resultJson: unknown): { against: number; forStuden
  * on the row (`total_awarded`/`total_max`) and `result_json.totals` are both
  * derived from here, never computed independently in a route or a component.
  *
- * GROUNDED runs are the exception on the max side: when the bot grounded the
- * denominator against the official-paper registry or Adrian's "out of ___"
- * (`totals.max_source` of 'registry'/'override', set in bot ai/paper-totals.js),
- * the max did NOT come from summing detected questions — so an Agree/Override
- * here re-sums awarded but must keep that denominator. Re-summing it would put
- * the guess-sum (Eva's /89) right back on a run the bot already corrected to /90.
+ * GROUNDED runs are the exception on the max side: when the denominator did NOT
+ * come from summing detected questions — the official-paper registry, Adrian's
+ * "out of ___", or the paper's own printed cover (`totals.max_source`, set in
+ * bot ai/paper-totals.js) — an Agree/Override re-sums awarded but must KEEP that
+ * denominator. Re-summing it would put the guess-sum (Eva's /89) right back on a
+ * run the bot already corrected to /90.
+ *
+ * The test is "is this source the counted sum?", not an allowlist of the sources
+ * we happened to know about (14 Sep 2026). It was an allowlist of two, and
+ * 'cover' fell out of it: Alexis Wong's run 94326fea is grounded to /90 off the
+ * cover, but nine phantom `added_by_audit` questions on page 1 carry 32 marks of
+ * max, so the sum is 122. Her re-issue message told her "your mark is unchanged,
+ * 77/122". A denominator that came from the paper beats one we added up.
+ *
+ * NOT the same question as shouldStampPaperTotal (lib/marked-pdf-layout.ts),
+ * which asks whether this is an exam paper that gets a printed total strip and
+ * deliberately excludes 'cover'. Don't collapse the two lists again.
  */
 export function recomputeTotals(resultJson: unknown): { awarded: number; max: number } {
   const counted = resultsOf(resultJson).reduce<{ awarded: number; max: number }>(
@@ -258,9 +269,9 @@ export function recomputeTotals(resultJson: unknown): { awarded: number; max: nu
     { awarded: 0, max: 0 }
   );
   const prior = asRecord(asRecord(resultJson)?.totals);
-  if (prior && (prior.max_source === 'registry' || prior.max_source === 'override')) {
-    return { awarded: counted.awarded, max: num(prior.max) };
-  }
+  const source = typeof prior?.max_source === 'string' ? prior.max_source : null;
+  const grounded = source !== null && source !== 'counted' && num(prior?.max) > 0;
+  if (grounded) return { awarded: counted.awarded, max: num(prior!.max) };
   return counted;
 }
 
