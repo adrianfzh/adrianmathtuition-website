@@ -172,6 +172,14 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   the lines above it as ordinary steps, then open the columns at the line the diagram
   serves: `('cols', [[those few lines], [('figure', astc_png, 3.9)]], [10.6, 3.9])`.
   Two cases that each need a quadrant square get one each, beside its own case.
+- **Notes can use columns too, outside any solution box** — `ws.columns([col, col, col],
+  [5.33, 5.33, 5.33])`, each column holding the same step shapes a solution row takes
+  (a parts list, a bare latex line, `('figure', png, cm)`). A set of related pictures
+  goes side by side so the student reads them as one picture (14 Sep 2026, on the trig
+  graphs: "show the three basic graphs (perhaps in three columns), with their
+  max/min/amplitude/centreline/period formula/period"). Keep every column the same
+  shape — the equation line first, then the figure, then the short facts — so the eye
+  compares straight across. The widths must sum to about 16 cm.
 - Figures from the question bank are embedded as stored; hand-drawn art only when the
   bank has none (and then through the bot's figure registry first — CLAUDE.md §Figure
   library).

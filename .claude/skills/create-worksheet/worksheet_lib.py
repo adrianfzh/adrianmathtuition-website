@@ -1139,6 +1139,41 @@ class Worksheet:
         self._block_paras.append(p)
         return p
 
+    def columns(self, columns, widths_cm=None):
+        """Side-by-side columns of NOTES, at top level — outside a solution box.
+
+        A borderless table with one cell per column, each cell holding the same
+        step shapes solution_box takes: a parts list (prose + inline maths), a
+        bare latex string (a display line), or ('figure', png[, cm]). Adrian's
+        notes put related pictures beside each other so the student reads them
+        as one picture (14 Sep 2026, on the trig graphs: "show the three basic
+        graphs (perhaps in three columns), with their max/min/amplitude/
+        centreline/period formula/period").
+
+        widths_cm must sum to about 16 (the text width); it defaults to equal
+        columns. A column never splits across a page.
+        """
+        n = len(columns)
+        widths = widths_cm or [round(16.0 / n, 2)] * n
+        table = self.doc.add_table(rows=1, cols=n)
+        table.autofit = False
+        b = OxmlElement('w:tblBorders')
+        for side in ('top', 'left', 'bottom', 'right', 'insideH', 'insideV'):
+            el = OxmlElement(f'w:{side}'); el.set(qn('w:val'), 'nil'); b.append(el)
+        table._tbl.tblPr.append(b)
+        for col, w in zip(table.columns, widths):
+            col.width = Cm(w)
+        for cell, steps, w in zip(table.rows[0].cells, columns, widths):
+            cell.width = Cm(w)
+            first = True
+            for step in steps:
+                p = cell.paragraphs[0] if first else cell.add_paragraph()
+                first = False
+                self._solution_step(p, step, width=w - 0.3)
+        _cant_split(table.rows[0])
+        self.doc.add_paragraph()   # breathing space under the block
+        return table
+
     def solution_box(self, rows, keep_together=True, part_gap=None):
         """Boxed worked solution in Adrian's house format.
 
@@ -1190,6 +1225,14 @@ class Worksheet:
         self._block_paras.append(spacer)
         self._add([('text', 'Solution:', {'bold': True})])
         labelled = any(label for label, _ in rows)
+        # The label column is 1 cm — his own sheets never go past "(vii)". A longer
+        # label ("(viii)", "(b)(ii)") wrapped onto two lines and pushed the part's
+        # first line down, so the column grows with the widest label instead.
+        lab_w = 1.0
+        widest = max((len(label) for label, _ in rows), default=0)
+        if widest > 5:
+            lab_w = round(1.0 + 0.22 * (widest - 5), 2)
+        work_w = 16.0 - lab_w
         table = self.doc.add_table(rows=len(rows), cols=2 if labelled else 1)
         table.style = self.doc.styles['Table Grid']
         table.autofit = False
@@ -1197,8 +1240,8 @@ class Worksheet:
         for (label, steps), row in zip(rows, table.rows):
             if labelled:
                 lab_cell, work_cell = row.cells
-                lab_cell.width = Cm(1.0)
-                work_cell.width = Cm(15.0)
+                lab_cell.width = Cm(lab_w)
+                work_cell.width = Cm(work_w)
                 if label:
                     self._fill(lab_cell.paragraphs[0], [('text', label)])
             else:
@@ -1208,7 +1251,7 @@ class Worksheet:
         # the soffice PDF preview) size columns from w:tblGrid instead and
         # split 50/50, clipping long display math in the working column
         # (found 9 Sep 2026 on the GCE solutions export). Set both.
-        for col, w in zip(table.columns, ([1.0, 15.0] if labelled else [16.0])):
+        for col, w in zip(table.columns, ([lab_w, work_w] if labelled else [16.0])):
             col.width = Cm(w)
         gap_pt = PART_GAP_PT if part_gap is None else float(part_gap)
         for idx, ((label, steps), row) in enumerate(zip(rows, table.rows)):
