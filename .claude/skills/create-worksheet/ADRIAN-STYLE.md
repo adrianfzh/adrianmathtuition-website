@@ -26,6 +26,23 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   solution step. `_solution_lines` turns it into the structure above. Nothing else to do.
 - **Never chain three "=" on one line**; a new "=" is a new line. Stacked fractions
   (`\dfrac`) always.
+- **A step that applies a formula is TWO lines, not one** (14 Sep 2026: "we can show
+  how the formula is being used"). One line puts the expression into the form the
+  identity expects; the next applies it. The student has to be able to see the match.
+
+      ✗  sec 162° = 1/cos 162°
+                  = 1/(−cos 18°)          ← 162° = 180° − 18°, 2nd quadrant, cosine negative
+                  = −1/√(1 − p²)
+
+      ✓  sec 162° = 1/cos 162°
+                  = 1/cos(180° − 18°)     ← 162° = 180° − 18°
+                  = 1/(−cos 18°)          ← using cos(180° − θ) = −cos θ, here θ = 18°
+                  = −1/√(1 − p²)
+
+  The ✗ line does two things at once — rewrite the angle AND apply the identity — and
+  hides the identity behind a quadrant sentence. Splitting it gives each move its own
+  line and its own note, which is the same instinct as "a new '=' is a new line". See
+  §2 for how the second note is worded.
 - **Every fraction is numerator OVER denominator — a fraction inside a fraction too.**
   Never `7/(7√5/2)` on one line, never Word's slanted/linear fraction (14 Sep 2026:
   "for fractions, write them as numerator over denominator, even for fractions within
@@ -76,6 +93,16 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
     `← know the trigonometric ratios: sin π/4 = 1/√2`. The exact ratios, the special
     angles, a standard result quoted from the notes — if the value appeared without
     being computed on the page, say where it comes from.
+  - **Quote the formula in general form, then bind it to this question** (14 Sep
+    2026). Naming a formula is not the same as showing it work:
+    ✗ `← 162° = 180° − 18°, 2nd quadrant, cosine negative`
+    ✓ `← using cos(180° − θ) = −cos θ, here θ = 18°`
+    The general identity with its own letter, then what that letter is on THIS line.
+    The angle rewrite that sets the line up is a note of its own on the line above
+    (`← 162° = 180° − 18°`) — §1, a step that applies a formula is two lines.
+    A quadrant sentence is a different tool: it justifies a SIGN the student has to
+    decide (§3's reject-the-negative case), not an identity that already carries its
+    own sign.
   This is authoring judgment, not something the renderer can supply: it can only
   warn. `find_terse_notes()` prints a hint at `save()` for a ← note that carries no
   words of explanation at all (a bare formula or symbol), which usually means one of
