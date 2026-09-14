@@ -4,6 +4,7 @@ import { PDFDocument } from 'pdf-lib';
 import { renderMarkingPNG, type MarkingOutput } from '@/lib/render-marking';
 import { coverPhotoIndexes, frontMatterPages, orderMarkedPages } from '@/lib/marked-pdf-order';
 import { pageImages, type MarkedPdfMode } from '@/lib/annotated-photo-source';
+import { missingAnnotatedPages } from '@/lib/marked-pdf-gaps';
 import { markedPdfColumn } from '@/lib/marked-pdf-column';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -27,6 +28,15 @@ export const dynamic = 'force-dynamic';
 const RENDER_CONCURRENCY = 4;
 
 type ResultIn = { question_number: string; marking_output: MarkingOutput | null; photo_index?: number | null };
+
+/** The slice of the marking run the assembly reads back, once, before it fetches a page. */
+type RunRow = {
+  page_classification?: unknown;
+  results?: unknown;
+  annotated_photos?: unknown;
+  grounding?: { source?: unknown } | null;
+  source?: { photos?: unknown } | null;
+};
 
 /** Put the finished URL on the run HERE, server-side, before answering the browser.
  *  It used to be a fire-and-forget call from the page after the response arrived, so a
@@ -125,6 +135,29 @@ export async function POST(req: NextRequest) {
     } catch (e) { console.warn('[mark-paper-pdf] booklet skipped:', (e as Error).message); }
   }
 
+  // ── The run itself, read ONCE, before a single page is fetched ───────────────
+  // Three things here need it: which pages are the paper's printed cover (they
+  // lead the document), whether the paper was marked with no question paper and
+  // no scheme (the PAPER TOTAL strip must then say so instead of printing the
+  // registry's 90 as if it were a result — lib/paper-total-text isUngroundedTotal,
+  // Adrian 10 Sep 2026), and — since 14 Sep 2026 — which pages the student
+  // handed in. The read used to sit below the fetch loop, when only the first
+  // two needed it. A failed read costs those refinements, never the PDF.
+  let runRow: RunRow | null = null;
+  if (runId) {
+    try {
+      const { data } = await getSupabaseAdmin().from('paper_marking_runs')
+        .select('page_classification:result_json->page_classification, results:result_json->results, annotated_photos:result_json->annotated_photos, grounding:result_json->grounding, source:result_json->source').eq('id', runId).maybeSingle();
+      runRow = data as RunRow | null;
+    } catch (e) { console.warn('[mark-paper-pdf] run unavailable, no cover-first and no page recovery:', (e as Error).message); }
+  }
+  const ungroundedTotal = isUngroundedTotal({
+    groundingSource: typeof runRow?.grounding?.source === 'string' ? runRow.grounding.source : null,
+    maxSource: body.totals?.max_source ?? null,
+    countedMax: body.totals?.counted_max ?? null,
+    max: body.totals?.max ?? null,
+  });
+
   // Fetch the annotated ORIGINAL photos (PNGs from Blob) — these go in the PDF first.
   // The marker sends two copies of each page; which one belongs in THIS document is
   // pickAnnotatedPhotoUrl's call (see that module for why it is not inlined here).
@@ -142,6 +175,24 @@ export async function POST(req: NextRequest) {
         else console.warn('[mark-paper-pdf] overflow sheet missing for page', ap.photo_index);
       } catch (e) { console.error('[mark-paper-pdf] fetch annotated failed', (e as Error).message); }
     }
+  }
+
+  // 🕳 A PAGE THE MARKED COPY WOULD OTHERWISE DROP (14 Sep 2026). Where there is
+  // no annotated image for a page but the run still holds the student's own
+  // photo of it, the plain photo goes in, in its right place. Alexis Wong's A
+  // Math GCE 2022 Paper 1 was marked in full and came back four pages short
+  // because four annotated JPEGs never reached the bucket, and nothing anywhere
+  // said so — lib/marked-pdf-gaps has the whole story. Unmarked is worse than
+  // marked and far better than gone. Additive: a paper with every page annotated
+  // gets exactly the document it always did.
+  for (const gap of missingAnnotatedPages(runRow?.source?.photos, body.annotated_photos)) {
+    try {
+      const r = await fetchOurFile(gap.url);
+      if (r.ok) {
+        annotated.push({ photo_index: gap.photo_index, buf: Buffer.from(await r.arrayBuffer()) });
+        console.warn('[mark-paper-pdf] page', gap.photo_index, 'has no annotated image — using the original');
+      } else console.error('[mark-paper-pdf] page', gap.photo_index, 'is MISSING from this paper: no annotated image and the original answered', r.status);
+    } catch (e) { console.error('[mark-paper-pdf] fetch original failed for page', gap.photo_index, (e as Error).message); }
   }
   annotated.sort((a, b) => a.photo_index - b.photo_index);
 
@@ -173,27 +224,7 @@ export async function POST(req: NextRequest) {
   // the "Where your marks went" page follows, then the marked pages. A paper
   // without a cover sheet is unchanged. The paper-total strip lands on the first
   // page drawn, so on such a paper it sits on the cover — where a total belongs.
-  let coverSet = new Set<number>();
-  // 🕳 Was this marked with NO question paper and NO mark scheme? The strip must
-  // then say so instead of printing the registry's 90 as if it were a result
-  // (lib/paper-total-text.ts isUngroundedTotal; Adrian, 10 Sep 2026).
-  let ungroundedTotal = false;
-  if (runId) {
-    try {
-      const { data } = await getSupabaseAdmin().from('paper_marking_runs')
-        .select('page_classification:result_json->page_classification, results:result_json->results, annotated_photos:result_json->annotated_photos, grounding:result_json->grounding').eq('id', runId).maybeSingle();
-      // With a classification the 'cover' pages lead; without one (Mac
-      // hand-backs) the leading pages no marked question sits on do — lib/marked-pdf-order.
-      const row = data as { page_classification?: unknown; results?: unknown; annotated_photos?: unknown; grounding?: { source?: unknown } | null } | null;
-      coverSet = new Set(coverPhotoIndexes(row?.page_classification, frontMatterPages(row)));
-      ungroundedTotal = isUngroundedTotal({
-        groundingSource: typeof row?.grounding?.source === 'string' ? row.grounding.source : null,
-        maxSource: body.totals?.max_source ?? null,
-        countedMax: body.totals?.counted_max ?? null,
-        max: body.totals?.max ?? null,
-      });
-    } catch (e) { console.warn('[mark-paper-pdf] page classification unavailable, no cover-first:', (e as Error).message); }
-  }
+  const coverSet = new Set<number>(coverPhotoIndexes(runRow?.page_classification, frontMatterPages(runRow)));
   const coverPhotos = annotated.filter(a => coverSet.has(a.photo_index));
   const bodyPhotos = annotated.filter(a => !coverSet.has(a.photo_index));
   // Practices get no PAPER TOTAL strip — only papers with an OFFICIAL denominator
