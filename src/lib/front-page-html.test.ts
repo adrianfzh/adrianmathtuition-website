@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { frontPageHtml, chooseThemes, kindsScore, type FrontPageInput, oLevelGrade, ungroundedLine } from './front-page-html';
-import { changedPartCount, ungroundedFrontPage } from './front-page-build';
+import { changedPartCount, ungroundedFrontPage, lostPartsFromRun } from './front-page-build';
 import type { Theme } from './paper-analysis';
 
 const theme = (over: Partial<Theme> = {}): Theme => ({
@@ -547,5 +547,64 @@ describe('ungroundedFrontPage — read off the run itself', () => {
     expect(ungroundedFrontPage(null)).toBeNull();
     expect(ungroundedFrontPage('junk')).toBeNull();
     expect(ungroundedFrontPage({})).toBeNull();
+  });
+});
+
+// ── Rows the allocation audit added never reach the cover (14 Sep 2026) ───────
+// Alexis Wong's A Math GCE 2022 Paper 1 (run 94326fea) came back with nine
+// phantom questions on its cover — "Practice 1 Q1", "Practice 2", "Practice 3
+// Q4" … 32 marks in all, none of them on that paper. They are the bot's own
+// note that the marker's parts didn't add up to the paper's total: scheme-derive
+// invents an `added_by_audit` row (or part) awarded 0 for every mark it could
+// not locate, so the shortfall is visible on Adrian's desk. They are kept out of
+// the paper's total for exactly that reason — and the cover was reading them as
+// marks the student had dropped.
+describe('lostPartsFromRun', () => {
+  const run = (results: unknown[]) => ({
+    id: 'run-1', paper_name: 'A Math · GCE 2022 · Paper 1', created_at: '2026-09-01T00:00:00Z',
+    result_json: { results },
+  });
+  const q = (question_number: string, parts: Array<Record<string, unknown>>, extra: Record<string, unknown> = {}) =>
+    ({ question_number, marking_output: { meta: { topic_detected: 'Surds' }, parts }, ...extra });
+
+  it('keeps the marker’s own losses, with topic and gap', () => {
+    const got = lostPartsFromRun(run([q('7', [
+      { label: '(i)', max: 3, awarded: 3 },
+      { label: '(ii)', max: 3, awarded: 2, error_summary: 'dropped the negative root', gap: 'rejects a root without a reason' },
+    ])]));
+    expect(got).toHaveLength(1);
+    expect(got[0]).toMatchObject({ question: '7', label: '(ii)', lost: 1, max: 3, topic: 'Surds', gap: 'rejects a root without a reason' });
+  });
+
+  it('skips a whole row the audit added', () => {
+    const got = lostPartsFromRun(run([
+      q('5', [{ label: '', max: 8, awarded: 6 }]),
+      q('Practice 1 Q1', [{ label: '(whole)', max: 4, awarded: 0, added_by_audit: true }], { added_by_audit: true }),
+    ]));
+    expect(got.map(p => p.question)).toEqual(['5']);
+  });
+
+  it('skips an audited PART on a row that is otherwise the marker’s own', () => {
+    const got = lostPartsFromRun(run([q('10', [
+      { label: '(a)', max: 4, awarded: 1 },
+      { label: '(b)', max: 3, awarded: 0, added_by_audit: true },
+    ])]));
+    expect(got.map(p => p.label)).toEqual(['(a)']);
+  });
+
+  it('an unreadable run is [], never a throw', () => {
+    expect(lostPartsFromRun({ id: 'x', paper_name: null, created_at: 'n', result_json: null })).toEqual([]);
+    expect(lostPartsFromRun({ id: 'x', paper_name: null, created_at: 'n', result_json: { results: 'junk' } })).toEqual([]);
+  });
+});
+
+describe('errorKindTotals ignores the audit', () => {
+  it('phantom rows do not become 32 unlabelled marks', () => {
+    const real = { question_number: '5', marking_output: { parts: [{ label: '', max: 8, awarded: 6, error_kind: 'careless' }] } };
+    const phantom = { question_number: 'Practice 2', added_by_audit: true,
+      marking_output: { parts: [{ label: '(whole)', max: 6, awarded: 0, added_by_audit: true, error_summary: 'not marked on any page — check whether it was attempted' }] } };
+    const t = errorKindTotals([real, phantom]);
+    expect(t.lostTotal).toBe(2);
+    expect(t.unlabelled).toBe(0);
   });
 });

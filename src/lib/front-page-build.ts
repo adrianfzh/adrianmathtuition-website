@@ -38,28 +38,7 @@ export async function buildFrontPage(
     .select('id, student_name, paper_name, created_at, result_json').eq('id', runId).maybeSingle();
   if (!run) return null;
 
-  const rows = [run as { id: string; paper_name: string | null; created_at: string; result_json: unknown }];
-
-  const parts: LostPart[] = [];
-  for (const r of rows) {
-    const res = (r.result_json as { results?: unknown[] } | null)?.results;
-    if (!Array.isArray(res)) continue;
-    for (const q of res as Record<string, never>[]) {
-      const mo = (q as { marking_output?: { parts?: Record<string, unknown>[]; meta?: { topic_detected?: unknown } } }).marking_output;
-      const topic = String(mo?.meta?.topic_detected ?? '');
-      for (const p of (mo?.parts ?? [])) {
-        const mx = Number(p.max), aw = Number(p.awarded);
-        if (!Number.isFinite(mx) || !Number.isFinite(aw) || aw >= mx) continue;
-        parts.push({
-          paperId: r.id, paperName: r.paper_name || 'a paper', createdAt: r.created_at,
-          question: String((q as { question_number?: unknown }).question_number ?? '?'),
-          label: String(p.label ?? ''), lost: mx - aw, max: mx,
-          blank: p.not_attempted === true, why: String(p.error_summary ?? ''), topic,
-          gap: typeof p.gap === 'string' && p.gap.trim() ? p.gap.trim() : null,
-        });
-      }
-    }
-  }
+  const parts = lostPartsFromRun(run as RunRow);
   const diagnosis = readDiagnosis(run.result_json);
   // Nothing lost anywhere: a cover page saying so would be noise on a clean script.
   if (!parts.length && !diagnosis) return null;
@@ -104,6 +83,50 @@ export async function buildFrontPage(
     themesSource: diagnosis ? 'sheet' : 'marker',
     worstQuestions: worstQuestions(parts, runId),
   });
+}
+
+/** The slice of a marking run this module reads. */
+type RunRow = { id: string; paper_name: string | null; created_at: string; result_json: unknown };
+
+/**
+ * The parts of ONE marked run that lost marks — the cover's raw material, and
+ * what `analyse`/`worstQuestions` rank. Pure; an unreadable run gives [].
+ *
+ * ROWS AND PARTS THE ALLOCATION AUDIT ADDED ARE SKIPPED (14 Sep 2026). When the
+ * marker's parts don't add up to the paper's total, the bot's lib/scheme-derive
+ * invents a row (or a part) for each mark it could not find, awarded 0 and
+ * flagged `added_by_audit`, so the shortfall is visible to Adrian on the desk.
+ * They are bookkeeping, not the student's work, and they are already kept out
+ * of the paper's total for that reason — but the cover was reading them as
+ * marks the student had dropped. Alexis Wong's A Math GCE 2022 Paper 1 carried
+ * nine of them ("Practice 1 Q1", "Practice 2", … 32 marks in all, questions
+ * that are not on that paper), and every one printed on her page as a loss.
+ * `changedPartCount` below has always skipped them; so does the bot wherever it
+ * re-reads its own results (lib/page-remark, lib/scheme-derive). Both shapes go:
+ * a whole audited row, and an audited part on a row that is otherwise real.
+ */
+export function lostPartsFromRun(run: RunRow): LostPart[] {
+  const res = (run.result_json as { results?: unknown[] } | null)?.results;
+  if (!Array.isArray(res)) return [];
+  const parts: LostPart[] = [];
+  for (const q of res as Record<string, never>[]) {
+    if (!q || typeof q !== 'object' || (q as { added_by_audit?: unknown }).added_by_audit) continue;
+    const mo = (q as { marking_output?: { parts?: Record<string, unknown>[]; meta?: { topic_detected?: unknown } } }).marking_output;
+    const topic = String(mo?.meta?.topic_detected ?? '');
+    for (const p of (mo?.parts ?? [])) {
+      if (!p || typeof p !== 'object' || p.added_by_audit) continue;
+      const mx = Number(p.max), aw = Number(p.awarded);
+      if (!Number.isFinite(mx) || !Number.isFinite(aw) || aw >= mx) continue;
+      parts.push({
+        paperId: run.id, paperName: run.paper_name || 'a paper', createdAt: run.created_at,
+        question: String((q as { question_number?: unknown }).question_number ?? '?'),
+        label: String(p.label ?? ''), lost: mx - aw, max: mx,
+        blank: p.not_attempted === true, why: String(p.error_summary ?? ''), topic,
+        gap: typeof p.gap === 'string' && p.gap.trim() ? p.gap.trim() : null,
+      });
+    }
+  }
+  return parts;
 }
 
 /**

@@ -102,19 +102,27 @@ export function emptyErrorKindTotals(): ErrorKindTotals {
  * with a missing or non-numeric max/awarded are skipped: they cannot have lost
  * a countable mark. Reads `marking_output.parts` (the contract) and falls back
  * to the back-compat `marking.parts` copy only when the former is absent.
+ *
+ * ROWS AND PARTS THE ALLOCATION AUDIT ADDED DO NOT COUNT (14 Sep 2026). The bot
+ * invents an `added_by_audit` row or part, awarded 0, for every mark the marker
+ * could not find on any page — a shortfall flag for Adrian's desk, not work the
+ * student got wrong. Counting them made the cover's kinds row report marks lost
+ * to nothing at all: Alexis Wong's A Math GCE 2022 Paper 1 carried nine such
+ * rows worth 32 marks, every one of them `unlabelled`. They stay out of the
+ * paper's total for the same reason.
  */
 export function errorKindTotals(results: unknown): ErrorKindTotals {
   const t = emptyErrorKindTotals();
   if (!Array.isArray(results)) return t;
   for (const raw of results) {
     const q = asRecord(raw);
-    if (!q) continue;
+    if (!q || q.added_by_audit) continue;
     const mo = asRecord(q.marking_output);
     const parts = Array.isArray(mo?.parts) ? mo.parts
       : Array.isArray(asRecord(q.marking)?.parts) ? (asRecord(q.marking)!.parts as unknown[]) : [];
     for (const p of parts) {
       const part = asRecord(p);
-      if (!part) continue;
+      if (!part || part.added_by_audit) continue;
       const mx = Number(part.max), aw = Number(part.awarded);
       if (!Number.isFinite(mx) || !Number.isFinite(aw)) continue;
       const lost = mx - aw;

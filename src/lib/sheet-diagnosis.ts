@@ -198,7 +198,11 @@ export function questionCovers(skillQuestion: string, partQuestion: string): boo
  * Every part that lost marks on the run, with the marker's kind and gap — the
  * evidence applyPracticeFocus rules on. Reads `marking_output.parts` (the
  * contract) and falls back to the back-compat `marking.parts`, like
- * errorKindTotals; a part with no countable loss is skipped.
+ * errorKindTotals; a part with no countable loss is skipped. Rows and parts the
+ * allocation audit added are skipped too (14 Sep 2026) — they are the bot's own
+ * note that some of the paper's marks were never located, awarded 0 and flagged
+ * `added_by_audit`, and a sheet must not set a student practising a question
+ * ("Practice 1 Q1", Alexis Wong's 2022 A Math P1) that is not on their paper.
  */
 export function lostPartsForFocus(resultJson: unknown): FocusPart[] {
   const rj = asRecord(resultJson);
@@ -206,7 +210,7 @@ export function lostPartsForFocus(resultJson: unknown): FocusPart[] {
   const out: FocusPart[] = [];
   for (const raw of results) {
     const q = asRecord(raw);
-    if (!q) continue;
+    if (!q || q.added_by_audit) continue;
     const mo = asRecord(q.marking_output);
     const parts = Array.isArray(mo?.parts) ? mo.parts
       : Array.isArray(asRecord(q.marking)?.parts) ? (asRecord(q.marking)!.parts as unknown[]) : [];
@@ -214,7 +218,7 @@ export function lostPartsForFocus(resultJson: unknown): FocusPart[] {
     if (!qn) continue;
     for (const p of parts) {
       const part = asRecord(p);
-      if (!part) continue;
+      if (!part || part.added_by_audit) continue;
       const mx = Number(part.max), aw = Number(part.awarded);
       if (!Number.isFinite(mx) || !Number.isFinite(aw) || mx - aw <= 0) continue;
       const label = String(part.label ?? '').replace(/[^a-z0-9()]/gi, '');
