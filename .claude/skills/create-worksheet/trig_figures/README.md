@@ -61,3 +61,22 @@ Matplotlib helpers, run under `/usr/bin/python3` (Pillow + numpy live there):
 Used from a sheet's `content.py` as `('figure', path, width_cm)` steps, usually in the
 right column of a `('cols', [[working…], [('figure', …)]], [10.6, 3.9])` step.
 See `../ADRIAN-STYLE.md` §Diagrams.
+
+## Sizing type — the 1.9 trap
+
+`fig(w, h)` returns `figsize=(w/2.54*1.9, h/2.54*1.9)` — every figure is drawn **1.9×**
+its target cm size, saved at `dpi=200, bbox_inches='tight'`, and placed in the document at
+`w` cm. The drawing wins the detail; the type loses, because a point size shrinks with it.
+Everything on the axes prints at about **0.53×** what the code says:
+
+| in the code | on the page |
+|---|---|
+| `font.size: 9` (ticks, the `x`/`y` letters) | ≈ 4.7 pt |
+| `fontsize=8` (equation labels, `mark()` points) | ≈ 4.2 pt |
+| `fontsize=7` (the faint second curve) | ≈ 3.7 pt |
+
+Body text on the sheet is 11 pt, so these read at under half the surrounding text.
+**Pick the size you want on the page and multiply by 1.9**, and give the equation of the
+graph the largest lift (Adrian, 14 Sep 2026: "fonts can be larger, especially for the
+equation of the graph"). Judge a figure at its printed size — a matplotlib window at
+1.9× flatters every label on it. → `../ADRIAN-STYLE.md` §Diagrams.

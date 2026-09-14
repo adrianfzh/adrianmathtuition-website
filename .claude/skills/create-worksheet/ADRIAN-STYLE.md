@@ -250,6 +250,18 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   part's working, never at the top of the box — §4's "beside the line it is for". Helper:
   `trig_figures/context_graph.py` `threshold_graph(...)`; the centre line rule applies to
   it like any other shifted cosine.
+- **Type on a figure is sized for the PAGE, not for matplotlib** (14 Sep 2026, looking at
+  the Example 4d sketch `f(x) = 4 sin 3x − 2`: "also, fonts can be larger, especially for
+  the equation of the graph"). `trig_figures/draw.py`'s `fig(w,h)` draws every figure at
+  **1.9×** its target cm size (`figsize=(w/2.54*1.9, …)`), saves it at `dpi=200`, and the
+  document then places it back at `w` cm — so every point size on the axes lands at about
+  **0.53×** what it says. `fontsize=8` prints at roughly 4.2 pt and the `font.size: 9`
+  base at roughly 4.7 pt, under half the 11 pt body text: right in the plot window, far
+  too small on paper. **Choose the size you want ON THE PAGE and multiply by 1.9.** The
+  equation of the graph gets the biggest lift — it is the label a student reads first,
+  and the one he named. Same complaint, same family, once before: "make the Pythagoras'
+  theorem part font larger" went to 11 pt. Whenever a generated figure is judged, judge it
+  at its printed size, not on screen.
 - Figures from the question bank are embedded as stored; hand-drawn art only when the
   bank has none (and then through the bot's figure registry first — CLAUDE.md §Figure
   library).
