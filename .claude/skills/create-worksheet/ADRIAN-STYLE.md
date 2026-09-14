@@ -329,6 +329,13 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   called from `save()`, now sets it on the first paragraph of every first-row cell of
   every table, nested tables included. A figure in a first row loses its usual 4 pt —
   that is the rule, not a bug.
+- **A marked paragraph's text stops 1.4 cm short of the right edge** (14 Sep 2026). The
+  `[n]` sits at a right-aligned tab at 15.5 cm; a last line that runs past about 15.0 cm
+  eats that tab — LibreOffice prints `…significant figures.[4]` flush, Word throws the
+  `[n]` into the margin. `_add()` therefore sets `right_indent = 1.4 cm` on any paragraph
+  carrying marks (0.5 cm beyond the tab + the widest label `[10]` + a gap), so the marks
+  column is always clear. Only marked paragraphs narrow; everything else keeps the full
+  16 cm measure.
 - No empty paragraphs for spacing; the box hugs its content; a small gap between parts is
   paragraph spacing.
 - Notes block: formulas as display maths, ≤ 6 "Mistakes to avoid"; the word "never" does

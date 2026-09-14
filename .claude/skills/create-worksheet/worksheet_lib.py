@@ -927,6 +927,14 @@ class Worksheet:
 
         if marks is not None:
             p.paragraph_format.tab_stops.add_tab_stop(Cm(15.5), WD_TAB_ALIGNMENT.RIGHT)
+            # The text of a marked paragraph stops 1.4 cm short of the right
+            # edge, so the [n] at the 15.5 cm right tab always stands clear of
+            # it (14 Sep 2026).  Without the indent a last line that happens to
+            # run past 15.0 cm eats the tab: LibreOffice collapses it to zero
+            # ("...significant figures.[4]") and Word throws the [n] out into
+            # the margin.  1.4 cm = the 0.5 cm beyond the tab stop, the widest
+            # label ([10]) and a gap.
+            p.paragraph_format.right_indent = Cm(1.4)
             run = p.add_run(f'\t[{marks}]')
             run.font.name = 'Times New Roman'
             run.font.size = Pt(9.5)
