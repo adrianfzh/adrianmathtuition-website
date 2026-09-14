@@ -64,6 +64,7 @@ import { releaseHeldPracticeItems } from '@/lib/practice-again-store';
 import { applyRunRelease } from '@/lib/notebook-mistakes-store';
 import { isRemarkInternal } from '@/lib/remark-internal';
 import { reissueLine, parseReissueReason } from '@/lib/reissue-message';
+import { buildPaperNotice } from '@/lib/paper-notice';
 import { gapsForRun, gapWatchReason, pageGapAlert } from '@/lib/page-gap-repair';
 
 export const runtime = 'nodejs';
@@ -450,6 +451,12 @@ export async function POST(req: NextRequest) {
     subject?: unknown;
     /** action 'reissue' only: why the copy changed — lib/reissue-message.ts. */
     reason?: unknown;
+    /**
+     * action 'reissue' only: where the student is told. 'telegram' (default) is
+     * the line in Adrian's name; 'app' leaves a three-day notice on the paper's
+     * card instead and sends nothing (Adrian, 14 Sep 2026 — lib/paper-notice.ts).
+     */
+    channel?: unknown;
   };
   try {
     body = await req.json();
@@ -651,16 +658,36 @@ export async function POST(req: NextRequest) {
     // …and a copy that was only ever MISSING PAGES was not re-marked at all
     // (14 Sep 2026): `reason: 'pages-recovered'` — lib/reissue-message.ts owns
     // both wordings so the self-fix and the desk say the same thing.
-    const line = reissueLine({
-      reason: parseReissueReason(body.reason), paper, awarded, max,
-      internal: isRemarkInternal(rj), site: SITE,
-    });
-    let via: 'telegram' | 'none' = 'none';
-    const tg = telegramHandinOf(rj);
-    if (tg?.chat_id) { if (await sendTelegramTo(tg.chat_id, line)) via = 'telegram'; }
-    else {
-      const recipient = await resolveRecipient(run.student_id);
-      if (recipient) { if (await sendTelegramTo(recipient.chatId, line)) via = 'telegram'; }
+    const reason = parseReissueReason(body.reason);
+    let via: 'telegram' | 'app' | 'none' = 'none';
+    // 📌 The app channel (14 Sep 2026, Adrian: "put the message in the app (in
+    // the cards instead - don't send through telegram), and only have the
+    // message last for 3 days"). News about the COPY — pages that were missing
+    // are there now — is our own plumbing, not Adrian's marking: it does not
+    // deserve a Telegram line in his name at whatever hour the repair runs. It
+    // sits on the paper's card, and it expires.
+    if (body.channel === 'app') {
+      // Only the pages news goes this way. "Adrian checked your paper and
+      // changed a mark" IS his voice and his accountability — that one keeps
+      // the Telegram line, so an app-channel 'checked' is refused rather than
+      // quietly downgraded to a banner nobody is pinged about.
+      if (reason !== 'pages-recovered') {
+        return NextResponse.json({ error: "the app channel carries the pages notice only — a 'checked' re-issue goes to Telegram" }, { status: 400 });
+      }
+      rj.student_notice = buildPaperNotice('pages-recovered');
+      await supa.from('paper_marking_runs').update({ result_json: rj }).eq('id', runId);
+      via = 'app';
+    } else {
+      const line = reissueLine({
+        reason, paper, awarded, max,
+        internal: isRemarkInternal(rj), site: SITE,
+      });
+      const tg = telegramHandinOf(rj);
+      if (tg?.chat_id) { if (await sendTelegramTo(tg.chat_id, line)) via = 'telegram'; }
+      else {
+        const recipient = await resolveRecipient(run.student_id);
+        if (recipient) { if (await sendTelegramTo(recipient.chatId, line)) via = 'telegram'; }
+      }
     }
     return NextResponse.json({ ok: true, via, awarded, max, dropbox });
   }

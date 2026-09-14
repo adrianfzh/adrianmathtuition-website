@@ -81,4 +81,23 @@ describe('partsForPage', () => {
       { question: '1', label: '(a)', awarded: 0 },
     ]);
   });
+
+  // Isabelle Toh Si Xian's page 4 (run 308c0fd0), 14 Sep 2026: an unlabelled
+  // continuation of Q5 and of Q6, 6/6 and 7/7. The old filter emptied the page,
+  // so a page whose annotated image had been lost could never be redrawn.
+  it("keeps a question's only part when it has no label — the bot matches it on the question", () => {
+    const continuation = [
+      { photo_index: 3, question_number: '5', marking: { parts: [{ label: '', awarded: 6, max: 6 }] } },
+      { photo_index: 3, question_number: '6', marking: { parts: [{ awarded: 7, max: 7 }] } },
+    ];
+    expect(partsForPage(continuation, 3)).toEqual([
+      { question: '5', label: '', awarded: 6 },
+      { question: '6', label: '', awarded: 7 },
+    ]);
+  });
+
+  it('still drops TWO nameless parts under one question — they would answer to the same key', () => {
+    const twins = [{ photo_index: 0, question_number: '13', marking: { parts: [{ awarded: 1 }, { label: '  ', awarded: 4 }] } }];
+    expect(partsForPage(twins, 0)).toEqual([]);
+  });
 });

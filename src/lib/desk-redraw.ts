@@ -55,16 +55,31 @@ export type ResultRow = { photo_index?: unknown; question_number?: unknown; mark
 
 /**
  * The run's CURRENT per-part marks for every question on one page — the record is
- * the truth, the drawing follows it. Parts with no label are dropped: the bot
- * matches on (question, label) and would report a nameless one as unmatched.
+ * the truth, the drawing follows it.
+ *
+ * A part with no label is kept ONLY when it is its question's only part
+ * (14 Sep 2026). The bot matches on (question, label) and normalises a missing
+ * label to '', so a lone nameless part matches its question exactly — but two
+ * nameless parts under one question would both answer to the same key and take
+ * each other's mark, so those are still dropped. This is not a nicety: Isabelle
+ * Toh Si Xian's page 4 is an unlabelled continuation of Q5 and Q6, marked 6/6
+ * and 7/7, and the old filter emptied the page — a page that had lost its
+ * annotated image could then never be redrawn, only fall back to her own photo.
  */
 export function partsForPage(results: unknown, photoIndex: number): { question: string; label: string; awarded: number }[] {
   const rows = Array.isArray(results) ? (results as ResultRow[]) : [];
   return rows
     .filter(r => Number(r.photo_index) === photoIndex)
-    .flatMap(r =>
-      (Array.isArray(r.marking?.parts) ? r.marking!.parts! : [])
-        .filter(p => typeof p.label === 'string' && p.label.trim() !== '')
-        .map(p => ({ question: String(r.question_number ?? ''), label: p.label as string, awarded: Number(p.awarded) || 0 })),
-    );
+    .flatMap(r => {
+      const parts = Array.isArray(r.marking?.parts) ? r.marking!.parts! : [];
+      const named = (p: Part) => typeof p.label === 'string' && p.label.trim() !== '';
+      const keep = parts.length === 1 ? parts : parts.filter(named);
+      return keep
+        .filter(p => named(p) || parts.length === 1)
+        .map(p => ({
+          question: String(r.question_number ?? ''),
+          label: named(p) ? (p.label as string) : '',
+          awarded: Number(p.awarded) || 0,
+        }));
+    });
 }

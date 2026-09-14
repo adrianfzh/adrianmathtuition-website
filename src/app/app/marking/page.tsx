@@ -444,6 +444,17 @@ function Paper({ paper, sheet, sheetJob, markedSheet, nextWave, inBundle = false
         </span>
       </div>
 
+      {/* News about the COPY, on the card, for three days — never a Telegram
+          message (Adrian, 14 Sep 2026: "put the message in the app (in the
+          cards instead - don't send through telegram), and only have the
+          message last for 3 days"). lib/paper-notice.ts owns the wording and
+          the clock. */}
+      {paper.notice && (
+        <p className="mt-3 text-[12px] text-sky-900 bg-sky-50 border border-sky-200 rounded-2xl px-3 py-2">
+          <span className="font-semibold">{paper.notice.title}.</span> {paper.notice.body}
+        </p>
+      )}
+
       {(paper.pdfUrl || paper.pages.length > 0) && (
         <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
           {/* Opens the in-app view — cover page first, marked pages below (7 Sep 2026). The PDF is on that page. */}

@@ -20,6 +20,7 @@ import { displayPaperName } from './paper-display-name';
 import { aggregateTopicBleed, type TopicBleed, type ReportPaper } from '@/lib/report-facts';
 import { recomputeTotals } from '@/lib/mark-triage';
 import { topicSlug } from '@/lib/topic-slug';
+import { activePaperNotice, type PaperNoticeText } from '@/lib/paper-notice';
 
 /** A `paper_marking_runs` row, reduced to the columns this view reads. */
 export interface MarkingRunRow {
@@ -147,6 +148,16 @@ export interface StudentPaper {
    * simply doesn't offer itself).
    */
   pages: { index: number; url: string; overflow?: true }[];
+  /**
+   * A short-lived line about the COPY, not the maths — "some pages didn't
+   * upload properly the first time, the whole paper is here now" (14 Sep 2026).
+   * Rendered on the card and at the top of the paper; null once it expires,
+   * which is three days after the copy changed (lib/paper-notice.ts).
+   *
+   * Optional in the type because the notebook/plan/mastery fixtures hand-build
+   * papers; `toPaper` always sets it.
+   */
+  notice?: PaperNoticeText | null;
   /** Follow-up practice, one item per dropped-marks question. Often empty. */
   practice: StudentPracticeItem[];
   /**
@@ -470,6 +481,7 @@ function toPaper(row: MarkingRunRow, studentName?: string | null): StudentPaper 
     pdfUrl,
     fullPdfUrl: row.pdf_url && row.pdf_url !== pdfUrl ? row.pdf_url : null,
     pages: annotatedPages(rj?.annotated_photos),
+    notice: activePaperNotice(row.result_json),
     practice,
     practiceDocxUrl: str(practiceRec?.docx_url) || null,
   };

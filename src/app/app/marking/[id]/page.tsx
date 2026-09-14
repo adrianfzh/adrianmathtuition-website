@@ -153,6 +153,14 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
         </p>
       )}
 
+      {/* The same three-day line the card carries (lib/paper-notice.ts) — a
+          student who opens the paper straight from a link still reads it. */}
+      {paper.notice && (
+        <p className="text-xs text-sky-900 bg-sky-50 border border-sky-200 rounded-2xl px-3 py-2">
+          <span className="font-semibold">{paper.notice.title}.</span> {paper.notice.body}
+        </p>
+      )}
+
       {isScience && (
         <section className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-900 space-y-1">
           <p className="font-bold">🧪 {subjectLabel(lane)} marking — feedback first, the total is an estimate</p>

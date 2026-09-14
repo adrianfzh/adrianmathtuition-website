@@ -15,12 +15,27 @@
 //                               rebuilds the marked PDFs, so the copy that
 //                               eventually goes out is whole. Nobody has seen
 //                               it, so nothing here needs approving.
-//   • gaps, ALREADY released  → REPORTED, never touched. Re-inking is
-//                               reversible; telling a student their copy
-//                               changed is not, and the re-issue sends a line
-//                               in Adrian's name. His call, from the desk.
-//     (And the standing instruction of the same day — "don't have to fix
-//     previous copies, just make sure the future marking works well".)
+//   • gaps, ALREADY released  → repaired too, and the student is told IN THE
+//                               APP. Redraw each missing page, then ONE
+//                               re-issue on the app channel: the copy is
+//                               rebuilt and a line appears on the paper's card
+//                               for three days. Nothing is sent.
+//
+// WHY THAT CHANGED (14 Sep 2026). Until this afternoon a released run was only
+// REPORTED, and the reason was the channel, not the repair: re-inking is
+// reversible, but the only way to tell a student their copy had changed was a
+// Telegram line in Adrian's name — his voice, at whatever hour the sweep fires,
+// for a piece of our own plumbing he did not do. So the sweep stopped at the
+// student's door and waited for him.
+//
+// Adrian: "put the message in the app (in the cards instead - don't send
+// through telegram), and only have the message last for 3 days". That removes
+// the objection. An expiring notice on the card is not an interruption and is
+// not spoken in his name, so the self-fix can now finish the job it could
+// already do — which is what he asked for in the first place ("able to have a
+// monitor and self fix system in place?"). He is still told, every time, in the
+// sweep's own Telegram line to the marking topic: the monitor reports to him,
+// the repair no longer waits for him.
 //
 // Every run it looked at carries `result_json.page_gap_check`, which is both the
 // audit trail and the reason Adrian is told about an unfixable page ONCE rather
@@ -59,6 +74,29 @@ function authed(req: NextRequest): boolean {
 
 type Row = GapRunRow & { created_at: string };
 
+/**
+ * Replace a released student's copy and leave the three-day notice on its card.
+ * Returns null on success, or the line to put in the run's errors.
+ *
+ * mark-triage owns every step of a re-issue — rebuild, Dropbox refile, the
+ * assignment's new score — and `channel: 'app'` is the one that does all of it
+ * and tells the student on the card instead of on Telegram (lib/paper-notice).
+ */
+async function reissueInApp(runId: string, origin: string, headers: Record<string, string>): Promise<string | null> {
+  try {
+    const r = await fetch(`${origin}/api/admin/mark-triage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...headers },
+      body: JSON.stringify({ action: 'reissue', runId, reason: 'pages-recovered', channel: 'app' }),
+      signal: AbortSignal.timeout(280_000),
+    });
+    const d = (await r.json().catch(() => ({}))) as { error?: string };
+    return r.ok ? null : `copy not replaced: ${d.error || `HTTP ${r.status}`}`;
+  } catch (e) {
+    return `copy not replaced: ${(e as Error).message}`;
+  }
+}
+
 export async function GET(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const supa = getSupabaseAdmin();
@@ -77,6 +115,8 @@ export async function GET(req: NextRequest) {
     runId: string; student: string | null; released: boolean;
     pages: number[]; repaired: number; remaining: number[]; errors: string[];
   }[] = [];
+  /** Released copies replaced this tick — each carries a three-day card notice. */
+  const noticed: string[] = [];
 
   try {
     const { data, error } = await supa
@@ -99,7 +139,7 @@ export async function GET(req: NextRequest) {
       const released = !!run.released_at;
       let outcome = { attempted: 0, repaired: 0, remaining: gaps, errors: [] as string[] };
 
-      if (!released && Date.now() - started < BUDGET_MS) {
+      if (Date.now() - started < BUDGET_MS) {
         // 🔧 The self-fix. Redraw, then rebuild — the PDFs were assembled before
         // the page came back, so without the rebuild the whole copy still shows
         // the gap the fallback papered over.
@@ -107,15 +147,26 @@ export async function GET(req: NextRequest) {
           origin, headers,
           budgetMs: Math.max(0, BUDGET_MS - (Date.now() - started)),
           limit: 8,
+          ...(released ? { allowReleased: true } : {}),
         });
         if (outcome.repaired > 0) {
-          const rb = await rebuildRunPdfs(run.id, { origin, headers });
-          if (!rb.rebuilt) outcome.errors.push(`PDFs not rebuilt: ${(rb.errors || []).join(' · ') || rb.skipped || 'unknown'}`);
+          if (released) {
+            // One re-issue for the whole paper, on the app channel: it rebuilds
+            // both PDFs, refiles the Dropbox copy, and leaves the three-day line
+            // on the card. It sends nothing — that is the point of the channel.
+            const rr = await reissueInApp(run.id, origin, headers);
+            if (rr) outcome.errors.push(rr);
+            else noticed.push(run.id);
+          } else {
+            const rb = await rebuildRunPdfs(run.id, { origin, headers });
+            if (!rb.rebuilt) outcome.errors.push(`PDFs not rebuilt: ${(rb.errors || []).join(' · ') || rb.skipped || 'unknown'}`);
+          }
         }
       }
 
-      // Tell Adrian about what is STILL missing — once per gap set, and always
-      // for a released copy, which this sweep will not touch on its own.
+      // Tell Adrian about what is STILL missing after the sweep's own attempt —
+      // once per gap set, so an unfixable page names itself to him one time
+      // instead of four times a day until he acts.
       const quiet = alreadyReported(run.result_json, outcome.remaining);
       if (outcome.remaining.length && !quiet) {
         lines.push(pageGapAlert({
@@ -146,10 +197,10 @@ export async function GET(req: NextRequest) {
     const repaired = report.reduce((n, r) => n + r.repaired, 0);
     const open = report.reduce((n, r) => n + r.remaining.length, 0);
     const summary = report.length
-      ? `${report.length} paper${report.length === 1 ? '' : 's'} with missing pages · ${repaired} redrawn · ${open} still open`
+      ? `${report.length} paper${report.length === 1 ? '' : 's'} with missing pages · ${repaired} redrawn · ${noticed.length} released copy${noticed.length === 1 ? '' : 'ies'} replaced · ${open} still open`
       : 'every page accounted for';
     await logJobRun('page-gap-sweep', true, summary).catch(() => {});
-    return NextResponse.json({ ok: true, summary, sent: lines.length, report });
+    return NextResponse.json({ ok: true, summary, sent: lines.length, noticed, report });
   } catch (e) {
     await logJobRun('page-gap-sweep', false, (e as Error).message.slice(0, 200)).catch(() => {});
     return NextResponse.json({ ok: false, error: (e as Error).message, report }, { status: 502 });

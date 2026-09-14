@@ -14,15 +14,26 @@
 //      named to Adrian rather than left for a student to notice. Alexis Wong
 //      asked about her own missing pages; nobody should have to ask again.
 //
-// WHAT THIS WILL AND WILL NOT DO BY ITSELF (the doctrine's checkpoint, CLAUDE.md
-// §Building doctrine: "the agent does everything reversible; a human approves
-// the outward-facing step"):
+// WHAT THIS DOES BY ITSELF (the doctrine's checkpoint, CLAUDE.md §Building
+// doctrine: "the agent does everything reversible; a human approves the
+// outward-facing step"):
 //   • A run the student has NOT seen is repaired outright — redraw the missing
 //     pages, rebuild the PDFs. Nothing has left the building, so nothing needs
 //     approving.
-//   • A run the student ALREADY HOLDS is only REPORTED. Re-inking it is
-//     reversible; telling them their copy changed is not, and re-issuing sends a
-//     Telegram line in Adrian's name. He decides, from the desk.
+//   • A run the student ALREADY HOLDS is repaired too, and told IN THE APP —
+//     the sweep passes `allowReleased` and then re-issues on the app channel
+//     (api/admin/mark-triage {channel:'app'}), which leaves a three-day line on
+//     the paper's card and sends nothing.
+//
+//     Until 14 Sep 2026 a released run was only REPORTED, and the reason was
+//     never the repair — it was that the only way to tell a student their copy
+//     had changed was a Telegram line in Adrian's name, for plumbing he did not
+//     do, at whatever hour the sweep fired. Adrian: "put the message in the app
+//     (in the cards instead - don't send through telegram), and only have the
+//     message last for 3 days" (lib/paper-notice). With that channel the
+//     outward-facing step is no longer an interruption in his voice, so the
+//     self-fix finishes the job. He is still told every time, in the sweep's own
+//     line to the marking topic.
 //
 // The redraw door is /api/admin/desk/redraw with `reissue: false` — one paper
 // with four missing pages must not rebuild its PDFs four times and tell the
@@ -111,8 +122,10 @@ export function pageGapAlert(input: {
   const pages = gapPagesText(input.gaps);
   const plural = input.gaps.length === 1 ? 'page' : 'pages';
   const fixed = input.repaired ? ` (${input.repaired} redrawn, ${input.gaps.length} still open)` : '';
+  // Only pages the sweep could NOT fix reach this line, so the released tail is
+  // no longer "go and re-ink it" — the attempt already happened and failed.
   const tail = input.released
-    ? 'The student already has this copy — re-ink it from the desk, then re-issue.'
+    ? "The student already has this copy and the redraw wouldn't take — their own photo is standing in. Fix it from the desk; re-issuing then tells them in the app."
     : 'Redraw it from the desk before this goes out.';
   return `🕳 ${who} — ${paper}: ${plural} ${pages} came back with no marked image${fixed}.\n${tail}\n${input.deskUrl}`;
 }
@@ -163,7 +176,11 @@ export async function repairPageGaps(
   opts: {
     origin: string;
     headers: Record<string, string>;
-    /** Re-ink a paper the student already holds. The re-issue is NEVER automatic. */
+    /**
+     * Re-ink a paper the student already holds. Re-inking is all this does — the
+     * caller decides whether the student is told, and how (the sweep re-issues
+     * once per paper on the app channel; nothing here sends anything).
+     */
     allowReleased?: boolean;
     limit?: number;
     budgetMs?: number;
