@@ -1201,7 +1201,9 @@ class Worksheet:
         space above each later part's first line, never an empty paragraph.
 
         rows: list of (label, steps). label is '(a)' / '(i)' ('' for an
-        unlabelled single-cell solution). Each step is one of:
+        unlabelled single-cell solution), or a PAIR ('(a)', '(i)') when a part
+        has sub-parts — see "A sub-part label gets its own column" below.
+        Each step is one of:
 
         - a bare latex string — a display equation, left-aligned at a small
           indent. Never chain several = signs on one line: write multi-step
@@ -1227,6 +1229,26 @@ class Worksheet:
         near miss is tightened — so callers pass keep_together=False; the
         True default is kept for old author scripts.
 
+        A SUB-PART LABEL GETS ITS OWN COLUMN (Adrian, 14 Sep 2026, on an (a)(i)
+        solution whose "(i)" was typed at the head of the working: "there should
+        be two columns separately to accomodate (a) and (i) / you can look at how
+        i did it in my notes worked examples"). His notes do it as a three-column
+        table — outer label, sub label, working (AM 16 Trigonometric Graphs, the
+        (iv)(a)/(iv)(b) table: 0.94 cm, 0.75 cm, the rest) — so the sub labels
+        line up under each other and the working starts at the same x on every
+        row. A row with no sub label merges the sub column into the working, so
+        an unlabelled row still uses the full width. Pass the pair and the
+        library builds it:
+
+            w.solution_box([
+                (('(a)', '(i)'),  ['period = …']),
+                (('',    '(ii)'), ['q = …']),
+                ('(b)',           ['…']),          # no sub-part: merged row
+            ], keep_together=False)
+
+        Repeat the outer label only on the FIRST of its sub-parts; '' after,
+        the way he writes it.
+
         THAT PUSH IS THE "LARGE SPACE" (Adrian, 2 Sep 2026: "how can i remove
         the large space between the example and section 3?"). A glued
         heading + example + figure + box that does not fit in what is left of
@@ -1239,39 +1261,62 @@ class Worksheet:
         spacer = self.doc.add_paragraph()  # breathing space above "Solution:"
         self._block_paras.append(spacer)
         self._add([('text', 'Solution:', {'bold': True})])
-        labelled = any(label for label, _ in rows)
+        # A label may be '(a)' or the pair ('(a)', '(i)') — outer, sub-part.
+        labels = [(lab if isinstance(lab, (tuple, list)) else (lab, ''))
+                  for lab, _ in rows]
+        labelled = any(outer or sub for outer, sub in labels)
+        subbed = any(sub for _, sub in labels)
         # The label column is 1 cm — his own sheets never go past "(vii)". A longer
         # label ("(viii)", "(b)(ii)") wrapped onto two lines and pushed the part's
         # first line down, so the column grows with the widest label instead.
-        lab_w = max(1.0, max((_label_width_cm(label) for label, _ in rows),
+        lab_w = max(1.0, max((_label_width_cm(outer) for outer, _ in labels),
                              default=0.0))
-        work_w = 16.0 - lab_w
-        table = self.doc.add_table(rows=len(rows), cols=2 if labelled else 1)
+        sub_w = max(0.75, max((_label_width_cm(sub) for _, sub in labels),
+                              default=0.0)) if subbed else 0.0
+        work_w = round(16.0 - lab_w - sub_w, 2)
+        ncols = 3 if subbed else (2 if labelled else 1)
+        table = self.doc.add_table(rows=len(rows), cols=ncols)
         table.style = self.doc.styles['Table Grid']
         table.autofit = False
         _outer_border_only(table)
-        for (label, steps), row in zip(rows, table.rows):
-            if labelled:
+        cells_by_row = []
+        for (outer, sub), row in zip(labels, table.rows):
+            if subbed:
+                lab_cell, sub_cell, work_cell = row.cells
+                lab_cell.width = Cm(lab_w)
+                if sub:
+                    sub_cell.width = Cm(sub_w)
+                    work_cell.width = Cm(work_w)
+                    self._fill(sub_cell.paragraphs[0], [('text', sub)])
+                else:
+                    # No sub-part on this row: the sub column joins the working,
+                    # so the row still uses the full width (his notes do the same).
+                    work_cell = sub_cell.merge(work_cell)
+                    work_cell.width = Cm(round(sub_w + work_w, 2))
+                    sub_cell = None
+            elif labelled:
                 lab_cell, work_cell = row.cells
                 lab_cell.width = Cm(lab_w)
                 work_cell.width = Cm(work_w)
-                if label:
-                    self._fill(lab_cell.paragraphs[0], [('text', label)])
+                sub_cell = None
             else:
+                lab_cell = sub_cell = None
                 work_cell = row.cells[0]
                 work_cell.width = Cm(16.0)
+            if lab_cell is not None and outer:
+                self._fill(lab_cell.paragraphs[0], [('text', outer)])
+            cells_by_row.append((lab_cell, sub_cell, work_cell))
         # cell.width only writes w:tcW, which Word honours; LibreOffice (and
         # the soffice PDF preview) size columns from w:tblGrid instead and
         # split 50/50, clipping long display math in the working column
         # (found 9 Sep 2026 on the GCE solutions export). Set both.
-        for col, w in zip(table.columns, ([lab_w, work_w] if labelled else [16.0])):
+        grid = ([lab_w, sub_w, work_w] if subbed
+                else ([lab_w, work_w] if labelled else [16.0]))
+        for col, w in zip(table.columns, grid):
             col.width = Cm(w)
         gap_pt = PART_GAP_PT if part_gap is None else float(part_gap)
-        for idx, ((label, steps), row) in enumerate(zip(rows, table.rows)):
-            if labelled:
-                lab_cell, work_cell = row.cells
-            else:
-                work_cell = row.cells[0]
+        for idx, ((_, steps), (lab_cell, sub_cell, work_cell)) in enumerate(
+                zip(rows, cells_by_row)):
             first = True
             for step in steps:
                 if isinstance(step, tuple) and step and step[0] == 'cols':
@@ -1300,7 +1345,8 @@ class Worksheet:
             # paragraph of every table cell must have text"; repair-sheet.py
             # step 2a) — so the gap never reached a filed sheet. Nothing strips
             # spacing, and 8 pt costs under half a line instead of a whole one.
-            tops = [work_cell.paragraphs[0]] + ([lab_cell.paragraphs[0]] if labelled else [])
+            tops = [work_cell.paragraphs[0]] + [
+                c.paragraphs[0] for c in (lab_cell, sub_cell) if c is not None]
             for tp in tops:
                 tp.paragraph_format.space_before = Pt(2) if idx == 0 else Pt(gap_pt)
         for row in table.rows:

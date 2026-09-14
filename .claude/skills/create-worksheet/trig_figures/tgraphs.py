@@ -3,7 +3,7 @@ Serif / cm mathtext to match astc.py and the rest of the sheet."""
 import matplotlib; matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-from axes import arrow_axes, cycle_colour, CYCLE_COLOURS, CURVE
+from axes import arrow_axes, cycle_colour, CURVE
 plt.rcParams.update({'font.family': 'serif', 'mathtext.fontset': 'cm'})
 
 DEG = np.pi / 180.0
@@ -30,20 +30,6 @@ def _frame(ax, xmax, ymin, ymax, xticks, yticks, right=1.08):
     arrow_axes(ax, xlabel='x', ylabel='y', size=6.5)
 
 
-def _count(ax, numbers):
-    """Number each graph in the range, in that graph's own colour.
-
-    The colour already separates one graph from the next; the numeral is what
-    makes the COUNT readable without the student tracing the curve with a
-    finger.  A tangent graph cut in half by the end of the range carries the
-    same numeral at both ends — the two halves are one graph between them.
-    """
-    for x, y, n in numbers:
-        ax.text(x, y, f'${n}$', color=CYCLE_COLOURS[n - 1], fontsize=7.0,
-                ha='center', va='center', fontweight='bold',
-                zorder=7).set_bbox(BOX)
-
-
 def _sincos(out, fn, label):
     f, ax = plt.subplots(figsize=(2.3, 1.5))
     x = np.linspace(0, 360, 900)
@@ -56,13 +42,20 @@ def _sincos(out, fn, label):
 
 
 def _tan(out):
-    """y = tan x to 360 deg — two tangent graphs, so the two are coloured.
+    """y = tan x to 360 deg — one colour per tangent graph.
 
-    One tangent graph is only 180 deg wide, so the range holds two of them and
-    the range ENDS cut the second one in half; both halves are numbered 2.
+    ONE TANGENT GRAPH IS THE PIECE BETWEEN TWO ASYMPTOTES (Adrian, 14 Sep 2026,
+    on the 90-270 branch: "this is considered one tangent graph -> this should
+    be same colour, then another set of this should be another colour").  So
+    the piece is the unit of colour: 0-90 is the tail of one graph, 90-270 is
+    a whole one, 270-360 is the head of the next, and all three take DIFFERENT
+    colours — the halves at the two ends belong to different graphs and must
+    never share.  How many graphs are in the range is read off the period
+    (360 / 180 = 2), not counted off the colour bands, and no numerals go on
+    the picture ("don't have to put the numbers", 14 Sep 2026).
     """
     f, ax = plt.subplots(figsize=(2.3, 1.5))
-    for a, b, ci in [(0, 90, 0), (90, 270, 1), (270, 360, 0)]:
+    for a, b, ci in [(0, 90, 0), (90, 270, 1), (270, 360, 2)]:
         x = np.linspace(a + 0.6, b - 0.6, 400)
         y = np.tan(x * DEG)
         y[np.abs(y) > 3.1] = np.nan
@@ -75,21 +68,24 @@ def _tan(out):
                 arrowprops=dict(arrowstyle='->', color=DIM, lw=0.7))
     ax.annotate('', xy=(268, 3.3), xytext=(210, 4.85),
                 arrowprops=dict(arrowstyle='->', color=DIM, lw=0.7))
-    _count(ax, [(45, 3.95, 1), (180, 3.95, 2), (315, 3.95, 1)])
     ax.text(180, -2.3, r'$y=\tan x$', fontsize=7.5, ha='center', va='center').set_bbox(BOX)
     f.savefig(out, dpi=220, bbox_inches='tight'); plt.close(f)
 
 
 def variation(out, fn, xmax, ymin, ymax, xticks, yticks, centre=None,
               dots=(), period=None, amp=None, base=None, asym=(),
-              pieces=None, numbers=(), clip=None, note=None):
+              pieces=None, clip=None, note=None):
     """One variation graph: the curve, its centre line, and the one feature the
     column is teaching, marked on the picture.
 
     `pieces` splits the curve into (from, to, colour number) runs so a range
     holding more than one graph is colour coded — one colour per graph.  Left
     out, the curve is drawn plain black, which is what a range holding a single
-    graph should look like.
+    graph should look like.  The colour is the whole of the count; the graphs
+    carry no numerals ("don't have to put the numbers", 14 Sep 2026).  On a
+    TANGENT curve the unit is the piece between two asymptotes — one piece,
+    one colour, and never the same colour twice in a row, so a part-graph at
+    the start of the range and a part-graph at the end are coloured apart.
     """
     f, ax = plt.subplots(figsize=(2.3, 1.55))
     if pieces is None:
@@ -127,7 +123,6 @@ def variation(out, fn, xmax, ymin, ymax, xticks, yticks, centre=None,
                     arrowprops=dict(arrowstyle='<->', color=DIM, lw=0.8))
         ax.text((xa + xb) / 2, yy + (ymax - ymin) * 0.035, txt, color=DIM,
                 fontsize=6.5, ha='center', va='bottom').set_bbox(BOX)
-    _count(ax, numbers)
     if note:
         ax.text(xmax * 0.5, ymax, note, color=NOTE, fontsize=6.3,
                 ha='center', va='top').set_bbox(BOX)
@@ -156,30 +151,28 @@ if __name__ == '__main__':
               [90, 180, 270, 360], [1, 2], centre=1,
               period=(0, 180, 2.45, r'period $180^\circ$'),
               dots=[(45, 2), (135, 0)],
-              pieces=cycles(360, 180), numbers=[(90, 3.35, 1), (270, 3.35, 2)])
+              pieces=cycles(360, 180))
     # 3. a and b together — y = 2 cos 3x, three cosine graphs
     variation('v_cos_ab.png', lambda t: 2 * np.cos(3 * d(t)), 360, -2.7, 4.4,
               [120, 240, 360], [-2, 2],
               period=(0, 120, 2.5, r'period $120^\circ$'),
               amp=(120, 0, 2),
-              pieces=cycles(360, 120),
-              numbers=[(60, 3.9, 1), (180, 3.9, 2), (300, 3.9, 3)])
+              pieces=cycles(360, 120))
     # 4. a negative, and c — y = -2 cos x + 1
     variation('v_cos_neg.png', lambda t: -2 * np.cos(d(t)) + 1, 360, -2.0, 4.6,
               [90, 180, 270, 360], [-1, 1, 3], centre=1,
               base=lambda t: 2 * np.cos(d(t)) + 1,
               dots=[(180, 3), (0, -1)],
               note=r'$a<0$ turns the curve over')
-    # 5. b on tan — y = tan 2x, drawn to 360 deg so the four are there to count.
-    #    The two range ends are each half of one graph, so both halves carry the 1.
+    # 5. b on tan — y = tan 2x, drawn to 360 deg so the four are there to see.
+    #    Five pieces between asymptotes, five colours: the part-graph at 0-45
+    #    and the part-graph at 315-360 belong to different graphs.
     variation('v_tan_b.png', lambda t: np.tan(2 * d(t)), 360, -2.7, 4.6,
               [90, 180, 270, 360], [-1, 1], asym=(45, 135, 225, 315),
               clip=(-2.5, 2.5),
               period=(45, 135, 3.05, r'period $90^\circ$'),
               pieces=[(0, 45, 0), (45, 135, 1), (135, 225, 2),
-                      (225, 315, 3), (315, 360, 0)],
-              numbers=[(22, 4.2, 1), (90, 4.2, 2), (180, 4.2, 3),
-                       (270, 4.2, 4), (338, 4.2, 1)])
+                      (225, 315, 3), (315, 360, 4)])
     # 6. a and a fractional b on tan — y = 2 tan (x/2).  One tangent graph fills
     #    the whole range, so there is nothing to colour code.
     variation('v_tan_ab.png', lambda t: 2 * np.tan(d(t) / 2), 360, -3.3, 5.2,

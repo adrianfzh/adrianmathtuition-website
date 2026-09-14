@@ -201,25 +201,35 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   along — each copy in its own colour on the same diagram, with a closing line saying
   the colours only show the cycle moved along and in the exam all of them are one pen.
   Pattern: `trig_figures/drawsteps.py`.
-- **More than one graph in the range means colour code and number them** (14 Sep 2026:
-  "if there are more than 1 graph, we should colour code to highlight the number of
-  graphs"). One colour per repeat of the curve, plus the graph's number in that same
-  colour above it, so the student COUNTS the graphs off the picture instead of being
-  told the answer. One graph in the range is drawn plain black — a colour there counts
-  something there is nothing to count. Palette and helper live in `trig_figures/axes.py`
-  (`CYCLE_COLOURS`, `cycle_colour(i)`); every figure uses the same one, so cycle 2 is the
-  same orange on the step-by-step panels as on the variation graphs. For sine and cosine
-  the colour changes at the end of each cycle; for tangent it changes at the asymptotes,
-  where the graph genuinely breaks.
+- **More than one graph in the range means colour code them — colour only, no numbers**
+  (14 Sep 2026: "if there are more than 1 graph, we should colour code to highlight the
+  number of graphs", then "for the trigo graphs, don't have to put the numbers"). One
+  colour per graph, so the student COUNTS the graphs off the picture instead of being
+  told the answer; a numeral written above each one says the answer out loud and is
+  clutter, so the graphs carry none. One graph in the range is drawn plain black — a
+  colour there counts something there is nothing to count. Palette and helper live in
+  `trig_figures/axes.py` (`CYCLE_COLOURS`, `cycle_colour(i)`); every figure uses the same
+  one, so graph 2 is the same orange on the step-by-step panels as on the variation
+  graphs. **Two graphs that touch never take the same colour** — the palette holds five
+  because a tangent range can hold four whole graphs plus a part-graph at each end.
+- **One tangent graph is the piece between two asymptotes** (14 Sep 2026, pointing at the
+  90°–270° branch of `y = tan x`: "this is considered one tangent graph -> this should be
+  same colour, then another set of this should be another colour"). So the piece, not the
+  period counted from 0, is the unit of colour: on `y = tan x` over 0°–360° the tail at
+  0°–90°, the whole branch at 90°–270° and the head at 270°–360° are three DIFFERENT
+  colours. A part-graph at the start of the range and a part-graph at the end belong to
+  different graphs and must never share a colour — an earlier version gave both ends the
+  same colour to say "between them they make one", and he corrected it. How many graphs
+  are in the range is read off the period, not counted off the colour bands.
 - **A tangent graph is drawn to 360°, not to one period** (14 Sep 2026: "for tangent
   graph draw until 360 degrees, to illustrate how many tangent graph there are in
   360degrees"). The point of the picture is the count, and a picture that stops at one
   period has nothing to count. One tangent graph is only 180° wide, so `y = a tan bx`
   has **`b` tangent graphs in 180°, and `2b` in 360°** — do NOT carry over the sine and
   cosine rule of "`b` graphs in 360°", it gives the wrong number for tangent. The range
-  ends usually cut a graph in half; the two half graphs at the ends carry the SAME
-  number, because between them they make one. Pattern: `trig_figures/tgraphs.py`
-  `variation(..., pieces=…, numbers=…)`.
+  ends usually cut a graph in half; each half is part of its OWN graph and is coloured
+  apart from the other end (see the bullet above). Pattern: `trig_figures/tgraphs.py`
+  `variation(..., pieces=…)`, one `(from, to, colour)` run per piece between asymptotes.
 - **A shifted sine or cosine shows its centre line, dotted** (14 Sep 2026: "the graph in
   the solution should show the centre line (dotted)"). Any sketch of
   `y = a sin bx + c` / `y = a cos bx + c` with `c ≠ 0` — the SOLUTION graphs as much as
@@ -227,6 +237,19 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   under the curve, with no label of its own (the value is already a y-tick). Two curves
   on the same axes get two centre lines, the fainter curve's at `alpha=0.6`. Helper:
   `trig_figures/draw.py` `centre_line(ax, c, x0, x1)`.
+- **Draw a graph even when the question never asked for one** (14 Sep 2026, Example
+  4d(ii) — the tide `h = 1.2 cos(4πt/25) + 5` and a boat that needs 4.2 m: "question did
+  not ask for a graph, but would be good if there is a graph to illustrate how to solve
+  the question - the visual will be very helpful"). The arithmetic answers it; the
+  picture shows WHY, and a worded context question — depth, height, temperature, a
+  Ferris wheel — is exactly where a student loses the thread. Put four things on it:
+  the model curve, the level the question tests it against (dashed, labelled with what
+  the level IS — "h = 4.2 (draft)", not just a number), the stretch where the answer is
+  no (lightly shaded), and the moment the question names (a dashed drop to the curve with
+  its value beside it, `h = 3.88 < 4.2`). The graph sits in the right column beside that
+  part's working, never at the top of the box — §4's "beside the line it is for". Helper:
+  `trig_figures/context_graph.py` `threshold_graph(...)`; the centre line rule applies to
+  it like any other shifted cosine.
 - Figures from the question bank are embedded as stored; hand-drawn art only when the
   bank has none (and then through the bot's figure registry first — CLAUDE.md §Figure
   library).
@@ -239,6 +262,27 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   Practice: `ws.Q` / `ws.SQ`, `numbered(…, 1, 'roman')` for roman parts, level 2 for
   subparts; a parts-only question gets `ws.Q([])` so its number sits on its own line.
   ("and can you autonumber to questions and subparts?", 12 Sep 2026.)
+- **A sub-part label gets its own column** (14 Sep 2026, on a solution box whose "(a)"
+  sat in the label column while "(i)", "(ii)", "(iii)" were typed at the head of the
+  working: "there should be two columns separately to accomodate (a) and (i) / you can
+  look at how i did it in my notes worked examples"). His notes do it as a THREE-column
+  table — outer label, sub label, working (`AM 16 Trigonometric Graphs.docx`, the
+  (iv)(a)/(iv)(b) table: 0.94 cm, 0.75 cm, the rest) — so the sub labels line up under
+  each other and the working starts at the same x on every row. A "(i)" typed into the
+  working pushes that first line right and nothing below it lines up. Pass the label as
+  a PAIR and `solution_box` builds it; a row with no sub label merges the sub column into
+  the working, so an unlabelled row still uses the full width:
+
+  ```python
+  w.solution_box([
+      (('(a)', '(i)'),  ['period = …']),
+      (('',    '(ii)'), ['q = …']),
+      ('(b)',           ['…']),          # no sub-part: merged row
+  ], keep_together=False)
+  ```
+
+  The outer label is repeated only on the FIRST of its sub-parts and left `''` on the
+  rest, the way he writes it.
 - A topic with several strands is **sectioned** (`ws.section("Section A — …")`), the
   **notes at the front of each section**, that section's practice right after its
   examples ("put the notes at the front of each section instead").

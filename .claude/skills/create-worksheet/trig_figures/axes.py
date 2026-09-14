@@ -69,7 +69,7 @@ def arrow_axes(ax, xlabel='x', ylabel='y', color='k', size=7.0, lw=0.9,
 # student counts the graphs in the range by counting the colours instead of
 # being told the number.  ONE palette for every figure, so cycle 2 is the same
 # orange on the step-by-step panels as it is on the variation graphs.
-CYCLE_COLOURS = ['#1a5fb4', '#c64600', '#7a3fb8', '#0b7285']
+CYCLE_COLOURS = ['#1a5fb4', '#c64600', '#7a3fb8', '#0b7285', '#a4187a']
 CURVE = '#1a1a1a'
 
 
@@ -77,6 +77,8 @@ def cycle_colour(i, default=CURVE):
     """Colour for repeat number i (0-based).  None = a single graph, so black.
 
     A range holding only one graph is drawn plain — a colour there would be
-    counting something there is nothing to count.
+    counting something there is nothing to count.  Adjacent graphs must never
+    land on the same colour, so there are five here: a tangent range can hold
+    four whole graphs plus a part-graph at each end.
     """
     return default if i is None else CYCLE_COLOURS[i % len(CYCLE_COLOURS)]
