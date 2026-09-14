@@ -26,7 +26,9 @@ export type ReissueReason =
   /** Adrian changed something on the desk — the marking that stands has moved. */
   | 'checked'
   /** Pages that never uploaded are in the copy now; the marking did not change. */
-  | 'pages-recovered';
+  | 'pages-recovered'
+  /** The ticks and crosses were re-placed; the marking and the mark did not change. */
+  | 'marks-realigned';
 
 export type ReissueLineInput = {
   reason: ReissueReason;
@@ -61,10 +63,19 @@ export function reissueLine(input: ReissueLineInput): string {
     return `📄 Some pages of your marked ${paper} didn't upload properly the first time, so they were missing from your copy. The full paper is in the app now${score ? ` — your mark is unchanged, ${score}` : ''}.\n\n${link}`;
   }
 
+  if (input.reason === 'marks-realigned') {
+    // The marking stands; only where the ink SITS changed (Joey Goh Zhi Xuan,
+    // 14 Sep 2026). Falling through to the desk's line would have claimed Adrian
+    // re-checked the paper and moved the mark — two things that did not happen.
+    return `📄 On some pages of your marked ${paper} the ticks and crosses didn't line up with your working. They do now — nothing about the marking changed${score ? `, and your mark is still ${score}` : ''}.\n\n${link}`;
+  }
+
   return `✏️ Adrian checked your marked ${paper} and updated it${score ? ` — it is now ${score}` : ''}. The copy in the app is the new one.`;
 }
 
 /** The reason off a request body — anything unrecognised is the desk's. */
 export function parseReissueReason(v: unknown): ReissueReason {
-  return v === 'pages-recovered' ? 'pages-recovered' : 'checked';
+  if (v === 'pages-recovered') return 'pages-recovered';
+  if (v === 'marks-realigned') return 'marks-realigned';
+  return 'checked';
 }

@@ -64,7 +64,7 @@ import { releaseHeldPracticeItems } from '@/lib/practice-again-store';
 import { applyRunRelease } from '@/lib/notebook-mistakes-store';
 import { isRemarkInternal } from '@/lib/remark-internal';
 import { reissueLine, parseReissueReason } from '@/lib/reissue-message';
-import { buildPaperNotice } from '@/lib/paper-notice';
+import { buildPaperNotice, parseNoticeKind } from '@/lib/paper-notice';
 import { gapsForRun, gapWatchReason, pageGapAlert } from '@/lib/page-gap-repair';
 
 export const runtime = 'nodejs';
@@ -618,10 +618,12 @@ export async function POST(req: NextRequest) {
     // deserve a Telegram line in his name at whatever hour the repair runs. It
     // sits on the paper's card, and it expires (lib/paper-notice).
     //
-    // Only the pages news goes this way. "Adrian checked your paper and changed
-    // a mark" IS his voice and his accountability — that one keeps the Telegram
-    // line, so an app-channel 'checked' is refused rather than quietly
-    // downgraded to a banner nobody is pinged about.
+    // Only OUR OWN news goes this way — the reasons that are also notice kinds
+    // (lib/paper-notice): pages we lost on the upload, ink we placed wrongly.
+    // "Adrian checked your paper and changed a mark" IS his voice and his
+    // accountability — that one keeps the Telegram line, so an app-channel
+    // 'checked' is refused rather than quietly downgraded to a banner nobody is
+    // pinged about.
     //
     // The refusal is decided HERE, before a byte moves. It first sat down beside
     // the send, and a rejected request had by then already rebuilt both PDFs,
@@ -629,8 +631,11 @@ export async function POST(req: NextRequest) {
     // was told had not happened. A guard that answers 400 must answer it before
     // the side effects, not after them.
     const reason = parseReissueReason(body.reason);
-    if (body.channel === 'app' && reason !== 'pages-recovered') {
-      return NextResponse.json({ error: "the app channel carries the pages notice only — a 'checked' re-issue goes to Telegram" }, { status: 400 });
+    // Non-null exactly when this re-issue is a card notice — which is also what
+    // decides the channel below, so the two can never disagree.
+    const noticeKind = body.channel === 'app' ? parseNoticeKind(reason) : null;
+    if (body.channel === 'app' && !noticeKind) {
+      return NextResponse.json({ error: "the app channel carries our own notices only — a 'checked' re-issue goes to Telegram" }, { status: 400 });
     }
     const { data: run, error: rErr } = await supa.from('paper_marking_runs')
       .select('id, paper_name, student_id, student_name, released_at, result_json, total_awarded, total_max, created_at')
@@ -676,13 +681,14 @@ export async function POST(req: NextRequest) {
     // copy (11 Sep 2026, lib/remark-internal.ts): "Adrian checked it and updated
     // it" would name a paper they were never sent. The release was stamped
     // 'none' at the time, but they may have linked Telegram since.
-    // …and a copy that was only ever MISSING PAGES was not re-marked at all
-    // (14 Sep 2026): `reason: 'pages-recovered'` — lib/reissue-message.ts owns
-    // both wordings so the self-fix and the desk say the same thing.
+    // …and two of the reasons are not a re-mark at all (14 Sep 2026):
+    // 'pages-recovered' (pages we lost on the upload) and 'marks-realigned' (ink
+    // we placed away from the working). lib/reissue-message.ts owns every
+    // wording so the self-fix and the desk say the same thing.
     let via: 'telegram' | 'app' | 'none' = 'none';
-    if (body.channel === 'app') {
-      // Vetted at the top of the block: this is only ever 'pages-recovered'.
-      rj.student_notice = buildPaperNotice('pages-recovered');
+    if (noticeKind) {
+      // Vetted at the top of the block; the card carries the reason it was given.
+      rj.student_notice = buildPaperNotice(noticeKind);
       await supa.from('paper_marking_runs').update({ result_json: rj }).eq('id', runId);
       via = 'app';
     } else {

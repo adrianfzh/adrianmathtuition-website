@@ -25,8 +25,18 @@
 //
 // Pure. The stamp lives on the run at `result_json.student_notice`.
 
-/** Why the student is being told. One kind today; the shape takes more. */
-export type PaperNoticeKind = 'pages-recovered';
+/**
+ * Why the student is being told.
+ *
+ * `marks-realigned` exists because `pages-recovered` was put on a card it was
+ * false for (Joey Goh Zhi Xuan, 14 Sep 2026). None of her pages were missing —
+ * every page uploaded, and the ticks and crosses landed away from the working
+ * they belonged to, so the ink was re-placed. Telling her pages hadn't uploaded
+ * would have been Alexis Wong's story in Joey's app. A notice is the one thing
+ * on the card the student cannot check against anything else, so the reason has
+ * to be the reason: a new kind, not the nearest existing one.
+ */
+export type PaperNoticeKind = 'pages-recovered' | 'marks-realigned';
 
 export type PaperNotice = {
   kind: PaperNoticeKind;
@@ -53,10 +63,23 @@ const TEXT: Record<PaperNoticeKind, PaperNoticeText> = {
     title: 'Your full paper is here',
     body: "Some pages didn't upload properly the first time, so they were missing from your copy. The whole paper is in the app now — your mark hasn't changed.",
   },
+  // Adrian's wording, 14 Sep 2026, picked over two others. Every phrase in it is
+  // load-bearing:
+  //   • never "re-marked" — that is the word that makes a student open the paper
+  //     asking whether their score moved. It did not.
+  //   • never "placement issues" — our jargon for our own defect.
+  //   • the pages are not named. A list invites a page-by-page audit of marking
+  //     that did not change; "some pages" is true and closes the matter.
+  //   • the mark goes last, so it is the sentence they leave with.
+  'marks-realigned': {
+    kind: 'marks-realigned',
+    title: 'A fix to your marked copy',
+    body: "On some pages the ticks and crosses didn't line up with your working. They do now. Nothing about the marking changed, and neither did your mark.",
+  },
 };
 
 function isKind(v: unknown): v is PaperNoticeKind {
-  return v === 'pages-recovered';
+  return v === 'pages-recovered' || v === 'marks-realigned';
 }
 
 /** The stamp to write on `result_json.student_notice`. */

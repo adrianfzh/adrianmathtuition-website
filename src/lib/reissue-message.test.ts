@@ -22,12 +22,21 @@ describe('reissueLine', () => {
     expect(s).not.toMatch(/you (?:did not|didn't|failed)|your upload|you sent/i);
   });
 
+  it('tells a marks-realigned student the ink moved and nothing else did', () => {
+    const s = reissueLine({ ...base, reason: 'marks-realigned', internal: false });
+    expect(s).toContain("didn't line up");
+    expect(s).toContain('still <b>77/90</b>');
+    // Not a re-mark, not a re-check, not a new score, and not the pages story.
+    expect(s).not.toMatch(/Adrian checked|updated|re-?mark|redraw|upload/i);
+  });
+
   it('reads as the first copy when the student never saw the predecessor', () => {
-    for (const reason of ['checked', 'pages-recovered'] as const) {
+    for (const reason of ['checked', 'pages-recovered', 'marks-realigned'] as const) {
       const s = reissueLine({ ...base, reason, internal: true });
       expect(s).toContain('is ready');
       expect(s).not.toContain('Adrian checked');
       expect(s).not.toContain("didn't upload");
+      expect(s).not.toContain("didn't line up");
     }
   });
 
@@ -44,7 +53,9 @@ describe('reissueLine', () => {
 
   it('reads the reason off a body and defaults to the desk', () => {
     expect(parseReissueReason('pages-recovered')).toBe('pages-recovered');
+    expect(parseReissueReason('marks-realigned')).toBe('marks-realigned');
     expect(parseReissueReason('checked')).toBe('checked');
+    expect(parseReissueReason('marks-redrawn')).toBe('checked');
     expect(parseReissueReason(undefined)).toBe('checked');
     expect(parseReissueReason({ reason: 'pages-recovered' })).toBe('checked');
   });

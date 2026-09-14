@@ -32,6 +32,21 @@ describe('activePaperNotice', () => {
     expect(parsePaperNotice(rj.student_notice)).not.toBeNull();
   });
 
+  it("says what was wrong with Joey's copy, and not what wasn't", () => {
+    const j = { student_notice: buildPaperNotice('marks-realigned', { at: AT }) };
+    const t = activePaperNotice(j, new Date('2026-09-15T00:00:00Z'));
+    expect(t?.kind).toBe('marks-realigned');
+    expect(t!.title).toBe('A fix to your marked copy');
+    expect(t!.body).toContain("didn't line up");
+    // Her pages were all there — the pages story is Alexis Wong's, not hers.
+    expect(t!.body).not.toMatch(/upload|missing/i);
+    // The word that makes a student ask whether their score moved. It did not.
+    expect(t!.body).not.toMatch(/redraw|re-?mark/i);
+    expect(t!.body).toMatch(/neither did your mark/i);
+    // No affected page is named: a list invites an audit of marking that stands.
+    expect(t!.body).not.toMatch(/\b(p(age)?\s*)?\d+\b/);
+  });
+
   it('is absent on a run that never had one, and on junk', () => {
     expect(activePaperNotice({})).toBeNull();
     expect(activePaperNotice(null)).toBeNull();
@@ -45,7 +60,10 @@ describe('activePaperNotice', () => {
 describe('parseNoticeKind', () => {
   it('takes only the kind it knows', () => {
     expect(parseNoticeKind('pages-recovered')).toBe('pages-recovered');
+    expect(parseNoticeKind('marks-realigned')).toBe('marks-realigned');
+    // A desk override is Adrian's own word and keeps its Telegram line.
     expect(parseNoticeKind('checked')).toBeNull();
+    expect(parseNoticeKind('marks realigned')).toBeNull();
     expect(parseNoticeKind(true)).toBeNull();
     expect(parseNoticeKind(undefined)).toBeNull();
   });
