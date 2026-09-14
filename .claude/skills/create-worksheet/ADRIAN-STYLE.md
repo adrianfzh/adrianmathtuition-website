@@ -349,6 +349,53 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
 - DOCX → PDF through Word from the container folder with a fresh file name each time
   (memory: word-export-container-folder). Never `rw.to_pdf` at a Dropbox path.
 
+## 7 · Stitching sheets into one book
+
+Adrian, 15 Sep 2026, on the overall S3 revision book: "make it into a nice document, with
+similar formatting for titles and subtitles … make a NEW document (do not alter the
+existing ones)", then "cut trig practice for consistency". A merged book keeps ONE copy of
+everything a `.docx` stores once, so any sheet that disagreed with the others about a
+document-wide default is silently re-laid-out. Bake the sheet's own value onto its
+paragraphs before merging — the sheet on its own is then unchanged, and the merge can no
+longer reach the setting.
+
+- **`defaultTabStop`** (settings.xml). Twelve of the thirteen S3 sheets sit at Word's 720
+  twips; Circles alone was written at 397. In the book every tabbed line in Circles
+  advanced nearly twice as far as it was written to, so the `[1]` / `[2]` mark counts at
+  the end of each part were pushed past the right margin and wrapped onto lines of their
+  own. Three extra lines split a solution table and the sliver printed as a blank page.
+  Write the sheet's own ladder onto every paragraph holding a tab (`prep.py bake_tabs`),
+  starting past any explicit stop and past the paragraph's own indent.
+- **Normal's font and size** reach the paragraph MARK, which is a real character: a
+  `pPr/rPr` with no `w:sz` takes the master's Normal and puts a floor under the line.
+  608 of Trigonometry's 713 marks had none, worth 2 pages at 1.5-line spacing.
+- **`m:ctrlPr`** carries the run properties of the parts of an equation that are not typed
+  characters — the fraction bar, the radical sign, the delimiters — and is what scales the
+  equation as a whole. 833 of Trigonometry's 935 equations had no size on it.
+- A sheet that still disagrees after baking gets a **scoped body style** of its own
+  (`TrigBody`), never a change to a shared one: `ListParagraph` is used by 824 paragraphs
+  elsewhere in the book, so it is cloned, not edited.
+
+**Three ways a merged book grows a blank page**, all found on this build:
+
+1. The document ends on a table, and a Word document may not — Word supplies an implicit
+   12 pt paragraph that can spill. Write that paragraph explicitly, 1 pt with no spacing.
+2. A page break alone in its own empty paragraph: the break fires, then the remains of
+   that paragraph take the first line of the new page. Carry the break on the next block
+   as `pageBreakBefore` (on a table, that means the first paragraph of the first cell) and
+   delete the paragraph.
+3. An empty paragraph immediately BEFORE a forced page break — invisible normally, but if
+   the block before it fills its page exactly it opens a page of its own and prints
+   wholly blank. Delete it.
+
+`pdftotext` cannot tell a blank page from an image-only one, and it reports a page holding
+only an empty table row as blank too — cross-check with `pdfimages -list` and render the
+page with `pdftoppm` before believing either answer.
+
+Every section is measured against its own standalone export, page for page. A sheet's solo
+PDF usually ends on a trailing blank page of its own; discount it before calling a
+difference a loss.
+
 ## Adding a rule (how this list grows)
 
 1. Quote what Adrian said, with the date, in the section it belongs to (new section if
