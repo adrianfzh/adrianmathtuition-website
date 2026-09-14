@@ -187,9 +187,91 @@ def _function_spaces(latex: str) -> str:
     return _FUNC_RE.sub(lambda m: m.group(1) + '\\, ', latex)
 
 
+_CSC_RE = re.compile(r'\\csc(?![A-Za-z])')
+
+
+def _cosec(latex: str) -> str:
+    """"cosec A", never "csc A" (Adrian, 14 Sep 2026, on the S3 Trigonometry
+    revision sheet: "write csc A as cosec A"). The Singapore syllabus spells it
+    cosec; \\csc is LaTeX's American name and pandoc prints it verbatim. Rewrite
+    it to the operator form the rest of the pipeline already knows how to space."""
+    return _CSC_RE.sub(r'\\operatorname{cosec}', latex)
+
+
+# A run of exactly one of these ends an operand: the fraction stops here.
+_SLASH_STOP = set('+-−=≠<>≤≥,;:±∓⇒⇔→←|')
+_OPEN, _CLOSE = '([{', ')]}'
+
+
+def _stack_slashes(elem):
+    """Every fraction is numerator OVER denominator — never "a/b" on one line,
+    and a fraction inside a fraction stacks too (Adrian, 14 Sep 2026: "for
+    fractions, write them as numerator over denominator, even for fractions
+    within a fraction"). pandoc leaves "7/2" as three runs, and texmath marks a
+    \dfrac with <m:type m:val="lin"/>; both render as the slanted form he
+    rejected. Make every fraction a bar fraction and turn each bare "/" into a
+    real <m:f>, taking the operand either side the way the maths binds —
+    "a+b/c+d" gives b over c, not a+b over c+d, and a bracketed group is taken
+    whole. A "/" inside \text{} (5 m/s) is left alone."""
+    m = lambda t: f'{{{M_NS}}}{t}'
+
+    for fPr in elem.iter(m('fPr')):                 # a linear fraction is a bar fraction
+        ty = fPr.find(m('type'))
+        if ty is not None and ty.get(m('val')) in ('lin', 'skw'):
+            fPr.remove(ty)
+
+    def text_of(el):
+        return ''.join(t.text or '' for t in el.iter(m('t')))
+
+    def is_slash(el):
+        return (el.tag == m('r') and text_of(el) == '/'
+                and el.find(f'{m("rPr")}/{m("nor")}') is None)   # not \text{m/s}
+
+    def span(kids, i, step):
+        """Indices of the operand on one side of the slash at kids[i]."""
+        opens, closes = (_CLOSE, _OPEN) if step < 0 else (_OPEN, _CLOSE)
+        j, depth, out = i + step, 0, []
+        while 0 <= j < len(kids):
+            t = text_of(kids[j])
+            if depth == 0 and len(t) == 1 and t in _SLASH_STOP:
+                break                                # an operator ends the operand
+            if t in opens:
+                depth += 1
+            elif t in closes:
+                depth -= 1
+                if depth < 0:
+                    break                            # the bracket we sit inside
+            out.append(j)
+            j += step
+        return sorted(out)
+
+    for parent in list(elem.iter()):
+        done = set()
+        while True:
+            kids = list(parent)
+            slash = next((i for i, k in enumerate(kids)
+                          if is_slash(k) and id(k) not in done), None)
+            if slash is None:
+                break
+            done.add(id(kids[slash]))
+            left, right = span(kids, slash, -1), span(kids, slash, +1)
+            if not left or not right:
+                continue                             # nothing to divide — leave it
+            frac = etree.Element(m('f'))
+            num = etree.SubElement(frac, m('num'))
+            den = etree.SubElement(frac, m('den'))
+            parent.insert(left[0], frac)             # in place of the numerator
+            for i in left:
+                parent.remove(kids[i]); num.append(kids[i])
+            for i in right:
+                parent.remove(kids[i]); den.append(kids[i])
+            parent.remove(kids[slash])
+    return elem
+
+
 def _latex_to_omml(latex_expr, display=False):
     """Convert a LaTeX math expression to an OMML element via pandoc."""
-    latex_expr = _function_spaces(latex_expr)
+    latex_expr = _function_spaces(_cosec(latex_expr))
     md = f"$${latex_expr}$$" if display else f"${latex_expr}$"
     with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
         f.write(md)
@@ -206,7 +288,7 @@ def _latex_to_omml(latex_expr, display=False):
                 elem = tree.find(f'.//{{{M_NS}}}oMath')
         else:
             elem = tree.find(f'.//{{{M_NS}}}oMath')
-        return elem
+        return _stack_slashes(elem) if elem is not None else elem
     finally:
         os.unlink(md_path)
         if os.path.exists(docx_path):
@@ -1495,9 +1577,27 @@ class Worksheet:
                                 for par in c2.paragraphs:
                                     fix(par)
 
+    def _table_first_line_gap(self, pt=2):
+        """2 pt above the first line of a table (Adrian, 14 Sep 2026: "for the
+        first line of a table, leave the spacing before as 2pt" — his Paragraph
+        dialog read Before 2 pt, After 0 pt, 1.5 lines). solution_box already
+        set it on its own top row; the nested column tables and the Notes tables
+        did not, so the first line of those boxes sat lower than the rest.
+        One pass over every table in the document, nested tables included."""
+        from docx.text.paragraph import Paragraph
+        for tbl in self.doc.element.body.iter(qn('w:tbl')):
+            tr = tbl.find(qn('w:tr'))
+            if tr is None:
+                continue
+            for tc in tr.findall(qn('w:tc')):
+                par = tc.find(qn('w:p'))
+                if par is not None:
+                    Paragraph(par, None).paragraph_format.space_before = Pt(pt)
+
     def save(self, path, strict_maths=False):
         """Save the worksheet, injecting clean numbering.xml."""
         self._enforce_line_spacing(1.5)
+        self._table_first_line_gap(2)
         self._finish_block()    # the last question has no Q() after it
         # Save to a temp buffer first, then rewrite numbering.xml
         buf = io.BytesIO()

@@ -26,10 +26,25 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   solution step. `_solution_lines` turns it into the structure above. Nothing else to do.
 - **Never chain three "=" on one line**; a new "=" is a new line. Stacked fractions
   (`\dfrac`) always.
+- **Every fraction is numerator OVER denominator — a fraction inside a fraction too.**
+  Never `7/(7√5/2)` on one line, never Word's slanted/linear fraction (14 Sep 2026:
+  "for fractions, write them as numerator over denominator, even for fractions within
+  a fraction"). The library enforces it (`_stack_slashes`, run on every converted
+  expression): a `<m:type m:val="lin"|"skw">` becomes a bar fraction, and every bare
+  "/" run becomes a real `<m:f>`, taking the operand either side the way the maths
+  binds — `a+b/c+d` gives b over c, a bracket group is taken whole, and a "/" inside
+  `\text{}` (5 m/s) is left alone. So `\dfrac{\pi}{2}` and `\pi/2` render the same;
+  write whichever is clearer. Only caveat: a division inside a grey ← note now stacks
+  too and makes that line taller — if a note must stay on one line, word it without
+  a division.
 - **Function names get a space**: "cos P", "sin x cos y", not "cosP" — the library adds
   the thin space (`_function_spaces`) after `\sin`, `\cos`, `\tan`, `\sec`, `\cot`,
   `\operatorname{cosec}` and before one that follows an argument ("cosP should be written
   like human typed cos P ← the omml way").
+- **"cosec A", never "csc A"** (14 Sep 2026: "write csc A as cosec A"). Write
+  `\operatorname{cosec}` or plain `\csc` — the library rewrites the latter
+  (`_cosec`, in `_latex_to_omml`) so the sheet always says cosec. Same for the
+  reciprocal identities and anything quoted from a question.
 
 ## 2 · Notes beside a line
 
@@ -99,6 +114,15 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   is a large gap", 12 Sep). Practice questions and their `[Ans:]` line stay together.
 - One `[Ans: (a) …; (b) …]` line per practice question, orange, right-aligned, at the end
   — never after each part.
+- **The first line of a table gets 2 pt above it** — spacing Before 2 pt, After 0 pt,
+  line spacing 1.5, no indent, exactly as his Paragraph dialog reads (7 Sep 2026: "2px
+  spacing from the top of the box for the first line only"; extended 14 Sep 2026 to
+  EVERY table: "for the first line of a table, leave the spacing before as 2pt").
+  `solution_box` had only ever set it on its own top row, so the nested `('cols', …)`
+  tables and the Notes tables started lower than the rest; `_table_first_line_gap`,
+  called from `save()`, now sets it on the first paragraph of every first-row cell of
+  every table, nested tables included. A figure in a first row loses its usual 4 pt —
+  that is the rule, not a bug.
 - No empty paragraphs for spacing; the box hugs its content; a small gap between parts is
   paragraph spacing.
 - Notes block: formulas as display maths, ≤ 6 "Mistakes to avoid"; the word "never" does
