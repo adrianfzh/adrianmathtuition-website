@@ -72,24 +72,25 @@ def arrow_axes(ax, xlabel='x', ylabel='y', color='k', size=7.0, lw=0.9,
 CYCLE_COLOURS = ['#1a5fb4', '#c64600', '#7a3fb8', '#0b7285', '#a4187a']
 CURVE = '#1a1a1a'
 
-# A COLOUR MEANS A WHOLE GRAPH.  Adrian, 14 Sep 2026, on the 0-360 tangent
-# picture with all three pieces coloured: "you misunderstand.  this is ONE
-# tangent graph" — a tangent graph runs from one asymptote to the next, and the
-# stub left at each end of the range is an offcut of the graph next door, not a
-# graph of its own.  An offcut is drawn GREY so it is plainly not one of the
-# things being counted.
+# A COLOUR MEANS A WHOLE GRAPH.  y = a sin/cos/tan bx all have b graphs in
+# 360 deg — TANGENT IS COUNTED THE SAME WAY AS SINE AND COSINE, so one tangent
+# graph is 360/b wide and an asymptote inside it does not end it (Adrian,
+# 14 Sep 2026: "this should be two colours (left one colour from 0 to 180) and
+# right one colour (from 180 to 360)" on y = tan 2x).  A genuine offcut beside
+# graphs that ARE being counted is drawn GREY; a range holding one graph or less
+# is plain black, never grey.
 PART_GRAPH = '#9a9a9a'
 
 
 def cycle_colour(i, default=CURVE):
     """Colour for graph number i (0-based).  None = a single graph, so black.
 
-    `'part'` = a part-graph at the edge of the range, drawn grey: it is an
-    offcut of a graph that does not fit in the picture, and colouring it would
-    add one to the count the colours are there to make.  A range holding only
-    one graph is drawn plain black — a colour there would be counting something
-    there is nothing to count.  Adjacent graphs never land on the same colour,
-    so there are five.
+    `'part'` = a genuine offcut at the edge of the range, drawn grey: colouring
+    it would add one to the count the colours are there to make.  A range
+    holding one graph, or less than one, is drawn plain BLACK — a colour there
+    would be counting something there is nothing to count, and grey only means
+    "don't count this one" beside things that are being counted.  Adjacent
+    graphs never land on the same colour, so there are five.
     """
     if i == 'part':
         return PART_GRAPH

@@ -29,23 +29,22 @@ Matplotlib helpers, run under `/usr/bin/python3` (Pillow + numpy live there):
   highlight the number of graphs", 14 Sep 2026), and **no numerals on the picture**
   ("for the trigo graphs, don't have to put the numbers", 14 Sep 2026) — the colour is
   the whole of the count. One graph in the range stays plain black. Five colours, because
-  two graphs that touch must never share one. **A colour means a WHOLE graph** — a
-  part-graph at the edge of the range is an offcut, so `cycle_colour('part')` draws it
-  grey and it is left out of the count ("you misunderstand. this is ONE tangent graph",
-  14 Sep 2026). The same palette serves `tgraphs.py` and `drawsteps.py`, so graph 2 is
+  two graphs that touch must never share one. `cycle_colour('part')` is a grey for a
+  genuine offcut beside graphs that ARE being counted; the tangent pictures no longer
+  need it. The same palette serves `tgraphs.py` and `drawsteps.py`, so graph 2 is
   the same orange in both.
 - `tgraphs.py` — the three basic shapes (sin, cos, tan) for a three-column notes block,
   plus six variation graphs showing what a, b and c each do. `variation(..., pieces=…)`
   does the colour coding; `cycles(xmax, period)` builds the runs for a curve
   that simply repeats. **Tangent graphs are drawn to 360°** ("draw until 360 degrees, to
-  illustrate how many tangent graph there are in 360degrees", 14 Sep 2026) — one tangent
-  graph is 180° wide, so `y = a tan bx` gives `b` of them in 180° and `2b` in 360°.
-  **On a tangent curve a graph runs from one asymptote to the next, and only a WHOLE one
-  is coloured** ("this is considered one tangent graph -> this should be same colour, then
-  another set of this should be another colour" / "you misunderstand. this is ONE tangent
-  graph", 14 Sep 2026): the stub at either end of the range is an offcut of the graph next
-  door, so it takes colour number `'part'` and comes out grey. Give `pieces` one run per
-  piece between asymptotes.
+  illustrate how many tangent graph there are in 360degrees", 14 Sep 2026).
+  **Tangent is counted EXACTLY like sine and cosine: `y = a tan bx` has `b` graphs in
+  360°, so one graph is 360°/b wide** ("this should be two colours (left one colour from
+  0 to 180) and right one colour (from 180 to 360)" on `y = tan 2x`, 14 Sep 2026) — an
+  asymptote INSIDE a graph does not end it. `y = tan x` is one graph, so plain black;
+  `y = tan 2x` is `cycles(360, 180)`; `y = 2 tan ½x` is half a graph, so plain black.
+  Never re-derive the count from tan's 180° period — that reading was corrected three
+  times. See `../ADRIAN-STYLE.md` §Diagrams.
 - `drawsteps.py` — the step-by-step SERIES for "how to draw a graph": six panels of the
   same axes, each adding one step (max/min → centre line → period and cycles → the five
   points → one cycle drawn → the cycle copied along, one colour per copy).
