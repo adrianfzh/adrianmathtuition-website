@@ -611,6 +611,27 @@ export async function POST(req: NextRequest) {
   if (body.action === 'reissue') {
     const runId = String(body.runId || '');
     if (!/^[0-9a-f-]{36}$/i.test(runId)) return NextResponse.json({ error: 'runId is required' }, { status: 400 });
+    // 📌 The app channel (14 Sep 2026, Adrian: "put the message in the app (in
+    // the cards instead - don't send through telegram), and only have the
+    // message last for 3 days"). News about the COPY — pages that were missing
+    // are there now — is our own plumbing, not Adrian's marking: it does not
+    // deserve a Telegram line in his name at whatever hour the repair runs. It
+    // sits on the paper's card, and it expires (lib/paper-notice).
+    //
+    // Only the pages news goes this way. "Adrian checked your paper and changed
+    // a mark" IS his voice and his accountability — that one keeps the Telegram
+    // line, so an app-channel 'checked' is refused rather than quietly
+    // downgraded to a banner nobody is pinged about.
+    //
+    // The refusal is decided HERE, before a byte moves. It first sat down beside
+    // the send, and a rejected request had by then already rebuilt both PDFs,
+    // overwritten the Dropbox copy and restamped reissued_at — work the caller
+    // was told had not happened. A guard that answers 400 must answer it before
+    // the side effects, not after them.
+    const reason = parseReissueReason(body.reason);
+    if (body.channel === 'app' && reason !== 'pages-recovered') {
+      return NextResponse.json({ error: "the app channel carries the pages notice only — a 'checked' re-issue goes to Telegram" }, { status: 400 });
+    }
     const { data: run, error: rErr } = await supa.from('paper_marking_runs')
       .select('id, paper_name, student_id, student_name, released_at, result_json, total_awarded, total_max, created_at')
       .eq('id', runId).maybeSingle();
@@ -658,22 +679,9 @@ export async function POST(req: NextRequest) {
     // …and a copy that was only ever MISSING PAGES was not re-marked at all
     // (14 Sep 2026): `reason: 'pages-recovered'` — lib/reissue-message.ts owns
     // both wordings so the self-fix and the desk say the same thing.
-    const reason = parseReissueReason(body.reason);
     let via: 'telegram' | 'app' | 'none' = 'none';
-    // 📌 The app channel (14 Sep 2026, Adrian: "put the message in the app (in
-    // the cards instead - don't send through telegram), and only have the
-    // message last for 3 days"). News about the COPY — pages that were missing
-    // are there now — is our own plumbing, not Adrian's marking: it does not
-    // deserve a Telegram line in his name at whatever hour the repair runs. It
-    // sits on the paper's card, and it expires.
     if (body.channel === 'app') {
-      // Only the pages news goes this way. "Adrian checked your paper and
-      // changed a mark" IS his voice and his accountability — that one keeps
-      // the Telegram line, so an app-channel 'checked' is refused rather than
-      // quietly downgraded to a banner nobody is pinged about.
-      if (reason !== 'pages-recovered') {
-        return NextResponse.json({ error: "the app channel carries the pages notice only — a 'checked' re-issue goes to Telegram" }, { status: 400 });
-      }
+      // Vetted at the top of the block: this is only ever 'pages-recovered'.
       rj.student_notice = buildPaperNotice('pages-recovered');
       await supa.from('paper_marking_runs').update({ result_json: rj }).eq('id', runId);
       via = 'app';
