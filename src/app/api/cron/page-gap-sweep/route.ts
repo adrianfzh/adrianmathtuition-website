@@ -97,17 +97,40 @@ async function reissueInApp(runId: string, origin: string, headers: Record<strin
   }
 }
 
+/**
+ * Is this error the PAGE's fault, or OURS? A page that won't re-ink is news
+ * about one paper; `Unauthorized` is news about the self-fix itself, and the
+ * two must not sound alike. The Unauthorized bug above hid for exactly this
+ * reason — it arrived dressed as an ordinary unfixable page, said so once, and
+ * `alreadyReported` then muted it for good.
+ */
+function isToolFault(err: string): boolean {
+  return /unauthorized|forbidden|not configured|\b40[13]\b/i.test(err);
+}
+
 export async function GET(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const supa = getSupabaseAdmin();
   const started = Date.now();
   const since = new Date(started - WINDOW_DAYS * 86_400_000).toISOString();
-  // The admin bearer this request already carries is what the redraw and the
-  // rebuild are called with — same-origin, same credentials (the release-with-
-  // sheet pattern). A cron fires with `x-vercel-cron` and no bearer, so fall
-  // back to CRON_SECRET / ADMIN_PASSWORD from the environment.
-  const pass = req.headers.get('authorization')
-    || (process.env.ADMIN_PASSWORD ? `Bearer ${process.env.ADMIN_PASSWORD}` : '');
+  // 🔑 The outbound bearer is ADMIN_PASSWORD — NEVER the header we arrived with.
+  //
+  // This route used to forward its own `Authorization` to /api/admin/desk/redraw
+  // and /api/admin/mark-triage, on the reasoning that a same-origin call should
+  // carry the credentials it was called with. It doesn't work here, because the
+  // two ends accept different secrets: `authed()` above takes CRON_SECRET, and a
+  // Vercel cron duly fires with `Authorization: Bearer <CRON_SECRET>` — but
+  // verifyAdminAuth (lib/schedule-helpers) accepts ONLY an admin session cookie
+  // or `Bearer ADMIN_PASSWORD`. So every cron-fired redraw came back
+  // `Unauthorized`, and the self-fix had never once repaired a page in
+  // production — it reported and stopped, which looks identical to a run with
+  // nothing fixable in it (run fa719bfb…, 14 Sep 2026 14:30 SGT:
+  // "errors":["page 1: Unauthorized","page 2: Unauthorized"],"repaired":0).
+  //
+  // The incoming header stays as the fallback so a hand-run `Bearer
+  // ADMIN_PASSWORD` still works on a deployment where the env var is absent.
+  const pass = (process.env.ADMIN_PASSWORD ? `Bearer ${process.env.ADMIN_PASSWORD}` : '')
+    || req.headers.get('authorization') || '';
   const headers: Record<string, string> = pass ? { Authorization: pass } : {};
   const origin = req.nextUrl.origin;
 
@@ -117,6 +140,8 @@ export async function GET(req: NextRequest) {
   }[] = [];
   /** Released copies replaced this tick — each carries a three-day card notice. */
   const noticed: string[] = [];
+  /** Errors that are about the sweep, not about a page. Deduped, never muted. */
+  const faults = new Set<string>();
 
   try {
     const { data, error } = await supa
@@ -164,6 +189,8 @@ export async function GET(req: NextRequest) {
         }
       }
 
+      for (const e of outcome.errors) if (isToolFault(e)) faults.add(e.replace(/^page \d+: /, ''));
+
       // Tell Adrian about what is STILL missing after the sweep's own attempt —
       // once per gap set, so an unfixable page names itself to him one time
       // instead of four times a day until he acts.
@@ -192,6 +219,17 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // 🔌 The self-fix couldn't do its job for a reason that has nothing to do
+    // with the paper. This line is NOT subject to alreadyReported: a broken
+    // repair arm is worth saying every six hours until somebody fixes it.
+    if (faults.size) {
+      lines.push(
+        `🔌 The page-gap self-fix could not do its own work: ${[...faults].slice(0, 3).join(' · ')}.\n`
+        + 'Pages were found but nothing was repaired — this is our plumbing, not the paper. '
+        + `Check ADMIN_PASSWORD on the deployment.\n${SITE}/admin/ops`,
+      );
+    }
+
     for (const line of lines) await sendTelegram(line, 'marking').catch(() => {});
 
     const repaired = report.reduce((n, r) => n + r.repaired, 0);
@@ -199,7 +237,9 @@ export async function GET(req: NextRequest) {
     const summary = report.length
       ? `${report.length} paper${report.length === 1 ? '' : 's'} with missing pages · ${repaired} redrawn · ${noticed.length} released copy${noticed.length === 1 ? '' : 'ies'} replaced · ${open} still open`
       : 'every page accounted for';
-    await logJobRun('page-gap-sweep', true, summary).catch(() => {});
+    // A sweep that found gaps and repaired none of them because of a tool fault
+    // is a FAILED run, so the ops board ambers instead of reading "all quiet".
+    await logJobRun('page-gap-sweep', !faults.size, faults.size ? `${summary} · self-fix broken: ${[...faults][0]}` : summary).catch(() => {});
     return NextResponse.json({ ok: true, summary, sent: lines.length, noticed, report });
   } catch (e) {
     await logJobRun('page-gap-sweep', false, (e as Error).message.slice(0, 200)).catch(() => {});

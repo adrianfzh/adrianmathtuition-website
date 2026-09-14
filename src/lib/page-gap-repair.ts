@@ -168,8 +168,11 @@ export function gapCheckStamp(out: RepairOutcome, at = new Date().toISOString())
  * redraw already in flight is always finished). Whatever is left over is still
  * a gap, and the sweep will be back in six hours.
  *
- * `origin` + `headers` come from the request that triggered it — a same-origin
- * fetch with the admin bearer forwarded, the release-with-sheet pattern.
+ * `origin` + `headers` come from the caller — a same-origin fetch carrying
+ * `Bearer ADMIN_PASSWORD`, the release-with-sheet pattern. It must be THAT
+ * secret and not whatever the caller was itself authenticated with: the desk
+ * routes accept only the admin password, so a cron that forwarded its own
+ * `Bearer CRON_SECRET` here got `Unauthorized` on every page (14 Sep 2026).
  */
 export async function repairPageGaps(
   runId: string,

@@ -49,7 +49,17 @@ Writers:
   14 Sep 2026 a run they ALREADY HOLD is repaired too and re-issued once on the
   **app channel** (`mark-triage {channel:'app'}`) — a three-day line on the
   paper's card, nothing sent. Whatever it still could not fix is named to Adrian
-  in the sweep's own line to the marking topic. Every run it looked at carries
+  in the sweep's own line to the marking topic. **A failure that is OURS rather
+  than the paper's — `Unauthorized`, `not configured`, a 401/403 — gets its own
+  🔌 line that `alreadyReported` never mutes, and stamps the job run as FAILED
+  so the board ambers.** Why: the sweep shipped forwarding its own incoming
+  `Authorization` to the desk routes, so a Vercel cron (which fires with
+  `Bearer CRON_SECRET`) got `Unauthorized` on every redraw and the self-fix
+  repaired nothing in production from 14 Sep 2026 until it was found the same
+  day — and it looked exactly like an ordinary unfixable page. **A cron that
+  calls an admin route must build `Bearer ADMIN_PASSWORD` itself and never
+  forward the header it arrived with**; the two ends accept different secrets.
+  Every run it looked at carries
   `result_json.page_gap_check`, which is the audit trail AND the memory that
   says an unfixable page once instead of four times a day. Stamps every run
   → [`MARKING.md`](MARKING.md) §🕳 When the paper is missing),
