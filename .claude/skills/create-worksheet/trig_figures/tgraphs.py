@@ -171,7 +171,7 @@ if __name__ == '__main__':
               dots=[(180, 3), (0, -1)],
               note=r'$a<0$ turns the curve over')
     # 5. b on tan — y = tan 2x, drawn to 360 deg so the four are there to count.
-    #    The range ends cut graph 4 in half, so both halves carry the 4.
+    #    The two range ends are each half of one graph, so both halves carry the 1.
     variation('v_tan_b.png', lambda t: np.tan(2 * d(t)), 360, -2.7, 4.6,
               [90, 180, 270, 360], [-1, 1], asym=(45, 135, 225, 315),
               clip=(-2.5, 2.5),
