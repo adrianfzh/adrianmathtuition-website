@@ -72,13 +72,25 @@ def arrow_axes(ax, xlabel='x', ylabel='y', color='k', size=7.0, lw=0.9,
 CYCLE_COLOURS = ['#1a5fb4', '#c64600', '#7a3fb8', '#0b7285', '#a4187a']
 CURVE = '#1a1a1a'
 
+# A COLOUR MEANS A WHOLE GRAPH.  Adrian, 14 Sep 2026, on the 0-360 tangent
+# picture with all three pieces coloured: "you misunderstand.  this is ONE
+# tangent graph" — a tangent graph runs from one asymptote to the next, and the
+# stub left at each end of the range is an offcut of the graph next door, not a
+# graph of its own.  An offcut is drawn GREY so it is plainly not one of the
+# things being counted.
+PART_GRAPH = '#9a9a9a'
+
 
 def cycle_colour(i, default=CURVE):
-    """Colour for repeat number i (0-based).  None = a single graph, so black.
+    """Colour for graph number i (0-based).  None = a single graph, so black.
 
-    A range holding only one graph is drawn plain — a colour there would be
-    counting something there is nothing to count.  Adjacent graphs must never
-    land on the same colour, so there are five here: a tangent range can hold
-    four whole graphs plus a part-graph at each end.
+    `'part'` = a part-graph at the edge of the range, drawn grey: it is an
+    offcut of a graph that does not fit in the picture, and colouring it would
+    add one to the count the colours are there to make.  A range holding only
+    one graph is drawn plain black — a colour there would be counting something
+    there is nothing to count.  Adjacent graphs never land on the same colour,
+    so there are five.
     """
+    if i == 'part':
+        return PART_GRAPH
     return default if i is None else CYCLE_COLOURS[i % len(CYCLE_COLOURS)]

@@ -210,26 +210,34 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   colour there counts something there is nothing to count. Palette and helper live in
   `trig_figures/axes.py` (`CYCLE_COLOURS`, `cycle_colour(i)`); every figure uses the same
   one, so graph 2 is the same orange on the step-by-step panels as on the variation
-  graphs. **Two graphs that touch never take the same colour** — the palette holds five
-  because a tangent range can hold four whole graphs plus a part-graph at each end.
-- **One tangent graph is the piece between two asymptotes** (14 Sep 2026, pointing at the
-  90°–270° branch of `y = tan x`: "this is considered one tangent graph -> this should be
-  same colour, then another set of this should be another colour"). So the piece, not the
-  period counted from 0, is the unit of colour: on `y = tan x` over 0°–360° the tail at
-  0°–90°, the whole branch at 90°–270° and the head at 270°–360° are three DIFFERENT
-  colours. A part-graph at the start of the range and a part-graph at the end belong to
-  different graphs and must never share a colour — an earlier version gave both ends the
-  same colour to say "between them they make one", and he corrected it. How many graphs
-  are in the range is read off the period, not counted off the colour bands.
+  graphs. **Two graphs that touch never take the same colour** — the palette holds five.
+- **A COLOUR MEANS A WHOLE GRAPH; a part-graph at the edge of the range is grey**
+  (14 Sep 2026, on `y = tan x` over 0°–360° drawn with all three pieces coloured: "you
+  misunderstand. this is ONE tangent graph"). A tangent graph runs from one asymptote to
+  the next, so only a piece with an asymptote at BOTH ends earns a colour. Inside 0°–360°
+  that is the 90°–270° branch alone: the stub before 90° and the stub after 270° are
+  offcuts of the graphs next door, drawn GREY so the eye does not count them. On
+  `y = tan 2x` the three whole graphs (45°–135°, 135°–225°, 225°–315°) take the three
+  colours and the two stubs stay grey — three whole plus two halves is the four the
+  period promises. **Do not colour a part-graph at all**: one earlier version gave both
+  ends the same colour to say "between them they make one", the next gave them two
+  different colours to say they belong to different graphs, and he corrected both — a
+  colour on the picture is a graph you can count, and half a graph is not one. When the
+  range holds no whole graph at all (`y = 2 tan ½x` over 0°–360° is the back half of one
+  and the front half of the next) the curve is plain BLACK, not grey: grey means "offcut,
+  don't count this one" beside things that are being counted, and there nothing is.
+  `cycle_colour('part')` in `trig_figures/axes.py` is the grey. How many graphs are in
+  the range is read off the period, never counted off the colour bands.
 - **A tangent graph is drawn to 360°, not to one period** (14 Sep 2026: "for tangent
   graph draw until 360 degrees, to illustrate how many tangent graph there are in
   360degrees"). The point of the picture is the count, and a picture that stops at one
   period has nothing to count. One tangent graph is only 180° wide, so `y = a tan bx`
   has **`b` tangent graphs in 180°, and `2b` in 360°** — do NOT carry over the sine and
   cosine rule of "`b` graphs in 360°", it gives the wrong number for tangent. The range
-  ends usually cut a graph in half; each half is part of its OWN graph and is coloured
-  apart from the other end (see the bullet above). Pattern: `trig_figures/tgraphs.py`
-  `variation(..., pieces=…)`, one `(from, to, colour)` run per piece between asymptotes.
+  ends usually cut a graph in half; a half is not a graph, so it is drawn grey and left
+  out of the count (see the bullet above). Pattern: `trig_figures/tgraphs.py`
+  `variation(..., pieces=…)`, one `(from, to, colour)` run per piece between asymptotes,
+  with `'part'` as the colour number for a stub at either end.
 - **A shifted sine or cosine shows its centre line, dotted** (14 Sep 2026: "the graph in
   the solution should show the centre line (dotted)"). Any sketch of
   `y = a sin bx + c` / `y = a cos bx + c` with `c ≠ 0` — the SOLUTION graphs as much as

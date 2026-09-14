@@ -29,19 +29,23 @@ Matplotlib helpers, run under `/usr/bin/python3` (Pillow + numpy live there):
   highlight the number of graphs", 14 Sep 2026), and **no numerals on the picture**
   ("for the trigo graphs, don't have to put the numbers", 14 Sep 2026) — the colour is
   the whole of the count. One graph in the range stays plain black. Five colours, because
-  two graphs that touch must never share one. The same palette serves `tgraphs.py` and
-  `drawsteps.py`, so graph 2 is the same orange in both.
+  two graphs that touch must never share one. **A colour means a WHOLE graph** — a
+  part-graph at the edge of the range is an offcut, so `cycle_colour('part')` draws it
+  grey and it is left out of the count ("you misunderstand. this is ONE tangent graph",
+  14 Sep 2026). The same palette serves `tgraphs.py` and `drawsteps.py`, so graph 2 is
+  the same orange in both.
 - `tgraphs.py` — the three basic shapes (sin, cos, tan) for a three-column notes block,
-  plus six variation graphs showing what a, b and c each do. `variation(..., pieces=…,
-  numbers=…)` does the colour coding; `cycles(xmax, period)` builds the runs for a curve
+  plus six variation graphs showing what a, b and c each do. `variation(..., pieces=…)`
+  does the colour coding; `cycles(xmax, period)` builds the runs for a curve
   that simply repeats. **Tangent graphs are drawn to 360°** ("draw until 360 degrees, to
   illustrate how many tangent graph there are in 360degrees", 14 Sep 2026) — one tangent
   graph is 180° wide, so `y = a tan bx` gives `b` of them in 180° and `2b` in 360°.
-  **On a tangent curve the unit of colour is the piece between two asymptotes** ("this is
-  considered one tangent graph -> this should be same colour, then another set of this
-  should be another colour", 14 Sep 2026): one piece, one colour, so the part-graph at the
-  start of the range and the part-graph at the end are coloured APART — they belong to
-  different graphs. Give `pieces` one run per piece.
+  **On a tangent curve a graph runs from one asymptote to the next, and only a WHOLE one
+  is coloured** ("this is considered one tangent graph -> this should be same colour, then
+  another set of this should be another colour" / "you misunderstand. this is ONE tangent
+  graph", 14 Sep 2026): the stub at either end of the range is an offcut of the graph next
+  door, so it takes colour number `'part'` and comes out grey. Give `pieces` one run per
+  piece between asymptotes.
 - `drawsteps.py` — the step-by-step SERIES for "how to draw a graph": six panels of the
   same axes, each adding one step (max/min → centre line → period and cycles → the five
   points → one cycle drawn → the cycle copied along, one colour per copy).

@@ -42,20 +42,20 @@ def _sincos(out, fn, label):
 
 
 def _tan(out):
-    """y = tan x to 360 deg — one colour per tangent graph.
+    """y = tan x to 360 deg — a colour marks a WHOLE tangent graph.
 
-    ONE TANGENT GRAPH IS THE PIECE BETWEEN TWO ASYMPTOTES (Adrian, 14 Sep 2026,
+    ONE TANGENT GRAPH RUNS FROM ONE ASYMPTOTE TO THE NEXT (Adrian, 14 Sep 2026,
     on the 90-270 branch: "this is considered one tangent graph -> this should
-    be same colour, then another set of this should be another colour").  So
-    the piece is the unit of colour: 0-90 is the tail of one graph, 90-270 is
-    a whole one, 270-360 is the head of the next, and all three take DIFFERENT
-    colours — the halves at the two ends belong to different graphs and must
-    never share.  How many graphs are in the range is read off the period
-    (360 / 180 = 2), not counted off the colour bands, and no numerals go on
-    the picture ("don't have to put the numbers", 14 Sep 2026).
+    be same colour, then another set of this should be another colour").  Only
+    a whole one is coloured: inside 0-360 that is the 90-270 branch alone.  The
+    stub before 90 and the stub after 270 are offcuts of the graphs next door,
+    so they are drawn GREY — colouring them would say three graphs, and he
+    corrected exactly that ("you misunderstand.  this is ONE tangent graph").
+    How many graphs are in the range is read off the period (360 / 180 = 2),
+    and no numerals go on the picture ("don't have to put the numbers").
     """
     f, ax = plt.subplots(figsize=(2.3, 1.5))
-    for a, b, ci in [(0, 90, 0), (90, 270, 1), (270, 360, 2)]:
+    for a, b, ci in [(0, 90, 'part'), (90, 270, 0), (270, 360, 'part')]:
         x = np.linspace(a + 0.6, b - 0.6, 400)
         y = np.tan(x * DEG)
         y[np.abs(y) > 3.1] = np.nan
@@ -82,10 +82,14 @@ def variation(out, fn, xmax, ymin, ymax, xticks, yticks, centre=None,
     holding more than one graph is colour coded — one colour per graph.  Left
     out, the curve is drawn plain black, which is what a range holding a single
     graph should look like.  The colour is the whole of the count; the graphs
-    carry no numerals ("don't have to put the numbers", 14 Sep 2026).  On a
-    TANGENT curve the unit is the piece between two asymptotes — one piece,
-    one colour, and never the same colour twice in a row, so a part-graph at
-    the start of the range and a part-graph at the end are coloured apart.
+    carry no numerals ("don't have to put the numbers", 14 Sep 2026).
+
+    A COLOUR MEANS A WHOLE GRAPH.  On a TANGENT curve a graph runs from one
+    asymptote to the next, so only a piece with an asymptote at BOTH ends takes
+    a colour; the stub left at either end of the range is an offcut of a graph
+    that does not fit in the picture and is given colour number `'part'`, which
+    draws it grey.  ("you misunderstand.  this is ONE tangent graph", Adrian,
+    14 Sep 2026, on a picture that had coloured all three pieces.)
     """
     f, ax = plt.subplots(figsize=(2.3, 1.55))
     if pieces is None:
@@ -165,16 +169,20 @@ if __name__ == '__main__':
               dots=[(180, 3), (0, -1)],
               note=r'$a<0$ turns the curve over')
     # 5. b on tan — y = tan 2x, drawn to 360 deg so the four are there to see.
-    #    Five pieces between asymptotes, five colours: the part-graph at 0-45
-    #    and the part-graph at 315-360 belong to different graphs.
+    #    Three WHOLE graphs sit inside the range and take the three colours; the
+    #    stubs at 0-45 and 315-360 are offcuts and stay grey.  Three whole plus
+    #    two halves is the four the period promises.
     variation('v_tan_b.png', lambda t: np.tan(2 * d(t)), 360, -2.7, 4.6,
               [90, 180, 270, 360], [-1, 1], asym=(45, 135, 225, 315),
               clip=(-2.5, 2.5),
               period=(45, 135, 3.05, r'period $90^\circ$'),
-              pieces=[(0, 45, 0), (45, 135, 1), (135, 225, 2),
-                      (225, 315, 3), (315, 360, 4)])
-    # 6. a and a fractional b on tan — y = 2 tan (x/2).  One tangent graph fills
-    #    the whole range, so there is nothing to colour code.
+              pieces=[(0, 45, 'part'), (45, 135, 0), (135, 225, 1),
+                      (225, 315, 2), (315, 360, 'part')])
+    # 6. a and a fractional b on tan — y = 2 tan (x/2).  The period is the whole
+    #    range, so no WHOLE graph fits inside it — the picture is the back half
+    #    of one graph and the front half of the next.  Nothing to count, so the
+    #    curve stays plain black rather than grey: grey says "offcut, don't count
+    #    it" next to things that ARE being counted, and here nothing is.
     variation('v_tan_ab.png', lambda t: 2 * np.tan(d(t) / 2), 360, -3.3, 5.2,
               [90, 180, 270, 360], [-2, 2], asym=(180,), clip=(-3.0, 3.0),
               period=(0, 360, 4.2, r'period $360^\circ$'))
