@@ -180,6 +180,27 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   max/min/amplitude/centreline/period formula/period"). Keep every column the same
   shape — the equation line first, then the figure, then the short facts — so the eye
   compares straight across. The widths must sum to about 16 cm.
+- **Every GRAPH carries named, arrowed axes** (14 Sep 2026: "the graphs should have x
+  and y axis labelled with the arrow for x-axis and y-axis (it was not drawn in the
+  trigonometric worksheet you presented)"). The two axes cross at the origin, each one
+  ends in an arrowhead, and each one carries its name — `x` and `y`, or `\theta` and `y`
+  when the angle is in radians. Draw them with the shared helper, never with spine code
+  of your own: `from axes import arrow_axes` then `arrow_axes(ax, xlabel='x', ylabel='y')`
+  AFTER the limits are set (`trig_figures/axes.py`). The helper also lifts the axis
+  above the curve and puts a white outline round the numbers, so a curve passing through
+  a tick label still leaves it readable. A quadrant reference square (`astc.py`,
+  `quad.py`) is not a graph — it keeps its plain crossed lines. And the curve is named
+  on the curve, not down the side of the axis: a rotated y-axis label saying the same
+  thing twice is removed.
+- **A graph is taught as a series, not as one finished picture** (14 Sep 2026: "showing
+  step by step how to draw a graph, properly show a series on diagrams… then copy the
+  graphs… use different colours for each graph on the same diagram"). One panel per
+  step of the SAME axes, each adding one thing: maximum and minimum first, then the
+  centre line, then the period and how many cycles fit the range, then the five points
+  of one cycle a quarter period apart, then that one cycle drawn, then the cycle copied
+  along — each copy in its own colour on the same diagram, with a closing line saying
+  the colours only show the cycle moved along and in the exam all of them are one pen.
+  Pattern: `trig_figures/drawsteps.py`.
 - Figures from the question bank are embedded as stored; hand-drawn art only when the
   bank has none (and then through the bot's figure registry first — CLAUDE.md §Figure
   library).

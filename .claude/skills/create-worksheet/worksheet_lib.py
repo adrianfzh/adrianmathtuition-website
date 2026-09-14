@@ -295,6 +295,21 @@ def _latex_to_omml(latex_expr, display=False):
             os.unlink(docx_path)
 
 
+# A label column of 1 cm fits "(a)" or "(vii)"; "(viii)" wrapped onto two lines and
+# pushed the part's first line down, and a word label ("Step 1") is wider still. So
+# the column is measured from the label's own glyphs, not its character count —
+# parentheses and "i" are narrow, letters and digits are not.
+_LAB_GLYPH_CM = {'(': 0.13, ')': 0.13, 'i': 0.10, 'l': 0.10, 'j': 0.10,
+                 '.': 0.10, ' ': 0.10, 'v': 0.18, 'x': 0.18, '1': 0.18}
+
+
+def _label_width_cm(label, pad=0.45):
+    """Width in cm the label column needs so `label` sits on one line at 11 pt."""
+    if not label:
+        return 0.0
+    return round(sum(_LAB_GLYPH_CM.get(ch, 0.22) for ch in label) + pad, 2)
+
+
 def _outer_border_only(table):
     """Adrian's solution boxes show ONLY the outer TableGrid border.
 
@@ -1228,10 +1243,8 @@ class Worksheet:
         # The label column is 1 cm — his own sheets never go past "(vii)". A longer
         # label ("(viii)", "(b)(ii)") wrapped onto two lines and pushed the part's
         # first line down, so the column grows with the widest label instead.
-        lab_w = 1.0
-        widest = max((len(label) for label, _ in rows), default=0)
-        if widest > 5:
-            lab_w = round(1.0 + 0.22 * (widest - 5), 2)
+        lab_w = max(1.0, max((_label_width_cm(label) for label, _ in rows),
+                             default=0.0))
         work_w = 16.0 - lab_w
         table = self.doc.add_table(rows=len(rows), cols=2 if labelled else 1)
         table.style = self.doc.styles['Table Grid']
