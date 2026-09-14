@@ -190,7 +190,6 @@ def main():
     worked(ws)
     ws.page_break()
     ws.para([B('Practice')])
-    ws.para([I('Show all working. Answers follow each question.')])
     n = render_practice(ws, by_id, PRACTICE)
     save(ws, "EM", "25 Statistics Revision.docx")
     print(f"worked examples: 4    practice: {n}/{len(PRACTICE)}")

@@ -265,7 +265,6 @@ def worked(ws):
 def practice(ws, rows):
     ws.page_break()
     ws.para([B('Practice')])
-    ws.para([I('Answers are at the end of each question. Show all working.')])
     by_id = {r["id"]: r for r in rows}
     n = 0
     for qid in PRACTICE:

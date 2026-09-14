@@ -58,6 +58,32 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   the incorrect one", 12 Sep 2026).
 - A derivation is shown, not quoted: the half-angle formula comes FROM the double-angle
   formula on the page (`cos 2A = 1 − 2 sin² A` → put `A = Q/2` → …), not stated.
+- **A note carries the REASON, not just the conclusion** — "a little more explanation
+  wherever it helps a student" (14 Sep 2026, the three edits he made to the S3
+  Trigonometry sheet). The student cannot see the step you skipped in your head, so
+  the note is the place to say it. Three shapes, from his own corrections:
+  - **Say where the fact came from, not just the fact.**
+    ✗ `← reject the negative: Q/2 is in the 2nd quadrant, sine positive`
+    ✓ `← reject the negative: since Q is in 4th quad, Q/2 is in the 2nd quadrant,
+      hence sine positive`
+    The quadrant of `Q/2` is the thing being asserted — the note has to start from
+    what the question gave (`Q` in the 4th) and walk to it. "since … hence" is his
+    wording.
+  - **Name what is being used, in words.** A bare formula label is not a sentence.
+    ✗ `← sin(A − B)`  ✓ `← using the formula for sin(A − B)`
+  - **A line that silently substitutes a known value gets a note saying so**, even
+    when the substitution feels obvious to us: `= (1/√2)(2/√5) − …` earned
+    `← know the trigonometric ratios: sin π/4 = 1/√2`. The exact ratios, the special
+    angles, a standard result quoted from the notes — if the value appeared without
+    being computed on the page, say where it comes from.
+  This is authoring judgment, not something the renderer can supply: it can only
+  warn. `find_terse_notes()` prints a hint at `save()` for a ← note that carries no
+  words of explanation at all (a bare formula or symbol), which usually means one of
+  the three shapes above is missing. It never blocks a save — a genuinely one-word
+  note is fine.
+  The countervailing rule still holds: a note that WRAPS drops its line out of
+  alignment. When the explanation will not fit beside the line, put it on its own
+  short line under the working rather than shortening it into a label.
 
 ## 3 · Two cases side by side with "or"
 
@@ -114,6 +140,13 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   is a large gap", 12 Sep). Practice questions and their `[Ans:]` line stay together.
 - One `[Ans: (a) …; (b) …]` line per practice question, orange, right-aligned, at the end
   — never after each part.
+- **No rubric line under a "Practice" heading** (14 Sep 2026: "don't have to put the
+  statement 'answers are at the end of each question…'"). The heading goes straight
+  into question 1. The `[Ans:]` line is visible at the foot of every question, so
+  saying so is noise, and his students already show working. Stripped from `rw.py`,
+  `bank_worked_sheet.py` and the `scripts/revision-builders/*` builders. A line that
+  carries REAL information about the questions still belongs there — "Each question
+  refers to the diagram printed with it" stayed; only the boilerplate half went.
 - **The first line of a table gets 2 pt above it** — spacing Before 2 pt, After 0 pt,
   line spacing 1.5, no indent, exactly as his Paragraph dialog reads (7 Sep 2026: "2px
   spacing from the top of the box for the first line only"; extended 14 Sep 2026 to

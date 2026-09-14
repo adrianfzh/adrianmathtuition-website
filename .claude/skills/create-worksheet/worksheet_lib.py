@@ -564,6 +564,50 @@ _PLAIN_MATHS_OK = re.compile(
 )
 
 
+#: tokens that are maths, not explanation — a note made only of these says nothing
+_NOTE_MATHS_WORDS = {
+    'sin', 'cos', 'tan', 'sec', 'cot', 'csc', 'cosec', 'sinh', 'cosh', 'tanh',
+    'log', 'lg', 'ln', 'exp', 'lim', 'max', 'min', 'arcsin', 'arccos', 'arctan',
+}
+
+
+def find_terse_notes(docx_path):
+    """Every grey "←" note in a saved .docx that carries no words of explanation.
+    Returns a list of note strings. Empty list = clean.
+
+    Adrian's rule (14 Sep 2026, on the S3 Trigonometry sheet): a note gives the
+    REASON, not just the conclusion — "using the formula for sin(A − B)", not a
+    bare "sin(A − B)"; "since Q is in 4th quad, Q/2 is in the 2nd quadrant,
+    hence sine positive", not the quadrant alone; and a line that substitutes a
+    known value says where it came from ("know the trigonometric ratios:
+    sin π/4 = 1/√2"). Whether a note explains ENOUGH is authoring judgment and
+    cannot be checked here. What can: a note that is only a formula or a symbol
+    has certainly not been written as a sentence, and is nearly always one of
+    those three shapes missing. A note needs one word of three letters or more
+    that is not a function name."""
+    import zipfile as _zf
+    from lxml import etree as _et
+    root = _et.fromstring(_zf.ZipFile(docx_path).read('word/document.xml'))
+    w_, m_ = f'{{{W}}}', f'{{{M_NS}}}'
+    notes = []
+    for par in root.iter(f'{w_}p'):
+        line = []
+        for el in par.iter():
+            if el.tag in (f'{w_}t', f'{m_}t'):
+                line.append(el.text or '')
+            elif el.tag == f'{w_}br':          # a soft break starts a new line
+                line.append('\n')
+        for seg in ''.join(line).split('\n'):
+            if '←' not in seg:
+                continue
+            note = seg.rsplit('←', 1)[1].strip()
+            words = [w for w in re.findall(r'[A-Za-z]+', note)
+                     if len(w) >= 3 and w.lower() not in _NOTE_MATHS_WORDS]
+            if not words:
+                notes.append(note)
+    return notes
+
+
 def find_plain_maths(docx_path):
     """Every <w:t> run in a saved .docx that looks like maths typed as text.
     Returns a list of (run text, reason). Empty list = clean."""
@@ -1633,3 +1677,11 @@ class Worksheet:
                 print(f'   {why}: {text!r}')
             if strict_maths:
                 raise ValueError(f'{len(hits)} plain-text maths run(s) in {path}')
+        # A ← note explains; it is not a label (ADRIAN-STYLE §2, 14 Sep 2026).
+        # Advisory only — a note the author meant to be short is fine.
+        terse = find_terse_notes(path)
+        if terse:
+            print(f'HINT: {len(terse)} "←" note(s) carry no explanation — say what is '
+                  f'being used and why ("using the formula for sin(A − B)", not "sin(A − B)"):')
+            for note in terse[:20]:
+                print(f'   ← {note}')

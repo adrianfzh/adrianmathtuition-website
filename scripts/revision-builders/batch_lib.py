@@ -153,7 +153,6 @@ def build(cfg):
         worked_from_bank(ws, wx, figdir, cfg.get("skill_titles", ["Worked Example"] * n_wx))
     ws.page_break()
     ws.para([B('Practice')])
-    ws.para([I('Show all working. The answer follows each question.')])
     by_id = {r["id"]: r for r in practice}
     n = render_practice(ws, by_id, [r["id"] for r in practice], figdir=figdir)
     out = save(ws, cfg["folder"], cfg["filename"])

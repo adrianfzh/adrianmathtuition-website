@@ -145,7 +145,7 @@ def main():
     worked(ws, figdir)
     ws.page_break()
     ws.para([B('Practice')])
-    ws.para([I('Each question refers to the diagram printed with it. Show all working.')])
+    ws.para([I('Each question refers to the diagram printed with it.')])
     n = render_practice(ws, by_id, PRACTICE, figdir=figdir)
     save(ws, "EM", "11 Distance and Speed Time Graphs Revision.docx")
     print(f"worked examples: 3    practice: {n}/{len(PRACTICE)}")

@@ -294,7 +294,6 @@ assert set(ANSWERS) == {str(r["id"])[:8] for r in practice}
 
 ws.page_break()
 ws.para([("text", "Practice", B)])
-ws.para([("text", "Answers are at the end of each question. Show all working.", I)])
 for r in practice:
     id8 = str(r["id"])[:8]
     ws.Q(sm(r["question_text"]))

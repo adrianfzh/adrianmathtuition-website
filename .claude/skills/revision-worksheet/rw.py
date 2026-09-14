@@ -749,7 +749,6 @@ def cmd_render(a):
 
     ws.page_break()
     ws.para([C.B("Practice")])
-    ws.para([C.I("Answers are at the end of each question. Show all working.")])
     ws.restart_numbering()
     for o in practice["practice"]:
         r = by8[o["id8"]]
