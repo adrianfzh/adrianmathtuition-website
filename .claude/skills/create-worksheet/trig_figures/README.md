@@ -19,7 +19,11 @@ Matplotlib helpers, run under `/usr/bin/python3` (Pillow + numpy live there):
   white so a curve crossing a label leaves it readable. Call it AFTER `set_xlim`/
   `set_ylim` — the arrowheads are pinned to the ends of the axes. A quadrant reference
   square is not a graph and does not use it.
-- `draw.py` — curve sketches for the graphs section (axes, degree/π ticks, marked points).
+- `draw.py` — curve sketches for the graphs section (axes, degree/π ticks, marked points),
+  plus `centre_line(ax, c, x0, x1, alpha=1.0)` — **a sketch of `y = a sin/cos bx + c`
+  shows its centre line `y = c`, dotted** ("the graph in the solution should show the
+  centre line (dotted)", 14 Sep 2026). Black, thin, unlabelled, under the curve; a
+  second, fainter curve on the same axes gets its own centre line at `alpha=0.6`.
 - `tgraphs.py` — the three basic shapes (sin, cos, tan) for a three-column notes block,
   plus six variation graphs showing what a, b and c each do.
 - `drawsteps.py` — the step-by-step SERIES for "how to draw a graph": six panels of the

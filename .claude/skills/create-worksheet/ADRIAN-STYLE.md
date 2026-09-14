@@ -201,6 +201,13 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   along — each copy in its own colour on the same diagram, with a closing line saying
   the colours only show the cycle moved along and in the exam all of them are one pen.
   Pattern: `trig_figures/drawsteps.py`.
+- **A shifted sine or cosine shows its centre line, dotted** (14 Sep 2026: "the graph in
+  the solution should show the centre line (dotted)"). Any sketch of
+  `y = a sin bx + c` / `y = a cos bx + c` with `c ≠ 0` — the SOLUTION graphs as much as
+  the teaching ones — carries a thin black dotted line at `y = c` across the drawn range,
+  under the curve, with no label of its own (the value is already a y-tick). Two curves
+  on the same axes get two centre lines, the fainter curve's at `alpha=0.6`. Helper:
+  `trig_figures/draw.py` `centre_line(ax, c, x0, x1)`.
 - Figures from the question bank are embedded as stored; hand-drawn art only when the
   bank has none (and then through the bot's figure registry first — CLAUDE.md §Figure
   library).
