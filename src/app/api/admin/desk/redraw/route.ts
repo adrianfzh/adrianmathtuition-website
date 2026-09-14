@@ -1,4 +1,4 @@
-// POST /api/admin/desk/redraw { runId, photoIndex, allowReleased? }
+// POST /api/admin/desk/redraw { runId, photoIndex, allowReleased?, reissue? }
 //
 // After Adrian changes a part's marks on the desk, the red pen on that page
 // still shows the marker's ink. This asks the bot to redraw the page from the
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   try { raw = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const parsed = parseRedrawBody(raw);
   if ('error' in parsed) return NextResponse.json({ error: parsed.error }, { status: 400 });
-  const { runId, photoIndex, allowReleased } = parsed.req;
+  const { runId, photoIndex, allowReleased, reissue } = parsed.req;
 
   const botBase = process.env.BOT_BASE_URL;
   const secret = process.env.BOT_INTERNAL_SECRET;
@@ -67,7 +67,9 @@ export async function POST(req: NextRequest) {
   }
 
   // Unreleased: nothing else to do — the PDFs are rebuilt at release time.
-  if (!wasReleased) return NextResponse.json({ ...out, reinked: true, reissued: false });
+  // `reissue: false` says the same for a released paper: the caller is fixing
+  // more than one page and will re-issue the copy once at the end (14 Sep 2026).
+  if (!wasReleased || !reissue) return NextResponse.json({ ...out, reinked: true, reissued: false });
 
   // Released: the page on the run is now right and the student's copy is not.
   // A re-issue that fails is REPORTED, not thrown away — the ink is already

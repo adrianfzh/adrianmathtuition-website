@@ -4,21 +4,34 @@ import { parseRedrawBody, redrawReleaseRefusal, partsForPage } from './desk-redr
 describe('parseRedrawBody', () => {
   it('takes runId + photoIndex, and defaults to refusing a released paper', () => {
     expect(parseRedrawBody({ runId: '9e66d0b4', photoIndex: 3 })).toEqual({
-      req: { runId: '9e66d0b4', photoIndex: 3, allowReleased: false },
+      req: { runId: '9e66d0b4', photoIndex: 3, allowReleased: false, reissue: true },
     });
     expect(parseRedrawBody({ runId: '9e66d0b4', photoIndex: 0 })).toEqual({
-      req: { runId: '9e66d0b4', photoIndex: 0, allowReleased: false },
+      req: { runId: '9e66d0b4', photoIndex: 0, allowReleased: false, reissue: true },
     });
   });
 
   it('opens the released door on a literal true only', () => {
     expect(parseRedrawBody({ runId: 'r', photoIndex: 3, allowReleased: true })).toEqual({
-      req: { runId: 'r', photoIndex: 3, allowReleased: true },
+      req: { runId: 'r', photoIndex: 3, allowReleased: true, reissue: true },
     });
     // A student's copy is not replaced because a body said "true", or 1, or {}.
     for (const v of ['true', 1, {}, 'yes', null]) {
       expect(parseRedrawBody({ runId: 'r', photoIndex: 3, allowReleased: v })).toEqual({
-        req: { runId: 'r', photoIndex: 3, allowReleased: false },
+        req: { runId: 'r', photoIndex: 3, allowReleased: false, reissue: true },
+      });
+    }
+  });
+
+  it('turns the re-issue off on a literal false only', () => {
+    expect(parseRedrawBody({ runId: 'r', photoIndex: 3, allowReleased: true, reissue: false })).toEqual({
+      req: { runId: 'r', photoIndex: 3, allowReleased: true, reissue: false },
+    });
+    // Anything else still replaces the student's copy — a body that forgot the
+    // field, or carried a 0, must not leave them holding the old one silently.
+    for (const v of [undefined, 'false', 0, {}, null, true]) {
+      expect(parseRedrawBody({ runId: 'r', photoIndex: 3, allowReleased: true, reissue: v })).toEqual({
+        req: { runId: 'r', photoIndex: 3, allowReleased: true, reissue: true },
       });
     }
   });

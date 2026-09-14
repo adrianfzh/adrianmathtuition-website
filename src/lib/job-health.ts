@@ -44,6 +44,10 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // the last 7 days, grouped, checked against paper_library + the bank, one
   // Telegram line (Vercel cron Mondays 8am SGT, 11 Sep 2026).
   'missing-papers':     { kind: 'interval', hours: 204, label: 'Mondays 8am' },
+  // The monitor + self-fix for a marked page whose image never uploaded: redraws
+  // what the student has not seen, reports what they already hold (Vercel cron
+  // every 6h at :30, 14 Sep 2026 — lib/page-gap-repair).
+  'page-gap-sweep':     { kind: 'interval', hours: 13, label: 'every 6h' },
   // The Dropbox tray's one-month life: a paper's folder goes 30 days after release (daily 03:30 SGT, 6 Sep 2026).
   'dropbox-tray':      { kind: 'interval', hours: 30, label: 'daily 3:30am' },
   // Weekly exam-library refresh on the Mac (scripts/paper-library/run.sh, launchd com.adrianmath.paperlibrary, Sun 04:10 SGT, 7 Sep 2026).

@@ -12,6 +12,17 @@ export type RedrawRequest = {
   photoIndex: number;
   /** Re-ink a paper the student already holds, then re-issue their copy. */
   allowReleased: boolean;
+  /**
+   * Whether a released re-ink also re-issues the student's copy. Default true —
+   * one call from the desk replaces what they hold, which is the whole point.
+   *
+   * `false` is for a caller fixing SEVERAL pages of one paper (14 Sep 2026): the
+   * re-issue rebuilds both PDFs and sends a Telegram line, so doing it per page
+   * would rebuild N times and tell the student N times about one copy. The
+   * page-gap self-fix redraws every missing page with this off and then re-issues
+   * once — lib/page-gap-repair.ts.
+   */
+  reissue: boolean;
 };
 
 /** Parse the POST body. Returns the request, or the message the route answers 400 with. */
@@ -24,7 +35,9 @@ export function parseRedrawBody(body: unknown): { req: RedrawRequest } | { error
   }
   // Only a literal `true`. A released paper is never re-inked because a body
   // carried the string "false", or a 0, or an accidental object.
-  return { req: { runId, photoIndex, allowReleased: b.allowReleased === true } };
+  // Only a literal `false` turns the re-issue off, for the same reason: a body
+  // that forgot the field, or carried a 0, still replaces the student's copy.
+  return { req: { runId, photoIndex, allowReleased: b.allowReleased === true, reissue: b.reissue !== false } };
 }
 
 /**

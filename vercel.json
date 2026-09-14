@@ -150,6 +150,10 @@
     {
       "path": "/api/cron/missing-papers",
       "schedule": "0 0 * * 1"
+    },
+    {
+      "path": "/api/cron/page-gap-sweep",
+      "schedule": "30 */6 * * *"
     }
   ]
 }

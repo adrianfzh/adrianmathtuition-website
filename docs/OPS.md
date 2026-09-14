@@ -40,7 +40,18 @@ Writers:
   their paper, grouped and checked against `paper_library` + the bank,
   `lib/missing-papers.ts`, one Telegram line; stamps even on a quiet week with
   nothing to report → [`MARKING.md`](MARKING.md) §🕳 When the paper is
-  missing), and `health-check` itself.
+  missing),
+  `page-gap-sweep` (every 6h at :30 — the monitor + self-fix for a marked page
+  whose annotated image never reached the bucket: the last 7 days of runs are
+  checked with the pure `lib/page-gap-repair.ts gapsForRun`, a run the student
+  has NOT seen is repaired outright (redraw each missing page through
+  `/api/admin/desk/redraw {reissue:false}`, then rebuild its PDFs), a run they
+  ALREADY HOLD is only reported — re-inking is reversible, telling them their
+  copy changed is not. Every run it looked at carries
+  `result_json.page_gap_check`, which is the audit trail AND the memory that
+  says an unfixable page once instead of four times a day. Stamps every run
+  → [`MARKING.md`](MARKING.md) §🕳 When the paper is missing),
+  and `health-check` itself.
 - **Mac plan-billed workers** stamp as the last step of their SKILL.md
   (`qb-topup`, `file-subgroups`, `bot-review`, `question-mine`,
   `figure-fitness` — the nightly question-figure fitness catch-up, which stamps

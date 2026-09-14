@@ -2662,6 +2662,54 @@ images PDF** (`mode:'photos'`) = the annotated original photos ONLY, no typeset 
 no Puppeteer — a few seconds, and the closest thing to a hand-marked script. With a
 single photo the full mode returns a PNG (`kind:'image'`) instead of a PDF.
 
+### 🕳 A page in, is a page out — the missing-page invariant (14 Sep 2026)
+
+**The invariant: every page a student handed in appears in their marked copy.** It did
+not hold. The assembly draws the pages it is handed (`annotated_photos`) and says nothing
+about the ones it isn't, so a page whose annotated JPEG never reached the `student-files`
+bucket simply wasn't in the document — no error, no gap, just a shorter paper. Alexis
+Wong's A Math GCE 2022 Paper 1 (run `94326fea`) was marked in full and came back four
+pages short: Q5, Q7, Q8 and Q10 were marked, their ink rendered, and then lost to a burst
+of `fetch failed` on the upload. **She noticed before we did**, and asked where her
+questions were. Kiara Tan Jia Min and Isabelle Toh Si Xian lost three pages each the same
+way in the same week. The error WAS recorded, on `annotation_debug`; nothing read it.
+
+Three layers, all live:
+
+1. **Patch the cause** — `putStudentFile` retries the upload three times (bot
+   `lib/student-files.js`). The original failure was a transient `fetch failed`.
+2. **It cannot fail silently** — `missingAnnotatedPages` (`lib/marked-pdf-gaps.ts`,
+   pure/tested) is the floor under the assembly: when there is no annotated image for a
+   page but the run still holds the student's own photo of it, **the plain photo goes in,
+   in its right place**. Unmarked is worse than marked; it is far better than gone. The
+   rule is deliberately blunt — a page in, is a page out — because deciding which gap
+   "deserves" a page is the kind of judgment that loses pages.
+3. **Monitor + self-fix** — `lib/page-gap-repair.ts` (pure/tested) plus
+   `/api/cron/page-gap-sweep` (every 6h at :30 → [`OPS.md`](OPS.md)). `gapsForRun` reads
+   the gap off the run itself; `repairPageGaps` redraws each missing page through
+   `/api/admin/desk/redraw` with **`reissue: false`** — one paper with four missing pages
+   must not rebuild its PDFs four times and tell the student four times about one copy
+   (`lib/desk-redraw.ts`). A run the student has **not** seen is repaired outright and its
+   PDFs rebuilt; a run they **already hold** is only reported, because re-inking is
+   reversible and telling them their copy changed is not. `result_json.page_gap_check` is
+   the audit trail and the memory that reports an unfixable page once rather than four
+   times a day.
+
+**And the release itself checks** (`mark-triage {action:'release'}`): the check is pure and
+free — it reads the run already in hand — so every release pays it, and a paper going out
+with an unmarked page rides a 👀 watch-out line plus one Telegram line to the marking
+topic naming the student, the paper and the pages. It does **not** hold the paper: holding
+helps nobody when the page is already in the copy (Adrian, 8 Sep 2026: "we should just
+release them, but ping me for anything important to watch out for"), and the sweep has the
+minutes the release path does not — the bot's auto-release call waits 60 s for it.
+
+**Re-issuing a recovered copy** uses `reason: 'pages-recovered'` on `mark-triage
+{action:'reissue'}` — `lib/reissue-message.ts`. The stock line ("Adrian checked your
+marked X and updated it") would be false twice over: nothing was re-marked and no score
+moved. Adrian, 14 Sep 2026: "don't tell her it's redrawn — some pages wasn't uploaded
+properly previously, here is the full copy." That is the wording the library holds.
+
+
 ### Photo vs transcript — who says what (2026-07-29)
 
 The two surfaces look overlapping but are not interchangeable, and the division below is

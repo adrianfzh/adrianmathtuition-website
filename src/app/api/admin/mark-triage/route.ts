@@ -36,7 +36,7 @@ import { after } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { resolveRecipient } from '@/lib/student-recipient';
-import { sendTelegramTo, sendTelegramDocumentTo } from '@/lib/telegram';
+import { sendTelegram, sendTelegramTo, sendTelegramDocumentTo } from '@/lib/telegram';
 import { pickSuperseded } from '@/lib/marking-supersede';
 import {
   extractFlagged,
@@ -63,6 +63,8 @@ const PAPER_SUBJECT_VALUES: readonly string[] = [...PAPER_SUBJECTS, ...SCIENCE_P
 import { releaseHeldPracticeItems } from '@/lib/practice-again-store';
 import { applyRunRelease } from '@/lib/notebook-mistakes-store';
 import { isRemarkInternal } from '@/lib/remark-internal';
+import { reissueLine, parseReissueReason } from '@/lib/reissue-message';
+import { gapsForRun, gapWatchReason, pageGapAlert } from '@/lib/page-gap-repair';
 
 export const runtime = 'nodejs';
 // Release itself is fast; the ceiling is for the after() enrichment, which
@@ -446,6 +448,8 @@ export async function POST(req: NextRequest) {
     sheet?: { pdfUrl?: string; title?: string; note?: string; topic?: string };
     /** action 'subject' only: 'A Math' | 'E Math' | 'H2 Math' | 'Other'. */
     subject?: unknown;
+    /** action 'reissue' only: why the copy changed — lib/reissue-message.ts. */
+    reason?: unknown;
   };
   try {
     body = await req.json();
@@ -644,9 +648,13 @@ export async function POST(req: NextRequest) {
     // copy (11 Sep 2026, lib/remark-internal.ts): "Adrian checked it and updated
     // it" would name a paper they were never sent. The release was stamped
     // 'none' at the time, but they may have linked Telegram since.
-    const line = isRemarkInternal(rj)
-      ? `📄 Your marked <b>${escapeHtml(paper)}</b> is ready${max > 0 ? ` — <b>${awarded}/${max}</b>` : ''}.\n\n${SITE}/app/marking`
-      : `✏️ Adrian checked your marked <b>${escapeHtml(paper)}</b> and updated it${max > 0 ? ` — it is now <b>${awarded}/${max}</b>` : ''}. The copy in the app is the new one.`;
+    // …and a copy that was only ever MISSING PAGES was not re-marked at all
+    // (14 Sep 2026): `reason: 'pages-recovered'` — lib/reissue-message.ts owns
+    // both wordings so the self-fix and the desk say the same thing.
+    const line = reissueLine({
+      reason: parseReissueReason(body.reason), paper, awarded, max,
+      internal: isRemarkInternal(rj), site: SITE,
+    });
     let via: 'telegram' | 'none' = 'none';
     const tg = telegramHandinOf(rj);
     if (tg?.chat_id) { if (await sendTelegramTo(tg.chat_id, line)) via = 'telegram'; }
@@ -738,6 +746,8 @@ export async function POST(req: NextRequest) {
     }[] = [];
     const practiceQueue: string[] = [];
     const enrichQueue: string[] = [];
+    /** 🕳 One line per paper going out with a page that has no marked image. */
+    const gapAlerts: string[] = [];
 
     for (const run of runs ?? []) {
       if (run.released_at) {
@@ -762,6 +772,28 @@ export async function POST(req: NextRequest) {
           continue;
         }
         watch = hold.reasons;
+      }
+
+      // 🕳 A PAGE WITH NO MARKED IMAGE (14 Sep 2026 — lib/page-gap-repair). The
+      // copy is not short: the fallback puts the student's own photo of the page
+      // back in its right place (lib/marked-pdf-gaps). But it goes out UNMARKED,
+      // and the one thing Alexis Wong's paper proved is that this must never be
+      // something only the student notices. The check is pure and free — it
+      // reads the run already in hand — so every release pays it, auto or not.
+      //
+      // It does NOT hold the paper. Adrian, 8 Sep 2026: "we should just release
+      // them, but ping me for anything important to watch out for" — and holding
+      // helps nobody when the page is already in the copy. The self-fix that
+      // redraws it is /api/cron/page-gap-sweep, which has the minutes this path
+      // does not (the bot's auto-release call waits 60 s for this one).
+      const gaps = gapsForRun(run.result_json);
+      const gapReason = gapWatchReason(gaps);
+      if (gapReason) {
+        watch = [...watch, gapReason];
+        gapAlerts.push(pageGapAlert({
+          studentName: run.student_name, paperName: run.paper_name,
+          gaps, released: false, deskUrl: `${SITE}/admin/desk?run=${run.id}`,
+        }));
       }
       // Since 9 Sep 2026 evening (Adrian: "I also want automatic release for the
       // papers I upload") the automatic door is open to EVERY tagged paper —
@@ -933,6 +965,10 @@ export async function POST(req: NextRequest) {
       const rj = (run.result_json && typeof run.result_json === 'object') ? run.result_json as Record<string, unknown> : {};
       await flipAssignmentMarked(supa, run.id, rj, totals, now);
     }
+
+    // Told at the moment it goes out, not six hours later by the sweep and not
+    // by the student. Fail-soft: a Telegram hiccup never un-releases a paper.
+    for (const line of gapAlerts) await sendTelegram(line, 'marking').catch(() => {});
 
     queuePostReleaseEnrichment(enrichQueue, practiceQueue);
 
