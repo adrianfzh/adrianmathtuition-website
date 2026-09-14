@@ -30,7 +30,8 @@ def threshold_graph(out, fn, xmax, ymax, xticks, yticks, level, level_label,
 
     `below=True` shades where the curve is UNDER the level (a minimum depth, a
     minimum height); pass False for a question that fails when the curve is over
-    the level.  `at` is the x the question names — a dashed drop to the curve and
+    the level.  The shading fills the whole strip of x, so the picture says "this
+    stretch is no good" rather than outlining a sliver.  `at` is the x the question names — a dashed drop to the curve and
     the value written beside it, so the student sees the number come off the graph.
     """
     f, ax = plt.subplots(figsize=figsize)
@@ -38,7 +39,12 @@ def threshold_graph(out, fn, xmax, ymax, xticks, yticks, level, level_label,
     y = fn(x)
 
     bad = (y < level) if below else (y > level)
-    ax.fill_between(x, y, level, where=bad, color=DIM, alpha=0.16, lw=0, zorder=1)
+    # the WHOLE strip of x where the answer is no, floor to level (or level to
+    # ceiling), not the thin slice between curve and level: on a shallow dip that
+    # slice is a sliver nobody can see, and it is the STRETCH OF TIME the question
+    # is about
+    lo_y, hi_y = (0.0, level) if below else (level, ymax)
+    ax.fill_between(x, lo_y, hi_y, where=bad, color=DIM, alpha=0.13, lw=0, zorder=0)
     if centre is not None:
         ax.plot([0, xmax], [centre, centre], 'k', ls=':', lw=0.9, zorder=1)
     ax.plot(x, y, color=CURVE, lw=1.6, zorder=3)
