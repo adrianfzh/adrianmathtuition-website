@@ -773,7 +773,13 @@ export async function POST(req: NextRequest) {
                   ? [...referrerInvoice.lineItemsExtra]
                   : [];
                 existingExtra.push({
-                  description: `Referral reward${matchConfidence === 'fuzzy' ? ' \u26a0 fuzzy match' : ''} \u2014 referred ${newStudentName}`,
+                  // Parent-facing text ONLY — `matchConfidence` below carries the fuzzy
+                  // flag for the admin badge (/admin/invoices reads the field, not this
+                  // string). It used to be interpolated here too, so "Referral reward
+                  // \u26a0 fuzzy match \u2014 referred Ian Chen" printed verbatim on Denise
+                  // Chan's October 2026 PDF (generate-pdf.ts renders item.description
+                  // as-is). Never put an internal flag in a description again.
+                  description: `Referral reward \u2014 referred ${newStudentName}`,
                   amount: -rewardAmount,
                   matchConfidence,
                   referrerNameGiven: referrerName,
