@@ -21,11 +21,19 @@ from matplotlib import patheffects as path_effects
 
 
 def arrow_axes(ax, xlabel='x', ylabel='y', color='k', size=7.0, lw=0.9,
-               head=3.6):
+               head=3.6, tick_size=None):
     """Spines crossing at the origin, each ending in an arrow and named.
 
     xlabel/ylabel are set in maths italics; pass e.g. xlabel=r'\\theta'.
     Pass xlabel=None (or ylabel=None) to draw the arrow without a name.
+
+    tick_size is the point size of the NUMBERS along the axes, and the only
+    way to set them on a graph that comes through here: moving the spines to
+    the origin rebuilds the tick artists, which throws away any size given to
+    `set_xticklabels(..., fontsize=...)` and silently leaves the numbers at
+    matplotlib's own 10 pt.  On a figure drawn at 1.9x that prints as 5 pt
+    (Adrian, 14 Sep 2026: the numbers on a figure were too small to read), so
+    pass the size the numbers should be, on the same 1.9x scale as `size`.
     """
     for s in ('top', 'right'):
         ax.spines[s].set_visible(False)
@@ -45,6 +53,10 @@ def arrow_axes(ax, xlabel='x', ylabel='y', color='k', size=7.0, lw=0.9,
     ax.set_axisbelow(False)
     ax.xaxis.set_zorder(9)
     ax.yaxis.set_zorder(9)
+    # the size of the numbers is set HERE, after the spines have moved, because
+    # the move rebuilds the ticks and throws away a size set before it
+    if tick_size:
+        ax.tick_params(labelsize=tick_size)
     # and the numbers are given a white outline, so a curve passing through a
     # tick label still leaves the digits readable (a white box would chop the
     # curve in half instead)

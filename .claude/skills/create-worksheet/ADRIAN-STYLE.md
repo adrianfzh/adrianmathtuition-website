@@ -262,6 +262,30 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   and the one he named. Same complaint, same family, once before: "make the Pythagoras'
   theorem part font larger" went to 11 pt. Whenever a generated figure is judged, judge it
   at its printed size, not on screen.
+- **The NUMBERS along the axes are sized through `arrow_axes`, nowhere else** (14 Sep
+  2026, the axis numbers on the Graphs of Functions figures printing at half the size of
+  the axis names beside them). `arrow_axes` moves both spines onto the origin, and that
+  move REBUILDS the tick artists — so a size given earlier by
+  `set_xticklabels(..., fontsize=…)` or `ax.tick_params` is thrown away without a word and
+  the numbers fall back to matplotlib's own 10 pt, which on a 1.9× figure prints at about
+  5 pt. Pass `tick_size=PT(8.0)` (the page size × 1.9, same scale as `size`) to
+  `arrow_axes` instead, and let it set them after the spines have moved. Measure a doubted
+  figure rather than trusting the call: crop a digit and an axis name out of the PNG and
+  compare their glyph heights — they should be close.
+
+- **A label goes ALONG its line when there is no room beside it** (15 Sep 2026, the
+  speed-time sheet's answer graph: two journeys crossing on the same axes, neither with
+  a clear gap to its left or right). A label beside a steep line either lands on the
+  other line or on the arrow between them, and a white bbox big enough to protect it
+  erases what it sits on — which §4 forbids. So set the text ON the line, rotated to the
+  line's own screen angle, at a fraction of its length where nothing else is drawn:
+  transform both endpoints through `ax.transData`, take
+  `degrees(arctan2(dy, dx))` of the transformed pair, and pass it as `rotation=` with
+  `rotation_mode="anchor"`. The angle must be measured in SCREEN space, not data space —
+  a graph whose axes have different scales tilts the line, and the data-space angle
+  writes the label off the line. Call `f.canvas.draw()` first, after the limits and
+  ticks are set, so `transData` is the one the saved figure uses.
+
 - Figures from the question bank are embedded as stored; hand-drawn art only when the
   bank has none (and then through the bot's figure registry first — CLAUDE.md §Figure
   library).
@@ -311,6 +335,23 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   it: AM 18 Example 3b breaks between (c) and (d) at the foot of a full page. So
   `keep_together=False` everywhere (gluing a whole box left half a page empty — "there
   is a large gap", 12 Sep). Practice questions and their `[Ans:]` line stay together.
+- **Notes may break across a page; a question may not** (15 Sep 2026, the speed-time and
+  graph-paper sheets: a section's notes and its first example sat in one block, so the
+  blanket glue held them together and Word pushed the whole thing forward — two thirds
+  of the first page of every section came out empty). Notes are not a part, so the page
+  rule does not protect them. Call `ws.notes_end()` after a section's notes and before
+  its first example: it closes the run so each paragraph paginates on its own. A bold
+  heading still holds the line beneath it, so nothing is stranded at the foot of a page.
+- **A bold heading at the end of a block glues forward to what follows** (15 Sep 2026,
+  the bare word "Practice" printing alone at the foot of a page with question 1 over the
+  fold). `_finish_block` now carries `keep_with_next` on a trailing bold-only paragraph.
+  A heading is a promise about what comes next; alone at a page foot it reads as the end
+  of the sheet.
+- **A part's lead-in glues to its first roman sub-part** — `ws.keep_with_next()` after a
+  line like "(d) By drawing a suitable tangent," so the bare "(d)" cannot sit alone under
+  the page rule while (i) and (ii) start the next page. The page rule says a part is
+  never cut; a lead-in and its romans are one part, even though Word sees three
+  paragraphs.
 - One `[Ans: (a) …; (b) …]` line per practice question, orange, right-aligned, at the end
   — never after each part.
 - **No rubric line under a "Practice" heading** (14 Sep 2026: "don't have to put the
@@ -336,6 +377,26 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   carrying marks (0.5 cm beyond the tab + the widest label `[10]` + a gap), so the marks
   column is always clear. Only marked paragraphs narrow; everything else keeps the full
   16 cm measure.
+- **A question's table of values is a real table, not a line of LaTeX** (15 Sep 2026, the
+  graph-paper sheet). The bank stores a table of values two different ways — a markdown
+  pipe table in some rows, a LaTeX `array` in others — and neither prints as a table a
+  student can read a value off. `ws.data_table(rows, label_w_cm=None)` draws it with
+  Word's own grid: the `x` row above the `y` row, each cell its own maths, the first
+  column (the row's name) narrow. The builders parse whichever form the row carries and
+  hand the values to `data_table`; a table left as text is a defect, not a style choice.
+- **A marks tag stored inside a part's own text is stripped** — `strip_marks(text)` in
+  `scripts/revision-builders/build_lib.py`. Some rows print "[3]" inside
+  `question_text` as well as carrying `marks: 3`, so the part rendered with the marks
+  twice, once mid-sentence. The tag belongs in the right-aligned `[n]` column and
+  nowhere else.
+- **A bank row may be overridden, in the open, in two places only** — `answers=` when the
+  stored key is wrong, `stems=` when the stem is unusable (it leaks its own answer, or
+  repeats a part label the parts list uses for something else). Both take
+  `{id: replacement}`, both are read by `render_practice`, and both PRINT what they
+  changed at build time — "** answer OVERRIDDEN (bank key is wrong): 507982ac", with the
+  bank's text and the used text under it. Every entry carries a comment at its call site
+  saying what is wrong with the row. Nothing about a bank row is quietly corrected: an
+  override is a fault to report back, and the build log is the report.
 - No empty paragraphs for spacing; the box hugs its content; a small gap between parts is
   paragraph spacing.
 - Notes block: formulas as display maths, ≤ 6 "Mistakes to avoid"; the word "never" does
@@ -348,6 +409,16 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   copy over it (12 Sep 2026, thirty minutes of his edits lost).
 - DOCX → PDF through Word from the container folder with a fresh file name each time
   (memory: word-export-container-folder). Never `rw.to_pdf` at a Dropbox path.
+- **Export from Word's own container folder, not from a scratch folder.** Word is
+  sandboxed: asked to open a file anywhere it has not been granted, it puts up a modal
+  *"Grant File Access — Microsoft Word needs access to the folder named X. Select the item
+  to grant access."* and waits for a human. From the outside that is indistinguishable
+  from a hang — `osascript` never returns, Word sits at 0% CPU, and `sample <pid>` shows
+  `runModalForWindow`. `~/Library/Containers/com.microsoft.Word/Data/Documents/adrianmath-export`
+  needs no grant. If a script is already stuck there, `set display alerts to none` before
+  the `save as` lets it through (15 Sep 2026, the E Math book — twenty minutes read as a
+  Word hang before a `screencapture` showed the dialog; when a Word export looks hung,
+  screenshot the screen before diagnosing anything).
 
 ## 7 · Stitching sheets into one book
 
@@ -375,6 +446,20 @@ longer reach the setting.
 - A sheet that still disagrees after baking gets a **scoped body style** of its own
   (`TrigBody`), never a change to a shared one: `ListParagraph` is used by 824 paragraphs
   elsewhere in the book, so it is cloned, not edited.
+- **Normal's own `pPr`** goes the same way, and it is the one that moves whole pages.
+  Every sheet `worksheet_lib` writes declares Normal as Times New Roman 9.5 pt at 1.5 line
+  spacing with no space before or after; the ten sheets Adrian typed leave Normal bare. In
+  the E Math book the four `worksheet_lib` sheets lost theirs to the master's and grew
+  +1, +2, +2 and +2 pages — his page breaks, moved — while the other ten matched their
+  solo exports exactly. Fix: lift that Normal out as `SheetNormalWS`, put `pStyle` on every
+  plain paragraph of those sheets, and re-base the styles that were `basedOn` Normal
+  (`SubQuestion`, `WSTitle`, `WSSubtitle`). Direct paragraph formatting still wins, so
+  nothing else moves.
+- **Find the guilty part-file by substitution, not by reading XML.** Copy the sheet, swap in
+  the BOOK's `styles.xml` (then `settings.xml`, `theme1.xml`, `fontTable.xml` one at a time),
+  export each and count pages: the one that reproduces the growth is the cause, and putting
+  the single style back into it must remove the growth again. Two 30-second exports settle
+  what an afternoon of theorising will not.
 
 **Three ways a merged book grows a blank page**, all found on this build:
 
@@ -399,14 +484,19 @@ difference a loss.
 ## 8 · Watermarks — chosen, not switched on
 
 Adrian, 15 Sep 2026, after twenty-two candidates over real pages of his own book: **"i like
-T, U and V, put them into memory (not using them yet, but may and iterate later)."** So:
+T, U and V, put them into memory (not using them yet, but may and iterate later)"** — and,
+later the same day, of the earlier pattern batch: **"i like this watermark as well, which
+was G."** So:
 
 - **No sheet carries a watermark today.** `worksheet_lib.py` has no `watermark=` argument
   and must not grow one until he asks. Do not add a carpet to a sheet on your own judgment.
-- The three he liked, the engine that draws them, and the four typographic rules that make a
-  tiled carpet look set on purpose live in **`watermark/`** (`README.md` + `designs.py`).
-  All three tile the words **`AdrianMath Tuition`** at more than one point size — T level,
-  U high-contrast, V in Georgia. Start there when he comes back to it, not from scratch.
+- The **four** he liked, the engines that draw them, and the four typographic rules that make
+  a tiled carpet look set on purpose live in **`watermark/`** (`README.md` + `designs.py` +
+  `patterns.py`). **T, U and V are carpets** tiling the words **`AdrianMath Tuition`** at
+  more than one point size — T level, U high-contrast, V in Georgia; `designs.py`. **G is
+  not a carpet**: one large AM badge, brand navy `#1e3a5f`, 11%, in the middle of the page —
+  `patterns.py` `big_icon(pct=11, colour=NAVY)`. It is the quiet one, for a page that already
+  carries dense working. Start from these four when he comes back to it, not from scratch.
 - Two things must be fixed before any of it ships: the figure helpers must
   `savefig(..., transparent=True)` (matplotlib saves opaque white, which would punch a white
   rectangle through the carpet at every figure), and **a carpet goes only on what a student

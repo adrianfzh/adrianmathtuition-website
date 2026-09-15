@@ -24,6 +24,7 @@ inline numPr patching) is handled internally. Only one script to run.
 from docx import Document
 from docx.shared import Pt, Cm, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
+from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
 from docx.enum.style import WD_STYLE_TYPE
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
@@ -1095,6 +1096,18 @@ class Worksheet:
         """Plain paragraph (no numbering)."""
         return self._add(parts, marks=marks)
 
+    def keep_with_next(self):
+        """Glue the paragraph just written to the one below it.
+
+        The blanket keep-together is off, because a NEW part may start on the
+        next page. The few places where two paragraphs are one and the same
+        part say so here -- a part's lead-in and the first (i) underneath it,
+        for instance, since a part is never cut across two pages
+        (15 Sep 2026, a bare "(d)" left at the foot of a page with its (i) and
+        (ii) on the next one)."""
+        if self._block_paras:
+            self._block_paras[-1].paragraph_format.keep_with_next = True
+
     def section(self, text):
         """Bold section header, e.g. 'Section B - Congruency and Similarity'.
 
@@ -1161,6 +1174,61 @@ class Worksheet:
             p.paragraph_format.keep_with_next = True   # and the part below
         self._block_paras.append(p)
         return p
+
+    def data_table(self, rows, label_w_cm=None):
+        """The question's own TABLE OF VALUES, drawn as a real table.
+
+        An exam paper prints the table of corresponding values with all its
+        rules -- a narrow first column carrying $x$ and $y$, then one column
+        per value -- so the sheet prints it the same way (15 Sep 2026: the bank
+        stores some of these as a markdown pipe table and others as a LaTeX
+        array, and both were reaching the page as raw characters or as a grid
+        with no rules at all).
+
+        `rows` is a list of rows; a row is a list of cells; a cell is a parts
+        list (`[('math', 'x')]`) or a bare string, which is split into prose and
+        inline maths the same way a question stem is. The table is centred, sized
+        to its own content rather than to the text width, and never split across
+        a page.
+
+        This is for the QUESTION's data. Working is never a table (ADRIAN-STYLE,
+        Working).
+        """
+        rows = [[(c if isinstance(c, (list, tuple)) else [('text', str(c))])
+                 for c in row] for row in rows]
+        ncols = max(len(r) for r in rows)
+        rows = [r + [[]] * (ncols - len(r)) for r in rows]
+
+        def cell_cm(cell):
+            n = sum(len(part[1]) for part in cell if len(part) > 1)
+            return round(0.22 * n + 0.5, 2)
+
+        lab_w = label_w_cm or max(1.1, max(cell_cm(r[0]) for r in rows))
+        val_w = max(0.95, max((cell_cm(c) for r in rows for c in r[1:]),
+                              default=0.95))
+        # the table sits within the text width even when the row is long
+        if lab_w + val_w * (ncols - 1) > 16.0:
+            val_w = round((16.0 - lab_w) / (ncols - 1), 2)
+        widths = [lab_w] + [val_w] * (ncols - 1)
+
+        table = self.doc.add_table(rows=len(rows), cols=ncols)
+        table.style = self.doc.styles['Table Grid']
+        table.autofit = False
+        table.alignment = WD_TABLE_ALIGNMENT.CENTER
+        for col, w in zip(table.columns, widths):
+            col.width = Cm(w)
+        for row, cells in zip(table.rows, rows):
+            _cant_split(row)
+            for cell, parts, w in zip(row.cells, cells, widths):
+                cell.width = Cm(w)
+                cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+                p = cell.paragraphs[0]
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                p.paragraph_format.space_after = Pt(1)
+                if parts:
+                    self._fill(p, parts)
+        self.doc.add_paragraph()   # breathing space under the table
+        return table
 
     def columns(self, columns, widths_cm=None):
         """Side-by-side columns of NOTES, at top level — outside a solution box.
@@ -1672,12 +1740,44 @@ class Worksheet:
             made.append(p)
         return made
 
+    def notes_end(self):
+        """Close a run of NOTES so Word may break inside it.
+
+        The page rule protects a question: a part is never cut across two pages
+        (ADRIAN-STYLE, Numbering and sections). Notes are not a part -- but they
+        sit in the same block as the question that follows, so the blanket glue
+        in `_finish_block` was making a section's whole notes block unbreakable
+        and leaving two thirds of the first page of a section empty (15 Sep 2026,
+        the speed-time and graph-paper sheets).
+
+        Call it after the notes of a section and before its first example. Every
+        paragraph keeps its own pagination; a bold heading still holds on to the
+        line beneath it, so a heading is never stranded at the foot of a page.
+        """
+        paras = self._block_paras
+        for i, para in enumerate(paras[:-1]):
+            runs = para.runs
+            if runs and all(r.bold for r in runs if r.text.strip()):
+                para.paragraph_format.keep_with_next = True
+        if paras:
+            self._blocks.append(paras)
+        self._block_paras = []
+
     def _finish_block(self):
         """Close the question just finished. The last paragraph must NOT keep
         with what follows, or every question chains into one unbreakable block."""
         if self.keep_questions_together:
             for para in self._block_paras[:-1]:
                 para.paragraph_format.keep_with_next = True
+        # a bold heading is the LAST line of the block it is written in -- "Practice"
+        # sits at the end of the examples and belongs to the question below it, so
+        # it glues forward instead of being left alone at the foot of a page
+        # (15 Sep 2026, the graph-paper and speed-time sheets)
+        if self._block_paras:
+            last = self._block_paras[-1]
+            runs = [r for r in last.runs if r.text.strip()]
+            if runs and all(r.bold for r in runs):
+                last.paragraph_format.keep_with_next = True
         if self._block_paras:
             self._blocks.append(self._block_paras)
         self._block_paras = []

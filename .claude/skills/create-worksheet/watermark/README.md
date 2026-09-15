@@ -3,8 +3,9 @@
 **Nothing here is switched on.** No sheet, book or PDF carries a watermark; `worksheet_lib.py`
 has no `watermark=` argument. This folder exists because Adrian looked at twenty-two
 candidates on 15 Sep 2026 and said: *"i like T, U and V, put them into memory (not using
-them yet, but may and iterate later)."* When he comes back to it, start from these three
-rather than from a blank page.
+them yet, but may and iterate later)"* — and, later the same day, of the earlier pattern
+batch: *"i like this watermark as well, which was G."* When he comes back to it, start from
+these **four** rather than from a blank page.
 
 ![T, U and V over a real page of the S3 revision book](samples-TUV.jpg)
 
@@ -23,10 +24,27 @@ tuition"). Each is a row pattern that repeats down the page; `designs.py` holds 
 The four he passed over (P beat, Q pair, R scale, S sizes-along-the-line) are kept in
 `designs.py` — the next iteration is far more likely to be a tweak of a shape already drawn.
 
+## The fourth — G, which is not a carpet
+
+**G** `p-icon-navy.png` — **one large AM badge**, brand navy `#1e3a5f`, **11%**: an 11 cm
+rounded square outlined on the centre of the page, `AM` in Arial Bold across it and
+`AdrianMath Tuition` in Georgia beneath. `patterns.py` `big_icon(pct=11, colour=NAVY)`.
+
+It is the opposite trade to the carpets. The least busy of the twenty-two, so it is the one
+that can sit under dense working without competing with it — and, being one mark in one
+place, the easiest of the lot to crop off a photograph. Pick it for a page of solutions;
+pick a carpet when the point is that a photograph of any corner carries the name.
+
+The six patterns he passed over are kept beside it in `patterns.py`: honeycomb, isometric
+ruling, the circles in grey and in navy, the tiled AM badge — and **E, this same badge in
+grey at 9%**. E and G differ only in the ink, so it is the **navy at 11%** he picked, not
+the shape alone.
+
 ## Running it
 
 ```
 /usr/bin/python3 designs.py                     # writes m-*.png, 200 dpi A4 tiles (PIL lives here)
+/usr/bin/python3 patterns.py                    # writes p-*.png — G first, then the six passed over
 python3 stamp.py book.pdf m-level.png out.pdf 51   # put a tile UNDER page 51 of a real PDF (needs pypdf)
 python3 mkdocx.py m-level.png out.docx          # the tile as a section-header picture
 ```
@@ -79,7 +97,7 @@ stack into a visible vertical street.
   another school's or the GCE's questions gets the footer branded, not a carpet across
   someone else's question.
 
-## What these three do NOT do
+## What these four do NOT do
 
 He chose "just use adrianmath tuition", so the carpet carries **no student name and no copy
 serial** — it is branding, not traceability. Anything that needs to be traceable to one
