@@ -27,6 +27,7 @@
 export interface StudentForHoliday {
   level?: string | null;            // Students.Level — 'Sec 1' … 'JC2'
   subjects?: readonly string[] | null; // Students.Subjects — e.g. ['E Math','A Math']
+  subjectLevel?: string | null;     // Students.Subject Level — 'IP' marks the through-train (no O-Level)
 }
 
 import { OPTOUT_MONTHS, EXAM_PREP_NOTE } from './year-end-billing';
@@ -57,9 +58,18 @@ export function takesAMath(s: StudentForHoliday): boolean {
   return (s.subjects ?? []).some((x) => (x || '').trim() === 'A Math');
 }
 
+/** An IP student carries a Sec 4/5 label but sits no O-Level — billed like Sec 1–3
+ *  (year-end-billing isIP), so they hear about the holidays too (Beryl Chen Guoer's
+ *  October 2026 email had no note, 15 Sep 2026). */
+function isIP(s: StudentForHoliday): boolean {
+  return (s.subjectLevel || '').trim() === 'IP' || (s.subjects ?? []).includes('IP Math');
+}
+
 /** Whether the holiday note goes to this student at all, for this invoice month. */
 export function wantsHolidayNote(s: StudentForHoliday, month: number): boolean {
-  return HOLIDAY_LEVELS.has((s.level || '').trim()) && (HOLIDAY_MONTHS as readonly number[]).includes(month);
+  const level = (s.level || '').trim();
+  const holidayLevel = HOLIDAY_LEVELS.has(level) || ((level === 'Sec 4' || level === 'Sec 5') && isIP(s));
+  return holidayLevel && (HOLIDAY_MONTHS as readonly number[]).includes(month);
 }
 
 /**

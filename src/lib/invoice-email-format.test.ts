@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatDueDate, formatMoney, amountDueHtml, paymentHtml } from './invoice-email-format';
+import { formatDueDate, formatMoney, amountDueHtml, paymentHtml, joinMonths } from './invoice-email-format';
 
 describe('formatDueDate', () => {
   it('renders ISO as a human date, en-SG order', () => {
@@ -66,5 +66,17 @@ describe('amountDueHtml with a previous balance (15 Sep 2026)', () => {
     expect(amountDueHtml(280, '2026-10-15', { month: 'October 2026', priorTotal: 0, priorMonths: [] }))
       .toBe('<strong>$280.00</strong>, due by <strong>15 October 2026</strong>');
     expect(amountDueHtml(280, '2026-10-15', null)).toBe('<strong>$280.00</strong>, due by <strong>15 October 2026</strong>');
+  });
+});
+
+describe('joinMonths', () => {
+  it('names a shared year once', () => {
+    expect(joinMonths(['July 2026', 'August 2026', 'September 2026'])).toBe('July, August and September 2026');
+    expect(joinMonths(['September 2026'])).toBe('September 2026');
+  });
+  it('keeps mixed years and odd labels as given', () => {
+    expect(joinMonths(['December 2026', 'January 2027'])).toBe('December 2026 and January 2027');
+    expect(joinMonths(['July 2026 (Adjustment)', 'August 2026'])).toBe('July 2026 (Adjustment) and August 2026');
+    expect(joinMonths([])).toBe('');
   });
 });

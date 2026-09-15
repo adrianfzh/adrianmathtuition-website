@@ -230,3 +230,12 @@ describe('the October block tells parents how November and December are billed (
     expect(html).not.toContain('How November and December are billed');
   });
 });
+
+describe('IP Sec 4 hears about the holidays like Sec 1–3 (Beryl Chen Guoer, 15 Sep 2026)', () => {
+  it('a Sec 4 filed IP gets the note; an ordinary Sec 4 does not', () => {
+    expect(wantsHolidayNote({ level: 'Sec 4', subjects: ['E Math', 'A Math'], subjectLevel: 'IP' }, 10)).toBe(true);
+    expect(wantsHolidayNote({ level: 'Sec 4', subjects: ['IP Math'] }, 11)).toBe(true);
+    expect(wantsHolidayNote({ level: 'Sec 4', subjects: ['E Math', 'A Math'], subjectLevel: 'G3' }, 10)).toBe(false);
+    expect(stepUpParagraph({ level: 'Sec 4', subjects: ['E Math'], subjectLevel: 'IP' })).toBeNull();
+  });
+});

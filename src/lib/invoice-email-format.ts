@@ -32,10 +32,21 @@ export function amountDueHtml(finalAmount: number, dueDate: string, prior?: Prio
   // spelled out — a parent reads the email number and pays that.
   if (prior && prior.priorTotal > 0.005) {
     const total = finalAmount + prior.priorTotal;
-    const months = prior.priorMonths.length ? ` for ${prior.priorMonths.join(' and ')}` : '';
+    const months = prior.priorMonths.length ? ` for ${joinMonths(prior.priorMonths)}` : '';
     return `<strong>$${formatMoney(total)}</strong> in total (<strong>$${formatMoney(finalAmount)}</strong> for ${prior.month}, plus <strong>$${formatMoney(prior.priorTotal)}</strong> still owing${months}), due by <strong>${formatDueDate(dueDate)}</strong>`;
   }
   return `<strong>$${formatMoney(finalAmount)}</strong>, due by <strong>${formatDueDate(dueDate)}</strong>`;
+}
+
+/** "July, August and September 2026" — months sharing a year are named once for it;
+ *  mixed years, or labels that are not plain months, are joined as given. */
+export function joinMonths(labels: readonly string[]): string {
+  const parsed = labels.map((l) => /^([A-Z][a-z]+) (\d{4})$/.exec(l.trim()));
+  const years = new Set(parsed.map((m) => m?.[2]));
+  const list = parsed.every(Boolean) && years.size === 1 && labels.length > 1
+    ? labels.map((l, i) => (i === labels.length - 1 ? l.trim() : parsed[i]![1]))
+    : labels.map((l) => l.trim());
+  return list.length <= 1 ? (list[0] || '') : `${list.slice(0, -1).join(', ')} and ${list[list.length - 1]}`;
 }
 
 /** What the PDF's previous-balance rows add up to, for the email's opening line. */

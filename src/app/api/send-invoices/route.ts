@@ -414,7 +414,7 @@ export async function POST(req: NextRequest) {
           examNote: examCutoffNoteFrom(rec.fields['Auto Notes'] as string),
           arrearsNote: arrearsNoteFrom(rec.fields['Auto Notes'] as string),
           holidayNote: holidayNoteHtml(
-            { level: invoice.level, subjects: stu.fields['Subjects'] as string[] | undefined },
+            { level: invoice.level, subjects: stu.fields['Subjects'] as string[] | undefined, subjectLevel: stu.fields['Subject Level'] as string | undefined },
             invoiceMonthNumber(rec.fields['Month'] as string),
             studentName,
             optOutUrlFor(sid),
@@ -540,7 +540,7 @@ export async function POST(req: NextRequest) {
       ...new Set(invoiceRecords.map((r: any) => r.fields['Student']?.[0]).filter(Boolean)),
     ] as string[];
     const studentsData = studentIds.length
-      ? await airtableRequestAll('Students', `?filterByFormula=OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})&fields[]=Student Name&fields[]=Parent Email&fields[]=Parent Name&fields[]=Level&fields[]=Subjects`)
+      ? await airtableRequestAll('Students', `?filterByFormula=OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})&fields[]=Student Name&fields[]=Parent Email&fields[]=Parent Name&fields[]=Level&fields[]=Subjects&fields[]=Subject Level`)
       : { records: [] };
     const studentsById: Record<string, any> = Object.fromEntries(
       studentsData.records.map((r: any) => [r.id, r.fields])
@@ -650,7 +650,7 @@ export async function POST(req: NextRequest) {
           examNote: examCutoffNoteFrom(invoiceRecord.fields['Auto Notes'] as string),
           arrearsNote: arrearsNoteFrom(invoiceRecord.fields['Auto Notes'] as string),
           holidayNote: holidayNoteHtml(
-            { level: invoice.level, subjects: student['Subjects'] as string[] | undefined },
+            { level: invoice.level, subjects: student['Subjects'] as string[] | undefined, subjectLevel: student['Subject Level'] as string | undefined },
             invoiceMonthNumber(invoiceRecord.fields['Month'] as string),
             invoice.studentName,
             optOutUrlFor(studentId),
