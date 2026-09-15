@@ -116,6 +116,10 @@
       "schedule": "0 0 * * *"
     },
     {
+      "path": "/api/cron/optout-rollup",
+      "schedule": "30 23 * * *"
+    },
+    {
       "path": "/api/progress-digest?period=month",
       "schedule": "0 0 1 * *"
     },

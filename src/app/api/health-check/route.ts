@@ -425,6 +425,14 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (bad token), got HTTP ${r.status}`);
       return 'token gate up';
     }),
+    // 🗓 The roll-up cron behind it (16 Sep 2026): it reads every family's
+    // opt-out months and names them, so an open door would hand a stranger the
+    // roster. It fires every morning and answers shouldSendRollup() itself.
+    timed('optout-rollup', async () => {
+      const r = await fetch(`${base}/api/cron/optout-rollup`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     timed('practice-again-request', async () => {
       const r = await fetch(`${base}/api/portal/practice-again/request`, { method: 'POST', redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);

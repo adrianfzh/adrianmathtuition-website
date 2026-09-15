@@ -107,6 +107,21 @@ The three year-end invoice jobs use it, since their crons only fire Nov/Dec/Jan
 | `generate-invoices-arrears` | `day 1`, grace 1, `months: [1, 11, 12]` | 1st 8am SGT (Nov, Dec, Jan) |
 | `payment-reminder-arrears` | `day 1`, grace 1, `months: [1, 11, 12]` | 1st 8pm SGT (Nov, Dec, Jan) |
 | `send-invoices-arrears` | `day 2`, grace 1, `months: [1, 11, 12]` | 2nd 10am SGT (Nov, Dec, Jan) |
+| `optout-rollup` | `day 1`, grace 1, `months: [1, 11, 12]` | 1st 7:30am SGT (Nov, Dec, Jan) |
+
+**`optout-rollup`** (16 Sep 2026) is the odd one in that table: its cron fires
+EVERY morning (`30 23 * * *` = 07:30 SGT) and the route itself answers
+`shouldSendRollup()` from `lib/optout-notice.ts`, returning
+`{ ok: true, skipped: 'not a roll-up day' }` on the other 362 mornings. Vercel
+keys crons by unique path, so three date-specific entries would have meant three
+routes; month-length arithmetic in UTC for a Singapore morning is the kind of
+thing that silently skips a year. Only the three real mornings stamp `job_runs`,
+which is why the rhythm above is monthly. It names who has pressed the holiday
+opt-out button and which months they are skipping, half an hour before the
+arrears run builds those invoices at 8am. **When nobody is skipping it sends no
+Telegram at all but still stamps** — absence of the message is never absence of
+the job. `GET /api/cron/optout-rollup?force=1` (Bearer `ADMIN_PASSWORD`) asks for
+the picture out of season.
 
 **`find-review`** (nightly 5:30am SGT — reads yesterday's `portal_generation_log`
 through `GET /api/admin/find-review`, judges every question that reached a student

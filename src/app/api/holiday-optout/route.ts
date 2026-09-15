@@ -22,6 +22,8 @@ import { verifyOptoutToken } from '@/lib/holiday-optout-token';
 import {
   loadOptoutMonths, applyOptoutChanges, changesForMonths, monthChoices,
 } from '@/lib/holiday-optout';
+import { pressNotice } from '@/lib/optout-notice';
+import { roster, studentRate } from '@/lib/optout-rollup';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -47,12 +49,21 @@ function studentFromToken(token: unknown): { studentId: string } | { error: Next
   return { studentId };
 }
 
-async function studentName(studentId: string): Promise<string> {
+/** The student's name for the page, plus the level the notice puts in brackets.
+ *  One record read; Airtable's single-record endpoint ignores `fields[]`, so
+ *  everything arrives anyway. */
+async function studentFacts(studentId: string): Promise<{ name: string; level: string; ip: boolean }> {
   try {
     const rec = await airtableRequest('Students', `/${studentId}`);
-    return String(rec?.fields?.['Student Name'] || '').trim() || 'your child';
+    const f = rec?.fields || {};
+    const subjects: string[] = f['Subjects'] || [];
+    return {
+      name: String(f['Student Name'] || '').trim() || 'your child',
+      level: String(f['Level'] || '').trim(),
+      ip: String(f['Subject Level'] || '').trim() === 'IP' || subjects.includes('IP Math'),
+    };
   } catch {
-    return 'your child';
+    return { name: 'your child', level: '', ip: false };
   }
 }
 
@@ -61,12 +72,12 @@ export async function GET(req: NextRequest) {
   if ('error' in auth) return auth.error;
 
   try {
-    const [months, name] = await Promise.all([
+    const [months, who] = await Promise.all([
       loadOptoutMonths(auth.studentId),
-      studentName(auth.studentId),
+      studentFacts(auth.studentId),
     ]);
-    if (!months) return NextResponse.json({ studentName: name, months: [], noSlots: true });
-    return NextResponse.json({ studentName: name, months: monthChoices(months) });
+    if (!months) return NextResponse.json({ studentName: who.name, months: [], noSlots: true });
+    return NextResponse.json({ studentName: who.name, months: monthChoices(months) });
   } catch (e: unknown) {
     console.error('[holiday-optout] public GET failed:', e);
     return NextResponse.json({ error: 'Could not load your lessons just now' }, { status: 500 });
@@ -94,32 +105,73 @@ export async function POST(req: NextRequest) {
     // changesForMonths drops anything else, and drops dates already in the
     // wanted state — so re-confirming an unchanged month writes nothing.
     const changes = changesForMonths(months, wanted);
-    const name = await studentName(auth.studentId);
+    const who = await studentFacts(auth.studentId);
 
     if (!changes.length) {
-      return NextResponse.json({ success: true, unchanged: true, studentName: name, months: monthChoices(months) });
+      return NextResponse.json({ success: true, unchanged: true, studentName: who.name, months: monthChoices(months) });
     }
 
     const result = await applyOptoutChanges(auth.studentId, changes);
     const after = await loadOptoutMonths(auth.studentId);
+    const choices = monthChoices(after || months);
 
-    const skipping = wanted.filter((w) => w.skip).map((w) => months.find((m) => m.year === w.year && m.month === w.month)?.label).filter(Boolean);
-    const keeping = wanted.filter((w) => !w.skip).map((w) => months.find((m) => m.year === w.year && m.month === w.month)?.label).filter(Boolean);
-    const lines = [`🗓 ${name} — holiday months changed by parent`];
-    if (skipping.length) lines.push(`• Skipping: ${skipping.join(', ')}`);
-    if (keeping.length) lines.push(`• Back on: ${keeping.join(', ')}`);
-    lines.push(`(${result.cancelled} cancelled, ${result.created} blocked ahead, ${result.restored + result.removed} restored)`);
-    if (result.skippedLocked.length) lines.push(`⚠ left alone: ${result.skippedLocked.join(', ')}`);
-    await sendTelegram(lines.join('\n')).catch(() => {});
+    const skipping = wanted.filter((w) => w.skip).map((w) => months.find((m) => m.year === w.year && m.month === w.month)?.label).filter(Boolean) as string[];
+    const keeping = wanted.filter((w) => !w.skip).map((w) => months.find((m) => m.year === w.year && m.month === w.month)?.label).filter(Boolean) as string[];
+
+    // Awaited, not fired and forgotten: a serverless function can be torn down
+    // the instant it responds, so an un-awaited send is a send that may never
+    // happen. notify() never throws and never rejects, so the parent's
+    // confirmation cannot fail on Adrian's notice.
+    await notify(auth.studentId, who, choices, skipping, keeping, result.skippedLocked);
 
     return NextResponse.json({
       success: true,
-      studentName: name,
-      months: monthChoices(after || months),
+      studentName: who.name,
+      months: choices,
       applied: { skipping, keeping },
     });
   } catch (e: unknown) {
     console.error('[holiday-optout] public POST failed:', e);
     return NextResponse.json({ error: 'Could not save that just now — please reply to your invoice email' }, { status: 500 });
+  }
+}
+
+/**
+ * Adrian's line, the moment a parent presses Confirm.
+ *
+ * It used to read `(0 cancelled, 4 blocked ahead, 0 restored)` — a description
+ * of the database write. Adrian, 16 Sep 2026, on being shown a plain-English
+ * version: "yes". So it now says which months are off, what that is in lessons
+ * and dollars, that the invoice will come out at $0 and the calendar is already
+ * updated, and who else is skipping so far. Wording lives in
+ * lib/optout-notice.ts so it can be read without sending anything.
+ */
+async function notify(
+  studentId: string,
+  who: { name: string; level: string; ip: boolean },
+  after: { label: string; lessonCount: number; skipped: boolean; partial: boolean }[],
+  skipping: string[],
+  keeping: string[],
+  leftAlone: string[],
+): Promise<void> {
+  try {
+    const [rate, people] = await Promise.all([
+      studentRate(studentId).catch(() => null),
+      roster().catch(() => [] as { name: string; months: string[] }[]),
+    ]);
+    const text = pressNotice({
+      name: who.name, level: who.level, ip: who.ip,
+      nowSkipping: skipping, nowKeeping: keeping,
+      after, ratePerLesson: rate, leftAlone, roster: people,
+    });
+    // One retry. A silent drop used to be the whole failure path: the opt-out
+    // applied, Adrian heard nothing, and the first he knew of it was a $0
+    // invoice. Telegram's own transient 5xx is the common case, so a second
+    // attempt is worth more here than anywhere else in the file.
+    if (await sendTelegram(text)) return;
+    await new Promise((r) => setTimeout(r, 1500));
+    if (!(await sendTelegram(text))) console.error('[holiday-optout] Telegram notice failed twice for', studentId);
+  } catch (e) {
+    console.error('[holiday-optout] notice threw:', (e as Error).message);
   }
 }

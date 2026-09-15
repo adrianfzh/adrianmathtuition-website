@@ -63,6 +63,10 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'generate-invoices-arrears': { kind: 'monthly', day: 1, graceDays: 1, months: [1, 11, 12], label: '1st 8am (Nov, Dec, Jan)' },
   'payment-reminder-arrears':  { kind: 'monthly', day: 1, graceDays: 1, months: [1, 11, 12], label: '1st 8pm (Nov, Dec, Jan)' },
   'send-invoices-arrears':     { kind: 'monthly', day: 2, graceDays: 1, months: [1, 11, 12], label: '2nd 10am (Nov, Dec, Jan)' },
+  // Who is skipping which holiday months, half an hour before the arrears run
+  // builds those invoices (Adrian, 16 Sep 2026). The cron fires every morning
+  // and the route answers shouldSendRollup(), so only these three days stamp.
+  'optout-rollup':     { kind: 'monthly', day: 1, graceDays: 1, months: [1, 11, 12], label: '1st 7:30am (Nov, Dec, Jan)' },
   'progress-digest':   { kind: 'monthly', day: 1,  graceDays: 1, label: '1st 8am' },
   'retention':         { kind: 'monthly', day: 2,  graceDays: 1, label: '2nd 3am' },
   // Portal auto-offboarding sweep — vercel.json "30 19 2 * *" UTC = 3rd 3:30am SGT.
