@@ -5,7 +5,7 @@ Keeps the four build scripts to their real content -- notes and worked examples
 -- rather than four copies of the same question-rendering and figure-embedding
 code.
 """
-import sys, tempfile, os
+import re, sys, tempfile, os
 from pathlib import Path
 
 SKILL = Path.home()/"dev/adrianmathtuition-website/.claude/skills"
@@ -68,6 +68,22 @@ def _normalise(fig: dict, stem: Path):
             return None
 
 
+_ROMAN = {"i": "a", "ii": "b", "iii": "c", "iv": "d", "v": "e"}
+_ROMAN_LABEL = re.compile(r"(?:(?<=^)|(?<=[;\n]))(\s*)\((i|ii|iii|iv|v)\)")
+
+
+def _letter_labels(answer: str, has_parts: bool) -> str:
+    """An answer keyed (i) (ii) beside parts printed (a) (b) is renumbered to match.
+
+    Schools label the same question both ways and the bank keeps whichever the
+    paper used, so a sheet can end up printing "(a)" over an answer that says
+    "(i)".  Only a label opening the string or a clause is touched.
+    """
+    if not has_parts or "(i)" not in answer:
+        return answer
+    return _ROMAN_LABEL.sub(lambda m: f"{m.group(1)}({_ROMAN[m.group(2)]})", answer)
+
+
 def render_practice(ws, by_id: dict, ids: list, figdir: Path = None) -> int:
     """Lay out the practice half from live bank rows.
 
@@ -81,10 +97,18 @@ def render_practice(ws, by_id: dict, ids: list, figdir: Path = None) -> int:
             print(f"  !! not in pool, skipped: {qid}")
             continue
         n += 1
-        parts = r.get("parts") or []
-        has_parts = isinstance(parts, list) and any(isinstance(p, dict) for p in parts)
-        ws.Q(R.split_math((r.get("question_text") or "").strip()),
-             marks=None if has_parts else r.get("total_marks"))
+        stem = (r.get("question_text") or "").strip()
+        parts = [p for p in (r.get("parts") or []) if isinstance(p, dict)]
+        # a bank row holding ONE part under an empty stem is not a question with
+        # sub-parts -- it is the question itself, so it loses the "(a)" label
+        if len(parts) == 1 and not stem:
+            stem = (parts[0].get("text") or "").strip()
+            marks = parts[0].get("marks") or r.get("total_marks")
+            parts = []
+        else:
+            marks = None if parts else r.get("total_marks")
+        has_parts = bool(parts)
+        ws.Q(R.split_math(stem), marks=marks)
 
         # figure between the stem and the sub-parts, as in Adrian's own sheets
         figs = r.get("_figures") or []
@@ -101,10 +125,8 @@ def render_practice(ws, by_id: dict, ids: list, figdir: Path = None) -> int:
 
         if has_parts:
             for p in parts:
-                if not isinstance(p, dict):
-                    continue
                 ws.SQ(R.split_math((p.get("text") or "").strip()), marks=p.get("marks"))
-        ws.ans(R.split_math((r.get("answer") or "").strip()))
+        ws.ans(R.split_math(_letter_labels((r.get("answer") or "").strip(), has_parts)))
     return n
 
 
