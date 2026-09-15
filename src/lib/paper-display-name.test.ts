@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { displayPaperName, practiceAgainHandinName } from './paper-display-name';
+import { displayPaperName, practiceAgainHandinName, practiceAgainTitle } from './paper-display-name';
 
 describe('displayPaperName', () => {
   it('reads the internal name the way a student would say it', () => {
@@ -37,5 +37,26 @@ describe('practiceAgainHandinName (8 Sep 2026)', () => {
   it('leaves an ordinary paper name alone', () => {
     expect(practiceAgainHandinName('Emath O2022', null, 'Alessi Tay')).toBe('Emath O2022');
     expect(practiceAgainHandinName('', null)).toBe('');
+  });
+  // Chloe Gng, 14 Sep 2026: a Practice Again asked for off a paper that was
+  // ITSELF a Practice Again hand-in. displayPaperName of that source already
+  // says "Practice Again · …", so the old template added a second prefix and she
+  // saw "Practice Again — Practice Again · E Math · GCE 2024 · Paper 1".
+  it('keeps one prefix when the source paper is already a Practice Again', () => {
+    expect(practiceAgainHandinName('Practice Again — Practice Again — EM TYS 2024 P1', 'Practice Again — em gce 2024 p1', 'Chloe Gng'))
+      .toBe('Practice Again — E Math · GCE 2024 · Paper 1');
+  });
+});
+
+describe('practiceAgainTitle (14 Sep 2026)', () => {
+  it('prefixes exactly once, however deep the round', () => {
+    expect(practiceAgainTitle('E Math · GCE 2024 · Paper 1')).toBe('Practice Again — E Math · GCE 2024 · Paper 1');
+    expect(practiceAgainTitle('Practice Again · E Math · GCE 2024 · Paper 1')).toBe('Practice Again — E Math · GCE 2024 · Paper 1');
+    expect(practiceAgainTitle('Practice Again — Practice Again · E Math · GCE 2024 · Paper 1')).toBe('Practice Again — E Math · GCE 2024 · Paper 1');
+  });
+  it('stands alone when there is nothing left to name', () => {
+    expect(practiceAgainTitle('Practice Again')).toBe('Practice Again');
+    expect(practiceAgainTitle('')).toBe('Practice Again');
+    expect(practiceAgainTitle(null)).toBe('Practice Again');
   });
 });

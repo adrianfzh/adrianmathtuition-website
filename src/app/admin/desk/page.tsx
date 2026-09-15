@@ -31,7 +31,7 @@ import SubjectChip from '@/components/SubjectChip';
 import GroundingChip from '@/components/GroundingChip';
 import RulesTag from '@/components/RulesTag';
 import { mathHtml } from '@/lib/math-inline';
-import { DESK_LANES, LANES_HIDDEN_AT_ZERO, releasedViaLabel, LANE_LABEL, orderLane, HANDIN_ORIGIN_LABEL, tickPlan, tickPlanLine, type DeskLane, type HandinOrigin, revisingLabel, type Revising, type SheetOutcome, type MarkingProgress, matchesStudent } from '@/lib/desk-state';
+import { DESK_TABS, LANES_HIDDEN_AT_ZERO, releasedViaLabel, LANE_LABEL, TAB_LABEL, TAB_HINT_ALL, isDeskTab, rowsForTab, orderTab, HANDIN_ORIGIN_LABEL, tickPlan, tickPlanLine, type DeskLane, type DeskTab, type HandinOrigin, revisingLabel, type Revising, type SheetOutcome, type MarkingProgress, matchesStudent } from '@/lib/desk-state';
 import { ERROR_KINDS, ERROR_KIND_HINT, isErrorKind } from '@/lib/error-kinds';
 import { PAPER_SUBJECTS, SCIENCE_PAPER_SUBJECTS, subjectPill } from '@/lib/portal-subjects';
 // The pen, in place (desk round 3, 8 Sep 2026): the same overlay mark-paper uses.
@@ -313,7 +313,8 @@ function PaperSubjectChip({ subject }: { subject: string | null | undefined }) {
   return <span title={`${subject} paper`} style={{ background: t.bg, color: t.fg, borderRadius: 999, padding: '1px 7px', fontSize: 11, fontWeight: 700, lineHeight: '16px', whiteSpace: 'nowrap' }}>{pill.text}</span>;
 }
 
-const LANE_HINT: Record<DeskLane, string> = {
+const LANE_HINT: Record<DeskTab, string> = {
+  all: TAB_HINT_ALL,
   untagged: 'A paper with no student reaches nobody — tag it so it reaches them.',
   'awaiting-sheet': 'Marked, and nobody has asked for a sheet. Vet the marking; Approve & release sends the paper on its own. A sheet you queue here and release is compulsory — the app reminds the student until it is handed in. Students can ask for their own from the app once the paper is out; those go out by themselves once they clear the gate.',
   ready: 'Marked, sheet written, not yet with the student. It goes out by itself on the 12-hour clock unless something holds it — the reasons sit under the button. Open one to agree or override, read the sheet, or Approve & release without waiting.',
@@ -329,7 +330,7 @@ export default function DeskPage() {
   const [authLoading, setAuthLoading] = useState(false);
 
   // ── queue ──────────────────────────────────────────────────────────────────
-  const [lane, setLane] = useState<DeskLane | null>(null);
+  const [lane, setLane] = useState<DeskTab | null>(null);
   // 👤 Filter by student (Adrian, 11 Sep 2026: "can i filter by student?") — a
   // name fragment, kept in the URL (?student=) so a link from a student's page lands filtered.
   const [studentFilter, setStudentFilter] = useState('');
@@ -374,7 +375,7 @@ export default function DeskPage() {
     const q = new URLSearchParams(window.location.search);
     setRunId(q.get('run'));
     const l = q.get('lane');
-    setLane(l && (DESK_LANES as readonly string[]).includes(l) ? (l as DeskLane) : null);
+    setLane(isDeskTab(l) ? l : null);
     setStudentFilter(q.get('student') || '');
   }, []);
   useEffect(() => {
@@ -382,7 +383,7 @@ export default function DeskPage() {
     window.addEventListener('popstate', readUrl);
     return () => window.removeEventListener('popstate', readUrl);
   }, [readUrl]);
-  function go(next: { run?: string | null; lane?: DeskLane | null; student?: string }) {
+  function go(next: { run?: string | null; lane?: DeskTab | null; student?: string }) {
     const q = new URLSearchParams();
     const l = next.lane === undefined ? lane : next.lane;
     const r = next.run === undefined ? runId : next.run;
@@ -949,11 +950,15 @@ export default function DeskPage() {
     );
   }
 
-  const activeLane: DeskLane = lane ?? 'awaiting-sheet';
+  const activeLane: DeskTab = lane ?? 'awaiting-sheet';
   // Work lanes oldest first — the paper that has waited longest is at the top;
   // Released stays newest first (lib/desk-state orderLane, Adrian 7 Sep 2026).
-  const laneAll = rows.filter(r => r.lane === activeLane);
-  const laneRows = orderLane(laneAll.filter(r => matchesStudent(r.studentName, studentFilter)), activeLane);
+  // All is every lane at once, newest first (orderTab, Adrian 15 Sep 2026).
+  // The All tab's count is every lane's — the desk API's counts cover the same
+  // 60 days the rows do, being-marked rows included (auto).
+  const tabTotal = counts ? Object.values(counts).reduce((t, n) => t + (n || 0), 0) : 0;
+  const laneAll = rowsForTab(rows, activeLane);
+  const laneRows = orderTab(laneAll.filter(r => matchesStudent(r.studentName, studentFilter)), activeLane);
   // Every name on the desk, for the filter box's suggestions.
   const studentNames = Array.from(new Set(rows.map(r => r.studentName).filter((n): n is string => !!n))).sort();
   // ── One sheet for several papers (Adrian, 10 Sep 2026: "right now build only
@@ -1022,9 +1027,9 @@ export default function DeskPage() {
         <>
           <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 6, marginBottom: 6, alignItems: 'center' }}>
             <AutoReleaseSwitch />
-            {DESK_LANES.filter(l => !(LANES_HIDDEN_AT_ZERO.includes(l) && counts && !(counts[l] ?? 0) && activeLane !== l)).map(l => (
+            {DESK_TABS.filter(l => !(l !== 'all' && LANES_HIDDEN_AT_ZERO.includes(l) && counts && !(counts[l] ?? 0) && activeLane !== l)).map(l => (
               <button key={l} className={`desk-tab${activeLane === l ? ' on' : ''}`} onClick={() => go({ lane: l })}>
-                {LANE_LABEL[l]}<span className="n">{counts ? counts[l] : '·'}</span>
+                {TAB_LABEL[l]}<span className="n">{counts ? (l === 'all' ? tabTotal : counts[l]) : '·'}</span>
               </button>
             ))}
           </div>
@@ -1052,13 +1057,14 @@ export default function DeskPage() {
           {queueError && <p style={{ color: C.danger }}>{queueError}</p>}
           {queueLoading && rows.length === 0 && <p style={{ color: C.muted }}>Loading…</p>}
           {studentFilter.trim() && laneRows.length > 0 && (
-            <p style={{ fontSize: 12.5, color: C.muted, margin: '0 0 8px' }}>Showing {laneRows.length} of {laneAll.length} in this lane for “{studentFilter.trim()}”.</p>
+            <p style={{ fontSize: 12.5, color: C.muted, margin: '0 0 8px' }}>Showing {laneRows.length} of {laneAll.length} {activeLane === 'all' ? 'on the desk' : 'in this lane'} for “{studentFilter.trim()}”.</p>
           )}
           {!queueLoading && !queueError && laneRows.length === 0 && (
             <p style={{ color: C.muted, padding: '32px 0', textAlign: 'center' }}>
               {studentFilter.trim()
-                ? `No paper for “${studentFilter.trim()}” in this lane${laneAll.length ? ` — ${laneAll.length} other${laneAll.length === 1 ? '' : 's'} here` : ''}.`
-                : activeLane === 'ready' ? 'Nothing in process — the sheets are on their way. 🎉' : 'Nothing here.'}
+                ? `No paper for “${studentFilter.trim()}” ${activeLane === 'all' ? 'on the desk' : 'in this lane'}${laneAll.length ? ` — ${laneAll.length} other${laneAll.length === 1 ? '' : 's'} here` : ''}.`
+                : activeLane === 'ready' ? 'Nothing in process — the sheets are on their way. 🎉'
+                : activeLane === 'all' ? 'Nothing on the desk in the last 60 days.' : 'Nothing here.'}
             </p>
           )}
 

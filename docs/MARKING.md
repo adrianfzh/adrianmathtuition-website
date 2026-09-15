@@ -1760,6 +1760,20 @@ it matters — hence the zoom / the original, not a bigger copy of every page.
   upright before reading, as it always did for photos. An unsure image still splits.
   Both intakes share the rule — `/admin/mark-paper` and `/app/submit`.
 
+### Desk additions, 15 Sep 2026 — the All tab
+
+- **All** (Adrian: "can i have an all tab besides still have to deal with and completed?
+  so i can see the full list"): a sixth tab, last in the strip, showing every paper on the
+  desk whatever lane it is in, newest first. It is a VIEW, not a lane — no run is ever *in*
+  All, so it stays out of `DeskLane` and out of the desk API's `?lane=` parameter (which
+  400s on anything that is not a real lane). The vocabulary is `DeskTab` / `DESK_TABS` /
+  `TAB_LABEL` / `isDeskTab` / `rowsForTab` / `orderTab` in `lib/desk-state.ts`
+  (pure/tested); `LANE_LABEL` and `orderLane` are unchanged and still describe a run's own
+  lane, which is what the detail view's chip reads. The API needed no change: it already
+  returns every lane's rows plus the 🌙 being-marked rows when `lane` is absent, which is
+  what the page has always fetched. The tab's count is the sum of `counts`. The 👤 student
+  filter works here too — All is the tab to search a student in, because nothing is hidden.
+
 ### Desk additions, 11 Sep 2026 — 👤 filter by student
 
 - **Filter by student** (Adrian: "can i filter by student?"): a name box beside the lane

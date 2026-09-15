@@ -96,8 +96,31 @@ export function practiceAgainHandinName(sent: string | null | undefined, sourceP
   const src = String(sourcePaperName ?? '').trim();
   let tail = src || (m ? m[1] : '');
   tail = tail.replace(/^(?:from\s+your|learn\s+from|from)\s+/i, '').replace(/\s+paper\s*$/i, '').replace(/^your\s+/i, '').trim();
-  const shown = tail ? displayPaperName(tail, studentName) : '';
-  return shown ? `Practice Again — ${shown}` : 'Practice Again';
+  return practiceAgainTitle(tail ? displayPaperName(tail, studentName) : '');
+}
+
+/** Strip every leading "Practice Again", with whatever separator follows it. */
+function withoutPracticeAgainPrefix(s: string): string {
+  let out = s.trim();
+  for (;;) {
+    const next = out.replace(/^practice\s+again\s*(?:[—–·-]\s*)?/i, '').trim();
+    if (next === out) return out;
+    out = next;
+  }
+}
+
+/**
+ * "Practice Again — <name>", with the prefix on exactly ONCE however many rounds
+ * deep the sheet is. Chloe Gng, 14 Sep 2026: she asked for a Practice Again off
+ * a paper that was itself a Practice Again hand-in, so the name it was built
+ * from already carried the prefix and got a second one —
+ * "Practice Again — Practice Again · E Math · GCE 2024 · Paper 1", which she saw
+ * in her app. Both places that name one of these go through here: the hand-in
+ * (above) and the assignment (api/admin/release-with-sheet).
+ */
+export function practiceAgainTitle(shown: string | null | undefined): string {
+  const tail = withoutPracticeAgainPrefix(String(shown ?? ''));
+  return tail ? `Practice Again — ${tail}` : 'Practice Again';
 }
 
 /**

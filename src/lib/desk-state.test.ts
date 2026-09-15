@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   laneFor, sheetStageLabel, isPracticeAgainHandin, releasedViaLabel, handinOriginOf, approveBlockers, releaseBlockers, deskFlags, defaultLane,
   amendedStatusFor, latestLiveJob, noSheetOf, pdfStaleOf, DESK_LANES, LANE_LABEL, orderLane, revisingOf, revisingLabel, sheetOutcomeOf, sheetInProgressOf,
+  DESK_TABS, TAB_LABEL, isDeskTab, rowsForTab, orderTab,
   markingProgressOf,
   tickPlan, tickPlanLine, matchesStudent,
 } from './desk-state';
@@ -244,6 +245,36 @@ describe('orderLane — the oldest waiting paper is at the top', () => {
     const tie = [{ id: 'x', createdAt: '2026-09-01T00:00:00Z' }, { id: 'y', createdAt: '2026-09-01T00:00:00Z' }];
     expect(orderLane(tie, 'ready').map(r => r.id)).toEqual(['x', 'y']);
     expect(rows[0].id).toBe('c');
+  });
+});
+
+// Adrian, 15 Sep 2026: "can i have an all tab besides still have to deal with
+// and completed? so i can see the full list".
+describe('the All tab', () => {
+  const rows = [
+    { id: 'c', lane: 'released' as const, createdAt: '2026-09-07T01:36:00Z' },
+    { id: 'a', lane: 'auto' as const, createdAt: '2026-09-03T01:35:00Z' },
+    { id: 'b', lane: 'untagged' as const, createdAt: '2026-09-06T00:42:00Z' },
+  ];
+  it('is a tab and never a lane — the desk API only knows the five lanes', () => {
+    expect(DESK_TABS).toEqual([...DESK_LANES, 'all']);
+    expect(DESK_LANES).not.toContain('all');
+    expect(TAB_LABEL.all).toBe('All');
+    expect(TAB_LABEL.released).toBe(LANE_LABEL.released);
+    expect(isDeskTab('all')).toBe(true);
+    expect(isDeskTab('released')).toBe(true);
+    expect(isDeskTab('nonsense')).toBe(false);
+    expect(isDeskTab(null)).toBe(false);
+  });
+  it('shows every lane at once, newest first, without mutating the list', () => {
+    expect(rowsForTab(rows, 'all').map(r => r.id)).toEqual(['c', 'a', 'b']);
+    expect(orderTab(rows, 'all').map(r => r.id)).toEqual(['c', 'b', 'a']);
+    expect(rows.map(r => r.id)).toEqual(['c', 'a', 'b']);
+  });
+  it('leaves a real lane exactly as it was', () => {
+    expect(rowsForTab(rows, 'auto').map(r => r.id)).toEqual(['a']);
+    expect(orderTab(rows, 'auto')).toEqual(orderLane(rows, 'auto'));
+    expect(rowsForTab(rows, 'ready')).toEqual([]);
   });
 });
 

@@ -27,7 +27,7 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { listFolder, dropboxConfigured, downloadFile } from '@/lib/dropbox';
 import { putStudentFile, runKey } from '@/lib/student-files';
-import { displayPaperName } from '@/lib/paper-display-name';
+import { displayPaperName, practiceAgainTitle } from '@/lib/paper-display-name';
 import { choosePdf, sheetFolder, ambiguityMessage, noSheetNote, earlierSheetsToWithdraw, type SheetFile } from '@/lib/release-with-sheet';
 import { readNoSheet } from '@/lib/sheet-jobs';
 import { attachAmendedFromDropbox } from '@/lib/attach-amended';
@@ -211,9 +211,12 @@ export async function POST(req: NextRequest) {
   // not the internal one ("wanqing am tys 2021 p1") — same rule as the Papers list.
   const batch = r.covered.length > 1;
   const subjectWord = String((r.run as { paper_subject?: string | null }).paper_subject || '').trim();
+  // practiceAgainTitle, not a template string: the source paper may itself be a
+  // Practice Again hand-in, and its display name then already opens with the
+  // prefix (Chloe Gng, 14 Sep 2026 — lib/paper-display-name).
   const title = batch
     ? `Practice Again — your ${r.covered.length}${subjectWord ? ` ${subjectWord}` : ''} papers`
-    : `Practice Again — ${r.run.paper_name ? displayPaperName(r.run.paper_name, r.run.student_name) : 'your marked paper'}`;
+    : practiceAgainTitle(r.run.paper_name ? displayPaperName(r.run.paper_name, r.run.student_name) : 'your marked paper');
   const aRes = await fetch(`${origin}/api/admin/assignments`, {
     method: 'POST', headers: fwd,
     body: JSON.stringify({

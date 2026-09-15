@@ -48,6 +48,40 @@ export const LANE_LABEL: Record<DeskLane, string> = {
   released: 'Completed',
 };
 
+// ── The tabs ────────────────────────────────────────────────────────────────
+// Adrian, 15 Sep 2026: "can i have an all tab besides still have to deal with
+// and completed? so i can see the full list". All is a VIEW, not a lane — no run
+// is ever in it, so it stays out of DeskLane (and out of the desk API's lane
+// parameter, which 400s on anything that is not a real lane).
+
+export type DeskTab = DeskLane | 'all';
+
+/** The tab strip, left to right. All sits last: it is the catch-all, not the door. */
+export const DESK_TABS: readonly DeskTab[] = [...DESK_LANES, 'all'];
+
+export const TAB_LABEL: Record<DeskTab, string> = { ...LANE_LABEL, all: 'All' };
+
+export function isDeskTab(s: string | null | undefined): s is DeskTab {
+  return !!s && (DESK_TABS as readonly string[]).includes(s);
+}
+
+/** The rows a tab shows — every row for All, that lane's rows otherwise. */
+export function rowsForTab<T extends { lane: DeskLane }>(rows: T[], tab: DeskTab): T[] {
+  return tab === 'all' ? rows.slice() : rows.filter(r => r.lane === tab);
+}
+
+/**
+ * Order the rows of a tab. All is a history of the whole desk rather than a
+ * queue to work down, so it reads newest first like Completed; a real lane keeps
+ * its own rule (orderLane).
+ */
+export function orderTab<T extends { createdAt: string; releasedAt?: string | null; revising?: Revising | null; marking?: MarkingProgress | null }>(rows: T[], tab: DeskTab): T[] {
+  return orderLane(rows, tab === 'all' ? 'released' : tab);
+}
+
+/** What the line under the tabs says. */
+export const TAB_HINT_ALL = 'Every paper on the desk, newest first — whatever lane it is in. Nothing is hidden here, so this is the tab to search a student in. Open one to work on it; what you can do is whatever its own lane allows.';
+
 /** The run columns the lane rules read. */
 export type DeskRun = {
   paper_name?: string | null;
