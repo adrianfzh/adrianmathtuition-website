@@ -15,6 +15,7 @@ import {
   effectiveEndISO,
   examCutoffFor,
   examCutoffNote,
+  examCutoffNoteFrom,
   humanDate,
   invoiceDueDateISO,
   isCombinedJanuary,
@@ -115,9 +116,29 @@ describe('exam cut-off dates (2026 SEAB timetables)', () => {
     expect(effectiveEndISO('2026-12-31', null)).toBe('2026-12-31');
     expect(effectiveEndISO(undefined, undefined)).toBeNull();
   });
-  it('the parent-facing note names the date and the paper', () => {
-    expect(examCutoffNote({ iso: '2026-10-28', paper: 'O-Level A Math Paper 2' }))
-      .toBe('Lessons run up to Wed, 28 Oct 2026, the last O-Level A Math Paper 2. No lessons are scheduled after the exams.');
+  it('the parent-facing note names the last paper AND the last lesson', () => {
+    expect(examCutoffNote({ iso: '2026-10-28', paper: 'O-Level A Math Paper 2' }, '2026-10-26'))
+      .toBe('Lessons run all the way up to the exams. The last paper is the O-Level A Math Paper 2 on Wed, 28 Oct 2026, so the last lesson is on Mon, 26 Oct 2026. No lessons are scheduled after the exams.');
+  });
+  it('without a last-lesson date it still names the paper', () => {
+    expect(examCutoffNote({ iso: '2026-10-23', paper: 'O-Level E Math Paper 2' }))
+      .toBe('Lessons run all the way up to the exams. The last paper is the O-Level E Math Paper 2 on Fri, 23 Oct 2026. No lessons are scheduled after the exams.');
+  });
+  it('the note is pronoun-free — it is read by parents and students alike', () => {
+    const n = examCutoffNote({ iso: '2026-10-28', paper: 'O-Level A Math Paper 2' }, '2026-10-26');
+    expect(n).not.toMatch(/\b(he|she|his|her|hers|him|they|their)\b/i);
+  });
+  it('the email pulls the cut-off paragraph back out of a multi-paragraph Auto Notes', () => {
+    const cut = examCutoffNote({ iso: '2026-10-28', paper: 'O-Level A Math Paper 2' }, '2026-10-26');
+    expect(examCutoffNoteFrom(['Additional lessons: Wed, 19 Aug 2026', cut].join('\n\n'))).toBe(cut);
+    // The referral thank-you shares the field on a referrer's invoice.
+    expect(examCutoffNoteFrom([cut, 'Thank you so much for referring a friend!'].join('\n\n'))).toBe(cut);
+    expect(examCutoffNoteFrom(cut)).toBe(cut);
+  });
+  it('an invoice with no cut-off note puts nothing in the email', () => {
+    expect(examCutoffNoteFrom('Additional lessons: Wed, 19 Aug 2026')).toBeNull();
+    expect(examCutoffNoteFrom('')).toBeNull();
+    expect(examCutoffNoteFrom(null)).toBeNull();
   });
 });
 
@@ -329,6 +350,10 @@ describe('review notes + the send cron hold reasons', () => {
   });
   it('classifies the notes this module writes, and nothing else', () => {
     expect(yearEndHoldReason(examCutoffNote({ iso: '2026-10-28', paper: 'O-Level A Math Paper 2' }))).toBe('exam cut-off');
+    // The reworded note (15 Sep 2026) must STILL hold the invoice — the hold
+    // regex matches "after the exams", so changing that phrase would silently
+    // put every exam-year invoice back into the 10:00 auto-send.
+    expect(yearEndHoldReason(examCutoffNote({ iso: '2026-10-28', paper: 'O-Level A Math Paper 2' }, '2026-10-26'))).toBe('exam cut-off');
     expect(yearEndHoldReason(attendedReviewNote('October 2026'))).toBe('attended lessons (exam-year student)');
     expect(yearEndHoldReason('Additional lessons: Tue 6 Oct')).toBeNull();
     expect(yearEndHoldReason('')).toBeNull();

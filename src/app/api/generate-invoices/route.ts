@@ -245,7 +245,7 @@ export async function POST(req: NextRequest) {
     let skipped = 0;
     const errors: any[] = [];
     const generatedList: { name: string; amount: number; count: number; extrasOnly?: boolean; cutoffNote?: string }[] = [];
-    const generatedInvoices: { id: string; studentId: string; lineItemsExtra: any[]; finalAmount: number }[] = [];
+    const generatedInvoices: { id: string; studentId: string; lineItemsExtra: any[]; finalAmount: number; autoNotes: string }[] = [];
     // Year-end bookkeeping for the Telegram summary (names, grouped — one line
     // each instead of a per-student skip flag).
     const arrearsDeferred: string[] = [];     // advance run: month is arrears-billed for them
@@ -483,6 +483,11 @@ export async function POST(req: NextRequest) {
           }
           lineItemsForInvoice.sort((a, b) => a.date.localeCompare(b.date));
           lessonCount = lineItemsForInvoice.length;
+          // The last REGULAR lesson, captured BEFORE the Additional lessons are
+          // pushed below: an Additional lesson can be dated later, and "your last
+          // lesson is on …" in the exam note must name the weekly slot's last
+          // sitting, not a one-off makeup.
+          const lastRegularISO: string = lineItemsForInvoice[lineItemsForInvoice.length - 1]?.date || '';
           // Per-enrollment rates (handles multi-rate students).
           baseAmount = sumLineRates(lineItemsForInvoice, ratePerLesson);
 
@@ -500,7 +505,7 @@ export async function POST(req: NextRequest) {
           // cron HOLD it for Adrian's review — deliberate in the first year.
           const cutoffBinding = !!cutoff && cutoff.iso >= monthFirstISO && cutoff.iso <= monthLastISO
             && slots.every((s) => !s.endISO || s.endISO >= cutoff.iso);
-          if (cutoffBinding && cutoff) cutoffNote = examCutoffNote(cutoff);
+          if (cutoffBinding && cutoff) cutoffNote = examCutoffNote(cutoff, lastRegularISO || null);
         } else {
           // ── Arrears: what was actually attended ─────────────────────────
           const regularBilled = heldTypes.has('Regular') || heldTypes.has('Enrollment');
@@ -631,7 +636,9 @@ export async function POST(req: NextRequest) {
               makeupCredits: 0,
               // Carry-over breakdown is stored in Airtable Auto Notes for admin reference,
               // but suppressed from the parent-facing PDF — they can view the prior invoice if needed.
-              notes: '',
+              // The exam cut-off note is the exception: it is written FOR the parent
+              // (Adrian, 15 Sep 2026), so it prints here as it does on the sent copy.
+              notes: cutoffNote,
               lineItems: lineItemsForInvoice,
               lineItemsExtra: carryOverLineItems,
               registerUrl: buildRegisterUrl(studentId),
@@ -658,7 +665,7 @@ export async function POST(req: NextRequest) {
         }
 
         generatedList.push({ name: student.fields['Student Name'], amount: finalAmount, count: lessonCount, extrasOnly, cutoffNote });
-        generatedInvoices.push({ id: createdRecord.id, studentId, lineItemsExtra: carryOverLineItems, finalAmount: totalFinalAmount });
+        generatedInvoices.push({ id: createdRecord.id, studentId, lineItemsExtra: carryOverLineItems, finalAmount: totalFinalAmount, autoNotes });
         generated++;
       } catch (err: any) {
         const studentName = student?.fields?.['Student Name'] || 'Unknown';
@@ -772,7 +779,13 @@ export async function POST(req: NextRequest) {
                   referrerNameGiven: referrerName,
                 });
                 const newFinalAmount = Math.max(0, referrerInvoice.finalAmount - rewardAmount);
+                // APPEND, never replace: this used to be a bare `'Auto Notes': referralNote`,
+                // which silently wiped whatever the generator had already written on that
+                // invoice — Denise Chan's October 2026 invoice lost its exam cut-off note
+                // that way, so her copy was the only Sec 4 one that did not say when the
+                // lessons stop (found 15 Sep 2026).
                 const referralNote = `Thank you so much for referring ${newStudentName} to us! 🎉 As a token of our appreciation, we've applied a complimentary month of lessons to this invoice.`;
+                const notesWithReferral = [referrerInvoice.autoNotes, referralNote].filter(Boolean).join('\n\n');
 
                 await airtableRequest('Invoices', `/${referrerInvoice.id}`, {
                   method: 'PATCH',
@@ -781,13 +794,14 @@ export async function POST(req: NextRequest) {
                     'Final Amount': newFinalAmount,
                     // Credit fully offsets the invoice → nothing owed → mark paid.
                     ...(newFinalAmount <= 0.005 ? { 'Is Paid': true } : {}),
-                    'Auto Notes': referralNote,
+                    'Auto Notes': notesWithReferral,
                   }}),
                 });
 
                 // Update local tracking to prevent double-applying if another referred student points to same referrer
                 referrerInvoice.lineItemsExtra = existingExtra;
                 referrerInvoice.finalAmount = newFinalAmount;
+                referrerInvoice.autoNotes = notesWithReferral;
               }
 
               // Mark referral as applied (even if invoice not in this batch — avoids re-triggering next month)

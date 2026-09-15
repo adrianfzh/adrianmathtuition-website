@@ -7,7 +7,7 @@ import { sendTelegram } from '@/lib/telegram';
 const notify_money = (text: string) => sendTelegram(text, 'money');
 import { getInvoiceMonth, displaySpanMonth, sgtTodayISO } from '@/lib/invoice-month';
 import { resolveRunMode, resolveTargetMonthLabel, jobNameFor } from '@/lib/invoice-run-mode';
-import { yearEndHoldReason } from '@/lib/year-end-billing';
+import { yearEndHoldReason, examCutoffNoteFrom } from '@/lib/year-end-billing';
 import { copy } from '@vercel/blob';
 import { generateAndStoreInvoicePdf } from '@/lib/invoice-pdf';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -48,14 +48,23 @@ function buildEmailHtml(invoice: {
   dueDate: string;
   paymentRef: string;
   studentId?: string; // powers the referral-link footer; older callers may omit
+  // The exam cut-off paragraph off the invoice's Auto Notes, when there is one
+  // (examCutoffNoteFrom). Adrian, 15 Sep 2026: "put both messages in the invoice
+  // pdf as well as the email message" — the PDF gets it through {{AUTO_NOTES}},
+  // and this is the other half. Same sentence in both places on purpose: a
+  // parent who reads one and skims the other sees no difference.
+  examNote?: string | null;
 }) {
   // One-time apology for the delayed July 2026 batch (was due to go out 18 June). Remove after July.
   const delayApology = invoice.month === 'July 2026'
     ? `<p>My sincere apologies for the delay — this ${invoice.month} invoice was due to be sent on 15 June.</p>\n    `
     : '';
+  const examNoteHtml = invoice.examNote
+    ? `\n    <p style="background: #f8fafc; border-left: 3px solid #cbd5e1; padding: 10px 14px; margin: 16px 0;">📅 ${invoice.examNote}</p>`
+    : '';
   return `
     <p>Dear Parent/Student,</p>
-    ${delayApology}<p>Please find attached the invoice for ${invoice.studentName} for ${invoice.month} — ${amountDueHtml(invoice.finalAmount, invoice.dueDate)}.</p>
+    ${delayApology}<p>Please find attached the invoice for ${invoice.studentName} for ${invoice.month} — ${amountDueHtml(invoice.finalAmount, invoice.dueDate)}.</p>${examNoteHtml}
     ${paymentHtml(invoice.finalAmount, invoice.paymentRef)}
     <p>Please feel free to reach out if you have any questions.</p>
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
@@ -361,7 +370,7 @@ export async function POST(req: NextRequest) {
       } else if (month === 'June 2026') {
         html = buildJune2026EmailHtml(invoice);
       } else {
-        html = buildEmailHtml(invoice);
+        html = buildEmailHtml({ ...invoice, examNote: examCutoffNoteFrom(rec.fields['Auto Notes'] as string) });
       }
       // HTML → readable plain text for Telegram
       const text = html
@@ -586,7 +595,7 @@ export async function POST(req: NextRequest) {
       } else if (invoice.month === 'June 2026') {
         html = buildJune2026EmailHtml(invoice);
       } else {
-        html = buildEmailHtml(invoice);
+        html = buildEmailHtml({ ...invoice, examNote: examCutoffNoteFrom(invoiceRecord.fields['Auto Notes'] as string) });
       }
 
       const emailData: any = {

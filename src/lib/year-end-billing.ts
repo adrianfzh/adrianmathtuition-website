@@ -146,9 +146,42 @@ export function humanDate(iso: string): string {
   });
 }
 
-/** The parent-facing note on an exam-year invoice that was cut short by the exams. */
-export function examCutoffNote(cutoff: ExamCutoff): string {
-  return `Lessons run up to ${humanDate(cutoff.iso)}, the last ${cutoff.paper}. No lessons are scheduled after the exams.`;
+/**
+ * The parent-facing note on an exam-year invoice that was cut short by the exams.
+ *
+ * Adrian, 15 Sep 2026: "Put a note saying that lessons will be all the way until
+ * their last exam (state the date of the last exam, and their last lesson date).
+ * put both messages in the invoice pdf as well as the email message." So the
+ * note carries BOTH dates, and it reaches the parent twice — on the PDF through
+ * the `Auto Notes` field ({{AUTO_NOTES}} in public/invoice-final.html) and in
+ * the email body, which picks this paragraph back out via examCutoffNoteFrom.
+ *
+ * `lastLessonISO` is the last REGULAR lesson on the invoice (an Additional
+ * lesson can fall later and is not what a parent means by "the last lesson");
+ * omit it and the note names the paper alone. Pronoun-free on purpose — these
+ * go to parents and students alike.
+ *
+ * ⚠ The closing sentence must keep the words "after the exams": yearEndHoldReason
+ * matches on them, and that match is what holds every one of these invoices out
+ * of the 10:00 auto-send for Adrian to read first.
+ */
+export function examCutoffNote(cutoff: ExamCutoff, lastLessonISO?: string | null): string {
+  const lastLesson = lastLessonISO ? `, so the last lesson is on ${humanDate(lastLessonISO)}` : '';
+  return `Lessons run all the way up to the exams. The last paper is the ${cutoff.paper} on `
+    + `${humanDate(cutoff.iso)}${lastLesson}. No lessons are scheduled after the exams.`;
+}
+
+/**
+ * The cut-off paragraph inside a (possibly multi-paragraph) Auto Notes, or null.
+ * The generator joins its notes with a blank line, and an invoice can carry an
+ * extras line or a referral thank-you alongside this one — the email wants only
+ * the exam paragraph, so this picks it out rather than printing the whole field.
+ */
+export function examCutoffNoteFrom(autoNotes: string | null | undefined): string | null {
+  return (autoNotes || '')
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .find((p) => /after the exams/.test(p)) || null;
 }
 
 /**
