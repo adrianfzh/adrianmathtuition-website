@@ -173,15 +173,25 @@ describe('the opt-out button (Adrian, 15 Sep 2026: "build the opt-out button")',
 describe('tone — Adrian, 15 Sep 2026: "not pushy - just word of advice"', () => {
   const sec2 = { level: 'Sec 2', subjects: ['Math'] };
 
-  it('frames the reasons as advice, not as a counter-argument to opting out', () => {
+  // My first pass replaced Adrian's own heading with a flatter one and added a
+  // reassurance paragraph after the bullets. He reversed both on the same day:
+  // 'keep "that said..."' / 'remove "either way is completely fine.."'. The
+  // recommendation is his to make, in his own words — these two tests exist to
+  // stop a later tone pass from softening it back out.
+  it("keeps Adrian's own heading over the reasons", () => {
     const html = holidayNoteHtml(sec2, 10, 'Alven');
-    expect(html).toContain('A word of advice, if it helps you decide');
-    expect(html).not.toContain('That said');
-    expect(html).not.toContain('I would encourage');
+    expect(html).toContain('That said, I would encourage students to keep attending regular lessons if they can.');
+    expect(html).not.toContain('A word of advice');
   });
 
-  it('says plainly that either choice is fine', () => {
-    expect(holidayNoteHtml(sec2, 10, 'Alven')).toContain('Either way is completely fine');
+  it('carries no reassurance paragraph after the bullets', () => {
+    const html = holidayNoteHtml(sec2, 10, 'Alven');
+    expect(html).not.toContain('Either way is completely fine');
+    expect(html).not.toContain('makes no difference to how');
+    // The opt-out still stands on its own at both ends of the block, which is
+    // what stops the reasons reading as something to be talked out of.
+    expect(html).toContain('they are optional over these three months');
+    expect(html).toContain('Anything you do not tell me about stays as it is.');
   });
 
   it('claims no superlatives and promises no outcome', () => {

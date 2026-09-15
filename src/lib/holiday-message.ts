@@ -129,10 +129,13 @@ export function holidayNoteHtml(
   const name = withName('[Student]', studentName);
   const step = stepUpParagraph(s);
 
-  // Adrian, 15 Sep 2026: "make sure it's not pushy - just word of advice".
-  // These are reasons, offered once, under a heading that says so. No
-  // superlatives, no promises about results, and the opt-out is stated first
-  // and last so it never reads as something to be talked out of.
+  // Adrian, 15 Sep 2026: "make sure it's not pushy - just word of advice" — and
+  // then, on my draft of it: keep "that said...", remove "either way is
+  // completely fine..". His own line ("That said, I would encourage students to
+  // keep attending regular lessons if they can.") is the heading; it is a
+  // recommendation in his voice, not a hedge. The reasons are offered once, with
+  // no superlatives and no promises about results, and the opt-out is stated
+  // first and last so it never reads as something to be talked out of.
   const bullets: [string, string][] = [
     ['Consistency is most of the work.',
       'Maths rewards steady practice more than intensity. Students who stop for six or eight weeks '
@@ -163,11 +166,10 @@ export function holidayNoteHtml(
     <div style="background:#f8fafc;border-left:3px solid #cbd5e1;padding:12px 16px;margin:16px 0;">
       <p style="margin:0 0 10px;"><strong>Lessons carry on as usual through October, November and December, but they are optional over these three months.</strong> If ${esc(name)} is travelling, resting, or you would simply rather pause, you can opt out of any of October, November or December — those months come off the schedule and off the invoice. Students who opt out can still come in for one-off lessons during the break, booked ad hoc and billed per lesson.</p>
       <p style="margin:0 0 10px;"><strong>If you are away for only part of a month, you don't need to opt out.</strong> Move those lessons with the WhatsApp assistant (details at the foot of this email) or just tell me the dates, and ${esc(name)} will get make-up lessons for whatever is missed.</p>
-      <p style="margin:0 0 6px;"><strong>A word of advice, if it helps you decide:</strong></p>
+      <p style="margin:0 0 6px;"><strong>That said, I would encourage students to keep attending regular lessons if they can.</strong></p>
       <ul style="margin:0 0 10px;padding-left:20px;">
       ${li}
       </ul>
-      <p style="margin:0 0 10px;">Either way is completely fine — it is your call, and it makes no difference to how ${esc(name)} is taught.</p>
       <p style="margin:0 0 10px;"><strong>Two periods when I will be away:</strong> Wed 28 October – Sun 1 November, and Sat 5 December – Sat 12 December. If ${esc(name)} is attending regular lessons as usual, I will provide make-up lessons for every lesson that falls in those two windows — the WhatsApp assistant can book them, or I will arrange them with you.</p>
       <p style="margin:0 0 4px;">To opt out of any month, tap the button below and pick the months there, or just reply to this email. Anything you do not tell me about stays as it is.</p>${button}
     </div>`;
