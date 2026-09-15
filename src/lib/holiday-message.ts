@@ -29,7 +29,7 @@ export interface StudentForHoliday {
   subjects?: readonly string[] | null; // Students.Subjects — e.g. ['E Math','A Math']
 }
 
-import { ARREARS_MONTHS, EXAM_PREP_NOTE } from './year-end-billing';
+import { OPTOUT_MONTHS, EXAM_PREP_NOTE } from './year-end-billing';
 
 /** Invoice months (1-indexed) whose email carries the holiday note. October's
  *  invoice is billed in advance as usual (Adrian, 15 Sep 2026) but ANNOUNCES the
@@ -38,7 +38,7 @@ export const HOLIDAY_MONTHS = [10, 11, 12] as const;
 
 const MONTH_WORDS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 /** "November and December" — the optional months, from the billing rule. */
-export function optionalMonthsPhrase(months: readonly number[] = ARREARS_MONTHS): string {
+export function optionalMonthsPhrase(months: readonly number[] = OPTOUT_MONTHS): string {
   const w = months.map((m) => MONTH_WORDS[m - 1]);
   return w.length <= 1 ? (w[0] || '') : `${w.slice(0, -1).join(', ')} and ${w[w.length - 1]}`;
 }
@@ -175,18 +175,18 @@ export function holidayNoteHtml(
     : '';
 
   const months = optionalMonthsPhrase();
-  const either = ARREARS_MONTHS.length === 2 ? `either ${months.replace(' and ', ' or ')}` : `any of ${months.replace(' and ', ' or ')}`;
-  const count = COUNT_WORDS[ARREARS_MONTHS.length] || String(ARREARS_MONTHS.length);
+  const either = OPTOUT_MONTHS.length === 2 ? `either ${months.replace(' and ', ' or ')}` : `any of ${months.replace(' and ', ' or ')}`;
+  const count = COUNT_WORDS[OPTOUT_MONTHS.length] || String(OPTOUT_MONTHS.length);
   // The October invoice is billed as usual; its job here is the exam-prep
   // reminder (Adrian, 15 Sep 2026) before the holiday months are announced.
   const prep = month === 10
     ? `\n      <p style="margin:0 0 10px;"><strong>Exams coming up?</strong> ${esc(EXAM_PREP_NOTE.replace(/^Exams coming up\? /, ''))}</p>`
     : '';
   // Told on the October invoice (the announcement), in the block's own words —
-  // the PDF carries ARREARS_ANNOUNCE_NOTE; a later month's invoice explains
-  // itself (arrearsCoverageNote) so this paragraph would only repeat it.
+  // the PDF carries HOLIDAY_BILLING_NOTE. Advance like any other month; the
+  // deadline is the day before the 14th's generation run (Adrian, 15 Sep 2026).
   const billing = month === 10
-    ? `\n      <p style="margin:0 0 10px;"><strong>How ${months} are billed.</strong> Nothing is charged in advance for these ${count} months. On 1 December you will receive November’s invoice for the lessons ${esc(name)} actually attended, due within a week. December’s lessons come together with January’s in one invoice on 1 January.</p>`
+    ? `\n      <p style="margin:0 0 10px;"><strong>How ${months} are billed.</strong> Both are billed in advance like any other month, on the 15th of the month before. If you would like ${esc(name)} to skip a month, tap the button below or just tell me — by 13 October for November, or by 13 November for December — and that month is simply not invoiced. Any one-off lessons during a skipped month are billed on the following invoice.</p>`
     : '';
   return `
     <div style="background:#f8fafc;border-left:3px solid #cbd5e1;padding:12px 16px;margin:16px 0;">${prep}

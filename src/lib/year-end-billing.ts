@@ -39,10 +39,18 @@ export const MONTH_LABELS = [
 export const EXAM_YEAR_LEVELS = ['Sec 4', 'Sec 5', 'JC2'];
 
 /** Months (1–12) billed in arrears for non-exam-year students. */
-// 15 Sep 2026, Adrian: "Make advance for October." October is a normal school
-// month — attendance is predictable, and the money comes in on 15 Sep rather
-// than 1 Nov — so only the two holiday months are billed from attendance.
-export const ARREARS_MONTHS = [11, 12];
+// 15 Sep 2026, Adrian, later the same day: "keep things simple — have all
+// months run on advance by default. Allow parents to opt out of months (Nov and
+// Dec), then we just have arrears payments for them." So NO month is billed from
+// attendance any more: every month is projected and billed on the 15th before,
+// a parent's opt-out takes that month's dates off the projection
+// (optoutDatesByStudent in the advance generator), and one-off lessons in a
+// skipped month ride the next invoice as Additional lessons. The arrears
+// machinery below stays in the file, dormant, in case the rule swings back.
+export const ARREARS_MONTHS: number[] = [];
+
+/** The months a parent may opt out of from the holiday email (1-indexed). */
+export const OPTOUT_MONTHS = [11, 12];
 
 /** The reminder on a non-exam-year student's October invoice (Auto Notes → the
  *  PDF; the email carries the same sentence inside the holiday block). Adrian,
@@ -51,11 +59,10 @@ export const ARREARS_MONTHS = [11, 12];
 export const EXAM_PREP_NOTE = 'Exams coming up? October lessons can be brought forward to before the exams for extra prep — just tell me, or schedule through the WhatsApp assistant.';
 
 /** Told once, on the October invoice of a non-exam-year student (Auto Notes →
- *  the PDF; the email's holiday block says it in its own words): the two holiday
- *  months are billed AFTER each month, for the lessons attended. Adrian,
- *  15 Sep 2026: "will sec 1 to 3 and JC 1 students be informed that the payments
- *  of november and december will be in arrears?" */
-export const ARREARS_ANNOUNCE_NOTE = 'November and December are billed after each month, for the lessons attended: November\'s invoice comes on 1 December (due within a week), and December\'s comes together with January\'s on 1 January.';
+ *  the PDF; the email's holiday block says it in its own words): the holiday
+ *  months are billed in advance like any other, and how to skip one. Adrian,
+ *  15 Sep 2026: "what do parents/students see?" */
+export const HOLIDAY_BILLING_NOTE = 'November and December are billed in advance like any other month. To skip a month, use the button in the email or just tell me — by 13 October for November, by 13 November for December — and that month is simply not invoiced. One-off lessons in a skipped month are billed on the next invoice.';
 
 /** The parent-facing note on a NON-exam-year student's arrears invoice — what
  *  this invoice is for, in one line. Both the PDF and the email carry it. */
@@ -232,7 +239,7 @@ export function yearEndHoldReason(autoNotes: string): string | null {
   if (/after the exams/.test(autoNotes)) return 'exam cut-off';
   if (/Billed for the lessons attended in/.test(autoNotes)) return 'attended lessons (exam-year student)';
   if (/lessons attended in/.test(autoNotes)) return 'attended lessons (billed after the month)';
-  if (/billed after each month/.test(autoNotes)) return 'October — holiday billing announced';
+  if (/billed in advance like any other month/.test(autoNotes)) return 'October — holiday note';
   return null;
 }
 
@@ -457,6 +464,7 @@ const CUTOFF_LABELS: { key: keyof ExamCutoffs; label: string; group: 'Sec 4/5' |
  */
 export function advanceRunNote(invoiceYear: number, invoiceMonth: number): string | null {
   const others = 'Sec 1–3 / JC1 (and IP Sec 4)';
+  if (!ARREARS_MONTHS.length) return null;   // every month advance-billed: the ordinary reminder stands
   if (invoiceMonth === 1) {
     return `Year-end billing: ${others} get NO January draft on the 14th — December + January go out as ONE invoice on 1 Jan (December attended + January projected). Sec 4/5 and JC2 are past their exams: no invoice.`;
   }

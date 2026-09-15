@@ -68,18 +68,6 @@
       "schedule": "0 2 15 * *"
     },
     {
-      "path": "/api/generate-invoices?mode=arrears",
-      "schedule": "0 0 1 12,1 *"
-    },
-    {
-      "path": "/api/payment-reminder?mode=arrears",
-      "schedule": "0 12 1 12,1 *"
-    },
-    {
-      "path": "/api/send-invoices?mode=arrears",
-      "schedule": "0 2 2 12,1 *"
-    },
-    {
       "path": "/api/june-revision-followup",
       "schedule": "0 1 25 5 *"
     },

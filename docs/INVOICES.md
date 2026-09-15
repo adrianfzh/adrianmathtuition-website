@@ -34,7 +34,32 @@ one independent fix, `lib/regenerate-line-items.ts`, was kept). Rules now live i
 nowhere else — never re-derive a cut-off date, a due date or an arrears month list in a
 route. First month the machinery bills: **October 2026** (`ARREARS_BILLING_FROM`).
 
-From October to January every student falls into exactly one of two lanes.
+> **⚠ Superseded on 15 Sep 2026 (later the same day) — every month is advance-billed.**
+> Adrian: "keep things simple — have all months run on advance by default. Allow parents
+> to opt out of months (Nov and Dec), then we just have arrears payments for them."
+> `ARREARS_MONTHS = []`, `OPTOUT_MONTHS = [11, 12]`. What that means in practice:
+> - The 14th's advance run drafts EVERY active student for the next month, all year.
+> - A parent's opt-out (the email button → `/holiday-optout`) or Adrian's per-date screen
+>   writes Cancelled lesson records with the `Holiday opt-out` marker; the advance
+>   generator fetches those for the invoice month (`optoutDatesByStudent`) and passes
+>   them to `invoiceMonthLessonDates` as exclusions, so a skipped month is simply not
+>   drafted and a skipped date comes off the line items. Deadline = the 13th of the
+>   month before (the 14th generates). A later opt-out → 🔁 Regenerate Invoice, which
+>   re-projects from the month's live lesson records and so already honours it.
+> - One-off lessons in a skipped month are booked as `Additional` and swept onto the
+>   NEXT advance invoice — that is the "arrears for them".
+> - The exam-year cut-off (Lane A below) still applies; it is independent of arrears.
+> - A non-exam-year October invoice carries `EXAM_PREP_NOTE` + `HOLIDAY_BILLING_NOTE` in
+>   Auto Notes (PDF) and the email block's "How November and December are billed"
+>   paragraph; both say advance like any other month, and the two deadlines.
+> - The arrears machinery (Lane B below, `?mode=arrears`, the combined January) is
+>   DORMANT: no cron schedules it (`vercel.json`), the route refuses any bill month not
+>   in `ARREARS_MONTHS`, and its tests pin the dormant behaviour. Left in place in case
+>   the rule swings back next year.
+
+From October to January every student falls into exactly one of two lanes (the text
+below describes the machinery as designed on 14 Sep 2026; see the box above for what
+actually runs).
 
 ### Lane A — exam-year students: advance billing, cut short at the last paper
 

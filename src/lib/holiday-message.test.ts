@@ -219,8 +219,9 @@ describe('the October block tells parents how November and December are billed (
     const html = holidayNoteHtml(sec3, 10, 'Gavin Ng', null);
     expect(html).toContain('Exams coming up?');
     expect(html).toContain('How November and December are billed.');
-    expect(html).toContain('On 1 December you will receive November');
-    expect(html).toContain('lessons Gavin actually attended');
+    expect(html).toContain('billed in advance like any other month');
+    expect(html).toContain('by 13 October for November');
+    expect(html).toContain('like Gavin to skip a month');
     expect(html.indexOf('Exams coming up?')).toBeLessThan(html.indexOf('Lessons carry on as usual'));
   });
   it('a later month carries neither — the invoice itself explains what it is for', () => {

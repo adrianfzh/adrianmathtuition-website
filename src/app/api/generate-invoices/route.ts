@@ -12,10 +12,11 @@ import { applyPriorBalance } from '@/lib/invoice-consolidate';
 import { parseReferrerMarker } from '@/lib/referral-link';
 import { NO_LESSON_DATES } from '@/lib/holidays';
 import { billableAdditionalFor, mapAdditionalRecord, type AdditionalLessonRecord } from '@/lib/additional-lessons';
-import { firstOfNextMonthISO, invoiceMonthLessonDates, lastDayOfMonthISO, nextDayISO } from '@/lib/billing-math';
+import { firstOfNextMonthISO, invoiceMonthLessonDates, lastDayOfMonthISO, monthWindowClause, nextDayISO } from '@/lib/billing-math';
+import { optoutDatesByStudent, OPTOUT_MARKER } from '@/lib/holiday-optout';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import {
-  ARREARS_ANNOUNCE_NOTE, ARREARS_MONTHS, EXAM_PREP_NOTE, arrearsBillMonthEnded, arrearsCoverageNote, arrearsRunTarget, arrearsTargetForMonth, attendedReviewNote, billingModeFor, effectiveEndISO,
+  HOLIDAY_BILLING_NOTE, ARREARS_MONTHS, EXAM_PREP_NOTE, arrearsBillMonthEnded, arrearsCoverageNote, arrearsRunTarget, arrearsTargetForMonth, attendedReviewNote, billingModeFor, effectiveEndISO,
   examCutoffFor, examCutoffNote, humanDate, invoiceDueDateISO, isCombinedJanuary, isExamYearStudent, parseMonthLabel,
   sweepAdditionalFor, unmarkedByStudent,
   type ArrearsLessonRecord, type ArrearsTarget, type BillingMode, type StudentBillingProfile,
@@ -318,6 +319,16 @@ export async function POST(req: NextRequest) {
     }
     const billedLessonPatches: string[] = [];
 
+    // ── Opt-outs (advance run): a parent's or Adrian's skipped dates for the
+    // invoice month, so they come OFF the projection (15 Sep 2026). One fetch
+    // for all students; a failed fetch means nobody is skipped, never a crash.
+    let optoutDates = new Map<string, string[]>();
+    if (mode !== 'arrears') {
+      const optQ = `?filterByFormula=${encodeURIComponent(`AND(${monthWindowClause(invoiceMonth.year, invoiceMonth.month)},OR({Status}='Cancelled',{Status}='Cancelled - Prorated'),FIND('${OPTOUT_MARKER}',{Notes}))`)}&fields[]=Student&fields[]=Date&fields[]=Status&fields[]=Notes`;
+      optoutDates = optoutDatesByStudent(await airtableRequestAll('Lessons', optQ).then((d: any) => d.records || []).catch(() => []));
+      if (optoutDates.size) console.log(`[generate-invoices] opt-outs in ${invoiceMonth.label}: ${[...optoutDates.entries()].map(([s, ds]) => `${s}:${ds.length}`).join(' ')}`);
+    }
+
     // ── Arrears run inputs — ONE window fetch for ALL students ──────────────
     // The bill month's attended (Completed Regular/Rescheduled) lessons, and
     // the months each student already holds an invoice for (a lesson moved in
@@ -462,7 +473,7 @@ export async function POST(req: NextRequest) {
           const description = `${descBase} — ${invoiceMonth.label}`;
           for (const s of slots) {
             if (s.weekday === undefined) continue;
-            const dates = invoiceMonthLessonDates(monthFirstISO, s.weekday, s.endISO, NO_LESSON_DATES);
+            const dates = invoiceMonthLessonDates(monthFirstISO, s.weekday, s.endISO, [...NO_LESSON_DATES, ...(optoutDates.get(studentId) ?? [])]);
             if (dates.length > 0) hasLessons = true;
             for (const date of dates) {
               lineItemsForInvoice.push({ date, day: s.dayLabel, type: 'Regular', description, rate: s.rate || ratePerLesson });
@@ -516,7 +527,7 @@ export async function POST(req: NextRequest) {
           // A non-exam-year student's October invoice carries the exam-prep
           // reminder (Adrian, 15 Sep 2026). It rides Auto Notes, so the send
           // cron holds these for review like any noted invoice.
-          if (!isExamYearStudent(profile) && invoiceMonth.month === 10) prepNote = `${EXAM_PREP_NOTE}\n\n${ARREARS_ANNOUNCE_NOTE}`;
+          if (!isExamYearStudent(profile) && invoiceMonth.month === 10) prepNote = `${EXAM_PREP_NOTE}\n\n${HOLIDAY_BILLING_NOTE}`;
         } else {
           // ── Arrears: what was actually attended ─────────────────────────
           const regularBilled = heldTypes.has('Regular') || heldTypes.has('Enrollment');

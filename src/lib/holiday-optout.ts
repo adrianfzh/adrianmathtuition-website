@@ -21,7 +21,7 @@
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { NO_LESSON_DATES } from '@/lib/holidays';
 import { billingMonthOf } from '@/lib/lesson-generation';
-import { ARREARS_MONTHS } from '@/lib/year-end-billing';
+import { OPTOUT_MONTHS } from '@/lib/year-end-billing';
 
 export const OPTOUT_MARKER = 'Holiday opt-out';
 export const AUTO_CREATED = '(auto-created)';
@@ -51,12 +51,38 @@ export type OptoutChange = { date: string; slotId: string; skip: boolean };
 export function upcomingOptionalMonths(now: Date): { year: number; month: number; label: string }[] {
   const y0 = now.getFullYear();
   const m0 = now.getMonth() + 2; // 1-based next month
-  const inYear = (y: number, from: number) => ARREARS_MONTHS
+  const inYear = (y: number, from: number) => OPTOUT_MONTHS
     .filter((m) => m >= from)
     .slice(0, MONTHS_SHOWN)
     .map((m) => ({ year: y, month: m, label: `${MONTH_NAMES[m - 1]} ${y}` }));
   const thisYear = m0 <= 12 ? inYear(y0, m0) : [];
   return thisYear.length ? thisYear : inYear(y0 + 1, 1);
+}
+
+/**
+ * The dates a student has opted out of, by student, from the month's Lessons
+ * records — a Cancelled record carrying the opt-out marker (either door writes
+ * one). The ADVANCE generator hands these to invoiceMonthLessonDates as
+ * exclusions, so a skipped month (or a skipped date on Adrian's screen) comes
+ * off the projected invoice instead of needing a hand amendment (15 Sep 2026,
+ * Adrian: "all months run on advance by default … allow parents to opt out").
+ * PURE.
+ */
+export function optoutDatesByStudent(records: { fields: Record<string, unknown> }[]): Map<string, string[]> {
+  const out = new Map<string, string[]>();
+  for (const r of records || []) {
+    const f = r.fields || {};
+    const status = String(f['Status'] || '');
+    if (status !== 'Cancelled' && status !== 'Cancelled - Prorated') continue;
+    if (!String(f['Notes'] || '').includes(OPTOUT_MARKER)) continue;
+    const sid = Array.isArray(f['Student']) ? String(f['Student'][0] || '') : '';
+    const date = String(f['Date'] || '');
+    if (!sid || !/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+    const list = out.get(sid) ?? [];
+    if (!list.includes(date)) list.push(date);
+    out.set(sid, list);
+  }
+  return out;
 }
 
 /** All YYYY-MM-DD dates of `weekday` inside (year, month), excluding NO_LESSON_DATES. */
@@ -140,8 +166,8 @@ export function validateChanges(changes: unknown): string | null {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(c?.date || '') || !c?.slotId || typeof c?.skip !== 'boolean') {
       return `Bad change entry: ${JSON.stringify(c)}`;
     }
-    if (!ARREARS_MONTHS.includes(Number(c.date.slice(5, 7)))) {
-      return `${c.date} is not in a year-end optional month (${ARREARS_MONTHS.map((m) => MONTH_NAMES[m - 1].slice(0, 3)).join('/')})`;
+    if (!OPTOUT_MONTHS.includes(Number(c.date.slice(5, 7)))) {
+      return `${c.date} is not in a year-end optional month (${OPTOUT_MONTHS.map((m) => MONTH_NAMES[m - 1].slice(0, 3)).join('/')})`;
     }
   }
   return null;

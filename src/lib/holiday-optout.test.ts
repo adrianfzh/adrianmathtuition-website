@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   upcomingOptionalMonths, weekdayDatesInMonth, slotDayIndex, slotLabel,
   monthChoices, changesForMonths, validateChanges, type MonthView, type DateEntry,
+  optoutDatesByStudent,
 } from './holiday-optout';
 
 const d = (date: string, state: DateEntry['state'], slotId = 'recSlot123456789'): DateEntry =>
@@ -140,5 +141,23 @@ describe('validateChanges', () => {
     expect(validateChanges(null)).toBeTruthy();
     expect(validateChanges([{ ...ok, date: 'tomorrow' }])).toBeTruthy();
     expect(validateChanges([{ ...ok, skip: 'yes' as unknown as boolean }])).toBeTruthy();
+  });
+});
+
+describe('optoutDatesByStudent — the dates the advance generator takes off the projection', () => {
+  const rec = (student: string, date: string, status: string, notes: string) => ({ fields: { Student: [student], Date: date, Status: status, Notes: notes } });
+  it('keeps only cancelled records carrying the opt-out marker, by student, without duplicates', () => {
+    const m = optoutDatesByStudent([
+      rec('recA', '2026-11-02', 'Cancelled', 'Holiday opt-out — November 2026 (auto-created)'),
+      rec('recA', '2026-11-09', 'Cancelled - Prorated', 'Holiday opt-out — November 2026'),
+      rec('recA', '2026-11-09', 'Cancelled', 'Holiday opt-out — November 2026'),
+      rec('recA', '2026-11-16', 'Cancelled', 'sick'),
+      rec('recA', '2026-11-23', 'Scheduled', 'Holiday opt-out — November 2026'),
+      rec('recB', '2026-12-05', 'Cancelled', 'x | Holiday opt-out — December 2026'),
+    ]);
+    expect(m.get('recA')).toEqual(['2026-11-02', '2026-11-09']);
+    expect(m.get('recB')).toEqual(['2026-12-05']);
+    expect(m.has('recC')).toBe(false);
+    expect(optoutDatesByStudent([]).size).toBe(0);
   });
 });
