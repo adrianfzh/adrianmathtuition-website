@@ -38,15 +38,23 @@ export async function getPriorBalance(
   currentMonth: string,
   currentInvoiceId: string,
 ): Promise<Consolidated> {
-  let records: any[] = [];
-  try {
-    const data = await airtableRequestAll('Invoices',
-      `?fields[]=Student&fields[]=Month&fields[]=Final Amount&fields[]=Amount Paid&fields[]=Is Paid&fields[]=Status&fields[]=Lessons Count&fields[]=Invoice Type`);
-    records = data.records || [];
-  } catch {
-    return { priorItems: [], priorTotal: 0 };
+  // Three attempts with a pause: the PDF and the email each make this call, and
+  // a bulk send fires dozens in parallel. Airtable's 429 under that load used
+  // to fall through to "no balance" for one of the two — the email said $280
+  // while its own attachment said $560 (Alexis Wong's October 2026 preview,
+  // 15 Sep 2026). Giving up is still the last resort, never a throw.
+  let records: any[] | null = null;
+  for (let attempt = 1; attempt <= 3 && records === null; attempt++) {
+    try {
+      const data = await airtableRequestAll('Invoices',
+        `?fields[]=Student&fields[]=Month&fields[]=Final Amount&fields[]=Amount Paid&fields[]=Is Paid&fields[]=Status&fields[]=Lessons Count&fields[]=Invoice Type`);
+      records = data.records || [];
+    } catch (e) {
+      if (attempt === 3) { console.error('[invoice-consolidate] prior-balance lookup failed after 3 attempts:', (e as Error)?.message); return { priorItems: [], priorTotal: 0 }; }
+      await new Promise((r) => setTimeout(r, 500 * attempt));
+    }
   }
-  return priorBalanceFrom(records, studentId, currentMonth, currentInvoiceId);
+  return priorBalanceFrom(records || [], studentId, currentMonth, currentInvoiceId);
 }
 
 // Pure core of getPriorBalance, separated so the money logic is unit-testable.
