@@ -18,7 +18,7 @@ import { relativeDay } from '@/lib/portal-activity';
 import { groupPracticeAgain, sheetByParent, sheetParents, sheetState, type SheetState } from '@/lib/portal-marking-group';
 import { type AssignmentRow } from '@/lib/assignments';
 
-import { fileHref } from '@/lib/student-files-url';
+import { adminPdfName, adminPdfHref } from '@/lib/marked-pdf-filename';
 // Same JC/Sec category (Mixed/Adhoc/unknown count as available to all).
 function sameLevelSlot(studentLevel: string, slotLevel: string): boolean {
   const stu = (studentLevel || '').toLowerCase();
@@ -855,7 +855,7 @@ export default function StudentProfilePage() {
                 </div>
               )}
               {paperCards.map(c => (
-                <PaperCard key={c.paper.id} paper={c.paper} sheet={c.sheet} markedRun={c.markedRun} />
+                <PaperCard key={c.paper.id} paper={c.paper} sheet={c.sheet} markedRun={c.markedRun} studentName={data.student.name} />
               ))}
             </Section>
 
@@ -1481,8 +1481,13 @@ function sheetChip(state: SheetState, sheet: AssignmentRow, markedRun: MarkedPap
  * knows. A paper with no sheet says so in as many words — the absence is an
  * answer to his question too, and a silent gap would read as "nothing to see".
  */
-function PaperCard({ paper: r, sheet, markedRun }: { paper: MarkedPaper; sheet: AssignmentRow | null; markedRun: MarkedPaper | null }) {
+function PaperCard({ paper: r, sheet, markedRun, studentName }: { paper: MarkedPaper; sheet: AssignmentRow | null; markedRun: MarkedPaper | null; studentName: string }) {
   const chip = sheet ? sheetChip(sheetState(sheet.status), sheet, markedRun) : null;
+  // A copy that leaves this page is called "Sophie Tan — A Math GCE 2021 Paper 1
+  // — 30 Aug 2026.pdf", not marked-photos.pdf, so importing it into Notability
+  // says whose paper it is (Adrian, 15 Sep 2026).
+  const name = (run: MarkedPaper, kind: 'marked' | 'full' | 'annotated' | 'sheet') =>
+    adminPdfName({ studentName, paperName: run.paper_name, dateISO: run.created_at }, kind);
   const nudges = sheet?.reminder_count ?? 0;
   return (
     <div style={{ border: '1px solid #e5e7eb', borderRadius: 10, marginBottom: 8, overflow: 'hidden', background: '#fff', opacity: r.superseded ? 0.55 : 1 }}>
@@ -1491,9 +1496,9 @@ function PaperCard({ paper: r, sheet, markedRun }: { paper: MarkedPaper; sheet: 
         <span style={{ flex: 1, minWidth: 120, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.paper_name || 'Paper'}</span>
         <span style={{ color: '#111', fontWeight: 600 }}>{r.total_awarded ?? 0}/{r.total_max ?? 0}{r.total_max ? <span style={{ color: '#9ca3af', fontWeight: 400 }}> · {Math.round(100 * (r.total_awarded ?? 0) / r.total_max)}%</span> : null}</span>
         {r.superseded && <span style={{ fontSize: 11, color: '#9ca3af' }}>re-marked later</span>}
-        {r.annotated_pdf_url && <a href={fileHref(r.annotated_pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600, fontSize: 13 }}>✍️ Annotated ↗</a>}
-        {r.photos_pdf_url && <a href={fileHref(r.photos_pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontSize: 13 }}>🖼 Images ↗</a>}
-        {r.pdf_url && <a href={fileHref(r.pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontSize: 13 }}>📄 Full ↗</a>}
+        {r.annotated_pdf_url && <a href={adminPdfHref(r.annotated_pdf_url, name(r, 'annotated'))} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600, fontSize: 13 }}>✍️ Annotated ↗</a>}
+        {r.photos_pdf_url && <a href={adminPdfHref(r.photos_pdf_url, name(r, 'marked'))} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontSize: 13 }}>🖼 Images ↗</a>}
+        {r.pdf_url && <a href={adminPdfHref(r.pdf_url, name(r, 'full'))} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontSize: 13 }}>📄 Full ↗</a>}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '7px 12px', background: '#f8fafc', borderTop: '1px solid #f1f5f9', fontSize: 13 }}>
         <span style={{ color: '#64748b', fontWeight: 600, width: 92, flexShrink: 0 }}>📘 Practice Again</span>
@@ -1506,9 +1511,9 @@ function PaperCard({ paper: r, sheet, markedRun }: { paper: MarkedPaper; sheet: 
               {nudges > 0 ? ` · nudged ×${nudges}` : ''}
               {sheet.required_at ? ' · compulsory' : ''}
             </span>
-            {sheet.pdf_url && <a href={fileHref(sheet.pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>📘 Sheet ↗</a>}
-            {markedRun?.annotated_pdf_url && <a href={fileHref(markedRun.annotated_pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600 }}>✍️ Marked ↗</a>}
-            {markedRun?.photos_pdf_url && <a href={fileHref(markedRun.photos_pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>🖼 Hand-in ↗</a>}
+            {sheet.pdf_url && <a href={adminPdfHref(sheet.pdf_url, name(r, 'sheet'))} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>📘 Sheet ↗</a>}
+            {markedRun?.annotated_pdf_url && <a href={adminPdfHref(markedRun.annotated_pdf_url, name(markedRun, 'annotated'))} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600 }}>✍️ Marked ↗</a>}
+            {markedRun?.photos_pdf_url && <a href={adminPdfHref(markedRun.photos_pdf_url, name(markedRun, 'marked'))} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>🖼 Hand-in ↗</a>}
           </>
         )}
       </div>

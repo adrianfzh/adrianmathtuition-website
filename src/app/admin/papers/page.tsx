@@ -21,7 +21,7 @@ import SubjectChip from '@/components/SubjectChip';
 import GroundingChip from '@/components/GroundingChip';
 import { dropboxWebUrl } from '@/lib/paper-folder';
 
-import { fileHref } from '@/lib/student-files-url';
+import { adminPdfName, adminPdfHref } from '@/lib/marked-pdf-filename';
 type Topic = { topic: string; awarded: number; max: number; lost: number; pct: number; questions: number };
 type LostQ = { questionNumber: string; awarded: number; max: number; topic: string | null };
 
@@ -51,6 +51,12 @@ type Run = {
   topics: Topic[];
   lostQuestions: LostQ[];
 };
+
+/** What a copy of this run is called once it leaves the browser — whose paper it
+ *  is and which paper, not marked-photos.pdf (Adrian, 15 Sep 2026). */
+function pdfName(run: Run, kind: 'marked' | 'full' | 'annotated'): string {
+  return adminPdfName({ studentName: run.studentName, paperName: run.paperName, dateISO: run.date }, kind);
+}
 
 const C = {
   border: '#e5e7eb',
@@ -488,17 +494,17 @@ export default function PapersPage() {
                 ✍️ Annotate
               </a>
               {run.annotatedPdfUrl && (
-                <a href={fileHref(run.annotatedPdfUrl)} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: C.pen, textDecoration: 'none' }}>
+                <a href={adminPdfHref(run.annotatedPdfUrl, pdfName(run, 'annotated'))} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: C.pen, textDecoration: 'none' }}>
                   ✍️ Annotated PDF ↗
                 </a>
               )}
               {run.photosPdfUrl && (
-                <a href={fileHref(run.photosPdfUrl)} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: C.link, textDecoration: 'none' }}>
+                <a href={adminPdfHref(run.photosPdfUrl, pdfName(run, 'marked'))} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: C.link, textDecoration: 'none' }}>
                   🖼 Images ↗
                 </a>
               )}
               {run.pdfUrl && (
-                <a href={fileHref(run.pdfUrl)} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: C.link, textDecoration: 'none' }}>
+                <a href={adminPdfHref(run.pdfUrl, pdfName(run, 'full'))} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: C.link, textDecoration: 'none' }}>
                   📄 Full PDF ↗
                 </a>
               )}

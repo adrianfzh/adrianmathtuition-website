@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { isOurFileUrl, fetchOurFile } from '@/lib/student-files';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { contentDisposition } from '@/lib/marked-pdf-filename';
 
 // Hand the marked PDF to the Mac with a real filename. Blob URLs serve inline under a
 // timestamp name; Adrian's send channel is dragging the file from Downloads into his
@@ -14,8 +15,10 @@ export async function GET(req: NextRequest) {
   const url = req.nextUrl.searchParams.get('url') || '';
   if (!isOurFileUrl(url)) return NextResponse.json({ error: 'Bad URL' }, { status: 400 });
 
-  const name = (req.nextUrl.searchParams.get('name') || 'marked-paper.pdf')
-    .replace(/[^\w.\- ()]/g, '').slice(0, 120) || 'marked-paper.pdf';
+  // The name is folded for the header by contentDisposition (em dash → "-", the
+  // exact name in filename*) — a raw strip here used to eat the separators and
+  // leave "Alexis Wong  Xinmin EM P2  1 Aug".
+  const name = (req.nextUrl.searchParams.get('name') || 'marked-paper.pdf').slice(0, 160);
   // inline = view in the tab but CARRY the clean filename — Notability (and any other
   // share-sheet import) titles the note from it, so opening PDFs through this route is
   // what turns "2026-07-31T16-17-30-359Z" into "Alexis Wong — Xinmin EM P2 — 1 Aug".
@@ -36,7 +39,7 @@ export async function GET(req: NextRequest) {
   return new NextResponse(r.body, {
     headers: {
       'Content-Type': r.headers.get('content-type') || 'application/pdf',
-      'Content-Disposition': `${disposition}; filename="${name}"`,
+      'Content-Disposition': contentDisposition(name, disposition),
       'Cache-Control': 'no-store',
     },
   });

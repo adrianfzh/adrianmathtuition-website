@@ -42,6 +42,7 @@ import type { Diagnosis } from '@/lib/sheet-diagnosis';
 import { pdfToPageImages } from '@/lib/pdf-pages';
 
 import { fileHref } from '@/lib/student-files-url';
+import { adminPdfName, adminPdfHref } from '@/lib/marked-pdf-filename';
 // ── Shapes the two desk routes return ────────────────────────────────────────
 type Row = {
   id: string; createdAt: string; paperName: string; subject: string;
@@ -1255,6 +1256,13 @@ function DetailView(p: {
     originalUrl: d.pageSources?.[ph.photoIndex]?.originalUrl ? fileHref(d.pageSources[ph.photoIndex].originalUrl as string) : null,
     rot: d.pageSources?.[ph.photoIndex]?.rot ?? 0,
   })), [d.annotatedPhotos, d.pageSources]);
+  // One name for every copy of this paper that leaves the desk — "Sophie Tan —
+  // A Math GCE 2021 Paper 1 — 30 Aug 2026.pdf", not marked-photos.pdf, so an
+  // import into Notability says whose paper it is (Adrian, 15 Sep 2026).
+  const pdfName = useCallback(
+    (kind: 'marked' | 'full' | 'annotated') => adminPdfName({ studentName: run.studentName, paperName: run.paperName, dateISO: run.createdAt }, kind),
+    [run.studentName, run.paperName, run.createdAt],
+  );
   const annotateStudent = useMemo(() => ({ name: run.studentName || '', level: '' }), [run.studentName]);
   const annotateTotals = useMemo(() => ({ awarded: run.awarded, max: run.max }), [run.awarded, run.max]);
   const closeAnnotate = useCallback(() => setAnnotatePage(null), []);
@@ -1478,11 +1486,11 @@ function DetailView(p: {
               📬 Follow up on all {weakTopics.length}
             </a>
           )}
-          {run.annotatedPdfUrl && <a href={fileHref(run.annotatedPdfUrl)} target="_blank" rel="noreferrer" style={{ color: C.pen, textDecoration: 'none' }}>✍️ Annotated ↗</a>}
-          {run.photosPdfUrl && <a href={fileHref(run.photosPdfUrl)} target="_blank" rel="noreferrer" style={{ color: C.link, textDecoration: 'none' }}>🖼 Images ↗</a>}
-          {run.pdfUrl && <a href={fileHref(run.pdfUrl)} target="_blank" rel="noreferrer" style={{ color: C.link, textDecoration: 'none' }}>📄 Full ↗</a>}
+          {run.annotatedPdfUrl && <a href={adminPdfHref(run.annotatedPdfUrl, pdfName('annotated'))} target="_blank" rel="noreferrer" style={{ color: C.pen, textDecoration: 'none' }}>✍️ Annotated ↗</a>}
+          {run.photosPdfUrl && <a href={adminPdfHref(run.photosPdfUrl, pdfName('marked'))} target="_blank" rel="noreferrer" style={{ color: C.link, textDecoration: 'none' }}>🖼 Images ↗</a>}
+          {run.pdfUrl && <a href={adminPdfHref(run.pdfUrl, pdfName('full'))} target="_blank" rel="noreferrer" style={{ color: C.link, textDecoration: 'none' }}>📄 Full ↗</a>}
           <a href={`/admin/mark-paper?run=${run.id}&annotate=1`} style={{ color: C.pen, textDecoration: 'none' }}>✏️ Annotate</a>
-          <OpenInApp url={run.annotatedPdfUrl || run.pdfUrl} name={`${run.paperName || 'marked paper'}.pdf`} />
+          <OpenInApp url={fileHref(run.annotatedPdfUrl || run.pdfUrl)} name={pdfName(run.annotatedPdfUrl ? 'annotated' : 'marked')} />
         </div>
         <div style={{ marginTop: 8, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', fontSize: 13.5 }}>
           <span style={{ color: C.muted }}>My copy:</span>
