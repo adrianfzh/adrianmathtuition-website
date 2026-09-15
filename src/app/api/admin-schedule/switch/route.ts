@@ -92,6 +92,25 @@ export async function POST(req: NextRequest) {
     results.errors.push(`Cancel step: ${err.message}`);
   }
 
+  // ── A2. The enrollment being switched away from ─────────────────────────────
+  // Read BEFORE step B, because its `End Date` — the student's LEAVING date,
+  // e.g. an exam-year cut-off — has to gate the lessons B creates, and step D
+  // overwrites that field with the switch-history date (the day before the
+  // switch). Without carrying it, switching slots in October would silently
+  // re-create lessons past a Sec 4 student's last exam.
+  let priorEnrollment: any = null;
+  try {
+    const enrollments = await airtableRequestAll('Enrollments',
+      `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Slot&fields[]=Rate Per Lesson&fields[]=Rate Type&fields[]=End Date`
+    );
+    priorEnrollment = enrollments.records.find((r: any) =>
+      r.fields['Student']?.[0] === studentId && r.fields['Slot']?.[0] === oldSlotId
+    ) || null;
+  } catch (err: any) {
+    results.errors.push(`Enrollment read: ${err.message}`);
+  }
+  const carryEndDate: string | null = priorEnrollment?.fields['End Date'] ?? null;
+
   // ── B. Create new weekly lessons on new slot (9-week horizon) ───────────────
   // (was 28 days — too short, so switched students ran out of lessons before
   // the bot's weekly generator extended them. Now matches signup's 9 weeks.)
@@ -101,6 +120,7 @@ export async function POST(req: NextRequest) {
       slotId: newSlotId,
       startDate: switchDate,
       weeksAhead: DEFAULT_WEEKS_AHEAD,
+      endDate: carryEndDate,
       noteFirstLesson: true,
       // w.e.f = the date the switch is registered (today, SGT), not the first-lesson date.
       firstNote: `Switched from ${oldSlotName} to ${newSlotName} (first lesson after switch). w.e.f ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Singapore' })}`,
@@ -112,13 +132,9 @@ export async function POST(req: NextRequest) {
 
   // ── C+D. Proration + enrollment history ─────────────────────────────────────
   try {
-    // Old (Active) enrollment for student on the old slot — source of rate + tenure.
-    const enrollments = await airtableRequestAll('Enrollments',
-      `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Slot&fields[]=Rate Per Lesson&fields[]=Rate Type`
-    );
-    const enrollment = enrollments.records.find((r: any) =>
-      r.fields['Student']?.[0] === studentId && r.fields['Slot']?.[0] === oldSlotId
-    );
+    // Old (Active) enrollment for student on the old slot — source of rate,
+    // tenure and the leaving date; read in A2, before step B needed it.
+    const enrollment = priorEnrollment;
     const ratePerLesson: number = enrollment?.fields['Rate Per Lesson'] ?? 0;
     const rateType: string = enrollment?.fields['Rate Type'] || '';
 
@@ -171,6 +187,9 @@ export async function POST(req: NextRequest) {
           'Start Date': switchDate, Status: 'Active',
           'Rate Per Lesson': ratePerLesson,
           ...(rateType ? { 'Rate Type': rateType } : {}),
+          // Carry the leaving date across the switch — the field on the OLD
+          // row is about to become the switch-history date, not the student's end.
+          ...(carryEndDate ? { 'End Date': carryEndDate } : {}),
         }}),
       });
       results.enrollmentUpdated = true;

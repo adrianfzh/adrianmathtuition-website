@@ -8,6 +8,7 @@ const notify_money = (text: string) => sendTelegram(text, 'money');
 import { getInvoiceMonth, displaySpanMonth, sgtTodayISO } from '@/lib/invoice-month';
 import { resolveRunMode, resolveTargetMonthLabel, jobNameFor } from '@/lib/invoice-run-mode';
 import { yearEndHoldReason, examCutoffNoteFrom } from '@/lib/year-end-billing';
+import { holidayNoteHtml, invoiceMonthNumber } from '@/lib/holiday-message';
 import { copy } from '@vercel/blob';
 import { generateAndStoreInvoicePdf } from '@/lib/invoice-pdf';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -54,6 +55,13 @@ function buildEmailHtml(invoice: {
   // and this is the other half. Same sentence in both places on purpose: a
   // parent who reads one and skims the other sees no difference.
   examNote?: string | null;
+  // The Oct–Dec holiday block for a NON-exam-year student, already rendered
+  // (lib/holiday-message). Adrian, 15 Sep 2026: "are you able to do the send
+  // code picking up by level?" — the "Next year is a step up" bullet inside it
+  // differs by Level, and is ABSENT for Sec 1 and for Sec 3 students taking
+  // E Math only. '' for everyone else, including every exam-year student, who
+  // gets examNote instead.
+  holidayNote?: string | null;
 }) {
   // One-time apology for the delayed July 2026 batch (was due to go out 18 June). Remove after July.
   const delayApology = invoice.month === 'July 2026'
@@ -64,7 +72,7 @@ function buildEmailHtml(invoice: {
     : '';
   return `
     <p>Dear Parent/Student,</p>
-    ${delayApology}<p>Please find attached the invoice for ${invoice.studentName} for ${invoice.month} — ${amountDueHtml(invoice.finalAmount, invoice.dueDate)}.</p>${examNoteHtml}
+    ${delayApology}<p>Please find attached the invoice for ${invoice.studentName} for ${invoice.month} — ${amountDueHtml(invoice.finalAmount, invoice.dueDate)}.</p>${examNoteHtml}${invoice.holidayNote || ''}
     ${paymentHtml(invoice.finalAmount, invoice.paymentRef)}
     <p>Please feel free to reach out if you have any questions.</p>
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
@@ -370,7 +378,15 @@ export async function POST(req: NextRequest) {
       } else if (month === 'June 2026') {
         html = buildJune2026EmailHtml(invoice);
       } else {
-        html = buildEmailHtml({ ...invoice, examNote: examCutoffNoteFrom(rec.fields['Auto Notes'] as string) });
+        html = buildEmailHtml({
+          ...invoice,
+          examNote: examCutoffNoteFrom(rec.fields['Auto Notes'] as string),
+          holidayNote: holidayNoteHtml(
+            { level: invoice.level, subjects: stu.fields['Subjects'] as string[] | undefined },
+            invoiceMonthNumber(rec.fields['Month'] as string),
+            studentName,
+          ),
+        });
       }
       // HTML → readable plain text for Telegram
       const text = html
@@ -491,7 +507,7 @@ export async function POST(req: NextRequest) {
       ...new Set(invoiceRecords.map((r: any) => r.fields['Student']?.[0]).filter(Boolean)),
     ] as string[];
     const studentsData = studentIds.length
-      ? await airtableRequestAll('Students', `?filterByFormula=OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})&fields[]=Student Name&fields[]=Parent Email&fields[]=Parent Name&fields[]=Level`)
+      ? await airtableRequestAll('Students', `?filterByFormula=OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})&fields[]=Student Name&fields[]=Parent Email&fields[]=Parent Name&fields[]=Level&fields[]=Subjects`)
       : { records: [] };
     const studentsById: Record<string, any> = Object.fromEntries(
       studentsData.records.map((r: any) => [r.id, r.fields])
@@ -595,7 +611,15 @@ export async function POST(req: NextRequest) {
       } else if (invoice.month === 'June 2026') {
         html = buildJune2026EmailHtml(invoice);
       } else {
-        html = buildEmailHtml({ ...invoice, examNote: examCutoffNoteFrom(invoiceRecord.fields['Auto Notes'] as string) });
+        html = buildEmailHtml({
+          ...invoice,
+          examNote: examCutoffNoteFrom(invoiceRecord.fields['Auto Notes'] as string),
+          holidayNote: holidayNoteHtml(
+            { level: invoice.level, subjects: student['Subjects'] as string[] | undefined },
+            invoiceMonthNumber(invoiceRecord.fields['Month'] as string),
+            invoice.studentName,
+          ),
+        });
       }
 
       const emailData: any = {

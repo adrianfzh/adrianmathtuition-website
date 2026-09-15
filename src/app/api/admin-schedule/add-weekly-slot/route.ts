@@ -16,7 +16,7 @@ export const maxDuration = 60;
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { studentId: string; slotId: string; startDate?: string; ratePerLesson?: number; rateType?: string };
+  let body: { studentId: string; slotId: string; startDate?: string; endDate?: string; ratePerLesson?: number; rateType?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
   const { studentId, slotId } = body;
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     // Existing active enrollments for this student (for dedup + rate fallback)
     const enrollData = await airtableRequestAll(
       'Enrollments',
-      `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Slot&fields[]=Rate Per Lesson&fields[]=Rate Type`
+      `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Slot&fields[]=Rate Per Lesson&fields[]=Rate Type&fields[]=End Date`
     );
     const studentEnrollments = enrollData.records.filter((r: any) => r.fields['Student']?.[0] === studentId);
 
@@ -47,6 +47,13 @@ export async function POST(req: NextRequest) {
       rateType = rateType ?? src?.fields['Rate Type'];
     }
 
+    // Leaving date: the caller's, else inherited from an enrollment the student
+    // already holds — same "copy what they're already on" rule as the rate. A
+    // second slot for a student with an exam-year cut-off must stop on the same
+    // day the first one does, not run nine weeks past it.
+    const endDate: string | null =
+      body.endDate ?? studentEnrollments.map((r: any) => r.fields['End Date']).find((d: any) => !!d) ?? null;
+
     // 1. Create the enrollment
     const enrollment = await airtableRequest('Enrollments', '', {
       method: 'POST',
@@ -55,6 +62,7 @@ export async function POST(req: NextRequest) {
         Slot: [slotId],
         Status: 'Active',
         'Start Date': startDate,
+        ...(endDate ? { 'End Date': endDate } : {}),
         ...(ratePerLesson != null ? { 'Rate Per Lesson': ratePerLesson } : {}),
         ...(rateType ? { 'Rate Type': rateType } : {}),
       }}),
@@ -65,7 +73,7 @@ export async function POST(req: NextRequest) {
 
     // 2. Generate the recurring lessons
     const { created, dates } = await generateRegularLessonsForSlot({
-      studentId, slotId, startDate, weeksAhead: DEFAULT_WEEKS_AHEAD,
+      studentId, slotId, startDate, weeksAhead: DEFAULT_WEEKS_AHEAD, endDate,
     });
 
     return NextResponse.json({ success: true, enrollmentId: enrollment.id, lessonsCreated: created, dates });

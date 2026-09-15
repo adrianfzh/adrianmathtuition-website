@@ -31,6 +31,13 @@ export interface GenerateOpts {
   weeksAhead?: number;          // default DEFAULT_WEEKS_AHEAD
   noteFirstLesson?: boolean;    // tag the first real lesson with firstNote (switch flow) — stays Type 'Regular'
   firstNote?: string;           // Notes on that first lesson
+  /**
+   * Enrollment `End Date` (ISO), INCLUSIVE — no lesson is written after it.
+   * Omit for an open-ended enrollment. Matches the bot's weekly generator,
+   * which gates on `current <= endDate` (handlers/flows.js), and
+   * billing-math's "BOTH INCLUSIVE" rule: a lesson ON the end date counts.
+   */
+  endDate?: string | null;
 }
 
 /**
@@ -40,7 +47,7 @@ export interface GenerateOpts {
  * created dates.
  */
 export async function generateRegularLessonsForSlot(opts: GenerateOpts): Promise<{ created: number; dates: string[] }> {
-  const { studentId, slotId, startDate, weeksAhead = DEFAULT_WEEKS_AHEAD, noteFirstLesson = false, firstNote } = opts;
+  const { studentId, slotId, startDate, weeksAhead = DEFAULT_WEEKS_AHEAD, noteFirstLesson = false, firstNote, endDate = null } = opts;
 
   const slot = await airtableRequest('Slots', `/${slotId}`);
   const dayRaw = (slot.fields['Day'] || '').replace(/^\d+\s+/, '').trim();
@@ -48,7 +55,18 @@ export async function generateRegularLessonsForSlot(opts: GenerateOpts): Promise
   if (targetDay === -1) throw new Error(`Slot has unrecognised Day: '${dayRaw}'`);
 
   const start = new Date(startDate + 'T00:00:00Z');
-  const end = addDays(start, weeksAhead * 7);
+  // The horizon is the earlier of "weeksAhead from the start" and the
+  // enrollment's End Date. Without this, switching or adding a slot for a
+  // student who already has a leaving date re-creates the very lessons the
+  // End Date exists to prevent — the bot's cron has gated on it since launch,
+  // this one-shot path did not (found 15 Sep 2026, after 65 such ghost Sec 4
+  // lessons were deleted by hand). A malformed date is ignored rather than
+  // guessed: generation stays as it was.
+  let end = addDays(start, weeksAhead * 7);
+  if (endDate && /^\d{4}-\d{2}-\d{2}$/.test(endDate)) {
+    const hardEnd = new Date(endDate + 'T00:00:00Z');
+    if (hardEnd < end) end = hardEnd;
+  }
   const dayAfterEnd = addDays(end, 1);
 
   // Dedup: existing lessons for this student in the window (keyed by date+slot)

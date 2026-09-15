@@ -67,6 +67,10 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'retention':         { kind: 'monthly', day: 2,  graceDays: 1, label: '2nd 3am' },
   // Portal auto-offboarding sweep — vercel.json "30 19 2 * *" UTC = 3rd 3:30am SGT.
   'deactivate-inactive': { kind: 'monthly', day: 3, graceDays: 1, label: '3rd 3:30am' },
+  // Closes an enrollment the morning after its End Date passes, and drops the
+  // student to Inactive when it was their last one. Runs (and stamps) every day,
+  // most days with nothing due — so silence here means the job is dead, not quiet.
+  'end-enrollments': { kind: 'interval', hours: 36, label: 'daily 8:15am' },
   'practice-topup':    { kind: 'interval', hours: 36, label: 'daily 2am' },
   'triage-reminder':   { kind: 'interval', hours: 36, label: 'daily 8am' },
   // Compulsory Practice Again sheets not handed in — day 3, then weekly (8 Sep 2026).

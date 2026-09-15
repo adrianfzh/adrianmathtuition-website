@@ -116,6 +116,10 @@
       "schedule": "30 19 2 * *"
     },
     {
+      "path": "/api/cron/end-enrollments",
+      "schedule": "15 0 * * *"
+    },
+    {
       "path": "/api/cron/practice-topup",
       "schedule": "0 18 * * *"
     },
