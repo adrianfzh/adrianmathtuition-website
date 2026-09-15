@@ -252,13 +252,29 @@ function buildAmendedEmailHtml(invoice: {
   finalAmount: number;
   dueDate: string;
   paymentRef: string;
-}) {
+}, opts: {
+  /** Why this invoice was amended, in Adrian's own words — the invoice's
+   *  `Custom Email Message`. It used to REPLACE the whole body, which took the
+   *  PayNow paragraph, the WhatsApp/Telegram footer and the holiday block with
+   *  it (Kieran Lai + Lakshanya Rajmohan's October 2026 amendments, 15 Sep 2026:
+   *  both invoices went out consolidating a September that had in fact been paid
+   *  by PayLah, and the apology had nowhere to live that didn't cost the parent
+   *  the payment instructions for the month that IS still due). On an amended
+   *  invoice it is now a paragraph inside this template instead. */
+  reason?: string;
+  /** The Oct–Dec holiday/opt-out block, so an amended October invoice keeps the
+   *  button the original carried. */
+  holidayNote?: string;
+} = {}) {
+  const reasonHtml = (opts.reason || '').trim()
+    ? `\n    <p>${(opts.reason || '').trim().replace(/\n\n+/g, '</p>\n    <p>').replace(/\n/g, '<br>')}</p>`
+    : '';
   return `
     <p>Dear Parent/Student,</p>
     <p>Please find attached the <strong>amended invoice</strong> for ${invoice.studentName} for ${invoice.month} — ${amountDueHtml(invoice.finalAmount, invoice.dueDate)}.</p>
-    <p>This replaces the previously sent invoice. Please disregard the earlier email.</p>
+    <p>This replaces the previously sent invoice. Please disregard the earlier email.</p>${reasonHtml}
     ${paymentHtml(invoice.finalAmount, invoice.paymentRef)}
-    <p>Please feel free to reach out if you have any questions.</p>
+    <p>Please feel free to reach out if you have any questions.</p>${opts.holidayNote || ''}
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
     ${buildSelfServiceFooterHtml()}
     <p>Best regards,<br>Adrian</p>
@@ -400,7 +416,9 @@ export async function POST(req: NextRequest) {
       const customMessage = (rec.fields['Custom Email Message'] || '') as string;
       const invoiceType = (rec.fields['Invoice Type'] || 'Regular') as string;
       let html: string;
-      if (customMessage.trim()) {
+      // An amended invoice reads its custom message as the REASON, inside the
+      // amended template — never as a replacement body (see buildAmendedEmailHtml).
+      if (customMessage.trim() && !isAmended) {
         html = `<p>${customMessage.trim().replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
       } else if (invoiceType === 'Revision Sprint') {
         let lineItems: { description?: string; amount?: number }[] = [];
@@ -409,7 +427,16 @@ export async function POST(req: NextRequest) {
           `<p>• ${li.description || 'Revision lessons'} — <strong>$${(li.amount || 0).toFixed(2)}</strong></p>`).join('');
         html = buildRevisionSprintEmailHtml({ ...invoice, lineItemsText });
       } else if (isAmended) {
-        html = buildAmendedEmailHtml(invoice);
+        html = buildAmendedEmailHtml(invoice, {
+          reason: customMessage,
+          holidayNote: holidayNoteHtml(
+            { level: invoice.level, subjects: stu.fields['Subjects'] as string[] | undefined, subjectLevel: stu.fields['Subject Level'] as string | undefined },
+            invoiceMonthNumber(rec.fields['Month'] as string),
+            studentName,
+            optOutUrlFor(sid),
+            parseInt(String(rec.fields['Month'] || '').slice(-4), 10) || new Date().getFullYear(),
+          ),
+        });
       } else if (isFirstInvP) {
         let firstLessonDate = '';
         try { const li = JSON.parse(rec.fields['Line Items'] || '[]'); firstLessonDate = li[0]?.date || ''; } catch { /* ignore */ }
@@ -637,7 +664,9 @@ export async function POST(req: NextRequest) {
       const customMessage = (invoiceRecord.fields['Custom Email Message'] || '') as string;
       const invoiceType = (invoiceRecord.fields['Invoice Type'] || 'Regular') as string;
       let html: string;
-      if (customMessage.trim()) {
+      // Same rule as the preview branch: on an amended invoice the custom
+      // message is the reason paragraph, not a replacement body.
+      if (customMessage.trim() && !isAmended) {
         html = `<p>${customMessage.trim().replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
       } else if (invoiceType === 'Revision Sprint') {
         // Parse line items to build a readable summary
@@ -648,7 +677,16 @@ export async function POST(req: NextRequest) {
         ).join('');
         html = buildRevisionSprintEmailHtml({ ...invoice, lineItemsText });
       } else if (isAmended) {
-        html = buildAmendedEmailHtml(invoice);
+        html = buildAmendedEmailHtml(invoice, {
+          reason: customMessage,
+          holidayNote: holidayNoteHtml(
+            { level: invoice.level, subjects: student['Subjects'] as string[] | undefined, subjectLevel: student['Subject Level'] as string | undefined },
+            invoiceMonthNumber(invoiceRecord.fields['Month'] as string),
+            invoice.studentName,
+            optOutUrlFor(studentId),
+            parseInt(String(invoiceRecord.fields['Month'] || '').slice(-4), 10) || new Date().getFullYear(),
+          ),
+        });
       } else if (((invoiceRecord.fields['Auto Notes'] || '') as string).toLowerCase().includes('first invoice')) {
         let firstLessonDate = '';
         try { const li = JSON.parse(invoiceRecord.fields['Line Items'] || '[]'); firstLessonDate = li[0]?.date || ''; } catch { /* ignore */ }
