@@ -186,6 +186,7 @@ def _normalise(fig: dict, stem: Path):
 
 _ROMAN = {"i": "a", "ii": "b", "iii": "c", "iv": "d", "v": "e"}
 _ROMAN_LABEL = re.compile(r"(?:(?<=^)|(?<=[;\n]))(\s*)\((i|ii|iii|iv|v)\)")
+_SQUASHED_LABEL = re.compile(r"\(([a-h])(i|ii|iii|iv|v)\)")
 
 
 def _letter_labels(answer: str, has_parts: bool) -> str:
@@ -194,7 +195,13 @@ def _letter_labels(answer: str, has_parts: bool) -> str:
     Schools label the same question both ways and the bank keeps whichever the
     paper used, so a sheet can end up printing "(a)" over an answer that says
     "(i)".  Only a label opening the string or a clause is touched.
+
+    A two-level label the bank squashed into one bracket -- "(ai)", "(aii)" --
+    is opened out to the "(a)(i)" the question itself prints (15 Sep 2026, HCI
+    2025 INSPIRATION on the JC2 P&C manual).
     """
+    answer = _SQUASHED_LABEL.sub(lambda m: f"({m.group(1)})({m.group(2)})",
+                                 answer or "")
     if not has_parts or "(i)" not in answer:
         return answer
     return _ROMAN_LABEL.sub(lambda m: f"{m.group(1)}({_ROMAN[m.group(2)]})", answer)
@@ -254,7 +261,7 @@ def _part_figure(ws, part, figdir: Path, cap_w: float, cap_h: float):
         ws.figure(str(fp), width_cm=fig_cm(f.get("px"), cap_w, cap_h))
 
 
-_TRAILING_MARKS = re.compile(r"\s*\[\s*\d{1,2}\s*\]\s*$")
+_TRAILING_MARKS = re.compile(r"\s*\[\s*\d{1,2}\s*\]?\s*$")
 
 
 def strip_marks(text):
@@ -263,9 +270,11 @@ def strip_marks(text):
     Most rows keep the marks in `marks`/`total_marks` and the sheet prints them
     right-aligned in their own column.  Some rows also carry a literal "[2]" at
     the end of the part text, so the part printed its marks twice (15 Sep 2026,
-    Fairfield Methodist 2023 P2 Q8 on the graph-paper sheet).  Only a tag at the
-    very end is dropped, and maths is always inside `$ $`, so a real expression
-    is never touched.
+    Fairfield Methodist 2023 P2 Q8 on the graph-paper sheet).  The closing
+    bracket is optional because an extractor sometimes stops mid-tag -- HCI
+    2025's INSPIRATION part (a)(i) ends "there are no restrictions, [1" (15 Sep
+    2026, the JC2 P&C manual).  Only a tag at the very end is dropped, and maths
+    is always inside `$ $`, so a real expression is never touched.
     """
     return _TRAILING_MARKS.sub("", text or "")
 
@@ -399,7 +408,7 @@ def render_stem(ws, stem, marks=None, numbered=True):
 def render_practice(ws, by_id: dict, ids: list, figdir: Path = None,
                     side_by_side: bool = False, cap_w: float = 10.5,
                     cap_h: float = 8.0, answers: dict = None,
-                    stems: dict = None) -> int:
+                    stems: dict = None, part_texts: dict = None) -> int:
     """Lay out the practice half from live bank rows.
 
     Questions are rendered from the database rather than transcribed, so a stem
@@ -417,6 +426,12 @@ def render_practice(ws, by_id: dict, ids: list, figdir: Path = None,
     carries something a student may not see -- an answer written under the
     table, a part label the parts list repeats.  Same discipline: a comment at
     the call site, and both the stored stem and the printed one at build time.
+
+    `part_texts` is that channel one level down: {question id: {part label: the
+    text to print}} for a row whose PART the extraction mangled -- a line that
+    landed after the marks instead of before them, markdown the renderer shows
+    raw, a Cyrillic letter standing in for a Latin one.  Same discipline again
+    (15 Sep 2026, NJC 2025 Q7(b) on the JC2 P&C manual).
     """
     n = 0
     for qid in ids:
@@ -432,6 +447,18 @@ def render_practice(ws, by_id: dict, ids: list, figdir: Path = None,
             print(f"     used: {stems[qid][:90]}...")
             stem = stems[qid].strip()
         parts = [p for p in (r.get("parts") or []) if isinstance(p, dict)]
+        for lab, text in ((part_texts or {}).get(qid) or {}).items():
+            for i, p in enumerate(parts):
+                if (p.get("label") or "").strip("() ") == lab:
+                    print(f"  ** part ({lab}) OVERRIDDEN "
+                          f"(bank part is unusable): {qid[:8]}")
+                    print(f"     bank: {(p.get('text') or '')[:90]}...")
+                    print(f"     used: {text[:90]}...")
+                    parts[i] = dict(p, text=text)
+                    break
+            else:
+                print(f"  !! part ({lab}) override found no such part: "
+                      f"{qid[:8]}")
         # a bank row holding ONE part under an empty stem is not a question with
         # sub-parts -- it is the question itself, so it loses the "(a)" label
         if len(parts) == 1 and not stem:

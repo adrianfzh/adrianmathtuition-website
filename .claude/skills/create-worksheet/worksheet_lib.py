@@ -1108,16 +1108,25 @@ class Worksheet:
         if self._block_paras:
             self._block_paras[-1].paragraph_format.keep_with_next = True
 
-    def section(self, text):
+    def section(self, text, new_page=False):
         """Bold section header, e.g. 'Section B - Congruency and Similarity'.
 
         Closes the previous question and glues itself to the question that
         follows, so a header can never be left stranded at the foot of a page
-        with its first question overleaf."""
+        with its first question overleaf.
+
+        new_page=True starts the section on a fresh page. It sets the
+        heading's own "page break before" rather than adding a hard break,
+        because Word drops that property when the heading already sits at the
+        top of a page. A hard break does not: after a page that happens to end
+        on the bottom margin it hands you a blank page (15 Sep 2026, the JC2
+        P&C manual had two)."""
         self._finish_block()
         p = self._add([('text', text, {'bold': True})])
         p.paragraph_format.space_before = Pt(6)
         p.paragraph_format.keep_with_next = True
+        if new_page:
+            p.paragraph_format.page_break_before = True
         return p
 
     def math_block(self, latex_expr):

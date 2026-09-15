@@ -484,6 +484,12 @@ longer reach the setting.
 3. An empty paragraph immediately BEFORE a forced page break — invisible normally, but if
    the block before it fills its page exactly it opens a page of its own and prints
    wholly blank. Delete it.
+4. A hard page break before a section heading, on a page that already ended on the bottom
+   margin. The break has nothing left to push, so it pushes nothing onto a page of its
+   own. A section that starts a fresh page carries `page_break_before` on the heading
+   itself — `ws.section('Section F — …', new_page=True)` — because Word drops that
+   property when the heading is already at the top of a page (15 Sep 2026, the JC2 P&C
+   manual had two such blanks, before Sections F and G).
 
 `pdftotext` cannot tell a blank page from an image-only one, and it reports a page holding
 only an empty table row as blank too — cross-check with `pdfimages -list` and render the
