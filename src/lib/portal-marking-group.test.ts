@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { groupPracticeAgain } from './portal-marking-group';
+import { groupPracticeAgain, sheetByParent, sheetState } from './portal-marking-group';
 
 const P = (id: string) => ({ id });
 
@@ -71,5 +71,53 @@ describe('groupPracticeAgain — a batch sheet nests under every paper it covers
     ]);
     expect(top.map(p => p.id)).toEqual(['p-mid']);
     expect(markedSheetByParent.get('p-mid')?.id).toBe('sheet-run');
+  });
+});
+
+// ── Pairing a sheet with its paper in EVERY state (15 Sep 2026) ─────────────
+// Adrian: "then it will be clear if student have completed THAT practice again
+// sheet for THAT exam paper (should be handed up/marked or something)". The
+// nesting above only ever sees a marked sheet; these two cover the rest.
+describe('sheetByParent — a paper finds its sheet whatever state it is in', () => {
+  const S = (id: string, source_run_id: string | null, status: string, extra: Record<string, unknown> = {}) =>
+    ({ id, source_run_id, run_id: null, status, ...extra }) as { id: string; source_run_id: string | null; run_id: string | null; status: string; source_run_ids?: string[] };
+
+  it('pairs an unmarked sheet with its paper — the case the nesting misses', () => {
+    const m = sheetByParent([S('a1', 'paper-run', 'assigned')]);
+    expect(m.get('paper-run')?.id).toBe('a1');
+    // groupPracticeAgain would show nothing at all for this paper.
+    expect(groupPracticeAgain([{ id: 'paper-run' }], [S('a1', 'paper-run', 'assigned')]).markedSheetByParent.size).toBe(0);
+  });
+
+  it('keeps the first (newest) sheet when a paper has been given two', () => {
+    const m = sheetByParent([S('new', 'p', 'assigned'), S('old', 'p', 'marked')]);
+    expect(m.get('p')?.id).toBe('new');
+  });
+
+  it('claims every paper a batch sheet covers', () => {
+    const m = sheetByParent([S('batch', 'p1', 'submitted', { source_run_ids: ['p1', 'p2', 'p3'] })]);
+    expect([...m.keys()]).toEqual(['p1', 'p2', 'p3']);
+    expect(m.get('p3')?.id).toBe('batch');
+  });
+
+  it('is empty with no sheets', () => {
+    expect(sheetByParent([]).size).toBe(0);
+  });
+});
+
+describe('sheetState — the words the profile prints', () => {
+  it('maps every assignment status', () => {
+    expect(sheetState('held')).toBe('not-released');
+    expect(sheetState('assigned')).toBe('to do');
+    expect(sheetState('submitted')).toBe('handed in');
+    expect(sheetState('marked')).toBe('marked');
+    expect(sheetState('revoked')).toBe('withdrawn');
+  });
+
+  it('treats an unknown status as still to do rather than as done', () => {
+    // A sheet must never be reported as completed on the strength of a status
+    // this build does not recognise.
+    expect(sheetState('queued')).toBe('to do');
+    expect(sheetState('')).toBe('to do');
   });
 });

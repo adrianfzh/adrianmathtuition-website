@@ -13,7 +13,7 @@
 import { getSupabaseAdmin } from './supabase';
 import { buildStudentMarking, type MarkingRunRow } from './portal-marking';
 import { allowedSubjects, subjectAllowed } from './portal-subjects';
-import { groupPracticeAgain, sheetParents } from './portal-marking-group';
+import { groupPracticeAgain, sheetByParent, sheetParents } from './portal-marking-group';
 import { bundleList } from './portal-paper-bundles';
 import { coveredRunIds } from './sheet-queue';
 import { readNoSheet } from './sheet-jobs';
@@ -132,8 +132,7 @@ export async function loadStudentAppView(identity: string): Promise<StudentAppVi
   const assignments = ((assignRes.data ?? []) as AssignmentRow[]);
   const paperIds = new Set(papers.map(p => p.id));
   const sheetRowsAll = assignments.filter(a => a.source === 'practice-again' && a.kind === 'worksheet' && a.status !== 'held' && a.status !== 'revoked' && sheetParents(a).some(id => paperIds.has(id)));
-  const sheetsByRun = new Map<string, AssignmentRow>();
-  for (const r of sheetRowsAll) for (const pid of sheetParents(r)) if (!sheetsByRun.has(pid)) sheetsByRun.set(pid, r);
+  const sheetsByRun = sheetByParent(sheetRowsAll);
   const { top, markedSheetByParent } = groupPracticeAgain(papers, sheetRowsAll);
 
   // Sheet jobs behind every listed paper — newest first, one per paper (the newest).

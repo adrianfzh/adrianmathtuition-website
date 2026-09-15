@@ -49,3 +49,44 @@ export function groupPracticeAgain<P extends { id: string }, S extends SheetLink
   }
   return { top: papers.filter(p => !nested.has(p.id)), markedSheetByParent };
 }
+
+// ── The sheet's state beside its paper (15 Sep 2026) ────────────────────────
+// Adrian, looking at a student's profile: "can we put the practice again
+// together with the associated pdf (like in a card or section or something?)
+// then it will be clear if student have completed THAT practice again sheet for
+// THAT exam paper (should be handed up/marked or something)".
+//
+// groupPracticeAgain answers only the LAST of those states — it nests a sheet
+// that has already come back and been marked. The states before it are exactly
+// the ones he is asking about: written but not released, out with the student,
+// handed in and waiting. So the pairing is its own map, over sheet rows in any
+// state, and the caller decides which states belong on its surface.
+//
+// `student-app-view` built this map inline; it lives here now so the admin
+// profile and the student mirror pair a sheet to a paper by the same rule.
+
+/** Where a paper's Practice Again sheet has got to. */
+export type SheetState = 'not-released' | 'to do' | 'handed in' | 'marked' | 'withdrawn';
+
+export function sheetState(status: string): SheetState {
+  switch (status) {
+    case 'held': return 'not-released';
+    case 'submitted': return 'handed in';
+    case 'marked': return 'marked';
+    case 'revoked': return 'withdrawn';
+    default: return 'to do';                // 'assigned', and anything unknown
+  }
+}
+
+/**
+ * One sheet per paper: paper id → the sheet row hanging off it. Rows are taken
+ * in the order given (every caller passes them newest first) and the first to
+ * claim a paper keeps it; a batch sheet claims every paper it covers. Status is
+ * NOT filtered here — a held or withdrawn sheet is real on the admin's page and
+ * invisible on the student's, which is the caller's decision, not this rule's.
+ */
+export function sheetByParent<S extends SheetLink>(sheets: readonly S[]): Map<string, S> {
+  const out = new Map<string, S>();
+  for (const s of sheets) for (const pid of sheetParents(s)) if (!out.has(pid)) out.set(pid, s);
+  return out;
+}

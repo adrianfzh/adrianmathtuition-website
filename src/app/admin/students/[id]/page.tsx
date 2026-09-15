@@ -15,6 +15,8 @@ import { sgtTodayISO } from '@/lib/sgt';
 import { marksTrend, trendLine, type TrendRun } from '@/lib/marks-trend';
 import { paperSubjectLabel } from '@/lib/paper-display-name';
 import { relativeDay } from '@/lib/portal-activity';
+import { groupPracticeAgain, sheetByParent, sheetParents, sheetState, type SheetState } from '@/lib/portal-marking-group';
+import { type AssignmentRow } from '@/lib/assignments';
 
 import { fileHref } from '@/lib/student-files-url';
 // Same JC/Sec category (Mixed/Adhoc/unknown count as available to all).
@@ -26,6 +28,13 @@ function sameLevelSlot(studentLevel: string, slotLevel: string): boolean {
   if (!slJC && !slSec) return true;
   return stu.startsWith('jc') === slJC;
 }
+
+/** One tagged marking run as the Marked papers section needs it. */
+type MarkedPaper = {
+  id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null;
+  subject?: string | null; superseded?: boolean; released?: boolean;
+  pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null;
+};
 
 function fmtDate(iso: string): string {
   if (!iso) return '';
@@ -282,7 +291,11 @@ export default function StudentProfilePage() {
   const [glance, setGlance] = useState<Glance | null>(null);
   // Marked papers — every AI-marked run tagged with this student on /admin/mark-paper.
   // Lives in the bot's run store (Supabase), fetched through the mark-paper proxy.
-  const [markedPapers, setMarkedPapers] = useState<{ id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; subject?: string | null; superseded?: boolean; released?: boolean; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null }[] | null>(null);
+  const [markedPapers, setMarkedPapers] = useState<MarkedPaper[] | null>(null);
+  // "From Adrian" rows live up here rather than inside the send-work card, because
+  // the Practice Again sheets among them belong on their PAPER (below) and the
+  // card must not list them a second time. One fetch, two readers.
+  const [assignments, setAssignments] = useState<AssignmentRow[] | null>(null);
 
   function showToast(kind: 'ok' | 'err', msg: string) {
     setToast({ kind, msg });
@@ -332,6 +345,51 @@ export default function StudentProfilePage() {
       setMarkedPapers(rows);
     } catch { /* non-fatal — section shows nothing rather than an error */ }
   }, [studentId]);
+
+  const fetchAssignments = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/admin/assignments?studentId=${encodeURIComponent(studentId)}`);
+      if (res.ok) setAssignments(((await res.json()).assignments || []) as AssignmentRow[]);
+    } catch { /* non-fatal */ }
+  }, [studentId]);
+
+  // Adrian, 15 Sep 2026: "can we put the practice again together with the
+  // associated pdf (like in a card or section or something?) then it will be
+  // clear if student have completed THAT practice again sheet for THAT exam
+  // paper (should be handed up/marked or something)".
+  //
+  // Until now a sheet showed up twice on this page and belonged to neither
+  // place: once as a To-do line in 📬 From Adrian, once as its own row beside
+  // the papers, with nothing saying which paper it was written from. The rule
+  // that fixes it is the one the student's own Papers list already uses
+  // (lib/portal-marking-group) — the sheet's marked run leaves the top level
+  // and hangs off its paper — plus sheetByParent, which finds the sheet for a
+  // paper whatever state it is in, which is the part Adrian is asking for.
+  //
+  // A sheet whose paper is NOT on this list (past the 200-row cap, or a run
+  // deleted since) keeps its own row and stays in the From Adrian card:
+  // nothing the student handed in may vanish because its parent did.
+  const paperCards = useMemo(() => {
+    const papers = markedPapers || [];
+    const sheets = (assignments || []).filter(a => a.kind === 'worksheet' && a.status !== 'revoked' && sheetParents(a).length > 0);
+    // `top` is the list with each sheet's own marked run taken out of it.
+    const { top } = groupPracticeAgain(papers, sheets);
+    const byParent = sheetByParent(sheets);
+    const byId = new Map(papers.map(p => [p.id, p] as const));
+    return top.map(paper => {
+      const sheet = byParent.get(paper.id) ?? null;
+      // The marked run belongs to THIS sheet or to none — never to the older
+      // sheet of a paper that has since been given a second one, which would
+      // put a "Marked ↗" link beside a "To do" chip.
+      const markedRun = sheet && sheet.status === 'marked' && sheet.run_id ? byId.get(sheet.run_id) ?? null : null;
+      return { paper, sheet, markedRun };
+    });
+  }, [markedPapers, assignments]);
+  /** Sheets now shown on their paper's card — the From Adrian list drops these. */
+  const pairedSheetIds = useMemo(
+    () => new Set(paperCards.map(c => c.sheet?.id).filter((x): x is string => !!x)),
+    [paperCards],
+  );
   // Is the student improving? One series per subject, oldest → newest, re-marks
   // counted once; the verdict is the slope, not the last two papers.
   const marksTrends = useMemo(() => marksTrend(
@@ -383,7 +441,7 @@ export default function StudentProfilePage() {
     // Signed httpOnly session (silently upgrades legacy plaintext cookies)
     ensureAdminSession().then(ok => { if (ok) setAuthed(true); });
   }, []);
-  useEffect(() => { if (authed && studentId) { fetchProfile(); fetchGlance(); fetchExams(); fetchMarkedPapers(); } }, [authed, studentId, fetchProfile, fetchGlance, fetchExams, fetchMarkedPapers]);
+  useEffect(() => { if (authed && studentId) { fetchProfile(); fetchGlance(); fetchExams(); fetchMarkedPapers(); fetchAssignments(); } }, [authed, studentId, fetchProfile, fetchGlance, fetchExams, fetchMarkedPapers, fetchAssignments]);
 
   async function submitSwitch() {
     if (!switchModal || !switchModal.date || !switchModal.newSlotId) return;
@@ -740,6 +798,9 @@ export default function StudentProfilePage() {
                 studentLevel={data.student.level}
                 subjects={data.student.subjects || []}
                 prefillTopic={sendTopic}
+                rows={assignments}
+                onChanged={fetchAssignments}
+                shownElsewhere={pairedSheetIds}
               />
             </Section>
 
@@ -793,16 +854,8 @@ export default function StudentProfilePage() {
                   })}
                 </div>
               )}
-              {(markedPapers || []).map(r => (
-                <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14, opacity: r.superseded ? 0.55 : 1 }}>
-                  <span style={{ width: 92, color: '#111', fontWeight: 600 }}>{fmtDate(r.created_at.slice(0, 10))}</span>
-                  <span style={{ flex: 1, minWidth: 120, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.paper_name || 'Paper'}</span>
-                  <span style={{ color: '#111', fontWeight: 600 }}>{r.total_awarded ?? 0}/{r.total_max ?? 0}{r.total_max ? <span style={{ color: '#9ca3af', fontWeight: 400 }}> · {Math.round(100 * (r.total_awarded ?? 0) / r.total_max)}%</span> : null}</span>
-                  {r.superseded && <span style={{ fontSize: 11, color: '#9ca3af' }}>re-marked later</span>}
-                  {r.annotated_pdf_url && <a href={fileHref(r.annotated_pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600, fontSize: 13 }}>✍️ Annotated ↗</a>}
-                  {r.photos_pdf_url && <a href={fileHref(r.photos_pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontSize: 13 }}>🖼 Images ↗</a>}
-                  {r.pdf_url && <a href={fileHref(r.pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontSize: 13 }}>📄 Full ↗</a>}
-                </div>
+              {paperCards.map(c => (
+                <PaperCard key={c.paper.id} paper={c.paper} sheet={c.sheet} markedRun={c.markedRun} />
               ))}
             </Section>
 
@@ -1398,6 +1451,71 @@ export default function StudentProfilePage() {
 }
 
 // ── Small presentational helpers ──────────────────────────────────────────────
+/** The Practice Again sheet's state, as a chip: colour, and the words Adrian reads. */
+function sheetChip(state: SheetState, sheet: AssignmentRow, markedRun: MarkedPaper | null): { bg: string; fg: string; text: string } {
+  switch (state) {
+    case 'not-released': return { bg: '#f1f5f9', fg: '#64748b', text: 'Written — not released yet' };
+    case 'handed in': return { bg: '#dbeafe', fg: '#1e40af', text: 'Handed in — being marked' };
+    case 'marked': {
+      // The assignment row carries the score once the hand-in is marked; a row
+      // marked before that column existed falls back to its own run's totals.
+      const awarded = sheet.out_of ? sheet.score ?? 0 : markedRun?.total_awarded ?? null;
+      const outOf = sheet.out_of ?? markedRun?.total_max ?? null;
+      return { bg: '#dcfce7', fg: '#166534', text: outOf ? `Marked · ${awarded ?? 0}/${outOf}` : 'Marked' };
+    }
+    case 'withdrawn': return { bg: '#f1f5f9', fg: '#9ca3af', text: 'Withdrawn' };
+    default: return { bg: '#fef3c7', fg: '#92400e', text: 'To do — not handed in yet' };
+  }
+}
+
+/**
+ * One marked paper with its Practice Again sheet underneath it.
+ *
+ * Adrian, 15 Sep 2026: "can we put the practice again together with the
+ * associated pdf (like in a card or section or something?) then it will be
+ * clear if student have completed THAT practice again sheet for THAT exam
+ * paper (should be handed up/marked or something)".
+ *
+ * So the sheet's state is the point of the second row, not the PDF link: the
+ * chip says where the sheet has got to, and the links are what he opens once he
+ * knows. A paper with no sheet says so in as many words — the absence is an
+ * answer to his question too, and a silent gap would read as "nothing to see".
+ */
+function PaperCard({ paper: r, sheet, markedRun }: { paper: MarkedPaper; sheet: AssignmentRow | null; markedRun: MarkedPaper | null }) {
+  const chip = sheet ? sheetChip(sheetState(sheet.status), sheet, markedRun) : null;
+  const nudges = sheet?.reminder_count ?? 0;
+  return (
+    <div style={{ border: '1px solid #e5e7eb', borderRadius: 10, marginBottom: 8, overflow: 'hidden', background: '#fff', opacity: r.superseded ? 0.55 : 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '9px 12px', fontSize: 14 }}>
+        <span style={{ width: 92, color: '#111', fontWeight: 600 }}>{fmtDate(r.created_at.slice(0, 10))}</span>
+        <span style={{ flex: 1, minWidth: 120, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.paper_name || 'Paper'}</span>
+        <span style={{ color: '#111', fontWeight: 600 }}>{r.total_awarded ?? 0}/{r.total_max ?? 0}{r.total_max ? <span style={{ color: '#9ca3af', fontWeight: 400 }}> · {Math.round(100 * (r.total_awarded ?? 0) / r.total_max)}%</span> : null}</span>
+        {r.superseded && <span style={{ fontSize: 11, color: '#9ca3af' }}>re-marked later</span>}
+        {r.annotated_pdf_url && <a href={fileHref(r.annotated_pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600, fontSize: 13 }}>✍️ Annotated ↗</a>}
+        {r.photos_pdf_url && <a href={fileHref(r.photos_pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontSize: 13 }}>🖼 Images ↗</a>}
+        {r.pdf_url && <a href={fileHref(r.pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontSize: 13 }}>📄 Full ↗</a>}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '7px 12px', background: '#f8fafc', borderTop: '1px solid #f1f5f9', fontSize: 13 }}>
+        <span style={{ color: '#64748b', fontWeight: 600, width: 92, flexShrink: 0 }}>📘 Practice Again</span>
+        {!sheet && <span style={{ color: '#9ca3af' }}>No sheet for this paper.</span>}
+        {sheet && chip && (
+          <>
+            <span style={{ background: chip.bg, color: chip.fg, fontWeight: 600, borderRadius: 999, padding: '2px 9px' }}>{chip.text}</span>
+            <span style={{ flex: 1, minWidth: 80, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              sent {fmtDate(sheet.created_at.slice(0, 10))}
+              {nudges > 0 ? ` · nudged ×${nudges}` : ''}
+              {sheet.required_at ? ' · compulsory' : ''}
+            </span>
+            {sheet.pdf_url && <a href={fileHref(sheet.pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>📘 Sheet ↗</a>}
+            {markedRun?.annotated_pdf_url && <a href={fileHref(markedRun.annotated_pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600 }}>✍️ Marked ↗</a>}
+            {markedRun?.photos_pdf_url && <a href={fileHref(markedRun.photos_pdf_url)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>🖼 Hand-in ↗</a>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Section({ title, action, children, show = true }: { title: string; action?: React.ReactNode; children: React.ReactNode; show?: boolean }) {
   if (!show) return null;
   return (

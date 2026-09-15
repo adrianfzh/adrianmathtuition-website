@@ -49,12 +49,22 @@ const pill = (on: boolean): React.CSSProperties => ({
   border: on ? '1px solid #1e3a5f' : '1px solid #e5e7eb', background: on ? '#1e3a5f' : '#fff', color: on ? '#fff' : '#374151',
 });
 
-export default function SendWorkCard({ studentId, studentName, studentLevel, subjects, prefillTopic, prefillTopics }: {
+export default function SendWorkCard({ studentId, studentName, studentLevel, subjects, prefillTopic, prefillTopics, rows, onChanged, shownElsewhere }: {
   studentId: string; studentName: string; studentLevel: string; subjects: string[]; prefillTopic?: string | null;
   /** The other weak topics from the same paper, offered as one-click switches
    *  (31 Aug 2026). A paper rarely fails on one thing, and sending three
    *  follow-ups used to mean three trips back to triage. */
   prefillTopics?: string[];
+  /** Every assignment row for this student, newest first — FETCHED BY THE PAGE.
+   *  This card used to fetch its own copy, which was fine while it was the only
+   *  reader; since 15 Sep 2026 the paper cards below show the Practice Again
+   *  sheets from the same list, and two fetches of one list drift. Null = still
+   *  loading. */
+  rows: AssignmentRow[] | null;
+  /** Re-fetch after this card sends or revokes something. */
+  onChanged: () => void;
+  /** Rows already shown on their paper's card — listed there, not here. */
+  shownElsewhere?: Set<string>;
 }) {
   const levels = useMemo(() => {
     const own = qbLevelsFor(studentLevel, subjects);
@@ -86,20 +96,12 @@ export default function SendWorkCard({ studentId, studentName, studentLevel, sub
   // send + list
   const [sending, setSending] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
-  const [list, setList] = useState<AssignmentRow[]>([]);
 
   // The prefill can arrive a tick after mount (the page reads it from window).
   useEffect(() => {
     if (prefillTopic) { setTopic(prefillTopic); setKind('question'); setOpen(true); }
   }, [prefillTopic]);
 
-  const loadList = useCallback(async () => {
-    try {
-      const r = await fetch(`/api/admin/assignments?studentId=${encodeURIComponent(studentId)}`);
-      if (r.ok) setList(((await r.json()).assignments || []) as AssignmentRow[]);
-    } catch { /* non-fatal */ }
-  }, [studentId]);
-  useEffect(() => { loadList(); }, [loadList]);
 
   // Topics for the chosen level (admin path of the practice topics route).
   useEffect(() => {
@@ -199,7 +201,7 @@ export default function SendWorkCard({ studentId, studentName, studentLevel, sub
       // Strike the topic off the paper's list so the next one is obvious.
       if (topic) setSentTopics(prev => prev.includes(topic) ? prev : [...prev, topic]);
       setPicked(null); setNote(''); setDueOn(''); setTitle(''); setUploaded(null); setLibPick(null);
-      loadList();
+      onChanged();
     } catch (e) {
       setMsg({ ok: false, text: (e as Error).message });
     } finally { setSending(false); }
@@ -209,9 +211,14 @@ export default function SendWorkCard({ studentId, studentName, studentLevel, sub
     if (!confirm('Take this back? The student will no longer see it.')) return;
     const r = await fetch('/api/admin/assignments', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, action: 'revoke' }) });
     if (!r.ok) { const j = await r.json().catch(() => ({})); setMsg({ ok: false, text: j.error || 'Could not revoke' }); }
-    loadList();
+    onChanged();
   };
 
+  // A Practice Again sheet now has a home on its paper's card, so it is listed
+  // there and not here — Adrian was seeing the same sheet twice, in two places
+  // that said nothing about each other (15 Sep 2026).
+  const list = (rows || []).filter(a => !shownElsewhere?.has(a.id));
+  const hidden = (rows || []).length - list.length;
   const pending = list.filter(a => isPending(a.status));
   const done = list.filter(a => !isPending(a.status));
 
@@ -380,7 +387,11 @@ export default function SendWorkCard({ studentId, studentName, studentLevel, sub
       )}
 
       {list.length === 0 && open === false && (
-        <div style={{ color: '#9ca3af', fontSize: 14 }}>Nothing assigned yet.</div>
+        <div style={{ color: '#9ca3af', fontSize: 14 }}>
+          {hidden > 0
+            ? `Nothing else assigned — ${hidden} Practice Again sheet${hidden === 1 ? '' : 's'} ${hidden === 1 ? 'is' : 'are'} shown with ${hidden === 1 ? 'its paper' : 'their papers'} below.`
+            : 'Nothing assigned yet.'}
+        </div>
       )}
       {pending.length > 0 && (
         <div>
@@ -392,6 +403,11 @@ export default function SendWorkCard({ studentId, studentName, studentLevel, sub
         <div>
           <div style={label}>Done</div>
           {done.slice(0, 10).map(a => <Row key={a.id} a={a} />)}
+        </div>
+      )}
+      {hidden > 0 && list.length > 0 && (
+        <div style={{ fontSize: 12, color: '#9ca3af' }}>
+          {hidden} Practice Again sheet{hidden === 1 ? '' : 's'} {hidden === 1 ? 'is' : 'are'} shown with {hidden === 1 ? 'its paper' : 'their papers'} under Marked papers below.
         </div>
       )}
     </div>
