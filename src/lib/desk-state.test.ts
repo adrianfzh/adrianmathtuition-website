@@ -280,10 +280,14 @@ describe('the All tab', () => {
 
 describe('laneFor — released by the system (8 Sep 2026)', () => {
   const tagged = { student_id: 'recX', released_at: null } as const;
+  // Pin the clock: the system lane empties itself after AUTO_LANE_DAYS, so a
+  // fixture dated 8 Sep silently changed lane on 15 Sep 2026 and these
+  // assertions started failing on the calendar rather than on the code.
+  const NOW = Date.parse('2026-09-08T14:00:00Z');
   it('an auto-released run waits in its own lane until Adrian has looked at it', () => {
-    expect(laneFor({ ...tagged, released_at: '2026-09-08T10:00:00Z', released_via: 'auto:portal', checked_at: null }, null)).toBe('auto');
-    expect(laneFor({ ...tagged, released_at: '2026-09-08T10:00:00Z', released_via: 'auto:portal', checked_at: '2026-09-08T12:00:00Z' }, null)).toBe('released');
-    expect(laneFor({ ...tagged, released_at: '2026-09-08T10:00:00Z', released_via: 'portal', checked_at: null }, null)).toBe('released');
+    expect(laneFor({ ...tagged, released_at: '2026-09-08T10:00:00Z', released_via: 'auto:portal', checked_at: null }, null, NOW)).toBe('auto');
+    expect(laneFor({ ...tagged, released_at: '2026-09-08T10:00:00Z', released_via: 'auto:portal', checked_at: '2026-09-08T12:00:00Z' }, null, NOW)).toBe('released');
+    expect(laneFor({ ...tagged, released_at: '2026-09-08T10:00:00Z', released_via: 'portal', checked_at: null }, null, NOW)).toBe('released');
   });
 });
 
@@ -346,7 +350,9 @@ describe('a sheet being revised comes back to "Still to deal with" (Adrian, 10 S
   });
   it('once the revised sheet is filed the paper goes back to where it was', () => {
     expect(laneFor(released, revise('done'))).toBe('released');
-    expect(laneFor({ ...released, checked_at: null }, revise('done'))).toBe('auto');   // the ordinary not-yet-looked-at rule still decides
+    // Same pinned clock as above — an unlooked-at auto release only stays in
+    // the system lane while it is younger than AUTO_LANE_DAYS.
+    expect(laneFor({ ...released, checked_at: null }, revise('done'), Date.parse('2026-09-08T14:00:00Z'))).toBe('auto');   // the ordinary not-yet-looked-at rule still decides
   });
   it('a fresh sheet being written pulls the paper back too (Adrian, later on 10 Sep 2026: "show all that is currently processing")', () => {
     expect(laneFor(released, { status: 'queued', stage: null, result: null })).toBe('auto');
