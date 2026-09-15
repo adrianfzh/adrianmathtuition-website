@@ -54,7 +54,8 @@ async function priorBalanceForEmail(studentId: string | undefined, storedMonth: 
   if (!studentId) return null;
   try {
     const { priorItems, priorTotal } = await getPriorBalance(studentId, storedMonth, invoiceId);
-    return { month: displayMonth, priorTotal, priorMonths: priorItems.map((i: any) => String(i.month || '')).filter(Boolean).reverse() };
+    // priorItems come newest-first with the month as their description ("September 2026", "July 2026 (Adjustment)"); oldest first reads naturally.
+    return { month: displayMonth, priorTotal, priorMonths: priorItems.map((i) => String(i.description || '')).filter(Boolean).reverse() };
   } catch { return null; }
 }
 
