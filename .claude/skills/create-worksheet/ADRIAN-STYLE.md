@@ -396,6 +396,23 @@ Every section is measured against its own standalone export, page for page. A sh
 PDF usually ends on a trailing blank page of its own; discount it before calling a
 difference a loss.
 
+## 8 · Watermarks — chosen, not switched on
+
+Adrian, 15 Sep 2026, after twenty-two candidates over real pages of his own book: **"i like
+T, U and V, put them into memory (not using them yet, but may and iterate later)."** So:
+
+- **No sheet carries a watermark today.** `worksheet_lib.py` has no `watermark=` argument
+  and must not grow one until he asks. Do not add a carpet to a sheet on your own judgment.
+- The three he liked, the engine that draws them, and the four typographic rules that make a
+  tiled carpet look set on purpose live in **`watermark/`** (`README.md` + `designs.py`).
+  All three tile the words **`AdrianMath Tuition`** at more than one point size — T level,
+  U high-contrast, V in Georgia. Start there when he comes back to it, not from scratch.
+- Two things must be fixed before any of it ships: the figure helpers must
+  `savefig(..., transparent=True)` (matplotlib saves opaque white, which would punch a white
+  rectangle through the carpet at every figure), and **a carpet goes only on what a student
+  KEEPS** — anything that comes back for marking gets the footer line alone, because the
+  ScanSnap and the AI marker read the page as an image.
+
 ## Adding a rule (how this list grows)
 
 1. Quote what Adrian said, with the date, in the section it belongs to (new section if
