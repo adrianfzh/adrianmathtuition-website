@@ -38,8 +38,13 @@
     /* No bottom padding: this file is only ever printed to A4, and 60px of
        trailing space was what pushed the footer alone onto a second page when
        an invoice carried a previous-balance row (15 Sep 2026, Alexis Wong). */
-    padding: 40px 20px 0;
+    padding: 24px 20px 0;
   }
+
+  /* Printed a hair smaller: the footer alone was still spilling onto a second
+     page by ~10px whenever a previous-balance row or an extras line was present.
+     Every one-page invoice simply gains a little air at the foot. */
+  html { zoom: 0.94; }
 
   /* A box is never cut in half by the page edge — Denise Chan's and Alessi
      Tay's October 2026 previews split the Telegram box across two pages. */
