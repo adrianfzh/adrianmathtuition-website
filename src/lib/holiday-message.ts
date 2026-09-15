@@ -30,7 +30,7 @@ export interface StudentForHoliday {
   subjectLevel?: string | null;     // Students.Subject Level — 'IP' marks the through-train (no O-Level)
 }
 
-import { OPTOUT_MONTHS, EXAM_PREP_NOTE } from './year-end-billing';
+import { OPTOUT_MONTHS } from './year-end-billing';
 
 /** Invoice months (1-indexed) whose email carries the holiday note. October's
  *  invoice is billed in advance as usual (Adrian, 15 Sep 2026) but ANNOUNCES the
@@ -187,27 +187,22 @@ export function holidayNoteHtml(
   const months = optionalMonthsPhrase();
   const either = OPTOUT_MONTHS.length === 2 ? `either ${months.replace(' and ', ' or ')}` : `any of ${months.replace(' and ', ' or ')}`;
   const count = COUNT_WORDS[OPTOUT_MONTHS.length] || String(OPTOUT_MONTHS.length);
-  // The October invoice is billed as usual; its job here is the exam-prep
-  // reminder (Adrian, 15 Sep 2026) before the holiday months are announced.
-  const prep = month === 10
-    ? `\n      <p style="margin:0 0 10px;"><strong>Exams coming up?</strong> ${esc(EXAM_PREP_NOTE.replace(/^Exams coming up\? /, ''))}</p>`
-    : '';
   // Told on the October invoice (the announcement), in the block's own words —
   // the PDF carries HOLIDAY_BILLING_NOTE. Advance like any other month; the
   // deadline is the day before the 14th's generation run (Adrian, 15 Sep 2026).
   const billing = month === 10
-    ? `\n      <p style="margin:0 0 10px;"><strong>How ${months} are billed.</strong> Both are billed in advance like any other month, on the 15th of the month before. If you would like ${esc(name)} to skip a month, tap the button below or just tell me — by 13 October for November, or by 13 November for December — and that month is simply not invoiced. Any one-off lessons during a skipped month are billed on the following invoice.</p>`
+    ? `\n      <p style="margin:0 0 10px;"><strong>How ${months} are billed.</strong> Both are billed in advance like any other month, on the 15th of the month before. If you would like ${esc(name)} to skip a month, ${optOutUrl ? 'tap the button below or just tell me' : 'just reply to this email'} — by 13 October for November, or by 13 November for December — and that month is simply not invoiced. Any one-off lessons during a skipped month are billed on the following invoice.</p>`
     : '';
   return `
-    <div style="background:#f8fafc;border-left:3px solid #cbd5e1;padding:12px 16px;margin:16px 0;">${prep}
+    <div style="background:#f8fafc;border-left:3px solid #cbd5e1;padding:12px 16px;margin:16px 0;">
       <p style="margin:0 0 10px;"><strong>Lessons carry on as usual through ${months}, but they are optional over these ${count} months.</strong> If ${esc(name)} is travelling, resting, or you would simply rather pause, you can opt out of ${either} — those months come off the schedule and off the invoice. Students who opt out can still come in for one-off lessons during the break, booked ad hoc and billed per lesson.</p>
-${billing}
+${billing}${button}
       <p style="margin:0 0 10px;"><strong>If you are away for only part of a month, you don't need to opt out.</strong> Move those lessons with the WhatsApp assistant (details at the foot of this email) or just tell me the dates, and ${esc(name)} will get make-up lessons for whatever is missed.</p>
       <p style="margin:0 0 6px;"><strong>That said, I would encourage students to keep attending regular lessons if they can.</strong></p>
       <ul style="margin:0 0 10px;padding-left:20px;">
       ${li}
       </ul>
       <p style="margin:0 0 10px;"><strong>Two periods when I will be away:</strong> Wed 28 October – Sun 1 November, and Sat 5 December – Sat 12 December. If ${esc(name)} is attending regular lessons as usual, I will provide make-up lessons for every lesson that falls in those two windows — the WhatsApp assistant can book them, or I will arrange them with you.</p>
-      <p style="margin:0 0 4px;">To opt out of any month, tap the button below and pick the months there, or just reply to this email. Anything you do not tell me about stays as it is.</p>${button}
+      <p style="margin:0;">${optOutUrl ? '' : 'To skip a month, just reply to this email. '}Anything you do not tell me about stays as it is.</p>
     </div>`;
 }

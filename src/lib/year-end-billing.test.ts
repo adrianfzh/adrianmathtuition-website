@@ -19,6 +19,9 @@ import {
   arrearsCoverageNote,
   arrearsNoteFrom,
   HOLIDAY_BILLING_NOTE,
+  EXAM_PREP_NOTE,
+  examPrepNoteFrom,
+  graduationNote,
   humanDate,
   invoiceDueDateISO,
   isCombinedJanuary,
@@ -410,5 +413,20 @@ describe('what a parent is told about billing after the month (15 Sep 2026)', ()
     expect(arrearsNoteFrom('Additional lessons only')).toBeNull();
     expect(yearEndHoldReason(nov)).toBe('attended lessons (billed after the month)');
     expect(yearEndHoldReason('Billed for the lessons attended in November 2026.')).toBe('attended lessons (exam-year student)');
+  });
+});
+
+describe('the main-message lines (Adrian, 15 Sep 2026)', () => {
+  it('the prep line is picked out of Auto Notes for the email', () => {
+    expect(EXAM_PREP_NOTE).toContain('End-of-Year exams');
+    expect(examPrepNoteFrom(['Additional lessons: Fri, 4 Sept', EXAM_PREP_NOTE, HOLIDAY_BILLING_NOTE].join('\n\n'))).toBe(EXAM_PREP_NOTE);
+    expect(examPrepNoteFrom(HOLIDAY_BILLING_NOTE)).toBeNull();
+  });
+  it('the graduating send-off uses the first name', () => {
+    const g = graduationNote('Alexis Wong');
+    expect(g).toContain('Alexis’s last invoice');
+    expect(g).toContain('pleasure teaching Alexis');
+    expect(g).toContain('all the best for the final stretch');
+    expect(graduationNote('')).toContain('your child');
   });
 });

@@ -215,18 +215,23 @@ describe('tone — Adrian, 15 Sep 2026: "not pushy - just word of advice"', () =
 
 describe('the October block tells parents how November and December are billed (15 Sep 2026)', () => {
   const sec3 = { level: 'Sec 3', subjects: ['E Math', 'A Math'] };
-  it('October: exam-prep reminder, then the billing-after-the-month paragraph', () => {
-    const html = holidayNoteHtml(sec3, 10, 'Gavin Ng', null);
-    expect(html).toContain('Exams coming up?');
+  it('October: the billing paragraph, then the button, then the part-of-a-month paragraph (Adrian, 15 Sep 2026)', () => {
+    const html = holidayNoteHtml(sec3, 10, 'Gavin Ng', 'https://www.adrianmathtuition.com/holiday-optout?t=x');
+    expect(html).not.toContain('Exams coming up?');   // the prep line lives in the main message now
     expect(html).toContain('How November and December are billed.');
     expect(html).toContain('billed in advance like any other month');
     expect(html).toContain('by 13 October for November');
-    expect(html).toContain('like Gavin to skip a month');
-    expect(html.indexOf('Exams coming up?')).toBeLessThan(html.indexOf('Lessons carry on as usual'));
+    const billing = html.indexOf('How November and December are billed.');
+    const button = html.indexOf('Choose which months to skip');
+    const away = html.indexOf('If you are away for only part of a month');
+    expect(billing).toBeLessThan(button);
+    expect(button).toBeLessThan(away);
+    expect(html.match(/Choose which months to skip/g)!.length).toBe(1);
+    expect(html.trim().endsWith('Anything you do not tell me about stays as it is.</p>\n    </div>')).toBe(true);
+    expect(html).not.toContain('reply to this email');   // the button is the route; the reply line appears only without one
   });
-  it('a later month carries neither — the invoice itself explains what it is for', () => {
+  it('a later month carries no billing paragraph — the invoice itself explains what it is for', () => {
     const html = holidayNoteHtml(sec3, 11, 'Gavin Ng', null);
-    expect(html).not.toContain('Exams coming up?');
     expect(html).not.toContain('How November and December are billed');
   });
 });

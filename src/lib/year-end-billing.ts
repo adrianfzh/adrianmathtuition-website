@@ -56,7 +56,24 @@ export const OPTOUT_MONTHS = [11, 12];
  *  PDF; the email carries the same sentence inside the holiday block). Adrian,
  *  15 Sep 2026: "remind parents that they can bring forward their lessons to
  *  before their exams for prep — just tell me, or schedule through whatsapp". */
-export const EXAM_PREP_NOTE = 'Exams coming up? October lessons can be brought forward to before the exams for extra prep — just tell me, or schedule through the WhatsApp assistant.';
+export const EXAM_PREP_NOTE = 'Students may bring forward their October lessons to before their End-of-Year exams if they wish, for extra prep — just tell me, or schedule through the WhatsApp assistant.';
+
+/** The exam-prep paragraph out of Auto Notes, for the email's main message. */
+export function examPrepNoteFrom(autoNotes: string | null | undefined): string | null {
+  return (autoNotes || '')
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .find((p) => /bring forward/.test(p)) || null;
+}
+
+/** A graduating student's send-off, on the invoice that carries the exam
+ *  cut-off — their last (Adrian, 15 Sep 2026: "This is the last invoice + it is
+ *  a pleasure to teach [student], work hard and all the best for the final
+ *  stretch"). First name only, the way he speaks to them. */
+export function graduationNote(studentName: string): string {
+  const first = (studentName || '').trim().split(/\s+/)[0] || 'your child';
+  return `This is ${first}’s last invoice with us. It has been a real pleasure teaching ${first} — work hard, and all the best for the final stretch!`;
+}
 
 /** Told once, on the October invoice of a non-exam-year student (Auto Notes →
  *  the PDF; the email's holiday block says it in its own words): the holiday

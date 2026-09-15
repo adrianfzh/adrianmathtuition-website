@@ -7,7 +7,7 @@ import { sendTelegram } from '@/lib/telegram';
 const notify_money = (text: string) => sendTelegram(text, 'money');
 import { getInvoiceMonth, displaySpanMonth, sgtTodayISO } from '@/lib/invoice-month';
 import { resolveRunMode, resolveTargetMonthLabel, jobNameFor } from '@/lib/invoice-run-mode';
-import { yearEndHoldReason, examCutoffNoteFrom, arrearsNoteFrom } from '@/lib/year-end-billing';
+import { yearEndHoldReason, examCutoffNoteFrom, arrearsNoteFrom, examPrepNoteFrom, graduationNote } from '@/lib/year-end-billing';
 import { holidayNoteHtml, invoiceMonthNumber } from '@/lib/holiday-message';
 import { signOptoutToken, optoutLink } from '@/lib/holiday-optout-token';
 import { copy } from '@vercel/blob';
@@ -82,6 +82,11 @@ function buildEmailHtml(invoice: {
   // What an ARREARS invoice is for, off its Auto Notes (arrearsNoteFrom) —
   // "the lessons attended in November 2026". Same sentence as the PDF.
   arrearsNote?: string | null;
+  // The exam-prep line off Auto Notes (examPrepNoteFrom) — a plain paragraph
+  // in the main message, not inside the holiday block (Adrian, 15 Sep 2026).
+  prepNote?: string | null;
+  // A graduating student's send-off on their last invoice (graduationNote).
+  graduation?: string | null;
   // The Oct–Dec holiday block for a NON-exam-year student, already rendered
   // (lib/holiday-message). Adrian, 15 Sep 2026: "are you able to do the send
   // code picking up by level?" — the "Next year is a step up" bullet inside it
@@ -100,11 +105,15 @@ function buildEmailHtml(invoice: {
   const examNoteHtml = [invoice.examNote, invoice.arrearsNote].filter(Boolean)
     .map((n) => `\n    <p style="background: #f8fafc; border-left: 3px solid #cbd5e1; padding: 10px 14px; margin: 16px 0;">📅 ${n}</p>`)
     .join('');
+  // Order (Adrian, 15 Sep 2026): the invoice line, the notes that belong to
+  // THIS invoice, how to pay, "reach out" — and only then the holiday block.
+  const graduationHtml = invoice.graduation ? `\n    <p>${invoice.graduation}</p>` : '';
+  const prepHtml = invoice.prepNote ? `\n    <p>${invoice.prepNote}</p>` : '';
   return `
     <p>Dear Parent/Student,</p>
-    ${delayApology}<p>Please find attached the invoice for ${invoice.studentName} for ${invoice.month} — ${amountDueHtml(invoice.finalAmount, invoice.dueDate, invoice.priorBalance)}.</p>${examNoteHtml}${invoice.holidayNote || ''}
+    ${delayApology}<p>Please find attached the invoice for ${invoice.studentName} for ${invoice.month} — ${amountDueHtml(invoice.finalAmount, invoice.dueDate, invoice.priorBalance)}.</p>${examNoteHtml}${graduationHtml}${prepHtml}
     ${paymentHtml(invoice.finalAmount, invoice.paymentRef)}
-    <p>Please feel free to reach out if you have any questions.</p>
+    <p>Please feel free to reach out if you have any questions.</p>${invoice.holidayNote || ''}
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
     ${buildSelfServiceFooterHtml()}
     ${invoice.studentId ? `<p style="font-size: 14px; color: #6b7280;">💛 <strong>Know a family who'd benefit?</strong> Share your referral link — you'll receive <strong>one free month of lessons</strong> once they join and complete 3 months: <a href="https://www.adrianmathtuition.com/r/${invoice.studentId}">adrianmathtuition.com/r/${invoice.studentId.slice(0, 6)}…</a></p>` : ''}
@@ -413,6 +422,8 @@ export async function POST(req: NextRequest) {
           priorBalance: await priorBalanceForEmail(sid, (rec.fields['Month'] || '') as string, rec.id, month),
           examNote: examCutoffNoteFrom(rec.fields['Auto Notes'] as string),
           arrearsNote: arrearsNoteFrom(rec.fields['Auto Notes'] as string),
+          prepNote: examPrepNoteFrom(rec.fields['Auto Notes'] as string),
+          graduation: examCutoffNoteFrom(rec.fields['Auto Notes'] as string) ? graduationNote(studentName) : null,
           holidayNote: holidayNoteHtml(
             { level: invoice.level, subjects: stu.fields['Subjects'] as string[] | undefined, subjectLevel: stu.fields['Subject Level'] as string | undefined },
             invoiceMonthNumber(rec.fields['Month'] as string),
@@ -649,6 +660,8 @@ export async function POST(req: NextRequest) {
           priorBalance: await priorBalanceForEmail(studentId, (invoiceRecord.fields['Month'] || '') as string, invoiceRecord.id, invoice.month),
           examNote: examCutoffNoteFrom(invoiceRecord.fields['Auto Notes'] as string),
           arrearsNote: arrearsNoteFrom(invoiceRecord.fields['Auto Notes'] as string),
+          prepNote: examPrepNoteFrom(invoiceRecord.fields['Auto Notes'] as string),
+          graduation: examCutoffNoteFrom(invoiceRecord.fields['Auto Notes'] as string) ? graduationNote(invoice.studentName) : null,
           holidayNote: holidayNoteHtml(
             { level: invoice.level, subjects: student['Subjects'] as string[] | undefined, subjectLevel: student['Subject Level'] as string | undefined },
             invoiceMonthNumber(invoiceRecord.fields['Month'] as string),
