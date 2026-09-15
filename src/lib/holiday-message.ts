@@ -186,7 +186,7 @@ export function holidayNoteHtml(
   // the PDF carries ARREARS_ANNOUNCE_NOTE; a later month's invoice explains
   // itself (arrearsCoverageNote) so this paragraph would only repeat it.
   const billing = month === 10
-    ? `\n      <p style="margin:0 0 10px;"><strong>How ${months} are billed.</strong> Nothing is charged in advance for these ${count} months. On 1 December you will receive November&#39;s invoice for the lessons ${esc(name)} actually attended, due within a week. December&#39;s lessons come together with January&#39;s in one invoice on 1 January.</p>`
+    ? `\n      <p style="margin:0 0 10px;"><strong>How ${months} are billed.</strong> Nothing is charged in advance for these ${count} months. On 1 December you will receive November’s invoice for the lessons ${esc(name)} actually attended, due within a week. December’s lessons come together with January’s in one invoice on 1 January.</p>`
     : '';
   return `
     <div style="background:#f8fafc;border-left:3px solid #cbd5e1;padding:12px 16px;margin:16px 0;">${prep}

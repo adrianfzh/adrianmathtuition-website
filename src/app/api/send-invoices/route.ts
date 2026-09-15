@@ -429,7 +429,7 @@ export async function POST(req: NextRequest) {
         .replace(/<\/li>/gi, '')
         .replace(/<hr[^>]*>/gi, '\n———\n')
         .replace(/<[^>]+>/g, '')
-        .replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').replace(/&#39;/g, "'").replace(/&quot;/g, '"')
         .split('\n').map((l) => l.trim()).join('\n')  // drop the template's indentation
         .replace(/[ \t]+\n/g, '\n')                    // strip trailing spaces
         .replace(/\n{2,}(• )/g, '\n$1')                // single-space bullet lists
