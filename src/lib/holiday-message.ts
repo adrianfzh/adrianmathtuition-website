@@ -29,8 +29,20 @@ export interface StudentForHoliday {
   subjects?: readonly string[] | null; // Students.Subjects — e.g. ['E Math','A Math']
 }
 
-/** Months the holiday note applies to (1-indexed), matching ARREARS_MONTHS. */
+import { ARREARS_MONTHS, EXAM_PREP_NOTE } from './year-end-billing';
+
+/** Invoice months (1-indexed) whose email carries the holiday note. October's
+ *  invoice is billed in advance as usual (Adrian, 15 Sep 2026) but ANNOUNCES the
+ *  optional months, so the parent hears about the opt-out a month ahead. */
 export const HOLIDAY_MONTHS = [10, 11, 12] as const;
+
+const MONTH_WORDS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+/** "November and December" — the optional months, from the billing rule. */
+export function optionalMonthsPhrase(months: readonly number[] = ARREARS_MONTHS): string {
+  const w = months.map((m) => MONTH_WORDS[m - 1]);
+  return w.length <= 1 ? (w[0] || '') : `${w.slice(0, -1).join(', ')} and ${w[w.length - 1]}`;
+}
+const COUNT_WORDS = ['', 'one', 'two', 'three', 'four'];
 
 /** Levels that hear about the holidays at all. Exam years get their own note. */
 const HOLIDAY_LEVELS = new Set(['Sec 1', 'Sec 2', 'Sec 3', 'JC1']);
@@ -162,9 +174,17 @@ export function holidayNoteHtml(
       <p style="margin:0 0 10px;font-size:13px;color:#6b7280;text-align:center;">Nothing changes until you press Confirm on that page. You can change it again later from the same link.</p>`
     : '';
 
+  const months = optionalMonthsPhrase();
+  const either = ARREARS_MONTHS.length === 2 ? `either ${months.replace(' and ', ' or ')}` : `any of ${months.replace(' and ', ' or ')}`;
+  const count = COUNT_WORDS[ARREARS_MONTHS.length] || String(ARREARS_MONTHS.length);
+  // The October invoice is billed as usual; its job here is the exam-prep
+  // reminder (Adrian, 15 Sep 2026) before the holiday months are announced.
+  const prep = month === 10
+    ? `\n      <p style="margin:0 0 10px;"><strong>Exams coming up?</strong> ${esc(EXAM_PREP_NOTE.replace(/^Exams coming up\? /, ''))}</p>`
+    : '';
   return `
-    <div style="background:#f8fafc;border-left:3px solid #cbd5e1;padding:12px 16px;margin:16px 0;">
-      <p style="margin:0 0 10px;"><strong>Lessons carry on as usual through October, November and December, but they are optional over these three months.</strong> If ${esc(name)} is travelling, resting, or you would simply rather pause, you can opt out of any of October, November or December — those months come off the schedule and off the invoice. Students who opt out can still come in for one-off lessons during the break, booked ad hoc and billed per lesson.</p>
+    <div style="background:#f8fafc;border-left:3px solid #cbd5e1;padding:12px 16px;margin:16px 0;">${prep}
+      <p style="margin:0 0 10px;"><strong>Lessons carry on as usual through ${months}, but they are optional over these ${count} months.</strong> If ${esc(name)} is travelling, resting, or you would simply rather pause, you can opt out of ${either} — those months come off the schedule and off the invoice. Students who opt out can still come in for one-off lessons during the break, booked ad hoc and billed per lesson.</p>
       <p style="margin:0 0 10px;"><strong>If you are away for only part of a month, you don't need to opt out.</strong> Move those lessons with the WhatsApp assistant (details at the foot of this email) or just tell me the dates, and ${esc(name)} will get make-up lessons for whatever is missed.</p>
       <p style="margin:0 0 6px;"><strong>That said, I would encourage students to keep attending regular lessons if they can.</strong></p>
       <ul style="margin:0 0 10px;padding-left:20px;">

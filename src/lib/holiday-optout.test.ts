@@ -11,19 +11,19 @@ const month = (year: number, m: number, label: string, dates: DateEntry[]): Mont
   ({ year, month: m, label, dates });
 
 describe('upcomingOptionalMonths', () => {
-  it('offers Oct, Nov, Dec when asked in September', () => {
+  it('offers Nov and Dec when asked in September — October is advance-billed since 15 Sep 2026', () => {
     expect(upcomingOptionalMonths(new Date('2026-09-15T00:00:00Z')).map((m) => m.label))
-      .toEqual(['October 2026', 'November 2026', 'December 2026']);
+      .toEqual(['November 2026', 'December 2026']);
   });
 
   it('never offers the current month — it is already underway', () => {
     expect(upcomingOptionalMonths(new Date('2026-10-20T00:00:00Z')).map((m) => m.label))
-      .toEqual(['November 2026', 'December 2026', 'October 2027']);
+      .toEqual(['November 2026', 'December 2026']);
   });
 
   it('rolls across the year boundary', () => {
     expect(upcomingOptionalMonths(new Date('2026-12-05T00:00:00Z')).map((m) => m.label))
-      .toEqual(['October 2027', 'November 2027', 'December 2027']);
+      .toEqual(['November 2027', 'December 2027']);
   });
 });
 
@@ -125,7 +125,7 @@ describe('changesForMonths — the parent answers by month, the writer works by 
 });
 
 describe('validateChanges', () => {
-  const ok = { date: '2026-10-04', slotId: 'recSlot123456789', skip: true };
+  const ok = { date: '2026-11-04', slotId: 'recSlot123456789', skip: true };
 
   it('accepts a good batch', () => {
     expect(validateChanges([ok])).toBeNull();

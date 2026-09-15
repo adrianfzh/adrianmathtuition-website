@@ -24,9 +24,27 @@ export function formatMoney(n: number): string {
  * meaningful due date, so it gets "(no payment needed)" instead — "due by
  * 15 September" on a nil invoice reads like a demand for nothing.
  */
-export function amountDueHtml(finalAmount: number, dueDate: string): string {
+export function amountDueHtml(finalAmount: number, dueDate: string, prior?: PriorBalanceForEmail | null): string {
   if (finalAmount <= 0) return `<strong>$${formatMoney(finalAmount)}</strong> (no payment needed)`;
+  // The email and the PDF must agree (Adrian, 15 Sep 2026): the PDF adds any
+  // earlier month still owing as a "previous balance" row and prints the sum as
+  // TOTAL DUE, so the email's headline figure is that same sum, with the split
+  // spelled out — a parent reads the email number and pays that.
+  if (prior && prior.priorTotal > 0.005) {
+    const total = finalAmount + prior.priorTotal;
+    const months = prior.priorMonths.length ? ` for ${prior.priorMonths.join(' and ')}` : '';
+    return `<strong>$${formatMoney(total)}</strong> in total (<strong>$${formatMoney(finalAmount)}</strong> for ${prior.month}, plus <strong>$${formatMoney(prior.priorTotal)}</strong> still owing${months}), due by <strong>${formatDueDate(dueDate)}</strong>`;
+  }
   return `<strong>$${formatMoney(finalAmount)}</strong>, due by <strong>${formatDueDate(dueDate)}</strong>`;
+}
+
+/** What the PDF's previous-balance rows add up to, for the email's opening line. */
+export interface PriorBalanceForEmail {
+  /** The month this invoice is for, as displayed ("October 2026"). */
+  month: string;
+  priorTotal: number;
+  /** The earlier months still owing, oldest first ("September 2026"). */
+  priorMonths: string[];
 }
 
 /**

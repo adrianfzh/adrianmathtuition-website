@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import puppeteer from 'puppeteer-core';
 import { reconciliationGap } from '@/lib/invoice-render-math';
+import { waDisplay } from '@/lib/wa-number';
 
 let browserInstance: Awaited<ReturnType<typeof puppeteer.launch>> | null = null;
 
@@ -135,6 +136,8 @@ export async function generateInvoicePDF(invoiceData: InvoiceData): Promise<Buff
 
   // Replace placeholders
   html = html.replace(/\{\{STUDENT_NAME\}\}/g, invoiceData.studentName || '');
+  // The scheduling channel is WhatsApp, as the email footer says (15 Sep 2026).
+  html = html.replace(/\{\{WA_DISPLAY\}\}/g, waDisplay());
   html = html.replace(/\{\{MONTH\}\}/g, invoiceData.month || '');
   html = html.replace(/\{\{INVOICE_ID\}\}/g, invoiceData.invoiceId || '');
 

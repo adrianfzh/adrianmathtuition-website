@@ -15,7 +15,7 @@ import { billableAdditionalFor, mapAdditionalRecord, type AdditionalLessonRecord
 import { firstOfNextMonthISO, invoiceMonthLessonDates, lastDayOfMonthISO, nextDayISO } from '@/lib/billing-math';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import {
-  arrearsBillMonthEnded, arrearsRunTarget, arrearsTargetForMonth, attendedReviewNote, billingModeFor, effectiveEndISO,
+  ARREARS_MONTHS, EXAM_PREP_NOTE, arrearsBillMonthEnded, arrearsRunTarget, arrearsTargetForMonth, attendedReviewNote, billingModeFor, effectiveEndISO,
   examCutoffFor, examCutoffNote, humanDate, invoiceDueDateISO, isCombinedJanuary, isExamYearStudent, parseMonthLabel,
   sweepAdditionalFor, unmarkedByStudent,
   type ArrearsLessonRecord, type ArrearsTarget, type BillingMode, type StudentBillingProfile,
@@ -125,6 +125,12 @@ export async function POST(req: NextRequest) {
       // draft a partial month, and the real run on the 1st would then skip
       // these students (an invoice for the label exists). The cron always
       // passes; a manual `{month}` needs `{force:true}` to run early.
+      // An advance-billed month has no arrears run: October came off the
+      // arrears list on 15 Sep 2026, and the 1 Nov cron must not draft it twice.
+      if (!ARREARS_MONTHS.includes(target.billMonth)) {
+        await logJobRun(jobName, true, `${target.billLabel} is advance-billed — no arrears run`);
+        return NextResponse.json({ skipped: true, reason: `${target.billLabel} is advance-billed; arrears months are ${ARREARS_MONTHS.join(', ')}` });
+      }
       if (!arrearsBillMonthEnded(target, todayISO) && reqBody.force !== true) {
         return NextResponse.json({
           error: `${target.billLabel} has not ended yet (today ${todayISO}) — an arrears run bills attended lessons, so this would draft a partial month. Pass {"force":true} to run anyway.`,
@@ -441,6 +447,7 @@ export async function POST(req: NextRequest) {
         let additionalLessons: AdditionalLessonRecord[] = [];
         let extrasOnly = false;
         let cutoffNote = '';
+        let prepNote = '';
         let reviewNote = '';
 
         if (mode === 'advance') {
@@ -506,6 +513,10 @@ export async function POST(req: NextRequest) {
           const cutoffBinding = !!cutoff && cutoff.iso >= monthFirstISO && cutoff.iso <= monthLastISO
             && slots.every((s) => !s.endISO || s.endISO >= cutoff.iso);
           if (cutoffBinding && cutoff) cutoffNote = examCutoffNote(cutoff, lastRegularISO || null);
+          // A non-exam-year student's October invoice carries the exam-prep
+          // reminder (Adrian, 15 Sep 2026). It rides Auto Notes, so the send
+          // cron holds these for review like any noted invoice.
+          if (!isExamYearStudent(profile) && invoiceMonth.month === 10) prepNote = EXAM_PREP_NOTE;
         } else {
           // ── Arrears: what was actually attended ─────────────────────────
           const regularBilled = heldTypes.has('Regular') || heldTypes.has('Enrollment');
@@ -569,7 +580,7 @@ export async function POST(req: NextRequest) {
               new Date(l.date + 'T00:00:00Z').toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })
             ).join(', ')}`
           : '';
-        const autoNotes = [extrasNote, cutoffNote, reviewNote].filter(Boolean).join('\n\n');
+        const autoNotes = [extrasNote, cutoffNote, prepNote, reviewNote].filter(Boolean).join('\n\n');
 
         // Dates: an advance invoice is issued on the 15th (its send day) and
         // due on the 15th of the month it covers; an arrears invoice is issued

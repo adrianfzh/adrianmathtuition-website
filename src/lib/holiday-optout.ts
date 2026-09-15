@@ -44,17 +44,19 @@ export type OptoutChange = { date: string; slotId: string; skip: boolean };
 
 // ————— pure —————
 
-/** Next N arrears months from `now` (never the current month — it is underway). */
+/** The arrears months still ahead in THIS year-end (never the current month —
+ *  it is underway), at most MONTHS_SHOWN. Asked in September that is Nov and
+ *  Dec; asked in December, nothing is left and next year's come up instead. A
+ *  parent opening the October email must never be offered November 2027. */
 export function upcomingOptionalMonths(now: Date): { year: number; month: number; label: string }[] {
-  const out: { year: number; month: number; label: string }[] = [];
-  let y = now.getFullYear();
-  let m = now.getMonth() + 2; // 1-based next month
-  while (out.length < MONTHS_SHOWN) {
-    if (m > 12) { m -= 12; y++; }
-    if (ARREARS_MONTHS.includes(m)) out.push({ year: y, month: m, label: `${MONTH_NAMES[m - 1]} ${y}` });
-    m++;
-  }
-  return out;
+  const y0 = now.getFullYear();
+  const m0 = now.getMonth() + 2; // 1-based next month
+  const inYear = (y: number, from: number) => ARREARS_MONTHS
+    .filter((m) => m >= from)
+    .slice(0, MONTHS_SHOWN)
+    .map((m) => ({ year: y, month: m, label: `${MONTH_NAMES[m - 1]} ${y}` }));
+  const thisYear = m0 <= 12 ? inYear(y0, m0) : [];
+  return thisYear.length ? thisYear : inYear(y0 + 1, 1);
 }
 
 /** All YYYY-MM-DD dates of `weekday` inside (year, month), excluding NO_LESSON_DATES. */
@@ -139,7 +141,7 @@ export function validateChanges(changes: unknown): string | null {
       return `Bad change entry: ${JSON.stringify(c)}`;
     }
     if (!ARREARS_MONTHS.includes(Number(c.date.slice(5, 7)))) {
-      return `${c.date} is not in a year-end optional month (Oct–Dec)`;
+      return `${c.date} is not in a year-end optional month (${ARREARS_MONTHS.map((m) => MONTH_NAMES[m - 1].slice(0, 3)).join('/')})`;
     }
   }
   return null;

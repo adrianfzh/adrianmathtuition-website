@@ -15,7 +15,8 @@ import { generateAndStoreInvoicePdf } from '@/lib/invoice-pdf';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { checkDelivery, alertVerificationBlind } from '@/lib/resend-verify';
 import { waDigits, waDisplay } from '@/lib/wa-number';
-import { formatDueDate, amountDueHtml, paymentHtml } from '@/lib/invoice-email-format';
+import { formatDueDate, amountDueHtml, paymentHtml, type PriorBalanceForEmail } from '@/lib/invoice-email-format';
+import { getPriorBalance } from '@/lib/invoice-consolidate';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -47,6 +48,16 @@ function optOutUrlFor(studentId: string | undefined): string | null {
   try { return optoutLink(signOptoutToken(studentId, secret)); } catch { return null; }
 }
 
+/** The PDF's previous-balance rows, shaped for the email's opening line. Never
+ *  throws: a failed lookup costs the split, not the email. */
+async function priorBalanceForEmail(studentId: string | undefined, storedMonth: string, invoiceId: string, displayMonth: string): Promise<PriorBalanceForEmail | null> {
+  if (!studentId) return null;
+  try {
+    const { priorItems, priorTotal } = await getPriorBalance(studentId, storedMonth, invoiceId);
+    return { month: displayMonth, priorTotal, priorMonths: priorItems.map((i: any) => String(i.month || '')).filter(Boolean).reverse() };
+  } catch { return null; }
+}
+
 function buildSelfServiceFooterHtml(): string {
   return `<p style="font-size: 14px; color: #6b7280;"><strong>📅 Reschedules &amp; makeups — one WhatsApp away</strong></p>
     <p style="font-size: 14px; color: #6b7280;">Need to change a lesson? <a href="https://wa.me/${waDigits()}?text=Hi"><strong>WhatsApp our assistant at ${waDisplay()}</strong></a> — just send "Hi" and it will recognise your number and open a menu to reschedule, book a makeup for a missed class, switch timeslot, or add extra lessons. Instant confirmation, any time of day, no registration needed.</p>
@@ -74,6 +85,9 @@ function buildEmailHtml(invoice: {
   // E Math only. '' for everyone else, including every exam-year student, who
   // gets examNote instead.
   holidayNote?: string | null;
+  // The earlier months still owing that the PDF prints as "Previous balance"
+  // (lib/invoice-consolidate, the same rows). The opening line quotes the sum.
+  priorBalance?: PriorBalanceForEmail | null;
 }) {
   // One-time apology for the delayed July 2026 batch (was due to go out 18 June). Remove after July.
   const delayApology = invoice.month === 'July 2026'
@@ -84,7 +98,7 @@ function buildEmailHtml(invoice: {
     : '';
   return `
     <p>Dear Parent/Student,</p>
-    ${delayApology}<p>Please find attached the invoice for ${invoice.studentName} for ${invoice.month} — ${amountDueHtml(invoice.finalAmount, invoice.dueDate)}.</p>${examNoteHtml}${invoice.holidayNote || ''}
+    ${delayApology}<p>Please find attached the invoice for ${invoice.studentName} for ${invoice.month} — ${amountDueHtml(invoice.finalAmount, invoice.dueDate, invoice.priorBalance)}.</p>${examNoteHtml}${invoice.holidayNote || ''}
     ${paymentHtml(invoice.finalAmount, invoice.paymentRef)}
     <p>Please feel free to reach out if you have any questions.</p>
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
@@ -392,6 +406,7 @@ export async function POST(req: NextRequest) {
       } else {
         html = buildEmailHtml({
           ...invoice,
+          priorBalance: await priorBalanceForEmail(sid, (rec.fields['Month'] || '') as string, rec.id, month),
           examNote: examCutoffNoteFrom(rec.fields['Auto Notes'] as string),
           holidayNote: holidayNoteHtml(
             { level: invoice.level, subjects: stu.fields['Subjects'] as string[] | undefined },
@@ -626,6 +641,7 @@ export async function POST(req: NextRequest) {
       } else {
         html = buildEmailHtml({
           ...invoice,
+          priorBalance: await priorBalanceForEmail(studentId, (invoiceRecord.fields['Month'] || '') as string, invoiceRecord.id, invoice.month),
           examNote: examCutoffNoteFrom(invoiceRecord.fields['Auto Notes'] as string),
           holidayNote: holidayNoteHtml(
             { level: invoice.level, subjects: student['Subjects'] as string[] | undefined },

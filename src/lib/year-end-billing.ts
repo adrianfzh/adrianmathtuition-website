@@ -10,9 +10,10 @@
 //   enrollment End Date earlier than the cut-off still wins (effectiveEndISO).
 //   IP students carry a Sec 4 label but sit no O-Level — they are NOT exam-year.
 //
-//   EVERYONE ELSE (Sec 1–3, JC1, IP Sec 4): October, November and December are
-//   billed IN ARREARS from lessons actually attended — a run on the 1st of the
-//   following month (1 Nov bills October, 1 Dec bills November). December is
+//   EVERYONE ELSE (Sec 1–3, JC1, IP Sec 4): November and December are billed
+//   IN ARREARS from lessons actually attended — a run on the 1st of the
+//   following month (1 Dec bills November). October is a normal advance month
+//   again since 15 Sep 2026 (it was arrears in the first design). December is
 //   combined with January in ONE invoice generated 1 Jan (December attended +
 //   January projected), stored under the January label so the monthly generator
 //   never double-bills; the 14 Dec advance run skips January for them.
@@ -38,7 +39,16 @@ export const MONTH_LABELS = [
 export const EXAM_YEAR_LEVELS = ['Sec 4', 'Sec 5', 'JC2'];
 
 /** Months (1–12) billed in arrears for non-exam-year students. */
-export const ARREARS_MONTHS = [10, 11, 12];
+// 15 Sep 2026, Adrian: "Make advance for October." October is a normal school
+// month — attendance is predictable, and the money comes in on 15 Sep rather
+// than 1 Nov — so only the two holiday months are billed from attendance.
+export const ARREARS_MONTHS = [11, 12];
+
+/** The reminder on a non-exam-year student's October invoice (Auto Notes → the
+ *  PDF; the email carries the same sentence inside the holiday block). Adrian,
+ *  15 Sep 2026: "remind parents that they can bring forward their lessons to
+ *  before their exams for prep — just tell me, or schedule through whatsapp". */
+export const EXAM_PREP_NOTE = 'Exams coming up? October lessons can be brought forward to before the exams for extra prep — just tell me, or schedule through the WhatsApp assistant.';
 
 /** Arrears invoices are due this many days after their issue (send) date. */
 export const ARREARS_DUE_DAYS = 7;

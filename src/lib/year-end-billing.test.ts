@@ -61,11 +61,13 @@ describe('who is exam-year', () => {
 });
 
 describe('billing mode by month', () => {
-  it('non-exam-year students: Oct, Nov, Dec in arrears; every other month in advance', () => {
+  it('non-exam-year students: Nov, Dec in arrears; October and every other month in advance (Adrian, 15 Sep 2026)', () => {
+    expect(ARREARS_MONTHS).toEqual([11, 12]);
     for (let m = 1; m <= 12; m++) {
       expect(billingModeFor(sec3, m)).toBe(ARREARS_MONTHS.includes(m) ? 'arrears' : 'advance');
     }
-    expect(billingModeFor(jc1, 10)).toBe('arrears');
+    expect(billingModeFor(jc1, 10)).toBe('advance');
+    expect(billingModeFor(jc1, 11)).toBe('arrears');
     expect(billingModeFor(sec4IP, 11)).toBe('arrears');
   });
   it('exam-year students stay in advance all year (the cut-off does the tapering)', () => {
@@ -233,17 +235,24 @@ describe('arrears lesson selection', () => {
     expect(arrearsRegularLessonsFor([moved], 'recA', ctxA)).toEqual([]);
   });
 
-  it('a makeup for a September absence is likewise already paid; a makeup for an October absence is billed', () => {
-    const sepMakeup = rec('s', { date: '2026-11-07', type: 'Rescheduled', billingMonth: 'September 2026', isMakeup: true });
-    const octMakeup = rec('o', { date: '2026-11-07', type: 'Rescheduled', billingMonth: 'October 2026', isMakeup: true });
-    const ctxNov = { ...sec3, invoicedMonths: new Set(['September 2026', 'October 2026']) };
-    expect(arrearsRegularLessonsFor([sepMakeup, octMakeup], 'recA', ctxNov).map((l) => l.id)).toEqual(['o']);
+  it('a makeup for a September or October absence is already paid (both advance months, 15 Sep 2026); a makeup for a November absence is billed', () => {
+    const sepMakeup = rec('s', { date: '2026-12-07', type: 'Rescheduled', billingMonth: 'September 2026', isMakeup: true });
+    const octMakeup = rec('o', { date: '2026-12-07', type: 'Rescheduled', billingMonth: 'October 2026', isMakeup: true });
+    const novMakeup = rec('n', { date: '2026-12-07', type: 'Rescheduled', billingMonth: 'November 2026', isMakeup: true });
+    const ctxDec = { ...sec3, invoicedMonths: new Set(['September 2026', 'October 2026', 'November 2026']) };
+    expect(arrearsRegularLessonsFor([sepMakeup, octMakeup, novMakeup], 'recA', ctxDec).map((l) => l.id)).toEqual(['n']);
   });
 
-  it('an October lesson moved into November is billed by the November run (October arrears invoice never carried it)', () => {
+  it('an October lesson moved into November was paid by the October advance invoice — never billed again', () => {
     const moved = rec('m', { date: '2026-11-03', type: 'Rescheduled', billingMonth: 'October 2026' });
     const ctxNov = { ...sec3, invoicedMonths: new Set(['October 2026']) };
-    expect(arrearsRegularLessonsFor([moved], 'recA', ctxNov).map((l) => l.id)).toEqual(['m']);
+    expect(arrearsRegularLessonsFor([moved], 'recA', ctxNov).map((l) => l.id)).toEqual([]);
+  });
+
+  it('a November lesson moved into December is billed by the December run (the November arrears invoice never carried it)', () => {
+    const moved = rec('m', { date: '2026-12-03', type: 'Rescheduled', billingMonth: 'November 2026' });
+    const ctxDec = { ...sec3, invoicedMonths: new Set(['November 2026']) };
+    expect(arrearsRegularLessonsFor([moved], 'recA', ctxDec).map((l) => l.id)).toEqual(['m']);
   });
 
   it('a lesson owned by an advance month with NO invoice was never paid — billed', () => {
@@ -366,13 +375,8 @@ describe('advanceRunNote — what the 12th/13th reminders say', () => {
     expect(advanceRunNote(2027, 2)).toBeNull();
     expect(advanceRunNote(2026, 6)).toBeNull();
   });
-  it('October 2026: non-exam-year in arrears on 1 Nov; Sec 4/5 cut at their papers; JC2 as usual', () => {
-    const n = advanceRunNote(2026, 10)!;
-    expect(n).toContain('NO October draft');
-    expect(n).toContain('1 November');
-    expect(n).toContain(`E Math up to ${humanDate('2026-10-23')}`);
-    expect(n).toContain(`A Math up to ${humanDate('2026-10-28')}`);
-    expect(n).toContain('JC2: as usual');
+  it('October 2026 is an ordinary advance month again (Adrian, 15 Sep 2026) — no year-end note', () => {
+    expect(advanceRunNote(2026, 10)).toBeNull();
   });
   it('November 2026: Sec 4/5 exams over; JC2 cut at H1/H2', () => {
     const n = advanceRunNote(2026, 11)!;
@@ -391,6 +395,6 @@ describe('advanceRunNote — what the 12th/13th reminders say', () => {
     expect(advanceRunNote(2027, 1)).toContain('ONE invoice on 1 Jan');
   });
   it('warns when the year has no cut-off row', () => {
-    expect(advanceRunNote(2027, 10)).toContain('no EXAM_CUTOFFS row for 2027');
+    expect(advanceRunNote(2027, 11)).toContain('no EXAM_CUTOFFS row for 2027');
   });
 });

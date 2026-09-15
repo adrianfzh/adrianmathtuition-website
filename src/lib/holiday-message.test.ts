@@ -190,7 +190,7 @@ describe('tone — Adrian, 15 Sep 2026: "not pushy - just word of advice"', () =
     expect(html).not.toContain('makes no difference to how');
     // The opt-out still stands on its own at both ends of the block, which is
     // what stops the reasons reading as something to be talked out of.
-    expect(html).toContain('they are optional over these three months');
+    expect(html).toContain('they are optional over these two months');
     expect(html).toContain('Anything you do not tell me about stays as it is.');
   });
 

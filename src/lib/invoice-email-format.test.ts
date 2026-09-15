@@ -53,3 +53,18 @@ describe('paymentHtml', () => {
     expect(h).toContain('No payment is needed');
   });
 });
+
+describe('amountDueHtml with a previous balance (15 Sep 2026)', () => {
+  it('headlines the PDF total and spells out the split', () => {
+    const html = amountDueHtml(280, '2026-10-15', { month: 'October 2026', priorTotal: 280, priorMonths: ['September 2026'] });
+    expect(html).toContain('<strong>$560.00</strong> in total');
+    expect(html).toContain('$280.00</strong> for October 2026');
+    expect(html).toContain('$280.00</strong> still owing for September 2026');
+    expect(html).toContain('due by <strong>15 October 2026</strong>');
+  });
+  it('no previous balance → the plain clause, unchanged', () => {
+    expect(amountDueHtml(280, '2026-10-15', { month: 'October 2026', priorTotal: 0, priorMonths: [] }))
+      .toBe('<strong>$280.00</strong>, due by <strong>15 October 2026</strong>');
+    expect(amountDueHtml(280, '2026-10-15', null)).toBe('<strong>$280.00</strong>, due by <strong>15 October 2026</strong>');
+  });
+});

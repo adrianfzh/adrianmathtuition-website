@@ -95,9 +95,9 @@ export default function OptOutClient() {
   }
 
   return (
-    <Shell>
+    <Shell title={`Lessons in ${monthsPhrase(months)}`}>
       <p className="text-gray-700">
-        Lessons carry on as usual over the holidays, but October, November and December are optional.
+        Lessons carry on as usual over the holidays, but {monthsPhrase(months)} {months.length === 1 ? 'is' : 'are'} optional.
         Turn off any month you would like {name} to skip.
       </p>
 
@@ -154,11 +154,17 @@ export default function OptOutClient() {
   );
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+/** "November and December" from the month labels the server offered (year dropped). */
+function monthsPhrase(months: { label: string }[]): string {
+  const w = months.map((m) => m.label.replace(/\s+\d{4}$/, ''));
+  return w.length <= 1 ? (w[0] || 'the holiday months') : `${w.slice(0, -1).join(', ')} and ${w[w.length - 1]}`;
+}
+
+function Shell({ children, title }: { children: React.ReactNode; title?: string }) {
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-10">
       <div className="mx-auto max-w-lg rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-        <h1 className="text-xl font-bold text-gray-900">Lessons in October, November and December</h1>
+        <h1 className="text-xl font-bold text-gray-900">{title || 'Lessons over the year-end holidays'}</h1>
         <div className="mt-4">{children}</div>
         <p className="mt-8 border-t border-gray-100 pt-4 text-xs text-gray-400">AdrianMath Tuition</p>
       </div>
