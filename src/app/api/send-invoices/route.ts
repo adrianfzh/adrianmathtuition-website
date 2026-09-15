@@ -9,6 +9,7 @@ import { getInvoiceMonth, displaySpanMonth, sgtTodayISO } from '@/lib/invoice-mo
 import { resolveRunMode, resolveTargetMonthLabel, jobNameFor } from '@/lib/invoice-run-mode';
 import { yearEndHoldReason, examCutoffNoteFrom } from '@/lib/year-end-billing';
 import { holidayNoteHtml, invoiceMonthNumber } from '@/lib/holiday-message';
+import { signOptoutToken, optoutLink } from '@/lib/holiday-optout-token';
 import { copy } from '@vercel/blob';
 import { generateAndStoreInvoicePdf } from '@/lib/invoice-pdf';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -35,6 +36,17 @@ function checkAuth(req: NextRequest): boolean {
 // Its number now comes from lib/wa-number.ts, which is unit-tested — the inline
 // formatter it replaces shipped a mangled replacement string and emailed a parent
 // "WhatsApp our assistant at 1\u30c9\u30eb 2\u30c9\u30eb". Do not re-inline it.
+/**
+ * The parent's "Choose which months to skip" link, or null when it cannot be
+ * signed. Never throws: a missing SIGNUP_SECRET must cost the button, not the
+ * invoice — the note still tells them to reply to the email.
+ */
+function optOutUrlFor(studentId: string | undefined): string | null {
+  const secret = process.env.SIGNUP_SECRET || '';
+  if (!studentId || !secret) return null;
+  try { return optoutLink(signOptoutToken(studentId, secret)); } catch { return null; }
+}
+
 function buildSelfServiceFooterHtml(): string {
   return `<p style="font-size: 14px; color: #6b7280;"><strong>📅 Reschedules &amp; makeups — one WhatsApp away</strong></p>
     <p style="font-size: 14px; color: #6b7280;">Need to change a lesson? <a href="https://wa.me/${waDigits()}?text=Hi"><strong>WhatsApp our assistant at ${waDisplay()}</strong></a> — just send "Hi" and it will recognise your number and open a menu to reschedule, book a makeup for a missed class, switch timeslot, or add extra lessons. Instant confirmation, any time of day, no registration needed.</p>
@@ -385,6 +397,7 @@ export async function POST(req: NextRequest) {
             { level: invoice.level, subjects: stu.fields['Subjects'] as string[] | undefined },
             invoiceMonthNumber(rec.fields['Month'] as string),
             studentName,
+            optOutUrlFor(sid),
           ),
         });
       }
@@ -618,6 +631,7 @@ export async function POST(req: NextRequest) {
             { level: invoice.level, subjects: student['Subjects'] as string[] | undefined },
             invoiceMonthNumber(invoiceRecord.fields['Month'] as string),
             invoice.studentName,
+            optOutUrlFor(studentId),
           ),
         });
       }

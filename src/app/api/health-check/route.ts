@@ -417,6 +417,14 @@ export async function GET(req: NextRequest) {
     // 📘 Practice Again on request (8 Sep 2026): the student's door on
     // /app/marking/[id] must hold its auth gate — a 404 means the request
     // button silently stops working and no sheet is ever written.
+    // 🗓 The parent's holiday opt-out button (15 Sep 2026): the ONE parent-facing
+    // surface with no login — a forged or expired token must be refused, and the
+    // GET must stay a read (a mail scanner opens this URL before any human does).
+    timed('holiday-optout', async () => {
+      const r = await fetch(`${base}/api/holiday-optout?t=recFORGED12345678.zzz.AAAAAAAAAAAAAAAAAAAAAA`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (bad token), got HTTP ${r.status}`);
+      return 'token gate up';
+    }),
     timed('practice-again-request', async () => {
       const r = await fetch(`${base}/api/portal/practice-again/request`, { method: 'POST', redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);

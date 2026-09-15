@@ -134,3 +134,72 @@ describe('invoiceMonthNumber', () => {
     expect(wantsHolidayNote({ level: 'Sec 2' }, invoiceMonthNumber('nonsense'))).toBe(false);
   });
 });
+
+describe('the opt-out button (Adrian, 15 Sep 2026: "build the opt-out button")', () => {
+  const sec2 = { level: 'Sec 2', subjects: ['Math'] };
+  const URL = 'https://www.adrianmathtuition.com/holiday-optout?t=recABC12345678901.abc.sig';
+
+  it('renders the button when a link was minted', () => {
+    const html = holidayNoteHtml(sec2, 10, 'Alven', URL);
+    expect(html).toContain('Choose which months to skip');
+    expect(html).toContain(`href="${URL.replace(/&/g, '&amp;')}"`);
+  });
+
+  it('says nothing changes until Confirm — the page, not the link, is the action', () => {
+    expect(holidayNoteHtml(sec2, 10, 'Alven', URL)).toContain('Nothing changes until you press Confirm');
+  });
+
+  it('leaves the button out entirely when no link could be signed, and still offers the reply route', () => {
+    const html = holidayNoteHtml(sec2, 10, 'Alven', null);
+    expect(html).not.toContain('Choose which months to skip');
+    expect(html).toContain('reply to this email');
+  });
+
+  it('is omitted the same way when the argument is simply absent', () => {
+    expect(holidayNoteHtml(sec2, 10, 'Alven')).not.toContain('<a href');
+  });
+
+  it('escapes the URL — it is interpolated into an href', () => {
+    const html = holidayNoteHtml(sec2, 10, 'Alven', 'https://x.test/?t=a"onmouseover="alert(1)');
+    expect(html).not.toContain('onmouseover="alert');
+    expect(html).toContain('&quot;');
+  });
+
+  it('gives no button to a student who gets no holiday note at all', () => {
+    expect(holidayNoteHtml({ level: 'Sec 4', subjects: ['E Math'] }, 10, 'Kayla', URL)).toBe('');
+  });
+});
+
+describe('tone — Adrian, 15 Sep 2026: "not pushy - just word of advice"', () => {
+  const sec2 = { level: 'Sec 2', subjects: ['Math'] };
+
+  it('frames the reasons as advice, not as a counter-argument to opting out', () => {
+    const html = holidayNoteHtml(sec2, 10, 'Alven');
+    expect(html).toContain('A word of advice, if it helps you decide');
+    expect(html).not.toContain('That said');
+    expect(html).not.toContain('I would encourage');
+  });
+
+  it('says plainly that either choice is fine', () => {
+    expect(holidayNoteHtml(sec2, 10, 'Alven')).toContain('Either way is completely fine');
+  });
+
+  it('claims no superlatives and promises no outcome', () => {
+    const html = holidayNoteHtml(sec2, 10, 'Alven');
+    expect(html).not.toContain('the best time');
+    expect(html).not.toContain('far easier');
+    expect(html).toContain('a good time to learn ahead');
+    expect(html).toContain('tend to come back ahead');
+  });
+
+  it('softens the step-up bullet to "can make a real difference"', () => {
+    expect(stepUpParagraph(sec2)).toContain('can make a real difference');
+  });
+
+  it("fixes Adrian's dangling clause on the Sec 3 bullet", () => {
+    const p = stepUpParagraph({ level: 'Sec 3', subjects: ['E Math', 'A Math'] });
+    expect(p).toContain('so that next year is a good deal easier');
+    expect(p).not.toContain('easier on next year');
+  });
+});
+

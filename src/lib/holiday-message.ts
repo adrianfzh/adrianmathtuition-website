@@ -59,14 +59,15 @@ export function stepUpParagraph(s: StudentForHoliday): string | null {
   if (level === 'Sec 2') {
     return 'If [Student] takes A Math next year, it becomes two maths subjects instead of one — '
       + 'twice the work, and harder material in both. For students heading that way, keeping '
-      + 'lessons going over the holidays makes a real difference.';
+      + 'lessons going over the holidays can make a real difference.';
   }
   if (level === 'Sec 3') {
     // Adrian's rule: only the A Math + E Math students. E-Math-only Sec 3s get
     // a three-bullet email.
     if (!takesAMath(s)) return null;
     return 'Sec 4 is the O-Level year, with both A Math and E Math to get through. The holidays '
-      + 'are a good time to catch up on anything still shaky, or to get ahead while there is room to.';
+      + 'are a good time to catch up on anything still shaky, or to learn ahead, so that next '
+      + 'year is a good deal easier.';
   }
   if (level === 'JC1') {
     return 'The pace in JC2 is considerably faster and the work is harder. The holidays are a '
@@ -96,8 +97,18 @@ export function withName(text: string, studentName: string): string {
   return text.replace(/\[Student\]/g, first);
 }
 
+// Everything here is interpolated into email HTML, and since the opt-out button
+// landed, one of them goes into an href="" ATTRIBUTE. Escaping only <, > and &
+// was enough while every escaped string was element text; it is not enough now —
+// a URL carrying a double quote would close the attribute and whatever followed
+// would be read as markup. Caught by holiday-message.test.ts, 15 Sep 2026.
 function esc(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 /**
@@ -105,20 +116,32 @@ function esc(s: string): string {
  * The bullets are fixed copy; only the ⬇ one varies, and it is dropped entirely
  * when `stepUpParagraph` returns null.
  */
-export function holidayNoteHtml(s: StudentForHoliday, month: number, studentName: string): string {
+export function holidayNoteHtml(
+  s: StudentForHoliday,
+  month: number,
+  studentName: string,
+  // The parent's signed "Choose which months to skip" link, when one could be
+  // minted (lib/holiday-optout-token). Omitted → the button is left out and
+  // replying to the email is the only route offered, which still works.
+  optOutUrl?: string | null,
+): string {
   if (!wantsHolidayNote(s, month)) return '';
   const name = withName('[Student]', studentName);
   const step = stepUpParagraph(s);
 
+  // Adrian, 15 Sep 2026: "make sure it's not pushy - just word of advice".
+  // These are reasons, offered once, under a heading that says so. No
+  // superlatives, no promises about results, and the opt-out is stated first
+  // and last so it never reads as something to be talked out of.
   const bullets: [string, string][] = [
     ['Consistency is most of the work.',
       'Maths rewards steady practice more than intensity. Students who stop for six or eight weeks '
-      + 'come back to a cold start, and the first few lessons back are spent recovering ground rather '
-      + 'than covering new work.'],
-    ['Holidays are the best time to learn ahead, or to catch up.',
+      + 'often come back to a cold start, and the first few lessons back are spent recovering ground '
+      + 'rather than covering new work.'],
+    ['Holidays are a good time to learn ahead, or to catch up.',
       'With no school and no deadlines, students can focus on new topics or shore up weak areas without '
-      + 'anything else competing for their attention. From past experience, students who keep up regular '
-      + 'lessons over the holidays come back ahead and have a far easier time when school reopens.'],
+      + 'anything else competing for their attention. In my experience students who keep up regular '
+      + 'lessons over the holidays tend to come back ahead, and find the start of the school year easier.'],
     ...(step ? ([['Next year is a step up.', withName(step, studentName)]] as [string, string][]) : []),
     ['Smaller classes.',
       'Fewer students come in over the holidays, so lessons are closer to one-to-one than they are during term time.'],
@@ -128,15 +151,24 @@ export function holidayNoteHtml(s: StudentForHoliday, month: number, studentName
     .map(([head, body]) => `<li style="margin-bottom:8px;"><strong>${esc(head)}</strong> ${esc(body)}</li>`)
     .join('\n      ');
 
+  const button = optOutUrl
+    ? `
+      <p style="margin:14px 0 6px;text-align:center;">
+        <a href="${esc(optOutUrl)}" style="display:inline-block;background:#111827;color:#ffffff;text-decoration:none;padding:11px 22px;border-radius:8px;font-weight:600;font-size:15px;">Choose which months to skip</a>
+      </p>
+      <p style="margin:0 0 10px;font-size:13px;color:#6b7280;text-align:center;">Nothing changes until you press Confirm on that page. You can change it again later from the same link.</p>`
+    : '';
+
   return `
     <div style="background:#f8fafc;border-left:3px solid #cbd5e1;padding:12px 16px;margin:16px 0;">
       <p style="margin:0 0 10px;"><strong>Lessons carry on as usual through October, November and December, but they are optional over these three months.</strong> If ${esc(name)} is travelling, resting, or you would simply rather pause, you can opt out of any of October, November or December — those months come off the schedule and off the invoice. Students who opt out can still come in for one-off lessons during the break, booked ad hoc and billed per lesson.</p>
       <p style="margin:0 0 10px;"><strong>If you are away for only part of a month, you don't need to opt out.</strong> Move those lessons with the WhatsApp assistant (details at the foot of this email) or just tell me the dates, and ${esc(name)} will get make-up lessons for whatever is missed.</p>
-      <p style="margin:0 0 6px;"><strong>That said, I would encourage students to keep attending regular lessons if they can.</strong></p>
+      <p style="margin:0 0 6px;"><strong>A word of advice, if it helps you decide:</strong></p>
       <ul style="margin:0 0 10px;padding-left:20px;">
       ${li}
       </ul>
+      <p style="margin:0 0 10px;">Either way is completely fine — it is your call, and it makes no difference to how ${esc(name)} is taught.</p>
       <p style="margin:0 0 10px;"><strong>Two periods when I will be away:</strong> Wed 28 October – Sun 1 November, and Sat 5 December – Sat 12 December. If ${esc(name)} is attending regular lessons as usual, I will provide make-up lessons for every lesson that falls in those two windows — the WhatsApp assistant can book them, or I will arrange them with you.</p>
-      <p style="margin:0;">To opt out of any month, just reply to this email with the months. Anything you do not tell me about stays as it is.</p>
+      <p style="margin:0 0 4px;">To opt out of any month, tap the button below and pick the months there, or just reply to this email. Anything you do not tell me about stays as it is.</p>${button}
     </div>`;
 }
