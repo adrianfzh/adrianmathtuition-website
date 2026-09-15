@@ -41,11 +41,6 @@
     padding: 24px 20px 0;
   }
 
-  /* Printed a hair smaller: the footer alone was still spilling onto a second
-     page by ~10px whenever a previous-balance row or an extras line was present.
-     Every one-page invoice simply gains a little air at the foot. */
-  html { zoom: 0.94; }
-
   /* A box is never cut in half by the page edge — Denise Chan's and Alessi
      Tay's October 2026 previews split the Telegram box across two pages. */
   .payment-box, .bot-box, .footer, .summary-block { break-inside: avoid; page-break-inside: avoid; }

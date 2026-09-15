@@ -59,6 +59,18 @@ async function renderPDF(html: string): Promise<Buffer> {
   // Belt-and-braces: explicitly wait for the fontset to finish loading.
   await page.evaluate(() => (document as any).fonts?.ready);
 
+  // FIT TO ONE PAGE (15 Sep 2026). An invoice carrying a previous-balance row
+  // or an extras line ran a few pixels past A4, and the footer alone — or the
+  // whole Telegram box — landed on a second page (Alexis Wong's, Denise Chan's
+  // October 2026 drafts). Measure the rendered height and scale the page down
+  // just enough, but only for a near miss: an invoice genuinely longer than a
+  // page and a third keeps its second page rather than shrinking to a squint.
+  await page.evaluate(() => {
+    const A4_PX = 1123;   // 297 mm at 96 dpi
+    const h = document.documentElement.scrollHeight;
+    if (h > A4_PX && h < A4_PX * 1.34) (document.documentElement.style as any).zoom = String(Math.floor((A4_PX / h) * 0.995 * 1000) / 1000);
+  });
+
   const pdfBuffer = await page.pdf({
     format: 'A4',
     printBackground: true,
