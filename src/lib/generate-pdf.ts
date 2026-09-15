@@ -158,6 +158,11 @@ export async function generateInvoicePDF(invoiceData: InvoiceData): Promise<Buff
   const statusClass = statusLabel.toLowerCase() === 'paid' ? 'paid' : 'pending';
   html = html.replace(/\{\{STATUS\}\}/g, statusLabel);
   html = html.replace(/\{\{STATUS_CLASS\}\}/g, statusClass);
+  // A paid invoice states what was settled, not what is owed. The template's
+  // CSS swaps the PayNow block for a receipt line off the same body class.
+  const isPaidDoc = statusClass === 'paid';
+  html = html.replace(/\{\{AMOUNT_LABEL\}\}/g, isPaidDoc ? 'Amount Paid' : 'Amount Due');
+  html = html.replace(/\{\{TOTAL_LABEL\}\}/g, isPaidDoc ? 'Total Paid' : 'Total Due');
   const paidStamp = statusLabel.toLowerCase() === 'paid'
     ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-60%) rotate(-35deg);border:10px solid #16a34a;border-radius:10px;padding:18px 40px;color:#16a34a;font-size:96px;font-weight:900;letter-spacing:0.12em;opacity:0.18;pointer-events:none;z-index:10;white-space:nowrap;font-family:'Open Sans',sans-serif;line-height:1;">PAID</div>`
     : '';

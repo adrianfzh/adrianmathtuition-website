@@ -699,9 +699,31 @@
     .save-btn { display: none !important; }
     .copy-btn { display: none !important; }
   }
+  /* A paid invoice asks for nothing: the PayNow block gives way to a receipt
+     line, and the money labels read "Paid" rather than "Due". Adrian,
+     15 Sep 2026 — an amended invoice sent AFTER payment must not read as a
+     second demand for the same money. */
+  body.paid .payment-box { display: none !important; }
+  body:not(.paid) .paid-box { display: none !important; }
+  .paid-box {
+    border: 1px solid #bbf7d0;
+    background: #f0fdf4;
+    border-radius: 10px;
+    padding: 14px 18px;
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  .paid-header {
+    font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    color: #15803d; margin-bottom: 6px;
+  }
+  .paid-main {
+    font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 13px; color: #166534; line-height: 1.6;
+  }
 </style>
 </head>
-<body>
+<body class="{{STATUS_CLASS}}">
 
 <!-- Top bar -->
 <div class="top-bar">
@@ -772,7 +794,7 @@
       </div>
     </div>
     <div class="meta-item">
-      <div class="meta-label">Amount Due</div>
+      <div class="meta-label">{{AMOUNT_LABEL}}</div>
       <div class="meta-value amount">${{FINAL_AMOUNT}}</div>
     </div>
   </div>
@@ -820,8 +842,16 @@
 
       <!-- Right: Total Due -->
       <div style="text-align: right; flex-shrink: 0;">
-        <div class="total-label">Total Due</div>
+        <div class="total-label">{{TOTAL_LABEL}}</div>
         <div class="total-amount">${{FINAL_AMOUNT}}</div>
+      </div>
+    </div>
+
+    <!-- Paid: shown instead of Payment Instructions when Status = Paid -->
+    <div class="paid-box" style="margin-top: 12px;">
+      <div class="paid-header">Payment Received</div>
+      <div class="paid-main">
+        This invoice has been <strong>paid in full</strong>. No payment is due &mdash; please disregard any earlier payment instructions for this month.
       </div>
     </div>
 
