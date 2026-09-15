@@ -429,6 +429,7 @@ export async function POST(req: NextRequest) {
             invoiceMonthNumber(rec.fields['Month'] as string),
             studentName,
             optOutUrlFor(sid),
+            parseInt(String(rec.fields['Month'] || '').slice(-4), 10) || new Date().getFullYear(),
           ),
         });
       }
@@ -667,6 +668,7 @@ export async function POST(req: NextRequest) {
             invoiceMonthNumber(invoiceRecord.fields['Month'] as string),
             invoice.studentName,
             optOutUrlFor(studentId),
+            parseInt(String(invoiceRecord.fields['Month'] || '').slice(-4), 10) || new Date().getFullYear(),
           ),
         });
       }

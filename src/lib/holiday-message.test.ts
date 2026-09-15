@@ -244,3 +244,9 @@ describe('IP Sec 4 hears about the holidays like Sec 1–3 (Beryl Chen Guoer, 15
     expect(stepUpParagraph({ level: 'Sec 4', subjects: ['E Math'], subjectLevel: 'IP' })).toBeNull();
   });
 });
+
+describe('the block title (Adrian, 15 Sep 2026)', () => {
+  it('names the optional months and the invoice year', () => {
+    expect(holidayNoteHtml({ level: 'Sec 2', subjects: ['Math'] }, 10, 'Alven Seah', null, 2026)).toContain('A note on lessons in November and December 2026');
+  });
+});

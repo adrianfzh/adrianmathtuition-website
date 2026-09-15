@@ -146,6 +146,21 @@ export function holidayNoteHtml(
   // minted (lib/holiday-optout-token). Omitted → the button is left out and
   // replying to the email is the only route offered, which still works.
   optOutUrl?: string | null,
+  // The invoice's year, for the block's title ("… November and December 2026").
+  year: number = new Date().getFullYear(),
+): string {
+  return holidayNoteHtmlImpl(s, month, studentName, optOutUrl, year);
+}
+
+function holidayNoteHtmlImpl(
+  s: StudentForHoliday,
+  month: number,
+  studentName: string,
+  // The parent's signed "Choose which months to skip" link, when one could be
+  // minted (lib/holiday-optout-token). Omitted → the button is left out and
+  // replying to the email is the only route offered, which still works.
+  optOutUrl?: string | null,
+  year: number = new Date().getFullYear(),
 ): string {
   if (!wantsHolidayNote(s, month)) return '';
   const name = withName('[Student]', studentName);
@@ -195,6 +210,7 @@ export function holidayNoteHtml(
     : '';
   return `
     <div style="background:#f8fafc;border-left:3px solid #cbd5e1;padding:12px 16px;margin:16px 0;">
+      <p style="margin:0 0 12px;font-size:17px;"><strong>A note on lessons in ${months} ${year}</strong></p>
       <p style="margin:0 0 10px;"><strong>Lessons carry on as usual through ${months}, but they are optional over these ${count} months.</strong> If ${esc(name)} is travelling, resting, or you would simply rather pause, you can opt out of ${either} — those months come off the schedule and off the invoice. Students who opt out can still come in for one-off lessons during the break, booked ad hoc and billed per lesson.</p>
 ${billing}${button}
       <p style="margin:0 0 10px;"><strong>If you are away for only part of a month, you don't need to opt out.</strong> Move those lessons with the WhatsApp assistant (details at the foot of this email) or just tell me the dates, and ${esc(name)} will get make-up lessons for whatever is missed.</p>
