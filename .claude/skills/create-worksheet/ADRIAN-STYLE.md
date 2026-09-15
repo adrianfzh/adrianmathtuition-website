@@ -419,6 +419,18 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   the `save as` lets it through (15 Sep 2026, the E Math book — twenty minutes read as a
   Word hang before a `screencapture` showed the dialog; when a Word export looks hung,
   screenshot the screen before diagnosing anything).
+- **Never export a document Word already has open, and never trust `open file name`'s
+  return value.** Two traps, both of which produce a *plausible wrong answer* rather than
+  an error. (a) `set d to open file name …` returns nothing in this Word build — `d` is
+  unbound and the `save as` dies with `-2753 "variable d is not defined"`; use
+  `open file name …` then `set d to active document`. (b) Word resolves a document by
+  NAME, so `save as document "x.docx" …` — and an `open` of a name already on screen —
+  acts on whatever it finds, which with several scratch books open is quite possibly not
+  the one you meant. 15 Sep 2026 this exported the *baked* E Math book while claiming to
+  export the un-baked one, produced a 90-page PDF where the file itself paginates to 97,
+  and cost an hour of chasing a fault that did not exist. **Copy to a fresh unique
+  filename, open that, export that** — and if a page count surprises you, re-run it from a
+  clean copy under a new name before believing it.
 
 ## 7 · Stitching sheets into one book
 

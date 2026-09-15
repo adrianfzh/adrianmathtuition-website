@@ -30,6 +30,14 @@ copies that `Normal` out as a style of its own, puts `pStyle` on every plain par
 those sheets, and re-bases the styles that were `basedOn` Normal. Direct paragraph
 formatting still wins, so nothing else moves.
 
+Confirmed by a controlled A/B on 15 Sep 2026, after a contaminated export briefly made it
+look unnecessary: the same merged book, copied to two fresh unique filenames, opened
+separately and each given time to settle before `save as … format PDF` — **un-baked 97
+pages, baked 90**, no blank page in either. The un-baked file still paginates to 97 after a
+fifteen-minute settle, so this is the styles, not Word repaginating late. The 90-page
+"un-baked" export that raised the doubt turned out to be page-for-page identical to the
+baked book's: Word had exported the wrong open document (ADRIAN-STYLE §6).
+
 ## The check that must pass
 
 Export every sheet on its own as well, and measure each section of the book against its
