@@ -322,6 +322,29 @@ node scripts/dropbox-put.mjs "<the .pdf>"  "/Students/<Student Name>/<YYYY-MM-DD
    folder, so an old prompt still lands in the right place. Copy the DOCX in,
    export, copy the PDF back.
 
+   **Before you hand the DOCX to Word, check it is a file Word will accept.**
+   Every `<w:tc>` must END in a `<w:p>` — a cell whose last child is a nested
+   table is invalid OOXML, and Word refuses the WHOLE document ("The file
+   appears to be corrupted") while LibreOffice renders it happily, so the fault
+   shows up an hour later and looks exactly like a hang:
+
+```bash
+/usr/bin/python3 -c "
+import sys,zipfile;from xml.etree import ElementTree as ET
+W='{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
+r=ET.fromstring(zipfile.ZipFile(sys.argv[1]).read('word/document.xml'))
+bad=[tc for tc in r.iter(W+'tc') if [k for k in tc if isinstance(k.tag,str) and k.tag!=W+'tcPr'] and [k for k in tc if isinstance(k.tag,str) and k.tag!=W+'tcPr'][-1].tag!=W+'p']
+print('cells not ending in a paragraph:',len(bad)); sys.exit(1 if bad else 0)" "<the .docx>"
+```
+
+   `repair-sheet.py` refuses to write such a file since 16 Sep 2026, so this is
+   a second pair of eyes on anything you assembled yourself. **And Word gets one
+   attempt, not a session:** if a document has not opened within ~5 minutes,
+   stop, quit Word (`pkill -x 'Microsoft Word'`), and go on with the LibreOffice
+   export (`soffice --headless --convert-to pdf`), saying so in the `verified`
+   note. Chloe Gng's 15 Sep 2026 sheet burned two 70-minute sessions on a Word
+   that was never going to open it.
+
 5. **Complete the job** — this is what Telegrams Adrian:
 
 ```bash

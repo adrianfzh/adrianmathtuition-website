@@ -228,11 +228,21 @@ def repair(xml_bytes, unglue=False):
 
     # ── 2a. no trailing empty paragraph inside a table cell ──────────────────
     for tc in root.iter(w('tc')):
-        paras = tc.findall(w('p'))
-        # Word requires a cell to END in a paragraph, so stop at one.
-        while len(paras) > 1 and not para_text(paras[-1]).strip() and not has_drawing(paras[-1]):
-            tc.remove(paras[-1])
-            paras.pop()
+        kids = [k for k in tc if isinstance(k.tag, str) and k.tag != w('tcPr')]
+        # Word requires a cell to END in a paragraph — and that paragraph is the
+        # cell's TERMINATOR, not decoration. Counting only <w:p> children was
+        # enough to keep one paragraph in the cell but not to keep it LAST: where
+        # the cell's final content is a NESTED TABLE, the trailing empty
+        # paragraph is the only legal terminator, and dropping it writes a file
+        # Word refuses outright ("The file appears to be corrupted") while
+        # LibreOffice renders it happily. That is exactly what happened to Chloe
+        # Gng's 15 Sep 2026 sheet: two cells lost their terminator, Word would
+        # not open the docx, and two 70-minute worker sessions burned on it.
+        # So a paragraph only goes when the one before it is a paragraph too.
+        while (len(kids) > 1 and kids[-1].tag == w('p') and kids[-2].tag == w('p')
+               and not para_text(kids[-1]).strip() and not has_drawing(kids[-1])):
+            tc.remove(kids[-1])
+            kids.pop()
             counts['trailing_empty'] += 1
 
     # ── 2b. the box starts where its label ends ──────────────────────────────
@@ -329,6 +339,15 @@ def main():
         was, now = original.count(tag), rewritten.count(tag)
         if now != was:
             problems.append(f'{label}: {was} before, {now} after')
+    # A table cell that does not END in a paragraph is invalid OOXML: Word
+    # refuses the whole document, LibreOffice renders it, so the fault only
+    # shows up at the Word export — an hour later, and looking like a hang.
+    # Check it here, where it costs a millisecond (Chloe Gng, 15 Sep 2026).
+    unterminated = [tc for tc in ET.fromstring(rewritten).iter(w('tc'))
+                    if [k for k in tc if isinstance(k.tag, str) and k.tag != w('tcPr')]
+                    and [k for k in tc if isinstance(k.tag, str) and k.tag != w('tcPr')][-1].tag != w('p')]
+    if unterminated:
+        problems.append(f'table cells not ending in a paragraph: {len(unterminated)} (Word will refuse the file)')
     if problems:
         print('REFUSING TO WRITE — the repair changed something it must not:')
         for p in problems:
