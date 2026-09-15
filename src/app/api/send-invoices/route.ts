@@ -7,7 +7,7 @@ import { sendTelegram } from '@/lib/telegram';
 const notify_money = (text: string) => sendTelegram(text, 'money');
 import { getInvoiceMonth, displaySpanMonth, sgtTodayISO } from '@/lib/invoice-month';
 import { resolveRunMode, resolveTargetMonthLabel, jobNameFor } from '@/lib/invoice-run-mode';
-import { yearEndHoldReason, examCutoffNoteFrom } from '@/lib/year-end-billing';
+import { yearEndHoldReason, examCutoffNoteFrom, arrearsNoteFrom } from '@/lib/year-end-billing';
 import { holidayNoteHtml, invoiceMonthNumber } from '@/lib/holiday-message';
 import { signOptoutToken, optoutLink } from '@/lib/holiday-optout-token';
 import { copy } from '@vercel/blob';
@@ -79,6 +79,9 @@ function buildEmailHtml(invoice: {
   // and this is the other half. Same sentence in both places on purpose: a
   // parent who reads one and skims the other sees no difference.
   examNote?: string | null;
+  // What an ARREARS invoice is for, off its Auto Notes (arrearsNoteFrom) —
+  // "the lessons attended in November 2026". Same sentence as the PDF.
+  arrearsNote?: string | null;
   // The Oct–Dec holiday block for a NON-exam-year student, already rendered
   // (lib/holiday-message). Adrian, 15 Sep 2026: "are you able to do the send
   // code picking up by level?" — the "Next year is a step up" bullet inside it
@@ -94,9 +97,9 @@ function buildEmailHtml(invoice: {
   const delayApology = invoice.month === 'July 2026'
     ? `<p>My sincere apologies for the delay — this ${invoice.month} invoice was due to be sent on 15 June.</p>\n    `
     : '';
-  const examNoteHtml = invoice.examNote
-    ? `\n    <p style="background: #f8fafc; border-left: 3px solid #cbd5e1; padding: 10px 14px; margin: 16px 0;">📅 ${invoice.examNote}</p>`
-    : '';
+  const examNoteHtml = [invoice.examNote, invoice.arrearsNote].filter(Boolean)
+    .map((n) => `\n    <p style="background: #f8fafc; border-left: 3px solid #cbd5e1; padding: 10px 14px; margin: 16px 0;">📅 ${n}</p>`)
+    .join('');
   return `
     <p>Dear Parent/Student,</p>
     ${delayApology}<p>Please find attached the invoice for ${invoice.studentName} for ${invoice.month} — ${amountDueHtml(invoice.finalAmount, invoice.dueDate, invoice.priorBalance)}.</p>${examNoteHtml}${invoice.holidayNote || ''}
@@ -409,6 +412,7 @@ export async function POST(req: NextRequest) {
           ...invoice,
           priorBalance: await priorBalanceForEmail(sid, (rec.fields['Month'] || '') as string, rec.id, month),
           examNote: examCutoffNoteFrom(rec.fields['Auto Notes'] as string),
+          arrearsNote: arrearsNoteFrom(rec.fields['Auto Notes'] as string),
           holidayNote: holidayNoteHtml(
             { level: invoice.level, subjects: stu.fields['Subjects'] as string[] | undefined },
             invoiceMonthNumber(rec.fields['Month'] as string),
@@ -644,6 +648,7 @@ export async function POST(req: NextRequest) {
           ...invoice,
           priorBalance: await priorBalanceForEmail(studentId, (invoiceRecord.fields['Month'] || '') as string, invoiceRecord.id, invoice.month),
           examNote: examCutoffNoteFrom(invoiceRecord.fields['Auto Notes'] as string),
+          arrearsNote: arrearsNoteFrom(invoiceRecord.fields['Auto Notes'] as string),
           holidayNote: holidayNoteHtml(
             { level: invoice.level, subjects: student['Subjects'] as string[] | undefined },
             invoiceMonthNumber(invoiceRecord.fields['Month'] as string),

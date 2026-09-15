@@ -182,9 +182,16 @@ export function holidayNoteHtml(
   const prep = month === 10
     ? `\n      <p style="margin:0 0 10px;"><strong>Exams coming up?</strong> ${esc(EXAM_PREP_NOTE.replace(/^Exams coming up\? /, ''))}</p>`
     : '';
+  // Told on the October invoice (the announcement), in the block's own words —
+  // the PDF carries ARREARS_ANNOUNCE_NOTE; a later month's invoice explains
+  // itself (arrearsCoverageNote) so this paragraph would only repeat it.
+  const billing = month === 10
+    ? `\n      <p style="margin:0 0 10px;"><strong>How ${months} are billed.</strong> Nothing is charged in advance for these ${count} months. On 1 December you will receive November&#39;s invoice for the lessons ${esc(name)} actually attended, due within a week. December&#39;s lessons come together with January&#39;s in one invoice on 1 January.</p>`
+    : '';
   return `
     <div style="background:#f8fafc;border-left:3px solid #cbd5e1;padding:12px 16px;margin:16px 0;">${prep}
       <p style="margin:0 0 10px;"><strong>Lessons carry on as usual through ${months}, but they are optional over these ${count} months.</strong> If ${esc(name)} is travelling, resting, or you would simply rather pause, you can opt out of ${either} — those months come off the schedule and off the invoice. Students who opt out can still come in for one-off lessons during the break, booked ad hoc and billed per lesson.</p>
+${billing}
       <p style="margin:0 0 10px;"><strong>If you are away for only part of a month, you don't need to opt out.</strong> Move those lessons with the WhatsApp assistant (details at the foot of this email) or just tell me the dates, and ${esc(name)} will get make-up lessons for whatever is missed.</p>
       <p style="margin:0 0 6px;"><strong>That said, I would encourage students to keep attending regular lessons if they can.</strong></p>
       <ul style="margin:0 0 10px;padding-left:20px;">

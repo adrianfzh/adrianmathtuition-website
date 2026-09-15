@@ -50,6 +50,29 @@ export const ARREARS_MONTHS = [11, 12];
  *  before their exams for prep — just tell me, or schedule through whatsapp". */
 export const EXAM_PREP_NOTE = 'Exams coming up? October lessons can be brought forward to before the exams for extra prep — just tell me, or schedule through the WhatsApp assistant.';
 
+/** Told once, on the October invoice of a non-exam-year student (Auto Notes →
+ *  the PDF; the email's holiday block says it in its own words): the two holiday
+ *  months are billed AFTER each month, for the lessons attended. Adrian,
+ *  15 Sep 2026: "will sec 1 to 3 and JC 1 students be informed that the payments
+ *  of november and december will be in arrears?" */
+export const ARREARS_ANNOUNCE_NOTE = 'November and December are billed after each month, for the lessons attended: November\'s invoice comes on 1 December (due within a week), and December\'s comes together with January\'s on 1 January.';
+
+/** The parent-facing note on a NON-exam-year student's arrears invoice — what
+ *  this invoice is for, in one line. Both the PDF and the email carry it. */
+export function arrearsCoverageNote(billLabel: string, combinedWith?: string | null): string {
+  return combinedWith
+    ? `This invoice is for the lessons attended in ${billLabel}, together with the lessons planned for ${combinedWith}. Every lesson is listed with its date.`
+    : `This invoice is for the lessons attended in ${billLabel}, listed with their dates. Nothing was charged for ${billLabel} in advance.`;
+}
+
+/** The arrears paragraph out of Auto Notes, for the email (mirror of examCutoffNoteFrom). */
+export function arrearsNoteFrom(autoNotes: string | null | undefined): string | null {
+  return (autoNotes || '')
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .find((p) => /lessons attended in/.test(p)) || null;
+}
+
 /** Arrears invoices are due this many days after their issue (send) date. */
 export const ARREARS_DUE_DAYS = 7;
 
@@ -207,7 +230,9 @@ export function attendedReviewNote(billLabel: string): string {
 /** The send cron's hold reason for the notes this module writes; null when the note is not ours. */
 export function yearEndHoldReason(autoNotes: string): string | null {
   if (/after the exams/.test(autoNotes)) return 'exam cut-off';
-  if (/lessons attended in/.test(autoNotes)) return 'attended lessons (exam-year student)';
+  if (/Billed for the lessons attended in/.test(autoNotes)) return 'attended lessons (exam-year student)';
+  if (/lessons attended in/.test(autoNotes)) return 'attended lessons (billed after the month)';
+  if (/billed after each month/.test(autoNotes)) return 'October — holiday billing announced';
   return null;
 }
 

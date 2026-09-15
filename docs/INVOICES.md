@@ -87,6 +87,14 @@ national Maths paper, from the SEAB timetables (`EXAM_CUTOFFS`, one row per year
 > 1 Jan only), and `generate-invoices?mode=arrears` refuses a bill month that is not in
 > `ARREARS_MONTHS`. The holiday note and the parent's opt-out page name the optional
 > months from `ARREARS_MONTHS`, so they read "November and December" now.
+>
+> **What the parent is told (15 Sep 2026, Adrian: "what do parents/students see?"):**
+> the October invoice carries `ARREARS_ANNOUNCE_NOTE` (PDF) and the email block's
+> "How November and December are billed" paragraph — nothing in advance, November's
+> invoice on 1 Dec for attended lessons, December's with January's on 1 Jan. Every
+> non-exam-year ARREARS invoice then carries `arrearsCoverageNote` ("This invoice is for
+> the lessons attended in November 2026…") on the PDF and, via `arrearsNoteFrom`, in the
+> email — which also HOLDS them on the 2nd for a look in this first year.
 
 - A run on the **1st of the following month** bills the month that just ended from lessons
   actually **attended**: 1 Nov bills October, 1 Dec bills November.

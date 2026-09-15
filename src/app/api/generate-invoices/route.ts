@@ -15,7 +15,7 @@ import { billableAdditionalFor, mapAdditionalRecord, type AdditionalLessonRecord
 import { firstOfNextMonthISO, invoiceMonthLessonDates, lastDayOfMonthISO, nextDayISO } from '@/lib/billing-math';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import {
-  ARREARS_MONTHS, EXAM_PREP_NOTE, arrearsBillMonthEnded, arrearsRunTarget, arrearsTargetForMonth, attendedReviewNote, billingModeFor, effectiveEndISO,
+  ARREARS_ANNOUNCE_NOTE, ARREARS_MONTHS, EXAM_PREP_NOTE, arrearsBillMonthEnded, arrearsCoverageNote, arrearsRunTarget, arrearsTargetForMonth, attendedReviewNote, billingModeFor, effectiveEndISO,
   examCutoffFor, examCutoffNote, humanDate, invoiceDueDateISO, isCombinedJanuary, isExamYearStudent, parseMonthLabel,
   sweepAdditionalFor, unmarkedByStudent,
   type ArrearsLessonRecord, type ArrearsTarget, type BillingMode, type StudentBillingProfile,
@@ -516,7 +516,7 @@ export async function POST(req: NextRequest) {
           // A non-exam-year student's October invoice carries the exam-prep
           // reminder (Adrian, 15 Sep 2026). It rides Auto Notes, so the send
           // cron holds these for review like any noted invoice.
-          if (!isExamYearStudent(profile) && invoiceMonth.month === 10) prepNote = EXAM_PREP_NOTE;
+          if (!isExamYearStudent(profile) && invoiceMonth.month === 10) prepNote = `${EXAM_PREP_NOTE}\n\n${ARREARS_ANNOUNCE_NOTE}`;
         } else {
           // ── Arrears: what was actually attended ─────────────────────────
           const regularBilled = heldTypes.has('Regular') || heldTypes.has('Enrollment');
@@ -555,6 +555,11 @@ export async function POST(req: NextRequest) {
           if (examYear && attended.length) {
             reviewNote = attendedReviewNote(target!.billLabel);
             examYearAttended.push(`${studentName} (${attended.length})`);
+          } else if (!examYear) {
+            // Every arrears invoice says what it is for (Adrian, 15 Sep 2026:
+            // "what do parents/students see?"). It rides Auto Notes, so the
+            // 2nd's cron holds these for a look in the first year, like the rest.
+            reviewNote = arrearsCoverageNote(target!.billLabel, target!.invoiceLabel !== target!.billLabel ? target!.invoiceLabel : null);
           }
           lineItemsForInvoice.push(...regularLines, ...additionalLessonLines(additionalLessons, ratePerLesson));
           lessonCount = regularLines.length;

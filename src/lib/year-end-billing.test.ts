@@ -16,6 +16,9 @@ import {
   examCutoffFor,
   examCutoffNote,
   examCutoffNoteFrom,
+  arrearsCoverageNote,
+  arrearsNoteFrom,
+  ARREARS_ANNOUNCE_NOTE,
   humanDate,
   invoiceDueDateISO,
   isCombinedJanuary,
@@ -396,5 +399,25 @@ describe('advanceRunNote — what the 12th/13th reminders say', () => {
   });
   it('warns when the year has no cut-off row', () => {
     expect(advanceRunNote(2027, 11)).toContain('no EXAM_CUTOFFS row for 2027');
+  });
+});
+
+describe('what a parent is told about billing after the month (15 Sep 2026)', () => {
+  it('the October announcement names both dates', () => {
+    expect(ARREARS_ANNOUNCE_NOTE).toContain('1 December');
+    expect(ARREARS_ANNOUNCE_NOTE).toContain('1 January');
+    expect(yearEndHoldReason(ARREARS_ANNOUNCE_NOTE)).toBe('October — holiday billing announced');
+  });
+  it('an arrears invoice says what it is for, and the email picks that paragraph out', () => {
+    const nov = arrearsCoverageNote('November 2026');
+    expect(nov).toContain('lessons attended in November 2026');
+    expect(nov).toContain('Nothing was charged for November 2026 in advance');
+    const combined = arrearsCoverageNote('December 2026', 'January 2027');
+    expect(combined).toContain('lessons attended in December 2026');
+    expect(combined).toContain('planned for January 2027');
+    expect(arrearsNoteFrom(['Additional lessons: Fri, 4 Dec', nov].join('\n\n'))).toBe(nov);
+    expect(arrearsNoteFrom('Additional lessons only')).toBeNull();
+    expect(yearEndHoldReason(nov)).toBe('attended lessons (billed after the month)');
+    expect(yearEndHoldReason('Billed for the lessons attended in November 2026.')).toBe('attended lessons (exam-year student)');
   });
 });

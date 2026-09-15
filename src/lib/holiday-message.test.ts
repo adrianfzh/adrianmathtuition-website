@@ -213,3 +213,19 @@ describe('tone — Adrian, 15 Sep 2026: "not pushy - just word of advice"', () =
   });
 });
 
+describe('the October block tells parents how November and December are billed (15 Sep 2026)', () => {
+  const sec3 = { level: 'Sec 3', subjects: ['E Math', 'A Math'] };
+  it('October: exam-prep reminder, then the billing-after-the-month paragraph', () => {
+    const html = holidayNoteHtml(sec3, 10, 'Gavin Ng', null);
+    expect(html).toContain('Exams coming up?');
+    expect(html).toContain('How November and December are billed.');
+    expect(html).toContain('On 1 December you will receive November');
+    expect(html).toContain('lessons Gavin actually attended');
+    expect(html.indexOf('Exams coming up?')).toBeLessThan(html.indexOf('Lessons carry on as usual'));
+  });
+  it('a later month carries neither — the invoice itself explains what it is for', () => {
+    const html = holidayNoteHtml(sec3, 11, 'Gavin Ng', null);
+    expect(html).not.toContain('Exams coming up?');
+    expect(html).not.toContain('How November and December are billed');
+  });
+});
