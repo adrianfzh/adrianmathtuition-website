@@ -552,6 +552,33 @@ own logo. `watermark/book/bookify.py` does the whole job on a `.docx` and writes
   is sound with an XML parse of every part in the zip plus a page count against the
   untouched original exported the same way (64 pages + 1 cover = 65 — the Dropbox PDF beside
   it was a day stale and said 90).
+- **A stitched book's contents links are probably dead — check them, and repair them with
+  `contents_links.py`.** Adrian, 16 Sep 2026: **"the hyperlinks to each topic does not
+  work"**. They *look* alive: `<w:hyperlink w:anchor="secNN">` renders as a blue live link
+  whether or not the bookmark exists. When per-topic files are stitched into one book each
+  source brings its own `w:id="0"` bookmark and only one survives — his book had 14 anchors
+  and exactly ONE bookmark. `contents_links.py in.docx out.docx` re-derives each destination
+  from the link's own text (`difflib` at 0.80, so "Graphs on Graph Paper" in the contents
+  still finds "Graph on Graph Paper" in the body) and bookmarks the **running banner** at the
+  top of the topic page, not the title halfway down it — styles are no help, only 5 of these
+  14 headings used Heading 1, but the banner recurs at every `<w:pageBreakBefore/>`. Two
+  traps: `<w:bookmarkStart>` goes AFTER `<w:pPr>` (pPr must be a paragraph's first child),
+  and a section break can leave a **spare banner line at the foot of the page before** the
+  topic — of two adjacent banners the topic is the second, the one with the page break. Get
+  that wrong and the link lands at the bottom of the previous page.
+- **The way back is a line in the header, so nothing reflows.** He also asked for
+  backlinks. Page geometry here is `pgMar top=1134` (2 cm) over `header=709`, which leaves
+  room for one 8 pt line — a right-aligned grey `↑ Contents` hyperlink added to the
+  watermark header costs **zero** body reflow and rides on every page but the cover. An
+  internal `w:anchor` link needs no relationship entry and survives Word's PDF export. Run
+  `contents_links.py` AFTER `bookify.py`: it hangs the backlink on the headers bookify makes.
+  It points at the **contents page**, not the cover — that is the page that makes it useful.
+- **Prove the links in the PDF, not the docx.** Word writes an internal link as
+  `<< /Dest N 0 R … /Subtype /Link >>` — no `/GoTo`, no `/Names`, so grepping for those says
+  "no links" on a perfectly good file. Resolve each `/Dest` object (`[ <page obj> /XYZ x y ]`)
+  and map the page object through the `/Kids` arrays: 14 topic destinations on 14 distinct
+  pages, each at the page top (y ≈ 785 of 842), and one contents destination collecting the
+  backlink from all 64 non-cover pages.
 - **The macOS prompt is not Claude Code's.** Copying into `~/Library/Containers/com.microsoft
   .Word/…` is "data from other apps" to TCC and it asks the terminal, once per data domain —
   bypass-permissions mode does not cover it, and it reads exactly like a hang. `screencapture

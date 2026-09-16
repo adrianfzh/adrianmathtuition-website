@@ -94,6 +94,15 @@ runs through them. `book/cover.py` draws the cover. Adrian's file is never writt
 rebuild goes beside it under a new name. **Judge the ink by pixel value, not by eye**: image
 previews contrast-boost a faint tint, and 70 % is the practical floor for something printed.
 
+`book/contents_links.py in.docx out.docx` is the **second** pass, run after `bookify.py`:
+it repairs a stitched book's dead contents links and adds the way back. A book assembled
+from per-topic files keeps all its `<w:hyperlink w:anchor="secNN">` but loses every bookmark
+but one (each source carried `w:id="0"`), and Word renders the dead ones as live blue links,
+so they must be tested rather than trusted. The script re-derives each destination from the
+link's own text, bookmarks the running banner at the **top** of the topic page, and puts a
+right-aligned grey `↑ Contents` in the watermark header — one 8 pt line inside the existing
+top margin, so no body text moves. First run: the S3 EM book, 16 Sep 2026, 13 links repaired.
+
 ## Two things that must be fixed before any of this ships
 
 - **`savefig(..., transparent=True)` in the figure helpers.** Matplotlib saves an OPAQUE
