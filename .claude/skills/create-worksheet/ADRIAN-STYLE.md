@@ -506,8 +506,11 @@ T, U and V, put them into memory (not using them yet, but may and iterate later)
 later the same day, of the earlier pattern batch: **"i like this watermark as well, which
 was G."** So:
 
-- **No sheet carries a watermark today.** `worksheet_lib.py` has no `watermark=` argument
-  and must not grow one until he asks. Do not add a carpet to a sheet on your own judgment.
+- **A watermark goes on only when he asks for it.** Adrian, 16 Sep 2026: **"watermark only
+  when i request for it, otherwise no watermark"**. This is the whole rule — not a default
+  that can be talked round by "it's a keeps-book", not something to offer because a sheet
+  looks bare. No request, no carpet. `worksheet_lib.py` has no `watermark=` argument and
+  must not grow one until he asks for that too.
 - The **four** he liked, the engines that draw them, and the four typographic rules that make
   a tiled carpet look set on purpose live in **`watermark/`** (`README.md` + `designs.py` +
   `patterns.py`). **T, U and V are carpets** tiling the words **`AdrianMath Tuition`** at
@@ -520,6 +523,39 @@ was G."** So:
   rectangle through the carpet at every figure), and **a carpet goes only on what a student
   KEEPS** — anything that comes back for marking gets the footer line alone, because the
   ScanSnap and the AI marker read the page as an image.
+
+### Putting one on a finished book — `watermark/book/`
+
+First asked for 16 Sep 2026: the Sec 3 E Math revision book, **T at 70 %**, a cover page, his
+own logo. `watermark/book/bookify.py` does the whole job on a `.docx` and writes a NEW file;
+`cover.py` draws the cover. What that build had to learn:
+
+- **Judge ink by pixel value, not by eye.** T at 100 % peaks at grey 213 on white, at 70 %
+  at 226, at 40 % at 239 — and 239 will not survive a laser print. Worse, image previews in
+  a terminal or a chat client are contrast-boosted, so a carpet that measures 243 grey can
+  *look* like solid type on screen. Measure: `min(i for i,v in enumerate(im.convert('L')
+  .histogram()) if v)` over a patch with no black in it. 70 % is the practical floor for
+  something meant to print.
+- **The figures are the real work, not the header.** The EM book had **104 of its 110
+  pictures opaque white**; every one would have printed as a white rectangle punched through
+  the carpet. `alpha_figures()` takes the white out using `min(R,G,B)` as the whiteness — so
+  coloured ink and grey shading stay — with a ramp (250→234) rather than a threshold, so
+  antialiased edges survive. JPEGs have no alpha at all: they are re-encoded as PNG and
+  their `document.xml.rels` targets rewritten. Look at the low-white ones first; if any were
+  photographs they would have to be left alone.
+- **A stitched book can have no headers at all.** This one had eleven `<w:sectPr>` and zero
+  `<w:headerReference>`. A section without one inherits the previous section's, so a carpet
+  wired into "the header" reaches nothing. Wire every section explicitly, and give the cover
+  its own first section pointing at an EMPTY header part.
+- **LibreOffice may refuse the book outright** — it crashed on this one, untouched, before
+  any edit. That is not evidence you broke the file. Export through Word, and prove the file
+  is sound with an XML parse of every part in the zip plus a page count against the
+  untouched original exported the same way (64 pages + 1 cover = 65 — the Dropbox PDF beside
+  it was a day stale and said 90).
+- **The macOS prompt is not Claude Code's.** Copying into `~/Library/Containers/com.microsoft
+  .Word/…` is "data from other apps" to TCC and it asks the terminal, once per data domain —
+  bypass-permissions mode does not cover it, and it reads exactly like a hang. `screencapture
+  -x` to see it (memory: `word-export-container-folder`).
 
 ## Adding a rule (how this list grows)
 

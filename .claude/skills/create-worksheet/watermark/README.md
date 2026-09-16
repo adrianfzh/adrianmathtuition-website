@@ -1,8 +1,10 @@
 # Watermarks — the candidates Adrian liked (15 Sep 2026)
 
-**Nothing here is switched on.** No sheet, book or PDF carries a watermark; `worksheet_lib.py`
-has no `watermark=` argument. This folder exists because Adrian looked at twenty-two
-candidates on 15 Sep 2026 and said: *"i like T, U and V, put them into memory (not using
+**A watermark goes on only when Adrian asks for it** — 16 Sep 2026: *"watermark only when i
+request for it, otherwise no watermark"*. Nothing is on by default; `worksheet_lib.py` has no
+`watermark=` argument. One book carries one today: the Sec 3 EM revision book, **T at 70 %**,
+built by **[`book/bookify.py`](book/)**. This folder exists because Adrian looked at
+twenty-two candidates on 15 Sep 2026 and said: *"i like T, U and V, put them into memory (not using
 them yet, but may and iterate later)"* — and, later the same day, of the earlier pattern
 batch: *"i like this watermark as well, which was G."* When he comes back to it, start from
 these **four** rather than from a blank page.
@@ -82,12 +84,24 @@ Learned the hard way while building these; `mixsize.py` enforces all four.
 Row phase: each row starts a third of its own repeat further along, so the seams never
 stack into a visible vertical street.
 
+## Putting one on a finished book — [`book/`](book/)
+
+`book/bookify.py in.docx out.docx tile.png "EYEBROW" "TITLE|LINES" "subtitle"` does the whole
+job on a `.docx` that already exists: the carpet into **every** section header (a section
+without its own `headerReference` silently inherits, so all of them must be wired), a cover
+page in its own section over an EMPTY header, and the figures made transparent so the carpet
+runs through them. `book/cover.py` draws the cover. Adrian's file is never written over — the
+rebuild goes beside it under a new name. **Judge the ink by pixel value, not by eye**: image
+previews contrast-boost a faint tint, and 70 % is the practical floor for something printed.
+
 ## Two things that must be fixed before any of this ships
 
 - **`savefig(..., transparent=True)` in the figure helpers.** Matplotlib saves an OPAQUE
   white background — `trig_figures/d_step1.png` is RGBA with corner alpha 255 — so every
   figure would punch a white rectangle through the carpet. The same one-word fix is also
   what lets the mark ride *inside* a figure that is cropped or photographed out of the sheet.
+  (For a book that is already built, `book/bookify.py` fixes this after the fact — it took
+  the white out of 104 of the EM book's 110 pictures.)
 - **A carpet goes on what students KEEP, never on what comes back for marking.** The
   ScanSnap and the AI marker read a hand-in as an image, and grey under a student's working
   is noise where the marker is reading. Hand-in sheets, Practice Again and printed papers
