@@ -156,8 +156,18 @@ them carries the standard; the moderator's verdict gained `standard: at|below|ab
 and scores a below- or above-standard slot ≤ 3 so `assemble` rejects it. 24 of 36 slots
 took at least one repair round (P1 Q3 Q4 Q7 Q8 Q10–13 Q15 Q16 Q18 Q20–22 Q25; every P2
 slot, P2 Q6 three rounds); 30 accepted at 5/5, six at 4/5 after a polish. JSON in
-`data/gce-generated/GCE-EM-P{1,2}-seed2-2026-09-12.json` (untracked); **handed to Adrian
-12 Sep 2026, publish as Set 1 waits for his OK.**
+`data/gce-generated/GCE-EM-P{1,2}-seed2-2026-09-12.json` (untracked); handed to Adrian
+12 Sep 2026, **published as E Math Set 1 on 16 Sep 2026** (27 + 9 rows) after his
+read-through. What his read-through changed in the method (16 Sep 2026): figures print
+at 100 mm wide (120 mm when wide, height ≤ 100 mm) instead of the old ~60 mm; a
+`graph-paper` figure prints at exactly 1 cm per major square, uncapped in height, and is
+placed AFTER the part that says "On the grid …" with no blank working space under it
+(the grid is the space); `<run>/figure-sizes.json = {"26": 105}` sets one figure's
+printed width in mm when he asks for bigger/smaller; `assemble --set N` prints the same
+title the app shows (`setPaperTitle`: "E Math · Set 1 · Paper 1 · O-Level format") on
+the draft PDF/DOCX and the answer key at the end is black. The durable copy of every
+output + figure spec is `~/Desktop/AdrianMath/GCE Sets/E Math Set 1/` (the scratchpad
+is wiped on reboot).
 
 The agent step was validated blind on 9 Sep 2026: an Opus agent given only P1 Q13's
 `figure_description` and the `--families`/`--doc` output chose `function-graph`, wrote a
