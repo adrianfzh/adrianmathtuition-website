@@ -145,7 +145,21 @@ def stem_paras(ws, q, marks_on_stem):
             p.paragraph_format.left_indent = Cm(Q_TEXT_CM)
 
 
+def asked_width_cm(figures, pos):
+    """<run>/figure-sizes.json = {"26": 105} — printed widths in mm Adrian asked
+    for; generate.mjs reads the same file for the PDF."""
+    try:
+        p = join(figures, 'figure-sizes.json') if figures else None
+        mm = float(json.load(open(p)).get(str(pos), 0)) if p and exists(p) else 0
+        return mm / 10 if mm else None
+    except Exception:
+        return None
+
+
 def figure_width_cm(figures, pos, png):
+    asked = asked_width_cm(figures, pos)
+    if asked:
+        return asked
     """The same printed sizes as the PDF (generate.mjs figureDataUri): a drawing
     10 cm wide, 12 cm when wide (aspect >= 1.5), never taller than 10 cm; a
     graph-paper grid at one major square = 1 cm exactly."""
@@ -217,6 +231,9 @@ def question(ws, s, figures, with_marks=True):
         figure_para(ws, q, s['pos'], figures)
     prev_outer = None
     for part in parts:
+        saved_space = ws.working_space
+        if part is after_part:
+            ws.working_space = 0
         outer, inner = split_label(part.get('label', ''))
         subs = part.get('subparts') or []
         marks = part.get('marks') if with_marks else None
@@ -229,6 +246,7 @@ def question(ws, s, figures, with_marks=True):
         for sub in subs:
             so, si = split_label(sub.get('label', ''))
             labelled(ws, [si or so], sub.get('text', ''), sub.get('marks') if with_marks else None, level=1)
+        ws.working_space = saved_space
         if part is after_part:
             figure_para(ws, q, s['pos'], figures)
     return q
@@ -373,10 +391,9 @@ def page_numbers(doc):
 def front_page(ws, paper, total):
     shape = paper.get('shape', {})
     code = f"{shape.get('code', '')}/0{paper.get('paperNo', '')}"
-    ws.title(f"{shape.get('subject', 'Additional Mathematics').upper()}  {code}")
-    ws.subtitle(f"Paper {paper.get('paperNo', '')}  ·  {shape.get('duration', '')}  ·  {total} marks")
-    ws.para([('text', f"Practice paper in the style of the GCE O-Level, set {paper.get('seed', '')}. "
-                      'Newly written questions, not a past-year paper.', {'italic': True})])
+    ws.title(paper.get('title') or f"{shape.get('subject', 'Additional Mathematics').upper()}  {code}")
+    ws.subtitle(f"{len(paper.get('questions') or [])} questions  ·  {total} marks  ·  {shape.get('duration', '')}")
+    ws.para([('text', 'Newly written questions in the GCE format, not a past-year paper.', {'italic': True})])
     ws.para([('text', '')])
     ws.para([('text', 'READ THESE INSTRUCTIONS FIRST', {'bold': True})])
     for line in INSTRUCTIONS:
@@ -430,8 +447,8 @@ def main():
     # --- worked solutions + answer key
     ws2 = Worksheet(working_space=0)
     shape = paper.get('shape', {})
-    ws2.title(f"{shape.get('subject', 'Additional Mathematics').upper()}  {shape.get('code', '')}/0{paper.get('paperNo', '')}  ·  WORKED SOLUTIONS")
-    ws2.subtitle(f"Paper {paper.get('paperNo', '')}  ·  set {paper.get('seed', '')}  ·  {total} marks")
+    ws2.title(f"{paper.get('title') or shape.get('subject', 'Additional Mathematics').upper()}  ·  Worked solutions")
+    ws2.subtitle(f"{total} marks")
     for s in slots:
         q = question(ws2, s, a.figures)
         ws2.solution_box(solution_rows(q.get('solution')), keep_together=False)

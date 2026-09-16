@@ -142,7 +142,8 @@ function partHtml(p: Part, workingSpace: boolean, uncapped = false): string {
   const after = p.image_url_after ? img(p.image_url_after, uncapped) : '';
   const text = p.text ? lineWithMarks('pp-part-text', label + richText(p.text), marks) : (label || marks ? lineWithMarks('pp-part-text', label, marks) : '');
   const subs = (p.subparts ?? []).map((sp) => partHtml(sp, workingSpace, uncapped)).join('');
-  const space = workingSpace && p.marks && !subsCarryMarks ? spacer(p.marks) : '';
+  // A grid printed after the part IS its working space — no blank block under it.
+  const space = workingSpace && p.marks && !subsCarryMarks && !(uncapped && p.image_url_after) ? spacer(p.marks) : '';
   return `<div class="pp-part">${before}${text}${after}${space}${subs}</div>`;
 }
 

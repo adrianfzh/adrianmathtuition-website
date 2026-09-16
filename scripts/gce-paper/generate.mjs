@@ -54,6 +54,9 @@ const RUN = argOf('--run', null);
 const SLOTS = argOf('--slots', '') ? argOf('--slots', '').split(',').map(Number) : null;
 const OUT_ROOT = argOf('--out', join(ROOT, 'data', 'gce-generated'));
 const PDF_DIR = argOf('--pdf-dir', null);
+// The Set number the paper is filed under (lib/print-sets setPaperTitle);
+// defaults to the seed, as the skill says, but a re-written seed keeps its set.
+const SET = Number(argOf('--set', String(SEED)));
 const log = (...a) => console.error(`[${new Date().toISOString().slice(11, 19)}]`, ...a);
 
 // ---------------------------------------------------------------- env ----
@@ -433,10 +436,20 @@ function check() {
 //     paper's scale is real), uncapped in height — the question starts on a
 //     fresh page when it does not fit.
 const NATURAL_PER_MM = 200 / 25.4;
+// Optional per-figure printed widths, in mm, for a figure Adrian asked to see
+// bigger or smaller than the rule below gives: <run>/figure-sizes.json = {"26": 105}.
+// export-docx.py reads the same file.
+function figureSizes(runDir) {
+  const p = resolve(runDir, 'figure-sizes.json');
+  if (!existsSync(p)) return {};
+  try { return JSON.parse(readFileSync(p, 'utf8')); } catch { return {}; }
+}
+
 function figureDataUri(runDir, pos) {
   const p = resolve(runDir, `Q${pos}.figure.svg`);
   if (!existsSync(p)) return null;
   let svg = readFileSync(p, 'utf8');
+  const askedMm = Number(figureSizes(runDir)[String(pos)]) || 0;
   const specPath = resolve(runDir, `Q${pos}.figure.json`);
   let family = null;
   if (existsSync(specPath)) {
@@ -451,6 +464,8 @@ function figureDataUri(runDir, pos) {
       const major = graphPaperMajorPx(svg);
       factor = major ? (10 * NATURAL_PER_MM) / major : 1;
       tall = true;
+    } else if (askedMm) {
+      factor = (askedMm * NATURAL_PER_MM) / w;
     } else {
       const targetMm = w / h >= 1.5 ? 120 : 100;
       factor = (targetMm * NATURAL_PER_MM) / w;
@@ -487,9 +502,14 @@ async function assemble() {
     return { pos: p.pos, topic: p.topic, target: p.target, accepted, question: accepted ? q : null, draft: accepted ? null : q, gates, blind, verdict, exemplars: planJ.exemplars[p.pos] ?? [] };
   });
   const ok = questions.filter((s) => s.accepted);
+  // The same title the app prints once the paper is a Set (lib/print-sets
+  // setPaperTitle): "E Math · Set 1 · Paper 1 · O-Level format".
+  const level = String(planJ.shape.level ?? '');
+  const subjectShort = level === 'AM' ? 'A Math' : /^JC/.test(level) ? 'H2 Mathematics' : 'E Math';
+  const title = `${subjectShort} · Set ${SET} · Paper ${planJ.paperNo} · ${/^JC/.test(level) ? 'A-Level' : 'O-Level'} format`;
   const paper = {
     ...planJ, models: { author: 'claude-fable-5-1 (Claude Code agent)', solver: 'claude-opus-5 (Claude Code agent)', moderator: 'claude-fable-5-1 (Claude Code agent)' },
-    assembled_at: new Date().toISOString(), questions,
+    set: SET, title, assembled_at: new Date().toISOString(), questions,
   };
   delete paper.exemplars;
   const stamp = paper.generated_at.slice(0, 10);
@@ -521,9 +541,8 @@ async function assemble() {
     if (gridPart) gridPart.image_url_after = figure.uri;
     return { qnum: String(s.pos), marks: s.target, stem, images: figure && !gridPart ? [figure.uri] : [], uncappedFigures: figure?.tall === true, missingFigure: false, parts, answerLines: answerKeyLines(q.parts, q.answer) };
   });
-  const title = `${planJ.shape.subject} ${planJ.shape.code} · Paper ${planJ.paperNo} · Practice paper in the GCE format`;
   const total = ok.reduce((a, s) => a + s.target, 0);
-  const metaLine = `${ok.length} questions · ${total} marks · ${planJ.shape.duration} · AI-authored draft (seed ${planJ.seed}) — not a past-year paper`;
+  const metaLine = `${ok.length} questions · ${total} marks · ${planJ.shape.duration}`;
   const pdfDir = PDF_DIR ? resolve(PDF_DIR) : OUT_ROOT;
   mkdirSync(pdfDir, { recursive: true });
   const base = `${planJ.key}-seed${planJ.seed}-${stamp}`;
