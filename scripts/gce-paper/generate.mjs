@@ -421,33 +421,58 @@ function check() {
 // A drawn figure lives beside its draft as Q<n>.figure.svg (written by
 // scripts/gce-paper/figure.mjs from Q<n>.figure.json). Embedded as a data URI
 // so the rendered PDF needs no file host; the JSON keeps the svg path only.
+// Printed size. The print renderer (render-paper-pdf) sizes an <img> at
+// naturalWidth x 96/200 CSS px (its sharpness pass for scanned crops), so a
+// vector figure prints at nominalWidth x 0.127 mm — the engine's ~600px
+// nominal came out at 76 mm, too small to read (Adrian, 16 Sep 2026). The
+// nominal width/height (never the viewBox) are rewritten here:
+//   - a drawing prints 100 mm wide, 120 mm when it is wide (aspect >= 1.5),
+//     never taller than 100 mm (the renderer caps at 300pt; an explicit width
+//     against that cap would distort);
+//   - a graph-paper grid prints with one major square = 1 cm exactly (the
+//     paper's scale is real), uncapped in height — the question starts on a
+//     fresh page when it does not fit.
+const NATURAL_PER_MM = 200 / 25.4;
 function figureDataUri(runDir, pos) {
   const p = resolve(runDir, `Q${pos}.figure.svg`);
   if (!existsSync(p)) return null;
   let svg = readFileSync(p, 'utf8');
-  // The print renderer (render-paper-pdf) sizes an <img> at naturalWidth x 96/200
-  // CSS px (its sharpness pass for scanned crops) and caps it at 300pt tall. A
-  // graph-paper grid the candidate draws on must print as large as that cap
-  // allows, so its nominal width/height (never the viewBox) are scaled up until
-  // the printed height meets the cap. Every other figure keeps the engine's size.
   const specPath = resolve(runDir, `Q${pos}.figure.json`);
+  let family = null;
   if (existsSync(specPath)) {
-    let family = null;
     try { family = JSON.parse(readFileSync(specPath, 'utf8')).family; } catch { /* not a registry figure */ }
-    if (family === 'graph-paper') {
-      const m = svg.match(/<svg[^>]*\swidth="([\d.]+)"[^>]*\sheight="([\d.]+)"/);
-      if (m) {
-        const w = Number(m[1]), h = Number(m[2]);
-        const CAP_CSS_HEIGHT = 400;           // the renderer's 300pt max-height, in CSS px
-        const CSS_PER_NATURAL = 96 / 200;     // the renderer's sharpness ratio
-        const factor = Math.max(1, CAP_CSS_HEIGHT / CSS_PER_NATURAL / h);
-        svg = svg
-          .replace(/(<svg[^>]*\swidth=")[\d.]+(")/, `$1${Math.round(w * factor)}$2`)
-          .replace(/(<svg[^>]*\sheight=")[\d.]+(")/, `$1${Math.round(h * factor)}$2`);
-      }
-    }
   }
-  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+  const m = svg.match(/<svg[^>]*\swidth="([\d.]+)"[^>]*\sheight="([\d.]+)"/);
+  let tall = false;
+  if (m) {
+    const w = Number(m[1]), h = Number(m[2]);
+    let factor;
+    if (family === 'graph-paper') {
+      const major = graphPaperMajorPx(svg);
+      factor = major ? (10 * NATURAL_PER_MM) / major : 1;
+      tall = true;
+    } else {
+      const targetMm = w / h >= 1.5 ? 120 : 100;
+      factor = (targetMm * NATURAL_PER_MM) / w;
+      const maxH = 100 * NATURAL_PER_MM;
+      if (h * factor > maxH) factor = maxH / h;
+    }
+    svg = svg
+      .replace(/(<svg[^>]*\swidth=")[\d.]+(")/, `$1${Math.round(w * factor)}$2`)
+      .replace(/(<svg[^>]*\sheight=")[\d.]+(")/, `$1${Math.round(h * factor)}$2`);
+  }
+  return { uri: `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`, tall };
+}
+// One major square of a rendered graph-paper grid, in viewBox px: the first
+// <path> is the minor grid, its vertical lines are `minor` apart, 5 to a major.
+function graphPaperMajorPx(svg) {
+  const grid = svg.match(/<path d="([^"]+)"/)?.[1];
+  if (!grid) return null;
+  const xs = [...new Set([...grid.matchAll(/M ([\d.]+) [\d.]+ L ([\d.]+) /g)].filter((a) => a[1] === a[2]).map((a) => Number(a[1])))].sort((a, b) => a - b);
+  if (xs.length < 3) return null;
+  let minor = Infinity;
+  for (let i = 1; i < xs.length; i++) minor = Math.min(minor, xs[i] - xs[i - 1]);
+  return minor * 5;
 }
 
 async function assemble() {
@@ -477,6 +502,7 @@ async function assemble() {
   if (!ok.length) { console.log(JSON.stringify({ json: jsonPath, ok: 0 })); return; }
 
   const libs = await loadLibs();
+  const findPart = (parts, test) => { for (const p of parts ?? []) { if (test(p)) return p; const sub = findPart(p.subparts, test); if (sub) return sub; } return null; };
   const toParts = (parts) => (parts ?? []).map((p) => ({
     // a part that carries subparts prints no bracket of its own — GCE brackets only (i), (ii)
     label: normLabel(p.label), text: String(p.text ?? ''), marks: p.subparts?.length ? null : (p.marks ?? null), answer: p.answer ?? null,
@@ -488,7 +514,12 @@ async function assemble() {
     const stem = q.needs_figure && q.figure_description && !figure
       ? `${String(q.stem ?? '').trim()}\n[Figure to be drawn: ${q.figure_description}]`
       : String(q.stem ?? '').trim();
-    return { qnum: String(s.pos), marks: s.target, stem, images: figure ? [figure] : [], missingFigure: false, parts: toParts(q.parts), answerLines: answerKeyLines(q.parts, q.answer) };
+    const parts = toParts(q.parts);
+    // A grid the candidate draws on is printed where the paper says "On the
+    // grid" — after that part — not above the question like a diagram.
+    const gridPart = figure?.tall ? findPart(parts, (p) => /\bgrid\b/i.test(p.text)) : null;
+    if (gridPart) gridPart.image_url_after = figure.uri;
+    return { qnum: String(s.pos), marks: s.target, stem, images: figure && !gridPart ? [figure.uri] : [], uncappedFigures: figure?.tall === true, missingFigure: false, parts, answerLines: answerKeyLines(q.parts, q.answer) };
   });
   const title = `${planJ.shape.subject} ${planJ.shape.code} · Paper ${planJ.paperNo} · Practice paper in the GCE format`;
   const total = ok.reduce((a, s) => a + s.target, 0);
@@ -497,7 +528,7 @@ async function assemble() {
   mkdirSync(pdfDir, { recursive: true });
   const base = `${planJ.key}-seed${planJ.seed}-${stamp}`;
   const paperPdf = join(pdfDir, `${base}.pdf`);
-  writeFileSync(paperPdf, await libs.renderPaperPDF({ title, metaLine, questions: pdfQs, workingSpace: true, answerKey: true, coverageWarning: ok.length < questions.length ? `${questions.length - ok.length} slot(s) did not pass the gates and were left out` : null }));
+  writeFileSync(paperPdf, await libs.renderPaperPDF({ title, metaLine, questions: pdfQs, workingSpace: true, answerKey: true, answerKeyColor: '#111', coverageWarning: ok.length < questions.length ? `${questions.length - ok.length} slot(s) did not pass the gates and were left out` : null }));
   const solPdf = join(pdfDir, `${base}-solutions.pdf`);
   writeFileSync(solPdf, await libs.renderSolutionsPDF({
     title: `${title} · Worked solutions`,

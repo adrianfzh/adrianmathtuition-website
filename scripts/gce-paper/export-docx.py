@@ -145,6 +145,33 @@ def stem_paras(ws, q, marks_on_stem):
             p.paragraph_format.left_indent = Cm(Q_TEXT_CM)
 
 
+def figure_width_cm(figures, pos, png):
+    """The same printed sizes as the PDF (generate.mjs figureDataUri): a drawing
+    10 cm wide, 12 cm when wide (aspect >= 1.5), never taller than 10 cm; a
+    graph-paper grid at one major square = 1 cm exactly."""
+    spec = join(figures, f'Q{pos}.figure.json') if figures else None
+    svg = join(figures, f'Q{pos}.figure.svg') if figures else None
+    try:
+        if spec and exists(spec) and json.load(open(spec)).get('family') == 'graph-paper' and svg and exists(svg):
+            text = open(svg).read()
+            m = re.search(r'<svg[^>]*\swidth="([\d.]+)"', text)
+            grid = re.search(r'<path d="([^"]+)"', text)
+            xs = sorted({float(a) for a, b in re.findall(r'M ([\d.]+) [\d.]+ L ([\d.]+) ', grid.group(1)) if a == b})
+            minor = min(b - a for a, b in zip(xs, xs[1:]))
+            return round(float(m.group(1)) / (minor * 5), 2)
+    except Exception:
+        pass
+    try:
+        from PIL import Image
+        w, h = Image.open(png).size
+        width = 12.0 if w / h >= 1.5 else 10.0
+        if h * width / w > 10.0:
+            width = 10.0 * w / h
+        return round(width, 2)
+    except Exception:
+        return 10.0
+
+
 def figure_para(ws, q, pos, figures):
     # figure.mjs writes Q<n>.figure.png beside the draft; a hand-made Q<n>.png also counts
     path = None
@@ -154,15 +181,7 @@ def figure_para(ws, q, pos, figures):
             path = cand
             break
     if path:
-        width_cm = 9.5
-        spec = join(figures, f'Q{pos}.figure.json') if figures else None
-        if spec and exists(spec):
-            try:
-                if json.load(open(spec)).get('family') == 'graph-paper':
-                    width_cm = 15.0   # a grid the candidate draws on prints near the full text width
-            except Exception:
-                pass
-        ws.figure(path, width_cm=width_cm)
+        ws.figure(path, width_cm=figure_width_cm(figures, pos, path))
         return True
     if q.get('needs_figure'):
         p = ws.para([('text', '[Figure to be drawn: ' + (q.get('figure_description') or '') + ']', {'italic': True})])
@@ -170,11 +189,32 @@ def figure_para(ws, q, pos, figures):
     return False
 
 
+def grid_part(q, figures, pos):
+    """A graph-paper grid prints where the paper says "On the grid" — the
+    first part (or sub-part) whose text mentions the grid — not above the
+    question like a diagram. None for every other figure."""
+    spec = join(figures, f'Q{pos}.figure.json') if figures else None
+    try:
+        if not (spec and exists(spec) and json.load(open(spec)).get('family') == 'graph-paper'):
+            return None
+    except Exception:
+        return None
+    for part in q.get('parts') or []:
+        if re.search(r'\bgrid\b', part.get('text') or '', re.I):
+            return part
+        for sub in part.get('subparts') or []:
+            if re.search(r'\bgrid\b', sub.get('text') or '', re.I):
+                return part
+    return None
+
+
 def question(ws, s, figures, with_marks=True):
     q = s.get('question') or s.get('draft')
     parts = q.get('parts') or []
     stem_paras(ws, q, s['target'] if (with_marks and not parts) else None)
-    figure_para(ws, q, s['pos'], figures)
+    after_part = grid_part(q, figures, s['pos'])
+    if after_part is None:
+        figure_para(ws, q, s['pos'], figures)
     prev_outer = None
     for part in parts:
         outer, inner = split_label(part.get('label', ''))
@@ -189,6 +229,8 @@ def question(ws, s, figures, with_marks=True):
         for sub in subs:
             so, si = split_label(sub.get('label', ''))
             labelled(ws, [si or so], sub.get('text', ''), sub.get('marks') if with_marks else None, level=1)
+        if part is after_part:
+            figure_para(ws, q, s['pos'], figures)
     return q
 
 

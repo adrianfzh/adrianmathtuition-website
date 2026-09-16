@@ -94,10 +94,35 @@ function ensureSvgNs(svg) {
   return out;
 }
 
+// A graph-paper grid is centred on a wide canvas, so a tall narrow plot comes
+// with blank side margins that would either waste the column or shrink the
+// squares when the figure is fitted to it. Trim the viewBox to the plot plus
+// 1.3 major squares each side (room for the axis numbering and the x label);
+// the top and bottom already hug the axis label and the tick labels.
+export function trimGraphPaper(svg) {
+  const open = svg.match(/<svg[^>]*>/)?.[0] ?? '';
+  const vb = open.match(/viewBox="\s*([-\d.]+)\s+([-\d.]+)\s+([\d.]+)\s+([\d.]+)\s*"/);
+  const grid = svg.match(/<path d="([^"]+)"/)?.[1];
+  if (!vb || !grid) return svg;
+  const xs = [...new Set([...grid.matchAll(/M ([\d.]+) [\d.]+ L ([\d.]+) /g)].filter((m) => m[1] === m[2]).map((m) => Number(m[1])))].sort((a, b) => a - b);
+  if (xs.length < 3) return svg;
+  let minor = Infinity;
+  for (let i = 1; i < xs.length; i++) minor = Math.min(minor, xs[i] - xs[i - 1]);
+  const major = minor * 5;
+  const x0 = Math.max(Number(vb[1]), xs[0] - 1.3 * major);
+  const x1 = Math.min(Number(vb[1]) + Number(vb[3]), xs[xs.length - 1] + 1.3 * major);
+  const w = Math.round(x1 - x0), h = Number(vb[4]);
+  return svg
+    .replace(/viewBox="[^"]*"/, `viewBox="${x0.toFixed(2)} ${vb[2]} ${w} ${h}"`)
+    .replace(/(<svg[^>]*\swidth=")[\d.]+(")/, `$1${w}$2`)
+    .replace(/(<svg[^>]*\sheight=")[\d.]+(")/, `$1${h}$2`);
+}
+
 function renderSpec(spec) {
   const v = registry.verifyFigure(spec);
   if (!v.ok) throw new Error(`verify: ${v.reason}`);
-  return registry.renderFigure(spec);
+  const svg = registry.renderFigure(spec);
+  return spec.family === 'graph-paper' ? trimGraphPaper(svg) : svg;
 }
 
 function renderEngine(file) {

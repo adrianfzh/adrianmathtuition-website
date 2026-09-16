@@ -58,6 +58,13 @@ export interface PaperPdfQuestion {
   parts: Part[];
   /** Answer-key lines (lib/paper-reconstruction.answerKeyLines). */
   answerLines: string[];
+  /**
+   * The stem figures are vector drawings whose author already fixed their
+   * printed size (a graph-paper grid the candidate draws on, sized so one
+   * square prints at 1 cm): print them at that size with no 300pt height cap.
+   * Off (the default) for the bank's scanned crops, which the cap protects.
+   */
+  uncappedFigures?: boolean;
 }
 
 export interface PaperPdfInput {
@@ -72,6 +79,8 @@ export interface PaperPdfInput {
   answerKey: boolean;
   /** Coverage warning ('' / null = paper looks complete). */
   coverageWarning?: string | null;
+  /** Colour of the ANSWER KEY entries (default the house orange; a printed set uses '#111'). */
+  answerKeyColor?: string;
 }
 
 function esc(s: string): string {
@@ -103,8 +112,8 @@ export function richText(s: string): string {
   }).join('\n');
 }
 
-function img(u: string): string {
-  return `<img class="pp-figure" src="${esc(u)}" alt="figure">`;
+function img(u: string, uncapped = false): string {
+  return `<img class="pp-figure${uncapped ? ' pp-figure-tall' : ''}" src="${esc(u)}" alt="figure">`;
 }
 
 function spacer(marks: number | null | undefined): string {
@@ -119,7 +128,7 @@ function lineWithMarks(cls: string, inner: string, marks: string): string {
   return `<div class="${cls}"><span class="pp-txt">${inner}</span>${marks}</div>`;
 }
 
-function partHtml(p: Part, workingSpace: boolean): string {
+function partHtml(p: Part, workingSpace: boolean, uncapped = false): string {
   const label = p.label ? `<strong>(${esc(String(p.label).replace(/^\(|\)$/g, ''))})</strong> ` : '';
   // Working space belongs to the part that asks for the work: a part with its
   // own marks and no marked subparts gets the skill-rule space after it.
@@ -129,10 +138,10 @@ function partHtml(p: Part, workingSpace: boolean): string {
   // A parent whose sub-parts carry their own marks prints no total of its own —
   // the paper says [2] beside (i), never [8] beside (b) as well.
   const marks = p.marks && !subsCarryMarks ? `<span class="pp-mk">[${p.marks}]</span>` : '';
-  const before = p.image_url ? img(p.image_url) : '';
-  const after = p.image_url_after ? img(p.image_url_after) : '';
+  const before = p.image_url ? img(p.image_url, uncapped) : '';
+  const after = p.image_url_after ? img(p.image_url_after, uncapped) : '';
   const text = p.text ? lineWithMarks('pp-part-text', label + richText(p.text), marks) : (label || marks ? lineWithMarks('pp-part-text', label, marks) : '');
-  const subs = (p.subparts ?? []).map((sp) => partHtml(sp, workingSpace)).join('');
+  const subs = (p.subparts ?? []).map((sp) => partHtml(sp, workingSpace, uncapped)).join('');
   const space = workingSpace && p.marks && !subsCarryMarks ? spacer(p.marks) : '';
   return `<div class="pp-part">${before}${text}${after}${space}${subs}</div>`;
 }
@@ -142,7 +151,7 @@ function partsCarryMarks(parts: Part[]): boolean {
 }
 
 function questionHtml(q: PaperPdfQuestion, workingSpace: boolean): string {
-  const figures = q.images.map(img).join('');
+  const figures = q.images.map((u) => img(u, q.uncappedFigures === true)).join('');
   const hole = q.missingFigure
     ? '<div class="pp-missing-figure">[ figure referenced by this question is not in the bank ]</div>'
     : '';
@@ -151,7 +160,7 @@ function questionHtml(q: PaperPdfQuestion, workingSpace: boolean): string {
   const stem = q.stem.trim()
     ? lineWithMarks('pp-stem', richText(q.stem.trim()), stemMarks)
     : (stemMarks ? lineWithMarks('pp-stem', '', stemMarks) : '');
-  const parts = q.parts.map((p) => partHtml(p, workingSpace)).join('');
+  const parts = q.parts.map((p) => partHtml(p, workingSpace, q.uncappedFigures === true)).join('');
   const stemSpace = workingSpace && !inParts ? spacer(q.marks) : '';
   // Stem first, then figures: stems say "the diagram below shows…". The
   // stem + figures travel as one .pp-intro unit so a page break can never
@@ -182,6 +191,7 @@ function answerKeyHtml(questions: PaperPdfQuestion[]): string {
 export function buildPaperHTML(input: PaperPdfInput): string {
   const { title, metaLine, questions, workingSpace, answerKey } = input;
   const warning = (input.coverageWarning ?? '').trim();
+  const answerColor = (input.answerKeyColor ?? '').trim() || ANSWER_ORANGE;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -216,6 +226,7 @@ ${katexInlineHead()}
   .pp-part .pp-part{margin-left:15pt}
   .pp-part-text{white-space:pre-wrap;break-inside:avoid;display:flex;justify-content:space-between;align-items:flex-end;gap:8pt}
   .pp-figure{display:block;max-width:100%;max-height:300pt;margin:6pt 0}
+  .pp-figure-tall{max-height:none}
   .pp-missing-figure{border:0.75pt dashed #999;color:#999;font-style:italic;text-align:center;padding:14pt 8pt;margin:5pt 0}
 
   .pp-mk{flex:none;font-weight:400}
@@ -228,8 +239,8 @@ ${katexInlineHead()}
   .pp-answers{break-before:page;page-break-before:always;padding-top:2pt}
   .pp-answers-h{color:${NAVY};font-weight:700;font-size:12pt;letter-spacing:.24em;text-transform:uppercase;border-bottom:0.9pt solid ${ANSWER_ORANGE};padding-bottom:2.5pt;margin-bottom:7pt}
   .pp-answer-list{list-style:none;padding-left:24pt;margin:0}
-  .pp-a{position:relative;margin-bottom:5pt;break-inside:avoid;color:${ANSWER_ORANGE}}
-  .pp-a .katex{color:${ANSWER_ORANGE}}
+  .pp-a{position:relative;margin-bottom:5pt;break-inside:avoid;color:${answerColor}}
+  .pp-a .katex{color:${answerColor}}
   .pp-anum{position:absolute;left:-24pt;top:0;font-weight:700;color:#111}
   .pp-a-none{color:#999}
 
