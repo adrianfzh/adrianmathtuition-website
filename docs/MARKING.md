@@ -2308,6 +2308,7 @@ obvious … remove the compulsory mark (put done or not done — colour code the
   it is: **"📘 One Practice Again sheet · made from these 2 papers — It teaches
   what you lost marks on in both papers, so you do it once."** (`bundleCaption`),
   the sheet's line once at the foot.
+- **✏️ Rename (17 Sep 2026, a student's ask):** the paper page's title carries a "rename" link → `POST /api/portal/marking/label {runId, label}` writes `paper_marking_runs.student_label` on the student's own released run (rule `lib/paper-label.ts`, pure/tested: trimmed, ≤ 60 chars, empty clears). `toPaper` shows the label as `name`; `rawName` / `paper_name` stay Adrian's for files, Dropbox and the desk. The admin mirror shows the label because it uses the same builder. Health-check `marking-label` probes the 401.
 - **Moved to the paper page** (`/app/marking/[id]`): "Where you lost marks"
   (`LostMarks.tsx` — the printed question, SEAB codes, comment, annotated
   solution, Practise chip; it used to exist only on the list), and the header

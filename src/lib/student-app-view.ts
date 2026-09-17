@@ -19,7 +19,7 @@ import { coveredRunIds } from './sheet-queue';
 import { readNoSheet } from './sheet-jobs';
 import { isPracticeAgainHandin, type DeskRun } from './desk-state';
 
-const RUN_COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, paper_subject, subject, superseded_by, queue_status, num_photos';
+const RUN_COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, paper_subject, subject, superseded_by, queue_status, num_photos';
 
 export interface AppSheet {
   id: string;

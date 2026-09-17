@@ -22,6 +22,7 @@ import { recomputeTotals } from '@/lib/mark-triage';
 import { topicSlug } from '@/lib/topic-slug';
 import { activePaperNotice, type PaperNoticeText } from '@/lib/paper-notice';
 import { sgtDateISO } from '@/lib/sgt';
+import { studentPaperName } from '@/lib/paper-label';
 
 /** A `paper_marking_runs` row, reduced to the columns this view reads. */
 export interface MarkingRunRow {
@@ -36,6 +37,8 @@ export interface MarkingRunRow {
   pdf_url: string | null;
   released_at: string | null;
   result_json: unknown;
+  /** The student's own name for the paper (portal rename, 17 Sep 2026); optional so selects that never show a name need not carry it. */
+  student_label?: string | null;
   /**
    * 'A Math' | 'E Math' | 'H2 Math' | 'Other' | null (SPEC-PORTAL-V2 §1) —
    * the pill on the card and which per-subject tile block the paper counts
@@ -475,7 +478,8 @@ function toPaper(row: MarkingRunRow, studentName?: string | null): StudentPaper 
     handedInDate: sgtDateISO(new Date(row.created_at)),
     markedDate: row.released_at ? sgtDateISO(new Date(row.released_at)) : null,
     // The name the student knows (Adrian, 7 Sep 2026): 'A Math · GCE 2022 · Paper 1', their own name dropped.
-    name: displayPaperName(str(row.paper_name), studentName),
+    // The student's own label wins (17 Sep 2026); rawName below stays Adrian's.
+    name: studentPaperName(row.student_label, displayPaperName(str(row.paper_name), studentName)),
     rawName: str(row.paper_name) || 'Marked paper',
     awarded: totals.awarded,
     max: totals.max,
