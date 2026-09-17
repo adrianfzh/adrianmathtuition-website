@@ -101,7 +101,7 @@ type Detail = {
     id: string; status: string; stage: string | null; error: string | null; attempts: number; focus: string | null;
     claimedBy: string | null; createdAt: string; completedAt: string | null; label: string;
     autoReleaseAt?: string | null; heldAt?: string | null; autoReleasedAt?: string | null;
-    /** 'student' = asked for from the app (goes out on its own once it clears the gate); 'adrian' = queued here (compulsory once released). */
+    /** 'student' = asked for from the app (goes out on its own once it clears the gate); 'adrian' = queued here (not compulsory unless the release asks, 17 Sep 2026). */
     requestedBy?: string | null;
     /** A batch sheet (10 Sep 2026): every paper it covers, the primary first. */
     runIds?: string[];
@@ -317,7 +317,7 @@ function PaperSubjectChip({ subject }: { subject: string | null | undefined }) {
 const LANE_HINT: Record<DeskTab, string> = {
   all: TAB_HINT_ALL,
   untagged: 'A paper with no student reaches nobody — tag it so it reaches them.',
-  'awaiting-sheet': 'Marked, and nobody has asked for a sheet. Vet the marking; Approve & release sends the paper on its own. A sheet you queue here and release is compulsory — the app reminds the student until it is handed in. Students can ask for their own from the app once the paper is out; those go out by themselves once they clear the gate.',
+  'awaiting-sheet': 'Marked, and nobody has asked for a sheet. Vet the marking; Approve & release sends the paper on its own. A sheet you queue here and release is the student’s to do; it is compulsory (the app reminds them until it is handed in) only when the release says so. Students can ask for their own from the app once the paper is out; those go out by themselves once they clear the gate.',
   ready: 'Marked, sheet written, not yet with the student. It goes out by itself on the 12-hour clock unless something holds it — the reasons sit under the button. Open one to agree or override, read the sheet, or Approve & release without waiting.',
   auto: 'Released by the system and not yet looked at — or a sheet being revised. Look it over if you want: Agree or Override still work here (an override re-issues their copy), ✓ Looked at moves it to Completed; anything you leave files itself under Completed after 7 days. A paper whose sheet is being revised sits at the top until the revised sheet is filed, then goes back to where it was.',
   released: 'With the student. Read-only — the folder link is the record.',

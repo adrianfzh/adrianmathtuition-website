@@ -1,7 +1,8 @@
 // /api/admin/release-with-sheet — step 7 of the teaching round, in one tap.
 //
 //   GET  ?runId=   → { ready, choice, candidates? }   what would happen, without doing it
-//   POST { runId, pdfPath? } → { ok, released, assignmentId }
+//   POST { runId, pdfPath?, required? } → { ok, released, assignmentId }
+//        required:true makes the sheet compulsory (reminders); the default is not (17 Sep 2026)
 //
 // Adrian releases the marked paper and sends the self-study sheet every time, in
 // that order, and a paper released without its sheet is the half that teaches
@@ -59,9 +60,10 @@ async function resolve(runId: string) {
   // finished job with no files. There is no PDF to choose and no assignment to
   // write — the marked paper is released on its own, deliberately, instead of
   // this answering 404 "No PDF in the sheet's folder yet".
-  // Who asked for this sheet decides what it is to the student (8 Sep 2026):
-  // one Adrian queued and released is COMPULSORY (required_at, reminders);
-  // one the student asked for from the app is theirs to do — no nag.
+  // Who asked for this sheet is recorded (8 Sep 2026), but since 17 Sep 2026 a
+  // sheet is NOT compulsory by default (Adrian: "for practice sheets, make them
+  // not compulsory by default") — required_at + the reminders only when the
+  // release says so explicitly (POST {runId, required:true}).
   const requestedBy = (job as { requested_by?: string | null }).requested_by === 'student' ? 'student' as const : 'adrian' as const;
   // A batch sheet (10 Sep 2026) covers several papers: the row it makes and the
   // archive it leaves go to every one of them.
@@ -128,8 +130,11 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  const body = await req.json().catch(() => ({} as { runId?: string; pdfPath?: string }));
+  const body = await req.json().catch(() => ({} as { runId?: string; pdfPath?: string; required?: unknown }));
   const runId = String(body.runId || '');
+  // Compulsory only on request (17 Sep 2026): the desk's default release is a
+  // sheet the student may do; {required:true} stamps required_at + reminders.
+  const required = body.required === true;
   if (!/^[0-9a-f-]{36}$/i.test(runId)) return NextResponse.json({ error: 'runId is required' }, { status: 400 });
 
   const r = await resolve(runId);
@@ -222,13 +227,13 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({
       studentId: r.run.student_id, kind: 'worksheet', title,
       pdfSource: `dropbox:${pdfPath}`,
-      note: r.requestedBy === 'student'
-        ? 'From the paper you just got back — the parts worth another go.'
-        : 'Adrian asked you to do this one — work through the examples, then hand the practice in.',
-      // Compulsory when Adrian set it (lib/assignments withRequired → required_at;
-      // /api/cron/practice-again-reminders nags until it is handed in). A sheet
-      // the student asked for carries no stamp.
-      required: r.requestedBy !== 'student',
+      note: required
+        ? 'Adrian asked you to do this one — work through the examples, then hand the practice in.'
+        : 'From the paper you just got back — the parts worth another go.',
+      // Compulsory ONLY when the release asks for it (lib/assignments withRequired
+      // → required_at; /api/cron/practice-again-reminders nags until it is handed
+      // in). Not the default since 17 Sep 2026.
+      required,
       // Filed as the paper's own Practice Again sheet (7 Sep 2026): the Papers
       // list's card and the Practice tab's "Practice Again" group both look for
       // source 'practice-again' + the source run — without them the sheet sat
@@ -314,7 +319,7 @@ export async function POST(req: NextRequest) {
     alreadyWasReleased: !!r.run.released_at,
     withdrawn,
     amended,
-    required: r.requestedBy !== 'student',
+    required,
     requestedBy: r.requestedBy,
     covered: r.covered,
   });
