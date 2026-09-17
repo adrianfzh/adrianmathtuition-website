@@ -340,9 +340,14 @@ print('cells not ending in a paragraph:',len(bad)); sys.exit(1 if bad else 0)" "
    `repair-sheet.py` refuses to write such a file since 16 Sep 2026, so this is
    a second pair of eyes on anything you assembled yourself. **And Word gets one
    attempt, not a session:** if a document has not opened within ~5 minutes,
-   stop, quit Word (`pkill -x 'Microsoft Word'`), and go on with the LibreOffice
-   export (`soffice --headless --convert-to pdf`), saying so in the `verified`
-   note. Chloe Gng's 15 Sep 2026 sheet burned two 70-minute sessions on a Word
+   stop, close only your own staged copy (`tell application "Microsoft Word" to
+   close (every document whose name contains "<your stem>") saving no`), and go
+   on with the LibreOffice export (`soffice --headless --convert-to pdf`), saying
+   so in the `verified` note. **Never quit or kill Word** (no `pkill`, no `quit`):
+   Adrian works in the same Word, and a kill throws away his unsaved documents.
+   `render_sheet.export_pdf` already waits while he is typing in Word (Word in
+   front and a key or click within 90 s) and after 30 min exports through
+   LibreOffice itself, printing a `NOTE:` line — carry that line into `verified`. Chloe Gng's 15 Sep 2026 sheet burned two 70-minute sessions on a Word
    that was never going to open it.
 
 5. **Complete the job** — this is what Telegrams Adrian:

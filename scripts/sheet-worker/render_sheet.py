@@ -46,6 +46,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import uuid
 import zipfile
 from pathlib import Path
@@ -597,6 +598,59 @@ def word_available():
     return Path('/Applications/Microsoft Word.app').exists()
 
 
+#: Adrian counts as working in Word while Word is the front app and he has
+#: touched the keyboard or mouse within this many seconds
+WORD_IDLE_SECONDS = 90
+#: how long an export waits for him before it goes to LibreOffice instead
+WORD_WAIT_SECONDS = 30 * 60
+
+
+def _front_bundle():
+    try:
+        asn = subprocess.run(['lsappinfo', 'front'], capture_output=True,
+                             text=True, timeout=5).stdout.strip()
+        info = subprocess.run(['lsappinfo', 'info', '-only', 'bundleid', asn],
+                              capture_output=True, text=True, timeout=5).stdout
+        return info.split('=')[-1].strip().strip('"')
+    except Exception:
+        return ''
+
+
+def _idle_seconds():
+    try:
+        out = subprocess.run(['ioreg', '-c', 'IOHIDSystem', '-d', '4'],
+                             capture_output=True, text=True, timeout=5).stdout
+        for line in out.splitlines():
+            if 'HIDIdleTime' in line:
+                return int(line.split()[-1]) / 1e9
+    except Exception:
+        pass
+    return float('inf')
+
+
+def adrian_in_word():
+    """True while Adrian is typing in Word on this Mac. Word cannot open a
+    document hidden (its `open` verb has no visible flag), and the new window
+    becomes Word's key window — so an export while he types would take his
+    keystrokes into the worker's scratch copy."""
+    return (_front_bundle() == 'com.microsoft.Word'
+            and _idle_seconds() < WORD_IDLE_SECONDS)
+
+
+def export_pdf_libreoffice(docx_path: Path, pdf_path: Path, timeout=240):
+    soffice = shutil.which('soffice') or '/Applications/LibreOffice.app/Contents/MacOS/soffice'
+    out = Path(tempfile.mkdtemp(prefix='lo-export-'))
+    res = subprocess.run([soffice, '--headless', '--convert-to', 'pdf', '--outdir',
+                          str(out), str(docx_path)], capture_output=True, text=True,
+                         timeout=timeout)
+    made = out / (docx_path.stem + '.pdf')
+    if res.returncode != 0 or not made.exists():
+        raise SpecError(f'LibreOffice could not export the PDF: {res.stderr.strip()[:300]}')
+    shutil.copyfile(made, pdf_path)
+    shutil.rmtree(out, ignore_errors=True)
+    return pdf_path
+
+
 def export_pdf(docx_path: Path, pdf_path: Path, timeout=240):
     """DOCX → PDF through Word, from inside Word's own sandbox container.
 
@@ -607,7 +661,19 @@ def export_pdf(docx_path: Path, pdf_path: Path, timeout=240):
     sheet slots share one Word instance and `active document` is a race that
     has exported a peer's sheet before now — hence the index loop and the name
     guard, not `active document`.
+
+    It never interrupts Adrian: while he is typing in Word it waits, and after
+    WORD_WAIT_SECONDS it exports through LibreOffice instead (a line on stderr
+    says so). It never quits Word and closes only its own staged copy.
     """
+    waited = 0
+    while adrian_in_word():
+        if waited >= WORD_WAIT_SECONDS:
+            print(f'NOTE: Adrian was working in Word for {waited // 60} min — '
+                  f'{docx_path.name} exported through LibreOffice instead', file=sys.stderr)
+            return export_pdf_libreoffice(docx_path, pdf_path, timeout=timeout)
+        time.sleep(15)
+        waited += 15
     WORD_CONTAINER.mkdir(parents=True, exist_ok=True)
     stem = f'sheet-{uuid.uuid4().hex[:8]}'
     staged = WORD_CONTAINER / f'{stem}.docx'
