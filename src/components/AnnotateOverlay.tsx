@@ -1014,6 +1014,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     if (!d) return;
     const cssPerImg = (kFactor() * DOC_W) / d.w;
     const fit = fitStroke(cur.stroke.points, { minLength: SNAP_MIN_CSS / cssPerImg });
+    if (!fit) logInk('snap-miss', { n: cur.stroke.points.length, page: cur.pageIdx });
     if (fit) {
       logInk('snap', { shape: fit.kind, nBefore: cur.fitAttemptAt, page: cur.pageIdx });
       cur.stroke.points = shapeToPolyline(fit);

@@ -14,11 +14,11 @@ import {
 } from './stroke-geometry';
 
 const LINE_MAX_DEVIATION = 0.04;    // of stroke length
-const CLOSURE_MAX_GAP = 0.15;       // first↔last gap, of perimeter (rect + ellipse)
+const CLOSURE_MAX_GAP = 0.25;       // first↔last gap, of perimeter (rect + ellipse) — 0.15 until 17 Sep 2026: real hands under-close a circle
 const RDP_EPSILON = 0.025;          // of stroke length (corner detection)
 const RECT_ANGLE_TOL = (20 * Math.PI) / 180;   // corner angle within 20° of 90°
 const RECT_AXIS_TOL = (10 * Math.PI) / 180;    // all edges within 10° of axes → axis-aligned
-const ELLIPSE_MAX_RADIAL_ERR = 0.06;           // mean |r-1| in ellipse frame
+const ELLIPSE_MAX_RADIAL_ERR = 0.10;           // mean |r-1| in ellipse frame — 0.06 until 17 Sep 2026 (Adrian: "I still can't draw circles that snap")
 const CIRCLE_AXIS_RATIO = 0.12;                // axes within 12% of each other → circle
 
 export type FitOptions = { minLength?: number };
@@ -195,9 +195,19 @@ function fitEllipse(points: XY[]): SnappedShape | null {
  *  tried first, so a four-cornered loop never lands here; a rounded blob
  *  simplifies to many points and falls through to the ellipse fit. */
 function fitTriangle(points: XY[], len: number): SnappedShape | null {
-  const simplified = rdpSimplify(points, RDP_EPSILON * len);
-  const corners = simplified.slice();
+  // A looser epsilon than the rect's: a hand-drawn side wobbles, and a wobble
+  // must not read as a fourth corner (17 Sep 2026).
+  const simplified = rdpSimplify(points, 1.6 * RDP_EPSILON * len);
+  let corners = simplified.slice();
   if (corners.length > 1 && dist(corners[0], corners[corners.length - 1]) < CLOSURE_MAX_GAP * len) corners.pop();
+  // Drop points that sit on the straight line between their neighbours (the
+  // pen-down blob, a start mid-side) — a corner sticks out well past that.
+  corners = corners.filter((c, i) => {
+    const a = corners[(i + corners.length - 1) % corners.length], b = corners[(i + 1) % corners.length];
+    const ab = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+    const off = Math.abs((b.x - a.x) * (a.y - c.y) - (a.x - c.x) * (b.y - a.y)) / ab;
+    return off > 0.03 * len;
+  });
   if (corners.length !== 3) return null;
   // Degenerate (three near-collinear points) is not a triangle.
   const [a, b, c] = corners;
