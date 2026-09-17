@@ -123,10 +123,15 @@ for (_fmt, _lvl), (_abs, _base) in NUMBERED_POOLS.items():
             f'</w:num>\n'
         )
 
-# 30 sub-question numIds, each with startOverride so (a)(b)(c) restarts per question
-for _i in range(30):
+# Sub-question numIds, each with startOverride so (a)(b)(c) restarts per question.
+# One is spent on EVERY Q() call, parts or not, so the pool has to cover every
+# question on the sheet: 30 overflowed on a 48-question revision sheet (17 Sep
+# 2026) -- Q31 onward pointed at numIds 40-49 (none defined, labels vanished)
+# and 50+ (the main-question pool, so parts printed "1. 2."). 400 each now.
+SUBQ_BASE, NOSTEM_BASE, SUBQ_POOL = 1000, 1400, 400
+for _i in range(SUBQ_POOL):
     NUMBERING_XML += (
-        f'  <w:num w:numId="{10+_i}">'
+        f'  <w:num w:numId="{SUBQ_BASE+_i}">'
         f'<w:abstractNumId w:val="101"/>'
         f'<w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride>'
         f'</w:num>\n'
@@ -154,13 +159,13 @@ for _i in range(30):
         f'<w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride>'
         f'</w:num>\n'
     )
-# 30 sub-question numIds (120..149) that START at (b): a question with NO stem
+# Sub-question numIds (NOSTEM_BASE..) that START at (b): a question with NO stem
 # puts its "(a)" on the number's own line ("1.  (a) Simplify …"), so the auto
 # list under it must begin at (b) (Adrian, 11 Sep 2026: "the question should be
 # horizontally level with the question number").
-for _i in range(30):
+for _i in range(SUBQ_POOL):
     NUMBERING_XML += (
-        f'  <w:num w:numId="{120+_i}">'
+        f'  <w:num w:numId="{NOSTEM_BASE+_i}">'
         f'<w:abstractNumId w:val="101"/>'
         f'<w:lvlOverride w:ilvl="0"><w:startOverride w:val="2"/></w:lvlOverride>'
         f'</w:num>\n'
@@ -824,7 +829,7 @@ class Worksheet:
         self.keep_figures_with_text = bool(keep_figures_with_text)
         self.one_mark_bonus = float(one_mark_bonus)
         self.keep_lines_with_text = max(0, int(keep_lines_with_text))
-        self._auto_subq_id = 9   # increments to 10, 11, ... per Q with sub-parts
+        self._auto_subq_id = SUBQ_BASE - 1   # increments to SUBQ_BASE, +1, ... per Q
         self._current_subq_id = None
         self._stemless_q = False  # Q([]) seen: the next SQ rides the number's line
         self._auto_parts_id = 89 # increments to 90, 91, ... per parts() (example sub-parts, flush left)
@@ -1035,6 +1040,8 @@ class Worksheet:
         # Bump the sub-question id pool for this question; reset on each Q call
         self._finish_block()    # glue the question that just ended
         self._auto_subq_id += 1
+        if self._auto_subq_id >= SUBQ_BASE + SUBQ_POOL:
+            raise RuntimeError(f'more than {SUBQ_POOL} questions on one sheet')
         self._current_subq_id = self._auto_subq_id
         self._block_paras = []  # a new question starts a new keep-together block
         if not parts:
@@ -1074,8 +1081,8 @@ class Worksheet:
             p.paragraph_format.left_indent = Cm(2.0)
             p.paragraph_format.first_line_indent = Cm(-2.0)
             p.paragraph_format.tab_stops.add_tab_stop(Cm(1.0))
-            if 10 <= self._current_subq_id <= 39:
-                self._current_subq_id = 120 + (self._current_subq_id - 10)
+            if SUBQ_BASE <= self._current_subq_id < SUBQ_BASE + SUBQ_POOL:
+                self._current_subq_id = NOSTEM_BASE + (self._current_subq_id - SUBQ_BASE)
             return p
         return self._add(parts, style='SubQuestion',
                          num_id=self._current_subq_id, marks=marks)
