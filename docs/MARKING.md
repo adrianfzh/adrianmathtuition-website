@@ -2273,6 +2273,48 @@ Other | null` (backfilled 6 Sep; the bot stamps new runs by name-then-level majo
 - **Health check:** `papers-subject` asserts no run released in the last 30 days has a null
   `paper_subject`; the failure text carries the count.
 
+### The simpler list — subject tabs, one row per paper, the sheet as one line (17 Sep 2026)
+
+Adrian, after Alexis asked him for her 2023 papers that were already in her app
+(they sat below two screens of cards): *"make the whole interface simpler, more
+user friendly … separate A Math papers from E Math papers … make scores more
+obvious … remove the compulsory mark (put done or not done — colour code them)"*.
+
+- **One panel per subject.** `SubjectPanels.tsx` (client, state = the open tab
+  only) shows an A Math | E Math segmented control when the student has papers
+  in more than one subject; each panel is rendered on the server and handed
+  over as a node. The tab that opens is the subject of the paper handed in
+  last. "Other"/untagged papers get an Other panel, last. Inside a panel the
+  tiles (`SubjectTiles.tsx`, now one subject, server), the streak line and
+  "Work on next" are computed over THAT subject's rows only.
+- **A sparkline under the tiles** — the last five scored papers, oldest →
+  newest, each point labelled (`SubjectStats.recentPcts`, `RECENT_PAPERS` in
+  `lib/portal-papers-stats.ts`, tested).
+- **One compact row per paper**: name, "Handed in 8 Sept · marked 9 Sept"
+  (`StudentPaper.handedInDate` / `markedDate` — SGT dates from `created_at` /
+  `released_at`; "Handed in and marked 9 Sept" when the same day), a big score
+  block (same 75 / 50 thresholds as before), the whole row opens the paper.
+  No pill (the tab says the subject), no buttons, no "Where you lost marks".
+- **The Practice Again state is ONE coloured line inside the row** —
+  `lib/practice-again-line.ts` (pure, tested): green ✓ "Practice Again done ·
+  17/18" with "See your marked sheet ›", amber ⏳ "handed in · being marked",
+  rose 📘 "not done yet" with **Start ›** (the PDF) and **Hand in**, grey
+  "being written" / "written · Adrian is checking it". The word *compulsory*
+  and the "Adrian asked you to do this one" wording are gone from every
+  student surface (`required_at` still drives nothing the student sees; the
+  reminder cron is paused). A paper with no sheet and no job shows no line —
+  the Request button is on the paper page.
+- **A merged sheet's frame** keeps the papers in syllabus order and says what
+  it is: **"📘 One Practice Again sheet · made from these 2 papers — It teaches
+  what you lost marks on in both papers, so you do it once."** (`bundleCaption`),
+  the sheet's line once at the foot.
+- **Moved to the paper page** (`/app/marking/[id]`): "Where you lost marks"
+  (`LostMarks.tsx` — the printed question, SEAB codes, comment, annotated
+  solution, Practise chip; it used to exist only on the list), and the header
+  now reads "Handed in … · marked …". Open-paper / clip / request were already
+  there. `ChoosePapers` (the tick) wraps each panel's list with that subject's
+  papers only.
+
 ### The Science tab — free science marking for students (10 Sep 2026)
 
 SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026 is the contract; this is the map.

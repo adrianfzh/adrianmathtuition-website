@@ -23,6 +23,8 @@ import { subjectLabel } from '@/lib/mark-subjects';
 import { TEACHER_TOTAL_LABEL } from '@/lib/science-truth';
 import ScienceTeacherMark from '../ScienceTeacherMark';
 import ScienceUseful from '../ScienceUseful';
+import LostMarks from '../LostMarks';
+import { sheetLine } from '@/lib/practice-again-line';
 
 const COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, paper_subject, superseded_by, subject';
 
@@ -131,7 +133,14 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h1 className="font-bold text-navy text-lg leading-snug break-words">{paper.name}</h1>
-            <p className="text-xs text-gray-500 mt-1 flex items-center gap-1.5"><PaperSubjectPill subject={paper.subject} /><span>{niceDate(paper.date)}</span></p>
+            <p className="text-xs text-gray-500 mt-1 flex items-center gap-1.5">
+              <PaperSubjectPill subject={paper.subject} />
+              <span>
+                {paper.markedDate && paper.markedDate !== (paper.handedInDate ?? paper.date)
+                  ? `Handed in ${niceDate(paper.handedInDate ?? paper.date)} · marked ${niceDate(paper.markedDate)}`
+                  : `Handed in and marked ${niceDate(paper.handedInDate ?? paper.date)}`}
+              </span>
+            </p>
           </div>
           {/* A science paper leads with the feedback; its total sits below the
               pages as an estimate (Adrian, 11 Sep 2026). Maths keeps the pill. */}
@@ -197,6 +206,10 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
         </section>
       )}
 
+      {/* Every question that dropped marks, with the comment and the annotated
+          worked solution — moved here from the Papers list on 17 Sep 2026. */}
+      <LostMarks paper={paper} />
+
       {sheet && (
         <section className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
@@ -213,10 +226,8 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
               </p>
             )}
             <p className="text-[12px] text-emerald-800/80 mt-0.5">
-              {sheet.status === 'marked' ? `Marked${sheet.score != null && sheet.out_of ? ` · ${sheet.score}/${sheet.out_of}` : ''}`
-                : sheet.status === 'submitted' ? 'Handed in — being marked'
-                : sheet.required_at ? 'To do — Adrian asked you to do this one. Work through the examples, then hand the practice in'
-                : 'To do — work through the examples, then hand the practice in'}
+              {/* The same words as the Papers list (lib/practice-again-line); "compulsory" went on 17 Sep 2026. */}
+              {sheetLine(sheet).text}{sheet.status !== 'marked' && sheet.status !== 'submitted' ? ' — work through the examples, then hand the practice in' : ''}
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">

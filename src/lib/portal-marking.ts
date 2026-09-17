@@ -21,6 +21,7 @@ import { aggregateTopicBleed, type TopicBleed, type ReportPaper } from '@/lib/re
 import { recomputeTotals } from '@/lib/mark-triage';
 import { topicSlug } from '@/lib/topic-slug';
 import { activePaperNotice, type PaperNoticeText } from '@/lib/paper-notice';
+import { sgtDateISO } from '@/lib/sgt';
 
 /** A `paper_marking_runs` row, reduced to the columns this view reads. */
 export interface MarkingRunRow {
@@ -109,6 +110,10 @@ export interface StudentPaper {
   id: string;
   /** YYYY-MM-DD, from created_at. */
   date: string;
+  /** YYYY-MM-DD in Singapore time — the day the paper was handed in (created_at). Always set by toPaper; optional like `subject` for hand-built fixtures. */
+  handedInDate?: string;
+  /** YYYY-MM-DD in Singapore time — the day the marking was released ("marked" to the student); null on an unreleased row. */
+  markedDate?: string | null;
   name: string;
   /** The internal name Adrian typed (file names, admin surfaces). */
   rawName?: string;
@@ -467,6 +472,8 @@ function toPaper(row: MarkingRunRow, studentName?: string | null): StudentPaper 
   return {
     id: row.id,
     date: String(row.created_at).slice(0, 10),
+    handedInDate: sgtDateISO(new Date(row.created_at)),
+    markedDate: row.released_at ? sgtDateISO(new Date(row.released_at)) : null,
     // The name the student knows (Adrian, 7 Sep 2026): 'A Math · GCE 2022 · Paper 1', their own name dropped.
     name: displayPaperName(str(row.paper_name), studentName),
     rawName: str(row.paper_name) || 'Marked paper',

@@ -28,7 +28,12 @@ export interface SubjectStats {
   averagePct: number | null;
   /** Newest scored minus oldest scored, in points. Null with fewer than 2 scored papers. */
   trendPts: number | null;
+  /** The last RECENT_PAPERS scored percentages, oldest → newest — the sparkline under the tiles (17 Sep 2026). */
+  recentPcts: number[];
 }
+
+/** How many papers the sparkline shows. */
+export const RECENT_PAPERS = 5;
 
 /** ±5 points is paper-to-paper noise; calling a 2-point move "improving" would be
  *  dishonest encouragement. Same band the page has always used. */
@@ -49,7 +54,8 @@ export function subjectStats(papers: readonly StatPaper[], subject: PaperSubject
     ? Math.round(scored.reduce((s, p) => s + p.pct, 0) / scored.length)
     : null;
   const trendPts = scored.length >= 2 ? scored[0].pct - scored[scored.length - 1].pct : null;
-  return { subject, papers: mine.length, latestPct, averagePct, trendPts };
+  const recentPcts = scored.slice(0, RECENT_PAPERS).map(p => p.pct).reverse();
+  return { subject, papers: mine.length, latestPct, averagePct, trendPts, recentPcts };
 }
 
 /**

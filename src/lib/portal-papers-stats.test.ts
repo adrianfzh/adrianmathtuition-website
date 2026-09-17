@@ -4,6 +4,15 @@ import { statsBySubject, subjectStats, trendLabel, isTileSubject, type StatPaper
 const p = (date: string, pct: number | null, subject: string | null): StatPaper => ({ date, pct, subject });
 
 describe('subjectStats — one subject, its own papers only', () => {
+  it('recentPcts is the last five scored papers, oldest first (the sparkline)', () => {
+    const s = subjectStats([
+      p('2026-09-07', 90, 'E Math'), p('2026-09-06', 80, 'E Math'), p('2026-09-05', 70, 'E Math'),
+      p('2026-09-04', 60, 'E Math'), p('2026-09-03', 50, 'E Math'), p('2026-09-02', 40, 'E Math'),
+      p('2026-09-01', null, 'E Math'),
+    ], 'E Math');
+    expect(s.recentPcts).toEqual([50, 60, 70, 80, 90]);
+  });
+
   it('latest is the newest scored paper, average is the mean, trend is newest minus oldest', () => {
     const s = subjectStats([
       p('2026-09-01', 80, 'A Math'),
@@ -11,7 +20,7 @@ describe('subjectStats — one subject, its own papers only', () => {
       p('2026-08-01', 50, 'A Math'),
       p('2026-08-20', 95, 'E Math'),   // another subject — must not leak in
     ], 'A Math');
-    expect(s).toEqual({ subject: 'A Math', papers: 3, latestPct: 80, averagePct: 63, trendPts: 30 });
+    expect(s).toEqual({ subject: 'A Math', papers: 3, latestPct: 80, averagePct: 63, trendPts: 30, recentPcts: [50, 60, 80] });
   });
 
   it('is order-independent (the page passes newest-first, the test passes oldest-first)', () => {
@@ -28,12 +37,12 @@ describe('subjectStats — one subject, its own papers only', () => {
       p('2026-09-02', null, 'A Math'),
       p('2026-09-01', 40, 'A Math'),
     ], 'A Math');
-    expect(s).toEqual({ subject: 'A Math', papers: 2, latestPct: 40, averagePct: 40, trendPts: null });
+    expect(s).toEqual({ subject: 'A Math', papers: 2, latestPct: 40, averagePct: 40, trendPts: null, recentPcts: [40] });
   });
 
   it('a subject with no papers is all-null and zero', () => {
     expect(subjectStats([p('2026-09-01', 80, 'A Math')], 'H2 Math'))
-      .toEqual({ subject: 'H2 Math', papers: 0, latestPct: null, averagePct: null, trendPts: null });
+      .toEqual({ subject: 'H2 Math', papers: 0, latestPct: null, averagePct: null, trendPts: null, recentPcts: [] });
   });
 });
 
@@ -57,7 +66,7 @@ describe('statsBySubject — the tabs', () => {
       p('2026-09-02', 10, null),
       p('2026-09-01', 70, 'A Math'),
     ], ['A Math', 'E Math']);
-    expect(out).toEqual([{ subject: 'A Math', papers: 1, latestPct: 70, averagePct: 70, trendPts: null }]);
+    expect(out).toEqual([{ subject: 'A Math', papers: 1, latestPct: 70, averagePct: 70, trendPts: null, recentPcts: [70] }]);
   });
 
   it('is empty when every paper is Other — the page then shows no tiles', () => {

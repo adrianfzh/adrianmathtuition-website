@@ -10,12 +10,24 @@
 // self-serve accounts). `paper_marking_runs` has no per-student RLS
 // policy, so the ownership filter below IS the access control — it must never
 // be driven by anything the client can set.
+//
+// 17 Sep 2026 — the simpler list (Adrian: "make the whole interface simpler,
+// more user friendly", after Alexis could not find her 2023 papers under two
+// screens of cards): one panel per subject (A Math | E Math tabs), the tiles
+// and a sparkline at the top of each, then ONE COMPACT ROW per paper — name,
+// "Handed in 8 Sept · marked 9 Sept", a big score — with the Practice Again
+// state as one coloured line inside the row (done / handed in / not done yet;
+// the "compulsory" chip went). Papers that share a merged sheet sit in one
+// frame whose caption says what the sheet is. Everything else (open the paper,
+// clip to notebook, where you lost marks, request Practice Again) lives on the
+// paper's own page.
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { answerLines, promptLines, buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/lib/portal-marking';
-import { allowedSubjects, subjectAllowed } from '@/lib/portal-subjects';
-import { statsBySubject } from '@/lib/portal-papers-stats';
+import { buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/lib/portal-marking';
+import { allowedSubjects, subjectAllowed, subjectPill, type SubjectTone } from '@/lib/portal-subjects';
+import { subjectStats, isTileSubject } from '@/lib/portal-papers-stats';
 import { coveredRunIds } from '@/lib/sheet-queue';
 import { isPracticeAgainHandin } from '@/lib/desk-state';
 import {
@@ -25,19 +37,15 @@ import ChoosePapers from './ChoosePapers';
 import NextWave from './NextWave';
 import { groupPracticeAgain, sheetParents } from '@/lib/portal-marking-group';
 import { bundleList } from '@/lib/portal-paper-bundles';
-import PaperSubjectPill from '@/components/PaperSubjectPill';
-import AnnotatedSolution from './AnnotatedSolution';
-import ClipToNotes from './ClipToNotes';
+import { sheetLine, sheetJobLine, bundleCaption, type SheetLine } from '@/lib/practice-again-line';
 import { readNoSheet } from '@/lib/sheet-jobs';
 import MarkingBeacon from './MarkingBeacon';
 import SubjectTiles from './SubjectTiles';
-import { mathHtml } from '@/lib/math-inline';
+import SubjectPanels, { type SubjectPanel } from './SubjectPanels';
 import { SURFACES } from '@/lib/portal-theme';
 import { fileHref } from '@/lib/student-files-url';
 import PortalIcon from '@/components/PortalIcon';
-// Practice questions carry inline $…$ TeX — mathHtml KaTeXes only the math
-// spans, and this stylesheet is what makes the output render as maths.
-import 'katex/dist/katex.min.css';
+import { sgtTodayISO } from '@/lib/sgt';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,13 +65,21 @@ const CARD = 'bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_1
 const M = SURFACES.marking;
 const S = SURFACES.submit;
 
-// Celebration is earned, not decoration: the chip goes solid emerald only at
+// Celebration is earned, not decoration: the score goes solid emerald only at
 // 75%+ — the same bar the streak notice uses.
-function scoreChip(pct: number | null): string {
+function scoreTone(pct: number | null): string {
   if (pct === null) return 'bg-gray-100 text-gray-600';
   if (pct >= 75) return 'bg-emerald-500 text-white shadow-[0_4px_12px_-4px_rgba(16,185,129,0.7)]';
-  if (pct >= 50) return 'bg-amber-100 text-amber-800';
-  return 'bg-rose-100 text-rose-800';
+  if (pct >= 50) return 'bg-amber-100 text-amber-900';
+  return 'bg-rose-100 text-rose-900';
+}
+
+/** "8 Sept", with the year only when it is not this year. */
+function shortDate(iso: string, todayISO: string): string {
+  const sameYear = iso.slice(0, 4) === todayISO.slice(0, 4);
+  return new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-SG', {
+    day: 'numeric', month: 'short', ...(sameYear ? {} : { year: 'numeric' }), timeZone: 'UTC',
+  });
 }
 
 function niceDate(d: string): string {
@@ -72,17 +88,31 @@ function niceDate(d: string): string {
   });
 }
 
+/** "Handed in 8 Sept · marked 9 Sept" — or one phrase when both fell on the same day. */
+function whenLine(paper: StudentPaper, todayISO: string): string {
+  const handedIn = paper.handedInDate ?? paper.date;
+  const handed = shortDate(handedIn, todayISO);
+  if (!paper.markedDate) return `Handed in ${handed}`;
+  if (paper.markedDate === handedIn) return `Handed in and marked ${handed}`;
+  return `Handed in ${handed} · marked ${shortDate(paper.markedDate, todayISO)}`;
+}
+
+/** Which panel a paper lists in — a tile subject, else "Other". */
+function bucketOf(subject: string | null | undefined): string {
+  return isTileSubject(subject) ? subject : 'Other';
+}
+
+type SheetRow = { id: string; source_run_id: string | null; source_run_ids: string[] | null; run_id: string | null; status: string; pdf_url: string | null; submitted_at: string | null; marked_at: string | null; score: number | null; out_of: number | null; required_at: string | null };
+type JobLite = { run_id: string; run_ids: string[] | null; status: string; result: unknown };
+type Wave = { count: number; runIds: string[] };
+
 export default async function MarkingPage() {
   const account = await currentAccount();
   // rec… for tuition, acct:<uuid> for strangers — runs are stamped with this
   // same identity by /api/portal/submit, so paying strangers see their papers.
   const sid = portalIdentity(account);
-  // Marking-only beta: /app/practice is closed to students, but the same flow
-  // is embedded on Home — so their "Work on next" chips deep-link to /app?topic=
-  // (the flow reads ?topic= on mount); the full portal links to /app/practice.
-  // Practise has its own page for everyone since 2026-08-21 (it briefly
-  // lived on Home during the marking-only beta).
   const practiceHref = (topic: string) => `/app/practice?topic=${encodeURIComponent(topic)}`;
+  const todayISO = sgtTodayISO();
 
   const sb = getSupabaseAdmin();
   // The released list, the pending list (papers this student handed in through
@@ -134,7 +164,7 @@ export default async function MarkingPage() {
   // the student is looking at. "Other" and untagged rows pass (they list, but
   // count in no tile — lib/portal-papers-stats).
   const rows = ((data ?? []) as MarkingRunRow[]).filter(r => subjectAllowed(account, r.paper_subject));
-  const { papers, focus, streakNote } = buildStudentMarking(rows, { studentName: account?.display_name ?? null });
+  const { papers } = buildStudentMarking(rows, { studentName: account?.display_name ?? null });
   // The raw row behind each card — when it was marked, and whether it is itself
   // a returned Practice Again sheet. Both decide whether it may join a tick.
   const rowById = new Map(rows.map(r => [r.id, r]));
@@ -142,7 +172,6 @@ export default async function MarkingPage() {
   // separate to-do page: one released worksheet assignment per source run.
   // `run_id` = the sheet's OWN marking run once its hand-in is marked — what
   // groups that marked sheet under this paper below (lib/portal-marking-group).
-  type SheetRow = { id: string; source_run_id: string | null; source_run_ids: string[] | null; run_id: string | null; status: string; pdf_url: string | null; submitted_at: string | null; marked_at: string | null; score: number | null; out_of: number | null; required_at: string | null };
   const sheetsByRun = new Map<string, SheetRow>();
   let sheetRowsAll: SheetRow[] = [];
   if (papers.length) {
@@ -162,11 +191,9 @@ export default async function MarkingPage() {
   // the sheet is (being written · with Adrian · nothing worth practising); for
   // papers WITH one, whether it kept gaps back for a next wave (11 Sep 2026)
   // and whether a sheet is in flight (which closes the paper to the tick).
-  // One query for both (it used to fetch only the sheet-less papers).
-  type JobLite = { run_id: string; run_ids: string[] | null; status: string; result: unknown };
   const jobByRun = new Map<string, { status: string; noSheet: boolean }>();
   /** The finished sheet's shelf, per paper it covers: what a next wave would teach. */
-  const waveByRun = new Map<string, { count: number; runIds: string[] }>();
+  const waveByRun = new Map<string, Wave>();
   const allIds = papers.map(p => p.id);
   if (allIds.length) {
     const { data: jobRows } = await sb.from('sheet_jobs').select('run_id, run_ids, status, result')
@@ -193,10 +220,68 @@ export default async function MarkingPage() {
       : null;
     return { id: p.id, name: p.name, subject: p.subject ?? '', date: p.date, awarded: p.awarded, max: p.max, blocked };
   });
-  // Per-subject tiles, in the account's display order; tabs only when the
-  // student has papers in more than one subject.
-  // Tiles describe the papers on screen — a nested sheet is not a paper.
-  const stats = statsBySubject(top, allowedSubjects(account));
+
+  // One panel per subject, in the account's display order, "Other" last. The
+  // tiles, streak line and "Work on next" inside a panel are computed over
+  // THAT subject's rows only — an A Math focus list under an E Math tab would
+  // send the student to the wrong practice.
+  const buckets = new Map<string, StudentPaper[]>();
+  for (const p of top) {
+    const k = bucketOf(p.subject);
+    buckets.set(k, [...(buckets.get(k) ?? []), p]);
+  }
+  const order = [...allowedSubjects(account).filter(s => buckets.has(s)), ...(buckets.has('Other') ? ['Other'] : [])];
+  const panels: SubjectPanel[] = order.map(subject => {
+    const list = buckets.get(subject)!;
+    const ids = new Set(list.map(p => p.id));
+    const own = buildStudentMarking(rows.filter(r => bucketOf(r.paper_subject) === subject), { studentName: account?.display_name ?? null });
+    const stats = isTileSubject(subject) ? subjectStats(top, subject) : null;
+    const pill = subjectPill(subject);
+    const tone: SubjectTone = pill?.tone ?? 'other';
+    const entries = bundleList(list, id => sheetsByRun.get(id));
+    const content: ReactNode = (
+      <div className="space-y-4">
+        {stats && <SubjectTiles s={stats} />}
+        {own.streakNote && (
+          <p className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-2.5 text-[13px] font-semibold text-emerald-800">{own.streakNote}</p>
+        )}
+        {own.focus.length > 0 && (
+          <div className={`${CARD} px-4 py-3`}>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1.5">Work on next</p>
+            <div className="flex flex-wrap gap-1.5">
+              {own.focus.map(t => (
+                <Link key={t.topic} href={practiceHref(t.topic)}
+                  className="text-[13px] bg-[hsl(45,80%,94%)] text-navy rounded-full px-3 py-1 hover:bg-[hsl(45,80%,88%)] transition-colors">
+                  {t.topic} <span className="text-gray-500">{t.pct}%</span><span className="ml-1 text-gray-400">›</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+        {/* 📘 "Choose papers" wraps the list: off, it is one line above the
+            rows; on, the rows give way to a tick list (ChoosePapers). */}
+        <ChoosePapers papers={pickPapers.filter(p => ids.has(p.id))}>
+          <div className="space-y-2.5">
+            {/* A merged sheet shows ONCE (Adrian, 11 Sep 2026): the papers it
+                covers sit in one frame, in syllabus order, the sheet's line at
+                the foot — lib/portal-paper-bundles. */}
+            {entries.map(entry => entry.kind === 'paper' ? (
+              <PaperRow key={entry.paper.id} paper={entry.paper} todayISO={todayISO}
+                sheet={sheetsByRun.get(entry.paper.id) ?? null} job={jobByRun.get(entry.paper.id) ?? null}
+                markedSheet={markedSheetByParent.get(entry.paper.id) ?? null} nextWave={waveByRun.get(entry.paper.id) ?? null} />
+            ) : (
+              <Bundle key={entry.sheetId} papers={entry.papers} todayISO={todayISO} sheet={sheetsByRun.get(entry.papers[0].id)!}
+                markedSheet={entry.papers.map(p => markedSheetByParent.get(p.id) ?? null).find(Boolean) ?? null}
+                nextWave={entry.papers.map(p => waveByRun.get(p.id) ?? null).find(Boolean) ?? null} />
+            ))}
+          </div>
+        </ChoosePapers>
+      </div>
+    );
+    return { key: subject, label: subject, tone, count: list.length, content };
+  });
+  // The tab that opens is the subject of the paper handed in last.
+  const defaultKey = top[0] ? bucketOf(top[0].subject) : (order[0] ?? 'Other');
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
@@ -262,50 +347,7 @@ export default async function MarkingPage() {
               the 'marking:view' beacon once mounted here, i.e. only when the
               student has at least one released paper. */}
           <MarkingBeacon />
-          <SubjectTiles stats={stats} />
-
-          {streakNote && (
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
-              {streakNote}
-            </div>
-          )}
-
-          {focus.length > 0 && (
-            <div className={`${CARD} p-4`}>
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Work on next</p>
-              <div className="flex flex-wrap gap-2">
-                {focus.map(t => (
-                  <Link
-                    key={t.topic}
-                    href={practiceHref(t.topic)}
-                    className="text-sm bg-[hsl(45,80%,94%)] text-navy rounded-full px-3 py-1 hover:bg-[hsl(45,80%,88%)] transition-colors"
-                  >
-                    {t.topic} <span className="text-gray-500">{t.pct}%</span>
-                    <span className="ml-1 text-gray-400">›</span>
-                  </Link>
-                ))}
-              </div>
-              <p className="text-[11px] text-gray-400 mt-2">
-                Where you lost the most marks across your marked papers — tap one to practise it.
-              </p>
-            </div>
-          )}
-
-          {/* 📘 "Choose papers" wraps the list: off, it is one line above the
-              cards; on, the cards give way to a tick list (ChoosePapers). */}
-          <ChoosePapers papers={pickPapers}>
-            {/* A merged sheet shows ONCE (Adrian, 11 Sep 2026): the papers it
-                covers sit in one frame, in syllabus order, the sheet's card at
-                the foot — lib/portal-paper-bundles. */}
-            {bundleList(top, id => sheetsByRun.get(id)).map(entry => entry.kind === 'paper' ? (
-              <Paper key={entry.paper.id} paper={entry.paper} sheet={sheetsByRun.get(entry.paper.id) ?? null} sheetJob={jobByRun.get(entry.paper.id) ?? null}
-                markedSheet={markedSheetByParent.get(entry.paper.id) ?? null} nextWave={waveByRun.get(entry.paper.id) ?? null} />
-            ) : (
-              <Bundle key={entry.sheetId} papers={entry.papers} sheet={sheetsByRun.get(entry.papers[0].id)!}
-                markedSheet={entry.papers.map(p => markedSheetByParent.get(p.id) ?? null).find(Boolean) ?? null}
-                nextWave={entry.papers.map(p => waveByRun.get(p.id) ?? null).find(Boolean) ?? null} />
-            ))}
-          </ChoosePapers>
+          <SubjectPanels panels={panels} defaultKey={defaultKey} />
 
           {earlier.length > 0 && (
             <details className={`${CARD} p-4`}>
@@ -331,255 +373,107 @@ export default async function MarkingPage() {
   );
 }
 
-// The latest / average / trend tiles moved into ./SubjectTiles (per subject,
-// SPEC-PORTAL-V2 §1); their arithmetic lives in lib/portal-papers-stats.
+// ── The rows ────────────────────────────────────────────────────────────────
 
+const LINE_TONE: Record<SheetLine['tone'], { box: string; mark: string }> = {
+  done: { box: 'bg-emerald-50 border-emerald-200 text-emerald-900', mark: '✓' },
+  waiting: { box: 'bg-amber-50 border-amber-200 text-amber-900', mark: '⏳' },
+  todo: { box: 'bg-rose-50 border-rose-200 text-rose-900', mark: '📘' },
+  quiet: { box: 'bg-gray-50 border-gray-200 text-gray-600', mark: '📘' },
+};
 
-/** The green Practice Again card — under a paper, or once at the foot of a Bundle (`top`). */
-function SheetCard({ sheet, markedSheet, nextWave, top = false, papersCount }: {
-  sheet: SheetCardRow;
+/** The Practice Again state as ONE coloured line — under a paper, or once at the foot of a bundle. */
+function SheetLineView({ line, sheet, markedSheet, nextWave }: {
+  line: SheetLine;
+  sheet: SheetRow | null;
   markedSheet: StudentPaper | null;
-  nextWave: { count: number; runIds: string[] } | null;
-  top?: boolean;
-  /** How many papers the bundle holds — the card says so instead of counting source_run_ids. */
-  papersCount?: number;
+  nextWave: Wave | null;
 }) {
-  const n = papersCount ?? (sheet.source_run_ids?.length ?? 0);
+  const t = LINE_TONE[line.tone];
+  const openMarked = line.tone === 'done' && sheet && (markedSheet?.id ?? sheet.run_id);
   return (
-    <div className={`${top ? "" : "mt-3 "}rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3 flex flex-wrap items-center justify-between gap-2`}>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-emerald-900">
-              {n > 1
-                ? `📘 Practice Again — one sheet for your ${n} papers`
-                : '📘 Practice Again — from this paper'}
-            </p>
-            <p className="text-[12px] text-emerald-800/80 mt-0.5">
-              {sheet.status === 'marked'
-                ? `Marked${sheet.score != null && sheet.out_of ? ` · ${sheet.score}/${sheet.out_of}` : ''}`
-                : sheet.status === 'submitted' ? 'Handed in — being marked'
-                : sheet.required_at ? 'To do — Adrian asked you to do this one. Work through the examples, then hand the practice in'
-                : 'To do — work through the examples, then hand the practice in'}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
+    <div className={`rounded-2xl border px-3 py-2 ${t.box}`}>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+        <p className="min-w-0 flex-1 text-[13px] font-semibold"><span aria-hidden>{t.mark}</span> {line.text}</p>
+        {openMarked && (
+          <Link href={`/app/marking/${openMarked}`} data-track="marking:open" className="shrink-0 text-xs font-bold underline underline-offset-2">
+            See your marked sheet ›
+          </Link>
+        )}
+        {line.actions && sheet && (
+          <span className="shrink-0 flex items-center gap-1.5">
             {sheet.pdf_url && (
-              <a href={fileHref(sheet.pdf_url)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold bg-emerald-700 text-white rounded-xl px-3 py-1.5">Open sheet</a>
+              <a href={fileHref(sheet.pdf_url)} target="_blank" rel="noopener noreferrer" className="text-xs font-bold bg-rose-600 text-white rounded-xl px-3 py-1.5 shadow-sm">Start ›</a>
             )}
-            {sheet.status !== 'marked' && sheet.status !== 'submitted' && (
-              <Link href={`/app/submit?assignment=${sheet.id}`} className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white">Hand in</Link>
-            )}
-          </div>
-          {/* The marked sheet lives HERE, under its paper — one card per paper,
-              not a second PDF in the list (Adrian, 8 Sep 2026). */}
-          {sheet.status === 'marked' && (markedSheet || sheet.run_id) && (
-            <Link href={`/app/marking/${markedSheet?.id ?? sheet.run_id}`} data-track="marking:open"
-              className="basis-full flex items-center justify-between gap-3 rounded-xl bg-white border border-emerald-200 px-3 py-2 hover:bg-emerald-50 transition-colors">
-              <span className="min-w-0 truncate text-sm font-semibold text-emerald-900">
-                📄 Open your marked sheet{markedSheet ? <span className="font-normal text-emerald-800/70"> · {niceDate(markedSheet.date)}</span> : null}
-              </span>
-              <span className="shrink-0 text-emerald-800 text-sm">›</span>
-            </Link>
-          )}
-          {/* One sheet teaches one wave; the rest was shelved with evidence.
-              Until now only Adrian's Telegram saw the shelf (11 Sep 2026). */}
-          {nextWave && <NextWave runIds={nextWave.runIds} count={nextWave.count} />}
-        </div>
-  );
-}
-
-/** The papers one merged sheet covers, in one frame: syllabus order inside, the sheet's card once at the foot (Adrian, 11 Sep 2026). */
-function Bundle({ papers, sheet, markedSheet, nextWave }: {
-  papers: StudentPaper[];
-  sheet: SheetCardRow;
-  markedSheet: StudentPaper | null;
-  nextWave: { count: number; runIds: string[] } | null;
-}) {
-  const subject = papers[0]?.subject && papers[0].subject !== 'Other' ? papers[0].subject : null;
-  return (
-    <div className="rounded-[28px] border-2 border-emerald-200 bg-emerald-50/40 p-2 space-y-2">
-      <p className="px-2 pt-1 text-xs font-semibold uppercase tracking-wide text-emerald-800/80">
-        {subject ? `${subject} · ` : ''}{papers.length} papers · one Practice Again sheet
-      </p>
-      {papers.map(p => (
-        <Paper key={p.id} paper={p} sheet={sheet} sheetJob={null} markedSheet={null} nextWave={null} inBundle />
-      ))}
-      <SheetCard sheet={sheet} markedSheet={markedSheet} nextWave={nextWave} top papersCount={papers.length} />
+            <Link href={`/app/submit?assignment=${sheet.id}`} className="text-xs font-semibold text-rose-900 border border-rose-300 bg-white rounded-xl px-3 py-1.5">Hand in</Link>
+          </span>
+        )}
+      </div>
+      {/* One sheet teaches one wave; the rest was shelved with evidence (11 Sep 2026). */}
+      {nextWave && <NextWave runIds={nextWave.runIds} count={nextWave.count} />}
     </div>
   );
 }
 
-type SheetCardRow = { id: string; run_id: string | null; status: string; pdf_url: string | null; score: number | null; out_of: number | null; required_at: string | null; source_run_ids?: string[] | null };
-
-function Paper({ paper, sheet, sheetJob, markedSheet, nextWave, inBundle = false }: {
+/** One paper: name, when, score — the whole row opens the paper. */
+function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle = false }: {
   paper: StudentPaper;
-  sheet: SheetCardRow | null;
-  /** Inside a Bundle the sheet's card is drawn once, at the foot — this card shows none of the sheet lines. */
-  inBundle?: boolean;
-  /** The latest sheet job when no sheet is with the student yet — says where it is. */
-  sheetJob: { status: string; noSheet: boolean } | null;
-  /** The sheet's own marked run, grouped under this paper (null until marked, or when it is not in the list). */
+  todayISO: string;
+  sheet: SheetRow | null;
+  job: { status: string; noSheet: boolean } | null;
   markedSheet: StudentPaper | null;
-  /** What the finished sheet kept back, and which papers a next wave would continue (11 Sep 2026). */
-  nextWave: { count: number; runIds: string[] } | null;
+  nextWave: Wave | null;
+  /** Inside a Bundle the sheet's line is drawn once, at the foot. */
+  inBundle?: boolean;
 }) {
+  const line = inBundle ? null : sheet ? sheetLine(sheet) : sheetJobLine(job);
   return (
-    <div className={`${CARD} p-4`}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-2.5 min-w-0">
-          <span className={`flex items-center justify-center w-9 h-9 rounded-xl shrink-0 ${M.tile}`} aria-hidden>
-            <PortalIcon name={M.icon} className="w-4.5 h-4.5" />
-          </span>
-          <div className="min-w-0">
-            <p className="font-bold text-navy leading-snug break-words">{paper.name}</p>
-            <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1.5">
-              {/* AM / EM / H2, colour-coded; "Other" and untagged papers carry no pill. */}
-              <PaperSubjectPill subject={paper.subject} />
-              <span>{niceDate(paper.date)}</span>
-            </p>
-          </div>
+    <div className={`${inBundle ? 'bg-white rounded-2xl' : CARD} p-3`}>
+      <Link href={`/app/marking/${paper.id}`} data-track="marking:open" className="flex items-center gap-3 group">
+        <div className="min-w-0 flex-1">
+          <p className="font-bold text-navy leading-snug break-words group-hover:underline">{paper.name}</p>
+          <p className="text-[12px] text-gray-500 mt-0.5">{whenLine(paper, todayISO)}</p>
         </div>
-        <span className={`shrink-0 text-sm font-bold rounded-full px-3 py-1 ${scoreChip(paper.pct)}`}>
-          {paper.max > 0 ? `${paper.awarded}/${paper.max}` : '—'}
-          {paper.pct !== null && <span className="font-semibold"> · {paper.pct}%</span>}
-        </span>
-      </div>
+        <div className={`shrink-0 rounded-2xl px-3 py-1.5 text-center min-w-[64px] ${scoreTone(paper.pct)}`}>
+          <p className="text-lg font-bold leading-tight tabular-nums">{paper.max > 0 ? `${paper.awarded}/${paper.max}` : '—'}</p>
+          {paper.pct !== null && <p className="text-[11px] font-semibold leading-tight opacity-90">{paper.pct}%</p>}
+        </div>
+        <span className="shrink-0 text-gray-300 text-lg" aria-hidden>›</span>
+      </Link>
 
       {/* News about the COPY, on the card, for three days — never a Telegram
-          message (Adrian, 14 Sep 2026: "put the message in the app (in the
-          cards instead - don't send through telegram), and only have the
-          message last for 3 days"). lib/paper-notice.ts owns the wording and
-          the clock. */}
+          message (Adrian, 14 Sep 2026). lib/paper-notice.ts owns the wording and the clock. */}
       {paper.notice && (
-        <p className="mt-3 text-[12px] text-sky-900 bg-sky-50 border border-sky-200 rounded-2xl px-3 py-2">
+        <p className="mt-2 text-[12px] text-sky-900 bg-sky-50 border border-sky-200 rounded-2xl px-3 py-2">
           <span className="font-semibold">{paper.notice.title}.</span> {paper.notice.body}
         </p>
       )}
 
-      {(paper.pdfUrl || paper.pages.length > 0) && (
-        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
-          {/* Opens the in-app view — cover page first, marked pages below (7 Sep 2026). The PDF is on that page. */}
-          <Link href={`/app/marking/${paper.id}`} data-track="marking:open"
-            className={`inline-block text-sm font-semibold ${M.tile} rounded-xl px-4 py-2 hover:opacity-90 transition-opacity`}>
-            📄 Open your marked paper
-          </Link>
-          {/* ✂️ clip a region of the marked pages into /app/my-notes — only
-              offered when the run has annotated page images to draw on. */}
-          {paper.pages.length > 0 && (
-            <ClipToNotes runId={paper.id} paperName={paper.name} pages={paper.pages} />
-          )}
-          {/* The typed-transcript 'Full report' link was removed for students on 7 Sep 2026 — one PDF per paper. */}
-        </div>
-      )}
-
-      {sheet && !inBundle && <SheetCard sheet={sheet} markedSheet={markedSheet} nextWave={nextWave} />}
-      {!sheet && !inBundle && sheetJob && (sheetJob.status === 'queued' || sheetJob.status === 'claimed') && (
-        <p className="mt-3 text-[12px] text-emerald-800/80">📘 Practice Again is being written for this paper — you’ll get a message when it’s ready.</p>
-      )}
-      {!sheet && !inBundle && sheetJob?.status === 'done' && !sheetJob.noSheet && (
-        <p className="mt-3 text-[12px] text-emerald-800/80">📘 Your Practice Again sheet is written — Adrian is checking it before it comes to you.</p>
-      )}
-      {!sheet && !inBundle && (!sheetJob || sheetJob.status === 'failed' || sheetJob.status === 'cancelled') && (
-        <p className="mt-3 text-[12px]">
-          <Link href={`/app/marking/${paper.id}#practice-again`} className="font-semibold text-emerald-900 underline underline-offset-2">📘 Want practice on what went wrong here? Request Practice Again ›</Link>
-        </p>
-      )}
-
-      {paper.dropped.length > 0 ? (
-        // Collapsed by default and rendered with <details> so this stays a
-        // server component — no client bundle just to open a list.
-        <details className="mt-3 group">
-          <summary className="cursor-pointer text-sm font-semibold text-navy list-none flex items-center gap-1.5">
-            <span className="text-gray-400 group-open:rotate-90 transition-transform inline-block">›</span>
-            Where you lost marks ({paper.dropped.length} question{paper.dropped.length === 1 ? '' : 's'})
-          </summary>
-          <ul className="mt-2 space-y-2.5">
-            {paper.dropped.map((q, i) => (
-              <li key={`${q.questionNumber}-${i}`} className="rounded-xl border border-gray-100 p-3">
-                <div className="flex items-baseline justify-between gap-3">
-                  <p className="text-sm font-bold text-navy">
-                    Q{q.questionNumber}
-                    {q.topic && <span className="ml-2 font-medium text-gray-400">{q.topic}</span>}
-                  </p>
-                  <span className="shrink-0 text-xs font-semibold text-gray-600">{q.awarded}/{q.max}</span>
-                </div>
-                {/* The printed question, so the feedback below has something to
-                    refer to (Adrian's phone review: "students can't tell what
-                    the comment refers to"). */}
-                {q.prompt && (
-                  <div className="mt-1.5 space-y-0.5 border-l-2 border-gray-200 pl-2">
-                    {promptLines(q.prompt).map((line, j) => (
-                      <MathText key={j} text={line} className="text-[12.5px] text-gray-600 leading-snug" />
-                    ))}
-                  </div>
-                )}
-                {q.schemes.length > 0 && (
-                  // SEAB teacher-margin shorthand, per part — the same codes a
-                  // school marker writes ("M1 A0" = method earned, accuracy lost).
-                  <div className="flex flex-wrap gap-1.5 mt-1.5">
-                    {q.schemes.map((s, j) => (
-                      <span key={j} className="text-[11px] font-mono bg-gray-100 text-gray-700 rounded px-1.5 py-0.5">
-                        {s.label ? `${s.label} ` : ''}{s.scheme}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {q.comment && <p className="text-[13px] text-gray-700 mt-1 leading-snug">{q.comment}</p>}
-                {q.solution && (
-                  <details className="mt-2 group/sol">
-                    <summary className="cursor-pointer text-[13px] font-semibold text-navy list-none flex items-center gap-1.5">
-                      <span className="text-gray-400 group-open/sol:rotate-90 transition-transform inline-block">›</span>
-                      📖 The worked solution, annotated
-                    </summary>
-                    <AnnotatedSolution solution={q.solution} schemes={q.schemes} />
-                  </details>
-                )}
-                {q.slips.length > 0 && (
-                  <ul className="mt-1.5 space-y-1">
-                    {q.slips.map((s, j) => (
-                      <li key={j} className="text-[12px] text-amber-900 bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-1.5">
-                        <MathText text={s} />
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {q.revise && (
-                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                    <Link
-                      href={q.revise.href}
-                      className="inline-block text-[12px] font-semibold bg-[hsl(45,80%,94%)] text-navy rounded-full px-3 py-1.5 hover:bg-[hsl(45,80%,88%)] transition-colors"
-                    >
-                      ✏️ Practise: {q.revise.name} <span className="text-gray-400">›</span>
-                    </Link>
-                    <a
-                      href={q.revise.examplesHref}
-                      className="text-[12px] text-gray-500 underline underline-offset-2 hover:text-navy"
-                    >
-                      worked examples ›
-                    </a>
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        </details>
-      ) : (
-        paper.questions.length > 0 && (
-          <p className="text-sm text-emerald-800 mt-3">✅ Full marks on every question marked.</p>
-        )
-      )}
-
-      {/* "Practice these next" + "Download as a worksheet" were removed on 6 Sep 2026
-          (Adrian: "remove the current practice these next since it's random") — the
-          list was an automatic bank draw, one question per lost part, with no
-          teaching in it. The Practice Again sheet (From Adrian) is the follow-up now.
-          paper.practice still comes back from buildStudentMarking for the desk/triage. */}
+      {line && <div className="mt-2"><SheetLineView line={line} sheet={sheet} markedSheet={markedSheet} nextWave={nextWave} /></div>}
     </div>
   );
 }
 
-// Server-side KaTeX over inline $…$ spans (same treatment the admin marking
-// page gives these strings — lib/math-inline decides what is maths and what
-// is a dollar sign).
-function MathText({ text, className }: { text: string; className?: string }) {
-  return <div className={className} dangerouslySetInnerHTML={{ __html: mathHtml(text) }} />;
+/** The papers one merged sheet covers, in one frame: the caption says what the sheet is, syllabus order inside, the sheet's line once at the foot. */
+function Bundle({ papers, todayISO, sheet, markedSheet, nextWave }: {
+  papers: StudentPaper[];
+  todayISO: string;
+  sheet: SheetRow;
+  markedSheet: StudentPaper | null;
+  nextWave: Wave | null;
+}) {
+  const cap = bundleCaption(papers.length);
+  const line = sheetLine(sheet);
+  return (
+    <div className="rounded-[28px] border-2 border-emerald-200 bg-emerald-50/50 p-2 space-y-2">
+      <div className="px-2 pt-1">
+        <p className="text-[13px] font-bold text-emerald-900">📘 {cap.title}</p>
+        <p className="text-[12px] text-emerald-800/80">{cap.sub}</p>
+      </div>
+      {papers.map(p => (
+        <PaperRow key={p.id} paper={p} todayISO={todayISO} sheet={sheet} job={null} markedSheet={null} nextWave={null} inBundle />
+      ))}
+      <SheetLineView line={line} sheet={sheet} markedSheet={markedSheet} nextWave={nextWave} />
+    </div>
+  );
 }
