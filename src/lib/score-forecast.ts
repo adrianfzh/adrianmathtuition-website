@@ -44,7 +44,27 @@ export interface TopicStat {
   rate: number;
   carelessLost: number;
 }
-export type Profile = Map<string, TopicStat>;
+export interface ProfileMeta {
+  /** Marks won / available across all papers, recency-weighted. */
+  overall: number;
+  /** Concept rate: (won + careless) / available — what the student knows, before slips. */
+  concept: number;
+  /** Careless marks lost per mark available, recency-weighted. */
+  carelessRate: number;
+  /** Improvement in the overall rate per 30 days, fitted over the papers (0 when too few or too close together). */
+  trendPer30d: number;
+  /** The overall rate projected to `now` from the fitted trend, clamped. */
+  projected: number;
+  papers: number;
+}
+export type Profile = Map<string, TopicStat> & { meta?: ProfileMeta };
+
+/** The trend is trusted only across ≥ 3 papers spanning ≥ 21 days, and never moves the forecast more than this. */
+const TREND_MIN_PAPERS = 3;
+const TREND_MIN_SPAN_DAYS = 21;
+const TREND_MAX_SHIFT = 0.12;
+/** Improvement assumed per 30 days when a student's own trend cannot be fitted yet (rate points, 0.03 = 3 %). */
+export const DEFAULT_TREND_PER_30D = Number(process.env.FORECAST_DEFAULT_TREND ?? '0.03');
 
 export const PROFILE_HALF_LIFE_DAYS = 45;
 /** Below this much evidence on a topic, the rate is shrunk towards the student's overall rate. */
@@ -71,13 +91,48 @@ export function buildProfile(papers: readonly ProfilePaper[], now: Date | string
     }
   }
   const overall = availAll > 0 ? wonAll / availAll : 0.7;
+  // Careless: slips are lost marks the student KNOWS how to avoid — kept out of the
+  // topic rates (concept) and charged once per paper instead.
+  let carelessAll = 0;
+  for (const a of acc.values()) carelessAll += a.careless;
+  const evidenceAll = [...acc.values()].reduce((x, a) => x + a.evidence, 0);
+  const carelessRate = evidenceAll > 0 ? Math.min(0.15, carelessAll / evidenceAll) : 0;
+  // The improvement trend (17 Sep 2026): the overall rate per paper against its date,
+  // weighted least squares, projected to `now`. A student at 60 % in June and 80 %
+  // last week is heading up; the average alone forecast 9 marks low on A Math.
+  const pts = papers.filter(p => p.questions.some(q => q.max > 0)).map(p => {
+    const won = p.questions.reduce((x, q) => x + q.awarded, 0), avail = p.questions.reduce((x, q) => x + q.max, 0);
+    return { t: (t0 - Date.parse(p.date + 'T00:00:00Z')) / DAY, y: avail > 0 ? won / avail : 0, w: avail };
+  });
+  // Too few papers to fit a trend → the default improvement a student on tuition
+  // shows (DEFAULT_TREND_PER_30D, set from the back-test over every sat GCE paper).
+  let trendPer30d = DEFAULT_TREND_PER_30D;
+  if (pts.length >= TREND_MIN_PAPERS) {
+    const span = Math.max(...pts.map(p => p.t)) - Math.min(...pts.map(p => p.t));
+    if (span >= TREND_MIN_SPAN_DAYS) {
+      const W = pts.reduce((x, p) => x + p.w, 0);
+      const mt = pts.reduce((x, p) => x + p.w * p.t, 0) / W, my = pts.reduce((x, p) => x + p.w * p.y, 0) / W;
+      const sxx = pts.reduce((x, p) => x + p.w * (p.t - mt) ** 2, 0);
+      const sxy = pts.reduce((x, p) => x + p.w * (p.t - mt) * (p.y - my), 0);
+      // t counts days AGO, so a rising student has a negative slope in t; flip the sign.
+      if (sxx > 0) trendPer30d = -(sxy / sxx) * 30;
+    }
+  }
+  // Projection: from the weighted mean date to now, capped so one hot paper cannot run away.
+  const meanAge = pts.length ? pts.reduce((x, p) => x + p.w * p.t, 0) / pts.reduce((x, p) => x + p.w, 0) : 0;
+  const shift = Math.max(-TREND_MAX_SHIFT, Math.min(TREND_MAX_SHIFT, trendPer30d * (meanAge / 30)));
+  const projected = Math.max(0, Math.min(1, overall + shift));
   const out: Profile = new Map();
   for (const [topic, a] of acc) {
-    // Shrink a thin topic towards the student's overall rate (a 2-mark part is not a verdict).
-    const raw = a.avail > 0 ? a.won / a.avail : overall;
+    // Concept rate (slips added back), shrunk towards the overall concept rate when thin,
+    // then lifted by the same trend shift the whole student shows.
+    const conceptAll = Math.min(1, overall + carelessRate);
+    const raw = a.avail > 0 ? Math.min(1, (a.won + a.careless * (a.avail / Math.max(1, a.evidence))) / a.avail) : conceptAll;
     const k = a.evidence / (a.evidence + PRIOR_MARKS);
-    out.set(topic, { topic, won: a.won, avail: a.avail, evidence: a.evidence, rate: k * raw + (1 - k) * overall, carelessLost: a.careless });
+    const rate = Math.max(0, Math.min(1, k * raw + (1 - k) * conceptAll + shift));
+    out.set(topic, { topic, won: a.won, avail: a.avail, evidence: a.evidence, rate, carelessLost: a.careless });
   }
+  out.meta = { overall, concept: Math.min(1, overall + carelessRate), carelessRate, trendPer30d: Math.round(trendPer30d * 1000) / 1000, projected, papers: pts.length };
   return out;
 }
 
@@ -98,6 +153,10 @@ export interface Forecast {
   losses: TopicLoss[];
   /** How much of the paper the profile could speak to, 0..1. */
   coverage: number;
+  /** Marks expected to go to careless slips on this paper (already taken off `expected`). */
+  carelessExpected: number;
+  /** The student's improvement per 30 days that was applied (0 when not trusted). */
+  trendPer30d: number;
 }
 
 export function forecastPaper(profile: Profile, target: TargetPaper): Forecast {
@@ -123,10 +182,13 @@ export function forecastPaper(profile: Profile, target: TargetPaper): Forecast {
       byTopic.set(t, row);
     }
   }
+  const carelessExpected = (profile.meta?.carelessRate ?? 0) * target.total;
+  expected -= carelessExpected;
   const band = Math.sqrt(variance) + 0.35 * unknownMarks;
   const losses = [...byTopic.values()].filter(r => r.known && r.expectedLost >= 0.5).sort((a, b) => b.expectedLost - a.expectedLost);
   return {
     key: target.key, label: target.label, total: target.total,
+    carelessExpected: round1(carelessExpected), trendPer30d: profile.meta?.trendPer30d ?? 0,
     expected: round1(expected),
     low: Math.max(0, Math.round(expected - band)),
     high: Math.min(target.total, Math.round(expected + band)),
@@ -136,6 +198,8 @@ export function forecastPaper(profile: Profile, target: TargetPaper): Forecast {
 }
 
 export function overallRate(profile: Profile): number {
+  // The unseen-topic rate: the student's projected concept rate (the trend applied), else the plain mean.
+  if (profile.meta) return Math.max(0, Math.min(1, profile.meta.projected + profile.meta.carelessRate));
   let won = 0, avail = 0;
   for (const s of profile.values()) { won += s.won; avail += s.avail; }
   return avail > 0 ? won / avail : 0.7;

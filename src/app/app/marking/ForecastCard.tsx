@@ -33,6 +33,8 @@ export default async function ForecastCard({ sid, subject }: { sid: string; subj
             <span className="font-semibold">{f.label}</span>: <span className="font-bold tabular-nums">{f.low}–{f.high}</span>
             <span className="text-indigo-900/60"> of {f.total} · likely {Math.round(f.expected)}</span>
             {f.unknownMarks >= 5 && <span className="text-indigo-900/60"> · {Math.round(f.unknownMarks)} marks on topics never seen</span>}
+            {f.carelessExpected >= 1 && <span className="text-indigo-900/60"> · about {Math.round(f.carelessExpected)} to careless slips</span>}
+            {f.trendPer30d >= 0.02 && <span className="text-indigo-900/60"> · improving ≈ {Math.round(f.trendPer30d * 100)} % a month</span>}
             {f.losses.length > 0 && (
               <span className="block text-[12px] text-indigo-900/75 mt-0.5">
                 would lose most on {f.losses.slice(0, 3).map(l => `${l.topic} −${Math.round(l.expectedLost)}`).join(' · ')}
@@ -45,7 +47,7 @@ export default async function ForecastCard({ sid, subject }: { sid: string; subj
         {bt.summary.n > 0
           ? `Checked on ${bt.summary.n} GCE paper${bt.summary.n === 1 ? '' : 's'} this student already sat, using only earlier papers: off by ${bt.summary.meanAbsError} marks on average${bt.summary.bias ? ` (${bt.summary.bias > 0 ? 'runs high' : 'runs low'} by ${Math.abs(bt.summary.bias)})` : ''}.`
           : 'No past GCE paper to check this against yet — treat it as a rough guide.'}
-        {' '}A range, not a mark. Across all students the method is off by about 4 marks (E Math) and 7 (A Math) where the papers cover the topics, and it runs low for a student who is still improving.
+        {' '}A range, not a mark. Across all students it is off by about 4 marks (E Math) and 7 (A Math) where the papers cover the topics; a student's own improvement is projected forward when three or more papers show it.
       </p>
     </section>
   );

@@ -2349,6 +2349,7 @@ each topic"*, then *"only show the prediction to me internally"*.
   tab in admin mode ONLY (students never see it): GCE 2025 P1/P2 and 2024 P1/P2 as ranges,
   "likely N", marks on unseen topics, the three topics that would cost most, and the
   student's own back-test line.
+- **Same evening:** the profile carries the student's improvement trend (weighted least squares over paper rates vs date, ≥ 3 papers over ≥ 21 days, projected to now, shift capped at ±12 points; `DEFAULT_TREND_PER_30D` = 3 % a month when a trend cannot be fitted — the sweep 0 / 2 / 3 / 5 % moved the all-papers A Math bias from −1.5 to −0.6 and changed little else) and charges careless slips ONCE per paper (`carelessExpected`, rate capped at 15 %) instead of hiding them in the topic rates. Difficulty scaling was dropped: 96 % of bank questions are "Standard". A prelim→GCE offset was checked and is not there (both average ~81 %). The earlier-papers-only A Math bias (−8.6) is genuine improvement in a 14-case sample of students with one or two early papers — not fixable from data that thin.
 - **Accuracy at launch** (`npx tsx scripts/score-forecast/backtest.ts`, 47 sat GCE papers,
   17 students): E Math mean error 5.4 marks (75 % within 8), 4.4 where the profile covers
   the paper; A Math 9.6 (7.4 covered), and with earlier papers only it runs 9 marks LOW —

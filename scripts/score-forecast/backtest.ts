@@ -26,6 +26,9 @@ import { backtest, type Level } from '../../src/lib/score-forecast';
       const papers = await loadStudentTopicPapers(sid, level, gce);
       students.push({ studentId: sid, papers });
     }
+    let qAll = 0, qUnmapped = 0;
+    for (const st of students) for (const pp of st.papers) for (const q of pp.questions) { qAll++; if (!q.topics.length) qUnmapped++; }
+    console.log(`\n   ${level}: ${qAll} marked questions, ${qUnmapped} (${Math.round(qUnmapped / Math.max(1, qAll) * 100)}%) with no bank topic`);
     const r = backtest(students, gce);
     const rp = backtest(students, gce, new Date(), { priorOnly: true });
     console.log(`\n== ${level}: ${r.summary.n} sat GCE papers across ${students.length} students`);

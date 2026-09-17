@@ -57,3 +57,20 @@ describe('canonicalTopic', () => {
     expect(canonicalTopic(null, 'EM')).toBeNull();
   });
 });
+
+describe('improvement trend and careless (17 Sep 2026)', () => {
+  it('a rising student is forecast above their average', () => {
+    const rising = [paper('a', '2026-06-01', [['Vectors', 5, 10]]), paper('b', '2026-07-15', [['Vectors', 7, 10]]), paper('c', '2026-09-10', [['Vectors', 9, 10]])];
+    const prof = buildProfile(rising, '2026-09-17');
+    expect(prof.meta!.trendPer30d).toBeGreaterThan(0.02);
+    expect(prof.get('Vectors')!.rate).toBeGreaterThan(0.75);
+  });
+  it('careless slips are charged once per paper, not hidden inside the topic rate', () => {
+    const p: ProfilePaper = { id: 'p', date: '2026-09-10', questions: [{ topics: ['Vectors'], awarded: 8, max: 10, carelessLost: 2 }] };
+    const prof = buildProfile([p], '2026-09-17');
+    expect(prof.get('Vectors')!.rate).toBeGreaterThan(0.9);   // concept: the 2 lost were slips
+    const f = forecastPaper(prof, { key: 'k', label: 'K', total: 90, questions: [{ number: '1', topics: ['Vectors'], marks: 90 }] });
+    expect(f.carelessExpected).toBeCloseTo(90 * 0.15, 0);       // capped at 15 %
+    expect(f.expected).toBeLessThan(90);
+  });
+});
