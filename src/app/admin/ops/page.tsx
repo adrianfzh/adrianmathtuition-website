@@ -41,7 +41,7 @@ const JOB_LINKS: Record<string, string> = {
   'progress-digest': '/admin/digests',
   'qb-topup': '/admin/bank-health',
   'file-subgroups': '/admin/bank-health',
-  'plan-marking': '/admin/papers',
+  'plan-marking': '/admin/desk?lane=released',
 };
 
 function ago(iso: string): string {

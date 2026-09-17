@@ -119,6 +119,11 @@ export interface StudentPracticeItem {
   note: string | null;
 }
 
+/** One marked page image; `layerUrl` + `layerH` (17 Sep 2026) = the marker's
+ *  editable ink layer for that page, when it has one — "See it on my paper"
+ *  measures the question's own marks in it to land pixel-exact. */
+export interface AnnotatedPage { index: number; url: string; overflow?: true; layerUrl?: string | null; layerW?: number | null; layerH?: number | null }
+
 export interface StudentPaper {
   id: string;
   /** YYYY-MM-DD, from created_at. */
@@ -171,7 +176,7 @@ export interface StudentPaper {
    * plumbing. Empty for runs that never rendered annotations (the clipper
    * simply doesn't offer itself).
    */
-  pages: { index: number; url: string; overflow?: true }[];
+  pages: AnnotatedPage[];
   /**
    * A short-lived line about the COPY, not the maths — "some pages didn't
    * upload properly the first time, the whole paper is here now" (14 Sep 2026).
@@ -349,9 +354,9 @@ function reviseLinks(
  * every entry is re-validated: a malformed block degrades to no clipper, never
  * to a broken image. https-only — these are public Vercel Blob JPEGs.
  */
-function annotatedPages(raw: unknown): { index: number; url: string; overflow?: true }[] {
+function annotatedPages(raw: unknown): AnnotatedPage[] {
   if (!Array.isArray(raw)) return [];
-  const pages: { index: number; url: string; overflow?: true }[] = [];
+  const pages: AnnotatedPage[] = [];
   for (const rawEntry of raw) {
     const entry = asRecord(rawEntry);
     if (!entry) continue;
@@ -363,7 +368,11 @@ function annotatedPages(raw: unknown): { index: number; url: string; overflow?: 
     const url = /^https:\/\//.test(withSol) ? withSol : plain;
     const index = Number(entry.photo_index);
     if (!/^https:\/\//.test(url) || !Number.isInteger(index)) continue;
-    pages.push({ index, url });
+    const layerUrl = str(entry.layer_url) || null;
+    const layerMeta = asRecord(entry.layer);
+    const hasLayer = /^https:\/\//.test(layerUrl ?? '') && num(layerMeta?.totalH) > 0;
+    // The layer keys ride only when there is one — older pages keep their exact shape.
+    pages.push(hasLayer ? { index, url, layerUrl, layerW: num(layerMeta?.canvasW) || null, layerH: num(layerMeta?.totalH) } : { index, url });
     const over = str(entry.overflow_url);
     if (/^https:\/\//.test(withSol) && /^https:\/\//.test(over)) pages.push({ index: index + 0.5, url: over, overflow: true });
   }

@@ -36,7 +36,7 @@ export function fitStroke(points: StrokePoint[], opts: FitOptions = {}): Snapped
   const gap = dist(points[0], points[points.length - 1]);
   if (gap > CLOSURE_MAX_GAP * len) return null;
 
-  return fitRect(points, len) ?? fitEllipse(points);
+  return fitRect(points, len) ?? fitTriangle(points, len) ?? fitEllipse(points);
 }
 
 function fitLine(points: XY[], len: number): SnappedShape | null {
@@ -191,8 +191,27 @@ function fitEllipse(points: XY[]): SnappedShape | null {
   return { kind: 'ellipse', cx, cy, rx, ry, angle: rx === ry ? 0 : angle };
 }
 
+/** A closed loop that simplifies to exactly three corners (17 Sep 2026). Rect is
+ *  tried first, so a four-cornered loop never lands here; a rounded blob
+ *  simplifies to many points and falls through to the ellipse fit. */
+function fitTriangle(points: XY[], len: number): SnappedShape | null {
+  const simplified = rdpSimplify(points, RDP_EPSILON * len);
+  const corners = simplified.slice();
+  if (corners.length > 1 && dist(corners[0], corners[corners.length - 1]) < CLOSURE_MAX_GAP * len) corners.pop();
+  if (corners.length !== 3) return null;
+  // Degenerate (three near-collinear points) is not a triangle.
+  const [a, b, c] = corners;
+  const area2 = Math.abs((b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y));
+  if (area2 < 0.02 * len * len) return null;
+  return { kind: 'triangle', points: [{ x: a.x, y: a.y }, { x: b.x, y: b.y }, { x: c.x, y: c.y }] };
+}
+
 /** Convert a fitted shape to the polyline stored on the stroke (see types.ts). */
 export function shapeToPolyline(shape: SnappedShape, pressure = 0.6): StrokePoint[] {
+  if (shape.kind === 'triangle') {
+    const [a, b, c] = shape.points;
+    return [a, b, c, a].map(p => ({ x: p.x, y: p.y, p: pressure }));
+  }
   if (shape.kind === 'line') {
     return [
       { x: shape.x1, y: shape.y1, p: pressure },

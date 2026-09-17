@@ -47,7 +47,9 @@ export function validateInkPages(input: unknown): InkResult {
       });
       if (points.some(pt => !num(pt.x) || !num(pt.y))) return { ok: false, error: `page ${k}: a point is not a number` };
       if (!points.length) continue;
-      strokes.push({ tool, color, width, points: points as Stroke['points'] } as Stroke);
+      const text = typeof st.text === 'string' && st.text.trim() ? st.text.slice(0, 500) : undefined;
+      const fontSize = num(st.fontSize) ? Math.min(200, Math.max(8, st.fontSize as number)) : undefined;
+      strokes.push({ tool, color, width, points: points as Stroke['points'], ...(text ? { text, fontSize: fontSize ?? 28 } : {}) } as Stroke);
     }
     if (strokes.length) out[idx] = { strokes, w: pg.w as number, h: pg.h as number };
   }

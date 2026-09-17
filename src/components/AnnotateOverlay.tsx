@@ -441,6 +441,15 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         ctx.globalAlpha = 1;
         ctx.globalCompositeOperation = 'source-over';
       }
+      if (s.text) {
+        // A typed note (student mode, 17 Sep 2026): drawn as text at its anchor, no outline.
+        if (pass === 'hl') continue;
+        const fs = s.fontSize || 28;
+        ctx.fillStyle = s.color;
+        ctx.font = `${fs}px 'Patrick Hand', 'DejaVu Sans', sans-serif`;
+        s.text.split('\n').forEach((ln, i) => ctx.fillText(ln, s.points[0].x, s.points[0].y + i * fs * 1.25));
+        continue;
+      }
       if (s.snapped) {
         ctx.strokeStyle = s.color;
         ctx.lineWidth = s.width;
@@ -1206,6 +1215,26 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           eraseChangedRef.current = false;
           (eraserMode === 'partial' ? eraseAtPartial : eraseAt)(x, y);
           scheduleLive();
+          return;
+        }
+        if (tool === 'text' && isStudent) {
+          // Student mode (17 Sep 2026): a typed note becomes a text stroke on the
+          // student's own layer — erasable and lassoable like ink.
+          const pt = toImage(x, y);
+          penDownRef.current = false;
+          if (!pt) return;
+          const typed = window.prompt('Type your note');
+          if (!typed || !typed.trim()) return;
+          const d = dimsRef.current[pt.pageIdx];
+          const stroke: Stroke = {
+            tool: 'pen', color: penColorRef.current, width: 2,
+            points: [{ x: pt.x, y: pt.y, p: 1 }],
+            text: typed.trim().slice(0, 500), fontSize: Math.max(18, Math.round((d?.w ?? 1200) / 44)),
+          };
+          strokesRef.current[pt.pageIdx].push(stroke);
+          pushUndo(pt.pageIdx, { t: 'add', stroke });
+          bumpInk();
+          scheduleBase();
           return;
         }
         if (tool === 'text') {
@@ -2397,7 +2426,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           <button style={tool === 'select' ? activeBtn : btn} onClick={() => setToolRemember('select')} aria-label="Select the marker's ink"
             title="Select: tap a tick, cross, box or note the marker drew — drag to move it; the chip deletes it or edits its text"><IconSelect /><span style={{ marginLeft: 5, fontSize: 12, fontWeight: 700 }}>Marks</span></button>
         )}
-        {hasLayers && (
+        {(hasLayers || isStudent) && (
           <button style={tool === 'text' ? activeBtn : btn} onClick={() => setToolRemember('text')} aria-label="Type text"
             title="Type text: tap where it should start, type, and it becomes a movable note in the marker's hand"><span style={{ fontWeight: 800, fontSize: 17, fontFamily: 'Georgia, serif' }}>T</span></button>
         )}

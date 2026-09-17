@@ -1186,7 +1186,7 @@ export default function DeskPage() {
           <div style={{ marginTop: 22, fontSize: 12.5, color: C.muted, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
             <span>Other views:</span>
             <a href="/admin/mark-paper" style={{ color: C.link, textDecoration: 'none' }}>✍️ Mark a paper</a>
-            <a href="/admin/papers" style={{ color: C.link, textDecoration: 'none' }}>📑 Papers library</a>
+            <a href="/admin/desk?lane=released" style={{ color: C.link, textDecoration: 'none' }}>📑 Papers library</a>
             <a href="/admin" style={{ color: C.link, textDecoration: 'none' }}>← Admin</a>
           </div>
         </>

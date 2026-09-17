@@ -198,3 +198,25 @@ describe('shapeToPolyline', () => {
     expect(Math.max(...pts.map((p) => p.y))).toBeCloseTo(7);
   });
 });
+
+describe('triangle (17 Sep 2026)', () => {
+  const walk = (corners: { x: number; y: number }[], perSide = 12) => {
+    const pts: { x: number; y: number; p: number }[] = [];
+    for (let i = 0; i < corners.length; i++) {
+      const a = corners[i], b = corners[(i + 1) % corners.length];
+      for (let k = 0; k < perSide; k++) pts.push({ x: a.x + (b.x - a.x) * (k / perSide), y: a.y + (b.y - a.y) * (k / perSide), p: 0.5 });
+    }
+    pts.push({ x: corners[0].x + 2, y: corners[0].y - 1, p: 0.5 });
+    return pts;
+  };
+  it('a three-cornered loop snaps to a triangle that closes on itself', () => {
+    const fit = fitStroke(walk([{ x: 100, y: 300 }, { x: 300, y: 300 }, { x: 200, y: 100 }]));
+    expect(fit?.kind).toBe('triangle');
+    const poly = shapeToPolyline(fit!);
+    expect(poly).toHaveLength(4);
+    expect(poly[0]).toEqual(poly[3]);
+  });
+  it('a four-cornered loop is still a rect', () => {
+    expect(fitStroke(walk([{ x: 100, y: 100 }, { x: 300, y: 100 }, { x: 300, y: 250 }, { x: 100, y: 250 }]))?.kind).toBe('rect');
+  });
+});

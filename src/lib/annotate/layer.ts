@@ -176,6 +176,13 @@ export function strokesToSvg(strokes: Stroke[]): string {
   let out = '';
   for (const s of strokes) {
     if (!s.points.length) continue;
+    if (s.text) {
+      // A typed note (17 Sep 2026): one <text> per line, anchored at points[0].
+      const fs = s.fontSize || 28;
+      const lines = s.text.split('\n');
+      out += lines.map((ln, i) => `<text x="${round(s.points[0].x)}" y="${round(s.points[0].y + i * fs * 1.25)}" font-family="Patrick Hand,DejaVu Sans,sans-serif" font-size="${fs}" fill="${escapeXml(s.color)}">${escapeXml(ln)}</text>`).join('');
+      continue;
+    }
     const d = s.points.map((p, i) => `${i ? 'L' : 'M'}${round(p.x)} ${round(p.y)}`).join(' ');
     const hl = s.tool === 'highlighter';
     out += `<path d="${d}" fill="none" stroke="${escapeXml(s.color)}" stroke-width="${round(s.width)}" stroke-linecap="round" stroke-linejoin="round"${hl ? ' stroke-opacity="0.38" style="mix-blend-mode:multiply"' : ''}/>`;

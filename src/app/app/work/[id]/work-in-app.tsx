@@ -137,6 +137,14 @@ function drawStrokes(ctx: CanvasRenderingContext2D, strokes: Stroke[]) {
     for (const s of strokes) {
       if ((s.tool === 'highlighter') !== (pass === 'hl')) continue;
       if (!s.points.length) continue;
+      if (s.text) {
+        if (pass !== 'pen') continue;
+        const fs = s.fontSize || 28;
+        ctx.save(); ctx.fillStyle = s.color; ctx.font = `${fs}px 'Patrick Hand', 'DejaVu Sans', sans-serif`;
+        s.text.split('\n').forEach((ln, i) => ctx.fillText(ln, s.points[0].x, s.points[0].y + i * fs * 1.25));
+        ctx.restore();
+        continue;
+      }
       ctx.save();
       ctx.strokeStyle = s.color; ctx.lineWidth = s.width; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       if (s.tool === 'highlighter') { ctx.globalAlpha = 0.38; ctx.globalCompositeOperation = 'multiply'; }

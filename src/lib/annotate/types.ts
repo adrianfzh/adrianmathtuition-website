@@ -16,7 +16,11 @@ export type ToolKind = 'pen' | 'highlighter';
 export type SnappedShape =
   | { kind: 'line'; x1: number; y1: number; x2: number; y2: number }
   | { kind: 'rect'; cx: number; cy: number; w: number; h: number; angle: number }
-  | { kind: 'ellipse'; cx: number; cy: number; rx: number; ry: number; angle: number };
+  | { kind: 'ellipse'; cx: number; cy: number; rx: number; ry: number; angle: number }
+  // 17 Sep 2026: a closed loop with three corners (Adrian: "triangles can't").
+  | { kind: 'triangle'; points: [XYPt, XYPt, XYPt] };
+
+export type XYPt = { x: number; y: number };
 
 export type Stroke = {
   tool: ToolKind;
@@ -30,4 +34,7 @@ export type Stroke = {
    */
   points: StrokePoint[];
   snapped?: SnappedShape['kind'];
+  /** 17 Sep 2026: a typed note (student mode's text tool) — drawn at points[0], no outline. */
+  text?: string;
+  fontSize?: number;
 };
