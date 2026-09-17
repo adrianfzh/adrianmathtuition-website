@@ -9,6 +9,14 @@
 // Telegram ID) + web push. Pure: the cron (/api/cron/practice-again-reminders)
 // does the I/O and stamps reminded_at / reminder_count.
 
+/**
+ * PAUSED — Adrian, 17 Sep 2026: "stop sending practice again reminders".
+ * The cron still runs and stamps job_runs (so the ops board stays green and
+ * the rhythm line stays true) but sends nothing and stamps no row. Flip to
+ * false to resume; the day-3 / weekly / ×4 rule below is unchanged.
+ */
+export const REMINDERS_PAUSED = true;
+
 export const FIRST_NUDGE_AFTER_DAYS = 3;
 export const NUDGE_EVERY_DAYS = 7;
 export const MAX_NUDGES = 4;

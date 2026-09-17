@@ -1303,7 +1303,7 @@ compulsory, so we should build a mechanism that reminds them it is not done."
   inserted with `required: true` → `portal_assignments.required_at`
   (`lib/assignments.ts withRequired`, tested) and the nudge says "he asked you
   to do this one" (`lib/assignment-nudge.ts`, tested). **Reminders:**
-  `/api/cron/practice-again-reminders` (daily 09:00 SGT in `vercel.json`;
+  `/api/cron/practice-again-reminders` (**PAUSED 17 Sep 2026** — Adrian: "stop sending practice again reminders"; `REMINDERS_PAUSED` in the lib, the cron stamps job_runs and exits; daily 09:00 SGT in `vercel.json`;
   `lib/practice-again-reminders.ts`, tested): day 3 after `required_at`, then
   every 7 days, `MAX_NUDGES` 4, five per run; Telegram via
   `lib/student-recipient.ts resolveRecipient` (portal chat, else the Airtable

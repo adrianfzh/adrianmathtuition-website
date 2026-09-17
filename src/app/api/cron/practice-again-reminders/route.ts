@@ -15,7 +15,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram, sendTelegramTo } from '@/lib/telegram';
 import { sendPushToStudent } from '@/lib/portal-push';
 import { resolveRecipient } from '@/lib/student-recipient';
-import { pickDue, nudgeText, nudgePush, nudgeSummaryLine, FIRST_NUDGE_AFTER_DAYS, type RequiredSheetRow, type NudgeSent } from '@/lib/practice-again-reminders';
+import { REMINDERS_PAUSED, pickDue, nudgeText, nudgePush, nudgeSummaryLine, FIRST_NUDGE_AFTER_DAYS, type RequiredSheetRow, type NudgeSent } from '@/lib/practice-again-reminders';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -32,6 +32,12 @@ function authed(req: NextRequest): boolean {
 export async function GET(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const dry = req.nextUrl.searchParams.get('dry') === '1';
+  // Paused (Adrian, 17 Sep 2026) — nothing sent, nothing stamped on rows; the
+  // logbook line says so, so a silent morning is a choice, not a dead cron.
+  if (REMINDERS_PAUSED) {
+    if (!dry) await logJobRun('practice-again-reminders', true, 'paused — reminders switched off 17 Sep 2026 (lib/practice-again-reminders REMINDERS_PAUSED)').catch(() => {});
+    return NextResponse.json({ ok: true, paused: true, nudged: 0 });
+  }
   const now = new Date();
   const sb = getSupabaseAdmin();
   const site = process.env.WEBSITE_URL || 'https://www.adrianmathtuition.com';

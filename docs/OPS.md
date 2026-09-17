@@ -31,7 +31,7 @@ Writers:
   through the same `mark-triage {release, auto:true, sweep:true}` door, until it
   succeeds; rule refusals and holds are left to the desk; the bot stamps every
   outcome on `result_json.auto_release` — 9 Sep 2026, Sophie's 1 Sep hand-in),
-  `practice-again-reminders` (daily 9am SGT — nudges students whose COMPULSORY
+  `practice-again-reminders` (daily 9am SGT — **PAUSED since 17 Sep 2026**, `REMINDERS_PAUSED` in `lib/practice-again-reminders.ts`: the cron stamps a 'paused' line and sends nothing. When on, nudges students whose COMPULSORY
   Practice Again sheet is still not handed in: `portal_assignments.required_at`
   is set when Adrian releases a sheet he queued himself; day 3, then weekly,
   four nudges at most, Telegram + web push, one summary line to Adrian; stamps
