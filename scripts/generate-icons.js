@@ -49,6 +49,21 @@ const pictorial = {
         <path d="M${70 * u},${62 * u} L${78 * u},${59.5 * u} L${73 * u},${67.5 * u} Z" fill="#C4342C"/>
       </svg>`;
   },
+  // students (18 Sep 2026, Adrian: "make /admin/student have a better icon") —
+  // the student directory: two cream figures, one a step behind, on the violet
+  // of the Papers tab, so the tile reads "people" beside the desk's tray.
+  'students': (size) => {
+    const s = size, u = s / 100;
+    const person = (cx, cy, r, w, h, fill) =>
+      `<circle cx="${cx * u}" cy="${cy * u}" r="${r * u}" fill="${fill}"/>
+       <path d="M${(cx - w / 2) * u},${(cy + r + h) * u} a${(w / 2) * u},${(w / 2) * u} 0 0 1 ${w * u},0 V${(cy + r + h + 2) * u} H${(cx - w / 2) * u} Z" fill="${fill}"/>`;
+    return `
+      <svg width="${s}" height="${s}" xmlns="http://www.w3.org/2000/svg">
+        <rect width="${s}" height="${s}" fill="#4F46E5"/>
+        ${person(62, 38, 12, 40, 12, '#C7C2F5')}
+        ${person(40, 42, 14, 46, 12, '#FFF8E7')}
+      </svg>`;
+  },
 };
 
 const outDir = path.join(__dirname, '..', 'public', 'icons');
