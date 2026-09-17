@@ -851,7 +851,15 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
             )}
 
             {/* 📄 Papers (17 Sep 2026): the student's own Papers view, with Adrian's doors — rendered on the server (./papers-tab). */}
-            {tab === 'papers' && <div style={{ marginBottom: 12 }}>{papersTab}</div>}
+            {tab === 'papers' && (
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginBottom: 10 }}>
+                  <a href={`/admin/mark-paper?student=${encodeURIComponent(studentId)}`} style={{ ...actionBtn(), background: '#1e3a5f', color: '#fff', borderColor: '#1e3a5f' }}>✍️ Mark a paper</a>
+                  <a href="/admin/desk" style={actionBtn()}>🖊 Desk</a>
+                </div>
+                {papersTab}
+              </div>
+            )}
 
             {/* Marked papers — runs tagged with this student on /admin/mark-paper.
                 ✍️ = Adrian's annotated copy (the hand-back), 🖼/📄 the AI outputs. */}

@@ -23,6 +23,7 @@ import { uploadStudentFile } from '@/lib/student-files-client';
 import 'katex/dist/katex.min.css';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Link from 'next/link';
+import MarkingSwitches from '@/components/MarkingSwitches';
 import dynamic from 'next/dynamic';
 import type { LayerMeta } from '@/lib/annotate/layer';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
@@ -155,7 +156,7 @@ const LANE_TONE: Record<DeskLane, { bg: string; fg: string }> = {
 // ▶️ The auto-release switch (8 Sep 2026): a setting, flipped here, reachable on
 // a phone. Off = every marked hand-in waits for Adrian, as before 8 Sep.
 function AutoReleaseSwitch() {
-  const [state, setState] = useState<{ paused: boolean; at: string | null; by: string | null } | null>(null);
+    const [state, setState] = useState<{ paused: boolean; at: string | null; by: string | null } | null>(null);
   const [busy, setBusy] = useState(false);
   useEffect(() => { fetch('/api/admin/auto-release').then(r => r.json()).then(d => setState(d && typeof d.paused === 'boolean' ? d : null)).catch(() => {}); }, []);
   if (!state) return null;
@@ -325,6 +326,7 @@ const LANE_HINT: Record<DeskTab, string> = {
 
 export default function DeskPage() {
   // ── auth ───────────────────────────────────────────────────────────────────
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [password, setPassword] = useState('');
   const [authed, setAuthed] = useState(false);
   const [authError, setAuthError] = useState('');
@@ -1020,8 +1022,11 @@ export default function DeskPage() {
           <Link href="/admin/students" style={{ ...btn('#fff', '#374151', C.border), textDecoration: 'none', padding: '6px 10px', fontSize: 13 }}>👥 Students</Link>
           <a href="/admin/mark-paper" style={{ ...btn(C.ink, '#fff'), textDecoration: 'none', padding: '6px 10px', fontSize: 13 }}>✍️ Mark a new paper</a>
           <button onClick={() => { loadQueue(); if (runId) loadRun(runId); }} style={{ ...btn('#fff', '#374151', C.border), padding: '6px 10px', fontSize: 13 }}>↻ Refresh</button>
+          <button onClick={() => setSettingsOpen(o => !o)} style={{ ...btn('#fff', '#374151', C.border), padding: '6px 10px', fontSize: 13 }} aria-expanded={settingsOpen}>⚙ Settings</button>
         </div>
       </header>
+      {/* ⚙ The switches, off the header (17 Sep 2026, SPEC-STUDENT-FIRST §5) — the same three the mark page carries. */}
+      {settingsOpen && <div style={{ maxWidth: 720, margin: '0 auto 14px' }}><MarkingSwitches /></div>}
 
       {/* ── queue ─────────────────────────────────────────────────────────── */}
       {!runId && (

@@ -303,6 +303,10 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
             className="inline-block text-sm font-semibold text-white bg-navy rounded-xl px-4 py-2 hover:opacity-90 disabled:opacity-60" />
           <a href={`/api/portal/marking-pdf?run=${paper.id}&kind=marked`} target="_blank" rel="noopener noreferrer" data-track="marking:open"
             className="inline-block text-sm font-semibold text-navy border border-navy/20 rounded-xl px-4 py-2 bg-white hover:bg-navy/5">⬇ Download as PDF</a>
+          {ink && Object.values(ink).some(pg => pg?.strokes?.length) && (
+            <a href={`/api/portal/marking-pdf?run=${paper.id}&kind=marked&notes=1`} target="_blank" rel="noopener noreferrer"
+              className="inline-block text-sm font-semibold text-navy border border-navy/20 rounded-xl px-4 py-2 bg-white hover:bg-navy/5">⬇ With my notes</a>
+          )}
         </div>
       )}
     </div>
