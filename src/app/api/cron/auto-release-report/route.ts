@@ -15,6 +15,7 @@ import { closureSummary } from '@/lib/sheet-closure-store';
 import { kindTrend, trendLine, type PaperScore } from '@/lib/kind-trend';
 import { errorKindTotals } from '@/lib/error-kinds';
 import { levelFromPaperName } from '@/lib/sheet-sections';
+import { unheldPapers, unheldLine, type RunForHeld } from '@/lib/unheld-papers';
 import { setAutoReleasePaused, getAutoReleaseSetting } from '@/lib/auto-release-setting';
 import { summariseAutoReleases } from '@/lib/auto-release-report';
 import { consistencyReport, weeklyRollups } from '@/lib/consistency-set';
@@ -81,6 +82,15 @@ export async function GET(req: NextRequest) {
     const line = consistencyLine(weeklyRollups(await consistencyReport(true)));
     if (line) measure += `\n${line}`;
   } catch (e) { console.warn('[auto-release-report] consistency line skipped:', (e as Error).message); }
+  // Papers marked this week without a scheme we hold (18 Sep 2026) — for Adrian
+  // only: drop the scheme in the inbox and the next marking is grounded.
+  try {
+    const { data: wk } = await sb.from('paper_marking_runs')
+      .select('paper_name, student_name, created_at, paper_subject, result_json')
+      .gte('created_at', since).not('student_id', 'is', null).limit(400);
+    const line = unheldLine(unheldPapers((wk ?? []) as RunForHeld[]));
+    if (line) measure += '\n' + line;
+  } catch (e) { console.warn('[auto-release-report] unheld line skipped:', (e as Error).message); }
   await sendTelegram(report.telegram + measure + (paused ? '\n⏸ Auto-release has been switched OFF — turn it back on from the desk when you are happy.' : ''), 'marking').catch(() => {});
   await logJobRun('auto-release-report', true, `${report.released} auto-released, ${report.changed} changed after${paused ? ' — PAUSED' : ''}`).catch(() => {});
   return NextResponse.json({ ok: true, ...report, paused });
