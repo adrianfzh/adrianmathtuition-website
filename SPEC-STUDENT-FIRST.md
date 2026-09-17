@@ -129,3 +129,7 @@ Adrian, 17 Sep 2026: *"mainly students should be able to do work on the app, and
 - **Triangle snap**: a closed loop with three corners snaps to a triangle (`lib/annotate/shape-fit fitTriangle`, tried after rect, before ellipse; tested). Lines, rectangles, circles and ellipses were already there.
 - **Typed notes** in student mode: the T tool asks for text and drops it at the tap as a text stroke on the student's layer — drawn on the canvas, in the SVG layer over the pages, in the with-my-notes PDF and in a submitted sheet; erasable and lassoable like ink (`Stroke.text` / `fontSize`).
 - **Finger draws / Finger scrolls** switch (student mode) for phones and pen-less tablets.
+
+## 14. Score forecast (17 Sep 2026, Adrian's Papers tab only)
+
+Built the same day: `lib/score-forecast.ts` + `-store.ts` + `ForecastCard.tsx` (see `docs/MARKING.md` §Score forecast). Adrian: "only show the prediction to me internally (in students under papers tab)". Students see nothing until the back-test error is under 5 marks for both subjects and the improvement trend is modelled.

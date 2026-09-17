@@ -51,6 +51,7 @@ import { starredFirst } from '@/lib/paper-star';
 import { noteFirstLine } from '@/lib/paper-label';
 import { adminLines, type AdminJobRow, type AdminSheetRow } from '@/lib/papers-admin-lines';
 import ReviewPicker, { type ReviewPickPaper } from './ReviewPicker';
+import ForecastCard from './ForecastCard';
 import { examReviewBands } from '@/lib/review-cards';
 import { getDashboardData } from '@/lib/portal-dashboard';
 import type { UpcomingExam } from '@/lib/portal-exams';
@@ -307,6 +308,8 @@ export default async function PapersView({ account, sid, admin = false }: {
           </Link>
         ))}
         {stats && <SubjectTiles s={stats} />}
+        {/* 📈 the forecast — Adrian's tab only (17 Sep 2026); students never see it. */}
+        {admin && stats && <ForecastCard sid={sid} subject={subject} />}
         {own.streakNote && (
           <p className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-2.5 text-[13px] font-semibold text-emerald-800">{own.streakNote}</p>
         )}

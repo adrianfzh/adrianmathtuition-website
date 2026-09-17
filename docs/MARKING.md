@@ -2275,6 +2275,35 @@ Other | null` (backfilled 6 Sep; the bot stamps new runs by name-then-level majo
 - **Health check:** `papers-subject` asserts no run released in the last 30 days has a null
   `paper_subject`; the failure text carries the count.
 
+### 📈 Score forecast — Adrian's Papers tab only (17 Sep 2026)
+
+Adrian: *"predict what a student will score based on the 2025 and 2024 actual O level exam,
+based on what is observed when they submit the papers — do they have the required skills in
+each topic"*, then *"only show the prediction to me internally"*.
+
+- **Pure rule** `lib/score-forecast.ts` (tested): `buildProfile` = marks won per canonical
+  topic across the student's marked papers of that subject, recency-weighted (45-day
+  half-life), thin topics shrunk towards the student's overall rate; `forecastPaper` lays a
+  bank paper over it — expected marks per question, a RANGE (sampling noise + a wide band
+  for topics never seen), the topics that would cost most; `backtest` predicts each GCE
+  paper the student already sat from their other papers (`priorOnly` = earlier papers only,
+  the honest mode) and reports mean error / within 5 / within 8 / bias.
+- **Data** `lib/score-forecast-store.ts`: the bank's GCE rows (`school='GCE'`,
+  `exam_type='GCE'` — the specimen shares the key), keyed `gce <year> <am|em> p<n>`; the
+  student's released, non-Practice-Again runs of the subject, each question tagged by the
+  bank row (join on question number when `paper_match.parsed.exam='GCE'`) else by
+  `canonicalTopic()` — a keyword map from the marker's free-text topic to the bank's names,
+  per level. Careless/arithmetic part losses are kept apart.
+- **The card** `app/marking/ForecastCard.tsx` sits under the tiles on the profile's Papers
+  tab in admin mode ONLY (students never see it): GCE 2025 P1/P2 and 2024 P1/P2 as ranges,
+  "likely N", marks on unseen topics, the three topics that would cost most, and the
+  student's own back-test line.
+- **Accuracy at launch** (`npx tsx scripts/score-forecast/backtest.ts`, 47 sat GCE papers,
+  17 students): E Math mean error 5.4 marks (75 % within 8), 4.4 where the profile covers
+  the paper; A Math 9.6 (7.4 covered), and with earlier papers only it runs 9 marks LOW —
+  students improve between papers. Not shown to students until that trend is modelled and
+  the covered-paper error is under 5 for both subjects.
+
 ### The simpler list — subject tabs, one row per paper, the sheet as one line (17 Sep 2026)
 
 **One view for both sides (17 Sep 2026, SPEC-STUDENT-FIRST §3):** the list is `app/marking/papers-view.tsx` (`PapersView({account, sid, admin})`); `/app/marking/page.tsx` is the header + hand-in button around it, and the admin profile's 📄 Papers tab (`admin/students/[id]/papers-tab.tsx`) renders the same component with `admin` on — no star/archive/remark editing, the sheet's Start / Hand in hidden, each row opens the paper as the student sees it in a new tab, a "desk" link + typed name + their remark under the row, and the tick posts `{runIds}` to `/api/admin/sheet-jobs` (the desk's merged-sheet door). The old mirror page redirects to `?tab=papers`. Rule: a change to what a student sees is made ONCE, in papers-view.
