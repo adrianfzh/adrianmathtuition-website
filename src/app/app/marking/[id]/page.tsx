@@ -25,9 +25,10 @@ import ScienceTeacherMark from '../ScienceTeacherMark';
 import ScienceUseful from '../ScienceUseful';
 import LostMarks from '../LostMarks';
 import RenamePaper from '../RenamePaper';
+import StarPaper from '../StarPaper';
 import { sheetLine } from '@/lib/practice-again-line';
 
-const COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, paper_subject, superseded_by, subject';
+const COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, paper_subject, superseded_by, subject';
 
 function niceDate(iso: string): string {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
@@ -146,6 +147,7 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
           </div>
           {/* A science paper leads with the feedback; its total sits below the
               pages as an estimate (Adrian, 11 Sep 2026). Maths keeps the pill. */}
+          {!isScience && <StarPaper runId={paper.id} starred={!!paper.starred} size="md" />}
           {!isScience && (
             <span className="shrink-0 text-sm font-bold rounded-full px-3 py-1 bg-navy/5 text-navy">
               {paper.max > 0 ? `${paper.awarded}/${paper.max}` : '—'}{paper.pct !== null && <span className="font-semibold"> · {paper.pct}%</span>}

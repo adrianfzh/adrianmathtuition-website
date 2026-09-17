@@ -434,6 +434,11 @@ export async function GET(req: NextRequest) {
       return 'auth gate up';
     }),
     // ✏️ Rename a paper (17 Sep 2026): the student's label door — anonymous must be refused.
+    timed('marking-star', async () => {
+      const r = await fetch(`${base}/api/portal/marking/star`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     timed('marking-label', async () => {
       const r = await fetch(`${base}/api/portal/marking/label`, { method: 'POST', redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);

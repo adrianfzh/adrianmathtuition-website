@@ -46,9 +46,9 @@ describe('rebuildBodyFromRun', () => {
     expect(rebuildBodyFromRun({ ...RUN, result_json: null })).toEqual({ skip: expect.stringMatching(/no marking/) });
   });
 
-  it('builds the photos half only when annotated pages exist', () => {
+  it('builds the images copy alone when annotated pages exist, the full report only as the fallback (17 Sep 2026)', () => {
     const withPhotos = (rebuildBodyFromRun(RUN) as { body: RebuildBody }).body;
-    expect(rebuildModes(withPhotos)).toEqual(['photos', 'full']);
+    expect(rebuildModes(withPhotos)).toEqual(['photos']);
     const noPhotos = (rebuildBodyFromRun({ ...RUN, result_json: { results: (RUN.result_json as { results: unknown[] }).results } }) as { body: RebuildBody }).body;
     expect(rebuildModes(noPhotos)).toEqual(['full']);
   });
@@ -59,7 +59,7 @@ describe('buildBothPdfs', () => {
   const ok = (url: string) => ({ ok: true, status: 200, json: async () => ({ url, kind: 'pdf' }) }) as unknown as Response;
   const fail = (error: string) => ({ ok: false, status: 500, json: async () => ({ error }) }) as unknown as Response;
 
-  it('posts both halves to the route with the admin headers and links each to its own column', async () => {
+  it('posts the images copy to the route with the admin headers and links it to photos_pdf_url (the full report is no longer drawn, 17 Sep 2026)', async () => {
     const calls: { url: string; mode: string; auth: string | undefined }[] = [];
     const fetchImpl = vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
       const b = JSON.parse(String(init?.body));
@@ -71,37 +71,43 @@ describe('buildBothPdfs', () => {
       origin: 'https://adrianmath-dev.vercel.app', headers: { Authorization: 'Bearer pw' }, fetchImpl,
       link: async (mode, url) => { linked.push([markedPdfColumn(mode), url]); },
     });
-    expect(out).toEqual({ rebuilt: true, photos: 'https://blob/photos.pdf', full: 'https://blob/full.pdf' });
-    expect(calls.map(c => c.url)).toEqual(Array(2).fill('https://adrianmath-dev.vercel.app/api/admin/mark-paper-pdf'));
-    expect(calls.map(c => c.mode).sort()).toEqual(['full', 'photos']);
+    expect(out).toEqual({ rebuilt: true, photos: 'https://blob/photos.pdf' });
+    expect(calls.map(c => c.url)).toEqual(['https://adrianmath-dev.vercel.app/api/admin/mark-paper-pdf']);
+    expect(calls.map(c => c.mode)).toEqual(['photos']);
     expect(calls.every(c => c.auth === 'Bearer pw')).toBe(true);
-    // The images copy must land in photos_pdf_url and the full script in pdf_url —
-    // and annotated_pdf_url (Adrian's amended copy) is never written.
-    expect(linked.sort()).toEqual([['pdf_url', 'https://blob/full.pdf'], ['photos_pdf_url', 'https://blob/photos.pdf']]);
-    expect(linked.find(l => l[0] === 'annotated_pdf_url')).toBeUndefined();
+    // The images copy lands in photos_pdf_url; pdf_url (the full report) and
+    // annotated_pdf_url (Adrian's amended copy) are never written.
+    expect(linked).toEqual([['photos_pdf_url', 'https://blob/photos.pdf']]);
   });
 
-  it('is rebuilt:false with the reason when a half fails, and the other half still links', async () => {
+  it('a paper with no annotated pages still gets the full report, so no paper is left without a PDF', async () => {
+    const noPhotos = (rebuildBodyFromRun({ ...RUN, result_json: { results: (RUN.result_json as { results: unknown[] }).results } }) as { body: RebuildBody }).body;
+    const modes: string[] = [];
     const fetchImpl = vi.fn(async (_url: string | URL | Request, init?: RequestInit) => {
-      const b = JSON.parse(String(init?.body));
-      return b.mode === 'full' ? fail('Nothing to render') : ok('https://blob/photos.pdf');
+      const b = JSON.parse(String(init?.body)); modes.push(b.mode); return ok('https://blob/full.pdf');
     }) as unknown as typeof fetch;
     const linked: string[] = [];
-    const out = await buildBothPdfs(body, {
-      origin: 'https://x', headers: {}, fetchImpl, link: async (mode) => { linked.push(mode); },
-    });
+    const out = await buildBothPdfs(noPhotos, { origin: 'https://x', headers: {}, fetchImpl, link: async (mode) => { linked.push(markedPdfColumn(mode)); } });
+    expect(modes).toEqual(['full']);
+    expect(out).toEqual({ rebuilt: true, full: 'https://blob/full.pdf' });
+    expect(linked).toEqual(['pdf_url']);
+  });
+
+  it('is rebuilt:false with the reason when the build fails', async () => {
+    const fetchImpl = vi.fn(async () => fail('Nothing to render')) as unknown as typeof fetch;
+    const linked: string[] = [];
+    const out = await buildBothPdfs(body, { origin: 'https://x', headers: {}, fetchImpl, link: async (mode) => { linked.push(mode); } });
     expect(out.rebuilt).toBe(false);
-    expect(out.photos).toBe('https://blob/photos.pdf');
-    expect(out.full).toBeNull();
-    expect(out.errors).toEqual(['full: Nothing to render']);
-    expect(linked).toEqual(['photos']);
+    expect(out.photos).toBeNull();
+    expect(out.errors).toEqual(['photos: Nothing to render']);
+    expect(linked).toEqual([]);
   });
 
   it('never throws — a network error becomes an outcome', async () => {
     const fetchImpl = vi.fn(async () => { throw new Error('fetch failed'); }) as unknown as typeof fetch;
     const out = await buildBothPdfs(body, { origin: 'https://x', headers: {}, fetchImpl, link: async () => {} });
     expect(out.rebuilt).toBe(false);
-    expect(out.errors).toEqual(['photos: fetch failed', 'full: fetch failed']);
+    expect(out.errors).toEqual(['photos: fetch failed']);
   });
 });
 

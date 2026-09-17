@@ -95,10 +95,14 @@ export function rebuildBodyFromRun(run: RunRow, opts: { allowReleased?: boolean 
   };
 }
 
-/** Which halves to build: the photos copy needs annotated pages to exist
- *  (the route answers "Nothing to render" otherwise). */
+/** Which copy to build. Since 17 Sep 2026 (Adrian: "there is no longer a need
+ *  for full pdf (i hardly use it) only image pdf") the images copy is THE
+ *  marked PDF — one render, one upload. The full typeset report is built
+ *  only when there are no annotated pages at all, so a paper never ends up
+ *  with no PDF. The typed transcript itself stays in result_json (the cover
+ *  page and the Notebook read it); only the PDF of it is no longer drawn. */
 export function rebuildModes(body: Pick<RebuildBody, 'annotated_photos'>): RebuildMode[] {
-  return body.annotated_photos.length ? ['photos', 'full'] : ['full'];
+  return body.annotated_photos.length ? ['photos'] : ['full'];
 }
 
 // Measured on the same route (docs/MARKING.md): images in seconds, full 17s warm /

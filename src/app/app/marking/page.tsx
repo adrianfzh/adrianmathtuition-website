@@ -38,6 +38,8 @@ import NextWave from './NextWave';
 import { groupPracticeAgain, sheetParents } from '@/lib/portal-marking-group';
 import { bundleList } from '@/lib/portal-paper-bundles';
 import { sheetLine, sheetJobLine, bundleCaption, type SheetLine } from '@/lib/practice-again-line';
+import { starredFirst } from '@/lib/paper-star';
+import StarPaper from './StarPaper';
 import { readNoSheet } from '@/lib/sheet-jobs';
 import MarkingBeacon from './MarkingBeacon';
 import SubjectTiles from './SubjectTiles';
@@ -56,7 +58,7 @@ const MAX_PAPERS = 40;
 // One literal, not a concatenation: supabase-js parses the select string at the
 // type level, and a `+` here widens it to `string` and loses the row type.
 const COLUMNS =
-  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, paper_subject';
+  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, paper_subject';
 
 // Home's soft elevated card (lib/portal-theme's visual language) — this tab
 // wears the marked-work violet and the hand-in teal the way Home's tiles do,
@@ -237,7 +239,8 @@ export default async function MarkingPage() {
     const stats = isTileSubject(subject) ? subjectStats(top, subject) : null;
     const pill = subjectPill(subject);
     const tone: SubjectTone = pill?.tone ?? 'other';
-    const entries = bundleList(list, id => sheetsByRun.get(id));
+    // ⭐ starred papers first (17 Sep 2026), newest first inside each group; a bundle sits where its first paper lands.
+    const entries = bundleList(starredFirst(list), id => sheetsByRun.get(id));
     const content: ReactNode = (
       <div className="space-y-4">
         {stats && <SubjectTiles s={stats} />}
@@ -422,6 +425,7 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
           <p className="font-bold text-navy leading-snug break-words group-hover:underline">{paper.name}</p>
           <p className="text-[12px] text-gray-500 mt-0.5">{whenLine(paper, todayISO)}</p>
         </div>
+        <StarPaper runId={paper.id} starred={!!paper.starred} />
         <div className={`shrink-0 rounded-2xl px-3 py-1.5 text-center min-w-[64px] ${scoreTone(paper.pct)}`}>
           <p className="text-lg font-bold leading-tight tabular-nums">{paper.max > 0 ? `${paper.awarded}/${paper.max}` : '—'}</p>
           {paper.pct !== null && <p className="text-[11px] font-semibold leading-tight opacity-90">{paper.pct}%</p>}
