@@ -41,7 +41,7 @@ Xcode / TestFlight / the AdrianMarker re-sign, the iPad, screenshots as a studen
 (puppeteer on the Mac), Telegram / Resend sends (no `TELEGRAM_*` / `RESEND_*` in the
 cloud — deliberately), anything needing `ADMIN_PASSWORD` or the Supabase secret key
 (privileged reads/writes outside the six families — ask Adrian or leave a note).
-Step 3 (moving marking/sheets off the Mac) is future work, not set up.
+Step 3 (moving marking/sheets off the Mac) is BUILT (§Step 3 below) and goes live on Adrian's first deploy.
 
 ## Per-account one-time bootstrap (~5 min)
 
@@ -146,3 +146,15 @@ Mint each as 32+ random characters (`openssl rand -hex 24`), set it in Vercel (P
 set opens nothing (the check fails closed under 24 chars). Rotate one family without
 touching the others. The admin password never leaves this Mac and the bot.
 Reading what agents did: `select * from agent_actions order by created_at desc`.
+
+## Step 3 — the plan loops off the Mac: the Fly worker (18 Sep 2026, built, awaiting first deploy)
+
+One Linux machine, `adrianmath-worker` (bot repo `worker/fly/`, README there), runs the
+Mac's slot loops: marking (`worker/plan-marking/run.sh`, 3 slots × up to 3 Claude
+accounts, dirs named as on the Mac) and — once `SHEET_SLOTS_ON='1'` after the LibreOffice
+PDF comparison — the sheet worker (`scripts/sheet-worker/run.sh` in a checkout of this
+repo at `/data/website`). Accounts are secrets `CLAUDE_TOKEN_n` + `CLAUDE_ACCOUNT_n`; the
+per-account switch and limit files work unchanged. Overlap plan: Fly slots on, Mac slots
+still on (the claim guard makes a double claim safe), Mac slots off after a few papers
+land. ~US$12/month. Deploy: `fly deploy -c worker/fly/fly.toml -a adrianmath-worker
+--remote-only` from the bot repo (Adrian runs it — a production deploy).
