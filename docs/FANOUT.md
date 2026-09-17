@@ -158,5 +158,7 @@ re-ink; and re-issue only after Adrian has seen the redrawn pages.
 
 **Dated log**
 - 17 Sep 2026 — written after the F2/F7/F9 strip regression (docs/MARKING-DEFECTS.md
-  F15); the re-mark-before-deploy line added the same evening after F17. Adrian: "do what you propose — make sure any session on any account
+  F15); the re-mark-before-deploy line added the same evening after F17. Later that
+  night the bench became a hard gate in the bot's push hook and the pen gained its
+  runtime self-check (F19) — §3's "verified on the bench" now happens by itself. Adrian: "do what you propose — make sure any session on any account
   knows this, but make this a living spec".
