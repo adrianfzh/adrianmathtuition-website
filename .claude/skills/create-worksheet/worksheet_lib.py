@@ -989,17 +989,18 @@ class Worksheet:
         p.style = self.doc.styles['WSSubtitle']
         p.add_run(text)
 
-    def brand(self, level, topic, kind='Practice', n_questions=None, marks=None):
+    def brand(self, level, topic, kind='Practice', n_questions=None, marks=None, mono=False):
         """The AdrianMath masthead for `level` (a questions.level value): A Math
-        navy band, E Math white + teal, Sec 1 green tint, Sec 2 plum bar — each
-        with its subject block, running header and the site footer. Goes to the
+        navy band, E Math white + teal, Sec 1 green tint, Sec 2 blue bar — each
+        with its subject block, running header and the site footer. mono=True is
+        the black-and-white version, told apart by design alone. Goes to the
         top of the body whenever it is called; replaces title()/subtitle().
         See worksheet_brand.py and ADRIAN-STYLE.md §9."""
         here = os.path.dirname(os.path.abspath(__file__))
         if here not in sys.path:
             sys.path.insert(0, here)
         import worksheet_brand
-        return worksheet_brand.apply(self, level, topic, kind, n_questions, marks)
+        return worksheet_brand.apply(self, level, topic, kind, n_questions, marks, mono)
 
     def concept(self, text):
         """Bold concept subtitle written above the Example(s) it covers.

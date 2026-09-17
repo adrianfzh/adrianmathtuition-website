@@ -617,7 +617,26 @@ glance and in black-and-white print. Each series also gets its own header style:
 | **A MATH** | `AM`, `S3_AM`, `AM_NA` | navy band across the top (design B) | orange block, orange bar beside the title |
 | **E MATH** | `EM`, `S3_EM`, `EM_NA`, `S3_EM_NA`, `S3_EM_NT` | white, teal rule under it (design A) | teal block, teal PRACTICE |
 | **SEC 1** | `S1` | pale green band | green block, green bar beside the title |
-| **SEC 2** | `S2` | white with a thick plum bar on top | plum block, plum PRACTICE |
+| **SEC 2** | `S2` | white with a thick blue bar on top | bright blue block, blue PRACTICE |
+
+Sec 2 was plum at first; "change purple, something suitable for secondary school students"
+(Adrian, 17 Sep 2026) → bright blue `1F74D6`.
+
+**Black-and-white version.** "i usually print in black and white, can i have other versions
+without colour? that means the design itself will distinguish the papers" (Adrian, 17 Sep
+2026). `ws.brand(..., mono=True)` builds it, saved beside the colour one as `… (B&W).docx`.
+Nothing relies on colour — every series is told apart by shape:
+
+| Series | Header | Subject block | Page-2 header rule |
+|---|---|---|---|
+| **A MATH** | solid black band | white box framed in black, inside the band | thick solid |
+| **E MATH** | white, double rule under it | outlined box | double |
+| **SEC 1** | light grey band | solid black, white letters | dotted |
+| **SEC 2** | white, thick black bar on top | mid-grey block | dashed |
+
+The logo is the black √m (`mark_black.png`), "Math" goes grey, and every other colour on the
+sheet — the [Ans:] lines, coloured working — is drained to dark grey `404040`.
+When Adrian asks for a sheet, give both unless he names one.
 
 Under the masthead: the topic in Georgia 19 pt navy, then `PRACTICE · n questions · m marks`
 (the kind in the accent colour), then a Name / Date line. Page 2 onward carries a running
@@ -631,8 +650,9 @@ the accent colour.
   masthead and title at the top of the body, so it goes after the questions are counted, and
   it replaces `ws.title()` / `ws.subtitle()`. Code: `worksheet_brand.py` (`SERIES`, `LEVELS`),
   logos in `assets/brand/`. An unknown level raises; add it to `LEVELS` rather than guessing.
-- **A new series** (JC, a new stream) gets its own row in `SERIES`: a different header style
-  *and* a different colour, never just a colour — the difference has to survive a mono printer.
+- **A new series** (JC, a new stream) gets its own row in `SERIES` **and** in `SERIES_MONO`: a
+  different header style *and* a different colour, and in black and white a header, block and
+  page-2 rule that no other series uses.
 - **No watermark** comes with the brand. Watermarks stay on request only (§8).
 - The Practice Again sheets from the sheet worker (`scripts/sheet-worker/render_sheet.py`)
   still use their own plain header — not branded until Adrian says so.

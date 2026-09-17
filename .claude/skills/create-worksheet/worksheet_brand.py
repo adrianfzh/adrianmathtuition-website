@@ -17,7 +17,18 @@ treatment and the accent colour:
     AM      navy band across the page (design B)   orange
     EM      white, rule under the header (design A) teal
     S1      pale green tinted band                  green
-    S2      white, thick plum bar over the header   plum
+    S2      white, thick blue bar over the header   bright blue
+
+Every series also has a BLACK-AND-WHITE version (`mono=True`, Adrian: "i usually
+print in black and white, can i have other versions without colour? that means
+the design itself will distinguish the papers"). There the structure alone tells
+the sheets apart — no colour is relied on:
+
+    series  header                                   subject block        page-2 rule
+    AM      solid black band                         white, black letters  thick solid
+    EM      white, double rule under the header      outlined box          double
+    S1      light grey band                          solid black           dotted
+    S2      white, thick black bar over the header   mid grey              dashed
 
 Use it through `Worksheet.brand(level, topic, ...)`. It inserts at the TOP of the
 body, so it can be called before or after the questions are written (after is
@@ -42,15 +53,44 @@ RULE = 'BEC6D2'
 WHITE = 'FFFFFF'
 TEXT_W_CM = 16.0    # A4 less worksheet_lib's 2.5 cm margins
 
+# The palette every piece reads. `ground` = the header band's fill (None = white),
+# `block` = the subject block's fill (None = an outlined box), `frame` = the
+# masthead's own rule, `run_rule` = the rule under the page-2 running header.
+COLOUR = dict(ink=NAVY, math=ORANGE, grey=GREY, pale=PALE, rule=RULE,
+              band_math=ORANGE, mark='mark_navy.png', band_mark='mark_white.png')
+MONO = dict(ink='1A1A1A', math='808080', grey='666666', pale='BFBFBF', rule='BFBFBF',
+            band_math='A6A6A6', mark='mark_black.png', band_mark='mark_white.png')
+
 SERIES = {
-    'AM': dict(tag='A MATH', subject='Additional Mathematics', style='band',
-               accent=ORANGE, tag_ink=NAVY),
-    'EM': dict(tag='E MATH', subject='Mathematics', style='plain',
-               accent='0E8A7D', tag_ink=WHITE),
-    'S1': dict(tag='SEC 1', subject='Mathematics', style='tint',
-               accent='2E9A58', tag_ink=WHITE, tint='E9F5ED'),
-    'S2': dict(tag='SEC 2', subject='Mathematics', style='bar',
-               accent='7A4DA6', tag_ink=WHITE),
+    'AM': dict(tag='A MATH', style='band', ground=NAVY,
+               accent=ORANGE, block=ORANGE, tag_ink=NAVY, title_bar=ORANGE,
+               run_rule=('single', 8, ORANGE)),
+    'EM': dict(tag='E MATH', style='plain', frame=('bottom', 'single', 18, '0E8A7D'),
+               accent='0E8A7D', block='0E8A7D', tag_ink=WHITE,
+               run_rule=('single', 8, '0E8A7D')),
+    'S1': dict(tag='SEC 1', style='tint', ground='E9F5ED',
+               accent='2E9A58', block='2E9A58', tag_ink=WHITE, title_bar='2E9A58',
+               run_rule=('single', 8, '2E9A58')),
+    # Sec 2 was plum; Adrian 17 Sep 2026: "change purple, something suitable for
+    # secondary school students"
+    'S2': dict(tag='SEC 2', style='bar', frame=('top', 'single', 36, '1F74D6'),
+               accent='1F74D6', block='1F74D6', tag_ink=WHITE,
+               run_rule=('single', 8, '1F74D6')),
+}
+
+SERIES_MONO = {
+    'AM': dict(tag='A MATH', style='band', ground='1A1A1A',
+               accent='1A1A1A', block=WHITE, block_box=24, tag_ink='1A1A1A', title_bar='1A1A1A',
+               run_rule=('single', 18, '1A1A1A')),
+    'EM': dict(tag='E MATH', style='plain', frame=('bottom', 'double', 6, '1A1A1A'),
+               accent='1A1A1A', block=None, tag_ink='1A1A1A',
+               run_rule=('double', 6, '1A1A1A')),
+    'S1': dict(tag='SEC 1', style='tint', ground='E3E3E3',
+               accent='1A1A1A', block='1A1A1A', tag_ink=WHITE, title_bar='8C8C8C',
+               run_rule=('dotted', 12, '1A1A1A')),
+    'S2': dict(tag='SEC 2', style='bar', frame=('top', 'single', 36, '1A1A1A'),
+               accent='1A1A1A', block='B3B3B3', tag_ink='1A1A1A',
+               run_rule=('dashed', 12, '1A1A1A')),
 }
 
 # questions.level -> (series, the small line under the subject block, level line)
@@ -99,20 +139,20 @@ def _tight(p, before=0, after=0, align=None):
     return p
 
 
-def _para_border(p, side, color, sz, space):
+def _para_border(p, side, color, sz, space, val='single'):
     pPr = p._p.get_or_add_pPr()
     b = pPr.find(qn('w:pBdr'))
     if b is None:
         b = OxmlElement('w:pBdr')
         pPr.append(b)
     e = OxmlElement(f'w:{side}')
-    for k, v in (('val', 'single'), ('sz', sz), ('space', space), ('color', color)):
+    for k, v in (('val', val), ('sz', sz), ('space', space), ('color', color)):
         e.set(qn(f'w:{k}'), str(v))
     b.append(e)
 
 
 def _table_borders(tbl, **sides):
-    """sides: name -> (sz, color); every other side is nil."""
+    """sides: name -> (sz, color) or (val, sz, color); every other side is nil."""
     tblPr = tbl._tbl.tblPr
     old = tblPr.find(qn('w:tblBorders'))
     if old is not None:
@@ -121,8 +161,8 @@ def _table_borders(tbl, **sides):
     for s in ('top', 'left', 'bottom', 'right', 'insideH', 'insideV'):
         e = OxmlElement(f'w:{s}')
         if s in sides:
-            sz, color = sides[s]
-            for k, v in (('val', 'single'), ('sz', sz), ('space', 0), ('color', color)):
+            val, sz, color = sides[s] if len(sides[s]) == 3 else ('single', *sides[s])
+            for k, v in (('val', val), ('sz', sz), ('space', 0), ('color', color)):
                 e.set(qn(f'w:{k}'), str(v))
         else:
             e.set(qn('w:val'), 'nil')
@@ -168,6 +208,18 @@ def _shade(cell, fill):
     cell._tc.get_or_add_tcPr().append(s)
 
 
+def _cell_box(cell, sz, color):
+    """Draw a box round one cell (the mono E Math subject block)."""
+    tcPr = cell._tc.get_or_add_tcPr()
+    b = OxmlElement('w:tcBorders')
+    for s in ('top', 'left', 'bottom', 'right'):
+        e = OxmlElement(f'w:{s}')
+        for k, v in (('val', 'single'), ('sz', sz), ('space', 0), ('color', color)):
+            e.set(qn(f'w:{k}'), str(v))
+        b.append(e)
+    tcPr.append(b)
+
+
 def _field(p, code, **kw):
     """PAGE / NUMPAGES as a real Word field."""
     def char(kind, text=''):
@@ -188,46 +240,48 @@ def _field(p, code, **kw):
 
 # ── the header lock-up ─────────────────────────────────────────────────────
 
-def _masthead(doc, cfg, small, level_line):
-    style = cfg['style']
-    band = style == 'band'
-    tint = cfg.get('tint') if style == 'tint' else None
-    ground = NAVY if band else tint
+def _masthead(doc, cfg, k, small, level_line):
+    band = cfg['style'] == 'band'
+    ground = cfg.get('ground')
     tbl = doc.add_table(rows=1, cols=4)
     tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
-    if style == 'bar':
-        _table_borders(tbl, top=(36, cfg['accent']))
-    elif style == 'plain':
-        _table_borders(tbl, bottom=(18, cfg['accent']))
+    if cfg.get('frame'):
+        side, val, sz, color = cfg['frame']
+        _table_borders(tbl, **{side: (val, sz, color)})
     else:
         _table_borders(tbl)
     pad = 170 if ground else 110
     _cell_margins(tbl, top=pad, bottom=pad, left=160 if ground else 0, right=160 if ground else 0)
-    _widths(tbl, (2.0, 5.4, 5.2, 3.4))
+    _widths(tbl, (2.0, 4.5, 6.1, 3.4))
     logo, word, level, block = tbl.rows[0].cells
     for c in tbl.rows[0].cells:
         c.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
         if ground:
             _shade(c, ground)
-    _shade(block, cfg['accent'])
+    if cfg['block']:
+        _shade(block, cfg['block'])
+    if cfg.get('block_box') or not cfg['block']:
+        # a white block in a black band needs its frame, or it reads as the band ending
+        _cell_box(block, cfg.get('block_box') or 12, cfg['tag_ink'])
 
     p = _tight(logo.paragraphs[0])
-    mark = 'mark_white.png' if band else 'mark_navy.png'
+    mark = k['band_mark'] if band else k['mark']
     p.add_run().add_picture(str(ASSETS / mark), width=Cm(1.35))
 
     p = _tight(word.paragraphs[0])
-    _run(p, 'Adrian', size=17, bold=True, color=WHITE if band else NAVY)
-    _run(p, 'Math', size=17, bold=True, color=ORANGE)
+    _run(p, 'Adrian', size=17, bold=True, color=WHITE if band else k['ink'])
+    _run(p, 'Math', size=17, bold=True, color=k['band_math'] if band else k['math'])
     p = _tight(word.add_paragraph())
-    _run(p, 'TUITION', size=7.5, bold=True, color=PALE if band else GREY, spacing=60)
+    _run(p, 'TUITION', size=7.5, bold=True, color=k['pale'] if band else k['grey'], spacing=60)
 
     # keep the level text off the subject block's edge
     p = _tight(level.paragraphs[0], align=WD_ALIGN_PARAGRAPH.RIGHT)
     p.paragraph_format.right_indent = Cm(0.35)
-    _run(p, level_line, size=10, bold=True, color=WHITE if band else NAVY)
+    _run(p, level_line, size=10 if len(level_line) <= 22 else 9, bold=True,
+         color=WHITE if band else k['ink'])
     p = _tight(level.add_paragraph(), align=WD_ALIGN_PARAGRAPH.RIGHT)
     p.paragraph_format.right_indent = Cm(0.35)
-    _run(p, 'adrianmathtuition.com', size=8, color=PALE if band else GREY)
+    _run(p, 'adrianmathtuition.com', size=8, color=k['pale'] if band else k['grey'])
 
     # the subject block: the one thing that says which sheet this is
     p = _tight(block.paragraphs[0], align=WD_ALIGN_PARAGRAPH.CENTER)
@@ -237,18 +291,18 @@ def _masthead(doc, cfg, small, level_line):
     return tbl._tbl
 
 
-def _title_block(doc, cfg, topic, kind, n, marks):
+def _title_block(doc, cfg, k, topic, kind, n, marks):
     accent = cfg['accent']
-    bar = cfg['style'] in ('band', 'tint')
+    bar = cfg.get('title_bar')
     els = []
     p = _tight(doc.add_paragraph(), before=12, after=1)
     if bar:
-        _para_border(p, 'left', accent, 36, 8)
-    _run(p, topic, font='Georgia', size=19, bold=True, color=NAVY)
+        _para_border(p, 'left', bar, 36, 8)
+    _run(p, topic, font='Georgia', size=19, bold=True, color=k['ink'])
     els.append(p._p)
     p = _tight(doc.add_paragraph(), after=4)
     if bar:
-        _para_border(p, 'left', accent, 36, 8)
+        _para_border(p, 'left', bar, 36, 8)
     _run(p, kind.upper(), size=9, bold=True, color=accent, spacing=20)
     bits = []
     if n:
@@ -256,25 +310,25 @@ def _title_block(doc, cfg, topic, kind, n, marks):
     if marks:
         bits.append(f'{marks} marks')
     if bits:
-        _run(p, '   ·   ' + '   ·   '.join(bits), size=9, color=GREY)
+        _run(p, '   ·   ' + '   ·   '.join(bits), size=9, color=k['grey'])
     els.append(p._p)
     p = _tight(doc.add_paragraph(), after=8)
-    _run(p, 'Name ', size=8.5, color=GREY)
-    _run(p, '_' * 38, size=8.5, color=RULE)
-    _run(p, '      Date ', size=8.5, color=GREY)
-    _run(p, '_' * 16, size=8.5, color=RULE)
-    _para_border(p, 'bottom', RULE, 4, 6)
+    _run(p, 'Name ', size=8.5, color=k['grey'])
+    _run(p, '_' * 38, size=8.5, color=k['rule'])
+    _run(p, '      Date ', size=8.5, color=k['grey'])
+    _run(p, '_' * 16, size=8.5, color=k['rule'])
+    _para_border(p, 'bottom', k['rule'], 4, 6)
     els.append(p._p)
     return els
 
 
 # ── page furniture ─────────────────────────────────────────────────────────
 
-def _two_sided(part, left, right, side, color, sz):
+def _two_sided(part, left, right, side, color, sz, val='single'):
     """A left/right line in a header or footer: a borderless two-cell table, the
     part's own empty paragraph kept after it at 1 pt."""
     tbl = part.add_table(rows=1, cols=2, width=Cm(TEXT_W_CM))
-    _table_borders(tbl, **{side: (sz, color)})
+    _table_borders(tbl, **{side: (val, sz, color)})
     _cell_margins(tbl, top=50 if side == 'top' else 0, bottom=50 if side == 'bottom' else 0)
     _widths(tbl, (10.5, 5.5))
     lc, rc = tbl.rows[0].cells
@@ -288,7 +342,7 @@ def _two_sided(part, left, right, side, color, sz):
     first.add_run('').font.size = Pt(1)
 
 
-def _furniture(doc, cfg, small, topic):
+def _furniture(doc, cfg, k, small, topic):
     s = doc.sections[0]
     s.bottom_margin = Cm(1.7)
     s.footer_distance = Cm(0.7)
@@ -296,46 +350,64 @@ def _furniture(doc, cfg, small, topic):
     s.different_first_page_header_footer = True
 
     def site(p):
-        _run(p, 'AdrianMath Tuition', size=8, bold=True, color=NAVY)
-        _run(p, '  ·  adrianmathtuition.com', size=8, color=GREY)
+        _run(p, 'AdrianMath Tuition', size=8, bold=True, color=k['ink'])
+        _run(p, '  ·  adrianmathtuition.com', size=8, color=k['grey'])
 
     def page(p):
-        _run(p, 'Page ', size=8, color=GREY)
-        _field(p, 'PAGE', size=8, color=GREY)
-        _run(p, ' of ', size=8, color=GREY)
-        _field(p, 'NUMPAGES', size=8, color=GREY)
+        _run(p, 'Page ', size=8, color=k['grey'])
+        _field(p, 'PAGE', size=8, color=k['grey'])
+        _run(p, ' of ', size=8, color=k['grey'])
+        _field(p, 'NUMPAGES', size=8, color=k['grey'])
 
     for ft in (s.first_page_footer, s.footer):
-        _two_sided(ft, site, page, 'top', RULE, 4)
+        _two_sided(ft, site, page, 'top', k['rule'], 4)
 
     def brand(p):
-        _run(p, 'Adrian', size=8, bold=True, color=NAVY)
-        _run(p, 'Math', size=8, bold=True, color=ORANGE)
-        _run(p, '  ·  ' + topic, size=8, color=GREY)
+        _run(p, 'Adrian', size=8, bold=True, color=k['ink'])
+        _run(p, 'Math', size=8, bold=True, color=k['math'])
+        _run(p, '  ·  ' + topic, size=8, color=k['grey'])
 
     def subject(p):
         _run(p, cfg['tag'], size=8.5, bold=True, color=cfg['accent'], spacing=10)
         if small != 'MATHEMATICS':
             _run(p, '  ·  ' + small.title().replace('N(a)', 'N(A)').replace('N(t)', 'N(T)'),
-                 size=8, color=GREY)
+                 size=8, color=k['grey'])
 
-    _two_sided(s.header, brand, subject, 'bottom', cfg['accent'], 8)
+    val, sz, color = cfg['run_rule']
+    _two_sided(s.header, brand, subject, 'bottom', color, sz, val)
 
 
-def apply(ws, level, topic, kind='Practice', n_questions=None, marks=None):
+def apply(ws, level, topic, kind='Practice', n_questions=None, marks=None, mono=False):
     """Brand a Worksheet for `level` (a questions.level value, e.g. 'AM', 'S3_EM',
     'S1'). Inserts the masthead + title block at the top of the body and sets
-    the header/footer. Returns the series key."""
+    the header/footer. `mono=True` = the black-and-white version of the series.
+    Returns the series key."""
     if level not in LEVELS:
         raise ValueError(f'no brand design for level {level!r} — known: {", ".join(LEVELS)}')
     series, small, level_line = LEVELS[level]
-    cfg = SERIES[series]
+    cfg = (SERIES_MONO if mono else SERIES)[series]
+    k = MONO if mono else COLOUR
     doc = ws.doc
-    els = [_masthead(doc, cfg, small, level_line)]
-    els += _title_block(doc, cfg, topic, kind, n_questions, marks)
+    els = [_masthead(doc, cfg, k, small, level_line)]
+    els += _title_block(doc, cfg, k, topic, kind, n_questions, marks)
     body = doc.element.body
     for i, el in enumerate(els):
         body.remove(el)
         body.insert(i, el)
-    _furniture(doc, cfg, small, topic)
+    _furniture(doc, cfg, k, small, topic)
+    if mono:
+        _drain_colour(doc)
     return series
+
+
+def _drain_colour(doc):
+    """The black-and-white version carries no colour anywhere: the orange [Ans:]
+    lines and any coloured working in the body and the styles go dark grey."""
+    for root in (doc.element.body, doc.styles.element):
+        for c in root.iter(qn('w:color')):
+            v = (c.get(qn('w:val')) or '').upper()
+            if len(v) == 6 and not (v[0:2] == v[2:4] == v[4:6]):
+                c.set(qn('w:val'), '404040')
+                for t in ('w:themeColor', 'w:themeShade', 'w:themeTint'):
+                    if c.get(qn(t)) is not None:
+                        del c.attrib[qn(t)]
