@@ -111,7 +111,6 @@ export default async function MarkingPage() {
   // rec… for tuition, acct:<uuid> for strangers — runs are stamped with this
   // same identity by /api/portal/submit, so paying strangers see their papers.
   const sid = portalIdentity(account);
-  const practiceHref = (topic: string) => `/app/practice?topic=${encodeURIComponent(topic)}`;
   const todayISO = sgtTodayISO();
 
   const sb = getSupabaseAdmin();
@@ -245,19 +244,8 @@ export default async function MarkingPage() {
         {own.streakNote && (
           <p className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-2.5 text-[13px] font-semibold text-emerald-800">{own.streakNote}</p>
         )}
-        {own.focus.length > 0 && (
-          <div className={`${CARD} px-4 py-3`}>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1.5">Work on next</p>
-            <div className="flex flex-wrap gap-1.5">
-              {own.focus.map(t => (
-                <Link key={t.topic} href={practiceHref(t.topic)}
-                  className="text-[13px] bg-[hsl(45,80%,94%)] text-navy rounded-full px-3 py-1 hover:bg-[hsl(45,80%,88%)] transition-colors">
-                  {t.topic} <span className="text-gray-500">{t.pct}%</span><span className="ml-1 text-gray-400">›</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* "Work on next" moved to My Notebook's Mistakes view on 17 Sep 2026
+            (lib/notebook-load weakest) — Papers says how you did, the Notebook what to fix. */}
         {/* 📘 "Choose papers" wraps the list: off, it is one line above the
             rows; on, the rows give way to a tick list (ChoosePapers). */}
         <ChoosePapers papers={pickPapers.filter(p => ids.has(p.id))}>

@@ -25,6 +25,8 @@ import { getDashboardData } from './portal-dashboard';
 import type { UpcomingExam } from './portal-exams';
 import { getTopicsForPaperLevel } from './canonical-topics';
 import { qbLevelsFor } from './qb-levels';
+import { buildStudentMarking, type MarkingRunRow } from './portal-marking';
+import { subjectAllowed } from './portal-subjects';
 
 export interface NotebookLoad {
   items: StreamItem[];
@@ -34,11 +36,21 @@ export interface NotebookLoad {
   topicGroups: TopicOptionGroup[];
   /** The student's practice level keys ('AM', 'EM', 'JC2', …). */
   levelKeys: string[];
+  /**
+   * Weakest topics across the student's released papers — the "Work on next"
+   * list that lived on Papers until 17 Sep 2026 (Adrian: Papers answers "how
+   * did I do", the Notebook answers "what do I fix"). Same rule as the parent
+   * report (buildStudentMarking → aggregateTopicBleed: ≥4 marks, <75 %, top 3).
+   */
+  weakest: { topic: string; pct: number }[];
 }
+
+/** Papers the weakest-topics line reads — a year is more than the rule needs. */
+const WEAKEST_MAX_PAPERS = 40;
 
 export async function loadNotebook(account: PortalAccount, sid: string): Promise<NotebookLoad> {
   const svc = createServiceClient();
-  const [notes, mistakes, askLines, pages, saves, privateNotes, exams] = await Promise.all([
+  const [notes, mistakes, askLines, pages, saves, privateNotes, exams, weakest] = await Promise.all([
     getSupabaseAdmin()
       .from('portal_notes')
       .select('id, run_id, source_label, topic, image_url, note, created_at, auto_topic, auto_skill, ocr_text')
@@ -57,6 +69,16 @@ export async function loadNotebook(account: PortalAccount, sid: string): Promise
       .then(r => (r.data ?? []) as PrivateNoteRow[], () => [] as PrivateNoteRow[]),
     // Exams ride Home's own Airtable batch (60 s cache per student, lib/portal-dashboard).
     getDashboardData(account).then(d => d.upcomingExams, () => [] as UpcomingExam[]),
+    // Weakest topics: the same released + subject-gated rows the Papers tab lists.
+    getSupabaseAdmin()
+      .from('paper_marking_runs')
+      .select('id, created_at, paper_name, total_awarded, total_max, released_at, result_json, paper_subject')
+      .eq('student_id', sid).not('released_at', 'is', null).is('superseded_by', null)
+      .order('created_at', { ascending: false }).limit(WEAKEST_MAX_PAPERS)
+      .then(r => {
+        const rows = ((r.data ?? []) as MarkingRunRow[]).filter(x => subjectAllowed(account, x.paper_subject));
+        return buildStudentMarking(rows, { studentName: account.display_name ?? null }).focus.map(t => ({ topic: t.topic, pct: t.pct }));
+      }, () => [] as { topic: string; pct: number }[]),
   ]);
 
   // Mistakes in display order (placeholders with no evidence yet are left out
@@ -97,5 +119,5 @@ export async function loadNotebook(account: PortalAccount, sid: string): Promise
     }
   }
 
-  return { items, exams, topicGroups, levelKeys: levels.map(l => l.key) };
+  return { items, exams, topicGroups, levelKeys: levels.map(l => l.key), weakest };
 }

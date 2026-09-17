@@ -286,3 +286,18 @@ What the round cost and why (the retrospective's numbers): 19 agents launched
 including relaunches, 6 lost to a transient API error or the session limit, 18
 bot deploys, 3 hand merges, the queue in-flight on one paper for 20 minutes
 twice. The playbook that came out of it is `docs/FANOUT.md`.
+
+**COST-1. A Mac-read paper cost $9.43 on the API (Isabelle, EM GCE 2023 P2, 17 Sep 2026). — FIXED 17 Sep 2026 (bot).**
+Adrian: *"why is marking this paper so expensive?"* The Mac read all 36 pages on
+the plan, but ~20 retry reads (empty hand-back pages, unmatched lines) "fell
+through to the sync API call" because the batch lane was shut and Mac-only was
+not on the assembly, and each carried the attached solutions library as an
+87k-token prefix — five of them wrote that prefix cold at double price because
+the warm-up is skipped whenever the reads are external. Every other Mac-read
+paper that week cost $0.06–$0.64. Fix: `handlers/webchat.js` passes
+`noApiReads` for any queued paper with no batch executor to fall to (only ⚡
+Mark now keeps the sync call), and `ai/external-reads.js` takes a `warm`
+callback that runs the cache warm-up ONCE before the first API fall-through
+(tests in `test/external-reads.test.js`). Watch for: a page that now goes out
+"could not be read" and is re-read by a Mac slot via the auto re-read instead.
+Also seen in the same log: two Mac slots claimed the same paper 2 s apart.

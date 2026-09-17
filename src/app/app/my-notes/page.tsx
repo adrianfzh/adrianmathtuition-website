@@ -75,7 +75,7 @@ export default async function MyNotebookPage({ searchParams }: { searchParams: P
     );
   }
 
-  const { items, exams, topicGroups } = await loadNotebook(account, sid);
+  const { items, exams, topicGroups, weakest } = await loadNotebook(account, sid);
   const soon = examsInWindow(exams).slice(0, 3);
   const metTopics = topicsMet(items).length;
 
@@ -106,7 +106,7 @@ export default async function MyNotebookPage({ searchParams }: { searchParams: P
         </Link>
       )}
 
-      <NotebookStream items={items} topicGroups={topicGroups} openId={typeof open === 'string' && open ? open : null} />
+      <NotebookStream weakest={weakest} items={items} topicGroups={topicGroups} openId={typeof open === 'string' && open ? open : null} />
     </div>
   );
 }

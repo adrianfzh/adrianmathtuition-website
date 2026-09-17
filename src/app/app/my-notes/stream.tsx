@@ -41,7 +41,9 @@ export function MathBody({ text, className }: { text: string; className?: string
   return <div ref={ref} className={className} />;
 }
 
-export default function NotebookStream({ items: initial, topicGroups, openId: openFromUrl }: {
+export default function NotebookStream({ items: initial, topicGroups, openId: openFromUrl, weakest = [] }: {
+  /** Weakest topics across the marked papers — one line at the top of the Mistakes view (17 Sep 2026). */
+  weakest?: { topic: string; pct: number }[];
   items: StreamItem[]; topicGroups: TopicOptionGroup[]; openId?: string | null;
 }) {
   const [items, setItems] = useState<StreamItem[]>(initial);
@@ -174,6 +176,23 @@ export default function NotebookStream({ items: initial, topicGroups, openId: op
           </button>
         ))}
       </div>
+
+      {/* Weakest topics — moved here from Papers on 17 Sep 2026 (Adrian: Papers
+          says how you did, the Notebook says what to fix). Mistakes view only. */}
+      {kind === 'mistake' && weakest.length > 0 && (
+        <p className="text-[12.5px] text-gray-600 leading-relaxed" data-weakest>
+          <span className="font-semibold text-navy">Weakest topics:</span>{' '}
+          {weakest.map((t, i) => (
+            <span key={t.topic}>
+              {i > 0 ? ' · ' : ''}
+              <Link href={`/app/practice?topic=${encodeURIComponent(t.topic)}`} className="underline underline-offset-2 hover:text-navy">
+                {t.topic} <span className="text-gray-400">{t.pct}%</span>
+              </Link>
+            </span>
+          ))}
+          <span className="text-gray-400"> ›</span>
+        </p>
+      )}
 
       {flash && <p className="text-[12px] text-rose-700">{flash}</p>}
 
