@@ -476,6 +476,10 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
             The marks are an <b>estimate</b>. Calculations are checked properly; <b>explain</b>{' '}answers are marked
             against standard syllabus points unless you attach your school&apos;s mark scheme below.
           </p>
+          <p>
+            <b>If you have the answers or the mark scheme, attach them below.</b> Marking is more accurate with them.
+            Without them, some marks may be off — especially on explain answers.
+          </p>
           <p>When your teacher returns the paper, compare — and enter their total on the marked paper&apos;s page so we can check ourselves.</p>
         </div>
       )}
@@ -612,14 +616,14 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
             school's points" on every explain answer. */}
         {isScience && (
           <div className="mt-3">
-            <p className="block text-sm font-semibold text-navy mb-1">Mark scheme <span className="font-normal text-gray-400">(optional)</span></p>
+            <p className="block text-sm font-semibold text-navy mb-1">Answers or mark scheme <span className="font-normal text-gray-400">(optional, but marking is more accurate with them)</span></p>
             <button
               type="button" onClick={() => schemeRef.current?.click()} disabled={busy}
               className="w-full rounded-xl border border-dashed border-gray-300 bg-white py-3 text-[13px] text-gray-600 active:bg-amber-50"
             >
               {schemeFiles.length
                 ? `📎 ${schemeFiles.length} file${schemeFiles.length === 1 ? '' : 's'} attached — tap to add more`
-                : '📎 Attach your school’s mark scheme — a PDF or photos'}
+                : '📎 Attach the answers or your school’s mark scheme — a PDF or photos'}
             </button>
             <input
               ref={schemeRef} type="file" accept="image/*,application/pdf" multiple className="hidden"
@@ -635,7 +639,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
                 Remove the mark scheme
               </button>
             )}
-            <p className="text-[11px] text-gray-400 mt-1">With the scheme, explain answers are marked against your school&apos;s points, not the standard ones.</p>
+            <p className="text-[11px] text-gray-400 mt-1">With the answers or scheme, marking follows your school&apos;s points, not the standard ones. Without them, marking may be less accurate.</p>
           </div>
         )}
         </div>

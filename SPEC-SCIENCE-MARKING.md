@@ -245,3 +245,24 @@ on single runs (A +3, C +3, E +8; per-part agreement 28/23/23 of 33), and one re
 script cannot separate a rule's effect from run-to-run noise. Next: measure the noise
 (the same script three times under one rule), the biology dial list, Singapore
 teacher-marked chemistry scripts.
+
+## Decision 17 Sep 2026 (Adrian) — the scheme is the standard; ask students for their answers
+
+> "just follow the seab marking scheme … the model can judge, in fact, over time, the model will
+> eventually outperform a real marker … schools' schemes can differ from each other too … i see no
+> major quality impairment when a model does the scheme."
+
+- **Calibration is against the scheme and examiner convention, not against Adrian's marks.** The
+  CLAUDE.md building doctrine's "Standard" line was revised the same day. Adrian's own hand-marked
+  math papers shook out the interpretation layer once; that job is done. His remaining role is
+  adjudicating the parts where the marker and a published examiner (the Cambridge booklets) disagree.
+- **Reading the script is a vision problem**, filed under the read step and the golden bench, not a
+  marking-quality problem.
+- **A model-built SEAB-style scheme for a school paper with no scheme is accepted.** Schools' schemes
+  differ from each other anyway; the estimate is for learning, not for predicting the school's mark.
+- **The hand-in form asks for answers.** The science disclaimer now says: attach the answers or the
+  mark scheme if you have them, marking is more accurate with them, without them some marks may be
+  off (especially explain answers). The "Mark scheme (optional)" block is titled "Answers or mark
+  scheme" with the same warning. The upload path is unchanged (`scheme_source`, stored in
+  `paper_schemes`). The math form has no such upload yet — a separate small build if wanted.
+
