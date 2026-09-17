@@ -999,6 +999,7 @@ export default function DeskPage() {
     <div style={{ fontFamily: 'system-ui, sans-serif', maxWidth: runId ? 1400 : 820, margin: '0 auto', padding: '14px 12px 96px', color: C.ink }}>
       <style>{`
         .desk-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; align-items: start; }
+        .desk-grid--single { grid-template-columns: minmax(0, 1fr) !important; max-width: 900px; }
         @media (min-width: 1024px) {
           .desk-grid { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
           .desk-right { position: sticky; top: 8px; max-height: calc(100vh - 16px); overflow: auto; }
@@ -1104,7 +1105,7 @@ export default function DeskPage() {
               <div key={row.id} className="desk-row" role="button" tabIndex={0}
                 onClick={() => go({ run: row.id })}
                 onKeyDown={e => { if (e.key === 'Enter') go({ run: row.id }); }}
-                style={{ display: 'flex', gap: 10, padding: '11px 12px', borderTop: `1px solid ${C.border}`, cursor: 'pointer', alignItems: 'flex-start', background: ticked.has(row.id) ? '#eff6ff' : undefined }}>
+                style={{ display: 'flex', gap: 10, padding: '11px 12px', borderTop: `1px solid ${C.border}`, cursor: 'pointer', alignItems: 'flex-start', borderLeft: row.practiceAgain ? '5px solid #10b981' : '5px solid transparent', background: ticked.has(row.id) ? '#eff6ff' : row.practiceAgain ? '#f0fdf4' : undefined }}>
                 {tickable(row) && (
                   <input type="checkbox" checked={ticked.has(row.id)} aria-label="Tick for a Practice Again sheet"
                     title="Tick any papers — one sheet per student per maths; papers of the same maths are merged, a lone paper gets its own"
@@ -1123,7 +1124,7 @@ export default function DeskPage() {
                   <div style={{ fontSize: 12.5, color: C.muted, marginTop: 3, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                     <span>marked {fmtDate(row.createdAt)}</span>
                     {row.origin && <OriginChip origin={row.origin} />}
-                    {row.practiceAgain && <Chip label="📘 Practice Again hand-in" bg="#ecfdf5" color="#047857" />}
+                    {row.practiceAgain && <Chip label="📘 Returned Practice Again sheet — marked as a paper" bg="#d1fae5" color="#065f46" />}
                     {row.lane !== 'released' && !row.practiceAgain && (
                       <span style={{ color: row.sheet?.status === 'done' ? C.ok : row.sheet?.status === 'failed' ? C.danger : C.link }}>
                         📘 {row.sheet?.label ?? 'no sheet yet'}{row.sheet?.requestedBy === 'student' ? ' · asked by the student' : ''}
@@ -1288,6 +1289,8 @@ function DetailView(p: {
     if (typeof window !== 'undefined' && !window.matchMedia('(min-width: 1024px)').matches) { document.getElementById(`page-${photoIndex}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     setRightPage(photoIndex); setRightPane('page');
   };
+  // The right column earns its space only with a sheet (any stage) or a page to peek at.
+  const thinRight = rightPage == null && (!!run.practiceAgain || (!(d as { sheetJob?: unknown }).sheetJob && !(d as { sheetSent?: boolean }).sheetSent));
   const tone = LANE_TONE[d.lane];
   const pct = run.max > 0 ? Math.round((run.awarded / run.max) * 100) : null;
   const canApprove = d.approveBlockers.length === 0 && !released;
@@ -1557,7 +1560,15 @@ function DetailView(p: {
         )}
       </section>
 
-      <div className="desk-grid">
+      <div className={`desk-grid${thinRight ? ' desk-grid--single' : ''}`}>
+        {thinRight && (
+          // Nothing to put beside the script (no sheet, no page picked): the sheet's one-line
+          // state sits above instead of an empty right column (Adrian, 17 Sep 2026).
+          <div style={{ minWidth: 0 }}>
+            <SheetPane d={d} sheetPages={p.sheetPages} sheetNote={p.sheetNote} busy={busy} focus={p.focus} setFocus={p.setFocus}
+              onQueueSheet={p.onQueueSheet} onCancelSheet={p.onCancelSheet} onAutoRelease={p.onAutoRelease} onRevise={p.onRevise} onSendSheet={p.onSendSheet} />
+          </div>
+        )}
         {/* ── left: the marked script ── */}
         <div style={{ minWidth: 0 }}>
           {/* Every question still waiting for a decision, first (Adrian, 8 Sep 2026:
@@ -1693,7 +1704,7 @@ function DetailView(p: {
         </div>
 
         {/* ── right: the sheet, or the page a "see page" asked for ── */}
-        <div className="desk-right" style={{ minWidth: 0 }}>
+        {!thinRight && <div className="desk-right" style={{ minWidth: 0 }}>
           {rightPage != null && (() => {
             const order = pages.map(pg => pg.photoIndex);
             const at = order.indexOf(rightPage);
@@ -1742,7 +1753,7 @@ function DetailView(p: {
             <SheetPane d={d} sheetPages={p.sheetPages} sheetNote={p.sheetNote} busy={busy} focus={p.focus} setFocus={p.setFocus}
               onQueueSheet={p.onQueueSheet} onCancelSheet={p.onCancelSheet} onAutoRelease={p.onAutoRelease} onRevise={p.onRevise} onSendSheet={p.onSendSheet} />
           )}
-        </div>
+        </div>}
       </div>
       {annotatePage != null && (
         <AnnotateOverlay

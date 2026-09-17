@@ -10,13 +10,13 @@ export const SEARCH_FROM = 8;
 
 export interface SearchEntry { key: string; haystack: string; node: ReactNode }
 
-export default function PaperSearch({ entries }: { entries: SearchEntry[] }) {
+export default function PaperSearch({ entries, always = false }: { entries: SearchEntry[]; /** Adrian's tab: the box is always there. */ always?: boolean }) {
   const [q, setQ] = useState('');
   const words = q.toLowerCase().split(/\s+/).filter(Boolean);
   const shown = words.length ? entries.filter(e => words.every(w => e.haystack.includes(w))) : entries;
   return (
     <div className="space-y-2.5">
-      {entries.length >= SEARCH_FROM && (
+      {(always || entries.length >= SEARCH_FROM) && (
         <input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Search your papers — 2023, paper 2, prelim…" aria-label="Search papers"
           className="w-full text-sm bg-white border border-black/10 rounded-2xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-navy/20" data-paper-search />
       )}

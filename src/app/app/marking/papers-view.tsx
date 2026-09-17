@@ -57,6 +57,7 @@ import type { UpcomingExam } from '@/lib/portal-exams';
 import StarPaper from './StarPaper';
 import ArchivePaper from './ArchivePaper';
 import PaperSearch, { type SearchEntry } from './PaperSearch';
+import AdminRename from './AdminRename';
 import { readNoSheet } from '@/lib/sheet-jobs';
 import MarkingBeacon from './MarkingBeacon';
 import SubjectTiles from './SubjectTiles';
@@ -318,7 +319,7 @@ export default async function PapersView({ account, sid, admin = false }: {
               covers sit in one frame, in syllabus order, the sheet's line at
               the foot — lib/portal-paper-bundles. The search box appears once
               a tab holds enough papers to need it (PaperSearch). */}
-          <PaperSearch entries={searchEntries} />
+          <PaperSearch entries={searchEntries} always={admin} />
         </ChoosePapers>
         {!admin && <ReviewPicker papers={reviewable} />}
         {archived.length > 0 && (
@@ -509,7 +510,7 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
         <p className="mt-1.5 flex flex-wrap gap-x-3 text-[11.5px]">
           <a href={`/admin/desk?student=${encodeURIComponent(paper.rawName ?? paper.name)}`} className="text-sky-700 underline">desk</a>
           <a href={`/app/marking/${paper.id}`} target="_blank" rel="noreferrer" className="text-sky-700 underline">as student ↗</a>
-          {paper.rawName && paper.rawName !== paper.name && <span className="text-gray-400">typed as “{paper.rawName}”</span>}
+          <AdminRename runId={paper.id} name={paper.rawName ?? paper.name} />
           {paper.note && <span className="text-gray-500 italic">their remark: {noteFirstLine(paper.note, 120)}</span>}
         </p>
       )}
@@ -539,13 +540,14 @@ function Bundle({ papers, todayISO, sheet, markedSheet, nextWave, admin = false,
   const line = sheetLine(sheet);
   return (
     <div className="rounded-[28px] border-2 border-emerald-200 bg-emerald-50/50 p-2 space-y-2">
+      {papers.map(p => (
+        <PaperRow key={p.id} paper={p} todayISO={todayISO} sheet={sheet} job={null} markedSheet={null} nextWave={null} inBundle admin={admin} adminInfo={adminInfoOf ? adminInfoOf(p.id) : null} />
+      ))}
+      {/* The caption sits BELOW the papers it covers (Adrian, 17 Sep 2026: "put one practice sheet from these two papers below the two papers"). */}
       <div className="px-2 pt-1">
         <p className="text-[13px] font-bold text-emerald-900">📘 {cap.title}</p>
         <p className="text-[12px] text-emerald-800/80">{cap.sub}</p>
       </div>
-      {papers.map(p => (
-        <PaperRow key={p.id} paper={p} todayISO={todayISO} sheet={sheet} job={null} markedSheet={null} nextWave={null} inBundle admin={admin} adminInfo={adminInfoOf ? adminInfoOf(p.id) : null} />
-      ))}
       <SheetLineView line={line} sheet={sheet} markedSheet={markedSheet} nextWave={nextWave} admin={admin} />
     </div>
   );

@@ -813,10 +813,8 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
 
             {/* From Adrian — assigned work (SPEC-ASSIGN.md): bank question → in-browser
                 grader, worksheet PDF → /app/submit pipeline. */}
-            <Section title="🧺 On the shelf" show={tab === 'work'}>
-          <ShelfSection studentId={studentId} studentName={data.student.name}
-            studentLevel={data.student.level} subjects={data.student.subjects || []} />
-        </Section>
+            {/* "On the shelf" left the profile on 17 Sep 2026 (SPEC-STUDENT-FIRST §3): the
+                gaps a sheet kept back are a property of that sheet and show under it. */}
 
         <Section title="📬 From Adrian" show={tab === 'work'}>
               <SendWorkCard
@@ -863,11 +861,9 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
 
             {/* Marked papers — runs tagged with this student on /admin/mark-paper.
                 ✍️ = Adrian's annotated copy (the hand-back), 🖼/📄 the AI outputs. */}
-            <Section title="Marked papers (Adrian's list)" show={tab === 'papers'} action={<span style={{ display: 'inline-flex', gap: 12 }}><a href={`/admin/students/${studentId}/app`} style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>📱 Their app, as they see it →</a><a href="/admin/mark-paper" style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>Mark a paper →</a></span>}>
+            <Section title="Score lines" show={tab === 'overview'}>
               {(!markedPapers || markedPapers.length === 0) && (
-                <div style={{ color: '#9ca3af', fontSize: 14 }}>
-                  None yet — papers appear here once tagged with this student on the mark page (pick them in the send row).
-                </div>
+                <div style={{ color: '#9ca3af', fontSize: 14 }}>No marked papers yet.</div>
               )}
               {marksTrends.length > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '4px 0 10px', borderBottom: '1px solid #e5e7eb', marginBottom: 4 }}>
@@ -893,9 +889,7 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
                   })}
                 </div>
               )}
-              {paperCards.map(c => (
-                <PaperCard key={c.paper.id} paper={c.paper} sheet={c.sheet} markedRun={c.markedRun} studentName={data.student.name} />
-              ))}
+              {/* The per-paper list moved to the Papers tab (the student's own view with Adrian's lines), 17 Sep 2026. */}
             </Section>
 
             {/* Enrollments / slots */}
@@ -1137,7 +1131,8 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
             <Section title="Progress" show={tab === 'overview'}>
               {(() => {
                 const p = data.progress;
-                const recent = p?.recent ?? [];
+                // Only lessons with something logged (17 Sep 2026: the list of bare dates read as empty).
+                const recent = (p?.recent ?? []).filter(h => h.topics || h.mastery || h.mood || h.progressLogged);
                 const masteryTotal = p ? p.mastery.strong + p.mastery.ok + p.mastery.slow : 0;
                 return (
                   <>
@@ -1157,7 +1152,7 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
                         <span style={{ marginLeft: 'auto', color: '#94a3b8', fontSize: 11 }}>last 90 days</span>
                       </div>
                     )}
-                    {recent.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>No logged lessons yet.</div>}
+                    {recent.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>No lesson notes yet — log a lesson from the schedule or the end-of-day page and it appears here.</div>}
                     {recent.map(h => (
                       <button key={h.id} onClick={() => setLessonModal({ id: h.id, studentId, studentName: s.name, date: h.date, slotId: h.slotId, type: h.type })}
                         style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14, width: '100%', background: 'none', border: 'none', borderBottomStyle: 'solid', cursor: 'pointer', textAlign: 'left' }}>
@@ -1233,7 +1228,7 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
 
             {/* Ad-hoc lessons ready to bill (Completed, not yet invoiced) */}
             {adhoc && adhoc.lessons.length > 0 && (
-              <Section title="Ad-hoc lessons to bill">
+              <Section title="Ad-hoc lessons to bill" show={tab === 'billing'}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                   <div style={{ fontSize: 14, color: '#374151' }}>
                     <b>{adhoc.lessons.length}</b> completed session{adhoc.lessons.length === 1 ? '' : 's'} · <b>{money(adhoc.total)}</b>
@@ -1248,7 +1243,7 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
             )}
 
             {/* Invoices */}
-            <Section title="Recent invoices" action={<a href="/admin/invoices" style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>All →</a>}>
+            <Section title="Recent invoices" show={tab === 'billing'} action={<a href="/admin/invoices" style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>All →</a>}>
               {data.invoices.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>None.</div>}
               {data.invoices.map(inv => (
                 <div key={inv.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14 }}>
@@ -1261,7 +1256,7 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
             </Section>
 
             {/* Every invoice PDF actually emailed to this student */}
-            <Section title={`Sent invoice PDFs (${data.sentInvoices.length})`}>
+            <Section title={`Sent invoice PDFs (${data.sentInvoices.length})`} show={tab === 'billing'}>
               {data.sentInvoices.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>No invoice emails on record.</div>}
               {data.sentInvoices.map(si => (
                 <div key={si.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14 }}>

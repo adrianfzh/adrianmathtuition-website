@@ -155,7 +155,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
-  let body: { runId?: string; runIds?: unknown; studentId?: string | null; checked?: boolean };
+  let body: { runId?: string; runIds?: unknown; studentId?: string | null; checked?: boolean; name?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -177,6 +177,15 @@ export async function POST(req: NextRequest) {
 
   const { runId, studentId } = body;
   if (!runId) return NextResponse.json({ error: 'runId is required' }, { status: 400 });
+
+  // ✏️ Rename (17 Sep 2026): Adrian's own name for the paper, from his Papers tab.
+  if (typeof body.name === 'string') {
+    const name = body.name.replace(/\s+/g, ' ').trim().slice(0, 120);
+    if (!name) return NextResponse.json({ error: 'name is empty' }, { status: 400 });
+    const { error } = await getSupabaseAdmin().from('paper_marking_runs').update({ paper_name: name }).eq('id', runId);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true, runId, name });
+  }
 
   // Manual ✓ from the library — the "looked through it, nothing to change" case that
   // no annotated copy or send would ever record (Adrian, 19 Aug 2026). A body with
