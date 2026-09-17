@@ -223,7 +223,10 @@ export default function SendWorkCard({ studentId, studentName, studentLevel, sub
   const list = (rows || []).filter(a => !shownElsewhere?.has(a.id));
   const hidden = (rows || []).length - list.length;
   const pending = list.filter(a => isPending(a.status));
-  const done = list.filter(a => !isPending(a.status));
+  // Withdrawn work is history, not a to-do list (18 Sep 2026, Adrian: "there are
+  // alot of withdrawn work? should we still show them?") — folded away, count only.
+  const done = list.filter(a => !isPending(a.status) && a.status !== 'revoked');
+  const withdrawn = list.filter(a => a.status === 'revoked');
 
   return (
     <div style={{ display: 'grid', gap: 12 }}>
@@ -419,6 +422,12 @@ export default function SendWorkCard({ studentId, studentName, studentLevel, sub
           <div style={label}>Done</div>
           {done.slice(0, 10).map(a => <Row key={a.id} a={a} />)}
         </div>
+      )}
+      {withdrawn.length > 0 && (
+        <details>
+          <summary style={{ ...label, cursor: 'pointer', listStyle: 'none' }}>▸ Withdrawn ({withdrawn.length})</summary>
+          {withdrawn.slice(0, 20).map(a => <Row key={a.id} a={a} />)}
+        </details>
       )}
       {hidden > 0 && list.length > 0 && (
         <div style={{ fontSize: 12, color: '#9ca3af' }}>
