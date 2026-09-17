@@ -421,6 +421,9 @@ export async function POST(req: NextRequest) {
         await sb.from('sheet_jobs').update({ auto_release_at: at, held_at: null, stage: `auto-release at ${at}` }).eq('id', job.id);
         notify_marking(scheduledLine(at, deskUrl, who, job.paper_name, gate.watch)).catch(() => {});
       } else if (hours > 0) {
+        // A held sheet SAYS so on the desk (17 Sep 2026): the stage used to stay
+        // at "filing", so a held sheet looked in progress and was never sent.
+        await sb.from('sheet_jobs').update({ held_at: new Date().toISOString(), stage: `held — ${gate.reasons[0]}` }).eq('id', job.id);
         notify_marking(heldLine(who, job.paper_name, gate.reasons, deskUrl)).catch(() => {});
       }
     };

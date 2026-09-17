@@ -10,8 +10,15 @@ describe('autoReleaseGate', () => {
   it('names every reason it will not release on its own', () => {
     const r = autoReleaseGate({ noSheet: false, verified: '70/73 sympy', wave: [], exampleCheck: { checked: 2, disagreements: [{}] }, grounded: false });
     expect(r.ok).toBe(false);
-    expect(r.reasons).toHaveLength(4);
+    expect(r.reasons).toHaveLength(3);
     expect(r.reasons[0]).toMatch(/only 70 of 73/);
+    // "not grounded" is a watch-out since 17 Sep 2026, never a refusal
+    expect(r.watch).toContain('the marking was not grounded on the real paper');
+  });
+  it('an ungrounded marking alone does not hold the sheet — it is pinged as a watch-out (17 Sep 2026)', () => {
+    const r = autoReleaseGate({ ...good, grounded: false });
+    expect(r.ok).toBe(true);
+    expect(r.watch).toEqual(['the marking was not grounded on the real paper']);
   });
   it('a skipped or missing example check holds the sheet for a human', () => {
     expect(autoReleaseGate({ ...good, exampleCheck: { checked: 0, disagreements: [], skipped: 'model call failed' } }).ok).toBe(false);

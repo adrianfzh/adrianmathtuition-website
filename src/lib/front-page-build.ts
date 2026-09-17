@@ -6,6 +6,8 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { analyse, worstQuestions, type LostPart } from '@/lib/paper-analysis';
 import { readDiagnosis, themesFromDiagnosis } from '@/lib/sheet-diagnosis';
 import { errorKindTotals } from '@/lib/error-kinds';
+import { coverRemark } from '@/lib/cover-remark';
+import { levelFromPaperName } from '@/lib/sheet-sections';
 import { renderFrontPagePng } from '@/lib/render-front-page';
 import { isUngroundedTotal } from '@/lib/paper-total-text';
 import { remarkedCoverInput } from '@/lib/remark-internal';
@@ -35,7 +37,7 @@ export async function buildFrontPage(
 ): Promise<Buffer | null> {
   const sb = getSupabaseAdmin();
   const { data: run } = await sb.from('paper_marking_runs')
-    .select('id, student_name, paper_name, created_at, result_json').eq('id', runId).maybeSingle();
+    .select('id, student_id, student_name, paper_name, created_at, result_json').eq('id', runId).maybeSingle();
   if (!run) return null;
 
   const parts = lostPartsFromRun(run as RunRow);
@@ -51,6 +53,28 @@ export async function buildFrontPage(
   try {
     errorKinds = errorKindTotals((run.result_json as { results?: unknown } | null)?.results);
   } catch (e) { console.warn('[front-page] error kinds skipped:', (e as Error).message); }
+
+  // The remark under the score (17 Sep 2026, lib/cover-remark.ts): the kinds
+  // split above, plus the student's previous released paper at the SAME level
+  // (AM / EM / H2 by paper name) for the "up from / down from" clause. Every
+  // miss is silent: no previous paper, no kinds → the sentence that fits, or none.
+  let remark: string | null = null;
+  try {
+    let previous: { awarded: number; max: number } | null = null;
+    const level = levelFromPaperName(run.paper_name);
+    const studentId = (run as { student_id?: string | null }).student_id;
+    if (studentId && level) {
+      const { data: earlier } = await sb.from('paper_marking_runs')
+        .select('id, paper_name, total_awarded, total_max, released_at')
+        .eq('student_id', studentId).neq('id', run.id)
+        .not('released_at', 'is', null).is('superseded_by', null)
+        .lt('created_at', run.created_at as string)
+        .order('created_at', { ascending: false }).limit(12);
+      const same = (earlier ?? []).find(r => levelFromPaperName(r.paper_name) === level && Number(r.total_max) > 0 && !/practice again/i.test(String(r.paper_name || '')));
+      if (same) previous = { awarded: Number(same.total_awarded) || 0, max: Number(same.total_max) };
+    }
+    remark = coverRemark({ awarded: meta.awarded, max: meta.max, kinds: errorKinds, previous });
+  } catch (e) { console.warn('[front-page] remark skipped:', (e as Error).message); }
 
   // A re-marked paper (10 Sep 2026): the run keeps previous_results from the
   // enqueue, queue.remark_pages names the pages (0-based), previous_marked_at
@@ -74,6 +98,7 @@ export async function buildFrontPage(
     remarked,
     ungrounded,
     errorKinds,
+    remark,
     studentName: meta.studentName || run.student_name,
     paperName: meta.paperName || run.paper_name,
     markedOn: null,

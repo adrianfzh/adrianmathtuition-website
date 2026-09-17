@@ -97,6 +97,9 @@ export type FrontPageInput = {
    *  paper) and when. The cover wears a REMARKED badge and says the changed parts
    *  are in purple — the pen inks them so (bot annotate.js REMARK_INK). */
   remarked?: { pages: number[] | null; at: string | null; changed?: number | null } | null;
+  /** One specific line under the score (lib/cover-remark.ts, 17 Sep 2026) —
+   *  absent or null → no markup at all, the page is unchanged. */
+  remark?: string | null;
   /**
    * 🕳 MARKED WITHOUT THE QUESTION PAPER (Adrian, 10 Sep 2026). Nothing grounded
    * this marking — no attached paper, no mark scheme, no bank rows — so the
@@ -326,6 +329,10 @@ ${sub}`;
  * byte-identical to the one it printed yesterday. The rule itself is
  * `overCount` in lib/paper-total-text.ts, shared with the PAPER TOTAL strip.
  */
+function escapeHtml(t: string): string {
+  return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function badge(input: FrontPageInput): string {
   if (overCount(input)) {
     return `<style>
@@ -345,8 +352,14 @@ function badge(input: FrontPageInput): string {
        <div class="check-tag">not official</div></div>`;
   }
   const pct = input.max > 0 ? Math.round((input.awarded / input.max) * 100) : 0;
+  // The remark (17 Sep 2026): Adrian's one specific line under the score — the
+  // careless / method / stopped-short split and the move since the last paper.
+  const remark = input.remark ? `<style>
+.remark{font-family:"Patrick Hand","Segoe Print",cursive;font-size:.98rem;line-height:1.3;color:var(--ink);
+        margin-top:.5rem;max-width:22rem;text-align:left}
+</style><div class="remark">${escapeHtml(input.remark)}</div>` : '';
   return `<div class="badge"><div class="score">${input.awarded}<span class="of">/${input.max}</span></div>
-       <div class="pct">${pct}%</div></div>`;
+       <div class="pct">${pct}%</div>${remark}</div>`;
 }
 
 /**

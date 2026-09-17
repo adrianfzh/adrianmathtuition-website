@@ -54,11 +54,17 @@ export function autoReleaseGate(g: GateInput): GateResult {
   else if (g.exampleCheck.skipped) reasons.push(`the example check was skipped: ${g.exampleCheck.skipped}`);
   else if (g.exampleCheck.checked === 0) reasons.push('no worked example was found to check');
   else if (g.exampleCheck.disagreements.length) reasons.push(`a second reader disagrees with ${g.exampleCheck.disagreements.length} worked example(s)`);
-  if (g.grounded === false) reasons.push('the marking was not grounded on the real paper');
+  // "Not grounded on the real paper" is a WATCH-OUT, not a refusal (17 Sep 2026):
+  // it held 14 of the last 17 finished sheets on the desk with the stage still
+  // reading "filing", Adrian sent the PDFs by hand, and a sheet handed back from
+  // a hand-sent PDF carries no link to itself (Rainie's "EMATH Practice Again
+  // 2", marked from the working alone). Same doctrine as the marking's own
+  // release since 8 Sep: release, and ping the signal.
+  const groundWatch = g.grounded === false ? ['the marking was not grounded on the real paper'] : [];
   // The paper's accuracy signals are WATCH-OUTS, not a refusal (Adrian, 8 Sep
   // 2026: "we should just release them, but ping me for anything important").
   // Only a paper with nothing marked stops the clock.
-  const watch = (Array.isArray(g.paperHold) ? g.paperHold : []).filter(r => r !== 'no questions were marked');
+  const watch = [...groundWatch, ...(Array.isArray(g.paperHold) ? g.paperHold : []).filter(r => r !== 'no questions were marked')];
   if ((g.paperHold || []).includes('no questions were marked')) reasons.push('the paper has nothing marked');
   return { ok: reasons.length === 0, reasons, watch };
 }
