@@ -6,6 +6,8 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
+import { cookies } from 'next/headers';
+import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
 import { fileHref } from '@/lib/student-files-url';
@@ -43,13 +45,21 @@ function niceDate(iso: string): string {
 export default async function PaperPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
-  const account = await currentAccount();
-  const sid = portalIdentity(account);
+  // Adrian's admin sign-in opens any student's released paper (18 Sep 2026 —
+  // from his Papers tab the page bounced him to the student login, because
+  // currentAccount() redirects a session with no portal account). An admin
+  // viewer has no account; the paper's own student id stands in for the
+  // identity everywhere below (sheets, siblings, the student's ink).
+  const isAdmin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
+  const account: Awaited<ReturnType<typeof currentAccount>> | null = isAdmin ? null : await currentAccount();
   const sb = getSupabaseAdmin();
-  const { data: row } = await sb.from('paper_marking_runs').select(COLUMNS)
-    .eq('id', id).eq('student_id', sid).not('released_at', 'is', null).maybeSingle();
+  let q = sb.from('paper_marking_runs').select(COLUMNS + ', student_id').eq('id', id).not('released_at', 'is', null);
+  if (!isAdmin) q = q.eq('student_id', portalIdentity(account!));
+  const { data: row } = await q.maybeSingle();
   if (!row) notFound();
-  const { papers } = buildStudentMarking([row as MarkingRunRow], { studentName: account?.display_name ?? null });
+  const sid: string = isAdmin ? String((row as { student_id?: string | null }).student_id ?? '') : portalIdentity(account!);
+  if (!sid) notFound();
+  const { papers } = buildStudentMarking([row as unknown as MarkingRunRow], { studentName: account?.display_name ?? null });
   const paper = papers[0];
   if (!paper) notFound();
 
