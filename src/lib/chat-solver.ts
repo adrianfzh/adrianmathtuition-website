@@ -288,7 +288,7 @@ export function appendStreamingMessage(inner: HTMLDivElement): HTMLDivElement {
   return textDiv;
 }
 
-/* ── 🚩 "Wrong? Tell Adrian" under an assistant answer (17 Sep 2026) ──
+/* ── 🤔 "Not sure? Ask Adrian" under an assistant answer (17 Sep 2026; "Wrong? Tell Adrian" was a little intimidating) ──
    The 👍/👎 row is gone (395 answers, 2 thumbs in a fortnight — nobody pressed
    them). One button now: the student says the answer looks wrong, adds a note if
    they like, and Adrian gets the question + answer in Telegram. The function
@@ -309,15 +309,15 @@ export function attachFeedbackRow(group: HTMLElement, messageId: number, existin
   row.style.cssText = 'display:flex;gap:6px;margin-top:4px;';
   const b = document.createElement('button');
   const sent = existing === 'flagged';
-  b.textContent = sent ? '🚩 Sent to Adrian ✓' : '🚩 Wrong? Tell Adrian';
-  b.setAttribute('aria-label', 'Tell Adrian this answer looks wrong');
+  b.textContent = sent ? '🤔 Sent to Adrian ✓' : '🤔 Not sure? Ask Adrian';
+  b.setAttribute('aria-label', 'Not sure about this answer? Ask Adrian');
   b.style.cssText = `background:none;border:1px solid hsl(220,15%,88%);border-radius:8px;padding:2px 9px;cursor:${sent ? 'default' : 'pointer'};font-size:12px;opacity:${sent ? '1' : '0.75'};color:inherit;`;
   if (sent) row.dataset.voted = 'flagged';
   b.onclick = () => {
     if (row.dataset.voted) return;
-    const note = window.prompt('What looks wrong? (optional — the correct answer, or which step)') ?? '';
+    const note = window.prompt('What are you unsure about? (optional — a different answer, or which step)') ?? '';
     row.dataset.voted = 'flagged';
-    b.textContent = '🚩 Sent to Adrian ✓'; b.style.opacity = '1'; b.style.cursor = 'default';
+    b.textContent = '🤔 Sent to Adrian ✓'; b.style.opacity = '1'; b.style.cursor = 'default';
     const body: Record<string, unknown> = { chatId: opts.getChatId(), messageId, note };
     const tgInit = opts.getTgInitData?.();
     if (tgInit) body.tgInitData = tgInit;
