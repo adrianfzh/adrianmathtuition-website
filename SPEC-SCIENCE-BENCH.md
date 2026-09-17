@@ -170,6 +170,13 @@ scripts are typeset.
 - Notices when the scheme convention itself is wrong for Singapore (the doctrine's
   "Novelty" item) — the bench surfaces it as a defect line that will not close.
 
+## How to run §1
+
+The step-by-step runbook is the committed skill `.claude/skills/science-bench/SKILL.md`
+(`/science-bench`): where every piece lives, the secrets needed, the exact API calls, the
+author + blind-verifier agents, scoring, and the acceptance rule. It travels with the repo, so
+a session on any account on a Mac with both repos can run it.
+
 ## Build order
 
 1. **§1 for physics, rules-alone and scheme-grounded**, 30 scripts, truth files, the

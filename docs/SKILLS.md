@@ -70,6 +70,7 @@ authoritative list.
 | `qb-enrich` | Extracts missing `answer` fields from existing solutions, writes solutions where there are none |
 | `plan-marking` | Runs one cycle of the plan-billed 🌙 marking worker by hand; also the way to debug the launchd worker |
 | `author-lesson` | Drafts a `data/lessons/<slug>.json` animated lesson for one (level, topic) from APPROVED learning units, gated by `scripts/lessons/verify-lesson.mjs` and Adrian's scene-by-scene approval; admin-preview only → [`docs/LESSONS.md`](LESSONS.md) |
+| `science-bench` | Builds and runs the seeded-script bench for science marking (SPEC-SCIENCE-BENCH.md §1): fake scripts with defects chosen in advance, handed in through the real queue, scored into `calibration_results` as `truth_source 'seeded'`; needs no marked paper; Mac + both repos, any account |
 | *(not a skill)* Telegram `/ws` | Adrian's five-kind worksheet menu in the bot: kind 3 (questions only) is the instant `/api/bot/worksheet` build, marks-banded; kinds 1 · 2 · 4 · 5 queue to `worksheet_jobs` and the Mac worker (`scripts/worksheet-worker/`) runs `revision-worksheet` / `crw --kind notes` / `crw --kind worked` / `prelim-paper` headless, files the DOCX and Telegrams it back → [`SPEC-WORKSHEET-MENU.md`](../SPEC-WORKSHEET-MENU.md) |
 
 ## Adding a skill
