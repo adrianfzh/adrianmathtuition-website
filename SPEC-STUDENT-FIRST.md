@@ -106,6 +106,8 @@ On the paper page, under the title, a quiet grey box "My remark" (Adrian: amber 
 
 Adrian, 17 Sep 2026: *"mainly students should be able to do work on the app, and annotate on the marked copy … the original marked pdf itself should still be accessible."* He will get an Apple developer account.
 
+**Status: use 1 (notes on a marked paper) BUILT 17 Sep 2026 on the preview — show / hide / clear, saved as a layer; the download-with-notes and use 2 (doing a sheet in the app) are next.**
+
 **Two uses of one ink overlay** (the overlay Adrian already uses on `/admin/mark-paper`, `SPEC-ANNOTATE.md`, with its drafts and its Done that bakes ink into a copy):
 
 1. **Notes on a marked paper.** The student writes on the marked pages in the app. Their ink is saved as **their own layer** (`student_ink`, one row per page, strokes as the overlay stores them), drawn on top of the marked page images. **The marked copy itself is never changed.** On the paper page a switch "Show my notes / Hide my notes" toggles the layer, and "Clear my notes" empties it after a confirm. The download offers both: "Marked copy" (the original) and "Marked copy with my notes" (flattened on request). No "clear to see the original" is ever needed, because the original is always there underneath.
