@@ -30,26 +30,40 @@ export async function GET(req: NextRequest) {
   const sb = getSupabaseAdmin();
   const terms = searchTerms(q).split(' ').filter(Boolean);
   if (!terms.length) return NextResponse.json({ steps: [], questions: [] });
-  // Sub-skills whose name carries the step's words: any word matches, ranked by
-  // how many match. ILIKE per word keeps it simple and exact enough for a
-  // table of a few thousand names.
-  let sg = sb.from('subgroups').select('id, name, topic, level').or(terms.slice(0, 6).map(t => `name.ilike.%${t.replace(/[%,]/g, '')}%`).join(','));
+  // Sub-skills whose NAME or DESCRIPTION carries the step's words. Every
+  // sub-skill has a description written as the step it exercises ("Apply the
+  // angle-at-centre = 2× angle-at-circumference rule, angles in the same
+  // segment, …"), so the description is where the step lives; the name is
+  // often the family ("Circle Theorems and Tangents"). Ranking is by RARITY of
+  // the matched words among the candidates — "angle" matches half the geometry
+  // filing and says little, "circumference" matches two rows and says a lot.
+  const like = (t: string) => t.replace(/[%,()]/g, '');
+  let sg = sb.from('subgroups').select('id, name, topic, level, description')
+    .or(terms.slice(0, 8).flatMap(t => [`name.ilike.%${like(t)}%`, `description.ilike.%${like(t)}%`]).join(','));
   const levels = LEVELS[level];
   if (levels) sg = sg.in('level', levels);
-  const { data: subs, error } = await sg.limit(60);
+  const { data: subs, error } = await sg.limit(150);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  const scored = (subs ?? []).map(s => ({ ...s, hits: terms.filter(t => String(s.name).toLowerCase().includes(t)).length }))
-    .filter(s => s.hits > 0).sort((a, b) => b.hits - a.hits).slice(0, 6);
-  if (!scored.length) return NextResponse.json({ steps: [], questions: [] });
-  const { data: links } = await sb.from('question_subgroups').select('question_id, subgroup_id, is_primary').in('subgroup_id', scored.map(s => s.id)).limit(400);
+  const hay = (s: { name: string; description?: string | null }) => `${s.name} ${s.description || ''}`.toLowerCase();
+  const df = new Map<string, number>();
+  for (const t of terms) df.set(t, (subs ?? []).filter(s => hay(s).includes(t)).length);
+  const weight = (t: string) => 1 / (1 + (df.get(t) || 0));
+  const scored = (subs ?? []).map(s => {
+    const hit = terms.filter(t => hay(s).includes(t));
+    return { ...s, hits: hit.length, score: hit.reduce((a, t) => a + weight(t), 0) };
+  }).filter(s => s.hits > 0).sort((a, b) => b.score - a.score);
+  const top = scored[0]?.score || 0;
+  const kept = scored.filter(s => s.score >= top * 0.5).slice(0, 6);
+  if (!kept.length) return NextResponse.json({ steps: [], questions: [] });
+  const { data: links } = await sb.from('question_subgroups').select('question_id, subgroup_id, is_primary').in('subgroup_id', kept.map(s => s.id)).limit(400);
   const ids = [...new Set((links ?? []).map(l => l.question_id as string))];
-  if (!ids.length) return NextResponse.json({ steps: scored.map(s => ({ id: s.id, name: s.name, topic: s.topic, questions: 0 })), questions: [] });
+  if (!ids.length) return NextResponse.json({ steps: kept.map(s => ({ id: s.id, name: s.name, topic: s.topic, questions: 0 })), questions: [] });
   const { data: qs } = await sb.from('questions')
     .select('id, school, year, paper, question_number, total_marks, question_text, has_image, level, topics')
     .in('id', ids).neq('school', 'AI Generated').eq('national', false).eq('legacy_syllabus', false).limit(limit * 3);
-  const subOf = new Map((links ?? []).map(l => [l.question_id as string, scored.find(s => s.id === l.subgroup_id)?.name || '']));
+  const subOf = new Map((links ?? []).map(l => [l.question_id as string, kept.find(s => s.id === l.subgroup_id)?.name || '']));
   const questions = (qs ?? []).slice(0, limit).map(x => ({ ...x, question_text: String(x.question_text || '').slice(0, 1200), subgroup: subOf.get(x.id as string) || '' }));
   const counts = new Map<string, number>();
   for (const l of links ?? []) counts.set(l.subgroup_id as string, (counts.get(l.subgroup_id as string) || 0) + 1);
-  return NextResponse.json({ steps: scored.map(s => ({ id: s.id, name: s.name, topic: s.topic, questions: counts.get(s.id) || 0 })), questions });
+  return NextResponse.json({ steps: kept.map(s => ({ id: s.id, name: s.name, topic: s.topic, questions: counts.get(s.id) || 0 })), questions });
 }
