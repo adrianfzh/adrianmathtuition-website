@@ -29,7 +29,7 @@ from docx.enum.style import WD_STYLE_TYPE
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 from lxml import etree
-import subprocess, tempfile, os, zipfile, io, re
+import subprocess, tempfile, os, sys, zipfile, io, re
 
 W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
 M_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/math'
@@ -988,6 +988,18 @@ class Worksheet:
         p = self.doc.add_paragraph()
         p.style = self.doc.styles['WSSubtitle']
         p.add_run(text)
+
+    def brand(self, level, topic, kind='Practice', n_questions=None, marks=None):
+        """The AdrianMath masthead for `level` (a questions.level value): A Math
+        navy band, E Math white + teal, Sec 1 green tint, Sec 2 plum bar — each
+        with its subject block, running header and the site footer. Goes to the
+        top of the body whenever it is called; replaces title()/subtitle().
+        See worksheet_brand.py and ADRIAN-STYLE.md §9."""
+        here = os.path.dirname(os.path.abspath(__file__))
+        if here not in sys.path:
+            sys.path.insert(0, here)
+        import worksheet_brand
+        return worksheet_brand.apply(self, level, topic, kind, n_questions, marks)
 
     def concept(self, text):
         """Bold concept subtitle written above the Example(s) it covers.

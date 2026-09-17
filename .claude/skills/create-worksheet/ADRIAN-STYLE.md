@@ -597,6 +597,46 @@ own logo. `watermark/book/bookify.py` does the whole job on a `.docx` and writes
   bypass-permissions mode does not cover it, and it reads exactly like a hang. `screencapture
   -x` to see it (memory: `word-export-container-folder`).
 
+## 9 · The brand header — one design per series
+
+> "can we have a better design for the worksheets? also include my brand + name too"
+> — Adrian, 17 Sep 2026 (tried on the Circles sheet first)
+>
+> "both designs are good, keep the design B for A Math and design A for E Math - but make it
+> more obvious which is A Math and which is E Math … For the footer remove Adrian Fong …
+> are you able to come up with design for Sec 1 and Sec 2? same idea, slightly different
+> designs for each of them (so it's easy to distinguish the worksheets)" — Adrian, 17 Sep 2026
+
+Every sheet opens with the AdrianMath masthead: the √m mark, **Adrian**Math / TUITION, the
+level line with adrianmathtuition.com under it, and a **solid coloured block on the right
+that names the series in big letters**. That block is what tells the sheets apart at a
+glance and in black-and-white print. Each series also gets its own header style:
+
+| Series | Levels (`questions.level`) | Header | Block + accent |
+|---|---|---|---|
+| **A MATH** | `AM`, `S3_AM`, `AM_NA` | navy band across the top (design B) | orange block, orange bar beside the title |
+| **E MATH** | `EM`, `S3_EM`, `EM_NA`, `S3_EM_NA`, `S3_EM_NT` | white, teal rule under it (design A) | teal block, teal PRACTICE |
+| **SEC 1** | `S1` | pale green band | green block, green bar beside the title |
+| **SEC 2** | `S2` | white with a thick plum bar on top | plum block, plum PRACTICE |
+
+Under the masthead: the topic in Georgia 19 pt navy, then `PRACTICE · n questions · m marks`
+(the kind in the accent colour), then a Name / Date line. Page 2 onward carries a running
+header — `AdrianMath · topic` on the left, the series tag + level on the right, over a rule in
+the accent colour.
+
+- **Footer: `AdrianMath Tuition · adrianmathtuition.com` | `Page x of y`.** No "Adrian Fong"
+  (Adrian, 17 Sep 2026). No school and no year, as everywhere.
+- **Call it, don't hand-build it:** render the questions, then
+  `ws.brand(level, topic, kind='Practice', n_questions=n, marks=m)` — it inserts the
+  masthead and title at the top of the body, so it goes after the questions are counted, and
+  it replaces `ws.title()` / `ws.subtitle()`. Code: `worksheet_brand.py` (`SERIES`, `LEVELS`),
+  logos in `assets/brand/`. An unknown level raises; add it to `LEVELS` rather than guessing.
+- **A new series** (JC, a new stream) gets its own row in `SERIES`: a different header style
+  *and* a different colour, never just a colour — the difference has to survive a mono printer.
+- **No watermark** comes with the brand. Watermarks stay on request only (§8).
+- The Practice Again sheets from the sheet worker (`scripts/sheet-worker/render_sheet.py`)
+  still use their own plain header — not branded until Adrian says so.
+
 ## Adding a rule (how this list grows)
 
 1. Quote what Adrian said, with the date, in the section it belongs to (new section if
