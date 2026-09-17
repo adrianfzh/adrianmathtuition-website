@@ -188,6 +188,11 @@ if [ -z "${SHEETS_API_BASE:-}" ] || [ -z "${SHEETS_API_TOKEN:-}" ]; then
   cleanup_pid; exit 1
 fi
 export SHEETS_API_BASE SHEETS_API_TOKEN
+# The renderer from a spec is ON (Adrian, 17 Sep 2026: "let's do all of them"):
+# the worker writes the sheet as a JSON spec and render_sheet.py builds the DOCX
+# the same way every time (WORKER_PROMPT §2b, SHEET-SPEC.md). Unset to go back
+# to hand-built DOCX; a shape the renderer cannot draw falls back by itself.
+export SHEET_RENDER=spec
 export SHEETS_STATE="$STATE"
 
 # ⏻ PER-ACCOUNT SWITCH (13 Sep 2026, Adrian: "3 toggles to on/off each one"): the

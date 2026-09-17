@@ -10,6 +10,6 @@ vets and releases. One job per session, on plan usage.
 | `install.sh` / `install-slot.sh` | Install the worker (slot 1) / an extra slot with its own state dir. |
 | `com.adrianmath.sheetworker.plist` | The launchd job. |
 | `repair-sheet.py` | Enforces the typesetting rules on a finished sheet — stacked fractions, boxes hugging their content, the gap between parts, no source lines. A required build step, not a safety net. |
-| `SHEET-SPEC.md` | **The sheet as a JSON spec** — the block types, the inline parts, what the renderer enforces. Behind `SHEET_RENDER=spec`; not switched on. |
+| `SHEET-SPEC.md` | **The sheet as a JSON spec** — the block types, the inline parts, what the renderer enforces. Behind `SHEET_RENDER=spec` — **ON since 17 Sep 2026** (set in `run.sh`); unset it there to go back to hand-built DOCX. |
 | `sheet-spec.schema.json` | The spec's JSON schema — the whole block vocabulary, with the house rule on each. |
 | `render_sheet.py` | Spec → DOCX + PDF, through `worksheet_lib`, `repair-sheet.py` and Word. Deterministic; `--check-determinism` proves it. |
