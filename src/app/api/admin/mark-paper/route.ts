@@ -29,6 +29,12 @@ function autoQueueRunIdFor(phase: string, sent: Record<string, unknown>, data: R
   if (phase === 'direct' || phase === 'remark') return typeof data.run_id === 'string' ? data.run_id : null;
   if (phase === 'external-marking-result') {
     if (data.superseded || data.error) return null;
+    // 👻 A SHADOW hand-back (17 Sep 2026) is a measurement, not a marking: the
+    // reading is filed beside the paper's real marking and nothing is delivered.
+    // It must not wake the sheet queue — sheet-queue's own guard would refuse a
+    // released paper anyway, but "would be refused" is not the same as "is never
+    // offered", and the invariant is that a shadow changes nothing.
+    if (data.shadow) return null;
     return typeof sent.id === 'string' ? sent.id : null;
   }
   if (phase === 'set-student') return sent.studentId && typeof sent.id === 'string' ? sent.id : null;

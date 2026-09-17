@@ -798,6 +798,57 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
      strip (still level) instead of sagging down the page.
 - **Runs link to their student** (2026-07-30): picking a student in the send row silently fires `phase:'set-student'` (bot store → `student_id`/`student_name` on `paper_marking_runs`, indexed; last pick wins). The organizing principle is the same as Lessons/Invoices — a link to the Airtable Student record, NOT per-student Blob folders (Blob is the shelf, the DB row is the index card). `phase:'by-student'` returns one student's runs; `/admin/students/[id]` renders them in a **Marked papers** section (overview tab, ✍️/🖼/📄 links). History rows show the tagged name. Runs marked before 2026-07-30 are untagged until re-loaded and re-picked.
 
+## 📏 The consistency measure — the weekly shadow read (17 Sep 2026)
+
+Adrian: *"we need consistency in marking … how can we measure the effectiveness
+of all these changes?"* The bot's golden bench proves that ONE fix does what it
+says on the papers it was found on. It cannot say whether the marking AS A WHOLE
+moved, or which way, after a month of them. This is that second measure.
+
+**How it runs.** A fixed set of papers — `consistency_set`, seeded with the
+bot's golden-bench papers and curated by hand from `/api/admin/consistency-set`
+— is re-read every **Sunday 22:00 SGT** by `/api/cron/consistency-remark`, which
+asks the bot for `{phase:'enqueue', id, remark:true, shadow:true}` on each one.
+The bot queues it on the **Mac lane only**, a slot reads it with the same prompt
+and the same grounding as a whole re-mark, and the reading is filed in
+`paper_marking_runs.result_json.shadow_runs[]` (the last 8 kept) beside the
+paper's real marking. Monday's `auto-release-report` prints one line.
+
+**THE INVARIANT:**
+
+> **A shadow read changes nothing a student, a parent or the desk can see.**
+
+No `results` overwrite, no annotated photos, no PDF, no release, no supersede, no
+Telegram to the student, no sheet queued, no notebook row, no `previous_results`
+— so the desk cannot show a shadow as a re-mark: the purple ink and the REMARKED
+badge are both read off `previous_results`, which a shadow does not write. It
+records no mark scheme and no allocation either, so the desk's 📐 chip does not
+move: a measurement may not change the ground it is measuring against. The bot's
+`test/shadow-invariant.test.js` proves it by driving the real hand-back door
+against a marked, RELEASED fixture whose marker returns different marks, and
+comparing the row byte for byte.
+
+**What it costs.** Plan time, never money: about 8 × 16 min of Mac plan on a
+Sunday night. There is deliberately **no API-lane path** — a shadow that finds no
+Mac slot simply does not happen that week. A shadow is also offered strictly
+AFTER every real paper in the queue: a student waiting for a hand-in always beats
+a measurement. A partially-read shadow is thrown away rather than assembled
+(assembly would send the missing pages to the paid API), and shadow reads are
+never checkpointed, so they are never resumed.
+
+**Reading the numbers.** `GET /api/admin/consistency` gives, per paper, the
+latest shadow against the previous shadow (the week-on-week move, which is what
+Monday reports) and against the marking the student actually has (the standing
+gap — whether a released paper would still be marked the way it was). The
+comparison is `lib/shadow-diff.ts`, the TS twin of the bot's
+`lib/shadow-diff.js`; both key a part exactly as the calibration harness does, so
+the two measures cannot drift apart. **Change one twin, change the other.**
+
+**What it does NOT say.** Nothing about right or wrong. A part that moved is not
+a part that got better — only a truth marking (`/admin/calibration`) says that.
+This answers "did the marking move", which is what a consistency measure may
+answer on its own.
+
 ## The marking desk (2 Sep 2026) — `/admin/desk`
 
 Spec: [`../SPEC-MARKING-DESK.md`](../SPEC-MARKING-DESK.md). Adrian: *"now i have 3

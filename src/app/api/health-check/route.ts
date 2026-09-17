@@ -620,6 +620,18 @@ export async function GET(req: NextRequest) {
     // hub's attention card and the student-profile row both read this route.
     // Anonymous 401 proves the auth gate is up; a 404 means the card and the
     // profile row silently go blank instead of showing anything wrong.
+    // 📏 The consistency measure (17 Sep 2026): both admin doors' 401 gates —
+    // the set Adrian curates, and the report the Monday line is built from.
+    timed('consistency-set', async () => {
+      const r = await fetch(`${base}/api/admin/consistency-set`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
+    timed('consistency', async () => {
+      const r = await fetch(`${base}/api/admin/consistency`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     timed('portal-activity', async () => {
       const r = await fetch(`${base}/api/admin/portal-activity`, { redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);

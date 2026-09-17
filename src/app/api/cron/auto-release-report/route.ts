@@ -17,6 +17,8 @@ import { errorKindTotals } from '@/lib/error-kinds';
 import { levelFromPaperName } from '@/lib/sheet-sections';
 import { setAutoReleasePaused, getAutoReleaseSetting } from '@/lib/auto-release-setting';
 import { summariseAutoReleases } from '@/lib/auto-release-report';
+import { consistencyReport, weeklyRollups } from '@/lib/consistency-set';
+import { consistencyLine } from '@/lib/shadow-diff';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -70,6 +72,15 @@ export async function GET(req: NextRequest) {
     }
     measure += '\n' + trendLine(kindTrend(rows));
   } catch (e) { console.warn('[auto-release-report] trend line skipped:', (e as Error).message); }
+  // 📏 The THIRD effectiveness line (17 Sep 2026): how far the marking itself
+  // moved. A fixed set of papers is re-read in SHADOW every Sunday night
+  // (/api/cron/consistency-remark) and this compares the latest reading with the
+  // one before it, part by part. Fail-soft like the two above — and silent in
+  // the first week, when there is nothing to compare a reading against yet.
+  try {
+    const line = consistencyLine(weeklyRollups(await consistencyReport(true)));
+    if (line) measure += `\n${line}`;
+  } catch (e) { console.warn('[auto-release-report] consistency line skipped:', (e as Error).message); }
   await sendTelegram(report.telegram + measure + (paused ? '\n⏸ Auto-release has been switched OFF — turn it back on from the desk when you are happy.' : ''), 'marking').catch(() => {});
   await logJobRun('auto-release-report', true, `${report.released} auto-released, ${report.changed} changed after${paused ? ' — PAUSED' : ''}`).catch(() => {});
   return NextResponse.json({ ok: true, ...report, paused });
