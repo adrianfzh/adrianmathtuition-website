@@ -77,3 +77,28 @@ Trigger: the `done` action itself (no cron). Log + alarm: the health-check probe
 the route's 401 (`sheet-sections`); a filing failure logs `[sheet-sections] not
 filed` and the completion still succeeds. Numbers to watch on the Monday review:
 rows filed per week, `reused` entries per sheet.
+
+## 7. Closure tracking (BUILT 17 Sep 2026)
+
+Exactly how it is done, step by step:
+
+1. A student hands a Practice Again sheet back through the app. The marker marks
+   it against the sheet (the bot attaches the sheet as the question paper and
+   stamps which sheet it was).
+2. When that marking is released, the site looks up the sheet: the assignment's
+   `sheet_job_id`, else the newest finished sheet job on the paper the sheet came
+   from. That job's rows in `sheet_sections` are the sections the sheet taught,
+   each with the wording of its practice questions (`practice_texts` — the worker
+   now sends `text` for every item; bank items are filled from the bank).
+3. Every question the marker found on the returned sheet is matched to ONE section
+   by the words of its stem against the section's practice questions (content
+   words, numbers included; the best overlap of at least 0.45 wins; nothing close
+   → no match). `lib/sheet-closure.ts`, pure, tested.
+4. Each section gets one outcome in `sheet_section_outcomes`: **closed** (every
+   matched question full marks), **slip** (marks lost only to careless kinds),
+   **still_failing** (marks lost to method or anything else), **unknown** (no
+   question matched). One line goes to the marking topic naming the sections still
+   failing.
+5. Over time the bank ranks sections by closure (`closureSummary`), and the Monday
+   report carries the week's closure numbers — the measure of whether the sheets
+   work, section by section.

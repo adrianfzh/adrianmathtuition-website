@@ -219,6 +219,33 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
      into the bank when you POST `done`. The old same-paper lookup
      (`sheet-jobs?paper=…&status=done`) still works for a same-paper, same-question
      reuse.
+   - **Practice by the MISSED STEP first (17 Sep 2026).** Before any topic search,
+     `GET /api/admin/practice-by-step?level=<AM|EM|H2>&q=<the missed step in words>`
+     — it finds the bank's sub-skills whose name carries the step and returns the
+     real questions filed under them (serving-eligible only). A question filed
+     under the step exercises it; a question that merely shares the topic may
+     not. Use its questions for the practice pair before the topic query in the
+     skill; say in `result.questions[].source` "step" / "topic" / "authored".
+   - **Every practice item carries its wording (17 Sep 2026).** In `result.questions[]`
+     put `"text"`: the question as printed on the sheet (plain, ≤ 400 chars), for
+     bank AND authored items. Closure tracking matches the returned sheet's
+     questions against these words; an item without text can never be scored.
+   - **Read the wrong line, not only the sentence about it (17 Sep 2026, Adrian).**
+     Before writing a section, open the run's read for that question
+     (`rest/v1/paper_marking_runs?id=eq.<run>&select=result_json` →
+     `results[].marking_output.lines`) and take the student's actual wrong line and
+     the marker's correction for it. The section's lead names both: "You wrote
+     0.813 × 3273363. The number given IS 81.3% of the total, so divide: 3273363 ÷
+     0.813." Check the gap sentence's DIRECTION against that line (Isabelle's
+     Q1(a)(iii) gap said "divides instead of multiplying"; she had multiplied) —
+     the ink is the truth, the sentence is a summary of it.
+   - **A recurring gap outranks a first-time slip (17 Sep 2026, Adrian).** Read the
+     student's notebook rows (`notebook_mistakes`, state `dark`) BEFORE ranking:
+     a gap whose row has `seen_count ≥ 2` across papers is a ① section with the
+     example and the practice even when it cost 1–2 marks on this paper, and its
+     lead says so ("this is the third paper where …"); a first-time 1–2 mark
+     careless slip is a ② line, never a section. Marks decide the order only
+     between gaps of the same standing.
 
 2b. **Rendering from a spec (`SHEET_RENDER=spec`)** — OFF unless the env var is
     set; when it is not, build the DOCX by hand as you always have and ignore
