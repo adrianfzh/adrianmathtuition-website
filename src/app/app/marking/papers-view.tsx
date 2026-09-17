@@ -507,7 +507,10 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
   const line = inBundle ? null : sheet ? sheetLine(sheet) : sheetJobLine(job);
   return (
     <div className={`${inBundle ? 'bg-white rounded-2xl' : CARD} p-3`}>
-      <Link href={`/app/marking/${paper.id}`} data-track={admin ? undefined : 'marking:open'} target={admin ? '_blank' : undefined} className="flex items-center gap-3 group">
+      {/* Same window in admin mode too (18 Sep 2026): from the installed admin app a
+          new tab opens a separate Safari that does not carry the sign-in, so the paper
+          asked Adrian to log in. The page's back arrow returns to the profile. */}
+      <Link href={`/app/marking/${paper.id}`} data-track={admin ? undefined : 'marking:open'} className="flex items-center gap-3 group">
         <div className="min-w-0 flex-1">
           <p className="font-bold text-navy leading-snug break-words group-hover:underline">{paper.name}</p>
           <p className="text-[12px] text-gray-500 mt-0.5">{whenLine(paper, todayISO)}</p>
@@ -535,7 +538,7 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
       {admin && (
         <p className="mt-1.5 flex flex-wrap gap-x-3 text-[11.5px]">
           <a href={`/admin/desk?student=${encodeURIComponent(paper.rawName ?? paper.name)}`} className="text-sky-700 underline">desk</a>
-          <a href={`/app/marking/${paper.id}`} target="_blank" rel="noreferrer" className="text-sky-700 underline">as student ↗</a>
+          <a href={`/app/marking/${paper.id}`} className="text-sky-700 underline">as student ›</a>
           <AdminRename runId={paper.id} name={paper.rawName ?? paper.name} />
           {look && <LookedAt runId={paper.id} needsLook={look.needsLook} checkedAt={look.checkedAt} />}
           {paper.note && <span className="text-gray-500 italic">their remark: {noteFirstLine(paper.note, 120)}</span>}
