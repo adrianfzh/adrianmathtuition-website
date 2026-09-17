@@ -34,7 +34,7 @@ export const REMARK_BANK = {
   mostlyIncomplete: '{incomplete} of the {lost} marks you lost were because you stopped before the final answer. Always finish the question.',
   mixed: '{careless} careless mistakes, {concept} marks from the wrong method. Check your answers, and go through the corrections.',
   up: ' Up from {prevPct}% last paper — keep it up.',
-  down: ' Down from {prevPct}% last paper.',
+  down: ' This is a big drop from {prevPct}% last paper — come and talk to me about it.',
 } as const;
 
 function fill(t: string, v: Record<string, number | string>): string {
@@ -64,13 +64,17 @@ export function coverRemark(f: RemarkFacts): string | null {
     }
   }
   if (!line) return null;
-  // The comparison rides only when it says something: a previous paper at the
-  // same level and a move of three points or more.
+  // The comparison rides only when it says something. An improvement of five
+  // points or more is worth a word. A DROP is mentioned only when it is drastic
+  // — fifteen points or more, the size that says something went wrong — and
+  // never as a scold: a harder paper is not a worse student (Adrian, 17 Sep
+  // 2026: "creates unnecessary pressure, this may be a genuinely more difficult
+  // paper. only mention it if there is a drastic change").
   const p = f.previous;
   if (p && Number(p.max) > 0) {
     const prevPct = Math.round((Number(p.awarded) / Number(p.max)) * 100);
-    if (pct - prevPct >= 3) line += fill(REMARK_BANK.up, { prevPct, pct });
-    else if (prevPct - pct >= 3) line += fill(REMARK_BANK.down, { prevPct, pct });
+    if (pct - prevPct >= 5) line += fill(REMARK_BANK.up, { prevPct, pct });
+    else if (prevPct - pct >= 15) line += fill(REMARK_BANK.down, { prevPct, pct });
   }
   return line;
 }

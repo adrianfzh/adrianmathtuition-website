@@ -34,11 +34,13 @@ describe('coverRemark — a specific sentence or nothing', () => {
     expect(coverRemark({ awarded: 60, max: 80, kinds: null })).toBeNull();
     expect(coverRemark({ awarded: 60, max: 0, kinds: null })).toBeNull();
   });
-  it('adds the comparison only for a move of three points or more', () => {
-    const base = { awarded: 72, max: 80, kinds: kinds({ careless: 8 }) };
+  it('mentions an improvement of five points or more, and a drop only when it is drastic (15+), never as a scold', () => {
+    const base = { awarded: 72, max: 80, kinds: kinds({ careless: 8 }) };   // 90%
     expect(coverRemark({ ...base, previous: { awarded: 60, max: 80 } })).toMatch(/Up from 75% last paper — keep it up\.$/);
-    expect(coverRemark({ ...base, previous: { awarded: 78, max: 80 } })).toMatch(/Down from 98% last paper\.$/);
-    expect(coverRemark({ ...base, previous: { awarded: 71, max: 80 } })).not.toMatch(/last paper/);
+    expect(coverRemark({ ...base, previous: { awarded: 70, max: 80 } })).not.toMatch(/last paper/);       // +2: nothing
+    expect(coverRemark({ ...base, previous: { awarded: 78, max: 80 } })).not.toMatch(/last paper/);       // −8: a harder paper, nothing
+    const weak = { awarded: 48, max: 80, kinds: kinds({ concept: 20, careless: 12 }) };                    // 60%
+    expect(coverRemark({ ...weak, previous: { awarded: 70, max: 80 } })).toMatch(/This is a big drop from 88% last paper — come and talk to me about it\.$/);
   });
 });
 
