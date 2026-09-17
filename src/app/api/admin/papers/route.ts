@@ -29,6 +29,7 @@ async function purgeFiles(urls: string[]): Promise<number> {
   return n;
 }
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { verifyAgentAuth } from '@/lib/agent-auth';
 import { isOurBlobUrl } from '@/lib/blob-url';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { airtableRequest } from '@/lib/airtable';
@@ -54,7 +55,7 @@ const COLUMNS =
   'total_awarded, total_max, rules_version, pdf_url, photos_pdf_url, annotated_pdf_url, released_at, checked_at, source, superseded_by';
 
 export async function GET(req: NextRequest) {
-  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'papers', { route: 'papers' }))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   const q = req.nextUrl.searchParams;
   const days = Math.min(Number(q.get('days')) || DEFAULT_DAYS, MAX_DAYS);
@@ -153,7 +154,7 @@ export async function GET(req: NextRequest) {
 // ── POST: tag a run with a student, or toggle its ✓ checked state ────────────
 
 export async function POST(req: NextRequest) {
-  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'papers', { route: 'papers' }))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   let body: { runId?: string; runIds?: unknown; studentId?: string | null; checked?: boolean; name?: unknown };
   try {
@@ -235,7 +236,7 @@ export async function POST(req: NextRequest) {
 // simply removes it from the student's portal along with everything else.
 
 export async function DELETE(req: NextRequest) {
-  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'papers', { route: 'papers' }))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   const id = req.nextUrl.searchParams.get('id') || '';
   if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 });
@@ -307,7 +308,7 @@ export async function DELETE(req: NextRequest) {
 
 /** Put a binned paper back, files and all — or take a paper off the marking queue. */
 export async function PATCH(req: NextRequest) {
-  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'papers', { route: 'papers' }))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const body = await req.json().catch(() => ({} as { action?: string; id?: string }));
   if (body.action !== 'restore' && body.action !== 'cancel-marking') {
     return NextResponse.json({ error: 'unknown action' }, { status: 400 });

@@ -7,6 +7,7 @@
 // when its account's key is in `off`. Anonymous → 401 (the health-check probes it).
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { verifyAgentAuth } from '@/lib/agent-auth';
 import { SLOT_ACCOUNTS, offKeys, slotAccountRows } from '@/lib/slot-accounts';
 import { getSlotAccounts, setSlotAccount } from '@/lib/slot-accounts-store';
 import { sendTelegram } from '@/lib/telegram';
@@ -15,7 +16,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'switches', { route: 'slot-accounts' }))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   try {
     const map = await getSlotAccounts(true);
     return NextResponse.json({ accounts: slotAccountRows(map), off: offKeys(map) });
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'switches', { route: 'slot-accounts' }))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const body = await req.json().catch(() => ({})) as { email?: unknown; on?: unknown };
   const email = String(body.email ?? '').trim().toLowerCase();
   const known = SLOT_ACCOUNTS.find(a => a.email === email);

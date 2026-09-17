@@ -35,6 +35,7 @@ import { isAutoReleasePaused } from '@/lib/auto-release-setting';
 import { rebuildRunPdfs } from '@/lib/rebuild-run-pdfs';
 import { after } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { verifyAgentAuth } from '@/lib/agent-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { resolveRecipient } from '@/lib/student-recipient';
 import { sendTelegram, sendTelegramTo, sendTelegramDocumentTo } from '@/lib/telegram';
@@ -100,7 +101,7 @@ function daysAgoIso(days: number) {
 
 // ── GET ──────────────────────────────────────────────────────────────────────
 export async function GET(req: NextRequest) {
-  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'release', { route: 'mark-triage' }))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   const days = Math.min(Number(req.nextUrl.searchParams.get('days')) || DEFAULT_DAYS, MAX_DAYS);
   const supa = getSupabaseAdmin();
@@ -431,7 +432,7 @@ async function flipAssignmentMarked(
 }
 
 export async function POST(req: NextRequest) {
-  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'release', { route: 'mark-triage' }))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   let body: {
     action?: string;

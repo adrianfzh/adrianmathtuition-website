@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { verifyAgentAuth } from '@/lib/agent-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
 import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
@@ -17,7 +18,7 @@ import { clashes, lessonRestoreFields, lessonsToRecreate, type DiscontinueSnapsh
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
-  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'reinstate', { route: 'student-reinstate' }))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { studentId } = await req.json().catch(() => ({}));
   if (!studentId || typeof studentId !== 'string') return NextResponse.json({ error: 'studentId required' }, { status: 400 });
   const sb = getSupabaseAdmin();

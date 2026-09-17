@@ -36,6 +36,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { plainMath, clip } from '@/lib/remark-diff';
 import { computeAutoHold, isGroundedRun } from '@/lib/mark-triage';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { verifyAgentAuth } from '@/lib/agent-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the marking topic (6 Sept 2026; falls back to the DM when unbound).
@@ -118,7 +119,7 @@ async function deliverRequestedSheet(req: NextRequest, runId: string): Promise<{
 }
 
 export async function GET(req: NextRequest) {
-  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'sheets', { route: 'sheet-jobs' }))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const sp = req.nextUrl.searchParams;
   const paper = (sp.get('paper') || '').trim().slice(0, 120);
   const status = (sp.get('status') || '').trim().slice(0, 20);
@@ -146,7 +147,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'sheets', { route: 'sheet-jobs' }))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   let body: { runId?: string; runIds?: unknown; focus?: string; remark?: boolean; action?: string; by?: string; id?: string; result?: unknown; error?: string ; stage?: string; instructions?: string; pdfPath?: string; source?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const sb = getSupabaseAdmin();

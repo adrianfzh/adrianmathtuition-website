@@ -14,6 +14,7 @@
 // Rebuilding never touches `annotated_pdf_url`.
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { verifyAgentAuth } from '@/lib/agent-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { rebuildRunPdfs } from '@/lib/rebuild-run-pdfs';
 
@@ -24,7 +25,7 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
-  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'papers', { route: 'desk/rebuild' }))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const body = await req.json().catch(() => ({} as { runId?: string }));
   const runId = String(body.runId || '');
   if (!/^[0-9a-f-]{36}$/i.test(runId)) return NextResponse.json({ error: 'runId is required' }, { status: 400 });

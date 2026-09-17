@@ -77,3 +77,45 @@ Report PASS/FAIL per probe.
   open a **new** session.
 - Scripting against prod: always `https://www.adrianmathtuition.com`, never the
   apex (307 redirect drops the Authorization header — see CLAUDE.md Gotchas).
+
+
+## Step 1 — promote, bot deploy and previews from the cloud (17 Sep 2026)
+
+Both are git pushes; nothing on the Mac is involved once the cloud session can push.
+
+1. **Repos with push rights.** In the claude.ai/code environment, add BOTH repos
+   (`adrianfzh/adrianmathtuition-website`, `adrianfzh/adrianmath-telegram-bot`) through
+   the GitHub app with write access. Add `github.com` and `api.github.com` to the network
+   allowlist.
+   - Promote = `git push origin origin/dev:main` in the website repo (the pre-push hook runs
+     the suite — Node is in the cloud image). Vercel builds production from `main`.
+   - Bot deploy = a push to the bot's `main`; `.github/workflows/fly-deploy.yml` runs the
+     checks and deploys. `gh run list -R adrianfzh/adrianmath-telegram-bot` shows it.
+2. **A project-scoped Vercel token** (Vercel → Account → Tokens, scope = this project,
+   expiry 90 days) as `VERCEL_TOKEN`, plus `api.vercel.com` on the allowlist. Unlocks
+   `vercel ls` and `vercel alias set <deploy> adrianmath-dev.vercel.app` after a `dev` push.
+   Rotate it from the same page; nothing else depends on it.
+
+Still Mac-only after this: the marking/sheet slots, the nightly + weekly reviews, the
+workers, Xcode/TestFlight, the iPad, and screenshots as a student.
+
+## Step 2 — acting on student data without the admin password (17 Sep 2026)
+
+Six narrow tokens, one per action family, accepted ONLY by that family's routes beside
+the admin cookie/password (`lib/agent-auth.ts`), every use logged to Supabase
+`agent_actions` (scope · route · action · ip · time):
+
+| Env var (Vercel, all scopes) | Routes | What it can do |
+|---|---|---|
+| `AGENT_TOKEN_RELEASE` | `/api/admin/mark-triage` | agree · override · release · re-mark · subject |
+| `AGENT_TOKEN_SHEETS` | `/api/admin/sheet-jobs` | queue / revise / cancel a Practice Again sheet |
+| `AGENT_TOKEN_REINSTATE` | `/api/admin/student-reinstate` | undo a Discontinue |
+| `AGENT_TOKEN_SWITCHES` | `/api/admin/marking-settings`, `/api/admin/slot-accounts` | Mac plan only · Science tab · slot accounts |
+| `AGENT_TOKEN_PAPERS` | `/api/admin/papers`, `/api/admin/desk/rebuild` | tag · rename · looked-at · rebuild the copy |
+| `AGENT_TOKEN_ASSIGN` | `/api/admin/assignments` | Send work |
+
+Mint each as 32+ random characters (`openssl rand -hex 24`), set it in Vercel (Production
++ Preview), and give the cloud environment only the ones it needs. A token you have not
+set opens nothing (the check fails closed under 24 chars). Rotate one family without
+touching the others. The admin password never leaves this Mac and the bot.
+Reading what agents did: `select * from agent_actions order by created_at desc`.

@@ -7,6 +7,7 @@
 // so either flip is live within half a minute, no deploy.
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { verifyAgentAuth } from '@/lib/agent-auth';
 import { getMacOnlySetting, getScienceOpenSetting, setMacOnly, setScienceOpen } from '@/lib/marking-settings';
 import { sendTelegram } from '@/lib/telegram';
 
@@ -14,7 +15,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'switches', { route: 'marking-settings' }))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   try {
     const [macOnly, scienceOpen] = await Promise.all([getMacOnlySetting(true), getScienceOpenSetting(true)]);
     return NextResponse.json({ macOnly, scienceOpen });
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'switches', { route: 'marking-settings' }))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const body = await req.json().catch(() => ({})) as { macOnly?: unknown; scienceOpen?: unknown; note?: unknown };
   const note = typeof body.note === 'string' ? body.note.slice(0, 200) : undefined;
   try {

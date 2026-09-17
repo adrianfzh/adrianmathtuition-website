@@ -9,6 +9,7 @@ import { putStudentFile, assignmentKey } from '@/lib/student-files';
 import { withSource, withRequired } from '@/lib/assignments';
 import { assignmentNudge } from '@/lib/assignment-nudge';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { verifyAgentAuth } from '@/lib/agent-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { validateAssignment, canTransition, type AssignmentRow } from '@/lib/assignments';
 import { sendTelegramTo } from '@/lib/telegram';
@@ -21,7 +22,7 @@ export const maxDuration = 60;
 const SITE = 'https://www.adrianmathtuition.com';
 
 export async function GET(req: NextRequest) {
-  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'assign', { route: 'assignments' }))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const studentId = new URL(req.url).searchParams.get('studentId') || '';
   if (!/^rec[A-Za-z0-9]{14}$/.test(studentId)) return NextResponse.json({ error: 'studentId required' }, { status: 400 });
   const { data, error } = await getSupabaseAdmin()
@@ -34,7 +35,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'assign', { route: 'assignments' }))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json().catch(() => ({}));
 
   // A Dropbox-sourced worksheet (`pdfSource: 'dropbox:<path>'`, no https pdfUrl)
@@ -109,7 +110,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'assign', { route: 'assignments' }))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json().catch(() => ({}));
   const { id, action } = body as { id?: string; action?: string };
   if (!id || action !== 'revoke') return NextResponse.json({ error: 'id and action:revoke required' }, { status: 400 });
