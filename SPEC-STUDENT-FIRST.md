@@ -1,0 +1,96 @@
+# Students first — one door for everything about a student
+
+**Status:** agreed in conversation 17 Sep 2026, awaiting Adrian's go on the build order below.
+**Written in plain words first; the code word follows in brackets so it can be found in the repo.**
+
+## 1. Why
+
+Adrian, 17 Sep 2026, after a week of building: *"I have to look at two interfaces for essentially the same thing — students' work — it is confusing … I would actually like the organisation to be students first — I would just look up a student, see what's pending, what's done — everything about the student."* And on the student profile page: *"able to better organise this as well? too much things going on, hard to understand."*
+
+Today the same student's work is spread over four pages: the marking desk (`/admin/desk`), Mark a paper (`/admin/mark-paper`), the student profile (`/admin/students/[id]`) and the mirror of their app (`/admin/students/[id]/app`). Each was right when built. Together they make Adrian hop.
+
+This spec continues the 13 Sep plan of "four doors by question" (desk · student · schedule · ops). It changes one thing in that plan: **the student door becomes the main one**, and the desk becomes the sweep for the days he wants to look across everyone.
+
+## 2. The one door: the student profile
+
+Open a student and everything is there, in four tabs.
+
+| Tab | Answers | What is on it |
+|---|---|---|
+| **Overview** | "Who is this and how are they doing?" | Level, subjects, next lesson, attendance, last exam. The three score lines (one per subject, the sparkline). The two or three weakest topics. The "Send something to do" button. |
+| **Papers** | "What have they handed in, what came back, what is still with them?" | **Exactly the student's own Papers tab**, drawn by the same code (`lib/student-app-view.ts` → the same rules as `/app/marking`). Each card: the paper, its score, the Practice Again sheet inside the card with its state (done · handed in · not done yet). Adrian's extra lines fold under each card (see §3). |
+| **Work** | "What did I send them, what did they ask for?" | From Adrian (assigned work), pages sent, Find-a-question items, essays. |
+| **Billing & slots** | "What do they pay and when do they come?" | Unchanged from today. |
+
+**Actions move into one "…" menu** at the top right (Portal invite · Portal link · Holiday opt-out · Discontinue). The row of nine buttons under the profile goes. Show contact and Ask for review stay as the two visible buttons because they are used weekly.
+
+## 3. The Papers tab is the mirror
+
+The separate mirror page ("Their app, as they see it") is retired by redirect to the profile's Papers tab. The rule Adrian set: *"my interface should be exactly how they see it."*
+
+What the student cannot see, Adrian still needs. It sits **under each card, folded**, in this order:
+
+- who asked for the sheet (student's request · Adrian's tick · the merged batch) and the writer's stage (queued · being written · with Adrian · released)
+- a sheet the student has not handed in — **shown on the card, not as a pending state** (Adrian: "sheets not handed in, just be able to view at the card level")
+- held or withdrawn sheets, superseded markings, papers hidden by the subject gate
+- the marking receipt: pages, who read them (Mac or API), what it cost, the watch-outs
+- the buttons: open on the desk · re-mark · queue a sheet · rebuild the copy
+
+"On the shelf" as its own box on the profile goes. The shelf is a property of one sheet (the gaps the writer left out for next time, with the marks they cost), so it belongs as one line under that sheet, which the card already carries.
+
+## 4. Discontinue: out of the way, and reversible
+
+Discontinue moves into the "…" menu. It keeps its confirmation (date, reason). It becomes reversible: the action records what it ended and removed (enrolments ended, lessons deleted, invoices voided) in one row (`student_discontinue_log`), and the profile of a discontinued student shows one **Reinstate** button that puts the enrolments back, re-creates the deleted future lessons from the recorded list, and un-voids nothing (money stays a human decision, shown as a note).
+
+## 5. The desk after this
+
+The desk stays for the across-students sweep: the four lanes, the tick for a merged sheet, Approve & release, the calibration numbers. Two changes from the 13 Sep plan still apply: **Mark a paper becomes a button** on the desk and on the profile (the page behind it stays until nothing else links to it), and the switches (Mac plan only · Science tab · slot accounts) move into a Settings drawer off the desk header. Every row on the desk links to the student's Papers tab, so the desk is the list and the profile is the detail.
+
+## 6. What is already done on the student side (17 Sep 2026)
+
+| Agreed | State |
+|---|---|
+| A Math \| E Math tabs, one compact row per paper, the sheet as one coloured done / not-done line, "compulsory" gone, sparkline | live on production |
+| "Work on next" moved to My Notebook's Mistakes view as one "Weakest topics" line | on the preview site |
+| Rename a paper (the student's label; Adrian's name stays on every file) | on the preview site |
+| Star a paper (starred first in its tab) | on the preview site |
+| Archive a paper (leaves the list for a folded row at the foot; nothing deleted) | on the preview site |
+| Search inside a tab (appears from eight papers) | on the preview site |
+| Sorting | not built — the tabs, star and archive cover it with less to tap |
+| Compare two papers by topic | not built — Adrian: "not useful" |
+| The full typeset PDF | no longer drawn when the images copy exists; kept as the fallback for a paper with no annotated pages |
+| Practice Again reminders | paused (`REMINDERS_PAUSED`) |
+
+## 7. Review my mistakes (replaces the "this exam" band)
+
+Adrian: *"allow them to select the papers, then all their errors will immediately show, then they can scroll through them as cards, and have an option to go to the exact question in the paper."*
+
+**What the student does.** On the Papers tab a button, **Review my mistakes**. It opens a tick list of their papers in that subject (the same list the merged-sheet tick uses). They tick two or three papers, or "all my E Math papers", and tap Review.
+
+**What they see.** One card per question that lost marks, across the ticked papers, newest paper first, biggest loss first inside a paper. Each card: which paper and question, the printed question, the marks (3/8), the marker's comment in Adrian's voice, the "why" label (the error kind), a folded worked solution, and a **Practise this** link. They scroll the cards one at a time (the swipe deck the worked-example player already has).
+
+**"See it on my paper."** Each card has that button. It opens the paper's page and scrolls to the marked page that question is on (every marked question already carries its page number, `results[].photo_index`), and where the marker recorded where it inked that question (`annotation_debug` boxes), the app draws a soft highlight around it for two seconds. Where no box was recorded, it scrolls to the page and stops there.
+
+**How it is built.** No new data. The wrong-question list per paper is what "Where you lost marks" shows today (`StudentPaper.dropped`, `lib/portal-marking.ts`). The page is one route (`/app/marking/review?papers=a,b,c`), a server component that loads the ticked papers (the same released + ownership + subject rules as the list), flattens the dropped questions into cards (a pure, tested function `lib/review-cards.ts`), and hands them to the swipe deck. The jump is an anchor on the paper page (`#page-N`) plus a small client piece that reads the box from the URL and draws the highlight. Also reachable from the Notebook's Mistakes view and from "Before the paper" (ticks pre-filled with the papers on the exam's topics).
+
+**Time.** One evening for the cards and the tick list, one for the jump-and-highlight.
+
+## 8. Build order, each step usable on its own
+
+1. **Profile tabs and the "…" menu** (one evening). Nothing removed; the mirror page becomes the Papers tab; the old URL redirects.
+2. **Adrian's folded lines under each card** (one evening). The mirror's hidden state moves in.
+3. **Reinstate for Discontinue** (half an evening; a log table + one button).
+4. **Review my mistakes** (two evenings, §7).
+5. **Desk: Mark a paper button + Settings drawer** (one evening). The old pages redirect.
+
+Each step ships to the preview first and Adrian looks at it as himself and as a student (the demo student) before it is promoted.
+
+## 9. What stays human
+
+The profile shows more, it decides nothing new. Releasing, overriding, reinstating and every parent-facing message still wait for Adrian's tap.
+
+## 10. Open questions for Adrian
+
+- On the Papers tab, should the search box and the tick list be shared with the student's own (yes, if "exactly how they see it" is the rule).
+- Reinstate: put the lessons back into the same weekly slot if it is still free, or leave the slot for Adrian to choose.
+- The Overview's "weakest topics": the same three the student sees in their Notebook, or a longer list for Adrian.

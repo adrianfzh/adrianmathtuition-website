@@ -26,9 +26,10 @@ import ScienceUseful from '../ScienceUseful';
 import LostMarks from '../LostMarks';
 import RenamePaper from '../RenamePaper';
 import StarPaper from '../StarPaper';
+import ArchivePaper from '../ArchivePaper';
 import { sheetLine } from '@/lib/practice-again-line';
 
-const COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, paper_subject, superseded_by, subject';
+const COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, student_archived_at, paper_subject, superseded_by, subject';
 
 function niceDate(iso: string): string {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
@@ -136,6 +137,7 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
           <div className="min-w-0">
             {/* ✏️ the student's own name for the paper (17 Sep 2026) — rawName is Adrian's and never changes. */}
             <RenamePaper runId={paper.id} name={paper.name} defaultName={displayPaperName(paper.rawName ?? null, account?.display_name ?? null)} />
+            {!isScience && <ArchivePaper runId={paper.id} archived={!!paper.archived} className="block mt-1" />}
             <p className="text-xs text-gray-500 mt-1 flex items-center gap-1.5">
               <PaperSubjectPill subject={paper.subject} />
               <span>

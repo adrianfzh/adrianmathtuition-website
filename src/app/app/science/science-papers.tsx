@@ -13,7 +13,7 @@ import PortalIcon from '@/components/PortalIcon';
 import { SURFACES } from '@/lib/portal-theme';
 
 export const SCIENCE_COLUMNS =
-  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, paper_subject, subject';
+  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, student_archived_at, paper_subject, subject';
 
 const CARD = 'bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)]';
 const M = SURFACES.marking;

@@ -40,6 +40,8 @@ import { bundleList } from '@/lib/portal-paper-bundles';
 import { sheetLine, sheetJobLine, bundleCaption, type SheetLine } from '@/lib/practice-again-line';
 import { starredFirst } from '@/lib/paper-star';
 import StarPaper from './StarPaper';
+import ArchivePaper from './ArchivePaper';
+import PaperSearch, { type SearchEntry } from './PaperSearch';
 import { readNoSheet } from '@/lib/sheet-jobs';
 import MarkingBeacon from './MarkingBeacon';
 import SubjectTiles from './SubjectTiles';
@@ -58,7 +60,7 @@ const MAX_PAPERS = 40;
 // One literal, not a concatenation: supabase-js parses the select string at the
 // type level, and a `+` here widens it to `string` and loses the row type.
 const COLUMNS =
-  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, paper_subject';
+  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, student_archived_at, paper_subject';
 
 // Home's soft elevated card (lib/portal-theme's visual language) — this tab
 // wears the marked-work violet and the hand-in teal the way Home's tiles do,
@@ -239,8 +241,24 @@ export default async function MarkingPage() {
     const stats = isTileSubject(subject) ? subjectStats(top, subject) : null;
     const pill = subjectPill(subject);
     const tone: SubjectTone = pill?.tone ?? 'other';
+    // 🗂 archived papers leave the list for the fold at the foot (17 Sep 2026).
+    const listed = list.filter(p => !p.archived);
+    const archived = list.filter(p => p.archived);
     // ⭐ starred papers first (17 Sep 2026), newest first inside each group; a bundle sits where its first paper lands.
-    const entries = bundleList(starredFirst(list), id => sheetsByRun.get(id));
+    const entries = bundleList(starredFirst(listed), id => sheetsByRun.get(id));
+    // 🔍 what a student might type to find an entry: names, dates, scores.
+    const hay = (ps: StudentPaper[]) => ps.map(p => `${p.name} ${p.rawName ?? ''} ${whenLine(p, todayISO)} ${p.awarded}/${p.max} ${p.pct ?? ''}%`).join(' ').toLowerCase();
+    const searchEntries: SearchEntry[] = entries.map(entry => entry.kind === 'paper' ? {
+      key: entry.paper.id, haystack: hay([entry.paper]),
+      node: <PaperRow paper={entry.paper} todayISO={todayISO}
+        sheet={sheetsByRun.get(entry.paper.id) ?? null} job={jobByRun.get(entry.paper.id) ?? null}
+        markedSheet={markedSheetByParent.get(entry.paper.id) ?? null} nextWave={waveByRun.get(entry.paper.id) ?? null} />,
+    } : {
+      key: entry.sheetId, haystack: hay(entry.papers),
+      node: <Bundle papers={entry.papers} todayISO={todayISO} sheet={sheetsByRun.get(entry.papers[0].id)!}
+        markedSheet={entry.papers.map(p => markedSheetByParent.get(p.id) ?? null).find(Boolean) ?? null}
+        nextWave={entry.papers.map(p => waveByRun.get(p.id) ?? null).find(Boolean) ?? null} />,
+    });
     const content: ReactNode = (
       <div className="space-y-4">
         {stats && <SubjectTiles s={stats} />}
@@ -252,21 +270,31 @@ export default async function MarkingPage() {
         {/* 📘 "Choose papers" wraps the list: off, it is one line above the
             rows; on, the rows give way to a tick list (ChoosePapers). */}
         <ChoosePapers papers={pickPapers.filter(p => ids.has(p.id))}>
-          <div className="space-y-2.5">
-            {/* A merged sheet shows ONCE (Adrian, 11 Sep 2026): the papers it
-                covers sit in one frame, in syllabus order, the sheet's line at
-                the foot — lib/portal-paper-bundles. */}
-            {entries.map(entry => entry.kind === 'paper' ? (
-              <PaperRow key={entry.paper.id} paper={entry.paper} todayISO={todayISO}
-                sheet={sheetsByRun.get(entry.paper.id) ?? null} job={jobByRun.get(entry.paper.id) ?? null}
-                markedSheet={markedSheetByParent.get(entry.paper.id) ?? null} nextWave={waveByRun.get(entry.paper.id) ?? null} />
-            ) : (
-              <Bundle key={entry.sheetId} papers={entry.papers} todayISO={todayISO} sheet={sheetsByRun.get(entry.papers[0].id)!}
-                markedSheet={entry.papers.map(p => markedSheetByParent.get(p.id) ?? null).find(Boolean) ?? null}
-                nextWave={entry.papers.map(p => waveByRun.get(p.id) ?? null).find(Boolean) ?? null} />
-            ))}
-          </div>
+          {/* A merged sheet shows ONCE (Adrian, 11 Sep 2026): the papers it
+              covers sit in one frame, in syllabus order, the sheet's line at
+              the foot — lib/portal-paper-bundles. The search box appears once
+              a tab holds enough papers to need it (PaperSearch). */}
+          <PaperSearch entries={searchEntries} />
         </ChoosePapers>
+        {archived.length > 0 && (
+          <details className={`${CARD} p-4`}>
+            <summary className="cursor-pointer text-sm font-semibold text-gray-500 select-none">
+              Archived <span className="text-gray-400 font-normal">({archived.length})</span>
+            </summary>
+            <p className="text-[11px] text-gray-400 mt-1">Papers you put away. They still count in your tiles; put one back any time.</p>
+            <ul className="mt-2 divide-y divide-black/5">
+              {archived.map(p => (
+                <li key={p.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                  <Link href={`/app/marking/${p.id}`} className="min-w-0 truncate text-navy hover:underline">{p.name} <span className="text-gray-400">· {whenLine(p, todayISO)}</span></Link>
+                  <span className="shrink-0 flex items-center gap-3">
+                    <span className="text-gray-500">{p.max > 0 ? `${p.awarded}/${p.max}` : '—'}</span>
+                    <ArchivePaper runId={p.id} archived />
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
       </div>
     );
     return { key: subject, label: subject, tone, count: list.length, content };
