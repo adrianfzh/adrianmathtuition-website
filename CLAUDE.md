@@ -377,7 +377,7 @@ the repo travels).
 
 ## ☁️ Cloud sessions (claude.ai/code) → [`docs/CLOUD.md`](docs/CLOUD.md)
 
-claude.ai environments and skill libraries are **per-account**, but everything committed in this repo (skills, docs, the `env` block in `.claude/settings.json` with the public Supabase config) carries to any account/machine automatically. The only per-account step is a one-time ~5-min secrets bootstrap — `CRON_SECRET` + a read-only Airtable token + the network allowlist. Recipe, verification probes, and the crown-jewels-never-in-cloud list: [`docs/CLOUD.md`](docs/CLOUD.md). Posture: **the cloud agent holds triggers, not power**.
+claude.ai environments and skill libraries are **per-account**, but everything committed in this repo (skills, docs, the `env` block in `.claude/settings.json` with the public Supabase config) carries to any account/machine automatically. The only per-account step is a one-time ~5-min secrets bootstrap — `CRON_SECRET` + a read-only Airtable token + the network allowlist. Recipe, verification probes, and the crown-jewels-never-in-cloud list: [`docs/CLOUD.md`](docs/CLOUD.md). Posture: **the cloud agent holds triggers, not power**. **SET UP AND VERIFIED 17 Sep 2026** (`docs/CLOUD.md` §STATUS): a cloud session on Adrian's account can push both repos, promote, deploy the bot, move the preview alias, and use all six `AGENT_TOKEN_*` doors; only the Mac slots/workers/reviews, Xcode, the iPad, sends and secret-key work stay Mac-only.
 
 ## Environment Variables
 

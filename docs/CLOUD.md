@@ -16,6 +16,33 @@
   bundles); all anon reads are RLS-gated. Committing it adds no exposure — it is
   already committed verbatim in the AdrianMath repo's CLAUDE.md.
 
+## STATUS — the cloud is fully set up (17 Sep 2026, 22:40 SGT)
+
+**Any session on any Claude account may use the cloud for everything below without
+asking Adrian to set anything up.** Done and verified on the `ablnon@gmail.com` account
+(the second account, `adrianmathtuition@gmail.com`, repeats the same per-account steps
+— the Vercel token and the six agent tokens are shared values, so only the pasting is
+repeated; Adrian holds the values, no session ever sees one):
+
+- Both repos connected with push rights; `github.com` / `api.github.com` allowed.
+  → promote (`git push origin origin/dev:main`) and bot deploys (push to the bot's `main`)
+  work from a cloud session.
+- `VERCEL_TOKEN` (project-scoped to the website, 90 days from 17 Sep 2026) → `vercel ls`
+  and re-pointing `adrianmath-dev.vercel.app` work from a cloud session.
+- All six `AGENT_TOKEN_*` families set in Vercel (Production + Preview) and in the cloud
+  environment; each probed from a cloud session on 17 Sep 2026 (papers 400 · sheets 200 ·
+  assign 400 · switches 200 · reinstate 400 · release 200 via mark-triage), fourteen
+  `agent_actions` rows confirm the logging.
+
+**What a cloud session STILL cannot do** (Mac-only; do not try, say so instead):
+the marking and sheet slots (plan-billed Claude Code on the Mac), the nightly / weekly
+reviews (launchd), the worksheet and extraction workers, Word-based sheet rendering,
+Xcode / TestFlight / the AdrianMarker re-sign, the iPad, screenshots as a student
+(puppeteer on the Mac), Telegram / Resend sends (no `TELEGRAM_*` / `RESEND_*` in the
+cloud — deliberately), anything needing `ADMIN_PASSWORD` or the Supabase secret key
+(privileged reads/writes outside the six families — ask Adrian or leave a note).
+Step 3 (moving marking/sheets off the Mac) is future work, not set up.
+
 ## Per-account one-time bootstrap (~5 min)
 
 **Where the UI is**: claude.ai/code **composer row** — the cloud icon above the
