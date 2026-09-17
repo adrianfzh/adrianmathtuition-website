@@ -354,6 +354,13 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   paragraphs.
 - One `[Ans: (a) …; (b) …]` line per practice question, orange, right-aligned, at the end
   — never after each part.
+- **A practice sheet has no working space** (17 Sep 2026, on the S4 AM Circles sheet:
+  "formatting is not great"). Questions follow one another straight down the page,
+  like his own practice sheets: `Worksheet()` already defaults to `working_space=0`, so
+  never pass a gap in. **The `[Ans:]` line fits on ONE line**: if the bank's key wraps
+  (a long proof-style answer, a range written as "a < p < b or c < p < d"), pass a
+  shorter override in `answers=` ("(b), (c), (d) shown", "1 < |p| < 9") that says the
+  same thing. Open the rendered pages before sending; the text extract hides both faults.
 - **No rubric line under a "Practice" heading** (14 Sep 2026: "don't have to put the
   statement 'answers are at the end of each question…'"). The heading goes straight
   into question 1. The `[Ans:]` line is visible at the foot of every question, so
