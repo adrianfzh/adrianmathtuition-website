@@ -1,5 +1,5 @@
 'use client';
-// 📝 My note — the student's own remark on a paper (17 Sep 2026). A light box
+// My remark — the student's own remark on a paper (17 Sep 2026). A light box
 // under the title; tap to edit, saved when they pause or leave the box. Adrian
 // sees it on his Papers tab as "their note". Empty clears it.
 import { useEffect, useRef, useState } from 'react';
@@ -32,16 +32,16 @@ export default function PaperNote({ runId, note }: { runId: string; note: string
   }, [text]);
 
   return (
-    <div className="rounded-2xl border border-amber-200/70 bg-amber-50/50 px-3 py-2" data-paper-note>
+    <div className="rounded-2xl border border-black/[0.06] bg-white px-3 py-2" data-paper-note>
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-amber-800/80">📝 My note</p>
-        <p className="text-[11px] text-amber-800/60">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">My remark</p>
+        <p className="text-[11px] text-gray-400">
           {state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved' : state === 'error' ? (err || 'Not saved') : text ? 'Adrian can read this too' : ''}
         </p>
       </div>
       <textarea value={text} onChange={e => setText(e.target.value)} onBlur={() => save(text)} maxLength={MAX_NOTE_LENGTH} rows={text ? 3 : 2}
-        placeholder="What went wrong, what to remember next time…" aria-label="My note on this paper"
-        className="mt-1 w-full text-sm text-navy bg-transparent outline-none resize-y placeholder:text-amber-900/40" />
+        placeholder="What went wrong, what to remember next time…" aria-label="My remark on this paper"
+        className="mt-1 w-full text-sm text-gray-700 bg-transparent outline-none resize-y placeholder:text-gray-300" />
     </div>
   );
 }

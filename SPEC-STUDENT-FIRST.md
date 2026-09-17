@@ -56,7 +56,7 @@ The desk stays for the across-students sweep: the four lanes, the tick for a mer
 | Star a paper (starred first in its tab) | on the preview site |
 | Archive a paper (leaves the list for a folded row at the foot; nothing deleted) | on the preview site |
 | Search inside a tab (appears from eight papers) | on the preview site |
-| My note — the student's own remark on a paper, read by Adrian too (option 2) | on the preview site |
+| My remark — the student's own remark on a paper, read by Adrian too (option 2) | on the preview site |
 | Sorting | not built — the tabs, star and archive cover it with less to tap |
 | Compare two papers by topic | not built — Adrian: "not useful" |
 | The full typeset PDF | no longer drawn when the images copy exists; kept as the fallback for a paper with no annotated pages |
@@ -98,9 +98,9 @@ The profile shows more, it decides nothing new. Releasing, overriding, reinstati
 - Reinstate: put the lessons back into the same weekly slot if it is still free, or leave the slot for Adrian to choose.
 - The Overview's "weakest topics": the same three the student sees in their Notebook, or a longer list for Adrian.
 
-## 11. My note — the student's remark on a paper (built 17 Sep 2026, option 2)
+## 11. My remark — the student's remark on a paper (built 17 Sep 2026, option 2)
 
-On the paper page, under the title, a light amber box "📝 My note" with the placeholder "What went wrong, what to remember next time…". It saves by itself when they pause typing. The first line shows in the Papers row under the date. Adrian reads it on his Papers tab as "their note", so it is never mistaken for the marker's comment; the box says "Adrian can read this too" once something is written. A private thought belongs in the Notebook's private notes, which nobody else reads.
+On the paper page, under the title, a quiet grey box "My remark" (Adrian: amber was "too striking for a remark") with the placeholder "What went wrong, what to remember next time…". It saves by itself when they pause typing. The first line shows in the Papers row under the date. Adrian reads it on his Papers tab as "their remark", so it is never mistaken for the marker's comment; the box says "Adrian can read this too" once something is written. A private thought belongs in the Notebook's private notes, which nobody else reads.
 
 ## 12. Doing work and writing on the marked copy, in the app
 

@@ -453,7 +453,7 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
         <div className="min-w-0 flex-1">
           <p className="font-bold text-navy leading-snug break-words group-hover:underline">{paper.name}</p>
           <p className="text-[12px] text-gray-500 mt-0.5">{whenLine(paper, todayISO)}</p>
-          {noteFirstLine(paper.note) && <p className="text-[12px] text-amber-900/80 mt-0.5 italic truncate">📝 {noteFirstLine(paper.note)}</p>}
+          {noteFirstLine(paper.note) && <p className="text-[12px] text-gray-400 mt-0.5 italic truncate">{noteFirstLine(paper.note)}</p>}
         </div>
         <StarPaper runId={paper.id} starred={!!paper.starred} />
         <div className={`shrink-0 rounded-2xl px-3 py-1.5 text-center min-w-[64px] ${scoreTone(paper.pct)}`}>
