@@ -28,6 +28,8 @@ import RenamePaper from '../RenamePaper';
 import StarPaper from '../StarPaper';
 import ArchivePaper from '../ArchivePaper';
 import PaperNote from '../PaperNote';
+import StudentInk from '../StudentInk';
+import type { InkPages } from '@/lib/student-ink';
 import { sheetLine } from '@/lib/practice-again-line';
 
 const COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, student_archived_at, student_note, paper_subject, superseded_by, subject';
@@ -113,6 +115,12 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
   // A returned Practice Again sheet may ask for ONE follow-up (11 Sep 2026); a
   // returned follow-up may not — what is still hard rides into the next paper's sheet.
   const followUpDepth = isScience ? 0 : await followUpDepthOf(sb, row as never);
+  // ✍️ the student's saved ink for this paper (their layer, never the marked copy).
+  let ink: InkPages | null = null;
+  if (!isScience && paper.pages.length) {
+    const { data: inkRow } = await sb.from('student_ink').select('pages').eq('run_id', id).eq('identity', sid).maybeSingle();
+    ink = (inkRow?.pages as InkPages | undefined) ?? null;
+  }
   const hasCover = paper.dropped.length > 0;
   const supersededBy = (row as { superseded_by?: string | null }).superseded_by ?? null;
   // Why it was archived (Adrian, 7 Sep 2026: "should say the reason") — a
@@ -203,7 +211,14 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
         </section>
       )}
 
-      {paper.pages.length > 0 && (
+      {paper.pages.length > 0 && !isScience && (
+        // ✍️ the student's own ink over the marked pages (17 Sep 2026); the clipper sits beside it.
+        <div className="space-y-2">
+          <div className="flex justify-end"><ClipToNotes runId={paper.id} paperName={paper.name} pages={paper.pages} /></div>
+          <StudentInk runId={paper.id} pages={paper.pages} initial={ink} />
+        </div>
+      )}
+      {paper.pages.length > 0 && isScience && (
         <section aria-label="Marked pages" className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Your marked pages</h2>

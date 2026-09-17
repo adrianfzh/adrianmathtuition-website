@@ -65,6 +65,19 @@ type Props = {
   onClose: () => void;
   /** Open scrolled to this page (photo index) — the desk's per-page ✏️ link. */
   initialPage?: number | null;
+  /**
+   * 'student' (17 Sep 2026, SPEC-STUDENT-FIRST §12): the student's own ink on
+   * their marked pages. Nothing is flattened or assembled — Done hands the
+   * strokes (page-image pixel coordinates, with each page's size) to
+   * `onSaveInk`, the marked copy underneath is never touched, the mouse draws
+   * too (laptops), and the draft lives under its own key so it never collides
+   * with Adrian's draft for the same run on a shared iPad.
+   */
+  mode?: 'admin' | 'student';
+  /** student mode: the ink saved earlier, by photo index — seeded when no local draft is newer. */
+  initialInk?: Record<number, Stroke[]> | null;
+  /** student mode: persist the ink. Resolves when saved; throws to show the error. */
+  onSaveInk?: (ink: Record<number, { strokes: Stroke[]; w: number; h: number }>) => Promise<void>;
 };
 
 // ── constants ────────────────────────────────────────────────────────────────
@@ -209,7 +222,13 @@ const IconSelect = () => (
   </svg>
 );
 
-export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals, onDone, onClose, initialPage = null }: Props) {
+export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals, onDone, onClose, initialPage = null, mode = 'admin', initialInk = null, onSaveInk }: Props) {
+  const isStudent = mode === 'student';
+  // The local draft's key: the student's ink and Adrian's ink for the same run
+  // must never share one (a shared iPad, the demo-student login).
+  const draftId = isStudent ? `student:${runId}` : runId;
+  const initialInkRef = useRef(initialInk); initialInkRef.current = initialInk;
+  const onSaveInkRef = useRef(onSaveInk); onSaveInkRef.current = onSaveInk;
   // Pages sorted by photo_index — array index is the working page index throughout.
   // Keyed on the pages' CONTENT, not the array's identity (10 Sep 2026): the
   // parent pages re-render on a 15 s poll and hand over a fresh `.map()` array
@@ -319,8 +338,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const pageNoRef = useRef(1);
   const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mouseAllowed = useMemo(
-    () => typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('mouse'),
-    [],
+    () => isStudent || (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('mouse')),
+    [isStudent],
   );
 
   // ── UI state ────────────────────────────────────────────────────────────────
@@ -880,11 +899,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     try {
       const rec: Record<number, Stroke[]> = {};
       pages.forEach((p, i) => { rec[p.photoIndex] = strokesRef.current[i]; });
-      const draft = makeDraft(runId, rec, Date.now(), doneAtRef.current);
-      if (draftIsEmpty(draft)) localStorage.removeItem(draftKey(runId));
-      else localStorage.setItem(draftKey(runId), serializeDraft(draft));
+      const draft = makeDraft(draftId, rec, Date.now(), doneAtRef.current);
+      if (draftIsEmpty(draft)) localStorage.removeItem(draftKey(draftId));
+      else localStorage.setItem(draftKey(draftId), serializeDraft(draft));
     } catch { /* quota / private mode — drafts are best-effort insurance */ }
-  }, [pages, runId]);
+  }, [pages, draftId]);
 
   useEffect(() => {
     if (!inkTick) return;
@@ -894,7 +913,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   }, [inkTick, saveDraft]);
 
   const applyDraft = useCallback(() => {
-    const d = parseDraft(localStorage.getItem(draftKey(runId)));
+    const d = parseDraft(localStorage.getItem(draftKey(draftId)));
     if (!d) return;
     pages.forEach((p, i) => {
       strokesRef.current[i] = (d.pages[p.photoIndex] || []).slice();
@@ -904,7 +923,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     setRestoreOffer(null);
     setInkTick((t) => t + 1);
     scheduleBase();
-  }, [pages, runId, scheduleBase]);
+  }, [pages, draftId, scheduleBase]);
 
   // The revert: wipe every page's ink AND the stored draft, after one confirm —
   // this is the only action here that can throw ink away, so it asks.
@@ -914,7 +933,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     pages.forEach((_, i) => { strokesRef.current[i] = []; undoRef.current[i] = []; redoRef.current[i] = []; });
     doneAtRef.current = null;
     dirtyRef.current = true;
-    try { localStorage.removeItem(draftKey(runId)); } catch { /* ignore */ }
+    try { localStorage.removeItem(draftKey(draftId)); } catch { /* ignore */ }
     setRestoreOffer(null);
     setInkTick((t) => t + 1);
     scheduleBase();
@@ -1982,12 +2001,19 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     // default, and the banner's "Start fresh" is the revert. Before 3 Sep 2026
     // the pages opened clean with a "Restore ink" offer, which read as the ink
     // being gone.
-    const d = parseDraft(localStorage.getItem(draftKey(runId)));
+    const d = parseDraft(localStorage.getItem(draftKey(draftId)));
     if (d && !draftIsEmpty(d)) {
       pages.forEach((p, i) => { strokesRef.current[i] = (d.pages[p.photoIndex] || []).slice(); });
       doneAtRef.current = d.doneAt;
       dirtyRef.current = false;
       setRestoreOffer({ savedAt: d.savedAt, wasDone: d.doneAt !== null });
+    } else if (isStudent && initialInkRef.current) {
+      // The student's saved ink comes back on the pages, quietly — no banner,
+      // it is simply their paper as they left it.
+      const saved = initialInkRef.current;
+      pages.forEach((p, i) => { strokesRef.current[i] = (saved[p.photoIndex] || []).slice(); });
+      doneAtRef.current = Date.now();
+      dirtyRef.current = false;
     }
 
     try {
@@ -2169,7 +2195,32 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
 
   // ── Done: flatten inked pages → upload → assemble → link ───────────────────
   const runDone = useCallback(async () => {
-    if (!hasInk() || busyRef.current) return;
+    if (busyRef.current) return;
+    if (isStudent) {
+      // Student mode: the strokes ARE the deliverable — saved as a layer over the
+      // marked copy. Empty is a valid save (they cleared their notes).
+      clearSelection();
+      setError('');
+      try {
+        setBusy('Saving your notes…');
+        const ink: Record<number, { strokes: Stroke[]; w: number; h: number }> = {};
+        pages.forEach((p, i) => {
+          const d = dimsRef.current[i];
+          if (strokesRef.current[i].length && d) ink[p.photoIndex] = { strokes: strokesRef.current[i], w: d.w, h: d.h };
+        });
+        await onSaveInkRef.current?.(ink);
+        doneAtRef.current = Date.now();
+        dirtyRef.current = false;
+        saveDraft();
+        setBusy('');
+        onDoneRef.current({ url: '', linked: true });
+      } catch (e) {
+        setBusy('');
+        setError((e as Error).message || 'Could not save your notes — try again.');
+      }
+      return;
+    }
+    if (!hasInk()) return;
     clearSelection();
     setError('');
     try {
@@ -2259,10 +2310,10 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       setBusy('');
       setError((e as Error).message);
     }
-  }, [clearSelection, drawStrokes, pages, runId, saveDraft, student, totals]);
+  }, [clearSelection, drawStrokes, pages, runId, saveDraft, student, totals, isStudent]);
 
   const discardAndClose = useCallback(() => {
-    try { localStorage.removeItem(draftKey(runId)); } catch { /* ignore */ }
+    try { localStorage.removeItem(draftKey(draftId)); } catch { /* ignore */ }
     onCloseRef.current();
   }, [runId]);
 
@@ -2390,13 +2441,13 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         <div style={{ flex: 1 }} />
         <button
           style={{
-            ...btn, background: hasInk() && !busy ? '#2563eb' : '#93c5fd', color: '#fff',
+            ...btn, background: (isStudent ? (hasInk() || dirtyRef.current) : hasInk()) && !busy ? '#2563eb' : '#93c5fd', color: '#fff',
             border: '1px solid transparent', fontWeight: 700, fontSize: 15, padding: '0 18px',
           }}
-          disabled={!hasInk() || !!busy}
+          disabled={(isStudent ? !(hasInk() || dirtyRef.current) : !hasInk()) || !!busy}
           onClick={runDone}
         >
-          {busy ? busy : 'Done ✓'}
+          {busy ? busy : isStudent ? 'Save ✓' : 'Done ✓'}
         </button>
       </div>
 
