@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { adminLines, sheetStoryLine, heldSheetsLine, receiptLine } from './papers-admin-lines';
+import { adminLines, sheetStoryLine, heldSheetsLine, receiptLine, needsLook } from './papers-admin-lines';
 
 describe('sheetStoryLine', () => {
   it('says who asked, the batch, and where it is', () => {
@@ -33,5 +33,16 @@ describe('adminLines', () => {
     const lines = adminLines({ sheet: null, job: null, held: [], facts: { pages: 3, usage: { externalReads: 3, costUsd: 0.2 }, notes: ['A', '', 'B', 'C', 'D', 'E'] } });
     expect(lines[0]).toBe('3 pages · all read on the Mac · $0.20 API');
     expect(lines.slice(1)).toEqual(['⚠ A', '⚠ B', '⚠ C', '⚠ D']);
+  });
+});
+
+describe('needsLook', () => {
+  it('is a system-released paper with no ✓ Looked at stamp', () => {
+    expect(needsLook({ released_at: '2026-09-16T10:00:00Z', released_via: 'auto:handin', checked_at: null })).toBe(true);
+  });
+  it('clears once Adrian ticks it, and never fires for a paper he released himself or one not yet released', () => {
+    expect(needsLook({ released_at: '2026-09-16T10:00:00Z', released_via: 'auto:handin', checked_at: '2026-09-17T01:00:00Z' })).toBe(false);
+    expect(needsLook({ released_at: '2026-09-16T10:00:00Z', released_via: 'desk', checked_at: null })).toBe(false);
+    expect(needsLook({ released_at: null, released_via: 'auto:handin', checked_at: null })).toBe(false);
   });
 });

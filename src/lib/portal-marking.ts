@@ -45,6 +45,10 @@ export interface MarkingRunRow {
   student_archived_at?: string | null;
   /** The student's own remark on the paper (📝, 17 Sep 2026); optional like student_label. */
   student_note?: string | null;
+  /** Adrian's ✓ Looked at stamp (the desk's checked_at) — read on his Papers tab only (18 Sep 2026). */
+  checked_at?: string | null;
+  /** How the paper went out — 'auto:…' = released by the system (lib/desk-state). */
+  released_via?: string | null;
   /**
    * 'A Math' | 'E Math' | 'H2 Math' | 'Other' | null (SPEC-PORTAL-V2 §1) —
    * the pill on the card and which per-subject tile block the paper counts

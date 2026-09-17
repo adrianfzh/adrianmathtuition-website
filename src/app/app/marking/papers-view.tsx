@@ -49,7 +49,7 @@ import { bundleList } from '@/lib/portal-paper-bundles';
 import { sheetLine, sheetJobLine, bundleCaption, type SheetLine } from '@/lib/practice-again-line';
 import { starredFirst } from '@/lib/paper-star';
 import { noteFirstLine } from '@/lib/paper-label';
-import { adminLines, type AdminJobRow, type AdminSheetRow } from '@/lib/papers-admin-lines';
+import { adminLines, needsLook, type AdminJobRow, type AdminSheetRow } from '@/lib/papers-admin-lines';
 import ReviewPicker, { type ReviewPickPaper } from './ReviewPicker';
 import ForecastCard from './ForecastCard';
 import { examReviewBands } from '@/lib/review-cards';
@@ -59,6 +59,7 @@ import StarPaper from './StarPaper';
 import ArchivePaper from './ArchivePaper';
 import PaperSearch, { type SearchEntry } from './PaperSearch';
 import AdminRename from './AdminRename';
+import LookedAt from './LookedAt';
 import { readNoSheet } from '@/lib/sheet-jobs';
 import MarkingBeacon from './MarkingBeacon';
 import SubjectTiles from './SubjectTiles';
@@ -73,7 +74,7 @@ const MAX_PAPERS = 40;
 // One literal, not a concatenation: supabase-js parses the select string at the
 // type level, and a `+` here widens it to `string` and loses the row type.
 const COLUMNS =
-  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, student_archived_at, student_note, paper_subject';
+  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, student_archived_at, student_note, paper_subject, checked_at, released_via';
 
 // Home's soft elevated card (lib/portal-theme's visual language) — this tab
 // wears the marked-work violet and the hand-in teal the way Home's tiles do,
@@ -185,6 +186,10 @@ export default async function PapersView({ account, sid, admin = false }: {
   // The raw row behind each card — when it was marked, and whether it is itself
   // a returned Practice Again sheet. Both decide whether it may join a tick.
   const rowById = new Map(rows.map(r => [r.id, r]));
+  // ✓ Looked at (18 Sep 2026, Adrian: "which ones are the ones i haven't looked
+  // at? i can't tell"): the desk's rule, on his Papers tab — a paper the system
+  // released that he has not ticked yet wears a pill; the tick is the desk's.
+  const lookOf = (id: string) => { const r = rowById.get(id); return r ? { needsLook: needsLook(r), checkedAt: r.checked_at ?? null } : null; };
   // The Practice Again sheet belongs with its paper (Adrian, 7 Sep 2026), not on a
   // separate to-do page: one released worksheet assignment per source run.
   // `run_id` = the sheet's OWN marking run once its hand-in is marked — what
@@ -284,13 +289,13 @@ export default async function PapersView({ account, sid, admin = false }: {
     const hay = (ps: StudentPaper[]) => ps.map(p => `${p.name} ${p.rawName ?? ''} ${whenLine(p, todayISO)} ${p.awarded}/${p.max} ${p.pct ?? ''}%`).join(' ').toLowerCase();
     const searchEntries: SearchEntry[] = entries.map(entry => entry.kind === 'paper' ? {
       key: entry.paper.id, haystack: hay([entry.paper]),
-      node: <PaperRow paper={entry.paper} todayISO={todayISO} admin={admin}
+      node: <PaperRow paper={entry.paper} todayISO={todayISO} admin={admin} look={admin ? lookOf(entry.paper.id) : null}
         adminInfo={admin ? adminLines({ sheet: (sheetsByRun.get(entry.paper.id) as AdminSheetRow | undefined) ?? null, job: jobByRun.get(entry.paper.id) ?? null, held: heldByRun.get(entry.paper.id) ?? [], facts: factsOf(entry.paper.id, entry.paper.pages.length) }) : null}
         sheet={sheetsByRun.get(entry.paper.id) ?? null} job={jobByRun.get(entry.paper.id) ?? null}
         markedSheet={markedSheetByParent.get(entry.paper.id) ?? null} nextWave={waveByRun.get(entry.paper.id) ?? null} />,
     } : {
       key: entry.sheetId, haystack: hay(entry.papers),
-      node: <Bundle papers={entry.papers} todayISO={todayISO} admin={admin} sheet={sheetsByRun.get(entry.papers[0].id)!}
+      node: <Bundle papers={entry.papers} todayISO={todayISO} admin={admin} sheet={sheetsByRun.get(entry.papers[0].id)!} lookOf={admin ? lookOf : undefined}
         adminInfoOf={admin ? (id => adminLines({ sheet: (sheetsByRun.get(id) as AdminSheetRow | undefined) ?? null, job: jobByRun.get(id) ?? null, held: heldByRun.get(id) ?? [], facts: factsOf(id, papers.find(p => p.id === id)?.pages.length ?? 0) })) : undefined}
         markedSheet={entry.papers.map(p => markedSheetByParent.get(p.id) ?? null).find(Boolean) ?? null}
         nextWave={entry.papers.map(p => waveByRun.get(p.id) ?? null).find(Boolean) ?? null} />,
@@ -310,6 +315,9 @@ export default async function PapersView({ account, sid, admin = false }: {
         {stats && <SubjectTiles s={stats} />}
         {/* 📈 the forecast — Adrian's tab only (17 Sep 2026); students never see it. */}
         {admin && stats && <ForecastCard sid={sid} subject={subject} />}
+        {admin && (() => { const n = listed.filter(p => lookOf(p.id)?.needsLook).length; return n > 0
+          ? <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-[13px] font-semibold text-amber-900">{n} paper{n === 1 ? '' : 's'} released by the system that you have not looked at yet — each wears a pill below; ✓ Looked at clears it.</p>
+          : null; })()}
         {own.streakNote && (
           <p className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-2.5 text-[13px] font-semibold text-emerald-800">{own.streakNote}</p>
         )}
@@ -469,12 +477,14 @@ function SheetLineView({ line, sheet, markedSheet, nextWave, admin = false }: {
 }
 
 /** One paper: name, when, score — the whole row opens the paper. */
-function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle = false, admin = false, adminInfo = null }: {
+function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle = false, admin = false, adminInfo = null, look = null }: {
   paper: StudentPaper;
   todayISO: string;
   admin?: boolean;
   /** Adrian's folded lines (lib/papers-admin-lines) — admin mode only. */
   adminInfo?: string[] | null;
+  /** Adrian's ✓ Looked at state for this paper (admin only). */
+  look?: { needsLook: boolean; checkedAt: string | null } | null;
   sheet: SheetRow | null;
   job: { status: string; noSheet: boolean } | null;
   markedSheet: StudentPaper | null;
@@ -491,6 +501,7 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
           <p className="text-[12px] text-gray-500 mt-0.5">{whenLine(paper, todayISO)}</p>
           {!admin && noteFirstLine(paper.note) && <p className="text-[12px] text-gray-400 mt-0.5 italic truncate">{noteFirstLine(paper.note)}</p>}
         </div>
+        {admin && look?.needsLook && <span className="shrink-0 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold px-2 py-0.5">Not looked at yet</span>}
         {admin ? (paper.starred ? <span className="shrink-0 text-lg text-amber-500" aria-label="Starred by the student">★</span> : null) : <StarPaper runId={paper.id} starred={!!paper.starred} />}
         <div className={`shrink-0 rounded-2xl px-3 py-1.5 text-center min-w-[64px] ${scoreTone(paper.pct)}`}>
           <p className="text-lg font-bold leading-tight tabular-nums">{paper.max > 0 ? `${paper.awarded}/${paper.max}` : '—'}</p>
@@ -514,6 +525,7 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
           <a href={`/admin/desk?student=${encodeURIComponent(paper.rawName ?? paper.name)}`} className="text-sky-700 underline">desk</a>
           <a href={`/app/marking/${paper.id}`} target="_blank" rel="noreferrer" className="text-sky-700 underline">as student ↗</a>
           <AdminRename runId={paper.id} name={paper.rawName ?? paper.name} />
+          {look && <LookedAt runId={paper.id} needsLook={look.needsLook} checkedAt={look.checkedAt} />}
           {paper.note && <span className="text-gray-500 italic">their remark: {noteFirstLine(paper.note, 120)}</span>}
         </p>
       )}
@@ -530,11 +542,12 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
 }
 
 /** The papers one merged sheet covers, in one frame: the caption says what the sheet is, syllabus order inside, the sheet's line once at the foot. */
-function Bundle({ papers, todayISO, sheet, markedSheet, nextWave, admin = false, adminInfoOf }: {
+function Bundle({ papers, todayISO, sheet, markedSheet, nextWave, admin = false, adminInfoOf, lookOf }: {
   papers: StudentPaper[];
   todayISO: string;
   admin?: boolean;
   adminInfoOf?: (id: string) => string[];
+  lookOf?: (id: string) => { needsLook: boolean; checkedAt: string | null } | null;
   sheet: SheetRow;
   markedSheet: StudentPaper | null;
   nextWave: Wave | null;
@@ -544,7 +557,7 @@ function Bundle({ papers, todayISO, sheet, markedSheet, nextWave, admin = false,
   return (
     <div className="rounded-[28px] border-2 border-emerald-200 bg-emerald-50/50 p-2 space-y-2">
       {papers.map(p => (
-        <PaperRow key={p.id} paper={p} todayISO={todayISO} sheet={sheet} job={null} markedSheet={null} nextWave={null} inBundle admin={admin} adminInfo={adminInfoOf ? adminInfoOf(p.id) : null} />
+        <PaperRow key={p.id} paper={p} todayISO={todayISO} sheet={sheet} job={null} markedSheet={null} nextWave={null} inBundle admin={admin} adminInfo={adminInfoOf ? adminInfoOf(p.id) : null} look={lookOf ? lookOf(p.id) : null} />
       ))}
       {/* The caption sits BELOW the papers it covers (Adrian, 17 Sep 2026: "put one practice sheet from these two papers below the two papers"). */}
       <div className="px-2 pt-1">

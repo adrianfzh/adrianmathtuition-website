@@ -80,3 +80,13 @@ export function adminLines(o: { sheet: AdminSheetRow | null; job: AdminJobRow | 
   for (const n of (o.facts.notes ?? []).map(n => (n || '').trim()).filter(Boolean).slice(0, 4)) out.push(`⚠ ${n}`);
   return out;
 }
+
+/**
+ * ✓ Looked at (18 Sep 2026): the desk's own rule for its "released by the
+ * system" lane, so the Papers tab and the desk agree — a paper that went out
+ * without Adrian (`released_via` 'auto:…') and carries no `checked_at` is one he
+ * has not looked at. A paper he released himself was seen on the way out.
+ */
+export function needsLook(run: { released_at?: string | null; released_via?: string | null; checked_at?: string | null }): boolean {
+  return !!run.released_at && String(run.released_via || '').startsWith('auto:') && !run.checked_at;
+}
