@@ -64,6 +64,28 @@ silently. The profile is read by the marker's prompt for that tutor's students o
 That is what turns "measured" into "marks like me". Today overrides are a record, not
 a dial; the profile is the dial, and it is the one piece still to build.
 
+### When there are no circled marks (Adrian, 17 Sep 2026: "what if there are no circled marks?")
+
+Teachers mark in different habits. The reader takes the richest thing on the page and
+says which rung it used, so a weaker script counts for less, never for more:
+
+1. **A number per part** ("(a) 2, (b) 3") — the best case; no allocation needed.
+2. **A circled number per question** — the common case; parts allocated as above.
+3. **Ticks and crosses only, no numbers** — the reader counts the ticks against the
+   paper's marking allocation (the bank's, or the attached scheme): one tick on a line
+   is the mark that line carries, a cross is zero for that part. This gives a mark per
+   part directly. The sum check still applies: if the ticks add to more than the
+   paper's total, the script is flagged for the tutor to look at.
+4. **Only a score on the front page** — the row keeps the paper total and nothing per
+   question. It counts towards the ±2 gate (which is per paper) but teaches nothing
+   about parts.
+5. **Nothing on the page** — the script is not a marked script; it is refused for
+   Phase 1 with a one-line reason, and the tutor is pointed at Phase 2 (mark the
+   computer's copy instead).
+
+Every row records its rung, and the tab shows how many of the ten scripts were read at
+rungs 1–3. A gate passed only on rung-4 scripts is shown as "paper totals only".
+
 ## 3. The gate — when the marking is switched on for a teacher
 
 **The pass mark is the same for everyone: within ±2 marks of the teacher on 90 % of
