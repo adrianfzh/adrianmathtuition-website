@@ -22,12 +22,14 @@ export default async function ForecastCard({ sid, subject }: { sid: string; subj
   const bt = backtest([{ studentId: sid, papers }], gce, new Date(), { priorOnly: true });
   const evidenceMarks = papers.reduce((a, p) => a + p.questions.reduce((b, q) => b + q.max, 0), 0);
   return (
-    <section className="rounded-3xl border border-indigo-100 bg-indigo-50/50 p-4 space-y-2" data-forecast>
-      <div className="flex items-baseline justify-between gap-3">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-indigo-700">📈 Forecast · only you see this</p>
+    // Folded by default (18 Sep 2026, Adrian: "make it default close, only when
+    // i click it shows") — the tab leads with the papers; the forecast is a tap away.
+    <details className="rounded-3xl border border-indigo-100 bg-indigo-50/50 p-4 group" data-forecast>
+      <summary className="flex items-baseline justify-between gap-3 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+        <p className="text-[11px] font-bold uppercase tracking-wide text-indigo-700"><span className="inline-block w-3 transition-transform group-open:rotate-90">▸</span> 📈 Forecast · only you see this</p>
         <p className="text-[11px] text-indigo-700/70">from {papers.length} paper{papers.length === 1 ? '' : 's'} · {evidenceMarks} marks of evidence</p>
-      </div>
-      <ul className="space-y-1.5">
+      </summary>
+      <ul className="space-y-1.5 mt-2">
         {forecasts.map(f => (
           <li key={f.key} className="text-[13px] text-indigo-950">
             <span className="font-semibold">{f.label}</span>: <span className="font-bold tabular-nums">{f.low}–{f.high}</span>
@@ -43,12 +45,12 @@ export default async function ForecastCard({ sid, subject }: { sid: string; subj
           </li>
         ))}
       </ul>
-      <p className="text-[11px] text-indigo-900/60">
+      <p className="text-[11px] text-indigo-900/60 mt-2">
         {bt.summary.n > 0
           ? `Checked on ${bt.summary.n} GCE paper${bt.summary.n === 1 ? '' : 's'} this student already sat, using only earlier papers: off by ${bt.summary.meanAbsError} marks on average${bt.summary.bias ? ` (${bt.summary.bias > 0 ? 'runs high' : 'runs low'} by ${Math.abs(bt.summary.bias)})` : ''}.`
           : 'No past GCE paper to check this against yet — treat it as a rough guide.'}
         {' '}A range, not a mark. Across all students it is off by about 4 marks (E Math) and 7 (A Math) where the papers cover the topics; a student's own improvement is projected forward when three or more papers show it.
       </p>
-    </section>
+    </details>
   );
 }
