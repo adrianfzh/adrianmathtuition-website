@@ -300,4 +300,10 @@ Mark now keeps the sync call), and `ai/external-reads.js` takes a `warm`
 callback that runs the cache warm-up ONCE before the first API fall-through
 (tests in `test/external-reads.test.js`). Watch for: a page that now goes out
 "could not be read" and is re-read by a Mac slot via the auto re-read instead.
-Also seen in the same log: two Mac slots claimed the same paper 2 s apart.
+The second assembly (page re-mark, 11:28 SGT) spent another $4.14 the same
+way before the fix deployed (11:54 SGT) — 35 sync page reads in all, $12.58.
+**COST-2. Two Mac slots claimed the same paper 2 s apart — FIXED 17 Sep 2026 (bot).**
+`externalClaimNext` guarded only on `queued_at`, which a claim does not move;
+the loser's hand-back was refused ("claim lost") so no duplicate reached the
+student, but both Macs read all 36 pages on the plan. The conditional update
+now also requires `external_claim` to be exactly what the claimant read.
