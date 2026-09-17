@@ -1206,8 +1206,16 @@ class Worksheet:
         return p
 
     def math_block(self, latex_expr):
-        """Centred display equation."""
+        """Centred display equation. A \\begin{aligned} block is drawn the way a
+        solution box draws one — one equation per line, aligned at "=" — so notes
+        follow the same one-equation-per-line rule (17 Sep 2026: the aligned block
+        used to print a literal "&=")."""
         p = self.doc.add_paragraph()
+        rows = _split_aligned(latex_expr)
+        if rows:
+            self._solution_lines(p, rows)
+            self._block_paras.append(p)
+            return p
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         elem = _latex_to_omml(latex_expr, display=True)
         if elem is not None:
