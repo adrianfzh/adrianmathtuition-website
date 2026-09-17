@@ -43,6 +43,8 @@ export interface MarkingRunRow {
   student_starred_at?: string | null;
   /** When the student archived the paper (🗂, 17 Sep 2026); optional like student_label. */
   student_archived_at?: string | null;
+  /** The student's own remark on the paper (📝, 17 Sep 2026); optional like student_label. */
+  student_note?: string | null;
   /**
    * 'A Math' | 'E Math' | 'H2 Math' | 'Other' | null (SPEC-PORTAL-V2 §1) —
    * the pill on the card and which per-subject tile block the paper counts
@@ -125,6 +127,8 @@ export interface StudentPaper {
   starred?: boolean;
   /** 🗂 archived by the student (17 Sep 2026) — listed under a folded row at the foot of its tab, never in the main list. */
   archived?: boolean;
+  /** 📝 the student's own remark (17 Sep 2026) — shown to them and, as "their note", on Adrian's Papers tab. */
+  note?: string | null;
   name: string;
   /** The internal name Adrian typed (file names, admin surfaces). */
   rawName?: string;
@@ -487,6 +491,7 @@ function toPaper(row: MarkingRunRow, studentName?: string | null): StudentPaper 
     markedDate: row.released_at ? sgtDateISO(new Date(row.released_at)) : null,
     starred: !!row.student_starred_at,
     archived: !!row.student_archived_at,
+    note: typeof row.student_note === 'string' && row.student_note.trim() ? row.student_note : null,
     // The name the student knows (Adrian, 7 Sep 2026): 'A Math · GCE 2022 · Paper 1', their own name dropped.
     // The student's own label wins (17 Sep 2026); rawName below stays Adrian's.
     name: studentPaperName(row.student_label, displayPaperName(str(row.paper_name), studentName)),

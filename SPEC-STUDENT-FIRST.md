@@ -56,6 +56,7 @@ The desk stays for the across-students sweep: the four lanes, the tick for a mer
 | Star a paper (starred first in its tab) | on the preview site |
 | Archive a paper (leaves the list for a folded row at the foot; nothing deleted) | on the preview site |
 | Search inside a tab (appears from eight papers) | on the preview site |
+| My note — the student's own remark on a paper, read by Adrian too (option 2) | on the preview site |
 | Sorting | not built — the tabs, star and archive cover it with less to tap |
 | Compare two papers by topic | not built — Adrian: "not useful" |
 | The full typeset PDF | no longer drawn when the images copy exists; kept as the fallback for a paper with no annotated pages |
@@ -96,3 +97,26 @@ The profile shows more, it decides nothing new. Releasing, overriding, reinstati
 - On the Papers tab, should the search box and the tick list be shared with the student's own (yes, if "exactly how they see it" is the rule).
 - Reinstate: put the lessons back into the same weekly slot if it is still free, or leave the slot for Adrian to choose.
 - The Overview's "weakest topics": the same three the student sees in their Notebook, or a longer list for Adrian.
+
+## 11. My note — the student's remark on a paper (built 17 Sep 2026, option 2)
+
+On the paper page, under the title, a light amber box "📝 My note" with the placeholder "What went wrong, what to remember next time…". It saves by itself when they pause typing. The first line shows in the Papers row under the date. Adrian reads it on his Papers tab as "their note", so it is never mistaken for the marker's comment; the box says "Adrian can read this too" once something is written. A private thought belongs in the Notebook's private notes, which nobody else reads.
+
+## 12. Doing work and writing on the marked copy, in the app
+
+Adrian, 17 Sep 2026: *"mainly students should be able to do work on the app, and annotate on the marked copy … the original marked pdf itself should still be accessible."* He will get an Apple developer account.
+
+**Two uses of one ink overlay** (the overlay Adrian already uses on `/admin/mark-paper`, `SPEC-ANNOTATE.md`, with its drafts and its Done that bakes ink into a copy):
+
+1. **Notes on a marked paper.** The student writes on the marked pages in the app. Their ink is saved as **their own layer** (`student_ink`, one row per page, strokes as the overlay stores them), drawn on top of the marked page images. **The marked copy itself is never changed.** On the paper page a switch "Show my notes / Hide my notes" toggles the layer, and "Clear my notes" empties it after a confirm. The download offers both: "Marked copy" (the original) and "Marked copy with my notes" (flattened on request). No "clear to see the original" is ever needed, because the original is always there underneath.
+2. **Doing a sheet or paper in the app.** An assigned sheet (Practice Again, From Adrian, a printed set) opens as pages in the app with the same overlay. Progress is saved every few seconds and on leaving (the overlay's draft store). A **Submit** button flattens the ink into the pages and hands them in through the existing hand-in door, so marking starts exactly as it does for a photographed paper. The student never leaves the app; the Preview-save-upload loop disappears.
+
+**The native app, in order:**
+
+1. **Enrol** (Adrian): Apple Developer Program, individual account, $99 a year. No D-U-N-S number needed for an individual. Takes a day or two to approve.
+2. **The app itself** (one evening): the existing AdrianMarker shell (`ios-shell/`) generalised — a full-screen web view of the app with login that persists, the Pencil double-tap forwarded to the overlay (the one thing Safari cannot do), push notifications through the app, and a **share extension** so that AdrianMath appears in every app's share sheet: a PDF written on in Notability or Preview can be sent straight back to the app as a hand-in. That last piece is only possible with a native app and answers "save back to the portal when done editing elsewhere".
+3. **TestFlight first** (a week): Adrian and three or four students install it from a link; no App Store review needed for a small tester list. This is where the Pencil feel is checked on real iPads.
+4. **App Store** (one to two weeks of waiting): the review can reject a plain website wrapper ("minimum functionality"), so the listing leads with what is native: Pencil ink on marked work, offline drafts, push, the share extension. Everyone else installs from the store.
+5. **Until then** the same features work in Safari, minus the Pencil double-tap, and students keep the "Open in…" and "Hand in" doors.
+
+**Build time on the web side:** about three evenings for the two uses above, on top of the native shell. **What stays human:** nothing new is decided by the app; a submitted sheet goes into the same marking queue and the same release rule.

@@ -27,9 +27,10 @@ import LostMarks from '../LostMarks';
 import RenamePaper from '../RenamePaper';
 import StarPaper from '../StarPaper';
 import ArchivePaper from '../ArchivePaper';
+import PaperNote from '../PaperNote';
 import { sheetLine } from '@/lib/practice-again-line';
 
-const COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, student_archived_at, paper_subject, superseded_by, subject';
+const COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, student_archived_at, student_note, paper_subject, superseded_by, subject';
 
 function niceDate(iso: string): string {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
@@ -157,6 +158,9 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
           )}
         </div>
       </header>
+
+      {/* 📝 the student's own remark (17 Sep 2026) — under the header, read by Adrian too. */}
+      {!isScience && !supersededBy && <PaperNote runId={paper.id} note={paper.note ?? null} />}
 
       {/* An earlier marking of a paper marked again (superseded_by) stays
           reachable from "Earlier markings" on the Papers list — archived, not

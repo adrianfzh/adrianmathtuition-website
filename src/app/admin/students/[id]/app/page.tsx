@@ -77,6 +77,7 @@ function PaperRow({ p, inBundle }: { p: AppPaper; inBundle?: boolean }) {
         <a className="text-[12px] text-sky-700 underline" href={`/app/marking/${p.id}`} target="_blank" rel="noreferrer">as student</a>
       </div>
       {p.rawName && p.rawName !== p.name && <div className="text-[11px] text-gray-400">typed as “{p.rawName}”</div>}
+      {p.note && <div className="text-[12px] text-amber-900/80 italic whitespace-pre-line">📝 their note: {p.note}</div>}
       <div className="mt-1"><SheetState paper={p} /></div>
       {p.markedSheet && <div className="mt-1 text-[12px] text-gray-600">↳ marked sheet shown under this paper: {p.markedSheet.name} · {p.markedSheet.awarded}/{p.markedSheet.max}</div>}
     </div>

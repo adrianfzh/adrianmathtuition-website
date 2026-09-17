@@ -19,7 +19,7 @@ import { coveredRunIds } from './sheet-queue';
 import { readNoSheet } from './sheet-jobs';
 import { isPracticeAgainHandin, type DeskRun } from './desk-state';
 
-const RUN_COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, student_archived_at, paper_subject, subject, superseded_by, queue_status, num_photos';
+const RUN_COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, student_archived_at, student_note, paper_subject, subject, superseded_by, queue_status, num_photos';
 
 export interface AppSheet {
   id: string;
@@ -56,6 +56,8 @@ export interface AppPaper {
   id: string;
   name: string;
   rawName: string | null;
+  /** 📝 the student's own remark (17 Sep 2026) — Adrian reads it as "their note". */
+  note: string | null;
   date: string;
   subject: string | null;
   awarded: number;
@@ -164,7 +166,7 @@ export async function loadStudentAppView(identity: string): Promise<StudentAppVi
     const row = rowById.get(p.id);
     const ms = markedSheetByParent.get(p.id);
     return {
-      id: p.id, name: p.name, rawName: p.rawName ?? null, date: p.date, subject: p.subject ?? null, awarded: p.awarded, max: p.max,
+      id: p.id, name: p.name, rawName: p.rawName ?? null, note: p.note ?? null, date: p.date, subject: p.subject ?? null, awarded: p.awarded, max: p.max,
       created_at: row?.created_at ?? '', released_at: row?.released_at ?? null,
       isPracticeAgainHandin: isPracticeAgainHandin(row as unknown as DeskRun),
       earlierMarkings: earlierCountByName.get(p.name) ?? 0,

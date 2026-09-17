@@ -39,6 +39,7 @@ import { groupPracticeAgain, sheetParents } from '@/lib/portal-marking-group';
 import { bundleList } from '@/lib/portal-paper-bundles';
 import { sheetLine, sheetJobLine, bundleCaption, type SheetLine } from '@/lib/practice-again-line';
 import { starredFirst } from '@/lib/paper-star';
+import { noteFirstLine } from '@/lib/paper-label';
 import StarPaper from './StarPaper';
 import ArchivePaper from './ArchivePaper';
 import PaperSearch, { type SearchEntry } from './PaperSearch';
@@ -60,7 +61,7 @@ const MAX_PAPERS = 40;
 // One literal, not a concatenation: supabase-js parses the select string at the
 // type level, and a `+` here widens it to `string` and loses the row type.
 const COLUMNS =
-  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, student_archived_at, paper_subject';
+  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, student_archived_at, student_note, paper_subject';
 
 // Home's soft elevated card (lib/portal-theme's visual language) — this tab
 // wears the marked-work violet and the hand-in teal the way Home's tiles do,
@@ -452,6 +453,7 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
         <div className="min-w-0 flex-1">
           <p className="font-bold text-navy leading-snug break-words group-hover:underline">{paper.name}</p>
           <p className="text-[12px] text-gray-500 mt-0.5">{whenLine(paper, todayISO)}</p>
+          {noteFirstLine(paper.note) && <p className="text-[12px] text-amber-900/80 mt-0.5 italic truncate">📝 {noteFirstLine(paper.note)}</p>}
         </div>
         <StarPaper runId={paper.id} starred={!!paper.starred} />
         <div className={`shrink-0 rounded-2xl px-3 py-1.5 text-center min-w-[64px] ${scoreTone(paper.pct)}`}>
