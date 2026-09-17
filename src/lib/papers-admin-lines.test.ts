@@ -43,6 +43,7 @@ describe('needsLook', () => {
   it('clears once Adrian ticks it, and never fires for a paper he released himself or one not yet released', () => {
     expect(needsLook({ released_at: '2026-09-16T10:00:00Z', released_via: 'auto:handin', checked_at: '2026-09-17T01:00:00Z' })).toBe(false);
     expect(needsLook({ released_at: '2026-09-16T10:00:00Z', released_via: 'desk', checked_at: null })).toBe(false);
+    expect(needsLook({ released_at: '2026-09-16T10:00:00Z', released_via: 'auto:handin', checked_at: null, admin_viewed_at: '2026-09-17T00:00:00Z' })).toBe(false);
     expect(needsLook({ released_at: null, released_via: 'auto:handin', checked_at: null })).toBe(false);
   });
 });

@@ -49,6 +49,9 @@ export interface MarkingRunRow {
   checked_at?: string | null;
   /** How the paper went out — 'auto:…' = released by the system (lib/desk-state). */
   released_via?: string | null;
+  /** First opened on the desk — counts as looked at (18 Sep 2026); admin only. */
+  admin_viewed_at?: string | null;
+  superseded_by?: string | null;
   /**
    * 'A Math' | 'E Math' | 'H2 Math' | 'Other' | null (SPEC-PORTAL-V2 §1) —
    * the pill on the card and which per-subject tile block the paper counts

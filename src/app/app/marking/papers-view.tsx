@@ -50,6 +50,7 @@ import { sheetLine, sheetJobLine, bundleCaption, type SheetLine } from '@/lib/pr
 import { starredFirst } from '@/lib/paper-star';
 import { noteFirstLine } from '@/lib/paper-label';
 import { adminLines, needsLook, type AdminJobRow, type AdminSheetRow } from '@/lib/papers-admin-lines';
+import { unseenLabel } from '@/lib/unseen-handins';
 import ReviewPicker, { type ReviewPickPaper } from './ReviewPicker';
 import ForecastCard from './ForecastCard';
 import { examReviewBands } from '@/lib/review-cards';
@@ -74,7 +75,7 @@ const MAX_PAPERS = 40;
 // One literal, not a concatenation: supabase-js parses the select string at the
 // type level, and a `+` here widens it to `string` and loses the row type.
 const COLUMNS =
-  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, student_archived_at, student_note, paper_subject, checked_at, released_via';
+  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, student_archived_at, student_note, paper_subject, checked_at, released_via, admin_viewed_at';
 
 // Home's soft elevated card (lib/portal-theme's visual language) — this tab
 // wears the marked-work violet and the hand-in teal the way Home's tiles do,
@@ -289,7 +290,7 @@ export default async function PapersView({ account, sid, admin = false }: {
     const hay = (ps: StudentPaper[]) => ps.map(p => `${p.name} ${p.rawName ?? ''} ${whenLine(p, todayISO)} ${p.awarded}/${p.max} ${p.pct ?? ''}%`).join(' ').toLowerCase();
     const searchEntries: SearchEntry[] = entries.map(entry => entry.kind === 'paper' ? {
       key: entry.paper.id, haystack: hay([entry.paper]),
-      node: <PaperRow paper={entry.paper} todayISO={todayISO} admin={admin} look={admin ? lookOf(entry.paper.id) : null}
+      node: <PaperRow paper={entry.paper} todayISO={todayISO} admin={admin} look={admin ? lookOf(entry.paper.id) : null} sheetLook={admin && markedSheetByParent.get(entry.paper.id) ? lookOf(markedSheetByParent.get(entry.paper.id)!.id) : null}
         adminInfo={admin ? adminLines({ sheet: (sheetsByRun.get(entry.paper.id) as AdminSheetRow | undefined) ?? null, job: jobByRun.get(entry.paper.id) ?? null, held: heldByRun.get(entry.paper.id) ?? [], facts: factsOf(entry.paper.id, entry.paper.pages.length) }) : null}
         sheet={sheetsByRun.get(entry.paper.id) ?? null} job={jobByRun.get(entry.paper.id) ?? null}
         markedSheet={markedSheetByParent.get(entry.paper.id) ?? null} nextWave={waveByRun.get(entry.paper.id) ?? null} />,
@@ -315,9 +316,14 @@ export default async function PapersView({ account, sid, admin = false }: {
         {stats && <SubjectTiles s={stats} />}
         {/* 📈 the forecast — Adrian's tab only (17 Sep 2026); students never see it. */}
         {admin && stats && <ForecastCard sid={sid} subject={subject} />}
-        {admin && (() => { const n = listed.filter(p => lookOf(p.id)?.needsLook).length; return n > 0
-          ? <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-[13px] font-semibold text-amber-900">{n} paper{n === 1 ? '' : 's'} released by the system that you have not looked at yet — each wears a pill below; ✓ Looked at clears it.</p>
-          : null; })()}
+        {admin && (() => {
+          // The same count the student directory shows (lib/unseen-handins):
+          // papers and Practice Again sheets apart, a sheet nested in its paper's card included.
+          const papersN = listed.filter(p => !isPracticeAgainHandin(rowById.get(p.id)) && lookOf(p.id)?.needsLook).length;
+          const sheetsN = listed.filter(p => isPracticeAgainHandin(rowById.get(p.id)) && lookOf(p.id)?.needsLook).length
+            + listed.filter(p => { const ms = markedSheetByParent.get(p.id); return ms && lookOf(ms.id)?.needsLook; }).length;
+          const label = unseenLabel({ papers: papersN, practiceAgain: sheetsN, latest: null, names: [] });
+          return label ? <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-[13px] font-semibold text-amber-900">📥 {label} — each wears a pill below; ✓ Looked at clears it.</p> : null; })()}
         {own.streakNote && (
           <p className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-2.5 text-[13px] font-semibold text-emerald-800">{own.streakNote}</p>
         )}
@@ -441,12 +447,14 @@ const LINE_TONE: Record<SheetLine['tone'], { box: string; mark: string }> = {
 };
 
 /** The Practice Again state as ONE coloured line — under a paper, or once at the foot of a bundle. */
-function SheetLineView({ line, sheet, markedSheet, nextWave, admin = false }: {
+function SheetLineView({ line, sheet, markedSheet, nextWave, admin = false, sheetLook = null }: {
   line: SheetLine;
   sheet: SheetRow | null;
   markedSheet: StudentPaper | null;
   nextWave: Wave | null;
   admin?: boolean;
+  /** Adrian's ✓ Looked at state for the marked sheet nested here (admin only). */
+  sheetLook?: { needsLook: boolean; checkedAt: string | null } | null;
 }) {
   const t = LINE_TONE[line.tone];
   const openMarked = line.tone === 'done' && sheet && (markedSheet?.id ?? sheet.run_id);
@@ -454,6 +462,8 @@ function SheetLineView({ line, sheet, markedSheet, nextWave, admin = false }: {
     <div className={`rounded-2xl border px-3 py-2 ${t.box}`}>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
         <p className="min-w-0 flex-1 text-[13px] font-semibold"><span aria-hidden>{t.mark}</span> {line.text}</p>
+        {admin && sheetLook?.needsLook && <span className="shrink-0 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold px-2 py-0.5">Not looked at yet</span>}
+        {admin && markedSheet && sheetLook && <span className="shrink-0 text-[11.5px]"><LookedAt runId={markedSheet.id} needsLook={sheetLook.needsLook} checkedAt={sheetLook.checkedAt} /></span>}
         {openMarked && (
           <Link href={`/app/marking/${openMarked}`} data-track="marking:open" className="shrink-0 text-xs font-bold underline underline-offset-2">
             See your marked sheet ›
@@ -477,7 +487,7 @@ function SheetLineView({ line, sheet, markedSheet, nextWave, admin = false }: {
 }
 
 /** One paper: name, when, score — the whole row opens the paper. */
-function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle = false, admin = false, adminInfo = null, look = null }: {
+function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle = false, admin = false, adminInfo = null, look = null, sheetLook = null }: {
   paper: StudentPaper;
   todayISO: string;
   admin?: boolean;
@@ -485,6 +495,8 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
   adminInfo?: string[] | null;
   /** Adrian's ✓ Looked at state for this paper (admin only). */
   look?: { needsLook: boolean; checkedAt: string | null } | null;
+  /** The same, for the marked Practice Again sheet nested in this card. */
+  sheetLook?: { needsLook: boolean; checkedAt: string | null } | null;
   sheet: SheetRow | null;
   job: { status: string; noSheet: boolean } | null;
   markedSheet: StudentPaper | null;
@@ -518,7 +530,7 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
         </p>
       )}
 
-      {line && <div className="mt-2"><SheetLineView line={line} sheet={sheet} markedSheet={markedSheet} nextWave={nextWave} admin={admin} /></div>}
+      {line && <div className="mt-2"><SheetLineView line={line} sheet={sheet} markedSheet={markedSheet} nextWave={nextWave} admin={admin} sheetLook={sheetLook} /></div>}
       {/* Adrian's doors (17 Sep 2026): the desk row for this paper, the paper as the student sees it. */}
       {admin && (
         <p className="mt-1.5 flex flex-wrap gap-x-3 text-[11.5px]">
@@ -564,7 +576,7 @@ function Bundle({ papers, todayISO, sheet, markedSheet, nextWave, admin = false,
         <p className="text-[13px] font-bold text-emerald-900">📘 {cap.title}</p>
         <p className="text-[12px] text-emerald-800/80">{cap.sub}</p>
       </div>
-      <SheetLineView line={line} sheet={sheet} markedSheet={markedSheet} nextWave={nextWave} admin={admin} />
+      <SheetLineView line={line} sheet={sheet} markedSheet={markedSheet} nextWave={nextWave} admin={admin} sheetLook={lookOf && markedSheet ? lookOf(markedSheet.id) : null} />
     </div>
   );
 }

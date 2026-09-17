@@ -1,3 +1,4 @@
+import { notLookedAt } from './unseen-handins';
 // Adrian's folded lines under each card on the profile's Papers tab (17 Sep
 // 2026, SPEC-STUDENT-FIRST §3 step 2): what the student cannot see, in plain
 // words, in this order — who asked for the sheet and where the writer is, a
@@ -82,11 +83,10 @@ export function adminLines(o: { sheet: AdminSheetRow | null; job: AdminJobRow | 
 }
 
 /**
- * ✓ Looked at (18 Sep 2026): the desk's own rule for its "released by the
- * system" lane, so the Papers tab and the desk agree — a paper that went out
- * without Adrian (`released_via` 'auto:…') and carries no `checked_at` is one he
- * has not looked at. A paper he released himself was seen on the way out.
+ * ✓ Looked at on the Papers tab = the ONE rule in lib/unseen-handins.ts
+ * (notLookedAt), so the student directory, this tab and the desk agree.
  */
-export function needsLook(run: { released_at?: string | null; released_via?: string | null; checked_at?: string | null }): boolean {
-  return !!run.released_at && String(run.released_via || '').startsWith('auto:') && !run.checked_at;
+export function needsLook(run: { released_at?: string | null; released_via?: string | null; checked_at?: string | null; admin_viewed_at?: string | null; superseded_by?: string | null; result_json?: unknown }): boolean {
+  const rj = (run.result_json ?? {}) as { portal_submission?: unknown };
+  return notLookedAt({ ...run, portal_submission: rj.portal_submission ?? null });
 }
