@@ -19,7 +19,7 @@ const RDP_EPSILON = 0.025;          // of stroke length (corner detection)
 const RECT_ANGLE_TOL = (20 * Math.PI) / 180;   // corner angle within 20° of 90°
 const RECT_AXIS_TOL = (10 * Math.PI) / 180;    // all edges within 10° of axes → axis-aligned
 const ELLIPSE_MAX_RADIAL_ERR = 0.10;           // mean |r-1| in ellipse frame — 0.06 until 17 Sep 2026 (Adrian: "I still can't draw circles that snap")
-const CIRCLE_AXIS_RATIO = 0.12;                // axes within 12% of each other → circle
+const CIRCLE_AXIS_RATIO = 0.28;                // axes within 28% of each other → circle (12 % until 17 Sep 2026: hand circles came out as ellipses)
 
 export type FitOptions = { minLength?: number };
 
@@ -200,6 +200,16 @@ function fitTriangle(points: XY[], len: number): SnappedShape | null {
   const simplified = rdpSimplify(points, 1.6 * RDP_EPSILON * len);
   let corners = simplified.slice();
   if (corners.length > 1 && dist(corners[0], corners[corners.length - 1]) < CLOSURE_MAX_GAP * len) corners.pop();
+  // A hand rounds a corner, so the simplifier often leaves two or three points
+  // around one turn: merge points closer than 8 % of the perimeter into one.
+  const merged: XY[] = [];
+  for (const c of corners) {
+    const last = merged[merged.length - 1];
+    if (last && dist(last, c) < 0.08 * len) { last.x = (last.x + c.x) / 2; last.y = (last.y + c.y) / 2; }
+    else merged.push({ x: c.x, y: c.y });
+  }
+  if (merged.length > 1 && dist(merged[0], merged[merged.length - 1]) < 0.08 * len) merged.pop();
+  corners = merged;
   // Drop points that sit on the straight line between their neighbours (the
   // pen-down blob, a start mid-side) — a corner sticks out well past that.
   corners = corners.filter((c, i) => {

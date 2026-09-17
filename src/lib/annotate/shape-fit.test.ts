@@ -220,3 +220,24 @@ describe('triangle (17 Sep 2026)', () => {
     expect(fitStroke(walk([{ x: 100, y: 100 }, { x: 300, y: 100 }, { x: 300, y: 250 }, { x: 100, y: 250 }]))?.kind).toBe('rect');
   });
 });
+
+describe('real hands (17 Sep 2026)', () => {
+  it('a triangle with rounded corners still snaps', () => {
+    const c = [{ x: 100, y: 300 }, { x: 320, y: 310 }, { x: 210, y: 110 }];
+    const pts: { x: number; y: number; p: number }[] = [];
+    for (let i = 0; i < 3; i++) {
+      const a = c[i], b = c[(i + 1) % 3], n = c[(i + 2) % 3];
+      for (let k = 0; k < 18; k++) { const t = k / 18; pts.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, p: 0.5 }); }
+      // the rounded corner: a short arc bending towards the next side
+      for (let k = 1; k <= 3; k++) { const t = k / 4; pts.push({ x: b.x + (n.x - b.x) * t * 0.08 - (b.x - a.x) * (1 - t) * 0.05, y: b.y + (n.y - b.y) * t * 0.08 - (b.y - a.y) * (1 - t) * 0.05, p: 0.5 }); }
+    }
+    expect(fitStroke(pts)?.kind).toBe('triangle');
+  });
+  it('a slightly oval hand circle snaps to a true circle', () => {
+    const pts: { x: number; y: number; p: number }[] = [];
+    for (let i = 0; i <= 64; i++) { const a = (i / 64) * Math.PI * 2 * 0.95; pts.push({ x: 300 + 120 * Math.cos(a), y: 300 + 100 * Math.sin(a), p: 0.5 }); }
+    const fit = fitStroke(pts);
+    expect(fit?.kind).toBe('ellipse');
+    if (fit?.kind === 'ellipse') expect(fit.rx).toBeCloseTo(fit.ry, 6);
+  });
+});
