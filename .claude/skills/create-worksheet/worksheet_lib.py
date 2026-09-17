@@ -833,6 +833,7 @@ class Worksheet:
         self._current_subq_id = None
         self._stemless_q = False  # Q([]) seen: the next SQ rides the number's line
         self._auto_parts_id = 89 # increments to 90, 91, ... per parts() (example sub-parts, flush left)
+        self._numbered_q_open = False  # True between a Q() and the next para() stem
         self._auto_q_id = 49     # increments to 50, 51, ... per restart_numbering()
         self._current_q_id = 1   # numId 1 = one continuous 1. 2. 3. list
         self._block_paras = []   # paragraphs of the current question block (for keep-together)
@@ -1043,6 +1044,7 @@ class Worksheet:
         if self._auto_subq_id >= SUBQ_BASE + SUBQ_POOL:
             raise RuntimeError(f'more than {SUBQ_POOL} questions on one sheet')
         self._current_subq_id = self._auto_subq_id
+        self._numbered_q_open = True   # parts() is a no-op until a para() stem
         self._block_paras = []  # a new question starts a new keep-together block
         if not parts:
             self._stemless_q = True
@@ -1095,6 +1097,14 @@ class Worksheet:
         (and its figure), then SQ() as usual. Q() keeps its own indented pool
         for practice questions, where the parts line up with the question's
         text instead. Real Word numbering either way."""
+        # Under a NUMBERED practice question this call is ignored: the parts
+        # keep the indented pool, so "(a)" sits level with the question's text,
+        # never in the number's column (Adrian, 17 Sep 2026, Alessi's EM 2022
+        # P1 Practice Again: "subparts should be aligned with the main question,
+        # not with the question number" — the worker had called parts() after
+        # ws.Q(), which put every practice part in the flush-left Example pool).
+        if getattr(self, '_numbered_q_open', False):
+            return self._current_subq_id
         self._auto_parts_id += 1
         if self._auto_parts_id > 119:
             raise RuntimeError('more than 30 example part-lists on one sheet')
@@ -1119,7 +1129,10 @@ class Worksheet:
         return self._add(parts, style=style, num_id=self._numbered_cur[key], marks=marks)
 
     def para(self, parts, marks=None):
-        """Plain paragraph (no numbering)."""
+        """Plain paragraph (no numbering). An Example's stem is written this
+        way, so a para() closes the numbered question above it and lets parts()
+        open its flush-left list again."""
+        self._numbered_q_open = False
         return self._add(parts, marks=marks)
 
     def keep_with_next(self):

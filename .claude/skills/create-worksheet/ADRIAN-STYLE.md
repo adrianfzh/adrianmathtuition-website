@@ -304,6 +304,13 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   the bare number. A wrapped line of that first part hangs under the part's text.
   `build_lib.render_stem` does this for every bank question whose stem is empty, unless
   a figure prints between the stem and the parts.
+- **Under a numbered question, "(a)" sits level with the question's TEXT** — one tab in
+  from the number, its own text one tab further — never in the number's column
+  (17 Sep 2026, Alessi's EM 2022 P1 Practice Again: "subparts should be aligned with the
+  main question, not with the question number"). `ws.Q(...)` then `ws.SQ(...)` gives this
+  by itself. `ws.parts()` is ONLY for an unnumbered Example stem written with `ws.para()`
+  (flush-left labels); since 17 Sep 2026 the library ignores a `parts()` call made under a
+  `Q()`, so the flush-left pool can no longer leak into a practice set.
 - **A sub-part label gets its own column** (14 Sep 2026, on a solution box whose "(a)"
   sat in the label column while "(i)", "(ii)", "(iii)" were typed at the head of the
   working: "there should be two columns separately to accomodate (a) and (i) / you can
