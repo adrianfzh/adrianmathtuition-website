@@ -242,7 +242,7 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 - `admin/my-todos/route.ts` — personal to-do CRUD (Supabase `admin_todos`)
 - `admin/todo/route.ts` — loop-queue CRUD (Airtable `Todos`)
 - `admin/status/route.ts` — At-a-glance data: loop todos, personal `myTodos {open,overdue}`, unpaid invoices, students, bot week count
-- `admin/student-profile/route.ts` — student profile hub data
+- `admin/student-profile/route.ts` — student profile hub data; `?part=core` (paints the page) | `?part=billing` (invoices · payments · the e-mail archive, fetched right after the first paint — 18 Sep 2026, the profile opened in 2.5 s before) | default = all
 - `admin/log-queue/route.ts` — read half of `/admin/log`: every unlogged in-window lesson + `prev` + `topicsByLevel`. **Owns no writes** → `docs/SCHEDULE.md`
 - `admin/papers/route.ts` — marked-script library (Supabase `paper_marking_runs` direct, NOT the bot proxy); GET `?days=&limit=&student=&untagged=1&subject=`, POST `{runId, studentId|null}` to tag (tagging no longer queues a sheet since 8 Sep 2026 — Practice Again is on request) → `docs/MARKING.md`
 - `admin/desk/route.ts` (GET `?lane=&days=60` — lane rows + counts), `admin/desk/run/route.ts` (GET `?runId=` — the detail view's everything), `admin/desk/rebuild/route.ts` (POST `{runId}` → `lib/rebuild-run-pdfs`, 409 on released) — the marking desk; service-key reads, `verifyAdminAuth`, health-check `desk` probes the 401 → `docs/MARKING.md` §The marking desk
