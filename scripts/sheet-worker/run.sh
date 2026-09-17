@@ -40,6 +40,9 @@ MAX_RUNTIME_SEC="${MAX_RUNTIME_SEC:-4200}"   # 70 min
 mkdir -p "$STATE"
 ts() { date '+%Y-%m-%d %H:%M:%S'; }
 say() { echo "[$(ts)] $*" >> "$LOG"; }
+# Portable date (18 Sep 2026, the Fly worker): no BSD `date -v` / `date -r` on Linux.
+epoch_in_min() { python3 -c 'import time,sys; print(int(time.time())+60*int(sys.argv[1]))' "$1"; }
+fmt_epoch() { python3 -c 'import time,sys; print(time.strftime("%a %H:%M", time.localtime(int(sys.argv[1] or 0))))' "${1:-0}" 2>/dev/null || echo "?"; }
 
 # A worker that dies BEFORE claiming a job is invisible: attempts stays 0, no
 # job_runs row is ever written, and /admin/ops has nothing to be amber about.
@@ -102,7 +105,7 @@ plan_limit_active() {
 }
 plan_limit_note() {
   # $1 = the CLI's limit line. Writes the epoch the limit lifts.
-  python3 - "$1" > "$PLAN_LIMIT_FILE" 2>/dev/null <<'PYLIM' || date -v+60M +%s > "$PLAN_LIMIT_FILE"
+  python3 - "$1" > "$PLAN_LIMIT_FILE" 2>/dev/null <<'PYLIM' || epoch_in_min 60 > "$PLAN_LIMIT_FILE"
 import re, sys, datetime, zoneinfo
 line = sys.argv[1] if len(sys.argv) > 1 else ""
 tz = zoneinfo.ZoneInfo("Asia/Singapore")
@@ -162,7 +165,7 @@ fi
 
 # --- single instance --------------------------------------------------------
 if plan_limit_active; then
-  say "plan limit on this account until $(date -r "$(cat "$PLAN_LIMIT_FILE")" '+%a %H:%M') — not claiming"
+  say "plan limit on this account until $(fmt_epoch "$(cat "$PLAN_LIMIT_FILE")") — not claiming"
   exit 0
 fi
 if [ -f "$STATE/worker.pid" ]; then
@@ -371,7 +374,7 @@ elif tail -40 "$LOG" | grep -qiE 'usage limit|rate.?limit|quota|weekly limit|hit
 try: print((json.load(sys.stdin).get("email") or "").strip())
 except Exception: print("")' 2>/dev/null || true)"
   plan_limit_note "$LIMIT_LINE"
-  say "END rc=$RC (${ELAPSED}s) — looks like a PLAN USAGE LIMIT, not a bug; no slot claims until $(date -r "$(cat "$PLAN_LIMIT_FILE")" '+%a %H:%M')"
+  say "END rc=$RC (${ELAPSED}s) — looks like a PLAN USAGE LIMIT, not a bug; no slot claims until $(fmt_epoch "$(cat "$PLAN_LIMIT_FILE")")"
   stamp_fail "plan limit on ${SHEETS_ACCOUNT:-unknown account}: ${LIMIT_LINE:-usage limit}"
 else
   say "END rc=$RC (${ELAPSED}s)"

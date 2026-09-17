@@ -666,6 +666,11 @@ def export_pdf(docx_path: Path, pdf_path: Path, timeout=240):
     WORD_WAIT_SECONDS it exports through LibreOffice instead (a line on stderr
     says so). It never quits Word and closes only its own staged copy.
     """
+    # No Word on this machine (the Fly worker, 18 Sep 2026): LibreOffice is the
+    # exporter, not the fallback. Said once on stderr so `verified` can carry it.
+    if not word_available():
+        print(f'NOTE: no Microsoft Word here — {docx_path.name} exported through LibreOffice', file=sys.stderr)
+        return export_pdf_libreoffice(docx_path, pdf_path, timeout=timeout)
     waited = 0
     while adrian_in_word():
         if waited >= WORD_WAIT_SECONDS:
