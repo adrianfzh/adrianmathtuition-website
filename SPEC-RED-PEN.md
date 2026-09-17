@@ -43,7 +43,7 @@ verdicts, `parts[]` with marks, `correct.full_solution_latex`. Plus, from 5 Sep 
 | `lines[].notation_slip.insert` | a correct line with a missing symbol | ≤ 4 chars, the symbol itself ("dx", "°", "+C"); `span_token` is then the text the symbol should FOLLOW, so the pen writes it in at the gap and points there. Shipped 9 Sep 2026 (Denise Q4: "arrow should be pointed at the space that dx should be"). Existing runs show it only after a re-mark. |
 | `lines[].why_short` | a wrong line | phase 2 — ≤ 12 words, why, in the student's numbers ("52.56 is already cm — no ×100") |
 | `parts[].verdict_line` | a part that lost marks | phase 2 — ≤ 8 words in Adrian's voice, from the phrase bank (§5) |
-| `parts[].continuation` | an attempted part that lost marks | phase 2 — `{ from_line_index, steps_latex[≤6], final_latex }`: the corrected line and the next steps **in the student's notation**, ending at the answer |
+| `parts[].continuation` | an attempted part that lost marks | phase 2, **ON since 17 Sep 2026** (`MARKING_PEN_V2=1` on Fly) — `{ from_line_index, steps_latex[≤6], final_latex, step_reasons[] }`: the corrected line and the next steps **in the student's notation**, ending at the answer, with a ≤ 6-word reason under each step that needs one ("quadratic graph above x-axis", "no real roots: discriminant < 0", "(shown)") — the shape of Adrian's own red pen on Q9(a), after a student wrote "Teacher I dont really understand 9a" about the strip's paragraph |
 
 ## 2. Output on the page — placement rules, in priority order
 
