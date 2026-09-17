@@ -29,7 +29,7 @@ export function CorrectedButton({ id }: { id: string }) {
         className="inline-flex items-center gap-1.5 bg-white border border-emerald-300 text-emerald-700 rounded-xl px-3 py-1.5 text-[13px] font-semibold hover:bg-emerald-50 disabled:opacity-50 transition-colors"
         title="I have fixed this — it comes back if the marking says otherwise"
       >
-        {busy ? 'Saving…' : '✓ Corrected'}
+        {busy ? 'Saving…' : 'Mark as corrected'}
       </button>
       {err && <span className="text-xs text-rose-600 mt-1">{err}</span>}
     </span>

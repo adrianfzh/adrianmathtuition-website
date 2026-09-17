@@ -15,7 +15,13 @@ const STATUS: Record<string, { text: string; cls: string }> = {
   derive: { text: 'derive it', cls: 'bg-sky-50 text-sky-800' },
 };
 
-export default function FormulaSheet({ sections, emptyLine }: { sections: FormulaSection[]; emptyLine: string }) {
+export default function FormulaSheet({ sections: all, emptyLine }: { sections: FormulaSection[]; emptyLine: string }) {
+  // A topic with nothing to show — no formula lines filed and no formulas page —
+  // is folded into one line at the foot instead of a card saying "nothing here"
+  // (Adrian, 18 Sep 2026: "doesn't seem very helpful"). The ⚠ marks-lost note
+  // on such a topic lives in the Mistakes view; this page is for the formulas.
+  const sections = all.filter(s => s.formulae.length > 0 || s.page);
+  const bare = all.filter(s => !(s.formulae.length > 0 || s.page));
   if (!sections.length) {
     return <div className={`${CARD} p-5 text-sm text-gray-600`} data-formula-sheet-empty>{emptyLine}</div>;
   }
@@ -37,7 +43,7 @@ export default function FormulaSheet({ sections, emptyLine }: { sections: Formul
 
           {s.watch && (
             <p className="mt-2 text-[12px] font-semibold text-rose-700" data-formula-watch>
-              ⚠ Marks lost here — {s.watch.title}{s.watch.where ? ` (${s.watch.where})` : ''}
+              ⚠ {s.watch.title}{s.watch.where ? ` · ${s.watch.where}` : ''}
             </p>
           )}
 
@@ -68,6 +74,11 @@ export default function FormulaSheet({ sections, emptyLine }: { sections: Formul
           )}
         </section>
       ))}
+      {bare.length > 0 && (
+        <p className="text-[12px] text-gray-500 px-1">
+          No formulas filed yet for {bare.length === 1 ? 'one topic you have met' : `${bare.length} topics you have met`}: {bare.map(s => s.topic).join(' · ')}.
+        </p>
+      )}
     </div>
   );
 }

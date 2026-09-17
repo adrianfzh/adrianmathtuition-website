@@ -213,7 +213,8 @@ export default function NotebookStream({ items: initial, topicGroups, openId: op
               <span className="text-lg leading-none mt-0.5 shrink-0" aria-hidden>{ICON[it.kind]}</span>
               <div className="min-w-0 flex-1">
                 <p className={`text-sm font-bold leading-snug ${it.kind === 'mistake' && it.mistake?.state !== 'dark' ? 'text-gray-600' : 'text-navy'}`}>{it.title}</p>
-                <p className="text-[12px] text-gray-500 mt-0.5">{it.subtitle}{it.subtitle && niceDate(it.at) ? ' · ' : ''}{niceDate(it.at)}</p>
+                {/* A mistake's subtitle already ends with the date it was seen — don't print "28 Aug · 28 Aug" (Adrian, 18 Sep 2026). */}
+                <p className="text-[12px] text-gray-500 mt-0.5">{it.subtitle}{it.subtitle && niceDate(it.at) && !it.subtitle.includes(niceDate(it.at)) ? ` · ${niceDate(it.at)}` : (!it.subtitle ? niceDate(it.at) : '')}</p>
               </div>
               {tag}
             </div>
