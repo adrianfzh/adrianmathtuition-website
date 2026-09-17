@@ -179,6 +179,39 @@ export async function POST(req: NextRequest) {
   const { runId, studentId } = body;
   if (!runId) return NextResponse.json({ error: 'runId is required' }, { status: 400 });
 
+  // 🔗 Belongs to a paper (18 Sep 2026): tie a stray Practice Again sheet's marking
+  // run to the paper it practises, as the SAME link the automatic sheets carry —
+  // one worksheet assignment row (source 'adrian', status 'marked', run_id = the
+  // sheet, source_run_id = the paper, note 'linked by Adrian'). `belongsTo: null`
+  // removes only rows this action wrote. Marks, PDFs and copies never change.
+  if ('belongsTo' in body) {
+    const sb = getSupabaseAdmin();
+    const MANUAL = 'linked by Adrian';
+    if (body.belongsTo === null) {
+      const { error } = await sb.from('portal_assignments').delete().eq('run_id', runId).eq('source', 'adrian').eq('note', MANUAL);
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ ok: true, runId, belongsTo: null });
+    }
+    const parentId = typeof body.belongsTo === 'string' ? body.belongsTo : '';
+    if (!/^[0-9a-f-]{36}$/i.test(parentId) || parentId === runId) return NextResponse.json({ error: 'belongsTo must be another paper' }, { status: 400 });
+    const { data: pair } = await sb.from('paper_marking_runs').select('id, student_id, paper_name, total_awarded, total_max, released_at, paper_subject').in('id', [runId, parentId]);
+    const sheet = (pair ?? []).find(r => r.id === runId), parent = (pair ?? []).find(r => r.id === parentId);
+    if (!sheet || !parent) return NextResponse.json({ error: 'paper not found' }, { status: 404 });
+    if (!sheet.student_id || sheet.student_id !== parent.student_id) return NextResponse.json({ error: 'not the same student' }, { status: 400 });
+    if (!sheet.released_at) return NextResponse.json({ error: 'the sheet is not marked yet' }, { status: 400 });
+    const { count } = await sb.from('portal_assignments').select('id', { count: 'exact', head: true }).eq('run_id', runId).eq('kind', 'worksheet');
+    if ((count ?? 0) > 0) return NextResponse.json({ error: 'this sheet is already linked to a paper' }, { status: 409 });
+    const now = new Date().toISOString();
+    const { error } = await sb.from('portal_assignments').insert({
+      airtable_student_id: sheet.student_id, kind: 'worksheet', source: 'adrian', status: 'marked', note: MANUAL,
+      title: sheet.paper_name || 'Practice Again', subject: sheet.paper_subject ?? parent.paper_subject ?? null,
+      source_run_id: parentId, run_id: runId, score: sheet.total_awarded, out_of: sheet.total_max,
+      submitted_at: sheet.released_at, marked_at: sheet.released_at, created_at: now,
+    });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true, runId, belongsTo: parentId });
+  }
+
   // ✏️ Rename (17 Sep 2026): Adrian's own name for the paper, from his Papers tab.
   if (typeof body.name === 'string') {
     const name = body.name.replace(/\s+/g, ' ').trim().slice(0, 120);

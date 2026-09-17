@@ -61,6 +61,7 @@ import ArchivePaper from './ArchivePaper';
 import PaperSearch, { type SearchEntry } from './PaperSearch';
 import AdminRename from './AdminRename';
 import LookedAt from './LookedAt';
+import BelongsTo from './BelongsTo';
 import { readNoSheet } from '@/lib/sheet-jobs';
 import MarkingBeacon from './MarkingBeacon';
 import SubjectTiles from './SubjectTiles';
@@ -119,7 +120,7 @@ function bucketOf(subject: string | null | undefined): string {
   return isTileSubject(subject) ? subject : 'Other';
 }
 
-type SheetRow = { id: string; source_run_id: string | null; source_run_ids: string[] | null; run_id: string | null; status: string; pdf_url: string | null; submitted_at: string | null; marked_at: string | null; score: number | null; out_of: number | null; required_at: string | null; created_at?: string | null; reminded_at?: string | null; reminder_count?: number | null };
+type SheetRow = { id: string; source_run_id: string | null; source_run_ids: string[] | null; run_id: string | null; status: string; pdf_url: string | null; submitted_at: string | null; marked_at: string | null; score: number | null; out_of: number | null; required_at: string | null; created_at?: string | null; reminded_at?: string | null; reminder_count?: number | null; note?: string | null };
 type JobLite = { run_id: string; run_ids: string[] | null; status: string; result: unknown; stage?: string | null; requested_by?: string | null; created_at?: string | null };
 type Wave = { count: number; runIds: string[] };
 
@@ -202,7 +203,7 @@ export default async function PapersView({ account, sid, admin = false }: {
   let sheetRowsAll: SheetRow[] = [];
   if (papers.length) {
     const { data: sheetRows } = await sb.from('portal_assignments')
-      .select('id, source_run_id, source_run_ids, run_id, status, pdf_url, submitted_at, marked_at, score, out_of, required_at, created_at, reminded_at, reminder_count')
+      .select('id, source_run_id, source_run_ids, run_id, status, pdf_url, submitted_at, marked_at, score, out_of, required_at, created_at, reminded_at, reminder_count, note')
       .eq('airtable_student_id', sid).in('source', ['practice-again', 'adrian']).eq('kind', 'worksheet').neq('status', 'held').neq('status', 'revoked')
       // A batch sheet (10 Sep 2026) belongs to every paper it covers.
       .or(`source_run_id.in.(${papers.map(p => p.id).join(',')}),source_run_ids.ov.{${papers.map(p => p.id).join(',')}}`);
@@ -286,6 +287,11 @@ export default async function PapersView({ account, sid, admin = false }: {
     const tone: SubjectTone = pill?.tone ?? 'other';
     // 🗂 archived papers leave the list for the fold at the foot (17 Sep 2026).
     const listed = list.filter(p => !p.archived);
+    // 🔗 A sheet that arrived with no link (its name says Practice Again, no sheet
+    // row points at it) may be filed under one of this subject's papers by Adrian.
+    const looksLikeSheet = (p: StudentPaper) => /practice\s*again/i.test(`${p.name} ${p.rawName ?? ''}`) || isPracticeAgainHandin(rowById.get(p.id));
+    const strayOptions = (p: StudentPaper) => admin && looksLikeSheet(p) && !sheetRowsAll.some(r => r.run_id === p.id)
+      ? listed.filter(q => q.id !== p.id && !looksLikeSheet(q)).map(q => ({ id: q.id, name: q.name })) : null;
     const archived = list.filter(p => p.archived);
     // ⭐ starred papers first (17 Sep 2026), newest first inside each group; a bundle sits where its first paper lands.
     const entries = bundleList(starredFirst(listed), id => sheetsByRun.get(id));
@@ -293,7 +299,7 @@ export default async function PapersView({ account, sid, admin = false }: {
     const hay = (ps: StudentPaper[]) => ps.map(p => `${p.name} ${p.rawName ?? ''} ${whenLine(p, todayISO)} ${p.awarded}/${p.max} ${p.pct ?? ''}%`).join(' ').toLowerCase();
     const searchEntries: SearchEntry[] = entries.map(entry => entry.kind === 'paper' ? {
       key: entry.paper.id, haystack: hay([entry.paper]),
-      node: <PaperRow paper={entry.paper} todayISO={todayISO} admin={admin} look={admin ? lookOf(entry.paper.id) : null} sheetLook={admin && markedSheetByParent.get(entry.paper.id) ? lookOf(markedSheetByParent.get(entry.paper.id)!.id) : null}
+      node: <PaperRow paper={entry.paper} todayISO={todayISO} admin={admin} look={admin ? lookOf(entry.paper.id) : null} belongsTo={strayOptions(entry.paper)} sheetLook={admin && markedSheetByParent.get(entry.paper.id) ? lookOf(markedSheetByParent.get(entry.paper.id)!.id) : null}
         adminInfo={admin ? adminLines({ sheet: (sheetsByRun.get(entry.paper.id) as AdminSheetRow | undefined) ?? null, job: jobByRun.get(entry.paper.id) ?? null, held: heldByRun.get(entry.paper.id) ?? [], facts: factsOf(entry.paper.id, entry.paper.pages.length) }) : null}
         sheet={sheetsByRun.get(entry.paper.id) ?? null} job={jobByRun.get(entry.paper.id) ?? null}
         markedSheet={markedSheetByParent.get(entry.paper.id) ?? null} nextWave={waveByRun.get(entry.paper.id) ?? null} />,
@@ -450,7 +456,7 @@ const LINE_TONE: Record<SheetLine['tone'], { box: string; mark: string }> = {
 };
 
 /** The Practice Again state as ONE coloured line — under a paper, or once at the foot of a bundle. */
-function SheetLineView({ line, sheet, markedSheet, nextWave, admin = false, sheetLook = null }: {
+function SheetLineView({ line, sheet, markedSheet, nextWave, admin = false, sheetLook = null, manualLink = false }: {
   line: SheetLine;
   sheet: SheetRow | null;
   markedSheet: StudentPaper | null;
@@ -458,6 +464,8 @@ function SheetLineView({ line, sheet, markedSheet, nextWave, admin = false, shee
   admin?: boolean;
   /** Adrian's ✓ Looked at state for the marked sheet nested here (admin only). */
   sheetLook?: { needsLook: boolean; checkedAt: string | null } | null;
+  /** Adrian filed this sheet under the paper by hand — offer the way back (admin only). */
+  manualLink?: boolean;
 }) {
   const t = LINE_TONE[line.tone];
   const openMarked = line.tone === 'done' && sheet && (markedSheet?.id ?? sheet.run_id);
@@ -467,6 +475,7 @@ function SheetLineView({ line, sheet, markedSheet, nextWave, admin = false, shee
         <p className="min-w-0 flex-1 text-[13px] font-semibold"><span aria-hidden>{t.mark}</span> {line.text}</p>
         {admin && sheetLook?.needsLook && <span className="shrink-0 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold px-2 py-0.5">Not looked at yet</span>}
         {admin && markedSheet && sheetLook && <span className="shrink-0 text-[11.5px]"><LookedAt runId={markedSheet.id} needsLook={sheetLook.needsLook} checkedAt={sheetLook.checkedAt} /></span>}
+        {admin && manualLink && sheet?.run_id && <span className="shrink-0 text-[11.5px]"><BelongsTo runId={sheet.run_id} options={[]} linked /></span>}
         {openMarked && (
           <Link href={`/app/marking/${openMarked}`} data-track="marking:open" className="shrink-0 text-xs font-bold underline underline-offset-2">
             See your marked sheet ›
@@ -490,7 +499,7 @@ function SheetLineView({ line, sheet, markedSheet, nextWave, admin = false, shee
 }
 
 /** One paper: name, when, score — the whole row opens the paper. */
-function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle = false, admin = false, adminInfo = null, look = null, sheetLook = null }: {
+function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle = false, admin = false, adminInfo = null, look = null, sheetLook = null, belongsTo = null }: {
   paper: StudentPaper;
   todayISO: string;
   admin?: boolean;
@@ -500,6 +509,8 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
   look?: { needsLook: boolean; checkedAt: string | null } | null;
   /** The same, for the marked Practice Again sheet nested in this card. */
   sheetLook?: { needsLook: boolean; checkedAt: string | null } | null;
+  /** A stray sheet: the papers Adrian may file it under (admin only). */
+  belongsTo?: { id: string; name: string }[] | null;
   sheet: SheetRow | null;
   job: { status: string; noSheet: boolean } | null;
   markedSheet: StudentPaper | null;
@@ -536,7 +547,7 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
         </p>
       )}
 
-      {line && <div className="mt-2"><SheetLineView line={line} sheet={sheet} markedSheet={markedSheet} nextWave={nextWave} admin={admin} sheetLook={sheetLook} /></div>}
+      {line && <div className="mt-2"><SheetLineView line={line} sheet={sheet} markedSheet={markedSheet} nextWave={nextWave} admin={admin} sheetLook={sheetLook} manualLink={!!(sheet?.note === 'linked by Adrian' && sheet.run_id)} /></div>}
       {/* Adrian's doors (17 Sep 2026): the desk row for this paper, the paper as the student sees it. */}
       {admin && (
         <p className="mt-1.5 flex flex-wrap gap-x-3 text-[11.5px]">
@@ -544,6 +555,7 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
           <a href={`/app/marking/${paper.id}`} className="text-sky-700 underline">as student ›</a>
           <AdminRename runId={paper.id} name={paper.rawName ?? paper.name} />
           {look && <LookedAt runId={paper.id} needsLook={look.needsLook} checkedAt={look.checkedAt} />}
+          {belongsTo && <BelongsTo runId={paper.id} options={belongsTo} />}
           {paper.note && <span className="text-gray-500 italic">their remark: {noteFirstLine(paper.note, 120)}</span>}
         </p>
       )}
@@ -582,7 +594,7 @@ function Bundle({ papers, todayISO, sheet, markedSheet, nextWave, admin = false,
         <p className="text-[13px] font-bold text-emerald-900">📘 {cap.title}</p>
         <p className="text-[12px] text-emerald-800/80">{cap.sub}</p>
       </div>
-      <SheetLineView line={line} sheet={sheet} markedSheet={markedSheet} nextWave={nextWave} admin={admin} sheetLook={lookOf && markedSheet ? lookOf(markedSheet.id) : null} />
+      <SheetLineView line={line} sheet={sheet} markedSheet={markedSheet} nextWave={nextWave} admin={admin} sheetLook={lookOf && markedSheet ? lookOf(markedSheet.id) : null} manualLink={!!(sheet?.note === 'linked by Adrian' && sheet.run_id)} />
     </div>
   );
 }
