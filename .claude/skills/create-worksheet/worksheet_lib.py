@@ -561,14 +561,15 @@ def tag(*items, color=RULE_GREEN, bold=True, brackets=True):
 
 
 # ── sub-part alignment lint (17 Sep 2026) ────────────────────────────────────
-# Under a NUMBERED question the parts use the indented pools (abstract 101/104/
-# 106 — label one tab in, level with the question's text). The flush-left pools
-# (abstract 102/103/105) exist only for an Example's unnumbered stem. Alessi's
+# Under a NUMBERED question the parts use the indented pools (abstract 101 for
+# (a), 105/106 two tabs in for the (i) under it — render_parts' roman_level=2).
+# The flush-left pools (abstract 102/103, at the margin) exist only for an
+# Example's unnumbered stem. 105 sits at 1701 twips, so it was never flush-left. Alessi's
 # EM 2022 P1 Practice Again put every practice "(a)" in the number's column
 # (Adrian: "subparts should be aligned with the main question, not with the
 # question number"), so a saved file is refused when a flush-left part follows a
 # numbered question with no plain stem paragraph in between.
-_FLUSH_LEFT_ABSTRACTS = {'102', '103', '105'}
+_FLUSH_LEFT_ABSTRACTS = {'102', '103'}
 _MAIN_Q_ABSTRACTS = {'100'}
 
 def find_flush_parts_under_numbered(path):
@@ -1603,11 +1604,13 @@ class Worksheet:
             om = elem.find(f'{{{M_NS}}}oMath')
             if om is None:
                 continue
-            # alignment marker on the first "=" run of the right-hand side
-            if rhs.lstrip().startswith('=') or '=' in rhs:
+            # alignment marker on the first relation sign of the right-hand side:
+            # "=", or an inequality sign on an inequality's working (17 Sep 2026)
+            rels = ('=', '<', '>', '≤', '≥', '≠', '≈')
+            if any(k in rhs for k in ('=', '<', '>', '\\le', '\\ge', '\\ne', '\\approx')):
                 for r in om.iter(f'{{{M_NS}}}r'):
                     t = r.find(f'{{{M_NS}}}t')
-                    if t is not None and (t.text or '').strip().startswith('='):
+                    if t is not None and (t.text or '').strip().startswith(rels):
                         mrpr = r.find(f'{{{M_NS}}}rPr')
                         if mrpr is None:
                             mrpr = etree.Element(f'{{{M_NS}}}rPr'); r.insert(0, mrpr)
