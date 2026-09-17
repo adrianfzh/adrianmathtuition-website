@@ -51,6 +51,14 @@ python3 my_worksheet.py
 
 That's it. One script to run. The library produces a Word-ready docx in a single pass.
 
+**Where the file goes (Adrian, 18 Sep 2026 — so a lesson-time request needs no follow-up
+question):** file it on the Dropbox shelf the kiosk reads, by what the sheet contains —
+`docs/KIOSK.md` §Dropbox library is the rule. A sheet WITH worked examples →
+`Dropbox/Apps/AdrianMathNotes/Revision/<LEVEL>`; questions with a summary/formula page and
+no solutions → `Practice/<LEVEL>`; a full paper → `Prelim/`. Never overwrite a file already
+on the shelf — a rebuild goes beside it under a new name (ADRIAN-STYLE.md). In a headless
+or Remote Control session also send the PDF to Adrian's Telegram (CLAUDE.md §📱).
+
 ## Author Script Template
 
 Save as `my_worksheet.py` next to `worksheet_lib.py`:
