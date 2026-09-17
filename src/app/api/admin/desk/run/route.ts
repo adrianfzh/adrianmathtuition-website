@@ -97,6 +97,11 @@ export async function GET(req: NextRequest) {
   const { data: run, error } = await sb.from('paper_marking_runs').select(RUN_COLUMNS).eq('id', runId).maybeSingle<RunRow>();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (!run) return NextResponse.json({ error: 'run not found' }, { status: 404 });
+  // "Looked at" (17 Sep 2026): opening a run on the desk is Adrian looking at
+  // it. First open stamps admin_viewed_at; the student directory highlights
+  // what he has not opened yet. Fail-soft, never on the response path.
+  sb.from('paper_marking_runs').update({ admin_viewed_at: new Date().toISOString() }).eq('id', runId).is('admin_viewed_at', null)
+    .then(({ error: e }) => { if (e) console.warn('[desk/run] admin_viewed_at not stamped', e.message); });
 
   const rj = run.result_json;
   const summary = extractFlagged(rj);

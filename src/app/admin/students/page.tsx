@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
+import { unseenLabel, type UnseenSummary } from '@/lib/unseen-handins';
 
 const AIRTABLE_URL = `https://airtable.com/appFJ43XdnrBL4LzA`;
 
@@ -10,7 +11,7 @@ export default function StudentsPage() {
   const [authed, setAuthed]       = useState(false);
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const [students, setStudents] = useState<{ id: string; name: string; level: string; subjects: string[] }[]>([]);
+  const [students, setStudents] = useState<{ id: string; name: string; level: string; subjects: string[]; unseen?: UnseenSummary | null }[]>([]);
   const [listLoading, setListLoading] = useState(false);
   const [query, setQuery] = useState('');
   const [levelFilter, setLevelFilter] = useState('All');
@@ -90,15 +91,22 @@ export default function StudentsPage() {
           );
           if (!filtered.length) return <div style={{ textAlign: 'center', color: '#9ca3af', padding: 40 }}>No students found.</div>;
 
-          const card = (s: { id: string; name: string; level: string; subjects: string[] }) => (
-            <a key={s.id} href={`/admin/students/${s.id}`}
-              style={{ display: 'block', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '14px 16px', textDecoration: 'none', color: 'inherit' }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#111' }}>{s.name}</div>
-              <div style={{ fontSize: 12, color: '#6b7280', marginTop: 3 }}>
-                {s.level}{Array.isArray(s.subjects) && s.subjects.length ? ` · ${s.subjects.join(', ')}` : ''}
-              </div>
-            </a>
-          );
+          // A card with app hand-ins Adrian has not opened on the desk wears an
+          // amber box and says what is waiting (17 Sep 2026: "let me see what
+          // students have submitted in the app and I have not looked at").
+          const card = (s: { id: string; name: string; level: string; subjects: string[]; unseen?: UnseenSummary | null }) => {
+            const waiting = unseenLabel(s.unseen);
+            return (
+              <a key={s.id} href={`/admin/students/${s.id}`} title={s.unseen?.names?.join(' · ') || undefined}
+                style={{ display: 'block', background: waiting ? '#fffbeb' : '#fff', border: waiting ? '2px solid #f59e0b' : '1px solid #e5e7eb', borderRadius: 12, padding: waiting ? '13px 15px' : '14px 16px', textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#111' }}>{s.name}</div>
+                <div style={{ fontSize: 12, color: '#6b7280', marginTop: 3 }}>
+                  {s.level}{Array.isArray(s.subjects) && s.subjects.length ? ` · ${s.subjects.join(', ')}` : ''}
+                </div>
+                {waiting && <div style={{ fontSize: 12, color: '#b45309', fontWeight: 600, marginTop: 6 }}>📥 {waiting}</div>}
+              </a>
+            );
+          };
           const grid = (list: typeof filtered) => (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>{list.map(card)}</div>
           );
