@@ -4,7 +4,7 @@
 // can rotate on its own, accepted only by the routes of that family, and every
 // use written to `agent_actions` (doctrine step 5: log + alarm).
 //
-//   AGENT_TOKEN_RELEASE   mark-triage (agree / override / release / re-mark)
+//   AGENT_TOKEN_RELEASE   mark-triage (agree / override / release / re-mark) + release-with-sheet (the desk's one-tap release)
 //   AGENT_TOKEN_SHEETS    sheet-jobs (queue / revise / cancel a Practice Again sheet)
 //   AGENT_TOKEN_REINSTATE student-reinstate
 //   AGENT_TOKEN_SWITCHES  marking-settings + slot-accounts

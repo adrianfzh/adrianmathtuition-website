@@ -25,6 +25,7 @@
 // (`kind:'no-sheet'`), rather than 404-ing "No PDF in the sheet's folder yet".
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { verifyAgentAuth } from '@/lib/agent-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { listFolder, dropboxConfigured, downloadFile } from '@/lib/dropbox';
 import { putStudentFile, runKey } from '@/lib/student-files';
@@ -100,7 +101,7 @@ async function resolve(runId: string) {
 }
 
 export async function GET(req: NextRequest) {
-  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'release', { route: 'release-with-sheet' }))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const runId = req.nextUrl.searchParams.get('runId') || '';
   if (!/^[0-9a-f-]{36}$/i.test(runId)) return NextResponse.json({ error: 'runId is required' }, { status: 400 });
 
@@ -129,7 +130,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'release', { route: 'release-with-sheet' }))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const body = await req.json().catch(() => ({} as { runId?: string; pdfPath?: string; required?: unknown }));
   const runId = String(body.runId || '');
   // Compulsory only on request (17 Sep 2026): the desk's default release is a

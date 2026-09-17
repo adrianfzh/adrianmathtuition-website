@@ -107,7 +107,7 @@ the admin cookie/password (`lib/agent-auth.ts`), every use logged to Supabase
 
 | Env var (Vercel, all scopes) | Routes | What it can do |
 |---|---|---|
-| `AGENT_TOKEN_RELEASE` | `/api/admin/mark-triage` | agree · override · release · re-mark · subject |
+| `AGENT_TOKEN_RELEASE` | `/api/admin/mark-triage`, `/api/admin/release-with-sheet` | agree · override · release · re-mark · subject · the desk's one-tap release with the sheet (added 17 Sep 2026 evening after the first cloud probe found it missing) |
 | `AGENT_TOKEN_SHEETS` | `/api/admin/sheet-jobs` | queue / revise / cancel a Practice Again sheet |
 | `AGENT_TOKEN_REINSTATE` | `/api/admin/student-reinstate` | undo a Discontinue |
 | `AGENT_TOKEN_SWITCHES` | `/api/admin/marking-settings`, `/api/admin/slot-accounts` | Mac plan only · Science tab · slot accounts |
