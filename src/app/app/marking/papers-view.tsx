@@ -50,6 +50,10 @@ import { sheetLine, sheetJobLine, bundleCaption, type SheetLine } from '@/lib/pr
 import { starredFirst } from '@/lib/paper-star';
 import { noteFirstLine } from '@/lib/paper-label';
 import { adminLines, type AdminJobRow, type AdminSheetRow } from '@/lib/papers-admin-lines';
+import ReviewPicker, { type ReviewPickPaper } from './ReviewPicker';
+import { examReviewBands } from '@/lib/review-cards';
+import { getDashboardData } from '@/lib/portal-dashboard';
+import type { UpcomingExam } from '@/lib/portal-exams';
 import StarPaper from './StarPaper';
 import ArchivePaper from './ArchivePaper';
 import PaperSearch, { type SearchEntry } from './PaperSearch';
@@ -247,6 +251,11 @@ export default async function PapersView({ account, sid, admin = false }: {
     return { id: p.id, name: p.name, subject: p.subject ?? '', date: p.date, awarded: p.awarded, max: p.max, blocked };
   });
 
+  // 🔁 Review my mistakes (17 Sep 2026): the upcoming exams make the band five
+  // days out. Student mode only, fail-soft (Home's own cached Airtable batch).
+  let exams: UpcomingExam[] = [];
+  if (!admin && account) { try { exams = (await getDashboardData(account)).upcomingExams; } catch { exams = []; } }
+
   // One panel per subject, in the account's display order, "Other" last. The
   // tiles, streak line and "Work on next" inside a panel are computed over
   // THAT subject's rows only — an A Math focus list under an E Math tab would
@@ -284,8 +293,18 @@ export default async function PapersView({ account, sid, admin = false }: {
         markedSheet={entry.papers.map(p => markedSheetByParent.get(p.id) ?? null).find(Boolean) ?? null}
         nextWave={entry.papers.map(p => waveByRun.get(p.id) ?? null).find(Boolean) ?? null} />,
     });
+    const reviewable: ReviewPickPaper[] = listed.filter(p => p.dropped.length > 0).map(p => ({ id: p.id, name: p.name, when: whenLine(p, todayISO), lost: p.dropped.reduce((a, q) => a + Math.max(0, q.max - q.awarded), 0) }));
+    const bands = admin ? [] : examReviewBands(exams, listed, subject);
     const content: ReactNode = (
       <div className="space-y-4">
+        {/* The bright band five days before an exam (Adrian: "make sure it can be clearly seen"). */}
+        {bands.map(b => (
+          <Link key={b.exam.id} href={b.paperIds.length ? `/app/marking/review?papers=${b.paperIds.join(',')}` : `/app/marking/review?papers=${reviewable.slice(0, 3).map(p => p.id).join(',')}`}
+            className="block rounded-3xl bg-rose-600 text-white px-4 py-3.5 shadow-[0_8px_24px_-10px_rgba(225,29,72,0.8)]">
+            <p className="font-bold">🔁 {b.exam.label}{b.exam.paper ? ` ${b.exam.paper}` : ''} {b.exam.daysLeft === 0 ? 'is today' : b.exam.daysLeft === 1 ? 'is tomorrow' : `in ${b.exam.daysLeft} days`} — review your mistakes ›</p>
+            <p className="text-[12px] text-white/85 mt-0.5">{b.paperIds.length ? `${b.paperIds.length} paper${b.paperIds.length === 1 ? '' : 's'} with mistakes on the tested topics, ready to scroll.` : 'Scroll the questions you lost marks on before the paper.'}</p>
+          </Link>
+        ))}
         {stats && <SubjectTiles s={stats} />}
         {own.streakNote && (
           <p className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-2.5 text-[13px] font-semibold text-emerald-800">{own.streakNote}</p>
@@ -301,6 +320,7 @@ export default async function PapersView({ account, sid, admin = false }: {
               a tab holds enough papers to need it (PaperSearch). */}
           <PaperSearch entries={searchEntries} />
         </ChoosePapers>
+        {!admin && <ReviewPicker papers={reviewable} />}
         {archived.length > 0 && (
           <details className={`${CARD} p-4`}>
             <summary className="cursor-pointer text-sm font-semibold text-gray-500 select-none">

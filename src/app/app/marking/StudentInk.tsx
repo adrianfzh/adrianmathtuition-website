@@ -67,7 +67,7 @@ export default function StudentInk({ runId, pages, initial }: { runId: string; p
       {pages.map(p => {
         const layer = show ? ink[p.index] : undefined;
         return (
-          <div key={p.index} className="relative">
+          <div key={p.index} className="relative" id={Number.isInteger(p.index) ? `page-${p.index}` : undefined}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={fileHref(p.url)} alt={p.overflow ? `Worked solution after page ${Math.floor(p.index) + 1}` : `Page ${p.index + 1}`} loading="lazy" className="w-full rounded-2xl border border-black/5 bg-white block" />
             {layer && layer.strokes.length > 0 && (

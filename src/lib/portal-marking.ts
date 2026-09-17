@@ -62,6 +62,10 @@ export interface StudentQuestion {
   awarded: number;
   max: number;
   topic: string | null;
+  /** The page (photo index) the marking read this question from — the jump target of Review my mistakes (17 Sep 2026). */
+  photoIndex?: number | null;
+  /** The marker's words for where on that page ("bottom half of page") — turned into a scroll position. */
+  region?: string | null;
   /** The marker's sentence about the attempt as a whole. */
   comment: string;
   /** Per-part "what went wrong" lines, in paper order, blanks dropped. */
@@ -288,6 +292,8 @@ function toQuestion(raw: unknown): StudentQuestion | null {
     awarded,
     max,
     topic: str(meta.topic_detected) || null,
+    photoIndex: Number.isInteger(r.photo_index) ? (r.photo_index as number) : null,
+    region: str(r.region) || null,
     comment: str(marking.overall_comment),
     slips,
     full: max > 0 && awarded >= max,

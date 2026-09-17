@@ -29,6 +29,8 @@ import StarPaper from '../StarPaper';
 import ArchivePaper from '../ArchivePaper';
 import PaperNote from '../PaperNote';
 import StudentInk from '../StudentInk';
+import JumpToMistake from '../JumpToMistake';
+import { Suspense } from 'react';
 import type { InkPages } from '@/lib/student-ink';
 import { sheetLine } from '@/lib/practice-again-line';
 
@@ -216,6 +218,7 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
         <div className="space-y-2">
           <div className="flex justify-end"><ClipToNotes runId={paper.id} paperName={paper.name} pages={paper.pages} /></div>
           <StudentInk runId={paper.id} pages={paper.pages} initial={ink} />
+          <Suspense fallback={null}><JumpToMistake /></Suspense>
         </div>
       )}
       {paper.pages.length > 0 && isScience && (
