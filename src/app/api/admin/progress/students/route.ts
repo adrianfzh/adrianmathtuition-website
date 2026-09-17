@@ -29,13 +29,17 @@ export async function GET(req: NextRequest) {
   // the desk (lib/unseen-handins.ts). Fail-soft: a Supabase blip costs the
   // badges, never the directory.
   let unseen: Record<string, ReturnType<typeof unseenByStudent> extends Map<string, infer V> ? V : never> = {};
+  let unseenNote: string | null = null;   // ?debug=1 shows why the badges are empty
   try {
     const since = new Date(Date.now() - 45 * 86400_000).toISOString();
-    const { data } = await getSupabaseAdmin().from('paper_marking_runs')
+    const { data, error } = await getSupabaseAdmin().from('paper_marking_runs')
       .select('id, student_id, paper_name, created_at, admin_viewed_at, portal_submission:result_json->portal_submission')
       .is('admin_viewed_at', null).not('student_id', 'is', null).gte('created_at', since).limit(1000);
+    if (error) throw new Error(error.message);
     unseen = Object.fromEntries(unseenByStudent((data ?? []) as HandinRow[]));
-  } catch (e) { console.warn('[progress/students] unseen skipped:', (e as Error).message); }
+    unseenNote = `${(data ?? []).length} rows, ${Object.keys(unseen).length} students`;
+  } catch (e) { unseenNote = `skipped: ${(e as Error).message}`; console.warn('[progress/students] unseen skipped:', (e as Error).message); }
 
-  return NextResponse.json({ students: students.map((s: { id: string }) => ({ ...s, unseen: unseen[s.id] ?? null })) });
+  const debug = req.nextUrl.searchParams.get('debug') === '1' ? { unseenNote } : {};
+  return NextResponse.json({ students: students.map((s: { id: string }) => ({ ...s, unseen: unseen[s.id] ?? null })), ...debug });
 }
