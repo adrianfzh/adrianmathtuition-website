@@ -170,5 +170,6 @@ apps — `worker/fly/set-secrets.sh` mints it), so the bill is running minutes, 
 Account two (`ablnon@gmail.com`) is the account Adrian chats on — keep it switched OFF for the
 workers unless he wants his own sessions to share the limit. Overlap plan: Fly slots on, Mac slots
 still on (the claim guard makes a double claim safe), Mac slots off after a few papers
-land. ~US$12/month. Deploy: `fly deploy -c fly.worker.toml -a adrianmath-worker
---remote-only` from the bot repo (Adrian runs it — a production deploy).
+land. ~US$12/month. Deploy: **a push to the bot's `main` touching `worker/**` or `fly.worker.toml`** (GitHub Action
+`fly-worker-deploy.yml`, since 18 Sep 2026 — so a cloud session deploys it with the Mac off);
+`fly deploy -c fly.worker.toml -a adrianmath-worker --remote-only` is the manual fallback.
