@@ -150,7 +150,13 @@ merged tree, not the agent's clone; read the agent's before/after; and when the
 patch touches how a note is placed, redraw one real page and look at it. The
 "what changed on the page" question is the one the tests answer least well.
 
+**No re-mark or re-ink of a student's paper until the deploy that carries the fix
+is LIVE** (17 Sep 2026: Isabelle's paper was re-marked at 18:18 for a duplicated
+hand-in; the strip-note fix reached Fly at 18:35; she was re-issued a copy drawn
+with the fault the fix was for). Check `gh run list` shows the deploy green, then
+re-ink; and re-issue only after Adrian has seen the redrawn pages.
+
 **Dated log**
 - 17 Sep 2026 — written after the F2/F7/F9 strip regression (docs/MARKING-DEFECTS.md
-  F15). Adrian: "do what you propose — make sure any session on any account
+  F15); the re-mark-before-deploy line added the same evening after F17. Adrian: "do what you propose — make sure any session on any account
   knows this, but make this a living spec".
