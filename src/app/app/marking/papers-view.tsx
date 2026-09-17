@@ -537,7 +537,7 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
       {/* Adrian's doors (17 Sep 2026): the desk row for this paper, the paper as the student sees it. */}
       {admin && (
         <p className="mt-1.5 flex flex-wrap gap-x-3 text-[11.5px]">
-          <a href={`/admin/desk?student=${encodeURIComponent(paper.rawName ?? paper.name)}`} className="text-sky-700 underline">desk</a>
+          <a href={`/admin/desk?run=${paper.id}`} className="text-sky-700 underline">desk</a>
           <a href={`/app/marking/${paper.id}`} className="text-sky-700 underline">as student ›</a>
           <AdminRename runId={paper.id} name={paper.rawName ?? paper.name} />
           {look && <LookedAt runId={paper.id} needsLook={look.needsLook} checkedAt={look.checkedAt} />}
