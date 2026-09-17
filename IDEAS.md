@@ -11,6 +11,8 @@
 
 Done that evening: the Science tab (hidden from students, `SCIENCE_MARKING_OPEN_TO_STUDENTS=false`), the teacher's-mark calibration box, the second-look re-mark fix (bot 9543b41), the desk's "being marked" rows, `MARK_QUEUE_BATCH=0` on Fly, six Cambridge-booklet calibration rows (SPEC-SCIENCE-MARKING §First numbers). Adrian is sourcing real marked science papers.
 
+**17 Sep 2026 — the doctrine moved:** the scheme + examiner convention is the ground truth, Adrian adjudicates disagreements only; he has no marked science scripts and will not mark any. The bench that replaces them is specced in [`SPEC-SCIENCE-BENCH.md`](SPEC-SCIENCE-BENCH.md) — 📐 **build §1 seeded scripts for physics first** (30 typeset scripts with truth by construction, `truth_source 'seeded'`), then §4 consistency tests, §2 per-mark scheme audit, §3 blind double marking with adjudication buttons, §6 scheme-later logging. The "Cambridge booklet" items below stay optional.
+
 **Science — opening it to students (the narrow way):**
 - 📐 **Physics brain: a point mark is all or nothing** — grade E over-awarded 11 half-right statements; one rule, then re-run the three physics scripts (truth files + harness, ~1 h, $0) and open **physics only** (make `SCIENCE_MARKING_OPEN_TO_STUDENTS` per subject).
 - 📐 **Chemistry pass** — get the Cambridge 5070 ECR booklet (2014/2015; mirrors blocked 10 Sep — Scribd download or Cambridge hub), build A/C/E scripts, score; open if it behaves like physics.
