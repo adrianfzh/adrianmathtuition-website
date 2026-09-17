@@ -2053,6 +2053,8 @@ it), and **tag the backlog**.
 
 ## /admin/calibration — is the marker trusted yet? (2026-09-02)
 
+> The method — Adrian's two phases, the gate, the two truths that never mix — is [`../SPEC-MARKING-CALIBRATION.md`](../SPEC-MARKING-CALIBRATION.md) (17 Sep 2026). This section is the page and the plumbing.
+
 > **Calibration uploads sit in "Still to deal with" until ticked (11 Sep 2026).** A
 > calibration script is uploaded as an admin run with no student (`CALIBRATION · …`),
 > so once marked it matches the outstanding rule (`lib/mark-paper-outstanding.ts`:

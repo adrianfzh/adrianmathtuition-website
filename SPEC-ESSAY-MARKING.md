@@ -173,6 +173,8 @@ marking — `lib/error-kinds`.)
 
 ## Calibration — what "trusted" means here
 
+> The shared method across subjects and teachers is [`SPEC-MARKING-CALIBRATION.md`](SPEC-MARKING-CALIBRATION.md) (17 Sep 2026); this section is the subject-specific detail.
+
 Not "within ±2 of Adrian". Three tests, all in `scripts/essay-calibration/` with the
 results on `/admin/calibration` under subjects `english` / `chinese`:
 

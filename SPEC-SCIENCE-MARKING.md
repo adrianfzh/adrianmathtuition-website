@@ -76,6 +76,8 @@ a `subject` field on the marking request (default `math` — nothing changes for
 
 ## Calibration protocol (the gate)
 
+> The shared method across subjects and teachers is [`SPEC-MARKING-CALIBRATION.md`](SPEC-MARKING-CALIBRATION.md) (17 Sep 2026); this section is the subject-specific detail.
+
 1. Adrian picks **one hand-marked Sec Physics paper** (his marks = truth #1).
 2. Run it through `scripts/eval-mark-model.js` with the physics prompt (the harness
    already supports prompt/model swaps — marking reads only, no side effects).

@@ -36,6 +36,8 @@ calibration row (the ±2 gate is per teacher — their marking is the truth for 
 students), their own desk, their own daily cap and billing. The marking standard stays
 Adrian's until a tutor's overrides say otherwise; that is a feature, not a gap.
 
+> **17 Sep 2026: the calibration method now lives in [`SPEC-MARKING-CALIBRATION.md`](SPEC-MARKING-CALIBRATION.md)** — Adrian's two phases (send in ten hand-marked scripts, the computer reads the circled marks; then annotate) replace the three-door list below, and the typed form is gone. The text below is kept as the history of the design.
+
 **Calibrate their own marking — the harness (Adrian, 11 Sep 2026: "able to let
 tutors calibrate their own marking? build them the harness").** Adrian's standard is
 the default; a tutor's own marking becomes THEIR truth the same way his does today:
