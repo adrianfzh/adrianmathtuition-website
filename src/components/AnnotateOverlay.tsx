@@ -940,8 +940,14 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   }, [pages, runId, scheduleBase]);
 
   // ── pointer plumbing ────────────────────────────────────────────────────────
+  // ☝️ Draw with a finger (17 Sep 2026, student mode — a phone or a tablet with
+  // no pen): a toolbar switch; while it is on, a single finger takes the pen
+  // path and fingers no longer scroll or zoom (the switch says so). Off by
+  // default so a resting palm never draws on an iPad.
+  const [fingerDraw, setFingerDraw] = useState(false);
+  const fingerDrawRef = useRef(false); fingerDrawRef.current = fingerDraw;
   const isPenLike = useCallback(
-    (e: PointerEvent) => e.pointerType === 'pen' || (mouseAllowed && e.pointerType === 'mouse'),
+    (e: PointerEvent) => e.pointerType === 'pen' || (mouseAllowed && e.pointerType === 'mouse') || (fingerDrawRef.current && e.pointerType === 'touch'),
     [mouseAllowed],
   );
 
@@ -2396,6 +2402,12 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
             title="Type text: tap where it should start, type, and it becomes a movable note in the marker's hand"><span style={{ fontWeight: 800, fontSize: 17, fontFamily: 'Georgia, serif' }}>T</span></button>
         )}
         <button style={tool === 'lasso' ? activeBtn : btn} onClick={() => setToolRemember('lasso')} aria-label="Lasso select" title="Lasso: circle strokes to select, then drag to move"><IconLasso /></button>
+        {isStudent && (
+          <button style={{ ...(fingerDraw ? activeBtn : btn), fontSize: 12, fontWeight: 700, padding: '0 10px' }} onClick={() => setFingerDraw(f => !f)} aria-pressed={fingerDraw}
+            title={fingerDraw ? 'Finger draws — tap to make fingers scroll and zoom again' : 'Fingers scroll and zoom — tap to draw with a finger (phones, tablets with no pen)'}>
+            ☝️ {fingerDraw ? 'Finger draws' : 'Finger scrolls'}
+          </button>
+        )}
 
         {tool === 'eraser' && (
           <div style={{ display: 'inline-flex', gap: 4 }}>
