@@ -381,14 +381,24 @@ def stem_blocks(stem):
     return [b for b in blocks if b[0] == "table" or b[1].strip()]
 
 
-def render_stem(ws, stem, marks=None, numbered=True):
-    """Print a question stem, its tables of values drawn as real tables."""
+def render_stem(ws, stem, marks=None, numbered=True, figure_next=False):
+    """Print a question stem, its tables of values drawn as real tables.
+
+    `figure_next`: a figure prints between this stem and the parts, so an empty
+    stem keeps its bare number line above the figure."""
     blocks = stem_blocks(stem)
     # the marks belong on the LAST line of prose, so they sit at the foot of the
     # question rather than above a table
     last_text = max((i for i, b in enumerate(blocks) if b[0] == "text"),
                     default=-1)
     first = numbered
+    if numbered and not blocks and not figure_next:
+        # no stem at all: the first part rides the number's line, "1.  (a) Find ..."
+        # (Adrian, 17 Sep 2026, on the S4 AM Circles sheet: "questions should be
+        # level horizontally with the question number"). Q([]) is the library's
+        # stemless form; Q([('text', '')]) printed a bare "1." over the parts.
+        ws.Q([])
+        return
     if numbered and (not blocks or blocks[0][0] == "table"):
         ws.Q([('text', '')])    # the question number, then its table
         first = False
@@ -471,7 +481,7 @@ def render_practice(ws, by_id: dict, ids: list, figdir: Path = None,
         # an answer keyed (i) (ii) is only renumbered when the printed labels
         # really are (a) (b); a question that prints (a)(i) keeps its own keys
         flat_parts = has_parts and not any(p.get("subparts") for p in parts)
-        render_stem(ws, stem, marks=marks)
+        render_stem(ws, stem, marks=marks, figure_next=bool(figdir and r.get("_figures")))
 
         # figure between the stem and the sub-parts, as in Adrian's own sheets
         place_figures(ws, r, figdir, side_by_side, cap_w, cap_h)

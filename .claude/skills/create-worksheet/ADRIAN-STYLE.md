@@ -296,8 +296,14 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   letters `(a)` or romans `(i)`; a part he adds in Word numbers itself.
   Examples: `ws.numbered(parts, 0, fmt, restart=first)` for parts, level 1 for subparts.
   Practice: `ws.Q` / `ws.SQ`, `numbered(…, 1, 'roman')` for roman parts, level 2 for
-  subparts; a parts-only question gets `ws.Q([])` so its number sits on its own line.
-  ("and can you autonumber to questions and subparts?", 12 Sep 2026.)
+  subparts. ("and can you autonumber to questions and subparts?", 12 Sep 2026.)
+- **A question with no stem starts its first part on the number's line** — "1.  (a) Find
+  …", never a bare "1." over an indented "(a)" (11 Sep 2026; again 17 Sep 2026 on the
+  S4 AM Circles sheet: "questions should be level horizontally with the question
+  number"). Use `ws.Q([])` then `ws.SQ(...)` — never `ws.Q([('text', '')])`, which prints
+  the bare number. A wrapped line of that first part hangs under the part's text.
+  `build_lib.render_stem` does this for every bank question whose stem is empty, unless
+  a figure prints between the stem and the parts.
 - **A sub-part label gets its own column** (14 Sep 2026, on a solution box whose "(a)"
   sat in the label column while "(i)", "(ii)", "(iii)" were typed at the head of the
   working: "there should be two columns separately to accomodate (a) and (i) / you can

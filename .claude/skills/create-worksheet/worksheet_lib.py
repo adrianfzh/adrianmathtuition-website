@@ -1055,6 +1055,12 @@ class Worksheet:
             p = self._add([('text', '(a)'), ('text', '\t')] + list(parts), style='Question',
                           num_id=self._current_q_id, marks=marks)
             p.paragraph_format.tab_stops.add_tab_stop(Cm(2.0))   # = the SubQuestion text indent (1134 twips)
+            # A wrapped line hangs under the part's text, not under the number
+            # (17 Sep 2026, S4 AM Circles Q1(a)): indent to the text column and
+            # hang the whole 2 cm, with a stop at 1 cm for the "(a)" label.
+            p.paragraph_format.left_indent = Cm(2.0)
+            p.paragraph_format.first_line_indent = Cm(-2.0)
+            p.paragraph_format.tab_stops.add_tab_stop(Cm(1.0))
             if 10 <= self._current_subq_id <= 39:
                 self._current_subq_id = 120 + (self._current_subq_id - 10)
             return p
