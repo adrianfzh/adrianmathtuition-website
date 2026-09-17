@@ -614,7 +614,7 @@ own logo. `watermark/book/bookify.py` does the whole job on a `.docx` and writes
 > are you able to come up with design for Sec 1 and Sec 2? same idea, slightly different
 > designs for each of them (so it's easy to distinguish the worksheets)" — Adrian, 17 Sep 2026
 
-Every sheet opens with the AdrianMath masthead: the √m mark, **Adrian**Math / TUITION, the
+Every sheet opens with the AdrianMath masthead: the triangle-A mark, **Adrian**Math / TUITION, the
 level line with adrianmathtuition.com under it, and a **solid coloured block on the right
 that names the series in big letters**. That block is what tells the sheets apart at a
 glance and in black-and-white print. Each series also gets its own header style:
@@ -649,8 +649,8 @@ subject tab.
 | **SEC 1** | near-white grey tint | double-lined box on white | dotted |
 | **SEC 2** | white, thick bar over it | heavy rules above and below, sides open | dashed |
 
-The logo is the **outlined** √m — a black ring and black letters on nothing
-(`mark_outline.png`), not a filled disc. "Math" goes grey, and every other colour on the
+The logo is the **outlined** triangle A — the outline alone, no solid ink
+(`mark_outline.png`). "Math" goes grey, and every other colour on the
 sheet — the [Ans:] lines, coloured working — is drained to dark grey `404040`.
 When Adrian asks for a sheet, give both unless he names one.
 
@@ -666,6 +666,11 @@ the accent colour.
   masthead and title at the top of the body, so it goes after the questions are counted, and
   it replaces `ws.title()` / `ws.subtitle()`. Code: `worksheet_brand.py` (`SERIES`, `LEVELS`),
   logos in `assets/brand/`. An unknown level raises; add it to `LEVELS` rather than guessing.
+- **The logo is the similar-triangles A** (Adrian picked it 17 Sep 2026: "i like 8, use that as
+  the logo"): a solid navy A whose counter is a smaller similar triangle, crossbar in orange;
+  white legs on the A Math navy band; outline only in black and white. Drawn by
+  `assets/brand/make_marks.py`. The previous √m ring marks are kept in
+  `assets/brand/previous-root-m/` — copy them back up a folder to return to the old logo.
 - **A new series** (JC, a new stream) gets its own row in `SERIES` **and** in `SERIES_MONO`: a
   different header style *and* a different colour, and in black and white a header, block and
   page-2 rule that no other series uses.

@@ -5,7 +5,7 @@ which is A Math and which is E Math … For the footer remove Adrian Fong … ar
 able to come up with design for Sec 1 and Sec 2? same idea, slightly different
 designs for each of them (so it's easy to distinguish the worksheets)"
 
-Every series carries the same pieces: the √m mark + AdrianMath / TUITION lock-up,
+Every series carries the same pieces: the triangle-A mark + AdrianMath / TUITION lock-up,
 the level line, a coloured SUBJECT BLOCK at the right end of the header ("A MATH",
 "E MATH", "SEC 1", "SEC 2") that reads from across the room, the topic title, a
 PRACTICE · n questions · m marks line, Name/Date, a running header from page 2 that
@@ -33,7 +33,10 @@ the sheets apart — no colour is relied on:
 
 (The first mono set, a solid black A Math band, was dropped the same day —
 Adrian: "too oppressive as black, and waste ink when printing".) The mark in
-black and white is the outlined ring (`mark_outline.png`), not a filled disc.
+black and white is the outlined A (`mark_outline.png`), no solid ink. The mark is the
+similar-triangles A since 17 Sep 2026 (Adrian: "i like 8, use that as the logo ... keep
+the previous logo around"); `assets/brand/make_marks.py` draws it, and the old √m ring
+marks sit in `assets/brand/previous-root-m/`.
 
 Use it through `Worksheet.brand(level, topic, ...)`. It inserts at the TOP of the
 body, so it can be called before or after the questions are written (after is
@@ -86,7 +89,7 @@ SERIES = {
 # The black-and-white set. Adrian 17 Sep 2026, after the first mono set (a solid
 # black A Math band): "the large black background is too oppressive as black, and
 # waste ink when printing". So no band is filled: every series is white or a
-# near-white tint, the mark is the outlined ring, and the SHAPE of the rules and
+# near-white tint, the mark is the outlined A, and the SHAPE of the rules and
 # of the subject block is what tells the sheets apart. `frame` may be a list of
 # rules; `block_rules` draws rules round the subject block only (None = no rule).
 SERIES_MONO = {
