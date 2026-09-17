@@ -154,7 +154,21 @@ Mac's slot loops: marking (`worker/plan-marking/run.sh`, 3 slots × up to 3 Clau
 accounts, dirs named as on the Mac) and — once `SHEET_SLOTS_ON='1'` after the LibreOffice
 PDF comparison — the sheet worker (`scripts/sheet-worker/run.sh` in a checkout of this
 repo at `/data/website`). Accounts are secrets `CLAUDE_TOKEN_n` + `CLAUDE_ACCOUNT_n`; the
-per-account switch and limit files work unchanged. Overlap plan: Fly slots on, Mac slots
+per-account switch and limit files work unchanged.
+
+**Night one (18 Sep 2026) and what it changed.** Nine slots started sessions on one tick
+when all three accounts were switched on, and Gemini was rate-limited for fourteen minutes
+so every claim was refused while the peek still said "4 claimable" — nine Claude sessions
+every 30 s for nothing, on all three accounts. Fixes, all in the bot repo: the peek runs
+the same vision preflight the claim runs (answers 0 + `blocked` during an outage); a slot
+offered nothing parks 5 min (`NONE_BACKOFF_SEC`) and reports `external-idle` (one Telegram
+line per account per hour after five wasted sessions); heartbeat every 2 min and stop at
+once on a lost claim; the worker starts a session only under `MAX_SESSIONS` (6) AND with
+`MIN_FREE_MB` (500) free; machine 2x / 4 GB; **it stops itself after 10 idle minutes and
+the bot wakes it on every enqueue** (`lib/fly-worker.js`, secret `FLY_WORKER_TOKEN` on both
+apps — `worker/fly/set-secrets.sh` mints it), so the bill is running minutes, not the month.
+Account two (`ablnon@gmail.com`) is the account Adrian chats on — keep it switched OFF for the
+workers unless he wants his own sessions to share the limit. Overlap plan: Fly slots on, Mac slots
 still on (the claim guard makes a double claim safe), Mac slots off after a few papers
 land. ~US$12/month. Deploy: `fly deploy -c fly.worker.toml -a adrianmath-worker
 --remote-only` from the bot repo (Adrian runs it — a production deploy).
