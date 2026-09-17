@@ -29,6 +29,8 @@ export type SectionRow = {
   pdf_path: string | null;
   practice_question_ids: string[];
   authored_practice: number;
+  /** The practice questions' wording (bank or authored) — what closure tracking matches a returned sheet against. */
+  practice_texts: string[];
 };
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -60,17 +62,21 @@ export type CompletionForBank = {
 
 /** The practice items of the completion grouped by their 1-based section
  *  number: bank question ids, and how many were authored (no questionId). */
-function practiceBySection(questions: unknown): Map<number, { ids: string[]; authored: number }> {
-  const out = new Map<number, { ids: string[]; authored: number }>();
+function practiceBySection(questions: unknown): Map<number, { ids: string[]; authored: number; texts: string[] }> {
+  const out = new Map<number, { ids: string[]; authored: number; texts: string[] }>();
   if (!Array.isArray(questions)) return out;
   for (const q of questions as Array<Record<string, unknown>>) {
     if (!q || typeof q !== 'object') continue;
     const sec = Number.parseInt(String(q.section ?? ''), 10);
     if (!Number.isFinite(sec) || sec < 1) continue;
-    const slot = out.get(sec) ?? { ids: [], authored: 0 };
+    const slot = out.get(sec) ?? { ids: [], authored: 0, texts: [] };
     const id = typeof q.questionId === 'string' ? q.questionId : typeof q.question_id === 'string' ? q.question_id : null;
     if (id && UUID_RE.test(id)) { if (!slot.ids.includes(id)) slot.ids.push(id); }
     else slot.authored += 1;
+    // The item's wording, when the worker gave it (WORKER_PROMPT §2: every
+    // practice item carries `text` since 17 Sep 2026): closure tracking needs it.
+    const text = typeof q.text === 'string' ? q.text : typeof q.textLatex === 'string' ? q.textLatex : typeof q.text_latex === 'string' ? q.text_latex : '';
+    if (text.trim()) slot.texts.push(text.trim().slice(0, 400));
     out.set(sec, slot);
   }
   return out;
@@ -91,7 +97,7 @@ export function sectionsFromCompletion(c: CompletionForBank): SectionRow[] {
     const title = String(s.title || '').trim();
     if (!title) continue;
     index += 1;
-    const p = practice.get(index) ?? { ids: [], authored: 0 };
+    const p = practice.get(index) ?? { ids: [], authored: 0, texts: [] };
     rows.push({
       job_id: c.jobId,
       run_id: c.runId,
@@ -110,6 +116,7 @@ export function sectionsFromCompletion(c: CompletionForBank): SectionRow[] {
       pdf_path: c.result?.pdf_path ?? null,
       practice_question_ids: p.ids,
       authored_practice: p.authored,
+      practice_texts: p.texts,
     });
   }
   return rows;

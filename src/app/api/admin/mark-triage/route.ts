@@ -30,6 +30,7 @@
 // which releases were automatic. Same student nudge + post-release enrichment
 // as a manual release.
 import { NextRequest, NextResponse } from 'next/server';
+import { recordSheetClosure } from '@/lib/sheet-closure-store';
 import { isAutoReleasePaused } from '@/lib/auto-release-setting';
 import { rebuildRunPdfs } from '@/lib/rebuild-run-pdfs';
 import { after } from 'next/server';
@@ -46,7 +47,7 @@ import {
   isReleasable,
   pendingCount,
   computeAutoHold,
-  TriageIndexError, overrideTally, paperTotalWarning, paperTotalsMismatch } from '@/lib/mark-triage';
+  TriageIndexError, overrideTally, paperTotalWarning, paperTotalsMismatch, isPracticeAgainRun } from '@/lib/mark-triage';
 import { ERROR_KINDS, isErrorKind } from '@/lib/error-kinds';
 import { buildReviseBlock } from '@/lib/revise-map';
 import { canTransition, validateAssignment, type AssignmentStatus } from '@/lib/assignments';
@@ -988,6 +989,20 @@ export async function POST(req: NextRequest) {
         } catch (err) {
           console.warn('[mark-triage] push scheduling failed:', (err as Error).message);
         }
+      }
+
+      // Closure tracking (17 Sep 2026): a released Practice Again hand-in scores
+      // the sections of the sheet it answers — closed / slip / still failing —
+      // into sheet_section_outcomes, one line to the marking topic. After the
+      // response, fail-soft.
+      if (isPracticeAgainRun(run.result_json)) {
+        const runForClosure = { id: run.id, student_id: run.student_id, student_name: run.student_name, paper_name: run.paper_name, result_json: run.result_json };
+        try {
+          after(async () => {
+            const r = await recordSheetClosure(supa, runForClosure, (line) => sendTelegram(line, 'marking'));
+            if (!r.ok) console.warn('[closure] skipped', run.id, r.reason);
+          });
+        } catch (err) { console.warn('[closure] scheduling failed:', (err as Error).message); }
       }
 
       // Full marks → nothing to practise; don't even queue the call.

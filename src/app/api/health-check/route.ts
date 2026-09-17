@@ -535,6 +535,12 @@ export async function GET(req: NextRequest) {
     // nothing and Adrian never learns why.
     // 📚 the section bank (17 Sep 2026): the sheet worker searches it before
     // authoring; anonymous must be refused, and a 5xx means the route is gone.
+    // 🎯 practice by the missed step (17 Sep 2026): the sheet worker's first search.
+    timed('practice-by-step', async () => {
+      const r = await fetch(`${base}/api/admin/practice-by-step?q=probe`, { signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 anon, got ${r.status}`);
+      return 'refuses anon';
+    }),
     timed('sheet-sections', async () => {
       const r = await fetch(`${base}/api/admin/sheet-sections?q=probe`, { signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 anon, got ${r.status}`);

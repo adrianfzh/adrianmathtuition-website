@@ -12,6 +12,14 @@ const HIT_COLUMNS = 'id,title,gap,level,subject,student_name,paper_name,question
 export async function fileSheetSections(sb: SupabaseClient, rows: SectionRow[]): Promise<number> {
   if (!rows.length) return 0;
   try {
+    // A bank item the worker named by id but not by text: take the stem from
+    // the bank, so closure tracking can match the returned sheet against it.
+    const need = [...new Set(rows.flatMap(r => r.practice_texts.length ? [] : r.practice_question_ids))];
+    if (need.length) {
+      const { data: qs } = await sb.from('questions').select('id, question_text').in('id', need);
+      const text = new Map((qs ?? []).map((q: { id: string; question_text: string | null }) => [q.id, String(q.question_text || '').slice(0, 400)]));
+      for (const r of rows) if (!r.practice_texts.length) r.practice_texts = r.practice_question_ids.map(id => text.get(id) || '').filter(Boolean);
+    }
     const { error } = await sb.from('sheet_sections').upsert(rows, { onConflict: 'job_id,section_index' });
     if (error) { console.warn('[sheet-sections] not filed', rows[0]?.job_id, error.message); return 0; }
     return rows.length;

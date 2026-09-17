@@ -16,7 +16,7 @@ const result = {
     { section: '1', index: 1, questionId: '33decb5c-3760-4f4b-ba1a-990e24b32ba7' },
     { section: '1', index: 2, questionId: 'f3bad3ba-cd3f-41c4-a792-66d940fdd007' },
     { section: '2', index: 1, questionId: '40f7f3bb-29e5-402c-a6e2-3c1b8d21e371' },
-    { section: '2', index: 2, questionId: null },              // authored
+    { section: '2', index: 2, questionId: null, text: 'Prove that triangle PQR is congruent to triangle STU, naming the test.' },              // authored
     { section: '3', index: 1, questionId: 'd236f763-4831-4e95-94db-802ce5ea0694' },
     { section: '3', index: 2, questionId: 'a15b94bd-1d7c-44bc-9519-c0c2dfc541c6' },
   ],
@@ -46,6 +46,7 @@ describe('sectionsFromCompletion', () => {
     expect(rows[0].authored_practice).toBe(0);
     expect(rows[1].practice_question_ids).toEqual(['40f7f3bb-29e5-402c-a6e2-3c1b8d21e371']);
     expect(rows[1].authored_practice).toBe(1);
+    expect(rows[1].practice_texts).toEqual(['Prove that triangle PQR is congruent to triangle STU, naming the test.']);
   });
 
   it('carries the missed step (gap), the level, the paper and the docx the section lives in', () => {
