@@ -754,6 +754,18 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
                   }}>
                   {inviteState === 'sending' ? 'Sending…' : '🔗 Portal link'}
                 </button>
+                {s.status === 'Inactive' && (
+                  // ↩ Reinstate (17 Sep 2026, Option A): put the enrolments, the lessons and the Active status back as they were.
+                  <button style={actionBtn('#166534', '#bbf7d0', '#f0fdf4')} onClick={async () => {
+                    if (!confirm(`Reinstate ${s.name}? The ended enrolments come back, the deleted future lessons are re-created in their slots, and the student is Active again. Invoices voided at discontinue stay voided.`)) return;
+                    try {
+                      const r = await fetch('/api/admin/student-reinstate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentId }) });
+                      const d = await r.json().catch(() => ({}));
+                      if (r.ok) { showToast('ok', `Reinstated — ${d.enrollmentsRestored} enrolment(s), ${d.lessonsRecreated} lesson(s)`); fetchProfile(); }
+                      else showToast('err', d.message || d.error || 'Reinstate failed');
+                    } catch { showToast('err', 'Network error'); }
+                  }}>↩ Reinstate</button>
+                )}
                 {s.status !== 'Inactive' && (
                   <button onClick={openHoliday} style={actionBtn('#0369a1', '#bae6fd', '#f0f9ff')}>🏖 Holiday opt-out</button>
                 )}

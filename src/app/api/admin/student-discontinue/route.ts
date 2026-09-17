@@ -5,6 +5,8 @@ import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the students topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_students = (text: string) => sendTelegram(text, 'students');
 import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
+import { getSupabaseAdmin } from '@/lib/supabase';
+import { LESSON_RESTORE_FIELDS, type DiscontinueSnapshot } from '@/lib/reinstate';
 
 export const runtime = 'nodejs';
 
@@ -53,9 +55,14 @@ export async function POST(req: NextRequest) {
   } catch { /* non-fatal */ }
 
   // 1. End all Active enrollments (linked-record gotcha: filter by Status, match student in JS)
-  const enr = await airtableRequestAll('Enrollments', `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Status`);
+  // ↩ Reinstate (17 Sep 2026): everything ended or removed below is remembered
+  // in one snapshot so /api/admin/student-reinstate can put it back as it was.
+  const snapshot: DiscontinueSnapshot = { enrollments: [], lessons: [], invoicesVoided: [], studentStatus: null };
+  try { const s0 = await airtableRequest('Students', `/${studentId}`); snapshot.studentStatus = s0.fields['Status'] || null; } catch { /* non-fatal */ }
+  const enr = await airtableRequestAll('Enrollments', `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Status&fields[]=End Date`);
   const mine = (enr.records || []).filter((r: any) => r.fields['Student']?.[0] === studentId);
   for (const r of mine) {
+    snapshot.enrollments.push({ id: r.id, endDate: r.fields['End Date'] || null });
     await airtableRequest('Enrollments', `/${r.id}`, {
       method: 'PATCH',
       body: JSON.stringify({ fields: { Status: 'Ended', 'End Date': dayBefore(effectiveDate) } }),
@@ -68,8 +75,9 @@ export async function POST(req: NextRequest) {
 
   // 2. Delete future Scheduled Regular lessons
   const lesFormula = encodeURIComponent(`AND({Type}='Regular',{Status}='Scheduled',{Date}>='${effectiveDate}')`);
-  const les = await airtableRequestAll('Lessons', `?filterByFormula=${lesFormula}&fields[]=Student&fields[]=Date`);
+  const les = await airtableRequestAll('Lessons', `?filterByFormula=${lesFormula}&fields[]=Student&fields[]=Date&${LESSON_RESTORE_FIELDS.map(f => `fields[]=${encodeURIComponent(f)}`).join('&')}`);
   const hisLessons = (les.records || []).filter((r: any) => r.fields['Student']?.[0] === studentId);
+  for (const r of hisLessons) snapshot.lessons.push({ id: r.id, fields: r.fields });
   for (let i = 0; i < hisLessons.length; i += 10) {
     const qs = hisLessons.slice(i, i + 10).map((r: any) => `records[]=${r.id}`).join('&');
     await airtableRequest('Lessons', `?${qs}`, { method: 'DELETE' });
@@ -101,12 +109,19 @@ export async function POST(req: NextRequest) {
       try {
         await airtableRequest('Invoices', `/${r.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { Status: 'Voided' } }) });
         result.invoicesVoided++;
+        snapshot.invoicesVoided.push(r.id);
         if (status === 'Sent' || status === 'Overdue') voidedSentMonths.push(r.fields['Month']);
         continue;
       } catch { /* fall through to report */ }
     }
     result.invoicesToReview.push({ id: r.id, month: r.fields['Month'], status, amount: r.fields['Final Amount'], type: r.fields['Invoice Type'] });
   }
+
+  // 4b. The snapshot, so Reinstate can undo this. Fail-soft: a logging miss must
+  //     not fail a discontinue that already happened in Airtable.
+  try {
+    await getSupabaseAdmin().from('student_discontinue_log').insert({ student_id: studentId, student_name: studentName || null, effective_date: effectiveDate, reason: reason ? String(reason).trim() : null, snapshot });
+  } catch (e) { console.warn('[discontinue] snapshot not written:', (e as Error).message); }
 
   // 5. Optional farewell email to the parent (opt-in).
   if (emailParent && parentEmail && process.env.RESEND_API_KEY) {

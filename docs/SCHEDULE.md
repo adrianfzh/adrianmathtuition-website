@@ -492,3 +492,22 @@ Sign-ups tab: Sign-up (`/api/admin-revision-signup`) does: (1) mark Student `Jun
 - Regular-lesson cancel/restore lives in `src/lib/revision-regular-lessons.ts` (`cancelJuneRegularLessons` / `restoreJuneRegularLessons`).
 - Cancelled lessons get `Status='Cancelled'` and a Notes marker `Cancelled — June Revision Sprint sign-up`; restore matches that marker so only the auto-cancelled ones come back.
 - Soft-cancel (not hard delete) → reversible, auditable, and dropped from the schedule (the schedule filters out `Status='Cancelled'`). Doesn't affect June invoicing (June is billed in **advance** from projected slot occurrences, not from these records). ⚠ Don't generalise that to **Oct–Dec**: those months bill non-exam-year students from **attended** lessons, so a cancelled/absent lesson there genuinely isn't billed → [`INVOICES.md` §Year-end billing](INVOICES.md#year-end-billing-octjan--2026-09-02).
+
+
+## ↩ Reinstate a discontinued student (17 Sep 2026)
+
+Discontinue (`/api/admin/student-discontinue`) now writes ONE snapshot row to Supabase
+`student_discontinue_log` before it changes anything: the Active enrolments it ends
+(id + prior End Date), the future Regular lessons it deletes (their writable fields —
+`lib/reinstate.ts LESSON_RESTORE_FIELDS`), the invoices it voids, the prior Status.
+`POST /api/admin/student-reinstate {studentId}` (admin auth) reads the latest un-used
+snapshot and, **before any write**, checks every saved lesson's slot-day against the
+Scheduled lessons now in Airtable: a slot-day held by ANOTHER student is a clash →
+409 with the list, nothing changed (Adrian, 17 Sep 2026: "reinstate is in the case
+where the deletion is accidental" → Option A, put it back exactly as it was). No
+clash → enrolments PATCHed back to Active with their old End Date, lessons POSTed
+back in tens as Scheduled (ones already back are skipped), Student Status=Active with
+a `[Reinstated …]` note, statics cache dropped, the log row stamped `reinstated_at`.
+Invoices voided at discontinue are reported in the Telegram line, never un-voided.
+The button: profile → … More → ↩ Reinstate (Inactive students only). Rules and
+tests: `lib/reinstate.ts`.
