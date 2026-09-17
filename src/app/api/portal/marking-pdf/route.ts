@@ -19,6 +19,7 @@ import { markedPdfFilename, contentDisposition } from '@/lib/marked-pdf-filename
 import { displayPaperName } from '@/lib/paper-display-name';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
 import { strokesToSvg } from '@/lib/annotate/layer';
+import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { TEACHER_INK_IDENTITY } from '@/lib/student-ink';
 import type { InkPages } from '@/lib/student-ink';
 import { PDFDocument } from 'pdf-lib';
@@ -27,10 +28,13 @@ import sharp from 'sharp';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-const COLUMNS = 'id, created_at, paper_name, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, total_awarded, total_max, paper_subject, student_label';
+const COLUMNS = 'id, created_at, paper_name, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, total_awarded, total_max, paper_subject, student_label, student_id';
 
 export async function GET(req: NextRequest) {
-  const { account } = await currentStudent(); // no session → redirect to /login
+  // Adrian's admin sign-in downloads any released paper (18 Sep 2026, the read-only viewer);
+  // a student must be signed in (currentStudent redirects to /login otherwise).
+  const isAdmin = verifyAdminSession(req.cookies.get(ADMIN_SESSION_COOKIE)?.value);
+  const account = isAdmin ? null : (await currentStudent()).account;
 
   const runId = (req.nextUrl.searchParams.get('run') || '').trim();
   if (!/^[0-9a-f-]{36}$/i.test(runId)) return NextResponse.json({ error: 'run is required' }, { status: 400 });
@@ -45,18 +49,18 @@ export async function GET(req: NextRequest) {
     .from('paper_marking_runs')
     .select(COLUMNS)
     .eq('id', runId)
-    .eq('student_id', portalIdentity(account))
     .not('released_at', 'is', null)
     .maybeSingle();
+  if (data && account && (data as { student_id?: string | null }).student_id !== portalIdentity(account)) return NextResponse.json({ error: 'not found' }, { status: 404 });
   if (!data) return NextResponse.json({ error: 'not found' }, { status: 404 });
 
   const row = data as { created_at: string; paper_name: string | null; annotated_pdf_url: string | null; photos_pdf_url: string | null; pdf_url: string | null };
   if (withNotes) {
-    const { papers } = buildStudentMarking([data as unknown as MarkingRunRow], { studentName: account.display_name ?? null });
+    const { papers } = buildStudentMarking([data as unknown as MarkingRunRow], { studentName: (account?.display_name ?? null) ?? null });
     const paper = papers[0];
     if (!paper || !paper.pages.length) return NextResponse.json({ error: 'no pages' }, { status: 404 });
     // Both layers ride into the download (18 Sep 2026): Adrian's notes first, the student's on top.
-    const { data: inkRows } = await sb.from('student_ink').select('identity, pages').eq('run_id', runId).in('identity', [portalIdentity(account), TEACHER_INK_IDENTITY]);
+    const { data: inkRows } = await sb.from('student_ink').select('identity, pages').eq('run_id', runId).in('identity', [String((data as { student_id?: string | null }).student_id ?? ''), TEACHER_INK_IDENTITY]);
     const ink: InkPages = {}; const teacher: InkPages = {};
     for (const r of (inkRows ?? []) as { identity: string; pages: InkPages }[]) Object.assign(r.identity === TEACHER_INK_IDENTITY ? teacher : ink, r.pages ?? {});
     const pdfDoc = await PDFDocument.create();
@@ -80,7 +84,7 @@ export async function GET(req: NextRequest) {
       page.drawImage(img, { x: 0, y: 0, width: PAGE_W, height: drawH });
     }
     const bytes = await pdfDoc.save();
-    const base = markedPdfFilename({ studentName: account.display_name, paperName: displayPaperName(row.paper_name, account.display_name), dateISO: row.created_at, kind: 'marked' });
+    const base = markedPdfFilename({ studentName: (account?.display_name ?? null), paperName: displayPaperName(row.paper_name, (account?.display_name ?? null)), dateISO: row.created_at, kind: 'marked' });
     const name = base.replace(/\.pdf$/i, '') + ' (with my notes).pdf';
     return new NextResponse(Buffer.from(bytes), {
       headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': contentDisposition(name, 'inline'), 'Cache-Control': 'private, no-store' },
@@ -94,7 +98,7 @@ export async function GET(req: NextRequest) {
   const filename = markedPdfFilename({
     // The paper's name the way the student knows it ("A Math · GCE 2022 · Paper 1"),
     // not the internal one Adrian typed ("rainie am tys 2022 p1") — same as the list.
-    studentName: account.display_name, paperName: displayPaperName(row.paper_name, account.display_name), dateISO: row.created_at, kind,
+    studentName: (account?.display_name ?? null), paperName: displayPaperName(row.paper_name, (account?.display_name ?? null)), dateISO: row.created_at, kind,
   });
 
   const r = await fetchOurFile(url);
