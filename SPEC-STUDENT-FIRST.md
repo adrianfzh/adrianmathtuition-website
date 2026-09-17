@@ -80,7 +80,7 @@ Adrian: *"allow them to select the papers, then all their errors will immediatel
 
 ## 8. Build order, each step usable on its own
 
-1. **Profile tabs and the "…" menu** (one evening). Nothing removed; the mirror page becomes the Papers tab; the old URL redirects.
+1. **Profile tabs and the "…" menu** (one evening). **BUILT 17 Sep 2026** — four tabs, the Papers tab is `papers-view` with admin on (tick + search included), the mirror redirects. Nothing removed; the mirror page becomes the Papers tab; the old URL redirects.
 2. **Adrian's folded lines under each card** (one evening). The mirror's hidden state moves in.
 3. **Reinstate for Discontinue** (half an evening; a log table + one button).
 4. **Review my mistakes** (two evenings, §7).

@@ -19,7 +19,12 @@ function niceDate(d: string): string {
   return new Date(`${d}T00:00:00Z`).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', timeZone: 'UTC' });
 }
 
-export default function ChoosePapers({ papers, children }: { papers: PickPaper[]; children: React.ReactNode }) {
+export default function ChoosePapers({ papers, children, admin = false }: {
+  papers: PickPaper[];
+  children: React.ReactNode;
+  /** Adrian's Papers tab (17 Sep 2026): the same tick, queued through the admin door (sheet-jobs {runIds}). */
+  admin?: boolean;
+}) {
   const [on, setOn] = useState(false);
   const [ticked, setTicked] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
@@ -49,7 +54,7 @@ export default function ChoosePapers({ papers, children }: { papers: PickPaper[]
   async function request() {
     setBusy(true); setErr(null); setStrong(null);
     try {
-      const r = await fetch('/api/portal/practice-again/request', {
+      const r = await fetch(admin ? '/api/admin/sheet-jobs' : '/api/portal/practice-again/request', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ runIds: ticked }),
       });
       const d = await r.json().catch(() => ({} as { error?: string; ok?: boolean; reason?: string; message?: string }));

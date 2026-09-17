@@ -2275,6 +2275,8 @@ Other | null` (backfilled 6 Sep; the bot stamps new runs by name-then-level majo
 
 ### The simpler list — subject tabs, one row per paper, the sheet as one line (17 Sep 2026)
 
+**One view for both sides (17 Sep 2026, SPEC-STUDENT-FIRST §3):** the list is `app/marking/papers-view.tsx` (`PapersView({account, sid, admin})`); `/app/marking/page.tsx` is the header + hand-in button around it, and the admin profile's 📄 Papers tab (`admin/students/[id]/papers-tab.tsx`) renders the same component with `admin` on — no star/archive/remark editing, the sheet's Start / Hand in hidden, each row opens the paper as the student sees it in a new tab, a "desk" link + typed name + their remark under the row, and the tick posts `{runIds}` to `/api/admin/sheet-jobs` (the desk's merged-sheet door). The old mirror page redirects to `?tab=papers`. Rule: a change to what a student sees is made ONCE, in papers-view.
+
 Adrian, after Alexis asked him for her 2023 papers that were already in her app
 (they sat below two screens of cards): *"make the whole interface simpler, more
 user friendly … separate A Math papers from E Math papers … make scores more
