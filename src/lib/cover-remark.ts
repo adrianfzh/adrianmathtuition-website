@@ -25,15 +25,16 @@ export type RemarkFacts = {
 export const REMARK_BANK = {
   // Written the way a Singapore secondary teacher talks to a Sec 1–4 student:
   // short, direct, what happened and what to do (Adrian, 17 Sep 2026: "you are
-  // talking to students … no code-speak").
+  // talking to students … no code-speak"; "are some of the remarks too long?"
+  // — two short sentences at most, the comparison one clause).
   full: 'Full marks. Well done — keep it up.',
   fewCareless: 'Well done. The marks you lost are all careless mistakes, and those are the easiest to get back.',
-  mostlyCareless: 'You lost {lost} marks, and {careless} of them were careless mistakes — a wrong sign, a number copied wrongly, an answer not rounded properly. Check every answer before you move on and you will get these marks back.',
-  mostlyConcept: 'You lost {lost} marks, and {concept} of them were because the method was wrong. Go through the corrections on your paper and do the practice — these are the marks to work on.',
-  mostlyIncomplete: 'You lost {lost} marks, and {incomplete} of them were because you stopped before the final answer. Your working was right — always finish the question and write the final answer clearly.',
-  mixed: 'You lost {lost} marks: {careless} were careless mistakes and {concept} were because the method was wrong. Check your answers to get the careless ones back, and go through the corrections for the rest.',
-  up: ' Your last paper was {prevPct}% — this is an improvement. Keep it up.',
-  down: ' Your last paper was {prevPct}%. Go through the corrections carefully before the next one.',
+  mostlyCareless: '{careless} of the {lost} marks you lost were careless mistakes. Check every answer before you move on.',
+  mostlyConcept: '{concept} of the {lost} marks you lost were from using the wrong method. Go through the corrections and do the practice.',
+  mostlyIncomplete: '{incomplete} of the {lost} marks you lost were because you stopped before the final answer. Always finish the question.',
+  mixed: '{careless} careless mistakes, {concept} marks from the wrong method. Check your answers, and go through the corrections.',
+  up: ' Up from {prevPct}% last paper — keep it up.',
+  down: ' Down from {prevPct}% last paper.',
 } as const;
 
 function fill(t: string, v: Record<string, number | string>): string {
