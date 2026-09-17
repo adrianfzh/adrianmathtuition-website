@@ -49,6 +49,7 @@ import { bundleList } from '@/lib/portal-paper-bundles';
 import { sheetLine, sheetJobLine, bundleCaption, type SheetLine } from '@/lib/practice-again-line';
 import { starredFirst } from '@/lib/paper-star';
 import { noteFirstLine } from '@/lib/paper-label';
+import { adminLines, type AdminJobRow, type AdminSheetRow } from '@/lib/papers-admin-lines';
 import StarPaper from './StarPaper';
 import ArchivePaper from './ArchivePaper';
 import PaperSearch, { type SearchEntry } from './PaperSearch';
@@ -110,8 +111,8 @@ function bucketOf(subject: string | null | undefined): string {
   return isTileSubject(subject) ? subject : 'Other';
 }
 
-type SheetRow = { id: string; source_run_id: string | null; source_run_ids: string[] | null; run_id: string | null; status: string; pdf_url: string | null; submitted_at: string | null; marked_at: string | null; score: number | null; out_of: number | null; required_at: string | null };
-type JobLite = { run_id: string; run_ids: string[] | null; status: string; result: unknown };
+type SheetRow = { id: string; source_run_id: string | null; source_run_ids: string[] | null; run_id: string | null; status: string; pdf_url: string | null; submitted_at: string | null; marked_at: string | null; score: number | null; out_of: number | null; required_at: string | null; created_at?: string | null; reminded_at?: string | null; reminder_count?: number | null };
+type JobLite = { run_id: string; run_ids: string[] | null; status: string; result: unknown; stage?: string | null; requested_by?: string | null; created_at?: string | null };
 type Wave = { count: number; runIds: string[] };
 
 export default async function PapersView({ account, sid, admin = false }: {
@@ -186,13 +187,28 @@ export default async function PapersView({ account, sid, admin = false }: {
   let sheetRowsAll: SheetRow[] = [];
   if (papers.length) {
     const { data: sheetRows } = await sb.from('portal_assignments')
-      .select('id, source_run_id, source_run_ids, run_id, status, pdf_url, submitted_at, marked_at, score, out_of, required_at')
+      .select('id, source_run_id, source_run_ids, run_id, status, pdf_url, submitted_at, marked_at, score, out_of, required_at, created_at, reminded_at, reminder_count')
       .eq('airtable_student_id', sid).eq('source', 'practice-again').eq('kind', 'worksheet').neq('status', 'held').neq('status', 'revoked')
       // A batch sheet (10 Sep 2026) belongs to every paper it covers.
       .or(`source_run_id.in.(${papers.map(p => p.id).join(',')}),source_run_ids.ov.{${papers.map(p => p.id).join(',')}}`);
     sheetRowsAll = (sheetRows ?? []) as SheetRow[];
     for (const r of sheetRowsAll) for (const pid of sheetParents(r)) if (!sheetsByRun.has(pid)) sheetsByRun.set(pid, r);
   }
+  // Adrian's folded lines (17 Sep 2026): held / withdrawn sheets the student never
+  // sees, and the marking receipt from the row itself — admin mode only.
+  const heldByRun = new Map<string, { status: string }[]>();
+  if (admin && papers.length) {
+    const { data: heldRows } = await sb.from('portal_assignments').select('status, source_run_id, source_run_ids')
+      .eq('airtable_student_id', sid).eq('source', 'practice-again').eq('kind', 'worksheet').in('status', ['held', 'revoked'])
+      .or(`source_run_id.in.(${papers.map(p => p.id).join(',')}),source_run_ids.ov.{${papers.map(p => p.id).join(',')}}`);
+    for (const r of (heldRows ?? []) as { status: string; source_run_id: string | null; source_run_ids: string[] | null }[]) {
+      for (const pid of sheetParents(r)) heldByRun.set(pid, [...(heldByRun.get(pid) ?? []), { status: r.status }]);
+    }
+  }
+  const factsOf = (id: string, pages: number) => {
+    const rj = (rowById.get(id)?.result_json ?? {}) as { usage?: { costUsd?: number; externalReads?: number; external?: boolean } | null; review?: { notes?: string[] } | null; queue?: { remark?: boolean } | null };
+    return { pages, usage: rj.usage ?? null, notes: rj.review?.notes ?? null, remark: !!rj.queue?.remark };
+  };
   // A marked Practice Again sheet is one card with its paper, not a second
   // top-level PDF (Adrian, 8 Sep 2026): its marking run leaves the list and is
   // opened from the paper's Practice Again row. `top` is what the student sees.
@@ -201,16 +217,16 @@ export default async function PapersView({ account, sid, admin = false }: {
   // the sheet is (being written · with Adrian · nothing worth practising); for
   // papers WITH one, whether it kept gaps back for a next wave (11 Sep 2026)
   // and whether a sheet is in flight (which closes the paper to the tick).
-  const jobByRun = new Map<string, { status: string; noSheet: boolean }>();
+  const jobByRun = new Map<string, AdminJobRow>();
   /** The finished sheet's shelf, per paper it covers: what a next wave would teach. */
   const waveByRun = new Map<string, Wave>();
   const allIds = papers.map(p => p.id);
   if (allIds.length) {
-    const { data: jobRows } = await sb.from('sheet_jobs').select('run_id, run_ids, status, result')
+    const { data: jobRows } = await sb.from('sheet_jobs').select('run_id, run_ids, status, result, stage, requested_by, created_at')
       .or(`run_id.in.(${allIds.join(',')}),run_ids.ov.{${allIds.join(',')}}`).order('created_at', { ascending: false });
     for (const j of (jobRows ?? []) as JobLite[]) {
       const covered = coveredRunIds(j);
-      for (const rid of covered) if (!jobByRun.has(rid)) jobByRun.set(rid, { status: j.status, noSheet: readNoSheet(j.result).noSheet });
+      for (const rid of covered) if (!jobByRun.has(rid)) jobByRun.set(rid, { status: j.status, noSheet: readNoSheet(j.result).noSheet, stage: j.stage ?? null, requested_by: j.requested_by ?? null, created_at: j.created_at ?? null });
       if (j.status === 'done') {
         const shelf = shelvedGaps(j.result);
         // The bar (11 Sep 2026): a left-out gap that cost 3 marks or more — else no button.
@@ -258,11 +274,13 @@ export default async function PapersView({ account, sid, admin = false }: {
     const searchEntries: SearchEntry[] = entries.map(entry => entry.kind === 'paper' ? {
       key: entry.paper.id, haystack: hay([entry.paper]),
       node: <PaperRow paper={entry.paper} todayISO={todayISO} admin={admin}
+        adminInfo={admin ? adminLines({ sheet: (sheetsByRun.get(entry.paper.id) as AdminSheetRow | undefined) ?? null, job: jobByRun.get(entry.paper.id) ?? null, held: heldByRun.get(entry.paper.id) ?? [], facts: factsOf(entry.paper.id, entry.paper.pages.length) }) : null}
         sheet={sheetsByRun.get(entry.paper.id) ?? null} job={jobByRun.get(entry.paper.id) ?? null}
         markedSheet={markedSheetByParent.get(entry.paper.id) ?? null} nextWave={waveByRun.get(entry.paper.id) ?? null} />,
     } : {
       key: entry.sheetId, haystack: hay(entry.papers),
       node: <Bundle papers={entry.papers} todayISO={todayISO} admin={admin} sheet={sheetsByRun.get(entry.papers[0].id)!}
+        adminInfoOf={admin ? (id => adminLines({ sheet: (sheetsByRun.get(id) as AdminSheetRow | undefined) ?? null, job: jobByRun.get(id) ?? null, held: heldByRun.get(id) ?? [], facts: factsOf(id, papers.find(p => p.id === id)?.pages.length ?? 0) })) : undefined}
         markedSheet={entry.papers.map(p => markedSheetByParent.get(p.id) ?? null).find(Boolean) ?? null}
         nextWave={entry.papers.map(p => waveByRun.get(p.id) ?? null).find(Boolean) ?? null} />,
     });
@@ -427,10 +445,12 @@ function SheetLineView({ line, sheet, markedSheet, nextWave, admin = false }: {
 }
 
 /** One paper: name, when, score — the whole row opens the paper. */
-function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle = false, admin = false }: {
+function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle = false, admin = false, adminInfo = null }: {
   paper: StudentPaper;
   todayISO: string;
   admin?: boolean;
+  /** Adrian's folded lines (lib/papers-admin-lines) — admin mode only. */
+  adminInfo?: string[] | null;
   sheet: SheetRow | null;
   job: { status: string; noSheet: boolean } | null;
   markedSheet: StudentPaper | null;
@@ -473,15 +493,24 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
           {paper.note && <span className="text-gray-500 italic">their remark: {noteFirstLine(paper.note, 120)}</span>}
         </p>
       )}
+      {admin && adminInfo && adminInfo.length > 0 && (
+        <details className="mt-1">
+          <summary className="cursor-pointer text-[11.5px] text-gray-400 select-none">Adrian&apos;s view</summary>
+          <ul className="mt-1 space-y-0.5 text-[11.5px] text-gray-600">
+            {adminInfo.map((l, i) => <li key={i}>{l}</li>)}
+          </ul>
+        </details>
+      )}
     </div>
   );
 }
 
 /** The papers one merged sheet covers, in one frame: the caption says what the sheet is, syllabus order inside, the sheet's line once at the foot. */
-function Bundle({ papers, todayISO, sheet, markedSheet, nextWave, admin = false }: {
+function Bundle({ papers, todayISO, sheet, markedSheet, nextWave, admin = false, adminInfoOf }: {
   papers: StudentPaper[];
   todayISO: string;
   admin?: boolean;
+  adminInfoOf?: (id: string) => string[];
   sheet: SheetRow;
   markedSheet: StudentPaper | null;
   nextWave: Wave | null;
@@ -495,7 +524,7 @@ function Bundle({ papers, todayISO, sheet, markedSheet, nextWave, admin = false 
         <p className="text-[12px] text-emerald-800/80">{cap.sub}</p>
       </div>
       {papers.map(p => (
-        <PaperRow key={p.id} paper={p} todayISO={todayISO} sheet={sheet} job={null} markedSheet={null} nextWave={null} inBundle admin={admin} />
+        <PaperRow key={p.id} paper={p} todayISO={todayISO} sheet={sheet} job={null} markedSheet={null} nextWave={null} inBundle admin={admin} adminInfo={adminInfoOf ? adminInfoOf(p.id) : null} />
       ))}
       <SheetLineView line={line} sheet={sheet} markedSheet={markedSheet} nextWave={nextWave} admin={admin} />
     </div>

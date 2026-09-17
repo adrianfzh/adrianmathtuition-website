@@ -81,7 +81,7 @@ Adrian: *"allow them to select the papers, then all their errors will immediatel
 ## 8. Build order, each step usable on its own
 
 1. **Profile tabs and the "…" menu** (one evening). **BUILT 17 Sep 2026** — four tabs, the Papers tab is `papers-view` with admin on (tick + search included), the mirror redirects. Nothing removed; the mirror page becomes the Papers tab; the old URL redirects.
-2. **Adrian's folded lines under each card** (one evening). The mirror's hidden state moves in.
+2. **Adrian's folded lines under each card** (one evening). The mirror's hidden state moves in. **BUILT 17 Sep 2026** — "Adrian's view" folds under each row: who asked for the sheet and where it is, held / withdrawn sheets, the receipt (pages · Mac reads · API cost · re-marked), up to four watch-outs (`lib/papers-admin-lines.ts`, pure/tested).
 3. **Reinstate for Discontinue** (half an evening; a log table + one button).
 4. **Review my mistakes** (two evenings, §7).
 5. **Desk: Mark a paper button + Settings drawer** (one evening). The old pages redirect.
