@@ -59,7 +59,15 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
   if (!row) notFound();
   const sid: string = isAdmin ? String((row as { student_id?: string | null }).student_id ?? '') : portalIdentity(account!);
   if (!sid) notFound();
-  const { papers } = buildStudentMarking([row as unknown as MarkingRunRow], { studentName: account?.display_name ?? null });
+  // The admin viewer sees the paper exactly as the student does, READ-ONLY:
+  // none of the student's controls (rename, star, archive, remark, ink, clip,
+  // hand in, request) — those act as the student and are not Adrian's to press.
+  let viewerName: string | null = account?.display_name ?? null;
+  if (isAdmin) {
+    const { data: acct } = await sb.from('portal_accounts').select('display_name').eq('airtable_student_id', sid).maybeSingle();
+    viewerName = (acct as { display_name?: string | null } | null)?.display_name ?? null;
+  }
+  const { papers } = buildStudentMarking([row as unknown as MarkingRunRow], { studentName: viewerName });
   const paper = papers[0];
   if (!paper) notFound();
 
@@ -99,7 +107,7 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
   let siblings: { id: string; name: string }[] = [];
   if (siblingIds.length) {
     const { data: sibRows } = await sb.from('paper_marking_runs').select('id, paper_name').in('id', siblingIds).eq('student_id', sid);
-    siblings = ((sibRows ?? []) as { id: string; paper_name: string | null }[]).map(r => ({ id: r.id, name: displayPaperName(r.paper_name, account?.display_name ?? null) }));
+    siblings = ((sibRows ?? []) as { id: string; paper_name: string | null }[]).map(r => ({ id: r.id, name: displayPaperName(r.paper_name, viewerName) }));
   }
   // No sheet with the student yet: is one being written, waiting on Adrian, or
   // was there nothing worth practising? Else offer the request button
@@ -151,14 +159,22 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="space-y-4 pb-8">
-      <Link href={isScience ? '/app/science' : '/app/marking'} className="inline-block text-sm font-semibold text-navy hover:underline">{isScience ? '← Science' : '← Papers'}</Link>
+      {isAdmin ? (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <Link href={`/admin/students/${sid}?tab=papers`} className="inline-block text-sm font-semibold text-navy hover:underline">← {viewerName || 'Student'}&apos;s papers</Link>
+          <p className="text-[12px] text-gray-500">Read-only — exactly what {viewerName || 'the student'} sees · <a href={`/admin/desk?student=${encodeURIComponent(paper.rawName ?? paper.name)}`} className="underline text-sky-700">open on the desk ›</a></p>
+        </div>
+      ) : (
+        <Link href={isScience ? '/app/science' : '/app/marking'} className="inline-block text-sm font-semibold text-navy hover:underline">{isScience ? '← Science' : '← Papers'}</Link>
+      )}
 
       <header className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             {/* ✏️ the student's own name for the paper (17 Sep 2026) — rawName is Adrian's and never changes. */}
-            <RenamePaper runId={paper.id} name={paper.name} defaultName={displayPaperName(paper.rawName ?? null, account?.display_name ?? null)} />
-            {!isScience && <ArchivePaper runId={paper.id} archived={!!paper.archived} className="block mt-1" />}
+            {isAdmin ? <h1 className="text-lg font-bold text-navy leading-snug">{paper.name}</h1>
+              : <RenamePaper runId={paper.id} name={paper.name} defaultName={displayPaperName(paper.rawName ?? null, viewerName)} />}
+            {!isScience && !isAdmin && <ArchivePaper runId={paper.id} archived={!!paper.archived} className="block mt-1" />}
             <p className="text-xs text-gray-500 mt-1 flex items-center gap-1.5">
               <PaperSubjectPill subject={paper.subject} />
               <span>
@@ -170,7 +186,7 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
           </div>
           {/* A science paper leads with the feedback; its total sits below the
               pages as an estimate (Adrian, 11 Sep 2026). Maths keeps the pill. */}
-          {!isScience && <StarPaper runId={paper.id} starred={!!paper.starred} size="md" />}
+          {!isScience && !isAdmin && <StarPaper runId={paper.id} starred={!!paper.starred} size="md" />}
           {!isScience && (
             <span className="shrink-0 text-sm font-bold rounded-full px-3 py-1 bg-navy/5 text-navy">
               {paper.max > 0 ? `${paper.awarded}/${paper.max}` : '—'}{paper.pct !== null && <span className="font-semibold"> · {paper.pct}%</span>}
@@ -180,7 +196,8 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
       </header>
 
       {/* 📝 the student's own remark (17 Sep 2026) — under the header, read by Adrian too. */}
-      {!isScience && !supersededBy && <PaperNote runId={paper.id} note={paper.note ?? null} />}
+      {!isScience && !supersededBy && !isAdmin && <PaperNote runId={paper.id} note={paper.note ?? null} />}
+      {isAdmin && paper.note && <p className="rounded-2xl border border-black/[0.06] bg-white px-3 py-2 text-sm text-gray-700"><span className="text-[11px] font-semibold uppercase tracking-wide text-gray-400 block">Their remark</span>{paper.note}</p>}
 
       {/* An earlier marking of a paper marked again (superseded_by) stays
           reachable from "Earlier markings" on the Papers list — archived, not
@@ -226,8 +243,8 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
       {paper.pages.length > 0 && !isScience && (
         // ✍️ the student's own ink over the marked pages (17 Sep 2026); the clipper sits beside it.
         <div className="space-y-2">
-          <div className="flex justify-end"><ClipToNotes runId={paper.id} paperName={paper.name} pages={paper.pages} /></div>
-          <StudentInk runId={paper.id} pages={paper.pages} initial={ink} />
+          {!isAdmin && <div className="flex justify-end"><ClipToNotes runId={paper.id} paperName={paper.name} pages={paper.pages} /></div>}
+          <StudentInk runId={paper.id} pages={paper.pages} initial={ink} readOnly={isAdmin} />
           <Suspense fallback={null}><JumpToMistake pages={paper.pages.map(p => ({ index: p.index, layerUrl: p.layerUrl ?? null, layerH: p.layerH ?? null }))} /></Suspense>
         </div>
       )}
@@ -235,7 +252,7 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
         <section aria-label="Marked pages" className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Your marked pages</h2>
-            <ClipToNotes runId={paper.id} paperName={paper.name} pages={paper.pages} />
+            {!isAdmin && <ClipToNotes runId={paper.id} paperName={paper.name} pages={paper.pages} />}
           </div>
           {paper.pages.map(p => (
             // eslint-disable-next-line @next/next/no-img-element
@@ -271,8 +288,8 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
           <div className="flex items-center gap-2 shrink-0">
             {sheet.pdf_url && <a href={fileHref(sheet.pdf_url)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold bg-emerald-700 text-white rounded-xl px-3 py-1.5">Open sheet</a>}
             {sheet.pdf_url && <OpenInApp url={fileHref(sheet.pdf_url)} name={`Practice Again — ${paper.name}`} className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white disabled:opacity-60" />}
-            {sheet.status !== 'marked' && sheet.status !== 'submitted' && sheet.pdf_url && <Link href={`/app/work/${sheet.id}`} className="text-xs font-bold text-white bg-emerald-700 rounded-xl px-3 py-1.5">✍️ Do it in the app</Link>}
-            {sheet.status !== 'marked' && sheet.status !== 'submitted' && <Link href={`/app/submit?assignment=${sheet.id}`} className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white">Hand in a photo</Link>}
+            {!isAdmin && sheet.status !== 'marked' && sheet.status !== 'submitted' && sheet.pdf_url && <Link href={`/app/work/${sheet.id}`} className="text-xs font-bold text-white bg-emerald-700 rounded-xl px-3 py-1.5">✍️ Do it in the app</Link>}
+            {!isAdmin && sheet.status !== 'marked' && sheet.status !== 'submitted' && <Link href={`/app/submit?assignment=${sheet.id}`} className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white">Hand in a photo</Link>}
           </div>
           {/* The marked sheet opens from its paper (grouped, 8 Sep 2026) — same view as a paper. */}
           {sheet.status === 'marked' && sheet.run_id && (
@@ -302,9 +319,9 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
       {isScience && paper.max > 0 && (
         <ScienceTeacherMark runId={paper.id} ours={{ awarded: paper.awarded, max: paper.max }} existing={teacherTotal} />
       )}
-      {isScience && <ScienceUseful runId={paper.id} />}
+      {isScience && !isAdmin && <ScienceUseful runId={paper.id} />}
 
-      {!isScience && !sheet && !supersededBy && followUpDepth <= 1 && <PracticeAgainRequest runId={paper.id} state={requestState} />}
+      {!isScience && !isAdmin && !sheet && !supersededBy && followUpDepth <= 1 && <PracticeAgainRequest runId={paper.id} state={requestState} />}
 
       {paper.pdfUrl && (
         <div className="flex flex-wrap items-center justify-center gap-2">

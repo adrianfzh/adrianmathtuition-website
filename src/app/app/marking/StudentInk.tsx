@@ -18,7 +18,7 @@ const AnnotateOverlay = dynamic(() => import('@/components/AnnotateOverlay'), { 
 
 export type InkPageInput = { index: number; url: string; overflow?: true };
 
-export default function StudentInk({ runId, pages, initial }: { runId: string; pages: InkPageInput[]; initial: InkPages | null }) {
+export default function StudentInk({ runId, pages, initial, readOnly = false }: { runId: string; pages: InkPageInput[]; initial: InkPages | null; readOnly?: boolean }) {
   const [ink, setInk] = useState<InkPages>(initial ?? {});
   const [show, setShow] = useState(true);
   const [open, setOpen] = useState(false);
@@ -56,12 +56,13 @@ export default function StudentInk({ runId, pages, initial }: { runId: string; p
             {show ? 'Hide my notes' : 'Show my notes'}
           </button>
         )}
-        {hasInk && (
+        {hasInk && !readOnly && (
           <button type="button" onClick={clear} disabled={busy} className="text-xs font-semibold text-gray-500 underline underline-offset-2 disabled:opacity-50">Clear my notes</button>
         )}
-        <button type="button" onClick={() => setOpen(true)} className="text-xs font-bold text-white bg-navy rounded-xl px-3 py-1.5 shadow-sm">
+        {/* The admin viewer (18 Sep 2026) sees the student's ink but never writes on their paper. */}
+        {!readOnly && <button type="button" onClick={() => setOpen(true)} className="text-xs font-bold text-white bg-navy rounded-xl px-3 py-1.5 shadow-sm">
           ✍️ Write on my paper
-        </button>
+        </button>}
       </div>
       {err && <p className="text-[12px] text-rose-700">{err}</p>}
       {pages.map(p => {
