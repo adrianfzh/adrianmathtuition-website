@@ -78,6 +78,8 @@ type Props = {
   initialInk?: Record<number, Stroke[]> | null;
   /** student mode: persist the ink. Resolves when saved; throws to show the error. */
   onSaveInk?: (ink: Record<number, { strokes: Stroke[]; w: number; h: number }>) => Promise<void>;
+  /** Student-mode draft key prefix — 'student' (default) or 'adrian' (his layer on their paper, 18 Sep 2026). */
+  draftScope?: string;
 };
 
 // ── constants ────────────────────────────────────────────────────────────────
@@ -222,11 +224,11 @@ const IconSelect = () => (
   </svg>
 );
 
-export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals, onDone, onClose, initialPage = null, mode = 'admin', initialInk = null, onSaveInk }: Props) {
+export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals, onDone, onClose, initialPage = null, mode = 'admin', initialInk = null, onSaveInk, draftScope = 'student' }: Props) {
   const isStudent = mode === 'student';
   // The local draft's key: the student's ink and Adrian's ink for the same run
   // must never share one (a shared iPad, the demo-student login).
-  const draftId = isStudent ? `student:${runId}` : runId;
+  const draftId = isStudent ? `${draftScope}:${runId}` : runId;
   const initialInkRef = useRef(initialInk); initialInkRef.current = initialInk;
   const onSaveInkRef = useRef(onSaveInk); onSaveInkRef.current = onSaveInk;
   // Pages sorted by photo_index — array index is the working page index throughout.

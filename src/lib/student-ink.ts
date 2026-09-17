@@ -11,6 +11,8 @@ export type InkPage = { strokes: Stroke[]; w: number; h: number };
 export type InkPages = Record<number, InkPage>;
 
 /** A generous ceiling: a whole paper of dense notes is a few hundred KB. */
+/** Adrian's own layer on a student's paper lives in the same table under this identity (18 Sep 2026). */
+export const TEACHER_INK_IDENTITY = 'adrian';
 export const MAX_INK_BYTES = 3_000_000;
 export const MAX_INK_PAGES = 60;
 export const MAX_STROKES_PER_PAGE = 5000;

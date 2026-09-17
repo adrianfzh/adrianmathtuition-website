@@ -191,6 +191,9 @@ export default async function PapersView({ account, sid, admin = false }: {
   // at? i can't tell"): the desk's rule, on his Papers tab — a paper the system
   // released that he has not ticked yet wears a pill; the tick is the desk's.
   const lookOf = (id: string) => { const r = rowById.get(id); return r ? { needsLook: needsLook(r), checkedAt: r.checked_at ?? null } : null; };
+  // A sheet Adrian SENT from the paper (Send-work, source 'adrian', with a
+  // source_run_id) is a Practice Again sheet too — Alessi's 30 Aug sheet sat as
+  // its own card until 18 Sep 2026 because only source 'practice-again' grouped.
   // The Practice Again sheet belongs with its paper (Adrian, 7 Sep 2026), not on a
   // separate to-do page: one released worksheet assignment per source run.
   // `run_id` = the sheet's OWN marking run once its hand-in is marked — what
@@ -200,7 +203,7 @@ export default async function PapersView({ account, sid, admin = false }: {
   if (papers.length) {
     const { data: sheetRows } = await sb.from('portal_assignments')
       .select('id, source_run_id, source_run_ids, run_id, status, pdf_url, submitted_at, marked_at, score, out_of, required_at, created_at, reminded_at, reminder_count')
-      .eq('airtable_student_id', sid).eq('source', 'practice-again').eq('kind', 'worksheet').neq('status', 'held').neq('status', 'revoked')
+      .eq('airtable_student_id', sid).in('source', ['practice-again', 'adrian']).eq('kind', 'worksheet').neq('status', 'held').neq('status', 'revoked')
       // A batch sheet (10 Sep 2026) belongs to every paper it covers.
       .or(`source_run_id.in.(${papers.map(p => p.id).join(',')}),source_run_ids.ov.{${papers.map(p => p.id).join(',')}}`);
     sheetRowsAll = (sheetRows ?? []) as SheetRow[];
@@ -211,7 +214,7 @@ export default async function PapersView({ account, sid, admin = false }: {
   const heldByRun = new Map<string, { status: string }[]>();
   if (admin && papers.length) {
     const { data: heldRows } = await sb.from('portal_assignments').select('status, source_run_id, source_run_ids')
-      .eq('airtable_student_id', sid).eq('source', 'practice-again').eq('kind', 'worksheet').in('status', ['held', 'revoked'])
+      .eq('airtable_student_id', sid).in('source', ['practice-again', 'adrian']).eq('kind', 'worksheet').in('status', ['held', 'revoked'])
       .or(`source_run_id.in.(${papers.map(p => p.id).join(',')}),source_run_ids.ov.{${papers.map(p => p.id).join(',')}}`);
     for (const r of (heldRows ?? []) as { status: string; source_run_id: string | null; source_run_ids: string[] | null }[]) {
       for (const pid of sheetParents(r)) heldByRun.set(pid, [...(heldByRun.get(pid) ?? []), { status: r.status }]);

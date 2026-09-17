@@ -19,6 +19,7 @@ import { markedPdfFilename, contentDisposition } from '@/lib/marked-pdf-filename
 import { displayPaperName } from '@/lib/paper-display-name';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
 import { strokesToSvg } from '@/lib/annotate/layer';
+import { TEACHER_INK_IDENTITY } from '@/lib/student-ink';
 import type { InkPages } from '@/lib/student-ink';
 import { PDFDocument } from 'pdf-lib';
 import sharp from 'sharp';
@@ -54,20 +55,24 @@ export async function GET(req: NextRequest) {
     const { papers } = buildStudentMarking([data as unknown as MarkingRunRow], { studentName: account.display_name ?? null });
     const paper = papers[0];
     if (!paper || !paper.pages.length) return NextResponse.json({ error: 'no pages' }, { status: 404 });
-    const { data: inkRow } = await sb.from('student_ink').select('pages').eq('run_id', runId).eq('identity', portalIdentity(account)).maybeSingle();
-    const ink = ((inkRow?.pages as InkPages | undefined) ?? {});
+    // Both layers ride into the download (18 Sep 2026): Adrian's notes first, the student's on top.
+    const { data: inkRows } = await sb.from('student_ink').select('identity, pages').eq('run_id', runId).in('identity', [portalIdentity(account), TEACHER_INK_IDENTITY]);
+    const ink: InkPages = {}; const teacher: InkPages = {};
+    for (const r of (inkRows ?? []) as { identity: string; pages: InkPages }[]) Object.assign(r.identity === TEACHER_INK_IDENTITY ? teacher : ink, r.pages ?? {});
     const pdfDoc = await PDFDocument.create();
     const PAGE_W = 595;
     for (const p of paper.pages) {
       const r = await fetchOurFile(p.url);
       if (!r.ok) continue;
       let buf: Buffer = Buffer.from(await r.arrayBuffer());
-      const layer = Number.isInteger(p.index) ? ink[p.index] : undefined;
-      if (layer && layer.strokes.length) {
+      const layers = Number.isInteger(p.index) ? [teacher[p.index], ink[p.index]].filter((l): l is InkPages[number] => !!l && l.strokes.length > 0) : [];
+      if (layers.length) {
         const meta = await sharp(buf).metadata();
-        const w = meta.width ?? layer.w, h = meta.height ?? layer.h;
-        const svg = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${layer.w} ${layer.h}">${strokesToSvg(layer.strokes)}</svg>`);
-        buf = await sharp(buf).composite([{ input: svg, top: 0, left: 0 }]).jpeg({ quality: 90 }).toBuffer();
+        const overlays = layers.map(layer => {
+          const w = meta.width ?? layer.w, h = meta.height ?? layer.h;
+          return { input: Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${layer.w} ${layer.h}">${strokesToSvg(layer.strokes)}</svg>`), top: 0, left: 0 };
+        });
+        buf = await sharp(buf).composite(overlays).jpeg({ quality: 90 }).toBuffer();
       }
       const img = await pdfDoc.embedJpg(buf).catch(() => pdfDoc.embedPng(buf));
       const drawH = Math.round(PAGE_W * (img.height / img.width));

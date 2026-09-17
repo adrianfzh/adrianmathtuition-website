@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { cookies } from 'next/headers';
+import { TEACHER_INK_IDENTITY } from '@/lib/student-ink';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
@@ -137,9 +138,12 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
   const followUpDepth = isScience ? 0 : await followUpDepthOf(sb, row as never);
   // ✍️ the student's saved ink for this paper (their layer, never the marked copy).
   let ink: InkPages | null = null;
+  let teacherInk: InkPages | null = null;   // ✍️ Adrian's notes on their paper (18 Sep 2026), a second layer
   if (!isScience && paper.pages.length) {
-    const { data: inkRow } = await sb.from('student_ink').select('pages').eq('run_id', id).eq('identity', sid).maybeSingle();
-    ink = (inkRow?.pages as InkPages | undefined) ?? null;
+    const { data: inkRows } = await sb.from('student_ink').select('identity, pages').eq('run_id', id).in('identity', [sid, TEACHER_INK_IDENTITY]);
+    for (const r of (inkRows ?? []) as { identity: string; pages: InkPages }[]) {
+      if (r.identity === TEACHER_INK_IDENTITY) teacherInk = r.pages ?? null; else ink = r.pages ?? null;
+    }
   }
   const hasCover = paper.dropped.length > 0;
   const supersededBy = (row as { superseded_by?: string | null }).superseded_by ?? null;
@@ -244,7 +248,10 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
         // ✍️ the student's own ink over the marked pages (17 Sep 2026); the clipper sits beside it.
         <div className="space-y-2">
           {!isAdmin && <div className="flex justify-end"><ClipToNotes runId={paper.id} paperName={paper.name} pages={paper.pages} /></div>}
-          <StudentInk runId={paper.id} pages={paper.pages} initial={ink} readOnly={isAdmin} />
+          {/* Two layers: the student edits theirs and sees "From Adrian"; Adrian edits his and sees theirs (18 Sep 2026). */}
+          {isAdmin
+            ? <StudentInk runId={paper.id} pages={paper.pages} initial={teacherInk} editor="adrian" other={{ pages: ink, label: `${viewerName || 'their'} notes` }} />
+            : <StudentInk runId={paper.id} pages={paper.pages} initial={ink} other={{ pages: teacherInk, label: "Adrian's notes" }} />}
           <Suspense fallback={null}><JumpToMistake pages={paper.pages.map(p => ({ index: p.index, layerUrl: p.layerUrl ?? null, layerH: p.layerH ?? null }))} /></Suspense>
         </div>
       )}
