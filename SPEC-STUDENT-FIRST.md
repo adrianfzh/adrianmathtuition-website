@@ -85,6 +85,7 @@ Adrian: *"allow them to select the papers, then all their errors will immediatel
 3. **Reinstate for Discontinue** (half an evening; a log table + one button). **BUILT 17 Sep 2026** — the discontinue route writes a snapshot (`student_discontinue_log`); `POST /api/admin/student-reinstate` puts enrolments, lessons and Active back (Option A), stops with the list on a slot clash, never un-voids invoices; ↩ Reinstate appears in the profile's … menu for an Inactive student (`lib/reinstate.ts`, pure/tested).
 4. **Review my mistakes** (two evenings, §7). **BUILT 17 Sep 2026** — picker + deck + the five-day band + the jump (by page and the marker's region words; pixel-exact boxes are a later refinement).
 5. **Desk: Mark a paper button + Settings drawer** (one evening). The old pages redirect. **BUILT 17 Sep 2026 (first half)** — ⚙ Settings drawer on the desk header (`components/MarkingSwitches.tsx`: Mac plan only · Science tab · slot accounts), ✍️ Mark a paper + 🖊 Desk buttons on the profile's Papers tab. The mark page keeps its own switch cards for now; the redirects wait until nothing links to the old pages.
+6. **Download with notes** — the marked copy with the student's own ink baked in, as a second download. **BUILT 17 Sep 2026** — `/api/portal/marking-pdf?run=&notes=1` composes the page images with the ink layer (sharp + pdf-lib, built on request, never stored); the paper page shows "⬇ With my notes" once there is ink.
 
 Each step ships to the preview first and Adrian looks at it as himself and as a student (the demo student) before it is promoted.
 
