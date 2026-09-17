@@ -24,11 +24,16 @@ print in black and white, can i have other versions without colour? that means
 the design itself will distinguish the papers"). There the structure alone tells
 the sheets apart — no colour is relied on:
 
-    series  header                                   subject block        page-2 rule
-    AM      solid black band                         white, black letters  thick solid
-    EM      white, double rule under the header      outlined box          double
-    S1      light grey band                          solid black           dotted
-    S2      white, thick black bar over the header   mid grey              dashed
+    series  header                                   subject block          page-2 rule
+    AM      white, thick rule over + thin rule under small solid black tab  thick solid
+    EM      white, one rule under the header         outlined box           double
+    S1      near-white grey tint (F2F2F2)            double-lined box       dotted
+    S2      white, thick bar over the header         heavy rules above and  dashed
+                                                     below, sides open
+
+(The first mono set, a solid black A Math band, was dropped the same day —
+Adrian: "too oppressive as black, and waste ink when printing".) The mark in
+black and white is the outlined ring (`mark_outline.png`), not a filled disc.
 
 Use it through `Worksheet.brand(level, topic, ...)`. It inserts at the TOP of the
 body, so it can be called before or after the questions are written (after is
@@ -59,7 +64,7 @@ TEXT_W_CM = 16.0    # A4 less worksheet_lib's 2.5 cm margins
 COLOUR = dict(ink=NAVY, math=ORANGE, grey=GREY, pale=PALE, rule=RULE,
               band_math=ORANGE, mark='mark_navy.png', band_mark='mark_white.png')
 MONO = dict(ink='1A1A1A', math='808080', grey='666666', pale='BFBFBF', rule='BFBFBF',
-            band_math='A6A6A6', mark='mark_black.png', band_mark='mark_white.png')
+            band_math='A6A6A6', mark='mark_outline.png', band_mark='mark_white.png')
 
 SERIES = {
     'AM': dict(tag='A MATH', style='band', ground=NAVY,
@@ -78,18 +83,32 @@ SERIES = {
                run_rule=('single', 8, '1F74D6')),
 }
 
+# The black-and-white set. Adrian 17 Sep 2026, after the first mono set (a solid
+# black A Math band): "the large black background is too oppressive as black, and
+# waste ink when printing". So no band is filled: every series is white or a
+# near-white tint, the mark is the outlined ring, and the SHAPE of the rules and
+# of the subject block is what tells the sheets apart. `frame` may be a list of
+# rules; `block_rules` draws rules round the subject block only (None = no rule).
 SERIES_MONO = {
-    'AM': dict(tag='A MATH', style='band', ground='1A1A1A',
-               accent='1A1A1A', block=WHITE, block_box=24, tag_ink='1A1A1A', title_bar='1A1A1A',
-               run_rule=('single', 18, '1A1A1A')),
-    'EM': dict(tag='E MATH', style='plain', frame=('bottom', 'double', 6, '1A1A1A'),
+    # ruled top and bottom like a newspaper masthead; the one small solid tab
+    'AM': dict(tag='A MATH', style='plain',
+               frame=[('top', 'single', 24, '1A1A1A'), ('bottom', 'single', 6, '1A1A1A')],
+               accent='1A1A1A', block='1A1A1A', tag_ink=WHITE, title_bar='1A1A1A',
+               run_rule=('single', 12, '1A1A1A')),
+    # one rule under the header; the subject in an outlined box
+    'EM': dict(tag='E MATH', style='plain', frame=('bottom', 'single', 12, '1A1A1A'),
                accent='1A1A1A', block=None, tag_ink='1A1A1A',
+               block_rules={s: ('single', 12) for s in ('top', 'left', 'bottom', 'right')},
                run_rule=('double', 6, '1A1A1A')),
-    'S1': dict(tag='SEC 1', style='tint', ground='E3E3E3',
-               accent='1A1A1A', block='1A1A1A', tag_ink=WHITE, title_bar='8C8C8C',
+    # a whisper of grey behind the header; the subject in a double box
+    'S1': dict(tag='SEC 1', style='tint', ground='F2F2F2',
+               accent='1A1A1A', block=WHITE, tag_ink='1A1A1A', title_bar='A6A6A6',
+               block_rules={s: ('double', 6) for s in ('top', 'left', 'bottom', 'right')},
                run_rule=('dotted', 12, '1A1A1A')),
+    # a thick bar over the header; the subject between two heavy rules, sides open
     'S2': dict(tag='SEC 2', style='bar', frame=('top', 'single', 36, '1A1A1A'),
-               accent='1A1A1A', block='B3B3B3', tag_ink='1A1A1A',
+               accent='1A1A1A', block=None, tag_ink='1A1A1A',
+               block_rules={'top': ('single', 18), 'bottom': ('single', 18)},
                run_rule=('dashed', 12, '1A1A1A')),
 }
 
@@ -208,13 +227,16 @@ def _shade(cell, fill):
     cell._tc.get_or_add_tcPr().append(s)
 
 
-def _cell_box(cell, sz, color):
-    """Draw a box round one cell (the mono E Math subject block)."""
+def _cell_box(cell, rules, color):
+    """Rules round one cell (the mono subject blocks): side -> (val, sz)."""
     tcPr = cell._tc.get_or_add_tcPr()
     b = OxmlElement('w:tcBorders')
     for s in ('top', 'left', 'bottom', 'right'):
+        if s not in rules:
+            continue
         e = OxmlElement(f'w:{s}')
-        for k, v in (('val', 'single'), ('sz', sz), ('space', 0), ('color', color)):
+        val, sz = rules[s]
+        for k, v in (('val', val), ('sz', sz), ('space', 0), ('color', color)):
             e.set(qn(f'w:{k}'), str(v))
         b.append(e)
     tcPr.append(b)
@@ -245,11 +267,10 @@ def _masthead(doc, cfg, k, small, level_line):
     ground = cfg.get('ground')
     tbl = doc.add_table(rows=1, cols=4)
     tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
-    if cfg.get('frame'):
-        side, val, sz, color = cfg['frame']
-        _table_borders(tbl, **{side: (val, sz, color)})
-    else:
-        _table_borders(tbl)
+    frame = cfg.get('frame') or []
+    if isinstance(frame, tuple):
+        frame = [frame]
+    _table_borders(tbl, **{side: (val, sz, color) for side, val, sz, color in frame})
     pad = 170 if ground else 110
     _cell_margins(tbl, top=pad, bottom=pad, left=160 if ground else 0, right=160 if ground else 0)
     _widths(tbl, (2.0, 4.5, 6.1, 3.4))
@@ -260,9 +281,8 @@ def _masthead(doc, cfg, k, small, level_line):
             _shade(c, ground)
     if cfg['block']:
         _shade(block, cfg['block'])
-    if cfg.get('block_box') or not cfg['block']:
-        # a white block in a black band needs its frame, or it reads as the band ending
-        _cell_box(block, cfg.get('block_box') or 12, cfg['tag_ink'])
+    if cfg.get('block_rules'):
+        _cell_box(block, cfg['block_rules'], cfg['tag_ink'])
 
     p = _tight(logo.paragraphs[0])
     mark = k['band_mark'] if band else k['mark']

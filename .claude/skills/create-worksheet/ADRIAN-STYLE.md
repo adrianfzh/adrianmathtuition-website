@@ -625,16 +625,25 @@ Sec 2 was plum at first; "change purple, something suitable for secondary school
 **Black-and-white version.** "i usually print in black and white, can i have other versions
 without colour? that means the design itself will distinguish the papers" (Adrian, 17 Sep
 2026). `ws.brand(..., mono=True)` builds it, saved beside the colour one as `… (B&W).docx`.
-Nothing relies on colour — every series is told apart by shape:
+Nothing relies on colour — every series is told apart by shape.
+
+> "as black and white, the design is not too nice -> able to come up with a better design?
+> the large black background is too oppressive as black, and waste ink when printing"
+> — Adrian, 17 Sep 2026, on the first mono set (a solid black A Math band)
+
+So **no large fill, ever, in black and white**: the headers are white or a near-white tint
+(`F2F2F2`), and rules and box shapes do the work. The only solid black is A Math's small
+subject tab.
 
 | Series | Header | Subject block | Page-2 header rule |
 |---|---|---|---|
-| **A MATH** | solid black band | white box framed in black, inside the band | thick solid |
-| **E MATH** | white, double rule under it | outlined box | double |
-| **SEC 1** | light grey band | solid black, white letters | dotted |
-| **SEC 2** | white, thick black bar on top | mid-grey block | dashed |
+| **A MATH** | white, thick rule over it + thin rule under it | small solid black tab, white letters | thick solid |
+| **E MATH** | white, one rule under it | outlined box | double |
+| **SEC 1** | near-white grey tint | double-lined box on white | dotted |
+| **SEC 2** | white, thick bar over it | heavy rules above and below, sides open | dashed |
 
-The logo is the black √m (`mark_black.png`), "Math" goes grey, and every other colour on the
+The logo is the **outlined** √m — a black ring and black letters on nothing
+(`mark_outline.png`), not a filled disc. "Math" goes grey, and every other colour on the
 sheet — the [Ans:] lines, coloured working — is drained to dark grey `404040`.
 When Adrian asks for a sheet, give both unless he names one.
 
