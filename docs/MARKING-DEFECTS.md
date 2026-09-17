@@ -307,3 +307,41 @@ way before the fix deployed (11:54 SGT) — 35 sync page reads in all, $12.58.
 the loser's hand-back was refused ("claim lost") so no duplicate reached the
 student, but both Macs read all 36 pages on the plan. The conditional update
 now also requires `external_claim` to be exactly what the claimant read.
+
+---
+
+# 17 Sep 2026 round — Alessi Tay, EM GCE 2022 P1 (run `022d1058`, marked 16 Sep)
+
+Nine complaints over one paper, read against the stored reads. Bins per
+`docs/FANOUT.md`. Fix-forward; the paper is not re-released.
+
+**What the stored reads say first**, because it changes three of the bins:
+
+- The run was keyed `2022 em p1` (student typed "2022 Emath Paper 1"), so it
+  never matched the extracted scheme `gce 2022 em p1` that Alexis's run of the
+  SAME paper used the day before. It marked on a scheme it derived from its own
+  page reads (`grounding.scheme.status = derived`, `allocation = page`).
+- Three answer lines (Q17, Q21, Q25(c)) carry `error_type: "transfer"` although
+  the slip was on an earlier line of the SAME part — the marker over-applied the
+  10 Sep "inherited wrong answer names its source" rule (prompt line ~693).
+- Q25(c) line 9 has `slip_token: null` (kind "misread"), so the pen had no
+  token to ring and the fix arrow landed on the ✗.
+- Q7(b) and Q17 line 2 DO carry a correction text in the read (the missing
+  rhombus statement; "O is the centre, not a point on the circle …") — the pen
+  did not draw either beside the line.
+
+| # | complaint | bin | root cause | fix | status |
+|---|---|---|---|---|---|
+| F1 | Q6: student never said what a and b stand for | rule | no "define your variables" habit note | notation-note shape: full marks, one line beside the tick | ⏳ rule (this session) |
+| F2 | Q7(b) 1/2: the B0 line has a ✗ and nothing saying what is missing | pen | correction text IS in the read (`lines[17].correction`); pen dropped it — suspect the `incomplete` kind or the answer-lines area | Opus agent `pen-labels` | ⏳ |
+| F3 | Q10 2/3 M1 M1 A0 — "is this SEAB?" | grounding | run not grounded on the extracted scheme (see above). Under that scheme (504π/3 → πr² = 2(168π)+25π → r = 19) the student did step 1 only: **1/3** is the SEAB-shaped mark, 2/3 was the derived scheme's generosity | `lib/paper-key.js`: a school-less name with year + level + paper and no "prelim" is the national paper (student shorthand "2022 Emath Paper 1") | ⏳ (this session) |
+| F4 | chips printed twice: Q66, Q1010, Q1515, Q1717, Q2121 | pen | a partless question's part label came back as the question number ("10") instead of "(whole)"/"" (the bank-allocated run had "(whole)"); the chip is `Q${question}${label}` and a second chip is drawn for the part | Opus agent `pen-chip`: normalise a label equal to the question number to the whole-question label at the adapter seam; one chip per partless question | ⏳ |
+| F5 | Q17: "concept error" says nothing; should name the concept (angle at centre = 2 × angle at circumference) | rule | the kind label is the bare kind word; the reason lived only in the strip note | concept lines: the label carries the rule name (≤ 6 words) after the fix | ⏳ rule (this session) |
+| F6 | Q17 65°, Q21 5x, Q25(c) 6300 all labelled "transfer error" on the answer line | rule | see above — same-part inheritance filed as transfer | an inherited wrong answer carries `error_type: null` and the pen writes only the value; "transfer" is for a value copied wrongly from a CORRECT line/part | ⏳ rule (this session) |
+| F7 | Q17: the lines built on the wrong 35° are unmarked; Adrian wants to SEE the error propagate to the answer | rule + pen | inherited lines are `neutral` by design (the ✗ goes where the error is made) | design choice for Adrian: a light "↓ carried" mark on each inherited line, or the answer-line note stating "wrong because of line 1". Correction text with the chain (`∠OQR = 55°, ∠PRQ = 25° … so ∠OQP = 65°`) already exists in the read and was not drawn — `pen-labels` agent checks why | ⏳ |
+| F8 | Q18(b): "It represents…" — should open "The elements represent…" | rule | no wording note on a full-marks explain part | notation-note shape | ⏳ rule (this session) |
+| F9 | Q21: "+6 · careless" should read "should be +6" | pen | fix label = `${fix_short} · ${kind}` | pen writes "should be +6" for a replace fix (insert keeps its own wording) | Opus agent `pen-labels` ⏳ |
+| F10 | Q25(c): arrow points at the ✗, not at 2000 | rule (+ pen) | `slip_token` null on a "misread" line where one wrong given IS the token | rule: a misread that uses the wrong given sets `slip_token` to that value; pen: when the token appears twice on the line ring the one in the working, not the answer | ⏳ |
+
+Model split (Adrian, 17 Sep): Opus 5 agents for the pen bugs, verified on
+`scripts/golden-pen.cjs` / `pen-dryrun.cjs`; the rule rewrites in this session.
