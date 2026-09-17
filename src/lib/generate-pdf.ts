@@ -3,6 +3,7 @@ import path from 'path';
 import puppeteer from 'puppeteer-core';
 import { reconciliationGap } from '@/lib/invoice-render-math';
 import { waDisplay } from '@/lib/wa-number';
+import { parentFacingDescription } from './invoice-description';
 
 let browserInstance: Awaited<ReturnType<typeof puppeteer.launch>> | null = null;
 
@@ -196,7 +197,7 @@ export async function generateInvoicePDF(invoiceData: InvoiceData): Promise<Buff
       // Lessons badge shows the count on its own — a slot/day isn't required
       // (ad-hoc invoices have no fixed weekday but still want the count visible).
       const lessonsCell = count ? `<span class="lessons-badge">${count}</span>` : '';
-      return `<tr><td><div class="desc-main">${description}</div></td><td>${slotCell}</td><td>${lessonsCell}</td><td>$${amount}</td></tr>`;
+      return `<tr><td><div class="desc-main">${parentFacingDescription(description, description)}</div></td><td>${slotCell}</td><td>${lessonsCell}</td><td>$${amount}</td></tr>`;
     }).join('');
   }
   html = html.replace(/\{\{LINE_ITEMS_ROWS\}\}/g, lineItemsRows);
@@ -219,7 +220,7 @@ export async function generateInvoicePDF(invoiceData: InvoiceData): Promise<Buff
       const unpaidTag = isPrev ? ` <span style="font-size:10px;background:#fef2f2;color:#dc2626;padding:1px 6px;border-radius:5px;margin-left:6px;">unpaid</span>` : '';
       const slotCell = item.slot ? `<span class="slot-pill">${item.slot}</span>` : '';
       const lessonsCell = item.lessons ? `<span class="lessons-badge">${item.lessons}</span>` : '';
-      return `${headerRow}<tr><td><div class="desc-main">${item.description || 'Additional Item'}${unpaidTag}</div></td><td>${slotCell}</td><td>${lessonsCell}</td><td>${sign}$${Math.abs(amount).toFixed(2)}</td></tr>`;
+      return `${headerRow}<tr><td><div class="desc-main">${parentFacingDescription(item.description)}${unpaidTag}</div></td><td>${slotCell}</td><td>${lessonsCell}</td><td>${sign}$${Math.abs(amount).toFixed(2)}</td></tr>`;
     }).join('');
   }
   // ── Reconciliation safety net (lib/invoice-render-math, unit-tested) ──────
@@ -290,7 +291,7 @@ export async function generateReceiptPDF(receiptData: ReceiptData): Promise<Buff
       const description = items[0].description || `Tuition \u2014 ${receiptData.month || ''}`;
       const slotCell    = day ? `<span class="slot-pill">${day}</span>` : '';
       const lessonsCell = count ? `<span class="lessons-badge">${count}</span>` : '';
-      return `<tr><td><div class="desc-main">${description}</div></td><td>${slotCell}</td><td>${lessonsCell}</td><td>$${amount}</td></tr>`;
+      return `<tr><td><div class="desc-main">${parentFacingDescription(description, description)}</div></td><td>${slotCell}</td><td>${lessonsCell}</td><td>$${amount}</td></tr>`;
     }).join('');
   }
   html = html.replace(/\{\{LINE_ITEMS_ROWS\}\}/g, lineItemsRows);
@@ -302,7 +303,7 @@ export async function generateReceiptPDF(receiptData: ReceiptData): Promise<Buff
       const sign = amount >= 0 ? '' : '-';
       const slotCell = item.slot ? `<span class="slot-pill">${item.slot}</span>` : '';
       const lessonsCell = item.lessons ? `<span class="lessons-badge">${item.lessons}</span>` : '';
-      return `<tr><td><div class="desc-main">${item.description || 'Additional Item'}</div></td><td>${slotCell}</td><td>${lessonsCell}</td><td>${sign}$${Math.abs(amount).toFixed(2)}</td></tr>`;
+      return `<tr><td><div class="desc-main">${parentFacingDescription(item.description)}</div></td><td>${slotCell}</td><td>${lessonsCell}</td><td>${sign}$${Math.abs(amount).toFixed(2)}</td></tr>`;
     }).join('');
   }
   html = html.replace(/\{\{EXTRA_LINE_ITEMS_ROWS\}\}/g, extraLineItemsRows);

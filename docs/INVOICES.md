@@ -356,6 +356,29 @@ For when an adjustment must land on a month whose invoice doesn't exist yet (e.g
 - **Banner:** `/admin/invoices` shows a blue "⏰ Pending adjustments" banner (data from `/api/admin-invoices/deferred-pending`) grouped by target month, each with a ✕ Cancel button.
 - PDF caveat: like referral credits, the deferral changes `Final Amount` after the draft PDF was rendered — regenerate PDFs before sending (the normal draft-review step covers this).
 
+## Nothing internal on a parent's invoice (17 Sep 2026)
+
+Adrian, reading Tan Sijia's August 2026 invoice: *"Should not mention fuzzy match"* — the
+line said **"Referral reward ⚠ fuzzy match — referred Chloe Gng"**. The referral generator
+used to interpolate its name-matching confidence into the parent-facing description; the
+flag belongs in the line item's own `matchConfidence` field, which is what `/admin/invoices`
+reads for its 🎁 badge (and what its ADMIN-only tooltip may say). `generate-invoices` was
+corrected on 15 Sep, but only Denise Chan's October row was cleaned — Sijia's August row
+still carried it, and nothing stopped a stored row from printing one again.
+
+- **The gate is at RENDER, not only at write:** `lib/invoice-description.ts`
+  `parentFacingDescription()` (pure, tested) strips `fuzzy|exact|no match` and any badge
+  emoji, closes the gap (no orphaned dash, no empty brackets), and falls back to
+  "Additional Item". `lib/generate-pdf.ts` calls it at **all four** description renders —
+  invoice main rows, invoice extras, receipt main rows, receipt extras — so whatever is
+  stored, a parent reads clean text. `leaksInternalFlag()` is the scanner for finding rows
+  worth cleaning at source.
+- **Cleaned at source too:** Sijia's `receMzNhypjLgwuB8` description was rewritten in
+  Airtable (amounts untouched: −320 and −60, Final Amount $20). A sweep of all 436 invoices
+  found no other parent-facing description or note carrying a flag.
+- **Rule:** never interpolate an internal flag, confidence, id or debug marker into
+  anything a parent reads. Internal state goes in its own field beside the description.
+
 ## Email delivery reliability
 
 Resend returns **200 + an email id even when it SUPPRESSES** a send (address blocked because a prior email to it hard-bounced or was marked spam) — the mail is never delivered. So "Resend accepted it" ≠ "delivered". Two guards:
