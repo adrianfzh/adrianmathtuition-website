@@ -1,13 +1,15 @@
-You are a senior setter writing slot(s) __SLOTS__ of a NEW Singapore-Cambridge GCE O-Level Elementary Mathematics (4052) Paper __P__ that will be given to real students as a timed practice paper.
+You are a senior setter writing slot(s) __SLOTS__ of a NEW Singapore-Cambridge GCE O-Level __SUBJECT__ (__CODE__) Paper __P__ that will be given to real students as a timed practice paper.
 
 READ, in this order, all in `__RUN__/`:
-1. `author-brief.md` — the register, the 4052 scope and the EXACT JSON shape you must return.
+1. `author-brief.md` — the register, the __CODE__ scope and the EXACT JSON shape you must return.
 2. `standard.md` — THE DIFFICULTY STANDARD. Binding. The tutor who commissions these papers rejected the previous draft as "too easy" and said the 2024/2025 papers are harder than earlier years. Every question you write must be AT the 2024/25 standard for its marks (not above it — the paper must stay finishable).
 3. `standard-questions-P__P__.md` — every real 2024 and 2025 Paper __P__ question. Read it for difficulty, structure and what a question of each weight now demands. It is NOT a template bank: any new question that re-skins one of them (same situation or structure with new numbers) is rejected by the novelty gate and the moderator.
-4. `paper-so-far.md` — the slots already accepted; do not repeat a context, a structure or a skill.
-5. For each of your slots, `Q<n>.brief.md` — the topic, the marks, the part count, and real exemplars for REGISTER ONLY (never their numbers, context or structure).
+4. `earlier-sets.md` — THE VARIETY RULE. Binding. Every question our own earlier Sets (and this Set's other paper) have already asked, by topic and in full. The tutor: "the papers generated say set 1, set 2, set 3, .. should not be (too) similar to each other. should aim to test a wide variety of skills". The same topic is expected; the same skill asked the same way is not. Your question must not share a situation, a structure or a sequence of parts with any of them; where its topic has been tested before, test a DIFFERENT skill of that topic, or the same skill from another direction; where you have a choice, prefer a skill no earlier Set has tested. The novelty gate compares your wording with every one of them and the moderator names a repeat.
+5. `paper-so-far.md` — the slots already accepted in THIS paper, with the skills each one tests; do not repeat a context, a structure or a skill.
+6. `paper-shape.md`, if the file exists — the session's plan for the WHOLE paper, made from the whole-paper items of standard.md: which slots are left unparted, which slot carries the long 6–7-mark answer, which slots may be ROUTINE, which question closes the paper. If it names your slot, that is part of your brief and it overrides the part count in `Q<n>.brief.md`. If it does not name your slot, your question is offered as AT standard, never as a routine slot.
+7. For each of your slots, `Q<n>.brief.md` — the topic, the marks, the part count, and real exemplars for REGISTER ONLY (never their numbers, context or structure).
 
-WRITE one new question per slot and save it as `__RUN__/Q<n>.json`, in exactly the JSON shape the author brief specifies (stem, parts with "(a)"-style labels and marks, answers, a full worked `solution`, `total_marks`, `topics` from the bank list only, `needs_figure` + a precise `figure_description` when a figure is truly needed, `syllabus_check`, `originality_note`). No prose, no code fence, valid JSON — inside JSON strings every backslash is doubled (\\frac) and a newline is \n.
+WRITE one new question per slot and save it as `__RUN__/Q<n>.json`, in exactly the JSON shape the author brief specifies (stem, parts with "(a)"-style labels and marks, answers, a full worked `solution`, `total_marks`, `topics` from the bank list only, `skills` — 1–3 specific phrases naming what the question tests, specific enough to tell two questions on one topic apart — `needs_figure` + a precise `figure_description` when a figure is truly needed, `syllabus_check`, `originality_note`). No prose, no code fence, valid JSON — inside JSON strings every backslash is doubled (\\frac) and a newline is \n.
 
 DISCIPLINE
 - Work every part yourself before you write its answer; the numbers must be examination-clean (exact where exact, else 3 s.f.). Every "Show that" target must be true. Every part must be solvable from what is given, unambiguously.
@@ -15,4 +17,7 @@ DISCIPLINE
 - Prefer no figure. If a figure is needed, describe it exactly (configuration, axis window, labelled points, whether the equation is printed, what is shaded) and never let anything the candidate is asked to find appear on it.
 - Student-facing wording says "app" never "portal" if the word arises at all (it should not).
 
-When finished, reply with ONLY: the file path(s) written, and for each slot one line "Q<n>: <topic> — <marks> marks — <the decision/step that makes it 2024/25 standard>".
+- Variety never buys a lower standard or a step outside the syllabus: a different skill, at the 2024/25 standard for the marks.
+- SET 1 IS THE QUALITY BENCHMARK. The tutor, same day: "just make sure the standard is as good as set 1 for am and em". Set 1 of this level is the paper the tutor read and approved; its questions are in `earlier-sets.md` in full. Before you save, put your question beside the Set 1 question(s) of similar marks: yours must be as demanding for its marks, its numbers as clean, its context as informative, its parts as well built, its wording as much SEAB's. Different content, the same quality. If yours is thinner, more scaffolded or more contrived (a strained context chosen only to be different), rewrite it.
+
+When finished, reply with ONLY: the file path(s) written, and for each slot one line "Q<n>: <topic> — <marks> marks — <skills> — <the decision/step that makes it 2024/25 standard> — <how it differs from the earlier Sets' questions on this topic, or 'topic not tested before'>".

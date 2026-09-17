@@ -152,7 +152,7 @@ method: `standard.mjs` writes `standard.md` (the written 2024/25 standard, now
 `.claude/skills/gce-paper/reference/em-standard-2024-2025.md`) and
 `standard-questions-P<n>.md` (all 54 P1 / 18 P2 real 2024+2025 questions) into the run,
 the four per-slot prompts became templates under the skill's `prompts/` and every one of
-them carries the standard; the moderator's verdict gained `standard: at|below|above`
+them carries the standard; the moderator's verdict gained `standard: at|below|above` (plus `routine` for A Math since 17 Sep 2026)
 and scores a below- or above-standard slot ≤ 3 so `assemble` rejects it. 24 of 36 slots
 took at least one repair round (P1 Q3 Q4 Q7 Q8 Q10–13 Q15 Q16 Q18 Q20–22 Q25; every P2
 slot, P2 Q6 three rounds); 30 accepted at 5/5, six at 4/5 after a polish. JSON in
@@ -168,6 +168,90 @@ title the app shows (`setPaperTitle`: "E Math · Set 1 · Paper 1 · O-Level for
 the draft PDF/DOCX and the answer key at the end is black. The durable copy of every
 output + figure spec is `~/Desktop/AdrianMath/GCE Sets/E Math Set 1/` (the scratchpad
 is wiped on reboot).
+
+**Sets must differ from each other — the variety rule (17 Sep 2026).** Adrian: "the
+papers generated say set 1, set 2, set 3, .. should not be (too) similar to each other.
+should aim to test a wide variety of skills". Until then a new Set was only compared
+with the REAL GCE papers, so Set 2 could quietly re-ask Set 1. What the method does now:
+
+- `generate.mjs brief` reads every question our own Sets of the level have asked — the
+  bank's `school='AdrianMath'`, `exam_type='Set n'` rows (both papers), plus any assembled
+  paper JSON in `data/gce-generated/` not in the bank yet, plus the `--companion` paper;
+  the paper being rewritten is left out (`--set N`), its sister paper is kept. It writes
+  `earlier-sets.md` (the rule, "already tested by topic", every question in full) and
+  `earlier-sets.json`, and each `Q<n>.brief.md` gains "OUR OWN EARLIER SETS ON THIS
+  TOPIC — test a different skill". `plan.json` carries `variety: true` and
+  `earlier_sets`; the prompt version is `gce-author-v2`.
+- The author's JSON gains `skills` — 1–3 specific phrases naming what the question
+  tests. `paper-so-far.md` lists them per accepted slot, `publish.mjs` stores them as
+  `gen_meta.skills`, and the next Set's `earlier-sets.md` shows them per topic. Rows
+  published before 17 Sep 2026 (A Math Set 1, E Math Set 1) carry none; their opening
+  words and full text are shown instead.
+- `check` fails a slot with no `skills`, and runs the trigram-Jaccard comparison a second
+  time against the earlier-Set questions at the same 0.4 ceiling
+  (`gates.novelty.nearest_set` / `jaccard_set`). `Q<n>.moderate.md` gains the earlier-Set
+  questions on the slot's topic(s) and the three nearest in wording.
+- The moderator has a third job, VARIETY: the same topic is expected, the same skill
+  asked the same way is not. A repeat is named in `repeats_set` and `assemble` rejects
+  the slot (`gates.pass && all_agree && !too_close_to && !repeats_set && as_good_as_set1 !== false && score >= 4`).
+- `manifest.mjs` prints each slot's skills and its nearest earlier-Set question — read
+  the skills column once for clustering before handing the paper over.
+- A run dir briefed before 17 Sep 2026 has no `variety` flag and is checked as it was
+  written. Variety never buys a lower standard or a step outside the syllabus.
+
+**Set 1 is the quality benchmark (17 Sep 2026).** Adrian, the same day: "just make sure
+the standard is as good as set 1 for am and em". Set 1 of each level is the paper he read
+and approved, so it is shown to every author and moderator for two reasons: what not to
+repeat, and the quality to reach.
+- `earlier-sets.md` carries a QUALITY BENCHMARK section and ALWAYS prints Set 1 in full
+  (the full-text list is otherwise the newest three Sets) — `BENCHMARK_SET` in
+  `generate.mjs`.
+- The author puts the new question beside the Set 1 question(s) of similar marks before
+  saving: as demanding for the marks, numbers as clean, a context that carries real
+  information, parts that build, SEAB's wording.
+- The moderator's fourth job is AS GOOD AS SET 1: thinner, more scaffolded, more contrived
+  (a strained context chosen only to be different) or less clean → score ≤ 3,
+  `as_good_as_set1: false`, and `assemble` rejects the slot.
+- Both written standards were checked against the approved Set 1 papers on 17 Sep 2026
+  (a moderator-style read of every Set 1 question under each document's own test); the
+  result is recorded at the foot of each reference file (§7). The level was right and
+  the wording was too literal: read word for word, the E Math document called 3 of 36
+  Set 1 questions above standard and the A Math one called 5 of 23 below and 1 above. Both were reworded until every Set 1
+  question is at standard (A Math: at standard, or a ROUTINE slot inside an allowance of
+  three questions and 26 marks a paper — Set 1's own level, inside the real papers'
+  14–27).
+
+**The whole paper is the session's check (17 Sep 2026).** The same read found that Set 1
+is good question by question but is not the 2024/25 paper SHAPE. E Math Set 1 P1 is a
+little harder than the real P1, has almost no explain / show-that marks and the Set has
+no geometric proof. A Math Set 1 is more guided than the real papers: 68 answer spaces
+against 51 and 46, no part above 5 marks, one unparted question against eight and
+seven, 22 printed show/prove targets against 9–12, no linear law, no exponential model.
+No slot's author or moderator can see any of that, so:
+- each standard separates the per-question items from the whole-paper items (E Math §4
+  item 13, A Math §4 List B). A slot is never rejected for a whole-paper item.
+- before wave 1 the session writes `$RUN/paper-shape.md` — which slots stay unparted,
+  which carries the 6–7-mark answer, which may be routine, which closes the paper. The
+  author and repair prompts read it; it overrides the advisory part count of a slot
+  brief (no gate counts parts).
+- the moderator's verdict gained `standard: "routine"` (A Math only, scored 4) and
+  "re-mark" fixes when the marks do not match the work. `assemble` does not read
+  `standard`, so neither changes acceptance.
+- `assemble` prints a `paper shape` line and writes `paper-shape-report.json` (answer
+  spaces, unparted questions, answers of 6+ and of ≤2 marks, show/prove targets, explain
+  answers, routine slots and their marks). On Set 1 it reproduces the numbers above
+  (A Math 36 + 32 answer spaces, 12 + 10 targets). A miss is repaired at assembly or by
+  re-briefing one slot.
+- **Open with Adrian:** whether later A Math Sets should move toward the real paper's
+  shape (written in, at the near edge of the real range) or keep Set 1's more guided
+  shape. To keep Set 1's shape, relax A Math items 3b, 6 and 13 and nothing else.
+
+**A Math has a written standard too (17 Sep 2026).**
+`.claude/skills/gce-paper/reference/am-standard-2024-2025.md` — all 48 questions of the
+2024 + 2025 4049 papers read against the 137 of 2019–2023 (2019–2020 are the older 4047
+syllabus). `standard.mjs` copies it into an A Math run as `standard.md`, as it does the
+E Math one. The four prompt templates serve both levels: `render.sh` reads the run's
+`plan.json` key and fills in the subject and syllabus code.
 
 The agent step was validated blind on 9 Sep 2026: an Opus agent given only P1 Q13's
 `figure_description` and the `--families`/`--doc` output chose `function-graph`, wrote a

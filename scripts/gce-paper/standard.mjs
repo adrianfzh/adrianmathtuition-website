@@ -55,7 +55,8 @@ const qPath = join(RUN, `standard-questions-P${paperNo}.md`);
 writeFileSync(qPath, out.join('\n'));
 console.log(`${qPath}  (${rows.length} questions: ${YEARS.map(y => `${y}: ${rows.filter(r => r.ref.startsWith(`GCE ${y} `)).length}`).join(', ')})`);
 
-const ref = level === 'EM' ? join(ROOT, '.claude', 'skills', 'gce-paper', 'reference', 'em-standard-2024-2025.md') : null;
+const refFile = { EM: 'em-standard-2024-2025.md', AM: 'am-standard-2024-2025.md' }[level];
+const ref = refFile ? join(ROOT, '.claude', 'skills', 'gce-paper', 'reference', refFile) : null;
 const sPath = join(RUN, 'standard.md');
 if (ref && existsSync(ref)) {
   writeFileSync(sPath, readFileSync(ref, 'utf8'));

@@ -25,6 +25,32 @@ the gates, the figure files, publishing). Student-facing side:
 - **Never re-skin a real GCE question.** The novelty gate (word-trigram Jaccard ≤ 0.4
   against every real GCE question of the level) is a floor, not the standard; the
   moderator also rejects a slot that names an exemplar as its template.
+- **Never repeat our own earlier Sets.** Adrian, 17 Sep 2026: "the papers generated say
+  set 1, set 2, set 3, .. should not be (too) similar to each other. should aim to test a
+  wide variety of skills". The same topic is expected (a GCE paper covers the syllabus
+  every year); the same skill asked the same way is not. `brief` puts every question our
+  earlier Sets asked in front of every author and moderator (`earlier-sets.md`), the
+  novelty gate compares against them too, the moderator names a repeat in `repeats_set`
+  and `assemble` rejects it. Variety never buys a lower standard or a step outside the
+  syllabus.
+- **Set 1 is the quality benchmark.** Adrian, 17 Sep 2026: "just make sure the standard is
+  as good as set 1 for am and em". Set 1 of each level is the paper he read and approved
+  (A Math Set 1: "a math set 1 paper was good"). Every later Set must be as good,
+  question for question: as demanding for its marks, numbers as clean, contexts that
+  carry real information, parts that build, SEAB's wording, an exactly right key.
+  `earlier-sets.md` always carries Set 1 in full for this reason, the author and the
+  moderator each put the new question beside the Set 1 question of similar marks, the
+  moderator writes `as_good_as_set1`, and `assemble` rejects a `false`. Different
+  content, the same quality. Both written standards (`reference/*-standard-2024-2025.md`)
+  were checked against Set 1 on 17 Sep 2026 and their wording corrected until every Set 1
+  QUESTION reads as at standard (A Math: at standard or a routine slot inside the
+  allowance). As whole PAPERS Set 1 is not the 2024/25 shape, and each document says so
+  at its foot (§7): E Math Set 1 P1 is a little harder than the real P1 and light on
+  explain / show-that marks, with no geometric proof; A Math Set 1 is more guided than
+  the real papers (68 answer spaces against 51 and 46, no part above 5 marks, one
+  unparted question, 22 printed targets against 9–12, no linear law). So a later Set
+  matches Set 1 question for question and moves the paper's SHAPE toward the real paper
+  — step 1c and the whole-paper check in step 4.
 - **The blind solver is a different model from the author** (Opus solves what Fable
   wrote) and sees ONLY `Q<n>.solve.md` — never the key.
 - **Nothing goes into the bank until Adrian has read the paper** (checkpoint 2 below).
@@ -80,7 +106,9 @@ older than their input and re-spawn ONLY that work — never the whole wave.
 ls data/gce-generated/                                    # seeds already written
 ```
 Seed = the next unused integer for that key; the Set number defaults to the seed
-(Set 1 = seed 1). A Set is TWO papers (P1 + P2) — plan both; each paper publishes
+(Set 1 = seed 1) — **when they differ, pass `--set <N>` to `brief` as well as to
+`assemble`/`publish`** (E Math Set 1 is seed 2, so E Math Set 2 is `--seed 3 --set 2`):
+the variety step uses it to know which paper is being written. A Set is TWO papers (P1 + P2) — plan both; each paper publishes
 on its own and appears in the app on its own.
 
 ### 1. Brief (deterministic)
@@ -90,8 +118,22 @@ node scripts/gce-paper/generate.mjs brief --key GCE-AM-P1 --seed 2 --out "$RUN"
 ```
 Writes `author-brief.md` (SEAB register, 4049 scope, the JSON shape every author must
 return), `Q<n>.brief.md` per slot (topic, marks, real GCE questions on that topic as
-STYLE anchors only), `paper-so-far.md`, `corpus.json`, `plan.json`. Read `plan.json`'s
-slot list once; that is the wave plan.
+STYLE anchors only, then OUR OWN earlier Sets' questions on that topic — test something
+else), `paper-so-far.md`, `corpus.json`, `plan.json`, and the variety files
+`earlier-sets.md` + `earlier-sets.json`. Read `plan.json`'s slot list once; that is the
+wave plan. When planning P2, pass `--companion <the P1 paper JSON>`: its topics are
+down-weighted and its questions join `earlier-sets.md` before it is published.
+
+**The variety files (17 Sep 2026).** `earlier-sets.md` = every question our own Sets of
+this level have asked — the bank's `AdrianMath · Set n` rows, plus any assembled paper in
+`data/gce-generated/` on this machine that is not in the bank yet, plus the companion;
+the paper being rewritten is left out, its sister paper is kept. It opens with the rule,
+then "already tested, by topic" (each question's `skills`, or its opening words when the
+row predates `skills`), then every question in full. The brief's log line says how many
+it found (`36 earlier Set questions: Set 1 P1, Set 1 P2`) — **if it says `none` and a Set
+of this level is published, stop: the bank read failed.** `plan.json` carries
+`variety: true`; a run dir briefed before 17 Sep 2026 has no flag and is checked as it
+was written.
 
 ### 1b. The standard (deterministic) — the 2024/2025 papers in front of every agent
 
@@ -100,8 +142,9 @@ node scripts/gce-paper/standard.mjs --run "$RUN"          # --years 2024,2025 is
 ```
 Writes `standard-questions-P<n>.md` (every real GCE 2024 + 2025 question of that paper
 number, from the run's corpus, in Q order) and `standard.md` (the written standard for
-the level — E Math: [`reference/em-standard-2024-2025.md`](reference/em-standard-2024-2025.md);
-A Math gets a placeholder until one is written). **Why this step exists** — Adrian,
+the level — E Math: [`reference/em-standard-2024-2025.md`](reference/em-standard-2024-2025.md),
+A Math: [`reference/am-standard-2024-2025.md`](reference/am-standard-2024-2025.md), written
+17 Sep 2026 from all 48 questions of the 2024 + 2025 papers against the 137 of 2019–2023). **Why this step exists** — Adrian,
 12 Sep 2026, on the 11 Sep E Math paper: "sep 11 set was too easy, must know that the
 standard for o levels got higher the recent years, like 2024/2025 are harder compared to
 previous years." The exemplars in `Q<n>.brief.md` are weighted by syllabus cut and mark
@@ -111,11 +154,31 @@ The rule every prompt below carries: **every slot AT the 2024/25 standard for it
 not below (the moderator scores it ≤ 3 and `assemble` rejects it), not above (the paper
 must stay finishable)** — and any re-skin of a 2024/25 question is `too_close_to`.
 
+### 1c. Plan the paper's shape (session) — `paper-shape.md`
+
+A slot's author and moderator see one question. Nobody but the session sees the paper,
+so the whole-paper items of the standard are the session's: **A Math §4 List B**
+(unparted questions, the 6–7-mark answer, the general constant, forced rejections, the
+answer-space count, the routine allowance, linear law and an exponential model across
+the Set) and **E Math §4 item 13** (unparted P1 questions, routine marks, top-of-band
+share, explain / show-that questions, exactly three 5+ mark parts in P2, one
+congruence or similarity proof across the Set). Before wave 1, read that part of
+`standard.md` beside `plan.json` and write `$RUN/paper-shape.md`: one line per slot
+that the plan touches — "Q4: leave unparted, one model worth 5", "Q9: carries the
+7-mark chain, no intermediate answer printed", "Q2, Q6: may be routine", "Q13 closes
+the paper, the hardest question", "Q7: the linear-law question" — and nothing for the
+slots it does not touch. Authors and the repair author read it; when it names a slot it
+overrides the advisory part count in `Q<n>.brief.md` (no gate counts parts). For P2,
+plan against what P1 already carries — the across-the-Set items are met once between
+the two papers. Keep it short: it is a plan for where the shape comes from, not a
+second brief.
+
 ### 2. Per slot — author → check → blind solve → moderate → repair
 
 The prompts are TEMPLATES in [`prompts/`](prompts/) (`author.md`, `blind.md`,
-`moderate.md`, `repair.md` — E Math 4052 wording; edit the syllabus code and the
-brief's name for A Math). Render one with the placeholders filled and paste the file's
+`moderate.md`, `repair.md` — one set for both levels: `render.sh` reads the run's
+`plan.json` and fills in Additional Mathematics 4049 or Elementary Mathematics 4052).
+Render one with the placeholders filled and paste the file's
 contents as the agent prompt:
 
 ```bash
@@ -126,30 +189,39 @@ zsh .claude/skills/gce-paper/prompts/render.sh repair   "$RUN" 1 4
 ```
 
 **Author** (Fable agent) — `prompts/author.md`: reads `author-brief.md`, `standard.md`,
-`standard-questions-P<n>.md`, `paper-so-far.md`, then its `Q<n>.brief.md`s; writes
-`Q<n>.json` in the brief's JSON shape. The discipline block (work every part yourself,
+`standard-questions-P<n>.md`, `earlier-sets.md`, `paper-so-far.md`, then its
+`Q<n>.brief.md`s; writes `Q<n>.json` in the brief's JSON shape, including `skills` — 1–3
+phrases naming what the question tests, specific enough to tell two questions on one
+topic apart ("reverse percentage through two successive changes", never "percentage").
+They are stored on the bank row (`gen_meta.skills`) and shown to the next Set's authors. The discipline block (work every part yourself,
 difficulty by what the candidate must DECIDE, prefer no figure, "app" never "portal") is
 in the template. Reply expected: the file path(s) + one line per slot naming the step
-that makes it 2024/25 standard.
+that makes it 2024/25 standard and how it differs from the earlier Sets.
 
 **Gates** (deterministic):
 ```bash
 node scripts/gce-paper/generate.mjs check --run "$RUN" --slots <n>
 ```
-→ `Q<n>.gates.json` (marks sum, topics ⊂ bank names, solution present, novelty
-nearest-neighbour), plus `Q<n>.solve.md` (question only) and `Q<n>.moderate.md`
-(question + key + exemplars). A failed gate → straight to repair.
+→ `Q<n>.gates.json` (marks sum, topics ⊂ bank names, solution present, `skills` named,
+novelty nearest-neighbour against the real GCE papers AND against our own earlier Sets —
+`novelty.nearest_set` / `jaccard_set`, same 0.4 ceiling), plus `Q<n>.solve.md` (question only) and `Q<n>.moderate.md`
+(question + key + exemplars + the earlier-Set questions on the same topic and the
+nearest in wording). A failed gate → straight to repair.
 
 **Blind solve** (Opus agent) — `prompts/blind.md`: opens ONLY `Q<n>.solve.md` (which
 carries its own instructions and the `{"answers": {...}, "solvable": bool, "issues": [...]}`
 shape) and writes `Q<n>.blind.json`. It is never told a key exists.
 
 **Moderate** (Fable agent) — `prompts/moderate.md`: reads `Q<n>.moderate.md` (its full
-brief: check the key against the blind solve, judge the question), `standard.md`,
-`standard-questions-P<n>.md` and `Q<n>.gates.json`; writes `Q<n>.verdict.json` as
+brief: check the key against the blind solve, judge the question, judge the variety),
+`standard.md`, `standard-questions-P<n>.md`, `earlier-sets.md` and `Q<n>.gates.json`; writes `Q<n>.verdict.json` as
 `{parts:[{label, agree, note}], all_agree, key_verdict, score:1-5, standard:"at"|"below"|"above",
-fixes:[…], too_close_to:null|"<ref>", why}`. `assemble` accepts only
-`gates.pass && all_agree && !too_close_to && score >= 4`. Below or above the 2024/25
+fixes:[…], too_close_to:null|"<ref>", repeats_set:null|"<Set ref>", as_good_as_set1:bool, why}`. `assemble`
+accepts only `gates.pass && all_agree && !too_close_to && !repeats_set && as_good_as_set1 !== false && score >= 4`.
+`as_good_as_set1: false` = thinner, more scaffolded, more contrived or less clean than the
+Set 1 question of similar marks (score ≤ 3, with what Set 1 does that the slot does not).
+`repeats_set` = the same situation, structure, sequence of parts, or the same skill asked
+the same way as a question of an earlier Set (or of this Set's other paper). Below or above the 2024/25
 standard → score ≤ 3 with concrete fixes.
 
 **Repair** (Fable agent, only when needed) — `prompts/repair.md`: the author again with
@@ -203,9 +275,28 @@ node scripts/gce-paper/manifest.mjs "$RUN/<key>-seed<n>.json" --md
 python3 scripts/gce-paper/export-docx.py "$RUN/<key>-seed<n>.json" --figures "$RUN" --out "$OUT"
 ```
 `assemble` accepts a slot only when gates pass, blind solve and key agree on every part,
-style ≥ 4/5 and no re-skin is named; it renders the paper PDF (answer key on) and the
+style ≥ 4/5, no re-skin is named and no earlier Set's question is repeated; the manifest
+lists each slot's skills and its nearest earlier-Set question. Read the skills column
+down the page once: a paper whose skills cluster (three slots all "solve a quadratic")
+is a repair, even when every slot passed on its own; it renders the paper PDF (answer key on) and the
 solutions booklet through the SAME renderers `/app/print` uses. `export-docx.py` writes
 `<name>.docx` + `<name>-solutions.docx`.
+
+**The whole-paper check (session, every paper).** `assemble` prints a `paper shape`
+line and writes `paper-shape-report.json`: answer spaces, unparted questions, answers
+of 6+ marks and the largest, answers of 2 marks or fewer, show/prove targets, explain
+answers, the slots the moderator called `routine` with their marks, and the last
+question's verdict. Put those counts beside A Math List B or E Math item 13 in
+`standard.md` and beside your `paper-shape.md`. The counts are counted from the text,
+so read the paper as well: forced rejections, the top-of-band share and "the hardest
+part comes last" are judged, not counted. A miss is repaired at assembly — unpart a
+slot, merge two parts, move marks between parts (the moderator's "re-mark" fixes name
+them), reorder questions so the hardest closes — or by re-briefing ONE slot with a
+line added to `paper-shape.md`. It is never a reason to reject a slot that passed, and
+never a reason to lower a question below Set 1. A Math only: routine slots over the
+allowance (three questions, 26 marks a paper) means the weakest routine slot is
+re-briefed as an at-standard question. Tell Adrian the counts when you hand the paper
+over, beside Set 1's and the real papers' (both are in §7 of the standard).
 
 Before handing over, page through every figure and construction page of the paper PDF
 yourself (`pdftotext -layout` per page to build the Q → page map, `pdftoppm -r 110 -f N -l N`
@@ -239,7 +330,8 @@ curl -s -H "Authorization: Bearer $ADMIN_PASSWORD" https://www.adrianmathtuition
 ## What to tell Adrian at the end
 
 The paper's totals and figure count, where the DOCX is, what the moderator flagged and
-how it was repaired, which slots needed more than one round, and — after publishing —
+how it was repaired, which slots needed more than one round, how the paper differs from
+the earlier Sets (the skills it tests that they did not), and — after publishing —
 that Set N is live in the app for <level> students. Trade-offs of a Set row (say them
 once, when a new set is published): Set rows sit in the same `questions` table, so they
 also join topic sheets, mock draws and practice pools for that level; they carry no

@@ -12,17 +12,22 @@
 //   1. PLAN     the GCE-* blueprint (data/paper-blueprints.json, derived from the real
 //               GCE papers) walked with the prelim builder's own walkTopics/targetMarks
 //               → one topic and one mark target per slot.                    [brief]
-//   2. AUTHOR   a Claude Fable agent reads Q<n>.brief.md + paper-so-far.md and writes
-//               Q<n>.json — a NEW question in SEAB register; real GCE questions on the
-//               topic are shown as STYLE anchors only.                       [agent]
-//   3. GATES    marks sum, bank topic names, worked solution present, word-trigram
-//               Jaccard against every real GCE question of the level (a disguised
-//               copy fails).                                                   [check]
+//   2. AUTHOR   a Claude Fable agent reads Q<n>.brief.md + paper-so-far.md +
+//               earlier-sets.md (every question our own earlier Sets asked — the
+//               variety rule) and writes Q<n>.json — a NEW question in SEAB register
+//               that names the skills it tests; real GCE questions on the topic are
+//               shown as STYLE anchors only.                                 [agent]
+//   3. GATES    marks sum, bank topic names, worked solution present, skills named,
+//               word-trigram Jaccard against every real GCE question of the level
+//               AND every question of our own earlier Sets (a disguised copy of
+//               either fails).                                                 [check]
 //   4. SOLVE    a Claude Opus agent reads ONLY Q<n>.solve.md (no key) and writes
 //               Q<n>.blind.json.                                              [agent]
 //   5. MODERATE a Claude Fable agent reads Q<n>.moderate.md (question + key + the
 //               exemplars) and Q<n>.blind.json, compares part by part, scores "reads
-//               like SEAB" 1–5, names a re-skinned exemplar → Q<n>.verdict.json. [agent]
+//               like SEAB" 1–5, names a re-skinned exemplar or a repeat of an earlier
+//               Set's question (repeats_set), as good as Set 1 (as_good_as_set1)
+//               → Q<n>.verdict.json.                                          [agent]
 //   6. REPAIR   a failing slot goes back to a Fable agent with the verdict (Q<n>.json
 //               rewritten), then 3–5 again; three strikes → the slot is left out.
 //   7. RENDER   the paper (answer key) + a solutions booklet through the SAME
@@ -40,7 +45,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const PROMPT_VERSION = 'gce-author-v1';
+const PROMPT_VERSION = 'gce-author-v2'; // v2 (17 Sep 2026): skills[] + the earlier-Sets variety rule
 const MATH_SUPABASE_URL = 'https://nempslbewxtlikfzachi.supabase.co';
 const NOVELTY_MAX = 0.4; // word-trigram Jaccard above this = a disguised copy
 
@@ -207,6 +212,91 @@ function pickExemplars(rows, topic, target, pos, cut, paperNo) {
   return { topical: chosen, positional };
 }
 
+// ------------------------------------------------------ earlier Sets ----
+// Adrian, 17 Sep 2026: "the papers generated say set 1, set 2, set 3, .. should not
+// be (too) similar to each other. should aim to test a wide variety of skills".
+// Every question our own Sets have already asked (the bank's AdrianMath · Set n rows
+// of this level, plus any assembled paper JSON on this machine that is not in the
+// bank yet, plus the --companion paper) is put in front of every author and
+// moderator, and the novelty gate compares against them as it does against the
+// real GCE papers. The paper being (re)written is left out; its sister paper
+// (same Set, other paper number) is kept — a Set's two papers must not repeat
+// each other either.
+// Adrian, 17 Sep 2026, same day: "just make sure the standard is as good as set 1 for
+// am and em". Set 1 of each level is the paper he read and approved (A Math: "a math
+// set 1 paper was good", 11 Sep 2026; E Math Set 1 published after his read-through,
+// 16 Sep 2026). So Set 1 is shown for TWO reasons: what not to repeat, and the
+// quality a later Set must reach. Its full text never drops out of earlier-sets.md.
+const BENCHMARK_SET = 1;
+const BENCHMARK_QUOTE = 'Adrian, 17 Sep 2026 (binding): "just make sure the standard is as good as set 1 for am and em"';
+const VARIETY_QUOTE = 'Adrian, 17 Sep 2026 (binding): "the papers generated say set 1, set 2, set 3, .. should not be (too) similar to each other. should aim to test a wide variety of skills"';
+async function fetchEarlierSets(env, level, { fam, paperNo, set, companionPath }) {
+  const items = new Map();
+  const put = (it) => { if (!(it.set === set && it.paper === paperNo) && it.text.length > 20 && !items.has(it.ref)) items.set(it.ref, it); };
+  const cols = 'id,exam_type,paper,question_number,total_marks,topics,question_text,parts,gen_meta';
+  for (let offset = 0; ; offset += 1000) {
+    const url = `${env.SUPABASE_URL}/rest/v1/questions?select=${cols}&school=eq.AdrianMath&level=eq.${level}` +
+      `&exam_type=like.Set*&deleted_at=is.null&order=id.asc&limit=1000&offset=${offset}`;
+    const res = await fetch(url, { headers: { apikey: env.SUPABASE_SECRET_KEY, Authorization: `Bearer ${env.SUPABASE_SECRET_KEY}` } });
+    if (!res.ok) throw new Error(`supabase ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    const page = await res.json();
+    for (const r of page) {
+      const n = Number(String(r.exam_type ?? '').replace(/\D/g, ''));
+      const pn = Number(r.paper), pos = parseInt(String(r.question_number ?? '').replace(/\D/g, ''), 10);
+      if (!n && n !== 0) continue;
+      put({ ref: `Set ${n} P${pn} Q${pos}`, set: n, paper: pn, pos, marks: r.total_marks, topics: r.topics ?? [],
+        skills: Array.isArray(r.gen_meta?.skills) ? r.gen_meta.skills : [], source: 'bank',
+        text: questionText({ stem: r.question_text, parts: Array.isArray(r.parts) ? r.parts : [] }) });
+    }
+    if (page.length < 1000) break;
+  }
+  const local = [];
+  const genDir = join(ROOT, 'data', 'gce-generated');
+  if (existsSync(genDir)) for (const f of readdirSync(genDir)) if (new RegExp(`^GCE-${fam}-P\\d-seed\\d+.*\\.json$`).test(f)) local.push(join(genDir, f));
+  if (companionPath) local.push(resolve(companionPath));
+  for (const f of local) {
+    let pj; try { pj = JSON.parse(readFileSync(f, 'utf8')); } catch { continue; }
+    const n = Number(pj.set ?? pj.seed), pn = Number(pj.paperNo ?? String(pj.key ?? '').split('-P')[1]);
+    for (const sl of pj.questions ?? []) {
+      const q = sl.question; if (!sl.accepted || !q) continue;
+      put({ ref: `Set ${n} P${pn} Q${sl.pos}`, set: n, paper: pn, pos: Number(sl.pos), marks: sl.target, topics: q.topics ?? [sl.topic],
+        skills: Array.isArray(q.skills) ? q.skills : [], source: 'local', text: questionText(q) });
+    }
+  }
+  return [...items.values()].sort((a, b) => a.set - b.set || a.paper - b.paper || a.pos - b.pos);
+}
+const oneLine = (text, n = 170) => { const t = String(text).replace(/\s+/g, ' ').trim(); return t.length > n ? `${t.slice(0, n)}…` : t; };
+const askedAs = (e) => (e.skills.length ? e.skills.join('; ') : oneLine(e.text));
+function earlierSetsDoc(earlier, set, paperNo) {
+  const head = `# Our own earlier Sets — what has already been asked
+
+${VARIETY_QUOTE}
+
+This is Set ${set}, Paper ${paperNo}. Below is every question our own Sets of this level have asked so far${earlier.some((e) => e.set === set) ? ` (including this Set's other paper)` : ''}: ${earlier.length} questions.
+
+THE VARIETY RULE — binding on every setter and moderator
+1. No question of this paper may share a SITUATION, a STRUCTURE or a SEQUENCE OF PARTS with any question below. The novelty gate compares word overlap with each of them exactly as it does with the real GCE papers; the moderator names a repeat in "repeats_set" and the slot is rejected.
+2. The same TOPIC is expected — a GCE paper covers the syllabus every year. The same SKILL asked the same way is not. Where a topic has been tested before, test a different skill of that topic, or the same skill from another direction (reversed, inside a context, as a proof, read from a graph, with the unknown moved).
+3. Across a Set's two papers and across Sets, cover the syllabus's skills WIDELY: where you have a choice, prefer a skill no earlier Set has tested over one that has been.
+4. Never trade the standard for variety: the question must still sit at the 2024/25 standard for its marks, inside the syllabus, in SEAB's register.
+
+THE QUALITY BENCHMARK — Set ${BENCHMARK_SET}
+${BENCHMARK_QUOTE}
+Set ${BENCHMARK_SET} of this level is the paper the tutor read and approved. It is shown below for two reasons: so that you do not repeat it, and so that you MATCH it. Every question of this paper must be at least as good as the Set ${BENCHMARK_SET} question of similar marks: as demanding for its marks, with numbers as clean, a context that carries real information, parts that build on each other, SEAB's wording, and a key that is exactly right. A question that is different from Set ${BENCHMARK_SET} but thinner, more scaffolded, more contrived or less clean than it is rejected. Different content, the same quality.
+`;
+  if (!earlier.length) return `${head}\n(No earlier Set of this level exists yet — this is the first. Rules 2–4 still hold inside this paper and between its two papers.)\n`;
+  const byTopic = new Map();
+  for (const e of earlier) for (const t of e.topics) { if (!byTopic.has(t)) byTopic.set(t, []); byTopic.get(t).push(e); }
+  const topicLines = [...byTopic.keys()].sort().map((t) => `### ${t}\n${byTopic.get(t).map((e) => `- ${e.ref} [${e.marks}] — ${askedAs(e)}`).join('\n')}`).join('\n\n');
+  // the file is read by every author and moderator: the by-topic list covers every
+  // Set, the full texts only the newest three (the gate still compares against all)
+  // plus Set 1, always — it is the quality benchmark
+  const allSets = [...new Set(earlier.map((e) => e.set))].sort((a, b) => b - a);
+  const newest = [...new Set([...allSets.slice(0, 3), ...allSets.filter((n) => n === BENCHMARK_SET)])];
+  const full = earlier.filter((e) => newest.includes(e.set)).map((e) => `### ${e.ref} (${e.marks} marks; ${e.topics.join(', ')})${e.skills.length ? `\nSkills: ${e.skills.join('; ')}` : ''}\n${e.text}`).join('\n\n');
+  return `${head}\n## Already tested, by topic\n\n${topicLines}\n\n## Earlier questions in full${newest.length < allSets.length ? ` (Sets ${[...newest].sort((a, b) => a - b).join(', ')} — older Sets are in the list above)` : ''}\n\n${full}\n`;
+}
+
 // ------------------------------------------------------------ briefs ----
 const SHAPE = {
   AM: {
@@ -254,15 +344,18 @@ DISCIPLINE
 - Prefer a question that needs no figure. Where the topic truly demands one (a plane geometry proof, a circle-properties diagram, a Venn diagram, a box-and-whisker plot, a cumulative frequency curve, a histogram, a solid, a graph grid), describe the configuration exactly so the question is answerable from the text alone, and set needs_figure true with a precise figure_description: the configuration, the axis window (x and y ranges), which points are labelled and how, whether the curve's equation is printed on the figure, what is shaded, and that NOTHING the candidate is asked to find or prove appears on it — a separate agent draws the figure from this text alone.
 - All mathematics in LaTeX between $…$: \\frac, \\sqrt, ^{ }, \\mathrm{e}^{x}, \\ln, \\lg, \\sin, \\cos, \\tan, \\sec, \\operatorname{cosec}, \\cot, \\pi, \\le, \\ge, ^\\circ, \\frac{dy}{dx}, \\int … \\,dx. No display environments, no \\[ \\], no markdown.
 - Answer key: the final answer of every part exactly as a marker writes it, and a full worked solution.
+- VARIETY. Read earlier-sets.md in this folder: every question our own earlier Sets have asked. Your question must not share a situation, a structure or a sequence of parts with any of them, and where its topic has been tested before it must test a DIFFERENT skill of that topic (or the same skill from another direction). Name what you test in "skills": 1–3 short phrases, each specific enough to tell two questions on one topic apart ("reverse percentage through two successive changes", "discriminant condition for a line to be tangent to a curve" — never just "percentage" or "quadratics").
 
 OUTPUT — write ONE JSON file (no prose, no code fence) of this shape:
-{"stem": string, "parts": [{"label": "(a)", "text": string, "marks": int, "answer": string, "subparts": [{"label": "(i)", "text": string, "marks": int, "answer": string}]}], "answer": string, "total_marks": int, "topics": [string], "needs_figure": bool, "figure_description": string, "solution": string, "syllabus_check": string, "originality_note": string}
+{"stem": string, "parts": [{"label": "(a)", "text": string, "marks": int, "answer": string, "subparts": [{"label": "(i)", "text": string, "marks": int, "answer": string}]}], "answer": string, "total_marks": int, "topics": [string], "skills": [string], "needs_figure": bool, "figure_description": string, "solution": string, "syllabus_check": string, "originality_note": string}
 "parts" is [] for a single-part question, whose final answer sits in "answer". "subparts" is omitted or [] when a part has none. The marks of the parts (and of the subparts within a part) must sum exactly to total_marks. Inside JSON strings every backslash is doubled (\\\\frac) and a newline is \\n.`;
 }
 
-function slotBrief({ shape, paperNo, pos, nSlots, total, target, slot, topic, exemplars }) {
+function slotBrief({ shape, paperNo, pos, nSlots, total, target, slot, topic, exemplars, earlier = [] }) {
   const pool = slot.topic_pool;
   const ex = exemplars.topical.map((r, i) => `[${i + 1}] ${refOf(r)} (${r.total_marks} marks; topics: ${r.topics.join(', ')})\n${r.text.slice(0, 1400)}`).join('\n\n');
+  const own = earlier.filter((e) => e.topics.includes(topic)).sort((a, b) => b.set - a.set || a.paper - b.paper || a.pos - b.pos).slice(0, 8);
+  const ownText = own.map((e) => `- ${e.ref} (${e.marks} marks)${e.skills.length ? ` — skills: ${e.skills.join('; ')}` : ''}:\n${e.text.slice(0, 700)}`).join('\n\n');
   const px = exemplars.positional.map((r) => `- ${refOf(r)} (${r.total_marks} marks; ${r.topics.join(', ')}):\n${r.text.slice(0, 900)}`).join('\n');
   return `# Question ${pos} — ${topic}, ${target} marks
 
@@ -275,6 +368,9 @@ SLOT
 
 ALREADY IN THIS PAPER — read paper-so-far.md in this folder before writing. Do not repeat a context, a structure or a topic already covered (a second question on a topic is only acceptable if it tests a different skill).
 
+OUR OWN EARLIER SETS ON THIS TOPIC — already asked. Test a DIFFERENT skill of ${topic} (or the same skill from another direction); never the same situation, structure or sequence of parts. The full list across all topics is earlier-sets.md.
+${ownText || '(none — no earlier Set has a question on this topic)'}
+
 EXEMPLARS — real SEAB questions on this topic. STYLE AND WEIGHT ONLY: your question must not resemble any of them in situation, numbers, unknowns, or the sequence of parts.
 ${ex || '(no exemplars on file for this topic — rely on the register in the brief)'}
 
@@ -286,14 +382,18 @@ ${px || '(none)'}
 const SOLVER_BRIEF = (shape) => `You are an expert O-Level ${shape.subject} (${shape.code}) examiner. Solve the question below completely and independently, exactly as the strongest candidate would. Work it fully in your reasoning, then return only final answers. Be exact where the question demands exact form; otherwise give 3 significant figures. For a "show that"/"prove" part answer "shown" only if you completed the argument and the target is true; if the target is false or the part cannot be done from the given information, say so in issues.
 Write ONE JSON file: {"answers": {"<part label, e.g. (a) or (b)(ii), or 'single'>": "<final answer as a marker writes it>"}, "solvable": bool, "issues": ["specific ambiguity / missing information / false target / step that cannot be done — or empty"]}`;
 
-const MODERATOR_BRIEF = (shape) => `You are a SEAB moderator for O-Level ${shape.subject} (${shape.code}). Two jobs.
+const MODERATOR_BRIEF = (shape, variety = false) => `You are a SEAB moderator for O-Level ${shape.subject} (${shape.code}). Two jobs.
 
 1. CHECK THE KEY. An independent examiner solved this question blind (their answers are in the .blind.json file beside this brief). Compare part by part with the setter's key below. Two answers AGREE when mathematically equivalent or differing only in presentation (0.5 vs 1/2; 3\\sqrt{5} vs 6.71 to 3 s.f.; a solution set in another order; "shown" vs "proved"). They DISAGREE when a value, a sign, a root, or an interval differs, or when the examiner reports the part cannot be done. Where they disagree, work the part yourself and say who is right.
 
 2. JUDGE THE QUESTION. Could it sit in the actual GCE paper at the stated position? Register (imperatives, precision demands, part labels, mark discipline), difficulty for the marks, syllabus scope, clarity, examination-clean numbers. Then check it against the exemplars listed below: it must not be a re-skin (same situation/structure with new numbers) of any of them.
 Scores: 5 = indistinguishable from a real question; 4 = a real question after a light edit; 3 = recognisably school-made; 2 = wrong weight or scope; 1 = unusable.
 
-Write ONE JSON file: {"parts": [{"label": string, "agree": bool, "note": string}], "all_agree": bool, "key_verdict": "one sentence — who is right where they differ", "score": 1|2|3|4|5, "fixes": ["specific edits that would raise the score — empty at 5"], "too_close_to": null | "<exemplar ref>", "why": "one or two sentences"}`;
+${variety ? `
+3. VARIETY. The section "OUR OWN EARLIER SETS" below lists questions our own earlier Sets (and this Set's other paper) have already asked on the same topic, and the ones nearest in wording. The same topic is expected; the same SKILL asked the same way is not. If this question shares a situation, a structure or a sequence of parts with one of them, or tests the same skill the same way, set "repeats_set" to that ref (the slot is then rejected) and say in "fixes" which different skill of the topic to test instead. Also check the setter's "skills" phrases are true of the question and specific (not just the topic name); if not, say so in "fixes".
+4. AS GOOD AS SET ${BENCHMARK_SET}. ${BENCHMARK_QUOTE}. Set ${BENCHMARK_SET} of this level is the paper the tutor read and approved; its questions are in earlier-sets.md in full. Put this question beside the Set ${BENCHMARK_SET} question(s) of similar marks: is it as demanding for its marks, are its numbers as clean, does its context carry real information, do its parts build, is the wording SEAB's? If it is thinner, more scaffolded, more contrived (a strained context chosen only to be different) or less clean than Set ${BENCHMARK_SET}, score it at most 3, set "as_good_as_set1" to false and say in "fixes" what Set ${BENCHMARK_SET} does that this does not.
+` : ''}
+Write ONE JSON file: {"parts": [{"label": string, "agree": bool, "note": string}], "all_agree": bool, "key_verdict": "one sentence — who is right where they differ", "score": 1|2|3|4|5, "standard": "at"|"routine"|"below"|"above" ("routine" only where standard.md defines a ROUTINE slot), "fixes": ["specific edits that would raise the score — empty at 5"], "too_close_to": null | "<exemplar ref>",${variety ? ' "repeats_set": null | "<Set ref, e.g. Set 1 P2 Q4>", "as_good_as_set1": bool,' : ''} "why": "one or two sentences"}`;
 
 // ---------------------------------------------------------- brief mode ----
 async function brief() {
@@ -335,8 +435,14 @@ async function brief() {
   const rows = await fetchGceRows(env, shape.level);
   log(`${rows.length} rows (${rows.filter((r) => r.year >= shape.cut).length} current-syllabus)`);
 
+  log('fetching our own earlier Sets of this level (the variety rule)…');
+  const earlier = await fetchEarlierSets(env, shape.level, { fam, paperNo, set: SET, companionPath });
+  log(`${earlier.length} earlier Set questions: ${[...new Set(earlier.map((e) => `Set ${e.set} P${e.paper}`))].join(', ') || 'none'}`);
+
   const dir = join(OUT_ROOT, 'runs', `${KEY}-seed${SEED}`);
   mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, 'earlier-sets.md'), earlierSetsDoc(earlier, SET, paperNo));
+  writeFileSync(join(dir, 'earlier-sets.json'), JSON.stringify(earlier));
   writeFileSync(join(dir, 'author-brief.md'), authorBrief(shape, topicList) + '\n');
   writeFileSync(join(dir, 'paper-so-far.md'), '# Already in this paper\n\n- (none yet)\n');
   const exemplarIds = {};
@@ -344,12 +450,12 @@ async function brief() {
     const slot = def.slots.find((s) => Number(s.pos) === p.pos);
     const exemplars = pickExemplars(rows, p.topic, p.target, p.pos, shape.cut, paperNo);
     exemplarIds[p.pos] = [...exemplars.topical, ...exemplars.positional].map((r) => ({ id: r.id, ref: refOf(r) }));
-    writeFileSync(join(dir, `Q${p.pos}.brief.md`), slotBrief({ shape, paperNo, pos: p.pos, nSlots: plan.length, total, target: p.target, slot, topic: p.topic, exemplars }));
+    writeFileSync(join(dir, `Q${p.pos}.brief.md`), slotBrief({ shape, paperNo, pos: p.pos, nSlots: plan.length, total, target: p.target, slot, topic: p.topic, exemplars, earlier }));
   }
   // the real GCE texts the novelty gate compares against (ids + text only)
   writeFileSync(join(dir, 'corpus.json'), JSON.stringify(rows.map((r) => ({ id: r.id, ref: refOf(r), topics: r.topics, text: r.text }))));
   writeFileSync(join(dir, 'plan.json'), JSON.stringify({
-    key: KEY, seed: SEED, shape, paperNo, total, prompt_version: PROMPT_VERSION, blueprint_derived_at: bp.source?.gce?.derived_at ?? null,
+    key: KEY, seed: SEED, set: SET, variety: true, earlier_sets: [...new Set(earlier.map((e) => `Set ${e.set} P${e.paper}`))], shape, paperNo, total, prompt_version: PROMPT_VERSION, blueprint_derived_at: bp.source?.gce?.derived_at ?? null,
     generated_at: new Date().toISOString(), topicList, must_appear: def.must_appear, plan, exemplars: exemplarIds,
   }, null, 1));
   console.log(dir);
@@ -366,7 +472,8 @@ function refreshPaperSoFar(dir, planJ) {
     if (!gates.pass) continue;
     const q = readJsonLoose(f);
     const ctx = String(q.stem || q.parts?.[0]?.text || '').replace(/\$[^$]*\$/g, '…').replace(/\s+/g, ' ').slice(0, 140);
-    lines.push(`- Q${p.pos} (${p.target} marks): ${(q.topics ?? [p.topic]).join(', ')} — ${ctx}`);
+    const sk = Array.isArray(q.skills) && q.skills.length ? ` — SKILLS: ${q.skills.join('; ')}` : '';
+    lines.push(`- Q${p.pos} (${p.target} marks): ${(q.topics ?? [p.topic]).join(', ')}${sk} — ${ctx}`);
   }
   writeFileSync(join(dir, 'paper-so-far.md'), `# Already in this paper\n\n${lines.length ? lines.join('\n') : '- (none yet)'}\n`);
 }
@@ -377,6 +484,12 @@ function check() {
   const corpus = JSON.parse(readFileSync(join(dir, 'corpus.json'), 'utf8'));
   const corpusGrams = corpus.map((r) => ({ ref: r.ref, g: grams(r.text) }));
   const shape = planJ.shape;
+  // plans written before 17 Sep 2026 carry no variety flag: their slots are
+  // checked as they were written (no skills[], no earlier-Sets comparison).
+  const variety = planJ.variety === true;
+  const earlierPath = join(dir, 'earlier-sets.json');
+  const earlier = variety && existsSync(earlierPath) ? JSON.parse(readFileSync(earlierPath, 'utf8')) : [];
+  const earlierGrams = earlier.map((e) => ({ ...e, g: grams(e.text) }));
   const targets = SLOTS ? planJ.plan.filter((p) => SLOTS.includes(p.pos)) : planJ.plan;
   const out = [];
   for (const p of targets) {
@@ -397,6 +510,20 @@ function check() {
     for (const r of corpusGrams) { const s = jaccard(g, r.g); if (s > nearest.score) nearest = { score: s, ref: r.ref }; }
     const novelty = { nearest: nearest.ref, jaccard: Math.round(nearest.score * 1000) / 1000 };
     if (nearest.score > NOVELTY_MAX) problems.push(`too close to ${nearest.ref} (trigram Jaccard ${nearest.score.toFixed(2)})`);
+    let nearSets = [];
+    if (variety) {
+      if (!Array.isArray(q.skills) || !q.skills.length || q.skills.some((k) => String(k).trim().length < 8)) problems.push('skills missing — 1–3 specific phrases naming what the question tests');
+      nearSets = earlierGrams.map((e) => ({ e, s: jaccard(g, e.g) })).sort((a, b) => b.s - a.s);
+      const top = nearSets[0];
+      novelty.nearest_set = top ? top.e.ref : null;
+      novelty.jaccard_set = top ? Math.round(top.s * 1000) / 1000 : 0;
+      if (top && top.s > NOVELTY_MAX) problems.push(`too close to our own ${top.e.ref} (trigram Jaccard ${top.s.toFixed(2)}) — the variety rule`);
+      // the same skill phrase as an earlier Set: not a failure by itself (a phrase can
+      // be asked from another direction), but the moderator is told.
+      const norm = (k) => String(k).toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+      const mine = new Set((q.skills ?? []).map(norm));
+      novelty.repeated_skills = earlier.filter((e) => e.skills.some((k) => mine.has(norm(k)))).map((e) => e.ref);
+    }
     const prev = existsSync(join(dir, `Q${p.pos}.gates.json`)) ? JSON.parse(readFileSync(join(dir, `Q${p.pos}.gates.json`), 'utf8')) : {};
     const gates = { pos: p.pos, pass: problems.length === 0, problems, novelty, marks, checked_at: new Date().toISOString(), rounds: (prev.rounds ?? 0) + 1 };
     writeFileSync(join(dir, `Q${p.pos}.gates.json`), JSON.stringify(gates, null, 1));
@@ -411,7 +538,13 @@ function check() {
       writeFileSync(join(dir, `Q${p.pos}.solve.md`), `${SOLVER_BRIEF(shape)}\n\nWrite your answers to Q${p.pos}.blind.json in this folder.\n\n# QUESTION ${p.pos} (${p.target} marks)\n\n${shown}\n`);
       const exRefs = (planJ.exemplars[p.pos] ?? []).map((e) => e.ref);
       const exText = corpus.filter((r) => exRefs.includes(r.ref)).map((r) => `[${r.ref}]\n${r.text.slice(0, 800)}`).join('\n\n');
-      writeFileSync(join(dir, `Q${p.pos}.moderate.md`), `${MODERATOR_BRIEF(shape)}\n\nRead Q${p.pos}.blind.json in this folder for the blind examiner's answers, then write Q${p.pos}.verdict.json there.\n\n# PAPER ${planJ.paperNo}, QUESTION ${p.pos} of ${planJ.plan.length}, ${p.target} MARKS\n\n${shown}\n\n# SETTER'S ANSWER KEY\n${answerKeyLines(q.parts, q.answer).join('\n') || '(none)'}\n\n# SETTER'S WORKED SOLUTION\n${String(q.solution ?? '')}\n\n# EXEMPLARS THE SETTER WAS SHOWN\n${exText}\n`);
+      // the moderator's variety evidence: earlier-Set questions on the same topic(s),
+      // plus the three nearest in wording whatever their topic
+      const sameTopic = earlier.filter((e) => e.topics.some((t) => (q.topics ?? []).includes(t)));
+      const nearRefs = nearSets.slice(0, 3).filter((x) => x.s > 0.15).map((x) => x.e.ref);
+      const ownShown = earlier.filter((e) => sameTopic.includes(e) || nearRefs.includes(e.ref));
+      const ownText = !variety ? '' : `\n\n# SETTER'S NAMED SKILLS\n${(q.skills ?? []).join('; ') || '(none)'}${novelty.repeated_skills?.length ? `\n(the same phrase was used by: ${novelty.repeated_skills.join(', ')})` : ''}\n\n# OUR OWN EARLIER SETS — same topic, and the nearest in wording\n${ownShown.length ? ownShown.map((e) => `[${e.ref}] (${e.marks} marks; ${e.topics.join(', ')})${e.skills.length ? ` skills: ${e.skills.join('; ')}` : ''}\n${e.text.slice(0, 800)}`).join('\n\n') : '(no earlier Set question on this topic)'}`;
+      writeFileSync(join(dir, `Q${p.pos}.moderate.md`), `${MODERATOR_BRIEF(shape, variety)}\n\nRead Q${p.pos}.blind.json in this folder for the blind examiner's answers, then write Q${p.pos}.verdict.json there.\n\n# PAPER ${planJ.paperNo}, QUESTION ${p.pos} of ${planJ.plan.length}, ${p.target} MARKS\n\n${shown}\n\n# SETTER'S ANSWER KEY\n${answerKeyLines(q.parts, q.answer).join('\n') || '(none)'}\n\n# SETTER'S WORKED SOLUTION\n${String(q.solution ?? '')}\n\n# EXEMPLARS THE SETTER WAS SHOWN\n${exText}${ownText}\n`);
     }
     out.push(gates);
     log(`Q${p.pos} ${gates.pass ? '✓' : '✗'} ${gates.pass ? `nearest ${novelty.nearest} @ ${novelty.jaccard}` : problems.join('; ')}`);
@@ -490,6 +623,31 @@ function graphPaperMajorPx(svg) {
   return minor * 5;
 }
 
+// Counts for the session's whole-paper check. An answer unit is a leaf part, or a
+// question with no parts — the same measure the two written standards use.
+function paperShape(ok) {
+  const units = [];
+  for (const s of ok) {
+    const q = s.question;
+    const walk = (list) => { for (const p of list ?? []) { if (p.subparts?.length) walk(p.subparts); else units.push({ pos: s.pos, marks: Number(p.marks) || 0, text: String(p.text ?? '') }); } };
+    if (q.parts?.length) walk(q.parts); else units.push({ pos: s.pos, marks: Number(q.total_marks) || s.target, text: String(q.stem ?? ''), unparted: true });
+  }
+  const routine = ok.filter((s) => s.verdict?.standard === 'routine');
+  return {
+    questions: ok.length,
+    answer_units: units.length,
+    unparted: units.filter((u) => u.unparted).length,
+    units_6plus: units.filter((u) => u.marks >= 6).length,
+    units_5plus: units.filter((u) => u.marks >= 5).length,
+    units_2orless: units.filter((u) => u.marks <= 2).length,
+    largest_unit: units.reduce((a, u) => Math.max(a, u.marks), 0),
+    printed_targets: units.filter((u) => /\b(show that|prove)\b/i.test(u.text)).length,
+    reason_units: units.filter((u) => /\b(explain|give a reason|justify|is (he|she|it) correct)\b/i.test(u.text)).length,
+    routine: { slots: routine.map((s) => `Q${s.pos}`), marks: routine.reduce((a, s) => a + s.target, 0) },
+    last_standard: ok.length ? ok[ok.length - 1].verdict?.standard ?? null : null,
+  };
+}
+
 async function assemble() {
   if (!RUN) throw new Error('--run <dir> required');
   const dir = resolve(RUN);
@@ -498,7 +656,7 @@ async function assemble() {
     const read = (suffix) => { const f = join(dir, `Q${p.pos}.${suffix}`); return existsSync(f) ? readJsonLoose(f) : null; };
     const gates = read('gates.json'), verdict = read('verdict.json'), blind = read('blind.json');
     const q = read('json');
-    const accepted = !!(q && gates?.pass && verdict?.all_agree === true && !verdict?.too_close_to && Number(verdict?.score) >= 4);
+    const accepted = !!(q && gates?.pass && verdict?.all_agree === true && !verdict?.too_close_to && !verdict?.repeats_set && verdict?.as_good_as_set1 !== false && Number(verdict?.score) >= 4);
     return { pos: p.pos, topic: p.topic, target: p.target, accepted, question: accepted ? q : null, draft: accepted ? null : q, gates, blind, verdict, exemplars: planJ.exemplars[p.pos] ?? [] };
   });
   const ok = questions.filter((s) => s.accepted);
@@ -517,6 +675,11 @@ async function assemble() {
   mkdirSync(OUT_ROOT, { recursive: true });
   writeFileSync(jsonPath, JSON.stringify(paper, null, 1) + '\n');
   log(`${ok.length}/${questions.length} accepted · ${ok.reduce((a, s) => a + s.target, 0)} marks · saved ${jsonPath}`);
+  // The whole-paper check (EM standard item 13, AM standard List B) is the session's, at
+  // the read-through. These counts are what it needs; nothing here accepts or rejects.
+  const shape = paperShape(ok);
+  writeFileSync(join(dir, 'paper-shape-report.json'), JSON.stringify(shape, null, 1) + '\n');
+  log(`paper shape · ${shape.answer_units} answer units · ${shape.unparted} unparted · ${shape.units_6plus} of 6+ marks (largest ${shape.largest_unit}) · ${shape.units_2orless} of ≤2 marks · ${shape.printed_targets} show/prove · ${shape.reason_units} explain · routine slots ${shape.routine.slots.join(', ') || 'none'} (${shape.routine.marks} marks) · last question: ${shape.last_standard ?? '?'}`);
   const missingMust = planJ.must_appear.filter((t) => !ok.some((s) => s.question.topics.includes(t)));
   if (missingMust.length) log(`⚠ must_appear not covered: ${missingMust.join(', ')}`);
   if (!ok.length) { console.log(JSON.stringify({ json: jsonPath, ok: 0 })); return; }
