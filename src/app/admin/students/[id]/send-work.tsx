@@ -87,6 +87,7 @@ export default function SendWorkCard({ studentId, studentName, studentLevel, sub
   const [title, setTitle] = useState('');
   // worksheet source
   const [wsSource, setWsSource] = useState<'upload' | 'library'>('library');
+  const [dragging, setDragging] = useState(false);
   const [libKind, setLibKind] = useState<'practice' | 'prelim'>('practice');
   const [library, setLibrary] = useState<LibraryEntry[] | null>(null);
   const [libPick, setLibPick] = useState<LibraryEntry | null>(null);
@@ -166,7 +167,9 @@ export default function SendWorkCard({ studentId, studentName, studentLevel, sub
         { contentType: 'application/pdf' },
       );
       setUploaded({ url: blob.url, name: f.name });
-      if (!title) setTitle(f.name.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ').trim());
+      // The title follows the file: empty, or still the last file's own name, → this file's name.
+      const fromName = (n: string) => n.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ').trim();
+      if (!title || (uploaded && title === fromName(uploaded.name))) setTitle(fromName(f.name));
     } catch (e) {
       setMsg({ ok: false, text: (e as Error).message });
     } finally { setUploading(false); }
@@ -354,10 +357,22 @@ export default function SendWorkCard({ studentId, studentName, studentLevel, sub
                 </div>
               )}
               {wsSource === 'upload' && (
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                // A drop zone (Adrian, 17 Sep 2026: "can I just drag and drop the
+                // pdf?") — drop a PDF anywhere on it, or tap to choose; the title
+                // fills itself from the file name either way (onFile).
+                <div
+                  onDragOver={e => { e.preventDefault(); if (!dragging) setDragging(true); }}
+                  onDragLeave={() => setDragging(false)}
+                  onDrop={e => { e.preventDefault(); setDragging(false); onFile(e.dataTransfer.files?.[0] || null); }}
+                  onClick={() => { if (!uploading) fileRef.current?.click(); }}
+                  style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', padding: '14px 16px', borderRadius: 14, cursor: uploading ? 'default' : 'pointer',
+                    border: `2px dashed ${dragging ? '#1e3a5f' : '#cbd5e1'}`, background: dragging ? '#eef2ff' : '#fafafa', transition: 'background .15s, border-color .15s' }}
+                >
                   <input ref={fileRef} type="file" accept="application/pdf,.pdf" style={{ display: 'none' }} onChange={e => onFile(e.target.files?.[0] || null)} />
-                  <button style={btnGhost} disabled={uploading} onClick={() => fileRef.current?.click()}>{uploading ? 'Uploading…' : (uploaded ? 'Replace PDF' : 'Choose PDF')}</button>
-                  {uploaded && <span style={{ fontSize: 13, color: '#166534' }}>✓ {uploaded.name}</span>}
+                  <button style={btnGhost} disabled={uploading} onClick={e => { e.stopPropagation(); fileRef.current?.click(); }}>{uploading ? 'Uploading…' : (uploaded ? 'Replace PDF' : 'Choose PDF')}</button>
+                  {uploaded
+                    ? <span style={{ fontSize: 13, color: '#166534' }}>✓ {uploaded.name}</span>
+                    : <span style={{ fontSize: 13, color: '#64748b' }}>or drag a PDF here — the title fills in from the file name</span>}
                 </div>
               )}
               <div>
