@@ -90,7 +90,8 @@ interface Profile {
   lastLesson: { date: string; mastery: string } | null;
   progress?: ProgressBlock;
   invoices: Invoice[];
-  payments: PaymentSummary;
+  /** null until the Billing part has loaded (fetched after the core paint, 18 Sep 2026). */
+  payments: PaymentSummary | null;
   sentInvoices: SentInvoice[];
   slots: SlotOpt[];
   portal: PortalActivity | null;
@@ -312,15 +313,31 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
     setTimeout(() => setToast(null), 3000);
   }
 
+  // Two requests (18 Sep 2026): `core` paints the profile; `billing` (invoices,
+  // payments, the e-mail archive — the slow Airtable pulls) follows behind it,
+  // so the page opens in well under a second and Billing is ready by the time
+  // Adrian taps it.
+  const [billingLoaded, setBillingLoaded] = useState(false);
+  const fetchBilling = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/admin/student-profile?id=${studentId}&part=billing`);
+      if (!res.ok) return;
+      const b = await res.json() as { invoices: Invoice[]; payments: PaymentSummary | null; sentInvoices: SentInvoice[] };
+      setData(d => d ? { ...d, invoices: b.invoices, payments: b.payments, sentInvoices: b.sentInvoices } : d);
+      setBillingLoaded(true);
+    } catch { /* the Billing tab says it is still loading */ }
+  }, [studentId]);
   const fetchProfile = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      const res = await fetch(`/api/admin/student-profile?id=${studentId}`);
+      const res = await fetch(`/api/admin/student-profile?id=${studentId}&part=core`);
       if (!res.ok) throw new Error((await res.json()).error || 'Failed to load');
       setData(await res.json());
+      setBillingLoaded(false);
+      void fetchBilling();
     } catch (e: unknown) { setError(e instanceof Error ? e.message : 'Failed'); }
     finally { setLoading(false); }
-  }, [studentId]);
+  }, [studentId, fetchBilling]);
 
   // (The old fetchHistory hit /api/admin/progress/students/[id]/lessons, whose
   // `{Student}='recXXX'` linked-record filter matches nothing — see CLAUDE.md
@@ -1181,6 +1198,7 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
             <Section title="Payment records" show={tab === 'billing'}>
               {(() => {
                 const p = data.payments;
+                if (!billingLoaded) return <div style={{ color: '#9ca3af', fontSize: 14 }}>Loading billing…</div>;
                 if (!p || p.months.length === 0) return <div style={{ color: '#9ca3af', fontSize: 14 }}>No invoices on record.</div>;
                 const STAT: Record<string, { label: string; bg: string; fg: string }> = {
                   paid:    { label: '✅ Paid',    bg: '#dcfce7', fg: '#15803d' },
@@ -1244,7 +1262,7 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
 
             {/* Invoices */}
             <Section title="Recent invoices" show={tab === 'billing'} action={<a href="/admin/invoices" style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>All →</a>}>
-              {data.invoices.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>None.</div>}
+              {data.invoices.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>{billingLoaded ? 'None.' : 'Loading…'}</div>}
               {data.invoices.map(inv => (
                 <div key={inv.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14 }}>
                   <span style={{ width: 110, fontWeight: 600, color: '#111' }}>{inv.month}</span>

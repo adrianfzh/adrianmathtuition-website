@@ -103,24 +103,31 @@ export async function GET(req: NextRequest) {
 
   // Everything below depends only on the student record, so it all goes out at
   // once — six serial phases used to run end to end.
+  // ?part=core | billing | (all) — 18 Sep 2026 (Adrian: "/admin/student loads quite
+  // slowly"): the invoice + e-mail-archive pulls were most of a 2.5 s call and only
+  // the Billing tab reads them, so the profile asks for `core` first (paints in
+  // well under a second) and fetches `billing` right after, behind the tabs.
+  const part = req.nextUrl.searchParams.get('part') || 'all';
+  const wantCore = part !== 'billing', wantBilling = part !== 'core';
+  const none = Promise.resolve({ records: [] as any[] });
   const [slotsData, enrollData, windowsData, lessonsData, invData, emailLogs, portalRaw] = await Promise.all([
     airtableRequestAll('Slots', `?fields[]=Day&fields[]=Time&fields[]=Level&fields[]=Is Active`),
-    airtableRequestAll('Enrollments',
-      `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Slot&fields[]=Rate Per Lesson&fields[]=Rate Type`),
+    wantCore ? airtableRequestAll('Enrollments',
+      `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Slot&fields[]=Rate Per Lesson&fields[]=Rate Type`) : none,
     airtableRequest('Settings',
       `?filterByFormula=${encodeURIComponent(`{Setting Name}='${SLOT_WINDOWS_SETTING}'`)}&maxRecords=1`).catch(() => null),
-    airtableRequestAll('Lessons',
-      `?filterByFormula=${encodeURIComponent(narrow(`{Date}>='${windowStart}'`))}&fields[]=Student&fields[]=Slot&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID&fields[]=Is Revision Makeup&fields[]=Mastery&fields[]=Topics Covered&fields[]=Topics Free Text&fields[]=Homework Returned&fields[]=Progress Logged&fields[]=Mood&sort[0][field]=Date&sort[0][direction]=asc`),
+    wantCore ? airtableRequestAll('Lessons',
+      `?filterByFormula=${encodeURIComponent(narrow(`{Date}>='${windowStart}'`))}&fields[]=Student&fields[]=Slot&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID&fields[]=Is Revision Makeup&fields[]=Mastery&fields[]=Topics Covered&fields[]=Topics Free Text&fields[]=Homework Returned&fields[]=Progress Logged&fields[]=Mood&sort[0][field]=Date&sort[0][direction]=asc`) : none,
     // Invoices for this student — match in JS. `Line Items Extra` is needed to
     // strip the carry-forward lump when computing the true per-month breakdown.
-    airtableRequestAll('Invoices',
-      `?${byStudentName ? `filterByFormula=${encodeURIComponent(byStudentName)}&` : ''}fields[]=Student&fields[]=Month&fields[]=Final Amount&fields[]=Status&fields[]=Amount Paid&fields[]=Is Paid&fields[]=Invoice Type&fields[]=PDF URL&fields[]=Line Items Extra&sort[0][field]=Month&sort[0][direction]=desc`),
+    wantBilling ? airtableRequestAll('Invoices',
+      `?${byStudentName ? `filterByFormula=${encodeURIComponent(byStudentName)}&` : ''}fields[]=Student&fields[]=Month&fields[]=Final Amount&fields[]=Status&fields[]=Amount Paid&fields[]=Is Paid&fields[]=Invoice Type&fields[]=PDF URL&fields[]=Line Items Extra&sort[0][field]=Month&sort[0][direction]=desc`) : none,
     // Every invoice PDF actually emailed (EmailLog archive) — matched to this
     // student's invoices below. Optional: a failure here just empties the list.
-    airtableRequestAll('EmailLog',
+    wantBilling ? airtableRequestAll('EmailLog',
       `?filterByFormula=${encodeURIComponent(`NOT({PDF URL}='')`)}&fields[]=Related Invoice&fields[]=Subject&fields[]=Sent At&fields[]=To Email&fields[]=Status&fields[]=PDF URL&sort[0][field]=Sent At&sort[0][direction]=desc`)
-      .catch(() => null),
-    readPortalActivity(id),
+      .catch(() => null) : none,
+    wantCore ? readPortalActivity(id) : Promise.resolve(null),
   ]);
   // Dated (ad-hoc) slots run on specific dates only. They belong in the one-off
   // reschedule picker — on their own dates — and never in the weekly-enrollment
@@ -375,9 +382,10 @@ export async function GET(req: NextRequest) {
     lastLesson,
     progress,
     invoices,
-    payments,
+    payments: wantBilling ? payments : null,
     sentInvoices,
     slots,
     portal,
+    part,
   });
 }
