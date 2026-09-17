@@ -258,7 +258,8 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
           <div className="flex items-center gap-2 shrink-0">
             {sheet.pdf_url && <a href={fileHref(sheet.pdf_url)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold bg-emerald-700 text-white rounded-xl px-3 py-1.5">Open sheet</a>}
             {sheet.pdf_url && <OpenInApp url={fileHref(sheet.pdf_url)} name={`Practice Again — ${paper.name}`} className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white disabled:opacity-60" />}
-            {sheet.status !== 'marked' && sheet.status !== 'submitted' && <Link href={`/app/submit?assignment=${sheet.id}`} className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white">Hand in</Link>}
+            {sheet.status !== 'marked' && sheet.status !== 'submitted' && sheet.pdf_url && <Link href={`/app/work/${sheet.id}`} className="text-xs font-bold text-white bg-emerald-700 rounded-xl px-3 py-1.5">✍️ Do it in the app</Link>}
+            {sheet.status !== 'marked' && sheet.status !== 'submitted' && <Link href={`/app/submit?assignment=${sheet.id}`} className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white">Hand in a photo</Link>}
           </div>
           {/* The marked sheet opens from its paper (grouped, 8 Sep 2026) — same view as a paper. */}
           {sheet.status === 'marked' && sheet.run_id && (

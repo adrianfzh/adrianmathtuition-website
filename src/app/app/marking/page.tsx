@@ -422,10 +422,11 @@ function SheetLineView({ line, sheet, markedSheet, nextWave }: {
         )}
         {line.actions && sheet && (
           <span className="shrink-0 flex items-center gap-1.5">
+            {/* Start = do it in the app (17 Sep 2026); the PDF and the photo hand-in stay as the other ways. */}
             {sheet.pdf_url && (
-              <a href={fileHref(sheet.pdf_url)} target="_blank" rel="noopener noreferrer" className="text-xs font-bold bg-rose-600 text-white rounded-xl px-3 py-1.5 shadow-sm">Start ›</a>
+              <Link href={`/app/work/${sheet.id}`} className="text-xs font-bold bg-rose-600 text-white rounded-xl px-3 py-1.5 shadow-sm">Start ›</Link>
             )}
-            <Link href={`/app/submit?assignment=${sheet.id}`} className="text-xs font-semibold text-rose-900 border border-rose-300 bg-white rounded-xl px-3 py-1.5">Hand in</Link>
+            <Link href={`/app/submit?assignment=${sheet.id}`} className="text-xs font-semibold text-rose-900 border border-rose-300 bg-white rounded-xl px-3 py-1.5">Hand in a photo</Link>
           </span>
         )}
       </div>

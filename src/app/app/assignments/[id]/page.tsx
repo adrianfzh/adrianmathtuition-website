@@ -72,6 +72,12 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
           </p>
         )}
 
+        {/* ✍️ Do it in the app (17 Sep 2026): the sheet's pages with the Pencil, saved as they go, Submit hands it in. */}
+        {a.pdf_url && a.status === 'assigned' && (
+          <Link href={`/app/work/${a.id}`} className="block text-center text-sm font-bold text-white bg-navy rounded-xl px-4 py-2.5 shadow-sm">
+            ✍️ Do it in the app
+          </Link>
+        )}
         {a.pdf_url && (
           <div className="flex gap-2">
             <a href={fileHref(a.pdf_url)} target="_blank" rel="noopener noreferrer"
