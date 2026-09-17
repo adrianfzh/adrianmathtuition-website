@@ -201,12 +201,24 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
      the angle; the sheet taught the maximum. A show-that worked in decimals
      needs "carry exact form through a show-that", not the area formula. The
      skill's "Teach the missed STEP" bullet has both cases.
-   - **Reuse before you write** (skill §"Reuse before you write"): `GET
-     /api/admin/sheet-jobs?paper=<this paper>&status=done` lists earlier sheets
-     on the same paper with their diagnosis; same question + same gap → reuse
-     that Example (Adrian's edited docx first — `scripts/dropbox-get.mjs
-     … --meta` shows whether he edited it), re-verify its numbers, and name it
-     in `result.reused`. A different gap on the same question is not a reuse.
+   - **Reuse before you write — the section bank** (17 Sep 2026, Adrian: "let
+     the bank accumulate, instead of writing everything from scratch"; skill
+     §"Reuse before you write"). BEFORE drafting any ① section, search the bank
+     by the MISSED STEP, across every paper:
+     `GET /api/admin/sheet-sections?q=<gap words>&subject=math&level=<AM|EM|H2>`
+     — every taught section of every filed sheet, one row each (title, gap,
+     the docx it lives in, its practice bank ids, `last_vetted_at`). Same
+     missed step (not merely the same topic) → REUSE that section: fetch the
+     row's `docx_path` (Adrian's edited copy IS the standard — `scripts/dropbox-get.mjs
+     … --meta` shows `client_modified` later than the row's `created_at` when
+     he touched it), take its Example and practice, re-run every sympy check,
+     and name it in `result.reused` ("Practice 1 from Alessi Tay's 16 Sep
+     sheet, vetted"). A different missed step on the same skill is NOT a reuse
+     (she lacked the angle; the next student may lack R itself). Nothing to
+     file by hand: the server files every ① section of your finished sheet
+     into the bank when you POST `done`. The old same-paper lookup
+     (`sheet-jobs?paper=…&status=done`) still works for a same-paper, same-question
+     reuse.
 
 2b. **Rendering from a spec (`SHEET_RENDER=spec`)** — OFF unless the env var is
     set; when it is not, build the DOCX by hand as you always have and ignore

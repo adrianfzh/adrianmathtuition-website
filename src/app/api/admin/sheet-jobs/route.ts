@@ -54,6 +54,8 @@ import { queueSheetJob, requeueSheetAfterRemark, queueSheetBatch, coveredRunIds 
 import { sanitizeSheetQuestions } from '@/lib/practice-again';
 import { createHeldPracticeItems, deleteHeldPracticeItems } from '@/lib/practice-again-store';
 import { archiveSheetToStore } from '@/lib/sheet-archive';
+import { fileSheetSections } from '@/lib/sheet-sections-store';
+import { sectionsFromCompletion } from '@/lib/sheet-sections';
 
 /** A worker's 'fail' whose reason is really 'no gap to teach' — treated as a noSheet completion. */
 const NO_SHEET_RE = /nothing to teach|no sheet needed|no real gap|no action needed|nothing to practise|nothing to practice/i;
@@ -531,6 +533,22 @@ export async function POST(req: NextRequest) {
         rebuild = { rebuilt: false, skipped: 'diagnosis malformed — ignored' };
       } else {
         diagnosisStored = await storeDiagnosis(job.run_id, diagnosis, runRow?.result_json);
+        // The section bank (17 Sep 2026, SPEC-SECTION-BANK.md): every TAUGHT
+        // section of this sheet is filed, keyed by its missed step, so the next
+        // sheet on the same step reuses it. Fail-soft — the bank never blocks
+        // a completion. A batch sheet files the whole diagnosis under the
+        // primary run.
+        try {
+          const subj = (runRow?.result_json as { subject?: unknown } | null | undefined)?.subject;
+          const filed = await fileSheetSections(sb, sectionsFromCompletion({
+            jobId: job.id, runId: job.run_id,
+            studentName: (job as { student_name?: string | null }).student_name ?? null,
+            paperName: (job as { paper_name?: string | null }).paper_name ?? null,
+            subject: typeof subj === 'string' ? subj : 'math',
+            skills: whole?.skills ?? diagnosis.skills, result,
+          }));
+          if (filed) console.log('[sheet-sections] filed', filed, 'section(s) for', job.id);
+        } catch (e) { console.warn('[sheet-sections] filing skipped', (e as Error).message); }
         // A ① section the gate demoted: the sheet still teaches it, the cover
         // does not lead with it — tell Adrian, so he can ✏️ Revise if he agrees.
         const demoted = diagnosis.skills.filter(s => s.slipOnly);

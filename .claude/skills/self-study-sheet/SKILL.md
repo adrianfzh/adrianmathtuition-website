@@ -777,6 +777,25 @@ written afresh for every student who lost it. A vetted example is worth more
 than a fresh one — Adrian may have edited it in Word, and it has survived his
 eye — and one voice across students is a feature.
 
+**Since 17 Sep 2026 the reuse is across ALL papers, keyed by the missed step
+(Adrian: "yes, we can just let the bank accumulate, instead of writing
+everything from scratch"; SPEC-SECTION-BANK.md).** Every taught section of every
+filed sheet is a row in `sheet_sections` (filed by `sheet-jobs {action:'done'}`;
+180 rows back-filled from the 39 sheets whose diagnosis is still on their run (the rest were superseded)). Search it FIRST:
+
+```bash
+curl -s "$SHEETS_API_BASE/api/admin/sheet-sections?q=same+segment+angle+centre&subject=math&level=EM" \
+  -H "Authorization: Bearer $SHEETS_API_TOKEN" | python3 -c "
+import sys, json
+for h in json.load(sys.stdin)['hits']: print(h['id'][:8], '|', h['line'], '|', h['docx_path'])"
+```
+
+`q` is the MISSED STEP in words (the gap, or the section title you would write),
+never the topic name; hits come vetted first, then newest; a retired row never
+appears. Same missed step → reuse that section from its `docx_path` (Adrian's
+copy), re-verify, name it in `reused`. Then, only for a same-paper same-question
+check, the older lookup below still applies:
+
 So, BEFORE drafting a section, look for an earlier sheet on the SAME paper:
 
 ```bash
