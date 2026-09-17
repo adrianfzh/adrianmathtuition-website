@@ -109,7 +109,8 @@ rounds can be compared.
 
 > **Revision rule.** This section is versioned here so it changes as models and
 > approaches change. Any session, on any account, should PROPOSE an edit (diff +
-> why, dated) when: (a) a new model ships — ask "which line below did this move?";
+> why, dated — **Adrian approves before it is committed; a session never edits
+> this section on its own**) when: (a) a new model ships — ask "which line below did this move?";
 > (b) a fix done at the cheaper tier had to be redone at the dearer one, or the
 > reverse; (c) a regression reaches Adrian that the brief rules below would have
 > caught. Never silently ignore it; change it in the open. The dated log at the

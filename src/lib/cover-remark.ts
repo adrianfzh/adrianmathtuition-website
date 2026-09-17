@@ -23,14 +23,17 @@ export type RemarkFacts = {
 /** {lost} = marks lost, {careless} / {concept} / {incomplete} = marks by kind,
  *  {prevPct} / {pct} = percentages. */
 export const REMARK_BANK = {
-  full: 'Full marks. Nothing to fix here — keep the same care on the next paper.',
-  fewCareless: 'Well done. The marks you lost are all careless ones, and those are the easiest to get back.',
-  mostlyCareless: 'Most of what you lost is careless — {careless} of the {lost} marks. Slow down on the last line of each part and those come back.',
-  mostlyConcept: '{concept} of the {lost} marks you lost are on method, not slips. Those are the ones to sit with — they are the sections below.',
-  mostlyIncomplete: 'You stopped short on {incomplete} of the {lost} marks — the working was right and the last step was missing. Finish every part to the value the question asked for.',
-  mixed: '{lost} marks lost: {careless} careless, {concept} on method. The careless ones come back with care; the method ones are in the sections below.',
-  up: ' Up from {prevPct}% on your last paper.',
-  down: ' Down from {prevPct}% last time — the sections below say where.',
+  // Written the way a Singapore secondary teacher talks to a Sec 1–4 student:
+  // short, direct, what happened and what to do (Adrian, 17 Sep 2026: "you are
+  // talking to students … no code-speak").
+  full: 'Full marks. Well done — keep it up.',
+  fewCareless: 'Well done. The marks you lost are all careless mistakes, and those are the easiest to get back.',
+  mostlyCareless: 'You lost {lost} marks, and {careless} of them were careless mistakes — a wrong sign, a number copied wrongly, an answer not rounded properly. Check every answer before you move on and you will get these marks back.',
+  mostlyConcept: 'You lost {lost} marks, and {concept} of them were because the method was wrong. Go through the corrections on your paper and do the practice — these are the marks to work on.',
+  mostlyIncomplete: 'You lost {lost} marks, and {incomplete} of them were because you stopped before the final answer. Your working was right — always finish the question and write the final answer clearly.',
+  mixed: 'You lost {lost} marks: {careless} were careless mistakes and {concept} were because the method was wrong. Check your answers to get the careless ones back, and go through the corrections for the rest.',
+  up: ' Your last paper was {prevPct}% — this is an improvement. Keep it up.',
+  down: ' Your last paper was {prevPct}%. Go through the corrections carefully before the next one.',
 } as const;
 
 function fill(t: string, v: Record<string, number | string>): string {
