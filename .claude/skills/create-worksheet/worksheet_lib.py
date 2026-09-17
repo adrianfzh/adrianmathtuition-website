@@ -560,6 +560,43 @@ def tag(*items, color=RULE_GREEN, bold=True, brackets=True):
     return out
 
 
+# ── sub-part alignment lint (17 Sep 2026) ────────────────────────────────────
+# Under a NUMBERED question the parts use the indented pools (abstract 101/104/
+# 106 — label one tab in, level with the question's text). The flush-left pools
+# (abstract 102/103/105) exist only for an Example's unnumbered stem. Alessi's
+# EM 2022 P1 Practice Again put every practice "(a)" in the number's column
+# (Adrian: "subparts should be aligned with the main question, not with the
+# question number"), so a saved file is refused when a flush-left part follows a
+# numbered question with no plain stem paragraph in between.
+_FLUSH_LEFT_ABSTRACTS = {'102', '103', '105'}
+_MAIN_Q_ABSTRACTS = {'100'}
+
+def find_flush_parts_under_numbered(path):
+    """Return [(text, why)] for every flush-left list paragraph that sits under a
+    numbered main question. Reads the saved .docx; no python-docx needed."""
+    import re as _re, zipfile as _zf
+    with _zf.ZipFile(path) as z:
+        doc = z.read('word/document.xml').decode('utf-8')
+        numbering = z.read('word/numbering.xml').decode('utf-8')
+    num_abs = dict(_re.findall(r'<w:num w:numId="(\d+)"[^>]*>\s*<w:abstractNumId w:val="(\d+)"', numbering))
+    hits, in_q = [], False
+    for m in _re.finditer(r'<w:p[ >].*?</w:p>', doc, _re.S):
+        para = m.group(0)
+        text = ''.join(_re.findall(r'<w:t[^>]*>([^<]*)</w:t>', para)).strip()
+        nid = _re.search(r'<w:numId w:val="(\d+)"', para)
+        if nid:
+            a = num_abs.get(nid.group(1))
+            if a in _MAIN_Q_ABSTRACTS:
+                in_q = True
+            elif a in _FLUSH_LEFT_ABSTRACTS and in_q:
+                hits.append((text[:60], f'flush-left part (numId {nid.group(1)}) under a numbered question'))
+        elif text:
+            # a plain paragraph with words is a stem written with para(): an
+            # Example begins here, so flush-left parts are allowed again
+            in_q = False
+    return hits
+
+
 # ── plain-text maths lint (9 Sep 2026) ───────────────────────────────────────
 # "If it is maths, it is an equation object, wherever it appears" — and the
 # only sweep the sheets had looked INSIDE <m:t>, so a 1/x typed into a Word run
@@ -1956,6 +1993,13 @@ class Worksheet:
         # once, per run, so the author fixes the parts list rather than the
         # file. `strict_maths=True` makes it a failure (the sheet worker's
         # pre-file lint runs the same check and exits 1 on any hit).
+        misaligned = find_flush_parts_under_numbered(path)
+        if misaligned:
+            for text, why in misaligned[:20]:
+                print(f'   {why}: {text!r}')
+            raise ValueError(f'{len(misaligned)} sub-part(s) sit in the question-number column '
+                             f'(ADRIAN-STYLE §5: under a numbered question use Q() then SQ(); '
+                             f'parts() is only for an Example stem) in {path}')
         hits = find_plain_maths(path)
         if hits:
             print(f'WARNING: {len(hits)} run(s) look like maths typed as text — use (\'math\', …) parts:')
