@@ -288,11 +288,17 @@ export function appendStreamingMessage(inner: HTMLDivElement): HTMLDivElement {
   return textDiv;
 }
 
-/* ── 👍/👎 feedback row under an assistant answer ── */
+/* ── 🚩 "Wrong? Tell Adrian" under an assistant answer (17 Sep 2026) ──
+   The 👍/👎 row is gone (395 answers, 2 thumbs in a fortnight — nobody pressed
+   them). One button now: the student says the answer looks wrong, adds a note if
+   they like, and Adrian gets the question + answer in Telegram. The function
+   keeps its name so both call sites are unchanged. */
 export interface FeedbackOpts {
   apiBase?: string;
   getChatId: () => string;
   getTgInitData?: () => string | undefined;
+  /** The logged-in student's name, so Adrian's line says who (portal Ask tab). */
+  getStudentName?: () => string | undefined;
 }
 
 export function attachFeedbackRow(group: HTMLElement, messageId: number, existing: string | null, opts: FeedbackOpts) {
@@ -301,31 +307,26 @@ export function attachFeedbackRow(group: HTMLElement, messageId: number, existin
   const row = document.createElement('div');
   row.className = 'fb-row';
   row.style.cssText = 'display:flex;gap:6px;margin-top:4px;';
-  if (existing) row.dataset.voted = existing;
-  const mk = (kind: 'up' | 'down') => {
-    const b = document.createElement('button');
-    b.textContent = kind === 'up' ? '👍' : '👎';
-    b.setAttribute('aria-label', kind === 'up' ? 'Good answer' : 'Bad answer');
-    b.style.cssText = 'background:none;border:1px solid hsl(220,15%,88%);border-radius:8px;padding:2px 9px;cursor:pointer;font-size:13px;opacity:0.5;';
-    if (existing === kind) { b.style.opacity = '1'; b.style.background = 'hsl(220,60%,96%)'; }
-    b.onclick = () => {
-      if (row.dataset.voted) return;
-      row.dataset.voted = kind;
-      Array.from(row.children).forEach(c => { (c as HTMLElement).style.opacity = c === b ? '1' : '0.3'; });
-      b.style.background = 'hsl(220,60%,96%)';
-      const fbBody: Record<string, unknown> = { chatId: opts.getChatId(), messageId, feedback: kind };
-      const tgInit = opts.getTgInitData?.();
-      if (tgInit) fbBody.tgInitData = tgInit;
-      fetch(`${apiBase}/api/chat/feedback`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(fbBody),
-      }).catch(() => { /* feedback is best-effort */ });
-    };
-    return b;
+  const b = document.createElement('button');
+  const sent = existing === 'flagged';
+  b.textContent = sent ? '🚩 Sent to Adrian ✓' : '🚩 Wrong? Tell Adrian';
+  b.setAttribute('aria-label', 'Tell Adrian this answer looks wrong');
+  b.style.cssText = `background:none;border:1px solid hsl(220,15%,88%);border-radius:8px;padding:2px 9px;cursor:${sent ? 'default' : 'pointer'};font-size:12px;opacity:${sent ? '1' : '0.75'};color:inherit;`;
+  if (sent) row.dataset.voted = 'flagged';
+  b.onclick = () => {
+    if (row.dataset.voted) return;
+    const note = window.prompt('What looks wrong? (optional — the correct answer, or which step)') ?? '';
+    row.dataset.voted = 'flagged';
+    b.textContent = '🚩 Sent to Adrian ✓'; b.style.opacity = '1'; b.style.cursor = 'default';
+    const body: Record<string, unknown> = { chatId: opts.getChatId(), messageId, note };
+    const tgInit = opts.getTgInitData?.();
+    if (tgInit) body.tgInitData = tgInit;
+    const name = opts.getStudentName?.();
+    if (name) body.studentName = name;
+    fetch(`${apiBase}/api/chat/flag`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .catch(() => { /* best-effort */ });
   };
-  row.appendChild(mk('up'));
-  row.appendChild(mk('down'));
+  row.appendChild(b);
   group.appendChild(row);
 }
 
