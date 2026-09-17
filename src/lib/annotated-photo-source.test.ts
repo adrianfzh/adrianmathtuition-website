@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { pickAnnotatedPhotoUrl } from './annotated-photo-source';
+import { pickAnnotatedPhotoUrl, pageImages, type MarkedPdfMode } from './annotated-photo-source';
 
 const PLAIN = 'https://blob/p-1.jpg';
 const SOL = 'https://blob/p-sol-1.jpg';
@@ -38,5 +38,19 @@ describe('photos-booklet mode', () => {
   // worked solution twice.
   it('gives the booklet-backed photos PDF the clean copy even when a twin exists', () => {
     expect(pickAnnotatedPhotoUrl({ url: PLAIN, url_with_solutions: SOL }, 'photos-booklet')).toBe(PLAIN);
+  });
+});
+
+// 17 Sep 2026 — the footer cap moves a long column or a margin figure off the BARE
+// page onto its own sheet (`overflow_url_plain`); the sheet follows the page.
+describe('pageImages — the bare page\'s overflow sheet', () => {
+  it('pairs overflow_url_plain with the bare page in any mode, and never with the with-solutions twin', () => {
+    const photo = { photo_index: 13, url: 'u/bare.jpg', url_with_solutions: 'u/sol.jpg', overflow_url: 'u/sol-over.jpg', overflow_url_plain: 'u/bare-over.jpg' };
+    const images = pageImages(photo, 'images' as MarkedPdfMode);
+    expect(images.map(i => i.url)).toEqual(['u/bare.jpg', 'u/bare-over.jpg']);
+    expect(images[1].overflow).toBe(true);
+    const photos = pageImages(photo, 'photos' as MarkedPdfMode);
+    expect(photos.map(i => i.url)).toEqual(['u/sol.jpg', 'u/sol-over.jpg']);
+    expect(pageImages({ photo_index: 1, url: 'u/p.jpg' }, 'images' as MarkedPdfMode)).toHaveLength(1);
   });
 });

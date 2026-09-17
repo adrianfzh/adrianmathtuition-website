@@ -28,7 +28,13 @@
  * answered twice.
  */
 
-export type AnnotatedPhotoUrls = { url: string; url_with_solutions?: string | null; overflow_url?: string | null };
+export type AnnotatedPhotoUrls = {
+  url: string; url_with_solutions?: string | null; overflow_url?: string | null;
+  /** The BARE page's own overflow sheet (17 Sep 2026): what the footer cap moved off
+   *  `url` — a long continuation column, a margin figure. Paired with `url`, in every
+   *  mode, the way `overflow_url` pairs with `url_with_solutions` in photos mode. */
+  overflow_url_plain?: string | null;
+};
 export type MarkedPdfMode = 'full' | 'photos' | 'photos-booklet';
 
 export function pickAnnotatedPhotoUrl(photo: AnnotatedPhotoUrls, mode: MarkedPdfMode): string {
@@ -50,5 +56,8 @@ export function pickAnnotatedPhotoUrl(photo: AnnotatedPhotoUrls, mode: MarkedPdf
 export function pageImages(photo: AnnotatedPhotoUrls & { photo_index: number }, mode: MarkedPdfMode): { photo_index: number; url: string; overflow?: true }[] {
   const out: { photo_index: number; url: string; overflow?: true }[] = [{ photo_index: photo.photo_index, url: pickAnnotatedPhotoUrl(photo, mode) }];
   if (mode === 'photos' && photo.url_with_solutions && photo.overflow_url) out.push({ photo_index: photo.photo_index + 0.5, url: photo.overflow_url, overflow: true });
+  // The bare page's sheet rides whenever the bare page itself is shown (the
+  // with-solutions twin already carries its own overflow above).
+  else if (photo.overflow_url_plain && out[0].url === photo.url) out.push({ photo_index: photo.photo_index + 0.5, url: photo.overflow_url_plain, overflow: true });
   return out;
 }
