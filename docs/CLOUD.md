@@ -156,5 +156,5 @@ PDF comparison — the sheet worker (`scripts/sheet-worker/run.sh` in a checkout
 repo at `/data/website`). Accounts are secrets `CLAUDE_TOKEN_n` + `CLAUDE_ACCOUNT_n`; the
 per-account switch and limit files work unchanged. Overlap plan: Fly slots on, Mac slots
 still on (the claim guard makes a double claim safe), Mac slots off after a few papers
-land. ~US$12/month. Deploy: `fly deploy -c worker/fly/fly.toml -a adrianmath-worker
+land. ~US$12/month. Deploy: `fly deploy -c fly.worker.toml -a adrianmath-worker
 --remote-only` from the bot repo (Adrian runs it — a production deploy).
