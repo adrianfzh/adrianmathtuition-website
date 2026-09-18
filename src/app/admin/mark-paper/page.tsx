@@ -5,6 +5,7 @@ import { useState, useRef, useEffect, memo, type CSSProperties, useMemo, useCall
 import dynamic from 'next/dynamic';
 import { uploadStudentFile } from '@/lib/student-files-client';
 import { isOutstandingRun } from '@/lib/mark-paper-outstanding';
+import { claimHolderLabel } from '@/lib/claim-holder';
 import 'katex/dist/katex.min.css';
 import { ensureAdminSession } from '@/lib/admin-client';
 import { pickAnnotatedPhotoUrl } from '@/lib/annotated-photo-source';
@@ -1990,10 +1991,10 @@ export default function MarkPaperPage() {
                       // the pages left; claimed, nothing counted yet → starting up.
                       : run.queued_at && run.claim_delivered_at ? '🎨 reads are in — drawing the marks, building the PDF, filing (about a minute)'
                       : run.queued_at && macMarking(run) ? (pageProgress(run)
-                          ? `💻 reading page ${pageProgress(run)!.done} of ${pageProgress(run)!.total} · ${pageProgress(run)!.pct}% · about ${Math.max(1, Math.ceil((pageProgress(run)!.total - pageProgress(run)!.done) * 5 / 60))} min of reading left`
-                          : '💻 your Mac has it — starting up and fetching the pages (a full paper reads in about 2–3 min, then a minute of drawing)')
+                          ? `${claimHolderLabel(run.marked_by)} · reading page ${pageProgress(run)!.done} of ${pageProgress(run)!.total} · ${pageProgress(run)!.pct}% · about ${Math.max(1, Math.ceil((pageProgress(run)!.total - pageProgress(run)!.done) * 5 / 60))} min of reading left`
+                          : `${claimHolderLabel(run.marked_by)} has it — starting up and fetching the pages (a full paper reads in about 2–3 min, then a minute of drawing)`)
                       : run.queued_at && run.skip_external ? '☁️ queued for the batch API (~50% price) — 10–60 min, then Telegram + Dropbox'
-                      : run.queued_at && run.total_max == null ? '🌙 queued — waiting for your Mac (free) while it is awake, else ~50% batch API. 10–60 min, then Telegram + Dropbox'
+                      : run.queued_at && run.total_max == null ? '🌙 queued — waiting for a free slot (the cloud worker or your Mac), else ~50% batch API. 10–60 min, then Telegram + Dropbox'
                       : canMark ? '⏳ uploaded — not marked yet'
                       : '⏳ still marking on the server — this row updates itself when it lands'}
                     {macMarking(run) && pageProgress(run) && (
