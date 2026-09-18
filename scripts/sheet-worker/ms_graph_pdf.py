@@ -36,7 +36,10 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-AUTHORITY = 'https://login.microsoftonline.com/common/oauth2/v2.0'
+# The app is registered for personal Microsoft accounts only (Adrian's Word is on
+# his hotmail account), and Microsoft then insists on the /consumers endpoint
+# (AADSTS9002346 on /common, 18 Sep 2026). MS_GRAPH_TENANT overrides it.
+AUTHORITY = f"https://login.microsoftonline.com/{os.environ.get('MS_GRAPH_TENANT', 'consumers')}/oauth2/v2.0"
 GRAPH = 'https://graph.microsoft.com/v1.0'
 SCOPE = 'Files.ReadWrite.AppFolder offline_access'
 CONVERT_RETRIES = 6          # the converter can lag a few seconds behind the upload
@@ -144,8 +147,16 @@ def export_pdf(docx_path: Path, pdf_path: Path) -> Path:
     caller can fall back."""
     docx_path, pdf_path = Path(docx_path), Path(pdf_path)
     name = f'sheet-{uuid.uuid4().hex[:10]}.docx'
-    item = _graph('PUT', f'/me/drive/special/approot:/{name}:/content', data=docx_path.read_bytes(),
-                  headers={'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'})
+    body = docx_path.read_bytes()
+    hdr = {'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}
+    try:
+        item = _graph('PUT', f'/me/drive/special/approot:/{name}:/content', data=body, headers=hdr)
+    except GraphError as e:
+        # the app folder is created on first use, and that first PUT can 404 (18 Sep 2026)
+        if 'HTTP 404' not in str(e):
+            raise
+        _graph('GET', '/me/drive/special/approot')
+        item = _graph('PUT', f'/me/drive/special/approot:/{name}:/content', data=body, headers=hdr)
     item_id = item.get('id')
     if not item_id:
         raise GraphError('upload returned no item id')
@@ -219,8 +230,8 @@ def status():
     if configured():
         try:
             access_token()
-            me = _graph('GET', '/me/drive?$select=driveType,owner')
-            print(f"drive:         {me.get('driveType')} — token refresh OK")
+            root = _graph('GET', '/me/drive/special/approot')   # the only folder this app may see
+            print(f"app folder:    {root.get('name')} — token refresh OK")
         except GraphError as e:
             print(f'token refresh FAILED: {e}')
 
