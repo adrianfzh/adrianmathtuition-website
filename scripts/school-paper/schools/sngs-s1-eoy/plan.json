@@ -1,0 +1,39 @@
+{
+ "key": "sngs-s1-eoy",
+ "school": "CHIJ St Nicholas Girls", "level": "S1", "exam": "EOY", "paper": "1", "model_year": 2025,
+ "title": "Secondary 1 Mathematics · End-of-Year Examination practice paper",
+ "subtitle_note": "Newly written questions in the style of a St Nicholas Girls' Sec 1 End-of-Year paper. Not a past-year paper.",
+ "duration": "2 hours 15 minutes", "total": 90,
+ "corpus_levels": ["S1", "S2"],
+ "instructions": [
+  "Answer all the questions.",
+  "Write your answers and working in the spaces provided on the question paper.",
+  "All essential working must be shown. Omission of essential working will result in loss of marks.",
+  "The use of an approved scientific calculator is expected, where appropriate.",
+  "If the degree of accuracy is not specified in the question, and if the answer is not exact, give the answer to three significant figures. Give answers in degrees to one decimal place.",
+  "For $\\pi$, use either your calculator value or 3.142, unless the question requires the answer in terms of $\\pi$.",
+  "The number of marks is given in brackets [ ] at the end of each question or part question."
+ ],
+ "slots": [
+  {"pos":1,"target":4,"parts":[1,1,2],"figure":false,"topics":["Numbers (Estimation)"],"content":"Rounding to a stated accuracy; estimate a calculation that includes a cube root; say whether the estimate is an over- or under-estimate, with a reason."},
+  {"pos":2,"target":2,"parts":[2],"figure":false,"topics":["Numbers (Real Numbers)"],"content":"Five numbers in a list (a recurring decimal, a surd, a fraction, a multiple of pi, a negative): put them in order and name the irrational ones."},
+  {"pos":3,"target":5,"parts":[3,2],"figure":false,"topics":["Financial Math (Interest)","Numbers (Percentages)"],"content":"(a) compound interest, then the simple-interest rate that would give the same amount; (b) a discount followed by 9% GST, find the marked price from the amount paid."},
+  {"pos":4,"target":2,"parts":[2],"figure":false,"topics":["Numbers (HCF and LCM)"],"content":"HCF in a context: the largest square tile that covers a rectangular floor exactly, and how many tiles are needed."},
+  {"pos":5,"target":4,"parts":[1,2,1],"figure":false,"topics":["Numbers (Prime Factorization)"],"content":"Two numbers given in index form: HCF and LCM; a cube root found without a calculator from the index form; the smallest multiplier that makes a perfect square."},
+  {"pos":6,"target":7,"parts":[1,2,2,2],"figure":false,"topics":["Algebra (Factorization)","Algebra (Expansion)"],"content":"A common factor taken out, then used to evaluate a decimal sum without a calculator; an expansion that includes a squared bracket, simplified; factorising four terms by grouping where one pair needs a sign change."},
+  {"pos":7,"target":3,"parts":[3],"figure":false,"topics":["Algebra (Fractions)"],"content":"Solve a linear equation with algebraic fractions on both sides (different numeric denominators, a negative sign in front of a bracketed numerator)."},
+  {"pos":8,"target":3,"parts":[1,2],"figure":false,"topics":["Polygons"],"content":"A polygon's interior angles are given in terms of x (some equal, some not); state the angle-sum fact used, then find the number of sides or x."},
+  {"pos":9,"target":4,"parts":[2,2],"figure":true,"topics":["Polygons","Angles"],"content":"A regular hexagon and a square drawn on a shared side; find two angles, stating reasons clearly."},
+  {"pos":10,"target":2,"parts":[2],"figure":false,"topics":["Numbers (Ratio)"],"content":"Join a:b and b:c (b not matching at first) in a context, then use a given difference or total to find one quantity."},
+  {"pos":11,"target":5,"parts":[3,2],"figure":true,"topics":["Mensuration","Algebra (Linear Equations)"],"content":"A rectangle with a right-angled triangle cut off one corner, sides in terms of x. The perimeter gives the equation (\"form an algebraic equation in x and solve it\"); then find the area of the remaining shape."},
+  {"pos":12,"target":3,"parts":[2,1],"figure":true,"topics":["Angles"],"content":"A bend between two parallel lines that needs a third parallel line drawn; find an angle with reasons; then decide, with a reason, whether a named triangle is isosceles."},
+  {"pos":13,"target":3,"parts":[3],"figure":false,"topics":["Numbers (Percentages)","Math In Real World Context"],"content":"A tiered water tariff printed as a small table (first block of cubic metres at one rate, the rest at a higher rate, then 9% GST on the total). Work BACKWARDS from the bill to the volume of water used."},
+  {"pos":14,"target":5,"parts":[2,1,1,1],"figure":false,"topics":["Geometrical Constructions"],"content":"Construct a triangle from two sides and the included angle; construct the bisector of one angle and the perpendicular bisector of one side; mark the point where they meet; measure a length and convert it with the given scale."},
+  {"pos":15,"target":9,"parts":[2,4,3],"figure":true,"topics":["Mensuration"],"content":"A solid cone given by its base radius and slant height [cone and sphere formulas printed in square brackets]: (a) the height by Pythagoras and the volume; (b) the total surface area; (c) it is melted and recast into small spheres whose radius is given in mm — count the whole spheres."},
+  {"pos":16,"target":7,"parts":[1,1,1,2,2],"figure":false,"topics":["Statistics"],"content":"A frequency table with one unknown frequency x: mode, median in terms of what is known, an expression for the mean, x found from the given mean; then one new value is added — say which of the mean, median and mode change, and why."},
+  {"pos":17,"target":2,"parts":[2],"figure":true,"topics":["Statistics"],"content":"A pictogram comparing two years where the picture is enlarged in both width and height; explain how it misleads and what should be drawn instead."},
+  {"pos":18,"target":5,"parts":[2,2,1],"figure":true,"topics":["Statistics"],"content":"A histogram is GIVEN: read it back into a grouped frequency table; estimate the mean; explain why the answer is only an estimate."},
+  {"pos":19,"target":5,"parts":[3,2],"figure":false,"topics":["Algebra (Linear Equations)","Algebra (Expressions)"],"content":"(a) simultaneous equations formed from a short word problem and solved; (b) make a letter the subject of a formula that contains a square root."},
+  {"pos":20,"target":10,"parts":[2,2,3,3],"figure":true,"topics":["Mensuration"],"content":"A grain silo: a cylinder on top of an inverted cone. (a) volume of the cone in terms of pi; (b) a 'show that' for the total capacity; (c) the inside surface area in contact with the grain when full; (d) whether a stated lorry load of grain (a unit change is needed) fits, stating one assumption made."}
+ ]
+}

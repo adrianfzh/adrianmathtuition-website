@@ -393,16 +393,21 @@ def front_page(ws, paper, total):
     code = f"{shape.get('code', '')}/0{paper.get('paperNo', '')}"
     ws.title(paper.get('title') or f"{shape.get('subject', 'Additional Mathematics').upper()}  {code}")
     ws.subtitle(f"{len(paper.get('questions') or [])} questions  ·  {total} marks  ·  {shape.get('duration', '')}")
-    ws.para([('text', 'Newly written questions in the GCE format, not a past-year paper.', {'italic': True})])
+    # A school-style paper (scripts/school-paper/run.mjs) carries its own front page:
+    # front = {note, instructions[], formulae[]}; an empty formulae list prints no sheet.
+    front = paper.get('front') or {}
+    ws.para([('text', front.get('note') or 'Newly written questions in the GCE format, not a past-year paper.', {'italic': True})])
     ws.para([('text', '')])
     ws.para([('text', 'READ THESE INSTRUCTIONS FIRST', {'bold': True})])
-    for line in INSTRUCTIONS:
+    for line in front.get('instructions') or INSTRUCTIONS:
         ws.para(segs(line))
     ws.para(segs(f'The total number of marks for this paper is {total}.'))
     ws.page_break()
+    if 'formulae' in front and not front['formulae']:
+        return
     ws.para([('text', 'Mathematical Formulae', {'bold': True})])
     ws.para([('text', '')])
-    for head, body in formulae_for(shape):
+    for head, body in (front.get('formulae') or formulae_for(shape)):
         if body is None:
             p = ws.para([('text', head, {'bold': True})])
             p.paragraph_format.space_before = Cm(0.3)
