@@ -18,7 +18,7 @@
 set -u -o pipefail
 
 export HOME="${HOME:-/Users/adrianfong}"
-export PATH="/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"   # /usr/local/bin = claude on the Fly worker (18 Sep 2026)
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 
