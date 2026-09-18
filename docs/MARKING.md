@@ -1272,6 +1272,10 @@ with its own accuracy gates (`computeAutoHold`).
 > builds the DOCX and the PDF — same `worksheet_lib`, same `repair-sheet.py`, same Word
 > export — instead of the worker typesetting it call by call: three vetted sheets came
 > back pixel-identical at 100 dpi. Blocks and fields: [`scripts/sheet-worker/SHEET-SPEC.md`](../scripts/sheet-worker/SHEET-SPEC.md).
+> **Where there is no Word (the Fly worker, 18 Sep 2026)** the PDF comes from **Word in the
+> cloud** — Microsoft Graph's converter, `scripts/sheet-worker/ms_graph_pdf.py`, the same
+> engine so the same pages. LibreOffice was tried (7.4 and 26.8) and fails the sheets'
+> equation paragraphs; it stays only as the last resort and says so on stderr.
 
 > **What the sheet teaches — 9 Sep 2026, Alessi's AM 2021 P2 (run `d66149d6`, sheet job
 > `fe3abdc1`).** Four rules absorbed into `.claude/skills/self-study-sheet/SKILL.md` and

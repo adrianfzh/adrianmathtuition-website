@@ -64,7 +64,8 @@ echo $$ > "$STATE/worker.pid"
 # REVIEW_DATE (a manual re-run) bypasses the stamp.
 if [ -z "${REVIEW_DATE:-}" ]; then
   now=$(date +%s)
-  today_due=$(date -j -f '%H:%M:%S' '05:30:00' +%s 2>/dev/null || date +%s)
+  # BSD date on the Mac, GNU date on the Fly worker (18 Sep 2026)
+  today_due=$(date -j -f '%H:%M:%S' '05:30:00' +%s 2>/dev/null || date -d 'today 05:30' +%s 2>/dev/null || date +%s)
   if [ "$now" -ge "$today_due" ]; then due=$today_due; else due=$(( today_due - 86400 )); fi
   last=0
   [ -f "$STAMP" ] && last=$(cat "$STAMP" 2>/dev/null || echo 0)
@@ -89,7 +90,7 @@ export FIND_REVIEW_STATE="$STATE"
 export FIND_REPO="${FIND_REPO:-$HOME/dev/adrianmathtuition-website}"
 # Yesterday in Singapore (the Mac is on SGT; TZ pinned so a travelling laptop
 # still reviews the right day).
-REVIEW_DATE="${REVIEW_DATE:-$(TZ=Asia/Singapore date -v-1d '+%Y-%m-%d')}"
+REVIEW_DATE="${REVIEW_DATE:-$(TZ=Asia/Singapore date -v-1d '+%Y-%m-%d' 2>/dev/null || TZ=Asia/Singapore date -d yesterday '+%Y-%m-%d')}"
 export REVIEW_DATE
 
 # --- credentials for the headless session (plan auth, never the API) --------

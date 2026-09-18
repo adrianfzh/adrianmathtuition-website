@@ -651,6 +651,23 @@ def export_pdf_libreoffice(docx_path: Path, pdf_path: Path, timeout=240):
     return pdf_path
 
 
+def _export_without_word(docx_path: Path, pdf_path: Path, timeout, why: str):
+    try:
+        import ms_graph_pdf
+    except ImportError:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import ms_graph_pdf
+    if ms_graph_pdf.configured():
+        try:
+            out = ms_graph_pdf.export_pdf(docx_path, pdf_path)
+            print(f'NOTE: {why} — {docx_path.name} exported through Word in the cloud (Graph)', file=sys.stderr)
+            return out
+        except Exception as e:  # noqa: BLE001 — any Graph failure falls back, and says so
+            print(f'WARN: Word in the cloud failed ({str(e)[:160]}) — falling back to LibreOffice', file=sys.stderr)
+    print(f'NOTE: {why} — {docx_path.name} exported through LibreOffice (equation layout is NOT faithful)', file=sys.stderr)
+    return export_pdf_libreoffice(docx_path, pdf_path, timeout=timeout)
+
+
 def export_pdf(docx_path: Path, pdf_path: Path, timeout=240):
     """DOCX → PDF through Word, from inside Word's own sandbox container.
 
@@ -666,17 +683,18 @@ def export_pdf(docx_path: Path, pdf_path: Path, timeout=240):
     WORD_WAIT_SECONDS it exports through LibreOffice instead (a line on stderr
     says so). It never quits Word and closes only its own staged copy.
     """
-    # No Word on this machine (the Fly worker, 18 Sep 2026): LibreOffice is the
-    # exporter, not the fallback. Said once on stderr so `verified` can carry it.
+    # No Word on this machine (the Fly worker, 18 Sep 2026): Word in the cloud
+    # (Microsoft Graph, ms_graph_pdf.py — the same engine, so the same PDF) when it
+    # is signed in, else LibreOffice, which cannot read the aligned equation
+    # paragraphs (it ran the lines together and re-paginated 11 pages to 16 on
+    # 18 Sep 2026). Said once on stderr so `verified` can carry it.
     if not word_available():
-        print(f'NOTE: no Microsoft Word here — {docx_path.name} exported through LibreOffice', file=sys.stderr)
-        return export_pdf_libreoffice(docx_path, pdf_path, timeout=timeout)
+        return _export_without_word(docx_path, pdf_path, timeout, why='no Microsoft Word here')
     waited = 0
     while adrian_in_word():
         if waited >= WORD_WAIT_SECONDS:
-            print(f'NOTE: Adrian was working in Word for {waited // 60} min — '
-                  f'{docx_path.name} exported through LibreOffice instead', file=sys.stderr)
-            return export_pdf_libreoffice(docx_path, pdf_path, timeout=timeout)
+            return _export_without_word(docx_path, pdf_path, timeout,
+                                        why=f'Adrian was working in Word for {waited // 60} min')
         time.sleep(15)
         waited += 15
     WORD_CONTAINER.mkdir(parents=True, exist_ok=True)

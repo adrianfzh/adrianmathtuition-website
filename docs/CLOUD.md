@@ -35,8 +35,13 @@ repeated; Adrian holds the values, no session ever sees one):
   `agent_actions` rows confirm the logging.
 
 **What a cloud session STILL cannot do** (Mac-only; do not try, say so instead):
-the marking and sheet slots (plan-billed Claude Code on the Mac), the nightly / weekly
-reviews (launchd), the worksheet and extraction workers, Word-based sheet rendering,
+the sheet slots and the worksheet worker until Word in the cloud is signed in
+(`scripts/sheet-worker/README.md` §Word in the cloud — LibreOffice failed the PDF
+comparison on 18 Sep 2026; the marking slots run on the Fly worker since 18 Sep),
+the nightly / weekly reviews + the worksheet worker (launchd) — their Fly copy is BUILT
+(bot `worker/fly/jobs.sh`, README §The reviews and the workers) and switched off until the
+review secrets are on the worker and `SCHEDULE_ON='1'`; the extraction fleet (retired in
+practice — the in-app `inbox-extract` task does that job),
 Xcode / TestFlight / the AdrianMarker re-sign, the iPad, screenshots as a student
 (puppeteer on the Mac), Telegram / Resend sends (no `TELEGRAM_*` / `RESEND_*` in the
 cloud — deliberately), anything needing `ADMIN_PASSWORD` or the Supabase secret key
