@@ -53,11 +53,17 @@ def _memo_omml(latex, display=False):
 
 worksheet_lib._latex_to_omml = _memo_omml
 
-MATH_RE = re.compile(r'\$\$(.+?)\$\$|\\\[(.+?)\\\]|\$(.+?)\$', re.S)
+# An escaped \$ (a price) never opens or closes a maths run.
+MATH_RE = re.compile(r'\$\$(.+?)\$\$|\\\[(.+?)\\\]|(?<!\\)\$((?:\\.|[^$\\])+?)\$', re.S)
+
+
+DEG_RE = re.compile(r'\^\s*\{\s*\\circ\s*\}|\^\s*\\circ')
+TABLE_ROW_RE = re.compile(r'^\s*\|.*\|\s*$')
+TABLE_RULE_RE = re.compile(r'^\s*\|[\s:|-]+\|\s*$')
 
 
 def _clean(s):
-    return s.replace('**', '')
+    return s.replace('**', '').replace('\\$', '$')
 
 
 def segs(text, attrs=None):
@@ -71,9 +77,17 @@ def segs(text, attrs=None):
         out.append(('text', _clean(s), attrs) if attrs else ('text', _clean(s)))
 
     for m in MATH_RE.finditer(text):
-        txt(text[pos:m.start()])
+        before = text[pos:m.start()]
         if m.group(3) is not None:
-            latex = m.group(3).strip()
+            latex = DEG_RE.sub('°', m.group(3).strip())
+            # "cm$^{2}$": a unit's power typed as a bare superscript has no base
+            # (Word draws an empty box) — the unit goes into the maths as its base.
+            unit = re.search(r'([A-Za-z]+)$', before)
+            if latex.startswith('^') and unit:
+                before = before[:unit.start()]
+                latex = '\\text{' + unit.group(1) + '}' + latex
+        txt(before)
+        if m.group(3) is not None:
             if _memo_omml(latex, False) is None:
                 out.append(('text', latex, {'italic': True}))
             else:
@@ -106,6 +120,41 @@ LABEL_RE = re.compile(r'^\s*\(([a-z]{1,3})\)\s*(?:\(([ivx]{1,5})\))?\s*', re.I)
 ROMAN = {'i', 'ii', 'iii', 'iv', 'v', 'vi'}
 
 
+def blocks(text):
+    """A text's lines, with a markdown pipe table folded into one ('table', rows)
+    block and a display line of items spaced by \\qquad into ('spaced', items)."""
+    out, rows = [], []
+    for line in (text or '').split('\n'):
+        if TABLE_ROW_RE.match(line):
+            if not TABLE_RULE_RE.match(line):
+                rows.append([c.strip() for c in line.strip().strip('|').split('|')])
+            continue
+        if rows:
+            out.append(('table', rows)); rows = []
+        if not line.strip():
+            continue
+        m = re.fullmatch(r'\s*\$\$?([^$]+?)\$?\$\s*', line, re.S)   # a line that is one maths run
+        if m and '\\qquad' in m.group(1):
+            out.append(('spaced', [x.strip() for x in re.split(r'(?:\\qquad\s*)+', m.group(1)) if x.strip()]))
+        else:
+            out.append(('line', line))
+    if rows:
+        out.append(('table', rows))
+    return out
+
+
+def special_block(ws, kind, body):
+    if kind == 'table':
+        ws.data_table([[segs(c) or [('text', '')] for c in row] for row in body])
+    else:
+        parts = []
+        for i, item in enumerate(body):
+            if i:
+                parts.append(('text', '\u2003\u2003\u2003'))
+            parts.append(('math', DEG_RE.sub('°', item)))
+        ws._add(parts, alignment=WD_ALIGN_PARAGRAPH.CENTER)
+
+
 def split_label(label):
     m = LABEL_RE.match(label or '')
     if not m:
@@ -122,27 +171,64 @@ def indent(p, level, hang_levels):
         pf.tab_stops.add_tab_stop(Cm(Q_TEXT_CM + STEP_CM * (lv + 1)))
 
 
-def labelled(ws, labels, text, marks, level):
+def number_line(ws, labels, line, marks, level):
+    """A question with no stem: its first part sits on the number's own line."""
+    head = [('text', '\t'.join(labels) + '\t')] if any(labels) else []
+    p = ws.Q(head + segs(line), marks=marks)
+    if any(labels):
+        pf = p.paragraph_format
+        text_cm = Q_TEXT_CM + STEP_CM * (level + 1)
+        pf.left_indent = Cm(text_cm)
+        pf.first_line_indent = Cm(-text_cm)
+        for lv in range(level + 1):
+            pf.tab_stops.add_tab_stop(Cm(Q_TEXT_CM + STEP_CM * lv))
+    return p
+
+
+def labelled(ws, labels, text, marks, level, numbered=False):
     """One part: `labels` is the list of label strings to lay across the hanging
     tab stops (['(c)', '(i)'] or ['', '(ii)'] or ['(a)']), text may span lines."""
-    lines = [l for l in (text or '').split('\n') if l.strip()] or ['']
-    for i, line in enumerate(lines):
-        last = i == len(lines) - 1
-        head = [('text', '\t'.join(labels) + '\t')] if i == 0 else []
-        p = ws._add(head + segs(line), marks=marks if last else None)
-        indent(p, level, len(labels) if i == 0 else 0)
+    bl = blocks(text) or [('line', '')]
+    last_line = max((i for i, b in enumerate(bl) if b[0] == 'line'), default=-1)
+    saved_space = ws.working_space
+    if bl[-1][0] == 'table':         # a table to complete IS the answer space
+        ws.working_space = 0
+    try:
+        _labelled_blocks(ws, bl, last_line, labels, marks, level, numbered)
+    finally:
+        ws.working_space = saved_space
+
+
+def _labelled_blocks(ws, bl, last_line, labels, marks, level, numbered):
+    for i, (kind, body) in enumerate(bl):
+        if kind != 'line':
+            special_block(ws, kind, body)
+            continue
+        m = marks if i == last_line else None
+        if i == 0 and numbered:
+            number_line(ws, labels, body, m, level)
+            continue
+        head = [('text', '\t'.join(labels) + '\t')] if i == 0 and any(labels) else []
+        p = ws._add(head + segs(body), marks=m)
+        indent(p, level if any(labels) else -1, len(labels) if i == 0 and any(labels) else 0)
 
 
 def stem_paras(ws, q, marks_on_stem):
-    lines = [l for l in q['stem'].split('\n') if l.strip()]
-    for i, line in enumerate(lines):
-        last = i == len(lines) - 1
-        m = marks_on_stem if last else None
-        if i == 0:
-            ws.Q(segs(line), marks=m)
+    bl = blocks(q.get('stem') or '')
+    last_line = max((i for i, b in enumerate(bl) if b[0] == 'line'), default=-1)
+    first = True
+    for i, (kind, body) in enumerate(bl):
+        if kind != 'line':
+            special_block(ws, kind, body)
+            continue
+        m = marks_on_stem if i == last_line else None
+        if first:
+            ws.Q(segs(body), marks=m)
+            first = False
         else:
-            p = ws.para(segs(line), marks=m)
+            p = ws.para(segs(body), marks=m)
             p.paragraph_format.left_indent = Cm(Q_TEXT_CM)
+    return not first
 
 
 def asked_width_cm(figures, pos):
@@ -186,7 +272,11 @@ def figure_width_cm(figures, pos, png):
         return 10.0
 
 
-def figure_para(ws, q, pos, figures):
+def has_figure(figures, pos):
+    return bool(figures) and any(exists(join(figures, n)) for n in (f'Q{pos}.figure.png', f'Q{pos}.png'))
+
+
+def figure_para(ws, q, pos, figures, raw=False):
     # figure.mjs writes Q<n>.figure.png beside the draft; a hand-made Q<n>.png also counts
     path = None
     for name in (f'Q{pos}.figure.png', f'Q{pos}.png'):
@@ -194,6 +284,13 @@ def figure_para(ws, q, pos, figures):
         if cand and exists(cand):
             path = cand
             break
+    if path and raw:
+        # an answer space keeps its blank paper: ws.figure trims a PNG to its ink
+        para = ws.doc.add_paragraph()
+        para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        para.add_run().add_picture(path, width=Cm(figure_width_cm(figures, pos, path)))
+        ws._block_paras.append(para)
+        return True
     if path:
         ws.figure(path, width_cm=figure_width_cm(figures, pos, path))
         return True
@@ -225,30 +322,47 @@ def grid_part(q, figures, pos):
 def question(ws, s, figures, with_marks=True):
     q = s.get('question') or s.get('draft')
     parts = q.get('parts') or []
-    stem_paras(ws, q, s['target'] if (with_marks and not parts) else None)
-    after_part = grid_part(q, figures, s['pos'])
+    has_stem = stem_paras(ws, q, s['target'] if (with_marks and not parts) else None)
+    # 'answer_space': the figure IS the space the candidate draws in (a
+    # construction's given line) — it prints under the last part, and the
+    # parts above it leave no writing lines of their own.
+    in_answer_space = q.get('figure_position') == 'answer_space' and bool(parts)
+    after_part = parts[-1] if in_answer_space else grid_part(q, figures, s['pos'])
     if after_part is None:
+        if has_stem and has_figure(figures, s['pos']):
+            for para in ws._block_paras:
+                para.paragraph_format.keep_with_next = True
         figure_para(ws, q, s['pos'], figures)
     prev_outer = None
+    numbered = not has_stem          # no stem: the first part carries the number
     for part in parts:
         saved_space = ws.working_space
-        if part is after_part:
+        if part is after_part or (in_answer_space and with_marks):
             ws.working_space = 0
         outer, inner = split_label(part.get('label', ''))
         subs = part.get('subparts') or []
         marks = part.get('marks') if with_marks else None
-        if inner:
+        text = part.get('text', '')
+        merge_first_sub = bool(subs) and not text.strip()   # "(a)  (i)  …" on one line
+        if merge_first_sub:
+            pass
+        elif inner:
             labels = [outer if outer != prev_outer else '', inner]
-            labelled(ws, labels, part.get('text', ''), None if subs else marks, level=1)
+            labelled(ws, labels, text, None if subs else marks, level=1, numbered=numbered)
+            numbered = False
         else:
-            labelled(ws, [outer], part.get('text', ''), None if subs else marks, level=0)
+            labelled(ws, [outer], text, None if subs else marks, level=0, numbered=numbered)
+            numbered = False
         prev_outer = outer
-        for sub in subs:
+        for k, sub in enumerate(subs):
             so, si = split_label(sub.get('label', ''))
-            labelled(ws, [si or so], sub.get('text', ''), sub.get('marks') if with_marks else None, level=1)
+            labels = [outer if k == 0 else '', si or so] if merge_first_sub else [si or so]
+            labelled(ws, labels, sub.get('text', ''), sub.get('marks') if with_marks else None, level=1,
+                     numbered=numbered)
+            numbered = False
         ws.working_space = saved_space
         if part is after_part:
-            figure_para(ws, q, s['pos'], figures)
+            figure_para(ws, q, s['pos'], figures, raw=in_answer_space)
     return q
 
 

@@ -34,6 +34,23 @@ Sec 1.
 5. Figures for the slots that carry one, then `run.mjs assemble`, then `export-docx.py
    <key>.json --figures <dir> --out <dir>`. **Checkpoint 3: Adrian reads the paper.**
 
+### What the Word exporter reads from a question (18 Sep 2026)
+
+- A markdown pipe table in a stem or part prints as a real ruled table. A part that ENDS in
+  a table (a table to complete) gets no writing lines; the table is the answer space.
+- A line that is one maths run with `\qquad` between items prints as a centred, spaced list.
+- A question with no stem puts its first part on the number's own line. A part with no text
+  and sub-parts prints as "(a) (i) …" on one line. A part with no label reads as more stem.
+- Money is `\$` in prose. Unit powers are written `m$^{3}$`; the exporter moves the unit
+  into the maths. `^\circ` prints as a real degree sign.
+- `"figure_position": "answer_space"` on a question: the figure is the space the candidate
+  draws in (a construction's given line). It prints under the last part, untrimmed, and the
+  parts above it leave no writing lines. Draw it as `Q<n>.png` and set its printed width in
+  `figure-sizes.json` (`{"14": 140}` = 14 cm) so a given length prints true. Print at actual size.
+- Every stem paragraph stays on the page with the figure under it.
+- Answer lines are printed only where the author wrote one. The school's own answer-line
+  format is not in the bank's text, so none are added automatically.
+
 ## The gates (`run.mjs check`)
 
 - the leaf part marks, in order, equal the slot's part marks;
@@ -58,4 +75,4 @@ school's style and is not a past-year paper.
 
 | Key | Paper | State |
 |---|---|---|
-| `sngs-s1-eoy` | CHIJ St Nicholas Girls, Sec 1 End-of-Year, 2 h 15 min, 90 marks, 20 questions | plan approved 18 Sep 2026, first paper in progress |
+| `sngs-s1-eoy` | CHIJ St Nicholas Girls, Sec 1 End-of-Year, 2 h 15 min, 90 marks, 20 questions | first paper written 18 Sep 2026 (20 questions, 90 marks, 7 figures, all slots through blind solve and moderation), with Adrian for his read; files in `~/Desktop/AdrianMath/School Papers/St Nicholas S1 EOY/` |
