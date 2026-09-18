@@ -35,17 +35,18 @@ repeated; Adrian holds the values, no session ever sees one):
   `agent_actions` rows confirm the logging.
 
 **What a cloud session STILL cannot do** (Mac-only; do not try, say so instead):
-the sheet slots and the worksheet worker until Word in the cloud is signed in
-(`scripts/sheet-worker/README.md` §Word in the cloud — LibreOffice failed the PDF
-comparison on 18 Sep 2026; the marking slots run on the Fly worker since 18 Sep),
-the nightly / weekly reviews + the worksheet worker (launchd) — their Fly copy is BUILT
-(bot `worker/fly/jobs.sh`, README §The reviews and the workers) and switched off until the
-review secrets are on the worker and `SCHEDULE_ON='1'`; the extraction fleet (retired in
-practice — the in-app `inbox-extract` task does that job),
 Xcode / TestFlight / the AdrianMarker re-sign, the iPad, screenshots as a student
-(puppeteer on the Mac), Telegram / Resend sends (no `TELEGRAM_*` / `RESEND_*` in the
-cloud — deliberately), anything needing `ADMIN_PASSWORD` or the Supabase secret key
+(puppeteer on the Mac), Telegram / Resend sends from a cloud SESSION (no `TELEGRAM_*` /
+`RESEND_*` in the cloud environment — deliberately; the bot and the worker send their own),
+anything needing `ADMIN_PASSWORD` or the Supabase secret key from a cloud session
 (privileged reads/writes outside the six families — ask Adrian or leave a note).
+**Since 18 Sep 2026 the Fly worker (`adrianmath-worker`, bot `worker/fly/`) runs everything
+the Mac's launchd used to**: the marking slots, the sheet slots (PDFs through Word in the
+cloud — `scripts/sheet-worker/ms_graph_pdf.py`, LibreOffice failed the comparison), the
+day-review 05:00/17:00, find-review 05:30, bot-review Mon 08:00, subject-retag 04:10 and the
+worksheet worker (`worker/fly/jobs.sh`; the bot wakes the machine before each). The Mac's
+launchd jobs for those are UNLOADED (18 Sep 2026); `launchctl load` the plists to hand them
+back. The old extraction-fleet jobs (`pdfpipelinecc.*`, dead since 20 Aug) are unloaded too.
 Step 3 (moving marking/sheets off the Mac) is BUILT (§Step 3 below) and goes live on Adrian's first deploy.
 
 ## Per-account one-time bootstrap (~5 min)
