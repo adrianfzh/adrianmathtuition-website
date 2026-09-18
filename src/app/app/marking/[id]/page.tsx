@@ -14,6 +14,7 @@ import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
 import { fileHref } from '@/lib/student-files-url';
 import PaperSubjectPill from '@/components/PaperSubjectPill';
 import ClipToNotes from '../ClipToNotes';
+import PaperTabs from '../PaperTabs';
 import PracticeAgainRequest, { type PracticeAgainState } from '../PracticeAgainRequest';
 import NextWave from '../NextWave';
 import OpenInApp from '../OpenInApp';
@@ -281,40 +282,63 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
 
       {!isScience && !isAdmin && !sheet && !supersededBy && followUpDepth <= 1 && <PracticeAgainRequest runId={paper.id} state={requestState} />}
 
-      {hasCover && (
-        <section aria-label="Where your marks went" className="bg-white rounded-3xl border border-black/5 shadow-sm overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/api/portal/marking-cover?run=${paper.id}`} alt="Where your marks went" className="w-full block" />
-        </section>
-      )}
+      {/* 📄 The paper opens on its marked pages — write-anywhere, like a PDF — and the cover + every
+          dropped mark is the second tab (18 Sep 2026). A science paper keeps its one-column order. */}
+      {isScience ? (
+        <>
+          {hasCover && (
+            <section aria-label="Where your marks went" className="bg-white rounded-3xl border border-black/5 shadow-sm overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`/api/portal/marking-cover?run=${paper.id}`} alt="Where your marks went" className="w-full block" />
+            </section>
+          )}
 
-      {paper.pages.length > 0 && !isScience && (
-        // ✍️ the student's own ink over the marked pages (17 Sep 2026); the clipper sits beside it.
-        <div className="space-y-2">
-          {!isAdmin && <div className="flex justify-end"><ClipToNotes runId={paper.id} paperName={paper.name} pages={paper.pages} /></div>}
-          {/* Two layers: the student edits theirs and sees "From Adrian"; Adrian edits his and sees theirs (18 Sep 2026). */}
-          {isAdmin
-            ? <StudentInk runId={paper.id} pages={paper.pages} initial={teacherInk} editor="adrian" other={{ pages: ink, label: `${viewerName || 'their'} notes` }} />
-            : <StudentInk runId={paper.id} pages={paper.pages} initial={ink} other={{ pages: teacherInk, label: "Adrian's notes" }} />}
-          <Suspense fallback={null}><JumpToMistake pages={paper.pages.map(p => ({ index: p.index, layerUrl: p.layerUrl ?? null, layerH: p.layerH ?? null }))} /></Suspense>
-        </div>
-      )}
-      {paper.pages.length > 0 && isScience && (
-        <section aria-label="Marked pages" className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Your marked pages</h2>
-            {!isAdmin && <ClipToNotes runId={paper.id} paperName={paper.name} pages={paper.pages} />}
-          </div>
-          {paper.pages.map(p => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={p.index} src={fileHref(p.url)} alt={p.overflow ? `Worked solution after page ${Math.floor(p.index) + 1}` : `Page ${p.index + 1}`} loading="lazy" className="w-full rounded-2xl border border-black/5 bg-white" />
-          ))}
-        </section>
-      )}
+          {paper.pages.length > 0 && isScience && (
+            <section aria-label="Marked pages" className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Your marked pages</h2>
+                {!isAdmin && <ClipToNotes runId={paper.id} paperName={paper.name} pages={paper.pages} />}
+              </div>
+              {paper.pages.map(p => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={p.index} src={fileHref(p.url)} alt={p.overflow ? `Worked solution after page ${Math.floor(p.index) + 1}` : `Page ${p.index + 1}`} loading="lazy" className="w-full rounded-2xl border border-black/5 bg-white" />
+              ))}
+            </section>
+          )}
 
-      {/* Every question that dropped marks, with the comment and the annotated
-          worked solution — moved here from the Papers list on 17 Sep 2026. */}
-      <LostMarks paper={paper} />
+          {/* Every question that dropped marks, with the comment and the annotated
+              worked solution — moved here from the Papers list on 17 Sep 2026. */}
+          <LostMarks paper={paper} />
+        </>
+      ) : (
+        <Suspense fallback={null}>
+          <PaperTabs hasPaper={paper.pages.length > 0} hasMarks={hasCover || paper.dropped.length > 0}
+            paperLabel={isAdmin ? 'Their paper' : 'My paper'}
+            paper={<>
+              {paper.pages.length > 0 && !isScience && (
+                // ✍️ the student's own ink over the marked pages (17 Sep 2026); the clipper sits beside it.
+                <div className="space-y-2">
+                  {!isAdmin && <div className="flex justify-end"><ClipToNotes runId={paper.id} paperName={paper.name} pages={paper.pages} /></div>}
+                  {/* Two layers: the student edits theirs and sees "From Adrian"; Adrian edits his and sees theirs (18 Sep 2026). */}
+                  {isAdmin
+                    ? <StudentInk runId={paper.id} pages={paper.pages} initial={teacherInk} editor="adrian" other={{ pages: ink, label: `${viewerName || 'their'} notes` }} />
+                    : <StudentInk runId={paper.id} pages={paper.pages} initial={ink} other={{ pages: teacherInk, label: "Adrian's notes" }} />}
+                  <Suspense fallback={null}><JumpToMistake pages={paper.pages.map(p => ({ index: p.index, layerUrl: p.layerUrl ?? null, layerH: p.layerH ?? null }))} /></Suspense>
+                </div>
+              )}
+            </>}
+            marks={<>
+              {hasCover && (
+                <section aria-label="Where your marks went" className="bg-white rounded-3xl border border-black/5 shadow-sm overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/api/portal/marking-cover?run=${paper.id}`} alt="Where your marks went" className="w-full block" />
+                </section>
+              )}
+
+              <LostMarks paper={paper} />
+            </>} />
+        </Suspense>
+      )}
 
       {isScience && paper.max > 0 && (
         <section className="rounded-2xl border border-black/5 bg-white p-4 flex items-center justify-between gap-3" data-science-estimate>
