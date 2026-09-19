@@ -114,6 +114,11 @@ function thumbUrl(path: string): string {
 /* ── solution vet lane ──────────────────────────────────────────────────────── */
 
 const BUCKET = 'question_images';
+/** figure_flags.path holds two spellings — bare (`sol_x.png`, `school/media/image3.png`)
+ *  and bucket-prefixed (`question_images/sol_x.png`). Storage wants the object name.
+ *  Without this, a prefixed row downloaded `question_images/question_images/…` —
+ *  the card showed a broken image and 🧹 Clean said "Object not found" (19 Sep 2026). */
+const obj = (p: string) => p.replace(/^question_images\//, '');
 const VET_BATCH = 'admin-vet-lane';
 /** Vercel hard-caps the request body at 4.5MB; leave room for the JSON envelope. */
 const MAX_AMEND_BYTES = 3.5 * 1024 * 1024;
@@ -152,7 +157,7 @@ async function listCandidateNames(supa: SupabaseClient, paths: string[]): Promis
 
 async function readSidecar(supa: SupabaseClient, path: string): Promise<Record<string, unknown>> {
   try {
-    const dl = await supa.storage.from(BUCKET).download(`candidates/${path}.json`);
+    const dl = await supa.storage.from(BUCKET).download(`candidates/${obj(path)}.json`);
     if (!dl.data) return {};
     const parsed = JSON.parse(await dl.data.text());
     return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
@@ -207,8 +212,8 @@ async function solutionLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
   const undecided = (rows: typeof everything) => rows.filter((f) => decided(f) === null).length;
 
   // One prefix listing per request — not one existence probe per card.
-  const names = await listCandidateNames(supa, listed.map((f) => f.path as string));
-  const withCandidate = working.filter((f) => names.has(f.path as string)).length;
+  const names = await listCandidateNames(supa, listed.map((f) => obj(f.path as string)));
+  const withCandidate = working.filter((f) => names.has(obj(f.path as string))).length;
 
   const page = Math.max(0, Number(sp.get('page') ?? 0) || 0);
   const pageSize = Math.min(60, Math.max(1, Number(sp.get('pageSize') ?? 20) || 20));
@@ -227,8 +232,8 @@ async function solutionLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
     const path = f.path as string;
     const q = meta[f.question_id as string];
     let candidate: Candidate | null = null;
-    if (names.has(path)) {
-      const side = names.has(`${path}.json`) ? await readSidecar(supa, path) : {};
+    if (names.has(obj(path))) {
+      const side = names.has(`${obj(path)}.json`) ? await readSidecar(supa, path) : {};
       candidate = {
         url: candidateUrl(path, side),
         verdict: str(side.verdict) ?? 'unknown',
@@ -247,7 +252,7 @@ async function solutionLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
       partLabel: q ? partLabelFor(q, path) : null,
       note: (f.note as string | null) ?? null,
       claimedBy: (f.claimed_by as string | null) ?? null,
-      liveUrl: imgSrc(`${BUCKET}/${path}`),
+      liveUrl: imgSrc(`${BUCKET}/${obj(path)}`),
       candidateUrl: candidate?.url ?? null,
       candidate,
     };
@@ -468,7 +473,7 @@ async function priorNote(supa: SupabaseClient, path: string): Promise<string> {
  *  so the judged_at stamp rides along as a cache-buster. */
 function candidateUrl(path: string, side: Record<string, unknown>): string {
   const v = typeof side.judged_at === 'string' ? `?v=${encodeURIComponent(side.judged_at)}` : '';
-  return `${imgSrc(`${BUCKET}/candidates/${path}`)}${v}`;
+  return `${imgSrc(`${BUCKET}/candidates/${obj(path)}`)}${v}`;
 }
 
 const JUDGE_MODEL = process.env.FIGURE_JUDGE_MODEL || 'claude-opus-5';
@@ -490,7 +495,7 @@ async function cleanAsCandidate(
   supa: SupabaseClient,
   o: { path: string; note: string | null; kind: 'question' | 'solution'; boxes?: Blemish[] | null; byEye?: boolean },
 ) {
-  const dl = await supa.storage.from(BUCKET).download(o.path);
+  const dl = await supa.storage.from(BUCKET).download(obj(o.path));
   if (dl.error || !dl.data) return step('download', dl.error?.message ?? 'the stored image could not be read');
   const bytes = Buffer.from(await dl.data.arrayBuffer());
   if (!bytes.length) return step('download', 'the stored image is empty');
@@ -596,9 +601,9 @@ async function cleanAsCandidate(
     method_note: `judge: ${judge}${o.boxes?.length && o.byEye ? ' (guards relaxed for hand-drawn boxes)' : ''}; dark marks by shape, pale marks by tone with the figure's ink protected; canvas size unchanged${verified ? '; ' + verified : ''}`,
     hold_kind: null, hold_reason: null, erased, judged_at: judgedAt, kind: o.kind,
   };
-  const up1 = await supa.storage.from(BUCKET).upload(`candidates/${o.path}`, r.png, { contentType: 'image/png', upsert: true, cacheControl: '60' });
+  const up1 = await supa.storage.from(BUCKET).upload(`candidates/${obj(o.path)}`, r.png, { contentType: 'image/png', upsert: true, cacheControl: '60' });
   if (up1.error) return step('upload', up1.error.message);
-  const up2 = await supa.storage.from(BUCKET).upload(`candidates/${o.path}.json`, Buffer.from(JSON.stringify(side)), { contentType: 'application/json', upsert: true, cacheControl: '60' });
+  const up2 = await supa.storage.from(BUCKET).upload(`candidates/${obj(o.path)}.json`, Buffer.from(JSON.stringify(side)), { contentType: 'application/json', upsert: true, cacheControl: '60' });
   if (up2.error) return step('upload', up2.error.message);
   return NextResponse.json({
     ok: true,
@@ -614,7 +619,7 @@ async function cleanAsCandidate(
  *  row is written so it can be reverted, the flag closes as fixed, and the
  *  candidate objects are removed so the lane never offers them twice. */
 async function approveQuestionCandidate(supa: SupabaseClient, path: string, questionId: string) {
-  const dl = await supa.storage.from(BUCKET).download(`candidates/${path}`);
+  const dl = await supa.storage.from(BUCKET).download(`candidates/${obj(path)}`);
   if (dl.error || !dl.data) return step('candidate', dl.error?.message ?? 'no cleaned candidate stored');
   const bytes = Buffer.from(await dl.data.arrayBuffer());
   if (!bytes.length) return step('candidate', 'the stored candidate is empty');
@@ -652,13 +657,13 @@ async function approveQuestionCandidate(supa: SupabaseClient, path: string, ques
   const prev = ((fl?.note as string | null) ?? '').trim();
   await supa.from('figure_flags').update({ status: 'fixed', note: prev ? `Adrian approved cleaned candidate · ${prev}` : 'Adrian approved cleaned candidate' })
     .eq('path', path).eq('kind', 'question');
-  await supa.storage.from(BUCKET).remove([`candidates/${path}`, `candidates/${path}.json`]);
+  await supa.storage.from(BUCKET).remove([`candidates/${obj(path)}`, `candidates/${obj(path)}.json`]);
   return NextResponse.json({ ok: true, status: 'fixed', field, newPath: `${BUCKET}/${name}` });
 }
 
 /** The candidate was wrong: drop it, say so on the row, keep the row where it was. */
 async function rejectCandidate(supa: SupabaseClient, path: string, kind: 'question' | 'solution') {
-  await supa.storage.from(BUCKET).remove([`candidates/${path}`, `candidates/${path}.json`]);
+  await supa.storage.from(BUCKET).remove([`candidates/${obj(path)}`, `candidates/${obj(path)}.json`]);
   const { data: fl } = await supa.from('figure_flags').select('note').eq('path', path).eq('kind', kind).maybeSingle();
   const prev = ((fl?.note as string | null) ?? '').trim();
   const stamp = `candidate rejected ${new Date().toISOString().slice(0, 10)}`;
@@ -727,7 +732,7 @@ async function solutionLanePost(
   if (action === 'reject-candidate') return rejectCandidate(supa, path, 'solution');
 
   if (action === 'approve-candidate') {
-    const dl = await supa.storage.from(BUCKET).download(`candidates/${path}`);
+    const dl = await supa.storage.from(BUCKET).download(`candidates/${obj(path)}`);
     if (dl.error || !dl.data) return step('candidate', dl.error?.message ?? 'no cleaned candidate stored');
     const bytes = Buffer.from(await dl.data.arrayBuffer());
     if (!bytes.length) return step('candidate', 'the stored candidate is empty');
@@ -815,15 +820,15 @@ async function fitnessLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
   }
 
   // 🧹 Clean leaves a candidate under candidates/<path>; one listing per request.
-  const candNames = await listCandidateNames(supa, slice.map((f) => f.path as string));
+  const candNames = await listCandidateNames(supa, slice.map((f) => obj(f.path as string)));
   const items = await Promise.all(slice.map(async (f) => {
     const path = f.path as string;
     const q = meta[f.question_id as string];
     const note = (f.note as string | null) ?? null;
     const { severity, verdict } = parseFitnessNote(note);
     let candidate: Candidate | null = null;
-    if (candNames.has(path)) {
-      const side = candNames.has(`${path}.json`) ? await readSidecar(supa, path) : {};
+    if (candNames.has(obj(path))) {
+      const side = candNames.has(`${obj(path)}.json`) ? await readSidecar(supa, path) : {};
       candidate = {
         url: candidateUrl(path, side), verdict: str(side.verdict) ?? 'unknown', route: str(side.route), note: str(side.note),
         holdKind: str(side.hold_kind), holdReason: str(side.hold_reason), methodNote: str(side.method_note),
@@ -836,7 +841,7 @@ async function fitnessLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
       level: q?.level ?? null, school: q?.school ?? null, year: q?.year ?? null,
       paper: q?.paper ?? null, qnum: q?.question_number ?? null,
       stem,
-      figureUrl: imgSrc(`${BUCKET}/${path}`),
+      figureUrl: imgSrc(`${BUCKET}/${obj(path)}`),
       severity, verdict, note,
       claimedBy: (f.claimed_by as string | null) ?? null,
       candidate,
