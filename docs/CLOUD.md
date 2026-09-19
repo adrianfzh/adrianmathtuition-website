@@ -40,6 +40,7 @@ Xcode / TestFlight / the AdrianMarker re-sign, the iPad, screenshots as a studen
 `RESEND_*` in the cloud environment — deliberately; the bot and the worker send their own),
 anything needing `ADMIN_PASSWORD` or the Supabase secret key from a cloud session
 (privileged reads/writes outside the six families — ask Adrian or leave a note).
+**Polling (19 Sep 2026):** slots on one machine share ONE read of the account switches (45 s) and ONE work poll (marking 20 s, sheets 100 s) through `~/.adrianmath_gate` (`shared_fetch` in both `run.sh` files) — every slot used to make both calls on every tick, ~30 website calls a minute from the Mac alone (~1.3 M Vercel function calls a month). Marking's claim / lease calls go straight to the bot's `/api/slot` (admin token, those phases only) when `MARKER_BOT_BASE` is set — set on the Fly worker and in the Mac slots' `env` files; the website stays the fallback. Still through Vercel: the switch read, the sheet queue list (≈255 KB a poll — worth a count-only peek), heartbeats and hand-backs.
 **Since 18 Sep 2026 the Fly worker (`adrianmath-worker`, bot `worker/fly/`) runs everything
 the Mac's launchd used to**: the marking slots, the sheet slots (PDFs through Word in the
 cloud — `scripts/sheet-worker/ms_graph_pdf.py`, LibreOffice failed the comparison), the
