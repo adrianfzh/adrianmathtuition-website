@@ -154,6 +154,13 @@ Five actions, and only three of them write to the question row:
 | 🙈 **Keep hidden** | prefixes the note `Adrian: kept hidden · …`, status unchanged. **Decided**: the row leaves the working lane onto the 🙈 door. |
 | ✏️ **Redraw** | prefixes the note `Adrian: redraw · …`, status unchanged. **Decided**: the row leaves the working lane onto the ✏️ door. |
 
+**Batch numbers on candidates (19 Sep 2026).** Adrian, on the first redraw batch:
+*"some redraw need to redo, do i just tell you?"* → *"why don't you number it"*. Every
+candidate a session files carries `#B<batch>-<n>` at the front of its note (and
+`batch` / `batchIndex` in the sidecar), so the card reads "#B1-15 · 🖊 redrawn …" and
+he can say "redo 15". The session keeps its `rows.json` per batch, so a number maps
+back to a path. Batch 1 = the first 30 cards of `?view=redraw` on 19 Sep 2026.
+
 **Superseded cards — a held image nobody renders (9 Sep 2026).** Adrian, opening
 the question behind a held card: *"the solution diagram looks different? the
 solution diagram is actually good"*. It was. That question carries TWO solution
