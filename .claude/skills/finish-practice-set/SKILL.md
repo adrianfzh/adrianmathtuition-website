@@ -205,9 +205,11 @@ over` are all **pixels**, so:
   `pymupdf.Pixmap(doc, xref)` and check the band rows are white. On a nudged
   first page the bands moved down with the body, so check `768 + dy`, not 768.
 - The source filename names the school, so the finished set is a **new file
-  named after its title** beside the original (`Sec 1 G2 Math SA2
-  Practice.pdf`), not an in-place rebuild — the `originals/` convention still
-  runs, on the per-paper halves in the scratch dir.
+  named after its title** beside the original, not an in-place rebuild — the
+  `originals/` convention still runs, on the per-paper halves in the scratch
+  dir. Adrian's title for that series: `Sec 1 G2 Math EOY Practice Set N` /
+  `Paper 1` (EOY, not SA2; numbered — that paper is Set 2), the key's
+  subheading the same line.
 
 ## 5. Verify before handing over
 
