@@ -109,7 +109,7 @@ export default function BatchDetailPage() {
   // Auto-poll every 8s while marking is in progress
   useEffect(() => {
     if (batch?.status !== 'marking' && batch?.status !== 'processing') return;
-    const id = setInterval(() => loadBatch(), 8000);
+    const id = setInterval(() => { if (!document.hidden) loadBatch(); }, 8000);
     return () => clearInterval(id);
   }, [batch?.status, loadBatch]);
 

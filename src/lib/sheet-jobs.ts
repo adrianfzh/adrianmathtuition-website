@@ -83,6 +83,16 @@ export function cancelState(
 }
 
 /** The next job a worker should take: queued first (oldest), then abandoned claims. */
+/**
+ * How many jobs a sheet slot could take right now — queued, or claimed with an expired
+ * lease, and not out of attempts. The SAME rule as pickNextJob, as a count: it is what
+ * the slots' `?peek=1` poll answers (19 Sep 2026 — the poll used to download the whole
+ * queue, results and all, ≈255 KB, to learn this one number).
+ */
+export function countWaiting(jobs: Pick<SheetJob, 'status' | 'attempts' | 'heartbeat_at' | 'claimed_at'>[], now = Date.now()): number {
+  return jobs.filter(j => (j.attempts ?? 0) < MAX_ATTEMPTS && (j.status === 'queued' || claimExpired(j, now))).length;
+}
+
 export function pickNextJob(jobs: SheetJob[], now = Date.now()): SheetJob | null {
   // 'cancelled' is terminal: it is neither queued nor a reclaimable lease, so it
   // falls out of both branches below. Asserted in the tests so a future edit to

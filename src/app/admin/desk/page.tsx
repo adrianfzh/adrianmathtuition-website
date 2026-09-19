@@ -472,8 +472,10 @@ export default function DeskPage() {
   const anyInMotion = rows.some(r => !!r.marking || (r.sheet != null && (r.sheet.status === 'queued' || r.sheet.status === 'claimed')));
   useEffect(() => {
     if (!authed || !anyInMotion) return;
-    const t = setInterval(() => loadQueue(), 30000);
-    return () => clearInterval(t);
+    const t = setInterval(() => { if (!document.hidden) loadQueue(); }, 30000);   // a tab left open in the background asks nothing (19 Sep 2026)
+    const back = () => { if (!document.hidden) loadQueue(); };                     // …and catches up the moment it is looked at again
+    document.addEventListener('visibilitychange', back);
+    return () => { clearInterval(t); document.removeEventListener('visibilitychange', back); };
   }, [authed, anyInMotion, loadQueue]);
   useEffect(() => {
     if (!authed || !runId) return;

@@ -85,8 +85,10 @@ export default function OpsPage() {
   const inMotion = !!data && ((data.queue?.rows?.length ?? 0) > 0 || (data.sheets?.active?.length ?? 0) > 0 || (data.sheets?.queued?.length ?? 0) > 0);
   useEffect(() => {
     if (!authed) return;
-    const t = setInterval(load, inMotion ? 20000 : 60000);
-    return () => clearInterval(t);
+    const t = setInterval(() => { if (!document.hidden) load(); }, inMotion ? 20000 : 60000);   // a hidden tab asks nothing (19 Sep 2026)
+    const back = () => { if (!document.hidden) load(); };
+    document.addEventListener('visibilitychange', back);
+    return () => { clearInterval(t); document.removeEventListener('visibilitychange', back); };
   }, [authed, load, inMotion]);
 
   if (!authed) {

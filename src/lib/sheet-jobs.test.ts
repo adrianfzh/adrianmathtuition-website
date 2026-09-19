@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  claimExpired, pickNextJob, sanitizeResult, completionMessage, cancelState, sheetFolder,
+  claimExpired, pickNextJob, countWaiting, sanitizeResult, completionMessage, cancelState, sheetFolder,
   isNoSheet, readNoSheet, NO_SHEET_REASON, LEASE_MS, MAX_ATTEMPTS,
   type SheetJob, type SheetFiledResult,
 } from './sheet-jobs';
@@ -269,5 +269,22 @@ describe('authoredItemsLine — an authored item never proposed is lost to the b
     expect(authoredItemsLine([{ question_id: 'a' }], 0)).toBeNull();
     expect(authoredItemsLine([{}], 0)).toBe('⚠️ 1 practice item written by the worker — none from the bank, 0 filed for vetting: the other 1 lives only in the sheet.');
     expect(authoredItemsLine(null, 0)).toBeNull();
+  });
+});
+
+describe('countWaiting — the slots\' count-only poll', () => {
+  const t0 = Date.parse('2026-09-19T12:00:00Z');
+  it('counts queued jobs and abandoned claims, never done / cancelled / out-of-attempts ones, and agrees with pickNextJob', () => {
+    const jobs = [
+      job({ id: 'q', status: 'queued' }),
+      job({ id: 'live', status: 'claimed', heartbeat_at: new Date(t0 - 60_000).toISOString() }),
+      job({ id: 'dead', status: 'claimed', heartbeat_at: new Date(t0 - 2 * LEASE_MS).toISOString() }),
+      job({ id: 'spent', status: 'queued', attempts: 3 }),
+      job({ id: 'done', status: 'done' }),
+      job({ id: 'x', status: 'cancelled' }),
+    ];
+    expect(countWaiting(jobs, t0)).toBe(2);
+    expect(countWaiting([], t0)).toBe(0);
+    expect(countWaiting([job({ status: 'done' })], t0) === 0).toBe(pickNextJob([job({ status: 'done' })], t0) === null);
   });
 });

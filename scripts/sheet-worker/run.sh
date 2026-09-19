@@ -230,8 +230,17 @@ shared_fetch() {  # shared_fetch <name> <ttl s> <command…> → the body, fetch
 # `slot_accounts`); a slot whose account is OFF claims nothing new. Keyed the way
 # the plan-limit file is keyed, so the site and this file mean the same account.
 # Fails OPEN: no answer, or an account the site does not list, means "on".
+# 🧮 ONE SMALL CALL (19 Sep 2026): `sheet-jobs?peek=1` answers {waiting, off} — how many jobs
+# a slot could take, and which accounts are switched off. An older site that does not know
+# `peek` answers with the full list, and then the two questions are asked the old way.
 fetch_switches() { curl -s -m 8 "$SHEETS_API_BASE/api/admin/slot-accounts" -H "Authorization: Bearer $SHEETS_API_TOKEN" 2>/dev/null; }
-SWITCH_STATE="$(shared_fetch slot-accounts 45 fetch_switches | python3 -c 'import json,sys
+fetch_peek() { curl -s -m 30 "$SHEETS_API_BASE/api/admin/sheet-jobs?peek=1" -H "Authorization: Bearer $SHEETS_API_TOKEN"; }
+JOBS=$(shared_fetch sheet-peek 100 fetch_peek) || JOBS=""
+HAS_OFF="$(printf '%s' "$JOBS" | python3 -c 'import json,sys
+try: print("yes" if isinstance(json.load(sys.stdin).get("off"), list) else "no")
+except Exception: print("no")' 2>/dev/null || echo no)"
+SWITCH_JSON="$JOBS"; [ "$HAS_OFF" = "yes" ] || SWITCH_JSON="$(shared_fetch slot-accounts 45 fetch_switches)"
+SWITCH_STATE="$(printf '%s' "$SWITCH_JSON" | python3 -c 'import json,sys
 try: print("off" if sys.argv[1] in (json.load(sys.stdin).get("off") or []) else "on")
 except Exception: print("on")' "$PLAN_ACCOUNT_KEY" 2>/dev/null || echo on)"
 if [ "$SWITCH_STATE" = "off" ]; then
@@ -250,8 +259,6 @@ export SHEETS_REPO="${SHEETS_REPO:-$HOME/dev/adrianmathtuition-website}"
 # diagnosing' for 33 hours (Tan Sijia, 1–2 Sep 2026): the API's `next` action
 # knows how to reclaim an expired lease, but no session was ever started to
 # call it. The lease is 40 min server-side; mirror it here.
-fetch_jobs() { curl -s -m 30 "$SHEETS_API_BASE/api/admin/sheet-jobs" -H "Authorization: Bearer $SHEETS_API_TOKEN"; }
-JOBS=$(shared_fetch sheet-jobs 100 fetch_jobs) || JOBS=""
 WAITING=$(printf '%s' "$JOBS" | python3 -c "
 import json,sys,datetime
 LEASE_S = 40*60
@@ -265,7 +272,10 @@ def expired(j):
         return True
     return (now - t).total_seconds() > LEASE_S
 try:
-    jobs = json.load(sys.stdin).get('jobs', [])
+    d = json.load(sys.stdin)
+    if isinstance(d.get('waiting'), int):      # the count-only poll answered
+        print(d['waiting']); raise SystemExit
+    jobs = d.get('jobs', [])                   # an older site: count from the list
     print(sum(1 for j in jobs
               if (j.get('attempts') or 0) < 3
               and (j.get('status') == 'queued' or (j.get('status') == 'claimed' and expired(j)))))

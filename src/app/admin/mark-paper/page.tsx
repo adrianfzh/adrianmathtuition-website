@@ -1502,7 +1502,7 @@ export default function MarkPaperPage() {
     (r.total_max == null && !!r.queued_at && !r.queue_failed));
   useEffect(() => {
     if (!inFlight) return;
-    const t = setInterval(() => { loadStats(); }, 15000);
+    const t = setInterval(() => { if (!document.hidden) loadStats(); }, 15000);   // a tab left open in the background asks nothing (19 Sep 2026)
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inFlight]);

@@ -42,7 +42,9 @@ import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the marking topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_marking = (text: string) => sendTelegram(text, 'marking');
 import { logJobRun } from '@/lib/job-log';
-import { pickNextJob, sanitizeResult, completionMessage, cancelState, isNoSheet, MAX_ATTEMPTS, type SheetJobResult, type SheetJob, type SheetFiledResult, authoredItemsLine } from '@/lib/sheet-jobs';
+import { offKeys } from '@/lib/slot-accounts';
+import { getSlotAccounts } from '@/lib/slot-accounts-store';
+import { countWaiting, pickNextJob, sanitizeResult, completionMessage, cancelState, isNoSheet, MAX_ATTEMPTS, type SheetJobResult, type SheetJob, type SheetFiledResult, authoredItemsLine } from '@/lib/sheet-jobs';
 import { sendTelegramDocument } from '@/lib/telegram';
 import { downloadFile, getTemporaryLink } from '@/lib/dropbox';
 import JSZip from 'jszip';
@@ -121,6 +123,18 @@ async function deliverRequestedSheet(req: NextRequest, runId: string): Promise<{
 export async function GET(req: NextRequest) {
   if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'sheets', { route: 'sheet-jobs' }))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const sp = req.nextUrl.searchParams;
+  // 🧮 The slots' poll (19 Sep 2026): "is anything waiting?" as ONE number, plus the accounts
+  // switched off — so a slot makes one small call instead of downloading the queue (≈255 KB,
+  // every job's result included) and then asking for the switches separately.
+  if (sp.get('peek') === '1') {
+    const sbp = getSupabaseAdmin();
+    const { data: open, error: perr } = await sbp.from('sheet_jobs')
+      .select('status, attempts, heartbeat_at, claimed_at').in('status', ['queued', 'claimed']);
+    if (perr) return NextResponse.json({ error: perr.message }, { status: 500 });
+    let off: string[] = [];
+    try { off = offKeys(await getSlotAccounts()); } catch { /* fails open: nobody is off */ }
+    return NextResponse.json({ waiting: countWaiting((open ?? []) as Parameters<typeof countWaiting>[0]), off });
+  }
   const paper = (sp.get('paper') || '').trim().slice(0, 120);
   const status = (sp.get('status') || '').trim().slice(0, 20);
   const limit = Math.min(200, Math.max(1, Number(sp.get('limit')) || 30));

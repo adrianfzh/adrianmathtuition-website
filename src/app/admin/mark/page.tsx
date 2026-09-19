@@ -184,7 +184,7 @@ function LandingView({ onNewBatch }: { onNewBatch: () => void }) {
   // Auto-refresh every 10s on to-mark tab (batches may be detecting or marking)
   useEffect(() => {
     if (tab !== 'to-mark') return;
-    const id = setInterval(() => fetchBatches('to-mark'), 10000);
+    const id = setInterval(() => { if (!document.hidden) fetchBatches('to-mark'); }, 10000);
     return () => clearInterval(id);
   }, [tab, fetchBatches]);
 
