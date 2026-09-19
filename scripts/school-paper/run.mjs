@@ -166,9 +166,12 @@ ${real || '(none on this topic in the two papers)'}
 `;
 }
 
-const SOLVER_BRIEF = (plan) => `You are a strong ${plan.level} mathematics student at a top Singapore girls' school, sitting the ${plan.exam} paper. Solve the question below completely and independently, using only lower-secondary methods. Work it fully, then return final answers. Give exact answers where the question asks for them; otherwise 3 significant figures, money to the nearest cent. For a "show that" part answer "shown" only if you completed the argument and the target is true. For an explain part, write the one or two sentences you would write. If a part cannot be done from the information given, is ambiguous, or needs a method beyond lower secondary, say so in "issues" and do not guess.
+// The solver's scope comes from the plan (`solver_scope`, e.g. "lower-secondary methods" or
+// "O-Level Additional Mathematics methods"), never from a hard-coded level — 20 Sep 2026,
+// the brief used to say "girls' school" + "lower-secondary methods" for every school.
+const SOLVER_BRIEF = (plan) => { const scope = plan.solver_scope ?? `the methods taught in this school's ${plan.level} course`; return `You are a strong ${plan.level} mathematics student at ${plan.school}, sitting the ${plan.exam} paper. Solve the question below completely and independently, using only ${scope}. Work it fully, then return final answers. Give exact answers where the question asks for them; otherwise 3 significant figures, money to the nearest cent. For a "show that" part answer "shown" only if you completed the argument and the target is true. For an explain part, write the one or two sentences you would write. If a part cannot be done from the information given, is ambiguous, or needs a method beyond ${scope}, say so in "issues" and do not guess.
 
-Return ONE JSON object: {"parts": [{"label": "(a)(i)", "answer": "…", "working": "short"}], "issues": ["…"], "minutes": <how long the whole question took a strong student>}`;
+Return ONE JSON object: {"parts": [{"label": "(a)(i)", "answer": "…", "working": "short"}], "issues": ["…"], "minutes": <how long the whole question took a strong student>}`; };
 
 const MODERATOR_BRIEF = (plan) => `You are the Head of Department moderating ONE question of a new ${plan.school} ${plan.level} ${plan.exam} paper before it is printed. You have the question with the setter's key and solution, the school's standard, the school's own real questions on the topic, and an independent blind solve.
 

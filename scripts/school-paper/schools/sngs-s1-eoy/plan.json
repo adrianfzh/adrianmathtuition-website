@@ -5,6 +5,7 @@
  "subtitle_note": "Newly written questions in the style of a St Nicholas Girls' Sec 1 End-of-Year paper. Not a past-year paper.",
  "duration": "2 hours 15 minutes", "total": 90,
  "corpus_levels": ["S1", "S2"],
+ "solver_scope": "lower-secondary methods",
  "instructions": [
   "Answer all the questions.",
   "Write your answers and working in the spaces provided on the question paper.",
