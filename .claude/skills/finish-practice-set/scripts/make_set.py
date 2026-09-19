@@ -96,7 +96,7 @@ def apply_scrubs(doc, scrubs):
 def build(live, title, footer_top, header_bot, content_top, key_pdf,
           title_size=TITLE_SIZE, title_baseline=TITLE_BASELINE,
           content_target=CONTENT_TOP, keep_highlights=False, scrubs=(),
-          subtitle=None, header_all_pages=False):
+          subtitle=None, header_all_pages=False, scanned=False):
     originals = os.path.join(os.path.dirname(live), "originals")
     os.makedirs(originals, exist_ok=True)
     backup = os.path.join(originals,
@@ -115,12 +115,19 @@ def build(live, title, footer_top, header_bot, content_top, key_pdf,
     if scrubs:
         print(f"  scrubbed {apply_scrubs(doc, scrubs)} callout band(s)")
 
+    # A scanned compilation is one image per page, so the school's footer and
+    # page numbers are PIXELS: the band must erase them from the image itself
+    # (PIXELS re-encodes the image with the band whitened), not just the
+    # compiler's overlay text. Text-based sets keep IMAGE_NONE so a diagram
+    # near the footer is never touched.
+    image_mode = (pymupdf.PDF_REDACT_IMAGE_PIXELS if scanned
+                  else pymupdf.PDF_REDACT_IMAGE_NONE)
     for pno, page in enumerate(doc):
         page.add_redact_annot(pymupdf.Rect(0, footer_top, W, H))
         if header_bot and (pno == 0 or header_all_pages):
             page.add_redact_annot(pymupdf.Rect(0, 0, W, header_bot))
         page.apply_redactions(
-            images=pymupdf.PDF_REDACT_IMAGE_NONE,
+            images=image_mode,
             graphics=pymupdf.PDF_REDACT_LINE_ART_REMOVE_IF_COVERED,
             text=pymupdf.PDF_REDACT_TEXT_REMOVE,
         )
@@ -174,6 +181,10 @@ def main():
                     help="strip the header band from every page, not just page 1 "
                          "(the source's own page numbers go too)")
     ap.add_argument("--key", required=True, help="answer-key PDF to append")
+    ap.add_argument("--scanned", action="store_true",
+                    help="the pages are scanned images: erase the header/footer "
+                         "PIXELS too (text-only redaction would leave the school's "
+                         "footer in the picture)")
     ap.add_argument("--keep-highlights", action="store_true",
                     help="leave the source's highlighter marks in place")
     ap.add_argument("--scrub", action="append", default=[], metavar="PAGE:Y0-Y1",
@@ -182,7 +193,7 @@ def main():
     a = ap.parse_args()
     build(a.live, a.title, a.footer_top, a.header_bot, a.content_top, a.key,
           keep_highlights=a.keep_highlights, scrubs=a.scrub, subtitle=a.subtitle,
-          header_all_pages=a.header_all_pages)
+          header_all_pages=a.header_all_pages, scanned=a.scanned)
 
 
 if __name__ == "__main__":

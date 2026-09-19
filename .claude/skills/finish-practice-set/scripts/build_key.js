@@ -35,10 +35,16 @@ const subheading = cfg.subheading === undefined
   ? (em ? 'Practice Set' : 'Promotional Examination &nbsp;&mdash;&nbsp; Answer Key')
   : cfg.subheading;
 
-const md = s => s.split(/(\$[^$]*\$)/g).map(c =>
+// `\$` is a literal dollar sign anywhere — money answers often need two on one
+// line ("$3.10 per kg for A, $3.89 for B"), which the $…$ pairing would otherwise
+// read as maths. It is swapped for a sentinel before the split and restored after:
+// as "$" in text, as KaTeX's own \$ inside a maths chunk.
+const DOLLAR = '\u0001';
+const md = s => s.replace(/\\\$/g, DOLLAR).split(/(\$[^$]*\$)/g).map(c =>
   (c.startsWith('$') && c.endsWith('$') && c.length > 2)
-    ? katex.renderToString(c.slice(1, -1), { throwOnError: true, displayMode: false, output: 'html' })
-    : c.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    ? katex.renderToString(c.slice(1, -1).replace(new RegExp(DOLLAR, 'g'), '\\$'),
+        { throwOnError: true, displayMode: false, output: 'html' })
+    : c.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(new RegExp(DOLLAR, 'g'), '$')
 ).join('');
 
 // A lone unlabelled answer sits on the number's own line ("21.  x = 231");

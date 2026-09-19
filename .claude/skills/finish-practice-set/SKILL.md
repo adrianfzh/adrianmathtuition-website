@@ -39,7 +39,9 @@ python3 .claude/skills/finish-practice-set/scripts/probe_set.py "<paper>.pdf"
 It prints suggested `footer_top` / `header_bot` / `content_top`, the lowest real
 content on any page (so the footer band cannot clip a diagram), any line art
 hiding in the header band, and any highlights baked into the pages. Sanity-check
-the numbers against its span dump before using them. Needs `pymupdf`
+the numbers against its span dump before using them. If it says **SCANNED**, the
+span dump is useless (it sees only the compiler's overlay) — read the pixel
+bands it prints instead and follow §Scanned compilations below. Needs `pymupdf`
 (`python3 -m venv venv && ./venv/bin/pip install pymupdf` in a scratch dir).
 
 ## 2. Pull the answers
@@ -98,9 +100,11 @@ node .claude/skills/finish-practice-set/scripts/build_key.js answers.json /tmp/k
   Set 1 does this.
 - Keep sketch answers descriptive (asymptotes, turning points, intercepts). Set 1
   writes `8. Graph` where there is nothing else to say.
-- **Never write `\$` inside `$…$`.** The renderer splits on `$…$` pairs, so
-  `$\$888$` is read as a math chunk holding a lone backslash and KaTeX dies.
-  Money goes in plain text: `"$888"`, `"$10 510"`.
+- **Money is `\$`.** The renderer splits on `$…$` pairs, so two plain dollar
+  signs on one line (`"$3.10 per kg for A, $3.89 for B"`) would be read as a
+  maths chunk. `\$` is a literal dollar sign anywhere — in text, and inside
+  `$…$` where it becomes KaTeX's own `\$`: `"\$862.40"`, `"A costs \$3.10, B
+  \$3.89"`. A single plain `$888` still works, but write `\$` and stop thinking.
 
 ### EM sheets: `style: "em"`
 
@@ -164,7 +168,8 @@ for lo, hi, sub, key in [(0, 7, "Paper 1", "key_p1.pdf"),
     half = pymupdf.open(); half.insert_pdf(src, from_page=lo, to_page=hi)
     half.save(path); half.close()
     make_set.build(path, TITLE, FOOTER_TOP, HEADER_BOT, CONTENT_TOP, key,
-                   subtitle=sub)               # subtitle = the second title line
+                   subtitle=sub,               # subtitle = the second title line
+                   header_all_pages=True, scanned=True)   # both only for a scan
 # then insert_pdf the finished halves into one document
 ```
 
@@ -175,6 +180,35 @@ matching the reference's `Sec 4 E Math Prelims Practice Set 1` / `Paper 2`.
 Find the paper boundary from the text: both papers restart at question 1 and at
 the source's own page 3, so `pdftotext -f N -l N` per page shows it immediately.
 
+### Scanned compilations — `--scanned`
+
+Some compilations are a 300-dpi greyscale scan per page with only the
+compiler's watermark + page number laid over it as text (first met: `EM S1
+G2 SA2 2023 Ahmad Ibrahim.pdf` in `1 ONLINE LESSONS/3 Exam Papers/EM S1
+(G2)/EM S1 SA2 (NA) 2023/`, 19 Sep 2026 — its seven sibling schools are the
+same shape). The tell: the probe finds two spans per page and "lowest real
+content y=0". The school's footer code, the source page numbers and `[Turn
+over` are all **pixels**, so:
+
+- Build with `--scanned`: the bands are applied with `PDF_REDACT_IMAGE_PIXELS`,
+  which whitens the image itself and re-encodes it (the file grows ~1.4×). A
+  text-only redaction would leave the school's name in the picture under a
+  clean text layer — grep would pass and the PDF would still leak.
+- `--header-all-pages` — the source page number is in every page's picture.
+- `[Turn over` shares the footer row with the school code; it goes with it.
+- The probe measures the bands from the pixel rows (72 dpi, one row = one
+  point, runs merged, scanned only above the overlay text) and suggests
+  `header_bot` / `footer_top`; `content_top` is the body's first run on
+  page 1. That paper: `--header-bot 72 --footer-top 768`, content at 84.5
+  (Paper 1) and 88.2 (Paper 2).
+- Verify the **stored image**, not a render: load each page's image with
+  `pymupdf.Pixmap(doc, xref)` and check the band rows are white. On a nudged
+  first page the bands moved down with the body, so check `768 + dy`, not 768.
+- The source filename names the school, so the finished set is a **new file
+  named after its title** beside the original (`Sec 1 G2 Math SA2
+  Practice.pdf`), not an in-place rebuild — the `originals/` convention still
+  runs, on the per-paper halves in the scratch dir.
+
 ## 5. Verify before handing over
 
 ```bash
@@ -183,8 +217,9 @@ pdftoppm -r 80 -png -f 1 -l 1 "<paper>.pdf" /tmp/p1     # then read the image
 
 Check, every time:
 
-- no `KiasuExamPaper` / school name / syllabus code left —
-  `pdftotext "<paper>.pdf" - | grep -niE "kiasu|<school>|9758"`
+- no `KiasuExamPaper` / school name / school code / syllabus code left —
+  `pdftotext "<paper>.pdf" - | grep -niE "kiasu|<school>|<code, e.g. AISS>|9758"`
+  (on a scanned set this only proves the text layer; check the pixels too, above)
 - page 1 title spacing looks right, and no rule or fragment survived from the header
 - a page with a diagram still has its diagram (redaction can eat line art)
 - the last page is the key, at the paper's page size

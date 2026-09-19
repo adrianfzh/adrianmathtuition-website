@@ -23,6 +23,89 @@ def spans(page):
                     yield sp
 
 
+def is_scanned(doc):
+    """One big image per page and (almost) no text = a scanned compilation.
+
+    The compiler overlays only its watermark and page number as text, so the
+    text-based bands below would report "no header" and a footer that clears
+    everything — while the school's footer sits untouched inside the picture.
+    """
+    hits = 0
+    for p in doc:
+        area = p.rect.width * p.rect.height
+        big = any((pymupdf.Rect(i["bbox"]).get_area() / area) > 0.8
+                  for i in p.get_image_info())
+        if big and sum(1 for _ in spans(p)) <= 3:
+            hits += 1
+    return hits >= max(1, len(doc) * 0.8)
+
+
+def dark_runs(page, y0, y1, thresh=170, merge_gap=3):
+    """Runs of rows carrying dark pixels between y0 and y1 (pt), as (top, bottom).
+
+    Rendered at 72 dpi so one pixel row is one point; a row counts when any
+    pixel in it is darker than `thresh` (0 = black; 170 still catches a thin
+    separator rule spread over two rows). Runs closer than `merge_gap` are one
+    object — a glyph's counter would otherwise split a page number in two.
+    """
+    pix = page.get_pixmap(dpi=72, colorspace=pymupdf.csGRAY)
+    w, buf = pix.width, pix.samples
+    lo, hi = max(0, int(y0)), min(pix.height, int(y1))
+    runs, start, last = [], None, None
+    for r in range(lo, hi):
+        dark = min(buf[r * w:(r + 1) * w]) < thresh
+        if dark:
+            if start is None:
+                start = r
+            last = r
+        elif start is not None and r - last > merge_gap:
+            runs.append((start, last))
+            start = None
+    if start is not None:
+        runs.append((start, last))
+    return runs
+
+
+def pixel_bands(doc):
+    """Suggest header_bot / footer_top for a scanned set from the pixel rows.
+
+    Header: the first dark run on a page is the source's page number and the
+    second is the body, so the band sits midway between the lowest page number
+    and the highest body start. Footer: rows are scanned only ABOVE the
+    compiler's overlay text (its watermark + page number, which the band takes
+    anyway); the last run is the school's footer row when it starts inside the
+    bottom 70pt, and the band sits midway between it and the content above.
+    Suggestions only — read the runs printed with them before trusting either.
+    """
+    H = doc[0].rect.height
+    print("\n  SCANNED pages — measuring the bands from the pixels (pt):")
+    num_bot, body_top, foot_top, cont_bot = [], [], [], []
+    for i, p in enumerate(doc):
+        overlay = [sp["bbox"][1] for sp in spans(p) if sp["bbox"][1] > H * 0.85]
+        cut = min(overlay) - 1 if overlay else H
+        top = dark_runs(p, 0, H * 0.16)
+        bot = dark_runs(p, H * 0.84, cut)
+        print(f"    p{i + 1:<3} top {top[:3]}   bottom {bot}   (overlay from y={cut + 1:.0f})")
+        if len(top) >= 2:
+            num_bot.append(top[0][1])
+            body_top.append(top[1][0])
+        if bot and bot[-1][0] >= H - 70:
+            foot_top.append(bot[-1][0])
+            if len(bot) >= 2:
+                cont_bot.append(bot[-2][1])
+        elif bot:
+            cont_bot.append(bot[-1][1])
+    header_bot = round((max(num_bot) + min(body_top)) / 2) if num_bot and body_top else None
+    footer_top = round((max(cont_bot) + min(foot_top)) / 2) if cont_bot and foot_top else None
+    if header_bot:
+        print(f"    page numbers end by y={max(num_bot)}, the body starts at y={min(body_top)}"
+              f" -> header_bot {header_bot} (every page carries one: --header-all-pages)")
+    if footer_top:
+        print(f"    content ends by y={max(cont_bot)}, the footer row starts at y={min(foot_top)}"
+              f" -> footer_top {footer_top}")
+    print("    content_top = the body's first run on page 1 (top list above); build with --scanned")
+    return header_bot, footer_top
+
 def main(path):
     doc = pymupdf.open(path)
     n = len(doc)
@@ -33,6 +116,11 @@ def main(path):
     sizes = {(round(p.rect.width), round(p.rect.height)) for p in doc}
     if len(sizes) > 1:
         print(f"  !! MIXED PAGE SIZES {sizes} — build the key to match the majority and check the odd pages")
+
+    scanned = is_scanned(doc)
+    if scanned:
+        print("  !! SCANNED compilation: one image per page, the only text is the compiler's overlay")
+        print("     the text bands below see just that overlay — use the pixel bands further down")
 
     # ---- footer: text near the bottom that repeats across most pages -------
     band = H * 0.85
@@ -131,8 +219,13 @@ def main(path):
             print(f"    p{pg} {r} {t!r}")
         print("    to erase one:  --scrub <page>:<y0>-<y1>   (check nothing real is in the band)")
 
+    if scanned:
+        hb, ft = pixel_bands(doc)
+        header_bot, footer_top = hb or header_bot, ft or footer_top
+
     print("\n  suggested config:")
-    print(f"    --footer-top {footer_top}  --header-bot {header_bot}  --content-top {content_top}")
+    print(f"    --footer-top {footer_top}  --header-bot {header_bot}  --content-top {content_top}"
+          + ("  --header-all-pages --scanned" if scanned else ""))
     doc.close()
 
 
