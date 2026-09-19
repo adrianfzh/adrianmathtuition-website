@@ -2976,6 +2976,12 @@ never receive.
     is **refused entirely** (page marked as-is). A failed confirm call keeps the rotation
     (the pre-gate behaviour). Telemetry: `rot_refused: <deg>` / `rot_check: 'unconfirmed'`
     per page in `annotation_debug`.
+  - **90 vs 270 is the detector's blind spot, and a 90/180 pair now resolves** (19 Sep 2026,
+    found on the chat solver's stem-and-leaf photo). A first read of 90 followed by 180 on
+    the rotated copy used to be a refusal that left the page sideways — but the two reads
+    AGREE on one answer, deg + 180, so `ensureUpright` tries exactly that once and requires
+    a clean 0 on it; anything else is still the refusal. `upDeg` is the degrees actually
+    applied; the page stamps `rot_resolved: <first read>`. Bot `test/marker-upright.test.js`.
 - **A successful line pass can still leave parts unboxed — on spreads, a region-only
   recovery re-looks per half** (2026-07-30). A null part region sends that part's score and
   diagnosis straight to Marker's notes without placement ever being attempted (the Q5(a)(i)
