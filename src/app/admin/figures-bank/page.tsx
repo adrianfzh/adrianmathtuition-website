@@ -130,13 +130,13 @@ export default function FiguresPage() {
   const [level, setLevel] = useState('');
   const [tab, setTab] = useState<Tab>('all');
   const [sols, setSols] = useState<SolItem[]>([]);
-  const [solTotals, setSolTotals] = useState({ held: 0, withCandidate: 0, sec: 0, jc: 0, allHeld: 0 , sentToRedraw: 0, keptHidden: 0, superseded: 0 });
+  const [solTotals, setSolTotals] = useState({ held: 0, withCandidate: 0, sec: 0, jc: 0, allHeld: 0 , sentToRedraw: 0, keptHidden: 0, superseded: 0, ready: 0 });
   // Sec first: Adrian paused JC cleaning until Sec completes, and one undivided
   // list put the 112 Sec decisions on page 11 behind 202 paused JC rows.
-  const [solScope, setSolScope] = useState<'sec' | 'jc' | 'all'>('sec');
+  const [solScope, setSolScope] = useState<'sec' | 'jc' | 'all'>('all');   // every level at once — a scope that hid the batch cost Adrian three round trips (19 Sep 2026)
   // Decided rows (✏️ Redraw / 🙈 Keep hidden) leave the working lane; the doors
   // show them — a count is a door, never a disappearance (9 Sep 2026).
-  const [solView, setSolView] = useState<'' | 'redraw' | 'hidden' | 'superseded'>('');
+  const [solView, setSolView] = useState<'' | 'redraw' | 'hidden' | 'superseded' | 'ready'>('');
   const [solBusy, setSolBusy] = useState('');
   const [solErr, setSolErr] = useState<Record<string, string>>({});
   const [fits, setFits] = useState<FitItem[]>([]);
@@ -636,7 +636,17 @@ export default function FiguresPage() {
       {tab === 'solutions' && (
         <>
           <div style={{ background: '#faf5ff', border: '1px solid #ddd6fe', borderRadius: 10, padding: '8px 12px', marginBottom: 10, fontSize: 13.5 }}>
-            {solView === 'redraw' ? (
+            {solView !== 'ready' && solTotals.ready > 0 && (
+              <div style={{ marginBottom: 10 }}>
+                <button onClick={() => { setSolView('ready'); setPage(0); }}
+                  style={{ fontSize: 15, fontWeight: 800, color: '#fff', background: '#15803d', border: 'none', borderRadius: 10, padding: '10px 16px', cursor: 'pointer' }}>
+                  {`🖊 ${solTotals.ready} redrawn or cleaned — ready for you to check`}
+                </button>
+              </div>
+            )}
+            {solView === 'ready' ? (
+              <><strong>{solTotals.ready} figures redrawn or cleaned, waiting for your eye</strong> — every level, in batch order. ✓ uses it, ✗ drops it; nothing changes until you press one.</>
+            ) : solView === 'redraw' ? (
               <><strong>{solTotals.sentToRedraw} solution images sent to redraw</strong> — still switched off, waiting on a redraw session.</>
             ) : solView === 'superseded' ? (
               <><strong>{solTotals.superseded} superseded by a clean redraw</strong> — the question already serves a good diagram, so nobody sees these. Nothing to do unless the redraw turns out to be the weaker one.</>
@@ -698,7 +708,7 @@ export default function FiguresPage() {
             </span>
           </div>
           {!loading && sols.length === 0 && (
-            <div style={{ color: C.muted, fontSize: 14, padding: 20, textAlign: 'center' }}>{solView === 'redraw' ? 'Nothing sent to redraw yet.' : solView === 'hidden' ? 'Nothing kept hidden yet.' : solView === 'superseded' ? 'Nothing superseded yet.' : 'Nothing held — every solution image has been judged.'}</div>
+            <div style={{ color: C.muted, fontSize: 14, padding: 20, textAlign: 'center' }}>{solView === 'ready' ? 'Nothing waiting — every candidate has been checked.' : solView === 'redraw' ? 'Nothing sent to redraw yet.' : solView === 'hidden' ? 'Nothing kept hidden yet.' : solView === 'superseded' ? 'Nothing superseded yet.' : 'Nothing held — every solution image has been judged.'}</div>
           )}
           {sols.map((it) => {
             const busy = solBusy === it.path;

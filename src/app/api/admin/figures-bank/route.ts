@@ -206,13 +206,21 @@ async function solutionLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
   // `?view=redraw|hidden` lists them; the counts below are the doors.
   const decided = (f: { note?: unknown }) => decidedSolutionKind((f.note as string | null) ?? null);
   const v = sp.get('view');
-  const view = v === 'redraw' || v === 'hidden' || v === 'superseded' ? v : '';
+  const view = v === 'redraw' || v === 'hidden' || v === 'superseded' || v === 'ready' ? v : '';
   const working = all.filter((f) => decided(f) === null);
-  const listed = view ? all.filter((f) => decided(f) === view) : working;
+  // 'ready' (19 Sep 2026, Adrian: "this is getting confusing and difficult, this
+  // should be easy"): every card, whatever its level or decision, that has a
+  // candidate waiting for his eye — the one list a batch session fills.
+  const readyNames = view === 'ready' ? await listCandidateNames(supa, everything.map((f) => obj(f.path as string))) : null;
+  const listed = view === 'ready' ? everything.filter((f) => readyNames!.has(obj(f.path as string)))
+    : view ? all.filter((f) => decided(f) === view) : working;
   const undecided = (rows: typeof everything) => rows.filter((f) => decided(f) === null).length;
 
   // One prefix listing per request — not one existence probe per card.
-  const names = await listCandidateNames(supa, listed.map((f) => obj(f.path as string)));
+  const names = readyNames ?? await listCandidateNames(supa, listed.map((f) => obj(f.path as string)));
+  // The ready count is level-independent: the button must show the same number on every scope.
+  const allNames = readyNames ?? await listCandidateNames(supa, everything.map((f) => obj(f.path as string)));
+  const ready = everything.filter((f) => allNames.has(obj(f.path as string))).length;
   const withCandidate = working.filter((f) => names.has(obj(f.path as string))).length;
 
   const page = Math.max(0, Number(sp.get('page') ?? 0) || 0);
@@ -274,6 +282,7 @@ async function solutionLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
       sentToRedraw: all.filter((f) => decided(f) === 'redraw').length,
       keptHidden: all.filter((f) => decided(f) === 'hidden').length,
       superseded: all.filter((f) => decided(f) === 'superseded').length,
+      ready,
       listed: listed.length,
     },
   });
