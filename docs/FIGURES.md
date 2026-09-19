@@ -168,6 +168,14 @@ window, same curves and asymptotes, every label the original carries, placed
 where the original places them — not a pixel copy of a scan. Match the original's
 layout as closely as the family allows before filing; a redraw that adds, drops or
 moves a labelled feature is a redo.
+**The redo of 19 Sep 2026** (Adrian: *"redo the ones i saw redrawn, make sure figure
+are EXACTLY the same"*) set the standing rules for every redraw spec: `grid: false`
+and, on function-graph, `ticks: false` — a JC sketch prints no numbered scale, so the
+redraw prints none; labels keep the paper's own wording (`y = g(x) = (1 − 3a)/(−x + 5)`,
+not a shortened name); an unlabelled curve stays unlabelled (`label: ""`); a parametric
+endpoint is a dot where the paper draws one; an equation label the placer keeps
+pushing across a line is hand-placed as a `marker: 'none'` point. Keep this list
+growing rather than re-learning it per batch.
 
 **Redraw labels are typeset (19 Sep 2026).** Adrian: *"can you use latex/katex for
 math expressions?"* — a redraw's `y = (x + 1)/(kx + 1)` was plain italic Times where the
@@ -176,7 +184,9 @@ paper prints a stacked fraction. The bot's figure library now takes
 a post-pass swaps every maths label for MathJax paths at the same anchor — equation
 labels stack their fractions, coordinate labels stay on one line so they do not collide
 beside a point, prose stays text. **Every redraw candidate is rendered with it on.**
-Batches 1 and 2 were re-rendered and re-filed the same day.
+Batches 1 and 2 were re-rendered and re-filed the same day. Any label carrying `=`
+stacks (an ellipse's `(x + 2)²/(1/2)² + (y − 1)²/1² = 1` stacks like the paper), and a
+parenthesised group with a power is a fraction operand.
 
 **Batch numbers on candidates (19 Sep 2026).** Adrian, on the first redraw batch:
 *"some redraw need to redo, do i just tell you?"* → *"why don't you number it"*. Every
