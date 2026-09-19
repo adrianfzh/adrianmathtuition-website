@@ -67,3 +67,4 @@ scripts/.sweep-log.json
 
 # session scratch (never committed)
 scratchpad/
+_backups/**/snapshot-all.json
