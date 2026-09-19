@@ -24,7 +24,10 @@ export type Rhythm =
 export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'qb-topup':          { kind: 'interval', hours: 36, label: 'nightly 3:30am' },
   'file-subgroups':    { kind: 'interval', hours: 36, label: 'nightly 4:15am' },
-  'bot-review':        { kind: 'interval', hours: 204, label: 'Mondays 8am' },   // 8.5 days
+  // Daily since 18 Sep 2026 (the Fly worker's scheduler, 05:45 after the day-review).
+  'bot-review':        { kind: 'interval', hours: 36, label: 'daily 5:45am' },
+  // 🔎 The page reader (19 Sep 2026, bot skill marking-review): yesterday's marked pages as the student sees them.
+  'marking-review':    { kind: 'interval', hours: 36, label: 'daily 6:15am' },
   // Nightly plan-billed review of the day's bot questions (bot repo
   // scripts/day-review-nightly.sh, launchd com.adrianmath.day-review, 5 Sept 2026).
   'day-review':        { kind: 'interval', hours: 36, label: 'nightly 5am' },

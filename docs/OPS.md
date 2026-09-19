@@ -65,7 +65,7 @@ Writers:
   → [`MARKING.md`](MARKING.md) §🕳 When the paper is missing),
   and `health-check` itself.
 - **Mac plan-billed workers** stamp as the last step of their SKILL.md
-  (`qb-topup`, `file-subgroups`, `bot-review`, `question-mine`,
+  (`qb-topup`, `file-subgroups`, `bot-review` — DAILY since 18 Sep 2026, run by the Fly worker's scheduler —, `marking-review` — 🔎 the page reader, 19 Sep 2026: yesterday's marked pages looked at as the student sees them, daily 06:15 on the Fly worker, read-only until 22 Sep —, `question-mine`,
   `figure-fitness` — the nightly question-figure fitness catch-up, which stamps
   every run including quiet ones (`queue empty`) and `ok=false` when it exits on
   a weak model or a failed calibration → [`FIGURES.md`](FIGURES.md) §4,

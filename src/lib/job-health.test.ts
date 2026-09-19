@@ -19,8 +19,14 @@ describe('staleJobs — interval jobs', () => {
   });
   it('a weekly job gets its 8.5-day window', () => {
     const now = new Date('2026-08-27T02:00:00Z');
-    expect(staleJobs([row('bot-review', '2026-08-24T00:00:00Z')], now)).toEqual([]);
-    expect(staleJobs([row('bot-review', '2026-08-17T00:00:00Z')], now)).toHaveLength(1);
+    // auto-release-report is the weekly example since the bot-review went daily (18 Sep 2026)
+    expect(staleJobs([row('auto-release-report', '2026-08-24T00:00:00Z')], now)).toEqual([]);
+    expect(staleJobs([row('auto-release-report', '2026-08-17T00:00:00Z')], now)).toHaveLength(1);
+  });
+  it('the daily reviews (bot-review, the page reader) alarm after a day and a half', () => {
+    const now = new Date('2026-09-22T02:00:00Z');
+    expect(staleJobs([row('bot-review', '2026-09-21T00:00:00Z'), row('marking-review', '2026-09-21T00:00:00Z')], now)).toEqual([]);
+    expect(staleJobs([row('marking-review', '2026-09-19T00:00:00Z')], now)).toHaveLength(1);
   });
 });
 
