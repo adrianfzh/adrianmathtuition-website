@@ -58,7 +58,7 @@ function readJsonLoose(path) {
 const normLabel = (l) => { const s = String(l ?? '').trim().replace(/^\(|\)$/g, ''); return s ? `(${s})` : ''; };
 function partsText(parts, depth = 0) {
   const pad = '  '.repeat(depth);
-  return (parts ?? []).map((p) => {
+  return (parts ?? []).filter(Boolean).map((p) => { // a bank row can carry a null inside parts (seen 20 Sep 2026, EM corpus)
     const kids = p.subparts ?? p.parts;
     const head = `${pad}${normLabel(p.label)} ${String(p.text ?? '').trim()}${kids?.length ? '' : ` [${p.marks ?? '?'}]`}`;
     return kids?.length ? `${head}\n${partsText(kids, depth + 1)}` : head;
@@ -68,7 +68,7 @@ const questionText = (q) => [String(q.stem ?? '').trim(), partsText(q.parts)].fi
 // leaf answer units: [marks, text]
 function leaves(parts) {
   const out = [];
-  const walk = (list) => { for (const p of list ?? []) { const kids = p.subparts ?? p.parts; if (kids?.length) walk(kids); else out.push({ marks: Number(p.marks) || 0, text: String(p.text ?? '') }); } };
+  const walk = (list) => { for (const p of (list ?? []).filter(Boolean)) { const kids = p.subparts ?? p.parts; if (kids?.length) walk(kids); else out.push({ marks: Number(p.marks) || 0, text: String(p.text ?? '') }); } };
   walk(parts);
   return out;
 }
@@ -291,7 +291,7 @@ function check() {
 }
 function flatAnswers(parts) {
   const out = [];
-  const walk = (list) => { for (const p of list ?? []) { const kids = p.subparts ?? p.parts; if (kids?.length) walk(kids); else out.push(p.answer); } };
+  const walk = (list) => { for (const p of (list ?? []).filter(Boolean)) { const kids = p.subparts ?? p.parts; if (kids?.length) walk(kids); else out.push(p.answer); } };
   walk(parts);
   return out;
 }
@@ -323,7 +323,7 @@ function assemble() {
   const paper = {
     key: plan.key, title: plan.title, school: plan.school, level: plan.level, exam: plan.exam, prompt_version: plan.prompt_version,
     shape: { subject: 'Mathematics', duration: plan.duration, level: plan.level },
-    front: { note: plan.subtitle_note, instructions: plan.instructions, formulae: [] },
+    front: { note: plan.subtitle_note, instructions: plan.instructions, formulae: plan.formulae ?? [] }, // formulae: [[head, body|null], …] as export-docx.py prints them; [] = no formulae page
     total: plan.total, generated_at: plan.generated_at, assembled_at: new Date().toISOString(), questions,
   };
   const jsonPath = join(dir, `${plan.key}.json`);

@@ -10,6 +10,13 @@ the bank. Scope comes from the school's papers, never from the national syllabus
 level: St Nicholas tests compound interest, cones, spheres and simultaneous equations in
 Sec 1.
 
+## Schools so far
+| key | paper | state |
+|---|---|---|
+| `sngs-s1-eoy` | CHIJ St Nicholas Girls · Sec 1 EOY · 90 marks, 20 Qs | plan approved, paper built 18 Sep 2026 |
+| `tjc-ip4-am-eoy` | Temasek Junior College (IP) · IP4 Additional Mathematics EOY · 100 marks, 14 Qs, 2 h 30 | plan + standard DRAFTED 20 Sep 2026 — the first upper-sec paper by this method; awaiting Adrian's checkpoint 2 |
+| `tjc-ip4-em-eoy` | Temasek Junior College (IP) · IP4 Intermediate Mathematics (= E Math) EOY · 100 marks, 16 Qs, 2 h 30 | plan + standard DRAFTED 20 Sep 2026; follows the 2025 shape (the question count moved 12 → 13 → 16 over the years) |
+
 ## The pieces
 
 | Piece | Where | Generic or per school |
@@ -19,6 +26,8 @@ Sec 1.
 | The standard (scope, where the difficulty sits, wording, what "different" means) | `scripts/school-paper/schools/<key>/standard.md` | per school |
 | Briefs, gates, assemble | `scripts/school-paper/run.mjs` | generic |
 | Figures | `scripts/gce-paper/figure.mjs` | shared with GCE papers |
+| `solver_scope` in `plan.json` — the methods the blind solver may use (e.g. "lower-secondary methods", "O-Level Additional Mathematics (4049) methods …"); the brief used to hard-code lower-sec (fixed 20 Sep 2026) | `plan.json` | per school |
+| `formulae` in `plan.json` — the formulae page as `[[head, body\|null], …]` in the shape `export-docx.py` prints (TJC prints one; St Nicholas does not, so it omits the field) | `plan.json` | per school |
 | Word files | `scripts/gce-paper/export-docx.py` (reads the paper's `front` block) | shared |
 
 ## The round

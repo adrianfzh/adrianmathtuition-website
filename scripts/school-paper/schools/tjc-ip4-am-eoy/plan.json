@@ -1,0 +1,304 @@
+{
+ "key": "tjc-ip4-am-eoy",
+ "school": "Temasek Junior College (IP)",
+ "level": "AM",
+ "exam": "EOY",
+ "paper": "1",
+ "model_year": 2025,
+ "title": "IP4 Additional Mathematics · End-of-Year Examination practice paper",
+ "subtitle_note": "Newly written questions in the style of a Temasek Junior College IP4 Additional Mathematics End-of-Year paper. Not a past-year paper.",
+ "duration": "2 hours 30 minutes",
+ "total": 100,
+ "corpus_levels": [
+  "AM",
+  "S3_AM"
+ ],
+ "solver_scope": "O-Level Additional Mathematics (4049) methods as taught in an IP Year 4 course — no L'Hôpital, no integration by parts, no complex numbers",
+ "instructions": [
+  "Write your name, CG and tutor's name on all the work you hand in.",
+  "Write in dark blue or black pen. You may use a soft pencil for any diagrams or graphs.",
+  "Do not use paper clips, highlighters, glue or correction fluid.",
+  "Answer all questions. Write your answers in the spaces provided in the question paper.",
+  "You may request for additional writing materials if there is insufficient space. These should be attached to the back of the booklet.",
+  "Give non-exact numerical answers correct to 3 significant figures, or 1 decimal place in the case of angles in degrees, unless a different level of accuracy is specified in the question. The calculator value for $\\pi$ should be used unless the question requires the answer in terms of $\\pi$.",
+  "The use of an approved scientific and/or graphing calculator is expected where appropriate.",
+  "You are reminded of the need for clear presentation in your answers. Marks will be deducted for poor or unclear presentation.",
+  "The number of marks is given in brackets [ ] at the end of each question or part question."
+ ],
+ "formulae": [
+  [
+   "1.  ALGEBRA",
+   null
+  ],
+  [
+   "Quadratic Equation",
+   "For the equation $ax^2 + bx + c = 0$, $x = \\dfrac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$"
+  ],
+  [
+   "Binomial expansion",
+   "$(a + b)^n = a^n + \\binom{n}{1}a^{n-1}b + \\binom{n}{2}a^{n-2}b^2 + \\cdots + \\binom{n}{r}a^{n-r}b^r + \\cdots + b^n$, where $n$ is a positive integer and $\\binom{n}{r} = \\dfrac{n!}{r!(n-r)!} = \\dfrac{n(n-1)\\cdots(n-r+1)}{r!}$"
+  ],
+  [
+   "2.  TRIGONOMETRY",
+   null
+  ],
+  [
+   "Identities",
+   "$\\sin^2 A + \\cos^2 A = 1$"
+  ],
+  [
+   "",
+   "$\\sec^2 A = 1 + \\tan^2 A$"
+  ],
+  [
+   "",
+   "$\\operatorname{cosec}^2 A = 1 + \\cot^2 A$"
+  ],
+  [
+   "",
+   "$\\sin(A \\pm B) = \\sin A \\cos B \\pm \\cos A \\sin B$"
+  ],
+  [
+   "",
+   "$\\cos(A \\pm B) = \\cos A \\cos B \\mp \\sin A \\sin B$"
+  ],
+  [
+   "",
+   "$\\tan(A \\pm B) = \\dfrac{\\tan A \\pm \\tan B}{1 \\mp \\tan A \\tan B}$"
+  ],
+  [
+   "",
+   "$\\sin 2A = 2 \\sin A \\cos A$"
+  ],
+  [
+   "",
+   "$\\cos 2A = \\cos^2 A - \\sin^2 A = 2\\cos^2 A - 1 = 1 - 2\\sin^2 A$"
+  ],
+  [
+   "",
+   "$\\tan 2A = \\dfrac{2 \\tan A}{1 - \\tan^2 A}$"
+  ],
+  [
+   "",
+   "$\\sin P + \\sin Q \\equiv 2\\sin\\tfrac12(P+Q)\\cos\\tfrac12(P-Q)$"
+  ],
+  [
+   "",
+   "$\\sin P - \\sin Q \\equiv 2\\cos\\tfrac12(P+Q)\\sin\\tfrac12(P-Q)$"
+  ],
+  [
+   "",
+   "$\\cos P + \\cos Q \\equiv 2\\cos\\tfrac12(P+Q)\\cos\\tfrac12(P-Q)$"
+  ],
+  [
+   "",
+   "$\\cos P - \\cos Q \\equiv -2\\sin\\tfrac12(P+Q)\\sin\\tfrac12(P-Q)$"
+  ],
+  [
+   "Formulae for $\\triangle ABC$",
+   "$\\dfrac{a}{\\sin A} = \\dfrac{b}{\\sin B} = \\dfrac{c}{\\sin C}$"
+  ],
+  [
+   "",
+   "$a^2 = b^2 + c^2 - 2bc \\cos A$"
+  ],
+  [
+   "",
+   "Area of $\\triangle ABC = \\dfrac{1}{2} ab \\sin C$"
+  ]
+ ],
+ "slots": [
+  {
+   "pos": 1,
+   "target": 6,
+   "parts": [
+    2,
+    4
+   ],
+   "figure": false,
+   "topics": [
+    "Polynomials"
+   ],
+   "content": "A cubic with TWO unknown coefficients. (a) Given the remainder when the cubic is divided by a linear factor of the form (ax+b) with a≠1, find one unknown. (b) With both remainder-and-factor facts, find the second unknown and hence solve f(x)=0 completely, showing the quadratic factor by comparing coefficients (not by long division alone). Different from 2023–2025, which gave k then asked for one constant of a given quadratic factor: here the student must find and use the quadratic factor themselves."
+  },
+  {
+   "pos": 2,
+   "target": 6,
+   "parts": [
+    6
+   ],
+   "figure": false,
+   "topics": [
+    "Partial Fractions"
+   ],
+   "content": "ONE improper fraction — degree of numerator EQUAL to degree of denominator — with a denominator of one linear factor and one REPEATED linear factor, e.g. shape (2x³+…)/((x+1)(x−2)²). The student must do the division first (no form is given, unlike 2024), then find three constants. Not the 2025 shape (proper, x² repeated) and not the 2023 shape (irreducible quadratic)."
+  },
+  {
+   "pos": 3,
+   "target": 7,
+   "parts": [
+    3,
+    4
+   ],
+   "figure": false,
+   "topics": [
+    "Binomial Theorem"
+   ],
+   "content": "(i) Using the general term, find the coefficient of a named power AND the term independent of x in an expansion of the form (px + q/x²)ⁿ with n ≥ 8 (larger n than 2023–2025's 7 so the general term is the natural route, not writing out). (ii) The expansion is multiplied by a second bracket containing an unknown constant a; GIVEN the numerical value of one coefficient of the product, find a. The direction is 'given the coefficient, find a' — 2025 asked for a making a term zero, 2023 for a term that does not exist."
+  },
+  {
+   "pos": 4,
+   "target": 7,
+   "parts": [
+    4,
+    3
+   ],
+   "figure": false,
+   "topics": [
+    "Logarithms"
+   ],
+   "content": "(a) An equation mixing a log with the UNKNOWN as base (e.g. log_x 8) and a fixed-base log of x, solved by change of base to a quadratic in log₂x; both roots checked against the domain. (b) An exponential equation with DIFFERENT bases on the two sides (e.g. 5^{2x+1} = 3^{x+2}), solved by taking lg, answer to 3 s.f. Neither shape appears in 2023–2025 (those were same-base equations and 'express y in terms of x')."
+  },
+  {
+   "pos": 5,
+   "target": 7,
+   "parts": [
+    3,
+    4
+   ],
+   "figure": false,
+   "topics": [
+    "Trigonometry (Identities)",
+    "Trigonometry (Equations)"
+   ],
+   "content": "(a) Prove a double-angle identity in the shape LHS ≡ tan or cot of a half/single angle, e.g. sin2A/(1+cos2A) ≡ tan A, using the formulae sheet. (b) HENCE solve an equation that becomes tan(kx) = constant or a quadratic in tan x, for a RADIAN interval such as 0 ≤ x ≤ 2π (2023 and 2025 solved in degrees). Answers exact multiples of π where possible."
+  },
+  {
+   "pos": 6,
+   "target": 8,
+   "parts": [
+    2,
+    3,
+    3
+   ],
+   "figure": true,
+   "topics": [
+    "Trigonometry (R-Formula)",
+    "Trigonometry (Applications)"
+   ],
+   "content": "A figure with a rod, ladder or rectangular frame whose position depends on an angle θ, in a configuration NOT used before (2023: two joined rods on a hinge; 2024: right trapezium + triangle perimeter; 2025: five points with a produced line). (i) Show that a named length or area is a cosθ + b sinθ (or a cosθ − b sinθ). (ii) Express it as R cos(θ − α) — the COSINE form, TJC used sine every year. (iii) Find the values of θ for which the length equals a stated value AND state its minimum value with the corresponding θ. The paper's only R-formula question."
+  },
+  {
+   "pos": 7,
+   "target": 5,
+   "parts": [
+    1,
+    2,
+    2
+   ],
+   "figure": false,
+   "topics": [
+    "Permutations and Combinations"
+   ],
+   "content": "SELECTION, not arrangement — 2023 and 2024 arranged letters of a word, 2025 arranged a family in a row. A committee/team is chosen from two named groups: (a) with no restriction; (b) with 'at least' one condition on the groups; (c) two particular people refuse to serve together, OR the chosen members are then seated in a row with a condition. Singapore school setting (CCA exco, class committee)."
+  },
+  {
+   "pos": 8,
+   "target": 8,
+   "parts": [
+    1,
+    2,
+    5
+   ],
+   "figure": true,
+   "topics": [
+    "Differentiation (Rates of Change)"
+   ],
+   "content": "A horizontal TROUGH of given length with an isosceles-triangular or trapezium cross-section (vertex down), filled at a constant rate — not a bowl (2023), pyramid (2024) or cone (2025). (i) Show the surface width in terms of the depth by similar triangles. (ii) Show the volume in terms of the depth. (iii) Find the rate at which the water level is rising at a given depth, and hence the rate at which the exposed water SURFACE AREA is increasing. Exact answers."
+  },
+  {
+   "pos": 9,
+   "target": 7,
+   "parts": [
+    2,
+    3,
+    2
+   ],
+   "figure": true,
+   "topics": [
+    "Differentiation (Maximum and Minimum)"
+   ],
+   "content": "An open box with a square base made from a FIXED AREA of card (the dual of 2023's fixed-volume cylinder; 2024 was a cone with fixed curved area, 2025 a wire of fixed length). (i) Show that V = ax − bx³ (or equivalent) from the area constraint. (ii) Find the value of x for which V is stationary and the corresponding volume. (iii) Show by the second derivative that it is a maximum. Figure: the net or the box with x labelled."
+  },
+  {
+   "pos": 10,
+   "target": 5,
+   "parts": [
+    2,
+    3
+   ],
+   "figure": false,
+   "topics": [
+    "Differentiation (Techniques)",
+    "Integration (Definite Integrals)"
+   ],
+   "content": "Graphing calculator NOT allowed, working shown (TJC's 2025 wording). (i) Show that d/dx[x sin 2x] = sin 2x + 2x cos 2x (a PRODUCT with a trig factor; 2023 used e^x·trig, 2024 a surd product, 2025 ln tan x). (ii) HENCE evaluate ∫₀^{π/4} x cos 2x dx exactly — the student must also integrate sin 2x on the way."
+  },
+  {
+   "pos": 11,
+   "target": 7,
+   "parts": [
+    3,
+    4
+   ],
+   "figure": true,
+   "topics": [
+    "Integration (Area)"
+   ],
+   "content": "A region bounded by a curve, the TANGENT to the curve at a given point, and one axis — a tangent has not been the boundary in 2023–2025 (line meeting the curve twice; ln curve with GC; sideways parabola). (i) Find the equation of the tangent at the given point. (ii) Find the area of the shaded region between the curve, the tangent and the x-axis, exactly: an integral minus a triangle. Curve of the shape y = k/x² or y = √(ax+b) so the integral needs a power rule with a non-integer or negative index."
+  },
+  {
+   "pos": 12,
+   "target": 11,
+   "parts": [
+    2,
+    1,
+    3,
+    3,
+    2
+   ],
+   "figure": true,
+   "topics": [
+    "Circles",
+    "Coordinate Geometry"
+   ],
+   "content": "Graphing calculator NOT allowed. A circle given by the endpoints of a DIAMETER (2025 gave the expanded equation; 2024 gave it with tangent lines; 2023 was in terms of a). (i)(a) centre, (i)(b) radius, and the equation in expanded form. (ii) Show a stated point C lies on the circle and find the equation of the tangent at C. (iii) Find the values of k for which the line y = mx + k (m given) is a tangent to the circle — by the discriminant or by the perpendicular distance from the centre. (iv) A second circle of the same radius touches the first EXTERNALLY at C; find its centre, or decide with reasons whether a stated circle does so."
+  },
+  {
+   "pos": 13,
+   "target": 6,
+   "parts": [
+    2,
+    4
+   ],
+   "figure": false,
+   "topics": [
+    "Vectors"
+   ],
+   "content": "Position vectors as column vectors (2025 used a and b; 2023 and 2024 used columns, so this alternates). A point P divides a segment in a given ratio. (i) Find OP. (ii) A point Q is given with one coordinate unknown (λ). Find λ such that three named points are collinear, AND state the ratio in which one divides the segment joining the other two. No 'unit vector' claim — 2024 Q6(iii) used that."
+  },
+  {
+   "pos": 14,
+   "target": 10,
+   "parts": [
+    3,
+    7
+   ],
+   "figure": false,
+   "topics": [
+    "Linear Law"
+   ],
+   "content": "(a) A formula of the form y = ax/(x + b) (or y = a/(x + b)): explain how a straight-line graph can be drawn from values of x and y, and state what the gradient and the vertical intercept represent (2025 (a) used y = ax√x − bx). (b) A table of six paired values believed to follow a POWER law y = k xⁿ — not exponential (2025) or a√x (2024). (b)(i) On the grid provided plot lg y against lg x and draw the straight line; (b)(ii) estimate k and n; (b)(iii) use the graph to estimate x for a stated y, OR explain why the model cannot hold at x = 0. Parts (b) = [2,4,1]. The grid is the answer space: figure_position 'answer_space' on the assembled question."
+  }
+ ]
+}

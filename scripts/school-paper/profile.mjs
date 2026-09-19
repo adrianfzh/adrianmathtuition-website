@@ -52,7 +52,7 @@ const SHOW = /\bshow that|\bprove\b/i;
 function units(q) {
   const out = [];
   const walk = (parts, prefix) => {
-    for (const p of parts ?? []) {
+    for (const p of (parts ?? []).filter(Boolean)) {
       const kids = p.parts ?? p.subparts ?? null;
       const label = `${prefix}(${p.label})`;
       if (Array.isArray(kids) && kids.length) walk(kids, label);
