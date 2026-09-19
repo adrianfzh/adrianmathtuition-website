@@ -67,6 +67,33 @@ every part, the moderator finds it in scope with fair marks, names no real quest
 too close to, rates the difficulty "same" or "slightly harder", and scores the wording at
 least 4 of 5. `paper-shape-report.json` gives the counts to set beside the profile.
 
+## Lessons from the TJC round (20 Sep 2026)
+
+- **The blind solve earns its keep on rounding.** The only key error in 30 questions was a
+  3rd-significant-figure tightrope (9.3849… written as 9.39). Authors must compute to 6 s.f.
+  and the moderator recomputes; when an answer sits within 0.001 of a rounding boundary,
+  change a given rather than print "accept 9.38–9.39".
+- **"Easier" is the commonest rejection, not "wrong".** Five of the eight first-round
+  rejections were the textbook exercise in the school's clothes (open square box, nested
+  similar triangles, a 2×2 matrix with the GC allowed, elevation with every quantity given).
+  The slot brief should name the rehearsed version it must NOT be.
+- **A plan slot's part marks must be the LEAF marks.** (b)(i)/(ii)/(iii) are three leaves —
+  write `[3,2,4,1]`, not `[3,7]`; the gate compares leaves and the author cannot bend it.
+- **One figure per question.** The exporter prints one image per slot; a question that needs
+  two drawings (a given sketch + blank answer axes; a chart + a box plot) gets ONE composed
+  engine construction, side by side when the 100 mm height cap would otherwise shrink it.
+  The plotting grid for a linear-law question IS the slot's figure (`figure: true` +
+  `figure_position: "answer_space"`).
+- **`solver_scope` + `formulae`** are per-school plan fields since this round (see the table
+  above); TJC prints the four sum-to-product identities on its AM formulae page.
+- **A stem that says "(not drawn to scale)" gets no caption** repeating it under the figure.
+- Figure-engine tricks the agents learned are in the figure authors' reports of this run and
+  belong in `.claude/skills/gce-paper/prompts/figure-author.md` KNOWN TRICKS: `el.region` /
+  `el.pline` take coordinate objects not names; a vertical `el.dim` label needs its own
+  `el.label` on a free anchor; nested angle arcs → unlabelled arcs + hand-placed labels;
+  `assertAngle` takes the three points as an array; a label anchored outside the geometry is
+  relocated by the declutter pass, so anchor captions at world points.
+
 ## Content policy
 
 A school's questions are grounding for the author and the moderator and are never
@@ -78,5 +105,5 @@ school's style and is not a past-year paper.
 | Key | Paper | State |
 |---|---|---|
 | `sngs-s1-eoy` | CHIJ St Nicholas Girls, Sec 1 End-of-Year, 2 h 15 min, 90 marks, 20 questions | first paper written 18 Sep 2026 (20 questions, 90 marks, 7 figures, all slots through blind solve and moderation), with Adrian for his read; files in `~/Desktop/AdrianMath/School Papers/St Nicholas S1 EOY/` |
-| `tjc-ip4-am-eoy` | Temasek Junior College (IP), IP4 Additional Mathematics End-of-Year, 2 h 30 min, 100 marks, 14 questions | plan + standard approved by Adrian 20 Sep 2026 — the first upper-secondary paper by the method; authoring round started the same day; files in `~/Desktop/AdrianMath/School Papers/TJC IP4 AM EOY/` |
-| `tjc-ip4-em-eoy` | Temasek Junior College (IP), IP4 Intermediate Mathematics (= E Math) End-of-Year, 2 h 30 min, 100 marks, 16 questions | as above, follows the 2025 shape (the question count moved 12 → 13 → 16); files in `~/Desktop/AdrianMath/School Papers/TJC IP4 EM EOY/` |
+| `tjc-ip4-am-eoy` | Temasek Junior College (IP), IP4 Additional Mathematics End-of-Year, 2 h 30 min, 100 marks, 14 questions | WRITTEN 20 Sep 2026 — the first upper-secondary paper by the method: 14/14 accepted (3 slots needed a second round: Q3 too close to 2025 Q3, Q6 degenerate endpoint answers, Q9 easier), 6 figures, blind solve 123 min; with Adrian for his read; files in `~/Desktop/AdrianMath/School Papers/TJC IP4 AM EOY/` |
+| `tjc-ip4-em-eoy` | Temasek Junior College (IP), IP4 Intermediate Mathematics (= E Math) End-of-Year, 2 h 30 min, 100 marks, 16 questions | WRITTEN 20 Sep 2026 — 16/16 accepted after repairs (Q5 sketch did not pin n; Q6 + Q8 easier; Q7 re-skin of 2024 Q5; Q14 easier; Q8 needed a THIRD round for a wrong key at a rounding boundary, 9.385 → the given changed to 65 m), 9 figures, blind solve 117 min; with Adrian; files in `~/Desktop/AdrianMath/School Papers/TJC IP4 EM EOY/` |
