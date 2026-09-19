@@ -10,13 +10,6 @@ the bank. Scope comes from the school's papers, never from the national syllabus
 level: St Nicholas tests compound interest, cones, spheres and simultaneous equations in
 Sec 1.
 
-## Schools so far
-| key | paper | state |
-|---|---|---|
-| `sngs-s1-eoy` | CHIJ St Nicholas Girls · Sec 1 EOY · 90 marks, 20 Qs | plan approved, paper built 18 Sep 2026 |
-| `tjc-ip4-am-eoy` | Temasek Junior College (IP) · IP4 Additional Mathematics EOY · 100 marks, 14 Qs, 2 h 30 | plan + standard DRAFTED 20 Sep 2026 — the first upper-sec paper by this method; awaiting Adrian's checkpoint 2 |
-| `tjc-ip4-em-eoy` | Temasek Junior College (IP) · IP4 Intermediate Mathematics (= E Math) EOY · 100 marks, 16 Qs, 2 h 30 | plan + standard DRAFTED 20 Sep 2026; follows the 2025 shape (the question count moved 12 → 13 → 16 over the years) |
-
 ## The pieces
 
 | Piece | Where | Generic or per school |
@@ -85,3 +78,5 @@ school's style and is not a past-year paper.
 | Key | Paper | State |
 |---|---|---|
 | `sngs-s1-eoy` | CHIJ St Nicholas Girls, Sec 1 End-of-Year, 2 h 15 min, 90 marks, 20 questions | first paper written 18 Sep 2026 (20 questions, 90 marks, 7 figures, all slots through blind solve and moderation), with Adrian for his read; files in `~/Desktop/AdrianMath/School Papers/St Nicholas S1 EOY/` |
+| `tjc-ip4-am-eoy` | Temasek Junior College (IP), IP4 Additional Mathematics End-of-Year, 2 h 30 min, 100 marks, 14 questions | plan + standard approved by Adrian 20 Sep 2026 — the first upper-secondary paper by the method; authoring round started the same day; files in `~/Desktop/AdrianMath/School Papers/TJC IP4 AM EOY/` |
+| `tjc-ip4-em-eoy` | Temasek Junior College (IP), IP4 Intermediate Mathematics (= E Math) End-of-Year, 2 h 30 min, 100 marks, 16 questions | as above, follows the 2025 shape (the question count moved 12 → 13 → 16); files in `~/Desktop/AdrianMath/School Papers/TJC IP4 EM EOY/` |
