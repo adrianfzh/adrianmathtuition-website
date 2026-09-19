@@ -1,0 +1,232 @@
+[
+ {
+  "task": "figure_placement",
+  "id": "06914943-3400-4c47-a008-b6f0c8619b21",
+  "reason": "Two question-level images look like near-identical blank coordinate-axes templates (both show only a dot at (1,1), different pixel dims 769x748 vs 768x625) for 2 parts (y=x^3, y=2^x) each needing its own blank sketch space. Ambiguous whether these are genuine duplicates (spec says drop dup) or two distinct blank templates that each part needs — dropping one risks leaving a part with no diagram. Left completely untouched."
+ },
+ {
+  "task": "figure_placement",
+  "id": "523811ac-c7b4-44a6-a4eb-7278dba966e7",
+  "reason": "img1 shows triangle ABC (10cm,15cm,35°,25°) and triangle XYZ (8cm) side by side, but part a's text describes a DIFFERENT triangle XYZ with XY=9.2cm, YZ=8.5cm, area=16.2cm^2 -- none of img1's labelled values match. Suspect img1 may belong to a different question entirely (possible bank mis-assignment), not just misplaced within this row. img2 (lighthouse, 80m, 35°) clearly matches part b and would be a confident move, but leaving the whole row untouched pending review of img1's origin, since partial-patching while img1 is unresolved risks leaving a mismatched figure at question level."
+ },
+ {
+  "task": "figure_placement",
+  "id": "fb9ba1a9-7174-4519-a241-1dacc8ee429b",
+  "reason": "img0 (blank two-circle A/B Venn diagram) clearly matches part (a) shading instruction, but img1 shows an odd single-circle diagram with both A and B labelled at top-left (not matching a two-set A cup B shaded diagram expected for part b) — looks like it may belong to a different/unrelated question (mismatched pairing). Left row untouched rather than guess."
+ },
+ {
+  "task": "figure_placement",
+  "id": "1b5bc65c-4a8a-4705-9e87-ddf0cc21b8ec",
+  "reason": "All 3 images (sol_ prefixed filenames) are scans of the MARKING SCHEME / solution booklet (labelled '10(i)', 'Qn/Solution' table, '10(ii)'), not question diagrams — they show the model answer scatter plots for parts (i)A, (i)B, (ii). These don't belong in question image_url/parts image fields at all; out of scope for part-placement decision, left untouched."
+ },
+ {
+  "task": "figure_placement",
+  "id": "21df1125-0574-4e23-8e88-9376696e12ec",
+  "reason": "Stem uses an inline {{IMG:...}} placeholder embedding image 2 (48f5d8e5...) directly in question_text for Figure 1, while image 1 (473c89a6...) has no placeholder and is presumably Figure 2 (cross-section). Both figures are used by both parts (a) and (b), so no part-level move is warranted, but the mixed inline-placeholder + trailing-array convention is unusual and outside the scope of a plain part-placement decision — left untouched to avoid risking a duplicate/rendering issue."
+ },
+ {
+  "task": "figure_placement",
+  "id": "48a94b61-e032-48cb-8912-678d3b4e8a59",
+  "reason": "Image1 is the given y=f(2x) graph (matches stem) but images 2 and 3 are ANSWER sketches (y=f(2x+4) labelled with the transformed asymptote/turning point, and y=1/f(2x)) — these are model-answer graphs for parts (a) and (b)(i), not question-given diagrams. Not a simple stem-vs-part placement decision; left untouched."
+ },
+ {
+  "task": "figure_placement",
+  "id": "674636b9-320e-48af-8cdc-6b386586f14e",
+  "reason": "Both images are ANSWER sketches (fully labelled coordinates for y=f(x) and y=2f(x-1)) for parts (a) and (b) respectively, not question-given diagrams — the question is a piecewise-function definition with no diagram of its own. Not a plain stem-vs-part placement decision; left untouched."
+ },
+ {
+  "task": "figure_placement",
+  "id": "bc8975dc-505d-434d-abfb-2707b08a0f9f",
+  "reason": "Both images (sol_ prefixed, labelled '5(ii)' with the answer coordinate and marks shown) are scans of the MARKING SCHEME/solution booklet showing the model-answer sketches of curves D and E, not question-given diagrams — this question has no given figure at all (parametric/cartesian curves defined algebraically). Out of scope for part-placement; left untouched."
+ },
+ {
+  "task": "figure_placement",
+  "id": "ceccf50e-31a4-40e9-91f4-49bf80b3f675",
+  "reason": "image_url here is an array of {url, mm} objects (non-standard — most rows use bare path strings), where 'mm' is presumably a display-size hint. Image2 (candles P and Q with dimensions) clearly belongs to part (a) ('two candles P and Q are similar...'), and image1 (single candle stock photo) likely belongs to the promotional stem. But the spec's part-level image_url/image_url_after convention only documents bare path strings, not {url,mm} objects, so moving a figure into a part risks silently dropping the mm sizing metadata with no defined replacement. Left untouched to avoid data loss until the {url,mm} convention for part-level fields is clarified."
+ },
+ {
+  "task": "figure_placement",
+  "id": "f5b0f720-0354-4e2b-915d-00a743d09be5",
+  "reason": "Both images are ANSWER sketches: image1 shows y=f(x) alone with labelled endpoints, image2 shows the model-answer sketch of y=f(x), y=f^-1(x) and y=x together (for part iii). Neither is a question-given diagram — the function is defined purely algebraically with no figure of its own. Not a plain stem-vs-part placement decision; left untouched."
+ },
+ {
+  "task": "stray_tags",
+  "id": "2e169b9e-7fd1-4b89-b835-0c3b27544f61",
+  "reason": "b.i text mixes a 'show that [1]' display equation with a further 'find an expression [3]' inline within a single already-nested subpart (b.i); splitting would need a 3rd nesting level or would collide with the existing b.ii label — left untouched."
+ },
+ {
+  "task": "stray_tags",
+  "id": "841f1bc8-b888-47c4-8a11-bb6c0dc037cf",
+  "reason": "a.ii text has inline lettered sub-answers '(a) ... [1] (b) ... [2]' already matched by a combined answer/solution; splitting into a further nested level under an existing roman-numeral subpart is ambiguous (label scheme + how to divide the combined answer) — left untouched."
+ },
+ {
+  "task": "stray_tags",
+  "id": "d46c53af-09ed-430b-bec2-a31a38a4e797",
+  "reason": "a.i and b.i both have inline lettered sub-answers '(a) ... [n] (b) ... [n]' matched by combined answer/solution, nested under existing subparts (a.i, b.i); a further nesting level is ambiguous — left both untouched."
+ },
+ {
+  "task": "stray_tags",
+  "id": "77f45471-490b-4106-9c4b-4010e3f750cf",
+  "reason": "b.ii text has inline lettered sub-answers '(a) ... [2] (b) ... [2]' matched by a combined answer/solution, nested under an existing subpart (b.ii); a further nesting level is ambiguous — left untouched."
+ },
+ {
+  "task": "stray_tags",
+  "id": "52a0d07d-2eeb-43a2-8e09-bc7b3b06473c",
+  "reason": "parts is null; the stem runs three inline sub-questions together with only two of them tagged ([6] and [1]); splitting into proper parts would require guessing the third (untagged) sub-question's marks (10-6-1=3) — left untouched."
+ },
+ {
+  "task": "stray_tags",
+  "id": "5cf33bfc-4320-40fc-b528-59f5f069348b",
+  "reason": "parts is null; stem has one tagged sub-question ([6] of 10) followed by a second, untagged sub-question with no derivable mark split — left untouched."
+ },
+ {
+  "task": "stray_tags",
+  "id": "b7a68ab9-88ea-4f0d-b3dd-525f153416de",
+  "reason": "a.i and a.iii both have inline lettered sub-answers '(a) ... [1] (b) ... [n]' matched by combined answer/solution, nested under existing subparts; a further nesting level is ambiguous — left both untouched."
+ },
+ {
+  "task": "stray_tags",
+  "id": "05e1681a-eb68-48ae-b2f9-3a607f2759a9",
+  "reason": "the stem duplicates the ENTIRE content of parts a and b verbatim (including their embedded mark tags [1] and [4]), while parts a/b already exist correctly split with their own marks; this looks like a data duplication bug beyond simple stray-tag removal, and editing the stem risks masking or worsening that — left untouched. Flagging for review beyond this task's scope."
+ },
+ {
+  "task": "stray_tags",
+  "id": "fd95ffa0-2b71-489b-b82f-a0a12506824f",
+  "reason": "parts is null; stem has one tagged sub-question ([2] of 6) followed by a second, untagged sub-question ('Lines BD and OA meet...') with no derivable mark split — left untouched."
+ },
+ {
+  "task": "stray_tags",
+  "id": "8bf51875-52f3-4475-a642-ff25c74731ab",
+  "reason": "parts is null; stem has two tagged sub-questions ([2] and [3], summing to 5 of 8) followed by a third, untagged 'Hence find...' sub-question with no derivable mark split — left untouched."
+ },
+ {
+  "task": "stray_tags",
+  "id": "41339d9a-ea3c-4524-945b-4aea0290b657",
+  "reason": "b.i text has inline lettered sub-answers '(a) ... [2] (b) ... [1] (c) ... [1]' matched by a combined answer/solution, nested under an existing subpart (b.i); a further nesting level is ambiguous — left untouched."
+ },
+ {
+  "task": "stray_tags",
+  "id": "626ff85c-e918-43cd-b813-9768d38352ec",
+  "reason": "stem-only question (parts=[]) with a mid-text tag [3] followed by more text ('Hence, without using a calculator, find ...'); no existing part to move the trailing text into, no inline (a)/(b) labels to split on, and the second segment has no tag of its own (total_marks=7, only 3 accounted for) — splitting would require inventing a mark value, so left untouched."
+ },
+ {
+  "task": "stray_tags",
+  "id": "273b7321-ca43-479d-83f5-189d142de226",
+  "reason": "stem-only question (parts=[]) with a mid-text tag [2] followed by more untagged text ('Hence, or otherwise, solve the inequality ...'); no existing part to move it into and no explicit mark for the remainder (total_marks=5, only 2 accounted for) — left untouched rather than inventing a split/mark."
+ },
+ {
+  "task": "stray_tags",
+  "id": "3262c259-9d36-4ecc-a938-27067ee29d47",
+  "reason": "stem-only question (parts=[]) with two mid-text tags [7] and [4] followed by a third untagged sentence ('State an assumption that you made...'); total_marks=12 but only 11 accounted for by the two tags, no existing parts to merge into, and no inline (a)/(b) labels — splitting into 3 parts would require inventing the third part's marks, so left untouched."
+ },
+ {
+  "task": "stray_tags",
+  "id": "8b8914ee-a4a3-4075-91bd-bd6779c9166e",
+  "reason": "stem-only question (parts=null) with a mid-text tag [2] followed by 'Prove the conjecture by Mathematical Induction.' with no tag of its own; no existing parts to merge into and no inline (a)/(b) labels. total_marks=6, only 2 accounted for — while the two tasks (conjecture, then induction proof) look like a natural split, inventing the second part's marks isn't warranted by the rules, so left untouched."
+ },
+ {
+  "task": "stray_tags",
+  "id": "c906909e-9a53-4fa8-9a12-ba127f355621",
+  "reason": "stem-only question (parts=null) with a mid-text tag [3] followed by 'Hence solve the inequality ...' with no tag; no existing parts to merge into, no inline labels, total_marks=6 with only 3 accounted for — left untouched rather than inventing the remainder's mark/split."
+ },
+ {
+  "task": "stray_tags",
+  "id": "41b17566-278a-45a6-a48d-b1e671cfa64b",
+  "reason": "stem-only question (parts=[]) with two mid-text tags [2] and [1] followed by a third untagged sentence ('Let R be the point ... write down the cartesian equation of the locus of R...'); total_marks=5 but only 3 accounted for by the two tags, no existing parts, no inline labels — left untouched rather than inventing the third segment's mark."
+ },
+ {
+  "task": "stray_tags",
+  "id": "d5d4a39c-b651-450d-9273-e0609d0316f5",
+  "reason": "stem-only question (parts=null) with two mid-text tags [2] and [3] followed by a third untagged paragraph (the instrument Q / geometric-progression task); total_marks=8 but only 5 accounted for by the two tags, no existing parts, no inline labels — left untouched rather than inventing the third segment's mark."
+ },
+ {
+  "task": "stray_tags",
+  "id": "de65f92a-154b-463f-b023-12b7bb79b27d",
+  "reason": "stem-only question (parts=null) with a mid-text tag [2] followed by 'Hence show that the sum of the first n terms ...' with no tag; no existing parts to merge into, no inline labels, total_marks=9 with only 2 accounted for — left untouched rather than inventing the remainder's mark."
+ },
+ {
+  "task": "stray_tags",
+  "id": "999a11b5-dbec-4bf1-9254-c6b35145784a",
+  "reason": "parts=null; stem holds two flowing demands (5 marks then an untagged deduce-demand) with no existing parts to split into or move text into; risk of inventing structure not in spec — left untouched"
+ },
+ {
+  "task": "stray_tags",
+  "id": "2fd4af0f-5503-40ec-9058-c53fae6555ce",
+  "reason": "parts=null; three flowing demands (tags [3],[4] then an untagged final demand), no existing parts; splitting would require inventing part boundaries/marks — left untouched"
+ },
+ {
+  "task": "stray_tags",
+  "id": "71098983-f2d1-4256-b999-1df414655789",
+  "reason": "parts=null; three flowing demands (tags [1],[4] then an untagged final demand), no existing parts to split into — left untouched"
+ },
+ {
+  "task": "stray_tags",
+  "id": "805f7e68-daec-49e3-964a-44efab466c53",
+  "reason": "parts=null; stem holds a [5]-tagged demand followed by an untagged sketch demand, no existing parts — left untouched"
+ },
+ {
+  "task": "stray_tags",
+  "id": "53b54471-96fd-4c89-ace6-18cc1cba7f73",
+  "reason": "parts=null; long stem with multiple display-math blocks and two tags ([4],[3]) each followed by substantial further content, no existing parts — too risky to split confidently, left untouched"
+ },
+ {
+  "task": "stray_tags",
+  "id": "7f09d479-e2e2-4c6f-9684-3871b7ceb869",
+  "reason": "parts=null; stem with two tags ([3],[3]) each followed by further paragraphs plus a final untagged demand, no existing parts — left untouched"
+ },
+ {
+  "task": "stray_tags",
+  "id": "59455981-4013-4850-ade1-9f0a4cc353a9",
+  "reason": "parts=null; stem holds a [5]-tagged demand followed by an untagged \"Hence\" demand, no existing parts — left untouched"
+ },
+ {
+  "task": "stray_tags",
+  "id": "243fa9d9-529d-49e7-aecc-34362bdf7d4c",
+  "reason": "parts=null; two demands each introducing its own display-math inequality, tags [4] and [2], no existing parts to split into — left untouched"
+ },
+ {
+  "task": "stray_tags",
+  "id": "f2e09962-42e2-4112-8411-8a08319178b1",
+  "reason": "parts=null; stem with tags [4] and [2] each followed by display math / further demand, no existing parts — left untouched"
+ },
+ {
+  "task": "stray_tags",
+  "id": "8a1a90e0-556f-493b-a243-80bd5fac980d",
+  "reason": "parts=null; three flowing demands (tags [2],[2] then an untagged final demand), no existing parts — left untouched"
+ },
+ {
+  "task": "stray_tags",
+  "id": "7caaef88-e1bf-4af5-b35a-451da1575301",
+  "reason": "parts=null; stem holds a [5]-tagged induction demand followed by an untagged \"Hence find\" demand with its own display-math, no existing parts — left untouched"
+ },
+ {
+  "task": "stray_tags",
+  "id": "823e218a-a741-4bca-901d-9d2df4117b2b",
+  "reason": "parts=null; three flowing demands (tags [1],[2] then an untagged final demand), no existing parts — left untouched"
+ },
+ {
+  "task": "stray_tags",
+  "id": "3af79116-558f-4bfc-843a-8a3dbf13a7a9",
+  "reason": "parts=null; stem holds a [3]-tagged demand followed by an untagged second-curve demand, no existing parts — left untouched"
+ },
+ {
+  "task": "stray_tags",
+  "id": "861560fc-db42-49da-80cc-5ca4b723bffa",
+  "reason": "parts=null; four flowing demands (tags [1],[2] then two untagged demands \"Deduce...\"/\"Hence or otherwise...\"), no existing parts — left untouched"
+ },
+ {
+  "task": "stray_tags",
+  "id": "851ad772-edd3-45ff-b2e9-bd96a357179d",
+  "reason": "subpart a.i text contains inline \"(a)...[1] (b)...[2] (c)...[2]\" sub-questions summing to its own marks=5, matching shape (a), but this subpart is already nested one level under part a -- splitting further would require a third level of nesting (subpart-of-subpart) which is not used anywhere else in the schema/data seen; left untouched to avoid inventing unsupported structure"
+ },
+ {
+  "task": "stray_tags",
+  "id": "eb01e59d-dc69-475f-9ee4-90daf8aa5c4e",
+  "reason": "subpart b.ii text contains inline \"(a)...[1] (b)...[2]\" sub-questions summing to its own marks=3, matching shape (a), but this subpart is already nested one level under part b -- splitting further would require a third level of nesting (subpart-of-subpart); left untouched"
+ },
+ {
+  "task": "stray_tags",
+  "id": "db14ea6c-4ee3-4439-a4b6-ff244940f603",
+  "reason": "subparts b.ii and b.iii each contain inline \"(A)...[..] (B)...[..]\" sub-questions matching their own marks, but require a third level of nesting to split (subpart-of-subpart), same issue as other unsure rows in this chunk. Also subpart b.ii has a displaced formula (the t=ax+b/t=cx^2+d models) sitting after the \"(A)\" tag rather than before it, compounding the ambiguity. Separately, part b itself has marks:null (pre-existing data issue, out of scope) -- flagging for visibility. Left untouched."
+ }
+]
