@@ -531,6 +531,15 @@ export function computeAutoHold(resultJson: unknown): AutoHold {
   if (pen) reasons.push(`corrections in another pen on ${pen} question${pen === 1 ? '' : 's'}`);
   if (uncertain) reasons.push(`question match uncertain on ${uncertain} question${uncertain === 1 ? '' : 's'}`);
 
+  // T — the total is out of all proportion to the pages handed in (19 Sep 2026, Denise:
+  // 2 photos, "out of 145" — an exam's allocation had been added to her Practice Again
+  // sheet). Mirror of the bot's lib/release-gates.js.
+  {
+    const src = asRecord(root.source);
+    const pages = Array.isArray(src?.photos) ? src!.photos.length : 0;
+    const max = Number(asRecord(root.totals)?.max) || 0;
+    if (pages > 0 && max / pages > 25) reasons.push(`out of ${max} over ${pages} page${pages === 1 ? '' : 's'} — the total looks like a different paper's`);
+  }
   return { hold: reasons.length > 0, reasons };
 }
 

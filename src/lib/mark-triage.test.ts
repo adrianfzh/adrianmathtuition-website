@@ -637,3 +637,14 @@ describe('isGroundedRun — the one definition of "grounded on the real paper"',
     expect(isGroundedRun(null)).toBe(false);
   });
 });
+
+describe('computeAutoHold — a total out of proportion to the pages (19 Sep 2026)', () => {
+  it('two photos "out of 145" is a watch-out; 90 over 15 pages and a 32-mark sheet over 3 are not', () => {
+    const odd = computeAutoHold({ results: [{ question_found: true }], totals: { max: 145, awarded: 40 }, source: { photos: [{}, {}] } });
+    expect(odd.reasons.some(r => /out of 145 over 2 pages/.test(r))).toBe(true);
+    const fine = computeAutoHold({ results: [{ question_found: true }], totals: { max: 90, awarded: 80 }, source: { photos: Array.from({ length: 15 }, () => ({})) } });
+    expect(fine.reasons.some(r => /different paper/.test(r))).toBe(false);
+    const sheet = computeAutoHold({ results: [{ question_found: true }], totals: { max: 32, awarded: 27 }, source: { photos: [{}, {}, {}] } });
+    expect(sheet.reasons.some(r => /different paper/.test(r))).toBe(false);
+  });
+});
