@@ -198,12 +198,40 @@ export SHEETS_API_BASE SHEETS_API_TOKEN
 export SHEET_RENDER=spec
 export SHEETS_STATE="$STATE"
 
+# 🧮 ONE FETCH PER MACHINE, NOT PER SLOT (19 Sep 2026, Adrian: "alot of calls are
+# unnecessary right?"). Every slot used to read the per-account switches AND ask for
+# work on every tick of its own — six marking slots at 30 s plus six sheet slots at
+# 120 s on the Mac alone was ~30 website calls a minute, around the clock, ~1.3 million
+# Vercel function calls a month to learn "nothing to do". The answers are the same for
+# every slot on a machine, so the first slot to ask keeps the answer in a shared file
+# and the others read that until it is `ttl` seconds old.
+GATE_DIR="${ADRIANMATH_GATE_DIR:-$HOME/.adrianmath_gate}"
+mkdir -p "$GATE_DIR" 2>/dev/null
+file_mtime() { stat -f %m "$1" 2>/dev/null || stat -c %Y "$1" 2>/dev/null || echo 0; }
+shared_fetch() {  # shared_fetch <name> <ttl s> <command…> → the body, fetched at most once per ttl per machine
+  local name="$1" ttl="$2"; shift 2
+  local f="$GATE_DIR/$name" lock="$GATE_DIR/$name.lock" body
+  if [ -s "$f" ] && [ $(( $(date +%s) - $(file_mtime "$f") )) -lt "$ttl" ]; then cat "$f"; return 0; fi
+  if mkdir "$lock" 2>/dev/null; then
+    body="$("$@")"
+    # only a JSON answer is worth sharing; an empty or HTML reply is this slot's problem alone
+    case "$body" in '{'*|'['*) printf '%s' "$body" > "$f.$$" && mv -f "$f.$$" "$f" ;; esac
+    rmdir "$lock" 2>/dev/null
+    printf '%s' "$body"; return 0
+  fi
+  # another slot is fetching right now: use what is there; clear a lock left by a killed slot
+  [ -n "$(find "$lock" -maxdepth 0 -mmin +1 2>/dev/null)" ] && rmdir "$lock" 2>/dev/null
+  local i; for i in 1 2 3 4 5 6 7 8; do [ -s "$f" ] && break; [ -d "$lock" ] || break; sleep 0.5; done   # give the fetcher a moment (cold start)
+  if [ -s "$f" ]; then cat "$f"; else "$@"; fi
+}
+
 # ⏻ PER-ACCOUNT SWITCH (13 Sep 2026, Adrian: "3 toggles to on/off each one"): the
 # site holds one switch per Claude account (/admin/mark-paper → Airtable
 # `slot_accounts`); a slot whose account is OFF claims nothing new. Keyed the way
 # the plan-limit file is keyed, so the site and this file mean the same account.
 # Fails OPEN: no answer, or an account the site does not list, means "on".
-SWITCH_STATE="$(curl -s -m 8 "$SHEETS_API_BASE/api/admin/slot-accounts" -H "Authorization: Bearer $SHEETS_API_TOKEN" 2>/dev/null | python3 -c 'import json,sys
+fetch_switches() { curl -s -m 8 "$SHEETS_API_BASE/api/admin/slot-accounts" -H "Authorization: Bearer $SHEETS_API_TOKEN" 2>/dev/null; }
+SWITCH_STATE="$(shared_fetch slot-accounts 45 fetch_switches | python3 -c 'import json,sys
 try: print("off" if sys.argv[1] in (json.load(sys.stdin).get("off") or []) else "on")
 except Exception: print("on")' "$PLAN_ACCOUNT_KEY" 2>/dev/null || echo on)"
 if [ "$SWITCH_STATE" = "off" ]; then
@@ -222,8 +250,8 @@ export SHEETS_REPO="${SHEETS_REPO:-$HOME/dev/adrianmathtuition-website}"
 # diagnosing' for 33 hours (Tan Sijia, 1–2 Sep 2026): the API's `next` action
 # knows how to reclaim an expired lease, but no session was ever started to
 # call it. The lease is 40 min server-side; mirror it here.
-JOBS=$(curl -s -m 30 "$SHEETS_API_BASE/api/admin/sheet-jobs" \
-  -H "Authorization: Bearer $SHEETS_API_TOKEN") || JOBS=""
+fetch_jobs() { curl -s -m 30 "$SHEETS_API_BASE/api/admin/sheet-jobs" -H "Authorization: Bearer $SHEETS_API_TOKEN"; }
+JOBS=$(shared_fetch sheet-jobs 100 fetch_jobs) || JOBS=""
 WAITING=$(printf '%s' "$JOBS" | python3 -c "
 import json,sys,datetime
 LEASE_S = 40*60
