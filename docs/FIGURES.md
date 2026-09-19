@@ -154,6 +154,21 @@ Five actions, and only three of them write to the question row:
 | 🙈 **Keep hidden** | prefixes the note `Adrian: kept hidden · …`, status unchanged. **Decided**: the row leaves the working lane onto the 🙈 door. |
 | ✏️ **Redraw** | prefixes the note `Adrian: redraw · …`, status unchanged. **Decided**: the row leaves the working lane onto the ✏️ door. |
 
+**Complex-number LOCI are out of syllabus — never redraw them (Adrian, 19 Sep 2026).**
+A held solution image whose question is an Argand LOCUS (a circle / bisector /
+half-line region, "sketch the locus of z") is marked kept-hidden with the note
+`out of syllabus — complex-number loci` and its candidate dropped. Roots of a
+complex number plotted on an Argand diagram, and plain points on one, are still
+H2 and still get redrawn. Batch 1 had six loci cards (#B1-1, 4, 6, 23, 27, 28); no
+other loci card was on the redraw list that day.
+
+**"Identical" (Adrian, same day: "redraw so that redrawn figure is EXACTLY the
+same - IDENTICAL").** A redraw is a clean drawing of the SAME figure — same
+window, same curves and asymptotes, every label the original carries, placed
+where the original places them — not a pixel copy of a scan. Match the original's
+layout as closely as the family allows before filing; a redraw that adds, drops or
+moves a labelled feature is a redo.
+
 **Batch numbers on candidates (19 Sep 2026).** Adrian, on the first redraw batch:
 *"some redraw need to redo, do i just tell you?"* → *"why don't you number it"*. Every
 candidate a session files carries `#B<batch>-<n>` at the front of its note (and
