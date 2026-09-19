@@ -41,7 +41,7 @@ def is_scanned(doc):
 
 
 def dark_runs(page, y0, y1, thresh=170, merge_gap=3):
-    """Runs of rows carrying dark pixels between y0 and y1 (pt), as (top, bottom).
+    """Runs of rows carrying dark pixels between y0 and y1 (pt), as (top, bottom, width).
 
     Rendered at 72 dpi so one pixel row is one point; a row counts when any
     pixel in it is darker than `thresh` (0 = black; 170 still catches a thin
@@ -51,27 +51,30 @@ def dark_runs(page, y0, y1, thresh=170, merge_gap=3):
     pix = page.get_pixmap(dpi=72, colorspace=pymupdf.csGRAY)
     w, buf = pix.width, pix.samples
     lo, hi = max(0, int(y0)), min(pix.height, int(y1))
-    runs, start, last = [], None, None
+    runs, start, last, cols = [], None, None, []
     for r in range(lo, hi):
-        dark = min(buf[r * w:(r + 1) * w]) < thresh
+        row = buf[r * w:(r + 1) * w]
+        dark = min(row) < thresh
         if dark:
             if start is None:
                 start = r
             last = r
+            cols.extend(i for i, v in enumerate(row) if v < thresh)
         elif start is not None and r - last > merge_gap:
-            runs.append((start, last))
-            start = None
+            runs.append((start, last, max(cols) - min(cols) + 1))
+            start, cols = None, []
     if start is not None:
-        runs.append((start, last))
+        runs.append((start, last, max(cols) - min(cols) + 1))
     return runs
 
 
 def pixel_bands(doc):
     """Suggest header_bot / footer_top for a scanned set from the pixel rows.
 
-    Header: the first dark run on a page is the source's page number and the
-    second is the body, so the band sits midway between the lowest page number
-    and the highest body start. Footer: rows are scanned only ABOVE the
+    Header: a page number is a short run high on the page (<= 60pt wide, top
+    <= 70pt); the body's first line is wide. The band sits midway between the
+    lowest page number and the highest body start — and when no page has one,
+    there is no header to strip (--header-bot 0). Footer: rows are scanned only ABOVE the
     compiler's overlay text (its watermark + page number, which the band takes
     anyway); the last run is the school's footer row when it starts inside the
     bottom 70pt, and the band sits midway between it and the content above.
@@ -85,26 +88,64 @@ def pixel_bands(doc):
         cut = min(overlay) - 1 if overlay else H
         top = dark_runs(p, 0, H * 0.16)
         bot = dark_runs(p, H * 0.84, cut)
-        print(f"    p{i + 1:<3} top {top[:3]}   bottom {bot}   (overlay from y={cut + 1:.0f})")
-        if len(top) >= 2:
+        fmt = lambda rs: [(a, b, f"w{wd}") for a, b, wd in rs]
+        print(f"    p{i + 1:<3} top {fmt(top[:3])}   bottom {fmt(bot)}   (overlay from y={cut + 1:.0f})")
+        if top and top[0][2] <= 60 and top[0][0] <= 70:      # a page number, not a body line
             num_bot.append(top[0][1])
-            body_top.append(top[1][0])
+            if len(top) >= 2:
+                body_top.append(top[1][0])
+        elif top:
+            body_top.append(top[0][0])
         if bot and bot[-1][0] >= H - 70:
             foot_top.append(bot[-1][0])
             if len(bot) >= 2:
                 cont_bot.append(bot[-2][1])
         elif bot:
             cont_bot.append(bot[-1][1])
-    header_bot = round((max(num_bot) + min(body_top)) / 2) if num_bot and body_top else None
+    header_bot = round((max(num_bot) + min(body_top)) / 2) if num_bot and body_top else 0
     footer_top = round((max(cont_bot) + min(foot_top)) / 2) if cont_bot and foot_top else None
-    if header_bot:
+    if num_bot:
         print(f"    page numbers end by y={max(num_bot)}, the body starts at y={min(body_top)}"
               f" -> header_bot {header_bot} (every page carries one: --header-all-pages)")
+    else:
+        print("    no page number in the top band on any page -> header_bot 0 (nothing to strip)")
     if footer_top:
         print(f"    content ends by y={max(cont_bot)}, the footer row starts at y={min(foot_top)}"
               f" -> footer_top {footer_top}")
     print("    content_top = the body's first run on page 1 (top list above); build with --scanned")
     return header_bot, footer_top
+
+def band_pixels(doc, header_bot, footer_top, thresh=128):
+    """Count dark pixels the STORED page images carry inside the two bands.
+
+    A text-only redaction leaves the picture untouched, so this decides the
+    mode: a few stray pixels per page are scan specks and text-only mode keeps
+    the images byte-identical; hundreds mean the school's footer or page
+    number is in the picture and the bands must be applied with --scanned.
+    """
+    table = bytes(1 if v < thresh else 0 for v in range(256))
+    worst_h = worst_f = (-1, 0)
+    for i, page in enumerate(doc):
+        for inf in page.get_image_info(xrefs=True):
+            if pymupdf.Rect(inf["bbox"]).get_area() / page.rect.get_area() < 0.8:
+                continue
+            pix = pymupdf.Pixmap(doc, inf["xref"])
+            if pix.n > 1:
+                pix = pymupdf.Pixmap(pymupdf.csGRAY, pix)
+            buf, w, h = pix.samples, pix.width, pix.height
+            x0, y0, x1, y1 = inf["bbox"]
+            scale = h / (y1 - y0)
+
+            def count(a, b):
+                ra, rb = max(0, int((a - y0) * scale)), min(h, int((b - y0) * scale))
+                return buf[ra * w:rb * w].translate(table).count(b"\x01") if rb > ra else 0
+
+            hc = count(0, header_bot) if header_bot else 0
+            fc = count(footer_top, page.rect.height) if footer_top else 0
+            worst_h = max(worst_h, (hc, i + 1))
+            worst_f = max(worst_f, (fc, i + 1))
+    return worst_h, worst_f
+
 
 def main(path):
     doc = pymupdf.open(path)
@@ -219,13 +260,20 @@ def main(path):
             print(f"    p{pg} {r} {t!r}")
         print("    to erase one:  --scrub <page>:<y0>-<y1>   (check nothing real is in the band)")
 
+    flags = ""
     if scanned:
         hb, ft = pixel_bands(doc)
-        header_bot, footer_top = hb or header_bot, ft or footer_top
+        header_bot, footer_top = hb, ft or footer_top
+        (hc, hp), (fc, fp) = band_pixels(doc, header_bot, footer_top)
+        dirty = max(hc, fc) > 50
+        print(f"\n  dark pixels the scan itself carries inside the bands: header max {hc} (p{hp}),"
+              f" footer max {fc} (p{fp})")
+        print("    -> the school's marks are in the picture: build with --scanned" if dirty else
+              "    -> specks only: text-only mode (no --scanned) keeps the images byte-identical")
+        flags = ("  --header-all-pages" if header_bot else "") + ("  --scanned" if dirty else "")
 
     print("\n  suggested config:")
-    print(f"    --footer-top {footer_top}  --header-bot {header_bot}  --content-top {content_top}"
-          + ("  --header-all-pages --scanned" if scanned else ""))
+    print(f"    --footer-top {footer_top}  --header-bot {header_bot}  --content-top {content_top}{flags}")
     doc.close()
 
 

@@ -190,20 +190,41 @@ same shape). The tell: the probe finds two spans per page and "lowest real
 content y=0". The school's footer code, the source page numbers and `[Turn
 over` are all **pixels**, so:
 
-- Build with `--scanned`: the bands are applied with `PDF_REDACT_IMAGE_PIXELS`,
-  which whitens the image itself and re-encodes it (the file grows ~1.4×). A
-  text-only redaction would leave the school's name in the picture under a
+- **The probe decides the mode.** It measures the bands from the pixel rows
+  (72 dpi, one row = one point, runs merged, scanned only above the overlay
+  text; a page number is a run ≤ 60pt wide in the top 70pt, a body line is
+  wide), then counts the dark pixels the STORED images carry inside those
+  bands. Hundreds = the school's marks are in the picture → `--scanned`
+  (bands applied with `PDF_REDACT_IMAGE_PIXELS`, which whitens the image
+  itself and re-encodes it, ~1.4× the size). A handful = scan specks →
+  plain text-only mode, which leaves the images byte-identical. A text-only
+  redaction on a dirty scan leaves the school's name in the picture under a
   clean text layer — grep would pass and the PDF would still leak.
-- `--header-all-pages` — the source page number is in every page's picture.
+- `--header-all-pages` when the source page number is in every page's
+  picture (the Ahmad Ibrahim set); `--header-bot 0` when no page has one
+  (the Woodgrove set).
 - `[Turn over` shares the footer row with the school code; it goes with it.
-- The probe measures the bands from the pixel rows (72 dpi, one row = one
-  point, runs merged, scanned only above the overlay text) and suggests
-  `header_bot` / `footer_top`; `content_top` is the body's first run on
-  page 1. That paper: `--header-bot 72 --footer-top 768`, content at 84.5
-  (Paper 1) and 88.2 (Paper 2).
+- `content_top` is the body's first run on the paper's page 1. Ahmad
+  Ibrahim 2023: `--header-bot 72 --footer-top 768`, content at 84.5 / 88.2,
+  `--scanned`. Woodgrove 2025 (Set 3, `EM S1 SA2 (NA) 2025/`): `--header-bot
+  0 --footer-top 780`, content at 95 / 97, text-only.
 - Verify the **stored image**, not a render: load each page's image with
   `pymupdf.Pixmap(doc, xref)` and check the band rows are white. On a nudged
   first page the bands moved down with the body, so check `768 + dy`, not 768.
+- **Covers and the scheme may be bound in.** Woodgrove's compilation carried
+  the school's cover page before each section (name + crest), the standard
+  formula sheet, a blank page and six pages of marking scheme (school, setter,
+  worked solutions). Keep only the question pages of each paper/section —
+  the covers go (that is the source), the scheme is replaced by the key, the
+  formula sheet went too because nothing on it is Sec 1 work (an O-Level set
+  may want it kept — ask). The probe shows these pages as the odd ones out:
+  a running head at y≈34 on the scheme pages, an empty page, a cover with a
+  476pt-wide run at the top. Find the section boundary by eye: each section
+  restarts with "Answer all the questions".
+- **Sectioned paper vs two papers.** A paper in Sections A/B (questions
+  numbered straight through) gets `--subtitle "Section A"` / `"Section B"`
+  and keys headed `Answers  -  Section A`; two bound papers get `Paper 1` /
+  `Paper 2`. Follow the paper's own words.
 - The source filename names the school, so the finished set is a **new file
   named after its title** beside the original, not an in-place rebuild — the
   `originals/` convention still runs, on the per-paper halves in the scratch
