@@ -109,8 +109,20 @@ export function trimGraphPaper(svg) {
   let minor = Infinity;
   for (let i = 1; i < xs.length; i++) minor = Math.min(minor, xs[i] - xs[i - 1]);
   const major = minor * 5;
-  const x0 = Math.max(Number(vb[1]), xs[0] - 1.3 * major);
-  const x1 = Math.min(Number(vb[1]) + Number(vb[3]), xs[xs.length - 1] + 1.3 * major);
+  // 1.3 major squares is room enough on a normal sheet, but a tall sheet (many
+  // majors under the height cap) has small majors, and 1.3 of them is narrower
+  // than a "0.2" tick label — the numbering and the origin O were sliced in half.
+  // Never trim the left side below the width the numbering needs.
+  const x0 = Math.max(Number(vb[1]), xs[0] - Math.max(1.3 * major, 46));
+  // The right side must still hold the x-axis label, which sits past the arrow
+  // head: measure where the drawn text actually ends rather than guess in majors.
+  let textEnd = 0;
+  for (const m of svg.matchAll(/<text x="([\d.]+)"[^>]*font-size="([\d.]+)"[^>]*text-anchor="(\w+)"[^>]*>([^<]*)</g)) {
+    const w = 0.58 * Number(m[2]) * m[4].length;
+    const start = m[3] === 'middle' ? Number(m[1]) - w / 2 : m[3] === 'end' ? Number(m[1]) - w : Number(m[1]);
+    textEnd = Math.max(textEnd, start + w);
+  }
+  const x1 = Math.min(Number(vb[1]) + Number(vb[3]), Math.max(xs[xs.length - 1] + 1.3 * major, textEnd + 6));
   const w = Math.round(x1 - x0), h = Number(vb[4]);
   return svg
     .replace(/viewBox="[^"]*"/, `viewBox="${x0.toFixed(2)} ${vb[2]} ${w} ${h}"`)
