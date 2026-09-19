@@ -11,10 +11,10 @@
 //  · The pages are drawn on <canvas>, never <img>. iPadOS Live Text finds the
 //    printed text in an <img> and the SYSTEM swallows Pencil strokes over it —
 //    the page never gets an event. A canvas has no text to find.
-//  · The Pencil is read from the TOUCH stream (touchType 'stylus'), with the
-//    pointer stream as the desktop path. Safari drops Pencil pointer events
-//    now and then; the stylus touches survive. preventDefault on a stylus touch
-//    is also what lets the finger keep scrolling the page natively.
+//  · The Pencil is read from BOTH of Safari's streams at once (see the input effect):
+//    dense pointer events while they flow, the stylus TOUCH stream whenever Safari
+//    drops them. preventDefault on a stylus touch is what keeps the page from
+//    scrolling under the Pencil while a finger still scrolls it natively.
 // The full-screen overlay (zoom, typed notes, shapes) is still one tap away.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
@@ -93,13 +93,25 @@ function PageSurface({ page, mine, other, tool, color, canWrite, fingerWrites, o
     return () => { io.disconnect(); ro.disconnect(); };
   }, [page.url]);
 
-  // ── input: the stylus touch stream first, the pointer stream for mouse / other pens ──
+  // ── input ────────────────────────────────────────────────────────────────────
+  // ONE stroke, fed by TWO streams (19 Sep 2026, Adrian on the iPad: "some strokes will
+  // be missed and i have to keep rewriting"). Safari gives the Pencil two event streams:
+  // pointer events — dense (getCoalescedEvents, ~240 Hz) but Safari drops them, sometimes
+  // for a whole stroke — and touch events (touchType 'stylus') — sparse (~60 Hz) but
+  // they always arrive. Whichever speaks first starts the stroke; pointer points are
+  // used while they flow, touch points fill in the moment they stop; whichever ends
+  // first ends it. And a Pencil stroke is NEVER thrown away as an accident: a palm is a
+  // finger touch, so everything the Pencil does is meant — a decimal point, the dot of
+  // an i, a short minus sign (the first version dropped anything under ~3 px).
   useEffect(() => {
     const el = wrapRef.current;
     if (!el || !writable) return;
     let pts: StrokePoint[] = [];
-    let src: null | 'touch' | 'pointer' = null;
+    let active = false;
+    let byPencil = false;
     let touchId: number | null = null;
+    let pointerId: number | null = null;
+    let lastPointerAt = 0;
 
     const at = (cx: number, cy: number, force: number) => {
       const n = natRef.current; if (!n) return null;
@@ -110,9 +122,10 @@ function PageSurface({ page, mine, other, tool, color, canWrite, fingerWrites, o
       const r = el.getBoundingClientRect();
       live.current.onErase(page.index, p.x, p.y, 14 * (n.w / Math.max(1, r.width)));
     };
-    const begin = (p: StrokePoint | null, from: 'touch' | 'pointer') => {
-      if (!p) return;
-      src = from; pts = [p];
+    const paint = () => liveRef.current?.setAttribute('d', pts.length === 1 ? `M${pts[0].x} ${pts[0].y}l0.1 0` : pathOf(pts));
+    const begin = (p: StrokePoint | null, pencil: boolean) => {
+      if (!p || active) return;
+      active = true; byPencil = pencil; pts = [p];
       if (live.current.tool === 'er') { erase(p); return; }
       const n = natRef.current!;
       const hl = live.current.tool === 'hl';
@@ -121,23 +134,28 @@ function PageSurface({ page, mine, other, tool, color, canWrite, fingerWrites, o
         lp.setAttribute('stroke', hl ? HL_COLOR : live.current.color);
         lp.setAttribute('stroke-width', String(toolWidth(live.current.tool, n)));
         lp.setAttribute('stroke-opacity', hl ? '0.38' : '1');
-        lp.setAttribute('d', pathOf(pts));
       }
+      paint();
     };
     const extend = (p: StrokePoint | null) => {
-      if (!p || !src) return;
+      if (!p || !active) return;
       if (live.current.tool === 'er') { erase(p); return; }
-      pts.push(p);
-      liveRef.current?.setAttribute('d', pathOf(pts));
+      const last = pts[pts.length - 1];
+      if (last && last.x === p.x && last.y === p.y) return;
+      pts.push(p); paint();
     };
     const end = () => {
+      if (!active) return;
       const n = natRef.current;
-      const mineSrc = src; src = null; touchId = null;
+      const pencil = byPencil;
+      active = false; touchId = null; pointerId = null;
       liveRef.current?.setAttribute('d', '');
-      if (!mineSrc || !n || live.current.tool === 'er' || isAccident(pts, n)) { pts = []; return; }
+      const mine = pts; pts = [];
+      if (!n || live.current.tool === 'er' || !mine.length) return;
+      if (!pencil && isAccident(mine, n)) return;        // a mouse click or a stray finger; never the Pencil
+      if (mine.length === 1) mine.push({ ...mine[0], x: mine[0].x + 0.1 });   // a dot: round caps draw it
       const hl = live.current.tool === 'hl';
-      live.current.onStroke(page.index, { tool: hl ? 'highlighter' : 'pen', color: hl ? HL_COLOR : live.current.color, width: toolWidth(live.current.tool, n), points: pts }, n);
-      pts = [];
+      live.current.onStroke(page.index, { tool: hl ? 'highlighter' : 'pen', color: hl ? HL_COLOR : live.current.color, width: toolWidth(live.current.tool, n), points: mine }, n);
     };
 
     type T = Touch & { touchType?: string };
@@ -150,46 +168,48 @@ function PageSurface({ page, mine, other, tool, color, canWrite, fingerWrites, o
     };
     const ts = (e: TouchEvent) => {
       const t = writingTouch(e); if (!t) return;          // a finger: leave it to the browser — it scrolls
-      e.preventDefault();                                 // the Pencil must not scroll the page
-      if (src === 'pointer') return;                      // the pointer stream already has this stroke
+      e.preventDefault();                                 // the Pencil must never scroll the page
       touchId = t.identifier;
-      begin(at(t.clientX, t.clientY, t.force), 'touch');
+      begin(at(t.clientX, t.clientY, t.force), t.touchType === 'stylus');   // no-op when the pointer stream began it
     };
     const tm = (e: TouchEvent) => {
-      if (touchId === null && src !== 'pointer') return;
+      if (!active) return;
       const t = writingTouch(e); if (!t) return;
       e.preventDefault();
-      if (src === 'touch') extend(at(t.clientX, t.clientY, t.force));
+      if (performance.now() - lastPointerAt > 40) extend(at(t.clientX, t.clientY, t.force));   // the pointer stream has gone quiet
     };
-    const te = (e: TouchEvent) => { if (src === 'touch' && writingTouch(e)) end(); };
+    const te = (e: TouchEvent) => { if (active && writingTouch(e)) end(); };
 
-    // On an iPad the Pencil is read ONLY from the touch stream: Safari drops its pointer
-    // events mid-stroke now and then, and a stroke begun there would be cut short.
-    const applePencil = /iPad|iPhone/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     const pd = (e: PointerEvent) => {
-      if (e.pointerType === 'touch' || src) return;       // fingers scroll; one stroke at a time
-      if (e.pointerType === 'pen' && applePencil) return;
+      if (e.pointerType === 'touch') return;              // fingers scroll (Finger writes goes through the touch stream)
       if (e.pointerType === 'mouse' && e.button !== 0) return;
+      if (active) { if (pointerId === null) pointerId = e.pointerId; return; }
+      pointerId = e.pointerId; lastPointerAt = performance.now();
       try { el.setPointerCapture(e.pointerId); } catch { /* not capturable */ }
-      begin(at(e.clientX, e.clientY, e.pressure), 'pointer');
+      begin(at(e.clientX, e.clientY, e.pressure), e.pointerType === 'pen');
     };
     const pm = (e: PointerEvent) => {
-      if (src !== 'pointer') return;
+      if (!active || e.pointerType === 'touch' || (pointerId !== null && e.pointerId !== pointerId)) return;
+      lastPointerAt = performance.now();
       const list = e.getCoalescedEvents?.() ?? [];
       if (list.length) for (const c of list) extend(at(c.clientX, c.clientY, c.pressure)); else extend(at(e.clientX, e.clientY, e.pressure));
     };
-    const pu = () => { if (src === 'pointer') end(); };
+    const pu = (e: PointerEvent) => { if (active && e.pointerType !== 'touch' && (pointerId === null || e.pointerId === pointerId)) end(); };
 
     el.addEventListener('touchstart', ts, { passive: false });
     el.addEventListener('touchmove', tm, { passive: false });
     el.addEventListener('touchend', te); el.addEventListener('touchcancel', te);
     el.addEventListener('pointerdown', pd); el.addEventListener('pointermove', pm);
-    el.addEventListener('pointerup', pu); el.addEventListener('pointercancel', pu);
+    el.addEventListener('pointerup', pu);
+    // A cancelled pointer is Safari dropping ITS stream, not the Pencil lifting: while the
+    // stylus touch is still down the stroke carries on from the touch stream.
+    const pc = (e: PointerEvent) => { if (touchId !== null) { pointerId = null; lastPointerAt = 0; return; } pu(e); };
+    el.addEventListener('pointercancel', pc);
     return () => {
       el.removeEventListener('touchstart', ts); el.removeEventListener('touchmove', tm);
       el.removeEventListener('touchend', te); el.removeEventListener('touchcancel', te);
       el.removeEventListener('pointerdown', pd); el.removeEventListener('pointermove', pm);
-      el.removeEventListener('pointerup', pu); el.removeEventListener('pointercancel', pu);
+      el.removeEventListener('pointerup', pu); el.removeEventListener('pointercancel', pc);
     };
   }, [page.index, writable]);
 
@@ -237,6 +257,28 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
   const inkRef = useRef(ink);   // every mutator below writes it together with the state, so a save never reads a stale layer
   const dirty = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Is any marked page on screen (the tool bar shows only then), and WHICH page is under the
+  // middle of the screen — that is where Full screen opens, not page 1.
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = sectionRef.current; if (!el) return;
+    const io = new IntersectionObserver(es => setInView(es.some(e => e.isIntersecting)), { rootMargin: '-80px 0px -80px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  const pageInView = useCallback((): number | null => {
+    const mid = window.innerHeight / 2;
+    let best: { idx: number; d: number } | null = null;
+    for (const node of Array.from(sectionRef.current?.querySelectorAll<HTMLElement>('[id^="page-"]') ?? [])) {
+      const r = node.getBoundingClientRect();
+      const d = r.top <= mid && r.bottom >= mid ? 0 : Math.min(Math.abs(r.top - mid), Math.abs(r.bottom - mid));
+      const idx = Number(node.id.slice(5));
+      if (Number.isInteger(idx) && (!best || d < best.d)) best = { idx, d };
+    }
+    return best ? best.idx : null;
+  }, []);
+  const [openAt, setOpenAt] = useState<number | null>(null);
   const hasInk = !inkIsEmpty(ink);
   const otherHas = !!other && !inkIsEmpty(other.pages);
 
@@ -294,16 +336,21 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
 
   const btn = (on: boolean) => `text-xs font-semibold rounded-xl px-3 py-1.5 border ${on ? 'bg-navy text-white border-navy' : 'bg-white text-navy border-navy/20'}`;
   return (
-    <section aria-label="Marked pages" className="space-y-3" data-student-ink>
-      {!readOnly && (
-        <div className="sticky top-[57px] z-30 -mx-1 px-1 py-2 bg-[#faf8f3]/95 backdrop-blur flex flex-wrap items-center gap-1.5">
+    <section ref={sectionRef} aria-label="Marked pages" className="space-y-3" data-student-ink>
+      {!readOnly && inView && (
+        // FIXED to the screen, not sticky (19 Sep 2026, Adrian: "i scroll down the marked pages, then i
+        // want to use the pen, but i have to scroll all the way up") — it is there on page 1 and on page
+        // 16 alike, for as long as any marked page is on screen. Above the phone's bottom tab bar.
+        <div className="fixed left-1/2 -translate-x-1/2 z-40 bottom-[calc(env(safe-area-inset-bottom)+76px)] md:bottom-5 max-w-[calc(100vw-16px)] rounded-2xl border border-black/10 bg-white/95 backdrop-blur shadow-lg px-2 py-1.5 flex flex-wrap items-center justify-center gap-1.5" data-ink-toolbar>
           <button type="button" onClick={() => setTool('pen')} className={btn(tool === 'pen')} aria-pressed={tool === 'pen'}>✏️ Pen</button>
           <button type="button" onClick={() => setTool('hl')} className={btn(tool === 'hl')} aria-pressed={tool === 'hl'}>🖍 Highlight</button>
           <button type="button" onClick={() => setTool('er')} className={btn(tool === 'er')} aria-pressed={tool === 'er'}>🧽 Erase</button>
           <button type="button" onClick={undo} disabled={!history.length} className={`${btn(false)} disabled:opacity-40`} aria-label="Undo">↩︎</button>
           <button type="button" onClick={() => setFingerWrites(f => !f)} className={btn(fingerWrites)} aria-pressed={fingerWrites}
             title="No Pencil? Turn this on to write with one finger; two fingers still scroll.">☝️ Finger writes</button>
-          <span className="ml-auto text-[11px] text-gray-500" aria-live="polite">
+          <button type="button" onClick={() => { setOpenAt(pageInView()); void flush().then(() => setFullScreen(true)); }} className={btn(false)}
+            title="Zoom in, type a note, draw straight lines and shapes — opens at the page you are on">⤢</button>
+          <span className="basis-full sm:basis-auto text-center text-[11px] text-gray-500" aria-live="polite">
             {status === 'saving' ? 'Saving…' : status === 'saved' ? '✓ Saved' : status === 'error' ? '⚠ Not saved yet' : fingerWrites ? 'One finger writes · two fingers scroll' : 'Pencil writes · your finger scrolls'}
           </span>
         </div>
@@ -321,10 +368,6 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
           </button>
         )}
         {hasInk && !readOnly && <button type="button" onClick={clear} className="text-xs font-semibold text-gray-500 underline underline-offset-2">Clear {mineLabel}</button>}
-        {!readOnly && (
-          <button type="button" onClick={() => { void flush().then(() => setFullScreen(true)); }} className="text-xs font-semibold text-gray-500 underline underline-offset-2"
-            title="Zoom in, type a note, draw straight lines and shapes">Full screen ⤢</button>
-        )}
       </div>
       {otherHas && other && showOther && (
         <p className="text-[12px] text-emerald-800"><span className="font-semibold">{other.label}</span> are drawn on the pages below in their own ink{isAdrian ? '' : ' — they stay until Adrian clears them'}.</p>
@@ -340,7 +383,7 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
       {fullScreen && (
         <AnnotateOverlay
           runId={runId} pages={overlayPages} student={{ name: '', level: '' }} totals={null}
-          mode="student" draftScope={isAdrian ? 'adrian' : 'student'} initialInk={inkStrokes(ink)} onSaveInk={overlaySave} onDone={closeOverlay} onClose={closeOverlay}
+          mode="student" initialPage={openAt} draftScope={isAdrian ? 'adrian' : 'student'} initialInk={inkStrokes(ink)} onSaveInk={overlaySave} onDone={closeOverlay} onClose={closeOverlay}
         />
       )}
     </section>
