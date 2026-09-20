@@ -144,6 +144,13 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   vocabulary of the question. `find_fancy_words()` prints a hint at `save()` for the
   judging adjectives; metaphor is authoring judgment and cannot be checked.
 
+- **A principle line teaches the maths, it is not a saying** (20 Sep 2026, on "the starting
+  velocity fixes the first, the starting position the second": "sentence is cryptic, remember
+  you are teaching math here, not english"). Name the quantity and the value: "Integrate
+  twice. Each integration gives one constant: use v = 2 at t = 0 to find the first, and
+  s = 0 at t = 0 to find the second." No compressed parallel phrasing, no "two facts, two
+  equations" — spell out fact (1) and fact (2).
+
 ## 3 · Two cases side by side with "or"
 
 - A factorised equation's two cases are solved **side by side**, "or" between them, in the
