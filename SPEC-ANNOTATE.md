@@ -482,3 +482,15 @@ proper … annotations at side column seems cut off too".
   `/* latin */` block is the fallback.
 - **Plain-typed maths in notes is typeset** — bot `ai/pen-math.js autoTexProse`, see
   SPEC-RED-PEN.md (20 Sep 2026).
+- **Missed strokes ("pen will miss strokes").** The overlay's stylus-touch fallback only
+  ever caught a stroke whose FIRST pointer event was dropped; a stroke Safari cut
+  mid-way was committed short, and a stroke the touch stream began was thrown away
+  when the pointer stream "adopted" it. Now one stroke is fed by both streams, as
+  StudentInk has been since 19 Sep: whichever speaks first starts it (touch-begun
+  points are KEPT), pointer points are used while they flow, the shadowing stylus
+  touch fills in once the pointer stream has been quiet 40 ms, a cancelled pointer
+  hands over to the touch stream instead of ending the stroke, and the stylus lift
+  ends it when the pointer-up never comes. Ink-log events: `adopt {kept:true}`,
+  `touch-shadow`, `cancel-handover`, `touch-end-pointer-stroke`. Live Text over the
+  page photo remains the one cause no web code can reach — the AdrianMarker shell
+  turns it off.

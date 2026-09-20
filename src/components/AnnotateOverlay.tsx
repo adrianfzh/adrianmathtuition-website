@@ -334,6 +334,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   // whenever the pointer path stays silent. strokeSrc arbitrates the two.
   const strokeSrcRef = useRef<null | 'pointer' | 'touch' | 'native'>(null);
   const touchStrokeIdRef = useRef<number | null>(null);
+  // When the pointer stream last spoke for the in-flight stroke (20 Sep 2026, ported
+  // from StudentInk's 19 Sep fix — Adrian: "pen will miss strokes"). Safari drops the
+  // Pencil's pointer events mid-stroke; the stylus TOUCH stream keeps arriving, so once
+  // the pointer stream has been quiet for 40 ms its points carry the same stroke on.
+  const lastPointerAtRef = useRef(0);
   const winPdRef = useRef(0);
   // AdrianMarker shell only: buffered native-pencil events awaiting the 60ms
   // web-silence verdict (see window.__nativePencil below).
@@ -1210,8 +1215,23 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         e.preventDefault();
         stopMomentum();
         gestureRef.current = null;          // pen wins over any finger gesture
-        // If the stylus-touch or native fallback engaged first (event-order
-        // surprise), the pointer path wins: discard and start clean.
+        // The stylus-touch stream usually speaks FIRST: when it has already begun
+        // this pen stroke, the pointer path carries the SAME stroke on — the points
+        // drawn so far are kept, not discarded (20 Sep 2026; the old "start clean"
+        // adoption threw the first few points of every stroke away).
+        if (strokeSrcRef.current === 'touch' && currentRef.current && (tool === 'pen' || tool === 'highlighter')) {
+          logInk('adopt', { from: 'touch', n: currentRef.current.stroke.points.length, kept: true });
+          strokeSrcRef.current = 'pointer';
+          lastPointerAtRef.current = performance.now();
+          try { el.setPointerCapture(e.pointerId); } catch { /* pointer already inactive */ }
+          penDownRef.current = true;
+          const { x, y } = cssPos(e);
+          cursorRef.current = { x, y, mode: 'dot' };
+          extendPenStroke(x, y, e.pressure);
+          return;
+        }
+        // The native fallback engaged first (event-order surprise): the pointer
+        // path wins — discard and start clean.
         if (strokeSrcRef.current === 'touch' || strokeSrcRef.current === 'native') {
           logInk('adopt', { from: strokeSrcRef.current, n: currentRef.current?.stroke.points.length ?? 0 });
           currentRef.current = null;
@@ -1219,6 +1239,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           nativePendingRef.current = null;
         }
         strokeSrcRef.current = 'pointer';
+        lastPointerAtRef.current = performance.now();
         try { el.setPointerCapture(e.pointerId); } catch { /* pointer already inactive */ }
         penDownRef.current = true;
         // Fresh live surface per stroke — the frozen-layer symptom starts at
@@ -1381,6 +1402,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         cursorRef.current = { x, y, mode: tool === 'eraser' ? 'ring' : 'dot' };
         if (!penDownRef.current) { scheduleLive(); return; }   // hover (M2 iPads / mouse)
         e.preventDefault();
+        if (strokeSrcRef.current === 'pointer') lastPointerAtRef.current = performance.now();
         if (tool === 'select') {
           const ls = layerSelRef.current, mv = layerMoveRef.current;
           if (ls && mv) {
@@ -1712,6 +1734,14 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     const onPointerCancel = (e: PointerEvent) => {
       logInk('cancel', { pt: e.pointerType, penDown: penDownRef.current });
       if (isPenLike(e)) {
+        // A cancelled pointer is Safari dropping ITS stream, not the Pencil lifting:
+        // while the stylus touch is still down the stroke carries on from it.
+        if (penDownRef.current && strokeSrcRef.current === 'pointer' && touchStrokeIdRef.current !== null && (tool === 'pen' || tool === 'highlighter')) {
+          logInk('cancel-handover', { n: currentRef.current?.stroke.points.length ?? 0 });
+          strokeSrcRef.current = 'touch';
+          lastPointerAtRef.current = 0;
+          return;
+        }
         // Keep what was drawn — losing ink to a system gesture is worse than a blot.
         if (penDownRef.current) finishPen(e);
         return;
@@ -1761,6 +1791,15 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     const onTouchStartFallback = (e: TouchEvent) => {
       const t = stylusIn(e, null);
       if (!t) return;
+      // The pointer stream began this stroke: remember the stylus touch so its
+      // points can fill in when the pointer stream goes quiet, and its lift can end
+      // the stroke when the pointer-up is dropped (20 Sep 2026).
+      if (penDownRef.current && strokeSrcRef.current === 'pointer' && currentRef.current && touchStrokeIdRef.current === null && (tool === 'pen' || tool === 'highlighter')) {
+        touchStrokeIdRef.current = t.identifier;
+        e.preventDefault();
+        logInk('touch-shadow', { id: t.identifier });
+        return;
+      }
       if (penDownRef.current || strokeSrcRef.current || currentRef.current) return;
       if (tool !== 'pen' && tool !== 'highlighter') return;
       if (busyRef.current) return;
@@ -1781,6 +1820,19 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       }
     };
     const onTouchMoveFallback = (e: TouchEvent) => {
+      if (strokeSrcRef.current === 'pointer') {
+        // Shadowing a pointer-begun stroke: fill in only when the pointer stream has
+        // gone quiet (dense pointer points win while they flow).
+        if (!penDownRef.current || touchStrokeIdRef.current === null) return;
+        const t = stylusIn(e, touchStrokeIdRef.current);
+        if (!t) return;
+        e.preventDefault();
+        if (performance.now() - lastPointerAtRef.current <= 40) return;
+        const { x, y } = cssPos(t);
+        cursorRef.current = { x, y, mode: 'dot' };
+        extendPenStroke(x, y, t.force || 0.5);
+        return;
+      }
       if (strokeSrcRef.current !== 'touch') return;
       const t = stylusIn(e, touchStrokeIdRef.current);
       if (!t) return;
@@ -1790,6 +1842,16 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       extendPenStroke(x, y, t.force || 0.5);
     };
     const onTouchEndFallback = (e: TouchEvent) => {
+      if (strokeSrcRef.current === 'pointer') {
+        // The Pencil lifted; if the pointer-up was dropped this is the only end there is.
+        if (!penDownRef.current || touchStrokeIdRef.current === null) return;
+        const t = stylusIn(e, touchStrokeIdRef.current);
+        if (!t) return;
+        e.preventDefault();
+        logInk('touch-end-pointer-stroke', { n: currentRef.current?.stroke.points.length ?? 0 });
+        finishPen(e as unknown as PointerEvent);
+        return;
+      }
       if (strokeSrcRef.current !== 'touch') return;
       const t = stylusIn(e, touchStrokeIdRef.current);
       if (!t) return;
