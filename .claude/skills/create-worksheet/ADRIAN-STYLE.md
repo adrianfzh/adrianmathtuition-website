@@ -69,6 +69,20 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   (`_cosec`, in `_latex_to_omml`) so the sheet always says cosec. Same for the
   reciprocal identities and anything quoted from a question.
 
+- **Align at the "=" of the maths, not a "=" inside the words** (20 Sep 2026: "alignment
+  at equal sign should be at the second equals"). `\text{At } t = 1: \quad s &= …` aligns
+  on the `&=`; the `=` inside the `\text{}` is words. `_solution_lines` skips relation
+  signs inside the left-hand words — write the prefix as `\text{…}: \quad` and it works.
+- **A grey line is grey all through** (20 Sep 2026: "you want to use grey for the font,
+  but x is still black — this occurs quite frequently"). Maths parts (`M(...)`) inside a
+  `P(...)` line inherit the line's colour; `_fill` applies `_colour_math` to every maths
+  run. Do not mix `T` and `P` on one line expecting the maths to pick up the grey.
+- **A small reference table belongs in the box** (20 Sep 2026: "first derivative test
+  should look like this instead" — a bordered 3-row table, `x | 0⁻ | 0 | 0⁺`, the sign of
+  dy/dx, the slope of the tangent). `('grid', rows, widths_cm)` inside a solution row or
+  the Notes draws it. Use it for a sign test, a summary of what each sign means, any
+  "value → meaning" list; never a run of prose lines for the same content.
+
 ## 2 · Notes beside a line — and the words everywhere else
 
 - A short reason sits at the **end of its own line**, grey, after a "←":
@@ -302,6 +316,37 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
 - Figures from the question bank are embedded as stored; hand-drawn art only when the
   bank has none (and then through the bot's figure registry first — CLAUDE.md §Figure
   library).
+
+### Diagram rules from the September 2026 revision sheets
+
+- **Draw a diagram whenever it helps understanding** (20 Sep 2026: "you should do any
+  diagrams you think would be helpful … again, always include diagram if you think its
+  useful") — and **skip it when the algebra is the whole idea** ("in this case, diagram
+  is not so helpful, just s_P = s_Q will do"). The test: does the picture show something
+  the line of working does not?
+- **Simple, one idea per panel** ("no the drawing is not good, it should be something
+  simple … just have a vertical line drawn from P to the x-axis, then the shaded area as
+  triangle minus the curve area"). For an area split: the vertical from the point to the
+  axis, the region shaded, one caption; a second panel for the second piece, not one
+  crowded picture.
+- **Labels sit fully inside the region they name; if there is no room, outside with an
+  arrow to it** (three times, 20 Sep 2026: "words not inside shaded area", "if no space,
+  put outside, then arrow to it"). A label straddling the boundary is wrong.
+- **Words are "inside the shaded region", not "under the curve"** when the region is
+  between the curve and a line ("shouldn't it be more 'inside' the shaded area?").
+- **Kinematics: show both ways to find a distance** — Method 1 tracks the displacement on
+  a number line at each turn, Method 2 is the area under the velocity-time graph; each
+  with its picture ("would like you draw the diagrams like method 1, and for method 2 …
+  best include both").
+- **A number-line picture of the motion**: one continuous rounded path along the line
+  (not straight arrows that overlap), a dotted vertical guide from every turning point
+  down to the axis with the displacement value written ON the axis, and a leader line
+  only where two values would collide ("words are stacked on top of each other … arrows
+  rounded and continuous?", "put vertical dotted lines down to the horizontal axes, and
+  labelling the displacement there (use arrows if no space)"). `rw-runs/am-kinematics/
+  draw_nl.py` is the reference drawing.
+- **Trig: solve by the basic angle**, and when the ASTC quadrant picture helps, put it
+  in a `('cols', …)` beside the lines (`trig_figures/astc.py`).
 
 ## 5 · Numbering, sections, spacing
 

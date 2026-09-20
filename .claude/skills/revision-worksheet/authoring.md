@@ -275,3 +275,28 @@ What render does, in order — each **stop** is a `SystemExit` before any file i
 part after the bank's own parts (same numbering run) and the solution box takes a
 `('(d)', …)` row for it. Only when Adrian asks to *extend* an example (21 Sep 2026,
 the robot's max speed from the cosine bounds); the hand-over says which part is added.
+
+## What Adrian asked for on the September 2026 AM sheets (carry into the next ones)
+
+- **Vary the set-up, not just the numbers.** Kinematics examples should not all start at
+  O: "start at a displacement not at O", "have some of them use different starting points
+  other than O, like A or B", "find atypical questions with different kinds of phrasing".
+  And "can we don't have so many examples that have quadratic, change up the algebra" —
+  one quadratic velocity is enough; the rest fractions in t, exponentials, trig.
+- **Differentiation must carry** a maximum/minimum GRADIENT example (set d²y/dx² = 0,
+  check d³y/dx³) and an "is the gradient increasing / decreasing" example (the sign of
+  d²y/dx²), one of each, and the Notes must say what each sign of dy/dx and d²y/dx²
+  means (the signs table) — "readability is poor and should have a summary of what
+  dy/dx = 0 mean".
+- **Kinematics must carry** a greatest/least value read off a sine or cosine bound
+  without differentiating (the robot's max speed ½ from −1 ≤ cos ≤ 1), and the Notes line
+  for it.
+- **Extending an example is allowed when he asks** ("for kinematics you can just extend
+  this example") — `EXTRA_PARTS`, above. Never add a part unasked.
+- **A cleaned figure goes back to the bank** ("save this picture back into the question
+  in database") — upload to `question_images/cleaned/`, point `image_url` at it, log the
+  swap in `figure_clean_log`, keep the original; then refresh `plan.json` and delete the
+  cached `figs/<id8>_0.png` or the sheet keeps the old picture.
+- **Every line teaches** ("sentence is cryptic, remember you are teaching math here, not
+  english"): a grey principle line names the quantity, the value and why — see
+  ADRIAN-STYLE §2.
