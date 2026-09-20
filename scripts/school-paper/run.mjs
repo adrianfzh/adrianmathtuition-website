@@ -180,11 +180,11 @@ Judge, in this order:
 2. SCOPE: is every step inside the scope in the standard? A method from outside it fails the question.
 3. MARKS: does each part deserve its marks (1 = one step, 2 = method and answer, 3 = two ideas, 4 = a short chain)?
 4. DIFFERENT: set it beside each real question shown. Is it the same question with the numbers, names or units changed, or the same figure with new lengths? If so name it in "too_close_to". The same skill asked from a new direction or in a new situation is what is wanted.
-5. DIFFICULTY: would this sit naturally in the school's 2025 paper at the same position: "easier", "same", "slightly harder" or "too hard"? Only "same" and "slightly harder" pass.
+5. DIFFICULTY: would this sit naturally in the school's 2025 paper at the same position: "easier", "same", "slightly harder" or "too hard"? Only "same" and "slightly harder" pass.${plan.difficulty_target ? ` THIS SET'S TARGET IS "${plan.difficulty_target}": a question you would call merely "same" is returned with a specific way to sharpen it (a further step, an unrehearsed direction, an exact-form demand) unless the slot cannot bear more; "too hard" (outside scope, or a chain longer than the school ever sets) still fails.` : ''}
 6. WORDING: the school's register, Singapore setting, units, accuracy instruction, marks in brackets, nothing ambiguous, the figure description complete and not giving away an answer.
 
 Return ONE JSON object: {"parts": [{"label": "(a)", "agree": true, "note": ""}], "all_agree": true, "in_scope": true, "marks_fair": true, "too_close_to": null, "difficulty": "same", "score": 1-5, "problems": ["specific, fixable"], "accept": true}
-"score" is the wording and craft, 5 = could be printed as it is. "accept" is true only when all_agree, in_scope, marks_fair, too_close_to is null, difficulty is "same" or "slightly harder", and score is at least 4.`;
+"score" is the wording and craft, 5 = could be printed as it is. "accept" is true only when all_agree, in_scope, marks_fair, too_close_to is null, difficulty is ${plan.difficulty_target === 'slightly harder' ? '"slightly harder" (or "same" only where you state in problems that the slot cannot bear more)' : '"same" or "slightly harder"'}, and score is at least 4.`;
 
 async function brief() {
   if (!KEY || !RUN) throw new Error('--key <school key> and --run <dir> required');
@@ -202,7 +202,22 @@ async function brief() {
     const own = r.school === plan.school;
     return { id: r.id, own, ref: `${own ? 'this school' : 'another school'} ${r.level} ${r.year} ${r.exam_type} P${r.paper} Q${r.question_number}`, topics: r.topics ?? [], total_marks: r.total_marks, has_image: r.has_image, level: r.level, exam: r.exam_type, year: r.year, qn: qn(r), text: bankText(r) };
   }).filter((r) => r.text.length >= 30);
-  const own = corpus.filter((r) => r.own && r.level === plan.level && r.exam === plan.exam).sort((a, b) => b.year - a.year || a.qn - b.qn);
+  // Earlier sets of the same paper (plan.avoid_runs = [run dirs]) join the corpus as the
+  // school's own: the wording gate and the moderator treat a Set 1 question exactly like a
+  // real TJC question, so Set 2 must differ from both (20 Sep 2026).
+  const earlier = [];
+  for (const [i, runDir] of (plan.avoid_runs ?? []).entries()) {
+    for (const s of plan.slots) {
+      const f = join(runDir, `Q${s.pos}.json`);
+      if (!existsSync(f)) continue;
+      const q = readJsonLoose(f);
+      const text = [String(q.stem ?? '').trim(), partsText(q.parts)].filter(Boolean).join('\n');
+      earlier.push({ id: `set${i + 1}-Q${s.pos}`, own: true, ref: `our earlier Set ${i + 1} Q${s.pos}`, topics: q.topics ?? s.topics, total_marks: s.target, has_image: !!q.needs_figure, level: plan.level, exam: plan.exam, year: 9999, qn: s.pos, text, set: i + 1, pos: s.pos });
+    }
+  }
+  corpus.push(...earlier);
+  if (earlier.length) log(`${earlier.length} question(s) from ${plan.avoid_runs.length} earlier set(s) join the corpus`);
+  const own = corpus.filter((r) => r.own && r.level === plan.level && r.exam === plan.exam && !r.set).sort((a, b) => b.year - a.year || a.qn - b.qn);
   if (!own.length) throw new Error('the school has no real papers in the bank for that level and exam');
   const topicList = [...new Set(rows.filter((r) => r.level === plan.level).flatMap((r) => r.topics ?? []))].sort();
   log(`${rows.length} bank rows (${levels.join(', ')}) · ${own.length} of the school's own · ${topicList.length} topic names`);
@@ -218,11 +233,15 @@ async function brief() {
     // the model year's question at this position first, then every own question sharing a topic
     const shown = own.filter((r) => r.topics.some((t) => s.topics.includes(t)))
       .sort((a, b) => (b.year === plan.model_year && b.qn === s.pos) - (a.year === plan.model_year && a.qn === s.pos)).slice(0, 5);
-    exemplars[s.pos] = shown.map((r) => ({ id: r.id, ref: r.ref }));
-    const note = `**The whole paper, so that you do not stray into another slot's ground:** ${outline}\n`;
-    writeFileSync(join(dir, `Q${s.pos}.brief.md`), slotBrief(plan, s, shown, note));
+    const prior = earlier.filter((r) => r.pos === s.pos || r.topics.some((t) => s.topics.includes(t)));
+    exemplars[s.pos] = [...shown, ...prior].map((r) => ({ id: r.id, ref: r.ref }));
+    let note = `**The whole paper, so that you do not stray into another slot's ground:** ${outline}\n`;
+    if (plan.difficulty_target) note += `**Difficulty target for this set:** ${plan.difficulty_target}\n`;
+    let brief = slotBrief(plan, s, shown, note);
+    if (prior.length) brief += `\n## Already written in our earlier set(s) at this slot or on this topic (${prior.length}) — a NEW question must differ from these as much as from the school's own: a different situation, a different direction, a different given-versus-found. Never a re-skin.\n\n${prior.map((r) => `### ${r.ref} · ${r.total_marks} marks\n${r.text}`).join('\n\n')}\n`;
+    writeFileSync(join(dir, `Q${s.pos}.brief.md`), brief);
   }
-  writeFileSync(join(dir, 'corpus.json'), JSON.stringify(corpus.map(({ id, own, ref, topics, text }) => ({ id, own, ref, topics, text }))));
+  writeFileSync(join(dir, 'corpus.json'), JSON.stringify(corpus.map(({ id, own, ref, topics, text, total_marks, has_image }) => ({ id, own, ref, topics, text, total_marks, has_image }))));
   writeFileSync(join(dir, 'plan.json'), JSON.stringify({ ...plan, prompt_version: PROMPT_VERSION, generated_at: new Date().toISOString(), topicList, exemplars }, null, 1));
   console.log(dir);
 }
