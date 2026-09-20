@@ -231,7 +231,7 @@ spent 40 s re-reading the source for exactly these facts, 7 Sep 2026).
 |---|---|---|---|
 | `TITLE` | no | str — header line 1 (the level line) | `plan.level_line` |
 | `SUBTITLE` | no | str — header line 2 (the topic) | `plan.topic` |
-| `NOTES` | no (warns) | list of `('head', str)` · `('para', parts)` · `('math', latex)` · `('mistakes', [str, …])` — **or** a builder string `"module:function"` naming a hand-authored Notes function in `scripts/revision-builders` (e.g. `"build_s2:notes_polygons"`) | none → warning *no Notes block* |
+| `NOTES` | no (warns) | list of `('head', str)` · `('para', parts)` · `('math', latex)` · `('mistakes', [str, …])` · `('figure', (path, width_cm))` — **or** a builder string `"module:function"` naming a hand-authored Notes function in `scripts/revision-builders` (e.g. `"build_s2:notes_polygons"`) | none → warning *no Notes block* |
 | `EXAMPLES` | yes | list of `(id8, concept, rows)` or `(id8, concept, rows, letter)` | |
 | `ANSWERS` | yes | dict `id8 → str` — the whole answer line, `$…$` inline maths (split with `sm`) | |
 

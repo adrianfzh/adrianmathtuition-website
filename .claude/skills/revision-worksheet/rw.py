@@ -637,6 +637,12 @@ def _notes_from_list(ws, notes):
             ws.para([C.B("Mistakes to avoid")])
             for i, e in enumerate(val, 1):
                 ws.para([C.T(f"{i}.  ")] + C.sm(e))
+        elif kind == "figure":
+            # A drawn picture in the Notes (20 Sep 2026, Adrian on the kinematics
+            # notes: "give me an image to show the three stages instead"). val is
+            # (path, width_cm), the same shape a solution-box figure step takes.
+            path, width_cm = val
+            ws.figure(str(path), width_cm=width_cm)
         else:
             raise SystemExit(f"NOTES entry kind {kind!r} not understood")
 
@@ -757,7 +763,16 @@ def cmd_render(a):
         if stem:
             C.emit_text(ws, stem, ws.Q, marks=None if parts else r.get("total_marks"))
         else:
-            ws.Q([])          # parts-only: the number sits on its own line, parts below it
+            # parts-only: Q([]) hoists the NEXT SQ onto the number line, but roman
+            # parts go through numbered() and a figure comes first — the number was
+            # then never printed (CHIJ 2023 on the Integration (Area) sheet, 20 Sep
+            # 2026). Print the number with an empty stem in that case.
+            first_fmt = C.fmt_of(parts[0].get("label")) if parts else "letter"
+            has_fig = bool(r.get("_figures"))
+            if first_fmt == "letter" and not has_fig:
+                ws.Q([])      # the (a) part rides the number line
+            else:
+                ws.Q([("text", "\u200b")])
         _figures(ws, r, figdir)
         for j, p in enumerate(parts):
             subs = p.get("subparts") or []
