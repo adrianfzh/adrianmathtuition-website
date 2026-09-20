@@ -30,3 +30,13 @@ describe('compose-page proxy body', () => {
     expect(sanitiseMarkSwaps('nope')).toBeUndefined();
   });
 });
+
+describe('allow_released', () => {
+  it('is forwarded only as a literal true — the desk redraw rule', () => {
+    const base = { runId: 'r', photoIndex: 0, layerSvg: '', inkSvg: '' };
+    expect(composeForwardBody({ ...base, allowReleased: true }).allow_released).toBe(true);
+    expect('allow_released' in composeForwardBody({ ...base, allowReleased: 'true' })).toBe(false);
+    expect('allow_released' in composeForwardBody({ ...base, allowReleased: 1 })).toBe(false);
+    expect('allow_released' in composeForwardBody(base)).toBe(false);
+  });
+});

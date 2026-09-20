@@ -110,12 +110,15 @@ describe('§14 ④–⑤: snapshots, typed text, ✓⇄✗, record edits', () =>
     const p = parseLayer(TICK.replace(' data-type="tick"', ''));
     expect(markType(p.objects[0])).toBe('tick');
   });
-  it('record edits are the retyped or deleted notes and verdicts with a question and part', () => {
+  it('record edits are the retyped or deleted notes and verdicts with a question and part, and a retyped score chip (20 Sep 2026)', () => {
     const p = parseLayer('<g data-obj="note" data-id="n1" data-q="10" data-part="(b)" data-text="old"><text x="1" y="2">old</text></g><g data-obj="score" data-id="s1" data-q="10" data-part="(b)"><text x="1" y="2">2/3</text></g><g data-obj="note" data-id="n2" data-part="Q10(c)" data-text="strip"><text x="1" y="2">strip</text></g>');
     p.objects[0].textOverride = 'new words';
     p.objects[1].textOverride = '3/3';
     p.objects[2].deleted = true;
-    expect(recordEditsFor(p)).toEqual([{ q: '10', part: '(b)', kind: 'note', text: 'new words' }]);
+    expect(recordEditsFor(p)).toEqual([
+      { q: '10', part: '(b)', kind: 'note', text: 'new words' },
+      { q: '10', part: '(b)', kind: 'score', awarded: 3, max: 3 },
+    ]);
   });
 });
 

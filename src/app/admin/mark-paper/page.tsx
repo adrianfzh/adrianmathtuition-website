@@ -2668,14 +2668,19 @@ export default function MarkPaperPage() {
           student={annotateStudent}
           totals={totals}
           initialPage={annotateInitialPage}
+          // A released paper may be re-inked from here too (20 Sep 2026); the desk is
+          // where the re-issue lives, so this page only says the student's copy is old.
+          allowReleased={!!recentRuns.find((r) => r.id === runId)?.released_at}
           onClose={closeAnnotate}
-          onDone={({ url, linked }) => {
+          onDone={({ url, linked, marks }) => {
             setAnnotateOpen(false);
             // Same list update as uploadAnnotated: the ✍️ copy takes the front slot,
             // so Download and Email switch to it immediately.
             setMarked((prev) => [{ url, kind: 'pdf', label: '✍️ Annotated PDF' }, ...prev.filter((m) => !m.label.startsWith('✍️'))]);
+            const wasReleased = !!recentRuns.find((r) => r.id === runId)?.released_at;
+            const marksNote = marks ? ` Marks now ${marks.awarded}/${marks.max}.` : '';
             setSendNote(linked
-              ? { ok: true, text: 'Annotated PDF attached — Download and Email now use it.' }
+              ? { ok: true, text: `Annotated PDF attached — Download and Email now use it.${marksNote}${wasReleased ? ' The student still holds the old copy — re-issue it from the desk.' : ''}` }
               : { ok: false, text: 'Annotated PDF built (usable this session), but linking it to the run failed — hit Done again later to relink.' });
             loadStats();
           }}

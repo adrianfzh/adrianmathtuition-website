@@ -158,7 +158,7 @@ export function serializeLayer(parsed: ParsedLayer): string {
     if (it.type === 'bg') { out += it.svg; continue; }
     const o = it.obj;
     if (o.deleted) continue;
-    const inner = o.textOverride != null ? applyText(o.inner, o.textOverride) : o.inner;
+    const inner = o.textOverride != null ? (o.kind === 'score' ? applyScoreText(o.inner, o.textOverride) : applyText(o.inner, o.textOverride)) : o.inner;
     const g = `${o.open}${inner}</g>`;
     out += o.dx || o.dy ? `<g transform="translate(${round(o.dx)} ${round(o.dy)})">${g}</g>` : g;
   }
@@ -265,13 +265,76 @@ export function swapMark(obj: LayerObj): boolean {
   return true;
 }
 
-export type RecordEdit = { q: string; part: string; kind: 'note' | 'verdict'; text: string | null };
+export type RecordEdit =
+  | { q: string; part: string; kind: 'note' | 'verdict'; text: string | null }
+  /** A score chip retyped to a new "a/b" (20 Sep 2026): the part's mark becomes
+   *  `awarded`, the question total its parts' sum, the paper totals follow. */
+  | { q: string; part: string; kind: 'score'; awarded: number; max: number };
+
+/** "Q3(b) 1/2" → { awarded: 1, max: 2 }; anything without an a/b is null. */
+export function parseScoreText(text: string): { awarded: number; max: number } | null {
+  const m = String(text || '').match(/(\d+)\s*\/\s*(\d+)/);
+  if (!m) return null;
+  const max = Number(m[2]);
+  if (!Number.isFinite(max) || max <= 0) return null;
+  return { awarded: Math.max(0, Math.min(max, Number(m[1]))), max };
+}
+
+// The bot's chip palette (ai/annotate.js _marginScore): a full-marks chip is a
+// solid green box with white figures, anything less an outlined red box with red
+// figures. A retyped chip is restyled here so the page Adrian sees while editing
+// and the page the bot composes agree.
+const CHIP_FULL_GREEN = '#1a7f37';
+const CHIP_RED = '#d32424';
+
+/** Repaint a score chip's box and figures for full / not-full marks. Only the
+ *  default red/green paints are touched — a purple re-marked chip keeps its ink. */
+export function restyleScoreInner(inner: string, full: boolean): string {
+  const rectRe = /<rect\b([^>]*)>/;
+  const rm = inner.match(rectRe);
+  if (!rm) return inner;
+  const attrs = rm[1];
+  const paint = (attrs.match(/\sfill="([^"]*)"/) || [])[1] || '';
+  const stroke = (attrs.match(/\sstroke="([^"]*)"/) || [])[1] || '';
+  const isDefault = [paint, stroke].some(c => c.toLowerCase() === CHIP_FULL_GREEN || c.toLowerCase() === CHIP_RED);
+  if (!isDefault) return inner;
+  const sw = (attrs.match(/\sstroke-width="([^"]*)"/) || [])[1] || '1.8';
+  const nextAttrs = attrs
+    .replace(/\sfill="[^"]*"/, '').replace(/\sstroke="[^"]*"/, '').replace(/\sstroke-width="[^"]*"/, '')
+    + (full ? ` fill="${CHIP_FULL_GREEN}" stroke="none"` : ` fill="none" stroke="${CHIP_RED}" stroke-width="${sw}"`);
+  let out = inner.replace(rectRe, `<rect${nextAttrs}>`);
+  out = out.replace(/<text\b([^>]*)>/g, (m, a: string) => `<text${a.replace(/\sfill="[^"]*"/, ` fill="${full ? '#ffffff' : CHIP_RED}"`)}>`);
+  return out;
+}
+
+/** A retyped score chip: only the FIRST <text> (the "Qn(x) a/b" line) changes —
+ *  a codes line underneath stays — and the chip is repainted for its new score. */
+export function applyScoreText(inner: string, newText: string): string {
+  const texts = [...inner.matchAll(TEXT_RE)];
+  if (!texts.length) return inner;
+  const [full, attrs] = texts[0];
+  const out = inner.replace(full, `<text${attrs}>${escapeXml(newText)}</text>`);
+  const parsed = parseScoreText(newText);
+  if (!parsed) return out;
+  return restyleScoreInner(out, parsed.awarded >= parsed.max);
+}
+
 /** The edits that must write back to the marking record (§14 ⑤): notes and
- *  verdicts the marker tied to a (question, part) that Adrian retyped or deleted. */
+ *  verdicts the marker tied to a (question, part) that Adrian retyped or deleted,
+ *  and score chips he retyped to a different "a/b" (20 Sep 2026). */
 export function recordEditsFor(parsed: ParsedLayer): RecordEdit[] {
   const out: RecordEdit[] = [];
   for (const o of parsed.objects) {
-    if ((o.kind !== 'note' && o.kind !== 'verdict') || !o.q || !o.part) continue;
+    if (!o.q || !o.part) continue;
+    if (o.kind === 'score') {
+      if (o.deleted || o.textOverride == null) continue;
+      const next = parseScoreText(o.textOverride);
+      const prev = parseScoreText(o.text);
+      if (!next || (prev && prev.awarded === next.awarded && prev.max === next.max)) continue;
+      out.push({ q: o.q, part: o.part, kind: 'score', awarded: next.awarded, max: next.max });
+      continue;
+    }
+    if (o.kind !== 'note' && o.kind !== 'verdict') continue;
     if (o.deleted) out.push({ q: o.q, part: o.part, kind: o.kind, text: null });
     else if (o.textOverride != null) out.push({ q: o.q, part: o.part, kind: o.kind, text: o.textOverride });
   }

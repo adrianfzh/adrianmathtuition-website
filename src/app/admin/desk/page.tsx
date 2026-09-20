@@ -1764,10 +1764,23 @@ function DetailView(p: {
           student={annotateStudent}
           totals={annotateTotals}
           initialPage={annotatePage}
+          allowReleased={released}
           onClose={closeAnnotate}
-          onDone={({ linked }) => {
+          onDone={async ({ linked, marks }) => {
             setAnnotatePage(null);
-            p.onToast(linked ? 'Saved — your copy is attached and the page images are updated.' : 'Saved — the copy could not be linked; attach it from the folder.');
+            const marksNote = marks ? ` Marks now ${marks.awarded}/${marks.max}.` : '';
+            p.onToast((linked ? 'Saved — your copy is attached and the page images are updated.' : 'Saved — the copy could not be linked; attach it from the folder.') + marksNote);
+            if (released) {
+              // The student already holds this paper (20 Sep 2026): the pen is allowed
+              // on it, so Done re-issues their copy the way a redrawn page does.
+              p.onToast(`Saved.${marksNote} Re-issuing the student's copy…`);
+              const rr = await fetch('/api/admin/mark-triage', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'reissue', runId: run.id }) });
+              const rd = await rr.json().catch(() => ({}));
+              const re = { ok: rr.ok && !rd.error, d: rd };
+              p.onToast(re.ok
+                ? `Saved and re-issued to the student${re.d.via === 'telegram' ? ' — Telegram sent' : ''}.${marksNote}`
+                : `Saved, but not re-issued: ${re.d.error || 'try again from the release button'}.${marksNote}`);
+            }
             p.onRefresh();
           }}
         />

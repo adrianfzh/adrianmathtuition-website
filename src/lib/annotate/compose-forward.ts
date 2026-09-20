@@ -16,6 +16,9 @@ export type ComposeForwardBody = {
   strokes?: unknown[];
   recordEdits?: unknown[];
   markSwaps?: MarkSwap[];
+  /** Re-ink a paper the student already holds (20 Sep 2026) — the bot's name
+   *  for the flag, sent only as a literal true, like the desk's redraw route. */
+  allow_released?: true;
 };
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -40,9 +43,10 @@ export function sanitiseMarkSwaps(raw: unknown): MarkSwap[] | undefined {
 
 export function composeForwardBody(input: {
   runId: string; photoIndex: number; layerSvg: string; inkSvg: string;
-  strokes?: unknown; recordEdits?: unknown; markSwaps?: unknown;
+  strokes?: unknown; recordEdits?: unknown; markSwaps?: unknown; allowReleased?: unknown;
 }): ComposeForwardBody {
   return {
+    ...(input.allowReleased === true ? { allow_released: true as const } : {}),
     runId: input.runId,
     photoIndex: input.photoIndex,
     layerSvg: input.layerSvg,

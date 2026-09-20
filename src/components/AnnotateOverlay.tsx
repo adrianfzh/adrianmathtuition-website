@@ -61,7 +61,11 @@ type Props = {
   student: { name: string; level: string };
   totals: { awarded: number; max: number } | null;
   /** Called after the annotated PDF is built + linked; parent closes + updates its list. */
-  onDone: (r: { url: string; linked: boolean }) => void;
+  onDone: (r: { url: string; linked: boolean; marks?: { awarded: number; max: number } | null }) => void;
+  /** Re-ink a paper the student already holds (20 Sep 2026): the desk opens the pen
+   *  on released papers, so Done must be allowed to compose their pages too — the
+   *  caller then re-issues the student's copy. Without it a layered page is refused. */
+  allowReleased?: boolean;
   onClose: () => void;
   /** Open scrolled to this page (photo index) — the desk's per-page ✏️ link. */
   initialPage?: number | null;
@@ -165,18 +169,29 @@ const IconLasso = () => (
 
 // ── the marker's editable layer: font, original, hit boxes (SPEC-ANNOTATE §14) ──
 // The bot draws in Patrick Hand (installed in its image). For the layer to look and
-// MEASURE the same here, the face is fetched once from Google Fonts and embedded as a
-// data URI: into the document (so getBBox measures with it) and into the SVG we
-// rasterise for the canvas (an <img>-loaded SVG cannot see page fonts).
+// MEASURE the same here, the face is embedded as a data URI: into the document (so
+// getBBox measures with it) and into the SVG we rasterise for the canvas (an
+// <img>-loaded SVG cannot see page fonts). The face ships with the site
+// (public/fonts, the Latin subset, OFL) since 20 Sep 2026: it used to be fetched
+// from Google Fonts at run time, and on Adrian's iPad that fetch failed, so the
+// browser measured with a wider fallback face and every side note ran off the
+// strip ("annotations at side column seems cut off"). Google stays the fallback.
 let patrickHandCss: Promise<string> | null = null;
 function loadPatrickHandCss(): Promise<string> {
   if (!patrickHandCss) {
     patrickHandCss = (async () => {
       try {
-        const css = await (await fetch('https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap')).text();
-        const m = css.match(/url\((https:[^)]+\.woff2)\)/);
-        if (!m) return '';
-        const bytes = new Uint8Array(await (await fetch(m[1])).arrayBuffer());
+        let bytes: Uint8Array | null = null;
+        try {
+          const local = await fetch('/fonts/patrick-hand-latin.woff2');
+          if (local.ok) bytes = new Uint8Array(await local.arrayBuffer());
+        } catch { /* fall through to Google */ }
+        if (!bytes || bytes.length < 1000) {
+          const css = await (await fetch('https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap')).text();
+          const m = css.match(/\/\* latin \*\/[^}]*url\((https:[^)]+\.woff2)\)/) || css.match(/url\((https:[^)]+\.woff2)\)/);
+          if (!m) return '';
+          bytes = new Uint8Array(await (await fetch(m[1])).arrayBuffer());
+        }
         let bin = '';
         for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
         const face = `@font-face{font-family:'Patrick Hand';font-style:normal;font-weight:400;src:url(data:font/woff2;base64,${btoa(bin)}) format('woff2');}`;
@@ -224,7 +239,7 @@ const IconSelect = () => (
   </svg>
 );
 
-export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals, onDone, onClose, initialPage = null, mode = 'admin', initialInk = null, onSaveInk, draftScope = 'student' }: Props) {
+export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals, onDone, onClose, initialPage = null, mode = 'admin', initialInk = null, onSaveInk, draftScope = 'student', allowReleased = false }: Props) {
   const isStudent = mode === 'student';
   // The local draft's key: the student's ink and Adrian's ink for the same run
   // must never share one (a shared iPad, the demo-student login).
@@ -2265,6 +2280,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       const inkedPhotoIdx = pages.filter((_, i) => strokesRef.current[i].length > 0).map((p) => p.photoIndex);
       const plan = planFlatten(pages.map((p) => ({ photoIndex: p.photoIndex, url: p.url })), inkedPhotoIdx);
       const finalPages: { photo_index: number; url: string }[] = [];
+      let marksChanged: { awarded: number; max: number } | null = null;
       let done = 0;
       for (const entry of plan) {
         const i = pages.findIndex((p) => p.photoIndex === entry.photoIndex);
@@ -2278,6 +2294,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               runId, photoIndex: entry.photoIndex,
+              ...(allowReleased ? { allowReleased: true } : {}),
               layerSvg: serializeLayer(parsedL), inkSvg: strokesToSvg(strokesRef.current[i]), strokes: strokesRef.current[i],
               // The words are the record (§14 ⑤): retyped / deleted notes reach results[].
               recordEdits: recordEditsFor(parsedL),
@@ -2291,6 +2308,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           });
           const cj = await cr.json().catch(() => ({}));
           if (!cr.ok || !cj.url) throw new Error(cj.error || `page ${entry.photoIndex + 1} could not be composed`);
+          if (cj.marks && Number.isFinite(cj.marks.awarded)) marksChanged = { awarded: cj.marks.awarded, max: cj.marks.max };
           finalPages.push({ photo_index: entry.photoIndex, url: cj.url });
           continue;
         }
@@ -2343,12 +2361,12 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       doneAtRef.current = Date.now();
       saveDraft();   // keep the strokes — reopening offers "edit your previous ink"
       setBusy('');
-      onDoneRef.current({ url: dResp.url, linked });
+      onDoneRef.current({ url: dResp.url, linked, marks: marksChanged });
     } catch (e) {
       setBusy('');
       setError((e as Error).message);
     }
-  }, [clearSelection, drawStrokes, pages, runId, saveDraft, student, totals, isStudent]);
+  }, [clearSelection, drawStrokes, pages, runId, saveDraft, student, totals, isStudent, allowReleased]);
 
   const discardAndClose = useCallback(() => {
     try { localStorage.removeItem(draftKey(draftId)); } catch { /* ignore */ }

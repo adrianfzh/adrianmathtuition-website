@@ -449,3 +449,36 @@ was disabled), and the proxy's body is now `lib/annotate/compose-forward.ts` (it
 `markSwaps`). The initial-page jump re-settles until every page above is sized.
 The §8 checklist was run EMULATED on the layered pages on 8 Sep 2026 (16/16 logic checks; the three hardware feels stay a real-iPad check).
 
+
+## 15. Done on a released paper, score chips as marks, the font (20 Sep 2026)
+
+Adrian, on the iPad: "annotations does not save, my work is gone … if i change the
+marks, will it recalculate? … will it change to red? … math expressions should be
+proper … annotations at side column seems cut off too".
+
+- **Done on a released paper works.** The desk has opened the pen on released papers
+  since 10 Sep, but the bot's `compose-page` refused every layered page of a released
+  run ("already released — the student has that copy"), so Done failed after the ink
+  was drawn. It now follows the desk redraw's one rule: the overlay sends
+  `allowReleased: true` (the desk passes `released`; `/admin/mark-paper` reads the
+  run), the website forwards it only as a literal true (`compose-forward.ts`), the
+  bot composes and stamps `reinked_after_release` on the page, and the desk's Done
+  handler then calls `mark-triage {action:'reissue'}` so the student's copy is
+  replaced, as a redrawn page's is. From `/admin/mark-paper` the note says the
+  student still holds the old copy.
+- **A retyped score chip IS a mark change.** `recordEditsFor` reports a score object
+  whose "a/b" changed (`kind:'score'`); the compose-page route writes it FIRST through
+  the desk editor's own path (`applyOverride` with parts → the question total is the
+  parts' sum → `recomputeTotals` → `pdf_stale`), then forwards; the bot repaints the
+  chip (`repaintScoreChips`: figures + the `_marginScore` palette, solid green/white
+  for full marks, outlined red for less; a purple re-marked chip keeps its ink) and
+  the overlay repaints it the same way while editing (`applyScoreText`). Ticks and
+  crosses stay ink (the ✓⇄✗ hint rule is unchanged). Pure pieces + tests:
+  `lib/annotate/score-edits.ts`, `layer.ts`.
+- **The font.** The overlay embedded the FIRST woff2 Google's CSS listed — the
+  Vietnamese subset — so Latin text never had the face and was measured in a wider
+  fallback: every side note ran off the strip on screen (the composed page was
+  fine). The Latin subset now ships in `public/fonts/` and loads first; Google's
+  `/* latin */` block is the fallback.
+- **Plain-typed maths in notes is typeset** — bot `ai/pen-math.js autoTexProse`, see
+  SPEC-RED-PEN.md (20 Sep 2026).

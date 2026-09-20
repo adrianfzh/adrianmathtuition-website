@@ -330,3 +330,21 @@ and the line ran off the column across the strip's own note.
 Forward-only, as always: Chloe's page is not re-inked. Verified with
 `scripts/pen-dryrun.cjs` on that page; pinned in `test/pen-math.test.js` and
 `test/annotate-label-typeset.test.js`.
+
+### 20 Sep 2026 — plain-typed maths inside a note is typeset (`autoTexProse`)
+
+Nicole's H2 P2 side notes read "state the range as a set: R_f = (-∞, 11]" and "the
+question says coordinates: (2 – √11, 0), (2 + √11, 0)" as typed — the marker wrote the
+maths without `$…$`, so the pen drew it as prose (Adrian: "math expressions should be
+proper - in katex or latex"). `texFromPlainMath` (12 Sep) covers a fix that IS one
+expression; `autoTexProse` (`ai/pen-math.js`) covers a sentence that CONTAINS one: a run
+of whitespace tokens is maths when every token is maths-shaped (no English word of
+three letters or more except the function and symbol names) and the run carries an
+operator, a relation, a power, a subscript or a surd; a colon or semicolon ends a run;
+trailing punctuation stays outside the dollars; `Q3(a)` captions, mark codes and text
+that already carries `$` or a backslash are never touched; a run the small table cannot
+map is left as typed. Applied to the side strip (`splitPenSentences`), in-page notes,
+verdict lines and footer lines — NOT to the ✗ why-labels, which have their own
+typesetting (`_whyLabelLines`) and cut the tail when handed mixed runs. Verified by
+`scripts/pen-dryrun.cjs` on Nicole's page 3 (both notes typeset, forward-only — her
+copy was not re-inked).
