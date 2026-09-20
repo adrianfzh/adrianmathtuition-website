@@ -1563,9 +1563,54 @@ class Worksheet:
         self.doc.add_paragraph()  # breathing space between the box and what follows
         return table
 
+    def _grid(self, work_cell, rows, widths_cm=None, host=None):
+        """('grid', rows, widths_cm) — a small BORDERED table, the shape Adrian's
+        sign test takes (20 Sep 2026: "first derivative test should look like this
+        instead (a table)"): x | 0⁻ | 0 | 0⁺ over the sign and the slope of dy/dx.
+        Every cell is centred and holds a parts list or a latex string. This is
+        for a reference grid, never for lines of working (§1 of ADRIAN-STYLE)."""
+        ncols = max(len(r) for r in rows)
+        widths = widths_cm or [round(14.0 / ncols, 2)] * ncols
+        inner = work_cell.add_table(rows=len(rows), cols=ncols)
+        inner.autofit = False
+        try:
+            inner.style = self.doc.styles['Table Grid']
+        except KeyError:
+            b = OxmlElement('w:tblBorders')
+            for side in ('top', 'left', 'bottom', 'right', 'insideH', 'insideV'):
+                el = OxmlElement(f'w:{side}'); el.set(qn('w:val'), 'single'); el.set(qn('w:sz'), '6'); b.append(el)
+            inner._tbl.tblPr.append(b)
+        for col, w in zip(inner.columns, widths):
+            col.width = Cm(w)
+        for r, row in zip(inner.rows, rows):
+            for cell, content, w in zip(r.cells, row, widths):
+                cell.width = Cm(w)
+                cp = cell.paragraphs[0]
+                cp.paragraph_format.line_spacing = 1.15
+                if isinstance(content, str):
+                    elem = _latex_to_omml(content, display=False)
+                    if elem is not None:
+                        _style_annotations(elem)
+                        cp._element.append(elem)
+                else:
+                    self._fill(cp, content)
+                cp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        _cant_split(inner.rows[0])
+        if host is not None:
+            host._p.addnext(inner._tbl)
+        return inner
+
+    def grid(self, rows, widths_cm=None):
+        """A bordered reference grid at top level (Notes)."""
+        t = self._grid(self.doc, rows, widths_cm)
+        self.doc.add_paragraph()
+        return t
+
     def _solution_step(self, p, step, width=14.5):
         """Render ONE solution step into paragraph p (shared by the box and its columns)."""
         p.paragraph_format.line_spacing = 1.5   # same as the body (Adrian, 2 Sep 2026: 1.5 "improves readability")
+        if isinstance(step, tuple) and step and step[0] == 'grid':
+            return self._grid(p._parent, step[1], step[2] if len(step) > 2 else None, host=p)
         if isinstance(step, tuple) and step and step[0] == 'cols':
             # nested columns (a sketch or an ASTC reference beside the working)
             return self._solution_cols(p._parent, step[1], step[2] if len(step) > 2 else None, False, host=p)

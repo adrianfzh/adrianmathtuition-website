@@ -637,6 +637,10 @@ def _notes_from_list(ws, notes):
             ws.para([C.B("Mistakes to avoid")])
             for i, e in enumerate(val, 1):
                 ws.para([C.T(f"{i}.  ")] + C.sm(e))
+        elif kind == "grid":
+            # ('grid', (rows, widths_cm)) — a bordered reference table in the Notes.
+            rows, widths = val if isinstance(val, tuple) and len(val) == 2 and isinstance(val[1], list) else (val, None)
+            ws.grid(rows, widths)
         elif kind == "figure":
             # A drawn picture in the Notes (20 Sep 2026, Adrian on the kinematics
             # notes: "give me an image to show the three stages instead"). val is
