@@ -304,5 +304,6 @@
    ],
    "content": "(a) A misleading chart — a DIFFERENT fault from 2025's BTO bar chart: a line graph with a truncated vertical axis, or two pie charts of different sizes; explain how it misleads and one improvement. (b) A GROUPED FREQUENCY TABLE (2025 gave a histogram) of a measured quantity for group Alpha; group Beta is summarised by a BOX-AND-WHISKER plot with its median and IQR readable. (b)(i) Estimate the mean and standard deviation for Alpha, working shown. (b)(ii) Which group scored higher on average, with a reason. (b)(iii) Which is more consistent — compare a spread measure that BOTH have. (b)(iv) A one-line comparison the two representations allow (e.g. whether Alpha's median could be found exactly, and why not)."
   }
- ]
+ ],
+ "page_per_question": true
 }

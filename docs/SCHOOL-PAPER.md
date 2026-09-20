@@ -52,6 +52,19 @@ Sec 1.
 - Every stem paragraph stays on the page with the figure under it.
 - Answer lines are printed only where the author wrote one. The school's own answer-line
   format is not in the bank's text, so none are added automatically.
+- **`page_per_question: true` in `plan.json`** (20 Sep 2026, TJC): every question starts on a
+  fresh page, no ruled writing lines, a bold "[Answers for Question n]" under it with the rest
+  of the page as the answer space, and a "[Continued answers for Question n]" page for a
+  question of `continuation_from` marks or more (default 8) — TJC's own shape. Without it the
+  per-mark writing lines print (St Nicholas).
+- **A part may carry its own figure**: `"figure": "a"` on a part prints `Q<n>a.figure.png`
+  under that part (the renderer accepts `Q<n><letter>.figure.json|cjs`); with
+  `"figure_position": "answer_space"` on the part it prints raw with no writing lines (TJC EM
+  Q5: the given sketch under (a), the blank axes under (b)). A slot whose parts carry figures
+  prints no slot-level figure. `figure-sizes.json` is keyed by the same `5a` / `5b`.
+- **A plotting grid must fit A4**: the printed image includes the axis numbering, so a
+  15 cm × 20 cm grid needs a 19 cm image — too wide. 1 cm per 0.1 on both axes (10 × 20 cm,
+  image 14.2 cm) fits on its own page; compute the width from the SVG's grid extent.
 
 ## The gates (`run.mjs check`)
 

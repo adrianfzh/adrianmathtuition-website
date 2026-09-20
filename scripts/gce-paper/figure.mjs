@@ -145,11 +145,14 @@ function renderEngine(file) {
 }
 
 const slots = readdirSync(runDir)
-  .map((f) => f.match(/^Q(\d+)\.figure\.(json|cjs)$/))
+  // Q<n>.figure.* is the slot's figure; Q<n><letter>.figure.* (Q5a, Q5b) is a PER-PART figure —
+  // export-docx.py prints it under the part whose "figure" key names the letter (20 Sep 2026,
+  // TJC IP4 EM Q5: a given sketch under (a) and blank answer axes under (b)).
+  .map((f) => f.match(/^Q(\d+)([a-z]?)\.figure\.(json|cjs)$/))
   .filter(Boolean)
-  .map((m) => ({ pos: Number(m[1]), kind: m[2], file: join(runDir, m[0]) }))
+  .map((m) => ({ pos: Number(m[1]), key: `Q${m[1]}${m[2]}`, kind: m[3], file: join(runDir, m[0]) }))
   .filter((s) => !only || only.includes(s.pos))
-  .sort((a, b) => a.pos - b.pos);
+  .sort((a, b) => a.pos - b.pos || a.key.localeCompare(b.key));
 
 if (!slots.length) { console.error(`no Q<n>.figure.json / .cjs in ${runDir}`); process.exit(1); }
 
@@ -157,19 +160,19 @@ let failed = 0;
 for (const s of slots) {
   try {
     const svg = ensureSvgNs(s.kind === 'json' ? renderSpec(JSON.parse(readFileSync(s.file, 'utf8'))) : renderEngine(s.file));
-    const svgPath = join(runDir, `Q${s.pos}.figure.svg`);
+    const svgPath = join(runDir, `${s.key}.figure.svg`);
     writeFileSync(svgPath, svg);
     let png = null;
     if (sharp) {
-      png = join(runDir, `Q${s.pos}.figure.png`);
+      png = join(runDir, `${s.key}.figure.png`);
       const buf = await sharp(Buffer.from(svg), { density }).flatten({ background: '#ffffff' }).png().toBuffer();
       writeFileSync(png, buf);
     }
     const family = s.kind === 'json' ? JSON.parse(readFileSync(s.file, 'utf8')).family : 'engine';
-    console.log(`Q${s.pos} ✓ ${family} → ${svgPath}${png ? ' + png' : ' (no sharp: png skipped)'}`);
+    console.log(`${s.key} ✓ ${family} → ${svgPath}${png ? ' + png' : ' (no sharp: png skipped)'}`);
   } catch (e) {
     failed++;
-    console.log(`Q${s.pos} ✗ ${e.message.split('\n')[0]}`);
+    console.log(`${s.key} ✗ ${e.message.split('\n')[0]}`);
   }
 }
 process.exit(failed ? 1 : 0);

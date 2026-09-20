@@ -276,10 +276,13 @@ def has_figure(figures, pos):
     return bool(figures) and any(exists(join(figures, n)) for n in (f'Q{pos}.figure.png', f'Q{pos}.png'))
 
 
-def figure_para(ws, q, pos, figures, raw=False):
-    # figure.mjs writes Q<n>.figure.png beside the draft; a hand-made Q<n>.png also counts
+def figure_para(ws, q, pos, figures, raw=False, key=None):
+    # figure.mjs writes Q<n>.figure.png beside the draft; a hand-made Q<n>.png also counts.
+    # key = "5a": a PER-PART figure (Q5a.figure.png) printed under the part whose
+    # "figure": "a" names it (20 Sep 2026).
     path = None
-    for name in (f'Q{pos}.figure.png', f'Q{pos}.png'):
+    key = key or str(pos)
+    for name in (f'Q{key}.figure.png', f'Q{key}.png'):
         cand = join(figures, name) if figures else None
         if cand and exists(cand):
             path = cand
@@ -288,13 +291,13 @@ def figure_para(ws, q, pos, figures, raw=False):
         # an answer space keeps its blank paper: ws.figure trims a PNG to its ink
         para = ws.doc.add_paragraph()
         para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        para.add_run().add_picture(path, width=Cm(figure_width_cm(figures, pos, path)))
+        para.add_run().add_picture(path, width=Cm(figure_width_cm(figures, key, path)))
         ws._block_paras.append(para)
         return True
     if path:
-        ws.figure(path, width_cm=figure_width_cm(figures, pos, path))
+        ws.figure(path, width_cm=figure_width_cm(figures, key, path))
         return True
-    if q.get('needs_figure'):
+    if q.get('needs_figure') and key == str(pos):
         p = ws.para([('text', '[Figure to be drawn: ' + (q.get('figure_description') or '') + ']', {'italic': True})])
         p.paragraph_format.left_indent = Cm(Q_TEXT_CM)
     return False
@@ -328,7 +331,8 @@ def question(ws, s, figures, with_marks=True):
     # parts above it leave no writing lines of their own.
     in_answer_space = q.get('figure_position') == 'answer_space' and bool(parts)
     after_part = parts[-1] if in_answer_space else grid_part(q, figures, s['pos'])
-    if after_part is None:
+    part_figures = any(p.get('figure') for p in parts)   # each part prints its own Q<n><letter> figure
+    if after_part is None and not part_figures:
         if has_stem and has_figure(figures, s['pos']):
             for para in ws._block_paras:
                 para.paragraph_format.keep_with_next = True
@@ -337,7 +341,9 @@ def question(ws, s, figures, with_marks=True):
     numbered = not has_stem          # no stem: the first part carries the number
     for part in parts:
         saved_space = ws.working_space
-        if part is after_part or (in_answer_space and with_marks):
+        part_fig = part.get('figure')                       # "a" → Q<n>a.figure.png under this part
+        part_raw = part.get('figure_position') == 'answer_space'
+        if part is after_part or (in_answer_space and with_marks) or (part_fig and part_raw):
             ws.working_space = 0
         outer, inner = split_label(part.get('label', ''))
         subs = part.get('subparts') or []
@@ -363,6 +369,8 @@ def question(ws, s, figures, with_marks=True):
         ws.working_space = saved_space
         if part is after_part:
             figure_para(ws, q, s['pos'], figures, raw=in_answer_space)
+        elif part_fig:
+            figure_para(ws, q, s['pos'], figures, raw=part_raw, key=f"{s['pos']}{part_fig}")
     return q
 
 
@@ -553,8 +561,26 @@ def main():
     # --- the paper
     ws = Worksheet(working_space=a.space)
     front_page(ws, paper, total)
-    for s in slots:
+    # layout.page_per_question (plan.json → run.mjs assemble): every question starts on a
+    # fresh page, the way TJC prints "[Answers for Question n]" under each one (20 Sep 2026).
+    layout = paper.get('layout') or {}
+    page_per_q = bool(layout.get('page_per_question'))
+    if page_per_q:
+        # TJC's shape: no ruled writing lines — the rest of the page under
+        # "[Answers for Question n]" is the answer space, and a question of
+        # `continuation_from` marks or more (default 8) gets a second page
+        # headed "[Continued answers for Question n]".
+        ws.working_space = 0
+    cont_from = int(layout.get('continuation_from') or 8)
+    for i, s in enumerate(slots):
+        if page_per_q and i:
+            ws.page_break()
         q = question(ws, s, a.figures)
+        if page_per_q:
+            ws.para([('text', f"[Answers for Question {s['pos']}]", {'bold': True})])
+            if s['target'] >= cont_from:
+                ws.page_break()
+                ws.para([('text', f"[Continued answers for Question {s['pos']}]", {'bold': True})])
         got = sum((p.get('marks') or 0) if not p.get('subparts') else sum(x.get('marks') or 0 for x in p['subparts'])
                   for p in (q.get('parts') or [])) or s['target']
         if got != s['target']:
