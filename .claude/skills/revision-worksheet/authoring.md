@@ -268,3 +268,10 @@ What render does, in order — each **stop** is a `SystemExit` before any file i
    refuses a target under `/private/tmp`) and falls back to `<workdir>/preview.html`. Every
    warning lands in `<workdir>/report.md`; repeat them in the hand-over.
 
+
+## EXTRA_PARTS — a part the exam did not ask
+
+`EXTRA_PARTS = {"97ed3737": [{"label": "d", "text": "…", "marks": 3}]}` prints one more
+part after the bank's own parts (same numbering run) and the solution box takes a
+`('(d)', …)` row for it. Only when Adrian asks to *extend* an example (21 Sep 2026,
+the robot's max speed from the cosine bounds); the hand-over says which part is added.

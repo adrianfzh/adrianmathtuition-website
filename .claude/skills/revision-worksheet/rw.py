@@ -725,6 +725,11 @@ def cmd_render(a):
     # 5 Sep 2026). "Practice" stays: that one marks the change of activity.
     for r, concept, sol_rows, letter in examples:
         parts = C.sorted_parts(r)
+        # content.EXTRA_PARTS = {id8: [{"label","text","marks"}]} appends a part the
+        # exam did not ask (Adrian, 21 Sep 2026: "for kinematics you can just extend
+        # this example" — a max/min-from-the-trig-bounds part on the robot). It is
+        # the one sanctioned departure from verbatim; the marks check ignores it.
+        extra = (getattr(content, "EXTRA_PARTS", {}) or {}).get(id8(r["id"]), [])
         # A part that splits into subparts carries its marks on THOSE, not on
         # itself — sum whichever the bank actually filled in, or the check fires
         # on every question shaped that way.
@@ -743,7 +748,7 @@ def cmd_render(a):
         # Parts and subparts carry REAL Word numbering (Adrian, 12 Sep 2026: "can you
         # autonumber the questions and subparts?") — a part he adds in Word numbers
         # itself. The bank's own label decides letters or romans.
-        for j, p in enumerate(parts):
+        for j, p in enumerate(list(parts) + list(extra)):
             subs = p.get("subparts") or []
             fmt = C.fmt_of(p.get("label"))
             C.emit_text(ws, p.get("text"),
@@ -778,7 +783,7 @@ def cmd_render(a):
             else:
                 ws.Q([("text", "\u200b")])
         _figures(ws, r, figdir)
-        for j, p in enumerate(parts):
+        for j, p in enumerate(list(parts) + list(extra)):
             subs = p.get("subparts") or []
             fmt = C.fmt_of(p.get("label"))
             if fmt == "letter":
