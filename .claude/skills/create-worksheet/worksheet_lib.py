@@ -989,7 +989,18 @@ class Worksheet:
         return p
 
     def _fill(self, p, parts):
-        """Append runs/math to an existing paragraph from a parts list."""
+        """Append runs/math to an existing paragraph from a parts list.
+
+        A maths part with no colour of its own takes the colour of the words
+        around it when every text part on the line shares one (20 Sep 2026,
+        Adrian: "you want to use grey for the font, but x is still black" — a
+        grey principle line with M('x') in it printed the x in black)."""
+        text_colours = {str(part[2].get('color')) for part in parts
+                        if part[0] == 'text' and len(part) > 2 and part[2].get('color')}
+        plain_text = any(part[0] == 'text' and not (len(part) > 2 and part[2].get('color')) for part in parts)
+        line_colour = None
+        if len(text_colours) == 1 and not plain_text:
+            line_colour = next(part[2]['color'] for part in parts if part[0] == 'text' and len(part) > 2 and part[2].get('color'))
         for part in parts:
             kind = part[0]
             if kind == 'text':
@@ -1016,6 +1027,8 @@ class Worksheet:
                     attrs = part[2] if len(part) > 2 else {}
                     if attrs.get('color'):
                         _colour_math(elem, _hex(attrs['color']))
+                    elif line_colour is not None:
+                        _colour_math(elem, _hex(line_colour))
                     if attrs.get('bold'):
                         _embolden_math(elem)
                     p._element.append(elem)
@@ -1608,9 +1621,28 @@ class Worksheet:
             # "=", or an inequality sign on an inequality's working (17 Sep 2026)
             rels = ('=', '<', '>', '≤', '≥', '≠', '≈')
             if any(k in rhs for k in ('=', '<', '>', '\\le', '\\ge', '\\ne', '\\approx')):
+                # The marker goes on the FIRST relation sign of the RIGHT-hand side.
+                # A left-hand side that carries its own "=" inside the words
+                # ("Maximum velocity when a = 0: 9 − 6t &= 0") used to take the
+                # marker on that first "=", so the next line lined up under the
+                # words instead of under the equation (Adrian, 20 Sep 2026:
+                # "alignment at equal sign should be at the second equals").
+                # Count the relation runs the lhs alone produces and skip them.
+                skip = 0
+                if lhs and any(k in lhs for k in ('=', '<', '>', '\\le', '\\ge', '\\ne', '\\approx')):
+                    lhs_elem = _latex_to_omml(lhs, display=True)
+                    if lhs_elem is not None:
+                        for r0 in lhs_elem.iter(f'{{{M_NS}}}r'):
+                            t0 = r0.find(f'{{{M_NS}}}t')
+                            if t0 is not None and (t0.text or '').strip().startswith(rels):
+                                skip += 1
+                seen = 0
                 for r in om.iter(f'{{{M_NS}}}r'):
                     t = r.find(f'{{{M_NS}}}t')
                     if t is not None and (t.text or '').strip().startswith(rels):
+                        if seen < skip:
+                            seen += 1
+                            continue
                         mrpr = r.find(f'{{{M_NS}}}rPr')
                         if mrpr is None:
                             mrpr = etree.Element(f'{{{M_NS}}}rPr'); r.insert(0, mrpr)
