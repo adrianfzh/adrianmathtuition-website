@@ -303,5 +303,6 @@
    "content": "(a) A formula of the form y = ax/(x + b) (or y = a/(x + b)): explain how a straight-line graph can be drawn from values of x and y, and state what the gradient and the vertical intercept represent (2025 (a) used y = ax√x − bx). (b) A table of six paired values believed to follow a POWER law y = k xⁿ — not exponential (2025) or a√x (2024). (b)(i) On the grid provided plot lg y against lg x and draw the straight line; (b)(ii) estimate k and n; (b)(iii) use the graph to estimate x for a stated y, OR explain why the model cannot hold at x = 0. Parts: (a) 3, then (b)(i) 2, (b)(ii) 4, (b)(iii) 1 as true subparts. The slot's figure IS the plotting grid: needs_figure true, figure_description = the grid (axes, scales, ranges that fit the lg values), figure_position 'answer_space' so it prints under the last part as the space the student plots in."
   }
  ],
- "page_per_question": true
+ "page_per_question": true,
+ "front_page": false
 }

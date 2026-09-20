@@ -322,6 +322,47 @@ def grid_part(q, figures, pos):
     return None
 
 
+PAGE_USABLE_CM = 29.7 - 2.0 - 1.0      # worksheet_lib page: A4, 2 cm top, 1 cm bottom
+LINE_CM = 0.60                          # one 1.5-spaced text line / one blank writing line
+TITLE_CM = 2.6                          # title + subtitle block on the first page
+
+
+def _plain_len(text):
+    return len(re.sub(r'\$[^$]*\$', lambda m: 'x' * max(3, len(m.group(0)) // 2), text or ''))
+
+
+def _figure_h_cm(figures, key, png):
+    try:
+        from PIL import Image
+        w, h = Image.open(png).size
+        return figure_width_cm(figures, key, png) * h / w
+    except Exception:
+        return 7.0
+
+
+def estimate_used_cm(q, figures, pos, first_page):
+    """Rough printed height of a question WITHOUT its writing space, so the space
+    can be sized to fill the rest of the page (layout.page_per_question)."""
+    used = TITLE_CM if first_page else 0.4
+    def block(text, chars):
+        n = _plain_len(text)
+        return (max(1, -(-n // chars)) * LINE_CM + 0.15) if n else 0
+    used += block(q.get('stem') or '', 88)
+    parts = q.get('parts') or []
+    for part in parts:
+        used += block(part.get('text') or '', 78)
+        for sub in part.get('subparts') or []:
+            used += block(sub.get('text') or '', 70)
+        if part.get('figure'):
+            png = join(figures, f"Q{pos}{part['figure']}.figure.png") if figures else None
+            if png and exists(png):
+                used += _figure_h_cm(figures, f"{pos}{part['figure']}", png) + 0.5
+    png = join(figures, f'Q{pos}.figure.png') if figures else None
+    if png and exists(png) and not any(p.get('figure') for p in parts):
+        used += _figure_h_cm(figures, str(pos), png) + 0.5
+    return used
+
+
 def question(ws, s, figures, with_marks=True):
     q = s.get('question') or s.get('draft')
     parts = q.get('parts') or []
@@ -560,27 +601,31 @@ def main():
 
     # --- the paper
     ws = Worksheet(working_space=a.space)
-    front_page(ws, paper, total)
-    # layout.page_per_question (plan.json → run.mjs assemble): every question starts on a
-    # fresh page, the way TJC prints "[Answers for Question n]" under each one (20 Sep 2026).
     layout = paper.get('layout') or {}
+    shape = paper.get('shape', {})
+    if layout.get('front_page') is False:
+        # Adrian, 20 Sep 2026 (TJC): "just have title, then questions right away" —
+        # no instructions page, no formulae sheet, no "[Answers for Question n]".
+        ws.title(paper.get('title') or f"{shape.get('subject', 'Additional Mathematics').upper()}")
+        ws.subtitle(f"{len(slots)} questions  ·  {total} marks  ·  {shape.get('duration', '')}")
+    else:
+        front_page(ws, paper, total)
     page_per_q = bool(layout.get('page_per_question'))
-    if page_per_q:
-        # TJC's shape: no ruled writing lines — the rest of the page under
-        # "[Answers for Question n]" is the answer space, and a question of
-        # `continuation_from` marks or more (default 8) gets a second page
-        # headed "[Continued answers for Question n]".
-        ws.working_space = 0
-    cont_from = int(layout.get('continuation_from') or 8)
     for i, s in enumerate(slots):
         if page_per_q and i:
             ws.page_break()
-        q = question(ws, s, a.figures)
         if page_per_q:
-            ws.para([('text', f"[Answers for Question {s['pos']}]", {'bold': True})])
-            if s['target'] >= cont_from:
-                ws.page_break()
-                ws.para([('text', f"[Continued answers for Question {s['pos']}]", {'bold': True})])
+            # Every question on its own page; the blank space under each part is sized to
+            # FILL that page (proportional to marks) instead of a fixed count per mark, so
+            # nothing spills into a near-empty overflow page. Floor 1 line per mark (a
+            # page-filling figure may then run onto a second page), cap 5.
+            q0 = s.get('question') or s.get('draft')
+            avail = PAGE_USABLE_CM - 0.8 - estimate_used_cm(q0, a.figures, s['pos'], first_page=(i == 0))
+            leaves = [x for p in (q0.get('parts') or []) for x in (p['subparts'] if p.get('subparts') else [p])]
+            bonus = sum(1 for x in leaves if x.get('marks') == 1)      # one_mark_bonus lines
+            lines = avail / LINE_CM - bonus
+            ws.working_space = max(1.0, min(5.0, lines / max(1, s['target'])))
+        q = question(ws, s, a.figures)
         got = sum((p.get('marks') or 0) if not p.get('subparts') else sum(x.get('marks') or 0 for x in p['subparts'])
                   for p in (q.get('parts') or [])) or s['target']
         if got != s['target']:

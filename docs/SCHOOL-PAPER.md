@@ -52,11 +52,14 @@ Sec 1.
 - Every stem paragraph stays on the page with the figure under it.
 - Answer lines are printed only where the author wrote one. The school's own answer-line
   format is not in the bank's text, so none are added automatically.
-- **`page_per_question: true` in `plan.json`** (20 Sep 2026, TJC): every question starts on a
-  fresh page, no ruled writing lines, a bold "[Answers for Question n]" under it with the rest
-  of the page as the answer space, and a "[Continued answers for Question n]" page for a
-  question of `continuation_from` marks or more (default 8) — TJC's own shape. Without it the
-  per-mark writing lines print (St Nicholas).
+- **`page_per_question: true` + `front_page: false` in `plan.json`** (Adrian, 20 Sep 2026, on the
+  TJC papers: "don't put [Answers for…], remove formula sheet, remove first page instructions,
+  just have title, then questions right away, and give space for individual parts"): the
+  title and one subtitle line, then Q1 on the same page; every later question on a fresh page;
+  the blank space under each part is sized to FILL that page in proportion to marks
+  (`estimate_used_cm` in `export-docx.py`, floor 1 line/mark, cap 5), so nothing spills into
+  a near-empty page. Without the flags the GCE front page and the fixed per-mark lines print
+  (St Nicholas).
 - **A part may carry its own figure**: `"figure": "a"` on a part prints `Q<n>a.figure.png`
   under that part (the renderer accepts `Q<n><letter>.figure.json|cjs`); with
   `"figure_position": "answer_space"` on the part it prints raw with no writing lines (TJC EM

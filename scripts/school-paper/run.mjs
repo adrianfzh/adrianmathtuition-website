@@ -324,7 +324,7 @@ function assemble() {
     key: plan.key, title: plan.title, school: plan.school, level: plan.level, exam: plan.exam, prompt_version: plan.prompt_version,
     shape: { subject: 'Mathematics', duration: plan.duration, level: plan.level },
     front: { note: plan.subtitle_note, instructions: plan.instructions, formulae: plan.formulae ?? [] }, // formulae: [[head, body|null], …] as export-docx.py prints them; [] = no formulae page
-    layout: { page_per_question: plan.page_per_question === true }, // export-docx.py: a fresh page per question
+    layout: { page_per_question: plan.page_per_question === true, front_page: plan.front_page !== false }, // export-docx.py: a fresh page per question
     total: plan.total, generated_at: plan.generated_at, assembled_at: new Date().toISOString(), questions,
   };
   const jsonPath = join(dir, `${plan.key}.json`);
