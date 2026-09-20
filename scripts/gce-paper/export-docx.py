@@ -384,8 +384,8 @@ def question(ws, s, figures, with_marks=True):
         saved_space = ws.working_space
         part_fig = part.get('figure')                       # "a" → Q<n>a.figure.png under this part
         part_raw = part.get('figure_position') == 'answer_space'
-        if part is after_part or (in_answer_space and with_marks) or (part_fig and part_raw):
-            ws.working_space = 0
+        if part is after_part or (in_answer_space and with_marks) or part_fig:
+            ws.working_space = 0          # a part with its own figure gets its space AFTER the figure
         outer, inner = split_label(part.get('label', ''))
         subs = part.get('subparts') or []
         marks = part.get('marks') if with_marks else None
@@ -400,6 +400,15 @@ def question(ws, s, figures, with_marks=True):
         else:
             labelled(ws, [outer], text, None if subs else marks, level=0, numbered=numbered)
             numbered = False
+        if part_fig and not subs:
+            # the part's own figure sits right under its text (before the writing space);
+            # an answer-space figure IS the space, otherwise the space follows the figure
+            for para in ws._block_paras[-2:]:
+                para.paragraph_format.keep_with_next = True
+            figure_para(ws, q, s['pos'], figures, raw=part_raw, key=f"{s['pos']}{part_fig}")
+            if not part_raw and with_marks and marks and saved_space:
+                ws.working_space = saved_space
+                ws.workspace(marks=marks)
         prev_outer = outer
         for k, sub in enumerate(subs):
             so, si = split_label(sub.get('label', ''))
@@ -410,7 +419,7 @@ def question(ws, s, figures, with_marks=True):
         ws.working_space = saved_space
         if part is after_part:
             figure_para(ws, q, s['pos'], figures, raw=in_answer_space)
-        elif part_fig:
+        elif part_fig and subs:
             figure_para(ws, q, s['pos'], figures, raw=part_raw, key=f"{s['pos']}{part_fig}")
     return q
 
@@ -615,16 +624,19 @@ def main():
         if page_per_q and i:
             ws.page_break()
         if page_per_q:
-            # Every question on its own page; the blank space under each part is sized to
-            # FILL that page (proportional to marks) instead of a fixed count per mark, so
-            # nothing spills into a near-empty overflow page. Floor 1 line per mark (a
-            # page-filling figure may then run onto a second page), cap 5.
+            # Every question on its own page. The blank space under each part is at least
+            # `a.space` lines per mark (3 by default — Adrian, 20 Sep 2026: "you have to give
+            # enough space"); the question takes as many whole pages as that needs (one, or
+            # two for a long question) and the space is then stretched to FILL those pages
+            # in proportion to marks, so no page is left nearly empty.
             q0 = s.get('question') or s.get('draft')
-            avail = PAGE_USABLE_CM - 0.8 - estimate_used_cm(q0, a.figures, s['pos'], first_page=(i == 0))
+            used = estimate_used_cm(q0, a.figures, s['pos'], first_page=(i == 0))
             leaves = [x for p in (q0.get('parts') or []) for x in (p['subparts'] if p.get('subparts') else [p])]
             bonus = sum(1 for x in leaves if x.get('marks') == 1)      # one_mark_bonus lines
-            lines = avail / LINE_CM - bonus
-            ws.working_space = max(1.0, min(5.0, lines / max(1, s['target'])))
+            min_lines = a.space * s['target'] + bonus
+            pages = max(1, -(-(used + min_lines * LINE_CM + 0.8) // PAGE_USABLE_CM))
+            avail = pages * PAGE_USABLE_CM - 0.8 - used
+            ws.working_space = max(a.space, (avail / LINE_CM - bonus) / max(1, s['target']))
         q = question(ws, s, a.figures)
         got = sum((p.get('marks') or 0) if not p.get('subparts') else sum(x.get('marks') or 0 for x in p['subparts'])
                   for p in (q.get('parts') or [])) or s['target']

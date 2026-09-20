@@ -1939,7 +1939,14 @@ class Worksheet:
         only Normal and the solution boxes had been set. Walk everything."""
         from docx.enum.text import WD_LINE_SPACING
         def fix(par):
+            # A paragraph that holds a picture keeps SINGLE spacing: Word scales a
+            # "multiple" line spacing by the tallest object on the line, so a 23 cm
+            # answer-space grid at 1.5 became a 35 cm line, overflowed its page and
+            # left a blank page behind it (TJC IP4 papers, 20 Sep 2026).
             pf = par.paragraph_format
+            if par._p.xpath('.//w:drawing'):
+                pf.line_spacing_rule = WD_LINE_SPACING.SINGLE
+                return
             pf.line_spacing_rule = WD_LINE_SPACING.MULTIPLE
             pf.line_spacing = spacing
         for par in self.doc.paragraphs:

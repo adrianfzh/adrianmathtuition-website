@@ -56,9 +56,12 @@ Sec 1.
   TJC papers: "don't put [Answers for…], remove formula sheet, remove first page instructions,
   just have title, then questions right away, and give space for individual parts"): the
   title and one subtitle line, then Q1 on the same page; every later question on a fresh page;
-  the blank space under each part is sized to FILL that page in proportion to marks
-  (`estimate_used_cm` in `export-docx.py`, floor 1 line/mark, cap 5), so nothing spills into
-  a near-empty page. Without the flags the GCE front page and the fixed per-mark lines print
+  the blank space under each part is AT LEAST `--space` lines per mark (3), the question takes
+  as many whole pages as that needs ("you can go to two pages if question is long"), and the
+  space is stretched to FILL those pages in proportion to marks (`estimate_used_cm` in
+  `export-docx.py`), so no page is left nearly empty. A part's own figure prints right under
+  its text, then the part's space. Picture paragraphs keep SINGLE line spacing (worksheet_lib
+  `_enforce_line_spacing`) — at 1.5 Word scaled a 23 cm grid's line to 35 cm and left a blank page. Without the flags the GCE front page and the fixed per-mark lines print
   (St Nicholas).
 - **A part may carry its own figure**: `"figure": "a"` on a part prints `Q<n>a.figure.png`
   under that part (the renderer accepts `Q<n><letter>.figure.json|cjs`); with
