@@ -88,6 +88,11 @@ least 4 of 5. `paper-shape-report.json` gives the counts to set beside the profi
 
 ## Lessons from the TJC round (20 Sep 2026)
 
+- **A second set needs its own slot briefs, or the moderator will do the redirecting.** With
+  `avoid_runs` the gate and the moderator catch Set 1 twins, but 12 of 30 Set 2 first drafts
+  were caught that way — cheaper to write the slot's `content` for Set 2 ("NOT the Set 1
+  direction, which was …") before authoring.
+
 - **The blind solve earns its keep on rounding.** The only key error in 30 questions was a
   3rd-significant-figure tightrope (9.3849… written as 9.39). Authors must compute to 6 s.f.
   and the moderator recomputes; when an answer sits within 0.001 of a rounding boundary,
@@ -125,4 +130,5 @@ school's style and is not a past-year paper.
 |---|---|---|
 | `sngs-s1-eoy` | CHIJ St Nicholas Girls, Sec 1 End-of-Year, 2 h 15 min, 90 marks, 20 questions | first paper written 18 Sep 2026 (20 questions, 90 marks, 7 figures, all slots through blind solve and moderation), with Adrian for his read; files in `~/Desktop/AdrianMath/School Papers/St Nicholas S1 EOY/` |
 | `tjc-ip4-am-eoy` | Temasek Junior College (IP), IP4 Additional Mathematics End-of-Year, 2 h 30 min, 100 marks, 14 questions | WRITTEN 20 Sep 2026 — the first upper-secondary paper by the method: 14/14 accepted (3 slots needed a second round: Q3 too close to 2025 Q3, Q6 degenerate endpoint answers, Q9 easier), 6 figures, blind solve 123 min; with Adrian for his read; files in `~/Desktop/AdrianMath/School Papers/TJC IP4 AM EOY/` |
+| `tjc-ip4-am-eoy-set2` / `tjc-ip4-em-eoy-set2` | the same two papers, SET 2, one notch harder (Adrian, 20 Sep 2026: "make it more difficult") | WRITTEN 20 Sep 2026 — 14/14 and 16/16 accepted; `avoid_runs` put Set 1 in the corpus and every brief, `difficulty_target: slightly harder`. Twelve of thirty first drafts were rejected as number-changed twins of Set 1 (the slot briefs are Set 1's, so an author following them literally reproduces Set 1) and redirected; one third-round change of solid (AM Q9 box → cylinder). Files in `…/TJC IP4 AM EOY/set2/` and `…/TJC IP4 EM EOY/set2/` |
 | `tjc-ip4-em-eoy` | Temasek Junior College (IP), IP4 Intermediate Mathematics (= E Math) End-of-Year, 2 h 30 min, 100 marks, 16 questions | WRITTEN 20 Sep 2026 — 16/16 accepted after repairs (Q5 sketch did not pin n; Q6 + Q8 easier; Q7 re-skin of 2024 Q5; Q14 easier; Q8 needed a THIRD round for a wrong key at a rounding boundary, 9.385 → the given changed to 65 m), 9 figures, blind solve 117 min; with Adrian; files in `~/Desktop/AdrianMath/School Papers/TJC IP4 EM EOY/` |
