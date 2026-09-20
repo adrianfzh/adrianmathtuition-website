@@ -20,6 +20,12 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   (12 Sep 2026: "readability is poor, lines are written continuously, should be by line,
   aligned at equal sign"; "able to make them line by line so i can edit, add lines, delete
   lines? equation should still be aligned at equal sign".)
+- **Two equations on one row are two rows** (20 Sep 2026, Kinematics sheet, Example 4(i):
+  `x = π/4, y = 2(1) − 1 = 1` came out as `x = π/4, y` / `= 2(1) − 1` / `= 1` — the `y`
+  stranded at the end of the first line, the working aligned under the wrong "="). A
+  comma never joins two equations in an aligned block: write `x &= \dfrac{\pi}{4}` on
+  its own row, then `y &= 2(1) - 1` and `&= 1`. When splitting a chained line by
+  script, split at `, y =` / `, s =` boundaries FIRST, then at the repeated "=".
 - **Never build the lines as a table** — one row per line was rejected outright
   ("you have built the equations inside tables, that's not what I want").
 - Code shape: a bare `\begin{aligned} lhs &= rhs \\ &= rhs \end{aligned}` string as a
