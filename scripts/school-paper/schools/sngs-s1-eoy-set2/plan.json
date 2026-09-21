@@ -1,0 +1,305 @@
+{
+ "key": "sngs-s1-eoy-set2",
+ "school": "CHIJ St Nicholas Girls",
+ "level": "S1",
+ "exam": "EOY",
+ "paper": "1",
+ "model_year": 2025,
+ "title": "Secondary 1 Mathematics · End-of-Year Examination practice paper — Set 2",
+ "subtitle_note": "Newly written questions in the style of a St Nicholas Girls' Sec 1 End-of-Year paper (Set 2). Not a past-year paper.",
+ "duration": "2 hours 15 minutes",
+ "total": 90,
+ "corpus_levels": [
+  "S1",
+  "S2"
+ ],
+ "solver_scope": "lower-secondary methods",
+ "instructions": [
+  "Answer all the questions.",
+  "Write your answers and working in the spaces provided on the question paper.",
+  "All essential working must be shown. Omission of essential working will result in loss of marks.",
+  "The use of an approved scientific calculator is expected, where appropriate.",
+  "If the degree of accuracy is not specified in the question, and if the answer is not exact, give the answer to three significant figures. Give answers in degrees to one decimal place.",
+  "For $\\pi$, use either your calculator value or 3.142, unless the question requires the answer in terms of $\\pi$.",
+  "The number of marks is given in brackets [ ] at the end of each question or part question."
+ ],
+ "slots": [
+  {
+   "pos": 1,
+   "target": 4,
+   "parts": [
+    1,
+    1,
+    2
+   ],
+   "figure": false,
+   "topics": [
+    "Numbers (Estimation)"
+   ],
+   "content": "Rounding and estimation in a context with a LARGE number (e.g. attendance at an event): (a) round to a stated number of significant figures; (b) round to the nearest thousand or similar; (c) a calculator answer to a calculation (a product and a square root over a difference) is quoted — by rounding each number to 1 significant figure, estimate the value and explain whether the quoted answer can be correct (a place-value slip). NOT the Set 1 direction (round a decimal mass, estimate a cube root, say over- or under-estimate)."
+  },
+  {
+   "pos": 2,
+   "target": 2,
+   "parts": [
+    2
+   ],
+   "figure": false,
+   "topics": [
+    "Numbers (Real Numbers)"
+   ],
+   "content": "Six numbers, several in disguise (a square root of a perfect square over a number, a cube root of a perfect cube, 22/7, a multiple of pi, a recurring decimal, a surd that does not simplify): write down the irrational ones, and give a reason why ONE named number is rational. NOT the Set 1 direction (put numbers in ascending order)."
+  },
+  {
+   "pos": 3,
+   "target": 5,
+   "parts": [
+    3,
+    2
+   ],
+   "figure": false,
+   "topics": [
+    "Financial Math (Interest)",
+    "Numbers (Percentages)"
+   ],
+   "content": "(a) Hire purchase: cash price, a percentage deposit, equal monthly instalments over a number of years — find the simple interest RATE per annum the shop charges on the balance. (b) Reverse percentage: a price AFTER a percentage increase is given; find the price before, then the percentage profit or loss against a given cost. NOT the Set 1 direction (compound interest compared with simple interest; discount followed by GST)."
+  },
+  {
+   "pos": 4,
+   "target": 2,
+   "parts": [
+    2
+   ],
+   "figure": false,
+   "topics": [
+    "Numbers (HCF and LCM)"
+   ],
+   "content": "LCM in a context of time: two (or three) bus services leave an interchange together at a stated clock time and then at different regular intervals; find the next clock time they leave together, and how many times this happens before a stated time. NOT the Set 1 direction (HCF, largest square tile)."
+  },
+  {
+   "pos": 5,
+   "target": 4,
+   "parts": [
+    1,
+    2,
+    1
+   ],
+   "figure": false,
+   "topics": [
+    "Numbers (Prime Factorization)"
+   ],
+   "content": "(a) Write an ordinary number (3 or 4 digits) as a product of prime factors in index form; (b) find the smallest positive integer the number must be DIVIDED by (or multiplied by) to give a perfect CUBE, and state the cube root; (c) the LCM of this number and an unknown n is given in index form — find the smallest possible n. NOT the Set 1 skeleton (two numbers given in index form: HCF, cube root of the product, smallest multiplier for a perfect square) and not the school's 2025 skeleton."
+  },
+  {
+   "pos": 6,
+   "target": 7,
+   "parts": [
+    1,
+    2,
+    2,
+    2
+   ],
+   "figure": false,
+   "topics": [
+    "Algebra (Factorization)",
+    "Algebra (Expansion)"
+   ],
+   "content": "(a) Write an algebraic expression from a sentence in words (a Singapore context), simplified; (b) expand and simplify an expression with a bracket inside a bracket and one fractional coefficient; (c) factorise completely four terms where a common factor must be taken out FIRST and then grouped; (d) evaluate an expression in two letters at negative and fractional values. NOT the Set 1 direction (common factor used to evaluate a decimal sum; squared bracket; plain grouping with a sign change)."
+  },
+  {
+   "pos": 7,
+   "target": 3,
+   "parts": [
+    3
+   ],
+   "figure": false,
+   "topics": [
+    "Algebra (Fractions)"
+   ],
+   "content": "Express as a single fraction in its simplest form: three terms, numeric denominators with an LCM that is not their product, one term an integer multiple of a bracket or a whole term, a negative sign in front of a bracketed numerator. An EXPRESSION, not an equation. NOT the Set 1 direction (solve a fractional equation)."
+  },
+  {
+   "pos": 8,
+   "target": 3,
+   "parts": [
+    1,
+    2
+   ],
+   "figure": false,
+   "topics": [
+    "Polygons"
+   ],
+   "content": "A REGULAR polygon: (a) the ratio of an interior angle to an exterior angle is given — find the number of sides; (b) a student claims a regular polygon can have an interior angle of a stated size (one that does NOT work) — do you agree? Justify. Part marks [1,2] may be taken as (a) the exterior angle or a stated fact [1] then n [2] if that reads better; keep the leaf marks [1,2]. NOT the Set 1 direction (irregular polygon with angles in x, find n)."
+  },
+  {
+   "pos": 9,
+   "target": 4,
+   "parts": [
+    2,
+    2
+   ],
+   "figure": true,
+   "topics": [
+    "Polygons",
+    "Angles"
+   ],
+   "content": "A regular pentagon with an equilateral triangle drawn INSIDE it on one side; a line joins the triangle's apex to a pentagon vertex. Find two angles, stating reasons clearly (interior angle of a regular polygon, equilateral triangle, isosceles triangle). NOT the Set 1 figure (hexagon with a square outside)."
+  },
+  {
+   "pos": 10,
+   "target": 2,
+   "parts": [
+    2
+   ],
+   "figure": false,
+   "topics": [
+    "Numbers (Ratio)"
+   ],
+   "content": "A changing ratio: the ratio of two quantities is given; after a stated number is added to (or moved from) one of them the ratio becomes another; find an original quantity. Concrete Singapore context. NOT the Set 1 direction (joining a:b and b:c)."
+  },
+  {
+   "pos": 11,
+   "target": 5,
+   "parts": [
+    3,
+    2
+   ],
+   "figure": true,
+   "topics": [
+    "Mensuration",
+    "Algebra (Linear Equations)"
+   ],
+   "content": "A trapezium (a garden plot or a sign) with its parallel sides in terms of x and a NUMERIC height; the AREA gives the equation ('Form an algebraic equation in x and solve it'); then find the perimeter, which needs Pythagoras' theorem for the slant side (a right-angled trapezium so one right-angled triangle suffices; whole-number triple). NOT the Set 1 direction (perimeter gives the equation, then area of a rectangle with a corner cut off)."
+  },
+  {
+   "pos": 12,
+   "target": 3,
+   "parts": [
+    2,
+    1
+   ],
+   "figure": true,
+   "topics": [
+    "Angles"
+   ],
+   "content": "Two straight lines crossed by two transversals that meet, forming a triangle between the lines; angles are given in terms of x. (a) Given the lines are parallel, form an equation and find x / a named angle, stating reasons; (b) a second pair of lines in the figure, with given angles: determine, with a reason, whether they are parallel (converse of corresponding/alternate/interior angles). NOT the Set 1 direction (a bend between parallels needing a third parallel line; isosceles check)."
+  },
+  {
+   "pos": 13,
+   "target": 3,
+   "parts": [
+    3
+   ],
+   "figure": false,
+   "topics": [
+    "Numbers (Percentages)",
+    "Math In Real World Context"
+   ],
+   "content": "Two money changers at Changi or in the city change Singapore dollars into a foreign currency: one offers a better rate but charges a percentage commission (or a flat fee), the other a plain rate. For a stated amount, decide which gives more foreign currency and by how much. The rates are printed as a small table. NOT the Set 1 direction (tiered water tariff worked backwards from the bill)."
+  },
+  {
+   "pos": 14,
+   "target": 5,
+   "parts": [
+    2,
+    1,
+    1,
+    1
+   ],
+   "figure": false,
+   "topics": [
+    "Geometrical Constructions"
+   ],
+   "content": "Construct a QUADRILATERAL ABCD from a given base line: two sides, two angles at the base, and one more side (so compasses are needed). Then construct the bisector of one angle and the perpendicular bisector of one side; mark the point where they meet and say what is true of that point (equidistant from two lines AND from two points); measure an ANGLE or a length of the figure. Leaf marks [2,1,1,1]. NOT the Set 1 direction (triangle from two sides and the included angle, a scale conversion at the end)."
+  },
+  {
+   "pos": 15,
+   "target": 9,
+   "parts": [
+    2,
+    4,
+    3
+   ],
+   "figure": true,
+   "topics": [
+    "Mensuration"
+   ],
+   "content": "A solid square-based pyramid (a paperweight or candle), base edge and vertical height given [Volume of pyramid formula printed in square brackets]: (a) the slant height of a triangular face by Pythagoras, and the volume; (b) the total surface area, then the cost or amount of coating at a stated rate (4 marks); (c) the pyramids are cast from a rectangular block of given dimensions that is melted — the greatest number that can be made and the percentage of the block left over. NOT the Set 1 skeleton (cone: height and volume, surface area, melted into spheres) and not the school's 2025 skeleton."
+  },
+  {
+   "pos": 16,
+   "target": 7,
+   "parts": [
+    1,
+    1,
+    1,
+    2,
+    2
+   ],
+   "figure": false,
+   "topics": [
+    "Statistics"
+   ],
+   "content": "A DOT DIAGRAM is described as a table of values in the stem (the figure slot is not used; give the data as a list or a table of value against number of dots): (a) mode; (b) median; (c) mean; (d) two more values are added, one of them unknown, and the new mean is given — find the unknown; (e) one value is an outlier: which of mean or median better represents the data, with a reason that uses a number. Leaf marks [1,1,1,2,2]. NOT the Set 1 direction (frequency table with unknown frequency x found from the mean)."
+  },
+  {
+   "pos": 17,
+   "target": 2,
+   "parts": [
+    2
+   ],
+   "figure": true,
+   "topics": [
+    "Statistics"
+   ],
+   "content": "A BAR CHART of two or three values whose vertical axis starts well above zero, used in an advertisement to claim 'sales doubled' or similar; explain how it misleads, using numbers read from the chart, and state what should be changed. NOT the Set 1 direction (pictogram enlarged in width and height)."
+  },
+  {
+   "pos": 18,
+   "target": 5,
+   "parts": [
+    2,
+    2,
+    1
+   ],
+   "figure": true,
+   "topics": [
+    "Statistics"
+   ],
+   "content": "A grouped frequency table is GIVEN with one frequency to be found from the total, and a histogram on a grid with some bars already drawn: (a) find the missing frequency and complete the histogram (the missing bars are drawn by the candidate on the printed grid); (b) find the percentage of the items that are at least a stated boundary value; (c) explain why the exact median (or the exact largest value) cannot be found from this table. Leaf marks [2,2,1]. NOT the Set 1 direction (read a histogram back into a table; estimate the mean)."
+  },
+  {
+   "pos": 19,
+   "target": 5,
+   "parts": [
+    3,
+    2
+   ],
+   "figure": false,
+   "topics": [
+    "Algebra (Linear Equations)",
+    "Algebra (Expressions)"
+   ],
+   "content": "(a) Simultaneous equations that come from GEOMETRY: a rectangle (or an isosceles triangle / parallelogram) whose opposite sides are given as expressions in x and y; form two equations, solve them, and find the perimeter. (b) Make a letter the subject of a formula in which the letter sits in a DENOMINATOR (one occurrence only), no square root. NOT the Set 1 direction (shopping word problem; subject under a square root)."
+  },
+  {
+   "pos": 20,
+   "target": 10,
+   "parts": [
+    2,
+    2,
+    3,
+    3
+   ],
+   "figure": true,
+   "topics": [
+    "Mensuration"
+   ],
+   "content": "A water tank: a cylinder with a hemispherical dome on top (radius and cylinder height given) [Volume of sphere and surface area of sphere printed in square brackets]. (a) volume of the hemisphere in terms of pi; (b) a 'show that' for the total capacity in terms of pi, used later; (c) the outside (curved wall and dome, not the base) is painted — area and the cost at a rate per square metre, or number of tins, rounding UP; (d) a pump fills the empty tank at a stated rate in litres per minute — a technician says it will be full within a stated time: do you agree? Justify (unit change m^3 to litres). NOT the Set 1 direction (silo: cylinder on an inverted cone, inside surface area, lorry loads)."
+  }
+ ],
+ "set": 2,
+ "avoid_runs": [
+  "/Users/adrianfong/Desktop/AdrianMath/School Papers/St Nicholas S1 EOY/run1"
+ ]
+}
