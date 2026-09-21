@@ -3545,7 +3545,7 @@ The marking model can attach an optional `diagram` spec to any attempt's
 `marking_output` (see DIAGRAM RULES appended to `MARK_JSON_SPEC` in
 `ai/paper-marker.js`). The spec carries **givens only** — labels, exact
 probabilities, angles, bearings, curve parameters, interval endpoints — never
-pixel coordinates. `ai/margin-diagram.js` (engine + gates, 52 unit tests in
+pixel coordinates. `lib/figures/margin-kit.js` (was `ai/margin-diagram.js` until 21 Sep 2026, when the kit joined the figure registry — bot CLAUDE.md §One registry; engine + gates, 52 unit tests in
 `test/margin-diagram.test.js`) validates it, constructs the figure
 deterministically, and **refuses to draw anything it cannot prove
 consistent** — "models author, deterministic gates verify"; a wrong diagram
