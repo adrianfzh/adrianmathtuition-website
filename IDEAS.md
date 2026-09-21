@@ -63,6 +63,13 @@ Done that evening: the Science tab (hidden from students, `SCIENCE_MARKING_OPEN_
 - 📱 iPad handwriting practice (Adrian, 2026-09-02: 'students will STAY in the app') — first native-only feature; the AdrianMarker WKWebView+PencilKit shell (ios-shell/) pointed at /app with a handwriting canvas for working, exported as PDF into the 🌙 marking queue; sequence after the learning features open to students + Capacitor shells.
 - ✅ **Ask questions as a soft signal, opt-in, BY SKILL — BUILT 10 Sep 2026** (Adrian: "perhaps we can leave it as a toggle in setting … like how claude have toggles in settings", then "should be by skill"): the Notebook's mistakes list stays verdict-fed (an ask is not a mistake). Settings → 💬 "Show skills I keep asking about" (`prefs.ask_signal`, `lib/portal-prefs.ts` whitelist) turns on "Keeps coming up in your questions": the bot files every linked ask under the bank sub-skill (`subgroups.name`) via the question generator's `classifySubgroup` into Supabase `ask_skills` (bot `lib/ask-skill.js`, web + Telegram; `scripts/backfill-ask-skills.js` for the last month); ≥ 3 asks on one skill in a fortnight → a line, "Coming up less" the fortnight after, then gone; topic-only fallback when the bot could not file it (`lib/ask-signal.ts` + tests, `lib/ask-signal-store.ts`). Off by default. **Questions to retry was DROPPED the same night** (0 attempts in a fortnight live).
 
+### Notebook mistakes list — after "her mistakes keep building up" (21 Sep 2026)
+Built the same evening (301b7050): Remove on every card (row kept, `removed_at`), fixed entries behind
+"Show fixed", the button reads "I've fixed this" on the card face. Still queued:
+- **Fade by time** — an entry with no recurrence for 6 weeks leaves the default view whatever its state.
+- **Cap the default view** at the last three marked papers, older ones folded.
+- The 166 generic "Marks lost in <topic>" rows (no error kind from the marker) under the same fade.
+
 ## Content policy — serve our own questions (Adrian, 11 Sep 2026)
 
 - ✅ **National rows are grounding-only** (11 Sep 2026): `questions.national` generated column, the four serving RPCs + `practiceEligibility` + print-paper + the sheet/revision skills exclude `school='GCE'`; the marker and solver keep reading them. Rules + facts: `docs/CONTENT-POLICY.md`.
