@@ -105,7 +105,7 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
 
       {page ? (
         <p className="text-[11px] text-gray-400">
-          A page Adrian sent to keep — nothing to hand in. It stays here and in <Link href="/app/my-notes" className="underline">My Notebook</Link>.
+          A page Adrian sent to keep — nothing to hand in.
         </p>
       ) : (
         <p className="text-[11px] text-gray-400">

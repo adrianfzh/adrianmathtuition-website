@@ -25,7 +25,6 @@ export default async function AssignmentsPage() {
   const rows = fromAdrian(all);
   const found = all.filter(isFound);
   // Pages (SPEC-NOTEBOOK-V2 §12) are material, not work: their own section, never "To do".
-  const pages = rows.filter(isPage);
   const work = rows.filter(r => !isPage(r));
   const pending = work.filter(r => isPending(r.status));
   const done = work.filter(r => !isPending(r.status));
@@ -68,13 +67,6 @@ export default async function AssignmentsPage() {
         <div className={`${CARD} p-5 text-sm text-gray-600`}>
           Nothing here yet. When Adrian sends you a question or a worksheet, it shows up here and on your Home page.
         </div>
-      )}
-
-      {pages.length > 0 && (
-        <section className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Pages from Adrian</p>
-          {pages.map(r => <Row key={r.id} r={r} />)}
-        </section>
       )}
 
       {pending.length > 0 && (

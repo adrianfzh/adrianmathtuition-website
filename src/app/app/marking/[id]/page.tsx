@@ -13,7 +13,6 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
 import { fileHref } from '@/lib/student-files-url';
 import PaperSubjectPill from '@/components/PaperSubjectPill';
-import ClipToNotes from '../ClipToNotes';
 import PaperTabs from '../PaperTabs';
 import PracticeAgainRequest, { type PracticeAgainState } from '../PracticeAgainRequest';
 import NextWave from '../NextWave';
@@ -297,7 +296,6 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
             <section aria-label="Marked pages" className="space-y-3">
               <div className="flex items-center justify-between">
                 <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Your marked pages</h2>
-                {!isAdmin && <ClipToNotes runId={paper.id} paperName={paper.name} pages={paper.pages} />}
               </div>
               {paper.pages.map(p => (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -316,9 +314,8 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
             paperLabel={isAdmin ? 'Their paper' : 'My paper'}
             paper={<>
               {paper.pages.length > 0 && !isScience && (
-                // ✍️ the student's own ink over the marked pages (17 Sep 2026); the clipper sits beside it.
+                // ✍️ the student's own ink over the marked pages (17 Sep 2026).
                 <div className="space-y-2">
-                  {!isAdmin && <div className="flex justify-end"><ClipToNotes runId={paper.id} paperName={paper.name} pages={paper.pages} /></div>}
                   {/* Two layers: the student edits theirs and sees "From Adrian"; Adrian edits his and sees theirs (18 Sep 2026). */}
                   {isAdmin
                     ? <StudentInk runId={paper.id} pages={paper.pages} initial={teacherInk} editor="adrian" other={{ pages: ink, label: `${viewerName || 'their'} notes` }} />

@@ -1,14 +1,10 @@
-// Before the paper (SPEC-NOTEBOOK-V2 §4, Adrian 11 Sep 2026: "yes do it", at
-// five days). When an exam the student has keyed is within BEFORE_PAPER_DAYS,
-// the Notebook pins one card that opens a page composed from the tested
-// topics: the live mistakes there, the answers
-// they saved, their photos and clippings, and the formulas they have met in
-// those topics (lib/formula-sheet.ts). Pure: the page hands in the stream
-// items and the exams; this picks and groups.
+// Which exams are close, and whether a topic belongs to one — the two rules
+// Review my mistakes (lib/review-cards.ts) pre-ticks papers with. They lived
+// in lib/before-paper.ts until 21 Sep 2026, when the Notebook's Before-the-
+// paper page went; the rules stayed because the Papers tab still needs them.
 import type { UpcomingExam } from './portal-exams';
-import type { StreamItem } from './notebook-stream';
 
-/** Days before the paper the card appears (Adrian, 11 Sep 2026 — not a fortnight). */
+/** Days before an exam it counts as "upcoming" for Review my mistakes (Adrian, 11 Sep 2026 — not a fortnight). */
 export const BEFORE_PAPER_DAYS = 5;
 
 export function examsInWindow(exams: readonly UpcomingExam[], days = BEFORE_PAPER_DAYS): UpcomingExam[] {
@@ -55,32 +51,4 @@ export function topicMatches(examTopic: string, itemTopic: string | null | undef
     return !!ab && !!bb && (ab === bb || ab.includes(bb) || bb.includes(ab));
   }
   return a.includes(b) || b.includes(a);
-}
-
-export interface BeforePaperGroups {
-  mistakes: StreamItem[];
-  photos: StreamItem[];
-  /** Tested topics that nothing in the book touches — the honest "nothing filed" list. */
-  untouched: string[];
-}
-
-/** The items in the tested topics, grouped for the page. Fixed mistakes stay out — the page is about what still costs marks. */
-export function beforePaperGroups(exam: Pick<UpcomingExam, 'testedTopics'>, items: readonly StreamItem[]): BeforePaperGroups {
-  const topics = exam.testedTopics;
-  const inTopics = (it: StreamItem) => topics.some(t => topicMatches(t, it.topic));
-  const hit = items.filter(inTopics);
-  const touched = new Set<string>();
-  for (const t of topics) if (hit.some(it => topicMatches(t, it.topic))) touched.add(t);
-  return {
-    mistakes: hit.filter(it => it.kind === 'mistake' && it.mistake?.live),
-    photos: hit.filter(it => it.kind === 'photo' || it.kind === 'clip'),
-    untouched: topics.filter(t => !touched.has(t)),
-  };
-}
-
-/** "WA3 · A Math P1 · in 3 days" / "· tomorrow" / "· today". */
-export function beforePaperLine(exam: Pick<UpcomingExam, 'label' | 'subject' | 'paper' | 'daysLeft' | 'approx'>): string {
-  const when = exam.daysLeft === 0 ? 'today' : exam.daysLeft === 1 ? 'tomorrow' : `in ${exam.daysLeft} days`;
-  const paper = [exam.subject, exam.paper].filter(Boolean).join(' ');
-  return [exam.label, paper, `${exam.approx ? '~' : ''}${when}`].filter(Boolean).join(' · ');
 }

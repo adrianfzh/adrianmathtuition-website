@@ -5,7 +5,7 @@
 // an upcoming exam pre-ticks. Pure; tested.
 import type { StudentPaper, StudentQuestion } from './portal-marking';
 import type { UpcomingExam } from './portal-exams';
-import { examsInWindow, topicMatches } from './before-paper';
+import { examsInWindow, topicMatches } from './exam-window';
 
 export interface ReviewCard {
   key: string;
