@@ -427,61 +427,86 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
   }, [runId, saveUrl]);
   const closeOverlay = useCallback(() => setFullScreen(false), []);
 
-  const btn = (on: boolean) => `text-xs font-semibold rounded-xl px-3 py-1.5 border ${on ? 'bg-navy text-white border-navy' : 'bg-white text-navy border-navy/20'}`;
-  // 22 Sep 2026 (Adrian: "select the different colours … allow for redo (undo and redo button
-  // can be a little larger) … snap to shapes … double tap to erase … do a good interface"):
-  // three tools with a colour dot, a palette strip that opens on a second tap of the active
-  // tool, 44 px undo/redo, and the two gestures (draw-and-hold, Pencil double-tap) explained
-  // once in the status line.
-  const toolBtn = (t: InkTool, label: string, glyph: string, dot?: string) => (
-    <button type="button" onClick={() => chooseTool(t)} aria-pressed={tool === t} data-tool={t}
-      title={t === 'er' ? 'Rub out a stroke — or double-tap the page with the Pencil to switch' : `${label} — tap again for colours`}
-      className={`relative min-h-[44px] rounded-xl px-3 text-[13px] font-semibold border flex items-center gap-1.5 ${tool === t ? 'bg-navy text-white border-navy' : 'bg-white text-navy border-navy/20'}`}>
-      <span aria-hidden>{glyph}</span>{label}
-      {dot && <span aria-hidden className="w-3.5 h-3.5 rounded-full border border-white/70 shadow-sm" style={{ background: dot }} />}
+  // 22 Sep 2026 (Adrian: "select the different colours … allow for redo … snap to shapes …
+  // double tap to erase … do a good interface", then "something more sleek/modern"): one
+  // pill, icons only, the active tool raised with its colour as a small ring, a floating
+  // palette above it on a second tap, 44 px targets throughout, and a one-time hint
+  // line for the two gestures. The Freeform / Notes shape, not a row of labelled buttons.
+  const Icon = ({ d, className = 'w-5 h-5' }: { d: string; className?: string }) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden><path d={d} /></svg>
+  );
+  const ICON = {
+    pen: 'M12 19l7-7 3 3-7 7-3-3z M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z M2 2l7.586 7.586 M11 11a2 2 0 1 0 4 0 2 2 0 0 0-4 0',
+    hl: 'M9 11l-6 6v3h9l3-3 M22 12l-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4',
+    er: 'M20 20H7L3 16a1 1 0 0 1 0-1.4l9.6-9.6a1 1 0 0 1 1.4 0l6 6a1 1 0 0 1 0 1.4L15 17.4 M6 11l7 7',
+    undo: 'M3 7v6h6 M21 17a9 9 0 0 0-15-6.7L3 13',
+    redo: 'M21 7v6h-6 M3 17a9 9 0 0 1 15-6.7L21 13',
+    finger: 'M8 13V5a2 2 0 1 1 4 0v6 M12 11V9a2 2 0 1 1 4 0v3 M16 12a2 2 0 1 1 4 0v3a6 6 0 0 1-6 6h-2a6 6 0 0 1-5.2-3L4 13a2 2 0 0 1 3.4-2L8 12',
+    expand: 'M15 3h6v6 M9 21H3v-6 M21 3l-7 7 M3 21l7-7',
+  } as const;
+  const [hintSeen, setHintSeen] = useState(true);
+  useEffect(() => {
+    try { setHintSeen(window.localStorage.getItem('ink-hint-seen') === '1'); } catch { setHintSeen(true); }
+  }, []);
+  const dismissHint = () => { setHintSeen(true); try { window.localStorage.setItem('ink-hint-seen', '1'); } catch { /* fine */ } };
+  const toolBtn = (t: InkTool, label: string, color?: string) => {
+    const on = tool === t;
+    return (
+      <button type="button" onClick={() => chooseTool(t)} aria-pressed={on} aria-label={label} data-tool={t}
+        title={t === 'er' ? 'Eraser — or double-tap the page with the Pencil' : `${label} — tap again for colours`}
+        className={`relative w-11 h-11 rounded-full flex items-center justify-center transition ${on ? 'bg-navy text-white shadow-md -translate-y-0.5' : 'text-navy/70 hover:bg-navy/5'}`}>
+        <Icon d={ICON[t]} />
+        {color && <span aria-hidden className={`absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full ring-2 ${on ? 'ring-navy' : 'ring-white'}`} style={{ background: color }} />}
+      </button>
+    );
+  };
+  const iconBtn = (label: string, d: string, onClick: () => void, opts: { disabled?: boolean; on?: boolean; title?: string } = {}) => (
+    <button type="button" onClick={onClick} disabled={opts.disabled} aria-pressed={opts.on} aria-label={label} title={opts.title ?? label}
+      className={`w-11 h-11 rounded-full flex items-center justify-center transition disabled:opacity-25 ${opts.on ? 'bg-navy text-white shadow-md' : 'text-navy/70 hover:bg-navy/5'}`}>
+      <Icon d={d} />
     </button>
   );
-  const sizedBtn = (on: boolean) => `min-h-[44px] min-w-[44px] rounded-xl text-lg font-semibold border flex items-center justify-center ${on ? 'bg-navy text-white border-navy' : 'bg-white text-navy border-navy/20'} disabled:opacity-35`;
+  const saveDot = status === 'saving' ? 'bg-amber-400 animate-pulse' : status === 'error' ? 'bg-rose-500' : status === 'saved' ? 'bg-emerald-500' : 'bg-transparent';
+  const saveText = status === 'saving' ? 'Saving' : status === 'error' ? 'Not saved yet' : status === 'saved' ? 'Saved' : '';
   return (
     <section ref={sectionRef} aria-label="Marked pages" className="space-y-3" data-student-ink>
       {!readOnly && inView && (
         // FIXED to the screen, not sticky (19 Sep 2026, Adrian: "i scroll down the marked pages, then i
         // want to use the pen, but i have to scroll all the way up") — it is there on page 1 and on page
         // 16 alike, for as long as any marked page is on screen. Above the phone's bottom tab bar.
-        <div className="fixed left-1/2 -translate-x-1/2 z-40 bottom-[calc(env(safe-area-inset-bottom)+76px)] md:bottom-5 max-w-[calc(100vw-16px)] rounded-2xl border border-black/10 bg-white/95 backdrop-blur shadow-lg px-2 py-1.5 flex flex-col items-center gap-1.5" data-ink-toolbar>
+        <div className="fixed left-1/2 -translate-x-1/2 z-40 bottom-[calc(env(safe-area-inset-bottom)+76px)] md:bottom-5 flex flex-col items-center gap-2" data-ink-toolbar>
+          {!hintSeen && (
+            <div className="max-w-[calc(100vw-24px)] rounded-full bg-navy text-white text-[11.5px] px-3.5 py-1.5 shadow-lg flex items-center gap-2" role="status">
+              <span>Hold the Pencil still at the end of a stroke to snap a line, box or circle · double-tap the page to erase</span>
+              <button type="button" onClick={dismissHint} aria-label="Got it" className="w-6 h-6 rounded-full bg-white/15 hover:bg-white/25 text-white leading-none">×</button>
+            </div>
+          )}
           {palette && (
-            <div className="flex items-center gap-2 px-1 py-1" role="group" aria-label={palette === 'pen' ? 'Pen colour' : 'Highlighter colour'} data-palette={palette}>
+            <div className="rounded-full bg-white/95 backdrop-blur shadow-lg border border-black/5 px-2 py-1.5 flex items-center gap-1.5" role="group" aria-label={palette === 'pen' ? 'Pen colour' : 'Highlighter colour'} data-palette={palette}>
               {(palette === 'pen' ? PEN_COLORS : HL_COLORS).map(c => {
                 const on = (palette === 'pen' ? penColor : hlColor) === c.hex;
                 return (
                   <button key={c.hex} type="button" onClick={() => pickColor(palette, c.hex)} aria-label={c.name} aria-pressed={on} title={c.name}
-                    className={`w-9 h-9 rounded-full border-2 flex items-center justify-center ${on ? 'border-navy scale-110' : 'border-black/10'}`}
-                    style={{ background: palette === 'hl' ? `${c.hex}99` : c.hex }}>
-                    {on && <span aria-hidden className={`text-sm font-bold ${palette === 'hl' ? 'text-navy' : 'text-white'}`}>✓</span>}
+                    className="w-10 h-10 rounded-full flex items-center justify-center">
+                    <span aria-hidden className={`block rounded-full transition ${on ? 'w-8 h-8 ring-2 ring-offset-2 ring-navy' : 'w-6 h-6'}`}
+                      style={{ background: palette === 'hl' ? `${c.hex}b3` : c.hex }} />
                   </button>
                 );
               })}
             </div>
           )}
-          <div className="flex flex-wrap items-center justify-center gap-1.5">
-            {toolBtn('pen', 'Pen', '✏️', penColor)}
-            {toolBtn('hl', 'Highlight', '🖍', hlColor)}
-            {toolBtn('er', 'Erase', '🧽')}
-            <span className="w-px h-7 bg-black/10 mx-0.5" aria-hidden />
-            <button type="button" onClick={undo} disabled={!history.past.length} className={sizedBtn(false)} aria-label="Undo" title="Undo">↶</button>
-            <button type="button" onClick={redo} disabled={!history.future.length} className={sizedBtn(false)} aria-label="Redo" title="Redo">↷</button>
-            <span className="w-px h-7 bg-black/10 mx-0.5" aria-hidden />
-            <button type="button" onClick={() => setFingerWrites(f => !f)} className={btn(fingerWrites)} aria-pressed={fingerWrites}
-              title="No Pencil? Turn this on to write with one finger; two fingers still scroll.">☝️ Finger</button>
-            <button type="button" onClick={() => { setOpenAt(pageInView()); void flush().then(() => setFullScreen(true)); }} className={sizedBtn(false)}
-              aria-label="Full screen" title="Zoom in, type a note — opens at the page you are on">⤢</button>
+          <div className="rounded-full bg-white/95 backdrop-blur shadow-lg border border-black/5 px-2 py-1 flex items-center gap-0.5 max-w-[calc(100vw-16px)]">
+            {toolBtn('pen', 'Pen', penColor)}
+            {toolBtn('hl', 'Highlighter', hlColor)}
+            {toolBtn('er', 'Eraser')}
+            <span className="w-px h-6 bg-black/10 mx-1" aria-hidden />
+            {iconBtn('Undo', ICON.undo, undo, { disabled: !history.past.length })}
+            {iconBtn('Redo', ICON.redo, redo, { disabled: !history.future.length })}
+            <span className="w-px h-6 bg-black/10 mx-1" aria-hidden />
+            {iconBtn('Finger writes', ICON.finger, () => setFingerWrites(f => !f), { on: fingerWrites, title: 'No Pencil? One finger writes, two fingers scroll' })}
+            {iconBtn('Full screen', ICON.expand, () => { setOpenAt(pageInView()); void flush().then(() => setFullScreen(true)); }, { title: 'Zoom in, type a note — opens at the page you are on' })}
+            <span className={`ml-1 mr-1.5 w-2 h-2 rounded-full ${saveDot}`} role="status" aria-live="polite" aria-label={saveText} title={saveText} />
           </div>
-          <span className="text-center text-[11px] text-gray-500" aria-live="polite">
-            {status === 'saving' ? 'Saving…' : status === 'saved' ? '✓ Saved' : status === 'error' ? '⚠ Not saved yet'
-              : tool === 'er' ? 'Rub across a stroke · double-tap the page to go back to the pen'
-              : fingerWrites ? 'One finger writes · two fingers scroll · hold still at the end of a line to make it straight'
-              : 'Pencil writes · hold still at the end of a stroke to snap a line, box or circle · double-tap to erase'}
-          </span>
         </div>
       )}
       <div className="flex flex-wrap items-center gap-2">
