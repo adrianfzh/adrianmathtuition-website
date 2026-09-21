@@ -282,6 +282,13 @@ is a repair, even when every slot passed on its own; it renders the paper PDF (a
 solutions booklet through the SAME renderers `/app/print` uses. `export-docx.py` writes
 `<name>.docx` + `<name>-solutions.docx`.
 
+**A PDF of the Word file: `scripts/gce-paper/lo-pdf.sh <file.docx>`, never a plain
+`soffice --convert-to pdf`** (21 Sep 2026). LibreOffice draws every Word formula at its
+own 12 pt beside the 9.5 pt text, so a plain convert prints the maths visibly bigger than
+the words (Adrian, reading on his phone: "the fonts are of different sizes?"). The script
+sets every formula to the text size and then exports; its log must end in a line starting
+`ok`. Render one page and look at maths beside text before the file goes to him.
+
 **The whole-paper check (session, every paper).** `assemble` prints a `paper shape`
 line and writes `paper-shape-report.json`: answer spaces, unparted questions, answers
 of 6+ marks and the largest, answers of 2 marks or fewer, show/prove targets, explain

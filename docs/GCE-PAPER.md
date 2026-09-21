@@ -110,6 +110,15 @@ own, matching the GCE layout; figures come from `Q<n>.figure.png` in `--figures`
 `solution_box` sets `w:tblGrid` widths as well as `w:tcW` since 9 Sep 2026 — LibreOffice
 (and the soffice PDF preview) split the columns 50/50 otherwise and clipped display math.
 
+**PDF of the Word file (21 Sep 2026).** Use `scripts/gce-paper/lo-pdf.sh <file.docx> [pt]`,
+never a plain `soffice --convert-to pdf`. Two faults made the maths bigger than the text:
+the exporter wrote no size on maths runs (fixed by `size_math()` in `export-docx.py`), and
+LibreOffice ignores that size and draws imported formulas at 12 pt (fixed by the macro
+`lopdf.py`, which sets `BaseFontHeight` on every embedded formula before exporting).
+LibreOffice's bundled python is killed by macOS (exit 137), so the macro runs in-process
+through a `vnd.sun.star.script` URL. Set PDFs made before this date carry the fault until
+remade. The app's own PDFs (Puppeteer + KaTeX) are not affected.
+
 ### Publishing a Set (9 Sep 2026)
 
 ```

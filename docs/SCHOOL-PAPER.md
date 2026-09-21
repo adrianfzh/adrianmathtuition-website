@@ -34,7 +34,8 @@ Sec 1.
    most, then replace the question). Tell Adrian the agents, models and rough reading
    first, and wait for his yes. Never the API.
 5. Figures for the slots that carry one, then `run.mjs assemble`, then `export-docx.py
-   <key>.json --figures <dir> --out <dir>`. **Checkpoint 3: Adrian reads the paper.**
+   <key>.json --figures <dir> --out <dir>`. PDFs come from
+   `scripts/gce-paper/lo-pdf.sh`, never a plain soffice convert (see the last section). **Checkpoint 3: Adrian reads the paper.**
 
 ### What the Word exporter reads from a question (18 Sep 2026)
 
