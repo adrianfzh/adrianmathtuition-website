@@ -3,9 +3,9 @@
 //
 //   GET  → { entries }                       the caller's own rows (401 anonymous);
 //                                            the 14-day student_fixed sweep runs on read
-//   POST { id, action: 'corrected' } → { ok, entry }
-//                                            the student's "Corrected" tap; 404 unless the
-//                                            row is the caller's own
+//   POST { id, action: 'corrected' | 'removed' } → { ok, entry }
+//                                            the student's "I've fixed this" / "Remove" tap;
+//                                            404 unless the row is the caller's own
 //
 // Access model: notebook_mistakes has RLS enabled with NO policies — every
 // query goes through the service client scoped by the session's portal
@@ -16,7 +16,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { portalIdentity, sessionAccount } from '@/lib/portal-auth';
 import { createServiceClient } from '@/lib/supabase-server';
-import { loadMistakes, markMistakeCorrected } from '@/lib/notebook-mistakes-store';
+import { loadMistakes, markMistakeCorrected, removeMistake } from '@/lib/notebook-mistakes-store';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -49,15 +49,18 @@ export async function POST(req: NextRequest) {
   let body: { id?: unknown; action?: unknown } = {};
   try { body = await req.json(); } catch { /* fall through to validation */ }
   const id = typeof body.id === 'string' ? body.id : '';
-  if (body.action !== 'corrected') return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
+  const action = body.action;
+  if (action !== 'corrected' && action !== 'removed') return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
   if (!UUID_RE.test(id)) return NextResponse.json({ error: 'id is required' }, { status: 400 });
 
   try {
-    const entry = await markMistakeCorrected(createServiceClient(), sid, id);
+    const entry = action === 'removed'
+      ? await removeMistake(createServiceClient(), sid, id)
+      : await markMistakeCorrected(createServiceClient(), sid, id);
     if (!entry) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json({ ok: true, entry });
   } catch (e) {
-    console.error('[notebook/mistakes] corrected failed:', (e as Error).message);
+    console.error(`[notebook/mistakes] ${action} failed:`, (e as Error).message);
     return NextResponse.json({ error: 'Could not save that — give it a moment and try again.' }, { status: 500 });
   }
 }

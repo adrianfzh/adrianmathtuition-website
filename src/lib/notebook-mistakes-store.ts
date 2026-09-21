@@ -39,7 +39,7 @@ import {
 
 export const MISTAKES_TABLE = 'notebook_mistakes';
 const COLUMNS =
-  'id, airtable_student_id, subject, title, error_kind, topic, state, seen_count, clean_count, came_back, evidence, practice_ids, last_seen_at, last_clean_at, student_fixed_at, created_at, updated_at';
+  'id, airtable_student_id, subject, title, error_kind, topic, state, seen_count, clean_count, came_back, evidence, practice_ids, last_seen_at, last_clean_at, student_fixed_at, removed_at, created_at, updated_at';
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** A notebook_mistakes row as selected with COLUMNS. */
@@ -100,6 +100,7 @@ function rowFrom(raw: unknown): MistakeRow | null {
     last_seen_at: typeof r.last_seen_at === 'string' ? r.last_seen_at : null,
     last_clean_at: typeof r.last_clean_at === 'string' ? r.last_clean_at : null,
     student_fixed_at: typeof r.student_fixed_at === 'string' ? r.student_fixed_at : null,
+    removed_at: typeof r.removed_at === 'string' ? r.removed_at : null,
     created_at: String(r.created_at ?? ''),
     updated_at: String(r.updated_at ?? ''),
   };
@@ -189,9 +190,11 @@ export async function applyObservations(
     if (error) throw new Error(`notebook_mistakes insert failed: ${error.message}`);
   }
   for (const u of fold.updated) {
+    // A removed entry that darkens again is back on the page — the mistake recurred.
+    const patch = u.state === 'dark' && u.removed_at ? { ...writable(u, nowIso), removed_at: null } : writable(u, nowIso);
     const { error } = await svc
       .from(MISTAKES_TABLE)
-      .update(writable(u, nowIso))
+      .update(patch)
       .eq('id', u.id)
       .eq('airtable_student_id', identity);
     if (error) throw new Error(`notebook_mistakes update failed: ${error.message}`);
@@ -256,6 +259,37 @@ export async function markMistakeCorrected(
     .eq('airtable_student_id', identity);
   if (wErr) throw new Error(`notebook_mistakes update failed: ${wErr.message}`);
   return { ...row, ...next };
+}
+
+/**
+ * The student's "Remove" tap (21 Sep 2026): the row stays, stamped removed_at,
+ * and leaves every student surface. Null when the row is not the caller's.
+ */
+export async function removeMistake(
+  svc: SupabaseClient,
+  identity: string,
+  id: string,
+  now: Date = new Date(),
+): Promise<MistakeRow | null> {
+  if (!identity || !UUID_RE.test(id)) return null;
+  const { data, error } = await svc
+    .from(MISTAKES_TABLE)
+    .select(COLUMNS)
+    .eq('id', id)
+    .eq('airtable_student_id', identity)
+    .maybeSingle();
+  if (error) throw new Error(`notebook_mistakes read failed: ${error.message}`);
+  const row = rowFrom(data);
+  if (!row) return null;
+  if (row.removed_at) return row;
+  const removed_at = now.toISOString();
+  const { error: wErr } = await svc
+    .from(MISTAKES_TABLE)
+    .update({ removed_at, updated_at: removed_at })
+    .eq('id', id)
+    .eq('airtable_student_id', identity);
+  if (wErr) throw new Error(`notebook_mistakes update failed: ${wErr.message}`);
+  return { ...row, removed_at };
 }
 
 /**

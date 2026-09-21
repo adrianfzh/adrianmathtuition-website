@@ -31,6 +31,18 @@ describe('buildStreamItems', () => {
   });
 });
 
+describe('filterStream — fixed mistakes hide by default (21 Sep 2026)', () => {
+  const items = buildStreamItems({
+    mistakes: [mistake({ id: 'live' }), mistake({ id: 'done', title: 'Units in Kinematics', state: 'fixed' })],
+    practiceFor: () => [], saves: [], notes: [], pages: [], skills: [],
+  });
+  it('leaves fixed entries out unless showFixed', () => {
+    expect(filterStream(items, 'mistake', '').map(i => i.id)).toEqual(['mistake:live']);
+    expect(filterStream(items, 'all', '').map(i => i.id)).toEqual(['mistake:live']);
+    expect(filterStream(items, 'mistake', '', true).map(i => i.id).sort()).toEqual(['mistake:done', 'mistake:live']);
+  });
+});
+
 describe('filterStream', () => {
   const items = buildStreamItems({ mistakes: [mistake({})], practiceFor: () => [], saves: [save], notes: [photo], pages: [page], skills: [] });
   it('narrows by chip; Photos includes clippings', () => {

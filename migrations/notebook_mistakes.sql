@@ -47,3 +47,9 @@ create index if not exists notebook_mistakes_student_idx
 alter table public.notebook_mistakes enable row level security;
 -- No policies on purpose: the anon/authenticated keys read zero rows. The
 -- service role carries the identity predicate in every query.
+
+-- 21 Sep 2026 — the student's "Remove" (a student: "my mistakes keep building
+-- up with no way of removing them"). The row stays for marking history, the
+-- export and delete-account; the Notebook and the resurface card skip it. New
+-- evidence of the same mistake clears removed_at — it really is back.
+alter table public.notebook_mistakes add column if not exists removed_at timestamptz;

@@ -11,7 +11,7 @@ import { getSupabaseAdmin } from './supabase';
 import { createServiceClient } from './supabase-server';
 import type { PortalAccount } from './portal-auth';
 import { loadMistakes, type MistakeRow } from './notebook-mistakes-store';
-import { displayOrder } from './notebook-mistakes';
+import { displayOrder, shownByDefault } from './notebook-mistakes';
 import { askSignalOn, type AskSignalLine } from './ask-signal';
 import { loadAskSignal } from './ask-signal-store';
 import { listStudentAssignments } from './portal-assignments';
@@ -83,7 +83,9 @@ export async function loadNotebook(account: PortalAccount, sid: string): Promise
 
   // Mistakes in display order (placeholders with no evidence yet are left out
   // by displayOrder), and the Practice items that fix them — one scoped query.
-  const bands = displayOrder(mistakes);
+  // Removed entries stay in the table and leave every student surface; fixed
+  // ones ride along for the stream's "Show fixed" toggle (21 Sep 2026).
+  const bands = displayOrder(mistakes.filter(m => shownByDefault(m, true)));
   const ordered = [...bands.stillHappening, ...bands.gettingBetter, ...bands.fixed];
   const practiceById = new Map<string, { id: string; title: string }>();
   const linkedIds = [...new Set(ordered.flatMap(m => m.practice_ids))];

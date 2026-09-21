@@ -82,6 +82,20 @@ export interface MistakeEntry {
   last_seen_at: string | null;
   last_clean_at: string | null;
   student_fixed_at: string | null;
+  /** The student tapped Remove (21 Sep 2026). Hidden from the Notebook; cleared when the mistake comes back. */
+  removed_at?: string | null;
+}
+
+/**
+ * What the Notebook shows without asking (21 Sep 2026, after a student: "my
+ * mistakes keep building up with no way of removing them"): a removed entry
+ * never; a fixed entry only behind "Show fixed". Placeholders (no evidence
+ * yet) are already left out by displayOrder.
+ */
+export function shownByDefault(e: Pick<MistakeEntry, 'state' | 'removed_at'>, showFixed = false): boolean {
+  if (e.removed_at) return false;
+  if (e.state === 'fixed' && !showFixed) return false;
+  return true;
 }
 
 export interface MistakeObservation {

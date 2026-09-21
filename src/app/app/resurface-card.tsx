@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { createServiceClient } from '@/lib/supabase-server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { loadMistakes, type MistakeRow } from '@/lib/notebook-mistakes-store';
-import { displayOrder } from '@/lib/notebook-mistakes';
+import { displayOrder, shownByDefault } from '@/lib/notebook-mistakes';
 import { loadSaves } from '@/lib/notebook-saves-store';
 import type { SaveRow } from '@/lib/notebook-saves';
 import { buildStreamItems } from '@/lib/notebook-stream';
@@ -29,7 +29,7 @@ export default async function ResurfaceCard({ identity, card, caption }: { ident
       .eq('airtable_student_id', identity).order('created_at', { ascending: false }).limit(60)
       .then(r => (r.data ?? []) as MyNoteRow[], () => [] as MyNoteRow[]),
   ]);
-  const bands = displayOrder(mistakes);
+  const bands = displayOrder(mistakes.filter(m => shownByDefault(m)));
   const items = buildStreamItems({
     mistakes: [...bands.stillHappening, ...bands.gettingBetter], practiceFor: () => [], saves, notes, pages: [], skills: [],
   });

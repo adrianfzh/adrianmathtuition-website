@@ -145,11 +145,13 @@ export function buildStreamItems(input: {
 }
 
 /** The chip + search filter the client runs. `kind` 'all' keeps every kind; the Photos chip shows clippings too. */
-export function filterStream(items: readonly StreamItem[], kind: 'all' | StreamKind, query: string): StreamItem[] {
+export function filterStream(items: readonly StreamItem[], kind: 'all' | StreamKind, query: string, showFixed = false): StreamItem[] {
   const needle = fold(query);
   return items.filter(it => {
     const kindOk = kind === 'all' || it.kind === kind || (kind === 'photo' && it.kind === 'clip');
     if (!kindOk) return false;
+    // Fixed mistakes leave the page by default (21 Sep 2026) — "Show fixed" brings them back.
+    if (it.kind === 'mistake' && it.mistake?.state === 'fixed' && !showFixed) return false;
     if (!needle) return true;
     return needle.split(' ').every(w => it.haystack.includes(w) || fold(it.title).includes(w));
   });

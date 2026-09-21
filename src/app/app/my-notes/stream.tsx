@@ -18,7 +18,7 @@ import type { MyNoteRow, TopicOptionGroup } from '@/lib/portal-notes';
 import type { SaveRow } from '@/lib/notebook-saves';
 import AddPhoto from './add-photo';
 import { NoteLightbox } from './my-notes-gallery';
-import { CorrectedButton } from './mistake-actions';
+import { CorrectedButton, RemoveButton } from './mistake-actions';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 const ICON: Record<StreamKind, string> = { mistake: '⚠️', saved: '💾', photo: '📷', clip: '✂️', adrian: '📖', skill: '💬', private: '✍️' };
@@ -49,6 +49,7 @@ export default function NotebookStream({ items: initial, topicGroups, openId: op
   const [items, setItems] = useState<StreamItem[]>(initial);
   const [query, setQuery] = useState('');
   const [kind, setKind] = useState<'all' | StreamKind>('all');
+  const [showFixed, setShowFixed] = useState(false);
   const [openId, setOpenId] = useState<string | null>(openFromUrl ?? null);
   const [lightbox, setLightbox] = useState<MyNoteRow | null>(null);
   const [busy, setBusy] = useState('');
@@ -57,7 +58,8 @@ export default function NotebookStream({ items: initial, topicGroups, openId: op
   const [writing, setWriting] = useState(false);
   const [draft, setDraft] = useState('');
   const [editing, setEditing] = useState<{ id: string; body: string } | null>(null);
-  const shown = useMemo(() => filterStream(items, kind, query), [items, kind, query]);
+  const shown = useMemo(() => filterStream(items, kind, query, showFixed), [items, kind, query, showFixed]);
+  const fixedCount = useMemo(() => items.filter(it => it.kind === 'mistake' && it.mistake?.state === 'fixed').length, [items]);
 
   useEffect(() => {
     if (!openFromUrl) return;
@@ -127,7 +129,10 @@ export default function NotebookStream({ items: initial, topicGroups, openId: op
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { all: items.length };
-    for (const it of items) c[it.kind === 'clip' ? 'photo' : it.kind] = (c[it.kind === 'clip' ? 'photo' : it.kind] ?? 0) + 1;
+    for (const it of items) {
+      if (it.kind === 'mistake' && it.mistake?.state === 'fixed') { c.all -= 1; continue; }
+      c[it.kind === 'clip' ? 'photo' : it.kind] = (c[it.kind === 'clip' ? 'photo' : it.kind] ?? 0) + 1;
+    }
     return c;
   }, [items]);
 
@@ -175,6 +180,12 @@ export default function NotebookStream({ items: initial, topicGroups, openId: op
             {c.label}{counts[c.key] ? <span className="ml-1 opacity-70">{counts[c.key]}</span> : null}
           </button>
         ))}
+        {fixedCount > 0 && (kind === 'all' || kind === 'mistake') && (
+          <button type="button" onClick={() => setShowFixed(v => !v)} data-show-fixed
+            className={`text-[12px] font-semibold rounded-full px-3 py-1 border transition ${showFixed ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white text-emerald-700 border-emerald-200'}`}>
+            {showFixed ? 'Hide fixed' : `Show fixed ${fixedCount}`}
+          </button>
+        )}
       </div>
 
       {/* Weakest topics — moved here from Papers on 17 Sep 2026 (Adrian: Papers
@@ -236,6 +247,12 @@ export default function NotebookStream({ items: initial, topicGroups, openId: op
           return (
             <div key={it.id} data-item-id={it.id} className={`${CARD} p-4`}>
               <button type="button" onClick={() => setOpenId(open ? null : it.id)} className="block w-full text-left">{head}</button>
+              {it.mistake?.live && (
+                <div className="flex flex-wrap items-center gap-2 mt-2.5 pl-8" data-mistake-actions>
+                  <CorrectedButton id={it.mistake.id} />
+                  <RemoveButton id={it.mistake.id} onRemoved={() => setItems(prev => prev.filter(x => x.id !== it.id))} />
+                </div>
+              )}
               {open && it.save && (
                 <div className="mt-3 pt-3 border-t border-gray-100 space-y-3">
                   {it.save.question_text && !/^\[?(image|photo)\]?$/i.test(it.save.question_text.trim()) && (
@@ -263,7 +280,6 @@ export default function NotebookStream({ items: initial, topicGroups, openId: op
                       ))}
                     </div>
                   )}
-                  {it.mistake.live && <CorrectedButton id={it.mistake.id} />}
                 </div>
               )}
               {open && it.skill && (

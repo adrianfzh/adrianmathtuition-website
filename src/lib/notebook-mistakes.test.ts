@@ -19,8 +19,7 @@ import {
   STUDENT_FIXED_DAYS,
   type MistakeEntry,
   type MistakeEvidence,
-  type Observation,
-} from './notebook-mistakes';
+  type Observation, shownByDefault } from './notebook-mistakes';
 
 const NOW = new Date('2026-09-06T04:00:00Z');
 const SID = 'recSTUDENT1';
@@ -382,6 +381,17 @@ describe('foldObservations', () => {
 });
 
 // ── display ─────────────────────────────────────────────────────────────────
+
+describe('shownByDefault (21 Sep 2026)', () => {
+  it('hides a removed entry whatever its state, and a fixed one unless asked', () => {
+    expect(shownByDefault({ state: 'dark', removed_at: null })).toBe(true);
+    expect(shownByDefault({ state: 'dark', removed_at: '2026-09-21T00:00:00Z' })).toBe(false);
+    expect(shownByDefault({ state: 'fixed', removed_at: null })).toBe(false);
+    expect(shownByDefault({ state: 'fixed', removed_at: null }, true)).toBe(true);
+    expect(shownByDefault({ state: 'fixed', removed_at: '2026-09-21T00:00:00Z' }, true)).toBe(false);
+    expect(shownByDefault({ state: 'student_fixed' })).toBe(true);
+  });
+});
 
 describe('display', () => {
   it('bands and words', () => {
