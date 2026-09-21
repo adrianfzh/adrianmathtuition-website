@@ -12,12 +12,8 @@ import { createServiceClient } from './supabase-server';
 import type { PortalAccount } from './portal-auth';
 import { loadMistakes, type MistakeRow } from './notebook-mistakes-store';
 import { displayOrder, shownByDefault } from './notebook-mistakes';
-import { askSignalOn, type AskSignalLine } from './ask-signal';
-import { loadAskSignal } from './ask-signal-store';
 import { listStudentAssignments } from './portal-assignments';
 import { isPage } from './assignments';
-import { loadSaves } from './notebook-saves-store';
-import type { SaveRow } from './notebook-saves';
 import { buildStreamItems, type StreamItem } from './notebook-stream';
 import { MAX_NOTES_PER_STUDENT, type MyNoteRow, type TopicOptionGroup } from './portal-notes';
 import { MAX_PRIVATE_NOTES, PRIVATE_NOTE_COLUMNS, type PrivateNoteRow } from './notebook-private-notes';
@@ -50,7 +46,7 @@ const WEAKEST_MAX_PAPERS = 40;
 
 export async function loadNotebook(account: PortalAccount, sid: string): Promise<NotebookLoad> {
   const svc = createServiceClient();
-  const [notes, mistakes, askLines, pages, saves, privateNotes, exams, weakest] = await Promise.all([
+  const [notes, mistakes, pages, privateNotes, exams, weakest] = await Promise.all([
     getSupabaseAdmin()
       .from('portal_notes')
       .select('id, run_id, source_label, topic, image_url, note, created_at, auto_topic, auto_skill, ocr_text')
@@ -60,9 +56,7 @@ export async function loadNotebook(account: PortalAccount, sid: string): Promise
       .then(r => (r.data ?? []) as MyNoteRow[], () => [] as MyNoteRow[]),
     // The read applies the 14-day "Corrected" → Fixed sweep on the way out.
     loadMistakes(svc, sid).catch((): MistakeRow[] => []),
-    askSignalOn(account.prefs) ? loadAskSignal(svc, sid) : Promise.resolve([] as AskSignalLine[]),
     listStudentAssignments(sid, account).then(rows => rows.filter(isPage), () => []),
-    loadSaves(svc, sid).catch((): SaveRow[] => []),
     // §8 private notes: this loader and the private-notes route are the only readers.
     svc.from('notebook_private_notes').select(PRIVATE_NOTE_COLUMNS)
       .eq('airtable_student_id', sid).order('created_at', { ascending: false }).limit(MAX_PRIVATE_NOTES)
@@ -103,7 +97,7 @@ export async function loadNotebook(account: PortalAccount, sid: string): Promise
   const practiceFor = (m: MistakeRow) =>
     m.practice_ids.map(id => practiceById.get(id)).filter((p): p is { id: string; title: string } => !!p);
 
-  const items = buildStreamItems({ mistakes: ordered, practiceFor, saves, notes, pages, skills: askLines, privateNotes });
+  const items = buildStreamItems({ mistakes: ordered, practiceFor, notes, pages, privateNotes });
 
   // Topic options for the ➕ Add-a-photo tagger: the canonical list for the
   // student's level(s), merged by category label and deduped. Optional in the UI.

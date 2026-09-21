@@ -4,7 +4,7 @@
 // with ONE set of instructions:
 //   · variant="home"      a slim card near the top of /app. Students only
 //                         (never Adrian's admin view), phones only, once per
-//                         page load, hidden when installed, ✕ = 14-day snooze.
+//                         page load, hidden when installed, ✕ = gone for good.
 //   · variant="settings"  the always-there row on /app/settings (replaced the
 //                         static "Add to Home Screen" paragraph, 2026-09-03).
 //                         Shows on every platform with platform-aware content,
@@ -16,7 +16,7 @@
 // tested pure functions in lib/install-prompt.ts — read that file's decision
 // table before changing what shows where.
 import { useEffect, useState } from 'react';
-import { claimHomeInstall, promptInstall, snoozeInstall, useInstallStore, type InstallSnapshot } from './portal-install-store';
+import { claimHomeInstall, dismissInstall, promptInstall, useInstallStore, type InstallSnapshot } from './portal-install-store';
 import { logPortalEvent } from '@/lib/portal-event';
 
 // Home's `card` (page.tsx keeps it as a local const) at !p-4, and the Settings card.
@@ -175,7 +175,7 @@ export default function InstallCard({ variant, adminViewer = false }: {
   const mine = snap.homeInstallOwner === token;
 
   // Home: iOS, or Android once Chrome has handed us its prompt (a button that
-  // can't prompt is worse than no card); never installed/desktop/snoozed.
+  // can't prompt is worse than no card); never installed/desktop/dismissed.
   const eligible =
     variant === 'home' && !adminViewer && snap.ready &&
     (snap.state === 'ios' || (snap.state === 'android' && snap.deferredPrompt !== null));
@@ -217,7 +217,7 @@ export default function InstallCard({ variant, adminViewer = false }: {
 
   function dismiss() {
     logPortalEvent('install:dismissed');
-    snoozeInstall(); // → state 'snoozed' → not eligible → gone
+    dismissInstall(); // → state 'dismissed' → not eligible → gone, for good
   }
 
   return (

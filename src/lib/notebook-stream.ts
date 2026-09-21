@@ -7,15 +7,12 @@
 // page builds the items, the client filters them.
 import type { MistakeRow } from './notebook-mistakes-store';
 import { bandOf, latestSighting, sightingLine, stateLabel } from './notebook-mistakes';
-import type { SaveRow } from './notebook-saves';
 import type { MyNoteRow } from './portal-notes';
 import { noteKind } from './portal-notes';
 import type { AssignmentRow } from './assignments';
-import type { AskSignalLine } from './ask-signal';
-import { askLineContext, askLineTitle, askSignalLine, askStateLabel } from './ask-signal';
 import { privateNoteTitle, type PrivateNoteRow } from './notebook-private-notes';
 
-export type StreamKind = 'mistake' | 'saved' | 'photo' | 'clip' | 'adrian' | 'skill' | 'private';
+export type StreamKind = 'mistake' | 'photo' | 'clip' | 'adrian' | 'private';
 
 export interface StreamTag { text: string; tone: 'rose' | 'amber' | 'emerald' | 'sky' | 'slate' | 'indigo' }
 
@@ -36,10 +33,8 @@ export interface StreamItem {
   /** Lower-cased text the search box matches against. */
   haystack: string;
   /** Inline detail payloads — exactly one is set, by kind. */
-  save?: SaveRow;
   note?: MyNoteRow;
   mistake?: { id: string; state: MistakeRow['state']; live: boolean; seen: number; cameBack: boolean; where: string; practice: { id: string; title: string }[] };
-  skill?: AskSignalLine;
   /** A private note (SPEC-NOTEBOOK-V2 §8) — the student's own words, never read by anything else. */
   priv?: PrivateNoteRow;
 }
@@ -47,7 +42,6 @@ export interface StreamItem {
 export const CHIPS: { key: 'all' | StreamKind; label: string }[] = [
   { key: 'all', label: 'All' },
   { key: 'mistake', label: 'Mistakes' },
-  { key: 'saved', label: 'Saved' },
   { key: 'photo', label: 'Photos' },
   { key: 'private', label: 'My notes' },
   { key: 'adrian', label: 'From Adrian' },
@@ -69,10 +63,8 @@ export function privateNoteItem(n: PrivateNoteRow): StreamItem {
 export function buildStreamItems(input: {
   mistakes: MistakeRow[];
   practiceFor: (m: MistakeRow) => { id: string; title: string }[];
-  saves: SaveRow[];
   notes: MyNoteRow[];
   pages: Pick<AssignmentRow, 'id' | 'title' | 'topic' | 'note' | 'created_at'>[];
-  skills: AskSignalLine[];
   privateNotes?: PrivateNoteRow[];
 }): StreamItem[] {
   const items: StreamItem[] = [];
@@ -93,16 +85,6 @@ export function buildStreamItems(input: {
     });
   }
 
-  for (const s of input.saves) {
-    items.push({
-      id: `saved:${s.id}`, kind: 'saved', title: s.title,
-      subtitle: ['Saved answer', s.topic].filter(Boolean).join(' · '),
-      at: s.created_at, topic: s.topic,
-      tag: s.skill ? { text: s.skill, tone: 'sky' } : undefined,
-      haystack: fold([s.title, s.topic, s.skill, s.question_text, s.answer_text].join(' ')),
-      save: s,
-    });
-  }
 
   for (const n of input.notes) {
     const photo = noteKind(n.image_url) === 'photo';
@@ -128,16 +110,6 @@ export function buildStreamItems(input: {
     });
   }
 
-  for (const l of input.skills) {
-    items.push({
-      id: `skill:${l.key}`, kind: 'skill', title: askLineTitle(l),
-      subtitle: [askLineContext(l), askSignalLine(l)].filter(Boolean).join(' · '),
-      at: l.lastAt, topic: l.topic,
-      tag: { text: askStateLabel(l.state), tone: l.state === 'up' ? 'sky' : 'slate' },
-      haystack: fold([l.skill, l.topic, 'keeps coming up'].join(' ')),
-      skill: l,
-    });
-  }
 
   for (const n of input.privateNotes ?? []) items.push(privateNoteItem(n));
 

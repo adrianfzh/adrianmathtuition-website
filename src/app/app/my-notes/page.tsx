@@ -10,16 +10,14 @@
 //     happening, Getting better, Fixed. "Corrected" (mistake-actions.tsx) lets
 //     the student mark one fixed; evidence can bring it back. Each links to the
 //     Practice items that fix it when the hand-back named any.
-//   • 💾 Saved answers (SPEC-NOTEBOOK-V2 §1, opt-in) — from the Ask tab, filed
-//     under topic + skill, title the student's own; rename / delete inline.
 //   • 📷 Photos and ✂️ clippings (portal_notes; lightbox in my-notes-gallery.tsx,
 //     ➕ Add a photo beside the search box; photos are read for topic + skill +
 //     searchable text, lib/photo-tag.ts).
 //   • ✍️ My notes (SPEC-NOTEBOOK-V2 §8) — typed by the student, "✍️ Write"
 //     beside the search box; the student's own words, read by nothing else.
 //   • 📖 Pages from Adrian (SPEC-NOTEBOOK-V2 §12) — open their own route.
-//   • 💬 Keeps coming up (opt-in — Settings → "Show skills I keep asking about"):
-//     the bank sub-skills the student keeps asking the app about (lib/ask-signal).
+//   (💾 Saved answers and 💬 Keeps coming up — REMOVED 21 Sep 2026 with their
+//   Settings switches: nobody used them. Tables notebook_saves / ask_skills stay.)
 //   (Questions to retry — DROPPED 10 Sep 2026: nobody ever attempted one.
 //   notebook_entries rows still accrue at release for export/retention.)
 //
@@ -84,7 +82,7 @@ export default async function MyNotebookPage({ searchParams }: { searchParams: P
       <div className="pt-1">
         <h1 className="text-xl font-bold text-navy">My Notebook</h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          Everything lands here by itself — your mistakes as they fade, answers you saved, your photos, pages from Adrian. Scroll, or search.
+          Everything lands here by itself — your mistakes as they fade, your photos, pages from Adrian. Scroll, or search.
         </p>
       </div>
 
@@ -94,7 +92,7 @@ export default async function MyNotebookPage({ searchParams }: { searchParams: P
           <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700">📝 Before the paper</p>
           <p className="text-sm font-bold text-navy mt-0.5">{beforePaperLine(exam)}</p>
           <p className="text-[12px] text-gray-600 mt-1">
-            Your mistakes, saved answers, photos and the formulas for the tested topics — on one page.
+            Your mistakes, photos and the formulas for the tested topics — on one page.
           </p>
         </Link>
       ))}

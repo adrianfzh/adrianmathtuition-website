@@ -101,10 +101,6 @@ export default async function BeforePaperPage({ params }: { params: Promise<{ ex
       </div>
 
       <Group title="⚠️ Still costing you marks" lead="Live mistakes in the tested topics. Thirty seconds each: what went wrong, what you do instead." items={groups.mistakes} empty="No live mistakes in these topics. Good." />
-      {groups.skills.length > 0 && (
-        <Group title="💬 Keeps coming up" lead="Skills you keep asking the app about in these topics." items={groups.skills} empty="" />
-      )}
-      <Group title="💾 Answers you saved" lead="Cover the answer, try it again, then compare." items={groups.saves} empty="Nothing saved in these topics." />
       <Group title="📷 Your photos and clippings" lead="School notes and cut-outs from marked papers in these topics." items={groups.photos} empty="No photos or clippings in these topics." />
 
       <section className="space-y-2">

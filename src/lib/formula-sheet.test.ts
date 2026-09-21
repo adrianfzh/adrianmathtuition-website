@@ -12,13 +12,13 @@ describe('topicsMet', () => {
   it('collects each topic once with how it was met, newest first', () => {
     const t = topicsMet([
       live('m1', 'Trigonometry (R-Formula)', 'R-formula sign slip'),
-      item('s1', 'saved', 'Logarithms', { at: '2026-09-10T00:00:00Z' }),
+      item('s1', 'photo', 'Logarithms', { at: '2026-09-10T00:00:00Z' }),
       item('n1', 'photo', 'Logarithms', { at: '2026-09-05T00:00:00Z' }),
       item('p1', 'adrian', 'Vectors'),
-      item('x', 'saved', null),
+      item('x', 'photo', null),
     ]);
     expect(t.map(x => x.topic)).toEqual(['Logarithms', 'Trigonometry (R-Formula)']);
-    expect(t[0].via).toEqual(['ask', 'photo']);
+    expect(t[0].via).toEqual(['photo']);
     expect(t[0].at).toBe('2026-09-10T00:00:00Z');
     expect(t[1].subject).toBe('A Math');
   });
@@ -57,7 +57,7 @@ describe('buildFormulaSheet', () => {
       { area: 'Indices/Logs', result: 'Change of base', statement: 'log_a b = lg b / lg a', given_status: 'memorise' },
     ],
   };
-  const topics = topicsMet([live('m1', 'Trigonometry (R-Formula)', 'R-formula: wrong quadrant for α'), item('s1', 'saved', 'Logarithms'), item('n1', 'photo', 'Vectors')]);
+  const topics = topicsMet([live('m1', 'Trigonometry (R-Formula)', 'R-formula: wrong quadrant for α'), item('s1', 'photo', 'Logarithms'), item('n1', 'photo', 'Vectors')]);
   const sheet = buildFormulaSheet({ topics, levelKeys: ['AM', 'EM'], formulaeByLevel, liveMistakes: [live('m1', 'Trigonometry (R-Formula)', 'R-formula: wrong quadrant for α')] });
 
   it('gives each met topic its lines, its page and its marks', () => {
@@ -86,6 +86,6 @@ describe('buildFormulaSheet', () => {
     expect(s[0].formulae[0].misapplied).toBeNull();
   });
   it('speaks the sightings', () => {
-    expect(viaLine(['paper', 'ask'])).toBe('Seen in a marked paper · an ask');
+    expect(viaLine(['paper', 'photo'])).toBe('Seen in a marked paper · a photo');
   });
 });

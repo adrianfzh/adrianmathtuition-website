@@ -24,9 +24,6 @@ import { ensureTelegramLinked } from '@/lib/telegram-link-state';
 import { SURFACES } from '@/lib/portal-theme';
 import PortalIcon from '@/components/PortalIcon';
 import ExamCountdown from './exam-countdown';
-import ExamCountdownNotice from './exam-countdown-notice';
-import { examCountdownNoticeDue, examCountdownOn, resurfaceOn } from '@/lib/portal-prefs';
-import ResurfaceCard from './resurface-card';
 import { examTitle } from '@/lib/portal-exams';
 
 export const dynamic = 'force-dynamic';
@@ -120,24 +117,6 @@ export default async function DashboardPage() {
     <div className="space-y-4 pb-20 sm:pb-4">
       <h1 className="text-2xl font-bold text-navy pt-1 tracking-tight">Hi {(account.display_name || 'there').split(' ')[0]} 👋</h1>
 
-      {/* 📅 Exam countdown at the TOP of Home — the student's own switch
-          (SPEC-NOTEBOOK-V2 §3, Adrian 11 Sep 2026: "put it in at the top …
-          toggle in the settings, default is off"). prefs.exam_countdown;
-          rides the same cached Airtable batch as the next-lesson island. */}
-      {examCountdownOn(account.prefs) && (
-        <Suspense fallback={null}>
-          <ExamCountdownTop account={account} fullPortal={fullPortal} card={card} caption={caption} />
-        </Suspense>
-      )}
-
-      {/* 🔁 One thing a day from the notebook (SPEC-NOTEBOOK-V2 §7, opt-in,
-          prefs.resurface): one small card, never a list — lib/resurface.ts. */}
-      {resurfaceOn(account.prefs) && (
-        <Suspense fallback={null}>
-          <ResurfaceCard identity={portalIdentity(account)} card={card} caption={caption} />
-        </Suspense>
-      )}
-
       {/* ⏳ Trial/pass-ending nudge — HOME ONLY, strangers riding a pass that
           ends today/tomorrow (lib/portal-passes.passEndingNudge). One slim
           amber line, straight to the renew screen. */}
@@ -161,12 +140,12 @@ export default async function DashboardPage() {
         <PortalAnnouncementCard announcement={announcement} />
       )}
 
-      {/* 📱 Install + 🔔 push nudges (2026-09-03, Adrian: students should
-          "STAY in the app"). Mutually exclusive by state — the install card
-          needs a browser tab on a phone, the push nudge needs the installed
-          app with permission not yet asked — so at most one renders. Both
-          students-only, once per page load, ✕ = 14-day snooze, all decided
-          in lib/install-prompt.ts (tested); telemetry → /api/portal/event. */}
+      {/* 📱 Install → 🔔 notifications → 📨 Telegram: ONE nudge at a time, in
+          that order, and each gone for good once done or ✕-dismissed (Adrian,
+          21 Sep 2026: "show one nudge card at a time, and once a student has
+          dismissed or done it, never show it again"). The order and the
+          dismissals are lib/install-prompt.ts homeNudge (tested); the Telegram
+          card reads the same store so it yields to the other two. */}
       <InstallCard variant="home" adminViewer={adminViewer} />
       <PushNudgeCard adminViewer={adminViewer} />
       {tgState === 'unlinked' && <TelegramLinkCard variant="home" adminViewer={adminViewer} />}
@@ -377,12 +356,6 @@ const dashboardOnce = cache(getDashboardData);
 
 /** The student's own countdown at the top of Home (prefs.exam_countdown) — no
  *  timed-set door and no topic links for a student while those stay admin-only. */
-async function ExamCountdownTop({ account, fullPortal, card, caption }: {
-  account: Awaited<ReturnType<typeof currentAccount>>; fullPortal: boolean; card: string; caption: string;
-}) {
-  const d = await dashboardOnce(account);
-  return <ExamCountdown exams={d.upcomingExams} card={card} caption={caption} studentMode={!fullPortal} />;
-}
 
 async function NextLessonAndStats({ account, fullPortal, card, caption }: {
   account: Awaited<ReturnType<typeof currentAccount>>; fullPortal: boolean; card: string; caption: string;
@@ -420,16 +393,13 @@ async function NextLessonAndStats({ account, fullPortal, card, caption }: {
           renders nothing when no dated exam is inside the horizon. Behind
           EXAM_PREP_OPEN_TO_STUDENTS (lib/portal-beta): in prod but not yet
           student-facing — Adrian's admin cookie sees it. */}
-      {(fullPortal || EXAM_PREP_OPEN_TO_STUDENTS) && !examCountdownOn(account.prefs) && (
+      {(fullPortal || EXAM_PREP_OPEN_TO_STUDENTS) && (
         <ExamCountdown exams={d.upcomingExams} card={card} caption={caption} />
       )}
 
       {/* The one-time notice about the countdown switch (SPEC-NOTEBOOK-V2 §3):
           students only, only while they have an upcoming exam and have never
           touched the switch or dismissed this; either button ends it forever. */}
-      {!fullPortal && examCountdownNoticeDue(account.prefs) && d.upcomingExams.length > 0 && (
-        <ExamCountdownNotice examTitle={examTitle(d.upcomingExams[0])} />
-      )}
 
       {/* Week stats — the "lessons done / coming up" pills were dropped on
           Adrian's request (2026-08-21); only the practice count remains, and

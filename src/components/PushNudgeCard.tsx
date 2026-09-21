@@ -9,7 +9,7 @@
 // manners). Denied → the browser remembers, the card is gone for good.
 // Granted → subscribed → a ✓ for a moment, then gone. ✕ → 14-day rest.
 import { useEffect, useState } from 'react';
-import { claimHomePush, refreshInstallStore, snoozePushNudge, useInstallStore } from './portal-install-store';
+import { claimHomePush, dismissPushNudge, refreshInstallStore, useInstallStore } from './portal-install-store';
 import { enablePush } from '@/lib/portal-push-client';
 import { logPortalEvent } from '@/lib/portal-event';
 
@@ -86,7 +86,7 @@ export default function PushNudgeCard({ adminViewer = false }: { adminViewer?: b
 
   function dismiss() {
     logPortalEvent('push:nudge-dismissed');
-    snoozePushNudge(); // → 'snoozed' → not eligible → gone
+    dismissPushNudge(); // → 'dismissed' → not eligible → gone, for good
   }
 
   return (

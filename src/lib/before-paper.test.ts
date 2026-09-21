@@ -44,18 +44,14 @@ describe('beforePaperGroups', () => {
     item('mistake:1', 'mistake', 'Trigonometry (R-Formula)', { mistake: live }),
     item('mistake:2', 'mistake', 'Logarithms', { mistake: fixed }),
     item('mistake:3', 'mistake', 'Vectors', { mistake: live }),
-    item('saved:1', 'saved', 'Logarithms'),
     item('note:1', 'photo', 'Trigonometry'),
     item('note:2', 'clip', 'Vectors'),
-    item('skill:1', 'skill', 'Trigonometry'),
     item('adrian:1', 'adrian', 'Trigonometry'),
   ];
   const g = beforePaperGroups(exam({}), items);
   it('keeps only the tested topics, live mistakes only, grouped by kind', () => {
     expect(g.mistakes.map(i => i.id)).toEqual(['mistake:1']);
-    expect(g.saves.map(i => i.id)).toEqual(['saved:1']);
     expect(g.photos.map(i => i.id)).toEqual(['note:1']);
-    expect(g.skills.map(i => i.id)).toEqual(['skill:1']);
   });
   it('names the tested topics nothing in the book touches', () => {
     expect(g.untouched).toEqual([]);

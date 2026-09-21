@@ -11,7 +11,6 @@
 // requireFullPortal() here on purpose — beta students may ask questions.
 import { currentAccount } from '@/lib/portal-auth';
 import { botLevelForAccount } from '@/lib/chat-solver';
-import { saveAnswersOn } from '@/lib/portal-prefs';
 import AskClient from './ask-client';
 
 export const dynamic = 'force-dynamic';
@@ -23,5 +22,5 @@ export default async function AskPage() {
   // 'S2') as its highest-priority system-prompt selector; there is NO name
   // field in its payload, so the greeting stays client-side only.
   const botLevel = botLevelForAccount(account.level, account.subjects);
-  return <AskClient firstName={firstName} botLevel={botLevel} saveEnabled={saveAnswersOn(account.prefs)} />;
+  return <AskClient firstName={firstName} botLevel={botLevel} />;
 }

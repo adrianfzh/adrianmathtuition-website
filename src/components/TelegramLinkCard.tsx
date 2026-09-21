@@ -5,12 +5,18 @@
 // Settings, for a phone where the t.me link cannot open).
 //
 //   · variant="home"      a slim nudge near the top of /app, students only,
-//                         rendered only when the server says 'unlinked'.
+//                         rendered only when the server says 'unlinked', no
+//                         install/notification nudge is showing (one at a
+//                         time — lib/install-prompt homeNudge), and ✕ was
+//                         never tapped on this device (21 Sep 2026).
 //   · variant="settings"  the Telegram card on /app/settings — the linked
 //                         state with Unlink, or the same Link button.
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { portalFetch } from '@/lib/portal-fetch';
+import { homeNudge } from '@/lib/install-prompt';
+import { logPortalEvent } from '@/lib/portal-event';
+import { dismissTelegramNudge, useInstallStore } from './portal-install-store';
 
 const HOME_CARD = 'bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-4';
 const SETTINGS_CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm p-5';
@@ -37,17 +43,22 @@ export default function TelegramLinkCard({ variant, adminViewer = false, linked 
   const [waiting, setWaiting] = useState(false);
   const [manual, setManual] = useState('');
   const pollRef = useRef<number | null>(null);
+  const snap = useInstallStore();
+  const homeSlot = variant === 'home' && !adminViewer && !linked && snap.ready
+    ? homeNudge({ state: snap.state, deferredPromptAvailable: snap.deferredPrompt !== null, push: snap.push, telegramUnlinked: true, telegramDismissed: snap.telegramDismissed })
+    : null;
+  const homeVisible = homeSlot === 'telegram';
 
   // Mint the link up front so the button is a plain <a> — Safari blocks a
   // window.open after an await, and a plain href hands off to the Telegram app.
   useEffect(() => {
-    if (linked || (variant === 'home' && adminViewer)) return;
+    if (linked || (variant === 'home' && !homeVisible)) return;
     let alive = true;
     portalFetch<{ url: string }>('/api/portal/telegram-link')
       .then(d => { if (alive) setUrl(d.url); })
       .catch(() => { if (alive) setMsg('Linking is not available right now — try again later.'); });
     return () => { alive = false; };
-  }, [linked, variant, adminViewer]);
+  }, [linked, variant, homeVisible]);
 
   useEffect(() => () => { if (pollRef.current) window.clearInterval(pollRef.current); }, []);
 
@@ -90,9 +101,11 @@ export default function TelegramLinkCard({ variant, adminViewer = false, linked 
   }
 
   if (variant === 'home') {
-    if (adminViewer || linked) return null;
+    if (!homeVisible) return null;
     return (
-      <div className={`${HOME_CARD} flex items-center gap-3`} role="status" data-telegram-link>
+      <div className={`${HOME_CARD} relative flex items-center gap-3`} role="status" data-telegram-link>
+        <button type="button" aria-label="Not now" onClick={() => { logPortalEvent('telegram:nudge-dismissed'); dismissTelegramNudge(); }}
+          className="absolute top-2 right-2 w-7 h-7 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 text-base leading-none">×</button>
         <span aria-hidden className="flex items-center justify-center w-10 h-10 rounded-2xl bg-[#229ED9]/10 text-[#229ED9] shrink-0">
           <TelegramGlyph className="w-5 h-5" />
         </span>

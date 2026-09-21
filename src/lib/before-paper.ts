@@ -1,7 +1,7 @@
 // Before the paper (SPEC-NOTEBOOK-V2 §4, Adrian 11 Sep 2026: "yes do it", at
 // five days). When an exam the student has keyed is within BEFORE_PAPER_DAYS,
 // the Notebook pins one card that opens a page composed from the tested
-// topics: the live mistakes there, the skills that keep coming up, the answers
+// topics: the live mistakes there, the answers
 // they saved, their photos and clippings, and the formulas they have met in
 // those topics (lib/formula-sheet.ts). Pure: the page hands in the stream
 // items and the exams; this picks and groups.
@@ -59,8 +59,6 @@ export function topicMatches(examTopic: string, itemTopic: string | null | undef
 
 export interface BeforePaperGroups {
   mistakes: StreamItem[];
-  skills: StreamItem[];
-  saves: StreamItem[];
   photos: StreamItem[];
   /** Tested topics that nothing in the book touches — the honest "nothing filed" list. */
   untouched: string[];
@@ -75,8 +73,6 @@ export function beforePaperGroups(exam: Pick<UpcomingExam, 'testedTopics'>, item
   for (const t of topics) if (hit.some(it => topicMatches(t, it.topic))) touched.add(t);
   return {
     mistakes: hit.filter(it => it.kind === 'mistake' && it.mistake?.live),
-    skills: hit.filter(it => it.kind === 'skill'),
-    saves: hit.filter(it => it.kind === 'saved'),
     photos: hit.filter(it => it.kind === 'photo' || it.kind === 'clip'),
     untouched: topics.filter(t => !touched.has(t)),
   };

@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
-  INSTALL_SNOOZE_KEY, PORTAL_CLIENT_EVENT_KINDS, PUSH_NUDGE_SNOOZE_KEY, SNOOZE_DAYS,
+  INSTALL_DISMISSED_KEY, PORTAL_CLIENT_EVENT_KINDS, PUSH_NUDGE_DISMISSED_KEY, TELEGRAM_NUDGE_DISMISSED_KEY, DISMISSED_MARK, homeNudge,
   installPlatform, installState, iosShareHint, isAndroid, isIOS, isIPad,
-  isPortalClientEventKind, parseSnooze, pushNudgeState, snoozeDeadline,
+  isPortalClientEventKind, parseDismissed, pushNudgeState,
 } from './install-prompt';
 
 const UA = {
@@ -22,7 +22,7 @@ const UA = {
 const NOW = Date.UTC(2026, 8, 3, 4, 0, 0); // 2026-09-03 12:00 SGT
 
 function input(over: Partial<Parameters<typeof installState>[0]> = {}) {
-  return { ua: UA.iphoneSafari, standalone: false, maxTouchPoints: 5, snoozedUntil: null, now: NOW, ...over };
+  return { ua: UA.iphoneSafari, standalone: false, maxTouchPoints: 5, dismissed: false, ...over };
 }
 
 describe('platform detection', () => {
@@ -66,44 +66,46 @@ describe('installState', () => {
   });
   it('desktop → desktop, whatever else is stored', () => {
     expect(installState(input({ ua: UA.macChrome, maxTouchPoints: 0 }))).toBe('desktop');
-    expect(installState(input({ ua: UA.macChrome, maxTouchPoints: 0, snoozedUntil: NOW + 1 }))).toBe('desktop');
+    expect(installState(input({ ua: UA.macChrome, maxTouchPoints: 0, dismissed: true }))).toBe('desktop');
   });
   it('standalone wins over everything — an installed app never nags', () => {
     expect(installState(input({ standalone: true }))).toBe('installed');
     expect(installState(input({ standalone: true, ua: UA.androidChrome }))).toBe('installed');
     expect(installState(input({ standalone: true, ua: UA.macChrome, maxTouchPoints: 0 }))).toBe('installed');
-    expect(installState(input({ standalone: true, snoozedUntil: NOW + 1 }))).toBe('installed');
+    expect(installState(input({ standalone: true, dismissed: true }))).toBe('installed');
   });
-  it('a live snooze hides the card on phones; an expired one does not', () => {
-    expect(installState(input({ snoozedUntil: NOW + 1 }))).toBe('snoozed');
-    expect(installState(input({ ua: UA.androidChrome, snoozedUntil: NOW + 60_000 }))).toBe('snoozed');
-    expect(installState(input({ snoozedUntil: NOW }))).toBe('ios');       // deadline reached
-    expect(installState(input({ snoozedUntil: NOW - 1 }))).toBe('ios');
+  it('a dismissal hides the card on phones for good (21 Sep 2026)', () => {
+    expect(installState(input({ dismissed: true }))).toBe('dismissed');
+    expect(installState(input({ ua: UA.androidChrome, dismissed: true }))).toBe('dismissed');
+    expect(installState(input({ dismissed: false }))).toBe('ios');
   });
 });
 
-describe('snooze bookkeeping', () => {
-  it('✕ snoozes for exactly 14 days', () => {
-    expect(SNOOZE_DAYS).toBe(14);
-    expect(snoozeDeadline(NOW)).toBe(NOW + 14 * 86_400_000);
-    // The written value round-trips through localStorage as a string.
-    expect(parseSnooze(String(snoozeDeadline(NOW)))).toBe(snoozeDeadline(NOW));
-    // …and survives a reload at day 13, not at day 15.
-    const until = snoozeDeadline(NOW);
-    expect(installState(input({ snoozedUntil: until, now: NOW + 13 * 86_400_000 }))).toBe('snoozed');
-    expect(installState(input({ snoozedUntil: until, now: NOW + 15 * 86_400_000 }))).toBe('ios');
+describe('dismissal bookkeeping', () => {
+  it('only the mark counts as dismissed — junk or an old snooze deadline does not', () => {
+    expect(parseDismissed(DISMISSED_MARK)).toBe(true);
+    expect(parseDismissed(null)).toBe(false);
+    expect(parseDismissed(undefined)).toBe(false);
+    expect(parseDismissed('')).toBe(false);
+    expect(parseDismissed('1758400000000')).toBe(false);
   });
-  it('treats junk in localStorage as "not snoozed"', () => {
-    expect(parseSnooze(null)).toBeNull();
-    expect(parseSnooze(undefined)).toBeNull();
-    expect(parseSnooze('')).toBeNull();
-    expect(parseSnooze('yes')).toBeNull();
-    expect(parseSnooze('NaN')).toBeNull();
-    expect(parseSnooze('-5')).toBeNull();
-    expect(parseSnooze('0')).toBeNull();
+  it('keeps the three nudges on separate keys', () => {
+    expect(new Set([INSTALL_DISMISSED_KEY, PUSH_NUDGE_DISMISSED_KEY, TELEGRAM_NUDGE_DISMISSED_KEY]).size).toBe(3);
   });
-  it('keeps the two nudges on separate keys', () => {
-    expect(INSTALL_SNOOZE_KEY).not.toBe(PUSH_NUDGE_SNOOZE_KEY);
+});
+
+describe('homeNudge — one at a time (21 Sep 2026)', () => {
+  const base = { state: 'ios' as const, deferredPromptAvailable: false, push: 'not-installed' as const, telegramUnlinked: true, telegramDismissed: false };
+  it('install first, then notifications, then Telegram', () => {
+    expect(homeNudge(base)).toBe('install');
+    expect(homeNudge({ ...base, state: 'android', deferredPromptAvailable: true })).toBe('install');
+    expect(homeNudge({ ...base, state: 'android', deferredPromptAvailable: false })).toBe('telegram');
+    expect(homeNudge({ ...base, state: 'installed', push: 'show' })).toBe('push');
+    expect(homeNudge({ ...base, state: 'installed', push: 'decided' })).toBe('telegram');
+  });
+  it('nothing once every ask is done or dismissed', () => {
+    expect(homeNudge({ ...base, state: 'dismissed', push: 'dismissed', telegramDismissed: true })).toBeNull();
+    expect(homeNudge({ ...base, state: 'installed', push: 'decided', telegramUnlinked: false })).toBeNull();
   });
 });
 
@@ -121,7 +123,7 @@ describe('iosShareHint', () => {
 });
 
 describe('pushNudgeState', () => {
-  const base = { standalone: true, supported: true, permission: 'default' as const, snoozedUntil: null, now: NOW };
+  const base = { standalone: true, supported: true, permission: 'default' as const, dismissed: false };
   it('shows only inside the installed app with the browser not yet asked', () => {
     expect(pushNudgeState(base)).toBe('show');
   });
@@ -136,9 +138,9 @@ describe('pushNudgeState', () => {
     expect(pushNudgeState({ ...base, supported: false })).toBe('unsupported');
     expect(pushNudgeState({ ...base, permission: null })).toBe('unsupported');
   });
-  it('honours its own snooze', () => {
-    expect(pushNudgeState({ ...base, snoozedUntil: NOW + 1 })).toBe('snoozed');
-    expect(pushNudgeState({ ...base, snoozedUntil: NOW - 1 })).toBe('show');
+  it('honours its own dismissal, for good', () => {
+    expect(pushNudgeState({ ...base, dismissed: true })).toBe('dismissed');
+    expect(pushNudgeState({ ...base, dismissed: false })).toBe('show');
   });
 });
 

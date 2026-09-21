@@ -11,13 +11,13 @@
 // `beforeinstallprompt` ONCE, early — often before React has mounted the Home
 // card — so the listener has to be installed the moment this chunk evaluates
 // and hold the event for whichever card mounts later. Everything the decision
-// needs (UA, touch points, standalone, the two snoozes, Notification state) is
+// needs (UA, touch points, standalone, the dismissals, Notification state) is
 // gathered here; the decisions themselves are the pure functions in
 // lib/install-prompt.ts.
 import { useSyncExternalStore } from 'react';
 import {
-  INSTALL_SNOOZE_KEY, PUSH_NUDGE_SNOOZE_KEY, installPlatform, installState, iosShareHint, isIPad,
-  parseSnooze, pushNudgeState, snoozeDeadline,
+  DISMISSED_MARK, INSTALL_DISMISSED_KEY, PUSH_NUDGE_DISMISSED_KEY, TELEGRAM_NUDGE_DISMISSED_KEY,
+  installPlatform, installState, iosShareHint, isIPad, parseDismissed, pushNudgeState,
   type InstallPlatform, type InstallState, type PushNudgeState, type PushPermission,
 } from '@/lib/install-prompt';
 import { pushPermission, pushSupported } from '@/lib/portal-push-client';
@@ -51,11 +51,13 @@ export interface InstallSnapshot {
    */
   homeInstallOwner: object | null;
   homePushOwner: object | null;
+  /** ✕ on the Home Telegram nudge (21 Sep 2026) — read here so Home shows one nudge at a time. */
+  telegramDismissed: boolean;
 }
 
 const SERVER_SNAPSHOT: InstallSnapshot = {
   ready: false, platform: 'desktop', ipad: false, shareHint: '', state: 'desktop', deferredPrompt: null,
-  push: 'not-installed', pushSupported: false, pushPermission: null, homeInstallOwner: null, homePushOwner: null,
+  push: 'not-installed', pushSupported: false, pushPermission: null, homeInstallOwner: null, homePushOwner: null, telegramDismissed: false,
 };
 
 function readStorage(key: string): string | null {
@@ -85,7 +87,6 @@ function compute(): InstallSnapshot {
   const ua = navigator.userAgent || '';
   const touch = navigator.maxTouchPoints || 0;
   const standalone = installed || isStandalone();
-  const now = Date.now();
   const supported = pushSupported();
   const permission = pushPermission();
   return {
@@ -93,13 +94,14 @@ function compute(): InstallSnapshot {
     platform: installPlatform(ua, touch),
     ipad: isIPad(ua, touch),
     shareHint: iosShareHint(ua, touch),
-    state: installState({ ua, standalone, maxTouchPoints: touch, snoozedUntil: parseSnooze(readStorage(INSTALL_SNOOZE_KEY)), now }),
+    state: installState({ ua, standalone, maxTouchPoints: touch, dismissed: parseDismissed(readStorage(INSTALL_DISMISSED_KEY)) }),
     deferredPrompt,
-    push: pushNudgeState({ standalone, supported, permission, snoozedUntil: parseSnooze(readStorage(PUSH_NUDGE_SNOOZE_KEY)), now }),
+    push: pushNudgeState({ standalone, supported, permission, dismissed: parseDismissed(readStorage(PUSH_NUDGE_DISMISSED_KEY)) }),
     pushSupported: supported,
     pushPermission: permission,
     homeInstallOwner,
     homePushOwner,
+    telegramDismissed: parseDismissed(readStorage(TELEGRAM_NUDGE_DISMISSED_KEY)),
   };
 }
 
@@ -146,15 +148,21 @@ export function useInstallStore(): InstallSnapshot {
 
 // ── Actions ──────────────────────────────────────────────────────────────────
 
-/** ✕ on the Home install card: hide it here for 14 days (lib/install-prompt SNOOZE_DAYS). */
-export function snoozeInstall(now: number = Date.now()): void {
-  writeStorage(INSTALL_SNOOZE_KEY, String(snoozeDeadline(now)));
+/** ✕ on the Home install card: never again on this device (21 Sep 2026). */
+export function dismissInstall(): void {
+  writeStorage(INSTALL_DISMISSED_KEY, DISMISSED_MARK);
   refreshInstallStore();
 }
 
-/** ✕ on the Home push nudge: same 14-day rest, its own key. */
-export function snoozePushNudge(now: number = Date.now()): void {
-  writeStorage(PUSH_NUDGE_SNOOZE_KEY, String(snoozeDeadline(now)));
+/** ✕ on the Home push nudge: never again, its own key. */
+export function dismissPushNudge(): void {
+  writeStorage(PUSH_NUDGE_DISMISSED_KEY, DISMISSED_MARK);
+  refreshInstallStore();
+}
+
+/** ✕ on the Home Telegram nudge: never again, its own key. */
+export function dismissTelegramNudge(): void {
+  writeStorage(TELEGRAM_NUDGE_DISMISSED_KEY, DISMISSED_MARK);
   refreshInstallStore();
 }
 

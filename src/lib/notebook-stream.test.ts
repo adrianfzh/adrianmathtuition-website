@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildStreamItems, filterStream } from './notebook-stream';
 import type { MistakeRow } from './notebook-mistakes-store';
-import type { SaveRow } from './notebook-saves';
 import type { MyNoteRow } from './portal-notes';
 
 const mistake = (over: Partial<MistakeRow>): MistakeRow => ({
@@ -9,18 +8,16 @@ const mistake = (over: Partial<MistakeRow>): MistakeRow => ({
   state: 'dark', seen_count: 3, clean_count: 0, came_back: false, evidence: [{ kind: 'paper', ref: 'r1|7', label: 'Q7', paper: 'Prelim P1', date: '2026-09-01', clean: false }],
   practice_ids: [], last_seen_at: '2026-09-01T00:00:00Z', last_clean_at: null, student_fixed_at: null, ...over,
 } as MistakeRow);
-const save: SaveRow = { id: 's1', kind: 'ask', source: '1', question_text: 'Express 3 sin x + 4 cos x', answer_text: 'R = 5', image_url: null, title: 'R-formula question', topic: 'Trigonometry', skill: 'R-formula', created_at: '2026-09-10T00:00:00Z' };
 const photo: MyNoteRow = { id: 'n1', run_id: null, source_label: 'My photo', topic: null, image_url: 'https://x/api/files/clippings/rec1/photo-abc.jpg', note: 'School notes', created_at: '2026-09-09T00:00:00Z', auto_topic: 'Differentiation', auto_skill: 'Chain rule' };
 const page = { id: 'p1', title: 'AM formula sheet', topic: 'Trigonometry', note: 'Keep this', created_at: '2026-09-11T00:00:00Z' };
 
 describe('buildStreamItems', () => {
-  const items = buildStreamItems({ mistakes: [mistake({})], practiceFor: () => [], saves: [save], notes: [photo], pages: [page], skills: [] });
+  const items = buildStreamItems({ mistakes: [mistake({})], practiceFor: () => [], notes: [photo], pages: [page] });
   it('makes one item per thing, newest first', () => {
-    expect(items.map(i => i.kind)).toEqual(['adrian', 'saved', 'photo', 'mistake']);
+    expect(items.map(i => i.kind)).toEqual(['adrian', 'photo', 'mistake']);
   });
   it('carries the right tag and payload per kind', () => {
     expect(items.find(i => i.kind === 'mistake')?.tag).toEqual({ text: 'Still happening', tone: 'rose' });
-    expect(items.find(i => i.kind === 'saved')?.tag?.text).toBe('R-formula');
     expect(items.find(i => i.kind === 'photo')?.tag?.text).toBe('Chain rule');
     expect(items.find(i => i.kind === 'adrian')?.href).toBe('/app/assignments/p1');
   });
@@ -34,7 +31,7 @@ describe('buildStreamItems', () => {
 describe('filterStream — fixed mistakes hide by default (21 Sep 2026)', () => {
   const items = buildStreamItems({
     mistakes: [mistake({ id: 'live' }), mistake({ id: 'done', title: 'Units in Kinematics', state: 'fixed' })],
-    practiceFor: () => [], saves: [], notes: [], pages: [], skills: [],
+    practiceFor: () => [], notes: [], pages: [],
   });
   it('leaves fixed entries out unless showFixed', () => {
     expect(filterStream(items, 'mistake', '').map(i => i.id)).toEqual(['mistake:live']);
@@ -44,13 +41,11 @@ describe('filterStream — fixed mistakes hide by default (21 Sep 2026)', () => 
 });
 
 describe('filterStream', () => {
-  const items = buildStreamItems({ mistakes: [mistake({})], practiceFor: () => [], saves: [save], notes: [photo], pages: [page], skills: [] });
+  const items = buildStreamItems({ mistakes: [mistake({})], practiceFor: () => [], notes: [photo], pages: [page] });
   it('narrows by chip; Photos includes clippings', () => {
-    expect(filterStream(items, 'saved', '').map(i => i.id)).toEqual(['saved:s1']);
     expect(filterStream(items, 'photo', '').map(i => i.kind)).toEqual(['photo']);
   });
   it('searches every word against the haystack, case-insensitively', () => {
-    expect(filterStream(items, 'all', 'r-formula').map(i => i.kind)).toEqual(['saved']);
     expect(filterStream(items, 'all', 'VECTORS sign').map(i => i.kind)).toEqual(['mistake']);
     expect(filterStream(items, 'all', 'chain').map(i => i.kind)).toEqual(['photo']);
     expect(filterStream(items, 'all', 'nothing here')).toEqual([]);
@@ -59,7 +54,7 @@ describe('filterStream', () => {
 
 describe('private notes in the stream (SPEC-NOTEBOOK-V2 §8)', () => {
   const priv = { id: 'pn1', body: 'Sine rule: two angles → third angle first\nthen opposite sides', created_at: '2026-09-11T01:00:00Z', updated_at: '2026-09-11T02:00:00Z' };
-  const items = buildStreamItems({ mistakes: [mistake({})], practiceFor: () => [], saves: [save], notes: [photo], pages: [page], skills: [], privateNotes: [priv] });
+  const items = buildStreamItems({ mistakes: [mistake({})], practiceFor: () => [], notes: [photo], pages: [page], privateNotes: [priv] });
   it('files a note as its own kind, first line as the title, sorted by its last edit', () => {
     const it = items.find(i => i.kind === 'private')!;
     expect(it.id).toBe('private:pn1');
@@ -75,7 +70,6 @@ describe('private notes in the stream (SPEC-NOTEBOOK-V2 §8)', () => {
   it('stamps every item with the topic it is filed under', () => {
     const topicOf = (kind: string) => items.find(i => i.kind === kind)?.topic;
     expect(topicOf('mistake')).toBe('Vectors');
-    expect(topicOf('saved')).toBe('Trigonometry');
     expect(topicOf('photo')).toBe('Differentiation');
     expect(topicOf('adrian')).toBe('Trigonometry');
     expect(topicOf('private')).toBeUndefined();

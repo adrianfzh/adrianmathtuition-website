@@ -14,7 +14,7 @@ import type { KnowledgeFormula } from './teaching-knowledge';
 import type { StreamItem } from './notebook-stream';
 import { getTopicsForPaperLevel } from './canonical-topics';
 
-export type SeenVia = 'paper' | 'ask' | 'photo';
+export type SeenVia = 'paper' | 'photo';
 
 export interface TopicSeen {
   topic: string;
@@ -51,7 +51,7 @@ export function topicsMet(items: readonly StreamItem[]): TopicSeen[] {
   for (const it of items) {
     const topic = (it.topic || '').trim();
     if (!topic) continue;
-    const via: SeenVia | null = it.kind === 'mistake' ? 'paper' : it.kind === 'saved' || it.kind === 'skill' ? 'ask' : it.kind === 'photo' || it.kind === 'clip' ? 'photo' : null;
+    const via: SeenVia | null = it.kind === 'mistake' ? 'paper' : it.kind === 'photo' || it.kind === 'clip' ? 'photo' : null;
     if (!via) continue;
     const key = fold(topic);
     const cur = by.get(key);
@@ -223,8 +223,8 @@ export function sectionsForTopics(sections: readonly FormulaSection[], match: (t
   return sections.filter(s => match(s.topic));
 }
 
-/** "Seen in a marked paper · an ask · a photo" */
+/** "Seen in a marked paper · a photo" */
 export function viaLine(via: readonly SeenVia[]): string {
-  const words: Record<SeenVia, string> = { paper: 'a marked paper', ask: 'an ask', photo: 'a photo' };
+  const words: Record<SeenVia, string> = { paper: 'a marked paper', photo: 'a photo' };
   return `Seen in ${via.map(v => words[v]).join(' · ')}`;
 }
