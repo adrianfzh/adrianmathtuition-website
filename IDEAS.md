@@ -70,6 +70,10 @@ Notebook became the mistakes list alone, grouped by paper with older papers fold
 fade-by-time and cap-at-three ideas. Still open: the generic "Marks lost in <topic>" rows (no error kind
 from the marker) are the least useful lines; the marker should name the kind more often.
 
+### Opening to the public — SPEC-PUBLIC-LAUNCH.md (21 Sep 2026, queued in the spec's §7 order)
+1. Showcase page + free revision sheets · 2. landing + self-serve sign-up + first paper free · 3. S$5 pack + pricing table ·
+4. parent page on release · 5. company / domain / App Store enrolment (Adrian). Nothing started.
+
 ## Content policy — serve our own questions (Adrian, 11 Sep 2026)
 
 - ✅ **National rows are grounding-only** (11 Sep 2026): `questions.national` generated column, the four serving RPCs + `practiceEligibility` + print-paper + the sheet/revision skills exclude `school='GCE'`; the marker and solver keep reading them. Rules + facts: `docs/CONTENT-POLICY.md`.
