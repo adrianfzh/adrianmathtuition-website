@@ -366,3 +366,17 @@ Model split (Adrian, 17 Sep): Opus 5 agents for the pen bugs, verified on
 |---|---|---|---|---|---|
 | F20 | self-check `pen-font-safe`: "−" (Sophie set 1 P2 pp. 3, 5) and "π" (Alexis Prelim Set 3 P2 p. 13) drawn as text in the handwriting font → an empty box | pen | the glyph rule lived only in the CHECK; three short-symbol channels (the notation-slip insert, the two lone-symbol fixes under a ring) pushed raw text into the SVG | bot 0e306dc2: `lib/pen-glyphs.js` is the one predicate both sides read; every marker-text channel goes through `penInk()` / `penSymbolSvg()`, which TYPESETS what the hand cannot write (π/2 → MathJax paths); 16 tests, 6 new bench pages | ✅ |
 | F21 | self-check `continuation-is-a-column` ×3 (Klaire EM 2023 P1 p. 5; Alexis pp. 3, 16): "continuation neither on the page nor in the footer" | bench (false alarm) + pen | TWO of three were the CHECK: it keyed a partless part as `Q9(whole)` (F4's seam again) and did not know the overflow sheet as a home. One real drop found alongside: the overflow sheet rendered AFTER the footer committed, so a failed sheet lost a solution or a column entirely | same commit: the check canonicalises via `displayPartLabel` and reads `continuations` off the layer; the sheet is built BEFORE the footer commits, rows leave the footer only once the page that carries them exists | ✅ — note: the self-check's first-night precision on this kind was 50%; a check that cries wolf trains Adrian to ignore it |
+
+
+# 22 Sep 2026 — the page reader's first two mornings (20–21 Sep), and the fixer's first pass
+
+The reader (`/marking-review`, read-only) found 87 things on 14 papers; the fixer (`/marking-fix`,
+new today, 06:45 on the worker) took the placement and symbol classes, the wording went to
+proposal branches, and the READ findings below are report-only — a mark never moves by a worker's
+hand. Rows F22+ are filled in by the fixer's reports as they land.
+
+| # | complaint | bin | root cause | fix | status |
+|---|---|---|---|---|---|
+| R1 | Sophie AM 2025 P1 p9 Q10(b) and Nicole H2 2024 P2 p13 Q7(iii): a wrong final answer with a ✓ on it (run `e40b7870` photo 8; run `01c39ed9` photo 12) | the read | the marker ticked a line whose value is wrong — accuracy, not drawing | none by a worker — Adrian's call; both pages are bench candidates | 📋 reported 22 Sep, awaiting Adrian |
+| R2 | Sophie AM 2025 P1 p14 Q13: the ring and ✗ sit on the CORRECT line and the wrong line below is ticked, three times on one page (run `e40b7870` photo 13) | placement OR the read — the fixer decides from the stored boxes | if the marker named the right line and the pen drew a row up → placement (F22); if the marker named the wrong line → the read | fixer pass 22 Sep | ⏳ |
+| R3 | Nicole H2 2024 P2 p21: the parabola figure states 5c² + c − 6 < 0 without ever deriving it (run `01c39ed9` photo 20) | the read (a solution step skipped) | the footer's continuation asserted the inequality it was meant to show | none by a worker — a rule about "show the step you use" is Adrian's | 📋 reported 22 Sep |
