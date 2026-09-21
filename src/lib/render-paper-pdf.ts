@@ -42,7 +42,7 @@ const ANSWER_ORANGE = '#843C0C';
 // v3 (2026-08-31): "End of Paper" after the last question.
 // v4 (2026-09-05): KaTeX inlined (was jsDelivr CDN 0.16.9, now the installed
 // 0.16.45 package) — cached PDFs must rebuild once to pick up the version bump.
-export const PAPER_PDF_RENDER_VERSION = 6;   // 6: figures shrink in proportion and cap at 110/130 mm (21 Sep 2026); 5: marks beside the last line, no parent total over marked sub-parts (13 Sep 2026)
+export const PAPER_PDF_RENDER_VERSION = 7;   // 7: figure caps 80/100 mm wide, 80 mm tall (21 Sep 2026, second pass); 6: figures shrink in proportion and cap at 110/130 mm (21 Sep 2026); 5: marks beside the last line, no parent total over marked sub-parts (13 Sep 2026)
 
 export interface PaperPdfQuestion {
   /** Printed question number (original or resequenced by the caller). */
@@ -287,19 +287,22 @@ export async function renderPaperPDF(input: PaperPdfInput): Promise<Buffer> {
     // measurement since it changes heights.
     await page.evaluate(() => {
       const MAX_CSS_PER_NATURAL = 96 / 200;
-      const CAP_HEIGHT_PX = 400; // the .pp-figure max-height (300pt) in CSS px
+      // 80 mm tall at most (was the 300pt CSS cap): Adrian, 21 Sep 2026, after the
+      // 110 mm pass on EM Set 1 Q9/Q18 — "images can be smaller for these two".
+      const CAP_HEIGHT_PX = 80 * (96 / 25.4);
       document.querySelectorAll('img.pp-figure').forEach((el) => {
         const img = el as HTMLImageElement;
         if (!img.naturalWidth || !img.naturalHeight) return;
         const sharpWidth = img.naturalWidth * MAX_CSS_PER_NATURAL;
         const colWidth = img.parentElement?.clientWidth ?? sharpWidth;
         // A figure never needs the whole 166 mm column (Adrian, 21 Sep 2026, on
-        // EM Set 1 Q18/Q20/Q22: "the diagram can be smaller"): 110 mm for an
-        // ordinary drawing, 130 mm for a wide one (aspect >= 1.5). A graph-paper
-        // grid (.pp-figure-tall) keeps its author's true size.
+        // EM Set 1 Q18/Q20/Q22: "the diagram can be smaller", then smaller again
+        // on Q9/Q18): 80 mm for an ordinary drawing, 100 mm for a wide one
+        // (aspect >= 1.5) — the same defaults as generate.mjs / the Word export.
+        // A graph-paper grid (.pp-figure-tall) keeps its author's true size.
         const aspect = img.naturalWidth / img.naturalHeight;
         const PX_PER_MM = 96 / 25.4;
-        const capWidth = img.classList.contains('pp-figure-tall') ? Infinity : (aspect >= 1.5 ? 130 : 110) * PX_PER_MM;
+        const capWidth = img.classList.contains('pp-figure-tall') ? Infinity : (aspect >= 1.5 ? 100 : 80) * PX_PER_MM;
         let width = Math.min(sharpWidth, colWidth, capWidth);
         // Never let the height cap squash the drawing: an explicit width against
         // max-height distorts (a circle printed as an ellipse, GCE EM Set 1 Q9 /
