@@ -226,7 +226,7 @@ ${katexInlineHead()}
   .pp-part{margin-top:4pt}
   .pp-part .pp-part{margin-left:15pt}
   .pp-part-text{white-space:pre-wrap;break-inside:avoid;display:flex;justify-content:space-between;align-items:flex-end;gap:8pt}
-  .pp-figure{display:block;max-width:100%;max-height:300pt;margin:6pt 0}
+  .pp-figure{display:block;max-width:100%;max-height:300pt;height:auto;margin:6pt 0}
   .pp-figure-tall{max-height:none}
   .pp-missing-figure{border:0.75pt dashed #999;color:#999;font-style:italic;text-align:center;padding:14pt 8pt;margin:5pt 0}
 
@@ -287,12 +287,30 @@ export async function renderPaperPDF(input: PaperPdfInput): Promise<Buffer> {
     // measurement since it changes heights.
     await page.evaluate(() => {
       const MAX_CSS_PER_NATURAL = 96 / 200;
+      const CAP_HEIGHT_PX = 400; // the .pp-figure max-height (300pt) in CSS px
       document.querySelectorAll('img.pp-figure').forEach((el) => {
         const img = el as HTMLImageElement;
-        if (!img.naturalWidth) return;
+        if (!img.naturalWidth || !img.naturalHeight) return;
         const sharpWidth = img.naturalWidth * MAX_CSS_PER_NATURAL;
         const colWidth = img.parentElement?.clientWidth ?? sharpWidth;
-        img.style.width = `${Math.min(sharpWidth, colWidth)}px`;
+        // A figure never needs the whole 166 mm column (Adrian, 21 Sep 2026, on
+        // EM Set 1 Q18/Q20/Q22: "the diagram can be smaller"): 110 mm for an
+        // ordinary drawing, 130 mm for a wide one (aspect >= 1.5). A graph-paper
+        // grid (.pp-figure-tall) keeps its author's true size.
+        const aspect = img.naturalWidth / img.naturalHeight;
+        const PX_PER_MM = 96 / 25.4;
+        const capWidth = img.classList.contains('pp-figure-tall') ? Infinity : (aspect >= 1.5 ? 130 : 110) * PX_PER_MM;
+        let width = Math.min(sharpWidth, colWidth, capWidth);
+        // Never let the height cap squash the drawing: an explicit width against
+        // max-height distorts (a circle printed as an ellipse, GCE EM Set 1 Q9 /
+        // Q26, Adrian 21 Sep 2026). Shrink the width so the capped height is met
+        // in proportion instead.
+        if (!img.classList.contains('pp-figure-tall')) {
+          const widthAtCap = CAP_HEIGHT_PX * img.naturalWidth / img.naturalHeight;
+          width = Math.min(width, widthAtCap);
+        }
+        img.style.width = `${width}px`;
+        img.style.height = 'auto';
       });
     });
     // Pagination pass (after KaTeX + fonts + figure sizing, so heights are

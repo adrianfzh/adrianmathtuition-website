@@ -562,8 +562,8 @@ function check() {
 // vector figure prints at nominalWidth x 0.127 mm — the engine's ~600px
 // nominal came out at 76 mm, too small to read (Adrian, 16 Sep 2026). The
 // nominal width/height (never the viewBox) are rewritten here:
-//   - a drawing prints 100 mm wide, 120 mm when it is wide (aspect >= 1.5),
-//     never taller than 100 mm (the renderer caps at 300pt; an explicit width
+//   - a drawing prints 80 mm wide, 100 mm when it is wide (aspect >= 1.5),
+//     never taller than 80 mm (the renderer caps at 300pt; an explicit width
 //     against that cap would distort);
 //   - a graph-paper grid prints with one major square = 1 cm exactly (the
 //     paper's scale is real), uncapped in height — the question starts on a
@@ -600,9 +600,12 @@ function figureDataUri(runDir, pos) {
     } else if (askedMm) {
       factor = (askedMm * NATURAL_PER_MM) / w;
     } else {
-      const targetMm = w / h >= 1.5 ? 120 : 100;
+      // 80 mm wide, 100 mm when wide (aspect >= 1.5), never taller than 80 mm —
+      // Adrian, 21 Sep 2026, on EM Set 1: "the diagram can be smaller" (Q18 sheet,
+      // Q20 pentagon, Q22 two solids). Was 100 / 120 / 100.
+      const targetMm = w / h >= 1.5 ? 100 : 80;
       factor = (targetMm * NATURAL_PER_MM) / w;
-      const maxH = 100 * NATURAL_PER_MM;
+      const maxH = 80 * NATURAL_PER_MM;
       if (h * factor > maxH) factor = maxH / h;
     }
     svg = svg
