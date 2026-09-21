@@ -547,6 +547,35 @@ def formulae_for(shape):
     return FORMULAE_EM if str(shape.get('code', '')) == '4052' else FORMULAE_AM
 
 
+def size_math(doc):
+    """Give every maths run the body's own size. A maths run with no size of its
+    own is drawn at Word's 11 pt default by LibreOffice and by the iPhone's file
+    preview, beside 9.5 pt text (Adrian, 21 Sep 2026: "the fonts are of different
+    sizes?"). Runs that already carry a size (the grey solution notes) are left."""
+    M = 'http://schemas.openxmlformats.org/officeDocument/2006/math'
+    half = str(int(round(doc.styles['Normal'].font.size.pt * 2)))
+    for r in doc.element.body.iter(f'{{{M}}}r'):
+        wrpr = r.find(qn('w:rPr'))
+        if wrpr is None:
+            wrpr = OxmlElement('w:rPr')
+            mrpr = r.find(f'{{{M}}}rPr')
+            if mrpr is not None:
+                mrpr.addnext(wrpr)
+            else:
+                r.insert(0, wrpr)
+        if wrpr.find(qn('w:sz')) is not None:
+            continue
+        if wrpr.find(qn('w:rFonts')) is None:
+            rf = OxmlElement('w:rFonts')
+            rf.set(qn('w:ascii'), 'Cambria Math')
+            rf.set(qn('w:hAnsi'), 'Cambria Math')
+            wrpr.insert(0, rf)
+        for tag in ('w:sz', 'w:szCs'):
+            e = OxmlElement(tag)
+            e.set(qn('w:val'), half)
+            wrpr.append(e)
+
+
 def page_numbers(doc):
     p = doc.sections[0].footer.paragraphs[0]
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -643,6 +672,7 @@ def main():
         if got != s['target']:
             print(f"  ⚠ Q{s['pos']} parts sum to {got}, slot target {s['target']}")
     page_numbers(ws.doc)
+    size_math(ws.doc)
     paper_path = join(out_dir, name + '.docx')
     ws.save(paper_path)
 
@@ -662,6 +692,7 @@ def main():
         p.paragraph_format.first_line_indent = Cm(-Q_TEXT_CM)
         p.paragraph_format.tab_stops.add_tab_stop(Cm(Q_TEXT_CM))
     page_numbers(ws2.doc)
+    size_math(ws2.doc)
     sol_path = join(out_dir, name + '-solutions.docx')
     ws2.save(sol_path)
 
