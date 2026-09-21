@@ -49,12 +49,11 @@ export default function NotebookMistakes({ initial, weakest }: {
               ))}
             </div>
           )}
-          {m.live && (
-            <div className="flex flex-wrap items-center gap-2 mt-2.5" data-mistake-actions>
-              <CorrectedButton id={m.id} />
-              <RemoveButton id={m.id} onRemoved={() => drop(m.id)} />
-            </div>
-          )}
+          {/* Remove on every card; "I've fixed this" only while the student has not said so yet. */}
+          <div className="flex flex-wrap items-center gap-2 mt-2.5" data-mistake-actions>
+            {m.live && <CorrectedButton id={m.id} />}
+            <RemoveButton id={m.id} onRemoved={() => drop(m.id)} />
+          </div>
         </div>
       ))}
     </section>

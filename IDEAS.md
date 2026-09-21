@@ -65,10 +65,10 @@ Done that evening: the Science tab (hidden from students, `SCIENCE_MARKING_OPEN_
 
 ### Notebook mistakes list — after "her mistakes keep building up" (21 Sep 2026)
 Built the same evening (301b7050): Remove on every card (row kept, `removed_at`), fixed entries behind
-"Show fixed", the button reads "I've fixed this" on the card face. Still queued:
-- **Fade by time** — an entry with no recurrence for 6 weeks leaves the default view whatever its state.
-- **Cap the default view** at the last three marked papers, older ones folded.
-- The 166 generic "Marks lost in <topic>" rows (no error kind from the marker) under the same fade.
+"Show fixed", the button reads "I've fixed this" on the card face. **Later that night (bc1e4378) the
+Notebook became the mistakes list alone, grouped by paper with older papers folded** — which replaced the
+fade-by-time and cap-at-three ideas. Still open: the generic "Marks lost in <topic>" rows (no error kind
+from the marker) are the least useful lines; the marker should name the kind more often.
 
 ## Content policy — serve our own questions (Adrian, 11 Sep 2026)
 
