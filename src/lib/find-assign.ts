@@ -189,10 +189,12 @@ export type FindLedgerRow = {
   questionId: string | null;
   seedText: string | null;
   level: string | null;
-  tier: FindTier | null;
+  tier: FindTier | 'practice-photo' | null;
   assignmentId: string | null;
   parentLogId?: string | null;
   candidates?: unknown;
+  /** Practice photo: the `generation_requests` row this ledger line queued. */
+  generationRequestId?: string | null;
 };
 
 /** One `portal_generation_log` row — the find ledger the caps count and the nightly review reads. Never throws; null when the write failed. */
@@ -212,6 +214,7 @@ export async function logFindRow(admin: SupabaseClient, row: FindLedgerRow): Pro
         assignment_id: row.assignmentId,
         parent_log_id: row.parentLogId ?? null,
         candidates: row.candidates ?? null,
+        generation_request_id: row.generationRequestId ?? null,
       })
       .select('id')
       .single<{ id: string }>();

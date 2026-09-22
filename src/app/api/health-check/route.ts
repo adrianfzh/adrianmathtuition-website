@@ -707,6 +707,21 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`assignment columns? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
       return 'auth gate up';
     }),
+    // 📷 Practice photo (SPEC-PRACTICE-PHOTO): the student door, the bot's done
+    // webhook, the Report door and Adrian's review page must all hold their gates.
+    timed('practice-photo', async () => {
+      const probes: [string, string][] = [
+        ['/api/portal/practice/photo', 'POST'],
+        ['/api/portal/practice/photo/done', 'POST'],
+        ['/api/portal/practice/report', 'POST'],
+        ['/api/admin/generated', 'GET'],
+      ];
+      for (const [path, method] of probes) {
+        const r = await fetch(`${base}${path}`, { method, redirect: 'manual', signal: T(10000), headers: { 'Content-Type': 'application/json' }, body: method === 'POST' ? '{}' : undefined });
+        if (r.status !== 401) throw new Error(`${path}: expected 401 (auth gate), got HTTP ${r.status}`);
+      }
+      return 'auth gates up';
+    }),
     // Portal reschedule (Home "Change" → /app/reschedule → bot lib/reschedule.js).
     // The route must hold its auth gate — a 404 here means students silently
     // lose self-service lesson moves and fall back to messaging Adrian.

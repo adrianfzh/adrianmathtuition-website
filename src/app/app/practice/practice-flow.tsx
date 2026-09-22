@@ -85,7 +85,7 @@ export type InitialAssignment = {
   score: number | null; outOf: number | null; question: Question;
   /** Which Practice section it came from (SPEC-PORTAL-V2 §3) — the banner and the
    *  way back change with it. Absent = Adrian's own send. */
-  source?: 'adrian' | 'practice-again' | 'find';
+  source?: 'adrian' | 'practice-again' | 'find' | 'practice-photo';
   /** Found by you: which tier the match was ("Similar question" / "Made for you"). */
   findTier?: 'similar' | 'made-for-you' | null;
   /** Practice Again: the paper it was written from ("From AM 2021 P1"). */
@@ -96,6 +96,7 @@ const SOURCE_META: Record<NonNullable<InitialAssignment['source']>, { label: str
   adrian: { label: '📬 From Adrian', back: '/app/assignments', backLabel: '← From Adrian' },
   'practice-again': { label: '🔁 Practice Again', back: '/app/practice', backLabel: '← Practice' },
   find: { label: '🔍 Found by you', back: '/app/practice', backLabel: '← Practice' },
+  'practice-photo': { label: '📷 From your photo', back: '/app/practice', backLabel: '← Practice' },
 };
 
 // ?qid= deep-link mode (the page resolves + eligibility-checks the question
@@ -541,6 +542,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
             </div>
             {assignment.note && <p className="text-sm mt-2 italic opacity-90">“{assignment.note}”</p>}
           </div>
+          {assignment.source === 'practice-photo' && <ReportQuestion assignmentId={assignment.id} />}
           {/* 💡 Concept reminder — collapsed by default (Adrian, 30 Aug 2026:
               "a hint/reminder at the front before the question, as a dropdown
               closed by default, for the concept it is trying to teach").
@@ -1090,6 +1092,70 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           onStart={(sg) => startFromSheet(sheetCard.topic, sheetCard.advancedCount === 0 ? 'Standard' : tier, sg)}
           onClose={() => setSheetTopic(null)}
         />
+      )}
+    </div>
+  );
+}
+
+// ── 📷 Report a photo question (SPEC-PRACTICE-PHOTO §7) ───────────────────────
+// One button under the banner of a question written from the student's photo.
+// A report withdraws the row from their list and marks the question so it is
+// never served or used as a seed again; Adrian gets a Telegram line. No
+// promotion rule, no vote — one report is enough.
+const REPORT_OPTIONS: { value: string; label: string }[] = [
+  { value: 'wrong-answer', label: 'The answer looks wrong' },
+  { value: 'not-like-mine', label: 'Not like the question I photographed' },
+  { value: 'unclear', label: 'I can’t tell what it’s asking' },
+  { value: 'other', label: 'Something else' },
+];
+
+function ReportQuestion({ assignmentId }: { assignmentId: string }) {
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState('wrong-answer');
+  const [note, setNote] = useState('');
+  const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [msg, setMsg] = useState<string | null>(null);
+
+  async function send() {
+    setState('sending');
+    try {
+      await portalFetch<{ ok: true }>('/api/portal/practice/report', { json: { assignmentId, reason, note: note.trim() || undefined }, fallback: 'Could not send that.' });
+      setState('sent');
+    } catch (e) {
+      setState('error');
+      setMsg(portalMessage(e));
+    }
+  }
+
+  if (state === 'sent') {
+    return (
+      <div className="mt-2 text-xs text-gray-600 bg-white rounded-xl border border-black/5 px-3 py-2">
+        Thanks — that one is off your list and Adrian has been told. <Link href="/app/practice" className="underline">Back to Practice</Link>
+      </div>
+    );
+  }
+  return (
+    <div className="mt-2 text-right">
+      {!open ? (
+        <button type="button" onClick={() => setOpen(true)} className="text-xs text-gray-500 hover:text-navy underline">Something wrong with this question?</button>
+      ) : (
+        <div className="text-left bg-white rounded-xl border border-black/5 p-3 space-y-2">
+          <p className="text-xs font-semibold text-navy">What’s wrong?</p>
+          <div className="space-y-1">
+            {REPORT_OPTIONS.map(o => (
+              <label key={o.value} className="flex items-center gap-2 text-sm text-gray-700">
+                <input type="radio" name="report-reason" value={o.value} checked={reason === o.value} onChange={() => setReason(o.value)} />
+                {o.label}
+              </label>
+            ))}
+          </div>
+          <textarea value={note} onChange={e => setNote(e.target.value)} maxLength={400} rows={2} placeholder="Anything else (optional)" className="w-full text-sm rounded-lg border border-black/10 px-2 py-1.5" />
+          {msg && <p className="text-xs text-red-700">{msg}</p>}
+          <div className="flex gap-2 justify-end">
+            <button type="button" onClick={() => setOpen(false)} className="text-xs text-gray-500 px-2 py-1">Cancel</button>
+            <button type="button" disabled={state === 'sending'} onClick={send} className="text-xs font-semibold bg-navy text-white rounded-full px-3 py-1.5 disabled:opacity-50">{state === 'sending' ? 'Sending…' : 'Report'}</button>
+          </div>
+        </div>
       )}
     </div>
   );

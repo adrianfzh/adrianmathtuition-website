@@ -441,6 +441,7 @@ const LAUNCHERS: Launcher[] = [
   // end, so a new tile lands at the bottom on every device either way.
   { emoji: '⚖️', title: 'Calibration', sub: 'AI marks vs the human standard · gate per subject', href: '/admin/calibration' },
   { emoji: '📘', title: 'Mark schemes', sub: 'schemes you attached, kept for the next hand-in of that paper', href: '/admin/schemes' },
+  { emoji: '📷', title: 'Generated', sub: 'questions written from students’ photos · reports', href: '/admin/generated' },
 ];
 
 // ── Custom launcher order (drag-to-arrange, per-device) ─────────────────────────

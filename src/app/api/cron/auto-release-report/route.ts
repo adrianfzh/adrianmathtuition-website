@@ -73,6 +73,15 @@ export async function GET(req: NextRequest) {
     }
     measure += '\n' + trendLine(kindTrend(rows));
   } catch (e) { console.warn('[auto-release-report] trend line skipped:', (e as Error).message); }
+  // 📷 Practice photo (SPEC-PRACTICE-PHOTO §7): how many photos became questions
+  // this week, how many were reported. Fail-soft like the two above.
+  try {
+    const { count: photos } = await sb.from('portal_generation_log').select('id', { count: 'exact', head: true }).eq('tier', 'practice-photo').gte('created_at', since);
+    const { count: reported } = await sb.from('questions').select('id', { count: 'exact', head: true }).eq('ai_generated', true).gte('reported_at', since);
+    if ((photos ?? 0) > 0 || (reported ?? 0) > 0) {
+      measure += `\n📷 Practice photos (7 days): ${photos ?? 0} question${photos === 1 ? '' : 's'} written, ${reported ?? 0} reported` + ((reported ?? 0) > 0 ? ' → /admin/generated' : '') + '.';
+    }
+  } catch (e) { console.warn('[auto-release-report] practice-photo line skipped:', (e as Error).message); }
   // 📏 The THIRD effectiveness line (17 Sep 2026): how far the marking itself
   // moved. A fixed set of papers is re-read in SHADOW every Sunday night
   // (/api/cron/consistency-remark) and this compares the latest reading with the

@@ -16,18 +16,20 @@ import type { AssignmentRow, AssignmentSource, AssignmentStatus } from './assign
 
 export type TodoSectionKey = AssignmentSource;
 
-/** The three sections, in display order. */
+/** The four sections, in display order. */
 export const TODO_SECTIONS: readonly { key: TodoSectionKey; title: string; icon: string; blurb: string }[] = [
   { key: 'adrian', title: 'From Adrian', icon: '📬', blurb: 'Work Adrian sent you.' },
   { key: 'practice-again', title: 'Practice Again', icon: '🔁', blurb: 'Your Practice Again sheets, one for each marked paper.' },
   { key: 'find', title: 'Found by you', icon: '🔍', blurb: 'Questions you found with Find a question.' },
+  { key: 'practice-photo', title: 'From your photos', icon: '📷', blurb: 'Questions written from the ones you photographed.' },
 ];
 
-/** to do → done (handed in, being marked) → marked. Held and revoked rows have no state: they are not shown. */
-export type TodoState = 'todo' | 'done' | 'marked';
+/** writing (a photo's twin on its way) → to do → done (handed in, being marked) → marked. Held and revoked rows have no state: they are not shown. */
+export type TodoState = 'writing' | 'todo' | 'done' | 'marked';
 
 export function todoState(status: AssignmentStatus | string): TodoState | null {
   switch (status) {
+    case 'writing': return 'writing';
     case 'assigned': return 'todo';
     case 'submitted': return 'done';
     case 'marked': return 'marked';
@@ -37,7 +39,7 @@ export function todoState(status: AssignmentStatus | string): TodoState | null {
 
 /** An unknown or missing source reads as Adrian's — every row before this build was his. */
 export function sectionFor(source: string | null | undefined): TodoSectionKey {
-  return source === 'practice-again' || source === 'find' ? source : 'adrian';
+  return source === 'practice-again' || source === 'find' || source === 'practice-photo' ? source : 'adrian';
 }
 
 export type TodoRow = Pick<AssignmentRow, 'id' | 'status' | 'source' | 'created_at'> & Partial<AssignmentRow>;
@@ -51,7 +53,7 @@ export function visibleToStudent(row: Pick<AssignmentRow, 'status'> & { subject?
   return subjectAllowed(account, row.subject ?? null);
 }
 
-const STATE_RANK: Record<TodoState, number> = { todo: 0, done: 1, marked: 2 };
+const STATE_RANK: Record<TodoState, number> = { writing: 0, todo: 1, done: 2, marked: 3 };
 
 export type TodoSection<R extends TodoRow = TodoRow> = {
   key: TodoSectionKey;
@@ -70,7 +72,7 @@ export type TodoSection<R extends TodoRow = TodoRow> = {
  * returned, empty or not — the page decides what to render.
  */
 export function groupPracticeTodo<R extends TodoRow>(rows: R[]): TodoSection<R>[] {
-  const sections = TODO_SECTIONS.map(s => ({ ...s, items: [] as (R & { state: TodoState })[], counts: { todo: 0, done: 0, marked: 0 } as Record<TodoState, number> }));
+  const sections = TODO_SECTIONS.map(s => ({ ...s, items: [] as (R & { state: TodoState })[], counts: { writing: 0, todo: 0, done: 0, marked: 0 } as Record<TodoState, number> }));
   const byKey = new Map(sections.map(s => [s.key, s]));
   for (const r of rows) {
     const state = todoState(r.status);
@@ -87,13 +89,14 @@ export function groupPracticeTodo<R extends TodoRow>(rows: R[]): TodoSection<R>[
 
 /** Totals across sections — the tab's own summary line. */
 export function todoTotals(sections: TodoSection[]): Record<TodoState, number> {
-  const t: Record<TodoState, number> = { todo: 0, done: 0, marked: 0 };
+  const t: Record<TodoState, number> = { writing: 0, todo: 0, done: 0, marked: 0 };
   for (const s of sections) for (const k of Object.keys(t) as TodoState[]) t[k] += s.counts[k];
   return t;
 }
 
 /** Chip text per state — "To do" / "Being marked" / "Marked · 3/5". */
 export function todoStateLabel(state: TodoState, row: Pick<AssignmentRow, 'score' | 'out_of'>): string {
+  if (state === 'writing') return 'Writing…';
   if (state === 'todo') return 'To do';
   if (state === 'done') return 'Being marked';
   return row.score != null && row.out_of != null ? `Marked · ${row.score}/${row.out_of}` : 'Marked';
@@ -116,6 +119,9 @@ export function todoSubtitle(
       break;
     case 'find':
       if (row.tier) parts.push(row.tier);
+      if (row.topic) parts.push(row.topic);
+      break;
+    case 'practice-photo':
       if (row.topic) parts.push(row.topic);
       break;
     default:

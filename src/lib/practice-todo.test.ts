@@ -67,7 +67,7 @@ describe('groupPracticeTodo — three sections, to-do first, newest first within
 
   it('returns every section in display order, empty or not', () => {
     expect(sections.map(s => s.key)).toEqual(TODO_SECTIONS.map(s => s.key));
-    expect(sections.map(s => s.title)).toEqual(['From Adrian', 'Practice Again', 'Found by you']);
+    expect(sections.map(s => s.title)).toEqual(['From Adrian', 'Practice Again', 'Found by you', 'From your photos']);
   });
   it('drops held and revoked rows', () => {
     const all = sections.flatMap(s => s.items);
@@ -84,15 +84,24 @@ describe('groupPracticeTodo — three sections, to-do first, newest first within
     expect(sections[2].items.map(i => i.state)).toEqual(['todo']);
   });
   it('counts per section and in total', () => {
-    expect(sections[0].counts).toEqual({ todo: 2, done: 0, marked: 1 });
-    expect(sections[1].counts).toEqual({ todo: 1, done: 1, marked: 0 });
-    expect(todoTotals(sections)).toEqual({ todo: 4, done: 1, marked: 1 });
+    expect(sections[0].counts).toEqual({ writing: 0, todo: 2, done: 0, marked: 1 });
+    expect(sections[1].counts).toEqual({ writing: 0, todo: 1, done: 1, marked: 0 });
+    expect(todoTotals(sections)).toEqual({ writing: 0, todo: 4, done: 1, marked: 1 });
+  });
+  it('a practice-photo row still being written lands in its own section, counted as writing, first in its band', () => {
+    const g = groupPracticeTodo([
+      { id: 'p1', status: 'writing', source: 'practice-photo', created_at: '2026-09-23T01:00:00Z', kind: 'question', question_id: null, title: 'Completing the square', topic: 'Quadratics', level: 'Sec 3', tier: null, note: null, attempt_id: null, submitted_at: null, marked_at: null } as never,
+      { id: 'p2', status: 'assigned', source: 'practice-photo', created_at: '2026-09-23T02:00:00Z', kind: 'question', question_id: 'q', title: 'Discriminant', topic: 'Quadratics', level: 'Sec 3', tier: null, note: null, attempt_id: null, submitted_at: null, marked_at: null } as never,
+    ]);
+    const photo = g.find(s => s.key === 'practice-photo')!;
+    expect(photo.items.map(i => i.state)).toEqual(['writing', 'todo']);
+    expect(photo.counts).toEqual({ writing: 1, todo: 1, done: 0, marked: 0 });
   });
   it('handles no rows at all', () => {
     const empty = groupPracticeTodo([]);
-    expect(empty).toHaveLength(3);
+    expect(empty).toHaveLength(4);
     expect(empty.every(s => s.items.length === 0)).toBe(true);
-    expect(todoTotals(empty)).toEqual({ todo: 0, done: 0, marked: 0 });
+    expect(todoTotals(empty)).toEqual({ writing: 0, todo: 0, done: 0, marked: 0 });
   });
 });
 

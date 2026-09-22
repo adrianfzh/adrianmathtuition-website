@@ -15,12 +15,16 @@ export type AssignmentKind = 'question' | 'worksheet' | 'generated' | 'page';
 // 'held' (same build): created but not yet released — invisible to the student
 // until Adrian's Approve & release flips it to 'assigned' together with the
 // paper and the sheet it came from (SPEC-TEACHING-CYCLE step 7).
-export type AssignmentStatus = 'held' | 'assigned' | 'submitted' | 'marked' | 'revoked';
+// 'writing' (SPEC-PRACTICE-PHOTO, 23 Sep 2026) = a photographed question's twin is
+// being written; the row is visible but opens nothing until the done webhook
+// flips it to 'assigned' (or 'revoked' when nothing passed the gates).
+export type AssignmentStatus = 'writing' | 'held' | 'assigned' | 'submitted' | 'marked' | 'revoked';
 // Which section of the student's Practice to-do list a row sits in
 // (SPEC-PORTAL-V2 §3): 'adrian' = the Send-work card / release-with-sheet's PDF
 // / remediation drills (every row before this build), 'practice-again' = one
 // row per question the sheet worker handed back, 'find' = Find a question.
-export type AssignmentSource = 'adrian' | 'practice-again' | 'find';
+// 'practice-photo' = the Practice tab's photo page (SPEC-PRACTICE-PHOTO).
+export type AssignmentSource = 'adrian' | 'practice-again' | 'find' | 'practice-photo';
 /** Find a question: which tier the match was (SPEC-PORTAL-V2 §4). */
 export type AssignmentFindTier = 'similar' | 'made-for-you';
 
@@ -64,6 +68,8 @@ export type AssignmentRow = {
   marks: number | null;
   /** Find a question tier shown on the card — non-null only for source 'find'. */
   find_tier: AssignmentFindTier | null;
+  /** source 'practice-photo': the `generation_requests` row the worker writes against (migration practice_photo_v1). */
+  generation_request_id?: string | null;
   // ── Compulsory sheets (migration practice_again_on_request, 8 Sep 2026) ──
   /** When Adrian made this sheet compulsory; NULL for student-requested sheets and ordinary sent work. */
   required_at?: string | null;
@@ -225,7 +231,7 @@ export function isFound(row: Pick<AssignmentRow, 'source'>): boolean {
 
 /** Rows Adrian actually sent — what the Home "From Adrian" card and its badge count. */
 export function fromAdrian<T extends Pick<AssignmentRow, 'source'>>(rows: T[]): T[] {
-  return rows.filter(r => r.source !== 'find');
+  return rows.filter(r => r.source !== 'find' && r.source !== 'practice-photo');
 }
 
 /** The card label for a found question: "Similar question" / "Made for you". */
@@ -286,6 +292,7 @@ export function assignmentHref(row: Pick<AssignmentRow, 'id' | 'kind' | 'status'
 /** Student-facing status chip text. */
 export function statusLabel(row: Pick<AssignmentRow, 'status' | 'kind' | 'score' | 'out_of'>): string {
   switch (row.status) {
+    case 'writing': return 'Writing…';
     case 'held': return 'Not released yet';   // admin surfaces only — students never see a held row
     case 'assigned': return isPage(row) ? 'Page' : opensInGrader(row.kind) ? 'To do' : 'To do · print or view';
     case 'submitted': return 'Being marked';
@@ -300,8 +307,9 @@ export function statusLabel(row: Pick<AssignmentRow, 'status' | 'kind' | 'score'
  *  released (→ assigned) or withdrawn; nothing ever goes BACK to held. */
 export function canTransition(from: AssignmentStatus, to: AssignmentStatus): boolean {
   if (from === to) return to === 'marked';            // re-mark overwrites score
-  if (to === 'held') return false;
-  if (to === 'revoked') return from === 'held' || from === 'assigned' || from === 'submitted';
+  if (to === 'held' || to === 'writing') return false;
+  if (to === 'revoked') return from === 'writing' || from === 'held' || from === 'assigned' || from === 'submitted';
+  if (from === 'writing') return to === 'assigned';
   if (from === 'held') return to === 'assigned';
   if (from === 'assigned') return to === 'submitted' || to === 'marked';
   if (from === 'submitted') return to === 'marked';

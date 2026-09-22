@@ -845,6 +845,21 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
                 onChanged={fetchAssignments}
                 shownElsewhere={pairedSheetIds}
               />
+              {/* 📷 Practice photo (SPEC-PRACTICE-PHOTO §7): one line, never a list —
+                  the questions live on /admin/generated. */}
+              {(() => {
+                const photo = (assignments || []).filter(a => a.source === 'practice-photo');
+                if (!photo.length) return null;
+                const writing = photo.filter(a => a.status === 'writing').length;
+                const done = photo.filter(a => a.status === 'marked' || a.status === 'submitted').length;
+                return (
+                  <p className="mt-3 text-sm text-neutral-600">
+                    📷 From their photos: <b>{photo.length}</b> question{photo.length === 1 ? '' : 's'}
+                    {writing ? ` · ${writing} being written` : ''}{done ? ` · ${done} attempted` : ''} —{' '}
+                    <a href="/admin/generated" className="underline">read them</a>
+                  </p>
+                );
+              })()}
             </Section>
 
             {/* Portal activity visibility (2026-09-03) — one compact line, no

@@ -216,3 +216,22 @@ export async function essayMarkingOpen(): Promise<boolean> {
 // it is part of the marking-only surface. Flip to false to hide the page from
 // students in one place; Adrian's admin cookie still sees it.
 export const FIND_OPEN_TO_STUDENTS = true;
+
+// 📷 Practice photo (SPEC-PRACTICE-PHOTO.md, 23 Sep 2026): the Practice tab
+// becomes a photo page — a photographed question is filed under a sub-skill and
+// a bank seed is RE-SKINNED into a new question on the student's list. CLOSED
+// to students until Adrian has read the first 20 on /admin/generated; his
+// admin cookie and the demo student see it meanwhile.
+export const PRACTICE_PHOTO_OPEN_TO_STUDENTS = false;
+export const PRACTICE_PHOTO_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
+
+export async function practicePhotoOpen(): Promise<boolean> {
+  if (PRACTICE_PHOTO_OPEN_TO_STUDENTS) return true;
+  if (!(await viewingAsStudent()) && (await isNotesAuthed())) return true;
+  try {
+    const { sessionAccount, portalIdentity } = await import('./portal-auth');
+    const acct = await sessionAccount().catch(() => null);
+    if (acct && PRACTICE_PHOTO_PREVIEW_IDENTITIES.includes(portalIdentity(acct))) return true;
+  } catch { /* closed */ }
+  return false;
+}

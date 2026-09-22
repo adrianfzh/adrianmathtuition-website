@@ -32,7 +32,8 @@
 // answer to mark against) — so a deep link can never open a question the
 // normal flow would refuse; an ineligible id degrades to a friendly notice
 // over the ordinary picker, never a broken screen.
-import { fullPortalVisible, practiceAccess } from '@/lib/portal-beta';
+import { fullPortalVisible, practiceAccess, practicePhotoOpen } from '@/lib/portal-beta';
+import PracticePhotoPage from './photo-page';
 import { notFound, redirect } from 'next/navigation';
 import PracticeFlow, { type FixedQuestion, type InitialAssignment } from './practice-flow';
 import PracticeTodo from './todo-list';
@@ -109,7 +110,10 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
   const access = await practiceAccess();
   if (access === 'list' && !assignmentId && !qid) {
     if (!account) redirect('/login');
-    return <PracticeTodo account={account} />;
+    // 📷 The photo page (SPEC-PRACTICE-PHOTO, 23 Sep 2026): the camera above the
+    // list, behind PRACTICE_PHOTO_OPEN_TO_STUDENTS until Adrian has read the first 20.
+    const photo = await practicePhotoOpen();
+    return <PracticeTodo account={account} top={photo ? <PracticePhotoPage account={account} /> : null} />;
   }
 
   let initialAssignment: InitialAssignment | null = null;
@@ -118,6 +122,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
     const identity = portalIdentity(account);
     const a = await getStudentAssignment(assignmentId, identity);
     if (!a) notFound();
+    if (a.status === 'writing') redirect('/app/practice');   // a photo's twin still being written — nothing to open yet
     if (!opensInGrader(a.kind)) redirect(`/app/assignments/${a.id}`);
     let question: InitialAssignment['question'];
     if (a.kind === 'generated') {
@@ -168,7 +173,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
       score: a.score,
       outOf: a.out_of,
       question,
-      source: a.source === 'practice-again' || a.source === 'find' ? a.source : 'adrian',
+      source: a.source === 'practice-again' || a.source === 'find' || a.source === 'practice-photo' ? a.source : 'adrian',
       paperName,
     };
   }

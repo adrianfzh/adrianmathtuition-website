@@ -153,6 +153,8 @@ Transcription empty → "We couldn't read a question there — try one question,
 
 Flag: `PRACTICE_PHOTO_OPEN_TO_STUDENTS` in `lib/portal-beta.ts`, false until step 6; Adrian's cookie and the demo student see it before then.
 
+**Status (23 Sep 2026):** steps 1–5 BUILT. 1 = `migrations/practice_photo_v1.sql` (applied). 2 = bot commit `b3add1e7` (`/api/portal-classify`, the re-skin request in `ai/question-gen.js`, the done webhook call in `generation-worker.js`). 3 = the three routes + `lib/practice-photo.ts` (pure/tested: cap, seed pick, request shape, done outcome, report parse). 4 = `practice/photo-page.tsx` + `photo-client.tsx` above the list, the Writing… row (`status='writing'`, section "From your photos"), the Report block in `practice-flow.tsx`. 5 = `/admin/generated` (+ `api/admin/generated` GET/POST restore|retire), the 📷 line on the profile's Work tab, the 📷 line on the Monday `auto-release-report`, the `practice-photo` health-check probe (four 401 gates). The ledger row a photo writes carries `tier='practice-photo'` and `generated=false`, so the finder's own made-for-you cap is untouched. Step 6 (Adrian reads the first 20) is what flips the flag. **Not yet:** a Mac slot that claims priority-1 `generation_requests` between the nightly topup runs — until one exists the bot's 15-min API overflow (`PRACTICE_PHOTO_MODEL`, `claude-opus-5`) is the path that actually writes the question.
+
 ## 13. Open items (not blocking)
 
 - Whether `GEN_MODEL` moves to Opus 5 for this path before the calibration bench compares (§3d).

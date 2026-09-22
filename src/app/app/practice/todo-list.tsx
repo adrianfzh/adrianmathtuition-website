@@ -13,6 +13,7 @@
 // assignment already had: a question (bank or worker-written) in the practice
 // grader, a worksheet on its own page with the Submit button.
 import Link from 'next/link';
+import type React from 'react';
 import { portalIdentity, type PortalAccount } from '@/lib/portal-auth';
 import { listStudentAssignments, paperNamesForStudent } from '@/lib/portal-assignments';
 import { assignmentHref, dueLabel, isOverdue } from '@/lib/assignments';
@@ -24,6 +25,7 @@ import {
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 
 const CHIP: Record<TodoState, string> = {
+  writing: 'bg-violet-50 text-violet-700',
   todo: 'bg-[hsl(45,80%,94%)] text-navy',
   done: 'bg-blue-50 text-blue-700',
   marked: 'bg-emerald-50 text-emerald-800',
@@ -35,13 +37,14 @@ function sentOn(iso: string): string {
 
 function summaryLine(t: Record<TodoState, number>): string | null {
   const parts: string[] = [];
+  if (t.writing) parts.push(`${t.writing} being written`);
   if (t.todo) parts.push(`${t.todo} to do`);
   if (t.done) parts.push(`${t.done} being marked`);
   if (t.marked) parts.push(`${t.marked} marked`);
   return parts.length ? parts.join(' · ') : null;
 }
 
-export default async function PracticeTodo({ account }: { account: Pick<PortalAccount, 'id' | 'airtable_student_id' | 'level' | 'subjects'> }) {
+export default async function PracticeTodo({ account, top = null }: { account: Pick<PortalAccount, 'id' | 'airtable_student_id' | 'level' | 'subjects'>; top?: React.ReactNode }) {
   const identity = portalIdentity(account);
   // rec… for tuition, acct:<uuid> for strangers — the identity predicate rides
   // the query; the subject gate is applied here on the rows that came back.
@@ -57,6 +60,7 @@ export default async function PracticeTodo({ account }: { account: Pick<PortalAc
         <h1 className="text-xl font-bold text-navy">Practice</h1>
         {summary && <p className="text-xs text-gray-500">{summary}</p>}
       </div>
+      {top}
 
       {sections.length === 0 && (
         <div className={`${CARD} p-5 space-y-2`}>
@@ -83,8 +87,7 @@ export default async function PracticeTodo({ account }: { account: Pick<PortalAc
             const due = r.source === 'adrian' || !r.source ? dueLabel(r.due_on) : null;
             const overdue = due ? isOverdue(r) : false;
             const subtitle = todoSubtitle(r, r.source_run_id ? paperNames.get(r.source_run_id) ?? null : null);
-            return (
-              <Link key={r.id} href={assignmentHref(r)} className={`${CARD} block p-4 hover:bg-[hsl(45,100%,99%)] active:scale-[0.99] transition`}>
+            const body = (
                 <div className="flex items-start gap-3">
                   <span className="text-xl leading-none mt-0.5" aria-hidden>{r.kind === 'worksheet' ? '📄' : '✏️'}</span>
                   <div className="flex-1 min-w-0">
@@ -98,7 +101,13 @@ export default async function PracticeTodo({ account }: { account: Pick<PortalAc
                   </div>
                   <span className={`shrink-0 text-[11px] font-semibold rounded-full px-2.5 py-1 ${CHIP[r.state]}`}>{todoStateLabel(r.state, r)}</span>
                 </div>
-              </Link>
+            );
+            // A Writing… row (a photo's twin on its way, SPEC-PRACTICE-PHOTO) opens nothing yet.
+            if (r.state === 'writing') {
+              return <div key={r.id} className={`${CARD} block p-4 opacity-80`} aria-busy>{body}</div>;
+            }
+            return (
+              <Link key={r.id} href={assignmentHref(r)} className={`${CARD} block p-4 hover:bg-[hsl(45,100%,99%)] active:scale-[0.99] transition`}>{body}</Link>
             );
           })}
         </section>
