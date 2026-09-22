@@ -5,7 +5,7 @@ import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
 import { NO_LESSON_DATES } from '@/lib/holidays';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
-import { displaySpanMonth, resolveInvoiceIssueDate, sgtTodayISO } from '@/lib/invoice-month';
+import { displaySpanMonth, invoicePdfFileName, resolveInvoiceIssueDate, sgtTodayISO } from '@/lib/invoice-month';
 import { monthWindowClause } from '@/lib/billing-math';
 import { applyPriorBalance, stripPersistedCarryOver } from '@/lib/invoice-consolidate';
 import {
@@ -319,7 +319,7 @@ export async function POST(req: NextRequest) {
       await applyPriorBalance(invoiceData, studentId, month);
       const pdfBuffer = await generateInvoicePDF(invoiceData);
       const blob = await put(
-        `invoices/AdrianMathTuition-Invoice-${studentName.replace(/\s+/g, '-')}-${month.replace(/\s+/g, '-')}.pdf`,
+        `invoices/${invoicePdfFileName(studentName, invoiceData.month, f['Invoice Type'])}`,
         pdfBuffer,
         { access: 'public', contentType: 'application/pdf', allowOverwrite: true }
       );

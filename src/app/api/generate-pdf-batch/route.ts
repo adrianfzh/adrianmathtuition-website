@@ -5,7 +5,7 @@ import { generateInvoicePDF } from '@/lib/generate-pdf';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
 import { applyPriorBalance } from '@/lib/invoice-consolidate';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
-import { resolveInvoiceIssueDate, sgtTodayISO } from '@/lib/invoice-month';
+import { resolveInvoiceIssueDate, sgtTodayISO, displaySpanMonth, invoicePdfFileName } from '@/lib/invoice-month';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -68,7 +68,9 @@ export async function POST(req: NextRequest) {
       const lineItems = f['Line Items'] ? JSON.parse(f['Line Items']) : [];
       const invoiceData = {
         studentName,
-        month: f['Month'] || '',
+        // "July–August 2026" when the lines start before the stored Month — the
+        // same label the email's subject, body and payment reference use.
+        month: displaySpanMonth(f['Month'] || '', f['Line Items']),
         invoiceId: id,
         issueDate,
         dueDate: f['Due Date'] || '',
@@ -90,7 +92,7 @@ export async function POST(req: NextRequest) {
       const pdfBuffer = await generateInvoicePDF(invoiceData);
 
       const blob = await put(
-        `invoices/AdrianMathTuition-Invoice-${studentName.replace(/\s+/g, '-')}-${(f['Month'] || '').replace(/\s+/g, '-')}.pdf`,
+        `invoices/${invoicePdfFileName(studentName, invoiceData.month, f['Invoice Type'])}`,
         pdfBuffer,
         { access: 'public', contentType: 'application/pdf', allowOverwrite: true }
       );

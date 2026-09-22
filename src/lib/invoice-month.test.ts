@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getInvoiceMonth, displaySpanMonth, resolveInvoiceIssueDate, sgtTodayISO, paidWindowCutoffISO } from './invoice-month';
+import { getInvoiceMonth, displaySpanMonth, invoicePdfFileName, resolveInvoiceIssueDate, sgtTodayISO, paidWindowCutoffISO } from './invoice-month';
 
 describe('getInvoiceMonth — always the month AFTER today', () => {
   it('mid-year: April → May', () => {
@@ -101,5 +101,18 @@ describe('paidWindowCutoffISO', () => {
     expect(paidWindowCutoffISO('2026-02-10', 4)).toBe('2025-10-01');
     expect(paidWindowCutoffISO('2026-01-05', 1)).toBe('2025-12-01');
     expect(paidWindowCutoffISO('2026-12-31', 12)).toBe('2025-12-01');
+  });
+});
+
+describe('invoicePdfFileName', () => {
+  // REGRESSION — Kevin Seng, 22 Sep 2026: the ad-hoc invoice's PDF was stored
+  // as ...-Kevin-Seng-August-2026.pdf with allowOverwrite, the same name as an
+  // August regular invoice, so one would replace the other's PDF.
+  it('gives a second invoice in the same month its own name', () => {
+    expect(invoicePdfFileName('Kevin Seng', 'August 2026', 'Regular')).toBe('AdrianMathTuition-Invoice-Kevin-Seng-August-2026.pdf');
+    expect(invoicePdfFileName('Kevin Seng', 'July–August 2026', 'Adhoc')).toBe('AdrianMathTuition-Invoice-Kevin-Seng-July-August-2026-Ad-hoc-Lessons.pdf');
+    expect(invoicePdfFileName('Kevin Seng', 'August 2026', 'Adjustment')).toBe('AdrianMathTuition-Invoice-Kevin-Seng-August-2026-Additional-Lessons.pdf');
+    expect(invoicePdfFileName('Kevin Seng', 'June 2026', 'Revision Sprint')).toBe('AdrianMathTuition-Invoice-Kevin-Seng-June-2026-Revision-Sprint.pdf');
+    expect(invoicePdfFileName('Kevin Seng', 'August 2026')).toBe('AdrianMathTuition-Invoice-Kevin-Seng-August-2026.pdf');
   });
 });

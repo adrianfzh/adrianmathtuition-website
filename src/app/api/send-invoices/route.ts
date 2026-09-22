@@ -5,7 +5,7 @@ import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the money topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_money = (text: string) => sendTelegram(text, 'money');
-import { getInvoiceMonth, displaySpanMonth, sgtTodayISO } from '@/lib/invoice-month';
+import { getInvoiceMonth, displaySpanMonth, invoicePdfFileName, sgtTodayISO } from '@/lib/invoice-month';
 import { resolveRunMode, resolveTargetMonthLabel, jobNameFor } from '@/lib/invoice-run-mode';
 import { yearEndHoldReason, examCutoffNoteFrom, arrearsNoteFrom, examPrepNoteFrom, graduationNote } from '@/lib/year-end-billing';
 import { holidayNoteHtml, invoiceMonthNumber } from '@/lib/holiday-message';
@@ -757,11 +757,7 @@ export async function POST(req: NextRequest) {
         emailData.attachments = [{
           filename: invoiceType === 'Revision Sprint'
             ? `AdrianMathTuition-Revision-Sprint-${(invoice.studentName || '').replace(/\s+/g, '-')}-June-2026.pdf`
-            : invoiceType === 'Adjustment'
-              ? `AdrianMathTuition-Invoice-${(invoice.studentName || '').replace(/\s+/g, '-')}-${(invoice.month || '').replace(/[\s–]/g, '-')}-Additional-Lessons.pdf`
-            : invoiceType === 'Adhoc'
-              ? `AdrianMathTuition-Invoice-${(invoice.studentName || '').replace(/\s+/g, '-')}-${(invoice.month || '').replace(/[\s–]/g, '-')}-Ad-hoc-Lessons.pdf`
-              : `AdrianMathTuition-Invoice-${(invoice.studentName || '').replace(/\s+/g, '-')}-${(invoice.month || '').replace(/[\s–]/g, '-')}.pdf`,
+            : invoicePdfFileName(invoice.studentName || '', invoice.month || '', invoiceType),
           content: pdfBuffer.toString('base64'),
           type: 'application/pdf',
           disposition: 'attachment',

@@ -69,6 +69,24 @@ export function resolveInvoiceIssueDate(
 }
 
 /**
+ * The invoice PDF's file name — the stored blob AND the email attachment.
+ * A second invoice in the same month (ad-hoc lessons, additional lessons, the
+ * Revision Sprint) gets its own suffix: the blob is written with
+ * allowOverwrite, so under the plain name it replaced that month's regular
+ * invoice PDF (found 22 Sep 2026 on Kevin Seng's ad-hoc invoice).
+ * `displayMonth` is the span label ("July–August 2026").
+ */
+export function invoicePdfFileName(studentName: string, displayMonth: string, invoiceType?: string | null): string {
+  const name = String(studentName || '').trim().replace(/\s+/g, '-');
+  const month = String(displayMonth || '').trim().replace(/[\s–]/g, '-');
+  const suffix = invoiceType === 'Adhoc' ? '-Ad-hoc-Lessons'
+    : invoiceType === 'Adjustment' ? '-Additional-Lessons'
+    : invoiceType === 'Revision Sprint' ? '-Revision-Sprint'
+    : '';
+  return `AdrianMathTuition-Invoice-${name}-${month}${suffix}.pdf`;
+}
+
+/**
  * Display month for an invoice whose line items start before its stored Month.
  * A combined first invoice (e.g. July lessons filed under "August 2026" so the
  * monthly generator doesn't double-bill) should read "July–August 2026" on the
