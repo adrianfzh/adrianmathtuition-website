@@ -106,7 +106,7 @@ PLAN_LIMIT_FILE="$HOME/.adrianmath-plan-limit-until.${PLAN_ACCOUNT_KEY}"
 LOGINS_DIR="${ADRIANMATH_LOGINS_DIR:-$HOME/.adrianmath/logins}"
 PICKER="${CLAUDE_PICK:-$HOME/dev/adrianmath-telegram-math-bot/scripts/claude-pick.sh}"
 POOLED=0
-if [ -d "$LOGINS_DIR" ] && [ -r "$PICKER" ] && ls "$LOGINS_DIR"/*/.credentials.json >/dev/null 2>&1; then POOLED=1; fi
+if [ -d "$LOGINS_DIR" ] && [ -r "$PICKER" ] && { ls "$LOGINS_DIR"/*/.credentials.json >/dev/null 2>&1 || { [ "$(uname)" = Darwin ] && ls "$LOGINS_DIR"/*/account >/dev/null 2>&1; }; }; then POOLED=1; fi  # a Mac keeps the login in the keychain; the picker finds it by the dir hash
 plan_limit_active() {
   [ -r "$PLAN_LIMIT_FILE" ] || return 1
   local until now
