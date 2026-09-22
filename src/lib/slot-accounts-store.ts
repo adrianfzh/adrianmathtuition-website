@@ -2,7 +2,7 @@
 // `Settings` row, Setting Name = slot_accounts, Value = the JSON map. Same home
 // as the other marking switches (lib/marking-settings.ts), 30 s cache.
 import { airtableRequest } from '@/lib/airtable';
-import { SLOT_ACCOUNTS_SETTING, parseSlotAccounts, withSlotAccount, type SlotAccountMap } from './slot-accounts';
+import { SLOT_ACCOUNTS_SETTING, SLOT_USAGE_SETTING, parseSlotAccounts, parseSlotUsage, withSlotAccount, withSlotUsage, type SlotAccountMap, type SlotUsageMap } from './slot-accounts';
 
 const TTL_MS = 30_000;
 let cache: { at: number; map: SlotAccountMap; id: string | null } | null = null;
@@ -27,5 +27,28 @@ export async function setSlotAccount(email: string, on: boolean, by: string): Pr
   if (row.id) await airtableRequest('Settings', `/${row.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { Value: json } }) });
   else await airtableRequest('Settings', '', { method: 'POST', body: JSON.stringify({ fields: { 'Setting Name': SLOT_ACCOUNTS_SETTING, Value: json } }) });
   cache = { at: Date.now(), map, id: row.id };
+  return map;
+}
+
+// 🎯 The usage meters (22 Sep 2026): a second row, Setting Name = slot_usage, the
+// picker's last reading per account. Written by every slot's picker (throttled on
+// its side to a moved meter or ten minutes), read by the card. No cache — it is
+// only read when the card opens.
+async function fetchUsageRow(): Promise<{ id: string | null; map: SlotUsageMap }> {
+  const data = await airtableRequest('Settings', `?filterByFormula=${encodeURIComponent(`{Setting Name}='${SLOT_USAGE_SETTING}'`)}&maxRecords=1`);
+  const rec = (data as { records?: { id: string; fields: Record<string, unknown> }[] }).records?.[0];
+  return { id: rec?.id ?? null, map: parseSlotUsage(rec?.fields?.Value) };
+}
+
+export async function getSlotUsage(): Promise<SlotUsageMap> {
+  return (await fetchUsageRow()).map;
+}
+
+export async function mergeSlotUsage(posted: unknown): Promise<SlotUsageMap> {
+  const row = await fetchUsageRow();
+  const map = withSlotUsage(row.map, posted);
+  const json = JSON.stringify(map);
+  if (row.id) await airtableRequest('Settings', `/${row.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { Value: json } }) });
+  else await airtableRequest('Settings', '', { method: 'POST', body: JSON.stringify({ fields: { 'Setting Name': SLOT_USAGE_SETTING, Value: json } }) });
   return map;
 }

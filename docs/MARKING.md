@@ -1500,6 +1500,18 @@ slot to claim it. The wait is the problem, not the writer.
    each account has its own plan-limit file and one running out never stops the
    other. A slot's own token wins over the login in BOTH run.sh files.
    `bash ~/.adrianmath_sheetsN/run.sh --auth-check` prints a slot's account.
+   **22 Sep 2026 — pooled logins:** when `~/.adrianmath/logins/<n>/` exist (one CLI
+   login per account, `CLAUDE_CONFIG_DIR=… claude auth login`, made once), every
+   sheet slot ignores the token/login above and asks the bot's
+   `scripts/claude-pick.sh` for the EMPTIEST account before each job (5-hour and
+   7-day utilisation from the CLI's usage endpoint; switched-off, ≥ 98 % and
+   limit-filed accounts skipped; exit 75 = "every login capped" → no claim). A
+   limit hit files the picked account's limit file. The picker posts its readings
+   to `POST /api/admin/slot-accounts {usage}` (`slot_usage` Settings row,
+   `lib/slot-accounts.ts` `withSlotUsage`), which the slot-accounts card on
+   `/admin/mark-paper` shows as the three meters. The state-dir copies of run.sh
+   pool only once refreshed (`install.sh` / `install-slot.sh`). Full account →
+   bot CLAUDE.md §The login pool.
 4. **A renderer from a spec** ✅ built, ⏸ OFF (`scripts/sheet-worker/render_sheet.py`,
    spec in `SHEET-SPEC.md` + `sheet-spec.schema.json`, `WORKER_PROMPT.md` §2b):
    the writer emits the sheet as JSON, the script builds the docx through the

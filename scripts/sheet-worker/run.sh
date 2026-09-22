@@ -96,6 +96,17 @@ PLAN_ACCOUNT_KEY="$( { [ -n "$SLOT_ACCOUNT" ] && printf '%s' "$SLOT_ACCOUNT" || 
 try: print((json.load(sys.stdin).get("email") or "").strip())
 except Exception: print("")'; } 2>/dev/null | python3 -c 'import sys,re; e=sys.stdin.read().strip().lower(); print(re.sub(r"[^a-z0-9]+","-",e) or "default")' 2>/dev/null || echo default)"
 PLAN_LIMIT_FILE="$HOME/.adrianmath-plan-limit-until.${PLAN_ACCOUNT_KEY}"
+# 🎯 POOLED LOGINS (22 Sep 2026, Adrian: "can the bot check the account usage? then
+# can it spread the load, instead of keep using one account until exhausted?").
+# When ~/.adrianmath/logins/<n>/ hold CLI logins (`CLAUDE_CONFIG_DIR=… claude auth login`
+# once each — they refresh themselves, no more setup-tokens), this slot owns NO account:
+# before every job the bot's scripts/claude-pick.sh reads each login's usage meters and
+# hands over the emptiest one (the site's ⏻ switches and the per-account limit files are
+# honoured inside the picker). The per-slot chain below stays for a machine without logins.
+LOGINS_DIR="${ADRIANMATH_LOGINS_DIR:-$HOME/.adrianmath/logins}"
+PICKER="${CLAUDE_PICK:-$HOME/dev/adrianmath-telegram-math-bot/scripts/claude-pick.sh}"
+POOLED=0
+if [ -d "$LOGINS_DIR" ] && [ -r "$PICKER" ] && ls "$LOGINS_DIR"/*/.credentials.json >/dev/null 2>&1; then POOLED=1; fi
 plan_limit_active() {
   [ -r "$PLAN_LIMIT_FILE" ] || return 1
   local until now
@@ -131,7 +142,11 @@ AUTH_VIA=""
 # the same token the marking slots 4-6 use) plus the $STATE/account sidecar, so
 # A running out never stops B and vice versa. Until this moved up, the keychain
 # won and any token file was ignored.
-if [ -r "$STATE/oauth_token" ] && [ -n "$(tr -d '[:space:]' < "$STATE/oauth_token")" ]; then
+if [ "$POOLED" = 1 ]; then
+  # the picker (which runs after the peek) sets the real line; before it, a placeholder
+  AUTH_VIA="${PICK_DIR:+login folder $(basename "$PICK_DIR") · ${PICK_WHY:-}}"
+  AUTH_VIA="${AUTH_VIA:-pooled login (picked before each job)}"
+elif [ -r "$STATE/oauth_token" ] && [ -n "$(tr -d '[:space:]' < "$STATE/oauth_token")" ]; then
   CLAUDE_CODE_OAUTH_TOKEN="$(tr -d '[:space:]' < "$STATE/oauth_token")"
   export CLAUDE_CODE_OAUTH_TOKEN
   AUTH_VIA="oauth_token file"
@@ -164,7 +179,7 @@ if [ "${1:-}" = "--auth-check" ]; then
 fi
 
 # --- single instance --------------------------------------------------------
-if plan_limit_active; then
+if [ "$POOLED" != 1 ] && plan_limit_active; then
   say "plan limit on this account until $(fmt_epoch "$(cat "$PLAN_LIMIT_FILE")") — not claiming"
   exit 0
 fi
@@ -240,12 +255,31 @@ HAS_OFF="$(printf '%s' "$JOBS" | python3 -c 'import json,sys
 try: print("yes" if isinstance(json.load(sys.stdin).get("off"), list) else "no")
 except Exception: print("no")' 2>/dev/null || echo no)"
 SWITCH_JSON="$JOBS"; [ "$HAS_OFF" = "yes" ] || SWITCH_JSON="$(shared_fetch slot-accounts 45 fetch_switches)"
-SWITCH_STATE="$(printf '%s' "$SWITCH_JSON" | python3 -c 'import json,sys
+if [ "$POOLED" = 1 ]; then
+  OFF_KEYS="$(printf '%s' "$SWITCH_JSON" | python3 -c 'import json,sys
+try: print(" ".join(json.load(sys.stdin).get("off") or []))
+except Exception: print("")' 2>/dev/null || true)"
+  PICK="$(bash "$PICKER" pick --off "$OFF_KEYS" 2>>"$STATE/picker.err")"; PRC=$?
+  if [ "$PRC" -eq 75 ]; then
+    say "every login capped or switched off — not claiming ($(tail -1 "$STATE/picker.err" 2>/dev/null | cut -c1-160))"
+    cleanup_pid; exit 0
+  elif [ "$PRC" -ne 0 ] || [ -z "$PICK" ]; then
+    say "login picker failed rc=$PRC — not claiming"
+    cleanup_pid; exit 1
+  fi
+  IFS=$'\t' read -r PICK_DIR SLOT_ACCOUNT PLAN_ACCOUNT_KEY PICK_5H PICK_7D PICK_WHY <<<"$PICK"
+  PLAN_LIMIT_FILE="$HOME/.adrianmath-plan-limit-until.${PLAN_ACCOUNT_KEY}"
+  CLAUDE_CONFIG_DIR="$PICK_DIR"; export CLAUDE_CONFIG_DIR
+  unset CLAUDE_CODE_OAUTH_TOKEN
+  AUTH_VIA="login folder $(basename "$PICK_DIR") · $PICK_WHY"
+else
+  SWITCH_STATE="$(printf '%s' "$SWITCH_JSON" | python3 -c 'import json,sys
 try: print("off" if sys.argv[1] in (json.load(sys.stdin).get("off") or []) else "on")
 except Exception: print("on")' "$PLAN_ACCOUNT_KEY" 2>/dev/null || echo on)"
-if [ "$SWITCH_STATE" = "off" ]; then
-  say "switched off on the site (${SLOT_ACCOUNT:-$PLAN_ACCOUNT_KEY}) — not claiming"
-  cleanup_pid; exit 0
+  if [ "$SWITCH_STATE" = "off" ]; then
+    say "switched off on the site (${SLOT_ACCOUNT:-$PLAN_ACCOUNT_KEY}) — not claiming"
+    cleanup_pid; exit 0
+  fi
 fi
 # The repo the session works in — sheets are authored with the skills that live
 # there. A COPY is not possible here (python envs, skills, scripts), so the
@@ -408,9 +442,9 @@ if [ "$RC" -eq 0 ]; then
 elif tail -40 "$LOG" | grep -qiE 'usage limit|rate.?limit|quota|weekly limit|hit your .*limit'; then
   # Name the limit and the account so /admin/ops can say "sheet worker closed" (9 Sep 2026).
   LIMIT_LINE="$(tail -40 "$LOG" | grep -iE 'usage limit|rate.?limit|quota|weekly limit|hit your .*limit' | tail -1 | tr -d '\r' | cut -c1-120)"
-  SHEETS_ACCOUNT="$(claude auth status 2>/dev/null | python3 -c 'import json,sys
+  SHEETS_ACCOUNT="${SLOT_ACCOUNT:-$(claude auth status 2>/dev/null | python3 -c 'import json,sys
 try: print((json.load(sys.stdin).get("email") or "").strip())
-except Exception: print("")' 2>/dev/null || true)"
+except Exception: print("")' 2>/dev/null || true)}"
   plan_limit_note "$LIMIT_LINE"
   say "END rc=$RC (${ELAPSED}s) — looks like a PLAN USAGE LIMIT, not a bug; no slot claims until $(fmt_epoch "$(cat "$PLAN_LIMIT_FILE")")"
   stamp_fail "plan limit on ${SHEETS_ACCOUNT:-unknown account}: ${LIMIT_LINE:-usage limit}"

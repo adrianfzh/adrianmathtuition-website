@@ -385,10 +385,13 @@ export default function MarkPaperPage() {
   const [scienceOpen, setScienceOpen] = useState<{ on: boolean; at: string | null } | null>(null);
   const [scienceBusy, setScienceBusy] = useState(false);
   // ⏻ Slots by account (13 Sep 2026, lib/slot-accounts.ts): one switch per Claude
-  // account the Mac slots spend. OFF = that account's slots claim nothing new
-  // (a paper or sheet in progress finishes). Every worker asks the site before it
-  // claims, so a flip is live within one tick, no deploy.
-  type SlotAccountRow = { email: string; key: string; label: string; on: boolean; at: string | null };
+  // account the slots spend. OFF = the picker never chooses that account (a paper
+  // or sheet in progress finishes). Every worker asks the site before it claims,
+  // so a flip is live within one tick, no deploy. 22 Sep 2026: every slot holds all
+  // three logins and picks the emptiest before each job; the picker posts what it
+  // read, shown here as the 5-hour / 7-day meters.
+  type SlotUsage = { five_hour: number | null; seven_day: number | null; resets_5h: string | null; resets_7d: string | null; at: string; from: string | null };
+  type SlotAccountRow = { email: string; key: string; label: string; on: boolean; at: string | null; usage: SlotUsage | null };
   const [slotAccounts, setSlotAccounts] = useState<SlotAccountRow[] | null>(null);
   const [slotBusy, setSlotBusy] = useState<string | null>(null);
   useEffect(() => {
@@ -1820,7 +1823,7 @@ export default function MarkPaperPage() {
         <div style={card} data-slot-accounts>
           <div style={{ fontWeight: 700 }}>⏻ Marking &amp; sheet slots, by account</div>
           <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2, marginBottom: 8 }}>
-            Off = that account&apos;s slots claim nothing new; whatever they are holding finishes. Live within one tick (30 s marking, 2 min sheets).
+            Every slot picks the emptiest account before each job. Off = never picked; whatever a slot is holding finishes. Live within one tick (30 s marking, 2 min sheets).
           </div>
           {slotAccounts.map(a => (
             <div key={a.email} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderTop: '1px solid #f3f4f6' }} data-slot-account={a.key} data-on={a.on ? 'on' : 'off'}>
@@ -1830,6 +1833,28 @@ export default function MarkPaperPage() {
                   {a.label}
                   {a.at ? ` · ${a.on ? 'on' : 'off'} since ${new Date(a.at).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}
                 </div>
+                {a.usage ? (() => {
+                  const u = a.usage;
+                  const stale = Date.now() - Date.parse(u.at) > 6 * 3600_000;
+                  const sgt = (iso: string | null) => iso ? new Date(iso).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', weekday: 'short', hour: '2-digit', minute: '2-digit' }) : null;
+                  const meter = (v: number | null, label: string, resets: string | null) => (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} title={resets ? `resets ${sgt(resets)}` : undefined}>
+                      <span style={{ width: 64, height: 6, borderRadius: 3, background: '#e5e7eb', overflow: 'hidden', display: 'inline-block' }}>
+                        <span style={{ display: 'block', height: '100%', width: `${v ?? 0}%`, background: (v ?? 0) >= 90 ? '#dc2626' : (v ?? 0) >= 70 ? '#f59e0b' : '#16a34a' }} />
+                      </span>
+                      {label} {v === null ? '?' : `${Math.round(v)}%`}
+                    </span>
+                  );
+                  return (
+                    <div data-slot-usage style={{ fontSize: 12, color: stale ? '#9ca3af' : '#374151', marginTop: 4, display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+                      {meter(u.five_hour, '5 h', u.resets_5h)}
+                      {meter(u.seven_day, 'week', u.resets_7d)}
+                      <span style={{ color: '#9ca3af' }}>read {new Date(u.at).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}{u.from ? ` by ${u.from}` : ''}{stale ? ' (old)' : ''}</span>
+                    </div>
+                  );
+                })() : (
+                  <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>no usage reading yet</div>
+                )}
               </div>
               <button
                 type="button" role="switch" aria-checked={a.on} aria-label={`Slots on ${a.email}`} disabled={slotBusy !== null} onClick={() => flipSlotAccount(a.email, !a.on)}
