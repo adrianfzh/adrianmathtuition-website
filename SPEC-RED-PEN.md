@@ -427,3 +427,33 @@ don't want to have to toggle on and off." So:
   and the desk's page re-mark redrew ALL fifteen pages in the inpage layout on a
   RELEASED paper. Fix-forward is Adrian's call (redraw each page with the default
   layout + one re-issue, or a whole-paper 🔁 Re-mark).
+
+### 23 Sep 2026 — handwriting that looks written, and a comment on the empty answer line
+
+Adrian, on the red-ink mode: "able for handwriting to be more natural?" → "Build 1 and
+2". Then, with Joey's Q7(b)(i) on his phone: "able for red comments to write on the line
+below for part (i) because that's what a teacher would do." All three are **natural
+look only** (`MARK_LOOK=natural`); the professional look is untouched. Bot
+`lib/pen-ink.js` + `lib/answer-rule.js`, wired in `ai/annotate.js`.
+
+1. **Ink texture.** One SVG turbulence + displacement filter on the pen groups only —
+   never on the photo, never on the score chips. Every layer that uses it carries the
+   filter's defs (a layer without them renders the group invisible).
+2. **Per-word wobble.** Each written line is per-word `<tspan>`s with a seeded baseline
+   drift (±1 px), slant (±2°) and size (±3 %, cancelling in pairs). Deterministic per
+   seed, so a re-issue draws the same page.
+3. **The empty answer line.** A wrong written-answer part usually has a printed dotted
+   rule left empty under the student's sentence. The pen now finds it on the page
+   raster (a scanned rule is a 5–6-row cluster, judged at its darkest row; the printed
+   "[1]" level with the rule is past its end and is not writing; a rule that already
+   carries ink is skipped) and writes there instead of the right margin, in this order:
+   the whole note rewrapped to the rule's width when it fits the rule(s) plus the blank
+   band beneath; an existing stack that fits; the **head alone** on the line ("range =
+   largest - smallest"), with the why folded into the part's margin note — one home per
+   sentence, never twice. Each baseline sits a hair above its rule and runs along it
+   (tilt ±0.6°), a run-on line continues below only into blank paper, and nothing seats
+   on what is already drawn. Verified on Joey p11: the head on the empty rule under
+   "The mass did not start from 0 g.", the ✗ beside the sentence unchanged.
+
+Follow-up noted, not built: prose inside a typeset (`$…$`) note still comes out in
+MathJax's serif, which reads printed beside the wobbled pen lines.
