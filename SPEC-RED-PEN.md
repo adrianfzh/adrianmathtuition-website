@@ -395,3 +395,33 @@ Default OFF — students see no change until the Fly secret `MARK_LAYOUT=inpage`
 set. The golden bench passes 479/479 in both layouts (`MARK_LAYOUT=inpage node
 scripts/golden-pen.cjs`). Side-by-side shown to Adrian on Rainie's Q9 page and the
 dense Alessi Q7 page; his verdict is pending.
+
+### 23 Sep 2026 — no cream at all, and a preview door that never touches live marking
+
+Adrian: "I do not want any cream at all. Natural red ink like handwriting. Also, I want
+to be able to test it (see the results) without touching the current marking pipeline —
+don't want to have to toggle on and off." So:
+
+- **The red-ink mode is `MARK_LOOK=natural` + `MARK_LAYOUT=inpage` together.** Verified
+  by render on Joey's page 11: the only cream on a page was the in-page slip
+  (`teachPanel`), which the natural look already removes; with both on, every mark,
+  score chip ("Q7(b)(i) 0/1" handwritten), note and "From your line" column is red,
+  nothing is boxed or filled, no strip, no footer. Both Fly secrets stay UNSET — live
+  marking is the professional look with the strip, as before.
+- **🧪 Red ink preview** on the desk (`/admin/desk`, beside "🔁 Re-mark this page" on
+  every page) → `POST /api/admin/desk/preview {runId, photoIndex, look?, layout?}` →
+  the bot's `POST /api/preview-page` (Bearer `BOT_INTERNAL_SECRET`) →
+  `ai/preview-page.js previewPage()`. The page is redrawn from the STORED read
+  (`assemblePageRender` in `ai/reannotate-page.js` — the same assembly the desk's
+  page redraw uses; no new read, no Mac slot, deterministic) inside a **child process**
+  whose env carries the look and layout (`ai/preview-page-child.js`; the ink colours
+  and label styles are fixed at module load, so the live process is never re-configured),
+  uploaded under `runs/<id>/preview/p<n>-<look>-<layout>-<ts>.jpg` (+ `over-…` for
+  the overflow sheet), and shown under the page on the desk labelled "preview — not
+  delivered". The only write to the run is a breadcrumb in `result_json.previews`
+  (last 20); `annotated_photos`, the PDFs and the student's copy are never touched.
+  Health-check `desk-preview` probes the 401.
+- The 22 Sep ON-window (21:30–21:55Z) touched exactly one run — Joey's `9ab6da10` —
+  and the desk's page re-mark redrew ALL fifteen pages in the inpage layout on a
+  RELEASED paper. Fix-forward is Adrian's call (redraw each page with the default
+  layout + one re-issue, or a whole-paper 🔁 Re-mark).

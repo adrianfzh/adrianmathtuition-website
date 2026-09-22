@@ -589,6 +589,12 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 🧪 The red-ink preview door (23 Sep 2026) — admin only; a POST with no auth must 401.
+    timed('desk-preview', async () => {
+      const r = await fetch(`${base}/api/admin/desk/preview`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // Student files (5 Sep 2026, lib/student-files.ts): the ONE door to the private
     // bucket must refuse an anonymous reader — a 200 here would mean every marked
     // paper is public-by-URL again.

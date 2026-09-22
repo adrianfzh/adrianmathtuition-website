@@ -769,6 +769,23 @@ export default function DeskPage() {
     refresh(id);
   }
 
+  // 🧪 Red-pen PREVIEW of one page (23 Sep 2026): the bot draws this page again
+  // in the natural red-ink look on the page (no cream, no side column) in a
+  // child process with the switches set for IT alone — the live marking, the
+  // switches and the student's copy are untouched. Shown under the page here.
+  const [previews, setPreviews] = useState<Record<number, { url: string; overflowUrl: string | null; at: string }>>({});
+  async function previewPage(photoIndex: number) {
+    if (!detail) return;
+    const id = detail.run.id;
+    setBusy('preview');
+    setToast(`Drawing page ${photoIndex + 1} in red ink — about 20 s…`);
+    const { ok, d } = await postJson('/api/admin/desk/preview', { runId: id, photoIndex, look: 'natural', layout: 'inpage' });
+    setBusy('');
+    if (!ok || typeof d.url !== 'string') { setToast(d.error || 'Could not draw the preview'); return; }
+    setPreviews(prev => ({ ...prev, [photoIndex]: { url: d.url as string, overflowUrl: typeof d.overflow_url === 'string' ? d.overflow_url : null, at: new Date().toISOString() } }));
+    setToast(`Page ${photoIndex + 1} drawn in red ink — it sits under the marked page. Nothing was delivered.`);
+  }
+
   // 🧮 Fill the parts the marker never scored from the paper's recorded
   // allocation (Adrian, 8 Sep 2026: "can't the marker check the total marks?"),
   // then redraw the PDFs so the cover prints the right total.
@@ -1207,7 +1224,7 @@ export default function DeskPage() {
           onAgree={agree} onOverride={override} onTag={tag} onSubject={setPaperSubject} onAttach={attachMyCopy} onRebuild={rebuild}
           onQueueSheet={queueSheet} onCancelSheet={cancelSheet} onAutoRelease={autoRelease} onApprove={approve} onReleaseOnly={releaseWithoutSheet} onToast={setToast} onRefresh={() => refresh(detail.run.id)}
           onSeen={markSeen} onUploadAmended={uploadAmended} onShelve={shelve} shelved={shelved}
-          onRevise={reviseSheet} onRemarkPage={remarkPage} onApproveScheme={() => approveScheme(false)} onAuditAllocation={auditAllocation} onChecked={markChecked}
+          onRevise={reviseSheet} onRemarkPage={remarkPage} onPreviewPage={previewPage} previews={previews} onApproveScheme={() => approveScheme(false)} onAuditAllocation={auditAllocation} onChecked={markChecked}
           onUnchecked={() => detail && unmarkChecked(detail.run.id, `${detail.run.studentName || 'this paper'} · ${detail.run.paperName || ''}`.trim())}
           onSendSheet={sendSheetNow}
         />
@@ -1229,6 +1246,25 @@ export default function DeskPage() {
   );
 }
 
+// 🧪 A red-ink preview under the marked page (23 Sep 2026) — the same page drawn
+// in the natural look, for Adrian's eye only. Never the student's copy.
+function PreviewBlock({ pv, photoIndex }: { pv: { url: string; overflowUrl: string | null; at: string }; photoIndex: number }) {
+  return (
+    <div style={{ borderTop: `2px dashed ${C.border}`, background: '#fff7f7' }}>
+      <div style={{ padding: '6px 12px', fontSize: 12.5, color: C.muted, display: 'flex', justifyContent: 'space-between' }}>
+        <span>🧪 Page {photoIndex + 1} in red ink (preview — not delivered)</span>
+        <a href={fileHref(pv.url)} target="_blank" rel="noreferrer" style={{ color: C.link, textDecoration: 'none', fontSize: 12 }}>open ↗</a>
+      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={fileHref(pv.url)} alt={`Red-ink preview of page ${photoIndex + 1}`} loading="lazy" style={{ width: '100%', display: 'block' }} />
+      {pv.overflowUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={fileHref(pv.overflowUrl)} alt={`Overflow sheet after page ${photoIndex + 1} (preview)`} loading="lazy" style={{ width: '100%', display: 'block', borderTop: `1px dashed ${C.border}` }} />
+      )}
+    </div>
+  );
+}
+
 // ── Detail view ───────────────────────────────────────────────────────────────
 function DetailView(p: {
   detail: Detail; cover: Cover | null; sheetPages: string[] | null; sheetNote: string;
@@ -1242,6 +1278,8 @@ function DetailView(p: {
   onApprove: () => void; onReleaseOnly: () => void;
   onSeen: () => void; onUploadAmended: (file: File) => void; onShelve: (q: Question) => void; shelved: Set<string>;
   onRevise: (instructions: string) => void; onRemarkPage: (photoIndex: number) => void;
+  /** 🧪 draw this page in the natural red-ink look, live pipeline untouched (23 Sep 2026). */
+  onPreviewPage: (photoIndex: number) => void; previews: Record<number, { url: string; overflowUrl: string | null; at: string }>;
   onApproveScheme: () => void; onAuditAllocation: () => void; onChecked: () => void;
   /** ↩ undo of ✓ Looked at (10 Sep 2026). */
   onUnchecked: () => void;
@@ -1665,6 +1703,11 @@ function DetailView(p: {
                       {busy === 'remark' ? '…' : '🔁 Re-mark this page'}
                     </button>
                   )}
+                  <button onClick={() => p.onPreviewPage(pg.photoIndex)} disabled={busy === 'preview'}
+                    title="Draw this page again in natural red ink on the page — a preview under the page, nothing delivered, the live marking untouched"
+                    style={{ background: 'transparent', border: `1px solid ${C.border}`, borderRadius: 7, padding: '2px 8px', fontSize: 12, color: C.muted, cursor: 'pointer' }}>
+                    {busy === 'preview' ? '…' : '🧪 Red ink preview'}
+                  </button>
                 </span>
               </div>
               {/* Tap the page to annotate it in place — released papers too (10 Sep 2026: every
@@ -1675,6 +1718,7 @@ function DetailView(p: {
                 onClick={() => setAnnotatePage(pg.photoIndex)}
                 title={released ? undefined : 'Tap to annotate this page'}
                 style={{ width: '100%', display: 'block', cursor: released ? 'default' : 'pointer' }} />
+              {p.previews[pg.photoIndex] && <PreviewBlock pv={p.previews[pg.photoIndex]} photoIndex={pg.photoIndex} />}
               {solutionsOnPage && pg.urlWithSolutions && pg.overflowUrl && (
                 <a href={fileHref(pg.overflowUrl)} target="_blank" rel="noreferrer" title="The worked solution did not fit on the page, so it is a sheet of its own, right after the page — the student sees it the same way.">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1741,10 +1785,16 @@ function DetailView(p: {
                       {busy === 'remark' ? '…' : '🔁 Re-mark this page'}
                     </button>
                   )}
+                  <button onClick={() => p.onPreviewPage(pg.photoIndex)} disabled={busy === 'preview'}
+                    title="Draw this page again in natural red ink on the page — a preview under the page, nothing delivered, the live marking untouched"
+                    style={{ background: 'transparent', border: `1px solid ${C.border}`, borderRadius: 7, padding: '2px 8px', fontSize: 12, color: C.muted, cursor: 'pointer' }}>
+                    {busy === 'preview' ? '…' : '🧪 Red ink preview'}
+                  </button>
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={src} alt={`Marked page ${pg.photoIndex + 1}`} onClick={() => setAnnotatePage(pg.photoIndex)}
                   title={released ? undefined : 'Tap to annotate this page'} style={{ width: '100%', display: 'block', cursor: released ? 'default' : 'pointer' }} />
+                {p.previews[pg.photoIndex] && <PreviewBlock pv={p.previews[pg.photoIndex]} photoIndex={pg.photoIndex} />}
                 {solutionsOnPage && pg.urlWithSolutions && pg.overflowUrl && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={fileHref(pg.overflowUrl)} alt={`Worked solution sheet after page ${pg.photoIndex + 1}`} loading="lazy" style={{ width: '100%', display: 'block', borderTop: `1px dashed ${C.border}` }} />
