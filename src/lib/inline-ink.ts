@@ -20,8 +20,14 @@ export const INK_SIZES: readonly InkSize[] = ['S', 'M', 'L'];
 export const INK_SIZE_DEFAULT: InkSize = 'M';
 /** Stroke width multiplier per size — M is what every stroke drew before sizes existed. */
 export const SIZE_FACTOR: Record<InkSize, number> = { S: 0.6, M: 1, L: 1.7 };
-/** The eraser's reach in SCREEN px per size (the page's pixel scale is applied by the caller). */
-export const ERASER_SCREEN_PX: Record<InkSize, number> = { S: 7, M: 14, L: 26 };
+/**
+ * The eraser's reach in SCREEN px per size (the page's pixel scale is applied by the caller).
+ * 23 Sep 2026 (Adrian: "eraser on the smallest size is still erasing a big part … more like
+ * what the size when being selected shows"): these are the RADII of the dots the size picker
+ * draws (6 / 12 / 20 px across), and the picker draws its dots from this table, so the two
+ * cannot drift apart again. Was 7 / 14 / 26.
+ */
+export const ERASER_SCREEN_PX: Record<InkSize, number> = { S: 3, M: 6, L: 10 };
 /** A stored size is honoured only when it is one of the three. */
 export function sizeChoice(stored: string | null | undefined): InkSize {
   return (INK_SIZES as readonly string[]).includes(stored || '') ? (stored as InkSize) : INK_SIZE_DEFAULT;

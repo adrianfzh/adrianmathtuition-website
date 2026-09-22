@@ -116,9 +116,13 @@ describe('inline ink — sizes, the partial eraser, the toolbar under zoom (22 S
     expect(I.sizeChoice(null)).toBe('M');
   });
   it('the eraser radius grows with the size and with how small the page is drawn', () => {
-    expect(I.eraserRadius('M', nat, 800)).toBeCloseTo(28, 5);
+    expect(I.eraserRadius('M', nat, 800)).toBeCloseTo(12, 5);
     expect(I.eraserRadius('L', nat, 800)).toBeGreaterThan(I.eraserRadius('M', nat, 800));
-    expect(I.eraserRadius('M', nat, 400)).toBeCloseTo(56, 5);
+    expect(I.eraserRadius('M', nat, 400)).toBeCloseTo(24, 5);
+  });
+  it('the smallest eraser is the size of the picker dot — three screen px of reach, not seven (23 Sep 2026)', () => {
+    expect(I.ERASER_SCREEN_PX.S).toBe(3);
+    expect(I.eraserRadius('S', nat, nat.w)).toBe(3);
   });
   it('the eraser cuts a stroke where it touches and keeps both ends', () => {
     const line = { tool: 'pen' as const, color: '#000', width: 4, points: [{ x: 0, y: 100, p: 0.5 }, { x: 200, y: 100, p: 0.5 }] };
