@@ -207,7 +207,7 @@ export SHEETS_STATE="$STATE"
 # and the others read that until it is `ttl` seconds old.
 GATE_DIR="${ADRIANMATH_GATE_DIR:-$HOME/.adrianmath_gate}"
 mkdir -p "$GATE_DIR" 2>/dev/null
-file_mtime() { stat -f %m "$1" 2>/dev/null || stat -c %Y "$1" 2>/dev/null || echo 0; }
+file_mtime() { stat -c %Y "$1" 2>/dev/null || stat -f %m "$1" 2>/dev/null || echo 0; }  # GNU first: on Linux `stat -f` is FILESYSTEM status and prints "File: …" instead of failing, which killed every worker slot 19–22 Sep 2026
 shared_fetch() {  # shared_fetch <name> <ttl s> <command…> → the body, fetched at most once per ttl per machine
   local name="$1" ttl="$2"; shift 2
   local f="$GATE_DIR/$name" lock="$GATE_DIR/$name.lock" body
