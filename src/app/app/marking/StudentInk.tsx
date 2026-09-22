@@ -23,8 +23,8 @@ import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 import { strokesToSvg } from '@/lib/annotate/layer';
 import { inkIsEmpty, inkStrokes, type InkPages } from '@/lib/student-ink';
 import {
-  addStroke, hitStrokes, isAccident, removeStrokes, toImagePoint, toolWidth, type InkTool, type Nat,
-  PEN_COLORS, HL_COLORS, PEN_COLOR_DEFAULT, HL_COLOR_DEFAULT, paletteColor,
+  addStroke, eraseAt, eraserRadius, isAccident, toImagePoint, toolWidth, type InkTool, type InkSize, type Nat,
+  PEN_COLORS, HL_COLORS, PEN_COLOR_DEFAULT, HL_COLOR_DEFAULT, paletteColor, INK_SIZES, INK_SIZE_DEFAULT, sizeChoice, toolbarPlacement,
   HOLD_SNAP_MS, snapHeldStroke, heldStill, isDoubleTap,
   emptyHistory, pushHistory, undoInk, redoInk, type InkHistory,
 } from '@/lib/inline-ink';
@@ -45,15 +45,16 @@ const pathOf = (pts: StrokePoint[]) => pts.map((p, i) => `${i ? 'L' : 'M'}${p.x}
 
 type SurfaceProps = {
   page: InkPageInput; mine?: InkPages[number]; other?: InkPages[number];
-  tool: InkTool; color: string; hlColor: string; canWrite: boolean; fingerWrites: boolean;
+  tool: InkTool; color: string; hlColor: string; size: InkSize; canWrite: boolean; fingerWrites: boolean;
   onStroke: (index: number, stroke: Stroke, nat: Nat) => void;
-  onErase: (index: number, x: number, y: number, radius: number) => void;
+  /** `phase` 'start' opens one erase gesture (one undo step however far the eraser travels). */
+  onErase: (index: number, x: number, y: number, radius: number, phase: 'start' | 'move') => void;
   /** Two quick Pencil taps on the page: pen ↔ eraser (22 Sep 2026). */
   onDoubleTap: () => void;
 };
 
 /** One page: its bitmap on a canvas (lazily, near the viewport), both ink layers, the live stroke, and the input. */
-function PageSurface({ page, mine, other, tool, color, hlColor, canWrite, fingerWrites, onStroke, onErase, onDoubleTap }: SurfaceProps) {
+function PageSurface({ page, mine, other, tool, color, hlColor, size, canWrite, fingerWrites, onStroke, onErase, onDoubleTap }: SurfaceProps) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const bmpRef = useRef<HTMLCanvasElement | null>(null);
   const liveRef = useRef<SVGPathElement | null>(null);
@@ -63,8 +64,8 @@ function PageSurface({ page, mine, other, tool, color, hlColor, canWrite, finger
   const natRef = useRef<Nat | null>(null);
   const writable = canWrite && Number.isInteger(page.index);
   // Latest props for the listeners below, which are attached once.
-  const live = useRef({ tool, color, hlColor, fingerWrites, onStroke, onErase, onDoubleTap });
-  useEffect(() => { live.current = { tool, color, hlColor, fingerWrites, onStroke, onErase, onDoubleTap }; });
+  const live = useRef({ tool, color, hlColor, size, fingerWrites, onStroke, onErase, onDoubleTap });
+  useEffect(() => { live.current = { tool, color, hlColor, size, fingerWrites, onStroke, onErase, onDoubleTap }; });
 
   // ── the page bitmap: draw when near the viewport, free it when far ──────────
   useEffect(() => {
@@ -147,29 +148,29 @@ function PageSurface({ page, mine, other, tool, color, hlColor, canWrite, finger
       const n = natRef.current; if (!n) return null;
       return toImagePoint(cx, cy, el.getBoundingClientRect(), n, force);
     };
-    const erase = (p: StrokePoint) => {
+    const erase = (p: StrokePoint, phase: 'start' | 'move') => {
       const n = natRef.current; if (!n) return;
       const r = el.getBoundingClientRect();
-      live.current.onErase(page.index, p.x, p.y, 14 * (n.w / Math.max(1, r.width)));
+      live.current.onErase(page.index, p.x, p.y, eraserRadius(live.current.size, n, r.width), phase);
     };
     const paint = () => liveRef.current?.setAttribute('d', pts.length === 1 ? `M${pts[0].x} ${pts[0].y}l0.1 0` : pathOf(pts));
     const begin = (p: StrokePoint | null, pencil: boolean) => {
       if (!p || active) return;
       active = true; byPencil = pencil; pts = [p]; snapped = null;
-      if (live.current.tool === 'er') { erase(p); return; }
+      if (live.current.tool === 'er') { erase(p, 'start'); return; }
       const n = natRef.current!;
       const hl = live.current.tool === 'hl';
       const lp = liveRef.current;
       if (lp) {
         lp.setAttribute('stroke', hl ? live.current.hlColor : live.current.color);
-        lp.setAttribute('stroke-width', String(toolWidth(live.current.tool, n)));
+        lp.setAttribute('stroke-width', String(toolWidth(live.current.tool, n, live.current.size)));
         lp.setAttribute('stroke-opacity', hl ? '0.38' : '1');
       }
       paint();
     };
     const extend = (p: StrokePoint | null) => {
       if (!p || !active) return;
-      if (live.current.tool === 'er') { erase(p); return; }
+      if (live.current.tool === 'er') { erase(p, 'move'); return; }
       const last = pts[pts.length - 1];
       if (last && last.x === p.x && last.y === p.y) return;
       pts.push(p);
@@ -203,8 +204,8 @@ function PageSurface({ page, mine, other, tool, color, hlColor, canWrite, finger
       if (!pencil && isAccident(mine, n)) return;        // a mouse click or a stray finger; never the Pencil
       const hl = live.current.tool === 'hl';
       const stroke: Stroke = fit
-        ? { tool: hl ? 'highlighter' : 'pen', color: hl ? live.current.hlColor : live.current.color, width: toolWidth(live.current.tool, n), points: fit.points, snapped: fit.snapped }
-        : { tool: hl ? 'highlighter' : 'pen', color: hl ? live.current.hlColor : live.current.color, width: toolWidth(live.current.tool, n), points: mine.length === 1 ? [mine[0], { ...mine[0], x: mine[0].x + 0.1 }] : mine };
+        ? { tool: hl ? 'highlighter' : 'pen', color: hl ? live.current.hlColor : live.current.color, width: toolWidth(live.current.tool, n, live.current.size), points: fit.points, snapped: fit.snapped }
+        : { tool: hl ? 'highlighter' : 'pen', color: hl ? live.current.hlColor : live.current.color, width: toolWidth(live.current.tool, n, live.current.size), points: mine.length === 1 ? [mine[0], { ...mine[0], x: mine[0].x + 0.1 }] : mine };
       if (tap) {
         // A Pencil dot: file it unless a second tap follows within the double-tap window.
         lastTap = { x: mine[0].x, y: mine[0].y, at: now };
@@ -318,11 +319,16 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
   const colorKey = (t: 'pen' | 'hl') => `ink-color:${isAdrian ? 'adrian' : 'student'}:${t}`;
   const [penColor, setPenColor] = useState<string>(PEN_DEFAULT[editor]);
   const [hlColor, setHlColor] = useState<string>(HL_COLOR_DEFAULT);
-  const [palette, setPalette] = useState<'pen' | 'hl' | null>(null);
+  // The popover above the pill: colours + sizes for the pen and highlighter, sizes for the eraser (22 Sep 2026).
+  const [palette, setPalette] = useState<InkTool | null>(null);
+  // Sizes (22 Sep 2026): one per tool, remembered on this device per editor.
+  const sizeKey = (t: InkTool) => `ink-size:${isAdrian ? 'adrian' : 'student'}:${t}`;
+  const [sizes, setSizes] = useState<Record<InkTool, InkSize>>({ pen: INK_SIZE_DEFAULT, hl: INK_SIZE_DEFAULT, er: INK_SIZE_DEFAULT });
   useEffect(() => {
     try {
       const p = window.localStorage.getItem(colorKey('pen')); if (p) setPenColor(paletteColor('pen', p) === p ? p : PEN_DEFAULT[editor]);
       const h = window.localStorage.getItem(colorKey('hl')); if (h) setHlColor(paletteColor('hl', h));
+      setSizes({ pen: sizeChoice(window.localStorage.getItem(sizeKey('pen'))), hl: sizeChoice(window.localStorage.getItem(sizeKey('hl'))), er: sizeChoice(window.localStorage.getItem(sizeKey('er'))) });
     } catch { /* private mode: defaults */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- read once on mount
   }, []);
@@ -331,10 +337,15 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
     try { window.localStorage.setItem(colorKey(t), hex); } catch { /* fine */ }
     setPalette(null);
   };
+  const pickSize = (t: InkTool, sz: InkSize) => {
+    setSizes(cur => ({ ...cur, [t]: sz }));
+    try { window.localStorage.setItem(sizeKey(t), sz); } catch { /* fine */ }
+    setPalette(null);
+  };
   const [lastDrawTool, setLastDrawTool] = useState<'pen' | 'hl'>('pen');
   const chooseTool = (t: InkTool) => {
-    if (t === 'pen' || t === 'hl') { setLastDrawTool(t); setPalette(tool === t && palette !== t ? t : null); }
-    else setPalette(null);
+    if (t === 'pen' || t === 'hl') setLastDrawTool(t);
+    setPalette(tool === t && palette !== t ? t : null);   // a second tap on the active tool opens its popover
     setTool(t);
   };
   /** Two Pencil taps on the page: eraser ↔ the last drawing tool. */
@@ -404,8 +415,17 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
     inkRef.current = out; setInk(out); touch();
   }, [touch]);
   const onStroke = useCallback((index: number, stroke: Stroke, nat: Nat) => change(cur => addStroke(cur, index, stroke, nat)), [change]);
-  const onErase = useCallback((index: number, x: number, y: number, radius: number) =>
-    change(cur => removeStrokes(cur, index, hitStrokes(cur[index]?.strokes ?? [], x, y, radius))), [change]);
+  // One erase gesture = one undo step: the first cut pushes the ink as it was when the
+  // eraser touched down; every cut until it lifts only updates the ink (22 Sep 2026).
+  const eraseGesture = useRef<{ before: InkPages; pushed: boolean } | null>(null);
+  const onErase = useCallback((index: number, x: number, y: number, radius: number, phase: 'start' | 'move') => {
+    if (phase === 'start' || !eraseGesture.current) eraseGesture.current = { before: inkRef.current, pushed: false };
+    const cur = inkRef.current; const out = eraseAt(cur, index, x, y, radius);
+    if (out === cur) return;
+    const g = eraseGesture.current;
+    if (!g.pushed) { histRef.current = pushHistory(histRef.current, g.before); setHistory(histRef.current); g.pushed = true; }
+    inkRef.current = out; setInk(out); touch();
+  }, [touch]);
   const undo = () => {
     const r = undoInk(histRef.current, inkRef.current); if (!r) return;
     histRef.current = r.history; setHistory(r.history);
@@ -448,6 +468,23 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
     expand: 'M15 3h6v6 M9 21H3v-6 M21 3l-7 7 M3 21l7-7',
     marks: 'M3 3h18v18H3z M7 13l3 3 7-7',
   } as const;
+  // Pinch zoom: pin the pill to the visual viewport at 1/scale so it stays put, centred, the same size.
+  const toolbarRef = useRef<HTMLDivElement | null>(null);
+  const [pinned, setPinned] = useState<{ left: number; top: number; scale: number } | null>(null);
+  useEffect(() => {
+    const vv = window.visualViewport; if (!vv) return;
+    let gap = 20;
+    const measure = () => {
+      if (vv.scale <= 1.02 && toolbarRef.current) {
+        const b = parseFloat(getComputedStyle(toolbarRef.current).bottom);
+        if (Number.isFinite(b) && b > 0) gap = b;
+      }
+      setPinned(toolbarPlacement(vv, gap));
+    };
+    measure();
+    vv.addEventListener('resize', measure); vv.addEventListener('scroll', measure);
+    return () => { vv.removeEventListener('resize', measure); vv.removeEventListener('scroll', measure); };
+  }, [inView, readOnly]);
   const [hintSeen, setHintSeen] = useState(true);
   useEffect(() => {
     try { setHintSeen(window.localStorage.getItem('ink-hint-seen') === '1'); } catch { setHintSeen(true); }
@@ -457,7 +494,7 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
     const on = tool === t;
     return (
       <button type="button" onClick={() => chooseTool(t)} aria-pressed={on} aria-label={label} data-tool={t}
-        title={t === 'er' ? 'Eraser — or double-tap the page with the Pencil' : `${label} — tap again for colours`}
+        title={t === 'er' ? 'Eraser — tap again for sizes, or double-tap the page with the Pencil' : `${label} — tap again for colours and sizes`}
         className={`relative w-11 h-11 rounded-full flex items-center justify-center transition ${on ? 'bg-navy text-white shadow-md -translate-y-0.5' : 'text-navy/70 hover:bg-navy/5'}`}>
         <Icon d={ICON[t]} />
         {color && <span aria-hidden className={`absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full ring-2 ${on ? 'ring-navy' : 'ring-white'}`} style={{ background: color }} />}
@@ -478,7 +515,8 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
         // FIXED to the screen, not sticky (19 Sep 2026, Adrian: "i scroll down the marked pages, then i
         // want to use the pen, but i have to scroll all the way up") — it is there on page 1 and on page
         // 16 alike, for as long as any marked page is on screen. Above the phone's bottom tab bar.
-        <div className="fixed left-1/2 -translate-x-1/2 z-40 bottom-[calc(env(safe-area-inset-bottom)+76px)] md:bottom-5 flex flex-col items-center gap-2" data-ink-toolbar>
+        <div ref={toolbarRef} className="fixed left-1/2 -translate-x-1/2 z-40 bottom-[calc(env(safe-area-inset-bottom)+76px)] md:bottom-5 flex flex-col items-center gap-2" data-ink-toolbar
+          style={pinned ? { left: pinned.left, top: pinned.top, bottom: 'auto', transform: `translate(-50%, -100%) scale(${pinned.scale})`, transformOrigin: '50% 100%' } : undefined}>
           {!hintSeen && (
             <div className="max-w-[calc(100vw-24px)] rounded-full bg-navy text-white text-[11.5px] px-3.5 py-1.5 shadow-lg flex items-center gap-2" role="status">
               <span>Hold the Pencil still at the end of a stroke to snap a line, box or circle · double-tap the page to erase</span>
@@ -486,17 +524,35 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
             </div>
           )}
           {palette && (
-            <div className="rounded-full bg-white/95 backdrop-blur shadow-lg border border-black/5 px-2 py-1.5 flex items-center gap-1.5" role="group" aria-label={palette === 'pen' ? 'Pen colour' : 'Highlighter colour'} data-palette={palette}>
-              {(palette === 'pen' ? PEN_COLORS : HL_COLORS).map(c => {
-                const on = (palette === 'pen' ? penColor : hlColor) === c.hex;
-                return (
-                  <button key={c.hex} type="button" onClick={() => pickColor(palette, c.hex)} aria-label={c.name} aria-pressed={on} title={c.name}
-                    className="w-10 h-10 rounded-full flex items-center justify-center">
-                    <span aria-hidden className={`block rounded-full transition ${on ? 'w-8 h-8 ring-2 ring-offset-2 ring-navy' : 'w-6 h-6'}`}
-                      style={{ background: palette === 'hl' ? `${c.hex}b3` : c.hex }} />
-                  </button>
-                );
-              })}
+            <div className="rounded-3xl bg-white/95 backdrop-blur shadow-lg border border-black/5 px-2 py-1.5 flex flex-col items-center gap-1 max-w-[calc(100vw-16px)]" role="group"
+              aria-label={palette === 'pen' ? 'Pen colour and size' : palette === 'hl' ? 'Highlighter colour and size' : 'Eraser size'} data-palette={palette}>
+              {palette !== 'er' && (
+                <div className="flex flex-wrap justify-center items-center gap-1 max-w-[264px]">
+                  {(palette === 'pen' ? PEN_COLORS : HL_COLORS).map(c => {
+                    const on = (palette === 'pen' ? penColor : hlColor) === c.hex;
+                    return (
+                      <button key={c.hex} type="button" onClick={() => pickColor(palette, c.hex)} aria-label={c.name} aria-pressed={on} title={c.name}
+                        className="w-10 h-10 rounded-full flex items-center justify-center">
+                        <span aria-hidden className={`block rounded-full transition ${on ? 'w-8 h-8 ring-2 ring-offset-2 ring-navy' : 'w-6 h-6'}`}
+                          style={{ background: palette === 'hl' ? `${c.hex}b3` : c.hex }} />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              <div className="flex items-center gap-1" role="group" aria-label="Size" data-sizes={palette}>
+                {INK_SIZES.map(sz => {
+                  const on = sizes[palette] === sz;
+                  const dot = sz === 'S' ? 'w-1.5 h-1.5' : sz === 'M' ? 'w-3 h-3' : 'w-5 h-5';
+                  const tint = palette === 'pen' ? penColor : palette === 'hl' ? `${hlColor}b3` : '#9ca3af';
+                  return (
+                    <button key={sz} type="button" onClick={() => pickSize(palette, sz)} aria-label={`${sz === 'S' ? 'Small' : sz === 'M' ? 'Medium' : 'Large'} ${palette === 'er' ? 'eraser' : palette === 'hl' ? 'highlighter' : 'pen'}`} aria-pressed={on}
+                      className={`w-11 h-11 rounded-full flex items-center justify-center transition ${on ? 'bg-navy/10 ring-2 ring-navy' : 'hover:bg-navy/5'}`}>
+                      <span aria-hidden className={`block rounded-full ${dot} ${palette === 'er' ? 'border-2 border-gray-400 bg-white' : ''}`} style={palette === 'er' ? undefined : { background: tint }} />
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
           <div className="rounded-full bg-white/95 backdrop-blur shadow-lg border border-black/5 px-2 py-1 flex items-center gap-0.5 max-w-[calc(100vw-16px)]">
@@ -537,7 +593,7 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
         <PageSurface key={p.index} page={p}
           mine={show ? ink[p.index] : undefined}
           other={showOther && other?.pages ? other.pages[p.index] : undefined}
-          tool={tool} color={penColor} hlColor={hlColor} canWrite={!readOnly && show} fingerWrites={fingerWrites}
+          tool={tool} color={penColor} hlColor={hlColor} size={sizes[tool]} canWrite={!readOnly && show} fingerWrites={fingerWrites}
           onStroke={onStroke} onErase={onErase} onDoubleTap={onDoubleTap} />
       ))}
       {fullScreen && (

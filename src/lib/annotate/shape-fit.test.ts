@@ -241,3 +241,88 @@ describe('real hands (17 Sep 2026)', () => {
     if (fit?.kind === 'ellipse') expect(fit.rx).toBeCloseTo(fit.ry, 6);
   });
 });
+
+// ── 22 Sep 2026: what a real hold on the iPad delivers (Adrian: "draw and hold to turn
+// into a perfect circle … usually turns into a square") ─────────────────────────────
+import { cleanLoop, trimClusters } from './shape-fit';
+import { pathLength } from './stroke-geometry';
+
+/** A hand circle: sparse (n points), jittered, overshooting the start by `close`−1 of a turn, ending in a hold cluster. */
+function handCircle(R: number, opts: { n?: number; jitter?: number; close?: number; tail?: number; seed?: number; squareness?: number } = {}): StrokePoint[] {
+  const { n = 24, jitter = 2, close = 1, tail = 30, seed = 5, squareness = 0 } = opts;
+  const rand = mulberry32(seed);
+  const pts: StrokePoint[] = [];
+  for (let i = 0; i <= n; i++) {
+    const t = 0.3 + (i / n) * 2 * Math.PI * close;
+    const r = R * (1 + squareness * Math.cos(4 * (t - 0.3 - Math.PI / 4)));
+    pts.push(pt(300 + r * Math.cos(t) + noise(rand, jitter), 300 + r * Math.sin(t) + noise(rand, jitter)));
+  }
+  const last = pts[pts.length - 1];
+  for (let i = 0; i < tail; i++) pts.push(pt(last.x + noise(rand, 1.5), last.y + noise(rand, 1.5)));
+  return pts;
+}
+/** A rounded square (superellipse exponent 12) drawn the same way. */
+function handSquare(a: number, opts: { n?: number; jitter?: number; close?: number; tail?: number; seed?: number; rot?: number } = {}): StrokePoint[] {
+  const { n = 40, jitter = 2, close = 1.08, tail = 30, seed = 6, rot = 0 } = opts;
+  const rand = mulberry32(seed);
+  const pts: StrokePoint[] = [];
+  for (let i = 0; i <= n; i++) {
+    const t = 0.3 + (i / n) * 2 * Math.PI * close, c = Math.cos(t), s = Math.sin(t);
+    const x = a * Math.sign(c) * Math.abs(c) ** (2 / 12), y = a * Math.sign(s) * Math.abs(s) ** (2 / 12);
+    pts.push(pt(300 + x * Math.cos(rot) - y * Math.sin(rot) + noise(rand, jitter), 300 + x * Math.sin(rot) + y * Math.cos(rot) + noise(rand, jitter)));
+  }
+  const last = pts[pts.length - 1];
+  for (let i = 0; i < tail; i++) pts.push(pt(last.x + noise(rand, 1.5), last.y + noise(rand, 1.5)));
+  return pts;
+}
+
+describe('a held stroke on the iPad (22 Sep 2026)', () => {
+  it('trimClusters collapses the hold cluster at the end and the pen-down blob at the start', () => {
+    const raw = handCircle(60, { tail: 40 });
+    const out = trimClusters(raw);
+    expect(out.length).toBeLessThan(raw.length - 30);
+    expect(out[out.length - 1]).toBeDefined();
+    // the head is untouched when there is no cluster there
+    expect(out[0]).toEqual(raw[0]);
+  });
+  it('cleanLoop cuts the overshoot so the loop is about one perimeter long', () => {
+    const loop = cleanLoop(handCircle(60, { close: 1.18, jitter: 0, tail: 0, n: 60 }));
+    expect(pathLength(loop)).toBeGreaterThan(2 * Math.PI * 60 * 0.9);
+    expect(pathLength(loop)).toBeLessThan(2 * Math.PI * 60 * 1.06);
+  });
+  it('a circle ending in a hold cluster is a circle', () => {
+    for (const seed of [1, 2, 3, 4]) {
+      const fit = fitStroke(handCircle(40, { seed }), { minLength: 20 });
+      expect(fit?.kind, `seed ${seed}`).toBe('ellipse');
+      if (fit?.kind === 'ellipse') expect(fit.rx).toBeCloseTo(fit.ry, 6);
+    }
+  });
+  it('a circle that overshoots its start is still a circle', () => {
+    for (const close of [1.08, 1.15, 1.25]) {
+      const fit = fitStroke(handCircle(60, { close, n: 40 }), { minLength: 20 });
+      expect(fit?.kind, `close ${close}`).toBe('ellipse');
+      if (fit?.kind === 'ellipse') { expect(fit.rx).toBeCloseTo(fit.ry, 6); expect(fit.rx).toBeGreaterThan(52); expect(fit.rx).toBeLessThan(68); }
+    }
+  });
+  it('a small, sparse, lumpy hand circle snaps to a circle, never a rectangle', () => {
+    for (const seed of [1, 2, 3, 4, 5, 6]) {
+      const fit = fitStroke(handCircle(25, { n: 20, jitter: 2, squareness: 0.12, seed }), { minLength: 20 });
+      expect(fit?.kind, `seed ${seed}`).toBe('ellipse');
+    }
+  });
+  it('a rounded square with an overshoot and a hold cluster is a rectangle, not a circle', () => {
+    for (const rot of [0, 0.35]) for (const seed of [1, 2, 3]) {
+      const fit = fitStroke(handSquare(50, { rot, seed }), { minLength: 20 });
+      expect(fit?.kind, `rot ${rot} seed ${seed}`).toBe('rect');
+    }
+  });
+  it('a held straight line with a hold cluster is a line', () => {
+    const rand = mulberry32(8);
+    const pts: StrokePoint[] = [];
+    for (let i = 0; i <= 20; i++) pts.push(pt(i * 10 + noise(rand, 1), 100 + i * 0.5 + noise(rand, 1.5)));
+    for (let i = 0; i < 30; i++) pts.push(pt(200 + noise(rand, 1.5), 110 + noise(rand, 1.5)));
+    const fit = fitStroke(pts, { minLength: 20 });
+    expect(fit?.kind).toBe('line');
+    if (fit?.kind === 'line') expect(fit.x2).toBeGreaterThan(195);
+  });
+});

@@ -86,3 +86,46 @@ describe('inline ink — colours, hold-to-snap, double-tap, undo/redo (22 Sep 20
     const fresh = I.pushHistory(u1.history, b); expect(fresh.future).toEqual([]);
   });
 });
+
+describe('inline ink — sizes, the partial eraser, the toolbar under zoom (22 Sep 2026)', () => {
+  const nat = { w: 1600, h: 2260 };
+  it('sizes scale the width; M is the old width; a stale stored size falls back to M', () => {
+    expect(I.toolWidth('pen', nat, 'M')).toBe(I.toolWidth('pen', nat));
+    expect(I.toolWidth('pen', nat, 'S')).toBeLessThan(I.toolWidth('pen', nat, 'M'));
+    expect(I.toolWidth('hl', nat, 'L')).toBeGreaterThan(I.toolWidth('hl', nat, 'M'));
+    expect(I.sizeChoice('L')).toBe('L');
+    expect(I.sizeChoice('XL')).toBe('M');
+    expect(I.sizeChoice(null)).toBe('M');
+  });
+  it('the eraser radius grows with the size and with how small the page is drawn', () => {
+    expect(I.eraserRadius('M', nat, 800)).toBeCloseTo(28, 5);
+    expect(I.eraserRadius('L', nat, 800)).toBeGreaterThan(I.eraserRadius('M', nat, 800));
+    expect(I.eraserRadius('M', nat, 400)).toBeCloseTo(56, 5);
+  });
+  it('the eraser cuts a stroke where it touches and keeps both ends', () => {
+    const line = { tool: 'pen' as const, color: '#000', width: 4, points: [{ x: 0, y: 100, p: 0.5 }, { x: 200, y: 100, p: 0.5 }] };
+    const pages = I.addStroke({}, 0, line, nat);
+    const out = I.eraseAt(pages, 0, 100, 100, 10);
+    expect(out).not.toBe(pages);
+    expect(out[0].strokes).toHaveLength(2);
+    expect(Math.max(...out[0].strokes[0].points.map(p => p.x))).toBeLessThan(95);
+    expect(Math.min(...out[0].strokes[1].points.map(p => p.x))).toBeGreaterThan(105);
+  });
+  it('a miss returns the same object; a typed note goes whole; a tiny stroke fully under the eraser goes', () => {
+    const note = { tool: 'pen' as const, color: '#000', width: 4, points: [{ x: 50, y: 50, p: 0.5 }], text: 'hi' };
+    const dot = { tool: 'pen' as const, color: '#000', width: 4, points: [{ x: 300, y: 300, p: 0.5 }, { x: 302, y: 300, p: 0.5 }] };
+    let pages = I.addStroke(I.addStroke({}, 0, note, nat), 0, dot, nat);
+    expect(I.eraseAt(pages, 0, 900, 900, 10)).toBe(pages);
+    pages = I.eraseAt(pages, 0, 50, 50, 10);
+    expect(pages[0].strokes).toHaveLength(1);
+    expect(pages[0].strokes[0].text).toBeUndefined();
+    pages = I.eraseAt(pages, 0, 301, 300, 10);
+    expect(pages[0]).toBeUndefined();
+  });
+  it('the toolbar is placed by CSS until a pinch zoom, then pinned to the visual viewport at 1/scale', () => {
+    expect(I.toolbarPlacement({ scale: 1, offsetLeft: 0, offsetTop: 0, width: 390, height: 844 }, 20)).toBeNull();
+    expect(I.toolbarPlacement(null, 20)).toBeNull();
+    const p = I.toolbarPlacement({ scale: 2, offsetLeft: 100, offsetTop: 300, width: 195, height: 422 }, 20);
+    expect(p).toEqual({ left: 197.5, top: 712, scale: 0.5 });
+  });
+});

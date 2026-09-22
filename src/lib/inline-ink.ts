@@ -6,9 +6,22 @@
 import type { Stroke, StrokePoint } from './annotate/types';
 import type { InkPages } from './student-ink';
 import { fitStroke, shapeToPolyline } from './annotate/shape-fit';
+import { splitStrokeAtCircle } from './annotate/stroke-split';
 
 export type Nat = { w: number; h: number };
 export type InkTool = 'pen' | 'hl' | 'er';
+/** Three sizes per tool (22 Sep 2026, Adrian: "select different sizes for pen, highlighter and eraser"). */
+export type InkSize = 'S' | 'M' | 'L';
+export const INK_SIZES: readonly InkSize[] = ['S', 'M', 'L'];
+export const INK_SIZE_DEFAULT: InkSize = 'M';
+/** Stroke width multiplier per size — M is what every stroke drew before sizes existed. */
+export const SIZE_FACTOR: Record<InkSize, number> = { S: 0.6, M: 1, L: 1.7 };
+/** The eraser's reach in SCREEN px per size (the page's pixel scale is applied by the caller). */
+export const ERASER_SCREEN_PX: Record<InkSize, number> = { S: 7, M: 14, L: 26 };
+/** A stored size is honoured only when it is one of the three. */
+export function sizeChoice(stored: string | null | undefined): InkSize {
+  return (INK_SIZES as readonly string[]).includes(stored || '') ? (stored as InkSize) : INK_SIZE_DEFAULT;
+}
 
 /** A client point → page-image pixels, clamped to the page. */
 export function toImagePoint(clientX: number, clientY: number, rect: { left: number; top: number; width: number; height: number }, nat: Nat, p = 0.5): StrokePoint {
@@ -19,9 +32,14 @@ export function toImagePoint(clientX: number, clientY: number, rect: { left: num
 }
 
 /** Tool widths scale with the page so a note looks the same on a 1200 px and a 2400 px scan. */
-export function toolWidth(tool: InkTool, nat: Nat): number {
+export function toolWidth(tool: InkTool, nat: Nat, size: InkSize = 'M'): number {
   const w = Math.max(400, nat.w);
-  return Math.round((tool === 'hl' ? w * 0.014 : w * 0.0024) * 10) / 10;
+  return Math.round((tool === 'hl' ? w * 0.014 : w * 0.0024) * SIZE_FACTOR[size] * 10) / 10;
+}
+
+/** The eraser circle in page-image px: its screen size for `size`, scaled by how big the page is drawn. */
+export function eraserRadius(size: InkSize, nat: Nat, drawnWidth: number): number {
+  return ERASER_SCREEN_PX[size] * (nat.w / Math.max(1, drawnWidth));
 }
 
 /** Indices of the strokes with any point within `radius` image px of (x, y). A typed note is hit at its anchor. */
@@ -48,6 +66,34 @@ export function addStroke(pages: InkPages, index: number, stroke: Stroke, nat: N
   return { ...pages, [index]: { strokes: [...(cur?.strokes ?? []), stroke], w: cur?.w || nat.w, h: cur?.h || nat.h } };
 }
 
+/**
+ * The eraser rubs out what is UNDER it, not the whole stroke (22 Sep 2026, Adrian:
+ * "can eraser erase partially (not whole objects?)"): every touched freehand stroke is
+ * cut at the circle and its surviving pieces stay; a typed note has no line to cut and
+ * goes whole. Returns the same object when nothing is touched, so the caller can tell.
+ */
+export function eraseAt(pages: InkPages, index: number, x: number, y: number, radius: number): InkPages {
+  const cur = pages[index];
+  if (!cur) return pages;
+  const hits = hitStrokes(cur.strokes, x, y, radius);
+  if (!hits.length) return pages;
+  const hit = new Set(hits);
+  let changed = false;
+  const strokes: Stroke[] = [];
+  cur.strokes.forEach((s, i) => {
+    if (!hit.has(i)) { strokes.push(s); return; }
+    if (s.text) { changed = true; return; }
+    const pieces = splitStrokeAtCircle(s, x, y, radius);
+    if (pieces === null) { strokes.push(s); return; }
+    changed = true;
+    strokes.push(...pieces);
+  });
+  if (!changed) return pages;
+  const next = { ...pages };
+  if (strokes.length) next[index] = { ...cur, strokes }; else delete next[index];
+  return next;
+}
+
 export function removeStrokes(pages: InkPages, index: number, idxs: number[]): InkPages {
   const cur = pages[index];
   if (!cur || !idxs.length) return pages;
@@ -69,7 +115,7 @@ export function isAccident(points: StrokePoint[], nat: Nat): boolean {
 // ── 22 Sep 2026 (Adrian: "select the different colours for the pen and highlighter …
 // allow for redo … allow for snap to shapes … double tap to erase") ─────────────
 
-/** The pen's palette — the first entry is the default for a student; Adrian's ink is the green. */
+/** The pen's palette — the first entry is the default for a student; Adrian's ink is the green. Twelve since 22 Sep 2026. */
 export const PEN_COLORS: readonly { hex: string; name: string }[] = [
   { hex: '#2563eb', name: 'Blue' },
   { hex: '#111827', name: 'Black' },
@@ -77,14 +123,23 @@ export const PEN_COLORS: readonly { hex: string; name: string }[] = [
   { hex: '#047857', name: 'Green' },
   { hex: '#7c3aed', name: 'Purple' },
   { hex: '#ea580c', name: 'Orange' },
+  { hex: '#db2777', name: 'Pink' },
+  { hex: '#0d9488', name: 'Teal' },
+  { hex: '#0284c7', name: 'Sky' },
+  { hex: '#4338ca', name: 'Indigo' },
+  { hex: '#92400e', name: 'Brown' },
+  { hex: '#6b7280', name: 'Grey' },
 ];
-/** The highlighter's palette — drawn at 38 % with multiply, so these are the bright originals. */
+/** The highlighter's palette — drawn at 38 % with multiply, so these are the bright originals. Eight since 22 Sep 2026. */
 export const HL_COLORS: readonly { hex: string; name: string }[] = [
   { hex: '#facc15', name: 'Yellow' },
   { hex: '#4ade80', name: 'Green' },
   { hex: '#f472b6', name: 'Pink' },
   { hex: '#38bdf8', name: 'Blue' },
   { hex: '#fb923c', name: 'Orange' },
+  { hex: '#c084fc', name: 'Purple' },
+  { hex: '#f87171', name: 'Red' },
+  { hex: '#2dd4bf', name: 'Teal' },
 ];
 export const PEN_COLOR_DEFAULT = PEN_COLORS[0].hex;
 export const HL_COLOR_DEFAULT = HL_COLORS[0].hex;
@@ -151,4 +206,24 @@ export function redoInk(h: InkHistory, current: InkPages): { history: InkHistory
   if (!h.future.length) return null;
   const next = h.future[h.future.length - 1];
   return { history: { past: [...h.past, current], future: h.future.slice(0, -1) }, ink: next };
+}
+
+// ── the toolbar under pinch zoom (22 Sep 2026, Adrian: "would like the toolbar to stay
+// even when zoomed in/out (and stay at same size at the centre)") ────────────────────
+// A `position: fixed` element is fixed to the LAYOUT viewport, so a pinch zoom scales it
+// and carries it off screen with the page. The visual viewport says where the screen
+// actually is in layout px; the pill is moved to the bottom-centre of THAT and counter-
+// scaled by 1/scale so it keeps its size in screen px.
+
+export type VisualViewportLike = { scale: number; offsetLeft: number; offsetTop: number; width: number; height: number };
+
+/** Inline style that pins the toolbar to the visual viewport, or null when not zoomed (the CSS classes then place it). */
+export function toolbarPlacement(vv: VisualViewportLike | null | undefined, gapScreenPx: number): { left: number; top: number; scale: number } | null {
+  if (!vv || !(vv.scale > 1.02) || !(vv.width > 0) || !(vv.height > 0)) return null;
+  const scale = vv.scale;
+  return {
+    left: vv.offsetLeft + vv.width / 2,
+    top: vv.offsetTop + vv.height - gapScreenPx / scale,
+    scale: 1 / scale,
+  };
 }
