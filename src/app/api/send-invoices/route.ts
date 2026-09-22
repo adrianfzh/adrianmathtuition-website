@@ -15,7 +15,8 @@ import { generateAndStoreInvoicePdf } from '@/lib/invoice-pdf';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { checkDelivery, alertVerificationBlind } from '@/lib/resend-verify';
 import { waDigits, waDisplay } from '@/lib/wa-number';
-import { formatDueDate, amountDueHtml, paymentHtml, type PriorBalanceForEmail } from '@/lib/invoice-email-format';
+import { formatDueDate, formatMoney, amountDueHtml, paymentHtml, type PriorBalanceForEmail } from '@/lib/invoice-email-format';
+import { adhocDatesText } from '@/lib/adhoc-billing';
 import { getPriorBalance } from '@/lib/invoice-consolidate';
 
 export const runtime = 'nodejs';
@@ -117,6 +118,32 @@ function buildEmailHtml(invoice: {
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
     ${buildSelfServiceFooterHtml()}
     ${invoice.studentId ? `<p style="font-size: 14px; color: #6b7280;">💛 <strong>Know a family who'd benefit?</strong> Share your referral link — you'll receive <strong>one free month of lessons</strong> once they join and complete 3 months: <a href="https://www.adrianmathtuition.com/r/${invoice.studentId}">adrianmathtuition.com/r/${invoice.studentId.slice(0, 6)}…</a></p>` : ''}
+    <p>Best regards,<br>Adrian</p>
+  `;
+}
+
+// ── Ad-hoc lessons template ─────────────────────────────────────────────────
+// An 'Adhoc' invoice (POST /api/admin/bill-adhoc — lessons booked one at a time,
+// billed on demand). Says which lessons it covers, in the parent's own reading
+// of the dates, and none of the regular invoice's term/holiday notes: these
+// lessons sit outside the monthly cycle (Kevin Seng, Jul–Aug 2026).
+function buildAdhocEmailHtml(invoice: {
+  studentName: string; month: string; finalAmount: number; dueDate: string; paymentRef: string;
+}, lineItemsRaw: string | undefined): string {
+  let items: { date?: string; rate?: number }[] = [];
+  try { items = JSON.parse(lineItemsRaw || '[]'); } catch { /* ignore */ }
+  const dated = items.filter(li => li.date);
+  const rates = dated.map(li => Number(li.rate) || 0);
+  const same = rates.length > 0 && rates.every(r => r === rates[0]);
+  const covers = dated.length
+    ? `<p>It covers ${dated.length} lesson${dated.length === 1 ? '' : 's'}${same ? ` at $${formatMoney(rates[0])} each` : ''}: ${adhocDatesText(dated.map(li => li.date as string))}.</p>`
+    : '';
+  return `
+    <p>Dear Parent/Student,</p>
+    <p>Please find attached the invoice for ${invoice.studentName}'s ad-hoc lessons in ${invoice.month} — ${amountDueHtml(invoice.finalAmount, invoice.dueDate)}.</p>
+    ${covers}
+    ${paymentHtml(invoice.finalAmount, invoice.paymentRef)}
+    <p>Please feel free to reach out if you have any questions.</p>
     <p>Best regards,<br>Adrian</p>
   `;
 }
@@ -410,6 +437,8 @@ export async function POST(req: NextRequest) {
         ? `Additional Lessons \u2014 Invoice for ${month} \u2013 ${studentName}`
         : isAmended
         ? `AMENDED Invoice for ${month} – ${studentName}`
+        : ((rec.fields['Invoice Type'] || '') as string) === 'Adhoc'
+        ? `Ad-hoc Lessons \u2014 Invoice for ${month} \u2013 ${studentName}`
         : isFirstInvP
           ? `Welcome to Adrian's Math Tuition — First Invoice for ${studentName} (${month})`
           : `Invoice for ${month} – ${studentName}`;
@@ -437,6 +466,8 @@ export async function POST(req: NextRequest) {
             parseInt(String(rec.fields['Month'] || '').slice(-4), 10) || new Date().getFullYear(),
           ),
         });
+      } else if (invoiceType === 'Adhoc') {
+        html = buildAdhocEmailHtml(invoice, rec.fields['Line Items'] as string | undefined);
       } else if (isFirstInvP) {
         let firstLessonDate = '';
         try { const li = JSON.parse(rec.fields['Line Items'] || '[]'); firstLessonDate = li[0]?.date || ''; } catch { /* ignore */ }
@@ -658,6 +689,8 @@ export async function POST(req: NextRequest) {
         ? `Additional Lessons \u2014 Invoice for ${invoice.month} \u2013 ${invoice.studentName}`
         : isAmended
         ? `AMENDED Invoice for ${invoice.month} \u2013 ${invoice.studentName}`
+        : ((invoiceRecord.fields['Invoice Type'] || '') as string) === 'Adhoc'
+        ? `Ad-hoc Lessons \u2014 Invoice for ${invoice.month} \u2013 ${invoice.studentName}`
         : isFirstInv
           ? `Welcome to Adrian's Math Tuition \u2014 First Invoice for ${invoice.studentName} (${invoice.month})`
           : `Invoice for ${invoice.month} \u2013 ${invoice.studentName}`;
@@ -687,6 +720,8 @@ export async function POST(req: NextRequest) {
             parseInt(String(invoiceRecord.fields['Month'] || '').slice(-4), 10) || new Date().getFullYear(),
           ),
         });
+      } else if (invoiceType === 'Adhoc') {
+        html = buildAdhocEmailHtml(invoice, invoiceRecord.fields['Line Items'] as string | undefined);
       } else if (((invoiceRecord.fields['Auto Notes'] || '') as string).toLowerCase().includes('first invoice')) {
         let firstLessonDate = '';
         try { const li = JSON.parse(invoiceRecord.fields['Line Items'] || '[]'); firstLessonDate = li[0]?.date || ''; } catch { /* ignore */ }
@@ -724,6 +759,8 @@ export async function POST(req: NextRequest) {
             ? `AdrianMathTuition-Revision-Sprint-${(invoice.studentName || '').replace(/\s+/g, '-')}-June-2026.pdf`
             : invoiceType === 'Adjustment'
               ? `AdrianMathTuition-Invoice-${(invoice.studentName || '').replace(/\s+/g, '-')}-${(invoice.month || '').replace(/[\s–]/g, '-')}-Additional-Lessons.pdf`
+            : invoiceType === 'Adhoc'
+              ? `AdrianMathTuition-Invoice-${(invoice.studentName || '').replace(/\s+/g, '-')}-${(invoice.month || '').replace(/[\s–]/g, '-')}-Ad-hoc-Lessons.pdf`
               : `AdrianMathTuition-Invoice-${(invoice.studentName || '').replace(/\s+/g, '-')}-${(invoice.month || '').replace(/[\s–]/g, '-')}.pdf`,
           content: pdfBuffer.toString('base64'),
           type: 'application/pdf',

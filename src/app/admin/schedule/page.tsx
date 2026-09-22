@@ -1470,9 +1470,9 @@ export default function SchedulePage() {
       setAllStudents((d.students || []).map((s: { id: string; name: string; level: string }) => ({ id: s.id, name: s.name, level: s.level })));
     } catch { /* non-fatal */ }
   }
-  async function prefillCharge(level: string) {
+  async function prefillCharge(level: string, studentId?: string) {
     try {
-      const r = await fetch(`/api/admin/rate?level=${encodeURIComponent(level)}`);
+      const r = await fetch(`/api/admin/rate?level=${encodeURIComponent(level)}${studentId ? `&studentId=${encodeURIComponent(studentId)}` : ''}`);
       const d = await r.json();
       if (d.rate != null) setAddModal(m => m ? { ...m, charge: String(d.rate) } : null);
     } catch { /* keep manual */ }
@@ -1490,7 +1490,7 @@ export default function SchedulePage() {
       if (!r.ok) { setModalError(d.error || 'Could not create student'); return; }
       setAllStudents(prev => [{ id: d.id, name: d.name, level }, ...prev]);
       setAddModal(m => m ? { ...m, studentId: d.id, studentSearch: '' } : null);
-      prefillCharge(level);
+      prefillCharge(level, d.id);
     } catch { setModalError('Could not create student'); }
     finally { setCreatingStudent(false); }
   }
@@ -5173,7 +5173,7 @@ export default function SchedulePage() {
                             <div className="student-search-results">
                               {matches.map(s => (
                                 <button key={s.id} className="student-result"
-                                  onClick={() => { setAddModal(m => m ? { ...m, studentId: s.id, studentSearch: '' } : null); prefillCharge(s.level); }}>
+                                  onClick={() => { setAddModal(m => m ? { ...m, studentId: s.id, studentSearch: '' } : null); prefillCharge(s.level, s.id); }}>
                                   {s.name} <span style={{ color: '#94a3b8', fontSize: 11 }}>· {s.level}</span>
                                 </button>
                               ))}
@@ -5204,7 +5204,7 @@ export default function SchedulePage() {
                       <span className="form-label">Charge for this session ($)</span>
                       <input type="number" className="modal-input" placeholder="e.g. 60" min="0" step="1"
                         value={addModal.charge || ''} onChange={e => setAddModal(m => m ? { ...m, charge: e.target.value } : null)} />
-                      <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 3 }}>Prefilled from the level rate — edit as needed. Billed on demand from the student’s profile.</div>
+                      <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 3 }}>Per lesson — prefilled from the student’s own rate, or the level’s 4-lesson price ÷ 4. Edit as needed. Billed on demand from the student’s profile.</div>
                     </div>
                   )}
                 </>

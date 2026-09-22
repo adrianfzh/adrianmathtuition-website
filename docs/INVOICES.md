@@ -339,6 +339,33 @@ and never explicitly confirmed:
   knows nothing about any of this.** Anything it generates or amends for Oct–Jan follows
   the old advance assumptions — check it before letting it touch a year-end invoice.
 
+## Ad-hoc lessons — booked one at a time, billed on demand (22 Sep 2026)
+
+A lesson booked from the schedule's Add modal with type **Ad-hoc** carries its price in
+`Charge Override`; the monthly generator never bills it. The student profile's
+"Ad-hoc lessons to bill" card → `POST /api/admin/bill-adhoc {studentId}` makes ONE Draft
+`Invoice Type = 'Adhoc'` invoice (a line per lesson), stamps `Source Invoice` + `Billing Month`
+on each lesson (the dedup key), and the normal Draft → PDF → preview → send flow follows.
+The rules are pure in `lib/adhoc-billing.ts` (tested).
+
+- **The price is PER LESSON.** The Rates table's `Amount` is the price of **four** lessons
+  ($320 Secondary, $360 JC). `GET /api/admin/rate?level=&studentId=` prefills the student's own
+  `Rate Per Lesson` (an Active enrollment first), else `Amount ÷ 4` (`adhocChargeDefault`).
+  Until 22 Sep 2026 it prefilled the whole `Amount`, so every one of Kevin Seng's eleven ad-hoc
+  lessons (Jul–Aug 2026) was booked at $320; they were corrected to $80 by hand.
+- **A moved ad-hoc lesson is billed on the row that happened.** Rescheduling creates a
+  `Type = 'Rescheduled'` row (`Makeup For` → the original) with no charge; the original becomes
+  `Status = 'Rescheduled'`. `billableAdhocLessons` walks `Makeup For` back to an Ad-hoc origin,
+  bills the Completed moved row ONCE at the first charge along the chain (the moved row's own
+  first), and the line reads "Ad-hoc lesson — 27 Jul 2026 (moved from 26 Jul)". A moved REGULAR
+  lesson is never picked up — the monthly invoice already covers it.
+- The route refuses (400) when a lesson has no charge — set one on the lesson first.
+- Auto Notes prints on the PDF, so it says "9 ad-hoc lessons at $80.00 each." — nothing internal.
+- The email has its own subject ("Ad-hoc Lessons — Invoice for July–August 2026 – <name>"),
+  its own body (the lesson dates grouped by month, no term/holiday notes — `buildAdhocEmailHtml`)
+  and its own attachment name (`…-Ad-hoc-Lessons.pdf`). Auto-send on the 15th skips it (Regular
+  only), so it goes out by hand after the preview.
+
 ## Deferred Adjustments (carry a credit/charge to a FUTURE month's invoice)
 
 For when an adjustment must land on a month whose invoice doesn't exist yet (e.g. a referral credit deferred from June to July). Stored on the student's **current** invoice via 4 Invoices fields:

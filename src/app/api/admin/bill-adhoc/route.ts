@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { billingMonthOf } from '@/lib/lesson-generation';
+import { billableAdhocLessons, adhocLineDescription, adhocInvoiceNote } from '@/lib/adhoc-billing';
+import { sgtTodayISO, addDaysISO } from '@/lib/sgt';
 
 export const runtime = 'nodejs';
 
@@ -19,22 +21,24 @@ function fmtDate(iso: string): string {
 //   so it can't be double-billed. Then the normal Draft -> PDF -> send flow applies.
 //
 // Linked-record filter caveat: {Student}='recXXX' can't be filtered server-side, so
-// we filter by Type+Status in Airtable and match the student id in JS.
+// we filter by Type in Airtable and match the student id in JS.
+//
+// A moved ad-hoc lesson (Type 'Rescheduled', 'Makeup For' → the ad-hoc row) is
+// billed on the row that happened, at the original's charge — the rules live in
+// lib/adhoc-billing.ts (Kevin Seng's 26 → 27 Jul lesson, 22 Sep 2026).
 
 async function unbilled(studentId: string) {
-  const filter = encodeURIComponent(`AND({Type}='Ad-hoc',{Status}='Completed')`);
+  const filter = encodeURIComponent(`OR({Type}='Ad-hoc',{Type}='Rescheduled')`);
   const data = await airtableRequestAll('Lessons',
-    `?filterByFormula=${filter}&fields[]=Student&fields[]=Date&fields[]=Charge Override&fields[]=Source Invoice&sort[0][field]=Date&sort[0][direction]=asc`);
-  return (data.records || []).filter((r: { fields: Record<string, any> }) =>
-    r.fields['Student']?.[0] === studentId && !(r.fields['Source Invoice']?.length));
+    `?filterByFormula=${filter}&fields[]=Student&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Charge Override&fields[]=Source Invoice&fields[]=Makeup For`);
+  return billableAdhocLessons(data.records || [], studentId);
 }
 
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const studentId = new URL(req.url).searchParams.get('studentId');
   if (!studentId) return NextResponse.json({ error: 'studentId required' }, { status: 400 });
-  const lessons = await unbilled(studentId);
-  const items = lessons.map((r: any) => ({ id: r.id, date: r.fields['Date'], charge: Number(r.fields['Charge Override']) || 0 }));
+  const items = await unbilled(studentId);
   return NextResponse.json({ lessons: items, total: items.reduce((s, l) => s + l.charge, 0) });
 }
 
@@ -47,18 +51,22 @@ export async function POST(req: NextRequest) {
   if (!lessons.length) {
     return NextResponse.json({ error: 'No un-billed completed Ad-hoc lessons for this student' }, { status: 400 });
   }
+  const uncharged = lessons.filter(l => !(l.charge > 0));
+  if (uncharged.length) {
+    return NextResponse.json({ error: `No charge set on ${uncharged.map(l => fmtDate(l.date)).join(', ')} — set one on the lesson first` }, { status: 400 });
+  }
 
-  const lineItems = lessons.map((r: any) => ({
-    date: r.fields['Date'],
+  const lineItems = lessons.map(l => ({
+    date: l.date,
     day: '',
     type: 'Ad-hoc',
-    description: `Ad-hoc lesson — ${fmtDate(r.fields['Date'])}`,
-    rate: Number(r.fields['Charge Override']) || 0,
+    description: adhocLineDescription(l),
+    rate: l.charge,
   }));
   const total = Math.round(lineItems.reduce((s, li) => s + li.rate, 0) * 100) / 100;
-  const monthLabel = billingMonthOf(lessons[lessons.length - 1].fields['Date']);
-  const today = new Date().toISOString().slice(0, 10);
-  const due = new Date(Date.now() + 14 * 864e5).toISOString().slice(0, 10);
+  const monthLabel = billingMonthOf(lessons[lessons.length - 1].date);
+  const today = sgtTodayISO();
+  const due = addDaysISO(today, 14);
 
   const inv = await airtableRequest('Invoices', '', {
     method: 'POST',
@@ -74,7 +82,8 @@ export async function POST(req: NextRequest) {
         'Final Amount': total,
         'Issue Date': today,
         'Due Date': due,
-        'Auto Notes': `Ad-hoc invoice: ${lessons.length} session(s), generated ${today}.`,
+        // Prints on the parent's PDF ({{AUTO_NOTES}}) — parent-facing words only.
+        'Auto Notes': adhocInvoiceNote(lessons.map(l => l.charge)),
       },
     }),
   });
