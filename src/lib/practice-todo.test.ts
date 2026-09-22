@@ -90,8 +90,8 @@ describe('groupPracticeTodo — three sections, to-do first, newest first within
   });
   it('a practice-photo row still being written lands in its own section, counted as writing, first in its band', () => {
     const g = groupPracticeTodo([
-      { id: 'p1', status: 'writing', source: 'practice-photo', created_at: '2026-09-23T01:00:00Z', kind: 'question', question_id: null, title: 'Completing the square', topic: 'Quadratics', level: 'Sec 3', tier: null, note: null, attempt_id: null, submitted_at: null, marked_at: null } as never,
-      { id: 'p2', status: 'assigned', source: 'practice-photo', created_at: '2026-09-23T02:00:00Z', kind: 'question', question_id: 'q', title: 'Discriminant', topic: 'Quadratics', level: 'Sec 3', tier: null, note: null, attempt_id: null, submitted_at: null, marked_at: null } as never,
+      row({ source: 'practice-photo', status: 'writing', question_id: null, created_at: '2026-09-23T01:00:00Z' }),
+      row({ source: 'practice-photo', status: 'assigned', created_at: '2026-09-23T02:00:00Z' }),
     ]);
     const photo = g.find(s => s.key === 'practice-photo')!;
     expect(photo.items.map(i => i.state)).toEqual(['writing', 'todo']);
