@@ -1,21 +1,23 @@
 'use client';
 // ✍️ Do a sheet in the app (17 Sep 2026): PDF → page images in the browser
 // (lib/pdf-pages, the same rasteriser the hand-in uses), the student's ink as
-// a layer, the Pencil overlay in student mode, progress saved to
-// /api/portal/work/ink, and Submit = flatten each page (image + ink) → upload
-// through the hand-in's own signed-upload door → POST /api/portal/submit with
-// the assignment id, exactly what the photo hand-in posts.
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import dynamic from 'next/dynamic';
+// a layer, progress saved to /api/portal/work/ink, and Submit = flatten each
+// page (image + ink) → upload through the hand-in's own signed-upload door →
+// POST /api/portal/submit with the assignment id, exactly what the photo
+// hand-in posts.
+//
+// 23 Sep 2026 (Adrian: "build it"): the pages are the SAME write-anywhere pen as
+// the marked paper (app/marking/StudentInk — pen / highlighter / eraser sizes,
+// lasso chip, coloured pointer, undo, Pencil-or-finger), pointed at this
+// sheet's own ink table. The full-screen overlay is still its ⤢ button.
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { pdfToPageImages } from '@/lib/pdf-pages';
 import { uploadStudentFile } from '@/lib/student-files-client';
 import { portalFetch, portalMessage } from '@/lib/portal-fetch';
-import { strokesToSvg } from '@/lib/annotate/layer';
-import { inkIsEmpty, inkStrokes, type InkPages } from '@/lib/student-ink';
+import { inkIsEmpty, type InkPages } from '@/lib/student-ink';
 import type { Stroke } from '@/lib/annotate/types';
-
-const AnnotateOverlay = dynamic(() => import('@/components/AnnotateOverlay'), { ssr: false });
+import StudentInk from '../../marking/StudentInk';
 
 type PageImg = { index: number; url: string; file: File };
 
@@ -24,7 +26,6 @@ export default function WorkInApp({ assignmentId, title, pdfUrl, initial }: { as
   const [pages, setPages] = useState<PageImg[] | null>(null);
   const [progress, setProgress] = useState('Opening the sheet…');
   const [ink, setInk] = useState<InkPages>(initial ?? {});
-  const [open, setOpen] = useState(false);
   const [stage, setStage] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const urlsRef = useRef<string[]>([]);
@@ -47,13 +48,10 @@ export default function WorkInApp({ assignmentId, title, pdfUrl, initial }: { as
     return () => { dead = true; urlsRef.current.forEach(u => URL.revokeObjectURL(u)); urlsRef.current = []; };
   }, [pdfUrl, title]);
 
-  const overlayPages = useMemo(() => (pages ?? []).map(p => ({ photoIndex: p.index, url: p.url })), [pages]);
-  const initialStrokes = useMemo(() => inkStrokes(ink), [ink]);
-
-  const save = useCallback(async (next: Record<number, { strokes: Stroke[]; w: number; h: number }>) => {
-    await portalFetch('/api/portal/work/ink', { json: { assignmentId, pages: next, pageCount: pages?.length ?? null }, fallback: 'save your work' });
-    setInk(next);
-  }, [assignmentId, pages]);
+  const pageCount = pages?.length ?? null;
+  const save = useCallback(async (next: InkPages, opts: { keepalive: boolean }) => {
+    await portalFetch('/api/portal/work/ink', { json: { assignmentId, pages: next, pageCount }, fallback: 'save your work', ...(opts.keepalive ? { keepalive: true } : {}) });
+  }, [assignmentId, pageCount]);
 
   // Submit: every page (inked or not) flattened to a JPEG → uploaded → handed in.
   async function submit() {
@@ -107,26 +105,11 @@ export default function WorkInApp({ assignmentId, title, pdfUrl, initial }: { as
     <section className="space-y-3" data-work-in-app>
       <div className="flex flex-wrap items-center gap-2">
         <p className="text-xs text-gray-500 mr-auto">{pages.length} page{pages.length === 1 ? '' : 's'}{hasInk ? ' · your work is saved' : ''}</p>
-        <button type="button" onClick={() => setOpen(true)} disabled={!!stage} className="text-xs font-bold text-white bg-navy rounded-xl px-3 py-1.5 shadow-sm disabled:opacity-50">✍️ Write</button>
         <button type="button" onClick={submit} disabled={!hasInk || !!stage} className="text-xs font-bold text-white bg-teal-600 rounded-xl px-3 py-1.5 shadow-sm disabled:opacity-50">{stage ?? 'Submit for marking'}</button>
       </div>
       {err && <p className="text-[12px] text-rose-700">{err}</p>}
-      {pages.map(p => {
-        const layer = ink[p.index];
-        return (
-          <div key={p.index} className="relative">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={p.url} alt={`Page ${p.index + 1}`} className="w-full rounded-2xl border border-black/5 bg-white block" />
-            {layer && layer.strokes.length > 0 && (
-              <svg viewBox={`0 0 ${layer.w} ${layer.h}`} className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden dangerouslySetInnerHTML={{ __html: strokesToSvg(layer.strokes) }} />
-            )}
-          </div>
-        );
-      })}
-      {open && (
-        <AnnotateOverlay runId={`work:${assignmentId}`} pages={overlayPages} student={{ name: '', level: '' }} totals={null}
-          mode="student" initialInk={initialStrokes} onSaveInk={save} onDone={() => setOpen(false)} onClose={() => setOpen(false)} />
-      )}
+      <StudentInk runId={`work:${assignmentId}`} pages={pages.map(p => ({ index: p.index, url: p.url }))} initial={initial}
+        readOnly={!!stage} save={save} onChange={setInk} heading="Your sheet" />
     </section>
   );
 }

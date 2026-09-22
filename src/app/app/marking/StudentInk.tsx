@@ -421,8 +421,15 @@ function PageSurface({ page, mine, other, tool, color, hlColor, pointerColor, si
   );
 }
 
-export default function StudentInk({ runId, pages, initial, readOnly = false, other = null, editor = 'student', onEditMarking }: {
+export default function StudentInk({ runId, pages, initial, readOnly = false, other = null, editor = 'student', onEditMarking, save, onChange, heading }: {
   runId: string; pages: InkPageInput[]; initial: InkPages | null; readOnly?: boolean; other?: OtherInk | null;
+  /** Where the ink goes (23 Sep 2026): by default the marked paper's layer (/api/portal/marking/ink);
+   *  a sheet being done in the app (/app/work) passes its own saver to `student_work_ink`. */
+  save?: (pages: InkPages, opts: { keepalive: boolean }) => Promise<void>;
+  /** Every change of the layer, saved or not — the sheet page reads this to hand the pages in. */
+  onChange?: (pages: InkPages) => void;
+  /** The small heading above the pages ("Your marked pages" by default). */
+  heading?: string;
   /** Who is drawing the editable layer: the student (their notes, /api/portal) or Adrian (his notes on their paper, /api/admin — 18 Sep 2026). */
   editor?: 'student' | 'adrian';
   /** Adrian only (22 Sep 2026: "just replace that expanded button to go into admin mode"): the ⤢ button becomes
@@ -529,11 +536,15 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
     if (timer.current) { clearTimeout(timer.current); timer.current = null; }
     setStatus('saving'); setErr(null);
     try {
-      await portalFetch(saveUrl, { json: { runId, pages: inkRef.current }, fallback: 'save your notes', ...(keepalive ? { keepalive: true } : {}) });
+      if (save) await save(inkRef.current, { keepalive });
+      else await portalFetch(saveUrl, { json: { runId, pages: inkRef.current }, fallback: 'save your notes', ...(keepalive ? { keepalive: true } : {}) });
       try { localStorage.removeItem(draftKey); } catch { /* the full-screen overlay's old draft must not come back over this */ }
       setStatus(dirty.current ? 'saving' : 'saved');
     } catch (e) { dirty.current = true; setStatus('error'); setErr(portalMessage(e)); }
-  }, [draftKey, runId, saveUrl]);
+  }, [draftKey, runId, saveUrl, save]);
+  // The parent sees every change (the sheet page hands in what is drawn, flushed or not).
+  const onChangeRef = useRef(onChange); onChangeRef.current = onChange;
+  useEffect(() => { onChangeRef.current?.(ink); }, [ink]);
   const touch = useCallback(() => {
     dirty.current = true; setStatus('saving');
     if (timer.current) clearTimeout(timer.current);
@@ -599,9 +610,10 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
   const inkable = useMemo(() => pages.filter(p => Number.isInteger(p.index)), [pages]);
   const overlayPages = useMemo(() => inkable.map(p => ({ photoIndex: p.index, url: fileHref(p.url) })), [inkable]);
   const overlaySave = useCallback(async (next: Record<number, { strokes: Stroke[]; w: number; h: number }>) => {
-    await portalFetch(saveUrl, { json: { runId, pages: next }, fallback: 'save your notes' });
+    if (save) await save(next, { keepalive: false });
+    else await portalFetch(saveUrl, { json: { runId, pages: next }, fallback: 'save your notes' });
     inkRef.current = next; setInk(next); histRef.current = emptyHistory(); setHistory(histRef.current); setStatus('saved');
-  }, [runId, saveUrl]);
+  }, [runId, saveUrl, save]);
   const closeOverlay = useCallback(() => setFullScreen(false), []);
 
   // 22 Sep 2026 (Adrian: "select the different colours … allow for redo … snap to shapes …
@@ -769,7 +781,7 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
         </div>
       )}
       <div className="flex flex-wrap items-center gap-2">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mr-auto">{isAdrian ? 'Their marked pages' : 'Your marked pages'}</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mr-auto">{heading ?? (isAdrian ? 'Their marked pages' : 'Your marked pages')}</h2>
         {otherHas && other && (
           <button type="button" onClick={() => setShowOther(s => !s)} className="text-xs font-semibold text-emerald-800 border border-emerald-700/30 bg-white rounded-xl px-3 py-1.5">
             {showOther ? `Hide ${other.label}` : `Show ${other.label}`}
