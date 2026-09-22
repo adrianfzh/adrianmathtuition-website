@@ -42,11 +42,29 @@ describe('inline ink', () => {
 describe('inline ink — colours, hold-to-snap, double-tap, undo/redo (22 Sep 2026)', () => {
   const nat = { w: 1000, h: 1414 };
   const pt = (x: number, y: number) => ({ x, y, p: 0.5 });
-  it('a stored colour is honoured only from the palette', () => {
+  it('any real hex colour is honoured (the whole grid + the wheel since 23 Sep 2026); junk falls back to the default', () => {
     expect(I.paletteColor('pen', '#DC2626')).toBe('#dc2626');
-    expect(I.paletteColor('pen', '#123456')).toBe(I.PEN_COLOR_DEFAULT);
+    expect(I.paletteColor('pen', '#123456')).toBe('#123456');
+    expect(I.paletteColor('pen', '#abc')).toBe('#aabbcc');
+    expect(I.paletteColor('pen', 'red')).toBe(I.PEN_COLOR_DEFAULT);
+    expect(I.paletteColor('pen', '#12345')).toBe(I.PEN_COLOR_DEFAULT);
     expect(I.paletteColor('hl', null)).toBe(I.HL_COLOR_DEFAULT);
     expect(I.paletteColor('hl', '#4ade80')).toBe('#4ade80');
+  });
+  it('the colour grid is 12 wide, greys first, every cell a hex; recents are unique, newest first, capped', () => {
+    expect(I.COLOR_GRID.length).toBe(6);
+    for (const row of I.COLOR_GRID) { expect(row.length).toBe(12); for (const c of row) expect(c).toMatch(/^#[0-9a-f]{6}$/); }
+    expect(I.COLOR_GRID[0][0]).toBe('#ffffff');
+    expect(I.COLOR_GRID[0][11]).toBe('#000000');
+    expect(I.hslToHex(0, 100, 50)).toBe('#ff0000');
+    expect(I.hslToHex(120, 100, 25)).toBe('#008000');
+    let r = I.rememberColor([], '#123456');
+    r = I.rememberColor(r, '#abcdef'); r = I.rememberColor(r, '#123456');
+    expect(r).toEqual(['#123456', '#abcdef']);
+    for (let i = 0; i < 20; i++) r = I.rememberColor(r, `#0000${i.toString(16).padStart(2, '0')}`);
+    expect(r.length).toBe(I.RECENT_COLORS_MAX);
+    expect(I.recentColors('not json')).toEqual([]);
+    expect(I.recentColors('["#ABCDEF", "nope", 3]')).toEqual(['#abcdef']);
   });
   it('a held, roughly straight stroke snaps to a two-point line; a dot never snaps', () => {
     const wobbly = Array.from({ length: 30 }, (_, i) => pt(100 + i * 10, 200 + (i % 3) * 1.5));
@@ -127,5 +145,46 @@ describe('inline ink — sizes, the partial eraser, the toolbar under zoom (22 S
     expect(I.toolbarPlacement(null, 20)).toBeNull();
     const p = I.toolbarPlacement({ scale: 2, offsetLeft: 100, offsetTop: 300, width: 195, height: 422 }, 20);
     expect(p).toEqual({ left: 197.5, top: 712, scale: 0.5 });
+  });
+
+  describe('the lasso (23 Sep 2026)', () => {
+    const pt = (x: number, y: number) => ({ x, y, p: 0.5 });
+    const line = (x: number, y: number, color = '#2563eb'): Stroke => ({ tool: 'pen', color, width: 3, points: [pt(x, y), pt(x + 40, y)] });
+    const pages: InkPages = { 0: { w: 1000, h: 1414, strokes: [line(100, 100), line(500, 500), line(120, 130)] } };
+    const loop = [{ x: 80, y: 80 }, { x: 200, y: 80 }, { x: 200, y: 160 }, { x: 80, y: 160 }];
+    it('selects the strokes inside the loop and boxes them', () => {
+      const sel = I.selectByLasso(pages, 0, loop);
+      expect(sel).toEqual({ index: 0, ids: [0, 2] });
+      expect(I.selectionBox(pages, sel)).toEqual({ minX: 100, minY: 100, maxX: 160, maxY: 130 });
+      expect(I.selectByLasso(pages, 0, [{ x: 900, y: 900 }, { x: 950, y: 900 }, { x: 950, y: 950 }])).toBeNull();
+      expect(I.selectByLasso(pages, 3, loop)).toBeNull();
+      expect(I.inBox(I.selectionBox(pages, sel), 165, 131, 10)).toBe(true);
+      expect(I.inBox(I.selectionBox(pages, sel), 300, 300, 10)).toBe(false);
+    });
+    it('moves, recolours, deletes and duplicates only the selection; a no-op returns the same object', () => {
+      const sel = { index: 0, ids: [0, 2] };
+      const moved = I.moveSelected(pages, sel, 10, -5);
+      expect(moved[0].strokes[0].points[0]).toEqual({ x: 110, y: 95, p: 0.5 });
+      expect(moved[0].strokes[1]).toBe(pages[0].strokes[1]);
+      expect(I.moveSelected(pages, sel, 0, 0)).toBe(pages);
+      const red = I.recolorSelected(pages, sel, '#dc2626');
+      expect(red[0].strokes.map(s => s.color)).toEqual(['#dc2626', '#2563eb', '#dc2626']);
+      expect(I.recolorSelected(pages, sel, 'red')).toBe(pages);
+      const gone = I.deleteSelected(pages, sel);
+      expect(gone[0].strokes.length).toBe(1);
+      expect(I.deleteSelected(pages, { index: 0, ids: [0, 1, 2] })[0]).toBeUndefined();
+      const dup = I.duplicateSelected(pages, sel);
+      expect(dup.pages[0].strokes.length).toBe(5);
+      expect(dup.selection).toEqual({ index: 0, ids: [3, 4] });
+      expect(dup.pages[0].strokes[3].points[0].x).toBe(130);
+    });
+  });
+  it('the pointer trail keeps the last TRAIL_MS of points, fading from tip to tail', () => {
+    const trail = [{ x: 0, y: 0, t: 0 }, { x: 10, y: 0, t: 300 }, { x: 20, y: 0, t: 600 }];
+    const alive = I.trailAlive(trail, 600);
+    expect(alive.map(p => p.x)).toEqual([10, 20]);
+    expect(alive[1].a).toBe(1);
+    expect(alive[0].a).toBeCloseTo(1 - 300 / I.TRAIL_MS, 5);
+    expect(I.trailAlive(trail, 2000)).toEqual([]);
   });
 });
