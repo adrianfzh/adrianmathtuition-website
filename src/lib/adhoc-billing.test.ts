@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { adhocChargeDefault, billableAdhocLessons, adhocLineDescription, adhocDatesText, adhocInvoiceNote, LESSONS_PER_PACKAGE, type LessonRow } from './adhoc-billing';
+import { adhocChargeDefault, billableAdhocLessons, adhocRowDescription, adhocDatesText, adhocInvoiceNote, LESSONS_PER_PACKAGE, type LessonRow } from './adhoc-billing';
 
 const KEVIN = 'recKevin';
 const row = (id: string, fields: Record<string, any>): LessonRow => ({ id, fields: { Student: [KEVIN], ...fields } });
@@ -76,9 +76,13 @@ describe('billableAdhocLessons', () => {
 });
 
 describe('the invoice’s words', () => {
-  it('names each lesson, and says where a moved one came from', () => {
-    expect(adhocLineDescription({ date: '2026-07-13' })).toBe('Ad-hoc lesson — 13 Jul 2026');
-    expect(adhocLineDescription({ date: '2026-07-27', movedFromDate: '2026-07-26' })).toBe('Ad-hoc lesson — 27 Jul 2026 (moved from 26 Jul)');
+  // Adrian, 22 Sep 2026: "just put Ad-hoc lessons -> 9 … simpler and looks better".
+  it('gives every lesson at one price the same description, so the PDF shows one row', () => {
+    expect(adhocRowDescription(80, Array(9).fill(80))).toBe('Ad-hoc lessons');
+  });
+  it('splits the row by price when the prices differ (one description would bill all at the first price)', () => {
+    expect(adhocRowDescription(80, [80, 90, 80])).toBe('Ad-hoc lessons at $80.00');
+    expect(adhocRowDescription(90, [80, 90, 80])).toBe('Ad-hoc lessons at $90.00');
   });
   it('lists Kevin’s nine dates the way Adrian wrote them', () => {
     const dates = ['2026-08-23', '2026-07-13', '2026-07-27', '2026-07-31', '2026-08-03', '2026-08-10', '2026-08-18', '2026-08-19', '2026-08-21'];
@@ -86,9 +90,10 @@ describe('the invoice’s words', () => {
     expect(adhocDatesText(['2026-12-28', '2027-01-04'])).toBe('28 December 2026; 4 January 2027');
     expect(adhocDatesText(['2026-07-13'])).toBe('13 July 2026');
   });
-  it('the PDF note states the count and, when they agree, the price', () => {
-    expect(adhocInvoiceNote(Array(9).fill(80))).toBe('9 ad-hoc lessons at $80.00 each.');
-    expect(adhocInvoiceNote([80, 90])).toBe('2 ad-hoc lessons.');
-    expect(adhocInvoiceNote([82.5])).toBe('1 ad-hoc lesson at $82.50 each.');
+  it('the PDF note lists the dates', () => {
+    const dates = ['2026-07-13', '2026-07-27', '2026-07-31', '2026-08-03', '2026-08-10', '2026-08-18', '2026-08-19', '2026-08-21', '2026-08-23'];
+    expect(adhocInvoiceNote(dates)).toBe('Lessons on 13, 27 and 31 July; 3, 10, 18, 19, 21 and 23 August 2026.');
+    expect(adhocInvoiceNote(['2026-07-13'])).toBe('Lessons on 13 July 2026.');
+    expect(adhocInvoiceNote([])).toBe('');
   });
 });

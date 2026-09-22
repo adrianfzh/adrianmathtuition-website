@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { billingMonthOf } from '@/lib/lesson-generation';
-import { billableAdhocLessons, adhocLineDescription, adhocInvoiceNote } from '@/lib/adhoc-billing';
+import { billableAdhocLessons, adhocRowDescription, adhocInvoiceNote } from '@/lib/adhoc-billing';
 import { sgtTodayISO, addDaysISO } from '@/lib/sgt';
 
 export const runtime = 'nodejs';
@@ -56,12 +56,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `No charge set on ${uncharged.map(l => fmtDate(l.date)).join(', ')} — set one on the lesson first` }, { status: 400 });
   }
 
+  // One line item per lesson (the email and the records read the dates); the
+  // PDF folds them into one row per price — see adhocRowDescription.
+  const charges = lessons.map(l => l.charge);
   const lineItems = lessons.map(l => ({
     date: l.date,
     day: '',
     type: 'Ad-hoc',
-    description: adhocLineDescription(l),
+    description: adhocRowDescription(l.charge, charges),
     rate: l.charge,
+    ...(l.movedFromDate ? { movedFrom: l.movedFromDate } : {}),
   }));
   const total = Math.round(lineItems.reduce((s, li) => s + li.rate, 0) * 100) / 100;
   const monthLabel = billingMonthOf(lessons[lessons.length - 1].date);
@@ -83,7 +87,7 @@ export async function POST(req: NextRequest) {
         'Issue Date': today,
         'Due Date': due,
         // Prints on the parent's PDF ({{AUTO_NOTES}}) — parent-facing words only.
-        'Auto Notes': adhocInvoiceNote(lessons.map(l => l.charge)),
+        'Auto Notes': adhocInvoiceNote(lessons.map(l => l.date)),
       },
     }),
   });

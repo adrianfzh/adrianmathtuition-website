@@ -106,12 +106,18 @@ function joinAnd(xs: string[]): string {
   return xs.length <= 1 ? (xs[0] || '') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`;
 }
 
-/** One invoice line's description: "Ad-hoc lesson — 27 Jul 2026 (moved from 26 Jul)". */
-export function adhocLineDescription(l: Pick<BillableAdhoc, 'date' | 'movedFromDate'>): string {
-  const [y, m, d] = String(l.date).split('-').map(Number);
-  const base = y && m && d ? `Ad-hoc lesson — ${d} ${SHORT[m - 1]} ${y}` : `Ad-hoc lesson — ${l.date}`;
-  const [, fm, fd] = String(l.movedFromDate || '').split('-').map(Number);
-  return fm && fd && l.movedFromDate !== l.date ? `${base} (moved from ${fd} ${SHORT[fm - 1]})` : base;
+/**
+ * An ad-hoc line item's description. The PDF renderer folds line items with the
+ * same description into ONE row (count × that row's first rate), so every
+ * lesson at one price shares one description: the PDF reads
+ * "Ad-hoc lessons · 9 · $720.00" and the dates go in the note under the table
+ * (Adrian, 22 Sep 2026: "just put Ad-hoc lessons -> 9 … simpler and looks
+ * better"). When the prices differ, each price gets its own row — a shared
+ * description would bill every lesson at the first one's price.
+ */
+export function adhocRowDescription(charge: number, allCharges: number[]): string {
+  const same = allCharges.every(c => c === allCharges[0]);
+  return same ? 'Ad-hoc lessons' : `Ad-hoc lessons at $${charge.toFixed(2)}`;
 }
 
 /**
@@ -134,10 +140,9 @@ export function adhocDatesText(dates: string[]): string {
   }).join('; ');
 }
 
-/** The invoice's note (it prints on the PDF): "9 ad-hoc lessons at $80.00 each." */
-export function adhocInvoiceNote(charges: number[]): string {
-  const n = charges.length;
-  const lessons = `${n} ad-hoc lesson${n === 1 ? '' : 's'}`;
-  const same = n > 0 && charges.every(c => c === charges[0]);
-  return same ? `${lessons} at $${charges[0].toFixed(2)} each.` : `${lessons}.`;
+/** The invoice's note (it prints on the PDF under the table): the lesson dates.
+ *  "Lessons on 13, 27 and 31 July; 3, 10, 18, 19, 21 and 23 August 2026." */
+export function adhocInvoiceNote(dates: string[]): string {
+  const text = adhocDatesText(dates);
+  return text ? `Lessons on ${text}.` : '';
 }

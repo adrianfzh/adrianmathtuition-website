@@ -344,7 +344,7 @@ and never explicitly confirmed:
 A lesson booked from the schedule's Add modal with type **Ad-hoc** carries its price in
 `Charge Override`; the monthly generator never bills it. The student profile's
 "Ad-hoc lessons to bill" card → `POST /api/admin/bill-adhoc {studentId}` makes ONE Draft
-`Invoice Type = 'Adhoc'` invoice (a line per lesson), stamps `Source Invoice` + `Billing Month`
+`Invoice Type = 'Adhoc'` invoice (a line item per lesson), stamps `Source Invoice` + `Billing Month`
 on each lesson (the dedup key), and the normal Draft → PDF → preview → send flow follows.
 The rules are pure in `lib/adhoc-billing.ts` (tested).
 
@@ -357,10 +357,16 @@ The rules are pure in `lib/adhoc-billing.ts` (tested).
   `Type = 'Rescheduled'` row (`Makeup For` → the original) with no charge; the original becomes
   `Status = 'Rescheduled'`. `billableAdhocLessons` walks `Makeup For` back to an Ad-hoc origin,
   bills the Completed moved row ONCE at the first charge along the chain (the moved row's own
-  first), and the line reads "Ad-hoc lesson — 27 Jul 2026 (moved from 26 Jul)". A moved REGULAR
+  first), and the line item keeps `movedFrom: '2026-07-26'` for the record. A moved REGULAR
   lesson is never picked up — the monthly invoice already covers it.
 - The route refuses (400) when a lesson has no charge — set one on the lesson first.
-- Auto Notes prints on the PDF, so it says "9 ad-hoc lessons at $80.00 each." — nothing internal.
+- **The PDF shows ONE row: "Ad-hoc lessons · 9 · $720.00", and the dates go in Auto Notes under
+  the table** ("Lessons on 13, 27 and 31 July; 3, 10, 18, 19, 21 and 23 August 2026.") — Adrian,
+  22 Sep 2026: "simpler and looks better". The renderer folds line items with the same
+  description into one row at the FIRST item's rate, so every lesson at one price shares the
+  description "Ad-hoc lessons"; when prices differ each price gets its own
+  ("Ad-hoc lessons at $90.00") — a shared description would bill them all at the first price
+  (`adhocRowDescription`). Auto Notes prints on the PDF, so nothing internal goes there.
 - The email has its own subject ("Ad-hoc Lessons — Invoice for July–August 2026 – <name>"),
   its own body (the lesson dates grouped by month, no term/holiday notes — `buildAdhocEmailHtml`)
   and its own attachment name (`…-Ad-hoc-Lessons.pdf`). Auto-send on the 15th skips it (Regular
