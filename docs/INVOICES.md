@@ -365,6 +365,13 @@ The rules are pure in `lib/adhoc-billing.ts` (tested).
   its own body (the lesson dates grouped by month, no term/holiday notes — `buildAdhocEmailHtml`)
   and its own attachment name (`…-Ad-hoc-Lessons.pdf`). Auto-send on the 15th skips it (Regular
   only), so it goes out by hand after the preview.
+- **One file name for every invoice PDF — `invoicePdfFileName` (`lib/invoice-month.ts`).** The
+  blob (generate-pdf-batch, `lib/invoice-pdf.ts`, regenerate-invoice) and the email attachment
+  both use it: the span month ("July–August 2026") plus a suffix for a second invoice in the
+  month (`-Ad-hoc-Lessons`, `-Additional-Lessons`, `-Revision-Sprint`). Before 22 Sep 2026
+  generate-pdf-batch printed the stored Month ("August 2026", so the PDF's payment reference
+  disagreed with the email's) and stored every PDF under `<name>-<month>.pdf` with
+  allowOverwrite, so an ad-hoc PDF replaced that month's regular invoice PDF.
 
 ## Deferred Adjustments (carry a credit/charge to a FUTURE month's invoice)
 
