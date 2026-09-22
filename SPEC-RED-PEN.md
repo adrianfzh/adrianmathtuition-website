@@ -405,8 +405,10 @@ don't want to have to toggle on and off." So:
 - **The red-ink mode is `MARK_LOOK=natural` + `MARK_LAYOUT=inpage` together.** Verified
   by render on Joey's page 11: the only cream on a page was the in-page slip
   (`teachPanel`), which the natural look already removes; with both on, every mark,
-  score chip ("Q7(b)(i) 0/1" handwritten), note and "From your line" column is red,
-  nothing is boxed or filled, no strip, no footer. Both Fly secrets stay UNSET — live
+  note and "From your line" column is red, no strip, no footer. **The score chips
+  stay boxed in every look** — red outline for lost marks, solid green when full, the
+  codes under — Adrian, later the same day, on the red mode: "I still want the marks
+  to be shown like that"; the handwritten no-box chip of 22 Sep is gone. Both Fly secrets stay UNSET — live
   marking is the professional look with the strip, as before.
 - **🧪 Red ink preview** on the desk (`/admin/desk`, beside "🔁 Re-mark this page" on
   every page) → `POST /api/admin/desk/preview {runId, photoIndex, look?, layout?}` →
