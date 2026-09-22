@@ -150,7 +150,7 @@ a scheme and says so — and the disclaimer says so to the student.
    is untouched and still off. The disclaimer sits on the form AND on every science paper
    page: new, free, an estimate; explain answers are marked against standard syllabus points
    unless the school's scheme was attached; check it against your teacher's marking.
-4. **Own daily slot.** One science paper per student per SGT day, counted separately from
+4. **Own daily slot — LIFTED 22 Sep 2026 with the maths cap (`DAILY_SCIENCE_SUBMIT_CAP` null).** Was: one science paper per student per SGT day, counted separately from
    the math slot (`countHandinsToday(…, 'science')` = runs with `subject <> 'math'`); the
    bot's `/handin` count is math-only from the same day, so a science hand-in never spends
    the Telegram math slot.

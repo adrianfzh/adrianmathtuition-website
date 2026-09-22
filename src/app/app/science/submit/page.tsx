@@ -20,9 +20,11 @@ export default async function ScienceSubmitPage() {
   const sid = portalIdentity(account);
   // Preflight of the science slot — the POST re-checks it.
   let slotUsed = false;
-  try {
-    const count = await countHandinsToday(getSupabaseAdmin() as unknown as HandinCountingClient, sid, new Date(), 'science');
-    slotUsed = count >= DAILY_SCIENCE_SUBMIT_CAP;
-  } catch { /* degrade to the POST-time check */ }
+  if (DAILY_SCIENCE_SUBMIT_CAP !== null) {
+    try {
+      const count = await countHandinsToday(getSupabaseAdmin() as unknown as HandinCountingClient, sid, new Date(), 'science');
+      slotUsed = count >= DAILY_SCIENCE_SUBMIT_CAP;
+    } catch { /* degrade to the POST-time check */ }
+  }
   return <SubmitClient family="science" slotUsed={slotUsed} subjectChoices={[...SCIENCE_MARK_SUBJECTS]} />;
 }

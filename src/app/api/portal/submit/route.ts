@@ -222,16 +222,19 @@ export async function POST(req: Request) {
     }, { status: 402 });
   }
 
-  // Daily ceiling: tuition students keep the global cap (1/SGT day, shared
+  // Daily ceiling (history): tuition students kept the global cap (1/SGT day, shared
   // with the bot's /handin); a stranger's ceiling comes from their pass tier
   // (Standard 1/day, Intensive 3/day — trials meter as Standard).
   // Only an EXAM paper spends the day (7 Sep 2026): a sheet or a printed paper
   // neither checks the cap here nor counts in it (countHandinsToday).
   // 🧪 Science has its own slot (one a day, everyone), counted apart from the
   // maths slot — see countHandinsToday's family argument.
-  const dailyCap = science ? DAILY_SCIENCE_SUBMIT_CAP : tuition ? DAILY_SUBMIT_CAP : dailyHandinCapForTier(meteredPass?.tier);
-  const count = (assignment || printedPaper) ? 0 : await countHandinsToday(admin as unknown as HandinCountingClient, studentId, new Date(), family);
-  if ((count ?? 0) >= dailyCap) {
+  // 22 Sep 2026: the tuition cap (and the science slot) are LIFTED — DAILY_*_CAP
+  // is null and nothing below runs for a tuition student. Only a stranger's
+  // pass tier still carries a daily ceiling.
+  const dailyCap: number | null = science ? DAILY_SCIENCE_SUBMIT_CAP : tuition ? DAILY_SUBMIT_CAP : dailyHandinCapForTier(meteredPass?.tier);
+  const count = (dailyCap === null || assignment || printedPaper) ? 0 : await countHandinsToday(admin as unknown as HandinCountingClient, studentId, new Date(), family);
+  if (dailyCap !== null && (count ?? 0) >= dailyCap) {
     return NextResponse.json({
       error: science
         ? 'Today’s science hand-in is used — one science paper a day; a fresh one opens at midnight. Your maths hand-in is separate.'

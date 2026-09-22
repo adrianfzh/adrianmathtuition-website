@@ -64,13 +64,14 @@ export default async function SubmitPage({ searchParams }: { searchParams: Promi
       // Strangers: the ceiling comes from their pass tier (Standard 1/day,
       // Intensive 3/day) and an exhausted pass meter also greys the form —
       // both re-checked server-side at POST time; this is only the preflight.
-      let cap = DAILY_SUBMIT_CAP;
+      // Tuition students have NO daily ceiling since 22 Sep 2026 (DAILY_SUBMIT_CAP null).
+      let cap: number | null = DAILY_SUBMIT_CAP;
       if (!isTuitionAccount(account)) {
         const pass = await getCurrentPass(account.id);
         cap = dailyHandinCapForTier(pass?.tier);
         if (handinsRemaining(pass) <= 0) slotUsed = true;
       }
-      if (!slotUsed) {
+      if (!slotUsed && cap !== null) {
         const count = await countHandinsToday(getSupabaseAdmin() as unknown as HandinCountingClient, sid);
         slotUsed = count >= cap;
       }

@@ -1,4 +1,4 @@
-// One EXAM-PAPER hand-in per student per Singapore calendar day (Adrian, 21 Aug
+// (History) One EXAM-PAPER hand-in per student per Singapore calendar day (Adrian, 21 Aug
 // 2026, Phase G hardening — every hand-in is auto-queued into Opus marking and
 // Telegrams a finished PDF, so the cap is a cost brake as much as a UX one).
 // Since 7 Sep 2026 only a FREE hand-in spends the day: a Practice Again / From
@@ -10,13 +10,18 @@
 // SGT is UTC+8 with no DST, so the day boundary needs no timezone library.
 import { sgtDayStartISO } from './sgt';
 
-export const DAILY_SUBMIT_CAP = 1;
+// REMOVED 22 Sep 2026 (Adrian: "remove the 1 marking paper per day limit for
+// student portal"): a tuition student may hand in as many exam papers a day as
+// they like. `null` = no ceiling. A STRANGER on a pass keeps the ceiling their
+// tier buys (lib/portal-passes dailyHandinCapForTier) — the meter is the product.
+// countHandinsToday stays for the bot's /handin, the desk and the report.
+export const DAILY_SUBMIT_CAP: number | null = null;
 
 // 🧪 Science has ITS OWN slot (SPEC-SCIENCE-MARKING.md, 10 Sep 2026): one science
 // paper a day, counted apart from the maths paper, so a physics hand-in never
 // blocks the evening's E Math paper. `family` picks which runs count:
 // 'math' = runs whose marking lane is math, 'science' = every other lane.
-export const DAILY_SCIENCE_SUBMIT_CAP = 1;
+export const DAILY_SCIENCE_SUBMIT_CAP: number | null = null; // lifted 22 Sep 2026 with the maths cap
 export type HandinFamily = 'math' | 'science';
 
 /** UTC ISO timestamp of the most recent midnight in Singapore (UTC+8). */
