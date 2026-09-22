@@ -1,0 +1,1656 @@
+{
+ "key": "GCE-AM-P2",
+ "seed": 1,
+ "shape": {
+  "subject": "Additional Mathematics",
+  "code": "4049",
+  "level": "AM",
+  "cut": 2021,
+  "duration": "2 hours 15 minutes",
+  "scope": "Quadratic functions, equations and inequalities (incl. nature of roots, simultaneous equations involving one linear and one non-linear equation); surds; indices and logarithms (incl. exponential growth/decay models); polynomials, remainder and factor theorems, partial fractions; binomial theorem for positive integer index; linear law; coordinate geometry of straight lines, perpendicular bisectors, areas of rectilinear figures; equations of circles; plane geometry proofs (angle properties of circles, similar/congruent triangles, tangent-chord theorem, midpoint theorem, intersecting chords); trigonometry (ratios of special angles, graphs of sin/cos/tan and their transformations, identities incl. sec/cosec/cot, addition and double-angle formulae, R-formula, equations, real-world models); differentiation (chain/product/quotient rules, trig/exp/log functions, tangents and normals, increasing/decreasing functions, rates of change, maxima/minima); integration (as reverse of differentiation, standard forms incl. (ax+b)^n, trig, e^x, 1/x, definite integrals, areas between curves and lines); kinematics of a particle in a straight line via calculus. NOT in 4049: vectors, matrices, statistics, complex numbers, integration by parts or substitution, inverse trigonometric functions, series beyond binomial."
+ },
+ "paperNo": 2,
+ "total": 90,
+ "prompt_version": "gce-author-v1",
+ "blueprint_derived_at": "2026-09-08",
+ "generated_at": "2026-09-08T17:15:05.123Z",
+ "topicList": [
+  "Quadratic Functions",
+  "Simultaneous Equations",
+  "Nature of Roots",
+  "Quadratic Inequalities",
+  "Surds",
+  "Polynomials",
+  "Partial Fractions",
+  "Indices",
+  "Logarithms",
+  "Binomial Theorem",
+  "Linear Law",
+  "Coordinate Geometry",
+  "Circles",
+  "Plane Geometry",
+  "Trigonometry (Ratios)",
+  "Trigonometry (Graphs)",
+  "Trigonometry (Identities)",
+  "Trigonometry (Equations)",
+  "Trigonometry (R-Formula)",
+  "Trigonometry (Applications)",
+  "Differentiation (Techniques)",
+  "Differentiation (Tangents and Normals)",
+  "Differentiation (Increasing and Decreasing Functions)",
+  "Differentiation (Rates of Change)",
+  "Differentiation (Maximum and Minimum)",
+  "Integration (Techniques)",
+  "Integration (Definite Integrals)",
+  "Integration (Area)",
+  "Integration (Applications)",
+  "Kinematics"
+ ],
+ "must_appear": [
+  "Circles",
+  "Coordinate Geometry",
+  "Differentiation (Maximum and Minimum)",
+  "Differentiation (Techniques)",
+  "Logarithms",
+  "Polynomials",
+  "Trigonometry (Applications)",
+  "Trigonometry (R-Formula)"
+ ],
+ "plan": [
+  {
+   "pos": 1,
+   "topic": "Logarithms",
+   "target": 5,
+   "marks": [
+    4,
+    6
+   ],
+   "parts": [
+    1,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Logarithms",
+     "weight": 0.6
+    },
+    {
+     "topic": "Binomial Theorem",
+     "weight": 0.020000000000000004
+    },
+    {
+     "topic": "Partial Fractions",
+     "weight": 0.020000000000000004
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Polynomials",
+   "target": 7,
+   "marks": [
+    5,
+    10
+   ],
+   "parts": [
+    1,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Polynomials",
+     "weight": 0.0332
+    },
+    {
+     "topic": "Linear Law",
+     "weight": 0.167
+    },
+    {
+     "topic": "Nature of Roots",
+     "weight": 0.167
+    },
+    {
+     "topic": "Plane Geometry",
+     "weight": 0.016700000000000003
+    },
+    {
+     "topic": "Quadratic Inequalities",
+     "weight": 0.016700000000000003
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Integration (Definite Integrals)",
+   "target": 8,
+   "marks": [
+    5,
+    10
+   ],
+   "parts": [
+    1,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Logarithms",
+     "weight": 0.25
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.125
+    },
+    {
+     "topic": "Integration (Area)",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Integration (Definite Integrals)",
+     "weight": 0.125
+    },
+    {
+     "topic": "Trigonometry (Equations)",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Trigonometry (Identities)",
+     "weight": 0.0125
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Trigonometry (R-Formula)",
+   "target": 9,
+   "marks": [
+    7,
+    10
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.125
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Nature of Roots",
+     "weight": 0.125
+    },
+    {
+     "topic": "Quadratic Functions",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Trigonometry (Applications)",
+     "weight": 0.125
+    },
+    {
+     "topic": "Trigonometry (Identities)",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Trigonometry (R-Formula)",
+     "weight": 0.125
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Differentiation (Techniques)",
+   "target": 7,
+   "marks": [
+    6,
+    9
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.165
+    },
+    {
+     "topic": "Logarithms",
+     "weight": 0.167
+    },
+    {
+     "topic": "Nature of Roots",
+     "weight": 0.167
+    },
+    {
+     "topic": "Quadratic Inequalities",
+     "weight": 0.016700000000000003
+    },
+    {
+     "topic": "Surds",
+     "weight": 0.016700000000000003
+    },
+    {
+     "topic": "Trigonometry (Identities)",
+     "weight": 0.016700000000000003
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Coordinate Geometry",
+   "target": 9,
+   "marks": [
+    9,
+    10
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.272
+    },
+    {
+     "topic": "Binomial Theorem",
+     "weight": 0.0091
+    },
+    {
+     "topic": "Circles",
+     "weight": 0.091
+    },
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.0091
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.091
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.0091
+    },
+    {
+     "topic": "Logarithms",
+     "weight": 0.091
+    },
+    {
+     "topic": "Polynomials",
+     "weight": 0.0091
+    },
+    {
+     "topic": "Simultaneous Equations",
+     "weight": 0.0091
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Trigonometry (Applications)",
+   "target": 10,
+   "marks": [
+    9,
+    12
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Logarithms",
+     "weight": 0.2
+    },
+    {
+     "topic": "Trigonometry (Applications)",
+     "weight": 0.2
+    },
+    {
+     "topic": "Trigonometry (R-Formula)",
+     "weight": 0.2
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.1
+    },
+    {
+     "topic": "Kinematics",
+     "weight": 0.1
+    },
+    {
+     "topic": "Linear Law",
+     "weight": 0.1
+    },
+    {
+     "topic": "Polynomials",
+     "weight": 0.010000000000000002
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Kinematics",
+   "target": 11,
+   "marks": [
+    10,
+    12
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.181
+    },
+    {
+     "topic": "Kinematics",
+     "weight": 0.182
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.0091
+    },
+    {
+     "topic": "Differentiation (Rates of Change)",
+     "weight": 0.0091
+    },
+    {
+     "topic": "Integration (Applications)",
+     "weight": 0.091
+    },
+    {
+     "topic": "Integration (Definite Integrals)",
+     "weight": 0.091
+    },
+    {
+     "topic": "Trigonometry (Equations)",
+     "weight": 0.0091
+    },
+    {
+     "topic": "Trigonometry (Graphs)",
+     "weight": 0.0091
+    },
+    {
+     "topic": "Trigonometry (Identities)",
+     "weight": 0.0091
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Circles",
+   "target": 12,
+   "marks": [
+    11,
+    12
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Circles",
+     "weight": 0.334
+    },
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.0333
+    },
+    {
+     "topic": "Linear Law",
+     "weight": 0.111
+    },
+    {
+     "topic": "Trigonometry (Applications)",
+     "weight": 0.111
+    },
+    {
+     "topic": "Trigonometry (R-Formula)",
+     "weight": 0.111
+    }
+   ]
+  },
+  {
+   "pos": 10,
+   "topic": "Differentiation (Maximum and Minimum)",
+   "target": 12,
+   "marks": [
+    12,
+    12
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.03
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.2
+    },
+    {
+     "topic": "Integration (Area)",
+     "weight": 0.020000000000000004
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.010000000000000002
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.1
+    },
+    {
+     "topic": "Logarithms",
+     "weight": 0.1
+    }
+   ]
+  }
+ ],
+ "models": {
+  "author": "claude-fable-5-1 (Claude Code agent)",
+  "solver": "claude-opus-5 (Claude Code agent)",
+  "moderator": "claude-fable-5-1 (Claude Code agent)"
+ },
+ "assembled_at": "2026-09-08T18:02:10.470Z",
+ "questions": [
+  {
+   "pos": 1,
+   "topic": "Logarithms",
+   "target": 5,
+   "accepted": true,
+   "question": {
+    "stem": "Solve the equation $\\log_3 x = 4\\log_x 3 + 3$.",
+    "parts": [],
+    "answer": "$x = 81$ or $x = \\frac{1}{3}$",
+    "total_marks": 5,
+    "topics": [
+     "Logarithms"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "By the change-of-base rule, $\\log_x 3 = \\frac{\\log_3 3}{\\log_3 x} = \\frac{1}{\\log_3 x}$, so the equation is $\\log_3 x = \\frac{4}{\\log_3 x} + 3$.\nLet $u = \\log_3 x$ (with $u \\ne 0$, since $x \\ne 1$). Then $u = \\frac{4}{u} + 3$. Multiplying through by $u$: $u^{2} = 4 + 3u$, so $u^{2} - 3u - 4 = 0$.\n$(u - 4)(u + 1) = 0$, so $u = 4$ or $u = -1$, that is $\\log_3 x = 4$ or $\\log_3 x = -1$.\n$\\log_3 x = 4 \\Rightarrow x = 3^{4} = 81$.\n$\\log_3 x = -1 \\Rightarrow x = 3^{-1} = \\frac{1}{3}$.\nCheck: $x = 81$: $\\log_3 81 = 4$ and $4\\log_{81} 3 + 3 = 4\\left(\\frac{1}{4}\\right) + 3 = 4$. $x = \\frac{1}{3}$: $\\log_3 \\frac{1}{3} = -1$ and $4\\log_{1/3} 3 + 3 = 4(-1) + 3 = -1$. Both values are positive and not equal to $1$, so both are solutions.\nMarks: M1 change of base, $\\log_x 3 = \\frac{1}{\\log_3 x}$; M1 form the quadratic in $\\log_3 x$, $u^{2} - 3u - 4 = 0$; A1 $u = 4$ and $u = -1$; A1 $x = 81$; A1 $x = \\frac{1}{3}$.",
+    "syllabus_check": "4049 Indices and logarithms: change of base ($\\log_a b = 1/\\log_b a$), solving an equation that reduces to a quadratic in $\\log_3 x$, converting logarithmic form to index form. Set as a single unlabelled 5-mark Solve, the way SEAB sets this type; no domain clause is stated, and the candidate is expected to know that $\\log_x 3$ requires $x > 0$, $x \\ne 1$; both roots satisfy this, so neither is rejected. No calculator needed; both answers exact. No content outside 4049.",
+    "originality_note": "Not modelled on any exemplar: the exemplars solve mixed-base equations (bases 2, 4, 8), a quadratic in $\\mathrm{e}^{x}$, or exponential decay models. This question uses a variable base $\\log_x 3$ reciprocated into $\\log_3 x$, with the change of base left for the candidate to find (unscaffolded, as SEAB sets the type), and a reciprocal-base twist that gives one solution greater than 1 and one less than 1. Paper 1 has no logarithm question and no change-of-base work."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 1,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2018 P1 Q6",
+     "jaccard": 0.154
+    },
+    "marks": 5,
+    "checked_at": "2026-09-08T17:58:16.068Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown (let y = log_3 x; log_x 3 = 1/y by change of base, so y = 4/y + 3, and multiplying by y (y != 0 since x != 1) gives y^2 - 3y - 4 = 0, i.e. (log_3 x)^2 - 3 log_3 x - 4 = 0)",
+     "(b)": "x = 81 or x = 1/3"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both use log_x 3 = 1/log_3 x, put u = log_3 x, multiply through by u (u != 0 since x != 1) and reach u^2 - 3u - 4 = 0. Verified: u = 4/u + 3 gives u^2 = 4 + 3u. Correct."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "(u - 4)(u + 1) = 0 gives log_3 x = 4 or -1, so x = 81 or x = 1/3. Both checked in the original equation: log_3 81 = 4 = 4(1/4) + 3; log_3 (1/3) = -1 = 4(-1) + 3. Both roots valid, none extraneous. Key correct."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Key and blind examiner agree on every part; the key is correct.",
+    "score": 4,
+    "fixes": [
+     "SEAB sets this exact type as one unlabelled 5-mark 'Solve' (2008 P2 Q4(ii) 3log_5 y - log_y 5 = 2 [5]; 2007 P2 Q7(i) log_x 72 = 3 - log_x 3; 2017 P2 Q5(ii) log_y 100 = lg y [5]). Part (a) hands over the only insight (log_x 3 = 1/log_3 x) and leaves (b) a 3-mark factorisation. Set it as: 'Solve the equation log_3 x = 4 log_x 3 + 3. [5]'.",
+     "If the scaffold is kept: drop 'where x > 0 and x != 1' from the stem (SEAB does not state the log domain in a solve question) and word (b) as 'Hence solve the equation.' rather than 'Hence find the values of x.'"
+    ],
+    "too_close_to": null,
+    "why": "A genuine 4049 type with clean answers (81 and 1/3) and a correct key, but the show-the-quadratic scaffold makes it softer than the unscaffolded 5-markers SEAB actually sets at this slot. Not a re-skin of any listed exemplar (2024 P2 Q3 is a mixed-base equation, the rest are exponential models)."
+   },
+   "exemplars": [
+    {
+     "id": "3a3206d8-888a-454f-a39c-61a61ead156a",
+     "ref": "GCE 2024 P2 Q3"
+    },
+    {
+     "id": "698ed809-ea9c-4a14-92aa-2d7b7298edf4",
+     "ref": "GCE 2021 P2 Q1"
+    },
+    {
+     "id": "2a20403d-af88-418b-907e-f80b48d86880",
+     "ref": "GCE 2022 P1 Q2"
+    },
+    {
+     "id": "ceaf5363-6cec-4262-9b33-e828e311d450",
+     "ref": "GCE 2022 P2 Q1"
+    },
+    {
+     "id": "1235893c-ff2e-43ae-a8de-5d6f5aceabca",
+     "ref": "GCE 2021 specimen P1 Q5"
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Polynomials",
+   "target": 7,
+   "accepted": true,
+   "question": {
+    "stem": "The polynomial $\\mathrm{p}(x) = 2x^{3} + ax^{2} + bx - 10$, where $a$ and $b$ are constants, leaves a remainder of $19x - 28$ when divided by $x^{2} + 2x - 3$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the value of $a$ and of $b$.",
+      "marks": 3,
+      "answer": "$a = -2$, $b = 1$",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "Using the values of $a$ and $b$ found in part (a), show that the equation $\\mathrm{p}(x) = 0$ has only one real root.",
+      "marks": 4,
+      "answer": "$\\mathrm{p}(x) = (x - 2)(2x^{2} + 2x + 5)$; the discriminant of $2x^{2} + 2x + 5$ is $4 - 40 = -36 < 0$, so the only real root is $x = 2$ (shown).",
+      "subparts": []
+     }
+    ],
+    "answer": "(a) $a = -2$, $b = 1$; (b) $\\mathrm{p}(x) = (x - 2)(2x^{2} + 2x + 5)$ with discriminant $-36 < 0$ for the quadratic factor, so the only real root is $x = 2$",
+    "total_marks": 7,
+    "topics": [
+     "Polynomials",
+     "Nature of Roots"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) $x^{2} + 2x - 3 = (x + 3)(x - 1)$. Since the divisor is quadratic, write $\\mathrm{p}(x) = (x + 3)(x - 1)\\mathrm{Q}(x) + 19x - 28$ for some linear $\\mathrm{Q}(x)$.\nSubstituting $x = 1$: $\\mathrm{p}(1) = 19 - 28 = -9$, so $2 + a + b - 10 = -9$, giving $a + b = -1$.\nSubstituting $x = -3$: $\\mathrm{p}(-3) = -57 - 28 = -85$, so $-54 + 9a - 3b - 10 = -85$, giving $9a - 3b = -21$, i.e. $3a - b = -7$.\nAdding the two equations: $4a = -8$, so $a = -2$ and $b = 1$.\n(b) $\\mathrm{p}(x) = 2x^{3} - 2x^{2} + x - 10$. Trying factors of $10$: $\\mathrm{p}(2) = 16 - 8 + 2 - 10 = 0$, so $x - 2$ is a factor.\nBy comparing coefficients (or long division), $\\mathrm{p}(x) = (x - 2)(2x^{2} + 2x + 5)$. [Check: $(x-2)(2x^{2}+2x+5) = 2x^{3} + 2x^{2} + 5x - 4x^{2} - 4x - 10 = 2x^{3} - 2x^{2} + x - 10$.]\nFor $2x^{2} + 2x + 5 = 0$, the discriminant is $2^{2} - 4(2)(5) = 4 - 40 = -36 < 0$, so this quadratic has no real roots.\nHence $\\mathrm{p}(x) = 0$ has only one real root, namely $x = 2$.\nMarks: (a) M1 the two remainder equations from $x = 1$ and $x = -3$ ($a + b = -1$ and $3a - b = -7$); M1 solve the simultaneous equations; A1 $a = -2$, $b = 1$. (b) M1 $\\mathrm{p}(2) = 0$, so $x - 2$ is a factor (found by trial among the factors of $10$); M1 A1 quadratic factor $2x^{2} + 2x + 5$; A1 discriminant $4 - 40 = -36 < 0$ with the conclusion that $x = 2$ is the only real root.",
+    "syllabus_check": "4049 Polynomials: remainder theorem applied through a quadratic divisor (remainder linear, evaluate at each root of the divisor), simultaneous equations in the constants, factor theorem and extraction of a quadratic factor. Nature of roots: discriminant of the quadratic factor to establish no further real roots. No content outside 4049.",
+    "originality_note": "The exemplars all divide by linear factors and end by factorising completely or solving; this question gives a linear remainder on division by a QUADRATIC divisor (so the candidate must first factorise the divisor and evaluate at both roots), and closes with a discriminant argument that the cubic has only one real root rather than a factorisation into three linear factors. Paper 1 Q12 tests the factor theorem with one unknown and continues into partial fractions; neither the quadratic-divisor remainder nor the nature-of-roots ending appears there."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 2,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2022 P2 Q2",
+     "jaccard": 0.241
+    },
+    "marks": 7,
+    "checked_at": "2026-09-08T17:58:16.079Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "a = -2, b = 1",
+     "(b)": "shown (p(x) = 2x^3 - 2x^2 + x - 10 = (x - 2)(2x^2 + 2x + 5); the quadratic factor has discriminant 2^2 - 4(2)(5) = -36 < 0 so it has no real roots, hence p(x) = 0 has only the one real root x = 2)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "x^2 + 2x - 3 = (x + 3)(x - 1); p(1) = -9 gives a + b = -1, p(-3) = -85 gives 9a - 3b = -21. Solved: a = -2, b = 1. Verified directly: (x^2 + 2x - 3)(2x - 6) + (19x - 28) = 2x^3 - 2x^2 + x - 10. Both agree; correct."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "p(x) = 2x^3 - 2x^2 + x - 10, p(2) = 16 - 8 + 2 - 10 = 0, p(x) = (x - 2)(2x^2 + 2x + 5) (expansion checked), discriminant 4 - 40 = -36 < 0, so x = 2 is the only real root. Both agree; correct."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Key and blind examiner agree on both parts; the key is correct.",
+    "score": 4,
+    "fixes": [
+     "(b) is under-weighted at [3]: the candidate must find the factor by trial, divide, and argue the discriminant. SEAB gave [4] for that argument with the factor already shown (2018 P2 Q8(iii) 'Show that the equation p(x) = 0 has only one real root') and [3] + [2] for factorise-then-explain (2016 P2 Q8). Make (b) [4]: M1 p(2) = 0, M1A1 quadratic factor 2x^2 + 2x + 5, A1 discriminant -36 < 0 with conclusion; total 8.",
+     "Open (b) the way SEAB does when a later part reuses found constants: 'Using the values of a and b found in part (a), show that ...' (2022 P2 Q2(b), 2021 specimen P1 Q10(b))."
+    ],
+    "too_close_to": null,
+    "why": "Register, numbers and key are examination-clean, and the quadratic-divisor remainder condition plus the one-real-root demand make it a different question from the factor-plus-remainder exemplars (2022 P2 Q2, 2021 specimen P1 Q10) that share the find-a-and-b skeleton. Only the mark discipline of (b) needs a light edit."
+   },
+   "exemplars": [
+    {
+     "id": "13226df5-5455-499c-89d9-521c661d8fe6",
+     "ref": "GCE 2022 P1 Q9"
+    },
+    {
+     "id": "8e1d2031-ec74-4b3a-8c6a-99a5fac95bbc",
+     "ref": "GCE 2022 P2 Q2"
+    },
+    {
+     "id": "dda2fb93-d93f-47a7-9218-3322317b1b5a",
+     "ref": "GCE 2021 specimen P1 Q10"
+    },
+    {
+     "id": "d5555a6c-17ce-42ba-bab8-a7e565612ac7",
+     "ref": "GCE 2024 P2 Q6"
+    },
+    {
+     "id": "00be4c94-404b-4d43-ab8b-181c658593a9",
+     "ref": "GCE 2021 P2 Q2"
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Integration (Definite Integrals)",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "It is given that $y = x\\ln(x + 1)$, where $x > -1$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that $\\frac{dy}{dx} = \\ln(x + 1) + 1 - \\frac{1}{x + 1}$.",
+      "marks": 3,
+      "answer": "By the product rule, $\\frac{dy}{dx} = \\ln(x + 1) + x \\cdot \\frac{1}{x + 1} = \\ln(x + 1) + \\frac{x}{x + 1} = \\ln(x + 1) + 1 - \\frac{1}{x + 1}$ (shown).",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "Hence find $\\int \\ln(x + 1)\\,dx$.",
+      "marks": 3,
+      "answer": "$x\\ln(x + 1) - x + \\ln(x + 1) + c$, i.e. $(x + 1)\\ln(x + 1) - x + c$",
+      "subparts": []
+     },
+     {
+      "label": "(c)",
+      "text": "Hence evaluate $\\int_{0}^{2} \\ln(x + 1)\\,dx$, giving your answer in the form $a\\ln 3 + b$, where $a$ and $b$ are integers.",
+      "marks": 2,
+      "answer": "$3\\ln 3 - 2$ (so $a = 3$, $b = -2$)",
+      "subparts": []
+     }
+    ],
+    "answer": "(a) shown; (b) $x\\ln(x + 1) - x + \\ln(x + 1) + c$; (c) $3\\ln 3 - 2$",
+    "total_marks": 8,
+    "topics": [
+     "Integration (Definite Integrals)",
+     "Differentiation (Techniques)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) With $u = x$ and $v = \\ln(x + 1)$: $\\frac{du}{dx} = 1$ and, by the chain rule, $\\frac{dv}{dx} = \\frac{1}{x + 1}$. By the product rule, $\\frac{dy}{dx} = u\\frac{dv}{dx} + v\\frac{du}{dx} = \\frac{x}{x + 1} + \\ln(x + 1)$. Since $\\frac{x}{x + 1} = \\frac{(x + 1) - 1}{x + 1} = 1 - \\frac{1}{x + 1}$, $\\frac{dy}{dx} = \\ln(x + 1) + 1 - \\frac{1}{x + 1}$.\n(b) From (a), $\\int \\left[\\ln(x + 1) + 1 - \\frac{1}{x + 1}\\right]dx = x\\ln(x + 1) + c_1$, so $\\int \\ln(x + 1)\\,dx = x\\ln(x + 1) - \\int 1\\,dx + \\int \\frac{1}{x + 1}\\,dx = x\\ln(x + 1) - x + \\ln(x + 1) + c$ (no modulus sign is needed since $x + 1 > 0$). Equivalently $(x + 1)\\ln(x + 1) - x + c$.\n[Check: $\\frac{d}{dx}\\left(x\\ln(x + 1) - x + \\ln(x + 1)\\right) = \\ln(x + 1) + \\frac{x}{x + 1} - 1 + \\frac{1}{x + 1} = \\ln(x + 1) + \\frac{x + 1}{x + 1} - 1 = \\ln(x + 1)$.]\n(c) $\\int_{0}^{2} \\ln(x + 1)\\,dx = \\left[x\\ln(x + 1) - x + \\ln(x + 1)\\right]_{0}^{2} = \\left(2\\ln 3 - 2 + \\ln 3\\right) - \\left(0 - 0 + \\ln 1\\right) = 3\\ln 3 - 2$, using $\\ln 1 = 0$. So $a = 3$, $b = -2$.\n[Equivalently $\\left[(x + 1)\\ln(x + 1) - x\\right]_{0}^{2} = (3\\ln 3 - 2) - (\\ln 1 - 0) = 3\\ln 3 - 2$. Numerically $1.30$ (3 s.f.).]\nMarks: (a) M1 product rule with $\\frac{d}{dx}\\left(\\ln(x + 1)\\right) = \\frac{1}{x + 1}$; A1 $\\ln(x + 1) + \\frac{x}{x + 1}$; A1 write $\\frac{x}{x + 1} = 1 - \\frac{1}{x + 1}$ to reach the given form. (b) M1 integrate (a) as $\\int \\left[\\ln(x + 1) + 1 - \\frac{1}{x + 1}\\right]dx = x\\ln(x + 1)$; M1 rearrange for $\\int \\ln(x + 1)\\,dx$ with $\\int \\frac{1}{x + 1}\\,dx = \\ln(x + 1)$; A1 $x\\ln(x + 1) - x + \\ln(x + 1) + c$ (accept $(x + 1)\\ln(x + 1) - x + c$). (c) M1 $\\mathrm{F}(2) - \\mathrm{F}(0)$ with their (b), using $\\ln 1 = 0$; A1 $3\\ln 3 - 2$ after collecting $2\\ln 3 + \\ln 3 = 3\\ln 3$.",
+    "syllabus_check": "4049 Differentiation: product rule, with the chain rule giving $\\frac{d}{dx}\\left(\\ln(x + 1)\\right) = \\frac{1}{x + 1}$ (derivative of the logarithmic function of a linear expression). Integration: integration as the reverse of differentiation (using a given derivative to reach an integral that would otherwise need integration by parts, which is not in 4049), the standard form $\\int \\frac{1}{ax + b}\\,dx = \\frac{1}{a}\\ln(ax + b) + c$ with $a = 1$, $b = 1$, linearity, and evaluation of a definite integral with limits $0$ and $2$ using $\\ln 1 = 0$ and leaving $\\ln 3$ exact. The condition $x > -1$ keeps $x + 1 > 0$, so $\\ln(x + 1)$ is defined throughout and no modulus sign arises. No integration by parts or substitution is required; no content outside 4049.",
+    "originality_note": "Own construction. The function is the product $x\\ln(x + 1)$ and the integral isolated is $\\int \\ln(x + 1)\\,dx$: the derivative in (a) is rearranged so that the logarithm stands alone and the residue $1 - \\frac{1}{x + 1}$ integrates to $x - \\ln(x + 1)$, which then closes as $a\\ln 3 + b$ with limits $0$ and $2$. It is not GCE 2016 P1 Q10: that question differentiates the quotient $\\frac{\\ln x}{x^{2}}$ and isolates $\\int \\frac{\\ln x}{x^{3}}\\,dx$ by subtracting the given derivative from $\\frac{1}{x^{3}}$, then finds $\\mathrm{f}(x)$ through a point; here the function is a product, the isolating step is different (the residue is a constant and a $\\frac{1}{x + 1}$ term, not a power of $x$), and the closing part is a definite integral in the form $a\\ln 3 + b$. It uses none of the families the real papers already use for show-then-hence-integrate: $x^{2}\\ln x$ (2012 P1 Q3, 2019 P2 Q1), $x^{3}\\ln x$ (2004, 2008), $\\frac{\\ln x}{x^{2}}$ (2016 P1 Q10), $x\\cos x$, $x\\sin x$, $x^{2}\\sin x$ (2002, 2018), $x\\tan x$ with $\\ln(\\cos x)$ (2015 P2 Q2), $(2x - 1)\\sqrt{4x + 1}$ and $(x + 2)\\sqrt{x - 1}$ (2005, 2009), $x(3x - 5)^{\\frac{5}{3}}$ (2020). A search of the GCE corpus finds no real question that differentiates $x\\ln(x + 1)$ or integrates $\\ln(x + 1)$. The exemplars for this slot use surd quotients ($\\frac{x}{\\sqrt{2x + 1}}$, $(x - 3)\\sqrt{2x + 1}$), $x\\sec^{2}x$, a partial-fraction integrand and a $\\cos 2x$ identity; none involve a logarithm of a linear expression or the form $a\\ln 3 + b$. Paper 1 integrates exponentials from a given $\\frac{dy}{dx}$ (Q6), partial fractions (Q12) and an area (Q13); this paper's Q5 (differentiation techniques) is not pre-empted, since the product-rule step here is a shown result serving the integral."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 3,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2022 P2 Q5",
+     "jaccard": 0.101
+    },
+    "marks": 8,
+    "checked_at": "2026-09-08T18:02:10.423Z",
+    "rounds": 4
+   },
+   "blind": {
+    "answers": [
+     {
+      "label": "(a)",
+      "answer": "shown: $\\frac{dy}{dx}=\\ln(x+1)+\\frac{x}{x+1}=\\ln(x+1)+\\frac{(x+1)-1}{x+1}=\\ln(x+1)+1-\\frac{1}{x+1}$"
+     },
+     {
+      "label": "(b)",
+      "answer": "$\\int \\ln(x+1)\\,dx=(x+1)\\ln(x+1)-x+C$"
+     },
+     {
+      "label": "(c)",
+      "answer": "$3\\ln 3-2$  (so $a=3$, $b=-2$)"
+     }
+    ],
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Product rule with d/dx ln(x+1) = 1/(x+1): dy/dx = ln(x+1) + x/(x+1) = ln(x+1) + 1 - 1/(x+1). Both agree; target is true and the step is within 4049 (product rule + chain rule on ln of a linear expression)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Integrating (a): x ln(x+1) = INT ln(x+1) dx + x - ln(x+1), so INT ln(x+1) dx = x ln(x+1) - x + ln(x+1) + c. The blind examiner's (x+1)ln(x+1) - x + C is the same expression collected; differentiating it returns ln(x+1). Both agree; correct. No modulus needed since x > -1 is given."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "[(x+1)ln(x+1) - x] from 0 to 2 = (3 ln 3 - 2) - (ln 1 - 0) = 3 ln 3 - 2, so a = 3, b = -2 (numerically 1.30). Both agree; correct and exam-clean."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Key and blind examiner agree on all three parts; the key is correct.",
+    "score": 4,
+    "fixes": [
+     "Re-weight (b)/(c) as [3]/[2] (total still 8). SEAB gave [3] for the analogous 'hence integrate' step in 2016 P1 Q10(ii), and (b) here needs one more integration (INT 1/(x+1) dx = ln(x+1)) than that one did, so [2] is a mark light; conversely (c) is only F(2) - F(0) with ln 1 = 0 and collecting 2 ln 3 + ln 3, for which SEAB's usual weight is [2] (cf. 2013 P2 Q5(ii), 2015 P2 Q2(iii)) - the second M1 'collect 2 ln 3 + ln 3' is arithmetic, not a method. Scheme: (b) M1 integrate (a) and rearrange, M1 INT(1 - 1/(x+1)) dx = x - ln(x+1), A1; (c) M1 limits with ln 1 = 0, A1 3 ln 3 - 2."
+    ],
+    "too_close_to": null,
+    "why": "Sound, fully within 4049, SEAB register throughout (given domain, 'Show that' / 'Hence find' / 'Hence evaluate ... in the form a ln 3 + b, where a and b are integers'), clean closing value, and a genuinely new family - the isolated integral is INT ln(x+1) dx with a constant-plus-1/(x+1) residue, which none of the real show-then-hence questions (ln x / x^2, x^2 ln x, x^3 ln x, x cos x, x sin x, x tan x, the surd products, x(3x-5)^(5/3)) use; sharing the show/hence device is the standard GCE structure, not a re-skin. The only edit a real paper would make is the marks split in (b)/(c)."
+   },
+   "exemplars": [
+    {
+     "id": "a906d956-d3fc-466d-9cd9-75b9505014e1",
+     "ref": "GCE 2021 P2 Q3"
+    },
+    {
+     "id": "cada459a-5436-41aa-92f2-80e3a77be480",
+     "ref": "GCE 2024 P1 Q12"
+    },
+    {
+     "id": "14d24a81-10c5-473d-9376-b1be1af3db49",
+     "ref": "GCE 2022 P2 Q8"
+    },
+    {
+     "id": "e9dac870-5eb4-42f8-bc7f-9c590e2ff544",
+     "ref": "GCE 2015 P2 Q2"
+    },
+    {
+     "id": "88f697b8-fd98-48df-9359-c0780779fd7e",
+     "ref": "GCE 2013 P2 Q5"
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Trigonometry (R-Formula)",
+   "target": 9,
+   "accepted": true,
+   "question": {
+    "stem": "It is given that $\\mathrm{f}(x) = \\sqrt{3}\\cos 2x - \\sin 2x$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Express $\\mathrm{f}(x)$ in the form $R\\cos(2x + \\alpha)$, where $R > 0$ and $0 < \\alpha < \\frac{\\pi}{2}$.",
+      "marks": 3,
+      "answer": "$2\\cos\\left(2x + \\frac{\\pi}{6}\\right)$"
+     },
+     {
+      "label": "(b)",
+      "text": "Hence solve the equation $\\mathrm{f}(x) = \\sqrt{2}$ for $0 \\le x \\le \\pi$, giving your answers in terms of $\\pi$.",
+      "marks": 4,
+      "answer": "$x = \\frac{\\pi}{24}$ or $x = \\frac{19\\pi}{24}$"
+     },
+     {
+      "label": "(c)",
+      "text": "Sketch the graph of $y = \\mathrm{f}(x)$ for $0 \\le x \\le \\pi$, showing the coordinates of the maximum point.",
+      "marks": 2,
+      "answer": "Sketch of $y = 2\\cos\\left(2x + \\frac{\\pi}{6}\\right)$: starts at $(0, \\sqrt{3})$, falls through $\\left(\\frac{\\pi}{6}, 0\\right)$ to the minimum $\\left(\\frac{5\\pi}{12}, -2\\right)$, rises through $\\left(\\frac{2\\pi}{3}, 0\\right)$ to the maximum $\\left(\\frac{11\\pi}{12}, 2\\right)$, and ends at $(\\pi, \\sqrt{3})$; maximum point $\\left(\\frac{11\\pi}{12}, 2\\right)$"
+     }
+    ],
+    "answer": "(a) $2\\cos\\left(2x + \\frac{\\pi}{6}\\right)$; (b) $x = \\frac{\\pi}{24}$ or $\\frac{19\\pi}{24}$; (c) sketch of $y = 2\\cos\\left(2x + \\frac{\\pi}{6}\\right)$ from $(0, \\sqrt{3})$ down to the minimum $\\left(\\frac{5\\pi}{12}, -2\\right)$, up to the maximum $\\left(\\frac{11\\pi}{12}, 2\\right)$, ending at $(\\pi, \\sqrt{3})$; maximum point $\\left(\\frac{11\\pi}{12}, 2\\right)$",
+    "total_marks": 9,
+    "topics": [
+     "Trigonometry (R-Formula)",
+     "Trigonometry (Equations)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) $R = \\sqrt{(\\sqrt{3})^2 + 1^2} = \\sqrt{4} = 2$. Comparing $\\sqrt{3}\\cos 2x - \\sin 2x$ with $R\\cos 2x\\cos\\alpha - R\\sin 2x\\sin\\alpha$: $R\\cos\\alpha = \\sqrt{3}$ and $R\\sin\\alpha = 1$, so $\\tan\\alpha = \\frac{1}{\\sqrt{3}}$ and $\\alpha = \\frac{\\pi}{6}$ (acute). Hence $\\mathrm{f}(x) = \\sqrt{3}\\cos 2x - \\sin 2x = 2\\cos\\left(2x + \\frac{\\pi}{6}\\right)$.\n(b) $2\\cos\\left(2x + \\frac{\\pi}{6}\\right) = \\sqrt{2}$ gives $\\cos\\left(2x + \\frac{\\pi}{6}\\right) = \\frac{\\sqrt{2}}{2} = \\frac{1}{\\sqrt{2}}$. For $0 \\le x \\le \\pi$, $\\frac{\\pi}{6} \\le 2x + \\frac{\\pi}{6} \\le \\frac{13\\pi}{6}$. Basic angle $\\frac{\\pi}{4}$; cosine is positive in the first and fourth quadrants, so $2x + \\frac{\\pi}{6} = \\frac{\\pi}{4}$ or $\\frac{7\\pi}{4}$ (the next value $\\frac{9\\pi}{4}$ exceeds $\\frac{13\\pi}{6}$). Then $2x = \\frac{\\pi}{12}$ or $\\frac{19\\pi}{12}$, so $x = \\frac{\\pi}{24}$ or $x = \\frac{19\\pi}{24}$. Check: $2x = 15^\\circ$: $\\sqrt{3}\\cos 15^\\circ - \\sin 15^\\circ = \\sqrt{2}$; $2x = 285^\\circ$: $\\sqrt{3}\\cos 285^\\circ - \\sin 285^\\circ = \\sqrt{2}$.\n(c) $y = \\mathrm{f}(x) = 2\\cos\\left(2x + \\frac{\\pi}{6}\\right)$ has amplitude $2$ and period $\\frac{2\\pi}{2} = \\pi$, so $0 \\le x \\le \\pi$ covers exactly one period, with $2x + \\frac{\\pi}{6}$ running from $\\frac{\\pi}{6}$ to $\\frac{13\\pi}{6}$.\nEnd values: at $x = 0$, $y = 2\\cos\\frac{\\pi}{6} = \\sqrt{3}$; at $x = \\pi$, $y = 2\\cos\\frac{13\\pi}{6} = 2\\cos\\frac{\\pi}{6} = \\sqrt{3}$.\nMinimum point: $\\cos\\left(2x + \\frac{\\pi}{6}\\right) = -1$ when $2x + \\frac{\\pi}{6} = \\pi$, so $2x = \\frac{5\\pi}{6}$, $x = \\frac{5\\pi}{12}$, giving $\\left(\\frac{5\\pi}{12}, -2\\right)$.\nMaximum point: $\\cos\\left(2x + \\frac{\\pi}{6}\\right) = 1$ when $2x + \\frac{\\pi}{6} = 2\\pi$ (the only such value in $\\frac{\\pi}{6} \\le 2x + \\frac{\\pi}{6} \\le \\frac{13\\pi}{6}$), so $2x = \\frac{11\\pi}{6}$, $x = \\frac{11\\pi}{12}$, giving $\\left(\\frac{11\\pi}{12}, 2\\right)$. (At $x = 0$ the value is only $\\sqrt{3}$, so the maximum is not at an endpoint.)\nAxis crossings: $2x + \\frac{\\pi}{6} = \\frac{\\pi}{2}$ or $\\frac{3\\pi}{2}$, giving $x = \\frac{\\pi}{6}$ and $x = \\frac{2\\pi}{3}$.\nThe sketch starts at $(0, \\sqrt{3})$, falls through $\\left(\\frac{\\pi}{6}, 0\\right)$ to the minimum $\\left(\\frac{5\\pi}{12}, -2\\right)$, rises through $\\left(\\frac{2\\pi}{3}, 0\\right)$ to the maximum $\\left(\\frac{11\\pi}{12}, 2\\right)$, and falls to $(\\pi, \\sqrt{3})$: one full cosine wave between $y = -2$ and $y = 2$, with the maximum point $\\left(\\frac{11\\pi}{12}, 2\\right)$ labelled.\nMarks: (a) M1 $R = \\sqrt{3 + 1} = 2$; M1 $\\tan\\alpha = \\frac{1}{\\sqrt{3}}$; A1 $2\\cos\\left(2x + \\frac{\\pi}{6}\\right)$. (b) M1 $\\cos\\left(2x + \\frac{\\pi}{6}\\right) = \\frac{1}{\\sqrt{2}}$; M1 basic angle $\\frac{\\pi}{4}$ with $\\frac{\\pi}{6} \\le 2x + \\frac{\\pi}{6} \\le \\frac{13\\pi}{6}$; A1 $x = \\frac{\\pi}{24}$; A1 $x = \\frac{19\\pi}{24}$. (c) B1 shape with the correct period and the end values $\\sqrt{3}$ at both ends; B1 maximum point $\\left(\\frac{11\\pi}{12}, 2\\right)$ labelled.",
+    "syllabus_check": "4049 Trigonometry: expression of $a\\cos t + b\\sin t$ as $R\\cos(t + \\alpha)$ (R-formula) with a double-angle argument; exact values of special angles ($R = 2$, $\\alpha = \\frac{\\pi}{6}$); solving a trigonometric equation with a compound argument over a stated domain in radians, answers in terms of $\\pi$, with the domain of $2x + \\frac{\\pi}{6}$ tracked; sketching the graph of $y = R\\cos(2x + \\alpha)$ over a stated domain (amplitude, period, end values, coordinates of the maximum point). A calculator is allowed, as in every SEAB R-formula question; exactness is demanded through 'in terms of $\\pi$'. No inverse trigonometric functions, no identities beyond the addition formula that the R-form rests on.",
+    "originality_note": "Pure R-formula question on a double-angle argument in radians, no context and no figure. The exemplars are all contextual 'show that a length equals $a\\cos t + b\\sin t$' questions in degrees (2024 P1 Q11, 2022 P2 Q7, 2021 specimen P2 Q6, 2023 P2 Q8) or 2020 P2 Q1 ($7\\cos t + 4\\sin t = 6$, then the extremes of $80 - (\\ldots)^{2}$). New coefficients ($\\sqrt{3}$, $1$ giving $R = 2$, $\\alpha = \\frac{\\pi}{6}$ exactly), the $2x$ argument that doubles the working interval and discards $\\frac{9\\pi}{4}$, right-hand side $\\sqrt{2}$, and a closing sketch of $y = \\mathrm{f}(x)$ over $0 \\le x \\le \\pi$ whose maximum $\\left(\\frac{11\\pi}{12}, 2\\right)$ is not at an endpoint and whose end values are both $\\sqrt{3}$, a demand no exemplar makes. Paper 1's trigonometry (graph of $2\\sin 3x + 1$; proving $\\sin(A+B)\\sin(A-B)$; an equation after a binomial expansion) is not repeated: Paper 1's graph is a sine with a vertical shift, this one a phase-shifted cosine obtained from an R-form."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 4,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2012 P1 Q8",
+     "jaccard": 0.095
+    },
+    "marks": 9,
+    "checked_at": "2026-09-08T17:58:16.086Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "2 cos(2x + pi/6)",
+     "(b)": "x = pi/24 or x = 19pi/24",
+     "(c)": "greatest value = 2, occurring at x = 11pi/12"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "R = sqrt(3 + 1) = 2; R cos(alpha) = sqrt3, R sin(alpha) = 1, tan(alpha) = 1/sqrt3, alpha = pi/6. 2cos(2x + pi/6). Both agree; correct."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "cos(2x + pi/6) = 1/sqrt2 with 2x + pi/6 in [pi/6, 13pi/6]: 2x + pi/6 = pi/4 or 7pi/4 (9pi/4 > 13pi/6 is excluded), so x = pi/24 or 19pi/24. Checked: 2x = 15 deg gives 2cos45 deg = sqrt2; 2x = 285 deg gives 2cos315 deg = sqrt2. Both agree; correct."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Greatest value 2 when cos(2x + pi/6) = 1, i.e. 2x + pi/6 = 2pi within [pi/6, 13pi/6], so x = 11pi/12 (x = -pi/12 is outside the domain; at x = 0 the value is only sqrt3). Both agree; correct."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Key and blind examiner agree on all three parts; the key is correct.",
+    "score": 4,
+    "fixes": [
+     "The skeleton (express in R-form -> solve on [0, pi] -> greatest value and the x at which it occurs) is the 2020 P2 Q1 skeleton with a double angle; give (c) a demand of its own, e.g. '(c) Sketch the graph of y = sqrt3 cos 2x - sin 2x for 0 <= x <= pi, stating the coordinates of the maximum point. [3]' (total 10) or '(c) State the number of solutions of sqrt3 cos 2x - sin 2x = -1 for 0 <= x <= pi and justify your answer. [2]'.",
+     "SEAB reserves 'A calculator must not be used in this question.' for surd/exact-identity questions (2022 P2 Q5, 2023 P2 Q4); every R-formula question in the corpus allows one. Either drop the line and demand the form instead ('giving your answers in terms of pi' in (b) and (c)), or keep it and make the point explicit with 'exact' in (b)."
+    ],
+    "too_close_to": null,
+    "why": "Correct, exam-clean (2, pi/6, pi/24, 19pi/24, 11pi/12) and the double-angle domain check in (b) is a real discriminator; but it is the one non-contextual R-formula exemplar (2020 P2 Q1) re-run with 2x and special angles rather than a fresh structure, and the no-calculator line is an unusual fit for the topic. Not a re-skin - 2020's second part (extremes of 80 - (expr)^2) is a different demand."
+   },
+   "exemplars": [
+    {
+     "id": "26e75099-4fc1-4639-9412-212442f9a7a9",
+     "ref": "GCE 2024 P1 Q11"
+    },
+    {
+     "id": "d1f03fe5-5d81-4200-8983-5c86ba20505b",
+     "ref": "GCE 2022 P2 Q7"
+    },
+    {
+     "id": "37c02057-7114-4712-a710-5d539f2564d2",
+     "ref": "GCE 2021 specimen P2 Q6"
+    },
+    {
+     "id": "892e5c5a-8b85-480a-a177-a35c8f249d7d",
+     "ref": "GCE 2023 P2 Q8"
+    },
+    {
+     "id": "d45bd145-3828-4276-a56f-7c7398aaa10c",
+     "ref": "GCE 2020 P2 Q1"
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Differentiation (Techniques)",
+   "target": 7,
+   "accepted": true,
+   "question": {
+    "stem": "The equation of a curve is $y = \\mathrm{e}^{-x}\\left(x^2 + kx + 2\\right)$, where $k$ is a constant.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that $\\frac{dy}{dx} = -\\mathrm{e}^{-x}\\left(x^2 + (k - 2)x + 2 - k\\right)$.",
+      "marks": 2,
+      "answer": "Shown: $\\frac{dy}{dx} = \\mathrm{e}^{-x}(2x + k) - \\mathrm{e}^{-x}(x^2 + kx + 2) = -\\mathrm{e}^{-x}\\left(x^2 + (k - 2)x + 2 - k\\right)$"
+     },
+     {
+      "label": "(b)",
+      "text": "Find the range of values of $k$ for which the curve has no stationary points.",
+      "marks": 3,
+      "answer": "$-2 < k < 2$"
+     },
+     {
+      "label": "(c)",
+      "text": "It is now given that $k = 4$. Hence find $\\int \\mathrm{e}^{-x}\\left(x^2 + 2x - 2\\right)\\,dx$.",
+      "marks": 2,
+      "answer": "$-\\mathrm{e}^{-x}\\left(x^2 + 4x + 2\\right) + c$"
+     }
+    ],
+    "answer": "(a) shown; (b) $-2 < k < 2$; (c) $-\\mathrm{e}^{-x}\\left(x^2 + 4x + 2\\right) + c$",
+    "total_marks": 7,
+    "topics": [
+     "Differentiation (Techniques)",
+     "Nature of Roots"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) By the product rule, with $\\frac{d}{dx}\\left(\\mathrm{e}^{-x}\\right) = -\\mathrm{e}^{-x}$: $\\frac{dy}{dx} = \\mathrm{e}^{-x}(2x + k) + \\left(x^2 + kx + 2\\right)\\left(-\\mathrm{e}^{-x}\\right) = \\mathrm{e}^{-x}\\left(2x + k - x^2 - kx - 2\\right) = -\\mathrm{e}^{-x}\\left(x^2 + kx - 2x - k + 2\\right) = -\\mathrm{e}^{-x}\\left(x^2 + (k - 2)x + 2 - k\\right)$.\n(b) Stationary points occur where $\\frac{dy}{dx} = 0$. Since $\\mathrm{e}^{-x} > 0$ for all $x$, the factor $\\mathrm{e}^{-x}$ never vanishes, so stationary points occur only where $x^2 + (k - 2)x + (2 - k) = 0$. The curve has no stationary points when this quadratic in $x$ has no real roots, i.e. when its discriminant is negative: $(k - 2)^2 - 4(1)(2 - k) < 0$. Expanding, $k^2 - 4k + 4 - 8 + 4k < 0$, so $k^2 - 4 < 0$, i.e. $(k - 2)(k + 2) < 0$. Hence $-2 < k < 2$.\n(c) With $k = 4$, $y = \\mathrm{e}^{-x}\\left(x^2 + 4x + 2\\right)$ and part (a) gives $\\frac{dy}{dx} = -\\mathrm{e}^{-x}\\left(x^2 + 2x + 2 - 4\\right) = -\\mathrm{e}^{-x}\\left(x^2 + 2x - 2\\right)$. So $\\mathrm{e}^{-x}\\left(x^2 + 2x - 2\\right) = -\\frac{dy}{dx} = \\frac{d}{dx}\\left[-\\mathrm{e}^{-x}\\left(x^2 + 4x + 2\\right)\\right]$, and integration as the reverse of differentiation gives $\\int \\mathrm{e}^{-x}\\left(x^2 + 2x - 2\\right)\\,dx = -y + c = -\\mathrm{e}^{-x}\\left(x^2 + 4x + 2\\right) + c$.\n[Check: $\\frac{d}{dx}\\left[-\\mathrm{e}^{-x}\\left(x^2 + 4x + 2\\right)\\right] = \\mathrm{e}^{-x}\\left(x^2 + 4x + 2\\right) - \\mathrm{e}^{-x}(2x + 4) = \\mathrm{e}^{-x}\\left(x^2 + 2x - 2\\right)$. Also $k = 4$ lies outside $-2 < k < 2$, so this particular curve does have stationary points (where $x^2 + 2x - 2 = 0$); they are not asked for.]\nMarks: (a) M1 product rule with $\\frac{d}{dx}\\left(\\mathrm{e}^{-x}\\right) = -\\mathrm{e}^{-x}$; A1 rearranged to the given form. (b) M1 discriminant of $x^2 + (k - 2)x + (2 - k)$ set $< 0$, with the justification that $\\mathrm{e}^{-x} > 0$ (or $\\ne 0$) so only the quadratic factor can vanish; M1 simplify to $k^2 - 4 < 0$; A1 $-2 < k < 2$. (c) M1 recognise the integrand as $-\\frac{dy}{dx}$ with $k = 4$ (or as the derivative of $-y$); A1 $-\\mathrm{e}^{-x}\\left(x^2 + 4x + 2\\right) + c$, with the arbitrary constant.",
+    "syllabus_check": "4049 Differentiation: product rule with an exponential factor (derivative of $\\mathrm{e}^{-x}$); stationary points from $\\frac{dy}{dx} = 0$ using the fact that $\\mathrm{e}^{-x}$ is never zero. Nature of Roots: discriminant condition for a quadratic to have no real roots, leading to a quadratic inequality in $k$. Integration as the reverse of differentiation, using the given derivative with a specific $k$ — the 4049 route to $\\int \\mathrm{e}^{-x}\\left(x^2 + 2x - 2\\right)\\,dx$; no integration by parts. The closing 2-mark 'hence integrate' shares the reverse-of-differentiation skill with Q3, but Q3 tests it through the quotient rule with $\\ln x$ and a definite integral with exact limits; here the derivative technique is the product rule with $\\mathrm{e}^{-x}$, the integral is indefinite, and the weight of the question sits in the parameter/discriminant argument of part (b), which Q3 has nothing of. No nature of turning points (Q10 owns maxima/minima), no tangent/normal (Paper 1 Q13). No content outside 4049.",
+    "originality_note": "An exponential product carrying a parameter $k$: a 'show that' derivative, then the discriminant of the bracket decides whether stationary points exist at all, then a specific $k$ turns the same derivative round into an integral the syllabus cannot reach any other way. The exemplars are 'find dy/dx then hence integrate' with no parameter (2023 P1 Q4: $x\\mathrm{e}^{-2x}$; 2021 P2 Q3: $x(2x+1)^{-\\frac{1}{2}}$ to a definite integral; 2024 P2 Q4: a rational gradient plus a separate $\\sec^2 x$ antiderivative), a kinematics oscillation (2022 P1 Q12) and indices + the gradient of $5 - \\mathrm{e}^{2x}$ (2022 P2 Q6). None has a parameter, a discriminant argument or $\\mathrm{e}^{-x}$ times a quadratic; the 'hence integrate' close is the SEAB shape for this slot, but here the candidate must first specialise (a) to $k = 4$ to see that the integrand is $-\\frac{dy}{dx}$ — a step none of the exemplars require."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 5,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2011 P2 Q1",
+     "jaccard": 0.169
+    },
+    "marks": 7,
+    "checked_at": "2026-09-08T17:58:16.089Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": [
+     {
+      "label": "(a)",
+      "answer": "shown: $\\frac{dy}{dx}=-\\mathrm{e}^{-x}(x^2+kx+2)+\\mathrm{e}^{-x}(2x+k)=\\mathrm{e}^{-x}\\left(-x^2-kx-2+2x+k\\right)=-\\mathrm{e}^{-x}\\left(x^2+(k-2)x+2-k\\right)$"
+     },
+     {
+      "label": "(b)",
+      "answer": "$-2<k<2$  (since $\\mathrm{e}^{-x}\\neq0$, need $x^2+(k-2)x+(2-k)=0$ to have no real roots: $(k-2)^2-4(2-k)<0\\Rightarrow k^2-4<0$)"
+     },
+     {
+      "label": "(c)",
+      "answer": "$-\\mathrm{e}^{-x}\\left(x^2+4x+2\\right)+C$"
+     }
+    ],
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both derive dy/dx = e^{-x}(2x+k) - e^{-x}(x^2+kx+2) = -e^{-x}(x^2+(k-2)x+2-k). Verified independently: e^{-x}(2x + k - x^2 - kx - 2) = -e^{-x}(x^2 + (k-2)x + (2-k))."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give -2 < k < 2 with the e^{-x} > 0 justification. Verified: (k-2)^2 - 4(2-k) = k^2 - 4k + 4 - 8 + 4k = k^2 - 4 < 0, so (k-2)(k+2) < 0."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give -e^{-x}(x^2+4x+2) + c (C vs c is presentation). Verified: with k = 4, (a) gives dy/dx = -e^{-x}(x^2+2x-2), so the integrand is -dy/dx and the integral is -y + c; differentiating -e^{-x}(x^2+4x+2) returns e^{-x}(x^2+4x+2) - e^{-x}(2x+4) = e^{-x}(x^2+2x-2)."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and the key is correct throughout.",
+    "score": 4,
+    "fixes": [
+     "Part (a) is a mark light by SEAB's own tariff: GCE 2023 P1 Q4(a) gave [3] for d/dx(xe^{-2x}) with no rearrangement demanded, and here a student must apply the product rule, get the sign on d/dx(e^{-x}) = -e^{-x}, and factor -1 out to reach the given form. Make (a) [3] (M1 product rule, A1 -e^{-x} for the exponential factor and correct unsimplified derivative, A1 given form) so the question is 8 marks; if the slot must stay at 7 this is the only place a mark is short."
+    ],
+    "too_close_to": null,
+    "why": "The repaired slot now uses the derivative three ways (show, discriminant on k, hence-integrate) in genuine SEAB register with exam-clean numbers (k^2 - 4), and the parts are independent since (a) gives the derivative. It shares the differentiate-then-hence-integrate frame with GCE 2023 P1 Q4 only as a syllabus staple, not as a re-skin (a parameter, a discriminant part and a specific k = 4 substitution); the one light edit is the (a) tariff."
+   },
+   "exemplars": [
+    {
+     "id": "73045143-a5ec-407c-911c-10524005176f",
+     "ref": "GCE 2024 P2 Q4"
+    },
+    {
+     "id": "7ce9b118-0db9-4eac-b681-ea09d0de65d5",
+     "ref": "GCE 2023 P1 Q4"
+    },
+    {
+     "id": "3fd0c2a4-c811-4101-bc71-08c5a4ccddf8",
+     "ref": "GCE 2022 P1 Q12"
+    },
+    {
+     "id": "a906d956-d3fc-466d-9cd9-75b9505014e1",
+     "ref": "GCE 2021 P2 Q3"
+    },
+    {
+     "id": "f2d2e5eb-d98d-4637-99fc-4037949bd8c5",
+     "ref": "GCE 2022 P2 Q6"
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Coordinate Geometry",
+   "target": 9,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram shows a trapezium $ABCD$ in which $AB$ is parallel to $DC$. The points $A$, $B$ and $C$ have coordinates $(-2, 3)$, $(6, 7)$ and $(8, 3)$ respectively, and $D$ lies on the $x$-axis.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the coordinates of $D$.",
+      "marks": 2,
+      "answer": "$D(2, 0)$"
+     },
+     {
+      "label": "(b)",
+      "text": "Show that angle $BCD$ is a right angle.",
+      "marks": 2,
+      "answer": "Gradient of $BC = -2$, gradient of $DC = \\frac{1}{2}$; product $= -1$, so $BC$ is perpendicular to $DC$"
+     },
+     {
+      "label": "(c)",
+      "text": "Find the area of the trapezium $ABCD$.",
+      "marks": 2,
+      "answer": "$35$ units$^2$"
+     },
+     {
+      "label": "(d)",
+      "text": "The line through $D$ parallel to $BC$ meets $AB$ at the point $F$.",
+      "marks": 3,
+      "answer": "(i) $F(0, 4)$; (ii) $DF \\parallel CB$ by construction and $FB \\parallel DC$ since $AB \\parallel DC$, so $DFBC$ is a parallelogram; angle $BCD = 90^\\circ$ from part (b), so $DFBC$ is a rectangle",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "Find the coordinates of $F$.",
+        "marks": 2,
+        "answer": "$F(0, 4)$"
+       },
+       {
+        "label": "(ii)",
+        "text": "Explain why $DFBC$ is a rectangle.",
+        "marks": 1,
+        "answer": "$DF \\parallel CB$ by construction and $FB \\parallel DC$ (since $AB \\parallel DC$), so $DFBC$ is a parallelogram; angle $BCD = 90^\\circ$ from part (b), so it is a rectangle"
+       }
+      ]
+     }
+    ],
+    "answer": "(a) $D(2, 0)$; (b) shown, gradients $-2$ and $\\frac{1}{2}$; (c) $35$ units$^2$; (d)(i) $F(0, 4)$; (d)(ii) $DF \\parallel CB$ and $FB \\parallel DC$, so $DFBC$ is a parallelogram with angle $BCD = 90^\\circ$, hence a rectangle",
+    "total_marks": 9,
+    "topics": [
+     "Coordinate Geometry"
+    ],
+    "needs_figure": true,
+    "figure_description": "Axes $Ox$, $Oy$. Trapezium $ABCD$ with $A(-2, 3)$, $B(6, 7)$, $C(8, 3)$ labelled with their coordinates and $D$ on the $x$-axis labelled $D$ only; $AB$ and $DC$ parallel; not to scale.",
+    "solution": "(a) Gradient of $AB = \\frac{7 - 3}{6 - (-2)} = \\frac{4}{8} = \\frac{1}{2}$. Since $DC$ is parallel to $AB$, the line $DC$ has gradient $\\frac{1}{2}$ and passes through $C(8, 3)$: $y - 3 = \\frac{1}{2}(x - 8)$, i.e. $y = \\frac{1}{2}x - 1$. [M1] $D$ lies on the $x$-axis, so $0 = \\frac{1}{2}x - 1$, giving $x = 2$. Hence $D$ is $(2, 0)$. [A1]\n(b) Gradient of $BC = \\frac{3 - 7}{8 - 6} = -2$. Gradient of $DC = \\frac{3 - 0}{8 - 2} = \\frac{1}{2}$ (the gradient of $AB$, as $DC \\parallel AB$). [M1] Since $(-2) \\times \\frac{1}{2} = -1$, $BC$ is perpendicular to $DC$, so angle $BCD = 90^\\circ$. [A1]\n(c) $AB = \\sqrt{8^2 + 4^2} = \\sqrt{80} = 4\\sqrt{5}$, $DC = \\sqrt{6^2 + 3^2} = \\sqrt{45} = 3\\sqrt{5}$ and, by part (b), the perpendicular distance between the parallel sides is $BC = \\sqrt{2^2 + 4^2} = \\sqrt{20} = 2\\sqrt{5}$. [M1] Area $= \\frac{1}{2}\\left(4\\sqrt{5} + 3\\sqrt{5}\\right)\\left(2\\sqrt{5}\\right) = \\frac{1}{2} \\times 7\\sqrt{5} \\times 2\\sqrt{5} = 35$ units$^2$. [A1] Alternatively, with the vertices in order $A(-2, 3)$, $B(6, 7)$, $C(8, 3)$, $D(2, 0)$: Area $= \\frac{1}{2}\\left|(-2)(7) + (6)(3) + (8)(0) + (2)(3) - \\left[(3)(6) + (7)(8) + (3)(2) + (0)(-2)\\right]\\right| = \\frac{1}{2}\\left|10 - 80\\right| = 35$ units$^2$.\n(d)(i) The line through $D(2, 0)$ parallel to $BC$ has gradient $-2$: $y - 0 = -2(x - 2)$, i.e. $y = -2x + 4$. The line $AB$ has gradient $\\frac{1}{2}$ and passes through $A(-2, 3)$: $y - 3 = \\frac{1}{2}(x + 2)$, i.e. $y = \\frac{1}{2}x + 4$. [M1] Solving, $\\frac{1}{2}x + 4 = -2x + 4$ gives $\\frac{5}{2}x = 0$, so $x = 0$ and $y = 4$. Hence $F$ is $(0, 4)$. [A1]\n(d)(ii) $DF$ is parallel to $CB$ by construction, and $FB$ lies along $AB$, which is parallel to $DC$; so $DFBC$ has two pairs of parallel sides and is a parallelogram. From part (b), angle $BCD = 90^\\circ$, and a parallelogram with one right angle is a rectangle. [B1] (Check: $\\vec{DF} = (-2, 4)$ and $\\vec{BC} = (2, -4)$ are parallel; $\\vec{FB} = (6, 3) = \\vec{DC}$; $F(0, 4)$ lies between $A$ and $B$ on $AB$.)",
+    "syllabus_check": "4049 Coordinate geometry of straight lines: gradient, condition for parallel lines (to locate $D$, and for the line through $D$), condition for perpendicular lines (the right angle), equation of a straight line, intersection with an axis and with another line, length of a line segment and area of a rectilinear figure (trapezium formula or shoelace); (d)(ii) is a one-line deduction from the parallel/perpendicular conditions already established, using the definition of a parallelogram and of a rectangle. Set with a diagram, as SEAB does for a quadrilateral named by its vertices. No circles (Q9 of this paper) and no perpendicular bisector or reflection (Paper 1 Q10).",
+    "originality_note": "A trapezium drawn in the diagram with its fourth vertex fixed by a parallel condition on the $x$-axis, a right angle proved by gradients, the area, then a parallel-line construction whose meeting point with $AB$ is the $y$-intercept and which closes with a geometric justification that $DFBC$ is a rectangle, so the last part earns a deduction rather than repeating the intersection routine of (a). Not a reflection in a line with a shortest path (Paper 1 Q10), not a point on $y = 2x - 1$ with parameter $k$ (Paper 1 Q4), not a kite with $h + k = 12$ (2021 P1 Q9), not a circle (2024 P2 Q7, 2023 P1 Q10, 2022 P2 Q9), not a curve with a normal (2022 P1 Q13). New integral coordinates chosen so that $AB : DC : BC = 4 : 3 : 2$ in units of $\\sqrt{5}$ and the area is a whole number."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 6,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2009 P1 Q11",
+     "jaccard": 0.135
+    },
+    "marks": 9,
+    "checked_at": "2026-09-08T17:58:16.092Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "D(2, 0)",
+     "(b)": "shown — gradient of CB = (7-3)/(6-8) = -2, gradient of CD = (0-3)/(2-8) = 1/2; (-2)(1/2) = -1, so BC ⊥ CD and angle BCD = 90°",
+     "(c)": "35 square units",
+     "(d)": "F(0, 4)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give D(2, 0). Verified: gradient AB = 4/8 = 1/2; DC through C(8,3) with gradient 1/2 is y = x/2 - 1; y = 0 gives x = 2."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both show gradient BC = -2, gradient DC = 1/2, product -1 so BC ⊥ DC. Verified: (3-7)/(8-6) = -2 and (3-0)/(8-2) = 1/2."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give 35 square units. Verified by shoelace on A(-2,3), B(6,7), C(8,3), D(2,0): ½|(-14+18+0+6) - (18+56+6+0)| = ½|10-80| = 35; cross-checked as ½(4√5 + 3√5)(2√5) = 35 using BC as the height from (b)."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both give F(0, 4). Verified: line through D(2,0) with gradient -2 is y = -2x + 4; AB is y = x/2 + 4; equal at x = 0, y = 4, and x = 0 lies between x_A = -2 and x_B = 6 so F is on the segment AB."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and the key is correct throughout.",
+    "score": 4,
+    "fixes": [
+     "Supply the diagram. Every GCE question that names a quadrilateral by its vertices ('The diagram shows a kite ABCD…', 2021 P1 Q9) is set with a figure; open with 'The diagram shows a trapezium ABCD in which AB is parallel to DC…' and draw A, B, C, D with D marked on the x-axis (not to scale).",
+     "Part (d) is light at [2] for forming the line through D with gradient -2, forming (or recalling) the line AB, and solving simultaneously — SEAB would normally give [3]. Either weight it [3] and trim (a) to [2] (gradient of AB is a one-liner and the equation of DC is the only real step), or replace (d) with a one-step consequence such as 'Explain why DFBC is a rectangle' [1] + 'find F' [2].",
+     "Consider making (d) earn a geometric idea rather than a repeat of (a): e.g. 'The point E is such that ABED is a parallelogram. Find the coordinates of E' or 'Find the length of the perpendicular from A to DC' would vary the technique instead of intersecting two lines again."
+    ],
+    "too_close_to": null,
+    "why": "A correct, cleanly-numbered coordinate-geometry trapezium (all lengths are multiples of √5, area 35) in proper register and fully specified without a figure; the missing diagram and the fact that (a) and (d) both reduce to 'write two lines and intersect' make it a light edit short of a real Q6."
+   },
+   "exemplars": [
+    {
+     "id": "e4ac5782-bc7a-4f07-8ccc-a8ee10c87447",
+     "ref": "GCE 2024 P2 Q7"
+    },
+    {
+     "id": "64269ab0-a9e7-4245-b23e-2a04388fae1f",
+     "ref": "GCE 2021 P1 Q9"
+    },
+    {
+     "id": "251d5273-4d46-4776-a04a-f837876f78ce",
+     "ref": "GCE 2023 P1 Q10"
+    },
+    {
+     "id": "b071686f-de36-479e-8f36-4638bf3fe287",
+     "ref": "GCE 2022 P1 Q13"
+    },
+    {
+     "id": "f57648c6-4ce1-433b-b20c-78139b8526aa",
+     "ref": "GCE 2022 P2 Q9"
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Trigonometry (Applications)",
+   "target": 10,
+   "accepted": true,
+   "question": {
+    "stem": "A person is exercising on an exercise bicycle. The pedals turn at a steady rate of 40 revolutions per minute. The height, $h$ cm, of the left pedal above the floor at time $t$ seconds after the person starts pedalling is modelled by $h = a + b\\cos kt$, where $a$, $b$ and $k$ are positive constants. When $t = 0$ the left pedal is at its highest point, which is 46 cm above the floor. At its lowest point the left pedal is 12 cm above the floor.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the value of $a$, of $b$ and of $k$.",
+      "marks": 3,
+      "answer": "$a = 29$, $b = 17$, $k = \\frac{4\\pi}{3}$"
+     },
+     {
+      "label": "(b)",
+      "text": "Find the times during the first revolution of the pedals at which the left pedal is 20 cm above the floor.",
+      "marks": 4,
+      "answer": "$t = 0.508$ s and $t = 0.992$ s"
+     },
+     {
+      "label": "(c)",
+      "text": "The right pedal is always diametrically opposite the left pedal. Find the times during the first revolution of the pedals at which the two pedals are at the same height above the floor, and state this height.",
+      "marks": 3,
+      "answer": "$t = \\frac{3}{8}$ s and $t = \\frac{9}{8}$ s; height 29 cm"
+     }
+    ],
+    "answer": "(a) $a = 29$, $b = 17$, $k = \\frac{4\\pi}{3}$; (b) $t = 0.508$ s, $0.992$ s; (c) $t = \\frac{3}{8}$ s, $\\frac{9}{8}$ s, height 29 cm",
+    "total_marks": 10,
+    "topics": [
+     "Trigonometry (Applications)",
+     "Trigonometry (Equations)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) At the highest point $\\cos kt = 1$, so $a + b = 46$. At the lowest point $\\cos kt = -1$, so $a - b = 12$. Adding, $2a = 58$, $a = 29$ and $b = 17$.\\nThe pedals make 40 revolutions per minute, so one revolution takes $\\frac{60}{40} = 1.5$ s. The period of $\\cos kt$ is $\\frac{2\\pi}{k}$, so $\\frac{2\\pi}{k} = 1.5$ and $k = \\frac{2\\pi}{1.5} = \\frac{4\\pi}{3}$.\\n\\n(b) $h = 20$: $29 + 17\\cos\\frac{4\\pi t}{3} = 20$, so $\\cos\\frac{4\\pi t}{3} = -\\frac{9}{17}$.\\nThe first revolution is $0 \\le t \\le 1.5$, so $0 \\le \\frac{4\\pi t}{3} \\le 2\\pi$.\\nBasic angle $\\alpha = \\cos^{-1}\\frac{9}{17} = 1.0129$ rad. The cosine is negative, so $\\frac{4\\pi t}{3} = \\pi - 1.0129 = 2.1287$ or $\\frac{4\\pi t}{3} = \\pi + 1.0129 = 4.1545$.\\nHence $t = \\frac{3 \\times 2.1287}{4\\pi} = 0.508$ s or $t = \\frac{3 \\times 4.1545}{4\\pi} = 0.992$ s (3 s.f.).\\n\\n(c) The right pedal is half a revolution ahead of the left pedal, so its height is $h_R = 29 + 17\\cos\\left(\\frac{4\\pi t}{3} + \\pi\\right) = 29 - 17\\cos\\frac{4\\pi t}{3}$.\\nThe pedals are at the same height when $29 + 17\\cos\\frac{4\\pi t}{3} = 29 - 17\\cos\\frac{4\\pi t}{3}$, that is $\\cos\\frac{4\\pi t}{3} = 0$.\\nFor $0 \\le \\frac{4\\pi t}{3} \\le 2\\pi$: $\\frac{4\\pi t}{3} = \\frac{\\pi}{2}$ or $\\frac{3\\pi}{2}$, giving $t = \\frac{3}{8}$ s and $t = \\frac{9}{8}$ s.\\nAt these times $\\cos\\frac{4\\pi t}{3} = 0$, so both pedals are $29$ cm above the floor (the height of the axle).",
+    "syllabus_check": "4049 Trigonometry: a real-world situation modelled by $y = a + b\\cos kt$ — amplitude and vertical shift from the maximum and minimum, the constant $k$ from the period, solving a trigonometric equation over a stated interval using the basic angle and quadrants, and interpreting a phase shift of $\\pi$ as $\\cos(\\theta + \\pi) = -\\cos\\theta$. No R-formula (Q4 owns it), no sketching (Paper 1 Q2), no rates of change (Paper 1 Q11). Answers to 3 s.f. or exact as demanded.",
+    "originality_note": "New situation (exercise-bicycle pedal, vertical circular motion about an axle at 40 rev/min) with a two-pedal closing part that requires the candidate to model the diametrically opposite pedal as $29 - 17\\cos kt$. Not a helicopter, hiker, skier, framework or farmer (the R-formula exemplars) and not the oscillating dot ($x = a\\sin nt$, velocity, acceleration): the constants come from max/min and rev/min rather than being given to explain, the middle part is a cos equation with a negative value (quadrants 2 and 3), and the final part is exact. Paper 1's folding fan and tent are not used."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 7,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2019 P2 Q8",
+     "jaccard": 0.035
+    },
+    "marks": 10,
+    "checked_at": "2026-09-08T17:58:16.095Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "a = 29, b = 17, k = 4π/3 (≈ 4.19)",
+     "(b)": "t = 0.508 s and t = 0.992 s",
+     "(c)": "t = 0.375 s and t = 1.125 s (i.e. 3/8 s and 9/8 s); height = 29 cm"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give a = 29, b = 17, k = 4π/3. Verified: a + b = 46 and a - b = 12 give a = 29, b = 17; 40 rev/min is a 1.5 s period so k = 2π/1.5 = 4π/3. The cosine model with b > 0 is consistent with the pedal being highest at t = 0."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give t = 0.508 s and 0.992 s. Verified: cos(4πt/3) = -9/17, basic angle arccos(9/17) = 1.0129 rad, solutions 4πt/3 = π ∓ 1.0129 = 2.1287, 4.1545, so t = 0.5082 and 0.9918 — both inside 0 ≤ t ≤ 1.5."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give t = 3/8 s and 9/8 s (0.375, 1.125) at height 29 cm. Verified: the right pedal is 29 + 17cos(4πt/3 + π) = 29 - 17cos(4πt/3), so equality forces cos(4πt/3) = 0, i.e. 4πt/3 = π/2, 3π/2; both pedals then sit at the axle height a = 29."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and the key is correct throughout.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "A genuine modelling question in GCE register (find a, b, k from max/min/period, solve a cosine equation in a stated window, then a deduction part that rewards seeing the phase shift or the axle-height argument), with physically sensible numbers (17 cm crank, 1.5 s period) and answers that fall cleanly; it shares nothing structurally with the five R-formula exemplars."
+   },
+   "exemplars": [
+    {
+     "id": "d1f03fe5-5d81-4200-8983-5c86ba20505b",
+     "ref": "GCE 2022 P2 Q7"
+    },
+    {
+     "id": "37c02057-7114-4712-a710-5d539f2564d2",
+     "ref": "GCE 2021 specimen P2 Q6"
+    },
+    {
+     "id": "892e5c5a-8b85-480a-a177-a35c8f249d7d",
+     "ref": "GCE 2023 P2 Q8"
+    },
+    {
+     "id": "0293f9d6-1ddc-4e25-b3b2-6a8c7e5e1ddd",
+     "ref": "GCE 2018 P2 Q5"
+    },
+    {
+     "id": "6043a5cd-e80b-4311-83af-1a4afc46acb3",
+     "ref": "GCE 2015 P2 Q9"
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Kinematics",
+   "target": 11,
+   "accepted": true,
+   "question": {
+    "stem": "A particle $P$ moves in a straight line so that, $t$ seconds after passing through a fixed point $O$, its velocity, $v$ m/s, is given by $v = \\frac{18}{(t+1)^{2}} - 2$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the value of $t$ at which $P$ is instantaneously at rest, and find the acceleration of $P$ at this instant.",
+      "marks": 4,
+      "answer": "$t = 2$; acceleration $= -\\frac{4}{3}$ m/s$^2$"
+     },
+     {
+      "label": "(b)",
+      "text": "Show that the displacement, $s$ m, of $P$ from $O$ is given by $s = 18 - 2t - \\frac{18}{t+1}$.",
+      "marks": 3,
+      "answer": "$s = -\\frac{18}{t+1} - 2t + c$ with $c = 18$ (shown)"
+     },
+     {
+      "label": "(c)",
+      "text": "Find the total distance travelled by $P$ in the first 8 seconds of its motion.",
+      "marks": 4,
+      "answer": "16 m"
+     }
+    ],
+    "answer": "(a) $t = 2$, acceleration $-\\frac{4}{3}$ m/s$^2$; (b) $s = 18 - 2t - \\frac{18}{t+1}$ (shown); (c) 16 m",
+    "total_marks": 11,
+    "topics": [
+     "Kinematics"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) $P$ is at rest when $v = 0$: $\\frac{18}{(t+1)^{2}} = 2$, so $(t+1)^{2} = 9$. Since $t \\ge 0$, $t + 1 = 3$ and $t = 2$.\\nAcceleration $a = \\frac{dv}{dt} = \\frac{d}{dt}\\left(18(t+1)^{-2} - 2\\right) = -36(t+1)^{-3} = -\\frac{36}{(t+1)^{3}}$.\\nAt $t = 2$: $a = -\\frac{36}{27} = -\\frac{4}{3}$ m/s$^2$.\\n\\n(b) $s = \\int v\\,dt = \\int \\left(18(t+1)^{-2} - 2\\right)dt = \\frac{18(t+1)^{-1}}{-1} - 2t + c = -\\frac{18}{t+1} - 2t + c$.\\nWhen $t = 0$, $s = 0$ ($P$ is at $O$): $-18 + c = 0$, so $c = 18$.\\nHence $s = 18 - 2t - \\frac{18}{t+1}$, as required.\\n\\n(c) For $0 \\le t < 2$, $(t+1)^{2} < 9$ so $v > 0$; for $t > 2$, $(t+1)^{2} > 9$ so $\\frac{18}{(t+1)^{2}} < 2$ and $v < 0$. So $P$ changes direction only at $t = 2$.\\nWhen $t = 2$: $s = 18 - 4 - \\frac{18}{3} = 8$.\\nWhen $t = 8$: $s = 18 - 16 - \\frac{18}{9} = 0$, so $P$ is back at $O$.\\nDistance travelled from $t = 0$ to $t = 2$ is $8 - 0 = 8$ m; from $t = 2$ to $t = 8$ it is $|0 - 8| = 8$ m.\\nTotal distance $= 8 + 8 = 16$ m.",
+    "syllabus_check": "4049 Kinematics of a particle in a straight line via calculus: $v = 0$ for instantaneous rest, $a = \\frac{dv}{dt}$ by differentiating $(t+1)^{-2}$, $s = \\int v\\,dt$ with the constant fixed by $s = 0$ at $t = 0$ (integration of $(ax+b)^{n}$, $n = -2$), and total distance found by splitting at the change of direction — a candidate who writes $s(8) - s(0) = 0$ has missed the reversal. All answers exact.",
+    "originality_note": "New function $v = \\frac{18}{(t+1)^{2}} - 2$ (a particle that slows to rest at $t = 2$, reverses, and is back at $O$ exactly when $t = 8$ with the displacement written as a show-that so the closing part is reachable). Not a polynomial with unknown constants (2021 specimen, 2024), not exponential braking (2021), not a sinusoidal model (2022 P1, 2023), and no total-distance-in-the-nth-second structure. The reversal-at-$t=2$ / return-to-$O$ trap is the point of the last part."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 8,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2011 P1 Q12",
+     "jaccard": 0.142
+    },
+    "marks": 11,
+    "checked_at": "2026-09-08T17:58:16.097Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "t = 2 s; acceleration = -36/(t+1)^3 = -4/3 m/s^2 (≈ -1.33 m/s^2)",
+     "(b)": "shown — s = ∫(18(t+1)^{-2} - 2) dt = -18/(t+1) - 2t + c; s = 0 when t = 0 gives c = 18, so s = 18 - 2t - 18/(t+1)",
+     "(c)": "16 m"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give t = 2 and acceleration -4/3 m/s². Verified: 18/(t+1)² = 2 gives (t+1)² = 9, t = 2 for t ≥ 0; dv/dt = -36(t+1)^{-3}, which at t = 2 is -36/27 = -4/3."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both show s = -18/(t+1) - 2t + c with c = 18 from s = 0 at t = 0. Verified: ∫18(t+1)^{-2} dt = -18(t+1)^{-1}; s(0) = -18 + c = 0."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give 16 m. Verified: v > 0 for t < 2 and v < 0 for t > 2, so the only turn is at t = 2; s(2) = 18 - 4 - 6 = 8 and s(8) = 18 - 16 - 2 = 0, so distance = 8 + |0 - 8| = 16 m. (A student who integrates straight across gets s(8) - s(0) = 0 — the intended trap.)"
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and the key is correct throughout.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "This is the canonical GCE kinematics shape (at rest + acceleration, show the displacement, total distance across a reversal) in exact SEAB wording, with a velocity function no exemplar uses and neat consequences — P returns to O at t = 8, so the 16 m answer punishes the ∫₀⁸ v dt = 0 error; 11 marks at Q8 is the right weight."
+   },
+   "exemplars": [
+    {
+     "id": "1256eefe-1ee9-439e-9321-9354b9eb1265",
+     "ref": "GCE 2023 P2 Q7"
+    },
+    {
+     "id": "7bbe6b23-ba87-4d42-80e3-35f89f343c24",
+     "ref": "GCE 2021 specimen P1 Q13"
+    },
+    {
+     "id": "e44ee8b7-01b6-4813-843a-aba3efa5162c",
+     "ref": "GCE 2021 P2 Q8"
+    },
+    {
+     "id": "7aaac191-6e12-4501-9b5d-04b59160841b",
+     "ref": "GCE 2024 P2 Q8"
+    },
+    {
+     "id": "3fd0c2a4-c811-4101-bc71-08c5a4ccddf8",
+     "ref": "GCE 2022 P1 Q12"
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Circles",
+   "target": 12,
+   "accepted": true,
+   "question": {
+    "stem": "A circle has equation $x^2 + y^2 - 14x - 14y + 73 = 0$. The point $P$ has coordinates $(6, 0)$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the coordinates of the centre, $C$, of the circle and the radius of the circle.",
+      "marks": 3,
+      "answer": "$C(7, 7)$, radius $5$"
+     },
+     {
+      "label": "(b)",
+      "text": "The line through $P$ with gradient $m$, where $m$ is a constant, is a tangent to the circle. Show that $12m^2 + 7m - 12 = 0$ and hence find the equations of the two tangents from $P$ to the circle.",
+      "marks": 4,
+      "answer": "$m = \\frac{3}{4}$ or $m = -\\frac{4}{3}$; the tangents are $3x - 4y = 18$ (i.e. $y = \\frac{3}{4}x - \\frac{9}{2}$) and $4x + 3y = 24$ (i.e. $y = -\\frac{4}{3}x + 8$)"
+     },
+     {
+      "label": "(c)",
+      "text": "The tangent with positive gradient touches the circle at $A$ and the other tangent touches the circle at $B$.",
+      "marks": 5,
+      "answer": "$A(10, 3)$, $B(3, 4)$; $CAPB$ is a square of side $5$",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "Find the coordinates of $A$ and of $B$.",
+        "marks": 3,
+        "answer": "$A(10, 3)$ and $B(3, 4)$"
+       },
+       {
+        "label": "(ii)",
+        "text": "Show that $CAPB$ is a square.",
+        "marks": 2,
+        "answer": "$CA = AP = PB = BC = 5$ and angle $CAP = 90^\\circ$ (gradient $CA = -\\frac{4}{3}$, gradient $AP = \\frac{3}{4}$), so $CAPB$ is a rhombus with a right angle, i.e. a square"
+       }
+      ]
+     }
+    ],
+    "answer": "(a) $C(7, 7)$, radius $5$. (b) $12m^2 + 7m - 12 = 0$ shown; tangents $3x - 4y = 18$ and $4x + 3y = 24$. (c)(i) $A(10, 3)$, $B(3, 4)$. (c)(ii) $CAPB$ is a square (all sides $5$, right angle at $A$).",
+    "total_marks": 12,
+    "topics": [
+     "Circles",
+     "Coordinate Geometry"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) $x^2 - 14x + y^2 - 14y + 73 = 0 \\Rightarrow (x - 7)^2 + (y - 7)^2 = 49 + 49 - 73 = 25$. So the centre is $C(7, 7)$ and the radius is $5$. (Equivalently, comparing with $x^2 + y^2 + 2gx + 2fy + c = 0$ gives $g = -7$, $f = -7$, $c = 73$, so the centre is $(-g, -f) = (7, 7)$ and the radius is $\\sqrt{g^2 + f^2 - c} = \\sqrt{49 + 49 - 73} = 5$.) Marks: M1 for completing the square (or for using $(-g, -f)$), A1 for the centre, A1 for the radius.\n\n(b) The line is $y = m(x - 6)$. Route 1 (discriminant): substituting into the circle, $x^2 + m^2(x - 6)^2 - 14x - 14m(x - 6) + 73 = 0$, i.e. $(1 + m^2)x^2 - (12m^2 + 14m + 14)x + (36m^2 + 84m + 73) = 0$. The line is a tangent, so this quadratic in $x$ has equal roots: $(12m^2 + 14m + 14)^2 - 4(1 + m^2)(36m^2 + 84m + 73) = 0$. Expanding, $(144m^4 + 336m^3 + 532m^2 + 392m + 196) - (144m^4 + 336m^3 + 436m^2 + 336m + 292) = 0$, so $96m^2 + 56m - 96 = 0$, i.e. $12m^2 + 7m - 12 = 0$. Route 2 (perpendicular distance): the line is $mx - y - 6m = 0$, and it is a tangent exactly when its perpendicular distance from the centre $C(7, 7)$ equals the radius: $\\frac{|7m - 7 - 6m|}{\\sqrt{m^2 + 1}} = 5$, so $(m - 7)^2 = 25(m^2 + 1)$, i.e. $m^2 - 14m + 49 = 25m^2 + 25$, giving $24m^2 + 14m - 24 = 0$, i.e. $12m^2 + 7m - 12 = 0$. Either route earns the marks. (The vertical line $x = 6$ through $P$ is at distance $1$ from $C$, so it is not a tangent and no tangent is lost by assuming a gradient $m$.) Hence $(4m - 3)(3m + 4) = 0$, so $m = \\frac{3}{4}$ or $m = -\\frac{4}{3}$. The tangents are $y = \\frac{3}{4}(x - 6)$, i.e. $3x - 4y = 18$, and $y = -\\frac{4}{3}(x - 6)$, i.e. $4x + 3y = 24$. Marks: M1 A1 for the quadratic in $m$ (by either route), M1 for factorising $(4m - 3)(3m + 4) = 0$, A1 for both tangent equations.\n\n(c)(i) The point of contact is the foot of the perpendicular from $C$ to the tangent. Tangent $3x - 4y = 18$ has gradient $\\frac{3}{4}$, so the perpendicular through $C$ is $y - 7 = -\\frac{4}{3}(x - 7)$, i.e. $4x + 3y = 49$. Solving with $3x - 4y = 18$: $16x + 12y = 196$ and $9x - 12y = 54$ give $25x = 250$, so $x = 10$, $y = 3$: $A = (10, 3)$. Tangent $4x + 3y = 24$ has gradient $-\\frac{4}{3}$, so the perpendicular through $C$ is $y - 7 = \\frac{3}{4}(x - 7)$, i.e. $3x - 4y = -7$. Solving with $4x + 3y = 24$: $16x + 12y = 96$ and $9x - 12y = -21$ give $25x = 75$, so $x = 3$, $y = 4$: $B = (3, 4)$. (Check: $100 + 9 - 140 - 42 + 73 = 0$ and $9 + 16 - 42 - 56 + 73 = 0$, so both lie on the circle.)\n\n(c)(ii) $CA = CB = 5$ (radii). $AP = \\sqrt{(10 - 6)^2 + (3 - 0)^2} = \\sqrt{25} = 5$ and $BP = \\sqrt{(6 - 3)^2 + (0 - 4)^2} = \\sqrt{25} = 5$, so $CAPB$ has four equal sides and is a rhombus. Gradient of $CA = \\frac{3 - 7}{10 - 7} = -\\frac{4}{3}$ and gradient of $AP = \\frac{0 - 3}{6 - 10} = \\frac{3}{4}$; their product is $-1$, so angle $CAP = 90^\\circ$ (equivalently, the tangent at $A$ is perpendicular to the radius $CA$). A rhombus with a right angle is a square, so $CAPB$ is a square. (Alternatively: the diagonals $CP$ and $AB$ both have length $\\sqrt{50}$, share the midpoint $\\left(\\frac{13}{2}, \\frac{7}{2}\\right)$ and have gradients $7$ and $-\\frac{1}{7}$, so they are equal and bisect each other at right angles.)",
+    "syllabus_check": "4049 Coordinate geometry: circle in the form $x^2 + y^2 + 2gx + 2fy + c = 0$ (centre and radius by completing the square); condition for a line to be a tangent to a curve via the discriminant (quadratic equations section); equation of a straight line, perpendicular gradients, simultaneous equations, distance formula; properties of a rhombus/square. One circle only (the syllabus excludes problems involving two circles). No vectors, no inverse trigonometry.",
+    "originality_note": "New situation: the two tangents from an external point found through the discriminant of the line-circle quadratic, then their points of contact as feet of perpendiculars, closing with the quadrilateral centre-contact-external point-contact shown to be a square. None of the exemplars does this (they build a circle from a perpendicular bisector, find a centre's distance from a line, find axis intersections or a diameter's other end, or a chord's midpoint), and Paper 1's coordinate geometry was a reflection in a line. Numbers were chosen so that both gradients are rational, both contact points are lattice points, and $CP = 5\\sqrt{2}$ with $PA = PB = 5$ makes $CAPB$ a square."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 9,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2013 P2 Q10",
+     "jaccard": 0.131
+    },
+    "marks": 12,
+    "checked_at": "2026-09-08T17:58:16.100Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "Centre C = (7, 7); radius = 5",
+     "(b)": "Tangent line: y = m(x - 6), i.e. mx - y - 6m = 0. Perpendicular distance from C(7,7) = |7m - 7 - 6m|/sqrt(m^2+1) = |m - 7|/sqrt(m^2+1) = 5, so (m-7)^2 = 25(m^2+1), m^2 - 14m + 49 = 25m^2 + 25, 24m^2 + 14m - 24 = 0, 12m^2 + 7m - 12 = 0 (shown). Factorising: (4m - 3)(3m + 4) = 0, m = 3/4 or m = -4/3. Tangents: y = (3/4)(x - 6), i.e. 3x - 4y - 18 = 0 (y = 0.75x - 4.5); and y = -(4/3)(x - 6), i.e. 4x + 3y - 24 = 0 (y = -(4/3)x + 8).",
+     "(c)(i)": "A = (10, 3), B = (3, 4)",
+     "(c)(ii)": "shown — CA = CB = 5 (radii); PA = sqrt((10-6)^2 + 3^2) = 5 and PB = sqrt((6-3)^2 + 4^2) = 5, so all four sides CA = AP = PB = BC = 5, i.e. CAPB is a rhombus; angle CAP = angle CBP = 90 deg since a tangent is perpendicular to the radius at the point of contact. A rhombus with a right angle is a square, so CAPB is a square. (Consistent check: diagonal CP = sqrt(1 + 49) = 5*sqrt(2) = 5*sqrt(2), as required for a square of side 5.)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give C(7, 7) and radius 5. Verified: (x-7)^2 + (y-7)^2 = 49 + 49 - 73 = 25."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both reach 12m^2 + 7m - 12 = 0, m = 3/4 or -4/3, and the tangents 3x - 4y = 18 and 4x + 3y = 24. The setter uses the discriminant of (1+m^2)x^2 - (12m^2+14m+14)x + (36m^2+84m+73) = 0; the examiner uses the perpendicular distance |m-7|/sqrt(m^2+1) = 5. Both routes verified: (m-7)^2 = 25(m^2+1) gives 24m^2 + 14m - 24 = 0, and (4m-3)(3m+4) expands to 12m^2 + 7m - 12. P is outside the circle (CP^2 = 50 > 25) and the vertical line x = 6 is at distance 1 from C, so no tangent is lost by assuming a gradient."
+     },
+     {
+      "label": "(c)(i)",
+      "agree": true,
+      "note": "Both give A(10, 3) and B(3, 4). Verified: both points satisfy the circle (100+9-140-42+73 = 0; 9+16-42-56+73 = 0), A lies on 3x - 4y = 18 (the positive-gradient tangent) and B on 4x + 3y = 24, and CA, CB are perpendicular to their tangents."
+     },
+     {
+      "label": "(c)(ii)",
+      "agree": true,
+      "note": "Both show CA = AP = PB = BC = 5 with a right angle at A (radius perpendicular to tangent, or gradients -4/3 and 3/4 multiplying to -1). Verified; the diagonal CP = sqrt(50) = 5*sqrt(2) is consistent with a square of side 5. Shown."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part; the key is correct throughout.",
+    "score": 4,
+    "fixes": [
+     "Remove the '[5]' printed on the (c) stem — GCE prints marks only against (i) and (ii); a stem sentence that just fixes A and B carries no bracket.",
+     "Mark discipline: GCE has weighted centre-and-radius from the general form at 3–4 marks (2022 P2 Q9(a) [4], 2024 P2 Q7(a) [3], 2023 P1 Q10(a) [4]); make (a) [3] and (b) [4] (show that [2]; factorise and state both tangent equations [2]) so the total stays at 12.",
+     "In the mark scheme, credit both routes to the 'show that' — the perpendicular-distance route many schools teach as well as the discriminant route, whose quartic expansion (12m^2+14m+14)^2 - 4(1+m^2)(36m^2+84m+73) is the heaviest algebra on the paper for the marks on offer."
+    ],
+    "too_close_to": null,
+    "why": "A well-designed tangents-from-an-external-point question on 3-4-5 numbers, with a genuinely fresh closing part (the two contact points, the centre and P form a square because the tangent length from P equals the radius); its structure differs from all five exemplars, which are chord, diameter and closest-point questions. Only the printed stem bracket and the light weighting of (a) keep it from reading as SEAB print-ready."
+   },
+   "exemplars": [
+    {
+     "id": "080354be-e89f-48f2-9262-eb1f8f5f546f",
+     "ref": "GCE 2021 specimen P2 Q8"
+    },
+    {
+     "id": "f57648c6-4ce1-433b-b20c-78139b8526aa",
+     "ref": "GCE 2022 P2 Q9"
+    },
+    {
+     "id": "251d5273-4d46-4776-a04a-f837876f78ce",
+     "ref": "GCE 2023 P1 Q10"
+    },
+    {
+     "id": "e4ac5782-bc7a-4f07-8ccc-a8ee10c87447",
+     "ref": "GCE 2024 P2 Q7"
+    },
+    {
+     "id": "2abd9e0f-c88e-4b73-94b1-c4fb95016a17",
+     "ref": "GCE 2024 P1 Q4"
+    }
+   ]
+  },
+  {
+   "pos": 10,
+   "topic": "Differentiation (Maximum and Minimum)",
+   "target": 12,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram shows the cross-section, through its axis $TO$, of a conical container with vertex $T$, height $TO = h$ cm and base radius $OB = r$ cm, where $h > 6$. A ball of radius $3$ cm is placed inside the container so that it touches the base at its centre $O$ and touches the curved surface. The centre of the ball is $C$, and the ball touches $TB$ at the point $N$. The volume of the container is $V$ cm$^3$.\n[The volume of a cone of base radius $r$ and height $h$ is $\\frac{1}{3}\\pi r^2 h$.]\n[The volume of a sphere of radius $a$ is $\\frac{4}{3}\\pi a^3$.]",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "",
+      "marks": 4,
+      "answer": "$r^2 = \\frac{9h}{h - 6}$ and $V = \\frac{3\\pi h^2}{h - 6}$ (both shown)",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "Show that $r^2 = \\frac{9h}{h - 6}$.",
+        "marks": 3,
+        "answer": "Shown: from similar triangles $TNC$ and $TOB$, $\\frac{3}{r} = \\frac{h - 3}{\\sqrt{r^2 + h^2}}$, which rearranges to $r^2 = \\frac{9h}{h - 6}$"
+       },
+       {
+        "label": "(ii)",
+        "text": "Hence show that $V = \\frac{3\\pi h^2}{h - 6}$.",
+        "marks": 1,
+        "answer": "Shown: $V = \\frac{1}{3}\\pi r^2 h = \\frac{3\\pi h^2}{h - 6}$"
+       }
+      ]
+     },
+     {
+      "label": "(b)",
+      "text": "Find $\\frac{dV}{dh}$ and hence find the value of $h$ for which $V$ is stationary.",
+      "marks": 4,
+      "answer": "$\\frac{dV}{dh} = \\frac{3\\pi h(h - 12)}{(h - 6)^2}$; $h = 12$"
+     },
+     {
+      "label": "(c)",
+      "text": "Determine whether this value of $h$ gives a maximum or a minimum value of $V$.",
+      "marks": 2,
+      "answer": "Minimum: $\\frac{d^2V}{dh^2} = \\frac{216\\pi}{(h - 6)^3} = \\pi > 0$ at $h = 12$ (or first-derivative sign change from negative to positive)"
+     },
+     {
+      "label": "(d)",
+      "text": "Find this stationary value of $V$ in terms of $\\pi$ and show that it is twice the volume of the ball.",
+      "marks": 2,
+      "answer": "$V = 72\\pi$ cm$^3$; volume of ball $= 36\\pi$ cm$^3$, so $V = 2 \\times 36\\pi$"
+     }
+    ],
+    "answer": "(a)(i) $r^2 = \\frac{9h}{h - 6}$ shown. (a)(ii) $V = \\frac{3\\pi h^2}{h - 6}$ shown. (b) $\\frac{dV}{dh} = \\frac{3\\pi h(h - 12)}{(h - 6)^2}$, $h = 12$. (c) Minimum. (d) $V = 72\\pi$ cm$^3$, which is twice the ball's volume of $36\\pi$ cm$^3$.",
+    "total_marks": 12,
+    "topics": [
+     "Differentiation (Maximum and Minimum)",
+     "Differentiation (Techniques)"
+    ],
+    "needs_figure": true,
+    "figure_description": "Triangle $TAB$ with $T$ at the top and $AB$ horizontal at the bottom; $O$ the midpoint of $AB$; the axis $TO$ drawn dashed; a circle with centre $C$ on $TO$ touching $AB$ at $O$ and $TB$ at $N$, with the right angle marked at $N$; labels $h$ cm beside $TO$, $r$ cm along $OB$, $3$ cm along $CN$; not to scale.",
+    "solution": "(a)(i) The ball has centre $C$ on $TO$ with $OC = 3$, so $TC = h - 3$. The ball touches $TB$ at $N$, so $CN = 3$ and $CN$ is perpendicular to $TB$ (a radius is perpendicular to the tangent at the point of contact). By Pythagoras' theorem in triangle $TOB$, $TB = \\sqrt{r^2 + h^2}$. Triangles $TNC$ and $TOB$ are similar (right angles at $N$ and $O$, angle $T$ common), so $\\frac{CN}{OB} = \\frac{TC}{TB}$, i.e. $\\frac{3}{r} = \\frac{h - 3}{\\sqrt{r^2 + h^2}}$. Squaring: $9(r^2 + h^2) = r^2(h - 3)^2 = r^2h^2 - 6r^2h + 9r^2$, so $9h^2 = r^2h^2 - 6r^2h = r^2h(h - 6)$. Since $h \\ne 0$, $r^2 = \\frac{9h}{h - 6}$.\n\n(a)(ii) $V = \\frac{1}{3}\\pi r^2 h = \\frac{1}{3}\\pi \\cdot \\frac{9h}{h - 6} \\cdot h = \\frac{3\\pi h^2}{h - 6}$.\n\n(b) By the quotient rule with $u = 3\\pi h^2$ and $v = h - 6$: $\\frac{dV}{dh} = \\frac{6\\pi h(h - 6) - 3\\pi h^2 \\cdot 1}{(h - 6)^2} = \\frac{3\\pi h^2 - 36\\pi h}{(h - 6)^2} = \\frac{3\\pi h(h - 12)}{(h - 6)^2}$. $V$ is stationary when $\\frac{dV}{dh} = 0$, i.e. $3\\pi h(h - 12) = 0$, so $h = 0$ or $h = 12$. Since $h > 6$, $h = 12$.\n\n(c) $\\frac{d^2V}{dh^2} = 3\\pi \\cdot \\frac{(2h - 12)(h - 6)^2 - (h^2 - 12h) \\cdot 2(h - 6)}{(h - 6)^4} = \\frac{3\\pi[(2h - 12)(h - 6) - 2(h^2 - 12h)]}{(h - 6)^3} = \\frac{3\\pi(2h^2 - 24h + 72 - 2h^2 + 24h)}{(h - 6)^3} = \\frac{216\\pi}{(h - 6)^3}$. At $h = 12$, $\\frac{d^2V}{dh^2} = \\frac{216\\pi}{216} = \\pi > 0$, so $h = 12$ gives a minimum value of $V$. (Alternatively, by the first-derivative test: for $6 < h < 12$, $h - 12 < 0$ so $\\frac{dV}{dh} < 0$; for $h > 12$, $\\frac{dV}{dh} > 0$; the gradient changes from negative to positive, so it is a minimum.)\n\n(d) $V = \\frac{3\\pi(12)^2}{12 - 6} = \\frac{432\\pi}{6} = 72\\pi$ cm$^3$ (at this point $r^2 = \\frac{108}{6} = 18$, so $r = 3\\sqrt{2}$). The volume of the ball is $\\frac{4}{3}\\pi(3)^3 = 36\\pi$ cm$^3$. Since $72\\pi = 2 \\times 36\\pi$, the minimum volume of the container is twice the volume of the ball.",
+    "syllabus_check": "4049 Differentiation: quotient rule (also obtainable by writing $V = 3\\pi(h + 6) + \\frac{108\\pi}{h - 6}$ and using the chain rule on $(h - 6)^{-1}$), stationary points, nature via the second derivative or the first-derivative sign test, maxima and minima in a modelled situation with a geometric constraint. The constraint in (a)(i) uses tangent-perpendicular-to-radius, Pythagoras' theorem and similar triangles (4049 plane geometry). Cone and sphere volume formulae are quoted in the question. No inverse trigonometry, no integration.",
+    "originality_note": "New situation: a ball placed in a conical container, the container's volume as a rational function $\\frac{3\\pi h^2}{h - 6}$ of its height via a similar-triangles constraint, minimised by the quotient rule, and closing with the container being exactly twice the ball's volume. This differs in kind from Paper 1's tent pyramid (a cubic from Pythagoras) and from every exemplar (a cuboid's surface area from a fixed volume, a runner's time with a square root, an exponential-times-sine curve, a polynomial curve, a sine-curve area). Context, numbers, the rational-function model, the second derivative $\\frac{216\\pi}{(h - 6)^3}$ and the volume-doubling finish are all original to this question."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 10,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2020 P2 Q11",
+     "jaccard": 0.078
+    },
+    "marks": 12,
+    "checked_at": "2026-09-08T17:58:16.103Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)(i)": "shown — take O as origin with the axis along Oy, so T = (0, h), B = (r, 0) and the ball's centre is C = (0, 3) (it touches the base at O). Line TB: x/r + y/h = 1, i.e. hx + ry - rh = 0. The ball touches TB at N, so the distance from C to TB equals 3: |0 + 3r - rh|/sqrt(h^2 + r^2) = r(h - 3)/sqrt(h^2 + r^2) = 3. Squaring: r^2(h - 3)^2 = 9(h^2 + r^2), so r^2[(h - 3)^2 - 9] = 9h^2, r^2(h^2 - 6h) = 9h^2, r^2 h(h - 6) = 9h^2, hence r^2 = 9h/(h - 6).",
+     "(a)(ii)": "shown — V = (1/3)*pi*r^2*h = (1/3)*pi*[9h/(h - 6)]*h = 3*pi*h^2/(h - 6).",
+     "(b)": "dV/dh = 3*pi*[2h(h - 6) - h^2]/(h - 6)^2 = 3*pi*(h^2 - 12h)/(h - 6)^2 = 3*pi*h(h - 12)/(h - 6)^2. Stationary when dV/dh = 0: h(h - 12) = 0, so h = 0 (rejected) or h = 12. Hence h = 12 (cm).",
+     "(c)": "Minimum. For 6 < h < 12, h(h - 12) < 0 so dV/dh < 0; for h > 12, h(h - 12) > 0 so dV/dh > 0 — the gradient changes from negative to positive, so h = 12 gives a minimum value of V. (Equivalently d^2V/dh^2 at h = 12 = 3*pi*(2h - 12)/(h - 6)^2 evaluated where h^2 - 12h = 0 gives 3*pi*12/36 = pi > 0, a minimum.)",
+     "(d)": "V = 3*pi*(12)^2/(12 - 6) = 3*pi*144/6 = 72*pi cm^3. Volume of ball = (4/3)*pi*3^3 = 36*pi cm^3, and 72*pi = 2 x 36*pi, so the stationary volume is twice the volume of the ball (shown)."
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)(i)",
+      "agree": true,
+      "note": "Both show r^2 = 9h/(h-6). The setter uses similar triangles TNC and TOB (3/r = (h-3)/sqrt(r^2+h^2)); the examiner places O at the origin, C = (0, 3), and sets the distance from C to the line hx + ry - rh = 0 equal to 3. Both reduce to r^2(h-3)^2 = 9(r^2+h^2), i.e. r^2 h(h-6) = 9h^2. Verified; the condition h > 6 is exactly what makes r^2 positive (the top of the ball at height 6 must sit below T)."
+     },
+     {
+      "label": "(a)(ii)",
+      "agree": true,
+      "note": "Both give V = (1/3)*pi*(9h/(h-6))*h = 3*pi*h^2/(h-6). Shown."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give dV/dh = 3*pi*h(h-12)/(h-6)^2 and h = 12, with h = 0 rejected by h > 6. Verified by the quotient rule: 3*pi*[2h(h-6) - h^2] = 3*pi*(h^2 - 12h)."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both conclude a minimum. Verified two ways: writing V = 3*pi*(h + 6 + 36/(h-6)) gives d^2V/dh^2 = 216*pi/(h-6)^3 = pi > 0 at h = 12 (the setter's value); the examiner's first-derivative sign change (negative on 6 < h < 12, positive for h > 12) and the shortcut d^2V/dh^2 = 3*pi*(2h-12)/(h-6)^2 at the zero of the numerator are also correct."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both give V = 3*pi*144/6 = 72*pi cm^3 and the ball's volume 36*pi cm^3, so V is twice the ball. Verified."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part; the key is correct throughout.",
+    "score": 4,
+    "fixes": [
+     "Remove the '[4]' printed on the (a) stem — GCE prints marks only against (i) and (ii).",
+     "Recast the opening sentence in SEAB register: 'The diagram shows the cross-section through the axis of a conical container with vertex T, height TO = h cm and base radius OB = r cm, where h > 6.' — 'conical box' is not natural English and 'of height TO = h cm' reads awkwardly.",
+     "The bracketed formulae reuse r for the sphere's radius while the question has already bound r to the cone's base radius; write the sphere formula with a different letter (e.g. 'a sphere of radius a') or in words.",
+     "The print must carry the diagram the stem refers to: triangle TOB with the axis TO vertical, the circle with centre C on TO touching OB at O and TB at N, and the right angle marked at N."
+    ],
+    "too_close_to": null,
+    "why": "The inscribed-ball minimum-cone problem is a textbook classic, but it is set here in SEAB's optimisation template (show, differentiate, nature, value) on exam-clean numbers (h = 12, V = 72*pi = twice the ball) and its situation is distinct from every exemplar — the cuboid container of 2022 P2 Q4 shares only the generic (b)/(c) wording that every such question uses. The stem's register and the printed stem bracket need a light edit before it is print-ready."
+   },
+   "exemplars": [
+    {
+     "id": "31f17a9c-95c4-4b44-b6ad-328c8743b61e",
+     "ref": "GCE 2024 P2 Q11"
+    },
+    {
+     "id": "457711a5-303c-4bfd-a85a-7d083103d2ca",
+     "ref": "GCE 2023 P2 Q9"
+    },
+    {
+     "id": "0132ea10-0e58-472b-bc2a-82b1afdeb76a",
+     "ref": "GCE 2021 P2 Q10"
+    },
+    {
+     "id": "9709e1ba-beb9-4d8f-8992-c378d4af621d",
+     "ref": "GCE 2022 P2 Q4"
+    },
+    {
+     "id": "24248693-5d8d-4eb9-853c-73f66bf3a703",
+     "ref": "GCE 2023 P1 Q9"
+    }
+   ]
+  }
+ ]
+}

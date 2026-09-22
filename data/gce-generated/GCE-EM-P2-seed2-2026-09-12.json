@@ -1,0 +1,1560 @@
+{
+ "key": "GCE-EM-P2",
+ "seed": 2,
+ "shape": {
+  "subject": "Mathematics",
+  "code": "4052",
+  "level": "EM",
+  "cut": 2023,
+  "duration": "2 hours 15 minutes",
+  "scope": "Numbers and their operations (primes, HCF/LCM, squares/cubes/roots, standard form, estimation, significant figures); ratio and proportion (incl. map scales, direct and inverse proportion); percentage (incl. reverse percentage); rate and speed (incl. average speed, conversion of units); financial mathematics (simple and compound interest, hire purchase, money exchange, taxation, utilities bills); algebraic expressions and formulae (expansion, factorisation incl. grouping and quadratic trinomials, algebraic fractions, changing the subject, algebraic identities); functions and graphs (linear, quadratic incl. completed-square and factorised forms, cubic, reciprocal y=a/x and a/x^2, exponential y=ka^x, drawing on a grid from a table of values, gradient of a curve by a tangent, solving equations by drawing a suitable line); equations and inequalities (linear, simultaneous linear, quadratic by factorisation / completing the square / the formula, fractional equations reducing to quadratics, linear inequalities incl. double inequalities, word problems leading to these); set language and notation (union, intersection, complement, subsets, Venn diagrams with numbers of elements); matrices (display of information, addition, scalar multiplication, multiplication of two matrices, interpretation of the product; no inverses); problems in real-world contexts (reading tables and information sheets, making and justifying a decision, estimating a cost or a quantity); angles, triangles and polygons (angle properties of parallel lines, triangles, quadrilaterals and regular polygons; construction with ruler, compasses and protractor: perpendicular bisectors and angle bisectors; scale drawings); congruence and similarity (tests, ratios of lengths, areas and volumes of similar figures and solids); properties of circles (symmetry properties: equal chords, perpendicular from centre, tangents from a point; angle properties: angle at centre, angle in a semicircle, angles in the same segment, opposite angles of a cyclic quadrilateral, tangent-radius; reasons stated); Pythagoras' theorem and trigonometry (sine, cosine and tangent for acute and obtuse angles, sine and cosine rules, area of a triangle as ½ab sin C, bearings, angles of elevation and depression, simple 3-D problems); mensuration (area of a triangle, parallelogram, trapezium, circle; arc length and sector area with the angle in RADIANS or degrees; surface area and volume of a prism, cylinder, pyramid, cone and sphere; composite solids); coordinate geometry (gradient, length, midpoint is NOT required, equation of a straight line y=mx+c, parallel lines, area of a rectilinear figure by shoelace is NOT required — use base×height or split into triangles); vectors in two dimensions (column vectors, magnitude, position vectors, addition, scalar multiples, collinearity, expressing one vector in terms of others, ratios of areas of triangles with a common height or on the same base); data handling and analysis (tables, bar charts, pie charts, pictograms, line graphs, histograms with equal class widths, dot diagrams, stem-and-leaf, box-and-whisker plots, cumulative frequency curves, median, quartiles, percentiles, range, interquartile range, mean and standard deviation for grouped and ungrouped data, comparing two distributions in context); probability (single events, combined events by possibility diagrams and tree diagrams, with and without replacement, mutually exclusive and independent events). NOT in 4052: calculus, logarithms, surds, the binomial theorem, trigonometric identities, the R-formula, quadratic inequalities, matrices inverses and determinants, vectors in three dimensions, the shoelace formula, the midpoint formula.",
+  "register": "REGISTER — how SEAB asks (4052)\n- Plain, exact, economical English. Instructions are imperatives: Find, Calculate, Work out, Write down, Simplify, Factorise, Expand, Solve, Show that, Explain why, Give a reason, Complete the table, Draw, Describe, Estimate, Express, State.\n- Parts are labelled (a), (b), (c), with sub-parts (i), (ii). Every part carries its marks. A 1–3 mark question is often a single unlabelled part.\n- A scientific calculator is allowed on BOTH papers. Never write \"a calculator must not be used\". The paper's rubric already says: non-exact answers to 3 significant figures, angles to 1 decimal place, π = calculator value or 3.142 — so a question states a precision only when it wants something else (\"correct to 2 decimal places\", \"in its simplest form\", \"in terms of π\", \"as a fraction in its lowest terms\", \"in standard form\", \"to the nearest cent\").\n- Angles are in DEGREES with the degree sign ($58^\\circ$); a sector angle in radians is stated as \"1.8 radians\". Bearings are three-figure ($048^\\circ$). Money is dollars and cents ($\\$92.75$).\n- Contexts are short, concrete and Singaporean-neutral (a garden fountain, a box of apples, a map of Singapore, a candle business): the situation in one or two sentences, units given, then the parts. Never chatty, never a story.\n- \"Show that\" states its target exactly (\"Show that $x^2 - 102x + 1440 = 0$\", \"Show that $p = 2.5$\") and a later part uses it. \"Explain why …\" / \"Give a reason for your answer\" / \"Is he correct?\" parts are worth 1 mark and expect one sentence with a number in it. A circle-properties question says \"Give a reason for each step of your working.\"\n- Statistics and probability parts ask for interpretation in context (\"By commenting on the means and the standard deviations, compare …\", \"Explain what this tells you about …\").\n- Paper 1 (27 short questions, 90 marks): each question tests ONE idea in 1–7 marks, answered in the space provided; the paper walks the syllabus (number, algebra, geometry, statistics interleaved), with the vector and mensuration questions near the end.\n- Paper 2 (9 long questions, 90 marks): each question is 8–12 marks in 3–5 parts. Early questions are ALGEBRA MEDLEYS whose parts (a), (b), (c), (d) are separate short problems on different algebra skills. Later ones are one context developed through parts: a graph question (a table of values with two blanks, \"On the grid, draw the graph of …\", a gradient by a tangent, \"By drawing a suitable straight line, solve …\"), a trigonometry-on-the-ground question with bearings and a mast, a statistics + probability question over a table or histogram, a circle-properties + circular-measure question, a speed/quadratic question (\"Show that … = 0\", solve to 2 decimal places, reject a root, interpret), and the last question is a PROBLEM IN A REAL-WORLD CONTEXT: an information sheet (a table of prices, rates or measurements) followed by parts that end in a 5–7 mark \"Suggest a suitable … Justify your answer\" or \"Is it worth …? Show your working\" decision.\n- Marks follow the work: about 1 mark per 1.5 minutes. 1 mark: read/state/one-line. 2 marks: one routine. 3–4 marks: a short chain. 5–7 marks: a multi-step argument or a decision with working."
+ },
+ "paperNo": 2,
+ "total": 90,
+ "prompt_version": "gce-author-v1",
+ "blueprint_derived_at": "2026-09-08",
+ "generated_at": "2026-09-12T02:06:16.950Z",
+ "topicList": [
+  "Algebra (Expansion)",
+  "Algebra (Expressions)",
+  "Algebra (Factorization)",
+  "Algebra (Fractions)",
+  "Algebra (Graph on Graph Paper)",
+  "Algebra (Identities)",
+  "Algebra (Inequalities)",
+  "Algebra (Linear Equations)",
+  "Algebra (Quadratic Equations)",
+  "Algebra (Quadratic Graphs)",
+  "Algebra (Simultaneous Equations)",
+  "Algebra (Subject of Formula)",
+  "Indices",
+  "Indices (Standard Form)",
+  "Numbers (Estimation)",
+  "Numbers (HCF and LCM)",
+  "Numbers (Percentages)",
+  "Numbers (Prime Factorization)",
+  "Numbers (Rate)",
+  "Numbers (Ratio)",
+  "Numbers (Speed)",
+  "Proportion",
+  "Angles",
+  "Circle Properties",
+  "Circular Measure",
+  "Congruency and Similarity",
+  "Coordinate Geometry",
+  "Distance and Speed Time Graphs",
+  "Geometrical Constructions",
+  "Graphs of Functions",
+  "Map Scales",
+  "Mensuration",
+  "Polygons",
+  "Trigonometry",
+  "Vectors",
+  "Financial Math (Hire Purchase)",
+  "Financial Math (Interest)",
+  "Financial Math (Taxation)",
+  "Math In Real World Context",
+  "Matrices",
+  "Number Patterns",
+  "Sets",
+  "Probability",
+  "Statistics",
+  "Coordinate Geometry (Lines)",
+  "Pythagoras' Theorem",
+  "Symmetry",
+  "Financial Math (Exchange Rate)"
+ ],
+ "must_appear": [
+  "Algebra (Fractions)",
+  "Algebra (Graph on Graph Paper)",
+  "Algebra (Quadratic Equations)",
+  "Circle Properties",
+  "Circular Measure",
+  "Coordinate Geometry",
+  "Graphs of Functions",
+  "Math In Real World Context"
+ ],
+ "plan": [
+  {
+   "pos": 1,
+   "topic": "Algebra (Fractions)",
+   "target": 11,
+   "marks": [
+    10,
+    12
+   ],
+   "parts": [
+    3,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.181
+    },
+    {
+     "topic": "Algebra (Inequalities)",
+     "weight": 0.091
+    },
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.091
+    },
+    {
+     "topic": "Algebra (Simultaneous Equations)",
+     "weight": 0.091
+    },
+    {
+     "topic": "Algebra (Subject of Formula)",
+     "weight": 0.091
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.091
+    },
+    {
+     "topic": "Indices (Standard Form)",
+     "weight": 0.091
+    },
+    {
+     "topic": "Map Scales",
+     "weight": 0.091
+    },
+    {
+     "topic": "Numbers (Percentages)",
+     "weight": 0.091
+    },
+    {
+     "topic": "Numbers (Rate)",
+     "weight": 0.091
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Algebra (Quadratic Equations)",
+   "target": 11,
+   "marks": [
+    9,
+    12
+   ],
+   "parts": [
+    3,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Numbers (Percentages)",
+     "weight": 0.2
+    },
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.1
+    },
+    {
+     "topic": "Algebra (Inequalities)",
+     "weight": 0.1
+    },
+    {
+     "topic": "Algebra (Linear Equations)",
+     "weight": 0.1
+    },
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.1
+    },
+    {
+     "topic": "Algebra (Subject of Formula)",
+     "weight": 0.1
+    },
+    {
+     "topic": "Financial Math (Hire Purchase)",
+     "weight": 0.1
+    },
+    {
+     "topic": "Matrices",
+     "weight": 0.1
+    },
+    {
+     "topic": "Numbers (Ratio)",
+     "weight": 0.1
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Algebra (Graph on Graph Paper)",
+   "target": 9,
+   "marks": [
+    9,
+    10
+   ],
+   "parts": [
+    3,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Graph on Graph Paper)",
+     "weight": 0.2
+    },
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.2
+    },
+    {
+     "topic": "Graphs of Functions",
+     "weight": 0.2
+    },
+    {
+     "topic": "Mensuration",
+     "weight": 0.2
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.2
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Graphs of Functions",
+   "target": 11,
+   "marks": [
+    10,
+    11
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Graph on Graph Paper)",
+     "weight": 0.285
+    },
+    {
+     "topic": "Graphs of Functions",
+     "weight": 0.286
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.143
+    },
+    {
+     "topic": "Probability",
+     "weight": 0.143
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.143
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Circle Properties",
+   "target": 9,
+   "marks": [
+    8,
+    9
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Circle Properties",
+     "weight": 0.285
+    },
+    {
+     "topic": "Circular Measure",
+     "weight": 0.286
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.286
+    },
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.143
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Coordinate Geometry",
+   "target": 11,
+   "marks": [
+    11,
+    11
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.333
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.333
+    },
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.167
+    },
+    {
+     "topic": "Numbers (Speed)",
+     "weight": 0.167
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Statistics",
+   "target": 8,
+   "marks": [
+    7,
+    9
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Probability",
+     "weight": 0.4
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.4
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.2
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Circular Measure",
+   "target": 10,
+   "marks": [
+    10,
+    11
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.25
+    },
+    {
+     "topic": "Circle Properties",
+     "weight": 0.125
+    },
+    {
+     "topic": "Circular Measure",
+     "weight": 0.125
+    },
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.125
+    },
+    {
+     "topic": "Mensuration",
+     "weight": 0.125
+    },
+    {
+     "topic": "Number Patterns",
+     "weight": 0.125
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.125
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Math In Real World Context",
+   "target": 10,
+   "marks": [
+    10,
+    11
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Math In Real World Context",
+     "weight": 0.334
+    },
+    {
+     "topic": "Numbers (Rate)",
+     "weight": 0.222
+    },
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.111
+    },
+    {
+     "topic": "Mensuration",
+     "weight": 0.111
+    },
+    {
+     "topic": "Numbers (Speed)",
+     "weight": 0.111
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.111
+    }
+   ]
+  }
+ ],
+ "models": {
+  "author": "claude-fable-5-1 (Claude Code agent)",
+  "solver": "claude-opus-5 (Claude Code agent)",
+  "moderator": "claude-fable-5-1 (Claude Code agent)"
+ },
+ "set": 1,
+ "title": "E Math · Set 1 · Paper 2 · O-Level format",
+ "assembled_at": "2026-09-16T13:50:06.454Z",
+ "questions": [
+  {
+   "pos": 1,
+   "topic": "Algebra (Fractions)",
+   "target": 11,
+   "accepted": true,
+   "question": {
+    "stem": "",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Factorise completely $6 + 4pq - 3q - 8p$.",
+      "marks": 2,
+      "answer": "$(4p - 3)(q - 2)$"
+     },
+     {
+      "label": "(b)",
+      "text": "It is given that $\\frac{2a - b}{a + b} = \\frac{3}{4}$. Find the value of $\\frac{a}{b}$.",
+      "marks": 2,
+      "answer": "$\\frac{a}{b} = \\frac{7}{5}$"
+     },
+     {
+      "label": "(c)",
+      "text": "Express as a single fraction in its simplest form $\\frac{1}{x} - \\frac{1}{x - 1} + \\frac{2}{(x - 1)^2}$.",
+      "marks": 3,
+      "answer": "$\\frac{x + 1}{x(x - 1)^2}$"
+     },
+     {
+      "label": "(d)",
+      "text": "Solve the equation $\\frac{5}{x - 3} - \\frac{2x}{x^2 - 9} = 1$. Show all your working. Give your solutions correct to 2 decimal places.",
+      "marks": 4,
+      "answer": "$x = 6.62$ or $x = -3.62$"
+     }
+    ],
+    "answer": "(a) $(4p - 3)(q - 2)$; (b) $\\frac{7}{5}$; (c) $\\frac{x + 1}{x(x - 1)^2}$; (d) $x = 6.62$ or $x = -3.62$",
+    "total_marks": 11,
+    "topics": [
+     "Algebra (Fractions)",
+     "Algebra (Quadratic Equations)",
+     "Algebra (Factorization)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) The terms as printed do not group in pairs: $6 + 4pq = 2(3 + 2pq)$ and $-3q - 8p = -(3q + 8p)$ share no bracket, so the expression must be re-ordered first.\n$6 + 4pq - 3q - 8p = 4pq - 8p - 3q + 6 = 4p(q - 2) - 3(q - 2) = (4p - 3)(q - 2)$.\nEquivalently, $4pq - 3q - 8p + 6 = q(4p - 3) - 2(4p - 3) = (4p - 3)(q - 2)$.\nCheck by expanding: $(4p - 3)(q - 2) = 4pq - 8p - 3q + 6$, which is the given expression. Numerical check with $p = 2$, $q = 5$: $6 + 40 - 15 - 16 = 15$ and $(8 - 3)(5 - 2) = 15$.\nMarks: M1 a correct pair of groups after re-ordering, each with its factor taken out so that the common bracket shows ($4p(q - 2) - 3(q - 2)$ or $q(4p - 3) - 2(4p - 3)$); A1 $(4p - 3)(q - 2)$, in either order. Grouping as printed, $2(3 + 2pq) - (3q + 8p)$, produces no common bracket and earns nothing; a group with its sign wrong, such as $4p(q - 2) + 3(q - 2)$ or $4p(q - 2) - 3(q + 2)$, is not a correct pair of groups (M0).\n\n(b) Cross-multiplying: $4(2a - b) = 3(a + b)$\n$8a - 4b = 3a + 3b$\n$5a = 7b$, so $\\frac{a}{b} = \\frac{7}{5}$.\nCheck: $a = 7$, $b = 5$ gives $\\frac{14 - 5}{7 + 5} = \\frac{9}{12} = \\frac{3}{4}$.\nMarks: M1 cross-multiply and collect the $a$ terms and the $b$ terms ($5a = 7b$); A1 $\\frac{7}{5}$ (accept $1.4$). $a$ and $b$ cannot be found separately; a candidate who tries to is not answering the question.\n\n(c) The lowest common denominator is $x(x - 1)^2$ (not $x(x - 1)^3$).\n$\\frac{1}{x} - \\frac{1}{x - 1} + \\frac{2}{(x - 1)^2} = \\frac{(x - 1)^2 - x(x - 1) + 2x}{x(x - 1)^2}$\nNumerator: $x^2 - 2x + 1 - x^2 + x + 2x = x + 1$.\nSo the single fraction is $\\frac{x + 1}{x(x - 1)^2}$.\nMarks: M1 common denominator $x(x - 1)^2$ with the three numerators $(x - 1)^2$, $-x(x - 1)$, $2x$ (or a correct equivalent over $x(x - 1)^3$); M1 expansion and collection of the numerator (the $x^2$ terms cancel); A1 $\\frac{x + 1}{x(x - 1)^2}$. A candidate who works over $x(x - 1)^3$ reaches $\\frac{(x + 1)(x - 1)}{x(x - 1)^3}$ and must cancel the common factor $(x - 1)$ for the A1.\n\n(d) $x^2 - 9 = (x - 3)(x + 3)$, so the lowest common denominator is $(x - 3)(x + 3)$, not $(x - 3)(x^2 - 9)$.\nMultiplying both sides by $(x - 3)(x + 3)$: $5(x + 3) - 2x = x^2 - 9$\n$5x + 15 - 2x = x^2 - 9$\n$x^2 - 3x - 24 = 0$\n$x = \\frac{3 \\pm \\sqrt{(-3)^2 - 4(1)(-24)}}{2(1)} = \\frac{3 \\pm \\sqrt{105}}{2}$\n$x = \\frac{3 + 10.2469\\ldots}{2} = 6.6235\\ldots = 6.62$ or $x = \\frac{3 - 10.2469\\ldots}{2} = -3.6235\\ldots = -3.62$ (2 d.p.).\nNeither value is $3$ or $-3$, so neither makes a denominator zero; both are solutions. Check with $x = 6.6235$: $\\frac{5}{3.6235} - \\frac{13.2470}{34.8704} = 1.3799 - 0.3799 = 1.000$.\nMarks: M1 factorise $x^2 - 9$ and multiply through by $(x - 3)(x + 3)$ to clear the denominators; A1 $x^2 - 3x - 24 = 0$ (or equivalent); M1 correct substitution into the quadratic formula (the discriminant $105$ is not a perfect square, so factorising fails); A1 both $6.62$ and $-3.62$. A candidate who multiplies through by $(x - 3)(x^2 - 9)$ gets a cubic and earns nothing beyond a possible M1 for a correct but unsimplified statement.",
+    "syllabus_check": "4052 Algebraic expressions and formulae / Equations: (a) factorisation of a four-term expression by grouping, where the terms as printed do not group in pairs and the re-ordering is the candidate's decision; (b) an equation in algebraic fractions solved by cross-multiplication and collecting like terms, answered as a ratio of the unknowns; (c) addition and subtraction of algebraic fractions with a lowest common denominator containing a squared factor; (d) a fractional equation reducing to a quadratic, solved by the quadratic formula to 2 decimal places, with a factorisable denominator so the candidate must choose the LCD. Every technique is in the 4052 list (factorisation by grouping, algebraic fractions, fractional equations reducing to quadratics, the formula). No calculus, surds beyond an intermediate root, identities or figure. A calculator is used only for the square root in (d). 2 + 2 + 3 + 4 = 11 marks, about 16 minutes at 1.5 min per mark.",
+    "originality_note": "An algebra medley in the GCE 2024/2025 P2 Q1 shape (four separate short items, marks rising 2, 2, 3, 4) but every item is new in structure, not only in numbers, and the four items test four different skills - factorise / a ratio from a fractional equation / combine fractions / a fractional equation to a quadratic - as GCE 2025 P2 Q1 spreads linear equation / factorise / simultaneous / fraction and GCE 2024 P2 Q1 spreads inequality / fraction division / indices / fraction. (a) is a four-term factorisation by grouping in which the printed order 6 + 4pq - 3q - 8p does not group in pairs, so the re-ordering is the one decision; it is not an algebraic fraction and contains no difference of two squares, so the only difference of two squares in the question is the x^2 - 9 that (d) turns on and (a) no longer previews (d)'s idea. It differs from GCE 2025 P2 Q1(b) (a common factor then a difference of two squares) and from GCE 2024 P1 Q7(b) (four letters, a monomial common factor m and a sign-reversed bracket (1 - mx)): here two letters, integer coefficients and no reversed bracket, and its letters p, q are not the a, b of (b) nor the x of (c) and (d). (b) has no counterpart in the exemplars: a single fractional equation in two unknowns whose only answer is their ratio, so the decision is to collect rather than solve. (c) uses a squared factor in the LCD with three terms and an x^2 that cancels, unlike GCE 2025 P2 Q1(d) (a product denominator with one repeated linear factor, two terms) and GCE 2024 P1 Q5 (numerical denominators). (d) differs from GCE 2025 P1 Q23 and GCE 2023 P2 Q2(d), whose two denominators are unrelated linear expressions: here one denominator is x^2 - 9 and contains the other, so the idea the candidate must supply is to factorise it and choose (x - 3)(x + 3) as the LCD - cross-multiplying blindly produces a cubic. Numbers, unknowns and answers share nothing with any exemplar or with any past paper I know of."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 1,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2025 P1 Q23",
+     "jaccard": 0.118
+    },
+    "marks": 11,
+    "checked_at": "2026-09-12T02:45:22.720Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "(2 - q)(3 - 4p)   [equivalently (q - 2)(4p - 3)]",
+     "(b)": "a/b = 7/5",
+     "(c)": "(x + 1) / [x(x - 1)^2]",
+     "(d)": "x^2 - 3x - 24 = 0, so x = (3 ± √105)/2; x = 6.62 or x = -3.62 (2 d.p.)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Setter (4p - 3)(q - 2); blind (2 - q)(3 - 4p) = (-1)(q - 2)(-1)(4p - 3), the same product. Re-worked: the printed order 6 + 4pq - 3q - 8p gives 2(3 + 2pq) - (3q + 8p), no common bracket; re-ordered, 4p(q - 2) - 3(q - 2) = (4p - 3)(q - 2); expansion returns 4pq - 8p - 3q + 6 and p = 2, q = 5 gives 15 both ways. Completely factorised. The key and the M1-only-after-re-ordering rule are correct."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give a/b = 7/5. Re-worked: 4(2a - b) = 3(a + b), 8a - 4b = 3a + 3b, 5a = 7b; a = 7, b = 5 returns 9/12 = 3/4. Only the ratio is determined, as the key says. Correct."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give (x + 1)/(x(x - 1)^2). Re-worked over the LCD x(x - 1)^2: (x - 1)^2 - x(x - 1) + 2x = x^2 - 2x + 1 - x^2 + x + 2x = x + 1; x + 1 shares no factor with x or (x - 1), so it is in simplest form (numerical check at x = 4: 0.1389 both sides). Correct."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both give x^2 - 3x - 24 = 0, x = (3 +/- sqrt105)/2 = 6.62 or -3.62. Re-worked: x^2 - 9 = (x - 3)(x + 3), so multiplying by (x - 3)(x + 3) gives 5(x + 3) - 2x = x^2 - 9; roots 6.6234... and -3.6234... (third decimal 3, so no rounding at a boundary), neither is +/-3, residual zero in the original equation. The wrong-LCD path (x - 3)(x^2 - 9) gives the cubic x^3 - 6x^2 - 15x + 72 = (x - 3)(x^2 - 3x - 24), so it is a genuine trap that still looks tidy. Correct."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part (the blind (a) is the same product with both brackets negated) and my own re-working confirms all four answers and the M/A allocation; the key stands.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "An 11-mark P2 Q1 algebra medley of the 2024/2025 kind (standard.md: unchanged in kind), marks rising 2, 2, 3, 4, four different skills, and each item carrying exactly one candidate decision with the routine following: the re-ordering in (a) (the very 2-mark benchmark standard.md names from GCE 2024 P1 Q7(b) - a technique real papers repeat, not a P2 situation re-skinned), collecting to a ratio rather than solving in (b), the repeated-factor LCD x(x - 1)^2 in (c), and factorising x^2 - 9 to avoid a cubic in (d), where the algebra is lighter than GCE 2025 P1 Q23's 5-marker exactly as the 4 marks say. Both round-2 fixes are adopted - the doubled difference of two squares is gone and only two of the four items are algebraic-fraction work, the same spread as GCE 2025 P2 Q1 - register is SEAB's own ('Factorise completely', 'Show all your working. Give your solutions correct to 2 decimal places'), numbers are examination-clean (discriminant 105, roots clear of the rounding boundary and of +/-3), about 14 of the 16.5 minutes the marks buy, no 2024/2025 P2 situation or structure is re-used ((c) is a three-term squared-factor sum with no cancellation, unlike GCE 2025 P2 Q1(d)'s two-term cancellation or GCE 2024 P2 Q1(d)'s (4 - x) sign; (d)'s factorable denominator is not the two unrelated linear ones of GCE 2025 P1 Q23), and all gates passed (rounds: 3). At standard; nothing left to edit."
+   },
+   "exemplars": [
+    {
+     "id": "21cf0b77-06e3-4b21-82b6-bde467aa7d8a",
+     "ref": "GCE 2024 P2 Q1"
+    },
+    {
+     "id": "f650d380-b315-4357-8798-46263e7870f7",
+     "ref": "GCE 2025 P2 Q1"
+    },
+    {
+     "id": "09308b09-e384-40ca-ae3d-4dcf9d205c9d",
+     "ref": "GCE 2023 P2 Q2"
+    },
+    {
+     "id": "4f282fde-e945-4503-8a58-2189374690ed",
+     "ref": "GCE 2025 P1 Q23"
+    },
+    {
+     "id": "aa860c94-c851-4e49-b146-6916435524b9",
+     "ref": "GCE 2024 P1 Q5"
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Algebra (Quadratic Equations)",
+   "target": 11,
+   "accepted": true,
+   "question": {
+    "stem": "Farhan buys a second-hand bicycle. He later sells the bicycle to Mei Ling, making a profit of $x\\%$. Mei Ling later sells the bicycle to Jun, making a loss. Her percentage loss is 10 less than Farhan's percentage profit. Jun pays $4\\%$ more for the bicycle than Farhan paid.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that $x$ satisfies the equation $x^2 - 10x - 600 = 0$.",
+      "marks": 5,
+      "answer": "Shown: with Farhan's cost price $\\$C$, $C\\left(1 + \\frac{x}{100}\\right)\\left(1 - \\frac{x - 10}{100}\\right) = 1.04C$, so $(100 + x)(110 - x) = 10400$, which gives $x^2 - 10x - 600 = 0$."
+     },
+     {
+      "label": "(b)",
+      "text": "Find the two solutions of the equation $x^2 - 10x - 600 = 0$.",
+      "marks": 2,
+      "answer": "$x = 30$ or $x = -20$"
+     },
+     {
+      "label": "(c)",
+      "text": "Give a reason why one of the solutions in part (b) is not possible.",
+      "marks": 1,
+      "answer": "$x = -20$ is not possible: a profit of $-20\\%$ means Farhan sold the bicycle at a loss, which contradicts the information that he made a profit (equivalently, Mei Ling's percentage loss would be $-30$, which is a profit, not a loss)."
+     },
+     {
+      "label": "(d)",
+      "text": "Jun paid $\\$936$ for the bicycle. Calculate the profit Farhan made and the loss Mei Ling made.",
+      "marks": 3,
+      "answer": "Farhan's profit $= \\$270$; Mei Ling's loss $= \\$234$"
+     }
+    ],
+    "answer": "(a) $x^2 - 10x - 600 = 0$ shown; (b) $x = 30$ or $x = -20$; (c) $x = -20$ is not possible because a negative percentage profit is a loss, contradicting the information; (d) Farhan's profit $\\$270$, Mei Ling's loss $\\$234$",
+    "total_marks": 11,
+    "topics": [
+     "Algebra (Quadratic Equations)",
+     "Numbers (Percentages)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Let Farhan's cost price be $\\$C$.\nFarhan sells at a profit of $x\\%$, so Mei Ling pays $C\\left(1 + \\frac{x}{100}\\right) = \\frac{C(100 + x)}{100}$.\nMei Ling's percentage loss is 10 less than $x$, i.e. $(x - 10)$, so Jun pays $\\frac{C(100 + x)}{100} \\times \\left(1 - \\frac{x - 10}{100}\\right) = \\frac{C(100 + x)}{100} \\times \\frac{110 - x}{100} = \\frac{C(100 + x)(110 - x)}{10000}$.\nJun pays $4\\%$ more than Farhan paid, so this amount equals $1.04C$:\n$\\frac{C(100 + x)(110 - x)}{10000} = 1.04C$\n$(100 + x)(110 - x) = 10400$ (the cost price $C$ cancels)\n$11000 - 100x + 110x - x^2 = 10400$\n$-x^2 + 10x + 600 = 0$\n$x^2 - 10x - 600 = 0$, so $x$ satisfies the equation (shown)\n\n(b) $x^2 - 10x - 600 = 0$\n$(x - 30)(x + 20) = 0$\n$x = 30$ or $x = -20$\n\n(c) $x = -20$ is not possible because a profit of $-20\\%$ means Farhan sold the bicycle for less than he paid, i.e. at a loss, which contradicts the information that he made a profit. (Equivalently, Mei Ling's percentage loss would be $-20 - 10 = -30$, which is a profit, not a loss.) Hence $x = 30$: Farhan made a $30\\%$ profit and Mei Ling a $20\\%$ loss.\n\n(d) Jun paid $4\\%$ more than Farhan paid, so Farhan paid $\\$936 \\div 1.04 = \\$900$.\nFarhan's profit $= 30\\% \\times \\$900 = \\$270$.\nMei Ling paid $\\$900 + \\$270 = \\$1170$ (or $1.3 \\times \\$900$).\nMei Ling's loss $= 20\\% \\times \\$1170 = \\$234$.\nCheck: Mei Ling sold the bicycle for $\\$1170 - \\$234 = \\$936$, which is what Jun paid, as given.",
+    "syllabus_check": "4052 only. Percentage: profit and loss as multipliers, two successive percentage changes, and a reverse percentage (recovering the original price from a price that is 4% higher). Quadratic equations: forming the equation from a context, solving by factorisation, and rejecting a root with a contextual reason. Part (d) asks for two money amounts (a profit and a loss), each on its own base. Nothing outside the syllabus (no interest formula, no surds, no calculus, no inequalities). Precision: all answers exact, so no rounding instruction is needed.",
+    "originality_note": "New situation and new equation structure. Every quadratic word problem in the GCE corpus is built either from reciprocals (times from speeds: GCE 2024 P2 Q6, 2014 P2 Q8, 2010 P2 Q6; rates from pumps or tankers: 2018 P2 Q6, 2012 P2 Q8, 2005 P2 Q6; cost per item: 2008 P2 Q5, 2002 P2 Q7, 2016 P2 Q7) or from lengths (cuboid diagonal or surface area: 2023 specimen P2 Q8, 2017 P2 Q7, 2011 P2 Q4; a trapezium under a line: 2025 P2 Q8; two squares: 2025 P1 Q20; a data list: 2024 P1 Q21). No GCE question forms a quadratic from a product of two linked percentage multipliers, and none makes the candidate introduce a cost price that then cancels. The second percentage is hidden in words (10 less than the first), as GCE 2024 P2 Q6 hides its 30 km/h, and the base of the 4% is the decision the stem tests (taking Mei Ling's price as the base gives the tidy wrong answer x = 6). The part wording is deliberately not the GCE 2024 P2 Q6 template's: 'Show that x satisfies the equation', 'Find the two solutions of the equation' (GCE 2022 P2 Q4, 2008 P2 Q9), 'Give a reason why ... is not possible' (GCE 2025 P1 Q16, 2018 P2 Q4, 2022 P1 Q4) and 'Work out' (GCE 2025 P2 Q6, 2016 P2 Q7). Part (d) earns its three marks with three steps: the reverse percentage (936 / 1.04 = 900, with 936 x 0.96 = 898.56 as the tidy wrong answer), Farhan's profit on his own price (270), and Mei Ling's loss on HER price (20% of 1170 = 234, with 20% of 936 = 187.20 as the tidy wrong answer for a candidate who takes the wrong base). The 2024 P2 Q6 mark scaffold [5, 3, 1, 2] is not copied: the solve is by factorisation [2] and the closing part is a 3-mark chain with its own decision."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 2,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2024 P2 Q6",
+     "jaccard": 0.06
+    },
+    "marks": 11,
+    "checked_at": "2026-09-12T02:46:33.728Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "Let Farhan pay $C. Selling price to Mei Ling = C(1 + x/100) = C(100 + x)/100. Mei Ling's percentage loss = (x - 10)%, so Jun pays C(100 + x)/100 x (100 - (x - 10))/100 = C(100 + x)(110 - x)/10000. Jun pays 4% more than Farhan paid, so C(100 + x)(110 - x)/10000 = 1.04C. Hence (100 + x)(110 - x) = 10400, i.e. 11000 + 10x - x^2 = 10400, so x^2 - 10x - 600 = 0. Shown.",
+     "(b)": "x^2 - 10x - 600 = (x - 30)(x + 20) = 0, so x = 30 or x = -20",
+     "(c)": "x = -20 is not possible: Farhan made a profit, so x must be positive (x = -20 would mean a 20% loss, and Mei Ling's percentage loss would be -30%, i.e. a profit, contradicting the question).",
+     "(d)": "Jun paid $936 = 1.04 x (Farhan's cost), so Farhan paid $900. With x = 30, Mei Ling paid 900 x 1.30 = $1170, so Farhan's profit = $270. Mei Ling's loss = 20% of $1170 = $234 (1170 - 234 = $936, as required)."
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Identical derivations: C(1 + x/100)(1 - (x - 10)/100) = 1.04C, cancel C to (100 + x)(110 - x) = 10400, expand to 11000 + 10x - x^2 = 10400, hence x^2 - 10x - 600 = 0. Re-worked independently: the target is true and the show-that is honest. Five one-mark steps (Mei Ling's price, the (110 - x)/100 multiplier on HER price, equate to 1.04C, cancel C and the 100s, expand and rearrange)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "x = 30 or x = -20 in both; (x - 30)(x + 20) expands back to x^2 - 10x - 600. Factorises cleanly, so [2] is right (GCE 2025 P2 Q8(a)(ii) gave [3] for factorise-and-reject). 'Find the two solutions' is the setter's deliberate variation from the 2024 P2 Q6 template; acceptable register."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both reject x = -20 on the same specific fact: x is a percentage profit, so a negative x contradicts 'making a profit' (equivalently Mei Ling's loss would be -30%, a profit). Not answerable by a generic sentence."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both give Farhan's profit $270 and Mei Ling's loss $234. Checked: 1.04 x 900 = 936 exactly, 0.3 x 900 = 270, 1.3 x 900 = 1170, 0.2 x 1170 = 234, and 1170 - 234 = 936 closes the loop. Three honest marks: the reverse-percentage decision (divide by 1.04; x0.96 gives 898.56), then one amount on each seller's own base (20% of 936 = 187.20 is the tidy wrong base)."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement anywhere: every part re-solves to the setter's values (x = 30, cost price $900, profit $270, loss $234), and the round-1 fixes are correctly reflected in the key and worked solution.",
+    "score": 4,
+    "fixes": [
+     "(d) trim the over-specified tail, which is the one school-made tell: 'Jun paid $936 for the bicycle. Calculate the profit Farhan made and the loss Mei Ling made. [3]' - the two sales are already the only ones in the stem, so 'when each of them sold the bicycle' adds nothing a SEAB setter would print."
+    ],
+    "too_close_to": null,
+    "why": "At the 2024/25 standard by the moderator's test: (a) [5] makes the candidate supply the model (the (x - 10)% loss compounded on Mei Ling's price with a cost price that cancels; the additive reading x - (x - 10) = 4 fails at once) and then runs four routine steps, matching GCE 2024 P2 Q6(a)'s weight; (b) and (c) are the routine and the specific reason; (d) [3] now carries its own decision (divide by 1.04) and two amounts on different bases, so no part merely re-uses an earlier answer, and 11 marks finish in about 16 minutes. The four-part show/solve/reject/use shape is SEAB's own recurring genre (2020 P2 Q9, 2023 specimen Q8, 2024 P2 Q6, 2025 P2 Q8(a)), but the situation and the algebra (a product of two linked percentage multipliers) match no 2024/25 P2 question, so not a re-skin; a percentages item sits acceptably in the P2 Q2 'number' slot; all gates passed."
+   },
+   "exemplars": [
+    {
+     "id": "60c9168d-07c4-454c-b444-2f455bd75a36",
+     "ref": "GCE 2025 P2 Q8"
+    },
+    {
+     "id": "14cef6ef-40db-4c4b-aedb-ce8545ac065b",
+     "ref": "GCE 2024 P2 Q6"
+    },
+    {
+     "id": "a2a3dab5-c1ec-4b59-a621-acb601da1a10",
+     "ref": "GCE 2023 specimen P2 Q8"
+    },
+    {
+     "id": "8031701c-dd03-407c-9d1d-6cb5bfc4158f",
+     "ref": "GCE 2025 P1 Q20"
+    },
+    {
+     "id": "12a67ec2-8a20-47e4-8921-8a3c5dc320f7",
+     "ref": "GCE 2024 P1 Q21"
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Algebra (Graph on Graph Paper)",
+   "target": 9,
+   "accepted": true,
+   "question": {
+    "stem": "",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Complete the table of values for $y = \\frac{x}{2} + \\frac{6}{x}$.\n$\\begin{array}{|c|c|c|c|c|c|c|c|c|c|} \\hline x & 1 & 1.5 & 2 & 2.5 & 3 & 3.5 & 4 & 4.5 & 5 \\\\ \\hline y & 6.5 & 4.75 & 4 & 3.65 & 3.5 & 3.46 & 3.5 & & 3.7 \\\\ \\hline \\end{array}$",
+      "marks": 1,
+      "answer": "$y = 3.58$ when $x = 4.5$"
+     },
+     {
+      "label": "(b)",
+      "text": "On the grid, draw the graph of $y = \\frac{x}{2} + \\frac{6}{x}$ for $1 \\le x \\le 5$.",
+      "marks": 3,
+      "answer": "A smooth curve through all nine points: falling steeply from $(1, 6.5)$, flattening to a minimum of about $3.46$ near $x = 3.5$, then rising gently to $(5, 3.7)$. (No straight-line segments; the curve must not be drawn symmetric about $x = 3.5$.)"
+     },
+     {
+      "label": "(c)",
+      "text": "By drawing a tangent, work out an estimate for the gradient of the curve at the point where $y = 4.5$.",
+      "marks": 2,
+      "answer": "Tangent drawn at the point $(1.6, 4.5)$ (the only point of the drawn curve with $y = 4.5$; exactly $x = 1.63$); gradient $\\approx -1.8$ (accept $-2.2$ to $-1.4$)"
+     },
+     {
+      "label": "(d)",
+      "text": "By drawing a suitable straight line on the grid, solve the equation $x^2 - 6x + 6 = 0$.",
+      "marks": 3,
+      "answer": "Line $y = 6 - \\frac{x}{2}$ drawn (for example through $(1, 5.5)$ and $(5, 3.5)$); $x \\approx 1.27$ and $x \\approx 4.73$ (accept $1.2$ to $1.35$ and $4.65$ to $4.8$)"
+     }
+    ],
+    "answer": "(a) 4.75, 3.58  (b) smooth curve through the nine points, minimum about 3.46 near $x = 3.5$  (c) tangent at $(1.6, 4.5)$, gradient $\\approx -1.8$  (d) line $y = 6 - \\frac{x}{2}$; $x \\approx 1.27$, $x \\approx 4.73$",
+    "total_marks": 9,
+    "topics": [
+     "Algebra (Graph on Graph Paper)",
+     "Graphs of Functions"
+    ],
+    "needs_figure": true,
+    "figure_description": "A blank graph grid for part (b), printed on 2 mm graph paper. Horizontal axis labelled $x$, running from 1 to 5; vertical axis labelled $y$, running from 3 to 7. Scale 4 cm to 1 unit on both axes (so the grid is 16 cm by 16 cm, one 2 mm square = 0.05 units, bold lines every 2 cm = 0.5 units). The left edge of the grid is the line $x = 1$ and the bottom edge is the line $y = 3$; the axes do NOT start at 0 and no origin is shown. Label the $x$-axis at 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5 and the $y$-axis at 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7. Nothing is plotted: no points, no curve, no tangent and no straight line appear on the grid, and the equation of the curve is NOT printed on the figure (the table of values sits in the question text, not on the figure).",
+    "solution": "(a) When $x = 1.5$: $y = \\frac{1.5}{2} + \\frac{6}{1.5} = 0.75 + 4 = 4.75$.\nWhen $x = 4.5$: $y = \\frac{4.5}{2} + \\frac{6}{4.5} = 2.25 + 1.333\\ldots = 3.583\\ldots = 3.58$ (2 d.p.).\n\n(b) Plot the nine points $(1, 6.5)$, $(1.5, 4.75)$, $(2, 4)$, $(2.5, 3.65)$, $(3, 3.5)$, $(3.5, 3.46)$, $(4, 3.5)$, $(4.5, 3.58)$, $(5, 3.7)$ and join them with a smooth curve. Setter's check: the curve falls steeply on the left, has its minimum value $2\\sqrt{3} = 3.46$ at $x = \\sqrt{12} = 3.46$, and rises slowly on the right, so it is NOT symmetric about $x = 3.5$ (at $x = 5$ it has only reached $3.7$). Marks: B1 all points plotted correctly, B1 smooth curve through them, B1 correct shape (steep left branch, shallow minimum, no straight-line segments).\n\n(c) The drawn curve takes the value $y = 4.5$ exactly once, on the steep left branch. Reading across from $y = 4.5$ gives $x \\approx 1.6$. [Setter's check: $\\frac{x}{2} + \\frac{6}{x} = 4.5 \\Rightarrow x^2 - 9x + 12 = 0 \\Rightarrow x = \\frac{9 - \\sqrt{33}}{2} = 1.63$; the other root $7.37$ lies outside $1 \\le x \\le 5$.] Draw the tangent to the curve at $(1.6, 4.5)$ and read two points on it, e.g. $(1, 5.6)$ and $(2.4, 3.1)$.\nGradient $\\approx \\frac{3.1 - 5.6}{2.4 - 1} = \\frac{-2.5}{1.4} = -1.79 \\approx -1.8$.\n[Setter's check: the exact gradient is $\\frac{1}{2} - \\frac{6}{x^2} = 0.5 - \\frac{6}{2.649} = -1.76$; accept $-2.2$ to $-1.4$.] Marks: M1 tangent drawn at the correct point (where the curve meets $y = 4.5$), A1 gradient in range.\n\n(d) The equation must be rewritten so that one side is the drawn curve. Since $x \\ne 0$, divide $x^2 - 6x + 6 = 0$ by $x$:\n$x - 6 + \\frac{6}{x} = 0$.\nSplit $x$ as $\\frac{x}{2} + \\frac{x}{2}$ and move $\\frac{x}{2} - 6$ to the right:\n$\\frac{x}{2} + \\frac{6}{x} = 6 - \\frac{x}{2}$.\nSo the solutions are the $x$-coordinates of the points where the curve meets the straight line $y = 6 - \\frac{x}{2}$. Its $y$-intercept $(0, 6)$ is off the grid, so draw it through two points inside the window, e.g. $(1, 5.5)$ and $(5, 3.5)$ (or $(3, 4.5)$).\nThe line cuts the curve twice: at $x \\approx 1.27$ and at $x \\approx 4.73$.\n[Setter's check: $x^2 - 6x + 6 = 0 \\Rightarrow x = 3 \\pm \\sqrt{3} = 1.268$ and $4.732$; both lie in $1 \\le x \\le 5$ and the equation does not factorise, so the graph is genuinely needed. At $x = 1.268$ both curve and line give $y = 5.37$; at $x = 4.732$ both give $y = 3.63$.] Marks: M1 for rearranging to $\\frac{x}{2} + \\frac{6}{x} = 6 - \\frac{x}{2}$ (or stating the line $y = 6 - \\frac{x}{2}$), A1 for the line correctly drawn, A1 for both solutions (accept $1.2$ to $1.35$ and $4.65$ to $4.8$).",
+    "syllabus_check": "4052 Functions and graphs: graphs of $y = ax^n$ for $n = -1$ and $n = 1$ and sums of such terms; drawing a graph on a grid from a table of values; estimating the gradient of a curve by drawing a tangent; solving an equation by drawing a suitable straight line on the same axes (Equations: a quadratic solved graphically). Nothing outside 4052 is needed: no calculus (the exact gradient in the setter's check is a verification only), no surds (the roots $3 \\pm \\sqrt{3}$ appear only in the check; the candidate reads decimals from the grid), no quadratic inequalities. Precision is not stated anywhere: in (a) the printed table values fix it at 2 decimal places, and in (c) and (d) the answers are graph readings. 1 + 3 + 2 + 3 = 9 marks, about 13 minutes.",
+    "originality_note": "Every exemplar and every 2024/2025 Paper 2 graph question plots a cubic (GCE 2022 P2 Q4, the 2023 specimen Q3, GCE 2024 P2 Q4) or reads a given exponential (GCE 2017 P2 Q3, GCE 2025 P2 Q5); none plots a reciprocal-plus-linear curve, and the shape here (a steep left branch and a long shallow right branch, minimum $2\\sqrt{3}$ at an irrational $x$) is new to the set. The separating step in (d) is a division by $x$ followed by re-splitting the $x$ term, a rearrangement of a different kind from the constant scalings in 2022 (divide by 10) and 2024 (divide by 2); a candidate who scales instead cannot reach the drawn curve. In (c) the tangent point is fixed by a $y$-value, so the candidate must first locate it on the drawn curve, the 2025 P2 Q5(b) demand transferred to a plotted algebraic curve; no exemplar names a point by its $y$-value. There is no $y = ka^x$ part, no 'only one solution' explanation, no 'values of $k$' part and no context, so nothing here re-skins 2022, 2024 or 2025 with new numbers. The numbers were chosen so both roots in (d) fall between table points (not on the unsampled steep end) and so the line's $y$-intercept lies off the grid, forcing the candidate to choose two in-window points."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 3,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2022 P2 Q4",
+     "jaccard": 0.163
+    },
+    "marks": 9,
+    "checked_at": "2026-09-12T02:46:33.733Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "x = 1.5: y = 4.75;  x = 4.5: y = 3.58 (3.583...)",
+     "(b)": "Smooth curve drawn through (1, 6.5), (1.5, 4.75), (2, 4), (2.5, 3.65), (3, 3.5), (3.5, 3.46), (4, 3.5), (4.5, 3.58), (5, 3.7); minimum near x = 3.46, y = 3.46; curve falls steeply from x = 1 then flattens and turns up after x = 3.5.",
+     "(c)": "Gradient = -1.8 (exact value -1.76, at x = (9 - sqrt 33)/2 = 1.63). Accept -1.5 to -2.1 from a hand-drawn tangent.",
+     "(d)": "Draw the line y = 6 - x/2 (through (1, 5.5) and (5, 3.5)). x = 1.27 and x = 4.73 (exact 3 - sqrt 3 and 3 + sqrt 3). Accept x = 1.25 to 1.3 and x = 4.7 to 4.75 (reading tolerance +/- 0.05, i.e. one 2 mm square)."
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give 4.75 and 3.58. Recomputed: 1.5/2 + 6/1.5 = 0.75 + 4 = 4.75; 4.5/2 + 6/4.5 = 2.25 + 1.333 = 3.583 -> 3.58. The seven printed values (6.5, 4, 3.65, 3.5, 3.46, 3.5, 3.7) are also all correct at 2 d.p. The printed 3.65 / 3.46 fix the precision without an instruction, as in 2022 P2 Q4 and 2024 P2 Q4 (2020, 2021 and 2023 did print a precision line, so either is authentic; not a fix)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Same nine points and the same shape: a steep fall from (1, 6.5), a shallow minimum at (sqrt 12, 2 sqrt 3) = (3.46, 3.46), a slow rise to (5, 3.7). Every value sits inside the 3..7 window on the broken-axis grid, and the 0.05-per-square scale plots 3.46 and 3.65 cleanly."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both locate the point at x = (9 - sqrt 33)/2 = 1.63 (from x^2 - 9x + 12 = 0; the other root 7.37 is outside the window, so the curve meets y = 4.5 exactly once) and read the gradient as about -1.8 (exact 1/2 - 6/x^2 = -1.76). The blind band -2.1..-1.5 lies inside the key's -2.2..-1.4. The tangent runs from about (1, 5.6) to (2.48, 3) inside the grid, some 12 cm of line, with 2.5 cm of curve to the left of the point, so it is drawable and readable."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both draw y = 6 - x/2 and read x = 1.27 and 4.73 (exact 3 +/- sqrt 3). Matching x/2 + 6/x = mx + c against k(x^2 - 6x + 6) = 0 forces k = 2, m = -1/2, c = 6, so the line is unique. The line stays inside the window ((1, 5.5) to (5, 3.5)); the crossings are at 46 degrees and 40 degrees between curve and line, both clean to read. The blind tolerances (+/- 0.05) sit inside the key's bands 1.2..1.35 and 4.65..4.8."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement anywhere: the blind readings (4.75, 3.58; -1.8; 1.27 and 4.73) all land inside the key's bands, and my own working confirms the tangent point x = 1.63 with gradient -1.76, the unique line y = 6 - x/2, and the roots 3 +/- sqrt 3, so the setter's key is right.",
+    "score": 4,
+    "fixes": [
+     "Leave ONE blank in the table, not two: print 4.75 at x = 1.5 and leave only x = 4.5 blank (3.583... -> 3.58, the one value that needs rounding). Every real 'Complete the table' part since 2020 leaves exactly one blank for [1] (GCE 2020 P2 Q3, 2021 P2 Q3, 2022 P2 Q4, 2023 P2 Q4, 2024 P2 Q4), and 2020 and 2021 both put that blank on the value that rounds.",
+     "Light, optional: phrase (c) as the 2025 paper does, 'By drawing a tangent, work out an estimate for the gradient of the curve at the point where y = 4.5.' The corpus never says a bare 'estimate the gradient'; it says 'find the gradient' (2002-2021) or 'work out an estimate for the gradient' (GCE 2025 P2 Q5(b))."
+    ],
+    "too_close_to": null,
+    "why": "AT the 2024/25 standard for 9 marks: (d) hands the candidate the rearrangement (divide x^2 - 6x + 6 = 0 by x, then split x into x/2 + x/2 to reach the drawn curve; the constant-scaling move of 2022 P2 Q4 / 2024 P2 Q4 fails here), to a line whose y-intercept is off the grid, for an equation that does not factorise, and (c) makes the candidate locate the point from its y-value before drawing the tangent (the GCE 2025 P2 Q5(b) move); the rest is routine that fits 1.5 minutes a mark, and all gates passed. It is not a re-skin of either 2024/25 graph question: 2024 P2 Q4 is a cubic with an explain-one-solution part and a y = ka^x part, 2025 P2 Q5 has no plotting. The setter's claim that a linear-plus-k/x curve is new to the set is wrong (GCE 2020 P2 Q3 plots 2x + 6/x - 9, GCE 2021 P2 Q3 plots 320/x + 4x - 16), but those are outside the 2024/25 set and run the line part the other way round (the line is given, A and B are asked for) with no tangent, so the demands here are different. Two blanks for [1] is the one visible house-style slip keeping it from a 5."
+   },
+   "exemplars": [
+    {
+     "id": "e0dfab94-8d90-494a-858c-990449760d16",
+     "ref": "GCE 2023 specimen P2 Q3"
+    },
+    {
+     "id": "6399e899-8387-4772-9ec9-f002ce7269df",
+     "ref": "GCE 2024 P2 Q4"
+    },
+    {
+     "id": "fcd01980-8713-45e7-968e-fb68eae226c0",
+     "ref": "GCE 2025 P1 Q26"
+    },
+    {
+     "id": "64acdc91-c8bf-4921-bc2c-97845bb79824",
+     "ref": "GCE 2017 P2 Q3"
+    },
+    {
+     "id": "13671f8b-54d9-4622-8b6e-95286425b780",
+     "ref": "GCE 2022 P2 Q4"
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Graphs of Functions",
+   "target": 11,
+   "accepted": true,
+   "question": {
+    "stem": "",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "The curve $y = ka^x$, where $k$ and $a$ are positive constants, passes through the points $(2, 45)$ and $(4, 405)$.",
+      "marks": 5,
+      "answer": "$a = 3$, $k = 5$; $q = -3$",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "Find the value of $a$ and the value of $k$.",
+        "marks": 3,
+        "answer": "$a = 3$, $k = 5$"
+       },
+       {
+        "label": "(ii)",
+        "text": "The value of $y$ when $x = 1$ is 81 times the value of $y$ when $x = q$. Find the value of $q$.",
+        "marks": 2,
+        "answer": "$q = -3$"
+       }
+      ]
+     },
+     {
+      "label": "(b)",
+      "text": "The curves $y = 3 \\times 4^{x}$ and $y = 192 \\times 2^{-x}$ intersect at the point $P$.",
+      "marks": 6,
+      "answer": "Sketch: both curves lie above the $x$-axis; $y = 3 \\times 4^{x}$ increases through $(0, 3)$, $y = 192 \\times 2^{-x}$ decreases through $(0, 192)$, each with the $x$-axis as asymptote; they cross once, to the right of the $y$-axis. $P = (2, 48)$",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "On the same axes, sketch the graphs of $y = 3 \\times 4^{x}$ and $y = 192 \\times 2^{-x}$, showing the coordinates of the points where the graphs cross the $y$-axis.",
+        "marks": 2,
+        "answer": "$y = 3 \\times 4^{x}$: increasing exponential curve, entirely above the $x$-axis, crossing the $y$-axis at $(0, 3)$, approaching the $x$-axis as $x \\to -\\infty$. $y = 192 \\times 2^{-x}$: decreasing exponential curve, entirely above the $x$-axis, crossing the $y$-axis at $(0, 192)$, approaching the $x$-axis as $x \\to \\infty$. The two curves cross exactly once, at a point to the right of the $y$-axis (since $3 < 192$ at $x = 0$)."
+       },
+       {
+        "label": "(ii)",
+        "text": "Find the coordinates of $P$. You must show your working.",
+        "marks": 4,
+        "answer": "$P = (2, 48)$"
+       }
+      ]
+     }
+    ],
+    "answer": "(a)(i) $a = 3$, $k = 5$  (a)(ii) $q = -3$  (b)(i) sketch: $y = 3 \\times 4^{x}$ increasing through $(0, 3)$, $y = 192 \\times 2^{-x}$ decreasing through $(0, 192)$, both above the $x$-axis, one crossing at $x > 0$  (b)(ii) $P = (2, 48)$",
+    "total_marks": 11,
+    "topics": [
+     "Graphs of Functions",
+     "Indices"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a)(i) Substituting the two points into $y = ka^x$:\n$45 = ka^2$ and $405 = ka^4$.\nNeither point has $x = 0$, so $k$ cannot be read off; divide the second equation by the first to eliminate $k$:\n$\\dfrac{ka^4}{ka^2} = \\dfrac{405}{45}$, so $a^2 = 9$.\n$a > 0$, so $a = 3$ (the root $a = -3$ is rejected).\nThen $k = \\dfrac{45}{3^2} = \\dfrac{45}{9} = 5$.\nCheck: $5 \\times 3^4 = 5 \\times 81 = 405$. So $a = 3$, $k = 5$ and the curve is $y = 5(3^x)$.\n\n(a)(ii) When $x = 1$, $y = 5 \\times 3 = 15$.\nWhen $x = q$, $y = 5(3^q)$.\n$15 = 81 \\times 5(3^q)$\n$3^q = \\dfrac{15}{405} = \\dfrac{1}{27} = 3^{-3}$\nSo $q = -3$.\n(Equivalently, $\\dfrac{5(3^1)}{5(3^q)} = 81$ gives $3^{1-q} = 3^4$, so $1 - q = 4$ and $q = -3$.)\n\n(b)(i) $y = 3 \\times 4^{x}$ is an increasing exponential curve: $4^x > 0$ for every $x$, so the curve lies entirely above the $x$-axis, it crosses the $y$-axis at $(0, 3)$, it approaches the $x$-axis (without meeting it) as $x \\to -\\infty$ and rises steeply as $x$ increases.\n$y = 192 \\times 2^{-x}$ is a decreasing exponential curve: $2^{-x} = \\dfrac{1}{2^x} > 0$ for every $x$, so it also lies entirely above the $x$-axis, it crosses the $y$-axis at $(0, 192)$, it falls as $x$ increases and approaches the $x$-axis (without meeting it) as $x \\to \\infty$.\nAt $x = 0$ the first curve ($y = 3$) is below the second ($y = 192$); as $x$ increases the first rises and the second falls, so the curves cross exactly once, at a point to the right of the $y$-axis. The sketch shows both curves above the $x$-axis, the $y$-intercepts labelled $(0, 3)$ and $(0, 192)$, and a single crossing point $P$ with $x > 0$.\n\n(b)(ii) At $P$, $3 \\times 4^{x} = 192 \\times 2^{-x}$.\nThe two curves are written in different bases, so first write $4^x$ in base 2: $4^x = (2^2)^x = 2^{2x}$.\n$3(2^{2x}) = 192 \\times 2^{-x}$\nMultiplying both sides by $2^x$: $3(2^{2x})(2^x) = 192$, so $3(2^{2x + x}) = 192$, that is $3(2^{3x}) = 192$ and $2^{3x} = 64$.\n$64 = 2^6$, so $3x = 6$ and $x = 2$. (There is only one solution because $2^{3x}$ increases with $x$, matching the single crossing in the sketch.)\n$y = 3 \\times 4^2 = 3 \\times 16 = 48$.\nCheck on the other curve: $192 \\times 2^{-2} = \\dfrac{192}{4} = 48$.\nSo $P = (2, 48)$.\n(Alternatively, with $u = 2^x$: $4^x = (2^x)^2 = u^2$ and $2^{-x} = \\dfrac{1}{u}$, so $3u^2 = \\dfrac{192}{u}$, $u^3 = 64$, $u = 4$, hence $2^x = 4$ and $x = 2$.)",
+    "syllabus_check": "Within 4052: the exponential function $y = ka^x$ and its graph (Graphs of Functions), sketching exponential curves and their $y$-intercepts, the laws of indices including negative indices ($3^{-3} = \\frac{1}{27}$, $2^{-x} = \\frac{1}{2^x}$), the power law $(2^2)^x = 2^{2x}$ and the product law $2^{2x} \\times 2^x = 2^{3x}$, and simultaneous equations by elimination. No logarithms are needed: $a^2 = 9$, $3^q = \\frac{1}{27}$ and $2^{3x} = 64$ are all resolved by recognising powers of 3 or 2. No calculus, no surds in any answer (every value is an integer or a simple fraction), no quadratic inequalities. Calculator allowed throughout, as in Paper 2; (b)(ii) asks for the working so that a calculator trial of $x = 2$ earns only the answer mark.",
+    "originality_note": "Not a re-skin of GCE 2024 P2 Q4(b) (points $A(0,5)$, $B(3,135)$ give $k$ at once; find $p$ at $x = 4$), GCE 2025 P2 Q5(c) (a point with $x = 0$ given; exact $y$ at $x = 3$), GCE 2012 P1 Q5 or GCE 2016 P1 Q17 (both give a point with $x = 0$): here neither given point has $x = 0$, so the candidate must decide to divide the two equations to eliminate $k$ and then reject $a = -3$. Part (a)(ii) reverses the usual direction — the candidate finds the $x$ at which the value is a given fraction of another value, not $y$ at a given $x$ — with the hidden equation $3^{1-q} = 81$. Part (b) has no counterpart in the 2024/25 papers: an increasing exponential in base 4 and a decreasing exponential in base 2 are sketched on the same axes ([1] a curve, as SEAB prices a sketch), and finding their intersection needs the candidate to choose a common base before the index laws can combine the terms — the technique of GCE 2025 P2 Q5(a) ($2^{100} + 2^{100}$ as a single power) but in a new situation (two curves, an intersection), so the second half of the question demands a skill the first half does not. No table of values, no drawing on a grid, no tangent, no 'only one solution' explanation, no 'values of k' part — all of which are Q3's territory in this paper or the 2024/25 exemplars' — and no bacteria, investment or compound-interest context (GCE 2022 P1 Q25, 2017 P2 Q3, 2015 P1 Q10, 2025 P2 Q5(b))."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 4,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2023 P1 Q6",
+     "jaccard": 0.062
+    },
+    "marks": 11,
+    "checked_at": "2026-09-12T07:11:24.100Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)(i)": "a = 3, k = 5",
+     "(a)(ii)": "q = -3",
+     "(b)(i)": "Two exponential curves on the same axes, both entirely above the x-axis with the x-axis (y = 0) as asymptote. y = 3(4^x): increasing, rising steeply left-to-right, crossing the y-axis at (0, 3), approaching y = 0 as x -> -infinity. y = 192(2^-x): decreasing, falling steeply from the left, crossing the y-axis at (0, 192), approaching y = 0 as x -> +infinity. The two curves cross once, at P in the first quadrant (to the right of the y-axis, at (2, 48)).",
+     "(b)(ii)": "P = (2, 48)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)(i)",
+      "agree": true,
+      "note": "Both give a = 3, k = 5. Re-worked: 45 = ka^2, 405 = ka^4; neither point has x = 0, so divide: a^2 = 9, a = 3 (a > 0), k = 45/9 = 5; check 5 x 3^4 = 405. Correct."
+     },
+     {
+      "label": "(a)(ii)",
+      "agree": true,
+      "note": "Both give q = -3. Re-worked: y(1) = 15 = 81 x 5 x 3^q, so 3^q = 15/405 = 1/27 = 3^-3, q = -3; equivalently 3^(1-q) = 3^4. Correct."
+     },
+     {
+      "label": "(b)(i)",
+      "agree": true,
+      "note": "Same sketch from both: y = 3(4^x) increasing through (0, 3), y = 192(2^-x) decreasing through (0, 192), both entirely above the x-axis with y = 0 as asymptote, one crossing with x > 0. B1 per curve at [2] is SEAB's price for a sketch. The decreasing curve is y = 192(1/2)^x, so a = 1/2 is not a positive integer as the 4052 graph list words it, but GCE 2025 P2 Q5(c) already uses a = 1/6, so this is within what SEAB sets."
+     },
+     {
+      "label": "(b)(ii)",
+      "agree": true,
+      "note": "Both give P = (2, 48). Re-worked: 3(4^x) = 192(2^-x); 4^x = 2^(2x); multiply by 2^x: 3(2^(3x)) = 192, 2^(3x) = 64 = 2^6, x = 2; y = 3 x 16 = 48 and 192/4 = 48 agree. Only one crossing since 2^(3x) is increasing. Correct; the u = 2^x route (3u^2 = 192/u, u^3 = 64) also lands on x = 2."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and my own re-working confirms all four answers; the key stands.",
+    "score": 4,
+    "fixes": [
+     "House style only: SEAB writes a multiplied exponential as y = 3 x 4^x and y = 192 x 2^(-x) (GCE 2022 P1 Q25: N = m x 2^(3t)), not with brackets round the power, and a sketch demand as 'On the same axes, sketch the graphs of y = 3 x 4^x and y = 192 x 2^(-x), showing the coordinates of the points where the graphs cross the y-axis.' Make both edits in (b)."
+    ],
+    "too_close_to": null,
+    "why": "Round-1 fix confirmed applied: (b)(i) is now [2] (B1 a curve) and (b)(ii) is [4] with the curves in different bases, so the second half demands a base change plus the product law that the first half does not. Judged fresh: every part carries exactly one candidate decision followed by routine - (a)(i) neither point has x = 0, so the candidate must choose to divide the equations (a step up on GCE 2024 P2 Q4(b) and GCE 2025 P2 Q5(c), where k is read off), (a)(ii) reverses the direction with the hidden equation 3^(1-q) = 81, (b)(ii) needs 4^x written as 2^(2x) before 2^(3x) = 64 - and a strong candidate finishes in about 14 of the 16.5 minutes the marks buy, so the slot sits AT the 2024/25 standard. Part (a) uses the 'exponential from two points' fixture standard.md names as a 2024/25 feature but varies it (no x = 0 point, constants then an inverse read), and (b) has no counterpart in either paper, so it is not a re-skin. Both gates passed (novelty nearest GCE 2023 P1 Q6, Jaccard 0.063). The one remaining gap from a real question is notation and sketch wording."
+   },
+   "exemplars": [
+    {
+     "id": "6399e899-8387-4772-9ec9-f002ce7269df",
+     "ref": "GCE 2024 P2 Q4"
+    },
+    {
+     "id": "d24f5978-7a46-45e7-898f-d4fbe92dcb11",
+     "ref": "GCE 2023 P2 Q4"
+    },
+    {
+     "id": "94560f4b-a427-4b3c-bbff-c1516ce72ec0",
+     "ref": "GCE 2025 P2 Q5"
+    },
+    {
+     "id": "fcd01980-8713-45e7-968e-fb68eae226c0",
+     "ref": "GCE 2025 P1 Q26"
+    },
+    {
+     "id": "cc18bc30-7197-4cb9-bd57-e60e15415dc6",
+     "ref": "GCE 2021 P2 Q3"
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Circle Properties",
+   "target": 9,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram shows a circle, centre $O$, which touches the sides $AB$, $BC$ and $CA$ of triangle $ABC$ at $P$, $Q$ and $R$ respectively.\n$AB = 11$ cm, $BC = 20$ cm and $CA = 13$ cm.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the length of $BP$.",
+      "marks": 3,
+      "answer": "$BP = 9$ cm"
+     },
+     {
+      "label": "(b)",
+      "text": "Find the radius of the circle.",
+      "marks": 4,
+      "answer": "$3$ cm"
+     },
+     {
+      "label": "(c)",
+      "text": "Find angle $PRQ$.\nGive a reason for each step of your working.",
+      "marks": 2,
+      "answer": "Angle $PRQ = 71.6^\\circ$"
+     }
+    ],
+    "answer": "(a) $BP = 9$ cm; (b) radius $= 3$ cm; (c) angle $PRQ = 71.6^\\circ$",
+    "total_marks": 9,
+    "topics": [
+     "Circle Properties",
+     "Trigonometry"
+    ],
+    "needs_figure": true,
+    "figure_description": "A triangle $ABC$ with one circle inside it touching all three sides. Draw to scale from these coordinates, 1 unit = 1 cm, scaled so that $BC$ is about 10 cm on the page; the figure is wide and low (20 units across, 6.6 units high), so it needs much less height than width. $B = (0, 0)$ at the bottom left, $C = (20, 0)$ at the bottom right on the positive $x$-axis, $A = (8.80, 6.60)$ at the top. The angle at $A$ is OBTUSE ($112.6^\\circ$); the angles at $B$ and $C$ are acute ($36.9^\\circ$ and $30.5^\\circ$), so $A$ sits almost directly above the centre and only 0.6 units above the top of the circle. The circle has centre $O = (9.00, 3.00)$ and radius $3.00$; it touches $AB$ at $P = (7.20, 5.40)$, $BC$ at $Q = (9.00, 0.00)$ and $CA$ at $R = (10.52, 5.58)$ (each contact point is the foot of the perpendicular from $O$ to that side, so derive $P$, $Q$, $R$ from $O$ and the sides rather than from these rounded values). Note that $P$ is near the $A$ end of $AB$ ($BP = 9$ of the 11) and $R$ is near the $A$ end of $CA$ ($CR = 11$ of the 13). Only $O$ is marked with a small dot; $A$, $B$, $C$, $P$, $Q$ and $R$ get their letters but NO dots. Letter placement (in the same units): $A$ directly above $A$, at about $(8.8, 7.4)$; $B$ below-left of $B$, at about $(-0.7, -0.8)$; $C$ below-right of $C$, at about $(20.7, -0.8)$; $P$ outside the triangle, up-left of $P$ on the side of $AB$ away from the circle, at about $(6.4, 6.3)$; $R$ outside the triangle, up-right of $R$ on the side of $CA$ away from the circle, at about $(11.1, 6.5)$ — so the letters $P$, $A$, $R$ sit in a row about 2.5 units apart and none touches another or a line; $Q$ below $BC$, at about $(9, -0.9)$; $O$ inside the circle, just to the right of its dot. Print exactly three lengths, each outside the triangle and each placed away from the contact point on its side: '11 cm' beside $AB$ about a third of the way from $B$ to $A$, at about $(2.2, 2.9)$, far from $P$ which is near the $A$ end; '20 cm' below $BC$ centred at about $(15, -1.2)$, between $Q$ and $C$ and clear of the letter $Q$ at $x = 9$; '13 cm' beside $CA$ about a third of the way from $C$ to $A$, at about $(17.1, 2.9)$, far from $R$ which is near the $A$ end. Draw nothing else: no radii $OP$, $OQ$, $OR$, no lines from $O$ to the vertices, no right-angle marks, no angle arcs, no chord $PQ$, $QR$ or $RP$, and none of the values $BP$, the radius or angle $PRQ$.",
+    "solution": "(a) Tangents from an external point are equal in length, so $AP = AR$, $BP = BQ$ and $CQ = CR$.\nLet $BP = BQ = x$ cm. Then $AP = AR = (11 - x)$ cm and $CQ = CR = (20 - x)$ cm.\n$CA = AR + RC$, so $(11 - x) + (20 - x) = 13$\n$31 - 2x = 13$\n$x = 9$\n$BP = 9$ cm\n[B1 the equal-tangent property used to name at least two pairs of equal lengths; M1 an equation in one unknown (or the system $x + y = 11$, $y + z = 20$, $x + z = 13$ and its solution); A1 $9$ cm]\nSetter's check: $AP = AR = 2$, $BP = BQ = 9$, $CQ = CR = 11$; $2 + 9 = 11$, $9 + 11 = 20$, $11 + 2 = 13$. Tidy wrong answers: $5.5$ (taking $P$ as the midpoint of $AB$), $10$ (midpoint of $BC$), or $2$ and $11$ (the tangent length from the wrong vertex).\n\n(b) Route 1 (area decomposition).\nCosine rule in triangle $ABC$: $\\cos ABC = \\frac{11^2 + 20^2 - 13^2}{2 \\times 11 \\times 20} = \\frac{352}{440} = \\frac{4}{5}$, so angle $ABC = 36.87^\\circ$.\nArea of triangle $ABC = \\frac{1}{2} \\times 11 \\times 20 \\times \\sin 36.87^\\circ = 66.0$ cm$^2$ (exactly $66$, since $\\sin ABC = \\frac{3}{5}$).\nLet the radius be $r$ cm and join $O$ to $A$, $B$ and $C$. A tangent is perpendicular to the radius at the point of contact, so $OP$, $OQ$ and $OR$ are the heights of triangles $OAB$, $OBC$ and $OCA$, each equal to $r$.\nArea of $ABC = \\frac{1}{2}(11)r + \\frac{1}{2}(20)r + \\frac{1}{2}(13)r = 22r$\n$22r = 66$, so $r = 3$.\nRadius $= 3$ cm\nRoute 2 (half-angle at $B$).\nTriangles $OPB$ and $OQB$ are congruent (RHS: $OP = OQ$ radii, $OB$ common, right angles at $P$ and $Q$), so $OB$ bisects angle $ABC$ and angle $OBP = 18.43^\\circ$.\nIn right-angled triangle $OPB$: $r = BP \\tan 18.43^\\circ = 9 \\times \\frac{1}{3} = 3$ cm.\n(The same value comes from $C$: $\\cos ACB = \\frac{20^2 + 13^2 - 11^2}{2 \\times 20 \\times 13} = \\frac{56}{65}$, angle $ACB = 30.51^\\circ$, $r = 11 \\tan 15.26^\\circ = 11 \\times \\frac{3}{11} = 3$; or from $A$: $\\cos BAC = \\frac{11^2 + 13^2 - 20^2}{2 \\times 11 \\times 13} = -\\frac{110}{286} = -\\frac{5}{13}$, so angle $BAC = 112.62^\\circ$, OBTUSE, and $r = 2 \\tan 56.31^\\circ = 2 \\times \\frac{3}{2} = 3$. A candidate who drops the minus sign gets angle $BAC = 67.4^\\circ$; the area route still gives $66$ because $\\sin 67.4^\\circ = \\sin 112.6^\\circ$, but the half-angle route then gives $r = 2 \\tan 33.7^\\circ = 1.33$, which is the twist the obtuse vertex carries.)\n[M1 cosine rule for any angle of triangle $ABC$; A1 the angle ($36.9^\\circ$ at $B$, $30.5^\\circ$ at $C$ or $112.6^\\circ$ at $A$); M1 area $= 22r$ after $\\frac{1}{2}ab\\sin C$, or $r = $ (tangent length) $\\times \\tan$(half the vertex angle) with the bisector justified; A1 $3$ cm]\nSetter's check: with $B = (0, 0)$, $C = (20, 0)$, $A = (8.8, 6.6)$ the centre is $(9, 3)$: its distance to $BC$ is $3$, to $AB$ ($3x - 4y = 0$) is $\\frac{|27 - 12|}{5} = 3$, to $CA$ ($33x + 56y - 660 = 0$) is $\\frac{|297 + 168 - 660|}{65} = \\frac{195}{65} = 3$. Tidy wrong answer: $r = BP \\tan 36.9^\\circ = 6.75$ (forgetting that $OB$ bisects the angle) means a circle of diameter $13.5$ cm inside a triangle only $6.6$ cm high, so a candidate who checks will reject it.\n\n(c) Angle $ABC = 36.87^\\circ$ (from (b); otherwise by the cosine rule, $\\cos ABC = \\frac{4}{5}$).\nAngle $OPB = $ angle $OQB = 90^\\circ$ (tangent perpendicular to radius).\nIn quadrilateral $OPBQ$: angle $POQ = 360^\\circ - 90^\\circ - 90^\\circ - 36.87^\\circ = 143.13^\\circ$ (angle sum of a quadrilateral).\nAngle $PRQ = \\frac{1}{2} \\times 143.13^\\circ = 71.6^\\circ$ (angle at the centre is twice the angle at the circumference, both standing on arc $PQ$).\n[M1 angle $POQ = 180^\\circ - $ angle $ABC$ with the two reasons (tangent perpendicular to radius; angle sum of a quadrilateral); A1 $71.6^\\circ$ with the angle-at-centre reason]\nSetter's check: from the coordinates $P = (7.2, 5.4)$, $Q = (9, 0)$, $R = (10.52, 5.58)$, $\\cos PRQ = 0.3162$ (exactly $\\frac{1}{\\sqrt{10}}$, so $\\tan PRQ = 3$), giving $71.6^\\circ$. The minor arc $PQ$ is $143.1^\\circ$ and the arcs $QR$ and $RP$ are $149.5^\\circ$ and $67.4^\\circ$ (each less than $180^\\circ$), so $R$ lies on the major arc $PQ$ and the theorem applies as used. A candidate who rounds angle $ABC$ to $36.9^\\circ$ first gets $\\frac{143.1}{2} = 71.55^\\circ$; accept $71.6^\\circ$ (allow $71.5^\\circ$ from that premature rounding). A candidate who uses the alternate segment theorem (angle $PRQ = $ angle $BPQ = \\frac{180 - 36.87}{2} = 71.6^\\circ$, triangle $BPQ$ isosceles) is correct; the theorem is outside 4052 but not penalised. Tidy wrong answers: $18.4^\\circ$ (halving angle $ABC$ instead of angle $POQ$) or $143.1^\\circ$ (not halving).",
+    "syllabus_check": "4052 only. Circle properties (symmetry): tangents from an external point are equal in length; a tangent is perpendicular to the radius at the point of contact. Circle properties (angle): the angle at the centre is twice the angle at the circumference on the same arc; angle sum of a quadrilateral. Trigonometry: cosine rule for an angle, including the obtuse angle at $A$ ($\\cos BAC = -\\frac{5}{13}$) if the candidate works from that vertex (sine, cosine and tangent for acute and obtuse angles are in 4052), area of a triangle as $\\frac{1}{2}ab\\sin C$, tangent ratio in a right-angled triangle. Congruent triangles (RHS) only if the candidate justifies that $OB$ bisects angle $ABC$. Nothing outside the syllabus is required: no alternate segment theorem, no Heron's formula, no half-angle identity (the half angle is obtained by halving a found angle). Precision: (a) and (b) exact; (c) to 1 decimal place, the rubric default, so no instruction is printed. 9 marks, about 13.5 minutes.",
+    "originality_note": "New configuration for the GCE corpus: one circle touching all three sides of a triangle whose side lengths are given. A search of the corpus for touching or inscribed circles finds only two cylinders in a box (GCE 2009 P2 Q9). The corpus's tangent questions give angles at tangents from an external point (2012 P1 Q15, 2013 P2 Q7, 2015 P2 Q5, 2025 P1 Q16) or a tangent meeting a line through the centre (2023 P2 Q5, 2025 P1 Q16); none uses the equal-tangent property to produce a hidden system of three unknowns, and none asks for the radius of a circle from the sides of the triangle around it. Not a re-skin of the exemplars or of any 2024/25 question: no two circles (2023 specimen P2 Q5, 2022 P2 Q6), no equal chords or midpoint congruence (2024 P2 Q8), no 'explain why not a tangent' (2024 P1 Q13), no angle in terms of $x$ (2023 specimen P1 Q20), no radian angles or sine rule (2025 P2 Q6). The decisions tested: (a) introduce a tangent length as the unknown, the equation being hidden; (b) choose a route to the radius, area $= \\frac{1}{2} r \\times$ perimeter after $\\frac{1}{2}ab\\sin C$ or the bisector and a half-angle in a right-angled triangle, with no intermediate answer supplied, matching the 'candidate chooses the decomposition' demand of 2024 P2 Q8(b); (c) choose the centre angle and the arc. Wrong decisions give tidy answers ($BP = 5.5$ or $10$; $r = 6.75$; $18.4^\\circ$). The triangle is $11$, $20$, $13$ — Heronian but deliberately NOT the textbook incircle example ($13$, $14$, $15$ with area $84$ and $r = 4$, which many students have memorised): its cosines are exact ($\\frac{4}{5}$ at $B$, $\\frac{56}{65}$ at $C$, $-\\frac{5}{13}$ at the obtuse $A$), the area is $66$ and the radius $3$, so every answer is clean whichever vertex the candidate works from, and the obtuse angle at $A$ is a twist met only by a candidate who chooses that vertex. Nothing in the paper so far (algebraic fractions, a percentage chain, a drawn graph, coordinate geometry with a right angle) shares this context or skill."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 5,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2021 P2 Q6",
+     "jaccard": 0.13
+    },
+    "marks": 9,
+    "checked_at": "2026-09-12T07:03:43.864Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "BP = 9 cm",
+     "(b)": "r = 3 cm",
+     "(c)": "angle PRQ = 71.6° (71.565°). Reasons: OP ⊥ AB and OQ ⊥ BC (tangent ⊥ radius at point of contact), so in quadrilateral OPBQ, angle POQ = 360° − 90° − 90° − angle PBQ = 180° − 36.87° = 143.13° (angle sum of a quadrilateral), where angle ABC = 36.87° by the cosine rule; then angle PRQ = ½ × angle POQ = 71.6° (angle at centre = 2 × angle at circumference, both standing on chord PQ, with R on the major arc)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give BP = 9 cm. Re-derived: tangent lengths x (from A), y (from B), z (from C) satisfy x+y=11, y+z=20, z+x=13, so x+y+z=22 and y = 22-13 = 9 (x = 2, z = 11). The setter's one-unknown equation (11-x)+(20-x)=13 is the same system."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give 3 cm. Re-derived two ways: cos ABC = 352/440 = 4/5, sin ABC = 3/5, area = (1/2)(11)(20)(3/5) = 66 exactly, and area = (1/2)r(11+20+13) = 22r gives r = 3; half-angle route tan(B/2) = sinB/(1+cosB) = (3/5)/(9/5) = 1/3, r = 9 x 1/3 = 3. Coordinate check: with B(0,0), C(20,0), A(8.8,6.6) the point (9,3) is exactly 3 from all three sides. The obtuse angle at A (cos BAC = -5/13, 112.6 deg) only bites a candidate who bisects at A and drops the sign (r = 1.33); the routes from B and C and the area route are unaffected."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give 71.6 deg by the same chain: OP perpendicular to AB and OQ perpendicular to BC (tangent perpendicular to radius), angle POQ = 360 - 90 - 90 - 36.87 = 143.13 deg (angle sum of quadrilateral OPBQ), angle PRQ = 71.57 deg (angle at centre = twice angle at circumference on arc PQ). Verified from the contact points P(7.2,5.4), Q(9,0), R(10.523,5.585): angle PRQ = 71.565 deg. The three arcs PQ, QR, RP are 143.1, 149.5 and 67.4 deg (each under 180), so R is on the major arc PQ and the theorem applies as used. Carrying the rounded 36.9 gives 71.55, so 71.5 should also be accepted, as the setter notes."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement anywhere; setter and blind examiner match on all three parts and every value re-derives independently (BP = 9, r = 3, angle PRQ = 71.6 deg) with the round-1 fix (11-20-13 in place of the textbook 13-14-15) applied exactly as named.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "AT the 2024/25 standard: each part makes the candidate supply exactly one idea with no cue in the stem (the equal-tangent system with no 'form an equation'; the three-triangle area decomposition or the bisector-plus-right-triangle after a routine cosine rule, with the obtuse vertex as the sign twist; the OPBQ quadrilateral chained into angle at centre, two facts for [2] as GCE 2024 P1 Q13(a) and GCE 2025 P1 Q16(b)), the rest is routine finishable in about 13 minutes, the numbers are examination-clean (cosines 4/5, 56/65, -5/13; area 66; r = 3) and no longer memorised, and the figure prints only 11 cm, 20 cm, 13 cm with no radii, right angles or chords drawn. Not a re-skin of any 2024/25 P2 question (GCE 2024 P2 Q8 is chord congruence plus two intersecting circles; GCE 2025 P2 Q6 is a radian quadrilateral); gates pass (nearest GCE 2021 P2 Q6, Jaccard 0.13)."
+   },
+   "exemplars": [
+    {
+     "id": "a9e6865e-701c-42d8-bc1a-5389402f77eb",
+     "ref": "GCE 2023 specimen P2 Q5"
+    },
+    {
+     "id": "20345f91-46c3-4357-87da-d90b830bb060",
+     "ref": "GCE 2024 P2 Q8"
+    },
+    {
+     "id": "9754f1ff-ccbc-4001-9208-38b9b5e75b86",
+     "ref": "GCE 2025 P1 Q16"
+    },
+    {
+     "id": "b7eb639e-49a4-4868-9de3-6ab2cb96f68d",
+     "ref": "GCE 2024 P1 Q13"
+    },
+    {
+     "id": "2e22e4f7-084e-4617-8a86-1e5d40e25537",
+     "ref": "GCE 2023 specimen P1 Q20"
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Coordinate Geometry",
+   "target": 11,
+   "accepted": true,
+   "question": {
+    "stem": "$A$ is the point $(-2, 3)$ and $B$ is the point $(2, 1)$. The point $C$ lies on the line $y = 9$ and angle $ABC = 90^\\circ$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the coordinates of $C$.",
+      "marks": 3,
+      "answer": "$C$ is the point $(6, 9)$"
+     },
+     {
+      "label": "(b)",
+      "text": "The perpendicular from $B$ to $AC$ meets $AC$ at $N$. Find the length of $BN$.",
+      "marks": 3,
+      "answer": "$BN = 4$ units"
+     },
+     {
+      "label": "(c)",
+      "text": "The line $CB$ is produced beyond $B$ to meet the $y$-axis at $D$. Find $\\frac{\\text{area of triangle } ABD}{\\text{area of triangle } ACD}$.",
+      "marks": 5,
+      "answer": "$\\frac{1}{3}$ (accept $0.333$)"
+     }
+    ],
+    "answer": "(a) $(6, 9)$; (b) $BN = 4$; (c) $\\frac{1}{3}$",
+    "total_marks": 11,
+    "topics": [
+     "Coordinate Geometry",
+     "Vectors",
+     "Pythagoras' Theorem"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Let $C$ be the point $(x, 9)$.\n$AB^2 = (2 - (-2))^2 + (1 - 3)^2 = 16 + 4 = 20$\n$BC^2 = (x - 2)^2 + (9 - 1)^2 = (x - 2)^2 + 64$\n$AC^2 = (x - (-2))^2 + (9 - 3)^2 = (x + 2)^2 + 36$\nAngle $ABC = 90^\\circ$, so by Pythagoras' theorem $AC^2 = AB^2 + BC^2$:\n$(x + 2)^2 + 36 = 20 + (x - 2)^2 + 64$\n$x^2 + 4x + 40 = x^2 - 4x + 88$\n$8x = 48$, so $x = 6$.\n$C$ is the point $(6, 9)$.\nCheck: $BC^2 = 16 + 64 = 80$, $AC^2 = 64 + 36 = 100$ and $20 + 80 = 100$.\n[Alternative, accepted: gradient of $AB = \\frac{1 - 3}{2 - (-2)} = -\\frac{1}{2}$, so the line through $B$ perpendicular to $AB$ has gradient $2$, i.e. $y = 2x - 3$; $y = 9$ gives $x = 6$.]\nThe wrong reading \"$BC$ is vertical\" gives the tidy but wrong point $(2, 9)$; it earns nothing, since then $AC^2 = 16 + 36 = 52$ while $AB^2 + BC^2 = 20 + 64 = 84$.\nM1 for the lengths $AB^2$, $BC^2$, $AC^2$ (at least two of them) in terms of $x$ (or the gradient of $AB$); M1 for $AC^2 = AB^2 + BC^2$ set up so that the $x^2$ terms cancel (or the perpendicular line through $B$); A1 for $(6, 9)$.\n\n(b) Write the area of triangle $ABC$ in two ways.\nWith the right angle at $B$: area $= \\frac{1}{2} \\times AB \\times BC = \\frac{1}{2} \\times \\sqrt{20} \\times \\sqrt{80} = \\frac{1}{2} \\times \\sqrt{1600} = \\frac{1}{2} \\times 40 = 20$ units$^2$.\n[Or enclose the triangle in the $8$ by $8$ rectangle bounded by $x = -2$, $x = 6$, $y = 1$ and $y = 9$: $64 - \\frac{1}{2}(4)(2) - \\frac{1}{2}(4)(8) - \\frac{1}{2}(6)(8) = 64 - 4 - 16 - 24 = 20$.]\nWith $AC$ as the base and $BN$ as the height: $AC = \\sqrt{(6 - (-2))^2 + (9 - 3)^2} = \\sqrt{64 + 36} = 10$, so area $= \\frac{1}{2} \\times 10 \\times BN = 5 \\times BN$.\n$5 \\times BN = 20$, so $BN = 4$ units.\nCheck: $N$ is the point $(-0.4, 4.2)$, so $BN^2 = 2.4^2 + 3.2^2 = 5.76 + 10.24 = 16$; also $AN = 2$, $NC = 8$ and $AN \\times NC = 16 = BN^2$.\n[Alternative, accepted: triangles $ABN$ and $ACB$ are similar (a right angle each and the common angle at $A$), so $\\frac{BN}{CB} = \\frac{AB}{AC}$ and $BN = \\frac{\\sqrt{20} \\times \\sqrt{80}}{10} = \\frac{40}{10} = 4$. Or $\\sin(\\text{angle } BAC) = \\frac{BC}{AC} = \\frac{\\sqrt{80}}{10}$ and $BN = AB \\sin(\\text{angle } BAC) = \\sqrt{20} \\times \\frac{\\sqrt{80}}{10} = 4$.]\nA bare \"$BN = 9 - 1 = 8$\" (the distance from $B$ up to the line $y = 9$) or \"$BN = 3 - 1 = 2$\" (the distance from $B$ up to the level of $A$) is not the perpendicular to $AC$ and earns no marks.\nM1 for the area of triangle $ABC = 20$ by any valid method; M1 for $AC = 10$ and $\\frac{1}{2} \\times AC \\times BN$ equated to that area (or the similar-triangles ratio, or $AB \\sin(\\text{angle } BAC)$); A1 for $BN = 4$.\n\n(c) First locate $D$.\nGradient of $CB = \\frac{1 - 9}{2 - 6} = \\frac{-8}{-4} = 2$\nEquation of the line $CB$: $y = 2x + c$. Through $B(2, 1)$: $1 = 4 + c$, so $c = -3$ and the line is $y = 2x - 3$.\nOn the $y$-axis, $x = 0$: $y = -3$.\n$D$ is the point $(0, -3)$. ($C(6, 9)$, $B(2, 1)$, $D(0, -3)$ lie on the line in that order, so $D$ is on $CB$ produced beyond $B$, as the question says.)\n[By vectors: $\\overrightarrow{CB} = \\begin{pmatrix} -4 \\\\ -8 \\end{pmatrix}$. With $D = (0, d)$, $\\overrightarrow{CD} = \\begin{pmatrix} -6 \\\\ d - 9 \\end{pmatrix} = k\\begin{pmatrix} -4 \\\\ -8 \\end{pmatrix}$; the first row gives $k = \\frac{3}{2}$ and the second gives $d = 9 - 12 = -3$.]\nNow the ratio. $C$, $B$ and $D$ lie on one straight line, so triangles $ABD$ and $ACD$ have their bases $BD$ and $CD$ on the same line and share the height from $A$ to that line (which is $AB$ itself, because angle $ABC = 90^\\circ$).\nHence $\\frac{\\text{area of triangle } ABD}{\\text{area of triangle } ACD} = \\frac{BD}{CD}$.\n$\\overrightarrow{BD} = \\begin{pmatrix} 0 - 2 \\\\ -3 - 1 \\end{pmatrix} = \\begin{pmatrix} -2 \\\\ -4 \\end{pmatrix}$ and $\\overrightarrow{CD} = \\begin{pmatrix} 0 - 6 \\\\ -3 - 9 \\end{pmatrix} = \\begin{pmatrix} -6 \\\\ -12 \\end{pmatrix}$, so $\\overrightarrow{BD} = \\frac{1}{3}\\overrightarrow{CD}$ and $BD : CD = 1 : 3$ (the horizontal steps alone give $2 : 6 = 1 : 3$).\n(Equivalently $BD = \\sqrt{2^2 + 4^2} = \\sqrt{20}$, $CD = \\sqrt{6^2 + 12^2} = \\sqrt{180}$ and $\\sqrt{\\frac{20}{180}} = \\frac{1}{3}$.)\n$\\frac{\\text{area of triangle } ABD}{\\text{area of triangle } ACD} = \\frac{1}{3}$ ($= 0.333$ to 3 s.f.)\n[Alternative, accepted: angle $ABD = 90^\\circ$ since $D$ lies on $CB$ produced, so area of triangle $ABD = \\frac{1}{2} \\times \\sqrt{20} \\times \\sqrt{20} = 10$; with $AB$ as the height on base $CD$, area of triangle $ACD = \\frac{1}{2} \\times \\sqrt{20} \\times \\sqrt{180} = \\frac{1}{2}\\sqrt{3600} = 30$; the ratio is $\\frac{10}{30} = \\frac{1}{3}$. The enclosing-rectangle method gives the same $10$ ($24 - 6 - 4 - 4$) and $30$ ($96 - 6 - 36 - 24$).]\nA wrong choice of bases such as $\\frac{AB}{AC} = \\frac{\\sqrt{20}}{10} = 0.447$ or $\\frac{BD}{CB} = \\frac{\\sqrt{20}}{\\sqrt{80}} = \\frac{1}{2}$ looks tidy and earns only the marks for $D$.\nM1 for the gradient of $CB$ (or $\\overrightarrow{CB}$); M1 for the equation of $CB$ (or the scalar-multiple equation) with $x = 0$; A1 for $D = (0, -3)$; M1 for the common-height argument giving $\\frac{BD}{CD}$ (or both areas found by a valid method); A1 for $\\frac{1}{3}$.",
+    "syllabus_check": "4052 only. Coordinate geometry: length of a line segment from its end points, gradient from two points, the equation of a straight line in the form y = mx + c, where a line meets an axis. Pythagoras' theorem with an unknown coordinate (part (a): AC^2 = AB^2 + BC^2 reduces to a linear equation because the x^2 terms cancel; the perpendicular-gradient rule is not in 4052 and is not needed, though a candidate who uses it is credited). Part (b) is the area of a triangle as half x base x height written two ways and equated, the hidden-equation move; no perpendicular-distance formula and no perpendicular gradients are needed (similar triangles or AB sin A are accepted routes). Part (c): a line produced to the y-axis, then the vectors-strand result that triangles with a common vertex and bases on one straight line have areas in the ratio of their bases; column vectors and a scalar multiple are one route to D and to 1 : 3. No midpoint formula, no shoelace formula; the only surds are sqrt(20) x sqrt(80) = 40, sqrt(20) x sqrt(20) = 20 and sqrt(20) x sqrt(180) = 60, which a calculator returns exactly (decimals to 3 s.f. give the same values). The angle is in degrees with the degree sign; every answer is exact.",
+    "originality_note": "A new configuration and a new sequence of demands, renumbered after the second moderation so that no wrong reading lands on a right answer. GCE 2024 P2 Q3 is three unrelated 3-mark items (two lines meeting at (-4, p) with an unknown k; a line from a point and a column vector; AB = 25 giving a < 0). GCE 2025 P2 Q8 is a trapezium between y = 2x + 1 and x = p whose area gives a quadratic in p, then a length, then a parallel line through a point on an axis in ax + by = c form. GCE 2022 P2 Q8 and the 2023 specimen Q6 take a length, a point from a column vector, the equation of a line, and then an a, b triangle with midpoints. None of them fixes a vertex by a right-angle condition on a horizontal line, asks for the foot of a perpendicular through two expressions for one area, or produces a side to an axis for a ratio of areas. Here every equation is formed by the candidate: (a) angle ABC = 90 degrees with C on y = 9 forces AC^2 = AB^2 + BC^2 in one unknown whose x^2 terms cancel, and the wrong reading (BC vertical, C = (2, 9)) is equally tidy; (b) BN is reachable only by deciding to equate half x AB x BC with half x AC x BN (AC = 10, BN = 4), the move of GCE 2025 P1 Q20(b) - and with these numbers the vertical gap from B up to the line y = 9 is 8 and the gap up to the level of A is 2, so a bare distance read off the coordinates is tidy but wrong and cannot be mistaken for the method; (c) is unscaffolded: D = (0, -3) must be located from the line CB (the prose says the line is produced beyond B, so no sketch is needed and needs_figure stays false), and the ratio needs the idea that ABD and ACD share the height AB on the common line CBD, so the ratio is BD : CD = 1 : 3, the shape of GCE 2025 P2 Q6(a)(ii) [5]; the tidy wrong ratios AB/AC = 0.447 and BD/CB = 1/2 are both distinguishable from 1/3. Numbers were chosen so that AB^2 = 20, BC^2 = 80, AC = 10, AB x BC = 40, AB x BD = 20 and AB x CD = 60 are all exact."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 6,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2023 P1 Q10",
+     "jaccard": 0.082
+    },
+    "marks": 11,
+    "checked_at": "2026-09-12T07:20:06.607Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "C = (6, 9)",
+     "(b)": "BN = 4 units",
+     "(c)": "area of triangle ABD : area of triangle ACD = 1/3  (i.e. 10 : 30)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give C = (6, 9). Re-worked: AB^2 = 16 + 4 = 20, BC^2 = (x - 2)^2 + 64, AC^2 = (x + 2)^2 + 36; angle ABC = 90 degrees gives AC^2 = AB^2 + BC^2, the x^2 terms cancel, 8x = 48, x = 6. Independent check by dot product: AB.BC = 4(6 - 2) + (-2)(8) = 16 - 16 = 0. The perpendicular-gradient route (gradient of AB = -1/2, so y = 2x - 3, x = 6 at y = 9) gives the same and is rightly only an accepted alternative. The wrong readings all land on tidy wrong points: BC vertical gives (2, 9); a sign slip in the perpendicular gradient gives (18, 9) or (-2, 9). Correct."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give BN = 4. Re-worked: area ABC = 1/2 x sqrt20 x sqrt80 = 1/2 x 40 = 20 (enclosing 8 by 8 rectangle: 64 - 4 - 16 - 24 = 20 agrees); AC = sqrt(64 + 36) = 10; 1/2 x 10 x BN = 20, BN = 4. Independent check: AN = projection of AB on AC = (4 x 0.8) + (-2 x 0.6) = 2, so N = (-0.4, 4.2), BN^2 = 2.4^2 + 3.2^2 = 16, and AN x NC = 2 x 8 = 16 = BN^2. The round-2 coincidence is gone: the vertical gap from B to y = 9 is now 8, to the level of A is 2, the midpoint mis-reading (N = (2, 6), which is also where the vertical through B meets AC) gives BN = 5, and a horizontal line from B to AC gives 20/3; the only other 4 in the figure is the horizontal step from B to A, which is not a perpendicular to anything and not a natural reading. Correct."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give 1/3. Re-worked: gradient of CB = (1 - 9)/(2 - 6) = 2, line y = 2x - 3, D = (0, -3); C(6, 9), B(2, 1), D(0, -3) sit on the line in that order (CB = (-4, -8), BD = (-2, -4) = 1/2 CB), so D is on CB produced beyond B as the stem says. Shoelace: area ABD = 1/2 |(-2)(1 + 3) + 2(-3 - 3) + 0| = 10, area ACD = 1/2 |(-2)(9 + 3) + 6(-3 - 3) + 0| = 30, ratio 10/30 = 1/3, matching BD : CD = sqrt20 : sqrt180 = 1 : 3. The tidy wrong ratios BD/CB = 1/2 and AB/AC = 0.447 are correctly named as earning only the D marks. Correct."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and my own re-working (dot product, projection of AB on AC, shoelace) confirms C = (6, 9), BN = 4 and 1/3; the key stands.",
+    "score": 5,
+    "fixes": [],
+    "too_close_to": null,
+    "why": "Round-2 fix confirmed applied (A(-2, 3), B(2, 1), C on y = 9, D on the y-axis) and judged fresh: each part hands the candidate exactly one decision with nothing named in the stem - (a) how to use the right angle with an unknown coordinate (Pythagoras, the x^2 terms cancelling), (b) how to reach a perpendicular length with no foot given (area written two ways, or similar triangles, or AB sin A), (c) locating D unprompted and then seeing AB as the common height on the line CBD - and every wrong decision lands on a tidy wrong number ((2, 9); 8, 2 or 5; 1/2 or 0.447), so the slot sits AT the 2024/25 standard, comparable in weight to GCE 2024 P2 Q3(c) [3] and GCE 2025 P2 Q8(b) [4], with a strong candidate needing about 13 of the 16.5 minutes the 11 marks buy. Register (SEAB's 'A is the point', 'produced', the area fraction), mark discipline (M1 M1 A1 / M1 M1 A1 / M1 M1 A1 M1 A1) and syllabus scope (4052, no perpendicular-gradient condition required) are right; no 2024/2025 P2 question fixes a vertex by a right angle on a horizontal line, asks a perpendicular length through two areas, or produces a side to an axis for an area ratio, and both gates pass (novelty nearest GCE 2023 P1 Q10, Jaccard 0.082)."
+   },
+   "exemplars": [
+    {
+     "id": "60c9168d-07c4-454c-b444-2f455bd75a36",
+     "ref": "GCE 2025 P2 Q8"
+    },
+    {
+     "id": "390b6a03-4a6b-44ac-a58a-eaf498a8e642",
+     "ref": "GCE 2023 specimen P2 Q6"
+    },
+    {
+     "id": "5627d27e-a8b8-4811-bf89-083d70fa265f",
+     "ref": "GCE 2024 P2 Q3"
+    },
+    {
+     "id": "2e397b9b-e15d-429d-b5e6-fc7eb757ce00",
+     "ref": "GCE 2023 specimen P1 Q14"
+    },
+    {
+     "id": "f8b0c2ea-6533-4dc7-9565-9485173e62d1",
+     "ref": "GCE 2022 P2 Q8"
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Statistics",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "A café delivers meals from two branches, A and B. The café refunds the cost of any delivery that takes more than 40 minutes.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "In one week, 60 meals were delivered from branch A. The table shows the cumulative frequency of the delivery times, $t$ minutes, for these 60 deliveries. All of these deliveries took more than 10 minutes.\n$\\begin{array}{|c|c|c|c|c|c|} \\hline \\text{Delivery time } (t \\text{ minutes}) & t \\le 20 & t \\le 30 & t \\le 40 & t \\le 50 & t \\le 60 \\\\ \\hline \\text{Cumulative frequency} & 6 & 26 & 51 & 58 & 60 \\\\ \\hline \\end{array}$",
+      "marks": 4,
+      "answer": "(i) 31.5 minutes  (ii) 9.28 minutes  (iii) 90% of 60 is 54 deliveries; the table shows 51 deliveries within 40 minutes and 58 within 50 minutes, so the number within 45 minutes is not known (anywhere from 51 to 58) and the claim cannot be checked.",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "Calculate an estimate of the mean delivery time from branch A.",
+        "marks": 2,
+        "answer": "$31.5$ minutes"
+       },
+       {
+        "label": "(ii)",
+        "text": "Calculate an estimate of the standard deviation of the delivery times from branch A.",
+        "marks": 1,
+        "answer": "$9.28$ minutes"
+       },
+       {
+        "label": "(iii)",
+        "text": "The café advertises that 90% of its deliveries arrive within 45 minutes. Explain why the table cannot be used to decide whether this is true for branch A.",
+        "marks": 1,
+        "answer": "90% of 60 $= 54$ deliveries. The table gives 51 deliveries within 40 minutes and 58 within 50 minutes, so the number of deliveries within 45 minutes could be anything from 51 to 58; whether it reaches 54 cannot be decided from the table."
+       }
+      ]
+     },
+     {
+      "label": "(b)",
+      "text": "In the same week, 60 meals were delivered from branch B. The table shows some information about these delivery times, in minutes.\n$\\begin{array}{|c|c|c|c|c|} \\hline \\text{Minimum} & \\text{Lower quartile} & \\text{Median} & \\text{Upper quartile} & \\text{Maximum} \\\\ \\hline 12 & 20 & 26 & 42 & 58 \\\\ \\hline \\end{array}$\nThe mean delivery time from branch B is 29.6 minutes. Devi says that, because this mean is smaller than the mean delivery time from branch A, fewer deliveries from branch B were refunded than from branch A. Explain why Devi is wrong.",
+      "marks": 2,
+      "answer": "Branch A: $60 - 51 = 9$ deliveries took more than 40 minutes, so 9 were refunded. Branch B: the upper quartile is 42 minutes, so at least $\\frac{1}{4} \\times 60 = 15$ deliveries took 42 minutes or more, all of which took more than 40 minutes and were refunded. At least 15 is more than 9, so branch B refunded more deliveries; a smaller mean does not show how many long deliveries there were."
+     },
+     {
+      "label": "(c)",
+      "text": "Two of the 60 deliveries from branch A are chosen at random. Find the probability that both of these deliveries were refunded.",
+      "marks": 2,
+      "answer": "$\\frac{6}{295}$"
+     }
+    ],
+    "answer": "(a)(i) 31.5 minutes  (a)(ii) 9.28 minutes  (a)(iii) 90% of 60 = 54; the table gives 51 within 40 min and 58 within 50 min, so the count within 45 min is unknown  (b)(i) A refunded 9; B's upper quartile 42 > 40 means at least 15 refunded, so B refunded more  (b)(ii) $\\frac{9}{60} \\times \\frac{8}{59} = \\frac{6}{295}$",
+    "total_marks": 8,
+    "topics": [
+     "Statistics",
+     "Probability"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a)(i) The table is cumulative, so the class frequencies must be recovered first. Since every delivery took more than 10 minutes, the classes are $10 < t \\le 20$, $20 < t \\le 30$, $30 < t \\le 40$, $40 < t \\le 50$, $50 < t \\le 60$ with frequencies\n$6, \\; 26 - 6 = 20, \\; 51 - 26 = 25, \\; 58 - 51 = 7, \\; 60 - 58 = 2$ (total 60).\nMid-values $x$: $15, 25, 35, 45, 55$.\n$\\sum fx = 6(15) + 20(25) + 25(35) + 7(45) + 2(55) = 90 + 500 + 875 + 315 + 110 = 1890$.\nEstimated mean $= \\frac{1890}{60} = 31.5$ minutes.\nMarks: M1 for the frequencies $6, 20, 25, 7, 2$ (or $\\sum fx = 1890$ seen); A1 for $31.5$. Setter's check on the trap: using the cumulative frequencies as if they were frequencies gives $\\frac{6(15) + 26(25) + 51(35) + 58(45) + 60(55)}{201} = \\frac{8435}{201} = 42.0$, a plausible-looking wrong answer; dividing that numerator by 60 gives 140.6, which exceeds the largest possible time.\n\n(a)(ii) $\\sum fx^2 = 6(15^2) + 20(25^2) + 25(35^2) + 7(45^2) + 2(55^2) = 1350 + 12500 + 30625 + 14175 + 6050 = 64700$.\nStandard deviation $= \\sqrt{\\frac{64700}{60} - 31.5^2} = \\sqrt{1078.33\\ldots - 992.25} = \\sqrt{86.083\\ldots} = 9.2781\\ldots = 9.28$ minutes (3 s.f.).\nCheck by deviations: $\\sum f(x - 31.5)^2 = 6(272.25) + 20(42.25) + 25(12.25) + 7(182.25) + 2(552.25) = 5165$, and $\\sqrt{5165 \\div 60} = 9.28$.\nMarks: B1 for $9.28$ (follow-through from wrong frequencies in (i) allowed if the method is correct).\n\n(a)(iii) 90% of 60 $= 54$ deliveries. The table shows 51 deliveries within 40 minutes and 58 within 50 minutes, so the number within 45 minutes is somewhere from 51 to 58. It may or may not be 54 or more, so the claim cannot be confirmed or rejected from the table. (The 54th delivery lies inside the class $40 < t \\le 50$ and the table gives no information about where inside a class the times lie.)\nMarks: B1 for a statement that identifies 54 (or 90% of 60) and that 45 minutes lies inside a class whose split is unknown (51 within 40 minutes, 58 within 50 minutes). A generic \"the data is grouped\" without these figures earns nothing.\n\n(b) Devi's premise is true ($29.6 < 31.5$, from (a)(i)) but does not decide the question: the mean is an average of all the times and says nothing about how many individual deliveries were long.\nBranch A: the number of deliveries taking more than 40 minutes is $60 - 51 = 9$, so branch A refunded 9 deliveries. (This is exact, because 40 minutes is a class boundary.)\nBranch B: the upper quartile is 42 minutes, so one quarter of the 60 deliveries, that is $\\frac{1}{4} \\times 60 = 15$ deliveries, took 42 minutes or more. Every one of these took more than 40 minutes, so branch B refunded at least 15 deliveries (possibly more, since some deliveries between 40 and 42 minutes may also exist).\nAt least 15 is more than 9, so branch B refunded more deliveries than branch A, not fewer.\nMarks: B1 for 9 refunds at branch A; B1 for \"at least 15\" at branch B from the upper quartile (the quartile must be the reason, not the maximum of 58 alone).\n\n(c) The refunded deliveries from branch A are those with $t > 40$: $60 - 51 = 9$ of the 60 (found in (b), or read afresh from the table). The two deliveries are chosen from the 60 without replacement, so\n$\\text{P(both refunded)} = \\frac{9}{60} \\times \\frac{8}{59} = \\frac{72}{3540} = \\frac{6}{295} = 0.0203$ (3 s.f.).\nMarks: M1 for $\\frac{9}{60} \\times \\frac{8}{59}$ (the 9 must come from $60 - 51$ and the second factor must be $\\frac{8}{59}$); A1 for $\\frac{6}{295}$ or $0.0203$. Setter's check on the traps: treating the draws as with replacement gives $\\left(\\frac{9}{60}\\right)^2 = \\frac{9}{400} = 0.0225$, tidy but wrong; using the 51 deliveries that were NOT refunded gives $\\frac{51}{60} \\times \\frac{50}{59} = \\frac{85}{118}$.\n\nSetter's data check for branch B: the summary statistics given are those of an actual set of 60 times (for example $12, 13, 14, 15, 15, 16, 16, 17, 17, 18, 18, 19, 19, 19, 20, 20, 21, 21, 22, 22, 23, 23, 23, 24, 24, 24, 25, 25, 25, 26, 26, 27, 28, 29, 30, 31, 32, 33, 34, 36, 38, 39, 40, 41, 42, 42, 42, 42, 42, 43, 43, 44, 44, 45, 45, 46, 46, 46, 46, 58$): minimum 12, lower quartile 20, median 26, upper quartile 42, maximum 58, sum 1776 so mean 29.6, and 17 deliveries exceeded 40 minutes, consistent with the \"at least 15\" argument.",
+    "syllabus_check": "4052 Data handling and analysis: reading a cumulative frequency table and recovering class frequencies; estimating the mean and the standard deviation of grouped data using class mid-values (calculator statistics mode permitted); the meaning of a percentage of a data set and of the upper quartile (a quarter of the data at or above it); reasoning about a summary statistic in context. 4052 Probability: combined events, two selections without replacement, by multiplying probabilities (no tree diagram needed). No cumulative frequency curve has to be drawn or read, no interpolation inside a class is required (part (a)(iii) is precisely that it cannot be done), nothing outside 4052.",
+    "originality_note": "The 2024/2025 statistics questions give either a frequency table to be processed (GCE 2024 P2 Q7: apples, then a histogram and a three-draw probability) or a cumulative frequency curve and a box plot to be read off (GCE 2025 P2 Q2: quiz times; GCE 2023 P1 Q8: heights), and GCE 2024 P1 Q21 hides an unknown in a list. None presents a cumulative frequency TABLE from which the class frequencies must first be recovered before the mean and standard deviation can be estimated, and none sets one real threshold (the 40-minute refund) against two differently summarised groups so that the candidate must see that a class boundary gives an exact count for one branch while a quartile gives only a lower bound for the other, and that the mean answers neither. The single probability part is a two-draw without-replacement product whose first step is to read the refund count off the cumulative table, not a three-draw ordering count as in GCE 2024 P2 Q7(b)(iii) or GCE 2025 P2 Q7(c)(ii). The context (meal deliveries from two branches, a refund rule and an advertised 90%-within-45-minutes claim) appears nowhere in the corpus or in this paper, whose other contexts are a resold bicycle, a treadmill on hire purchase, two banks, a nature-reserve map and a band's ages; there is no median calculation and no tree diagram. Numbers are new throughout and the threshold values (40 on a class boundary, 45 inside a class, an upper quartile of 42 just above 40) were chosen so that each reasoning part turns on one specific fact, and the probability's with-replacement wrong answer (9/400) is as tidy as the right one."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 7,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2024 P2 Q7",
+     "jaccard": 0.045
+    },
+    "marks": 8,
+    "checked_at": "2026-09-12T07:11:24.131Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)(i)": "Mean = 1890/60 = 31.5 minutes",
+     "(a)(ii)": "Standard deviation = sqrt(64700/60 - 31.5^2) = sqrt(86.0833...) = 9.28 minutes (3 s.f.)",
+     "(a)(iii)": "The table gives cumulative frequencies only at the 10-minute boundaries, so the number of deliveries taking 45 minutes or less is not known - it could only be estimated by assuming the 7 deliveries between 40 and 50 minutes are spread evenly, which need not be true.",
+     "(b)(i)": "The number of refunds depends on how many deliveries took more than 40 minutes, not on the mean: for branch B the upper quartile is 42, so at least 15 of the 60 deliveries took more than 40 minutes, whereas for branch A only 60 - 51 = 9 did, so branch B in fact had more refunds.",
+     "(b)(ii)": "Number refunded from A = 60 - 51 = 9, so P = (9/60) x (8/59) = 72/3540 = 6/295 = 0.0203 (3 s.f.)"
+    },
+    "solvable": true,
+    "issues": [
+     "Part (b)(ii) asks about deliveries from branch A, but it is placed under part (b), which is otherwise entirely about branch B - it reads as a mislabelled part that belongs under (a). The part is still answerable as printed (9 of A's 60 deliveries exceeded 40 minutes).",
+     "In (a)(ii) the question does not state whether the population or sample standard deviation is wanted; the population value 9.28 is given (the sample value would be 9.36). At O-Level the population value is the expected answer."
+    ]
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)(i)",
+      "agree": true,
+      "note": "Both recover the class frequencies 6, 20, 25, 7, 2 from the cumulative table (first class 10 < t <= 20 from 'more than 10 minutes'); sum fx = 1890, mean 31.5 min. Re-derived."
+     },
+     {
+      "label": "(a)(ii)",
+      "agree": true,
+      "note": "sum fx^2 = 64700; 64700/60 - 31.5^2 = 86.083; SD = 9.28 min (3 s.f.). Re-derived. The examiner's population-vs-sample remark is not an issue: the population formula is the O-Level convention and both sides give 9.28 (the sample value 9.36 is not what 4052 expects)."
+     },
+     {
+      "label": "(a)(iii)",
+      "agree": true,
+      "note": "Same fact on both sides: 45 minutes lies inside the class 40 < t <= 50, so the count within 45 minutes is anywhere from 51 to 58 and whether it reaches 90% of 60 = 54 cannot be decided. The examiner's wording (the 7 deliveries in that class need not be spread evenly) is the same reason; the setter's scheme rightly demands the 51/58 (or 54) figures rather than a generic 'the data is grouped'."
+     },
+     {
+      "label": "(b)(i)",
+      "agree": true,
+      "note": "Identical argument: branch A refunded exactly 60 - 51 = 9 (40 is a class boundary); branch B's upper quartile of 42 puts the 46th to 60th ordered times at or above 42 > 40, so at least 15 refunds; 15 > 9, so Devi's conclusion is wrong and the mean cannot settle it. Checked the setter's illustrative data set of 60 times: min 12, LQ 20, median 26, UQ 42, max 58, sum 1776 (mean 29.6), 17 over 40 minutes, so the five figures and the mean are jointly attainable."
+     },
+     {
+      "label": "(b)(ii)",
+      "agree": true,
+      "note": "Both: 9 refunded of 60, drawn without replacement, 9/60 x 8/59 = 72/3540 = 6/295 = 0.0203 (3 s.f.). Re-derived. The examiner's placement remark is a labelling point, not a key point: the part is unambiguous as printed."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement anywhere; all five values and both explanation arguments re-derive independently, the round-1 fixes (the two-draw probability on branch A's refunds in place of the prose comparison; the standard-deviation sentence removed from the (b) stem) were applied exactly as named, and the blind examiner's two remarks are a part label and the population-SD convention, neither of which touches the key.",
+    "score": 4,
+    "fixes": [
+     "Relabel (b)(ii) as a separate part (c) [2] with the same wording ('Two of the 60 deliveries from branch A are chosen at random. Find the probability that both of these deliveries were refunded.'), so (b) stays 'In the same week, 60 meals were delivered from branch B ...' with (b) [2] as the Devi part alone. The placement under (b) does not read naturally: in every real paper a sub-part sits inside the data set its preamble introduces (GCE 2024 P2 Q7(b)(iii) is on the 150 tomatoes of the (b) histogram; GCE 2025 P2 Q7(c)(ii) on the full-time workers of the (c) table), and (b)(i)'s comparison of the two branches does not turn a branch-A probability into a branch-B sub-part. As (c) it follows the comparison naturally (the refund count 9 is on the page, the refund rule is in the question's opening stem) and the marks stay 4 + 2 + 2. The part cannot be moved to branch B, since a five-figure summary gives only 'at least 15' refunds, never an exact count."
+    ],
+    "too_close_to": null,
+    "why": "AT the 2024/25 standard: the cumulative table hides the one decision in (a)(i) (a candidate who treats the cumulative figures as frequencies gets a tidy-looking 42.0), (a)(ii) is the routine 1-mark SD as in GCE 2024 P2 Q7(a)(iii), each explain part turns on one specific fact (45 sits inside a class; the upper quartile fixes at least 15 refunds, so a generic 'the mean does not show spread' earns nothing) as GCE 2024 P2 Q7(b)(i) does, and the two-draw probability is the routine that follows the refund count, all finishable in about 12 minutes; the mark split (3 prose of 8, one probability part) now matches the real statistics questions. Not a re-skin: delivery times with a refund threshold, a cumulative table and a five-figure summary share only the genre with the apples/tomatoes and quiz-times questions (gates pass, nearest GCE 2024 P2 Q7 at Jaccard 0.045). The one light edit is the part label."
+   },
+   "exemplars": [
+    {
+     "id": "98f4a286-0e1f-4543-b6bd-7faee75caf63",
+     "ref": "GCE 2025 P2 Q2"
+    },
+    {
+     "id": "ec412120-d59f-429a-a097-8e6bf6aba169",
+     "ref": "GCE 2024 P2 Q7"
+    },
+    {
+     "id": "29eb0e1c-3958-4601-acd0-de2729420552",
+     "ref": "GCE 2023 P2 Q7"
+    },
+    {
+     "id": "77a410ea-31c3-46bd-8224-32b2c75d2cd7",
+     "ref": "GCE 2023 P1 Q8"
+    },
+    {
+     "id": "12a67ec2-8a20-47e4-8921-8a3c5dc320f7",
+     "ref": "GCE 2024 P1 Q21"
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Circular Measure",
+   "target": 10,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram shows the cross-section of a road tunnel. The curved roof $ATB$ of the tunnel is an arc of a circle, centre $O$ and radius $r$ metres. The road surface $AB$ is horizontal and $AB = 6$ m. $T$ is the highest point of the tunnel, $TO$ is vertical and $T$ is $4.5$ m above the road.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that $r = 3.25$.",
+      "marks": 3,
+      "answer": "Let $M$ be the midpoint of $AB$: $OM = 4.5 - r$, $AM = 3$, so $r^2 = (4.5 - r)^2 + 3^2$, giving $9r = 29.25$ and $r = 3.25$ (shown).",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "",
+      "marks": 5,
+      "answer": "",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "Calculate the length of the arc $ATB$.",
+        "marks": 3,
+        "answer": "$12.8$ m (reflex $\\angle AOB = 3.93$ rad; $3.25 \\times 3.9312 = 12.78$)"
+       },
+       {
+        "label": "(ii)",
+        "text": "Calculate the area of the cross-section of the tunnel.",
+        "marks": 2,
+        "answer": "$24.5$ m$^2$"
+       }
+      ]
+     },
+     {
+      "label": "(c)",
+      "text": "A double-decker bus is $2.5$ m wide and $4.4$ m high. The bus is driven through the tunnel along the centre of the road. Determine whether the bus can pass through the tunnel. Show your working.",
+      "marks": 2,
+      "answer": "No. At $1.25$ m from the centre of the road the roof is only $1.25 + \\sqrt{3.25^2 - 1.25^2} = 4.25$ m above the road, and $4.25 < 4.4$, so the top corners of the bus would hit the roof (equivalently, at a height of $4.4$ m the tunnel is only $1.6$ m wide).",
+      "subparts": []
+     }
+    ],
+    "answer": "(a) $r = 3.25$ shown from $(4.5 - r)^2 + 3^2 = r^2$; (b)(i) $12.8$ m; (b)(ii) $24.5$ m$^2$; (c) No — the roof is $4.25$ m high at $1.25$ m from the centre line, less than $4.4$ m.",
+    "total_marks": 10,
+    "topics": [
+     "Circular Measure",
+     "Trigonometry",
+     "Pythagoras' Theorem"
+    ],
+    "needs_figure": true,
+    "figure_description": "The cross-section of the tunnel, drawn approximately to scale with 1 m = 1 unit. Take the circle of radius 3.25 with centre O at (0, 1.25), but draw ONLY the part of the circle on or above the line y = 0: a single solid arc starting at A (-3, 0) on the left, rising over T (0, 4.5) at the top and coming down to B (3, 0) on the right — this is the major arc. Do NOT draw the part of the circle below y = 0. Draw the chord AB as a solid horizontal line (the road surface). Mark O as a small dot labelled O (it sits above the road, on the vertical line through T). Do NOT draw the radii OA or OB and do not print the letter r anywhere. Draw a dashed vertical line from T down through O to the midpoint of AB; beside it place a dimension arrow from the road up to T labelled 4.5 m. Below AB place a dimension arrow labelled 6 m. Label A and B at the two ends of the chord and T at the top of the arc. Print NOTHING else: no value 3.25, no 1.25, no angle sizes in degrees or radians, no arc length, no area, no bus, no shading, and do not label the midpoint of AB.",
+    "solution": "(a) Let $M$ be the midpoint of $AB$. Then $AM = 3$ m, and $O$, $M$ and $T$ lie on the vertical line through $T$. Since $OT = r$ and $MT = 4.5$, $OM = 4.5 - r$.\nIn right-angled triangle $OMA$: $OA^2 = OM^2 + AM^2$\n$r^2 = (4.5 - r)^2 + 3^2$\n$r^2 = 20.25 - 9r + r^2 + 9$\n$9r = 29.25$\n$r = 3.25$ (shown)\n\n(b)(i) $OM = 4.5 - 3.25 = 1.25$ m.\nIn triangle $OMA$, $\\cos \\angle AOM = \\frac{1.25}{3.25} = \\frac{5}{13}$, so $\\angle AOM = 1.1760$ rad.\n$\\angle AOB = 2 \\times 1.1760 = 2.3520$ rad.\nThe arc $ATB$ goes over the top of the tunnel, so it is the major arc: reflex $\\angle AOB = 2\\pi - 2.3520 = 3.9312$ rad.\nArc $ATB = r\\theta = 3.25 \\times 3.9312 = 12.776 = 12.8$ m (3 s.f.).\n[In degrees: $\\angle AOM = 67.38^\\circ$, reflex $\\angle AOB = 225.24^\\circ$, arc $= \\frac{225.24}{360} \\times 2\\pi \\times 3.25 = 12.8$ m.]\n\n(b)(ii) The cross-section is the major segment, so\nArea $=$ major sector $OATB$ $+$ triangle $OAB$\n$= \\frac{1}{2}(3.25)^2(3.9312) + \\frac{1}{2}(6)(1.25)$\n$= 20.762 + 3.75$\n$= 24.512 = 24.5$ m$^2$ (3 s.f.).\n[Alternatively: circle $-$ minor segment $= \\pi(3.25)^2 - \\frac{1}{2}(3.25)^2(2.3520 - \\sin 2.3520) = 33.183 - 8.671 = 24.5$ m$^2$.]\n\n(c) The bus is $2.5$ m wide, so its top corners are $1.25$ m from the centre line of the road, i.e. $1.25$ m horizontally from the line $OT$.\nHeight of the roof at that horizontal distance $= OM + \\sqrt{3.25^2 - 1.25^2} = 1.25 + \\sqrt{9} = 4.25$ m.\nSince $4.25 < 4.4$, the top corners of the bus would hit the roof. The bus cannot pass through the tunnel, even though the tunnel is $4.5$ m high at the centre.\n[Equivalently: at a height of $4.4$ m, which is $3.15$ m above $O$, the tunnel is $2\\sqrt{3.25^2 - 3.15^2} = 2\\sqrt{0.64} = 1.6$ m wide, and $1.6 < 2.5$.]",
+    "syllabus_check": "4052 only: Pythagoras' theorem in a right-angled triangle with an unknown radius (a); cosine ratio in a right-angled triangle giving an angle, reflex angle, arc length $s = r\\theta$ with the angle in radians — the degree route $\\frac{\\theta}{360} \\times 2\\pi r$ is equally acceptable (b)(i); area of a major segment as reflex sector $\\frac{1}{2}r^2\\theta$ plus triangle, or circle minus minor segment (b)(ii); Pythagoras again for the clearance at a given horizontal distance (c). No circle-property theorems are needed (the half-chord follows from the vertical line of symmetry $TO$), no calculus, no identities, no surds beyond $\\sqrt{9}$ and $\\sqrt{0.64}$. Answers: $r$ exact; $12.8$ m and $24.5$ m$^2$ to 3 s.f.; (c) decided by $4.25 < 4.4$.",
+    "originality_note": "New situation and structure: a road tunnel whose cross-section is the MAJOR segment of a circle (the road is a chord below the centre), with the radius hidden behind the chord and the height, then a vehicle-clearance decision that turns on the bus's top corner rather than its centre line. Nothing in GCE 2024 P2 (Q8: congruent triangles from two equal chords, a major arc from a GIVEN 1.8 rad, two intersecting circles with a sine-rule angle) or GCE 2025 P2 (Q6: quadrilateral with three given radian angles, sine and cosine rule, then a pyramid) involves a segment cross-section, a radius to be found from chord-and-sagitta, or a clearance test; the exemplars (sector-to-cone net, wiper area, sector perimeter from a given angle, cyclic quadrilateral angles) share neither the configuration nor the sequence of parts. Numbers are the 5-12-13 triangle scaled by 0.25, so every intermediate is clean while the naive centre-only check in (c) still produces a tidy but wrong 'yes'. Does not repeat this paper's Q5 (incircle of a triangle), Q6 (coordinate geometry) or Q9 (rainwater mensuration)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 8,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2015 P1 Q19",
+     "jaccard": 0.057
+    },
+    "marks": 10,
+    "checked_at": "2026-09-12T07:11:24.134Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown — with O at height h above AB, T is (h + r) above the road so h = 4.5 - r; the perpendicular from O to the chord AB bisects it, so 3^2 + h^2 = r^2 giving 9 + (4.5 - r)^2 = r^2, i.e. 9 + 20.25 - 9r = 0, 9r = 29.25, r = 3.25 (so O is 1.25 m above the road)",
+     "(b)(i)": "12.8 m (arc ATB = 12.7763... m; cos(AOT-half angle) = 1.25/3.25 so angle AOB = 2.35201 rad = 134.760 deg, reflex angle AOB = 3.93117 rad = 225.240 deg, arc = 3.25 x 3.93117)",
+     "(b)(ii)": "24.5 m^2 (major sector = 1/2 x 3.25^2 x 3.93117 = 20.7615 m^2, triangle AOB = 1/2 x 6 x 1.25 = 3.75 m^2, total 24.5115 m^2)",
+     "(c)": "No, the bus cannot pass through. Along the centre of the road the bus occupies 1.25 m each side of the centre line; at a horizontal distance of 1.25 m from the centre the height of the tunnel is 1.25 + sqrt(3.25^2 - 1.25^2) = 1.25 + 3 = 4.25 m, which is less than the bus height of 4.4 m."
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both show r = 3.25 by the same route: the perpendicular from O bisects the chord (AM = 3), OM = 4.5 - r, and r^2 = (4.5 - r)^2 + 9 gives 9r = 29.25. Re-derived; O is 1.25 m above the road, so the section is a major segment and O lies inside it as the figure shows."
+     },
+     {
+      "label": "(b)(i)",
+      "agree": true,
+      "note": "Both give 12.8 m: cos AOM = 1.25/3.25 = 5/13, angle AOB = 2.3520 rad, reflex angle AOB = 2pi - 2.3520 = 3.9312 rad, arc = 3.25 x 3.9312 = 12.776 m. Re-derived. The 5-12-13 triangle OMA (1.25, 3, 3.25) keeps the numbers clean."
+     },
+     {
+      "label": "(b)(ii)",
+      "agree": true,
+      "note": "Both give 24.5 m^2 as major sector + triangle: (1/2)(3.25^2)(3.9312) + (1/2)(6)(1.25) = 20.761 + 3.75 = 24.51. Re-derived, and the alternative circle - minor segment (33.183 - 8.671) agrees."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both: no. The bus's top corners are 1.25 m from the centre line, where the roof is 1.25 + sqrt(3.25^2 - 1.25^2) = 1.25 + 3 = 4.25 m above the road, and 4.25 < 4.4. Re-derived; equivalently at 4.4 m (3.15 m above O) the tunnel is 2 sqrt(3.25^2 - 3.15^2) = 1.6 m wide. The trap works: comparing the bus height with the 4.5 m centre height gives a tidy-looking 'yes'."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement anywhere; setter and blind examiner match on all four parts and every value re-derives independently (r = 3.25, arc 12.8 m, area 24.5 m^2, roof 4.25 m at the bus's corner so the bus cannot pass).",
+    "score": 4,
+    "fixes": [
+     "Stem precision: 'The cross-section is part of a circle, centre O and radius r metres' describes a region as part of a curve. Write it as a real paper would: 'The curved roof ATB of the tunnel is an arc of a circle, centre O and radius r metres.' (keep 'The road surface AB is horizontal and AB = 6 m. T is the highest point of the tunnel, TO is vertical and T is 4.5 m above the road.').",
+     "(c) verb: 'Explain, with working, whether the bus can pass through the tunnel' is not a GCE imperative; use 'Determine whether the bus can pass through the tunnel. Show your working.' (the GCE 2025 P2 Q9(c) 'justify with calculations whether' shape).",
+     "Figure: drop the dashed radii OA and OB (keep the dot at O, the dashed vertical TO to the road and the two dimensions 6 m and 4.5 m; r is named in the stem, so the label on OB is not needed). With OA drawn, triangle OMA is handed to the candidate in (a) and the triangle OAB in (b)(ii); without them the candidate chooses the triangle for the Pythagoras step and the sector-plus-triangle decomposition, which is the 'chosen, not named' step the 2024/25 checklist asks for. The figure as described prints no value the candidate must find, which is correct."
+    ],
+    "too_close_to": null,
+    "why": "AT the 2024/25 standard: (a) [3] is a show-that placed where it gates every later part and worth its marks, the candidate forming OM = 4.5 - r with no 'form an equation' cue (the GCE 2025 P1 Q20(b) shape); (b)(i) [3] hands the candidate the major-arc decision (reflex angle in radians, as GCE 2024 P2 Q8(a)(ii) but with the angle to be found first); (b)(ii) [2] makes the candidate choose the decomposition of a major segment; (c) [2] is a context that changes the maths (the corner at 1.25 m, not the centre height) with a tidy wrong answer for the wrong decision, and the whole runs about 14 minutes. Radians, arc length, sector and segment areas are all 4052. Not a re-skin: a single-circle tunnel section with the radius to be found is neither the chord-congruence/two-circle GCE 2024 P2 Q8 nor any 2025 P2 question (gates pass, nearest GCE 2015 P1 Q19 at Jaccard 0.06). The three edits are register and figure polish, none touches the key or the weight."
+   },
+   "exemplars": [
+    {
+     "id": "20345f91-46c3-4357-87da-d90b830bb060",
+     "ref": "GCE 2024 P2 Q8"
+    },
+    {
+     "id": "a9e6865e-701c-42d8-bc1a-5389402f77eb",
+     "ref": "GCE 2023 specimen P2 Q5"
+    },
+    {
+     "id": "e594a84c-4369-4a1d-893c-e6907e45bcb2",
+     "ref": "GCE 2023 specimen P1 Q21"
+    },
+    {
+     "id": "2885c79b-8287-489f-892a-56e05dbefe36",
+     "ref": "GCE 2024 P1 Q9"
+    },
+    {
+     "id": "5e5c98ba-bf19-4cbf-884b-a885b5fd2721",
+     "ref": "GCE 2016 specimen P2 Q8"
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Math In Real World Context",
+   "target": 10,
+   "accepted": true,
+   "question": {
+    "stem": "A school collects rainwater from the roof of its garden shed and uses it to water the garden. The information below is used to plan the system.\n\nCollecting rainwater\nVolume of rainwater collected, in litres $= 0.8 \\times$ area of roof in m$^2$ $\\times$ rainfall in mm.\n$1$ m$^3 = 1000$ litres.\nThe roof of the shed has an area of $36$ m$^2$.\n\nWater tanks available\n$\\begin{array}{|c|l|l|} \\hline \\text{Tank} & \\text{Shape} & \\text{Dimensions} \\\\ \\hline A & \\text{Cylinder} & \\text{diameter } 1.2 \\text{ m, height } 1.5 \\text{ m} \\\\ \\hline B & \\text{Cylinder} & \\text{diameter } 1.4 \\text{ m, height } 1.6 \\text{ m} \\\\ \\hline C & \\text{Cuboid} & 1.5 \\text{ m long, } 1.0 \\text{ m wide, } 1.8 \\text{ m high} \\\\ \\hline \\end{array}$\nThe tank must stand upright, with the whole of its bottom resting on the rectangular concrete base beside the shed. The concrete base measures $1.6$ m by $1.3$ m.\n\nWatering the garden\nThe garden is watered once a day by a drip line connected to the tank. The drip line delivers $2.5$ litres of water per minute and runs for $24$ minutes each day. On a day when the temperature rises above $32^\\circ$C, the drip line runs for a further $12$ minutes.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that the capacity of Tank A is $1700$ litres, correct to 3 significant figures.",
+      "marks": 2,
+      "answer": "$\\pi \\times 0.6^2 \\times 1.5 = 1.6964\\ldots$ m$^3 = 1696.46\\ldots$ litres $= 1700$ litres (3 s.f.)"
+     },
+     {
+      "label": "(b)",
+      "text": "In a trial, Tank A is connected to the roof of the shed. One evening the tank is one-quarter full. During the night, heavy rain fills the tank and $320$ litres of water overflows. Calculate the rainfall, in mm, that night.\nGive your answer correct to the nearest millimetre.",
+      "marks": 2,
+      "answer": "$55$ mm (from $55.38\\ldots$ carrying $1700$ litres, or $55.3$ carrying $1696.46$ litres)"
+     },
+     {
+      "label": "(c)",
+      "text": "The school expects a dry spell of $28$ days with no rain, including $8$ days when the temperature rises above $32^\\circ$C. The tank will be full at the start of the dry spell and must supply all the water for the garden until the dry spell ends. The school wants to buy the tank with the smallest capacity that can do this and can stand on the concrete base. Suggest which tank the school should buy. Justify your answer with calculations.",
+      "marks": 6,
+      "answer": "Tank C. Water needed $= 20 \\times 60 + 8 \\times 90 = 1920$ litres. Tank A holds only $1700 < 1920$ litres. Tank B holds $\\pi \\times 0.7^2 \\times 1.6 = 2.46$ m$^3 = 2460$ litres, enough, but its diameter $1.4$ m is greater than the $1.3$ m width of the base, so it cannot stand on the base. Tank C holds $1.5 \\times 1.0 \\times 1.8 = 2.7$ m$^3 = 2700 \\ge 1920$ litres and its $1.5$ m by $1.0$ m bottom fits on the $1.6$ m by $1.3$ m base."
+     }
+    ],
+    "answer": "(a) $\\pi \\times 0.6^2 \\times 1.5 = 1.696\\ldots$ m$^3 = 1700$ litres (3 s.f.)  (b) $55.4$ mm  (c) Tank C: need $1920$ litres; A holds $1700 < 1920$; B holds $2460$ but diameter $1.4$ m $> 1.3$ m base width; C holds $2700 \\ge 1920$ and fits",
+    "total_marks": 10,
+    "topics": [
+     "Math In Real World Context",
+     "Mensuration"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Radius of Tank A $= \\frac{1.2}{2} = 0.6$ m.\nCapacity $= \\pi r^2 h = \\pi \\times 0.6^2 \\times 1.5 = 0.54\\pi = 1.6964\\ldots$ m$^3$.\n$1$ m$^3 = 1000$ litres, so capacity $= 1696.46\\ldots$ litres $= 1700$ litres, correct to 3 significant figures. (Shown.)\n[Equivalently in cm: $\\pi \\times 60^2 \\times 150 = 1\\,696\\,460$ cm$^3 = 1696.46$ litres.] Marks: M1 for $\\pi \\times 0.6^2 \\times 1.5$ (radius $0.6$, not $1.2$), A1 for $1696.46\\ldots$ converted to litres and rounded to $1700$.\n\n(b) The tank is one-quarter full, so the water needed to fill it is $\\frac{3}{4} \\times 1700 = 1275$ litres.\nThe rain also produces $320$ litres of overflow, so the volume collected that night is $1275 + 320 = 1595$ litres.\nVolume collected $= 0.8 \\times 36 \\times$ rainfall, so $28.8 \\times$ rainfall $= 1595$.\nRainfall $= \\frac{1595}{28.8} = 55.38\\ldots = 55$ mm, correct to the nearest millimetre.\n[Carrying $1696.46$ litres instead of $1700$ gives $\\frac{1272.35 + 320}{28.8} = 55.3\\ldots$, also $55$ mm.] Marks: M1 for $\\frac{3}{4} \\times 1700 + 320 = 1595$ (the volume collected is the space in the tank plus the overflow), A1 for $55$ mm.\n\n(c) Water used on an ordinary day $= 2.5 \\times 24 = 60$ litres.\nWater used on a day above $32^\\circ$C $= 2.5 \\times (24 + 12) = 2.5 \\times 36 = 90$ litres.\nWater needed for the dry spell $= 20 \\times 60 + 8 \\times 90 = 1200 + 720 = 1920$ litres.\nTank A: capacity $1700$ litres $< 1920$ litres, so Tank A runs dry before the dry spell ends. Not suitable. [The trap: ignoring the $8$ hotter days gives $28 \\times 60 = 1680 \\le 1700$ and wrongly accepts Tank A.]\nTank B: capacity $= \\pi \\times 0.7^2 \\times 1.6 = 0.784\\pi = 2.463\\ldots$ m$^3 = 2460$ litres $\\ge 1920$ litres, so it holds enough water. But a cylinder of diameter $1.4$ m needs a base at least $1.4$ m wide in every direction, and the concrete base is only $1.3$ m wide ($1.4 > 1.3$, even though $1.4 < 1.6$). So Tank B cannot stand on the base. Not suitable.\nTank C: capacity $= 1.5 \\times 1.0 \\times 1.8 = 2.7$ m$^3 = 2700$ litres $\\ge 1920$ litres, so it holds enough water. Its bottom is $1.5$ m by $1.0$ m, and $1.5 \\le 1.6$, $1.0 \\le 1.3$, so it stands on the base.\nTank C is the only tank that meets both requirements, so the school should buy Tank C.\nMarks: M1 for $90$ litres on a day above $32^\\circ$C (rate $\\times$ time with the extra $12$ minutes), A1 for $1920$ litres, M1 for the capacity of Tank B ($\\pi \\times 0.7^2 \\times 1.6 = 2460$ litres), B1 for rejecting Tank B on the base ($1.4$ m $> 1.3$ m), B1 for Tank C with $2700 \\ge 1920$ and the $1.5$ m by $1.0$ m fit, A1 for rejecting Tank A ($1700 < 1920$) and stating Tank C.",
+    "syllabus_check": "4052 Problems in real-world contexts: reading an information sheet (a formula, a table of tank sizes, a rate) and making and justifying a decision with working. Mensuration: volume of a cylinder ($\\pi r^2 h$, radius from a stated diameter) and of a cuboid; conversion m$^3 \\to$ litres from the sheet's $1$ m$^3 = 1000$ litres. Rate: litres per minute $\\times$ minutes, a total over a number of days. Nothing outside 4052: no money, no percentages, no similarity, no calculus. Precision: (a) states 3 s.f. because it is a show-that; (b) and (c) fall under the paper's rubric (answers in whole litres and mm to 3 s.f.). Marks: 2 + 2 + 6 = 10, about 15 minutes at 1.5 minutes per mark: (a) one routine, (b) one accounting step then a reversed formula, (c) a demand calculation with one rule to apply, then three tank checks of which two are decisions that change the outcome.",
+    "originality_note": "A new situation: sizing a rainwater tank for a school garden. No money and no percentages anywhere (the paper already spent both in Q2 and in P1). GCE 2024 P2 Q9 (candles: mass from a volume formula, a wax/oil split, similar cylinders, buying packs, pricing) shares only the word 'cylinder'; there is no similarity, no pack choice and no price here. GCE 2025 P2 Q9 (an electric-car road trip: a distance table, charging rates, a time budget and a cost claim) shares nothing: no journey, no speed, no time budget, no claims to test. The GCE 2023 specimen Q9 (exercise minutes and calories), GCE 2021 P2 Q10 (bridge-cable masses against a limit) and GCE 2020 P2 Q10 (a year of living costs in pounds) are different situations and different chains. The 2024/25 standard is met by what the candidate must decide: in (b) that the water collected equals the empty space plus the overflow, then a reversed formula; in (c) that the dry-spell demand must include the hotter days' extra running time (without it $1680 \\le 1700$ and Tank A wrongly passes), and that a cylinder's diameter must fit the SHORTER side of the base (Tank B fits the $1.6$ m length but not the $1.3$ m width, and it has enough capacity, so only the geometric check rejects it). Both decisions change the answer; the wrong path gives a tidy-looking Tank A. The final 6-mark part is a 'Suggest ... Justify' decision after two short warm-ups, the shape the last question has kept every year."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 9,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2017 P2 Q8",
+     "jaccard": 0.031
+    },
+    "marks": 10,
+    "checked_at": "2026-09-12T06:59:33.326Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown — V = pi r^2 h = pi(0.6)^2(1.5) = 0.54pi = 1.69646 m^3 = 1696.46 litres = 1700 litres (3 s.f.)",
+     "(b)": "55.3 mm (rain collected = 3/4 x 1696.46 + 320 = 1592.3 litres; 1592.3 / (0.8 x 36) = 55.29 mm)",
+     "(c)": "Tank C. Water needed = 28 x 2.5 x 24 + 8 x 2.5 x 12 = 1680 + 240 = 1920 litres. Tank A holds 1696 litres (< 1920) — too small. Tank B holds pi(0.7)^2(1.6) = 2463 litres (enough) but its 1.4 m diameter will not fit on the 1.6 m by 1.3 m base (needs 1.4 m in both directions, base is only 1.3 m wide). Tank C holds 1.5 x 1.0 x 1.8 = 2.7 m^3 = 2700 litres >= 1920 litres and its 1.5 m by 1.0 m base fits on the 1.6 m by 1.3 m concrete base. So buy Tank C."
+    },
+    "solvable": true,
+    "issues": [
+     "(b) is mildly rounding-sensitive: using the unrounded capacity 1696.46 litres gives 55.3 mm, while a candidate who uses the 1700 litres established in (a) gets 55.4 mm. A mark scheme should accept both."
+    ]
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both show 1700 litres. Re-worked: radius 0.6 m from the 1.2 m diameter, pi x 0.6^2 x 1.5 = 0.54 pi = 1.69646 m^3 = 1696.46 litres = 1700 litres to 3 s.f. The target is true and the two steps (radius from diameter with pi r^2 h; m^3 to litres then round) carry M1 A1 exactly as the key says."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Setter 55.4 mm carrying the shown 1700 (3/4 x 1700 + 320 = 1595; 1595 / 28.8 = 55.38), blind 55.3 mm carrying the exact 1696.46 (1272.35 + 320 = 1592.35; / 28.8 = 55.29). Same model (collected = the three-quarters of the tank still empty + the overflow), same reversed formula; the 0.09 mm gap is only which capacity is carried, and both are correct. The key already accepts 55.3 in a parenthetical; the scheme must carry both as printed answers."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give Tank C by the same route. Re-worked: 2.5 x 24 = 60 and 2.5 x 36 = 90 litres a day; 20 x 60 + 8 x 90 = 1920 litres. A: 1696.46 < 1920, runs dry. B: pi x 0.7^2 x 1.6 = 0.784 pi = 2.463 m^3 = 2460 litres holds enough, but a 1.4 m diameter needs 1.4 m across the 1.3 m width of the base, so it cannot stand (the stem's 'whole of its bottom resting on' closes any overhang reading). C: 1.5 x 1.0 x 1.8 = 2.7 m^3 = 2700 litres and 1.5 by 1.0 fits 1.6 by 1.3. Both wrong paths land tidily: 28 x 60 = 1680 <= 1700 accepts A; checking B only against the 1.6 m length or by area (1.54 < 2.08) accepts B, and 'smallest capacity' then picks B over C. The key is right."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No substantive disagreement: the 55.3 / 55.4 split in (b) is the carried capacity (exact 1696.46 versus the shown 1700), both are correct and the key must accept both; every other answer, and the two traps in (c), are confirmed by my own working.",
+    "score": 4,
+    "fixes": [
+     "accept 55.3 or 55.4 in (b): print the key's answer as '55.4 mm or 55.3 mm (55.4 carrying the shown 1700 litres, 55.3 carrying 1696.46 litres)' so the mark scheme carries both as full-credit answers rather than a parenthetical. Cleaner still, in the examination's own style: add 'Give your answer correct to the nearest millimetre.' to (b), which makes both routes give 55 mm and removes the rounding fork altogether.",
+     "(c) mark scheme, light: three marks for the demand (M1 60 and 90, M1 the sum, A1 1920) is heavy and Tank B's fresh cylinder volume earns nothing. Reallocate one mark per decision or fresh computation, the way SEAB's justify schemes fall: M1 90 litres on a hot day (the extra 12 minutes), A1 1920 litres, M1 Tank B capacity 2460 litres, B1 B rejected on 1.4 m > 1.3 m, B1 C with 2700 >= 1920 and the 1.5 by 1.0 fit, A1 A rejected (1700 < 1920) and Tank C stated."
+    ],
+    "too_close_to": null,
+    "why": "AT the 2024/25 standard for 10 marks and the last question's kept shape (two 2-mark warm-ups, then one 6-mark 'suggest and justify'): (b) makes the candidate build the model (collected = the empty three-quarters of the tank + the overflow) and reverse the sheet's formula, and (c) hands over two decisions that each change the answer with a tidy wrong result on the other path (the hot days' extra 30 litres, without which 1680 <= 1700 accepts A; a cylinder must clear the SHORTER side of the base, without which B, the smaller of the two that hold enough, is bought), with the rest routine and the whole finishable in about 12 of the 15 minutes; gates passed (nearest corpus item GCE 2017 P2 Q8 at jaccard 0.019), and it is neither the candle costing of GCE 2024 P2 Q9 nor the EV journey of GCE 2025 P2 Q9 in situation or chain. A 4 not a 5 because (b) forks at 3 s.f. on which capacity is carried, which real papers avoid, and (c) sits at the lighter end of the 2024/25 final part (no running state to track as in GCE 2025 P2 Q9(c))."
+   },
+   "exemplars": [
+    {
+     "id": "06644e75-f947-4d76-b5ef-69990767c093",
+     "ref": "GCE 2023 specimen P2 Q9"
+    },
+    {
+     "id": "2283a969-cca8-444f-9aae-c453bcbdae48",
+     "ref": "GCE 2025 P2 Q9"
+    },
+    {
+     "id": "2c458b26-c70a-4f6d-9afc-f27570e26b27",
+     "ref": "GCE 2024 P2 Q9"
+    },
+    {
+     "id": "954a0fe6-73d9-45b0-ac6e-5731b60bcc2b",
+     "ref": "GCE 2021 P2 Q10"
+    },
+    {
+     "id": "0d307f22-686c-42ee-a1d9-d92f371512dc",
+     "ref": "GCE 2020 P2 Q10"
+    }
+   ]
+  }
+ ]
+}

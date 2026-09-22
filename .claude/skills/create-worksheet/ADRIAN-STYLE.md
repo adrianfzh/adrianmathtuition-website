@@ -313,6 +313,66 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   writes the label off the line. Call `f.canvas.draw()` first, after the limits and
   ticks are set, so `transData` is the one the saved figure uses.
 
+- **Maths inside a figure must render like KaTeX, not like typed text** (18 Sep 2026,
+  Adrian on the JC Vectors diagrams, looking at the `ex09b` figure: *"make sure math
+  expressions are proper - like how it looks like when render with katex/latex"*). A label
+  on a figure is read exactly as closely as a line of working is, so it obeys the same bar:
+  every maths string is real LaTeX inside `$…$`, never a slash fraction, never plain typed
+  text. `\dfrac{|11-(-4)|}{\sqrt{5}}`, not `|11-(-4)|/√5`; `\left|\mathbf{a}\right|`,
+  `\overrightarrow{OA}`, `\hat{\mathbf{a}}`, `^\circ`, `\perp`, `\Rightarrow`,
+  `\mathbf{a}\cdot\mathbf{b}=|\mathbf{a}|\,|\mathbf{b}|\cos\theta` (the `\,` is what makes
+  the two moduli sit apart the way KaTeX sets them). Set
+  `mathtext.fontset='stix'` + `font.family='STIXGeneral'` so the figure's maths matches the
+  document's. What matplotlib's mathtext will and will not take, probed 18 Sep 2026:
+  - **Works**: `\dfrac`, `\frac`, `\left|…\right|`, `\sqrt`, `\mathrm`, `\mathbf`,
+    `\hat{\mathbf{a}}`, `\overrightarrow{OA}`, `\perp`, `\Rightarrow`, `\Leftrightarrow`,
+    `\times`, `\genfrac`, `^\circ`, greek, `\quad` `\;` `\,` and `\ ` inside `\mathrm{…}`.
+  - **Does NOT exist**: `\tfrac` (raises `ParseFatalException`), `\text{…}`, and every
+    LaTeX *environment* — `\begin{pmatrix}` is a parse error. **Column vectors are built
+    from nested `\genfrac`**; keep the helper beside the figures (`cv(a,b,c)` in the JC
+    Vectors `vecfig.py` is the reference copy).
+  - **Two traps.** `\left|…\right|` as a `\dfrac` DENOMINATOR renders visibly smaller than
+    the numerator — use `\left|…\right|` only around tall numerator content and plain
+    `|…|` underneath. And mixing plain words with `$…$` in one string opens an ugly gap —
+    write the whole line as maths and wrap the words in `\mathrm{…}`.
+  - **Budget the vertical room the tall constructs need.** On a 13 cm-wide figure 1 data
+    unit ≈ 53.9 pt, so a size-11.5 one-line label is ≈ 0.4 units tall, a `\dfrac` stack
+    ≈ 1.05 units, and a three-row column vector ≈ 1.5–1.6 units — a `cv` label wants
+    ≥ 0.85 units of clearance below its anchor and ≥ 1.4 units between two stacked ones.
+    Measure rather than guess: render, read the PNG's pixel span, convert.
+
+- **A right-angle mark is only square if its two directions are square ON THE PAGE**
+  (18 Sep 2026, the `ex14d` mark at E reading as a skewed flag). `rightangle(corner, P, Q)`
+  draws between the screen directions corner→P and corner→Q; in an oblique-projection
+  plane the direction to a far corner is not perpendicular on paper even when it is in 3-D,
+  so the square comes out as a wedge. **Take the second direction IN-PLANE and horizontal**
+  — `E + U`, the plane's own edge vector — never a far vertex. And when two marks share a
+  corner and a leg, give them clearly different sizes (0.30 and 0.52) so they nest; equal
+  sizes merge into one illegible hexagon.
+
+- **Prove a label sits inside its parallelogram before you draw it** (18 Sep 2026, plane
+  equations overflowing their planes in `ex11c`). For `plane(bl, U, V)` with horizontal
+  `U=(L,0)`, the left edge at height y is `x = bl_x + vx·(y − bl_y)/vy` and the right edge
+  is that plus L. Solve both at the label's own y and check the text's half-width fits;
+  do the same for every dot and arrow tip. Related: an opaque plane HIDES whatever is
+  drawn under it — give a distinguished plane `alpha≈0.8` so the others read through, and
+  draw a line meant to be seen crossing a plane at `zorder=2` (above the fill), not
+  `zorder=0`.
+
+- **Proof a figure at PRINTED size, inside the finished document** (18 Sep 2026: two
+  faults in the Vectors diagrams — a stray dashed stub landing in a formula, and a typo in
+  a heading — were invisible in the PNGs and obvious on the page). The loop:
+  ```
+  /Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to pdf \
+    --outdir <dir> <docx>
+  /opt/homebrew/bin/pdftoppm -png -r 110 <dir>/<name>.pdf <dir>/pages/p
+  ```
+  then READ every `p-N.png`. When a page render shows something suspicious but too small
+  to name, crop that region out of the SOURCE png with PIL, upscale 2× with LANCZOS, and
+  read the crop — that is what turned "a stray apostrophe" into "a grey dashed line cutting
+  the `\dfrac`". (`mutool`, `gs` and `qpdf` are not installed on this Mac; `pdftoppm` and
+  `pymupdf` are.)
+
 - Figures from the question bank are embedded as stored; hand-drawn art only when the
   bank has none (and then through the bot's figure registry first — CLAUDE.md §Figure
   library).
@@ -347,6 +407,24 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   draw_nl.py` is the reference drawing.
 - **Trig: solve by the basic angle**, and when the ASTC quadrant picture helps, put it
   in a `('cols', …)` beside the lines (`trig_figures/astc.py`).
+
+- **A stored bank figure can still be unusable, and no `!!` lint catches it** (18 Sep
+  2026, S2 Probability): one row's spinner came back with its six sectors EMPTY, so the
+  printed question could not be answered, and another carried packaging artwork instead
+  of a diagram. Both were found only by READING the rendered page. The two fixes, in the
+  build script:
+  - drop a picture — `by_id[qid]['_figures'] = []` before rendering. Taking the id out of
+    the script's own `FIGURE_IDS` guard list does NOT drop anything; `place_figures`
+    reads `row['_figures']` and nothing else.
+  - replace a picture — `by_id[qid]['_figures'] = [{'bytes': png.read_bytes(),
+    'ext': 'png', 'px': size}]`. Redraw only what the row's own answers pin down (the
+    hexagon's sectors had to be 1–6 for its four printed answers to hold).
+  Both print a `  ** ` line so the build log says what was changed and why.
+- **Name the row a fix belongs to from the row's own TEXT, not from where it sits on the
+  page** (same sheet): the empty hexagon was practice Q5 on the page, so the redraw was
+  aimed at the 5th id in the practice list — which is the 4th question's row, a different
+  spinner that was perfectly fine. Grep the dumped stem for the words the page prints
+  before touching a figure.
 
 ## 5 · Numbering, sections, spacing
 
@@ -432,6 +510,43 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   (a long proof-style answer, a range written as "a < p < b or c < p < d"), pass a
   shorter override in `answers=` ("(b), (c), (d) shown", "1 < |p| < 9") that says the
   same thing. Open the rendered pages before sending; the text extract hides both faults.
+  **The build now says so itself** (18 Sep 2026, on the S2 Quadratic Graphs sheet, where
+  24 of 50 keys wrapped): `Worksheet.ans()` estimates the line's printed width
+  (`_para_width_cm` — plain runs at the body font's average glyph, maths through the
+  OMML estimator) and prints `!! [Ans:] wraps (17.4 cm > 15.6 cm): …` for anything over
+  the text column, so a long key is caught at build time rather than on the render.
+  `build_lib.short_key()` then cuts, from every bank key, the three things that make a
+  graph question's answer run over and that the question has already given the student:
+  the whole list of plotted points (the question prints it in its own table) → "the
+  table points"; the prose describing the curve they have just drawn ("A smooth
+  downward-opening curve through … cutting the y-axis at −390") → the landmark points
+  it names, or nothing; and the accepted range beside each reading → dropped, with the
+  section's notes saying instead how close a reading has to be. What survives is what
+  a student checks against — a constant, a turning point, a root, a reading. Anything
+  still over after that is a row with six parts or a part answered in a sentence, and
+  it takes a hand-written `answers=` entry with a comment saying why. Two habits make
+  those hand-written ones fit: the part label already says what was asked, so a reading
+  is written as the bare number (`(c)(i) -1.6`, not `(c)(i) x = -1.6`) and a pair of
+  roots as `-0.8, 4.8`; and a part answered in a sentence is cut to the one fact the
+  sentence turns on. A dollar sign stays INSIDE maths the way the bank writes it —
+  `$\$198$` — because a bare `\$` in a plain run prints the backslash.
+
+  Measure a candidate before rebuilding, rather than guessing: a three-line harness
+  (`Worksheet()`, `ws.ans(R.split_math(candidate))`, `_para_width_cm(p)`) prints the
+  width of each try in a second, where a rebuild of a 43-page sheet takes two minutes.
+
+  **A row whose figures will not fit takes `caps=`** (same date, same sheet): a
+  "match each graph to its equation" question printing four panels ran 30 cm and broke
+  across two pages, separating the parts from the graphs they refer to.
+  `render_practice(..., caps={question id: height in cm})` shrinks that row's panels
+  instead — legitimate when the panels carry shape only, no scale or tick labels, so
+  they stay readable small. Same discipline as `answers=`: a comment at the call site
+  saying why, and a line printed at build time. That particular row was then dropped
+  anyway, for a reason the warning had led me to look at: its four sketches print with
+  no (a)/(b)/(c)/(d) beside them, so "write down the equation of graph (a)" cannot be
+  answered from the page. **A multi-panel question needs the panel labels IN the
+  pictures** — the bank stores each panel as its own image and nothing re-letters them,
+  so check the render before keeping one.
 - **No rubric line under a "Practice" heading** (14 Sep 2026: "don't have to put the
   statement 'answers are at the end of each question…'"). The heading goes straight
   into question 1. The `[Ans:]` line is visible at the foot of every question, so
@@ -462,6 +577,18 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   Word's own grid: the `x` row above the `y` row, each cell its own maths, the first
   column (the row's name) narrow. The builders parse whichever form the row carries and
   hand the values to `data_table`; a table left as text is a defect, not a style choice.
+  **A table inside a PART counts too** (18 Sep 2026, the S2 Quadratic Graphs sheet): only
+  stems were being parsed, so "(c) Some values of x and V are given below. `$$array$$`
+  Find the value of p." printed the array as raw maths — no rules, and a red `¿` under
+  every column where LibreOffice met `\hline`. `_part_text` in `build_lib.py` now splits a
+  part the same way the stem is split, and the lines after the table are written with
+  `ws.cont(...)` — the part's own text indent, no label, since a continuation line that
+  opened a new `(d)` would renumber the rest of the question.
+- **A unit written `75 m$^2$` prints an empty box** (18 Sep 2026, same sheet). The maths
+  holds the exponent with no base, and both Word and LibreOffice draw the empty slot:
+  `75 m□²`. `split_math` pulls the letter into the maths with it — `$\text{m}^2$` — which
+  is what the paper means. Bank text carries this habit for m², m³ and cm², so the fix
+  lives in the splitter, not in a per-sheet rewrite.
 - **A marks tag stored inside a part's own text is stripped** — `strip_marks(text)` in
   `scripts/revision-builders/build_lib.py`. Some rows print "[3]" inside
   `question_text` as well as carrying `marks: 3`, so the part rendered with the marks

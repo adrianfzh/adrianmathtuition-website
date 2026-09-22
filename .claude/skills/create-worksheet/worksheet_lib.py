@@ -443,6 +443,21 @@ def _omml_em(el):
     return sum(_omml_em(c) for c in el)
 
 
+def _para_width_cm(p, size_pt=9.5, char_cm=0.151):
+    """Rough printed width of one paragraph, in cm: plain runs at the body
+    font's average glyph width, maths through the OMML estimator. Used to
+    catch a line that is about to wrap; an estimate, not a measurement."""
+    em_cm = size_pt / 72 * 2.54
+    w = 0.0
+    for el in p._p.iter():
+        tag = etree.QName(el)
+        if tag.namespace == M_NS and tag.localname == 'oMath':
+            w += _omml_em(el) * em_cm
+        elif tag.localname == 't' and tag.namespace != M_NS:
+            w += char_cm * len(el.text or '')
+    return w
+
+
 def _split_aligned(latex):
     """An aligned block → [(lhs, rhs, note)] per line, or None if not aligned.
     Each line is `lhs &= rhs \\quad\\text{← note}`; a line starting with `&`
@@ -1018,6 +1033,12 @@ class Worksheet:
                 if attrs.get('color'):
                     run.font.color.rgb = attrs['color']
             elif kind in ('math', 'math_display'):
+                if part[1].lstrip().startswith(('^', '_')):
+                    # an exponent with nothing under it: Word and LibreOffice
+                    # both draw the empty base slot as a box, "m□²"
+                    # (18 Sep 2026). The unit goes inside the maths with the
+                    # number: $156 \text{ m}^2$.
+                    print(f'  !! empty-base superscript: {part[1]!r}')
                 elem = _latex_to_omml(part[1], display=(kind == 'math_display'))
                 if elem is not None:
                     _style_annotations(elem)
@@ -1140,6 +1161,17 @@ class Worksheet:
         return self._add(parts, style='SubQuestion',
                          num_id=self._current_subq_id, marks=marks)
 
+    def cont(self, parts, marks=None, level=1):
+        """A further line of the part above, at the part's own text indent.
+
+        No label of its own: the part already carries one. A part that prints a
+        table of values in the middle of itself needs this -- "(c) Some values
+        of x and V are given below." / the table / "Find the value of p." is one
+        part, and the closing line must not open a new (d) (18 Sep 2026).
+        """
+        return self._add(parts, style='SubQuestion' if level >= 1 else None,
+                         marks=marks)
+
     def parts(self):
         """Start a fresh (a)(b)(c) list under an UNNUMBERED stem — an Example's
         question written with para(). The labels sit flush with the stem's left
@@ -1238,13 +1270,27 @@ class Worksheet:
         self._block_paras.append(p)
         return p
 
+    #: the text column an [Ans: …] line has to fit inside (A4 less the house
+    #: side margins), with a little slack for the estimate's own error
+    ANS_CM = 15.6
+
     def ans(self, parts):
         """[Ans: ...] right-aligned orange line, glued to the line above it so
-        it cannot be stranded at the top of the next page."""
+        it cannot be stranded at the top of the next page.
+
+        The line has to fit on ONE line -- a key that wraps reads as two
+        answers. The width is estimated here and anything over the column
+        prints at build time, so a too-long key is shortened at its source
+        rather than discovered on the render."""
         if self._block_paras:
             self._block_paras[-1].paragraph_format.keep_with_next = True
         full = [('text', '[Ans: ')] + list(parts) + [('text', ']')]
-        return self._add(full, style='Answer', alignment=WD_ALIGN_PARAGRAPH.RIGHT)
+        p = self._add(full, style='Answer', alignment=WD_ALIGN_PARAGRAPH.RIGHT)
+        w = _para_width_cm(p)
+        if w > self.ANS_CM:
+            flat = ''.join(s for _, s in full)
+            print(f'  !! [Ans:] wraps ({w:.1f} cm > {self.ANS_CM} cm): {flat[:100]}')
+        return p
 
     def _picture(self, p, path, width_cm):
         """Centre a PNG in paragraph p, capped at width_cm and never upscaled

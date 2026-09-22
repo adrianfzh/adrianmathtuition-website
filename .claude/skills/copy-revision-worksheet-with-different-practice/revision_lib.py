@@ -1310,10 +1310,17 @@ MATH_SPLIT = re.compile(
 BOLD_MD = re.compile(r"\*\*(.+?)\*\*", re.S)
 
 
+# A unit the bank writes as "75 m$^2$" -- the maths holds the exponent alone, so
+# its base is empty and both Word and LibreOffice draw the empty slot as a box:
+# "75 m□²" (18 Sep 2026, the S2 Quadratic Graphs sheet).  Pull the letter into the
+# maths with it, which is what the paper means: $\text{m}^2$.
+_LOOSE_SUP = re.compile(r"(?<![$\\])([A-Za-z]+)\$\^\{?(-?\w+)\}?\$")
+
+
 def split_math(text: str) -> list:
     """'text with $x^2$' -> [('text', ...), ('math', 'x^2'), ...]"""
     out, pos = [], 0
-    text = text or ""
+    text = _LOOSE_SUP.sub(r"$\\text{\1}^{\2}$", text or "")
     for m in MATH_SPLIT.finditer(text):
         if m.start() > pos:
             out += _split_bold(text[pos:m.start()])

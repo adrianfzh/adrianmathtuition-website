@@ -296,8 +296,9 @@ def render_parts(ws, parts, roman_level: int = 2, figdir: Path = None,
         if not isinstance(p, dict):
             continue                       # a hole the extractor left in parts[]
         subs = [s for s in (p.get("subparts") or []) if isinstance(s, dict)]
-        ws.SQ(R.split_math(strip_marks((p.get("text") or "").strip())),
-              marks=None if subs else p.get("marks"))
+        _part_text(ws, strip_marks((p.get("text") or "").strip()),
+                   lambda parts_, m: ws.SQ(parts_, marks=m),
+                   None if subs else p.get("marks"))
         _part_figure(ws, p, figdir, cap_w, cap_h)
         if subs:
             # the lead-in and the first (i) under it are the same part, and a
@@ -305,9 +306,11 @@ def render_parts(ws, parts, roman_level: int = 2, figdir: Path = None,
             # empty would otherwise leave a bare "(d)" at the foot of a page
             ws.keep_with_next()
         for j, s in enumerate(subs):
-            ws.numbered(R.split_math(strip_marks((s.get("text") or "").strip())),
-                        level=roman_level, fmt='roman', restart=(j == 0),
-                        marks=s.get("marks"))
+            _part_text(ws, strip_marks((s.get("text") or "").strip()),
+                       lambda parts_, m, j=j: ws.numbered(
+                           parts_, level=roman_level, fmt='roman',
+                           restart=(j == 0), marks=m),
+                       s.get("marks"))
 
 
 _MD_ROW = re.compile(r"^\s*\|.*\|\s*$")
@@ -381,6 +384,43 @@ def stem_blocks(stem):
     return [b for b in blocks if b[0] == "table" or b[1].strip()]
 
 
+def _part_text(ws, text, emit, marks):
+    """Print ONE part, its table of values drawn as a real table.
+
+    A table of corresponding values sits inside a part as often as inside a
+    stem -- "(c) Some values of x and V are given below. $$\\begin{array}...$$
+    Find the value of p." -- and that array used to reach the page as raw
+    maths: no rules, and one red ¿ per column where LibreOffice met \\hline
+    (18 Sep 2026, the S2 Quadratic Graphs sheet). `emit` writes the part's
+    FIRST line with its own label; the lines after the table are continuations
+    of the same part, so they carry no label of their own. The marks sit on the
+    last line of prose, as they do in a stem.
+    """
+    blocks = stem_blocks(text)
+    if not any(b[0] == "table" for b in blocks):
+        emit(R.split_math(text), marks)
+        return
+    last_text = max((i for i, b in enumerate(blocks) if b[0] == "text"),
+                    default=-1)
+    first = True
+    for i, (kind, payload) in enumerate(blocks):
+        if kind == "table":
+            if first:
+                emit([], None)             # the bare "(c)" over its table
+                first = False
+            ws.data_table(payload)
+            continue
+        m = marks if i == last_text else None
+        if first:
+            emit(R.split_math(payload), m)
+            first = False
+        else:
+            ws.cont(R.split_math(payload), marks=m)
+        if i + 1 < len(blocks) and blocks[i + 1][0] == "table":
+            # the lead-in and the table it announces are one part
+            ws.keep_with_next()
+
+
 def render_stem(ws, stem, marks=None, numbered=True, figure_next=False):
     """Print a question stem, its tables of values drawn as real tables.
 
@@ -415,10 +455,124 @@ def render_stem(ws, stem, marks=None, numbered=True, figure_next=False):
             ws.para(R.split_math(payload), marks=m)
 
 
+# a coordinate pair, with or without its $ delimiters and LaTeX thin spaces
+_PAIR = r"\$?\(\s*-?[\d.]+\s*,\s*(?:\\\s)?\s*-?[\d.]+\s*\)\$?"
+# three or more of them in a row -- the list of points a graph question already
+# prints in its own table, repeated back at the student in the bank's key
+_PAIR_RUN = re.compile(_PAIR + r"(?:\s*(?:,\s*and|,|\s+and)\s*" + _PAIR + r"){2,}")
+
+_KEY_TRIMS = [
+    (re.compile(r"\bA\s+smooth\s+", re.I), ""),
+    (re.compile(r"\bSmooth\s+", re.I), ""),
+    (re.compile(r"\bcurve\s+drawn\s+through\b", re.I), "curve through"),
+    (re.compile(r"\bGraph\s+drawn\s*\(([^)]*)\)"), r"\1"),
+    (re.compile(r"\bdownward-opening\b", re.I), r"$\\cap$-shaped"),
+    (re.compile(r"\bupward-opening\b", re.I), r"$\\cup$-shaped"),
+    (re.compile(r"\bthe\s+(?:\w+\s+)?tabulated\s+points\b", re.I), "the table points"),
+    (re.compile(r"\bthe\s+plotted\s+points\b", re.I), "the table points"),
+    (re.compile(r"\bpassing\s+through\b", re.I), "through"),
+    (re.compile(r"\s*\.\s*;"), ";"),
+    (re.compile(r"\s{2,}"), " "),
+]
+
+
+def _drop_tolerances(s: str) -> str:
+    """Drop an "(accept ... )" / "(allow ...)" note, brackets and all.
+
+    A number read off a graph is approximate by its nature, and the section's
+    notes say how close counts; spelling the accepted range out beside every
+    reading is what pushes a five-part graph key onto a second line.  Brackets
+    are matched by counting, because the range itself often holds a pair --
+    "(accept $(2.6, 0)$ to $(2.7, 0)$)".
+    """
+    out, i, low = [], 0, s.lower()
+    while True:
+        hits = [h for h in (low.find("(accept", i), low.find("(allow", i)) if h >= 0]
+        if not hits:
+            out.append(s[i:])
+            return "".join(out)
+        j = min(hits)
+        out.append(s[i:j].rstrip())
+        depth, p = 0, j
+        while p < len(s):
+            if s[p] == "(":
+                depth += 1
+            elif s[p] == ")":
+                depth -= 1
+                if depth == 0:
+                    break
+            p += 1
+        i = p + 1
+
+
+# the label a clause opens with -- "(a)", "(b)(ii)", "(iii)"
+_CLAUSE_LABEL = re.compile(r"^\s*(\((?:[a-z]{1,2}|[ivx]{1,4})\)"
+                           r"(?:\((?:[a-z]{1,2}|[ivx]{1,4})\))?)\s*")
+# a clause that opens by describing the curve the student was asked to DRAW
+_DRAWING = re.compile(r"^(?:an?|the)?\s*(?:\$\\c(?:ap|up)\$-shaped|smooth|inverted(?:-u)?|"
+                      r"straight|curve|parabola|graph|line|sketch)\b", re.I)
+# one landmark pair, and the words that say which landmark it is
+_ONE_PAIR = re.compile(_PAIR)
+_TURN = re.compile(r"(maximum|minimum|turning)[^,;]{0,30}$", re.I)
+
+
+def _collapse_drawing(clause: str) -> str:
+    """A "draw the curve" clause, cut back to the points it names.
+
+    The prose -- "a smooth $\\cup$-shaped curve through the table points,
+    cutting the $y$-axis at $-390$" -- describes the picture the student has
+    just drawn from the table, so it checks nothing they cannot see.  What is
+    worth checking is the handful of named points, so those are kept (with
+    "max"/"min" in front of a turning point) and the sentence around them goes.
+    An empty result means the clause said nothing but "draw it", and it is
+    dropped whole.
+    """
+    m = _CLAUSE_LABEL.match(clause)
+    label, body = (m.group(1), clause[m.end():]) if m else ("", clause.strip())
+    if not _DRAWING.match(body):
+        return clause
+    kept = []
+    for p in _ONE_PAIR.finditer(body):
+        t = _TURN.search(body[:p.start()])
+        tag = {"maximum": "max ", "minimum": "min ",
+               "turning": "turning point "}[t.group(1).lower()] if t else ""
+        kept.append(tag + p.group(0))
+    return f"{label} {', '.join(kept)}".strip() if kept else ""
+
+
+def short_key(key: str) -> str:
+    """Shorten a bank answer so the [Ans: ...] line fits on ONE line.
+
+    Three things make a graph question's key run over, and none of them tells
+    the student anything the question has not already given them:
+
+      * the whole list of plotted points, which the question prints in its own
+        table -- collapsed to "the table points";
+      * the shape written out in prose, "A smooth downward-opening curve
+        through ... cutting the $y$-axis at ..." -- cut back to the landmark
+        points it names, and dropped entirely when it names none;
+      * the accepted range beside every graph reading -- dropped, because the
+        section's notes already say how close a reading has to be.
+
+    What a student actually checks against -- the value of a constant, a
+    turning point, a root, a reading -- survives untouched.
+    """
+    if not key:
+        return key
+    out = _PAIR_RUN.sub("the table points", key)
+    for rx, rep in _KEY_TRIMS:
+        out = rx.sub(rep, out)
+    out = _drop_tolerances(out)
+    clauses = [_collapse_drawing(c) for c in out.split(";")]
+    out = "; ".join(c.strip() for c in clauses if c.strip())
+    return re.sub(r"\s{2,}", " ", out).strip()
+
+
 def render_practice(ws, by_id: dict, ids: list, figdir: Path = None,
                     side_by_side: bool = False, cap_w: float = 10.5,
                     cap_h: float = 8.0, answers: dict = None,
-                    stems: dict = None, part_texts: dict = None) -> int:
+                    stems: dict = None, part_texts: dict = None,
+                    caps: dict = None) -> int:
     """Lay out the practice half from live bank rows.
 
     Questions are rendered from the database rather than transcribed, so a stem
@@ -436,6 +590,12 @@ def render_practice(ws, by_id: dict, ids: list, figdir: Path = None,
     carries something a student may not see -- an answer written under the
     table, a part label the parts list repeats.  Same discipline: a comment at
     the call site, and both the stored stem and the printed one at build time.
+
+    `caps` is the same channel for a row's FIGURES: {question id: the height cap
+    in cm} for a question carrying so many panels that its glued run cannot fit
+    on one page -- a "match each graph to its equation" row with four sketches,
+    say.  The panels shrink rather than the question breaking away from them.
+    Same discipline: a comment at the call site, and a line at build time.
 
     `part_texts` is that channel one level down: {question id: {part label: the
     text to print}} for a row whose PART the extraction mangled -- a line that
@@ -484,13 +644,20 @@ def render_practice(ws, by_id: dict, ids: list, figdir: Path = None,
         render_stem(ws, stem, marks=marks, figure_next=bool(figdir and r.get("_figures")))
 
         # figure between the stem and the sub-parts, as in Adrian's own sheets
-        place_figures(ws, r, figdir, side_by_side, cap_w, cap_h)
+        row_cap = cap_h
+        if caps and qid in caps:
+            row_cap = caps[qid]
+            print(f"  ** figures CAPPED at {row_cap} cm (the run will not fit "
+                  f"on one page otherwise): {qid[:8]}")
+        place_figures(ws, r, figdir, side_by_side, cap_w, row_cap)
 
         if has_parts:
-            render_parts(ws, parts, figdir=figdir, cap_w=cap_w, cap_h=cap_h)
-        key = (r.get("answer") or "").strip()
+            render_parts(ws, parts, figdir=figdir, cap_w=cap_w, cap_h=row_cap)
+        # the bank's own key, with the repeated point lists and the drawing
+        # prose cut out of it so the [Ans:] line fits on one line
+        key = short_key((r.get("answer") or "").strip())
         if answers and qid in answers:
-            print(f"  ** answer OVERRIDDEN (bank key is wrong): {qid[:8]}")
+            print(f"  ** answer from the build script (see its comment): {qid[:8]}")
             print(f"     bank: {key}")
             print(f"     used: {answers[qid]}")
             key = answers[qid]
