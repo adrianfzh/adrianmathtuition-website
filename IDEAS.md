@@ -36,6 +36,8 @@ Done that evening: the Science tab (hidden from students, `SCIENCE_MARKING_OPEN_
 
 ## Product — student portal
 
+- **📷 Practice tab = photo a question → a re-skinned one of ours** — AGREED 23 Sep 2026 ("ok go, write the spec with re-skin as default"), not started. Spec + build order: [`SPEC-PRACTICE-PHOTO.md`](SPEC-PRACTICE-PHOTO.md). Creates SPEC-TWINS' `twin_of` column and the `/admin/generated` page the twins batch will share.
+
 - **📱 The student app (unlisted App Store app)** — AGREED 18 Sep 2026, not started. PencilKit writing on marked papers (same ink layer as the web), document-scanner hand-in, native push. Step 0 is Adrian's: enrol in the Apple Developer Program (US$99/yr). Spec + build order: [`SPEC-STUDENT-APP.md`](SPEC-STUDENT-APP.md).
 
 - **Essay marking (English + 中文)** — SPEC-ESSAY-MARKING.md. **E1 BUILT 13 Sep 2026** (English continuous + situational writing, typed hand-in, the report, /admin/essays, the calibration harness; preview identity + Adrian only). Next: a real class set through `scripts/essay-calibration` (needs ≥ 8 essays from one teacher on one prompt with their marks), then E2 (photo + transcript confirm, 华文作文), the HELD Agree/Override door, the `essay_marking_open` switch.
