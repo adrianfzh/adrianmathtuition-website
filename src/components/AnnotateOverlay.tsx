@@ -15,7 +15,8 @@
 //  · Freehand ink renders as pressure-tapered filled outlines (perfect-freehand);
 //    highlighter is a uniform translucent ribbon drawn UNDER pen ink.
 //  · Draw-and-hold ≥500ms at the end of a stroke snaps it to a clean line/rect/
-//    ellipse (lib/annotate/shape-fit). Lift early to keep freehand.
+//    triangle/ellipse, an arc, or the smoothed curve the hand meant (lib/annotate/
+//    shape-fit; arcs + curves since 22 Sep 2026). Lift early to keep freehand.
 //  · Drafts autosave to localStorage per run (tab-eviction insurance) and are
 //    KEPT after Done — reopening RESTORES the ink by default and offers
 //    "Start fresh" as the way back (Adrian, 3 Sep 2026: "make the inked copy

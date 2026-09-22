@@ -102,11 +102,12 @@ describe('fitStroke — lines', () => {
       expect(fit.x2).toBeCloseTo(300, -1);
     }
   });
-  it('does NOT snap a deliberate curve', () => {
-    expect(fitStroke(deliberateArc())).toBeNull();
+  it('a deliberate curve is never a line (since 22 Sep 2026 it is an arc)', () => {
+    const fit = fitStroke(deliberateArc());
+    expect(fit?.kind).toBe('arc');
   });
-  it('does NOT snap a zigzag', () => {
-    expect(fitStroke(zigzag())).toBeNull();
+  it('a zigzag is never a line (since 22 Sep 2026 it is a smoothed curve)', () => {
+    expect(fitStroke(zigzag())?.kind).toBe('curve');
   });
 });
 
@@ -163,8 +164,10 @@ describe('fitStroke — ellipses and circles', () => {
 });
 
 describe('fitStroke — rejections', () => {
-  it('an open C-shape fits nothing', () => {
-    expect(fitStroke(openC())).toBeNull();
+  it('an open C-shape is no closed shape (since 22 Sep 2026 it is a 270° arc)', () => {
+    const fit = fitStroke(openC());
+    expect(fit?.kind).toBe('arc');
+    if (fit?.kind === 'arc') expect(Math.abs(fit.sweep)).toBeCloseTo(1.5 * Math.PI, 1);
   });
   it('strokes below minLength never snap', () => {
     const tiny = wobblyLine().map((p) => ({ ...p, x: p.x / 15, y: p.y / 15 }));
@@ -324,5 +327,132 @@ describe('a held stroke on the iPad (22 Sep 2026)', () => {
     const fit = fitStroke(pts, { minLength: 20 });
     expect(fit?.kind).toBe('line');
     if (fit?.kind === 'line') expect(fit.x2).toBeGreaterThan(195);
+  });
+});
+
+// ── arcs and curves (22 Sep 2026, Adrian: "trace a curve … snaps to the closest fitted curve, like Notability") ──
+
+/** A hand-drawn arc: radius r, from angle a to b, ±jitter, ending in a hold cluster. */
+function handArc(r: number, a: number, b: number, opts: { seed?: number; jitter?: number; tail?: number; n?: number } = {}): StrokePoint[] {
+  const { seed = 1, jitter = 1.2, tail = 25, n = 40 } = opts;
+  const rand = mulberry32(seed);
+  const pts: StrokePoint[] = [];
+  for (let i = 0; i <= n; i++) {
+    const t = a + ((b - a) * i) / n;
+    pts.push(pt(300 + r * Math.cos(t) + noise(rand, jitter), 300 + r * Math.sin(t) + noise(rand, jitter)));
+  }
+  const end = pts[pts.length - 1];
+  for (let i = 0; i < tail; i++) pts.push(pt(end.x + noise(rand, 0.8), end.y + noise(rand, 0.8)));
+  return pts;
+}
+
+/** A wobbly S-curve (a sine over 400 px) — no shape, but a curve the hand meant. */
+function handS(seed = 1, jitter = 1.5): StrokePoint[] {
+  const rand = mulberry32(seed);
+  const pts: StrokePoint[] = [];
+  for (let i = 0; i <= 60; i++) {
+    const x = (i / 60) * 400;
+    pts.push(pt(x + noise(rand, jitter), 80 * Math.sin((x / 400) * 2 * Math.PI) + noise(rand, jitter)));
+  }
+  return pts;
+}
+
+/** Mean distance from the drawn points to the fitted polyline. */
+function residual(points: StrokePoint[], poly: StrokePoint[]): number {
+  let sum = 0;
+  for (const p of points) {
+    let best = Infinity;
+    for (let i = 1; i < poly.length; i++) {
+      const a = poly[i - 1], b = poly[i];
+      const dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy || 1;
+      const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2));
+      const d = Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+      if (d < best) best = d;
+    }
+    sum += best;
+  }
+  return sum / points.length;
+}
+
+describe('arcs (22 Sep 2026)', () => {
+  it('a hand arc ending in a hold cluster snaps to the circle it sits on', () => {
+    for (const seed of [1, 2, 3]) {
+      const fit = fitStroke(handArc(120, 0.2, 2.0, { seed }), { minLength: 20 });
+      expect(fit?.kind, `seed ${seed}`).toBe('arc');
+      if (fit?.kind === 'arc') {
+        expect(fit.r).toBeCloseTo(120, -1);
+        expect(fit.cx).toBeCloseTo(300, -1);
+        expect(fit.cy).toBeCloseTo(300, -1);
+        expect(fit.sweep).toBeCloseTo(1.8, 1);
+      }
+    }
+  });
+  it('the arc keeps the ends where the hand put them', () => {
+    const raw = handArc(100, -1, 1, { jitter: 0, tail: 0 });
+    const fit = fitStroke(raw, { minLength: 20 });
+    expect(fit?.kind).toBe('arc');
+    const poly = shapeToPolyline(fit!);
+    expect(Math.hypot(poly[0].x - raw[0].x, poly[0].y - raw[0].y)).toBeLessThan(3);
+    const last = raw[raw.length - 1], plast = poly[poly.length - 1];
+    expect(Math.hypot(plast.x - last.x, plast.y - last.y)).toBeLessThan(3);
+  });
+  it('a shallow bend (under 25°) is a line, not an arc', () => {
+    const fit = fitStroke(handArc(600, 0, 0.3, { jitter: 0, tail: 0 }), { minLength: 20 });
+    expect(fit?.kind).toBe('line');
+  });
+  it('a near-full loop is a circle, not an arc', () => {
+    const fit = fitStroke(handArc(80, 0, 6.0, { jitter: 0.5 }), { minLength: 20 });
+    expect(fit?.kind).toBe('ellipse');
+  });
+  it('an arc → a dense polyline along the circle', () => {
+    const poly = shapeToPolyline({ kind: 'arc', cx: 0, cy: 0, r: 100, a0: 0, sweep: Math.PI / 2 });
+    expect(poly.length).toBeGreaterThan(8);
+    for (const p of poly) expect(Math.hypot(p.x, p.y)).toBeCloseTo(100, 6);
+    expect(poly[poly.length - 1].x).toBeCloseTo(0, 6);
+    expect(poly[poly.length - 1].y).toBeCloseTo(100, 6);
+  });
+});
+
+describe('smoothed curves (22 Sep 2026)', () => {
+  it('a wobbly S-curve becomes a smooth curve that follows the hand', () => {
+    for (const seed of [1, 2]) {
+      const raw = handS(seed);
+      const fit = fitStroke(raw, { minLength: 20 });
+      expect(fit?.kind, `seed ${seed}`).toBe('curve');
+      const poly = shapeToPolyline(fit!);
+      // stays on the drawn path (well within the 2 % tolerance) …
+      expect(residual(raw, poly)).toBeLessThan(0.015 * 500);
+      // … with the ends close to where the hand started and stopped (the pen-down
+      // blob and the hold cluster collapse to their centroids first)
+      expect(Math.hypot(poly[0].x - raw[0].x, poly[0].y - raw[0].y)).toBeLessThan(8);
+      const last = raw[raw.length - 1], plast = poly[poly.length - 1];
+      expect(Math.hypot(plast.x - last.x, plast.y - last.y)).toBeLessThan(8);
+    }
+  });
+  it('the smoothed curve has far fewer bends than the jitter (few Béziers)', () => {
+    const fit = fitStroke(handS(3), { minLength: 20 });
+    expect(fit?.kind).toBe('curve');
+    if (fit?.kind === 'curve') expect(fit.beziers.length).toBeLessThanOrEqual(8);
+  });
+  it('a closed blob that is no shape becomes a closed smooth curve', () => {
+    // a heart — not a rect, triangle or ellipse (a gently dented circle is still
+    // an ellipse on purpose: hand circles are lumpy)
+    const pts: StrokePoint[] = [];
+    for (let i = 0; i <= 80; i++) {
+      const t = (i / 80) * 2 * Math.PI;
+      pts.push(pt(
+        200 + 8 * 16 * Math.sin(t) ** 3,
+        200 - 8 * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)),
+      ));
+    }
+    const fit = fitStroke(pts, { minLength: 20 });
+    expect(fit?.kind).toBe('curve');
+    const poly = shapeToPolyline(fit!);
+    const a = poly[0], b = poly[poly.length - 1];
+    expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeLessThan(1e-6);
+  });
+  it('a curve below minLength still keeps its freehand ink', () => {
+    const raw = handS(1).map((p) => ({ ...p, x: p.x / 20, y: p.y / 20 }));
+    expect(fitStroke(raw, { minLength: 30 })).toBeNull();
   });
 });

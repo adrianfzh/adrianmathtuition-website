@@ -18,7 +18,13 @@ export type SnappedShape =
   | { kind: 'rect'; cx: number; cy: number; w: number; h: number; angle: number }
   | { kind: 'ellipse'; cx: number; cy: number; rx: number; ry: number; angle: number }
   // 17 Sep 2026: a closed loop with three corners (Adrian: "triangles can't").
-  | { kind: 'triangle'; points: [XYPt, XYPt, XYPt] };
+  | { kind: 'triangle'; points: [XYPt, XYPt, XYPt] }
+  // 22 Sep 2026 (Adrian: "trace a curve, then the pen stroke snaps to the closest
+  // fitted curve, like Notability"): an open stroke on a circle becomes a clean arc
+  // (angles in radians, `sweep` signed), anything else held becomes a smoothed curve
+  // (a chain of cubic Béziers, see lib/annotate/curve-fit).
+  | { kind: 'arc'; cx: number; cy: number; r: number; a0: number; sweep: number }
+  | { kind: 'curve'; beziers: [XYPt, XYPt, XYPt, XYPt][] };
 
 export type XYPt = { x: number; y: number };
 

@@ -86,7 +86,18 @@ at a time:
   closed within 15% of perimeter — snap to the bounding box, axis-aligned if all edges
   within 10° of axes, else keep rotation), **ellipse/circle** (fit vs. best-fit ellipse,
   mean radial error < 6%; circle if axes within 12% of each other).
-- No fit → keep the freehand stroke unchanged. Never snap without the hold.
+- **Arcs and curves (22 Sep 2026 — Adrian: "trace a curve, then the pen stroke snaps to
+  the closest fitted curve, like how Notability does it"):** a stroke that is none of the
+  above snaps anyway. An OPEN stroke whose ink sits on a circle (Kåsa least-squares
+  circle, mean radial error < 6 % of the radius, sweep 25°–340°, radius < 4× the stroke
+  length) becomes a clean **arc** that starts and ends where the hand did. Anything else
+  — an S, a parabola sketch, a wavy underline, a closed blob that is no shape — becomes
+  the **smoothed curve** the hand meant: the fewest cubic Béziers within 2 % of the
+  stroke's length (2–12 image px) of every point (Schneider's fit, `lib/annotate/curve-fit`),
+  so wobble goes and every real bend stays; a closed-ish blob is closed on itself. The
+  stored stroke is still a polyline (`snapped: 'arc' | 'curve'`), so nothing downstream
+  changes.
+- Only a stroke under the minimum length keeps its freehand ink. Never snap without the hold.
 
 ## 5. Architecture
 
@@ -127,10 +138,12 @@ trivial there and avoids shipping stroke JSON.
 
 Create in `src/lib/annotate/`, each with a sibling `.test.ts`:
 
-1. **`shape-fit.ts`** — `fitStroke(points): { kind:'line'|'rect'|'ellipse', ... } | null`
-   with the thresholds of §4. Tests: a hand-wobbly line snaps; a deliberate curve does
-   NOT; a 4-corner-ish loop → rect (axis-aligned and rotated cases); a round-ish loop →
-   ellipse; an open C-shape → null; thresholds pinned with named fixtures.
+1. **`shape-fit.ts`** — `fitStroke(points): { kind:'line'|'rect'|'ellipse'|'triangle'|'arc'|'curve', ... } | null`
+   with the thresholds of §4. Tests: a hand-wobbly line snaps; a deliberate curve is
+   never a line (an arc since 22 Sep 2026); a 4-corner-ish loop → rect (axis-aligned and
+   rotated cases); a round-ish loop → ellipse; an open C-shape → a 270° arc; a wobbly S →
+   a smoothed curve that follows the hand; thresholds pinned with named fixtures.
+   `curve-fit.ts` = the Bézier fitter on its own.
 2. **`stroke-geometry.ts`** — RDP simplification, perpendicular-deviation, smoothing
    points for render. Tests on fixtures.
 3. **`hit-test.ts`** — `strokeHit(stroke, x, y, tolerance)` for the eraser (distance to

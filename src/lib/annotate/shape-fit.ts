@@ -1,6 +1,10 @@
 // Draw-and-hold shape snapping (SPEC-ANNOTATE.md §4): decide whether a held stroke
-// is a straight line, a rectangle or an ellipse/circle, with the spec's thresholds.
-// Priority order line → rect → ellipse; anything else returns null (keep freehand).
+// is a straight line, a rectangle, a triangle or an ellipse/circle, with the spec's
+// thresholds. Priority order line → (closed loop) rect → triangle → ellipse → arc →
+// smoothed curve. Since 22 Sep 2026 a held stroke ALWAYS snaps to something: an open
+// stroke on a circle becomes a clean arc, and whatever fits no shape becomes the
+// smoothed curve the hand meant (Adrian: "like Notability"). Only a stroke below
+// minLength keeps its freehand ink.
 //
 // All thresholds are RELATIVE to the stroke's own size, so the fit behaves the same
 // on a 1600px photo and a 2500px scan. The one absolute input, minLength, is passed
@@ -12,6 +16,7 @@ import {
   angleDiff, dist, maxChordDeviation, pathLength, pointSegmentDistance, rdpSimplify,
   resampleByArcLength, type XY,
 } from './stroke-geometry';
+import { beziersToPolyline, fitBeziers } from './curve-fit';
 
 // 22 Sep 2026 (Adrian: "draw and hold to turn into a perfect circle … usually turns
 // into a square"): the points a real hold delivers are not the clean loops the first
@@ -40,6 +45,15 @@ const RECT_AXIS_TOL = (10 * Math.PI) / 180;    // all edges within 10° of axes 
 const ELLIPSE_MAX_RADIAL_ERR = 0.13;           // mean |r-1| in ellipse frame — 0.06 until 17 Sep 2026, 0.10 until 22 Sep (a hand circle is lumpy; rect wins the residual contest when it is really a box)
 const CIRCLE_AXIS_RATIO = 0.28;                // axes within 28% of each other → circle (12 % until 17 Sep 2026: hand circles came out as ellipses)
 
+// Arc + curve (22 Sep 2026)
+const ARC_MAX_RADIAL_ERR = 0.06;    // mean |dist − r| / r for an open stroke to be a circular arc
+const ARC_MIN_SWEEP = (25 * Math.PI) / 180;    // less than this bends too little to be an arc
+const ARC_MAX_SWEEP = (340 * Math.PI) / 180;   // more is a loop — the closed-shape fits own it
+const ARC_MAX_RADIUS_TO_LEN = 4;    // a "circle" four times longer than the stroke is a line that wobbled
+const CURVE_ERROR_FRACTION = 0.02;  // Bézier tolerance, of stroke length …
+const CURVE_ERROR_MIN = 2;          // … clamped to [2, 12] image px: a wobble is smoothed, a bend is kept
+const CURVE_ERROR_MAX = 12;
+
 export type FitOptions = { minLength?: number };
 
 export function fitStroke(points: StrokePoint[], opts: FitOptions = {}): SnappedShape | null {
@@ -54,19 +68,123 @@ export function fitStroke(points: StrokePoint[], opts: FitOptions = {}): Snapped
   // Rect, triangle and ellipse all require a closed-ish loop — of the CLEANED path.
   const loop = cleanLoop(points);
   const loopLen = pathLength(loop);
-  if (loop.length < 8 || loopLen < minLength) return null;
-  const gap = dist(loop[0], loop[loop.length - 1]);
-  if (gap > CLOSURE_MAX_GAP * loopLen) return null;
+  const gap = loop.length ? dist(loop[0], loop[loop.length - 1]) : Infinity;
+  const closed = loop.length >= 8 && loopLen >= minLength && gap <= CLOSURE_MAX_GAP * loopLen;
 
-  const rect = fitRect(loop, loopLen);
-  if (rect) {
-    // A round loop can pass the corner test (its inscribed square turns 90° four
-    // times); let the ink decide — whichever outline it sits closer to.
-    const ellipse = fitEllipse(loop);
-    if (ellipse && outlineResidual(loop, ellipse) < outlineResidual(loop, rect)) return ellipse;
-    return rect;
+  if (closed) {
+    const rect = fitRect(loop, loopLen);
+    if (rect) {
+      // A round loop can pass the corner test (its inscribed square turns 90° four
+      // times); let the ink decide — whichever outline it sits closer to.
+      const ellipse = fitEllipse(loop);
+      if (ellipse && outlineResidual(loop, ellipse) < outlineResidual(loop, rect)) return ellipse;
+      return rect;
+    }
+    const shape = fitTriangle(loop, loopLen) ?? fitEllipse(loop);
+    if (shape) return shape;
   }
-  return fitTriangle(loop, loopLen) ?? fitEllipse(loop);
+
+  // Not a shape: an arc if the ink sits on a circle, else the smoothed curve.
+  const open = smoothOpen(points);
+  const openLen = pathLength(open);
+  if (open.length < 4 || openLen < minLength) return null;
+  return fitArc(open, openLen) ?? fitCurve(closed ? loop : open, closed);
+}
+
+/** An open stroke as the arc/curve fits read it: clusters collapsed, resampled, lightly smoothed. */
+function smoothOpen(points: StrokePoint[]): XY[] {
+  const trimmed = trimClusters(points);
+  if (trimmed.length < 3) return trimmed;
+  const dense = resampleByArcLength(trimmed, Math.min(SMOOTH_SAMPLES, Math.max(8, trimmed.length)));
+  return dense.map((q, i) => {
+    if (i === 0 || i === dense.length - 1) return { x: q.x, y: q.y };
+    const a = dense[i - 1], b = dense[i + 1];
+    return { x: (a.x + q.x + b.x) / 3, y: (a.y + q.y + b.y) / 3 };
+  });
+}
+
+/** Signed angle from a to b, in (−π, π]. */
+function signedAngle(a: number, b: number): number {
+  let d = (b - a) % (2 * Math.PI);
+  if (d > Math.PI) d -= 2 * Math.PI;
+  if (d <= -Math.PI) d += 2 * Math.PI;
+  return d;
+}
+
+/**
+ * A circular arc through an OPEN stroke (22 Sep 2026): algebraic least-squares
+ * circle (Kåsa), accepted when the ink sits within 6 % of the radius, bends between
+ * 25° and 340°, and the circle is not so large that the stroke is really a line.
+ * The arc starts at the first point's angle and sweeps to the last point's, so the
+ * ends stay where the hand put them.
+ */
+export function fitArc(points: XY[], len: number): SnappedShape | null {
+  const n = points.length;
+  if (n < 4) return null;
+  // Kåsa: minimise Σ (x² + y² + D x + E y + F)²  — a 3×3 normal system.
+  let sxx = 0, sxy = 0, syy = 0, sx = 0, sy = 0, sxz = 0, syz = 0, sz = 0;
+  for (const p of points) {
+    const z = p.x * p.x + p.y * p.y;
+    sxx += p.x * p.x; sxy += p.x * p.y; syy += p.y * p.y; sx += p.x; sy += p.y;
+    sxz += p.x * z; syz += p.y * z; sz += z;
+  }
+  const sol = solve3([
+    [sxx, sxy, sx, -sxz],
+    [sxy, syy, sy, -syz],
+    [sx, sy, n, -sz],
+  ]);
+  if (!sol) return null;
+  const [D, E, F] = sol;
+  const cx = -D / 2, cy = -E / 2;
+  const r2 = cx * cx + cy * cy - F;
+  if (!(r2 > 0)) return null;
+  const r = Math.sqrt(r2);
+  if (r > ARC_MAX_RADIUS_TO_LEN * len) return null;
+  let err = 0;
+  for (const p of points) err += Math.abs(dist(p, { x: cx, y: cy }) - r);
+  if (err / n > ARC_MAX_RADIAL_ERR * r) return null;
+  // Unwrap the angle the stroke sweeps, point to point, so a 200° arc is 200° not 160°.
+  const a0 = Math.atan2(points[0].y - cy, points[0].x - cx);
+  let sweep = 0, prev = a0;
+  for (let i = 1; i < n; i++) {
+    const a = Math.atan2(points[i].y - cy, points[i].x - cx);
+    sweep += signedAngle(prev, a);
+    prev = a;
+  }
+  if (Math.abs(sweep) < ARC_MIN_SWEEP || Math.abs(sweep) > ARC_MAX_SWEEP) return null;
+  return { kind: 'arc', cx, cy, r, a0, sweep };
+}
+
+function solve3(m: number[][]): [number, number, number] | null {
+  const a = m.map((row) => row.slice());
+  for (let c = 0; c < 3; c++) {
+    let piv = c;
+    for (let r = c + 1; r < 3; r++) if (Math.abs(a[r][c]) > Math.abs(a[piv][c])) piv = r;
+    if (Math.abs(a[piv][c]) < 1e-12) return null;
+    [a[c], a[piv]] = [a[piv], a[c]];
+    for (let r = 0; r < 3; r++) {
+      if (r === c) continue;
+      const f = a[r][c] / a[c][c];
+      for (let k = c; k < 4; k++) a[r][k] -= f * a[c][k];
+    }
+  }
+  return [a[0][3] / a[0][0], a[1][3] / a[1][1], a[2][3] / a[2][2]];
+}
+
+/**
+ * The smoothed curve a held freehand stroke becomes when it is no known shape
+ * (22 Sep 2026): the fewest cubic Béziers within a tolerance of 2 % of the stroke's
+ * length (2–12 image px), so hand wobble is ironed out and every real bend is kept.
+ * A closed-ish loop that fits no shape is closed on itself.
+ */
+export function fitCurve(points: XY[], closed: boolean): SnappedShape | null {
+  const pts = closed ? [...points, points[0]] : points;
+  const len = pathLength(pts);
+  if (pts.length < 2 || len === 0) return null;
+  const tol = Math.min(CURVE_ERROR_MAX, Math.max(CURVE_ERROR_MIN, CURVE_ERROR_FRACTION * len));
+  const beziers = fitBeziers(pts, tol);
+  if (!beziers.length) return null;
+  return { kind: 'curve', beziers: beziers.map((b) => b.map((p) => ({ x: p.x, y: p.y })) as [XY, XY, XY, XY]) };
 }
 
 /** Collapse the pen-down blob and the hold cluster at either end into one point each. */
@@ -337,6 +455,19 @@ function fitTriangle(points: XY[], len: number): SnappedShape | null {
 
 /** Convert a fitted shape to the polyline stored on the stroke (see types.ts). */
 export function shapeToPolyline(shape: SnappedShape, pressure = 0.6): StrokePoint[] {
+  if (shape.kind === 'curve') {
+    return beziersToPolyline(shape.beziers).map((p) => ({ x: p.x, y: p.y, p: pressure }));
+  }
+  if (shape.kind === 'arc') {
+    const { cx, cy, r, a0, sweep } = shape;
+    const N = Math.max(8, Math.ceil((Math.abs(sweep) * r) / 6));
+    const out: StrokePoint[] = [];
+    for (let i = 0; i <= N; i++) {
+      const t = a0 + (sweep * i) / N;
+      out.push({ x: cx + r * Math.cos(t), y: cy + r * Math.sin(t), p: pressure });
+    }
+    return out;
+  }
   if (shape.kind === 'triangle') {
     const [a, b, c] = shape.points;
     return [a, b, c, a].map(p => ({ x: p.x, y: p.y, p: pressure }));

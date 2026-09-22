@@ -122,7 +122,8 @@ function PageSurface({ page, mine, other, tool, color, hlColor, size, canWrite, 
     let lastPointerAt = 0;
     // Draw-and-hold → shape (22 Sep 2026, the overlay's rule brought to the page):
     // when the pen stops moving for HOLD_SNAP_MS the stroke becomes a clean line,
-    // rectangle or ellipse; moving on again un-snaps it. `snapped` is what end() files.
+    // rectangle, triangle or ellipse, an arc, or a smoothed curve (22 Sep 2026);
+    // moving on again un-snaps it. `snapped` is what end() files.
     let holdTimer: ReturnType<typeof setTimeout> | null = null;
     let holdFrom = -1;
     let snapped: { points: StrokePoint[]; snapped: NonNullable<Stroke['snapped']> } | null = null;
