@@ -472,15 +472,19 @@ function SheetLineView({ line, sheet, markedSheet, nextWave, admin = false, shee
   return (
     <div className={`rounded-2xl border px-3 py-2 ${t.box}`}>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-        <p className="min-w-0 flex-1 text-[13px] font-semibold"><span aria-hidden>{t.mark}</span> {line.text}</p>
+        {/* The whole line opens the marked sheet — the old "See your marked sheet ›" was a
+            small underlined tail at the end of a wrapped line, easy to miss on an iPad
+            (Adrian, 22 Sep 2026: "i can't click on the Practice Again sheet"). */}
+        {openMarked ? (
+          <Link href={`/app/marking/${openMarked}`} data-track="marking:open" className="min-w-0 flex-1 -mx-1 -my-1 rounded-xl px-1 py-1 text-[13px] font-semibold active:bg-black/5">
+            <span aria-hidden>{t.mark}</span> {line.text} <span className="whitespace-nowrap underline underline-offset-2">See your marked sheet ›</span>
+          </Link>
+        ) : (
+          <p className="min-w-0 flex-1 text-[13px] font-semibold"><span aria-hidden>{t.mark}</span> {line.text}</p>
+        )}
         {admin && sheetLook?.needsLook && <span className="shrink-0 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold px-2 py-0.5">Not looked at yet</span>}
         {admin && markedSheet && sheetLook && <span className="shrink-0 text-[11.5px]"><LookedAt runId={markedSheet.id} needsLook={sheetLook.needsLook} checkedAt={sheetLook.checkedAt} /></span>}
         {admin && manualLink && sheet?.run_id && <span className="shrink-0 text-[11.5px]"><BelongsTo runId={sheet.run_id} options={[]} linked /></span>}
-        {openMarked && (
-          <Link href={`/app/marking/${openMarked}`} data-track="marking:open" className="shrink-0 text-xs font-bold underline underline-offset-2">
-            See your marked sheet ›
-          </Link>
-        )}
         {line.actions && sheet && !admin && (
           <span className="shrink-0 flex items-center gap-1.5">
             {/* Start = do it in the app (17 Sep 2026); the PDF and the photo hand-in stay as the other ways. */}

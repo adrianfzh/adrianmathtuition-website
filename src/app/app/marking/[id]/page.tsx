@@ -9,6 +9,7 @@ import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { cookies } from 'next/headers';
 import { TEACHER_INK_IDENTITY } from '@/lib/student-ink';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
+import { viewingAsStudent } from '@/lib/portal-beta';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
 import { fileHref } from '@/lib/student-files-url';
@@ -52,7 +53,9 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
   // currentAccount() redirects a session with no portal account). An admin
   // viewer has no account; the paper's own student id stands in for the
   // identity everywhere below (sheets, siblings, the student's ink).
-  const isAdmin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
+  // Adrian's cookie, unless he is "viewing as a student" — then the page is the student's
+  // (no Edit marking, no Their paper) so he sees exactly what they see (22 Sep 2026).
+  const isAdmin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value) && !(await viewingAsStudent());
   const account: Awaited<ReturnType<typeof currentAccount>> | null = isAdmin ? null : await currentAccount();
   const sb = getSupabaseAdmin();
   let q = sb.from('paper_marking_runs').select(COLUMNS + ', student_id').eq('id', id).not('released_at', 'is', null);
@@ -314,6 +317,14 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
           <PaperTabs hasPaper={paper.pages.length > 0} hasMarks={hasCover || paper.dropped.length > 0}
             paperLabel={isAdmin ? 'Their paper' : 'My paper'}
             paper={<>
+              {/* The "Where your marks went" cover leads, then the marked pages — the paper as it
+                  is handed back (Adrian, 22 Sep 2026: "like how it was originally"). */}
+              {hasCover && (
+                <section aria-label="Where your marks went" className="bg-white rounded-3xl border border-black/5 shadow-sm overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/api/portal/marking-cover?run=${paper.id}`} alt="Where your marks went" className="w-full block" />
+                </section>
+              )}
               {paper.pages.length > 0 && !isScience && (
                 // ✍️ the student's own ink over the marked pages (17 Sep 2026).
                 <div className="space-y-2">
@@ -325,16 +336,7 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
                 </div>
               )}
             </>}
-            marks={<>
-              {hasCover && (
-                <section aria-label="Where your marks went" className="bg-white rounded-3xl border border-black/5 shadow-sm overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={`/api/portal/marking-cover?run=${paper.id}`} alt="Where your marks went" className="w-full block" />
-                </section>
-              )}
-
-              <LostMarks paper={paper} />
-            </>} />
+            marks={<LostMarks paper={paper} />} />
         </Suspense>
       )}
 
