@@ -298,10 +298,13 @@ function PageSurface({ page, mine, other, tool, color, hlColor, canWrite, finger
   );
 }
 
-export default function StudentInk({ runId, pages, initial, readOnly = false, other = null, editor = 'student' }: {
+export default function StudentInk({ runId, pages, initial, readOnly = false, other = null, editor = 'student', onEditMarking }: {
   runId: string; pages: InkPageInput[]; initial: InkPages | null; readOnly?: boolean; other?: OtherInk | null;
   /** Who is drawing the editable layer: the student (their notes, /api/portal) or Adrian (his notes on their paper, /api/admin — 18 Sep 2026). */
   editor?: 'student' | 'adrian';
+  /** Adrian only (22 Sep 2026: "just replace that expanded button to go into admin mode"): the ⤢ button becomes
+   *  "Edit marking" and hands the page in view to the desk's marker-layer overlay (AdminMarkingPen). */
+  onEditMarking?: (pageIndex: number) => void;
 }) {
   const isAdrian = editor === 'adrian';
   const saveUrl = isAdrian ? '/api/admin/marking/teacher-ink' : '/api/portal/marking/ink';
@@ -443,6 +446,7 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
     redo: 'M21 7v6h-6 M3 17a9 9 0 0 1 15-6.7L21 13',
     finger: 'M8 13V5a2 2 0 1 1 4 0v6 M12 11V9a2 2 0 1 1 4 0v3 M16 12a2 2 0 1 1 4 0v3a6 6 0 0 1-6 6h-2a6 6 0 0 1-5.2-3L4 13a2 2 0 0 1 3.4-2L8 12',
     expand: 'M15 3h6v6 M9 21H3v-6 M21 3l-7 7 M3 21l7-7',
+    marks: 'M3 3h18v18H3z M7 13l3 3 7-7',
   } as const;
   const [hintSeen, setHintSeen] = useState(true);
   useEffect(() => {
@@ -504,7 +508,9 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
             {iconBtn('Redo', ICON.redo, redo, { disabled: !history.future.length })}
             <span className="w-px h-6 bg-black/10 mx-1" aria-hidden />
             {iconBtn('Finger writes', ICON.finger, () => setFingerWrites(f => !f), { on: fingerWrites, title: 'No Pencil? One finger writes, two fingers scroll' })}
-            {iconBtn('Full screen', ICON.expand, () => { setOpenAt(pageInView()); void flush().then(() => setFullScreen(true)); }, { title: 'Zoom in, type a note — opens at the page you are on' })}
+            {onEditMarking
+              ? iconBtn('Edit marking', ICON.marks, () => { const at = pageInView() ?? 0; void flush().then(() => onEditMarking(at)); }, { title: 'Edit the ticks, crosses, notes and marks — opens at the page you are on' })
+              : iconBtn('Full screen', ICON.expand, () => { setOpenAt(pageInView()); void flush().then(() => setFullScreen(true)); }, { title: 'Zoom in, type a note — opens at the page you are on' })}
             <span className={`ml-1 mr-1.5 w-2 h-2 rounded-full ${saveDot}`} role="status" aria-live="polite" aria-label={saveText} title={saveText} />
           </div>
         </div>

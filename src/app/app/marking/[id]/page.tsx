@@ -32,6 +32,7 @@ import StarPaper from '../StarPaper';
 import ArchivePaper from '../ArchivePaper';
 import PaperNote from '../PaperNote';
 import StudentInk from '../StudentInk';
+import AdminMarkingPen from '../AdminMarkingPen';
 import JumpToMistake from '../JumpToMistake';
 import { Suspense } from 'react';
 import type { InkPages } from '@/lib/student-ink';
@@ -318,7 +319,7 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
                 <div className="space-y-2">
                   {/* Two layers: the student edits theirs and sees "From Adrian"; Adrian edits his and sees theirs (18 Sep 2026). */}
                   {isAdmin
-                    ? <StudentInk runId={paper.id} pages={paper.pages} initial={teacherInk} editor="adrian" other={{ pages: ink, label: `${viewerName || 'their'} notes` }} />
+                    ? <AdminMarkingPen runId={paper.id} pages={paper.pages} initial={teacherInk} other={{ pages: ink, label: `${viewerName || 'their'} notes` }} />
                     : <StudentInk runId={paper.id} pages={paper.pages} initial={ink} other={{ pages: teacherInk, label: "Adrian's notes" }} />}
                   <Suspense fallback={null}><JumpToMistake pages={paper.pages.map(p => ({ index: p.index, layerUrl: p.layerUrl ?? null, layerH: p.layerH ?? null }))} /></Suspense>
                 </div>
