@@ -494,3 +494,32 @@ proper … annotations at side column seems cut off too".
   `touch-shadow`, `cancel-handover`, `touch-end-pointer-stroke`. Live Text over the
   page photo remains the one cause no web code can reach — the AdrianMarker shell
   turns it off.
+
+## 16. Four shortcuts on Edit marking (22 Sep 2026)
+
+Adrian: "right now i have to click to delete the tick marks or the cross marks (and
+perhaps replace it) and change the marks by clicking onto the marks, then deleting the
+mark, and typing it -> any possible shortcuts?" — "build 1 to 4". Admin mode only; the
+student's overlay is untouched. All four live in `components/AnnotateOverlay.tsx` over
+the pure helpers in `lib/annotate/layer.ts` (`addMarkObject`, `markGlyph`,
+`setScoreAwarded`; tested).
+
+1. **A score chip's number row.** Selecting a score chip shows the buttons 0…max
+   (when max ≤ 12) above "✏️ Edit text"; one tap sets the awarded mark
+   (`setScoreAwarded` rewrites only the numerator, clamped to max). It is a
+   `textOverride`, so Done records it as the mark change of §15.
+2. **Quick tap flips a ✓/✗.** With the Marks tool, pen-down → up under 350 ms with
+   no movement on a tick or cross swaps it (`swapLayerMark`, ink only as in §14).
+   A hold or a drag still selects and moves it and shows the chip.
+3. **The eraser rubs out the marker's objects too.** When an eraser stroke hits none
+   of Adrian's ink, it looks for a tick, cross, note, verdict or box under it
+   (`hitLayerObject`) and marks it `deleted`; one layer undo step per drag.
+4. **✓ and ✗ stamp tools.** Two red buttons on the toolbar plant a mark in the
+   marker's own hand at the tap (`addMarkObject` — the bot's tick/cross paths at the
+   bot's size, `fontSize = max(24, width/44) × 0.95`, a `<g data-obj="mark">` like
+   any the bot drew, so it flips, erases and moves like one). Stamps and typed text
+   set `added`, so `layerDirty` enables Done for them (a typed text alone never
+   enabled Done before this).
+
+Not built, by agreement: item 5, changing the mark when a ✓ is swapped to a ✗ — a
+swap stays ink only.

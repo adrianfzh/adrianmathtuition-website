@@ -348,3 +348,20 @@ verdict lines and footer lines — NOT to the ✗ why-labels, which have their o
 typesetting (`_whyLabelLines`) and cut the tail when handed mixed runs. Verified by
 `scripts/pen-dryrun.cjs` on Nicole's page 3 (both notes typeset, forward-only — her
 copy was not re-inked).
+
+### 22 Sep 2026 — the natural look (`MARK_LOOK=natural`, OFF)
+
+Adrian: "right now the annotations are quite professional, in brown, in neat boxes but
+i would also like a version where it really looks like natural teachers marking → red
+ink, like how a teacher would write them → build a separate version and see how it
+looks like? the marking engine should still be the same." A LOOK switch on the bot's
+renderer, `ai/annotate.js naturalLook()` — the marking, the placement and every word
+are identical; only the ink and the furniture change: the teaching ink (`TEACH_BLUE`)
+becomes the marker's red, in-page notes lose their cream slip (`teachPanel` draws
+nothing), the ✗ why-labels are red, and a part's score is handwritten as "Q9(a)(i) 1/1"
+in red with no box and no green fill (`_marginScore`, same footprint so the bench's
+overlap checks still hold). Per-ink overrides (`MARK_TEACH_INK`, `MARK_KIND_INK`)
+still win over the look. Default OFF — students see no change until the Fly secret
+`MARK_LOOK=natural` is set (`fly secrets set MARK_LOOK=natural`); the golden bench
+passes in both looks (`MARK_LOOK=natural node scripts/golden-pen.cjs`). Side-by-side
+shown to Adrian on Rainie's Q9 page; his verdict is pending.
