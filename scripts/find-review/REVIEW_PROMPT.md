@@ -94,7 +94,7 @@ Write `verdicts.json`:
   {"id":"<row id>","verdict":"similar","why":"seed and served both: tangent at a given point, 4 vs 4 marks"},
   {"id":"<row id>","verdict":"same-chapter","why":"seed: centre and radius from general form; served: tangent from an external point"},
   {"id":"<row id>","verdict":"off","why":"seed is E-Math speed–time; served an A-Math kinematics integral"}
-],"note":"<optional: one line for Adrian — a pattern you noticed, or nothing>"}
+],"note":"<optional: ONE sentence for Adrian, only when he must do something, ending with what — or omit>"}
 ```
 
 ```bash
@@ -104,8 +104,14 @@ curl -s -X POST "$FIND_API_BASE/api/admin/find-review" \
 ```
 
 The route stores each verdict in `portal_generation_log.review`, builds the
-digest from every review stored for the day (counts + the misses, one line
-each) and sends it to Adrian's Ops topic. Check the response: `ok: true`,
+digest from every review stored for the day and sends it to Adrian's Ops topic.
+The digest's shape is fixed in code (`src/lib/find-review.ts reviewDigest`,
+23 Sep 2026): a header of numbers, then "Nothing for you today." or the wrong
+matches as numbered items ending "→ your read". Your `note` is appended as one
+📝 line, so keep it to ONE plain sentence that tells him what to do, and omit
+it when there is nothing — Adrian reads these on his phone and asked that the
+reviews stop burying the actionable line under evidence. A pattern you noticed
+that needs no action goes in the `why` of the rows it concerns, not the note. Check the response: `ok: true`,
 `updated` = the number you sent, `telegram: true`. A `400` names the bad
 entry — fix it and post again (posting twice is safe; the newer verdict wins).
 

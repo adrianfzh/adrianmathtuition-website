@@ -63,21 +63,27 @@ describe('reviewCounts + digest', () => {
     expect(reviewSummaryLine(c)).toBe('3 finds · 2 judged · 1 miss');
   });
 
-  it('digest leads with the counts and lists every miss with student, place and why', () => {
+  it('digest: a header of numbers, then the wrong matches as numbered items for Adrian', () => {
     const d = reviewDigest('2026-09-05', rows, [
       { id: A, verdict: 'same-chapter', why: 'general form <x>, not tangent' },
       { id: B, verdict: 'similar', why: 'same coefficient skill' },
     ]);
-    expect(d).toContain('Find review — 5 Sep');
-    expect(d).toContain('3 finds · 1 similar · 1 made for you · 1 nothing found');
-    expect(d).toContain('Judged 2: 1 similar · 1 same-chapter · 0 off');
-    expect(d).toContain('Same chapter only</b> (1)');
-    expect(d).toContain('Zane · Circles / Tangent at a Point on the Circle · similar — general form &lt;x&gt;, not tangent');
-    expect(d).not.toContain('Off</b>');
-    expect(d.split('\n').length).toBeLessThan(20);
+    const lines = d.split('\n');
+    expect(lines[0]).toBe('🔍 <b>Find a question — 5 Sep</b> · 3 finds · 2 judged · 1 wrong match');
+    expect(lines[1]).toBe('👉 For you (1):');
+    expect(lines[2]).toBe('1. Zane got a same-chapter question, not a similar one (Circles / Tangent at a Point on the Circle): general form &lt;x&gt;, not tangent → your read');
+    expect(lines.length).toBe(3);
+  });
+
+  it('digest: every match judged similar says nothing for you', () => {
+    const d = reviewDigest('2026-09-05', rows, [
+      { id: A, verdict: 'similar', why: 'same' },
+      { id: B, verdict: 'similar', why: 'same' },
+    ]);
+    expect(d).toBe('🔍 <b>Find a question — 5 Sep</b> · 3 finds · 2 judged · 0 wrong matches\nNothing for you today.');
   });
 
   it('a day with no finds still produces a digest line', () => {
-    expect(reviewDigest('2026-09-05', [], [])).toBe('🔍 <b>Find review — 5 Sep</b>\nNo finds yesterday — nothing to judge.');
+    expect(reviewDigest('2026-09-05', [], [])).toBe('🔍 <b>Find a question — 5 Sep</b>\nNo student used it yesterday. Nothing for you.');
   });
 });

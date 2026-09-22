@@ -129,25 +129,30 @@ const MAX_LISTED = 8;
  * to see at breakfast; the counts are context.
  */
 export function reviewDigest(date: string, rows: ReviewDayRow[], verdicts: ReviewEntry[]): string {
+  // The digest shape every review in this system uses since 23 Sep 2026 (Adrian:
+  // "can the readability be better? … do i need to take action?"): one header line
+  // of numbers, then either "Nothing for you today." or "👉 For you (N):" with the
+  // items that are his. Counts and evidence stay in the ledger.
   const c = reviewCounts(rows, verdicts);
-  const head = `🔍 <b>Find review — ${dayLabel(date)}</b>`;
-  if (!rows.length) return `${head}\nNo finds yesterday — nothing to judge.`;
+  const head = `🔍 <b>Find a question — ${dayLabel(date)}</b>`;
+  if (!rows.length) return `${head}\nNo student used it yesterday. Nothing for you.`;
   const byId = new Map(rows.map((r) => [r.id, r]));
+  const misses = verdicts.filter((v) => (v.verdict === 'off' || v.verdict === 'same-chapter') && byId.has(v.id));
   const lines = [
-    `${head} · ${c.finds} find${c.finds === 1 ? '' : 's'} · ${c.similar} similar · ${c.madeForYou} made for you · ${c.misses} nothing found`,
-    `✅ Judged ${c.judged}: ${c.byVerdict.similar} similar · ${c.byVerdict['same-chapter']} same-chapter · ${c.byVerdict.off} off`,
+    `${head} · ${c.finds} find${c.finds === 1 ? '' : 's'} · ${c.judged} judged · ${misses.length} wrong match${misses.length === 1 ? '' : 'es'}`,
   ];
-  for (const verdict of ['same-chapter', 'off'] as const) {
-    const hits = verdicts.filter((v) => v.verdict === verdict && byId.has(v.id));
-    if (!hits.length) continue;
-    lines.push(`${verdict === 'off' ? '⚠️' : '❌'} <b>${REVIEW_VERDICT_LABEL[verdict]}</b> (${hits.length}):`);
-    for (const v of hits.slice(0, MAX_LISTED)) {
-      const r = byId.get(v.id)!;
-      const where = [r.topic, r.subgroup].filter(Boolean).join(' / ');
-      lines.push(`• ${esc(r.student || 'a student')}${where ? ` · ${esc(where)}` : ''}${r.tier ? ` · ${r.tier}` : ''} — ${esc(v.why)}`);
-    }
-    if (hits.length > MAX_LISTED) lines.push(`• …and ${hits.length - MAX_LISTED} more`);
+  if (!misses.length) {
+    lines.push('Nothing for you today.');
+    return lines.join('\n');
   }
+  lines.push(`👉 For you (${misses.length}):`);
+  misses.slice(0, MAX_LISTED).forEach((v, i) => {
+    const r = byId.get(v.id)!;
+    const where = [r.topic, r.subgroup].filter(Boolean).join(' / ');
+    const what = v.verdict === 'off' ? 'got a question from the wrong topic' : 'got a same-chapter question, not a similar one';
+    lines.push(`${i + 1}. ${esc(r.student || 'A student')} ${what}${where ? ` (${esc(where)})` : ''}: ${esc(v.why)} → your read`);
+  });
+  if (misses.length > MAX_LISTED) lines.push(`…and ${misses.length - MAX_LISTED} more in the ledger`);
   return lines.join('\n');
 }
 
