@@ -156,7 +156,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'papers', { route: 'papers' }))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
-  let body: { runId?: string; runIds?: unknown; studentId?: string | null; checked?: boolean; name?: unknown };
+  let body: { runId?: string; runIds?: unknown; studentId?: string | null; checked?: boolean; name?: unknown; recentDone?: boolean };
   try {
     body = await req.json();
   } catch {
@@ -219,6 +219,17 @@ export async function POST(req: NextRequest) {
     const { error } = await getSupabaseAdmin().from('paper_marking_runs').update({ paper_name: name }).eq('id', runId);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true, runId, name });
+  }
+
+  // 📥 Out of the "Handed in this week" frame on Adrian's Papers tab (22 Sep 2026):
+  // dragging a paper out stamps recent_done_at; `recentDone:false` puts it back.
+  if (typeof body.recentDone === 'boolean') {
+    const { error } = await getSupabaseAdmin()
+      .from('paper_marking_runs')
+      .update({ recent_done_at: body.recentDone ? new Date().toISOString() : null })
+      .eq('id', runId);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true, runId, recentDone: body.recentDone });
   }
 
   // Manual ✓ from the library — the "looked through it, nothing to change" case that

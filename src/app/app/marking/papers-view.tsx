@@ -51,6 +51,7 @@ import { starredFirst } from '@/lib/paper-star';
 import { noteFirstLine } from '@/lib/paper-label';
 import { adminLines, needsLook, type AdminJobRow, type AdminSheetRow } from '@/lib/papers-admin-lines';
 import { unseenLabel } from '@/lib/unseen-handins';
+import { isRecentHandin } from '@/lib/recent-handins';
 import ReviewPicker, { type ReviewPickPaper } from './ReviewPicker';
 import ForecastCard from './ForecastCard';
 import { examReviewBands } from '@/lib/review-cards';
@@ -58,7 +59,7 @@ import { getDashboardData } from '@/lib/portal-dashboard';
 import type { UpcomingExam } from '@/lib/portal-exams';
 import StarPaper from './StarPaper';
 import ArchivePaper from './ArchivePaper';
-import PaperSearch, { type SearchEntry } from './PaperSearch';
+import PaperSearch, { type SearchEntry, type RecentEntry } from './PaperSearch';
 import AdminRename from './AdminRename';
 import LookedAt from './LookedAt';
 import BelongsTo from './BelongsTo';
@@ -76,7 +77,7 @@ const MAX_PAPERS = 40;
 // One literal, not a concatenation: supabase-js parses the select string at the
 // type level, and a `+` here widens it to `string` and loses the row type.
 const COLUMNS =
-  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, student_archived_at, student_note, paper_subject, checked_at, released_via, admin_viewed_at';
+  'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, student_archived_at, student_note, paper_subject, checked_at, released_via, admin_viewed_at, recent_done_at';
 
 // Home's soft elevated card (lib/portal-theme's visual language) — this tab
 // wears the marked-work violet and the hand-in teal the way Home's tiles do,
@@ -310,6 +311,15 @@ export default async function PapersView({ account, sid, admin = false }: {
         markedSheet={entry.papers.map(p => markedSheetByParent.get(p.id) ?? null).find(Boolean) ?? null}
         nextWave={entry.papers.map(p => waveByRun.get(p.id) ?? null).find(Boolean) ?? null} />,
     });
+    // 📥 Handed in this week (Adrian, 22 Sep 2026) — his tab only: every entry
+    // whose hand-in is inside seven days and that he has not dragged out yet.
+    // A bundle goes in whole when any of its papers is that recent.
+    const nowMs = Date.now();
+    const recentEntries: RecentEntry[] = admin ? entries.flatMap(entry => {
+      const ps = entry.kind === 'paper' ? [entry.paper] : entry.papers;
+      if (!ps.some(p => isRecentHandin(rowById.get(p.id), nowMs))) return [];
+      return [{ key: entry.kind === 'paper' ? entry.paper.id : entry.sheetId, runIds: ps.map(p => p.id) }];
+    }) : [];
     const reviewable: ReviewPickPaper[] = listed.filter(p => p.dropped.length > 0).map(p => ({ id: p.id, name: p.name, when: whenLine(p, todayISO), lost: p.dropped.reduce((a, q) => a + Math.max(0, q.max - q.awarded), 0) }));
     const bands = admin ? [] : examReviewBands(exams, listed, subject);
     const content: ReactNode = (
@@ -345,7 +355,7 @@ export default async function PapersView({ account, sid, admin = false }: {
               covers sit in one frame, in syllabus order, the sheet's line at
               the foot — lib/portal-paper-bundles. The search box appears once
               a tab holds enough papers to need it (PaperSearch). */}
-          <PaperSearch entries={searchEntries} always={admin} />
+          <PaperSearch entries={searchEntries} always={admin} recent={recentEntries} />
         </ChoosePapers>
         {!admin && <ReviewPicker papers={reviewable} />}
         {archived.length > 0 && (

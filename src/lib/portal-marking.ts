@@ -51,6 +51,8 @@ export interface MarkingRunRow {
   released_via?: string | null;
   /** First opened on the desk — counts as looked at (18 Sep 2026); admin only. */
   admin_viewed_at?: string | null;
+  /** 📥 Dragged out of the "Handed in this week" frame on Adrian's Papers tab (22 Sep 2026). */
+  recent_done_at?: string | null;
   superseded_by?: string | null;
   /**
    * 'A Math' | 'E Math' | 'H2 Math' | 'Other' | null (SPEC-PORTAL-V2 §1) —
