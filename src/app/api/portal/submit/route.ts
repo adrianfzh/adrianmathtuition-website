@@ -227,7 +227,7 @@ export async function POST(req: Request) {
   // (Standard 1/day, Intensive 3/day — trials meter as Standard).
   // Only an EXAM paper spends the day (7 Sep 2026): a sheet or a printed paper
   // neither checks the cap here nor counts in it (countHandinsToday).
-  // 🧪 Science has its own slot (one a day, everyone), counted apart from the
+  // 🧪 Science has its own allowance (two a day, everyone), counted apart from the
   // maths slot — see countHandinsToday's family argument.
   // 22 Sep 2026: the tuition cap (and the science slot) are LIFTED — DAILY_*_CAP
   // is null and nothing below runs for a tuition student. Only a stranger's
@@ -237,7 +237,7 @@ export async function POST(req: Request) {
   if (dailyCap !== null && (count ?? 0) >= dailyCap) {
     return NextResponse.json({
       error: science
-        ? 'Today’s science hand-in is used — one science paper a day; a fresh one opens at midnight. Your maths hand-in is separate.'
+        ? `You’ve handed in ${dailyCap} science papers today — a fresh allowance opens at midnight. Maths papers are separate.`
         : dailyCap === 1
         ? 'Today’s exam-paper hand-in is used — a fresh one opens at midnight. Practice Again sheets and printed papers don’t count, so those can still go in.'
         : `You’ve handed in ${dailyCap} exam papers today — a fresh allowance opens at midnight. Practice Again sheets and printed papers don’t count.`,

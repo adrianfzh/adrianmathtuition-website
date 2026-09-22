@@ -402,10 +402,10 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         <h1 className="text-xl font-bold text-navy pt-1">Hand in a science paper</h1>
         <div className={`${CARD} p-5 text-center`}>
           <p className="text-4xl">🎟️</p>
-          <p className="font-bold text-navy mt-2">Today&apos;s science hand-in is used</p>
+          <p className="font-bold text-navy mt-2">Today&apos;s science hand-ins are used</p>
           <p className="text-sm text-gray-600 mt-1.5">
-            One science paper a day. A fresh slot opens at midnight — line the next one up for tomorrow.
-            Your maths hand-in is separate and may still be open.
+            Two science papers a day. A fresh allowance opens at midnight — line the next one up for tomorrow.
+            Maths papers are separate.
           </p>
           <div className="mt-4 flex justify-center">
             <Link href="/app/science" className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
@@ -456,7 +456,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         <div className="pt-1">
           <Link href="/app/science" className="text-sm text-gray-500 hover:text-navy">← Science</Link>
           <h1 className="text-xl font-bold text-navy mt-1">🧪 Hand in a science paper</h1>
-          <p className="text-[13px] text-gray-500 mt-0.5">🎟️ One science paper a day, free — separate from your maths hand-in.</p>
+          <p className="text-[13px] text-gray-500 mt-0.5">🎟️ Two science papers a day, free — separate from your maths papers.</p>
         </div>
       ) : (
         <div className="pt-1">

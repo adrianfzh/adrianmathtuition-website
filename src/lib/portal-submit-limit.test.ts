@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DAILY_SUBMIT_CAP, sgtStartOfDayIso, countHandinsToday } from './portal-submit-limit';
+import { DAILY_SUBMIT_CAP, DAILY_SCIENCE_SUBMIT_CAP, sgtStartOfDayIso, countHandinsToday } from './portal-submit-limit';
 import type { HandinCountingClient } from './portal-submit-limit';
 
 // The submit cap counts hand-ins since SGT midnight, not a rolling 24h window —
@@ -21,8 +21,9 @@ describe('sgtStartOfDayIso', () => {
     const after = new Date('2026-08-20T16:01:00Z');  // 00:01 SGT, 21 Aug
     expect(sgtStartOfDayIso(before)).not.toBe(sgtStartOfDayIso(after));
   });
-  it('the tuition cap is lifted (22 Sep 2026): null = no ceiling', () => {
+  it('the tuition cap is lifted (22 Sep 2026): null = no ceiling; science keeps 2 a day', () => {
     expect(DAILY_SUBMIT_CAP).toBeNull();
+    expect(DAILY_SCIENCE_SUBMIT_CAP).toBe(2);
   });
 });
 

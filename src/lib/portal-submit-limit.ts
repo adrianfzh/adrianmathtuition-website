@@ -17,11 +17,11 @@ import { sgtDayStartISO } from './sgt';
 // countHandinsToday stays for the bot's /handin, the desk and the report.
 export const DAILY_SUBMIT_CAP: number | null = null;
 
-// 🧪 Science has ITS OWN slot (SPEC-SCIENCE-MARKING.md, 10 Sep 2026): one science
-// paper a day, counted apart from the maths paper, so a physics hand-in never
-// blocks the evening's E Math paper. `family` picks which runs count:
+// 🧪 Science has ITS OWN allowance (SPEC-SCIENCE-MARKING.md, 10 Sep 2026): two science
+// papers a day since 22 Sep 2026 (was one), counted apart from the maths papers, which
+// have no cap. `family` picks which runs count:
 // 'math' = runs whose marking lane is math, 'science' = every other lane.
-export const DAILY_SCIENCE_SUBMIT_CAP: number | null = null; // lifted 22 Sep 2026 with the maths cap
+export const DAILY_SCIENCE_SUBMIT_CAP: number | null = 2; // 22 Sep 2026 (Adrian: "science cap keep to 2 papers per day") — was 1
 export type HandinFamily = 'math' | 'science';
 
 /** UTC ISO timestamp of the most recent midnight in Singapore (UTC+8). */
