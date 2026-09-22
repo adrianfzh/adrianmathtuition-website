@@ -285,6 +285,21 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
 
       {!isScience && !isAdmin && !sheet && !supersededBy && followUpDepth <= 1 && <PracticeAgainRequest runId={paper.id} state={requestState} />}
 
+      {/* ⬇ The PDF first (Adrian, 22 Sep 2026: "put the download pdf at the top"). */}
+      {paper.pdfUrl && (
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {/* 📤 straight to Notability / GoodNotes / Files via the share sheet (11 Sep 2026) */}
+          <OpenInApp url={`/api/portal/marking-pdf?run=${paper.id}&kind=marked`} name={paper.name}
+            className="inline-block text-sm font-semibold text-white bg-navy rounded-xl px-4 py-2 hover:opacity-90 disabled:opacity-60" />
+          <a href={`/api/portal/marking-pdf?run=${paper.id}&kind=marked`} target="_blank" rel="noopener noreferrer" data-track="marking:open"
+            className="inline-block text-sm font-semibold text-navy border border-navy/20 rounded-xl px-4 py-2 bg-white hover:bg-navy/5">⬇ Download as PDF</a>
+          {ink && Object.values(ink).some(pg => pg?.strokes?.length) && (
+            <a href={`/api/portal/marking-pdf?run=${paper.id}&kind=marked&notes=1`} target="_blank" rel="noopener noreferrer"
+              className="inline-block text-sm font-semibold text-navy border border-navy/20 rounded-xl px-4 py-2 bg-white hover:bg-navy/5">⬇ With my notes</a>
+          )}
+        </div>
+      )}
+
       {/* 📄 The paper opens on its marked pages — write-anywhere, like a PDF — and the cover + every
           dropped mark is the second tab (18 Sep 2026). A science paper keeps its one-column order. */}
       {isScience ? (
@@ -355,20 +370,6 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
         <ScienceTeacherMark runId={paper.id} ours={{ awarded: paper.awarded, max: paper.max }} existing={teacherTotal} />
       )}
       {isScience && !isAdmin && <ScienceUseful runId={paper.id} />}
-
-      {paper.pdfUrl && (
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          {/* 📤 straight to Notability / GoodNotes / Files via the share sheet (11 Sep 2026) */}
-          <OpenInApp url={`/api/portal/marking-pdf?run=${paper.id}&kind=marked`} name={paper.name}
-            className="inline-block text-sm font-semibold text-white bg-navy rounded-xl px-4 py-2 hover:opacity-90 disabled:opacity-60" />
-          <a href={`/api/portal/marking-pdf?run=${paper.id}&kind=marked`} target="_blank" rel="noopener noreferrer" data-track="marking:open"
-            className="inline-block text-sm font-semibold text-navy border border-navy/20 rounded-xl px-4 py-2 bg-white hover:bg-navy/5">⬇ Download as PDF</a>
-          {ink && Object.values(ink).some(pg => pg?.strokes?.length) && (
-            <a href={`/api/portal/marking-pdf?run=${paper.id}&kind=marked&notes=1`} target="_blank" rel="noopener noreferrer"
-              className="inline-block text-sm font-semibold text-navy border border-navy/20 rounded-xl px-4 py-2 bg-white hover:bg-navy/5">⬇ With my notes</a>
-          )}
-        </div>
-      )}
     </div>
   );
 }

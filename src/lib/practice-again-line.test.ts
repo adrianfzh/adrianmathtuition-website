@@ -19,15 +19,20 @@ describe('sheetLine — the sheet inside its paper card', () => {
 });
 
 describe('sheetJobLine — no sheet yet', () => {
+  it("names the student's own request, in their words and in Adrian's (22 Sep 2026)", () => {
+    expect(sheetJobLine({ status: 'queued', noSheet: false, requested_by: 'student' })?.text).toBe('You asked for Practice Again · being written');
+    expect(sheetJobLine({ status: 'done', noSheet: false, requested_by: 'student' }, { admin: true })?.text).toBe('Practice Again requested by the student · written, Adrian is checking it');
+    expect(sheetJobLine({ status: 'queued', noSheet: false, requested_by: 'adrian' }, { admin: true })?.text).toBe('Practice Again · being written');
+  });
   it('says nothing with no job, or after a failed / no-sheet job', () => {
     expect(sheetJobLine(null)).toBeNull();
     expect(sheetJobLine({ status: 'failed', noSheet: false })).toBeNull();
     expect(sheetJobLine({ status: 'done', noSheet: true })).toBeNull();
   });
   it('being written while queued or claimed; with Adrian once done', () => {
-    expect(sheetJobLine({ status: 'queued', noSheet: false })?.text).toBe('Practice Again is being written');
+    expect(sheetJobLine({ status: 'queued', noSheet: false })?.text).toBe('Practice Again · being written');
     expect(sheetJobLine({ status: 'claimed', noSheet: false })?.tone).toBe('quiet');
-    expect(sheetJobLine({ status: 'done', noSheet: false })?.text).toBe('Practice Again written · Adrian is checking it');
+    expect(sheetJobLine({ status: 'done', noSheet: false })?.text).toBe('Practice Again · written, Adrian is checking it');
   });
 });
 

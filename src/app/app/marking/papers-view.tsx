@@ -516,13 +516,13 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
   /** A stray sheet: the papers Adrian may file it under (admin only). */
   belongsTo?: { id: string; name: string }[] | null;
   sheet: SheetRow | null;
-  job: { status: string; noSheet: boolean } | null;
+  job: { status: string; noSheet: boolean; requested_by?: string | null } | null;
   markedSheet: StudentPaper | null;
   nextWave: Wave | null;
   /** Inside a Bundle the sheet's line is drawn once, at the foot. */
   inBundle?: boolean;
 }) {
-  const line = inBundle ? null : sheet ? sheetLine(sheet) : sheetJobLine(job);
+  const line = inBundle ? null : sheet ? sheetLine(sheet) : sheetJobLine(job, { admin });
   return (
     <div className={`${inBundle ? 'bg-white rounded-2xl' : CARD} p-3`}>
       {/* Same window in admin mode too (18 Sep 2026): from the installed admin app a

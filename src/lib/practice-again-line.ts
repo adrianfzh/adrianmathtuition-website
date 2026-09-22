@@ -34,10 +34,17 @@ export function sheetLine(sheet: SheetLineInput): SheetLine {
 }
 
 /** The line for a paper with NO sheet yet, from its latest sheet job — null when there is nothing to say. */
-export function sheetJobLine(job: { status: string; noSheet: boolean } | null | undefined): SheetLine | null {
+export function sheetJobLine(
+  job: { status: string; noSheet: boolean; requested_by?: string | null } | null | undefined,
+  opts: { admin?: boolean } = {},
+): SheetLine | null {
   if (!job) return null;
-  if (job.status === 'queued' || job.status === 'claimed') return { tone: 'quiet', text: 'Practice Again is being written', actions: false };
-  if (job.status === 'done' && !job.noSheet) return { tone: 'quiet', text: 'Practice Again written · Adrian is checking it', actions: false };
+  // Who asked (22 Sep 2026, Adrian: "am i able to see if they have requested for a
+  // practice again sheet in this page?") — the student's own request is named, on
+  // both the student's list and Adrian's Papers tab.
+  const asked = job.requested_by === 'student' ? (opts.admin ? 'Practice Again requested by the student' : 'You asked for Practice Again') : 'Practice Again';
+  if (job.status === 'queued' || job.status === 'claimed') return { tone: 'quiet', text: `${asked} · being written`, actions: false };
+  if (job.status === 'done' && !job.noSheet) return { tone: 'quiet', text: `${asked} · written, Adrian is checking it`, actions: false };
   return null;
 }
 
