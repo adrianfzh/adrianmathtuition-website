@@ -32,7 +32,7 @@ import { splitStrokeAtCircle } from '@/lib/annotate/stroke-split';
 import { lassoSelect, strokesBBox } from '@/lib/annotate/lasso';
 import { planFlatten } from '@/lib/annotate/flatten-plan';
 import {
-  parseLayer, serializeLayer, strokesToSvg, layerDocument, layerDirty, objectHasText, objectTextLines,
+  parseLayer, serializeLayer, strokesToSvg, layerDocument, layerDirty, objectHasText, objectTextLines, addMarkObject, parseScoreText, setScoreAwarded,
   layerSnapshot, layerRestore as restoreLayerSnapshot, addTextObject, markType, swapMark, recordEditsFor,
   type LayerMeta, type LayerObj, type ParsedLayer, type LayerSnapshot,
 } from '@/lib/annotate/layer';
@@ -116,7 +116,9 @@ type Op =
 type LayerBox = { x: number; y: number; w: number; h: number };
 type PageDim = { w: number; h: number } | null;
 type DisplayBitmap = { src: CanvasImageSource; w: number };
-type ToolSel = ToolKind | 'eraser' | 'lasso' | 'select' | 'text';
+// 'tick' | 'cross' = the ✓ / ✗ stamps (22 Sep 2026): one tap plants a mark in the marker's hand.
+type ToolSel = ToolKind | 'eraser' | 'lasso' | 'select' | 'text' | 'tick' | 'cross';
+const MARKER_RED = '#d32424';
 type EraserMode = 'stroke' | 'partial';
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
@@ -374,6 +376,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const [hlColor, setHlColor] = useState(HL_COLORS[0]);
   const [eraserMode, setEraserMode] = useState<EraserMode>('stroke');
   const [selChip, setSelChip] = useState<{ x: number; y: number } | null>(null);
+  const selDownAtRef = useRef(0);
+  const swapLayerMarkRef = useRef<() => void>(() => {});
   const [pageNo, setPageNo] = useState(1);
   const [inkTick, setInkTick] = useState(0);
   const [busy, setBusy] = useState('');
@@ -397,7 +401,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
 
   const setToolRemember = useCallback((t: ToolSel) => {
     setTool(t);
-    if (t !== 'eraser' && t !== 'lasso' && t !== 'select' && t !== 'text') lastInkToolRef.current = t;
+    if (t !== 'eraser' && t !== 'lasso' && t !== 'select' && t !== 'text' && t !== 'tick' && t !== 'cross') lastInkToolRef.current = t;
     if (t !== 'lasso') clearSelection();
   }, [clearSelection]);
 
@@ -1052,6 +1056,23 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     holdTimerRef.current = setTimeout(attemptSnap, HOLD_MS + 20);
   }, [attemptSnap]);
 
+  // The eraser also rubs out the marker's own objects (22 Sep 2026 — Adrian's
+  // shortcut 3): a tick, cross, note or box under the eraser is deleted whole,
+  // as one layer undo step per drag. Only where Adrian's ink is not the hit.
+  const eraseLayerRef = useRef<{ pageIdx: number; before: LayerSnapshot } | null>(null);
+  const eraseLayerAt = useCallback((pageIdx: number, x: number, y: number) => {
+    const parsed = layerRef.current[pageIdx];
+    if (!parsed) return;
+    const o = hitLayerObject(pageIdx, x, y);
+    if (!o) return;
+    if (!eraseLayerRef.current) eraseLayerRef.current = { pageIdx, before: layerSnap(parsed) };
+    else if (eraseLayerRef.current.pageIdx !== pageIdx) return;
+    o.deleted = true;
+    if (layerSelRef.current?.id === o.id) clearSelection();
+    rebuildLayerImage(pageIdx);
+    scheduleBase();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clearSelection, rebuildLayerImage, scheduleBase]);
   const eraseAt = useCallback((cssX: number, cssY: number) => {
     const pt = toImage(cssX, cssY, erasePageRef.current >= 0 ? erasePageRef.current : -1);
     if (!pt) return;
@@ -1060,13 +1081,13 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     if (!d) return;
     const cssPerImg = (kFactor() * DOC_W) / d.w;
     const hits = hitStrokes(strokesRef.current[pt.pageIdx], pt.x, pt.y, ERASER_TOL_CSS / cssPerImg);
-    if (!hits.length) return;
+    if (!hits.length) { eraseLayerAt(pt.pageIdx, pt.x, pt.y); return; }
     for (const idx of hits) {
       const [removed] = strokesRef.current[pt.pageIdx].splice(idx, 1);
       eraseOpsRef.current.push({ index: idx, stroke: removed });
     }
     scheduleBase();
-  }, [scheduleBase, toImage]);
+  }, [eraseLayerAt, scheduleBase, toImage]);
 
   // Partial mode: split strokes at the eraser circle instead of removing them whole.
   // Undo works on a page snapshot taken at pen-down — a drag may split the same
@@ -1095,8 +1116,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     if (changed) {
       eraseChangedRef.current = true;
       scheduleBase();
-    }
-  }, [scheduleBase, toImage]);
+    } else eraseLayerAt(pt.pageIdx, pt.x, pt.y);
+  }, [eraseLayerAt, scheduleBase, toImage]);
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -1252,8 +1273,29 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           eraseOpsRef.current = [];
           eraseBeforeRef.current = null;
           eraseChangedRef.current = false;
+          eraseLayerRef.current = null;
           (eraserMode === 'partial' ? eraseAtPartial : eraseAt)(x, y);
           scheduleLive();
+          return;
+        }
+        if (tool === 'tick' || tool === 'cross') {
+          // A stamp: one tap plants a ✓ or ✗ in the marker's hand where the pen
+          // touched (its optical centre is the anchor), sized like the bot's own.
+          const pt = toImage(x, y);
+          penDownRef.current = false;
+          if (!pt) return;
+          const parsed = layerRef.current[pt.pageIdx];
+          const meta = pages[pt.pageIdx]?.layer;
+          if (!parsed || !meta) return;
+          const before = layerSnap(parsed);
+          const obj = addMarkObject(parsed, { x: pt.x, y: pt.y, type: tool, fontSize: Math.max(24, Math.round(meta.width / 44)) * 0.95, ink: MARKER_RED });
+          const box = measureLayer(`${obj.open}${obj.inner}</g>`, meta, fontCssRef.current).get(obj.id);
+          if (box) layerBBoxRef.current[pt.pageIdx].set(obj.id, box);
+          pushUndo(pt.pageIdx, { t: 'layer', before, after: layerSnap(parsed) });
+          bumpInk();
+          rebuildLayerImage(pt.pageIdx);
+          clearSelection();
+          scheduleBase();
           return;
         }
         if (tool === 'text' && isStudent) {
@@ -1311,6 +1353,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           if (hit) {
             layerSelRef.current = { pageIdx: pt.pageIdx, id: hit.id };
             layerMoveRef.current = { startX: pt.x, startY: pt.y, dx: 0, dy: 0 };
+            selDownAtRef.current = performance.now();
           }
           scheduleBase();
           return;
@@ -1527,7 +1570,14 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       if (tool === 'select') {
         // Commit a move of the marker's object as one undo step; the selection stays.
         const ls = layerSelRef.current, mv = layerMoveRef.current;
-        if (ls && mv && (Math.abs(mv.dx) > 0.5 || Math.abs(mv.dy) > 0.5)) {
+        const moved = !!mv && (Math.abs(mv.dx) > 0.5 || Math.abs(mv.dy) > 0.5);
+        if (ls && mv && !moved && performance.now() - selDownAtRef.current < 350) {
+          // A quick tap on a ✓ or ✗ flips it (22 Sep 2026 — Adrian's shortcut 2);
+          // a hold or a drag keeps the old behaviour (select / move) and the chip.
+          const o = layerRef.current[ls.pageIdx]?.objects.find((q) => q.id === ls.id);
+          if (o && markType(o)) swapLayerMarkRef.current();
+        }
+        if (ls && mv && moved) {
           const parsed = layerRef.current[ls.pageIdx];
           const o = parsed?.objects.find((q) => q.id === ls.id);
           if (parsed && o) {
@@ -1625,6 +1675,13 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         } else if (eraseOpsRef.current.length && erasePageRef.current >= 0) {
           pushUndo(erasePageRef.current, { t: 'remove', items: eraseOpsRef.current });
           bumpInk();
+        }
+        const el = eraseLayerRef.current;
+        if (el) {
+          const parsed = layerRef.current[el.pageIdx];
+          if (parsed) pushUndo(el.pageIdx, { t: 'layer', before: el.before, after: layerSnap(parsed) });
+          bumpInk();
+          eraseLayerRef.current = null;
         }
         eraseOpsRef.current = [];
         eraseBeforeRef.current = null;
@@ -2275,12 +2332,39 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     rebuildLayerImage(ls.pageIdx);
     scheduleBase();
   }, [bumpInk, pushUndo, rebuildLayerImage, scheduleBase]);
+  swapLayerMarkRef.current = swapLayerMark;
   const layerSelMark = () => {
     const ls = layerSelRef.current;
     if (!ls) return null;
     const o = layerRef.current[ls.pageIdx]?.objects.find((q) => q.id === ls.id);
     return o ? markType(o) : null;
   };
+  // A score chip's "a/b" as a number row (22 Sep 2026 — Adrian's shortcut 1):
+  // one tap on 0…max sets the mark; the chip is restyled and the record edit
+  // (recordEditsFor) follows, exactly as a retyped chip would.
+  const layerSelScore = () => {
+    const ls = layerSelRef.current;
+    if (!ls) return null;
+    const o = layerRef.current[ls.pageIdx]?.objects.find((q) => q.id === ls.id);
+    if (!o || o.kind !== 'score') return null;
+    return parseScoreText(o.textOverride ?? objectTextLines(o).join(' '));
+  };
+  const setLayerScore = useCallback((awarded: number) => {
+    const ls = layerSelRef.current;
+    if (!ls) return;
+    const parsed = layerRef.current[ls.pageIdx];
+    const o = parsed?.objects.find((q) => q.id === ls.id);
+    if (!parsed || !o || o.kind !== 'score') return;
+    const current = o.textOverride ?? objectTextLines(o).join(' ');
+    const next = setScoreAwarded(current, awarded);
+    if (next === current) return;
+    const before = layerSnap(parsed);
+    o.textOverride = next;
+    pushUndo(ls.pageIdx, { t: 'layer', before, after: layerSnap(parsed) });
+    bumpInk();
+    rebuildLayerImage(ls.pageIdx);
+    scheduleBase();
+  }, [bumpInk, pushUndo, rebuildLayerImage, scheduleBase]);
   const layerSelHasText = () => {
     const ls = layerSelRef.current;
     if (!ls) return false;
@@ -2507,7 +2591,15 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         <button style={tool === 'eraser' ? activeBtn : btn} onClick={() => setToolRemember('eraser')} aria-label="Eraser" title="Eraser"><IconEraser /></button>
         {hasLayers && (
           <button style={tool === 'select' ? activeBtn : btn} onClick={() => setToolRemember('select')} aria-label="Select the marker's ink"
-            title="Select: tap a tick, cross, box or note the marker drew — drag to move it; the chip deletes it or edits its text"><IconSelect /><span style={{ marginLeft: 5, fontSize: 12, fontWeight: 700 }}>Marks</span></button>
+            title="Select: tap a tick or cross to flip it; hold or drag to select and move it; the chip deletes it, edits its text or sets a score"><IconSelect /><span style={{ marginLeft: 5, fontSize: 12, fontWeight: 700 }}>Marks</span></button>
+        )}
+        {hasLayers && !isStudent && (
+          <>
+            <button style={{ ...(tool === 'tick' ? activeBtn : btn), color: tool === 'tick' ? undefined : MARKER_RED, fontSize: 18, fontWeight: 800 }} onClick={() => setToolRemember('tick')} aria-label="Stamp a tick"
+              title="Tick stamp: tap the page to plant a ✓ in the marker's hand">✓</button>
+            <button style={{ ...(tool === 'cross' ? activeBtn : btn), color: tool === 'cross' ? undefined : MARKER_RED, fontSize: 18, fontWeight: 800 }} onClick={() => setToolRemember('cross')} aria-label="Stamp a cross"
+              title="Cross stamp: tap the page to plant a ✗ in the marker's hand">✗</button>
+          </>
         )}
         {(hasLayers || isStudent) && (
           <button style={tool === 'text' ? activeBtn : btn} onClick={() => setToolRemember('text')} aria-label="Type text"
@@ -2621,6 +2713,18 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
             {layerSelRef.current ? (
               <>
                 <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13, color: '#b91c1c', border: '1px solid #fca5a5' }} onClick={deleteLayerObject}>🗑 Delete</button>
+                {(() => {
+                  const sc = layerSelScore();
+                  if (!sc || sc.max > 12) return null;
+                  return (
+                    <div style={{ display: 'inline-flex', gap: 3 }} aria-label="Marks for this part">
+                      {Array.from({ length: sc.max + 1 }, (_, m) => (
+                        <button key={m} style={{ ...(m === sc.awarded ? activeBtn : btn), height: 36, minWidth: 34, padding: '0 8px', fontSize: 14, fontWeight: 700 }}
+                          onClick={() => setLayerScore(m)} title={`${m} / ${sc.max}`}>{m}</button>
+                      ))}
+                    </div>
+                  );
+                })()}
                 {layerSelHasText() && <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={editLayerText}>✏️ Edit text</button>}
                 {layerSelMark() && <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={swapLayerMark} title="Turn this tick into a cross, or this cross into a tick">{layerSelMark() === 'tick' ? '✓ → ✗' : '✗ → ✓'}</button>}
                 <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={() => { clearSelection(); scheduleBase(); }}>Deselect</button>

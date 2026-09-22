@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseLayer, serializeLayer, applyText, wrapText, objectTextLines, strokesToSvg, layerDirty, layerSnapshot, layerRestore, addTextObject, markType, swapMark, recordEditsFor } from './layer';
+import { parseLayer, serializeLayer, applyText, wrapText, objectTextLines, strokesToSvg, layerDirty, layerSnapshot, layerRestore, addTextObject, markType, swapMark, recordEditsFor, addMarkObject, setScoreAwarded } from './layer';
 
 const BODY =
   '<rect x="0" y="0" width="5" height="5"/>' +
@@ -109,6 +109,31 @@ describe('§14 ④–⑤: snapshots, typed text, ✓⇄✗, record edits', () =>
   it('markType falls back to the path count on a layer stored before data-type existed', () => {
     const p = parseLayer(TICK.replace(' data-type="tick"', ''));
     expect(markType(p.objects[0])).toBe('tick');
+  });
+  it('a stamped ✓ / ✗ is a mark object in the marker\'s hand: it flips, erases and dirties the layer like one the bot drew (22 Sep 2026)', () => {
+    const p = parseLayer('');
+    const o = addMarkObject(p, { x: 100.04, y: 200, type: 'tick', fontSize: 20, ink: '#d32424' });
+    expect(o.kind).toBe('mark');
+    expect(markType(o)).toBe('tick');
+    expect(layerDirty(p)).toBe(true);
+    const svg = serializeLayer(p);
+    expect(svg).toContain('data-obj="mark"');
+    expect(svg).toContain('data-type="tick"');
+    expect(svg).toContain('stroke="#d32424" stroke-width="2.1"');
+    // radius s = fontSize / 2 = 10 → the tick starts at x − 8
+    expect(svg).toContain('M 92 199.5');
+    expect(swapMark(o)).toBe(true);
+    expect(markType(o)).toBe('cross');
+    expect((o.inner.match(/<path\b/g) || []).length).toBe(2);
+    const x = addMarkObject(p, { x: 10, y: 10, type: 'cross', fontSize: 20, ink: '#d32424' });
+    expect(markType(x)).toBe('cross');
+    expect(x.id).not.toBe(o.id);
+  });
+  it('setScoreAwarded rewrites only the numerator, clamped to the max (22 Sep 2026)', () => {
+    expect(setScoreAwarded('Q3(b) 1/3', 2)).toBe('Q3(b) 2/3');
+    expect(setScoreAwarded('Q3(b) 1 / 3', 0)).toBe('Q3(b) 0 / 3');
+    expect(setScoreAwarded('Q3(b) 1/3', 9)).toBe('Q3(b) 3/3');
+    expect(setScoreAwarded('no score here', 2)).toBe('no score here');
   });
   it('record edits are the retyped or deleted notes and verdicts with a question and part, and a retyped score chip (20 Sep 2026)', () => {
     const p = parseLayer('<g data-obj="note" data-id="n1" data-q="10" data-part="(b)" data-text="old"><text x="1" y="2">old</text></g><g data-obj="score" data-id="s1" data-q="10" data-part="(b)"><text x="1" y="2">2/3</text></g><g data-obj="note" data-id="n2" data-part="Q10(c)" data-text="strip"><text x="1" y="2">strip</text></g>');

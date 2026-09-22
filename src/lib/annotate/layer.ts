@@ -31,6 +31,8 @@ export type LayerObj = {
   textOverride: string | null;
   /** A ✓/✗ Adrian flipped (swapMark); flipping it back clears this. */
   swapped: boolean;
+  /** An object Adrian added (typed text, a stamped mark) — dirty by existence. */
+  added?: boolean;
 };
 
 export type LayerItem = { type: 'bg'; svg: string } | { type: 'obj'; obj: LayerObj };
@@ -168,7 +170,7 @@ const round = (n: number) => Math.round(n * 10) / 10;
 
 /** Has anything changed against the stored layer? */
 export function layerDirty(parsed: ParsedLayer): boolean {
-  return parsed.objects.some(o => o.deleted || o.dx || o.dy || o.textOverride != null || o.swapped);
+  return parsed.objects.some(o => o.deleted || o.dx || o.dy || o.textOverride != null || o.swapped || o.added);
 }
 
 /** Adrian's ink as SVG in the same coordinate space as the layer. */
@@ -216,7 +218,36 @@ export function addTextObject(parsed: ParsedLayer, o: { x: number; y: number; te
   const id = `${ADRIAN_TEXT_KIND}-${Date.now().toString(36)}-${++textSeq}`;
   const open = `<g data-obj="${ADRIAN_TEXT_KIND}" data-id="${id}" data-text="${escapeXml(o.text.slice(0, 400))}">`;
   const inner = `<text x="${round(o.x)}" y="${round(o.y)}" font-size="${round(o.fontSize)}" fill="${escapeXml(o.color)}" font-family="${escapeXml(o.font)}">${escapeXml(o.text)}</text>`;
-  const obj: LayerObj = { id, kind: ADRIAN_TEXT_KIND, q: null, part: null, text: o.text, open, inner, dx: 0, dy: 0, deleted: false, textOverride: null, swapped: false };
+  const obj: LayerObj = { id, kind: ADRIAN_TEXT_KIND, q: null, part: null, text: o.text, open, inner, dx: 0, dy: 0, deleted: false, textOverride: null, swapped: false, added: true };
+  parsed.items.push({ type: 'obj', obj });
+  parsed.objects.push(obj);
+  return obj;
+}
+
+export const ADRIAN_MARK_KIND = 'mark';
+let markSeq = 0;
+/** The tick / cross glyph the bot draws (ai/annotate.js _teacherMark): paths of
+ *  radius s about the anchor (x, y), inside a barely-tilted <g>. Shared by
+ *  swapMark (the other glyph at the same anchor) and addMarkObject (a stamp). */
+export function markGlyph(type: 'tick' | 'cross', x: number, y: number, s: number): string {
+  const r = (v: number) => Math.round(v * 100) / 100;
+  return type === 'cross'
+    ? `<path d="M ${r(x - s * 0.7)} ${r(y - s * 0.65)} Q ${r(x + s * 0.02)} ${r(y + s * 0.02)}, ${r(x + s * 0.75)} ${r(y + s * 0.7)}"/><path d="M ${r(x + s * 0.7)} ${r(y - s * 0.7)} Q ${r(x - s * 0.02)} ${r(y + s * 0.02)}, ${r(x - s * 0.72)} ${r(y + s * 0.68)}"/>`
+    : `<path d="M ${r(x - s * 0.8)} ${r(y - s * 0.05)} Q ${r(x - s * 0.5)} ${r(y + s * 0.45)}, ${r(x - s * 0.28)} ${r(y + s * 0.68)} L ${r(x + s * 0.95)} ${r(y - s * 0.8)}"/>`;
+}
+
+/** A ✓ or ✗ Adrian stamps (22 Sep 2026): a mark object in the marker's own hand
+ *  (same paths, same fine-liner width, a small tilt), so it moves, flips, erases
+ *  and composes like one the bot drew. `fontSize` is the page's marking font; the
+ *  radius follows the bot's _teacherMarkRadius (half of it). */
+export function addMarkObject(parsed: ParsedLayer, o: { x: number; y: number; type: 'tick' | 'cross'; fontSize: number; ink: string }): LayerObj {
+  const id = `adrian-${ADRIAN_MARK_KIND}-${Date.now().toString(36)}-${++markSeq}`;
+  const s = o.fontSize * 0.5;
+  const sw = Math.min(2.4, Math.max(1.4, o.fontSize * 0.105));
+  const rot = (((markSeq * 37) % 7) - 3).toFixed(1);
+  const open = `<g data-obj="${ADRIAN_MARK_KIND}" data-id="${id}" data-text="" data-type="${o.type}">`;
+  const inner = `<g transform="rotate(${rot} ${round(o.x)} ${round(o.y)})" stroke="${escapeXml(o.ink)}" stroke-width="${round(sw)}" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9">${markGlyph(o.type, round(o.x), round(o.y), s)}</g>`;
+  const obj: LayerObj = { id, kind: ADRIAN_MARK_KIND, q: null, part: null, text: '', open, inner, dx: 0, dy: 0, deleted: false, textOverride: null, swapped: false, added: true };
   parsed.items.push({ type: 'obj', obj });
   parsed.objects.push(obj);
   return obj;
@@ -251,10 +282,7 @@ export function swapMark(obj: LayerObj): boolean {
   if (!first) return false;
   const startX = Number(first[1]);
   const s = Math.abs(x - startX) / (type === 'tick' ? 0.8 : 0.7) || 10;
-  const r = (v: number) => Math.round(v * 100) / 100;
-  const glyph = type === 'tick'
-    ? `<path d="M ${r(x - s * 0.7)} ${r(y - s * 0.65)} Q ${r(x + s * 0.02)} ${r(y + s * 0.02)}, ${r(x + s * 0.75)} ${r(y + s * 0.7)}"/><path d="M ${r(x + s * 0.7)} ${r(y - s * 0.7)} Q ${r(x - s * 0.02)} ${r(y + s * 0.02)}, ${r(x - s * 0.72)} ${r(y + s * 0.68)}"/>`
-    : `<path d="M ${r(x - s * 0.8)} ${r(y - s * 0.05)} Q ${r(x - s * 0.5)} ${r(y + s * 0.45)}, ${r(x - s * 0.28)} ${r(y + s * 0.68)} L ${r(x + s * 0.95)} ${r(y - s * 0.8)}"/>`;
+  const glyph = markGlyph(type === 'tick' ? 'cross' : 'tick', x, y, s);
   const rest = gm[4].replace(/<path\b[^>]*\/>/g, '');
   obj.inner = obj.inner.replace(gm[0], `<g transform="rotate(${gm[0].match(/rotate\(([^ ]+) /)![1]} ${gm[1]} ${gm[2]})"${gm[3]}>${glyph}${rest}</g>`);
   const next = type === 'tick' ? 'cross' : 'tick';
@@ -278,6 +306,16 @@ export function parseScoreText(text: string): { awarded: number; max: number } |
   const max = Number(m[2]);
   if (!Number.isFinite(max) || max <= 0) return null;
   return { awarded: Math.max(0, Math.min(max, Number(m[1]))), max };
+}
+
+/** "Q3(b) 1/3" with `awarded` = 2 → "Q3(b) 2/3": the number row's one-tap edit
+ *  (22 Sep 2026). The max and everything around the fraction are kept; a text
+ *  with no a/b comes back unchanged. */
+export function setScoreAwarded(text: string, awarded: number): string {
+  const cur = parseScoreText(text);
+  if (!cur) return text;
+  const a = Math.max(0, Math.min(cur.max, Math.round(awarded)));
+  return String(text).replace(/(\d+)(\s*\/\s*)(\d+)/, `${a}$2$3`);
 }
 
 // The bot's chip palette (ai/annotate.js _marginScore): a full-marks chip is a
