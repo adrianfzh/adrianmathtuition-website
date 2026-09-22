@@ -1,11 +1,12 @@
-// POST /api/admin/desk/preview { runId, photoIndex, look?, layout? }
+// POST /api/admin/desk/preview { runId, photoIndex }
 //
 // 🧪 The red-pen PREVIEW (23 Sep 2026). Adrian: "I want to be able to test it
 // (see the results) without touching the current marking pipeline — don't want
 // to have to toggle on and off." The bot draws one already-marked page in
-// another look/layout in a throw-away child process whose env alone carries
-// MARK_LOOK / MARK_LAYOUT (bot ai/preview-page.js): no marker call, no change
-// to the live switches, the delivered pages untouched. The image lands under
+// the red-ink mode in a throw-away child process whose env alone carries
+// MARK_RED_INK=1 (bot ai/preview-page.js; ONE mode since 23 Sep 2026 — Adrian:
+// "do just one red ink mode — we will just iterate on one mode"): no marker call,
+// no change to the live switch, the delivered pages untouched. The image lands under
 // runs/<id>/preview/ and the run keeps a breadcrumb in result_json.previews[].
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -13,8 +14,6 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-const LOOKS = new Set(['default', 'natural']);
-const LAYOUTS = new Set(['default', 'inpage']);
 
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -25,8 +24,6 @@ export async function POST(req: NextRequest) {
   if (!/^[0-9a-f-]{36}$/i.test(runId) || !Number.isInteger(photoIndex) || photoIndex < 0) {
     return NextResponse.json({ error: 'runId and photoIndex are required' }, { status: 400 });
   }
-  const look = typeof b.look === 'string' && LOOKS.has(b.look) ? b.look : 'natural';
-  const layout = typeof b.layout === 'string' && LAYOUTS.has(b.layout) ? b.layout : 'inpage';
 
   const botBase = process.env.BOT_BASE_URL;
   const secret = process.env.BOT_INTERNAL_SECRET;
@@ -35,7 +32,7 @@ export async function POST(req: NextRequest) {
     const r = await fetch(`${botBase.replace(/\/+$/, '')}/api/preview-page`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${secret}` },
-      body: JSON.stringify({ runId, photoIndex, look, layout }),
+      body: JSON.stringify({ runId, photoIndex }),
       signal: AbortSignal.timeout(200_000),
     });
     const out = await r.json().catch(() => ({}));

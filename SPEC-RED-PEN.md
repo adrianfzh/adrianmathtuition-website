@@ -349,7 +349,7 @@ typesetting (`_whyLabelLines`) and cut the tail when handed mixed runs. Verified
 `scripts/pen-dryrun.cjs` on Nicole's page 3 (both notes typeset, forward-only — her
 copy was not re-inked).
 
-### 22 Sep 2026 — the natural look (`MARK_LOOK=natural`, OFF)
+### 22 Sep 2026 — the natural look (was `MARK_LOOK=natural`; folded into `MARK_RED_INK=1` on 23 Sep, see below)
 
 Adrian: "right now the annotations are quite professional, in brown, in neat boxes but
 i would also like a version where it really looks like natural teachers marking → red
@@ -367,7 +367,7 @@ passes in both looks (`MARK_LOOK=natural node scripts/golden-pen.cjs`). Side-by-
 shown to Adrian on Rainie's Q9 page. **His reply: "that's not my idea"** — the look
 stays as a switch, but what he asked for is the layout below.
 
-### 22 Sep 2026 — on the paper only (`MARK_LAYOUT=inpage`, OFF)
+### 22 Sep 2026 — on the paper only (was `MARK_LAYOUT=inpage`; folded into `MARK_RED_INK=1` on 23 Sep, see below)
 
 Adrian: "my idea is that for the red annotations are on the paper itself — without side
 column and bottom footer — can it be done? … a new mode of marking, i am exploring /
@@ -402,13 +402,13 @@ Adrian: "I do not want any cream at all. Natural red ink like handwriting. Also,
 to be able to test it (see the results) without touching the current marking pipeline —
 don't want to have to toggle on and off." So:
 
-- **The red-ink mode is `MARK_LOOK=natural` + `MARK_LAYOUT=inpage` together.** Verified
+- **The red-ink mode is the natural look + the on-paper layout together — ONE switch since later on 23 Sep, see below.** Verified
   by render on Joey's page 11: the only cream on a page was the in-page slip
   (`teachPanel`), which the natural look already removes; with both on, every mark,
   note and "From your line" column is red, no strip, no footer. **The score chips
   stay boxed in every look** — red outline for lost marks, solid green when full, the
   codes under — Adrian, later the same day, on the red mode: "I still want the marks
-  to be shown like that"; the handwritten no-box chip of 22 Sep is gone. Both Fly secrets stay UNSET — live
+  to be shown like that"; the handwritten no-box chip of 22 Sep is gone. The switch stays UNSET — live
   marking is the professional look with the strip, as before.
 - **🧪 Red ink preview** on the desk (`/admin/desk`, beside "🔁 Re-mark this page" on
   every page) → `POST /api/admin/desk/preview {runId, photoIndex, look?, layout?}` →
@@ -428,12 +428,27 @@ don't want to have to toggle on and off." So:
   RELEASED paper. Fix-forward is Adrian's call (redraw each page with the default
   layout + one re-issue, or a whole-paper 🔁 Re-mark).
 
+### 23 Sep 2026 — ONE red-ink mode, one switch (`MARK_RED_INK=1`, OFF)
+
+Adrian: "Do just one red ink mode. We will just iterate on one mode." So the two 22 Sep
+switches are retired — `MARK_LOOK` and `MARK_LAYOUT` are never read again. `MARK_RED_INK=1`
+on Fly turns on everything the red-ink mode is: the natural look (red ink, no cream, the
+ink texture and wobble, the boxed score chips) AND the on-paper layout (no strip, no
+footer, "From your line" as a column beside the working). Unset = the professional look
+with the strip, exactly as live marking is today. Bot `ai/annotate.js` `redInkMode()`;
+`naturalLook()` and `inpageLayout()` both read it and nothing else. The desk's 🧪 preview
+(`/api/admin/desk/preview {runId, photoIndex}` → bot `/api/preview-page`) always draws the
+red-ink mode in a child process with `MARK_RED_INK=1` in its env alone; the breadcrumb in
+`result_json.previews[]` says `mode:'red-ink'`. The golden bench passes 479/479 with the
+switch on and off (`MARK_RED_INK=1 node scripts/golden-pen.cjs`). Every later change to
+the red-ink mode lands in this one mode; there is no second one to keep in step.
+
 ### 23 Sep 2026 — handwriting that looks written, and a comment on the empty answer line
 
 Adrian, on the red-ink mode: "able for handwriting to be more natural?" → "Build 1 and
 2". Then, with Joey's Q7(b)(i) on his phone: "able for red comments to write on the line
-below for part (i) because that's what a teacher would do." All three are **natural
-look only** (`MARK_LOOK=natural`); the professional look is untouched. Bot
+below for part (i) because that's what a teacher would do." All three are **red-ink
+mode only** (`MARK_RED_INK=1`); the professional look is untouched. Bot
 `lib/pen-ink.js` + `lib/answer-rule.js`, wired in `ai/annotate.js`.
 
 1. **Ink texture.** One SVG turbulence + displacement filter on the pen groups only —

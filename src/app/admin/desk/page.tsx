@@ -770,16 +770,16 @@ export default function DeskPage() {
   }
 
   // 🧪 Red-pen PREVIEW of one page (23 Sep 2026): the bot draws this page again
-  // in the natural red-ink look on the page (no cream, no side column) in a
-  // child process with the switches set for IT alone — the live marking, the
-  // switches and the student's copy are untouched. Shown under the page here.
+  // in the red-ink mode (all red, no cream, no side column — the ONE mode since
+  // 23 Sep 2026) in a child process with the switch set for IT alone — the live
+  // marking, the switch and the student's copy are untouched. Shown under the page.
   const [previews, setPreviews] = useState<Record<number, { url: string; overflowUrl: string | null; at: string }>>({});
   async function previewPage(photoIndex: number) {
     if (!detail) return;
     const id = detail.run.id;
     setBusy('preview');
     setToast(`Drawing page ${photoIndex + 1} in red ink — about 20 s…`);
-    const { ok, d } = await postJson('/api/admin/desk/preview', { runId: id, photoIndex, look: 'natural', layout: 'inpage' });
+    const { ok, d } = await postJson('/api/admin/desk/preview', { runId: id, photoIndex });
     setBusy('');
     if (!ok || typeof d.url !== 'string') { setToast(d.error || 'Could not draw the preview'); return; }
     setPreviews(prev => ({ ...prev, [photoIndex]: { url: d.url as string, overflowUrl: typeof d.overflow_url === 'string' ? d.overflow_url : null, at: new Date().toISOString() } }));
