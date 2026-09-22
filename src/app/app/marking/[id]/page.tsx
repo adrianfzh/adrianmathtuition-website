@@ -18,6 +18,7 @@ import PaperTabs from '../PaperTabs';
 import PracticeAgainRequest, { type PracticeAgainState } from '../PracticeAgainRequest';
 import NextWave from '../NextWave';
 import OpenInApp from '../OpenInApp';
+import DownloadMenu from '../DownloadMenu';
 import { readNoSheet } from '@/lib/sheet-jobs';
 import { coveredRunIds } from '@/lib/sheet-queue';
 import { shelvedGaps, shelfWorthAWave } from '@/lib/student-batch';
@@ -291,12 +292,11 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
           {/* 📤 straight to Notability / GoodNotes / Files via the share sheet (11 Sep 2026) */}
           <OpenInApp url={`/api/portal/marking-pdf?run=${paper.id}&kind=marked`} name={paper.name}
             className="inline-block text-sm font-semibold text-white bg-navy rounded-xl px-4 py-2 hover:opacity-90 disabled:opacity-60" />
-          <a href={`/api/portal/marking-pdf?run=${paper.id}&kind=marked`} target="_blank" rel="noopener noreferrer" data-track="marking:open"
-            className="inline-block text-sm font-semibold text-navy border border-navy/20 rounded-xl px-4 py-2 bg-white hover:bg-navy/5">⬇ Download as PDF</a>
-          {ink && Object.values(ink).some(pg => pg?.strokes?.length) && (
-            <a href={`/api/portal/marking-pdf?run=${paper.id}&kind=marked&notes=1`} target="_blank" rel="noopener noreferrer"
-              className="inline-block text-sm font-semibold text-navy border border-navy/20 rounded-xl px-4 py-2 bg-white hover:bg-navy/5">⬇ With my notes</a>
-          )}
+          {/* ⬇ three-way (Adrian, 22 Sep 2026): marked · with my notes · with Adrian's notes */}
+          <DownloadMenu runId={paper.id}
+            hasMine={!!ink && Object.values(ink).some(pg => pg?.strokes?.length)}
+            hasAdrian={!!teacherInk && Object.values(teacherInk).some(pg => pg?.strokes?.length)}
+            mineLabel={isAdmin ? 'With their notes' : 'With my notes'} />
         </div>
       )}
 

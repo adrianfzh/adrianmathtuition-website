@@ -22,6 +22,7 @@ import { strokesToSvg } from '@/lib/annotate/layer';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { TEACHER_INK_IDENTITY } from '@/lib/student-ink';
 import type { InkPages } from '@/lib/student-ink';
+import { notesChoice, layersFor, notesSuffix } from '@/lib/marking-notes-layers';
 import { PDFDocument } from 'pdf-lib';
 import sharp from 'sharp';
 
@@ -42,7 +43,10 @@ export async function GET(req: NextRequest) {
   // ✍️ ?notes=1 (17 Sep 2026, SPEC-STUDENT-FIRST §12): the marked pages with the
   // student's own ink baked in — built on request from the page images and the
   // student_ink layer, never stored, never touching the marked copy.
-  const withNotes = req.nextUrl.searchParams.get('notes') === '1';
+  // 22 Sep 2026: three-way — ?notes=mine (the student's ink), ?notes=adrian (Adrian's
+  // notes on their paper), ?notes=1|all (both, the legacy value).
+  const notes = notesChoice(req.nextUrl.searchParams.get('notes'));
+  const withNotes = notes !== 'none';
 
   const sb = getSupabaseAdmin();
   const { data } = await sb
@@ -59,7 +63,8 @@ export async function GET(req: NextRequest) {
     const { papers } = buildStudentMarking([data as unknown as MarkingRunRow], { studentName: (account?.display_name ?? null) ?? null });
     const paper = papers[0];
     if (!paper || !paper.pages.length) return NextResponse.json({ error: 'no pages' }, { status: 404 });
-    // Both layers ride into the download (18 Sep 2026): Adrian's notes first, the student's on top.
+    // The chosen layers ride into the download: Adrian's notes first, the student's on top.
+    const want = layersFor(notes);
     const { data: inkRows } = await sb.from('student_ink').select('identity, pages').eq('run_id', runId).in('identity', [String((data as { student_id?: string | null }).student_id ?? ''), TEACHER_INK_IDENTITY]);
     const ink: InkPages = {}; const teacher: InkPages = {};
     for (const r of (inkRows ?? []) as { identity: string; pages: InkPages }[]) Object.assign(r.identity === TEACHER_INK_IDENTITY ? teacher : ink, r.pages ?? {});
@@ -69,7 +74,7 @@ export async function GET(req: NextRequest) {
       const r = await fetchOurFile(p.url);
       if (!r.ok) continue;
       let buf: Buffer = Buffer.from(await r.arrayBuffer());
-      const layers = Number.isInteger(p.index) ? [teacher[p.index], ink[p.index]].filter((l): l is InkPages[number] => !!l && l.strokes.length > 0) : [];
+      const layers = Number.isInteger(p.index) ? [want.teacher ? teacher[p.index] : undefined, want.student ? ink[p.index] : undefined].filter((l): l is InkPages[number] => !!l && l.strokes.length > 0) : [];
       if (layers.length) {
         const meta = await sharp(buf).metadata();
         const overlays = layers.map(layer => {
@@ -85,7 +90,7 @@ export async function GET(req: NextRequest) {
     }
     const bytes = await pdfDoc.save();
     const base = markedPdfFilename({ studentName: (account?.display_name ?? null), paperName: displayPaperName(row.paper_name, (account?.display_name ?? null)), dateISO: row.created_at, kind: 'marked' });
-    const name = base.replace(/\.pdf$/i, '') + ' (with my notes).pdf';
+    const name = base.replace(/\.pdf$/i, '') + notesSuffix(notes) + '.pdf';
     return new NextResponse(Buffer.from(bytes), {
       headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': contentDisposition(name, 'inline'), 'Cache-Control': 'private, no-store' },
     });
