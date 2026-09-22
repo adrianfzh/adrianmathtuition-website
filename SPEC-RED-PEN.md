@@ -364,4 +364,34 @@ overlap checks still hold). Per-ink overrides (`MARK_TEACH_INK`, `MARK_KIND_INK`
 still win over the look. Default OFF — students see no change until the Fly secret
 `MARK_LOOK=natural` is set (`fly secrets set MARK_LOOK=natural`); the golden bench
 passes in both looks (`MARK_LOOK=natural node scripts/golden-pen.cjs`). Side-by-side
-shown to Adrian on Rainie's Q9 page; his verdict is pending.
+shown to Adrian on Rainie's Q9 page. **His reply: "that's not my idea"** — the look
+stays as a switch, but what he asked for is the layout below.
+
+### 22 Sep 2026 — on the paper only (`MARK_LAYOUT=inpage`, OFF)
+
+Adrian: "my idea is that for the red annotations are on the paper itself — without side
+column and bottom footer — can it be done? … a new mode of marking, i am exploring /
+make sure the current marking still stays the same." Yes: the strip and the footer are
+manufactured by the renderer (`sharp.extend`), not by the marking, so a layout switch
+leaves the photo at its own size and puts everything on it. `ai/annotate.js
+inpageLayout()`:
+
+- **Score chips** sit in the page's own right margin beside the part (or left of the
+  working when that is fuller). Nothing is parked in a strip.
+- **Notes** try every band at FULL size before any band at a smaller pen — beside the
+  working, the whole column, then the column down to the page foot — so the blank
+  half-page under a question is the note's natural home and a note never shrinks into
+  a sliver of margin while that space stands empty. Every in-page note carries a
+  "Q9(a)(ii):" caption, so the link to the part holds even when the leader would rake
+  through the student's lines — then no arrow is drawn (the leader-crossing cutoff that
+  used to send the note to the strip is gone; the penalty stays, the cleaner spot wins).
+- **What has no room** — a note on a dense page, the footer's solutions and
+  continuations — goes to the overflow sheet ("From the marker — continued from the page
+  before"). Nothing the marker wrote is lost; the sheet is the only extra page.
+- The engine, the marks, the verdict wording and the pen checks are untouched;
+  `MARK_LOOK=natural` combines with it for the red-ink teacher look.
+
+Default OFF — students see no change until the Fly secret `MARK_LAYOUT=inpage` is
+set. The golden bench passes 479/479 in both layouts (`MARK_LAYOUT=inpage node
+scripts/golden-pen.cjs`). Side-by-side shown to Adrian on Rainie's Q9 page and the
+dense Alessi Q7 page; his verdict is pending.
