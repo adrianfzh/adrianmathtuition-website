@@ -232,33 +232,59 @@ account, and using a consumer subscription to serve a company's paying customers
 checked against Anthropic's terms before anyone relies on it. **Company customers are costed
 on the commercial API.** The plan lane stays for Adrian's tuition students and his own work.
 
-**Cost per marked paper** (USD→SGD at 1.30, an assumption):
+**Cost per marked paper — recalculated 23 Sep 2026 at Opus 5.5, with the vision step counted**
+(USD→SGD at 1.30, an assumption).
 
-| Lane | US$ | S$ | Turnaround | Use for |
+The first version of this table left one cost out. Placing the marks on the photo uses
+Google's Gemini vision models, and that spend is stored but never priced (`vision_usage` on
+each run; the bot's `finalizeUsage` prices Claude only). Measured over the last 30 days —
+116 papers, 13.9 pages each — it is **85,000 tokens in and 25,600 out a paper**, mostly on
+`gemini-3.1-pro-preview`. At Gemini Pro list prices (roughly US$1.25–2 in and US$10–12 out
+per Mtok — check against the Google bill) that is **about US$0.35–0.50 a paper**; US$0.45 below.
+
+| Lane | Claude, US$ | Vision, US$ | Total US$ | S$ | Turnaround | Use for |
+|---|---|---|---|---|---|---|
+| API, synchronous | ~1.82 (the measured 2.27 at Opus 5 prices × 0.8) | ~0.45 | ~2.27 | ~2.95 | within the hour | the premium use |
+| **API, Batch** | ~0.91 (half) | ~0.45 | ~1.36 | ~1.77 | by morning | **the default** |
+| Plan lane | 0 for the page reads; ~0.35 for assembly (measured 0.44 × 0.8) | ~0.45 | ~0.80 | ~1.04 | varies with the slots | tuition students only |
+
+**What changed:** Opus 5.5 is US$4 / US$20 per Mtok (Batch US$2 / US$10, cache reads US$0.20,
+60 % below Opus 5), so Claude's share falls by about a fifth — and the vision step, now counted,
+takes most of that back. The synchronous lane lands where the first table had it; Batch is
+about S$0.20 dearer than its first estimate; and the plan lane was never 57 cents a paper, it
+was about a dollar. The Claude figures are upper bounds (cache reads fell 60 % and Anthropic
+reports fewer tokens at a lower effort). **Re-measure on the first 20 API papers before
+setting any price, and price the vision step in the ledger.**
+
+**The other services, per use:**
+
+| Service | Model | US$ each | S$ | Basis |
 |---|---|---|---|---|
-| API, synchronous (measured, on Opus 5 / 4.8 at US$5 / US$25 per Mtok) | 2.27 | 2.95 | within the hour | the premium tier |
-| **API, Batch** (estimate — Batch prices the reads at half; **measure before pricing**) | ~1.20 | ~1.56 | by morning | **every default tier** |
-| Plan lane (measured) | 0.44 | 0.57 | varies with the slots | tuition students only |
+| Ask, a photo | Opus 5.5 | ~0.12 | ~0.16 | ~0.15 on Opus 4.8 (bot CLAUDE.md) × 0.8 |
+| Ask, typed | Sonnet 5 | ~0.03 | ~0.04 | estimate |
+| Practice Again sheet | the sheet worker | not known on the API | — | plan-billed today, and a long Claude Code session; **measure one on the API before sheets go into any company plan** |
 
-**Opus 5.5 (the marker's model since 23 Sep 2026) lowers every row.** It is US$4 / US$20 per
-Mtok (Batch US$2 / US$10, cache reads US$0.20 — 60 % cheaper than Opus 5), and Anthropic
-reports it matches Opus 5 at a lower effort with fewer tokens. The measured US$2.27 predates
-the switch; expect it to fall by at least a fifth. **Re-measure on the first 20 API papers
-after the switch before setting any price** — the table below is kept at the old figures so
-the margins stay on the safe side.
+In August the bot answered about 660 photo and 270 long typed questions in 30 days across all
+users — roughly 13 photos a student a month, **about S$2.50 of Ask per student**.
+
+**Today's passes, checked** (web fee ~4 %, the store's 15 % in brackets; Ask at S$2.50 on
+Standard and S$4 on Intensive):
+
+| Pass | Price | Papers | All used, Batch | All used, synchronous | 60 % used, Batch |
+|---|---|---|---|---|---|
+| Standard | S$29 | 8 | S$11.20 left, 40 % (store 32 %) | S$1.70, 6 % | S$16.80, 60 % |
+| Intensive | S$49 | 20 | S$7.60, 16 % (store 5 %) | **−S$16, a loss** | S$21.80, 46 % |
+
+Standard holds up on Batch. **Intensive does not**: twenty papers at S$49 works only if students
+use about half of them, and twenty "within the hour" loses money. Credits (§7.1) fix both.
 
 **The price a paper must carry** for a 60 % gross margin after the payment fee:
 price ≥ cost ÷ (0.4 × (1 − fee)).
 
 | | Web (card/PayNow ~4 %) | App store (15 %: Apple's Small Business Program; Google on subscriptions) |
 |---|---|---|
-| Batch lane (S$1.56) | ≥ S$4.10 | ≥ S$4.60 |
+| Batch lane (S$1.77) | ≥ S$4.60 | ≥ S$5.20 |
 | Synchronous lane (S$2.95) | ≥ S$7.70 | ≥ S$8.70 |
-
-**What that says about today's prices:** the S$29 pass is 8 papers, S$3.63 a paper if all are
-used — under water on the synchronous lane, about break-even on Batch through a store. It
-works only if (a) the default is Batch and (b) the average student uses about 60 % of the
-allowance. Both are measurable in the first month; neither is known.
 
 **Proposed ladder** (Adrian sets the numbers; the SHAPE follows `SPEC-PUBLIC-LAUNCH.md` §1 —
 non-renewing passes headline on the web, credits never expire):
@@ -266,15 +292,15 @@ non-renewing passes headline on the web, credits never expire):
 | Student app | What | Web | Store |
 |---|---|---|---|
 | Free | Ask with a daily photo cap; free notes; **one marked paper, ever** | S$0 | S$0 |
-| Pack | 3 marked papers, never expire | S$15 | web ÷ 0.85, rounded to a store price point |
-| Standard | 30 days: 8 papers (by morning), Practice Again, Ask, parent view | S$39 | ″ |
-| Intensive | 30 days: 20 papers, within the hour, Practice Again, Ask | S$69 | ″ |
+| Pack | 3 credits (3 papers by morning), never expire | S$15 | web ÷ 0.85, rounded to a store price point |
+| Standard | 30 days: 8 credits, Practice Again, Ask, parent view | S$39 | ″ |
+| Intensive | 30 days: 20 credits (a within-the-hour paper spends 2), Practice Again, Ask | S$69 | ″ |
 | Season | dated to the national papers: prelims → last paper | set each year | ″ |
 | Family | one parent account, up to three children, each on their own plan | — | Family Sharing where the store allows |
 
 | Tutor app | What | Price (web) |
 |---|---|---|
-| Credits | marked papers, never expire, by morning | S$4 a paper in packs of 25 |
+| Credits | one credit = one paper by morning, never expire | S$4 a credit in packs of 25 |
 | Solo | 30 papers a month, the desk, calibration, their name, parent pages | S$99 / month; extra papers S$3 |
 | Centre | per teacher seat, the manager view, the calibration table | S$39 / seat / month + papers at S$3 (3-seat minimum) |
 | API | the marker inside another company's app | per paper at volume, annual contract |
@@ -283,7 +309,7 @@ The value anchor for tutors is their own time: a 90-mark paper takes a tutor rou
 minutes to mark by hand (an estimate to confirm with the Phase 0 tutor).
 
 **Illustrative contribution, one Standard student:** S$39 − store fee S$5.85 − marking 5
-papers × S$1.56 − Ask ~S$2 ≈ **S$23 (about 60 %)**, before fixed costs.
+papers × S$1.77 − Ask ~S$2.50 ≈ **S$21.80 (about 56 %)**, before fixed costs.
 
 **The price anchor in the market:** Tutorly's S$49 a month for everything, without line-by-line
 checking; a tuition hour. The Standard plan sits under both and does the one thing neither does.
@@ -291,6 +317,50 @@ checking; a tuition hour. The Standard plan sits under both and does the one thi
 **Levers, in the order to pull them:** Batch by default · the prompt cache on the scheme and
 the paper (already in use) · a cheaper model on pages the classifier calls simple · per-tier
 daily caps (exist) · pricing.
+
+### 7.1 Credits (Adrian, 23 Sep 2026: "we can offer credits/tokens too")
+
+**One credit is one marked paper**, not a token count. A parent understands "3 papers left";
+nobody understands "147 tokens left", and a token price would move with every model change.
+
+| Use | Credits |
+|---|---|
+| A paper marked by morning (the Batch lane) | 1 |
+| A paper marked within the hour | 2 |
+| A science paper | 1 |
+| A Practice Again sheet | 1 — re-price once one is measured on the API (§7) |
+| Ask | none: included in every plan, with a daily photo cap per plan |
+
+- **Packs never expire** (bought credits; the Grail lesson — parents trust it). Web: S$5 a
+  credit, 3 for S$15, 10 for S$45. In the apps, the same packs as consumable in-app purchases
+  at the nearest store price point (web ÷ 0.85). At S$5 a by-morning paper keeps about 58 %
+  through a store and 63 % on the web.
+- **Plans grant credits every month**, and those expire at the end of the month with one
+  month's rollover. That keeps the plan recurring revenue (§14.6) and stops unused credits
+  piling up as a debt on the books.
+- **One wallet per student** across web, iOS and Android. Apple lets credits bought on the web
+  be spent in the app when the same packs are also sold inside it (guideline 3.1.3(b)); the
+  app never mentions the web price.
+- **Tutors use the same unit**: S$4 a credit in packs of 25; Solo and Centre grant credits
+  monthly.
+- **A wrong mark or a failed marking gives the credit back**, never cash ("Question this mark",
+  §9.1).
+
+**What credits fix.** Intensive becomes 20 credits: a student who wants every paper back within
+the hour gets 10 of them, so the plan cannot lose money at full use. Through a store, all
+credits used on Batch: Standard at S$39 keeps S$16.50 (50 %), Intensive at S$69 keeps S$19.25
+(33 %, acceptable only because full use is rare; 57 % at 60 % use).
+
+**What credits do to the books.** Bought credits are deferred revenue until spent — a liability
+— and never-expiring ones sit there until used, or until the accountant has enough history to
+recognise the share that never will be ("breakage"). A buyer will ask for that number. So keep
+a **credit ledger from day one**: one append-only row per grant, purchase, spend, refund and
+expiry, per account and per org — never only a balance column.
+
+**Code delta:** a `credit_ledger` table and a balance view; `lib/credits.ts` pure and tested; a
+hand-in reserves a credit and releases it when marking fails or nothing was marked; the store
+receipt → grant path (App Store server notifications, Google Play real-time notifications); it
+replaces the `HANDINS_PER_PASS` count in `lib/portal-passes.ts` rather than sitting beside it.
 
 ## 8. Content — what a public app may serve
 
@@ -305,6 +375,47 @@ The rules in `docs/CONTENT-POLICY.md` carry over unchanged and bite harder in pu
 - National papers (`school = 'GCE'`) stay grounding-only, as today.
 - The science bank needs the same `national` gate and the same twins route before any
   science practice goes public.
+
+### 8.1 The bank, in numbers, and the plan (Adrian, 23 Sep 2026: "Reskin the questions?")
+
+**Yes — but not the 36,500. Only what gets served, one sub-skill at a time.**
+
+Read live on 23 Sep 2026:
+
+| | Count |
+|---|---|
+| School-paper questions in the bank | 36,544 |
+| National papers (`school = 'GCE'`) | 1,885 |
+| Ours (AI-written, gated) | 492 |
+| Bank questions handed to students in the last 120 days | 102 — 92 different: 68 school, 14 GCE, 10 ours — all through "From Adrian" assignments |
+| Practice attempts on bank questions, same window | 10 |
+| Kiosk prints, same window | 0 |
+| Sub-skills (`subgroups`) — A Math / E Math / JC | 227 / 322 / 197 |
+| Sub-skills with 3 or more of our own questions — A Math / E Math / JC | 63 / 0 / 0 |
+
+So today the bank earns its keep as **grounding** — knowing the paper, its answers and its
+marks when a script is marked — not as a library students browse. Serving is tiny, which makes
+replacing it cheap.
+
+1. **The unit is the sub-skill, not the source question.** Start with **3 of our own per
+   sub-skill** (about 2,240; about 1,800 to write after what exists), then an Advanced tier where
+   the sub-skill has one. **E Math first** (the most exam-year students, no coverage), then JC,
+   then the A Math gaps; science after its bench.
+2. **A twin, not a reskin.** A school question with new numbers and names is still a copy of it.
+   Each question is written for the sub-skill, the source used only to pitch the level, and
+   passes the existing gates (code check, blind solve, skill, difficulty, the figure registry)
+   **plus a novelty check against its source** (`SPEC-TWINS.md`); `twin_of` is kept internally
+   as provenance. The practice-photo pipeline (built 23 Sep 2026) already does exactly this one
+   question at a time on request; this is the same thing run as a batch.
+3. **Cost.** Plan-billed today, so free. On the company's API: roughly **US$0.20–0.40 per
+   question that passes** (writing plus four gates on Opus 5.5 on Batch, rejections included) —
+   **about US$400–700 for 1,800**. An estimate; the first 50 set the real figure.
+4. **Adrian reads a sample, not every question** — say one in ten per topic. The gates carry
+   correctness.
+5. **The 36,500 school rows are never served by the company's apps.** They stay as marking
+   grounding only if the lawyer agrees (§14.1); otherwise they stay with the tuition business and
+   the company marks school papers from the model-built SEAB-style scheme the doctrine already
+   accepts (revised 17 Sep 2026). National papers stay grounding-only, as today.
 
 ## 9. The tuition business and the company
 
@@ -401,7 +512,11 @@ Each phase ends at a gate measured in numbers, not a date.
 7. **International** (segment I) — whether it is in the plan at all.
 8. **The plan lane** — confirm with Anthropic's terms how, if at all, it may be used for
    company customers; until then every company price assumes the API.
-9. **Built to be sold (§14)** — the IP assignment, company-owned accounts, the brand name, and
+9. **Credits (§7.1)** — one credit per paper, and whether plan credits expire monthly (recommended)
+   while bought ones never do.
+10. **The name (§15)** — after the register checks.
+11. **Claude for placement (§16)** — the US$10–20 test.
+12. **Built to be sold (§14)** — the IP assignment, company-owned accounts, the brand name, and
    what happens to the school-paper bank. A lawyer should see §14.1, §14.2 and §14.5 before
    the company takes its first outside customer.
 
@@ -414,6 +529,10 @@ Each phase ends at a gate measured in numbers, not a date.
 - The lower-sec science solutions pass (content work, the extraction fleet's method).
 - Draft the `orgs` migration and the entitlements shape as a proposal for review — not
   applied until §12.1–4 are settled.
+- **Price the vision step in the ledger** — the bot's `finalizeUsage` stores `vision_usage` but
+  prices only Claude, so every marking cost to date is understated by about US$0.45 a paper.
+- **E Math twins, plan-billed** (§8.1): the first 50 questions, which also set the API cost
+  estimate.
 
 ## 14. Built to be sold (Adrian, 23 Sep 2026: "the company should be built in a way to be sold later")
 
@@ -424,7 +543,7 @@ are for a lawyer.
 
 ### 14.1 The question bank is other people's copyright — the biggest issue
 
-About 35,000 bank rows are school papers and 1,900 are national papers
+About 36,500 bank rows are school papers and 1,900 are national papers
 (`docs/CONTENT-POLICY.md`); much of the recent intake came from the "Holy Grail" harvest; some
 scans carried a paid reseller's stamp (KiasuExamPaper), which one clean-up sweep removed; the
 Cambridge calibration booklets came from a third-party host. A buyer cannot buy that as an
@@ -477,13 +596,42 @@ business whose value walks out with its founder. The company's brand is not a pe
 the pen writes in the brand's voice (and in a tutor's own name in the tutor app). Adrian can
 stay the public face as head of curriculum. Register the brand at IPOS as soon as it is chosen.
 
-### 14.5 Customer data must belong to the company
+### 14.5 Customer data must belong to the company — how (Adrian, 23 Sep 2026: "How to do #5")
 
-Most users are children (§9). The company must be the data controller for its own users from
-their first sign-up, with a notice that allows the data to move with the business. Tuition
-students' data stays with the tuition business unless they consent again. The deletion and
-export paths already exist; add a record of consent per account and the data-protection
-impact assessment (§11 Phase 0).
+Most users are children (§9). In order:
+
+1. **The company exists first** (a Pte Ltd with a UEN). Until it does, there is no one to hold
+   the data.
+2. **The company is the organisation responsible (the controller) for everyone who signs up to
+   its apps.** Its notice names it (name, UEN, the data protection officer's contact), says what
+   is collected and why, who processes it (Anthropic, Google, Supabase, Vercel, Fly, Stripe,
+   Apple, Google Play — each contract in the company's name), how long it is kept, and one plain
+   sentence: *"If the business is sold, your data goes to the new owner, who must keep these
+   promises."* The PDPA already allows data to move with a sale under its business-asset-
+   transaction exception; saying so in the notice removes the argument.
+3. **Age at sign-up.** Ask the year of birth (or school level). Under 13: a parent's consent
+   before the account works — the parent's email, a confirm link, recorded. 13–17: their own
+   consent, with a notice written so a 13-year-old understands it (the PDPC's 2024 children's
+   guidelines). Paid plans are usually bought by a parent, so the parent's email is often
+   there already.
+4. **A consent record per event, not per account.** Today `portal_accounts.consent_record` holds
+   one JSON value (`policy_version` `v2-2026-09`, who, when — written by `api/portal/join` and
+   `api/portal/activate`). Add an append-only `consent_records` table: account, org, who
+   consented (student or parent), the parent's contact when it was a parent, the age band, the
+   notice version and a hash of its text, the channel (web, iOS, Android), the time. A
+   withdrawal is a new row. A buyer's lawyer, or the PDPC, asks for the history, not the latest
+   value.
+5. **Tuition students stay with the tuition business.** Every row carries `org_id` (§10 step 1).
+   The company runs the software for the tuition business as its **processor**, under a short
+   written agreement between the two entities. A tuition student who signs up to the public app
+   themselves starts a new relationship with its own consent; the two accounts are never merged
+   quietly.
+6. **Before the public launch:** a data-protection impact assessment (children's data, the
+   marking models, processing overseas), a retention schedule (the retention cron exists), export
+   and delete in the app (exist), a named DPO, and a breach runbook (the PDPC is told within 3
+   days of assessing a notifiable breach).
+7. **Code:** `consent_records`, the age step, the parent-confirm flow and `org_id`. Everything
+   else exists.
 
 ### 14.6 Revenue a buyer will value
 
@@ -522,3 +670,49 @@ marking data while a tutor's own calibration stays theirs (`SPEC-MARKING-CALIBRA
 4. Company workloads off the Macs and the plan logins (Phase 1).
 5. Twins for every topic Practice serves publicly (Phase 3 gate).
 
+## 15. A name (Adrian, 23 Sep 2026: "Suggest a good name?")
+
+Best first. **None is checked yet** against the trade-mark register, the App Store, Google Play
+or the domains — do that before falling for one (an IPOS search first, then the stores, then
+`.com` and `.sg`).
+
+| Name | Why |
+|---|---|
+| **Scriptwise** | "Script" is what Singapore teachers call a marked answer paper. Says marking without saying maths, so science and essays fit, and it works for both apps ("Scriptwise for Tutors") |
+| Tickmark | the red pen's own mark; short. The phrase is common in accounting, so the register may be crowded |
+| Onemark | "every mark counts"; neutral |
+| Showwork | what the marker rewards — working shown; reads as an instruction |
+| Markly | short and app-like, but generic and likely taken somewhere |
+
+Not a person's name (§14.4), and not "tuition": it is a product, not a centre.
+
+## 16. Can Claude replace Gemini for placing the marks? (Adrian, 23 Sep 2026)
+
+**What Gemini does today.** Claude marks the paper; Gemini finds **where** on the photo to draw:
+a box round each row of writing with its transcription, the token to ring, each part's region,
+the features on a sketch, and whether the photo is upright. About 50 calls a paper, 85,000 tokens
+in and 25,600 out; `gemini-3.1-pro-preview` first, then `gemini-3.7-flash` and `gemini-2.5-pro`
+(`ai/photo-overlay.js` `VISION_MODELS`, in the bot).
+
+**Could Claude do it?** Possibly. Opus 5.5 is reported to read images better, but nothing in the
+repos has measured Claude's boxes on handwriting, and Gemini is trained specifically to return
+boxes. So it is a test, not a switch.
+
+**It would not save money.** The same tokens cost about US$0.85 a paper on Opus 5.5 against about
+US$0.45 on Gemini; a smaller Claude model narrows the gap. The case for switching is **one
+vendor**: one contract, one bill, one processor fewer in the privacy notice (§14.5), one fewer
+thing for a buyer to check, and every cost in one ledger.
+
+**The test** — roughly US$10–20 of API, so Adrian's OK first:
+
+1. A Claude placer behind the same door (`visionGenerate`, `ai/photo-overlay.js`), chosen by an
+   environment variable, so nothing live changes.
+2. **The upright check first**: one call a photo, four possible answers (0, 90, 180, 270), easy to
+   score against pages whose answer is known. Haiku or Sonnet should do it; if it matches, switch
+   that call.
+3. **Then placement, on the golden pen bench** (`scripts/golden-pen.cjs`): its pages already carry
+   Gemini's stored boxes. Run the Claude placer on the same pages, run the bench's checks on both
+   (each ✓ on the right line, nothing on top of anything, everything on the page), and show Adrian
+   the pages where they disagree.
+4. **Switch only where Claude is at least as good on the bench**, one call type at a time, with
+   Gemini kept as the fallback for a month.
