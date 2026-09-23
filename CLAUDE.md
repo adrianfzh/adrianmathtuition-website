@@ -85,6 +85,35 @@ Apply this whenever designing a NEW feature, process, or automation — it's the
 - **Relationships** — trust with parents and students is the distribution channel. Agents draft; Adrian delivers in his own voice.
 - **Novelty** — noticing the spec itself is wrong (new syllabus, new failure mode) is human work. Surface anomalies to him; never smooth them over.
 
+## 🏢 The company — standing reminders (Adrian, 24 Sep 2026)
+
+Adrian: *"put #5 into memory and remind me when anything about company comes up"* and *"the
+credits part also put into memory"*.
+
+**When a session touches anything about the company** — `SPEC-COMPANY.md` or the specs under
+it (public launch, student app, tutor tools), pricing, passes, packs or credits, sign-up or
+consent, the app stores, a brand or domain, orgs or entitlements — **remind Adrian of both
+points below in the reply, briefly**, and check the work against them:
+
+1. **Customer data belongs to the company from each user's first sign-up** (`SPEC-COMPANY.md`
+   §14.5).
+   - The company exists first and is the controller.
+   - Its notice names it and says the data passes to a buyer.
+   - Year of birth at sign-up; a parent confirms for anyone under 13.
+   - An append-only `consent_records` table (one row per consent event, with the notice
+     version and its hash, and the channel), not one JSON value per account.
+   - Every row carries `org_id`. Tuition students stay with the tuition business, the company
+     acting as its processor under a written agreement.
+   - A DPIA, a named DPO and a breach runbook before launch.
+2. **Credits** (`SPEC-COMPANY.md` §7.1).
+   - One credit = one paper marked by morning; within the hour = 2.
+   - Bought packs never expire; plan credits expire monthly, with one month's rollover.
+   - One wallet across web, iOS and Android.
+   - Ask is included with a daily cap, not charged in credits.
+   - A wrong or failed marking gives the credit back.
+   - An append-only credit ledger from day one: unspent credits are deferred revenue a buyer
+     will ask about.
+
 ## Commands
 
 - `npm run dev` / `next dev` — run locally

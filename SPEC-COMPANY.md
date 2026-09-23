@@ -28,6 +28,27 @@ teachers under their own name. Science is the second subject family in both, Sec
 released and followed up without anyone touching it; people set the standard and answer
 the disputes.
 
+**Revised 24 Sep 2026 — the student app is a teacher, not a marking app.** Adrian: *"the app
+is not about marking, it's a teaching and resource tool, expect students to self learn with
+it — the app is aimed at replacing tutors — the idea is the app can teach as well, if not
+better than teachers — the way students learn is drastically changing — more students are
+relying on AI to learn and do work, most students don't even ask me questions now, they ask
+the bot."* So the student app leads with **Ask and learning** — a question from a photo
+explained step by step, then the practice and the notebook that follow from it — and marking
+a whole paper is one of its tools, not its identity. The evidence is already in the logs: in
+August the bot answered about 660 photo questions and 270 long typed ones in 30 days, against
+187 papers marked. Two things follow:
+
+- **§4's loop reorders**: Ask → understand → practise → hand in a paper → Practice Again.
+  Pricing stays on credits for the expensive step (a marked paper, §7.1); Ask stays included
+  with a daily cap.
+- **A tension to decide, not smooth over (the doctrine's Novelty item):** the tutor app (§5)
+  sells to the very people the student app sets out to replace. Tutors may not want to feed
+  a product aimed at their students' wallets, and a buyer will ask about it. Options: sell
+  the tutor app under a separate brand; make it the "tutor + AI" story (the tutor sets the
+  work, the app teaches between lessons); or drop the tutor app and put everything into the
+  student app. Adrian decides (§12).
+
 ## 1. The starting line, in numbers (read live 23 Sep 2026)
 
 | | Today |
@@ -98,6 +119,28 @@ Most official pages could only be read through search excerpts; confidence is ma
 | Competitors: Tutorly S$49 / month (photos, not line by line); grail.moe credits S$3–15; MarkPilot (SG, P5 maths for tutors, WhatsApp recaps); CoGrader US$15–19 / month (essays); Graide, Graded Pro (UK STEM, institutions) | the products' own pages | medium |
 | **PDPC children's data guidelines (28 Mar 2024)**: a child is under 18; "technology-aided learning" named in scope; 13–17 may consent themselves if the notice is understandable to them, under 13 needs a parent; children's data held to a higher standard; collect only what is needed; high-privacy defaults; a data-protection impact assessment before launch encouraged | PDPC advisory guidelines (via law-firm summaries) | medium-high |
 
+### 2.2 Will Grail be bogged down by cost? (Adrian, 24 Sep 2026)
+
+Probably not, because of **what** it sells. Grail (grail.moe) sells **generated practice
+papers** on credits — S$15 a month for 20, about 70 cents each (`SPEC-PUBLIC-LAUNCH.md` §1).
+
+- **A generated paper is a one-off cost that can be reused.** Writing a 20-question paper with
+  a current model costs cents to a few tens of cents. The same paper can be served to many
+  students, and the price per token falls with every model generation (Opus 5.5 is a fifth
+  cheaper than Opus 5).
+- **Most subscribers don't use their allowance.** Unused credits are margin.
+
+Its costs grow with use only where the work is **per student and per page**: reading a
+student's handwriting, marking a whole paper (US$1.40–2.30 a paper for us, §7), and unlimited
+photo questions (about US$0.12 each). If Grail adds those at S$15 a month without caps, heavy
+users would sink it; if it caps them or charges per paper, it won't sink.
+
+**Where Grail is exposed is elsewhere:** quality (its library is unvetted uploads) and
+copyright (serving other people's papers, §14.1). **The lesson for us:** price the per-student
+work per use — credits (§7.1) — and never sell unlimited marking at a flat price.
+
+These are inferences from Grail's public pages read on 21 Sep 2026, not from its accounts.
+
 ## 3. The segments, and the solution for each
 
 The ask is "solutions covering different segments". This table is the answer; §4 and §5
@@ -134,7 +177,9 @@ three native parts (the scanner, push, and PencilKit on iPad — `SPEC-STUDENT-A
 (`components/PortalTabs.tsx FamilySwitch`). Each family's menu is Home · Hand in · Papers ·
 Ask, plus Practice once the served bank is ours (§8).
 
-**The loop a paying student lives in:**
+**The loop a paying student lives in** (reordered 24 Sep 2026 — Ask leads, §0):
+0. Ask and learn — photograph any question or type one; explained step by step, in the
+   thread, as a teacher would (the Telegram and web solver, the photo thread, the notes).
 1. Hand in — photograph or scan the paper (the scanner in the app, the camera on the web).
 2. Marked — the cover ("Where your marks went"), the red-pen pages, the estimate for science.
 3. Practice Again — the sheet for what they got wrong, on request.
@@ -161,9 +206,10 @@ Ask to Buy / Family Link, so **the stores already make the parent the payer** �
 plan and the parent view build on that rather than around it. Apple's age screen for 18+
 apps does not touch a 4+ education app.
 
-**What it deliberately is not:** a library of school papers, a generic chatbot, or a
-course platform. Free notes are the front door; marking is the paid room
-(`SPEC-PUBLIC-LAUNCH.md` §0).
+**What it deliberately is not:** a library of school papers or a generic chatbot. It is a
+teacher: it explains in the syllabus's own method, remembers what the student gets wrong,
+and sets the next piece of work. Free notes and a daily allowance of Ask are the front door;
+marked papers and the practice that follows them are the paid room (`SPEC-PUBLIC-LAUNCH.md` §0).
 
 ## 5. App 2 — the tutor app ("the marking desk")
 
@@ -515,6 +561,8 @@ Each phase ends at a gate measured in numbers, not a date.
 9. **Credits (§7.1)** — one credit per paper, and whether plan credits expire monthly (recommended)
    while bought ones never do.
 10. **The name (§15)** — after the register checks.
+10a. **The tutor app, given the student app aims to replace tutors (§0)** — a separate brand,
+   the "tutor + AI" story, or no tutor app at all.
 11. **Claude for placement (§16)** — the US$10–20 test.
 12. **Built to be sold (§14)** — the IP assignment, company-owned accounts, the brand name, and
    what happens to the school-paper bank. A lawyer should see §14.1, §14.2 and §14.5 before
@@ -670,21 +718,30 @@ marking data while a tutor's own calibration stays theirs (`SPEC-MARKING-CALIBRA
 4. Company workloads off the Macs and the plan logins (Phase 1).
 5. Twins for every topic Practice serves publicly (Phase 3 gate).
 
-## 15. A name (Adrian, 23 Sep 2026: "Suggest a good name?")
+## 15. A name (Adrian, 23–24 Sep 2026)
 
-Best first. **None is checked yet** against the trade-mark register, the App Store, Google Play
-or the domains — do that before falling for one (an IPOS search first, then the stores, then
-`.com` and `.sg`).
+**24 Sep 2026: the first list is withdrawn.** Scriptwise, Tickmark, Onemark, Showwork and
+Markly all say "marking", and the app is a teacher (§0). The new list comes from a search of
+about 40 names for existing education apps, edtech companies, App Store / Play listings and
+live `.com` domains. IPOS, USPTO and WIPO could not be searched from here, and the stores
+were searched from US results only — **check all three registers before choosing.**
 
-| Name | Why |
-|---|---|
-| **Scriptwise** | "Script" is what Singapore teachers call a marked answer paper. Says marking without saying maths, so science and essays fit, and it works for both apps ("Scriptwise for Tutors") |
-| Tickmark | the red pen's own mark; short. The phrase is common in accounting, so the register may be crowded |
-| Onemark | "every mark counts"; neutral |
-| Showwork | what the marker rewards — working shown; reads as an instruction |
-| Markly | short and app-like, but generic and likely taken somewhere |
+| Name | Why | What the search found |
+|---|---|---|
+| **Deskmate** | The tutor who sits beside you every evening. Chinese-speaking parents hear 同桌 (the classmate who shares your desk). Works for any subject | A study-timer app and an unrelated robot companion app share the name; no education brand. deskmate.com is taken (a file-search product); deskmate.ai looked free. A 1990s US mark was cancelled |
+| Figured | "I figured it out myself" — the self-learning promise | A New Zealand farm-finance company owns figured.com and likely software marks; leans towards maths |
+| Workedout | Worked examples are how it teaches; "worked it out" is what the student does | workedout.com is listed for sale; reads a little like "workout" |
+| Lamplit | Late-night study, the light coming on | Crowded with small unrelated uses (a word game, a wellness app, a German medical exam-prep firm) |
+| Groundwork | Laying foundations — parents get it at once | Very common word, so a weak trade mark |
 
-Not a person's name (§14.4), and not "tuition": it is a product, not a centre.
+Runner-up: Plainly ("explained plainly") — plainly.com is a live legal-software product.
+
+Dropped because an education product already uses the name: **Lumo** (an AI tutor for ages
+10–18 that works from photos and e-mails parents — close to this exact product, worth watching
+as a competitor), Stepwise, Unstuck, Grasp, Tuto, Homeroom, Pupil, Masterly, Clicked,
+Tutorless, Afterclass, Seatmate, Scaffold, Sifu, Cikgu, Learnt, Pennydrop.
+
+Not a person's name (§14.4), and not "tuition".
 
 ## 16. Can Claude replace Gemini for placing the marks? (Adrian, 23 Sep 2026)
 
@@ -716,3 +773,31 @@ thing for a buyer to check, and every cost in one ledger.
    the pages where they disagree.
 4. **Switch only where Claude is at least as good on the bench**, one call type at a time, with
    Gemini kept as the fallback for a month.
+
+**Decision (Adrian, 24 Sep 2026): keep Gemini, and make it cheaper.** The test was built the
+same day as `scripts/vision-trial.cjs` in the bot repo (run on the Mac — it needs the Google,
+Anthropic and Supabase keys; `--dry` shows the pages and the estimate, about US$4.50). It runs
+four set-ups on the bench's pages — Gemini as it runs today, the same model with thinking set
+low, Flash, and Claude — and scores each against the boxes the page was really drawn with. So
+one run answers both questions.
+
+**Ways to lower the Gemini bill, most promising first:**
+
+1. **Turn its thinking down.** `visionGenerate` (`ai/photo-overlay.js`) sets no thinking level,
+   so the Pro model thinks at its default on every call. The thinking is billed as output at
+   the output price, and output is about two thirds of the vision bill. Finding boxes round
+   lines of writing is perception, not reasoning, so "low" probably costs nothing in accuracy.
+   The trial's `thought` column shows how much of the 25,600 output tokens a paper is thinking.
+   **One line to change once the bench agrees.**
+2. **Flash first, Pro as the fallback.** Flash is already the second rung. Swapping the order
+   is a Fly secret (`GEMINI_VISION_MODELS`), not a code change, and Flash costs a fraction of
+   Pro per token. The trial's `flash` row says whether it places as well.
+3. **A small picture for "which way up?".** That call only needs to see the text direction; a
+   ~512-pixel copy is a quarter of the tokens of the marking copy.
+4. **Fewer calls.** Redraws already reuse the stored boxes. A page whose row scan comes back
+   thin is asked twice; a re-mark that did not change a page need not scan it again.
+5. **Gemini's batch mode, for papers due by morning** — half price, the same trade as Claude's
+   Batch lane. A bigger change: drawing would wait for the batch to come back.
+6. **Count it first.** The ledger does not price vision at all yet (the task queued 23 Sep
+   2026). Without it none of the above can be seen to work.
+
