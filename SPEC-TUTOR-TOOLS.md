@@ -1,5 +1,7 @@
 # SPEC — Tools for tuition teachers
 
+> **23 Sep 2026: the umbrella plan is [`SPEC-COMPANY.md`](SPEC-COMPANY.md)** — the tutor app is its App 2 (§5), with tiers Solo → Centre → API and a proposed price ladder (§7). This spec stays the detail.
+
 *Drafted 11 Sep 2026 at Adrian's request ("let's target solo tuition teachers first,
 then later institutional — marking is already one of them"). A product spec, not a
 build plan: what we sell, to whom, in what order, and what has to change in the code

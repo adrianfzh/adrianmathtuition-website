@@ -1,5 +1,7 @@
 # SPEC — Opening to the public: the front door, the first purchase, the showcase
 
+> **23 Sep 2026: the umbrella plan is [`SPEC-COMPANY.md`](SPEC-COMPANY.md)** — the two apps, the segment table, the economics by lane (§7 revisits this spec's prices against the API cost) and the phase order. This spec stays the detail for the student front door.
+
 > Agreed 21 Sep 2026, from a read of grail.moe's pricing, practice, PSLE and library pages
 > the same evening. Adrian: "we already have everything they have and more … put these
 > ideas in specs." Nothing here is built yet. Companion specs: `SPEC-TUTOR-TOOLS.md`

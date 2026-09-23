@@ -1,5 +1,7 @@
 # SPEC — the student app (unlisted App Store app)
 
+> **23 Sep 2026: [`SPEC-COMPANY.md`](SPEC-COMPANY.md) proposes the public version** — both stores, in-app purchase, self-serve sign-up (§4, §10 step 6). The unlisted iOS app below is its first step, unchanged.
+
 Agreed 18 Sep 2026 (Adrian: "let's do unlisted app store app"). Nothing built yet.
 Why: writing on a marked paper only feels like GoodNotes in a **native** app — Apple's
 PencilKit reads the Pencil ~240 times a second, predicts the stroke, rejects the palm in

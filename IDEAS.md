@@ -36,6 +36,8 @@ Done that evening: the Science tab (hidden from students, `SCIENCE_MARKING_OPEN_
 
 ## Product — student portal
 
+- 📐 **The company — two apps across the market segments** — PLANNED 23 Sep 2026 (Adrian: "an edtech company based on subscriptions … science for sec level first … another app selling marking to tutors … pure app/web"), nothing built. Umbrella spec [`SPEC-COMPANY.md`](SPEC-COMPANY.md): the segment table (§3), the student app (§4), the tutor app (§5), science one subject at a time behind its bench (§6), the economics by lane (§7 — API US$2.27 a paper measured; Batch by default; today's S$29 pass is about break-even through a store), orgs + entitlements + brand-by-hostname first (§10), phases with numeric gates (§11), Adrian's decisions (§12). Startable now: measure the Batch cost on 20 papers, the physics seeded bench, the lower-sec science solutions pass.
+
 - **📷 Practice tab = photo a question → a re-skinned one of ours** — AGREED 23 Sep 2026 ("ok go, write the spec with re-skin as default"), not started. Spec + build order: [`SPEC-PRACTICE-PHOTO.md`](SPEC-PRACTICE-PHOTO.md). Creates SPEC-TWINS' `twin_of` column and the `/admin/generated` page the twins batch will share.
 
 - **📱 The student app (unlisted App Store app)** — AGREED 18 Sep 2026, not started. PencilKit writing on marked papers (same ink layer as the web), document-scanner hand-in, native push. Step 0 is Adrian's: enrol in the Apple Developer Program (US$99/yr). Spec + build order: [`SPEC-STUDENT-APP.md`](SPEC-STUDENT-APP.md).
