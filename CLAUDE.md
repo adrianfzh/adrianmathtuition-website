@@ -30,6 +30,7 @@ The deep documentation (bug archaeology, invariants, field tables) was split out
 | **The student app — unlisted App Store app** (agreed 18 Sep 2026, nothing built): a WKWebView shell on `/app` + three native parts (PencilKit "Write on my paper" on the SAME `student_ink` layer, VisionKit document-scanner hand-in, APNs), unlisted distribution, the build order and what needs Adrian (Developer Program enrolment first) | [`SPEC-STUDENT-APP.md`](SPEC-STUDENT-APP.md) |
 | **Students first — the admin revamp** (agreed 17 Sep 2026, build order awaiting Adrian's go): the student profile as the one door (Overview · Papers · Work · Billing), the Papers tab = the student's own view with Adrian's lines folded under each card, the mirror page retired, Discontinue into a "…" menu with Reinstate, the desk as the sweep, **Review my mistakes** (cards + jump to the question on the page) | [`SPEC-STUDENT-FIRST.md`](SPEC-STUDENT-FIRST.md) |
 | **Opening to the public** (21 Sep 2026, from the Grail read, nothing built): copy the pricing SHAPE not the level (S$5 first marked paper, credits never expire, non-renewing passes headline), the front door in order (landing → self-serve sign-up → first paper free, capped at one ever → S$5 pack → pass), the parent as the buyer below Sec 3, free revision sheets + own notes as the front door and never a library, the "see a finished paper first" showcase, a new company + domain for the App Store selling to students and teachers | [`SPEC-PUBLIC-LAUNCH.md`](SPEC-PUBLIC-LAUNCH.md) |
+| **The company — two apps and the market segments** (23 Sep 2026, Adrian: "an edtech company based on subscriptions … science for sec level first, sell through app stores, and another app selling marking to tutors … pure app/web"; a plan, nothing built): one engine, a student app + a tutor app (the marking desk under the tutor's name); the segment table (exam-year Sec, JC, parents of Sec 1–2, private candidates, N(A)/G1–G2, solo tutors, centres, chains/API, Cambridge abroad); science one subject at a time behind its bench (physics → chemistry → combined → biology feedback-only → lower-sec); the economics (recalculated at Opus 5.5 with the Gemini vision step counted: ~US$2.27 a paper synchronous, ~US$1.36 on Batch, Batch by default, the plan lane is not a company cost base); credits = one marked paper (§7.1); the bank plan = our own twins per sub-skill, E Math first (§8.1); how the company holds the data (§14.5); names (§15); the Claude-for-Gemini placement test (§16); orgs + entitlements + brand-by-hostname as the ground; phases with numeric gates; what only Adrian decides. The umbrella over the launch, app, tutor, calibration and science specs | [`SPEC-COMPANY.md`](SPEC-COMPANY.md) |
 | **Tools for tuition teachers** — the product for solo tutors then centres: the three pain points mapped to what exists (marking · the admin tail · materials), pricing shape, the multi-tenant delta, phase 0, centre pain points | [`SPEC-TUTOR-TOOLS.md`](SPEC-TUTOR-TOOLS.md) |
 | **Turning a marked paper into work a student does** — the per-student teaching round (vet → diagnose → pick a wave → author the sheet → amend → release paper+sheet together → hand-in → vet), its four human checkpoints and binding rules | [`SPEC-TEACHING-CYCLE.md`](SPEC-TEACHING-CYCLE.md) — the CURRENT flow; [`SPEC-REMEDIATION.md`](SPEC-REMEDIATION.md) is the portal-drills lane, built but deliberately not in use |
 | **The section bank** — every taught section of every filed Practice Again sheet as a row (`sheet_sections`, keyed by the missed step), searched by the sheet worker BEFORE it authors (`GET /api/admin/sheet-sections?q=`), vetted / retired by PATCH; filed by `sheet-jobs {action:'done'}`; 180 rows back-filled 17 Sep 2026 (Adrian: "let the bank accumulate, instead of writing everything from scratch") | [`SPEC-SECTION-BANK.md`](SPEC-SECTION-BANK.md) |
@@ -83,6 +84,35 @@ Apply this whenever designing a NEW feature, process, or automation — it's the
 - **Accountability** — parents pay a person who answers for outcomes. Parent-facing output carries his name. **Revised 8 Sep 2026 (Adrian: "can we automate the release of the marking and the practice again without my vetting?"):** the sign-off checkpoint sits AFTER release for marked hand-ins — every marked hand-in goes to the student at once (only a paper with nothing marked is refused); the accuracy signals (`lib/mark-triage.ts computeAutoHold`) are pinged to him as ⚠️ watch-outs, not holds; an override after release re-issues the copy; the switch is a Setting he can flip from the desk; the Monday `auto-release-report` counts what he changed and pauses the switch when it exceeds one in ten. Sheets go out on the 12-hour clock unless the paper is held. **Later on 8 Sep 2026 (Adrian: "only generate when they request"):** a Practice Again sheet exists only when asked for — Adrian's desk 📘 Queue (**not compulsory by default since 17 Sep 2026** — `release-with-sheet {required:true}` makes one compulsory, and only then `practice-again-reminders` nags the student day 3 / weekly / ×4) or the student's Request button in the app (goes out on its own once it clears the gate) → `docs/MARKING.md` §Practice Again on request.
 - **Relationships** — trust with parents and students is the distribution channel. Agents draft; Adrian delivers in his own voice.
 - **Novelty** — noticing the spec itself is wrong (new syllabus, new failure mode) is human work. Surface anomalies to him; never smooth them over.
+
+## 🏢 The company — standing reminders (Adrian, 24 Sep 2026)
+
+Adrian: *"put #5 into memory and remind me when anything about company comes up"* and *"the
+credits part also put into memory"*.
+
+**When a session touches anything about the company** — `SPEC-COMPANY.md` or the specs under
+it (public launch, student app, tutor tools), pricing, passes, packs or credits, sign-up or
+consent, the app stores, a brand or domain, orgs or entitlements — **remind Adrian of both
+points below in the reply, briefly**, and check the work against them:
+
+1. **Customer data belongs to the company from each user's first sign-up** (`SPEC-COMPANY.md`
+   §14.5).
+   - The company exists first and is the controller.
+   - Its notice names it and says the data passes to a buyer.
+   - Year of birth at sign-up; a parent confirms for anyone under 13.
+   - An append-only `consent_records` table (one row per consent event, with the notice
+     version and its hash, and the channel), not one JSON value per account.
+   - Every row carries `org_id`. Tuition students stay with the tuition business, the company
+     acting as its processor under a written agreement.
+   - A DPIA, a named DPO and a breach runbook before launch.
+2. **Credits** (`SPEC-COMPANY.md` §7.1).
+   - One credit = one paper marked by morning; within the hour = 2.
+   - Bought packs never expire; plan credits expire monthly, with one month's rollover.
+   - One wallet across web, iOS and Android.
+   - Ask is included with a daily cap, not charged in credits.
+   - A wrong or failed marking gives the credit back.
+   - An append-only credit ledger from day one: unspent credits are deferred revenue a buyer
+     will ask about.
 
 ## Commands
 
