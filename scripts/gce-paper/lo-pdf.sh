@@ -21,7 +21,9 @@ PROFILE="$(mktemp -d)/lo"
 mkdir -p "$PROFILE/user/Scripts/python"
 cp "$HERE/lopdf.py" "$PROFILE/user/Scripts/python/lopdf.py"
 export LOPDF_SRC="$SRC" LOPDF_DST="${SRC%.docx}.pdf" LOPDF_SIZE="${2:-10}" LOPDF_LOG="$PROFILE/log.txt"
-"$SOFFICE" --headless --norestore \
+# The macro runs in LibreOffice's own Python; another Python's library path
+# (e.g. a CI runner's setup-python LD_LIBRARY_PATH) stops it from starting.
+env -u LD_LIBRARY_PATH -u PYTHONHOME -u PYTHONPATH "$SOFFICE" --headless --norestore \
   "-env:UserInstallation=file://$PROFILE" \
   'vnd.sun.star.script:lopdf.py$main?language=Python&location=user' >/dev/null 2>&1 || true
 [ -f "$LOPDF_LOG" ] || { echo "lo-pdf: the macro never ran ($SOFFICE) — on Linux install libreoffice-script-provider-python" >&2; exit 1; }
