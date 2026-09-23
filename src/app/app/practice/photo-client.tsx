@@ -80,7 +80,7 @@ export default function PhotoClient({ levels }: { levels: FindLevelOption[] }) {
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="font-semibold text-navy">Snap a question</p>
-          <p className="text-xs text-gray-500">Get a new one that tests the same skill.</p>
+          <p className="text-xs text-gray-500">Get a similar question.</p>
         </div>
         {levels.length > 1 && (
           <div className="flex gap-1 shrink-0" role="radiogroup" aria-label="Which subject?">
