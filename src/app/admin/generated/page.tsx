@@ -29,7 +29,7 @@ function Card({ r, onAction }: { r: GeneratedRow; onAction: (id: string, action:
       <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-500">
         <span>{fmtWhen(r.created_at)}</span>
         {r.level && <span className="rounded-full bg-neutral-100 px-2 py-0.5">{r.level}</span>}
-        {r.topic && <span className="rounded-full bg-neutral-100 px-2 py-0.5">{r.topic}</span>}
+        {r.topics?.length ? <span className="rounded-full bg-neutral-100 px-2 py-0.5">{r.topics.join(" · ")}</span> : null}
         {typeof meta.subgroup === 'string' && <span className="rounded-full bg-sky-50 text-sky-700 px-2 py-0.5">{meta.subgroup}</span>}
         {r.total_marks != null && <span>[{r.total_marks}]</span>}
         <span className={`rounded-full px-2 py-0.5 ${reskin ? 'bg-violet-50 text-violet-700' : 'bg-amber-50 text-amber-700'}`}>{reskin ? 're-skin' : 'from scratch'}</span>
