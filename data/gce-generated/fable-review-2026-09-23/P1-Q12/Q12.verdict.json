@@ -1,0 +1,28 @@
+{
+  "parts": [
+    {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give 2 + 4/(x-1) - 1/(x+2). Checked independently: 2x^2+5x+5 = 2(x^2+x-2) + (3x+9); (x-1)(x+2) with 3x+9 = A(x+2)+B(x-1) gives A = 4 at x = 1 and B = -1 at x = -2. The division is NOT printed as its own rung (unlike GCE 2022 P1 Q3(a)), so the candidate must notice the fraction is improper."
+    },
+    {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give (-5, 5/3) and (-1, -1). Checked: dy/dx = -4(x-1)^-2 + (x+2)^-2; dy/dx = 0 gives (x-1)^2 = 4(x+2)^2, i.e. 3x^2+18x+15 = 0, (x+1)(x+5) = 0, so x = -1, -5, neither an asymptote. y(-5) = 2 - 2/3 + 1/3 = 5/3; y(-1) = 2 - 2 - 1 = -1."
+    },
+    {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give x < -5 or -1 < x < 1 or x > 1, and the blind examiner writes it in the equivalent form 'x < -5 or x > -1, x != 1'. Checked: dy/dx = -3(x+1)(x+5)/[(x-1)^2(x+2)^2], denominator positive, so dy/dx < 0 exactly when (x+1)(x+5) > 0, i.e. x < -5 or x > -1, with x = 1 removed (x = -2 lies in -5 < x < -1 and so does not bite). Sign spot-checks confirm: dy/dx < 0 at x = -6, 0, 2 and dy/dx = 3/4 > 0 at x = -3. The blind examiner's one issue — that the scheme must say whether omitting x != 1 is penalised — is already answered in the setter's (c) scheme, which withholds the A1 for 'x < -5 or x > -1' alone."
+    }
+  ],
+  "all_agree": true,
+  "key_verdict": "No disagreement anywhere: I worked all three parts independently and the setter's key is right, including the removal of x = 1 in (c), and the blind examiner's only reservation (whether omitting x != 1 costs the A1) is explicitly settled by the setter's mark scheme.",
+  "score": 5,
+  "standard": "at",
+  "fixes": [],
+  "too_close_to": null,
+  "repeats_set": null,
+  "as_good_as_set1": true,
+  "why": "Partial fractions feeding DIFFERENTIATION is the chain §1 item 9 rewards (the corpus only ever feeds an integral), and two scaffolds the earlier papers printed are withheld: the division is not its own part (GCE 2022 P1 Q3(a) gave it [1]) and no target form is printed anywhere, so (b) and (c) run on the candidate's own (a). The idea that carries the standard is in (c): the outside region of the quadratic inequality is the decreasing set, and x = 1 must be cut out of x > -1 because the curve is undefined there — a 2-mark A1 that hangs on a consequence read exactly, exactly the §2 1–2 mark band; a second, smaller noticing is that both roots of the square-root split in (b) stand and neither is an asymptote. Marks match the work (repeated-factor PF was paid [5] in GCE 2024 P1 Q12(a); divide-first with two distinct factors at [3] is within a mark of that, and [4]/[2] for the calculus is SEAB's own weighting), the register and part labels are SEAB's, every answer closes exactly (5/3, -1, -5), and 9 marks is about 13 minutes of work. Variety: the nearest earlier questions are Set 1 P1 Q12 (partial fractions with a REPEATED factor, reached through the factor theorem and spent on an integral) and Set 1 P1 Q6 (the increasing-function set solved as an exponential inequality from a GIVEN dy/dx) — this one is improper-with-division, distinct factors, and the inequality is rational with an asymptote to remove, so no situation, structure or skill is repeated; within this paper Q1 also ends in a factorised quadratic inequality, but that is a generic sub-step and its idea (the vanishing leading coefficient) is unrelated. Against the exemplars it shares only 'Express in partial fractions' plus 'Hence' with GCE 2024 P1 Q12, whose fraction type and calculus are both different, so it is not a re-skin. Beside Set 1 P1 Q12 (also 9 marks, also partial fractions) it is equally chained and equally clean — every part feeds the next and nothing can be deleted — with one fewer printed target and a last part that ends on a structural fact about the curve rather than a number; the setter's named skills are all true of the question and specific. Gates passed (novelty jaccard 0.174 / 0.152, no repeated skills, no problems)."
+}

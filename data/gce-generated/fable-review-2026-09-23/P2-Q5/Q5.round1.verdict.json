@@ -1,0 +1,18 @@
+{
+  "parts": [
+    {"label": "(a)", "agree": true, "note": "Both reach dy/dx = (2cos x + 1)/(2 + cos x)^2, gradient 1/4, cos^2 x - 4cos x = 0, cos x = 0 with cos x = 4 rejected, points (pi/2, 1/2) and (3pi/2, -1/2). Checked: at both points dy/dx = 1/4 and neither lies on x - 4y = 3, so the tangents are parallel, not coincident."},
+    {"label": "(b)", "agree": true, "note": "Both form 4cos^2 x + 18cos x + 17 = 0 (discriminant 52, roots (-9 +/- sqrt13)/4 = -1.35, -3.15, both below -1). Checked independently: g(c) = (2c+1)/(2+c)^2 has g'(c) = (2 - 2c)/(2+c)^3 >= 0 on [-1, 1], so the gradient runs from -1 to 1/3 and never reaches -4. The key's alternative inequality argument is also sound."}
+  ],
+  "all_agree": true,
+  "key_verdict": "The key and the blind examiner agree on every part and both are correct; the printed answers stand.",
+  "score": 3,
+  "standard": "at",
+  "fixes": [
+    "Part (a) tests the same skill the same way as Set 1 P1 Q13(a): 'the tangent at P is parallel to the line x + y = 5 — find the coordinates of P' becomes 'parallel to the line x - 4y = 3 — find the coordinates of each point', only the curve changed; a gradient-equals-a-value solve also already sits in this Set's P1 Q2(b). Keep the quotient rule collapsing to (2cos x + 1)/(2 + cos x)^2 (that simplification is the good part) but hang a different tangents-and-normals skill on it: for example (a) find the greatest and least values of the gradient of the curve, showing that the tangent is steepest where cos x = -1 [4–5], then (b) find the equation of the normal at the point where x = pi/2 and the x-coordinate of the point where it meets the curve's axis of symmetry / the x-axis [2–3]; or ask for the acute angle between the two tangents at x = pi/3 and x = pi, exact via tan(A - B). Either keeps the range-of-cosine idea and drops the Set 1 P1 Q13(a) framing.",
+    "If the parallel-tangent framing is kept for any reason, make the rejected root do more work than cos x = 4: choose the line so both roots of the quadratic in cos x lie in [-1, 1] and the candidate must keep FOUR values of x in 0 <= x <= 2pi (a kept second case, standard.md §6 item 6), rather than the single root cos x = 0 that gives the two obvious quadrantal points."
+  ],
+  "too_close_to": null,
+  "repeats_set": "Set 1 P1 Q13",
+  "as_good_as_set1": true,
+  "why": "A clean, correct, SEAB-register question at the 2024/25 'calculus technique plus a reason' standard (2024 P2 Q4, 2025 P2 Q5): the identity collapse, the rejection by the range of cosine, and a (b) whose trap is that the discriminant is POSITIVE so 'no real roots' is wrong; numbers close exactly and the marks fit the work. It is rejected on variety alone: five of its seven marks re-ask Set 1 P1 Q13(a)'s 'tangent parallel to a given line, find the point' with a new curve."
+}
