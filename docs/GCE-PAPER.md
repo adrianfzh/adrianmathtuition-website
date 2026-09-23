@@ -74,6 +74,23 @@ renders the paper (answer key on) and a solutions booklet through the SAME rende
 `/app/print` uses. `assemble` inserts nothing — the paper is a file for Adrian to read
 first; filing it in the bank is the separate, explicit `publish.mjs` step below.
 
+**Off the Mac (23 Sep 2026).** Everything but the bank reads runs on Linux with no path
+edits (a cloud session writing A Math Set 2 had to patch each by hand); the Mac defaults
+are unchanged and come first unless an env var overrides them:
+- `assemble`'s Chrome (`src/lib/generate-pdf.ts` `localChromePath`): `CHROME_PATH` /
+  `PUPPETEER_EXECUTABLE_PATH` → the Mac's Google Chrome → the newest
+  `$PLAYWRIGHT_BROWSERS_PATH/chromium-*/chrome-linux/chrome` (default `/opt/pw-browsers`,
+  where the cloud containers keep one).
+- `lo-pdf.sh`: `SOFFICE` → the Mac app → `soffice` / `libreoffice` on PATH. Ubuntu needs
+  `libreoffice-writer`, `libreoffice-math` and `libreoffice-script-provider-python` (without
+  the last the macro never runs and the script says so).
+- `figure.mjs`: `BOT_REPO` → the Mac checkout → the bot cloned beside this repo as
+  `adrianmath-telegram-bot` (the GitHub name) or `adrianmath-telegram-math-bot`, with
+  `npm install` done there (sharp).
+- `.claude/skills/gce-paper/prompts/render.sh` is POSIX `sh` (was zsh-only); run it with `sh`.
+- The bank read (`brief` needs `SUPABASE_SECRET_KEY`; `publish.mjs` writes the bank) stays
+  Mac-only by design (`docs/CLOUD.md`) — hand a cloud session a `brief` run dir.
+
 ### Figures (9 Sep 2026)
 
 A slot with `needs_figure` gets ONE of two files in the run dir, written from the

@@ -72,6 +72,15 @@ the gates, the figure files, publishing). Student-facing side:
 - DOCX export: `python3` + `pandoc` (the `create-worksheet` skill's `worksheet_lib.py`
   is imported by `export-docx.py`).
 - A scratch run directory: `$SCRATCH/gce/runs/<key>-seed<n>` (the session scratchpad).
+- **Off the Mac (Linux / a cloud container, 23 Sep 2026)** — every Mac path has a fallback,
+  no edits needed; only the bank reads stay Mac-only (`docs/CLOUD.md`):
+  - PDFs (`assemble`): Chrome comes from `CHROME_PATH` / `PUPPETEER_EXECUTABLE_PATH`, else
+    the Mac's Google Chrome, else the newest Playwright Chromium under `/opt/pw-browsers`.
+  - `lo-pdf.sh`: `SOFFICE`, else the Mac app, else `soffice` on PATH — on Ubuntu
+    `apt install libreoffice-writer libreoffice-math libreoffice-script-provider-python`.
+  - `figure.mjs`: `BOT_REPO`, else the Mac checkout, else the bot cloned BESIDE this repo
+    (`../adrianmath-telegram-bot` or `../adrianmath-telegram-math-bot`, `npm install` done).
+  - `render.sh` is POSIX sh — run it with `sh`; zsh is not needed.
 
 ## Models per spawn (deliberate — never session-inherit)
 
@@ -191,10 +200,10 @@ Render one with the placeholders filled and paste the file's
 contents as the agent prompt:
 
 ```bash
-zsh .claude/skills/gce-paper/prompts/render.sh author   "$RUN" 1 1,2,3   # → $RUN/prompt-author-Q1-2-3.md
-zsh .claude/skills/gce-paper/prompts/render.sh blind    "$RUN" 1 4       # one slot per blind/repair spawn
-zsh .claude/skills/gce-paper/prompts/render.sh moderate "$RUN" 1 1,2,3
-zsh .claude/skills/gce-paper/prompts/render.sh repair   "$RUN" 1 4
+sh .claude/skills/gce-paper/prompts/render.sh author   "$RUN" 1 1,2,3   # → $RUN/prompt-author-Q1-2-3.md
+sh .claude/skills/gce-paper/prompts/render.sh blind    "$RUN" 1 4       # one slot per blind/repair spawn
+sh .claude/skills/gce-paper/prompts/render.sh moderate "$RUN" 1 1,2,3
+sh .claude/skills/gce-paper/prompts/render.sh repair   "$RUN" 1 4
 ```
 
 **Author** (Opus 5.5 agent — trial; was Fable) — `prompts/author.md`: reads `author-brief.md`, `standard.md`,
