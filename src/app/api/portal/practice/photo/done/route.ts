@@ -12,6 +12,7 @@ import { parseDoneBody, doneOutcome, PHOTO_FAILED_MESSAGE, PRACTICE_PHOTO_PREFIX
 import { sendPushToStudent } from '@/lib/portal-push';
 import { resolveRecipient } from '@/lib/student-recipient';
 import { sendTelegram, sendTelegramTo } from '@/lib/telegram';
+import { botInternalSecret } from '@/lib/bot-secret';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -19,7 +20,7 @@ export const dynamic = 'force-dynamic';
 type Row = { id: string; airtable_student_id: string; status: string; title: string; generation_request_id: string | null };
 
 export async function POST(req: Request) {
-  const secret = process.env.BOT_INTERNAL_SECRET;
+  const secret = botInternalSecret();
   const auth = req.headers.get('authorization') || '';
   if (!secret || auth !== `Bearer ${secret}`) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
