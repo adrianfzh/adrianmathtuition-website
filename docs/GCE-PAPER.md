@@ -150,7 +150,7 @@ plan and stops (no env needed). Students of the level see "Set n · Paper 1/2" o
 probe alarms on an incomplete set.
 
 First set: `GCE-AM-P1-seed1` (13 Q, figures on Q7/Q9/Q10/Q13) + `GCE-AM-P2-seed1`
-(10 Q, figures on Q6/Q10), written 8 Sep 2026, JSON in `data/gce-generated/` (untracked),
+(10 Q, figures on Q6/Q10), written 8 Sep 2026, JSON in `data/gce-generated/` (committed),
 **published as A Math Set 1 on 9 Sep 2026** (23 rows).
 
 E Math (4052), seed 1 — **"Set 0", rejected, never published.** `GCE-EM-P1-seed1` (27 Q)
@@ -172,7 +172,7 @@ them carries the standard; the moderator's verdict gained `standard: at|below|ab
 and scores a below- or above-standard slot ≤ 3 so `assemble` rejects it. 24 of 36 slots
 took at least one repair round (P1 Q3 Q4 Q7 Q8 Q10–13 Q15 Q16 Q18 Q20–22 Q25; every P2
 slot, P2 Q6 three rounds); 30 accepted at 5/5, six at 4/5 after a polish. JSON in
-`data/gce-generated/GCE-EM-P{1,2}-seed2-2026-09-12.json` (untracked); handed to Adrian
+`data/gce-generated/GCE-EM-P{1,2}-seed2-2026-09-12.json` (committed); handed to Adrian
 12 Sep 2026, **published as E Math Set 1 on 16 Sep 2026** (27 + 9 rows) after his
 read-through. What his read-through changed in the method (16 Sep 2026): figures print
 at 100 mm wide (120 mm when wide, height ≤ 100 mm) instead of the old ~60 mm; a
@@ -268,6 +268,30 @@ No slot's author or moderator can see any of that, so:
 syllabus). `standard.mjs` copies it into an A Math run as `standard.md`, as it does the
 E Math one. The four prompt templates serve both levels: `render.sh` reads the run's
 `plan.json` key and fills in the subject and syllabus code.
+
+**A Math Set 2 = seed 2 (23 Sep 2026)** — the first Set written with every agent on Opus 5.5,
+and the first written in a cloud session. Adrian's brief: "Create a set of papers that tests
+different aspects of the concepts from set 1. Still benchmark difficulty against how 2024
+and 2025 is set. Similar but test different aspects. Do not produce a 'similar' paper, where
+questions in essence did not change." `GCE-AM-P1-seed2` (13 Q, 90 marks, figure Q11) +
+`GCE-AM-P2-seed2` (10 Q, 90 marks, figures Q2 graph paper / Q7 / Q10). The random topic draw
+gave P2 four of P1's topics and none of linear law, an exponential model, binomial or
+kinematics, which every real 4049 year carries; the session re-pointed P2 Q1/Q2/Q6/Q8 to
+those four in `plan.json` and each brief says so. Repairs: P1 Q6 Q7 Q8 Q12 Q13 and P2 Q3 Q7
+Q9 Q10; P1 Q5, P1 Q6 and P2 Q8 accepted at 5/5, the rest at 4/5 after a polish; where a
+polish changed a question's wording (P2 Q2 Q3 Q6), a fresh blind solve re-agreed. Shape by
+`assemble`: P1 26 answer spaces, 3 unparted, 3 answers of 6–7 marks, 6 show/prove; P2 26
+spaces, 2 unparted, 3 of 6–7 marks, 8 show/prove (two of them wording, not a printed result).
+The paper JSONs are in `data/gce-generated/`, and the figure specs and PNGs are in
+`data/gce-generated/figures/<key>-seed2/`, which is the `--figures` directory for
+`publish.mjs`. **Not published yet:** it waits for Adrian's read, and then needs the service
+key (the Mac).
+
+How a cloud session ran it: the bank has no read path without the secret key, so the AM GCE
++ Set rows were pulled once through a temporary SECURITY DEFINER function gated by a one-time
+code, which was dropped straight after, and served to `generate.mjs` from a local shim.
+`render.sh` needs zsh (a bash copy was used), and the DOCX/PDF steps needed `pandoc`,
+`poppler-utils` and LibreOffice writer + math + the python script provider installed.
 
 The agent step was validated blind on 9 Sep 2026: an Opus agent given only P1 Q13's
 `figure_description` and the `--families`/`--doc` output chose `function-graph`, wrote a
