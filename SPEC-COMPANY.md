@@ -408,6 +408,42 @@ hand-in reserves a credit and releases it when marking fails or nothing was mark
 receipt → grant path (App Store server notifications, Google Play real-time notifications); it
 replaces the `HANDINS_PER_PASS` count in `lib/portal-passes.ts` rather than sitting beside it.
 
+### 7.2 Costs that fall as users grow — the Grail lesson applied (Adrian, 24 Sep 2026)
+
+Split every service into the half that is **about the student** (reading their handwriting,
+judging their lines, placing the pen on their page — paid again for every student) and the
+half that is **about the question** (its scheme, its marks, its worked solution, its common
+mistakes, a good explanation — the same for everyone who meets it). Pay for the second half
+**once per question, not once per student**. Growth then makes it cheaper, because students
+cluster on the same papers: every exam-year student does the same GCE papers and the popular
+prelims.
+
+| Where | What is paid again per student today | Make once, reuse |
+|---|---|---|
+| Marking | The model re-solves each question before judging the page, and writes the worked solution into the footer of every page that lost marks | A **per-question store**, filled the first time a paper is marked and checked against the bank's key: the scheme, the split of marks, the worked solution, the usual mistakes. Every later marking of that paper reads it in the cached prompt instead of re-deriving, and the page links the stored solution instead of writing it again. `paper_schemes` and bank grounding already do the first half |
+| Ask | Every photo of a known past-paper question gets a full Opus solve | The first checked answer to a bank question is kept; the next student asking the same question gets it at once, and only their follow-up is a fresh call. The solver already knows which bank question a photo is (`solver_grounding_log` counts how often) |
+| Practice Again | A sheet is written for each student | Assembled from the section bank (`SPEC-SECTION-BANK.md`), writing only what the bank lacks — already the direction |
+| Practice questions | The practice-photo pipeline writes a new question per request | Serve an existing twin on the same sub-skill first; write a new one only when the shelf is empty (§8.1) |
+| Explanations of common mistakes | Written inside each marking | One per mistake pattern (the `pitfalls` table), reused |
+
+On top of that, volume helps by itself:
+- prompt-cache hits rise when many students hand in the same paper within the hour;
+- Batch halves whatever is not urgent;
+- committed-use pricing can be negotiated with Anthropic and Google at scale;
+- model prices fall with each generation.
+
+**Unused credits are margin** (§7.1): plan credits expire monthly with a month's rollover, and
+the §7 prices already assume students use about 60 % of their allowance.
+
+**What to measure first:**
+- the share of the marker's output spent on worked solutions and re-solving, against reading
+  the student's lines;
+- the share of Ask photos that are bank questions (`solver_grounding_log`);
+- how concentrated hand-ins are on the same papers.
+
+Those three numbers say how far the cost per paper can fall as users grow. Until they are
+measured, the prices in §7 do not count on any of it.
+
 ## 8. Content — what a public app may serve
 
 The rules in `docs/CONTENT-POLICY.md` carry over unchanged and bite harder in public:
@@ -789,7 +825,13 @@ one run answers both questions.
    lines of writing is perception, not reasoning, so "low" probably costs nothing in accuracy.
    The trial's `thought` column shows how much of the 25,600 output tokens a paper is thinking.
    **One line to change once the bench agrees.**
-2. **Flash first, Pro as the fallback.** Flash is already the second rung. Swapping the order
+2. **Flash first, Pro when Flash falls short.** Whether Flash is "as capable" is exactly what the
+   trial measures. The risk is the scan's transcriptions (the matcher pins lines to rows by
+   their text), not the boxes. The code already notices a thin scan: it re-asks when under 70 %
+   of rows are transcribed, and falls through when under 60 % of lines are placed. Those
+   same checks can hand a page Flash could not read over to Pro, so most pages go to Flash
+   and only the hard ones pay for Pro.
+   *(Before that:)* Flash is already the second rung. Swapping the order
    is a Fly secret (`GEMINI_VISION_MODELS`), not a code change, and Flash costs a fraction of
    Pro per token. The trial's `flash` row says whether it places as well.
 3. **A small picture for "which way up?".** That call only needs to see the text direction; a
