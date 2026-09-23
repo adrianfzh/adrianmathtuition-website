@@ -1,12 +1,40 @@
 name: CI
 
-# Lint + test gate. Runs on every push to main and on PRs. This is the
-# visibility/history layer; the blocking guardrail before a prod push is the
-# local pre-push hook (.husky/pre-push). Build/typecheck happens on Vercel.
+# Lint + test gate on PRs and on pushes to main (a promotion). This is the
+# visibility/history layer; the blocking guardrail before every push is the local
+# pre-push hook (.githooks/pre-push). Build/typecheck happens on Vercel.
+#
+# NOT on every push to dev (24 Sep 2026, Adrian: the account hit 90 % of its 2,000
+# free Actions minutes by the 23rd). dev took ~35 pushes a day, each billed 2 minutes,
+# all already tested by the pre-push hook. Documents-only changes (the same list the
+# Vercel build skips, minus scripts/ and .github/, which lint can see) do not run it,
+# and a newer push to the same PR or branch cancels the older run.
 on:
   push:
-    branches: [main, dev]
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '.claude/**'
+      - '.githooks/**'
+      - 'reference/**'
+      - '_backups/**'
+      - '_old/**'
+      - 'ios-shell/**'
+      - '*.md'
   pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '.claude/**'
+      - '.githooks/**'
+      - 'reference/**'
+      - '_backups/**'
+      - '_old/**'
+      - 'ios-shell/**'
+      - '*.md'
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:

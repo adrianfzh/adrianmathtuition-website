@@ -30,8 +30,30 @@ describe('costs — per run, per day, per path (9 Sep 2026)', () => {
   it('unmarked rows are left out; Gemini tokens are carried when stored', () => {
     const e = costEntries([row('x', '2026-09-09T02:00:00Z', { total_max: null, cost_usd: null }), row('g', '2026-09-09T02:00:00Z', { result_json: { queue: { queued_at: 'x' }, vision_usage: { inputTokens: 1000, outputTokens: 50, pages: 20 } } })]);
     expect(e).toHaveLength(1);
-    expect(e[0].gemini).toEqual({ inputTokens: 1000, outputTokens: 50, pages: 20 });
+    expect(e[0].gemini).toEqual({ inputTokens: 1000, outputTokens: 50, pages: 20, cost: null, models: [] });
     expect(costByDay(e)[0].geminiTokens).toBe(1050);
+  });
+  it('a run from before 24 Sep 2026 is all Claude and its Gemini is unpriced, never guessed', () => {
+    const e = costEntries([row('o', '2026-09-20T02:00:00Z', { cost_usd: 1.2, result_json: { queue: { queued_at: 'x' }, vision_usage: { inputTokens: 85000, outputTokens: 25600, pages: 20 } } })]);
+    expect([e[0].cost, e[0].claudeCost, e[0].geminiCost]).toEqual([1.2, 1.2, null]);
+    expect(e[0].centsPerPage).toBe(6);
+    const d = costByDay(e)[0];
+    expect([d.cost, d.claudeCost, d.geminiCost, d.geminiUnpriced]).toEqual([1.2, 1.2, 0, 1]);
+  });
+  it('a run since 24 Sep 2026 carries Claude and Gemini apart; the total is both, ¢/page is Claude only', () => {
+    const e = costEntries([
+      row('n', '2026-09-24T02:00:00Z', { cost_usd: 1.62, result_json: { queue: { queued_at: 'x' }, usage: { claudeCostUsd: 1.18, visionCostUsd: 0.44 }, vision_usage: { inputTokens: 85000, outputTokens: 25600, pages: 20, costUsd: 0.44, byModel: { 'gemini-3.1-pro-preview': { calls: 30, costUsd: 0.44 } } } } }),
+      // vision_usage alone (no usage split) still yields the Gemini part, and Claude is the rest
+      row('v', '2026-09-24T03:00:00Z', { cost_usd: 0.5, result_json: { queue: { queued_at: 'x' }, vision_usage: { inputTokens: 1, outputTokens: 1, pages: 10, costUsd: 0.1 } } }),
+    ]);
+    const n = e.find(x => x.id === 'n')!, v = e.find(x => x.id === 'v')!;
+    expect([n.cost, n.claudeCost, n.geminiCost]).toEqual([1.62, 1.18, 0.44]);
+    expect(n.centsPerPage).toBe(6);
+    expect(n.gemini?.models).toEqual(['gemini-3.1-pro-preview']);
+    expect([v.claudeCost, v.geminiCost]).toEqual([0.4, 0.1]);
+    const d = costByDay(e)[0];
+    expect([d.cost, d.claudeCost, d.geminiCost, d.geminiUnpriced]).toEqual([2.12, 1.58, 0.54, 0]);
+    expect(monthTotal(e, '2026-09').cost).toBe(2.12);
   });
   it('folds the Admin API cost report to one line per day — amounts arrive in cents', () => {
     const report = { data: [
