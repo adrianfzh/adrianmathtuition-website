@@ -55,11 +55,23 @@ free (the plan lane) is not a cost a company can plan on** — §7.
 - The buyer is split: a secondary student decides what to use, a parent pays for anything
   bigger than pocket money, and a tutor or centre decides for their own students. Every
   segment below names who decides and who pays.
-- **2027 is the first year of the new national exam.** The cohort that entered Sec 1 in 2024
-  under Full Subject-Based Banding sits the Singapore-Cambridge Secondary Education
-  Certificate instead of O- and N-Levels (verify in §2.1). A format change is the moment
-  families look for new material — the same lever grail.moe used for the 2026 PSLE format.
-  **Be in the stores by January 2027**, the start of that cohort's exam year.
+- **2027 is the first year of the new national exam.** 2026 is the last O-Level; from 2027
+  Sec 4 students sit the Singapore-Cambridge Secondary Education Certificate (SEC), subjects
+  at G1 / G2 / G3 (≈ the old N(T) / N(A) / O-Level), with new syllabus codes (§2.1). A format
+  change is the moment families look for new material — the same lever grail.moe used for
+  the 2026 PSLE format. **Be in the stores by January 2027**, the start of that cohort's exam
+  year, with the marker's syllabus map already on the 2027 codes.
+- **The size of it.** A year of O-Level candidates is about 22,500, N-Level about 13,500
+  (9,000 N(A) + 4,500 N(T)), A-Level about 11,000; households spent S$1.8 billion on tuition
+  in 2023. Cambridge's June 2026 series had 231,100 O Level and 757,000 IGCSE entries
+  worldwide, Pakistan the largest O Level market. Singapore is the proving ground; the scale
+  is the Cambridge world (segment I).
+- **The gap is real.** No Singapore student app found marks a whole photographed paper line by
+  line: Tutorly (S$49 a month, all levels) takes photos but says it does not check working line
+  by line; grail.moe sells generated papers on credits. For tutors, **MarkPilot** (Singapore)
+  marks Primary 5 maths against MOE rubrics and sends parents WhatsApp recaps — the nearest
+  competitor to the tutor app, at a different level; CoGrader and EssayGrader (US) mark essays
+  only; Graide and Graded Pro (UK) mark STEM for institutions.
 - The school calendar sets the selling seasons: January (new year, new tuition), May
   (mid-years), July–September (prelims), October–November (the national papers). Nothing
   launches in the middle of the national papers.
@@ -68,9 +80,23 @@ free (the plan lane) is not a cost a company can plan on** — §7.
   the convention of Cambridge O Level and IGCSE worldwide — the international segment in §3
   is the same engine with a different syllabus map.
 
-### 2.1 Verified facts
+### 2.1 Verified facts (research pass, 23 Sep 2026)
 
-*(filled from the research pass — see the bottom of this file)*
+Most official pages could only be read through search excerpts; confidence is marked.
+
+| Fact | Source | Confidence |
+|---|---|---|
+| 2026 is the last O-Level; the SEC replaces O, N(A) and N(T) from 2027. G1 = N(T), G2 = N(A), G3 = O-Level | aacrao.org (SEC news); moe.gov.sg Full SBB secondary page | medium-high |
+| 2027 SEC codes — Mathematics G3 **K310**, Additional Mathematics G3 **K341**, G2 Maths K210, G2 Add Maths K232, G1 Maths K110; Physics G3 **K323**, Chemistry G3 **K324**, Biology G3 **K325**, combined Science G3 **K326 / K327 / K328** (which pair is which not confirmed) | seab.gov.sg 2027 syllabus PDFs (K341, K323–K325, K328); MOE-hosted K310 | high |
+| O-Level 2025: 22,468 candidates · N(A) 8,987 · N(T) 4,479 · A-Level 10,977 | MOE press releases 14 Jan 2026, 18 Dec 2025, 27 Feb 2026 | high |
+| Household tuition spending S$1.8 bn (2023), S$104.80 a month per household | SingStat HES 2023 release, 28 Nov 2024 | medium-high |
+| Cambridge June 2026: 231,100 O Level entries, 757,000 IGCSE entries; codes 4024 / 4037 / 5054 / 5070 / 5090 current | tes.com Aug 2026; cambridgeinternational.org syllabus pages | medium-high |
+| **Apple**: 15 % commission in the Small Business Program (≤ US$1 M proceeds a year), subscriptions included from the first cycle | developer.apple.com Small Business Program + Subscriptions | high |
+| **Apple, Singapore storefront**: a digital subscription **must** be sold by in-app purchase (3.1.1); no link-out to web payment (link-outs exist only in the US and a few named regions); 3.1.3(b) lets a web buyer use what they bought, **provided the same items are also sold in-app**, and the app may not point to the web price | App Review Guidelines, current version | high |
+| **Google Play, Singapore today**: 15 % on subscriptions from day one; the new 10 % + 5 %-billing model reaches "rest of world" by 30 Sep 2027; no alternative billing confirmed for Singapore | developer.android.com blog Mar + Jun 2026; RevenueCat | medium |
+| Under-18 purchases: Apple **Ask to Buy** (a parent approves; on by default under 13, prompted under 18); Google **Family Link** purchase approval for supervised accounts | support.apple.com; support.google.com/families | medium-high |
+| Competitors: Tutorly S$49 / month (photos, not line by line); grail.moe credits S$3–15; MarkPilot (SG, P5 maths for tutors, WhatsApp recaps); CoGrader US$15–19 / month (essays); Graide, Graded Pro (UK STEM, institutions) | the products' own pages | medium |
+| **PDPC children's data guidelines (28 Mar 2024)**: a child is under 18; "technology-aided learning" named in scope; 13–17 may consent themselves if the notice is understandable to them, under 13 needs a parent; children's data held to a higher standard; collect only what is needed; high-privacy defaults; a data-protection impact assessment before launch encouraged | PDPC advisory guidelines (via law-firm summaries) | medium-high |
 
 ## 3. The segments, and the solution for each
 
@@ -79,15 +105,15 @@ describe the two apps that carry them.
 
 | # | Segment | Decides / pays | The job they hire us for | Our solution | Price shape | How they find us | Phase |
 |---|---|---|---|---|---|---|---|
-| **A** | Sec 3–4 exam-year, Express / G3 (math + sciences) | student decides; parent pays over ~S$5 | "Show me where I lose marks before the exam" | Student app: hand in → marked paper → Practice Again → Ask | first paper free → pack → monthly or season pass | free revision sheets, the showcase, friend referral (a free paper each) | **1** |
-| **B** | JC H2 Math | student, often pays themselves | "Mark my H2 prelim like the examiner would" | Student app, H2 marking (the deepest bank: JC2 8.9k) | pass; higher price | same as A; JC word of mouth | **1** |
+| **A** | Sec 3–4 exam-year, G3 / Express (math + sciences) — ~22,500 a year | student decides; parent pays over ~S$5 | "Show me where I lose marks before the exam" | Student app: hand in → marked paper → Practice Again → Ask | first paper free → pack → monthly or season pass | free revision sheets, the showcase, friend referral (a free paper each) | **1** |
+| **B** | JC H2 Math — ~11,000 A-Level candidates a year | student, often pays themselves | "Mark my H2 prelim like the examiner would" | Student app, H2 marking (the deepest bank: JC2 8.9k) | pass; higher price | same as A; JC word of mouth | **1** |
 | **C** | Sec 1–2 (and lower Sec 3) | parent | "Is my child keeping up?" | Student app + **parent view** (the cover, the score, the sheet, a weekly line) | family monthly | the parent page every release sends | **2** |
 | **D** | Private candidates, repeaters, home-schoolers | the candidate or parent | "Nobody marks my papers" | Student app, packs only | packs | search, forums | **2** (falls out of A) |
-| **E** | N(A) / N(T), G1–G2 | parent; low spend | "Help my child pass" | Student app at a lower price, or seats sold to community tuition programmes (self-help groups, VWOs) | cheaper pack; seat licence | programme partners | **3** |
-| **F** | Solo tuition tutor (math first, then science) | the tutor | "Stop marking at 11 pm; give parents something to see" | Tutor app: roster, class hand-in link, **marking under their name**, their own calibration | credits or monthly | tutor groups, Adrian's network, Phase 0 by hand | **0 → 2** |
+| **E** | G1 / G2 (the old N(T) / N(A)) — ~13,500 a year | parent; low spend | "Help my child pass" | Student app at a lower price, or seats sold to community tuition programmes (self-help groups, VWOs) | cheaper pack; seat licence | programme partners | **3** |
+| **F** | Solo tuition tutor (math first, then science) | the tutor | "Stop marking at 11 pm; give parents something to see" — MarkPilot sells this at P5; nobody at Sec/JC | Tutor app: roster, class hand-in link, **marking under their name**, their own calibration | credits or monthly | tutor groups, Adrian's network, Phase 0 by hand | **0 → 2** |
 | **G** | Small centre, 2–10 teachers | the owner | "One standard across my teachers; parents see progress" | Tutor app + manager view + calibration table per teacher + bulk parent reports | per teacher seat + papers | direct | **3** |
 | **H** | Chains and edtechs with their own app | management | "Marking inside our app, under our brand" | Marking API / white label | per paper at volume, annual | direct | **4** |
-| **I** | International Cambridge O Level / IGCSE students | parent | same as A | Student app, marking only, a Cambridge syllabus map, local-currency prices | packs + monthly | local partners, search | **4** |
+| **I** | International Cambridge O Level / IGCSE students — 231k O Level + 757k IGCSE entries a year | parent | same as A | Student app, marking only, a Cambridge syllabus map, local-currency prices | packs + monthly | local partners, search | **4** |
 | — | Government schools | — | — | **Not a target.** Procurement cycles, the Student Learning Space, and data rules make it a different business; private/international schools running Cambridge are served as H. | — | — | — |
 
 Two rules hold across the table:
@@ -128,6 +154,13 @@ Ask, plus Practice once the served bank is ours (§8).
 | iOS unlisted app for enrolled students | Public listing on both stores |
 | Account deletion on the web | The same, reachable inside the app (a store requirement) |
 
+**Store rules that shape it (Singapore storefront, §2.1):** every plan sold on the web must
+also be on sale by in-app purchase, and the app never mentions the web or its price;
+a web buyer signs in and gets what they paid for (3.1.3(b)). Under-18 purchases go through
+Ask to Buy / Family Link, so **the stores already make the parent the payer** — the family
+plan and the parent view build on that rather than around it. Apple's age screen for 18+
+apps does not touch a 4+ education app.
+
 **What it deliberately is not:** a library of school papers, a generic chatbot, or a
 course platform. Free notes are the front door; marking is the paid room
 (`SPEC-PUBLIC-LAUNCH.md` §0).
@@ -154,6 +187,11 @@ path, which is also how their marking style is learned). Detail in `SPEC-TUTOR-T
    (`SPEC-MARKING-CALIBRATION.md` §2). Their truth never touches Adrian's.
 6. **Parents** — a progress page per student they can send in bulk.
 
+**Sold on the web.** Tutors and centres buy by card or invoice on the website. If the iPad
+app sells nothing inside it, 3.1.3(b) still requires the same plans to be buyable in-app for a
+web buyer to use them there — whether a class tool sold to tutors instead qualifies as an
+enterprise service is settled at App Review, not assumed.
+
 **Tiers:** Solo (one tutor) → Centre (seats, a manager view with the calibration table of
 every teacher, one standard) → API / white label (a chain's own app calls the marker). The
 admin tail (schedules, invoices) is **not** in the tutor app: it is the larger multi-tenant
@@ -166,10 +204,10 @@ after its bench passes** — never the whole tab at once.
 
 | Order | Subject | Why this order | Gate before release | New build |
 |---|---|---|---|---|
-| 1 | **Physics** (pure 6091 and the physics section of combined science) | Numericals are derivable, like maths; the brain is built | The all-or-nothing point rule (grade E over-awarded 11 half-right statements); the seeded bench `SPEC-SCIENCE-BENCH.md` §1 on 30 physics scripts within ±2 on 90 %; run-to-run noise measured | a per-subject release switch (today one switch opens all three) |
-| 2 | **Chemistry** (6092 + combined section) | Calculations derivable; explain parts need the scheme | Same bench, chemistry scripts | — |
-| 3 | **Combined Science** (the physics/chemistry/biology pairs) | Many Express students sit combined, not pure; one paper, two subjects | Each section passes its own subject's bench | **section routing**: the paper's pages split by section, each section to its subject's brain, one cover |
-| 4 | **Biology** | Answers ARE scheme points; the brain cannot know which points a school pays for | Scheme attached or a bank twin found → marked with a total; neither → **feedback-only mode**: comments on every answer, no score estimate | the feedback-only mode |
+| 1 | **Physics** — SEC G3 K323 from 2027 (O-Level 6091 this last year), and the physics section of combined science | Numericals are derivable, like maths; the brain is built | The all-or-nothing point rule (grade E over-awarded 11 half-right statements); the seeded bench `SPEC-SCIENCE-BENCH.md` §1 on 30 physics scripts within ±2 on 90 %; run-to-run noise measured | a per-subject release switch (today one switch opens all three) |
+| 2 | **Chemistry** — G3 K324 (6092), and the combined section | Calculations derivable; explain parts need the scheme | Same bench, chemistry scripts | — |
+| 3 | **Combined Science** — G3 K326 / K327 / K328, the subject pairs | Many Express students sit combined, not pure; one paper, two subjects | Each section passes its own subject's bench | **section routing**: the paper's pages split by section, each section to its subject's brain, one cover |
+| 4 | **Biology** — G3 K325 (6093) | Answers ARE scheme points; the brain cannot know which points a school pays for | Scheme attached or a bank twin found → marked with a total; neither → **feedback-only mode**: comments on every answer, no score estimate | the feedback-only mode |
 | 5 | **Lower-secondary science** (Sec 1–2) | Parent segment C; the bank has 4,751 questions with **no solutions** | Solutions + embeddings written and verified for the lower-sec bank first (a fleet job like the chem/phys/bio pass), then marking | the solutions pass; the sub-topic filing (`canonical_topics_s1sci.json` exists) |
 
 Around the marking, per subject as it opens:
@@ -182,8 +220,9 @@ Around the marking, per subject as it opens:
   rules. Phase 2.
 - **Science practice** (the picker) is built for admin preview (`SCIENCE_PRACTICE_OPEN_TO_STUDENTS`).
   It serves school questions, so for the public it waits on science twins (§8).
-- **The 2027 national exam** (§2): the science syllabuses the SEC cohort sits need mapping
-  onto the bank's topics before the store listing claims them.
+- **The 2027 national exam** (§2): K323–K328 (and K310 / K341 for maths) need mapping onto the
+  bank's topics and the brains' rules before the store listing claims them; G2 versions follow
+  with segment E.
 
 ## 7. The economics — why the price must follow the lane
 
@@ -204,7 +243,7 @@ on the commercial API.** The plan lane stays for Adrian's tuition students and h
 **The price a paper must carry** for a 60 % gross margin after the payment fee:
 price ≥ cost ÷ (0.4 × (1 − fee)).
 
-| | Web (card/PayNow ~4 %) | App store (15 %) |
+| | Web (card/PayNow ~4 %) | App store (15 %: Apple's Small Business Program; Google on subscriptions) |
 |---|---|---|
 | Batch lane (S$1.56) | ≥ S$4.10 | ≥ S$4.60 |
 | Synchronous lane (S$2.95) | ≥ S$7.70 | ≥ S$8.70 |
@@ -239,6 +278,9 @@ minutes to mark by hand (an estimate to confirm with the Phase 0 tutor).
 **Illustrative contribution, one Standard student:** S$39 − store fee S$5.85 − marking 5
 papers × S$1.56 − Ask ~S$2 ≈ **S$23 (about 60 %)**, before fixed costs.
 
+**The price anchor in the market:** Tutorly's S$49 a month for everything, without line-by-line
+checking; a tuition hour. The Standard plan sits under both and does the one thing neither does.
+
 **Levers, in the order to pull them:** Batch by default · the prompt cache on the scheme and
 the paper (already in use) · a cheaper model on pages the classifier calls simple · per-tier
 daily caps (exist) · pricing.
@@ -270,9 +312,12 @@ The rules in `docs/CONTENT-POLICY.md` carry over unchanged and bite harder in pu
   business is one organisation; "direct" public customers are another; each tutor or centre
   is one more. How the two entities share one database (a processor agreement, or a second
   Supabase project later) is a question for a lawyer, not a blocker for step 1.
-- **Children's data:** most users are 13–17. The public privacy notice, parental consent
-  where required, data minimisation and in-app deletion follow the PDPC's guidance for
-  children (§2.1). The short notice Adrian adopted on 11 Sep 2026 is the starting text.
+- **Children's data:** every user under 18 is a child under the PDPC's 2024 guidelines (§2.1).
+  13–17 may consent themselves when the notice is written so they understand it; under 13 needs
+  a parent (Sec 1 students can be 12). So: a notice written for a 13-year-old, a parent step at
+  sign-up for anyone under 13, collect only what marking needs, private by default, deletion in
+  the app, and a data-protection impact assessment before the public launch. The short notice
+  Adrian adopted on 11 Sep 2026 is the starting text.
 
 ### 9.1 The building doctrine, for the company — proposed revision (Adrian approves)
 
@@ -330,7 +375,7 @@ Each phase ends at a gate measured in numbers, not a date.
 
 | Phase | When (target) | Ship | Gate to move on |
 |---|---|---|---|
-| **0 — Ground** | now → Dec 2026 (no public launch during the national papers) | company, brand, domain, Apple + Google developer accounts (Adrian); §10 steps 1–4; the Batch cost measured on 20 real papers; the physics bench built and passed; **one outside tutor on the desk by hand** (`SPEC-TUTOR-TOOLS.md` §4 Phase 0) | Batch cost per paper known; physics passes its bench; the Phase 0 tutor pays for a second month |
+| **0 — Ground** | now → Dec 2026 (no public launch during the national papers) | company, brand, domain, Apple + Google developer accounts (Adrian); §10 steps 1–4; the Batch cost measured on 20 real papers; the physics bench built and passed; the SEC 2027 syllabus map; the data-protection impact assessment; **one outside tutor on the desk by hand** (`SPEC-TUTOR-TOOLS.md` §4 Phase 0) | Batch cost per paper known; physics passes its bench; the Phase 0 tutor pays for a second month |
 | **1 — Student app, web then stores** | Jan–Mar 2027 | public door, showcase, free sheets, first paper free, packs, passes (web) → iOS + Android listings with in-app purchase; maths + physics marking; Ask | 200 sign-ups; ≥15 % of free-paper users buy something; "Question this mark" rate under 5 % |
 | **2 — Tutor app; more science** | Apr–Jun 2027 | tutor app v1 (class link, desk, their name, credits, calibration tab); chemistry; combined science; parent view; Practice Again for science | 10 paying tutors; chemistry passes its bench |
 | **3 — Breadth** | Jul–Dec 2027 | centres (seats, calibration table); biology feedback-only mode; lower-sec science; public Practice on twins; N(A)/G1–G2 pricing and programme seats; Languages (essays) as the third family | retention: paying students hand in ≥3 papers a month |
@@ -340,8 +385,9 @@ Each phase ends at a gate measured in numbers, not a date.
 
 1. **The company**: name, entity, shareholders, and the brand the apps carry.
 2. **Prices** — every number in §7.
-3. **Android in v1** (recommended: yes — Capacitor makes it cheap, and a large share of
-   Singapore teenagers are on Android) or iOS first.
+3. **Android in v1** (recommended: yes — Capacitor makes it cheap, Google already charges 15 %
+   on subscriptions and drops to 10 % + 5 % billing by Sep 2027, and many Singapore teenagers are
+   on Android) or iOS first.
 4. **Whether tuition students move to the company's app** or stay on the tuition site.
 5. **The Phase 0 tutor** — who, and on what terms.
 6. **The doctrine revision** in §9.1.
