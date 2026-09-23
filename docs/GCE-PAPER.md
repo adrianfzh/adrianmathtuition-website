@@ -282,6 +282,14 @@ Q9 Q10; P1 Q5, P1 Q6 and P2 Q8 accepted at 5/5, the rest at 4/5 after a polish; 
 polish changed a question's wording (P2 Q2 Q3 Q6), a fresh blind solve re-agreed. Shape by
 `assemble`: P1 26 answer spaces, 3 unparted, 3 answers of 6–7 marks, 6 show/prove; P2 26
 spaces, 2 unparted, 3 of 6–7 marks, 8 show/prove (two of them wording, not a printed result).
+**Second read by Fable 5.1, the same evening** (`data/gce-generated/fable-review-2026-09-23/REVIEW.md`):
+"on a par with Set 1", every answer right; its one change is P2 Q5 — the log-differentiation
+tangent question became y = sin x/(2 + cos x), greatest and least gradient [3, 4] (Opus 5.5
+author, Fable blind + moderator, 4/5), so log differentiation is left in P1 Q2 only — and the
+P1 Q12(c) note was re-moderated (5/5). P2 is now 27 spaces, 1 unparted, 2 answers of 6–7 marks.
+Left open for Adrian: the new Q5's second route (the gradient rises with cos x) is the same
+"extremes over the range of a trig quantity" move as P2 Q4; the moderator's alternative
+(the set of x on which the gradient increases) would repeat P1 Q12(c)'s skill instead.
 The paper JSONs are in `data/gce-generated/`, and the figure specs and PNGs are in
 `data/gce-generated/figures/<key>-seed2/`, which is the `--figures` directory for
 `publish.mjs`. **Not published yet:** it waits for Adrian's read, and then needs the service
