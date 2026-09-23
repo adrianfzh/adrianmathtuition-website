@@ -1370,7 +1370,8 @@ class Worksheet:
         table.alignment = WD_TABLE_ALIGNMENT.CENTER
         for col, w in zip(table.columns, widths):
             col.width = Cm(w)
-        for row, cells in zip(table.rows, rows):
+        last = len(rows) - 1
+        for r_i, (row, cells) in enumerate(zip(table.rows, rows)):
             _cant_split(row)
             for cell, parts, w in zip(row.cells, cells, widths):
                 cell.width = Cm(w)
@@ -1378,6 +1379,10 @@ class Worksheet:
                 p = cell.paragraphs[0]
                 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
                 p.paragraph_format.space_after = Pt(1)
+                # cantSplit keeps a row whole; keep-with-next on every row but
+                # the last keeps the ROWS together (23 Sep 2026: a table of
+                # values broke between its x row and its y row).
+                p.paragraph_format.keep_with_next = r_i < last
                 if parts:
                     self._fill(p, parts)
         self.doc.add_paragraph()   # breathing space under the table

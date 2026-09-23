@@ -1,0 +1,8 @@
+{
+  "answers": {
+    "(a)": "dy/dx = (2cos x + 1)/(2 + cos x)^2",
+    "(b)": "Writing c = cos x, f(c) = (2c+1)/(2+c)^2 has f'(c) = (2 - 2c)/(2+c)^3 >= 0 on -1 <= c <= 1, so dy/dx increases with cos x. Greatest value of dy/dx = 1/3, occurring at x = 0 and x = 2pi (cos x = 1); least value of dy/dx = -1, occurring at x = pi (cos x = -1)."
+  },
+  "solvable": true,
+  "issues": []
+}

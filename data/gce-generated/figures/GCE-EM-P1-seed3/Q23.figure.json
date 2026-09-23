@@ -1,0 +1,67 @@
+{
+  "family": "plane-geometry-configuration",
+  "specVersion": 1,
+  "points": [
+    {
+      "id": "Q",
+      "x": 0,
+      "y": 0,
+      "labelPos": "below-left"
+    },
+    {
+      "id": "R",
+      "x": 13,
+      "y": 0,
+      "labelPos": "below-right"
+    },
+    {
+      "id": "S",
+      "x": 5,
+      "y": 0,
+      "labelPos": "below"
+    },
+    {
+      "id": "P",
+      "x": 5,
+      "y": 6.324555320336759,
+      "labelPos": "above"
+    }
+  ],
+  "segments": [
+    {
+      "from": "Q",
+      "to": "R"
+    },
+    {
+      "from": "P",
+      "to": "Q"
+    },
+    {
+      "from": "P",
+      "to": "R"
+    },
+    {
+      "from": "P",
+      "to": "S"
+    }
+  ],
+  "collinear": [
+    [
+      "Q",
+      "S",
+      "R"
+    ]
+  ],
+  "rightAngles": [
+    {
+      "at": "P",
+      "from": "Q",
+      "to": "R"
+    },
+    {
+      "at": "S",
+      "from": "P",
+      "to": "R"
+    }
+  ]
+}

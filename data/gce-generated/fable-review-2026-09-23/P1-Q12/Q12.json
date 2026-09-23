@@ -1,0 +1,40 @@
+{
+ "stem": "The equation of a curve is $y = \\frac{2x^2 + 5x + 5}{x^2 + x - 2}$.",
+ "parts": [
+  {
+   "label": "(a)",
+   "text": "Express $\\frac{2x^2 + 5x + 5}{x^2 + x - 2}$ in partial fractions.",
+   "marks": 3,
+   "answer": "$2 + \\frac{4}{x - 1} - \\frac{1}{x + 2}$"
+  },
+  {
+   "label": "(b)",
+   "text": "Hence find the coordinates of the stationary points of the curve.",
+   "marks": 4,
+   "answer": "$\\left(-5, \\frac{5}{3}\\right)$ and $(-1, -1)$"
+  },
+  {
+   "label": "(c)",
+   "text": "Find the set of values of $x$ for which $y$ is a decreasing function of $x$.",
+   "marks": 2,
+   "answer": "$x < -5$ or $-1 < x < 1$ or $x > 1$"
+  }
+ ],
+ "answer": "(a) $2 + \\frac{4}{x - 1} - \\frac{1}{x + 2}$; (b) $\\left(-5, \\frac{5}{3}\\right)$ and $(-1, -1)$; (c) $x < -5$ or $-1 < x < 1$ or $x > 1$",
+ "total_marks": 9,
+ "topics": [
+  "Partial Fractions",
+  "Differentiation (Techniques)",
+  "Differentiation (Increasing and Decreasing Functions)"
+ ],
+ "skills": [
+  "express an improper rational function with an unfactorised quadratic denominator in partial fractions by dividing first",
+  "differentiate the partial-fraction form (two reciprocal terms by the chain rule) and solve dy/dx = 0 for both stationary points",
+  "set of x on which a rational curve is decreasing, from dy/dx < 0 cleared by positive squares to a quadratic inequality whose solution is the outside region, removing x = 1, where the curve is undefined, from x > -1"
+ ],
+ "needs_figure": false,
+ "figure_description": "",
+ "solution": "(a) The numerator and denominator have the same degree, so divide first:\n$2x^2 + 5x + 5 = 2(x^2 + x - 2) + (3x + 9)$, so $y = 2 + \\frac{3x + 9}{x^2 + x - 2}$.\n$x^2 + x - 2 = (x - 1)(x + 2)$.\nLet $\\frac{3x + 9}{(x - 1)(x + 2)} = \\frac{A}{x - 1} + \\frac{B}{x + 2}$, so $3x + 9 = A(x + 2) + B(x - 1)$.\n$x = 1$: $12 = 3A$, so $A = 4$.\n$x = -2$: $3 = -3B$, so $B = -1$.\n$\\frac{2x^2 + 5x + 5}{x^2 + x - 2} = 2 + \\frac{4}{x - 1} - \\frac{1}{x + 2}$\n(b) $y = 2 + 4(x - 1)^{-1} - (x + 2)^{-1}$\n$\\frac{dy}{dx} = -\\frac{4}{(x - 1)^2} + \\frac{1}{(x + 2)^2}$\nAt a stationary point $\\frac{dy}{dx} = 0$: $\\frac{1}{(x + 2)^2} = \\frac{4}{(x - 1)^2}$, so $(x - 1)^2 = 4(x + 2)^2$.\n$x - 1 = 2(x + 2)$ gives $x = -5$; $x - 1 = -2(x + 2)$ gives $3x = -3$, $x = -1$.\n(Equivalently $x^2 - 2x + 1 = 4x^2 + 16x + 16$, $3x^2 + 18x + 15 = 0$, $(x + 1)(x + 5) = 0$.) Neither value is $1$ or $-2$.\n$x = -5$: $y = 2 + \\frac{4}{-6} - \\frac{1}{-3} = 2 - \\frac{2}{3} + \\frac{1}{3} = \\frac{5}{3}$.\n$x = -1$: $y = 2 + \\frac{4}{-2} - \\frac{1}{1} = -1$.\nThe stationary points are $\\left(-5, \\frac{5}{3}\\right)$ and $(-1, -1)$.\nScheme (b): B1 the derivative of the partial-fraction form; M1 set $\\frac{dy}{dx} = 0$ and solve; A1 $x = -5$ and $x = -1$; A1 both $y$-coordinates.\n(c) $y$ is a decreasing function of $x$ where $\\frac{dy}{dx} < 0$:\n$\\frac{1}{(x + 2)^2} - \\frac{4}{(x - 1)^2} < 0$\nFor $x \\ne 1$ and $x \\ne -2$, multiply by $(x - 1)^2(x + 2)^2$, which is positive:\n$(x - 1)^2 - 4(x + 2)^2 < 0$\n$x^2 - 2x + 1 - 4x^2 - 16x - 16 < 0$\n$-3x^2 - 18x - 15 < 0$\n$x^2 + 6x + 5 > 0$\n$(x + 1)(x + 5) > 0$, so $x < -5$ or $x > -1$.\n(Equivalently $\\frac{dy}{dx} = \\frac{-3(x + 1)(x + 5)}{(x - 1)^2(x + 2)^2}$, whose denominator is positive, so $\\frac{dy}{dx} < 0$ exactly when $(x + 1)(x + 5) > 0$. Check: at $x = -6$, $\\frac{dy}{dx} = -\\frac{4}{49} + \\frac{1}{16} = -\\frac{15}{784} < 0$; at $x = 0$, $\\frac{dy}{dx} = -4 + \\frac{1}{4} = -\\frac{15}{4} < 0$; at $x = 2$, $\\frac{dy}{dx} = -4 + \\frac{1}{16} = -\\frac{63}{16} < 0$; while at $x = -3$, $\\frac{dy}{dx} = -\\frac{4}{16} + 1 = \\frac{3}{4} > 0$.)\nThe curve is not defined at $x = 1$, which lies inside the region $x > -1$, so $x = 1$ is removed. The curve is not defined at $x = -2$ either, but $x = -2$ lies in $-5 < x < -1$, outside the set, so it does not affect the answer.\n$x < -5$ or $-1 < x < 1$ or $x > 1$\nScheme (c): M1 $(x + 1)(x + 5) > 0$, obtained from $\\frac{dy}{dx} < 0$ by clearing the positive squares (or from the single fraction); A1 $x < -5$ or $-1 < x < 1$ or $x > 1$. The answer '$x < -5$ or $x > -1$, $x \\ne 1$' earns the A1; '$x < -5$ or $x > -1$' alone, with $x = 1$ not removed, does not.",
+ "syllabus_check": "4049 Polynomials and partial fractions: an improper fraction (numerator of the same degree as the denominator) divided first, then partial fractions with the denominator (x - 1)(x + 2), a case the syllabus lists. 4049 Differentiation: derivative of (ax + b)^n by the chain rule, stationary points, and decreasing functions from the sign of dy/dx. 4049 Quadratics: solving a quadratic inequality. No curve sketching of rational functions, no asymptote theory and no integration are needed; the exclusion of x = 1 follows from the curve's equation being undefined there.",
+ "originality_note": "New situation and structure. Set 1 P1 Q12 and GCE 2024 P1 Q12 used a repeated linear factor (Set 1 via the factor theorem) and ended in a definite integral of the form a + ln b; this question uses an improper fraction whose quadratic denominator is given unfactorised, and its follow-on is differentiation of the partial-fraction form: the stationary points, then where the curve decreases. It differs from GCE 2022 P1 Q3 and the 2021 specimen P2 Q1 (a cubic over x(x^2 + c), division prompted or partial fractions only). Set 1 P1 Q6(b) asked for the INCREASING set from an exponential derivative, a quadratic in e^x with no excluded point; here (c) asks for the DECREASING set, so it no longer repeats Set 1's wording, the rational derivative is cleared by positive squares into a quadratic inequality in x whose solution is the OUTSIDE region (x < -5 or x > -1), and the A1 turns on removing x = 1, where the curve is undefined, from x > -1 (x = -2 lies in -5 < x < -1, outside the set, so it plays no part). The earlier (c) (y = k meeting the curve once, with the vanishing x^2 coefficient at k = 2) was dropped because Q1 and Q10(b) of this paper already rest on a kept degenerate case at k = 2. Q9 uses a first-derivative sign test but asks for no increasing or decreasing set. The numbers (quotient 2, constants 4 and -1, stationary points (-5, 5/3) and (-1, -1), decreasing set x < -5 or -1 < x < 1 or x > 1, with x = 1 removed) are original."
+}

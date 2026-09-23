@@ -1,0 +1,1657 @@
+{
+ "key": "GCE-EM-P2",
+ "seed": 3,
+ "set": 2,
+ "variety": true,
+ "models": {
+  "author": "claude-opus-5-5 (Claude Code agent)",
+  "solver": "claude-opus-5-5 (Claude Code agent)",
+  "moderator": "claude-opus-5-5 (Claude Code agent)",
+  "figure": "claude-opus-5-5 (Claude Code agent)"
+ },
+ "earlier_sets": [
+  "Set 1 P1",
+  "Set 1 P2",
+  "Set 2 P1"
+ ],
+ "shape": {
+  "subject": "Mathematics",
+  "code": "4052",
+  "level": "EM",
+  "cut": 2023,
+  "duration": "2 hours 15 minutes",
+  "scope": "Numbers and their operations (primes, HCF/LCM, squares/cubes/roots, standard form, estimation, significant figures); ratio and proportion (incl. map scales, direct and inverse proportion); percentage (incl. reverse percentage); rate and speed (incl. average speed, conversion of units); financial mathematics (simple and compound interest, hire purchase, money exchange, taxation, utilities bills); algebraic expressions and formulae (expansion, factorisation incl. grouping and quadratic trinomials, algebraic fractions, changing the subject, algebraic identities); functions and graphs (linear, quadratic incl. completed-square and factorised forms, cubic, reciprocal y=a/x and a/x^2, exponential y=ka^x, drawing on a grid from a table of values, gradient of a curve by a tangent, solving equations by drawing a suitable line); equations and inequalities (linear, simultaneous linear, quadratic by factorisation / completing the square / the formula, fractional equations reducing to quadratics, linear inequalities incl. double inequalities, word problems leading to these); set language and notation (union, intersection, complement, subsets, Venn diagrams with numbers of elements); matrices (display of information, addition, scalar multiplication, multiplication of two matrices, interpretation of the product; no inverses); problems in real-world contexts (reading tables and information sheets, making and justifying a decision, estimating a cost or a quantity); angles, triangles and polygons (angle properties of parallel lines, triangles, quadrilaterals and regular polygons; construction with ruler, compasses and protractor: perpendicular bisectors and angle bisectors; scale drawings); congruence and similarity (tests, ratios of lengths, areas and volumes of similar figures and solids); properties of circles (symmetry properties: equal chords, perpendicular from centre, tangents from a point; angle properties: angle at centre, angle in a semicircle, angles in the same segment, opposite angles of a cyclic quadrilateral, tangent-radius; reasons stated); Pythagoras' theorem and trigonometry (sine, cosine and tangent for acute and obtuse angles, sine and cosine rules, area of a triangle as ½ab sin C, bearings, angles of elevation and depression, simple 3-D problems); mensuration (area of a triangle, parallelogram, trapezium, circle; arc length and sector area with the angle in RADIANS or degrees; surface area and volume of a prism, cylinder, pyramid, cone and sphere; composite solids); coordinate geometry (gradient, length, midpoint is NOT required, equation of a straight line y=mx+c, parallel lines, area of a rectilinear figure by shoelace is NOT required — use base×height or split into triangles); vectors in two dimensions (column vectors, magnitude, position vectors, addition, scalar multiples, collinearity, expressing one vector in terms of others, ratios of areas of triangles with a common height or on the same base); data handling and analysis (tables, bar charts, pie charts, pictograms, line graphs, histograms with equal class widths, dot diagrams, stem-and-leaf, box-and-whisker plots, cumulative frequency curves, median, quartiles, percentiles, range, interquartile range, mean and standard deviation for grouped and ungrouped data, comparing two distributions in context); probability (single events, combined events by possibility diagrams and tree diagrams, with and without replacement, mutually exclusive and independent events). NOT in 4052: calculus, logarithms, surds, the binomial theorem, trigonometric identities, the R-formula, quadratic inequalities, matrices inverses and determinants, vectors in three dimensions, the shoelace formula, the midpoint formula.",
+  "register": "REGISTER — how SEAB asks (4052)\n- Plain, exact, economical English. Instructions are imperatives: Find, Calculate, Work out, Write down, Simplify, Factorise, Expand, Solve, Show that, Explain why, Give a reason, Complete the table, Draw, Describe, Estimate, Express, State.\n- Parts are labelled (a), (b), (c), with sub-parts (i), (ii). Every part carries its marks. A 1–3 mark question is often a single unlabelled part.\n- A scientific calculator is allowed on BOTH papers. Never write \"a calculator must not be used\". The paper's rubric already says: non-exact answers to 3 significant figures, angles to 1 decimal place, π = calculator value or 3.142 — so a question states a precision only when it wants something else (\"correct to 2 decimal places\", \"in its simplest form\", \"in terms of π\", \"as a fraction in its lowest terms\", \"in standard form\", \"to the nearest cent\").\n- Angles are in DEGREES with the degree sign ($58^\\circ$); a sector angle in radians is stated as \"1.8 radians\". Bearings are three-figure ($048^\\circ$). Money is dollars and cents ($\\$92.75$).\n- Contexts are short, concrete and Singaporean-neutral (a garden fountain, a box of apples, a map of Singapore, a candle business): the situation in one or two sentences, units given, then the parts. Never chatty, never a story.\n- \"Show that\" states its target exactly (\"Show that $x^2 - 102x + 1440 = 0$\", \"Show that $p = 2.5$\") and a later part uses it. \"Explain why …\" / \"Give a reason for your answer\" / \"Is he correct?\" parts are worth 1 mark and expect one sentence with a number in it. A circle-properties question says \"Give a reason for each step of your working.\"\n- Statistics and probability parts ask for interpretation in context (\"By commenting on the means and the standard deviations, compare …\", \"Explain what this tells you about …\").\n- Paper 1 (27 short questions, 90 marks): each question tests ONE idea in 1–7 marks, answered in the space provided; the paper walks the syllabus (number, algebra, geometry, statistics interleaved), with the vector and mensuration questions near the end.\n- Paper 2 (9 long questions, 90 marks): each question is 8–12 marks in 3–5 parts. Early questions are ALGEBRA MEDLEYS whose parts (a), (b), (c), (d) are separate short problems on different algebra skills. Later ones are one context developed through parts: a graph question (a table of values with two blanks, \"On the grid, draw the graph of …\", a gradient by a tangent, \"By drawing a suitable straight line, solve …\"), a trigonometry-on-the-ground question with bearings and a mast, a statistics + probability question over a table or histogram, a circle-properties + circular-measure question, a speed/quadratic question (\"Show that … = 0\", solve to 2 decimal places, reject a root, interpret), and the last question is a PROBLEM IN A REAL-WORLD CONTEXT: an information sheet (a table of prices, rates or measurements) followed by parts that end in a 5–7 mark \"Suggest a suitable … Justify your answer\" or \"Is it worth …? Show your working\" decision.\n- Marks follow the work: about 1 mark per 1.5 minutes. 1 mark: read/state/one-line. 2 marks: one routine. 3–4 marks: a short chain. 5–7 marks: a multi-step argument or a decision with working."
+ },
+ "paperNo": 2,
+ "total": 90,
+ "prompt_version": "gce-author-v2",
+ "blueprint_derived_at": "2026-09-08",
+ "generated_at": "2026-09-23T13:01:21.787Z",
+ "topicList": [
+  "Algebra (Expansion)",
+  "Algebra (Expressions)",
+  "Algebra (Factorization)",
+  "Algebra (Fractions)",
+  "Algebra (Graph on Graph Paper)",
+  "Algebra (Identities)",
+  "Algebra (Inequalities)",
+  "Algebra (Linear Equations)",
+  "Algebra (Quadratic Equations)",
+  "Algebra (Quadratic Graphs)",
+  "Algebra (Simultaneous Equations)",
+  "Algebra (Subject of Formula)",
+  "Indices",
+  "Indices (Standard Form)",
+  "Numbers (Estimation)",
+  "Numbers (HCF and LCM)",
+  "Numbers (Percentages)",
+  "Numbers (Prime Factorization)",
+  "Numbers (Rate)",
+  "Numbers (Ratio)",
+  "Numbers (Speed)",
+  "Proportion",
+  "Angles",
+  "Circle Properties",
+  "Circular Measure",
+  "Congruency and Similarity",
+  "Coordinate Geometry",
+  "Distance and Speed Time Graphs",
+  "Geometrical Constructions",
+  "Graphs of Functions",
+  "Map Scales",
+  "Mensuration",
+  "Polygons",
+  "Trigonometry",
+  "Vectors",
+  "Financial Math (Hire Purchase)",
+  "Financial Math (Interest)",
+  "Financial Math (Taxation)",
+  "Math In Real World Context",
+  "Matrices",
+  "Number Patterns",
+  "Sets",
+  "Probability",
+  "Statistics",
+  "Coordinate Geometry (Lines)",
+  "Pythagoras' Theorem",
+  "Symmetry",
+  "Financial Math (Exchange Rate)"
+ ],
+ "must_appear": [
+  "Algebra (Fractions)",
+  "Algebra (Graph on Graph Paper)",
+  "Algebra (Quadratic Equations)",
+  "Circle Properties",
+  "Circular Measure",
+  "Coordinate Geometry",
+  "Graphs of Functions",
+  "Math In Real World Context"
+ ],
+ "plan": [
+  {
+   "pos": 1,
+   "topic": "Algebra (Fractions)",
+   "target": 11,
+   "marks": [
+    10,
+    12
+   ],
+   "parts": [
+    3,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.0181
+    },
+    {
+     "topic": "Algebra (Inequalities)",
+     "weight": 0.0091
+    },
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.0091
+    },
+    {
+     "topic": "Algebra (Simultaneous Equations)",
+     "weight": 0.0091
+    },
+    {
+     "topic": "Algebra (Subject of Formula)",
+     "weight": 0.091
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.0091
+    },
+    {
+     "topic": "Indices (Standard Form)",
+     "weight": 0.0091
+    },
+    {
+     "topic": "Map Scales",
+     "weight": 0.091
+    },
+    {
+     "topic": "Numbers (Percentages)",
+     "weight": 0.0091
+    },
+    {
+     "topic": "Numbers (Rate)",
+     "weight": 0.0091
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Algebra (Quadratic Equations)",
+   "target": 11,
+   "marks": [
+    9,
+    12
+   ],
+   "parts": [
+    3,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Numbers (Percentages)",
+     "weight": 0.020000000000000004
+    },
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.010000000000000002
+    },
+    {
+     "topic": "Algebra (Inequalities)",
+     "weight": 0.010000000000000002
+    },
+    {
+     "topic": "Algebra (Linear Equations)",
+     "weight": 0.010000000000000002
+    },
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.010000000000000002
+    },
+    {
+     "topic": "Algebra (Subject of Formula)",
+     "weight": 0.1
+    },
+    {
+     "topic": "Financial Math (Hire Purchase)",
+     "weight": 0.1
+    },
+    {
+     "topic": "Matrices",
+     "weight": 0.010000000000000002
+    },
+    {
+     "topic": "Numbers (Ratio)",
+     "weight": 0.1
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Trigonometry",
+   "target": 9,
+   "marks": [
+    9,
+    10
+   ],
+   "parts": [
+    3,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Graph on Graph Paper)",
+     "weight": 0.2
+    },
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.020000000000000004
+    },
+    {
+     "topic": "Graphs of Functions",
+     "weight": 0.2
+    },
+    {
+     "topic": "Mensuration",
+     "weight": 0.020000000000000004
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.020000000000000004
+    }
+   ],
+   "repointed_from": "Graphs of Functions"
+  },
+  {
+   "pos": 4,
+   "topic": "Algebra (Graph on Graph Paper)",
+   "target": 11,
+   "marks": [
+    10,
+    11
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Graph on Graph Paper)",
+     "weight": 0.285
+    },
+    {
+     "topic": "Graphs of Functions",
+     "weight": 0.286
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.0143
+    },
+    {
+     "topic": "Probability",
+     "weight": 0.0143
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.0143
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Circle Properties",
+   "target": 9,
+   "marks": [
+    8,
+    9
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Circle Properties",
+     "weight": 0.028499999999999998
+    },
+    {
+     "topic": "Circular Measure",
+     "weight": 0.0286
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.0286
+    },
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.0143
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Coordinate Geometry",
+   "target": 11,
+   "marks": [
+    11,
+    11
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.0333
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.0333
+    },
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.016700000000000003
+    },
+    {
+     "topic": "Numbers (Speed)",
+     "weight": 0.167
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Statistics",
+   "target": 8,
+   "marks": [
+    7,
+    9
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Probability",
+     "weight": 0.04000000000000001
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.04000000000000001
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.020000000000000004
+    }
+   ],
+   "repointed_from": "Probability"
+  },
+  {
+   "pos": 8,
+   "topic": "Circular Measure",
+   "target": 10,
+   "marks": [
+    10,
+    11
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.025
+    },
+    {
+     "topic": "Circle Properties",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Circular Measure",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Mensuration",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Number Patterns",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.0125
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Math In Real World Context",
+   "target": 10,
+   "marks": [
+    10,
+    11
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Math In Real World Context",
+     "weight": 0.033400000000000006
+    },
+    {
+     "topic": "Numbers (Rate)",
+     "weight": 0.0222
+    },
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.0111
+    },
+    {
+     "topic": "Mensuration",
+     "weight": 0.0111
+    },
+    {
+     "topic": "Numbers (Speed)",
+     "weight": 0.111
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.0111
+    }
+   ]
+  }
+ ],
+ "title": "E Math · Set 2 · Paper 2 · O-Level format",
+ "assembled_at": "2026-09-23T13:26:47.480Z",
+ "questions": [
+  {
+   "pos": 1,
+   "topic": "Algebra (Fractions)",
+   "target": 11,
+   "accepted": true,
+   "question": {
+    "stem": "",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Simplify $\\dfrac{3^{2n+1} + 9^{n}}{3^{n+1} - 3^{n}}$.",
+      "marks": 2,
+      "answer": "$2 \\times 3^{n}$"
+     },
+     {
+      "label": "(b)",
+      "text": "$T = \\sqrt{\\dfrac{2p + 5}{p - 3}}$\nRearrange the formula to make $p$ the subject.",
+      "marks": 3,
+      "answer": "$p = \\dfrac{3T^2 + 5}{T^2 - 2}$"
+     },
+     {
+      "label": "(c)",
+      "text": "Find the greatest possible value of $\\dfrac{7}{x^2 - 3x + 4}$.\nShow your working.",
+      "marks": 3,
+      "answer": "$4$"
+     },
+     {
+      "label": "(d)",
+      "text": "Use algebra to explain why the sum of the squares of any three consecutive integers is never a multiple of 3.",
+      "marks": 3,
+      "answer": "With the integers $n - 1$, $n$, $n + 1$, the sum of their squares is $3n^2 + 2$, which is 2 more than the multiple of 3, $3n^2$, so it leaves remainder 2 when divided by 3 and is never a multiple of 3."
+     }
+    ],
+    "answer": "(a) $2 \\times 3^{n}$; (b) $p = \\dfrac{3T^2 + 5}{T^2 - 2}$; (c) $4$; (d) $(n-1)^2 + n^2 + (n+1)^2 = 3n^2 + 2$, which is 2 more than a multiple of 3, so never a multiple of 3.",
+    "total_marks": 11,
+    "topics": [
+     "Algebra (Quadratic Graphs)",
+     "Indices",
+     "Algebra (Subject of Formula)",
+     "Algebra (Expansion)"
+    ],
+    "skills": [
+     "rewriting $9^{n}$ as $3^{2n}$ and taking out the common power factors $3^{2n}$ above and $3^{n}$ below to simplify a quotient of a sum and a difference of powers with a variable index to an expression in $n$",
+     "making a subject that appears in both the numerator and the denominator of a fraction under a square root",
+     "finding the greatest value of a fraction whose denominator is a quadratic with no real roots, by completing the square to find the least value of the positive denominator",
+     "proving by expansion, with the unknown introduced by the candidate, that the sum of the squares of three consecutive integers is always 2 more than a multiple of 3"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Write every power with base 3: $9^{n} = (3^{2})^{n} = 3^{2n}$, and $3^{2n+1} = 3 \\times 3^{2n}$.\nNumerator: $3^{2n+1} + 9^{n} = 3 \\times 3^{2n} + 3^{2n} = 3^{2n}(3 + 1) = 4 \\times 3^{2n}$\nDenominator: $3^{n+1} - 3^{n} = 3 \\times 3^{n} - 3^{n} = 3^{n}(3 - 1) = 2 \\times 3^{n}$ [M1 for a correct common factor taken out of the numerator or of the denominator]\n$\\dfrac{3^{2n+1} + 9^{n}}{3^{n+1} - 3^{n}} = \\dfrac{4 \\times 3^{2n}}{2 \\times 3^{n}} = 2 \\times 3^{2n - n} = 2 \\times 3^{n}$ [A1 for $2 \\times 3^{n}$ or $2(3^{n})$]\n(Check: $n = 1$ gives $\\dfrac{27 + 9}{9 - 3} = \\dfrac{36}{6} = 6 = 2 \\times 3^{1}$; $n = 2$ gives $\\dfrac{243 + 81}{27 - 9} = \\dfrac{324}{18} = 18 = 2 \\times 3^{2}$.)\nCommon errors: dividing the indices instead of subtracting them, $\\dfrac{3^{2n}}{3^{n}} = 3^{2}$, which gives $18$; cancelling terms rather than factors, $\\dfrac{3^{2n+1}}{3^{n+1}} + \\dfrac{9^{n}}{-3^{n}} = 3^{n} - 3^{n}$, which gives $0$; adding the indices of a sum, $3^{2n+1} + 3^{2n} = 3^{4n+1}$. Substituting a value of $n$ gives only a number (6 when $n = 1$), not the simplified expression, and earns no marks.\n\n(b) Square both sides: $T^2 = \\dfrac{2p + 5}{p - 3}$ [M1]\n$T^2(p - 3) = 2p + 5$\n$pT^2 - 3T^2 = 2p + 5$\nCollect the terms in $p$ on one side: $pT^2 - 2p = 3T^2 + 5$ [M1]\n$p(T^2 - 2) = 3T^2 + 5$\n$p = \\dfrac{3T^2 + 5}{T^2 - 2}$ [A1]\n(Check: $T = 3$ gives $p = \\dfrac{32}{7}$, and $\\dfrac{2p + 5}{p - 3} = \\dfrac{99/7}{11/7} = 9 = 3^2$.)\n\n(c) Complete the square for the denominator:\n$x^2 - 3x + 4 = \\left(x - \\dfrac{3}{2}\\right)^2 - \\dfrac{9}{4} + 4 = \\left(x - \\dfrac{3}{2}\\right)^2 + \\dfrac{7}{4}$ [M1]\nSince $\\left(x - \\dfrac{3}{2}\\right)^2 \\ge 0$ for all $x$, the denominator is always positive and its least value is $\\dfrac{7}{4}$, when $x = \\dfrac{3}{2}$. [M1]\nThe numerator 7 is fixed and the denominator is always positive, so the fraction is greatest when the denominator is least.\nGreatest value $= 7 \\div \\dfrac{7}{4} = 4$ [A1] (when $x = 1.5$)\nCommon error: substituting $x = 0$ to get $\\dfrac{7}{4}$.\n\n(d) Let the three consecutive integers be $n - 1$, $n$ and $n + 1$, where $n$ is an integer. [B1]\nSum of their squares $= (n - 1)^2 + n^2 + (n + 1)^2$\n$= n^2 - 2n + 1 + n^2 + n^2 + 2n + 1$\n$= 3n^2 + 2$ [M1]\n$3n^2$ is a multiple of 3, so $3n^2 + 2$ is 2 more than a multiple of 3: it leaves a remainder of 2 when divided by 3.\nSo the sum of the squares of any three consecutive integers is never a multiple of 3. [A1]\n(Alternative: with $n$, $n + 1$, $n + 2$ the sum is $3n^2 + 6n + 5 = 3(n^2 + 2n + 1) + 2$, the same conclusion.)\nChecking numerical examples only (for example $1^2 + 2^2 + 3^2 = 14$) is not an explanation and earns no marks.",
+    "syllabus_check": "All four parts are inside 4052 and use no A-Math technique. (a) laws of indices with a variable index: a power of a power ($9^{n} = 3^{2n}$), $3^{2n+1} = 3 \\times 3^{2n}$ and the division law $3^{2n} \\div 3^{n} = 3^{n}$, with a common factor taken out of a sum and a difference of powers (Numbers and algebra: indices). (b) changing the subject of a formula in which the subject appears twice and the formula involves a square root and an algebraic fraction (Algebraic expressions and formulae). (c) a quadratic expression written in completed-square form to find its least value (Functions and graphs: quadratic functions in completed-square form); the argument uses only that a square is never negative, not a quadratic inequality, and no calculus. (d) expansion of squared brackets used to prove a property of integers (Algebraic expressions: expansion). No partial fractions, no surds, no simultaneous non-linear equations, no combining of fractions and no fractional equation.",
+    "originality_note": "Written as an algebra medley whose parts are all different skills from the earlier Sets. No part combines algebraic fractions or solves a fractional equation (Set 1 P2 Q1(c),(d), Set 2 P1 Q5, Set 1 P1 Q11). (a) is not GCE 2025 P2 Q5(a) (a sum of two equal numeric powers giving a single power of 2): here the index is a variable, a power of 9 must first be rewritten as a power of 3, different common powers are taken out above and below, and the fraction simplifies to an expression in $n$ that no substitution can give; it is also unlike the common-base index equations of Set 1 P2 Q4(b) and Set 1 P1 Q16. (b) differs from Set 1 P1 Q12(b) (expand and cancel the $x^2$ terms) and from GCE 2023 P2 Q2(c)(ii) by the square root over a fraction with the subject in both numerator and denominator. (c) finds the maximum of a reciprocal from the minimum of a quadratic with no real roots; Set 2 P1 Q6 found the maximum of a parabola from its roots. (d) is a divisibility-by-3 proof by expansion with the candidate choosing the variable; Set 1 P1 Q25(b) argued the parity of a given $n^2 + n + 1$, and GCE 2024 P1 Q23(a) the parity of a given $y$."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 1,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2010 P1 Q22",
+     "jaccard": 0.066,
+     "nearest_set": "Set 1 P1 Q12",
+     "jaccard_set": 0.053,
+     "repeated_skills": []
+    },
+    "marks": 11,
+    "checked_at": "2026-09-23T13:22:50.090Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "2(3^n)",
+     "(b)": "p = (3T^2 + 5)/(T^2 - 2)",
+     "(c)": "4",
+     "(d)": "shown: (n-1)^2 + n^2 + (n+1)^2 = 3n^2 + 2, which leaves remainder 2 when divided by 3, so it is never a multiple of 3"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both 5/3. Checked: numerator 3^{n-1}(9+1), denominator 3^{n-1}(9-3), ratio 10/6 = 5/3 for every n (verified n = 1..5)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both p = (3T^2 + 5)/(T^2 - 2). Checked symbolically: square, multiply out, collect the p terms, factorise."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both 4. x^2 - 3x + 4 = (x - 3/2)^2 + 7/4 is always positive with least value 7/4, so the greatest value of the fraction is 7 / (7/4) = 4."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both reach (n-1)^2 + n^2 + (n+1)^2 = 3n^2 + 2, remainder 2 on division by 3. The statement is true and the proof is complete."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on every part, and I checked each part independently: the key is right.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "(a) has a shortcut. 'Find the exact value' tells the candidate that the answer does not depend on n, so putting n = 1 gives (9 + 1)/(9 - 3) = 5/3 in one line. The setter's own check line does exactly this, and it skips the factorising the part exists to test. Set 1 P2 Q1 has no part that can be beaten this way. Change (a) so that the answer depends on n, keeping [2]: for example 'Simplify $\\dfrac{3^{2n+1} + 9^{n}}{3^{n+1} - 3^{n}}$.' Answer $2 \\times 3^{n}$: the candidate must rewrite $9^{n}$ as $3^{2n}$, take out $3^{2n}$ and $3^{n}$, and cannot cancel terms. Substituting n = 1 now gives only 6, which is not the answer. Do not turn (a) into a 'show that it is independent of n', because (d) is already the proof.",
+     "Split the setter's skills array into four entries, one per part. At present the second entry joins (b) and (c) with a semicolon. Replace the topic tag 'Algebra (Fractions)': no algebraic fraction is combined or simplified. Use 'Algebra (Quadratic Graphs)' for the completing-the-square extreme value in (c).",
+     "Register, a light edit: in (b), write 'Rearrange the formula to make $p$ the subject.' (SEAB's wording, GCE 2023 P2 Q2(c)(ii))."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "This is a P2 Q1 algebra medley of the 2024/25 kind (GCE 2025 P2 Q1 [2,2,3,3]). Each part has a twist. The candidate makes the decisions in (c), which is unscaffolded (complete the square, then take the reciprocal of the least value), and in (d), where the candidate chooses the three integers and proves the result: these two parts carry 6 of the 11 marks. The numbers are clean and the traps give tidy wrong answers (-1/3 from cancelling, 7/4 from x = 0). It is as demanding as Set 1 P2 Q1 and uses different skills (not fractions or fractional equations; different from Set 1 P1 Q25(b) and Set 2 P1 Q6). Only (a) needs a light edit, because substituting n = 1 bypasses its idea.",
+    "session_note": "23 Sep: polish: fix 1 applied — (a) is now \"Simplify (3^(2n+1) + 9^n)/(3^(n+1) - 3^n)\", answer 2 x 3^n (no n = 1 shortcut); fix 2 (skills one per part, topic Algebra (Quadratic Graphs) for Algebra (Fractions)); fix 3 (wording of (b)). Gates re-run; round-2 blind solve agrees on every part."
+   },
+   "exemplars": [
+    {
+     "id": "21cf0b77-06e3-4b21-82b6-bde467aa7d8a",
+     "ref": "GCE 2024 P2 Q1"
+    },
+    {
+     "id": "f650d380-b315-4357-8798-46263e7870f7",
+     "ref": "GCE 2025 P2 Q1"
+    },
+    {
+     "id": "09308b09-e384-40ca-ae3d-4dcf9d205c9d",
+     "ref": "GCE 2023 P2 Q2"
+    },
+    {
+     "id": "4f282fde-e945-4503-8a58-2189374690ed",
+     "ref": "GCE 2025 P1 Q23"
+    },
+    {
+     "id": "aa860c94-c851-4e49-b146-6916435524b9",
+     "ref": "GCE 2024 P1 Q5"
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Algebra (Quadratic Equations)",
+   "target": 11,
+   "accepted": true,
+   "question": {
+    "stem": "A factory has two machines, $P$ and $Q$, for making paper bags. Each order is for the same number of paper bags. Each machine works at its own constant rate.\nWorking on its own, machine $P$ takes $x$ hours to complete an order.\nWorking on its own, machine $Q$ takes 2 hours less than machine $P$ to complete an order.\nOn Monday, both machines start work on an order at 8.00 a.m. Machine $P$ breaks down at 9.20 a.m. Machine $Q$ continues on its own and completes the order at 12.30 p.m.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that $6x^2 - 47x + 16 = 0$.",
+      "marks": 5,
+      "answer": "$\\frac{4}{3x} + \\frac{9}{2(x - 2)} = 1$, which simplifies to $6x^2 - 47x + 16 = 0$ (shown)"
+     },
+     {
+      "label": "(b)",
+      "text": "By solving the equation $6x^2 - 47x + 16 = 0$, find the time that machine $Q$ takes to complete an order on its own.\nGive your answer in hours and minutes, correct to the nearest minute.",
+      "marks": 3,
+      "answer": "5 hours 29 minutes ($x = 7.48$; $x = 0.36$ rejected because $x - 2$ would be negative)"
+     },
+     {
+      "label": "(c)",
+      "text": "On Tuesday, machine $P$ has been repaired. Machine $Q$ starts work on another order on its own at 8.00 a.m. Machine $P$ starts work on the same order later that morning, and the two machines then work together until the order is completed at 12 noon.\nFind the time at which machine $P$ starts work.\nGive your answer correct to the nearest minute.",
+      "marks": 3,
+      "answer": "9.59 a.m."
+     }
+    ],
+    "answer": "(a) shown; (b) 5 hours 29 minutes; (c) 9.59 a.m.",
+    "total_marks": 11,
+    "topics": [
+     "Algebra (Quadratic Equations)",
+     "Algebra (Fractions)"
+    ],
+    "skills": [
+     "work-rate model: each machine's share of an order as working time times its rate, with the working times read from clock times (1 h 20 min and 4 h 30 min, the faster machine working through the breakdown), summed to one whole order and cleared to a quadratic",
+     "choosing the valid root when both roots of the quadratic are positive (the other machine's time x - 2 must be positive), then giving the other machine's time in hours and minutes",
+     "reversed work-rate: machine P's working time found from the share of the order left after machine Q's 4 hours of work (Q works throughout, first alone, then with P), counted back from 12 noon to a start time"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Machine $P$ works from 8.00 a.m. to 9.20 a.m., which is 1 h 20 min $= \\frac{4}{3}$ h.\nMachine $Q$ works from 8.00 a.m. to 12.30 p.m. (it does not stop when $P$ breaks down), which is 4 h 30 min $= \\frac{9}{2}$ h.\nIn 1 hour, $P$ completes $\\frac{1}{x}$ of an order and $Q$ completes $\\frac{1}{x - 2}$ of an order.\nFraction of the order done by $P$ $= \\frac{4}{3} \\times \\frac{1}{x} = \\frac{4}{3x}$; fraction done by $Q$ $= \\frac{9}{2} \\times \\frac{1}{x - 2} = \\frac{9}{2(x - 2)}$.\nTogether they complete one whole order: $\\frac{4}{3x} + \\frac{9}{2(x - 2)} = 1$.\nMultiply both sides by $6x(x - 2)$: $8(x - 2) + 27x = 6x(x - 2)$\n$8x - 16 + 27x = 6x^2 - 12x$\n$35x - 16 = 6x^2 - 12x$\n$6x^2 - 47x + 16 = 0$ (shown)\n[B1 both working times in hours, M1 rates $\\frac{1}{x}$ and $\\frac{1}{x-2}$, M1 fractions summed to 1, M1 clearing the denominators, A1 given equation with no error]\n(b) $x = \\frac{47 \\pm \\sqrt{(-47)^2 - 4(6)(16)}}{2(6)} = \\frac{47 \\pm \\sqrt{1825}}{12}$\n$x = 7.4767$ or $x = 0.35667$ (7.48 or 0.36 to 2 decimal places)\n$x = 0.357$ is rejected: machine $Q$ would take $x - 2 = -1.64$ hours, which is impossible (also, $P$ could not work for 1 h 20 min on an order it finishes on its own in about 21 minutes).\nTime for $Q$ on its own $= 7.4767 - 2 = 5.4767$ h.\n$0.4767 \\times 60 = 28.6$ min, so the time is 5 hours 29 minutes (to the nearest minute).\n[M1 correct substitution into the formula, A1 $x = 7.48$ with the other root rejected, A1 5 h 29 min]\n(c) Machine $Q$ works from 8.00 a.m. to 12 noon, which is 4 h.\nFraction of the order done by $Q$ $= \\frac{4}{5.4767} = 0.73037$.\nFraction left for $P$ $= 1 - 0.73037 = 0.26963$.\n$P$ completes $\\frac{1}{7.4767}$ of an order per hour, so the time $P$ works $= 0.26963 \\times 7.4767 = 2.0159$ h.\n$0.0159 \\times 60 = 0.96$ min, so $P$ works for 2 h 1 min (to the nearest minute).\n$P$ starts at 12 noon $-$ 2 h 1 min $=$ 9.59 a.m.\n(Using $x = 7.48$: $\\frac{4}{5.48} = 0.72993$, $0.27007 \\times 7.48 = 2.020$ h, which also gives 9.59 a.m.)\n[M1 $\\frac{4}{x - 2}$ as $Q$'s share, M1 remaining share $\\times$ $x$ for $P$'s working time, A1 9.59 a.m.]\nCommon wrong answers: 7 h 29 min in (b) (the time for $P$, not $Q$); 9.27 a.m. in (c) (the two machines' times swapped).",
+    "syllabus_check": "4052 only: a word problem (rates of work) leading to a fractional equation that reduces to a quadratic, solved by the quadratic formula, with a root rejected in context; time conversions between hours, minutes and clock times. No calculus, no inequalities, no content outside 4052.",
+    "originality_note": "Topic tested before in our Sets only as a percentage profit-and-loss chain (Set 1 P2 Q2), a without-replacement probability (Set 1 P1 Q13), a quadratic sequence (Set 1 P1 Q25), a speed-time trapezium (Set 2 P1 Q19) and similar triangles (Set 2 P1 Q23); rates of work appear in no earlier Set. Against the real papers: GCE 2024 P2 Q6 is a two-stage speed journey; GCE 2018 P2 Q6 and GCE 2012 P2 Q8 are pumps with a stated DIFFERENCE of filling times and a 'together' follow-on; GCE 2016 P2 Q7 counts mugs painted at per-item times. Here the model is shares of ONE job done over DIFFERENT working times read from clock times (one machine breaks down, the other works through), both roots are positive so the rejection must be reasoned, (b) asks for the other machine's time rather than x, and (c) reverses the model to find a start time rather than a combined time. Part sequence [5, 3, 3] differs from Set 1 P2 Q2 [5, 2, 1, 3] and GCE 2024 P2 Q6 [5, 3, 1, 2]; no scaffold expressions are asked for."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 2,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2016 P1 Q22",
+     "jaccard": 0.043,
+     "nearest_set": "Set 2 P1 Q16",
+     "jaccard_set": 0.022,
+     "repeated_skills": []
+    },
+    "marks": 11,
+    "checked_at": "2026-09-23T13:22:50.100Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown",
+     "(b)": "5 hours 29 minutes (x = 7.4767, rejecting x = 0.357 since x > 2)",
+     "(c)": "9.59 a.m."
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both 'shown'. Checked: P works 8.00-9.20 = 4/3 h, Q works 8.00-12.30 = 9/2 h; 4/(3x) + 9/(2(x-2)) = 1, times 6x(x-2): 8(x-2) + 27x = 6x^2 - 12x, so 6x^2 - 47x + 16 = 0. True show-that; the trap (Q counted only from 9.20, 19/6 h) gives 6x^2 - 39x + 16 = 0 and is caught by the printed target."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both 5 h 29 min. x = (47 +/- sqrt 1825)/12 = 7.4767 or 0.3567; 0.357 rejected (x - 2 < 0); Q takes 5.4767 h = 5 h 28.6 min -> 5 h 29 min."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both 9.59 a.m. Q's share 4/5.4767 = 0.73037, P works 0.26963 x 7.4767 = 2.0159 h, start 9:59.04. Robust to sensible rounding: x = 7.48 gives 9:58.8, Q's time taken as 5 h 29 min gives 9:58.5, both 9.59; only a 2 s.f. x = 7.5 drifts to 9.57."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on every part, and my own working confirms (a) shown, (b) 5 h 29 min, (c) 9.59 a.m.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Skills phrase 3 is not true of the question: machine Q does not 'work alone for 4 hours'. It works 4 hours in total, alone until P joins and then with P. Rewrite: 'reversed work-rate: machine P's working time found from the share of the order left after machine Q's 4 hours of work (Q works throughout, first alone, then with P), counted back from 12 noon to a start time'.",
+     "Light edit to SEAB register in the stem's first sentence: 'Every order that the factory receives is for the same number of paper bags, and each machine always works at its own constant rate.' -> 'Each order is for the same number of paper bags. Each machine works at its own constant rate.'"
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "This is the P2 staple of a formed quadratic, shape [5, 3, 3], as the plan asked. Its model is new: shares of one job over different working times read off clock times, with Q working through P's breakdown. Every part holds a decision with a believable wrong answer: 6x^2 - 39x + 16, 7 h 29 min, 9.27 a.m. It is at least as demanding and clean as Set 1 P2 Q2. It is not a re-skin of GCE 2024 P2 Q6, whose situation and model differ, although it has the same four-part family shape and the same reason for rejecting a root (x - k < 0). Past pump questions (GCE 2012 P2 Q8, GCE 2018 P2 Q6) gave rates and a difference of times with expression rungs; this one does not.",
+    "session_note": "23 Sep: polish: fixes 1 (skills phrase 3) and 2 (stem wording). Answers unchanged; gates re-run."
+   },
+   "exemplars": [
+    {
+     "id": "60c9168d-07c4-454c-b444-2f455bd75a36",
+     "ref": "GCE 2025 P2 Q8"
+    },
+    {
+     "id": "14cef6ef-40db-4c4b-aedb-ce8545ac065b",
+     "ref": "GCE 2024 P2 Q6"
+    },
+    {
+     "id": "a2a3dab5-c1ec-4b59-a621-acb601da1a10",
+     "ref": "GCE 2023 specimen P2 Q8"
+    },
+    {
+     "id": "8031701c-dd03-407c-9d1d-6cb5bfc4158f",
+     "ref": "GCE 2025 P1 Q20"
+    },
+    {
+     "id": "12a67ec2-8a20-47e4-8921-8a3c5dc320f7",
+     "ref": "GCE 2024 P1 Q21"
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Trigonometry",
+   "target": 9,
+   "accepted": true,
+   "question": {
+    "stem": "A lighthouse, $L$, stands on a small island.\nA ship sails in a straight line on a bearing of $038^\\circ$ at a constant speed of 20 km/h.\nAt 10 00 the ship is at $A$ and $L$ is on a bearing of $062^\\circ$ from the ship.\nAt 10 45 the ship is at $B$ and $L$ is due east of the ship.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Calculate the distance between the ship and $L$ at 10 45.",
+      "marks": 3,
+      "answer": "13.0 km",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "The ship continues on the same course at the same speed.\nFind the time at which the ship is closest to $L$.",
+      "marks": 3,
+      "answer": "11 09",
+      "subparts": []
+     },
+     {
+      "label": "(c)",
+      "text": "At 10 45 a supply boat leaves $L$ and sails in a straight line at a constant speed to meet the ship.\nWhen they meet, the supply boat has sailed the shortest possible distance.",
+      "marks": 3,
+      "answer": "(i) $308^\\circ$ (ii) 25.6 km/h",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "Find the bearing on which the supply boat sails.",
+        "marks": 1,
+        "answer": "$308^\\circ$"
+       },
+       {
+        "label": "(ii)",
+        "text": "Calculate the speed of the supply boat.",
+        "marks": 2,
+        "answer": "25.6 km/h"
+       }
+      ]
+     }
+    ],
+    "answer": "(a) 13.0 km (b) 11 09 (c)(i) $308^\\circ$ (c)(ii) 25.6 km/h",
+    "total_marks": 9,
+    "topics": [
+     "Trigonometry",
+     "Numbers (Speed)"
+    ],
+    "skills": [
+     "interior angles of a triangle from a ship's course and two sightings of one point taken at different times, using the reversed course at the second position and a 'due east' sighting, then the sine rule for a side",
+     "closest approach of a moving ship: the foot of the perpendicular from the fixed point to the course, and the clock time it is reached from the distance along the course",
+     "shortest route to meet a moving ship: sail perpendicular to its course and choose the speed that arrives at the same moment"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) From 10 00 to 10 45 is 45 minutes, so $AB = 20 \\times \\frac{45}{60} = 15$ km.\nAt $A$: angle $LAB = 062^\\circ - 038^\\circ = 24^\\circ$.\nAt $B$: the bearing of $A$ from $B$ is $038^\\circ + 180^\\circ = 218^\\circ$ and $L$ is due east of $B$ (bearing $090^\\circ$), so angle $ABL = 218^\\circ - 90^\\circ = 128^\\circ$.\nAngle $ALB = 180^\\circ - 24^\\circ - 128^\\circ = 28^\\circ$.\nSine rule in triangle $ABL$: $\\frac{BL}{\\sin 24^\\circ} = \\frac{15}{\\sin 28^\\circ}$\n$BL = \\frac{15 \\sin 24^\\circ}{\\sin 28^\\circ} = 12.996 \\ldots = 13.0$ km (3 s.f.)\n(Taking angle $ABL$ as $90^\\circ - 38^\\circ = 52^\\circ$, the angle between the course and $BL$, gives the wrong value $6.29$ km: the angle inside triangle $ABL$ at $B$ is between $BA$ and $BL$.)\n\n(b) The ship is closest to $L$ at the point $X$ on its course where $LX$ is perpendicular to the course.\nAt $B$ the angle between the direction of travel ($038^\\circ$) and $BL$ ($090^\\circ$) is $90^\\circ - 38^\\circ = 52^\\circ$, which is acute, so $X$ lies ahead of $B$ on the course.\nIn the right-angled triangle $BXL$: $BX = BL \\cos 52^\\circ = 12.996 \\times \\cos 52^\\circ = 8.000 \\ldots$ km.\nTime to sail from $B$ to $X$ $= \\frac{8.000}{20} = 0.4000$ h $= 24.0$ minutes.\nThe ship is closest to $L$ at 10 45 + 24 minutes $=$ 11 09.\n\n(c)(i) The shortest distance from $L$ to the ship's course is the perpendicular distance $LX$, so the supply boat sails along $LX$ and meets the ship at $X$ at 11 09.\n$LX$ is perpendicular to the course, so the bearing of $L$ from $X$ is $038^\\circ + 90^\\circ = 128^\\circ$.\nBearing on which the supply boat sails (bearing of $X$ from $L$) $= 128^\\circ + 180^\\circ = 308^\\circ$.\n(Check: the bearing of $B$ from $L$ is $270^\\circ$ and angle $BLX = 90^\\circ - 52^\\circ = 38^\\circ$, so $270^\\circ + 38^\\circ = 308^\\circ$.)\n\n(c)(ii) $LX = BL \\sin 52^\\circ = 12.996 \\times \\sin 52^\\circ = 10.24 \\ldots$ km (or $LX = \\sqrt{BL^2 - BX^2}$).\nThe boat leaves at 10 45 and reaches $X$ at 11 09, so it sails for 24 minutes $= 0.4$ h.\nSpeed $= \\frac{10.24}{0.4} = 25.6$ km/h (3 s.f.)",
+    "syllabus_check": "4052 only: three-figure bearings and back bearings, angle sum of a triangle, sine rule for a side opposite a known angle (no ambiguous case), sine and cosine in a right-angled triangle, and speed-distance-time with times in hours and minutes (Rate and speed). No 3-D work, no radians, no calculus.",
+    "originality_note": "A running fix: a moving ship sights one fixed point on two bearings at two clock times, then the question asks for its closest approach and for a second boat to intercept it. The real GCE bearings questions (GCE 2024 P2 Q5, GCE 2023 P1 Q23, GCE 2017 P2 Q5, GCE 2009 P2 Q8, GCE 2023 specimen P2 Q7, GCE 2016 specimen P2 Q2) fix static points by given sides and ask for a third side, a bearing and an elevation; none has a moving observer, a closest-approach time or an intercept speed. The perpendicular intercept appears only in GCE 2022 P1 Q9(b), measured on a scale drawing to a fixed point; here it is computed and timed against the moving ship. Set 1 had no bearings question; Set 2 P1 Q2 used the sine rule's ambiguous case, which this question does not, and Set 1 P1 Q23(c) found a shortest distance from a triangle's area, whereas here the along-course distance and its time are the point."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 3,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2022 P1 Q9",
+     "jaccard": 0.055,
+     "nearest_set": "Set 2 P1 Q10",
+     "jaccard_set": 0.01,
+     "repeated_skills": []
+    },
+    "marks": 9,
+    "checked_at": "2026-09-23T13:22:50.106Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "13.0 km",
+     "(b)": "11 09",
+     "(c)(i)": "308°",
+     "(c)(ii)": "25.6 km/h"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both 13.0 km. Checked: AB = 20 x 0.75 = 15 km; angle LAB = 24 deg; angle ABL = 218 - 90 = 128 deg (back bearing, not the 52 deg between the course and BL); angle ALB = 28 deg; BL = 15 sin 24 / sin 28 = 12.9956 = 13.0 km. Coordinate check puts L on bearing 062.0 deg from A. The wrong-angle route (52 deg) lands on a believable 6.29 km."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both 11 09. Angle between course 038 and BL 090 is 52 deg (acute, so the foot X of the perpendicular is ahead of B); BX = 12.9956 cos 52 = 8.0009 km; 8.0009/20 h = 24.00 min; 10 45 + 24 min = 11 09. Same answer from A: AX = AL cos 24 = 23.00 km, 69.0 min after 10 00. Robust to using 13.0 (24.01 min)."
+     },
+     {
+      "label": "(c)(i)",
+      "agree": true,
+      "note": "Both 308 deg. The nearest point of the ship's remaining course to L is X (ahead of B), so the boat sails along LX, perpendicular to 038: bearing of X from L = 038 + 270 = 308 deg (or 270 + 38). Coordinate check gives 308.0 deg."
+     },
+     {
+      "label": "(c)(ii)",
+      "agree": true,
+      "note": "Both 25.6 km/h. LX = 12.9956 sin 52 = 10.241 km; the boat must reach X when the ship does, 11 09, so it sails 24 min = 0.4 h; 10.241/0.4 = 25.6 km/h (25.599 unrounded; 25.6 from 13.0 too)."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part (13.0 km, 11 09, 308 deg, 25.6 km/h), and my own working, including a coordinate check, confirms all four.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Reword the (c) stem into SEAB's register (GCE 2022 P1 Q9(b)): 'At 10 45 a supply boat leaves L and sails in a straight line at a constant speed to meet the ship. When they meet, the supply boat has sailed the shortest possible distance.' The current 'The supply boat sails as short a distance as possible' reads as school-made."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A clean running-fix bearings question in which every part hands the candidate a decision: (a) the interior angle at B from the back bearing, with a tempting 6.29 km if they take 52 deg instead; (b) closest approach as the foot of the perpendicular, timed from the along-course distance; (c) the perpendicular intercept with its speed set by the ship's arrival time. The context carries all the information, the numbers come out tidy (15 km, 8.00 km, 24 min, 11 09), and the demand for 9 marks matches Set 1 P2 Q5 and GCE 2024 P2 Q5 without re-skinning either. No earlier Set asks a moving-observer or closest-approach question.",
+    "session_note": "23 Sep: polish: fix 1 ((c) wording in SEAB register). Answers unchanged; gates re-run."
+   },
+   "exemplars": [
+    {
+     "id": "f05ebc88-2a20-4bba-bce3-60d467a1a143",
+     "ref": "GCE 2024 P2 Q5"
+    },
+    {
+     "id": "31161f93-9f37-4d87-98f6-936f47b32fbf",
+     "ref": "GCE 2023 P2 Q5"
+    },
+    {
+     "id": "75dafe53-e059-4b92-bfec-a91415dcf017",
+     "ref": "GCE 2023 specimen P2 Q7"
+    },
+    {
+     "id": "a2a3dab5-c1ec-4b59-a621-acb601da1a10",
+     "ref": "GCE 2023 specimen P2 Q8"
+    },
+    {
+     "id": "cfef0bfa-8b24-41d9-95f9-6def72828472",
+     "ref": "GCE 2025 P2 Q4"
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Algebra (Graph on Graph Paper)",
+   "target": 11,
+   "accepted": true,
+   "question": {
+    "stem": "",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "",
+      "marks": 4,
+      "answer": "(i) 5.8; (ii) smooth curve through the 11 plotted points",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "Complete the table of values for $y = \\frac{x^3}{2} - 3x^2 + 4x + 3$.\nValues are given to 1 decimal place where appropriate.\n$\\begin{array}{|c|c|c|c|c|c|c|c|c|c|c|c|} \\hline x & 0 & 0.5 & 1 & 1.5 & 2 & 2.5 & 3 & 3.5 & 4 & 4.5 & 5 \\\\ \\hline y & 3 & 4.3 & 4.5 & 3.9 & 3 & 2.1 & 1.5 & 1.7 & 3 & & 10.5 \\\\ \\hline \\end{array}$",
+        "marks": 1,
+        "answer": "$5.8$"
+       },
+       {
+        "label": "(ii)",
+        "text": "On the grid, draw the graph of $y = \\frac{x^3}{2} - 3x^2 + 4x + 3$ for $0 \\le x \\le 5$.",
+        "marks": 3,
+        "answer": "Smooth curve through $(0, 3)$, $(0.5, 4.3)$, $(1, 4.5)$, $(1.5, 3.9)$, $(2, 3)$, $(2.5, 2.1)$, $(3, 1.5)$, $(3.5, 1.7)$, $(4, 3)$, $(4.5, 5.8)$, $(5, 10.5)$, with a maximum of about $4.5$ near $x = 0.8$ and a minimum of about $1.5$ near $x = 3.2$"
+       }
+      ]
+     },
+     {
+      "label": "(b)",
+      "text": "By drawing a suitable straight line on the grid, solve the inequality $x^3 + 6x + 4 > 6x^2$ for $0 \\le x \\le 5$.",
+      "marks": 3,
+      "answer": "Line $y = x + 1$; $0 \\le x < 2$ or $4.45 < x \\le 5$ (accept $4.4$ to $4.5$)"
+     },
+     {
+      "label": "(c)",
+      "text": "",
+      "marks": 4,
+      "answer": "(i) $3 \\le k < 4.5$; (ii) $0 \\le p < 3.1$",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "Use your graph to find the range of values of $k$ for which the equation $\\frac{x^3}{2} - 3x^2 + 4x + 3 = k$ has three solutions for $0 \\le x \\le 5$.",
+        "marks": 2,
+        "answer": "$3 \\le k < 4.5$ (upper bound read from the graph: accept $4.5$ to $4.6$)"
+       },
+       {
+        "label": "(ii)",
+        "text": "Hence find the range of values of $p$ for which the equation $x^3 - 6x^2 + 8x = p$ has three solutions for $0 \\le x \\le 5$.",
+        "marks": 2,
+        "answer": "$0 \\le p < 3.1$ (upper bound $= 2 \\times$ their upper bound in (c)(i) $- 6$: accept $3.0$ to $3.2$)"
+       }
+      ]
+     }
+    ],
+    "answer": "(a)(i) $5.8$ (a)(ii) curve drawn (b) $0 \\le x < 2$ or $4.45 < x \\le 5$ (c)(i) $3 \\le k < 4.5$ (c)(ii) $0 \\le p < 3.1$",
+    "total_marks": 11,
+    "topics": [
+     "Algebra (Graph on Graph Paper)",
+     "Graphs of Functions"
+    ],
+    "skills": [
+     "solve a cubic inequality graphically by halving it and moving terms so that it reads curve > line ($y = x + 1$), giving a solution set of two separate intervals",
+     "range of k for which a horizontal line meets the drawn cubic three times within the drawn domain, the lower bound fixed by the curve's value at the end point x = 0 rather than by the minimum turning value",
+     "carry that range over to a related cubic equation (x^3 - 6x^2 + 8x = p, so p = 2k - 6)"
+    ],
+    "needs_figure": true,
+    "figure_description": "A BLANK sheet of graph paper for the candidate to draw on, printed immediately after the text of part (a)(ii) and before part (b). Horizontal axis labelled x, from 0 to 5, scale 2 cm to 1 unit, labelled at 0, 1, 2, 3, 4, 5. Vertical axis labelled y, from 0 to 11, scale 1 cm to 1 unit, labelled at every whole number 0 to 11. Origin at the bottom-left corner of the grid. 2 mm minor squares and 1 cm major squares. Nothing else is printed on the grid: no curve, no plotted points, no straight lines, no equation, no shading.",
+    "solution": "(a)(i) When $x = 4.5$: $y = \\frac{4.5^3}{2} - 3(4.5)^2 + 4(4.5) + 3 = 45.5625 - 60.75 + 18 + 3 = 5.8125 = 5.8$ (1 d.p.). [B1]\n\n(a)(ii) Plot the 11 points $(0, 3)$, $(0.5, 4.3)$, $(1, 4.5)$, $(1.5, 3.9)$, $(2, 3)$, $(2.5, 2.1)$, $(3, 1.5)$, $(3.5, 1.7)$, $(4, 3)$, $(4.5, 5.8)$, $(5, 10.5)$ using 2 cm to 1 unit on the $x$-axis and 1 cm to 1 unit on the $y$-axis, and join them with a smooth curve. The curve rises to a maximum of about $4.5$ (between $x = 0.5$ and $x = 1$), falls to a minimum of about $1.5$ (just after $x = 3$), then rises steeply to $10.5$ at $x = 5$. [P2 for all 11 points correctly plotted (P1 for at least 9), C1 for a smooth curve through them]\n\n(b) Rearrange so that one side is the curve that has been drawn.\n$x^3 + 6x + 4 > 6x^2$\n$x^3 - 6x^2 + 6x + 4 > 0$\nDivide by 2: $\\frac{x^3}{2} - 3x^2 + 3x + 2 > 0$\nAdd $x + 1$ to both sides: $\\frac{x^3}{2} - 3x^2 + 4x + 3 > x + 1$.\nSo draw the line $y = x + 1$ (through $(0, 1)$, $(2, 3)$ and $(5, 6)$) and find where the curve is ABOVE the line. [B1 for $y = x + 1$]\nThe line meets the curve at $x = 2$ (the point $(2, 3)$) and at $x \\approx 4.45$. [B1 for both $x$-values read, accept $4.4$ to $4.5$]\nAt $x = 0$ the curve ($y = 3$) is above the line ($y = 1$); between $x = 2$ and $x = 4.45$ the curve is below the line (e.g. at $x = 3$: $1.5 < 4$); after $x = 4.45$ it is above again (at $x = 5$: $10.5 > 6$).\nSolution: $0 \\le x < 2$ or $4.45 < x \\le 5$. [A1, both intervals]\n(Check: $x^3 - 6x^2 + 6x + 4 = (x - 2)(x^2 - 4x - 2)$, roots $x = 2$ and $x = 2 \\pm \\sqrt{6}$, i.e. $4.449$ and $-0.449$; the root $-0.449$ is outside $0 \\le x \\le 5$.)\nTempting wrong answers: $2 < x < 4.45$ (the region where the curve is below the line) or $x > 4.45$ only (missing the interval that starts at the end point $x = 0$).\n\n(c)(i) The solutions of $\\frac{x^3}{2} - 3x^2 + 4x + 3 = k$ are the $x$-coordinates of the points where the horizontal line $y = k$ meets the curve, and only the part of the curve for $0 \\le x \\le 5$ counts.\nThe line $y = k$ meets the drawn curve three times only while it cuts all three sections of the curve: the section from $(0, 3)$ up to the maximum, the section from the maximum down to the minimum, and the section from the minimum up to $(5, 10.5)$.\nThe first section only covers $3 \\le y \\le 4.5$, because the curve starts at $y = 3$ when $x = 0$.\nSo $3 \\le k < 4.5$ (maximum read from the graph, accept $4.5$ to $4.6$). [B1 lower bound 3 (condone $<$), B1 upper bound with $<$]\nAt $k = 3$ there are exactly three solutions, $x = 0$, $2$ and $4$; for $k$ just below 3 the line meets the curve only twice, and at $k = 4.5$ (the maximum) only twice.\nTempting wrong answer: $1.5 < k < 4.5$, from the two turning values, ignoring that the curve begins at $y = 3$.\n\n(c)(ii) $x^3 - 6x^2 + 8x = p$\nDivide by 2: $\\frac{x^3}{2} - 3x^2 + 4x = \\frac{p}{2}$\nAdd 3: $\\frac{x^3}{2} - 3x^2 + 4x + 3 = \\frac{p}{2} + 3$.\nSo this is the equation of (c)(i) with $k = \\frac{p}{2} + 3$, i.e. $p = 2k - 6$. [M1]\n$3 \\le k < 4.5$ gives $2(3) - 6 \\le p < 2(4.5) - 6$, so $0 \\le p < 3.1$ (accept $3.0$ to $3.2$ from the maximum read in (c)(i); exact value $3.08$). [A1]\n(Check: $p = 0$ gives $x(x - 2)(x - 4) = 0$, which has exactly the three solutions $0$, $2$ and $4$ in the range.)\nTempting wrong answer: $-3 < p < 3$, from the turning values $1.5$ and $4.5$.",
+    "syllabus_check": "4052 Functions and graphs: graph of a cubic function drawn from a table of values on a grid, and solving an equation or inequality by drawing a suitable straight line on the same grid (as GCE 2024 P2 Q4 and GCE 2025 P1 Q26). Reading the number of solutions of f(x) = k from where a horizontal line meets the drawn curve uses only the graph; no calculus is needed or expected (the turning values are read from the curve). Transferring the result to x^3 - 6x^2 + 8x = p is a linear rearrangement (algebraic manipulation). Nothing outside 4052.",
+    "originality_note": "Set 1 P2 Q3 drew y = x/2 + 6/x (a reciprocal-plus-linear curve), estimated a gradient by a tangent at the point where y = 4.5 and drew a line to solve a quadratic EQUATION; Set 1 P2 Q4 was exponentials. This question uses a positive cubic, asks for no tangent, and replaces 'solve the equation' with a scattered cubic INEQUALITY whose answer is two intervals, then asks how many times a horizontal line meets the curve inside the drawn domain (the end point, not the turning point, fixes the lower bound) and carries that range to a second cubic. It differs from GCE 2024 P2 Q4 (negative cubic, 'explain why only one solution', line solves an equation), GCE 2025 P1 Q26 (pre-drawn negative cubic, inequality only), GCE 2023 P2 Q4 (reciprocal-square curve, find A and B from a drawn line) and GCE 2019 P2 Q4 (read y > 4 directly, show that a line gives a cubic). No earlier Set has asked a number-of-solutions range or an inequality solved by drawing a line."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 4,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2024 P2 Q4",
+     "jaccard": 0.162,
+     "nearest_set": "Set 1 P2 Q3",
+     "jaccard_set": 0.223,
+     "repeated_skills": []
+    },
+    "marks": 11,
+    "checked_at": "2026-09-23T13:10:20.291Z",
+    "rounds": 1
+   },
+   "blind": {
+    "answers": {
+     "(a)(i)": "y = 5.8 when x = 4.5",
+     "(a)(ii)": "Smooth cubic curve through the 11 plotted points (0,3), (0.5,4.3), (1,4.5), (1.5,3.9), (2,3), (2.5,2.1), (3,1.5), (3.5,1.7), (4,3), (4.5,5.8), (5,10.5); maximum near (0.85, 4.54), minimum near (3.15, 1.46)",
+     "(b)": "Draw y = x + 1; 0 <= x < 2 or 4.45 < x <= 5 (graph reading 4.4 to 4.5; exact 2 + sqrt(6))",
+     "(c)(i)": "3 <= k < 4.54 (graph reading about 4.5; exact 3 + 8*sqrt(3)/9)",
+     "(c)(ii)": "0 <= p < 3.08 (p = 2k - 6; graph reading about 3.0 to 3.1; exact 16*sqrt(3)/9)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)(i)",
+      "agree": true,
+      "note": "Both 5.8 (4.5^3/2 - 3(4.5)^2 + 18 + 3 = 5.8125). Every printed table value checked: 3, 4.3125, 4.5, 3.9375, 3, 2.0625, 1.5, 1.6875, 3, 10.5 all round correctly."
+     },
+     {
+      "label": "(a)(ii)",
+      "agree": true,
+      "note": "Same 11 points; turning points at x = 2 +/- 2/sqrt3 (0.845, 3.155), y = 3 +/- 8sqrt3/9 = 4.54 and 1.46. The blank grid (x 2 cm/unit to 5, y 1 cm/unit to 11) holds every point and the line y = x + 1."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both draw y = x + 1 and give 0 <= x < 2 or 4.45 < x <= 5. Checked: x^3 - 6x^2 + 6x + 4 = (x - 2)(x^2 - 4x - 2), roots 2 and 2 + sqrt6 = 4.449 (2 - sqrt6 outside the domain); sign positive at 0, negative on (2, 4.449), positive after."
+     },
+     {
+      "label": "(c)(i)",
+      "agree": true,
+      "note": "Setter 3 <= k < 4.5 (accept 4.5 to 4.6); blind 3 <= k < 4.54. Same answer, graph-read upper bound. At k = 3 the roots are 0, 2, 4 (three, x = 0 inside the domain); at k = local max only two."
+     },
+     {
+      "label": "(c)(ii)",
+      "agree": true,
+      "note": "Both use p = 2k - 6: setter 0 <= p < 3.1 (accept 3.0 to 3.2), blind 0 <= p < 3.08 = 16sqrt3/9. Same answer; p = 0 gives x(x - 2)(x - 4) = 0, three roots in range."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on every part, and my own working (factorisation, exact turning values 3 +/- 8sqrt3/9, bound 16sqrt3/9 = 3.08) confirms the key and its tolerances.",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A clean SEAB graph question: after the routine table [1] and plot [3], the idea-bearing parts carry 7 of 11 marks — the halve-and-add rearrangement to curve > line with a two-interval answer including the end interval (the 2025 P1 Q26 inequality twist, not the 2024 P2 Q4 equation), the endpoint-fixed lower bound for three roots with a believable wrong answer (1.5 < k < 4.5, then -3 < p < 3), and the p = 2k - 6 transfer; numbers are exam-clean (y = 3 at x = 0, 2, 4, the line through the plotted point (2, 3)). It is more demanding per mark than Set 1 P2 Q3 [9] (table, plot, tangent, line for an equation) and shares no skill sequence with it beyond the universal table/plot opener; nothing else in this paper or earlier Sets tests graphical inequalities or root-counting ranges."
+   },
+   "exemplars": [
+    {
+     "id": "6399e899-8387-4772-9ec9-f002ce7269df",
+     "ref": "GCE 2024 P2 Q4"
+    },
+    {
+     "id": "d24f5978-7a46-45e7-898f-d4fbe92dcb11",
+     "ref": "GCE 2023 P2 Q4"
+    },
+    {
+     "id": "fcd01980-8713-45e7-968e-fb68eae226c0",
+     "ref": "GCE 2025 P1 Q26"
+    },
+    {
+     "id": "cc18bc30-7197-4cb9-bd57-e60e15415dc6",
+     "ref": "GCE 2021 P2 Q3"
+    },
+    {
+     "id": "4b0b299a-7e4f-4aa2-a591-1de8da008951",
+     "ref": "GCE 2019 P2 Q4"
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Circle Properties",
+   "target": 9,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram shows a circle, centre $O$.\n$A$, $B$, $C$ and $D$ are points on the circle.\n$AC$ bisects angle $BAD$.\nThe tangent to the circle at $C$ meets $AD$ produced at $E$.\nAngle $ABD = 40^\\circ$ and angle $BDC = 34^\\circ$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that triangle $BCD$ is isosceles.\nGive a reason for each statement you make.",
+      "marks": 2,
+      "answer": "Angle $BAC$ = angle $BDC = 34^\\circ$ (angles in the same segment); angle $CAD$ = angle $BAC = 34^\\circ$ ($AC$ bisects angle $BAD$); angle $CBD$ = angle $CAD = 34^\\circ$ (angles in the same segment). So angle $CBD$ = angle $CDB$ and triangle $BCD$ is isosceles ($CB = CD$)."
+     },
+     {
+      "label": "(b)",
+      "text": "$BD = 12$ cm.\nCalculate the area of quadrilateral $OBCD$.",
+      "marks": 4,
+      "answer": "$38.8$ cm$^2$"
+     },
+     {
+      "label": "(c)",
+      "text": "Find angle $AEC$.\nGive a reason for each step of your working.",
+      "marks": 3,
+      "answer": "$72^\\circ$"
+     }
+    ],
+    "answer": "(a) Proof: angle $CBD$ = angle $CAD$ = angle $BAC$ = angle $BDC = 34^\\circ$, so triangle $BCD$ is isosceles. (b) $38.8$ cm$^2$. (c) $72^\\circ$.",
+    "total_marks": 9,
+    "topics": [
+     "Circle Properties",
+     "Trigonometry"
+    ],
+    "skills": [
+     "prove the triangle opposite a bisected angle of a cyclic quadrilateral is isosceles by pairing angles in the same segment with the bisector",
+     "radius from a chord and the angle it subtends at the circumference (angle at the centre, perpendicular from the centre), then the area of the kite of radii OBCD, with no radius given",
+     "angle between the tangent at C and AD produced, linking the tangent to the angles inside the circle through tangent perpendicular to radius (OC perpendicular to BD from part (a), or the isosceles triangle OCD)"
+    ],
+    "needs_figure": true,
+    "figure_description": "A circle with centre O, shown as a small dot labelled O. NO radii are drawn (do not draw OA, OB, OC or OD). Four points on the circumference, labelled just outside the circle, placed at these positions about O (angles measured anticlockwise from the positive x-direction): A at 83 degrees (top, slightly right of the vertical), B at 227 degrees (lower left), C at 295 degrees (bottom right), D at 3 degrees (right). With O at the origin and the radius as 1 unit, the coordinates are A (0.122, 0.993), B (-0.682, -0.731), C (0.423, -0.906), D (0.999, 0.052). Draw as solid straight lines the four sides AB, BC, CD and DA of quadrilateral ABCD and both diagonals AC and BD. Extend AD beyond D as a solid straight line to the point E (1.447, -0.429), labelled E. Draw the tangent to the circle at C as a solid straight line from a point about 0.3 units beyond C on the lower-left side, through C, to E (E lies on this tangent, outside the circle, to the right of D and below it). Mark the angle at B between BA and BD with a small arc labelled 40 degrees, and the angle at D between DB and DC with a small arc labelled 34 degrees. Mark NOTHING else: no other angle values (in particular do not mark angle AEC, angle ADB, angle BAD or its halves), no equal-angle marks at A, no right-angle marks, no parallel-line arrows, no lengths (do not write 12 cm on BD).",
+    "solution": "(a)\nAngle $BAC$ = angle $BDC = 34^\\circ$ (angles in the same segment, on chord $BC$).\nAngle $CAD$ = angle $BAC = 34^\\circ$ ($AC$ bisects angle $BAD$).\nAngle $CBD$ = angle $CAD = 34^\\circ$ (angles in the same segment, on chord $CD$).\nSo angle $CBD$ = angle $CDB = 34^\\circ$, and triangle $BCD$ is isosceles with $CB = CD$ (base angles equal).\n\n(b)\nAngle $BAD = 34^\\circ + 34^\\circ = 68^\\circ$.\nAngle $BOD = 2 \\times 68^\\circ = 136^\\circ$ (angle at the centre is twice the angle at the circumference).\n$OB = OD$ (radii), so the perpendicular from $O$ to $BD$ meets $BD$ at its midpoint $M$ and bisects angle $BOD$: $BM = 6$ cm and angle $BOM = 68^\\circ$.\nRadius $r = OB = \\frac{6}{\\sin 68^\\circ} = 6.4712$ cm.\n(Or: in isosceles triangle $OBD$, angle $OBD = \\frac{180^\\circ - 136^\\circ}{2} = 22^\\circ$, and $\\frac{r}{\\sin 22^\\circ} = \\frac{12}{\\sin 136^\\circ}$ gives $r = 6.4712$ cm.)\nAngle $BOC = 2 \\times$ angle $BAC = 68^\\circ$ and angle $COD = 2 \\times$ angle $CAD = 68^\\circ$ (angle at the centre).\nArea of $OBCD$ = area of triangle $OBC$ + area of triangle $OCD$\n$= 2 \\times \\frac{1}{2} \\times 6.4712^2 \\times \\sin 68^\\circ$\n$= 38.827$\n$= 38.8$ cm$^2$ (3 s.f.).\n(Check: $OC$ is perpendicular to $BD$ (see (c)), so area $= \\frac{1}{2} \\times OC \\times BD = \\frac{1}{2} \\times 6.4712 \\times 12 = 38.8$ cm$^2$; or area $BCD$ + area $OBD = \\frac{1}{2} \\times 7.2373^2 \\times \\sin 112^\\circ + \\frac{1}{2} \\times 6.4712^2 \\times \\sin 136^\\circ = 24.282 + 14.545 = 38.8$ cm$^2$, with $CB = \\frac{6}{\\cos 34^\\circ} = 7.2373$ cm.)\nTempting errors: treating $BD$ as a diameter ($r = 6$, area $33.4$ cm$^2$), or taking angle $BOD = 2 \\times 34^\\circ$ ($r = 10.7$ cm).\n\n(c)\nMethod 1:\n$CB = CD$ (part (a)) and $OB = OD$ (radii), so $C$ and $O$ both lie on the perpendicular bisector of the chord $BD$ (the perpendicular bisector of a chord passes through the centre). Hence $OC$ is perpendicular to $BD$.\nAngle $OCE = 90^\\circ$ (tangent is perpendicular to the radius).\nSo $CE$ is parallel to $BD$ (both are perpendicular to $OC$).\nAngle $ADB = 180^\\circ - 68^\\circ - 40^\\circ = 72^\\circ$ (angle sum of triangle $ABD$).\nAngle $AEC$ = angle $ADB = 72^\\circ$ (corresponding angles, $EC$ parallel to $DB$).\nMethod 2:\nAngle $COD = 2 \\times$ angle $CBD = 68^\\circ$ (angle at the centre); angle $OCD = \\frac{180^\\circ - 68^\\circ}{2} = 56^\\circ$ (base angles of isosceles triangle $OCD$).\nAngle $DCE = 90^\\circ - 56^\\circ = 34^\\circ$ (tangent is perpendicular to the radius).\nAngle $ABC = 40^\\circ + 34^\\circ = 74^\\circ$, so angle $ADC = 180^\\circ - 74^\\circ = 106^\\circ$ (angles in opposite segments are supplementary).\nAngle $CDE = 180^\\circ - 106^\\circ = 74^\\circ$ (adjacent angles on a straight line).\nAngle $AEC = 180^\\circ - 34^\\circ - 74^\\circ = 72^\\circ$ (angle sum of triangle $CDE$).\n\nMark scheme: (a) B1 one same-segment pair with reason; B1 the bisector step and the conclusion $CBD = CDB$. (b) M1 angle $BOD = 136^\\circ$ or angle $BOC = 68^\\circ$; M1 $r = \\frac{6}{\\sin 68^\\circ}$ or equivalent; M1 area as $2 \\times \\frac{1}{2} r^2 \\sin 68^\\circ$ or $\\frac{1}{2} \\times r \\times 12$ or equivalent; A1 $38.8$. (c) B1 angle $DCE = 34^\\circ$, or $CE \\parallel BD$, with correct reason(s); B1 angle $CDE = 74^\\circ$ (angles in opposite segments are supplementary, or exterior angle of a cyclic quadrilateral, with adjacent angles on a straight line) or angle $ADB = 72^\\circ$ (angle sum of triangle $ABD$); B1 $72^\\circ$ with the final reason.\nNote on (c): angle $DCE$ = angle $CAD = 34^\\circ$ (alternate segment theorem / tangent-chord theorem) is accepted: it is a valid theorem, although not required by 4052. Any valid route with a reason at each step scores 3/3.",
+    "syllabus_check": "4052 properties of circles only: angles in the same segment, angle at the centre is twice the angle at the circumference, the perpendicular bisector of a chord passes through the centre (perpendicular from the centre bisects the chord), tangent perpendicular to radius, angles in opposite segments are supplementary (Method 2 of (c)); trigonometry of right-angled triangles and area of a triangle as $\\frac{1}{2}ab\\sin C$ (sine rule optional); corresponding angles and angle sum of a triangle. No alternate segment theorem is required (a candidate who uses it for angle $DCE = 34^\\circ$ still reaches $72^\\circ$), no radians, no arc or sector work, no part of 5 or more marks.",
+    "originality_note": "New configuration: a diagonal that bisects an angle of a cyclic quadrilateral, so the opposite vertex is the midpoint of its arc (isosceles triangle, kite of radii, tangent parallel to the chord). Earlier Sets tested angles in the same segment only as a 2-mark numeric chase at a chord intersection (Set 1 P1 Q9), equal tangents and an incircle (Set 1 P2 Q5), the angle in a semicircle by construction (Set 2 P1 Q7) and, in Set 2 P1 Q13, a tangent where the angle at the external point is GIVEN and angles inside are found; here the angle at the external point is FOUND, most directly through the parallel the arc midpoint forces. The radius is recovered from a chord and an angle at the circumference through the angle at the centre (Set 1 P2 Q8 found a radius from a chord and a height by Pythagoras), and the paper's opposite-segments property appears for the first time across the Sets. Not a re-skin of GCE 2024 P2 Q8(a) (equal chords, midpoints, RHS congruence), GCE 2003 P2 Q5 (parallel chords, isosceles triangle at the chord intersection) or GCE 2005 P2 Q3 (a bisector with a diameter)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 5,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2023 P2 Q5",
+     "jaccard": 0.13,
+     "nearest_set": "Set 1 P1 Q9",
+     "jaccard_set": 0.126,
+     "repeated_skills": []
+    },
+    "marks": 9,
+    "checked_at": "2026-09-23T13:23:29.114Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown — angle BAC = angle BDC = 34° (angles in the same segment); angle CAD = angle BAC = 34° (AC bisects angle BAD); angle CBD = angle CAD = 34° (angles in the same segment); so angle CBD = angle CDB = 34°, base angles equal, hence triangle BCD is isosceles (CB = CD)",
+     "(b)": "38.8 cm² (angle BOD = 2 × 68° = 136°, r = 6/sin 68° = 6.471 cm; OBCD is a kite with OC ⊥ BD, area = ½ × OC × BD = 6r = 38.83 cm²; equivalently 14.54 + 24.28)",
+     "(c)": "72° (angle DCE = angle CAD = 34°, alternate segment theorem; angle CDE = angle ABC = 40° + 34° = 74°, exterior angle of cyclic quadrilateral; angle AEC = 180° − 74° − 34° = 72°, angle sum of triangle)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Identical chain on both sides: BAC = BDC = 34 deg (same segment, chord BC), CAD = BAC (bisector), CBD = CAD (same segment, chord CD), so CBD = CDB. Checked on the figure coordinates: A and D lie in the major segment on BC, A and B in the major segment on CD, so both same-segment steps are valid. A true show-that that gates (b) (kite of radii) and (c) (OC perpendicular to BD)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "38.8 cm^2 both. Worked independently: angle BAD = 68 deg, angle BOD = 136 deg, r = 6/sin 68 deg = 6.4712 cm, area = 6r = 38.827 cm^2 (= 2 x 1/2 r^2 sin 68 deg). Tempting wrong answers land on believable numbers: BD taken as a diameter gives 33.4 (or 36), angle BOD taken as 68 deg gives r = 10.7 and 64.4. One idea (radius from a chord and an angle at the circumference via the angle at the centre) plus routine: at standard for 4."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "72 deg both; confirmed by coordinates (E = (1.447, -0.429), angle AEC = 72.0, DCE = 34.0, CDE = 74.0). The KEY's own routes stay inside 4052: Method 1 uses the perpendicular bisector of a chord through the centre, tangent perpendicular to radius and corresponding angles; Method 2 uses angle at the centre, isosceles triangle of radii, tangent perpendicular to radius, opposite angles of a cyclic quadrilateral. The blind examiner's route used the alternate segment theorem (DCE = CAD = 34 deg), which is 4049's tangent-chord theorem, NOT on 4052; it is a true theorem and must be credited (see fixes), but the published solution must not rely on it, and it does not. Variety note, not a repeat: Method 2 is Set 2 P1 Q13's tangent-meets-a-produced-chord chase run in reverse (angle at the external point found, not given), which the variety rule allows; Method 1 (tangent at the arc midpoint parallel to the chord) is new to the Sets."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part ((a) shown, (b) 38.8 cm^2, (c) 72 deg), and I confirmed each independently, by the angle chase, r = 6/sin 68 deg and coordinates of E.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Mark scheme for (c) must be route-neutral, because as written it gives a fully correct alternate-segment solution only 2/3 (its first B1 demands 'OC perpendicular to BD or angle OCD = 56 deg', which that route never needs). Rewrite: B1 angle DCE = 34 deg, or CE parallel to BD, with correct reason(s); B1 angle CDE = 74 deg (opposite angles of a cyclic quadrilateral / exterior angle of a cyclic quadrilateral, with adjacent angles on a straight line) or angle ADB = 72 deg (angle sum of triangle ABD); B1 72 deg with the final reason. Add the note: 'angle DCE = angle CAD = 34 deg (alternate segment theorem / tangent-chord theorem) is accepted: it is a valid theorem, although not required by 4052; any valid route with a reason at each step scores 3/3.' Keep the published worked solution on the two 4052 routes it already gives.",
+     "Stem, light edit to SEAB register: replace 'The diagonal AC of the quadrilateral ABCD bisects angle BAD.' with 'AC bisects angle BAD.' (the quadrilateral is never needed by name; SEAB writes the bare fact).",
+     "The third named skill claims the parallel-tangent property is what (c) tests, but the question does not force that route (Method 2 and the alternate segment shortcut both avoid it). Rephrase to what every route needs: 'angle between the tangent at C and AD produced, linking the tangent to the angles inside the circle through tangent perpendicular to radius (OC perpendicular to BD from part (a), or the isosceles triangle OCD)'."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A clean, well-built circle question in which one object (C as the midpoint of arc BD) threads all three parts: a true 2-mark proof that gates the kite in (b) and the perpendicular in (c), a 4-mark radius-from-chord area with believable wrong answers, and a 3-mark tangent angle; each part carries one idea, the numbers are exact, and it stands level with Set 1 P2 Q5 for its 9 marks. It needs only a route-neutral mark scheme for (c) that credits the alternate-segment route, and a register trim in the stem.",
+    "session_note": "23 Sep: polish: fixes 1 (route-neutral mark scheme for (c), alternate segment route accepted), 2 (stem wording) and 3 (skills phrase 3). Worked solution keeps its 4052 routes; answers and figure unchanged."
+   },
+   "exemplars": [
+    {
+     "id": "a9e6865e-701c-42d8-bc1a-5389402f77eb",
+     "ref": "GCE 2023 specimen P2 Q5"
+    },
+    {
+     "id": "20345f91-46c3-4357-87da-d90b830bb060",
+     "ref": "GCE 2024 P2 Q8"
+    },
+    {
+     "id": "9754f1ff-ccbc-4001-9208-38b9b5e75b86",
+     "ref": "GCE 2025 P1 Q16"
+    },
+    {
+     "id": "b7eb639e-49a4-4868-9de3-6ab2cb96f68d",
+     "ref": "GCE 2024 P1 Q13"
+    },
+    {
+     "id": "2e22e4f7-084e-4617-8a86-1e5d40e25537",
+     "ref": "GCE 2023 specimen P1 Q20"
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Coordinate Geometry",
+   "target": 11,
+   "accepted": true,
+   "question": {
+    "stem": "$A$ is the point $(-3, 2)$, $B$ is the point $(0, -2)$ and $C$ is the point $(5, -2)$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Calculate angle $ABC$.",
+      "marks": 2,
+      "answer": "$126.9^\\circ$"
+     },
+     {
+      "label": "(b)",
+      "text": "The point $D$ lies on the line $y = x + 2$ and is the same distance from $A$ as it is from $C$.\nFind the coordinates of $D$.",
+      "marks": 3,
+      "answer": "$(4, 6)$"
+     },
+     {
+      "label": "(c)",
+      "text": "Explain why $ABCD$ has exactly one line of symmetry, and find the equation of this line.",
+      "marks": 3,
+      "answer": "$BA = BC = 5$ and $DA = DC = \\sqrt{65}$, but $AB \\ne AD$, so $ABCD$ is a kite and not a rhombus; its only line of symmetry is the diagonal $BD$, $y = 2x - 2$"
+     },
+     {
+      "label": "(d)",
+      "text": "The point $P$ lies on $BD$.\nThe area of the quadrilateral $ABCP$ is $30$ units$^2$.\nFind the coordinates of $P$.",
+      "marks": 3,
+      "answer": "$(3, 4)$"
+     }
+    ],
+    "answer": "(a) $126.9^\\circ$  (b) $(4, 6)$  (c) $BA = BC = 5$, $DA = DC = \\sqrt{65}$, $AB \\ne AD$: a kite, not a rhombus, so the only line of symmetry is $BD$; $y = 2x - 2$  (d) $(3, 4)$",
+    "total_marks": 11,
+    "topics": [
+     "Coordinate Geometry",
+     "Polygons",
+     "Trigonometry"
+    ],
+    "skills": [
+     "obtuse angle at a vertex between a horizontal side and a slanted side from coordinates: 180 degrees - tan^-1(4/3) or the cosine rule (trap: the acute 53.1 degrees)",
+     "point on a given line equidistant from two points: equate the two squared lengths so the squared terms cancel to a linear equation",
+     "explain from its side lengths why a quadrilateral has exactly one line of symmetry (a kite, not a rhombus: BA = BC, DA = DC, AB != AD, so the axis is BD, not AC) and find the equation of that diagonal",
+     "locate a point on the axis of symmetry from the area of a symmetric quadrilateral: area ABCP = 2 x area BCP on the horizontal base BC (or BP : BD = 30 : 40)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) $BC$ lies along the line $y = -2$. Let $F$ be the point $(-3, -2)$, directly below $A$, on the line $CB$ produced.\nIn the right-angled triangle $ABF$, $AF = 2 - (-2) = 4$ and $BF = 0 - (-3) = 3$.\n$\\tan \\angle ABF = \\frac{4}{3}$, so $\\angle ABF = 53.13^\\circ$.\n$F$ and $C$ lie on opposite sides of $B$ on the line $y = -2$, so angle $ABC = 180^\\circ - 53.13^\\circ = 126.87^\\circ = 126.9^\\circ$ (1 d.p.).\n[Alternative: $AB = \\sqrt{3^2 + 4^2} = 5$, $BC = 5$, $AC^2 = 8^2 + 4^2 = 80$; $\\cos ABC = \\frac{25 + 25 - 80}{2 \\times 5 \\times 5} = -0.6$, angle $ABC = 126.9^\\circ$.]\nM1 for $\\tan^{-1}\\frac{4}{3}$ (or the cosine rule with $AC^2 = 80$), A1 $126.9^\\circ$. The tempting wrong answer is the acute angle $53.1^\\circ$.\n\n(b) $D$ lies on $y = x + 2$, so let $D$ be $(d, d + 2)$.\n$DA^2 = (d + 3)^2 + (d + 2 - 2)^2 = (d + 3)^2 + d^2$\n$DC^2 = (d - 5)^2 + (d + 2 + 2)^2 = (d - 5)^2 + (d + 4)^2$\n$DA = DC$ gives $(d + 3)^2 + d^2 = (d - 5)^2 + (d + 4)^2$\n$d^2 + 6d + 9 + d^2 = d^2 - 10d + 25 + d^2 + 8d + 16$\n$6d + 9 = -2d + 41$\n$8d = 32$, so $d = 4$.\n$D = (4, 6)$. Check: $DA^2 = 7^2 + 4^2 = 65$ and $DC^2 = 1^2 + 8^2 = 65$.\nM1 for $DA^2$ or $DC^2$ in terms of $d$, M1 for equating and simplifying to a linear equation, A1 $(4, 6)$.\n\n(c) $BA = \\sqrt{(-3 - 0)^2 + (2 + 2)^2} = \\sqrt{9 + 16} = 5$ and $BC = 5 - 0 = 5$, so $BA = BC = 5$.\nFrom (b), $DA = DC = \\sqrt{65}$.\nSo $ABCD$ has two pairs of equal adjacent sides, meeting at $B$ and at $D$: it is a kite. It is not a rhombus, since $AB = 5$ but $AD = \\sqrt{65}$, so $AB \\ne AD$.\nA kite that is not a rhombus has exactly one line of symmetry, the diagonal through the vertices where its equal sides meet: here $BD$. ($A$ and $C$ are reflections of each other in $BD$; $AC$ is not a line of symmetry, since $B$ and $D$ are not equidistant from $A$.)\nGradient of $BD = \\frac{6 - (-2)}{4 - 0} = \\frac{8}{4} = 2$, and the line passes through $B(0, -2)$, so its $y$-intercept is $-2$.\nLine of symmetry: $y = 2x - 2$.\nB1 for $BA = BC = 5$ and $DA = DC = \\sqrt{65}$ with $AB \\ne AD$ (a kite, not a rhombus, so the only line of symmetry is the diagonal $BD$), M1 gradient of $BD = 2$, A1 $y = 2x - 2$. An equation of $BD$ given without the reason scores M1 A1 only.\n\n(d) $P$ lies on $BD$, i.e. on $y = 2x - 2$ between $B$ and $D$, so $P = (p, 2p - 2)$ with $0 \\le p \\le 4$.\n$A$ and $C$ are reflections of each other in $BD$ and $P$ is on $BD$, so triangles $ABP$ and $CBP$ are congruent and area of $ABCP = 2 \\times$ area of triangle $BCP$.\n$BC$ is horizontal, of length 5, and the height of $P$ above $BC$ is $(2p - 2) - (-2) = 2p$.\nArea of triangle $BCP = \\frac{1}{2} \\times 5 \\times 2p = 5p$, so area of $ABCP = 10p$.\n$10p = 30$, so $p = 3$ and $2p - 2 = 4$.\n$P = (3, 4)$.\n[Alternative: area of $ABCD = 2 \\times$ area of triangle $BCD = 2 \\times \\frac{1}{2} \\times 5 \\times 8 = 40$. For $P$ on $BD$ the area of $ABCP$ is proportional to $BP$, so $BP : BD = 30 : 40 = 3 : 4$ and $\\overrightarrow{BP} = \\frac{3}{4}\\overrightarrow{BD} = \\frac{3}{4}\\begin{pmatrix} 4 \\\\ 8 \\end{pmatrix} = \\begin{pmatrix} 3 \\\\ 6 \\end{pmatrix}$, giving $P = (0 + 3, -2 + 6) = (3, 4)$.]\nCheck: area of $ABCP = \\frac{1}{2} \\times AC \\times BP = \\frac{1}{2} \\times \\sqrt{80} \\times \\sqrt{45} = \\frac{1}{2} \\times 60 = 30$.\nM1 for area $ABCP = 2 \\times$ area $BCP$ (or area $ABCP$ : area $ABCD = BP : BD$), M1 for $\\frac{1}{2} \\times 5 \\times 2p = 15$ (or $BP = \\frac{3}{4}BD$), A1 $(3, 4)$. The tempting wrong decision, area of triangle $BCP = 30$, gives $(6, 10)$, which is beyond $D$ and not on $BD$.",
+    "syllabus_check": "4052 only. Coordinate geometry: length of a segment from coordinates, gradient from two points, equation y = mx + c (G7.1-7.4, 'geometric problems involving coordinates'). Properties of special quadrilaterals including their symmetry (the kite's line of symmetry through the vertices where the equal sides meet). Trigonometric ratios in a right-angled triangle and an obtuse angle as 180 degrees minus an acute angle (or the cosine rule). Area of a triangle as half base times height; congruent triangles by symmetry. No midpoint formula, no perpendicular-gradient condition, no shoelace formula and no circle equation is needed anywhere; every equation (the linear equation in d, the area equation in p) is formed by the candidate without a prompt.",
+    "originality_note": "Not a re-skin of any exemplar or earlier Set. Set 1 P2 Q6 located a point from perpendicular gradients, found a perpendicular length and an area ratio of triangles sharing an apex; this Set's P1 Q10 found a line through two points, a triangle area against the y-axis and a parallelogram's fourth vertex. Here the point is fixed by EQUIDISTANCE (equal squared lengths collapsing to a linear equation), the candidate must explain from the lengths why the quadrilateral is a kite and not a rhombus, so has exactly one line of symmetry (BD, not AC), before finding its equation, and the final point is located on the axis from the area of a symmetric quadrilateral. The real papers' coordinate questions (GCE 2025 P2 Q8 trapezium area in p; GCE 2024 P2 Q3 intersection with k, a line from a vector, a length of 25; GCE 2021 P2 Q5 trapezium between parallel lines) share none of these situations or parts. Numbers are new: A(-3, 2), B(0, -2), C(5, -2), D(4, 6), P(3, 4)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 6,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2011 P1 Q19",
+     "jaccard": 0.093,
+     "nearest_set": "Set 1 P1 Q7",
+     "jaccard_set": 0.07,
+     "repeated_skills": []
+    },
+    "marks": 11,
+    "checked_at": "2026-09-23T13:26:12.586Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "126.9°",
+     "(b)": "D(4, 6)",
+     "(c)": "BA = BC = 5 and DA = DC = √65, so ABCD is a kite (not a rhombus since AB ≠ AD); B and D lie on the perpendicular bisector of AC, so the only line of symmetry is BD: y = 2x − 2",
+     "(d)": "P(3, 4)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both 126.9 degrees. Checked: BA = (-3, 4), BC = (5, 0), cos ABC = -15/25 = -0.6, angle 126.87 = 126.9 degrees (or 180 - tan^-1(4/3)). Tempting wrong answer 53.1 degrees."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both (4, 6). Checked: D = (d, d + 2); DA^2 = (d + 3)^2 + d^2, DC^2 = (d - 5)^2 + (d + 4)^2; the squared terms cancel to 6d + 9 = -2d + 41, d = 4; DA^2 = DC^2 = 65."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both y = 2x - 2. Checked: BA = BC = 5 and DA = DC = sqrt(65), AB != AD, so ABCD is a kite (convex, vertices in order) and its only line of symmetry is BD; gradient 8/4 = 2 through B(0, -2). (This line is also the perpendicular bisector of AC.)"
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both (3, 4). Checked: P = (p, 2p - 2), area ABCP = 2 x area BCP = 2 x (1/2)(5)(2p) = 10p = 30, p = 3, on segment BD (0 <= p <= 4). Shoelace on A, B, C, P gives 60/2 = 30; area ABCD = 40. Trap: area BCP = 30 gives (6, 10), beyond D."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on every part, and my own working confirms all four answers: 126.9 degrees, (4, 6), y = 2x - 2, (3, 4).",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "(c): make the kite reasoning carry the marks: 'Explain why ABCD has exactly one line of symmetry and find its equation. [3]' (B1 BA = BC = 5 and DA = DC = sqrt(65) with AB != AD, so a kite and not a rhombus; M1 gradient of BD = 2; A1 y = 2x - 2). As set, once BD is picked from a sketch the equation is a read-off (B is the y-intercept), and a candidate who does (b) by the perpendicular bisector of AC (midpoint (1, 0), gradient 2: outside 4052, but common among A-Math candidates) has already written y = 2x - 2, so (c) pays 3 marks for no new idea. Requiring the justification keeps one mark that the A-Math route does not earn.",
+     "skills: add the skill (a) tests: the obtuse angle at B between a horizontal side and a slanted side, 180 - tan^-1(4/3) or the cosine rule (trap 53.1 degrees). The three phrases given are true of the question and specific."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "At the 2024/25 standard and at least as demanding as GCE 2024 P2 Q3 and GCE 2025 P2 Q8. The parts build on one object: D from equidistance, the kite's axis, then P on the axis from an area by symmetry. The numbers are clean, there are two believable wrong answers (53.1 degrees and (6, 10)), and every 3-mark part turns on its own idea; the one light edit is to (c). On variety: (b) shares only a frame with Set 1 P2 Q6(a), a point on a given line fixed by one condition. The condition and its translation differ: equidistance, which the candidate must turn into DA^2 = DC^2 with both coordinates in d, against a right angle turned into perpendicular gradients or Pythagoras. That makes it a different skill of the topic, not the same move in new clothes. The question as a whole (an obtuse angle from coordinates, a kite recognised by its lengths and its axis chosen, a point found on the axis from an area) is a different question from Set 1 P2 Q6 (a perpendicular length, an area ratio for a shared apex) and from Set 2 P1 Q10 (a line through two points, a triangle against the y-axis, a parallelogram's fourth vertex). (d)'s alternative route, area proportional to BP, is Set 1 P2 Q6(c)'s shared-apex idea run in reverse, which the variety rule allows.",
+    "session_note": "23 Sep: polish: fix 1 applied — (c) is now \"Explain why ABCD has exactly one line of symmetry, and find the equation of this line\" (kite, not rhombus; y = 2x - 2); fix 2 (skills: the obtuse angle at B). Variety settled by this moderator: (b) is a different condition from Set 1 P2 Q6(a). Gates re-run; round-2 blind solve agrees on every part."
+   },
+   "exemplars": [
+    {
+     "id": "60c9168d-07c4-454c-b444-2f455bd75a36",
+     "ref": "GCE 2025 P2 Q8"
+    },
+    {
+     "id": "390b6a03-4a6b-44ac-a58a-eaf498a8e642",
+     "ref": "GCE 2023 specimen P2 Q6"
+    },
+    {
+     "id": "5627d27e-a8b8-4811-bf89-083d70fa265f",
+     "ref": "GCE 2024 P2 Q3"
+    },
+    {
+     "id": "2e397b9b-e15d-429d-b5e6-fc7eb757ce00",
+     "ref": "GCE 2023 specimen P1 Q14"
+    },
+    {
+     "id": "f8b0c2ea-6533-4dc7-9565-9485173e62d1",
+     "ref": "GCE 2022 P2 Q8"
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Statistics",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "A fish farm has two ponds, $P$ and $Q$. A sample of 15 fish is netted from pond $P$ and a sample of 19 fish is netted from pond $Q$. The length of each fish is measured in centimetres.\nThe back-to-back stem-and-leaf diagram shows the results.\n$\\begin{array}{r|c|l} \\text{Pond } P & & \\text{Pond } Q \\\\ 8 & 1 & 1 \\\\ 8\\;\\;7\\;\\;6\\;\\;4\\;\\;3\\;\\;1 & 2 & 7\\;\\;8\\;\\;9\\;\\;9 \\\\ 9\\;\\;7\\;\\;6\\;\\;4\\;\\;3\\;\\;1\\;\\;0 & 3 & 0\\;\\;1\\;\\;1\\;\\;2\\;\\;2\\;\\;3\\;\\;3\\;\\;4\\;\\;4\\;\\;5\\;\\;6\\;\\;6\\;\\;7\\;\\;8 \\\\ 1 & 4 & \\end{array}$\nKey: $4 \\mid 2 \\mid 7$ means a length of 24 cm for pond $P$ and a length of 27 cm for pond $Q$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "",
+      "marks": 5,
+      "answer": "(i) $P$: 12 cm, $Q$: 6 cm; (ii) No: $Q$'s range (27 cm) is large only because of the single 11 cm fish, and its interquartile range (6 cm) is smaller than $P$'s (12 cm); (iii) 31.5 cm",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "Find the interquartile range of the lengths of the fish from each pond.",
+        "marks": 2,
+        "answer": "Pond $P$: 12 cm; pond $Q$: 6 cm"
+       },
+       {
+        "label": "(ii)",
+        "text": "Mei says that the lengths of the fish from pond $Q$ are more spread out than those from pond $P$, because the range for pond $Q$ is greater.\nIs she correct? Give a reason, using figures to support your answer.",
+        "marks": 1,
+        "answer": "No. The range for pond $Q$ ($38 - 11 = 27$ cm, against $41 - 18 = 23$ cm for pond $P$) is large only because of the one extreme value, a fish of length 11 cm; the other 18 fish from pond $Q$ lie between 27 cm and 38 cm. The interquartile range for pond $Q$ (6 cm) is smaller than that for pond $P$ (12 cm), so the middle half of the lengths from pond $Q$ is less spread out."
+       },
+       {
+        "label": "(iii)",
+        "text": "The 34 fish in the two samples are put together.\nFind the median length of these 34 fish.",
+        "marks": 2,
+        "answer": "31.5 cm"
+       }
+      ]
+     },
+     {
+      "label": "(b)",
+      "text": "A fish is ready for sale if its length is at least 30 cm.\nTwo fish are chosen at random, without replacement, from the sample from pond $P$. One fish is chosen at random from the sample from pond $Q$.\nFind the probability that exactly two of these three fish are ready for sale.",
+      "marks": 3,
+      "answer": "$\\frac{44}{95}$",
+      "subparts": []
+     }
+    ],
+    "answer": "(a)(i) 12 cm (pond $P$), 6 cm (pond $Q$); (a)(ii) No: the range for $Q$ is large only because of the one 11 cm fish; its interquartile range (6 cm) is smaller than $P$'s (12 cm), so $Q$ is less spread out; (a)(iii) 31.5 cm; (b) $\\frac{44}{95}$",
+    "total_marks": 8,
+    "topics": [
+     "Statistics",
+     "Probability"
+    ],
+    "skills": [
+     "interquartile ranges read from a back-to-back stem-and-leaf diagram with samples of different sizes (15 and 19), then used to judge a claim about spread that rests on a range inflated by one extreme value",
+     "median of two samples combined, found as the 17th and 18th values of the merged back-to-back data rather than the mean of the two separate medians",
+     "probability that exactly two of three items meet a condition when two are drawn without replacement from one sample and one from a different sample: three cases according to which item fails"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a)(i) Pond $P$ (15 lengths, in order): 18, 21, 23, 24, 26, 27, 28, 30, 31, 33, 34, 36, 37, 39, 41 (the leaves on the left are read outwards from the stem).\nMedian $=$ 8th value $= 30$. Lower quartile $=$ 4th value $= 24$, upper quartile $=$ 12th value $= 36$.\nInterquartile range for $P = 36 - 24 = 12$ cm. [B1]\nPond $Q$ (19 lengths, in order): 11, 27, 28, 29, 29, 30, 31, 31, 32, 32, 33, 33, 34, 34, 35, 36, 36, 37, 38.\nMedian $=$ 10th value $= 32$. Lower quartile $=$ 5th value $= 29$, upper quartile $=$ 15th value $= 35$.\nInterquartile range for $Q = 35 - 29 = 6$ cm. [B1]\n(a)(ii) Range for $P = 41 - 18 = 23$ cm; range for $Q = 38 - 11 = 27$ cm, so the range for $Q$ is greater, as Mei says.\nBut Mei is not correct. The range for $Q$ is large only because of one fish of length 11 cm, which is much shorter than every other fish in that sample: the other 18 fish from pond $Q$ lie between 27 cm and 38 cm (a spread of only 11 cm).\nThe interquartile range is not affected by this one extreme value, and it is 6 cm for $Q$ against 12 cm for $P$, so the middle half of the lengths from pond $Q$ is LESS spread out.\n[B1 — No, with a reason supported by a figure: EITHER the one extreme value 11 cm (the other 18 fish lie between 27 cm and 38 cm), OR the interquartile ranges compared, 6 cm for $Q$ < 12 cm for $P$. A reason with no figure, or \"No\" alone, scores 0.]\n(a)(iii) There are 34 lengths, so the median is the mean of the 17th and 18th values of the combined data.\nCombined counts by stem: stem 1: $1 + 1 = 2$ (running total 2); stem 2: $6 + 4 = 10$ (running total 12); so the 17th and 18th values are the 5th and 6th smallest lengths on stem 3.\nStem 3, both ponds together, in order: 30, 30, 31, 31, 31, 32, 32, 33, 33, 33, ... so the 5th is 31 and the 6th is 32. [M1]\nMedian $= \\frac{31 + 32}{2} = 31.5$ cm. [A1]\n(The mean of the two separate medians, $\\frac{30 + 32}{2} = 31$ cm, is NOT the median of the combined data.)\n(b) Ready for sale (at least 30 cm): pond $P$: 30, 31, 33, 34, 36, 37, 39, 41, so 8 of the 15 are ready and 7 are not; pond $Q$: 19 − 5 = 14 are ready (the 5 not ready are 11, 27, 28, 29, 29).\nExactly two ready means exactly one of the three fish is not ready. There are three cases.\nFirst $P$ fish not ready, second $P$ fish ready, $Q$ fish ready: $\\frac{7}{15} \\times \\frac{8}{14} \\times \\frac{14}{19} = \\frac{784}{3990}$\nFirst $P$ fish ready, second $P$ fish not ready, $Q$ fish ready: $\\frac{8}{15} \\times \\frac{7}{14} \\times \\frac{14}{19} = \\frac{784}{3990}$ [M1 for one correct product of three]\nBoth $P$ fish ready, $Q$ fish not ready: $\\frac{8}{15} \\times \\frac{7}{14} \\times \\frac{5}{19} = \\frac{280}{3990}$\nProbability $= \\frac{784 + 784 + 280}{3990} = \\frac{1848}{3990} = \\frac{44}{95}$ (0.463 to 3 s.f.). [M1 for adding all three cases, A1]\n(Counting the two $P$ fish in only one order gives $\\frac{4}{15}$, which is wrong.)",
+    "syllabus_check": "4052 data handling and analysis: stem-and-leaf diagrams (back-to-back), median, quartiles, interquartile range, range, comparing two distributions in context; probability: combined events, with and without replacement. No grouped data, no calculator statistics mode needed, nothing outside 4052.",
+    "originality_note": "New situation (lengths of fish sampled from two ponds, a 30 cm ready-for-sale threshold) and a display no earlier Set has used (a back-to-back stem-and-leaf diagram). Set 1 P2 Q7 took the mean and standard deviation from a grouped cumulative frequency table, explained what the grouped table cannot show and why a smaller mean need not mean fewer refunds, and found P(both of two from one pool); Set 2 P1 Q25 found an unknown frequency from a mean and tested an upper-quartile claim; Set 1 P1 Q4 recovered a missing value from a median; Set 2 P1 Q11 was a two-stage die game. Here the skills are different: judging a claim about spread that rests on the range when one value is extreme (range versus interquartile range), the median of two samples merged (trap: the mean of the two medians, 31), and a three-fish probability drawn from TWO different samples, two without replacement from one (trap: 4/15 when the order within pond P is ignored). Real stem-and-leaf questions (GCE 2019 P2 Q9, GCE 2018 P1 Q19, GCE 2016 P2 Q9, GCE 2010 P1 Q18) ask for medians, ranges, percentages and verbal comparisons, none of these three skills; GCE 2024 P2 Q7(b)(iii) draws three from a single pool."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 7,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2005 P2 Q4",
+     "jaccard": 0.044,
+     "nearest_set": "Set 2 P1 Q25",
+     "jaccard_set": 0.021,
+     "repeated_skills": []
+    },
+    "marks": 8,
+    "checked_at": "2026-09-23T13:23:29.128Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)(i)": "Pond P: Q1 = 24, Q3 = 36, IQR = 12 cm; Pond Q: Q1 = 29, Q3 = 35, IQR = 6 cm",
+     "(a)(ii)": "No. Range Q = 38 - 11 = 27 cm > range P = 41 - 18 = 23 cm, but the range of Q is inflated by the extreme value 11 cm. IQR of Q (6 cm) is smaller than IQR of P (12 cm), so the lengths from pond Q are less spread out.",
+     "(a)(iii)": "31.5 cm (mean of the 17th and 18th values, 31 and 32)",
+     "(b)": "44/95 (= 0.463 to 3 s.f.)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)(i)",
+      "agree": true,
+      "note": "Both give P: Q1 = 24, Q3 = 36, IQR 12 cm; Q: Q1 = 29, Q3 = 35, IQR 6 cm. Checked: P ordered 18 … 41 (15 values), Q ordered 11 … 38 (19 values); the halves method and the (n+1)/4 positions (4th/12th for P, 5th/15th for Q) give the same quartiles, so the answer does not depend on the convention a school teaches."
+     },
+     {
+      "label": "(a)(ii)",
+      "agree": true,
+      "note": "Both say that Q's range (38 - 11 = 27 against P's 23) is inflated by the single 11 cm fish, and that Q's IQR (6) is half of P's (12). The same B1 fact in the same words."
+     },
+     {
+      "label": "(a)(iii)",
+      "agree": true,
+      "note": "Both give 31.5 cm. Checked: 2 values on stem 1 and 10 on stem 2 make 12, so the 17th and 18th are the 5th and 6th on stem 3 of the merged data (30, 30, 31, 31, 31, 32, …), which are 31 and 32. The tempting wrong answer, the mean of the two medians (30 + 32)/2 = 31, is a believable number."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give 44/95. Checked: P has 8 ready (≥ 30, including the 30) and 7 not; Q has 14 ready and 5 not. 2(8/15)(7/14)(14/19) + (8/15)(7/14)(5/19) = 112/285 + 20/285 = 132/285 = 44/95. Counting the pond-P pair in one order only gives exactly 4/15, a tidy wrong answer. The inclusive 'at least 30 cm' also matters, because both samples contain a 30."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter's key and the blind examiner agree on every part, and I re-derived every value (IQRs 12 and 6, combined median 31.5, probability 44/95); the key is right.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "(a)(ii) is telegraphed. The stem states the conclusion ('Explain why this does not mean …'), and (a)(i) has just handed the candidate the IQRs to quote. Hand the decision over in SEAB's register instead, e.g. 'Mei says that the lengths of the fish from pond Q are more spread out than those from pond P, because the range for pond Q is greater. Is she correct? Give a reason, using figures to support your answer. [1]'. The mark scheme should accept either the 11 cm extreme value with the other 18 fish lying within 27–38 cm, or the IQR comparison 6 < 12, and must require a figure.",
+     "(a)(i) [2] is a plain routine opener. The moderator's test allows it, but the only thing it adds is reading pond P's leaves outwards. That is acceptable. It needs no change, provided (a)(ii) is reworded as above so the question carries its reasoning mark on its own."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "This is a real 4052 P2 statistics-and-probability question. A back-to-back display with unequal samples feeds a range-versus-IQR judgement, a merged median with a believable trap (31), and an exactly-two-of-three probability across two samples with a case split and a tidy trap (4/15). That puts 6 of its 8 marks on decisions, which is at the 2024/25 standard (compare GCE 2024 P2 Q7(b)(iii) [3]). It is not a re-skin of any 2024/25 question or exemplar. It is also not a repeat of Set 1 P2 Q7: a different display and different measures, and its probability part is a three-case, two-source model where Set 1's was the single product P(both). Beside Set 1 P2 Q7 it matches on clean numbers, context doing real work (the 11 cm fish, the inclusive 30 cm threshold) and parts that build. It falls short of a 5 only because its one explain mark is telegraphed, where Set 1 made the candidate decide what to compute.",
+    "session_note": "23 Sep: polish: fix 1 applied — (a)(ii) is now Mei's range claim, \"Is she correct? Give a reason, using figures\" (No: the 11 cm fish; IQR 6 < 12). Gates re-run; round-2 blind solve agrees on every part."
+   },
+   "exemplars": [
+    {
+     "id": "98f4a286-0e1f-4543-b6bd-7faee75caf63",
+     "ref": "GCE 2025 P2 Q2"
+    },
+    {
+     "id": "ec412120-d59f-429a-a097-8e6bf6aba169",
+     "ref": "GCE 2024 P2 Q7"
+    },
+    {
+     "id": "29eb0e1c-3958-4601-acd0-de2729420552",
+     "ref": "GCE 2023 P2 Q7"
+    },
+    {
+     "id": "1995d8f9-a5d5-4879-bf28-ca4469ab147c",
+     "ref": "GCE 2023 specimen P2 Q4"
+    },
+    {
+     "id": "47974111-81c3-42b6-9e91-3ee82dd8e385",
+     "ref": "GCE 2023 P2 Q9"
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Circular Measure",
+   "target": 10,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram shows a belt stretched tightly around two circular pulleys in a machine.\nThe larger pulley has centre $A$ and radius 25 cm. The smaller pulley has centre $B$ and radius 10 cm.\n$AB = 39$ cm.\nThe straight parts of the belt, $PQ$ and $RS$, are tangents to both pulleys.\n$PQ$ touches the larger pulley at $P$ and the smaller pulley at $Q$.\n$RS$ touches the larger pulley at $R$ and the smaller pulley at $S$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that angle $PAB = 1.176$ radians, correct to 3 decimal places.",
+      "marks": 3,
+      "answer": "$\\cos \\angle PAB = \\frac{25 - 10}{39} = \\frac{15}{39}$, so angle $PAB = 1.1760\\ldots = 1.176$ radians (shown)"
+     },
+     {
+      "label": "(b)",
+      "text": "Calculate the length of the belt.",
+      "marks": 5,
+      "answer": "194 cm (193.8 cm)"
+     },
+     {
+      "label": "(c)",
+      "text": "The larger pulley turns at 150 revolutions per minute.\nThe belt does not slip on either pulley.\nCalculate the time, in seconds, that it takes a point on the belt to make one complete circuit.",
+      "marks": 2,
+      "answer": "0.494 s"
+     }
+    ],
+    "answer": "(a) angle $PAB = 1.1760\\ldots = 1.176$ radians (shown); (b) 194 cm; (c) 0.494 s",
+    "total_marks": 10,
+    "topics": [
+     "Circular Measure",
+     "Trigonometry",
+     "Numbers (Speed)"
+    ],
+    "skills": [
+     "angle between a radius and the line of centres found by building the right-angled triangle on a common external tangent of two circles (radii perpendicular to the tangent, side = difference of the radii)",
+     "length of a belt round two pulleys: two tangent lengths plus the arcs of contact, a reflex angle $2\\pi - 2\\theta$ on the larger pulley but only $2\\theta$ on the smaller one, in radians",
+     "belt speed equal to the rim speed of the driving pulley (revolutions per minute to cm per second) to time one circuit of the belt"
+    ],
+    "needs_figure": true,
+    "figure_description": "Side view of two circles drawn to scale (1 unit = 1 cm). Larger circle: centre A at (0, 0), radius 25, on the LEFT. Smaller circle: centre B at (39, 0), radius 10, on the RIGHT, so AB is horizontal and the circles do not touch (gap of 4 between (25, 0) and (29, 0)). The belt is drawn as a THICK line made of four pieces: (1) the straight upper segment from P = (9.62, 23.08) on the larger circle to Q = (42.85, 9.23) on the smaller circle; (2) the straight lower segment from R = (9.62, -23.08) on the larger circle to S = (42.85, -9.23) on the smaller circle; (3) the MAJOR arc of the larger circle from P anticlockwise over the top, through the leftmost point (-25, 0), round to R; (4) the MINOR arc of the smaller circle from Q clockwise through the rightmost point (49, 0) round to S. The remaining parts of the two circles (the arc of the larger circle from P to R through (25, 0), facing B, and the arc of the smaller circle from Q to S through (29, 0), facing A) are drawn as thin lines, so both pulleys appear as complete circles. Thin straight lines: the radius AP, the radius BQ and the line of centres AB (AB may be dashed). A and B are marked as small dots at the centres. Label the points A, B, P, Q, R and S with letters only. Do NOT write any lengths, radii or angles on the diagram, do NOT mark right angles, and do NOT draw any line through B parallel to PQ: angle PAB, the length PQ and the length of the belt must not appear.",
+    "solution": "(a) A tangent is perpendicular to the radius at the point of contact, so $AP \\perp PQ$ and $BQ \\perp PQ$; hence $AP$ is parallel to $BQ$.\nDraw the line through $B$ parallel to $QP$, meeting $AP$ at $X$. Then $PQBX$ is a rectangle, so $XP = BQ = 10$ cm, $BX = PQ$ and angle $AXB = 90^\\circ$.\n$AX = AP - XP = 25 - 10 = 15$ cm.   [M1]\nIn right-angled triangle $AXB$: $\\cos \\angle PAB = \\frac{AX}{AB} = \\frac{15}{39}$   [M1]\nangle $PAB = \\cos^{-1}\\left(\\frac{15}{39}\\right) = 1.17600\\ldots = 1.176$ radians (3 d.p.)   [A1]\n\n(b) $PQ = BX = \\sqrt{39^2 - 15^2} = \\sqrt{1296} = 36$ cm; by symmetry about $AB$, $RS = 36$ cm.   [M1]\nThe belt wraps the larger pulley along the major arc $PR$, on the side away from $B$.\nReflex angle $PAR = 2\\pi - 2(1.176) = 3.9312$ radians   [M1]\nMajor arc $PR = 25 \\times 3.9312 = 98.280$ cm.\nSince $AP$ is parallel to $BQ$, angle $QBA = \\pi - 1.176 = 1.9656$ radians (co-interior angles).\nThe belt wraps the smaller pulley along the minor arc $QS$, on the side away from $A$.\nAngle $QBS$ (on the side away from $A$) $= 2\\pi - 2(\\pi - 1.176) = 2(1.176) = 2.352$ radians   [M1]\nMinor arc $QS = 10 \\times 2.352 = 23.52$ cm.\nLength of belt $= 36 + 36 + 98.280 + 23.52$   [M1]\n$= 193.80 = 194$ cm (3 s.f.)   [A1]\n(Taking a semicircle on each pulley gives the wrong value $72 + 35\\pi = 182$ cm; swapping the two angles gives $170$ cm.)\n\n(c) The belt does not slip, so the belt moves at the same speed as a point on the rim of the larger pulley.\nSpeed of belt $= 150 \\times 2\\pi \\times 25 = 7500\\pi$ cm per minute $= 125\\pi = 392.70$ cm/s   [M1]\nTime for one complete circuit $= \\frac{193.80}{392.70} = 0.49351 = 0.494$ s (3 s.f.)   [A1]\n(Using the radius of the smaller pulley gives the wrong value 1.23 s.)",
+    "syllabus_check": "Inside 4052: tangent perpendicular to the radius at the point of contact (properties of circles), parallel lines (co-interior angles), cosine ratio in a right-angled triangle with the angle in radians, Pythagoras' theorem, arc length $s = r\\theta$ with $\\theta$ in radians including a reflex angle, and speed as distance over time with a conversion of units. No calculus, no trigonometric identities, no 3-D work, nothing outside the 4052 syllabus.",
+    "originality_note": "No belt, pulley or common-tangent question appears anywhere in the GCE corpus (2002-2025) or in any earlier Set. Set 1 P2 Q8 found a circle's radius from a chord and a height inside a road tunnel, then an arc, a segment-plus-rectangle area and a bus-clearance check; Set 2 P1 Q9 eliminated the angle between the arc-length and sector-area formulas; Set 1 P1 Q2 scaled a sector by an area factor. This question tests different skills: an angle from the right-angled triangle hidden in a common tangent of two circles, arcs of contact that are a reflex angle on one circle and an acute-based angle on the other, and a rim-speed rate. It shares no situation or part sequence with GCE 2024 P2 Q8(b) (two intersecting circles, shaded area via the sine rule) or GCE 2025 P2 Q6(a) (radians in the sine and cosine rules in a quadrilateral)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 8,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2012 P1 Q20",
+     "jaccard": 0.044,
+     "nearest_set": "Set 1 P1 Q20",
+     "jaccard_set": 0.029,
+     "repeated_skills": []
+    },
+    "marks": 10,
+    "checked_at": "2026-09-23T13:09:48.776Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown (cos PAB = (25 − 10)/39 = 15/39 = 5/13, so angle PAB = 1.17600... = 1.176 rad to 3 d.p.)",
+     "(b)": "194 cm (PQ = RS = √(39² − 15²) = 36; major arc on larger pulley = 25(2π − 2×1.176) = 98.28; minor arc on smaller pulley = 10(2×1.176) = 23.52; total = 72 + 98.28 + 23.52 = 193.80 ≈ 194 cm)",
+     "(c)": "0.494 s (belt speed = 150 × 2π × 25 = 7500π cm/min = 125π cm/s ≈ 392.7 cm/s; time = 193.80 ÷ 392.7 ≈ 0.494 s)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both: AP and BQ are both perpendicular to PQ, so the right-angled triangle on AB has side 25 - 10 = 15 and cos PAB = 15/39 = 5/13, giving angle PAB = 1.17601 = 1.176 rad (checked: tan PAB = 36/15 = 2.4, arctan 2.4 = 1.17601). The printed target is true, and the construction is not drawn, so the candidate must build it."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both 194 cm. Checked: PQ = RS = sqrt(39^2 - 15^2) = 36; reflex angle on the larger pulley 2pi - 2(1.17601) = 3.93117, arc 98.279; angle on the smaller pulley 2(1.17601) = 2.35201 (parallel radii, co-interior angles), arc 23.520; total 72 + 98.279 + 23.520 = 193.80 = 194 cm. Using the rounded 1.176 changes nothing (193.80). Tempting wrong answers: 72 + 35pi = 182 (semicircles) and 170 (angles swapped)."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both 0.494 s. Checked: belt speed = rim speed of the larger pulley = 150 x 2pi x 25 = 7500pi cm/min = 392.70 cm/s; 193.80 / 392.70 = 0.4935 = 0.494 s. Tempting wrong answers: 0.4 s (one circuit taken as one revolution of the pulley) and 1.23 s (the smaller radius)."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on every part (1.176 rad shown, 194 cm, 0.494 s), and my own working confirms all three.",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "All 10 marks sit in parts where the candidate decides the method: (a) building the triangle on the common tangent (side = difference of the radii) with the construction left undrawn, a show-that that gates (b); (b) a 5-mark chain (tangent length, reflex arc 2pi - 2theta on the larger pulley, only 2theta on the smaller one from the parallel radii) with believable wrong totals of 182 and 170; (c) rim speed as belt speed, with 0.4 s as the trap. The numbers are clean (the 15-36-39 triple), the wording is SEAB's, and no belt or common-tangent question appears in the corpus or any earlier Set. It matches Set 1 P2 Q8 in weight and polish. It shares only the generic P2 show-that-then-build shape with that question, not its situation (a tunnel) or its skills (radius from a chord and height, segment area, clearance), and no skill overlaps Q1, Q2 or Q7 of this paper. All gates passed."
+   },
+   "exemplars": [
+    {
+     "id": "20345f91-46c3-4357-87da-d90b830bb060",
+     "ref": "GCE 2024 P2 Q8"
+    },
+    {
+     "id": "a9e6865e-701c-42d8-bc1a-5389402f77eb",
+     "ref": "GCE 2023 specimen P2 Q5"
+    },
+    {
+     "id": "e594a84c-4369-4a1d-893c-e6907e45bcb2",
+     "ref": "GCE 2023 specimen P1 Q21"
+    },
+    {
+     "id": "2885c79b-8287-489f-892a-56e05dbefe36",
+     "ref": "GCE 2024 P1 Q9"
+    },
+    {
+     "id": "5e5c98ba-bf19-4cbf-884b-a885b5fd2721",
+     "ref": "GCE 2016 specimen P2 Q8"
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Math In Real World Context",
+   "target": 10,
+   "accepted": true,
+   "question": {
+    "stem": "A music festival is held in a park. Many people travel to the festival by train and then take a shuttle bus from the MRT station to the park. The organisers use the information below to plan the shuttle buses.\n\nLast year's festival\nThe table shows the number of people who arrived at the station to take a shuttle bus in each hour.\n$\\begin{array}{|l|c|c|c|c|c|} \\hline \\text{Time of arrival} & \\text{2 pm to 3 pm} & \\text{3 pm to 4 pm} & \\text{4 pm to 5 pm} & \\text{5 pm to 6 pm} & \\text{6 pm to 7 pm} \\\\ \\hline \\text{Number of people} & 450 & 1050 & 1600 & 2350 & 1550 \\\\ \\hline \\end{array}$\n\nBuses for hire\n$\\begin{array}{|l|c|c|c|} \\hline \\text{Type of bus} & \\text{Maximum number of passengers} & \\text{Time for one round trip} & \\text{Hire charge for the day} \\\\ \\hline \\text{Single-deck} & 60 & 20 \\text{ minutes} & \\$450 \\\\ \\hline \\text{Double-deck} & 100 & 30 \\text{ minutes} & \\$490 \\\\ \\hline \\end{array}$\nA round trip is from the station to the park and back to the station, including the time for passengers to get on and off the bus.\n\nThe organisers assume that\n• people arrive at the station at a steady rate during each hour,\n• the buses run continuously from 2 pm, leaving the station one at a time at equal intervals, so that whenever people are waiting, the buses take them away from the station at a steady rate,\n• each bus carries as many people as possible on each trip.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Last year, the organisers hired 10 single-deck buses. There was no one waiting at the station at 2 pm.\nFind the number of people waiting at the station for a shuttle bus at 7 pm.",
+      "marks": 3,
+      "answer": "300"
+     },
+     {
+      "label": "(b)",
+      "text": "This year, the organisers expect $20\\%$ more people than last year to arrive at the station in each hour.\nSo that the buses can run to a regular timetable, the organisers will hire buses of one type only. They need enough buses so that, in every hour, the buses can carry at least as many people as arrive at the station in that hour. They want the total hire charge to be as low as possible.\nEvery passenger will pay the same fare. The organisers want the total of the fares to be at least the total hire charge.\nSuggest which type of bus, and how many of these buses, the organisers should hire, and find the lowest fare, in cents, that they can charge.\nJustify the decisions you make and show your calculations clearly.",
+      "marks": 7,
+      "answer": "Hire 16 single-deck buses (total hire charge $\\$7200$; 15 double-deck buses would cost $\\$7350$). Lowest fare: 86 cents."
+     }
+    ],
+    "answer": "(a) 300 (b) 16 single-deck buses (total hire charge $\\$7200$); lowest fare 86 cents",
+    "total_marks": 10,
+    "topics": [
+     "Math In Real World Context",
+     "Numbers (Rate)"
+    ],
+    "skills": [
+     "a queue that carries over from one hour to the next, where spare bus capacity in the quiet hours cannot be used later",
+     "sizing a bus fleet for the busiest hour from trips per hour x passengers per trip, where rounding up to whole buses reverses which bus type is cheaper",
+     "break-even fare from the total (not the peak) number of passengers, rounded up to whole cents so that the fares cover the cost"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a)\nThe buses leave one at a time at equal intervals, so whenever people are waiting they are taken away at a steady rate: the working uses the hourly carrying capacity of the buses.\nA single-deck bus makes $60 \\div 20 = 3$ round trips an hour, so it carries at most $3 \\times 60 = 180$ people an hour.\n10 buses carry at most $10 \\times 180 = 1800$ people an hour, the steady rate at which waiting people are taken away. [B1]\nFrom 2 pm to 5 pm, fewer than 1800 people arrive in each hour (450, 1050, 1600), so no queue builds up and no one is waiting at 5 pm. The spare capacity in these hours cannot be used later.\n5 pm to 6 pm: $2350 - 1800 = 550$ people are waiting at 6 pm. [M1]\n6 pm to 7 pm: $550 + 1550 - 1800 = 300$ people are waiting at 7 pm. [A1]\n(Tempting wrong answers: 0 from comparing only the 6 pm to 7 pm arrivals with 1800, or from comparing the totals $7000 < 5 \\times 1800$.)\n\n(b)\nDecision 1 — the buses.\nThe number of buses is fixed by the busiest hour, 5 pm to 6 pm: this year $2350 \\times 1.2 = 2820$ people arrive in that hour. [M1]\nHourly carrying capacity, as in (a): single-deck: 3 trips an hour, $3 \\times 60 = 180$ people per bus per hour. Double-deck: $60 \\div 30 = 2$ trips an hour, $2 \\times 100 = 200$ people per bus per hour. [M1]\nSingle-deck: $2820 \\div 180 = 15.67$, so 16 buses are needed (15 buses carry only 2700). Double-deck: $2820 \\div 200 = 14.1$, so 15 buses are needed (14 buses carry only 2800, 20 too few). [M1]\nHire charge: $16 \\times \\$450 = \\$7200$; $15 \\times \\$490 = \\$7350$.\nSo the organisers should hire 16 single-deck buses, total hire charge $\\$7200$. [A1]\n(16 single-deck buses carry 2880 people an hour, which is at least the number arriving in every hour this year: 540, 1260, 1920, 2820, 1860.)\nDecision 2 — the fare.\nTotal number of passengers this year $= 7000 \\times 1.2 = 8400$ (assuming everyone expected takes a bus and pays). [M1]\n$\\$7200 \\div 8400 = \\$0.857\\ldots$ [M1]\nA fare of 85 cents gives $8400 \\times \\$0.85 = \\$7140 < \\$7200$, which does not cover the hire charge; a fare of 86 cents gives $8400 \\times \\$0.86 = \\$7224 \\ge \\$7200$.\nLowest fare = 86 cents. [A1]\n(Tempting wrong routes: 14 double-deck buses at $\\$6860$ (rounding 14.1 down); averaging $8400 \\div 5 = 1680$ an hour, giving 10 single-deck buses at $\\$4500$ or 9 double-deck buses at $\\$4410$; leaving out the $20\\%$ increase; or dividing by 60 or 100 passengers without the trips per hour. Each of these picks the double-deck bus. If the double-deck buses were hired, the fare would be $\\$7350 \\div 8400$, giving 88 cents.)",
+    "syllabus_check": "4052 only: rate (people carried per hour = passengers per trip x round trips per hour, compared with an arrival rate), percentage increase, rounding up to whole buses and whole cents in context, money; problems in real-world contexts — reading an information sheet and making and justifying two decisions. No off-syllabus content (no queueing theory beyond comparing hourly totals; no mixed-fleet optimisation, which the one-type rule excludes).",
+    "originality_note": "New situation: shuttle buses from an MRT station to a festival, planned from last year's hourly arrivals. No real GCE question (corpus searched for bus, shuttle, festival, passengers) and no earlier Set question uses it. Set 1 P2 Q9 chose the smallest water tank that holds enough and fits a base (capacity + fit); this question sizes a fleet against the busiest hour, where the whole-bus step flips the cheaper type, and sets a break-even fare from the total — a different decision on a different object. It is not a price-plan comparison (Set 2 P1 Q15): each bus has one flat hire charge. It differs from Set 2 P1 Q18 (replacement rate = total / lifetime) and P1 Q26 (pipe flow rate): here an hourly carrying capacity is compared with hourly arrivals and a queue is carried across hours. Structure [3, 7] differs from Set 1 P2 Q9 [2, 2, 6] and from GCE 2024/2025 P2 Q9."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 9,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2023 P2 Q9",
+     "jaccard": 0.017,
+     "nearest_set": "Set 2 P1 Q3",
+     "jaccard_set": 0.011,
+     "repeated_skills": []
+    },
+    "marks": 10,
+    "checked_at": "2026-09-23T13:23:29.141Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "300",
+     "(b)": "Hire 16 single-deck buses (capacity 16 x 60 x 3 = 2880 per hour >= busiest hour 2350 x 1.2 = 2820; cost $7200, cheaper than 15 double-deck at $7350). Total passengers 7000 x 1.2 = 8400; fare >= 7200/8400 = 85.7 cents, so lowest fare = 86 cents"
+    },
+    "solvable": true,
+    "issues": [
+     "(a) assumes the per-hour capacity model (10 buses x 3 trips x 60 = 1800 per hour; queue 0 until 5-6 pm, 550 at 6 pm, 550 + 1550 - 1800 = 300 at 7 pm). If departures are modelled as discrete simultaneous 20-minute departures from 2 pm, the count at 7 pm depends on whether a 7:00 departure has left, so the answer is model-dependent; the intended reading is clearly the hourly-capacity one."
+    ]
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give 300. My check: a single-deck bus makes 3 round trips an hour, so 10 buses carry at most 1800 an hour. Fewer than 1800 arrive in each of 2-3, 3-4 and 4-5 pm, so the queue is 0 at 5 pm and the spare capacity is lost. The queue is 2350 - 1800 = 550 at 6 pm and 550 + 1550 - 1800 = 300 at 7 pm. The blind examiner's reading issue is real. The literal reading of 'the buses run continuously, starting at 2 pm' is that all 10 buses leave together at 2:00, 2:20, ..., 7:00, taking up to 600 people each time. Simulated with exact fractions, that model gives 550 just after the 6:00 departure and, at 7 pm, 900 waiting just before the 7:00 departure and 300 just after it. With staggered buses (one every 2 minutes), it gives 360 just before and 300 just after. The intended answer, 300, therefore survives every model if it is read as 'just after the 7 pm bus has left'. But the stem does not fix the model, and a SEAB stem would. See fixes. Tempting wrong answer: 0, from the totals (7000 < 5 x 1800) or from comparing only the 6-7 pm arrivals with 1800."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give 16 single-deck buses and 86 cents. My check: the busiest hour this year is 2350 x 1.2 = 2820. Single-deck carries 180 a bus an hour: 2820/180 = 15.67, so 16 buses at $7200. Double-deck carries 200 a bus an hour: 2820/200 = 14.1, so 15 buses at $7350. Single-deck is cheaper, although double-deck is cheaper per place ($2.45 against $2.50), so rounding up to whole buses is what reverses the choice. 16 buses carry 2880 an hour, at least every hourly arrival (540, 1260, 1920, 2820, 1860), so no queue forms and all 8400 people ride and pay. Then 7200/8400 = 0.857..., 85 cents gives $7140 < $7200, and 86 cents gives $7224, so the answer is 86 cents. The one-type rule carries weight: without it, a mixed fleet of 9 single-deck and 6 double-deck buses gives exactly 2820 an hour for $6990, so the rule (and its 'regular timetable' reason) must stay."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on both parts, and my own working confirms 300 people at 7 pm and 16 single-deck buses with a lowest fare of 86 cents. The only open point is the model wording in (a), which the fix below closes without changing the key.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Fix the carrying model in the stem (the blind examiner's issue). The stem needs one sentence: 'the buses run continuously, starting at 2 pm' reads naturally as all 10 buses leaving together every 20 minutes. Then 7 pm falls on a departure, and the count is 900 just before it and 300 just after. SEAB states the modelling assumption its answer depends on (GCE 2025 P2 Q9(c): 'Erin assumes that each charger charges at a constant maximum rate'). Replace the second bullet with: '• the buses run continuously from 2 pm, leaving the station one at a time at equal intervals, so that whenever people are waiting, the buses take them away from the station at a steady rate,'. This fixes the steady-flow (hourly-capacity) model the key uses, and the answer is unchanged at 300. It does not hand over the idea: the candidate must still build the per-hour capacity (trips x passengers x buses), carry the queue from hour to hour, and see that spare capacity cannot be used later. It also makes (b)'s reason for one bus type ('run to a regular timetable') follow from the stated equal intervals. A minimal alternative, if the bullet is left alone, is to end (a) with '... at 7 pm, just after a bus has left the station.' That gives 300 in every model, but it invites a discrete simulation, so the bullet is the better fix."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "All 10 marks are in parts where the candidate decides. In (a) [3], the idea is a queue that carries over, where quiet-hour capacity is lost, with a believable wrong answer of 0. In (b) [7], the item-10 pair of decisions: size each fleet for the busiest hour, where rounding up flips the cheaper type (14 double-deck buses at $6860 and the lower per-place cost both lure candidates to the double-deck bus); then the break-even fare from the total, not the peak, rounded up and justified by 85 cents against 86 cents. The context changes the maths at every step, the numbers are clean (2820, 8400, 6/7 of a dollar), and the wording is SEAB's register. It is at least as demanding as Set 1 P2 Q9 [2, 2, 6] for its marks. It re-skins no GCE 2024/25 question and repeats no earlier Set: Set 2 P1 Q4's bus interchange tests an LCM, and Set 2 P1 Q15 compares price plans by inequalities. It shares no skill with Q2's work rate or Q8's belt speed. It scores 4, not 5, only because the carrying model needs the one-sentence fix. All gates passed.",
+    "session_note": "23 Sep: polish: the one fix — the second assumption bullet now says the buses leave one at a time at equal intervals and take waiting people away at a steady rate (the hourly-capacity model the key uses). Answers unchanged: 300; 16 single-deck, $7200; 86 cents."
+   },
+   "exemplars": [
+    {
+     "id": "06644e75-f947-4d76-b5ef-69990767c093",
+     "ref": "GCE 2023 specimen P2 Q9"
+    },
+    {
+     "id": "2283a969-cca8-444f-9aae-c453bcbdae48",
+     "ref": "GCE 2025 P2 Q9"
+    },
+    {
+     "id": "2c458b26-c70a-4f6d-9afc-f27570e26b27",
+     "ref": "GCE 2024 P2 Q9"
+    },
+    {
+     "id": "954a0fe6-73d9-45b0-ac6e-5731b60bcc2b",
+     "ref": "GCE 2021 P2 Q10"
+    },
+    {
+     "id": "0d307f22-686c-42ee-a1d9-d92f371512dc",
+     "ref": "GCE 2020 P2 Q10"
+    }
+   ]
+  }
+ ]
+}

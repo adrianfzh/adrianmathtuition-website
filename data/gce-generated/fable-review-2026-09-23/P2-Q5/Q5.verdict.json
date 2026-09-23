@@ -1,0 +1,18 @@
+{
+  "parts": [
+    {"label": "(a)", "agree": true, "note": "Both give dy/dx = (2cos x + 1)/(2 + cos x)^2. Checked: quotient rule gives (2cos x + cos^2 x + sin^2 x)/(2 + cos x)^2, and sin^2 x + cos^2 x = 1 collapses the numerator. Correct."},
+    {"label": "(b)", "agree": true, "note": "Both give greatest 1/3 at x = 0 and x = 2pi, least -1 at x = pi. Checked by both routes: with c = cos x, d/dc[(2c+1)/(2+c)^2] = (2 - 2c)/(2+c)^3 >= 0 on [-1, 1], so the gradient is increasing in cos x and its extremes sit at cos x = 1 (x = 0, 2pi: 3/9 = 1/3) and cos x = -1 (x = pi: -1/1 = -1); the chain rule turns this into d2y/dx2 = 2 sin x (cos x - 1)/(2 + cos x)^3, which is the setter's Method 1 form. Correct, with both end points."}
+  ],
+  "all_agree": true,
+  "key_verdict": "The setter and the blind examiner agree on every part and both are right; the second derivative factorises as stated and the end point x = 2pi belongs to the answer.",
+  "score": 4,
+  "standard": "at",
+  "fixes": [
+    "Wording of (b): 'stating in each case every value of x in 0 <= x <= 2pi at which it occurs' telegraphs that a value repeats, which is the very twist (the end point x = 2pi counts) that carries the A1. SEAB's form is 'Find the greatest and the least values of dy/dx and the corresponding values of x.' — the interval is already in the stem; drop 'every' and let the candidate discover x = 2pi.",
+    "Overlap inside THIS paper: Q4 already earns its A1 from the extremes of an expression over the range of a trigonometric quantity (least at the end point u = -sqrt(2)). Method 2 here (gradient increasing in cos x, so extremes at cos x = +/-1) is the same move a second time. It is not fatal because Method 1 (differentiate the gradient again, factorise, sign of d2y/dx2) is a different skill and the one the setter names; the session may prefer to keep the two questions apart, e.g. by asking instead for the set of x on which the gradient is increasing (d2y/dx2 > 0 on pi < x < 2pi), which no question in this Set has asked."
+  ],
+  "too_close_to": null,
+  "repeats_set": null,
+  "as_good_as_set1": true,
+  "why": "A clean 7-mark P2 calculus question in the register of GCE 2024 P2 Q11 / GCE 2025 P2 Q5 but not a re-skin of either: the candidate must see that the greatest gradient is not found by dy/dx = 0 and choose to differentiate the quotient again (or read it as a function of cos x), then keep the repeated end point x = 2pi, with answers 1/3 and -1 closing exactly. It is not Set 1 P1 Q13's tangent-parallel skill nor Set 2 P1 Q2's gradient-equals-value skill, and Set 2 P1 Q7 reads the greatest gradient from an amplitude, not from a second derivative; the two fixes are a wording tightening and a partial overlap with this paper's Q4."
+}

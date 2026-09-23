@@ -12,7 +12,7 @@
 //   1. PLAN     the GCE-* blueprint (data/paper-blueprints.json, derived from the real
 //               GCE papers) walked with the prelim builder's own walkTopics/targetMarks
 //               → one topic and one mark target per slot.                    [brief]
-//   2. AUTHOR   a Claude Fable agent reads Q<n>.brief.md + paper-so-far.md +
+//   2. AUTHOR   a Claude Opus agent reads Q<n>.brief.md + paper-so-far.md +
 //               earlier-sets.md (every question our own earlier Sets asked — the
 //               variety rule) and writes Q<n>.json — a NEW question in SEAB register
 //               that names the skills it tests; real GCE questions on the topic are
@@ -21,14 +21,14 @@
 //               word-trigram Jaccard against every real GCE question of the level
 //               AND every question of our own earlier Sets (a disguised copy of
 //               either fails).                                                 [check]
-//   4. SOLVE    a Claude Opus agent reads ONLY Q<n>.solve.md (no key) and writes
-//               Q<n>.blind.json.                                              [agent]
-//   5. MODERATE a Claude Fable agent reads Q<n>.moderate.md (question + key + the
+//   4. SOLVE    a FRESH Claude Opus agent reads ONLY Q<n>.solve.md (no key) and
+//               writes Q<n>.blind.json.                                              [agent]
+//   5. MODERATE a Claude Opus agent reads Q<n>.moderate.md (question + key + the
 //               exemplars) and Q<n>.blind.json, compares part by part, scores "reads
 //               like SEAB" 1–5, names a re-skinned exemplar or a repeat of an earlier
 //               Set's question (repeats_set), as good as Set 1 (as_good_as_set1)
 //               → Q<n>.verdict.json.                                          [agent]
-//   6. REPAIR   a failing slot goes back to a Fable agent with the verdict (Q<n>.json
+//   6. REPAIR   a failing slot goes back to an Opus agent with the verdict (Q<n>.json
 //               rewritten), then 3–5 again; three strikes → the slot is left out.
 //   7. RENDER   the paper (answer key) + a solutions booklet through the SAME
 //               renderers /app/print uses.                                 [assemble]
@@ -46,6 +46,16 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const PROMPT_VERSION = 'gce-author-v2'; // v2 (17 Sep 2026): skills[] + the earlier-Sets variety rule
+// Who plays each role, recorded in plan.json at `brief` and carried into the assembled
+// paper (publish.mjs reads the author to label the bank rows). Adrian, 23 Sep 2026: "use
+// the trial split, but change solves blind to opus 5.5" — author, blind solve, repair and
+// figures are `model: "opus"` (Opus 5.5), the moderator is `model: "fable"`. Until then
+// Fable wrote/moderated/repaired and Opus 5 solved blind; a run briefed before that has
+// no `models` in plan.json and keeps the old record (MODELS_UNTIL_2026_09_23). A run
+// briefed on 23 Sep under "opus 5.5 for all" carries its own record in plan.json.
+const AGENT = (id) => `${id} (Claude Code agent)`;
+const MODELS = { author: AGENT('claude-opus-5-5'), solver: AGENT('claude-opus-5-5'), moderator: AGENT('claude-fable-5-1'), figure: AGENT('claude-opus-5-5') };
+const MODELS_UNTIL_2026_09_23 = { author: AGENT('claude-fable-5-1'), solver: AGENT('claude-opus-5'), moderator: AGENT('claude-fable-5-1') };
 const MATH_SUPABASE_URL = 'https://nempslbewxtlikfzachi.supabase.co';
 const NOVELTY_MAX = 0.4; // word-trigram Jaccard above this = a disguised copy
 
@@ -455,7 +465,7 @@ async function brief() {
   // the real GCE texts the novelty gate compares against (ids + text only)
   writeFileSync(join(dir, 'corpus.json'), JSON.stringify(rows.map((r) => ({ id: r.id, ref: refOf(r), topics: r.topics, text: r.text }))));
   writeFileSync(join(dir, 'plan.json'), JSON.stringify({
-    key: KEY, seed: SEED, set: SET, variety: true, earlier_sets: [...new Set(earlier.map((e) => `Set ${e.set} P${e.paper}`))], shape, paperNo, total, prompt_version: PROMPT_VERSION, blueprint_derived_at: bp.source?.gce?.derived_at ?? null,
+    key: KEY, seed: SEED, set: SET, variety: true, models: MODELS, earlier_sets: [...new Set(earlier.map((e) => `Set ${e.set} P${e.paper}`))], shape, paperNo, total, prompt_version: PROMPT_VERSION, blueprint_derived_at: bp.source?.gce?.derived_at ?? null,
     generated_at: new Date().toISOString(), topicList, must_appear: def.must_appear, plan, exemplars: exemplarIds,
   }, null, 1));
   console.log(dir);
@@ -669,7 +679,7 @@ async function assemble() {
   const subjectShort = level === 'AM' ? 'A Math' : /^JC/.test(level) ? 'H2 Mathematics' : 'E Math';
   const title = `${subjectShort} · Set ${SET} · Paper ${planJ.paperNo} · ${/^JC/.test(level) ? 'A-Level' : 'O-Level'} format`;
   const paper = {
-    ...planJ, models: { author: 'claude-opus-5-5 (Claude Code agent; trial since 23 Sep 2026, Sets 1–3 were claude-fable-5-1)', solver: 'claude-fable-5-1 (Claude Code agent; was claude-opus-5)', moderator: 'claude-fable-5-1 (Claude Code agent)' },
+    ...planJ, models: planJ.models ?? MODELS_UNTIL_2026_09_23,
     set: SET, title, assembled_at: new Date().toISOString(), questions,
   };
   delete paper.exemplars;

@@ -56,15 +56,23 @@ shape), `Q<n>.brief.md` per slot (topic, marks, real GCE questions on the topic 
 STYLE anchors only), `paper-so-far.md`, `corpus.json` (every real GCE question of the
 level, for the novelty gate), `plan.json`.
 
-The round per slot, orchestrated by the session with the Agent tool:
+The round per slot, orchestrated by the session with the Agent tool. **Since 23 Sep 2026
+the author, blind solver, repair author and figure author are Opus 5.5 (`model: "opus"`)
+and the moderator is Fable 5.1 (`model: "fable"`)** (Adrian: "use the trial split, but
+change solves blind to opus 5.5"). Until then Fable 5.1 wrote, moderated and repaired and
+Opus 5 solved blind, which is how both Set 1s were made; A Math Set 2 and E Math Set 2
+were written the same day with every agent on Opus 5.5, moderator included. The blind
+solver is a fresh agent that never sees the key, so its independence from the author is
+context isolation; the moderator is a different model, and it and Adrian's read are the
+backstop for a blind spot the author and solver share.
 
 | step | who | reads | writes |
 |---|---|---|---|
-| author | **Fable** agent | `author-brief.md`, `Q<n>.brief.md`, `paper-so-far.md` | `Q<n>.json` |
+| author | **Opus 5.5** agent | `author-brief.md`, `Q<n>.brief.md`, `paper-so-far.md` | `Q<n>.json` |
 | gates | `check` | `Q<n>.json` | `Q<n>.gates.json`, `Q<n>.solve.md`, `Q<n>.moderate.md` |
-| blind solve | **Opus** agent (a different model from the author, on purpose) | ONLY `Q<n>.solve.md` (no key) | `Q<n>.blind.json` |
-| moderate | **Fable** agent | `Q<n>.moderate.md` (question + key + exemplars), `Q<n>.blind.json` | `Q<n>.verdict.json` |
-| repair | Fable agent with the verdict | | `Q<n>.json` again → re-check → re-solve → re-moderate |
+| blind solve | a **fresh Opus 5.5** agent (no key, no author context) | ONLY `Q<n>.solve.md` (no key) | `Q<n>.blind.json` |
+| moderate | **Fable 5.1** agent | `Q<n>.moderate.md` (question + key + exemplars), `Q<n>.blind.json` | `Q<n>.verdict.json` |
+| repair | Opus 5.5 agent with the verdict | | `Q<n>.json` again → re-check → re-solve → re-moderate |
 
 Gates in `check`: marks sum = slot target, topics ⊂ bank names, worked solution present,
 word-trigram Jaccard vs every real GCE question of the level ≤ 0.4 (nearest recorded).
@@ -149,7 +157,9 @@ Files the paper in the bank as the Print-a-paper **Set** preset
 `school='AdrianMath'`, `exam_type='Set <n>'`, `paper='1'|'2'`, `question_number` = slot,
 `level` = the blueprint family (AM/EM/JC), `year` = generation year, `difficulty
 'Standard'`, `verified=false` (Adrian flips it), `ai_generated=true`,
-`solution_source='fable_session'`, parts with bank-style bare labels (`a`, `i`), and
+`solution_source` = `'opus_session'` or `'fable_session'` by the author the paper JSON
+records (`models.author`, written into `plan.json` by `brief` since 23 Sep 2026; both Set
+1s say Fable), parts with bank-style bare labels (`a`, `i`), and
 `gen_meta {kind:'gce-set', set_key, set_item, seed, gates, blind_agree, figure, …}`.
 Figures: `Q<n>.figure.png` → the public `practice-figures` bucket at
 `gce-sets/<key>-set<n>/Q<n>.png` → `figure_url` + `has_image` (`image_watermark_status`
@@ -162,7 +172,7 @@ plan and stops (no env needed). Students of the level see "Set n · Paper 1/2" o
 probe alarms on an incomplete set.
 
 First set: `GCE-AM-P1-seed1` (13 Q, figures on Q7/Q9/Q10/Q13) + `GCE-AM-P2-seed1`
-(10 Q, figures on Q6/Q10), written 8 Sep 2026, JSON in `data/gce-generated/` (untracked),
+(10 Q, figures on Q6/Q10), written 8 Sep 2026, JSON in `data/gce-generated/` (committed),
 **published as A Math Set 1 on 9 Sep 2026** (23 rows).
 
 E Math (4052), seed 1 — **"Set 0", rejected, never published.** `GCE-EM-P1-seed1` (27 Q)
@@ -184,7 +194,7 @@ them carries the standard; the moderator's verdict gained `standard: at|below|ab
 and scores a below- or above-standard slot ≤ 3 so `assemble` rejects it. 24 of 36 slots
 took at least one repair round (P1 Q3 Q4 Q7 Q8 Q10–13 Q15 Q16 Q18 Q20–22 Q25; every P2
 slot, P2 Q6 three rounds); 30 accepted at 5/5, six at 4/5 after a polish. JSON in
-`data/gce-generated/GCE-EM-P{1,2}-seed2-2026-09-12.json` (untracked); handed to Adrian
+`data/gce-generated/GCE-EM-P{1,2}-seed2-2026-09-12.json` (committed); handed to Adrian
 12 Sep 2026, **published as E Math Set 1 on 16 Sep 2026** (27 + 9 rows) after his
 read-through. What his read-through changed in the method (16 Sep 2026): figures print
 at 100 mm wide (120 mm when wide, height ≤ 100 mm) instead of the old ~60 mm; a
@@ -280,6 +290,66 @@ No slot's author or moderator can see any of that, so:
 syllabus). `standard.mjs` copies it into an A Math run as `standard.md`, as it does the
 E Math one. The four prompt templates serve both levels: `render.sh` reads the run's
 `plan.json` key and fills in the subject and syllabus code.
+
+**A Math Set 2 = seed 2 (23 Sep 2026)** — the first Set written with every agent on Opus 5.5,
+and the first written in a cloud session. Adrian's brief: "Create a set of papers that tests
+different aspects of the concepts from set 1. Still benchmark difficulty against how 2024
+and 2025 is set. Similar but test different aspects. Do not produce a 'similar' paper, where
+questions in essence did not change." `GCE-AM-P1-seed2` (13 Q, 90 marks, figure Q11) +
+`GCE-AM-P2-seed2` (10 Q, 90 marks, figures Q2 graph paper / Q7 / Q10). The random topic draw
+gave P2 four of P1's topics and none of linear law, an exponential model, binomial or
+kinematics, which every real 4049 year carries; the session re-pointed P2 Q1/Q2/Q6/Q8 to
+those four in `plan.json` and each brief says so. Repairs: P1 Q6 Q7 Q8 Q12 Q13 and P2 Q3 Q7
+Q9 Q10; P1 Q5, P1 Q6 and P2 Q8 accepted at 5/5, the rest at 4/5 after a polish; where a
+polish changed a question's wording (P2 Q2 Q3 Q6), a fresh blind solve re-agreed. Shape by
+`assemble`: P1 26 answer spaces, 3 unparted, 3 answers of 6–7 marks, 6 show/prove; P2 26
+spaces, 2 unparted, 3 of 6–7 marks, 8 show/prove (two of them wording, not a printed result).
+**Second read by Fable 5.1, the same evening** (`data/gce-generated/fable-review-2026-09-23/REVIEW.md`):
+"on a par with Set 1", every answer right; its one change is P2 Q5 — the log-differentiation
+tangent question became y = sin x/(2 + cos x), greatest and least gradient [3, 4] (Opus 5.5
+author, Fable blind + moderator, 4/5), so log differentiation is left in P1 Q2 only — and the
+P1 Q12(c) note was re-moderated (5/5). P2 is now 27 spaces, 1 unparted, 2 answers of 6–7 marks.
+Left open for Adrian: the new Q5's second route (the gradient rises with cos x) is the same
+"extremes over the range of a trig quantity" move as P2 Q4; the moderator's alternative
+(the set of x on which the gradient increases) would repeat P1 Q12(c)'s skill instead.
+The paper JSONs are in `data/gce-generated/`, and the figure specs and PNGs are in
+`data/gce-generated/figures/<key>-seed2/`, which is the `--figures` directory for
+`publish.mjs`. **Not published yet:** it waits for Adrian's read, and then needs the service
+key (the Mac).
+
+**E Math Set 2 = seed 3, `--set 2` (23 Sep 2026)** — the same brief, the same Opus 5.5
+agents, written straight after A Math Set 2. `GCE-EM-P1-seed3` (27 Q, 90 marks, figures
+Q13 / Q23 / Q27) + `GCE-EM-P2-seed3` (9 Q, 90 marks, figures Q4 graph paper / Q5 / Q8).
+The draw gave P1 two Angles slots, HCF/LCM beside prime factorisation and six marks of Sets,
+so the session re-pointed P1 Q15 (inequality), Q17 (Sets, 2 marks), Q19 (speed-time graph)
+and Q23 (the Set's congruence/similarity PROOF); P2's draw came out almost slot for slot
+Set 1 P2's, so every P2 line in `paper-shape.md` names what Set 1 and this Set's P1 already
+did, and Q3 (trigonometry, bearings) and Q7 (statistics with one probability part) were
+re-pointed. P1 repairs: Q8 Q9 Q10 Q22 Q27; P1 Q3 Q18 Q19 Q20 and P2 Q4 Q8 at 5/5, the rest
+at 4/5 after a polish; every polish that changed an answer or a decision was re-solved blind
+and agreed (P1 Q10 Q12 Q17 Q21 Q24, P2 Q1 Q6 Q7). Shape by `assemble`: P1 39 answer spaces,
+16 unparted, largest part 4; P2 32 answer spaces, exactly three parts of 5+ (Q2(a) 5, Q8(b) 5,
+Q9(b) 7). P1 Q13's figure leaves the radius OC undrawn so the 35° mark can only be read as
+angle ACB; P1 Q23 says "not drawn to scale" and is drawn off its answer proportions.
+Figures in `data/gce-generated/figures/GCE-EM-P{1,2}-seed3/`. **Not published yet** (as
+A Math Set 2).
+
+**The Word export, fixed the same day.** `export-docx.py` turned a markdown pipe table into a
+Word table but left a LaTeX `\begin{array}` line as maths — a matrix with no rules, whose
+empty cells and `\hline` LibreOffice drew as red ¿ (E Math Set 1 and Set 2 both store tables
+that way). A line that is one array now becomes a real table (`array_rows`, the revision
+builders' 18 Sep fix), every line of a part or stem is kept with the next so a part and its
+table never break across a page, and `worksheet_lib.data_table` keeps its rows together.
+`lopdf.py` (the preview PDF) gives LibreOffice an empty operand for a formula that opens or
+closes on a relation ("Total amount = P(…)", "… 2 h 1 min = 9.59 a.m.") — Word never needed
+it; the previews of both A Math and E Math Set 2 papers now carry no ¿ (a few |x| bars remain
+in the solutions previews, a LibreOffice drawing quirk only).
+
+How a cloud session ran it: the bank has no read path without the secret key, so the AM GCE
++ Set rows were pulled once through a temporary SECURITY DEFINER function gated by a one-time
+code, which was dropped straight after, and served to `generate.mjs` from a local shim.
+`render.sh` needs zsh (a bash copy was used), and the DOCX/PDF steps needed `pandoc`,
+`poppler-utils` and LibreOffice writer + math + the python script provider installed.
 
 The agent step was validated blind on 9 Sep 2026: an Opus agent given only P1 Q13's
 `figure_description` and the `--families`/`--doc` output chose `function-graph`, wrote a

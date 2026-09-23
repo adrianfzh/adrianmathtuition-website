@@ -125,7 +125,7 @@ rounds can be compared.
 | pen and drawing code, adapters, reconciliation code, any fix with a bench (`npm test` golden replay, `scripts/golden-pen.cjs`, `pen-dryrun.cjs`) | **Opus** agent, in its own clone | mechanical once the cause is named; the bench, not the model, is the proof |
 | a marking RULE whose wording must not collide with the ninety-odd dated rules already in `ai/paper-marker.js`; triage of a round of complaints across several papers; reading a marked page the way Adrian reads it | **Fable** (the orchestrating session) | the cost of a rule that teaches the wrong lesson is a wrong mark on a student's paper; the collision check is judgement over the whole prompt |
 | mechanical builds with a spec (renderers, migrations, backfills, docs sweeps) | **Sonnet** agent | speed; the spec is the judgement |
-| solutions and question authoring for the bank | Fable only where it WRITES the maths (the extraction fleet) | accuracy of the maths itself |
+| solutions and question authoring for the bank | Fable only where it WRITES the maths (the extraction fleet); **the GCE Set generator writes, blind-solves and repairs on Opus 5.5 and moderates on Fable** since 23 Sep 2026 (`docs/GCE-PAPER.md`) | accuracy of the maths itself |
 
 Running every fix on the dearest tier is not "safer" — it costs plan usage for no
 gain on work the bench already proves. Running rule wording on the cheapest tier
@@ -164,3 +164,11 @@ re-ink; and re-issue only after Adrian has seen the redrawn pages.
   night the bench became a hard gate in the bot's push hook and the pen gained its
   runtime self-check (F19) — §3's "verified on the bench" now happens by itself. Adrian: "do what you propose — make sure any session on any account
   knows this, but make this a living spec".
+- 23 Sep 2026 — GCE Set papers (the `gce-paper` skill: author, blind solve, moderate,
+  repair, figures) move to Opus 5.5 for every role. Adrian: "I think you can just use
+  opus 5.5 for all". Both Set 1s were Fable-written; the first Set made this way is the
+  comparison — count its repair rounds against E Math Set 1's 24 of 36 slots.
+  Later the same day (Adrian: "use the trial split, but change solves blind to opus
+  5.5"): the moderator goes back to Fable, so the judge is a different model from the
+  writer and the one that scored the earlier Sets; author, blind solve, repair and
+  figures stay on Opus 5.5.
