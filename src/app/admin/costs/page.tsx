@@ -86,10 +86,17 @@ export default function CostsPage() {
 
             <section className="bg-white rounded-xl border border-neutral-200 p-4 mb-4 overflow-x-auto">
               <div className="font-medium mb-2">By day</div>
-              <table className="text-sm w-full min-w-[520px]">
-                <thead><tr className="text-neutral-500 text-xs text-left"><th className="py-1">day</th><th>papers</th><th>pages</th><th>Mac pages</th><th className="text-right">Claude (bot pricing)</th><th className="text-right">Gemini tokens</th></tr></thead>
+              <table className="text-sm w-full min-w-[640px]">
+                <thead><tr className="text-neutral-500 text-xs text-left"><th className="py-1">day</th><th>papers</th><th>pages</th><th>Mac pages</th><th className="text-right">Claude</th><th className="text-right">Gemini</th><th className="text-right">total</th><th className="text-right">Gemini tokens</th></tr></thead>
                 <tbody>{data.byDay.map(d => (
-                  <tr key={d.day} className="border-t border-neutral-100"><td className="py-1">{d.day}</td><td>{d.runs}</td><td>{d.pages}</td><td>{d.macPages}</td><td className="text-right tabular-nums">{money(d.cost)}</td><td className="text-right tabular-nums text-neutral-500">{d.geminiTokens ? d.geminiTokens.toLocaleString() : '—'}</td></tr>
+                  <tr key={d.day} className="border-t border-neutral-100"><td className="py-1">{d.day}</td><td>{d.runs}</td><td>{d.pages}</td><td>{d.macPages}</td>
+                    <td className="text-right tabular-nums">{money(d.claudeCost)}</td>
+                    <td className="text-right tabular-nums" title={d.geminiUnpriced ? `${d.geminiUnpriced} paper(s) marked before Gemini was priced (24 Sep 2026) — tokens only` : undefined}>
+                      {d.geminiCost > 0 ? money(d.geminiCost) : d.geminiUnpriced ? <span className="text-neutral-400">not priced</span> : '—'}
+                      {d.geminiCost > 0 && d.geminiUnpriced ? <span className="text-xs text-neutral-400"> +{d.geminiUnpriced} unpriced</span> : null}
+                    </td>
+                    <td className="text-right tabular-nums">{money(d.cost)}</td>
+                    <td className="text-right tabular-nums text-neutral-500">{d.geminiTokens ? d.geminiTokens.toLocaleString() : '—'}</td></tr>
                 ))}</tbody>
               </table>
             </section>
@@ -97,7 +104,7 @@ export default function CostsPage() {
             <section className="bg-white rounded-xl border border-neutral-200 p-4 mb-4 overflow-x-auto">
               <div className="font-medium mb-2">Every paper, newest first</div>
               <table className="text-sm w-full min-w-[720px]">
-                <thead><tr className="text-neutral-500 text-xs text-left"><th className="py-1">when</th><th>student</th><th>paper</th><th>lane</th><th>pages</th><th className="text-right">cost</th><th className="text-right">¢ / API page</th><th className="text-right">tokens in / out</th></tr></thead>
+                <thead><tr className="text-neutral-500 text-xs text-left"><th className="py-1">when</th><th>student</th><th>paper</th><th>lane</th><th>pages</th><th className="text-right">cost</th><th className="text-right">Claude ¢ / API page</th><th className="text-right">tokens in / out</th></tr></thead>
                 <tbody>{data.runs.map(r => (
                   <tr key={r.id} className="border-t border-neutral-100">
                     <td className="py-1 whitespace-nowrap">{new Date(r.at).toLocaleString('en-SG', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Singapore' })}</td>
@@ -105,7 +112,7 @@ export default function CostsPage() {
                     <td className="max-w-[240px] truncate" title={r.paper}><a href={`/admin/desk?run=${r.id}`} className="hover:underline">{r.paper}</a></td>
                     <td className="whitespace-nowrap">{PATH_LABEL[r.path] ?? r.path}{r.macPages && r.macPages < r.pages ? <span className="text-xs text-neutral-400"> · {r.macPages} Mac</span> : null}{r.batched === false && r.path === 'api-queue' ? <span className="text-xs text-amber-700"> · not batched</span> : null}</td>
                     <td>{r.pages}</td>
-                    <td className="text-right tabular-nums">{money(r.cost)}</td>
+                    <td className="text-right tabular-nums whitespace-nowrap">{money(r.cost)}{r.geminiCost != null ? <div className="text-[10px] text-neutral-400" title={r.gemini?.models.join(', ') || undefined}>Claude {money(r.claudeCost)} · Gemini {money(r.geminiCost)}</div> : null}</td>
                     <td className="text-right tabular-nums">{r.centsPerPage == null ? '—' : `${r.centsPerPage}¢`}</td>
                     <td className="text-right tabular-nums text-neutral-500 whitespace-nowrap">{r.tokensIn.toLocaleString()} / {r.tokensOut.toLocaleString()}</td>
                   </tr>

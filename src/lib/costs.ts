@@ -1,14 +1,18 @@
 // /admin/costs — what the marking pipeline spends, per run and per day
 // (9 Sep 2026, Adrian: "I need real cost breakdown on usage via API").
 //
-// `cost_usd` on a run is the bot's own pricing of the Claude tokens it used
+// `cost_usd` on a run is the bot's own pricing of the tokens it used
 // (ai/paper-marker.js finalizeUsage: sync at list price, the 🌙 batch buckets
-// at 50 %, cache reads at 10 %) — the same token counts Anthropic bills, so it
-// tracks the invoice to the cent when the price table is current. It never
-// includes Gemini (placement — Google bills it) and it is $0 for the pages the
-// Mac read on the plan. Since 9 Sep 2026 evening a run also carries
-// `result_json.usage.buckets` and `result_json.vision_usage`; older runs show
-// the total only. Pure — the route feeds rows, the page renders.
+// at 50 %, cache reads at 10 %) — $0 for the pages the Mac read on the plan.
+// Since 24 Sep 2026 it is Claude + Gemini (placement, priced per call on the
+// model that answered — bot ai/vision-cost.js), with the two kept apart as
+// `usage.claudeCostUsd` / `usage.visionCostUsd` and `vision_usage.costUsd`.
+// Before that it was Claude only, so a run with no `claudeCostUsd` is all
+// Claude and its Gemini is unpriced (null here, never a guess). The Claude
+// part is what compares with the Anthropic invoice. Since 9 Sep 2026 evening
+// a run also carries `result_json.usage.buckets` and `result_json.vision_usage`
+// tokens; older runs show the total only. Pure — the route feeds rows, the
+// page renders.
 import { markingPath, isHandin, type MarkingPath } from './marking-path';
 import { sgtDateISO } from './sgt';
 
@@ -27,8 +31,8 @@ export type CostRunRow = {
     queue?: { queued_at?: string; mark_now?: boolean; external_claim?: { by?: string; at?: string; delivered_at?: string; released_at?: string } | null } | null;
     portal_submission?: unknown;
     telegram_handin?: unknown;
-    usage?: { batched?: boolean; external?: boolean; externalReads?: number; buckets?: Record<string, number> } | null;
-    vision_usage?: { inputTokens?: number; outputTokens?: number; pages?: number } | null;
+    usage?: { batched?: boolean; external?: boolean; externalReads?: number; buckets?: Record<string, number>; claudeCostUsd?: number; visionCostUsd?: number } | null;
+    vision_usage?: { inputTokens?: number; outputTokens?: number; pages?: number; calls?: number; costUsd?: number; byModel?: Record<string, { calls?: number; costUsd?: number }> } | null;
   } | null;
 };
 
@@ -41,7 +45,13 @@ export type CostEntry = {
   pages: number;
   path: MarkingPath;
   handin: boolean;
+  /** The run's whole cost — Claude + Gemini since 24 Sep 2026, Claude only before. */
   cost: number;
+  /** The Claude part (what the Anthropic invoice bills). */
+  claudeCost: number;
+  /** The Gemini part; null on runs from before Gemini was priced. */
+  geminiCost: number | null;
+  /** Claude cents per page the API read (Gemini runs on every page, Mac-read ones too). */
   centsPerPage: number | null;
   tokensIn: number;
   tokensOut: number;
@@ -50,10 +60,12 @@ export type CostEntry = {
   macPages: number;
   batched: boolean | null;
   buckets: Record<string, number> | null;
-  gemini: { inputTokens: number; outputTokens: number; pages: number } | null;
+  gemini: { inputTokens: number; outputTokens: number; pages: number; cost: number | null; models: string[] } | null;
 };
 
 const num = (v: unknown) => (Number.isFinite(Number(v)) ? Number(v) : 0);
+const has = (v: unknown) => v != null && v !== '' && Number.isFinite(Number(v));
+const r4 = (n: number) => Math.round(n * 10000) / 10000;
 
 export function costEntries(rows: CostRunRow[]): CostEntry[] {
   return (rows || [])
@@ -67,32 +79,37 @@ export function costEntries(rows: CostRunRow[]): CostEntry[] {
       const apiPages = Math.max(0, pages - macPages);
       const cost = num(r.cost_usd);
       const vu = rj.vision_usage || null;
+      const geminiCost = usage && has(usage.visionCostUsd) ? num(usage.visionCostUsd) : vu && has(vu.costUsd) ? num(vu.costUsd) : null;
+      const claudeCost = usage && has(usage.claudeCostUsd) ? num(usage.claudeCostUsd) : Math.max(0, cost - (geminiCost ?? 0));
       return {
         id: r.id, at: r.created_at, day: sgtDateISO(new Date(r.created_at)),
         student: r.student_name || null, paper: r.paper_name || 'Paper', pages, path,
         handin: isHandin(r as Parameters<typeof isHandin>[0]),
-        cost: Math.round(cost * 10000) / 10000,
-        centsPerPage: apiPages > 0 ? Math.round((cost / apiPages) * 100) : null,
+        cost: r4(cost), claudeCost: r4(claudeCost), geminiCost: geminiCost == null ? null : r4(geminiCost),
+        centsPerPage: apiPages > 0 ? Math.round((claudeCost / apiPages) * 100) : null,
         tokensIn: num(r.input_tokens), tokensOut: num(r.output_tokens), model: r.model || null,
         macPages, batched: usage ? !!usage.batched : null,
         buckets: usage && usage.buckets ? usage.buckets : null,
-        gemini: vu ? { inputTokens: num(vu.inputTokens), outputTokens: num(vu.outputTokens), pages: num(vu.pages) } : null,
+        gemini: vu ? { inputTokens: num(vu.inputTokens), outputTokens: num(vu.outputTokens), pages: num(vu.pages), cost: geminiCost, models: vu.byModel ? Object.keys(vu.byModel) : [] } : null,
       };
     })
     .sort((a, b) => b.at.localeCompare(a.at));
 }
 
-export type DayTotal = { day: string; runs: number; pages: number; macPages: number; cost: number; geminiTokens: number };
+/** `geminiCost` sums the runs that carry a price; `geminiUnpriced` counts the ones that don't (older runs). */
+export type DayTotal = { day: string; runs: number; pages: number; macPages: number; cost: number; claudeCost: number; geminiCost: number; geminiUnpriced: number; geminiTokens: number };
 
 export function costByDay(entries: CostEntry[]): DayTotal[] {
   const m = new Map<string, DayTotal>();
   for (const e of entries) {
-    const d = m.get(e.day) ?? { day: e.day, runs: 0, pages: 0, macPages: 0, cost: 0, geminiTokens: 0 };
-    d.runs += 1; d.pages += e.pages; d.macPages += e.macPages; d.cost += e.cost;
+    const d = m.get(e.day) ?? { day: e.day, runs: 0, pages: 0, macPages: 0, cost: 0, claudeCost: 0, geminiCost: 0, geminiUnpriced: 0, geminiTokens: 0 };
+    d.runs += 1; d.pages += e.pages; d.macPages += e.macPages; d.cost += e.cost; d.claudeCost += e.claudeCost;
+    if (e.geminiCost != null) d.geminiCost += e.geminiCost; else if (e.gemini) d.geminiUnpriced += 1;
     d.geminiTokens += e.gemini ? e.gemini.inputTokens + e.gemini.outputTokens : 0;
     m.set(e.day, d);
   }
-  return [...m.values()].map(d => ({ ...d, cost: Math.round(d.cost * 100) / 100 })).sort((a, b) => b.day.localeCompare(a.day));
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+  return [...m.values()].map(d => ({ ...d, cost: r2(d.cost), claudeCost: r2(d.claudeCost), geminiCost: r2(d.geminiCost) })).sort((a, b) => b.day.localeCompare(a.day));
 }
 
 export type PathTotal = { runs: number; pages: number; cost: number };
@@ -148,7 +165,8 @@ export function foldCostLines(report: CostReport): BillLine[] {
 // ── The bot's per-feature ledger (Airtable CostLog), folded into parts ─────────
 // Mirrors the bot's lib/cost-buckets.js BUCKETS so the Telegram /costs report and
 // this page name the same parts. Marking joined the ledger on 9 Sep 2026 evening;
-// before that its cost lives only on the run rows above.
+// before that its cost lives only on the run rows above. Its Gemini calls joined
+// on 24 Sep 2026 (marking_vision / _split / _preflight / _overlay → ✏️ marking).
 export type LedgerRow = { date: string; feature: string; model: string; cost: number; calls: number };
 export type Part = 'marking' | 'science' | 'web' | 'practice' | 'checks' | 'telegram' | 'other';
 const PARTS: Array<{ key: Part; test: RegExp }> = [
