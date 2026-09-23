@@ -89,16 +89,13 @@ jobs:
       - name: "C · render.sh under sh (dash) and bash"
         run: |
           S="$RUNNER_TEMP/gce"
-          for k in author moderate; do
-            out=$(sh .claude/skills/gce-paper/prompts/render.sh $k "$S/run" 1 1,2,3); echo "$out"
-            grep -c "Elementary Mathematics" "$out"
-          done
-          for k in blind repair; do
-            out=$(bash .claude/skills/gce-paper/prompts/render.sh $k "$S/run" 1 4); echo "$out"
-            grep -c "Elementary Mathematics" "$out"
-          done
+          # Every placeholder filled, the run dir written in (blind.md names no subject, by design).
+          filled() { echo "$1"; ! grep -n '__[A-Z]*__' "$1" && grep -q "$S/run" "$1"; }
+          for k in author moderate; do filled "$(sh .claude/skills/gce-paper/prompts/render.sh $k "$S/run" 1 1,2,3)"; done
+          for k in blind repair; do filled "$(bash .claude/skills/gce-paper/prompts/render.sh $k "$S/run" 1 4)"; done
+          grep -c "Elementary Mathematics (4052)\|Elementary Mathematics 4052\|4052" "$S/run/prompt-author-Q1-2-3.md"
           chmod +x .claude/skills/gce-paper/prompts/render.sh
-          .claude/skills/gce-paper/prompts/render.sh author "$S/run" 1 5
+          filled "$(.claude/skills/gce-paper/prompts/render.sh author "$S/run" 1 5)"
 
       - name: "D · export-docx.py → lo-pdf.sh (soffice found on PATH)"
         run: |
