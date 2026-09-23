@@ -1,87 +1,131 @@
 'use client';
-// 📷 Practice photo — the client half (SPEC-PRACTICE-PHOTO §5). Same camera
-// wiring as Find a question (find-client.tsx): a downscaled JPEG or typed text
-// → POST /api/portal/practice/photo → the page refreshes so the Writing… row
-// shows on the list below.
-import { useRef, useState } from 'react';
+// 📷 Practice photo — the client half (SPEC-PRACTICE-PHOTO §5). A downscaled
+// JPEG or typed text → POST /api/portal/practice/photo → the page refreshes so
+// the Writing… row shows on the list below.
+//
+// The camera and album doors are <label>s wrapping their file inputs (not a
+// scripted input.click() on a display:none input): a label tap is a native
+// activation, which every phone honours — including iOS in a home-screen web
+// app, where a scripted click on a hidden input can open nothing at all
+// (Adrian, 23 Sep 2026: "the buttons for take photo and album not working").
+import { useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 import type { FindLevelOption } from '@/lib/portal-find';
 import { fileToJpegDataUrl } from './image-downscale';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
+// Off-screen but still a real, focusable input (never display:none).
+const INPUT = 'sr-only';
 
 type PhotoReply = { ok: true; assignmentId: string; title: string; reskin: boolean; remaining: number };
+type Busy = null | 'photo' | 'text';
 
 export default function PhotoClient({ levels }: { levels: FindLevelOption[] }) {
   const router = useRouter();
-  const cameraRef = useRef<HTMLInputElement>(null);
-  const albumRef = useRef<HTMLInputElement>(null);
+  const uid = useId();
   const [level, setLevel] = useState<FindLevelOption['key']>(levels[0]?.key ?? 'EM');
   const [typed, setTyped] = useState('');
   const [typing, setTyping] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<Busy>(null);
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
 
-  async function submit(body: { imageBase64?: string; text?: string }) {
-    setBusy(true); setMsg(null);
+  async function submit(body: { imageBase64?: string; text?: string }, kind: Exclude<Busy, null>) {
+    setBusy(kind); setMsg(null);
     try {
       const r = await portalFetch<PhotoReply>('/api/portal/practice/photo', {
         json: { ...body, level },
         fallback: 'Could not send that — try again.',
       });
-      setMsg({ kind: 'ok', text: `Writing a ${r.title} question for you — it will appear below in a few minutes.${r.remaining <= 2 ? ` ${r.remaining} more today.` : ''}` });
+      setMsg({ kind: 'ok', text: `Writing a ${r.title} question for you — it appears below in a few minutes.${r.remaining <= 2 ? ` ${r.remaining} more today.` : ''}` });
       setTyped(''); setTyping(false);
       router.refresh();
     } catch (e) {
       setMsg({ kind: 'err', text: portalMessage(e) });
     } finally {
-      setBusy(false);
+      setBusy(null);
     }
   }
 
   async function onPhoto(file: File | undefined) {
     if (!file) return;
-    setBusy(true); setMsg(null);
+    setBusy('photo'); setMsg(null);
     try {
       const dataUrl = await fileToJpegDataUrl(file);
-      await submit({ imageBase64: dataUrl.split(',')[1] });
+      await submit({ imageBase64: dataUrl.split(',')[1] }, 'photo');
     } catch (e) {
       setMsg({ kind: 'err', text: portalMessage(e) });
-      setBusy(false);
+      setBusy(null);
     }
   }
 
+  const locked = busy !== null;
+  const cameraId = `${uid}-camera`;
+  const albumId = `${uid}-album`;
+
   return (
     <section className={`${CARD} p-4 space-y-3`}>
-      <div className="flex items-baseline justify-between gap-3">
-        <p className="font-semibold text-navy">📷 Snap a question</p>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="font-semibold text-navy">Snap a question</p>
+          <p className="text-xs text-gray-500">Get a new one that tests the same skill.</p>
+        </div>
         {levels.length > 1 && (
-          <div className="flex gap-1">
+          <div className="flex gap-1 shrink-0" role="radiogroup" aria-label="Which subject?">
             {levels.map(l => (
-              <button key={l.key} type="button" onClick={() => setLevel(l.key)}
-                className={`text-[11px] font-semibold rounded-full px-2.5 py-1 ${level === l.key ? 'bg-navy text-white' : 'bg-gray-100 text-gray-600'}`}>{l.label}</button>
+              <button key={l.key} type="button" role="radio" aria-checked={level === l.key} disabled={locked}
+                onClick={() => setLevel(l.key)}
+                className={`text-[11px] font-semibold rounded-full px-2.5 py-1 border transition ${
+                  level === l.key ? 'bg-navy text-white border-navy' : 'bg-white text-gray-600 border-black/10'}`}>
+                {l.label}
+              </button>
             ))}
           </div>
         )}
       </div>
-      <p className="text-sm text-gray-600">Photograph a question you want more of. We write a new one that tests the same skill and put it on your list.</p>
-      <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => { onPhoto(e.target.files?.[0]); e.target.value = ''; }} />
-      <input ref={albumRef} type="file" accept="image/*" className="hidden" onChange={e => { onPhoto(e.target.files?.[0]); e.target.value = ''; }} />
-      <div className="flex flex-wrap gap-2">
-        <button type="button" disabled={busy} onClick={() => cameraRef.current?.click()} className="flex-1 min-w-[8rem] bg-navy text-white font-semibold rounded-xl px-4 py-3 disabled:opacity-50">{busy ? 'Sending…' : '📷 Take a photo'}</button>
-        <button type="button" disabled={busy} onClick={() => albumRef.current?.click()} className="bg-gray-100 text-navy font-semibold rounded-xl px-4 py-3 disabled:opacity-50">🖼 Album</button>
-        <button type="button" disabled={busy} onClick={() => setTyping(v => !v)} className="bg-gray-100 text-navy font-semibold rounded-xl px-4 py-3 disabled:opacity-50">⌨️ Type</button>
-      </div>
-      {typing && (
-        <div className="space-y-2">
-          <textarea value={typed} onChange={e => setTyped(e.target.value)} rows={3} maxLength={4000} placeholder="Type the question here" className="w-full text-sm rounded-xl border border-black/10 px-3 py-2" />
-          <div className="text-right">
-            <button type="button" disabled={busy || typed.trim().length < 8} onClick={() => submit({ text: typed.trim() })} className="text-sm font-semibold bg-navy text-white rounded-full px-4 py-2 disabled:opacity-50">Send</button>
-          </div>
+
+      {/* Camera: `capture` sends iOS straight to the camera, so the album door needs its own input without it. */}
+      <input id={cameraId} type="file" accept="image/*" capture="environment" className={INPUT} disabled={locked}
+        onChange={e => { onPhoto(e.target.files?.[0]); e.target.value = ''; }} />
+      <input id={albumId} type="file" accept="image/*" className={INPUT} disabled={locked}
+        onChange={e => { onPhoto(e.target.files?.[0]); e.target.value = ''; }} />
+
+      {busy ? (
+        <div className="flex items-center gap-3 rounded-xl bg-[hsl(45,80%,96%)] px-4 py-3" role="status">
+          <div className="h-5 w-5 shrink-0 rounded-full border-[3px] border-navy/20 border-t-navy animate-spin" aria-hidden />
+          <p className="text-sm font-semibold text-navy">{busy === 'photo' ? 'Reading your photo…' : 'Reading your question…'}</p>
         </div>
+      ) : (
+        <>
+          <label htmlFor={cameraId}
+            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-navy px-4 py-3.5 text-[15px] font-semibold text-white active:opacity-80">
+            <span aria-hidden>📷</span> Take a photo
+          </label>
+          <div className="flex items-center justify-center gap-4 text-sm font-semibold text-navy/80">
+            <label htmlFor={albumId} className="cursor-pointer underline-offset-2 hover:underline">🖼 From album</label>
+            <span className="text-gray-300" aria-hidden>·</span>
+            <button type="button" onClick={() => setTyping(v => !v)} className="underline-offset-2 hover:underline">
+              ⌨️ {typing ? 'Never mind' : 'Type it'}
+            </button>
+          </div>
+        </>
       )}
-      {msg && <p className={`text-sm ${msg.kind === 'ok' ? 'text-emerald-800' : 'text-red-700'}`}>{msg.text}</p>}
+
+      {typing && !busy && (
+        <form className="space-y-2" onSubmit={e => { e.preventDefault(); if (typed.trim().length >= 8) submit({ text: typed.trim() }, 'text'); }}>
+          <textarea value={typed} onChange={e => setTyped(e.target.value)} rows={3} maxLength={4000} autoFocus
+            placeholder="Type the question — e.g. Solve 2x² − 5x + 2 = 0"
+            className="w-full rounded-xl border border-black/10 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy/30" />
+          <div className="flex justify-end">
+            <button type="submit" disabled={typed.trim().length < 8}
+              className="rounded-full bg-navy px-4 py-2 text-sm font-semibold text-white disabled:opacity-40">Send</button>
+          </div>
+        </form>
+      )}
+
+      {msg && (
+        <p className={`rounded-xl px-3 py-2 text-sm ${msg.kind === 'ok' ? 'bg-emerald-50 text-emerald-800' : 'bg-red-50 text-red-700'}`}>{msg.text}</p>
+      )}
     </section>
   );
 }
