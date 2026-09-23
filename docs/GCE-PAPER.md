@@ -79,11 +79,13 @@ edits (a cloud session writing A Math Set 2 had to patch each by hand); the Mac 
 are unchanged and come first unless an env var overrides them:
 - `assemble`'s Chrome (`src/lib/generate-pdf.ts` `localChromePath`): `CHROME_PATH` /
   `PUPPETEER_EXECUTABLE_PATH` → the Mac's Google Chrome → the newest
-  `$PLAYWRIGHT_BROWSERS_PATH/chromium-*/chrome-linux/chrome` (default `/opt/pw-browsers`,
+  `$PLAYWRIGHT_BROWSERS_PATH/chromium-*/chrome-linux{,64}/chrome` (default `/opt/pw-browsers`,
   where the cloud containers keep one).
-- `lo-pdf.sh`: `SOFFICE` → the Mac app → `soffice` / `libreoffice` on PATH. Ubuntu needs
-  `libreoffice-writer`, `libreoffice-math` and `libreoffice-script-provider-python` (without
-  the last the macro never runs and the script says so).
+- `lo-pdf.sh`: `SOFFICE` → the Mac app → `soffice` / `libreoffice` on PATH. Ubuntu:
+  `libreoffice-writer`, `libreoffice-math` and `libreoffice-script-provider-python` (the macro).
+  Ubuntu 24.04's LibreOffice 24.2 aborts on a macro named on the command line, so when the
+  macro does not run the script converts plainly with the formula size set in a fresh profile
+  (`Office.Math/StandardFormat/BaseSize`) — the same pages; `LOPDF_VIA=convert` forces it.
 - `figure.mjs`: `BOT_REPO` → the Mac checkout → the bot cloned beside this repo as
   `adrianmath-telegram-bot` (the GitHub name) or `adrianmath-telegram-math-bot`, with
   `npm install` done there (sharp).

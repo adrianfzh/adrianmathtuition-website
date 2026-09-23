@@ -77,7 +77,8 @@ the gates, the figure files, publishing). Student-facing side:
   - PDFs (`assemble`): Chrome comes from `CHROME_PATH` / `PUPPETEER_EXECUTABLE_PATH`, else
     the Mac's Google Chrome, else the newest Playwright Chromium under `/opt/pw-browsers`.
   - `lo-pdf.sh`: `SOFFICE`, else the Mac app, else `soffice` on PATH — on Ubuntu
-    `apt install libreoffice-writer libreoffice-math libreoffice-script-provider-python`.
+    `apt install libreoffice-writer libreoffice-math libreoffice-script-provider-python`
+    (where the macro cannot run, e.g. Ubuntu 24.04, it converts with the size set in the profile).
   - `figure.mjs`: `BOT_REPO`, else the Mac checkout, else the bot cloned BESIDE this repo
     (`../adrianmath-telegram-bot` or `../adrianmath-telegram-math-bot`, `npm install` done).
   - `render.sh` is POSIX sh — run it with `sh`; zsh is not needed.

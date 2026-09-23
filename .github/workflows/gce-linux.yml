@@ -12,6 +12,7 @@ on:
 jobs:
   linux:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -104,13 +105,14 @@ jobs:
           python scripts/gce-paper/export-docx.py "$J" --out "$S/docx"
           ls -la "$S/docx"
           D=$(ls "$S"/docx/*.docx | grep -v solutions | head -1)
-          # Diagnostic: why the command-line macro does not start on this LibreOffice.
           soffice --version
-          P0="$(mktemp -d)/lo"; mkdir -p "$P0/user/Scripts/python"; cp scripts/gce-paper/lopdf.py "$P0/user/Scripts/python/"
-          env -u LD_LIBRARY_PATH PYSCRIPT_LOG_LEVEL=DEBUG PYSCRIPT_LOG_STDOUT=1 LOPDF_SRC="$D" LOPDF_DST="$S/diag.pdf" LOPDF_SIZE=10 LOPDF_LOG="$P0/log.txt" \
-            timeout 120 soffice --headless --norestore "-env:UserInstallation=file://$P0" \
-            'vnd.sun.star.script:lopdf.py$main?language=Python&location=user' 2>&1 | grep -v '^/usr/lib\|^/lib' | tail -30 || true
-          echo "macro route log: $(cat "$P0/log.txt" 2>/dev/null || echo 'never written')"
           time bash scripts/gce-paper/lo-pdf.sh "$D"
-          echo "soffice left running: $(pgrep -c soffice || true)"
-          P="${D%.docx}.pdf"; ls -la "$P"; pdfinfo "$P" | grep Pages
+          P="${D%.docx}.pdf"; echo "lo-pdf: $(pdfinfo "$P" | grep Pages)"
+          # A plain convert beside it: formulas at LibreOffice's own 12 pt.
+          soffice --headless --convert-to pdf --outdir "$S/plain" "$D" >/dev/null 2>&1
+          echo "plain: $(pdfinfo "$S/plain/$(basename "$P")" | grep Pages)"
+          mkdir -p "$S/show"; cp "$P" "$S/show/lo-pdf.pdf"; cp "$S/plain/$(basename "$P")" "$S/show/plain.pdf"; cp "$S"/pdf/*.pdf "$S/show/"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: gce-linux-pdfs, path: "${{ runner.temp }}/gce/show", retention-days: 3 }

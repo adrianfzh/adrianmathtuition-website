@@ -1,10 +1,11 @@
-import os, sys, time, uno
+import os, uno
 from com.sun.star.beans import PropertyValue
 def pv(n, v):
     p = PropertyValue(); p.Name = n; p.Value = v; return p
-def convert(desk):
+def main(*a):
     log = open(os.environ['LOPDF_LOG'], 'w')
     try:
+        desk = XSCRIPTCONTEXT.getDesktop()
         doc = desk.loadComponentFromURL(uno.systemPathToFileUrl(os.environ['LOPDF_SRC']), '_blank', 0, (pv('Hidden', True),))
         n = 0
         objs = doc.getEmbeddedObjects()
@@ -20,21 +21,6 @@ def convert(desk):
     except Exception as e:
         log.write('ERR ' + repr(e) + '\n')
     log.close()
-    try: desk.terminate()
+    try: XSCRIPTCONTEXT.getDesktop().terminate()
     except Exception: pass
-def main(*a):
-    convert(XSCRIPTCONTEXT.getDesktop())
 g_exportedScripts = (main,)
-# The pipe route (lo-pdf.sh's fallback): `python lopdf.py <pipe name>` with a
-# Python that has LibreOffice's uno module, against `soffice --accept=pipe,...`.
-if __name__ == '__main__':
-    local = uno.getComponentContext()
-    resolver = local.ServiceManager.createInstanceWithContext('com.sun.star.bridge.UnoUrlResolver', local)
-    for _ in range(120):
-        try:
-            ctx = resolver.resolve(f'uno:pipe,name={sys.argv[1]};urp;StarOffice.ComponentContext'); break
-        except Exception:
-            time.sleep(0.5)
-    else:
-        sys.exit('lopdf: LibreOffice did not answer on the pipe')
-    convert(ctx.ServiceManager.createInstanceWithContext('com.sun.star.frame.Desktop', ctx))
