@@ -831,8 +831,12 @@ one run answers both questions.
    of rows are transcribed, and falls through when under 60 % of lines are placed. Those
    same checks can hand a page Flash could not read over to Pro, so most pages go to Flash
    and only the hard ones pay for Pro. (Swapping the order alone is a Fly secret,
-   `GEMINI_VISION_MODELS`; the hand-over on a thin scan is a small code change.) Flash costs a
-   fraction of Pro per token.
+   `GEMINI_VISION_MODELS`; the hand-over on a thin scan is a small code change.) Published
+   prices (third-party pages, 24 Sep 2026): Flash US$0.75 / US$3.75 per Mtok against Pro's
+   US$2 / US$12 — about a third — until 31 Dec 2026, then US$1.50 / US$7.50, about 60 % of
+   Pro. On Roboflow's general Vision Evals, 3.7 Flash scores at or above 3.1 Pro on object
+   detection (69.4 % vs 67.4 % mAP@50); those are everyday objects, not lines of
+   handwriting, so the trial decides.
 3. **A small picture for "which way up?".** That call only needs to see the text direction; a
    ~512-pixel copy is a quarter of the tokens of the marking copy.
 4. **Fewer calls.** Redraws already reuse the stored boxes. A page whose row scan comes back
