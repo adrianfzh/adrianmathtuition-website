@@ -11,10 +11,33 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { MathMarkdown } from '@/lib/math-markdown';
+import { questionMarkdown, solutionMarkdown, type BankPart, type BankQuestion } from '@/lib/bank-question-markdown';
 import type { GeneratedRow } from '@/app/api/admin/generated/route';
 
 function fmtWhen(iso: string): string {
   return new Date(iso).toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
+
+// Where a generated row came from, in one chip (gen_meta.kind): a Set paper slot,
+// a practice photo, the finder, or the nightly top-up (no kind, twin_of only).
+function sourceChip(meta: Record<string, unknown>, twinOf: string | null): string {
+  const kind = typeof meta.kind === 'string' ? meta.kind : '';
+  if (kind === 'gce-set') return `📚 Set ${meta.set ?? '?'} · ${meta.key ?? ''}${meta.slot != null ? ` slot ${meta.slot}` : ''}`;
+  if (kind === 'practice-photo') return '📷 Practice photo';
+  if (kind === 'find') return '🔍 Find a question';
+  if (kind) return kind;
+  return twinOf ? '🌙 top-up twin' : 'generated';
+}
+
+// Per-part answers, indented like the question ("**(a)** 31.5 / (i) 9.28…").
+function partAnswers(parts: unknown, depth = 0): string {
+  if (!Array.isArray(parts)) return '';
+  const pad = '&nbsp;&nbsp;'.repeat(depth);
+  return (parts as BankPart[]).map(pt => {
+    const ans = (pt as { answer?: unknown }).answer;
+    const line = pt.label ? `${pad}**(${pt.label})** ${ans == null || ans === '' ? '—' : String(ans)}` : '';
+    return [line, partAnswers(pt.subparts, depth + 1)].filter(Boolean).join('\n\n');
+  }).filter(Boolean).join('\n\n');
 }
 
 function Card({ r, onAction }: { r: GeneratedRow; onAction: (id: string, action: 'restore' | 'retire') => Promise<void> }) {
@@ -24,6 +47,15 @@ function Card({ r, onAction }: { r: GeneratedRow; onAction: (id: string, action:
   const reported = Boolean(r.reported_at);
   const meta = r.gen_meta ?? {};
   const reskin = meta.reskin === true || Boolean(r.twin_of);
+  // The bank's own renderer: stem images + text + the parts tree with marks.
+  const bq: BankQuestion = {
+    id: r.id, question_text: r.question_text, parts: Array.isArray(r.parts) ? (r.parts as BankPart[]) : null,
+    image_url: r.image_url, images: Array.isArray(r.images) ? (r.images as { filename: string }[]) : null,
+    solution: r.solution, answer: r.answer,
+  };
+  // A generated figure lives in figure_url (Set papers), a bank scan in question_image_url.
+  const figure = r.figure_url || r.question_image_url || null;
+  const answers = partAnswers(r.parts);
   return (
     <section className={`bg-white rounded-xl shadow-sm border p-4 ${reported ? 'border-red-300' : retired ? 'border-neutral-300 opacity-60' : 'border-neutral-200'}`}>
       <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-500">
@@ -32,6 +64,7 @@ function Card({ r, onAction }: { r: GeneratedRow; onAction: (id: string, action:
         {r.topics?.length ? <span className="rounded-full bg-neutral-100 px-2 py-0.5">{r.topics.join(" · ")}</span> : null}
         {typeof meta.subgroup === 'string' && <span className="rounded-full bg-sky-50 text-sky-700 px-2 py-0.5">{meta.subgroup}</span>}
         {r.total_marks != null && <span>[{r.total_marks}]</span>}
+        <span className="rounded-full bg-emerald-50 text-emerald-700 px-2 py-0.5">{sourceChip(meta, r.twin_of)}</span>
         <span className={`rounded-full px-2 py-0.5 ${reskin ? 'bg-violet-50 text-violet-700' : 'bg-amber-50 text-amber-700'}`}>{reskin ? 're-skin' : 'from scratch'}</span>
         {r.student && <span>for <b>{r.student}</b></span>}
         {retired && <span className="rounded-full bg-neutral-200 px-2 py-0.5">retired</span>}
@@ -42,18 +75,22 @@ function Card({ r, onAction }: { r: GeneratedRow; onAction: (id: string, action:
         </div>
       )}
       <div className="mt-3 text-sm text-neutral-900">
-        <MathMarkdown content={r.question_text || '(no text)'} />
-        {r.has_image && r.image_url && (
+        {figure && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={r.image_url} alt="figure" className="mt-2 max-h-64 rounded border border-neutral-200" />
+          <img src={figure} alt="figure" className="mb-3 max-h-72 rounded border border-neutral-200 bg-white" />
         )}
+        <MathMarkdown content={questionMarkdown(bq) || '(no text)'} />
       </div>
       <button onClick={() => setOpen(o => !o)} className="mt-3 text-xs text-neutral-500 hover:text-neutral-800">{open ? '▾ Hide' : '▸ Solution + seed'}</button>
       {open && (
         <div className="mt-2 space-y-3 text-sm">
           <div className="rounded-lg bg-neutral-50 p-3">
-            <div className="text-[11px] uppercase tracking-wider text-neutral-400 mb-1">Solution{r.answer ? ` · answer: ${r.answer}` : ''}</div>
-            <MathMarkdown content={r.solution || '(none)'} />
+            <div className="text-[11px] uppercase tracking-wider text-neutral-400 mb-1">Answers</div>
+            <MathMarkdown content={[r.answer ? `**Answer:** ${r.answer}` : '', answers].filter(Boolean).join('\n\n') || '(none)'} />
+          </div>
+          <div className="rounded-lg bg-neutral-50 p-3">
+            <div className="text-[11px] uppercase tracking-wider text-neutral-400 mb-1">Solution</div>
+            <MathMarkdown content={solutionMarkdown({ ...bq, answer: null }) || '(none)'} />
           </div>
           <div className="rounded-lg bg-neutral-50 p-3">
             <div className="text-[11px] uppercase tracking-wider text-neutral-400 mb-1">

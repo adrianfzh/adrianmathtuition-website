@@ -17,12 +17,12 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const COLUMNS = 'id, created_at, level, topics, question_text, solution, answer, total_marks, difficulty, has_image, image_url, parts, twin_of, gen_meta, reported_at, reported_by, report_reason, deleted_at, flagged_count';
+const COLUMNS = 'id, created_at, level, topics, question_text, solution, answer, total_marks, difficulty, has_image, image_url, figure_url, question_image_url, images, parts, twin_of, gen_meta, reported_at, reported_by, report_reason, deleted_at, flagged_count';
 
 export type GeneratedRow = {
   id: string; created_at: string; level: string | null; topics: string[] | null; question_text: string | null;
   solution: string | null; answer: string | null; total_marks: number | null; difficulty: string | null;
-  has_image: boolean | null; image_url: string | null; parts: unknown; twin_of: string | null;
+  has_image: boolean | null; image_url: string | null; figure_url: string | null; question_image_url: string | null; images: unknown; parts: unknown; twin_of: string | null;
   gen_meta: Record<string, unknown> | null; reported_at: string | null; reported_by: string | null;
   report_reason: string | null; deleted_at: string | null; flagged_count: number | null;
   seed?: { id: string; school: string | null; year: number | null; paper: string | null; question_text: string | null; total_marks: number | null } | null;
