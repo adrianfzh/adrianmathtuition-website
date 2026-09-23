@@ -28,7 +28,7 @@ import {
   HOLD_SNAP_MS, snapHeldStroke, heldStill, isDoubleTap,
   emptyHistory, pushHistory, undoInk, redoInk, type InkHistory,
   COLOR_GRID, COLOR_GRID_COLUMNS, normalizeHex, rememberColor, recentColors,
-  type Selection, type Box, selectByLasso, selectionBox, inBox, moveSelected, recolorSelected, deleteSelected, duplicateSelected,
+  type Selection, type Box, selectByLasso, selectionBox, inBox, moveSelected, recolorSelected, resizeSelected, selectionColor, selectionSize, deleteSelected, duplicateSelected,
   type TrailPoint, trailAlive,
 } from '@/lib/inline-ink';
 import type { Stroke, StrokePoint } from '@/lib/annotate/types';
@@ -49,7 +49,11 @@ const pathOf = (pts: StrokePoint[]) => pts.map((p, i) => `${i ? 'L' : 'M'}${p.x}
 /** The lasso's selection on THIS page (23 Sep 2026): which strokes, their box, and what the chip above it can do. */
 type SurfaceSelection = {
   ids: number[]; box: Box | null;
-  move: (dx: number, dy: number) => void; recolor: () => void; duplicate: () => void; remove: () => void; done: () => void;
+  /** The one colour of the selected strokes, or null when they differ (the chip's swatch). */
+  color: string | null;
+  /** Open the palette FOR the selection (colour + size); a pick changes the selected strokes and keeps them selected. */
+  style: () => void;
+  move: (dx: number, dy: number) => void; duplicate: () => void; remove: () => void; done: () => void;
 };
 
 type SurfaceProps = {
@@ -400,8 +404,8 @@ function PageSurface({ page, mine, other, tool, color, hlColor, pointerColor, si
             ? { top: `${((selection.box.maxY + mine.w * 0.03) / mine.h) * 100}%`, transform: 'translate(-50%, 0)' }
             : { top: `${((selection.box.minY - mine.w * 0.03) / mine.h) * 100}%`, transform: 'translate(-50%, -100%)' }) }}
           role="toolbar" aria-label="Selected notes" data-selection-chip>
-          <button type="button" onClick={selection.recolor} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/15" aria-label="Colour the selection with the pen colour" title="Colour with the pen's colour">
-            <span aria-hidden className="block w-4 h-4 rounded-full ring-2 ring-white/80" style={{ background: color }} />
+          <button type="button" onClick={selection.style} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/15" aria-label="Colour and size of the selection" title="Colour and size">
+            <span aria-hidden className="block w-4 h-4 rounded-full ring-2 ring-white/80" style={{ background: selection.color ?? 'conic-gradient(#f43f5e, #f59e0b, #22c55e, #3b82f6, #a855f7, #f43f5e)' }} />
           </button>
           <button type="button" onClick={selection.duplicate} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/15" aria-label="Duplicate" title="Duplicate">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden><path d="M8 8h12v12H8z M16 8V4H4v12h4" /></svg>
@@ -451,7 +455,8 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
   // The pointer's colour (23 Sep 2026, Adrian: "can we have more colours for pointer?") — the pen's palette, red by default.
   const [pointerColor, setPointerColor] = useState<string>(LASER);
   // The popover above the pill: colours + sizes for the pen and highlighter, sizes for the eraser (22 Sep 2026).
-  const [palette, setPalette] = useState<InkTool | null>(null);
+  // 'sel' = the lasso selection's own palette (23 Sep 2026): its picks change the selected strokes, not the pen.
+  const [palette, setPalette] = useState<InkTool | 'sel' | null>(null);
   // Sizes (22 Sep 2026): one per tool, remembered on this device per editor.
   const sizeKey = (t: InkTool) => `ink-size:${isAdrian ? 'adrian' : 'student'}:${t}`;
   const [sizes, setSizes] = useState<Record<InkTool, InkSize>>({ pen: INK_SIZE_DEFAULT, hl: INK_SIZE_DEFAULT, er: INK_SIZE_DEFAULT, lasso: INK_SIZE_DEFAULT, pointer: INK_SIZE_DEFAULT });
@@ -469,15 +474,26 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
     } catch { /* private mode: defaults */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- read once on mount
   }, []);
-  const pickColor = (t: 'pen' | 'hl' | 'pointer', raw: string, opts: { keepOpen?: boolean } = {}) => {
+  const pickColor = (t: 'pen' | 'hl' | 'pointer' | 'sel', raw: string, opts: { keepOpen?: boolean } = {}) => {
     const hex = normalizeHex(raw); if (!hex) return;
+    if (t === 'sel') {
+      // recolour what the lasso holds and keep it selected (and the palette open) so the student can try another
+      const sel = selectionRef.current; if (!sel) return;
+      change(cur => recolorSelected(cur, sel, hex));
+      return;
+    }
     if (t === 'pen') setPenColor(hex); else if (t === 'hl') setHlColor(hex); else setPointerColor(hex);
     const quick = (t === 'hl' ? HL_COLORS : PEN_COLORS).some(c => c.hex === hex);
     if (!quick) setRecent(cur => { const next = rememberColor(cur, hex); try { window.localStorage.setItem(recentKey, JSON.stringify(next)); } catch { /* fine */ } return next; });
     try { window.localStorage.setItem(colorKey(t), hex); } catch { /* fine */ }
     if (!opts.keepOpen) { setPalette(null); setGrid(false); }
   };
-  const pickSize = (t: InkTool, sz: InkSize) => {
+  const pickSize = (t: InkTool | 'sel', sz: InkSize) => {
+    if (t === 'sel') {
+      const sel = selectionRef.current; if (!sel) return;
+      change(cur => resizeSelected(cur, sel, sz));
+      return;
+    }
     setSizes(cur => ({ ...cur, [t]: sz }));
     try { window.localStorage.setItem(sizeKey(t), sz); } catch { /* fine */ }
     setPalette(null);
@@ -495,6 +511,10 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
   const onDoubleTap = useCallback(() => { setPalette(null); setGrid(false); setSelection(null); setTool(cur => (cur === 'er' ? lastDrawTool : 'er')); }, [lastDrawTool]);
   // The lasso's selection (23 Sep 2026, Adrian: "lasso to select and do stuff"): one page at a time.
   const [selection, setSelection] = useState<Selection | null>(null);
+  const selectionRef = useRef<Selection | null>(null);
+  selectionRef.current = selection;
+  // the selection's palette goes with the selection
+  useEffect(() => { if (!selection) setPalette(cur => (cur === 'sel' ? null : cur)); }, [selection]);
   const [fingerWrites, setFingerWrites] = useState(false);
   const [show, setShow] = useState(true);
   const [showOther, setShowOther] = useState(true);
@@ -592,15 +612,15 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
     if (!selection) return null;
     const sel = selection;
     return {
-      ids: sel.ids, box: selectionBox(inkRef.current, sel),
+      ids: sel.ids, box: selectionBox(inkRef.current, sel), color: selectionColor(inkRef.current, sel),
       move: (dx, dy) => change(cur => moveSelected(cur, sel, dx, dy)),
-      recolor: () => change(cur => recolorSelected(cur, sel, penColor)),
+      style: () => { setGrid(false); setPalette(cur => (cur === 'sel' ? null : 'sel')); },
       duplicate: () => { let next: Selection | null = null; change(cur => { const r = duplicateSelected(cur, sel); next = r.selection; return r.pages; }); if (next) setSelection(next); },
       remove: () => { change(cur => deleteSelected(cur, sel)); setSelection(null); },
       done: () => setSelection(null),
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps -- ink is read through inkRef; the box only moves through `change`, which re-renders
-  }, [selection, penColor, change, ink]);
+  }, [selection, change, ink]);
   const clear = () => {
     if (!window.confirm('Clear your notes on every page of this paper? The marked copy stays as it is.')) return;
     change(() => ({}));
@@ -700,9 +720,10 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
           )}
           {palette && (
             <div className="rounded-3xl bg-white/95 backdrop-blur shadow-lg border border-black/5 px-2 py-1.5 flex flex-col items-center gap-1 max-w-[calc(100vw-16px)]" role="group"
-              aria-label={palette === 'pen' ? 'Pen colour and size' : palette === 'hl' ? 'Highlighter colour and size' : palette === 'pointer' ? 'Pointer colour' : 'Eraser size'} data-palette={palette}>
-              {(palette === 'pen' || palette === 'hl' || palette === 'pointer') && (() => {
-                const cur = palette === 'pen' ? penColor : palette === 'hl' ? hlColor : pointerColor;
+              aria-label={palette === 'pen' ? 'Pen colour and size' : palette === 'hl' ? 'Highlighter colour and size' : palette === 'pointer' ? 'Pointer colour' : palette === 'sel' ? 'Colour and size of the selection' : 'Eraser size'} data-palette={palette}>
+              {palette === 'sel' && <div className="text-[11px] font-semibold text-navy/70 pt-0.5">Selected notes</div>}
+              {(palette === 'pen' || palette === 'hl' || palette === 'pointer' || palette === 'sel') && (() => {
+                const cur = palette === 'pen' ? penColor : palette === 'hl' ? hlColor : palette === 'pointer' ? pointerColor : (selectionColor(inkRef.current, selection) ?? '');
                 const tintOf = (hex: string) => (palette === 'hl' ? `${hex}b3` : hex);
                 const swatch = (hex: string, name: string, small = false) => {
                   const on = cur === hex;
@@ -726,7 +747,7 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
                       {/* The device's own picker (the iPad's wheel, sliders and eyedropper) — the whole suit of colours. */}
                       <label className="relative w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" title="Any colour — the device's colour wheel" aria-label="Any colour">
                         <span aria-hidden className="block w-6 h-6 rounded-full ring-1 ring-black/10" style={{ background: 'conic-gradient(#f43f5e, #f59e0b, #facc15, #22c55e, #06b6d4, #3b82f6, #a855f7, #f43f5e)' }} />
-                        <input type="color" value={cur} onChange={e => pickColor(palette, e.target.value, { keepOpen: true })} onBlur={() => { setPalette(null); setGrid(false); }}
+                        <input type="color" value={cur || '#000000'} onChange={e => pickColor(palette, e.target.value, { keepOpen: true })} onBlur={() => { if (palette !== 'sel') { setPalette(null); setGrid(false); } }}
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" data-color-wheel />
                       </label>
                     </div>
@@ -745,15 +766,15 @@ export default function StudentInk({ runId, pages, initial, readOnly = false, ot
                   </>
                 );
               })()}
-              {(palette === 'pen' || palette === 'hl' || palette === 'er') && <div className="flex items-center gap-1" role="group" aria-label="Size" data-sizes={palette}>
+              {(palette === 'pen' || palette === 'hl' || palette === 'er' || palette === 'sel') && <div className="flex items-center gap-1" role="group" aria-label="Size" data-sizes={palette}>
                 {INK_SIZES.map(sz => {
-                  const on = sizes[palette] === sz;
+                  const on = palette === 'sel' ? selectionSize(inkRef.current, selection) === sz : sizes[palette] === sz;
                   const dot = sz === 'S' ? 'w-1.5 h-1.5' : sz === 'M' ? 'w-3 h-3' : 'w-5 h-5';
                   // the eraser's dot IS its reach: drawn from the same table the page erases with (23 Sep 2026)
                   const erDot = { width: ERASER_SCREEN_PX[sz] * 2, height: ERASER_SCREEN_PX[sz] * 2 };
-                  const tint = palette === 'pen' ? penColor : palette === 'hl' ? `${hlColor}b3` : '#9ca3af';
+                  const tint = palette === 'pen' ? penColor : palette === 'hl' ? `${hlColor}b3` : palette === 'sel' ? (selectionColor(inkRef.current, selection) ?? '#1f2937') : '#9ca3af';
                   return (
-                    <button key={sz} type="button" onClick={() => pickSize(palette, sz)} aria-label={`${sz === 'S' ? 'Small' : sz === 'M' ? 'Medium' : 'Large'} ${palette === 'er' ? 'eraser' : palette === 'hl' ? 'highlighter' : 'pen'}`} aria-pressed={on}
+                    <button key={sz} type="button" onClick={() => pickSize(palette, sz)} aria-label={`${sz === 'S' ? 'Small' : sz === 'M' ? 'Medium' : 'Large'} ${palette === 'er' ? 'eraser' : palette === 'hl' ? 'highlighter' : palette === 'sel' ? 'selection' : 'pen'}`} aria-pressed={on}
                       className={`w-11 h-11 rounded-full flex items-center justify-center transition ${on ? 'bg-navy/10 ring-2 ring-navy' : 'hover:bg-navy/5'}`}>
                       <span aria-hidden className={`block rounded-full ${palette === 'er' ? 'border border-gray-500 bg-white' : dot}`} style={palette === 'er' ? erDot : { background: tint }} />
                     </button>

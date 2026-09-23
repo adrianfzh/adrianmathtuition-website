@@ -174,6 +174,19 @@ describe('inline ink — sizes, the partial eraser, the toolbar under zoom (22 S
       const red = I.recolorSelected(pages, sel, '#dc2626');
       expect(red[0].strokes.map(s => s.color)).toEqual(['#dc2626', '#2563eb', '#dc2626']);
       expect(I.recolorSelected(pages, sel, 'red')).toBe(pages);
+      // the selection's own palette (23 Sep 2026): size follows the tool's width table, colour/size read back when uniform
+      const nat = { w: 1000, h: 1414 };
+      const big = I.resizeSelected(pages, sel, 'L');
+      expect(big[0].strokes.map(s => s.width)).toEqual([I.toolWidth('pen', nat, 'L'), 3, I.toolWidth('pen', nat, 'L')]);
+      expect(I.selectionSize(big, sel)).toBe('L');
+      expect(I.selectionSize(pages, sel)).toBeNull();                       // width 3 is no size on a 1000 px page
+      expect(I.resizeSelected(big, sel, 'L')).toBe(big);
+      const hlPages: InkPages = { 0: { w: 1000, h: 1414, strokes: [{ ...line(100, 100), tool: 'highlighter' }] } };
+      expect(I.resizeSelected(hlPages, { index: 0, ids: [0] }, 'S')[0].strokes[0].width).toBe(I.toolWidth('hl', nat, 'S'));
+      expect(I.selectionColor(pages, sel)).toBe('#2563eb');
+      expect(I.selectionColor(pages, { index: 0, ids: [0, 1] })).toBe('#2563eb');
+      expect(I.selectionColor(red, { index: 0, ids: [0, 1] })).toBeNull();
+      expect(I.selectionColor(pages, null)).toBeNull();
       const gone = I.deleteSelected(pages, sel);
       expect(gone[0].strokes.length).toBe(1);
       expect(I.deleteSelected(pages, { index: 0, ids: [0, 1, 2] })[0]).toBeUndefined();

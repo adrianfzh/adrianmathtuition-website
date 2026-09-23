@@ -228,7 +228,9 @@ export function inBox(box: Box | null, x: number, y: number, pad = 0): boolean {
 const mapSelected = (pages: InkPages, sel: Selection, f: (s: Stroke) => Stroke): InkPages => {
   const cur = pages[sel.index]; if (!cur) return pages;
   const set = new Set(sel.ids);
-  return { ...pages, [sel.index]: { ...cur, strokes: cur.strokes.map((s, i) => (set.has(i) ? f(s) : s)) } };
+  const strokes = cur.strokes.map((s, i) => (set.has(i) ? f(s) : s));
+  if (strokes.every((s, i) => s === cur.strokes[i])) return pages;   // nothing changed → the same object, so undo has nothing to file
+  return { ...pages, [sel.index]: { ...cur, strokes } };
 };
 const shift = (s: Stroke, dx: number, dy: number): Stroke => ({ ...s, points: s.points.map(p => ({ ...p, x: Math.round((p.x + dx) * 10) / 10, y: Math.round((p.y + dy) * 10) / 10 })) });
 
@@ -240,6 +242,35 @@ export function moveSelected(pages: InkPages, sel: Selection, dx: number, dy: nu
 export function recolorSelected(pages: InkPages, sel: Selection, color: string): InkPages {
   const hex = normalizeHex(color); if (!hex) return pages;
   return mapSelected(pages, sel, s => (s.color === hex ? s : { ...s, color: hex }));
+}
+/**
+ * Give the selected strokes the width the pen (or highlighter) draws at `size` on this page
+ * (23 Sep 2026, Adrian: "colour/style is still not working for lasso" — the chip now opens the
+ * palette FOR the selection, so a colour or a size tap changes what is selected, not the pen).
+ */
+export function resizeSelected(pages: InkPages, sel: Selection, size: InkSize): InkPages {
+  const cur = pages[sel.index]; if (!cur) return pages;
+  const nat = { w: cur.w, h: cur.h };
+  return mapSelected(pages, sel, s => {
+    const w = toolWidth(s.tool === 'highlighter' ? 'hl' : 'pen', nat, size);
+    return s.width === w ? s : { ...s, width: w };
+  });
+}
+/** The colour the palette shows as "on" for a selection: the one colour every selected stroke has, else null. */
+export function selectionColor(pages: InkPages, sel: Selection | null): string | null {
+  if (!sel) return null;
+  const cur = pages[sel.index]; if (!cur) return null;
+  const colors = new Set(sel.ids.map(i => cur.strokes[i]?.color).filter(Boolean));
+  return colors.size === 1 ? [...colors][0]! : null;
+}
+/** The size the palette shows as "on" for a selection: the one size every selected stroke is drawn at, else null. */
+export function selectionSize(pages: InkPages, sel: Selection | null): InkSize | null {
+  if (!sel) return null;
+  const cur = pages[sel.index]; if (!cur) return null;
+  const nat = { w: cur.w, h: cur.h };
+  const sizes = new Set(sel.ids.map(i => cur.strokes[i]).filter(Boolean)
+    .map(s => INK_SIZES.find(sz => toolWidth(s.tool === 'highlighter' ? 'hl' : 'pen', nat, sz) === s.width) ?? 'none'));
+  return sizes.size === 1 && [...sizes][0] !== 'none' ? ([...sizes][0] as InkSize) : null;
 }
 /** Remove the selected strokes; a page left empty is dropped so the layer can be "empty". */
 export function deleteSelected(pages: InkPages, sel: Selection): InkPages {
