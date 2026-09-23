@@ -23,9 +23,27 @@ cp "$HERE/lopdf.py" "$PROFILE/user/Scripts/python/lopdf.py"
 export LOPDF_SRC="$SRC" LOPDF_DST="${SRC%.docx}.pdf" LOPDF_SIZE="${2:-10}" LOPDF_LOG="$PROFILE/log.txt"
 # The macro runs in LibreOffice's own Python; another Python's library path
 # (e.g. a CI runner's setup-python LD_LIBRARY_PATH) stops it from starting.
-env -u LD_LIBRARY_PATH -u PYTHONHOME -u PYTHONPATH "$SOFFICE" --headless --norestore \
+LO="env -u LD_LIBRARY_PATH -u PYTHONHOME -u PYTHONPATH"
+[ "${LOPDF_VIA:-}" = pipe ] || $LO "$SOFFICE" --headless --norestore \
   "-env:UserInstallation=file://$PROFILE" \
   'vnd.sun.star.script:lopdf.py$main?language=Python&location=user' >/dev/null 2>&1 || true
-[ -f "$LOPDF_LOG" ] || { echo "lo-pdf: the macro never ran ($SOFFICE) — on Linux install libreoffice-script-provider-python" >&2; exit 1; }
+if [ ! -f "$LOPDF_LOG" ]; then
+  # Some builds (Ubuntu 24.04's LibreOffice 24.2) crash running a macro named on
+  # the command line: run the same code from a Python with LibreOffice's uno
+  # module, over a pipe. LOPDF_VIA=pipe takes this route first.
+  PY=""
+  for c in "${LOPDF_PYTHON:-}" "$(dirname "$SOFFICE")/../Resources/python" "$(dirname "$SOFFICE")/python" /usr/bin/python3 python3; do
+    [ -n "$c" ] && $LO "$c" -c 'import uno' >/dev/null 2>&1 && { PY="$c"; break; }
+  done
+  [ -n "$PY" ] || { echo "lo-pdf: the macro never ran ($SOFFICE) and no Python here imports uno — on Linux install libreoffice-script-provider-python" >&2; exit 1; }
+  PIPE="lopdf$$"; PROFILE2="$(mktemp -d)/lo"
+  $LO "$SOFFICE" --headless --norestore --invisible "-env:UserInstallation=file://$PROFILE2" \
+    "--accept=pipe,name=$PIPE;urp;" >/dev/null 2>&1 &
+  LOPID=$!
+  $LO "$PY" "$HERE/lopdf.py" "$PIPE" || true
+  for _ in 1 2 3 4 5 6 7 8 9 10; do kill -0 "$LOPID" 2>/dev/null || break; sleep 1; done
+  kill "$LOPID" 2>/dev/null || true
+  [ -f "$LOPDF_LOG" ] || { echo "lo-pdf: LibreOffice ran neither the macro nor the pipe route ($SOFFICE, $PY)" >&2; exit 1; }
+fi
 cat "$LOPDF_LOG"
 grep -q '^ok' "$LOPDF_LOG"

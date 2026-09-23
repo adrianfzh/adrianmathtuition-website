@@ -104,12 +104,13 @@ jobs:
           python scripts/gce-paper/export-docx.py "$J" --out "$S/docx"
           ls -la "$S/docx"
           D=$(ls "$S"/docx/*.docx | grep -v solutions | head -1)
-          # Diagnostic: LibreOffice's own Python with setup-python's LD_LIBRARY_PATH still set.
-          echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-unset}"
-          /usr/bin/python3 -c 'import uno; print("system python imports uno:", uno.__file__)' || true
+          # Diagnostic: why the command-line macro does not start on this LibreOffice.
+          soffice --version
           P0="$(mktemp -d)/lo"; mkdir -p "$P0/user/Scripts/python"; cp scripts/gce-paper/lopdf.py "$P0/user/Scripts/python/"
-          LOPDF_SRC="$D" LOPDF_DST="$S/diag.pdf" LOPDF_SIZE=10 LOPDF_LOG="$P0/log.txt" timeout 120 soffice --headless --norestore \
-            "-env:UserInstallation=file://$P0" 'vnd.sun.star.script:lopdf.py$main?language=Python&location=user' 2>&1 | tail -20 || true
-          echo "with LD_LIBRARY_PATH set, the macro log: $(cat "$P0/log.txt" 2>/dev/null || echo 'never written')"
-          bash scripts/gce-paper/lo-pdf.sh "$D"
+          env -u LD_LIBRARY_PATH PYSCRIPT_LOG_LEVEL=DEBUG PYSCRIPT_LOG_STDOUT=1 LOPDF_SRC="$D" LOPDF_DST="$S/diag.pdf" LOPDF_SIZE=10 LOPDF_LOG="$P0/log.txt" \
+            timeout 120 soffice --headless --norestore "-env:UserInstallation=file://$P0" \
+            'vnd.sun.star.script:lopdf.py$main?language=Python&location=user' 2>&1 | grep -v '^/usr/lib\|^/lib' | tail -30 || true
+          echo "macro route log: $(cat "$P0/log.txt" 2>/dev/null || echo 'never written')"
+          time bash scripts/gce-paper/lo-pdf.sh "$D"
+          echo "soffice left running: $(pgrep -c soffice || true)"
           P="${D%.docx}.pdf"; ls -la "$P"; pdfinfo "$P" | grep Pages
