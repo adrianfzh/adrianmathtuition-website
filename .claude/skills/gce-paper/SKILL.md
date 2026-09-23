@@ -51,7 +51,7 @@ the gates, the figure files, publishing). Student-facing side:
   unparted question, 22 printed targets against 9–12, no linear law). So a later Set
   matches Set 1 question for question and moves the paper's SHAPE toward the real paper
   — step 1c and the whole-paper check in step 4.
-- **The blind solver is a different model from the author** (Opus solves what Fable
+- **The blind solver is a different model from the author** (the solver's model is never the author's — the table below says which; today Fable solves what Opus 5.5
   wrote) and sees ONLY `Q<n>.solve.md` — never the key.
 - **Nothing goes into the bank until Adrian has read the paper** (checkpoint 2 below).
   `assemble` writes files only; `publish.mjs` is a separate, explicit step.
@@ -75,14 +75,21 @@ the gates, the figure files, publishing). Student-facing side:
 
 ## Models per spawn (deliberate — never session-inherit)
 
-> Since 23 Sep 2026 "Opus" = Opus 5.5 (the `opus` alias). Author + moderator stay on Fable until Adrian says otherwise — see `docs/FANOUT.md` §9.
+> **TRIAL since 23 Sep 2026 (Adrian: "test changing the fable parts to opus 5.5"):** author + repair
+> run on **Opus 5.5** (the `opus` alias), the blind solver moves to **Fable** so it still differs from
+> the author, and the moderator STAYS on Fable so the judge is the same one that scored Sets 1–3
+> (a like-for-like reading). Judge the trial on the moderator's `as_good_as_set1` + score against
+> Set 3's, and on Adrian's read of the DOCX.
+>
+> **ORIGINAL (Sets 1–3, until 23 Sep 2026) — restore if the trial reads worse:**
+> author **Fable** · blind solve **Opus** · moderate **Fable** · repair **Fable** · figure author **Opus**.
 
 | step | model | why |
 |---|---|---|
-| author | **Fable** | register + originality are judgment; this is the moat step |
-| blind solve | **Opus** | must differ from the author; solving is mechanical |
+| author | **Opus 5.5** (trial; was Fable) | register + originality are judgment; this is the moat step |
+| blind solve | **Fable** (trial; was Opus) | must differ from the author; solving is mechanical |
 | moderate | **Fable** | compares key vs blind solve, scores style 1–5, names re-skins |
-| repair | **Fable** | same author with the verdict in hand |
+| repair | **Opus 5.5** (trial; was Fable) | same author with the verdict in hand |
 | figure author | **Opus** | mechanical against a written spec doc; verify() catches errors |
 
 Run slots in **waves of agents in parallel** (independent slots; one message, several
@@ -190,7 +197,7 @@ zsh .claude/skills/gce-paper/prompts/render.sh moderate "$RUN" 1 1,2,3
 zsh .claude/skills/gce-paper/prompts/render.sh repair   "$RUN" 1 4
 ```
 
-**Author** (Fable agent) — `prompts/author.md`: reads `author-brief.md`, `standard.md`,
+**Author** (Opus 5.5 agent — trial; was Fable) — `prompts/author.md`: reads `author-brief.md`, `standard.md`,
 `standard-questions-P<n>.md`, `earlier-sets.md`, `paper-so-far.md`, then its
 `Q<n>.brief.md`s; writes `Q<n>.json` in the brief's JSON shape, including `skills` — 1–3
 phrases naming what the question tests, specific enough to tell two questions on one
@@ -210,7 +217,7 @@ novelty nearest-neighbour against the real GCE papers AND against our own earlie
 (question + key + exemplars + the earlier-Set questions on the same topic and the
 nearest in wording). A failed gate → straight to repair.
 
-**Blind solve** (Opus agent) — `prompts/blind.md`: opens ONLY `Q<n>.solve.md` (which
+**Blind solve** (Fable agent — trial; was Opus) — `prompts/blind.md`: opens ONLY `Q<n>.solve.md` (which
 carries its own instructions and the `{"answers": {...}, "solvable": bool, "issues": [...]}`
 shape) and writes `Q<n>.blind.json`. It is never told a key exists.
 
@@ -226,7 +233,7 @@ Set 1 question of similar marks (score ≤ 3, with what Set 1 does that the slot
 the same way as a question of an earlier Set (or of this Set's other paper). Below or above the 2024/25
 standard → score ≤ 3 with concrete fixes.
 
-**Repair** (Fable agent, only when needed) — `prompts/repair.md`: the author again with
+**Repair** (Opus 5.5 agent — trial; was Fable — only when needed) — `prompts/repair.md`: the author again with
 the gates, blind and verdict files, fixing EVERY named problem or writing a new question
 for the slot; then re-run check → blind solve → moderate. Three rounds max — after that,
 replace the question rather than patch it (P2 Q6 of E Math Set 1 took all three).

@@ -669,7 +669,7 @@ async function assemble() {
   const subjectShort = level === 'AM' ? 'A Math' : /^JC/.test(level) ? 'H2 Mathematics' : 'E Math';
   const title = `${subjectShort} · Set ${SET} · Paper ${planJ.paperNo} · ${/^JC/.test(level) ? 'A-Level' : 'O-Level'} format`;
   const paper = {
-    ...planJ, models: { author: 'claude-fable-5-1 (Claude Code agent)', solver: 'claude-opus-5-5 (Claude Code agent)', moderator: 'claude-fable-5-1 (Claude Code agent)' },
+    ...planJ, models: { author: 'claude-opus-5-5 (Claude Code agent; trial since 23 Sep 2026, Sets 1–3 were claude-fable-5-1)', solver: 'claude-fable-5-1 (Claude Code agent; was claude-opus-5)', moderator: 'claude-fable-5-1 (Claude Code agent)' },
     set: SET, title, assembled_at: new Date().toISOString(), questions,
   };
   delete paper.exemplars;
