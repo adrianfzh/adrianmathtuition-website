@@ -231,8 +231,10 @@ queue, SPEC-TEACHING-CYCLE) polls every 5 min (was 15 until 7 Sep 2026) but only
 queued a sheet, so a week with no sheets is normal, not a fault — giving it a
 `JOB_RHYTHMS` line would alarm on his silence. It still stamps `job_runs` on
 success, so the /admin/ops board shows when it last produced something. Same
-reasoning would apply to any future queue-driven worker: rhythms are for jobs
-that MUST run on a clock.
+reasoning applies to `practice-photo-author` (23 Sep 2026 — a sheet slot's idle
+tick writing one Practice-tab photo question on the plan, SPEC-PRACTICE-PHOTO §5;
+it stamps on success and on a plan limit, never on a rhythm) and to any future
+queue-driven worker: rhythms are for jobs that MUST run on a clock.
 
 ## Claude Code scheduled tasks — per-Mac registry
 

@@ -54,7 +54,7 @@ stamp_fail() {
   [ -n "${SHEETS_API_BASE:-}" ] && [ -n "${SHEETS_API_TOKEN:-}" ] || return 0
   curl -s -m 15 -X POST "$SHEETS_API_BASE/api/job-log" \
     -H "Authorization: Bearer $SHEETS_API_TOKEN" -H 'Content-Type: application/json' \
-    -d "{\"job\":\"sheet-worker\",\"ok\":false,\"summary\":$(python3 -c '
+    -d "{\"job\":\"${STAMP_JOB:-sheet-worker}\",\"ok\":false,\"summary\":$(python3 -c '
 import json, sys
 print(json.dumps(sys.argv[1][:300]))' "$1")}" > /dev/null 2>&1 || true
 }
@@ -68,7 +68,7 @@ stamp_ok() {
     -H "Authorization: Bearer $SHEETS_API_TOKEN" -H 'Content-Type: application/json' \
     -d "$(python3 -c '
 import json, sys
-print(json.dumps({"job":"sheet-worker","ok":True,"summary":sys.argv[1][:300],"meta":json.loads(sys.argv[2] or "{}")}))' "$1" "$2")" > /dev/null 2>&1 || true
+print(json.dumps({"job":sys.argv[3] or "sheet-worker","ok":True,"summary":sys.argv[1][:300],"meta":json.loads(sys.argv[2] or "{}")}))' "$1" "$2" "${STAMP_JOB:-sheet-worker}")" > /dev/null 2>&1 || true
 }
 # cleanup_pid is defined HERE, above die(): a die() before the old definition point
 # (the credentials check, --auth-check on a fresh Mac, 13 Sep 2026) printed
@@ -320,16 +320,47 @@ if [ "$WAITING" = "-1" ]; then
   say "peek failed: $(printf '%s' "$JOBS" | head -c 200)"
   cleanup_pid; exit 1
 fi
+# 📷 A PHOTO QUESTION ON THE PLAN (23 Sep 2026, Adrian: "can we use plan usage?
+# … yes, and stay switched off with mac plan only"). A student's Practice-tab
+# photo is a `generation_requests` row (priority 1, requested_by
+# 'practice-photo:<uuid>', SPEC-PRACTICE-PHOTO §5). Under 🖥 Mac plan only the
+# Fly bot's 15-min API overflow stays shut, and the only plan consumer was the
+# nightly top-up — so a photo taken at noon waited for 3:30am. Now a slot with
+# NO sheet to write spends its tick on one photo row instead: the same
+# `claude -p` shape, the bot repo as cwd (its topup-plan-worker.js + skill),
+# PHOTO_PROMPT.md as the brief, one row and stop. A sheet always comes first.
+MODE=sheet
+PHOTO_WAITING=$(printf '%s' "$JOBS" | python3 -c "
+import json,sys
+try: print(int(json.load(sys.stdin).get('photo') or 0))
+except Exception: print(0)")
+PHOTO_REPO="${PHOTO_REPO:-$HOME/dev/adrianmath-telegram-math-bot}"
+PHOTO_PROMPT="$SHEETS_REPO/scripts/sheet-worker/PHOTO_PROMPT.md"
+PHOTO_MAX_RUNTIME_SEC="${PHOTO_MAX_RUNTIME_SEC:-2400}"   # 40 min: one question, gated
+PHOTO_LOCK="$GATE_DIR/photo.lock"   # one photo session per MACHINE — six slots read the same peek
 if [ "$WAITING" = "0" ]; then
-  cleanup_pid; exit 0   # quiet tick — nothing to author
+  [ "$PHOTO_WAITING" -gt 0 ] || { cleanup_pid; exit 0; }   # quiet tick — nothing to author
+  if [ ! -d "$PHOTO_REPO/.git" ] || [ ! -r "$PHOTO_REPO/scripts/topup-plan-worker.js" ]; then
+    # a machine without the bot checkout (the Fly worker) leaves photos to a Mac; say so once an hour
+    if [ -z "$(find "$STATE/photo-skip-noted" -mmin -60 2>/dev/null)" ]; then
+      say "photo waiting ($PHOTO_WAITING) but no bot checkout at $PHOTO_REPO — leaving it to a slot that has one"
+      touch "$STATE/photo-skip-noted"
+    fi
+    cleanup_pid; exit 0
+  fi
+  [ -n "$(find "$PHOTO_LOCK" -maxdepth 0 -mmin +"$(( PHOTO_MAX_RUNTIME_SEC / 60 + 5 ))" 2>/dev/null)" ] && rmdir "$PHOTO_LOCK" 2>/dev/null   # a lock a killed slot left
+  if ! mkdir "$PHOTO_LOCK" 2>/dev/null; then cleanup_pid; exit 0; fi   # another slot on this machine has it
+  trap 'rmdir "$PHOTO_LOCK" 2>/dev/null' EXIT
+  MODE=photo
+  MAX_RUNTIME_SEC="$PHOTO_MAX_RUNTIME_SEC"
 fi
 
-if [ ! -r "$PROMPT" ]; then
+if [ "$MODE" = sheet ] && [ ! -r "$PROMPT" ]; then
   die "missing $PROMPT — run install.sh again"
 fi
 
 # --- run: one sheet, one session -------------------------------------------
-say "START ($WAITING queued, auth=$AUTH_VIA, model=${WORKER_MODEL:-opus}, max ${MAX_RUNTIME_SEC}s)"
+say "START $MODE ($WAITING queued, $PHOTO_WAITING photo, auth=$AUTH_VIA, model=${WORKER_MODEL:-opus}, max ${MAX_RUNTIME_SEC}s)"
 START_EPOCH=$(date +%s)
 cd "$SHEETS_REPO" || die "cannot cd to $SHEETS_REPO"
 
@@ -380,11 +411,23 @@ fi
 # the run so the plan-limit grep below keeps working.
 RUN_JSON="$STATE/work/last-run.json"
 mkdir -p "$STATE/work"
-claude -p "$(cat "$PROMPT")" \
+# 📷 photo mode: the bot repo is the cwd (topup-plan-worker.js, its .env with the
+# Supabase key, the topup-bank skill's gate procedure), PHOTO_PROMPT.md is the
+# brief, and the Agent tool is allowed — the gate battery is fresh-context subagents.
+if [ "$MODE" = photo ]; then
+  [ -r "$PHOTO_PROMPT" ] || die "missing $PHOTO_PROMPT"
+  cd "$PHOTO_REPO" || die "cannot cd to $PHOTO_REPO"
+  GIT_TERMINAL_PROMPT=0 git pull --ff-only --quiet 2>&1 | head -2 >> "$LOG" || true
+  LAUNCH_PROMPT="$PHOTO_PROMPT"; LAUNCH_TOOLS="Bash Read Write Edit Glob Grep TodoWrite Skill Agent"
+else
+  LAUNCH_PROMPT="$PROMPT"; LAUNCH_TOOLS="Bash Read Write Edit Glob Grep TodoWrite Skill"
+fi
+# shellcheck disable=SC2086
+claude -p "$(cat "$LAUNCH_PROMPT")" \
   --model "${WORKER_MODEL:-opus}" \
   --effort "${WORKER_EFFORT:-high}" \
   --permission-mode dontAsk \
-  --allowedTools Bash Read Write Edit Glob Grep TodoWrite Skill \
+  --allowedTools $LAUNCH_TOOLS \
   --setting-sources user project \
   --output-format json \
   < /dev/null > "$RUN_JSON" 2>> "$LOG" &
@@ -436,9 +479,10 @@ fi
 # A job left 'claimed' by a dead session is NOT released here: the lease
 # (lib/sheet-jobs.ts) expires on its own and the next tick reclaims it. That is
 # deliberate — a half-authored sheet should not be retried instantly.
+STAMP_JOB=sheet-worker; [ "$MODE" = photo ] && STAMP_JOB=practice-photo-author   # on-demand, no rhythm (docs/OPS.md)
 if [ "$RC" -eq 0 ]; then
-  say "END ok (${ELAPSED}s)${USAGE_LINE:+ · $USAGE_LINE}"
-  stamp_ok "sheet session ${ELAPSED}s${USAGE_LINE:+ · $USAGE_LINE}" "$USAGE_META"
+  say "END $MODE ok (${ELAPSED}s)${USAGE_LINE:+ · $USAGE_LINE}"
+  stamp_ok "$MODE session ${ELAPSED}s${USAGE_LINE:+ · $USAGE_LINE}" "$USAGE_META"
 elif tail -40 "$LOG" | grep -qiE 'usage limit|rate.?limit|quota|weekly limit|hit your .*limit'; then
   # Name the limit and the account so /admin/ops can say "sheet worker closed" (9 Sep 2026).
   LIMIT_LINE="$(tail -40 "$LOG" | grep -iE 'usage limit|rate.?limit|quota|weekly limit|hit your .*limit' | tail -1 | tr -d '\r' | cut -c1-120)"

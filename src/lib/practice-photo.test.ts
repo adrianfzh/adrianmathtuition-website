@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   countPracticePhotosToday, parseClassification, pickSeed, buildPhotoRequest, intentText,
   writingTitle, parseDoneBody, doneOutcome, parseReportBody, reportReasonText, DAILY_PRACTICE_PHOTO_CAP,
+  countPhotoWaiting, PLAN_WORKER_STALE_MS,
   type PhotoCountingClient,
 } from './practice-photo';
 
@@ -124,6 +125,23 @@ describe('done webhook', () => {
     expect(doneOutcome({ questionIds: [U2], error: null })).toEqual({ status: 'assigned', questionId: U2 });
     expect(doneOutcome({ questionIds: [], error: 'no candidate passed the gates' })).toEqual({ status: 'revoked', reason: 'no candidate passed the gates' });
     expect(doneOutcome({ questionIds: [], error: null })).toEqual({ status: 'revoked', reason: 'no question written' });
+  });
+});
+
+describe('countPhotoWaiting — the slots\' peek', () => {
+  const t0 = Date.parse('2026-09-23T06:00:00Z');
+  const iso = (msAgo: number) => new Date(t0 - msAgo).toISOString();
+  it('counts pending photo rows and stale plan-worker claims, never the nightly top-up rows or a live claim', () => {
+    expect(countPhotoWaiting([
+      { requested_by: 'practice-photo:' + U1, status: 'pending', claimed_by: null, claimed_at: null },
+      { requested_by: 'practice-photo:' + U1, status: 'claimed', claimed_by: 'plan-worker', claimed_at: iso(PLAN_WORKER_STALE_MS + 1) },
+      { requested_by: 'practice-photo:' + U1, status: 'claimed', claimed_by: 'plan-worker', claimed_at: null },
+      { requested_by: 'practice-photo:' + U2, status: 'claimed', claimed_by: 'plan-worker', claimed_at: iso(60_000) },
+      { requested_by: 'practice-photo:' + U2, status: 'claimed', claimed_by: 'fly-worker', claimed_at: iso(PLAN_WORKER_STALE_MS * 2) },
+      { requested_by: 'admin-topup', status: 'pending', claimed_by: null, claimed_at: null },
+      { requested_by: 'practice-photo:' + U2, status: 'done', claimed_by: null, claimed_at: null },
+    ], t0)).toBe(3);
+    expect(countPhotoWaiting([], t0)).toBe(0);
   });
 });
 

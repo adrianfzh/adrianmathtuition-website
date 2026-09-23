@@ -43,6 +43,7 @@ import { sendTelegram } from '@/lib/telegram';
 const notify_marking = (text: string) => sendTelegram(text, 'marking');
 import { logJobRun } from '@/lib/job-log';
 import { offKeys } from '@/lib/slot-accounts';
+import { countPhotoWaiting, PRACTICE_PHOTO_PREFIX, type PhotoQueueRow } from '@/lib/practice-photo';
 import { getSlotAccounts } from '@/lib/slot-accounts-store';
 import { countWaiting, pickNextJob, sanitizeResult, completionMessage, cancelState, isNoSheet, MAX_ATTEMPTS, type SheetJobResult, type SheetJob, type SheetFiledResult, authoredItemsLine } from '@/lib/sheet-jobs';
 import { sendTelegramDocument } from '@/lib/telegram';
@@ -133,7 +134,17 @@ export async function GET(req: NextRequest) {
     if (perr) return NextResponse.json({ error: perr.message }, { status: 500 });
     let off: string[] = [];
     try { off = offKeys(await getSlotAccounts()); } catch { /* fails open: nobody is off */ }
-    return NextResponse.json({ waiting: countWaiting((open ?? []) as Parameters<typeof countWaiting>[0]), off });
+    // 📷 A photo question waiting for a plan slot (23 Sep 2026): a slot with no sheet to
+    // write spends its tick on one of these instead (run.sh's photo branch). Fails to 0 —
+    // a slot that cannot learn about photos still writes sheets.
+    let photo = 0;
+    try {
+      const { data: gr } = await sbp.from('generation_requests')
+        .select('requested_by, status, claimed_by, claimed_at')
+        .like('requested_by', `${PRACTICE_PHOTO_PREFIX}%`).in('status', ['pending', 'claimed']);
+      photo = countPhotoWaiting((gr ?? []) as PhotoQueueRow[]);
+    } catch { /* fails closed to 0 */ }
+    return NextResponse.json({ waiting: countWaiting((open ?? []) as Parameters<typeof countWaiting>[0]), off, photo });
   }
   const paper = (sp.get('paper') || '').trim().slice(0, 120);
   const status = (sp.get('status') || '').trim().slice(0, 20);

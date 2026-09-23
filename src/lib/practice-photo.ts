@@ -130,6 +130,28 @@ export function pickSeed(
 // ── The request row ──────────────────────────────────────────────────────────
 export const PRACTICE_PHOTO_PREFIX = 'practice-photo:';
 
+// ── The slots' peek (23 Sep 2026) ────────────────────────────────────────────
+// A sheet slot with no sheet to write asks "is a photo waiting?" through
+// `sheet-jobs?peek=1` and, when one is, spends its tick on that row instead
+// (scripts/sheet-worker/run.sh, PHOTO_PROMPT.md). Waiting = pending, or claimed
+// by the plan worker and older than its own reclaim age (the bot's
+// scripts/topup-plan-worker.js: CLAIMED_BY 'plan-worker', STALE_MINUTES 240) —
+// a row a dead session left claimed would otherwise wait for the nightly run.
+export const PLAN_WORKER_CLAIMANT = 'plan-worker';
+export const PLAN_WORKER_STALE_MS = 240 * 60_000;
+export type PhotoQueueRow = { requested_by: string | null; status: string | null; claimed_by: string | null; claimed_at: string | null };
+export function countPhotoWaiting(rows: PhotoQueueRow[], now = Date.now()): number {
+  let n = 0;
+  for (const r of rows) {
+    if (!String(r.requested_by ?? '').startsWith(PRACTICE_PHOTO_PREFIX)) continue;
+    if (r.status === 'pending') { n++; continue; }
+    if (r.status !== 'claimed' || r.claimed_by !== PLAN_WORKER_CLAIMANT) continue;
+    const t = r.claimed_at ? Date.parse(r.claimed_at) : NaN;
+    if (Number.isNaN(t) || now - t > PLAN_WORKER_STALE_MS) n++;
+  }
+  return n;
+}
+
 /** What the worker is asked to write — the intent text rides `source_text` for the seed-less case and the ledger. */
 export function intentText(c: Pick<PhotoClassification, 'extractedText' | 'subgroup' | 'marks'>): string {
   const head = c.subgroup ? `Sub-skill: ${c.subgroup.name}${c.subgroup.topic ? ` (${c.subgroup.topic})` : ''}` : 'Sub-skill: unknown';
