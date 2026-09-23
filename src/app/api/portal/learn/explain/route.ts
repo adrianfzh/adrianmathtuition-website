@@ -20,7 +20,7 @@ import type { UnitPayload } from '@/lib/learn-types';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-const MODEL = 'claude-opus-4-8';
+const MODEL = 'claude-opus-5-5';
 const DAILY_CAP = 20;
 const MAX_ANSWER = 200;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

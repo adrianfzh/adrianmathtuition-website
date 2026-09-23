@@ -4,13 +4,13 @@
 // same prompts against any candidate model so you know when a cheaper/open model
 // clears your accuracy bar and you can flip this one line.
 
-export const GRADING_MODEL = process.env.LEARN_GRADING_MODEL || 'claude-opus-4-8';
+export const GRADING_MODEL = process.env.LEARN_GRADING_MODEL || 'claude-opus-5-5';
 
 // Models the grader may be asked to run, exposed as a picker on /solo so you can
 // A/B a candidate against the default. Keep this allowlist tight — the route only
 // honours a client-supplied model if it's in here (otherwise it ignores it).
 export const GRADING_MODELS = [
-  { id: 'claude-opus-4-8', label: 'Opus 4.8 (default)' },
+  { id: 'claude-opus-5-5', label: 'Opus 4.8 (default)' },
   { id: 'claude-sonnet-5', label: 'Sonnet 5 (test)' },
 ] as const;
 

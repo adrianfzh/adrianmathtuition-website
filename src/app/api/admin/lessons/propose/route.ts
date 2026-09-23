@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
   let body: { level?: string; topics?: string[]; questionIds?: string[]; rejectedIds?: string[]; model?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'bad json' }, { status: 400 }); }
   const { level, topics, questionIds, rejectedIds = [] } = body;
-  const model = body.model === 'fable' ? 'claude-fable-5' : 'claude-opus-4-8';
+  const model = body.model === 'fable' ? 'claude-fable-5' : 'claude-opus-5-5';
   if (!level || !Array.isArray(topics) || topics.length === 0 || !Array.isArray(questionIds) || questionIds.length === 0) {
     return NextResponse.json({ error: 'level, topics, questionIds required' }, { status: 400 });
   }

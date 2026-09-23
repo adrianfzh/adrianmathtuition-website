@@ -75,6 +75,8 @@ the gates, the figure files, publishing). Student-facing side:
 
 ## Models per spawn (deliberate — never session-inherit)
 
+> Since 23 Sep 2026 "Opus" = Opus 5.5 (the `opus` alias). Author + moderator stay on Fable until Adrian says otherwise — see `docs/FANOUT.md` §9.
+
 | step | model | why |
 |---|---|---|
 | author | **Fable** | register + originality are judgment; this is the moat step |

@@ -485,7 +485,7 @@ function candidateUrl(path: string, side: Record<string, unknown>): string {
   return `${imgSrc(`${BUCKET}/candidates/${obj(path)}`)}${v}`;
 }
 
-const JUDGE_MODEL = process.env.FIGURE_JUDGE_MODEL || 'claude-opus-5';
+const JUDGE_MODEL = process.env.FIGURE_JUDGE_MODEL || 'claude-opus-5-5';
 
 /**
  * 🧹 Clean — judge by looking, erase exactly, store a CANDIDATE (9 Sep 2026).

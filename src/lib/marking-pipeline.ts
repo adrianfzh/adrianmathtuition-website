@@ -681,7 +681,7 @@ export async function callSonnetMarking(
   const makeCall = (userText: string) =>
     withSonnetRetry(
       () => client.messages.create({
-        model: 'claude-opus-5',
+        model: 'claude-opus-5-5',
         max_tokens: 8000,
         system: systemPrompt,
         messages: [

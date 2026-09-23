@@ -11,7 +11,7 @@
 // Run:  node scripts/golden-anatomy-check.mjs                 # first 5 items, 1 sample each
 //       node scripts/golden-anatomy-check.mjs --n 39 --samples 3   # full set (integrator)
 //       node scripts/golden-anatomy-check.mjs --items 0,3,7   # specific items
-// Env:  PRACTICE_EVAL_MODEL (default claude-opus-5)
+// Env:  PRACTICE_EVAL_MODEL (default claude-opus-5-5)
 //
 // PASS = every item's median baseline score equals its median with-anatomy score.
 // With --samples 1 a 1-mark disagreement can be plain sampling noise (the grader
@@ -26,7 +26,7 @@ const env = Object.fromEntries(fs.readFileSync(new URL('../.env.local', import.m
   .split('\n').filter(l => l.includes('=') && !l.startsWith('#'))
   .map(l => [l.slice(0, l.indexOf('=')), l.slice(l.indexOf('=') + 1).replace(/^["']|["']$/g, '')]));
 const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
-const MODEL = process.env.PRACTICE_EVAL_MODEL || 'claude-opus-5'; // = GRADING_MODEL in practice-grade.ts
+const MODEL = process.env.PRACTICE_EVAL_MODEL || 'claude-opus-5-5'; // = GRADING_MODEL in practice-grade.ts
 
 const arg = (name, dflt) => {
   const i = process.argv.indexOf(name);

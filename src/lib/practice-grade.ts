@@ -10,7 +10,7 @@ import { createServiceClient } from './supabase-server';
 import { ERROR_TAGS, buildGradingPrompt, type MethodHint, type PitfallHint } from './practice-grade-prompt';
 import { parseMarkAnatomy, type MarkAnatomyItem } from './mark-anatomy';
 
-export const GRADING_MODEL = 'claude-opus-5';
+export const GRADING_MODEL = 'claude-opus-5-5';
 export const DAILY_GRADE_CAP = 20;
 
 export { ERROR_TAGS };

@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     ? `${SYSTEM}\n\n--- CONTEXT ---\n${JSON.stringify(contextItem, null, 2)}`
     : SYSTEM;
   const response = await client.messages.create({
-    model: 'claude-opus-4-8',
+    model: 'claude-opus-5-5',
     max_tokens: 2000,
     system: [{ type: 'text', text: systemWithCtx, cache_control: { type: 'ephemeral' } }],
     messages,

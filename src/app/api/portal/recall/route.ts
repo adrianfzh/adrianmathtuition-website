@@ -19,7 +19,7 @@ import type { UnitKind } from '@/lib/learn-types';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-const MODEL = 'claude-opus-4-8';
+const MODEL = 'claude-opus-5-5';
 const MAX_TURNS = 10;
 const MAX_CHARS = 500;
 const DAILY_CAP = 30;

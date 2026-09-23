@@ -7,7 +7,7 @@ import { segment, type Ann } from '@/lib/learn/segment';
 // authoritative allowlist. Kept inline so the grading prompts aren't pulled into
 // the client bundle. Must stay in sync with GRADING_MODELS there.
 const GRADING_MODELS = [
-  { id: 'claude-opus-4-8', label: 'Opus 4.8 (default)' },
+  { id: 'claude-opus-5-5', label: 'Opus 4.8 (default)' },
   { id: 'claude-sonnet-5', label: 'Sonnet 5 (test)' },
 ] as const;
 

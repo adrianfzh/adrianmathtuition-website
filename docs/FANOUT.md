@@ -118,6 +118,8 @@ rounds can be compared.
 
 **The split today (models as of Sep 2026 — Fable 5.1 / Opus 5 / Sonnet 5):**
 
+> **23 Sep 2026 — Opus 5.5 shipped.** Every API pin in both repos (`claude-opus-5`, `claude-opus-4-8`) now reads `claude-opus-5-5` ($4/$20 per Mtok, was $5/$25); the `opus` alias an agent spawn or a Mac slot passes resolves to it. The Fable rows below are UNCHANGED for now: Opus 5.5 outscores Fable 5.1 on the published benchmarks, so the moat question is open — which "Fable only" rows (marking rules, GCE author + moderator, bank solutions) move to Opus 5.5? Adrian decides after the golden bench re-reads under the new marking pin.
+
 | work | model | why |
 |---|---|---|
 | pen and drawing code, adapters, reconciliation code, any fix with a bench (`npm test` golden replay, `scripts/golden-pen.cjs`, `pen-dryrun.cjs`) | **Opus** agent, in its own clone | mechanical once the cause is named; the bench, not the model, is the proof |
