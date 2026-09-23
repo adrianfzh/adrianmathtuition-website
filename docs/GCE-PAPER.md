@@ -56,15 +56,20 @@ shape), `Q<n>.brief.md` per slot (topic, marks, real GCE questions on the topic 
 STYLE anchors only), `paper-so-far.md`, `corpus.json` (every real GCE question of the
 level, for the novelty gate), `plan.json`.
 
-The round per slot, orchestrated by the session with the Agent tool:
+The round per slot, orchestrated by the session with the Agent tool. **Every agent is
+Opus 5.5 since 23 Sep 2026** (Adrian: "I think you can just use opus 5.5 for all"); until
+then Fable 5.1 wrote, moderated and repaired and Opus 5 solved blind, which is how both
+Set 1s were made. The blind solver is still a fresh agent that never sees the key, so
+independence now rests on context isolation alone — the moderator and Adrian's read are
+the backstop for a blind spot the model shares with itself.
 
 | step | who | reads | writes |
 |---|---|---|---|
-| author | **Fable** agent | `author-brief.md`, `Q<n>.brief.md`, `paper-so-far.md` | `Q<n>.json` |
+| author | **Opus** agent | `author-brief.md`, `Q<n>.brief.md`, `paper-so-far.md` | `Q<n>.json` |
 | gates | `check` | `Q<n>.json` | `Q<n>.gates.json`, `Q<n>.solve.md`, `Q<n>.moderate.md` |
-| blind solve | **Opus** agent (a different model from the author, on purpose) | ONLY `Q<n>.solve.md` (no key) | `Q<n>.blind.json` |
-| moderate | **Fable** agent | `Q<n>.moderate.md` (question + key + exemplars), `Q<n>.blind.json` | `Q<n>.verdict.json` |
-| repair | Fable agent with the verdict | | `Q<n>.json` again → re-check → re-solve → re-moderate |
+| blind solve | a **fresh Opus** agent (no key, no author context) | ONLY `Q<n>.solve.md` (no key) | `Q<n>.blind.json` |
+| moderate | **Opus** agent | `Q<n>.moderate.md` (question + key + exemplars), `Q<n>.blind.json` | `Q<n>.verdict.json` |
+| repair | Opus agent with the verdict | | `Q<n>.json` again → re-check → re-solve → re-moderate |
 
 Gates in `check`: marks sum = slot target, topics ⊂ bank names, worked solution present,
 word-trigram Jaccard vs every real GCE question of the level ≤ 0.4 (nearest recorded).
@@ -130,7 +135,9 @@ Files the paper in the bank as the Print-a-paper **Set** preset
 `school='AdrianMath'`, `exam_type='Set <n>'`, `paper='1'|'2'`, `question_number` = slot,
 `level` = the blueprint family (AM/EM/JC), `year` = generation year, `difficulty
 'Standard'`, `verified=false` (Adrian flips it), `ai_generated=true`,
-`solution_source='fable_session'`, parts with bank-style bare labels (`a`, `i`), and
+`solution_source` = `'opus_session'` or `'fable_session'` by the author the paper JSON
+records (`models.author`, written into `plan.json` by `brief` since 23 Sep 2026; both Set
+1s say Fable), parts with bank-style bare labels (`a`, `i`), and
 `gen_meta {kind:'gce-set', set_key, set_item, seed, gates, blind_agree, figure, …}`.
 Figures: `Q<n>.figure.png` → the public `practice-figures` bucket at
 `gce-sets/<key>-set<n>/Q<n>.png` → `figure_url` + `has_image` (`image_watermark_status`

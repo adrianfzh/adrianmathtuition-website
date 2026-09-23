@@ -51,8 +51,11 @@ the gates, the figure files, publishing). Student-facing side:
   unparted question, 22 printed targets against 9–12, no linear law). So a later Set
   matches Set 1 question for question and moves the paper's SHAPE toward the real paper
   — step 1c and the whole-paper check in step 4.
-- **The blind solver is a different model from the author** (Opus solves what Fable
-  wrote) and sees ONLY `Q<n>.solve.md` — never the key.
+- **The blind solver is a FRESH agent** that sees ONLY `Q<n>.solve.md` — never the key,
+  never the author's conversation. Since 23 Sep 2026 author and solver are the same model
+  (Opus 5.5, below), so independence is context isolation alone: a blind spot the model
+  shares with itself can still pass as agreement. The moderator works any part it doubts,
+  and Adrian reads the paper before it is published — those are the backstop.
 - **Nothing goes into the bank until Adrian has read the paper** (checkpoint 2 below).
   `assemble` writes files only; `publish.mjs` is a separate, explicit step.
 - **Never set `image_watermark_status='clean'`** on a Set row — `figure_url` alone makes
@@ -75,13 +78,22 @@ the gates, the figure files, publishing). Student-facing side:
 
 ## Models per spawn (deliberate — never session-inherit)
 
-| step | model | why |
+**Every spawn is Opus 5.5** — pass `model: "opus"` on every `Agent` call (Adrian, 23 Sep
+2026: "I think you can just use opus 5.5 for all"). `generate.mjs` records this as
+`MODELS` in the run's `plan.json`; change it there too when the model changes.
+
+| step | model | notes |
 |---|---|---|
-| author | **Fable** | register + originality are judgment; this is the moat step |
-| blind solve | **Opus** | must differ from the author; solving is mechanical |
-| moderate | **Fable** | compares key vs blind solve, scores style 1–5, names re-skins |
-| repair | **Fable** | same author with the verdict in hand |
-| figure author | **Opus** | mechanical against a written spec doc; verify() catches errors |
+| author | **Opus 5.5** | register + originality are judgment; this is the moat step |
+| blind solve | **Opus 5.5**, a fresh agent | independence by context: it sees only `Q<n>.solve.md` |
+| moderate | **Opus 5.5** | compares key vs blind solve, scores style 1–5, names re-skins |
+| repair | **Opus 5.5** | the author's job again, with the verdict in hand |
+| figure author | **Opus 5.5** | mechanical against a written spec doc; verify() catches errors |
+
+Until 23 Sep 2026 Fable 5.1 wrote, moderated and repaired and Opus 5 solved blind — that
+is how A Math Set 1 and E Math Set 1 were made (their bank rows say
+`solution_source='fable_session'`; `publish.mjs` labels a Set by the author its paper
+records, so every Set since is `opus_session`).
 
 Run slots in **waves of agents in parallel** (independent slots; one message, several
 `Agent` calls; the harness caps a session at 20 live subagents — count what is still
@@ -188,7 +200,7 @@ zsh .claude/skills/gce-paper/prompts/render.sh moderate "$RUN" 1 1,2,3
 zsh .claude/skills/gce-paper/prompts/render.sh repair   "$RUN" 1 4
 ```
 
-**Author** (Fable agent) — `prompts/author.md`: reads `author-brief.md`, `standard.md`,
+**Author** (Opus agent) — `prompts/author.md`: reads `author-brief.md`, `standard.md`,
 `standard-questions-P<n>.md`, `earlier-sets.md`, `paper-so-far.md`, then its
 `Q<n>.brief.md`s; writes `Q<n>.json` in the brief's JSON shape, including `skills` — 1–3
 phrases naming what the question tests, specific enough to tell two questions on one
@@ -212,7 +224,7 @@ nearest in wording). A failed gate → straight to repair.
 carries its own instructions and the `{"answers": {...}, "solvable": bool, "issues": [...]}`
 shape) and writes `Q<n>.blind.json`. It is never told a key exists.
 
-**Moderate** (Fable agent) — `prompts/moderate.md`: reads `Q<n>.moderate.md` (its full
+**Moderate** (Opus agent) — `prompts/moderate.md`: reads `Q<n>.moderate.md` (its full
 brief: check the key against the blind solve, judge the question, judge the variety),
 `standard.md`, `standard-questions-P<n>.md`, `earlier-sets.md` and `Q<n>.gates.json`; writes `Q<n>.verdict.json` as
 `{parts:[{label, agree, note}], all_agree, key_verdict, score:1-5, standard:"at"|"below"|"above",
@@ -224,7 +236,7 @@ Set 1 question of similar marks (score ≤ 3, with what Set 1 does that the slot
 the same way as a question of an earlier Set (or of this Set's other paper). Below or above the 2024/25
 standard → score ≤ 3 with concrete fixes.
 
-**Repair** (Fable agent, only when needed) — `prompts/repair.md`: the author again with
+**Repair** (Opus agent, only when needed) — `prompts/repair.md`: the author again with
 the gates, blind and verdict files, fixing EVERY named problem or writing a new question
 for the slot; then re-run check → blind solve → moderate. Three rounds max — after that,
 replace the question rather than patch it (P2 Q6 of E Math Set 1 took all three).

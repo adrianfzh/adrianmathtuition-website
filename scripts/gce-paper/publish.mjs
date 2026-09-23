@@ -11,7 +11,8 @@
 //   school 'AdrianMath' · exam_type 'Set <n>' · paper '1'|'2' · question_number = slot
 //   level = the blueprint family (GCE-AM → AM, GCE-EM → EM, GCE-JC → JC)
 //   year = the generation year · difficulty 'Standard' · verified false (Adrian flips it)
-//   ai_generated true · solution_source 'fable_session'
+//   ai_generated true · solution_source from the paper's recorded author: 'opus_session'
+//   (every Set briefed since 23 Sep 2026) or 'fable_session' (Set 1 of A Math and E Math)
 //   gen_meta.set_item = '<key>-set<n>-Q<pos>' — the IDEMPOTENCY key: re-running
 //   updates the row in place (a retracted row is revived), never duplicates it.
 // Figures: Q<n>.figure.png → Storage bucket practice-figures (public) at
@@ -81,6 +82,8 @@ const paperNo = km[2];
 const setKey = `${paper.key}-set${setNo}`;
 const examType = `Set ${setNo}`;
 const year = new Date(paper.generated_at ?? paper.assembled_at ?? Date.now()).getFullYear();
+// who wrote the maths — a re-publish of a Fable-written Set keeps its label
+const solutionSource = /opus/i.test(paper.models?.author ?? '') ? 'opus_session' : 'fable_session';
 
 const slots = (paper.questions ?? []).filter((s) => s.accepted && s.question).sort((a, b) => a.pos - b.pos);
 const problems = [];
@@ -195,7 +198,7 @@ for (const p of plan) {
     verified: false,
     ai_generated: true,
     solution: q.solution ?? null,
-    solution_source: 'fable_session',
+    solution_source: solutionSource,
     deleted_at: null,
     gen_meta: {
       kind: 'gce-set',
