@@ -45,8 +45,12 @@ the web, the notes PDF and Adrian's view.
 
 ## 3. Distribution: unlisted
 
-1. Adrian enrols in the **Apple Developer Program** (US$99/yr, individual — the seller name
-   shown is his own; an organisation account needs a D-U-N-S number and is not needed).
+1. The **company** enrols in the **Apple Developer Program** (US$99/yr) **as an organisation**,
+   with its D-U-N-S number (free, a week or two). *Changed 23 Sep 2026* — this line said
+   "individual, the seller name shown is his own"; an individual account puts Adrian's name
+   on the listing and makes the app his personal asset, which a buyer would make him move
+   first (`SPEC-COMPANY.md` §14.2). The unlisted app can start on an individual account only
+   if the company is not yet formed — then transfer it when it is.
 2. The app goes through ordinary **App Review** as if public: demo login for the reviewer
    (the demo student, a marked paper with pages already on it), privacy labels (account
    e-mail, user content = hand-ins + ink, no tracking, no ads), age rating 4+, account

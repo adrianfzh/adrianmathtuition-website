@@ -236,9 +236,16 @@ on the commercial API.** The plan lane stays for Adrian's tuition students and h
 
 | Lane | US$ | S$ | Turnaround | Use for |
 |---|---|---|---|---|
-| API, synchronous (measured) | 2.27 | 2.95 | within the hour | the premium tier |
+| API, synchronous (measured, on Opus 5 / 4.8 at US$5 / US$25 per Mtok) | 2.27 | 2.95 | within the hour | the premium tier |
 | **API, Batch** (estimate — Batch prices the reads at half; **measure before pricing**) | ~1.20 | ~1.56 | by morning | **every default tier** |
 | Plan lane (measured) | 0.44 | 0.57 | varies with the slots | tuition students only |
+
+**Opus 5.5 (the marker's model since 23 Sep 2026) lowers every row.** It is US$4 / US$20 per
+Mtok (Batch US$2 / US$10, cache reads US$0.20 — 60 % cheaper than Opus 5), and Anthropic
+reports it matches Opus 5 at a lower effort with fewer tokens. The measured US$2.27 predates
+the switch; expect it to fall by at least a fifth. **Re-measure on the first 20 API papers
+after the switch before setting any price** — the table below is kept at the old figures so
+the margins stay on the safe side.
 
 **The price a paper must carry** for a 60 % gross margin after the payment fee:
 price ≥ cost ÷ (0.4 × (1 − fee)).
@@ -394,6 +401,9 @@ Each phase ends at a gate measured in numbers, not a date.
 7. **International** (segment I) — whether it is in the plan at all.
 8. **The plan lane** — confirm with Anthropic's terms how, if at all, it may be used for
    company customers; until then every company price assumes the API.
+9. **Built to be sold (§14)** — the IP assignment, company-owned accounts, the brand name, and
+   what happens to the school-paper bank. A lawyer should see §14.1, §14.2 and §14.5 before
+   the company takes its first outside customer.
 
 ## 13. Can start now, without a decision
 
@@ -404,3 +414,111 @@ Each phase ends at a gate measured in numbers, not a date.
 - The lower-sec science solutions pass (content work, the extraction fleet's method).
 - Draft the `orgs` migration and the entitlements shape as a proposal for review — not
   applied until §12.1–4 are settled.
+
+## 14. Built to be sold (Adrian, 23 Sep 2026: "the company should be built in a way to be sold later")
+
+A buyer pays for what it can own, move and run without the founder. Their lawyers look at
+exactly the places below, and each one is cheapest to fix **before** the first outside
+customer. Ranked by how badly each would hurt a sale. Not legal advice — §14.1, §14.2 and §14.5
+are for a lawyer.
+
+### 14.1 The question bank is other people's copyright — the biggest issue
+
+About 35,000 bank rows are school papers and 1,900 are national papers
+(`docs/CONTENT-POLICY.md`); much of the recent intake came from the "Holy Grail" harvest; some
+scans carried a paid reseller's stamp (KiasuExamPaper), which one clean-up sweep removed; the
+Cambridge calibration booklets came from a third-party host. A buyer cannot buy that as an
+asset, and will price the risk in.
+
+- **The company serves only its own questions.** Twins (`SPEC-TWINS.md`), Set papers and
+  generated questions. Twins move from "nice to have" to **a condition of the sale** —
+  topic by topic, before Practice opens to the public (§8 already says so).
+- **The school-paper bank is used only to check a student's own paper** (the marker and the
+  solver ground on it; nothing is copied to anyone). Keep it that way, and ask the lawyer
+  whether that use belongs to the company or should stay with the tuition business under a
+  licence.
+- **A provenance register.** For every source file: where it came from, how it was obtained,
+  when, and on what terms. The `paper_library` and extraction queue already record most of
+  it; the Grail harvest and the calibration booklets are the gaps.
+- **Ask the lawyer about the removed reseller stamp.** Removing another party's marking from
+  a scan can be an issue of its own. The content policy's current rule (withhold, never
+  scrub) is the right one from here on.
+
+### 14.2 Everything is in Adrian's name
+
+The code is on a personal GitHub account; Vercel, Fly, Supabase, Stripe, the domains, the
+Telegram bot, the Twilio number and Airtable belong to Adrian or the tuition business; and
+`SPEC-STUDENT-APP.md` planned an **individual** Apple account.
+
+- **An IP assignment deed** moves the code, prompts, skills, specs, figures, the generated
+  questions and the brand from Adrian (and from the Kix Education partnership, if it paid for
+  or built any of it — its partner(s) sign too) to the company. Without it the company owns
+  nothing a buyer can buy.
+- **Company-owned accounts from day one:** a GitHub organisation, a Vercel team, a Fly
+  organisation, a Supabase organisation, Stripe under the company's UEN, the product domain,
+  and **Apple and Google developer accounts as an organisation** (Apple needs a D-U-N-S number,
+  free, a week or two). An individual Apple account shows Adrian's name as the seller and
+  moving an app off it later is paperwork a buyer will make you do first.
+- The tuition business then **uses** the company's product under a short written agreement,
+  at arm's length.
+
+### 14.3 It runs on Adrian and his Macs
+
+Marking reads run on Mac slots and on a Fly worker that pools three personal Claude plan
+logins; the sheet worker, the launchd jobs and the iCloud paper queue live on Adrian's Macs.
+A buyer cannot buy a person's Macs or subscriptions. Company customers run on company
+infrastructure under the commercial API (§7 already prices it that way), with every job
+documented and reproducible from the repo — which the repo docs make unusually easy.
+
+### 14.4 The brand is Adrian's name
+
+"AdrianMath", a red pen "in Adrian's voice", parent output signed by him: a buyer discounts a
+business whose value walks out with its founder. The company's brand is not a person's name;
+the pen writes in the brand's voice (and in a tutor's own name in the tutor app). Adrian can
+stay the public face as head of curriculum. Register the brand at IPOS as soon as it is chosen.
+
+### 14.5 Customer data must belong to the company
+
+Most users are children (§9). The company must be the data controller for its own users from
+their first sign-up, with a notice that allows the data to move with the business. Tuition
+students' data stays with the tuition business unless they consent again. The deletion and
+export paths already exist; add a record of consent per account and the data-protection
+impact assessment (§11 Phase 0).
+
+### 14.6 Revenue a buyer will value
+
+Buyers pay most for recurring revenue with clean numbers. Non-renewing passes
+(`SPEC-PUBLIC-LAUNCH.md` §1) are trusted by parents but count as one-off sales. The
+compromise: the monthly plan auto-renews (store subscriptions do by default) with a plain
+cancel button, and dated passes stay for exam season. From day one, keep: monthly recurring
+revenue, churn, conversion from the free paper, cost per paper per org, and acquisition cost
+per channel. Tuition revenue stays out of the company's books — it is a personal service and
+worth nothing to a buyer.
+
+### 14.7 Contracts that transfer
+
+Every tutor, centre, school-partner and supplier contract is assignable to a buyer (no
+change-of-control veto), and the tutor terms say what the company may do with anonymised
+marking data while a tutor's own calibration stays theirs (`SPEC-MARKING-CALIBRATION.md` §4).
+
+### 14.8 Already in good shape (checked 23 Sep 2026)
+
+- **Documentation and tests** — the specs, runbooks and 3,351 bot tests are what a technical
+  buyer hopes to find.
+- **No secrets in the repos** — a scan of all three repos' files and available history found
+  only public (anon) keys. The website and bot clones scanned held their last 52 and 87 commits;
+  re-run the scan on a full clone before a sale.
+- **Licences** — the bot's 429 dependencies are permissive, except libvips (LGPL, linked
+  dynamically through sharp, which is normal for a web service).
+- **Records** — the cost ledger, `job_runs`, calibration rows and the marking benches are the
+  evidence a buyer's diligence asks for.
+
+### 14.9 Order
+
+1. Company, brand, IP assignment, company-owned accounts, Apple/Google as an organisation —
+   **before** any outside customer (Phase 0).
+2. Provenance register; lawyer's view on the bank and the removed stamp (Phase 0).
+3. The company as data controller, consent records, the impact assessment (before Phase 1).
+4. Company workloads off the Macs and the plan logins (Phase 1).
+5. Twins for every topic Practice serves publicly (Phase 3 gate).
+
