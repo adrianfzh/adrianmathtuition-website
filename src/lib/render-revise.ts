@@ -7,6 +7,7 @@
  */
 
 import puppeteer from 'puppeteer-core';
+import { localChromePath } from '@/lib/generate-pdf';
 
 export type RenderType = 'question' | 'question_with_answer' | 'solution';
 
@@ -38,7 +39,7 @@ async function getBrowser() {
     });
   } else {
     _browser = await puppeteer.launch({
-      executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      executablePath: localChromePath(),
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
