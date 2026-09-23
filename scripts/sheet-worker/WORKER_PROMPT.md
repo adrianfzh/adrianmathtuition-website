@@ -333,6 +333,13 @@ python3 -c "import sys; sys.path.insert(0, '.claude/skills/create-worksheet'); f
 
       Green rule tags are built with `worksheet_lib.tag(...)`; a binomial
       pairing section carries a `binomial_pairing` figure beside its prose.
+    - **Kinematics, total distance when the particle turns** (Adrian's red pen,
+      24 Sep 2026): teach BOTH methods, each full marks — Method 1 the positions
+      at $t = 0$, at every $v = 0$, at the end, the legs written and ADDED;
+      Method 2 the area under the $v$–$t$ graph split at $v = 0$, the piece
+      below the axis counted positive. Draw Method 2 with an `area_decomposition`
+      figure (the two pieces as `pieces`, `op: '+'`, `result` the total). Never
+      the last $s$ minus the first — that is the displacement.
     - `Common Error` above 2 means you are writing one under every example —
       keep only the ones that name the wrong tool or a trap that costs marks.
     - Answers: one `[Ans: …]` per practice question, after the whole question.

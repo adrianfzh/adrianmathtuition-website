@@ -174,9 +174,10 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
 
   const [solution, setSolution] = useState<string | null>(null);
   const [solLoading, setSolLoading] = useState(false);
-  // 💡 Method hint (teaching-knowledge layer, 2026-09-03): Adrian's method for
-  // this question type, shown BEFORE the solution and answer-free, so it never
-  // switches marking off. null = not asked; '' = asked, shelf had nothing.
+  // 💡 "How to approach it" (23 Sep 2026, was the topic's method templates):
+  // three short answer-free lines written for THIS question and cached on the
+  // row, shown BEFORE the solution so it never switches marking off.
+  // null = not asked; '' = asked, nothing to say.
   const [hint, setHint] = useState<string | null>(null);
   const [hintLoading, setHintLoading] = useState(false);
 
@@ -936,13 +937,13 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           {/* 💡 Method hint — Adrian's method for this question type, answer-free */}
           {isStudent && hint !== null && (
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
-              <div className="text-xs font-bold uppercase tracking-wide text-amber-800 mb-2">💡 How Adrian would approach it</div>
+              <div className="text-xs font-bold uppercase tracking-wide text-amber-800 mb-2">💡 How to approach it</div>
               {hint ? (
                 <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed">
                   <MathMarkdown content={hint} />
                 </div>
               ) : (
-                <p className="text-sm text-amber-900/80">No method note for this topic yet — try the solution after you&apos;ve had a go.</p>
+                <p className="text-sm text-amber-900/80">Nothing to add for this one — have a go, then check the solution.</p>
               )}
             </div>
           )}
@@ -1050,9 +1051,9 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           )}
           {!isStudent && hint !== null && (
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-3">
-              <div className="text-xs font-bold uppercase tracking-wide text-amber-800 mb-2">💡 How Adrian would approach it</div>
+              <div className="text-xs font-bold uppercase tracking-wide text-amber-800 mb-2">💡 How to approach it</div>
               {hint ? <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed"><MathMarkdown content={hint} /></div>
-                    : <p className="text-sm text-amber-900/80">No method note for this topic yet.</p>}
+                    : <p className="text-sm text-amber-900/80">Nothing to add for this one.</p>}
             </div>
           )}
           {!isStudent && q && solution === null && (

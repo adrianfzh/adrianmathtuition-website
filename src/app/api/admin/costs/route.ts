@@ -3,8 +3,10 @@
 // Two sources side by side: the bot's own pricing of every run (lib/costs.ts
 // over paper_marking_runs — attributable to a paper, a student, a lane) and,
 // when ANTHROPIC_ADMIN_KEY is set, the Anthropic Admin API's cost report — the
-// invoice itself, per day, which is the only "exact" number. Gemini is shown as
-// tokens only; Google bills it. Admin session/bearer. Fail-soft on the bill.
+// invoice itself, per day, which is the only "exact" number. Since 24 Sep 2026 a
+// run's cost carries its Gemini part too (priced by the bot from Google's list),
+// kept apart from Claude so the Claude column still lines up with the invoice.
+// Admin session/bearer. Fail-soft on the bill.
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -87,10 +89,10 @@ export async function GET(req: NextRequest) {
     bill,
     ledger: { byPart: costByPart(ledger.rows), total: Math.round(ledger.rows.reduce((a, r) => a + r.cost, 0) * 100) / 100, rows: ledger.rows.length, note: ledger.note ?? null },
     notes: [
-      'Run costs are the bot\'s pricing of the Claude tokens it used (list price sync, 50 % batch, 10 % cache reads) — the same counts Anthropic bills.',
+      'Run costs are the bot\'s pricing of the tokens it used. Claude: list price sync, 50 % batch, 10 % cache reads — the same counts Anthropic bills, so the Claude column is the one to hold against the invoice.',
+      'Gemini (placement, part boxes, the photo overlay) is priced per call on the model that answered, from Google\'s list (thinking counted as output), and added to the run\'s total since 24 Sep 2026. Runs before that carry Gemini tokens only (from 9 Sep 2026 evening) and show "not priced" — never a guess.',
       'Pages the Mac read on the plan cost $0 here; a plan run\'s cost is the bot-side extras only.',
-      'Gemini (placement, ink checks) is billed by Google and shown as tokens only; runs before 9 Sep 2026 evening carry no Gemini count.',
-      'By part reads the bot\'s own ledger (every Claude call, tagged by what it was for; Airtable CostLog, flushed hourly). Marking joined that ledger on 9 Sep 2026 evening — earlier marking is on the run rows only.',
+      'By part reads the bot\'s own ledger (every Claude call, tagged by what it was for; Airtable CostLog, flushed hourly). Marking joined that ledger on 9 Sep 2026 evening — earlier marking is on the run rows only. Gemini marking calls (marking_vision, marking_split, marking_preflight, marking_overlay) joined it on 24 Sep 2026.',
     ],
   });
 }

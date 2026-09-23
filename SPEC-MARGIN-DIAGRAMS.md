@@ -146,6 +146,18 @@ shapes, a two-inch picture teaches faster than any sentence:
 A small margin diagram beside the annotation turns "your angle should be at B"
 into the triangle itself.
 
+> **24 Sep 2026 — kinematics.** Two more margin kinds from Adrian's own red pen on a
+> "total distance travelled" question: `kinematics_line` (the positions at $t=0$, each
+> $v=0$ and the end ticked on the displacement axis, and above it the particle's path
+> as ONE line — out, a rounded U-turn up a lane, back — with a dot and its time at the
+> start, each turn and the stop; nothing written beneath (Adrian's own sketch, after the
+> first draft was "too wordy"); the gate is that the legs the renderer derives must
+> add to the stated distance, so the student's own error — the displacement offered as
+> the distance — draws nothing) and `velocity_area` (Method 2: `integral_region` with
+> $t$ horizontal, one curve $v(t)$, every region between the curve and the axis, split
+> at $v = 0$, the below-axis piece positive, "total distance" as the sum). Marker rules
+> 17–18 in `ai/paper-marker.js`; tests `test/margin-diagram-kinematics.test.js`.
+
 ## v1 families (only these two)
 
 ### 1. `right-triangle-elevation`

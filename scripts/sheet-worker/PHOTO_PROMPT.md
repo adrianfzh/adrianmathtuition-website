@@ -36,6 +36,11 @@ export SUPABASE_URL=https://nempslbewxtlikfzachi.supabase.co
      and its marks (±1), not the whole topic.
    - `figure_expected` true → the candidate must carry `figure_py` (the skill's
      figure rules), or the worker rejects it.
+   - **Write the `hint` too** (23 Sep 2026, SKILL.md step 4 "Hint"): the
+     student's 💡 "How to approach it" — at most three short lines in student
+     words, how to start and what to look for, never a number they must find,
+     never the answer, no names. It is served with the question; the website
+     only writes one itself when the candidate carries none.
 
 3. Run the PLAN GATE BATTERY exactly as SKILL.md §Loop step 3 (3a CODE + 3b
    BLIND in parallel, 3c SKILL, 3d DIFFICULTY, 3e FIGURE when figure_mode).
