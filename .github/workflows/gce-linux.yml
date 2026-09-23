@@ -1,0 +1,111 @@
+name: GCE generator on Linux
+
+# One-off check (23 Sep 2026): the GCE Set generator runs on a Linux box with
+# no path edits and no path env vars — Chromium where the claude.ai cloud
+# containers keep it (/opt/pw-browsers), LibreOffice from apt, render.sh under
+# Ubuntu's /bin/sh (dash), figure.mjs finding a bot checkout beside this repo.
+on:
+  push:
+    branches: [dev]
+    paths: [.github/workflows/gce-linux.yml]
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: npm ci
+
+      - name: Environment (nothing set, no zsh needed)
+        run: |
+          uname -srm; grep PRETTY /etc/os-release
+          echo "zsh: $(command -v zsh || echo none) · /bin/sh -> $(readlink -f /bin/sh)"
+          echo "CHROME_PATH=${CHROME_PATH:-unset} PUPPETEER_EXECUTABLE_PATH=${PUPPETEER_EXECUTABLE_PATH:-unset} PLAYWRIGHT_BROWSERS_PATH=${PLAYWRIGHT_BROWSERS_PATH:-unset} SOFFICE=${SOFFICE:-unset} BOT_REPO=${BOT_REPO:-unset}"
+
+      - name: Chromium where the cloud containers keep it
+        run: |
+          sudo mkdir -p /opt/pw-browsers && sudo chown "$USER" /opt/pw-browsers
+          PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers npx -y playwright@latest install --with-deps chromium
+          ls -d /opt/pw-browsers/*/chrome-linux*/chrome
+
+      - name: LibreOffice (the three packages the doc names) + pandoc
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q libreoffice-writer libreoffice-math libreoffice-script-provider-python pandoc poppler-utils
+          pip install -q python-docx pillow lxml
+          echo "soffice: $(command -v soffice)"
+
+      - name: A run dir from a saved paper (no bank read)
+        run: |
+          S="$RUNNER_TEMP/gce"; mkdir -p "$S/run" "$S/out" "$S/pdf" "$S/docx"
+          cat > "$S/mkrun.cjs" <<'EOF'
+          const fs = require('fs'), path = require('path');
+          const [src, dir] = process.argv.slice(2);
+          const p = JSON.parse(fs.readFileSync(src, 'utf8'));
+          const plan = { ...p };
+          for (const k of ['questions', 'models', 'set', 'title', 'assembled_at']) delete plan[k];
+          plan.exemplars = {};
+          for (const q of p.questions) {
+            plan.exemplars[q.pos] = q.exemplars || [];
+            const w = (s, v) => v != null && fs.writeFileSync(path.join(dir, `Q${q.pos}.${s}`), JSON.stringify(v));
+            w('json', q.question || q.draft); w('gates.json', q.gates); w('verdict.json', q.verdict); w('blind.json', q.blind);
+          }
+          fs.writeFileSync(path.join(dir, 'plan.json'), JSON.stringify(plan));
+          console.log(p.questions.length, 'slots');
+          EOF
+          node "$S/mkrun.cjs" data/gce-generated/GCE-EM-P1-seed2-2026-09-12.json "$S/run"
+
+      - name: "A · generate.mjs assemble (Chrome found under /opt/pw-browsers)"
+        run: |
+          S="$RUNNER_TEMP/gce"
+          node scripts/gce-paper/generate.mjs assemble --run "$S/run" --out "$S/out" --pdf-dir "$S/pdf" --set 1
+          ls -la "$S/pdf"
+          for f in "$S"/pdf/*.pdf; do echo "$(basename "$f"): $(pdfinfo "$f" | grep Pages)"; done
+          [ "$(ls "$S"/pdf/*.pdf | wc -l)" -ge 2 ]
+
+      - name: "B · figure.mjs --families (bot checkout beside this repo, either name)"
+        run: |
+          set +e
+          node scripts/gce-paper/figure.mjs --families; code=$?
+          set -e
+          echo "no bot checkout → exit $code"; [ "$code" -eq 1 ]
+          # The bot repo is private, so a stand-in checkout with the same layout:
+          # this proves the lookup + createRequire path, not the bot's drawing.
+          for name in adrianmath-telegram-bot adrianmath-telegram-math-bot; do
+            B="$GITHUB_WORKSPACE/../$name"
+            mkdir -p "$B/lib/figures" "$B/ai"
+            echo '{"name":"stand-in"}' > "$B/package.json"
+            echo "module.exports = { figureFamilies: () => ['stand-in'], getFamily: () => ({ SPEC_DOC: 'found $name' }) };" > "$B/lib/figures/index.js"
+            echo 'module.exports = {};' > "$B/ai/figure-engine.js"
+            node scripts/gce-paper/figure.mjs --families | tee "$RUNNER_TEMP/fam.txt"
+            grep -q "found $name" "$RUNNER_TEMP/fam.txt"
+            rm -rf "$B"
+          done
+
+      - name: "C · render.sh under sh (dash) and bash"
+        run: |
+          S="$RUNNER_TEMP/gce"
+          for k in author moderate; do
+            out=$(sh .claude/skills/gce-paper/prompts/render.sh $k "$S/run" 1 1,2,3); echo "$out"
+            grep -c "Elementary Mathematics" "$out"
+          done
+          for k in blind repair; do
+            out=$(bash .claude/skills/gce-paper/prompts/render.sh $k "$S/run" 1 4); echo "$out"
+            grep -c "Elementary Mathematics" "$out"
+          done
+          chmod +x .claude/skills/gce-paper/prompts/render.sh
+          .claude/skills/gce-paper/prompts/render.sh author "$S/run" 1 5
+
+      - name: "D · export-docx.py → lo-pdf.sh (soffice found on PATH)"
+        run: |
+          S="$RUNNER_TEMP/gce"
+          J=$(ls "$S"/out/*.json | head -1); echo "paper: $J"
+          python scripts/gce-paper/export-docx.py "$J" --out "$S/docx"
+          ls -la "$S/docx"
+          D=$(ls "$S"/docx/*.docx | grep -v solutions | head -1)
+          bash scripts/gce-paper/lo-pdf.sh "$D"
+          P="${D%.docx}.pdf"; ls -la "$P"; pdfinfo "$P" | grep Pages
