@@ -8,7 +8,7 @@
 // activation, which every phone honours — including iOS in a home-screen web
 // app, where a scripted click on a hidden input can open nothing at all
 // (Adrian, 23 Sep 2026: "the buttons for take photo and album not working").
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 import type { FindLevelOption } from '@/lib/portal-find';
@@ -29,6 +29,18 @@ export default function PhotoClient({ levels }: { levels: FindLevelOption[] }) {
   const [typing, setTyping] = useState(false);
   const [busy, setBusy] = useState<Busy>(null);
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
+  // iOS Safari leaves a file input inert after its sheet is dismissed (the
+  // next label tap opens nothing — Adrian, 23 Sep 2026), so both inputs are
+  // remounted after every cancel or pick: the key changes, a fresh input mounts.
+  const [epoch, setEpoch] = useState(0);
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const albumRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const els = [cameraRef.current, albumRef.current].filter((el): el is HTMLInputElement => Boolean(el));
+    const bump = () => setEpoch(e => e + 1);
+    els.forEach(el => el.addEventListener('cancel', bump));
+    return () => els.forEach(el => el.removeEventListener('cancel', bump));
+  }, [epoch]);
 
   async function submit(body: { imageBase64?: string; text?: string }, kind: Exclude<Busy, null>) {
     setBusy(kind); setMsg(null);
@@ -85,10 +97,10 @@ export default function PhotoClient({ levels }: { levels: FindLevelOption[] }) {
       </div>
 
       {/* Camera: `capture` sends iOS straight to the camera, so the album door needs its own input without it. */}
-      <input id={cameraId} type="file" accept="image/*" capture="environment" className={INPUT} disabled={locked}
-        onChange={e => { onPhoto(e.target.files?.[0]); e.target.value = ''; }} />
-      <input id={albumId} type="file" accept="image/*" className={INPUT} disabled={locked}
-        onChange={e => { onPhoto(e.target.files?.[0]); e.target.value = ''; }} />
+      <input key={`camera-${epoch}`} ref={cameraRef} id={cameraId} type="file" accept="image/*" capture="environment" className={INPUT} disabled={locked}
+        onChange={e => { const f = e.target.files?.[0]; setEpoch(n => n + 1); onPhoto(f); }} />
+      <input key={`album-${epoch}`} ref={albumRef} id={albumId} type="file" accept="image/*" className={INPUT} disabled={locked}
+        onChange={e => { const f = e.target.files?.[0]; setEpoch(n => n + 1); onPhoto(f); }} />
 
       {busy ? (
         <div className="flex items-center gap-3 rounded-xl bg-[hsl(45,80%,96%)] px-4 py-3" role="status">
