@@ -60,6 +60,44 @@ MATH_RE = re.compile(r'\$\$(.+?)\$\$|\\\[(.+?)\\\]|(?<!\\)\$((?:\\.|[^$\\])+?)\$
 DEG_RE = re.compile(r'\^\s*\{\s*\\circ\s*\}|\^\s*\\circ')
 TABLE_ROW_RE = re.compile(r'^\s*\|.*\|\s*$')
 TABLE_RULE_RE = re.compile(r'^\s*\|[\s:|-]+\|\s*$')
+# A line that is one LaTeX array: `$\begin{array}{|c|c|} \hline … \end{array}$`.
+ARRAY_LINE_RE = re.compile(
+    r'^\s*\$\$?\s*\\begin\{array\}\{[^}]*\}(.*?)\\end\{array\}\s*\$?\$\s*\.?\s*$', re.S)
+TEXT_CMD_RE = re.compile(r'\\text\{([^{}]*)\}')
+PLAIN_CELL_RE = re.compile(r'^(?:\\\$|[\d\s.,:%$-])+$')
+LATEX_SPACE_RE = re.compile(r'\\[;,:!]|\\q?quad\b')
+
+
+def array_cell(cell):
+    """One LaTeX array cell as a segs() string: \\text{…} runs become prose, a
+    bare number or price stays prose, anything else becomes one $…$ run."""
+    out, pos = [], 0
+
+    def maths(s):
+        if not s.strip():
+            out.append(s)
+        elif PLAIN_CELL_RE.match(LATEX_SPACE_RE.sub(' ', s).strip()):
+            out.append(LATEX_SPACE_RE.sub(' ', s))
+        else:
+            out.append('$' + s.strip() + '$')
+
+    for m in TEXT_CMD_RE.finditer(cell):
+        maths(cell[pos:m.start()])
+        out.append(m.group(1))
+        pos = m.end()
+    maths(cell[pos:])
+    return re.sub(r'\s+', ' ', ''.join(out)).strip()
+
+
+def array_rows(body):
+    """A LaTeX array body as table rows (the \\hline rules dropped: a data
+    table is drawn with all its rules). An empty cell stays empty."""
+    rows = []
+    for line in body.replace('\\hline', ' ').split('\\\\'):
+        cells = [array_cell(c.strip()) for c in line.split('&')]
+        if any(cells):
+            rows.append(cells)
+    return rows
 
 
 def _clean(s):
@@ -121,8 +159,12 @@ ROMAN = {'i', 'ii', 'iii', 'iv', 'v', 'vi'}
 
 
 def blocks(text):
-    """A text's lines, with a markdown pipe table folded into one ('table', rows)
-    block and a display line of items spaced by \\qquad into ('spaced', items)."""
+    """A text's lines, with a markdown pipe table or a LaTeX array line folded
+    into one ('table', rows) block and a display line of items spaced by
+    \\qquad into ('spaced', items). A LaTeX array left as maths reached Word as
+    a matrix with no rules, its empty cells and \\hline as red ¿ in the
+    LibreOffice PDF (23 Sep 2026, E Math Set 2 P2 Q4, Q7, Q9 — the fix the
+    revision builders got on 18 Sep, build_lib.stem_blocks)."""
     out, rows = [], []
     for line in (text or '').split('\n'):
         if TABLE_ROW_RE.match(line):
@@ -132,6 +174,10 @@ def blocks(text):
         if rows:
             out.append(('table', rows)); rows = []
         if not line.strip():
+            continue
+        arr = ARRAY_LINE_RE.match(line)
+        if arr and array_rows(arr.group(1)):
+            out.append(('table', array_rows(arr.group(1))))
             continue
         m = re.fullmatch(r'\s*\$\$?([^$]+?)\$?\$\s*', line, re.S)   # a line that is one maths run
         if m and '\\qquad' in m.group(1):
@@ -207,10 +253,12 @@ def _labelled_blocks(ws, bl, last_line, labels, marks, level, numbered):
         m = marks if i == last_line else None
         if i == 0 and numbered:
             number_line(ws, labels, body, m, level)
-            continue
-        head = [('text', '\t'.join(labels) + '\t')] if i == 0 and any(labels) else []
-        p = ws._add(head + segs(body), marks=m)
-        indent(p, level if any(labels) else -1, len(labels) if i == 0 and any(labels) else 0)
+        else:
+            head = [('text', '\t'.join(labels) + '\t')] if i == 0 and any(labels) else []
+            p = ws._add(head + segs(body), marks=m)
+            indent(p, level if any(labels) else -1, len(labels) if i == 0 and any(labels) else 0)
+        if i + 1 < len(bl):
+            ws.keep_with_next()      # a part is never cut across two pages, its table included
 
 
 def stem_paras(ws, q, marks_on_stem):
@@ -228,6 +276,8 @@ def stem_paras(ws, q, marks_on_stem):
         else:
             p = ws.para(segs(body), marks=m)
             p.paragraph_format.left_indent = Cm(Q_TEXT_CM)
+        if i + 1 < len(bl):
+            ws.keep_with_next()      # the stem's lines and its tables stay together
     return not first
 
 

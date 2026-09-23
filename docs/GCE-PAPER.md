@@ -287,6 +287,34 @@ The paper JSONs are in `data/gce-generated/`, and the figure specs and PNGs are 
 `publish.mjs`. **Not published yet:** it waits for Adrian's read, and then needs the service
 key (the Mac).
 
+**E Math Set 2 = seed 3, `--set 2` (23 Sep 2026)** — the same brief, the same Opus 5.5
+agents, written straight after A Math Set 2. `GCE-EM-P1-seed3` (27 Q, 90 marks, figures
+Q13 / Q23 / Q27) + `GCE-EM-P2-seed3` (9 Q, 90 marks, figures Q4 graph paper / Q5 / Q8).
+The draw gave P1 two Angles slots, HCF/LCM beside prime factorisation and six marks of Sets,
+so the session re-pointed P1 Q15 (inequality), Q17 (Sets, 2 marks), Q19 (speed-time graph)
+and Q23 (the Set's congruence/similarity PROOF); P2's draw came out almost slot for slot
+Set 1 P2's, so every P2 line in `paper-shape.md` names what Set 1 and this Set's P1 already
+did, and Q3 (trigonometry, bearings) and Q7 (statistics with one probability part) were
+re-pointed. P1 repairs: Q8 Q9 Q10 Q22 Q27; P1 Q3 Q18 Q19 Q20 and P2 Q4 Q8 at 5/5, the rest
+at 4/5 after a polish; every polish that changed an answer or a decision was re-solved blind
+and agreed (P1 Q10 Q12 Q17 Q21 Q24, P2 Q1 Q6 Q7). Shape by `assemble`: P1 39 answer spaces,
+16 unparted, largest part 4; P2 32 answer spaces, exactly three parts of 5+ (Q2(a) 5, Q8(b) 5,
+Q9(b) 7). P1 Q13's figure leaves the radius OC undrawn so the 35° mark can only be read as
+angle ACB; P1 Q23 says "not drawn to scale" and is drawn off its answer proportions.
+Figures in `data/gce-generated/figures/GCE-EM-P{1,2}-seed3/`. **Not published yet** (as
+A Math Set 2).
+
+**The Word export, fixed the same day.** `export-docx.py` turned a markdown pipe table into a
+Word table but left a LaTeX `\begin{array}` line as maths — a matrix with no rules, whose
+empty cells and `\hline` LibreOffice drew as red ¿ (E Math Set 1 and Set 2 both store tables
+that way). A line that is one array now becomes a real table (`array_rows`, the revision
+builders' 18 Sep fix), every line of a part or stem is kept with the next so a part and its
+table never break across a page, and `worksheet_lib.data_table` keeps its rows together.
+`lopdf.py` (the preview PDF) gives LibreOffice an empty operand for a formula that opens or
+closes on a relation ("Total amount = P(…)", "… 2 h 1 min = 9.59 a.m.") — Word never needed
+it; the previews of both A Math and E Math Set 2 papers now carry no ¿ (a few |x| bars remain
+in the solutions previews, a LibreOffice drawing quirk only).
+
 How a cloud session ran it: the bank has no read path without the secret key, so the AM GCE
 + Set rows were pulled once through a temporary SECURITY DEFINER function gated by a one-time
 code, which was dropped straight after, and served to `generate.mjs` from a local shim.
