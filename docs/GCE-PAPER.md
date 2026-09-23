@@ -56,20 +56,23 @@ shape), `Q<n>.brief.md` per slot (topic, marks, real GCE questions on the topic 
 STYLE anchors only), `paper-so-far.md`, `corpus.json` (every real GCE question of the
 level, for the novelty gate), `plan.json`.
 
-The round per slot, orchestrated by the session with the Agent tool. **Every agent is
-Opus 5.5 since 23 Sep 2026** (Adrian: "I think you can just use opus 5.5 for all"); until
-then Fable 5.1 wrote, moderated and repaired and Opus 5 solved blind, which is how both
-Set 1s were made. The blind solver is still a fresh agent that never sees the key, so
-independence now rests on context isolation alone — the moderator and Adrian's read are
-the backstop for a blind spot the model shares with itself.
+The round per slot, orchestrated by the session with the Agent tool. **Since 23 Sep 2026
+the author, blind solver, repair author and figure author are Opus 5.5 (`model: "opus"`)
+and the moderator is Fable 5.1 (`model: "fable"`)** (Adrian: "use the trial split, but
+change solves blind to opus 5.5"). Until then Fable 5.1 wrote, moderated and repaired and
+Opus 5 solved blind, which is how both Set 1s were made; A Math Set 2 and E Math Set 2
+were written the same day with every agent on Opus 5.5, moderator included. The blind
+solver is a fresh agent that never sees the key, so its independence from the author is
+context isolation; the moderator is a different model, and it and Adrian's read are the
+backstop for a blind spot the author and solver share.
 
 | step | who | reads | writes |
 |---|---|---|---|
-| author | **Opus** agent | `author-brief.md`, `Q<n>.brief.md`, `paper-so-far.md` | `Q<n>.json` |
+| author | **Opus 5.5** agent | `author-brief.md`, `Q<n>.brief.md`, `paper-so-far.md` | `Q<n>.json` |
 | gates | `check` | `Q<n>.json` | `Q<n>.gates.json`, `Q<n>.solve.md`, `Q<n>.moderate.md` |
-| blind solve | a **fresh Opus** agent (no key, no author context) | ONLY `Q<n>.solve.md` (no key) | `Q<n>.blind.json` |
-| moderate | **Opus** agent | `Q<n>.moderate.md` (question + key + exemplars), `Q<n>.blind.json` | `Q<n>.verdict.json` |
-| repair | Opus agent with the verdict | | `Q<n>.json` again → re-check → re-solve → re-moderate |
+| blind solve | a **fresh Opus 5.5** agent (no key, no author context) | ONLY `Q<n>.solve.md` (no key) | `Q<n>.blind.json` |
+| moderate | **Fable 5.1** agent | `Q<n>.moderate.md` (question + key + exemplars), `Q<n>.blind.json` | `Q<n>.verdict.json` |
+| repair | Opus 5.5 agent with the verdict | | `Q<n>.json` again → re-check → re-solve → re-moderate |
 
 Gates in `check`: marks sum = slot target, topics ⊂ bank names, worked solution present,
 word-trigram Jaccard vs every real GCE question of the level ≤ 0.4 (nearest recorded).
@@ -78,6 +81,25 @@ on every part, the style score is ≥ 4/5 and no exemplar is named as re-skinned
 renders the paper (answer key on) and a solutions booklet through the SAME renderers
 `/app/print` uses. `assemble` inserts nothing — the paper is a file for Adrian to read
 first; filing it in the bank is the separate, explicit `publish.mjs` step below.
+
+**Off the Mac (23 Sep 2026).** Everything but the bank reads runs on Linux with no path
+edits (a cloud session writing A Math Set 2 had to patch each by hand); the Mac defaults
+are unchanged and come first unless an env var overrides them:
+- `assemble`'s Chrome (`src/lib/generate-pdf.ts` `localChromePath`): `CHROME_PATH` /
+  `PUPPETEER_EXECUTABLE_PATH` → the Mac's Google Chrome → the newest
+  `$PLAYWRIGHT_BROWSERS_PATH/chromium-*/chrome-linux{,64}/chrome` (default `/opt/pw-browsers`,
+  where the cloud containers keep one).
+- `lo-pdf.sh`: `SOFFICE` → the Mac app → `soffice` / `libreoffice` on PATH. Ubuntu:
+  `libreoffice-writer`, `libreoffice-math` and `libreoffice-script-provider-python` (the macro).
+  Ubuntu 24.04's LibreOffice 24.2 aborts on a macro named on the command line, so when the
+  macro does not run the script converts plainly with the formula size set in a fresh profile
+  (`Office.Math/StandardFormat/BaseSize`) — the same pages; `LOPDF_VIA=convert` forces it.
+- `figure.mjs`: `BOT_REPO` → the Mac checkout → the bot cloned beside this repo as
+  `adrianmath-telegram-bot` (the GitHub name) or `adrianmath-telegram-math-bot`, with
+  `npm install` done there (sharp).
+- `.claude/skills/gce-paper/prompts/render.sh` is POSIX `sh` (was zsh-only); run it with `sh`.
+- The bank read (`brief` needs `SUPABASE_SECRET_KEY`; `publish.mjs` writes the bank) stays
+  Mac-only by design (`docs/CLOUD.md`) — hand a cloud session a `brief` run dir.
 
 ### Figures (9 Sep 2026)
 

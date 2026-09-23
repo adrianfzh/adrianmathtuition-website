@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/sh
 # Render one of the per-slot prompt templates for an Agent spawn.
 #   usage: render.sh <author|blind|moderate|repair> <RUN dir> <paper no> <slots, e.g. 1,2,3>
 #   prints the rendered prompt's path (written into the run dir); paste its contents as the agent prompt.
@@ -6,11 +6,12 @@
 # __SUBJECT__ / __CODE__ = the syllabus, read from the run's plan.json key (GCE-AM-* → Additional
 # Mathematics 4049, GCE-EM-* → Elementary Mathematics 4052) — the templates serve both levels.
 # blind.md and repair.md are one slot per spawn (__N__ must be a single number).
+# POSIX sh (23 Sep 2026): runs under sh, bash or zsh — the cloud containers have no zsh.
 set -e
 kind=$1; RUN=$2; P=$3; slots=$4
-here=${0:A:h}
-[[ -f "$here/${kind}.md" ]] || { echo "no template $here/${kind}.md" >&2; exit 1; }
-[[ -d "$RUN" ]] || { echo "no run dir $RUN" >&2; exit 1; }
+here="$(cd "$(dirname "$0")" && pwd)"
+[ -f "$here/${kind}.md" ] || { echo "no template $here/${kind}.md" >&2; exit 1; }
+[ -d "$RUN" ] || { echo "no run dir $RUN" >&2; exit 1; }
 fam=$(node -p "JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')).key.split('-')[1]" "$RUN/plan.json" 2>/dev/null || echo "")
 case "$fam" in
   AM) subject="Additional Mathematics"; code=4049 ;;

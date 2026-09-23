@@ -3,6 +3,7 @@ import path from 'path';
 import puppeteer from 'puppeteer-core';
 import { repairMarkingLatex } from '@/lib/latex-repair';
 import { alignMarkingSolutions } from '@/lib/solution-align';
+import { localChromePath } from '@/lib/generate-pdf';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -89,7 +90,7 @@ async function getBrowser() {
     });
   } else {
     browserInstance = await puppeteer.launch({
-      executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      executablePath: localChromePath(),
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });

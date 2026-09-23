@@ -4,7 +4,7 @@
 //     Telegram digest to Adrian: per student with lessons last week — mastery
 //     trend, red flags (Slow ×2+, HW not done repeatedly, unlogged lessons).
 //   period=month:
-//     AI parent-facing DRAFTS (<150 words each, claude-opus-4-8) for the
+//     AI parent-facing DRAFTS (<150 words each, claude-opus-5-5) for the
 //     previous calendar month (or current month after the 10th) → Supabase
 //     `parent_digests` (status='draft'). NEVER auto-sent.
 //   period=term&examType=WA3:

@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
   if (!level || !Array.isArray(concepts) || concepts.length === 0) {
     return NextResponse.json({ error: 'level and concepts required' }, { status: 400 });
   }
-  const model = body.model === 'fable' ? 'claude-fable-5' : 'claude-opus-4-8';
+  const model = body.model === 'fable' ? 'claude-fable-5' : 'claude-opus-5-5';
 
   const briefByConcept = new Map(examples.map(e => [e.concept, e.brief]));
   const blocks = concepts.map(c => {

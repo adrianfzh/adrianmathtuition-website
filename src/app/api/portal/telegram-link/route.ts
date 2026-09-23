@@ -18,6 +18,7 @@ import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server
 import { safeEqual } from '@/lib/safe-equal';
 import { airtableRequest } from '@/lib/airtable';
 import { signTelegramLinkToken, verifyTelegramLinkToken, telegramDeepLink, TELEGRAM_LINK_TTL_SECONDS } from '@/lib/telegram-link';
+import { botInternalSecret } from '@/lib/bot-secret';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -32,14 +33,14 @@ export async function GET(req: NextRequest) {
   if (req.nextUrl.searchParams.get('check')) {
     return NextResponse.json({ linked: !!account.telegram_chat_id });
   }
-  const secret = process.env.BOT_INTERNAL_SECRET;
+  const secret = botInternalSecret();
   if (!secret) return NextResponse.json({ error: 'Telegram linking is not set up yet — message Adrian.' }, { status: 503 });
   const token = signTelegramLinkToken(account.id, secret);
   return NextResponse.json({ url: telegramDeepLink(token), expiresInSec: TELEGRAM_LINK_TTL_SECONDS });
 }
 
 export async function POST(req: NextRequest) {
-  const secret = process.env.BOT_INTERNAL_SECRET;
+  const secret = botInternalSecret();
   const auth = req.headers.get('authorization') || '';
   if (!secret || !safeEqual(auth, `Bearer ${secret}`)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const body = await req.json().catch(() => ({} as Record<string, unknown>));

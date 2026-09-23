@@ -590,8 +590,11 @@ async function getNarrativeBrowser(): Promise<unknown | null> {
         headless: true,
       });
     } else {
+      // Lazy, like puppeteer above: scripts/marking-eval.mjs loads this file
+      // under plain Node, which cannot resolve generate-pdf's '@/…' imports.
+      const { localChromePath } = await import('./generate-pdf');
       _narrativeBrowser = await puppeteer.launch({
-        executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+        executablePath: localChromePath(),
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
@@ -681,7 +684,7 @@ export async function callSonnetMarking(
   const makeCall = (userText: string) =>
     withSonnetRetry(
       () => client.messages.create({
-        model: 'claude-opus-5',
+        model: 'claude-opus-5-5',
         max_tokens: 8000,
         system: systemPrompt,
         messages: [

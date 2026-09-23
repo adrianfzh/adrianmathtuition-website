@@ -14,7 +14,7 @@ export const maxDuration = 60;
 //
 //   1. Gemini transcribes the audio (GOOGLE_API_KEY, @google/generative-ai —
 //      same stack as batch marking). Audio is NEVER stored anywhere.
-//   2. claude-opus-4-8 parses the transcript into per-student updates
+//   2. claude-opus-5-5 parses the transcript into per-student updates
 //      { lessonId, mastery?, topics?[], homeworkPrev?, note? }, fuzzy-matching
 //      spoken names against the roster (case/partial). Speech that can't be
 //      mapped to a rostered student lands in an `unassigned` bucket.
@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
   try {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const msg = await anthropic.messages.create({
-      model: 'claude-opus-4-8',
+      model: 'claude-opus-5-5',
       max_tokens: 2000,
       system,
       messages: [{ role: 'user', content: `Transcript:\n"""\n${transcript}\n"""` }],

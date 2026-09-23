@@ -4,7 +4,7 @@
 //
 //   node scripts/eval/grading/run.mjs                          # default model
 //   EVAL_MODEL=claude-sonnet-4-6 node scripts/eval/grading/run.mjs
-//   EVAL_MODEL=claude-opus-4-8 EVAL_TARGET=75 node scripts/eval/grading/run.mjs
+//   EVAL_MODEL=claude-opus-5-5 EVAL_TARGET=75 node scripts/eval/grading/run.mjs
 //
 // Metric: % of exemplars graded within ±3 marks (~1 band) of your mark, + mean
 // absolute error. Exit 0 if it clears EVAL_TARGET, else 1 (so it gates).
@@ -17,7 +17,7 @@ const env = Object.fromEntries(
     .map((l) => { const i = l.indexOf('='); return [l.slice(0, i).trim(), l.slice(i + 1).trim().replace(/^["']|["']$/g, '')]; })
 );
 const KEY = env.ANTHROPIC_API_KEY;
-const MODEL = process.env.EVAL_MODEL || 'claude-opus-4-8';
+const MODEL = process.env.EVAL_MODEL || 'claude-opus-5-5';
 const TARGET = Number(process.env.EVAL_TARGET || '75'); // % within ±3 marks
 const TOL = Number(process.env.EVAL_TOL || '3');         // marks tolerance ≈ 1 band
 

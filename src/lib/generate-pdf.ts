@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import { existsSync, readdirSync } from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer-core';
 import { reconciliationGap } from '@/lib/invoice-render-math';
@@ -6,6 +7,37 @@ import { waDisplay } from '@/lib/wa-number';
 import { parentFacingDescription } from './invoice-description';
 
 let browserInstance: Awaited<ReturnType<typeof puppeteer.launch>> | null = null;
+
+const MAC_CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+
+/** The Chrome a local (non-Vercel) render launches. CHROME_PATH or
+ *  PUPPETEER_EXECUTABLE_PATH wins; then the Mac's Google Chrome, as always;
+ *  then the newest Playwright Chromium (PLAYWRIGHT_BROWSERS_PATH, default
+ *  /opt/pw-browsers — where the claude.ai cloud containers keep one, 23 Sep
+ *  2026). With none of them it answers the Mac path, so the launch error reads
+ *  as it did before. `fsx` is injectable for the test. */
+export function localChromePath(
+  env: Record<string, string | undefined> = process.env,
+  fsx: { existsSync: (p: string) => boolean; readdirSync: (p: string) => string[] } = { existsSync, readdirSync },
+): string {
+  const fromEnv = (env.CHROME_PATH || env.PUPPETEER_EXECUTABLE_PATH || '').trim();
+  if (fromEnv) return fromEnv;
+  if (fsx.existsSync(MAC_CHROME)) return MAC_CHROME;
+  const pw = (env.PLAYWRIGHT_BROWSERS_PATH || '/opt/pw-browsers').trim();
+  let dirs: string[] = [];
+  try { dirs = fsx.readdirSync(pw); } catch { /* no Playwright browsers here */ }
+  const builds = dirs
+    .map((d) => ({ d, n: Number(/^chromium-(\d+)$/.exec(d)?.[1]) }))
+    .filter((b) => Number.isFinite(b.n))
+    .sort((a, b) => b.n - a.n);
+  for (const { d } of builds) {
+    for (const sub of ['chrome-linux', 'chrome-linux64']) {
+      const bin = path.join(pw, d, sub, 'chrome');
+      if (fsx.existsSync(bin)) return bin;
+    }
+  }
+  return MAC_CHROME;
+}
 
 export async function getBrowser() {
   // If we have a cached instance, verify it's still connected before reusing it.
@@ -36,7 +68,7 @@ export async function getBrowser() {
     });
   } else {
     browserInstance = await puppeteer.launch({
-      executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      executablePath: localChromePath(),
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });

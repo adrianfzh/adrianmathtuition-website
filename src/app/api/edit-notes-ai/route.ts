@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
     (async () => {
       try {
         const stream = client.messages.stream({
-          model: 'claude-opus-4-8',
+          model: 'claude-opus-5-5',
           max_tokens: 16000,
           system: SYSTEM_PROMPT,
           messages: [{

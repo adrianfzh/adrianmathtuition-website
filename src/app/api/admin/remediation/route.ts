@@ -25,7 +25,7 @@ import { extractQuestionEvidence, type ShelfEvidence } from '@/lib/shelf';
 export const runtime = 'nodejs';
 export const maxDuration = 120;
 
-const DRAFT_MODEL = 'claude-opus-4-8';
+const DRAFT_MODEL = 'claude-opus-5-5';
 const CANDIDATES_PER_ITEM = 5;
 
 export async function GET(req: NextRequest) {

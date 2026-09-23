@@ -54,8 +54,9 @@ the gates, the figure files, publishing). Student-facing side:
 - **The blind solver is a FRESH agent** that sees ONLY `Q<n>.solve.md` — never the key,
   never the author's conversation. Since 23 Sep 2026 author and solver are the same model
   (Opus 5.5, below), so independence is context isolation alone: a blind spot the model
-  shares with itself can still pass as agreement. The moderator works any part it doubts,
-  and Adrian reads the paper before it is published — those are the backstop.
+  shares with itself can still pass as agreement. The moderator is a different model
+  (Fable) and works any part it doubts, and Adrian reads the paper before it is
+  published — those are the backstop.
 - **Nothing goes into the bank until Adrian has read the paper** (checkpoint 2 below).
   `assemble` writes files only; `publish.mjs` is a separate, explicit step.
 - **Never set `image_watermark_status='clean'`** on a Set row — `figure_url` alone makes
@@ -75,25 +76,43 @@ the gates, the figure files, publishing). Student-facing side:
 - DOCX export: `python3` + `pandoc` (the `create-worksheet` skill's `worksheet_lib.py`
   is imported by `export-docx.py`).
 - A scratch run directory: `$SCRATCH/gce/runs/<key>-seed<n>` (the session scratchpad).
+- **Off the Mac (Linux / a cloud container, 23 Sep 2026)** — every Mac path has a fallback,
+  no edits needed; only the bank reads stay Mac-only (`docs/CLOUD.md`):
+  - PDFs (`assemble`): Chrome comes from `CHROME_PATH` / `PUPPETEER_EXECUTABLE_PATH`, else
+    the Mac's Google Chrome, else the newest Playwright Chromium under `/opt/pw-browsers`.
+  - `lo-pdf.sh`: `SOFFICE`, else the Mac app, else `soffice` on PATH — on Ubuntu
+    `apt install libreoffice-writer libreoffice-math libreoffice-script-provider-python`
+    (where the macro cannot run, e.g. Ubuntu 24.04, it converts with the size set in the profile).
+  - `figure.mjs`: `BOT_REPO`, else the Mac checkout, else the bot cloned BESIDE this repo
+    (`../adrianmath-telegram-bot` or `../adrianmath-telegram-math-bot`, `npm install` done).
+  - `render.sh` is POSIX sh — run it with `sh`; zsh is not needed.
 
 ## Models per spawn (deliberate — never session-inherit)
 
-**Every spawn is Opus 5.5** — pass `model: "opus"` on every `Agent` call (Adrian, 23 Sep
-2026: "I think you can just use opus 5.5 for all"). `generate.mjs` records this as
-`MODELS` in the run's `plan.json`; change it there too when the model changes.
+**The split since 23 Sep 2026** (Adrian: "use the trial split, but change solves blind to
+opus 5.5"): author, blind solve, repair and figure author are **Opus 5.5** — pass
+`model: "opus"` (the alias resolves to `claude-opus-5-5`; checked in the agents' own
+transcripts on 23 Sep 2026); the moderator is **Fable 5.1** — pass `model: "fable"` — so
+the judge is a different model from the writer and the same one that scored the earlier Sets (a
+like-for-like reading). `generate.mjs` records the split as `MODELS` in the run's
+`plan.json`; change it there too when a model changes. Judge the split on the moderator's
+`as_good_as_set1` + score against the earlier Sets', and on Adrian's read of the DOCX.
 
 | step | model | notes |
 |---|---|---|
-| author | **Opus 5.5** | register + originality are judgment; this is the moat step |
-| blind solve | **Opus 5.5**, a fresh agent | independence by context: it sees only `Q<n>.solve.md` |
-| moderate | **Opus 5.5** | compares key vs blind solve, scores style 1–5, names re-skins |
-| repair | **Opus 5.5** | the author's job again, with the verdict in hand |
+| author | **Opus 5.5** (was Fable) | register + originality are judgment; this is the moat step |
+| blind solve | **Opus 5.5**, a fresh agent (was Opus 5) | independence by context: it sees only `Q<n>.solve.md` |
+| moderate | **Fable 5.1** | compares key vs blind solve, scores style 1–5, names re-skins |
+| repair | **Opus 5.5** (was Fable) | the author's job again, with the verdict in hand |
 | figure author | **Opus 5.5** | mechanical against a written spec doc; verify() catches errors |
 
-Until 23 Sep 2026 Fable 5.1 wrote, moderated and repaired and Opus 5 solved blind — that
-is how A Math Set 1 and E Math Set 1 were made (their bank rows say
+**ORIGINAL (until 23 Sep 2026) — restore if the new split reads worse:**
+author **Fable** · blind solve **Opus 5** · moderate **Fable** · repair **Fable** · figure
+author **Opus**. That is how A Math Set 1 and E Math Set 1 were made (their bank rows say
 `solution_source='fable_session'`; `publish.mjs` labels a Set by the author its paper
-records, so every Set since is `opus_session`).
+records, so every Set since is `opus_session`). A Math Set 2 and E Math Set 2 (23 Sep 2026)
+were written with every spawn on Opus 5.5, moderator included; Fable then re-read A Math
+Set 2 as a whole.
 
 Run slots in **waves of agents in parallel** (independent slots; one message, several
 `Agent` calls; the harness caps a session at 20 live subagents — count what is still
@@ -194,13 +213,13 @@ Render one with the placeholders filled and paste the file's
 contents as the agent prompt:
 
 ```bash
-zsh .claude/skills/gce-paper/prompts/render.sh author   "$RUN" 1 1,2,3   # → $RUN/prompt-author-Q1-2-3.md
-zsh .claude/skills/gce-paper/prompts/render.sh blind    "$RUN" 1 4       # one slot per blind/repair spawn
-zsh .claude/skills/gce-paper/prompts/render.sh moderate "$RUN" 1 1,2,3
-zsh .claude/skills/gce-paper/prompts/render.sh repair   "$RUN" 1 4
+sh .claude/skills/gce-paper/prompts/render.sh author   "$RUN" 1 1,2,3   # → $RUN/prompt-author-Q1-2-3.md
+sh .claude/skills/gce-paper/prompts/render.sh blind    "$RUN" 1 4       # one slot per blind/repair spawn
+sh .claude/skills/gce-paper/prompts/render.sh moderate "$RUN" 1 1,2,3
+sh .claude/skills/gce-paper/prompts/render.sh repair   "$RUN" 1 4
 ```
 
-**Author** (Opus agent) — `prompts/author.md`: reads `author-brief.md`, `standard.md`,
+**Author** (Opus 5.5 agent) — `prompts/author.md`: reads `author-brief.md`, `standard.md`,
 `standard-questions-P<n>.md`, `earlier-sets.md`, `paper-so-far.md`, then its
 `Q<n>.brief.md`s; writes `Q<n>.json` in the brief's JSON shape, including `skills` — 1–3
 phrases naming what the question tests, specific enough to tell two questions on one
@@ -220,11 +239,11 @@ novelty nearest-neighbour against the real GCE papers AND against our own earlie
 (question + key + exemplars + the earlier-Set questions on the same topic and the
 nearest in wording). A failed gate → straight to repair.
 
-**Blind solve** (Opus agent) — `prompts/blind.md`: opens ONLY `Q<n>.solve.md` (which
+**Blind solve** (a fresh Opus 5.5 agent) — `prompts/blind.md`: opens ONLY `Q<n>.solve.md` (which
 carries its own instructions and the `{"answers": {...}, "solvable": bool, "issues": [...]}`
 shape) and writes `Q<n>.blind.json`. It is never told a key exists.
 
-**Moderate** (Opus agent) — `prompts/moderate.md`: reads `Q<n>.moderate.md` (its full
+**Moderate** (Fable 5.1 agent, `model: "fable"`) — `prompts/moderate.md`: reads `Q<n>.moderate.md` (its full
 brief: check the key against the blind solve, judge the question, judge the variety),
 `standard.md`, `standard-questions-P<n>.md`, `earlier-sets.md` and `Q<n>.gates.json`; writes `Q<n>.verdict.json` as
 `{parts:[{label, agree, note}], all_agree, key_verdict, score:1-5, standard:"at"|"below"|"above",
@@ -236,7 +255,7 @@ Set 1 question of similar marks (score ≤ 3, with what Set 1 does that the slot
 the same way as a question of an earlier Set (or of this Set's other paper). Below or above the 2024/25
 standard → score ≤ 3 with concrete fixes.
 
-**Repair** (Opus agent, only when needed) — `prompts/repair.md`: the author again with
+**Repair** (Opus 5.5 agent, only when needed) — `prompts/repair.md`: the author again with
 the gates, blind and verdict files, fixing EVERY named problem or writing a new question
 for the slot; then re-run check → blind solve → moderate. Three rounds max — after that,
 replace the question rather than patch it (P2 Q6 of E Math Set 1 took all three).

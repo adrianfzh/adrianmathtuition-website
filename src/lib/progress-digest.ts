@@ -331,7 +331,7 @@ export interface DraftGenResult {
 }
 
 /**
- * Generate parent-facing draft summaries with claude-opus-4-8, one call per
+ * Generate parent-facing draft summaries with claude-opus-5-5, one call per
  * student, 3 concurrent. Students with zero logged lessons in range are skipped.
  */
 export async function generateParentDrafts(opts: {
@@ -384,7 +384,7 @@ export async function generateParentDrafts(opts: {
 
     try {
       const msg = await client.messages.create({
-        model: 'claude-opus-4-8',
+        model: 'claude-opus-5-5',
         max_tokens: period === 'term' ? 1200 : 800,
         system: period === 'term' ? TERM_SYSTEM : MONTH_SYSTEM,
         messages: [{ role: 'user', content: user }],

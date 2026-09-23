@@ -10,8 +10,8 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const GEN_MODEL = 'claude-opus-4-8';
-const VERIFY_MODEL = 'claude-opus-4-8';
+const GEN_MODEL = 'claude-opus-5-5';
+const VERIFY_MODEL = 'claude-opus-5-5';
 const CODE_EXEC_TOOL = [{ type: 'code_execution_20250825', name: 'code_execution' }];
 const CODE_EXEC_BETA = 'code-execution-2025-08-25';
 

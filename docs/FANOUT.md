@@ -118,12 +118,14 @@ rounds can be compared.
 
 **The split today (models as of Sep 2026 — Fable 5.1 / Opus 5 / Sonnet 5):**
 
+> **23 Sep 2026 — Opus 5.5 shipped.** Every API pin in both repos (`claude-opus-5`, `claude-opus-4-8`) now reads `claude-opus-5-5` ($4/$20 per Mtok, was $5/$25); the `opus` alias an agent spawn or a Mac slot passes resolves to it. The Fable rows below are UNCHANGED for now: Opus 5.5 outscores Fable 5.1 on the published benchmarks, so the moat question is open — which "Fable only" rows (marking rules, GCE author + moderator, bank solutions) move to Opus 5.5? Adrian decides after the golden bench re-reads under the new marking pin.
+
 | work | model | why |
 |---|---|---|
 | pen and drawing code, adapters, reconciliation code, any fix with a bench (`npm test` golden replay, `scripts/golden-pen.cjs`, `pen-dryrun.cjs`) | **Opus** agent, in its own clone | mechanical once the cause is named; the bench, not the model, is the proof |
 | a marking RULE whose wording must not collide with the ninety-odd dated rules already in `ai/paper-marker.js`; triage of a round of complaints across several papers; reading a marked page the way Adrian reads it | **Fable** (the orchestrating session) | the cost of a rule that teaches the wrong lesson is a wrong mark on a student's paper; the collision check is judgement over the whole prompt |
 | mechanical builds with a spec (renderers, migrations, backfills, docs sweeps) | **Sonnet** agent | speed; the spec is the judgement |
-| solutions and question authoring for the bank | Fable only where it WRITES the maths (the extraction fleet); **the GCE Set generator runs every role on Opus 5.5** since 23 Sep 2026 (`docs/GCE-PAPER.md`) | accuracy of the maths itself |
+| solutions and question authoring for the bank | Fable only where it WRITES the maths (the extraction fleet); **the GCE Set generator writes, blind-solves and repairs on Opus 5.5 and moderates on Fable** since 23 Sep 2026 (`docs/GCE-PAPER.md`) | accuracy of the maths itself |
 
 Running every fix on the dearest tier is not "safer" — it costs plan usage for no
 gain on work the bench already proves. Running rule wording on the cheapest tier
@@ -166,3 +168,7 @@ re-ink; and re-issue only after Adrian has seen the redrawn pages.
   repair, figures) move to Opus 5.5 for every role. Adrian: "I think you can just use
   opus 5.5 for all". Both Set 1s were Fable-written; the first Set made this way is the
   comparison — count its repair rounds against E Math Set 1's 24 of 36 slots.
+  Later the same day (Adrian: "use the trial split, but change solves blind to opus
+  5.5"): the moderator goes back to Fable, so the judge is a different model from the
+  writer and the one that scored the earlier Sets; author, blind solve, repair and
+  figures stay on Opus 5.5.

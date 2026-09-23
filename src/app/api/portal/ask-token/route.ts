@@ -18,6 +18,7 @@ import { botLevelForAccount } from '@/lib/chat-solver';
 import { signAskToken } from '@/lib/ask-token';
 import { portalIdentity, type PortalAccount } from '@/lib/portal-auth';
 import { requireActiveAccess } from '@/lib/portal-passes';
+import { botInternalSecret } from '@/lib/bot-secret';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -47,7 +48,7 @@ export async function GET() {
   const access = await requireActiveAccess(account);
   if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
 
-  const secret = process.env.BOT_INTERNAL_SECRET;
+  const secret = botInternalSecret();
   if (!secret) {
     // Preview/local env without the bot secret: the client falls back to
     // anonymous asking, so this is a degrade, not an outage.

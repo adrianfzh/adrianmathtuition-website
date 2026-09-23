@@ -22,9 +22,22 @@
 // Both engines are zero-dep CommonJS in the bot repo; nothing here calls a model.
 import { createRequire } from 'node:module';
 import { existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const BOT = process.env.BOT_REPO || '/Users/adrianfong/dev/adrianmath-telegram-math-bot';
+// The bot checkout: BOT_REPO when set; else the Mac's; else one beside this
+// website checkout, under either name (the GitHub repo is adrianmath-telegram-bot
+// — how a cloud container clones it, 23 Sep 2026).
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const BOT = process.env.BOT_REPO || [
+  '/Users/adrianfong/dev/adrianmath-telegram-math-bot',
+  join(ROOT, '..', 'adrianmath-telegram-math-bot'),
+  join(ROOT, '..', 'adrianmath-telegram-bot'),
+].find((d) => existsSync(join(d, 'lib', 'figures')));
+if (!BOT) {
+  console.error('figure.mjs: no bot checkout — clone adrianmath-telegram-bot beside this repo (and npm install there), or set BOT_REPO=<path>');
+  process.exit(1);
+}
 const botRequire = createRequire(join(BOT, 'package.json'));
 const registry = botRequire('./lib/figures');
 const engine = botRequire('./ai/figure-engine');

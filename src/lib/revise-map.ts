@@ -22,7 +22,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
-export const REVISE_MAP_MODEL = 'claude-opus-4-8';
+export const REVISE_MAP_MODEL = 'claude-opus-5-5';
 
 /** Content-bank levels — match `subgroups.level` and /revise URL segments. */
 export type BankLevel = 'AM' | 'EM' | 'JC' | 'S1' | 'S2';
