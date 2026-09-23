@@ -830,10 +830,9 @@ one run answers both questions.
    their text), not the boxes. The code already notices a thin scan: it re-asks when under 70 %
    of rows are transcribed, and falls through when under 60 % of lines are placed. Those
    same checks can hand a page Flash could not read over to Pro, so most pages go to Flash
-   and only the hard ones pay for Pro.
-   *(Before that:)* Flash is already the second rung. Swapping the order
-   is a Fly secret (`GEMINI_VISION_MODELS`), not a code change, and Flash costs a fraction of
-   Pro per token. The trial's `flash` row says whether it places as well.
+   and only the hard ones pay for Pro. (Swapping the order alone is a Fly secret,
+   `GEMINI_VISION_MODELS`; the hand-over on a thin scan is a small code change.) Flash costs a
+   fraction of Pro per token.
 3. **A small picture for "which way up?".** That call only needs to see the text direction; a
    ~512-pixel copy is a quarter of the tokens of the marking copy.
 4. **Fewer calls.** Redraws already reuse the stored boxes. A page whose row scan comes back
