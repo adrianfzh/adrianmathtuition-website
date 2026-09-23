@@ -49,7 +49,7 @@ export default async function ForecastCard({ sid, subject }: { sid: string; subj
         {bt.summary.n > 0
           ? `Checked on ${bt.summary.n} GCE paper${bt.summary.n === 1 ? '' : 's'} this student already sat, using only earlier papers: off by ${bt.summary.meanAbsError} marks on average${bt.summary.bias ? ` (${bt.summary.bias > 0 ? 'runs high' : 'runs low'} by ${Math.abs(bt.summary.bias)})` : ''}.`
           : 'No past GCE paper to check this against yet — treat it as a rough guide.'}
-        {' '}A range, not a mark. Across all students it is off by about 4 marks (E Math) and 7 (A Math) where the papers cover the topics; a student's own improvement is projected forward when three or more papers show it.
+        {' '}A range, not a mark. Across all students it is off by about 4 marks (E Math) and 7 (A Math) where the papers cover the topics; a student&apos;s own improvement is projected forward when three or more papers show it.
       </p>
     </details>
   );
