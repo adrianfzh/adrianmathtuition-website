@@ -37,7 +37,7 @@ export async function buildFrontPage(
 ): Promise<Buffer | null> {
   const sb = getSupabaseAdmin();
   const { data: run } = await sb.from('paper_marking_runs')
-    .select('id, student_id, student_name, paper_name, created_at, result_json').eq('id', runId).maybeSingle();
+    .select('id, student_id, student_name, paper_name, paper_subject, created_at, result_json').eq('id', runId).maybeSingle();
   if (!run) return null;
 
   const parts = lostPartsFromRun(run as RunRow);
@@ -101,6 +101,8 @@ export async function buildFrontPage(
     remark,
     studentName: meta.studentName || run.student_name,
     paperName: meta.paperName || run.paper_name,
+    // The subject frame (25 Sep 2026): the run's own tag, never the caller's guess.
+    subject: (run as { paper_subject?: string | null }).paper_subject ?? null,
     markedOn: null,
     awarded: meta.awarded, max: meta.max,
     papersRead: 1,

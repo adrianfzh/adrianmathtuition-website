@@ -29,6 +29,7 @@
 // Pure: analysis in, HTML out, no I/O. The route renders it with the shared
 // Puppeteer browser and prepends the image to the assembled PDF.
 import type { Theme } from './paper-analysis';
+import { subjectPill, type SubjectTone } from './portal-subjects';
 import { mathHtml } from './math-inline';
 import {
   CARELESS_KINDS, CONCEPT_KINDS, ERROR_KIND_LABEL, hasLabelledLoss,
@@ -111,7 +112,50 @@ export type FrontPageInput = {
    * one it printed yesterday. lib/paper-total-text.ts `isUngroundedTotal`.
    */
   ungrounded?: { countedMax: number } | null;
+  /**
+   * The paper's subject (`paper_marking_runs.paper_subject`: 'A Math' | 'E Math' |
+   * 'H2 Math' | 'Physics' | 'Chemistry' | 'Biology' | 'Other'), 25 Sep 2026 —
+   * Adrian: colour-code the cover "so it's easily recognizable". A FRAME, not a
+   * repaint: the band across the top of the sheet and the tag beside the brand
+   * wear the subject's tone — the same tone as the paper card's edge and the
+   * paper page's header band (components/PaperSubjectPill SUBJECT_TONE) — and
+   * everything from the score box down keeps the red, which is the marks-lost
+   * language. Absent, Other or unknown → the sheet is byte-identical to before.
+   */
+  subject?: string | null;
 };
+
+/**
+ * The cover's frame colour for a subject: the label the tag prints and the two
+ * hexes of the app's tone (Tailwind's 500 for the band, 600 for the tag — the
+ * literal values of `SUBJECT_TONE.strip` / `.solid`, which are class names and
+ * cannot reach a Puppeteer page). One colour means one subject everywhere;
+ * change a colour there and here together. Null for Other, untagged, unknown.
+ */
+export function coverSubject(subject: string | null | undefined): { label: string; band: string; solid: string } | null {
+  const pill = subjectPill(subject);
+  if (!pill || pill.tone === 'other') return null;
+  const T: Record<Exclude<SubjectTone, 'other'>, { label: string; band: string; solid: string }> = {
+    am: { label: 'A Math', band: '#6366F1', solid: '#4F46E5' },      // indigo
+    em: { label: 'E Math', band: '#0EA5E9', solid: '#0284C7' },      // sky
+    h2: { label: 'H2 Math', band: '#D946EF', solid: '#C026D3' },     // fuchsia
+    phy: { label: 'Physics', band: '#3B82F6', solid: '#2563EB' },    // blue
+    chem: { label: 'Chemistry', band: '#A855F7', solid: '#9333EA' }, // purple
+    bio: { label: 'Biology', band: '#22C55E', solid: '#16A34A' },    // green
+  };
+  return T[pill.tone];
+}
+
+/** The frame's CSS — the band is the body's top border (the top padding gives
+ *  back its height, so the content box is the one the un-banded sheet has),
+ *  the tag a small solid pill after the brand. Nothing without a subject. */
+function subjectCss(tone: ReturnType<typeof coverSubject>): string {
+  if (!tone) return '';
+  return `body{border-top:2.4mm solid ${tone.band};padding-top:12.6mm}
+.subject-tag{display:inline-block;margin-left:.6rem;padding:.16rem .5rem .12rem;border-radius:999px;
+             background:${tone.solid};color:#fff;font-size:.58rem;letter-spacing:.14em;line-height:1.2;vertical-align:.1em}
+`;
+}
 
 // ONE A4 SHEET. Adrian asked for "a pdf page attached right in front" —
 // singular, and a cover that runs to two pages stops being a cover. The first
@@ -420,6 +464,7 @@ function closingLine(input: FrontPageInput): string {
 }
 
 export function frontPageHtml(input: FrontPageInput): string {
+  const tone = coverSubject(input.subject);
   const themes = chooseThemes(input.themes || []);
   const worst = (input.worstQuestions || []).slice(0, MAX_QUESTIONS);
   const withTopics = worst.some(q => !!(q.topic || '').trim());
@@ -462,7 +507,7 @@ export function frontPageHtml(input: FrontPageInput): string {
 :root{--sheet:#fff;--ink:#1F1D1A;--ink-soft:#6B6257;--ink-faint:#98907F;
       --teach:#5B4636;--verdict:#C4342C;--earned:#1A7F37;--rule:#E7E1D5;
       --rail:#F1EBDE;--shade:#FDFBF6;}
-*{box-sizing:border-box}
+${subjectCss(tone)}*{box-sizing:border-box}
 body{margin:0;background:var(--sheet);color:var(--ink);width:210mm;min-height:297mm;
      font-family:"Source Serif 4",Georgia,serif;font-size:14.5px;line-height:1.5;
      -webkit-font-smoothing:antialiased;padding:15mm 17mm 13mm;position:relative;overflow:hidden;
@@ -532,7 +577,7 @@ h2::before{content:none}
 <div class="blobs"><span class="blob a"></span><span class="blob b"></span><span class="blob c"></span></div>
 <div class="page">
 <div class="masthead">
-  <span class="brand">Adrian's Math Tuition</span>
+  <span class="brand">Adrian's Math Tuition${tone ? `<span class="subject-tag">${esc(tone.label)}</span>` : ''}</span>
   <span class="paper-name">${esc(input.paperName || 'Marked paper')}${
     input.markedOn ? ` &middot; marked ${esc(input.markedOn)}` : ''}</span>
 </div>

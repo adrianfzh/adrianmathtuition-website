@@ -465,6 +465,18 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   Chromium has no emoji font), one A4 sheet (`scrollHeight` ≤ 1123px is the test).
   The closing "start with Q26 and Q11" line only claims a question "sits under" the top
   theme when that theme's own evidence names it.
+  - **The subject frame (25 Sep 2026).** Adrian: colour-code the cover *"so it's easily
+    recognizable"*. A frame, not a repaint: a 2.4 mm band across the top of the sheet and a
+    small tag beside the brand ("A MATH", "CHEMISTRY" — so a black-and-white print still says
+    the subject) in the paper's tone, the SAME tone as the paper card's edge and the paper
+    page's header band (`SUBJECT_TONE` in `components/PaperSubjectPill.tsx`; the hexes live in
+    `front-page-html.ts coverSubject` because a Puppeteer page cannot read Tailwind classes —
+    change a colour in both). Everything from the score box down keeps the red: that is the
+    marks-lost language. `FrontPageInput.subject` is fed by `front-page-build.ts` from the run's
+    own `paper_subject`, never a caller's guess; Other / untagged → byte-identical to before.
+    The cover's cache key became `runs/<id>/cover-<stamp>-subject.png`, so an old cached cover
+    is rendered once more on its next view and a student's list never mixes the two looks (no
+    batch re-render). Tested in `front-page-html.test.ts` "the subject frame".
   - **The sheet's diagnosis drives the cover (2026-09-02).** Adrian: *"the sheet's diagnosis
     should drive the cover, not the cover the sheet."* The self-study worker sends
     `result.diagnosis` with its `done` call (`/api/admin/sheet-jobs`; shape + example in

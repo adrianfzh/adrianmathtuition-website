@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { frontPageHtml, chooseThemes, kindsScore, type FrontPageInput, oLevelGrade, ungroundedLine } from './front-page-html';
+import { frontPageHtml, chooseThemes, kindsScore, type FrontPageInput, oLevelGrade, ungroundedLine, coverSubject } from './front-page-html';
 import { changedPartCount, ungroundedFrontPage, lostPartsFromRun } from './front-page-build';
 import type { Theme } from './paper-analysis';
 
@@ -606,5 +606,34 @@ describe('errorKindTotals ignores the audit', () => {
     const t = errorKindTotals([real, phantom]);
     expect(t.lostTotal).toBe(2);
     expect(t.unlabelled).toBe(0);
+  });
+});
+
+// The subject frame (25 Sep 2026, Adrian: colour-code the cover "so it's easily
+// recognizable"): a band + a tag in the paper's tone, the red kept below.
+describe('frontPageHtml — the subject frame', () => {
+  it('wears the subject tone as a top band and a tag beside the brand, and keeps the red below', () => {
+    const html = frontPageHtml({ ...base, subject: 'Chemistry' });
+    expect(html).toMatch(/body\{border-top:2\.4mm solid #A855F7;padding-top:12\.6mm\}/);
+    expect(html).toContain('<span class="subject-tag">Chemistry</span>');
+    expect(html).toContain('--verdict:#C4342C');
+    expect(html).toContain('border-left:4px solid var(--verdict)');
+  });
+  it('is byte-identical without a subject, or for Other', () => {
+    const plain = frontPageHtml(base);
+    expect(frontPageHtml({ ...base, subject: null })).toBe(plain);
+    expect(frontPageHtml({ ...base, subject: 'Other' })).toBe(plain);
+    expect(frontPageHtml({ ...base, subject: 'Latin' })).toBe(plain);
+    expect(plain).not.toContain('subject-tag');
+    expect(plain).not.toContain('border-top:2.4mm');
+  });
+  it('coverSubject: the six tones the app uses, by the run\'s paper_subject', () => {
+    expect(coverSubject('A Math')).toEqual({ label: 'A Math', band: '#6366F1', solid: '#4F46E5' });
+    expect(coverSubject('E Math')?.band).toBe('#0EA5E9');
+    expect(coverSubject('H2 Math')?.band).toBe('#D946EF');
+    expect(coverSubject('Physics')?.band).toBe('#3B82F6');
+    expect(coverSubject('Biology')?.band).toBe('#22C55E');
+    expect(coverSubject('Other')).toBeNull();
+    expect(coverSubject(undefined)).toBeNull();
   });
 });

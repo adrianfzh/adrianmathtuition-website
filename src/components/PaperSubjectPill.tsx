@@ -13,7 +13,9 @@ import { subjectPill, type SubjectTone } from '@/lib/portal-subjects';
  *  everywhere. */
 /** `strip` = the coloured edge on a paper card / the band on the paper page's
  *  header, `tint` = that header's wash (24 Sep 2026, Adrian: "per subject colour
- *  mockups"). Score chips and the red pen keep their own colours. */
+ *  mockups"). Score chips and the red pen keep their own colours. The "Where your
+ *  marks went" cover wears the same tone as a band + tag (25 Sep 2026) — its hexes
+ *  are in lib/front-page-html.ts coverSubject; change a colour in both. */
 export const SUBJECT_TONE: Record<Exclude<SubjectTone, 'other'>, { soft: string; solid: string; strip: string; tint: string }> = {
   am: { soft: 'bg-indigo-100 text-indigo-800', solid: 'bg-indigo-600 text-white', strip: 'bg-indigo-500', tint: 'bg-indigo-50/60 border-indigo-200/70' },
   em: { soft: 'bg-sky-100 text-sky-800', solid: 'bg-sky-600 text-white', strip: 'bg-sky-500', tint: 'bg-sky-50/60 border-sky-200/70' },

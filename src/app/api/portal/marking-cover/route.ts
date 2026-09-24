@@ -32,7 +32,10 @@ export async function GET(req: NextRequest) {
   // follows the latest of release and re-issue.
   const stampSrc = (run as { reissued_at?: string | null }).reissued_at || run.released_at;
   const stamp = String(stampSrc).replace(/[^0-9]/g, '').slice(0, 12);
-  const key = runKey(runId, `cover-${stamp}.png`);
+  // "-subject": the look changed on 25 Sep 2026 (the subject frame — band + tag
+  // in the paper's tone). A cover cached under the old name is rendered once
+  // more, on its next view, so a student's list never mixes the two looks.
+  const key = runKey(runId, `cover-${stamp}-subject.png`);
   const headers = { 'Content-Type': 'image/png', 'Cache-Control': 'private, max-age=3600' };
   try {
     const cached = await downloadStudentFile(key);
