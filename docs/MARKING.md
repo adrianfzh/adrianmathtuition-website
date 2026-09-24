@@ -2459,6 +2459,23 @@ SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026 is the contract; this is the map.
   `migrations/paper_subject_science.sql`). Own daily slot: `countHandinsToday(…, 'science')` =
   runs with `subject <> 'math'` (`DAILY_SCIENCE_SUBMIT_CAP`); the bot's `/handin` count is
   maths-only. A science hand-in never spends a stranger's pass meter.
+- **The waiting list (24 Sep 2026, SPEC-PRACTICE-PHOTO §14 — Adrian: "If they upload more than 2,
+  then the rest will be queued. Allow them to remove the queued items too.").** A third science
+  paper today is not refused: `/api/portal/submit` asks `lib/science-queue-store.ts
+  scienceQueuePlacement` (the runs of the last three days + today, a direct hand-in counted on
+  its created day and a queued one on its `result_json.queued_for` day, removed ones nowhere) and
+  the pure rule `lib/daily-queue.ts placeInQueue` (allowance 2 a day, horizon `QUEUE_HORIZON_DAYS`
+  = 3 beyond today, the first day with room; past the horizon a plain 429 line). A paper that
+  waits is created with `queued_for` and NOT enqueued — Adrian's Telegram line says 🕒 queued for
+  <day>; the midnight cron `/api/cron/daily-queue` (`0 16 * * *` UTC) enqueues every run whose day
+  has come and stamps `queue_released_at`. `/app/science/submit` shows a teal line naming the day
+  before the student uploads (`queueNotice`; blocking only when the horizon is full), the done
+  screen says "Science paper queued", and Science › Papers lists "Waiting for its day" rows with
+  **Remove** (`POST /api/portal/science/queue {action:'remove', runId}` — a hard delete of the
+  run + its files while it still waits, `queue_removed_at` soft-stamp as the fallback, 409 once
+  marking started). `countHandinsToday` is no longer consulted for science (it misses a run
+  created yesterday for today); the maths path is untouched. Health-check `practice-photo` probes
+  the Remove door's 401 and the cron's.
 - **Lists.** `app/science/science-papers.tsx` selects the student's own runs with
   `subject <> 'math'`; the maths Papers list / Home counts filter through `subjectAllowed`, which
   admits no science value, so the two families never mix. Pills: PHY / CHEM / BIO tones in

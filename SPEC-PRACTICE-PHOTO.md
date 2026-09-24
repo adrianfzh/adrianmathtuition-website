@@ -160,3 +160,107 @@ Flag: `PRACTICE_PHOTO_OPEN_TO_STUDENTS` in `lib/portal-beta.ts`, false until ste
 - Whether `GEN_MODEL` moves to Opus 5 for this path before the calibration bench compares (§3d).
 - Whether a stranger on a pass gets this at all in v1 (SPEC-PUBLIC-LAUNCH lists "first paper free"; practice photos are a natural second door but the cap and cost story differs). Default: tuition students only.
 - SPEC-TWINS phase 1 (the batch over ~3,000 sources) can reuse everything from step 2 unchanged; that spec's `twin_of` column is created here.
+
+## 14. Photos in, one sheet a day out (agreed 24 Sep 2026 — BUILT the same day)
+
+Adrian, 24 Sep 2026: *"can allow students to upload multiple photos then provide them with a
+worksheet pdf instead? Something like practice again? 2 practice questions will be provided for
+each photo they sent — one similar question and another one with slight variation to test their
+understanding of the concept. So we limit to 10 questions per day right? And if students upload
+more than the required number of questions per day, they will be queued for the next day. But
+max queue is 3 days? We can put this idea for PDFs uploads for marking also — for science. If
+they upload more than 2, then the rest will be queued. Allow them to remove the queued items too.
+And for just a single question, shall we provide an option for worked example too?"* On the two
+ways to write the questions: *"i would go for b"* (write them fresh, with a taught part, the way a
+Practice Again sheet is written — not a pull from the bank). On what the sheet is for: *"for #2,
+do option A"* — the sheet is handed in and marked like a Practice Again sheet.
+
+This section REPLACES the student-facing shape of §§1–12 (the single-question card on the
+Practice list). That path stays in the code behind the same flag,
+`PRACTICE_PHOTO_OPEN_TO_STUDENTS`, for Adrian's own reading on `/admin/generated`; students
+get the sheet.
+
+### 14.1 What the student sees
+
+- The Practice tab is a photo page and the list. Up to **5 photos** (camera or album, 64 px
+  thumbnails with ✕), the level chips, and one button: **Write my sheet · n questions**. The
+  header says: *Photos in, a practice sheet out · Up to 5 questions a day · 2 practice questions
+  for each, in about an hour.*
+- A **single photo** offers one tick: *include a worked example*.
+- Tapping the button puts one row on the Practice list at once: *Writing…* with a Remove
+  button, then the finished sheet (a worksheet the student hands in from the same row, marked
+  like Practice Again). The sheet's page is headed *📷 Your practice sheet* with a back link to
+  Practice.
+- A second tap today lands on the waiting list: the row's chip says *Queued · Thursday* and the
+  reply says so in one line. Remove is allowed while it waits AND while it is being written.
+
+### 14.2 What the sheet is
+
+One sheet a day (`PHOTO_SHEET_ALLOWANCE` = 1), up to 5 photos, **2 questions per photo**
+(`QUESTIONS_PER_PHOTO`), so **10 questions a day** at most. For each photo the sheet worker
+writes:
+
+- a short **taught part** — the method the photographed question needs, in Adrian's voice, the
+  way a Practice Again section teaches a missed step; every taught part is filed in the section
+  bank (`sheet_sections`) like any other;
+- **one question like it** — the same sub-skill and marks, re-skinned (a bank seed by default,
+  from scratch only without one, never a clone);
+- **one turned-around variation** — the same sub-skill and marks, asked the other way round, so
+  the student shows they hold the idea and not the shape;
+- a **worked example** when the single-photo tick is on: one fully worked question of the same
+  kind before the two practice questions.
+
+The novelty gate accepts the pair only when the two questions are distinct from each other AND
+from the seed. Every question passes the existing gates (structure, blind solve, moderate,
+figure registry) and is filed `ai_generated` with `twin_of`.
+
+### 14.3 The waiting list — one pure rule, two users
+
+`lib/daily-queue.ts` (pure, tested) is the whole rule; it knows nothing about sheets or papers:
+
+- an **allowance per Singapore day** (practice sheets 1, science papers 2);
+- a **horizon of 3 days beyond today** (`QUEUE_HORIZON_DAYS`);
+- each new item lands on the **first day with room**, today first; past the horizon it is refused
+  with a plain line;
+- a queued item **starts at midnight SGT** on its day and takes that day's allowance first;
+- the student sees *Queued · Thursday* rows with **Remove**.
+
+Science has no practice; it uses the rule for **hand-ins**: the third paper today uploads, its run
+is created with `result_json.queued_for` and is NOT put in the marking queue; the midnight cron
+`/api/cron/daily-queue` enqueues it when its day comes and stamps `queue_released_at`. Remove
+(`POST /api/portal/science/queue`) deletes the run and its files while it waits; once marking
+starts the button is gone (409). The science notice gained one sentence: *Limit: two papers a
+day.* — and `/app/science/submit` says which day a paper will queue for before the upload.
+
+### 14.4 Where it lives
+
+| Piece | Where |
+|---|---|
+| The pure rule (allowance, horizon, placement, day words) | `src/lib/daily-queue.ts` + test |
+| Sheet constants + body parsing (`MAX_SHEET_PHOTOS`, `QUESTIONS_PER_PHOTO`, `parseSheetBody`, `sheetSentMessage`) | `src/lib/practice-sheet.ts` + test |
+| Science placement on the database (counts a direct hand-in on its day, a queued one on its `queued_for` day) | `src/lib/science-queue-store.ts` |
+| "Write my sheet" + Remove | `POST /api/portal/practice/sheet` |
+| The science Remove door | `POST /api/portal/science/queue` |
+| The midnight cron (`0 16 * * *` UTC, `job_runs` `daily-queue`, health 36 h) | `/api/cron/daily-queue` |
+| The sheet worker's rules for a photo sheet (taught part + the pair + the worked example) | `scripts/sheet-worker/WORKER_PROMPT.md` §1h; the worker peeks `sheet-jobs?peek=1` and `dueFilter()` hides a job until its `scheduled_for` day |
+| Rows | `sheet_jobs` (`kind='practice-sheet'`, `photos`, `scheduled_for`, `worked_example`, `run_id` nullable — migration `practice_sheet_v1`); `portal_assignments` (`source='practice-photo'`, `sheet_job_id`); `paper_marking_runs.result_json.queued_for / queue_released_at / queue_removed_at` |
+| The student's pages | `app/practice/photo-client.tsx`, `todo-list.tsx` (+ `remove-sheet-button.tsx`), `app/science/submit` + `submit-client.tsx` (`queueNotice`), `app/science/science-papers.tsx` (+ `science-queue-remove.tsx`) |
+| The worker reads the photos | `GET /api/files/<key>` with `Authorization: Bearer $SHEETS_API_TOKEN` (the same token the worker already carries) |
+
+### 14.5 Rules that bind
+
+- A sheet exists only when the student asks; nothing is written from a hand-in or a marking.
+- The **allowance is by sheet, not by question**: five photos in one sheet is one day's sheet;
+  one photo is also one day's sheet. The student is told the count before tapping.
+- A queued sheet **starts writing at midnight SGT** of its day, never earlier, so the worker's
+  hour lands in the morning.
+- Remove is always the student's: it deletes the job (and the science run with its files); no
+  admin step, no Telegram question.
+- Every taught part goes to the section bank; a sheet that fails the gates is refused, the job
+  is failed, and the student sees the plain line — never a half sheet.
+- Cost: one sheet ≈ one Practice Again sheet on the plan worker; nothing goes to the API.
+
+### 14.6 Open
+
+- Whether the 23 Sep single-question card comes back as a "just one, now" door beside the sheet.
+- Whether a stranger on a pass gets the sheet (default: tuition students only, as §13).

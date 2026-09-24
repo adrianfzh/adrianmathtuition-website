@@ -715,6 +715,11 @@ export async function GET(req: NextRequest) {
         ['/api/portal/practice/photo/done', 'POST'],
         ['/api/portal/practice/report', 'POST'],
         ['/api/admin/generated', 'GET'],
+        // §14 (24 Sep 2026): the "Write my sheet" door, the science waiting
+        // list's Remove door and the midnight queue cron.
+        ['/api/portal/practice/sheet', 'POST'],
+        ['/api/portal/science/queue', 'POST'],
+        ['/api/cron/daily-queue', 'GET'],
       ];
       for (const [path, method] of probes) {
         const r = await fetch(`${base}${path}`, { method, redirect: 'manual', signal: T(10000), headers: { 'Content-Type': 'application/json' }, body: method === 'POST' ? '{}' : undefined });

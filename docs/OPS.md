@@ -31,6 +31,7 @@ Writers:
   through the same `mark-triage {release, auto:true, sweep:true}` door, until it
   succeeds; rule refusals and holds are left to the desk; the bot stamps every
   outcome on `result_json.auto_release` — 9 Sep 2026, Sophie's 1 Sep hand-in),
+  `daily-queue` (**midnight SGT**, `0 16 * * *` UTC — the waiting list's clock, SPEC-PRACTICE-PHOTO §14, 24 Sep 2026: every science hand-in whose `result_json.queued_for` is today or earlier and that is neither released to the 🌙 queue nor removed goes into the bot's marking queue and is stamped `queue_released_at`; photo-sheet `sheet_jobs` carry `scheduled_for` and the sheet worker's own peek (`dueFilter()`) picks them up when their day comes, so the cron has nothing to do for them; stamps even on an empty night — a missing stamp means queued papers are sitting past their day; `job-health` allows 36 h),
   `practice-again-reminders` (daily 9am SGT — **PAUSED since 17 Sep 2026**, `REMINDERS_PAUSED` in `lib/practice-again-reminders.ts`: the cron stamps a 'paused' line and sends nothing. When on, nudges students whose COMPULSORY
   Practice Again sheet is still not handed in: `portal_assignments.required_at`
   is set when Adrian releases a sheet he queued himself; day 3, then weekly,
