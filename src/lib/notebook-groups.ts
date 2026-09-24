@@ -29,6 +29,8 @@ export interface NotebookMistake {
   seen: number;
   cameBack: boolean;
   practice: { id: string; title: string }[];
+  /** The paper's subject ('A Math' … 'Chemistry'); the card shows a pill for a science one (24 Sep 2026). */
+  subject: string | null;
 }
 
 export interface NotebookGroup {
@@ -94,6 +96,7 @@ export function groupMistakes<T extends Row>(
       tone: band === 'still-happening' ? 'rose' : 'amber',
       live: m.state === 'dark' || m.state === 'light',
       where: seen?.label ?? null, seen: m.seen_count, cameBack: m.came_back, practice: practiceFor(m),
+      subject: m.subject ?? null,
     });
   }
   const groups = [...byKey.values()].sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : a.title.localeCompare(b.title)));

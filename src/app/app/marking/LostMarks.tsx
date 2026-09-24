@@ -54,6 +54,17 @@ export default function LostMarks({ paper }: { paper: StudentPaper }) {
                 ))}
               </div>
             )}
+            {/* Science, a point lost for the WORDS not the idea (24 Sep 2026, the
+                chemistry study loop): the scheme's phrase beside the student's
+                own, both verbatim — the pair they learn from. */}
+            {q.schemes.filter((s) => s.words).map((s, j) => (
+              <div key={`w${j}`} className="mt-1.5 rounded-lg border border-purple-100 bg-purple-50 px-2.5 py-1.5 text-[12.5px] leading-snug text-gray-800">
+                {s.label && <span className="font-mono text-[11px] text-purple-700/70 mr-1.5">{s.label}</span>}
+                <span className="font-semibold text-purple-900">Scheme says:</span> “{s.words!.scheme}”
+                <span className="text-gray-400 mx-1.5">·</span>
+                <span className="font-semibold text-purple-900">You wrote:</span> “{s.words!.yours}”
+              </div>
+            ))}
             {q.comment && <p className="text-[13px] text-gray-700 mt-1 leading-snug">{q.comment}</p>}
             {q.solution && (
               <details className="mt-2 group/sol">

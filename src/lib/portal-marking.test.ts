@@ -389,8 +389,23 @@ describe('buildStudentMarking — SEAB scheme chips', () => {
       ] },
     })];
     const { papers } = buildStudentMarking(rows);
-    expect(papers[0].questions[0].schemes).toEqual([{ label: '(a)', scheme: 'M1 A1 A0', why: 'slip', teach: null }]);
+    expect(papers[0].questions[0].schemes).toEqual([{ label: '(a)', scheme: 'M1 A1 A0', why: 'slip', teach: null, words: null }]);
     expect(papers[0].questions[1].schemes).toEqual([]);
+  });
+  it('a science part lost for wording carries the scheme\'s phrase beside the student\'s own (24 Sep 2026); half a pair is nothing', () => {
+    const rows = [run({
+      id: 'r1',
+      result_json: { results: [
+        q({ n: '1', awarded: 1, max: 2, parts: [
+          { label: '(a)', awarded: 1, max: 2, error_kind: 'keywords', error_summary: 'the scheme wants the precipitate named', scheme: 'M1 A0',
+            scheme_words: { scheme: 'a white precipitate forms', yours: 'it goes cloudy' } } as never,
+        ] }),
+        q({ n: '2', awarded: 0, max: 2, parts: [{ label: '(a)', awarded: 0, max: 2, error_summary: 'x', scheme: 'A0', scheme_words: { scheme: 'only one side' } } as never] }),
+      ] },
+    })];
+    const { papers } = buildStudentMarking(rows);
+    expect(papers[0].questions[0].schemes[0].words).toEqual({ scheme: 'a white precipitate forms', yours: 'it goes cloudy' });
+    expect(papers[0].questions[1].schemes[0].words).toBeNull();
   });
 });
 

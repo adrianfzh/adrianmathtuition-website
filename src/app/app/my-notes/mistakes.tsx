@@ -8,6 +8,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { groupHeading, splitFold, type NotebookGroup, type NotebookGroups } from '@/lib/notebook-groups';
 import { CorrectedButton, RemoveButton } from './mistake-actions';
+import PaperSubjectPill from '@/components/PaperSubjectPill';
+import { isScienceSubject } from '@/lib/portal-subjects';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 const TONE = { rose: 'bg-rose-50 text-rose-700', amber: 'bg-amber-50 text-amber-800' } as const;
@@ -34,7 +36,11 @@ export default function NotebookMistakes({ initial, weakest }: {
         <div key={m.id} data-item-id={`mistake:${m.id}`} className={`${CARD} p-4`}>
           <div className="flex items-start gap-3">
             <div className="min-w-0 flex-1">
-              <p className={`text-sm font-bold leading-snug ${m.tone === 'rose' ? 'text-navy' : 'text-gray-600'}`}>{m.title}</p>
+              <p className={`text-sm font-bold leading-snug ${m.tone === 'rose' ? 'text-navy' : 'text-gray-600'}`}>
+                {m.title}
+                {/* A science mistake (24 Sep 2026) says which science, the way the paper card does. */}
+                {isScienceSubject(m.subject) && <span className="ml-1.5 align-middle"><PaperSubjectPill subject={m.subject} /></span>}
+              </p>
               <p className="text-[12px] text-gray-500 mt-0.5">
                 {[m.where, m.seen > 1 ? `seen ${m.seen} times` : ''].filter(Boolean).join(' · ')}
               </p>

@@ -88,7 +88,11 @@ export interface StudentQuestion {
    * marker emits since 2026-08-24, plus that part's red-ink reason and ✱
    * teaching note for the annotated-solution view. Empty for older runs.
    */
-  schemes: { label: string | null; scheme: string; why: string | null; teach: string | null }[];
+  schemes: {
+    label: string | null; scheme: string; why: string | null; teach: string | null;
+    /** Science, a point lost for wording (24 Sep 2026): the scheme's phrase beside the student's own, both verbatim. */
+    words: { scheme: string; yours: string } | null;
+  }[];
   /** The complete correct solution, one step per line ($…$ TeX). */
   solution: string | null;
   /**
@@ -262,6 +266,18 @@ function num(v: unknown): number {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
 }
+/**
+ * The marker's `scheme_words` on a science part lost for wording (24 Sep 2026):
+ * `{ scheme, yours }`, two verbatim quotations. Both must be there, or it is nothing.
+ */
+export function schemeWords(v: unknown): { scheme: string; yours: string } | null {
+  const r = asRecord(v);
+  if (!r) return null;
+  const scheme = str(r.scheme).trim();
+  const yours = str(r.yours).trim();
+  return scheme && yours ? { scheme, yours } : null;
+}
+
 function str(v: unknown): string {
   return typeof v === 'string' ? v.trim() : '';
 }
@@ -279,7 +295,7 @@ function toQuestion(raw: unknown): StudentQuestion | null {
   const parts = Array.isArray(marking.parts) ? marking.parts : [];
 
   const slips: string[] = [];
-  const schemes: { label: string | null; scheme: string; why: string | null; teach: string | null }[] = [];
+  const schemes: StudentQuestion['schemes'] = [];
   for (const p of parts) {
     const part = asRecord(p);
     if (!part) continue;
@@ -290,6 +306,7 @@ function toQuestion(raw: unknown): StudentQuestion | null {
         scheme,
         why: str(part.error_summary) || null,
         teach: str(part.study_note) || null,
+        words: schemeWords(part.scheme_words),
       });
     }
     // A part that scored full marks has nothing to say; `error_summary` on a

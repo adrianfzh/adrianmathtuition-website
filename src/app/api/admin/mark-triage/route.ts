@@ -932,9 +932,11 @@ export async function POST(req: NextRequest) {
       // release-with-sheet button all stamp here — so the hook lives here
       // once. Idempotent per run (the run id is the evidence ref), and
       // fail-soft: a notebook hiccup never undoes or delays a release.
-      // Not for a science paper (10 Sep 2026): the mistakes list files
-      // "<kind> in <topic>" under maths canonical topics.
-      if (run.student_id && !isScienceSubject(run.paper_subject)) {
+      // A science paper files too since 24 Sep 2026 (the chemistry study loop):
+      // under three reasons — concept gap / careless slip / wrong keywords —
+      // rather than the nine maths kinds (lib/notebook-mistakes scienceReason).
+      // The practice / revise maps further down stay maths-only.
+      if (run.student_id) {
         try {
           await applyRunRelease(supa, run.student_id, {
             id: run.id, paper_name: run.paper_name, paper_subject: run.paper_subject, result_json: run.result_json,
