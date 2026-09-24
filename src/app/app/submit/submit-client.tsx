@@ -263,8 +263,9 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         uploadedRef.current.set(i, url);
         urls.push(url);
       }
-      // The school's mark scheme, if attached (science only) — same retry, same
-      // resume-from-cache as the pages; a PDF goes up as-is, a photo is resized.
+      // The answers or mark scheme, if attached (both families since 24 Sep
+      // 2026) — same retry, same resume-from-cache as the pages; a PDF goes up
+      // as-is, a photo is resized.
       const schemeUrls: string[] = [];
       for (let i = 0; i < schemeFiles.length; i++) {
         const cached = schemeUploadedRef.current.get(i);
@@ -303,7 +304,10 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
       const body = JSON.stringify({
         photoUrls: urls,
         paperName: paperName.trim(),
-        ...(isScience ? { family: 'science', subject, schemeUrls } : subjectChoices.length > 1 ? { subject } : {}),
+        ...(isScience ? { family: 'science', subject } : subjectChoices.length > 1 ? { subject } : {}),
+        // The answers or scheme the student attached, either family — grounds
+        // THIS paper only (the route stamps attached_by:'student').
+        ...(schemeUrls.length ? { schemeUrls } : {}),
         ...(confirmed ? { confirmed: true } : {}),
         ...(assignment ? { assignmentId: assignment.id } : {}),
         ...(paper ? { paperId: paper.id } : {}),
@@ -378,13 +382,15 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
             the red pen, and what each lost mark was for.
           </p>
           <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
-            <Link href={assignment ? '/app/assignments' : '/app/marking'} className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
-              {assignment ? 'Back to From Adrian' : 'Go to Marked papers'}
+            <Link href={assignment ? '/app/assignments' : isScience ? '/app/science/papers' : '/app/marking'} className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
+              {assignment ? 'Back to From Adrian' : isScience ? 'Go to Papers' : 'Go to Marked papers'}
             </Link>
           </div>
-          {!assignment && !paper && (
+          {/* No daily cap for tuition students since 22 Sep 2026 — the old
+              "a fresh one opens at midnight" line was stale (Adrian, 24 Sep). */}
+          {!assignment && !paper && !isScience && (
             <p className="text-[13px] text-gray-500 mt-3">
-              🎟️ That was today&apos;s exam-paper hand-in — a fresh one opens at midnight. Practice Again sheets and printed papers can still go in.
+              Another paper? Hand it in as soon as it&apos;s done — Practice Again sheets and printed papers go in here too.
             </p>
           )}
         </div>
@@ -423,15 +429,15 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         <h1 className="text-xl font-bold text-navy pt-1">Submit a paper</h1>
         <div className={`${CARD} p-5 text-center`}>
           <p className="text-4xl">🎟️</p>
-          <p className="font-bold text-navy mt-2">Today&apos;s exam-paper hand-in is used</p>
+          <p className="font-bold text-navy mt-2">{isScience ? 'Today’s science hand-ins are used' : 'Today’s hand-ins are used'}</p>
           <p className="text-sm text-gray-600 mt-1.5">
-            One exam paper a day gets every script marked properly. A fresh slot opens at midnight —
-            line the next paper up for tomorrow. Practice Again sheets and printed papers don&apos;t count,
-            so those can still go in today.
+            {isScience
+              ? 'Two science papers a day — a fresh pair opens at midnight. Your maths papers are separate and can still go in.'
+              : 'Your pass’s hand-ins for today are used. A fresh slot opens at midnight, or when your pass is topped up — line the next paper up. Practice Again sheets and printed papers don’t count, so those can still go in today.'}
           </p>
           <div className="mt-4 flex justify-center">
-            <Link href="/app/marking" className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
-              Go to Marked papers
+            <Link href={isScience ? '/app/science/papers' : '/app/marking'} className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
+              {isScience ? 'Go to Papers' : 'Go to Marked papers'}
             </Link>
           </div>
         </div>
@@ -461,7 +467,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
       ) : (
         <div className="pt-1">
           <h1 className="text-xl font-bold text-navy">Submit a paper</h1>
-          <p className="text-[13px] text-gray-500 mt-0.5">🎟️ Today&apos;s exam-paper hand-in is open — one a day; practice sheets and printed papers don&apos;t count.</p>
+          <p className="text-[13px] text-gray-500 mt-0.5">Exam papers, Practice Again sheets and printed papers all go in here — hand in each one as soon as it&apos;s done.</p>
         </div>
       )}
 
@@ -485,9 +491,15 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
       )}
 
       <div className={`${CARD} p-4 space-y-3`}>
+        {/* Two labelled slots on both forms (Adrian, 24 Sep 2026: "(b) yes"):
+            this one is the paper — the questions and the working; the answers
+            or scheme have their own slot further down. */}
+        <p className="text-sm font-semibold text-navy">
+          {assignment ? 'Your worksheet: the questions and your working' : 'Your paper: the questions and your working'}
+        </p>
         <p className="text-sm text-gray-600">
           Photograph your worked {assignment ? 'worksheet' : 'paper'} — <b>one page per photo</b>, straight on, in good light —
-          or upload a <b>PDF scan</b>. It comes back marked in <b>Marked papers</b>.
+          or upload a <b>PDF scan</b>. It comes back marked in <b>{isScience ? 'Papers' : 'Marked papers'}</b>.
         </p>
 
         {/* Free-form hand-ins only — mocks and assigned worksheets already carry their
@@ -610,38 +622,40 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
             </p>
           </div>
         )}
-        {/* The school's mark scheme, optional (science only): a PDF or photos. The
-            marker grounds on it and keeps it for every later hand-in of the same
-            paper — the difference between "the standard points" and "your
-            school's points" on every explain answer. */}
-        {isScience && (
-          <div className="mt-3">
-            <p className="block text-sm font-semibold text-navy mb-1">Answers or mark scheme <span className="font-normal text-gray-400">(optional, but marking is more accurate with them)</span></p>
-            <button
-              type="button" onClick={() => schemeRef.current?.click()} disabled={busy}
-              className="w-full rounded-xl border border-dashed border-gray-300 bg-white py-3 text-[13px] text-gray-600 active:bg-amber-50"
-            >
-              {schemeFiles.length
-                ? `📎 ${schemeFiles.length} file${schemeFiles.length === 1 ? '' : 's'} attached — tap to add more`
-                : '📎 Attach the answers or your school’s mark scheme — a PDF or photos'}
+        {/* The answers or mark scheme, optional, on BOTH forms (Adrian, 24 Sep
+            2026: "(b) yes"): a PDF or photos. It grounds THIS paper's marking
+            only — a student's attachment is never filed as the paper's shared
+            scheme (the route stamps attached_by:'student'; the bot's remarkRun
+            skips saveScheme for it, and the paper library's own solutions
+            outrank it), and the marking never shows, quotes or names it. */}
+        <div className="mt-3">
+          <p className="block text-sm font-semibold text-navy mb-1">Answers or mark scheme <span className="font-normal text-gray-400">(optional)</span></p>
+          <button
+            type="button" onClick={() => schemeRef.current?.click()} disabled={busy}
+            className="w-full rounded-xl border border-dashed border-gray-300 bg-white py-3 text-[13px] text-gray-600 active:bg-amber-50"
+          >
+            {schemeFiles.length
+              ? `📎 ${schemeFiles.length} file${schemeFiles.length === 1 ? '' : 's'} attached — tap to add more`
+              : '📎 Attach the answers or your school’s mark scheme — a PDF or photos'}
+          </button>
+          <input
+            ref={schemeRef} type="file" accept="image/*,application/pdf" multiple className="hidden"
+            onChange={(e) => {
+              const list = Array.from(e.target.files ?? []).filter(f => f.type === 'application/pdf' || f.type.startsWith('image/') || /\.(pdf|jpe?g|png|webp|heic|heif)$/i.test(f.name));
+              schemeUploadedRef.current.clear();
+              setSchemeFiles(prev => [...prev, ...list].slice(0, 12));
+              if (schemeRef.current) schemeRef.current.value = '';
+            }}
+          />
+          {schemeFiles.length > 0 && !busy && (
+            <button type="button" onClick={() => { setSchemeFiles([]); schemeUploadedRef.current.clear(); }} className="mt-1 text-[11px] text-gray-500 underline underline-offset-2">
+              Remove the mark scheme
             </button>
-            <input
-              ref={schemeRef} type="file" accept="image/*,application/pdf" multiple className="hidden"
-              onChange={(e) => {
-                const list = Array.from(e.target.files ?? []).filter(f => f.type === 'application/pdf' || f.type.startsWith('image/') || /\.(pdf|jpe?g|png|webp|heic|heif)$/i.test(f.name));
-                schemeUploadedRef.current.clear();
-                setSchemeFiles(prev => [...prev, ...list].slice(0, 12));
-                if (schemeRef.current) schemeRef.current.value = '';
-              }}
-            />
-            {schemeFiles.length > 0 && !busy && (
-              <button type="button" onClick={() => { setSchemeFiles([]); schemeUploadedRef.current.clear(); }} className="mt-1 text-[11px] text-gray-500 underline underline-offset-2">
-                Remove the mark scheme
-              </button>
-            )}
-            <p className="text-[11px] text-gray-400 mt-1">With the answers or scheme, marking follows your school&apos;s points, not the standard ones. Without them, marking may be less accurate.</p>
-          </div>
-        )}
+          )}
+          {/* Adrian's line, verbatim (24 Sep 2026: "we should state that"). */}
+          <p className="text-[11px] text-gray-500 mt-1">Attach only answers or a scheme you were given for your own study. We use it only to mark your paper.</p>
+          <p className="text-[11px] text-gray-400 mt-1">With the answers or scheme, marking follows your school&apos;s points, not the standard ones. Without them, marking may be less accurate.</p>
+        </div>
         </div>
         )}
 

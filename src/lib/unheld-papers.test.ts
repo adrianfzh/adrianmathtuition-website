@@ -12,6 +12,10 @@ describe('schemeHeld', () => {
     expect(schemeHeld(run('a', { scheme: { status: 'derived' }, allocation: 'bank' }))).toBe(true);
     expect(schemeHeld(run('a', { source: 'attached' }, { paper_match: { trusted: true } }))).toBe(true);
   });
+
+  it('not held: the answers the student attached at hand-in ground one run only (24 Sep 2026)', () => {
+    expect(schemeHeld(run('a', { source: 'attached', attached_by: 'student' }, { paper_match: { trusted: true } }))).toBe(false);
+  });
   it('not held: a derived scheme from the page, or no stamp at all', () => {
     expect(schemeHeld(run('a', { scheme: { status: 'derived' }, allocation: 'page' }))).toBe(false);
     expect(schemeHeld(run('a', null))).toBe(false);

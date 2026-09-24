@@ -11,6 +11,10 @@ export type GroundingStamp = {
   scheme?: { status?: string | null; key?: string | null } | null;
   source?: string | null;
   allocation?: string | null;
+  /** 'student' when the attached scheme is the answers the STUDENT put in at
+   *  hand-in (24 Sep 2026) — that grounds one run and is never the paper's
+   *  scheme, so the paper still counts as one we do not hold. */
+  attached_by?: string | null;
 };
 export type RunForHeld = {
   paper_name: string | null;
@@ -28,7 +32,7 @@ export function schemeHeld(run: RunForHeld): boolean {
   const status = String(g?.scheme?.status || '').toLowerCase();
   if (status === 'extracted' || status === 'approved') return true;
   if (String(g?.allocation || '').toLowerCase() === 'bank') return true;
-  if (run.result_json?.paper_match?.trusted && String(g?.source || '') === 'attached') return true;
+  if (run.result_json?.paper_match?.trusted && String(g?.source || '') === 'attached' && String(g?.attached_by || '') !== 'student') return true;
   return false;
 }
 

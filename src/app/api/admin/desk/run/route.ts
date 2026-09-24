@@ -216,6 +216,7 @@ export async function GET(req: NextRequest) {
       photosPdfUrl: run.photos_pdf_url,
       pdfStale: pdfStaleOf(run),
       grounding: ((rj as { grounding?: { source?: string | null } } | null)?.grounding?.source) ?? null,
+      groundingAttachedBy: ((rj as { grounding?: { attached_by?: string | null } } | null)?.grounding?.attached_by) ?? null,
       scheme,
       // 🧮 The allocation audit's record (bot lib/scheme-derive, 8 Sep 2026).
       allocationAudit: (() => {

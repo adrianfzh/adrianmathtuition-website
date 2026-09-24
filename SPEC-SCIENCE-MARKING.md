@@ -265,8 +265,12 @@ teacher-marked chemistry scripts.
 - **The hand-in form asks for answers.** The science disclaimer now says: attach the answers or the
   mark scheme if you have them, marking is more accurate with them, without them some marks may be
   off (especially explain answers). The "Mark scheme (optional)" block is titled "Answers or mark
-  scheme" with the same warning. The upload path is unchanged (`scheme_source`, stored in
-  `paper_schemes`). The math form has no such upload yet — a separate small build if wanted.
+  scheme" with the same warning. **24 Sep 2026 (Adrian: "(b) yes"): the maths form has the same
+  slot**, and on both forms a student's attachment is `scheme_source.attached_by = 'student'` — it
+  grounds that run and is NEVER stored in `paper_schemes` (the earlier "stored" wording here was the
+  poisoning path: one student's answers marking the next student's paper). The line under the slot is
+  Adrian's: *Attach only answers or a scheme you were given for your own study. We use it only to
+  mark your paper.* → `docs/MARKING.md` §The Science tab, Hand-in.
 
 
 ## Bench results, 24 Sep 2026 — six scripts, the marker is too generous on weak answers

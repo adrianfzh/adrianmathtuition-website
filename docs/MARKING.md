@@ -2441,8 +2441,19 @@ SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026 is the contract; this is the map.
   the subject picker is required (physics / chemistry / biology — `SCIENCE_MARK_SUBJECTS`), the
   disclaimer sits above the photos, an optional **mark scheme** (PDF or photos) uploads through
   `submit-token?kind=scheme` and rides `save-paper` as `source.scheme_source` (the admin attach's
-  shape — the bot extracts, grounds and STORES it in `paper_schemes`). `/api/portal/submit` takes
-  `family:'science'` + `subject` + `schemeUrls`; the subject is `resolveScienceSubject` (any student,
+  shape). **Since 24 Sep 2026 the same slot is on the maths form too** (Adrian: "(b) yes") — two
+  labelled slots on both forms, "Your paper: the questions and your working" and "Answers or mark
+  scheme (optional)", with his line under the second: *Attach only answers or a scheme you were given
+  for your own study. We use it only to mark your paper.* The route stamps
+  `scheme_source.attached_by = 'student'` (in the save-paper payload AND in the post-save
+  read-merge-write, so it holds under an older bot): the bot grounds THAT run on it
+  (`grounding.source = 'attached'`, `grounding.attached_by = 'student'`) and **never files it in
+  `paper_schemes`** — a student's answers must not mark the next student's paper (`remarkRun` skips
+  `saveScheme` + the fingerprint stamp; `buildRunSource` keeps the flag); the paper library's own
+  solutions outrank it (`attachFromLibrary` replaces it, `scheme_source.replaced = 'student'`); the
+  desk chip reads 📘 scheme · student's; `lib/unheld-papers schemeHeld` does NOT count it as held. The
+  marking never shows, quotes or names the scheme. `/api/portal/submit` takes `family:'science'` +
+  `subject`, and `schemeUrls` from either family; the subject is `resolveScienceSubject` (any student,
   no enrolment check — the maths gate `resolveHandinSubject` is untouched); the run is stamped
   `paper_subject` = Physics | Chemistry | Biology (`paperSubjectForMarkSubject`; CHECK widened by
   `migrations/paper_subject_science.sql`). Own daily slot: `countHandinsToday(…, 'science')` =

@@ -167,12 +167,15 @@ export async function POST(req: Request) {
   for (const u of photoUrls) {
     if (!ownsUrl(u)) return NextResponse.json({ error: 'A photo upload went wrong — please re-add your photos and try again.' }, { status: 400 });
   }
-  // The school's mark scheme, if the student has it (science only; a PDF or
-  // photos, uploaded under the same prefix via submit-token?kind=scheme). It
-  // rides save-paper as source.scheme_source — the shape the admin attach uses —
-  // so the bot extracts it, grounds on it and STORES it for every later hand-in
-  // of the same paper.
-  const schemeUrls = science && Array.isArray(body.schemeUrls)
+  // The answers or mark scheme, if the student has them (either family since
+  // 24 Sep 2026 — Adrian: "(b) yes"; a PDF or photos, uploaded under the same
+  // prefix via submit-token?kind=scheme). It rides save-paper as
+  // source.scheme_source — the admin attach's shape — stamped attached_by:
+  // 'student': the bot grounds THIS run on it and never files it as the paper's
+  // shared scheme (a student's answers must not mark the next student's paper;
+  // bot remarkRun skips saveScheme for it), and Adrian's paper library outranks
+  // it when the library holds the solutions (bot lib/paper-library).
+  const schemeUrls = Array.isArray(body.schemeUrls)
     ? [...new Set(body.schemeUrls.filter((u): u is string => typeof u === 'string'))].slice(0, 12)
     : [];
   for (const u of schemeUrls) {
@@ -180,7 +183,7 @@ export async function POST(req: Request) {
   }
   const schemePdf = schemeUrls.find(u => /\.pdf($|\?)/i.test(u)) ?? null;
   const schemePages = schemeUrls.filter(u => u !== schemePdf).map(u => ({ url: u }));
-  const schemeSource = (schemePdf || schemePages.length) ? { scheme_source: { pdf_url: schemePdf, pages: schemePages } } : {};
+  const schemeSource = (schemePdf || schemePages.length) ? { scheme_source: { pdf_url: schemePdf, pages: schemePages, attached_by: 'student' } } : {};
 
   // Required since 2026-08-21 (Adrian: "let's just have the student fill it up
   // properly") — the client disables Send until it's typed; this is the backstop.
@@ -361,6 +364,13 @@ export async function POST(req: Request) {
       result_json: {
         ...rj,
         portal_submission: true,
+        // The provenance stamp, belt and braces: the bot's buildRunSource keeps
+        // attached_by, but a bot from before that deploy rebuilds scheme_source
+        // without it — and without it the student's scheme would be filed as
+        // the paper's.
+        ...(schemeUrls.length && rj.source && typeof rj.source === 'object'
+          ? { source: { ...(rj.source as Record<string, unknown>), scheme_source: { ...(((rj.source as { scheme_source?: Record<string, unknown> }).scheme_source) ?? {}), attached_by: 'student' } } }
+          : {}),
         ...(assignment ? { assignment_id: assignment.id } : {}),
         // Pre-registration (SPEC-PRINT-PAPER.md): the exact QB questions on
         // the printed sheet, in order — the marker can ground on their stored
@@ -417,7 +427,7 @@ export async function POST(req: Request) {
   }
   if (queued) {
     const lane = scienceSubject ? `🧪 ${scienceSubject} · ` : '';
-    const scheme = schemeUrls.length ? ' · mark scheme attached' : '';
+    const scheme = schemeUrls.length ? ' · answers/scheme attached by the student (this paper only)' : '';
     notify_marking(
       `📥 <b>${escapeTelegramHtml(who)}</b> handed in “${escapeTelegramHtml(paperName)}” — ` +
       `${lane}${photoUrls.length} page${photoUrls.length === 1 ? '' : 's'}${scheme}, queued for marking.`
