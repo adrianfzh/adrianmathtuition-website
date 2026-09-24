@@ -8,6 +8,12 @@
    "runId": "5f7fa5aa-bff5-4c91-9f2a-c72af7198c9f",
    "paperName": "BENCH · chemistry · Cedar Girls 2025 Prelim Chemistry P2 · E · seed 03",
    "queuedAt": "2026-09-24T02:12:32.823Z"
+  },
+  "scheme-grounded": {
+   "runId": "8f7a960d-6df1-4ea8-af61-6d52b116d5c4",
+   "paperName": "BENCH · chemistry · Cedar Girls 2025 Prelim Chemistry P2 · E · seed 03 · scheme",
+   "scheme": "cedar-p2-scheme.pdf",
+   "queuedAt": "2026-09-24T04:48:37.125Z"
   }
  },
  "parts": [
