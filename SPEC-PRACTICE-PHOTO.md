@@ -243,7 +243,7 @@ day.* — and `/app/science/submit` says which day a paper will queue for before
 | The science Remove door | `POST /api/portal/science/queue` |
 | The midnight cron (`0 16 * * *` UTC, `job_runs` `daily-queue`, health 36 h) | `/api/cron/daily-queue` |
 | The sheet worker's rules for a photo sheet (taught part + the pair + the worked example) | `scripts/sheet-worker/WORKER_PROMPT.md` §1h; the worker peeks `sheet-jobs?peek=1` and `dueFilter()` hides a job until its `scheduled_for` day |
-| Rows | `sheet_jobs` (`kind='practice-sheet'`, `photos`, `scheduled_for`, `worked_example`, `run_id` nullable — migration `practice_sheet_v1`); `portal_assignments` (`source='practice-photo'`, `sheet_job_id`); `paper_marking_runs.result_json.queued_for / queue_released_at / queue_removed_at` |
+| Rows | `sheet_jobs` (`kind='photo-sheet'`, `photos`, `scheduled_for`, `worked_example`, `run_id` nullable — migration `practice_sheet_v1`); `portal_assignments` (`source='practice-photo'`, `sheet_job_id`); `paper_marking_runs.result_json.queued_for / queue_released_at / queue_removed_at` |
 | The student's pages | `app/practice/photo-client.tsx`, `todo-list.tsx` (+ `remove-sheet-button.tsx`), `app/science/submit` + `submit-client.tsx` (`queueNotice`), `app/science/science-papers.tsx` (+ `science-queue-remove.tsx`) |
 | The worker reads the photos | `GET /api/files/<key>` with `Authorization: Bearer $SHEETS_API_TOKEN` (the same token the worker already carries) |
 
