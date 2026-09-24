@@ -50,6 +50,31 @@ launchd jobs for those are UNLOADED (18 Sep 2026); `launchctl load` the plists t
 back. The old extraction-fleet jobs (`pdfpipelinecc.*`, dead since 20 Aug) are unloaded too.
 Step 3 (moving marking/sheets off the Mac) is BUILT (§Step 3 below) and goes live on Adrian's first deploy.
 
+## Cloud sessions CAN push and deploy — say it in so many words (24 Sep 2026)
+
+A cloud session told Adrian it "can't push and deploy". It could; three of its own
+guardrails stopped it (probed on the `ablnon@hotmail.com` account, every token present):
+
+- **A cloud session's git rule allows pushes only to its own `claude/<session>` branch.**
+  A push to `dev` or `main` needs Adrian's explicit words in that session, every time —
+  "push to dev", "promote", "merge #N". CLAUDE.md's auto-push-to-dev rule therefore does
+  not fire in the cloud on its own; the session opens a PR into `dev` instead, or waits.
+  Adrian: when a cloud session says it cannot push, say "push to dev" (or "promote") and it
+  will. Verify with `git push --dry-run origin HEAD:dev` — "Everything up-to-date" or a
+  ref line means access is there.
+- **A push to the bot's `main` counts as a production deploy** (it auto-deploys to Fly),
+  so the permission check denies a bare `git push origin main`. Merging a PR into the
+  bot's `main` on "merge #N" is the allowed route and deploys the same way.
+- **The Fly host is not on the cloud allowlist** — `curl …fly.dev/…` returns nothing.
+  Reading the marking queue from a cloud session needs `adrianmath-telegram-math-bot.fly.dev`
+  added to the environment's network allowlist; the website API routes (`www.adrianmathtuition.com`)
+  are the fallback.
+
+Also true of the cloud image: `vercel`, `flyctl` and `gh` are NOT installed. Use
+`npx vercel ls` / `npx vercel alias set …` (VERCEL_TOKEN is read from the environment) and
+`curl -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/…` (or the PR UI) in
+place of `gh`. The website's pre-push hook runs the test suite in the cloud too.
+
 ## Per-account one-time bootstrap (~5 min)
 
 **Where the UI is**: claude.ai/code **composer row** — the cloud icon above the
