@@ -300,3 +300,17 @@ One under-mark: a fully correct 8(a) on the A script lost its mark.
 **Filing note.** The scoring script accepts a truth source of teacher / school / scheme / triage only, so the seeded scripts are filed as `truth_source='scheme'` with the label `seeded · <grade> · seed <n>`. A `seeded` source needs a bot change (and a bot deploy); not done.
 
 **Next.** The same three chemistry scripts marked WITH the Cedar Girls scheme (scheme-grounded rather than rules alone) says whether the leniency is the missing scheme or the marker; the rejects and "with state symbols" lines are in the scheme, so a grounded run should catch 1(a) and 8(c) if grounding works. The science disclaimer stays; teacher totals remain the drift alarm.
+
+### The same chemistry scripts with the scheme attached — no change (24 Sep 2026, later)
+
+| Script | Truth | Rules-alone | Scheme attached | ±2 gate | `calibration_results` |
+|---|---|---|---|---|---|
+| Chemistry A | 32 | 33 | 32 | PASS | 9d92e827 |
+| Chemistry C | 25 | 29 | 28 | FAIL | 15bd96b2 |
+| Chemistry E | 10 | 12 | 13 | FAIL | df552516 |
+
+Only three parts moved, one mark each and in both directions (A 6 −1, C 8(a) −1, E 6 +1). 1(a) with no state symbols is still +2 on C; CaCl₂ at 8(c) is still given on E.
+
+**Why nothing changed: the "rules-alone" runs were never scheme-free.** The science bank already holds Cedar Girls 2025 P2 with its scheme, so those runs grounded on it (`result_json.grounding = {source:'bank', allocation:'scheme'}`); the attached runs say `source:'attached'`. Both sets marked with the scheme in hand. So the leniency is the marker, not a missing scheme: it reads "with state symbols" and "reject: chemical formula" and gives the mark anyway. A true rules-alone bench needs a paper the bank does not hold, or a way to switch bank grounding off for a run.
+
+**Next.** Make the scheme's reject / "with …" conditions bind: pull them out of the scheme as hard conditions per part and check the answer against each before awarding (a rule in the chemistry brain, measured on these six scripts again). Until then the disclaimer stays.
