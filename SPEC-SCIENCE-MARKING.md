@@ -361,3 +361,30 @@ Cambridge 5054 2014 P2, the ECR scripts (1 = grade E, 2 = C, 3 = A). A blind she
 Unlike chemistry, the teacher and the Cambridge examiner disagree with each other more than our marker disagrees with either. On the weak script he gives the keyword marks the way our marker does (10 against the examiner's 5, ours 12; he sides with our marker on 8 of the 13 parts); on working carried forward he is stricter than both (the four parts on scripts 2–3: examiner 13, ours 9, teacher 2). His 1/8 on script 3's 10(c) is below anything the answer supports ((i) and (ii) are right, and (iii)2 is a correct carry-forward) and is worth asking him about.
 
 Where the two humans agree against us (three parts, 4 marks, all ours too kind), that is the physics fix: no mark for one right word inside a wrong answer (9(f) "stopwatch", 10(b)(i) "black emits more heat"), and no end-point marks on a graph of the wrong shape (11(c) script 2). On script 1's 10(c) he gives the (iii) method mark for 9000 × 8 = 72 000 J that our marker gave and the examiner withheld, and nothing for (ii) "boils vigorously causing harm to the surrounding" — too vague to say what the disadvantage is. The truth for the ±2 gate stays the examiner's (the two truths never mix, SPEC-MARKING-CALIBRATION); a teacher's marks are evidence of convention, not a second truth.
+
+### The slots were marking science on the maths rules — found and fixed (24 Sep 2026)
+
+After the teacher-read rules shipped (bot `32a86640`), the six bench re-marks did not move
+(physics 60/34/28 against the examiner's 64/37/20). The cause was not the rules: the Mac/Fly
+plan slots fetch their prompts from the bot's `external-prompts` phase, which served the
+**bare maths prompts with no subject block**, while the run was still stamped with the
+science `rules_version`. Every science paper a slot had marked until then — both teacher
+comparisons above included — was read with no physics/chemistry rules; the chemistry
+scheme was carrying the chemistry numbers. Fixed in bot `4d1cd35c`: `lib/external-prompts.js`
+wraps both prompts in `withSubjectRules` as the API lane does, the runbook sends
+`run.subject` and releases when the returned subject differs; maths is byte-identical.
+
+The same six papers re-marked on the fixed slots:
+
+| Script | Truth | Maths rules (before) | Science rules (after) |
+|---|---|---|---|
+| Physics A | 64 | 60 | 60 (10(c) now 6/8 = Adrian's adjudication; 9(f) still +2) |
+| Physics C | 37 | 34 | 39 — gate PASS |
+| Physics E | 20 | 28 | 21 — gate PASS |
+| Chemistry A (seeded) | 32 | 32 | 32 — gate PASS |
+| Chemistry C (seeded) | 25 | — | 27 — gate PASS |
+| Chemistry E (seeded) | 10 | — | 10 — gate PASS |
+
+Script 3 (grade A) 10(c) settled at 6/8 — (iii)1 = 1/3, (iii)2 = 2/2 carried forward
+(Adrian, 24 Sep 2026). Caveat: the teacher-read rules were written from these same
+parts, so the bench improving is weaker evidence than fresh scripts would be.
