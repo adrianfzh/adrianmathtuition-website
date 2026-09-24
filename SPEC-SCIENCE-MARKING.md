@@ -314,3 +314,21 @@ Only three parts moved, one mark each and in both directions (A 6 −1, C 8(a) �
 **Why nothing changed: the "rules-alone" runs were never scheme-free.** The science bank already holds Cedar Girls 2025 P2 with its scheme, so those runs grounded on it (`result_json.grounding = {source:'bank', allocation:'scheme'}`); the attached runs say `source:'attached'`. Both sets marked with the scheme in hand. So the leniency is the marker, not a missing scheme: it reads "with state symbols" and "reject: chemical formula" and gives the mark anyway. A true rules-alone bench needs a paper the bank does not hold, or a way to switch bank grounding off for a run.
 
 **Next.** Make the scheme's reject / "with …" conditions bind: pull them out of the scheme as hard conditions per part and check the answer against each before awarding (a rule in the chemistry brain, measured on these six scripts again). Until then the disclaimer stays.
+
+### A chemistry teacher's marks on the eight disputed parts (24 Sep 2026)
+
+Adrian sent a science teacher a blind one-page sheet (question, scheme, the student's answer, "your mark") with the eight Cedar Girls P2 parts where our marker and the strict scheme reading disagreed. His marks:
+
+| Part | Strict | Our marker | Teacher | Sides with |
+|---|---|---|---|---|
+| 1(a) no state symbols | 0/2 | 2/2 | 1/2 | between (one mark off for state symbols, not both) |
+| 2(a) no energy comparison | 2/3 | 3/3 | 2/3 | strict |
+| 2(b)(i) states named, not given | 0/2 | 1/2 | 1/2 | our marker |
+| 5(a) script 1 | 1/2 | 2/2 | 1/2 | strict |
+| 5(a) script 2 "dissolve" only | 0/2 | 1/2 | 0/2 | strict |
+| 6 verdicts, reasons thin | 1/4 | 2/4 | 1/4 | strict |
+| 8(a) the scheme's answer | 1/1 | 0/1 | 1/1 | strict (our marker too harsh) |
+| 8(c) CaCl₂, scheme rejects formula | 0/1 | 1/1 | 0/1 | strict |
+| **Total** | **5** | **12** | **7** | |
+
+The teacher sides with the strict scheme reading on 6 of 8 parts. Our marker is too generous: the scheme's "reject" line and each listed point (ions not mobile in the solid, the energy comparison, a reason per method) should count as hard conditions, and it should never swap in its own answer where the scheme gives one (8(a)). Two teacher conventions are softer than the literal scheme: missing state symbols costs one mark, not every mark that asks for them, and naming the direction of the oxidation-state change earns one of two. This is the evidence for the **Next** step above; the physics sheet (13 parts, Cambridge 5054 2014 P2) went to the same teacher the same day.
