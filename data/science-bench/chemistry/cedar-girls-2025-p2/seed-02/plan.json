@@ -1,0 +1,228 @@
+{
+ "subject": "chemistry",
+ "paperKey": "Cedar Girls 2025 Prelim Chemistry P2",
+ "grade": "C",
+ "seed": 2,
+ "runs": {
+  "rules-alone": {
+   "runId": "7f68e28c-ab37-49d8-84ba-85d6e8592d92",
+   "paperName": "BENCH · chemistry · Cedar Girls 2025 Prelim Chemistry P2 · C · seed 02",
+   "queuedAt": "2026-09-24T02:12:29.346Z"
+  },
+  "scheme-grounded": {
+   "runId": "d7308d40-244e-457f-ac99-1be1de5f3f39",
+   "paperName": "BENCH · chemistry · Cedar Girls 2025 Prelim Chemistry P2 · C · seed 02 · scheme",
+   "scheme": "cedar-p2-scheme.pdf",
+   "queuedAt": "2026-09-24T04:48:32.547Z"
+  }
+ },
+ "parts": [
+  {
+   "question": "1",
+   "label": "(a)",
+   "max": 2,
+   "answer": "2Cl⁻ → Cl₂ + 2e⁻\nCu²⁺ + 2e⁻ → Cu",
+   "defect": "NO_STATE",
+   "truth": 0,
+   "why": "scheme: [1] per half equation WITH state symbols; none given → 0/2"
+  },
+  {
+   "question": "1",
+   "label": "(b)(i)",
+   "max": 1,
+   "answer": "B",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "1",
+   "label": "(b)(ii)",
+   "max": 1,
+   "answer": "A",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "1",
+   "label": "(b)(iii)",
+   "max": 1,
+   "answer": "C",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "1",
+   "label": "(b)(iv)",
+   "max": 1,
+   "answer": "B",
+   "defect": "WRONG_ANSWER",
+   "truth": 0,
+   "why": "answer is C"
+  },
+  {
+   "question": "2",
+   "label": "(a)",
+   "max": 3,
+   "answer": "TiCl₄ is a simple covalent molecule but TiO₂ has a giant covalent structure. The intermolecular forces between TiCl₄ molecules are weak while the covalent bonds in TiO₂ are strong.",
+   "defect": "MISS_POINT",
+   "truth": 2,
+   "why": "structure + what is overcome/broken given; no energy comparison → 2/3"
+  },
+  {
+   "question": "2",
+   "label": "(b)(i)",
+   "max": 2,
+   "answer": "Titanium is reduced because its oxidation state decreases. Sodium is oxidised because its oxidation state increases.",
+   "defect": "HALF_POINT",
+   "truth": 0,
+   "why": "\"use oxidation states\": each [1] needs the states (+4 → 0, 0 → +1); direction alone → 0 each"
+  },
+  {
+   "question": "2",
+   "label": "(b)(ii)",
+   "max": 2,
+   "answer": "Add water to the mixture to dissolve the sodium chloride, then filter. Titanium is collected as the residue.",
+   "defect": "CLEAN",
+   "truth": 2,
+   "why": "fully correct"
+  },
+  {
+   "question": "2",
+   "label": "(b)(iii)",
+   "max": 2,
+   "answer": "They have variable oxidation states. They are good conductors of electricity.",
+   "defect": "MISS_POINT",
+   "truth": 1,
+   "why": "variable oxidation states is on the list; conducting electricity is every metal, not on the list → 1/2"
+  },
+  {
+   "question": "2",
+   "label": "(b)(iv)",
+   "max": 1,
+   "answer": "HCl",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "2",
+   "label": "(c)",
+   "max": 2,
+   "answer": "Fe²⁺ and TiO₃²⁻",
+   "defect": "CLEAN",
+   "truth": 2,
+   "why": "fully correct"
+  },
+  {
+   "question": "5",
+   "label": "(a)",
+   "max": 2,
+   "answer": "Water dissolves the crystals so that the ions can move freely through the water and react when they meet.",
+   "defect": "MISS_POINT",
+   "truth": 1,
+   "why": "point 2 (dissolved → ions mobile) given; point 1 (ions not mobile in the solid) not stated → 1/2"
+  },
+  {
+   "question": "5",
+   "label": "(b)",
+   "max": 1,
+   "answer": "Ag⁺(aq) + I⁻(aq) → AgI(s)",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "5",
+   "label": "(d)",
+   "max": 2,
+   "answer": "Add aqueous sodium hydroxide and aluminium foil and warm. Test the gas with moist red litmus paper. The litmus turns blue, ammonia is given off, so nitrate ions are present.",
+   "defect": "CLEAN",
+   "truth": 2,
+   "why": "fully correct"
+  },
+  {
+   "question": "6",
+   "label": "",
+   "max": 4,
+   "answer": "Student A: not suitable. Insoluble barium sulfate forms a layer on the barium carbonate so the reaction stops.\nStudent B: suitable. Barium carbonate reacts with nitric acid to give soluble barium nitrate, then sulfuric acid precipitates barium sulfate which is filtered, washed and dried.\nStudent C: not suitable.",
+   "defect": "MISS_POINT",
+   "truth": 3,
+   "why": "all three verdicts right [1] + A and B explained [2]; C has no reason → 3/4"
+  },
+  {
+   "question": "8",
+   "label": "(a)",
+   "max": 1,
+   "answer": "Sodium chloride is a neutral salt, not an acid, so it does not react with calcium carbonate. Calcium carbonate only reacts with acids.",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "8",
+   "label": "(b)(i)",
+   "max": 1,
+   "answer": "Burning coke is exothermic. The energy given out is used for the decomposition of calcium carbonate, which is endothermic.",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "8",
+   "label": "(b)(ii)",
+   "max": 1,
+   "answer": "1 mole",
+   "defect": "WRONG_ANSWER",
+   "truth": 0,
+   "why": "answer is 2 (393 ≈ 2 × 178)"
+  },
+  {
+   "question": "8",
+   "label": "(b)(iii)",
+   "max": 1,
+   "answer": "Stage 5",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "8",
+   "label": "(b)(iv)",
+   "max": 1,
+   "answer": "Filtration",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "8",
+   "label": "(b)(v)",
+   "max": 1,
+   "answer": "The carbon dioxide made in stages 2 and 5 is used in stage 3.",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "8",
+   "label": "(b)(vi)",
+   "max": 1,
+   "answer": "Ca(OH)₂ + 2NH₄Cl → 2NH₃ + 2H₂O + CaCl₂",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "8",
+   "label": "(c)",
+   "max": 1,
+   "answer": "Calcium chloride",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  }
+ ]
+}

@@ -265,6 +265,99 @@ teacher-marked chemistry scripts.
 - **The hand-in form asks for answers.** The science disclaimer now says: attach the answers or the
   mark scheme if you have them, marking is more accurate with them, without them some marks may be
   off (especially explain answers). The "Mark scheme (optional)" block is titled "Answers or mark
-  scheme" with the same warning. The upload path is unchanged (`scheme_source`, stored in
-  `paper_schemes`). The math form has no such upload yet — a separate small build if wanted.
+  scheme" with the same warning. **24 Sep 2026 (Adrian: "(b) yes"): the maths form has the same
+  slot**, and on both forms a student's attachment is `scheme_source.attached_by = 'student'` — it
+  grounds that run and is NEVER stored in `paper_schemes` (the earlier "stored" wording here was the
+  poisoning path: one student's answers marking the next student's paper). The line under the slot is
+  Adrian's: *Attach only answers or a scheme you were given for your own study. We use it only to
+  mark your paper.* → `docs/MARKING.md` §The Science tab, Hand-in.
 
+
+## Bench results, 24 Sep 2026 — six scripts, the marker is too generous on weak answers
+
+Two sets, both marked on the Mac slots (rules alone, no mark scheme given to the marker), model `claude-opus-5-5`, scored with the bot's `scripts/eval-mark-model.js --from-stored --save`:
+
+- **Physics** — the three Cambridge 5054 Physics 2014 P2 Example Candidate Responses (grades A, C, E), truth = the examiner's own marks.
+- **Chemistry** — three made-up scripts on Cedar Girls 2025 Prelim Chemistry P2 (35 marks over 23 parts), truth by construction (SPEC-SCIENCE-BENCH §1): each part written to a planned defect with the mark the school scheme gives it. Files in `data/science-bench/chemistry/cedar-girls-2025-p2/` (`seed-01..03/plan.json` + `truth.json` + rendered pages; `data/science-bench/handin.js` hands one in).
+
+| Script | Truth | Marker | Off by | ±2 gate | Parts agreed | `calibration_results` |
+|---|---|---|---|---|---|---|
+| Physics A | 64/90 | 62/90 | 2 | PASS | 25/33 | 4c6b0da1 |
+| Physics C | 37/90 | 35/90 (33 matched) | 2 on the paper, 4 matched | FAIL as scored | 26/33 | 3440f099 |
+| Physics E | 20/90 | 27/90 | 7 | FAIL | 24/33 | 5bc62786 |
+| Chemistry A | 32/35 | 33/35 | 1 | PASS | 20/23 | 16344b98 |
+| Chemistry C | 25/35 | 29/35 | 4 | FAIL | 20/23 | 901ba586 |
+| Chemistry E | 10/35 | 12/35 | 2 | PASS | 21/23 | feaa2812 |
+
+**What it shows.** The error is almost all one way: marks given that the scheme withholds (chemistry: 8 over, 1 under; physics E: 8 over, 1 under). It grows as the script gets weaker — the good scripts pass, the middle and weak ones drift up. Physics E is the plainest case: one extra mark on eight different parts, each a partial-credit mark for an answer the examiner gave nothing.
+
+**The chemistry defects the marker let through** (each checked against the scheme's own wording before counting it as the marker's fault):
+- equations with no state symbols, where the scheme's mark is "with state symbols" (1(a), +2);
+- "its oxidation state decreases / increases" with no states, where the question says *use oxidation states* (2(b)(i), +1);
+- a missing point in a two- or three-point explanation (2(a) +1, 5(a) +1 on two scripts);
+- **"CaCl₂" where the scheme says "reject: chemical formula" and asks for the name — given the mark on BOTH scripts that carried it** (8(c)). A scheme's explicit reject is the one thing the marker should never miss.
+
+One under-mark: a fully correct 8(a) on the A script lost its mark.
+
+**Physics C's fail is partly how it was scored.** The marker labelled Q9 as (e)(f)(g) where the examiner's has (e)(f), so 9(g)'s 2 marks fall out as "extra"; on the whole paper it is 35 vs 37, inside the gate. The real misses are 10(c) −2, 11(c) +2, 11(d) −2.
+
+**Filing note.** The scoring script accepts a truth source of teacher / school / scheme / triage only, so the seeded scripts are filed as `truth_source='scheme'` with the label `seeded · <grade> · seed <n>`. A `seeded` source needs a bot change (and a bot deploy); not done.
+
+**Next.** The same three chemistry scripts marked WITH the Cedar Girls scheme (scheme-grounded rather than rules alone) says whether the leniency is the missing scheme or the marker; the rejects and "with state symbols" lines are in the scheme, so a grounded run should catch 1(a) and 8(c) if grounding works. The science disclaimer stays; teacher totals remain the drift alarm.
+
+### The same chemistry scripts with the scheme attached — no change (24 Sep 2026, later)
+
+| Script | Truth | Rules-alone | Scheme attached | ±2 gate | `calibration_results` |
+|---|---|---|---|---|---|
+| Chemistry A | 32 | 33 | 32 | PASS | 9d92e827 |
+| Chemistry C | 25 | 29 | 28 | FAIL | 15bd96b2 |
+| Chemistry E | 10 | 12 | 13 | FAIL | df552516 |
+
+Only three parts moved, one mark each and in both directions (A 6 −1, C 8(a) −1, E 6 +1). 1(a) with no state symbols is still +2 on C; CaCl₂ at 8(c) is still given on E.
+
+**Why nothing changed: the "rules-alone" runs were never scheme-free.** The science bank already holds Cedar Girls 2025 P2 with its scheme, so those runs grounded on it (`result_json.grounding = {source:'bank', allocation:'scheme'}`); the attached runs say `source:'attached'`. Both sets marked with the scheme in hand. So the leniency is the marker, not a missing scheme: it reads "with state symbols" and "reject: chemical formula" and gives the mark anyway. A true rules-alone bench needs a paper the bank does not hold, or a way to switch bank grounding off for a run.
+
+**Next.** Make the scheme's reject / "with …" conditions bind: pull them out of the scheme as hard conditions per part and check the answer against each before awarding (a rule in the chemistry brain, measured on these six scripts again). Until then the disclaimer stays.
+
+### A chemistry teacher's marks on the eight disputed parts (24 Sep 2026)
+
+Adrian sent a science teacher a blind one-page sheet (question, scheme, the student's answer, "your mark") with the eight Cedar Girls P2 parts where our marker and the strict scheme reading disagreed. His marks:
+
+| Part | Strict | Our marker | Teacher | Sides with |
+|---|---|---|---|---|
+| 1(a) no state symbols | 0/2 | 2/2 | 1/2 | between (one mark off for state symbols, not both) |
+| 2(a) no energy comparison | 2/3 | 3/3 | 2/3 | strict |
+| 2(b)(i) states named, not given | 0/2 | 1/2 | 1/2 | our marker |
+| 5(a) script 1 | 1/2 | 2/2 | 1/2 | strict |
+| 5(a) script 2 "dissolve" only | 0/2 | 1/2 | 0/2 | strict |
+| 6 verdicts, reasons thin | 1/4 | 2/4 | 1/4 | strict |
+| 8(a) the scheme's answer | 1/1 | 0/1 | 1/1 | strict (our marker too harsh) |
+| 8(c) CaCl₂, scheme rejects formula | 0/1 | 1/1 | 0/1 | strict |
+| **Total** | **5** | **12** | **7** | |
+
+The teacher sides with the strict scheme reading on 6 of 8 parts. Our marker is too generous: the scheme's "reject" line and each listed point (ions not mobile in the solid, the energy comparison, a reason per method) should count as hard conditions, and it should never swap in its own answer where the scheme gives one (8(a)). Two teacher conventions are softer than the literal scheme: missing state symbols costs one mark, not every mark that asks for them, and naming the direction of the oxidation-state change earns one of two. This is the evidence for the **Next** step above; the physics sheet (13 parts, Cambridge 5054 2014 P2) went to the same teacher the same day.
+
+### The same teacher's marks on the thirteen physics parts (24 Sep 2026)
+
+Cambridge 5054 2014 P2, the ECR scripts (1 = grade E, 2 = C, 3 = A). A blind sheet in the same style; "what earns the marks" was written by us from the physics (we hold no official scheme text), and the answers were typed from the handwriting.
+
+| Part | Script | Examiner | Our marker | Teacher | Teacher sides with |
+|---|---|---|---|---|---|
+| 5(b) | 1 | 0/3 | 1/3 | 1/3 | our marker |
+| 7(b) | 1 | 1/3 | 2/3 | 2/3 | our marker |
+| 9(a) | 1 | 0/3 | 1/3 | 1/3 | our marker |
+| 9(f) | 1 | 0/3 | 1/3 | 0/3 | examiner |
+| 10(a) | 1 | 1/4 | 2/4 | 2/4 | our marker |
+| 10(b) | 1 | 0/3 | 1/3 | 0/3 | examiner |
+| 10(c) | 1 | 2/8 | 3/8 | 3/8 | our marker — (i) 2, (ii) 0, (iii) 1 (Adrian's read of his marks, 24 Sep 2026) |
+| 10(c) | 2 | 3/8 | 1/8 | 0/8 | neither (below both) |
+| 10(c) | 3 | 7/8 | 5/8 | 1/8 | neither (far below both) |
+| 11(b) | 1 | 0/2 | 1/2 | 1/2 | our marker |
+| 11(c) | 2 | 1/5 | 3/5 | 1/5 | examiner |
+| 11(d) | 1 | 1/5 | 0/5 | 0/5 | our marker |
+| 11(d) | 2 | 2/5 | 0/5 | 0/5 | our marker |
+| **Total** | | **18** | **21** | **12** | |
+
+Unlike chemistry, the teacher and the Cambridge examiner disagree with each other more than our marker disagrees with either. On the weak script he gives the keyword marks the way our marker does (10 against the examiner's 5, ours 12; he sides with our marker on 8 of the 13 parts); on working carried forward he is stricter than both (the four parts on scripts 2–3: examiner 13, ours 9, teacher 2). His 1/8 on script 3's 10(c) is below anything the answer supports ((i) and (ii) are right, and (iii)2 is a correct carry-forward) and is worth asking him about.
+
+Where the two humans agree against us (three parts, 4 marks, all ours too kind), that is the physics fix: no mark for one right word inside a wrong answer (9(f) "stopwatch", 10(b)(i) "black emits more heat"), and no end-point marks on a graph of the wrong shape (11(c) script 2). On script 1's 10(c) he gives the (iii) method mark for 9000 × 8 = 72 000 J that our marker gave and the examiner withheld, and nothing for (ii) "boils vigorously causing harm to the surrounding" — too vague to say what the disadvantage is. The truth for the ±2 gate stays the examiner's (the two truths never mix, SPEC-MARKING-CALIBRATION); a teacher's marks are evidence of convention, not a second truth.

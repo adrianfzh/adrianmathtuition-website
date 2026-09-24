@@ -79,7 +79,7 @@ type Detail = {
     awarded: number; max: number; totalQuestions: number;
     releasedAt: string | null; releasedVia: string | null; archivedAt: string | null; checkedAt: string | null;
     pdfUrl: string | null; annotatedPdfUrl: string | null; photosPdfUrl: string | null;
-    pdfStale: boolean; grounding: string | null; unattempted: string[]; portalSubmission: boolean; practiceAgain?: boolean; origin?: HandinOrigin;
+    pdfStale: boolean; grounding: string | null; groundingAttachedBy?: string | null; unattempted: string[]; portalSubmission: boolean; practiceAgain?: boolean; origin?: HandinOrigin;
     paperMatch: PaperMatch | null;
     remarking: boolean; remarkPages: number[];
     remark: RemarkPanel | null;
@@ -1409,7 +1409,7 @@ function DetailView(p: {
                   {PAPER_SUBJECT_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </label>
-              <SubjectChip subject={run.subject} /><GroundingChip source={run.grounding} /><PaperMatchChip pm={run.paperMatch} /><SchemeChip s={run.scheme} runId={run.id} busy={busy} onApprove={p.onApproveScheme} /><RulesTag v={run.rulesVersion} />
+              <SubjectChip subject={run.subject} /><GroundingChip source={run.grounding} attachedBy={run.groundingAttachedBy} /><PaperMatchChip pm={run.paperMatch} /><SchemeChip s={run.scheme} runId={run.id} busy={busy} onApprove={p.onApproveScheme} /><RulesTag v={run.rulesVersion} />
               <span>· marked {fmtWhen(run.createdAt)} · {run.totalQuestions} question{run.totalQuestions === 1 ? '' : 's'}</span>
               {run.portalSubmission && <Chip label="📱 hand-in" bg="#eff6ff" color={C.link} />}
             </div>

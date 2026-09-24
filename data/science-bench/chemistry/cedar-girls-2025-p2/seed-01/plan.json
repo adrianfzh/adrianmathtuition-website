@@ -1,0 +1,228 @@
+{
+ "subject": "chemistry",
+ "paperKey": "Cedar Girls 2025 Prelim Chemistry P2",
+ "grade": "A",
+ "seed": 1,
+ "runs": {
+  "rules-alone": {
+   "runId": "0c74e671-9b5a-45bd-b622-b1141224387f",
+   "paperName": "BENCH · chemistry · Cedar Girls 2025 Prelim Chemistry P2 · A · seed 01",
+   "queuedAt": "2026-09-24T02:12:27.298Z"
+  },
+  "scheme-grounded": {
+   "runId": "892185bf-403e-44f5-a1c5-71d5b62004e7",
+   "paperName": "BENCH · chemistry · Cedar Girls 2025 Prelim Chemistry P2 · A · seed 01 · scheme",
+   "scheme": "cedar-p2-scheme.pdf",
+   "queuedAt": "2026-09-24T04:48:27.168Z"
+  }
+ },
+ "parts": [
+  {
+   "question": "1",
+   "label": "(a)",
+   "max": 2,
+   "answer": "At the anode: 2Cl⁻(aq) → Cl₂(g) + 2e⁻\nAt the cathode: Cu²⁺(aq) + 2e⁻ → Cu(s)",
+   "defect": "CLEAN",
+   "truth": 2,
+   "why": "fully correct"
+  },
+  {
+   "question": "1",
+   "label": "(b)(i)",
+   "max": 1,
+   "answer": "B",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "1",
+   "label": "(b)(ii)",
+   "max": 1,
+   "answer": "A",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "1",
+   "label": "(b)(iii)",
+   "max": 1,
+   "answer": "C",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "1",
+   "label": "(b)(iv)",
+   "max": 1,
+   "answer": "C",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "2",
+   "label": "(a)",
+   "max": 3,
+   "answer": "TiCl₄ is a simple covalent molecule but TiO₂ has a giant covalent structure. The intermolecular forces between TiCl₄ molecules are weak while the covalent bonds in TiO₂ are strong, so TiCl₄ melts at a lower temperature.",
+   "defect": "MISS_POINT",
+   "truth": 2,
+   "why": "structure mark + link mark given; the energy comparison (\"less energy needed … than …\") never stated → that point withheld"
+  },
+  {
+   "question": "2",
+   "label": "(b)(i)",
+   "max": 2,
+   "answer": "Titanium is reduced as its oxidation state decreases from +4 in TiCl₄ to 0 in Ti. Sodium is oxidised as its oxidation state increases from 0 in Na to +1 in NaCl.",
+   "defect": "CLEAN",
+   "truth": 2,
+   "why": "fully correct"
+  },
+  {
+   "question": "2",
+   "label": "(b)(ii)",
+   "max": 2,
+   "answer": "Add water to the mixture to dissolve the sodium chloride, then filter. Titanium is collected as the residue.",
+   "defect": "CLEAN",
+   "truth": 2,
+   "why": "fully correct"
+  },
+  {
+   "question": "2",
+   "label": "(b)(iii)",
+   "max": 2,
+   "answer": "They form coloured compounds and they can act as catalysts.",
+   "defect": "CLEAN",
+   "truth": 2,
+   "why": "fully correct"
+  },
+  {
+   "question": "2",
+   "label": "(b)(iv)",
+   "max": 1,
+   "answer": "HCl",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "2",
+   "label": "(c)",
+   "max": 2,
+   "answer": "Fe²⁺ and TiO₃²⁻",
+   "defect": "CLEAN",
+   "truth": 2,
+   "why": "fully correct"
+  },
+  {
+   "question": "5",
+   "label": "(a)",
+   "max": 2,
+   "answer": "In the solid crystals the ions are held in fixed positions and cannot move. When the crystals dissolve in water the ions become mobile, so they can diffuse through the water, meet and react.",
+   "defect": "CLEAN",
+   "truth": 2,
+   "why": "fully correct"
+  },
+  {
+   "question": "5",
+   "label": "(b)",
+   "max": 1,
+   "answer": "Ag⁺(aq) + I⁻(aq) → AgI(s)",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "5",
+   "label": "(d)",
+   "max": 2,
+   "answer": "Add aqueous sodium hydroxide and aluminium foil and warm the mixture. Test the gas given off with moist red litmus paper.",
+   "defect": "MISS_POINT",
+   "truth": 1,
+   "why": "procedure point given; no observation / conclusion (litmus turns blue, ammonia) → second point withheld"
+  },
+  {
+   "question": "6",
+   "label": "",
+   "max": 4,
+   "answer": "Student A: not suitable. Insoluble barium sulfate forms a layer that coats the barium carbonate so the reaction stops.\nStudent B: suitable. Barium carbonate reacts completely with nitric acid to form soluble barium nitrate, and adding sulfuric acid precipitates insoluble barium sulfate which is filtered, washed and dried.\nStudent C: not suitable. Barium sulfate is a precipitate and neither salt is an acid or alkali, so there is no end point for methyl orange to show; titration cannot be used.",
+   "defect": "CLEAN",
+   "truth": 4,
+   "why": "fully correct"
+  },
+  {
+   "question": "8",
+   "label": "(a)",
+   "max": 1,
+   "answer": "Sodium chloride is a neutral salt, not an acid, so it does not react with calcium carbonate. Calcium carbonate only reacts with acids.",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "8",
+   "label": "(b)(i)",
+   "max": 1,
+   "answer": "Burning coke is exothermic. The energy given out is used for the decomposition of calcium carbonate, which is endothermic.",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "8",
+   "label": "(b)(ii)",
+   "max": 1,
+   "answer": "2 moles. The burning of coke gives out 393 kJ, which is about twice the 178 kJ needed to decompose one mole of calcium carbonate.",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "8",
+   "label": "(b)(iii)",
+   "max": 1,
+   "answer": "Stage 5",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "8",
+   "label": "(b)(iv)",
+   "max": 1,
+   "answer": "Filtration",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "8",
+   "label": "(b)(v)",
+   "max": 1,
+   "answer": "The carbon dioxide made in stages 2 and 5 is used in stage 3.",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "8",
+   "label": "(b)(vi)",
+   "max": 1,
+   "answer": "Ca(OH)₂ + 2NH₄Cl → 2NH₃ + 2H₂O + CaCl₂",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "8",
+   "label": "(c)",
+   "max": 1,
+   "answer": "CaCl₂",
+   "defect": "WRONG_WORD",
+   "truth": 0,
+   "why": "scheme: \"reject: chemical formula of calcium chloride\" — the question asks for a name"
+  }
+ ]
+}

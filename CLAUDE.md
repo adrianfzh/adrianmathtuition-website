@@ -146,6 +146,7 @@ vercel alias set <new-deployment-url> adrianmath-dev.vercel.app
 - Always run the build/typecheck first; never push a broken build. The pre-push hook (`.githooks/pre-push`) runs the test suite and blocks the push on failure.
 - The advisory pre-push review hook (`.claude/settings.json`) still runs on every push.
 - The user can say **"don't push"** (or "hold off") to skip auto-push for that turn.
+- **In a cloud session** the auto-push cannot fire on its own (the cloud's git rule allows only the session's `claude/…` branch): open a PR into `dev`, or ask Adrian for "push to dev" — and say that is all you need, not that you cannot push. → `docs/CLOUD.md`
 - Write a real, descriptive commit message (not "auto"); end with the `Co-Authored-By` trailer.
 
 **Promote to production** only when the user explicitly says so — e.g. **"promote"**, **"ship it"**, **"to prod"**, **"push to prod"**. To promote: fast-forward `main` to `dev` and push `main`:
@@ -414,7 +415,7 @@ the repo travels).
 
 ## ☁️ Cloud sessions (claude.ai/code) → [`docs/CLOUD.md`](docs/CLOUD.md)
 
-claude.ai environments and skill libraries are **per-account**, but everything committed in this repo (skills, docs, the `env` block in `.claude/settings.json` with the public Supabase config) carries to any account/machine automatically. The only per-account step is a one-time ~5-min secrets bootstrap — `CRON_SECRET` + a read-only Airtable token + the network allowlist. Recipe, verification probes, and the crown-jewels-never-in-cloud list: [`docs/CLOUD.md`](docs/CLOUD.md). Posture: **the cloud agent holds triggers, not power**. **SET UP AND VERIFIED 17 Sep 2026** (`docs/CLOUD.md` §STATUS): a cloud session on Adrian's account can push both repos, promote, deploy the bot, move the preview alias, and use all six `AGENT_TOKEN_*` doors; only the Mac slots/workers/reviews, Xcode, the iPad, sends and secret-key work stay Mac-only.
+claude.ai environments and skill libraries are **per-account**, but everything committed in this repo (skills, docs, the `env` block in `.claude/settings.json` with the public Supabase config) carries to any account/machine automatically. The only per-account step is a one-time ~5-min secrets bootstrap — `CRON_SECRET` + a read-only Airtable token + the network allowlist. Recipe, verification probes, and the crown-jewels-never-in-cloud list: [`docs/CLOUD.md`](docs/CLOUD.md). Posture: **the cloud agent holds triggers, not power**. **SET UP AND VERIFIED 17 Sep 2026** (`docs/CLOUD.md` §STATUS): a cloud session on Adrian's account can push both repos, promote, deploy the bot, move the preview alias, and use all six `AGENT_TOKEN_*` doors; only the Mac slots/workers/reviews, Xcode, the iPad, sends and secret-key work stay Mac-only. **☁️ If you ARE a cloud session (claude.ai/code): you CAN push and deploy — the cloud's git rule only lets you push to your own `claude/…` branch until Adrian says "push to dev", "promote" or "merge #N" in so many words, and a bare push to the bot's `main` is denied as a production deploy (merge the PR instead). Never tell Adrian you cannot push or deploy; say what words you need. `vercel`/`gh`/`flyctl` are not installed there — `npx vercel`, curl the GitHub API. → `docs/CLOUD.md` §Cloud sessions CAN push and deploy (24 Sep 2026).**
 
 ## Environment Variables
 

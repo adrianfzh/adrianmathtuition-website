@@ -1,0 +1,203 @@
+{
+ "subject": "chemistry",
+ "paperKey": "Cedar Girls 2025 Prelim Chemistry P2",
+ "source": "science bank (adrianscience) questions, school=Cedar Girls, year=2025, paper=2",
+ "note": "Q3, Q4, Q7 and Q5(c), Q8(d)(e) left out: they need a figure/table the page cannot print, or a drawing",
+ "questions": [
+  {
+   "question": "1",
+   "bankId": "dafd86f1-5b1a-4978-930e-f75bf0531930",
+   "stem": "Different electrochemical set-ups are shown below.\n\nObservations to each set-up were made after some time.\n\n- **Set-up A:** a battery connected to a Cu electrode and a graphite electrode dipping in dilute $CuCl_2(aq)$\n- **Set-up B:** a battery connected to two graphite electrodes dipping in concentrated $CuCl_2(aq)$\n- **Set-up C:** a voltmeter connected to a Cu electrode and a Mg electrode dipping in dilute $CuCl_2(aq)$",
+   "parts": [
+    {
+     "label": "(a)",
+     "text": "Write the ionic equations for the reactions at each electrode for set-up B.",
+     "max": 2,
+     "scheme": "$2Cl^-(aq) \\\\rightarrow Cl_2(g) + 2e^-$\n$Cu^{2+}(aq) + 2e^- \\\\rightarrow Cu(s)$\n[1] half equation with state symbols for each reaction. [2]"
+    },
+    {
+     "label": "(b)",
+     "text": "Use the letters A, B and C to answer the following questions. Each letter may be used once, more than once or not at all.",
+     "max": null,
+     "scheme": null,
+     "header": true
+    },
+    {
+     "label": "(b)(i)",
+     "text": "Which set-up will have a decrease in total mass of apparatus and solution?",
+     "max": 1,
+     "scheme": "B [1]"
+    },
+    {
+     "label": "(b)(ii)",
+     "text": "Which set-up will not have a visible colour change in the solution?",
+     "max": 1,
+     "scheme": "A [1]"
+    },
+    {
+     "label": "(b)(iii)",
+     "text": "Which set-up will have a decrease in mass at the negative electrode?",
+     "max": 1,
+     "scheme": "C [1]"
+    },
+    {
+     "label": "(b)(iv)",
+     "text": "Which set-up will have a greater increase in mass at the cathode compared to the decrease in mass at the anode?",
+     "max": 1,
+     "scheme": "C [1]"
+    }
+   ]
+  },
+  {
+   "question": "2",
+   "bankId": "f07d7c20-7375-4088-90a0-cac729c3df26",
+   "stem": "Titanium is a very useful transition metal. Titanium can be extracted from rutile ore, $TiO_2$, which has the same type of structure as $SiO_2$.\n\n**Stage 1**\nRutile is mixed with coke and heated in a stream of chlorine gas, forming titanium(IV) chloride.\n\n$TiO_2 + 2C + 2Cl_2 \\\\rightarrow TiCl_4 + 2CO$\n\n**Stage 2**\nThe titanium(IV) chloride vapour is then reacted with sodium.\n\n$TiCl_4 + 4Na \\\\rightarrow Ti + 4NaCl$\n\nThe sodium chloride is recycled during the process.",
+   "parts": [
+    {
+     "label": "(a)",
+     "text": "Titanium(IV) chloride, $TiCl_4$, and titanium dioxide, $TiO_2$, are both covalent compounds. $TiCl_4$ is a liquid at room temperature. $TiO_2$ is a solid with a high melting point. Using ideas about structure, explain why the two compounds have different melting points.",
+     "max": 3,
+     "scheme": "$TiCl_4$ has low melting point while $TiO_2$ has high melting point.\n$TiCl_4$ is a simple covalent molecule while $TiO_2$ has a giant covalent structure [1] (comparison of structure).\nLess energy is required to overcome the weak intermolecular forces of attraction in $TiCl_4$ as compared to the large amount of energy needed to break the strong covalent bonds in $TiO_2$ [1] comparison of energy requirement, [1] link to what is broken / overcome.\nReject if students include discussion of breaking covalent bonds in $TiCl_4$. [3]"
+    },
+    {
+     "label": "(b)",
+     "text": "This question is about stage 2.",
+     "max": null,
+     "scheme": null,
+     "header": true
+    },
+    {
+     "label": "(b)(i)",
+     "text": "Use oxidation states to explain why stage 2 is a redox reaction.",
+     "max": 2,
+     "scheme": "$TiCl_4$ is reduced. Oxidation state of titanium decreases from +4 in $TiCl_4$ to 0 in Ti [1].\nNa is oxidised. Oxidation state of sodium increases from 0 in Na to +1 in NaCl [1]. [2]"
+    },
+    {
+     "label": "(b)(ii)",
+     "text": "The products of Stage 2 are collected and cooled to room temperature. Suggest how titanium can be separated from sodium chloride.",
+     "max": 2,
+     "scheme": "Add water to dissolve NaCl [1].\nTitanium can be obtained by filtration and collected as residue [1]. [2]"
+    },
+    {
+     "label": "(b)(iii)",
+     "text": "Titanium is a transition metal. Give two characteristic properties of transition metals.",
+     "max": 2,
+     "scheme": "Any two properties, [1] each, max [2]:\nPhysical properties: transition metals have high density; transition metals have high melting point/boiling point.\nChemical properties: transition metals have variable oxidation states in their compounds; transition metals and their compounds can act as catalysts; transition metals form coloured compounds. [2]"
+    },
+    {
+     "label": "(b)(iv)",
+     "text": "During stage 2, care must be taken to ensure that no water enters the reaction chamber. Titanium(IV) chloride can react with water to form titanium dioxide and another product X, shown in the equation below: $TiCl_4 + 2H_2O \\\\rightarrow TiO_2 + 4X$. Predict the formula of product X.",
+     "max": 1,
+     "scheme": "$HCl$ [1]"
+    },
+    {
+     "label": "(c)",
+     "text": "Besides rutile ore, titanium can also be found in a mineral known as ilmenite or iron(II) titanate, $FeTiO_3$. $FeTiO_3$ contains two ions, one of which is a polyatomic ion. Deduce the formulae of the two ions present.",
+     "max": 2,
+     "scheme": "$Fe^{2+}$ [1] correct cation\n$TiO_3^{2-}$ [1] correct anion [2]"
+    }
+   ]
+  },
+  {
+   "question": "5",
+   "bankId": "a5cc3518-84f9-4832-a86d-e3755233d093",
+   "stem": "A student placed a crystal of silver nitrate and a crystal of potassium iodide at opposite sides of a petri dish filled with pure water as shown in Fig. 5.1.\n\nAfter 30 minutes, the student observed that solid A was formed as shown in the petri-dish.",
+   "parts": [
+    {
+     "label": "(a)",
+     "text": "Explain why water was added to the petri-dish. Use ideas about particles in your answer.",
+     "max": 2,
+     "scheme": "Since the crystals are in the solid state, the ions are not mobile [1].\nWhen water is added, the crystals can dissolve in water and exist in the aqueous state. In the aqueous state, the ions are now mobile / free to move, enabling diffusion to occur and for the particles to react [1]. [2]"
+    },
+    {
+     "label": "(b)",
+     "text": "Write an ionic equation for the formation of solid A.",
+     "max": 1,
+     "scheme": "$Ag^+(aq) + I^-(aq) \\\\rightarrow AgI(s)$ [1]"
+    },
+    {
+     "label": "(d)",
+     "text": "Describe a chemical test for the presence of nitrate ions. Include expected observations in your answer.",
+     "max": 2,
+     "scheme": "Add aqueous sodium hydroxide, aluminium and warm. Test the gas evolved with moist red litmus paper [1].\nIf the red litmus paper turns blue, ammonia gas has evolved, and nitrates were present [1]. [2]"
+    }
+   ]
+  },
+  {
+   "question": "6",
+   "bankId": "b1b90880-9536-4846-bfea-21a7dc4b6139",
+   "stem": "Three students wanted to prepare a pure, dry sample of barium sulfate salt from a sample of solid barium carbonate. Each of the students proposed a method to prepare the salt.\n\n**Student A:** 'I will add excess dilute sulfuric acid directly to barium carbonate, filter to remove any unreacted solid, then evaporate the filtrate to dryness.'\n\n**Student B:** 'I will first react barium carbonate with excess dilute nitric acid, then add dilute sulfuric acid to the resulting solution; filter, wash and dry the solid formed.'\n\n**Student C:** 'I will react barium carbonate with dilute hydrochloric acid to form barium chloride. Then I will titrate barium chloride against sodium sulfate using methyl orange as indicator; and evaporate the mixture to dryness.'\n\nState and explain whether the methods proposed are suitable to prepare a pure, dry sample of barium sulfate salt.",
+   "parts": [
+    {
+     "label": "",
+     "text": "",
+     "max": 4,
+     "scheme": "[1] overall address whether the respective methods work; [1] for each explanation of why the method works / does not work.\n\nStudent A: Does not work. A layer of insoluble barium sulfate coats solid barium carbonate. No visible reaction / reaction stops shortly after [1].\n\nStudent B: Works. Barium carbonate reacts fully with nitric acid to form soluble barium nitrate. Adding sulfuric acid forms insoluble barium sulfate, which can be filtered, washed, and dried [1].\n\nStudent C: Does not work. Titration is unsuitable as barium sulfate precipitate is formed, no acid reaction to allow for end point to be observed / both salts are neutral and will not react with each other [1]. [4]"
+    }
+   ]
+  },
+  {
+   "question": "8",
+   "bankId": "31fc9263-dc34-4b9b-9bba-71f59c6d2145",
+   "stem": "**Manufacture of sodium carbonate**\n\nSodium carbonate is used by many different industries as a raw material.\n\nSodium carbonate can be manufactured from a reaction between sodium chloride and calcium carbonate, as shown in the equation below.\n\n$2NaCl + CaCO_3 \\\\rightarrow Na_2CO_3 + CaCl_2$\n\nHowever, sodium carbonate cannot be produced directly. Hence, sodium carbonate is obtained by a series of seven stages. This process is known as the Solvay Process.\n\nThe various stages of the Solvay Process are interlinked as can be seen from the diagram in Fig. 8.1 (Part 1: Various stages of the Solvay Process).\n\n**Part 2: Seven stages of the Solvay Process**\n\n**Stage 1: Ammoniation of brine** — Ammonia gas is absorbed in concentrated brine to give a solution containing both sodium chloride and ammonia.\n\n**Stage 2: Formation of calcium oxide and carbon dioxide** — The burning of coke raises the temperature of the furnace. This provides energy for calcium carbonate to react to form calcium oxide and carbon dioxide.\n\n$C(s) + O_2(g) \\\\rightarrow CO_2(g)$, $\\\\Delta H = -393$ kJ/mol\n$CaCO_3(s) \\\\rightarrow CaO(s) + CO_2(g)$, $\\\\Delta H = +178$ kJ/mol\n\n**Stage 3: Formation of sodium hydrogencarbonate** — The key reaction is that between sodium chloride solution and carbon dioxide in the presence of ammonia. This is a reversible reaction forming ammonium chloride and sodium hydrogencarbonate.\n\n$NaCl(aq) + NH_3(aq) + H_2O(l) + CO_2(g) \\\\rightleftharpoons NH_4Cl(aq) + NaHCO_3(s)$, $\\\\Delta H = -79$ kJ/mol\n\n**Stage 4: Separation of sodium hydrogencarbonate** — Sodium hydrogencarbonate is much less soluble than ammonium chloride at low temperature and precipitates out. The mixture of products is separated.\n\n**Stage 5: Formation of sodium carbonate** — Sodium hydrogencarbonate is heated to form sodium carbonate, carbon dioxide, and water. Carbon dioxide is recycled within the Solvay Process.\n\n$2NaHCO_3(s) \\\\rightarrow Na_2CO_3(s) + CO_2(g) + H_2O(g)$, $\\\\Delta H = +85$ kJ/mol\n\n**Stage 6: Formation of calcium hydroxide** — Calcium oxide from Stage 2 is slaked with water to form calcium hydroxide.\n\n$CaO(s) + H_2O(l) \\\\rightarrow Ca(OH)_2(s)$, $\\\\Delta H = -65$ kJ/mol\n\n**Stage 7: Regeneration of ammonia** — Calcium hydroxide is used to regenerate ammonia from one of the products formed in Stage 3.",
+   "parts": [
+    {
+     "label": "(a)",
+     "text": "Explain why sodium chloride and calcium carbonate do not react together directly.",
+     "max": 1,
+     "scheme": "Sodium chloride is a neutral salt; it does not react with calcium carbonate. Calcium carbonate reacts with acid, but sodium chloride is not an acid / not acidic [1]"
+    },
+    {
+     "label": "(b)",
+     "text": "",
+     "max": null,
+     "scheme": null,
+     "header": true
+    },
+    {
+     "label": "(b)(i)",
+     "text": "Explain why the burning of coke is required for calcium carbonate to react.",
+     "max": 1,
+     "scheme": "The burning of coke is exothermic. This provides energy for the decomposition of calcium carbonate which is an endothermic reaction [1] (unpack exothermic reaction)."
+    },
+    {
+     "label": "(b)(ii)",
+     "text": "Deduce, to the nearest whole number, how many moles of calcium carbonate can react on burning one mole of coke.",
+     "max": 1,
+     "scheme": "Since the energy given out in the burning of coke ($-393$ kJ/mol) is twice that of the energy taken in to decompose calcium carbonate ($+178$ kJ/mol), two moles of calcium carbonate can react on burning one mole of coke [1] (relate to the magnitude of the enthalpy change)."
+    },
+    {
+     "label": "(b)(iii)",
+     "text": "Identify one stage of the Solvay Process where only decomposition occurs.",
+     "max": 1,
+     "scheme": "Stage 5 [1] (no credit: crystallisation)"
+    },
+    {
+     "label": "(b)(iv)",
+     "text": "State the method used to separate sodium hydrogencarbonate from the reaction mixture.",
+     "max": 1,
+     "scheme": "Filtration [1] (no penalty if stage 2 is not mentioned)"
+    },
+    {
+     "label": "(b)(v)",
+     "text": "How is carbon dioxide recycled in the Solvay Process?",
+     "max": 1,
+     "scheme": "Carbon dioxide produced in Stage (2 and) 5 is used in Stage 3 [1]"
+    },
+    {
+     "label": "(b)(vi)",
+     "text": "Write the chemical equation for the regeneration of ammonia from calcium hydroxide.",
+     "max": 1,
+     "scheme": "$Ca(OH)_2 + 2NH_4Cl \\\\rightarrow 2NH_3 + 2H_2O + CaCl_2$ [1]"
+    },
+    {
+     "label": "(c)",
+     "text": "A by-product is one which is produced by a chemical process, but it is not needed. Name the by-product of the Solvay Process.",
+     "max": 1,
+     "scheme": "Calcium chloride [1] (reject: chemical formula of calcium chloride)"
+    }
+   ]
+  }
+ ],
+ "totalMax": 35
+}

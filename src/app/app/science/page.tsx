@@ -10,6 +10,7 @@ import { scienceMarkingOpen } from '@/lib/portal-beta';
 import PortalIcon from '@/components/PortalIcon';
 import { SURFACES } from '@/lib/portal-theme';
 import { loadSciencePapers, SciencePaperCard, SciencePendingList, ScienceEstimateNote } from './science-papers';
+import ScienceOpenNotice from './science-notice';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,6 +36,9 @@ export default async function SciencePage() {
         </div>
       </div>
 
+      {/* "Science marking is open" — one day per device from the first visit, then gone (Adrian, 24 Sep 2026) */}
+      <ScienceOpenNotice />
+
       <Link
         href="/app/science/submit"
         className="flex items-center gap-3 bg-teal-500 text-white rounded-3xl px-4 py-3.5 font-semibold shadow-[0_8px_24px_-10px_rgba(20,184,166,0.8)] hover:brightness-105 active:scale-[0.98] transition"
@@ -48,32 +52,19 @@ export default async function SciencePage() {
 
       <SciencePendingList pending={pending} />
 
-      {papers.length === 0 && pending.length === 0 ? (
-        <div className="bg-white rounded-3xl p-5 border border-black/5 shadow-sm space-y-2">
-          <p className="text-sm text-gray-700">
-            Finished a physics, chemistry or biology paper? <b>Photograph it and hand it in</b> — it comes back
-            marked here, with the red pen on your pages and where each mark went.
-          </p>
-          <p className="text-[13px] text-gray-500">
-            Science marking is new and free. Calculations are checked properly; explain answers are marked against
-            standard syllabus points unless you attach your school&apos;s mark scheme. Treat the marks as an estimate and
-            compare with your teacher&apos;s when you get the paper back.
-          </p>
-        </div>
-      ) : (
-        <>
-          {papers.length > 0 && (
-            <div className="flex items-baseline justify-between">
-              <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Marked papers</h2>
-              {papers.length > HOME_LIMIT && (
-                <Link href="/app/science/papers" className="text-[12px] font-semibold text-navy hover:underline">All {papers.length} ›</Link>
-              )}
-            </div>
+      {/* No empty-state card: the tab is the Hand in button and the list (Adrian,
+          24 Sep 2026: the 'Finished a physics…' + 'Science marking is new and free…'
+          paragraphs are gone — the one-day notice above says what needs saying). */}
+      {papers.length > 0 && (
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Marked papers</h2>
+          {papers.length > HOME_LIMIT && (
+            <Link href="/app/science/papers" className="text-[12px] font-semibold text-navy hover:underline">All {papers.length} ›</Link>
           )}
-          {papers.slice(0, HOME_LIMIT).map(p => <SciencePaperCard key={p.id} paper={p} />)}
-          {papers.length > 0 && <ScienceEstimateNote />}
-        </>
+        </div>
       )}
+      {papers.slice(0, HOME_LIMIT).map(p => <SciencePaperCard key={p.id} paper={p} />)}
+      {papers.length > 0 && <ScienceEstimateNote />}
     </div>
   );
 }

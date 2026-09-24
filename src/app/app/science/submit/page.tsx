@@ -1,8 +1,10 @@
 // /app/science/submit — hand in a physics / chemistry / biology paper
 // (SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026). The same phone-first form
 // as the maths hand-in, in its science shape: the subject is required, the
-// disclaimer sits above the photos, the school's mark scheme may ride along,
-// and the science slot (one a day) is checked here before any photographing.
+// disclaimer sits above the photos, the answers or mark scheme may ride along
+// (the maths form has the same slot since 24 Sep 2026; a student's attachment
+// grounds that run only), and the science slot (two a day) is checked here
+// before any photographing.
 import { redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';

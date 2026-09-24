@@ -843,6 +843,42 @@ one run answers both questions.
    thin is asked twice; a re-mark that did not change a page need not scan it again.
 5. **Gemini's batch mode, for papers due by morning** — half price, the same trade as Claude's
    Batch lane. A bigger change: drawing would wait for the batch to come back.
-6. **Count it first.** The ledger does not price vision at all yet (the task queued 23 Sep
-   2026). Without it none of the above can be seen to work.
+6. **Count it first.** Done 24 Sep 2026 (bot f140239): every Gemini call is now priced on
+   the model that answered, on the run and in the ledger.
+
+**Result of the trial (24 Sep 2026, run on the Mac, 24 pen-bench pages, US$3.00):**
+
+| Set-up | Lines placed | Same row as drawn | Box overlap (IoU) | Seconds | US$ / page |
+|---|---|---|---|---|---|
+| Gemini 3.1 Pro, today | 93 % | 96 % | 0.90 | 14.7 | 0.032 |
+| **Same model, thinking low** | 91 % | **96 %** | 0.92 | 14.6 | **0.026** |
+| Gemini 3.7 Flash | **28 %** | 88 % | 0.80 | 7.7 | 0.008 |
+| Claude Opus 5.5, low effort | 90 % | 82 % | 0.53 | 11.6 | 0.031 |
+
+| Which way up? (pages turned 0/90/180/270) | Right | US$ / call |
+|---|---|---|
+| Gemini 3.1 Pro, today | 34 / 48 | 0.0025 |
+| Gemini 3.7 Flash | **43 / 48** | 0.0023 |
+| Claude Haiku 4.5 | 26 / 48 | 0.0017 |
+| Claude Opus 5.5 | 42 / 48 | 0.0077 |
+
+- **Thinking low on the row scan is the only set-up that places as well as today**, at about
+  19 % less on that call (about US$0.08 a paper at 14 pages). Smaller than the "most of the
+  bill" hoped for in lever 1: the API reported no separate thinking tokens, so the trial
+  could not see how much of the output was thinking. **Live 24 Sep 2026 (bot PR #7):** the
+  row scan's first ask thinks low; the re-ask after a thin reply keeps the default, and the
+  Fly secret `GEMINI_ROW_THINKING=default` turns it off without a deploy.
+- **Flash cannot be the first rung for the row scan**: it placed only 28 % of the lines (the
+  transcription risk named in lever 2). Lever 2 is closed for the row scan.
+- **Claude does not replace Gemini for placement**: its boxes sit on the right row less often
+  (82 %) and fit the lines loosely (0.53). This confirms the decision to keep Gemini.
+- **The which-way-up check is a quality finding, not a cost one.** Flash got 43 of 48 right
+  against today's 34, at the same price. No set-up turned an upright page (12 of 12 each).
+  Pro's misses were a sideways page read the wrong way round, which production's recheck partly
+  rescues at two or three calls, and 2 upside-down pages, which nothing rechecks; Flash got
+  every upside-down page. **Live 24 Sep 2026 (bot PR #8):** the check asks Flash first, with
+  Pro behind it only for when Flash is unavailable; `GEMINI_ROTATION_MODEL=default` turns it
+  off without a deploy.
+- Caveats: 24 pages, one run each. The reference boxes were drawn by Gemini, which gives the
+  Gemini set-ups a home advantage.
 

@@ -1,0 +1,228 @@
+{
+ "subject": "chemistry",
+ "paperKey": "Cedar Girls 2025 Prelim Chemistry P2",
+ "grade": "E",
+ "seed": 3,
+ "runs": {
+  "rules-alone": {
+   "runId": "5f7fa5aa-bff5-4c91-9f2a-c72af7198c9f",
+   "paperName": "BENCH · chemistry · Cedar Girls 2025 Prelim Chemistry P2 · E · seed 03",
+   "queuedAt": "2026-09-24T02:12:32.823Z"
+  },
+  "scheme-grounded": {
+   "runId": "8f7a960d-6df1-4ea8-af61-6d52b116d5c4",
+   "paperName": "BENCH · chemistry · Cedar Girls 2025 Prelim Chemistry P2 · E · seed 03 · scheme",
+   "scheme": "cedar-p2-scheme.pdf",
+   "queuedAt": "2026-09-24T04:48:37.125Z"
+  }
+ },
+ "parts": [
+  {
+   "question": "1",
+   "label": "(a)",
+   "max": 2,
+   "answer": "Cl⁻(aq) → Cl₂(g) + e⁻\nCu²⁺(aq) + 2e⁻ → Cu(s)",
+   "defect": "WRONG_FORMULA",
+   "truth": 1,
+   "why": "chlorine half equation unbalanced → 0 for it; copper half equation correct with state symbols → 1"
+  },
+  {
+   "question": "1",
+   "label": "(b)(i)",
+   "max": 1,
+   "answer": "B",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "1",
+   "label": "(b)(ii)",
+   "max": 1,
+   "answer": "B",
+   "defect": "WRONG_ANSWER",
+   "truth": 0,
+   "why": "answer is A"
+  },
+  {
+   "question": "1",
+   "label": "(b)(iii)",
+   "max": 1,
+   "answer": "",
+   "defect": "BLANK",
+   "truth": 0,
+   "why": "not attempted"
+  },
+  {
+   "question": "1",
+   "label": "(b)(iv)",
+   "max": 1,
+   "answer": "A",
+   "defect": "WRONG_ANSWER",
+   "truth": 0,
+   "why": "answer is C"
+  },
+  {
+   "question": "2",
+   "label": "(a)",
+   "max": 3,
+   "answer": "TiO₂ has stronger bonds so it has a higher melting point than TiCl₄.",
+   "defect": "HALF_POINT",
+   "truth": 0,
+   "why": "no structure named, no energy comparison, \"stronger bonds\" does not say which forces are overcome in TiCl₄ → 0/3"
+  },
+  {
+   "question": "2",
+   "label": "(b)(i)",
+   "max": 2,
+   "answer": "The oxidation state of titanium decreases from +4 in TiCl₄ to 0 in Ti so titanium is reduced.",
+   "defect": "MISS_POINT",
+   "truth": 1,
+   "why": "Ti point given with states; sodium never mentioned → 1/2"
+  },
+  {
+   "question": "2",
+   "label": "(b)(ii)",
+   "max": 2,
+   "answer": "",
+   "defect": "BLANK",
+   "truth": 0,
+   "why": "not attempted"
+  },
+  {
+   "question": "2",
+   "label": "(b)(iii)",
+   "max": 2,
+   "answer": "They form coloured compounds and they can act as catalysts.",
+   "defect": "CLEAN",
+   "truth": 2,
+   "why": "fully correct"
+  },
+  {
+   "question": "2",
+   "label": "(b)(iv)",
+   "max": 1,
+   "answer": "Cl₂",
+   "defect": "WRONG_ANSWER",
+   "truth": 0,
+   "why": "answer is HCl"
+  },
+  {
+   "question": "2",
+   "label": "(c)",
+   "max": 2,
+   "answer": "Fe²⁺ and TiO₃⁻",
+   "defect": "MISS_POINT",
+   "truth": 1,
+   "why": "cation right [1]; anion charge wrong → 0 for it"
+  },
+  {
+   "question": "5",
+   "label": "(a)",
+   "max": 2,
+   "answer": "So that the crystals can dissolve.",
+   "defect": "HALF_POINT",
+   "truth": 0,
+   "why": "dissolving alone: no ions, no mobility, neither point stated → 0/2"
+  },
+  {
+   "question": "5",
+   "label": "(b)",
+   "max": 1,
+   "answer": "Ag⁺(aq) + I⁻(aq) → AgI(s)",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "5",
+   "label": "(d)",
+   "max": 2,
+   "answer": "",
+   "defect": "BLANK",
+   "truth": 0,
+   "why": "not attempted"
+  },
+  {
+   "question": "6",
+   "label": "",
+   "max": 4,
+   "answer": "Student A does not work because barium sulfate is insoluble.\nStudent B works.\nStudent C does not work.",
+   "defect": "HALF_POINT",
+   "truth": 1,
+   "why": "three verdicts right [1]; A's reason lacks the coating / reaction stops idea, B and C unexplained → 1/4"
+  },
+  {
+   "question": "8",
+   "label": "(a)",
+   "max": 1,
+   "answer": "",
+   "defect": "BLANK",
+   "truth": 0,
+   "why": "not attempted"
+  },
+  {
+   "question": "8",
+   "label": "(b)(i)",
+   "max": 1,
+   "answer": "To make the furnace hot.",
+   "defect": "HALF_POINT",
+   "truth": 0,
+   "why": "scheme needs exothermic burning supplying energy to the endothermic decomposition (\"unpack exothermic\") → 0"
+  },
+  {
+   "question": "8",
+   "label": "(b)(ii)",
+   "max": 1,
+   "answer": "2 moles. The burning of coke gives out 393 kJ, which is about twice the 178 kJ needed to decompose one mole of calcium carbonate.",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "8",
+   "label": "(b)(iii)",
+   "max": 1,
+   "answer": "Stage 4",
+   "defect": "WRONG_ANSWER",
+   "truth": 0,
+   "why": "answer is Stage 5"
+  },
+  {
+   "question": "8",
+   "label": "(b)(iv)",
+   "max": 1,
+   "answer": "Filtration",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "8",
+   "label": "(b)(v)",
+   "max": 1,
+   "answer": "",
+   "defect": "BLANK",
+   "truth": 0,
+   "why": "not attempted"
+  },
+  {
+   "question": "8",
+   "label": "(b)(vi)",
+   "max": 1,
+   "answer": "Ca(OH)₂ + NH₄Cl → NH₃ + H₂O + CaCl₂",
+   "defect": "WRONG_FORMULA",
+   "truth": 0,
+   "why": "unbalanced → 0"
+  },
+  {
+   "question": "8",
+   "label": "(c)",
+   "max": 1,
+   "answer": "CaCl₂",
+   "defect": "WRONG_WORD",
+   "truth": 0,
+   "why": "scheme rejects the formula; a name is asked for"
+  }
+ ]
+}
