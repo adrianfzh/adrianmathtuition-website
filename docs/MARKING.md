@@ -2499,6 +2499,46 @@ SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026 is the contract; this is the map.
   `logMarkingRun` passes the run's lane as `handinSubject` so the marking write never nulls the
   stamp; the queue's completion Telegram says `🧪 physics`.
 
+#### The chemistry study loop (24 Sep 2026)
+
+Adrian: "Build all three chemistry study ideas". Three pieces, each behind the Science
+tab's own gate, no switch of their own:
+
+1. **The scheme's words beside the student's.** The tenth error kind, `keywords`
+   (SCIENCE ONLY — the bot sets it since `ffd67fb`; `lib/error-kinds.ts` mirrors it,
+   label 'wording', in neither the careless nor the concept bucket): a part that had the
+   right idea in words that miss the scheme's term. The bot writes
+   `scheme_words: {scheme, yours}` on that part (the rule is the "THE WORDS vs THE IDEA"
+   block of the three brains' shared `SCIENCE_COMMON`); `lib/portal-marking.ts
+   schemeWords` reads it into `schemes[].words` (half a pair is nothing) and the paper
+   page's LostMarks shows "Scheme says: … · You wrote: …" under the chips.
+2. **Qualitative-analysis flashcards** — `/app/science/qa`, the door a row above the
+   papers on the Chemistry tab of Science Home (`ScienceTabs panelExtras` + `QaDoor` in
+   `science-papers.tsx`). The SEAB 6092 table as cards: 13 cation cards (NaOH and NH₃
+   for Al³⁺, NH₄⁺, Ca²⁺, Cu²⁺, Fe²⁺, Fe³⁺, Zn²⁺), 5 anions, 6 gases, in the scheme's own
+   words; two directions (ion → what you see; what you see → ion, which folds ions with
+   the same result into one card); ✓ Knew it / ↻ Again (an Again card comes round once
+   more before the round ends); the known set per device in localStorage
+   (`portal_qa_known`, best effort); "Only the n I don't know yet". `lib/qa-cards.ts` =
+   the table + the deck rules (`buildDeck`, seeded `shuffle`, `orderRound`),
+   pure/tested. No server state, no marks. Health-check `portal-science-qa`.
+3. **Science lost marks in My Notebook.** mark-triage's release hook files a science run
+   too (the practice / revise maps further down that hook stay maths-only).
+   `lib/notebook-mistakes.ts scienceReason` folds the kinds into four reasons —
+   concept gap (concept, misread) · careless slip (`CARELESS_KINDS`) · wrong keywords ·
+   incomplete — titled by `scienceTitle` ("Careless slip in Mole concept"); an
+   unstamped part is "Marks lost in X". The Notebook card carries the subject pill
+   (`NotebookMistake.subject`). The three demo science runs released before this were
+   not back-filled.
+
+**One colour per subject (the same day; Adrian: "per subject colour mockups" — a
+mockup, he has not chosen):** `SUBJECT_TONE` in `components/PaperSubjectPill.tsx`
+gained `strip` + `tint`; `<SubjectEdge>` runs the subject's colour down the left of
+every paper card (the maths `PaperRow`, the `SciencePaperCard`, whose icon tile takes
+the colour too), the paper page's header carries a band on top + a wash of the tone,
+and the "being marked" / "waiting" rows show the pill. Score chips and the red pen
+keep their own colours; an Other / untagged paper stays plain.
+
 ## /app/submit — student paper hand-ins (2026-08-12)
 
 The door IN from the student side: photograph the worked paper on a phone →

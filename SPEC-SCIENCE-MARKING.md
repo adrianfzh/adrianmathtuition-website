@@ -390,3 +390,19 @@ The same six papers re-marked on the fixed slots:
 Script 3 (grade A) 10(c) settled at 6/8 — (iii)1 = 1/3, (iii)2 = 2/2 carried forward
 (Adrian, 24 Sep 2026). Caveat: the teacher-read rules were written from these same
 parts, so the bench improving is weaker evidence than fresh scripts would be.
+
+## The chemistry study loop — built 24 Sep 2026
+
+Adrian: "Build all three chemistry study ideas". What shipped (the detail lives in
+`docs/MARKING.md` §The Science tab › The chemistry study loop):
+
+1. **The tenth error kind `keywords` (science only)** + `scheme_words {scheme, yours}`
+   on the part → "Scheme says / You wrote" on the paper page. The rule lives in the
+   brains' shared `SCIENCE_COMMON` block and is gated only by the existing science gate
+   + precedent checks — the bench of `SPEC-SCIENCE-BENCH.md` is not built, so a drift in
+   how often the marker reaches for `keywords` would show first on the teacher's-mark
+   rows, not on a bench.
+2. **`/app/science/qa`** — the SEAB 6092 qualitative-analysis table as flashcards, the
+   door on the Chemistry tab of Science Home.
+3. **Science lost marks filed in My Notebook** under four reasons (concept gap · careless
+   slip · wrong keywords · incomplete).
