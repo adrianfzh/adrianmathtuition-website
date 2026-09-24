@@ -268,3 +268,35 @@ teacher-marked chemistry scripts.
   scheme" with the same warning. The upload path is unchanged (`scheme_source`, stored in
   `paper_schemes`). The math form has no such upload yet — a separate small build if wanted.
 
+
+## Bench results, 24 Sep 2026 — six scripts, the marker is too generous on weak answers
+
+Two sets, both marked on the Mac slots (rules alone, no mark scheme given to the marker), model `claude-opus-5-5`, scored with the bot's `scripts/eval-mark-model.js --from-stored --save`:
+
+- **Physics** — the three Cambridge 5054 Physics 2014 P2 Example Candidate Responses (grades A, C, E), truth = the examiner's own marks.
+- **Chemistry** — three made-up scripts on Cedar Girls 2025 Prelim Chemistry P2 (35 marks over 23 parts), truth by construction (SPEC-SCIENCE-BENCH §1): each part written to a planned defect with the mark the school scheme gives it. Files in `data/science-bench/chemistry/cedar-girls-2025-p2/` (`seed-01..03/plan.json` + `truth.json` + rendered pages; `data/science-bench/handin.js` hands one in).
+
+| Script | Truth | Marker | Off by | ±2 gate | Parts agreed | `calibration_results` |
+|---|---|---|---|---|---|---|
+| Physics A | 64/90 | 62/90 | 2 | PASS | 25/33 | 4c6b0da1 |
+| Physics C | 37/90 | 35/90 (33 matched) | 2 on the paper, 4 matched | FAIL as scored | 26/33 | 3440f099 |
+| Physics E | 20/90 | 27/90 | 7 | FAIL | 24/33 | 5bc62786 |
+| Chemistry A | 32/35 | 33/35 | 1 | PASS | 20/23 | 16344b98 |
+| Chemistry C | 25/35 | 29/35 | 4 | FAIL | 20/23 | 901ba586 |
+| Chemistry E | 10/35 | 12/35 | 2 | PASS | 21/23 | feaa2812 |
+
+**What it shows.** The error is almost all one way: marks given that the scheme withholds (chemistry: 8 over, 1 under; physics E: 8 over, 1 under). It grows as the script gets weaker — the good scripts pass, the middle and weak ones drift up. Physics E is the plainest case: one extra mark on eight different parts, each a partial-credit mark for an answer the examiner gave nothing.
+
+**The chemistry defects the marker let through** (each checked against the scheme's own wording before counting it as the marker's fault):
+- equations with no state symbols, where the scheme's mark is "with state symbols" (1(a), +2);
+- "its oxidation state decreases / increases" with no states, where the question says *use oxidation states* (2(b)(i), +1);
+- a missing point in a two- or three-point explanation (2(a) +1, 5(a) +1 on two scripts);
+- **"CaCl₂" where the scheme says "reject: chemical formula" and asks for the name — given the mark on BOTH scripts that carried it** (8(c)). A scheme's explicit reject is the one thing the marker should never miss.
+
+One under-mark: a fully correct 8(a) on the A script lost its mark.
+
+**Physics C's fail is partly how it was scored.** The marker labelled Q9 as (e)(f)(g) where the examiner's has (e)(f), so 9(g)'s 2 marks fall out as "extra"; on the whole paper it is 35 vs 37, inside the gate. The real misses are 10(c) −2, 11(c) +2, 11(d) −2.
+
+**Filing note.** The scoring script accepts a truth source of teacher / school / scheme / triage only, so the seeded scripts are filed as `truth_source='scheme'` with the label `seeded · <grade> · seed <n>`. A `seeded` source needs a bot change (and a bot deploy); not done.
+
+**Next.** The same three chemistry scripts marked WITH the Cedar Girls scheme (scheme-grounded rather than rules alone) says whether the leniency is the missing scheme or the marker; the rejects and "with state symbols" lines are in the scheme, so a grounded run should catch 1(a) and 8(c) if grounding works. The science disclaimer stays; teacher totals remain the drift alarm.
