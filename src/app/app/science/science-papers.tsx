@@ -9,7 +9,7 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
-import PaperSubjectPill from '@/components/PaperSubjectPill';
+import PaperSubjectPill, { SubjectEdge, subjectTone } from '@/components/PaperSubjectPill';
 import PortalIcon from '@/components/PortalIcon';
 import RemoveQueuedScience from './science-queue-remove';
 import { queuedLabel } from '@/lib/daily-queue';
@@ -77,7 +77,7 @@ export function SciencePendingList({ pending }: { pending: SciencePending[] }) {
               <li key={p.id} className="text-sm text-teal-900 flex items-baseline justify-between gap-3">
                 <span className="min-w-0 break-words">
                   ⏳ {p.paper_name || 'Science paper'}
-                  {p.subject && <span className="text-teal-700/60"> · {p.subject}</span>}
+                  {p.subject && <PaperSubjectPill subject={p.subject} className="ml-1.5 align-middle" />}
                   {typeof p.num_photos === 'number' && p.num_photos > 0 && <span className="text-teal-700/60"> · {p.num_photos} page{p.num_photos === 1 ? '' : 's'}</span>}
                 </span>
                 <span className="shrink-0 text-xs text-teal-700/60">{niceDate(String(p.created_at).slice(0, 10))}</span>
@@ -95,7 +95,7 @@ export function SciencePendingList({ pending }: { pending: SciencePending[] }) {
               <li key={p.id} className="text-sm text-teal-900 flex items-baseline justify-between gap-3">
                 <span className="min-w-0 break-words">
                   🕒 {p.paper_name || 'Science paper'}
-                  {p.subject && <span className="text-teal-700/60"> · {p.subject}</span>}
+                  {p.subject && <PaperSubjectPill subject={p.subject} className="ml-1.5 align-middle" />}
                   <span className="text-teal-700/60"> · {queuedLabel(String(p.result_json?.queued_for), today)}</span>
                 </span>
                 <RemoveQueuedScience runId={p.id} />
@@ -110,10 +110,11 @@ export function SciencePendingList({ pending }: { pending: SciencePending[] }) {
 
 export function SciencePaperCard({ paper }: { paper: ReturnType<typeof buildStudentMarking>['papers'][number] }) {
   return (
-    <Link href={`/app/marking/${paper.id}`} data-track="marking:open" className={`${CARD} p-4 block hover:bg-black/[0.02] transition-colors`}>
+    <Link href={`/app/marking/${paper.id}`} data-track="marking:open" className={`${CARD} relative overflow-hidden p-4 pl-5 block hover:bg-black/[0.02] transition-colors`}>
+      <SubjectEdge subject={paper.subject} />
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-2.5 min-w-0">
-          <span className={`flex items-center justify-center w-9 h-9 rounded-xl shrink-0 ${M.tile}`} aria-hidden>
+          <span className={`flex items-center justify-center w-9 h-9 rounded-xl shrink-0 ${subjectTone(paper.subject)?.solid ?? M.tile}`} aria-hidden>
             <PortalIcon name={M.icon} className="w-4.5 h-4.5" />
           </span>
           <div className="min-w-0">

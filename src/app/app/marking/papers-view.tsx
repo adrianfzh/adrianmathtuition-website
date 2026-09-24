@@ -31,6 +31,7 @@
 // clip to notebook, where you lost marks, request Practice Again) lives on the
 // paper's own page.
 import Link from 'next/link';
+import { SubjectEdge } from '@/components/PaperSubjectPill';
 import type { ReactNode } from 'react';
 import type { PortalAccount } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -534,7 +535,8 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
 }) {
   const line = inBundle ? null : sheet ? sheetLine(sheet) : sheetJobLine(job, { admin });
   return (
-    <div className={`${inBundle ? 'bg-white rounded-2xl' : CARD} p-3`}>
+    <div className={`${inBundle ? 'bg-white rounded-2xl' : CARD} relative overflow-hidden p-3 pl-4`}>
+      <SubjectEdge subject={paper.subject} />
       {/* Same window in admin mode too (18 Sep 2026): from the installed admin app a
           new tab opens a separate Safari that does not carry the sign-in, so the paper
           asked Adrian to log in. The page's back arrow returns to the profile. */}

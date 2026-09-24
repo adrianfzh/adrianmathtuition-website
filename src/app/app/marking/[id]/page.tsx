@@ -13,7 +13,7 @@ import { viewingAsStudent } from '@/lib/portal-beta';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
 import { fileHref } from '@/lib/student-files-url';
-import PaperSubjectPill from '@/components/PaperSubjectPill';
+import PaperSubjectPill, { subjectTone } from '@/components/PaperSubjectPill';
 import PaperTabs from '../PaperTabs';
 import PracticeAgainRequest, { type PracticeAgainState } from '../PracticeAgainRequest';
 import NextWave from '../NextWave';
@@ -82,6 +82,7 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
   // the teacher's-mark card — and no Practice Again (that sheet is maths).
   const lane = String((row as { subject?: string | null }).subject ?? 'math');
   const isScience = lane !== 'math';
+  const tone = subjectTone(paper.subject);
   const rjRaw = (row as { result_json?: Record<string, unknown> | null }).result_json ?? {};
   const groundingSource = (() => {
     const g = rjRaw.grounding;
@@ -177,7 +178,8 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
         <Link href={isScience ? '/app/science' : '/app/marking'} className="inline-block text-sm font-semibold text-navy hover:underline">{isScience ? '← Science' : '← Papers'}</Link>
       )}
 
-      <header className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
+      <header className={`relative overflow-hidden rounded-3xl p-4 pt-5 border shadow-sm ${tone ? tone.tint : 'bg-white border-black/5'}`}>
+        {tone && <span aria-hidden className={`absolute inset-x-0 top-0 h-1.5 ${tone.strip}`} />}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             {/* ✏️ the student's own name for the paper (17 Sep 2026) — rawName is Adrian's and never changes. */}
