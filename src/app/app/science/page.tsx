@@ -12,7 +12,7 @@ import { scienceMarkingOpen } from '@/lib/portal-beta';
 import { scienceChoiceLabel, studentSciences } from '@/lib/portal-prefs';
 import PortalIcon from '@/components/PortalIcon';
 import { SURFACES } from '@/lib/portal-theme';
-import { loadSciencePapers, ScienceTabs } from './science-papers';
+import { loadSciencePapers, QaDoor, ScienceTabs } from './science-papers';
 import SciencePicker from './science-picker';
 
 export const dynamic = 'force-dynamic';
@@ -64,7 +64,7 @@ export default async function ScienceHome({ searchParams }: { searchParams: Prom
             <span className="shrink-0 text-white/80 text-lg">›</span>
           </Link>
 
-          <ScienceTabs papers={papers} pending={pending} subjects={choice!.subjects} limit={HOME_LIMIT} />
+          <ScienceTabs papers={papers} pending={pending} subjects={choice!.subjects} limit={HOME_LIMIT} panelExtras={{ chemistry: <QaDoor /> }} />
         </>
       )}
     </div>

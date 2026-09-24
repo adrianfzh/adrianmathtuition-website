@@ -288,6 +288,14 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`columns? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
       return `page ${r.status}`;
     }),
+    // The qualitative-analysis flashcards (24 Sep 2026): the Chemistry tab's
+    // door must not 404. Anonymous → the login redirect, which is fine.
+    timed('portal-science-qa', async () => {
+      const r = await fetch(`${base}/app/science/qa`, { redirect: 'manual', signal: T(10000) });
+      if (r.status === 404) throw new Error('/app/science/qa is missing — the QA flashcards door 404s');
+      if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
+      return `page ${r.status}`;
+    }),
     // Every released paper carries a subject (SPEC-PORTAL-V2 §1): the Papers
     // page pills, the per-subject tiles and the subject gate all key on
     // paper_subject. The bot stamps it at save-paper and /api/portal/submit

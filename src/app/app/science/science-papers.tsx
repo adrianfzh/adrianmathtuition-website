@@ -5,6 +5,7 @@
 // per-subject tiles, no Practice Again, no "Work on next" — marking first
 // (Adrian, 10 Sep 2026: "for the science tab, just put marking functionality
 // first"). Server component; ownership = the student_id filter, never the client.
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
@@ -165,8 +166,26 @@ function laneOf(v: string | null | undefined): ScienceSubject | null {
 
 type SciencePaper = ReturnType<typeof buildStudentMarking>['papers'][number];
 
-export function ScienceTabs({ papers, pending, subjects, limit = 0, allHref = '/app/science/papers' }: {
+/** The Chemistry tab's door to the qualitative-analysis flashcards (24 Sep 2026): a row above the papers. */
+export function QaDoor() {
+  return (
+    <Link href="/app/science/qa" className={`${CARD} p-3 flex items-center gap-3 hover:brightness-[0.99] active:scale-[0.99] transition`}>
+      <span className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0 bg-purple-600 text-white" aria-hidden>
+        <PortalIcon name="flask" className="w-5 h-5" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-bold text-navy">Qualitative analysis flashcards</span>
+        <span className="block text-[12px] text-gray-500">Cation, anion and gas tests · tap to flip</span>
+      </span>
+      <span className="shrink-0 text-gray-300 text-lg">›</span>
+    </Link>
+  );
+}
+
+export function ScienceTabs({ papers, pending, subjects, limit = 0, allHref = '/app/science/papers', panelExtras }: {
   papers: SciencePaper[]; pending: SciencePending[]; subjects: ScienceSubject[]; limit?: number; allHref?: string;
+  /** Something above a science's papers — Home puts the QA flashcards door on Chemistry (24 Sep 2026). */
+  panelExtras?: Partial<Record<ScienceSubject, ReactNode>>;
 }) {
   const present = new Set<ScienceSubject>();
   for (const p of papers) { const s = laneOf(p.subject); if (s) present.add(s); }
@@ -184,6 +203,7 @@ export function ScienceTabs({ papers, pending, subjects, limit = 0, allHref = '/
       key: s, label, tone: SCIENCE_TONE[s], count: mine.length,
       content: (
         <div className="space-y-4">
+          {panelExtras?.[s]}
           <SciencePendingList pending={pend} />
           {mine.length > 0 ? (
             <>
