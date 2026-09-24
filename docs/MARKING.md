@@ -474,9 +474,19 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
     change a colour in both). Everything from the score box down keeps the red: that is the
     marks-lost language. `FrontPageInput.subject` is fed by `front-page-build.ts` from the run's
     own `paper_subject`, never a caller's guess; Other / untagged → byte-identical to before.
-    The cover's cache key became `runs/<id>/cover-<stamp>-subject.png`, so an old cached cover
-    is rendered once more on its next view and a student's list never mixes the two looks (no
-    batch re-render). Tested in `front-page-html.test.ts` "the subject frame".
+    The cover's cache key became `runs/<id>/cover-<stamp>-subject.png` (`-subject2` since the
+    palette below), so an old cached cover is rendered once more on its next view and a
+    student's list never mixes the two looks (no batch re-render). Tested in
+    `front-page-html.test.ts` "the subject frame".
+    **The palette (25 Sep 2026, Adrian: E Math sky and Physics blue "look almost the same",
+    "navy blue for Amath", teal "looks similar to green", "Remove h2"):** A Math navy
+    (Tailwind blue-900 `#1E3A8A` — not the app's own navy, so a card's edge never reads as
+    chrome; its wash is blue-900 at 10 %, never blue-100, which is Physics's), E Math amber
+    (`#F59E0B` band, `#B45309` tag), Physics blue, Chemistry purple, Biology green. **H2 Math
+    has no tone**: `subjectPill('H2 Math')` is `{ text: 'H2', tone: 'other' }`, so a JC paper
+    shows a plain grey H2 pill and gets no card edge, header wash or cover band; the subject
+    logic (JC accounts hand in under H2 Math, sort, count) is untouched. The desk's
+    `PAPER_SUBJECT_TONE` carries the same five as hexes.
   - **The sheet's diagnosis drives the cover (2026-09-02).** Adrian: *"the sheet's diagnosis
     should drive the cover, not the cover the sheet."* The self-study worker sends
     `result.diagnosis` with its `done` call (`/api/admin/sheet-jobs`; shape + example in

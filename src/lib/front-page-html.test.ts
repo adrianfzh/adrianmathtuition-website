@@ -627,10 +627,10 @@ describe('frontPageHtml — the subject frame', () => {
     expect(plain).not.toContain('subject-tag');
     expect(plain).not.toContain('border-top:2.4mm');
   });
-  it('coverSubject: the six tones the app uses, by the run\'s paper_subject', () => {
-    expect(coverSubject('A Math')).toEqual({ label: 'A Math', band: '#6366F1', solid: '#4F46E5' });
-    expect(coverSubject('E Math')?.band).toBe('#0EA5E9');
-    expect(coverSubject('H2 Math')?.band).toBe('#D946EF');
+  it('coverSubject: the five tones the app uses, by the run\'s paper_subject; H2 is plain', () => {
+    expect(coverSubject('A Math')).toEqual({ label: 'A Math', band: '#1E3A8A', solid: '#1E3A8A' });
+    expect(coverSubject('E Math')).toEqual({ label: 'E Math', band: '#F59E0B', solid: '#B45309' });
+    expect(coverSubject('H2 Math')).toBeNull();
     expect(coverSubject('Physics')?.band).toBe('#3B82F6');
     expect(coverSubject('Biology')?.band).toBe('#22C55E');
     expect(coverSubject('Other')).toBeNull();

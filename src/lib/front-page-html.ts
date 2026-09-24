@@ -127,18 +127,18 @@ export type FrontPageInput = {
 
 /**
  * The cover's frame colour for a subject: the label the tag prints and the two
- * hexes of the app's tone (Tailwind's 500 for the band, 600 for the tag — the
- * literal values of `SUBJECT_TONE.strip` / `.solid`, which are class names and
- * cannot reach a Puppeteer page). One colour means one subject everywhere;
+ * hexes of the app's tone (the literal values of `SUBJECT_TONE.strip` for the
+ * band and `.solid` for the tag, which are class names and cannot reach a
+ * Puppeteer page). One colour means one subject everywhere;
  * change a colour there and here together. Null for Other, untagged, unknown.
  */
 export function coverSubject(subject: string | null | undefined): { label: string; band: string; solid: string } | null {
   const pill = subjectPill(subject);
   if (!pill || pill.tone === 'other') return null;
   const T: Record<Exclude<SubjectTone, 'other'>, { label: string; band: string; solid: string }> = {
-    am: { label: 'A Math', band: '#6366F1', solid: '#4F46E5' },      // indigo
-    em: { label: 'E Math', band: '#0EA5E9', solid: '#0284C7' },      // sky
-    h2: { label: 'H2 Math', band: '#D946EF', solid: '#C026D3' },     // fuchsia
+    am: { label: 'A Math', band: '#1E3A8A', solid: '#1E3A8A' },      // navy (blue-900, band and tag alike)
+    em: { label: 'E Math', band: '#F59E0B', solid: '#B45309' },      // amber (500 band, 700 tag — 600 is too pale under white)
+    // H2 Math: no row — a JC paper's cover is plain (25 Sep 2026, "Remove h2").
     phy: { label: 'Physics', band: '#3B82F6', solid: '#2563EB' },    // blue
     chem: { label: 'Chemistry', band: '#A855F7', solid: '#9333EA' }, // purple
     bio: { label: 'Biology', band: '#22C55E', solid: '#16A34A' },    // green

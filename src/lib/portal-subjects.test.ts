@@ -27,6 +27,8 @@ describe('subjectAllowed and the pill', () => {
   it('pills read AM / EM / H2', () => {
     expect(subjectPill('A Math')).toEqual({ text: 'AM', tone: 'am' });
     expect(subjectPill('E Math')).toEqual({ text: 'EM', tone: 'em' });
+    // H2 keeps its letters but no tone since 25 Sep 2026 ("Remove h2").
+    expect(subjectPill('H2 Math')).toEqual({ text: 'H2', tone: 'other' });
     expect(subjectPill(null)).toBeNull();
   });
 });

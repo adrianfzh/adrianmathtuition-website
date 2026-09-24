@@ -71,15 +71,18 @@ export function subjectAllowed(account: SubjectAccount | null | undefined, subje
   return (allowedSubjects(account) as string[]).includes(subject);
 }
 
-export type SubjectTone = 'am' | 'em' | 'h2' | 'phy' | 'chem' | 'bio' | 'other';
+export type SubjectTone = 'am' | 'em' | 'phy' | 'chem' | 'bio' | 'other';
 
 /** Short pill text + colour class per subject (Adrian: "a colour coded EM and AM pill").
- *  The three sciences wear their own tones (10 Sep 2026). */
+ *  The three sciences wear their own tones (10 Sep 2026). H2 Math has NO tone since
+ *  25 Sep 2026 (Adrian: "Remove h2") — its pill still reads H2, in the plain grey of
+ *  Other, and a JC paper gets no card edge, header wash or cover band. The subject
+ *  itself is untouched: a JC account still hands in, sorts and counts under H2 Math. */
 export function subjectPill(subject: string | null | undefined): { text: string; tone: SubjectTone } | null {
   switch (subject) {
     case 'A Math': return { text: 'AM', tone: 'am' };
     case 'E Math': return { text: 'EM', tone: 'em' };
-    case 'H2 Math': return { text: 'H2', tone: 'h2' };
+    case 'H2 Math': return { text: 'H2', tone: 'other' };
     case 'Physics': return { text: 'PHY', tone: 'phy' };
     case 'Chemistry': return { text: 'CHEM', tone: 'chem' };
     case 'Biology': return { text: 'BIO', tone: 'bio' };
