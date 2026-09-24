@@ -174,6 +174,46 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
     If every lost mark on the returned sheet is a slip, say so with `noSheet`
     (rule 6).
 
+1h. **A photo sheet (`job.kind === 'photo-sheet'`, 24 Sep 2026, SPEC-PRACTICE-PHOTO §14).**
+   There is NO run: `job.run_id` is null, there are no marked pages, no cover, no
+   diagnosis to read. The job carries `job.photos[]` — one entry per photo the
+   student sent: `{ url, key, text, subgroup, marks, seed, figureExpected }`
+   (`text` = the bot's read of the photo; `subgroup` = the ONE sub-skill it was
+   filed under, or null; `seed` = `{ id, tier, marks }` of a bank question under
+   that sub-skill the student may see, or null) — and `job.worked_example`
+   (true only for a single photo). Fetch every photo with the worker's own token
+   (the bucket is private; the URL's path starts `/api/files/`):
+   `curl -s -o "$WORK/photo-N.jpg" -H "Authorization: Bearer $SHEETS_API_TOKEN" "$SHEETS_API_BASE<path of url>"`
+   and LOOK at it — the read text is a guide, the photo is the truth.
+   - **Per photo, one short taught part + exactly two questions:** (1) **one like
+     it** — the same question re-skinned: new numbers / a new context, same
+     sub-skill, same marks (`marks`, or the seed's) — and (2) **one turned
+     around** — same sub-skill and marks, but what is given and what is asked
+     swap, or the first step changes because the context differs. The two must
+     be distinct from each other AND from the photo's question and the seed —
+     the novelty gate applies to the pair (rule 6). Never a clone of the photo.
+   - Where a seed is served, re-skin the SEED (its structure and marks) — the
+     photo tells you which sub-skill and level; where `seed` is null, work from
+     the photo's own question.
+   - When `job.worked_example` is true, the taught part is a full worked example
+     of a question LIKE the photo's (never the photo's own question solved) — the
+     model answer laid out the way the marking desk shows one, then the two
+     questions.
+   - At most 10 questions (5 photos × 2). No "Practice Again" framing, no run
+     diagnosis rules (§1c/§1d's run-derived parts do not apply): the title is
+     **"Practice sheet · <D Mon>"** (= `job.paper_name`), the renderer gets
+     `--name "Practice sheet"`, and the files go to
+     `/Students/<Student>/<YYYY-MM-DD> Practice sheet/Practice sheet.docx|.pdf`.
+   - A photo that is unreadable or not a maths question is SKIPPED with a line
+     in the sheet's foreword ("Photo 3 could not be read"); `noSheet` only when
+     EVERY photo is unusable.
+   - STILL post `diagnosis` on done, one skill per photo (its sub-skill, the
+     step the questions practise) — the section bank files the taught parts
+     from it — and `questions[]` as for any sheet, with `question_id` set to
+     the seed's id on the "like it" question when a seed was used.
+   - `done` with `docx_path`, `pdf_path`, `questions[]`, `diagnosis`. The
+     server copies the PDF into the student's Practice list and tells them.
+
 1d. **ALWAYS post `diagnosis`** — on a fresh sheet, a revision, and when you
     decide an existing sheet stands unchanged after a re-mark ("identical
     diagnosis, not rebuilt"). The paper's cover page ("Where your marks went")

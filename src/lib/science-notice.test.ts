@@ -39,7 +39,7 @@ describe('scienceNoticeState — one day from the first visit', () => {
 describe('the approved wording', () => {
   it('ends with the limit and never asks for feedback', () => {
     const all = [SCIENCE_OPEN_NOTICE.greeting, SCIENCE_OPEN_NOTICE.lead, ...SCIENCE_OPEN_NOTICE.paragraphs, SCIENCE_OPEN_NOTICE.limit].join(' ');
-    expect(SCIENCE_OPEN_NOTICE.limit).toBe('Limit: two papers a day.');
+    expect(SCIENCE_OPEN_NOTICE.limit).toBe('Limit: two papers a day. Extra papers wait for the next day, up to three days ahead.');
     expect(all).not.toMatch(/tell me what you think/i);
     expect(all).toMatch(/consult your teacher or tutor/);
     expect(all).toMatch(/attach them for better results/);

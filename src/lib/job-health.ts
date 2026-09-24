@@ -86,6 +86,8 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'triage-reminder':   { kind: 'interval', hours: 36, label: 'daily 8am' },
   // Compulsory Practice Again sheets not handed in — day 3, then weekly (8 Sep 2026).
   'practice-again-reminders': { kind: 'interval', hours: 36, label: 'daily 9am' },
+  // Midnight SGT: science hand-ins that waited on the list go into the marking queue (24 Sep 2026).
+  'daily-queue': { kind: 'interval', hours: 36, label: 'daily midnight' },
   // Weekly and deliberately quiet — it stamps every run, so a silent Telegram and
   // a dead cron are told apart here rather than by their absence.
   'question-proposals-nudge': { kind: 'interval', hours: 204, label: 'Mondays 9am' },

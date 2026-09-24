@@ -12,9 +12,23 @@ import { escapeTelegramHtml } from './telegram-html';
 
 export type SheetJobStatus = 'queued' | 'claimed' | 'done' | 'failed' | 'cancelled';
 
+export type SheetJobKind = 'practice-again' | 'photo-sheet';
+
+/** What one photo on a photo-sheet job showed (SPEC-PRACTICE-PHOTO.md §14). */
+export type SheetJobPhoto = {
+  url: string;
+  key: string;
+  text: string;
+  subgroup: { id: number; name: string; topic: string | null; description: string | null } | null;
+  marks: number | null;
+  seed: { id: string; tier: string; marks: number | null } | null;
+  figureExpected: boolean;
+};
+
 export type SheetJob = {
   id: string;
-  run_id: string;
+  /** The marked paper's run. NULL on a photo-sheet job (24 Sep 2026) — those have photos instead. */
+  run_id: string | null;
   airtable_student_id: string;
   student_name: string;
   paper_name: string;
@@ -38,6 +52,12 @@ export type SheetJob = {
   requested_by?: 'student' | 'adrian' | 'auto' | null;
   /** A batch sheet (10 Sep 2026): every run it covers; run_id is the primary/newest. */
   run_ids?: string[] | null;
+  /** 24 Sep 2026 (SPEC-PRACTICE-PHOTO §14): 'photo-sheet' = the Practice tab's photos → one sheet, no run. */
+  kind?: SheetJobKind | null;
+  photos?: SheetJobPhoto[] | null;
+  /** The SGT day the job may be claimed (the waiting list, lib/daily-queue). NULL = at once. */
+  scheduled_for?: string | null;
+  worked_example?: boolean | null;
 };
 
 /** How long a claim survives without a heartbeat before anyone may retake it. */
