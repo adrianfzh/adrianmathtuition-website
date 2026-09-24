@@ -125,7 +125,7 @@ rounds can be compared.
 | pen and drawing code, adapters, reconciliation code, any fix with a bench (`npm test` golden replay, `scripts/golden-pen.cjs`, `pen-dryrun.cjs`) | **Opus** agent, in its own clone | mechanical once the cause is named; the bench, not the model, is the proof |
 | a marking RULE whose wording must not collide with the ninety-odd dated rules already in `ai/paper-marker.js`; triage of a round of complaints across several papers; reading a marked page the way Adrian reads it | **Fable** (the orchestrating session) | the cost of a rule that teaches the wrong lesson is a wrong mark on a student's paper; the collision check is judgement over the whole prompt |
 | mechanical builds with a spec (renderers, migrations, backfills, docs sweeps) | **Sonnet** agent | speed; the spec is the judgement |
-| solutions and question authoring for the bank | Fable only where it WRITES the maths (the extraction fleet); **the GCE Set generator writes, blind-solves and repairs on Opus 5.5 and moderates on Fable** since 23 Sep 2026 (`docs/GCE-PAPER.md`) | accuracy of the maths itself |
+| solutions and question authoring for the bank | Fable only where it WRITES the maths (the extraction fleet); **the GCE Set generator writes, blind-solves and repairs on Opus and moderates on Fable** (the `opus` / `fable` aliases, newest of each family) since 23 Sep 2026 (`docs/GCE-PAPER.md`) | accuracy of the maths itself |
 
 Running every fix on the dearest tier is not "safer" — it costs plan usage for no
 gain on work the bench already proves. Running rule wording on the cheapest tier

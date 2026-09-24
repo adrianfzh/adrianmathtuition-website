@@ -57,9 +57,11 @@ STYLE anchors only), `paper-so-far.md`, `corpus.json` (every real GCE question o
 level, for the novelty gate), `plan.json`.
 
 The round per slot, orchestrated by the session with the Agent tool. **Since 23 Sep 2026
-the author, blind solver, repair author and figure author are Opus 5.5 (`model: "opus"`)
-and the moderator is Fable 5.1 (`model: "fable"`)** (Adrian: "use the trial split, but
-change solves blind to opus 5.5"). Until then Fable 5.1 wrote, moderated and repaired and
+the author, blind solver, repair author and figure author are Opus (`model: "opus"`) and
+the moderator is Fable (`model: "fable"`)** (Adrian: "use the trial split, but change
+solves blind to opus 5.5"). The skill names the aliases, not versions (Adrian, 24 Sep
+2026: "it will all default to the latest version right?"): Claude Code points each at the
+newest model of its family — on 24 Sep 2026 `claude-opus-5-5` and `claude-fable-5-1`. Until then Fable 5.1 wrote, moderated and repaired and
 Opus 5 solved blind, which is how both Set 1s were made; A Math Set 2 and E Math Set 2
 were written the same day with every agent on Opus 5.5, moderator included. The blind
 solver is a fresh agent that never sees the key, so its independence from the author is
@@ -68,11 +70,11 @@ backstop for a blind spot the author and solver share.
 
 | step | who | reads | writes |
 |---|---|---|---|
-| author | **Opus 5.5** agent | `author-brief.md`, `Q<n>.brief.md`, `paper-so-far.md` | `Q<n>.json` |
+| author | **Opus** agent (`model: "opus"`) | `author-brief.md`, `Q<n>.brief.md`, `paper-so-far.md` | `Q<n>.json` |
 | gates | `check` | `Q<n>.json` | `Q<n>.gates.json`, `Q<n>.solve.md`, `Q<n>.moderate.md` |
-| blind solve | a **fresh Opus 5.5** agent (no key, no author context) | ONLY `Q<n>.solve.md` (no key) | `Q<n>.blind.json` |
-| moderate | **Fable 5.1** agent | `Q<n>.moderate.md` (question + key + exemplars), `Q<n>.blind.json` | `Q<n>.verdict.json` |
-| repair | Opus 5.5 agent with the verdict | | `Q<n>.json` again → re-check → re-solve → re-moderate |
+| blind solve | a **fresh Opus** agent (no key, no author context) | ONLY `Q<n>.solve.md` (no key) | `Q<n>.blind.json` |
+| moderate | **Fable** agent (`model: "fable"`) | `Q<n>.moderate.md` (question + key + exemplars), `Q<n>.blind.json` | `Q<n>.verdict.json` |
+| repair | Opus agent with the verdict | | `Q<n>.json` again → re-check → re-solve → re-moderate |
 
 Gates in `check`: marks sum = slot target, topics ⊂ bank names, worked solution present,
 word-trigram Jaccard vs every real GCE question of the level ≤ 0.4 (nearest recorded).
@@ -145,6 +147,17 @@ LibreOffice ignores that size and draws imported formulas at 12 pt (fixed by the
 LibreOffice's bundled python is killed by macOS (exit 137), so the macro runs in-process
 through a `vnd.sun.star.script` URL. Set PDFs made before this date carry the fault until
 remade. The app's own PDFs (Puppeteer + KaTeX) are not affected.
+
+**The maths looks odd outside Word (24 Sep 2026, Adrian: "the mathematical notation font
+seems weird?").** Word draws the maths in Cambria Math. LibreOffice, and file previews built
+on it (the Claude app's Word preview looks like one), redraws every formula with its own
+engine. Without Cambria Math (Linux, a cloud container) it falls back to FreeSerif, and it
+pads brackets and splits a number from a letter ("p ( x )", "6 k") whatever the file says.
+One part of that WAS the file's: pandoc writes every letter as its own maths run, and
+LibreOffice gaps between runs ("F B = 2", "angle F E B"). `join_math_runs()` in
+`export-docx.py` joins neighbouring runs with identical formatting (Word draws the file the
+same). The rest is LibreOffice's. Read a paper in Word or in the app-style PDF from
+`assemble`, and make `lo-pdf.sh` PDFs on the Mac, where LibreOffice finds Cambria Math.
 
 ### Publishing a Set (9 Sep 2026)
 
@@ -312,6 +325,15 @@ P1 Q12(c) note was re-moderated (5/5). P2 is now 27 spaces, 1 unparted, 2 answer
 Left open for Adrian: the new Q5's second route (the gradient rises with cos x) is the same
 "extremes over the range of a trig quantity" move as P2 Q4; the moderator's alternative
 (the set of x on which the gradient increases) would repeat P1 Q12(c)'s skill instead.
+**24 Sep 2026, Adrian: "restore Q5".** P2 Q5 is the original tangent question again (the
+swap left P2 with one unparted question against the standard's two, and overlapped Q4);
+the replacement stays in `fable-review-2026-09-23/P2-Q5/`. The same day P1 Q8 (garden and
+lawn) and Q9 (screen on a wall) gained diagrams at his request ("there are no diagrams for
+Q9 and Q8?") — they had been word-only while Set 1 P1 carried four figures. Both are drawn
+in neither answer's proportions, so the Q8 drawing does not show which lawn fits and the
+Q9 drawing is not at x = 4. P1 now has three figures (Q8, Q9, Q11). `export-docx.py` also
+learnt to print an unparted question's figure BEFORE its writing space (Q8's had landed
+under the space, chained to Q9's stem) and to keep a stem with its first part.
 The paper JSONs are in `data/gce-generated/`, and the figure specs and PNGs are in
 `data/gce-generated/figures/<key>-seed2/`, which is the `--figures` directory for
 `publish.mjs`. **Not published yet:** it waits for Adrian's read, and then needs the service

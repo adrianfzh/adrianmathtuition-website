@@ -44,3 +44,11 @@ re-assembly and are restored to Set 2 here.
 
 The paper and solutions PDFs/docx from this build are on the Mac at
 `~/Desktop/AdrianMath/GCE Sets/AM Set 2 swap 2026-09-23/` (not committed).
+
+## Afterwards (24 Sep 2026)
+
+Adrian chose the ORIGINAL P2 Q5 (the tangent through the origin to
+y = (1 + ln x)²/x): with the swap, Paper 2 had one unparted question where the A Math
+standard asks for at least two, and the new question's part (b) overlapped Q4. The
+replacement stays in `P2-Q5/` here. Same day, P1 Q8 (garden and lawn) and Q9 (screen on a
+wall) gained diagrams at Adrian's request, drawn in neither answer's proportions.

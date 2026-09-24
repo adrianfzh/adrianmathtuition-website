@@ -53,7 +53,7 @@ the gates, the figure files, publishing). Student-facing side:
   — step 1c and the whole-paper check in step 4.
 - **The blind solver is a FRESH agent** that sees ONLY `Q<n>.solve.md` — never the key,
   never the author's conversation. Since 23 Sep 2026 author and solver are the same model
-  (Opus 5.5, below), so independence is context isolation alone: a blind spot the model
+  (Opus, below), so independence is context isolation alone: a blind spot the model
   shares with itself can still pass as agreement. The moderator is a different model
   (Fable) and works any part it doubts, and Adrian reads the paper before it is
   published — those are the backstop.
@@ -90,21 +90,25 @@ the gates, the figure files, publishing). Student-facing side:
 ## Models per spawn (deliberate — never session-inherit)
 
 **The split since 23 Sep 2026** (Adrian: "use the trial split, but change solves blind to
-opus 5.5"): author, blind solve, repair and figure author are **Opus 5.5** — pass
-`model: "opus"` (the alias resolves to `claude-opus-5-5`; checked in the agents' own
-transcripts on 23 Sep 2026); the moderator is **Fable 5.1** — pass `model: "fable"` — so
-the judge is a different model from the writer and the same one that scored the earlier Sets (a
-like-for-like reading). `generate.mjs` records the split as `MODELS` in the run's
-`plan.json`; change it there too when a model changes. Judge the split on the moderator's
-`as_good_as_set1` + score against the earlier Sets', and on Adrian's read of the DOCX.
+opus 5.5"): author, blind solve, repair and figure author pass `model: "opus"`; the
+moderator passes `model: "fable"` — so the judge is a different model from the writer and
+the same family that scored the earlier Sets (a like-for-like reading). **Use the alias,
+never a version id** (Adrian, 24 Sep 2026: "it will all default to the latest version
+right?"): Claude Code points `opus` and `fable` at the newest model of each family, so the
+skill needs no edit when a new one ships. On 24 Sep 2026 they resolve to `claude-opus-5-5`
+and `claude-fable-5-1` (read from the agents' own transcripts). When a new model does ship,
+the building doctrine still asks the question — read the first Set it writes before
+trusting it. `generate.mjs` records the aliases as `MODELS` in the run's `plan.json`.
+Judge the split on the moderator's `as_good_as_set1` + score against the earlier Sets', and
+on Adrian's read of the DOCX.
 
-| step | model | notes |
+| step | `model:` | notes |
 |---|---|---|
-| author | **Opus 5.5** (was Fable) | register + originality are judgment; this is the moat step |
-| blind solve | **Opus 5.5**, a fresh agent (was Opus 5) | independence by context: it sees only `Q<n>.solve.md` |
-| moderate | **Fable 5.1** | compares key vs blind solve, scores style 1–5, names re-skins |
-| repair | **Opus 5.5** (was Fable) | the author's job again, with the verdict in hand |
-| figure author | **Opus 5.5** | mechanical against a written spec doc; verify() catches errors |
+| author | `"opus"` (was Fable) | register + originality are judgment; this is the moat step |
+| blind solve | `"opus"`, a fresh agent (was Opus 5) | independence by context: it sees only `Q<n>.solve.md` |
+| moderate | `"fable"` | compares key vs blind solve, scores style 1–5, names re-skins |
+| repair | `"opus"` (was Fable) | the author's job again, with the verdict in hand |
+| figure author | `"opus"` | mechanical against a written spec doc; verify() catches errors |
 
 **ORIGINAL (until 23 Sep 2026) — restore if the new split reads worse:**
 author **Fable** · blind solve **Opus 5** · moderate **Fable** · repair **Fable** · figure
@@ -219,7 +223,7 @@ sh .claude/skills/gce-paper/prompts/render.sh moderate "$RUN" 1 1,2,3
 sh .claude/skills/gce-paper/prompts/render.sh repair   "$RUN" 1 4
 ```
 
-**Author** (Opus 5.5 agent) — `prompts/author.md`: reads `author-brief.md`, `standard.md`,
+**Author** (Opus agent, `model: "opus"`) — `prompts/author.md`: reads `author-brief.md`, `standard.md`,
 `standard-questions-P<n>.md`, `earlier-sets.md`, `paper-so-far.md`, then its
 `Q<n>.brief.md`s; writes `Q<n>.json` in the brief's JSON shape, including `skills` — 1–3
 phrases naming what the question tests, specific enough to tell two questions on one
@@ -239,11 +243,11 @@ novelty nearest-neighbour against the real GCE papers AND against our own earlie
 (question + key + exemplars + the earlier-Set questions on the same topic and the
 nearest in wording). A failed gate → straight to repair.
 
-**Blind solve** (a fresh Opus 5.5 agent) — `prompts/blind.md`: opens ONLY `Q<n>.solve.md` (which
+**Blind solve** (a fresh Opus agent, `model: "opus"`) — `prompts/blind.md`: opens ONLY `Q<n>.solve.md` (which
 carries its own instructions and the `{"answers": {...}, "solvable": bool, "issues": [...]}`
 shape) and writes `Q<n>.blind.json`. It is never told a key exists.
 
-**Moderate** (Fable 5.1 agent, `model: "fable"`) — `prompts/moderate.md`: reads `Q<n>.moderate.md` (its full
+**Moderate** (Fable agent, `model: "fable"`) — `prompts/moderate.md`: reads `Q<n>.moderate.md` (its full
 brief: check the key against the blind solve, judge the question, judge the variety),
 `standard.md`, `standard-questions-P<n>.md`, `earlier-sets.md` and `Q<n>.gates.json`; writes `Q<n>.verdict.json` as
 `{parts:[{label, agree, note}], all_agree, key_verdict, score:1-5, standard:"at"|"below"|"above",
@@ -255,7 +259,7 @@ Set 1 question of similar marks (score ≤ 3, with what Set 1 does that the slot
 the same way as a question of an earlier Set (or of this Set's other paper). Below or above the 2024/25
 standard → score ≤ 3 with concrete fixes.
 
-**Repair** (Opus 5.5 agent, only when needed) — `prompts/repair.md`: the author again with
+**Repair** (Opus agent, `model: "opus"`, only when needed) — `prompts/repair.md`: the author again with
 the gates, blind and verdict files, fixing EVERY named problem or writing a new question
 for the slot; then re-run check → blind solve → moderate. Three rounds max — after that,
 replace the question rather than patch it (P2 Q6 of E Math Set 1 took all three).

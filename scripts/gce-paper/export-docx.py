@@ -416,7 +416,18 @@ def estimate_used_cm(q, figures, pos, first_page):
 def question(ws, s, figures, with_marks=True):
     q = s.get('question') or s.get('draft')
     parts = q.get('parts') or []
+    # An unparted question's marks sit on its stem, and the writing space follows the
+    # marks at once — so its figure printed UNDER the space, tied to the next question's
+    # stem (A Math Set 2 P1 Q8, 24 Sep 2026). Hold the space until the figure is down.
+    space_after_figure = not parts and with_marks and has_figure(figures, s['pos'])
+    saved_space = ws.working_space
+    if space_after_figure:
+        ws.working_space = 0
     has_stem = stem_paras(ws, q, s['target'] if (with_marks and not parts) else None)
+    ws.working_space = saved_space
+    if has_stem and parts:
+        # a stem never sits alone at a page foot with its parts overleaf (P1 Q10)
+        ws._block_paras[-1].paragraph_format.keep_with_next = True
     # 'answer_space': the figure IS the space the candidate draws in (a
     # construction's given line) — it prints under the last part, and the
     # parts above it leave no writing lines of their own.
@@ -428,6 +439,8 @@ def question(ws, s, figures, with_marks=True):
             for para in ws._block_paras:
                 para.paragraph_format.keep_with_next = True
         figure_para(ws, q, s['pos'], figures)
+        if space_after_figure and saved_space:
+            ws.workspace(marks=s['target'])
     prev_outer = None
     numbered = not has_stem          # no stem: the first part carries the number
     for part in parts:
@@ -626,6 +639,40 @@ def size_math(doc):
             wrpr.append(e)
 
 
+def join_math_runs(doc):
+    """Join neighbouring maths runs that carry the same formatting into one run
+    ("F" + "B" -> "FB"). pandoc writes every letter as its own run; Word draws
+    that the same either way, but LibreOffice, and the file previews built on it,
+    put a gap between runs, so "FB = 2" came out "F B = 2" (Adrian, 24 Sep 2026:
+    "the mathematical notation font seems weird?"). Runs only join when their
+    run properties are identical, so nothing Word shows changes."""
+    from lxml import etree
+    M = 'http://schemas.openxmlformats.org/officeDocument/2006/math'
+    R, T = f'{{{M}}}r', f'{{{M}}}t'
+
+    def props(r):
+        kids = [c for c in r if c.tag != T]
+        if len(kids) + 1 != len(r) or r.find(T) is None or r[-1].tag != T:
+            return None
+        return b''.join(etree.tostring(c) for c in kids)
+
+    joined = 0
+    for r in list(doc.element.body.iter(R)):
+        if r.getparent() is None:
+            continue
+        nxt = r.getnext()
+        key = props(r)
+        while key is not None and nxt is not None and nxt.tag == R and props(nxt) == key:
+            t, t2 = r.find(T), nxt.find(T)
+            t.text = (t.text or '') + (t2.text or '')
+            if t.text[:1] == ' ' or t.text[-1:] == ' ':
+                t.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
+            r.getparent().remove(nxt)
+            joined += 1
+            nxt = r.getnext()
+    return joined
+
+
 def page_numbers(doc):
     p = doc.sections[0].footer.paragraphs[0]
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -723,6 +770,7 @@ def main():
             print(f"  ⚠ Q{s['pos']} parts sum to {got}, slot target {s['target']}")
     page_numbers(ws.doc)
     size_math(ws.doc)
+    join_math_runs(ws.doc)
     paper_path = join(out_dir, name + '.docx')
     ws.save(paper_path)
 
@@ -743,6 +791,7 @@ def main():
         p.paragraph_format.tab_stops.add_tab_stop(Cm(Q_TEXT_CM))
     page_numbers(ws2.doc)
     size_math(ws2.doc)
+    join_math_runs(ws2.doc)
     sol_path = join(out_dir, name + '-solutions.docx')
     ws2.save(sol_path)
 

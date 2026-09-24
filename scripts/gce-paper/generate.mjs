@@ -49,12 +49,17 @@ const PROMPT_VERSION = 'gce-author-v2'; // v2 (17 Sep 2026): skills[] + the earl
 // Who plays each role, recorded in plan.json at `brief` and carried into the assembled
 // paper (publish.mjs reads the author to label the bank rows). Adrian, 23 Sep 2026: "use
 // the trial split, but change solves blind to opus 5.5" — author, blind solve, repair and
-// figures are `model: "opus"` (Opus 5.5), the moderator is `model: "fable"`. Until then
-// Fable wrote/moderated/repaired and Opus 5 solved blind; a run briefed before that has
-// no `models` in plan.json and keeps the old record (MODELS_UNTIL_2026_09_23). A run
-// briefed on 23 Sep under "opus 5.5 for all" carries its own record in plan.json.
+// figures are `model: "opus"`, the moderator is `model: "fable"`. The record is the ALIAS
+// (Adrian, 24 Sep 2026: "it will all default to the latest version right?"): Claude Code
+// points each alias at the newest model of its family, so nothing here changes when a new
+// Opus or Fable ships. On 24 Sep 2026 `opus` = claude-opus-5-5 and `fable` =
+// claude-fable-5-1 (read from the agents' own transcripts); the paper's generated_at says
+// when it was written. Until 23 Sep Fable wrote/moderated/repaired and Opus 5 solved
+// blind; a run briefed before that has no `models` in plan.json and keeps the old record
+// (MODELS_UNTIL_2026_09_23). A Math Set 2 and E Math Set 2 (23 Sep, every role on Opus 5.5)
+// carry their own record in plan.json.
 const AGENT = (id) => `${id} (Claude Code agent)`;
-const MODELS = { author: AGENT('claude-opus-5-5'), solver: AGENT('claude-opus-5-5'), moderator: AGENT('claude-fable-5-1'), figure: AGENT('claude-opus-5-5') };
+const MODELS = { author: AGENT('opus'), solver: AGENT('opus'), moderator: AGENT('fable'), figure: AGENT('opus') };
 const MODELS_UNTIL_2026_09_23 = { author: AGENT('claude-fable-5-1'), solver: AGENT('claude-opus-5'), moderator: AGENT('claude-fable-5-1') };
 const MATH_SUPABASE_URL = 'https://nempslbewxtlikfzachi.supabase.co';
 const NOVELTY_MAX = 0.4; // word-trigram Jaccard above this = a disguised copy
