@@ -352,7 +352,7 @@ Cambridge 5054 2014 P2, the ECR scripts (1 = grade E, 2 = C, 3 = A). A blind she
 | 11(c) | 2 | 1/5 | 3/5 | 1/5 | examiner |
 | 11(d) | 1 | 1/5 | 0/5 | 0/5 | our marker |
 | 11(d) | 2 | 2/5 | 0/5 | 0/5 | our marker |
-| **Total** | | **18** | **20** | **11** | |
+| **Total** | | **18** | **21** | **11** | |
 
 Unlike chemistry, the teacher and the Cambridge examiner disagree with each other more than our marker disagrees with either. On the weak script he gives the keyword marks the way our marker does (9 against the examiner's 5, ours 12); on working carried forward he is stricter than both (the four parts on scripts 2–3: examiner 13, ours 9, teacher 2). His 1/8 on script 3's 10(c) is below anything the answer supports ((i) and (ii) are right, and (iii)2 is a correct carry-forward) and is worth asking him about.
 
