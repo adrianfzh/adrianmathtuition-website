@@ -382,8 +382,8 @@ The same six papers re-marked on the fixed slots:
 | Physics C | 37 | 34 | 39 — gate PASS |
 | Physics E | 20 | 28 | 21 — gate PASS |
 | Chemistry A (seeded) | 32 | 32 | 32 — gate PASS |
-| Chemistry C (seeded) | 25 | — | 27 — gate PASS |
-| Chemistry E (seeded) | 10 | — | 10 — gate PASS |
+| Chemistry C (seeded) | 25 | 28 | 27 — gate PASS |
+| Chemistry E (seeded) | 10 | 13 | 10 — gate PASS |
 
 Script 3 (grade A) 10(c) settled at 6/8 — (iii)1 = 1/3, (iii)2 = 2/2 carried forward
 (Adrian, 24 Sep 2026). Caveat: the teacher-read rules were written from these same
