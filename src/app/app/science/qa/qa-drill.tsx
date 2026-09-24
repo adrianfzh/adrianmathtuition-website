@@ -88,7 +88,6 @@ export default function QaDrill({ cards }: { cards: readonly QaCard[] }) {
             {QA_GROUP_LABEL[g]}
           </button>
         ))}
-        <span className="mx-1 text-gray-300" aria-hidden>·</span>
         <button type="button" onClick={() => { setDirection(d => (d === 'forward' ? 'reverse' : 'forward')); setQueue(null); }}
           className="rounded-full px-3 py-1 text-[12px] font-semibold bg-white text-gray-600 border border-gray-200">
           {direction === 'forward' ? 'Ion → what you see' : 'What you see → ion'}
