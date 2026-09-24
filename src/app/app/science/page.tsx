@@ -54,7 +54,7 @@ export default async function SciencePage() {
 
       {/* No empty-state card: the tab is the Hand in button and the list (Adrian,
           24 Sep 2026: the 'Finished a physics…' + 'Science marking is new and free…'
-        paragraphs are gone — the one-day notice above says what needs saying). */}
+          paragraphs are gone — the one-day notice above says what needs saying). */}
       {papers.length > 0 && (
         <div className="flex items-baseline justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Marked papers</h2>
@@ -64,7 +64,7 @@ export default async function SciencePage() {
         </div>
       )}
       {papers.slice(0, HOME_LIMIT).map(p => <SciencePaperCard key={p.id} paper={p} />)}
-        {papers.length > 0 && <ScienceEstimateNote />}
+      {papers.length > 0 && <ScienceEstimateNote />}
     </div>
   );
 }
