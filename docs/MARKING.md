@@ -2434,10 +2434,10 @@ SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026 is the contract; this is the map.
 
 - **Two families, one shell.** `components/PortalTabs.tsx` `FamilySwitch` (Math | Science, under
   the top bar) + `familyOfPath`: everything under `/app/science` is science and the bottom menu
-  becomes **Home · Hand in · Papers** (`/app/science`, `/app/science/submit`,
+  becomes **Home · Papers** (`/app/science` — the hand-in form lives on Home since 24 Sep 2026, `/app/science/submit` redirects there;
   `/app/science/papers`; `scienceTabs` in `app/layout.tsx`). Flag: `SCIENCE_MARKING_OPEN_TO_STUDENTS`
   in `lib/portal-beta.ts` (`scienceMarkingOpen()`); off = no switcher, the routes bounce to `/app`.
-- **Hand-in.** `/app/science/submit` renders the SAME `submit-client.tsx` with `family="science"`:
+- **Hand-in.** The Science Home (`/app/science`) renders the SAME `submit-client.tsx` with `family="science"` and `embedded` (no header, no hint copy — Adrian, 24 Sep 2026: "so many words it's scary … keep it simple"; the disclaimer is one line under the title):
   the subject picker is required (physics / chemistry / biology — `SCIENCE_MARK_SUBJECTS`), the
   disclaimer sits above the photos, an optional **mark scheme** (PDF or photos) uploads through
   `submit-token?kind=scheme` and rides `save-paper` as `source.scheme_source` (the admin attach's
@@ -2468,7 +2468,7 @@ SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026 is the contract; this is the map.
   = 3 beyond today, the first day with room; past the horizon a plain 429 line). A paper that
   waits is created with `queued_for` and NOT enqueued — Adrian's Telegram line says 🕒 queued for
   <day>; the midnight cron `/api/cron/daily-queue` (`0 16 * * *` UTC) enqueues every run whose day
-  has come and stamps `queue_released_at`. `/app/science/submit` shows a teal line naming the day
+  has come and stamps `queue_released_at`. the Science Home shows a teal line naming the day
   before the student uploads (`queueNotice`; blocking only when the horizon is full), the done
   screen says "Science paper queued", and Science › Papers lists "Waiting for its day" rows with
   **Remove** (`POST /api/portal/science/queue {action:'remove', runId}` — a hard delete of the

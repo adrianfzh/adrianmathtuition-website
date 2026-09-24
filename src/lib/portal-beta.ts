@@ -145,7 +145,7 @@ export async function markSubjectAccess(): Promise<import('./mark-subject-for-st
 // 🧪 The Science tab (SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026, Adrian: "i can
 // let students submit science papers to mark for free, but give a disclaimer …
 // two tabs (math, then science) at the top"). While this is on, every signed-in
-// student sees the Math | Science switcher, and /app/science/submit marks a
+// student sees the Math | Science switcher, and /app/science marks a
 // physics / chemistry / biology hand-in with that subject's brain — no enrolment
 // check, its own daily slot, the disclaimer on the form and on every science
 // paper. Flip to false to hide the tab and shut the door (the routes bounce to

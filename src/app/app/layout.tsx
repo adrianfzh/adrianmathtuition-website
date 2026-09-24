@@ -125,12 +125,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     essayMarkingOpen(),
   ]);
   // 🧪 The Science family's own bottom menu (SPEC-SCIENCE-MARKING.md, 10 Sep
-  // 2026) — marking first, nothing else yet: Home · Hand in · Papers. The tab
+  // 2026) — marking first, nothing else yet: Home (with the hand-in form) · Papers. The tab
   // components pick this list whenever the path is under /app/science.
   const scienceTabs = scienceOpen
     ? [
         { href: '/app/science', label: 'Home' },
-        { href: '/app/science/submit', label: 'Hand in', fab: true },
+        // No Hand in tab since 24 Sep 2026: the form is on Home (Adrian: 'no need for another page').
         { href: '/app/science/papers', label: 'Papers' },
       ]
     : [];

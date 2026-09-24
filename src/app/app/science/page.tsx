@@ -1,20 +1,26 @@
-// /app/science — the Science tab's Home (SPEC-SCIENCE-MARKING.md §Decision
-// 10 Sep 2026: "two tabs (math, then science) at the top … for the science
-// tab, just put marking functionality first"). Hand in first, then what is
-// being marked, then the latest marked papers. Students only see their own
-// runs; the flag in lib/portal-beta shuts the whole tab.
+// 🧪 The Science tab's Home (SPEC-SCIENCE-MARKING.md, Decision 10 Sep 2026).
+// 24 Sep 2026 (Adrian: "just allow the upload at this page will do. Simple …
+// no need for another page"): the hand-in form sits right here under the
+// title — no separate /app/science/submit, no notice box, one line of
+// disclaimer. Under the form: the papers still waiting or being marked, then
+// the last few marked ones.
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import { scienceMarkingOpen } from '@/lib/portal-beta';
+import { DAILY_SCIENCE_SUBMIT_CAP } from '@/lib/portal-submit-limit';
+import { scienceQueuePlacement } from '@/lib/science-queue-store';
+import { dayWord } from '@/lib/daily-queue';
+import { sgtTodayISO } from '@/lib/sgt';
+import { SCIENCE_MARK_SUBJECTS } from '@/lib/mark-subject-for-student';
 import PortalIcon from '@/components/PortalIcon';
 import { SURFACES } from '@/lib/portal-theme';
 import { loadSciencePapers, SciencePaperCard, SciencePendingList, ScienceEstimateNote } from './science-papers';
-import ScienceOpenNotice from './science-notice';
+import SubmitClient from '../submit/submit-client';
 
 export const dynamic = 'force-dynamic';
 
-const S = SURFACES.submit;
 const SC = SURFACES.science;
 const HOME_LIMIT = 3;
 
@@ -24,6 +30,18 @@ export default async function SciencePage() {
   const sid = portalIdentity(account);
   const { papers, pending } = await loadSciencePapers(sid, account?.display_name ?? null);
 
+  // The waiting list (SPEC-PRACTICE-PHOTO §14): past today's allowance the
+  // form still opens — one line says which day the paper is queued for; only
+  // a full horizon (three days) replaces the form. The route decides again.
+  let queueNotice: { blocking: boolean; text: string } | null = null;
+  if (DAILY_SCIENCE_SUBMIT_CAP !== null) {
+    try {
+      const place = await scienceQueuePlacement(getSupabaseAdmin(), sid, DAILY_SCIENCE_SUBMIT_CAP, new Date());
+      if (!place.ok) queueNotice = { blocking: true, text: place.message };
+      else if (place.waits) queueNotice = { blocking: false, text: `Today’s two science papers are used — this one is queued for ${dayWord(place.day, sgtTodayISO())} and goes for marking at midnight.` };
+    } catch { /* never block the page on a read — the route checks again */ }
+  }
+
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
       <div className="flex items-center gap-2.5 pt-1">
@@ -32,29 +50,15 @@ export default async function SciencePage() {
         </span>
         <div>
           <h1 className="text-xl font-bold text-navy leading-tight">Science</h1>
-          <p className="text-[12px] text-gray-500">Physics · Chemistry · Biology — marking, free while it&apos;s new</p>
+          {/* The whole disclaimer, in one line (Adrian, 24 Sep 2026: "so many words it's scary"). */}
+          <p className="text-[12px] text-gray-500">Physics · Chemistry · Biology — free while it&apos;s new. Two papers a day; the marks are an estimate.</p>
         </div>
       </div>
 
-      {/* "Science marking is open" — one day per device from the first visit, then gone (Adrian, 24 Sep 2026) */}
-      <ScienceOpenNotice />
-
-      <Link
-        href="/app/science/submit"
-        className="flex items-center gap-3 bg-teal-500 text-white rounded-3xl px-4 py-3.5 font-semibold shadow-[0_8px_24px_-10px_rgba(20,184,166,0.8)] hover:brightness-105 active:scale-[0.98] transition"
-      >
-        <span className="flex items-center justify-center w-9 h-9 rounded-2xl bg-white/25 shrink-0" aria-hidden>
-          <PortalIcon name={S.icon} className="w-5 h-5" />
-        </span>
-        <span className="flex-1">Hand in a science paper</span>
-        <span className="shrink-0 text-white/80 text-lg">›</span>
-      </Link>
+      <SubmitClient family="science" embedded queueNotice={queueNotice} subjectChoices={[...SCIENCE_MARK_SUBJECTS]} />
 
       <SciencePendingList pending={pending} />
 
-      {/* No empty-state card: the tab is the Hand in button and the list (Adrian,
-          24 Sep 2026: the 'Finished a physics…' + 'Science marking is new and free…'
-          paragraphs are gone — the one-day notice above says what needs saying). */}
       {papers.length > 0 && (
         <div className="flex items-baseline justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Marked papers</h2>

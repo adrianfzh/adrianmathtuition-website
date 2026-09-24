@@ -174,7 +174,7 @@ iOS and Android app. One codebase: the web app is the product; the store apps ar
 three native parts (the scanner, push, and PencilKit on iPad — `SPEC-STUDENT-APP.md` §1).
 
 **The families:** Math | Science (| Languages later) — the switcher that exists
-(`components/PortalTabs.tsx FamilySwitch`). Each family's menu is Home · Hand in · Papers ·
+(`components/PortalTabs.tsx FamilySwitch`). Each family's menu is Home · Papers (science's hand-in form is on Home) ·
 Ask, plus Practice once the served bank is ours (§8).
 
 **The loop a paying student lives in** (reordered 24 Sep 2026 — Ask leads, §0):

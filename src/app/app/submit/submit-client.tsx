@@ -97,7 +97,7 @@ async function uploadPage(file: File, onNote: (s: string) => void): Promise<stri
   throw err;
 }
 
-export default function SubmitClient({ assignment = null, paper = null, slotUsed = false, queueNotice = null, subjectChoices = [], family = 'math' }: {
+export default function SubmitClient({ assignment = null, paper = null, slotUsed = false, queueNotice = null, subjectChoices = [], family = 'math', embedded = false }: {
   assignment?: { id: string; title: string } | null;
   paper?: { id: string; title: string } | null;
   slotUsed?: boolean;
@@ -108,6 +108,8 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   // every student until the flag flips) means no picker and an implicit math
   // hand-in — nothing on screen changes. First entry is the default.
   subjectChoices?: string[];
+  /** On the Science Home the form sits under the page's own header (Adrian, 24 Sep 2026: "just allow the upload at this page"): no heading, no notices, and the done / queue-full states are one card in the form's place. */
+  embedded?: boolean;
   // 🧪 'science' = the Science tab's form (SPEC-SCIENCE-MARKING.md, 10 Sep 2026):
   // the subject is REQUIRED (physics / chemistry / biology, chosen by the
   // student), the disclaimer sits above the photos, an optional mark scheme
@@ -356,24 +358,26 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   }
 
   if (doneRunId && isScience) {
+    const line = queuedFor
+      ? <>Marking starts at midnight on {dayWord(queuedFor, sgtTodayISO())}. Until then you can remove it under <b>Papers</b>.</>
+      : <>It comes back under <b>Papers</b>, usually within the hour.</>;
+    const card = (
+      <div className={`${CARD} p-5 text-center`}>
+        <p className="text-4xl">{queuedFor ? '🕒' : '🧪'}</p>
+        <p className="font-bold text-navy mt-2">{queuedFor ? 'Queued for marking' : 'Sent for marking'}</p>
+        <p className="text-sm text-gray-600 mt-1.5">{line}</p>
+        <div className="mt-4 flex justify-center gap-2">
+          {/* A plain link, not <Link>: a full load resets the form and refreshes the list under it. */}
+          <a href="/app/science" className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">Hand in another</a>
+          <Link href="/app/science/papers" className="text-sm font-semibold text-navy rounded-xl px-4 py-2.5 border border-gray-200 bg-white">Papers</Link>
+        </div>
+      </div>
+    );
+    if (embedded) return card;
     return (
       <div className="space-y-4 pb-24 sm:pb-4">
         <h1 className="text-xl font-bold text-navy pt-1">{queuedFor ? 'Science paper queued' : 'Science paper sent'}</h1>
-        <div className={`${CARD} p-5 text-center`}>
-          <p className="text-4xl">{queuedFor ? '🕒' : '🧪'}</p>
-          <p className="font-bold text-navy mt-2">{queuedFor ? 'Queued for marking' : 'Sent for marking'}</p>
-          <p className="text-sm text-gray-600 mt-1.5">
-            {queuedFor
-              ? <>It waits for its day — marking starts at midnight on {dayWord(queuedFor, sgtTodayISO())}, and it comes back under <b>Science › Papers</b>. You can remove it there until then.</>
-              : <>It comes back under <b>Science › Papers</b>, usually within the hour. The marks are an estimate — when your teacher marks the same paper, come back and enter their total so we can compare.</>}
-          </p>
-          <div className="mt-4 flex justify-center">
-            <Link href="/app/science" className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
-              Back to Science
-            </Link>
-          </div>
-          {!queuedFor && <p className="text-[13px] text-gray-500 mt-3">🎟️ Two science hand-ins a day — a third one queues for the next free day. Your maths hand-in is separate.</p>}
-        </div>
+        {card}
       </div>
     );
   }
@@ -411,21 +415,18 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   // front, before any photographing happens. The POST-time 429 stays as the
   // backstop for a slot spent from the Telegram side mid-visit.
   if (queueNotice?.blocking && isScience) {
+    const card = (
+      <div className={`${CARD} p-5 text-center`}>
+        <p className="text-4xl">🎟️</p>
+        <p className="font-bold text-navy mt-2">The science queue is full</p>
+        <p className="text-sm text-gray-600 mt-1.5">{queueNotice.text}</p>
+      </div>
+    );
+    if (embedded) return card;
     return (
       <div className="space-y-4 pb-24 sm:pb-4">
         <h1 className="text-xl font-bold text-navy pt-1">Hand in a science paper</h1>
-        <div className={`${CARD} p-5 text-center`}>
-          <p className="text-4xl">🎟️</p>
-          <p className="font-bold text-navy mt-2">The science queue is full</p>
-          <p className="text-sm text-gray-600 mt-1.5">
-            {queueNotice.text} Maths papers are separate.
-          </p>
-          <div className="mt-4 flex justify-center">
-            <Link href="/app/science" className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
-              Back to Science
-            </Link>
-          </div>
-        </div>
+        {card}
       </div>
     );
   }
@@ -465,7 +466,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
           <h1 className="text-xl font-bold text-navy mt-1">📬 Hand in: {paper.title}</h1>
           <p className="text-[13px] text-gray-500 mt-0.5">Marking already knows every question on this sheet.</p>
         </div>
-      ) : isScience ? (
+      ) : isScience && embedded ? null : isScience ? (
         <div className="pt-1">
           <Link href="/app/science" className="text-sm text-gray-500 hover:text-navy">← Science</Link>
           <h1 className="text-xl font-bold text-navy mt-1">🧪 Hand in a science paper</h1>
@@ -478,27 +479,10 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         </div>
       )}
 
-      {/* The disclaimer (Adrian, 10 Sep 2026: "give a disclaimer") — said BEFORE
-          the photos, in plain words: new, free, an estimate; explain answers
-          are marked against standard points unless the school's scheme comes
-          too; check it against the teacher's marking. */}
+      {/* The science disclaimer is ONE line under the Science Home's title now (Adrian, 24 Sep 2026: "so many words it's scary … keep it simple"); the queue line below is the only notice the form carries. */}
       {isScience && queueNotice && !queueNotice.blocking && (
         <div className="rounded-2xl border border-teal-200 bg-teal-50 px-4 py-3 text-[13px] text-teal-900" role="status">
           🕒 {queueNotice.text}
-        </div>
-      )}
-      {isScience && (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-900 space-y-1">
-          <p className="font-bold">Science marking is new, and free while it is.</p>
-          <p>
-            The marks are an <b>estimate</b>. Calculations are checked properly; <b>explain</b>{' '}answers are marked
-            against standard syllabus points unless you attach your school&apos;s mark scheme below.
-          </p>
-          <p>
-            <b>If you have the answers or the mark scheme, attach them below.</b> Marking is more accurate with them.
-            Without them, some marks may be off — especially on explain answers.
-          </p>
-          <p>When your teacher returns the paper, compare — and enter their total on the marked paper&apos;s page so we can check ourselves.</p>
         </div>
       )}
 
@@ -506,20 +490,25 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         {/* Two labelled slots on both forms (Adrian, 24 Sep 2026: "(b) yes"):
             this one is the paper — the questions and the working; the answers
             or scheme have their own slot further down. */}
-        <p className="text-sm font-semibold text-navy">
-          {assignment ? 'Your worksheet: the questions and your working' : 'Your paper: the questions and your working'}
-        </p>
-        <p className="text-sm text-gray-600">
-          Photograph your worked {assignment ? 'worksheet' : 'paper'} — <b>one page per photo</b>, straight on, in good light —
-          or upload a <b>PDF scan</b>. It comes back marked in <b>{isScience ? 'Papers' : 'Marked papers'}</b>.
-        </p>
+        {/* Science says none of this (Adrian, 24 Sep 2026: "keep it simple"): the dropzone is the whole instruction. */}
+        {!isScience && (
+          <>
+            <p className="text-sm font-semibold text-navy">
+              {assignment ? 'Your worksheet: the questions and your working' : 'Your paper: the questions and your working'}
+            </p>
+            <p className="text-sm text-gray-600">
+              Photograph your worked {assignment ? 'worksheet' : 'paper'} — <b>one page per photo</b>, straight on, in good light —
+              or upload a <b>PDF scan</b>. It comes back marked in <b>Marked papers</b>.
+            </p>
+          </>
+        )}
 
         {/* Free-form hand-ins only — mocks and assigned worksheets already carry their
             questions. The marker anchors each attempt on the student's own question
             labels, and printed question pages are classified and skipped harmlessly,
             so asking for both rescues the working-on-foolscap case at no cost
             (Adrian, 2026-08-28, ahead of Alessi's plain-paper TYS hand-in). */}
-        {!assignment && !paper && (
+        {!assignment && !paper && !isScience && (
           <p className="text-[13px] text-gray-500">
             ✍️ Worked on your own paper instead of the question sheet? Add photos of the{' '}
             <b>question pages</b> too, and write each <b>question number</b> clearly beside
@@ -566,9 +555,11 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
             are submitting papers in the app that working in green pen will not count
             towards the marks — they will be treated as corrections"). Said BEFORE the
             photos go up, in one line, so a corrected paper is never a surprise. */}
-        <p className="text-[12px] text-gray-500">
-          Write your attempt in blue or black. Green, red or purple ink is read as a later correction and earns no marks.
-        </p>
+        {!isScience && (
+          <p className="text-[12px] text-gray-500">
+            Write your attempt in blue or black. Green, red or purple ink is read as a later correction and earns no marks.
+          </p>
+        )}
 
         {capNote && <p className="text-[13px] font-semibold text-amber-700">{capNote}</p>}
         {splitNote && pages.length > 0 && <p className="text-[13px] text-emerald-700">{splitNote}</p>}
@@ -614,7 +605,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
           {/* A name shaped like the placeholder is what lets ai/paper-totals.js
               ground the run to the official total (e.g. /90) — vague names fall
               back to a counted denominator (Adrian, 2026-08-29). */}
-          <p className="text-[11px] text-gray-400 mt-1">School, year and paper — so Adrian knows what he&apos;s marking, and your score comes back out of the official total (e.g. /90).</p>
+          {!isScience && <p className="text-[11px] text-gray-400 mt-1">School, year and paper — so Adrian knows what he&apos;s marking, and your score comes back out of the official total (e.g. /90).</p>}
         {subjectChoices.length > 1 && (
           <div className="mt-3">
             <label htmlFor="paper-subject" className="block text-sm font-semibold text-navy mb-1">Subject</label>
@@ -629,9 +620,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
                 <option key={sub} value={sub}>{subjectLabel(sub)}</option>
               ))}
             </select>
-            <p className="text-[11px] text-gray-400 mt-1">
-              {isScience ? 'Physics, chemistry or biology — each is marked by its own rules.' : 'Pick the subject of this paper so it is marked the right way.'}
-            </p>
+            {!isScience && <p className="text-[11px] text-gray-400 mt-1">Pick the subject of this paper so it is marked the right way.</p>}
           </div>
         )}
         {/* The answers or mark scheme, optional, on BOTH forms (Adrian, 24 Sep
@@ -666,7 +655,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
           )}
           {/* Adrian's line, verbatim (24 Sep 2026: "we should state that"). */}
           <p className="text-[11px] text-gray-500 mt-1">Attach only answers or a scheme you were given for your own study. We use it only to mark your paper.</p>
-          <p className="text-[11px] text-gray-400 mt-1">With the answers or scheme, marking follows your school&apos;s points, not the standard ones. Without them, marking may be less accurate.</p>
+          {!isScience && <p className="text-[11px] text-gray-400 mt-1">With the answers or scheme, marking follows your school&apos;s points, not the standard ones. Without them, marking may be less accurate.</p>}
         </div>
         </div>
         )}

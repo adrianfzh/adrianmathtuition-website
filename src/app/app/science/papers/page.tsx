@@ -29,7 +29,7 @@ export default async function SciencePapersPage() {
       {papers.length === 0 ? (
         <div className="bg-white rounded-3xl p-5 border border-black/5 shadow-sm">
           <p className="text-sm text-gray-600">
-            Nothing marked yet. <Link href="/app/science/submit" className="font-semibold text-navy hover:underline">Hand in a science paper</Link> and it comes back here.
+            Nothing marked yet. <Link href="/app/science" className="font-semibold text-navy hover:underline">Hand in a science paper</Link> and it comes back here.
           </p>
         </div>
       ) : (

@@ -136,7 +136,7 @@ a scheme and says so — and the disclaimer says so to the student.
 
 1. **Two families, one app.** A top switcher **Math | Science** in the app shell; the
    bottom menu is per family (`components/PortalTabs.tsx` picks by pathname). Science's
-   menu is marking first: **Home · Hand in · Papers** (`/app/science`, `/app/science/submit`,
+   menu is marking first: **Home · Papers** (`/app/science` with the hand-in form on it since 24 Sep 2026,
    `/app/science/papers`). Nothing else for science yet — no Practice, no Practice Again, no
    Notebook. Everything under `/app/science/*` is science; everything else stays math.
 2. **`paper_subject` widens** to `A Math | E Math | H2 Math | Physics | Chemistry | Biology |
