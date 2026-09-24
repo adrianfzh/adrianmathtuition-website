@@ -40,6 +40,7 @@ import { portalIdentity } from '@/lib/portal-auth';
 import { markSubjectAccess, scienceMarkingOpen } from '@/lib/portal-beta';
 import { enrolledMarkSubjects } from '@/lib/student-mark-subjects';
 import { resolveHandinSubject, resolveScienceSubject } from '@/lib/mark-subject-for-student';
+import { studentSciences } from '@/lib/portal-prefs';
 import { paperSubjectForMarkSubject, paperSubjectFromName } from '@/lib/portal-subjects';
 import {
   dailyHandinCapForTier,
@@ -65,7 +66,7 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { data: account } = await supabase
     .from('portal_accounts')
-    .select('id, airtable_student_id, display_name')
+    .select('id, airtable_student_id, display_name, prefs')
     .eq('id', user.id)
     .single();
   if (!account) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -377,6 +378,9 @@ export async function POST(req: Request) {
         ...rj,
         portal_submission: true,
         ...(queuedFor ? { queued_for: queuedFor } : {}),
+        // The science track (24 Sep 2026): a Combined Science student's paper is
+        // marked to the combined syllabus once the marker reads this stamp.
+        ...(science ? { science_track: studentSciences(account.prefs)?.combined ? 'combined' : 'pure' } : {}),
         // The provenance stamp, belt and braces: the bot's buildRunSource keeps
         // attached_by, but a bot from before that deploy rebuilds scheme_source
         // without it — and without it the student's scheme would be filed as

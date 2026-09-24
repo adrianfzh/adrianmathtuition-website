@@ -1,46 +1,34 @@
-// 🧪 The Science tab's Home (SPEC-SCIENCE-MARKING.md, Decision 10 Sep 2026).
-// 24 Sep 2026 (Adrian: "just allow the upload at this page will do. Simple …
-// no need for another page"): the hand-in form sits right here under the
-// title — no separate /app/science/submit, no notice box, one line of
-// disclaimer. Under the form: the papers still waiting or being marked, then
-// the last few marked ones.
+// The Science tab's Home (SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026),
+// shaped like the maths Papers tab (Adrian, 24 Sep 2026: "just follow the
+// math interface"): the header, the "Hand in a science paper" card into
+// /app/science/submit, then one tab per science — Physics | Chemistry |
+// Biology — each with its pending hand-ins and its three newest marked papers.
+// A student who has not yet said which sciences they take sees the picker
+// first (science-picker.tsx); "Change" (?choose=1) brings it back.
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
-import { getSupabaseAdmin } from '@/lib/supabase';
 import { scienceMarkingOpen } from '@/lib/portal-beta';
-import { DAILY_SCIENCE_SUBMIT_CAP } from '@/lib/portal-submit-limit';
-import { scienceQueuePlacement } from '@/lib/science-queue-store';
-import { dayWord } from '@/lib/daily-queue';
-import { sgtTodayISO } from '@/lib/sgt';
-import { SCIENCE_MARK_SUBJECTS } from '@/lib/mark-subject-for-student';
+import { scienceChoiceLabel, studentSciences } from '@/lib/portal-prefs';
 import PortalIcon from '@/components/PortalIcon';
 import { SURFACES } from '@/lib/portal-theme';
-import { loadSciencePapers, SciencePaperCard, SciencePendingList, ScienceEstimateNote } from './science-papers';
-import SubmitClient from '../submit/submit-client';
+import { loadSciencePapers, ScienceTabs } from './science-papers';
+import SciencePicker from './science-picker';
 
 export const dynamic = 'force-dynamic';
 
+const S = SURFACES.submit;
 const SC = SURFACES.science;
 const HOME_LIMIT = 3;
 
-export default async function SciencePage() {
+export default async function ScienceHome({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   if (!(await scienceMarkingOpen())) redirect('/app');
   const account = await currentAccount();
   const sid = portalIdentity(account);
-  const { papers, pending } = await loadSciencePapers(sid, account?.display_name ?? null);
-
-  // The waiting list (SPEC-PRACTICE-PHOTO §14): past today's allowance the
-  // form still opens — one line says which day the paper is queued for; only
-  // a full horizon (three days) replaces the form. The route decides again.
-  let queueNotice: { blocking: boolean; text: string } | null = null;
-  if (DAILY_SCIENCE_SUBMIT_CAP !== null) {
-    try {
-      const place = await scienceQueuePlacement(getSupabaseAdmin(), sid, DAILY_SCIENCE_SUBMIT_CAP, new Date());
-      if (!place.ok) queueNotice = { blocking: true, text: place.message };
-      else if (place.waits) queueNotice = { blocking: false, text: `Today’s two science papers are used — this one is queued for ${dayWord(place.day, sgtTodayISO())} and goes for marking at midnight.` };
-    } catch { /* never block the page on a read — the route checks again */ }
-  }
+  const choice = studentSciences(account?.prefs);
+  const sp = await searchParams;
+  const choosing = !choice || sp?.choose === '1';
+  const { papers, pending } = choosing ? { papers: [], pending: [] } : await loadSciencePapers(sid, account?.display_name ?? null);
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
@@ -48,27 +36,37 @@ export default async function SciencePage() {
         <span className={`flex items-center justify-center w-9 h-9 rounded-2xl shrink-0 ${SC.tile}`}>
           <PortalIcon name={SC.icon} className="w-5 h-5" />
         </span>
-        <div>
+        <div className="min-w-0">
           <h1 className="text-xl font-bold text-navy leading-tight">Science</h1>
-          {/* The whole disclaimer, in one line (Adrian, 24 Sep 2026: "so many words it's scary"). */}
-          <p className="text-[12px] text-gray-500">Physics · Chemistry · Biology — free while it&apos;s new. Two papers a day; the marks are an estimate.</p>
+          {choice && !choosing ? (
+            <p className="text-[12px] text-gray-500">
+              {scienceChoiceLabel(choice)}
+              <Link href="/app/science?choose=1" className="ml-2 font-semibold text-navy hover:underline">Change</Link>
+            </p>
+          ) : (
+            <p className="text-[12px] text-gray-500">Physics · Chemistry · Biology — marking, free while it&apos;s new</p>
+          )}
         </div>
       </div>
 
-      <SubmitClient family="science" embedded queueNotice={queueNotice} subjectChoices={[...SCIENCE_MARK_SUBJECTS]} />
+      {choosing ? (
+        <SciencePicker initial={choice} firstTime={!choice} />
+      ) : (
+        <>
+          <Link
+            href="/app/science/submit"
+            className="flex items-center gap-3 bg-teal-500 text-white rounded-3xl px-4 py-3.5 font-semibold shadow-[0_8px_24px_-10px_rgba(20,184,166,0.8)] hover:brightness-105 active:scale-[0.98] transition"
+          >
+            <span className="flex items-center justify-center w-9 h-9 rounded-2xl bg-white/25 shrink-0" aria-hidden>
+              <PortalIcon name={S.icon} className="w-5 h-5" />
+            </span>
+            <span className="flex-1">Hand in a science paper</span>
+            <span className="shrink-0 text-white/80 text-lg">›</span>
+          </Link>
 
-      <SciencePendingList pending={pending} />
-
-      {papers.length > 0 && (
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Marked papers</h2>
-          {papers.length > HOME_LIMIT && (
-            <Link href="/app/science/papers" className="text-[12px] font-semibold text-navy hover:underline">All {papers.length} ›</Link>
-          )}
-        </div>
+          <ScienceTabs papers={papers} pending={pending} subjects={choice!.subjects} limit={HOME_LIMIT} />
+        </>
       )}
-      {papers.slice(0, HOME_LIMIT).map(p => <SciencePaperCard key={p.id} paper={p} />)}
-      {papers.length > 0 && <ScienceEstimateNote />}
     </div>
   );
 }

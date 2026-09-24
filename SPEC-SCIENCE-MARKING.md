@@ -136,8 +136,10 @@ a scheme and says so — and the disclaimer says so to the student.
 
 1. **Two families, one app.** A top switcher **Math | Science** in the app shell; the
    bottom menu is per family (`components/PortalTabs.tsx` picks by pathname). Science's
-   menu is marking first: **Home · Papers** (`/app/science` with the hand-in form on it since 24 Sep 2026,
-   `/app/science/papers`). Nothing else for science yet — no Practice, no Practice Again, no
+   menu is marking first: **Home · Hand in · Papers** (`/app/science`, `/app/science/submit`,
+   `/app/science/papers` — the maths shape; 24 Sep 2026: the first visit asks which sciences the
+   student takes, Combined Science included, and Home + Papers then carry one tab per science —
+   `docs/MARKING.md` §Which sciences). Nothing else for science yet — no Practice, no Practice Again, no
    Notebook. Everything under `/app/science/*` is science; everything else stays math.
 2. **`paper_subject` widens** to `A Math | E Math | H2 Math | Physics | Chemistry | Biology |
    Other`. The math Papers list, Home counts and every math gate already filter with

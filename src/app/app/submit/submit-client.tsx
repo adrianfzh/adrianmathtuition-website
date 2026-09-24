@@ -122,8 +122,8 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   const [pages, setPages] = useState<Page[]>([]);
   const [paperName, setPaperName] = useState(assignment?.title ?? paper?.title ?? '');
   // Science starts EMPTY so the student chooses; a wrong default brain is worse
-  // than one extra tap.
-  const [subject, setSubject] = useState(isScience ? '' : (subjectChoices[0] ?? 'math'));
+  // than one extra tap — unless the student takes exactly one science (24 Sep 2026).
+  const [subject, setSubject] = useState(isScience ? (subjectChoices.length === 1 ? subjectChoices[0] : '') : (subjectChoices[0] ?? 'math'));
   const [schemeFiles, setSchemeFiles] = useState<File[]>([]);
   const schemeUploadedRef = useRef<Map<number, string>>(new Map());
   const [splitNote, setSplitNote] = useState('');
@@ -368,7 +368,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         <p className="text-sm text-gray-600 mt-1.5">{line}</p>
         <div className="mt-4 flex justify-center gap-2">
           {/* A plain link, not <Link>: a full load resets the form and refreshes the list under it. */}
-          <a href="/app/science" className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">Hand in another</a>
+          <a href="/app/science/submit" className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">Hand in another</a>
           <Link href="/app/science/papers" className="text-sm font-semibold text-navy rounded-xl px-4 py-2.5 border border-gray-200 bg-white">Papers</Link>
         </div>
       </div>

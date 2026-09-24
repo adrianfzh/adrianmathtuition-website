@@ -99,7 +99,7 @@ export const SURFACES: Record<SurfaceKey, SurfaceIdentity> = {
  *  Notebook (Adrian, phone review round 5, 2026-08-28). */
 export function surfaceForHref(href: string): SurfaceIdentity {
   // The Science tab's own pages map onto the surfaces their maths twins wear
-  // ('/app/science' → submit, '/app/science/papers' → marking); its
+  // ('/app/science/submit' → submit, '/app/science/papers' → marking); its
   // Home is the science surface itself.
   if (href.startsWith('/app/science/')) {
     const sub = href.slice('/app/science/'.length).split(/[/?]/)[0];

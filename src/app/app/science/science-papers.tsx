@@ -145,3 +145,64 @@ export function ScienceEstimateNote() {
     </p>
   );
 }
+
+// ── One tab per science (Adrian, 24 Sep 2026: "have tabs for physics
+// chemistry and bio like Amath and Emath") ─────────────────────────────────
+// The tabs are the sciences the student said they take (lib/portal-prefs
+// studentSciences) plus any science a paper or a pending hand-in already
+// carries. Each panel is rendered here on the server; SubjectPanels (the
+// maths A Math | E Math strip) only switches between them, remembering the
+// last tab under its own key so the maths memory is untouched.
+import SubjectPanels, { type SubjectPanel } from '../marking/SubjectPanels';
+import { SCIENCE_SUBJECTS, SCIENCE_SUBJECT_LABEL, type ScienceSubject } from '@/lib/portal-prefs';
+
+const SCIENCE_TONE: Record<ScienceSubject, 'phy' | 'chem' | 'bio'> = { physics: 'phy', chemistry: 'chem', biology: 'bio' };
+
+function laneOf(v: string | null | undefined): ScienceSubject | null {
+  const s = (v ?? '').toLowerCase();
+  return (SCIENCE_SUBJECTS as readonly string[]).includes(s) ? (s as ScienceSubject) : null;
+}
+
+type SciencePaper = ReturnType<typeof buildStudentMarking>['papers'][number];
+
+export function ScienceTabs({ papers, pending, subjects, limit = 0, allHref = '/app/science/papers' }: {
+  papers: SciencePaper[]; pending: SciencePending[]; subjects: ScienceSubject[]; limit?: number; allHref?: string;
+}) {
+  const present = new Set<ScienceSubject>();
+  for (const p of papers) { const s = laneOf(p.subject); if (s) present.add(s); }
+  for (const p of pending) { const s = laneOf(p.subject); if (s) present.add(s); }
+  const keys = SCIENCE_SUBJECTS.filter(s => subjects.includes(s) || present.has(s));
+  if (keys.length === 0) return null;
+  // A paper with no subject stamped (never from the app's own hand-in) sits under the first tab.
+  const bucket = (p: SciencePaper) => laneOf(p.subject) ?? keys[0];
+  const panels: SubjectPanel[] = keys.map(s => {
+    const label = SCIENCE_SUBJECT_LABEL[s];
+    const mine = papers.filter(p => bucket(p) === s);
+    const pend = pending.filter(p => (laneOf(p.subject) ?? keys[0]) === s);
+    const shown = limit > 0 ? mine.slice(0, limit) : mine;
+    return {
+      key: s, label, tone: SCIENCE_TONE[s], count: mine.length,
+      content: (
+        <div className="space-y-4">
+          <SciencePendingList pending={pend} />
+          {mine.length > 0 ? (
+            <>
+              <div className="flex items-baseline justify-between">
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Marked papers</h2>
+                {limit > 0 && mine.length > limit && (
+                  <Link href={allHref} className="text-[12px] font-semibold text-navy hover:underline">All {mine.length} ›</Link>
+                )}
+              </div>
+              {shown.map(p => <SciencePaperCard key={p.id} paper={p} />)}
+              <ScienceEstimateNote />
+            </>
+          ) : pend.length === 0 ? (
+            <p className="text-sm text-gray-500 px-1">No {label.toLowerCase()} paper marked yet — hand one in and it comes back here.</p>
+          ) : null}
+        </div>
+      ),
+    };
+  });
+  const newest = laneOf(pending[0]?.subject) ?? laneOf(papers[0]?.subject) ?? keys[0];
+  return <SubjectPanels panels={panels} defaultKey={keys.includes(newest) ? newest : keys[0]} rememberKey="portal_science_subject" />;
+}

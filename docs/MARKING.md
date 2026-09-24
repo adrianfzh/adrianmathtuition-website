@@ -2434,10 +2434,11 @@ SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026 is the contract; this is the map.
 
 - **Two families, one shell.** `components/PortalTabs.tsx` `FamilySwitch` (Math | Science, under
   the top bar) + `familyOfPath`: everything under `/app/science` is science and the bottom menu
-  becomes **Home · Papers** (`/app/science` — the hand-in form lives on Home since 24 Sep 2026, `/app/science/submit` redirects there;
+  becomes **Home · Hand in · Papers** (`/app/science`, `/app/science/submit` — the maths shape again since the afternoon of 24 Sep 2026, Adrian: "just follow the math interface";
   `/app/science/papers`; `scienceTabs` in `app/layout.tsx`). Flag: `SCIENCE_MARKING_OPEN_TO_STUDENTS`
   in `lib/portal-beta.ts` (`scienceMarkingOpen()`); off = no switcher, the routes bounce to `/app`.
-- **Hand-in.** The Science Home (`/app/science`) renders the SAME `submit-client.tsx` with `family="science"` and `embedded` (no header, no hint copy — Adrian, 24 Sep 2026: "so many words it's scary … keep it simple"; the disclaimer is one line under the title):
+- **Which sciences (24 Sep 2026).** The first visit to `/app/science` shows the picker (`science-picker.tsx`): a "Science marking is live" card (three lines) and "Which sciences do you take?" — Physics / Chemistry / Biology pills plus a **Combined Science** box (a TRACK, not a fourth subject: O-Level 5086/5087/5088 = two sciences in one lighter syllabus, so the box needs exactly two pills). Saved through `POST /api/portal/settings {prefs:{sciences:[…], combined_science}}` — `lib/portal-prefs.ts` (`PORTAL_PREF_LISTS.sciences`, `readPrefsPatch` refuses an empty list or Combined with ≠ 2, `studentSciences(prefs)` → `{subjects, combined} | null`, `scienceChoiceLabel`; pure/tested). Until chosen, Home IS the picker and Papers redirects to Home; "Change" in the header = `?choose=1`. **Then one tab per science** on Home (three newest + "All n ›") and Papers (all): `science-papers.tsx ScienceTabs` builds a `SubjectPanel` per chosen science ∪ any science a paper or pending row already carries (fixed order physics · chemistry · biology, tones phy/chem/bio, the pending rows of that science on top, an unstamped paper under the first tab) and hands them to the maths `SubjectPanels` with `rememberKey='portal_science_subject'`. The hand-in page's subject list is the student's sciences (`submit/page.tsx` → `subjectChoices`; one science = pre-selected in `submit-client.tsx`), and the route stamps `result_json.science_track = 'combined' | 'pure'` from `prefs` — the brains do not read it yet; the mixed Combined Paper 1 (MCQ across both sciences) is an open question.
+- **Hand-in.** `/app/science/submit` renders the SAME `submit-client.tsx` with `family="science"` (the header "🧪 Hand in a science paper", the two-a-day line; the disclaimer is one line under the title):
   the subject picker is required (physics / chemistry / biology — `SCIENCE_MARK_SUBJECTS`), the
   disclaimer sits above the photos, an optional **mark scheme** (PDF or photos) uploads through
   `submit-token?kind=scheme` and rides `save-paper` as `source.scheme_source` (the admin attach's
@@ -2468,7 +2469,7 @@ SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026 is the contract; this is the map.
   = 3 beyond today, the first day with room; past the horizon a plain 429 line). A paper that
   waits is created with `queued_for` and NOT enqueued — Adrian's Telegram line says 🕒 queued for
   <day>; the midnight cron `/api/cron/daily-queue` (`0 16 * * *` UTC) enqueues every run whose day
-  has come and stamps `queue_released_at`. the Science Home shows a teal line naming the day
+  has come and stamps `queue_released_at`. the hand-in page shows a teal line naming the day
   before the student uploads (`queueNotice`; blocking only when the horizon is full), the done
   screen says "Science paper queued", and Science › Papers lists "Waiting for its day" rows with
   **Remove** (`POST /api/portal/science/queue {action:'remove', runId}` — a hard delete of the
