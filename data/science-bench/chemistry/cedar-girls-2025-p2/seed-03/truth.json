@@ -1,0 +1,169 @@
+{
+ "run_id": null,
+ "subject": "chemistry",
+ "source": "seeded",
+ "label": "seeded · E · seed 3",
+ "questions": [
+  {
+   "question": "1",
+   "label": "(a)",
+   "awarded": 1,
+   "max": 2,
+   "note": "WRONG_FORMULA"
+  },
+  {
+   "question": "1",
+   "label": "(b)(i)",
+   "awarded": 1,
+   "max": 1,
+   "note": "CLEAN"
+  },
+  {
+   "question": "1",
+   "label": "(b)(ii)",
+   "awarded": 0,
+   "max": 1,
+   "note": "WRONG_ANSWER"
+  },
+  {
+   "question": "1",
+   "label": "(b)(iii)",
+   "awarded": 0,
+   "max": 1,
+   "note": "BLANK"
+  },
+  {
+   "question": "1",
+   "label": "(b)(iv)",
+   "awarded": 0,
+   "max": 1,
+   "note": "WRONG_ANSWER"
+  },
+  {
+   "question": "2",
+   "label": "(a)",
+   "awarded": 0,
+   "max": 3,
+   "note": "HALF_POINT"
+  },
+  {
+   "question": "2",
+   "label": "(b)(i)",
+   "awarded": 1,
+   "max": 2,
+   "note": "MISS_POINT"
+  },
+  {
+   "question": "2",
+   "label": "(b)(ii)",
+   "awarded": 0,
+   "max": 2,
+   "note": "BLANK"
+  },
+  {
+   "question": "2",
+   "label": "(b)(iii)",
+   "awarded": 2,
+   "max": 2,
+   "note": "CLEAN"
+  },
+  {
+   "question": "2",
+   "label": "(b)(iv)",
+   "awarded": 0,
+   "max": 1,
+   "note": "WRONG_ANSWER"
+  },
+  {
+   "question": "2",
+   "label": "(c)",
+   "awarded": 1,
+   "max": 2,
+   "note": "MISS_POINT"
+  },
+  {
+   "question": "5",
+   "label": "(a)",
+   "awarded": 0,
+   "max": 2,
+   "note": "HALF_POINT"
+  },
+  {
+   "question": "5",
+   "label": "(b)",
+   "awarded": 1,
+   "max": 1,
+   "note": "CLEAN"
+  },
+  {
+   "question": "5",
+   "label": "(d)",
+   "awarded": 0,
+   "max": 2,
+   "note": "BLANK"
+  },
+  {
+   "question": "6",
+   "label": "",
+   "awarded": 1,
+   "max": 4,
+   "note": "HALF_POINT"
+  },
+  {
+   "question": "8",
+   "label": "(a)",
+   "awarded": 0,
+   "max": 1,
+   "note": "BLANK"
+  },
+  {
+   "question": "8",
+   "label": "(b)(i)",
+   "awarded": 0,
+   "max": 1,
+   "note": "HALF_POINT"
+  },
+  {
+   "question": "8",
+   "label": "(b)(ii)",
+   "awarded": 1,
+   "max": 1,
+   "note": "CLEAN"
+  },
+  {
+   "question": "8",
+   "label": "(b)(iii)",
+   "awarded": 0,
+   "max": 1,
+   "note": "WRONG_ANSWER"
+  },
+  {
+   "question": "8",
+   "label": "(b)(iv)",
+   "awarded": 1,
+   "max": 1,
+   "note": "CLEAN"
+  },
+  {
+   "question": "8",
+   "label": "(b)(v)",
+   "awarded": 0,
+   "max": 1,
+   "note": "BLANK"
+  },
+  {
+   "question": "8",
+   "label": "(b)(vi)",
+   "awarded": 0,
+   "max": 1,
+   "note": "WRONG_FORMULA"
+  },
+  {
+   "question": "8",
+   "label": "(c)",
+   "awarded": 0,
+   "max": 1,
+   "note": "WRONG_WORD"
+  }
+ ]
+}
