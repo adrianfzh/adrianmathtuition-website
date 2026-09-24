@@ -332,3 +332,28 @@ Adrian sent a science teacher a blind one-page sheet (question, scheme, the stud
 | **Total** | **5** | **12** | **7** | |
 
 The teacher sides with the strict scheme reading on 6 of 8 parts. Our marker is too generous: the scheme's "reject" line and each listed point (ions not mobile in the solid, the energy comparison, a reason per method) should count as hard conditions, and it should never swap in its own answer where the scheme gives one (8(a)). Two teacher conventions are softer than the literal scheme: missing state symbols costs one mark, not every mark that asks for them, and naming the direction of the oxidation-state change earns one of two. This is the evidence for the **Next** step above; the physics sheet (13 parts, Cambridge 5054 2014 P2) went to the same teacher the same day.
+
+### The same teacher's marks on the thirteen physics parts (24 Sep 2026)
+
+Cambridge 5054 2014 P2, the ECR scripts (1 = grade E, 2 = C, 3 = A). A blind sheet in the same style; "what earns the marks" was written by us from the physics (we hold no official scheme text), and the answers were typed from the handwriting.
+
+| Part | Script | Examiner | Our marker | Teacher | Teacher sides with |
+|---|---|---|---|---|---|
+| 5(b) | 1 | 0/3 | 1/3 | 1/3 | our marker |
+| 7(b) | 1 | 1/3 | 2/3 | 2/3 | our marker |
+| 9(a) | 1 | 0/3 | 1/3 | 1/3 | our marker |
+| 9(f) | 1 | 0/3 | 1/3 | 0/3 | examiner |
+| 10(a) | 1 | 1/4 | 2/4 | 2/4 | our marker |
+| 10(b) | 1 | 0/3 | 1/3 | 0/3 | examiner |
+| 10(c) | 1 | 2/8 | 3/8 | 2/8 | examiner |
+| 10(c) | 2 | 3/8 | 1/8 | 0/8 | neither (below both) |
+| 10(c) | 3 | 7/8 | 5/8 | 1/8 | neither (far below both) |
+| 11(b) | 1 | 0/2 | 1/2 | 1/2 | our marker |
+| 11(c) | 2 | 1/5 | 3/5 | 1/5 | examiner |
+| 11(d) | 1 | 1/5 | 0/5 | 0/5 | our marker |
+| 11(d) | 2 | 2/5 | 0/5 | 0/5 | our marker |
+| **Total** | | **18** | **20** | **11** | |
+
+Unlike chemistry, the teacher and the Cambridge examiner disagree with each other more than our marker disagrees with either. On the weak script he gives the keyword marks the way our marker does (9 against the examiner's 5, ours 12); on working carried forward he is stricter than both (the four parts on scripts 2–3: examiner 13, ours 9, teacher 2). His 1/8 on script 3's 10(c) is below anything the answer supports ((i) and (ii) are right, and (iii)2 is a correct carry-forward) and is worth asking him about.
+
+Where the two humans agree against us (four parts, all ours too kind), that is the physics fix: no mark for one right word inside a wrong answer (9(f) "stopwatch", 10(b)(i) "black emits more heat"), no method mark for a first step that leads nowhere (10(c) script 1, 9000 × 8 then ÷ 1000), and no end-point marks on a graph of the wrong shape (11(c) script 2). The truth for the ±2 gate stays the examiner's (the two truths never mix, SPEC-MARKING-CALIBRATION); a teacher's marks are evidence of convention, not a second truth.
