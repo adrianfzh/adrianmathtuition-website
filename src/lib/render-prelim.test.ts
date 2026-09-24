@@ -104,3 +104,22 @@ describe('buildKeyHTML', () => {
     expect(html).not.toContain('class="cv-warn"');
   });
 });
+
+describe('figures (24 Sep 2026: "is the graph to scale?")', () => {
+  const withFig = (extra: Partial<PrelimInput['questions'][number]>): PrelimInput => ({
+    ...covered,
+    questions: [{ pos: 2, marks: 7, text: 'Draw on the grid.', answer: '-', imageUrl: 'https://x.test/Q2.png', ...extra }],
+  });
+
+  it('prints an ordinary figure under the 72% cap, as before', () => {
+    const html = buildExamHTML(withFig({}));
+    expect(html).toContain('<img class="q-img" src="https://x.test/Q2.png"');
+    expect(html).not.toContain('class="q-img q-img-true"');
+  });
+
+  it('prints a graph-paper grid at its true width, so its squares are 1 cm', () => {
+    const html = buildExamHTML(withFig({ imageWidthMm: 162.6 }));
+    expect(html).toContain('<img class="q-img q-img-true" style="width:162.6mm" src="https://x.test/Q2.png"');
+    expect(html).toContain('.q-img-true{max-width:100%}');
+  });
+});

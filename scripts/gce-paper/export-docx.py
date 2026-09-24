@@ -322,6 +322,53 @@ def figure_width_cm(figures, pos, png):
         return 10.0
 
 
+def grid_width_cm(figures, pos, png):
+    """Printed width (cm) of a graph-paper grid's PNG with its major squares at
+    1 cm, or None for any other figure. Measured on the PNG itself: the outermost
+    vertical lines that run most of its height are the grid's edges, and the spec
+    says how many major squares lie between them — the rule publish.mjs stores for
+    the app (scripts/gce-paper/figure-size.mjs; Adrian, 24 Sep 2026: "is the graph
+    to scale?")."""
+    try:
+        spec = json.load(open(join(figures, f'Q{pos}.figure.json')))
+        if spec.get('family') != 'graph-paper':
+            return None
+        x = spec.get('xAxis') or {}
+        cols = (float(x['max']) - float(x['min'])) / float(x['step']) * float(x.get('majorsPerStep') or 1)
+        from PIL import Image
+        with Image.open(png) as im:
+            g = im.convert('L')
+            w, h = g.size
+            px = g.load()
+            full = [xx for xx in range(w) if sum(1 for yy in range(h) if px[xx, yy] < 250) >= 0.5 * h]
+        if len(full) < 2 or full[-1] <= full[0]:
+            return None
+        cm = w * cols / (full[-1] - full[0])   # one major square = 1 cm
+        return round(cm, 2) if 2 <= cm <= 20 else None
+    except Exception:
+        return None
+
+
+def set_picture_width(p, width_cm, text_cm=16.0):
+    """Give the picture in paragraph p an exact width. Word's figures are capped at
+    the 16 cm text width; a grid a hair wider than that is centred over the margins
+    instead of being shrunk."""
+    EMU = 360000
+    ext = p._p.xpath('.//wp:extent')
+    if not ext:
+        return
+    old_cx, old_cy = int(ext[0].get('cx')), int(ext[0].get('cy'))
+    cx = int(round(width_cm * EMU))
+    cy = int(round(old_cy * cx / old_cx))
+    for e in p._p.xpath('.//wp:extent') + p._p.xpath('.//a:ext'):
+        e.set('cx', str(cx))
+        e.set('cy', str(cy))
+    if width_cm > text_cm:
+        over = Cm((width_cm - text_cm) / 2)
+        p.paragraph_format.left_indent = -over
+        p.paragraph_format.right_indent = -over
+
+
 def has_figure(figures, pos):
     return bool(figures) and any(exists(join(figures, n)) for n in (f'Q{pos}.figure.png', f'Q{pos}.png'))
 
@@ -345,7 +392,10 @@ def figure_para(ws, q, pos, figures, raw=False, key=None):
         ws._block_paras.append(para)
         return True
     if path:
-        ws.figure(path, width_cm=figure_width_cm(figures, key, path))
+        para = ws.figure(path, width_cm=figure_width_cm(figures, key, path))
+        exact = grid_width_cm(figures, key, path)   # measured after ws.figure trimmed the PNG
+        if exact:
+            set_picture_width(para, exact)
         return True
     if q.get('needs_figure') and key == str(pos):
         p = ws.para([('text', '[Figure to be drawn: ' + (q.get('figure_description') or '') + ']', {'italic': True})])

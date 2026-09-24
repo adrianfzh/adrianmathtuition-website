@@ -112,7 +112,7 @@ function ensureSvgNs(svg) {
 // squares when the figure is fitted to it. Trim the viewBox to the plot plus
 // 1.3 major squares each side (room for the axis numbering and the x label);
 // the top and bottom already hug the axis label and the tick labels.
-export function trimGraphPaper(svg) {
+export function trimGraphPaper(svg, { tight = false } = {}) {
   const open = svg.match(/<svg[^>]*>/)?.[0] ?? '';
   const vb = open.match(/viewBox="\s*([-\d.]+)\s+([-\d.]+)\s+([\d.]+)\s+([\d.]+)\s*"/);
   const grid = svg.match(/<path d="([^"]+)"/)?.[1];
@@ -122,6 +122,22 @@ export function trimGraphPaper(svg) {
   let minor = Infinity;
   for (let i = 1; i < xs.length; i++) minor = Math.min(minor, xs[i] - xs[i - 1]);
   const major = minor * 5;
+  if (tight) {
+    // A blank grid (axes: false) has no numbering to make room for: keep the grid
+    // and a hairline of white, so a 16-square grid prints 16 cm wide rather than
+    // 18.7 cm and still fits the page at 1 cm squares (Adrian, 24 Sep 2026: "is
+    // the graph to scale?").
+    const ys = [...grid.matchAll(/M ([\d.]+) ([\d.]+) L ([\d.]+) ([\d.]+)/g)].filter((m) => m[1] === m[3]).flatMap((m) => [Number(m[2]), Number(m[4])]);
+    if (ys.length) {
+      const pad = 0.1 * major;
+      const x0 = xs[0] - pad, y0 = Math.min(...ys) - pad;
+      const w = Math.round(xs[xs.length - 1] - xs[0] + 2 * pad), h = Math.round(Math.max(...ys) - Math.min(...ys) + 2 * pad);
+      return svg
+        .replace(/viewBox="[^"]*"/, `viewBox="${x0.toFixed(2)} ${y0.toFixed(2)} ${w} ${h}"`)
+        .replace(/(<svg[^>]*\swidth=")[\d.]+(")/, `$1${w}$2`)
+        .replace(/(<svg[^>]*\sheight=")[\d.]+(")/, `$1${h}$2`);
+    }
+  }
   // 1.3 major squares is room enough on a normal sheet, but a tall sheet (many
   // majors under the height cap) has small majors, and 1.3 of them is narrower
   // than a "0.2" tick label — the numbering and the origin O were sliced in half.
@@ -147,7 +163,7 @@ function renderSpec(spec) {
   const v = registry.verifyFigure(spec);
   if (!v.ok) throw new Error(`verify: ${v.reason}`);
   const svg = registry.renderFigure(spec);
-  return spec.family === 'graph-paper' ? trimGraphPaper(svg) : svg;
+  return spec.family === 'graph-paper' ? trimGraphPaper(svg, { tight: spec.axes === false }) : svg;
 }
 
 function renderEngine(file) {

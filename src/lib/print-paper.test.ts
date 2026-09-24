@@ -26,6 +26,7 @@ import {
   toPaperShape,
   type MockSlotInput,
   type QbPrintRow,
+  figureWidthMm,
 } from './print-paper';
 import { mulberry32, targetMarks, type Candidate, type PaperDef } from './prelim-builder';
 import type { TopicMastery } from './mastery';
@@ -405,5 +406,22 @@ describe('assembleMockFromCandidates', () => {
         expect(Object.keys(ref).sort()).toEqual(['id', 'marks', 'pos']);
       }
     }
+  });
+});
+
+describe('figureWidthMm (a Set grid prints to scale, 24 Sep 2026)', () => {
+  it('reads the width publish.mjs stored, as text or number', () => {
+    expect(figureWidthMm('162.6')).toBe(162.6);
+    expect(figureWidthMm(113.1)).toBe(113.1);
+  });
+  it('leaves every other figure at the default size', () => {
+    expect(figureWidthMm(null)).toBeNull();
+    expect(figureWidthMm(undefined)).toBeNull();
+    expect(figureWidthMm('')).toBeNull();
+    expect(figureWidthMm('abc')).toBeNull();
+  });
+  it('refuses a width the print column cannot hold, or a speck', () => {
+    expect(figureWidthMm(190)).toBeNull();
+    expect(figureWidthMm(5)).toBeNull();
   });
 });

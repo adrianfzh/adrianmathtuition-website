@@ -32,6 +32,7 @@ import {
   toPaperShape,
   type PaperShape,
   type QbPrintRow,
+  figureWidthMm,
   type PrintQuestionRef,
 } from '@/lib/print-paper';
 import type { PaperDef } from '@/lib/prelim-builder';
@@ -76,7 +77,7 @@ export async function GET(req: NextRequest) {
 
   const { data: qRows, error } = await sb
     .from('questions')
-    .select('id, question_text, total_marks, parts, answer, has_image, image_url, figure_url')
+    .select('id, question_text, total_marks, parts, answer, has_image, image_url, figure_url, print_width_mm:gen_meta->figure->>print_width_mm')
     .in('id', refs.map(r => r.id));
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   const byId = new Map((qRows as QbPrintRow[]).map(q => [q.id, q]));
@@ -92,6 +93,8 @@ export async function GET(req: NextRequest) {
       // A redrawn/authored figure (figure_url — a public Storage URL, the
       // Set papers' figures live there) wins over the scanned crop.
       imageUrl: q.figure_url || (q.has_image ? storageUrl(q.image_url) : null),
+      // A Set paper's graph-paper grid prints at its true size (1 cm squares).
+      imageWidthMm: q.figure_url ? figureWidthMm(q.print_width_mm) : null,
       answer: answerMarkdown(q),
     });
   }

@@ -18,7 +18,9 @@
 // Figures: Q<n>.figure.png → Storage bucket practice-figures (public) at
 //   gce-sets/<key>-set<n>/Q<pos>.png → figure_url + has_image=true — exactly what
 //   kiosk-pool's figureServable accepts; image_watermark_status stays NULL
-//   (docs/FIGURES.md reserves 'clean' for the five fitness checks).
+//   (docs/FIGURES.md reserves 'clean' for the five fitness checks). A graph-paper
+//   grid also records gen_meta.figure.print_width_mm — the width at which its
+//   major squares print at 1 cm — so /app/print prints it to scale (24 Sep 2026).
 // Checks before any write: accepted slots contiguous 1..n, marks sum to the
 // paper total, a PNG exists for every needs_figure slot. --dry prints the plan
 // and stops (no env needed). --retract soft-deletes (deleted_at) every row of
@@ -29,6 +31,7 @@
 import { createRequire } from 'node:module';
 import { existsSync, readFileSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
+import { gridPrintWidthMm } from './figure-size.mjs';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
@@ -137,10 +140,16 @@ const plan = slots.map((s) => {
   return { pos: s.pos, topic: s.topic, marks: Number(q.total_marks || 0), needsFigure: !!q.needs_figure, png: hasPng ? png : null, storagePath, item: `${setKey}-Q${s.pos}` };
 });
 
+// A graph-paper grid's true printed width, measured on the PNG being uploaded
+// (figure-size.mjs); null for every other figure.
+let sharpLib = null;
+try { sharpLib = require('sharp'); } catch { /* no sharp: grids print at the default size */ }
+for (const p of plan) p.gridWidthMm = p.png ? await gridPrintWidthMm(figuresDir, p.pos, sharpLib) : null;
+
 console.log(`${paper.key} seed ${paper.seed ?? '?'} → ${SET_SCHOOL} · ${examType} · Paper ${paperNo} · level ${level} · year ${year}`);
 console.log(`${slots.length} questions · ${sum} marks (paper total ${paper.total}) · ${plan.filter((p) => p.needsFigure).length} figures`);
 for (const p of plan) {
-  console.log(`  Q${String(p.pos).padStart(2)}  [${String(p.marks).padStart(2)}]  ${p.topic}${p.needsFigure ? (p.png ? '  🖼 ' + basename(p.png) : '  🖼 MISSING') : ''}`);
+  console.log(`  Q${String(p.pos).padStart(2)}  [${String(p.marks).padStart(2)}]  ${p.topic}${p.needsFigure ? (p.png ? '  🖼 ' + basename(p.png) : '  🖼 MISSING') : ''}${p.gridWidthMm ? `  (grid, prints ${p.gridWidthMm} mm wide)` : ''}`);
 }
 if (problems.length) {
   console.error('\nNot publishable:');
@@ -213,7 +222,7 @@ for (const p of plan) {
       models: paper.models ?? null,
       gates: s.gates ? { pass: s.gates.pass ?? null, novelty: s.gates.novelty ?? null } : null,
       blind_agree: Array.isArray(s.verdict?.parts) ? s.verdict.parts.every((v) => v.agree) : null,
-      figure: figureUrl ? { file: basename(p.png), description: q.figure_description ?? null } : null,
+      figure: figureUrl ? { file: basename(p.png), description: q.figure_description ?? null, ...(p.gridWidthMm ? { print_width_mm: p.gridWidthMm } : {}) } : null,
       // what the question tests, in the setter's words — the next Set's authors are
       // shown these per topic so they test something else (generate.mjs fetchEarlierSets)
       skills: Array.isArray(q.skills) ? q.skills : [],

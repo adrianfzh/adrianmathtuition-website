@@ -42,6 +42,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { homedir } from 'node:os';
 import { createRequire } from 'node:module';
+import { graphPaperMajorPx } from './figure-size.mjs';
 
 const require = createRequire(import.meta.url);
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -628,17 +629,6 @@ function figureDataUri(runDir, pos) {
       .replace(/(<svg[^>]*\sheight=")[\d.]+(")/, `$1${Math.round(h * factor)}$2`);
   }
   return { uri: `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`, tall };
-}
-// One major square of a rendered graph-paper grid, in viewBox px: the first
-// <path> is the minor grid, its vertical lines are `minor` apart, 5 to a major.
-function graphPaperMajorPx(svg) {
-  const grid = svg.match(/<path d="([^"]+)"/)?.[1];
-  if (!grid) return null;
-  const xs = [...new Set([...grid.matchAll(/M ([\d.]+) [\d.]+ L ([\d.]+) /g)].filter((a) => a[1] === a[2]).map((a) => Number(a[1])))].sort((a, b) => a - b);
-  if (xs.length < 3) return null;
-  let minor = Infinity;
-  for (let i = 1; i < xs.length; i++) minor = Math.min(minor, xs[i] - xs[i - 1]);
-  return minor * 5;
 }
 
 // Counts for the session's whole-paper check. An answer unit is a leaf part, or a

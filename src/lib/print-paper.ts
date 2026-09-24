@@ -397,6 +397,17 @@ export interface QbPrintRow {
   /** A redrawn/authored figure as a full public URL (Set papers, repaired
    * figures) — wins over image_url when present. */
   figure_url?: string | null;
+  /** gen_meta.figure.print_width_mm — a Set paper's graph-paper grid, the width
+   * (mm) at which its squares print at 1 cm (publish.mjs, 24 Sep 2026). */
+  print_width_mm?: string | number | null;
+}
+
+/** The printed width in mm a question's figure asks for, or null for the
+ * renderer's default size. Only sane widths pass (a grid fits the 171 mm text
+ * column of the print layout). */
+export function figureWidthMm(raw: string | number | null | undefined): number | null {
+  const mm = Number(raw);
+  return Number.isFinite(mm) && mm >= 20 && mm <= 171 ? mm : null;
 }
 
 /** First image path out of a bare path or JSON-encoded array, as a public

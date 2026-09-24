@@ -34,6 +34,10 @@ export interface PrelimQuestion {
   marks: number;
   text: string; // markdown with $…$ math (stem + flattened parts)
   imageUrl?: string | null;
+  /** Print the figure at exactly this width (mm) instead of the default 72% cap —
+   * a graph-paper grid whose squares must print at 1 cm (Adrian, 24 Sep 2026:
+   * "is the graph to scale?"). */
+  imageWidthMm?: number | null;
   answer: string; // key text (markdown/math ok)
 }
 
@@ -88,6 +92,7 @@ const STYLES = `
   .q-body{flex:1}
   .q-marks{text-align:right;font-weight:600;color:#333;margin-top:2px}
   .q-img{max-width:72%;display:block;margin:10px auto}
+  .q-img-true{max-width:100%}
   .q-space{border-bottom:1px dashed #e2e8f0;margin:6px 0 2px}
 
   .keypage{page-break-before:always}
@@ -151,6 +156,15 @@ ${body}
 </html>`;
 }
 
+function figureImg(q: PrelimQuestion): string {
+  const alt = `figure for question ${q.pos}`;
+  const mm = q.imageWidthMm;
+  if (mm && Number.isFinite(mm) && mm > 0) {
+    return `<img class="q-img q-img-true" style="width:${Math.round(mm * 10) / 10}mm" src="${esc(q.imageUrl ?? '')}" alt="${alt}">`;
+  }
+  return `<img class="q-img" src="${esc(q.imageUrl ?? '')}" alt="${alt}">`;
+}
+
 function questionsHtml(input: PrelimInput): string {
   const sectionAt = new Map((input.sections ?? []).map((s) => [s.beforePos, s.label]));
   return input.questions
@@ -167,7 +181,7 @@ function questionsHtml(input: PrelimInput): string {
         <div class="q-num">${q.pos}</div>
         <div class="q-body">
           ${mdToHtml(q.text)}
-          ${q.imageUrl ? `<img class="q-img" src="${esc(q.imageUrl)}" alt="figure for question ${q.pos}">` : ''}
+          ${q.imageUrl ? figureImg(q) : ''}
           <div class="q-marks">[${q.marks}]</div>
         </div>
       </div>

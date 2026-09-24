@@ -302,8 +302,27 @@ export async function renderPaperPDF(input: PaperPdfInput): Promise<Buffer> {
         // A graph-paper grid (.pp-figure-tall) keeps its author's true size.
         const aspect = img.naturalWidth / img.naturalHeight;
         const PX_PER_MM = 96 / 25.4;
-        const capWidth = img.classList.contains('pp-figure-tall') ? Infinity : (aspect >= 1.5 ? 100 : 80) * PX_PER_MM;
+        const tall = img.classList.contains('pp-figure-tall');
+        const capWidth = tall ? Infinity : (aspect >= 1.5 ? 100 : 80) * PX_PER_MM;
         let width = Math.min(sharpWidth, colWidth, capWidth);
+        if (tall) {
+          // A grid keeps its 1 cm squares even when it is wider than the question's
+          // text column (Adrian, 24 Sep 2026: "is the graph to scale?" — a 16-square
+          // grid printed at 0.84 cm squares): it moves left into the question-number
+          // gutter, and shrinks only when the whole printed page cannot hold it.
+          // This pass runs on the screen layout (800 px wide), but the PDF prints
+          // the page 166 mm wide (@page margin 22 mm a side), so the column is
+          // worked out for PRINT: the insets beside it are fixed pt/px and carry over.
+          const PRINT_WIDTH_PX = 166 * (96 / 25.4);
+          const page = document.body.getBoundingClientRect();
+          const col = img.parentElement?.getBoundingClientRect();
+          const leftInset = col ? Math.max(0, col.left - page.left) : 0;
+          const rightInset = col ? Math.max(0, page.right - col.right) : 0;
+          const printCol = PRINT_WIDTH_PX - leftInset - rightInset;
+          width = Math.min(sharpWidth, printCol + leftInset);
+          img.style.marginLeft = `${-Math.max(0, width - printCol)}px`;
+          img.style.maxWidth = 'none';
+        }
         // Never let the height cap squash the drawing: an explicit width against
         // max-height distorts (a circle printed as an ellipse, GCE EM Set 1 Q9 /
         // Q26, Adrian 21 Sep 2026). Shrink the width so the capped height is met

@@ -159,6 +159,26 @@ LibreOffice gaps between runs ("F B = 2", "angle F E B"). `join_math_runs()` in
 same). The rest is LibreOffice's. Read a paper in Word or in the app-style PDF from
 `assemble`, and make `lo-pdf.sh` PDFs on the Mac, where LibreOffice finds Cambria Math.
 
+**Grids print to scale (24 Sep 2026, Adrian: "is the graph to scale?").** A graph-paper
+grid the candidate draws on prints with one major square = 1 cm (small squares 2 mm) in
+all three outputs. Before this, the assemble PDF squeezed a 16-square grid into the
+question's text column (0.84 cm squares), the app printed every figure at 72% of the text
+width (about 0.7 cm), and Word capped it at the 16 cm text width. Now:
+- `figure.mjs` trims a blank grid (`axes: false`) to the grid plus a hairline border;
+  a numbered grid keeps its label margins.
+- `render-paper-pdf.ts` works out a grid's column for the PRINTED page (166 mm); its
+  sizing pass runs on the 800 px screen layout. A grid wider than its column moves left
+  into the number gutter.
+- `export-docx.py` measures the grid on the PNG and centres it over the margins when it is
+  a hair wider than 16 cm.
+- `publish.mjs` stores `gen_meta.figure.print_width_mm`, measured the same way on the PNG it
+  uploads (`figure-size.mjs`: the grid's outer lines, over the spec's column count). The
+  app's print route reads it and prints the figure at that width
+  (`lib/print-paper.ts figureWidthMm`, `lib/render-prelim.ts`).
+
+A Set published before this has no stored width and prints its grid as before until it is
+re-published from the Mac. Any Set with a grid needs that: E Math Set 1 P2 Q3, if it is live.
+
 ### Publishing a Set (9 Sep 2026)
 
 ```
@@ -334,6 +354,13 @@ in neither answer's proportions, so the Q8 drawing does not show which lawn fits
 Q9 drawing is not at x = 4. P1 now has three figures (Q8, Q9, Q11). `export-docx.py` also
 learnt to print an unparted question's figure BEFORE its writing space (Q8's had landed
 under the space, chained to Q9's stem) and to keep a stem with its first part.
+**Also 24 Sep, Adrian: "is max/min gradient tested twice?"** Set 2 carried calculus
+optimisation three times (P1 Q9, P2 Q8(b), P2 Q10(b)(c)) against about one a year in the
+real papers, so P2 Q10(b)(c) were rewritten without it: (b) [3] the k for which the two
+shaded regions have equal areas, k = (eᵇ − 1)/b; (c) [4] whether that k exists for every
+b > 0 (yes: b < eᵇ − 1 < b·eᵇ puts it strictly between 1 and eᵇ). Opus author, fresh Opus
+blind solve (agrees), Fable moderator 4/5 at standard; its one wording fix applied. The
+old ending is in the run's `replaced/Q10-least-S.*`.
 The paper JSONs are in `data/gce-generated/`, and the figure specs and PNGs are in
 `data/gce-generated/figures/<key>-seed2/`, which is the `--figures` directory for
 `publish.mjs`. **Not published yet:** it waits for Adrian's read, and then needs the service
