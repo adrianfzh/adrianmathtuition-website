@@ -7,14 +7,15 @@
 import { subjectPill, type SubjectTone } from '@/lib/portal-subjects';
 
 /** Soft (inactive / card) and solid (active tab) treatments per subject tone.
- *  The sciences (10 Sep 2026): physics orange, chemistry purple, biology green —
- *  the same three the bot's analytics chips use, so a colour means one subject
+ *  The sciences (10 Sep 2026): physics blue, chemistry purple, biology green —
+ *  the three the Bot Analytics chips use (physics was orange until 24 Sep 2026 —
+ *  Adrian: it shouted beside the orange Science tile), so a colour means one subject
  *  everywhere. */
 export const SUBJECT_TONE: Record<Exclude<SubjectTone, 'other'>, { soft: string; solid: string }> = {
   am: { soft: 'bg-indigo-100 text-indigo-800', solid: 'bg-indigo-600 text-white' },
   em: { soft: 'bg-sky-100 text-sky-800', solid: 'bg-sky-600 text-white' },
   h2: { soft: 'bg-fuchsia-100 text-fuchsia-800', solid: 'bg-fuchsia-600 text-white' },
-  phy: { soft: 'bg-orange-100 text-orange-800', solid: 'bg-orange-600 text-white' },
+  phy: { soft: 'bg-blue-100 text-blue-800', solid: 'bg-blue-600 text-white' },
   chem: { soft: 'bg-purple-100 text-purple-800', solid: 'bg-purple-600 text-white' },
   bio: { soft: 'bg-green-100 text-green-800', solid: 'bg-green-600 text-white' },
 };

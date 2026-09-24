@@ -599,7 +599,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
             // Leaving the field is the moment the name is finished — ask then
             // rather than waiting out the debounce (lib/paper-check).
             onBlur={(e) => { void runPaperCheck(e.target.value.trim()); }}
-            placeholder="e.g. Xinmin 2021 AM Prelim P2"
+            placeholder={isScience ? "e.g. Cedar 2025 Chemistry Prelim P2" : "e.g. Xinmin 2021 AM Prelim P2"}
             className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy/20"
           />
           {/* A name shaped like the placeholder is what lets ai/paper-totals.js
