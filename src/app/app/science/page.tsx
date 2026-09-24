@@ -10,6 +10,7 @@ import { scienceMarkingOpen } from '@/lib/portal-beta';
 import PortalIcon from '@/components/PortalIcon';
 import { SURFACES } from '@/lib/portal-theme';
 import { loadSciencePapers, SciencePaperCard, SciencePendingList, ScienceEstimateNote } from './science-papers';
+import ScienceOpenNotice from './science-notice';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,6 +35,9 @@ export default async function SciencePage() {
           <p className="text-[12px] text-gray-500">Physics · Chemistry · Biology — marking, free while it&apos;s new</p>
         </div>
       </div>
+
+      {/* "Science marking is open" — one day per device from the first visit, then gone (Adrian, 24 Sep 2026) */}
+      <ScienceOpenNotice />
 
       <Link
         href="/app/science/submit"
