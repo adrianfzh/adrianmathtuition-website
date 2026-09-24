@@ -39,7 +39,7 @@ export const SCIENCE_OPEN_NOTICE = {
   lead: 'Science marking is now open in the app. 🧪',
   paragraphs: [
     'It is meant to be a tool to help you prepare for your exams, not a replacement for your teacher. Please consult your teacher or tutor if you have any doubts about a mark or a comment.',
-    'The total is an estimate, and explain answers can be marked a little differently from how your school words them. If you have the answers or the mark scheme, attach them for better results.',
+    'The total is an estimate, and answers to explain questions can be marked a little differently from how your school words them. If you have the answers or the mark scheme, attach them for better results.',
   ],
-  limit: 'Limit: Two papers a day.',
+  limit: 'Limit: two papers a day.',
 } as const;
