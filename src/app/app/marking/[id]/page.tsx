@@ -4,7 +4,7 @@
 // the sheet written from it, then the PDF for anyone who wants the file.
 // Same access rule as the list: the logged-in student's own released run.
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { cookies } from 'next/headers';
 import { TEACHER_INK_IDENTITY } from '@/lib/student-ink';
@@ -24,7 +24,6 @@ import { coveredRunIds } from '@/lib/sheet-queue';
 import { shelvedGaps, shelfWorthAWave } from '@/lib/student-batch';
 import { followUpDepthOf } from '@/lib/sheet-queue';
 import { displayPaperName } from '@/lib/paper-display-name';
-import { subjectLabel } from '@/lib/mark-subjects';
 import { TEACHER_TOTAL_LABEL } from '@/lib/science-truth';
 import ScienceTeacherMark from '../ScienceTeacherMark';
 import ScienceUseful from '../ScienceUseful';
@@ -46,7 +45,12 @@ function niceDate(iso: string): string {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 }
 
-export default async function PaperPage({ params }: { params: Promise<{ id: string }> }) {
+// `under` = which family's route rendered the page (25 Sep 2026): the shell picks
+// the Math | Science switcher AND the bottom menu from the path, so a chemistry
+// paper at /app/marking/<id> showed the Math tab and the maths menu. A science
+// run belongs at /app/science/marking/<id> (that route wraps this page) and
+// either door redirects to the right one, so old links and pushes still work.
+export default async function PaperPage({ params, under = 'math' }: { params: Promise<{ id: string }>; under?: 'math' | 'science' }) {
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   // Adrian's admin sign-in opens any student's released paper (18 Sep 2026 —
@@ -82,6 +86,8 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
   // the teacher's-mark card — and no Practice Again (that sheet is maths).
   const lane = String((row as { subject?: string | null }).subject ?? 'math');
   const isScience = lane !== 'math';
+  if (isScience && under !== 'science') redirect(`/app/science/marking/${id}`);
+  if (!isScience && under === 'science') redirect(`/app/marking/${id}`);
   const tone = subjectTone(paper.subject);
   const rjRaw = (row as { result_json?: Record<string, unknown> | null }).result_json ?? {};
   const groundingSource = (() => {
@@ -228,21 +234,9 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
         </p>
       )}
 
-      {isScience && (
-        <section className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-900 space-y-1">
-          <p className="font-bold">🧪 {subjectLabel(lane)} marking — feedback first, the total is an estimate</p>
-          <p>
-            Use the comments on each question: what a full answer needed, and where the marks went. The total at the bottom is our estimate, not a grade.{' '}
-            Calculations are checked properly.{' '}
-            {schemeGrounded
-              ? <>Explain answers were marked against <b>your school&apos;s mark scheme</b>.</>
-              : bankGrounded
-              ? <>Explain answers were marked against the <b>marking points for this paper</b> in our bank.</>
-              : <>Explain answers were marked against <b>standard syllabus points</b> — no mark scheme was attached, so a point your school words differently may be scored differently.</>}
-          </p>
-          <p>Compare with your teacher&apos;s marking when you get the paper back, and enter their total below.</p>
-        </section>
-      )}
+      {/* The amber "feedback first, the total is an estimate" card that sat here is gone
+          (Adrian, 25 Sep 2026: "no need to keep repeating") — the grounding line lives in
+          "Our estimate" below, the estimate line on the list. */}
 
       {/* 📘 Practice Again sits at the TOP (18 Sep 2026, Adrian: "put the request for practice again at the
           top, instead of the end") — the sheet's status and doors when one exists, else the Request button. */}
@@ -361,7 +355,14 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
         <section className="rounded-2xl border border-black/5 bg-white p-4 flex items-center justify-between gap-3" data-science-estimate>
           <div className="min-w-0">
             <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Our estimate</p>
-            <p className="text-[12px] text-gray-500">Not your teacher&apos;s mark. The feedback above is the part to use.</p>
+            <p className="text-[12px] text-gray-500">
+              Not your teacher&apos;s mark.{' '}
+              {schemeGrounded
+                ? <>Explain answers were marked against your school&apos;s mark scheme.</>
+                : bankGrounded
+                ? <>Explain answers were marked against the marking points for this paper in our bank.</>
+                : <>No mark scheme was attached, so explain answers were marked against standard syllabus points.</>}
+            </p>
           </div>
           <span className="shrink-0 text-lg font-bold text-navy">
             {paper.awarded}/{paper.max}{paper.pct !== null && <span className="text-sm font-semibold text-gray-500"> · {paper.pct}%</span>}

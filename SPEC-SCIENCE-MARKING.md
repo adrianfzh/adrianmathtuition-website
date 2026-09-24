@@ -235,10 +235,12 @@ notice." Built:
   hard override. Adrian's admin preview sees the tab either way, and so does the demo
   student (`SCIENCE_PREVIEW_IDENTITIES`), which is how Adrian tests it as a student.
 - **Feedback first.** A science paper page has no score pill in the header. The
-  disclaimer says the total is an estimate and the comments are the part to use; the
-  cover and the marked pages follow; then an "Our estimate" card with the total, then
-  the teacher's-mark card, then "Was this marking useful?". The list card says
-  `est. 31/40`.
+  cover and the marked pages come first; then an "Our estimate" card with the total and
+  one clause on what grounded the explain answers, then the teacher's-mark card, then
+  "Was this marking useful?". The list card says `31/40 · 78%`; the one quiet estimate
+  line sits under the list. (Until 25 Sep 2026 an amber "feedback first, the total is an
+  estimate" card opened every paper page and the card said `est. 31/40` — Adrian: "no
+  need to keep repeating".) The page's route is `/app/science/marking/<id>`.
 - **"Was this marking useful?"** — 👍 / 👎 and an optional line, one Telegram line to
   the marking topic per tap and a `portal_event_log` row (`science:feedback`). This is
   the student's opinion of the feedback; the teacher's mark (rule 7) is still the only
@@ -403,6 +405,7 @@ Adrian: "Build all three chemistry study ideas". What shipped (the detail lives 
    how often the marker reaches for `keywords` would show first on the teacher's-mark
    rows, not on a bench.
 2. **`/app/science/qa`** — the SEAB 6092 qualitative-analysis table as flashcards, the
-   door on the Chemistry tab of Science Home.
+   door on the Chemistry tab of Science Home. **Admin only** since 25 Sep 2026
+   (`QA_FLASHCARDS_OPEN_TO_STUDENTS`, Adrian: "gate to admin only first").
 3. **Science lost marks filed in My Notebook** under four reasons (concept gap · careless
    slip · wrong keywords · incomplete).

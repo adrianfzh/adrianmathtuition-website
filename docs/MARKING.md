@@ -2522,6 +2522,22 @@ tab's own gate, no switch of their own:
    (`portal_qa_known`, best effort); "Only the n I don't know yet". `lib/qa-cards.ts` =
    the table + the deck rules (`buildDeck`, seeded `shuffle`, `orderRound`),
    pure/tested. No server state, no marks. Health-check `portal-science-qa`.
+   **Admin only since 25 Sep 2026** (Adrian: "gate to admin only first"):
+   `QA_FLASHCARDS_OPEN_TO_STUDENTS = false` in `lib/portal-beta.ts` — the door renders
+   and the page opens only on Adrian's cookie (not "viewing as a student"); a student
+   at `/app/science/qa` is sent to `/app/science`. Flip the flag to open it.
+**The science paper page, tidied 25 Sep 2026** (Adrian, from his phone): the list card
+says `60/90 · 67%` (no "est." — the quiet estimate line under the list carries that)
+and has no icon tile in front; the amber "🧪 X marking — feedback first, the total is
+an estimate" card is GONE ("no need to keep repeating") — the grounding it stated
+(school scheme · bank marking points · syllabus points) is one clause in the "Our
+estimate" card at the bottom. **A science paper lives at `/app/science/marking/<id>`**
+(`science/marking/[id]/page.tsx` wraps the maths page with `under="science"`): the shell
+reads the family from the path, so at `/app/marking/<id>` a chemistry paper lit the Math
+tab and showed the maths bottom menu; either door redirects a run to the right family,
+so old links, pushes and Telegram lines keep working, and `isActive` lights the science
+Papers tab there.
+
 3. **Science lost marks in My Notebook.** mark-triage's release hook files a science run
    too (the practice / revise maps further down that hook stay maths-only).
    `lib/notebook-mistakes.ts scienceReason` folds the kinds into four reasons —

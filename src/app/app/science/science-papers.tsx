@@ -9,18 +9,16 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
-import PaperSubjectPill, { SubjectEdge, subjectTone } from '@/components/PaperSubjectPill';
+import PaperSubjectPill, { SubjectEdge } from '@/components/PaperSubjectPill';
 import PortalIcon from '@/components/PortalIcon';
 import RemoveQueuedScience from './science-queue-remove';
 import { queuedLabel } from '@/lib/daily-queue';
 import { sgtTodayISO } from '@/lib/sgt';
-import { SURFACES } from '@/lib/portal-theme';
 
 export const SCIENCE_COLUMNS =
   'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, student_archived_at, student_note, paper_subject, subject';
 
 const CARD = 'bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)]';
-const M = SURFACES.marking;
 
 function scoreChip(pct: number | null): string {
   if (pct === null) return 'bg-gray-100 text-gray-600';
@@ -110,13 +108,10 @@ export function SciencePendingList({ pending }: { pending: SciencePending[] }) {
 
 export function SciencePaperCard({ paper }: { paper: ReturnType<typeof buildStudentMarking>['papers'][number] }) {
   return (
-    <Link href={`/app/marking/${paper.id}`} data-track="marking:open" className={`${CARD} relative overflow-hidden p-4 pl-5 block hover:bg-black/[0.02] transition-colors`}>
+    <Link href={`/app/science/marking/${paper.id}`} data-track="marking:open" className={`${CARD} relative overflow-hidden p-4 pl-5 block hover:bg-black/[0.02] transition-colors`}>
       <SubjectEdge subject={paper.subject} />
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-2.5 min-w-0">
-          <span className={`flex items-center justify-center w-9 h-9 rounded-xl shrink-0 ${subjectTone(paper.subject)?.solid ?? M.tile}`} aria-hidden>
-            <PortalIcon name={M.icon} className="w-4.5 h-4.5" />
-          </span>
           <div className="min-w-0">
             <p className="font-bold text-navy leading-snug break-words">{paper.name}</p>
             <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1.5">
@@ -126,7 +121,7 @@ export function SciencePaperCard({ paper }: { paper: ReturnType<typeof buildStud
           </div>
         </div>
         <span className={`shrink-0 text-sm font-bold rounded-full px-3 py-1 ${scoreChip(paper.pct)}`}>
-          {paper.max > 0 ? `est. ${paper.awarded}/${paper.max}` : '—'}
+          {paper.max > 0 ? `${paper.awarded}/${paper.max}` : '—'}
           {paper.pct !== null && <span className="font-semibold"> · {paper.pct}%</span>}
         </span>
       </div>

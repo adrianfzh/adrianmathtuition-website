@@ -235,3 +235,10 @@ export async function practicePhotoOpen(): Promise<boolean> {
   } catch { /* closed */ }
   return false;
 }
+
+/**
+ * 🧪 The Chemistry tab's qualitative-analysis flashcards (/app/science/qa and
+ * the door on /app/science): Adrian's cookie only until he opens them
+ * (25 Sep 2026: "for chem qualitative analysis — gate to admin only first").
+ */
+export const QA_FLASHCARDS_OPEN_TO_STUDENTS = false;

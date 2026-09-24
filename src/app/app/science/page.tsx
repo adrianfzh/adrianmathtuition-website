@@ -8,7 +8,9 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
-import { scienceMarkingOpen } from '@/lib/portal-beta';
+import { cookies } from 'next/headers';
+import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
+import { QA_FLASHCARDS_OPEN_TO_STUDENTS, scienceMarkingOpen, viewingAsStudent } from '@/lib/portal-beta';
 import { scienceChoiceLabel, studentSciences } from '@/lib/portal-prefs';
 import PortalIcon from '@/components/PortalIcon';
 import { SURFACES } from '@/lib/portal-theme';
@@ -28,6 +30,9 @@ export default async function ScienceHome({ searchParams }: { searchParams: Prom
   const choice = studentSciences(account?.prefs);
   const sp = await searchParams;
   const choosing = !choice || sp?.choose === '1';
+  // The flashcards door is Adrian's alone until QA_FLASHCARDS_OPEN_TO_STUDENTS flips.
+  const qaOpen = QA_FLASHCARDS_OPEN_TO_STUDENTS
+    || (verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value) && !(await viewingAsStudent()));
   const { papers, pending } = choosing ? { papers: [], pending: [] } : await loadSciencePapers(sid, account?.display_name ?? null);
 
   return (
@@ -64,7 +69,7 @@ export default async function ScienceHome({ searchParams }: { searchParams: Prom
             <span className="shrink-0 text-white/80 text-lg">›</span>
           </Link>
 
-          <ScienceTabs papers={papers} pending={pending} subjects={choice!.subjects} limit={HOME_LIMIT} panelExtras={{ chemistry: <QaDoor /> }} />
+          <ScienceTabs papers={papers} pending={pending} subjects={choice!.subjects} limit={HOME_LIMIT} panelExtras={qaOpen ? { chemistry: <QaDoor /> } : undefined} />
         </>
       )}
     </div>

@@ -5,7 +5,9 @@
 // Chemistry tab of Science Home. Data + deck rules: lib/qa-cards.ts.
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { scienceMarkingOpen } from '@/lib/portal-beta';
+import { cookies } from 'next/headers';
+import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
+import { QA_FLASHCARDS_OPEN_TO_STUDENTS, scienceMarkingOpen, viewingAsStudent } from '@/lib/portal-beta';
 import { QA_CARDS } from '@/lib/qa-cards';
 import PortalIcon from '@/components/PortalIcon';
 import QaDrill from './qa-drill';
@@ -14,6 +16,9 @@ export const dynamic = 'force-dynamic';
 
 export default async function ScienceQaPage() {
   if (!(await scienceMarkingOpen())) redirect('/app');
+  // Admin only until Adrian opens it (25 Sep 2026).
+  const isAdmin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value) && !(await viewingAsStudent());
+  if (!QA_FLASHCARDS_OPEN_TO_STUDENTS && !isAdmin) redirect('/app/science');
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
       <div className="flex items-center gap-2.5 pt-1">
