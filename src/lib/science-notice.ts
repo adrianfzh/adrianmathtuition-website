@@ -33,14 +33,13 @@ export function scienceNoticeState(stored: string | null | undefined, now: numbe
   return { show: ageMs < SCIENCE_NOTICE_HOURS * 3600_000, stamp: null };
 }
 
-/** The message, one paragraph per entry, exactly as Adrian approved it (24 Sep 2026). */
+/** The message, one paragraph per entry, exactly as Adrian wrote it (24 Sep 2026, second draft). */
 export const SCIENCE_OPEN_NOTICE = {
   greeting: 'Dear students,',
   lead: 'Science marking is now open in the app. 🧪',
   paragraphs: [
-    'You can hand in a Physics, Chemistry or Biology paper the same way you hand in a Math paper, and it comes back marked with comments on every question: what a full answer needed, and where the marks went.',
-    'It is meant to be a tool to help you prepare for your exams, not a replacement for your teacher. The total is an estimate, and explain answers can be marked a little differently from how your school words them. If you have any doubts about a mark or a comment, ask your science teacher or tutor. Their word counts.',
-    'If you have the answers or the mark scheme, attach them when you hand in, and the marking will be more accurate.',
+    'It is meant to be a tool to help you prepare for your exams, not a replacement for your teacher. Please consult your teacher or tutor if you have any doubts about a mark or a comment.',
+    'The total is an estimate, and explain answers can be marked a little differently from how your school words them. If you have the answers or the mark scheme, attach them for better results.',
   ],
   limit: 'Limit: Two papers a day.',
 } as const;

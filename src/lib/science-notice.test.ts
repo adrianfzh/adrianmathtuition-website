@@ -41,6 +41,7 @@ describe('the approved wording', () => {
     const all = [SCIENCE_OPEN_NOTICE.greeting, SCIENCE_OPEN_NOTICE.lead, ...SCIENCE_OPEN_NOTICE.paragraphs, SCIENCE_OPEN_NOTICE.limit].join(' ');
     expect(SCIENCE_OPEN_NOTICE.limit).toBe('Limit: Two papers a day.');
     expect(all).not.toMatch(/tell me what you think/i);
-    expect(all).toMatch(/ask your science teacher or tutor/);
+    expect(all).toMatch(/consult your teacher or tutor/);
+    expect(all).toMatch(/attach them for better results/);
   });
 });
