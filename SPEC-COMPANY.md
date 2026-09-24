@@ -865,15 +865,20 @@ one run answers both questions.
 - **Thinking low on the row scan is the only set-up that places as well as today**, at about
   19 % less on that call (about US$0.08 a paper at 14 pages). Smaller than the "most of the
   bill" hoped for in lever 1: the API reported no separate thinking tokens, so the trial
-  could not see how much of the output was thinking.
+  could not see how much of the output was thinking. **Live 24 Sep 2026 (bot PR #7):** the
+  row scan's first ask thinks low; the re-ask after a thin reply keeps the default, and the
+  Fly secret `GEMINI_ROW_THINKING=default` turns it off without a deploy.
 - **Flash cannot be the first rung for the row scan**: it placed only 28 % of the lines (the
   transcription risk named in lever 2). Lever 2 is closed for the row scan.
 - **Claude does not replace Gemini for placement**: its boxes sit on the right row less often
   (82 %) and fit the lines loosely (0.53). This confirms the decision to keep Gemini.
 - **The which-way-up check is a quality finding, not a cost one.** Flash got 43 of 48 right
-  against today's 34, at the same price. The trial asks once, while production also rechecks a
-  turned page, so before switching, check which turns each got wrong. What matters most is
-  that an upright page is never turned.
+  against today's 34, at the same price. No set-up turned an upright page (12 of 12 each).
+  Pro's misses were a sideways page read the wrong way round, which production's recheck partly
+  rescues at two or three calls, and 2 upside-down pages, which nothing rechecks; Flash got
+  every upside-down page. **Live 24 Sep 2026 (bot PR #8):** the check asks Flash first, with
+  Pro behind it only for when Flash is unavailable; `GEMINI_ROTATION_MODEL=default` turns it
+  off without a deploy.
 - Caveats: 24 pages, one run each. The reference boxes were drawn by Gemini, which gives the
   Gemini set-ups a home advantage.
 
