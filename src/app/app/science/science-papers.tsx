@@ -10,6 +10,9 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
 import PaperSubjectPill from '@/components/PaperSubjectPill';
 import PortalIcon from '@/components/PortalIcon';
+import RemoveQueuedScience from './science-queue-remove';
+import { queuedLabel } from '@/lib/daily-queue';
+import { sgtTodayISO } from '@/lib/sgt';
 import { SURFACES } from '@/lib/portal-theme';
 
 export const SCIENCE_COLUMNS =
@@ -29,7 +32,12 @@ export function niceDate(d: string): string {
   return new Date(d + 'T00:00:00Z').toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 }
 
-export type SciencePending = { id: string; created_at: string; paper_name: string | null; num_photos: number | null; subject: string | null };
+export type SciencePending = {
+  id: string; created_at: string; paper_name: string | null; num_photos: number | null; subject: string | null;
+  // 🕒 queued_for = the day the paper waits for (SPEC-PRACTICE-PHOTO §14);
+  // queue_released_at = the midnight cron has put it in for marking.
+  result_json: { queued_for?: string; queue_released_at?: string } | null;
+};
 
 /** The student's science runs: released papers (newest first) and the ones still being marked. */
 export async function loadSciencePapers(sid: string, studentName: string | null, limit = 40) {
@@ -39,33 +47,62 @@ export async function loadSciencePapers(sid: string, studentName: string | null,
       .eq('student_id', sid).not('subject', 'eq', 'math')
       .not('released_at', 'is', null).is('superseded_by', null)
       .order('created_at', { ascending: false }).limit(limit),
-    sb.from('paper_marking_runs').select('id, created_at, paper_name, num_photos, subject')
+    sb.from('paper_marking_runs').select('id, created_at, paper_name, num_photos, subject, result_json')
       .eq('student_id', sid).not('subject', 'eq', 'math')
-      .eq('result_json->>portal_submission', 'true').is('released_at', null)
-      .order('created_at', { ascending: false }).limit(5),
+      .eq('result_json->>portal_submission', 'true').is('result_json->>queue_removed_at', null).is('released_at', null)
+      .order('created_at', { ascending: false }).limit(8),
   ]);
   const { papers } = buildStudentMarking((released ?? []) as MarkingRunRow[], { studentName });
   return { papers, pending: (pendingRows ?? []) as SciencePending[] };
 }
 
+function isQueued(p: SciencePending): boolean {
+  return Boolean(p.result_json?.queued_for) && !p.result_json?.queue_released_at;
+}
+
 export function SciencePendingList({ pending }: { pending: SciencePending[] }) {
   if (!pending.length) return null;
+  const today = sgtTodayISO();
+  const marking = pending.filter(p => !isQueued(p));
+  const queued = pending.filter(isQueued);
   return (
-    <div className="bg-teal-50 rounded-3xl p-4">
-      <p className="text-xs font-semibold uppercase tracking-wide text-teal-700/80 mb-1">Being marked</p>
-      <p className="text-[13px] text-teal-900/80 mb-2">Usually back within the hour. You will get a notification when it is ready.</p>
-      <ul className="space-y-1.5">
-        {pending.map(p => (
-          <li key={p.id} className="text-sm text-teal-900 flex items-baseline justify-between gap-3">
-            <span className="min-w-0 break-words">
-              ⏳ {p.paper_name || 'Science paper'}
-              {p.subject && <span className="text-teal-700/60"> · {p.subject}</span>}
-              {typeof p.num_photos === 'number' && p.num_photos > 0 && <span className="text-teal-700/60"> · {p.num_photos} page{p.num_photos === 1 ? '' : 's'}</span>}
-            </span>
-            <span className="shrink-0 text-xs text-teal-700/60">{niceDate(String(p.created_at).slice(0, 10))}</span>
-          </li>
-        ))}
-      </ul>
+    <div className="bg-teal-50 rounded-3xl p-4 space-y-3">
+      {marking.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-teal-700/80 mb-1">Being marked</p>
+          <p className="text-[13px] text-teal-900/80 mb-2">Usually back within the hour. You will get a notification when it is ready.</p>
+          <ul className="space-y-1.5">
+            {marking.map(p => (
+              <li key={p.id} className="text-sm text-teal-900 flex items-baseline justify-between gap-3">
+                <span className="min-w-0 break-words">
+                  ⏳ {p.paper_name || 'Science paper'}
+                  {p.subject && <span className="text-teal-700/60"> · {p.subject}</span>}
+                  {typeof p.num_photos === 'number' && p.num_photos > 0 && <span className="text-teal-700/60"> · {p.num_photos} page{p.num_photos === 1 ? '' : 's'}</span>}
+                </span>
+                <span className="shrink-0 text-xs text-teal-700/60">{niceDate(String(p.created_at).slice(0, 10))}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {queued.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-teal-700/80 mb-1">Waiting for its day</p>
+          <p className="text-[13px] text-teal-900/80 mb-2">Two science papers a day — these go for marking at midnight on their day. Remove one to free the day.</p>
+          <ul className="space-y-1.5">
+            {queued.map(p => (
+              <li key={p.id} className="text-sm text-teal-900 flex items-baseline justify-between gap-3">
+                <span className="min-w-0 break-words">
+                  🕒 {p.paper_name || 'Science paper'}
+                  {p.subject && <span className="text-teal-700/60"> · {p.subject}</span>}
+                  <span className="text-teal-700/60"> · {queuedLabel(String(p.result_json?.queued_for), today)}</span>
+                </span>
+                <RemoveQueuedScience runId={p.id} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

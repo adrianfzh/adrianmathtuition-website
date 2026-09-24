@@ -24,6 +24,7 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
   const due = dueLabel(a.due_on);
   const overdue = isOverdue(a);
   const page = isPage(a);
+  const photoSheet = a.source === 'practice-photo';
 
   // If it's been marked, find whether the run is released so we can link it.
   let released = false;
@@ -36,12 +37,14 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
       <div className="flex items-baseline justify-between pt-1">
-        <Link href="/app/assignments" className="text-sm text-gray-500 hover:text-navy">← From Adrian</Link>
+        {photoSheet
+          ? <Link href="/app/practice" className="text-sm text-gray-500 hover:text-navy">← Practice</Link>
+          : <Link href="/app/assignments" className="text-sm text-gray-500 hover:text-navy">← From Adrian</Link>}
       </div>
 
       <div className={`${CARD} p-5 space-y-3`}>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{page ? '📖 A page from Adrian' : '📬 Worksheet from Adrian'}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{photoSheet ? '📷 Your practice sheet' : page ? '📖 A page from Adrian' : '📬 Worksheet from Adrian'}</p>
           <h1 className="text-lg font-bold text-navy">{a.title}</h1>
           <p className="text-xs text-gray-500 mt-1 flex flex-wrap gap-x-2">
             {a.topic && <span>{a.topic}</span>}

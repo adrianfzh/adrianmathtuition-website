@@ -21,6 +21,10 @@ import {
   groupPracticeTodo, sourceRunIds, todoStateLabel, todoSubtitle, todoTotals, visibleToStudent,
   type TodoState,
 } from '@/lib/practice-todo';
+import { getSupabaseAdmin } from '@/lib/supabase';
+import { queuedLabel } from '@/lib/daily-queue';
+import { sgtTodayISO } from '@/lib/sgt';
+import RemoveSheetButton from './remove-sheet-button';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 
@@ -50,6 +54,17 @@ export default async function PracticeTodo({ account, top = null }: { account: P
   // the query; the subject gate is applied here on the rows that came back.
   const all = await listStudentAssignments(identity).catch(() => []);
   const rows = all.filter(r => visibleToStudent(r, account));
+  // A queued practice sheet (SPEC-PRACTICE-PHOTO §14) waits on its sheet
+  // job's scheduled_for — the chip says the day instead of Writing….
+  const today = sgtTodayISO();
+  const queuedDay = new Map<string, string>();
+  const jobIds = rows.filter(r => r.status === 'writing' && r.source === 'practice-photo' && r.sheet_job_id).map(r => r.sheet_job_id as string);
+  if (jobIds.length) {
+    const { data } = await getSupabaseAdmin().from('sheet_jobs').select('id, scheduled_for').in('id', jobIds);
+    for (const j of (data ?? []) as { id: string; scheduled_for: string | null }[]) {
+      if (j.scheduled_for && j.scheduled_for > today) queuedDay.set(j.id, j.scheduled_for);
+    }
+  }
   const paperNames = await paperNamesForStudent(identity, sourceRunIds(rows));
   const sections = groupPracticeTodo(rows).filter(s => s.items.length > 0);
   const summary = summaryLine(todoTotals(sections));
@@ -87,6 +102,7 @@ export default async function PracticeTodo({ account, top = null }: { account: P
             const due = r.source === 'adrian' || !r.source ? dueLabel(r.due_on) : null;
             const overdue = due ? isOverdue(r) : false;
             const subtitle = todoSubtitle(r, r.source_run_id ? paperNames.get(r.source_run_id) ?? null : null);
+          const queued = r.sheet_job_id ? queuedDay.get(r.sheet_job_id) ?? null : null;
             const body = (
                 <div className="flex items-start gap-3">
                   <span className="text-xl leading-none mt-0.5" aria-hidden>{r.kind === 'worksheet' ? '📄' : '✏️'}</span>
@@ -99,12 +115,18 @@ export default async function PracticeTodo({ account, top = null }: { account: P
                     </div>
                     {r.note && s.key === 'adrian' && <p className="text-sm text-gray-700 mt-2 italic">“{r.note}”</p>}
                   </div>
-                  <span className={`shrink-0 text-[11px] font-semibold rounded-full px-2.5 py-1 ${CHIP[r.state]}`}>{todoStateLabel(r.state, r)}</span>
+                  <span className={`shrink-0 text-[11px] font-semibold rounded-full px-2.5 py-1 ${CHIP[r.state]}`}>{queued ? queuedLabel(queued, today) : todoStateLabel(r.state, r)}</span>
                 </div>
             );
             // A Writing… row (a photo's twin on its way, SPEC-PRACTICE-PHOTO) opens nothing yet.
             if (r.state === 'writing') {
-              return <div key={r.id} className={`${CARD} block p-4 opacity-80`} aria-busy>{body}</div>;
+              const photoSheet = r.source === 'practice-photo' && Boolean(r.sheet_job_id);
+              return (
+                <div key={r.id} className={`${CARD} block p-4 ${queued ? '' : 'opacity-80'}`} aria-busy={!queued}>
+                  {body}
+                  {photoSheet && <RemoveSheetButton id={r.id} />}
+                </div>
+              );
             }
             return (
               <Link key={r.id} href={assignmentHref(r)} className={`${CARD} block p-4 hover:bg-[hsl(45,100%,99%)] active:scale-[0.99] transition`}>{body}</Link>

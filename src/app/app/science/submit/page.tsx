@@ -9,8 +9,10 @@ import { redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { scienceMarkingOpen } from '@/lib/portal-beta';
-import { DAILY_SCIENCE_SUBMIT_CAP, countHandinsToday } from '@/lib/portal-submit-limit';
-import type { HandinCountingClient } from '@/lib/portal-submit-limit';
+import { DAILY_SCIENCE_SUBMIT_CAP } from '@/lib/portal-submit-limit';
+import { scienceQueuePlacement } from '@/lib/science-queue-store';
+import { dayWord } from '@/lib/daily-queue';
+import { sgtTodayISO } from '@/lib/sgt';
 import { SCIENCE_MARK_SUBJECTS } from '@/lib/mark-subject-for-student';
 import SubmitClient from '../../submit/submit-client';
 
@@ -21,12 +23,16 @@ export default async function ScienceSubmitPage() {
   const account = await currentAccount();
   const sid = portalIdentity(account);
   // Preflight of the science slot — the POST re-checks it.
-  let slotUsed = false;
+  // The waiting list (SPEC-PRACTICE-PHOTO §14): past today's allowance the
+  // form still opens — the notice says which day the paper is queued for;
+  // only a full horizon (three days) blocks it. The route decides again.
+  let queueNotice: { blocking: boolean; text: string } | null = null;
   if (DAILY_SCIENCE_SUBMIT_CAP !== null) {
     try {
-      const count = await countHandinsToday(getSupabaseAdmin() as unknown as HandinCountingClient, sid, new Date(), 'science');
-      slotUsed = count >= DAILY_SCIENCE_SUBMIT_CAP;
-    } catch { /* degrade to the POST-time check */ }
+      const place = await scienceQueuePlacement(getSupabaseAdmin(), sid, DAILY_SCIENCE_SUBMIT_CAP, new Date());
+      if (!place.ok) queueNotice = { blocking: true, text: place.message };
+      else if (place.waits) queueNotice = { blocking: false, text: `Today’s science hand-ins are used — this paper will be queued for ${dayWord(place.day, sgtTodayISO())} and go for marking at midnight. You can remove it from Science › Papers until then.` };
+    } catch { /* never block the page on a read — the route checks again */ }
   }
-  return <SubmitClient family="science" slotUsed={slotUsed} subjectChoices={[...SCIENCE_MARK_SUBJECTS]} />;
+  return <SubmitClient family="science" queueNotice={queueNotice} subjectChoices={[...SCIENCE_MARK_SUBJECTS]} />;
 }

@@ -38,6 +38,7 @@ export async function GET(req: Request) {
     .not('result_json->>queued_for', 'is', null)
     .lte('result_json->>queued_for', today)
     .is('result_json->>queue_released_at', null)
+    .is('result_json->>queue_removed_at', null)
     .is('released_at', null)
     .order('created_at', { ascending: true })
     .limit(50);

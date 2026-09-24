@@ -27,6 +27,9 @@ import { isOurBlobUrl } from '@/lib/blob-url';
 import { keyFromUrl } from '@/lib/student-files-url';
 import { DAILY_SUBMIT_CAP, DAILY_SCIENCE_SUBMIT_CAP, countHandinsToday } from '@/lib/portal-submit-limit';
 import type { HandinCountingClient, HandinFamily } from '@/lib/portal-submit-limit';
+import { scienceQueuePlacement } from '@/lib/science-queue-store';
+import { dayWord } from '@/lib/daily-queue';
+import { sgtTodayISO } from '@/lib/sgt';
 import { sendTelegram } from '@/lib/telegram';
 import { escapeTelegramHtml } from '@/lib/telegram-html';
 // Every notification from this file belongs in the marking topic (6 Sept 2026; falls back to the DM when unbound).
@@ -236,12 +239,21 @@ export async function POST(req: Request) {
   // is null and nothing below runs for a tuition student. Only a stranger's
   // pass tier still carries a daily ceiling.
   const dailyCap: number | null = science ? DAILY_SCIENCE_SUBMIT_CAP : tuition ? DAILY_SUBMIT_CAP : dailyHandinCapForTier(meteredPass?.tier);
-  const count = (dailyCap === null || assignment || printedPaper) ? 0 : await countHandinsToday(admin as unknown as HandinCountingClient, studentId, new Date(), family);
-  if (dailyCap !== null && (count ?? 0) >= dailyCap) {
+  const count = (dailyCap === null || assignment || printedPaper || science) ? 0 : await countHandinsToday(admin as unknown as HandinCountingClient, studentId, new Date(), family);
+  // 🧪 The science waiting list (SPEC-PRACTICE-PHOTO §14, 24 Sep 2026): past
+  // today's allowance the paper is not refused — it lands on the first day
+  // with room up to three days ahead (result_json.queued_for) and the
+  // midnight cron `daily-queue` puts it in the 🌙 queue on that day. Beyond
+  // the horizon: a plain refusal. The placement helper is the truth (it
+  // counts queued papers on their day), so countHandinsToday is skipped here.
+  let queuedFor: string | null = null;
+  if (science && dailyCap !== null && !assignment && !printedPaper) {
+    const place = await scienceQueuePlacement(admin, studentId, dailyCap, new Date());
+    if (!place.ok) return NextResponse.json({ error: place.message }, { status: 429 });
+    if (place.waits) queuedFor = place.day;
+  } else if (dailyCap !== null && (count ?? 0) >= dailyCap) {
     return NextResponse.json({
-      error: science
-        ? `You’ve handed in ${dailyCap} science papers today — a fresh allowance opens at midnight. Maths papers are separate.`
-        : dailyCap === 1
+      error: dailyCap === 1
         ? 'Today’s exam-paper hand-in is used — a fresh one opens at midnight. Practice Again sheets and printed papers don’t count, so those can still go in.'
         : `You’ve handed in ${dailyCap} exam papers today — a fresh allowance opens at midnight. Practice Again sheets and printed papers don’t count.`,
     }, { status: 429 });
@@ -364,6 +376,7 @@ export async function POST(req: Request) {
       result_json: {
         ...rj,
         portal_submission: true,
+        ...(queuedFor ? { queued_for: queuedFor } : {}),
         // The provenance stamp, belt and braces: the bot's buildRunSource keeps
         // attached_by, but a bot from before that deploy rebuilds scheme_source
         // without it — and without it the student's scheme would be filed as
@@ -417,6 +430,12 @@ export async function POST(req: Request) {
   // marking lands; the queue worker's finished-marking Telegram (student name +
   // 🖼 PDF) stays the doorbell, and nothing here asks him to tap anything.
   const who = account.display_name || 'A student';
+  if (queuedFor) {
+    // Waits for its day: no enqueue now, the midnight cron does it.
+    const lane = scienceSubject ? `🧪 ${scienceSubject} · ` : '';
+    notify_marking(`🕒 <b>${escapeTelegramHtml(who)}</b> handed in “${escapeTelegramHtml(paperName)}” — ${lane}${photoUrls.length} page${photoUrls.length === 1 ? '' : 's'}, queued for ${dayWord(queuedFor, sgtTodayISO())} (the midnight queue sends it for marking).`).catch(() => {});
+    return NextResponse.json({ ok: true, runId, queuedFor });
+  }
   let queued = false;
   try {
     const q = await bot({ phase: 'enqueue', id: runId });

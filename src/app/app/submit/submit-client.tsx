@@ -17,6 +17,8 @@ import { pdfToPageImages } from '@/lib/pdf-pages';
 import { friendlyPortalMessage } from '@/lib/portal-fetch';
 import { splitFileIfSpread, resizeToJpeg } from '@/lib/spread-split';
 import { SUBMIT_FAILED_KIND, type SubmitFailure } from '@/lib/submit-failure';
+import { dayWord } from '@/lib/daily-queue';
+import { sgtTodayISO } from '@/lib/sgt';
 
 // Tell Adrian a hand-in failed after every retry (7 Sep 2026: "monitor failures
 // on students' end"). Fire-and-forget with keepalive, so it survives the student
@@ -95,10 +97,13 @@ async function uploadPage(file: File, onNote: (s: string) => void): Promise<stri
   throw err;
 }
 
-export default function SubmitClient({ assignment = null, paper = null, slotUsed = false, subjectChoices = [], family = 'math' }: {
+export default function SubmitClient({ assignment = null, paper = null, slotUsed = false, queueNotice = null, subjectChoices = [], family = 'math' }: {
   assignment?: { id: string; title: string } | null;
   paper?: { id: string; title: string } | null;
   slotUsed?: boolean;
+  // 🧪 The science waiting list's word for this hand-in (SPEC-PRACTICE-PHOTO §14):
+  // blocking = the three-day horizon is full; otherwise the day it queues for.
+  queueNotice?: { blocking: boolean; text: string } | null;
   // The subjects this student may mark a hand-in as. Empty (the default for
   // every student until the flag flips) means no picker and an implicit math
   // hand-in — nothing on screen changes. First entry is the default.
@@ -128,6 +133,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   // goes through regardless (see the route — this is advice, never a gate).
   const [findings, setFindings] = useState<{ kind: string; message: string; blocking?: boolean }[]>([]);
   const [doneRunId, setDoneRunId] = useState<string | null>(null);
+  const [queuedFor, setQueuedFor] = useState<string | null>(null);
   // Pages that already reached Blob, kept across a failed attempt so tapping Send
   // again RESUMES instead of starting from page 1 (1 Sep 2026 — see uploadPage).
   const uploadedRef = useRef<Map<number, string>>(new Map());
@@ -312,7 +318,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         ...(assignment ? { assignmentId: assignment.id } : {}),
         ...(paper ? { paperId: paper.id } : {}),
       });
-      let r: Response | null = null, d: { error?: string; runId?: string; findings?: { kind: string; message: string; blocking?: boolean }[] } = {};
+      let r: Response | null = null, d: { error?: string; runId?: string; queuedFor?: string; findings?: { kind: string; message: string; blocking?: boolean }[] } = {};
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
           if (attempt > 1) setStage(`Sending to Adrian… (try ${attempt} of 3)`);
@@ -339,6 +345,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         reportSubmitFailure({ stage: 'rejected', reason: `HTTP ${r.status}${d.error ? `: ${String(d.error).slice(0, 120)}` : ''}`, pages: pages.length, uploaded: urls.length, paperName: paperName.trim() || null, attempts: 1 });
         throw new Error(friendlyPortalMessage(r.status, d.error, 'The submission failed — try again.'));
       }
+      setQueuedFor(d.queuedFor ?? null);
       setDoneRunId(d.runId || 'ok');
       pages.forEach(p => { if (p.preview) URL.revokeObjectURL(p.preview); });
     } catch (e) {
@@ -351,20 +358,21 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   if (doneRunId && isScience) {
     return (
       <div className="space-y-4 pb-24 sm:pb-4">
-        <h1 className="text-xl font-bold text-navy pt-1">Science paper sent</h1>
+        <h1 className="text-xl font-bold text-navy pt-1">{queuedFor ? 'Science paper queued' : 'Science paper sent'}</h1>
         <div className={`${CARD} p-5 text-center`}>
-          <p className="text-4xl">🧪</p>
-          <p className="font-bold text-navy mt-2">Sent for marking</p>
+          <p className="text-4xl">{queuedFor ? '🕒' : '🧪'}</p>
+          <p className="font-bold text-navy mt-2">{queuedFor ? 'Queued for marking' : 'Sent for marking'}</p>
           <p className="text-sm text-gray-600 mt-1.5">
-            It comes back under <b>Science › Papers</b>, usually within the hour. The marks are an
-            estimate — when your teacher marks the same paper, come back and enter their total so we can compare.
+            {queuedFor
+              ? <>It waits for its day — marking starts at midnight on {dayWord(queuedFor, sgtTodayISO())}, and it comes back under <b>Science › Papers</b>. You can remove it there until then.</>
+              : <>It comes back under <b>Science › Papers</b>, usually within the hour. The marks are an estimate — when your teacher marks the same paper, come back and enter their total so we can compare.</>}
           </p>
           <div className="mt-4 flex justify-center">
             <Link href="/app/science" className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
               Back to Science
             </Link>
           </div>
-          <p className="text-[13px] text-gray-500 mt-3">🎟️ That was today&apos;s science hand-in — a fresh one opens at midnight. Your maths hand-in is separate.</p>
+          {!queuedFor && <p className="text-[13px] text-gray-500 mt-3">🎟️ Two science hand-ins a day — a third one queues for the next free day. Your maths hand-in is separate.</p>}
         </div>
       </div>
     );
@@ -402,16 +410,15 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   // printed paper — only an exam paper spends the day, 7 Sep 2026): say so up
   // front, before any photographing happens. The POST-time 429 stays as the
   // backstop for a slot spent from the Telegram side mid-visit.
-  if (slotUsed && isScience) {
+  if (queueNotice?.blocking && isScience) {
     return (
       <div className="space-y-4 pb-24 sm:pb-4">
         <h1 className="text-xl font-bold text-navy pt-1">Hand in a science paper</h1>
         <div className={`${CARD} p-5 text-center`}>
           <p className="text-4xl">🎟️</p>
-          <p className="font-bold text-navy mt-2">Today&apos;s science hand-ins are used</p>
+          <p className="font-bold text-navy mt-2">The science queue is full</p>
           <p className="text-sm text-gray-600 mt-1.5">
-            Two science papers a day. A fresh allowance opens at midnight — line the next one up for tomorrow.
-            Maths papers are separate.
+            {queueNotice.text} Maths papers are separate.
           </p>
           <div className="mt-4 flex justify-center">
             <Link href="/app/science" className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
@@ -475,6 +482,11 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
           the photos, in plain words: new, free, an estimate; explain answers
           are marked against standard points unless the school's scheme comes
           too; check it against the teacher's marking. */}
+      {isScience && queueNotice && !queueNotice.blocking && (
+        <div className="rounded-2xl border border-teal-200 bg-teal-50 px-4 py-3 text-[13px] text-teal-900" role="status">
+          🕒 {queueNotice.text}
+        </div>
+      )}
       {isScience && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-900 space-y-1">
           <p className="font-bold">Science marking is new, and free while it is.</p>
