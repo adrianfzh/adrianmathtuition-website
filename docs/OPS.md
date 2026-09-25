@@ -240,6 +240,20 @@ tick writing one Practice-tab photo question on the plan, SPEC-PRACTICE-PHOTO §
 it stamps on success and on a plan limit, never on a rhythm) and to any future
 queue-driven worker: rhythms are for jobs that MUST run on a clock.
 
+**Since 25 Sep 2026 no Mac runs a plan-billed worker.** The Fly worker
+`adrianmath-worker` holds every lane — 9 marking slots, 9 sheet slots
+(`SHEET_SLOTS_ON='1'`), `worksheets`, `extract`, `find-review`, `bot-review` — and
+each job picks the login with the least 7-day usage before it starts (bot
+`scripts/claude-pick.sh`; the meters are the ⏻ slot-accounts card on
+`/admin/mark-paper`). The Air's LaunchAgents were unloaded that morning; the
+Pro's `com.adrianmath.planmarking{,2,3}`, `sheetworker` and `worksheetworker`
+were booted out and disabled by Adrian that evening (`launchctl list | grep
+com.adrianmath` → nothing). The Macs now carry only Adrian's own sessions and
+the Claude scheduled tasks in the table below. A `plan-marking` / `sheet-worker`
+stamp whose `meta.slot` is a Mac after that date means an `install.sh` was
+re-run — a Mac slot never uses the picker (no `pool-here`), so it would spend
+that Mac's keychain login again.
+
 ## Claude Code scheduled tasks — per-Mac registry
 
 Claude Code desktop scheduled tasks are **machine-local**: stored under
@@ -297,6 +311,11 @@ Mac, so there is one account per machine and the hostname identifies it:
 | machine | Claude account | plan |
 |---|---|---|
 | `Adrians-MacBook-Pro` (Mac B) | `adrianmathtuition@gmail.com` | Max |
+
+**25 Sep 2026: the table above is history** — no Mac slot is loaded (see "Since
+25 Sep 2026" under on-demand workers); every claim now comes from the Fly
+worker (its `hostname -s` is the machine id `286d921a104298`), the account
+chosen per job by the picker and written into the same `BY` tag.
 
 Check the current mapping with `claude auth status` on the machine in question
 (it prints `email` and `subscriptionType`). Update this table if a slot is ever
