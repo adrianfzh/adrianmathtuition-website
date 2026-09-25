@@ -208,6 +208,18 @@ describe('frontPageHtml', () => {
     }
   });
 
+  it('never promises a practice sheet on a science cover — the corrections are the next move', () => {
+    for (const subject of ['Physics', 'Chemistry', 'Biology']) {
+      const h = frontPageHtml({ ...base, subject, paperName: 'Cambridge 5054 Physics 2014 Paper 2' });
+      expect(h).toContain('Start with <b>Q5</b>');
+      expect(h).toContain('Work through the corrections on those first, then read the topics behind them.');
+      expect(h).not.toMatch(/practice sheet/i);
+    }
+    // Maths keeps its line.
+    expect(frontPageHtml({ ...base, subject: 'A Math' })).toContain('drills exactly that');
+    expect(frontPageHtml({ ...base, subject: 'E Math' })).not.toContain('Work through the corrections');
+  });
+
   it('ties the closing line to every question the sheet named, not only the printed one', () => {
     const h = frontPageHtml({ ...base, themes: sheetThemes(), themesSource: 'sheet', worstQuestions: [
       { question: 'Q20', lost: 5, max: 6 }, { question: 'Q11', lost: 4, max: 8 },

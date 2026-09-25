@@ -29,7 +29,7 @@
 // Pure: analysis in, HTML out, no I/O. The route renders it with the shared
 // Puppeteer browser and prepends the image to the assembled PDF.
 import type { Theme } from './paper-analysis';
-import { subjectPill, type SubjectTone } from './portal-subjects';
+import { subjectPill, isScienceSubject, type SubjectTone } from './portal-subjects';
 import { mathHtml } from './math-inline';
 import {
   CARELESS_KINDS, CONCEPT_KINDS, ERROR_KIND_LABEL, hasLabelledLoss,
@@ -458,11 +458,17 @@ function closingLine(input: FrontPageInput): string {
       : ` <b>${esc(named[0].question)}</b> sits under ${topName} above.`;
   // When the themes ARE the sheet's sections, say so: page 1 and the practice
   // sheet behind it are one document, in one order.
-  const sheet = input.themesSource === 'sheet'
-    ? 'The practice sheet with this paper works through these in the same order.'
-    : 'The practice sheet that came with this paper drills exactly that.';
+  // A SCIENCE paper gets no practice sheet (SPEC-SCIENCE-MARKING: no Practice
+  // Again), so its next move is the corrections and the topics behind them —
+  // never "the practice sheet that came with this paper" (Adrian, 25 Sep 2026,
+  // on the demo Physics cover).
+  const next = isScienceSubject(input.subject)
+    ? 'Work through the corrections on those first, then read the topics behind them.'
+    : input.themesSource === 'sheet'
+      ? 'The practice sheet with this paper works through these in the same order.'
+      : 'The practice sheet that came with this paper drills exactly that.';
   return `<div class="close"><span class="close-tag">Your next move</span>
-    <p>Start with ${which}.${tie} ${sheet}</p></div>`;
+    <p>Start with ${which}.${tie} ${next}</p></div>`;
 }
 
 export function frontPageHtml(input: FrontPageInput): string {

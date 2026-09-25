@@ -41,7 +41,10 @@ export async function GET(req: NextRequest) {
   // orange, Physics cyan) — once more.
   // "-subject4": the science remark (25 Sep 2026 — concept gaps, no "do the practice"
   // line on a paper that gets no sheet) — once more.
-  const key = runKey(runId, `cover-${stamp}-subject4.png`);
+  // "-subject5": the science FOOTER (same day — "Your next move" on a science
+  // cover names the corrections, not "the practice sheet that came with this
+  // paper"; the remark box and the footer are built in two files) — once more.
+  const key = runKey(runId, `cover-${stamp}-subject5.png`);
   const headers = { 'Content-Type': 'image/png', 'Cache-Control': 'private, max-age=3600' };
   try {
     const cached = await downloadStudentFile(key);
