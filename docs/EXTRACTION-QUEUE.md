@@ -228,6 +228,9 @@ both Macs closed — Adrian: "build it".
   inside an `all` PDF goes back to the inbox via `scripts/dropbox-put.mjs`.
 - **Guard:** 2.5 h TERM-then-KILL under the 3-hour lease; a run that dies holding a row
   is finished `failed` by the wrapper with the reason, so a poison paper never loops.
+  The wrapper learns WHICH row it holds from the queue (`claimed_by` = its runner name),
+  never from the model's output — `claude -p` prints only the final message, so a marker
+  printed at claim time never reaches it (the first dry run, 25 Sep 2026).
 - **Logbook:** every run that claimed a row stamps `job_runs` `pdf-extract` through
   `POST /api/job-log` (`ok` = done/skipped); an empty-queue tick stamps nothing.
 - **The row's `notes`** carries the law's DONE / SKIPPED / SPARSE / FLAGGED line — the
