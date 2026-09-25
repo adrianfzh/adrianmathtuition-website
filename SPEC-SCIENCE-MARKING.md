@@ -161,8 +161,10 @@ a scheme and says so — and the disclaimer says so to the student.
    and passed to `save-paper` as `source.scheme_source` (`{pdf_url}` or `{pages:[{url}]}`),
    the shape the admin attach already uses. The bot extracts it, grounds on it, and STORES
    it in `paper_schemes` keyed by paper — every later hand-in of that paper, by anyone,
-   is grounded on it. *Phase 2 (not built): queue the stored scheme + paper into the science
-   bank's extraction inbox so the questions land in the QB.*
+   is grounded on it. *Phase 2 — the inbox HALF is built (26 Sep 2026): a science paper or scheme dropped
+   into `Extraction Inbox` by name is queued with its subject and extracted into the
+   science bank by the Fly lane (`docs/EXTRACTION-QUEUE.md` §4a; the law's §Science
+   papers). NOT built: the automatic hand-off of a `paper_schemes` row into that inbox.*
 6. **Release.** Auto-release as for math (free + disclaimer, no pre-release hold). The
    completion Telegram names the subject (🧪 physics). No Practice Again for science:
    `sheetQueueGuard` refuses a run whose `subject` is not math (status `science`) from both

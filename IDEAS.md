@@ -19,7 +19,7 @@ Done that evening: the Science tab (hidden from students, `SCIENCE_MARKING_OPEN_
 - 📐 **Biology: stricter scheme wording**; with no scheme attached, feedback only — score off the page (or refuse the hand-in).
 - 📐 **Science paper page: feedback above the total**, total framed as "our estimate".
 - 📐 **Rebuild the biology calibration scripts with the continuation pages** (Q1c, Q2c-d, Q5b were never handed in) and re-score; add Adrian's incoming marked papers as truth files.
-- 💡 Phase 2: an uploaded scheme filed into the science bank's extraction inbox; a Science-tab Ask.
+- 💡 Phase 2: an uploaded scheme filed into the science bank's extraction inbox; a Science-tab Ask. **The inbox side is BUILT 26 Sep 2026** — a science paper or scheme dropped in `Extraction Inbox` by name (`BIO PRELIM 2018 West Spring P1.pdf`, `… P1 MS.pdf`) is queued with `subject`, the Fly lane routes it to the science bank under the law's §Science papers (`docs/EXTRACTION-QUEUE.md` §4a); still open: the AUTO-filing of a student's uploaded scheme from `paper_schemes` into that inbox, and the Science-tab Ask.
 
 **Marking queue robustness (bot) — one piece of work, in this order:**
 - 📐 **A hand-back is accepted the moment its reads are checkpointed** (ack, not "worker busy"); the Mac slot clears its spool and claims the next paper; persist the Mac's second look + key check with the reads (both were redone on the API after every takeover on 10 Sep).

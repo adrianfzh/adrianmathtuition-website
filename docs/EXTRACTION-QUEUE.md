@@ -20,6 +20,10 @@ Drop a `.docx` or `.pdf` into **`Dropbox/Apps/AdrianMathNotes/Extraction Inbox/`
 outside the app folder). Name it the way the fleet already expects —
 `AM PRELIM 2025 Bedok South.pdf`, `JC2 MY 2012 SAJC.docx`,
 `EM S4 PRELIM (NA) 2024 Pierce.pdf` — because the watcher files it by that name.
+**Science papers take the same door since 26 Sep 2026** — `BIO PRELIM 2018 West Spring P1.pdf`,
+`CHEM MYE 2022 SASS P2.pdf`, `PHY PRELIM 2024 ACSI P1.pdf`, `S3 BIO EOY 2020 SJI P1.pdf`,
+`S2 SCI EOY 2023 Hua Yi.pdf`; a **mark scheme** is `… P1 MS.pdf` (or `… MS.pdf` for a
+P1+P2 scheme) and is kept for pairing, never queued → §4a.
 
 `GET /api/cron/extraction-inbox` runs every 10 minutes (Vercel cron; `?dry=1`
 lists the plan). For each file that has sat unchanged for 90 s (≤ 5 per tick):
@@ -158,12 +162,15 @@ queued ──claim──▶ claimed ──finish──▶ done | skipped | flagg
 ```
 
 Columns added: `status`, `claimed_by`, `claimed_at`, `finished_at`, `inbox_path`,
-`exam_type`, `notes`. Two functions:
+`exam_type`, `notes` — and **`subject`** since 26 Sep 2026 (`math` · `biology` ·
+`chemistry` · `physics` · `science`, parsed from the name's first token). Two functions:
 
-- `claim_extraction_paper(p_runner text, p_lease_hours int = 3)` — one queued
-  source, oldest first, `FOR UPDATE SKIP LOCKED`; a `claimed` row whose lease has
-  expired is fair game again (the note records the reclaim). **This one call
-  replaces every stale-claim heuristic in the fleet law.**
+- `claim_extraction_paper(p_runner text, p_lease_hours int = 3, p_subject text = null)` —
+  one queued source, oldest first, `FOR UPDATE SKIP LOCKED`; a `claimed` row whose
+  lease has expired is fair game again (the note records the reclaim); `p_subject`
+  narrows the claim to one subject (the Fly lane starts `claude` against that
+  subject's bank project, so it must not be handed a row of another subject).
+  **This one call replaces every stale-claim heuristic in the fleet law.**
 - `finish_extraction_paper(p_id, p_runner, p_status, p_notes = null)` — only the
   claimant may finish; anyone may hand a row back to `queued`.
 
@@ -177,7 +184,7 @@ key, no bucket credential, no iCloud folder.
 curl -s -X POST https://www.adrianmathtuition.com/api/admin/extraction-queue \
   -H "Authorization: Bearer $ADMIN_PASSWORD" -H 'Content-Type: application/json' \
   -d '{"action":"claim","runner":"PDF-Pipeline-CC1"}'
-# → { row: {...}, downloadUrl: "<signed, 1 hour>" }
+# → { row: {...}, downloadUrl: "<signed, 1 hour>" }   (add "subject":"biology" to claim one subject only)
 
 curl -sL -o paper.docx "$downloadUrl"        # then extract exactly as the law says
 
@@ -193,7 +200,7 @@ queue (with per-status counts). Direct-DB workers (psql on `$PGURL`) may call th
 two functions themselves and download by `storage_path` with a signed URL from
 `download`.
 
-Rows carry what the watcher parsed from the name — `level`, `year`, `school`
+Rows carry what the watcher parsed from the name — `subject`, `level`, `year`, `school`
 (spelled exactly as staged: **RI stays RI**), `exam_type`, `paper` (`p1`/`p2`, or
 `all` for a bundled docx). The worker still runs the duplicate guard and the alias
 pre-guard; those are about the *bank*, not the file.
@@ -240,6 +247,54 @@ The Mac tasks are redundant now; coexistence is harmless (the claim RPC is atomi
 a lease is a lease), so Adrian removes them when convenient. `SCHOOL_ALIASES.md` and
 the `pending_images_*.txt` side files still live on the Macs; the alias list wants its
 own small table when it next matters.
+
+### 4a. Science through the one inbox (26 Sep 2026)
+
+Adrian: *"the 16 waiting biology PDFs go through the inbox like any maths paper, and
+the Bio extract card can go with the other seven."* The four pieces:
+
+1. **The name.** The watcher's first token now includes the sciences
+   (`lib/extraction-inbox.ts`): `BIO` / `CHEM` / `PHY` → level `BIO` / `CHEM` / `PHYS`
+   (6093 / 6092 / 6091, subject `biology` / `chemistry` / `physics`); `S3 BIO|CHEM|PHY`
+   → `S3_BIO` / `S3_CHEM` / `S3_PHYS`; `S1 SCI` / `S2 SCI` → `S1` / `S2`, subject
+   `science`. Exam type and school follow the maths rule; `P1` / `P2` as before.
+   A file whose name carries **`MS`, `ANS` or `Answers`** is a mark scheme: the
+   watcher uploads it and files the row `status='skipped'` ("a mark scheme — kept
+   for pairing"), never queues it, and never runs `splitBook` on it. The worker
+   finds it later by subject + level + year + school (+ paper, else `all`).
+2. **The row.** `paper_library.subject` (above); the claim takes an optional
+   `subject` and the RPC's `p_subject` honours it.
+3. **The lane** (bot `worker/fly/extract.sh`): every tick **peeks the oldest queued
+   row's subject** (`GET ?status=queued&limit=1`), claims with that subject, and for
+   a science row swaps the Supabase pair to the science project
+   (`SUPABASE_URL_SCIENCE` / `SUPABASE_SERVICE_KEY_SCIENCE` become `$SUPABASE_URL` /
+   `$SUPABASE_SECRET_KEY` for the run, so `bank_insert.py insert|verify` works
+   unchanged) while the law, the queue, `job_runs` and the scheme lookup stay on the
+   math project as `$SUPABASE_URL_MAIN` / `$SUPABASE_SECRET_KEY_MAIN`; it passes
+   `EXTRACT_SUBJECT`, picks the model (Opus 5.5 high; **biology → Opus 5**) and stamps
+   `job_runs pdf-extract` meta `subject` + `model`. A run that finds itself holding a
+   row of another subject requeues it ("claimed by a <subject> run — wrong subject")
+   and stops.
+4. **The law.** The live `extraction_worker_prompt` row (`exam-extraction`,
+   `v2026-09-26-science`; archive `exam-extraction-2026-09-26-science`) carries a
+   pointer under *Claim a file* and a **§Science papers** section at the end that
+   REPLACES §Level / school / duplicate guard and §Process for a science run:
+   `level` = the staged token, `exam_type` as printed (Title Case), `paper` `'1'` MCQ
+   / `'2'` structured (Sec 3 and S1/S2 combined papers → `'1'`), topics only from the
+   science bank's `bank_topics` view for that level (+ `canonical_topics_bio.json` for
+   biology), MCQ = stem + four options + a top-level `solution` (V11), structured =
+   `parts[]` with one scheme point per mark, **the key wins** (only arithmetic slips
+   corrected, disagreements flagged), the paired scheme → `solution_source`
+   `mark_scheme` else `expanded_from_answer`, figures as
+   `<bio|chem|phy|sci>_{school}_{year}_p{paper}_q{n}_{8-hex}.png` POSTed straight
+   into the science bucket `question_images`, the 40-MCQ / 80-mark minimums, and the
+   log line's ` | Subject: … | MS: …` suffix. Maths runs never read it.
+
+What is NOT built: the automatic hand-off of a student's uploaded scheme from
+`paper_schemes` into this inbox (`SPEC-SCIENCE-MARKING.md` Phase 2) — a scheme still
+has to be dropped in by name. The science bank's `bank_topics` is a view over the live
+rows, so a level with no rows yet (`S3_*`) has no list: the section says to use the
+Sec 4 list for it.
 
 ## 5. Rollback
 

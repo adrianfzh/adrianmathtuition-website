@@ -40,8 +40,11 @@ per bin, with the whole bin's evidence, is faster and merges cleanly.
   when a notification never arrives. Relaunch by pointing a fresh agent at
   the same directory ("you are resuming; inspect the directory; finish what
   is partial").
-- **Opus for investigations and judgement, Sonnet for mechanical builds,
-  Fable only where it writes solutions** (extraction).
+- **Opus for investigations and judgement, Sonnet for mechanical builds.**
+  Fable is no longer in the extraction lane (26 Sep 2026, Adrian: "Fable should
+  be an overkill for pdf extraction") — the Fly worker extracts on **Opus 5.5 at
+  HIGH effort**, biology on **Opus 5** (the restricted-subject switch), and the
+  nightly figure-fitness judge runs on Opus 5.5 high too.
 
 ## 3. Verify on the bench, not on a live paper
 
@@ -125,7 +128,7 @@ rounds can be compared.
 | pen and drawing code, adapters, reconciliation code, any fix with a bench (`npm test` golden replay, `scripts/golden-pen.cjs`, `pen-dryrun.cjs`) | **Opus** agent, in its own clone | mechanical once the cause is named; the bench, not the model, is the proof |
 | a marking RULE whose wording must not collide with the ninety-odd dated rules already in `ai/paper-marker.js`; triage of a round of complaints across several papers; reading a marked page the way Adrian reads it | **Fable** (the orchestrating session) | the cost of a rule that teaches the wrong lesson is a wrong mark on a student's paper; the collision check is judgement over the whole prompt |
 | mechanical builds with a spec (renderers, migrations, backfills, docs sweeps) | **Sonnet** agent | speed; the spec is the judgement |
-| solutions and question authoring for the bank | Fable only where it WRITES the maths (the extraction fleet); **the GCE Set generator writes, blind-solves and repairs on Opus and moderates on Fable** (the `opus` / `fable` aliases, newest of each family) since 23 Sep 2026 (`docs/GCE-PAPER.md`) | accuracy of the maths itself |
+| solutions and question authoring for the bank | **the extraction lane on Opus 5.5 at HIGH effort, biology on Opus 5** (bot `worker/fly/extract.sh`, since 26 Sep 2026 — Fable was the fleet's solver until then and is not needed for reading a paper against its key; figure-fitness `figfit.sh` + `jobs.sh plan_run` pinned the same way); **the GCE Set generator writes, blind-solves and repairs on Opus and moderates on Fable** (the `opus` / `fable` aliases, newest of each family) since 23 Sep 2026 (`docs/GCE-PAPER.md`) | accuracy of the maths itself |
 
 Running every fix on the dearest tier is not "safer" — it costs plan usage for no
 gain on work the bench already proves. Running rule wording on the cheapest tier
