@@ -5,7 +5,7 @@
 // cloud session — needs only the admin bearer and curl, never the service key
 // or a bucket credential:
 //   GET  ?status=queued|claimed|done|flagged|all&limit=50   → the rows
-//   POST {action:'claim',   runner}                          → one row + a 1-hour signed download URL (204 when the queue is empty)
+//   POST {action:'claim',   runner, subject?}                → one row (subject = math|biology|chemistry|physics|science; omitted = any) + a 1-hour signed download URL (204 when the queue is empty)
 //   POST {action:'download', id}                             → a fresh signed URL for a row you hold
 //   POST {action:'finish',  id, runner, status, notes?}      → done | skipped | flagged | failed (claimant only)
 //   POST {action:'requeue', id, notes?}                      → back to 'queued', claim cleared (admin)
@@ -57,7 +57,10 @@ export async function POST(req: NextRequest) {
     const runner = String(body.runner || '').trim().slice(0, 80);
     if (!runner) return NextResponse.json({ error: 'runner required' }, { status: 400 });
     const lease = Number.isFinite(Number(body.leaseHours)) ? Math.min(24, Math.max(1, Number(body.leaseHours))) : 3;
-    const { data, error } = await sb.rpc('claim_extraction_paper', { p_runner: runner, p_lease_hours: lease });
+    // `subject` (26 Sep 2026): a worker started with one bank project's keys claims only
+    // that subject's rows — math | biology | chemistry | physics | science. Omitted = any.
+    const subject = body.subject ? String(body.subject).trim().toLowerCase().slice(0, 20) : null;
+    const { data, error } = await sb.rpc('claim_extraction_paper', { p_runner: runner, p_lease_hours: lease, p_subject: subject });
     if (error) return NextResponse.json({ error: error.message }, { status: 502 });
     const row = Array.isArray(data) ? data[0] : data;
     if (!row) return new NextResponse(null, { status: 204 });
