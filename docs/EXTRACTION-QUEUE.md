@@ -198,21 +198,45 @@ Rows carry what the watcher parsed from the name — `level`, `year`, `school`
 `all` for a bundled docx). The worker still runs the duplicate guard and the alias
 pre-guard; those are about the *bank*, not the file.
 
-## 4. What is deliberately NOT done yet — the fleet cutover
+## 4. Who runs the queue — the cutover (10 Sep 2026) and the Fly lane (25 Sep 2026)
 
-The workers still read the iCloud folder. Switching them is one edit to the fleet
-law (`extraction_worker_prompt`, id `exam-extraction`): replace "claim a file in
-`papers/`" with the three `curl` calls above, and delete §"Recover stale claims",
-the `.claims/` marker rules and the resurrection pre-check. That edit is
-mechanical but it changes how six autonomous workers behave on every paper, so it
-is a deliberate step with a dry run, not a side-effect of this build. Until then
-both lanes can coexist: the folder still works, and anything dropped in the inbox
-simply waits in `queued`.
+**The cutover happened on 10 Sep 2026:** the fleet law (`extraction_worker_prompt`,
+id `exam-extraction`) has a step 0 that claims from this queue through the three
+`curl` calls above before it looks at the iCloud folder, and a QUEUE-ONLY shim
+stops on a 204. The Mac fleet (`inbox-extract` on the Pro, the `exam-extraction-cc1..3`
+launchd shims) ran that way for a fortnight.
 
-The side files — `papers/processing_log.txt`, `pending_images_*.txt`,
-`SCHOOL_ALIASES.md` — also still live on iCloud. `notes` on the row is where a
-worker's per-paper log belongs once cut over; the alias list wants its own small
-table. Backfilling `processed/` history into the library is optional and separate.
+**Since 25 Sep 2026 the queue is drained by the Fly worker** (`adrianmath-worker`,
+bot repo `worker/fly/extract.sh` + `EXTRACT_PROMPT.md`), so extraction runs with
+both Macs closed — Adrian: "build it".
+
+- `worker/fly/jobs.sh` reads `GET /api/admin/extraction-queue?status=queued&limit=1`
+  every 15 min (one curl); a queued row starts `extract.sh`.
+- **Budget:** the marking slots come first. Outside 00:00–06:59 SGT a run starts only
+  when the marking queue is empty (the supervisor's `external-peek`). The bot wakes the
+  machine at 00:02 for the night window; with the queue non-empty the machine stays up
+  (`extract` is in jobs.sh's hold list) and claims one row every 15 min until it is dry.
+- **The run:** `claude -p` on a pooled CLI login (never the API key), in a clone of the
+  AdrianMath repo at `/data/bank` (`~/Desktop/AdrianMath` is a symlink to it, so the
+  law's paths read true), runner `PDF-Pipeline-Fly-<ddHHMM>`. The prompt fetches the
+  law fresh from Supabase and follows it with overrides for the box: REST only
+  (`scripts/bank_insert.py` reads `SUPABASE_URL` + `SUPABASE_SECRET_KEY` from env;
+  reads are PostgREST GETs), the Bearer is `$ADMIN_PASSWORD` from env, no Mac-fleet
+  housekeeping (`.claims/`, sweeps, iCloud), `.auto-memory` absent, `.upload_secret`
+  written at boot from the Fly secret `BANK_UPLOAD_SECRET` (missing → the paper is
+  banked and finished `flagged` with `FLAGGED-IMAGES`, never abandoned), a second cover
+  inside an `all` PDF goes back to the inbox via `scripts/dropbox-put.mjs`.
+- **Guard:** 2.5 h TERM-then-KILL under the 3-hour lease; a run that dies holding a row
+  is finished `failed` by the wrapper with the reason, so a poison paper never loops.
+- **Logbook:** every run that claimed a row stamps `job_runs` `pdf-extract` through
+  `POST /api/job-log` (`ok` = done/skipped); an empty-queue tick stamps nothing.
+- **The row's `notes`** carries the law's DONE / SKIPPED / SPARSE / FLAGGED line — the
+  box's `papers/processing_log.txt` is local and disposable.
+
+The Mac tasks are redundant now; coexistence is harmless (the claim RPC is atomic and
+a lease is a lease), so Adrian removes them when convenient. `SCHOOL_ALIASES.md` and
+the `pending_images_*.txt` side files still live on the Macs; the alias list wants its
+own small table when it next matters.
 
 ## 5. Rollback
 
