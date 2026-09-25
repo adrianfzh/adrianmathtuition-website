@@ -2457,6 +2457,10 @@ obvious … remove the compulsory mark (put done or not done — colour code the
 
 ### The Science tab — free science marking for students (10 Sep 2026)
 
+> **OPEN since 25 Sep 2026 09:40 SGT** (Adrian: "turn on science now") — the Airtable `Settings`
+> row `science_marking_open` is on; every signed-in student sees the tab. Close it again from
+> the 🧪 card on `/admin/mark-paper` or `POST /api/admin/marking-settings {scienceOpen:false}`.
+
 SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026 is the contract; this is the map.
 
 - **Two families, one shell.** `components/PortalTabs.tsx` `FamilySwitch` (Math | Science, under

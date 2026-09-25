@@ -222,6 +222,13 @@ taxonomy (the nine math kinds are used as-is; biology's "missing point / impreci
 reads as `incomplete` / `concept`).
 
 
+## Decision 25 Sep 2026 — OPEN
+
+Adrian: "turn on science now." The switch below was flipped on at 09:40 SGT on
+25 Sep 2026 (`science_marking_open` on, note "Adrian: turn on science now"), the same
+morning Set 2 of the subject colours was promoted. Every signed-in student now sees the
+Science tab; the demo student and the admin preview saw it already.
+
 ## Decision 11 Sep 2026 — ready to release, not released
 
 Adrian: "put in the disclaimer, don't open it yet. i will see test through student
