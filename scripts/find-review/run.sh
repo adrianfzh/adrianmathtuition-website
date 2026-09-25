@@ -98,11 +98,11 @@ unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN ANTHROPIC_BASE_URL
 AUTH_VIA=""
 if claude auth status 2>/dev/null | grep -q '"loggedIn": *true'; then
   AUTH_VIA="keychain"
-elif [ -r "$STATE/oauth_token" ]; then
+elif [ -s "$STATE/oauth_token" ]; then
   CLAUDE_CODE_OAUTH_TOKEN="$(tr -d '[:space:]' < "$STATE/oauth_token")"
   export CLAUDE_CODE_OAUTH_TOKEN
   AUTH_VIA="oauth_token file"
-elif [ -r "$HOME/.adrianmath_pipeline/oauth_token" ]; then
+elif [ -s "$HOME/.adrianmath_pipeline/oauth_token" ]; then
   # The token every plan-billed worker on this Mac shares (sheet-worker precedent).
   CLAUDE_CODE_OAUTH_TOKEN="$(tr -d '[:space:]' < "$HOME/.adrianmath_pipeline/oauth_token")"
   export CLAUDE_CODE_OAUTH_TOKEN
