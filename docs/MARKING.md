@@ -491,7 +491,9 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
     JC paper shows a plain grey H2 pill and gets no card edge, header wash or cover band;
     the subject logic (JC accounts hand in under H2 Math, sort, count) is untouched. The
     desk's `PAPER_SUBJECT_TONE` carries the same five as hexes; the cover's cache key is
-    `-subject3`, so every cover is drawn once more on its next view.
+    `-subject4` (`-subject3` was Set 2; `-subject4` the science remark the same day — a science
+    cover's closing line says "concept gaps … read those topics again", never "do the
+    practice", `lib/cover-remark.ts` `family:'science'`), so every cover is drawn once more on its next view.
   - **The sheet's diagnosis drives the cover (2026-09-02).** Adrian: *"the sheet's diagnosis
     should drive the cover, not the cover the sheet."* The self-study worker sends
     `result.diagnosis` with its `done` call (`/api/admin/sheet-jobs`; shape + example in

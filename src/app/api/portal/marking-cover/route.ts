@@ -39,7 +39,9 @@ export async function GET(req: NextRequest) {
   // amber, H2 plain) — the same rule, one more render on the next view.
   // "-subject3": Set 2 (every subject's band = its tag; A Math royal blue, E Math
   // orange, Physics cyan) — once more.
-  const key = runKey(runId, `cover-${stamp}-subject3.png`);
+  // "-subject4": the science remark (25 Sep 2026 — concept gaps, no "do the practice"
+  // line on a paper that gets no sheet) — once more.
+  const key = runKey(runId, `cover-${stamp}-subject4.png`);
   const headers = { 'Content-Type': 'image/png', 'Cache-Control': 'private, max-age=3600' };
   try {
     const cached = await downloadStudentFile(key);
