@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
   const status = req.nextUrl.searchParams.get('status') || 'queued';
   const limit = Math.min(200, Math.max(1, Number(req.nextUrl.searchParams.get('limit') || 50)));
   let q = getSupabaseAdmin().from('paper_library')
-    .select('id, key, status, source_file, level, year, school, exam_type, paper, size_bytes, sha256, storage_path, inbox_path, claimed_by, claimed_at, finished_at, notes, indexed_at')
+    .select('id, key, status, source_file, level, year, school, exam_type, paper, subject, size_bytes, sha256, storage_path, inbox_path, claimed_by, claimed_at, finished_at, notes, indexed_at')
     .eq('kind', 'source').order('indexed_at', { ascending: true }).limit(limit);
   if (status !== 'all') {
     if (!STATUSES.has(status)) return NextResponse.json({ error: `status must be one of ${[...STATUSES].join('|')}|all` }, { status: 400 });

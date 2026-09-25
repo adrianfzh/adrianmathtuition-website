@@ -40,7 +40,7 @@ import { dropboxConfigured, ensureFolder, listFolder, downloadFile, movePath } f
 import {
   decideInboxFile, inboxSummary, isSourceFile, libraryRowFor, libraryLabel,
   runsToReground, regroundNotice, parseSourceFilename, sourceKey, sourceStoragePath,
-  type InboxEntry, type KnownSource, type LibraryRow, type RegroundRun, type ParsedSourceName,
+  type InboxEntry, type KnownSource, type LibraryRow, type RegroundRun, type ParsedSourceName, libraryKindOf,
 } from '@/lib/extraction-inbox';
 import { splitBook, type BookRead } from '@/lib/paper-book-split-io';
 import { describeParts, partFileName } from '@/lib/paper-book-split';
@@ -148,7 +148,7 @@ async function remarkUngroundedRuns(
   return out;
 }
 
-type Counts = { queued: number; flagged: number; duplicate: number; moved: number; waiting: number; failed: number; filed: number; remarked: number; split: number };
+type Counts = { queued: number; flagged: number; duplicate: number; moved: number; waiting: number; failed: number; filed: number; remarked: number; split: number; schemes: number };
 
 /**
  * The marker's half for ONE paper: its library row over the object the source
@@ -219,7 +219,7 @@ async function fileBookParts(
   const bookNote = `split by the watcher on ${today} into ${book.parts.length} papers (${describeParts(book.parts)}), read from the covers by ${book.model}: ${names.join(', ')} — each queued as its own row`;
   const { data: ins, error: insErr } = await sb.from('paper_library').upsert({
     key: d.key, kind: 'source', storage_path: d.storagePath, source_file: e.name, source_folder: INBOX_FOLDER,
-    level: parsed.level, year: parsed.year, paper: parsed.paper, school: parsed.school, exam_type: parsed.examType,
+    level: parsed.level, year: parsed.year, paper: parsed.paper, school: parsed.school, exam_type: parsed.examType, subject: parsed.subject,
     size_bytes: bytes.length, sha256, indexed_at: now.toISOString(), inbox_path: e.path, status: 'skipped', notes: bookNote,
   }, { onConflict: 'key,kind' }).select('id').single();
   if (insErr) throw new Error(`row: ${insErr.message}`);
@@ -246,7 +246,7 @@ async function fileBookParts(
     } else {
       const { data: pIns, error: pInsErr } = await sb.from('paper_library').upsert({
         key, kind: 'source', storage_path: storagePath, source_file: name, source_folder: INBOX_FOLDER,
-        level: pp.level, year: pp.year, paper: pp.paper, school: pp.school, exam_type: pp.examType,
+        level: pp.level, year: pp.year, paper: pp.paper, school: pp.school, exam_type: pp.examType, subject: pp.subject,
         size_bytes: partBytes.length, sha256: partSha, indexed_at: now.toISOString(), inbox_path: to ?? e.path, status: 'queued',
         notes: `pp. ${part.from}–${part.to} of "${e.name}", cut by the watcher on ${today}`,
       }, { onConflict: 'key,kind' }).select('id').single();
@@ -290,7 +290,7 @@ export async function GET(req: NextRequest) {
     status: String(r.status), inbox_path: r.inbox_path ? String(r.inbox_path) : null, source_file: String(r.source_file),
   }));
 
-  const counts: Counts = { queued: 0, flagged: 0, duplicate: 0, moved: 0, waiting: 0, failed: 0, filed: 0, remarked: 0, split: 0 };
+  const counts: Counts = { queued: 0, flagged: 0, duplicate: 0, moved: 0, waiting: 0, failed: 0, filed: 0, remarked: 0, split: 0, schemes: 0 };
   const out: Array<Record<string, unknown>> = [];
   let handled = 0;
   for (const e of entries) {
@@ -327,10 +327,16 @@ export async function GET(req: NextRequest) {
         item.action = `duplicate of ${d.of.source_file} (${d.of.status}) — moved to rejected/`; counts.duplicate++;
         continue;
       }
+      // A mark scheme is never a paper to extract (26 Sep 2026): its bytes are
+      // kept — the maths marker files them under the paper's key, the science
+      // worker pairs them by level, year and school — but the source row closes
+      // as `skipped`, so no worker claims a scheme as a paper and the cover
+      // reader never cuts one into "papers".
+      const scheme = d.kind === 'enqueue' && libraryKindOf(e.name) === 'solutions';
       // A book? Read the covers before anything is filed (see fileBookParts).
       let parsed: ParsedSourceName = d.parsed;
       let book: BookRead | null = null;
-      if (d.kind === 'enqueue' && parsed.ok && parsed.paper === 'all' && parsed.ext === 'pdf') {
+      if (d.kind === 'enqueue' && !scheme && parsed.ok && parsed.paper === 'all' && parsed.ext === 'pdf') {
         try { book = await splitBook(bytes); item.book = bookSummary(book); }
         catch (err) { item.book = `covers not read: ${((err as Error).message || String(err)).slice(0, 120)}`; }
       }
@@ -351,14 +357,15 @@ export async function GET(req: NextRequest) {
         key: d.key, kind: 'source', storage_path: d.storagePath, source_file: e.name, source_folder: INBOX_FOLDER,
         level: parsed.ok ? parsed.level : null, year: parsed.ok ? parsed.year : null,
         paper: parsed.ok ? parsed.paper : null, school: parsed.ok ? parsed.school : null,
-        exam_type: parsed.ok ? parsed.examType : null,
+        exam_type: parsed.ok ? parsed.examType : null, subject: parsed.ok ? parsed.subject : 'math',
         size_bytes: bytes.length, sha256, indexed_at: now.toISOString(), inbox_path: e.path,
-        status: d.kind === 'enqueue' ? 'queued' : 'flagged',
+        status: d.kind === 'enqueue' ? (scheme ? 'skipped' : 'queued') : 'flagged',
         // A name the fleet cannot file says BOTH conventions, because a book is
         // the commonest reason: one file per paper, named the way the marker
         // looks a paper up (10 Sep 2026).
         notes: d.kind === 'flag'
           ? `inbox could not file the name: ${parsed.ok ? '' : parsed.reason}. Rename it (fleet convention, e.g. "AM PRELIM 2025 Bedok South.pdf") and requeue. A combined Ten-Year-Series book: split it into one file per paper, named \`AM GCE 2025 Paper 1.pdf\`.`
+          : scheme ? 'a mark scheme, not a paper to extract — kept for pairing: the science worker finds it by level, year and school; the maths marker by the paper\'s key. Nothing claims it.'
           : coverPaper ? `paper number read from the cover by the watcher: ${coverPaper.toUpperCase()}`
           : book ? `covers: ${String(item.book)}` : null,
       };
@@ -368,8 +375,13 @@ export async function GET(req: NextRequest) {
       if (to) await sb.from('paper_library').update({ inbox_path: to }).eq('id', ins.id);
       known.push({ id: String(ins.id), key: d.key, sha256, status: row.status, inbox_path: to ?? e.path, source_file: e.name });
       if (d.kind === 'enqueue') {
-        counts.queued++;
-        item.action = `queued: ${parsed.ok ? `${parsed.level} ${parsed.year} ${parsed.school}${parsed.examType ? ' ' + parsed.examType : ''} ${parsed.paper}` : ''} → ${d.storagePath}`;
+        if (scheme) {
+          counts.schemes++;
+          item.action = `mark scheme kept for pairing: ${parsed.ok ? `${parsed.level} ${parsed.year} ${parsed.school}${parsed.examType ? ' ' + parsed.examType : ''} ${parsed.paper}` : ''} → ${d.storagePath}`;
+        } else {
+          counts.queued++;
+          item.action = `queued: ${parsed.ok ? `${parsed.level} ${parsed.year} ${parsed.school}${parsed.examType ? ' ' + parsed.examType : ''} ${parsed.paper}` : ''} → ${d.storagePath}`;
+        }
         // ── …and the MARKER's copy of the same file (10 Sep 2026) ────────────
         // The extraction row above is for the fleet; this is the row the marker
         // grounds on. Both point at one object. A file that names no single
