@@ -17,17 +17,19 @@ import { subjectPill, type SubjectTone } from '@/lib/portal-subjects';
  *  marks went" cover wears the same tone as a band + tag (25 Sep 2026) — its hexes
  *  are in lib/front-page-html.ts coverSubject; change a colour in both. */
 export const SUBJECT_TONE: Record<Exclude<SubjectTone, 'other'>, { soft: string; solid: string; strip: string; tint: string }> = {
-  // The maths (25 Sep 2026, Adrian: E Math sky and Physics blue "look almost the
-  // same"; "navy blue for Amath"; teal "looks similar to green"): A Math is navy —
-  // Tailwind blue-900, not the app's own navy, so a card's edge never reads as
-  // chrome — as a wash of itself rather than blue-100, which is Physics's; E Math
-  // is amber, the one warm colour that sits beside neither the sciences nor the
-  // red pen. H2 has no row: a JC paper is plain (portal-subjects subjectPill).
-  am: { soft: 'bg-blue-900/10 text-blue-900', solid: 'bg-blue-900 text-white', strip: 'bg-blue-900', tint: 'bg-blue-900/[0.06] border-blue-900/20' },
-  em: { soft: 'bg-amber-100 text-amber-800', solid: 'bg-amber-700 text-white', strip: 'bg-amber-500', tint: 'bg-amber-50/60 border-amber-200/70' },
-  phy: { soft: 'bg-blue-100 text-blue-800', solid: 'bg-blue-600 text-white', strip: 'bg-blue-500', tint: 'bg-blue-50/60 border-blue-200/70' },
-  chem: { soft: 'bg-purple-100 text-purple-800', solid: 'bg-purple-600 text-white', strip: 'bg-purple-500', tint: 'bg-purple-50/60 border-purple-200/70' },
-  bio: { soft: 'bg-green-100 text-green-800', solid: 'bg-green-600 text-white', strip: 'bg-green-500', tint: 'bg-green-50/60 border-green-200/70' },
+  // Set 2 (25 Sep 2026, Adrian picked it from three sets after "for orange, why
+  // not the same colour here?" and "should be coherent with the overall app"):
+  // one colour per subject, and the card's edge (strip) and the tag (solid) are
+  // that SAME colour — A Math royal blue (blue-700), E Math orange (orange-400,
+  // dark text on the tag: white fails contrast on it), Physics cyan, Chemistry
+  // purple-500, Biology green-600. Beside the app's own slate / amber notice /
+  // emerald done / rose lost marks none of the five is a state colour. H2 has no
+  // row: a JC paper is plain (portal-subjects subjectPill).
+  am: { soft: 'bg-blue-700/10 text-blue-800', solid: 'bg-blue-700 text-white', strip: 'bg-blue-700', tint: 'bg-blue-700/[0.06] border-blue-700/20' },
+  em: { soft: 'bg-orange-100 text-orange-800', solid: 'bg-orange-400 text-orange-950', strip: 'bg-orange-400', tint: 'bg-orange-50/70 border-orange-200/70' },
+  phy: { soft: 'bg-cyan-100 text-cyan-800', solid: 'bg-cyan-600 text-white', strip: 'bg-cyan-600', tint: 'bg-cyan-50/70 border-cyan-200/70' },
+  chem: { soft: 'bg-purple-100 text-purple-800', solid: 'bg-purple-500 text-white', strip: 'bg-purple-500', tint: 'bg-purple-50/60 border-purple-200/70' },
+  bio: { soft: 'bg-green-100 text-green-800', solid: 'bg-green-600 text-white', strip: 'bg-green-600', tint: 'bg-green-50/60 border-green-200/70' },
 };
 
 /** The tone record for a paper's subject, or null for Other / untagged. */

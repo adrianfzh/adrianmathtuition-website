@@ -126,22 +126,24 @@ export type FrontPageInput = {
 };
 
 /**
- * The cover's frame colour for a subject: the label the tag prints and the two
- * hexes of the app's tone (the literal values of `SUBJECT_TONE.strip` for the
- * band and `.solid` for the tag, which are class names and cannot reach a
- * Puppeteer page). One colour means one subject everywhere;
- * change a colour there and here together. Null for Other, untagged, unknown.
+ * The cover's frame colour for a subject: the label the tag prints and the hex
+ * of the app's tone (the literal value of `SUBJECT_TONE.strip`, which is a class
+ * name and cannot reach a Puppeteer page) — band and tag are the SAME colour
+ * (Set 2, 25 Sep 2026), so `band` and `solid` agree; `ink` is the tag's text
+ * where white would fail on it (orange). One colour means one subject
+ * everywhere; change a colour there and here together. Null for Other,
+ * untagged, unknown.
  */
-export function coverSubject(subject: string | null | undefined): { label: string; band: string; solid: string } | null {
+export function coverSubject(subject: string | null | undefined): { label: string; band: string; solid: string; ink?: string } | null {
   const pill = subjectPill(subject);
   if (!pill || pill.tone === 'other') return null;
-  const T: Record<Exclude<SubjectTone, 'other'>, { label: string; band: string; solid: string }> = {
-    am: { label: 'A Math', band: '#1E3A8A', solid: '#1E3A8A' },      // navy (blue-900, band and tag alike)
-    em: { label: 'E Math', band: '#F59E0B', solid: '#B45309' },      // amber (500 band, 700 tag — 600 is too pale under white)
+  const T: Record<Exclude<SubjectTone, 'other'>, { label: string; band: string; solid: string; ink?: string }> = {
+    am: { label: 'A Math', band: '#1D4ED8', solid: '#1D4ED8' },                  // royal blue (blue-700)
+    em: { label: 'E Math', band: '#FB923C', solid: '#FB923C', ink: '#431407' },  // orange (orange-400; orange-950 text on the tag)
     // H2 Math: no row — a JC paper's cover is plain (25 Sep 2026, "Remove h2").
-    phy: { label: 'Physics', band: '#3B82F6', solid: '#2563EB' },    // blue
-    chem: { label: 'Chemistry', band: '#A855F7', solid: '#9333EA' }, // purple
-    bio: { label: 'Biology', band: '#22C55E', solid: '#16A34A' },    // green
+    phy: { label: 'Physics', band: '#0891B2', solid: '#0891B2' },                // cyan (cyan-600)
+    chem: { label: 'Chemistry', band: '#A855F7', solid: '#A855F7' },             // purple (purple-500)
+    bio: { label: 'Biology', band: '#16A34A', solid: '#16A34A' },                // green (green-600)
   };
   return T[pill.tone];
 }
@@ -153,7 +155,7 @@ function subjectCss(tone: ReturnType<typeof coverSubject>): string {
   if (!tone) return '';
   return `body{border-top:2.4mm solid ${tone.band};padding-top:12.6mm}
 .subject-tag{display:inline-block;margin-left:.6rem;padding:.16rem .5rem .12rem;border-radius:999px;
-             background:${tone.solid};color:#fff;font-size:.58rem;letter-spacing:.14em;line-height:1.2;vertical-align:.1em}
+             background:${tone.solid};color:${tone.ink ?? '#fff'};font-size:.58rem;letter-spacing:.14em;line-height:1.2;vertical-align:.1em}
 `;
 }
 

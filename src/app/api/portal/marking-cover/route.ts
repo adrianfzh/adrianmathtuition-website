@@ -37,7 +37,9 @@ export async function GET(req: NextRequest) {
   // more, on its next view, so a student's list never mixes the two looks.
   // "-subject2": the maths tones changed later that day (A Math navy, E Math
   // amber, H2 plain) — the same rule, one more render on the next view.
-  const key = runKey(runId, `cover-${stamp}-subject2.png`);
+  // "-subject3": Set 2 (every subject's band = its tag; A Math royal blue, E Math
+  // orange, Physics cyan) — once more.
+  const key = runKey(runId, `cover-${stamp}-subject3.png`);
   const headers = { 'Content-Type': 'image/png', 'Cache-Control': 'private, max-age=3600' };
   try {
     const cached = await downloadStudentFile(key);

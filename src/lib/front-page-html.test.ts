@@ -627,12 +627,21 @@ describe('frontPageHtml — the subject frame', () => {
     expect(plain).not.toContain('subject-tag');
     expect(plain).not.toContain('border-top:2.4mm');
   });
+  it('E Math: the orange tag prints dark text (white fails on orange-400); the others stay white', () => {
+    const em = frontPageHtml({ ...base, subject: 'E Math' });
+    expect(em).toMatch(/body\{border-top:2\.4mm solid #FB923C;padding-top:12\.6mm\}/);
+    expect(em).toContain('background:#FB923C;color:#431407;');
+    expect(frontPageHtml({ ...base, subject: 'Chemistry' })).toContain('background:#A855F7;color:#fff;');
+  });
+
   it('coverSubject: the five tones the app uses, by the run\'s paper_subject; H2 is plain', () => {
-    expect(coverSubject('A Math')).toEqual({ label: 'A Math', band: '#1E3A8A', solid: '#1E3A8A' });
-    expect(coverSubject('E Math')).toEqual({ label: 'E Math', band: '#F59E0B', solid: '#B45309' });
+    expect(coverSubject('A Math')).toEqual({ label: 'A Math', band: '#1D4ED8', solid: '#1D4ED8' });
+    expect(coverSubject('E Math')).toEqual({ label: 'E Math', band: '#FB923C', solid: '#FB923C', ink: '#431407' });
     expect(coverSubject('H2 Math')).toBeNull();
-    expect(coverSubject('Physics')?.band).toBe('#3B82F6');
-    expect(coverSubject('Biology')?.band).toBe('#22C55E');
+    expect(coverSubject('Physics')?.band).toBe('#0891B2');
+    expect(coverSubject('Biology')?.band).toBe('#16A34A');
+    // Set 2: the band and the tag are one colour for every subject
+    for (const s of ['A Math', 'E Math', 'Physics', 'Chemistry', 'Biology']) expect(coverSubject(s)?.band).toBe(coverSubject(s)?.solid);
     expect(coverSubject('Other')).toBeNull();
     expect(coverSubject(undefined)).toBeNull();
   });

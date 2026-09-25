@@ -292,12 +292,12 @@ function Chip({ label, bg = '#f3f4f6', color = '#374151', title }: { label: stri
 // "Other" shows as a grey chip here (Adrian needs to see the untagged ones);
 // null shows nothing.
 const PAPER_SUBJECT_TONE: Record<string, { bg: string; fg: string }> = {
-  // The app's SUBJECT_TONE, as hexes (25 Sep 2026: A Math navy, E Math amber; H2 is
-  // `other` — plain — since that day).
-  am: { bg: '#e8ebf3', fg: '#1e3a8a' },
-  em: { bg: '#fef3c7', fg: '#92400e' },
-  // The sciences (10 Sep 2026) — the same three tones as the app's pill.
-  phy: { bg: '#dbeafe', fg: '#1e40af' },
+  // The app's SUBJECT_TONE as hexes — Set 2 (25 Sep 2026): A Math royal blue, E Math
+  // orange, Physics cyan; H2 is `other` — plain — since that day.
+  am: { bg: '#dbeafe', fg: '#1d4ed8' },
+  em: { bg: '#ffedd5', fg: '#9a3412' },
+  // The sciences — the same three tones as the app's pill.
+  phy: { bg: '#cffafe', fg: '#155e75' },
   chem: { bg: '#f3e8ff', fg: '#6b21a8' },
   bio: { bg: '#dcfce7', fg: '#166534' },
   other: { bg: '#f3f4f6', fg: '#6b7280' },
