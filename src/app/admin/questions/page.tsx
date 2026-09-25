@@ -190,6 +190,8 @@ export default function QuestionBankPage() {
   const [pdfTitle, setPdfTitle] = useState(''); // prefilled with the auto title on paper open, editable in place
   const [pdfResult, setPdfResult] = useState<{ url: string; count: number; marksTotal: number; cached: boolean } | null>(null);
   const [solResult, setSolResult] = useState<{ url: string; count: number } | null>(null);
+  const [ansBusy, setAnsBusy] = useState(false);
+  const [ansResult, setAnsResult] = useState<{ url: string; count: number; cached: boolean } | null>(null);
   const replaceRef = useRef<HTMLInputElement | null>(null);
   const [replaceTarget, setReplaceTarget] = useState<string | null>(null); // figure URL being replaced
   const [replBusy, setReplBusy] = useState(false);
@@ -338,7 +340,7 @@ export default function QuestionBankPage() {
         `${meta.school} ${meta.year}`, meta.level,
         meta.paper ? `Paper ${String(meta.paper).replace(/^P/i, '')}` : null, meta.examType,
       ].filter(Boolean).join(' · '));
-      setPdfResult(null); setSolResult(null);
+      setPdfResult(null); setSolResult(null); setAnsResult(null);
       setOpenDetail(null);
       window.scrollTo({ top: 0 });
     } catch (e) { setApiError((e as Error).message); }
@@ -572,6 +574,32 @@ export default function QuestionBankPage() {
       navigator.clipboard?.writeText(d.url).catch(() => {});
     } catch (e) { flash((e as Error).message); }
     finally { setPdfBusy(false); }
+  };
+
+  // Answers PDF — the open paper's answer key on its own (Adrian, 25 Sep 2026).
+  // Same paper-pdf action with answersOnly, so it shares the key the Paper PDF
+  // prints and the original-numbering toggle and title.
+  const generateAnswersPdf = async () => {
+    if (!paperView || ansBusy) return;
+    setAnsBusy(true);
+    try {
+      const m = paperView.meta;
+      const r = await fetch('/api/admin/questions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'paper-pdf', school: m.school, year: m.year,
+          level: m.level || undefined, paper: m.paper || undefined, examType: m.examType || undefined,
+          originalNumbering: pdfOrigNum, answersOnly: true,
+          title: pdfTitle.trim() || undefined,
+        }),
+      });
+      const d = await r.json();
+      if (d.error) { flash(d.error); return; }
+      (d.warnings || []).forEach((w: string) => flash(w));
+      setAnsResult({ url: d.url, count: d.count, cached: !!d.cached });
+      navigator.clipboard?.writeText(d.url).catch(() => {});
+    } catch (e) { flash((e as Error).message); }
+    finally { setAnsBusy(false); }
   };
 
   // Honest coverage of the open paper, from the same lib the API uses.
@@ -997,6 +1025,10 @@ export default function QuestionBankPage() {
                 style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer', opacity: solBusy ? 0.6 : 1 }}>
                 {solBusy ? 'Building…' : '📄 Solutions PDF'}
               </button>
+              <button onClick={generateAnswersPdf} disabled={ansBusy}
+                style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer', opacity: ansBusy ? 0.6 : 1 }}>
+                {ansBusy ? 'Building…' : '🔑 Answers PDF'}
+              </button>
               <button onClick={() => {
                 const open = paperView.questions.every(q => solOpen[q.id]);
                 setSolOpen(m => {
@@ -1049,6 +1081,15 @@ export default function QuestionBankPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 8, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '6px 10px', fontSize: 13 }}>
                 <span>✅ Paper ready — {pdfResult.count} questions · {pdfResult.marksTotal} marks{pdfResult.cached ? ' · instant (cached)' : ''} · link copied</span>
                 <a href={pdfResult.url} target="_blank" rel="noopener noreferrer"
+                  style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 600, color: '#fff', background: '#15803d', borderRadius: 8, padding: '4px 12px', textDecoration: 'none' }}>
+                  Open PDF ↗
+                </a>
+              </div>
+            )}
+            {ansResult && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 8, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '6px 10px', fontSize: 13 }}>
+                <span>✅ Answers ready — {ansResult.count} question{ansResult.count === 1 ? '' : 's'}{ansResult.cached ? ' · instant (cached)' : ''} · link copied</span>
+                <a href={ansResult.url} target="_blank" rel="noopener noreferrer"
                   style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 600, color: '#fff', background: '#15803d', borderRadius: 8, padding: '4px 12px', textDecoration: 'none' }}>
                   Open PDF ↗
                 </a>

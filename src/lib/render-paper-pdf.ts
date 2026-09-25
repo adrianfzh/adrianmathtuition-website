@@ -81,6 +81,9 @@ export interface PaperPdfInput {
   coverageWarning?: string | null;
   /** Colour of the ANSWER KEY entries (default the house orange; a printed set uses '#111'). */
   answerKeyColor?: string;
+  /** The answer key ALONE — no questions, name bar or End of Paper; the key
+   *  starts on page 1 (Adrian, 25 Sep 2026: "a button for an Answers PDF"). */
+  answersOnly?: boolean;
 }
 
 function esc(s: string): string {
@@ -173,7 +176,7 @@ function questionHtml(q: PaperPdfQuestion, workingSpace: boolean): string {
     </li>`;
 }
 
-function answerKeyHtml(questions: PaperPdfQuestion[]): string {
+function answerKeyHtml(questions: PaperPdfQuestion[], firstPage = false): string {
   const rows = questions
     .map((q) => {
       const body = q.answerLines.length
@@ -183,7 +186,7 @@ function answerKeyHtml(questions: PaperPdfQuestion[]): string {
     })
     .join('\n');
   return `
-  <section class="pp-answers">
+  <section class="pp-answers${firstPage ? ' pp-answers-first' : ''}">
     <div class="pp-answers-h">Answer Key</div>
     <ol class="pp-answer-list">${rows}</ol>
   </section>`;
@@ -193,6 +196,7 @@ export function buildPaperHTML(input: PaperPdfInput): string {
   const { title, metaLine, questions, workingSpace, answerKey } = input;
   const warning = (input.coverageWarning ?? '').trim();
   const answerColor = (input.answerKeyColor ?? '').trim() || ANSWER_ORANGE;
+  const answersOnly = input.answersOnly === true;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -238,6 +242,7 @@ ${katexInlineHead()}
   .pp-end{text-align:center;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
     font-size:9.5pt;color:${NAVY};margin:14pt 0 2pt;break-inside:avoid;page-break-inside:avoid}
   .pp-answers{break-before:page;page-break-before:always;padding-top:2pt}
+  .pp-answers-first{break-before:auto;page-break-before:auto}
   .pp-answers-h{color:${NAVY};font-weight:700;font-size:12pt;letter-spacing:.24em;text-transform:uppercase;border-bottom:0.9pt solid ${ANSWER_ORANGE};padding-bottom:2.5pt;margin-bottom:7pt}
   .pp-answer-list{list-style:none;padding-left:24pt;margin:0}
   .pp-a{position:relative;margin-bottom:5pt;break-inside:avoid;color:${answerColor}}
@@ -248,6 +253,12 @@ ${katexInlineHead()}
 </style>
 </head>
 <body>
+${answersOnly ? `  <div class="pp-header">
+    <div class="pp-title">${esc(title)}</div>
+    <div class="pp-meta">${esc(metaLine)}</div>
+    ${warning ? `<div class="pp-warning">&#9888; ${esc(warning)}</div>` : ''}
+  </div>
+${answerKeyHtml(questions, true)}` : `
   <div class="pp-header">
     <div class="pp-title">${esc(title)}</div>
     <div class="pp-meta">${esc(metaLine)}${workingSpace ? ' &middot; Answer ALL questions in the spaces provided.' : ''}</div>
@@ -267,7 +278,7 @@ ${questions.map((q) => questionHtml(q, workingSpace)).join('\n')}
        overleaf (Adrian, 2026-08-31). -->
   <div class="pp-end">End of Paper</div>
 
-${answerKey ? answerKeyHtml(questions) : ''}
+${answerKey ? answerKeyHtml(questions) : ''}`}
 ${katexAutoRenderScript()}
 </body>
 </html>`;

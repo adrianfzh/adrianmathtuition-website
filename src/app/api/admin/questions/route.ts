@@ -849,7 +849,9 @@ export async function POST(req: NextRequest) {
     // both are asked for) — so one file is the paper, its answers and its
     // solutions in the order you would hand them out. Opt-in: a sit-able paper
     // with the solutions stapled on is not what you give a student.
-    const withSolutions = body.solutions === true;
+    // The answer key ALONE (Adrian, 25 Sep 2026) — no questions, no solutions.
+    const answersOnly = body.answersOnly === true;
+    const withSolutions = !answersOnly && body.solutions === true;
 
     const partHasImage = (list: Part[] | null | undefined): boolean =>
       (list ?? []).some((pt) =>
@@ -878,7 +880,7 @@ export async function POST(req: NextRequest) {
     }, 0);
     const cov = assessCoverage(marksTotal, rows.length, level);
     const answerless = questions.filter((qq) => !qq.answerLines.length).length;
-    if (answerKey && answerless > 0) warnings.push(`${answerless} question${answerless === 1 ? '' : 's'} with no stored answer — "—" in the key`);
+    if ((answerKey || answersOnly) && answerless > 0) warnings.push(`${answerless} question${answerless === 1 ? '' : 's'} with no stored answer — "—" in the key`);
 
     const autoTitle = [
       `${school} ${year}`, level,
@@ -886,7 +888,8 @@ export async function POST(req: NextRequest) {
     ].filter(Boolean).join(' · ');
     // Adrian can type his own title on the print card; blank falls back to the
     // auto title (which the UI shows as the input's placeholder).
-    const titleBits = typeof body.title === 'string' && body.title.trim() ? body.title.trim() : autoTitle;
+    const baseTitle = typeof body.title === 'string' && body.title.trim() ? body.title.trim() : autoTitle;
+    const titleBits = answersOnly ? `${baseTitle} — answers` : baseTitle;
 
     // Cache: the render is ~20s of Puppeteer, so same content + same options
     // returns the stored Blob URL instantly. The key hashes the FULL question
@@ -895,7 +898,7 @@ export async function POST(req: NextRequest) {
     // toggle misses naturally, with no manual invalidation to forget.
     const cacheKey = createHash('sha256').update(JSON.stringify({
       v: PAPER_PDF_RENDER_VERSION,
-      opts: { workingSpace, answerKey, originalNumbering, withSolutions, title: titleBits },
+      opts: { workingSpace, answerKey, originalNumbering, withSolutions, answersOnly, title: titleBits },
       rows: rows.map((r) => [r.id, r.question_number, r.total_marks, r.question_text, r.parts, r.answer, r.image_url, r.figure_url, r.has_image]),
     })).digest('hex');
     const payload = {
@@ -917,6 +920,7 @@ export async function POST(req: NextRequest) {
         questions,
         workingSpace,
         answerKey,
+        answersOnly,
         coverageWarning: cov.label || null,
       });
       timings.render_ms = Date.now() - tStart;
