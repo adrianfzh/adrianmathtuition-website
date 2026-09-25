@@ -180,6 +180,7 @@ function solutionItemsFrom(rows: Row[], gate?: SolutionImageGate): { items: Solu
       qnum: (row.question_number as string | null) ?? null,
       questionText: ((row.question_text as string | null) ?? '').trim(),
       solution,
+      solutionFromParts: !(typeof row.solution === 'string' && row.solution.trim()),
       answer: ((row.answer as string | null) ?? '').trim(),
       parts: (row.parts as SolutionsPart[] | null) ?? null,
       solutionImages,

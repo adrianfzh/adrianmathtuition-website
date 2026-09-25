@@ -21,7 +21,11 @@ const ANSWER_ORANGE = '#843C0C';
 
 export interface SolutionsPart {
   label?: string | null;
+  /** The part's own question text (shown small and grey above its solution). */
+  text?: string | null;
   answer?: string | null;
+  /** The part's worked solution, when the row keeps its solutions per part. */
+  solution?: string | null;
   subparts?: SolutionsPart[] | null;
 }
 
@@ -31,6 +35,9 @@ export interface SolutionsItem {
   questionText: string;
   /** The worked solution (plain text with $…$ TeX). Empty = none on file. */
   solution: string;
+  /** true = the row has no top-level solution and `solution` is only the
+   *  roll-up of parts[].solution — so the parts are laid out one by one. */
+  solutionFromParts?: boolean;
   /** Final answer fallback when there is no worked solution. */
   answer: string;
   parts: SolutionsPart[] | null;
@@ -65,6 +72,82 @@ function partsAnswerLines(parts: SolutionsPart[] | null, prefix = ''): string[] 
   return out;
 }
 
+/** "a" + "ii" → "(a)(ii)"; an already-bracketed label is kept. */
+export function partLabel(labels: string[]): string {
+  return labels
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((l) => (/^\(.*\)$/.test(l) ? l : `(${l.replace(/[().]/g, '')})`))
+    .join('');
+}
+
+/** Full-size fractions in the working and the answers: an inline \frac
+ *  prints at ~70% and is the hardest thing on the page to read. The grey
+ *  question text keeps its compact fractions. */
+export function displayFractions(tex: string): string {
+  return tex.replace(/\\frac(?![a-zA-Z])/g, '\\dfrac');
+}
+
+/** A self-check line ("Check: …", "Check in (2): …") — printed grey, since it
+ *  is the solver verifying, not part of the answer a student writes. */
+export function isCheckLine(line: string): boolean {
+  return /^\(?\s*check\b/i.test(line.trim());
+}
+
+/**
+ * Solution text → one <div> per line so check lines can be greyed. A display-
+ * maths block ($$…$$, \[…\], \begin{…}) may span lines and KaTeX needs its
+ * delimiters in ONE element, so such a text stays a single pre-wrap block.
+ */
+export function solutionLinesHtml(text: string): string {
+  const t = text.trim();
+  if (!t) return '';
+  if (/\$\$|\\\[|\\begin\{/.test(t)) return `<div class="sol-body">${esc(t)}</div>`;
+  return `<div class="sol-lines">${t
+    .split('\n')
+    .map((l) => (l.trim()
+      ? `<div class="${isCheckLine(l) ? 'sol-check' : 'sol-line'}">${esc(displayFractions(l))}</div>`
+      : '<div class="sol-gap"></div>'))
+    .join('')}</div>`;
+}
+
+/** The parts flattened in reading order, each with its full label. */
+function flattenParts(parts: SolutionsPart[] | null, prefix: string[] = []): { label: string; part: SolutionsPart; depth: number }[] {
+  const out: { label: string; part: SolutionsPart; depth: number }[] = [];
+  for (const p of parts ?? []) {
+    const labels = [...prefix, p.label ?? ''].filter(Boolean);
+    out.push({ label: partLabel(labels), part: p, depth: prefix.length });
+    if (p.subparts?.length) out.push(...flattenParts(p.subparts, labels));
+  }
+  return out;
+}
+
+/** Question text for the grey context line: the bank's inline figure markers
+ *  ({{IMG:…}}) are for the question page, not a solutions handout. */
+export function stemText(text: string | null | undefined): string {
+  return (text ?? '').replace(/\{\{IMG:[^}]*\}\}/g, '').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function partsHtml(parts: SolutionsPart[] | null, includeStems: boolean): string {
+  return flattenParts(parts)
+    .map(({ label, part }) => {
+      const sol = (part.solution ?? '').trim();
+      const ans = (part.answer ?? '').trim();
+      const text = includeStems ? stemText(part.text) : '';
+      // A parent with only an intro ("(a) A website records…") and sub-parts
+      // below: its text still sits under its label, with nothing else.
+      if (!sol && !ans && !text) return '';
+      return `
+      <div class="sol-part">
+        <span class="sol-plabel">${esc(label)}</span>
+        ${text ? `<div class="sol-pstem">${esc(text)}</div>` : ''}
+        ${solutionLinesHtml(sol)}
+        ${ans ? `<div class="sol-final"><span class="sol-final-k">Answer:</span> ${esc(displayFractions(ans))}</div>` : ''}
+      </div>`;
+    })
+    .join('');
+}
+
 function itemHtml(it: SolutionsItem, index: number, includeStems: boolean): string {
   const num = it.qnum || String(index + 1);
   const images = it.solutionImages
@@ -72,20 +155,22 @@ function itemHtml(it: SolutionsItem, index: number, includeStems: boolean): stri
     .join('');
 
   let body: string;
-  if (it.solution.trim()) {
-    body = `<div class="sol-body">${esc(it.solution.trim())}</div>`;
+  if (it.solutionFromParts && it.parts?.length) {
+    body = partsHtml(it.parts, includeStems);
+  } else if (it.solution.trim()) {
+    body = solutionLinesHtml(it.solution);
   } else {
     const lines = partsAnswerLines(it.parts);
     if (!lines.length && it.answer.trim()) lines.push(it.answer.trim());
     body = lines.length
-      ? `<div class="sol-ans">${lines.map((l) => `<div>[Ans: ${esc(l)}]</div>`).join('')}</div>`
+      ? `<div class="sol-ans">${lines.map((l) => `<div>Answer: ${esc(l)}</div>`).join('')}</div>`
       : images
         ? '' // a scanned solution IS the solution
         : '<div class="sol-none">No worked solution on file.</div>';
   }
 
-  const stem = includeStems && it.questionText
-    ? `<div class="sol-stem">${esc(it.questionText)}</div>`
+  const stem = includeStems && stemText(it.questionText)
+    ? `<div class="sol-stem">${esc(stemText(it.questionText))}</div>`
     : '';
   return `
     <li class="sol-q">
@@ -105,7 +190,7 @@ ${katexInlineHead()}
   *{box-sizing:border-box;margin:0;padding:0}
   @page{size:A4;margin:15mm 22mm 13mm}
   html,body{background:#fff}
-  body{color:#111;font-family:"Times New Roman",Georgia,serif;font-size:9.5pt;line-height:1.55}
+  body{color:#111;font-family:"Times New Roman",Georgia,serif;font-size:10.5pt;line-height:1.6}
   .katex{font-size:1em}
 
   .sol-header{margin-bottom:9pt}
@@ -114,11 +199,23 @@ ${katexInlineHead()}
   .sol-meta{text-align:center;color:#6E6E6E;font-size:8.5pt}
 
   .sol-list{list-style:none;padding-left:20pt;margin:0}
-  .sol-q{margin-bottom:9pt;break-inside:avoid;position:relative;border-bottom:0.5pt solid #e3e3e3;padding-bottom:7pt}
-  .sol-qnum{position:absolute;left:-20pt;top:0;font-weight:700}
-  .sol-stem{color:#6E6E6E;font-size:8.5pt;white-space:pre-wrap;margin-bottom:3.5pt}
+  .sol-q{margin-bottom:10pt;position:relative;border-bottom:0.5pt solid #e3e3e3;padding-bottom:7pt}
+  .sol-qnum{position:absolute;left:-20pt;top:0;font-weight:700;color:${NAVY}}
+  .sol-stem{color:#6E6E6E;font-size:9pt;white-space:pre-wrap;margin-bottom:3.5pt}
   .sol-body{white-space:pre-wrap}
-  .sol-ans{color:${ANSWER_ORANGE}}
+  .sol-line{white-space:pre-wrap;margin:1pt 0}
+  .sol-gap{height:5pt}
+  .sol-check{white-space:pre-wrap;color:#8a8a8a;font-size:9.5pt}
+  .sol-check .katex{color:#8a8a8a}
+  .sol-part{position:relative;padding-left:34pt;margin-top:7pt;break-inside:avoid}
+  .sol-part:first-child{margin-top:0}
+  .sol-plabel{position:absolute;left:0;top:0;font-weight:700;color:${NAVY}}
+  .sol-pstem{color:#6E6E6E;font-size:9pt;white-space:pre-wrap;margin-bottom:2.5pt}
+  .sol-final{margin-top:2.5pt;font-weight:700;color:${ANSWER_ORANGE}}
+  .sol-final .katex{color:${ANSWER_ORANGE};font-weight:700}
+  .sol-final .katex *{font-weight:inherit}
+  .sol-final-k{font-weight:700}
+  .sol-ans{color:${ANSWER_ORANGE};font-weight:700}
   .sol-ans .katex{color:${ANSWER_ORANGE}}
   .sol-none{color:#999;font-style:italic}
   .sol-img{display:block;max-width:100%;max-height:340pt;margin:4pt 0}
