@@ -393,9 +393,11 @@ note `ingest-fitness <date> · <severity> · <verdict> · <reason>`. Both outcom
 also append a `fitness:…` stamp to `image_watermark_notes`, which is how the
 catch-up below tells a judged row from an unjudged one.
 
-**2 · A nightly catch-up re-judges what ingestion missed.** Desktop scheduled
-task **`figure-fitness`** (3:10am SGT daily, `~/.claude/scheduled-tasks/figure-fitness/SKILL.md`,
-registry row in [`docs/OPS.md`](OPS.md)). It takes up to 120 figures per run —
+**2 · A nightly catch-up re-judges what ingestion missed.** The Fly worker job
+**`figure-fitness`** (3:10am SGT daily, bot `worker/fly/figfit/figfit.sh` fired by
+`worker/fly/jobs.sh` under a pooled login — **since 25 Sep 2026**; until then a
+Claude scheduled task on the MacBook Pro, last real run 9 Sep; registry row in
+[`docs/OPS.md`](OPS.md)). It takes up to 120 figures per run —
 questions with `has_image` whose `created_at` is inside 7 days, plus older
 questions whose figure actually changed (a `figure_clean_log` or
 `question_image_placement_log` row inside 7 days) — that carry no `fitness:`
@@ -403,14 +405,22 @@ stamp, and judges them by the same five checks. **`questions.updated_at` is NOT
 the freshness signal**: measured 3 Sep 2026, 5,827 image-carrying rows had
 `updated_at` inside 7 days with no figure change (bulk column sweeps bump it)
 against 1,048 genuinely new rows; the two log tables are the durable record of a
-figure moving. The task is thin on purpose — the rubric lives in the law row, not
-in the SKILL.md, so one edit propagates to ingestion and catch-up together. It
+figure moving. The job is thin on purpose — the rubric lives in the law row, not
+in the scripts (`law.mjs` cuts the section fresh each run), so one edit propagates to ingestion and catch-up together. It
 calibrates on 4 planted swaps before any real verdict, is judge-only (it never
 writes `image_watermark_status`, an image reference or a bucket object), stamps
-`job_runs` slug `figure-fitness`, and is resumable per
+`job_runs` slug `figure-fitness` (quiet nights too), and is resumable per
 [`docs/RESUMABLE-JOBS.md`](RESUMABLE-JOBS.md) — its per-item state is the
 `fitness:` stamp in the database, so a killed run loses nothing and re-running is
-a no-op. Strong model only (Opus/Fable class); a weak run exits without judging.
+a no-op. Strong model only (`claude -p --model claude-fable-5-1`). The shape on Fly:
+deterministic node/python steps (law → candidates → build → select → fetch →
+measure → calib → units → contact sheets of 6 tiles with the stems beside them)
+build the night's material; ONE `claude -p` run calibrates on 12 tiles with 4
+planted swaps (the key is on disk but never read by the judge; `calib-score.mjs`
+scores it afterwards — 4/4 caught and 0 false positives, or nothing is written),
+judges every tile through `verdict.mjs` (the only pen; the vocabulary is
+enforced), then `write.mjs --apply` stamps and flags; the whole run is capped at
+2 h. Telegram only on an `open` flag.
 
 **Who may un-serve.** Adrian, by tapping 🙈 in the fitness lane — with two
 exceptions the catch-up may set to `open` itself, because they are correctness

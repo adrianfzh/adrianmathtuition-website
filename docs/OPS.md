@@ -137,9 +137,9 @@ topic; SPEC-PORTAL-V2 §4) takes the same nightly shape:
 `find-review` health-check probe). Install on the Mac with
 `bash scripts/find-review/install.sh`.
 
-**`figure-fitness`** (nightly 3:10am SGT — the ingestion figure-fitness catch-up,
-[`FIGURES.md`](FIGURES.md) §4) takes the nightly shape every plan-billed Mac
-worker uses: `'figure-fitness': { kind: 'interval', hours: 36, label: 'nightly 3:10am' }`
+**`figure-fitness`** (nightly 3:10am SGT on the Fly worker since 25 Sep 2026 — the ingestion figure-fitness catch-up,
+[`FIGURES.md`](FIGURES.md) §4) keeps the nightly shape it had as a Mac
+task: `'figure-fitness': { kind: 'interval', hours: 36, label: 'nightly 3:10am' }`
 — the same 36h grace as `qb-topup`, so one skipped night (a sleeping laptop) is
 quiet and a genuinely dead task ambers on the board and alarms on the next
 6-hourly check. It stamps on quiet nights too, so a dead task and an empty queue
@@ -281,7 +281,7 @@ Rules:
 | `siteground-vercel-migration-reminder` | one-time 1 Nov 2026 | A (MacBook Pro) | ✅ armed | domain + hosting expiry reminder |
 | `exam-extraction-cc1..6` | ⏸ **superseded 25 Sep 2026** by the Fly `extract` job above (cc4–6 retired 8 Sep; cc1–3 + the Pro's `inbox-extract` task are redundant now — claims are atomic, so leaving them on is harmless; Adrian removes them) | the MacBook Pro | ⏸ redundant | was: the queue-only shims under the fleet law, `PDF-Pipeline-CC<n>` runners |
 | *(extraction fleet)* | — | B (the Air) | ⏸ redundant since 25 Sep 2026 | the `pdf-pipeline-cc-*` shims read the same queue; the Fly lane replaces them |
-| `figure-fitness` | `10 3 * * *` (3:10am SGT daily; the app adds ~6 min jitter) | **this MacBook Pro**, the account whose registry holds `solution-image-pass` + `pdf-pipeline-cc-*` | ✅ live (2026-09-03) | the ingestion figure-fitness catch-up: judges question figures ingested in the last 7 days that carry no `fitness:` stamp, holds failures for Adrian's `/admin/figures-bank?kind=fitness` lane, may un-serve only `wrong-figure`/`answer-leak`. **Rubric is NOT in the SKILL.md** — it is the `## Figure fitness` section of the Supabase law row `extraction_worker_prompt` id `exam-extraction`, shared with every extraction worker, so one edit moves both. Ceiling 120 figures/run, strong model only, stamps `figure-fitness` → [`FIGURES.md`](FIGURES.md) §4 |
+| `figure-fitness` | 03:10 SGT daily from the Fly worker's `jobs.sh` timed table | **the Fly worker `adrianmath-worker`** (bot `worker/fly/figfit/figfit.sh` under a pooled login, `with_pool_login`; state `/data/home/.adrianmath_figfit`, runs pruned at 14 days) — **since 25 Sep 2026**; it was a paused Claude scheduled task on the MacBook Pro whose last real run was 9 Sep | ✅ live (2026-09-03; on Fly 25 Sep 2026) | the ingestion figure-fitness catch-up: judges question figures ingested in the last 7 days (Lane A) or whose figure changed since their last stamp (Lane B, the two placement logs' `applied_at`) that carry no `fitness:` stamp, holds failures for Adrian's `/admin/figures-bank?kind=fitness` lane, may un-serve only `wrong-figure`/`answer-leak`. **Rubric is NOT in the scripts** — `law.mjs` cuts the `## Figure fitness` section of the Supabase law row `extraction_worker_prompt` id `exam-extraction` at every run, shared with every extraction worker, so one edit moves both. Ceiling 120 figures/run, one `claude -p` judge (Fable), 12-tile calibration with 4 planted swaps or nothing is written; stamps `figure-fitness` every night incl. quiet → [`FIGURES.md`](FIGURES.md) §4 |
 
 <!-- preview-build tick 2026-08-29a — dev-only nudge so Vercel builds a preview when dev == main (same-commit builds get skipped) -->
 
