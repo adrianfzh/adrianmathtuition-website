@@ -2531,7 +2531,9 @@ SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026 is the contract; this is the map.
   one `calibration_results` row (`truth_source 'teacher'`, `truth_label 'student-reported teacher
   total'`, whole-paper only, updated in place on a second entry; `lib/science-truth.ts` pure +
   tested) + one 📏 line to the marking topic. The website WRITES this one row kind; everything
-  else on `calibration_results` still comes from the bot harness.
+  else on `calibration_results` still comes from the bot harness. **The card that fed it is gone
+  since 25 Sep 2026** (§The chemistry study loop, "one notice, nothing repeated") — the route
+  stays, and no student-facing surface calls it until Adrian asks for the card back.
 - **Health check:** `science-tab` (GET /app/science never 404/5xx) and `science-truth` (401 anon).
 - **Bot side** (`lib/paper-subject.js`): `fromHandin`/`fromPaperName`/`fromLevels` know the sciences;
   `logMarkingRun` passes the run's lane as `handinSubject` so the marking write never nulls the
@@ -2565,11 +2567,29 @@ tab's own gate, no switch of their own:
    and the page opens only on Adrian's cookie (not "viewing as a student"); a student
    at `/app/science/qa` is sent to `/app/science`. Flip the flag to open it.
 **The science paper page, tidied 25 Sep 2026** (Adrian, from his phone): the list card
-says `60/90 · 67%` (no "est." — the quiet estimate line under the list carries that)
-and has no icon tile in front; the amber "🧪 X marking — feedback first, the total is
-an estimate" card is GONE ("no need to keep repeating") — the grounding it stated
-(school scheme · bank marking points · syllabus points) is one clause in the "Our
-estimate" card at the bottom. **A science paper lives at `/app/science/marking/<id>`**
+says `60/90 · 67%` (no "est.") and has no icon tile in front; the amber "🧪 X marking —
+feedback first, the total is an estimate" card is GONE ("no need to keep repeating").
+**Later that day (Adrian: "leave the first-visit picker and just put this on at the
+page … and remove these"):** ONE notice, nothing repeated. Science Home carries the
+"Dear students" notice for good — under the header, above Hand in, `ScienceOpenNotice`
+in `science/page.tsx`: a tool to help you prepare for your exams, not a replacement
+for your teacher; consult your teacher or tutor if you have any doubts about a mark
+or a comment; attach the answers or the mark scheme for better results; two papers a
+day. The sentence "The total is an estimate, and explain answers can be marked a
+little differently from how your school words them" is NOT in it (Adrian struck it).
+Static, no day rule (the 24 Sep version showed for one day per device), no ✕. The
+first-visit picker keeps its one estimate bullet. GONE the same day: the quiet
+"Science marks are an estimate…" line under the Papers list (`ScienceEstimateNote`),
+and at the foot of every paper page the "Our estimate" card (the total + one clause
+on what grounded the explain answers), the ✏️ **Your teacher's mark** card and
+**"Was this marking useful?"** — `marking/ScienceTeacherMark.tsx` and
+`marking/ScienceUseful.tsx` are deleted. What STAYS so either door comes back as one
+component: `POST /api/portal/science-truth` and `lib/science-truth.ts` (the
+student-reported teacher total → `calibration_results`; nothing on the app writes it
+now), the `science:feedback` event kind + `lib/science-feedback.ts`, and both
+health-check probes. A science paper page is now the cover, the marked pages and the
+lost marks, one column, no score pill in the header — the total is on the cover and on
+the list card. **A science paper lives at `/app/science/marking/<id>`**
 (`science/marking/[id]/page.tsx` wraps the maths page with `under="science"`): the shell
 reads the family from the path, so at `/app/marking/<id>` a chemistry paper lit the Math
 tab and showed the maths bottom menu; either door redirects a run to the right family,

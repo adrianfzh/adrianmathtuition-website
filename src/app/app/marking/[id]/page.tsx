@@ -24,9 +24,6 @@ import { coveredRunIds } from '@/lib/sheet-queue';
 import { shelvedGaps, shelfWorthAWave } from '@/lib/student-batch';
 import { followUpDepthOf } from '@/lib/sheet-queue';
 import { displayPaperName } from '@/lib/paper-display-name';
-import { TEACHER_TOTAL_LABEL } from '@/lib/science-truth';
-import ScienceTeacherMark from '../ScienceTeacherMark';
-import ScienceUseful from '../ScienceUseful';
 import LostMarks from '../LostMarks';
 import RenamePaper from '../RenamePaper';
 import StarPaper from '../StarPaper';
@@ -81,27 +78,16 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
   const paper = papers[0];
   if (!paper) notFound();
 
-  // 🧪 A science paper (SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026): the
-  // disclaimer on the page, whether the school's scheme grounded the marking,
-  // the teacher's-mark card — and no Practice Again (that sheet is maths).
+  // 🧪 A science paper (SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026): the cover,
+  // the marked pages and the lost marks, one column — and no Practice Again (that
+  // sheet is maths). The "Our estimate" card, the teacher's-mark card and "Was this
+  // marking useful?" that closed the page went on 25 Sep 2026 (Adrian: "remove
+  // these") — the one notice on Science Home says the marking is a tool now.
   const lane = String((row as { subject?: string | null }).subject ?? 'math');
   const isScience = lane !== 'math';
   if (isScience && under !== 'science') redirect(`/app/science/marking/${id}`);
   if (!isScience && under === 'science') redirect(`/app/marking/${id}`);
   const tone = subjectTone(paper.subject);
-  const rjRaw = (row as { result_json?: Record<string, unknown> | null }).result_json ?? {};
-  const groundingSource = (() => {
-    const g = rjRaw.grounding;
-    return g && typeof g === 'object' ? String((g as { source?: unknown }).source ?? '') : '';
-  })();
-  const schemeGrounded = /scheme|attached|stored|fingerprint/i.test(groundingSource);
-  const bankGrounded = !schemeGrounded && /bank|matched/i.test(groundingSource);
-  let teacherTotal: { awarded: number; max: number } | null = null;
-  if (isScience) {
-    const { data: t } = await sb.from('calibration_results').select('truth_awarded, truth_max')
-      .eq('run_id', id).eq('truth_source', 'teacher').eq('truth_label', TEACHER_TOTAL_LABEL).limit(1).maybeSingle();
-    if (t) teacherTotal = { awarded: Number(t.truth_awarded), max: Number(t.truth_max) };
-  }
 
   const { data: sheetRows } = isScience ? { data: [] } : await sb.from('portal_assignments')
     .select('id, run_id, status, pdf_url, score, out_of, required_at, source_run_id, source_run_ids')
@@ -201,8 +187,8 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
               </span>
             </p>
           </div>
-          {/* A science paper leads with the feedback; its total sits below the
-              pages as an estimate (Adrian, 11 Sep 2026). Maths keeps the pill. */}
+          {/* A science paper leads with the feedback — no score pill; its total is
+              on the cover (Adrian, 11 Sep 2026). Maths keeps the pill. */}
           {!isScience && !isAdmin && <StarPaper runId={paper.id} starred={!!paper.starred} size="md" />}
           {!isScience && (
             <span className="shrink-0 text-sm font-bold rounded-full px-3 py-1 bg-navy/5 text-navy">
@@ -233,10 +219,6 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
           <span className="font-semibold">{paper.notice.title}.</span> {paper.notice.body}
         </p>
       )}
-
-      {/* The amber "feedback first, the total is an estimate" card that sat here is gone
-          (Adrian, 25 Sep 2026: "no need to keep repeating") — the grounding line lives in
-          "Our estimate" below, the estimate line on the list. */}
 
       {/* 📘 Practice Again sits at the TOP (18 Sep 2026, Adrian: "put the request for practice again at the
           top, instead of the end") — the sheet's status and doors when one exists, else the Request button. */}
@@ -351,28 +333,6 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
         </Suspense>
       )}
 
-      {isScience && paper.max > 0 && (
-        <section className="rounded-2xl border border-black/5 bg-white p-4 flex items-center justify-between gap-3" data-science-estimate>
-          <div className="min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Our estimate</p>
-            <p className="text-[12px] text-gray-500">
-              Not your teacher&apos;s mark.{' '}
-              {schemeGrounded
-                ? <>Explain answers were marked against your school&apos;s mark scheme.</>
-                : bankGrounded
-                ? <>Explain answers were marked against the marking points for this paper in our bank.</>
-                : <>No mark scheme was attached, so explain answers were marked against standard syllabus points.</>}
-            </p>
-          </div>
-          <span className="shrink-0 text-lg font-bold text-navy">
-            {paper.awarded}/{paper.max}{paper.pct !== null && <span className="text-sm font-semibold text-gray-500"> · {paper.pct}%</span>}
-          </span>
-        </section>
-      )}
-      {isScience && paper.max > 0 && (
-        <ScienceTeacherMark runId={paper.id} ours={{ awarded: paper.awarded, max: paper.max }} existing={teacherTotal} />
-      )}
-      {isScience && !isAdmin && <ScienceUseful runId={paper.id} />}
     </div>
   );
 }

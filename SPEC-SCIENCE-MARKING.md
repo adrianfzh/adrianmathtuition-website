@@ -242,16 +242,21 @@ notice." Built:
   hard override. Adrian's admin preview sees the tab either way, and so does the demo
   student (`SCIENCE_PREVIEW_IDENTITIES`), which is how Adrian tests it as a student.
 - **Feedback first.** A science paper page has no score pill in the header. The
-  cover and the marked pages come first; then an "Our estimate" card with the total and
-  one clause on what grounded the explain answers, then the teacher's-mark card, then
-  "Was this marking useful?". The list card says `31/40 · 78%`; the one quiet estimate
-  line sits under the list. (Until 25 Sep 2026 an amber "feedback first, the total is an
-  estimate" card opened every paper page and the card said `est. 31/40` — Adrian: "no
-  need to keep repeating".) The page's route is `/app/science/marking/<id>`.
-- **"Was this marking useful?"** — 👍 / 👎 and an optional line, one Telegram line to
-  the marking topic per tap and a `portal_event_log` row (`science:feedback`). This is
-  the student's opinion of the feedback; the teacher's mark (rule 7) is still the only
-  truth signal.
+  cover, the marked pages and the lost marks, one column; the total is on the cover and
+  on the list card (`31/40 · 78%`). The page's route is `/app/science/marking/<id>`.
+- **One notice, nothing repeated (25 Sep 2026).** Adrian: "leave the first-visit picker
+  and just put this on at the page … and remove these". Science Home carries the "Dear
+  students" notice for good (a tool to prepare for exams, not a replacement for your
+  teacher; consult your teacher or tutor on any doubt; attach the answers or scheme for
+  better results; two papers a day) — WITHOUT the sentence "The total is an estimate,
+  and explain answers can be marked a little differently from how your school words
+  them", which he struck. The first-visit picker keeps its one estimate bullet. Removed
+  the same day: the quiet estimate line under the Papers list; on every paper page the
+  "Our estimate" card, the ✏️ teacher's-mark card (rule 7's student door — the route
+  `/api/portal/science-truth` stays, nothing on the app calls it now) and "Was this
+  marking useful?" (`science:feedback` — the event kind and `lib/science-feedback.ts`
+  stay). Earlier that day the amber per-page disclaimer and the `est.` prefix went ("no
+  need to keep repeating"). Either card comes back as one component when he asks.
 
 Calibration stays where the night of 10–11 Sep left it: physics A/C/E fail the ±2 gate
 on single runs (A +3, C +3, E +8; per-part agreement 28/23/23 of 33), and one re-run per

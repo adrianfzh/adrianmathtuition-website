@@ -5,6 +5,12 @@
 // Biology — each with its pending hand-ins and its three newest marked papers.
 // A student who has not yet said which sciences they take sees the picker
 // first (science-picker.tsx); "Change" (?choose=1) brings it back.
+//
+// 25 Sep 2026 (Adrian: "just put this on at the page"): the "Dear students"
+// notice sits under the header for good — the ONE place that says the marking
+// is a tool and the teacher's word counts. The estimate line under the Papers
+// list and the "Our estimate" / teacher's-mark / "Was this marking useful?"
+// cards on every paper page went the same day ("no need to keep repeating").
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
@@ -58,6 +64,8 @@ export default async function ScienceHome({ searchParams }: { searchParams: Prom
         <SciencePicker initial={choice} firstTime={!choice} />
       ) : (
         <>
+          <ScienceOpenNotice />
+
           <Link
             href="/app/science/submit"
             className="flex items-center gap-3 bg-teal-500 text-white rounded-3xl px-4 py-3.5 font-semibold shadow-[0_8px_24px_-10px_rgba(20,184,166,0.8)] hover:brightness-105 active:scale-[0.98] transition"
@@ -73,5 +81,18 @@ export default async function ScienceHome({ searchParams }: { searchParams: Prom
         </>
       )}
     </div>
+  );
+}
+
+/** The notice, exactly as Adrian approved it (25 Sep 2026) — static, no day rule, no ✕. */
+function ScienceOpenNotice() {
+  return (
+    <section className="rounded-3xl border border-teal-200 bg-teal-50/50 px-5 py-4 space-y-2.5 text-[15px] leading-relaxed text-gray-800" aria-label="Science marking is open">
+      <p className="font-semibold text-navy">Dear students,</p>
+      <p className="font-semibold text-navy">Science marking is now open in the app. 🧪</p>
+      <p>It is meant to be a tool to help you prepare for your exams, not a replacement for your teacher. Please consult your teacher or tutor if you have any doubts about a mark or a comment.</p>
+      <p>If you have the answers or the mark scheme, attach them for better results.</p>
+      <p className="font-semibold text-navy">Limit: Two papers a day.</p>
+    </section>
   );
 }

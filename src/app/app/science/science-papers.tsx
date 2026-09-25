@@ -134,15 +134,6 @@ export function SciencePaperCard({ paper }: { paper: ReturnType<typeof buildStud
   );
 }
 
-/** The disclaimer as one quiet line under a list — the full version is on the form and on every paper. */
-export function ScienceEstimateNote() {
-  return (
-    <p className="text-[11px] text-gray-400">
-      Science marks are an estimate while marking is new. When your teacher marks a paper, enter their total on that paper&apos;s page.
-    </p>
-  );
-}
-
 // ── One tab per science (Adrian, 24 Sep 2026: "have tabs for physics
 // chemistry and bio like Amath and Emath") ─────────────────────────────────
 // The tabs are the sciences the student said they take (lib/portal-prefs
@@ -210,7 +201,6 @@ export function ScienceTabs({ papers, pending, subjects, limit = 0, allHref = '/
                 )}
               </div>
               {shown.map(p => <SciencePaperCard key={p.id} paper={p} />)}
-              <ScienceEstimateNote />
             </>
           ) : pend.length === 0 ? (
             <p className="text-sm text-gray-500 px-1">No {label.toLowerCase()} paper marked yet — hand one in and it comes back here.</p>
