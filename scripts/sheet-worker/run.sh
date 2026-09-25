@@ -92,7 +92,7 @@ die() { say "FATAL: $1"; stamp_fail "$1"; cleanup_pid; exit 1; }
 # tells `claude auth status` NO email, so without the sidecar a second
 # account's slots would share the first account's limit file.
 SLOT_ACCOUNT="$( { [ -r "$STATE/account" ] && tr -d '[:space:]' < "$STATE/account"; } 2>/dev/null || true)"
-PLAN_ACCOUNT_KEY="$( { [ -n "$SLOT_ACCOUNT" ] && printf '%s' "$SLOT_ACCOUNT" || claude auth status 2>/dev/null | python3 -c 'import json,sys
+PLAN_ACCOUNT_KEY="$( { [ -n "$SLOT_ACCOUNT" ] && printf '%s' "$SLOT_ACCOUNT" || { ls "${ADRIANMATH_LOGINS_DIR:-$HOME/.adrianmath/logins}"/*/.credentials.json >/dev/null 2>&1 && printf pooled; } || claude auth status 2>/dev/null | python3 -c 'import json,sys
 try: print((json.load(sys.stdin).get("email") or "").strip())
 except Exception: print("")'; } 2>/dev/null | python3 -c 'import sys,re; e=sys.stdin.read().strip().lower(); print(re.sub(r"[^a-z0-9]+","-",e) or "default")' 2>/dev/null || echo default)"
 PLAN_LIMIT_FILE="$HOME/.adrianmath-plan-limit-until.${PLAN_ACCOUNT_KEY}"
