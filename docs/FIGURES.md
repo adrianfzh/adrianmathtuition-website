@@ -420,7 +420,12 @@ planted swaps (the key is on disk but never read by the judge; `calib-score.mjs`
 scores it afterwards — 4/4 caught and 0 false positives, or nothing is written),
 judges every tile through `verdict.mjs` (the only pen; the vocabulary is
 enforced), then `write.mjs --apply` stamps and flags; the whole run is capped at
-2 h. Telegram only on an `open` flag.
+2 h. Telegram only on an `open` flag. **Run it outside the slot** with the recipe at the
+top of `worker/fly/figfit/run-now.sh` (the `with_pool_login` replica; `jobs.sh` has no
+run-now subcommand). First run on the worker 25 Sep 2026 21:35 SGT: 3 figures, calibration
+4/4, 3 rows stamped `ok`, no flags — the only fault was the summary line (an f-string the
+worker's Python 3.11 rejects; the Mac's 3.12 had passed it), fixed the same night. ⚠ The
+worker's `python3` is **3.11**: no backslash inside an f-string expression, Pillow 9.4.
 
 **Who may un-serve.** Adrian, by tapping 🙈 in the fitness lane — with two
 exceptions the catch-up may set to `open` itself, because they are correctness
