@@ -1288,7 +1288,7 @@ class Worksheet:
         p = self._add(full, style='Answer', alignment=WD_ALIGN_PARAGRAPH.RIGHT)
         w = _para_width_cm(p)
         if w > self.ANS_CM:
-            flat = ''.join(s for _, s in full)
+            flat = ''.join(str(t[1]) for t in full)   # a part may carry a style dict as t[2] (26 Sep 2026: this crashed the sheet worker)
             print(f'  !! [Ans:] wraps ({w:.1f} cm > {self.ANS_CM} cm): {flat[:100]}')
         return p
 
