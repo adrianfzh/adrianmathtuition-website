@@ -14,8 +14,24 @@ node scripts/derive-paper-blueprints.mjs --gce --from-dump data/gce-rows.json   
 ```
 
 - Base papers = real GCE + SEAB specimen papers of the current syllabus (`GCE_CUT`:
-  AM ≥ 2021, EM ≥ 2023, JC all); specimen rows sit under school `GCE Specimen` so a
+  AM ≥ 2021, EM ≥ 2023, **JC ≥ 2017 since 26 Sep 2026** — the 9740 papers of 2008–2016
+  carried Poisson and a heavier sampling section, and a mock walked from the old entry
+  could ask for a Poisson slot); specimen rows sit under school `GCE Specimen` so a
   specimen and a real paper of the same year never collapse into one.
+- **Year weights (26 Sep 2026** — Adrian: "we should take more weightage into account of
+  papers of the more recent years (discount year 2025 because somehow that year was too
+  easy)"): every per-slot statistic (topic pools, must-appear presence, typical marks,
+  diagram rate, question count) is a weighted count over the base papers — the three
+  newest full-weight sittings ×1, the next two ×0.6, older ×0.4, SEAB's specimen ×0.5,
+  and a discounted sitting keeps its own weight (`GCE_DISCOUNT`: H2 2025 ×0.3). The
+  min..max ranges stay unweighted. `source.gce.year_weights` in the file records what
+  each entry was derived with; `paper-blueprints.test.ts` pins the H2 cut and the
+  discount. For H2 alone, must-appear presence counts each question's LEADING tag
+  (`GCE_MUST_LEADING_TAG`): the H2 list is short against its slots and technique
+  topics ride as second tags, so on all tags the weighting pinned ten of Paper 1's
+  eleven slots. Typicals are clamped into their slot's range after scaling.
+  Which H2 years are representative and why 2025 is discounted:
+  `.claude/skills/gce-paper/reference/jc-standard-2022-2024.md` §1.
 - Thin-data rules (2–5 base papers): slot mark ranges are the min..max seen at that
   position, pools list every topic seen there, must_appear = topics in ≥ 80 % of base
   papers, and — since 9 Sep — **trimmed until every must can take a distinct slot**
@@ -415,5 +431,27 @@ construction figure therefore cannot print at true size — construction slots a
 self-contained. Unverified: whether `max-height` + the explicit width distorts a
 near-square PNG on `/app/print` (the published path) — check a printed Set paper.
 
-Known gaps: no JC shape yet (`SHAPE` has AM + EM — the EM entry, its 4052 register and the 4052 formula sheet in `export-docx.py` landed with E Math Set 1, 11 Sep 2026); the run folder lives wherever `--out` points (scratchpad
+### H2 Mathematics 9758 (26 Sep 2026)
+
+`SHAPE.JC` in `generate.mjs`: subject Mathematics, code 9758, `exam: 'A-Level'`, bank level
+`JC2` for the GCE rows and `setLevel: 'JC'` for a Set's rows, `cut: 2017`, 3 hours,
+`standardYears: '2022–2024'`, the 9758 scope written from the syllabus document (with the
+revised-syllabus exclusions: no method of differences, no polar or exponential form, no
+Poisson, no induction, no skew-line distance, no reduction formulae, no t-test) and an
+A-Level register (graphing calculator assumed; "Use calculus" / "exact" / "Do not use a
+calculator" as the working switches; Section B asks for words in context). `excludeTopics`
+drops the bank's `Distributions (Poisson)` and `Mathematical Induction` from the author's
+topic list and the gate. Paper 2's `section_boundary` becomes `plan.json.sections`
+(`{boundary, a, b}`): every slot brief names its section, `assemble` passes a
+`sectionHeading` to `render-paper-pdf` (new optional field; `PAPER_PDF_RENDER_VERSION` 9)
+and `export-docx.py` prints the headings (Section B on a fresh page). The DOCX front page
+is the A-Level one — `INSTRUCTIONS_JC`, an "Additional Materials: List of Formulae (MF26)"
+line, no formula sheet (`formulae_for` returns none for 9758). `standard.mjs` defaults a JC
+run to `--years 2022,2023,2024` and copies `reference/jc-standard-2022-2024.md`; the prompt
+templates take `__EXAM__`, `__YEARS__` and `__STANDARD_NOTE__` from `render.sh`. Verified
+26 Sep 2026 with a two-question fixture through `brief → check → assemble → export-docx`
+(both section headings on the printed paper); no real H2 Set has been written yet — the
+first is held to the standard document alone (its §7).
+
+Known gaps: the run folder lives wherever `--out` points (scratchpad
 for trials); `function-graph` has no `ticks:false` (the step trick stands in for it).

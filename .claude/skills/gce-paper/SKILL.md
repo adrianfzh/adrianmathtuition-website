@@ -1,6 +1,6 @@
 ---
 name: gce-paper
-description: Write a genuinely NEW exam paper in the SEAB GCE shape (O-Level A Math 4049 and E Math 4052, P1/P2; the GCE-JC blueprint keys exist but the generator's SHAPE table has no JC entry yet) with plan-billed Claude Code agents — author → gates → blind solve → moderate → repair per slot, agent-authored figures, DOCX for Adrian to read, then publish.mjs files it in the question bank as a Print-a-paper "Set N" students can print in the app. Trigger on "gce paper", "new set", "set 2", "seab-style paper", "write a new O-level paper", "generate set 3 paper 2". NOT prelim-paper — prelim-paper ASSEMBLES real past-prelim questions from the bank; this skill WRITES new questions and needs no bank questions at all. Args: key (GCE-AM-P1|GCE-AM-P2|GCE-EM-P1|GCE-EM-P2), seed (integer, default next unused), set (the Set number to publish under, default = seed).
+description: Write a genuinely NEW exam paper in the SEAB GCE shape (O-Level A Math 4049 and E Math 4052, and — since 26 Sep 2026 — A-Level H2 Mathematics 9758, P1/P2) with plan-billed Claude Code agents — author → gates → blind solve → moderate → repair per slot, agent-authored figures, DOCX for Adrian to read, then publish.mjs files it in the question bank as a Print-a-paper "Set N" students can print in the app. Trigger on "gce paper", "new set", "set 2", "seab-style paper", "write a new O-level paper", "write a new H2 paper", "generate set 3 paper 2". NOT prelim-paper — prelim-paper ASSEMBLES real past-prelim questions from the bank; this skill WRITES new questions and needs no bank questions at all. Args: key (GCE-AM-P1|GCE-AM-P2|GCE-EM-P1|GCE-EM-P2|GCE-JC-P1|GCE-JC-P2), seed (integer, default next unused), set (the Set number to publish under, default = seed).
 ---
 
 # GCE paper — write a new SEAB-style paper and file it as a Set
@@ -178,7 +178,9 @@ node scripts/gce-paper/standard.mjs --run "$RUN"          # --years 2024,2025 is
 Writes `standard-questions-P<n>.md` (every real GCE 2024 + 2025 question of that paper
 number, from the run's corpus, in Q order) and `standard.md` (the written standard for
 the level — E Math: [`reference/em-standard-2024-2025.md`](reference/em-standard-2024-2025.md),
-A Math: [`reference/am-standard-2024-2025.md`](reference/am-standard-2024-2025.md), written
+A Math: [`reference/am-standard-2024-2025.md`](reference/am-standard-2024-2025.md), H2:
+[`reference/jc-standard-2022-2024.md`](reference/jc-standard-2022-2024.md) (the default years are
+2022,2023,2024 for a `GCE-JC-*` run — §H2 below), written
 17 Sep 2026 from all 48 questions of the 2024 + 2025 papers against the 137 of 2019–2023). **Why this step exists** — Adrian,
 12 Sep 2026, on the 11 Sep E Math paper: "sep 11 set was too easy, must know that the
 standard for o levels got higher the recent years, like 2024/2025 are harder compared to
@@ -211,8 +213,10 @@ second brief.
 ### 2. Per slot — author → check → blind solve → moderate → repair
 
 The prompts are TEMPLATES in [`prompts/`](prompts/) (`author.md`, `blind.md`,
-`moderate.md`, `repair.md` — one set for both levels: `render.sh` reads the run's
-`plan.json` and fills in Additional Mathematics 4049 or Elementary Mathematics 4052).
+`moderate.md`, `repair.md` — one set for all three levels: `render.sh` reads the run's
+`plan.json` and fills in the subject, code and exam (Additional Mathematics 4049 O-Level,
+Elementary Mathematics 4052 O-Level, H2 Mathematics 9758 A-Level) and the sittings that set
+the standard, `__YEARS__` / `__STANDARD_NOTE__` — 2024/25 for O-Level, 2022–2024 for H2).
 Render one with the placeholders filled and paste the file's
 contents as the agent prompt:
 
@@ -368,6 +372,40 @@ incomplete:
 ```bash
 curl -s -H "Authorization: Bearer $ADMIN_PASSWORD" https://www.adrianmathtuition.com/api/health-check | grep -o '"print-sets"[^}]*}'
 ```
+
+## H2 Mathematics 9758 (26 Sep 2026)
+
+Adrian: "do both" — the JC blueprint cut at 2017 with recent years weighted (docs/GCE-PAPER.md
+§1) and the generator taught the H2 shape. Everything above applies; what differs:
+
+- **Keys** `GCE-JC-P1` (pure, 11 slots) and `GCE-JC-P2` (10 slots: Section A pure = Q1–4,
+  40 marks; Section B statistics = Q5–10, 60 marks — the blueprint's `section_boundary`,
+  carried as `sections` in `plan.json`, printed as headings by `assemble` and `export-docx.py`).
+  Every slot brief says which section it is in; a Section B slot is statistics only.
+- **The standard is 2022–2024, NOT 2024/25.** Adrian, 26 Sep 2026: "discount year 2025
+  because somehow that year was too easy". `standard.mjs` defaults to `--years 2022,2023,2024`
+  for a JC run and copies `reference/jc-standard-2022-2024.md`; the 2025 sitting and the
+  2025 specimen stay in `corpus.json` (the novelty gate, and the only real examples of the
+  REVISED syllabus — recurrence sequences in, the method of differences and polar form out).
+  The register in `author-brief.md` and §5 item 7 of the standard list what may not be set.
+- **No Set 1 benchmark yet.** Until Adrian approves the first H2 Set the moderator omits
+  `as_good_as_set1`; the first Set is held to the standard document alone (its §7).
+- **Bank levels.** GCE rows sit under `JC2` (the shape's `level`); a Set files under `JC`
+  (`setLevel`; `publish.mjs`, `lib/print-sets`) and reaches JC1 + JC2 students through
+  `PRINT_POOL_SCOPE`. The bank's JC topic list still carries `Distributions (Poisson)` and
+  `Mathematical Induction` for old prelims — `excludeTopics` keeps them out of the author's
+  list and the gate.
+- **Front page.** No formula sheet — the real paper's "Additional Materials: List of
+  Formulae (MF26)" line and the A-Level instructions (graphing calculator expected,
+  unsupported GC answers allowed unless stated) print instead (`export-docx.py`
+  `INSTRUCTIONS_JC`). The PDF and DOCX title is "H2 Mathematics · Set N · Paper n · A-Level
+  format" (`setPaperTitle`).
+- **Waves.** One author agent per slot for both papers (every H2 question is long); blind
+  solves and repairs one slot per spawn as always. The figure registry already covers the
+  H2 kinds an author is likely to need — `argand`, `argand-polygon`, `function-graph`,
+  `curve-sketch-from-features`, `parametric-curve`, `conic-section`,
+  `inverse-function-pair`, `vector-3d`, `normal-curve`, `scatter-regression`,
+  `tree-diagram`, `graph-paper` (`figure.mjs --families`).
 
 ## What to tell Adrian at the end
 

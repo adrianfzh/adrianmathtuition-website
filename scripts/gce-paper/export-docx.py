@@ -617,6 +617,26 @@ INSTRUCTIONS = [
     'The number of marks is given in brackets [ ] at the end of each question or part question.',
 ]
 
+# 9758 (H2): the A-Level front page. The List of Formulae (MF26) is a separate booklet
+# the candidate is given, so the paper prints no formula sheet of its own.
+INSTRUCTIONS_JC = [
+    'Answer all the questions.',
+    'Write your answers in the spaces provided.',
+    'Give non-exact numerical answers correct to 3 significant figures, or 1 decimal place in the '
+    'case of angles in degrees, unless a different level of accuracy is specified in the question.',
+    'The use of an approved graphing calculator is expected, where appropriate.',
+    'Unsupported answers from a graphing calculator are allowed unless a question specifically states otherwise.',
+    'Where unsupported answers from a graphing calculator are not allowed in a question, you are required '
+    'to present the mathematical steps using mathematical notations and not calculator commands.',
+    'You are reminded of the need for clear presentation in your answers.',
+    'The number of marks is given in brackets [ ] at the end of each question or part question.',
+]
+
+
+def instructions_for(shape):
+    return INSTRUCTIONS_JC if str(shape.get('code', '')) == '9758' else INSTRUCTIONS
+
+
 FORMULAE_AM = [
     ('1.  ALGEBRA', None),
     ('Quadratic Equation', 'For the equation $ax^2 + bx + c = 0$, $x = \\dfrac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$'),
@@ -656,8 +676,12 @@ FORMULAE_EM = [
 
 
 def formulae_for(shape):
-    """The formula list the real paper of this syllabus prints (4049 → A Math, 4052 → E Math)."""
-    return FORMULAE_EM if str(shape.get('code', '')) == '4052' else FORMULAE_AM
+    """The formula list the real paper of this syllabus prints (4049 → A Math, 4052 → E Math;
+    9758 prints none — MF26 is a separate booklet)."""
+    code = str(shape.get('code', ''))
+    if code == '9758':
+        return []
+    return FORMULAE_EM if code == '4052' else FORMULAE_AM
 
 
 def size_math(doc):
@@ -745,17 +769,21 @@ def front_page(ws, paper, total):
     # front = {note, instructions[], formulae[]}; an empty formulae list prints no sheet.
     front = paper.get('front') or {}
     ws.para([('text', front.get('note') or 'Newly written questions in the GCE format, not a past-year paper.', {'italic': True})])
+    additional = front.get('additional', shape.get('additional'))
+    if additional:
+        ws.para([('text', f'Additional Materials: {additional}', {'italic': True})])
     ws.para([('text', '')])
     ws.para([('text', 'READ THESE INSTRUCTIONS FIRST', {'bold': True})])
-    for line in front.get('instructions') or INSTRUCTIONS:
+    for line in front.get('instructions') or instructions_for(shape):
         ws.para(segs(line))
     ws.para(segs(f'The total number of marks for this paper is {total}.'))
     ws.page_break()
-    if 'formulae' in front and not front['formulae']:
+    formulae = front['formulae'] if 'formulae' in front else formulae_for(shape)
+    if not formulae:
         return
     ws.para([('text', 'Mathematical Formulae', {'bold': True})])
     ws.para([('text', '')])
-    for head, body in (front.get('formulae') or formulae_for(shape)):
+    for head, body in formulae:
         if body is None:
             p = ws.para([('text', head, {'bold': True})])
             p.paragraph_format.space_before = Cm(0.3)
@@ -796,9 +824,15 @@ def main():
     else:
         front_page(ws, paper, total)
     page_per_q = bool(layout.get('page_per_question'))
+    # H2 Paper 2 prints its section headings (generate.mjs brief → plan.json `sections`)
+    sections = paper.get('sections') or {}
     for i, s in enumerate(slots):
         if page_per_q and i:
             ws.page_break()
+        if sections and s['pos'] == 1:
+            ws.section(sections.get('a', 'Section A'))
+        elif sections and s['pos'] == sections.get('boundary'):
+            ws.section(sections.get('b', 'Section B'), new_page=not page_per_q)
         if page_per_q:
             # Every question on its own page. The blank space under each part is at least
             # `a.space` lines per mark (3 by default — Adrian, 20 Sep 2026: "you have to give

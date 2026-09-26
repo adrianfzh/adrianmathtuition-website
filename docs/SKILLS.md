@@ -21,7 +21,7 @@ several of them are paper-shaped and it stops being obvious which is which.
 | Add a different practice set to one of my EXISTING revision sheets | `copy-revision-worksheet-with-different-practice` (or just `crw, am circles, worked`) |
 | Browse the bank, pick questions myself, then get a sheet | `worksheet-clerk` |
 | Generate a whole S4 prelim paper to blueprint | `prelim-paper` |
-| Write a NEW paper in the SEAB O-Level shape and file it as a Print-a-paper Set | `gce-paper` |
+| Write a NEW paper in the SEAB O-Level or A-Level H2 shape and file it as a Print-a-paper Set | `gce-paper` |
 | Second-guess a prelim draft I already saved | `setter-pass` |
 | Clean up a past-paper PDF I downloaded and add its answer key | `finish-practice-set` |
 | See which topics my students actually lose marks on | `bleed-table` |
@@ -42,7 +42,7 @@ from**:
 | `copy-revision-worksheet-with-different-practice` | **an existing document of Adrian's** (a notes-bank fragment, or a worked-examples sheet) | that same document, byte-cloned, with a fresh Practice section of real QB questions appended. Was named `revision-worksheet` until 5 Sep 2026 |
 | `worksheet-clerk` | **a conversation** — it shows candidates and Adrian picks | a physical worksheet from the picks (it calls `create-worksheet` to render); can also read jobs off `/admin/todo` |
 | `prelim-paper` | **the blueprint** (`data/paper-blueprints.json`) + the QB | a full S4 prelim paper, DOCX, with answer key |
-| `gce-paper` | **the GCE blueprint + nothing else** — it WRITES new questions with plan-billed agents (author → gates → blind solve → moderate → repair, agent-authored figures), every slot at the 2024/25 standard and — since 17 Sep 2026 — never repeating a question or a skill-asked-the-same-way from our own earlier Sets | a new SEAB-style paper (DOCX + PDF) for Adrian to read, then `publish.mjs` files it in the bank as a Print-a-paper **Set** students print in the app → [`docs/GCE-PAPER.md`](GCE-PAPER.md) |
+| `gce-paper` | **the GCE blueprint + nothing else** — it WRITES new questions with plan-billed agents (author → gates → blind solve → moderate → repair, agent-authored figures), every slot at the 2024/25 standard (H2, since 26 Sep 2026: the 2022–2024 standard, 2025 discounted) and — since 17 Sep 2026 — never repeating a question or a skill-asked-the-same-way from our own earlier Sets | a new SEAB-style paper (DOCX + PDF) for Adrian to read, then `publish.mjs` files it in the bank as a Print-a-paper **Set** students print in the app → [`docs/GCE-PAPER.md`](GCE-PAPER.md) |
 | `finish-practice-set` | **a PDF that already exists** — a compiled past paper | the same paper, cleaned of its source's header/footer/mark-up, titled, with a QB answer key appended |
 | `self-study-sheet` | **one student's MARKED PAPER** — the questions they actually lost marks on | a per-student sheet they learn from (Example → Practice pairs, verified), filed to Dropbox `/Self-Study/<Student>/` for Adrian to vet, edit and release with the marked copy. Steps 3–6 of [`SPEC-TEACHING-CYCLE.md`](../SPEC-TEACHING-CYCLE.md) |
 

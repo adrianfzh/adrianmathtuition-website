@@ -10,7 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { mulberry32, targetMarks, walkTopics, type PaperDef } from './prelim-builder';
 
-const blueprint: { papers: Record<string, PaperDef> } = JSON.parse(
+const blueprint: { papers: Record<string, PaperDef>; source?: { gce?: { year_weights?: Record<string, Record<string, number>> } } } = JSON.parse(
   fs.readFileSync(path.join(process.cwd(), 'data', 'paper-blueprints.json'), 'utf8')
 );
 
@@ -70,6 +70,27 @@ describe('GCE paper blueprints', () => {
         expect(targets).toHaveLength(paper.slots.length);
         expect(targets.reduce((a, b) => a + b, 0)).toBe(paper.total_marks);
       });
+    });
+  }
+});
+
+// The H2 entries follow the current syllabus (26 Sep 2026): base papers from 2017
+// (the first 9758 sitting — the 9740 papers carried Poisson and leaked it into the
+// pools), recent sittings weighted up and the 2025 sitting discounted (Adrian: "somehow
+// that year was too easy"). These pins fail a regeneration that forgets either.
+describe('GCE H2 entries follow the 2017+ syllabus and the year weights', () => {
+  for (const key of ['GCE-JC-P1', 'GCE-JC-P2']) {
+    it(`${key} pools carry no 9740-only topic`, () => {
+      const pooled = blueprint.papers[key].slots.flatMap((s) => s.topic_pool.map((p) => p.topic));
+      expect(pooled).not.toContain('Distributions (Poisson)');
+    });
+    it(`${key} records its year weights: nothing before 2017, 2025 discounted below the recent years`, () => {
+      const w = blueprint.source?.gce?.year_weights?.[key];
+      expect(w, `${key}: source.gce.year_weights missing`).toBeTruthy();
+      const years = Object.keys(w!);
+      expect(years.every((y) => Number(y.slice(0, 4)) >= 2017)).toBe(true);
+      expect(w!['2025']).toBeLessThan(w!['2024']);
+      expect(w!['2024']).toBeGreaterThan(w!['2017']);
     });
   }
 });

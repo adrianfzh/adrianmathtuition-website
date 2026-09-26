@@ -42,7 +42,7 @@ const ANSWER_ORANGE = '#843C0C';
 // v3 (2026-08-31): "End of Paper" after the last question.
 // v4 (2026-09-05): KaTeX inlined (was jsDelivr CDN 0.16.9, now the installed
 // 0.16.45 package) — cached PDFs must rebuild once to pick up the version bump.
-export const PAPER_PDF_RENDER_VERSION = 8;   // 8: no coverage banner on the printed paper or answers (26 Sep 2026); 7: figure caps 80/100 mm wide, 80 mm tall (21 Sep 2026, second pass); 6: figures shrink in proportion and cap at 110/130 mm (21 Sep 2026); 5: marks beside the last line, no parent total over marked sub-parts (13 Sep 2026)
+export const PAPER_PDF_RENDER_VERSION = 9;   // 9: optional section heading above a question (H2 Paper 2's Section A / B, 26 Sep 2026); 8: no coverage banner on the printed paper or answers (26 Sep 2026); 7: figure caps 80/100 mm wide, 80 mm tall (21 Sep 2026, second pass); 6: figures shrink in proportion and cap at 110/130 mm (21 Sep 2026); 5: marks beside the last line, no parent total over marked sub-parts (13 Sep 2026)
 
 export interface PaperPdfQuestion {
   /** Printed question number (original or resequenced by the caller). */
@@ -65,6 +65,13 @@ export interface PaperPdfQuestion {
    * Off (the default) for the bank's scanned crops, which the cap protects.
    */
   uncappedFigures?: boolean;
+  /**
+   * A heading printed ABOVE this question — "Section A: Pure Mathematics
+   * [40 marks]" on the first question of an H2 Paper 2 and "Section B: …" on
+   * the first statistics question (scripts/gce-paper/generate.mjs assemble).
+   * Absent on every other paper.
+   */
+  sectionHeading?: string;
 }
 
 export interface PaperPdfInput {
@@ -169,10 +176,25 @@ function questionHtml(q: PaperPdfQuestion, workingSpace: boolean): string {
   // Stem first, then figures: stems say "the diagram below shows…". The
   // stem + figures travel as one .pp-intro unit so a page break can never
   // strand a stem on the page before its diagram.
+  const intro = `<div class="pp-intro">${stem}${figures}${hole}</div>`;
+  if (q.sectionHeading) {
+    // The heading travels with the question's opening block (one break-inside:avoid
+    // unit), so a page can never end on "Section B" with its first question overleaf —
+    // break-after:avoid alone let that happen when the question was taller than the
+    // space left (26 Sep 2026). The number is positioned inside that first block.
+    return `
+    <li class="pp-q">
+      <div class="pp-keep">
+        <div class="pp-section">${esc(q.sectionHeading)}</div>
+        <div class="pp-q-body pp-q-headed"><span class="pp-qnum">${esc(q.qnum)}</span>${intro}</div>
+      </div>
+      <div class="pp-q-body">${parts}${stemSpace}</div>
+    </li>`;
+  }
   return `
     <li class="pp-q">
       <span class="pp-qnum">${esc(q.qnum)}</span>
-      <div class="pp-q-body"><div class="pp-intro">${stem}${figures}${hole}</div>${parts}${stemSpace}</div>
+      <div class="pp-q-body">${intro}${parts}${stemSpace}</div>
     </li>`;
 }
 
@@ -219,6 +241,8 @@ ${katexInlineHead()}
 
   .pp-questions{list-style:none;padding-left:24pt;margin:0}
   .pp-q{margin-bottom:8pt;position:relative}
+  .pp-section{font-weight:700;color:${NAVY};letter-spacing:.04em;margin:12pt 0 8pt -24pt}
+  .pp-q-headed{position:relative}
   .pp-qnum{position:absolute;left:-24pt;top:0;font-weight:700}
   .pp-stem{white-space:pre-wrap;break-inside:avoid;display:flex;justify-content:space-between;align-items:flex-end;gap:8pt}
   .pp-txt{flex:1 1 auto;min-width:0}
