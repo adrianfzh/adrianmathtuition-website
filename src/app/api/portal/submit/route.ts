@@ -53,7 +53,7 @@ import {
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-const MAX_PAGES = 20;
+const MAX_PAGES = 30;   // was 20 — raised 26 Sep 2026 (a student hit it with an A Math paper + its cover page); the bot mirror is lib/handin.js
 
 /** How long a repeat of the same photos counts as a retry rather than a new
  *  hand-in. Long enough to cover a phone that reconnects minutes later, far

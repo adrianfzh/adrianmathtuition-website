@@ -33,7 +33,7 @@ function reportSubmitFailure(detail: Omit<SubmitFailure, 'attempts'> & { attempt
 }
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
-const MAX_PAGES = 20;
+const MAX_PAGES = 30;   // was 20 — raised 26 Sep 2026 (a student hit it with an A Math paper + its cover page); the bot mirror is lib/handin.js
 
 type Page = { file: File; preview: string | null };
 
