@@ -15,9 +15,9 @@
  * (lib/paper-reconstruction.workingSpaceMm — generous 4 lines per mark),
  * and an optional ANSWER KEY on a final page of its own.
  *
- * Honesty rule: a paper the bank only partially covers says so — the coverage
- * warning prints under the header, so a photocopied sheet can't masquerade as
- * the full paper. Same for questions whose figure is
+ * The coverage warning CAN print under the header, but the bank route no longer
+ * passes one (Adrian, 26 Sep 2026: the "partial — N marks missing" line on the
+ * Answers PDF is "not necessary"); the bank page's chip still says it. Questions whose figure is
  * flagged (has_image) but missing from the bank: a placeholder box marks the
  * hole instead of silently printing a figureless stem.
  *
@@ -42,7 +42,7 @@ const ANSWER_ORANGE = '#843C0C';
 // v3 (2026-08-31): "End of Paper" after the last question.
 // v4 (2026-09-05): KaTeX inlined (was jsDelivr CDN 0.16.9, now the installed
 // 0.16.45 package) — cached PDFs must rebuild once to pick up the version bump.
-export const PAPER_PDF_RENDER_VERSION = 7;   // 7: figure caps 80/100 mm wide, 80 mm tall (21 Sep 2026, second pass); 6: figures shrink in proportion and cap at 110/130 mm (21 Sep 2026); 5: marks beside the last line, no parent total over marked sub-parts (13 Sep 2026)
+export const PAPER_PDF_RENDER_VERSION = 8;   // 8: no coverage banner on the printed paper or answers (26 Sep 2026); 7: figure caps 80/100 mm wide, 80 mm tall (21 Sep 2026, second pass); 6: figures shrink in proportion and cap at 110/130 mm (21 Sep 2026); 5: marks beside the last line, no parent total over marked sub-parts (13 Sep 2026)
 
 export interface PaperPdfQuestion {
   /** Printed question number (original or resequenced by the caller). */

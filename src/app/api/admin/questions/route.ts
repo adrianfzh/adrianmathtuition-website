@@ -922,7 +922,9 @@ export async function POST(req: NextRequest) {
         workingSpace,
         answerKey,
         answersOnly,
-        coverageWarning: cov.label || null,
+        // No "partial — N marks missing" banner on the printout (Adrian, 26 Sep 2026: "that's not
+        // necessary"); the bank page still shows the coverage chip.
+        coverageWarning: null,
       });
       timings.render_ms = Date.now() - tStart;
       if (withSolutions) {
