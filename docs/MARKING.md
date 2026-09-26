@@ -149,6 +149,14 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   - **Receipts:** the queue Telegram says `(💻 plan-billed — marked on the Mac)`;
     `cost_usd` then only carries bot-side extras (fall-through retries, rescue,
     answer-key check). `usage.external` + `externalReads` ride the run row.
+    **Since 26 Sep 2026 the slot also classifies the pages** (runbook "Page classes",
+    prompt served as `external-prompts .classify`, handed back as `page_classes`,
+    parsed by `pagesFromClassification`) — the Sonnet pre-pass over every page was
+    most of the Claude bill on plan-read papers. What still bills on a plan-read
+    paper: the Gemini ink placement (Google, ~$0.03/page), the allocation re-check
+    when totals don't tally (~1 paper in 8, Sonnet), the attached-paper openings read
+    (rare), and page classes on shards/shadows. The per-paper practice LIST
+    (`phase:'practice'`, Opus) is no longer requested at release — removed that day.
   - **Superseded submits are dropped, never double-delivered**: the result phase
     validates the claim is still the caller's and the run still unmarked; a
     timed-out result POST retried after the bot finished answers
