@@ -155,7 +155,6 @@ type AnnotatedPhoto = {
 // One practice question per below-max question — QB pick ('db', with its school/year
 // origin) or freshly generated. Built ON REQUEST only (📝 button) and stored on the
 // run, so a reload shows the same list without another model call.
-type PracticeItem = { for: string; source: 'db' | 'generated'; question: string; answer: string; origin?: string | null; topic?: string | null; note?: string };
 // Everything a PDF build needs. Normally read off state, but the automatic build that
 // fires the instant a paper finishes marking runs in the same tick as the setState
 // calls that would fill it — so the marking gets handed over directly instead.
@@ -317,8 +316,6 @@ export default function MarkPaperPage() {
   const [inboxToken, setInboxToken] = useState<string | null>(null);
   const [annotatedBusy, setAnnotatedBusy] = useState(false);
   const [annotateOpen, setAnnotateOpen] = useState(false);
-  const [practiceItems, setPracticeItems] = useState<PracticeItem[] | null>(null);
-  const [practiceBusy, setPracticeBusy] = useState(false);
   const annotatedInputRef = useRef<HTMLInputElement>(null);
   const [generating, setGenerating] = useState(false);
   const [stats, setStats] = useState<{ count: number; totalCost: number; avgCost: number; avgTime: number } | null>(null);
@@ -564,7 +561,6 @@ export default function MarkPaperPage() {
         photos: Object.fromEntries(((rj.source?.photos || []) as Array<{ photo_index: number; original_url?: string }>).filter(x => x && x.original_url).map(x => [x.photo_index, x.original_url as string])),
         rot: Object.fromEntries(((rj.annotation_debug || []) as Array<{ photo_index: number; rot?: number }>).map(x => [x.photo_index, Number(x.rot) || 0])),
       };
-      setPracticeItems(rj.practice?.items?.length ? rj.practice.items : null);
       setUnattempted(rj.unattempted_questions || []);
       // Surface a stored "out of" the same way the name prefills — a re-mark of
       // this run must ground against the same official total.
@@ -777,7 +773,7 @@ export default function MarkPaperPage() {
     // Keep a name Adrian typed before hitting Mark — the box is now above this
     // button, so blanking it back to the filename would throw away the thing he
     // just wrote. Only an untouched box falls back to the working PDF's name.
-    setError(''); setPhase('marking'); setResults(null); setTotals(null); setReview(null); setMarked([]); setLoadedName(''); setPaperName((p) => p.trim() || workingNameRef.current); setPracticeItems(null); setDbxNote(null);
+    setError(''); setPhase('marking'); setResults(null); setTotals(null); setReview(null); setMarked([]); setLoadedName(''); setPaperName((p) => p.trim() || workingNameRef.current); setDbxNote(null);
     let pendingId: string | null = null;
     try {
       // PDF is optional — without it, photos are marked standalone (self-contained
@@ -934,7 +930,7 @@ export default function MarkPaperPage() {
   // on a saved-but-unmarked paper, and the tail of remarkPaper above. The bot fills
   // a never-marked row in place, so the ⏳ entry becomes the marked run.
   async function markFromStored(id: string) {
-    setError(''); setPhase('marking'); setResults(null); setTotals(null); setReview(null); setMarked([]); setPracticeItems(null); setDbxNote(null);
+    setError(''); setPhase('marking'); setResults(null); setTotals(null); setReview(null); setMarked([]); setDbxNote(null);
     // A re-mark is a NEW marked copy of the same run, so it earns a fresh filing.
     autoFiledRef.current.delete(id);
     if (historyRef.current) historyRef.current.open = false;
@@ -1629,63 +1625,6 @@ export default function MarkPaperPage() {
     }
   }
 
-  // ⬇ House-style DOCX of the practice list, built server-side (pandoc on the bot).
-  const [docxBusy, setDocxBusy] = useState(false);
-  async function downloadPracticeDocx() {
-    if (!runId || docxBusy) return;
-    setDocxBusy(true); setError('');
-    try {
-      const r = await fetch('/api/admin/mark-paper', {
-        method: 'POST', headers: authHeaders,
-        body: JSON.stringify({ phase: 'practice-docx', id: runId }),
-      });
-      const d = await r.json();
-      if (!r.ok || !d.url) throw new Error(d.error || `docx failed (${r.status})`);
-      const fname = [...[sendStudentName, paperName].filter(Boolean), 'practice'].join(' — ') + '.docx';
-      window.open(downloadHref(d.url, fname, false), '_blank');
-    } catch (e) { setError((e as Error).message); }
-    finally { setDocxBusy(false); }
-  }
-
-  // 📝 Practice questions — OPT-IN (Adrian, 3 Aug 2026: "put it as an option…
-  // do not do this by default"): one QB-or-generated question per below-max
-  // question, built only when the button is pressed. The bot stores the list on
-  // the run, so pressing again (or reloading the run) never pays twice.
-  async function loadPractice() {
-    if (!runId || practiceBusy) return;
-    setPracticeBusy(true); setError('');
-    try {
-      const r = await fetch('/api/admin/mark-paper', {
-        method: 'POST', headers: authHeaders,
-        body: JSON.stringify({ phase: 'practice', id: runId, model: markModel }),
-      });
-      let d: { error?: string; items?: PracticeItem[] } | null = null;
-      try { d = await r.json(); } catch { d = null; }
-      if (d) {
-        if (!r.ok || d.error) throw new Error(d.error || `practice failed (${r.status})`);
-        if (!d.items?.length) { setError('No practice questions came back — try again, or the wrong questions had no usable match.'); return; }
-        setPracticeItems(d.items);
-        return;
-      }
-      // Unparseable response — the Vercel proxy cuts requests at 300s, and a paper
-      // with many wrong questions generates for longer, so the reply dies as a
-      // plain-text error page ("Unexpected token 'A' … is not valid JSON",
-      // 30 Aug 2026 on Alessi's 12-wrong-question run). The bot finishes anyway
-      // and stores the list on the run — poll for it instead of failing.
-      for (let i = 0; i < 36; i++) {
-        await new Promise((res) => setTimeout(res, 10_000));
-        const rr = await fetch('/api/admin/mark-paper', {
-          method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'run', id: runId }),
-        });
-        const rd = await rr.json().catch(() => null);
-        const items: PracticeItem[] | undefined = rd?.run?.result_json?.practice?.items;
-        if (items?.length) { setPracticeItems(items); return; }
-      }
-      setError('Practice is still building server-side (it never pays twice) — reload the run in a few minutes to see the list.');
-    } catch (e) { setError((e as Error).message); }
-    finally { setPracticeBusy(false); }
-  }
-  const wrongCount = (results || []).filter((r) => (r.marking?.total_max ?? 0) > 0 && (r.marking?.total_awarded ?? 0) < (r.marking?.total_max ?? 0)).length;
 
   // Auto-refresh the history while a row is still being marked server-side
   // (⏳, not 🌙-queued, under 15 min old): a marking whose browser connection
@@ -2631,40 +2570,6 @@ export default function MarkPaperPage() {
               {sendNote && (
                 <span style={{ fontSize: 13, color: sendNote.ok ? '#15803d' : '#b91c1c' }}>{sendNote.ok ? '✓ ' : '✗ '}{sendNote.text}</span>
               )}
-            </div>
-          )}
-          {/* 📝 Practice questions — opt-in, one per question that dropped marks. */}
-          {runId && wrongCount > 0 && !practiceItems && (
-            <div style={{ marginTop: 14 }}>
-              <button style={{ ...btn, background: '#b45309', opacity: practiceBusy ? 0.6 : 1 }} disabled={practiceBusy} onClick={loadPractice}>
-                {practiceBusy ? 'Finding practice questions…' : `📝 Practice questions (${wrongCount} wrong)`}
-              </button>
-              <span style={{ marginLeft: 10, color: '#6b7280', fontSize: 13 }}>One per wrong question — from the question bank when it has a match, freshly written when it doesn&rsquo;t. Takes ~a minute.</span>
-            </div>
-          )}
-          {practiceItems && (
-            <div style={{ marginTop: 14, padding: 12, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10 }}>
-              <div style={{ fontWeight: 700, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <span>📝 Practice — one question per dropped-marks question</span>
-                <button style={{ ...btn, background: '#374151', fontSize: 12, padding: '5px 10px', opacity: docxBusy ? 0.6 : 1 }} disabled={docxBusy} onClick={downloadPracticeDocx}
-                  title="House-style Word file — typeset equations, working space, orange answers">
-                  {docxBusy ? 'Building…' : '⬇ DOCX'}
-                </button>
-              </div>
-              {practiceItems.map((it, i) => (
-                <div key={i} style={{ padding: '10px 0', borderTop: i ? '1px solid #fef3c7' : 'none' }}>
-                  <div style={{ fontSize: 12, color: '#92400e', fontWeight: 700, marginBottom: 4 }}>
-                    For Q{it.for}
-                    {it.topic ? ` · ${it.topic}` : ''}
-                    {it.origin ? ` · ${it.origin}` : it.source === 'generated' ? ' · written for this error' : ''}
-                  </div>
-                  <div style={{ fontSize: 14, whiteSpace: 'pre-wrap' }}><MathText text={it.question} /></div>
-                  {it.answer && (
-                    <div style={{ fontSize: 13, color: '#b45309', marginTop: 6 }}>Ans: <MathText text={it.answer} /></div>
-                  )}
-                  {it.note && <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4, fontStyle: 'italic' }}><MathText text={it.note} /></div>}
-                </div>
-              ))}
             </div>
           )}
         </div>
