@@ -50,3 +50,11 @@ describe('marks placement (JPJC 2025 P2 Q11, 13 Sep 2026)', () => {
     expect(html).not.toContain('float:right');
   });
 });
+
+describe('richText bold', () => {
+  it('turns **x** into bold and keeps a lone ** as typed', () => {
+    expect(richText('Write your answer to **part (a)** in standard form.'))
+      .toBe('Write your answer to <strong>part (a)</strong> in standard form.');
+    expect(richText('2 ** 3')).toBe('2 ** 3');
+  });
+});

@@ -28,7 +28,7 @@ import { isOurBlobUrl } from '@/lib/blob-url';
 import { paperFileNames } from '@/lib/paper-filename';
 import Anthropic from '@anthropic-ai/sdk';
 import { cleanScan } from '@/lib/figure-clean';
-import { solutionImageAllowed, type SolutionImageGate } from '@/lib/bank-question-markdown';
+import { solutionImageAllowed, partImagePaths, type SolutionImageGate } from '@/lib/bank-question-markdown';
 import { solutionImageGateFor } from '@/lib/solution-image-gate';
 
 export const runtime = 'nodejs';
@@ -133,7 +133,11 @@ function resolveParts(parts: unknown, gate?: SolutionImageGate, questionId?: str
     if (typeof o.solution_image === 'string' && !solutionImageAllowed(o.solution_image, gate, questionId)) delete o.solution_image;
     for (const k of ['image_url', 'image_url_after', 'solution_image'] as const) {
       if (typeof o[k] === 'string' && o[k] && !/^https?:/i.test(o[k] as string) && isPlausibleImagePath(o[k])) {
-        o[k] = imgSrc(o[k] as string);
+        // A part's figure is sometimes stored as a JSON list — '["question_images/x.png"]'
+        // (29 questions, e.g. GCE 2023 EM P1 Q22(b)'s Venn diagram). Treating that text as
+        // one path glued the brackets into the URL and printed a broken image (26 Sep 2026).
+        const first = partImagePaths(o[k]).find(isPlausibleImagePath);
+        if (first) o[k] = imgSrc(first); else delete o[k];
       }
     }
     if (o.subparts) o.subparts = resolveParts(o.subparts, gate, questionId);

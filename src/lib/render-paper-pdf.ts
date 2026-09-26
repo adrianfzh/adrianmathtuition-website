@@ -42,7 +42,7 @@ const ANSWER_ORANGE = '#843C0C';
 // v3 (2026-08-31): "End of Paper" after the last question.
 // v4 (2026-09-05): KaTeX inlined (was jsDelivr CDN 0.16.9, now the installed
 // 0.16.45 package) — cached PDFs must rebuild once to pick up the version bump.
-export const PAPER_PDF_RENDER_VERSION = 9;   // 9: optional section heading above a question (H2 Paper 2's Section A / B, 26 Sep 2026); 8: no coverage banner on the printed paper or answers (26 Sep 2026); 7: figure caps 80/100 mm wide, 80 mm tall (21 Sep 2026, second pass); 6: figures shrink in proportion and cap at 110/130 mm (21 Sep 2026); 5: marks beside the last line, no parent total over marked sub-parts (13 Sep 2026)
+export const PAPER_PDF_RENDER_VERSION = 10;   // 10: **bold** in question text + part figures stored as a JSON list (26 Sep 2026); 9: optional section heading above a question (H2 Paper 2's Section A / B, 26 Sep 2026); 8: no coverage banner on the printed paper or answers (26 Sep 2026); 7: figure caps 80/100 mm wide, 80 mm tall (21 Sep 2026, second pass); 6: figures shrink in proportion and cap at 110/130 mm (21 Sep 2026); 5: marks beside the last line, no parent total over marked sub-parts (13 Sep 2026)
 
 export interface PaperPdfQuestion {
   /** Printed question number (original or resequenced by the caller). */
@@ -110,13 +110,20 @@ function esc(s: string): string {
  * The SPLITTING lives in @/lib/pipe-tables, shared with the on-screen question
  * view — the same stem has to become the same table in print and in a browser.
  */
+/** esc() + markdown bold: the bank writes emphasis as **part (a)** / **not**, which
+ *  printed with its asterisks (GCE 2023 EM P1 Q3(b), 26 Sep 2026). Only a same-line
+ *  **…** pair becomes bold; a lone ** stays as typed. */
+function escBold(s: string): string {
+  return esc(s).replace(/\*\*([^*\n]+?)\*\*/g, '<strong>$1</strong>');
+}
+
 export function richText(s: string): string {
   return splitPipeTables(s).map((b) => {
-    if (b.kind === 'text') return esc(b.text);
+    if (b.kind === 'text') return escBold(b.text);
     const [head, ...rest] = b.rows;
-    return '<table class="pp-table"><thead><tr>' + head.map((c) => `<th>${esc(c)}</th>`).join('') + '</tr></thead>' +
+    return '<table class="pp-table"><thead><tr>' + head.map((c) => `<th>${escBold(c)}</th>`).join('') + '</tr></thead>' +
       (rest.length
-        ? '<tbody>' + rest.map((r) => '<tr>' + r.map((c) => `<td>${esc(c)}</td>`).join('') + '</tr>').join('') + '</tbody>'
+        ? '<tbody>' + rest.map((r) => '<tr>' + r.map((c) => `<td>${escBold(c)}</td>`).join('') + '</tr>').join('') + '</tbody>'
         : '') +
       '</table>';
   }).join('\n');
