@@ -25,7 +25,7 @@ import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server
 import { resolveFindLevel } from '@/lib/portal-find';
 import { portalIdentity } from '@/lib/portal-auth';
 import { requireActiveAccess } from '@/lib/portal-passes';
-import { practicePhotoOpen } from '@/lib/portal-beta';
+import { practicePhotoOpen, PRACTICE_PHOTO_PREVIEW_IDENTITIES } from '@/lib/portal-beta';
 import { logFindRow } from '@/lib/find-assign';
 import { classifyPhoto, type ClassifyAccount } from '@/lib/practice-photo-classify';
 import { PHOTO_UNREADABLE_MESSAGE } from '@/lib/practice-photo';
@@ -96,7 +96,11 @@ export async function POST(req: Request) {
     .or(`created_at.gte.${sgtMidnight},scheduled_for.gte.${today}`);
   const used = usedByDay(((jobs ?? []) as { scheduled_for: string | null; created_at: string }[])
     .map(j => ({ createdDay: sgtDateISO(new Date(j.created_at)), queuedFor: j.scheduled_for })));
-  const place = placeInQueue({ allowance: PHOTO_SHEET_ALLOWANCE, today, usedByDay: used, noun: 'sheet' });
+  // The demo student skips the one-a-day allowance so a trial can run several sheets
+  // in one sitting (Adrian, 26 Sep 2026: "let demo skip the daily limit"). Real
+  // students keep PHOTO_SHEET_ALLOWANCE.
+  const allowance = PRACTICE_PHOTO_PREVIEW_IDENTITIES.includes(identity) ? 99 : PHOTO_SHEET_ALLOWANCE;
+  const place = placeInQueue({ allowance, today, usedByDay: used, noun: 'sheet' });
   if (!place.ok) return NextResponse.json({ error: place.message }, { status: 429 });
 
   // Read every photo (in parallel — the bot's classify is ~10 s each).
