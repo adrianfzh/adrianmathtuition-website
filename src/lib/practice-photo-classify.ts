@@ -29,7 +29,12 @@ export async function classifyImage(door: BotDoor, imageBase64: string, level: s
   const r = await fetch(`${door.botBase}/api/portal-classify`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${door.botSecret}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ imageBase64, level }),
+    // The bot's OCR reads RAW base64. The sheet route holds each photo as a data URL
+    // (it files the bytes in the student's folder too), and passing that prefix
+    // through made every "Write my sheet" photo "unreadable" — found by the demo
+    // trial, 26 Sep 2026, before any student used it. The photo route strips it in
+    // parseSimilarBody; strip here too so both doors send the same thing.
+    body: JSON.stringify({ imageBase64: imageBase64.replace(/^data:[^,]*,/, ''), level }),
     signal: AbortSignal.timeout(timeoutMs),
   });
   const raw = await r.json().catch(() => null);
