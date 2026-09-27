@@ -15,6 +15,8 @@
 // helpers at the top are safe to import in node and are unit-tested in
 // chat-solver.test.ts.
 
+import { markCurrencyDollars, CURRENCY_MARK } from './chat-currency';
+
 export const BOT_API_BASE = 'https://adrianmath-telegram-math-bot.fly.dev';
 
 /* ── Types ── */
@@ -95,6 +97,11 @@ export function trimUnclosedMath(t: string): string {
 
 /* ── renderToElement (KaTeX inline render) ── */
 export function renderToElement(el: HTMLDivElement, text: string, streaming = false) {
+  // Prices first: a currency $ must never pair with a maths $ (28 Sep 2026 —
+  // "Alice paid $400 for $x$ packs" typeset "400 for" as maths). Backticks
+  // become $…$ BEFORE the scan (they pair too), and the scan runs before the
+  // streaming trim, so a price no longer holds back the rest of the line.
+  text = markCurrencyDollars(text.replace(/`([^`\n]+)`/g, '$$$1$').replace(/\\\$(\d)/g, '$$$1'));
   if (streaming) text = trimUnclosedMath(text);
   text = text.replace(/\n\s*(?:CONFIDENCE\s*:\s*(?:HIGH|LOW)|DIAGRAM\s*:\s*REQUEST[^\n]*|DATA\s*:\s*MISSING[^\n]*|BANK\s*:\s*(?:AGREE|DISAGREE|UNSURE))(?=\n|$)/gi, '').trimEnd();
   text = text.replace(/`([^`\n]+)`/g, '$$$1$');
@@ -158,12 +165,17 @@ export function renderToElement(el: HTMLDivElement, text: string, streaming = fa
 
   html = html.replace(/\n/g, '<br>');
   html = html.replace(/\uE000(\d+)\uE001/g, (_, i) => mathChunks[+i]);
+  html = html.split(CURRENCY_MARK).join('$');
   if (streaming) html += '<span class="stream-caret">▍</span>';
   el.innerHTML = html;
 }
 
 /* ── formatMessage (for final display of user messages) ── */
 export function formatMessage(text: string): string {
+  // A price's $ goes out as its own <span>: auto-render (appendChatMessage)
+  // pairs $ only within one run of text nodes, so the span keeps a price
+  // from pairing with the next maths $ on a restored answer.
+  text = markCurrencyDollars(text.replace(/`([^`\n]+)`/g, '$$$1$').replace(/\\\$(\d)/g, '$$$1'));
   text = text.replace(/\n\s*(?:CONFIDENCE\s*:\s*(?:HIGH|LOW)|DIAGRAM\s*:\s*REQUEST[^\n]*|DATA\s*:\s*MISSING[^\n]*|BANK\s*:\s*(?:AGREE|DISAGREE|UNSURE))(?=\n|$)/gi, '').trimEnd();
   text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
   text = text.replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>');
@@ -171,7 +183,7 @@ export function formatMessage(text: string): string {
     '<span style="font-weight:700;display:block;margin-top:14px;color:hsl(40,80%,42%);font-size:13px;text-transform:uppercase;letter-spacing:0.05em;">$1</span>');
   text = text.replace(/`([^`\n]+)`/g, '$$$1$');
   text = text.replace(/\n/g, '<br>');
-  return text;
+  return text.split(CURRENCY_MARK).join('<span class="cur">$</span>');
 }
 
 /* ── image lightbox: click any chat image to view it enlarged ── */
@@ -235,6 +247,7 @@ export function appendChatMessage(inner: HTMLDivElement, role: 'user' | 'bot', c
               { left: '$$', right: '$$', display: true },
               { left: '$', right: '$', display: false },
             ],
+            ignoredClasses: ['cur'],
             throwOnError: false,
           });
         } catch { /* noop */ }
