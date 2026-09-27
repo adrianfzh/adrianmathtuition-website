@@ -153,9 +153,14 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
     prompt served as `external-prompts .classify`, handed back as `page_classes`,
     parsed by `pagesFromClassification`) — the Sonnet pre-pass over every page was
     most of the Claude bill on plan-read papers. What still bills on a plan-read
-    paper: the Gemini ink placement (Google, ~$0.03/page), the allocation re-check
-    when totals don't tally (~1 paper in 8, Sonnet), the attached-paper openings read
-    (rare), and page classes on shards/shadows. The per-paper practice LIST
+    paper: the Gemini ink placement (Google, ~$0.03/page = **US$0.50–0.90 a paper,
+    ~US$80 a month** at late-Sep volume; Claude was measured for it on 28 Sep 2026 —
+    80 % same row against Gemini's 96 %, boxes half a line low — so it stays on
+    Gemini, bot CLAUDE.md §vision trial), the attached-paper openings read (rare),
+    and page classes + the add-up re-check on shards/shadows. **The add-up re-check
+    (allocations that don't tally, ~1 paper in 8) runs from the plan slot's own
+    bracket readings since 28 Sep 2026** (`allocation_recheck.source: 'plan'`); only
+    a paper with no readings falls back to the paid Sonnet re-read. The per-paper practice LIST
     (`phase:'practice'`, Opus) is no longer requested at release — removed that day.
   - **Superseded submits are dropped, never double-delivered**: the result phase
     validates the claim is still the caller's and the run still unmarked; a
