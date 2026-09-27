@@ -400,6 +400,31 @@ Adrian: "do both" — the JC blueprint cut at 2017 with recent years weighted (d
   unsupported GC answers allowed unless stated) print instead (`export-docx.py`
   `INSTRUCTIONS_JC`). The PDF and DOCX title is "H2 Mathematics · Set N · Paper n · A-Level
   format" (`setPaperTitle`).
+- **THE IDEAS STEP — H2 only, since 27 Sep 2026.** Adrian on the first draft of H2 Set 1:
+  "questions are too easy. And very standard. H2 A level math gce are more creative with the
+  questions. They are set in a smart way, where students need to think, and they gave
+  non-standard questions." That draft had passed every gate: the moderator's test rewarded a
+  clean question with one twist and scored an inventive one down as "above", and the briefs
+  by topic produced each topic's textbook route. So for H2 the standard document's §5–§6
+  were rewritten (the MAIN step must be one of the §8 moves; the §9 templates are below
+  standard as whole questions; chaining ideas is the standard, not "above"; stems short),
+  and a step sits BEFORE authoring:
+  ```bash
+  sh .claude/skills/gce-paper/prompts/render.sh ideas "$RUN" 1 4,5,6,7,9,10   # the open slots
+  ```
+  Spawn TWO ideas agents per group of AT MOST THREE slots — `model: "fable"` and
+  `model: "opus"`, each told its model name for the output file (a six-slot Fable run
+  overran the 64k output limit on 27 Sep 2026 and lost everything) — so six ideas arrive
+  per slot, each built from a §8 move
+  with its topics, parts, marks, the step the candidate must find and sketched answers. The
+  SESSION chooses one per slot (the most non-standard that stays inside 9758, every move at
+  most twice a paper, the must-appear topics landing somewhere) and writes it to
+  `$RUN/Q<n>.idea.md`. `render.sh` then appends the H2 extras to the author, moderator and
+  repair prompts (`prompts/JC-extra-*.md`): the author implements the idea and names the
+  move in `skills`; the moderator adds `"template"` and `"move"` to its verdict and scores a
+  template-with-new-numbers at most 3 whatever its polish; the repair author rebuilds from
+  the move. `paper-shape.md` for an H2 paper lists the kept questions' moves, the open slots
+  and which must-appear topics still have to land — not templates per slot.
 - **Waves.** One author agent per slot for both papers (every H2 question is long); blind
   solves and repairs one slot per spawn as always. The figure registry already covers the
   H2 kinds an author is likely to need — `argand`, `argand-polygon`, `function-graph`,

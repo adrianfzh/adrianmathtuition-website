@@ -1,6 +1,9 @@
 #!/bin/sh
 # Render one of the per-slot prompt templates for an Agent spawn.
-#   usage: render.sh <author|blind|moderate|repair> <RUN dir> <paper no> <slots, e.g. 1,2,3>
+#   usage: render.sh <author|blind|moderate|repair|ideas> <RUN dir> <paper no> <slots, e.g. 1,2,3>
+#   H2 (27 Sep 2026): a family may carry EXTRA rules per kind in <FAM>-extra-<kind>.md (JC-extra-author.md,
+#   JC-extra-moderate.md, JC-extra-repair.md); they are appended to the rendered prompt with the same
+#   placeholders filled. `ideas` renders the ideas-step prompt (H2's step before authoring).
 #   prints the rendered prompt's path (written into the run dir); paste its contents as the agent prompt.
 # Placeholders: __RUN__ = run dir, __P__ = paper number, __SLOTS__ = "Q1, Q2, Q3", __N__ = the raw slot list,
 # __SUBJECT__ / __CODE__ / __EXAM__ = the syllabus, read from the run's plan.json key (GCE-AM-* → Additional
@@ -25,6 +28,8 @@ case "$fam" in
 esac
 label=$(echo "$slots" | sed 's/,/, Q/g; s/^/Q/')
 out="$RUN/prompt-${kind}-Q$(echo "$slots" | tr ',' '-').md"
-sed -e "s|__RUN__|$RUN|g" -e "s|__P__|$P|g" -e "s|__SLOTS__|$label|g" -e "s|__N__|$slots|g" -e "s|__SUBJECT__|$subject|g" -e "s|__CODE__|$code|g" \
-    -e "s|__EXAM__|$exam|g" -e "s|__YEARS__|$years|g" -e "s|__STANDARD_NOTE__|$note|g" "$here/${kind}.md" > "$out"
+fill() { sed -e "s|__RUN__|$RUN|g" -e "s|__P__|$P|g" -e "s|__SLOTS__|$label|g" -e "s|__N__|$slots|g" -e "s|__SUBJECT__|$subject|g" -e "s|__CODE__|$code|g" \
+    -e "s|__EXAM__|$exam|g" -e "s|__YEARS__|$years|g" -e "s|__STANDARD_NOTE__|$note|g" "$1"; }
+fill "$here/${kind}.md" > "$out"
+[ -f "$here/${fam}-extra-${kind}.md" ] && fill "$here/${fam}-extra-${kind}.md" >> "$out"
 echo "$out"

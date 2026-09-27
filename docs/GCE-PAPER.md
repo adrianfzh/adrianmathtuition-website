@@ -450,8 +450,16 @@ line, no formula sheet (`formulae_for` returns none for 9758). `standard.mjs` de
 run to `--years 2022,2023,2024` and copies `reference/jc-standard-2022-2024.md`; the prompt
 templates take `__EXAM__`, `__YEARS__` and `__STANDARD_NOTE__` from `render.sh`. Verified
 26 Sep 2026 with a two-question fixture through `brief → check → assemble → export-docx`
-(both section headings on the printed paper); no real H2 Set has been written yet — the
-first is held to the standard document alone (its §7).
+(both section headings on the printed paper). **The first H2 Set 1 draft (26 Sep 2026) was
+rejected by Adrian as "too easy and very standard"** although every slot had passed the
+gates: the moderator's test rewarded a clean question with one twist, and the topic-first
+briefs produced each topic's textbook route. Since 27 Sep 2026 an H2 run has an IDEAS STEP
+before authoring (`prompts/ideas.md`, two planners, the session chooses one idea per slot
+into `Q<n>.idea.md`), the H2 standard's §5–§6 make the §8 MOVE the main step and the §9
+TEMPLATES below standard, and `render.sh` appends `prompts/JC-extra-{author,moderate,repair}.md`
+to the H2 prompts (the moderator's verdict carries `template` and `move`). Adrian kept five
+of the first draft's Paper 1 questions; Paper 2 was rewritten whole. The first approved Set
+is held to the standard document alone (its §7).
 
 Known gaps: the run folder lives wherever `--out` points (scratchpad
 for trials); `function-graph` has no `ticks:false` (the step trick stands in for it).
