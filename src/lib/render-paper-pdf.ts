@@ -27,7 +27,7 @@
  */
 
 import { getBrowser } from '@/lib/generate-pdf';
-import { workingSpaceMm } from '@/lib/paper-reconstruction';
+import { workingSpaceMm, isConstructionQuestion, constructionSpaceMm } from '@/lib/paper-reconstruction';
 import type { Part } from '@/lib/kiosk-worksheet-images';
 import { splitPipeTables } from '@/lib/pipe-tables';
 import { katexInlineHead, katexAutoRenderScript, waitForPageReady } from '@/lib/katex-inline';
@@ -42,7 +42,7 @@ const ANSWER_ORANGE = '#843C0C';
 // v3 (2026-08-31): "End of Paper" after the last question.
 // v4 (2026-09-05): KaTeX inlined (was jsDelivr CDN 0.16.9, now the installed
 // 0.16.45 package) — cached PDFs must rebuild once to pick up the version bump.
-export const PAPER_PDF_RENDER_VERSION = 10;   // 10: **bold** in question text + part figures stored as a JSON list (26 Sep 2026); 9: optional section heading above a question (H2 Paper 2's Section A / B, 26 Sep 2026); 8: no coverage banner on the printed paper or answers (26 Sep 2026); 7: figure caps 80/100 mm wide, 80 mm tall (21 Sep 2026, second pass); 6: figures shrink in proportion and cap at 110/130 mm (21 Sep 2026); 5: marks beside the last line, no parent total over marked sub-parts (13 Sep 2026)
+export const PAPER_PDF_RENDER_VERSION = 11;   // 11: answer key in black, a grid at its true printed width, a construction question gets one 15 cm+ area after its last part instead of strips (28 Sep 2026); 10: **bold** in question text + part figures stored as a JSON list (26 Sep 2026); 9: optional section heading above a question (H2 Paper 2's Section A / B, 26 Sep 2026); 8: no coverage banner on the printed paper or answers (26 Sep 2026); 7: figure caps 80/100 mm wide, 80 mm tall (21 Sep 2026, second pass); 6: figures shrink in proportion and cap at 110/130 mm (21 Sep 2026); 5: marks beside the last line, no parent total over marked sub-parts (13 Sep 2026)
 
 export interface PaperPdfQuestion {
   /** Printed question number (original or resequenced by the caller). */
@@ -164,6 +164,10 @@ function partHtml(p: Part, workingSpace: boolean, uncapped = false): string {
   return `<div class="pp-part">${before}${text}${after}${space}${subs}</div>`;
 }
 
+function flatPartTexts(parts: Part[]): string[] {
+  return parts.flatMap((p) => [p.text ?? '', ...flatPartTexts(p.subparts ?? [])]);
+}
+
 function partsCarryMarks(parts: Part[]): boolean {
   return parts.some((p) => !!p.marks || partsCarryMarks(p.subparts ?? []));
 }
@@ -178,8 +182,13 @@ function questionHtml(q: PaperPdfQuestion, workingSpace: boolean): string {
   const stem = q.stem.trim()
     ? lineWithMarks('pp-stem', richText(q.stem.trim()), stemMarks)
     : (stemMarks ? lineWithMarks('pp-stem', '', stemMarks) : '');
-  const parts = q.parts.map((p) => partHtml(p, workingSpace, q.uncappedFigures === true)).join('');
-  const stemSpace = workingSpace && !inParts ? spacer(q.marks) : '';
+  // A construction question gets ONE blank area after its last part (the triangle is
+  // drawn there and the later parts build on it), never a strip under each part —
+  // and no less than a 15 cm block (Adrian, 28 Sep 2026, E Math Set 1 P1 Q7).
+  const construction = workingSpace && isConstructionQuestion(q.stem, flatPartTexts(q.parts));
+  const parts = q.parts.map((p) => partHtml(p, workingSpace && !construction, q.uncappedFigures === true)).join('');
+  const stemSpace = workingSpace && !inParts && !construction ? spacer(q.marks) : '';
+  const constructionSpace = construction ? `<div class="pp-space" style="height:${constructionSpaceMm(q.marks)}mm"></div>` : '';
   // Stem first, then figures: stems say "the diagram below shows…". The
   // stem + figures travel as one .pp-intro unit so a page break can never
   // strand a stem on the page before its diagram.
@@ -195,13 +204,13 @@ function questionHtml(q: PaperPdfQuestion, workingSpace: boolean): string {
         <div class="pp-section">${esc(q.sectionHeading)}</div>
         <div class="pp-q-body pp-q-headed"><span class="pp-qnum">${esc(q.qnum)}</span>${intro}</div>
       </div>
-      <div class="pp-q-body">${parts}${stemSpace}</div>
+      <div class="pp-q-body">${parts}${stemSpace}${constructionSpace}</div>
     </li>`;
   }
   return `
     <li class="pp-q">
       <span class="pp-qnum">${esc(q.qnum)}</span>
-      <div class="pp-q-body">${intro}${parts}${stemSpace}</div>
+      <div class="pp-q-body">${intro}${parts}${stemSpace}${constructionSpace}</div>
     </li>`;
 }
 
@@ -224,7 +233,9 @@ function answerKeyHtml(questions: PaperPdfQuestion[], firstPage = false): string
 export function buildPaperHTML(input: PaperPdfInput): string {
   const { title, metaLine, questions, workingSpace, answerKey } = input;
   const warning = (input.coverageWarning ?? '').trim();
-  const answerColor = (input.answerKeyColor ?? '').trim() || ANSWER_ORANGE;
+  // Black by default since 28 Sep 2026 (Adrian: "answers can be in black, not orange");
+  // the orange stays for the heading rule only.
+  const answerColor = (input.answerKeyColor ?? '').trim() || '#111';
   const answersOnly = input.answersOnly === true;
 
   return `<!DOCTYPE html>

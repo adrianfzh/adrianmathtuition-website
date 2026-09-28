@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   assessCoverage, workingSpaceLines, workingSpaceMm, answerKeyLines,
+  isConstructionQuestion, constructionSpaceMm, CONSTRUCTION_SPACE_MIN_MM,
 } from './paper-reconstruction';
 
 // Grouping (count / marks_total / numbered per paper) lives in the Supabase
@@ -106,5 +107,21 @@ describe('answerKeyLines', () => {
     expect(answerKeyLines(null, ' y = 2x ')).toEqual(['y = 2x']);
     expect(answerKeyLines([{ label: 'a' }], null)).toEqual([]);
     expect(answerKeyLines(null, '  ')).toEqual([]);
+  });
+});
+
+describe('construction questions get one contiguous area (Adrian, 28 Sep 2026)', () => {
+  it('detects the wording in the stem or in any part', () => {
+    expect(isConstructionQuestion('Show all your construction lines and arcs clearly.', [])).toBe(true);
+    expect(isConstructionQuestion('', ['Using ruler and compasses only, construct triangle $ABC$.'])).toBe(true);
+    expect(isConstructionQuestion('', ['Construct the perpendicular bisector of $AB$.', null])).toBe(true);
+    expect(isConstructionQuestion('The diagram shows a triangle.', ['Find angle $ABC$.'])).toBe(false);
+    expect(isConstructionQuestion('A constructor builds a wall.', [])).toBe(false); // "constructor" is not a construction
+  });
+  it('gives at least 150 mm, more for a big question, never more than a page', () => {
+    expect(constructionSpaceMm(4)).toBe(CONSTRUCTION_SPACE_MIN_MM);   // 4 marks would be 128 mm as strips
+    expect(constructionSpaceMm(1)).toBe(CONSTRUCTION_SPACE_MIN_MM);
+    expect(constructionSpaceMm(6)).toBe(192);
+    expect(constructionSpaceMm(12)).toBe(230);
   });
 });

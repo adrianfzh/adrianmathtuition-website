@@ -18,6 +18,7 @@ import { renderBotWorksheetPDF, type BotWorksheetQuestion } from '@/lib/render-b
 import { renderSolutionsPDF, type SolutionsItem, type SolutionsPart } from '@/lib/render-solutions-pdf';
 import { rollupSolution } from '@/lib/solution-rollup';
 import { renderPaperPDF, PAPER_PDF_RENDER_VERSION, type PaperPdfQuestion } from '@/lib/render-paper-pdf';
+import { figureWidthMm } from '@/lib/print-paper';
 import { createHash } from 'crypto';
 import { assessCoverage, answerKeyLines, type AnswerPart } from '@/lib/paper-reconstruction';
 import { KIOSK_LEVELS } from '@/lib/kiosk-session';
@@ -876,6 +877,10 @@ export async function POST(req: NextRequest) {
         missingFigure,
         parts,
         answerLines: answerKeyLines(parts as AnswerPart[], (row.answer as string | null) ?? null),
+        // A Set paper's authored figure with a stored print width (a graph-paper grid
+        // whose squares must print at 1 cm) keeps its true size instead of the 80 mm
+        // cap (Adrian, 28 Sep 2026: "graph too small. make it to scale").
+        uncappedFigures: !!figureWidthMm((row.gen_meta as { figure?: { print_width_mm?: unknown } } | null)?.figure?.print_width_mm as string | number | null | undefined),
       };
     });
 

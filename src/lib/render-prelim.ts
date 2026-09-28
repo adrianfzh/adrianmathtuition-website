@@ -28,6 +28,7 @@ import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { getBrowser } from '@/lib/generate-pdf';
 import { mdToHtml } from '@/lib/render-worksheet';
 import type { PrelimCover, SectionHeading } from '@/lib/print-paper';
+import { workingSpaceMm, isConstructionQuestion, constructionSpaceMm } from '@/lib/paper-reconstruction';
 
 export interface PrelimQuestion {
   pos: number;
@@ -171,10 +172,13 @@ function questionsHtml(input: PrelimInput): string {
     .map((q) => {
       const label = sectionAt.get(q.pos);
       const heading = label ? `<div class="section-h">${esc(label)}</div>\n    ` : '';
-      // ~9mm of working space per mark, capped at 130mm, only when requested.
-      const space = input.workingSpace
-        ? `<div class="q-space" style="min-height:${Math.min(130, q.marks * 9)}mm"></div>`
-        : '';
+      // Working space, only when requested: the shared rule of lib/paper-reconstruction
+      // (4 handwriting lines per mark, capped to a page) — it was 9 mm per mark capped
+      // at 130 mm, which gave a 4-mark question 36 mm; and a construction question gets
+      // one 15 cm+ area (Adrian, 28 Sep 2026: "make sure adequate space is given",
+      // "we need space for construction for EM set 1 paper 1").
+      const mm = isConstructionQuestion(q.text, []) ? constructionSpaceMm(q.marks) : workingSpaceMm(q.marks);
+      const space = input.workingSpace ? `<div class="q-space" style="min-height:${mm}mm"></div>` : '';
       return `
     ${heading}<div class="q">
       <div class="q-row">

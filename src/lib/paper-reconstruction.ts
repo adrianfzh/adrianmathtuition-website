@@ -84,6 +84,29 @@ export function workingSpaceMm(marks: number | null | undefined): number {
   return Math.min(SPACE_CAP_MM, workingSpaceLines(marks) * LINE_MM);
 }
 
+/**
+ * A construction question ("Using ruler and compasses only, construct …",
+ * "Show all your construction lines and arcs clearly") needs ONE contiguous
+ * blank area, not a strip under each part: the triangle is drawn under the
+ * first part and the later parts build on it and measure from it. Adrian,
+ * 28 Sep 2026 (E Math Set 1 Paper 1 Q7 printed with 32 mm strips): "we need
+ * space for construction … also remember this when regenerating exam papers
+ * from /admin/questions".
+ */
+const CONSTRUCTION_RE = /\bconstruct(ion|ed|s)?\b|ruler and compasses|compasses only/i;
+
+export function isConstructionQuestion(stem: string | null | undefined, partTexts: Array<string | null | undefined>): boolean {
+  return CONSTRUCTION_RE.test(stem ?? '') || partTexts.some((t) => CONSTRUCTION_RE.test(t ?? ''));
+}
+
+/** Floor for the single construction area: 8 cm sides plus arcs need ~15 cm. */
+export const CONSTRUCTION_SPACE_MIN_MM = 150;
+
+/** One block after the last part: the usual space for the marks, never less than the floor, still capped to a page. */
+export function constructionSpaceMm(marks: number | null | undefined): number {
+  return Math.min(SPACE_CAP_MM, Math.max(CONSTRUCTION_SPACE_MIN_MM, workingSpaceLines(marks) * LINE_MM));
+}
+
 /** Minimal part shape the answer-key walk needs (questions.parts jsonb). */
 export interface AnswerPart {
   label?: string | null;
