@@ -382,6 +382,20 @@ The paper JSONs are in `data/gce-generated/`, and the figure specs and PNGs are 
 `publish.mjs`. **Published as A Math Set 2 on 28 Sep 2026** from the Mac (13 + 10 rows) — Adrian
 reads it published and names slots to amend.
 
+**29 Sep 2026, Adrian's read of A Math Set 2 P1** ("Q3a, should there be some hints … Q3b is still
+doable if students can't solve 3a … need a diagram for this question 4 … tone down the difficulty for
+Q7a and b … Q9, tone down the difficulty a little (same question) … Q10 sounds confusing … Does Q13
+need a diagram?"). Re-published in place (13 rows updated) from
+`data/gce-generated/GCE-AM-P1-seed2-2026-09-29.json`: Q3 (a) a show-that with sin 2A = 2 sin A cos A as
+the hint, so (b) stands alone, (b) states the substitution θ = π/7; Q4 a trough figure; Q7 (a) says O
+is a minimum point, (b) is the tangent at the first point of gradient 24 (the tangents' meeting point
+and the left/right argument are gone); Q9 (b) the derivative as a show-that, (c) hence x = 4 and
+36.9° (the complementary-angles part dropped); Q10 (a) x − 2 a factor, (b) the quadratic factor,
+(c) the repeated root (the "no other factor of the form x − a" clause gone); Q13 a not-to-scale
+triangle labelled A(10, 2), B(0, 7), H and C only. Q2 kept (in syllabus). Fresh Opus blind solves
+agreed on every changed part; a Fable moderator scored Q3 Q7 Q9 Q10 5/5. Solutions rewritten one
+step a line with no mark notes (CLAUDE.md §Readability). Figures in `figures/GCE-AM-P1-seed2/`.
+
 **E Math Set 2 = seed 3, `--set 2` (23 Sep 2026)** — the same brief, the same Opus 5.5
 agents, written straight after A Math Set 2. `GCE-EM-P1-seed3` (27 Q, 90 marks, figures
 Q13 / Q23 / Q27) + `GCE-EM-P2-seed3` (9 Q, 90 marks, figures Q4 graph paper / Q5 / Q8).
