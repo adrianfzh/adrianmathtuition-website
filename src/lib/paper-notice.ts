@@ -36,7 +36,7 @@
  * on the card the student cannot check against anything else, so the reason has
  * to be the reason: a new kind, not the nearest existing one.
  */
-export type PaperNoticeKind = 'pages-recovered' | 'marks-realigned';
+export type PaperNoticeKind = 'pages-recovered' | 'marks-realigned' | 'marks-recalibrated';
 
 export type PaperNotice = {
   kind: PaperNoticeKind;
@@ -76,10 +76,20 @@ const TEXT: Record<PaperNoticeKind, PaperNoticeText> = {
     title: 'A fix to your marked copy',
     body: "On some pages the ticks and crosses didn't line up with your working. They do now. Nothing about the marking changed, and neither did your mark.",
   },
+  // The paper's TOTAL was corrected (29 Sep 2026, Isabelle's Queenstown Prelim
+  // Chemistry: 70/90 → 70/80 — the cover says Section A 70 + one Section B
+  // question 10). Adrian: "Just reissue, saying marks have been recalibrated. Do
+  // not mention me." No name, no "checked", no re-mark: the marks she earned did
+  // not move, only what the paper is out of.
+  'marks-recalibrated': {
+    kind: 'marks-recalibrated',
+    title: 'Your marks have been recalibrated',
+    body: "The total for this paper has been corrected. Your updated copy is here.",
+  },
 };
 
 function isKind(v: unknown): v is PaperNoticeKind {
-  return v === 'pages-recovered' || v === 'marks-realigned';
+  return v === 'pages-recovered' || v === 'marks-realigned' || v === 'marks-recalibrated';
 }
 
 /** The stamp to write on `result_json.student_notice`. */

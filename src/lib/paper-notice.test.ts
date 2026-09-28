@@ -68,3 +68,9 @@ describe('parseNoticeKind', () => {
     expect(parseNoticeKind(undefined)).toBeNull();
   });
 });
+
+describe('marks-recalibrated (29 Sep 2026)', () => {
+  it('is a notice kind whose words never name Adrian', () => {
+    expect(parseNoticeKind('marks-recalibrated')).toBe('marks-recalibrated');
+  });
+});
