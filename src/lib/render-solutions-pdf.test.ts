@@ -98,3 +98,11 @@ describe('a scheme or alternative line inside a paragraph', () => {
     expect(r2.alternatives).toEqual(['use the chain rule.\nit gives 3']);
   });
 });
+
+describe('"Mark scheme for (c):"', () => {
+  it('is dropped like a plain Mark scheme line', async () => {
+    const { splitSolution: split } = await import('./render-solutions-pdf');
+    expect(split('Working\n\nMark scheme for (c): any complete route; B1 …').main).toBe('Working');
+    expect(split('Marks for part (b): M1 A1').main).toBe('');
+  });
+});

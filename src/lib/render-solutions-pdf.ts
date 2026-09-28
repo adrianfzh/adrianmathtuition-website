@@ -116,7 +116,7 @@ export function markNotesToCodes(line: string): string {
     `${MK_OPEN}${codes.replace(/[,\s]+/g, ' ').trim()}${MK_CLOSE}`).replace(/\s+(\u0001)/g, ' $1');
 }
 
-const SCHEME_PARA = /^\s*(?:mark(?:ing)?\s*scheme|marking|marks?\s*(?:allocation|breakdown)?)\s*:/i;
+const SCHEME_PARA = /^\s*(?:mark(?:ing)?\s*scheme|marking|marks?\s*(?:allocation|breakdown)?)(?:\s+for\s+[^:\n]{1,24})?\s*:/i;
 const ALT_PARA = /^\s*(?:alternatively|alternative(?:\s+(?:route|method|approach|solution|way))?|another (?:way|method))\s*[:,.—-]?\s*/i;
 
 /** Split a solution into its working and its alternative routes, dropping any
