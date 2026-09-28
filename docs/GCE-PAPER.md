@@ -379,8 +379,8 @@ blind solve (agrees), Fable moderator 4/5 at standard; its one wording fix appli
 old ending is in the run's `replaced/Q10-least-S.*`.
 The paper JSONs are in `data/gce-generated/`, and the figure specs and PNGs are in
 `data/gce-generated/figures/<key>-seed2/`, which is the `--figures` directory for
-`publish.mjs`. **Not published yet:** it waits for Adrian's read, and then needs the service
-key (the Mac).
+`publish.mjs`. **Published as A Math Set 2 on 28 Sep 2026** from the Mac (13 + 10 rows) — Adrian
+reads it published and names slots to amend.
 
 **E Math Set 2 = seed 3, `--set 2` (23 Sep 2026)** — the same brief, the same Opus 5.5
 agents, written straight after A Math Set 2. `GCE-EM-P1-seed3` (27 Q, 90 marks, figures
@@ -396,8 +396,10 @@ and agreed (P1 Q10 Q12 Q17 Q21 Q24, P2 Q1 Q6 Q7). Shape by `assemble`: P1 39 ans
 16 unparted, largest part 4; P2 32 answer spaces, exactly three parts of 5+ (Q2(a) 5, Q8(b) 5,
 Q9(b) 7). P1 Q13's figure leaves the radius OC undrawn so the 35° mark can only be read as
 angle ACB; P1 Q23 says "not drawn to scale" and is drawn off its answer proportions.
-Figures in `data/gce-generated/figures/GCE-EM-P{1,2}-seed3/`. **Not published yet** (as
-A Math Set 2).
+Figures in `data/gce-generated/figures/GCE-EM-P{1,2}-seed3/`. **Published as E Math Set 2 on
+28 Sep 2026** (27 + 9 rows), together with A Math Set 2 (13 + 10 rows) — Adrian: "publish set 2";
+he reads it published and names slots to amend (publish is an upsert, so a repaired slot is
+re-published in place).
 
 **The Word export, fixed the same day.** `export-docx.py` turned a markdown pipe table into a
 Word table but left a LaTeX `\begin{array}` line as maths — a matrix with no rules, whose
