@@ -253,7 +253,7 @@ own small table when it next matters.
 Adrian: "are there sec 1 g2 (NA) papers in the question bank?" — there were none (every Sec 1
 row was Express or IP), and the name rule filed a bare `(NA)` as Sec 4. The watcher now files
 `S1 (NA)` / `S1 G2` → `S1_NA` and `S2 (NA)` / `S2 G2` → `S2_NA` (before the bare-`(NA)` rule),
-strips `G1`/`G2`/`G3` from the school, and the app knows the two levels (`qb-levels`,
+strips `G1`/`G2`/`G3` from the school, **the fleet LAW knows them too** (Supabase `extraction_worker_prompt` `exam-extraction`, v2026-09-28-s1na; the previous text is archived as `exam-extraction-2026-09-28` — the first two claims, Chung Cheng High 2023 and Broadrick 2023, had flagged themselves with "level needs a ruling" because the law's level list stopped at `EM_NA`; they were requeued once the law carried `S1_NA`/`S2_NA` as valid bank levels with the Sec 1 / Sec 2 topic lists), and the app knows the two levels (`qb-levels`,
 `canonical-topics` → Sec 1 / Sec 2 topics, `portal-find` → the Sec 1 / Sec 2 family). The
 first drop is the Dropbox `EM S1 (G2)` 2023 + 2025 SA2 folders, one file per school, named
 `EM S1 SA2 (NA) <year> <School>.<ext>`; the `(With Answers)` copies and the practice sets stay
