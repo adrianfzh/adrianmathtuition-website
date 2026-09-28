@@ -273,7 +273,7 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
           <OpenInApp url={`/api/portal/marking-pdf?run=${paper.id}&kind=marked`} name={paper.name} label="🖨 Print" title="Print the marked paper, or open it in Notability, GoodNotes, Files…"
             className="inline-block text-sm font-semibold text-white bg-navy rounded-xl px-4 py-2 hover:opacity-90 disabled:opacity-60" />
           {/* ⬇ three-way (Adrian, 22 Sep 2026): marked · with my notes · with Adrian's notes */}
-          <DownloadMenu runId={paper.id}
+          <DownloadMenu runId={paper.id} name={paper.name}
             hasMine={!!ink && Object.values(ink).some(pg => pg?.strokes?.length)}
             hasAdrian={!!teacherInk && Object.values(teacherInk).some(pg => pg?.strokes?.length)}
             mineLabel={isAdmin ? 'With their notes' : 'With my notes'} />

@@ -8,8 +8,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { openPdf } from './OpenInApp';
 
-export default function DownloadMenu({ runId, hasMine, hasAdrian, mineLabel = 'With my notes' }: {
-  runId: string; hasMine: boolean; hasAdrian: boolean; mineLabel?: string;
+export default function DownloadMenu({ runId, name, hasMine, hasAdrian, mineLabel = 'With my notes' }: {
+  runId: string; name?: string; hasMine: boolean; hasAdrian: boolean; mineLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement | null>(null);
@@ -38,7 +38,7 @@ export default function DownloadMenu({ runId, hasMine, hasAdrian, mineLabel = 'W
         <div role="menu" className="absolute left-1/2 -translate-x-1/2 z-30 mt-1 w-72 rounded-2xl border border-black/10 bg-white shadow-lg p-1.5 text-left">
           {rows.map(r => r.on ? (
             <a key={r.label} role="menuitem" href={r.href} target="_blank" rel="noopener noreferrer" data-track={r.track}
-              onClick={e => { setOpen(false); /* inside the installed app a tab is a dead end — the share sheet has Print (28 Sep 2026) */ e.preventDefault(); void openPdf(r.href, r.label, 'tab'); }}
+              onClick={e => { setOpen(false); /* inside the installed app a tab is a dead end — the share sheet has Print (28 Sep 2026) */ e.preventDefault(); void openPdf(r.href, name ? `${name} — ${r.label}` : r.label, 'tab'); }}
               className="block rounded-xl px-3 py-2 hover:bg-navy/5">
               <span className="block text-sm font-semibold text-navy">⬇ {r.label}</span>
               <span className="block text-[11px] text-gray-500">{r.hint}</span>
