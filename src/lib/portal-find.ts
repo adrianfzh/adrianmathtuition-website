@@ -542,7 +542,8 @@ const FIND_LEVEL_LABEL: Record<FindLevelKey, string> = {
 };
 
 function findKeyOf(qbKey: string): FindLevelKey | null {
-  if (qbKey === 'S1' || qbKey === 'S2') return qbKey;
+  if (qbKey === 'S1' || qbKey === 'S1_NA') return 'S1';
+  if (qbKey === 'S2' || qbKey === 'S2_NA') return 'S2';
   if (qbKey === 'EM' || qbKey === 'S3_EM' || qbKey === 'EM_NA') return 'EM';
   if (qbKey === 'AM' || qbKey === 'S3_AM') return 'AM';
   if (qbKey === 'JC1' || qbKey === 'JC2') return 'JC';

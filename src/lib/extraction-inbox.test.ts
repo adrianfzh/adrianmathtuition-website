@@ -26,6 +26,10 @@ describe("parseSourceFilename — the fleet law's filename conventions", () => {
     expect(parseSourceFilename('AM (NA) Prelim 2022 Beatty P1.pdf')).toMatchObject({ level: 'AM_NA', school: 'Beatty', paper: 'p1' });
     expect(parseSourceFilename('AM S3 SA2 2021 Pierce.pdf')).toMatchObject({ level: 'S3_AM', examType: 'SA2' });
     expect(parseSourceFilename('EM S2 SA2 2014 Raffles Institution.docx')).toMatchObject({ level: 'S2', school: 'Raffles Institution' });
+    // lower-sec N(A): the Sec 1 G2 papers (28 Sep 2026)
+    expect(parseSourceFilename('EM S1 SA2 (NA) 2023 Ahmad Ibrahim.docx')).toMatchObject({ level: 'S1_NA', year: 2023, examType: 'SA2', school: 'Ahmad Ibrahim' });
+    expect(parseSourceFilename('EM S1 G2 SA2 2025 Chung Cheng High (Yishun) (Set 5).pdf')).toMatchObject({ level: 'S1_NA', year: 2025, school: 'Chung Cheng High (Yishun) (Set 5)' });
+    expect(parseSourceFilename('EM S2 (NA) SA1 2024 Bartley.pdf')).toMatchObject({ level: 'S2_NA', examType: 'SA1', school: 'Bartley' });
   });
   it('picks up a paper number and maps EOY to SA2', () => {
     expect(parseSourceFilename('AM PRELIM 2021 Bukit Panjang Government High P1.pdf')).toMatchObject({ paper: 'p1', school: 'Bukit Panjang Government High' });

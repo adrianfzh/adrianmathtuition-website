@@ -248,6 +248,20 @@ a lease is a lease), so Adrian removes them when convenient. `SCHOOL_ALIASES.md`
 the `pending_images_*.txt` side files still live on the Macs; the alias list wants its
 own small table when it next matters.
 
+### 3a. Lower-sec N(A) (28 Sep 2026)
+
+Adrian: "are there sec 1 g2 (NA) papers in the question bank?" — there were none (every Sec 1
+row was Express or IP), and the name rule filed a bare `(NA)` as Sec 4. The watcher now files
+`S1 (NA)` / `S1 G2` → `S1_NA` and `S2 (NA)` / `S2 G2` → `S2_NA` (before the bare-`(NA)` rule),
+strips `G1`/`G2`/`G3` from the school, and the app knows the two levels (`qb-levels`,
+`canonical-topics` → Sec 1 / Sec 2 topics, `portal-find` → the Sec 1 / Sec 2 family). The
+first drop is the Dropbox `EM S1 (G2)` 2023 + 2025 SA2 folders, one file per school, named
+`EM S1 SA2 (NA) <year> <School>.<ext>`; the `(With Answers)` copies and the practice sets stay
+out. **Which login runs a run:** `job_extract` goes through `with_pool_login`, i.e. the same
+`scripts/claude-pick.sh` the marking slots use — the login with the emptiest 7-day meter,
+the site's ⏻ switches and the per-account limit files honoured — so extraction already
+spreads across the accounts like marking (Adrian asked for this on 28 Sep 2026; nothing to change).
+
 ### 4a. Science through the one inbox (26 Sep 2026)
 
 Adrian: *"the 16 waiting biology PDFs go through the inbox like any maths paper, and
