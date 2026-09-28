@@ -94,6 +94,69 @@ export function isCheckLine(line: string): boolean {
   return /^\(?\s*check\b/i.test(line.trim());
 }
 
+// ── Readability (Adrian, 29 Sep 2026: "can solutions pdf have better readability?
+// i keep asking … better readability has to apply to all solutions … basically
+// everything"). The bank's worked solutions are also where examiners' notes ended
+// up — "[M1 for the two conditions … with the discriminant formed]" mid-line, a
+// "Mark scheme:" paragraph, an "Alternative route:" in the middle of the working.
+// A student reads the working; the marks are for the marker (the stored text is
+// untouched, so the marker and paper_schemes keep them). So, when PRINTED:
+//   • a bracketed mark note shrinks to its codes — a small grey "M1" at the line end;
+//   • a "Mark scheme:" / "Marking:" paragraph is left out;
+//   • an "Alternative …:" paragraph moves below the working, in its own quiet box;
+//   • a whole-line aside in brackets ("(or expanded: …)") prints grey, like a check;
+//   • a top-level solution's "(a)" / "(b)(ii)" at the start of a line prints bold navy.
+
+const MARK_NOTE = /\[\s*((?:[BMA]\d\s*,?\s*)+)(?:[^\]]*)\]/g;
+const MK_OPEN = '\u0001', MK_CLOSE = '\u0002';
+
+/** "[M1 for the two conditions …]" → the codes alone, wrapped for a chip. Pure. */
+export function markNotesToCodes(line: string): string {
+  return line.replace(MARK_NOTE, (_m, codes: string) =>
+    `${MK_OPEN}${codes.replace(/[,\s]+/g, ' ').trim()}${MK_CLOSE}`).replace(/\s+(\u0001)/g, ' $1');
+}
+
+const SCHEME_PARA = /^\s*(?:mark(?:ing)?\s*scheme|marking|marks?\s*(?:allocation|breakdown)?)\s*:/i;
+const ALT_PARA = /^\s*(?:alternative(?:\s+(?:route|method|approach|solution|way))?|alternatively|another (?:way|method))\s*[:,.—-]?\s*/i;
+
+/** Split a solution into its working and its alternative routes, dropping any
+ *  mark-scheme paragraph. Paragraphs are blank-line separated. Pure. */
+export function splitSolution(text: string): { main: string; alternatives: string[] } {
+  const paras = text.trim().split(/\n\s*\n/);
+  const main: string[] = [], alternatives: string[] = [];
+  for (const p of paras) {
+    if (SCHEME_PARA.test(p)) continue;
+    if (ALT_PARA.test(p)) { const body = p.replace(ALT_PARA, '').trim(); if (body) alternatives.push(body); continue; }
+    main.push(p);
+  }
+  return { main: main.join('\n\n'), alternatives };
+}
+
+/** A whole line in brackets that is an aside, not a part label. */
+export function isAsideLine(line: string): boolean {
+  const t = line.trim();
+  return /^\(.*\)[.;]?$/.test(t) && !/^\((?:[a-z]|i{1,3}|iv|vi{0,3}|ix|x)\)\s/i.test(t);
+}
+
+function lineHtml(l: string): string {
+  const cls = isCheckLine(l) || isAsideLine(l) ? 'sol-check' : 'sol-line';
+  let h = esc(displayFractions(markNotesToCodes(l)));
+  h = h.replace(/^(\s*)((?:\((?:[a-z]|i{1,3}|iv|vi{0,3}|ix|x)\))+)(\s)/i, '$1<span class="sol-inlabel">$2</span>$3');
+  h = h.replace(/\u0001([^\u0002]*)\u0002/g, '<span class="sol-mk">$1</span>');
+  return `<div class="${cls}">${h}</div>`;
+}
+
+function linesBlock(t: string): string {
+  if (/\$\$|\\\[|\\begin\{/.test(t)) {
+    const h = esc(markNotesToCodes(t)).replace(/\u0001([^\u0002]*)\u0002/g, '<span class="sol-mk">$1</span>');
+    return `<div class="sol-body">${h}</div>`;
+  }
+  return `<div class="sol-lines">${t
+    .split('\n')
+    .map((l) => (l.trim() ? lineHtml(l) : '<div class="sol-gap"></div>'))
+    .join('')}</div>`;
+}
+
 /**
  * Solution text → one <div> per line so check lines can be greyed. A display-
  * maths block ($$…$$, \[…\], \begin{…}) may span lines and KaTeX needs its
@@ -102,13 +165,11 @@ export function isCheckLine(line: string): boolean {
 export function solutionLinesHtml(text: string): string {
   const t = text.trim();
   if (!t) return '';
-  if (/\$\$|\\\[|\\begin\{/.test(t)) return `<div class="sol-body">${esc(t)}</div>`;
-  return `<div class="sol-lines">${t
-    .split('\n')
-    .map((l) => (l.trim()
-      ? `<div class="${isCheckLine(l) ? 'sol-check' : 'sol-line'}">${esc(displayFractions(l))}</div>`
-      : '<div class="sol-gap"></div>'))
-    .join('')}</div>`;
+  const { main, alternatives } = splitSolution(t);
+  const alts = alternatives
+    .map((a) => `<div class="sol-alt"><div class="sol-alt-h">Another way</div>${linesBlock(a)}</div>`)
+    .join('');
+  return `${main ? linesBlock(main) : ''}${alts}`;
 }
 
 /** The parts flattened in reading order, each with its full label. */
@@ -158,7 +219,11 @@ function itemHtml(it: SolutionsItem, index: number, includeStems: boolean): stri
   if (it.solutionFromParts && it.parts?.length) {
     body = partsHtml(it.parts, includeStems);
   } else if (it.solution.trim()) {
-    body = solutionLinesHtml(it.solution);
+    // The bold Answer line closes a one-block solution too (29 Sep 2026), as it
+    // does each part — the result should not have to be found inside the working.
+    const ans = it.answer.trim();
+    body = solutionLinesHtml(it.solution)
+      + (ans ? `<div class="sol-final"><span class="sol-final-k">Answer:</span> ${esc(displayFractions(ans))}</div>` : '');
   } else {
     const lines = partsAnswerLines(it.parts);
     if (!lines.length && it.answer.trim()) lines.push(it.answer.trim());
@@ -219,6 +284,10 @@ ${katexInlineHead()}
   .sol-ans .katex{color:${ANSWER_ORANGE}}
   .sol-none{color:#999;font-style:italic}
   .sol-img{display:block;max-width:100%;max-height:340pt;margin:4pt 0}
+  .sol-mk{font-family:Arial,Helvetica,sans-serif;font-size:7.5pt;font-weight:700;color:#9a9a9a;margin-left:5pt;letter-spacing:.03em;white-space:nowrap}
+  .sol-inlabel{font-weight:700;color:${NAVY}}
+  .sol-alt{margin-top:6pt;padding:4pt 9pt 5pt;border-left:2pt solid #d6dbe2;background:#f6f7f9;font-size:10pt;break-inside:avoid}
+  .sol-alt-h{font-family:Arial,Helvetica,sans-serif;font-size:7.5pt;font-weight:700;color:#7a8594;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.5pt}
 
 </style>
 </head>

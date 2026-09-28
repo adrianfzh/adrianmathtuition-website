@@ -85,6 +85,31 @@ Apply this whenever designing a NEW feature, process, or automation — it's the
 - **Relationships** — trust with parents and students is the distribution channel. Agents draft; Adrian delivers in his own voice.
 - **Novelty** — noticing the spec itself is wrong (new syllabus, new failure mode) is human work. Surface anomalies to him; never smooth them over.
 
+## 📖 Readability — everything (Adrian, 29 Sep 2026)
+
+Adrian: *"can solutions pdf have better readability? i keep asking for better readability, is
+anyone following?"* … *"better readability has to apply to all solutions, and all annotations
+… basically everything"*. He has asked more than once; treat it as a standing rule on EVERY
+surface a student or Adrian reads — solutions PDFs, printed papers and answer keys, the red
+pen, Practice Again sheets, notes, cards, the app's copy, Telegram messages, reports.
+
+- **One idea per line.** Working is a chain, one step a line ([[solution-one-chain]]). No
+  paragraph that carries three things.
+- **The result stands out.** Every solution and every part ends with a bold **Answer:**
+  line; a verdict on a marked page comes before the explanation.
+- **Marker's material stays out of what a student reads.** Mark codes, "[M1 for …]", a
+  "Mark scheme:" paragraph, examiner commentary belong to the scheme, not the solution —
+  at most a small grey code. Alternatives go AFTER the working, set apart.
+- **Asides and checks are quieter** (grey, smaller); the main line is not.
+- **Short, plain words.** Say what went wrong, then what to do. Fewer words wins a tie.
+- **Look at the rendered thing** (PDF, page, phone screen) before calling it done — not the
+  source text. A page that is correct but hard to read is NOT done.
+- **Fix at the source, keep the renderer's net.** Writers (gce-paper, the sheet worker, the
+  marker, the notes miners) write clean content; the renderers also clean what reaches them
+  (`lib/render-solutions-pdf.ts` `splitSolution` / `markNotesToCodes`, 29 Sep 2026), so old
+  content reads well too. The daily page reader counts a hard-to-read note as a finding (bot
+  `.claude/skills/marking-review/SKILL.md` §D).
+
 ## 🏢 The company — standing reminders (Adrian, 24 Sep 2026)
 
 Adrian: *"put #5 into memory and remind me when anything about company comes up"* and *"the
