@@ -243,8 +243,10 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {sheet.pdf_url && <a href={fileHref(sheet.pdf_url)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold bg-emerald-700 text-white rounded-xl px-3 py-1.5">Open sheet</a>}
-            {sheet.pdf_url && <OpenInApp url={fileHref(sheet.pdf_url)} name={`Practice Again — ${paper.name}`} className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white disabled:opacity-60" />}
+            {/* 🖨 Print = the share sheet (Print is in it on iPhone/iPad; a tab on a computer). Open sheet = a tab on a
+                browser, the share sheet inside the installed app where a tab has no way back (28 Sep 2026). */}
+            {sheet.pdf_url && <OpenInApp url={fileHref(sheet.pdf_url)} name={`Practice Again — ${paper.name}`} label="🖨 Print" title="Print the sheet or save the PDF" className="text-xs font-semibold bg-emerald-700 text-white rounded-xl px-3 py-1.5 disabled:opacity-60" />}
+            {sheet.pdf_url && <OpenInApp url={fileHref(sheet.pdf_url)} name={`Practice Again — ${paper.name}`} label="Open sheet" mode="tab" title="Open the sheet" className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white disabled:opacity-60" />}
             {!isAdmin && sheet.status !== 'marked' && sheet.status !== 'submitted' && sheet.pdf_url && <Link href={`/app/work/${sheet.id}`} className="text-xs font-bold text-white bg-emerald-700 rounded-xl px-3 py-1.5">✍️ Do it in the app</Link>}
             {!isAdmin && sheet.status !== 'marked' && sheet.status !== 'submitted' && <Link href={`/app/submit?assignment=${sheet.id}`} className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white">Hand in a photo</Link>}
           </div>
@@ -268,7 +270,7 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
       {paper.pdfUrl && (
         <div className="flex flex-wrap items-center justify-center gap-2">
           {/* 📤 straight to Notability / GoodNotes / Files via the share sheet (11 Sep 2026) */}
-          <OpenInApp url={`/api/portal/marking-pdf?run=${paper.id}&kind=marked`} name={paper.name}
+          <OpenInApp url={`/api/portal/marking-pdf?run=${paper.id}&kind=marked`} name={paper.name} label="🖨 Print" title="Print the marked paper, or open it in Notability, GoodNotes, Files…"
             className="inline-block text-sm font-semibold text-white bg-navy rounded-xl px-4 py-2 hover:opacity-90 disabled:opacity-60" />
           {/* ⬇ three-way (Adrian, 22 Sep 2026): marked · with my notes · with Adrian's notes */}
           <DownloadMenu runId={paper.id}

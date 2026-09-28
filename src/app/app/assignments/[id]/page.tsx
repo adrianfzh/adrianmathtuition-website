@@ -10,6 +10,7 @@ import { assignmentHref, dueLabel, isOverdue, isPage, opensInGrader } from '@/li
 import { getSupabaseAdmin } from '@/lib/supabase';
 
 import { fileHref } from '@/lib/student-files-url';
+import OpenInApp from '../../marking/OpenInApp';
 export const dynamic = 'force-dynamic';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
@@ -83,14 +84,12 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
         )}
         {a.pdf_url && (
           <div className="flex gap-2">
-            <a href={fileHref(a.pdf_url)} target="_blank" rel="noopener noreferrer"
-              className="flex-1 text-center text-sm font-semibold text-navy rounded-xl px-4 py-2.5 border border-black/10 hover:bg-navy/5">
-              ↗ Open PDF
-            </a>
-            <a href={fileHref(a.pdf_url)} download
-              className="flex-1 text-center text-sm font-semibold text-navy rounded-xl px-4 py-2.5 border border-black/10 hover:bg-navy/5">
-              ⬇ Download to print
-            </a>
+            {/* 🖨 Print = the share sheet (Print, Files, GoodNotes…); Open = a tab, or the share sheet inside the
+                installed app, where a tab has no toolbar and `download` does nothing (28 Sep 2026). */}
+            <OpenInApp url={fileHref(a.pdf_url)} name={a.title || 'Worksheet'} label="🖨 Print" title="Print the worksheet or save the PDF"
+              className="flex-1 text-center text-sm font-semibold text-white bg-navy rounded-xl px-4 py-2.5 hover:opacity-90 disabled:opacity-60" />
+            <OpenInApp url={fileHref(a.pdf_url)} name={a.title || 'Worksheet'} label="↗ Open PDF" mode="tab" title="Open the PDF"
+              className="flex-1 text-center text-sm font-semibold text-navy rounded-xl px-4 py-2.5 border border-black/10 hover:bg-navy/5 disabled:opacity-60" />
           </div>
         )}
       </div>
