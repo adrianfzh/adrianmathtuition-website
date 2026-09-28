@@ -87,3 +87,14 @@ describe('one-block solution closes with the Answer line', () => {
     expect(h).toMatch(/work[\s\S]*sol-final[\s\S]*Answer:<\/span> \$2 \\le k &lt; 7\$/);
   });
 });
+
+describe('a scheme or alternative line inside a paragraph', () => {
+  it('drops a Mark scheme line and moves an Alternative line, without a blank line before them', async () => {
+    const { splitSolution: split } = await import('./render-solutions-pdf');
+    const r = split('Width = 30 + 1.5h\nAnswer 3 cm per minute.\nMark scheme: M1 width; A1 3');
+    expect(r.main).toBe('Width = 30 + 1.5h\nAnswer 3 cm per minute.');
+    const r2 = split('Step one\nAlternatively: use the chain rule.\nit gives 3');
+    expect(r2.main).toBe('Step one');
+    expect(r2.alternatives).toEqual(['use the chain rule.\nit gives 3']);
+  });
+});

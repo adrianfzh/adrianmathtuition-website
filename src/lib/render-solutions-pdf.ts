@@ -117,7 +117,7 @@ export function markNotesToCodes(line: string): string {
 }
 
 const SCHEME_PARA = /^\s*(?:mark(?:ing)?\s*scheme|marking|marks?\s*(?:allocation|breakdown)?)\s*:/i;
-const ALT_PARA = /^\s*(?:alternative(?:\s+(?:route|method|approach|solution|way))?|alternatively|another (?:way|method))\s*[:,.—-]?\s*/i;
+const ALT_PARA = /^\s*(?:alternatively|alternative(?:\s+(?:route|method|approach|solution|way))?|another (?:way|method))\s*[:,.—-]?\s*/i;
 
 /** Split a solution into its working and its alternative routes, dropping any
  *  mark-scheme paragraph. Paragraphs are blank-line separated. Pure. */
@@ -125,9 +125,17 @@ export function splitSolution(text: string): { main: string; alternatives: strin
   const paras = text.trim().split(/\n\s*\n/);
   const main: string[] = [], alternatives: string[] = [];
   for (const p of paras) {
-    if (SCHEME_PARA.test(p)) continue;
-    if (ALT_PARA.test(p)) { const body = p.replace(ALT_PARA, '').trim(); if (body) alternatives.push(body); continue; }
-    main.push(p);
+    // A scheme or alternative can also start partway down a paragraph (a line of
+    // its own, no blank line before it — AM Set 2 P1 Q4, 29 Sep 2026): cut there.
+    const lines = p.split('\n');
+    const cut = lines.findIndex((l) => SCHEME_PARA.test(l) || ALT_PARA.test(l));
+    const head = (cut < 0 ? lines : lines.slice(0, cut)).join('\n').trim();
+    const tail = cut < 0 ? '' : lines.slice(cut).join('\n');
+    if (head) main.push(head);
+    if (!tail) continue;
+    if (SCHEME_PARA.test(tail.split('\n')[0])) continue;
+    const body = tail.replace(ALT_PARA, '').trim();
+    if (body) alternatives.push(body);
   }
   return { main: main.join('\n\n'), alternatives };
 }
