@@ -909,7 +909,8 @@ export async function POST(req: NextRequest) {
     const cacheKey = createHash('sha256').update(JSON.stringify({
       v: PAPER_PDF_RENDER_VERSION,
       opts: { workingSpace, answerKey, originalNumbering, withSolutions, answersOnly, title: titleBits },
-      rows: rows.map((r) => [r.id, r.question_number, r.total_marks, r.question_text, r.parts, r.answer, r.image_url, r.figure_url, r.has_image]),
+      // The stored print width decides a grid's size, so it is part of the key (28 Sep 2026).
+      rows: rows.map((r) => [r.id, r.question_number, r.total_marks, r.question_text, r.parts, r.answer, r.image_url, r.figure_url, r.has_image, (r.gen_meta as { figure?: { print_width_mm?: unknown } } | null)?.figure?.print_width_mm ?? null]),
     })).digest('hex');
     const payload = {
       count: rows.length, marksTotal,
