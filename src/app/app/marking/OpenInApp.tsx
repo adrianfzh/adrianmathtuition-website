@@ -10,7 +10,10 @@
 // whose own share button does the same job. Nothing here writes anything.
 import { useState } from 'react';
 
-export default function OpenInApp({ url, name, className = '' }: { url: string; name: string; className?: string }) {
+// `label` (28 Sep 2026): the same share sheet is also the way to PRINT a Practice
+// Again sheet on an iPad — Adrian: "there is no option to print". Share sheet →
+// Print; on a computer the PDF opens in a tab and prints from there.
+export default function OpenInApp({ url, name, className = '', label = '📤 Open in…', title = 'Share sheet → Notability, GoodNotes, Files…' }: { url: string; name: string; className?: string; label?: string; title?: string }) {
   const [busy, setBusy] = useState(false);
   const canShareFiles = typeof navigator !== 'undefined' && typeof navigator.share === 'function' && typeof navigator.canShare === 'function';
   const open = async () => {
@@ -28,8 +31,8 @@ export default function OpenInApp({ url, name, className = '' }: { url: string; 
     } finally { setBusy(false); }
   };
   return (
-    <button type="button" onClick={open} disabled={busy} title="Share sheet → Notability, GoodNotes, Files…" className={className}>
-      {busy ? '📤 Preparing…' : '📤 Open in…'}
+    <button type="button" onClick={open} disabled={busy} title={title} className={className}>
+      {busy ? 'Preparing…' : label}
     </button>
   );
 }

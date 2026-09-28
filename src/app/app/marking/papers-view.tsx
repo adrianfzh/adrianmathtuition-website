@@ -39,6 +39,7 @@ import { buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/li
 import { allowedSubjects, subjectAllowed, subjectPill, type SubjectTone } from '@/lib/portal-subjects';
 import { subjectStats, isTileSubject } from '@/lib/portal-papers-stats';
 import { coveredRunIds } from '@/lib/sheet-queue';
+import PrintSheet from './OpenInApp';
 import { isPracticeAgainHandin } from '@/lib/desk-state';
 import {
   shelvedGaps, shelfWorthAWave, outsideWindow, NOTE_STALE, NOTE_IN_FLIGHT, NOTE_PRACTICE_AGAIN, type PickPaper,
@@ -496,6 +497,13 @@ function SheetLineView({ line, sheet, markedSheet, nextWave, admin = false, shee
         {admin && sheetLook?.needsLook && <span className="shrink-0 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold px-2 py-0.5">Not looked at yet</span>}
         {admin && markedSheet && sheetLook && <span className="shrink-0 text-[11.5px]"><LookedAt runId={markedSheet.id} needsLook={sheetLook.needsLook} checkedAt={sheetLook.checkedAt} /></span>}
         {admin && manualLink && sheet?.run_id && <span className="shrink-0 text-[11.5px]"><BelongsTo runId={sheet.run_id} options={[]} linked /></span>}
+        {/* 🖨 Print (28 Sep 2026, Adrian: "there is no option to print") — the sheet's
+            PDF through the share sheet, for one paper or a combined sheet alike, and
+            on Adrian's view too so he can print it for the student. */}
+        {line.actions && sheet?.pdf_url && (
+          <PrintSheet url={fileHref(sheet.pdf_url)} name="Practice Again sheet" label="🖨 Print" title="Print the sheet or save the PDF"
+            className="shrink-0 text-xs font-semibold text-rose-900 border border-rose-300 bg-white rounded-xl px-3 py-1.5 disabled:opacity-60" />
+        )}
         {line.actions && sheet && !admin && (
           <span className="shrink-0 flex items-center gap-1.5">
             {/* Start = do it in the app (17 Sep 2026); the PDF and the photo hand-in stay as the other ways. */}
