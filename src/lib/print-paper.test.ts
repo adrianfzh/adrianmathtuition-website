@@ -421,7 +421,8 @@ describe('figureWidthMm (a Set grid prints to scale, 24 Sep 2026)', () => {
     expect(figureWidthMm('abc')).toBeNull();
   });
   it('refuses a width the print column cannot hold, or a speck', () => {
-    expect(figureWidthMm(190)).toBeNull();
+    expect(figureWidthMm(186)).toBe(186); // a 16 cm grid with its labels (EM Set 1 P2 Q3); the renderers shrink it to the page
+    expect(figureWidthMm(191)).toBeNull();
     expect(figureWidthMm(5)).toBeNull();
   });
 });
