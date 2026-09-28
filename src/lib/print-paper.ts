@@ -407,7 +407,9 @@ export interface QbPrintRow {
  * column of the print layout). */
 export function figureWidthMm(raw: string | number | null | undefined): number | null {
   const mm = Number(raw);
-  return Number.isFinite(mm) && mm >= 20 && mm <= 171 ? mm : null;
+  // Up to 190 mm: a 16 cm grid with its axis labels measures ~186 mm; the renderers
+  // shrink a grid to the printed page when it is wider than the column (28 Sep 2026).
+  return Number.isFinite(mm) && mm >= 20 && mm <= 190 ? mm : null;
 }
 
 /** First image path out of a bare path or JSON-encoded array, as a public
