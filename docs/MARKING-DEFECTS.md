@@ -456,3 +456,19 @@ on that alone is Adrian's call. F34 — the largest of the three — was not re-
 
 Tooling: the bench needs a box that can draw a page in seconds (a Mac), or a hand-started
 GitHub Actions job with the page-store keys in the `vision-trial`-style environment — not built.
+
+# 28 Sep 2026 — the fixer's run on the findings of 28 Sep (12 papers, 40 pages, ~79 findings)
+
+The second guard found nothing to judge: no fixer change had shipped since 23 Sep (the 25 Sep
+re-made pair still sits on `reship-f35-f36`), so every repeat of an older class is residue.
+Two classes worked, most frequent first among the ones two teachers would fix the same way.
+Fix-forward; nothing delivered was re-inked.
+
+| # | complaint | bin | root cause | fix | status |
+|---|---|---|---|---|---|
+| F37 | Nicole H2 2024 P2 (run `8f41ab3d`) p7: about ten ✓ in a 0/2 part beside three ✗ — "a student sees a page of ticks and zero marks"; also Kassandra AM22 p11, Isabelle Zhonghua p7/p8 (the reader's R-b, filed under F29). And Nicole p13: ticks on two lines the stored read calls neutral, in a 1/3 part | pen (ordering) + rule scope | Adrian's 12 Sep rule (`quietZeroParts`: no tick after the ✗ in a part that scored nothing) ran only at ASSEMBLY, after every page had been drawn — the stored read said "no tick", the page kept the tick: 90 ticks on 36 pages in the fortnight to 28 Sep. Separately, the rule was page-wide: an M0 belonging to a SCORING part (Q7(a)(iii) 1/3, "M1 M0 A0") quieted the follow-through after it because two B0 parts on the same page scored 0 | bot `99e94b4`: `markPhotoDirect` quiets its own read before the code plan and the drawing (the assembly call stays, idempotent); a zero code starts the quiet only when a zero-scoring part's scheme lists it. `test/zero-part-ink.test.js` on the raw reads of that paper (`test/golden/zero-part-ink-h2-2024-p2.json`, from `paper_external_reads` + the drawn boxes): red on main 2/5, green 5/5; full `npm test` 3439/3439. No pen case: the pen bench redraws from STORED lines, which were already quieted — the gap was upstream of it | ✅ forward |
+| F38 | " * " between a part's note and its study note, ~12 pages (the reader's P1): "not attempted * Start by …", "…for every burger * The two binomial …"; on Chloe EM 2023 P1 p9 it read as maths, "the overlap A ∩ B * A union takes in …" | pen (text) | the 29 Aug fold (one home per mistake) joined the two texts with a bare "  * " because Patrick Hand has no ✱ | bot `995abd3` on `proposal/2026-09-28-no-asterisk-glue`: `note-dedup foldStudyNote` — two sentences, the second never re-cased; `text-renders` now fails on a bare " * " between words. Case `chloe-em23p1-p9-no-asterisk-glue`: FAIL on main, PASS on the branch (drawn on the worker); unit tests green | ⚠️ Adrian's call — the other 50 pen cases could not be redrawn (94 % CPU steal) |
+
+**Report only (the read):** Alessi AM 2021 Specimen P2 p2 (`c169300c` photo 1) — "should be 1.8" drawn at (b)(iii)'s ring on g = 161.9: the stored boxes put L10 "Answer: 1.6 secs" on the row where L17 "Answer: g = 161.9" is written and L17 got no box at all, so the rows matcher paired two "Answer:" lines wrongly (needs the row scan to bench — not stored); Denise EM 2025 P2 Q3(d) scored 0 from a page missing from her hand-in, and the bank's labels "d)(i" are malformed (in the reader's note to Adrian); R-c … R-h as the reader listed them.
+
+**Not worked (residue, the reader's counts):** P4 red on handwriting (6), P2 other wrong-seat labels (5), P6 stray ticks on blank paper (6), P5 leaders across working (5), P10 the same point 3–4 times (7), P8 empty "Marker's notes:" heading (4), P7 notes clipped at a stripless page's edge (3), P9 raw TeX / caret / π spelt out (3), P11–P14.
