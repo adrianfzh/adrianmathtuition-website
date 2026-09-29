@@ -43,6 +43,12 @@ export function looksLikeMath(c: string): boolean {
   // "(see, above)" stays prose.
   if (c.length <= 32 && !/[a-zA-Z]{2,}/.test(c) &&
       /^\(\s*[-+−]?[\w√.]+(\s*[-+−]?\s*[\w√.]+)*(\s*,\s*[-+−]?[\w√.]+(\s*[-+−]?\s*[\w√.]+)*)+\s*\)$/.test(c.trim())) return true;
+  // A ratio — "$3 : 1$", "$9 : 4$", "$x : y$", "$1.5 : 2 : 3$" (29 Sep 2026, E Math Set 2
+  // P1 Q10 printed "$3 : 1$" raw). Short terms only (a number or one letter), so prose
+  // with a colon ("Note: see $5") never matches; a segment ratio "$PQ : PR$" is 2–3 capitals.
+  if (c.length <= 30 && /^\s*(\d+(\.\d+)?|[a-zA-Z]|[A-Z]{2,3})(\s*:\s*(\d+(\.\d+)?|[a-zA-Z]|[A-Z]{2,3}))+\s*$/.test(c)) return true;
+  // A lone signed number with a space — "$- 6$".
+  if (/^\s*[−–-]\s*\d+(\.\d+)?\s*$/.test(c)) return true;
   // A NAMED point — "$H(1, 5)$", "$P(-2, a)$", "$A'(3, 4)$" (29 Sep 2026, A Math Set 2
   // P1 Q13 printed "$H(1, 5)$." raw): one capital, an optional prime or subscript
   // digit, then a coordinate pair that the rules above would accept on its own.

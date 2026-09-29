@@ -42,7 +42,7 @@ const ANSWER_ORANGE = '#843C0C';
 // v3 (2026-08-31): "End of Paper" after the last question.
 // v4 (2026-09-05): KaTeX inlined (was jsDelivr CDN 0.16.9, now the installed
 // 0.16.45 package) — cached PDFs must rebuild once to pick up the version bump.
-export const PAPER_PDF_RENDER_VERSION = 14;   // 14: "Mark scheme for (c):" dropped too (29 Sep 2026); 13: a Mark scheme or Alternative line mid-paragraph is handled too (29 Sep 2026); 12: solutions read cleanly — mark notes shrink to codes, no Mark scheme paragraph, Another way boxed (29 Sep 2026); 11: answer key in black, a grid at its true printed width, a construction question gets one 15 cm+ area after its last part instead of strips (28 Sep 2026); 10: **bold** in question text + part figures stored as a JSON list (26 Sep 2026); 9: optional section heading above a question (H2 Paper 2's Section A / B, 26 Sep 2026); 8: no coverage banner on the printed paper or answers (26 Sep 2026); 7: figure caps 80/100 mm wide, 80 mm tall (21 Sep 2026, second pass); 6: figures shrink in proportion and cap at 110/130 mm (21 Sep 2026); 5: marks beside the last line, no parent total over marked sub-parts (13 Sep 2026)
+export const PAPER_PDF_RENDER_VERSION = 15;   // 15: a question's own figure width (gen_meta.figure.width_mm) (29 Sep 2026); 14: "Mark scheme for (c):" dropped too (29 Sep 2026); 13: a Mark scheme or Alternative line mid-paragraph is handled too (29 Sep 2026); 12: solutions read cleanly — mark notes shrink to codes, no Mark scheme paragraph, Another way boxed (29 Sep 2026); 11: answer key in black, a grid at its true printed width, a construction question gets one 15 cm+ area after its last part instead of strips (28 Sep 2026); 10: **bold** in question text + part figures stored as a JSON list (26 Sep 2026); 9: optional section heading above a question (H2 Paper 2's Section A / B, 26 Sep 2026); 8: no coverage banner on the printed paper or answers (26 Sep 2026); 7: figure caps 80/100 mm wide, 80 mm tall (21 Sep 2026, second pass); 6: figures shrink in proportion and cap at 110/130 mm (21 Sep 2026); 5: marks beside the last line, no parent total over marked sub-parts (13 Sep 2026)
 
 export interface PaperPdfQuestion {
   /** Printed question number (original or resequenced by the caller). */
@@ -65,6 +65,8 @@ export interface PaperPdfQuestion {
    * Off (the default) for the bank's scanned crops, which the cap protects.
    */
   uncappedFigures?: boolean;
+  /** A chosen print width for this question's figures, mm (gen_meta.figure.width_mm; Adrian, 29 Sep 2026: "can make the diagram slightly bigger?"). Still never wider than the column. */
+  figureWidthMm?: number | null;
   /**
    * A heading printed ABOVE this question — "Section A: Pure Mathematics
    * [40 marks]" on the first question of an H2 Paper 2 and "Section B: …" on
@@ -129,8 +131,9 @@ export function richText(s: string): string {
   }).join('\n');
 }
 
-function img(u: string, uncapped = false): string {
-  return `<img class="pp-figure${uncapped ? ' pp-figure-tall' : ''}" src="${esc(u)}" alt="figure">`;
+function img(u: string, uncapped = false, widthMm: number | null = null): string {
+  const w = widthMm && widthMm > 0 ? ` data-wmm="${Math.round(widthMm)}"` : '';
+  return `<img class="pp-figure${uncapped ? ' pp-figure-tall' : ''}"${w} src="${esc(u)}" alt="figure">`;
 }
 
 function spacer(marks: number | null | undefined): string {
@@ -173,7 +176,7 @@ function partsCarryMarks(parts: Part[]): boolean {
 }
 
 function questionHtml(q: PaperPdfQuestion, workingSpace: boolean): string {
-  const figures = q.images.map((u) => img(u, q.uncappedFigures === true)).join('');
+  const figures = q.images.map((u) => img(u, q.uncappedFigures === true, q.figureWidthMm ?? null)).join('');
   const hole = q.missingFigure
     ? '<div class="pp-missing-figure">[ figure referenced by this question is not in the bank ]</div>'
     : '';
@@ -356,7 +359,10 @@ export async function renderPaperPDF(input: PaperPdfInput): Promise<Buffer> {
         const aspect = img.naturalWidth / img.naturalHeight;
         const PX_PER_MM = 96 / 25.4;
         const tall = img.classList.contains('pp-figure-tall');
-        const capWidth = tall ? Infinity : (aspect >= 1.5 ? 100 : 80) * PX_PER_MM;
+        // A question may carry its own width (data-wmm) — its figure prints at that
+        // width, taller too, instead of the 80/100 mm default.
+        const chosenMm = Number(img.dataset.wmm) || 0;
+        const capWidth = tall ? Infinity : (chosenMm > 0 ? chosenMm : (aspect >= 1.5 ? 100 : 80)) * PX_PER_MM;
         let width = Math.min(sharpWidth, colWidth, capWidth);
         if (tall) {
           // A grid keeps its 1 cm squares even when it is wider than the question's
@@ -381,7 +387,8 @@ export async function renderPaperPDF(input: PaperPdfInput): Promise<Buffer> {
         // Q26, Adrian 21 Sep 2026). Shrink the width so the capped height is met
         // in proportion instead.
         if (!img.classList.contains('pp-figure-tall')) {
-          const widthAtCap = CAP_HEIGHT_PX * img.naturalWidth / img.naturalHeight;
+          const capH = chosenMm > 0 ? Math.max(CAP_HEIGHT_PX, chosenMm * PX_PER_MM / aspect) : CAP_HEIGHT_PX;
+          const widthAtCap = capH * img.naturalWidth / img.naturalHeight;
           width = Math.min(width, widthAtCap);
         }
         img.style.width = `${width}px`;

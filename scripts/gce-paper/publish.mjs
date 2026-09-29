@@ -228,7 +228,7 @@ for (const p of plan) {
       models: paper.models ?? null,
       gates: s.gates ? { pass: s.gates.pass ?? null, novelty: s.gates.novelty ?? null } : null,
       blind_agree: Array.isArray(s.verdict?.parts) ? s.verdict.parts.every((v) => v.agree) : null,
-      figure: figureUrl ? { file: basename(p.png), description: q.figure_description ?? null, ...(p.gridWidthMm ? { print_width_mm: p.gridWidthMm } : {}) } : null,
+      figure: figureUrl ? { file: basename(p.png), description: q.figure_description ?? null, ...(p.gridWidthMm ? { print_width_mm: p.gridWidthMm } : {}), ...(Number(q.figure_width_mm) > 0 ? { width_mm: Number(q.figure_width_mm) } : {}) } : null,
       // what the question tests, in the setter's words — the next Set's authors are
       // shown these per topic so they test something else (generate.mjs fetchEarlierSets)
       skills: Array.isArray(q.skills) ? q.skills : [],

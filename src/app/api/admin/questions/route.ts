@@ -887,6 +887,7 @@ export async function POST(req: NextRequest) {
         // whose squares must print at 1 cm) keeps its true size instead of the 80 mm
         // cap (Adrian, 28 Sep 2026: "graph too small. make it to scale").
         uncappedFigures: !!figureWidthMm((row.gen_meta as { figure?: { print_width_mm?: unknown } } | null)?.figure?.print_width_mm as string | number | null | undefined),
+        figureWidthMm: (() => { const n = Number((row.gen_meta as { figure?: { width_mm?: unknown } } | null)?.figure?.width_mm); return Number.isFinite(n) && n > 0 && n <= 166 ? n : null; })(),
       };
     });
 
@@ -916,7 +917,7 @@ export async function POST(req: NextRequest) {
       v: PAPER_PDF_RENDER_VERSION,
       opts: { workingSpace, answerKey, originalNumbering, withSolutions, answersOnly, title: titleBits },
       // The stored print width decides a grid's size, so it is part of the key (28 Sep 2026).
-      rows: rows.map((r) => [r.id, r.question_number, r.total_marks, r.question_text, r.parts, r.answer, r.image_url, r.figure_url, r.has_image, (r.gen_meta as { figure?: { print_width_mm?: unknown } } | null)?.figure?.print_width_mm ?? null]),
+      rows: rows.map((r) => [r.id, r.question_number, r.total_marks, r.question_text, r.parts, r.answer, r.image_url, r.figure_url, r.has_image, (r.gen_meta as { figure?: { print_width_mm?: unknown } } | null)?.figure?.print_width_mm ?? null, (r.gen_meta as { figure?: { width_mm?: unknown } } | null)?.figure?.width_mm ?? null]),
     })).digest('hex');
     const payload = {
       count: rows.length, marksTotal,

@@ -234,3 +234,21 @@ describe('a named point', () => {
     expect(mathHtml('costs $5 (see) and $6')).not.toContain('katex');
   });
 });
+
+describe('a ratio', () => {
+  it('renders $3 : 1$ and $x : y$, keeps prices and prose literal', () => {
+    expect(mathHtml('the ratio is $3 : 1$.')).toContain('katex');
+    expect(mathHtml('$9 : 4$')).toContain('katex');
+    expect(mathHtml('$x : y : z$')).toContain('katex');
+    expect(mathHtml('Note: it costs $3 and $4 more')).not.toContain('katex');
+  });
+});
+
+describe('segment ratios and a spaced negative', () => {
+  it('renders $PQ : PR$, $AF : FB$ and $- 6$', () => {
+    expect(mathHtml('$PQ : PR$')).toContain('katex');
+    expect(mathHtml('$AF : FB$')).toContain('katex');
+    expect(mathHtml('$- 6$')).toContain('katex');
+    expect(mathHtml('pay $5 - $6 today')).not.toContain('katex');
+  });
+});
