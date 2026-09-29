@@ -23,8 +23,7 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { isOurBlobUrl } from '@/lib/blob-url';
-import { keyFromUrl } from '@/lib/student-files-url';
+import { ownsHandinUrl } from '@/lib/add-pages';
 import { DAILY_SUBMIT_CAP, DAILY_SCIENCE_SUBMIT_CAP, countHandinsToday } from '@/lib/portal-submit-limit';
 import type { HandinCountingClient, HandinFamily } from '@/lib/portal-submit-limit';
 import { scienceQueuePlacement } from '@/lib/science-queue-store';
@@ -150,24 +149,8 @@ export async function POST(req: Request) {
   if (photoUrls.length > MAX_PAGES) {
     return NextResponse.json({ error: `That's too many pages for one paper (max ${MAX_PAGES}) — submit the rest as a second paper.` }, { status: 400 });
   }
-  // A URL is this student's own upload when its key sits under their prefix.
-  const ownsUrl = (u: string): boolean => {
-    const key = keyFromUrl(u);
-    if (key) {
-      // Private-store upload (5 Sep 2026): the submit-token route pinned the key
-      // under handins/<identity>/, so the prefix IS the ownership proof.
-      return key.startsWith(`handins/${studentId}/`);
-    }
-    if (isOurBlobUrl(u)) {
-      // decodeURIComponent: a stranger's identity segment (`acct:<uuid>`)
-      // contains a colon, which a URL serializer MAY percent-encode — decode
-      // before comparing so both spellings match the prefix the submit-token
-      // route pinned. Airtable rec ids are alphanumeric, so this is a no-op
-      // for tuition students.
-      try { return decodeURIComponent(new URL(u).pathname).startsWith(`/mark-paper/portal/${studentId}/`); } catch { return false; }
-    }
-    return false;
-  };
+  // A URL is this student's own upload when its key sits under their prefix (lib/add-pages ownsHandinUrl).
+  const ownsUrl = (u: string): boolean => ownsHandinUrl(u, studentId);
   for (const u of photoUrls) {
     if (!ownsUrl(u)) return NextResponse.json({ error: 'A photo upload went wrong — please re-add your photos and try again.' }, { status: 400 });
   }
@@ -292,11 +275,12 @@ export async function POST(req: Request) {
   const botBase = process.env.BOT_BASE_URL;
   const botSecret = process.env.BOT_INTERNAL_SECRET;
   if (!botBase || !botSecret) return NextResponse.json({ error: 'Submissions are temporarily unavailable' }, { status: 503 });
-  const bot = async (payload: Record<string, unknown>) => {
+  const bot = async (payload: Record<string, unknown>, timeoutMs?: number) => {
     const r = await fetch(`${botBase}/api/mark-paper`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${botSecret}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+      ...(timeoutMs ? { signal: AbortSignal.timeout(timeoutMs) } : {}),
     });
     return r.json().catch(() => ({}));
   };
@@ -312,7 +296,10 @@ export async function POST(req: Request) {
   // hand-in is worse than the gap it catches — the paper gets marked with a
   // missing page either way, but a refused hand-in never arrives at all.
   if (!body.confirmed) {
-    const pre = await bot({ phase: 'preflight', source: { photos: photoUrls.map(u => ({ original_url: u })) } });
+    // 25 s at most (29 Sep 2026): the check reads every page, and this route has
+    // 60 s in all — a slow read must never cost the student their hand-in, so a
+    // timeout is simply "no findings", like every other pre-flight failure.
+    const pre = await bot({ phase: 'preflight', source: { photos: photoUrls.map(u => ({ original_url: u })) } }, 25_000).catch(() => ({}));
     const findings = Array.isArray(pre?.findings) ? pre.findings : [];
     if (findings.some((f: { blocking?: boolean }) => f?.blocking)) {
       return NextResponse.json({ needsConfirm: true, findings }, { status: 409 });

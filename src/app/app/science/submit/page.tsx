@@ -16,13 +16,17 @@ import { sgtTodayISO } from '@/lib/sgt';
 import { SCIENCE_MARK_SUBJECTS } from '@/lib/mark-subject-for-student';
 import { studentSciences } from '@/lib/portal-prefs';
 import SubmitClient from '../../submit/submit-client';
+import AddPagesView from '../../submit/add-pages-view';
 
 export const dynamic = 'force-dynamic';
 
-export default async function ScienceSubmitPage() {
+export default async function ScienceSubmitPage({ searchParams }: { searchParams: Promise<{ addTo?: string }> }) {
   if (!(await scienceMarkingOpen())) redirect('/app');
   const account = await currentAccount();
   const sid = portalIdentity(account);
+  // ➕ Add forgotten pages to a paper still waiting (29 Sep 2026).
+  const { addTo } = await searchParams;
+  if (addTo) return <AddPagesView runId={addTo} studentId={sid} backHref="/app/science/papers" />;
   // The subject list is the sciences this student takes (24 Sep 2026); all
   // three until they have chosen. The route accepts any of the three.
   const choice = studentSciences(account?.prefs);

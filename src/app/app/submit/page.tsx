@@ -17,18 +17,21 @@ import {
 import { DAILY_SUBMIT_CAP, countHandinsToday } from '@/lib/portal-submit-limit';
 import type { HandinCountingClient } from '@/lib/portal-submit-limit';
 import SubmitClient from './submit-client';
+import AddPagesView from './add-pages-view';
 import { markSubjectAccess } from '@/lib/portal-beta';
 import { enrolledMarkSubjects } from '@/lib/student-mark-subjects';
 import { pickableSubjects } from '@/lib/mark-subject-for-student';
 
 export const dynamic = 'force-dynamic';
 
-export default async function SubmitPage({ searchParams }: { searchParams: Promise<{ assignment?: string; paper?: string }> }) {
+export default async function SubmitPage({ searchParams }: { searchParams: Promise<{ assignment?: string; paper?: string; addTo?: string }> }) {
   const account = await currentAccount();
   // rec… for tuition, acct:<uuid> for strangers — the same identity the submit
   // route stamps on runs and counts the daily cap by.
   const sid = portalIdentity(account);
-  const { assignment: assignmentId, paper: paperId } = await searchParams;
+  const { assignment: assignmentId, paper: paperId, addTo } = await searchParams;
+  // ➕ Add forgotten pages to a paper still waiting to be marked (29 Sep 2026).
+  if (addTo) return <AddPagesView runId={addTo} studentId={sid} backHref="/app/marking" />;
   let assignment: { id: string; title: string } | null = null;
   if (assignmentId) {
     const a = await getStudentAssignment(assignmentId, sid);
