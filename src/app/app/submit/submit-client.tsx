@@ -375,13 +375,6 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         <p className="text-4xl">{queuedFor ? '🕒' : '🧪'}</p>
         <p className="font-bold text-navy mt-2">{queuedFor ? 'Queued for marking' : 'Sent for marking'}</p>
         <p className="text-sm text-gray-600 mt-1.5">{line}</p>
-        {doneRunId !== 'ok' && (
-          <p className="text-[13px] text-teal-900 bg-teal-50 border border-teal-200 rounded-xl px-3 py-2 mt-3">
-            Forgot a page? You can add it until marking starts —{' '}
-            <a href={`/app/science/submit?addTo=${doneRunId}`} className="font-semibold underline underline-offset-2">➕ Add pages</a>
-            , or later from <b>Papers</b>.
-          </p>
-        )}
         <div className="mt-4 flex justify-center gap-2">
           {/* A plain link, not <Link>: a full load resets the form and refreshes the list under it. */}
           <a href="/app/science/submit" className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">Hand in another</a>
@@ -414,15 +407,6 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
               {assignment ? 'Back to From Adrian' : isScience ? 'Go to Papers' : 'Go to Marked papers'}
             </Link>
           </div>
-          {/* ➕ Forgot a page? (Adrian, 29 Sep 2026: "also inform the student you can add
-              pages while paper is still in the queue"). */}
-          {doneRunId !== 'ok' && (
-            <p className="text-[13px] text-teal-900 bg-teal-50 border border-teal-200 rounded-xl px-3 py-2 mt-3">
-              Forgot a page? You can add it until marking starts —{' '}
-              <a href={`/app/submit?addTo=${doneRunId}`} className="font-semibold underline underline-offset-2">➕ Add pages</a>
-              , or later from <b>Marked papers</b>.
-            </p>
-          )}
           {/* No daily cap for tuition students since 22 Sep 2026 — the old
               "a fresh one opens at midnight" line was stale (Adrian, 24 Sep). */}
           {!assignment && !paper && !isScience && (

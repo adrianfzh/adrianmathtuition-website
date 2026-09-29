@@ -105,7 +105,7 @@ const TEXT: Record<PaperNoticeKind, PaperNoticeText> = {
   'missing-questions': {
     kind: 'missing-questions',
     title: 'Some questions are not in your photos',
-    body: "If you did them, add those pages — only they are marked, and the rest keeps its marking.",
+    body: "If you did them, add those pages.",
     addPages: true,
   },
 };
@@ -172,7 +172,7 @@ export function activePaperNotice(resultJson: unknown, now: Date = new Date()): 
     return {
       ...TEXT['missing-questions'],
       title: `We can't see ${describeRefs(notice.missing.slice(0, 10))}${n > 10 ? ' and more' : ''} in your photos`,
-      body: `If you did ${n === 1 ? 'it' : 'them'}, add ${n === 1 ? 'that page' : 'those pages'} — only ${n === 1 ? 'it is' : 'they are'} marked, and the rest keeps its marking.`,
+      body: `If you did ${n === 1 ? 'it' : 'them'}, add ${n === 1 ? 'that page' : 'those pages'}.`,
     };
   }
   return TEXT[notice.kind];

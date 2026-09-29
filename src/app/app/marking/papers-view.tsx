@@ -52,7 +52,6 @@ import { sheetLine, sheetJobLine, bundleCaption, type SheetLine } from '@/lib/pr
 import { starredFirst } from '@/lib/paper-star';
 import { noteFirstLine } from '@/lib/paper-label';
 import { adminLines, needsLook, type AdminJobRow, type AdminSheetRow } from '@/lib/papers-admin-lines';
-import { ADD_PAGES_HINT, canAddPages } from '@/lib/add-pages';
 import { unseenLabel } from '@/lib/unseen-handins';
 import { isRecentHandin } from '@/lib/recent-handins';
 import ReviewPicker, { type ReviewPickPaper } from './ReviewPicker';
@@ -162,15 +161,7 @@ export default async function PapersView({ account, sid, admin = false }: {
       .order('created_at', { ascending: false })
       .limit(5),
   ]);
-  // ➕ Add pages (29 Sep 2026): a paper nobody has started marking can still take
-  // the pages the student forgot — the button shows only on those (lib/add-pages).
-  const pending = (pendingRows ?? []).map((p) => ({
-    ...p,
-    addable: canAddPages({
-      total_max: p.total_max, released_at: p.released_at, queue_status: p.queue_status, lease_until: p.lease_until,
-      result_json: { queue: p.queue, source: p.source, queued_for: p.queued_for },
-    }),
-  }));
+  const pending = pendingRows ?? [];
 
   // Earlier markings (Adrian, 7 Sep 2026: Alessi's defective 38/66 "should be
   // archived — still allow access, but not shown at the main screen"): a paper
@@ -414,9 +405,6 @@ export default async function PapersView({ account, sid, admin = false }: {
                   )}
                 </span>
                 <span className="shrink-0 flex items-baseline gap-2">
-                  {!admin && p.addable && (
-                    <a href={`/app/submit?addTo=${p.id}`} className="text-xs font-semibold text-teal-800 underline underline-offset-2">➕ Add pages</a>
-                  )}
                   <span className="text-xs text-teal-700/60">{niceDate(String(p.created_at).slice(0, 10))}</span>
                 </span>
               </li>
@@ -424,7 +412,6 @@ export default async function PapersView({ account, sid, admin = false }: {
           </ul>
           <p className="text-[11px] text-teal-700/70 mt-2">
             Handed in — it appears below once marked and released.
-            {!admin && pending.some((p) => p.addable) && <> {ADD_PAGES_HINT}</>}
           </p>
         </div>
       )}

@@ -6,7 +6,6 @@
 // (Adrian, 10 Sep 2026: "for the science tab, just put marking functionality
 // first"). Server component; ownership = the student_id filter, never the client.
 import type { ReactNode } from 'react';
-import { ADD_PAGES_HINT, canAddPages } from '@/lib/add-pages';
 import Link from 'next/link';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
@@ -39,16 +38,6 @@ export type SciencePending = {
   result_json: { queued_for?: string; queue_released_at?: string } | null;
   total_max?: number | null; queue_status?: string | null; lease_until?: string | null;
 };
-
-/** ➕ Add pages (29 Sep 2026): still waiting, nobody has started it (lib/add-pages). */
-function addable(p: SciencePending): boolean {
-  return canAddPages({ total_max: p.total_max ?? null, released_at: null, queue_status: p.queue_status ?? null, lease_until: p.lease_until ?? null, result_json: p.result_json as Record<string, unknown> | null });
-}
-
-function AddPagesLink({ p }: { p: SciencePending }) {
-  if (!addable(p)) return null;
-  return <a href={`/app/science/submit?addTo=${p.id}`} className="text-xs font-semibold text-teal-800 underline underline-offset-2">➕ Add pages</a>;
-}
 
 /** The student's science runs: released papers (newest first) and the ones still being marked. */
 export async function loadSciencePapers(sid: string, studentName: string | null, limit = 40) {
@@ -91,13 +80,11 @@ export function SciencePendingList({ pending }: { pending: SciencePending[] }) {
                   {typeof p.num_photos === 'number' && p.num_photos > 0 && <span className="text-teal-700/60"> · {p.num_photos} page{p.num_photos === 1 ? '' : 's'}</span>}
                 </span>
                 <span className="shrink-0 flex items-baseline gap-2">
-                  <AddPagesLink p={p} />
                   <span className="text-xs text-teal-700/60">{niceDate(String(p.created_at).slice(0, 10))}</span>
                 </span>
               </li>
             ))}
           </ul>
-          {marking.some(addable) && <p className="text-[11px] text-teal-700/70 mt-2">{ADD_PAGES_HINT}</p>}
         </div>
       )}
       {queued.length > 0 && (
@@ -112,7 +99,7 @@ export function SciencePendingList({ pending }: { pending: SciencePending[] }) {
                   {p.subject && <PaperSubjectPill subject={p.subject} className="ml-1.5 align-middle" />}
                   <span className="text-teal-700/60"> · {queuedLabel(String(p.result_json?.queued_for), today)}</span>
                 </span>
-                <span className="shrink-0 flex items-baseline gap-2"><AddPagesLink p={p} /><RemoveQueuedScience runId={p.id} /></span>
+                <span className="shrink-0 flex items-baseline gap-2"><RemoveQueuedScience runId={p.id} /></span>
               </li>
             ))}
           </ul>

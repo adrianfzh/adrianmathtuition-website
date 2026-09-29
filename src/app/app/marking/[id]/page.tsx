@@ -234,7 +234,6 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
         <p className="text-xs text-gray-600">
           Missing a page?{' '}
           <a href={`${isScience ? '/app/science/submit' : '/app/submit'}?addTo=${id}`} className="font-semibold text-navy underline underline-offset-2">➕ Add missing pages</a>
-          {' '}— only the new pages are marked; the rest keeps its marking.
         </p>
       ) : null}
 

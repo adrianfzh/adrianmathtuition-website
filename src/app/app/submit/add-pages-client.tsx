@@ -101,7 +101,7 @@ export default function AddPagesClient({ runId, title, pagesNow, backHref, after
           <p className="font-bold text-navy mt-2">{done.added} page{done.added === 1 ? '' : 's'} added to “{title}”</p>
           <p className="text-sm text-gray-600 mt-1.5">
             {done.remark
-              ? <>The new pages are being marked now — the rest of your paper keeps its marking. It updates here when they&apos;re done, usually within the hour.</>
+              ? <>The new pages are being marked now. Your paper updates here when they&apos;re done, usually within the hour.</>
               : <>It now has {done.total} pages{done.reordered ? ', put in question order' : ''}, and it will be marked with all of them.</>}
           </p>
           {done.findings.length > 0 && (
@@ -126,7 +126,7 @@ export default function AddPagesClient({ runId, title, pagesNow, backHref, after
         <h1 className="text-xl font-bold text-navy mt-1">➕ {afterMarking ? 'Add missing pages' : 'Add pages'}: {title}</h1>
         <p className="text-[13px] text-gray-500 mt-0.5">
           {afterMarking
-            ? <>Your paper is marked. Add the pages that were missing — only they are marked, and the rest of your paper keeps its marking.</>
+            ? <>Your paper is marked. Add the pages that were missing.</>
             : <>It has {pagesNow} page{pagesNow === 1 ? '' : 's'} so far. Add the ones you missed — in any order: we put the whole paper back in question order before it is marked.</>}
         </p>
       </div>
