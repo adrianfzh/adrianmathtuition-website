@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
 import { flattenExamTopics, parseExtractionResponse } from '@/lib/exam-topic-extract';
 import { put } from '@vercel/blob';
+import { SONNET_55 } from '@/lib/claude-models';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -27,7 +28,7 @@ export const maxDuration = 60;
 // meaning; parseExtractionResponse then gates every returned topic against
 // the canonical list (models author, deterministic gates verify).
 
-const EXTRACTION_MODEL = 'claude-sonnet-5';
+const EXTRACTION_MODEL = SONNET_55; // Sonnet 5.5 since 30 Sep 2026 (was claude-sonnet-5)
 
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

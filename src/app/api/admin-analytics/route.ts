@@ -3,6 +3,7 @@ import { airtableRequestAll } from '@/lib/airtable';
 import { costFor } from '@/lib/model-pricing';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { sgtDateISO } from '@/lib/sgt';
+import { anthropicText } from '@/lib/claude-models';
 
 export const runtime = 'nodejs';
 
@@ -224,6 +225,6 @@ export async function POST(req: NextRequest) {
   });
 
   const json: any = await res.json();
-  const analysis = json.content?.[0]?.text || 'Analysis failed.';
+  const analysis = anthropicText(json) || 'Analysis failed.'; // first TEXT block — a thinking block may come first
   return NextResponse.json({ analysis, questionCount: records.length });
 }
