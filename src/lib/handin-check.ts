@@ -70,3 +70,37 @@ export function handinCheckLine(stamp: unknown): string | null {
   if (s?.answer === 'not-done') return `✋ Student said not done: ${refs}`;
   return `⚠️ Missing at hand-in, sent anyway: ${refs}`;
 }
+
+/**
+ * 🕳 The backstop after marking (SPEC-HANDIN-COMPLETENESS ⑥, 30 Sep 2026): what the
+ * marked paper came back without that nobody said was left undone. Two witnesses:
+ *  - `unattempted_questions` — whole questions the marker never found, filled in only
+ *    when the paper's total is known (bot ai/paper-totals detectUnattempted);
+ *  - the hand-in check's own list, when the student was asked and sent anyway.
+ * Anything the student said they didn't do is left out. Only a student's own app
+ * hand-in counts (they are the one who can add the pages); a Practice Again or
+ * From Adrian sheet never does. Pure; [] when there is nothing to say.
+ */
+export function missingAfterMarking(resultJson: unknown): HandinMissing[] {
+  const rj = (resultJson && typeof resultJson === 'object' ? resultJson : {}) as Record<string, any>;
+  if (!rj.portal_submission) return [];
+  if (rj.assignment_id || rj.source?.paper_kind === 'practice-again') return [];
+  const check = rj.handin_check as { missing?: unknown; answer?: unknown } | undefined;
+  const saidNotDone = check?.answer === 'not-done' ? cleanMissing(check.missing) : [];
+  const skipQ = new Set(saidNotDone.filter((m) => !m.part).map((m) => m.q));
+  const skipPart = new Set(saidNotDone.filter((m) => m.part).map((m) => `${m.q}${m.part}`));
+
+  const out = new Map<string, HandinMissing>();
+  for (const x of Array.isArray(rj.unattempted_questions) ? rj.unattempted_questions : []) {
+    const q = parseInt(String(x), 10);
+    if (Number.isInteger(q) && q >= 1 && q <= 99 && !skipQ.has(q)) out.set(`${q}`, { q });
+  }
+  if (check?.answer === 'sent-anyway') {
+    for (const m of cleanMissing(check.missing)) {
+      if (skipQ.has(m.q) || out.has(`${m.q}`)) continue;
+      if (m.part && skipPart.has(`${m.q}${m.part}`)) continue;
+      out.set(m.part ? `${m.q}${m.part}` : `${m.q}`, m);
+    }
+  }
+  return [...out.values()].sort((a, b) => a.q - b.q || String(a.part || '').localeCompare(String(b.part || '')));
+}

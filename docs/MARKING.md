@@ -2632,6 +2632,14 @@ The door IN from the student side: photograph the worked paper on a phone →
 auto spread-split + ≤2600px downscale (`lib/spread-split.ts`, same hygiene as
 Adrian's own intake) → straight-to-Blob via client token → one POST files it.
 
+> **Missing pages (29–30 Sep 2026, [`SPEC-HANDIN-COMPLETENESS.md`](../SPEC-HANDIN-COMPLETENESS.md)).**
+> Before sending, the pre-flight names the questions no photo shows ("➕ Add the pages" /
+> "I didn't do these" → `result_json.handin_check`). While the paper waits, **➕ Add pages**
+> (`?addTo=<run>`) appends photos and the bot re-orders the whole paper by question; after
+> release, **➕ Add missing pages** (≤14 days) re-marks only the new pages and re-issues
+> (notice `pages-added`). At release, `missingAfterMarking` stamps a 3-day
+> `missing-questions` notice naming what came back unseen, plus a ⚠️ watch-out.
+
 - **A submission IS a saved run.** `/api/portal/submit` calls the bot's
   `phase:'save-paper'` + `phase:'set-student'`, so it lands as the same
   "⏳ uploaded — not marked yet" row Adrian's own uploads make: visible in

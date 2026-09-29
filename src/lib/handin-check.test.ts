@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { cleanMissing, handinCheckStamp, handinCheckLine } from './handin-check';
+import { cleanMissing, handinCheckStamp, handinCheckLine, missingAfterMarking } from './handin-check';
 
 const AT = '2026-09-29T16:00:00.000Z';
 const joey = [{ q: 1, part: 'a' }, { q: 1, part: 'd' }, { q: 2 }];
@@ -33,5 +33,25 @@ describe('cleanMissing / handinCheckLine', () => {
     expect(handinCheckLine({ missing: joey, answer: 'sent-anyway' })).toBe('⚠️ Missing at hand-in, sent anyway: Q1(a), Q1(d), Q2');
     expect(handinCheckLine({ missing: joey, answer: 'not-done' })).toBe('✋ Student said not done: Q1(a), Q1(d), Q2');
     expect(handinCheckLine({ missing: [], answer: 'added' })).toBeNull();
+  });
+});
+
+describe('missingAfterMarking — the backstop', () => {
+  const base = { portal_submission: true };
+  it('names questions the marker never found', () => {
+    expect(missingAfterMarking({ ...base, unattempted_questions: ['4', '7'] })).toEqual([{ q: 4 }, { q: 7 }]);
+  });
+  it('adds parts the student was warned about and sent anyway', () => {
+    expect(missingAfterMarking({ ...base, unattempted_questions: ['2'], handin_check: { answer: 'sent-anyway', missing: [{ q: 1, part: 'a' }, { q: 2 }] } }))
+      .toEqual([{ q: 1, part: 'a' }, { q: 2 }]);
+  });
+  it('leaves out what the student said they did not do', () => {
+    expect(missingAfterMarking({ ...base, unattempted_questions: ['4', '7'], handin_check: { answer: 'not-done', missing: [{ q: 7 }] } })).toEqual([{ q: 4 }]);
+  });
+  it('says nothing for Adrian’s uploads, sheets, or a complete paper', () => {
+    expect(missingAfterMarking({ unattempted_questions: ['4'] })).toEqual([]);
+    expect(missingAfterMarking({ ...base, assignment_id: 'a1', unattempted_questions: ['4'] })).toEqual([]);
+    expect(missingAfterMarking({ ...base, source: { paper_kind: 'practice-again' }, unattempted_questions: ['4'] })).toEqual([]);
+    expect(missingAfterMarking({ ...base })).toEqual([]);
   });
 });

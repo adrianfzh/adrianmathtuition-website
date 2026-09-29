@@ -585,6 +585,9 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
       {paper.notice && (
         <p className="mt-2 text-[12px] text-sky-900 bg-sky-50 border border-sky-200 rounded-2xl px-3 py-2">
           <span className="font-semibold">{paper.notice.title}.</span> {paper.notice.body}
+          {paper.notice.addPages && !admin && (
+            <>{' '}<a href={`${/^(physics|chemistry|biology|science)/i.test(paper.subject ?? '') ? '/app/science/submit' : '/app/submit'}?addTo=${paper.id}`} className="font-semibold underline underline-offset-2">➕ Add missing pages</a></>
+          )}
         </p>
       )}
 

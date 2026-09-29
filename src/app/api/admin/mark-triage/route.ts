@@ -66,7 +66,8 @@ import { releaseHeldPracticeItems } from '@/lib/practice-again-store';
 import { applyRunRelease } from '@/lib/notebook-mistakes-store';
 import { isRemarkInternal } from '@/lib/remark-internal';
 import { reissueLine, parseReissueReason } from '@/lib/reissue-message';
-import { buildPaperNotice, parseNoticeKind } from '@/lib/paper-notice';
+import { activePaperNotice, buildPaperNotice, describeRefs, parseNoticeKind } from '@/lib/paper-notice';
+import { missingAfterMarking } from '@/lib/handin-check';
 import { gapsForRun, gapWatchReason, pageGapAlert } from '@/lib/page-gap-repair';
 
 export const runtime = 'nodejs';
@@ -872,6 +873,25 @@ export async function POST(req: NextRequest) {
       // teaching round). A run with no sheet has none. Fail-soft — never undoes
       // the release it rides.
       const heldItems = await releaseHeldPracticeItems(supa, run.id);
+
+      // 🕳 THE BACKSTOP (SPEC-HANDIN-COMPLETENESS ⑥, 30 Sep 2026): the paper came
+      // back without questions nobody said were left undone → a three-day line on
+      // the student's paper naming them, with ➕ Add missing pages under it, and a
+      // watch-out for Adrian. Never a hold; never over another live notice.
+      // Fail-soft: a stamp that fails never undoes the release.
+      const missing = missingAfterMarking(run.result_json);
+      if (missing.length) {
+        watch = [...watch, `${describeRefs(missing.slice(0, 8))}${missing.length > 8 ? '…' : ''} not in the photos — the student is asked to add the pages`];
+        try {
+          const { data: fresh } = await supa.from('paper_marking_runs').select('result_json').eq('id', run.id).single();
+          const frj = (fresh?.result_json && typeof fresh.result_json === 'object' ? fresh.result_json : {}) as Record<string, unknown>;
+          if (!activePaperNotice(frj)) {
+            await supa.from('paper_marking_runs')
+              .update({ result_json: { ...frj, student_notice: buildPaperNotice('missing-questions', { missing }) } })
+              .eq('id', run.id);
+          }
+        } catch (e) { console.warn('[mark-triage] missing-questions notice not stamped:', (e as Error).message); }
+      }
       results.push({
         runId: run.id,
         studentName: run.student_name,

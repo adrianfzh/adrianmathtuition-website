@@ -218,6 +218,9 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
       {paper.notice && (
         <p className="text-xs text-sky-900 bg-sky-50 border border-sky-200 rounded-2xl px-3 py-2">
           <span className="font-semibold">{paper.notice.title}.</span> {paper.notice.body}
+          {paper.notice.addPages && !isAdmin && canAddPagesAfterMarking(row as unknown as MarkedRow) && (
+            <>{' '}<a href={`${isScience ? '/app/science/submit' : '/app/submit'}?addTo=${id}`} className="font-semibold underline underline-offset-2">➕ Add missing pages</a></>
+          )}
         </p>
       )}
 
@@ -227,7 +230,7 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
         <p className="text-xs text-teal-900 bg-teal-50 border border-teal-200 rounded-2xl px-3 py-2">
           <span className="font-semibold">➕ Your added pages are being marked.</span> Your paper updates here when they&apos;re done — usually within the hour.
         </p>
-      ) : !isAdmin && canAddPagesAfterMarking(row as unknown as MarkedRow) ? (
+      ) : !isAdmin && !paper.notice?.addPages && canAddPagesAfterMarking(row as unknown as MarkedRow) ? (
         <p className="text-xs text-gray-600">
           Missing a page?{' '}
           <a href={`${isScience ? '/app/science/submit' : '/app/submit'}?addTo=${id}`} className="font-semibold text-navy underline underline-offset-2">➕ Add missing pages</a>

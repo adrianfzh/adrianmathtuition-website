@@ -36,7 +36,7 @@
  * on the card the student cannot check against anything else, so the reason has
  * to be the reason: a new kind, not the nearest existing one.
  */
-export type PaperNoticeKind = 'pages-recovered' | 'marks-realigned' | 'marks-recalibrated' | 'pages-added';
+export type PaperNoticeKind = 'pages-recovered' | 'marks-realigned' | 'marks-recalibrated' | 'pages-added' | 'missing-questions';
 
 export type PaperNotice = {
   kind: PaperNoticeKind;
@@ -44,10 +44,16 @@ export type PaperNotice = {
   at: string;
   /** When the line stops being shown — ISO. */
   until: string;
+  /** 'missing-questions' only: what the paper came back without. */
+  missing?: { q: number; part?: string }[];
 };
 
 /** What the student reads. */
-export type PaperNoticeText = { kind: PaperNoticeKind; title: string; body: string };
+export type PaperNoticeText = {
+  kind: PaperNoticeKind; title: string; body: string;
+  /** Show the ➕ Add missing pages door under the line. */
+  addPages?: boolean;
+};
 
 /** How long a notice stands. Adrian, 14 Sep 2026. */
 export const NOTICE_DAYS = 3;
@@ -93,21 +99,49 @@ const TEXT: Record<PaperNoticeKind, PaperNoticeText> = {
     title: 'Your added pages are marked',
     body: 'The pages you added are marked and your paper is updated — the new total is on the cover.',
   },
+  // 🕳 The backstop (SPEC-HANDIN-COMPLETENESS ⑥, 30 Sep 2026): the paper came back
+  // without questions nobody said were left undone. The body names them — built in
+  // activePaperNotice from the stamp's `missing`; this is the fallback.
+  'missing-questions': {
+    kind: 'missing-questions',
+    title: 'Some questions are not in your photos',
+    body: "If you did them, add those pages — only they are marked, and the rest keeps its marking.",
+    addPages: true,
+  },
 };
 
 function isKind(v: unknown): v is PaperNoticeKind {
-  return v === 'pages-recovered' || v === 'marks-realigned' || v === 'marks-recalibrated' || v === 'pages-added';
+  return v === 'pages-recovered' || v === 'marks-realigned' || v === 'marks-recalibrated' || v === 'pages-added' || v === 'missing-questions';
 }
 
 /** The stamp to write on `result_json.student_notice`. */
 export function buildPaperNotice(
   kind: PaperNoticeKind,
-  opts: { at?: string | Date; days?: number } = {},
+  opts: { at?: string | Date; days?: number; missing?: { q: number; part?: string }[] } = {},
 ): PaperNotice {
   const at = opts.at ? new Date(opts.at) : new Date();
   const days = Number.isFinite(opts.days) ? Number(opts.days) : NOTICE_DAYS;
   const until = new Date(at.getTime() + days * 86_400_000);
-  return { kind, at: at.toISOString(), until: until.toISOString() };
+  const missing = kind === 'missing-questions' ? cleanRefs(opts.missing) : [];
+  return { kind, at: at.toISOString(), until: until.toISOString(), ...(missing.length ? { missing } : {}) };
+}
+
+function cleanRefs(x: unknown): { q: number; part?: string }[] {
+  if (!Array.isArray(x)) return [];
+  const out: { q: number; part?: string }[] = [];
+  for (const m of x.slice(0, 40)) {
+    const q = Number((m as { q?: unknown })?.q);
+    if (!Number.isInteger(q) || q < 1 || q > 99) continue;
+    const part = (m as { part?: unknown })?.part;
+    out.push(typeof part === 'string' && /^[a-h]$/.test(part) ? { q, part } : { q });
+  }
+  return out;
+}
+
+/** "Q4, Q7(b) and Q9" */
+export function describeRefs(refs: { q: number; part?: string }[]): string {
+  const r = refs.map((m) => (m.part ? `Q${m.q}(${m.part})` : `Q${m.q}`));
+  return r.length <= 1 ? r.join('') : `${r.slice(0, -1).join(', ')} and ${r[r.length - 1]}`;
 }
 
 /** Parse whatever is stored, without trusting it. Null when there is no usable notice. */
@@ -117,7 +151,8 @@ export function parsePaperNotice(raw: unknown): PaperNotice | null {
   const at = typeof r.at === 'string' ? r.at : '';
   const until = typeof r.until === 'string' ? r.until : '';
   if (!until || Number.isNaN(Date.parse(until))) return null;
-  return { kind: r.kind, at, until };
+  const missing = r.kind === 'missing-questions' ? cleanRefs(r.missing) : [];
+  return { kind: r.kind, at, until, ...(missing.length ? { missing } : {}) };
 }
 
 /**
@@ -132,6 +167,14 @@ export function activePaperNotice(resultJson: unknown, now: Date = new Date()): 
   const notice = parsePaperNotice(rj?.student_notice);
   if (!notice) return null;
   if (Date.parse(notice.until) <= now.getTime()) return null;
+  if (notice.kind === 'missing-questions' && notice.missing?.length) {
+    const n = notice.missing.length;
+    return {
+      ...TEXT['missing-questions'],
+      title: `We can't see ${describeRefs(notice.missing.slice(0, 10))}${n > 10 ? ' and more' : ''} in your photos`,
+      body: `If you did ${n === 1 ? 'it' : 'them'}, add ${n === 1 ? 'that page' : 'those pages'} — only ${n === 1 ? 'it is' : 'they are'} marked, and the rest keeps its marking.`,
+    };
+  }
   return TEXT[notice.kind];
 }
 

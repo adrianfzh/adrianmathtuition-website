@@ -81,3 +81,13 @@ describe('pages-added notice', () => {
     expect(buildPaperNotice('pages-added').kind).toBe('pages-added');
   });
 });
+
+describe('missing-questions notice', () => {
+  it('names the questions and offers the door', () => {
+    const n = buildPaperNotice('missing-questions', { at: '2026-09-30T00:00:00Z', missing: [{ q: 4 }, { q: 7, part: 'b' }] });
+    const t = activePaperNotice({ student_notice: n }, new Date('2026-10-01T00:00:00Z'));
+    expect(t?.title).toBe("We can't see Q4 and Q7(b) in your photos");
+    expect(t?.addPages).toBe(true);
+    expect(activePaperNotice({ student_notice: n }, new Date('2026-10-04T00:00:00Z'))).toBeNull();
+  });
+});
