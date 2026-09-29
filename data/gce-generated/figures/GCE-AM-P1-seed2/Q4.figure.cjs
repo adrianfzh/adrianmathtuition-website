@@ -35,6 +35,8 @@ module.exports = ({ Construction, el }) => {
       // the water runs the whole length: its level on the right side face (visible, shaded),
       // on the far end, and along the hidden left side (dashed)
       el.region([c.P('BR'), c.P('BR2'), c.P('WR2'), c.P('WR')], { spacing: 6 }),
+      // the water's top surface, hatched lighter and level so it reads as a surface, not a wall
+      el.region([c.P('WL'), c.P('WR'), c.P('WR2'), c.P('WL2')], { spacing: 8, hatchAngle: 0, noEdge: true, op: 0.55 }),
       el.seg('WR', 'WR2', { w: 1.1 }), el.seg('WL2', 'WR2', { w: 1.1 }), el.seg('WL', 'WL2', { w: 1.1, dash: true }),
       // front face
       el.seg('BL', 'BR'), el.seg('BR', 'TR'), el.seg('TR', 'TL'), el.seg('TL', 'BL'),
