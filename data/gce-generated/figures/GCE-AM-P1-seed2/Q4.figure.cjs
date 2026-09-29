@@ -1,5 +1,5 @@
 // Set 2 P1 Q4 — open trough, isosceles-trapezium cross-section (bottom 30, top 90, depth 40),
-// length 200 receding (oblique, NOT to scale), water at depth h shown on the front face.
+// length 200 receding (oblique, NOT to scale), water at depth h shown along the whole length (front face, right side face, far end; hidden left side dashed).
 module.exports = ({ Construction, el }) => {
   const dx = 55, dy = 32;          // receding vector (not to scale)
   const hw = 16;                   // drawn water depth
@@ -12,6 +12,7 @@ module.exports = ({ Construction, el }) => {
     .point('D0', -80, 0).point('D1', -80, 40)                       // 40 cm dimension
     .point('F0', -36, 0).point('F1', -36, 16)                       // h cm dimension
     .lerp('WL', 'BL', 'TL', hw / 40).lerp('WR', 'BR', 'TR', hw / 40)
+    .lerp('WL2', 'BL2', 'TL2', hw / 40).lerp('WR2', 'BR2', 'TR2', hw / 40)
     .intersectLines('K', ['BL2', 'TL2'], ['TL', 'TR'])   // where the far-left edge rises above the front rim
     .assertParallel('top // base', ['TL', 'TR'], ['BL', 'BR'])
     .assertEqualLength('isosceles', ['BL', 'TL'], ['BR', 'TR'])
@@ -24,11 +25,17 @@ module.exports = ({ Construction, el }) => {
     .assertEqualLength('uniform length', ['BL', 'BL2'], ['TR', 'TR2'])
     .assertBetween('K on far-left edge', 'BL2', 'K', 'TL2')
     .assertBetween('K on front rim', 'TL', 'K', 'TR')
+    .assertParallel('water surface runs the length', ['WR', 'WR2'], ['BR', 'BR2'])
+    .assertParallel('far water line level', ['WL2', 'WR2'], ['BL', 'BR'])
     .assertParallel('water level extension horizontal', ['WL', 'E1'], ['BL', 'BR']);
   return {
     cons: c, width: 420, height: 230, margin: 52,
     base: [
       el.region([c.P('BL'), c.P('BR'), c.P('WR'), c.P('WL')], { spacing: 6 }),
+      // the water runs the whole length: its level on the right side face (visible, shaded),
+      // on the far end, and along the hidden left side (dashed)
+      el.region([c.P('BR'), c.P('BR2'), c.P('WR2'), c.P('WR')], { spacing: 6 }),
+      el.seg('WR', 'WR2', { w: 1.1 }), el.seg('WL2', 'WR2', { w: 1.1 }), el.seg('WL', 'WL2', { w: 1.1, dash: true }),
       // front face
       el.seg('BL', 'BR'), el.seg('BR', 'TR'), el.seg('TR', 'TL'), el.seg('TL', 'BL'),
       // visible receding edges and the far rim
