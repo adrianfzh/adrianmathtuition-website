@@ -392,7 +392,7 @@ is a minimum point, (b) is the tangent at the first point of gradient 24 (the ta
 and the left/right argument are gone); Q9 (b) the derivative as a show-that, (c) hence x = 4 and
 36.9° (the complementary-angles part dropped); Q10 (a) x − 2 a factor, (b) the quadratic factor,
 (c) the repeated root (the "no other factor of the form x − a" clause gone); Q13 a not-to-scale
-triangle labelled A(10, 2), B(0, 7), H and C only. Q2 kept (in syllabus). Fresh Opus blind solves
+triangle labelled A(10, 2), B(0, 7), H and C only. Later that day (Adrian: "Q13 seems too hard for Sec 4 students, tone down the difficulty") Q13 became five steps on the same diagram, now on x- and y-axes: (a) gradient of AH [1], (b) show BC is y = 3x + 7 [2], (c) equation of AC [3], (d) C(−4, −5) [2], (e) show AB ⊥ CH [2]; the old 'find C in one step' and 'K without equations' parts are gone. Fresh blind solve agrees ("fair Sec 4 level … routine rather than demanding"). Q4's trough now shows the water along its whole length. Q2 kept (in syllabus). Fresh Opus blind solves
 agreed on every changed part; a Fable moderator scored Q3 Q7 Q9 Q10 5/5. Solutions rewritten one
 step a line with no mark notes (CLAUDE.md §Readability). Figures in `figures/GCE-AM-P1-seed2/`.
 
