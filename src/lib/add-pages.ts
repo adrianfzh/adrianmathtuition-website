@@ -52,7 +52,7 @@ export function canAddPagesAfterMarking(row: MarkedRow, now: number = Date.now()
   if (!row || row.total_max == null || !row.released_at || row.superseded_by) return false;
   const rj = (row.result_json || {}) as Record<string, any>;
   // A marked run keeps its old queue record (queue_status 'done'); only a live one is busy.
-  if (rj.queue && row.queue_status !== 'done' && row.queue_status !== 'failed') return false;
+  if (rj.queue && (row.queue_status === 'queued' || row.queue_status === 'claimed')) return false;
   const rel = Date.parse(row.released_at);
   if (Number.isFinite(rel) && now - rel > ADD_AFTER_DAYS * 86_400_000) return false;
   const photos = Array.isArray(rj.source?.photos) ? rj.source.photos.length : 0;
@@ -62,7 +62,7 @@ export function canAddPagesAfterMarking(row: MarkedRow, now: number = Date.now()
 
 /** A released paper whose added pages are being marked right now (the flag stays on the record once done). */
 export function pagesBeingAdded(resultJson: unknown, queueStatus: string | null | undefined): boolean {
-  if (queueStatus === 'done' || queueStatus === 'failed') return false;
+  if (queueStatus !== 'queued' && queueStatus !== 'claimed') return false;
   const q = (resultJson as { queue?: { pages_added?: unknown } } | null)?.queue;
   return !!(q && Number(q.pages_added) > 0);
 }
