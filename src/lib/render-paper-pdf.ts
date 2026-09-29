@@ -42,7 +42,7 @@ const ANSWER_ORANGE = '#843C0C';
 // v3 (2026-08-31): "End of Paper" after the last question.
 // v4 (2026-09-05): KaTeX inlined (was jsDelivr CDN 0.16.9, now the installed
 // 0.16.45 package) — cached PDFs must rebuild once to pick up the version bump.
-export const PAPER_PDF_RENDER_VERSION = 15;   // 15: a question's own figure width (gen_meta.figure.width_mm) (29 Sep 2026); 14: "Mark scheme for (c):" dropped too (29 Sep 2026); 13: a Mark scheme or Alternative line mid-paragraph is handled too (29 Sep 2026); 12: solutions read cleanly — mark notes shrink to codes, no Mark scheme paragraph, Another way boxed (29 Sep 2026); 11: answer key in black, a grid at its true printed width, a construction question gets one 15 cm+ area after its last part instead of strips (28 Sep 2026); 10: **bold** in question text + part figures stored as a JSON list (26 Sep 2026); 9: optional section heading above a question (H2 Paper 2's Section A / B, 26 Sep 2026); 8: no coverage banner on the printed paper or answers (26 Sep 2026); 7: figure caps 80/100 mm wide, 80 mm tall (21 Sep 2026, second pass); 6: figures shrink in proportion and cap at 110/130 mm (21 Sep 2026); 5: marks beside the last line, no parent total over marked sub-parts (13 Sep 2026)
+export const PAPER_PDF_RENDER_VERSION = 16;   // 16: a grid prints after the part that asks for the graph; a table-of-values array prints as a table (29 Sep 2026); 15: a question's own figure width (gen_meta.figure.width_mm) (29 Sep 2026); 14: "Mark scheme for (c):" dropped too (29 Sep 2026); 13: a Mark scheme or Alternative line mid-paragraph is handled too (29 Sep 2026); 12: solutions read cleanly — mark notes shrink to codes, no Mark scheme paragraph, Another way boxed (29 Sep 2026); 11: answer key in black, a grid at its true printed width, a construction question gets one 15 cm+ area after its last part instead of strips (28 Sep 2026); 10: **bold** in question text + part figures stored as a JSON list (26 Sep 2026); 9: optional section heading above a question (H2 Paper 2's Section A / B, 26 Sep 2026); 8: no coverage banner on the printed paper or answers (26 Sep 2026); 7: figure caps 80/100 mm wide, 80 mm tall (21 Sep 2026, second pass); 6: figures shrink in proportion and cap at 110/130 mm (21 Sep 2026); 5: marks beside the last line, no parent total over marked sub-parts (13 Sep 2026)
 
 export interface PaperPdfQuestion {
   /** Printed question number (original or resequenced by the caller). */
@@ -115,13 +115,38 @@ function esc(s: string): string {
 /** esc() + markdown bold: the bank writes emphasis as **part (a)** / **not**, which
  *  printed with its asterisks (GCE 2023 EM P1 Q3(b), 26 Sep 2026). Only a same-line
  *  **…** pair becomes bold; a lone ** stays as typed. */
+/** A table of values written as a TeX array — "$\\begin{array}{|c|c|} \\hline x & 1 \\\\ \\hline y & 6.5 \\\\ \\hline \\end{array}$"
+ *  — printed as a real table at text size (29 Sep 2026, E Math Set 1 P2 Q3: the array
+ *  came out tiny under the grid). Each cell stays maths ($…$) for the auto-render.
+ *  Returns null when the text is not exactly one such array. Pure. */
+export function arrayTable(tex: string): string[][] | null {
+  const m = tex.trim().match(/^\$\s*\\begin\{array\}\{[^}]*\}([\s\S]*?)\\end\{array\}\s*\$$/);
+  if (!m) return null;
+  const rows = m[1].replace(/\\hline/g, '').split(/\\\\/).map((r) => r.trim()).filter(Boolean)
+    .map((r) => r.split('&').map((c) => c.trim()));
+  return rows.length && rows.every((r) => r.length === rows[0].length) ? rows : null;
+}
+
+function arrayTableHtml(rows: string[][]): string {
+  return '<table class="pp-table pp-values"><tbody>' + rows.map((r) => '<tr>' + r.map((c, i) =>
+    `<${i === 0 ? 'th' : 'td'}>${c ? esc(`$${c}$`) : ''}</${i === 0 ? 'th' : 'td'}>`).join('') + '</tr>').join('') + '</tbody></table>';
+}
+
+/** Text with any table-of-values arrays (one per line) printed as tables. */
+function withArrayTables(text: string): string {
+  return text.split('\n').map((line) => {
+    const rows = arrayTable(line);
+    return rows ? arrayTableHtml(rows) : escBold(line);
+  }).join('\n');
+}
+
 function escBold(s: string): string {
   return esc(s).replace(/\*\*([^*\n]+?)\*\*/g, '<strong>$1</strong>');
 }
 
 export function richText(s: string): string {
   return splitPipeTables(s).map((b) => {
-    if (b.kind === 'text') return escBold(b.text);
+    if (b.kind === 'text') return withArrayTables(b.text);
     const [head, ...rest] = b.rows;
     return '<table class="pp-table"><thead><tr>' + head.map((c) => `<th>${escBold(c)}</th>`).join('') + '</tr></thead>' +
       (rest.length
@@ -171,12 +196,18 @@ function flatPartTexts(parts: Part[]): string[] {
   return parts.flatMap((p) => [p.text ?? '', ...flatPartTexts(p.subparts ?? [])]);
 }
 
+/** The top-level part that asks for the graph on the printed grid, or -1. Pure. */
+export function gridPartIndex(parts: Part[]): number {
+  return parts.findIndex((p) => /\b(on the grid|on the graph paper|graph paper|on the axes)\b/i.test(flatPartTexts([p]).join(' ')));
+}
+
 function partsCarryMarks(parts: Part[]): boolean {
   return parts.some((p) => !!p.marks || partsCarryMarks(p.subparts ?? []));
 }
 
 function questionHtml(q: PaperPdfQuestion, workingSpace: boolean): string {
-  const figures = q.images.map((u) => img(u, q.uncappedFigures === true, q.figureWidthMm ?? null)).join('');
+  const gridInPart = q.uncappedFigures === true && q.images.length === 1 && gridPartIndex(q.parts) >= 0;
+  const figures = gridInPart ? '' : q.images.map((u) => img(u, q.uncappedFigures === true, q.figureWidthMm ?? null)).join('');
   const hole = q.missingFigure
     ? '<div class="pp-missing-figure">[ figure referenced by this question is not in the bank ]</div>'
     : '';
@@ -189,7 +220,14 @@ function questionHtml(q: PaperPdfQuestion, workingSpace: boolean): string {
   // drawn there and the later parts build on it), never a strip under each part —
   // and no less than a 15 cm block (Adrian, 28 Sep 2026, E Math Set 1 P1 Q7).
   const construction = workingSpace && isConstructionQuestion(q.stem, flatPartTexts(q.parts));
-  const parts = q.parts.map((p) => partHtml(p, workingSpace && !construction, q.uncappedFigures === true)).join('');
+  // A graph-paper grid prints AFTER the part that asks for the graph ("On the grid,
+  // draw …"), where it is that part's working space — never above part (a)'s table
+  // (29 Sep 2026, E Math Set 1 P2 Q3; the Word export already did this).
+  const gridAt = q.uncappedFigures && q.images.length === 1 ? gridPartIndex(q.parts) : -1;
+  const partsForHtml = gridAt >= 0
+    ? q.parts.map((p, i) => (i === gridAt ? { ...p, image_url_after: q.images[0] } : p))
+    : q.parts;
+  const parts = partsForHtml.map((p) => partHtml(p, workingSpace && !construction, q.uncappedFigures === true)).join('');
   const stemSpace = workingSpace && !inParts && !construction ? spacer(q.marks) : '';
   const constructionSpace = construction ? `<div class="pp-space" style="height:${constructionSpaceMm(q.marks)}mm"></div>` : '';
   // Stem first, then figures: stems say "the diagram below shows…". The
@@ -272,6 +310,7 @@ ${katexInlineHead()}
   .pp-table{white-space:normal;border-collapse:collapse;margin:4pt 0;break-inside:avoid}
   .pp-table th,.pp-table td{border:0.75pt solid #444;padding:2pt 8pt;text-align:center}
   .pp-table th{font-weight:700}
+  .pp-values td,.pp-values th{padding:3pt 9pt;min-width:22pt}
   .pp-part{margin-top:4pt}
   .pp-part .pp-part{margin-left:15pt}
   .pp-part-text{white-space:pre-wrap;break-inside:avoid;display:flex;justify-content:space-between;align-items:flex-end;gap:8pt}

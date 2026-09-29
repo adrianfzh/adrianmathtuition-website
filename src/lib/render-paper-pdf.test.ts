@@ -58,3 +58,25 @@ describe('richText bold', () => {
     expect(richText('2 ** 3')).toBe('2 ** 3');
   });
 });
+
+describe('graph questions (29 Sep 2026)', () => {
+  it('reads a table-of-values array into rows', async () => {
+    const { arrayTable } = await import('./render-paper-pdf');
+    expect(arrayTable('$\\begin{array}{|c|c|c|} \\hline x & 1 & 1.5 \\\\ \\hline y & 6.5 & \\\\ \\hline \\end{array}$'))
+      .toEqual([['x', '1', '1.5'], ['y', '6.5', '']]);
+    expect(arrayTable('$x^2$')).toBeNull();
+  });
+  it('finds the part that asks for the graph on the grid', async () => {
+    const { gridPartIndex } = await import('./render-paper-pdf');
+    expect(gridPartIndex([{ text: 'Complete the table' }, { text: 'On the grid, draw the graph' }] as never)).toBe(1);
+    expect(gridPartIndex([{ text: 'Find x' }] as never)).toBe(-1);
+  });
+  it('prints the grid after that part, not above the question', () => {
+    const html = buildPaperHTML({ title: 't', metaLine: 'm', workingSpace: true, answerKey: false, questions: [{
+      qnum: '3', marks: 4, stem: '', images: ['https://x/grid.png'], missingFigure: false, uncappedFigures: true, answerLines: [],
+      parts: [{ label: 'a', text: 'Complete the table', marks: 1 }, { label: 'b', text: 'On the grid, draw the graph', marks: 3 }],
+    }] } as never);
+    const a = html.indexOf('Complete the table'), b = html.indexOf('On the grid'), g = html.indexOf('grid.png');
+    expect(a).toBeLessThan(b); expect(b).toBeLessThan(g);
+  });
+});
