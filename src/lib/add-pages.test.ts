@@ -42,12 +42,15 @@ describe('canAddPagesAfterMarking — phase 3', () => {
     expect(canAddPagesAfterMarking({ ...marked, released_at: '2026-09-01T10:00:00Z' }, NOW)).toBe(false);
   });
   it('not while it is being updated, once re-marked, or if its photos were split', () => {
-    expect(canAddPagesAfterMarking({ ...marked, result_json: { ...marked.result_json, queue: { pages_added: 1 } } }, NOW)).toBe(false);
+    expect(canAddPagesAfterMarking({ ...marked, queue_status: 'queued', result_json: { ...marked.result_json, queue: { pages_added: 1 } } }, NOW)).toBe(false);
+    // Regression (30 Sep 2026): every marked run keeps its old queue record — 'done' is not busy.
+    expect(canAddPagesAfterMarking({ ...marked, queue_status: 'done', result_json: { ...marked.result_json, queue: { queued_at: 'x' } } }, NOW)).toBe(true);
     expect(canAddPagesAfterMarking({ ...marked, superseded_by: 'r2' }, NOW)).toBe(false);
     expect(canAddPagesAfterMarking({ ...marked, result_json: { ...marked.result_json, annotated_photos: photos(9) } }, NOW)).toBe(false);
   });
   it('pagesBeingAdded reads the queue flag', () => {
-    expect(pagesBeingAdded({ queue: { pages_added: 2 } })).toBe(true);
-    expect(pagesBeingAdded({ queue: {} })).toBe(false);
+    expect(pagesBeingAdded({ queue: { pages_added: 2 } }, 'queued')).toBe(true);
+    expect(pagesBeingAdded({ queue: { pages_added: 2 } }, 'done')).toBe(false);
+    expect(pagesBeingAdded({ queue: {} }, 'queued')).toBe(false);
   });
 });

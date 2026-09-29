@@ -61,7 +61,7 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
   const isAdmin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value) && !(await viewingAsStudent());
   const account: Awaited<ReturnType<typeof currentAccount>> | null = isAdmin ? null : await currentAccount();
   const sb = getSupabaseAdmin();
-  let q = sb.from('paper_marking_runs').select(COLUMNS + ', student_id').eq('id', id).not('released_at', 'is', null);
+  let q = sb.from('paper_marking_runs').select(COLUMNS + ', student_id, queue_status').eq('id', id).not('released_at', 'is', null);
   if (!isAdmin) q = q.eq('student_id', portalIdentity(account!));
   const { data: row } = await q.maybeSingle();
   if (!row) notFound();
@@ -226,7 +226,7 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
 
       {/* ➕ Pages added after marking (29 Sep 2026, SPEC-HANDIN-COMPLETENESS phase 3): while
           only the new pages are being marked, say so; otherwise offer the door, for 14 days. */}
-      {pagesBeingAdded((row as { result_json?: unknown }).result_json) ? (
+      {pagesBeingAdded((row as { result_json?: unknown }).result_json, (row as { queue_status?: string | null }).queue_status) ? (
         <p className="text-xs text-teal-900 bg-teal-50 border border-teal-200 rounded-2xl px-3 py-2">
           <span className="font-semibold">➕ Your added pages are being marked.</span> Your paper updates here when they&apos;re done — usually within the hour.
         </p>
