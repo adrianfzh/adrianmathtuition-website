@@ -41,7 +41,8 @@ export async function POST(req: Request) {
   if (!run || run.student_id !== studentId || !run.portal_submission) {
     return NextResponse.json({ error: "We couldn't find that paper." }, { status: 404 });
   }
-  if (run.released_at) return NextResponse.json({ error: 'This paper has already been marked.' }, { status: 409 });
+  // A released paper takes pages as a page re-mark (phase 3) — the bot decides; no hold needed.
+  if (run.released_at && action === 'hold') return NextResponse.json({ ok: true, hold_until: null });
 
   let photos: { original_url: string }[] = [];
   if (action === 'add') {

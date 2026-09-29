@@ -4,6 +4,7 @@
 // the sheet written from it, then the PDF for anyone who wants the file.
 // Same access rule as the list: the logged-in student's own released run.
 import Link from 'next/link';
+import { canAddPagesAfterMarking, pagesBeingAdded, type MarkedRow } from '@/lib/add-pages';
 import { notFound, redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { cookies } from 'next/headers';
@@ -219,6 +220,20 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
           <span className="font-semibold">{paper.notice.title}.</span> {paper.notice.body}
         </p>
       )}
+
+      {/* ➕ Pages added after marking (29 Sep 2026, SPEC-HANDIN-COMPLETENESS phase 3): while
+          only the new pages are being marked, say so; otherwise offer the door, for 14 days. */}
+      {pagesBeingAdded((row as { result_json?: unknown }).result_json) ? (
+        <p className="text-xs text-teal-900 bg-teal-50 border border-teal-200 rounded-2xl px-3 py-2">
+          <span className="font-semibold">➕ Your added pages are being marked.</span> Your paper updates here when they&apos;re done — usually within the hour.
+        </p>
+      ) : !isAdmin && canAddPagesAfterMarking(row as unknown as MarkedRow) ? (
+        <p className="text-xs text-gray-600">
+          Missing a page?{' '}
+          <a href={`${isScience ? '/app/science/submit' : '/app/submit'}?addTo=${id}`} className="font-semibold text-navy underline underline-offset-2">➕ Add missing pages</a>
+          {' '}— only the new pages are marked; the rest keeps its marking.
+        </p>
+      ) : null}
 
       {/* 📘 Practice Again sits at the TOP (18 Sep 2026, Adrian: "put the request for practice again at the
           top, instead of the end") — the sheet's status and doors when one exists, else the Request button. */}

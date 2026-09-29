@@ -36,6 +36,35 @@ export function canAddPages(row: AddableRow, now: number = Date.now()): boolean 
   return true;
 }
 
+/** Pages may be added this many days after a paper comes back (bot lib/add-pages ADD_AFTER_DAYS). */
+export const ADD_AFTER_DAYS = 14;
+
+export interface MarkedRow extends AddableRow {
+  superseded_by?: string | null;
+}
+
+/**
+ * ➕ After marking (phase 3): show "Add missing pages" on a RELEASED paper — within
+ * 14 days, not re-marked since, not already being updated, and not a paper whose
+ * photos were split when marked. The bot decides again when the pages arrive.
+ */
+export function canAddPagesAfterMarking(row: MarkedRow, now: number = Date.now()): boolean {
+  if (!row || row.total_max == null || !row.released_at || row.superseded_by) return false;
+  const rj = (row.result_json || {}) as Record<string, any>;
+  if (rj.queue) return false;
+  const rel = Date.parse(row.released_at);
+  if (Number.isFinite(rel) && now - rel > ADD_AFTER_DAYS * 86_400_000) return false;
+  const photos = Array.isArray(rj.source?.photos) ? rj.source.photos.length : 0;
+  const drawn = Array.isArray(rj.annotated_photos) ? rj.annotated_photos.length : photos;
+  return photos > 0 && photos < ADD_PAGES_MAX && drawn === photos;
+}
+
+/** A released paper whose added pages are being marked right now. */
+export function pagesBeingAdded(resultJson: unknown): boolean {
+  const q = (resultJson as { queue?: { pages_added?: unknown } } | null)?.queue;
+  return !!(q && Number(q.pages_added) > 0);
+}
+
 /**
  * Is this upload URL the student's own hand-in file? The submit-token route pins
  * every key under handins/<identity>/ (private store) or, for legacy Blob,

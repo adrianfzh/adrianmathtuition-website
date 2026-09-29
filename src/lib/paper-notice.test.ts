@@ -74,3 +74,10 @@ describe('marks-recalibrated (29 Sep 2026)', () => {
     expect(parseNoticeKind('marks-recalibrated')).toBe('marks-recalibrated');
   });
 });
+
+describe('pages-added notice', () => {
+  it('is a notice kind with its own words', () => {
+    expect(parseNoticeKind('pages-added')).toBe('pages-added');
+    expect(buildPaperNotice('pages-added').kind).toBe('pages-added');
+  });
+});

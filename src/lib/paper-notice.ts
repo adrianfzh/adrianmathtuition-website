@@ -36,7 +36,7 @@
  * on the card the student cannot check against anything else, so the reason has
  * to be the reason: a new kind, not the nearest existing one.
  */
-export type PaperNoticeKind = 'pages-recovered' | 'marks-realigned' | 'marks-recalibrated';
+export type PaperNoticeKind = 'pages-recovered' | 'marks-realigned' | 'marks-recalibrated' | 'pages-added';
 
 export type PaperNotice = {
   kind: PaperNoticeKind;
@@ -86,10 +86,17 @@ const TEXT: Record<PaperNoticeKind, PaperNoticeText> = {
     title: 'Your marks have been recalibrated',
     body: "The total for this paper has been corrected. Your updated copy is here.",
   },
+  // ➕ The student added pages after the paper came back (29 Sep 2026, SPEC-HANDIN-
+  // COMPLETENESS phase 3): only those pages were marked; the rest kept its marking.
+  'pages-added': {
+    kind: 'pages-added',
+    title: 'Your added pages are marked',
+    body: 'The pages you added are marked and your paper is updated — the new total is on the cover.',
+  },
 };
 
 function isKind(v: unknown): v is PaperNoticeKind {
-  return v === 'pages-recovered' || v === 'marks-realigned' || v === 'marks-recalibrated';
+  return v === 'pages-recovered' || v === 'marks-realigned' || v === 'marks-recalibrated' || v === 'pages-added';
 }
 
 /** The stamp to write on `result_json.student_notice`. */

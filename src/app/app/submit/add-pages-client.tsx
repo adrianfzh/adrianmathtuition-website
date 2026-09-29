@@ -20,8 +20,10 @@ const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 type Page = { file: File; preview: string | null };
 type Finding = { kind: string; message: string };
 
-export default function AddPagesClient({ runId, title, pagesNow, backHref }: {
+export default function AddPagesClient({ runId, title, pagesNow, backHref, afterMarking = false }: {
   runId: string; title: string; pagesNow: number; backHref: string;
+  /** The paper is already marked: only the new pages are marked, then it is updated (phase 3). */
+  afterMarking?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const uploaded = useRef(new Map<number, string>());
@@ -29,7 +31,7 @@ export default function AddPagesClient({ runId, title, pagesNow, backHref }: {
   const [busy, setBusy] = useState(false);
   const [stage, setStage] = useState('');
   const [error, setError] = useState('');
-  const [done, setDone] = useState<{ total: number; added: number; reordered: boolean; findings: Finding[] } | null>(null);
+  const [done, setDone] = useState<{ total: number; added: number; reordered: boolean; findings: Finding[]; remark: boolean } | null>(null);
   const room = Math.max(0, 30 - pagesNow);
 
   async function onPick(list: FileList | null) {
@@ -82,7 +84,7 @@ export default function AddPagesClient({ runId, title, pagesNow, backHref }: {
         throw new Error(d.error || 'The pages could not be added — tap Add again.');
       }
       pages.forEach(p => { if (p.preview) URL.revokeObjectURL(p.preview); });
-      setDone({ total: d.total, added: d.added, reordered: !!d.reordered, findings: Array.isArray(d.findings) ? d.findings : [] });
+      setDone({ total: d.total, added: d.added, reordered: !!d.reordered, findings: Array.isArray(d.findings) ? d.findings : [], remark: d.mode === 'remark' });
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -98,7 +100,9 @@ export default function AddPagesClient({ runId, title, pagesNow, backHref }: {
           <p className="text-4xl">✅</p>
           <p className="font-bold text-navy mt-2">{done.added} page{done.added === 1 ? '' : 's'} added to “{title}”</p>
           <p className="text-sm text-gray-600 mt-1.5">
-            It now has {done.total} pages{done.reordered ? ', put in question order' : ''}, and it will be marked with all of them.
+            {done.remark
+              ? <>The new pages are being marked now — the rest of your paper keeps its marking. It updates here when they&apos;re done, usually within the hour.</>
+              : <>It now has {done.total} pages{done.reordered ? ', put in question order' : ''}, and it will be marked with all of them.</>}
           </p>
           {done.findings.length > 0 && (
             <div className="mt-3 text-left text-sm bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5 text-amber-900">
@@ -119,15 +123,19 @@ export default function AddPagesClient({ runId, title, pagesNow, backHref }: {
     <div className="space-y-4 pb-24 sm:pb-4">
       <div className="pt-1">
         <Link href={backHref} className="text-sm text-gray-500 hover:text-navy">← Back</Link>
-        <h1 className="text-xl font-bold text-navy mt-1">➕ Add pages: {title}</h1>
+        <h1 className="text-xl font-bold text-navy mt-1">➕ {afterMarking ? 'Add missing pages' : 'Add pages'}: {title}</h1>
         <p className="text-[13px] text-gray-500 mt-0.5">
-          It has {pagesNow} page{pagesNow === 1 ? '' : 's'} so far. Add the ones you missed — in any order: we put the whole paper back in question order before it is marked.
+          {afterMarking
+            ? <>Your paper is marked. Add the pages that were missing — only they are marked, and the rest of your paper keeps its marking.</>
+            : <>It has {pagesNow} page{pagesNow === 1 ? '' : 's'} so far. Add the ones you missed — in any order: we put the whole paper back in question order before it is marked.</>}
         </p>
       </div>
       <div className={`${CARD} p-4 space-y-3`}>
-        <p className="text-[13px] text-teal-800 bg-teal-50 border border-teal-200 rounded-xl px-3 py-2">
-          ⏸ This paper waits for you for the next 10 minutes, so marking won&apos;t start before your pages are in.
-        </p>
+        {!afterMarking && (
+          <p className="text-[13px] text-teal-800 bg-teal-50 border border-teal-200 rounded-xl px-3 py-2">
+            ⏸ This paper waits for you for the next 10 minutes, so marking won&apos;t start before your pages are in.
+          </p>
+        )}
         <button
           onClick={() => inputRef.current?.click()} disabled={busy || !room}
           className="w-full rounded-2xl border-2 border-dashed border-gray-300 bg-[hsl(45,100%,98%)] py-8 text-center active:bg-amber-50"
