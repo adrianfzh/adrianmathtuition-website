@@ -28,6 +28,7 @@
 //
 // Env: SUPABASE_URL + SUPABASE_SECRET_KEY (.env.local), else the bot repo's
 // .env SUPABASE_SERVICE_KEY_MAIN — same fallback as generate.mjs. Never printed.
+import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { existsSync, readFileSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
@@ -181,9 +182,14 @@ for (const p of plan) {
   const q = s.question;
   let figureUrl = null;
   if (p.png) {
-    const { error } = await sb.storage.from(BUCKET).upload(p.storagePath, readFileSync(p.png), { contentType: 'image/png', upsert: true });
+    const bytes = readFileSync(p.png);
+    const { error } = await sb.storage.from(BUCKET).upload(p.storagePath, bytes, { contentType: 'image/png', upsert: true });
     if (error) { console.error(`Q${p.pos} figure upload failed: ${error.message}`); process.exit(1); }
-    figureUrl = `${env.SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${p.storagePath}`;
+    // The address carries the picture's fingerprint (29 Sep 2026, Adrian: "the image is
+    // the same?" after Q4 was redrawn): the file is overwritten in place, so without
+    // it a browser, and every cached paper PDF keyed on the URL, kept the old figure.
+    const v = createHash('sha256').update(bytes).digest('hex').slice(0, 10);
+    figureUrl = `${env.SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${p.storagePath}?v=${v}`;
   }
   const topics = Array.isArray(q.topics) && q.topics.length ? q.topics : [s.topic];
   const row = {

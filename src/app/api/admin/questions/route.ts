@@ -326,7 +326,13 @@ export async function GET(req: NextRequest) {
     let pq = supa.from('paper_index').select('*');
     if (level) pq = pq.eq('level', level);
     if (year) pq = pq.eq('year', Number(year));
-    if (filter) pq = pq.ilike('school', `%${filter.replace(/[%_]/g, '')}%`);
+    // Word by word (29 Sep 2026, the shared search box): a four-digit word is the year
+    // when no year was picked, every other word must appear in the school's name —
+    // so "crescent 2024" and "adrian" both find their papers.
+    for (const w of filter.split(/\s+/).map(x => x.replace(/[%_,]/g, '')).filter(Boolean)) {
+      if (/^(19|20)\d{2}$/.test(w) && !year) pq = pq.eq('year', Number(w));
+      else pq = pq.ilike('school', `%${w}%`);
+    }
     const { data, error } = await pq.order('year', { ascending: false }).order('school').limit(1000);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const papers = ((data ?? []) as Row[]).map(r => {

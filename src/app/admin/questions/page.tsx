@@ -244,13 +244,21 @@ export default function QuestionBankPage() {
     finally { setLoading(false); }
   }, [query, level, year, school, mode, cacheCards]);
 
+  // The search box is shared by both tabs (Adrian, 29 Sep 2026: "when i type in
+  // search box, then switch to papers tab, can whatever i typed still remain in
+  // search box?"). On Papers it narrows the list by school / paper name. Read
+  // through a ref so typing does not refetch the list on every key — Enter or Go
+  // (or switching to the tab) does.
+  const queryRef = useRef(query);
+  queryRef.current = query;
   const loadPapers = useCallback(async () => {
     setLoading(true); setApiError('');
     try {
       const p = new URLSearchParams({ papers: '1' });
       if (level) p.set('level', level);
       if (year) p.set('year', year);
-      if (school) p.set('q', school);
+      const q = [school, queryRef.current].map(x => x.trim()).filter(Boolean).join(' ');
+      if (q) p.set('q', q);
       const r = await fetch(`/api/admin/questions?${p}`);
       const d = await r.json();
       if (d.error) { setApiError(d.error); return; }
@@ -947,20 +955,21 @@ export default function QuestionBankPage() {
       </header>
 
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-        {tab === 'search' && (
-          <div style={{ flex: '1 1 100%', display: 'flex', gap: 6 }}>
-            <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && search(0)}
-              placeholder={dragging ? 'Drop the photo here' : mode === 'smart' ? 'Describe the question — "ladder against wall trig"…' : 'Search question text or school… or drop / paste a photo'} inputMode="search"
+        <div style={{ flex: '1 1 100%', display: 'flex', gap: 6 }}>
+            <input value={query} onChange={e => setQuery(e.target.value)}
+              onKeyDown={e => { if (e.key !== 'Enter') return; if (tab === 'search') search(0); else { setPaperView(null); loadPapers(); } }}
+              placeholder={tab === 'papers' ? 'Filter papers by school or name — "adrian", "Crescent 2024"…' : dragging ? 'Drop the photo here' : mode === 'smart' ? 'Describe the question — "ladder against wall trig"…' : 'Search question text or school… or drop / paste a photo'} inputMode="search"
               style={{ flex: 1, padding: '10px 12px', fontSize: 16, borderRadius: 10,
                 border: dragging ? `2px dashed ${C.navy}` : `1px solid ${C.border}`, background: dragging ? 'rgba(20,41,82,0.05)' : '#fff' }} />
-            <button onClick={() => cameraRef.current?.click()} disabled={ocrBusy} title="Snap a question to find it"
-              style={{ padding: '0 12px', fontSize: 18, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 10, cursor: 'pointer' }}>
-              {ocrBusy ? '…' : '📷'}
-            </button>
+            {tab === 'search' && (
+              <button onClick={() => cameraRef.current?.click()} disabled={ocrBusy} title="Snap a question to find it"
+                style={{ padding: '0 12px', fontSize: 18, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 10, cursor: 'pointer' }}>
+                {ocrBusy ? '…' : '📷'}
+              </button>
+            )}
             <input ref={cameraRef} type="file" accept="image/*" capture="environment" hidden
               onChange={e => onPhotoPicked(e.target.files?.[0] ?? null)} />
           </div>
-        )}
         {tab === 'search' && (
           <div style={{ display: 'flex', gap: 4 }}>
             {(['text', 'smart'] as const).map(m => (
