@@ -13,6 +13,7 @@
 // folder that cannot be listed comes back as `amended.status: 'unknown'` and
 // the page says so instead of guessing.
 import { NextRequest, NextResponse } from 'next/server';
+import { handinCheckLine } from '@/lib/handin-check';
 import { coveredRunIds } from '@/lib/sheet-queue';
 import { remarkDiff, plainMath } from '@/lib/remark-diff';
 import { isRemarkInternal } from '@/lib/remark-internal';
@@ -277,6 +278,8 @@ export async function GET(req: NextRequest) {
           })(),
         };
       })(),
+      // ⚠️ / ✋ from the hand-in check (lib/handin-check, 29 Sep 2026).
+      handinCheck: handinCheckLine((rj as { handin_check?: unknown } | null)?.handin_check),
       unattempted: Array.isArray((rj as { unattempted_questions?: unknown } | null)?.unattempted_questions)
         ? ((rj as { unattempted_questions: unknown[] }).unattempted_questions).map(String) : [],
       portalSubmission: (rj as { portal_submission?: unknown } | null)?.portal_submission === true,

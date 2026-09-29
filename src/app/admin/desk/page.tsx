@@ -79,7 +79,7 @@ type Detail = {
     awarded: number; max: number; totalQuestions: number;
     releasedAt: string | null; releasedVia: string | null; archivedAt: string | null; checkedAt: string | null;
     pdfUrl: string | null; annotatedPdfUrl: string | null; photosPdfUrl: string | null;
-    pdfStale: boolean; grounding: string | null; groundingAttachedBy?: string | null; unattempted: string[]; portalSubmission: boolean; practiceAgain?: boolean; origin?: HandinOrigin;
+    pdfStale: boolean; grounding: string | null; groundingAttachedBy?: string | null; unattempted: string[]; handinCheck?: string | null; portalSubmission: boolean; practiceAgain?: boolean; origin?: HandinOrigin;
     paperMatch: PaperMatch | null;
     remarking: boolean; remarkPages: number[];
     remark: RemarkPanel | null;
@@ -1511,6 +1511,9 @@ function DetailView(p: {
                 ? <>⏸ Not auto-released{d.autoRelease.note ? `: ${d.autoRelease.note}` : ''} — re-mark, then release.</>
                 : <>⏸ Automatic release refused{d.autoRelease.note ? `: ${d.autoRelease.note}` : ''} — release from here when it is right.</>}
           </div>
+        )}
+        {run.handinCheck && (
+          <div style={{ marginTop: 8, fontSize: 12.5, color: run.handinCheck.startsWith('⚠️') ? '#b45309' : C.muted, fontWeight: 600 }}>{run.handinCheck}</div>
         )}
         {run.unattempted.length > 0 && (
           <div style={{ marginTop: 8, fontSize: 12.5, color: C.muted }}>Not attempted: {run.unattempted.map(n => `Q${n}`).join(', ')}</div>

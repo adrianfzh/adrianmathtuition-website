@@ -24,6 +24,7 @@ import { NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { ownsHandinUrl } from '@/lib/add-pages';
+import { handinCheckStamp } from '@/lib/handin-check';
 import { DAILY_SUBMIT_CAP, DAILY_SCIENCE_SUBMIT_CAP, countHandinsToday } from '@/lib/portal-submit-limit';
 import type { HandinCountingClient, HandinFamily } from '@/lib/portal-submit-limit';
 import { scienceQueuePlacement } from '@/lib/science-queue-store';
@@ -50,7 +51,7 @@ import {
 } from '@/lib/portal-passes';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 90;
 
 const MAX_PAGES = 30;   // was 20 — raised 26 Sep 2026 (a student hit it with an A Math paper + its cover page); the bot mirror is lib/handin.js
 
@@ -84,7 +85,7 @@ export async function POST(req: Request) {
   if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
   const meteredPass = access.pass; // null for tuition accounts
 
-  let body: { photoUrls?: unknown; paperName?: unknown; assignmentId?: unknown; paperId?: unknown; confirmed?: boolean; subject?: unknown; family?: unknown; schemeUrls?: unknown };
+  let body: { photoUrls?: unknown; paperName?: unknown; assignmentId?: unknown; paperId?: unknown; confirmed?: boolean; subject?: unknown; family?: unknown; schemeUrls?: unknown; handinCheck?: { asked?: unknown; list?: unknown; key?: unknown }; handinAnswer?: unknown };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const admin = getSupabaseAdmin();
 
@@ -295,15 +296,29 @@ export async function POST(req: Request) {
   // reading the warning, and it always goes through. A checker that can refuse a
   // hand-in is worse than the gap it catches — the paper gets marked with a
   // missing page either way, but a refused hand-in never arrives at all.
+  let preflightResult: { list?: unknown; key?: unknown; missing?: unknown } | null = null;
   if (!body.confirmed) {
-    // 25 s at most (29 Sep 2026): the check reads every page, and this route has
-    // 60 s in all — a slow read must never cost the student their hand-in, so a
-    // timeout is simply "no findings", like every other pre-flight failure.
-    const pre = await bot({ phase: 'preflight', source: { photos: photoUrls.map(u => ({ original_url: u })) } }, 25_000).catch(() => ({}));
+    // 40 s at most (29 Sep 2026): the check reads every page (in parallel batches,
+    // ~15 s for 15 pages), and this route has 90 s in all — a slow read must never
+    // cost the student their hand-in, so a timeout is simply "no findings".
+    // meta (29 Sep 2026, SPEC-HANDIN-COMPLETENESS): the paper's name + the student's
+    // name let the bot find the paper's own list of parts in the bank; a printed Set
+    // brings its questions; a worksheet from Adrian / Practice Again is never checked
+    // for missing exam parts.
+    const pre = await bot({
+      phase: 'preflight',
+      source: { photos: photoUrls.map(u => ({ original_url: u })) },
+      meta: {
+        paperName, studentName: account.display_name || '', subject: scienceSubject || 'math',
+        assignment: !!assignment,
+        ...(printedPaper && Array.isArray(printedPaper.question_ids) ? { questionIds: printedPaper.question_ids } : {}),
+      },
+    }, 40_000).catch(() => ({}));
     const findings = Array.isArray(pre?.findings) ? pre.findings : [];
     if (findings.some((f: { blocking?: boolean }) => f?.blocking)) {
-      return NextResponse.json({ needsConfirm: true, findings }, { status: 409 });
+      return NextResponse.json({ needsConfirm: true, findings, list: pre?.list ?? 'none', key: pre?.key ?? null }, { status: 409 });
     }
+    preflightResult = pre && typeof pre === 'object' ? pre : null;
   }
 
   // THE GATE (lib/mark-subject-for-student). The client picker is only UX; the
@@ -380,6 +395,11 @@ export async function POST(req: Request) {
         // the printed sheet, in order — the marker can ground on their stored
         // solutions instead of working out what each question even is.
         ...(printedPaper ? { generated_paper_id: printedPaper.id, generated_question_ids: printedPaper.question_ids } : {}),
+        // What the pre-flight found and what the student answered (lib/handin-check).
+        ...(() => {
+          const stamp = handinCheckStamp({ at: new Date().toISOString(), preflight: body.confirmed ? null : preflightResult, check: body.handinCheck ?? null, answer: body.handinAnswer });
+          return stamp ? { handin_check: stamp } : {};
+        })(),
       },
     }).eq('id', runId);
   } catch (e) {

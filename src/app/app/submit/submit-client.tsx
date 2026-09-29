@@ -133,7 +133,11 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   const [error, setError] = useState('');
   // What the pre-flight found wrong with the hand-in. Shown once; sending again
   // goes through regardless (see the route — this is advice, never a gate).
-  const [findings, setFindings] = useState<{ kind: string; message: string; blocking?: boolean }[]>([]);
+  const [findings, setFindings] = useState<{ kind: string; message: string; blocking?: boolean; missing?: unknown }[]>([]);
+  // What the check asked about the first time (SPEC-HANDIN-COMPLETENESS ④) — echoed
+  // back on the final send so the run records it (lib/handin-check).
+  const [askedCheck, setAskedCheck] = useState<{ asked: unknown; list?: unknown; key?: unknown } | null>(null);
+  const missingAsk = findings.find(f => f.kind === 'missing-questions') || null;
   const [doneRunId, setDoneRunId] = useState<string | null>(null);
   const [queuedFor, setQueuedFor] = useState<string | null>(null);
   // Pages that already reached Blob, kept across a failed attempt so tapping Send
@@ -218,6 +222,8 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
       }
     }
     if (splits) setSplitNote(`✂️ Split ${splits} two-page photo${splits > 1 ? 's' : ''} into single pages for you`);
+    // More pages after the check asked → the next send checks again (the ➕ Add the pages path).
+    if (added.length) setFindings([]);
     setPages(prev => {
       const merged = [...prev, ...added];
       const dropped = merged.length - MAX_PAGES;
@@ -246,7 +252,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
     });
   }
 
-  async function submit(confirmed = false) {
+  async function submit(confirmed = false, answer: 'not-done' | 'sent-anyway' | null = null) {
     if (!pages.length || busy) return;
     if (!paperName.trim()) { setError('Tell us which paper this is before sending.'); return; }
     if (isScience && !subject) { setError('Pick the subject — physics, chemistry or biology — before sending.'); return; }
@@ -316,11 +322,12 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         // The answers or scheme the student attached, either family — grounds
         // THIS paper only (the route stamps attached_by:'student').
         ...(schemeUrls.length ? { schemeUrls } : {}),
-        ...(confirmed ? { confirmed: true } : {}),
+        ...(confirmed ? { confirmed: true, handinAnswer: answer ?? 'sent-anyway' } : {}),
+        ...(askedCheck ? { handinCheck: askedCheck } : {}),
         ...(assignment ? { assignmentId: assignment.id } : {}),
         ...(paper ? { paperId: paper.id } : {}),
       });
-      let r: Response | null = null, d: { error?: string; runId?: string; queuedFor?: string; findings?: { kind: string; message: string; blocking?: boolean }[] } = {};
+      let r: Response | null = null, d: { error?: string; runId?: string; queuedFor?: string; findings?: { kind: string; message: string; blocking?: boolean; missing?: unknown }[]; list?: unknown; key?: unknown } = {};
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
           if (attempt > 1) setStage(`Sending to Adrian… (try ${attempt} of 3)`);
@@ -340,6 +347,8 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
       // their pages stay uploaded, so sending again costs nothing.
       if (r.status === 409 && Array.isArray(d.findings)) {
         setFindings(d.findings);
+        const mq = d.findings.find(f => f.kind === 'missing-questions');
+        if (mq && !askedCheck) setAskedCheck({ asked: mq.missing, list: d.list, key: d.key });
         setStage('');
         return;
       }
@@ -691,18 +700,27 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
             <p className="text-[11px] text-amber-700">
               Your photos are already uploaded — adding a page won&apos;t re-send them.
             </p>
+            {missingAsk && (
+              <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                <button type="button" onClick={() => inputRef.current?.click()} disabled={busy}
+                  className="flex-1 text-sm font-bold bg-navy text-[hsl(45,100%,96%)] rounded-xl py-2.5 disabled:opacity-40">➕ Add the pages</button>
+                <button type="button" onClick={() => submit(true, 'not-done')} disabled={busy}
+                  className="flex-1 text-sm font-semibold text-navy bg-white border border-amber-300 rounded-xl py-2.5 disabled:opacity-40">I didn&apos;t do these — send</button>
+              </div>
+            )}
           </div>
         )}
 
-        <button
-          onClick={() => submit(findings.length > 0)}
+        {!missingAsk && <button
+          onClick={() => submit(findings.length > 0, findings.length > 0 ? 'sent-anyway' : null)}
           disabled={!pages.length || !paperName.trim() || busy || (isScience && !subject)}
           className="w-full text-sm font-bold bg-navy text-[hsl(45,100%,96%)] rounded-xl py-3 disabled:opacity-40"
         >
           {busy ? stage
             : findings.length > 0 ? '📤 Send anyway'
             : pages.length ? `📤 Send ${pages.length} page${pages.length === 1 ? '' : 's'} for marking` : '📤 Send for marking'}
-        </button>
+        </button>}
+        {missingAsk && busy && <p className="text-center text-sm text-gray-500">{stage}</p>}
         <p className="text-[11px] text-gray-400">
           Wide photos of an open booklet are split into single pages automatically. PDFs are converted to pages on your phone before uploading.
           Wrote on a PDF with your Pencil in Preview on an iPad? Share → Save to Files, then choose it here — your ink comes with it.
