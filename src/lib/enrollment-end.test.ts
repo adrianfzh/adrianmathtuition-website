@@ -81,6 +81,6 @@ describe('endSummaryLine', () => {
     );
     expect(out).toContain('🎓 Enrollments ended (2)');
     expect(out).toContain('• Alexis Wong — ended 2026-10-28');
-    expect(out).toContain('Now Inactive (no enrollment left): Tin Tze Hin');
+    expect(out).toContain('No enrollment left — now Inactive, 🎓 = Graduated: Tin Tze Hin');
   });
 });

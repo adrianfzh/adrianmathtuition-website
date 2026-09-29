@@ -7,6 +7,7 @@ const notify_students = (text: string) => sendTelegram(text, 'students');
 import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { LESSON_RESTORE_FIELDS, type DiscontinueSnapshot } from '@/lib/reinstate';
+import { draftFinalExtrasInvoice, setLeavingStatus, type FinalBill } from '@/lib/final-extras-store';
 
 export const runtime = 'nodejs';
 
@@ -43,13 +44,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'studentId and effectiveDate (YYYY-MM-DD) required' }, { status: 400 });
   }
 
-  const result = { enrollmentsEnded: 0, lessonsDeleted: 0, studentInactive: false, invoicesVoided: 0, invoicesToReview: [] as any[], emailSent: false };
+  const result = { enrollmentsEnded: 0, lessonsDeleted: 0, studentInactive: false, leftAs: 'Inactive', finalBill: null as FinalBill | null, invoicesVoided: 0, invoicesToReview: [] as any[], emailSent: false };
 
   // Student record (name / parent email / existing notes) for the notes append, email, and summary.
-  let studentName = '', parentEmail = '', existingNotes = '';
+  let studentName = '', parentEmail = '', existingNotes = '', studentLevel: string | null = null;
   try {
     const s = await airtableRequest('Students', `/${studentId}`);
     studentName = s.fields['Student Name'] || '';
+    studentLevel = s.fields['Level'] || null;
     parentEmail = s.fields['Parent Email'] || '';
     existingNotes = s.fields['Notes'] || '';
   } catch { /* non-fatal */ }
@@ -59,8 +61,9 @@ export async function POST(req: NextRequest) {
   // in one snapshot so /api/admin/student-reinstate can put it back as it was.
   const snapshot: DiscontinueSnapshot = { enrollments: [], lessons: [], invoicesVoided: [], studentStatus: null };
   try { const s0 = await airtableRequest('Students', `/${studentId}`); snapshot.studentStatus = s0.fields['Status'] || null; } catch { /* non-fatal */ }
-  const enr = await airtableRequestAll('Enrollments', `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Status&fields[]=End Date`);
+  const enr = await airtableRequestAll('Enrollments', `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Status&fields[]=End Date&fields[]=Rate Per Lesson`);
   const mine = (enr.records || []).filter((r: any) => r.fields['Student']?.[0] === studentId);
+  const lastRate = mine.map((r: any) => Number(r.fields['Rate Per Lesson']) || 0).filter((x: number) => x > 0).pop() || 0;
   for (const r of mine) {
     snapshot.enrollments.push({ id: r.id, endDate: r.fields['End Date'] || null });
     await airtableRequest('Enrollments', `/${r.id}`, {
@@ -84,13 +87,12 @@ export async function POST(req: NextRequest) {
   }
   result.lessonsDeleted = hisLessons.length;
 
-  // 3. Student -> Inactive, and log the discontinue reason to Notes.
+  // 3. Student -> 'Graduated' (a final-year student leaving in the exam season)
+  //    or 'Inactive' (lib/graduation.ts), and log the discontinue reason to Notes.
   const stamp = `[Discontinued ${effectiveDate}${reason ? ` — ${String(reason).trim()}` : ''}]`;
   const newNotes = existingNotes ? `${existingNotes}\n${stamp}` : stamp;
-  await airtableRequest('Students', `/${studentId}`, {
-    method: 'PATCH',
-    body: JSON.stringify({ fields: { Status: 'Inactive', Notes: newNotes } }),
-  });
+  const left = await setLeavingStatus(studentId, studentLevel, dayBefore(effectiveDate), { Notes: newNotes });
+  result.leftAs = left.status;
   result.studentInactive = true;
 
   // 4. Invoices FROM the effective month onwards cover lessons that won't happen,
@@ -116,6 +118,13 @@ export async function POST(req: NextRequest) {
     }
     result.invoicesToReview.push({ id: r.id, month: r.fields['Month'], status, amount: r.fields['Final Amount'], type: r.fields['Invoice Type'] });
   }
+
+  // 4a. The last extra lessons ride no next invoice — draft one final bill for
+  //     them (after the voids above, so it is never voided by them). The 15th's
+  //     send cron sends it. Fail-soft.
+  try {
+    result.finalBill = await draftFinalExtrasInvoice(studentId, dayBefore(effectiveDate), lastRate);
+  } catch (e) { console.warn('[discontinue] final bill not drafted:', (e as Error).message); }
 
   // 4b. The snapshot, so Reinstate can undo this. Fail-soft: a logging miss must
   //     not fail a discontinue that already happened in Airtable.
@@ -159,6 +168,9 @@ export async function POST(req: NextRequest) {
       `Effective: ${effectiveDate}${reason ? `\nReason: ${String(reason).trim()}` : ''}\n` +
       `Enrolments ended: ${result.enrollmentsEnded} · Future lessons removed: ${result.lessonsDeleted}\n` +
       `Invoices auto-voided: ${result.invoicesVoided}${result.emailSent ? '\n📧 Farewell email sent to parent' : ''}` +
+      `\nNow: ${result.leftAs}${result.leftAs === 'Graduated' ? ' 🎓' : ''}` +
+      (result.finalBill?.invoiceId ? `\n🧾 Final bill drafted: ${result.finalBill.dates.length} additional lesson(s), $${result.finalBill.amount} (${result.finalBill.month}) — goes out with the 15th's send` : '') +
+      (result.finalBill?.unmarked.length ? `\n⚠️ Extra lesson(s) still unmarked: ${result.finalBill.unmarked.join(', ')}` : '') +
       reviewLine
     );
   } catch { /* non-fatal */ }
