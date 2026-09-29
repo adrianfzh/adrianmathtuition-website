@@ -43,6 +43,13 @@ export function looksLikeMath(c: string): boolean {
   // "(see, above)" stays prose.
   if (c.length <= 32 && !/[a-zA-Z]{2,}/.test(c) &&
       /^\(\s*[-+−]?[\w√.]+(\s*[-+−]?\s*[\w√.]+)*(\s*,\s*[-+−]?[\w√.]+(\s*[-+−]?\s*[\w√.]+)*)+\s*\)$/.test(c.trim())) return true;
+  // A NAMED point — "$H(1, 5)$", "$P(-2, a)$", "$A'(3, 4)$" (29 Sep 2026, A Math Set 2
+  // P1 Q13 printed "$H(1, 5)$." raw): one capital, an optional prime or subscript
+  // digit, then a coordinate pair that the rules above would accept on its own.
+  {
+    const m = c.trim().match(/^[A-Z](?:'|′|_?\d)?\s*(\(.*\))$/);
+    if (m && looksLikeMath(m[1])) return true;
+  }
   // Bare numeric lists — "$2, 3$" in a study note (Kayla's P2 script printed the
   // raw dollars, 2026-08-29). A digit is REQUIRED after every comma, so the
   // "5, " caught between two prices ("$5, $6") still reads as prose.

@@ -225,3 +225,12 @@ describe('parallel is written // (Adrian, 11 Sep 2026)', () => {
     expect(mathHtml('$PQ ∥ SR$')).not.toContain('∥');
   });
 });
+
+describe('a named point', () => {
+  it('renders $H(1, 5)$ and $P(-2, a)$ as maths, keeps prose literal', () => {
+    expect(mathHtml('at the point $H(1, 5)$.')).toContain('katex');
+    expect(mathHtml('$P(-2, a)$')).toContain('katex');
+    expect(mathHtml("$A'(3, 4)$")).toContain('katex');
+    expect(mathHtml('costs $5 (see) and $6')).not.toContain('katex');
+  });
+});
