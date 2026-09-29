@@ -85,6 +85,9 @@ export function missingAfterMarking(resultJson: unknown): HandinMissing[] {
   const rj = (resultJson && typeof resultJson === 'object' ? resultJson : {}) as Record<string, any>;
   if (!rj.portal_submission) return [];
   if (rj.assignment_id || rj.source?.paper_kind === 'practice-again') return [];
+  // Maths only: a science paper's Section B is a choice ("answer one of Q10/Q11"), so a
+  // question with no working there is usually the one they didn't pick.
+  if (rj.subject && rj.subject !== 'math') return [];
   const check = rj.handin_check as { missing?: unknown; answer?: unknown } | undefined;
   const saidNotDone = check?.answer === 'not-done' ? cleanMissing(check.missing) : [];
   const skipQ = new Set(saidNotDone.filter((m) => !m.part).map((m) => m.q));
@@ -92,8 +95,13 @@ export function missingAfterMarking(resultJson: unknown): HandinMissing[] {
 
   const out = new Map<string, HandinMissing>();
   for (const x of Array.isArray(rj.unattempted_questions) ? rj.unattempted_questions : []) {
-    const q = parseInt(String(x), 10);
-    if (Number.isInteger(q) && q >= 1 && q <= 99 && !skipQ.has(q)) out.set(`${q}`, { q });
+    // "7", or "Q4(c)" on some runs.
+    const m = String(x).trim().match(/^Q?\s*(\d+)\s*(?:\(([a-h])\))?/i);
+    const q = m ? parseInt(m[1], 10) : NaN;
+    if (!Number.isInteger(q) || q < 1 || q > 99 || skipQ.has(q)) continue;
+    const part = m?.[2]?.toLowerCase();
+    if (part) { if (!out.has(`${q}`) && !skipPart.has(`${q}${part}`)) out.set(`${q}${part}`, { q, part }); }
+    else { for (const k of [...out.keys()]) if (k.startsWith(`${q}`) && /^\d+[a-h]$/.test(k) && parseInt(k, 10) === q) out.delete(k); out.set(`${q}`, { q }); }
   }
   if (check?.answer === 'sent-anyway') {
     for (const m of cleanMissing(check.missing)) {

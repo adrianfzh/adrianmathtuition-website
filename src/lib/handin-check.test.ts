@@ -48,6 +48,13 @@ describe('missingAfterMarking — the backstop', () => {
   it('leaves out what the student said they did not do', () => {
     expect(missingAfterMarking({ ...base, unattempted_questions: ['4', '7'], handin_check: { answer: 'not-done', missing: [{ q: 7 }] } })).toEqual([{ q: 4 }]);
   });
+  it('reads "Q4(c)" labels too', () => {
+    expect(missingAfterMarking({ ...base, unattempted_questions: ['Q4(c)', 'Q4(d)'] })).toEqual([{ q: 4, part: 'c' }, { q: 4, part: 'd' }]);
+  });
+  it('says nothing on a science paper (Section B is a choice)', () => {
+    expect(missingAfterMarking({ ...base, subject: 'chemistry', unattempted_questions: ['7', '8'] })).toEqual([]);
+    expect(missingAfterMarking({ ...base, subject: 'math', unattempted_questions: ['7'] })).toEqual([{ q: 7 }]);
+  });
   it('says nothing for Adrian’s uploads, sheets, or a complete paper', () => {
     expect(missingAfterMarking({ unattempted_questions: ['4'] })).toEqual([]);
     expect(missingAfterMarking({ ...base, assignment_id: 'a1', unattempted_questions: ['4'] })).toEqual([]);
