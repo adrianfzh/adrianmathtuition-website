@@ -65,6 +65,13 @@ describe('parseSourceFilename — the science tokens (26 Sep 2026)', () => {
     expect(parseSourceFilename('Physics Prelim 2024 Anderson Paper 1.pdf')).toMatchObject({ ok: true, level: 'PHYS', subject: 'physics', school: 'Anderson', paper: 'p1' });
     expect(parseSourceFilename('PURE BIOLOGY 6093 PRELIM 2022 Anglo-Chinese School (Independent) P1.pdf')).toMatchObject({ ok: true, level: 'BIO', subject: 'biology', school: 'Anglo-Chinese School (Independent)' });
   });
+  it('Combined Science (30 Sep 2026): CS / Sci / Comb beside the subject → CS_CHEM / CS_PHYS / CS_BIO, G2 or (NA) → _NA', () => {
+    expect(parseSourceFilename('CS CHEM PRELIM 2024 Bowen P3.pdf')).toMatchObject({ ok: true, level: 'CS_CHEM', subject: 'chemistry', year: 2024, school: 'Bowen', examType: 'Prelim', paper: 'p3' });
+    expect(parseSourceFilename('CS PHY G2 PRELIM 2023 Dunearn P2 MS.pdf')).toMatchObject({ ok: true, level: 'CS_PHYS_NA', subject: 'physics', school: 'Dunearn', paper: 'p2' });
+    expect(parseSourceFilename('CS BIO PRELIM 2024 Mayflower P4.pdf')).toMatchObject({ ok: true, level: 'CS_BIO', school: 'Mayflower', paper: 'p4' });
+    expect(parseSourceFilename('Sci Chem PRELIM 2020 Serangoon P3.docx')).toMatchObject({ ok: true, level: 'CS_CHEM', school: 'Serangoon' });
+    expect(parseSourceFilename('CS PHY (NA) SA2 2018 Kranji P2.pdf')).toMatchObject({ ok: true, level: 'CS_PHYS_NA', school: 'Kranji' });
+  });
   it('S3 in front of a science is the Sec 3 internal paper', () => {
     expect(parseSourceFilename('S3 BIO EOY 2020 SJI P1.pdf')).toMatchObject({ ok: true, level: 'S3_BIO', subject: 'biology', examType: 'SA2', school: 'SJI', paper: 'p1' });
     expect(parseSourceFilename('S3 CHEM SA2 2022 Cedar Girls.pdf')).toMatchObject({ ok: true, level: 'S3_CHEM', subject: 'chemistry', school: 'Cedar Girls' });

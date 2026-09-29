@@ -115,17 +115,25 @@ const SCIENCE_SUBJECT_RULES: Array<[RegExp, string, SourceSubject]> = [
   [/\bPHY(?:S(?:ICS)?)?\b/i, 'PHYS', 'physics'],
 ];
 const COMBINED_SCIENCE = /\bCOMBINED\b|\bSCI\b|(?<!\b(?:of|and)\s)\bSCIENCE\b/i;
+/** Beside a subject word, these make it the combined paper. */
+const COMBINED_MARK = /\b(?:CS|SCI|SC|COMB|COMBINED|SCIENCE)\b/i;
+const CS_NA = /\bG2\b|\(NA\)|\b4NA\b|\bN\(A\)/i;
 const MATH_LEVEL_TOKEN = /\b(?:AM|EM|JC[12]|H[12])\b|\((?:NA|NT)\)/i;
 const JC_TOKEN = /\b(?:JC[12]|H[12])\b/i;
 /** The words and syllabus codes that name a science; never part of a school. */
-const SCIENCE_WORDS = /\b(?:BIO|BIOLOGY|CHEM|CHEMISTRY|PHY|PHYS|PHYSICS|SCI|SCIENCE|COMBINED|PURE)\b/gi;
-const SCIENCE_CODES = /\b(?:6093|5059|5073|5076|5086|5087|5088)\b/g;
+const SCIENCE_WORDS = /\b(?:BIO|BIOLOGY|CHEM|CHEMISTRY|PHY|PHYS|PHYSICS|SCI|SCIENCE|COMBINED|PURE|CS|SC|COMB|G[23])\b|\((?:NA)\)|\b4NA\b/gi;
+const SCIENCE_CODES = /\b(?:6091|6092|6093|5059|5073|5076|5077|5078|5086|5087|5088|5105|5106|5107)\b/g;
 
 function detectScience(stem: string): { level: string; subject: SourceSubject } | { refuse: string } | null {
   const sec3 = /\bS3\b/i.test(stem);
   for (const [re, level, subject] of SCIENCE_SUBJECT_RULES) {
     if (!re.test(stem)) continue;
     if (JC_TOKEN.test(stem)) return { refuse: 'JC science has no level in the science bank yet (BIO/CHEM/PHY are the O-Level pure sciences)' };
+    // Combined Science (30 Sep 2026): "CS CHEM PRELIM 2024 Bowen P3" — or Sci / Sc /
+    // Comb / Combined beside the subject word — is the Sec 4 combined paper
+    // (CS_CHEM / CS_PHYS / CS_BIO); G2 / (NA) / 4NA makes it the N(A) one (_NA).
+    // "Science (Chemistry)" is always combined in Singapore; the pure paper says Chemistry alone.
+    if (!sec3 && COMBINED_MARK.test(stem)) return { level: `CS_${level}${CS_NA.test(stem) ? '_NA' : ''}`, subject };
     return { level: sec3 ? `S3_${level}` : level, subject };
   }
   if (!COMBINED_SCIENCE.test(stem) || MATH_LEVEL_TOKEN.test(stem)) return null;
