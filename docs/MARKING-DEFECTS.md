@@ -472,3 +472,43 @@ Fix-forward; nothing delivered was re-inked.
 **Report only (the read):** Alessi AM 2021 Specimen P2 p2 (`c169300c` photo 1) — "should be 1.8" drawn at (b)(iii)'s ring on g = 161.9: the stored boxes put L10 "Answer: 1.6 secs" on the row where L17 "Answer: g = 161.9" is written and L17 got no box at all, so the rows matcher paired two "Answer:" lines wrongly (needs the row scan to bench — not stored); Denise EM 2025 P2 Q3(d) scored 0 from a page missing from her hand-in, and the bank's labels "d)(i" are malformed (in the reader's note to Adrian); R-c … R-h as the reader listed them.
 
 **Not worked (residue, the reader's counts):** P4 red on handwriting (6), P2 other wrong-seat labels (5), P6 stray ticks on blank paper (6), P5 leaders across working (5), P10 the same point 3–4 times (7), P8 empty "Marker's notes:" heading (4), P7 notes clipped at a stripless page's edge (3), P9 raw TeX / caret / π spelt out (3), P11–P14.
+
+# 29 Sep 2026 — the fixer's run on the findings of 29 Sep (8 papers, 40 pages, ~72 findings)
+
+The second guard: F37 (bot `99e94b4`, no ✓ after the ✗ in a part that scored nothing) held on all
+40 pages, every one drawn after it shipped — nothing to revert. Every page was drawn BEFORE this
+morning's red-pen readability commits (`2196988`, `9bab0e2`, `79e31f1`, `48a152e`, `8f9ff8a`), so
+the " * " glue, serif prose in notes and the repeated rule heads are residue to judge on tomorrow's
+pages. `2196988`'s `composePartNote` rewrote the seam `no-asterisk-glue` (F38) changed, so that
+proposal is marked superseded. Fix-forward; nothing delivered was re-inked.
+
+| # | complaint | bin | root cause | fix | status |
+|---|---|---|---|---|---|
+| F39 | an EMPTY "Marker's notes:" heading at the foot of the page (Alexis EM GCE 2024 P1 p17, Denise EM 2023 P2 p20, Joey AM Prelim set 4 P1 p1; the reader's 28 Sep P8 too) while the "From your line" column went to the overflow sheet — on Denise's page the answer to "Is Zhao correct?" is only on that sheet | pen (footer) | every note that spilled was a continuation column; columns have their own footer bucket, and when the footer cap moved them to the overflow sheet the heading stayed behind in the head bucket alone | bot `0040d5d`: a heading that heads only columns comes off with them (`_dropOrphanNotesHead`); new ink check `no-empty-notes-heading` on every drawn page; the bench can set a case's pen env (`"env"`) and check the with-solutions copy (`"page"`). Case `alexis-em2024p1-p17-empty-notes-heading` (drawn with FOOTER_CAP_FRAC 0.1 — since this morning that page's column fits under the cap): FAIL on main, PASS on the fix; `denise-em2023p2-p20-…` a guard | ✅ fixed |
+| F41 | the pen's own self-check flagged Alexis EM GCE 2024 P1 p17's Q27(b) column "4 reasons on 3 row(s) — a column is one to a line", a watch-out on the desk, although all four reasons sit on rows of their own | pen self-check | `continuation-is-a-column` finds a reason by its words before the first maths token; "compare coefficients of $a$" and "… of $b$" both come down to "compare coefficients of", and both found the first such row | bot `9accbb4`: a reason takes the first matching row no earlier reason has claimed; two reasons really squeezed onto one row still fail (`test/continuation-column-check.test.js`, red on main's check) | ✅ fixed |
+| F40 | exponents typeset as full-size stacked fractions — "50x^{1/3}" read "50x 1/3" (Isabelle ACS(BR) Prelim 2025 P1 p6 Q7), "4e^{½x}" read "4e ½ x" (Joey AM set 4 P1 p3 Q3(b)): a power that reads as a product | pen (typesetting) | `ai/figure-tex.js upgradeFractions` sets every fraction `\dfrac` "including inside exponents" — Adrian's rule for the Learn figure labels — and the pen shares `texBlock` | bot `fad5135` on `proposal/2026-09-29-small-exponent-fractions`: the pen only asks for `scriptFractions` — a fraction inside ^{…}/_{…} keeps script size; figures unchanged | ⚠️ Adrian's call — the small digits are the trade-off he ruled on for figures |
+
+**Report only (the read):** Chloe EM 2023 P2 p18 Q9(c) 2/7 — the note says "divide the year by
+365 days … (8.26, so 9)" and "should be 8.26", but 8.26 is HER 336-day figure; with 365 days it is
+7.60 kWh ÷ 0.99936 → 8 panels (the page contradicts itself); Joey AM 2024 P2 p15 Q10(a)(ii) —
+"should be 110" beside her R = 55 and "R = 110 is wrong" in the strip; the corrected ≈ 98 in the
+read never reaches the page; kind "transfer" untrue; Isabelle ACS(BR) P1 p8 Q10(c) 0/1 —
+shading right relative to her own bisector (does ft earn the B1?), kind "transfer" untrue;
+Isabelle P1 p4 Q3(a) B1 for "every four months … 3rd quarter" (possibly generous); Alexis EM
+2024 P1 p17 Q27(b) ring on the "−" with the words "equate the coefficients!" (two different
+things); Denise p20 Q9(b) the note names only the walks; Joey set 4 P1 p1 Q1(b) never teaches the
+"Hence" link.
+
+**Not worked (residue or already open):** glyphs on print / handwriting (~14, the P4 class; Denise
+p20 is a strip-less page); arrows ending at nothing or at the correct term (~8); leaders through
+her ink (~6); a ✗ on a crossed-out line while the standing answer below is bare (Rainie AM 2023 P1
+p18, `89324a6f` photo 17 — new, one page; bench candidate); stray wordless ✗ (4); labels against
+the wrong table cell (Chloe p7); boxes clipped at a page edge (3); ∧∧ at nothing (F33, open on
+`caret-only-with-column`); chip drops a code (F36, open on `reship-f35-f36`); a second strip note
+under the bare "Q10:" (Joey 78e40f9b p14). Wording (Adrian's): one slip two kinds; "transfer
+error"; " · " read as ×; a phrase-bank verdict as the only words; the same wrong final value ticked
+in the working and crossed on the answer; a follow-through "should be" with no "from your
+equation". Proof on the worker: `npm test` 3457/3458 (the one red was the case-shape test, fixed before the
+push; the touched files re-run 60/60 on the final tree); the 15 other pen cases whose page carries a
+"From your line" column redrawn on the fix, all green — the other 35 cannot change (the heading is
+dropped only when every note under it is a column).
