@@ -354,8 +354,14 @@ export async function GET(req: NextRequest) {
           ? { status: assessed.status, missingMarks: assessed.missingMarks, label: assessed.label }
           : null,
       };
+    // One sitting's papers sit together, Paper 1 then Paper 2 (29 Sep 2026, Adrian: "should this
+    // be in the order of the same year together, then paper 1 then paper 2 next?") — so level and
+    // exam type (a Set's "Set 1", a school's Prelim / EOY) group BEFORE the paper number.
     }).sort((a, b) =>
-      b.year - a.year || a.school.localeCompare(b.school) || String(a.paper).localeCompare(String(b.paper)));
+      b.year - a.year || a.school.localeCompare(b.school)
+      || String(a.level ?? '').localeCompare(String(b.level ?? ''))
+      || String(a.examType ?? '').localeCompare(String(b.examType ?? ''), undefined, { numeric: true })
+      || String(a.paper).localeCompare(String(b.paper), undefined, { numeric: true }));
     return NextResponse.json({ papers: papers.slice(0, 400), total: papers.length });
   }
 

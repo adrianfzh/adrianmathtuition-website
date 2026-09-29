@@ -252,3 +252,14 @@ describe('segment ratios and a spaced negative', () => {
     expect(mathHtml('pay $5 - $6 today')).not.toContain('katex');
   });
 });
+
+describe('mathHtml — display maths', () => {
+  it('renders a $$…$$ line as display maths with no stray dollars (E Math Set 1 P1 Q25)', () => {
+    const html = mathHtml('These are the first four terms of a sequence.\n$$3 \\qquad 7 \\qquad 13 \\qquad 21$$');
+    expect(html).toContain('katex-display');
+    expect(html).not.toContain('$');
+  });
+  it('still leaves two prices as prose', () => {
+    expect(mathHtml('a meal at $96 and the other at $x')).not.toContain('katex');
+  });
+});

@@ -91,9 +91,18 @@ const PARALLEL_GLYPH = /\u2225/g;
 
 /** Render a comment string to safe HTML: math spans via KaTeX, the rest escaped. */
 export function mathHtml(s: string): string {
-  const parts = s.replace(PARALLEL_GLYPH, '//').replace(/\\\$/g, ESCAPED_DOLLAR).split(/(\$[^$\n]+\$)/g);
+  // `$$…$$` is DISPLAY maths (a bank stem's own line — "$$3 \qquad 7 \qquad 13 \qquad 21$$",
+  // E Math Set 1 P1 Q25, 29 Sep 2026): split it out first, or the inline scan pairs the inner
+  // dollars and leaves a stray "$" at each end. Always TeX — nobody writes a price as "$$".
+  const parts = s.replace(PARALLEL_GLYPH, '//').replace(/\\\$/g, ESCAPED_DOLLAR).split(/(\$\$[^$]+\$\$|\$[^$\n]+\$)/g);
   return parts
     .map((part, i) => {
+      if (part.length > 4 && part.startsWith('$$') && part.endsWith('$$')) {
+        const inner = part.slice(2, -2).replaceAll(ESCAPED_DOLLAR, '\\$');
+        try {
+          return katex.renderToString(inner, { throwOnError: false, output: 'html', displayMode: true, macros: { ...KATEX_MACROS } });
+        } catch { /* fall through — show the literal text */ }
+      }
       if (part.length > 2 && part.startsWith('$') && part.endsWith('$')) {
         const inner = part.slice(1, -1).replaceAll(ESCAPED_DOLLAR, '\\$');
         // Two prices colliding, not a span: in "… $420 = $52.50 …" the closing $
