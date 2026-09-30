@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { batchKey, isSentBack, readSendBack, sendBackNote, sentBackObject, sgtDayLabel } from './figure-check';
+import { REASON_CHIPS, batchKey, isSentBack, readSendBack, reasonComment, sendBackNote, sentBackObject, sgtDayLabel, sizedImageUrl } from './figure-check';
 
 describe('sendBackNote', () => {
   it('keeps the lane prefix, puts the ask first, keeps what was there', () => {
@@ -40,5 +40,25 @@ describe('small helpers', () => {
   it('orders by batch then index, unbatched last', () => {
     expect(batchKey('#B5-12 · redrawn')).toEqual([5, 12]);
     expect(batchKey(null)[0]).toBe(Number.MAX_SAFE_INTEGER);
+  });
+});
+
+describe('reason chips', () => {
+  it('joins chips and words into one comment', () => {
+    expect(reasonComment(['crop', 'blurry'], '  the  axis is cut ')).toBe('crop; blurry; the axis is cut');
+    expect(reasonComment([], '')).toBe('');
+    expect(REASON_CHIPS).toContain('caption inside');
+  });
+});
+
+describe('sizedImageUrl', () => {
+  it('points a public Storage URL at the image transform, keeping the cache-buster', () => {
+    expect(sizedImageUrl('https://x.supabase.co/storage/v1/object/public/question_images/candidates/a.png?v=2026', 480))
+      .toBe('https://x.supabase.co/storage/v1/render/image/public/question_images/candidates/a.png?width=480&resize=contain&v=2026');
+    expect(sizedImageUrl('https://x.supabase.co/storage/v1/object/public/question_images/a.png', 1200))
+      .toBe('https://x.supabase.co/storage/v1/render/image/public/question_images/a.png?width=1200&resize=contain');
+  });
+  it('leaves any other URL alone', () => {
+    expect(sizedImageUrl('/api/files/x.png', 480)).toBe('/api/files/x.png');
   });
 });

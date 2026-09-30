@@ -72,3 +72,24 @@ export function batchKey(note: string | null | undefined): [number, number] {
   const m = /#B(\d+)-(\d+)/.exec(note ?? '');
   return m ? [Number(m[1]), Number(m[2])] : [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER];
 }
+
+/** The reasons Adrian taps on a card that is not good enough — one tap each,
+ *  free text optional (30 Sep 2026). */
+export const REASON_CHIPS = ['caption inside', 'labels too small', 'crop', 'watermark', 'wrong figure', 'blurry'] as const;
+
+/** Chips + his own words → the one comment the send-back note carries. */
+export function reasonComment(chips: readonly string[], text: string | null | undefined): string {
+  const words = (text ?? '').replace(/\s+/g, ' ').trim();
+  return [...chips, ...(words ? [words] : [])].join('; ');
+}
+
+/** A smaller copy of a stored image, for the grid (Supabase's image transform):
+ *  .../object/public/<bucket>/<key>?v=… → .../render/image/public/<bucket>/<key>?width=…&v=….
+ *  Anything that is not a public Storage URL comes back as it was. */
+export function sizedImageUrl(url: string, width: number): string {
+  const i = url.indexOf('/storage/v1/object/public/');
+  if (i < 0) return url;
+  const [base, query] = url.split('?');
+  const out = base.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
+  return `${out}?width=${Math.round(width)}&resize=contain${query ? `&${query}` : ''}`;
+}
