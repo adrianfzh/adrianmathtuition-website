@@ -56,6 +56,12 @@ export type ReplaceResult = {
 };
 
 const IMG_TOKEN = /\{\{IMG:([^}]+)\}\}/g;
+// A markdown image inside solution text: `![Graph of y = |f(2 - x)|](<url>)`.
+// Some rows carry their figure this way (NJC 2024 P2 Q3, 30 Sep 2026 — Approve
+// failed with "no reference matched the old key" because only {{IMG:}} and a
+// whole-string path were rewritten). The url may carry a ?query; the alt text
+// is kept as it was.
+const MD_IMG = /(!\[[^\]]*\]\()([^)\s]+)(\))/g;
 
 /** The bare bucket key: strips a public-URL prefix and any `question_images/`. */
 export function imageKey(raw: string | null | undefined): string {
@@ -88,6 +94,10 @@ function stringRefs(s: unknown, key: string): boolean {
     IMG_TOKEN.lastIndex = 0;
     for (const m of s.matchAll(IMG_TOKEN)) if (normaliseImagePath(m[1]) === key) return true;
   }
+  if (s.includes('![')) {
+    MD_IMG.lastIndex = 0;
+    for (const m of s.matchAll(MD_IMG)) if (normaliseImagePath(m[2].split('?')[0]) === key) return true;
+  }
   return false;
 }
 
@@ -96,6 +106,12 @@ function replaceInString(s: string, key: string, newUrl: string): { value: strin
     let n = 0;
     const out = s.replace(IMG_TOKEN, (whole, inner: string) =>
       (normaliseImagePath(inner) === key ? (n++, `{{IMG:${newUrl}}}`) : whole));
+    if (n) return { value: out, n };
+  }
+  if (s.includes('![')) {
+    let n = 0;
+    const out = s.replace(MD_IMG, (whole, open: string, url: string, close: string) =>
+      (normaliseImagePath(url.split('?')[0]) === key ? (n++, `${open}${newUrl}${close}`) : whole));
     if (n) return { value: out, n };
   }
   if (normaliseImagePath(s) === key) return { value: newUrl, n: 1 };

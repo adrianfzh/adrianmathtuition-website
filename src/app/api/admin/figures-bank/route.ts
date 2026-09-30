@@ -342,11 +342,16 @@ async function applyCleanedSolutionImage(
   const ext = /jpe?g/i.test(o.contentType) ? 'jpg' : 'png';
   const dest = cleanedObjectKey(o.questionId, partLabel, sha8, ext);
 
+  const newUrl = imgSrc(`${BUCKET}/${dest}`);
+  // Prove the swap finds the old key BEFORE uploading, so a refusal leaves no
+  // stray object behind (30 Sep 2026: NJC 2024 P2 Q3's markdown image did).
+  if (!replaceSolutionImageRefsMany(row, [{ oldPath: o.path, newUrl }]).pairs[0].replaced) {
+    return step('replace', 'no reference matched the old key');
+  }
   const up = await supa.storage.from(BUCKET).upload(dest, o.bytes, {
     contentType: o.contentType, upsert: false, cacheControl: '3600',
   });
   if (up.error) return step('upload', up.error.message);
-  const newUrl = imgSrc(`${BUCKET}/${dest}`);
 
   // Every earlier apply on THIS question, so a clobbered one rides along and is
   // repaired by the same PATCH. A log we cannot read is a refusal, not a shrug:
