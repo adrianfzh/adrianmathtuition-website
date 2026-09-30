@@ -24,6 +24,7 @@ import { scienceEligible, scienceQuestion } from '@/lib/science-bank';
 import { sciencePracticeAccess } from '@/lib/portal-beta';
 import { scienceLevelOpenFor } from '@/lib/practice';
 import { applyGradedAttempt } from '@/lib/notebook-mistakes-store';
+import { bankLevelSubject } from '@/lib/portal-find';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -298,6 +299,9 @@ export async function POST(req: NextRequest) {
         attemptId: inserted.id,
         verdict: result.verdict,
         topic: Array.isArray(q.topics) && typeof q.topics[0] === 'string' ? q.topics[0] : null,
+        // The subject from the bank level (AM → A Math): without it the entry sat under an
+        // "Other" tab in the Notebook (Adrian, 1 Oct 2026: "why is there an other tab?").
+        subject: bankLevelSubject(q.level),
         tags: newTags,
         assignmentId: assignment?.id ?? null,
         at: new Date().toISOString(),
