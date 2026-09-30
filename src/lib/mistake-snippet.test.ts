@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SNIPPET_PAD, regionAt, snippetStyle, snippetsFor } from './mistake-snippet';
+import { CONTEXT_LINES, GAP_SPLIT, SNIPPET_PAD, regionAt, snippetStyle, snippetsFor, windowsFor } from './mistake-snippet';
 
 // The A Math page of 1 Oct 2026: layer 960 × 1280, strip 250, no panel; the
 // saved image is 1210 × 1280 at 2.03×. Q3's one part sits at x 292–637, y 205–535.
@@ -68,5 +68,46 @@ describe('snippetsFor — the window of the student\'s page a card shows (1 Oct 
     expect(r.span).toBeCloseTo((535 - 205 + 2 * SNIPPET_PAD) / 1280);
     expect(r.at).toBeCloseTo((205 - SNIPPET_PAD) / 1280 + r.span / 2);
     expect(regionAt(debug, photos, '3', 3)).toBeNull();
+  });
+});
+
+describe('windowsFor — one window or several, by the question and its mistakes (1 Oct 2026)', () => {
+  const box = (y1: number, y2: number) => ({ x1: 100, y1, x2: 600, y2 });
+  it('lost parts next to each other share one window', () => {
+    expect(windowsFor([box(100, 200), box(210, 300)], [], 1280)).toEqual([{ x1: 100, y1: 100, x2: 600, y2: 300 }]);
+  });
+  it('a short run of right parts between two lost ones keeps one window; a long run splits it', () => {
+    const short = GAP_SPLIT * 1280 - 10, long = GAP_SPLIT * 1280 + 10;
+    expect(windowsFor([box(100, 200), box(200 + short, 500)], [], 1280)).toHaveLength(1);
+    expect(windowsFor([box(100, 200), box(200 + long, 500)], [], 1280)).toHaveLength(2);
+  });
+  it('order does not matter; the windows come out top to bottom', () => {
+    const w = windowsFor([box(900, 1000), box(100, 200)], [], 1280);
+    expect(w.map(x => x.y1)).toEqual([100, 900]);
+  });
+  it('each window takes the nearest lines above its first lost part, up to CONTEXT_LINES, never more than 12% of the page', () => {
+    const lines = [{ y1: 20, y2: 40 }, { y1: 50, y2: 70 }, { y1: 80, y2: 98 }, { y1: 300, y2: 320 }];
+    const [w] = windowsFor([box(100, 200)], lines, 1280);
+    expect(CONTEXT_LINES).toBe(2);
+    expect(w.y1).toBe(50);
+    const [far] = windowsFor([box(1000, 1100)], [{ y1: 10, y2: 30 }], 1280);
+    expect(far.y1).toBeCloseTo(1000 - 0.12 * 1280);
+  });
+  it('snippetsFor: Q10-shaped parts — (b)(i), (b)(ii) lost, (c)(i), (c)(ii) full, (c)(iii) lost → two windows on the page', () => {
+    const regions = [
+      { question: '10', bbox: { x1: 100, y1: 100, x2: 600, y2: 200 }, awarded: 0, max: 1 },
+      { question: '10', bbox: { x1: 100, y1: 210, x2: 600, y2: 300 }, awarded: 0, max: 2 },
+      { question: '10', bbox: { x1: 100, y1: 310, x2: 600, y2: 500 }, awarded: 2, max: 2 },
+      { question: '10', bbox: { x1: 100, y1: 510, x2: 600, y2: 700 }, awarded: 1, max: 1 },
+      { question: '10', bbox: { x1: 100, y1: 710, x2: 600, y2: 900 }, awarded: 1, max: 3 },
+    ];
+    const dbg = { '2': { rot: 0, photo_index: 2, grounding: { space: { w: 960, h: 1280 }, partRegions: regions, boxes: [] } } };
+    const s = snippetsFor(dbg, photos, '10');
+    expect(s).toHaveLength(2);
+    expect(s[0].y).toBeCloseTo((100 - SNIPPET_PAD) / 1280);
+    expect(s[1].y).toBeCloseTo((710 - SNIPPET_PAD) / 1280);
+    // The jump spans both windows.
+    const r = regionAt(dbg, photos, '10', 2)!;
+    expect(r.span).toBeCloseTo((900 + SNIPPET_PAD - (100 - SNIPPET_PAD)) / 1280);
   });
 });

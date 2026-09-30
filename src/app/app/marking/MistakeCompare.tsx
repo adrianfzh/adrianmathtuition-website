@@ -20,6 +20,7 @@
 import Link from 'next/link';
 import { promptLines, type StudentQuestion } from '@/lib/portal-marking';
 import { jumpHref } from '@/lib/review-cards';
+import { canExplain, explainHref } from '@/lib/explain-clip';
 import { mathHtml } from '@/lib/math-inline';
 import { fileHref } from '@/lib/student-files-url';
 import { snippetStyle } from '@/lib/mistake-snippet';
@@ -41,11 +42,13 @@ function SnippetWindow({ s }: { s: NonNullable<StudentQuestion['snippets']>[numb
   );
 }
 
-export default function MistakeCompare({ q, runId, paperName = null }: {
+export default function MistakeCompare({ q, runId, paperName = null, explain = false }: {
   q: StudentQuestion;
   runId: string;
   /** Printed above the question number when the card stands outside its paper's group. */
   paperName?: string | null;
+  /** The ▶ one-minute explanation door (lib/explain-clip) — the caller decides who may see it. */
+  explain?: boolean;
 }) {
   const fixes = q.fixes ?? [];
   const corrections = q.corrections ?? [];
@@ -94,7 +97,7 @@ export default function MistakeCompare({ q, runId, paperName = null }: {
             <p className={YOURS_HEAD}>Your working</p>
             {snippets.length > 0 ? (
               <>
-                {snippets.map(s => <SnippetWindow key={s.photoIndex} s={s} />)}
+                {snippets.map((s, i) => <SnippetWindow key={`${s.photoIndex}:${i}`} s={s} />)}
                 {typed.length > 0 && (
                   <details className="group/typed pt-1">
                     <summary className="cursor-pointer list-none text-[11px] font-semibold text-gray-400 flex items-center gap-1">
@@ -128,6 +131,9 @@ export default function MistakeCompare({ q, runId, paperName = null }: {
         </details>
       )}
       <div className="flex flex-wrap items-center gap-3">
+        {explain && canExplain(q) && (
+          <Link href={explainHref(runId, q.questionNumber)} className="text-[12px] font-semibold bg-navy text-white rounded-full px-3 py-1.5" data-explain-door>▶ Explain it · 1 min</Link>
+        )}
         {q.revise && <Link href={q.revise.href} className="text-[12px] font-semibold bg-[hsl(45,80%,94%)] text-navy rounded-full px-3 py-1.5">✏️ Practise: {q.revise.name}</Link>}
         <Link href={jumpHref(card)} className="text-[12px] font-semibold text-gray-500 underline underline-offset-2">See it on my paper</Link>
       </div>
