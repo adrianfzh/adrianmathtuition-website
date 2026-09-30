@@ -16,7 +16,7 @@
 // Pure (repo testing policy: marks logic never inline in a route or component).
 // Input is already-fetched rows; no I/O.
 
-import { buildReviewFixes, buildWorkingLines, type ReviewFix, type WorkingLine } from './review-fix';
+import { buildLineCorrections, buildReviewFixes, buildWorkingLines, type LineCorrection, type ReviewFix, type WorkingLine } from './review-fix';
 import { displayPaperName } from './paper-display-name';
 import { aggregateTopicBleed, type TopicBleed, type ReportPaper } from '@/lib/report-facts';
 import { recomputeTotals } from '@/lib/mark-triage';
@@ -109,6 +109,8 @@ export interface StudentQuestion {
   revise: { name: string; href: string; examplesHref: string } | null;
   /** The red pen's "from your line" per part — the Review card's side-by-side (lib/review-fix). Empty when none. */
   fixes?: ReviewFix[];
+  /** Every ✗ line with the red pen's fix under it — science cards live on these (lib/review-fix). */
+  corrections?: LineCorrection[];
   /** No fix on any part: the student's own lines, ✗ marked, for the card's comparison beside `solution` (lib/review-fix). */
   working?: WorkingLine[];
   /** No page showed this question — the allocation audit added it at 0 (30 Sep 2026: Review puts these last). */
@@ -327,6 +329,7 @@ function toQuestion(raw: unknown): StudentQuestion | null {
     slips.push(label ? `${label}: ${why}` : why);
   }
 
+  const fixes = buildReviewFixes(parts, output?.lines);
   return {
     questionNumber: str(r.question_number) || '?',
     awarded,
@@ -341,7 +344,8 @@ function toQuestion(raw: unknown): StudentQuestion | null {
     schemes,
     solution: str(asRecord(output?.correct)?.full_solution_latex) || null,
     revise: null, // attached per-paper from result_json.revise in toPaper
-    fixes: buildReviewFixes(parts, output?.lines),
+    fixes,
+    corrections: max > 0 && awarded < max ? buildLineCorrections(output?.lines, fixes.map(f => f.at)) : [],
     working: max > 0 && awarded < max ? buildWorkingLines(output?.lines) : [],
     ...(r.added_by_audit === true ? { unmarked: true } : {}),
   };

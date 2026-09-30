@@ -14,6 +14,8 @@ export interface ReviewFix {
   steps: { latex: string; why: string }[];
   /** The line the working should end on. */
   final: string | null;
+  /** The wrong line's index in `marking_output.lines` — so its correction is not shown twice. */
+  at: number;
 }
 
 /** How many of the student's lines before the wrong one to show — enough to see where they were. */
@@ -49,7 +51,7 @@ export function buildReviewFixes(parts: unknown, lines: unknown): ReviewFix[] {
     yours.push(wrong);
     const final = s(c.final_latex);
     // The final line often repeats the last step; say it once.
-    out.push({ label: s(p.label) && s(p.label) !== '(whole)' ? s(p.label) : null, yours, steps, final: final && final !== steps[steps.length - 1].latex ? final : null });
+    out.push({ label: s(p.label) && s(p.label) !== '(whole)' ? s(p.label) : null, yours, steps, final: final && final !== steps[steps.length - 1].latex ? final : null, at });
   }
   return out;
 }
@@ -72,4 +74,28 @@ export function buildWorkingLines(lines: unknown): WorkingLine[] {
     if (t) out.push({ text: t, wrong: l.verdict === 'wrong' });
   }
   return out.some(l => l.wrong) ? out : [];
+}
+
+/** A wrong line and the red pen's fix for it, as the card shows them: ✗ yours, then ✓ the fix. */
+export interface LineCorrection { yours: string; fix: string }
+
+/**
+ * Every ✗ line that carries the red pen's correction, in page order (30 Sep 2026,
+ * Adrian: "directly show the mistakes, then the correct steps"). The science marker
+ * writes no "from your line" steps, but every wrong line has its fix in
+ * `correction.text_latex`; maths lines carry the same. Lines already covered by a
+ * part's continuation (`skip`) and crossed-out lines are left out.
+ */
+export function buildLineCorrections(lines: unknown, skip: readonly number[] = []): LineCorrection[] {
+  const out: LineCorrection[] = [];
+  const ls = Array.isArray(lines) ? lines : [];
+  ls.forEach((raw, i) => {
+    const l = rec(raw);
+    if (!l || l.verdict !== 'wrong' || l.is_crossed_out === true || skip.includes(i)) return;
+    const c = rec(l.correction);
+    const fix = c ? s(c.text_latex) || s(c.text_plain) : '';
+    const yours = s(l.transcription_latex) || s(l.transcription_plain);
+    if (yours && fix) out.push({ yours, fix });
+  });
+  return out;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildReviewFixes, buildWorkingLines } from './review-fix';
+import { buildLineCorrections, buildReviewFixes, buildWorkingLines } from './review-fix';
 
 const lines = [
   { verdict: 'correct', transcription_latex: '$4p^2 + 2p + 110 = 140$' },
@@ -47,5 +47,28 @@ describe('buildWorkingLines', () => {
   it('is empty when nothing went wrong or nothing was read', () => {
     expect(buildWorkingLines([{ verdict: 'correct', transcription_latex: '$x = 1$' }])).toEqual([]);
     expect(buildWorkingLines(null)).toEqual([]);
+  });
+});
+
+describe('buildLineCorrections', () => {
+  const sci = [
+    { verdict: 'correct', transcription_plain: 'p = F/A' },
+    { verdict: 'wrong', transcription_plain: '= 33.33 Pa', correction: { text_latex: '$33 \\text{ N/cm}^2$' } },
+    { verdict: 'wrong', transcription_plain: 'no fix on this one' },
+    { verdict: 'wrong', transcription_plain: 'crossed', is_crossed_out: true, correction: { text_plain: 'x' } },
+    { verdict: 'wrong', transcription_plain: 'It also means usefulness.', correction: { text_plain: 'say what 75% means here' } },
+  ];
+  it('pairs each wrong line with its fix, in page order', () => {
+    expect(buildLineCorrections(sci)).toEqual([
+      { yours: '= 33.33 Pa', fix: '$33 \\text{ N/cm}^2$' },
+      { yours: 'It also means usefulness.', fix: 'say what 75% means here' },
+    ]);
+  });
+  it('leaves out the lines a continuation already covers', () => {
+    expect(buildLineCorrections(sci, [1]).map(c => c.yours)).toEqual(['It also means usefulness.']);
+    expect(buildLineCorrections(null)).toEqual([]);
+  });
+  it('a fix records the wrong line it starts from', () => {
+    expect(buildReviewFixes([part], lines)[0].at).toBe(3);
   });
 });

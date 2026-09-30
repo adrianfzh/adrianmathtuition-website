@@ -21,6 +21,7 @@ export const dynamic = 'force-dynamic';
 // side by side when it is turned sideways, and always on a tablet or laptop.
 const COMPARE = 'grid grid-cols-1 gap-2 landscape:grid-cols-2 md:grid-cols-2';
 const YOURS_HEAD = 'text-[10.5px] font-semibold uppercase tracking-wide text-gray-400';
+const WRONG_HEAD = 'text-[10.5px] font-semibold uppercase tracking-wide text-rose-600';
 const RIGHT_HEAD = 'text-[10.5px] font-semibold uppercase tracking-wide text-emerald-700';
 
 function WorkLine({ text, wrong, faint = false }: { text: string; wrong: boolean; faint?: boolean }) {
@@ -49,35 +50,55 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
 
   const items: DeckItem[] = cards.map(c => {
     const q = c.question;
-    // No red-pen fix on any part: compare the student's whole working with the worked solution instead.
-    const compareAll = !(q.fixes ?? []).length && (q.working ?? []).length > 0 && !!q.solution;
+    const fixes = q.fixes ?? [];
+    const corrections = q.corrections ?? [];
+    // No fix and no corrected line: compare the student's whole working with the worked solution instead.
+    const compareAll = !fixes.length && !corrections.length && (q.working ?? []).length > 0 && !!q.solution;
     const solutionLines = compareAll ? String(q.solution).split('\n').map(l => l.trim()).filter(Boolean) : [];
+    const shown = fixes.length > 0 || corrections.length > 0 || compareAll;
     return {
       key: c.key,
       node: (
-        <article className="bg-white rounded-3xl border border-black/5 shadow-sm p-4 space-y-2.5 h-full overflow-y-auto">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{c.paperName}</p>
-          <div className="flex items-baseline justify-between gap-3">
-            <p className="text-base font-bold text-navy">Q{q.questionNumber}{q.topic && <span className="ml-2 text-sm font-medium text-gray-400">{q.topic}</span>}</p>
-            <span className={`shrink-0 text-sm font-bold rounded-full px-2.5 py-0.5 ${q.awarded === 0 ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}`}>{q.awarded}/{q.max}</span>
+        <article className="bg-white rounded-3xl border border-black/5 shadow-sm p-4 space-y-3 h-full overflow-y-auto">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{c.paperName}</p>
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="text-base font-bold text-navy">Q{q.questionNumber}{q.topic && <span className="ml-2 text-sm font-medium text-gray-400">{q.topic}</span>}</p>
+              <span className={`shrink-0 text-sm font-bold rounded-full px-2.5 py-0.5 ${q.awarded === 0 ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}`}>{q.awarded}/{q.max}</span>
+            </div>
           </div>
           {q.prompt && (
             <div className="space-y-0.5 border-l-2 border-gray-200 pl-2">
-              {promptLines(q.prompt).map((line, j) => <div key={j} className="text-[12.5px] text-gray-600 leading-snug" dangerouslySetInnerHTML={{ __html: mathHtml(line) }} />)}
+              {promptLines(q.prompt).map((line, j) => <div key={j} className="text-[12px] text-gray-500 leading-snug" dangerouslySetInnerHTML={{ __html: mathHtml(line) }} />)}
             </div>
           )}
-          {q.schemes.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {q.schemes.map((s, j) => <span key={j} className="text-[11px] font-mono bg-gray-100 text-gray-700 rounded px-1.5 py-0.5">{s.label ? `${s.label} ` : ''}{s.scheme}</span>)}
-            </div>
+          {/* 1 — what went wrong, one line a part (the verdict first). */}
+          {q.slips.length > 0 ? (
+            <section className="space-y-1">
+              <p className={WRONG_HEAD}>What went wrong</p>
+              <ul className="space-y-1">
+                {q.slips.map((s, j) => <li key={j} className="text-[13px] text-gray-800 leading-snug" dangerouslySetInnerHTML={{ __html: mathHtml(s) }} />)}
+              </ul>
+            </section>
+          ) : q.comment ? <p className="text-[13px] text-gray-800 leading-snug">{q.comment}</p> : null}
+          {/* 2 — each line that went wrong, with the fix right under it. */}
+          {corrections.length > 0 && (
+            <section className="space-y-2" data-review-corrections>
+              <p className={RIGHT_HEAD}>Your line → the fix</p>
+              {corrections.map((k, j) => (
+                <div key={j} className="rounded-xl border border-black/5 overflow-hidden">
+                  <div className="flex items-start gap-1.5 bg-rose-50 px-2.5 py-1.5 text-[12.5px] leading-snug text-rose-900 overflow-x-auto">
+                    <span className="shrink-0 font-bold text-rose-600">✗</span><span dangerouslySetInnerHTML={{ __html: mathHtml(k.yours) }} />
+                  </div>
+                  <div className="flex items-start gap-1.5 bg-emerald-50 px-2.5 py-1.5 text-[12.5px] leading-snug text-navy overflow-x-auto">
+                    <span className="shrink-0 font-bold text-emerald-600">✓</span><span dangerouslySetInnerHTML={{ __html: mathHtml(k.fix) }} />
+                  </div>
+                </div>
+              ))}
+            </section>
           )}
-          {q.comment && <p className="text-[13px] text-gray-800 leading-snug">{q.comment}</p>}
-          {q.slips.length > 0 && (
-            <ul className="space-y-1">
-              {q.slips.map((s, j) => <li key={j} className="text-[12px] text-amber-900 bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-1.5" dangerouslySetInnerHTML={{ __html: mathHtml(s) }} />)}
-            </ul>
-          )}
-          {(q.fixes ?? []).map((f, j) => (
+          {/* 3 — the red pen's steps from the line that went wrong. */}
+          {fixes.map((f, j) => (
             <div key={j} className="space-y-1" data-review-fix>
               {f.label && <p className="text-[11px] font-semibold text-gray-500">{f.label}</p>}
               <div className={COMPARE}>
@@ -86,7 +107,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
                   {f.yours.map((line, k) => <WorkLine key={k} text={line} wrong={k === f.yours.length - 1} faint />)}
                 </div>
                 <div className="min-w-0 space-y-1">
-                  <p className={RIGHT_HEAD}>From your line</p>
+                  <p className={RIGHT_HEAD}>The right steps</p>
                   {f.steps.map((st, k) => (
                     <div key={k} className="rounded-lg bg-emerald-50/60 px-1.5 py-1 overflow-x-auto">
                       <div className="text-[12.5px] leading-snug text-navy" dangerouslySetInnerHTML={{ __html: mathHtml(st.latex) }} />
@@ -112,17 +133,18 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
               </div>
             </div>
           )}
-          {q.solution && (!compareAll || q.schemes.length > 0) && (
-            <details open className="group/sol">
+          {/* The full solution stays folded once the card already shows the fix. */}
+          {q.solution && !compareAll && (
+            <details open={!shown} className="group/sol">
               <summary className="cursor-pointer text-[13px] font-semibold text-navy list-none flex items-center gap-1.5">
-                <span className="text-gray-400 group-open/sol:rotate-90 transition-transform inline-block">›</span>{compareAll ? '📖 Where the marks went' : '📖 The worked solution, annotated'}
+                <span className="text-gray-400 group-open/sol:rotate-90 transition-transform inline-block">›</span>📖 The full worked solution
               </summary>
-              <AnnotatedSolution solution={q.solution} schemes={q.schemes} hideLines={compareAll} />
+              <AnnotatedSolution solution={q.solution} schemes={q.schemes} />
             </details>
           )}
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            <Link href={jumpHref(c)} className="text-[12px] font-bold text-white bg-navy rounded-xl px-3 py-1.5">See it on my paper ›</Link>
+          <div className="flex flex-wrap items-center gap-3 pt-1">
             {q.revise && <Link href={q.revise.href} className="text-[12px] font-semibold bg-[hsl(45,80%,94%)] text-navy rounded-full px-3 py-1.5">✏️ Practise: {q.revise.name}</Link>}
+            <Link href={jumpHref(c)} className="text-[12px] font-semibold text-gray-500 underline underline-offset-2">See it on my paper</Link>
           </div>
         </article>
       ),
