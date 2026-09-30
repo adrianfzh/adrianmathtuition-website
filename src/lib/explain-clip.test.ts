@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildExplainScript, canExplain, explainHref, spokenMath, speakable } from './explain-clip';
-import { validateLessonScript, type EquationStepsScene } from './lesson-script';
+import { buildExplainScript, canExplain, explainHref, isProse, spokenMath, speakable } from './explain-clip';
+import { validateLessonScript, type CaptionScene, type EquationStepsScene } from './lesson-script';
 import type { StudentQuestion } from './portal-marking';
 
 const base: StudentQuestion = {
@@ -53,6 +53,26 @@ describe('buildExplainScript', () => {
     const scene = script!.scenes[0] as EquationStepsScene;
     expect(scene.steps).toHaveLength(2);
     expect(scene.beats!.map(b => b.say)).toEqual(['You wrote this line.', 'The fix: You moved 3x across without changing its sign.']);
+  });
+  it('sets a science SENTENCE as written words, not maths (Adrian, 1 Oct 2026: the spaces vanished)', () => {
+    expect(isProse('As black is a better emitter of heat, it cools faster.')).toBe(true);
+    expect(isProse('F = ma = 2 \\times 3 = 5')).toBe(false);
+    expect(isProse('hence proved')).toBe(false);
+    const q: StudentQuestion = { ...base, questionNumber: '10', topic: 'Thermal properties', slips: ['black is a better emitter of radiation'], corrections: [
+      { yours: 'As black is a better emitter of heat, it cools faster.', fix: 'black is a better emitter of radiation: pan B radiates infra-red faster, so it cools faster' },
+      { yours: 'Q = mc\\Delta T = 2 \\times 4200 \\times 5', fix: 'Q = mc\\Delta T = 2 \\times 4200 \\times 50' },
+    ] };
+    const script = buildExplainScript(q, 'run')!;
+    expect(validateLessonScript(script).ok, JSON.stringify(validateLessonScript(script))).toBe(true);
+    expect(script.scenes.map(sc => sc.type)).toEqual(['caption', 'equation-steps']);
+    const cap = script.scenes[0] as CaptionScene;
+    expect(cap.text).toBe('✗ You wrote: As black is a better emitter of heat, it cools faster.\n\n✓ Write instead: black is a better emitter of radiation: pan B radiates infra-red faster, so it cools faster');
+    expect(cap.beats!.map(b => b.say)).toEqual([
+      'You wrote: As black is a better emitter of heat, it cools faster.',
+      'Write instead: black is a better emitter of radiation: pan B radiates infra-red faster, so it cools faster. black is a better emitter of radiation',
+    ]);
+    const board = script.scenes[1] as EquationStepsScene;
+    expect(board.steps[0].tokens[0].tex).toBe('Q = mc\\Delta T = 2 \\times 4200 \\times 5');
   });
   it('is null with nothing to replay, and canExplain agrees', () => {
     expect(buildExplainScript(base, 'run')).toBeNull();

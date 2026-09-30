@@ -59,7 +59,10 @@ page is the video.**
   chalk beside it, then the red pen's "from your line" steps in green with the reason
   under each, then **Answer**. One `equation-steps` scene per part with a continuation
   (≤ 2 parts, ≤ 6 pen steps); with no continuation anywhere (science, an older run) the
-  ✗ line + fix pairs (≤ 3). About 25–40 s at 1×. Starts in ▶ Auto (`startAuto`), tap
+  ✗ line + fix pairs (≤ 3) — a pair of SENTENCES (a science answer) is a `caption` scene
+  written by the chalk hand and wrapping on a phone, never set as maths (Adrian's screenshot,
+  1 Oct 2026: the spaces vanished); its beats say the sentence itself so the silent Auto
+  timer covers the writing. About 25–40 s at 1×. Starts in ▶ Auto (`startAuto`), tap
   the board to pause, ‹ goes back to the paper, the closer is the card's own Practise
   link.
 - **Where it is built.** `lib/explain-clip.ts` (pure, tested): `buildExplainScript(q,

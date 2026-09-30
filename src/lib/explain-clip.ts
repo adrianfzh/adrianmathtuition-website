@@ -14,7 +14,7 @@
 // a committed lesson: beats, the chalk theme, ▶ Auto, tap to pause. Voice clips
 // are not written here (no `audio`); the player shows no 🔊 pill without them.
 
-import type { Beat, BeatAction, EquationStep, EquationStepsScene, LessonScript, StepToken } from './lesson-script';
+import type { Beat, BeatAction, CaptionScene, EquationStep, EquationStepsScene, LessonScript, StepToken } from './lesson-script';
 import type { StudentQuestion } from './portal-marking';
 
 /** The most of the student's lines shown before the ✗ one (the card shows two; the board has room for the same). */
@@ -110,10 +110,20 @@ function line(tex: string, id: string, hl?: StepToken['hl'], note?: string): Equ
   return step;
 }
 
-/** A line's TeX for the board: the card stores bare TeX (no dollars) — strip a wrapping pair if one came through. */
+/** Maths that only maths carries — a relation, an operator, a command, a power, a fraction bar with digits. */
+const MATH_SIGNS = /[=<>+^_\\]|\d\s*\/\s*\d|\b\d+\s*[a-zA-Z]\b/;
+/** A sentence, not working: three or more words and none of the signs above (a science answer, a "hence" line). */
+export function isProse(text: string): boolean {
+  const t = s(text);
+  return t.split(/\s+/).length >= 3 && !MATH_SIGNS.test(t);
+}
+
+/** A line's TeX for the board: the card stores bare TeX (no dollars) — strip a wrapping pair if one came through.
+ *  A sentence is set as text (upright, spaces kept) — KaTeX eats the spaces of prose set as maths. */
 function boardTex(text: string): string {
   const t = s(text).replace(/^\$+|\$+$/g, '').trim();
-  return t || '\\;';
+  if (!t) return '\\;';
+  return isProse(t) ? `\\text{${t.replace(/[{}]/g, '')}}` : t;
 }
 
 function clip(text: string, max: number): string {
@@ -181,20 +191,41 @@ function continuationScene(q: StudentQuestion, fix: NonNullable<StudentQuestion[
 
 /**
  * No continuation on any part (a science paper, an older maths run): every ✗ line
- * with the red pen's fix under it — you wrote, the fix — up to three pairs.
+ * with the red pen's fix under it — you wrote, the fix — up to three pairs. A pair of
+ * WORKING goes on one equation board; a pair of SENTENCES (a science answer) is a
+ * caption scene, so the chalk hand writes the words and they wrap on a phone (1 Oct
+ * 2026, Adrian's screenshot: a sentence set as maths lost its spaces and went italic).
  */
-function correctionsScene(q: StudentQuestion, corrections: NonNullable<StudentQuestion['corrections']>): EquationStepsScene {
-  const steps: EquationStep[] = [];
-  const beats: Beat[] = [];
+function correctionScenes(q: StudentQuestion, corrections: NonNullable<StudentQuestion['corrections']>): (EquationStepsScene | CaptionScene)[] {
+  const heading = `Q${q.questionNumber} · what to write instead`;
+  const out: (EquationStepsScene | CaptionScene)[] = [];
+  let board: EquationStepsScene | null = null;
   corrections.slice(0, CORRECTIONS_MAX).forEach((c, i) => {
-    const y = `y${i}`, f = `f${i}`;
-    steps.push(line(boardTex(c.yours), y, 'rose'));
-    steps.push(line(boardTex(c.fix), f, 'emerald'));
-    beats.push({ say: i === 0 ? 'You wrote this line.' : 'Then you wrote this.', do: [write(y, 0.1), { do: 'mark', kind: 'box', token: y, at: 0.6 }] });
     const verdict = i === 0 ? verdictFor(q, 0) : '';
-    beats.push({ say: speakable(verdict ? `The fix: ${verdict}` : '', 'It should read like this.'), do: [write(f, 0.1)] });
+    const fixSay = speakable(verdict ? `The fix: ${verdict}` : '', 'It should read like this.');
+    if (isProse(c.yours) || isProse(c.fix)) {
+      board = null;
+      out.push({
+        type: 'caption', heading,
+        text: `✗ You wrote: ${s(c.yours)}\n\n✓ Write instead: ${s(c.fix)}`,
+        // The beat SAYS the sentence: that is what a voice would read, and the silent Auto
+        // timer is sized by the spoken words (lib/lesson-beats beatAutoMs) — a three-word
+        // beat ended before the hand had written the line (1 Oct 2026).
+        beats: [
+          { say: speakable(`${i === 0 ? 'You wrote' : 'Then you wrote'}: ${s(c.yours)}`), do: [{ do: 'write', text: 'text', para: 0, at: 0.05 }] },
+          { say: speakable(`Write instead: ${s(c.fix)}. ${verdict}`), do: [{ do: 'write', text: 'text', para: 1, at: 0.05 }] },
+        ],
+      });
+      return;
+    }
+    if (!board) { board = { type: 'equation-steps', heading, steps: [], beats: [] }; out.push(board); }
+    const y = `y${i}`, f = `f${i}`;
+    board.steps.push(line(boardTex(c.yours), y, 'rose'));
+    board.steps.push(line(boardTex(c.fix), f, 'emerald'));
+    board.beats!.push({ say: i === 0 ? 'You wrote this line.' : 'Then you wrote this.', do: [write(y, 0.1), { do: 'mark', kind: 'box', token: y, at: 0.6 }] });
+    board.beats!.push({ say: fixSay, do: [write(f, 0.1)] });
   });
-  return { type: 'equation-steps', heading: `Q${q.questionNumber} · what to write instead`, steps, beats };
+  return out;
 }
 
 /** Whether the marking carries enough to replay — the door shows only then. */
@@ -214,11 +245,11 @@ export function explainHref(runId: string, questionNumber: string): string {
  */
 export function buildExplainScript(q: StudentQuestion, runId: string): LessonScript | null {
   const fixes = (q.fixes ?? []).filter(f => f.yours.length > 0 && f.steps.length > 0).slice(0, PARTS_MAX);
-  const scenes: EquationStepsScene[] = fixes.map((f, i) => continuationScene(q, f, i));
+  const scenes: (EquationStepsScene | CaptionScene)[] = fixes.map((f, i) => continuationScene(q, f, i));
   if (scenes.length === 0) {
     const corrections = (q.corrections ?? []).filter(c => s(c.yours) && s(c.fix));
     if (corrections.length === 0) return null;
-    scenes.push(correctionsScene(q, corrections));
+    scenes.push(...correctionScenes(q, corrections));
   }
   const qn = q.questionNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'q';
   return {

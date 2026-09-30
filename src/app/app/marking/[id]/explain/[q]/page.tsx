@@ -16,7 +16,7 @@ import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { explainClipVisible, viewingAsStudent } from '@/lib/portal-beta';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
-import { buildExplainScript } from '@/lib/explain-clip';
+import { buildExplainScript, canExplain } from '@/lib/explain-clip';
 import { buildPlayScenes } from '@/lib/lesson-load';
 import LessonPlayer from '../../../../lesson/[slug]/lesson-player';
 
@@ -48,7 +48,8 @@ export default async function ExplainPage({ params, under = 'math' }: { params: 
 
   const { papers } = buildStudentMarking([row as unknown as MarkingRunRow]);
   const paper = papers[0];
-  const question = paper?.questions.find(x => x.questionNumber === qn) ?? null;
+  // A science run can list one number twice (a part per entry): take the entry with something to replay.
+  const question = paper?.questions.filter(x => x.questionNumber === qn).find(canExplain) ?? null;
   const script = question ? buildExplainScript(question, id) : null;
   if (!paper || !question || !script) redirect(paperHref);
 
