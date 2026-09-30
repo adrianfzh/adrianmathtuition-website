@@ -1171,14 +1171,26 @@ function useFitToBoard(cardRef: React.RefObject<HTMLDivElement | null>, active: 
 
 type Pacing = 'manual' | 'auto' | 'narrated';
 
-export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp }: {
+export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false }: {
   slug: string; title: string; topic: string; minutes: number; scenes: PlayScene[]; theme?: LessonTheme;
+  /** Where ‹ goes (the practice page for a lesson; the paper for a one-minute explanation). */
+  backHref?: string;
+  /** The small word above the title ("Lesson", "Explain"). */
+  kicker?: string;
+  /** The closer's link and its label; default = practise this lesson's topic. */
+  practiceHref?: string;
+  practiceLabel?: string;
+  /** The closer's heading and line. */
+  doneTitle?: string;
+  doneText?: string;
+  /** Start in ▶ Auto — a clip plays like a video from the first frame (the one-minute explanation). */
+  startAuto?: boolean;
 }) {
   const theme = normalizeTheme(themeProp);
   const [sceneIdx, setSceneIdx] = useState(0);
   const [step, setStep] = useState(0);
   const [done, setDone] = useState(false);
-  const [auto, setAuto] = useState(false);
+  const [auto, setAuto] = useState(startAuto);
   const [paused, setPaused] = useState(false);
   const [rateOpen, setRateOpen] = useState(false);
   const [resolved, setResolved] = useState<Set<number>>(() => new Set());
@@ -1434,7 +1446,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
     return () => document.removeEventListener('pointerdown', onDown);
   }, [rateOpen]);
 
-  const practiceHref = `/app/practice?topic=${encodeURIComponent(topic)}&from=lesson`;
+  const practiceHref = practiceHrefProp ?? `/app/practice?topic=${encodeURIComponent(topic)}&from=lesson`;
   const themed = theme !== 'slide';
   const themeStyle = useMemo(() => themeCssVars(theme) as React.CSSProperties, [theme]);
 
@@ -1481,12 +1493,12 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           row keeps its shape whichever mode is on. Long labels are for ≥ sm;
           a phone gets icons + the fill colour (measured: one row at 390 px). */}
       <div className="flex items-center gap-2.5 pt-1 mb-3">
-        <Link href="/app/practice" aria-label="Back to practice"
+        <Link href={backHref} aria-label="Back"
           className="shrink-0 w-9 h-9 rounded-xl bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)] text-navy inline-flex items-center justify-center hover:bg-slate-50 active:scale-95 motion-safe:transition-transform">
           <span className="text-lg leading-none" aria-hidden>‹</span>
         </Link>
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 truncate">▶ Lesson · {minutes} min</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 truncate">▶ {kicker} · {minutes} min</p>
           <h1 className="font-bold text-navy text-sm truncate">{title}</h1>
         </div>
         <div className="relative shrink-0 flex items-center gap-1.5" data-rate-menu data-pills>
@@ -1539,14 +1551,14 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
         /* ── Completion — the closer CTA ── */
         <div className="bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-6 min-h-[440px] flex flex-col items-center justify-center text-center lsn-scene">
           <span className="inline-block text-4xl mb-3 lsn-rise" aria-hidden>🎉</span>
-          <h2 className="text-xl font-bold text-navy lsn-ink lsn-rise" style={{ animationDelay: '120ms' }}>Lesson complete</h2>
+          <h2 className="text-xl font-bold text-navy lsn-ink lsn-rise" style={{ animationDelay: '120ms' }}>{doneTitle}</h2>
           <p className="mt-2 max-w-xs text-sm text-slate-600 lsn-ink-2 lsn-rise" style={{ animationDelay: '240ms' }}>
-            That&apos;s the whole idea — the fastest way to make it stick is to use it on real questions while it&apos;s fresh.
+            {doneText}
           </p>
           <Link href={practiceHref}
             className="block text-center mt-6 w-full max-w-xs bg-amber-400 text-navy rounded-2xl px-4 py-3.5 font-bold text-[15px] shadow-[0_8px_24px_-10px_rgba(245,158,11,0.8)] hover:bg-amber-300 active:scale-[0.98] motion-safe:transition lsn-rise"
             style={{ animationDelay: '360ms' }}>
-            ✏️ Practise {topic} →
+            {practiceLabel ?? `✏️ Practise ${topic} →`}
           </Link>
           <button type="button" onClick={restart}
             className="mt-3 text-sm font-semibold text-slate-500 lsn-muted hover:text-navy">

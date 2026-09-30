@@ -297,6 +297,14 @@ export async function GET(req: NextRequest) {
       if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
       return `page ${r.status}`;
     }),
+    // ▶ The one-minute explanation (1 Oct 2026): the door on every mistake card; an
+    // anonymous visitor is sent to /login by the /app layout, never a 404 or a 500.
+    timed('portal-explain', async () => {
+      const r = await fetch(`${base}/app/marking/00000000-0000-4000-8000-000000000000/explain/1`, { redirect: 'manual', signal: T(10000) });
+      if (r.status === 404) throw new Error('/app/marking/[id]/explain/[q] is missing — the Explain it door 404s');
+      if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
+      return `page ${r.status}`;
+    }),
     timed('portal-science-qa', async () => {
       const r = await fetch(`${base}/app/science/qa`, { redirect: 'manual', signal: T(10000) });
       if (r.status === 404) throw new Error('/app/science/qa is missing — the QA flashcards door 404s');

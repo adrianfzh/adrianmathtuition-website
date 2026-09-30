@@ -43,6 +43,50 @@ model below).
 > (§ The slate, re-cut · § Sizes). Still additive: `slide` is byte-unchanged
 > — proved again by a screenshot diff of the binomial pilot.
 
+## ▶ The one-minute explanation (1 Oct 2026) — one question, on the board
+
+Adrian, after the China scan (洋葱学园's 5-minute animations, 作业帮's per-question
+讲题 videos, the 学习机 diagnose-and-push loop): *"students have too short attention
+span to sit through even a 20 minute lesson, they usually want to know immediately
+what they need to know … dominant unit is one question sounds like somewhat along the
+right path"* — and *"or perhaps html?"*. So: **the same player, one lost-marks
+question, built from the marker's own steps, no model call, no file rendered — the
+page is the video.**
+
+- **What it shows.** `/app/marking/[id]/explain/[q]` (a science run redirects to
+  `/app/science/marking/[id]/explain/[q]`): the student's lines up to the ✗ one (their
+  last two before it), the ✗ line boxed in pink with the marker's verdict written in
+  chalk beside it, then the red pen's "from your line" steps in green with the reason
+  under each, then **Answer**. One `equation-steps` scene per part with a continuation
+  (≤ 2 parts, ≤ 6 pen steps); with no continuation anywhere (science, an older run) the
+  ✗ line + fix pairs (≤ 3). About 25–40 s at 1×. Starts in ▶ Auto (`startAuto`), tap
+  the board to pause, ‹ goes back to the paper, the closer is the card's own Practise
+  link.
+- **Where it is built.** `lib/explain-clip.ts` (pure, tested): `buildExplainScript(q,
+  runId)` from a `StudentQuestion` (`fixes` / `corrections` — lib/review-fix), `canExplain`
+  gates the door, `explainHref` names the route, `speakable()` turns a pen reason with
+  `$…$` into words a voice could say (fractions, powers, roots, relations) — the
+  validator refuses TeX in a spoken line, and these `say` strings are what a voice clip
+  would read. Output passes `validateLessonScript`. The page (`app/marking/[id]/explain/
+  [q]/page.tsx`) applies the paper page's access rule, then hands the script to
+  `LessonPlayer` with its new props (`backHref`, `kicker`, `practiceHref`,
+  `practiceLabel`, `doneTitle`, `doneText`, `startAuto`) — every committed lesson renders
+  exactly as before.
+- **The doors.** "▶ Explain it · 1 min" on every lost-marks question of the paper page
+  (`LostMarks`, `explain` prop) and on every Notebook mistake card (`MistakeCompare`,
+  `explain` prop) — only where `canExplain` says there is something to replay.
+- **The switch.** `EXPLAIN_CLIP_OPEN_TO_STUDENTS` in `lib/portal-beta.ts` (`explainClipVisible`):
+  **admin-only + the preview student until Adrian has watched a few**; a student who
+  types the URL early is sent back to the paper. Health-check `portal-explain` probes the
+  route. Telemetry rides the player's existing `lesson:<slug>:…` events (the slug is
+  `explain-<run8>-<q>`), so "did anyone tap it" is answerable before opening it.
+- **Not yet.** No voice: the beats carry `say` but no `audio`, so the 🔊 pill never
+  shows. The next step, if the taps say so, is server TTS per beat (the same Gemini
+  voice as `generate-narration.mjs`) cached under the run's files, then the "what comes
+  next?" ask between the ✗ line and the fix (SPEC-COMPANY's voice-tutor shape, one
+  question at a time). The topic lessons above stay the long form, reached from a
+  card — never a Lessons tab.
+
 ## Map
 
 | Piece | Where | Notes |

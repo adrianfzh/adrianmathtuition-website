@@ -7,12 +7,13 @@
 import Link from 'next/link';
 import { promptLines, type StudentPaper } from '@/lib/portal-marking';
 import { mathHtml } from '@/lib/math-inline';
+import { canExplain, explainHref } from '@/lib/explain-clip';
 import AnnotatedSolution from './AnnotatedSolution';
 // Questions carry inline $…$ TeX — mathHtml KaTeXes only the math spans, and
 // this stylesheet is what makes the output render as maths.
 import 'katex/dist/katex.min.css';
 
-export default function LostMarks({ paper }: { paper: StudentPaper }) {
+export default function LostMarks({ paper, explain = false }: { paper: StudentPaper; explain?: boolean }) {
   if (paper.dropped.length === 0) {
     return paper.questions.length > 0
       ? <p className="text-sm text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-3">✅ Full marks on every question marked.</p>
@@ -66,6 +67,10 @@ export default function LostMarks({ paper }: { paper: StudentPaper }) {
               </div>
             ))}
             {q.comment && <p className="text-[13px] text-gray-700 mt-1 leading-snug">{q.comment}</p>}
+            {/* ▶ The one-minute explanation (1 Oct 2026): this question replayed on the board from the marker's own steps. */}
+            {explain && canExplain(q) && (
+              <Link href={explainHref(paper.id, q.questionNumber)} className="inline-block mt-2 text-[12px] font-semibold bg-navy text-white rounded-full px-3 py-1.5" data-explain-door>▶ Explain it · 1 min</Link>
+            )}
             {q.solution && (
               <details className="mt-2 group/sol">
                 <summary className="cursor-pointer text-[13px] font-semibold text-navy list-none flex items-center gap-1.5">

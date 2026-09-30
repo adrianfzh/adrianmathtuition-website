@@ -254,3 +254,18 @@ export async function practicePhotoOpen(): Promise<boolean> {
  * (25 Sep 2026: "for chem qualitative analysis — gate to admin only first").
  */
 export const QA_FLASHCARDS_OPEN_TO_STUDENTS = false;
+
+// ▶ The one-minute explanation (1 Oct 2026): one lost-marks question replayed on the
+// chalk board from the marker's own steps (lib/explain-clip). ADMIN-ONLY until Adrian
+// has watched a few — flip this to open the door on every mistake card and on the
+// paper's "Where you lost marks"; the preview student sees it meanwhile.
+export const EXPLAIN_CLIP_OPEN_TO_STUDENTS = false;
+export const EXPLAIN_CLIP_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
+export async function explainClipVisible(identity?: string | null): Promise<boolean> {
+  if (EXPLAIN_CLIP_OPEN_TO_STUDENTS) return true;
+  if (identity && EXPLAIN_CLIP_PREVIEW_IDENTITIES.includes(identity)) return true;
+  const { cookies } = await import('next/headers');
+  const { ADMIN_SESSION_COOKIE, verifyAdminSession } = await import('./admin-session');
+  const admin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
+  return admin && !(await viewingAsStudent());
+}

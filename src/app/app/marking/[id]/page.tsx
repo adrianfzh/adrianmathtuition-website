@@ -10,7 +10,7 @@ import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { cookies } from 'next/headers';
 import { TEACHER_INK_IDENTITY } from '@/lib/student-ink';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
-import { viewingAsStudent } from '@/lib/portal-beta';
+import { explainClipVisible, viewingAsStudent } from '@/lib/portal-beta';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
 import { fileHref } from '@/lib/student-files-url';
@@ -89,6 +89,8 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
   if (isScience && under !== 'science') redirect(`/app/science/marking/${id}`);
   if (!isScience && under === 'science') redirect(`/app/marking/${id}`);
   const tone = subjectTone(paper.subject);
+  // ▶ Explain it (1 Oct 2026): admin-only until the flag flips; the preview student sees it.
+  const explain = await explainClipVisible(sid);
 
   const { data: sheetRows } = isScience ? { data: [] } : await sb.from('portal_assignments')
     .select('id, run_id, status, pdf_url, score, out_of, required_at, source_run_id, source_run_ids')
@@ -327,7 +329,7 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
 
           {/* Every question that dropped marks, with the comment and the annotated
               worked solution — moved here from the Papers list on 17 Sep 2026. */}
-          <LostMarks paper={paper} />
+          <LostMarks paper={paper} explain={explain} />
         </>
       ) : (
         <Suspense fallback={null}>
@@ -353,7 +355,7 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
                 </div>
               )}
             </>}
-            marks={<LostMarks paper={paper} />} />
+            marks={<LostMarks paper={paper} explain={explain} />} />
         </Suspense>
       )}
 

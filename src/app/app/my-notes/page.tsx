@@ -32,6 +32,7 @@
 // never calls the gate (lib/portal-beta.ts).
 import Link from 'next/link';
 import { portalIdentity, sessionAccount } from '@/lib/portal-auth';
+import { explainClipVisible } from '@/lib/portal-beta';
 import { loadNotebook, type NotebookSubjectPanel } from '@/lib/notebook-load';
 import { OPEN_GROUPS } from '@/lib/notebook-groups';
 import NotebookMistakes, { type CompareNodes } from './mistakes';
@@ -45,14 +46,14 @@ export const dynamic = 'force-dynamic';
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 
 /** The comparison for every card in the groups the page shows — open ones, or all with `?earlier=1`. */
-function compareNodes(p: NotebookSubjectPanel, all: boolean): CompareNodes {
+function compareNodes(p: NotebookSubjectPanel, all: boolean, explain: boolean): CompareNodes {
   const out: CompareNodes = {};
   for (const g of all ? p.cardGroups : p.cardGroups.slice(0, OPEN_GROUPS)) {
     const paper = p.papers.get(g.key);
     if (!paper) continue;
     for (const c of g.cards) {
       const q = paper.dropped.find(x => x.questionNumber === c.questionNumber);
-      if (q) out[c.key] = <MistakeCompare q={q} runId={paper.id} />;
+      if (q) out[c.key] = <MistakeCompare q={q} runId={paper.id} explain={explain} />;
     }
   }
   return out;
@@ -81,6 +82,7 @@ export default async function MyNotebookPage({ searchParams }: { searchParams: P
   }
 
   const { subjects, defaultSubject, groups, weakest } = await loadNotebook(account, sid);
+  const explain = await explainClipVisible(sid);
   // One tab per subject (30 Sep 2026), the Papers tab's own switcher; one subject → no tabs.
   const panels: SubjectPanel[] = subjects.map(p => ({
     key: p.subject,
@@ -88,7 +90,7 @@ export default async function MyNotebookPage({ searchParams }: { searchParams: P
     label: subjects.length > 3 ? (subjectPill(p.subject)?.text ?? p.subject) : p.subject,
     tone: subjectPill(p.subject)?.tone ?? 'other',
     count: p.groups.groups.reduce((n, g) => n + g.mistakes.length, 0),
-    content: <NotebookMistakes initial={p.groups} cardGroups={p.cardGroups} compare={compareNodes(p, showEarlier)} showEarlier={showEarlier} weakest={p.weakest} />,
+    content: <NotebookMistakes initial={p.groups} cardGroups={p.cardGroups} compare={compareNodes(p, showEarlier, explain)} showEarlier={showEarlier} weakest={p.weakest} />,
   }));
 
   return (
