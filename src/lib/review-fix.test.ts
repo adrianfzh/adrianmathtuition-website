@@ -64,6 +64,14 @@ describe('buildLineCorrections', () => {
       { yours: 'It also means usefulness.', fix: 'say what 75% means here' },
     ]);
   });
+  it('shows the plain copy of a sentence, the maths copy of a fraction', () => {
+    const [a, b] = buildLineCorrections([
+      { verdict: 'wrong', transcription_latex: '$\\text{Cooking food}$', transcription_plain: 'Cooking food', correction: { text_latex: '$\\text{a thermostat}$', text_plain: 'a thermostat' } },
+      { verdict: 'wrong', transcription_latex: '$m = \\frac{9000}{4200}$', transcription_plain: 'm = 9000/4200', correction: { text_latex: '$m = 0.5$', text_plain: 'm = 0.5' } },
+    ]);
+    expect(a).toEqual({ yours: 'Cooking food', fix: 'a thermostat' });
+    expect(b.yours).toBe('$m = \\frac{9000}{4200}$');
+  });
   it('leaves out the lines a continuation already covers', () => {
     expect(buildLineCorrections(sci, [1]).map(c => c.yours)).toEqual(['It also means usefulness.']);
     expect(buildLineCorrections(null)).toEqual([]);

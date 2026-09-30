@@ -86,6 +86,13 @@ export interface LineCorrection { yours: string; fix: string }
  * `correction.text_latex`; maths lines carry the same. Lines already covered by a
  * part's continuation (`skip`) and crossed-out lines are left out.
  */
+// A sentence typeset as one \text{} block cannot wrap on a phone, so the plain copy
+// is shown unless the line carries real maths (a fraction, a root, a sum).
+const REAL_MATH = /\\(d?frac|sqrt|int|sum|vec|overline|lim)\b/;
+function readable(latex: string, plain: string): string {
+  return plain && !REAL_MATH.test(latex) ? plain : latex || plain;
+}
+
 export function buildLineCorrections(lines: unknown, skip: readonly number[] = []): LineCorrection[] {
   const out: LineCorrection[] = [];
   const ls = Array.isArray(lines) ? lines : [];
@@ -93,8 +100,8 @@ export function buildLineCorrections(lines: unknown, skip: readonly number[] = [
     const l = rec(raw);
     if (!l || l.verdict !== 'wrong' || l.is_crossed_out === true || skip.includes(i)) return;
     const c = rec(l.correction);
-    const fix = c ? s(c.text_latex) || s(c.text_plain) : '';
-    const yours = s(l.transcription_latex) || s(l.transcription_plain);
+    const fix = c ? readable(s(c.text_latex), s(c.text_plain)) : '';
+    const yours = readable(s(l.transcription_latex), s(l.transcription_plain));
     if (yours && fix) out.push({ yours, fix });
   });
   return out;
