@@ -121,10 +121,12 @@ export const LAST_LESSON_OPEN_TO_STUDENTS = false;
 // flips; once open, a student needs 'Physics' in Airtable Students.Subjects
 // (the option doesn't exist yet — add it via typecast when opening). Adrian's
 // admin cookie previews every science level.
-// OPEN since 1 Oct 2026 (Adrian: "option 2 …" — the Science Practise tab): the gate
+// Opened 1 Oct 2026 (Adrian: "option 2 …" — the Science Practise tab): the gate
 // is the student's own science choice (portal_accounts.prefs.sciences), not an
-// Airtable subject; see lib/practice practiceLevelAllowed.
-export const SCIENCE_PRACTICE_OPEN_TO_STUDENTS = true;
+// Airtable subject; see lib/practice practiceLevelAllowed. CLOSED AGAIN the same
+// evening before the promote (Adrian: "gate keep science practice first") — Adrian's
+// cookie and the preview student still see it; flip to true to open.
+export const SCIENCE_PRACTICE_OPEN_TO_STUDENTS = false;
 // Structured science practice = write an answer, get it MARKED, then the scheme (Adrian,
 // 1 Oct 2026: "they must practice right? then we mark? … no point just giving the answers
 // straight away"). The practice grader has not been checked against science scheme
