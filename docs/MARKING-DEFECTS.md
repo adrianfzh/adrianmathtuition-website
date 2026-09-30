@@ -543,3 +543,31 @@ wrong part (4), arrows at nothing (4), leaders through her ink (~7), "underline"
 (2), carets (F33), clipping at the page foot (4), a rule head said twice (Shayenne p19, after
 `9bab0e2`), the same point three times at one error (~9, wording), a vague next step (Sun p6 Q23(a),
 comprehension FAIL), "circular" (Shayenne p9, comprehension FAIL).
+
+# 1 Oct 2026 — the fixer's run on the findings of 1 Oct (8 papers, 40 pages, ~70 findings)
+
+The second guard: F42 (`e3110fd`), F43 (`9652e33`), F44 (`a375ad7`) are on main. F43/F44 not seen
+again. F42 held on the channels it covered (column reasons and strip notes typeset ∠ θ π √ on pages
+drawn after it); the reader's residue is on the channels it did not reach — fixed below as F46, not
+a regression. Nothing to revert. Fix-forward; nothing delivered was re-inked.
+
+| # | complaint | bin | root cause | fix | status |
+|---|---|---|---|---|---|
+| F46 | symbols spelt as words in the SHORT channels (4 pages, all drawn after F42): Eva EM 2022 P1 p8 Q15 fix label "should be vert. opp. angle s"; Isabelle AM 2021 P1 p6 Q11(a) notation note "should be angle CAB = angle CBA = theta" beside a ✓M1; Alexis AM 2021 P1 p11 reason "since k != h"; Alexis EM 2024 P2 p17 verdict "95.625 g => 96 g" | pen (text) | a label with no `$…$` span was drawn through `penInk`, which transliterates ∠ θ π; `penSafe` rewrote ≠ → "!=", → → "=>" (and ≤ ≥ ≈ ∴) although the pen's font stack draws them; the `text-renders` check read `=&gt;` and could not see "=>" | bot `a5bc4ea`: a label whose words need the typesetter takes the typeset branch; `penSafe` keeps the drawable relations; font-metrics measures them; the check reads unescaped text. Cases `eva-em22p1-p8-fix-label-angle-s`, `isabelle-am21p1-p6-notation-label-theta`, `alexis-am21p1-p11-reason-not-equal`, `alexis-em24p2-p17-verdict-arrow` | fixed |
+| F47 | rendering in reasons and notes: Rainie AM 2023 P2 p6 "λ = 7.938×10⊠ ^4from (c)(i)" (self-check caught it); Alexis AM 2021 P2 p4 "factor out (2x+1)^(-3/2)" raw caret; Alexis EM 2021 P1 p7 "60--69" and "fewer aged 0 − 19"; Alexis AM 2021 P1 p4 "X + 3 = 0 gives x = −3" | pen (text) | superscripts lifted one character at a time (MathJax refused ⁻); the on-page reason row skipped `autoTexProse`; TeX's `--` inside `\text` drawn raw; `autoTexProse` read an en-dash range as a minus; `asSentence` capitalised a variable | bot `6730d8b`: one `{}^{…}` per superscript run; reasons run `autoTexProse`; `--`/`---` → –/—; a range with no operator beside it stays words; a leading variable keeps its case. Cases `rainie-am23p2-p6-reason-superscript`, `alexis-am21p2-p4-reason-caret`, `alexis-em21p1-p7-dash-range`; `test/pen-render-residue.test.js` | fixed |
+| F48 | Shayenne St Gabriel 2025 EM P2 p13 Q7(b)(i), two-column working: the ✗ of the left column's "l = 5.5 + y" drawn on the right column's "242 + 22y = 286 × 2" (which has its own ✓), the next line's ✓ on "22y = 330"; her real slip had no ✗ | placement | `_rightmostInkX`'s gap-stop only arms once the line's own ink is seen; on this shadowed photo the grid read her left-column writing as background, so the walk took the right column's first stroke as the line's end | bot `ec4f5e1`: ink met first more than a gap past the box is another column's; the box edge stands. Case `shayenne-em25p2-p13-glyph-crosses-column` with the new opt-in check `mark-beside-its-line`; `test/rightmost-ink-column.test.js` | fixed |
+| F49 | Isabelle AM 2021 P1 p6 Q11(a): a notation note beside a ✓ opens "should be" — the day's one comprehension FAIL ("is my line wrong or not?") | marker rule (wording) | the 10 Sep ring rule asks every notation note to open "should be", which is how a correction reads | bot `9124774` on `proposal/2026-10-01-notation-note-not-a-correction`: "write it as …" beside a ✓; "should be" stays beside a ✗. Case `isabelle-am21p1-p6-notation-write-it-as` | proposal — Adrian's call |
+
+**Report only (the read):** Isabelle AM GCE 2021 P1 `1cceb10e` — the paper library attached the
+Specimen Paper 1 (For 2021) as `gce 2021 am p1`'s questions file, and page 1's footer printed the
+marker's own grounding note to her ("the held Q2 scheme belongs to the specimen paper") — re-file
+the library row. Alexis AM 2021 P2 p10 Q6(c) 2/3 (A0 withheld on a correct follow-through, possibly
+harsh); Eva EM 2022 P1 p8 Q14(a) 2/2 (possibly generous); Rainie AM 2023 P2 p3 Q2(a) 4/4 (possibly
+generous). **Bench candidates not worked:** Shayenne p13's ✓ on "= 121 + 121 + 22y" slid ~150 px by
+`_slidePastInk` on grey paper (the same page's `marks-clear-of-ink` reads the paper as ink); Isabelle
+p6 score chip "Q12(a) 4/4" over a solution block (no-overlap, fails on main); arrows to the wrong
+line (5 pages); glyphs on print / crossed-out work (~9); maths broken mid-expression in strip notes
+(3); the same point three or four times at one error (~10 pages — a wording question for Adrian).
+Proof on the worker: pen bench 643/643 checks over 79 cases on the final tree (each new case FAIL on
+main, PASS on the fix); touched-module unit tests 396/396; the three commits' tree is byte-identical
+to the benched one. Full `npm test` left to CI.
