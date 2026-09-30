@@ -212,12 +212,16 @@ export type AlignedLine = ViewLine | { kind: 'sub'; text: string } | { kind: 'al
 const CONNECTOR = /^(?:so|gives|giving|then|hence|thus|therefore|and|when|which gives|so that|or)?$/i;
 const REL_CMD = /^\\(?:approx|equiv)(?![a-zA-Z])/;
 const INEQ = /^(?:<|>|\\(?:le|leq|ge|geq|lt|gt|ne|neq)(?![a-zA-Z]))/;
+const HAS_INEQ = /<|>|\\(?:le|leq|ge|geq|lt|gt|ne|neq)(?![a-zA-Z])/;
+// An implication chain or an environment is not one equality chain: leave it a sentence.
+const NOT_A_CHAIN = /\\(?:Rightarrow|Leftarrow|Leftrightarrow|rightarrow|implies|iff|therefore|to|mapsto|longrightarrow|Longrightarrow|xrightarrow|begin)(?![a-zA-Z])|&|\\\\/;
 
 /** Split TeX at its top-level "=" (and ≈, ≡). null when it is not an equation
  *  (no relation, or an inequality anywhere at the top level). */
 export function splitRelations(tex: string): { terms: string[]; rels: string[] } | null {
+  if (NOT_A_CHAIN.test(tex)) return null;
   const terms: string[] = [], rels: string[] = [];
-  let depth = 0, cur = '';
+  let depth = 0, cur = '', comma = false;
   for (let i = 0; i < tex.length; i++) {
     const c = tex[i], rest = tex.slice(i);
     if (c === '\\') {
@@ -229,14 +233,16 @@ export function splitRelations(tex: string): { terms: string[]; rels: string[] }
       }
       if (depth === 0 && INEQ.test(rest)) return null;
       const rc = depth === 0 ? rest.match(REL_CMD) : null;
-      if (rc) { terms.push(cur.trim()); rels.push(rc[0]); cur = ''; i += rc[0].length - 1; continue; }
-      const word = rest.match(/^\\(?:[a-zA-Z]+|.)/);
-      cur += word![0]; i += word![0].length - 1; continue;
+      if (rc) { if (comma) return null; terms.push(cur.trim()); rels.push(rc[0]); cur = ''; i += rc[0].length - 1; continue; }
+      const w = rest.match(/^\\(?:[a-zA-Z]+|.)/)?.[0] ?? c;
+      cur += w; i += w.length - 1; continue;
     }
     if (c === '{' || c === '(' || c === '[') depth++;
     else if ((c === '}' || c === ')' || c === ']') && depth > 0) depth--;
     if (depth === 0 && (c === '<' || c === '>')) return null;
-    if (depth === 0 && c === '=') { terms.push(cur.trim()); rels.push('='); cur = ''; continue; }
+    // "x = 1, y = 2" is a system, not a chain.
+    if (depth === 0 && c === '=') { if (comma) return null; terms.push(cur.trim()); rels.push('='); cur = ''; continue; }
+    if (depth === 0 && c === ',' && rels.length) comma = true;
     cur += c;
   }
   terms.push(cur.trim());
@@ -246,7 +252,8 @@ export function splitRelations(tex: string): { terms: string[]; rels: string[] }
 
 /** A step's text in math and prose pieces ("$…$" only; display maths never gets here). */
 function pieces(text: string): { math: boolean; s: string }[] {
-  const raw = text.split(/(\$[^$]+\$)/g).filter((p) => p !== '')
+  // "\$" is a dollar sign, not a maths delimiter.
+  const raw = text.split(/((?<!\\)\$(?:\\\$|[^$])+?(?<!\\)\$)/g).filter((p) => p !== '')
     .map((p) => (p.length > 2 && p.startsWith('$') && p.endsWith('$') ? { math: true, s: p.slice(1, -1) } : { math: false, s: p }));
   // A bracketed aside that holds maths ("(the only such value in $…$)") is ONE
   // prose piece, so it can go to the row's note whole.
@@ -281,6 +288,8 @@ export function stepRows(text: string): AlignRow[] | null {
     if (!p.math) {
       let s = p.s.trim();
       const aside = leadingAside(s);
+      // An aside that carries meaning ("not 3", "since h > 0") stays in the sentence.
+      if (aside && /\b(?:not|reject(?:ed)?|since|because|as)\b/i.test(aside[0])) return null;
       if (aside && rows.length) {
         const last = rows[rows.length - 1];
         last.note = [last.note, aside[0]].filter(Boolean).join('; ');
@@ -294,6 +303,7 @@ export function stepRows(text: string): AlignRow[] | null {
     }
     const eq = splitRelations(p.s);
     if (or) {
+      if (!eq && HAS_INEQ.test(p.s)) return null;
       rows[rows.length - 1].rhs += ` \\quad\\text{or}\\quad ${p.s.trim()}`;
       or = false; continue;
     }
@@ -314,10 +324,11 @@ export function stepRows(text: string): AlignRow[] | null {
 export function leadIn(text: string): [string, string] | null {
   let inMath = false;
   for (let i = 0; i < text.length - 1; i++) {
-    if (text[i] === '$') inMath = !inMath;
-    if (!inMath && text[i] === ':' && text[i + 1] === ' ') {
+    if (text[i] === '$' && text[i - 1] !== '\\') inMath = !inMath;
+    // not a ratio or a clock time ("2: 3", "10: 30")
+    if (!inMath && text[i] === ':' && text[i + 1] === ' ' && !(/\d/.test(text[i - 1] ?? '') && /\d/.test(text[i + 2] ?? ''))) {
       const head = text.slice(0, i + 1).trim(), rest = text.slice(i + 2).trim();
-      if (!rest || head.length > 160 || /^\(?\s*check\b/i.test(head)) return null;
+      if (!rest || head.length > 160 || /^\(?\s*(?:check|let|since|so|because|if|as|hence|therefore|thus)\b/i.test(head)) return null;
       const prose = head.replace(/\$[^$]*\$/g, ' ');
       if (!/[A-Za-z]{3,}/.test(prose) || prose.trim().split(/\s+/).length > 6) return null;
       return [head, rest];
@@ -341,7 +352,8 @@ export function alignView(lines: ViewLine[]): AlignedLine[] {
     let text = l.text;
     const li = leadIn(text);
     if (li) { flush(); out.push({ kind: 'sub', text: li[0] }); text = li[1]; }
-    const rows = stepRows(text);
+    let rows: AlignRow[] | null = null;
+    try { rows = stepRows(text); } catch { rows = null; }
     const line: ViewLine = { ...l, text };
     if (!rows) { flush(); out.push(line); continue; }
     if (l.codes) rows[rows.length - 1].codes = l.codes;

@@ -102,3 +102,40 @@ describe('equations lined up on "=" (30 Sep 2026)', () => {
     expect(v.map((l) => l.kind)).toEqual(['step', 'quiet', 'quiet']);
   });
 });
+
+// The bank audit of 356 solutions (30 Sep 2026) — each case it broke.
+describe('alignment — bank audit regressions', () => {
+  it('a dollar sign never throws and never splits the maths', () => {
+    expect(() => stepRows('$\\$360$')).not.toThrow();
+    expect(() => alignView([{ kind: 'step', text: '$x=\\dfrac{5000\\times 100}{40}=\\$12\\,500$' }])).not.toThrow();
+    const r = stepRows('$x=\\dfrac{5000\\times 100}{40}=\\$12\\,500$');
+    expect(r?.map((x) => x.rhs)).toEqual(['\\dfrac{5000\\times 100}{40}', '\\$12\\,500']);
+  });
+  it('an implication chain stays a sentence', () => {
+    expect(splitRelations('9 + y^2 - 2y = 72 \\Rightarrow y^2 - 2y - 63 = 0')).toBeNull();
+    expect(splitRelations('y = x^4 \\xrightarrow{a} y = 2x^4')).toBeNull();
+  });
+  it('an environment is never split', () => {
+    expect(splitRelations('f(x) = \\begin{cases} 1 & x=0 \\\\ 2 \\end{cases} = 3')).toBeNull();
+  });
+  it('an inequality after "or" leaves the step a sentence', () => {
+    expect(stepRows('$x = 1$ or $x \\geq 3$')).toBeNull();
+    expect(stepRows('$x = 1$ or $x = 2$')?.length).toBe(1);
+  });
+  it('"x = 1, y = 2" is a system, not a chain', () => {
+    expect(splitRelations('x=1, y=2')).toBeNull();
+    expect(splitRelations('D = (2(4) - 7,\\ 2(4) - 0) = (1, 8)')?.rels.length).toBe(2);
+  });
+  it('an aside that carries meaning stays in the sentence', () => {
+    expect(stepRows('$x = 2$ (not $3$) so $y = 4$')).toBeNull();
+    expect(stepRows('$h = 3$ (since $h>0$)')).toBeNull();
+    expect(stepRows('$\\alpha = 30°$ (acute) so $\\beta = 60°$')?.[0].note).toBe('acute');
+  });
+  it('no lead-in split at a ratio, a time, or a sentence that starts Let / Since / So', () => {
+    expect(leadIn('The ratio is 2: 3 so $x = 4$')).toBeNull();
+    expect(leadIn('Let f: $x \\mapsto 2x + 1$, so $f(2) = 5$')).toBeNull();
+    expect(leadIn('Since $0.0477<0.05$, we reject $H_0$: there is evidence')).toBeNull();
+    expect(leadIn('So he is not correct: 12 students')).toBeNull();
+    expect(leadIn('End values: at $x = 0$, $y = 1$')?.[0]).toBe('End values:');
+  });
+});
